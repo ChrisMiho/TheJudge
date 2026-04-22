@@ -1,0 +1,13 @@
+{
+  "finalQuestion": "What happens here?",
+  "orderedStack": [
+    {
+      "cardId": "opt",
+      "name": "Opt",
+      "oracleText": "Scry 1, then draw a card.",
+      "imageUrl": "",
+      "stackIndex": 0,
+      "stackRole": "top"
+    }
+  ]
+}

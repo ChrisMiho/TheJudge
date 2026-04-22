@@ -1,0 +1,13 @@
+INSTRUCTIONS
+- Explain reasoning clearly and concisely.
+- State uncertainty when context is incomplete.
+- Do not invent hidden state, targets, or board conditions.
+
+QUESTION
+What happens here?
+
+ORDERED STACK (BOTTOM TO TOP)
+Card 1 (top)
+cardId: opt
+name: Opt
+oracleText: Scry 1, then draw a card.

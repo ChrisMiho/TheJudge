@@ -1,0 +1,18 @@
+INSTRUCTIONS
+- Explain reasoning clearly and concisely.
+- State uncertainty when context is incomplete.
+- Do not invent hidden state, targets, or board conditions.
+
+QUESTION
+can i do this before that resolves??
+
+ORDERED STACK (BOTTOM TO TOP)
+Card 1 (bottom)
+cardId: silence
+name: Silence
+oracleText: Your opponents can't cast spells this turn.
+
+Card 2 (top)
+cardId: mystical-dispute
+name: Mystical Dispute
+oracleText: Counter target spell unless its controller pays 3.

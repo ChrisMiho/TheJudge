@@ -76,7 +76,7 @@ Implemented from the PRD:
 
 ## Next suggested steps
 
-Current branch focus: `feat/metadata-loading-optimization`
+Current branch focus: `feat/frontend-flow-tests`
 
 - [x] Move metadata loading off the main bundle path while keeping the static prebuilt data strategy.
 - [ ] Tune metadata filters and dedupe policy for gameplay realism.

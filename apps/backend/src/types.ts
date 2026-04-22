@@ -18,3 +18,13 @@ export type AskAiError = {
   error: string;
   retryAfterSeconds?: number;
 };
+
+export type PromptContextStackItem = StackItem & {
+  stackIndex: number;
+  stackRole: "bottom" | "middle" | "top";
+};
+
+export type PromptContext = {
+  finalQuestion: string;
+  orderedStack: PromptContextStackItem[];
+};

@@ -1,0 +1,63 @@
+{
+  "id": "near-cap-stack",
+  "description": "Near-cap stack verifies role/index behavior and fallback question logic.",
+  "request": {
+    "question": "    ",
+    "stack": [
+      {
+        "cardId": "card-1",
+        "name": "Card 1",
+        "oracleText": "First effect.",
+        "imageUrl": ""
+      },
+      {
+        "cardId": "card-2",
+        "name": "Card 2",
+        "oracleText": "Second effect.",
+        "imageUrl": ""
+      },
+      {
+        "cardId": "card-3",
+        "name": "Card 3",
+        "oracleText": "Third effect.",
+        "imageUrl": ""
+      },
+      {
+        "cardId": "card-4",
+        "name": "Card 4",
+        "oracleText": "Fourth effect.",
+        "imageUrl": ""
+      },
+      {
+        "cardId": "card-5",
+        "name": "Card 5",
+        "oracleText": "Fifth effect.",
+        "imageUrl": ""
+      },
+      {
+        "cardId": "card-6",
+        "name": "Card 6",
+        "oracleText": "Sixth effect.",
+        "imageUrl": ""
+      },
+      {
+        "cardId": "card-7",
+        "name": "Card 7",
+        "oracleText": "Seventh effect.",
+        "imageUrl": ""
+      },
+      {
+        "cardId": "card-8",
+        "name": "Card 8",
+        "oracleText": "Eighth effect.",
+        "imageUrl": ""
+      },
+      {
+        "cardId": "card-9",
+        "name": "Card 9",
+        "oracleText": "Ninth effect.",
+        "imageUrl": ""
+      }
+    ]
+  }
+}

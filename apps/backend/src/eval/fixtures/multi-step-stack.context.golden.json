@@ -1,0 +1,29 @@
+{
+  "finalQuestion": "Walk me through the full stack resolution.",
+  "orderedStack": [
+    {
+      "cardId": "lightning-bolt",
+      "name": "Lightning Bolt",
+      "oracleText": "Lightning Bolt deals 3 damage to any target.",
+      "imageUrl": "",
+      "stackIndex": 0,
+      "stackRole": "bottom"
+    },
+    {
+      "cardId": "counterspell",
+      "name": "Counterspell",
+      "oracleText": "Counter target spell.",
+      "imageUrl": "",
+      "stackIndex": 1,
+      "stackRole": "middle"
+    },
+    {
+      "cardId": "deflecting-swat",
+      "name": "Deflecting Swat",
+      "oracleText": "You may choose new targets for target spell or ability.",
+      "imageUrl": "",
+      "stackIndex": 2,
+      "stackRole": "top"
+    }
+  ]
+}

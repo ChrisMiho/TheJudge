@@ -1,0 +1,27 @@
+{
+  "id": "multi-step-stack",
+  "description": "Three-card stack where strict ordering matters for resolution.",
+  "request": {
+    "question": "Walk me through the full stack resolution.",
+    "stack": [
+      {
+        "cardId": "lightning-bolt",
+        "name": "Lightning Bolt",
+        "oracleText": "Lightning Bolt deals 3 damage to any target.",
+        "imageUrl": ""
+      },
+      {
+        "cardId": "counterspell",
+        "name": "Counterspell",
+        "oracleText": "Counter target spell.",
+        "imageUrl": ""
+      },
+      {
+        "cardId": "deflecting-swat",
+        "name": "Deflecting Swat",
+        "oracleText": "You may choose new targets for target spell or ability.",
+        "imageUrl": ""
+      }
+    ]
+  }
+}

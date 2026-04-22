@@ -1,0 +1,27 @@
+# STORY-002 - Context Normalization and Guardrails
+
+- title: Add deterministic normalization and guardrails so context is clean, bounded, and model-ready.
+- user value: As a player, I receive clearer responses because noisy or inconsistent inputs are normalized before prompt generation.
+- scope:
+  - implement normalization rules for question and card text fields used in context output
+  - enforce safe length limits and truncation strategy for long oracle text sections
+  - add explicit uncertainty and non-invention guardrail instructions to the generated prompt content
+  - define deterministic formatting rules for card blocks and section ordering
+  - expose normalization behavior through pure functions for isolated testing
+- acceptance criteria:
+  - normalization output is deterministic for identical inputs
+  - question and card text are trimmed and sanitized consistently
+  - long text handling follows documented truncation rules without breaking order semantics
+  - generated prompt content includes uncertainty language and "do not invent hidden state" guidance
+  - unit tests cover text cleanup, truncation behavior, and deterministic formatting
+- dependencies:
+  - STORY-001 context builder contract (interface alignment only)
+  - REQ-006, REQ-011
+  - DEC-004, DEC-009, DEC-013
+  - NFR-005
+  - `sections/integrations-and-data.md` (AI prompt context rules)
+- exclusions:
+  - no provider-specific code (Bedrock or otherwise)
+  - no request/response contract changes for `POST /api/ask-ai`
+  - no UI copy or styling changes
+  - no target/controller/mode expansion in MVP1

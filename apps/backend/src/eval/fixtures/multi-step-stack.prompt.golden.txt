@@ -1,0 +1,23 @@
+INSTRUCTIONS
+- Explain reasoning clearly and concisely.
+- State uncertainty when context is incomplete.
+- Do not invent hidden state, targets, or board conditions.
+
+QUESTION
+Walk me through the full stack resolution.
+
+ORDERED STACK (BOTTOM TO TOP)
+Card 1 (bottom)
+cardId: lightning-bolt
+name: Lightning Bolt
+oracleText: Lightning Bolt deals 3 damage to any target.
+
+Card 2 (middle)
+cardId: counterspell
+name: Counterspell
+oracleText: Counter target spell.
+
+Card 3 (top)
+cardId: deflecting-swat
+name: Deflecting Swat
+oracleText: You may choose new targets for target spell or ability.

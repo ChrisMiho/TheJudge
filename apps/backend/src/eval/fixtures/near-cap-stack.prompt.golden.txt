@@ -1,0 +1,53 @@
+INSTRUCTIONS
+- Explain reasoning clearly and concisely.
+- State uncertainty when context is incomplete.
+- Do not invent hidden state, targets, or board conditions.
+
+QUESTION
+Resolve the stack
+
+ORDERED STACK (BOTTOM TO TOP)
+Card 1 (bottom)
+cardId: card-1
+name: Card 1
+oracleText: First effect.
+
+Card 2 (middle)
+cardId: card-2
+name: Card 2
+oracleText: Second effect.
+
+Card 3 (middle)
+cardId: card-3
+name: Card 3
+oracleText: Third effect.
+
+Card 4 (middle)
+cardId: card-4
+name: Card 4
+oracleText: Fourth effect.
+
+Card 5 (middle)
+cardId: card-5
+name: Card 5
+oracleText: Fifth effect.
+
+Card 6 (middle)
+cardId: card-6
+name: Card 6
+oracleText: Sixth effect.
+
+Card 7 (middle)
+cardId: card-7
+name: Card 7
+oracleText: Seventh effect.
+
+Card 8 (middle)
+cardId: card-8
+name: Card 8
+oracleText: Eighth effect.
+
+Card 9 (top)
+cardId: card-9
+name: Card 9
+oracleText: Ninth effect.
