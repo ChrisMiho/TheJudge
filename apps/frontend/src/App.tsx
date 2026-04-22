@@ -1,12 +1,13 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { apiBaseUrl } from "./lib/env";
 import { getSuggestions, NO_MATCH_COPY } from "./lib/search";
 import type { AskAiError, AskAiRequest, AskAiResponse, StackItem } from "./types";
 
 const MAX_STACK_SIZE = 10;
 const RETRY_COOLDOWN_SECONDS = 13;
 const DEFAULT_QUESTION = "Resolve the stack";
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 const METADATA_URL = "/data/cardMetadata.json";
+const EMPTY_STATE_IMAGE_URL = "/assets/cat-wizard.svg";
 
 function formatMetaList(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "N/A";
@@ -31,6 +32,7 @@ export default function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [retryCountdown, setRetryCountdown] = useState(0);
+  const [emptyStateImageFailed, setEmptyStateImageFailed] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -117,7 +119,7 @@ export default function App() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/ask-ai`, {
+      const response = await fetch(`${apiBaseUrl}/api/ask-ai`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -191,7 +193,16 @@ export default function App() {
 
         {stack.length === 0 && (
           <div className="rounded-2xl border border-dashed border-slate-600 bg-gradient-to-br from-slate-800/80 to-slate-900 p-5 text-center">
-            <p className="text-4xl">🐱🧙</p>
+            {emptyStateImageFailed ? (
+              <p className="text-2xl font-semibold text-slate-200">Cat wizard</p>
+            ) : (
+              <img
+                src={EMPTY_STATE_IMAGE_URL}
+                alt="Cat wizard"
+                onError={() => setEmptyStateImageFailed(true)}
+                className="mx-auto w-24 max-w-full"
+              />
+            )}
             <p className="mt-2 text-sm font-medium text-slate-200">Build your stack to start.</p>
           </div>
         )}

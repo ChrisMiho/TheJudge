@@ -116,7 +116,9 @@ Current trunk slice branch: `feat/frontend-flow-tests`
 
 - [x] Keep static metadata strategy (DEC-012) but reduce frontend initial bundle impact from large metadata payloads.
 - [x] Complete merged metadata policy+tests slice (`STORY-010`, with former `STORY-005` scope): deterministic filtering/dedupe plus transform/search regression coverage.
-- [ ] Add UI-focused frontend coverage for search/add/decrypt flows (backend validation contract tests are implemented).
-- [ ] Add explicit UI regression stories for stack details/count, duplicate/cap constraints, and Decrypt failure-state resilience (`STORY-011` to `STORY-013`).
-- [ ] Prepare a clean interface boundary for eventual Bedrock Phase B integration without changing request/response contracts (`STORY-014`).
-- [ ] Replace emoji empty-state visual with a bundled static cat-wizard asset if approved.
+- [x] Add UI-focused frontend coverage for search/add/decrypt flows (`STORY-006`).
+- [x] Add explicit UI regression stories for stack details/count, duplicate/cap constraints, and Decrypt failure-state resilience (`STORY-011` to `STORY-013`).
+- [x] Add environment configuration/deployment target contract for frontend/backend API origin wiring (`STORY-007`).
+- [x] Prepare a clean interface boundary for eventual Bedrock Phase B integration without changing request/response contracts (`STORY-014`).
+- [x] Improve deterministic Phase A mock-answer readability for prompt/context debugging (`STORY-009`).
+- [x] Replace emoji empty-state visual with bundled static cat-wizard asset (`STORY-008`).

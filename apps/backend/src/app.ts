@@ -1,23 +1,29 @@
 import cors from "cors";
 import express from "express";
-import { buildMockAnswer } from "./mockAskAi.js";
-import { buildPromptContext } from "./promptContext.js";
+import { mockAskAiProvider } from "./providers/mockAskAiProvider.js";
+import type { AskAiProvider } from "./providers/askAiProvider.js";
 import { askAiRequestSchema } from "./validation.js";
 import type { AskAiError } from "./types.js";
 
 const retryAfterSeconds = 13;
 
-export function createApp() {
-  const app = express();
+type AppOptions = {
+  frontendOrigin?: string;
+  askAiProvider?: AskAiProvider;
+};
 
-  app.use(cors());
+export function createApp(options: AppOptions = {}) {
+  const app = express();
+  const askAiProvider = options.askAiProvider ?? mockAskAiProvider;
+
+  app.use(cors(options.frontendOrigin ? { origin: options.frontendOrigin } : undefined));
   app.use(express.json());
 
   app.get("/api/health", (_req, res) => {
     res.status(200).json({ ok: true });
   });
 
-  app.post("/api/ask-ai", (req, res) => {
+  app.post("/api/ask-ai", async (req, res) => {
     const parsed = askAiRequestSchema.safeParse(req.body);
     if (!parsed.success) {
       const error: AskAiError = {
@@ -27,8 +33,6 @@ export function createApp() {
       res.status(400).json(error);
       return;
     }
-
-    const promptContext = buildPromptContext(parsed.data);
 
     const shouldFail = req.query.fail === "true";
     if (shouldFail) {
@@ -40,8 +44,16 @@ export function createApp() {
       return;
     }
 
-    const response = buildMockAnswer(promptContext);
-    res.status(200).json(response);
+    try {
+      const response = await askAiProvider.generateAnswer(parsed.data);
+      res.status(200).json(response);
+    } catch {
+      const error: AskAiError = {
+        error: "Miho is working on it",
+        retryAfterSeconds
+      };
+      res.status(502).json(error);
+    }
   });
 
   return app;
