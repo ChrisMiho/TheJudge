@@ -10,9 +10,21 @@ ORDERED STACK (BOTTOM TO TOP)
 Card 1 (bottom)
 cardId: silence
 name: Silence
+manaCost: (none)
+manaValue: 0
+typeLine: (none)
+colors: (none)
+supertypes: (none)
+subtypes: (none)
 oracleText: Your opponents can't cast spells this turn.
 
 Card 2 (top)
 cardId: mystical-dispute
 name: Mystical Dispute
+manaCost: (none)
+manaValue: 0
+typeLine: (none)
+colors: (none)
+supertypes: (none)
+subtypes: (none)
 oracleText: Counter target spell unless its controller pays 3.

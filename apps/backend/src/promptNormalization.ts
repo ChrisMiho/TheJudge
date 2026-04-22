@@ -24,11 +24,26 @@ export function normalizeCardText(value: string): string {
   return truncateOracleText(normalizeWhitespace(value));
 }
 
+function formatList(values: string[]): string {
+  return values.length > 0 ? values.join(", ") : "(none)";
+}
+
 export function buildPromptText(context: PromptContext): string {
   const cardsSection = context.orderedStack
     .map(
       (card, index) =>
-        `Card ${index + 1} (${card.stackRole})\ncardId: ${card.cardId}\nname: ${card.name}\noracleText: ${card.oracleText}`
+        [
+          `Card ${index + 1} (${card.stackRole})`,
+          `cardId: ${card.cardId}`,
+          `name: ${card.name}`,
+          `manaCost: ${card.manaCost || "(none)"}`,
+          `manaValue: ${card.manaValue}`,
+          `typeLine: ${card.typeLine || "(none)"}`,
+          `colors: ${formatList(card.colors)}`,
+          `supertypes: ${formatList(card.supertypes)}`,
+          `subtypes: ${formatList(card.subtypes)}`,
+          `oracleText: ${card.oracleText}`
+        ].join("\n")
     )
     .join("\n\n");
 

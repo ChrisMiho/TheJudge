@@ -98,13 +98,25 @@ describe("context evaluation harness", () => {
             cardId: "bottom",
             name: "Bottom Spell",
             oracleText: "Bottom text",
-            imageUrl: ""
+            imageUrl: "",
+            manaCost: "{U}",
+            manaValue: 1,
+            typeLine: "Instant",
+            colors: ["U"],
+            supertypes: [],
+            subtypes: []
           },
           {
             cardId: "top",
             name: "Top Spell",
             oracleText: "Top text",
-            imageUrl: ""
+            imageUrl: "",
+            manaCost: "{1}{R}",
+            manaValue: 2,
+            typeLine: "Instant",
+            colors: ["R"],
+            supertypes: [],
+            subtypes: []
           }
         ]
       }

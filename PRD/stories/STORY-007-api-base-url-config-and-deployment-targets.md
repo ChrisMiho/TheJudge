@@ -24,3 +24,5 @@
   - no multi-endpoint product API expansion
   - no infrastructure-as-code requirement in MVP1 scope
   - no runtime metadata sync tooling
+  - no frontend interaction-flow regression test expansion (tracked in `STORY-006`)
+  - no mock-answer formatting changes (tracked in `STORY-009`)

@@ -1,0 +1,27 @@
+# STORY-012 - Duplicate and Stack-Cap Regression Coverage
+
+- title: Add explicit frontend regression coverage for duplicate-card blocking and 10-card stack limit behavior.
+- user value: As a player, I get consistent guardrails during stack building because duplicate and cap rules behave predictably in MVP1.
+- scope:
+  - add coverage that duplicate adds are blocked when the selected card already exists in stack
+  - add coverage that duplicate-block message appears with MVP1 temporary-rule intent
+  - add coverage that adding an 11th card is blocked when stack already contains 10 cards
+  - add coverage that stack-cap explanatory message appears when limit is reached
+  - ensure guardrails do not silently mutate existing stack order or entries
+- acceptance criteria:
+  - tests verify duplicate add attempts are blocked and stack size remains unchanged
+  - tests verify duplicate-block copy is shown when duplicate add is attempted
+  - tests verify add attempts beyond 10 cards are blocked and stack size remains at 10
+  - tests verify stack-cap explanatory copy is shown when limit is reached
+  - tests verify existing ordered stack entries are preserved after blocked actions
+  - tests run in CI and fail on duplicate/cap regression behavior
+- dependencies:
+  - REQ-009, REQ-010
+  - FLOW-004
+  - DEC-001, DEC-007, DEC-008
+  - NFR-002, NFR-005
+- exclusions:
+  - no support for duplicate cards in MVP1
+  - no changes to configured stack size limit
+  - no gameplay legality rules engine
+  - no backend endpoint or contract changes

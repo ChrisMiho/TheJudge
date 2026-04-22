@@ -17,6 +17,12 @@ const baseContext: PromptContext = {
       name: "Opt",
       oracleText: "Scry 1, then draw a card.",
       imageUrl: "",
+      manaCost: "{U}",
+      manaValue: 1,
+      typeLine: "Instant",
+      colors: ["U"],
+      supertypes: [],
+      subtypes: [],
       stackIndex: 0,
       stackRole: "bottom"
     },
@@ -25,6 +31,12 @@ const baseContext: PromptContext = {
       name: "Counterspell",
       oracleText: "Counter target spell.",
       imageUrl: "",
+      manaCost: "{U}{U}",
+      manaValue: 2,
+      typeLine: "Instant",
+      colors: ["U"],
+      supertypes: [],
+      subtypes: [],
       stackIndex: 1,
       stackRole: "top"
     }

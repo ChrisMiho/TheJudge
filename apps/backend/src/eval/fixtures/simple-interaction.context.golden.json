@@ -6,6 +6,12 @@
       "name": "Opt",
       "oracleText": "Scry 1, then draw a card.",
       "imageUrl": "",
+      "manaCost": "",
+      "manaValue": 0,
+      "typeLine": "",
+      "colors": [],
+      "supertypes": [],
+      "subtypes": [],
       "stackIndex": 0,
       "stackRole": "top"
     }

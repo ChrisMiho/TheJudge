@@ -8,7 +8,13 @@ function createStack(size: number): AskAiRequest["stack"] {
     cardId: `card-${index + 1}`,
     name: `Card ${index + 1}`,
     oracleText: `Oracle text ${index + 1}`,
-    imageUrl: ""
+    imageUrl: "",
+    manaCost: `{${index + 1}}`,
+    manaValue: index + 1,
+    typeLine: "Instant",
+    colors: ["U"],
+    supertypes: [],
+    subtypes: []
   }));
 }
 
@@ -71,7 +77,13 @@ describe("buildPromptContext", () => {
           cardId: "  card-1 ",
           name: "  Fancy   Name ",
           oracleText: `\n${"z".repeat(MAX_ORACLE_TEXT_CHARS + 60)}\n`,
-          imageUrl: "  https://example.com/image.png  "
+          imageUrl: "  https://example.com/image.png  ",
+          manaCost: " {1}{U} ",
+          manaValue: 2,
+          typeLine: "  Legendary   Creature —  Wizard  ",
+          colors: ["U", "U", " "],
+          supertypes: ["Legendary", "  "],
+          subtypes: ["Wizard", "Wizard"]
         }
       ]
     });
@@ -80,6 +92,11 @@ describe("buildPromptContext", () => {
     expect(context.orderedStack[0]?.cardId).toBe("card-1");
     expect(context.orderedStack[0]?.name).toBe("Fancy Name");
     expect(context.orderedStack[0]?.imageUrl).toBe("https://example.com/image.png");
+    expect(context.orderedStack[0]?.manaCost).toBe("{1}{U}");
+    expect(context.orderedStack[0]?.typeLine).toBe("Legendary Creature — Wizard");
+    expect(context.orderedStack[0]?.colors).toEqual(["U"]);
+    expect(context.orderedStack[0]?.supertypes).toEqual(["Legendary"]);
+    expect(context.orderedStack[0]?.subtypes).toEqual(["Wizard"]);
     expect((context.orderedStack[0]?.oracleText.length ?? 0) <= MAX_ORACLE_TEXT_CHARS).toBe(true);
   });
 });

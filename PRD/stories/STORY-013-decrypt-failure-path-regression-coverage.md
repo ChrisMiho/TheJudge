@@ -1,0 +1,27 @@
+# STORY-013 - Decrypt Failure-Path Regression Coverage
+
+- title: Add explicit frontend integration coverage for Decrypt failure handling, preserved state, and retry cooldown behavior.
+- user value: As a player, I can recover from backend errors without rebuilding context because failure UX remains resilient and predictable.
+- scope:
+  - add frontend integration-style tests for failed Decrypt request behavior
+  - verify failure-state copy uses **Miho is working on it**
+  - verify stack and question remain intact after failed request
+  - verify previous successful answer remains visible until a new success replaces it
+  - verify retry control presence and 13-second cooldown behavior
+- acceptance criteria:
+  - tests verify failed request shows **Miho is working on it**
+  - tests verify failed request preserves stack and question values
+  - tests verify previous successful response remains visible after subsequent failure
+  - tests verify retry button is shown and cooldown behavior enforces 13 seconds
+  - tests verify repeated failures do not wipe in-progress user context
+  - tests run in CI and fail on failure-path regressions
+- dependencies:
+  - REQ-014
+  - FLOW-003
+  - DEC-014, DEC-016
+  - NFR-007, NFR-005
+- exclusions:
+  - no changes to retry cooldown duration
+  - no backend provider integration changes
+  - no redesign of error-state visual styling
+  - no additional product-facing endpoints

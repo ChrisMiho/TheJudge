@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { getSuggestions } from "./lib/search";
+import { getSuggestions, NO_MATCH_COPY } from "./lib/search";
 import type { AskAiError, AskAiRequest, AskAiResponse, StackItem } from "./types";
 
 const MAX_STACK_SIZE = 10;
@@ -7,6 +7,10 @@ const RETRY_COOLDOWN_SECONDS = 13;
 const DEFAULT_QUESTION = "Resolve the stack";
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 const METADATA_URL = "/data/cardMetadata.json";
+
+function formatMetaList(values: string[]): string {
+  return values.length > 0 ? values.join(", ") : "N/A";
+}
 
 function getFinalQuestion(question: string): string {
   const trimmed = question.trim();
@@ -216,7 +220,7 @@ export default function App() {
             ) : metadataLoadError ? (
               <p className="px-2 py-1 text-sm text-rose-300">{metadataLoadError}</p>
             ) : suggestions.length === 0 ? (
-              <p className="px-2 py-1 text-sm text-slate-400">No matching card found</p>
+              <p className="px-2 py-1 text-sm text-slate-400">{NO_MATCH_COPY}</p>
             ) : (
               <ul className="flex flex-col gap-1">
                 {suggestions.map((card) => (
@@ -237,22 +241,46 @@ export default function App() {
 
         {selectedCard && (
           <article className="rounded-2xl border border-slate-600 bg-slate-800/75 p-4 shadow-[0_14px_34px_-24px_rgba(37,99,235,0.9)]">
-            <h2 className="text-base font-semibold text-slate-100">{selectedCard.name}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-slate-300">{selectedCard.oracleText}</p>
-            {selectedCard.imageUrl && (
-              <img
-                src={selectedCard.imageUrl}
-                alt={selectedCard.name}
-                className="mt-3 h-36 rounded-xl border border-slate-600 object-cover"
-              />
-            )}
-            <button
-              type="button"
-              onClick={handleAddSelectedCard}
-              className="mt-4 rounded-xl bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:from-sky-500 hover:to-cyan-400"
-            >
-              {addButtonLabel}
-            </button>
+            <div className="grid gap-3 sm:grid-cols-[minmax(180px,220px)_1fr]">
+              {selectedCard.imageUrl ? (
+                <img
+                  src={selectedCard.imageUrl}
+                  alt={selectedCard.name}
+                  className="w-full rounded-xl border border-slate-600 bg-slate-950/40 object-contain p-1"
+                />
+              ) : (
+                <div className="flex min-h-56 w-full items-center justify-center rounded-xl border border-dashed border-slate-600 bg-slate-900/40 text-xs text-slate-400">
+                  No image
+                </div>
+              )}
+              <div className="flex flex-col justify-between gap-3 rounded-xl border border-slate-600/80 bg-slate-900/45 p-3">
+                <div>
+                  <h2 className="text-base font-semibold text-slate-100">{selectedCard.name}</h2>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-300">{selectedCard.oracleText}</p>
+                </div>
+                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs text-slate-300">
+                  <dt className="font-semibold text-slate-200">Mana Cost</dt>
+                  <dd>{selectedCard.manaCost || "N/A"}</dd>
+                  <dt className="font-semibold text-slate-200">Mana Value</dt>
+                  <dd>{selectedCard.manaValue}</dd>
+                  <dt className="font-semibold text-slate-200">Type Line</dt>
+                  <dd>{selectedCard.typeLine || "N/A"}</dd>
+                  <dt className="font-semibold text-slate-200">Colors</dt>
+                  <dd>{formatMetaList(selectedCard.colors)}</dd>
+                  <dt className="font-semibold text-slate-200">Supertypes</dt>
+                  <dd>{formatMetaList(selectedCard.supertypes)}</dd>
+                  <dt className="font-semibold text-slate-200">Subtypes</dt>
+                  <dd>{formatMetaList(selectedCard.subtypes)}</dd>
+                </dl>
+                <button
+                  type="button"
+                  onClick={handleAddSelectedCard}
+                  className="rounded-xl bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:from-sky-500 hover:to-cyan-400"
+                >
+                  {addButtonLabel}
+                </button>
+              </div>
+            </div>
           </article>
         )}
 

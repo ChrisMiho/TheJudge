@@ -24,3 +24,5 @@
   - no remote CDN image dependency
   - no changes to backend/API behavior
   - no additional empty-state action buttons
+  - no environment/base-URL configuration work (tracked in `STORY-007`)
+  - no metadata policy or search test work (tracked in `STORY-010`)

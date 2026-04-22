@@ -44,6 +44,7 @@ Validate the end-to-end user flow before full Bedrock integration:
    - `npm install`
 2. Prepare card metadata source file:
    - place Scryfall bulk file at `apps/frontend/data/scryfall/default-cards.json`
+   - or refresh automatically with `npm run data:refresh`
 3. Build trimmed metadata:
    - `npm run data:build`
 4. Start both apps:
@@ -61,6 +62,7 @@ Validate the end-to-end user flow before full Bedrock integration:
 - `npm --workspace apps/frontend run test` - run frontend tests
 - `npm --workspace apps/backend run test` - run backend tests
 - `npm --workspace apps/backend run test:eval` - run backend eval harness test
+- `npm run data:refresh` - download latest Scryfall `default_cards` and rebuild trimmed metadata
 - stop running processes with `Ctrl + C`
 
 ## Current Feature Status
@@ -68,13 +70,16 @@ Validate the end-to-end user flow before full Bedrock integration:
 Implemented flow and platform pieces:
 
 - [x] search input with threshold and no-match behavior
-- [x] card preview before add
+- [x] card preview before add with in-panel metadata context and improved image quality
 - [x] stack add/remove and stack details
 - [x] duplicate blocking (MVP simplification) and stack cap of 10
 - [x] optional question with fallback `Resolve the stack`
-- [x] backend request validation and mock `POST /api/ask-ai`
+- [x] backend request validation and mock `POST /api/ask-ai` with explicit stack-order markers
 - [x] failure state with retry cooldown behavior
-- [x] metadata transform pipeline + runtime metadata loading from `public/data/cardMetadata.json`
+- [x] metadata transform pipeline + runtime metadata loading from `public/data/cardMetadata.json` with deterministic latest-printing dedupe
+- [x] automatic Scryfall refresh script (`npm run data:refresh`) to fetch `default_cards` and rebuild metadata
+- [x] enriched stack context fields in request/prompt pipeline (`manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`)
+- [x] suggestion list capped to 3 items to keep search UI compact
 - [x] backend prompt context builder, normalization, and fixture-based eval harness
 
 ## Story Checklist (Track Progress Here)
@@ -88,12 +93,15 @@ Context and prompt quality:
 
 Pending implementation backlog:
 
-- [ ] `STORY-010` tune metadata filtering and dedupe policy
-- [ ] `STORY-005` add metadata transform contract tests and broader search scenarios
+- [x] `STORY-010` define metadata filtering/dedupe policy and lock it with transform/search regression tests (merged scope formerly tracked as `STORY-005`)
 - [ ] `STORY-006` add UI-focused frontend coverage for search/add/decrypt
 - [ ] `STORY-007` add API base URL environment config and deployment targets
-- [ ] `STORY-008` replace empty-state emoji with bundled cat-wizard asset (after approval)
 - [ ] `STORY-009` improve mock answer ergonomics for clearer prompt/context debugging
+- [ ] `STORY-011` add stack icon/count and stack details/remove regression coverage
+- [ ] `STORY-012` add duplicate-block and 10-card-cap regression coverage
+- [ ] `STORY-013` add Decrypt failure-path regression coverage (error copy/state preserve/retry cooldown)
+- [ ] `STORY-014` add backend provider boundary so mock can swap to Bedrock later without API contract changes
+- [ ] `STORY-008` replace empty-state emoji with bundled cat-wizard asset (after approval)
 
 ## Documentation Notes
 

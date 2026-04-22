@@ -1,0 +1,26 @@
+# STORY-014 - LLM Provider Boundary for Phase B Readiness
+
+- title: Create a clean backend provider boundary so Phase A mock logic can be replaced by Bedrock later without changing request/response contracts.
+- user value: As a player, I get more stable behavior over time because backend integration changes can happen without breaking the Decrypt Stack workflow.
+- scope:
+  - define a backend service interface for generating `answer` text from validated `AskAiRequest` input
+  - isolate current Phase A mock implementation behind that interface
+  - ensure route handlers depend on the interface boundary rather than inline provider-specific logic
+  - document boundary responsibilities and future Bedrock handoff expectations
+  - preserve existing endpoint behavior and payload contracts during refactor
+- acceptance criteria:
+  - `POST /api/ask-ai` request and response contracts remain unchanged
+  - mock answer generation is invoked through a dedicated provider/service boundary
+  - route/controller layer does not contain provider-specific formatting or invocation logic
+  - integration tests continue to pass with Phase A mock behavior active
+  - contributor docs describe where Phase B Bedrock implementation should plug in
+- dependencies:
+  - REQ-012, REQ-013
+  - DEC-010, DEC-011, DEC-017
+  - NFR-004, NFR-005, NFR-008
+  - `sections/integrations-and-data.md` (API Design, Delivery Strategy, Phase A/Phase B)
+- exclusions:
+  - no real Bedrock invocation or credential setup in MVP1
+  - no contract/schema changes for `AskAiRequest` or `AskAiResponse`
+  - no additional product-facing backend endpoints
+  - no prompt-rule expansion beyond existing MVP1 context rules

@@ -1,5 +1,7 @@
 import type { StackItem } from "../types";
 
+export const NO_MATCH_COPY = "No matching card found";
+
 export function normalize(input: string): string {
   return input.trim().toLowerCase();
 }
@@ -38,5 +40,5 @@ export function isFuzzyMatch(candidateName: string, query: string): boolean {
 
 export function getSuggestions(cards: StackItem[], query: string): StackItem[] {
   if (query.trim().length < 3) return [];
-  return cards.filter((card) => isFuzzyMatch(card.name, query)).slice(0, 8);
+  return cards.filter((card) => isFuzzyMatch(card.name, query)).slice(0, 3);
 }

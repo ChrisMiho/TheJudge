@@ -7,7 +7,6 @@
   - add frontend tests for preview/add flow including first-add and subsequent-add button labels
   - add frontend tests for stack ordering assumptions across add/remove and submit payload composition
   - add frontend tests for Decrypt Stack button behavior including empty-stack guard
-  - validate core failure-path UX contract where relevant to Decrypt flow
 - acceptance criteria:
   - tests cover search threshold behavior and suggestion selection to preview path
   - tests verify add button text rules: **Begin stackening!** then **Add to Stack**
@@ -23,3 +22,4 @@
   - no Bedrock integration
   - no backend endpoint expansion
   - no manual stack reorder feature
+  - no full failure-path retry/cooldown coverage ownership (tracked in `STORY-013`)

@@ -6,6 +6,12 @@
       "name": "Silence",
       "oracleText": "Your opponents can't cast spells this turn.",
       "imageUrl": "",
+      "manaCost": "",
+      "manaValue": 0,
+      "typeLine": "",
+      "colors": [],
+      "supertypes": [],
+      "subtypes": [],
       "stackIndex": 0,
       "stackRole": "bottom"
     },
@@ -14,6 +20,12 @@
       "name": "Mystical Dispute",
       "oracleText": "Counter target spell unless its controller pays 3.",
       "imageUrl": "",
+      "manaCost": "",
+      "manaValue": 0,
+      "typeLine": "",
+      "colors": [],
+      "supertypes": [],
+      "subtypes": [],
       "stackIndex": 1,
       "stackRole": "top"
     }
