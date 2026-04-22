@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const inputPath = path.resolve("apps/frontend/data/scryfall/default-cards.json");
-const outputPath = path.resolve("apps/frontend/src/data/cardMetadata.json");
+const outputPath = path.resolve("apps/frontend/public/data/cardMetadata.json");
 
 function normalizeName(name) {
   return name.trim().toLowerCase();

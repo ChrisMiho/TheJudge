@@ -71,11 +71,16 @@ Implemented from the PRD:
 - mock backend `POST /api/ask-ai` response flow
 - failure copy and retry cooldown behavior
 - local trimmed metadata pipeline from Scryfall bulk data (`npm run data:build`)
+- runtime metadata loading from `public/data/cardMetadata.json` to keep bundle size low
+- lightweight frontend and backend test suites via Vitest
 
 ## Next suggested steps
 
-1. Tune metadata filters and dedupe policy for gameplay realism.
-2. Add tests for the metadata transform script and search behavior.
-3. Add frontend/backend test coverage for core flows and validation.
-4. Add environment configuration for API base URL and deployment targets.
-5. Begin Phase B integration boundary for real Bedrock invocation.
+Current branch focus: `feat/metadata-loading-optimization`
+
+- [x] Move metadata loading off the main bundle path while keeping the static prebuilt data strategy.
+- [ ] Tune metadata filters and dedupe policy for gameplay realism.
+- [ ] Add tests for the metadata transform script and expand search behavior scenarios.
+- [ ] Add UI-focused frontend tests for search/add/decrypt flows (backend contract tests are in place).
+- [ ] Add environment configuration for API base URL and deployment targets.
+- [ ] Begin Phase B integration boundary for real Bedrock invocation.

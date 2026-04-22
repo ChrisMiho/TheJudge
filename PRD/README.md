@@ -104,11 +104,16 @@ Read in this order:
 - Frontend currently supports search, preview, add/remove stack, duplicate block, stack cap, optional question, and Decrypt Stack flow.
 - Backend `POST /api/ask-ai` is implemented with validation and Phase A mock response contract.
 - Local Scryfall bulk data is stored at `apps/frontend/data/scryfall/default-cards.json`.
-- Trimmed metadata generation is implemented via `npm run data:build` and outputs `apps/frontend/src/data/cardMetadata.json`.
+- Trimmed metadata generation is implemented via `npm run data:build` and outputs `apps/frontend/public/data/cardMetadata.json`.
+- Frontend now loads metadata at runtime from `/data/cardMetadata.json` to avoid bundling the full dataset in the main JS chunk.
+- Lightweight automated tests exist for frontend search helpers and backend API contracts.
 - Root dev workflow is available with `npm run dev` for running frontend and backend together.
 
 ## Next Agent Implementation Focus
-1. Keep static metadata strategy (DEC-012) but reduce frontend initial bundle impact from large metadata payloads.
-2. Replace emoji empty-state visual with a bundled static cat-wizard asset if approved.
-3. Add test coverage for search/add/decrypt flows and backend validation contracts.
-4. Prepare a clean interface boundary for eventual Bedrock Phase B integration without changing request/response contracts.
+Current trunk slice branch: `feat/metadata-loading-optimization`
+
+- [x] Keep static metadata strategy (DEC-012) but reduce frontend initial bundle impact from large metadata payloads.
+- [ ] Add tests for metadata transform output shape and expand search behavior against representative card samples.
+- [ ] Add UI-focused frontend coverage for search/add/decrypt flows (backend validation contract tests are implemented).
+- [ ] Prepare a clean interface boundary for eventual Bedrock Phase B integration without changing request/response contracts.
+- [ ] Replace emoji empty-state visual with a bundled static cat-wizard asset if approved.
