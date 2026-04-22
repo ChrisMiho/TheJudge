@@ -149,7 +149,7 @@ Pending implementation backlog:
 - [x] `STORY-013` add Decrypt failure-path regression coverage (error copy/state preserve/retry cooldown)
 - [x] `STORY-014` add backend provider boundary so mock can swap to Bedrock later without API contract changes
 - [x] `STORY-008` replace empty-state emoji with bundled cat-wizard asset (after approval)
-- [ ] `STORY-015` use `cats-homescreen.png` as centered empty-state default image with no surrounding box
+- [x] `STORY-015` use `cats-homescreen.png` as centered empty-state default image with no surrounding box
 - [x] `STORY-016` establish engineering quality guardrails with enforceable repo-level gates
 - [x] `STORY-017` remediate current hotspots via modular refactor with regression-safe tests
 
