@@ -1,0 +1,347 @@
+import { FormEvent, useMemo, useState } from "react";
+import cardMetadataRaw from "./data/cardMetadata.json";
+import type { AskAiError, AskAiRequest, AskAiResponse, StackItem } from "./types";
+
+const MAX_STACK_SIZE = 10;
+const RETRY_COOLDOWN_SECONDS = 13;
+const DEFAULT_QUESTION = "Resolve the stack";
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+const cardMetadata = cardMetadataRaw as StackItem[];
+
+function normalize(input: string): string {
+  return input.trim().toLowerCase();
+}
+
+function levenshteinDistance(a: string, b: string): number {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+
+  const matrix: number[][] = Array.from({ length: b.length + 1 }, () =>
+    Array(a.length + 1).fill(0)
+  );
+
+  for (let i = 0; i <= b.length; i += 1) matrix[i][0] = i;
+  for (let j = 0; j <= a.length; j += 1) matrix[0][j] = j;
+
+  for (let i = 1; i <= b.length; i += 1) {
+    for (let j = 1; j <= a.length; j += 1) {
+      const substitutionCost = a[j - 1] === b[i - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + substitutionCost
+      );
+    }
+  }
+
+  return matrix[b.length][a.length];
+}
+
+function isFuzzyMatch(candidateName: string, query: string): boolean {
+  const normalizedCandidate = normalize(candidateName);
+  const normalizedQuery = normalize(query);
+  if (normalizedCandidate.includes(normalizedQuery)) return true;
+  return levenshteinDistance(normalizedCandidate, normalizedQuery) <= 2;
+}
+
+function getFinalQuestion(question: string): string {
+  const trimmed = question.trim();
+  return trimmed.length > 0 ? trimmed : DEFAULT_QUESTION;
+}
+
+export default function App() {
+  const [searchInput, setSearchInput] = useState("");
+  const [selectedCard, setSelectedCard] = useState<StackItem | null>(null);
+  const [stack, setStack] = useState<StackItem[]>([]);
+  const [showStackDetails, setShowStackDetails] = useState(false);
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [retryCountdown, setRetryCountdown] = useState(0);
+
+  const suggestions = useMemo(() => {
+    if (searchInput.trim().length < 3) return [];
+    return cardMetadata.filter((card) => isFuzzyMatch(card.name, searchInput)).slice(0, 8);
+  }, [searchInput]);
+
+  const addButtonLabel = stack.length === 0 ? "Begin stackening!" : "Add to Stack";
+  const canRetry = retryCountdown === 0 && !isSubmitting;
+
+  function flashStatus(message: string): void {
+    setStatusMessage(message);
+    window.setTimeout(() => {
+      setStatusMessage((current) => (current === message ? null : current));
+    }, 1400);
+  }
+
+  function startRetryCooldown(seconds: number): void {
+    setRetryCountdown(seconds);
+    const intervalId = window.setInterval(() => {
+      setRetryCountdown((current) => {
+        if (current <= 1) {
+          window.clearInterval(intervalId);
+          return 0;
+        }
+        return current - 1;
+      });
+    }, 1000);
+  }
+
+  function handleAddSelectedCard(): void {
+    if (!selectedCard) return;
+
+    if (stack.some((item) => item.cardId === selectedCard.cardId)) {
+      flashStatus("Duplicate cards are not supported in MVP1.");
+      return;
+    }
+
+    if (stack.length >= MAX_STACK_SIZE) {
+      flashStatus("MVP stack limit reached (10 cards).");
+      return;
+    }
+
+    setStack((current) => [...current, selectedCard]);
+    flashStatus("Stacked");
+  }
+
+  function removeFromStack(cardId: string): void {
+    setStack((current) => current.filter((item) => item.cardId !== cardId));
+  }
+
+  async function submitAskAi(payload: AskAiRequest): Promise<void> {
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/ask-ai`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const body = (await response.json()) as AskAiError;
+        setError("Miho is working on it");
+        startRetryCooldown(body.retryAfterSeconds ?? RETRY_COOLDOWN_SECONDS);
+        return;
+      }
+
+      const body = (await response.json()) as AskAiResponse;
+      setAnswer(body.answer);
+      setError(null);
+    } catch (_err) {
+      setError("Miho is working on it");
+      startRetryCooldown(RETRY_COOLDOWN_SECONDS);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleDecryptStack(event: FormEvent): Promise<void> {
+    event.preventDefault();
+
+    if (stack.length === 0) {
+      flashStatus("Add at least one card before decrypting.");
+      return;
+    }
+
+    const payload: AskAiRequest = {
+      question: getFinalQuestion(question),
+      stack
+    };
+
+    await submitAskAi(payload);
+  }
+
+  async function handleRetry(): Promise<void> {
+    if (!canRetry || stack.length === 0) return;
+    await submitAskAi({
+      question: getFinalQuestion(question),
+      stack
+    });
+  }
+
+  return (
+    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
+      <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 shadow-[0_20px_60px_-28px_rgba(30,64,175,0.65)] backdrop-blur-xl md:p-6">
+        <header className="flex items-center justify-between">
+          <div>
+            <h1 className="bg-gradient-to-r from-sky-300 to-blue-400 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+              TheJudge
+            </h1>
+            <p className="text-sm text-slate-300">Flow-validation MVP</p>
+          </div>
+          {stack.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowStackDetails(true)}
+              className="relative rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm font-medium text-slate-100 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800"
+            >
+              Stack
+              <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 px-1 text-xs font-semibold text-white">
+                {stack.length}
+              </span>
+            </button>
+          )}
+        </header>
+
+        {stack.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-slate-600 bg-gradient-to-br from-slate-800/80 to-slate-900 p-5 text-center">
+            <p className="text-4xl">🐱🧙</p>
+            <p className="mt-2 text-sm font-medium text-slate-200">Build your stack to start.</p>
+          </div>
+        )}
+
+        <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
+          Card search
+          <input
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            placeholder="Type to begin"
+            className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-100 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
+          />
+        </label>
+
+        {searchInput.trim().length >= 3 && (
+          <div className="rounded-xl border border-slate-600 bg-slate-800/70 p-2">
+            {suggestions.length === 0 ? (
+              <p className="px-2 py-1 text-sm text-slate-400">No matching card found</p>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {suggestions.map((card) => (
+                  <li key={card.cardId}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCard(card)}
+                      className="w-full rounded-lg px-2 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-700 hover:text-sky-300"
+                    >
+                      {card.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        {selectedCard && (
+          <article className="rounded-2xl border border-slate-600 bg-slate-800/75 p-4 shadow-[0_14px_34px_-24px_rgba(37,99,235,0.9)]">
+            <h2 className="text-base font-semibold text-slate-100">{selectedCard.name}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-slate-300">{selectedCard.oracleText}</p>
+            {selectedCard.imageUrl && (
+              <img
+                src={selectedCard.imageUrl}
+                alt={selectedCard.name}
+                className="mt-3 h-36 rounded-xl border border-slate-600 object-cover"
+              />
+            )}
+            <button
+              type="button"
+              onClick={handleAddSelectedCard}
+              className="mt-4 rounded-xl bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:from-sky-500 hover:to-cyan-400"
+            >
+              {addButtonLabel}
+            </button>
+          </article>
+        )}
+
+        <form onSubmit={handleDecryptStack} className="flex flex-col gap-3">
+          <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
+            Optional question
+            <textarea
+              value={question}
+              onChange={(event) => setQuestion(event.target.value.slice(0, 300))}
+              maxLength={300}
+              rows={3}
+              className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-100 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
+              placeholder="How does this resolve?"
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={stack.length === 0 || isSubmitting}
+            className="rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:from-cyan-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isSubmitting ? "Decrypting..." : "Decrypt Stack"}
+          </button>
+        </form>
+
+        {statusMessage && (
+          <p className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2 text-sm font-medium text-cyan-200">
+            {statusMessage}
+          </p>
+        )}
+
+        {error && (
+          <div className="rounded-xl border border-rose-500/40 bg-rose-950/40 p-3">
+            <p className="text-sm font-medium text-rose-200">{error}</p>
+            <button
+              type="button"
+              onClick={handleRetry}
+              disabled={!canRetry}
+              className="mt-2 rounded-lg border border-rose-400/60 bg-slate-900/40 px-3 py-1 text-sm font-medium text-rose-200 transition hover:bg-slate-900/70 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {retryCountdown > 0 ? `Retry in ${retryCountdown}s` : "Retry"}
+            </button>
+          </div>
+        )}
+
+        {answer && (
+          <article className="rounded-2xl border border-slate-600 bg-slate-800/75 p-4 shadow-[0_14px_34px_-24px_rgba(14,165,233,0.9)]">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.08em] text-sky-300">Response</h2>
+            <pre className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-200">{answer}</pre>
+          </article>
+        )}
+      </section>
+
+      {showStackDetails && (
+        <div className="fixed inset-0 z-10 flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-slate-600 bg-slate-900/90 p-4 shadow-2xl">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-slate-100">Stack details</h2>
+              <button
+                type="button"
+                onClick={() => setShowStackDetails(false)}
+                className="rounded-lg border border-slate-500 bg-slate-800/80 px-2 py-1 text-sm font-medium text-slate-100 transition hover:bg-slate-700"
+              >
+                Close
+              </button>
+            </div>
+            <ul className="flex max-h-80 flex-col gap-2 overflow-auto">
+              {stack.map((item, index) => (
+                <li
+                  key={item.cardId}
+                  className="flex items-center gap-2 rounded-xl border border-slate-600 bg-slate-800/80 p-2"
+                >
+                  <span className="w-6 text-xs font-medium text-sky-300/90">{index + 1}</span>
+                  {item.imageUrl ? (
+                    <img
+                      src={item.imageUrl}
+                      alt={item.name}
+                      className="h-10 w-8 rounded-md border border-slate-600 object-cover"
+                      onError={(event) => {
+                        event.currentTarget.style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <div className="h-10 w-8 rounded-md bg-slate-700" />
+                  )}
+                  <p className="flex-1 text-sm text-slate-200">{item.name}</p>
+                  <button
+                    type="button"
+                    onClick={() => removeFromStack(item.cardId)}
+                    className="rounded-lg border border-slate-500 bg-slate-700/80 px-2 py-1 text-xs font-medium text-sky-200 transition hover:bg-slate-700"
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}

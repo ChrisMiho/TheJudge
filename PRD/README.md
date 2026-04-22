@@ -2,8 +2,8 @@
 
 ## Status
 - Project Status: active
-- Current Drafting Phase: MVP1 definition and agent-ready modularization
-- Overall Documentation Status: needs review
+- Current Drafting Phase: MVP1 implementation in progress (Phase A mock backend)
+- Overall Documentation Status: active and implementation-aligned
 
 ## Purpose
 This file is the control-plane document for the PRD set.
@@ -98,3 +98,17 @@ Read in this order:
 - Duplicate-card blocking is temporary and should not be treated as long-term product truth.
 - Stack ordering is critical and must remain consistent across UI, API payloads, and prompt-building logic.
 - The mock-first delivery strategy is part of current planning and should remain visible in implementation-related work.
+
+## Implementation Snapshot
+- Frontend and backend workspaces are implemented under `apps/frontend` and `apps/backend`.
+- Frontend currently supports search, preview, add/remove stack, duplicate block, stack cap, optional question, and Decrypt Stack flow.
+- Backend `POST /api/ask-ai` is implemented with validation and Phase A mock response contract.
+- Local Scryfall bulk data is stored at `apps/frontend/data/scryfall/default-cards.json`.
+- Trimmed metadata generation is implemented via `npm run data:build` and outputs `apps/frontend/src/data/cardMetadata.json`.
+- Root dev workflow is available with `npm run dev` for running frontend and backend together.
+
+## Next Agent Implementation Focus
+1. Keep static metadata strategy (DEC-012) but reduce frontend initial bundle impact from large metadata payloads.
+2. Replace emoji empty-state visual with a bundled static cat-wizard asset if approved.
+3. Add test coverage for search/add/decrypt flows and backend validation contracts.
+4. Prepare a clean interface boundary for eventual Bedrock Phase B integration without changing request/response contracts.

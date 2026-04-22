@@ -22,3 +22,7 @@ dist/
 build/
 .next/
 coverage/
+*.tsbuildinfo
+
+# Local bulk datasets (do not commit)
+apps/frontend/data/scryfall/default-cards.json
