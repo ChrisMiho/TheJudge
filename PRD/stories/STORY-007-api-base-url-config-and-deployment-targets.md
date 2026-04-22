@@ -1,0 +1,26 @@
+# STORY-007 - API Base URL Environment Configuration and Deployment Targets
+
+- title: Add explicit environment configuration for API base URL and deployment targets across frontend/backend workflows.
+- user value: As a player, I can use stable builds in different environments because the app points to the correct backend without manual code edits.
+- scope:
+  - define environment-variable contract for frontend API base URL usage
+  - define backend/frontend environment files and defaults for local development
+  - document deployment-target expectations (local, preview, production) and required variables
+  - ensure existing request/response contracts remain unchanged while URL origin is configurable
+  - add lightweight configuration validation where practical to fail fast on misconfiguration
+- acceptance criteria:
+  - frontend reads API base URL from environment config rather than hardcoded host values
+  - local development has a documented default path that works with current dev workflow
+  - deployment targets and required environment variables are documented in repository docs
+  - missing/invalid configuration produces clear developer-facing error behavior
+  - no change to `POST /api/ask-ai` payload/response shape
+- dependencies:
+  - REQ-012, REQ-013
+  - DEC-010
+  - NFR-004, NFR-005
+  - `sections/integrations-and-data.md` (API Design and Dependencies)
+- exclusions:
+  - no Bedrock credential or IAM architecture changes
+  - no multi-endpoint product API expansion
+  - no infrastructure-as-code requirement in MVP1 scope
+  - no runtime metadata sync tooling

@@ -1,0 +1,26 @@
+# STORY-005 - Metadata Transform Contract and Search Scenario Tests
+
+- title: Add robust tests for metadata transform output shape and broader representative search scenarios.
+- user value: As a player, I get more reliable card discovery because metadata regressions and search edge-case breaks are caught before release.
+- scope:
+  - add tests that validate metadata transform output shape and required fields
+  - add tests for stable transform behavior on representative source inputs
+  - add broader search scenario tests using realistic card-name patterns and typo-tolerance paths
+  - verify no-match behavior and suggestion threshold behavior remain intact
+  - keep tests fast and deterministic for local and CI execution
+- acceptance criteria:
+  - tests fail if transform output shape changes unexpectedly
+  - tests cover representative match, partial match, typo-like input, and no-match search paths
+  - tests verify suggestions appear only at 3+ typed characters
+  - tests verify no-match copy remains **No matching card found**
+  - `npm run test` in affected workspaces passes with the new coverage
+- dependencies:
+  - STORY-010 metadata filtering and dedupe policy (consumed behavior)
+  - REQ-001, REQ-002
+  - DEC-012, DEC-015
+  - NFR-002, NFR-005
+- exclusions:
+  - no visual/UI styling changes
+  - no backend API contract changes
+  - no runtime metadata sync additions
+  - no expansion into Bedrock/provider evaluation tests

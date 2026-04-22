@@ -1,0 +1,25 @@
+# STORY-006 - Frontend UI Flow Coverage for Search, Add, and Decrypt
+
+- title: Add UI-focused frontend test coverage for search, add-to-stack, and Decrypt Stack flows.
+- user value: As a player, I can trust core gameplay interactions because high-value UI flows are regression-protected.
+- scope:
+  - add frontend integration-style tests for search input and suggestion behavior
+  - add frontend tests for preview/add flow including first-add and subsequent-add button labels
+  - add frontend tests for stack ordering assumptions across add/remove and submit payload composition
+  - add frontend tests for Decrypt Stack button behavior including empty-stack guard
+  - validate core failure-path UX contract where relevant to Decrypt flow
+- acceptance criteria:
+  - tests cover search threshold behavior and suggestion selection to preview path
+  - tests verify add button text rules: **Begin stackening!** then **Add to Stack**
+  - tests verify ordered payload semantics remain bottom-to-top (`stack[0]` bottom)
+  - tests verify Decrypt submit is blocked when stack is empty
+  - tests run in CI and fail on ordering/flow regressions
+- dependencies:
+  - REQ-001, REQ-002, REQ-004, REQ-005, REQ-006, REQ-012
+  - DEC-004, DEC-005, DEC-006, DEC-010, DEC-015
+  - NFR-001, NFR-002, NFR-005
+- exclusions:
+  - no redesign of existing UI layout
+  - no Bedrock integration
+  - no backend endpoint expansion
+  - no manual stack reorder feature
