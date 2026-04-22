@@ -14,6 +14,7 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 Validate the end-to-end user flow before full Bedrock integration:
 
 - search and preview cards from local metadata
+- capture lightweight structured game context before stack resolution
 - build an ordered stack bottom-to-top
 - submit an optional question (with fallback behavior)
 - receive a mock AI answer via backend contract-compatible endpoint
@@ -160,6 +161,9 @@ Pending implementation backlog:
 - [x] `STORY-019` add basic frontend/backend debug logging with correlation id traceability for flow validation
 - [x] `STORY-020` wire enriched stack-entry context into deterministic backend prompt/mock output for LLM-readiness
 - [x] `STORY-021` expand caster/player-target labels to support up to four players across UI and backend validation
+- [ ] `STORY-022` capture pre-stack general game context (player count + life totals) and include it in LLM prompt context
+- [ ] `STORY-023` capture per-stack-entry mana spent context with deterministic fallback to `manaValue` in prompt context
+- [ ] `STORY-024` add optional battlefield-context step after game context with explicit skip path and prompt-context inclusion
 
 ## Documentation Notes
 

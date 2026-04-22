@@ -36,10 +36,22 @@ This file captures integrations, payloads, data rules, and delivery constraints.
   - `{ kind: "player", targetPlayer: "Player 1" | "Player 2" | "Player 3" | "Player 4" }`
   - `{ kind: "none" }`
 - `contextNotes?: string`
+- `manaSpent?: number` (prompt-facing fallback uses `manaValue` when omitted)
+
+### GameContext
+- `playerCount: number`
+- `players: Array<{ label: "Player 1" | "Player 2" | "Player 3" | "Player 4"; lifeTotal: number }>`
+
+### BattlefieldContextItem
+- `name: string`
+- `details?: string`
+- `targets?: StackTarget[]`
 
 ### AskAiRequest
 - `question: string`
 - `stack: StackItem[]`
+- `gameContext: GameContext`
+- `battlefieldContext: BattlefieldContextItem[]`
 
 ### AskAiResponse
 - `answer: string`
@@ -59,7 +71,7 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 
 ### Endpoint: `POST /api/ask-ai`
 Purpose:
-- accept the final question and ordered stack payload
+- accept the final question, ordered stack payload, and captured context payload fields
 - validate input
 - build the Bedrock prompt
 - invoke the model
@@ -94,7 +106,24 @@ Purpose:
             { "kind": "player", "targetPlayer": "Player 3" },
             { "kind": "none" }
           ],
-          "contextNotes": "optional freeform context"
+          "contextNotes": "optional freeform context",
+          "manaSpent": 5
+        }
+      ],
+      "gameContext": {
+        "playerCount": 4,
+        "players": [
+          { "label": "Player 1", "lifeTotal": 40 },
+          { "label": "Player 2", "lifeTotal": 37 },
+          { "label": "Player 3", "lifeTotal": 22 },
+          { "label": "Player 4", "lifeTotal": 18 }
+        ]
+      },
+      "battlefieldContext": [
+        {
+          "name": "Rhystic Study",
+          "details": "Tax effect relevant to stack decisions",
+          "targets": [{ "kind": "none" }]
         }
       ]
     }
@@ -124,9 +153,12 @@ Purpose:
 ## AI Prompt Context Rules
 The backend should include:
 - final user question
+- pre-stack game context (player count + life totals)
+- optional battlefield context entries
 - ordered stack
 - oracle text for each card
 - mana cost and mana value for each card
+- mana spent per stack item (fallback to `manaValue` when omitted)
 - type line with parsed supertypes/subtypes and colors
 - instructions to explain reasoning
 - instructions to state uncertainty

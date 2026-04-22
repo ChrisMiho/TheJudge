@@ -129,3 +129,6 @@ Current trunk slice branch: `feat/frontend-flow-tests`
 - [x] Add lightweight frontend/backend debug logging with end-to-end correlation-id traceability for flow validation (`STORY-019`).
 - [x] Wire enriched stack-entry context fields into deterministic backend prompt/mock output (`STORY-020`).
 - [x] Expand caster/player-target labels to support up to four players across UI/backend contracts (`STORY-021`).
+- [ ] Capture pre-stack general game context (player count + life totals) and include it in prompt input (`STORY-022`).
+- [ ] Capture per-stack-entry mana spent context with fallback to `manaValue` in prompt context (`STORY-023`).
+- [ ] Add optional battlefield-context step after game context, including explicit skip path (`STORY-024`).

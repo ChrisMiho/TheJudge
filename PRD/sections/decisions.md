@@ -37,6 +37,7 @@
   - REQ-011
   - REQ-012
 - Notes:
+  - superseded in part by DEC-019 for approved structured context additions
 
 ### DEC-004
 - Decision: Stack ordering is bottom-to-top in the array, with `stack[0]` as bottom and the last item as top.
@@ -193,4 +194,21 @@
   - thumbnail rendering is opportunistic, not mandatory
 - Related requirements:
   - REQ-008
+- Notes:
+
+### DEC-019
+- Decision: MVP1 includes structured context beyond stack/question for flow validation: pre-stack game context (player count + life totals), optional battlefield context with skip, and per-stack mana-spent context with deterministic fallback behavior.
+- Status: confirmed
+- Context: Story roadmap now requires richer prompt-ready context while still avoiding rules-engine complexity.
+- Impact:
+  - frontend flow becomes staged: game context -> optional battlefield context -> stack construction/question
+  - backend request/prompt context includes approved structured context fields deterministically
+  - mana-spent context defaults to `manaValue` when omitted by user
+  - DEC-003 remains historical and is overridden where it conflicts with this approved context expansion
+- Related requirements:
+  - REQ-012
+  - REQ-013
+  - REQ-015
+  - REQ-016
+  - REQ-017
 - Notes:

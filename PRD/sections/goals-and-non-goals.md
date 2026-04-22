@@ -8,7 +8,7 @@
 
 ### GOAL-002
 - Title: Keep MVP1 fast and lightweight
-- Description: The first version should optimize for speed of use, narrow context, and simple implementation.
+- Description: The first version should optimize for speed of use, structured lightweight context, and simple implementation.
 
 ### GOAL-003
 - Title: Validate the core product loop
@@ -29,6 +29,9 @@
 - visual stack icon with count
 - stack details panel with remove capability
 - optional question input
+- pre-stack game context capture (player count + life totals)
+- optional battlefield-context step with explicit skip
+- per-stack-entry context enrichment (caster/targets/notes/mana spent fallback)
 - Decrypt Stack submit flow
 - plain-text AI response
 - mock-first integration path
@@ -38,7 +41,6 @@
 - official judge-grade rulings
 - deterministic rules engine behavior
 - full board-state modeling
-- target selection
 - controller selection
 - mode selection
 - multiplayer sync

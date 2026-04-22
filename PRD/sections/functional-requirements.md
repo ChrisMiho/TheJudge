@@ -163,10 +163,10 @@
 ### REQ-012
 - Title: Decrypt Stack submit action
 - Priority: high
-- Description: The app must submit the current ordered stack and final question to the backend through the main action button.
+- Description: The app must submit ordered stack data, final question, and captured contextual inputs to the backend through the main action button.
 - Acceptance Criteria:
   - action button label is **Decrypt Stack**
-  - clicking the button sends ordered stack and final question
+  - clicking the button sends ordered stack, final question, and structured context payload fields
   - if stack is empty, request is not sent
 - Constraints:
   - one main product-facing endpoint in MVP1
@@ -203,3 +203,56 @@
 - Dependencies:
   - backend error contract
 - Notes:
+
+### REQ-015
+- Title: Pre-stack game context capture
+- Priority: high
+- Description: Before stack construction begins, the app must collect core game context including player count and life totals.
+- Acceptance Criteria:
+  - user can set number of players using fixed labels (`Player 1` ... `Player N`)
+  - user can enter life totals for each included player label
+  - user must confirm context before proceeding to stack construction
+  - invalid or missing required values block progression
+- Constraints:
+  - fixed player labels only (no custom names)
+  - support range is constrained by current player-label model
+- Dependencies:
+  - frontend staged flow
+  - prompt context contract
+- Notes:
+  - this context is prompt-facing, not a rules-engine source of truth
+
+### REQ-016
+- Title: Optional battlefield context step with skip
+- Priority: medium
+- Description: After general game context capture, the app must provide an optional battlefield-context step that users can fill or skip.
+- Acceptance Criteria:
+  - battlefield step appears after pre-stack game context confirmation
+  - user can add/remove relevant battlefield context entries
+  - user can explicitly skip when no relevant battlefield context exists
+  - continue/skip both lead to stack construction flow
+- Constraints:
+  - do not force placeholder battlefield entries
+  - keep interaction lightweight for live gameplay
+- Dependencies:
+  - pre-stack game context step
+  - prompt context contract
+- Notes:
+  - battlefield context is intended for stack-relevant board effects, not full board simulation
+
+### REQ-017
+- Title: Per-stack mana-spent context with fallback
+- Priority: medium
+- Description: Each stack entry may include mana spent to cast; when omitted, prompt-facing mana spent defaults to the entry's mana value.
+- Acceptance Criteria:
+  - user can optionally enter mana-spent context per stack entry
+  - backend prompt context always emits deterministic mana-spent value per stack entry
+  - omitted user input falls back to `manaValue`
+  - prompt/mock output includes mana-spent context in stable formatting
+- Constraints:
+  - do not implement comprehensive mana-source legality checks
+- Dependencies:
+  - stack-entry data model
+  - backend prompt context builder
+- Notes:
+  - X-spell clarity is a primary motivation for this field
