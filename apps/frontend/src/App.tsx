@@ -164,7 +164,7 @@ export default function App() {
             <h1 className="bg-gradient-to-r from-sky-300 to-blue-400 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
               TheJudge
             </h1>
-            <p className="text-sm text-slate-300">Flow-validation MVP</p>
+            <p className="text-sm text-slate-300">Stack Assistant</p>
           </div>
           {stack.length > 0 && (
             <button
@@ -192,7 +192,6 @@ export default function App() {
                 className="mx-auto w-56 max-w-full rounded-xl"
               />
             )}
-            <p className="mt-2 text-sm font-medium text-slate-200">Build your stack to start.</p>
           </div>
         )}
 
