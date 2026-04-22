@@ -65,3 +65,12 @@
 - Use acceptance criteria to make implementation measurable.
 - Use constraints for anything the agent must not overstep.
 - Use dependencies to show external reliance or coupling.
+
+## Story Dependency Rules
+
+Behavioral guidance for story writing lives in `instructions/story-generation.md`.
+This document only adds dependency-field rules for `PRD/stories/` entries:
+
+- `parallel-ready`: list only non-blocking references (REQ/DEC/NFR, etc.); no prerequisite story IDs.
+- `sequential`: include prerequisite story ID(s) and one-line reason per prerequisite.
+- Always use concrete dependency entries; avoid vague values like "other stories" or "future work".
