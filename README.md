@@ -65,6 +65,35 @@ Validate the end-to-end user flow before full Bedrock integration:
 - `npm run data:refresh` - download latest Scryfall `default_cards` and rebuild trimmed metadata
 - stop running processes with `Ctrl + C`
 
+## Environment Configuration
+
+Local defaults work out of the box, but deployment targets should set explicit values.
+
+- Frontend (`apps/frontend/.env`):
+  - `VITE_API_URL` - absolute backend origin used by the browser app (default: `http://localhost:3000`)
+- Backend (`apps/backend/.env`):
+  - `PORT` - backend server port (default: `3000`)
+  - `FRONTEND_ORIGIN` - optional CORS allow-origin for frontend deployments (example: `https://preview.thejudge.dev`)
+
+Reference templates:
+
+- `apps/frontend/.env.example`
+- `apps/backend/.env.example`
+
+## Deployment Targets
+
+- Local:
+  - frontend `VITE_API_URL=http://localhost:3000`
+  - backend `PORT=3000`, optional `FRONTEND_ORIGIN=http://localhost:5173`
+- Preview:
+  - frontend `VITE_API_URL=<preview-backend-origin>`
+  - backend `PORT=<platform-port>`, `FRONTEND_ORIGIN=<preview-frontend-origin>`
+- Production:
+  - frontend `VITE_API_URL=<production-backend-origin>`
+  - backend `PORT=<platform-port>`, `FRONTEND_ORIGIN=<production-frontend-origin>`
+
+Both frontend and backend fail fast on invalid URL/port configuration to surface misconfiguration early.
+
 ## Current Feature Status
 
 Implemented flow and platform pieces:
@@ -81,6 +110,11 @@ Implemented flow and platform pieces:
 - [x] enriched stack context fields in request/prompt pipeline (`manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`)
 - [x] suggestion list capped to 3 items to keep search UI compact
 - [x] backend prompt context builder, normalization, and fixture-based eval harness
+- [x] environment-driven API origin and backend runtime config with fail-fast validation (`VITE_API_URL`, `PORT`, `FRONTEND_ORIGIN`)
+- [x] frontend integration coverage for search/add/decrypt, stack details/count, duplicate/cap guardrails, and failure/retry resilience
+- [x] backend provider boundary to isolate Phase A mock from route/controller logic
+- [x] deterministic, structured mock answer output for prompt/context debugging
+- [x] empty-state cat-wizard visual served from bundled static assets with fallback copy
 
 ## Story Checklist (Track Progress Here)
 
@@ -94,17 +128,19 @@ Context and prompt quality:
 Pending implementation backlog:
 
 - [x] `STORY-010` define metadata filtering/dedupe policy and lock it with transform/search regression tests (merged scope formerly tracked as `STORY-005`)
-- [ ] `STORY-006` add UI-focused frontend coverage for search/add/decrypt
-- [ ] `STORY-007` add API base URL environment config and deployment targets
-- [ ] `STORY-009` improve mock answer ergonomics for clearer prompt/context debugging
-- [ ] `STORY-011` add stack icon/count and stack details/remove regression coverage
-- [ ] `STORY-012` add duplicate-block and 10-card-cap regression coverage
-- [ ] `STORY-013` add Decrypt failure-path regression coverage (error copy/state preserve/retry cooldown)
-- [ ] `STORY-014` add backend provider boundary so mock can swap to Bedrock later without API contract changes
-- [ ] `STORY-008` replace empty-state emoji with bundled cat-wizard asset (after approval)
+- [x] `STORY-006` add UI-focused frontend coverage for search/add/decrypt
+- [x] `STORY-007` add API base URL environment config and deployment targets
+- [x] `STORY-009` improve mock answer ergonomics for clearer prompt/context debugging
+- [x] `STORY-011` add stack icon/count and stack details/remove regression coverage
+- [x] `STORY-012` add duplicate-block and 10-card-cap regression coverage
+- [x] `STORY-013` add Decrypt failure-path regression coverage (error copy/state preserve/retry cooldown)
+- [x] `STORY-014` add backend provider boundary so mock can swap to Bedrock later without API contract changes
+- [x] `STORY-008` replace empty-state emoji with bundled cat-wizard asset (after approval)
 
 ## Documentation Notes
 
 - Keep product truth and planning detail in `PRD/`.
 - Keep this root README concise and onboarding-focused.
 - Update the checklist above as stories move from planned to implemented.
+- Empty-state artwork is bundled at `apps/frontend/public/assets/cat-wizard.svg`; keep it local/static and retain a text fallback path.
+- Provider integration boundary docs live in `apps/backend/src/providers/README.md`.

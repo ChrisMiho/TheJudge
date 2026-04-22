@@ -1,8 +1,9 @@
 import { createApp } from "./app.js";
+import { readServerConfig } from "./config.js";
 
-const app = createApp();
-const port = Number(process.env.PORT ?? 3000);
+const config = readServerConfig(process.env);
+const app = createApp({ frontendOrigin: config.frontendOrigin });
 
-app.listen(port, () => {
-  console.log(`TheJudge backend listening on :${port}`);
+app.listen(config.port, () => {
+  console.log(`TheJudge backend listening on :${config.port}`);
 });

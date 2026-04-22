@@ -1,53 +1,38 @@
 import type { AskAiResponse, PromptContext } from "./types.js";
 
-type MockOutboundPayload = {
-  question: string;
-  stackOrderConvention: "bottom-to-top";
-  stack: Array<{
-    cardId: string;
-    name: string;
-    oracleText: string;
-    manaCost: string;
-    manaValue: number;
-    typeLine: string;
-    colors: string[];
-    supertypes: string[];
-    subtypes: string[];
-    stackIndex: number;
-    stackRole: "bottom" | "middle" | "top";
-  }>;
-};
-
-function toOutboundPayload(context: PromptContext): MockOutboundPayload {
-  return {
-    question: context.finalQuestion,
-    stackOrderConvention: "bottom-to-top",
-    stack: context.orderedStack.map(
-      ({ cardId, name, oracleText, manaCost, manaValue, typeLine, colors, supertypes, subtypes, stackIndex, stackRole }) => ({
-      cardId,
-      name,
-      oracleText,
-      manaCost,
-      manaValue,
-      typeLine,
-      colors,
-      supertypes,
-      subtypes,
-      stackIndex,
-      stackRole
-      })
-    )
-  };
+function formatList(values: string[]): string {
+  return values.length > 0 ? values.join(", ") : "N/A";
 }
 
-function toPrettyJson(payload: MockOutboundPayload): string {
-  return JSON.stringify(payload, null, 2);
+function formatStackRows(context: PromptContext): string {
+  return context.orderedStack
+    .map((item) =>
+      [
+        `${item.stackIndex + 1}. [${item.stackRole}] ${item.name} (cardId: ${item.cardId})`,
+        `   Mana: ${item.manaCost || "N/A"} | MV: ${item.manaValue}`,
+        `   Type: ${item.typeLine || "N/A"}`,
+        `   Colors: ${formatList(item.colors)} | Supertypes: ${formatList(item.supertypes)} | Subtypes: ${formatList(item.subtypes)}`,
+        `   Oracle: ${item.oracleText}`
+      ].join("\n")
+    )
+    .join("\n");
 }
 
 export function buildMockAnswer(context: PromptContext): AskAiResponse {
-  const outboundPayload = toOutboundPayload(context);
+  const stackRows = formatStackRows(context);
+  const lines = [
+    "MOCK RESPONSE",
+    "This is deterministic debug output for prompt/context validation.",
+    "",
+    `Final question: ${context.finalQuestion}`,
+    `Stack order convention: bottom-to-top (stack[0] is the bottom spell)`,
+    `Stack size: ${context.orderedStack.length}`,
+    "",
+    "Ordered stack:",
+    stackRows
+  ];
 
   return {
-    answer: `MOCK RESPONSE\n${toPrettyJson(outboundPayload)}`
+    answer: lines.join("\n")
   };
 }

@@ -5,12 +5,6 @@ import type { AskAiRequest } from "./types.js";
 
 const app = createApp();
 
-function extractMockJson(answer: string): Record<string, unknown> {
-  const prefix = "MOCK RESPONSE\n";
-  expect(answer.startsWith(prefix)).toBe(true);
-  return JSON.parse(answer.slice(prefix.length));
-}
-
 function createStackItem(overrides: Partial<AskAiRequest["stack"][number]> = {}): AskAiRequest["stack"][number] {
   return {
     cardId: "opt",
@@ -43,18 +37,10 @@ describe("backend contract tests", () => {
     expect(response.status).toBe(200);
     expect(typeof response.body.answer).toBe("string");
     expect(response.body.answer).toContain("MOCK RESPONSE");
-    expect(response.body.answer).toContain("How does this resolve?");
-    const payload = extractMockJson(response.body.answer);
-    expect(payload.stackOrderConvention).toBe("bottom-to-top");
-    const first = (payload.stack as Array<Record<string, unknown>>)[0];
-    expect(first).toBeDefined();
-    expect(first).not.toHaveProperty("imageUrl");
-    expect(first).toMatchObject({
-      manaCost: "{U}",
-      manaValue: 1,
-      typeLine: "Instant",
-      colors: ["U"]
-    });
+    expect(response.body.answer).toContain("Final question: How does this resolve?");
+    expect(response.body.answer).toContain("Stack order convention: bottom-to-top");
+    expect(response.body.answer).toContain("1. [top] Opt (cardId: opt)");
+    expect(response.body.answer).toContain("Mana: {U} | MV: 1");
   });
 
   it("applies fallback question when blank question is submitted", async () => {
@@ -72,7 +58,7 @@ describe("backend contract tests", () => {
     });
 
     expect(response.status).toBe(200);
-    expect(response.body.answer).toContain("\"question\": \"Resolve the stack\"");
+    expect(response.body.answer).toContain("Final question: Resolve the stack");
   });
 
   it("includes explicit stack order metadata in mock answer payload", async () => {
@@ -102,15 +88,9 @@ describe("backend contract tests", () => {
     });
 
     expect(response.status).toBe(200);
-    const payload = extractMockJson(response.body.answer) as {
-      stackOrderConvention: string;
-      stack: Array<{ cardId: string; stackIndex: number; stackRole: string }>;
-    };
-    expect(payload.stackOrderConvention).toBe("bottom-to-top");
-    expect(payload.stack).toEqual([
-      expect.objectContaining({ cardId: "bottom", stackIndex: 0, stackRole: "bottom" }),
-      expect.objectContaining({ cardId: "top", stackIndex: 1, stackRole: "top" })
-    ]);
+    expect(response.body.answer).toContain("Stack order convention: bottom-to-top");
+    expect(response.body.answer).toContain("1. [bottom] Bottom Spell (cardId: bottom)");
+    expect(response.body.answer).toContain("2. [top] Top Spell (cardId: top)");
   });
 
   it("returns 400 for invalid payload shape", async () => {
@@ -142,5 +122,27 @@ describe("backend contract tests", () => {
     expect(response.status).toBe(502);
     expect(response.body.error).toBe("Miho is working on it");
     expect(response.body.retryAfterSeconds).toBe(13);
+  });
+
+  it("delegates answer generation through provider boundary", async () => {
+    const providerCalls: AskAiRequest[] = [];
+    const appWithProvider = createApp({
+      askAiProvider: {
+        generateAnswer(requestPayload) {
+          providerCalls.push(requestPayload);
+          return { answer: "Provider boundary response" };
+        }
+      }
+    });
+
+    const response = await request(appWithProvider).post("/api/ask-ai").send({
+      question: "Boundary check",
+      stack: [createStackItem()]
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.answer).toBe("Provider boundary response");
+    expect(providerCalls).toHaveLength(1);
+    expect(providerCalls[0].question).toBe("Boundary check");
   });
 });
