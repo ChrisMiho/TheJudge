@@ -1,0 +1,21 @@
+{
+  "finalQuestion": "can i do this before that resolves??",
+  "orderedStack": [
+    {
+      "cardId": "silence",
+      "name": "Silence",
+      "oracleText": "Your opponents can't cast spells this turn.",
+      "imageUrl": "",
+      "stackIndex": 0,
+      "stackRole": "bottom"
+    },
+    {
+      "cardId": "mystical-dispute",
+      "name": "Mystical Dispute",
+      "oracleText": "Counter target spell unless its controller pays 3.",
+      "imageUrl": "",
+      "stackIndex": 1,
+      "stackRole": "top"
+    }
+  ]
+}

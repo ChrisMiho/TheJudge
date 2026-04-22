@@ -1,0 +1,26 @@
+# STORY-008 - Replace Empty-State Emoji with Bundled Cat-Wizard Asset
+
+- title: Replace empty-state emoji visual with a bundled static cat-wizard asset after approval.
+- user value: As a player, I get a clearer and more consistent branded empty state while keeping load behavior simple.
+- scope:
+  - replace current emoji-only empty-state visual with a bundled static asset
+  - preserve current empty-state search interaction and copy behavior
+  - ensure asset loading has a graceful fallback path if the file is missing or fails
+  - document asset location and usage expectations for future edits
+  - keep implementation lightweight for MVP1
+- acceptance criteria:
+  - empty state displays bundled cat-wizard asset on initial load
+  - search input still says **Type to begin** before user input
+  - UI remains functional if the image cannot load
+  - asset is served locally from frontend static assets (not remote URL)
+  - story is only started after product approval is confirmed
+- dependencies:
+  - REQ-001
+  - DEC-015
+  - NFR-001, NFR-006
+  - Q-003 (approval and static asset direction)
+- exclusions:
+  - no animation-heavy illustration work
+  - no remote CDN image dependency
+  - no changes to backend/API behavior
+  - no additional empty-state action buttons

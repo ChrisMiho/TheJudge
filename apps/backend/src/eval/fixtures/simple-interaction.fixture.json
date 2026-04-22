@@ -1,0 +1,15 @@
+{
+  "id": "simple-interaction",
+  "description": "Single-card interaction with a straightforward question.",
+  "request": {
+    "question": "What happens here?",
+    "stack": [
+      {
+        "cardId": "opt",
+        "name": "Opt",
+        "oracleText": "Scry 1, then draw a card.",
+        "imageUrl": ""
+      }
+    ]
+  }
+}

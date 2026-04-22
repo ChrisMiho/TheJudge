@@ -1,0 +1,27 @@
+# STORY-003 - Context Evaluation Harness and Golden Cases
+
+- title: Build a repeatable evaluation harness for context/prompt outputs using representative stack scenarios.
+- user value: As a player, I benefit from higher answer quality because context generation is validated against known-good patterns before model rollout.
+- scope:
+  - create a fixture-driven test harness for context and prompt output snapshots
+  - define representative golden scenarios (simple interaction, multi-step stack, ambiguous wording, near-cap stack)
+  - add quality checks for ordering fidelity, fallback behavior, and guardrail presence
+  - provide a lightweight scoring/checklist report to compare prompt revisions over time
+  - document how to add new fixtures when gameplay edge cases are discovered
+- acceptance criteria:
+  - harness can run locally and in CI with stable deterministic results
+  - each golden scenario asserts stack order preservation and final question behavior
+  - harness fails when required guardrail instructions are removed from output
+  - fixture additions follow documented structure and are easy to review in PRs
+  - at least one regression-style test proves detection of an ordering or formatting break
+- dependencies:
+  - STORY-001 context contract output shape (consumed by fixtures)
+  - STORY-002 normalization and guardrail rules (validated by harness)
+  - REQ-006, REQ-011, REQ-014
+  - DEC-004, DEC-009, DEC-014
+  - NFR-005, NFR-007
+- exclusions:
+  - no model invocation benchmarking
+  - no UI or frontend behavior changes
+  - no new backend endpoints
+  - no expansion into full gameplay rules simulation

@@ -1,0 +1,21 @@
+{
+  "id": "ambiguous-wording",
+  "description": "Whitespace-heavy ambiguous question should normalize and keep guardrails.",
+  "request": {
+    "question": "   can i do this before that resolves??   ",
+    "stack": [
+      {
+        "cardId": "silence",
+        "name": "Silence",
+        "oracleText": "Your opponents can't cast spells this turn.",
+        "imageUrl": ""
+      },
+      {
+        "cardId": "mystical-dispute",
+        "name": "Mystical Dispute",
+        "oracleText": "Counter target spell unless its controller pays 3.",
+        "imageUrl": ""
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+# STORY-009 - Mock Answer Debug Ergonomics Improvement
+
+- title: Improve Phase A mock answer ergonomics so prompt/context debugging is clearer than raw JSON echo.
+- user value: As a developer and playtester, I can diagnose prompt/context issues faster and with less confusion during mock-mode validation.
+- scope:
+  - redesign mock `answer` formatting to present context and prompt-relevant fields in a readable structured text layout
+  - keep the same `AskAiResponse` contract (`answer: string`) and endpoint behavior
+  - include clear labeled sections for final question, stack order, and key context cues
+  - ensure output remains deterministic so tests and fixture-based checks stay stable
+  - document expected mock output style for contributors
+- acceptance criteria:
+  - mock response remains plain text in `answer` and does not change API schema
+  - output clearly communicates final question and stack ordering semantics
+  - output remains easy to diff in tests (stable deterministic formatting)
+  - existing flow-validation UX still works without Bedrock integration
+  - tests validate at least one representative formatted mock output example
+- dependencies:
+  - REQ-013
+  - DEC-004, DEC-011, DEC-017
+  - NFR-005
+  - `sections/integrations-and-data.md` (Phase A Mock Response Rule)
+- exclusions:
+  - no Bedrock/provider invocation
+  - no change to frontend rendering contract beyond consuming plain text `answer`
+  - no introduction of rich markdown rendering requirements
+  - no additional product-facing API endpoints

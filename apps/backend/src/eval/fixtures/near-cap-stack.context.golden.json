@@ -1,0 +1,77 @@
+{
+  "finalQuestion": "Resolve the stack",
+  "orderedStack": [
+    {
+      "cardId": "card-1",
+      "name": "Card 1",
+      "oracleText": "First effect.",
+      "imageUrl": "",
+      "stackIndex": 0,
+      "stackRole": "bottom"
+    },
+    {
+      "cardId": "card-2",
+      "name": "Card 2",
+      "oracleText": "Second effect.",
+      "imageUrl": "",
+      "stackIndex": 1,
+      "stackRole": "middle"
+    },
+    {
+      "cardId": "card-3",
+      "name": "Card 3",
+      "oracleText": "Third effect.",
+      "imageUrl": "",
+      "stackIndex": 2,
+      "stackRole": "middle"
+    },
+    {
+      "cardId": "card-4",
+      "name": "Card 4",
+      "oracleText": "Fourth effect.",
+      "imageUrl": "",
+      "stackIndex": 3,
+      "stackRole": "middle"
+    },
+    {
+      "cardId": "card-5",
+      "name": "Card 5",
+      "oracleText": "Fifth effect.",
+      "imageUrl": "",
+      "stackIndex": 4,
+      "stackRole": "middle"
+    },
+    {
+      "cardId": "card-6",
+      "name": "Card 6",
+      "oracleText": "Sixth effect.",
+      "imageUrl": "",
+      "stackIndex": 5,
+      "stackRole": "middle"
+    },
+    {
+      "cardId": "card-7",
+      "name": "Card 7",
+      "oracleText": "Seventh effect.",
+      "imageUrl": "",
+      "stackIndex": 6,
+      "stackRole": "middle"
+    },
+    {
+      "cardId": "card-8",
+      "name": "Card 8",
+      "oracleText": "Eighth effect.",
+      "imageUrl": "",
+      "stackIndex": 7,
+      "stackRole": "middle"
+    },
+    {
+      "cardId": "card-9",
+      "name": "Card 9",
+      "oracleText": "Ninth effect.",
+      "imageUrl": "",
+      "stackIndex": 8,
+      "stackRole": "top"
+    }
+  ]
+}

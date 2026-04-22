@@ -1,86 +1,102 @@
 # TheJudge
 
-Product planning and implementation repository for TheJudge.
+TheJudge is an MVP card-stack interaction assistant for Magic gameplay questions.
+It helps players build an ordered stack of cards, ask a question, and receive an AI-generated explanation through a backend API.
 
-## Repository structure
+## Start Here
 
-- `PRD/` - Product requirements, app breakdown, and planning docs
-- `apps/frontend/` - React + Vite + Tailwind MVP client
-- `apps/backend/` - Express + TypeScript mock API (`POST /api/ask-ai`)
-- `scripts/` - helper scripts for local dev and data tooling
+- Product planning and story source of truth: `PRD/README.md`
+- This root README is for fast onboarding, setup, and implementation status.
+- If you are using coding agents, point them to `PRD/README.md` first.
 
-## Getting started
+## MVP1 Goal
 
-1. Review the PRD in `PRD/README.md`.
-2. Install dependencies:
+Validate the end-to-end user flow before full Bedrock integration:
+
+- search and preview cards from local metadata
+- build an ordered stack bottom-to-top
+- submit an optional question (with fallback behavior)
+- receive a mock AI answer via backend contract-compatible endpoint
+- preserve user state on failure with controlled retry UX
+
+## Tech Stack
+
+- Frontend: React + Vite + TypeScript + Tailwind CSS
+- Backend: Node.js + Express + TypeScript + Zod validation
+- Testing: Vitest (frontend and backend)
+- Data: Scryfall-derived local metadata transform pipeline
+- Architecture: npm workspaces monorepo (`apps/frontend`, `apps/backend`)
+
+## Repository Layout
+
+- `PRD/`
+  - `README.md` control plane for product docs and read order
+  - `sections/` product truth (requirements, decisions, flows, constraints)
+  - `instructions/` generation and editing rules
+  - `stories/` implementation slices and Definition of Done
+- `apps/frontend/` MVP client app
+- `apps/backend/` API app (`POST /api/ask-ai`, `GET /api/health`)
+- `scripts/` shared dev/data scripts (including metadata build)
+
+## Local Setup
+
+1. Install dependencies from repo root:
    - `npm install`
-3. Build trimmed frontend card metadata from downloaded Scryfall bulk data:
-   - place raw file at `apps/frontend/data/scryfall/default-cards.json`
-   - run `npm run data:build`
-4. Build both apps:
-   - `npm run build`
-5. Start both services together:
+2. Prepare card metadata source file:
+   - place Scryfall bulk file at `apps/frontend/data/scryfall/default-cards.json`
+3. Build trimmed metadata:
+   - `npm run data:build`
+4. Start both apps:
    - `npm run dev`
-6. Open the frontend URL shown by Vite (typically `http://localhost:5173`).
+5. Optional checks:
+   - frontend: `http://localhost:5173`
+   - backend health: `http://localhost:3000/api/health`
 
-Alternative manual startup:
+## Useful Commands
 
-- backend only: `npm run dev:backend`
-- frontend only: `npm run dev:frontend`
-- stop any running dev command with `Ctrl + C`
+- `npm run dev` - run frontend + backend together
+- `npm run dev:frontend` - run frontend only
+- `npm run dev:backend` - run backend only
+- `npm run build` - build both apps
+- `npm --workspace apps/frontend run test` - run frontend tests
+- `npm --workspace apps/backend run test` - run backend tests
+- `npm --workspace apps/backend run test:eval` - run backend eval harness test
+- stop running processes with `Ctrl + C`
 
-## Start and stop services
+## Current Feature Status
 
-Recommended (single command from repo root):
+Implemented flow and platform pieces:
 
-- start both: `npm run dev`
-- stop both: press `Ctrl + C`
-- if prompted with `Terminate batch job (Y/N)?`, press `Y` then Enter
+- [x] search input with threshold and no-match behavior
+- [x] card preview before add
+- [x] stack add/remove and stack details
+- [x] duplicate blocking (MVP simplification) and stack cap of 10
+- [x] optional question with fallback `Resolve the stack`
+- [x] backend request validation and mock `POST /api/ask-ai`
+- [x] failure state with retry cooldown behavior
+- [x] metadata transform pipeline + runtime metadata loading from `public/data/cardMetadata.json`
+- [x] backend prompt context builder, normalization, and fixture-based eval harness
 
-Two-terminal option:
+## Story Checklist (Track Progress Here)
 
-1. Terminal A (backend):
-   - `npm run dev:backend`
-2. Terminal B (frontend):
-   - `npm run dev:frontend`
+Context and prompt quality:
 
-To stop the two-terminal setup, press `Ctrl + C` in each terminal.
+- [x] `STORY-001` context contract and builder
+- [x] `STORY-002` context normalization and guardrails
+- [x] `STORY-003` context evaluation harness
+- [x] `STORY-004` explicit stack-order signaling
 
-Optional service checks:
+Pending implementation backlog:
 
-- frontend should be available at `http://localhost:5173`
-- backend health endpoint should return `{"ok":true}` at `http://localhost:3000/api/health`
+- [ ] `STORY-010` tune metadata filtering and dedupe policy
+- [ ] `STORY-005` add metadata transform contract tests and broader search scenarios
+- [ ] `STORY-006` add UI-focused frontend coverage for search/add/decrypt
+- [ ] `STORY-007` add API base URL environment config and deployment targets
+- [ ] `STORY-008` replace empty-state emoji with bundled cat-wizard asset (after approval)
+- [ ] `STORY-009` improve mock answer ergonomics for clearer prompt/context debugging
 
-## Workspace model
+## Documentation Notes
 
-This repo uses a workspace layout:
-
-- root `package.json` orchestrates all apps and shared scripts
-- each app keeps its own `package.json` for app-specific dependencies
-- root `tsconfig.base.json` holds shared TypeScript defaults
-
-## Current MVP status
-
-Implemented from the PRD:
-
-- card search with suggestion threshold and no-match state
-- card preview before add
-- stack add/remove and stack detail modal
-- duplicate-blocking and stack-size cap (10)
-- optional question + fallback to `Resolve the stack`
-- mock backend `POST /api/ask-ai` response flow
-- failure copy and retry cooldown behavior
-- local trimmed metadata pipeline from Scryfall bulk data (`npm run data:build`)
-- runtime metadata loading from `public/data/cardMetadata.json` to keep bundle size low
-- lightweight frontend and backend test suites via Vitest
-
-## Next suggested steps
-
-Current branch focus: `feat/metadata-loading-optimization`
-
-- [x] Move metadata loading off the main bundle path while keeping the static prebuilt data strategy.
-- [ ] Tune metadata filters and dedupe policy for gameplay realism.
-- [ ] Add tests for the metadata transform script and expand search behavior scenarios.
-- [ ] Add UI-focused frontend tests for search/add/decrypt flows (backend contract tests are in place).
-- [ ] Add environment configuration for API base URL and deployment targets.
-- [ ] Begin Phase B integration boundary for real Bedrock invocation.
+- Keep product truth and planning detail in `PRD/`.
+- Keep this root README concise and onboarding-focused.
+- Update the checklist above as stories move from planned to implemented.

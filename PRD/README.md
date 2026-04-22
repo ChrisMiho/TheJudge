@@ -110,7 +110,7 @@ Read in this order:
 - Root dev workflow is available with `npm run dev` for running frontend and backend together.
 
 ## Next Agent Implementation Focus
-Current trunk slice branch: `feat/metadata-loading-optimization`
+Current trunk slice branch: `feat/frontend-flow-tests`
 
 - [x] Keep static metadata strategy (DEC-012) but reduce frontend initial bundle impact from large metadata payloads.
 - [ ] Add tests for metadata transform output shape and expand search behavior against representative card samples.

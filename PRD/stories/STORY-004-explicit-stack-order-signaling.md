@@ -1,0 +1,28 @@
+# STORY-004 - Explicit Stack Order Signaling for Prompt and Mock Payloads
+
+- title: Make stack ordering explicit in generated prompt context and Phase A mock answer payloads so ordering intent is unambiguous to downstream LLM logic and debugging workflows.
+- user value: As a player, I get more reliable AI explanations because stack order semantics are explicit instead of implied by array position only.
+- scope:
+  - add explicit stack-order metadata in backend-generated output used for prompt/mock visibility (for example, order label and per-card role/index fields)
+  - preserve the existing array ordering contract while making bottom-to-top semantics machine-readable in the debug payload
+  - ensure the Phase A mock response continues to return a plain-text `answer` string while exposing clearer order annotations for inspection
+  - extend tests to verify order metadata is present and consistent with `stack[0]` bottom / last item top
+  - extend evaluation fixtures/golden snapshots to fail on missing or inconsistent order annotations
+- acceptance criteria:
+  - mock answer debug payload explicitly communicates stack order convention (bottom-to-top) in addition to ordered card entries
+  - each card entry in debug-visible payload includes deterministic order markers aligned to backend context (`stackIndex` and/or role)
+  - existing request/response contract for `POST /api/ask-ai` remains unchanged (`answer` remains string)
+  - context/prompt harness fails when explicit order markers are removed or conflict with actual ordering
+  - backend tests cover single-card, multi-card, and near-cap stacks with explicit order assertions
+- dependencies:
+  - STORY-001 context contract and builder
+  - STORY-002 normalization and guardrails
+  - STORY-003 context evaluation harness and golden fixtures
+  - REQ-006, REQ-012, REQ-013
+  - DEC-004, DEC-011, DEC-017
+  - NFR-005, NFR-007
+- exclusions:
+  - no Bedrock SDK/provider integration
+  - no gameplay legality engine or deterministic rules simulation
+  - no frontend UI redesign or response formatting overhaul
+  - no additional product-facing backend endpoints

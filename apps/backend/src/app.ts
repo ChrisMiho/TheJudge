@@ -1,8 +1,9 @@
 import cors from "cors";
 import express from "express";
 import { buildMockAnswer } from "./mockAskAi.js";
+import { buildPromptContext } from "./promptContext.js";
 import { askAiRequestSchema } from "./validation.js";
-import type { AskAiError, AskAiRequest } from "./types.js";
+import type { AskAiError } from "./types.js";
 
 const retryAfterSeconds = 13;
 
@@ -27,10 +28,7 @@ export function createApp() {
       return;
     }
 
-    const payload: AskAiRequest = {
-      question: parsed.data.question.trim().length > 0 ? parsed.data.question.trim() : "Resolve the stack",
-      stack: parsed.data.stack
-    };
+    const promptContext = buildPromptContext(parsed.data);
 
     const shouldFail = req.query.fail === "true";
     if (shouldFail) {
@@ -42,7 +40,7 @@ export function createApp() {
       return;
     }
 
-    const response = buildMockAnswer(payload);
+    const response = buildMockAnswer(promptContext);
     res.status(200).json(response);
   });
 

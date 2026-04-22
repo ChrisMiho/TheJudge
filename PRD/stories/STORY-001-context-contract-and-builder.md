@@ -1,0 +1,26 @@
+# STORY-001 - Context Contract and Builder Service
+
+- title: Define a stable context payload contract and implement a single backend builder that produces it from `{ question, stack }`.
+- user value: As a player, I get more consistent AI outcomes because the app always sends structured, predictable context.
+- scope:
+  - define a typed internal `PromptContext` contract used before any model invocation
+  - implement a `buildPromptContext` service that derives context from validated request payloads
+  - preserve stack ordering semantics in context (`stack[0]` bottom, last item top)
+  - apply fallback question logic (`Resolve the stack`) during context construction
+  - provide clear ownership boundaries so route handlers do not assemble context inline
+- acceptance criteria:
+  - a single builder function is the only allowed path for context assembly
+  - builder output includes final question, ordered stack entries, and oracle text fields
+  - context builder never inverts stack order
+  - blank or whitespace-only question always resolves to `Resolve the stack` in output
+  - unit tests cover empty question, single card, multi-card, and near-cap stack inputs
+- dependencies:
+  - REQ-006, REQ-011, REQ-012
+  - DEC-003, DEC-004, DEC-009
+  - NFR-005
+  - `sections/integrations-and-data.md` (AI prompt context rules)
+- exclusions:
+  - no Bedrock SDK integration
+  - no frontend contract changes
+  - no new product-facing endpoints
+  - no gameplay legality or deterministic rules logic

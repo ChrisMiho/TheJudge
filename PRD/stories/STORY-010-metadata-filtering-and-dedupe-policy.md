@@ -1,0 +1,26 @@
+# STORY-010 - Metadata Filtering and Dedupe Policy Tuning
+
+- title: Tune metadata filtering and dedupe policy so gameplay-relevant search results are realistic while staying fast.
+- user value: As a player, I can find the expected card quickly without noisy duplicate-like suggestions that slow stack building.
+- scope:
+  - review current metadata transform filtering and dedupe behavior used for search/autocomplete
+  - define deterministic inclusion/exclusion rules for gameplay-relevant records
+  - define deterministic dedupe keys and tie-break strategy for retained records
+  - preserve compatibility with existing metadata file loading and search flow
+  - document the tuned policy so future metadata refreshes remain consistent
+- acceptance criteria:
+  - transform applies one explicit filtering policy before output generation
+  - transform applies one explicit dedupe policy with deterministic tie-breaks
+  - resulting metadata still supports suggestions at 3+ typed characters
+  - no runtime metadata sync/refresh is introduced
+  - policy is documented in backend/frontend data notes or fixture guidance
+- dependencies:
+  - REQ-002, REQ-003
+  - DEC-012
+  - NFR-002, NFR-004, NFR-005
+  - `sections/integrations-and-data.md` (Metadata Strategy)
+- exclusions:
+  - no Bedrock integration work
+  - no gameplay legality engine
+  - no full-card-data runtime loading in frontend bundle
+  - no new product-facing API endpoints
