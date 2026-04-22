@@ -6,18 +6,29 @@ INSTRUCTIONS
 QUESTION
 Resolve the stack
 
+GAME CONTEXT
+playerCount: 4
+Player 1: lifeTotal=20
+Player 2: lifeTotal=19
+Player 3: lifeTotal=17
+Player 4: lifeTotal=14
+
+BATTLEFIELD CONTEXT
+(none)
+
 ORDERED STACK (BOTTOM TO TOP)
 Card 1 (bottom)
 cardId: card-1
 name: Card 1
 manaCost: (none)
-manaValue: 0
+manaValue: 1
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
 caster: Player 1
 targets: (none)
+manaSpent: 1
 contextNotes: (none)
 oracleText: First effect.
 
@@ -25,13 +36,14 @@ Card 2 (middle)
 cardId: card-2
 name: Card 2
 manaCost: (none)
-manaValue: 0
+manaValue: 2
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
-caster: Player 1
+caster: Player 2
 targets: (none)
+manaSpent: 2
 contextNotes: (none)
 oracleText: Second effect.
 
@@ -39,13 +51,14 @@ Card 3 (middle)
 cardId: card-3
 name: Card 3
 manaCost: (none)
-manaValue: 0
+manaValue: 3
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
-caster: Player 1
+caster: Player 3
 targets: (none)
+manaSpent: 3
 contextNotes: (none)
 oracleText: Third effect.
 
@@ -53,13 +66,14 @@ Card 4 (middle)
 cardId: card-4
 name: Card 4
 manaCost: (none)
-manaValue: 0
+manaValue: 4
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
-caster: Player 1
+caster: Player 4
 targets: (none)
+manaSpent: 4
 contextNotes: (none)
 oracleText: Fourth effect.
 
@@ -67,13 +81,14 @@ Card 5 (middle)
 cardId: card-5
 name: Card 5
 manaCost: (none)
-manaValue: 0
+manaValue: 5
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
 caster: Player 1
 targets: (none)
+manaSpent: 5
 contextNotes: (none)
 oracleText: Fifth effect.
 
@@ -81,13 +96,14 @@ Card 6 (middle)
 cardId: card-6
 name: Card 6
 manaCost: (none)
-manaValue: 0
+manaValue: 6
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
-caster: Player 1
+caster: Player 2
 targets: (none)
+manaSpent: 6
 contextNotes: (none)
 oracleText: Sixth effect.
 
@@ -95,13 +111,14 @@ Card 7 (middle)
 cardId: card-7
 name: Card 7
 manaCost: (none)
-manaValue: 0
+manaValue: 7
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
-caster: Player 1
+caster: Player 3
 targets: (none)
+manaSpent: 7
 contextNotes: (none)
 oracleText: Seventh effect.
 
@@ -109,13 +126,14 @@ Card 8 (middle)
 cardId: card-8
 name: Card 8
 manaCost: (none)
-manaValue: 0
+manaValue: 8
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
-caster: Player 1
+caster: Player 4
 targets: (none)
+manaSpent: 8
 contextNotes: (none)
 oracleText: Eighth effect.
 
@@ -123,12 +141,13 @@ Card 9 (top)
 cardId: card-9
 name: Card 9
 manaCost: (none)
-manaValue: 0
+manaValue: 9
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
 caster: Player 1
 targets: (none)
+manaSpent: 9
 contextNotes: (none)
 oracleText: Ninth effect.

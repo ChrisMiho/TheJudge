@@ -15,7 +15,9 @@ import type {
   AskAiError,
   AskAiRequest,
   AskAiResponse,
+  BattlefieldContextItem,
   CardMetadataItem,
+  GameContext,
   PlayerLabel,
   StackItem,
   StackTarget
@@ -26,6 +28,7 @@ const METADATA_URL = "/data/cardMetadata.json";
 const EMPTY_STATE_IMAGE_URL = "/assets/cats-homescreen.png";
 const PLAYER_OPTIONS: PlayerLabel[] = ["Player 1", "Player 2", "Player 3", "Player 4"];
 type TargetKind = StackTarget["kind"];
+type FlowStep = "game-context" | "battlefield-context" | "stack-builder";
 
 function formatMetaList(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "N/A";
@@ -53,9 +56,28 @@ export default function App() {
   const [metadataLoadError, setMetadataLoadError] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
   const [selectedCard, setSelectedCard] = useState<CardMetadataItem | null>(null);
+  const [flowStep, setFlowStep] = useState<FlowStep>("game-context");
+  const [playerCountInput, setPlayerCountInput] = useState<2 | 3 | 4>(2);
+  const [lifeTotalsByPlayer, setLifeTotalsByPlayer] = useState<Record<PlayerLabel, string>>({
+    "Player 1": "20",
+    "Player 2": "20",
+    "Player 3": "20",
+    "Player 4": "20"
+  });
+  const [gameContext, setGameContext] = useState<GameContext | null>(null);
+  const [battlefieldContext, setBattlefieldContext] = useState<BattlefieldContextItem[]>([]);
+  const [battlefieldEntryName, setBattlefieldEntryName] = useState("");
+  const [battlefieldEntryDetails, setBattlefieldEntryDetails] = useState("");
+  const [battlefieldEntryTargets, setBattlefieldEntryTargets] = useState<StackTarget[]>([]);
+  const [battlefieldTargetKind, setBattlefieldTargetKind] = useState<TargetKind>("battlefield");
+  const [battlefieldTargetPermanent, setBattlefieldTargetPermanent] = useState("");
+  const [battlefieldTargetPlayer, setBattlefieldTargetPlayer] = useState<PlayerLabel>("Player 2");
+  const [battlefieldTargetStackName, setBattlefieldTargetStackName] = useState("");
+  const [battlefieldTargetStackId, setBattlefieldTargetStackId] = useState("");
   const [stack, setStack] = useState<StackItem[]>([]);
   const [entryCaster, setEntryCaster] = useState<PlayerLabel>(DEFAULT_CASTER);
   const [entryContextNotes, setEntryContextNotes] = useState("");
+  const [entryManaSpent, setEntryManaSpent] = useState("");
   const [entryTargets, setEntryTargets] = useState<StackTarget[]>([]);
   const [targetKind, setTargetKind] = useState<TargetKind>("stack");
   const [targetStackCardId, setTargetStackCardId] = useState("");
@@ -112,6 +134,21 @@ export default function App() {
 
   const addButtonLabel = stack.length === 0 ? "Begin stackening!" : "Add to Stack";
   const canRetry = retryCountdown === 0 && !isSubmitting;
+  const activePlayers = PLAYER_OPTIONS.slice(0, playerCountInput);
+
+  function parseManaSpentInput(rawValue: string): number | undefined {
+    const trimmed = rawValue.trim();
+    if (trimmed.length === 0) {
+      return undefined;
+    }
+
+    const parsed = Number(trimmed);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return undefined;
+    }
+
+    return parsed;
+  }
 
   function flashStatus(message: string): void {
     setStatusMessage(message);
@@ -136,6 +173,7 @@ export default function App() {
   function resetEntryContext(): void {
     setEntryCaster(DEFAULT_CASTER);
     setEntryContextNotes("");
+    setEntryManaSpent("");
     setEntryTargets([]);
     setTargetKind("stack");
     setTargetStackCardId("");
@@ -191,6 +229,96 @@ export default function App() {
 
   function removeEntryTarget(indexToRemove: number): void {
     setEntryTargets((current) => current.filter((_, index) => index !== indexToRemove));
+  }
+
+  function updateLifeTotal(player: PlayerLabel, value: string): void {
+    setLifeTotalsByPlayer((current) => ({
+      ...current,
+      [player]: value
+    }));
+  }
+
+  function confirmGameContext(): void {
+    const players = activePlayers.map((player) => {
+      const parsed = Number(lifeTotalsByPlayer[player]);
+      return {
+        label: player,
+        lifeTotal: Number.isFinite(parsed) ? parsed : NaN
+      };
+    });
+
+    if (players.some((player) => Number.isNaN(player.lifeTotal))) {
+      flashStatus("Enter numeric life totals for each active player.");
+      return;
+    }
+
+    setGameContext({
+      playerCount: playerCountInput,
+      players
+    });
+    setFlowStep("battlefield-context");
+    flashStatus("Game context saved.");
+  }
+
+  function addBattlefieldTarget(): void {
+    if (battlefieldTargetKind === "battlefield") {
+      const targetPermanent = battlefieldTargetPermanent.trim();
+      if (targetPermanent.length === 0) return;
+      setBattlefieldEntryTargets((current) => [...current, { kind: "battlefield", targetPermanent }]);
+      setBattlefieldTargetPermanent("");
+      return;
+    }
+
+    if (battlefieldTargetKind === "player") {
+      setBattlefieldEntryTargets((current) => [...current, { kind: "player", targetPlayer: battlefieldTargetPlayer }]);
+      return;
+    }
+
+    if (battlefieldTargetKind === "stack") {
+      const targetCardName = battlefieldTargetStackName.trim();
+      const targetCardId = battlefieldTargetStackId.trim() || targetCardName.toLowerCase().replace(/\s+/g, "-");
+      if (targetCardName.length === 0 || targetCardId.length === 0) return;
+      setBattlefieldEntryTargets((current) => [...current, { kind: "stack", targetCardId, targetCardName }]);
+      setBattlefieldTargetStackName("");
+      setBattlefieldTargetStackId("");
+      return;
+    }
+
+    setBattlefieldEntryTargets((current) => [...current, { kind: "none" }]);
+  }
+
+  function removeBattlefieldTarget(targetIndexToRemove: number): void {
+    setBattlefieldEntryTargets((current) => current.filter((_, index) => index !== targetIndexToRemove));
+  }
+
+  function addBattlefieldEntry(): void {
+    const name = battlefieldEntryName.trim();
+    if (name.length === 0) {
+      return;
+    }
+
+    const details = battlefieldEntryDetails.trim();
+    setBattlefieldContext((current) => [
+      ...current,
+      {
+        name,
+        details: details.length > 0 ? details : undefined,
+        targets: battlefieldEntryTargets
+      }
+    ]);
+    setBattlefieldEntryName("");
+    setBattlefieldEntryDetails("");
+    setBattlefieldEntryTargets([]);
+    flashStatus("Battlefield context added.");
+  }
+
+  function continueFromBattlefield(): void {
+    setFlowStep("stack-builder");
+  }
+
+  function skipBattlefieldStep(): void {
+    setBattlefieldContext([]);
+    setFlowStep("stack-builder");
   }
 
   function updateStackEntry(cardId: string, updates: Partial<StackItem>): void {
@@ -285,7 +413,8 @@ export default function App() {
     const stackEntry = buildStackItemFromMetadata(selectedCard, {
       caster: entryCaster,
       contextNotes: entryContextNotes,
-      targets: entryTargets
+      targets: entryTargets,
+      manaSpent: parseManaSpentInput(entryManaSpent)
     });
     const validationResult = validateStackAdd(stack, stackEntry);
     if (!validationResult.ok) {
@@ -384,9 +513,14 @@ export default function App() {
       return;
     }
 
+    if (!gameContext) {
+      flashStatus("Confirm game context before decrypting.");
+      return;
+    }
+
     const correlationId = createCorrelationId();
     const finalQuestion = getFinalQuestion(question);
-    const payload: AskAiRequest = buildAskAiRequest(question, stack);
+    const payload: AskAiRequest = buildAskAiRequest(question, gameContext, battlefieldContext, stack);
     logFrontendDebug("ask_ai.submit_attempted", {
       source: "decrypt",
       correlationId,
@@ -399,7 +533,7 @@ export default function App() {
   }
 
   async function handleRetry(): Promise<void> {
-    if (!canRetry || stack.length === 0) return;
+    if (!canRetry || stack.length === 0 || !gameContext) return;
     const correlationId = createCorrelationId();
     const finalQuestion = getFinalQuestion(question);
     logFrontendDebug("ask_ai.submit_attempted", {
@@ -409,7 +543,197 @@ export default function App() {
       questionLength: finalQuestion.length,
       usedFallbackQuestion: question.trim().length === 0
     });
-    await submitAskAi(buildAskAiRequest(question, stack), correlationId);
+    await submitAskAi(buildAskAiRequest(question, gameContext, battlefieldContext, stack), correlationId);
+  }
+
+  if (flowStep === "game-context") {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
+        <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 md:p-6">
+          <h1 className="text-2xl font-semibold text-sky-300">Game context</h1>
+          <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
+            Number of players
+            <select
+              aria-label="Number of players"
+              value={playerCountInput}
+              onChange={(event) => setPlayerCountInput(Number(event.target.value) as 2 | 3 | 4)}
+              className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
+            >
+              <option value={2}>2</option>
+              <option value={3}>3</option>
+              <option value={4}>4</option>
+            </select>
+          </label>
+          <div className="space-y-2">
+            {activePlayers.map((player) => (
+              <label key={player} className="flex items-center justify-between gap-3 text-sm">
+                <span>{player} life total</span>
+                <input
+                  aria-label={`${player} life total`}
+                  value={lifeTotalsByPlayer[player]}
+                  onChange={(event) => updateLifeTotal(player, event.target.value)}
+                  inputMode="numeric"
+                  className="w-28 rounded-lg border border-slate-600 bg-slate-800 px-2 py-1 text-right"
+                />
+              </label>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={confirmGameContext}
+            className="rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white"
+          >
+            Confirm game context
+          </button>
+          {statusMessage && (
+            <p className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2 text-sm font-medium text-cyan-200">
+              {statusMessage}
+            </p>
+          )}
+        </section>
+      </main>
+    );
+  }
+
+  if (flowStep === "battlefield-context") {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
+        <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 md:p-6">
+          <h1 className="text-2xl font-semibold text-sky-300">Battlefield context (optional)</h1>
+          <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
+            Battlefield item
+            <input
+              aria-label="Battlefield item name"
+              value={battlefieldEntryName}
+              onChange={(event) => setBattlefieldEntryName(event.target.value)}
+              className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
+              placeholder="Rhystic Study"
+            />
+          </label>
+          <textarea
+            aria-label="Battlefield item details"
+            value={battlefieldEntryDetails}
+            onChange={(event) => setBattlefieldEntryDetails(event.target.value.slice(0, 280))}
+            rows={2}
+            maxLength={280}
+            className="w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
+            placeholder="Optional details"
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              aria-label="Battlefield target kind"
+              value={battlefieldTargetKind}
+              onChange={(event) => setBattlefieldTargetKind(event.target.value as TargetKind)}
+              className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+            >
+              <option value="battlefield">Battlefield target</option>
+              <option value="player">Player target</option>
+              <option value="stack">Stack target</option>
+              <option value="none">No specific target</option>
+            </select>
+            {battlefieldTargetKind === "battlefield" && (
+              <input
+                aria-label="Battlefield target permanent"
+                value={battlefieldTargetPermanent}
+                onChange={(event) => setBattlefieldTargetPermanent(event.target.value)}
+                className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                placeholder="Permanent name"
+              />
+            )}
+            {battlefieldTargetKind === "player" && (
+              <select
+                aria-label="Battlefield target player"
+                value={battlefieldTargetPlayer}
+                onChange={(event) => setBattlefieldTargetPlayer(event.target.value as PlayerLabel)}
+                className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+              >
+                {activePlayers.map((player) => (
+                  <option key={player} value={player}>
+                    {player}
+                  </option>
+                ))}
+              </select>
+            )}
+            {battlefieldTargetKind === "stack" && (
+              <>
+                <input
+                  aria-label="Battlefield target stack name"
+                  value={battlefieldTargetStackName}
+                  onChange={(event) => setBattlefieldTargetStackName(event.target.value)}
+                  className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                  placeholder="Stack card name"
+                />
+                <input
+                  aria-label="Battlefield target stack id"
+                  value={battlefieldTargetStackId}
+                  onChange={(event) => setBattlefieldTargetStackId(event.target.value)}
+                  className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                  placeholder="Stack card id (optional)"
+                />
+              </>
+            )}
+            <button
+              type="button"
+              onClick={addBattlefieldTarget}
+              className="rounded-md border border-slate-500 bg-slate-700 px-2 py-1 text-xs text-slate-100"
+            >
+              Add battlefield target
+            </button>
+          </div>
+          {battlefieldEntryTargets.length > 0 && (
+            <ul className="space-y-1">
+              {battlefieldEntryTargets.map((target, index) => (
+                <li key={`${target.kind}-${index}`} className="flex items-center justify-between gap-2 text-xs">
+                  <span>{formatTarget(target)}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeBattlefieldTarget(index)}
+                    className="rounded border border-slate-500 px-1.5 py-0.5 text-[11px] text-slate-100"
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={addBattlefieldEntry}
+              className="rounded-xl bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-2 text-sm font-semibold text-white"
+            >
+              Add battlefield item
+            </button>
+            <button
+              type="button"
+              onClick={continueFromBattlefield}
+              className="rounded-xl border border-slate-500 px-4 py-2 text-sm font-semibold text-slate-100"
+            >
+              Continue to stack
+            </button>
+            <button
+              type="button"
+              onClick={skipBattlefieldStep}
+              className="rounded-xl border border-slate-500 px-4 py-2 text-sm font-semibold text-slate-100"
+            >
+              Skip battlefield context
+            </button>
+          </div>
+          {battlefieldContext.length > 0 && (
+            <ul className="space-y-1 text-sm text-slate-300">
+              {battlefieldContext.map((item, index) => (
+                <li key={`${item.name}-${index}`}>{`${index + 1}. ${item.name}`}</li>
+              ))}
+            </ul>
+          )}
+          {statusMessage && (
+            <p className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2 text-sm font-medium text-cyan-200">
+              {statusMessage}
+            </p>
+          )}
+        </section>
+      </main>
+    );
   }
 
   return (
@@ -435,6 +759,13 @@ export default function App() {
             </button>
           )}
         </header>
+        {gameContext && (
+          <div className="rounded-xl border border-slate-700 bg-slate-800/50 px-3 py-2 text-xs text-slate-200">
+            <p>{`Game context: ${gameContext.playerCount} players`}</p>
+            <p>{gameContext.players.map((player) => `${player.label}=${player.lifeTotal}`).join(" | ")}</p>
+            <p>{`Battlefield context entries: ${battlefieldContext.length}`}</p>
+          </div>
+        )}
 
         {stack.length === 0 && (
           <div className="p-2 text-center">
@@ -626,6 +957,17 @@ export default function App() {
                       ))}
                     </ul>
                   )}
+                  <label className="flex items-center gap-2 text-xs text-slate-200">
+                    Mana spent
+                    <input
+                      aria-label="Entry mana spent"
+                      value={entryManaSpent}
+                      onChange={(event) => setEntryManaSpent(event.target.value)}
+                      inputMode="numeric"
+                      placeholder={`Defaults to MV (${selectedCard.manaValue})`}
+                      className="w-40 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                    />
+                  </label>
                   <textarea
                     aria-label="Entry context notes"
                     value={entryContextNotes}
@@ -756,6 +1098,20 @@ export default function App() {
                           </option>
                         ))}
                       </select>
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-slate-200">
+                      Mana spent
+                      <input
+                        aria-label={`Mana spent for ${item.name}`}
+                        value={item.manaSpent ?? ""}
+                        onChange={(event) => {
+                          const nextValue = parseManaSpentInput(event.target.value);
+                          updateStackEntry(item.cardId, { manaSpent: nextValue });
+                        }}
+                        inputMode="numeric"
+                        placeholder={`Defaults to MV (${item.manaValue})`}
+                        className="w-40 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                      />
                     </label>
                     <div className="flex flex-wrap items-center gap-2">
                       <select

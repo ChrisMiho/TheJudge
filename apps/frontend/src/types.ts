@@ -31,14 +31,33 @@ export type CardMetadataItem = {
   subtypes: string[];
 };
 
+export type GamePlayerContext = {
+  label: PlayerLabel;
+  lifeTotal: number;
+};
+
+export type GameContext = {
+  playerCount: number;
+  players: GamePlayerContext[];
+};
+
+export type BattlefieldContextItem = {
+  name: string;
+  details?: string;
+  targets: StackTarget[];
+};
+
 export type StackItem = CardMetadataItem & {
   caster: PlayerLabel;
   targets: StackTarget[];
   contextNotes?: string;
+  manaSpent?: number;
 };
 
 export type AskAiRequest = {
   question: string;
+  gameContext: GameContext;
+  battlefieldContext: BattlefieldContextItem[];
   stack: StackItem[];
 };
 

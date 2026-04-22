@@ -1,5 +1,33 @@
 {
   "finalQuestion": "Walk me through the full stack resolution.",
+  "gameContext": {
+    "playerCount": 3,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 22
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 14
+      },
+      {
+        "label": "Player 3",
+        "lifeTotal": 7
+      }
+    ]
+  },
+  "battlefieldContext": [
+    {
+      "name": "Rule of Law",
+      "details": "Each player can cast one spell each turn.",
+      "targets": [
+        {
+          "kind": "none"
+        }
+      ]
+    }
+  ],
   "orderedStack": [
     {
       "cardId": "lightning-bolt",
@@ -7,13 +35,19 @@
       "oracleText": "Lightning Bolt deals 3 damage to any target.",
       "imageUrl": "",
       "manaCost": "",
-      "manaValue": 0,
+      "manaValue": 1,
       "typeLine": "",
       "colors": [],
       "supertypes": [],
       "subtypes": [],
       "caster": "Player 1",
-      "targets": [],
+      "targets": [
+        {
+          "kind": "player",
+          "targetPlayer": "Player 2"
+        }
+      ],
+      "manaSpent": 1,
       "stackIndex": 0,
       "stackRole": "bottom"
     },
@@ -23,13 +57,20 @@
       "oracleText": "Counter target spell.",
       "imageUrl": "",
       "manaCost": "",
-      "manaValue": 0,
+      "manaValue": 2,
       "typeLine": "",
       "colors": [],
       "supertypes": [],
       "subtypes": [],
-      "caster": "Player 1",
-      "targets": [],
+      "caster": "Player 2",
+      "targets": [
+        {
+          "kind": "stack",
+          "targetCardId": "lightning-bolt",
+          "targetCardName": "Lightning Bolt"
+        }
+      ],
+      "manaSpent": 2,
       "stackIndex": 1,
       "stackRole": "middle"
     },
@@ -39,13 +80,20 @@
       "oracleText": "You may choose new targets for target spell or ability.",
       "imageUrl": "",
       "manaCost": "",
-      "manaValue": 0,
+      "manaValue": 3,
       "typeLine": "",
       "colors": [],
       "supertypes": [],
       "subtypes": [],
-      "caster": "Player 1",
-      "targets": [],
+      "caster": "Player 3",
+      "targets": [
+        {
+          "kind": "stack",
+          "targetCardId": "counterspell",
+          "targetCardName": "Counterspell"
+        }
+      ],
+      "manaSpent": 0,
       "stackIndex": 2,
       "stackRole": "top"
     }

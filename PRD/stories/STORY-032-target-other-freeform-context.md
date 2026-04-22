@@ -1,0 +1,39 @@
+# STORY-032 - Target `other` Freeform Context
+
+- title: Add a new `other` target option that captures up to 200 characters of custom target context and includes it in payload/prompt output.
+- user value: As a player, I can describe unusual or ambiguous target context quickly without waiting for full MVP2 targeting refinements.
+- scope:
+  - extend target model with new option:
+    - `kind: "other"`
+    - freeform text field limited to 200 characters (trimmed)
+  - support `other` target entry in both:
+    - stack-entry creation flow
+    - stack-details edit flow
+  - update frontend/backend request types and validation to accept `other` target shape
+  - update prompt-context builder and deterministic prompt/mock formatting to include `other` target text
+  - enforce deterministic normalization behavior:
+    - empty/whitespace-only `other` text is rejected or blocked from add
+    - non-empty text is trimmed and preserved
+  - add/update tests for:
+    - UI add/edit of `other` target text
+    - contract validation for valid/invalid `other` target payloads
+    - prompt/mock rendering coverage for `other` target context
+- acceptance criteria:
+  - user can choose `other` target option and enter up to 200 chars
+  - valid `other` target text is included in ask-ai payload and backend prompt/mock output
+  - invalid `other` target input does not produce malformed payload entries
+  - existing target kinds (`stack`, `battlefield`, `player`, `none`) continue to work unchanged
+- execution mode: sequential
+- dependencies:
+  - STORY-025 (blocking): story requires strict contract hardening baseline before extending target discriminated union.
+  - dependency reason: target-shape contract changes are safer after schema/normalization behavior is locked.
+  - what becomes parallelizable after prerequisite lands: frontend and backend `other` target implementation/testing can proceed independently from unrelated flow stories.
+  - REQ-012, REQ-013
+  - DEC-010, DEC-013, DEC-019
+  - NFR-005
+  - `sections/integrations-and-data.md` (StackTarget contract)
+- exclusions:
+  - no full target-rules reasoning engine
+  - no natural-language target parsing beyond plain user-entered text
+  - no increase to question-field character limits
+  - no MVP2 target ontology expansion beyond single `other` text field

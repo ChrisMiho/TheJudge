@@ -5,6 +5,14 @@ import type { AskAiRequest } from "./types.js";
 
 const app = createApp();
 
+function createGameContext(playerCount: 2 | 3 | 4 = 2): AskAiRequest["gameContext"] {
+  const labels: AskAiRequest["gameContext"]["players"][number]["label"][] = ["Player 1", "Player 2", "Player 3", "Player 4"];
+  return {
+    playerCount,
+    players: labels.slice(0, playerCount).map((label) => ({ label, lifeTotal: 20 }))
+  };
+}
+
 function createStackItem(overrides: Partial<AskAiRequest["stack"][number]> = {}): AskAiRequest["stack"][number] {
   return {
     cardId: "opt",
@@ -19,6 +27,7 @@ function createStackItem(overrides: Partial<AskAiRequest["stack"][number]> = {})
     subtypes: [],
     caster: "Player 1",
     targets: [],
+    manaSpent: undefined,
     ...overrides
   };
 }
@@ -33,6 +42,8 @@ describe("backend contract tests", () => {
   it("returns mock answer on valid ask-ai request", async () => {
     const response = await request(app).post("/api/ask-ai").send({
       question: "How does this resolve?",
+      gameContext: createGameContext(4),
+      battlefieldContext: [{ name: "Rhystic Study", targets: [{ kind: "none" }] }],
       stack: [
         createStackItem({
           caster: "Player 4",
@@ -46,6 +57,8 @@ describe("backend contract tests", () => {
     expect(response.body.answer).toContain("MOCK RESPONSE");
     expect(response.body.answer).toContain("Final question: How does this resolve?");
     expect(response.body.answer).toContain("Stack order convention: bottom-to-top");
+    expect(response.body.answer).toContain("Players: 4");
+    expect(response.body.answer).toContain("Battlefield context items: 1");
     expect(response.body.answer).toContain("1. [top] Opt (cardId: opt)");
     expect(response.body.answer).toContain("Caster: Player 4 | Targets: none:does-not-target");
     expect(response.body.answer).toContain("Mana: {U} | MV: 1");
@@ -54,6 +67,8 @@ describe("backend contract tests", () => {
   it("applies fallback question when blank question is submitted", async () => {
     const response = await request(app).post("/api/ask-ai").send({
       question: "   ",
+      gameContext: createGameContext(),
+      battlefieldContext: [],
       stack: [
         createStackItem({
           cardId: "counterspell",
@@ -72,6 +87,8 @@ describe("backend contract tests", () => {
   it("includes explicit stack order metadata in mock answer payload", async () => {
     const response = await request(app).post("/api/ask-ai").send({
       question: "Order check",
+      gameContext: createGameContext(),
+      battlefieldContext: [],
       stack: [
         createStackItem({
           cardId: "bottom",
@@ -104,6 +121,8 @@ describe("backend contract tests", () => {
   it("returns 400 for invalid payload shape", async () => {
     const response = await request(app).post("/api/ask-ai").send({
       question: "oops",
+      gameContext: createGameContext(),
+      battlefieldContext: [],
       stack: []
     });
 
@@ -115,6 +134,8 @@ describe("backend contract tests", () => {
   it("returns 400 for invalid caster labels", async () => {
     const response = await request(app).post("/api/ask-ai").send({
       question: "invalid caster",
+      gameContext: createGameContext(),
+      battlefieldContext: [],
       stack: [{ ...createStackItem(), caster: "Player 5" }]
     });
 
@@ -125,6 +146,8 @@ describe("backend contract tests", () => {
   it("returns 400 for malformed typed targets", async () => {
     const response = await request(app).post("/api/ask-ai").send({
       question: "bad target",
+      gameContext: createGameContext(),
+      battlefieldContext: [],
       stack: [{ ...createStackItem(), targets: [{ kind: "stack", targetCardId: "x" }] }]
     });
 
@@ -132,9 +155,64 @@ describe("backend contract tests", () => {
     expect(response.body.error).toContain("stack.0.targets.0.targetCardName");
   });
 
+  it("returns 400 when gameContext players do not match playerCount", async () => {
+    const response = await request(app).post("/api/ask-ai").send({
+      question: "bad game context",
+      gameContext: {
+        playerCount: 3,
+        players: [
+          { label: "Player 1", lifeTotal: 20 },
+          { label: "Player 2", lifeTotal: 20 }
+        ]
+      },
+      battlefieldContext: [],
+      stack: [createStackItem()]
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toContain("gameContext.players");
+  });
+
+  it("returns 400 for unknown extra fields in strict contract", async () => {
+    const response = await request(app).post("/api/ask-ai").send({
+      question: "strict contract",
+      gameContext: createGameContext(),
+      battlefieldContext: [],
+      stack: [{ ...createStackItem(), unknownField: "x" }]
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toContain("stack.0");
+  });
+
+  it("returns 400 when prompt budget is exceeded", async () => {
+    const response = await request(app).post("/api/ask-ai").send({
+      question: "prompt budget check",
+      gameContext: createGameContext(4),
+      battlefieldContext: Array.from({ length: 16 }, (_, index) => ({
+        name: `Permanent ${index + 1}`,
+        details: "x".repeat(280),
+        targets: [{ kind: "none" }]
+      })),
+      stack: Array.from({ length: 10 }, (_, index) =>
+        createStackItem({
+          cardId: `card-${index}`,
+          name: `Card ${index}`,
+          oracleText: "z".repeat(1000),
+          contextNotes: "y".repeat(280)
+        })
+      )
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toContain("prompt exceeds max budget");
+  });
+
   it("returns 502 with retry hint when fail=true", async () => {
     const response = await request(app).post("/api/ask-ai?fail=true").send({
       question: "fail path",
+      gameContext: createGameContext(),
+      battlefieldContext: [],
       stack: [
         createStackItem({
           cardId: "bolt",
@@ -165,6 +243,8 @@ describe("backend contract tests", () => {
 
     const response = await request(appWithProvider).post("/api/ask-ai").send({
       question: "Boundary check",
+      gameContext: createGameContext(),
+      battlefieldContext: [],
       stack: [createStackItem()]
     });
 
@@ -197,6 +277,8 @@ describe("backend contract tests", () => {
       .set("X-Correlation-Id", "corr-test-123")
       .send({
         question: "Boundary check",
+        gameContext: createGameContext(),
+        battlefieldContext: [],
         stack: [createStackItem()]
       });
 
@@ -205,8 +287,8 @@ describe("backend contract tests", () => {
     expect(eventNames).toContain("ask_ai.request_received");
     expect(eventNames).toContain("ask_ai.request_validation_succeeded");
     expect(eventNames).toContain("ask_ai.prompt_context_build_started");
-    expect(eventNames).toContain("ask_ai.mock_provider_invocation_started");
-    expect(eventNames).toContain("ask_ai.mock_provider_invocation_completed");
+    expect(eventNames).toContain("ask_ai.provider_invocation_started");
+    expect(eventNames).toContain("ask_ai.provider_invocation_completed");
     expect(eventNames).toContain("ask_ai.prompt_context_build_completed");
     expect(eventNames).toContain("ask_ai.response_success");
 

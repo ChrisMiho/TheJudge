@@ -1,0 +1,33 @@
+# STORY-030 - Battlefield Context Metadata Search Alignment
+
+- title: Reuse the same metadata-backed search behavior in the battlefield-context step as the stack-creation search flow.
+- user value: As a player, I can find battlefield cards/effects quickly with familiar search behavior instead of manual free-text entry only.
+- scope:
+  - add searchable battlefield-item entry that uses the same local metadata source and search utility patterns already used by stack creation
+  - preserve existing search interaction conventions where applicable:
+    - suggestions start at 3+ characters
+    - deterministic no-match messaging
+    - suggestion selection behavior remains explicit (no accidental auto-add)
+  - keep battlefield-step entry model lightweight (search-assisted identification + optional details/targets)
+  - ensure selected battlefield entries continue to serialize through existing `battlefieldContext` payload contract
+  - add/update tests for:
+    - suggestion threshold and no-match behavior in battlefield step
+    - selecting search results into battlefield entries
+    - payload inclusion of search-selected battlefield entries
+- acceptance criteria:
+  - battlefield-context step supports metadata-backed search using the same core search logic as stack entry
+  - search behavior in battlefield step is consistent with existing stack search conventions
+  - users can add battlefield entries via search-assisted selection without breaking current flow
+  - resulting `battlefieldContext` entries are included in request payload and visible in prompt/mock output paths
+- execution mode: parallel-ready
+- dependencies:
+  - REQ-001, REQ-002, REQ-012, REQ-016
+  - DEC-010, DEC-012, DEC-019
+  - NFR-005, NFR-007
+  - `sections/user-flows.md` (FLOW-001 staged flow behavior)
+  - `sections/integrations-and-data.md` (`battlefieldContext` contract)
+- exclusions:
+  - no additional product-facing backend endpoints
+  - no runtime metadata sync strategy changes
+  - no comprehensive fuzzy-search engine rewrite
+  - no gameplay legality/rules enforcement for battlefield state

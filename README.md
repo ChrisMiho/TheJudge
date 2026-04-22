@@ -164,6 +164,15 @@ Pending implementation backlog:
 - [ ] `STORY-022` capture pre-stack general game context (player count + life totals) and include it in LLM prompt context
 - [ ] `STORY-023` capture per-stack-entry mana spent context with deterministic fallback to `manaValue` in prompt context
 - [ ] `STORY-024` add optional battlefield-context step after game context with explicit skip path and prompt-context inclusion
+- [ ] `STORY-025` harden expanded Ask-AI context contract end-to-end after staged-context features land
+- [ ] `STORY-026` expand deterministic prompt structure to include staged context sections
+- [ ] `STORY-027` extend eval harness fixtures/checks for staged-context regression detection
+- [ ] `STORY-028` prepare Phase B Bedrock bootstrap/config/provider-selection wiring without API contract changes
+- [ ] `STORY-029` add prompt budget and latency guardrails for high-context scenarios
+- [ ] `STORY-030` align battlefield-context entry with existing metadata-backed card search behavior
+- [ ] `STORY-031` simplify battlefield-step progression to one dynamic skip/continue action button
+- [ ] `STORY-032` add target kind `other` with up-to-200-char custom target context wired through payload/prompt
+- [ ] `STORY-033` move cat visual from stack window/empty-state placement to game-context first screen
 
 ## Documentation Notes
 

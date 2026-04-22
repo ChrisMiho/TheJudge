@@ -6,6 +6,14 @@ describe("mock answer ergonomics", () => {
   it("renders deterministic labeled debug output", () => {
     const context: PromptContext = {
       finalQuestion: "How does this resolve?",
+      gameContext: {
+        playerCount: 2,
+        players: [
+          { label: "Player 1", lifeTotal: 20 },
+          { label: "Player 2", lifeTotal: 18 }
+        ]
+      },
+      battlefieldContext: [{ name: "Rhystic Study", details: "Tax effect", targets: [{ kind: "none" }] }],
       orderedStack: [
         {
           cardId: "opt",
@@ -20,6 +28,7 @@ describe("mock answer ergonomics", () => {
           subtypes: [],
           caster: "Player 1",
           targets: [],
+          manaSpent: 1,
           contextNotes: "",
           stackIndex: 0,
           stackRole: "bottom"
@@ -37,6 +46,7 @@ describe("mock answer ergonomics", () => {
           subtypes: [],
           caster: "Player 3",
           targets: [{ kind: "none" }, { kind: "player", targetPlayer: "Player 4" }],
+          manaSpent: 3,
           contextNotes: "cast for free",
           stackIndex: 1,
           stackRole: "top"
@@ -49,9 +59,12 @@ describe("mock answer ergonomics", () => {
     expect(result.answer).toContain("MOCK RESPONSE");
     expect(result.answer).toContain("Final question: How does this resolve?");
     expect(result.answer).toContain("Stack order convention: bottom-to-top");
+    expect(result.answer).toContain("Players: 2 (Player 1=20, Player 2=18)");
+    expect(result.answer).toContain("Battlefield context items: 1");
     expect(result.answer).toContain("1. [bottom] Opt (cardId: opt)");
     expect(result.answer).toContain("2. [top] Lightning Bolt (cardId: bolt)");
     expect(result.answer).toContain("Caster: Player 3 | Targets: none:does-not-target | player:Player 4");
+    expect(result.answer).toContain("Mana Spent: 3");
     expect(result.answer).toContain("Notes: cast for free");
     expect(result.answer).toContain("Colors: U | Supertypes: N/A | Subtypes: N/A");
   });

@@ -1,0 +1,28 @@
+# STORY-033 - Game Context First-Screen Cat Visual Placement
+
+- title: Move the cat visual from stack/empty-state placement to the game-context first screen so it appears on initial app load.
+- user value: As a player, I see welcoming visual branding on the first screen I interact with, not after navigating deeper into the flow.
+- scope:
+  - relocate current cat visual asset usage from stack-window/stack-empty-state placement to the game-context step screen
+  - keep the same bundled static-asset strategy and fallback behavior for image-load failures
+  - ensure visual move does not block or distract from game-context input controls (player count and life totals)
+  - update UI tests to verify:
+    - cat visual appears on first-load game-context screen
+    - fallback path still works if image fails
+    - previous stack-window placement is removed/updated
+- acceptance criteria:
+  - cat image is visible on the game-context first screen on initial load
+  - stack-window/stack-empty-state no longer owns primary cat placement for first impression
+  - image failure fallback remains graceful and non-blocking
+  - existing game-context flow interactions remain functional
+- execution mode: parallel-ready
+- dependencies:
+  - REQ-015
+  - DEC-019
+  - NFR-001
+  - `sections/user-flows.md` (FLOW-001 entry point)
+- exclusions:
+  - no asset redesign or replacement request
+  - no animation/motion feature scope
+  - no broader visual theme overhaul
+  - no backend/API changes

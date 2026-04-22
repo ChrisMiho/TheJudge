@@ -1,11 +1,17 @@
 import { resolveDebugLoggingEnabled } from "./logging.js";
 
 const DEFAULT_PORT = 3000;
+const DEFAULT_ASK_AI_PROVIDER = "mock";
+const PROVIDER_OPTIONS = ["mock", "bedrock"] as const;
+type AskAiProviderMode = (typeof PROVIDER_OPTIONS)[number];
 
 export type ServerConfig = {
   port: number;
   frontendOrigin?: string;
   debugLoggingEnabled: boolean;
+  askAiProvider: AskAiProviderMode;
+  awsRegion?: string;
+  bedrockModelId?: string;
 };
 
 function parsePort(rawPort: string | undefined): number {
@@ -43,9 +49,25 @@ function parseFrontendOrigin(rawOrigin: string | undefined): string | undefined 
 }
 
 export function readServerConfig(env: NodeJS.ProcessEnv): ServerConfig {
+  const provider = (env.ASK_AI_PROVIDER?.trim().toLowerCase() ?? DEFAULT_ASK_AI_PROVIDER) as AskAiProviderMode;
+  if (!PROVIDER_OPTIONS.includes(provider)) {
+    throw new Error(`Invalid ASK_AI_PROVIDER value "${env.ASK_AI_PROVIDER}". Expected one of: mock, bedrock.`);
+  }
+
+  const awsRegion = env.AWS_REGION?.trim() || undefined;
+  const bedrockModelId = env.BEDROCK_MODEL_ID?.trim() || undefined;
+  if (provider === "bedrock" && (!awsRegion || !bedrockModelId)) {
+    throw new Error(
+      `ASK_AI_PROVIDER=bedrock requires both AWS_REGION and BEDROCK_MODEL_ID to be configured.`
+    );
+  }
+
   return {
     port: parsePort(env.PORT),
     frontendOrigin: parseFrontendOrigin(env.FRONTEND_ORIGIN),
-    debugLoggingEnabled: resolveDebugLoggingEnabled(env.DEBUG_LOGGING, env.NODE_ENV)
+    debugLoggingEnabled: resolveDebugLoggingEnabled(env.DEBUG_LOGGING, env.NODE_ENV),
+    askAiProvider: provider,
+    awsRegion,
+    bedrockModelId
   };
 }

@@ -3,60 +3,97 @@
   "description": "Near-cap stack verifies role/index behavior and fallback question logic.",
   "request": {
     "question": "    ",
+    "gameContext": {
+      "playerCount": 4,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 20 },
+        { "label": "Player 2", "lifeTotal": 19 },
+        { "label": "Player 3", "lifeTotal": 17 },
+        { "label": "Player 4", "lifeTotal": 14 }
+      ]
+    },
+    "battlefieldContext": [],
     "stack": [
       {
         "cardId": "card-1",
         "name": "Card 1",
         "oracleText": "First effect.",
-        "imageUrl": ""
+        "imageUrl": "",
+        "manaValue": 1,
+        "caster": "Player 1",
+        "targets": []
       },
       {
         "cardId": "card-2",
         "name": "Card 2",
         "oracleText": "Second effect.",
-        "imageUrl": ""
+        "imageUrl": "",
+        "manaValue": 2,
+        "caster": "Player 2",
+        "targets": []
       },
       {
         "cardId": "card-3",
         "name": "Card 3",
         "oracleText": "Third effect.",
-        "imageUrl": ""
+        "imageUrl": "",
+        "manaValue": 3,
+        "caster": "Player 3",
+        "targets": []
       },
       {
         "cardId": "card-4",
         "name": "Card 4",
         "oracleText": "Fourth effect.",
-        "imageUrl": ""
+        "imageUrl": "",
+        "manaValue": 4,
+        "caster": "Player 4",
+        "targets": []
       },
       {
         "cardId": "card-5",
         "name": "Card 5",
         "oracleText": "Fifth effect.",
-        "imageUrl": ""
+        "imageUrl": "",
+        "manaValue": 5,
+        "caster": "Player 1",
+        "targets": []
       },
       {
         "cardId": "card-6",
         "name": "Card 6",
         "oracleText": "Sixth effect.",
-        "imageUrl": ""
+        "imageUrl": "",
+        "manaValue": 6,
+        "caster": "Player 2",
+        "targets": []
       },
       {
         "cardId": "card-7",
         "name": "Card 7",
         "oracleText": "Seventh effect.",
-        "imageUrl": ""
+        "imageUrl": "",
+        "manaValue": 7,
+        "caster": "Player 3",
+        "targets": []
       },
       {
         "cardId": "card-8",
         "name": "Card 8",
         "oracleText": "Eighth effect.",
-        "imageUrl": ""
+        "imageUrl": "",
+        "manaValue": 8,
+        "caster": "Player 4",
+        "targets": []
       },
       {
         "cardId": "card-9",
         "name": "Card 9",
         "oracleText": "Ninth effect.",
-        "imageUrl": ""
+        "imageUrl": "",
+        "manaValue": 9,
+        "caster": "Player 1",
+        "targets": []
       }
     ]
   }

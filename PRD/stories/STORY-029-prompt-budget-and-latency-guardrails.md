@@ -1,0 +1,26 @@
+# STORY-029 - Prompt Budget and Latency Guardrails
+
+- title: Add deterministic prompt-size and latency-oriented guardrails so expanded context remains practical before Bedrock experiments.
+- user value: As a developer, I can avoid runaway prompt growth and preserve responsive gameplay UX as context richness increases.
+- scope:
+  - define deterministic prompt-size guardrails tied to current context model and stack limits
+  - enforce truncation/normalization boundaries for long context fields where needed
+  - add regression tests for size-related guardrail behavior and representative high-context scenarios
+  - add lightweight diagnostics in debug outputs to surface prompt-size characteristics during validation
+  - document guardrail expectations for pre-Bedrock tuning work
+- acceptance criteria:
+  - prompt-building logic applies stable size/normalization guardrails for expanded context inputs
+  - representative high-context scenarios remain within defined guardrail expectations
+  - test coverage includes at least one near-limit context composition case
+  - debug output provides enough visibility to inspect prompt-size pressure during development
+- execution mode: sequential
+- dependencies:
+  - STORY-026 (blocking): depends on expanded prompt structure
+  - REQ-006, REQ-013, REQ-015, REQ-016, REQ-017
+  - DEC-008, DEC-017, DEC-019
+  - NFR-002, NFR-005
+  - `sections/non-functional-requirements.md` (latency/performance constraints)
+- exclusions:
+  - no production autoscaling or infra-level performance work
+  - no model-selection experimentation scope
+  - no additional product-facing backend endpoints

@@ -93,6 +93,14 @@ describe("context evaluation harness", () => {
       description: "Synthetic fixture used to prove regression detection",
       request: {
         question: "How does this resolve?",
+        gameContext: {
+          playerCount: 2,
+          players: [
+            { label: "Player 1", lifeTotal: 20 },
+            { label: "Player 2", lifeTotal: 20 }
+          ]
+        },
+        battlefieldContext: [],
         stack: [
           {
             cardId: "bottom",

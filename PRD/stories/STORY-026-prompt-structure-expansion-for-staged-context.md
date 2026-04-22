@@ -1,0 +1,29 @@
+# STORY-026 - Prompt Structure Expansion for Staged Context
+
+- title: Update prompt-context and prompt-text generation to include staged game/battlefield/mana context in deterministic section order before Bedrock exploration.
+- user value: As a developer tuning model behavior, I can inspect a stable prompt that consistently includes all intended context fields, reducing ambiguity in LLM responses.
+- scope:
+  - expand prompt context object to include normalized staged context sections:
+    - general game context
+    - optional battlefield context
+    - ordered stack with per-entry enriched fields (including `manaSpent`)
+  - update prompt text builder to render deterministic section order and stable labels
+  - preserve stack ordering semantics and fallback question behavior while extending prompt structure
+  - update mock/debug response formatting to reflect expanded prompt-context sections clearly
+  - add/update tests for section presence, order determinism, and representative context permutations
+- acceptance criteria:
+  - prompt context output contains all approved staged context fields
+  - prompt text includes deterministic section ordering covering game/battlefield/stack context
+  - mock/debug output mirrors the expanded context in stable labels
+  - regression tests protect ordering and required-section presence
+- execution mode: sequential
+- dependencies:
+  - STORY-025 (blocking): requires hardened request-contract support for all context fields
+  - REQ-006, REQ-012, REQ-013, REQ-015, REQ-016, REQ-017
+  - DEC-004, DEC-009, DEC-017, DEC-019
+  - NFR-005
+  - `sections/integrations-and-data.md` (AI prompt context rules)
+- exclusions:
+  - no Bedrock invocation wiring
+  - no model-specific prompt optimization experiments
+  - no rules-engine or hidden-state inference logic

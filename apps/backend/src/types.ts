@@ -18,6 +18,22 @@ export type StackTarget =
       kind: "none";
     };
 
+export type GamePlayerContext = {
+  label: PlayerLabel;
+  lifeTotal: number;
+};
+
+export type GameContext = {
+  playerCount: number;
+  players: GamePlayerContext[];
+};
+
+export type BattlefieldContextItem = {
+  name: string;
+  details?: string;
+  targets: StackTarget[];
+};
+
 export type StackItem = {
   cardId: string;
   name: string;
@@ -32,10 +48,13 @@ export type StackItem = {
   caster: PlayerLabel;
   targets: StackTarget[];
   contextNotes?: string;
+  manaSpent?: number;
 };
 
 export type AskAiRequest = {
   question: string;
+  gameContext: GameContext;
+  battlefieldContext: BattlefieldContextItem[];
   stack: StackItem[];
 };
 
@@ -55,5 +74,7 @@ export type PromptContextStackItem = StackItem & {
 
 export type PromptContext = {
   finalQuestion: string;
+  gameContext: GameContext;
+  battlefieldContext: BattlefieldContextItem[];
   orderedStack: PromptContextStackItem[];
 };

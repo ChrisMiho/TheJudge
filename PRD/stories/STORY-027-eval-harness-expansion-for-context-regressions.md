@@ -1,0 +1,31 @@
+# STORY-027 - Eval Harness Expansion for Context Regressions
+
+- title: Expand the context/prompt evaluation harness to detect regressions in new staged-context sections before Bedrock work begins.
+- user value: As an engineer, I can safely evolve prompt logic because fixture-based checks catch ordering/guardrail/context regressions early.
+- scope:
+  - extend eval checks to validate presence/format/order for:
+    - general game context section
+    - optional battlefield context section
+    - per-entry mana-spent output behavior
+  - add representative fixtures and golden snapshots covering:
+    - full-context path
+    - battlefield-skip path
+    - mana-spent explicit + fallback path
+  - keep existing stack-order and guardrail checks intact while broadening required coverage
+  - update checklist report output to include staged-context regression visibility
+- acceptance criteria:
+  - harness fails when required staged-context sections are missing or out of order
+  - fixtures/goldens cover full, partial, and fallback context scenarios
+  - checklist report clearly indicates staged-context check outcomes
+  - backend eval test target remains deterministic and green on valid outputs
+- execution mode: sequential
+- dependencies:
+  - STORY-026 (blocking): depends on finalized expanded prompt structure
+  - REQ-006, REQ-013, REQ-015, REQ-016, REQ-017
+  - DEC-004, DEC-017, DEC-019
+  - NFR-005
+  - `apps/backend/src/eval/fixtures/README.md` (fixture conventions)
+- exclusions:
+  - no production observability platform integration
+  - no Bedrock provider invocation changes
+  - no UI behavior changes beyond test-related wiring

@@ -13,7 +13,8 @@ type EvaluationCheckId =
   | "stack-order-preserved"
   | "final-question-behavior"
   | "required-guardrails-present"
-  | "prompt-section-order";
+  | "prompt-section-order"
+  | "mana-spent-fallback";
 
 export type EvaluationFixture = {
   id: string;
@@ -79,20 +80,39 @@ function checkRequiredGuardrails(promptText: string): EvaluationCheckResult {
 function checkPromptSectionOrder(promptText: string): EvaluationCheckResult {
   const instructionsIndex = promptText.indexOf("INSTRUCTIONS");
   const questionIndex = promptText.indexOf("QUESTION");
+  const gameContextIndex = promptText.indexOf("GAME CONTEXT");
+  const battlefieldContextIndex = promptText.indexOf("BATTLEFIELD CONTEXT");
   const stackIndex = promptText.indexOf("ORDERED STACK (BOTTOM TO TOP)");
   const passed =
     instructionsIndex !== -1 &&
     questionIndex !== -1 &&
+    gameContextIndex !== -1 &&
+    battlefieldContextIndex !== -1 &&
     stackIndex !== -1 &&
     instructionsIndex < questionIndex &&
-    questionIndex < stackIndex;
+    questionIndex < gameContextIndex &&
+    gameContextIndex < battlefieldContextIndex &&
+    battlefieldContextIndex < stackIndex;
 
   return {
     id: "prompt-section-order",
     passed,
     details: passed
       ? "Prompt sections appear in deterministic order."
-      : "Expected section order INSTRUCTIONS -> QUESTION -> ORDERED STACK (BOTTOM TO TOP)."
+      : "Expected section order INSTRUCTIONS -> QUESTION -> GAME CONTEXT -> BATTLEFIELD CONTEXT -> ORDERED STACK (BOTTOM TO TOP)."
+  };
+}
+
+function checkManaSpentFallback(context: PromptContext): EvaluationCheckResult {
+  const missing = context.orderedStack.filter((item) => typeof item.manaSpent !== "number");
+  const passed = missing.length === 0;
+
+  return {
+    id: "mana-spent-fallback",
+    passed,
+    details: passed
+      ? "Every stack item has deterministic manaSpent value."
+      : `Missing manaSpent for cardIds: ${missing.map((item) => item.cardId).join(", ")}`
   };
 }
 
@@ -105,7 +125,8 @@ export function evaluateScenario(
     checkStackOrder(fixture, context),
     checkFinalQuestionBehavior(fixture, context),
     checkRequiredGuardrails(promptText),
-    checkPromptSectionOrder(promptText)
+    checkPromptSectionOrder(promptText),
+    checkManaSpentFallback(context)
   ];
   const score = checks.filter((check) => check.passed).length;
 

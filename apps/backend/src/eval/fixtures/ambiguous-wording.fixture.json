@@ -3,18 +3,38 @@
   "description": "Whitespace-heavy ambiguous question should normalize and keep guardrails.",
   "request": {
     "question": "   can i do this before that resolves??   ",
+    "gameContext": {
+      "playerCount": 2,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 5 },
+        { "label": "Player 2", "lifeTotal": 2 }
+      ]
+    },
+    "battlefieldContext": [
+      {
+        "name": "Narset, Parter of Veils",
+        "details": "Each opponent can't draw more than one card each turn.",
+        "targets": [{ "kind": "none" }]
+      }
+    ],
     "stack": [
       {
         "cardId": "silence",
         "name": "Silence",
         "oracleText": "Your opponents can't cast spells this turn.",
-        "imageUrl": ""
+        "imageUrl": "",
+        "manaValue": 1,
+        "caster": "Player 1",
+        "targets": []
       },
       {
         "cardId": "mystical-dispute",
         "name": "Mystical Dispute",
         "oracleText": "Counter target spell unless its controller pays 3.",
-        "imageUrl": ""
+        "imageUrl": "",
+        "manaValue": 3,
+        "caster": "Player 2",
+        "targets": [{ "kind": "stack", "targetCardId": "silence", "targetCardName": "Silence" }]
       }
     ]
   }

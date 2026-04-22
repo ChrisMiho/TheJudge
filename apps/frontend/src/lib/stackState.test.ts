@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CardMetadataItem, StackItem } from "../types";
+import type { BattlefieldContextItem, CardMetadataItem, GameContext, StackItem } from "../types";
 import {
   appendToStack,
   buildAskAiRequest,
@@ -32,16 +32,30 @@ function createStackCard(cardId: string, name: string): StackItem {
   return buildStackItemFromMetadata(createMetadataCard(cardId, name));
 }
 
+function createGameContext(): GameContext {
+  return {
+    playerCount: 2,
+    players: [
+      { label: "Player 1", lifeTotal: 20 },
+      { label: "Player 2", lifeTotal: 20 }
+    ]
+  };
+}
+
+function createBattlefieldContext(): BattlefieldContextItem[] {
+  return [];
+}
+
 describe("stack state helpers", () => {
   it("falls back to default question when input is empty", () => {
     const card = createStackCard("opt", "Opt");
-    const request = buildAskAiRequest("   ", [card]);
+    const request = buildAskAiRequest("   ", createGameContext(), createBattlefieldContext(), [card]);
     expect(request.question).toBe(DEFAULT_QUESTION);
   });
 
   it("uses trimmed user question when provided", () => {
     const card = createStackCard("opt", "Opt");
-    const request = buildAskAiRequest("  What happens? ", [card]);
+    const request = buildAskAiRequest("  What happens? ", createGameContext(), createBattlefieldContext(), [card]);
     expect(request.question).toBe("What happens?");
   });
 
@@ -83,5 +97,14 @@ describe("stack state helpers", () => {
     expect(entry.caster).toBe(DEFAULT_CASTER);
     expect(entry.targets).toEqual([]);
     expect(entry.contextNotes).toBe("kicked");
+  });
+
+  it("includes provided context fields in ask-ai request", () => {
+    const request = buildAskAiRequest("what now", createGameContext(), [{ name: "Rhystic Study", targets: [] }], [
+      createStackCard("opt", "Opt")
+    ]);
+
+    expect(request.gameContext.playerCount).toBe(2);
+    expect(request.battlefieldContext).toHaveLength(1);
   });
 });

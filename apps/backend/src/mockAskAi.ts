@@ -1,4 +1,5 @@
 import type { AskAiResponse, PromptContext } from "./types.js";
+import { buildPromptText, estimatePromptChars } from "./promptNormalization.js";
 
 function formatList(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "N/A";
@@ -36,6 +37,7 @@ function formatStackRows(context: PromptContext): string {
         `   Mana: ${item.manaCost || "N/A"} | MV: ${item.manaValue}`,
         `   Type: ${item.typeLine || "N/A"}`,
         `   Colors: ${formatList(item.colors)} | Supertypes: ${formatList(item.supertypes)} | Subtypes: ${formatList(item.subtypes)}`,
+        `   Mana Spent: ${item.manaSpent ?? item.manaValue}`,
         `   Caster: ${item.caster} | Targets: ${formatTargets(item.targets)}`,
         `   Notes: ${item.contextNotes || "N/A"}`,
         `   Oracle: ${item.oracleText}`
@@ -45,14 +47,31 @@ function formatStackRows(context: PromptContext): string {
 }
 
 export function buildMockAnswer(context: PromptContext): AskAiResponse {
+  const promptText = buildPromptText(context);
   const stackRows = formatStackRows(context);
+  const battlefieldRows =
+    context.battlefieldContext.length > 0
+      ? context.battlefieldContext
+          .map((item, index) => {
+            return `${index + 1}. ${item.name} | details=${item.details || "N/A"} | targets=${formatTargets(item.targets)}`;
+          })
+          .join("\n")
+      : "(none)";
   const lines = [
     "MOCK RESPONSE",
     "This is deterministic debug output for prompt/context validation.",
     "",
     `Final question: ${context.finalQuestion}`,
     `Stack order convention: bottom-to-top (stack[0] is the bottom spell)`,
+    `Players: ${context.gameContext.playerCount} (${context.gameContext.players
+      .map((player) => `${player.label}=${player.lifeTotal}`)
+      .join(", ")})`,
+    `Battlefield context items: ${context.battlefieldContext.length}`,
     `Stack size: ${context.orderedStack.length}`,
+    `Prompt char estimate: ${estimatePromptChars(promptText)}`,
+    "",
+    "Battlefield context:",
+    battlefieldRows,
     "",
     "Ordered stack:",
     stackRows

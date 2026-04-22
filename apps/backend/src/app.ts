@@ -3,6 +3,8 @@ import express from "express";
 import { createAppLogger, resolveCorrelationId, type AppLogger } from "./logging.js";
 import { mockAskAiProvider } from "./providers/mockAskAiProvider.js";
 import type { AskAiProvider } from "./providers/askAiProvider.js";
+import { buildPromptContext } from "./promptContext.js";
+import { buildPromptText, MAX_PROMPT_CHAR_BUDGET } from "./promptNormalization.js";
 import { askAiRequestSchema } from "./validation.js";
 import type { AskAiError } from "./types.js";
 
@@ -81,10 +83,50 @@ export function createApp(options: AppOptions = {}) {
 
     try {
       logger.info("ask_ai.prompt_context_build_started", { correlationId });
-      logger.info("ask_ai.mock_provider_invocation_started", { correlationId });
+      const promptBuildStartedAt = Date.now();
+      const promptContext = buildPromptContext(parsed.data);
+      const promptText = buildPromptText(promptContext);
+      const promptChars = promptText.length;
+      logger.info("ask_ai.prompt_context_build_completed", {
+        correlationId,
+        promptChars,
+        promptBuildElapsedMs: Date.now() - promptBuildStartedAt
+      });
+
+      if (promptChars > MAX_PROMPT_CHAR_BUDGET) {
+        logger.info("ask_ai.prompt_budget_exceeded", {
+          correlationId,
+          promptChars,
+          promptBudgetChars: MAX_PROMPT_CHAR_BUDGET
+        });
+        const error: AskAiError = {
+          error: `Invalid request payload: prompt exceeds max budget (${MAX_PROMPT_CHAR_BUDGET} chars)`,
+          retryAfterSeconds
+        };
+        res.status(400).json(error);
+        return;
+      }
+
+      if (promptChars > MAX_PROMPT_CHAR_BUDGET - 800) {
+        logger.info("ask_ai.prompt_budget_near_limit", {
+          correlationId,
+          promptChars,
+          promptBudgetChars: MAX_PROMPT_CHAR_BUDGET
+        });
+      }
+
+      logger.info("ask_ai.provider_invocation_started", { correlationId });
+      const providerStartedAt = Date.now();
       const response = await askAiProvider.generateAnswer(parsed.data);
-      logger.info("ask_ai.mock_provider_invocation_completed", { correlationId });
-      logger.info("ask_ai.prompt_context_build_completed", { correlationId });
+      const providerElapsedMs = Date.now() - providerStartedAt;
+      logger.info("ask_ai.provider_invocation_completed", { correlationId, providerElapsedMs });
+      if (providerElapsedMs > 1200) {
+        logger.info("ask_ai.provider_latency_warning", {
+          correlationId,
+          providerElapsedMs,
+          thresholdMs: 1200
+        });
+      }
       logger.info("ask_ai.response_success", { correlationId });
       res.status(200).json(response);
     } catch (cause) {
