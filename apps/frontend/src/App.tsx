@@ -201,7 +201,7 @@ export default function App() {
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
             placeholder="Type to begin"
-            className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-100 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
+            className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-50 placeholder:text-slate-300 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
           />
           <p className="mt-1 text-[11px] normal-case tracking-normal text-slate-400">
             {isMetadataLoading
@@ -291,7 +291,7 @@ export default function App() {
               onChange={(event) => setQuestion(event.target.value.slice(0, 300))}
               maxLength={300}
               rows={3}
-              className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-100 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
+              className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-50 placeholder:text-slate-300 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
               placeholder="How does this resolve?"
             />
           </label>
