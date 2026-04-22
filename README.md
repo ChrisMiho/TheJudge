@@ -58,12 +58,25 @@ Validate the end-to-end user flow before full Bedrock integration:
 - `npm run dev` - run frontend + backend together
 - `npm run dev:frontend` - run frontend only
 - `npm run dev:backend` - run backend only
+- `npm run typecheck` - run frontend + backend TypeScript checks
+- `npm run test` - run frontend + backend test suites
+- `npm run quality:check` - run pre-PR quality gate (`typecheck` + `test`)
 - `npm run build` - build both apps
 - `npm --workspace apps/frontend run test` - run frontend tests
 - `npm --workspace apps/backend run test` - run backend tests
 - `npm --workspace apps/backend run test:eval` - run backend eval harness test
 - `npm run data:refresh` - download latest Scryfall `default_cards` and rebuild trimmed metadata
 - stop running processes with `Ctrl + C`
+
+## Quality Gate Workflow
+
+Use this baseline before opening a PR:
+
+1. Run `npm run quality:check` from repository root.
+2. If it fails, fix issues and rerun until green.
+3. Optionally run workspace-specific checks while iterating (`npm --workspace apps/frontend run test`, `npm --workspace apps/backend run test`).
+
+`quality:check` is the canonical guardrail command and runs both static typing checks and tests across frontend/backend.
 
 ## Environment Configuration
 
@@ -136,6 +149,9 @@ Pending implementation backlog:
 - [x] `STORY-013` add Decrypt failure-path regression coverage (error copy/state preserve/retry cooldown)
 - [x] `STORY-014` add backend provider boundary so mock can swap to Bedrock later without API contract changes
 - [x] `STORY-008` replace empty-state emoji with bundled cat-wizard asset (after approval)
+- [x] `STORY-015` use `cats-homescreen.png` as centered empty-state default image with no surrounding box
+- [x] `STORY-016` establish engineering quality guardrails with enforceable repo-level gates
+- [x] `STORY-017` remediate current hotspots via modular refactor with regression-safe tests
 
 ## Documentation Notes
 

@@ -1,0 +1,25 @@
+# STORY-017 - Hotspot Remediation and Modular Refactor
+
+- title: Remediate current high-churn code hotspots by extracting focused modules while preserving existing product behavior.
+- user value: As a player, I get safer and faster iteration because critical flows are easier to maintain and less likely to regress.
+- scope:
+  - identify and prioritize current hotspots with primary focus on `apps/frontend/src/App.tsx`
+  - extract at least one major concern into smaller module(s) with stable, testable boundaries
+  - preserve all current UX behavior, copy, and API contracts during refactor
+  - update and/or add tests for extracted seams to keep regression confidence high
+  - keep refactor size incremental and reviewable (small-slice changes, no broad rewrites)
+- acceptance criteria:
+  - at least one high-churn concern from `App.tsx` is extracted to dedicated module(s)
+  - frontend behavior remains unchanged across existing integration coverage
+  - new or updated tests cover extracted logic and changed integration seams
+  - full frontend and backend tests pass after refactor
+  - no API contract changes for `POST /api/ask-ai`
+- dependencies:
+  - `STORY-016` quality-gate baseline
+  - existing frontend regression coverage (`STORY-006`, `STORY-011`, `STORY-012`, `STORY-013`)
+  - NFR-005
+- exclusions:
+  - no product feature expansion
+  - no backend provider redesign work
+  - no additional product-facing endpoints
+  - no framework migration

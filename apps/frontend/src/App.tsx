@@ -1,21 +1,20 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { apiBaseUrl } from "./lib/env";
 import { getSuggestions, NO_MATCH_COPY } from "./lib/search";
+import {
+  appendToStack,
+  buildAskAiRequest,
+  removeFromStackById,
+  validateStackAdd
+} from "./lib/stackState";
 import type { AskAiError, AskAiRequest, AskAiResponse, StackItem } from "./types";
 
-const MAX_STACK_SIZE = 10;
 const RETRY_COOLDOWN_SECONDS = 13;
-const DEFAULT_QUESTION = "Resolve the stack";
 const METADATA_URL = "/data/cardMetadata.json";
-const EMPTY_STATE_IMAGE_URL = "/assets/cat-wizard.svg";
+const EMPTY_STATE_IMAGE_URL = "/assets/cats-homescreen.png";
 
 function formatMetaList(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "N/A";
-}
-
-function getFinalQuestion(question: string): string {
-  const trimmed = question.trim();
-  return trimmed.length > 0 ? trimmed : DEFAULT_QUESTION;
 }
 
 export default function App() {
@@ -96,22 +95,18 @@ export default function App() {
   function handleAddSelectedCard(): void {
     if (!selectedCard) return;
 
-    if (stack.some((item) => item.cardId === selectedCard.cardId)) {
-      flashStatus("Duplicate cards are not supported in MVP1.");
+    const validationResult = validateStackAdd(stack, selectedCard);
+    if (!validationResult.ok) {
+      flashStatus(validationResult.message);
       return;
     }
 
-    if (stack.length >= MAX_STACK_SIZE) {
-      flashStatus("MVP stack limit reached (10 cards).");
-      return;
-    }
-
-    setStack((current) => [...current, selectedCard]);
+    setStack((current) => appendToStack(current, selectedCard));
     flashStatus("Stacked");
   }
 
   function removeFromStack(cardId: string): void {
-    setStack((current) => current.filter((item) => item.cardId !== cardId));
+    setStack((current) => removeFromStackById(current, cardId));
   }
 
   async function submitAskAi(payload: AskAiRequest): Promise<void> {
@@ -151,20 +146,14 @@ export default function App() {
       return;
     }
 
-    const payload: AskAiRequest = {
-      question: getFinalQuestion(question),
-      stack
-    };
+    const payload: AskAiRequest = buildAskAiRequest(question, stack);
 
     await submitAskAi(payload);
   }
 
   async function handleRetry(): Promise<void> {
     if (!canRetry || stack.length === 0) return;
-    await submitAskAi({
-      question: getFinalQuestion(question),
-      stack
-    });
+    await submitAskAi(buildAskAiRequest(question, stack));
   }
 
   return (
@@ -175,7 +164,7 @@ export default function App() {
             <h1 className="bg-gradient-to-r from-sky-300 to-blue-400 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
               TheJudge
             </h1>
-            <p className="text-sm text-slate-300">Flow-validation MVP</p>
+            <p className="text-sm text-slate-300">Stack Assistant</p>
           </div>
           {stack.length > 0 && (
             <button
@@ -192,7 +181,7 @@ export default function App() {
         </header>
 
         {stack.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-slate-600 bg-gradient-to-br from-slate-800/80 to-slate-900 p-5 text-center">
+          <div className="p-2 text-center">
             {emptyStateImageFailed ? (
               <p className="text-2xl font-semibold text-slate-200">Cat wizard</p>
             ) : (
@@ -200,10 +189,9 @@ export default function App() {
                 src={EMPTY_STATE_IMAGE_URL}
                 alt="Cat wizard"
                 onError={() => setEmptyStateImageFailed(true)}
-                className="mx-auto w-24 max-w-full"
+                className="mx-auto w-56 max-w-full rounded-xl"
               />
             )}
-            <p className="mt-2 text-sm font-medium text-slate-200">Build your stack to start.</p>
           </div>
         )}
 
@@ -213,7 +201,7 @@ export default function App() {
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
             placeholder="Type to begin"
-            className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-100 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
+            className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-50 placeholder:text-slate-300 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
           />
           <p className="mt-1 text-[11px] normal-case tracking-normal text-slate-400">
             {isMetadataLoading
@@ -303,7 +291,7 @@ export default function App() {
               onChange={(event) => setQuestion(event.target.value.slice(0, 300))}
               maxLength={300}
               rows={3}
-              className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-100 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
+              className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-50 placeholder:text-slate-300 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
               placeholder="How does this resolve?"
             />
           </label>

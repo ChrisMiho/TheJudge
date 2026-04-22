@@ -1,0 +1,26 @@
+# STORY-015 - Use cats-homescreen Photo as Centered Empty-State Visual
+
+- title: Replace the current empty-state icon with `cats-homescreen.png` as a centered photo-only default visual.
+- user value: As a player, I see the intended homescreen artwork directly without extra framing so the empty state feels cleaner and closer to final brand direction.
+- scope:
+  - switch empty-state visual source from the current asset to `cats-homescreen.png`
+  - require the image to be loaded from frontend local static assets at `apps/frontend/public/assets/cats-homescreen.png`
+  - remove decorative box/chrome around the image so only the centered photo is shown
+  - preserve existing empty-state behavior and search interaction (`Type to begin`, no flow changes)
+  - keep graceful fallback behavior if the image is missing or fails to load
+- acceptance criteria:
+  - initial empty state renders `cats-homescreen.png` from local frontend static assets
+  - empty-state image appears centered with no additional framed box around the photo
+  - search input still shows **Type to begin** before user input
+  - UI remains functional if image loading fails (fallback copy or equivalent non-breaking behavior)
+  - no backend/API behavior changes
+- dependencies:
+  - REQ-001
+  - DEC-015
+  - NFR-001, NFR-006
+  - `STORY-008` baseline empty-state asset implementation
+- exclusions:
+  - no backend contract or route changes
+  - no animation or interactive empty-state redesign
+  - no remote CDN/third-party image hosting
+  - no changes to stack/search/decrypt business logic

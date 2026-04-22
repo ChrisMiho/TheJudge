@@ -5,6 +5,29 @@ import {
   transformCards
 } from "../../../../scripts/build-card-metadata.mjs";
 
+type TransformResultCard = {
+  cardId: string;
+  name: string;
+  oracleText: string;
+  imageUrl: string;
+  manaCost: string;
+  manaValue: number;
+  typeLine: string;
+  colors: string[];
+  supertypes: string[];
+  subtypes: string[];
+};
+
+type TransformResult = {
+  cards: TransformResultCard[];
+  stats: {
+    parsedCount: number;
+    includedCount: number;
+    skippedAsDuplicate: number;
+    skippedByFilter: number;
+  };
+};
+
 describe("metadata transform policy", () => {
   it("filters cards to english paper records with valid names", () => {
     expect(shouldIncludeCard({ lang: "en", games: ["paper"], digital: false, name: "Opt" })).toBe(true);
@@ -108,7 +131,7 @@ describe("metadata transform policy", () => {
       }
     ];
 
-    const result = transformCards(sourceCards);
+    const result = transformCards(sourceCards) as TransformResult;
     expect(result.stats.parsedCount).toBe(4);
     expect(result.stats.includedCount).toBe(2);
     expect(result.stats.skippedAsDuplicate).toBe(1);
