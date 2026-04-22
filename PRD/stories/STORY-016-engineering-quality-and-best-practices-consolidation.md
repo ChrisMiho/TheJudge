@@ -1,0 +1,25 @@
+# STORY-016 - Engineering Quality Guardrails Baseline
+
+- title: Define and enforce a lightweight engineering quality baseline so future development follows consistent best-practice gates.
+- user value: As a player, I get more reliable feature delivery because new changes must pass consistent quality checks before merge.
+- scope:
+  - define and document a repository-level quality-gate workflow for contributors
+  - add root scripts for pre-PR validation across frontend/backend (type checks plus tests)
+  - add or standardize static quality checks with clear pass/fail behavior and minimal setup overhead
+  - align workspace scripts so frontend/backend quality commands are consistent and easy to run
+  - validate baseline by running the full quality gate after wiring changes
+- acceptance criteria:
+  - repository docs include an actionable quality-gate workflow contributors can follow
+  - root scripts provide a single command that runs required checks for both apps
+  - frontend and backend expose consistent quality scripts used by the root gate
+  - static checks and test suites fail fast on issues and pass on the updated baseline
+  - no product behavior changes and no API contract changes for `POST /api/ask-ai`
+- dependencies:
+  - NFR-005 (quality/maintainability expectations)
+  - `PRD/instructions/technical-design-rules.md`
+- exclusions:
+  - no hotspot refactor/remediation work (tracked in `STORY-017`)
+  - no feature redesign or new product behavior
+  - no Bedrock/provider behavior changes
+  - no additional product-facing endpoints
+  - no heavy CI platform migration beyond lightweight quality-gate wiring

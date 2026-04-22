@@ -215,7 +215,7 @@ describe("App MVP interaction flows", () => {
     await waitForMetadataReady();
 
     const emptyStateImage = screen.getByRole("img", { name: "Cat wizard" });
-    expect(emptyStateImage).toHaveAttribute("src", "/assets/cat-wizard.svg");
+    expect(emptyStateImage).toHaveAttribute("src", "/assets/cats-homescreen.png");
     expect(screen.getByPlaceholderText("Type to begin")).toBeInTheDocument();
 
     fireEvent.error(emptyStateImage);

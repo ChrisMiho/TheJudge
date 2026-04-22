@@ -122,3 +122,6 @@ Current trunk slice branch: `feat/frontend-flow-tests`
 - [x] Prepare a clean interface boundary for eventual Bedrock Phase B integration without changing request/response contracts (`STORY-014`).
 - [x] Improve deterministic Phase A mock-answer readability for prompt/context debugging (`STORY-009`).
 - [x] Replace emoji empty-state visual with bundled static cat-wizard asset (`STORY-008`).
+- [ ] Replace empty-state asset with `cats-homescreen.png` and remove surrounding frame so photo is centered-only (`STORY-015`).
+- [x] Establish engineering quality guardrails and enforceable repository-level validation gates (`STORY-016`).
+- [x] Remediate current high-churn hotspots via modular refactor with regression-safe tests (`STORY-017`).
