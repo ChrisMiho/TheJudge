@@ -1,6 +1,6 @@
 fixtureId | score | checks
 ---|---|---
-ambiguous-wording | 4/4 | PASS
-multi-step-stack | 4/4 | PASS
-near-cap-stack | 4/4 | PASS
-simple-interaction | 4/4 | PASS
+ambiguous-wording | 5/5 | PASS
+multi-step-stack | 5/5 | PASS
+near-cap-stack | 5/5 | PASS
+simple-interaction | 5/5 | PASS

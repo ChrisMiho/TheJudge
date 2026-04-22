@@ -7,30 +7,38 @@
   - app is loaded
   - local metadata is available
 - Main Flow:
-  1. User sees an empty state with a cat wearing a wizard hat and a visible card search box.
-  2. Before the user types, the search box says **Type to begin**.
-  3. User types at least 3 characters into the search box.
-  4. App shows autocomplete suggestions from local metadata.
-  5. User taps a suggestion.
-  6. App shows a card preview.
-  7. User clicks the add button.
-  8. If `stack.length === 0`, the add button text is **Begin stackening!**
-  9. If `stack.length > 0`, the add button text is **Add to Stack**
-  10. App shows a brief success message such as **Stacked**
-  11. Card is appended to the stack array and becomes the top of the stack.
-  12. User repeats until the stack is complete.
-  13. User optionally enters a question.
-  14. User clicks **Decrypt Stack**
-  15. Frontend sends the ordered stack and final question to the backend.
-  16. Backend builds the prompt and returns a plain-text answer.
-  17. Frontend displays the answer.
+  1. User sees home-screen game context capture.
+  2. User sets player count and life totals for included player labels.
+  3. User confirms game context to proceed.
+  4. App presents optional battlefield-context step.
+  5. User either adds relevant battlefield context entries or clicks skip.
+  6. App shows stack-building screen with card search input.
+  7. Before the user types, the search box says **Type to begin**.
+  8. User types at least 3 characters into the search box.
+  9. App shows autocomplete suggestions from local metadata.
+  10. User taps a suggestion.
+  11. App shows a card preview.
+  12. User optionally sets stack-entry context (caster/targets/notes/mana spent).
+  13. User clicks the add button.
+  14. If `stack.length === 0`, the add button text is **Begin stackening!**
+  15. If `stack.length > 0`, the add button text is **Add to Stack**
+  16. App shows a brief success message such as **Stacked**
+  17. Card is appended to the stack array and becomes the top of the stack.
+  18. User repeats until the stack is complete.
+  19. User optionally enters a question.
+  20. User clicks **Decrypt Stack**
+  21. Frontend sends ordered stack, final question, and captured context to backend.
+  22. Backend builds the prompt and returns a plain-text answer.
+  23. Frontend displays the answer.
 - Edge Cases:
+  - if game-context values are missing/invalid, continue action is blocked
+  - if battlefield context is not relevant, user can explicitly skip step
   - if no matches are found, show **No matching card found**
   - if the question is blank after trimming, use the fallback question **Resolve the stack**
   - if the stack is empty, do not send the request
   - if the stack has 10 cards, block additional adds
 - Notes:
-  - this is the primary MVP1 flow
+  - this is the primary MVP1 flow with staged context capture
 
 ### FLOW-002
 - Name: Inspect and remove cards from stack

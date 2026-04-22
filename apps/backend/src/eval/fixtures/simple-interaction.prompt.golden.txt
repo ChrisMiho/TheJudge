@@ -6,14 +6,26 @@ INSTRUCTIONS
 QUESTION
 What happens here?
 
+GAME CONTEXT
+playerCount: 2
+Player 1: lifeTotal=20
+Player 2: lifeTotal=20
+
+BATTLEFIELD CONTEXT
+(none)
+
 ORDERED STACK (BOTTOM TO TOP)
 Card 1 (top)
 cardId: opt
 name: Opt
 manaCost: (none)
-manaValue: 0
+manaValue: 1
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
+caster: Player 1
+targets: (none)
+manaSpent: 1
+contextNotes: (none)
 oracleText: Scry 1, then draw a card.

@@ -1,0 +1,35 @@
+# STORY-022 - Pre-Stack Game Context (Players + Life Totals)
+
+- title: Capture general game context on home screen before stack construction, including player count and per-player life totals, and include this context in LLM-bound payload/prompt input.
+- user value: As a player, I can provide core table-state context up front so stack explanations are grounded in the actual game setup.
+- scope:
+  - add a first-step home-screen context capture before stack entry that collects:
+    - number of players (supported range aligned with current player-label model)
+    - life total for each player label (`Player 1` ... `Player N`)
+  - add a confirmation button on the home screen that advances to the existing stack-entry flow/page
+  - block advancing until required game-context inputs are valid
+  - persist confirmed game context through Decrypt/retry flows without losing existing resilience behavior
+  - extend request/prompt context building so general game context is included deterministically in LLM-facing prompt input and mock debug output
+  - add/update frontend/backend tests covering:
+    - valid capture + continue behavior
+    - invalid/empty input guardrails
+    - payload/prompt inclusion of game context
+- acceptance criteria:
+  - user can set player count and life totals before stack-building UI is shown
+  - confirmation action advances user to stack-capture flow only when inputs are valid
+  - captured game context appears in backend prompt context and deterministic prompt/mock output
+  - Decrypt and retry paths preserve confirmed game context
+  - existing endpoint count stays unchanged and tests pass with representative game-context scenarios
+- execution mode: sequential
+- dependencies:
+  - REQ-011, REQ-012, REQ-013, REQ-014, REQ-015
+  - DEC-004, DEC-009, DEC-010, DEC-013, DEC-017, DEC-019
+  - NFR-001, NFR-005, NFR-007
+  - `sections/user-flows.md` (primary flow ordering)
+  - `sections/integrations-and-data.md` (request/prompt contract sections)
+- exclusions:
+  - no gameplay legality or rules-engine behavior
+  - no per-turn history tracking or event timeline
+  - no additional product-facing backend endpoints
+  - no custom player names beyond fixed labels
+  - no Bedrock Phase B invocation changes

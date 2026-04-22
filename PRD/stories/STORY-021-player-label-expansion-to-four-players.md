@@ -1,0 +1,33 @@
+# STORY-021 - Player Label Expansion to Four Players
+
+- title: Expand caster and player-target labels from two players to support up to four players across UI, request validation, and prompt-facing context.
+- user value: As a player testing multiplayer interactions, I can assign spells and targets to any player at the table (up to four), so stack explanations reflect realistic multiplayer scenarios.
+- scope:
+  - expand player label model from `Player 1` / `Player 2` to `Player 1` through `Player 4`
+  - update frontend stack-entry capture/edit controls to allow selecting all supported player labels for:
+    - `caster`
+    - player-kind targets
+  - update backend request validation to accept the expanded player label set and reject out-of-range labels
+  - update shared/request types and test fixtures to reflect expanded player-label union consistently
+  - preserve existing stack-order semantics, fallback question behavior, and existing endpoint shape while expanding allowed per-entry values
+  - add or update frontend/backend tests for representative `Player 3` and `Player 4` caster/target scenarios
+- acceptance criteria:
+  - users can set `caster` to any of `Player 1`, `Player 2`, `Player 3`, or `Player 4`
+  - users can set player-kind targets to any of `Player 1` through `Player 4`
+  - request validation accepts supported player labels and rejects unsupported values (for example `Player 5`)
+  - Decrypt flow remains functional when using two-player and four-player label combinations
+  - existing tests remain green and new coverage includes at least one `Player 3` and one `Player 4` scenario
+- execution mode: sequential
+- dependencies:
+  - STORY-018 (blocking): extends the two-player implementation rather than replacing the underlying enrichment model.
+  - REQ-011, REQ-012, REQ-013
+  - DEC-004, DEC-009, DEC-010, DEC-017
+  - NFR-005
+  - `sections/integrations-and-data.md` (request contract and prompt-context rules)
+- exclusions:
+  - no gameplay legality/rules-engine behavior
+  - no board-state simulation logic
+  - no support beyond four players in MVP1
+  - no custom player-name input; keep fixed labels (`Player 1` ... `Player 4`)
+  - no additional product-facing backend endpoints
+  - no Bedrock Phase B invocation changes

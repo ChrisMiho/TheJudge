@@ -1,0 +1,32 @@
+# STORY-023 - Stack Cast Mana-Spent Context
+
+- title: Capture mana actually spent to cast each stack entry and include it in prompt context, with deterministic fallback to mana value when user input is omitted.
+- user value: As a player (especially when X costs or alternate costs matter), I can provide actual mana-spent context so the explanation better reflects how the spell was cast.
+- scope:
+  - extend stack-entry capture/edit UI to collect optional mana-spent context per entry
+  - support a simple MVP input model for mana spent suitable for X-spell and alternate-cost clarification
+  - update request validation/types and prompt-context builder to include mana-spent context per stack entry
+  - enforce deterministic fallback behavior in prompt context:
+    - if user does not provide mana-spent input, use that entry's `manaValue` as default prompt-facing mana-spent value
+  - update prompt text and mock/debug output formatting to show mana-spent context clearly per entry
+  - add/update tests for:
+    - explicit mana-spent input path
+    - fallback-to-`manaValue` path
+    - X-spell representative scenario
+- acceptance criteria:
+  - user can provide optional mana-spent context for each stack entry during add/edit flow
+  - backend prompt context includes a deterministic mana-spent value for every stack entry
+  - when omitted by user, mana-spent value in prompt context defaults to the card's `manaValue`
+  - prompt text/mock debug output shows mana-spent context per card in stable formatting
+  - Decrypt flow remains functional with and without explicit mana-spent input
+- execution mode: parallel-ready
+- dependencies:
+  - REQ-006, REQ-012, REQ-013, REQ-017
+  - DEC-004, DEC-010, DEC-013, DEC-017, DEC-019
+  - NFR-005
+  - `sections/integrations-and-data.md` (stack item contract + prompt context sections)
+- exclusions:
+  - no full mana-source legality validation
+  - no comprehensive cost-modification rules engine
+  - no additional product-facing backend endpoints
+  - no Bedrock Phase B invocation changes

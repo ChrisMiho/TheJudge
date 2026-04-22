@@ -100,16 +100,12 @@ Read in this order:
 - The mock-first delivery strategy is part of current planning and should remain visible in implementation-related work.
 
 ## Implementation Snapshot
-- Frontend and backend workspaces are implemented under `apps/frontend` and `apps/backend`.
-- Frontend currently supports search, preview with card-context panel, add/remove stack, duplicate block, stack cap, optional question, and Decrypt Stack flow.
-- Backend `POST /api/ask-ai` is implemented with validation and Phase A mock response contract.
-- Local Scryfall bulk data is stored at `apps/frontend/data/scryfall/default-cards.json`.
-- Trimmed metadata generation is implemented via `npm run data:build` and outputs `apps/frontend/public/data/cardMetadata.json`.
-- Metadata can be refreshed end-to-end with `npm run data:refresh` (downloads latest Scryfall `default_cards` then rebuilds trimmed metadata).
-- Frontend now loads metadata at runtime from `/data/cardMetadata.json` to avoid bundling the full dataset in the main JS chunk.
-- Metadata transform now includes enriched stack-context fields (mana cost/value, type line, colors, supertypes/subtypes) and deterministic latest-printing tie-break behavior.
-- Lightweight automated tests exist for frontend search helpers and backend API contracts.
-- Root dev workflow is available with `npm run dev` for running frontend and backend together.
+- Runtime code is split across `apps/frontend` and `apps/backend`, with a single product-facing backend route (`POST /api/ask-ai`) plus health endpoint.
+- Current frontend flow supports staged context + stack interaction patterns; canonical behavior is tracked in `sections/user-flows.md`.
+- Prompt/input contract includes structured context beyond stack/question (see `sections/integrations-and-data.md` and `sections/decisions.md`).
+- Metadata pipeline remains static-file based (`npm run data:build` / `npm run data:refresh`) with runtime loading from `/data/cardMetadata.json`.
+- Phase A mock-provider architecture is active; provider boundary remains in place for future Phase B integration.
+- Automated tests and type checks are part of the active workflow; root dev run remains `npm run dev`.
 
 ## Next Agent Implementation Focus
 Current trunk slice branch: `feat/frontend-flow-tests`
@@ -125,3 +121,19 @@ Current trunk slice branch: `feat/frontend-flow-tests`
 - [x] Replace empty-state asset with `cats-homescreen.png` and remove surrounding frame so photo is centered-only (`STORY-015`).
 - [x] Establish engineering quality guardrails and enforceable repository-level validation gates (`STORY-016`).
 - [x] Remediate current high-churn hotspots via modular refactor with regression-safe tests (`STORY-017`).
+- [x] Enrich stack entries with explicit caster labels and typed targeting context for improved LLM prompt readiness (`STORY-018`).
+- [x] Add lightweight frontend/backend debug logging with end-to-end correlation-id traceability for flow validation (`STORY-019`).
+- [x] Wire enriched stack-entry context fields into deterministic backend prompt/mock output (`STORY-020`).
+- [x] Expand caster/player-target labels to support up to four players across UI/backend contracts (`STORY-021`).
+- [ ] Capture pre-stack general game context (player count + life totals) and include it in prompt input (`STORY-022`).
+- [ ] Capture per-stack-entry mana spent context with fallback to `manaValue` in prompt context (`STORY-023`).
+- [ ] Add optional battlefield-context step after game context, including explicit skip path (`STORY-024`).
+- [ ] Harden expanded Ask-AI context contract end-to-end after staged-context features land (`STORY-025`).
+- [ ] Expand deterministic prompt structure to include staged context sections (`STORY-026`).
+- [ ] Extend eval harness fixtures/checks for staged-context regression detection (`STORY-027`).
+- [ ] Prepare Phase B Bedrock bootstrap/config/provider-selection wiring without contract changes (`STORY-028`).
+- [ ] Add prompt budget and latency guardrails for high-context scenarios (`STORY-029`).
+- [ ] Reuse metadata-backed search behavior in battlefield-context entry flow (`STORY-030`).
+- [ ] Replace battlefield-step dual progression controls with one dynamic skip/continue action (`STORY-031`).
+- [ ] Add `other` target option with 200-char freeform context wired into payload/prompt (`STORY-032`).
+- [ ] Move cat visual placement to game-context first screen (`STORY-033`).

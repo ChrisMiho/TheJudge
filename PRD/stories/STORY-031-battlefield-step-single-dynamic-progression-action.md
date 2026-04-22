@@ -1,0 +1,34 @@
+# STORY-031 - Battlefield Step Single Dynamic Progression Action
+
+- title: Replace separate battlefield-step progression controls with one dynamic action button that changes label by state.
+- user value: As a player, I get a clearer next action with less UI clutter: skip when empty, continue when context exists.
+- scope:
+  - replace dual progression controls on battlefield step with one primary progression button
+  - dynamic label behavior:
+    - when `battlefieldContext` has zero entries: button label is **Skip battlefield context**
+    - when one or more entries exist: button label is **Continue to stack**
+  - preserve semantic behavior:
+    - zero-entry path must behave as explicit skip
+    - non-empty path must preserve entered entries and proceed
+  - retain existing add/remove battlefield-item interactions
+  - ensure retry/decrypt state behavior remains unchanged after progression
+  - add/update tests for:
+    - label switching based on battlefield-entry count
+    - zero-entry skip path correctness
+    - non-empty continue path correctness
+- acceptance criteria:
+  - battlefield step shows exactly one progression button
+  - button text deterministically reflects whether battlefield entries exist
+  - progressing with zero entries does not inject placeholder battlefield data
+  - progressing with entries preserves and submits them in payload
+- execution mode: parallel-ready
+- dependencies:
+  - REQ-012, REQ-014, REQ-016
+  - DEC-010, DEC-014, DEC-019
+  - NFR-001, NFR-005
+  - `sections/user-flows.md` (FLOW-001 and FLOW-003 state continuity)
+- exclusions:
+  - no additional multi-step wizard controls
+  - no redesign of non-battlefield screens
+  - no backend contract expansion
+  - no persistence/storage layer introduction

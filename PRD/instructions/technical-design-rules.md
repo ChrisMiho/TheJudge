@@ -25,7 +25,7 @@ Do not propose or implement:
 - deterministic rules engine behavior
 - legality validation
 - board-state simulation
-- target/controller/mode systems for MVP1
+- full gameplay-rules target/controller/mode simulation for MVP1
 - extra product-facing endpoints
 - microservices
 - runtime metadata refresh/sync
@@ -41,6 +41,6 @@ Do not propose or implement:
 
 ## Prompt-Related Rules
 - preserve bottom-to-top ordering semantics
-- pass question and selected cards only
+- pass documented structured context fields (question, stack, and approved game/battlefield/entry context)
 - do not add hidden-state assumptions beyond documented prompt guidance
 - do not add rules-validation behavior under the label of prompt enrichment

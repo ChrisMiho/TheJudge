@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveApiBaseUrl } from "./env";
+import { resolveApiBaseUrl, resolveDebugLoggingEnabled } from "./env";
 
 describe("frontend env config", () => {
   it("uses localhost backend default when unset", () => {
@@ -16,5 +16,22 @@ describe("frontend env config", () => {
 
   it("throws for unsupported protocol", () => {
     expect(() => resolveApiBaseUrl("ftp://example.com")).toThrow(/Only http and https are supported/);
+  });
+
+  it("enables debug logging by default in development mode", () => {
+    expect(resolveDebugLoggingEnabled(undefined, true, "development")).toBe(true);
+  });
+
+  it("disables debug logging by default in test mode", () => {
+    expect(resolveDebugLoggingEnabled(undefined, true, "test")).toBe(false);
+  });
+
+  it("supports explicit true/false debug logging overrides", () => {
+    expect(resolveDebugLoggingEnabled("true", false, "production")).toBe(true);
+    expect(resolveDebugLoggingEnabled("false", true, "development")).toBe(false);
+  });
+
+  it("throws for invalid debug logging values", () => {
+    expect(() => resolveDebugLoggingEnabled("maybe", true, "development")).toThrow(/Invalid VITE_DEBUG_LOGGING value/);
   });
 });

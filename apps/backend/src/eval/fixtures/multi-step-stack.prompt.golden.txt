@@ -6,36 +6,60 @@ INSTRUCTIONS
 QUESTION
 Walk me through the full stack resolution.
 
+GAME CONTEXT
+playerCount: 3
+Player 1: lifeTotal=22
+Player 2: lifeTotal=14
+Player 3: lifeTotal=7
+
+BATTLEFIELD CONTEXT
+Battlefield 1
+name: Rule of Law
+details: Each player can cast one spell each turn.
+targets: none:does-not-target
+
 ORDERED STACK (BOTTOM TO TOP)
 Card 1 (bottom)
 cardId: lightning-bolt
 name: Lightning Bolt
 manaCost: (none)
-manaValue: 0
+manaValue: 1
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
+caster: Player 1
+targets: player:Player 2
+manaSpent: 1
+contextNotes: (none)
 oracleText: Lightning Bolt deals 3 damage to any target.
 
 Card 2 (middle)
 cardId: counterspell
 name: Counterspell
 manaCost: (none)
-manaValue: 0
+manaValue: 2
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
+caster: Player 2
+targets: stack:Lightning Bolt (lightning-bolt)
+manaSpent: 2
+contextNotes: (none)
 oracleText: Counter target spell.
 
 Card 3 (top)
 cardId: deflecting-swat
 name: Deflecting Swat
 manaCost: (none)
-manaValue: 0
+manaValue: 3
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
+caster: Player 3
+targets: stack:Counterspell (counterspell)
+manaSpent: 0
+contextNotes: (none)
 oracleText: You may choose new targets for target spell or ability.

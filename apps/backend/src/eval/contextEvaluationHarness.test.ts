@@ -93,6 +93,14 @@ describe("context evaluation harness", () => {
       description: "Synthetic fixture used to prove regression detection",
       request: {
         question: "How does this resolve?",
+        gameContext: {
+          playerCount: 2,
+          players: [
+            { label: "Player 1", lifeTotal: 20 },
+            { label: "Player 2", lifeTotal: 20 }
+          ]
+        },
+        battlefieldContext: [],
         stack: [
           {
             cardId: "bottom",
@@ -104,7 +112,9 @@ describe("context evaluation harness", () => {
             typeLine: "Instant",
             colors: ["U"],
             supertypes: [],
-            subtypes: []
+            subtypes: [],
+            caster: "Player 1",
+            targets: []
           },
           {
             cardId: "top",
@@ -116,7 +126,9 @@ describe("context evaluation harness", () => {
             typeLine: "Instant",
             colors: ["R"],
             supertypes: [],
-            subtypes: []
+            subtypes: [],
+            caster: "Player 2",
+            targets: [{ kind: "stack", targetCardId: "bottom", targetCardName: "Bottom Spell" }]
           }
         ]
       }

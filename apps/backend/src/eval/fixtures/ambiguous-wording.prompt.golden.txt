@@ -6,25 +6,44 @@ INSTRUCTIONS
 QUESTION
 can i do this before that resolves??
 
+GAME CONTEXT
+playerCount: 2
+Player 1: lifeTotal=5
+Player 2: lifeTotal=2
+
+BATTLEFIELD CONTEXT
+Battlefield 1
+name: Narset, Parter of Veils
+details: Each opponent can't draw more than one card each turn.
+targets: none:does-not-target
+
 ORDERED STACK (BOTTOM TO TOP)
 Card 1 (bottom)
 cardId: silence
 name: Silence
 manaCost: (none)
-manaValue: 0
+manaValue: 1
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
+caster: Player 1
+targets: (none)
+manaSpent: 1
+contextNotes: (none)
 oracleText: Your opponents can't cast spells this turn.
 
 Card 2 (top)
 cardId: mystical-dispute
 name: Mystical Dispute
 manaCost: (none)
-manaValue: 0
+manaValue: 3
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
+caster: Player 2
+targets: stack:Silence (silence)
+manaSpent: 3
+contextNotes: (none)
 oracleText: Counter target spell unless its controller pays 3.

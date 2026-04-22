@@ -1,0 +1,38 @@
+# STORY-020 - Prompt Context Enrichment Wiring (Caster + Targets + Notes)
+
+- title: Ensure stack-entry enrichment fields collected in UI are deterministically included in LLM prompt input and mock debug output.
+- user value: As a developer validating stack interactions, I can trust that caster/target/note context entered in the UI is carried end-to-end into prompt context so AI explanations can use the intended perspective and interaction details.
+- scope:
+  - update backend prompt-context construction so each ordered stack item includes:
+    - `caster` (using the currently supported player-label set)
+    - typed `targets` (`stack`, `battlefield`, `player`)
+    - optional `contextNotes`
+  - update prompt text formatting so enriched fields are emitted in stable, deterministic labels per card
+  - update mock/debug answer formatting so enriched fields are visible when validating request-to-prompt shaping in Phase A
+  - preserve existing stack-order semantics and fallback-question behavior while extending per-card context lines
+  - add normalization rules for optional enrichment fields:
+    - trim text fields
+    - preserve typed target kind
+    - omit empty optional values from prompt context where appropriate
+  - add or update backend tests and eval fixtures/goldens to verify enriched fields are present and ordered correctly in prompt context and prompt text
+- acceptance criteria:
+  - for a request containing `caster`, typed `targets`, and `contextNotes`, backend prompt context includes those fields for each matching stack entry
+  - generated prompt text includes enriched fields in deterministic per-card output format
+  - mock/debug response output includes enriched fields in deterministic labels for developer inspection
+  - blank/omitted optional enrichment values do not break Decrypt flow or reorder stack entries
+  - existing API route shape remains unchanged (`POST /api/ask-ai` request/response contract is extended only within stack-entry content)
+  - backend tests and eval harness snapshots pass with representative enriched-context scenarios
+- execution mode: sequential
+- dependencies:
+  - STORY-018 (blocking): requires stack-entry enrichment capture and request-shape extension to exist before prompt-wiring can be validated end-to-end.
+  - STORY-021 (blocking): requires player-label expansion to be defined so prompt outputs can be validated against the final supported player set.
+  - REQ-006, REQ-011, REQ-012, REQ-013
+  - DEC-004, DEC-009, DEC-010, DEC-017
+  - NFR-005
+  - `sections/integrations-and-data.md` (AI prompt context rules + request contract sections)
+- exclusions:
+  - no gameplay legality or rules-engine behavior
+  - no board-state simulation logic
+  - no additional product-facing backend endpoints
+  - no external observability platform integration
+  - no Bedrock Phase B provider invocation changes

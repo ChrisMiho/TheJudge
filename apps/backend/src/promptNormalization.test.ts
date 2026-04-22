@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   MAX_ORACLE_TEXT_CHARS,
+  MAX_PROMPT_CHAR_BUDGET,
   buildPromptText,
   normalizeCardText,
   normalizeQuestion,
@@ -11,6 +12,14 @@ import type { PromptContext } from "./types.js";
 
 const baseContext: PromptContext = {
   finalQuestion: "How does this resolve?",
+  gameContext: {
+    playerCount: 2,
+    players: [
+      { label: "Player 1", lifeTotal: 20 },
+      { label: "Player 2", lifeTotal: 17 }
+    ]
+  },
+  battlefieldContext: [{ name: "Rhystic Study", details: "Tax effect", targets: [{ kind: "none" }] }],
   orderedStack: [
     {
       cardId: "card-1",
@@ -23,6 +32,10 @@ const baseContext: PromptContext = {
       colors: ["U"],
       supertypes: [],
       subtypes: [],
+      caster: "Player 1",
+      targets: [],
+      manaSpent: 1,
+      contextNotes: "",
       stackIndex: 0,
       stackRole: "bottom"
     },
@@ -37,6 +50,13 @@ const baseContext: PromptContext = {
       colors: ["U"],
       supertypes: [],
       subtypes: [],
+      caster: "Player 3",
+      targets: [
+        { kind: "stack", targetCardId: "card-1", targetCardName: "Opt" },
+        { kind: "none" }
+      ],
+      manaSpent: 5,
+      contextNotes: "kicker paid",
       stackIndex: 1,
       stackRole: "top"
     }
@@ -73,7 +93,9 @@ describe("buildPromptText", () => {
 
     expect(first).toBe(second);
     expect(first.indexOf("INSTRUCTIONS")).toBeLessThan(first.indexOf("QUESTION"));
-    expect(first.indexOf("QUESTION")).toBeLessThan(first.indexOf("ORDERED STACK (BOTTOM TO TOP)"));
+    expect(first.indexOf("QUESTION")).toBeLessThan(first.indexOf("GAME CONTEXT"));
+    expect(first.indexOf("GAME CONTEXT")).toBeLessThan(first.indexOf("BATTLEFIELD CONTEXT"));
+    expect(first.indexOf("BATTLEFIELD CONTEXT")).toBeLessThan(first.indexOf("ORDERED STACK (BOTTOM TO TOP)"));
   });
 
   it("includes uncertainty and non-invention guardrails", () => {
@@ -81,5 +103,14 @@ describe("buildPromptText", () => {
 
     expect(prompt).toContain("State uncertainty when context is incomplete.");
     expect(prompt).toContain("Do not invent hidden state, targets, or board conditions.");
+    expect(prompt).toContain("playerCount: 2");
+    expect(prompt).toContain("caster: Player 3");
+    expect(prompt).toContain("manaSpent: 5");
+    expect(prompt).toContain("targets: stack:Opt (card-1) | none:does-not-target");
+  });
+
+  it("stays under configured prompt budget for normal payloads", () => {
+    const prompt = buildPromptText(baseContext);
+    expect(prompt.length).toBeLessThan(MAX_PROMPT_CHAR_BUDGET);
   });
 });

@@ -14,6 +14,7 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 Validate the end-to-end user flow before full Bedrock integration:
 
 - search and preview cards from local metadata
+- capture lightweight structured game context before stack resolution
 - build an ordered stack bottom-to-top
 - submit an optional question (with fallback behavior)
 - receive a mock AI answer via backend contract-compatible endpoint
@@ -84,9 +85,11 @@ Local defaults work out of the box, but deployment targets should set explicit v
 
 - Frontend (`apps/frontend/.env`):
   - `VITE_API_URL` - absolute backend origin used by the browser app (default: `http://localhost:3000`)
+  - `VITE_DEBUG_LOGGING` - optional debug log toggle (`true`/`false`); defaults on in development and off in test mode
 - Backend (`apps/backend/.env`):
   - `PORT` - backend server port (default: `3000`)
   - `FRONTEND_ORIGIN` - optional CORS allow-origin for frontend deployments (example: `https://preview.thejudge.dev`)
+  - `DEBUG_LOGGING` - optional backend debug log toggle (`true`/`false`); defaults on in `development`
 
 Reference templates:
 
@@ -128,6 +131,8 @@ Implemented flow and platform pieces:
 - [x] backend provider boundary to isolate Phase A mock from route/controller logic
 - [x] deterministic, structured mock answer output for prompt/context debugging
 - [x] empty-state cat-wizard visual served from bundled static assets with fallback copy
+- [x] per-stack-entry context enrichment (`caster`, typed `targets`, optional `contextNotes`) with frontend capture/edit and backend deterministic prompt output (supports `Player 1` ... `Player 4` and explicit `none` target context)
+- [x] lightweight frontend/backend debug logging with per-request correlation id and environment toggles (`VITE_DEBUG_LOGGING`, `DEBUG_LOGGING`)
 
 ## Story Checklist (Track Progress Here)
 
@@ -152,6 +157,22 @@ Pending implementation backlog:
 - [x] `STORY-015` use `cats-homescreen.png` as centered empty-state default image with no surrounding box
 - [x] `STORY-016` establish engineering quality guardrails with enforceable repo-level gates
 - [x] `STORY-017` remediate current hotspots via modular refactor with regression-safe tests
+- [x] `STORY-018` enrich stack entries with explicit caster (`Player 1` / `Player 2`) and typed targeting context for improved LLM prompt input
+- [x] `STORY-019` add basic frontend/backend debug logging with correlation id traceability for flow validation
+- [x] `STORY-020` wire enriched stack-entry context into deterministic backend prompt/mock output for LLM-readiness
+- [x] `STORY-021` expand caster/player-target labels to support up to four players across UI and backend validation
+- [ ] `STORY-022` capture pre-stack general game context (player count + life totals) and include it in LLM prompt context
+- [ ] `STORY-023` capture per-stack-entry mana spent context with deterministic fallback to `manaValue` in prompt context
+- [ ] `STORY-024` add optional battlefield-context step after game context with explicit skip path and prompt-context inclusion
+- [ ] `STORY-025` harden expanded Ask-AI context contract end-to-end after staged-context features land
+- [ ] `STORY-026` expand deterministic prompt structure to include staged context sections
+- [ ] `STORY-027` extend eval harness fixtures/checks for staged-context regression detection
+- [ ] `STORY-028` prepare Phase B Bedrock bootstrap/config/provider-selection wiring without API contract changes
+- [ ] `STORY-029` add prompt budget and latency guardrails for high-context scenarios
+- [ ] `STORY-030` align battlefield-context entry with existing metadata-backed card search behavior
+- [ ] `STORY-031` simplify battlefield-step progression to one dynamic skip/continue action button
+- [ ] `STORY-032` add target kind `other` with up-to-200-char custom target context wired through payload/prompt
+- [ ] `STORY-033` move cat visual from stack window/empty-state placement to game-context first screen
 
 ## Documentation Notes
 

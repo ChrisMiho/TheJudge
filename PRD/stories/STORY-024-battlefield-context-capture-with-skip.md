@@ -1,0 +1,34 @@
+# STORY-024 - Battlefield Context Capture with Skip
+
+- title: Add an optional battlefield-context step after general game-context capture, allowing users to enter relevant battlefield cards/effects or skip when none are relevant.
+- user value: As a player, I can quickly provide important battlefield context that affects the stack while still being able to skip this step when it is not needed.
+- scope:
+  - add a battlefield-context step that appears after general game-context confirmation and before stack entry
+  - use existing stack-context input patterns for battlefield entries where possible (reusing current targeting/context controls)
+  - allow users to add/remove battlefield context items relevant to board-wide or stack-affecting effects
+  - add an explicit skip action that proceeds to stack entry when no battlefield context is relevant
+  - persist either entered battlefield context or explicit-skip state through Decrypt/retry flows
+  - include battlefield context deterministically in backend prompt context and prompt/mock output
+  - add/update tests for:
+    - proceed with battlefield entries
+    - skip path with no entries
+    - payload/prompt inclusion behavior
+- acceptance criteria:
+  - user sees battlefield-context step after completing general game-context step
+  - user can either provide battlefield context and continue or explicitly skip and continue
+  - skip path does not block Decrypt flow and does not inject invalid placeholder data
+  - provided battlefield context appears in backend prompt context and deterministic prompt/mock output
+  - existing endpoint shape remains unchanged and tests pass for both enter/skip paths
+- execution mode: sequential
+- dependencies:
+  - STORY-022 (blocking): battlefield step must be placed after the new pre-stack game-context step.
+  - REQ-006, REQ-012, REQ-013, REQ-014, REQ-016
+  - DEC-004, DEC-010, DEC-013, DEC-017, DEC-019
+  - NFR-001, NFR-005, NFR-007
+  - `sections/user-flows.md` (flow sequencing)
+  - `sections/integrations-and-data.md` (request/prompt contract sections)
+- exclusions:
+  - no full board-state simulation or continuous battlefield tracker
+  - no rules-engine legality enforcement for battlefield effects
+  - no additional product-facing backend endpoints
+  - no Bedrock Phase B invocation changes

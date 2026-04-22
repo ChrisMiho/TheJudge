@@ -1,5 +1,29 @@
 {
   "finalQuestion": "can i do this before that resolves??",
+  "gameContext": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 5
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 2
+      }
+    ]
+  },
+  "battlefieldContext": [
+    {
+      "name": "Narset, Parter of Veils",
+      "details": "Each opponent can't draw more than one card each turn.",
+      "targets": [
+        {
+          "kind": "none"
+        }
+      ]
+    }
+  ],
   "orderedStack": [
     {
       "cardId": "silence",
@@ -7,11 +31,14 @@
       "oracleText": "Your opponents can't cast spells this turn.",
       "imageUrl": "",
       "manaCost": "",
-      "manaValue": 0,
+      "manaValue": 1,
       "typeLine": "",
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
+      "manaSpent": 1,
       "stackIndex": 0,
       "stackRole": "bottom"
     },
@@ -21,11 +48,20 @@
       "oracleText": "Counter target spell unless its controller pays 3.",
       "imageUrl": "",
       "manaCost": "",
-      "manaValue": 0,
+      "manaValue": 3,
       "typeLine": "",
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "caster": "Player 2",
+      "targets": [
+        {
+          "kind": "stack",
+          "targetCardId": "silence",
+          "targetCardName": "Silence"
+        }
+      ],
+      "manaSpent": 3,
       "stackIndex": 1,
       "stackRole": "top"
     }

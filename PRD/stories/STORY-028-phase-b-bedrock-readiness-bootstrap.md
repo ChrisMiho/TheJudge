@@ -1,0 +1,27 @@
+# STORY-028 - Phase B Bedrock Readiness Bootstrap
+
+- title: Prepare production-safe Bedrock bootstrap/config wiring behind the existing provider boundary without changing API contracts.
+- user value: As an engineer, I can begin Bedrock exploration quickly because environment/config/provider scaffolding is ready and contract-safe.
+- scope:
+  - add Bedrock readiness bootstrap under provider boundary patterns established in `STORY-014`
+  - define and validate required backend environment settings for Bedrock readiness (without enabling by default in Phase A)
+  - wire provider selection/composition in bootstrap code so mock and future Bedrock providers can be swapped safely
+  - define error-handling/mapping expectations for provider failures while preserving existing API response shape
+  - add focused tests for config validation and provider selection behavior
+  - document operational readiness notes in provider docs and environment templates
+- acceptance criteria:
+  - backend bootstrap supports explicit provider selection via config wiring
+  - Bedrock-related env/config validation fails fast with clear messages when invalid/missing
+  - `/api/ask-ai` request/response contract remains unchanged
+  - provider-selection and config tests pass without requiring live Bedrock calls
+- execution mode: sequential
+- dependencies:
+  - STORY-025 (blocking): ensures contract and context shape are stable before provider bootstrap hardening
+  - REQ-012, REQ-013
+  - DEC-010, DEC-011, DEC-017, DEC-019
+  - NFR-003, NFR-005
+  - `apps/backend/src/providers/README.md` (Phase B handoff guidance)
+- exclusions:
+  - no mandatory live Bedrock invocation in this story
+  - no change to product-facing endpoint count
+  - no frontend Bedrock credential handling

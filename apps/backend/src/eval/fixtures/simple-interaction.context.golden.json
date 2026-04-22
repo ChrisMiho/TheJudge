@@ -1,5 +1,19 @@
 {
   "finalQuestion": "What happens here?",
+  "gameContext": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 20
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ]
+  },
+  "battlefieldContext": [],
   "orderedStack": [
     {
       "cardId": "opt",
@@ -7,11 +21,14 @@
       "oracleText": "Scry 1, then draw a card.",
       "imageUrl": "",
       "manaCost": "",
-      "manaValue": 0,
+      "manaValue": 1,
       "typeLine": "",
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
+      "manaSpent": 1,
       "stackIndex": 0,
       "stackRole": "top"
     }

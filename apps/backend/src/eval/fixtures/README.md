@@ -17,12 +17,23 @@ This folder stores fixture-driven golden cases for context and prompt evaluation
   "description": "Human-readable scenario intent",
   "request": {
     "question": "What happens here?",
+    "gameContext": {
+      "playerCount": 2,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 20 },
+        { "label": "Player 2", "lifeTotal": 20 }
+      ]
+    },
+    "battlefieldContext": [],
     "stack": [
       {
         "cardId": "opt",
         "name": "Opt",
         "oracleText": "Scry 1, then draw a card.",
-        "imageUrl": ""
+        "imageUrl": "",
+        "manaSpent": 1,
+        "caster": "Player 1",
+        "targets": []
       }
     ]
   }

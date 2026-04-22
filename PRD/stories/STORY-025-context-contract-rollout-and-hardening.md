@@ -1,0 +1,29 @@
+# STORY-025 - Context Contract Rollout and Hardening
+
+- title: Harden and fully implement the expanded Ask-AI context contract end-to-end so documented request fields are validated, normalized, and consistently transmitted.
+- user value: As a developer, I can trust that staged game/battlefield/stack context is consistently represented from UI through backend prompt context without contract drift.
+- scope:
+  - implement full request contract support for documented context fields (`gameContext`, `battlefieldContext`, `manaSpent` on stack entries)
+  - align frontend payload assembly with contract-defined required/optional fields
+  - align backend schema validation and type definitions with contract-defined fields and constraints
+  - add deterministic normalization rules for new context objects (trim/empty handling, fixed labels, fallback-ready values)
+  - ensure retry/failure paths preserve all newly captured context fields
+  - add/update frontend/backend tests that assert request-shape stability and validation failures for malformed context
+- acceptance criteria:
+  - outbound frontend payload matches `sections/integrations-and-data.md` request shape for context fields
+  - backend validation accepts valid context payloads and rejects malformed payloads with clear errors
+  - context fields persist through Decrypt and retry flows
+  - request-contract tests pass with representative valid/invalid cases across new context inputs
+- execution mode: sequential
+- dependencies:
+  - STORY-022 (blocking): provides pre-stack game context capture
+  - STORY-023 (blocking): provides per-entry mana-spent capture + fallback requirement
+  - STORY-024 (blocking): provides optional battlefield-context capture/skip behavior
+  - REQ-012, REQ-015, REQ-016, REQ-017
+  - DEC-010, DEC-019
+  - NFR-005, NFR-007
+  - `sections/integrations-and-data.md` (API contract sections)
+- exclusions:
+  - no Bedrock runtime invocation changes
+  - no additional product-facing backend endpoints
+  - no gameplay legality or rules-engine behavior

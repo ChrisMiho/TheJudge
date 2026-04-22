@@ -4,19 +4,43 @@ import { readServerConfig } from "./config.js";
 describe("backend env config", () => {
   it("uses local defaults when env is not set", () => {
     const config = readServerConfig({});
-    expect(config).toEqual({ port: 3000, frontendOrigin: undefined });
+    expect(config).toEqual({
+      port: 3000,
+      frontendOrigin: undefined,
+      debugLoggingEnabled: false,
+      askAiProvider: "mock",
+      awsRegion: undefined,
+      bedrockModelId: undefined
+    });
   });
 
   it("parses explicit port and frontend origin", () => {
     const config = readServerConfig({
       PORT: "4567",
-      FRONTEND_ORIGIN: "https://preview.thejudge.dev/"
+      FRONTEND_ORIGIN: "https://preview.thejudge.dev/",
+      DEBUG_LOGGING: "true"
     });
 
     expect(config).toEqual({
       port: 4567,
-      frontendOrigin: "https://preview.thejudge.dev"
+      frontendOrigin: "https://preview.thejudge.dev",
+      debugLoggingEnabled: true,
+      askAiProvider: "mock",
+      awsRegion: undefined,
+      bedrockModelId: undefined
     });
+  });
+
+  it("parses bedrock readiness config when requested", () => {
+    const config = readServerConfig({
+      ASK_AI_PROVIDER: "bedrock",
+      AWS_REGION: "us-east-1",
+      BEDROCK_MODEL_ID: "anthropic.claude-v2"
+    });
+
+    expect(config.askAiProvider).toBe("bedrock");
+    expect(config.awsRegion).toBe("us-east-1");
+    expect(config.bedrockModelId).toBe("anthropic.claude-v2");
   });
 
   it("throws on invalid port", () => {
@@ -30,6 +54,20 @@ describe("backend env config", () => {
   it("throws on unsupported origin protocol", () => {
     expect(() => readServerConfig({ FRONTEND_ORIGIN: "ftp://frontend.example.com" })).toThrow(
       /Only http and https are supported/
+    );
+  });
+
+  it("throws on invalid DEBUG_LOGGING values", () => {
+    expect(() => readServerConfig({ DEBUG_LOGGING: "maybe" })).toThrow(/Invalid DEBUG_LOGGING value/);
+  });
+
+  it("throws on invalid provider selection", () => {
+    expect(() => readServerConfig({ ASK_AI_PROVIDER: "openai" })).toThrow(/Invalid ASK_AI_PROVIDER value/);
+  });
+
+  it("throws when bedrock provider is missing required env", () => {
+    expect(() => readServerConfig({ ASK_AI_PROVIDER: "bedrock", AWS_REGION: "us-east-1" })).toThrow(
+      /requires both AWS_REGION and BEDROCK_MODEL_ID/
     );
   });
 });

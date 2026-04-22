@@ -3,12 +3,23 @@
   "description": "Single-card interaction with a straightforward question.",
   "request": {
     "question": "What happens here?",
+    "gameContext": {
+      "playerCount": 2,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 20 },
+        { "label": "Player 2", "lifeTotal": 20 }
+      ]
+    },
+    "battlefieldContext": [],
     "stack": [
       {
         "cardId": "opt",
         "name": "Opt",
         "oracleText": "Scry 1, then draw a card.",
-        "imageUrl": ""
+        "imageUrl": "",
+        "manaValue": 1,
+        "caster": "Player 1",
+        "targets": []
       }
     ]
   }

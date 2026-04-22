@@ -2,9 +2,9 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
-import type { AskAiRequest, StackItem } from "./types";
+import type { AskAiRequest, CardMetadataItem } from "./types";
 
-const baseCardMetadataFixture: StackItem[] = [
+const baseCardMetadataFixture: CardMetadataItem[] = [
   {
     cardId: "opt",
     name: "Opt",
@@ -44,9 +44,10 @@ const baseCardMetadataFixture: StackItem[] = [
 ];
 
 let fetchMock: ReturnType<typeof vi.fn>;
-let metadataFixture: StackItem[] = [];
+let metadataFixture: CardMetadataItem[] = [];
 let askAiResponseQueue: Array<{ status: number; body: unknown }> = [];
 const submittedAskAiRequests: AskAiRequest[] = [];
+const submittedAskAiHeaders: Array<Record<string, string>> = [];
 
 function jsonResponse(payload: unknown, status = 200): Response {
   return new Response(JSON.stringify(payload), {
@@ -61,7 +62,7 @@ function getUrlFromRequest(input: RequestInfo | URL): string {
   return input.url;
 }
 
-function createStackItem(name: string, index: number): StackItem {
+function createStackItem(name: string, index: number): CardMetadataItem {
   return {
     cardId: `card-${index}`,
     name,
@@ -76,12 +77,37 @@ function createStackItem(name: string, index: number): StackItem {
   };
 }
 
+function normalizeHeaders(initHeaders: RequestInit["headers"]): Record<string, string> {
+  if (!initHeaders) return {};
+  if (initHeaders instanceof Headers) {
+    return Object.fromEntries(initHeaders.entries());
+  }
+
+  if (Array.isArray(initHeaders)) {
+    return Object.fromEntries(initHeaders);
+  }
+
+  return Object.fromEntries(
+    Object.entries(initHeaders).map(([key, value]) => [key.toLowerCase(), String(value)])
+  );
+}
+
 function queueAskAiResponses(...responses: Array<{ status: number; body: unknown }>): void {
   askAiResponseQueue = responses;
 }
 
 async function waitForMetadataReady(): Promise<void> {
-  await screen.findByText(/\d+ cards ready/);
+  await screen.findByPlaceholderText("Type to begin");
+}
+
+async function advanceToStackBuilder(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+  await user.click(screen.getByRole("button", { name: "Skip battlefield context" }));
+}
+
+async function openStackBuilder(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await advanceToStackBuilder(user);
+  await waitForMetadataReady();
 }
 
 async function selectCard(user: ReturnType<typeof userEvent.setup>, query: string, cardName: string): Promise<void> {
@@ -106,6 +132,7 @@ describe("App MVP interaction flows", () => {
     metadataFixture = [...baseCardMetadataFixture];
     askAiResponseQueue = [{ status: 200, body: { answer: "Mock answer" } }];
     submittedAskAiRequests.length = 0;
+    submittedAskAiHeaders.length = 0;
 
     fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
       const url = getUrlFromRequest(input);
@@ -116,6 +143,7 @@ describe("App MVP interaction flows", () => {
 
       if (url.endsWith("/api/ask-ai") && init?.method === "POST") {
         submittedAskAiRequests.push(JSON.parse(String(init.body)) as AskAiRequest);
+        submittedAskAiHeaders.push(normalizeHeaders(init.headers));
 
         const nextResponse = askAiResponseQueue.shift() ?? { status: 200, body: { answer: "Mock answer" } };
         return jsonResponse(nextResponse.body, nextResponse.status);
@@ -135,8 +163,7 @@ describe("App MVP interaction flows", () => {
   it("shows suggestions only at threshold and supports suggestion-to-preview selection", async () => {
     const user = userEvent.setup();
     render(<App />);
-
-    await waitForMetadataReady();
+    await openStackBuilder(user);
 
     const searchInput = screen.getByPlaceholderText("Type to begin");
     await user.type(searchInput, "op");
@@ -152,8 +179,7 @@ describe("App MVP interaction flows", () => {
   it("uses first-add then subsequent-add button labels", async () => {
     const user = userEvent.setup();
     render(<App />);
-
-    await waitForMetadataReady();
+    await openStackBuilder(user);
 
     await selectCard(user, "opt", "Opt");
 
@@ -168,15 +194,14 @@ describe("App MVP interaction flows", () => {
   it("submits bottom-to-top stack payload after add/remove interactions", async () => {
     const user = userEvent.setup();
     render(<App />);
-
-    await waitForMetadataReady();
+    await openStackBuilder(user);
 
     await addCardToStack(user, "opt", "Opt");
     await addCardToStack(user, "cou", "Counterspell");
     await addCardToStack(user, "lig", "Lightning Bolt");
 
     await user.click(screen.getByRole("button", { name: /^Stack/ }));
-    const counterspellRow = screen.getByText("Counterspell").closest("li");
+    const counterspellRow = screen.getByLabelText("Caster for Counterspell").closest("li");
     expect(counterspellRow).not.toBeNull();
     await user.click(within(counterspellRow as HTMLLIElement).getByRole("button", { name: "Remove" }));
     await user.click(screen.getByRole("button", { name: "Close" }));
@@ -189,14 +214,93 @@ describe("App MVP interaction flows", () => {
     });
 
     expect(requestBody.question).toBe("Resolve the stack");
+    expect(requestBody.gameContext.playerCount).toBe(2);
+    expect(requestBody.battlefieldContext).toEqual([]);
     expect(requestBody.stack.map((card) => card.name)).toEqual(["Opt", "Lightning Bolt"]);
+    expect(submittedAskAiHeaders[0]["x-correlation-id"]).toMatch(/\S+/);
+  });
+
+  it("captures caster, typed targets, and notes when adding a stack entry", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await openStackBuilder(user);
+    await selectCard(user, "opt", "Opt");
+
+    await user.selectOptions(screen.getByLabelText("Entry caster"), "Player 4");
+    await user.selectOptions(screen.getByLabelText("Entry target kind"), "player");
+    await user.selectOptions(screen.getByLabelText("Entry player target"), "Player 3");
+    await user.click(screen.getByRole("button", { name: "Add entry target" }));
+    await user.type(screen.getByLabelText("Entry mana spent"), "4");
+    await user.type(screen.getByLabelText("Entry context notes"), "Cast for alternate cost");
+    await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
+    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+
+    const requestBody = await waitFor(() => {
+      expect(submittedAskAiRequests.length).toBeGreaterThan(0);
+      return submittedAskAiRequests[0];
+    });
+
+    expect(requestBody.stack[0]).toMatchObject({
+      name: "Opt",
+      caster: "Player 4",
+      targets: [{ kind: "player", targetPlayer: "Player 3" }],
+      contextNotes: "Cast for alternate cost",
+      manaSpent: 4
+    });
+  });
+
+  it("lets users edit caster and targeting context from stack details", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await openStackBuilder(user);
+    await addCardToStack(user, "opt", "Opt");
+
+    await user.click(screen.getByRole("button", { name: /^Stack/ }));
+    await user.selectOptions(screen.getByLabelText("Caster for Opt"), "Player 3");
+    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "player");
+    await user.selectOptions(screen.getByLabelText("Player target for Opt"), "Player 4");
+    await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
+    await user.type(screen.getByLabelText("Context notes for Opt"), "Copied from graveyard");
+    await user.click(screen.getByRole("button", { name: "Close" }));
+    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+
+    const requestBody = await waitFor(() => {
+      expect(submittedAskAiRequests.length).toBeGreaterThan(0);
+      return submittedAskAiRequests[0];
+    });
+
+    expect(requestBody.stack[0]).toMatchObject({
+      caster: "Player 3",
+      targets: [{ kind: "player", targetPlayer: "Player 4" }],
+      contextNotes: "Copied from graveyard"
+    });
+  });
+
+  it("supports a no-specific-target context option", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await openStackBuilder(user);
+    await selectCard(user, "opt", "Opt");
+    await user.selectOptions(screen.getByLabelText("Entry target kind"), "none");
+    await user.click(screen.getByRole("button", { name: "Add entry target" }));
+    await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
+    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+
+    const requestBody = await waitFor(() => {
+      expect(submittedAskAiRequests.length).toBeGreaterThan(0);
+      return submittedAskAiRequests[0];
+    });
+
+    expect(requestBody.stack[0]?.targets).toEqual([{ kind: "none" }]);
   });
 
   it("guards Decrypt Stack when stack is empty", async () => {
     const user = userEvent.setup();
     const { container } = render(<App />);
-
-    await waitForMetadataReady();
+    await openStackBuilder(user);
 
     const decryptButton = screen.getByRole("button", { name: "Decrypt Stack" });
     expect(decryptButton).toBeDisabled();
@@ -211,8 +315,9 @@ describe("App MVP interaction flows", () => {
   });
 
   it("shows bundled empty-state cat-wizard asset with graceful fallback", async () => {
+    const user = userEvent.setup();
     render(<App />);
-    await waitForMetadataReady();
+    await openStackBuilder(user);
 
     const emptyStateImage = screen.getByRole("img", { name: "Cat wizard" });
     expect(emptyStateImage).toHaveAttribute("src", "/assets/cats-homescreen.png");
@@ -225,8 +330,7 @@ describe("App MVP interaction flows", () => {
   it("shows stack icon/count only when cards exist and updates count after removal", async () => {
     const user = userEvent.setup();
     render(<App />);
-
-    await waitForMetadataReady();
+    await openStackBuilder(user);
 
     expect(screen.queryByRole("button", { name: /^Stack/ })).not.toBeInTheDocument();
 
@@ -238,15 +342,18 @@ describe("App MVP interaction flows", () => {
     expect(stackButton).toHaveTextContent("2");
 
     await user.click(stackButton);
-    await user.click(within(screen.getByText("Opt").closest("li") as HTMLLIElement).getByRole("button", { name: "Remove" }));
+    await user.click(
+      within(screen.getByLabelText("Caster for Opt").closest("li") as HTMLLIElement).getByRole("button", {
+        name: "Remove"
+      })
+    );
     expect(screen.getByRole("button", { name: /^Stack/ })).toHaveTextContent("1");
   });
 
   it("renders stack details bottom-to-top and rows stay usable on image load failure", async () => {
     const user = userEvent.setup();
     render(<App />);
-
-    await waitForMetadataReady();
+    await openStackBuilder(user);
 
     await addCardToStack(user, "opt", "Opt");
     await addCardToStack(user, "lig", "Lightning Bolt");
@@ -260,7 +367,7 @@ describe("App MVP interaction flows", () => {
     expect(within(rows[0]).getByText("Opt")).toBeInTheDocument();
     expect(within(rows[1]).getByText("Lightning Bolt")).toBeInTheDocument();
 
-    const lightningBoltRow = within(detailsList).getByText("Lightning Bolt").closest("li");
+    const lightningBoltRow = screen.getByLabelText("Caster for Lightning Bolt").closest("li");
     expect(lightningBoltRow).not.toBeNull();
 
     const lightningImage = within(lightningBoltRow as HTMLLIElement).getByRole("img", { name: "Lightning Bolt" });
@@ -274,8 +381,7 @@ describe("App MVP interaction flows", () => {
   it("blocks duplicate adds and preserves stack entries", async () => {
     const user = userEvent.setup();
     render(<App />);
-
-    await waitForMetadataReady();
+    await openStackBuilder(user);
 
     await addCardToStack(user, "opt", "Opt");
     await user.click(screen.getByRole("button", { name: "Add to Stack" }));
@@ -302,8 +408,7 @@ describe("App MVP interaction flows", () => {
     const manyCards = uniqueCardNames.map((name, index) => createStackItem(name, index));
     metadataFixture = manyCards;
     render(<App />);
-
-    await waitForMetadataReady();
+    await openStackBuilder(user);
 
     for (const card of manyCards.slice(0, 10)) {
       await addCardToStack(user, card.name, card.name);
@@ -336,8 +441,7 @@ describe("App MVP interaction flows", () => {
       { status: 502, body: { error: "Miho is working on it", retryAfterSeconds: 13 } }
     );
     render(<App />);
-
-    await waitForMetadataReady();
+    await openStackBuilder(user);
     await addCardToStack(user, "opt", "Opt");
 
     const questionInput = screen.getByPlaceholderText("How does this resolve?");
@@ -361,8 +465,7 @@ describe("App MVP interaction flows", () => {
       { status: 502, body: { error: "Miho is working on it", retryAfterSeconds: 13 } }
     );
     render(<App />);
-
-    await waitForMetadataReady();
+    await openStackBuilder(user);
     await addCardToStack(user, "opt", "Opt");
 
     const questionInput = screen.getByPlaceholderText("How does this resolve?");
@@ -400,5 +503,36 @@ describe("App MVP interaction flows", () => {
     expect(questionInput).toHaveValue("Retry this");
     expect(submittedAskAiRequests).toHaveLength(2);
 
+  });
+
+  it("requires game context before showing stack builder", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    expect(screen.getByRole("heading", { name: "Battlefield context (optional)" })).toBeInTheDocument();
+  });
+
+  it("captures battlefield context and submits it in ask-ai payload", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await user.type(screen.getByLabelText("Battlefield item name"), "Rhystic Study");
+    await user.selectOptions(screen.getByLabelText("Battlefield target kind"), "none");
+    await user.click(screen.getByRole("button", { name: "Add battlefield target" }));
+    await user.click(screen.getByRole("button", { name: "Add battlefield item" }));
+    await user.click(screen.getByRole("button", { name: "Continue to stack" }));
+    await waitForMetadataReady();
+
+    await addCardToStack(user, "opt", "Opt");
+    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+
+    const requestBody = await waitFor(() => {
+      expect(submittedAskAiRequests.length).toBeGreaterThan(0);
+      return submittedAskAiRequests[0];
+    });
+    expect(requestBody.battlefieldContext).toEqual([{ name: "Rhystic Study", targets: [{ kind: "none" }] }]);
   });
 });

@@ -14,14 +14,26 @@ function createStack(size: number): AskAiRequest["stack"] {
     typeLine: "Instant",
     colors: ["U"],
     supertypes: [],
-    subtypes: []
+    subtypes: [],
+    caster: "Player 1",
+    targets: []
   }));
 }
 
 describe("buildPromptContext", () => {
+  const defaultGameContext: AskAiRequest["gameContext"] = {
+    playerCount: 2,
+    players: [
+      { label: "Player 1", lifeTotal: 20 },
+      { label: "Player 2", lifeTotal: 20 }
+    ]
+  };
+
   it("applies fallback question for blank input", () => {
     const context = buildPromptContext({
       question: "   ",
+      gameContext: defaultGameContext,
+      battlefieldContext: [],
       stack: createStack(1)
     });
 
@@ -31,6 +43,8 @@ describe("buildPromptContext", () => {
   it("keeps stack order for multi-card input", () => {
     const context = buildPromptContext({
       question: "How does this resolve?",
+      gameContext: defaultGameContext,
+      battlefieldContext: [],
       stack: createStack(3)
     });
 
@@ -49,6 +63,8 @@ describe("buildPromptContext", () => {
   it("sets top role on single-card stacks", () => {
     const context = buildPromptContext({
       question: "Single",
+      gameContext: defaultGameContext,
+      battlefieldContext: [],
       stack: createStack(1)
     });
 
@@ -60,6 +76,8 @@ describe("buildPromptContext", () => {
   it("supports near-cap stacks while preserving indexes", () => {
     const context = buildPromptContext({
       question: "Near cap",
+      gameContext: defaultGameContext,
+      battlefieldContext: [],
       stack: createStack(9)
     });
 
@@ -72,6 +90,21 @@ describe("buildPromptContext", () => {
   it("normalizes noisy text fields and truncates long oracle text", () => {
     const context = buildPromptContext({
       question: "  How   does\tthis resolve?\n",
+      gameContext: {
+        playerCount: 3,
+        players: [
+          { label: "Player 1", lifeTotal: 30 },
+          { label: "Player 2", lifeTotal: 20 },
+          { label: "Player 3", lifeTotal: 10 }
+        ]
+      },
+      battlefieldContext: [
+        {
+          name: "  Rhystic   Study ",
+          details: "  tax effect ",
+          targets: [{ kind: "none" }]
+        }
+      ],
       stack: [
         {
           cardId: "  card-1 ",
@@ -83,7 +116,22 @@ describe("buildPromptContext", () => {
           typeLine: "  Legendary   Creature —  Wizard  ",
           colors: ["U", "U", " "],
           supertypes: ["Legendary", "  "],
-          subtypes: ["Wizard", "Wizard"]
+          subtypes: ["Wizard", "Wizard"],
+          caster: "Player 4",
+          targets: [
+            {
+              kind: "battlefield",
+              targetPermanent: "   Delver of Secrets   "
+            },
+            {
+              kind: "player",
+              targetPlayer: "Player 1"
+            },
+            {
+              kind: "none"
+            }
+          ],
+          contextNotes: "  kicked  "
         }
       ]
     });
@@ -97,6 +145,16 @@ describe("buildPromptContext", () => {
     expect(context.orderedStack[0]?.colors).toEqual(["U"]);
     expect(context.orderedStack[0]?.supertypes).toEqual(["Legendary"]);
     expect(context.orderedStack[0]?.subtypes).toEqual(["Wizard"]);
+    expect(context.orderedStack[0]?.caster).toBe("Player 4");
+    expect(context.orderedStack[0]?.targets).toEqual([
+      { kind: "battlefield", targetPermanent: "Delver of Secrets" },
+      { kind: "player", targetPlayer: "Player 1" },
+      { kind: "none" }
+    ]);
+    expect(context.orderedStack[0]?.contextNotes).toBe("kicked");
+    expect(context.orderedStack[0]?.manaSpent).toBe(2);
+    expect(context.gameContext.players).toHaveLength(3);
+    expect(context.battlefieldContext[0]?.name).toBe("Rhystic Study");
     expect((context.orderedStack[0]?.oracleText.length ?? 0) <= MAX_ORACLE_TEXT_CHARS).toBe(true);
   });
 });
