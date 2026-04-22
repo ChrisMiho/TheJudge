@@ -18,6 +18,9 @@ describe("mock answer ergonomics", () => {
           colors: ["U"],
           supertypes: [],
           subtypes: [],
+          caster: "Player 1",
+          targets: [],
+          contextNotes: "",
           stackIndex: 0,
           stackRole: "bottom"
         },
@@ -32,6 +35,9 @@ describe("mock answer ergonomics", () => {
           colors: ["R"],
           supertypes: [],
           subtypes: [],
+          caster: "Player 3",
+          targets: [{ kind: "none" }, { kind: "player", targetPlayer: "Player 4" }],
+          contextNotes: "cast for free",
           stackIndex: 1,
           stackRole: "top"
         }
@@ -45,6 +51,8 @@ describe("mock answer ergonomics", () => {
     expect(result.answer).toContain("Stack order convention: bottom-to-top");
     expect(result.answer).toContain("1. [bottom] Opt (cardId: opt)");
     expect(result.answer).toContain("2. [top] Lightning Bolt (cardId: bolt)");
+    expect(result.answer).toContain("Caster: Player 3 | Targets: none:does-not-target | player:Player 4");
+    expect(result.answer).toContain("Notes: cast for free");
     expect(result.answer).toContain("Colors: U | Supertypes: N/A | Subtypes: N/A");
   });
 });

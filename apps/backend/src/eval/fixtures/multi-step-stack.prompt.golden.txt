@@ -16,6 +16,9 @@ typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
+caster: Player 1
+targets: (none)
+contextNotes: (none)
 oracleText: Lightning Bolt deals 3 damage to any target.
 
 Card 2 (middle)
@@ -27,6 +30,9 @@ typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
+caster: Player 1
+targets: (none)
+contextNotes: (none)
 oracleText: Counter target spell.
 
 Card 3 (top)
@@ -38,4 +44,7 @@ typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
+caster: Player 1
+targets: (none)
+contextNotes: (none)
 oracleText: You may choose new targets for target spell or ability.

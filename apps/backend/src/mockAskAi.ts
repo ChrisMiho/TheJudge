@@ -4,6 +4,30 @@ function formatList(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "N/A";
 }
 
+function formatTargets(targets: PromptContext["orderedStack"][number]["targets"]): string {
+  if (targets.length === 0) {
+    return "N/A";
+  }
+
+  return targets
+    .map((target) => {
+      if (target.kind === "none") {
+        return "none:does-not-target";
+      }
+
+      if (target.kind === "player") {
+        return `player:${target.targetPlayer}`;
+      }
+
+      if (target.kind === "battlefield") {
+        return `battlefield:${target.targetPermanent}`;
+      }
+
+      return `stack:${target.targetCardName} (${target.targetCardId})`;
+    })
+    .join(" | ");
+}
+
 function formatStackRows(context: PromptContext): string {
   return context.orderedStack
     .map((item) =>
@@ -12,6 +36,8 @@ function formatStackRows(context: PromptContext): string {
         `   Mana: ${item.manaCost || "N/A"} | MV: ${item.manaValue}`,
         `   Type: ${item.typeLine || "N/A"}`,
         `   Colors: ${formatList(item.colors)} | Supertypes: ${formatList(item.supertypes)} | Subtypes: ${formatList(item.subtypes)}`,
+        `   Caster: ${item.caster} | Targets: ${formatTargets(item.targets)}`,
+        `   Notes: ${item.contextNotes || "N/A"}`,
         `   Oracle: ${item.oracleText}`
       ].join("\n")
     )

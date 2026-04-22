@@ -1,9 +1,16 @@
-import type { AskAiRequest, StackItem } from "../types";
+import type { AskAiRequest, CardMetadataItem, PlayerLabel, StackItem, StackTarget } from "../types";
 
 export const MAX_STACK_SIZE = 10;
 export const DEFAULT_QUESTION = "Resolve the stack";
 export const DUPLICATE_CARD_MESSAGE = "Duplicate cards are not supported in MVP1.";
 export const STACK_LIMIT_MESSAGE = "MVP stack limit reached (10 cards).";
+export const DEFAULT_CASTER: PlayerLabel = "Player 1";
+
+type StackEntryContextInput = {
+  caster?: PlayerLabel;
+  targets?: StackTarget[];
+  contextNotes?: string;
+};
 
 type StackAddValidationResult =
   | { ok: true }
@@ -21,6 +28,20 @@ export function buildAskAiRequest(question: string, stack: StackItem[]): AskAiRe
   return {
     question: getFinalQuestion(question),
     stack
+  };
+}
+
+export function buildStackItemFromMetadata(
+  card: CardMetadataItem,
+  context: StackEntryContextInput = {}
+): StackItem {
+  const trimmedContextNotes = context.contextNotes?.trim() ?? "";
+
+  return {
+    ...card,
+    caster: context.caster ?? DEFAULT_CASTER,
+    targets: context.targets ?? [],
+    contextNotes: trimmedContextNotes.length > 0 ? trimmedContextNotes : undefined
   };
 }
 

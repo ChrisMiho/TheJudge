@@ -12,6 +12,8 @@
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
       "stackIndex": 0,
       "stackRole": "bottom"
     },
@@ -26,6 +28,8 @@
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
       "stackIndex": 1,
       "stackRole": "middle"
     },
@@ -40,6 +44,8 @@
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
       "stackIndex": 2,
       "stackRole": "middle"
     },
@@ -54,6 +60,8 @@
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
       "stackIndex": 3,
       "stackRole": "middle"
     },
@@ -68,6 +76,8 @@
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
       "stackIndex": 4,
       "stackRole": "middle"
     },
@@ -82,6 +92,8 @@
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
       "stackIndex": 5,
       "stackRole": "middle"
     },
@@ -96,6 +108,8 @@
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
       "stackIndex": 6,
       "stackRole": "middle"
     },
@@ -110,6 +124,8 @@
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
       "stackIndex": 7,
       "stackRole": "middle"
     },
@@ -124,6 +140,8 @@
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
       "stackIndex": 8,
       "stackRole": "top"
     }

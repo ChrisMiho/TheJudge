@@ -23,6 +23,9 @@ const baseContext: PromptContext = {
       colors: ["U"],
       supertypes: [],
       subtypes: [],
+      caster: "Player 1",
+      targets: [],
+      contextNotes: "",
       stackIndex: 0,
       stackRole: "bottom"
     },
@@ -37,6 +40,12 @@ const baseContext: PromptContext = {
       colors: ["U"],
       supertypes: [],
       subtypes: [],
+      caster: "Player 3",
+      targets: [
+        { kind: "stack", targetCardId: "card-1", targetCardName: "Opt" },
+        { kind: "none" }
+      ],
+      contextNotes: "kicker paid",
       stackIndex: 1,
       stackRole: "top"
     }
@@ -81,5 +90,7 @@ describe("buildPromptText", () => {
 
     expect(prompt).toContain("State uncertainty when context is incomplete.");
     expect(prompt).toContain("Do not invent hidden state, targets, or board conditions.");
+    expect(prompt).toContain("caster: Player 3");
+    expect(prompt).toContain("targets: stack:Opt (card-1) | none:does-not-target");
   });
 });

@@ -12,6 +12,8 @@
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
       "stackIndex": 0,
       "stackRole": "bottom"
     },
@@ -26,6 +28,8 @@
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
       "stackIndex": 1,
       "stackRole": "middle"
     },
@@ -40,6 +44,8 @@
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
       "stackIndex": 2,
       "stackRole": "top"
     }

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { StackItem } from "../types";
+import type { CardMetadataItem } from "../types";
 import { getSuggestions, isFuzzyMatch, levenshteinDistance, NO_MATCH_COPY } from "./search";
 
-const sampleCards: StackItem[] = [
+const sampleCards: CardMetadataItem[] = [
   {
     cardId: "1",
     name: "Lightning Bolt",

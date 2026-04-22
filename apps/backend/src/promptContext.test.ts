@@ -14,7 +14,9 @@ function createStack(size: number): AskAiRequest["stack"] {
     typeLine: "Instant",
     colors: ["U"],
     supertypes: [],
-    subtypes: []
+    subtypes: [],
+    caster: "Player 1",
+    targets: []
   }));
 }
 
@@ -83,7 +85,22 @@ describe("buildPromptContext", () => {
           typeLine: "  Legendary   Creature —  Wizard  ",
           colors: ["U", "U", " "],
           supertypes: ["Legendary", "  "],
-          subtypes: ["Wizard", "Wizard"]
+          subtypes: ["Wizard", "Wizard"],
+          caster: "Player 4",
+          targets: [
+            {
+              kind: "battlefield",
+              targetPermanent: "   Delver of Secrets   "
+            },
+            {
+              kind: "player",
+              targetPlayer: "Player 1"
+            },
+            {
+              kind: "none"
+            }
+          ],
+          contextNotes: "  kicked  "
         }
       ]
     });
@@ -97,6 +114,13 @@ describe("buildPromptContext", () => {
     expect(context.orderedStack[0]?.colors).toEqual(["U"]);
     expect(context.orderedStack[0]?.supertypes).toEqual(["Legendary"]);
     expect(context.orderedStack[0]?.subtypes).toEqual(["Wizard"]);
+    expect(context.orderedStack[0]?.caster).toBe("Player 4");
+    expect(context.orderedStack[0]?.targets).toEqual([
+      { kind: "battlefield", targetPermanent: "Delver of Secrets" },
+      { kind: "player", targetPlayer: "Player 1" },
+      { kind: "none" }
+    ]);
+    expect(context.orderedStack[0]?.contextNotes).toBe("kicked");
     expect((context.orderedStack[0]?.oracleText.length ?? 0) <= MAX_ORACLE_TEXT_CHARS).toBe(true);
   });
 });

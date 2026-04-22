@@ -1,0 +1,34 @@
+# STORY-018 - Stack Entry Context Enrichment (Player + Targeting)
+
+- title: Enrich each stack entry with explicit caster and targeting context so prompt input is more deterministic and perspective-agnostic.
+- user value: As a player, I can describe stack interactions more accurately because each card includes who cast it, what it targets, and key contextual notes for resolution explanation.
+- scope:
+  - extend stack entry data model to include `caster` using explicit labels (`Player 1`, `Player 2`)
+  - add typed targeting context per stack entry for common target kinds:
+    - stack target (another spell/ability on stack)
+    - battlefield target (named permanent)
+    - player target (`Player 1` or `Player 2`)
+  - add optional per-entry context notes for relevant edge context (for example: alternate cost, copy source, kicker/extra mode notes)
+  - update frontend stack-entry capture/edit flow to collect and persist the new context fields
+  - update backend request validation and prompt-context building so enriched fields are normalized and included deterministically
+  - preserve existing stack order semantics (`stack[0]` is bottom) and current API route shape while extending entry contents
+  - add/update tests across frontend and backend for enriched context serialization and prompt-context output
+- acceptance criteria:
+  - users can assign each stack entry to `Player 1` or `Player 2`
+  - users can provide zero-or-more typed targets per stack entry across stack/battlefield/player kinds
+  - enriched context appears in backend prompt context output in deterministic format
+  - existing Decrypt flow remains functional when optional enrichment fields are omitted
+  - request validation rejects invalid caster labels or malformed target payloads with clear errors
+  - frontend and backend test suites include representative coverage for enriched entries and still pass
+- execution mode: parallel-ready
+- dependencies:
+  - REQ-012, REQ-013
+  - DEC-004, DEC-010, DEC-017
+  - NFR-005
+  - `sections/integrations-and-data.md` (contract + prompt context sections)
+- exclusions:
+  - no gameplay legality/rules-engine behavior
+  - no full board-state simulation
+  - no multiplayer expansion beyond `Player 1` / `Player 2` labels
+  - no additional product-facing backend endpoints
+  - no Bedrock invocation changes in this story

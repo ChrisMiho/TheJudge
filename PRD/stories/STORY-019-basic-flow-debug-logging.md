@@ -1,0 +1,37 @@
+# STORY-019 - Basic Flow Debug Logging (Frontend + Backend)
+
+- title: Add lightweight structured logging across frontend and backend so MVP1 flow issues can be debugged and request flow can be validated quickly.
+- user value: As a developer validating live flow behavior, I can see consistent step-by-step logs for key UI and API events, making failures and ordering issues faster to diagnose.
+- scope:
+  - add frontend debug logs for key user-flow milestones:
+    - card selected for preview
+    - card added to stack (including updated stack size)
+    - Decrypt submit attempted (including stack size and whether fallback question is used)
+    - Decrypt success and failure states
+  - add backend logs for `POST /api/ask-ai` lifecycle:
+    - request received
+    - request validation outcome
+    - prompt-context build start/complete
+    - mock provider invocation start/complete
+    - response success or handled failure
+  - include a lightweight per-request correlation id passed from frontend to backend and echoed in related logs
+  - keep logs developer-oriented and minimal, with stable event names and concise structured payload fields
+  - ensure logging can be disabled or reduced outside debugging mode using existing environment/config patterns
+- acceptance criteria:
+  - frontend emits debug logs for the defined flow milestones without changing user-facing behavior
+  - backend emits debug logs for the defined request lifecycle stages without changing API contracts
+  - a single Decrypt attempt can be traced end-to-end using correlation id across frontend and backend logs
+  - log output does not include secrets or unnecessary sensitive user text beyond what is required for flow debugging
+  - when debug logging is disabled, normal app behavior and request/response flow remain unchanged
+  - existing tests remain green and focused tests cover logging-enabled flow traceability at least at one representative path
+- execution mode: parallel-ready
+- dependencies:
+  - REQ-011, REQ-012, REQ-013, REQ-014
+  - DEC-009, DEC-010, DEC-011, DEC-014, DEC-017
+  - NFR-002, NFR-005, NFR-007
+- exclusions:
+  - no external observability platform integration (for example Datadog, OpenTelemetry, or cloud log pipelines)
+  - no new product-facing backend endpoints
+  - no persistent analytics/event-warehouse tracking
+  - no UI redesign for developer tooling beyond current flow surfaces
+  - no Bedrock Phase B integration changes

@@ -16,6 +16,9 @@ typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
+caster: Player 1
+targets: (none)
+contextNotes: (none)
 oracleText: Your opponents can't cast spells this turn.
 
 Card 2 (top)
@@ -27,4 +30,7 @@ typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
+caster: Player 1
+targets: (none)
+contextNotes: (none)
 oracleText: Counter target spell unless its controller pays 3.

@@ -1,4 +1,4 @@
-import type { StackItem } from "../types";
+import type { CardMetadataItem } from "../types";
 
 export const NO_MATCH_COPY = "No matching card found";
 
@@ -38,7 +38,7 @@ export function isFuzzyMatch(candidateName: string, query: string): boolean {
   return levenshteinDistance(normalizedCandidate, normalizedQuery) <= 2;
 }
 
-export function getSuggestions(cards: StackItem[], query: string): StackItem[] {
+export function getSuggestions(cards: CardMetadataItem[], query: string): CardMetadataItem[] {
   if (query.trim().length < 3) return [];
   return cards.filter((card) => isFuzzyMatch(card.name, query)).slice(0, 3);
 }

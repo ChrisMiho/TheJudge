@@ -28,6 +28,30 @@ function formatList(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "(none)";
 }
 
+function formatTargets(targets: PromptContext["orderedStack"][number]["targets"]): string {
+  if (targets.length === 0) {
+    return "(none)";
+  }
+
+  return targets
+    .map((target) => {
+      if (target.kind === "none") {
+        return "none:does-not-target";
+      }
+
+      if (target.kind === "player") {
+        return `player:${target.targetPlayer}`;
+      }
+
+      if (target.kind === "battlefield") {
+        return `battlefield:${target.targetPermanent}`;
+      }
+
+      return `stack:${target.targetCardName} (${target.targetCardId})`;
+    })
+    .join(" | ");
+}
+
 export function buildPromptText(context: PromptContext): string {
   const cardsSection = context.orderedStack
     .map(
@@ -42,6 +66,9 @@ export function buildPromptText(context: PromptContext): string {
           `colors: ${formatList(card.colors)}`,
           `supertypes: ${formatList(card.supertypes)}`,
           `subtypes: ${formatList(card.subtypes)}`,
+          `caster: ${card.caster}`,
+          `targets: ${formatTargets(card.targets)}`,
+          `contextNotes: ${card.contextNotes || "(none)"}`,
           `oracleText: ${card.oracleText}`
         ].join("\n")
     )

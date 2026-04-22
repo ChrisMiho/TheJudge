@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { StackItem } from "../types";
+import type { CardMetadataItem, StackItem } from "../types";
 import {
   appendToStack,
   buildAskAiRequest,
+  buildStackItemFromMetadata,
+  DEFAULT_CASTER,
   DEFAULT_QUESTION,
   DUPLICATE_CARD_MESSAGE,
   MAX_STACK_SIZE,
@@ -11,7 +13,7 @@ import {
   validateStackAdd
 } from "./stackState";
 
-function createCard(cardId: string, name: string): StackItem {
+function createMetadataCard(cardId: string, name: string): CardMetadataItem {
   return {
     cardId,
     name,
@@ -26,46 +28,60 @@ function createCard(cardId: string, name: string): StackItem {
   };
 }
 
+function createStackCard(cardId: string, name: string): StackItem {
+  return buildStackItemFromMetadata(createMetadataCard(cardId, name));
+}
+
 describe("stack state helpers", () => {
   it("falls back to default question when input is empty", () => {
-    const card = createCard("opt", "Opt");
+    const card = createStackCard("opt", "Opt");
     const request = buildAskAiRequest("   ", [card]);
     expect(request.question).toBe(DEFAULT_QUESTION);
   });
 
   it("uses trimmed user question when provided", () => {
-    const card = createCard("opt", "Opt");
+    const card = createStackCard("opt", "Opt");
     const request = buildAskAiRequest("  What happens? ", [card]);
     expect(request.question).toBe("What happens?");
   });
 
   it("rejects duplicate card adds", () => {
-    const stack = [createCard("opt", "Opt")];
-    const result = validateStackAdd(stack, createCard("opt", "Opt"));
+    const stack = [createStackCard("opt", "Opt")];
+    const result = validateStackAdd(stack, createStackCard("opt", "Opt"));
     expect(result).toEqual({ ok: false, message: DUPLICATE_CARD_MESSAGE });
   });
 
   it("rejects adds when stack is at max size", () => {
     const fullStack = Array.from({ length: MAX_STACK_SIZE }, (_, index) =>
-      createCard(`card-${index}`, `Card ${index}`)
+      createStackCard(`card-${index}`, `Card ${index}`)
     );
-    const result = validateStackAdd(fullStack, createCard("new-card", "New Card"));
+    const result = validateStackAdd(fullStack, createStackCard("new-card", "New Card"));
     expect(result).toEqual({ ok: false, message: STACK_LIMIT_MESSAGE });
   });
 
   it("appends card to end to preserve bottom-to-top order", () => {
-    const initial = [createCard("opt", "Opt")];
-    const updated = appendToStack(initial, createCard("bolt", "Lightning Bolt"));
+    const initial = [createStackCard("opt", "Opt")];
+    const updated = appendToStack(initial, createStackCard("bolt", "Lightning Bolt"));
     expect(updated.map((card) => card.name)).toEqual(["Opt", "Lightning Bolt"]);
   });
 
   it("removes one card by id and keeps order of remaining cards", () => {
     const stack = [
-      createCard("opt", "Opt"),
-      createCard("counterspell", "Counterspell"),
-      createCard("bolt", "Lightning Bolt")
+      createStackCard("opt", "Opt"),
+      createStackCard("counterspell", "Counterspell"),
+      createStackCard("bolt", "Lightning Bolt")
     ];
     const updated = removeFromStackById(stack, "counterspell");
     expect(updated.map((card) => card.name)).toEqual(["Opt", "Lightning Bolt"]);
+  });
+
+  it("builds stack entries with default caster and trimmed optional notes", () => {
+    const entry = buildStackItemFromMetadata(createMetadataCard("bolt", "Lightning Bolt"), {
+      contextNotes: "  kicked  "
+    });
+
+    expect(entry.caster).toBe(DEFAULT_CASTER);
+    expect(entry.targets).toEqual([]);
+    expect(entry.contextNotes).toBe("kicked");
   });
 });

@@ -27,8 +27,61 @@ function normalizeOptionalList(values: string[] | undefined): string[] {
   return normalizeTagList(values ?? []);
 }
 
+function normalizeStackTarget(
+  target: AskAiRequest["stack"][number]["targets"][number]
+): AskAiRequest["stack"][number]["targets"][number] | null {
+  if (target.kind === "none") {
+    return { kind: "none" };
+  }
+
+  if (target.kind === "player") {
+    return { kind: "player", targetPlayer: target.targetPlayer };
+  }
+
+  if (target.kind === "battlefield") {
+    const targetPermanent = normalizeWhitespace(target.targetPermanent);
+    if (targetPermanent.length === 0) {
+      return null;
+    }
+
+    return {
+      kind: "battlefield",
+      targetPermanent
+    };
+  }
+
+  const targetCardId = normalizeWhitespace(target.targetCardId);
+  const targetCardName = normalizeWhitespace(target.targetCardName);
+
+  if (targetCardId.length === 0 || targetCardName.length === 0) {
+    return null;
+  }
+
+  return {
+    kind: "stack",
+    targetCardId,
+    targetCardName
+  };
+}
+
+function normalizeTargets(
+  targets: AskAiRequest["stack"][number]["targets"] | undefined
+): AskAiRequest["stack"][number]["targets"] {
+  const normalized = (targets ?? [])
+    .map((target) => normalizeStackTarget(target))
+    .filter((target): target is AskAiRequest["stack"][number]["targets"][number] => target !== null);
+
+  return normalized;
+}
+
 function normalizeOptionalNumber(value: number | undefined): number {
   return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : 0;
+}
+
+function normalizeCaster(value: AskAiRequest["stack"][number]["caster"]): AskAiRequest["stack"][number]["caster"] {
+  return value === "Player 1" || value === "Player 2" || value === "Player 3" || value === "Player 4"
+    ? value
+    : "Player 1";
 }
 
 export function buildPromptContext(payload: AskAiRequest): PromptContext {
@@ -47,6 +100,9 @@ export function buildPromptContext(payload: AskAiRequest): PromptContext {
       colors: normalizeOptionalList(card.colors),
       supertypes: normalizeOptionalList(card.supertypes),
       subtypes: normalizeOptionalList(card.subtypes),
+      caster: normalizeCaster(card.caster),
+      targets: normalizeTargets(card.targets),
+      contextNotes: normalizeOptionalText(card.contextNotes) || undefined,
       stackIndex,
       stackRole: toStackRole(stackIndex, stack.length)
     }))

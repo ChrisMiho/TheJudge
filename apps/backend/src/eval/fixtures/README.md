@@ -22,7 +22,9 @@ This folder stores fixture-driven golden cases for context and prompt evaluation
         "cardId": "opt",
         "name": "Opt",
         "oracleText": "Scry 1, then draw a card.",
-        "imageUrl": ""
+        "imageUrl": "",
+        "caster": "Player 1",
+        "targets": []
       }
     ]
   }

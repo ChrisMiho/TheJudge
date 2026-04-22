@@ -125,3 +125,7 @@ Current trunk slice branch: `feat/frontend-flow-tests`
 - [x] Replace empty-state asset with `cats-homescreen.png` and remove surrounding frame so photo is centered-only (`STORY-015`).
 - [x] Establish engineering quality guardrails and enforceable repository-level validation gates (`STORY-016`).
 - [x] Remediate current high-churn hotspots via modular refactor with regression-safe tests (`STORY-017`).
+- [x] Enrich stack entries with explicit caster labels and typed targeting context for improved LLM prompt readiness (`STORY-018`).
+- [x] Add lightweight frontend/backend debug logging with end-to-end correlation-id traceability for flow validation (`STORY-019`).
+- [x] Wire enriched stack-entry context fields into deterministic backend prompt/mock output (`STORY-020`).
+- [x] Expand caster/player-target labels to support up to four players across UI/backend contracts (`STORY-021`).

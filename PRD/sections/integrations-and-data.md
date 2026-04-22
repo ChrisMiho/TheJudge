@@ -29,6 +29,13 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - `colors: string[]`
 - `supertypes: string[]`
 - `subtypes: string[]`
+- `caster: "Player 1" | "Player 2" | "Player 3" | "Player 4"`
+- `targets: StackTarget[]` where each target is one of:
+  - `{ kind: "stack", targetCardId: string, targetCardName: string }`
+  - `{ kind: "battlefield", targetPermanent: string }`
+  - `{ kind: "player", targetPlayer: "Player 1" | "Player 2" | "Player 3" | "Player 4" }`
+  - `{ kind: "none" }`
+- `contextNotes?: string`
 
 ### AskAiRequest
 - `question: string`
@@ -81,7 +88,13 @@ Purpose:
           "typeLine": "string",
           "colors": ["W", "U"],
           "supertypes": ["Legendary"],
-          "subtypes": ["Wizard"]
+          "subtypes": ["Wizard"],
+          "caster": "Player 1",
+          "targets": [
+            { "kind": "player", "targetPlayer": "Player 3" },
+            { "kind": "none" }
+          ],
+          "contextNotes": "optional freeform context"
         }
       ]
     }

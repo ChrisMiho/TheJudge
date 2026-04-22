@@ -1,8 +1,11 @@
+import { resolveDebugLoggingEnabled } from "./logging.js";
+
 const DEFAULT_PORT = 3000;
 
 export type ServerConfig = {
   port: number;
   frontendOrigin?: string;
+  debugLoggingEnabled: boolean;
 };
 
 function parsePort(rawPort: string | undefined): number {
@@ -42,6 +45,7 @@ function parseFrontendOrigin(rawOrigin: string | undefined): string | undefined 
 export function readServerConfig(env: NodeJS.ProcessEnv): ServerConfig {
   return {
     port: parsePort(env.PORT),
-    frontendOrigin: parseFrontendOrigin(env.FRONTEND_ORIGIN)
+    frontendOrigin: parseFrontendOrigin(env.FRONTEND_ORIGIN),
+    debugLoggingEnabled: resolveDebugLoggingEnabled(env.DEBUG_LOGGING, env.NODE_ENV)
   };
 }

@@ -16,4 +16,7 @@ typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
+caster: Player 1
+targets: (none)
+contextNotes: (none)
 oracleText: Scry 1, then draw a card.
