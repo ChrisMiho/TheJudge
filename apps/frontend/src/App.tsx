@@ -1,48 +1,12 @@
-import { FormEvent, useMemo, useState } from "react";
-import cardMetadataRaw from "./data/cardMetadata.json";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { getSuggestions } from "./lib/search";
 import type { AskAiError, AskAiRequest, AskAiResponse, StackItem } from "./types";
 
 const MAX_STACK_SIZE = 10;
 const RETRY_COOLDOWN_SECONDS = 13;
 const DEFAULT_QUESTION = "Resolve the stack";
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
-const cardMetadata = cardMetadataRaw as StackItem[];
-
-function normalize(input: string): string {
-  return input.trim().toLowerCase();
-}
-
-function levenshteinDistance(a: string, b: string): number {
-  if (a.length === 0) return b.length;
-  if (b.length === 0) return a.length;
-
-  const matrix: number[][] = Array.from({ length: b.length + 1 }, () =>
-    Array(a.length + 1).fill(0)
-  );
-
-  for (let i = 0; i <= b.length; i += 1) matrix[i][0] = i;
-  for (let j = 0; j <= a.length; j += 1) matrix[0][j] = j;
-
-  for (let i = 1; i <= b.length; i += 1) {
-    for (let j = 1; j <= a.length; j += 1) {
-      const substitutionCost = a[j - 1] === b[i - 1] ? 0 : 1;
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1,
-        matrix[i][j - 1] + 1,
-        matrix[i - 1][j - 1] + substitutionCost
-      );
-    }
-  }
-
-  return matrix[b.length][a.length];
-}
-
-function isFuzzyMatch(candidateName: string, query: string): boolean {
-  const normalizedCandidate = normalize(candidateName);
-  const normalizedQuery = normalize(query);
-  if (normalizedCandidate.includes(normalizedQuery)) return true;
-  return levenshteinDistance(normalizedCandidate, normalizedQuery) <= 2;
-}
+const METADATA_URL = "/data/cardMetadata.json";
 
 function getFinalQuestion(question: string): string {
   const trimmed = question.trim();
@@ -50,6 +14,9 @@ function getFinalQuestion(question: string): string {
 }
 
 export default function App() {
+  const [cardMetadata, setCardMetadata] = useState<StackItem[]>([]);
+  const [isMetadataLoading, setIsMetadataLoading] = useState(true);
+  const [metadataLoadError, setMetadataLoadError] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
   const [selectedCard, setSelectedCard] = useState<StackItem | null>(null);
   const [stack, setStack] = useState<StackItem[]>([]);
@@ -61,10 +28,41 @@ export default function App() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [retryCountdown, setRetryCountdown] = useState(0);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadMetadata() {
+      setIsMetadataLoading(true);
+      setMetadataLoadError(null);
+
+      try {
+        const response = await fetch(METADATA_URL, { signal: controller.signal });
+        if (!response.ok) {
+          throw new Error(`Metadata fetch failed with status ${response.status}`);
+        }
+
+        const payload = (await response.json()) as StackItem[];
+        setCardMetadata(payload);
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setMetadataLoadError("Card data could not be loaded. Refresh to try again.");
+          console.error(error);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsMetadataLoading(false);
+        }
+      }
+    }
+
+    void loadMetadata();
+
+    return () => controller.abort();
+  }, []);
+
   const suggestions = useMemo(() => {
-    if (searchInput.trim().length < 3) return [];
-    return cardMetadata.filter((card) => isFuzzyMatch(card.name, searchInput)).slice(0, 8);
-  }, [searchInput]);
+    return getSuggestions(cardMetadata, searchInput);
+  }, [cardMetadata, searchInput]);
 
   const addButtonLabel = stack.length === 0 ? "Begin stackening!" : "Add to Stack";
   const canRetry = retryCountdown === 0 && !isSubmitting;
@@ -202,11 +200,22 @@ export default function App() {
             placeholder="Type to begin"
             className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-100 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
           />
+          <p className="mt-1 text-[11px] normal-case tracking-normal text-slate-400">
+            {isMetadataLoading
+              ? "Loading card index..."
+              : metadataLoadError
+                ? metadataLoadError
+                : `${cardMetadata.length.toLocaleString()} cards ready`}
+          </p>
         </label>
 
         {searchInput.trim().length >= 3 && (
           <div className="rounded-xl border border-slate-600 bg-slate-800/70 p-2">
-            {suggestions.length === 0 ? (
+            {isMetadataLoading ? (
+              <p className="px-2 py-1 text-sm text-slate-400">Loading cards...</p>
+            ) : metadataLoadError ? (
+              <p className="px-2 py-1 text-sm text-rose-300">{metadataLoadError}</p>
+            ) : suggestions.length === 0 ? (
               <p className="px-2 py-1 text-sm text-slate-400">No matching card found</p>
             ) : (
               <ul className="flex flex-col gap-1">
