@@ -23,6 +23,12 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - `name: string`
 - `oracleText: string`
 - `imageUrl: string`
+- `manaCost: string`
+- `manaValue: number`
+- `typeLine: string`
+- `colors: string[]`
+- `supertypes: string[]`
+- `subtypes: string[]`
 
 ### AskAiRequest
 - `question: string`
@@ -69,7 +75,13 @@ Purpose:
           "cardId": "string",
           "name": "string",
           "oracleText": "string",
-          "imageUrl": "string"
+          "imageUrl": "string",
+          "manaCost": "string",
+          "manaValue": 0,
+          "typeLine": "string",
+          "colors": ["W", "U"],
+          "supertypes": ["Legendary"],
+          "subtypes": ["Wizard"]
         }
       ]
     }
@@ -90,6 +102,8 @@ Purpose:
 ## Metadata Strategy
 - use a static prebuilt metadata file committed with the app
 - local metadata powers autocomplete and preview
+- filter source records to english, paper-playable, non-digital cards with a non-empty name
+- dedupe by normalized card name with deterministic tie-breaks (higher metadata completeness, then later release date, then stable ID)
 - do not implement runtime sync/refresh in MVP1
 - do not cache all card images in MVP1
 - load images on demand
@@ -99,9 +113,15 @@ The backend should include:
 - final user question
 - ordered stack
 - oracle text for each card
+- mana cost and mana value for each card
+- type line with parsed supertypes/subtypes and colors
 - instructions to explain reasoning
 - instructions to state uncertainty
 - instructions not to invent hidden state
+
+The backend mock/debug response should:
+- include explicit stack-order metadata (`stackOrderConvention`, `stackIndex`, `stackRole`)
+- omit `imageUrl` from LLM-facing debug payload output
 
 The backend may include:
 - assume a Magic game with 2 or more players

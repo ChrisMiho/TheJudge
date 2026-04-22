@@ -1,0 +1,27 @@
+# STORY-011 - Stack Details and Count Regression Coverage
+
+- title: Add explicit frontend regression coverage for stack icon count and stack details/remove behavior.
+- user value: As a player, I can trust stack inspection and editing because count, ordering, and removal behavior stay stable across updates.
+- scope:
+  - add frontend integration-style coverage for stack icon visibility and badge count updates
+  - add coverage for opening stack details UI and listing cards bottom-to-top
+  - add coverage for removing one or more cards from stack details and reflecting updated count
+  - validate details-row behavior with and without thumbnail image availability
+  - keep assertions focused on behavior, not visual styling implementation details
+- acceptance criteria:
+  - tests verify stack icon appears when stack has cards and count matches stack size
+  - tests verify stack details view opens from icon interaction
+  - tests verify details rows render bottom-to-top with remove controls
+  - tests verify removing cards updates both details list and stack count correctly
+  - tests verify rows remain usable when thumbnail image load fails or is unavailable
+  - tests run in CI and fail on stack-details/count regressions
+- dependencies:
+  - REQ-007, REQ-008
+  - FLOW-002
+  - DEC-004, DEC-018
+  - NFR-001, NFR-005
+- exclusions:
+  - no manual stack reorder feature
+  - no redesign of stack details visual style
+  - no backend API contract changes
+  - no Bedrock integration work

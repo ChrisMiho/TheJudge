@@ -3,6 +3,12 @@ export type StackItem = {
   name: string;
   oracleText: string;
   imageUrl: string;
+  manaCost: string;
+  manaValue: number;
+  typeLine: string;
+  colors: string[];
+  supertypes: string[];
+  subtypes: string[];
 };
 
 export type AskAiRequest = {

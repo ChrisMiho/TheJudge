@@ -1,11 +1,44 @@
 import { describe, expect, it } from "vitest";
 import type { StackItem } from "../types";
-import { getSuggestions, isFuzzyMatch, levenshteinDistance } from "./search";
+import { getSuggestions, isFuzzyMatch, levenshteinDistance, NO_MATCH_COPY } from "./search";
 
 const sampleCards: StackItem[] = [
-  { cardId: "1", name: "Lightning Bolt", oracleText: "Deal 3 damage.", imageUrl: "" },
-  { cardId: "2", name: "Counterspell", oracleText: "Counter target spell.", imageUrl: "" },
-  { cardId: "3", name: "Brainstorm", oracleText: "Draw three cards.", imageUrl: "" }
+  {
+    cardId: "1",
+    name: "Lightning Bolt",
+    oracleText: "Deal 3 damage.",
+    imageUrl: "",
+    manaCost: "{R}",
+    manaValue: 1,
+    typeLine: "Instant",
+    colors: ["R"],
+    supertypes: [],
+    subtypes: []
+  },
+  {
+    cardId: "2",
+    name: "Counterspell",
+    oracleText: "Counter target spell.",
+    imageUrl: "",
+    manaCost: "{U}{U}",
+    manaValue: 2,
+    typeLine: "Instant",
+    colors: ["U"],
+    supertypes: [],
+    subtypes: []
+  },
+  {
+    cardId: "3",
+    name: "Brainstorm",
+    oracleText: "Draw three cards.",
+    imageUrl: "",
+    manaCost: "{U}",
+    manaValue: 1,
+    typeLine: "Instant",
+    colors: ["U"],
+    supertypes: [],
+    subtypes: []
+  }
 ];
 
 describe("search helpers", () => {
@@ -29,15 +62,34 @@ describe("search helpers", () => {
     expect(result[0].name).toBe("Lightning Bolt");
   });
 
-  it("limits suggestion count to 8", () => {
+  it("returns suggestions for partial multiword and typo-like queries", () => {
+    expect(getSuggestions(sampleCards, "lightning bol").map((card) => card.name)).toContain("Lightning Bolt");
+    expect(getSuggestions(sampleCards, "brianstorm").map((card) => card.name)).toContain("Brainstorm");
+  });
+
+  it("returns empty list for no-match queries", () => {
+    expect(getSuggestions(sampleCards, "zzzzzzzz")).toEqual([]);
+  });
+
+  it("keeps expected no-match UX copy constant", () => {
+    expect(NO_MATCH_COPY).toBe("No matching card found");
+  });
+
+  it("limits suggestion count to 3", () => {
     const largeSet = Array.from({ length: 20 }, (_, index) => ({
       cardId: String(index),
       name: `Card Name ${index}`,
       oracleText: "text",
-      imageUrl: ""
+      imageUrl: "",
+      manaCost: "",
+      manaValue: 0,
+      typeLine: "",
+      colors: [],
+      supertypes: [],
+      subtypes: []
     }));
 
     const result = getSuggestions(largeSet, "Card");
-    expect(result).toHaveLength(8);
+    expect(result).toHaveLength(3);
   });
 });

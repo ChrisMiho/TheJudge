@@ -1,25 +1,36 @@
-# STORY-010 - Metadata Filtering and Dedupe Policy Tuning
+# STORY-010 - Metadata Search Policy and Regression Tests
 
-- title: Tune metadata filtering and dedupe policy so gameplay-relevant search results are realistic while staying fast.
-- user value: As a player, I can find the expected card quickly without noisy duplicate-like suggestions that slow stack building.
+- title: Define deterministic metadata filtering and dedupe policy, then lock behavior with transform and search regression tests.
+- user value: As a player, I can find the expected card quickly because metadata behavior is tuned for gameplay relevance and guarded by stable tests.
 - scope:
   - review current metadata transform filtering and dedupe behavior used for search/autocomplete
   - define deterministic inclusion/exclusion rules for gameplay-relevant records
   - define deterministic dedupe keys and tie-break strategy for retained records
   - preserve compatibility with existing metadata file loading and search flow
   - document the tuned policy so future metadata refreshes remain consistent
+  - add tests that validate metadata transform output shape and required fields
+  - add tests for stable transform behavior on representative source inputs
+  - add broader search scenario tests using realistic card-name patterns and typo-tolerance paths
+  - verify no-match behavior and suggestion threshold behavior remain intact
+  - keep tests fast and deterministic for local and CI execution
 - acceptance criteria:
   - transform applies one explicit filtering policy before output generation
   - transform applies one explicit dedupe policy with deterministic tie-breaks
-  - resulting metadata still supports suggestions at 3+ typed characters
+  - tests fail if transform output shape changes unexpectedly
+  - tests cover representative match, partial match, typo-like input, and no-match search paths
+  - tests verify suggestions appear only at 3+ typed characters
+  - tests verify no-match copy remains **No matching card found**
   - no runtime metadata sync/refresh is introduced
   - policy is documented in backend/frontend data notes or fixture guidance
+  - `npm run test` in affected workspaces passes with the new coverage
 - dependencies:
-  - REQ-002, REQ-003
-  - DEC-012
+  - REQ-001, REQ-002, REQ-003
+  - DEC-012, DEC-015
   - NFR-002, NFR-004, NFR-005
   - `sections/integrations-and-data.md` (Metadata Strategy)
 - exclusions:
+  - no visual/UI styling changes
+  - no backend API contract changes
   - no Bedrock integration work
   - no gameplay legality engine
   - no full-card-data runtime loading in frontend bundle

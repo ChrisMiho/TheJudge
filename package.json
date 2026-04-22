@@ -11,6 +11,7 @@
     "dev:frontend": "npm --workspace apps/frontend run dev",
     "dev:backend": "npm --workspace apps/backend run dev",
     "build": "npm --workspace apps/frontend run build && npm --workspace apps/backend run build",
-    "data:build": "node scripts/build-card-metadata.mjs"
+    "data:build": "node scripts/build-card-metadata.mjs",
+    "data:refresh": "node scripts/refresh-scryfall-data.mjs"
   }
 }

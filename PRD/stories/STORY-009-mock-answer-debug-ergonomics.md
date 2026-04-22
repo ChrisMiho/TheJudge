@@ -24,3 +24,5 @@
   - no change to frontend rendering contract beyond consuming plain text `answer`
   - no introduction of rich markdown rendering requirements
   - no additional product-facing API endpoints
+  - no metadata policy/search behavior changes (tracked in `STORY-010`)
+  - no environment/deployment base-URL configuration work (tracked in `STORY-007`)

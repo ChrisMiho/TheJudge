@@ -6,6 +6,12 @@
       "name": "Lightning Bolt",
       "oracleText": "Lightning Bolt deals 3 damage to any target.",
       "imageUrl": "",
+      "manaCost": "",
+      "manaValue": 0,
+      "typeLine": "",
+      "colors": [],
+      "supertypes": [],
+      "subtypes": [],
       "stackIndex": 0,
       "stackRole": "bottom"
     },
@@ -14,6 +20,12 @@
       "name": "Counterspell",
       "oracleText": "Counter target spell.",
       "imageUrl": "",
+      "manaCost": "",
+      "manaValue": 0,
+      "typeLine": "",
+      "colors": [],
+      "supertypes": [],
+      "subtypes": [],
       "stackIndex": 1,
       "stackRole": "middle"
     },
@@ -22,6 +34,12 @@
       "name": "Deflecting Swat",
       "oracleText": "You may choose new targets for target spell or ability.",
       "imageUrl": "",
+      "manaCost": "",
+      "manaValue": 0,
+      "typeLine": "",
+      "colors": [],
+      "supertypes": [],
+      "subtypes": [],
       "stackIndex": 2,
       "stackRole": "top"
     }

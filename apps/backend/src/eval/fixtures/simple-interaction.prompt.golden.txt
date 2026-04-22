@@ -10,4 +10,10 @@ ORDERED STACK (BOTTOM TO TOP)
 Card 1 (top)
 cardId: opt
 name: Opt
+manaCost: (none)
+manaValue: 0
+typeLine: (none)
+colors: (none)
+supertypes: (none)
+subtypes: (none)
 oracleText: Scry 1, then draw a card.

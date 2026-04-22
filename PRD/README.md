@@ -101,11 +101,13 @@ Read in this order:
 
 ## Implementation Snapshot
 - Frontend and backend workspaces are implemented under `apps/frontend` and `apps/backend`.
-- Frontend currently supports search, preview, add/remove stack, duplicate block, stack cap, optional question, and Decrypt Stack flow.
+- Frontend currently supports search, preview with card-context panel, add/remove stack, duplicate block, stack cap, optional question, and Decrypt Stack flow.
 - Backend `POST /api/ask-ai` is implemented with validation and Phase A mock response contract.
 - Local Scryfall bulk data is stored at `apps/frontend/data/scryfall/default-cards.json`.
 - Trimmed metadata generation is implemented via `npm run data:build` and outputs `apps/frontend/public/data/cardMetadata.json`.
+- Metadata can be refreshed end-to-end with `npm run data:refresh` (downloads latest Scryfall `default_cards` then rebuilds trimmed metadata).
 - Frontend now loads metadata at runtime from `/data/cardMetadata.json` to avoid bundling the full dataset in the main JS chunk.
+- Metadata transform now includes enriched stack-context fields (mana cost/value, type line, colors, supertypes/subtypes) and deterministic latest-printing tie-break behavior.
 - Lightweight automated tests exist for frontend search helpers and backend API contracts.
 - Root dev workflow is available with `npm run dev` for running frontend and backend together.
 
@@ -113,7 +115,8 @@ Read in this order:
 Current trunk slice branch: `feat/frontend-flow-tests`
 
 - [x] Keep static metadata strategy (DEC-012) but reduce frontend initial bundle impact from large metadata payloads.
-- [ ] Add tests for metadata transform output shape and expand search behavior against representative card samples.
+- [x] Complete merged metadata policy+tests slice (`STORY-010`, with former `STORY-005` scope): deterministic filtering/dedupe plus transform/search regression coverage.
 - [ ] Add UI-focused frontend coverage for search/add/decrypt flows (backend validation contract tests are implemented).
-- [ ] Prepare a clean interface boundary for eventual Bedrock Phase B integration without changing request/response contracts.
+- [ ] Add explicit UI regression stories for stack details/count, duplicate/cap constraints, and Decrypt failure-state resilience (`STORY-011` to `STORY-013`).
+- [ ] Prepare a clean interface boundary for eventual Bedrock Phase B integration without changing request/response contracts (`STORY-014`).
 - [ ] Replace emoji empty-state visual with a bundled static cat-wizard asset if approved.

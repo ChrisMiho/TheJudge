@@ -10,14 +10,32 @@ ORDERED STACK (BOTTOM TO TOP)
 Card 1 (bottom)
 cardId: lightning-bolt
 name: Lightning Bolt
+manaCost: (none)
+manaValue: 0
+typeLine: (none)
+colors: (none)
+supertypes: (none)
+subtypes: (none)
 oracleText: Lightning Bolt deals 3 damage to any target.
 
 Card 2 (middle)
 cardId: counterspell
 name: Counterspell
+manaCost: (none)
+manaValue: 0
+typeLine: (none)
+colors: (none)
+supertypes: (none)
+subtypes: (none)
 oracleText: Counter target spell.
 
 Card 3 (top)
 cardId: deflecting-swat
 name: Deflecting Swat
+manaCost: (none)
+manaValue: 0
+typeLine: (none)
+colors: (none)
+supertypes: (none)
+subtypes: (none)
 oracleText: You may choose new targets for target spell or ability.
