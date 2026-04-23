@@ -16,6 +16,10 @@ export type StackTarget =
     }
   | {
       kind: "none";
+    }
+  | {
+      kind: "other";
+      targetDescription: string;
     };
 
 export type CardMetadataItem = {

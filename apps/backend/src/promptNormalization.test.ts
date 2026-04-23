@@ -53,7 +53,8 @@ const baseContext: PromptContext = {
       caster: "Player 3",
       targets: [
         { kind: "stack", targetCardId: "card-1", targetCardName: "Opt" },
-        { kind: "none" }
+        { kind: "none" },
+        { kind: "other", targetDescription: "custom context target" }
       ],
       manaSpent: 5,
       contextNotes: "kicker paid",
@@ -106,7 +107,7 @@ describe("buildPromptText", () => {
     expect(prompt).toContain("playerCount: 2");
     expect(prompt).toContain("caster: Player 3");
     expect(prompt).toContain("manaSpent: 5");
-    expect(prompt).toContain("targets: stack:Opt (card-1) | none:does-not-target");
+    expect(prompt).toContain("targets: stack:Opt (card-1) | none:does-not-target | other:custom context target");
   });
 
   it("stays under configured prompt budget for normal payloads", () => {

@@ -250,6 +250,28 @@ describe("App MVP interaction flows", () => {
     });
   });
 
+  it("supports an other-target context option with freeform text", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await openStackBuilder(user);
+    await selectCard(user, "opt", "Opt");
+    await user.selectOptions(screen.getByLabelText("Entry target kind"), "other");
+    await user.type(screen.getByLabelText("Entry other target"), "Target defined by delayed trigger context");
+    await user.click(screen.getByRole("button", { name: "Add entry target" }));
+    await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
+    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+
+    const requestBody = await waitFor(() => {
+      expect(submittedAskAiRequests.length).toBeGreaterThan(0);
+      return submittedAskAiRequests[0];
+    });
+
+    expect(requestBody.stack[0]?.targets).toEqual([
+      { kind: "other", targetDescription: "Target defined by delayed trigger context" }
+    ]);
+  });
+
   it("lets users edit caster and targeting context from stack details", async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -314,14 +336,12 @@ describe("App MVP interaction flows", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("shows bundled empty-state cat-wizard asset with graceful fallback", async () => {
-    const user = userEvent.setup();
+  it("shows bundled cat-wizard asset on game-context first screen with graceful fallback", async () => {
     render(<App />);
-    await openStackBuilder(user);
 
     const emptyStateImage = screen.getByRole("img", { name: "Cat wizard" });
     expect(emptyStateImage).toHaveAttribute("src", "/assets/cats-homescreen.png");
-    expect(screen.getByPlaceholderText("Type to begin")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
 
     fireEvent.error(emptyStateImage);
     expect(screen.getByText("Cat wizard")).toBeInTheDocument();
@@ -519,10 +539,13 @@ describe("App MVP interaction flows", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
-    await user.type(screen.getByLabelText("Battlefield item name"), "Rhystic Study");
+    await user.type(screen.getByLabelText("Battlefield search input"), "lig");
+    await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
     await user.selectOptions(screen.getByLabelText("Battlefield target kind"), "none");
     await user.click(screen.getByRole("button", { name: "Add battlefield target" }));
+    expect(screen.getByRole("button", { name: "Skip battlefield context" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Add battlefield item" }));
+    expect(screen.getByRole("button", { name: "Continue to stack" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Continue to stack" }));
     await waitForMetadataReady();
 
@@ -533,6 +556,12 @@ describe("App MVP interaction flows", () => {
       expect(submittedAskAiRequests.length).toBeGreaterThan(0);
       return submittedAskAiRequests[0];
     });
-    expect(requestBody.battlefieldContext).toEqual([{ name: "Rhystic Study", targets: [{ kind: "none" }] }]);
+    expect(requestBody.battlefieldContext).toEqual([
+      {
+        name: "Lightning Bolt",
+        details: "Lightning Bolt deals 3 damage to any target.",
+        targets: [{ kind: "none" }]
+      }
+    ]);
   });
 });

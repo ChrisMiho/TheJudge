@@ -41,6 +41,10 @@ function formatTargets(targets: PromptContext["orderedStack"][number]["targets"]
         return "none:does-not-target";
       }
 
+      if (target.kind === "other") {
+        return `other:${target.targetDescription}`;
+      }
+
       if (target.kind === "player") {
         return `player:${target.targetPlayer}`;
       }

@@ -108,7 +108,7 @@ Read in this order:
 - Automated tests and type checks are part of the active workflow; root dev run remains `npm run dev`.
 
 ## Next Agent Implementation Focus
-Current trunk slice branch: `feat/frontend-flow-tests`
+Use the repository’s current default branch as the integration baseline, and open a dedicated feature branch per story slice.
 
 - [x] Keep static metadata strategy (DEC-012) but reduce frontend initial bundle impact from large metadata payloads.
 - [x] Complete merged metadata policy+tests slice (`STORY-010`, with former `STORY-005` scope): deterministic filtering/dedupe plus transform/search regression coverage.

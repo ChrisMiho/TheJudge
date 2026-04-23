@@ -47,7 +47,7 @@ describe("backend contract tests", () => {
       stack: [
         createStackItem({
           caster: "Player 4",
-          targets: [{ kind: "none" }]
+          targets: [{ kind: "none" }, { kind: "other", targetDescription: "retarget to token copy" }]
         })
       ]
     });
@@ -60,7 +60,7 @@ describe("backend contract tests", () => {
     expect(response.body.answer).toContain("Players: 4");
     expect(response.body.answer).toContain("Battlefield context items: 1");
     expect(response.body.answer).toContain("1. [top] Opt (cardId: opt)");
-    expect(response.body.answer).toContain("Caster: Player 4 | Targets: none:does-not-target");
+    expect(response.body.answer).toContain("Caster: Player 4 | Targets: none:does-not-target | other:retarget to token copy");
     expect(response.body.answer).toContain("Mana: {U} | MV: 1");
   });
 
@@ -153,6 +153,18 @@ describe("backend contract tests", () => {
 
     expect(response.status).toBe(400);
     expect(response.body.error).toContain("stack.0.targets.0.targetCardName");
+  });
+
+  it("returns 400 for malformed other targets", async () => {
+    const response = await request(app).post("/api/ask-ai").send({
+      question: "bad other target",
+      gameContext: createGameContext(),
+      battlefieldContext: [],
+      stack: [{ ...createStackItem(), targets: [{ kind: "other" }] }]
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toContain("stack.0.targets.0.targetDescription");
   });
 
   it("returns 400 when gameContext players do not match playerCount", async () => {
