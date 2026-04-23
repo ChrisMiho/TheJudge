@@ -176,10 +176,10 @@ Pending implementation backlog:
 - [x] `STORY-033` move cat visual from stack window/empty-state placement to game-context first screen
 - [x] `STORY-034` remove `cardId` from LLM-facing prompt output while preserving deterministic stack-order context
 - [x] `STORY-035` introduce a shared autocomplete path foundation across stack and battlefield entry
-- [ ] `STORY-036` add deterministic relevance ranking contract for suggestion ordering
-- [ ] `STORY-037` add keyboard interaction parity for autocomplete in both contexts
+- [x] `STORY-036` add deterministic relevance ranking contract for suggestion ordering
+- [x] `STORY-037` add keyboard interaction parity for autocomplete in both contexts
 - [ ] `STORY-038` clean up battlefield input-state path wiring against shared adapters
-- [ ] `STORY-039` add cross-flow parity regression suite for stack vs battlefield suggestions
+- [x] `STORY-039` add cross-flow parity regression suite for stack vs battlefield suggestions
 - [ ] `STORY-040` add lightweight search performance guardrails for responsiveness
 
 ## Documentation Notes

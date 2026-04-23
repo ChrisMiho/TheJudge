@@ -1,6 +1,8 @@
 import type { CardMetadataItem } from "../types";
 
 export const NO_MATCH_COPY = "No matching card found";
+const MAX_SUGGESTIONS = 3;
+const MAX_TYPO_DISTANCE = 2;
 
 export function normalize(input: string): string {
   return input.trim().toLowerCase();
@@ -35,10 +37,73 @@ export function isFuzzyMatch(candidateName: string, query: string): boolean {
   const normalizedCandidate = normalize(candidateName);
   const normalizedQuery = normalize(query);
   if (normalizedCandidate.includes(normalizedQuery)) return true;
-  return levenshteinDistance(normalizedCandidate, normalizedQuery) <= 2;
+  return levenshteinDistance(normalizedCandidate, normalizedQuery) <= MAX_TYPO_DISTANCE;
+}
+
+type MatchTier = 0 | 1 | 2 | 3;
+
+type RankedSuggestion = {
+  card: CardMetadataItem;
+  matchTier: MatchTier;
+  typoDistance: number;
+  normalizedName: string;
+};
+
+function rankSuggestion(card: CardMetadataItem, normalizedQuery: string): RankedSuggestion | null {
+  const normalizedName = normalize(card.name);
+  if (normalizedName.length === 0) {
+    return null;
+  }
+
+  if (normalizedName === normalizedQuery) {
+    return { card, matchTier: 0, typoDistance: 0, normalizedName };
+  }
+
+  if (normalizedName.startsWith(normalizedQuery)) {
+    return {
+      card,
+      matchTier: 1,
+      typoDistance: levenshteinDistance(normalizedName, normalizedQuery),
+      normalizedName
+    };
+  }
+
+  if (normalizedName.includes(normalizedQuery)) {
+    return {
+      card,
+      matchTier: 2,
+      typoDistance: levenshteinDistance(normalizedName, normalizedQuery),
+      normalizedName
+    };
+  }
+
+  const typoDistance = levenshteinDistance(normalizedName, normalizedQuery);
+  if (typoDistance > MAX_TYPO_DISTANCE) {
+    return null;
+  }
+
+  return { card, matchTier: 3, typoDistance, normalizedName };
 }
 
 export function getSuggestions(cards: CardMetadataItem[], query: string): CardMetadataItem[] {
-  if (query.trim().length < 3) return [];
-  return cards.filter((card) => isFuzzyMatch(card.name, query)).slice(0, 3);
+  const normalizedQuery = normalize(query);
+  if (normalizedQuery.length < 3) return [];
+
+  return cards
+    .map((card) => rankSuggestion(card, normalizedQuery))
+    .filter((ranked): ranked is RankedSuggestion => ranked !== null)
+    .sort((left, right) => {
+      if (left.matchTier !== right.matchTier) {
+        return left.matchTier - right.matchTier;
+      }
+      if (left.typoDistance !== right.typoDistance) {
+        return left.typoDistance - right.typoDistance;
+      }
+      if (left.normalizedName !== right.normalizedName) {
+        return left.normalizedName.localeCompare(right.normalizedName);
+      }
+      return left.card.cardId.localeCompare(right.card.cardId);
+    })
+    .slice(0, MAX_SUGGESTIONS)
+    .map((ranked) => ranked.card);
 }

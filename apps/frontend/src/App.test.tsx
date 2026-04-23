@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
+import { NO_MATCH_COPY } from "./lib/search";
 import type { AskAiRequest, CardMetadataItem } from "./types";
 
 const baseCardMetadataFixture: CardMetadataItem[] = [
@@ -110,6 +111,30 @@ async function openStackBuilder(user: ReturnType<typeof userEvent.setup>): Promi
   await waitForMetadataReady();
 }
 
+function readSuggestionNamesFromPanel(searchInput: HTMLElement): string[] {
+  const searchLabel = searchInput.closest("label");
+  const suggestionPanel = searchLabel?.nextElementSibling;
+  if (!(suggestionPanel instanceof HTMLElement)) {
+    return [];
+  }
+  const hasAutocompleteContent =
+    within(suggestionPanel).queryByText("Loading cards...") !== null ||
+    within(suggestionPanel).queryByText(NO_MATCH_COPY) !== null ||
+    suggestionPanel.querySelector("ul") !== null;
+  if (!hasAutocompleteContent) {
+    return [];
+  }
+
+  if (within(suggestionPanel).queryByText(NO_MATCH_COPY)) {
+    return [];
+  }
+
+  return within(suggestionPanel)
+    .queryAllByRole("button")
+    .map((button) => button.textContent?.trim() ?? "")
+    .filter((name) => name.length > 0);
+}
+
 async function selectCard(user: ReturnType<typeof userEvent.setup>, query: string, cardName: string): Promise<void> {
   const searchInput = screen.getByPlaceholderText("Type to begin");
   await user.clear(searchInput);
@@ -174,6 +199,157 @@ describe("App MVP interaction flows", () => {
 
     expect(screen.getByRole("heading", { name: "Opt" })).toBeInTheDocument();
     expect(screen.getByText("Scry 1, then draw a card.")).toBeInTheDocument();
+  });
+
+  it("supports keyboard suggestion navigation and selection in stack builder search", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+
+    const searchInput = screen.getByPlaceholderText("Type to begin");
+    await user.type(searchInput, "lig");
+    expect(await screen.findByRole("button", { name: "Lightning Bolt" })).toBeInTheDocument();
+
+    fireEvent.keyDown(searchInput, { key: "ArrowDown" });
+    fireEvent.keyDown(searchInput, { key: "Enter" });
+
+    expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Lightning Bolt" })).not.toBeInTheDocument();
+  });
+
+  it("supports keyboard selection and escape-dismiss behavior in battlefield search", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+
+    const battlefieldSearchInput = screen.getByLabelText("Battlefield search input");
+    await user.type(battlefieldSearchInput, "lig");
+    expect(await screen.findByRole("button", { name: "Lightning Bolt" })).toBeInTheDocument();
+
+    fireEvent.keyDown(battlefieldSearchInput, { key: "Escape" });
+    expect(screen.queryByRole("button", { name: "Lightning Bolt" })).not.toBeInTheDocument();
+
+    await user.type(battlefieldSearchInput, "h");
+    expect(await screen.findByRole("button", { name: "Lightning Bolt" })).toBeInTheDocument();
+
+    fireEvent.keyDown(battlefieldSearchInput, { key: "ArrowDown" });
+    fireEvent.keyDown(battlefieldSearchInput, { key: "Enter" });
+
+    expect(screen.getByLabelText("Battlefield item name")).toHaveValue("Lightning Bolt");
+    expect(screen.getByLabelText("Battlefield item details")).toHaveValue(
+      "Lightning Bolt deals 3 damage to any target."
+    );
+    expect(screen.queryByRole("button", { name: "Lightning Bolt" })).not.toBeInTheDocument();
+  });
+
+  it("keeps ordered suggestions, threshold, and no-match behavior in parity across stack and battlefield flows", async () => {
+    const parityFixture: CardMetadataItem[] = [
+      {
+        cardId: "swords-to-plowshares",
+        name: "Swords to Plowshares",
+        oracleText: "Exile target creature.",
+        imageUrl: "",
+        manaCost: "{W}",
+        manaValue: 1,
+        typeLine: "Instant",
+        colors: ["W"],
+        supertypes: [],
+        subtypes: []
+      },
+      {
+        cardId: "sword-of-fire-and-ice",
+        name: "Sword of Fire and Ice",
+        oracleText: "Equipped creature gets +2/+2 and has protection from red and from blue.",
+        imageUrl: "",
+        manaCost: "{3}",
+        manaValue: 3,
+        typeLine: "Artifact - Equipment",
+        colors: [],
+        supertypes: [],
+        subtypes: ["Equipment"]
+      },
+      {
+        cardId: "swiftfoot-boots",
+        name: "Swiftfoot Boots",
+        oracleText: "Equipped creature has hexproof and haste.",
+        imageUrl: "",
+        manaCost: "{2}",
+        manaValue: 2,
+        typeLine: "Artifact - Equipment",
+        colors: [],
+        supertypes: [],
+        subtypes: ["Equipment"]
+      }
+    ];
+    metadataFixture = parityFixture;
+    const user = userEvent.setup();
+
+    const stackView = render(<App />);
+    await openStackBuilder(user);
+    const stackInput = screen.getByPlaceholderText("Type to begin");
+
+    await user.type(stackInput, "sw");
+    expect(readSuggestionNamesFromPanel(stackInput)).toEqual([]);
+    expect(screen.queryByText(NO_MATCH_COPY)).not.toBeInTheDocument();
+
+    await user.type(stackInput, "o");
+    const stackOrderedSuggestions = readSuggestionNamesFromPanel(stackInput);
+    expect(stackOrderedSuggestions).toEqual(["Swords to Plowshares", "Sword of Fire and Ice"]);
+
+    await user.clear(stackInput);
+    await user.type(stackInput, "zzz");
+    expect(readSuggestionNamesFromPanel(stackInput)).toEqual([]);
+    expect(screen.queryByRole("button", { name: "Swords to Plowshares" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Sword of Fire and Ice" })).not.toBeInTheDocument();
+
+    stackView.unmount();
+
+    const battlefieldView = render(<App />);
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    const battlefieldInput = screen.getByLabelText("Battlefield search input");
+
+    await user.type(battlefieldInput, "sw");
+    expect(readSuggestionNamesFromPanel(battlefieldInput)).toEqual([]);
+    expect(screen.queryByText(NO_MATCH_COPY)).not.toBeInTheDocument();
+
+    await user.type(battlefieldInput, "o");
+    const battlefieldOrderedSuggestions = readSuggestionNamesFromPanel(battlefieldInput);
+    expect(battlefieldOrderedSuggestions).toEqual(stackOrderedSuggestions);
+
+    await user.clear(battlefieldInput);
+    await user.type(battlefieldInput, "zzz");
+    expect(readSuggestionNamesFromPanel(battlefieldInput)).toEqual([]);
+    expect(screen.queryByRole("button", { name: "Swords to Plowshares" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Sword of Fire and Ice" })).not.toBeInTheDocument();
+
+    battlefieldView.unmount();
+  });
+
+  it("keeps suggestion selection behavior in parity between stack and battlefield flows", async () => {
+    const user = userEvent.setup();
+
+    const stackView = render(<App />);
+    await openStackBuilder(user);
+    const stackInput = screen.getByPlaceholderText("Type to begin");
+    await user.type(stackInput, "lig");
+    await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
+
+    expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
+    expect(screen.getByText("Lightning Bolt deals 3 damage to any target.")).toBeInTheDocument();
+
+    stackView.unmount();
+
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    const battlefieldInput = screen.getByLabelText("Battlefield search input");
+    await user.type(battlefieldInput, "lig");
+    await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
+
+    expect(screen.getByLabelText("Battlefield item name")).toHaveValue("Lightning Bolt");
+    expect(screen.getByLabelText("Battlefield item details")).toHaveValue(
+      "Lightning Bolt deals 3 damage to any target."
+    );
   });
 
   it("uses first-add then subsequent-add button labels", async () => {

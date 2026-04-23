@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { createCorrelationId, logFrontendDebug } from "./lib/debugLogger";
 import { apiBaseUrl } from "./lib/env";
 import { NO_MATCH_COPY } from "./lib/search";
+import { useAutocompleteKeyboard } from "./lib/useAutocompleteKeyboard";
 import { useAutocompleteSuggestions } from "./lib/useAutocompleteSuggestions";
 import {
   appendToStack,
@@ -145,6 +146,16 @@ export default function App() {
   const battlefieldSuggestions = useAutocompleteSuggestions({
     cards: cardMetadata,
     query: battlefieldSearchInput
+  });
+  const stackKeyboard = useAutocompleteKeyboard({
+    query: searchInput,
+    suggestions,
+    onSelect: selectStackSuggestion
+  });
+  const battlefieldKeyboard = useAutocompleteKeyboard({
+    query: battlefieldSearchInput,
+    suggestions: battlefieldSuggestions,
+    onSelect: selectBattlefieldSuggestion
   });
 
   const addButtonLabel = stack.length === 0 ? "Begin stackening!" : "Add to Stack";
@@ -353,10 +364,18 @@ export default function App() {
 
   function selectBattlefieldSuggestion(card: CardMetadataItem): void {
     setBattlefieldEntryName(card.name);
-    setBattlefieldSearchInput(card.name);
     if (battlefieldEntryDetails.trim().length === 0) {
       setBattlefieldEntryDetails(card.oracleText.slice(0, 280));
     }
+  }
+
+  function selectStackSuggestion(card: CardMetadataItem): void {
+    setSelectedCard(card);
+    resetEntryContext();
+    logFrontendDebug("card.preview_selected", {
+      cardId: card.cardId,
+      cardName: card.name
+    });
   }
 
   function progressFromBattlefieldStep(): void {
@@ -686,11 +705,12 @@ export default function App() {
                 setBattlefieldSearchInput(event.target.value);
                 setBattlefieldEntryName(event.target.value);
               }}
+              onKeyDown={battlefieldKeyboard.handleKeyDown}
               className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
               placeholder="Type to begin"
             />
           </label>
-          {battlefieldSearchInput.trim().length >= 3 && (
+          {battlefieldSearchInput.trim().length >= 3 && battlefieldKeyboard.isOpen && (
             <div className="rounded-xl border border-slate-600 bg-slate-800/70 p-2">
               {isMetadataLoading ? (
                 <p className="px-2 py-1 text-sm text-slate-400">Loading cards...</p>
@@ -698,12 +718,18 @@ export default function App() {
                 <p className="px-2 py-1 text-sm text-slate-400">{NO_MATCH_COPY}</p>
               ) : (
                 <ul className="flex flex-col gap-1">
-                  {battlefieldSuggestions.map((card) => (
+                  {battlefieldSuggestions.map((card, index) => (
                     <li key={`battlefield-${card.cardId}`}>
                       <button
                         type="button"
-                        onClick={() => selectBattlefieldSuggestion(card)}
-                        className="w-full rounded-lg px-2 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-700 hover:text-sky-300"
+                        onClick={() => {
+                          selectBattlefieldSuggestion(card);
+                          battlefieldKeyboard.closeSuggestions();
+                        }}
+                        onMouseEnter={() => battlefieldKeyboard.setActiveIndex(index)}
+                        className={`w-full rounded-lg px-2 py-2 text-left text-sm text-slate-200 transition hover:text-sky-300 ${
+                          battlefieldKeyboard.activeIndex === index ? "bg-slate-700 text-sky-300" : "hover:bg-slate-700"
+                        }`}
                       >
                         {card.name}
                       </button>
@@ -888,6 +914,7 @@ export default function App() {
           <input
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
+            onKeyDown={stackKeyboard.handleKeyDown}
             placeholder="Type to begin"
             className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-50 placeholder:text-slate-300 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
           />
@@ -900,7 +927,7 @@ export default function App() {
           </p>
         </label>
 
-        {searchInput.trim().length >= 3 && (
+        {searchInput.trim().length >= 3 && stackKeyboard.isOpen && (
           <div className="rounded-xl border border-slate-600 bg-slate-800/70 p-2">
             {isMetadataLoading ? (
               <p className="px-2 py-1 text-sm text-slate-400">Loading cards...</p>
@@ -910,19 +937,18 @@ export default function App() {
               <p className="px-2 py-1 text-sm text-slate-400">{NO_MATCH_COPY}</p>
             ) : (
               <ul className="flex flex-col gap-1">
-                {suggestions.map((card) => (
+                {suggestions.map((card, index) => (
                   <li key={card.cardId}>
                     <button
                       type="button"
                       onClick={() => {
-                        setSelectedCard(card);
-                        resetEntryContext();
-                        logFrontendDebug("card.preview_selected", {
-                          cardId: card.cardId,
-                          cardName: card.name
-                        });
+                        selectStackSuggestion(card);
+                        stackKeyboard.closeSuggestions();
                       }}
-                      className="w-full rounded-lg px-2 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-700 hover:text-sky-300"
+                      onMouseEnter={() => stackKeyboard.setActiveIndex(index)}
+                      className={`w-full rounded-lg px-2 py-2 text-left text-sm text-slate-200 transition hover:text-sky-300 ${
+                        stackKeyboard.activeIndex === index ? "bg-slate-700 text-sky-300" : "hover:bg-slate-700"
+                      }`}
                     >
                       {card.name}
                     </button>
