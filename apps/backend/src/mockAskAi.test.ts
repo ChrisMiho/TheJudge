@@ -74,8 +74,6 @@ describe("mock answer ergonomics", () => {
     expect(result.answer).toContain("Prompt near limit:");
     expect(result.answer).toContain("1. [bottom] Card: Opt");
     expect(result.answer).toContain("2. [top] Card: Lightning Bolt");
-    expect(result.answer).toContain("StackOrder: 1");
-    expect(result.answer).toContain("StackOrder: 2");
     expect(result.answer).toContain(
       "Caster: Player 3 | Targets: none:does-not-target | player:Player 4 | other:custom target detail"
     );

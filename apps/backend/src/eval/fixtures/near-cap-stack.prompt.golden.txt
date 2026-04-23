@@ -18,7 +18,6 @@ OPTIONAL BATTLEFIELD CONTEXT
 
 ORDERED STACK CONTEXT (BOTTOM TO TOP)
 Stack item 1 (bottom)
-StackOrder: 1
 card: Card 1
 manaCost: (none)
 manaValue: 1
@@ -33,7 +32,6 @@ contextNotes: (none)
 oracleText: First effect.
 
 Stack item 2 (middle)
-StackOrder: 2
 card: Card 2
 manaCost: (none)
 manaValue: 2
@@ -48,7 +46,6 @@ contextNotes: (none)
 oracleText: Second effect.
 
 Stack item 3 (middle)
-StackOrder: 3
 card: Card 3
 manaCost: (none)
 manaValue: 3
@@ -63,7 +60,6 @@ contextNotes: (none)
 oracleText: Third effect.
 
 Stack item 4 (middle)
-StackOrder: 4
 card: Card 4
 manaCost: (none)
 manaValue: 4
@@ -78,7 +74,6 @@ contextNotes: (none)
 oracleText: Fourth effect.
 
 Stack item 5 (middle)
-StackOrder: 5
 card: Card 5
 manaCost: (none)
 manaValue: 5
@@ -93,7 +88,6 @@ contextNotes: (none)
 oracleText: Fifth effect.
 
 Stack item 6 (middle)
-StackOrder: 6
 card: Card 6
 manaCost: (none)
 manaValue: 6
@@ -108,7 +102,6 @@ contextNotes: (none)
 oracleText: Sixth effect.
 
 Stack item 7 (middle)
-StackOrder: 7
 card: Card 7
 manaCost: (none)
 manaValue: 7
@@ -123,7 +116,6 @@ contextNotes: (none)
 oracleText: Seventh effect.
 
 Stack item 8 (middle)
-StackOrder: 8
 card: Card 8
 manaCost: (none)
 manaValue: 8
@@ -138,7 +130,6 @@ contextNotes: (none)
 oracleText: Eighth effect.
 
 Stack item 9 (top)
-StackOrder: 9
 card: Card 9
 manaCost: (none)
 manaValue: 9

@@ -64,7 +64,6 @@ describe("backend contract tests", () => {
     expect(response.body.answer).toContain("Optional battlefield context:");
     expect(response.body.answer).toContain("items: 1");
     expect(response.body.answer).toContain("1. [top] Card: Opt");
-    expect(response.body.answer).toContain("StackOrder: 1");
     expect(response.body.answer).toContain("Caster: Player 4 | Targets: none:does-not-target | other:retarget to token copy");
     expect(response.body.answer).toContain("Mana: {U} | MV: 1");
   });
@@ -89,7 +88,7 @@ describe("backend contract tests", () => {
     expect(response.body.answer).toContain("Final question: Resolve the stack");
   });
 
-  it("includes explicit stack order metadata in mock answer payload", async () => {
+  it("includes ordered stack index cues in mock answer payload", async () => {
     const response = await request(app).post("/api/ask-ai").send({
       question: "Order check",
       gameContext: createGameContext(),
@@ -121,8 +120,6 @@ describe("backend contract tests", () => {
     expect(response.body.answer).toContain("Stack order convention: bottom-to-top");
     expect(response.body.answer).toContain("1. [bottom] Card: Bottom Spell");
     expect(response.body.answer).toContain("2. [top] Card: Top Spell");
-    expect(response.body.answer).toContain("StackOrder: 1");
-    expect(response.body.answer).toContain("StackOrder: 2");
   });
 
   it("returns 400 for invalid payload shape", async () => {

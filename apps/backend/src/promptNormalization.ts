@@ -134,7 +134,6 @@ export function buildPromptText(context: PromptContext): string {
       (card, index) =>
         [
           `Stack item ${index + 1} (${card.stackRole})`,
-          `StackOrder: ${index + 1}`,
           `card: ${card.name}`,
           `manaCost: ${card.manaCost || "(none)"}`,
           `manaValue: ${card.manaValue}`,

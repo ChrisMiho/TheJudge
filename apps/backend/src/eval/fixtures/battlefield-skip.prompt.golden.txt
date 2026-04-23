@@ -17,7 +17,6 @@ OPTIONAL BATTLEFIELD CONTEXT
 
 ORDERED STACK CONTEXT (BOTTOM TO TOP)
 Stack item 1 (bottom)
-StackOrder: 1
 card: Opt
 manaCost: (none)
 manaValue: 1
@@ -32,7 +31,6 @@ contextNotes: (none)
 oracleText: Scry 1, then draw a card.
 
 Stack item 2 (top)
-StackOrder: 2
 card: Counterspell
 manaCost: (none)
 manaValue: 2

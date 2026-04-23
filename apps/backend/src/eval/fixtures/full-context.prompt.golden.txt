@@ -21,7 +21,6 @@ targets: none:does-not-target
 
 ORDERED STACK CONTEXT (BOTTOM TO TOP)
 Stack item 1 (bottom)
-StackOrder: 1
 card: Brainstorm
 manaCost: (none)
 manaValue: 1
@@ -36,7 +35,6 @@ contextNotes: (none)
 oracleText: Draw three cards, then put two cards from your hand on top of your library in any order.
 
 Stack item 2 (top)
-StackOrder: 2
 card: Narset's Reversal
 manaCost: (none)
 manaValue: 2

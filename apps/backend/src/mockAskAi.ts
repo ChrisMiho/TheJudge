@@ -38,7 +38,6 @@ function formatStackRows(context: PromptContext): string {
     .map((item) =>
       [
         `${item.stackIndex + 1}. [${item.stackRole}] Card: ${item.name}`,
-        `   StackOrder: ${item.stackIndex + 1}`,
         `   Mana: ${item.manaCost || "N/A"} | MV: ${item.manaValue}`,
         `   Type: ${item.typeLine || "N/A"}`,
         `   Colors: ${formatList(item.colors)} | Supertypes: ${formatList(item.supertypes)} | Subtypes: ${formatList(item.subtypes)}`,

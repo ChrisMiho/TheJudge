@@ -16,7 +16,6 @@ OPTIONAL BATTLEFIELD CONTEXT
 
 ORDERED STACK CONTEXT (BOTTOM TO TOP)
 Stack item 1 (top)
-StackOrder: 1
 card: Opt
 manaCost: (none)
 manaValue: 1

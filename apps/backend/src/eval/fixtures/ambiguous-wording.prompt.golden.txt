@@ -19,7 +19,6 @@ targets: none:does-not-target
 
 ORDERED STACK CONTEXT (BOTTOM TO TOP)
 Stack item 1 (bottom)
-StackOrder: 1
 card: Silence
 manaCost: (none)
 manaValue: 1
@@ -34,7 +33,6 @@ contextNotes: (none)
 oracleText: Your opponents can't cast spells this turn.
 
 Stack item 2 (top)
-StackOrder: 2
 card: Mystical Dispute
 manaCost: (none)
 manaValue: 3
