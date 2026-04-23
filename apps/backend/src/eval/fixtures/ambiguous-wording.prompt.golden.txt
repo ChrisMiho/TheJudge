@@ -19,12 +19,7 @@ targets: none:does-not-target
 
 ORDERED STACK CONTEXT (BOTTOM TO TOP)
 Stack item 1 (bottom)
-<<<<<<< HEAD
 card: Silence
-=======
-cardId: silence
-name: Silence
->>>>>>> origin/main
 manaCost: (none)
 manaValue: 1
 typeLine: (none)
@@ -38,12 +33,7 @@ contextNotes: (none)
 oracleText: Your opponents can't cast spells this turn.
 
 Stack item 2 (top)
-<<<<<<< HEAD
 card: Mystical Dispute
-=======
-cardId: mystical-dispute
-name: Mystical Dispute
->>>>>>> origin/main
 manaCost: (none)
 manaValue: 3
 typeLine: (none)

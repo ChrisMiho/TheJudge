@@ -16,12 +16,7 @@ OPTIONAL BATTLEFIELD CONTEXT
 
 ORDERED STACK CONTEXT (BOTTOM TO TOP)
 Stack item 1 (top)
-<<<<<<< HEAD
 card: Opt
-=======
-cardId: opt
-name: Opt
->>>>>>> origin/main
 manaCost: (none)
 manaValue: 1
 typeLine: (none)

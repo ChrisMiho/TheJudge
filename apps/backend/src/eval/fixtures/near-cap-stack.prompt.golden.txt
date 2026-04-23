@@ -18,12 +18,7 @@ OPTIONAL BATTLEFIELD CONTEXT
 
 ORDERED STACK CONTEXT (BOTTOM TO TOP)
 Stack item 1 (bottom)
-<<<<<<< HEAD
 card: Card 1
-=======
-cardId: card-1
-name: Card 1
->>>>>>> origin/main
 manaCost: (none)
 manaValue: 1
 typeLine: (none)
@@ -37,12 +32,7 @@ contextNotes: (none)
 oracleText: First effect.
 
 Stack item 2 (middle)
-<<<<<<< HEAD
 card: Card 2
-=======
-cardId: card-2
-name: Card 2
->>>>>>> origin/main
 manaCost: (none)
 manaValue: 2
 typeLine: (none)
@@ -56,12 +46,7 @@ contextNotes: (none)
 oracleText: Second effect.
 
 Stack item 3 (middle)
-<<<<<<< HEAD
 card: Card 3
-=======
-cardId: card-3
-name: Card 3
->>>>>>> origin/main
 manaCost: (none)
 manaValue: 3
 typeLine: (none)
@@ -75,12 +60,7 @@ contextNotes: (none)
 oracleText: Third effect.
 
 Stack item 4 (middle)
-<<<<<<< HEAD
 card: Card 4
-=======
-cardId: card-4
-name: Card 4
->>>>>>> origin/main
 manaCost: (none)
 manaValue: 4
 typeLine: (none)
@@ -94,12 +74,7 @@ contextNotes: (none)
 oracleText: Fourth effect.
 
 Stack item 5 (middle)
-<<<<<<< HEAD
 card: Card 5
-=======
-cardId: card-5
-name: Card 5
->>>>>>> origin/main
 manaCost: (none)
 manaValue: 5
 typeLine: (none)
@@ -113,12 +88,7 @@ contextNotes: (none)
 oracleText: Fifth effect.
 
 Stack item 6 (middle)
-<<<<<<< HEAD
 card: Card 6
-=======
-cardId: card-6
-name: Card 6
->>>>>>> origin/main
 manaCost: (none)
 manaValue: 6
 typeLine: (none)
@@ -132,12 +102,7 @@ contextNotes: (none)
 oracleText: Sixth effect.
 
 Stack item 7 (middle)
-<<<<<<< HEAD
 card: Card 7
-=======
-cardId: card-7
-name: Card 7
->>>>>>> origin/main
 manaCost: (none)
 manaValue: 7
 typeLine: (none)
@@ -151,12 +116,7 @@ contextNotes: (none)
 oracleText: Seventh effect.
 
 Stack item 8 (middle)
-<<<<<<< HEAD
 card: Card 8
-=======
-cardId: card-8
-name: Card 8
->>>>>>> origin/main
 manaCost: (none)
 manaValue: 8
 typeLine: (none)
@@ -170,12 +130,7 @@ contextNotes: (none)
 oracleText: Eighth effect.
 
 Stack item 9 (top)
-<<<<<<< HEAD
 card: Card 9
-=======
-cardId: card-9
-name: Card 9
->>>>>>> origin/main
 manaCost: (none)
 manaValue: 9
 typeLine: (none)

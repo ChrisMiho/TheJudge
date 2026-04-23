@@ -20,12 +20,7 @@ targets: none:does-not-target
 
 ORDERED STACK CONTEXT (BOTTOM TO TOP)
 Stack item 1 (bottom)
-<<<<<<< HEAD
 card: Lightning Bolt
-=======
-cardId: lightning-bolt
-name: Lightning Bolt
->>>>>>> origin/main
 manaCost: (none)
 manaValue: 1
 typeLine: (none)
@@ -39,12 +34,7 @@ contextNotes: (none)
 oracleText: Lightning Bolt deals 3 damage to any target.
 
 Stack item 2 (middle)
-<<<<<<< HEAD
 card: Counterspell
-=======
-cardId: counterspell
-name: Counterspell
->>>>>>> origin/main
 manaCost: (none)
 manaValue: 2
 typeLine: (none)
@@ -58,12 +48,7 @@ contextNotes: (none)
 oracleText: Counter target spell.
 
 Stack item 3 (top)
-<<<<<<< HEAD
 card: Deflecting Swat
-=======
-cardId: deflecting-swat
-name: Deflecting Swat
->>>>>>> origin/main
 manaCost: (none)
 manaValue: 3
 typeLine: (none)
