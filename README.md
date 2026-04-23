@@ -145,6 +145,7 @@ Context and prompt quality:
 
 Pending implementation backlog:
 
+- [x] `STORY-005` metadata-transform/search scenario tests (scope merged and completed under `STORY-010`)
 - [x] `STORY-010` define metadata filtering/dedupe policy and lock it with transform/search regression tests (merged scope formerly tracked as `STORY-005`)
 - [x] `STORY-006` add UI-focused frontend coverage for search/add/decrypt
 - [x] `STORY-007` add API base URL environment config and deployment targets
@@ -174,6 +175,12 @@ Pending implementation backlog:
 - [x] `STORY-032` add target kind `other` with up-to-200-char custom target context wired through payload/prompt
 - [x] `STORY-033` move cat visual from stack window/empty-state placement to game-context first screen
 - [x] `STORY-034` remove `cardId` from LLM-facing prompt output while preserving deterministic stack-order context
+- [ ] `STORY-035` introduce a shared autocomplete path foundation across stack and battlefield entry
+- [ ] `STORY-036` add deterministic relevance ranking contract for suggestion ordering
+- [ ] `STORY-037` add keyboard interaction parity for autocomplete in both contexts
+- [ ] `STORY-038` clean up battlefield input-state path wiring against shared adapters
+- [ ] `STORY-039` add cross-flow parity regression suite for stack vs battlefield suggestions
+- [ ] `STORY-040` add lightweight search performance guardrails for responsiveness
 
 ## Documentation Notes
 
