@@ -1,0 +1,22 @@
+# STORY-038 - Battlefield Input State Path Cleanup
+
+- title: Refactor battlefield autocomplete input wiring to remove extra per-keystroke state duplication and align with shared path adapters.
+- user value: As a player, battlefield search feels as smooth and predictable as stack search.
+- scope:
+  - remove unnecessary dual-write input updates in battlefield typing flow where possible
+  - use shared autocomplete interface side-effect hooks for selection-to-entry mapping
+  - preserve existing battlefield payload shape and skip/continue behavior
+- acceptance criteria:
+  - battlefield keystrokes no longer depend on duplicate input-state writes
+  - battlefield suggestion selection remains compatible with current context-entry UX
+  - no regressions in battlefield payload submission tests
+- execution mode: sequential
+- dependencies:
+  - STORY-035 (blocking): shared autocomplete interface must land first to avoid conflicting battlefield adapter rewrites
+  - after STORY-035 lands, additional parity and performance stories can proceed independently
+  - REQ-016
+  - DEC-019
+  - NFR-005
+- exclusions:
+  - no changes to backend `battlefieldContext` contract
+  - no additional battlefield domain fields

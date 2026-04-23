@@ -1,6 +1,5 @@
 fixtureId | score | checks
 ---|---|---
-<<<<<<< HEAD
 ambiguous-wording | 8/8 | PASS
 battlefield-skip | 8/8 | PASS
 full-context | 8/8 | PASS
@@ -8,12 +7,3 @@ mana-spent-explicit-fallback | 8/8 | PASS
 multi-step-stack | 8/8 | PASS
 near-cap-stack | 8/8 | PASS
 simple-interaction | 8/8 | PASS
-=======
-ambiguous-wording | 7/7 | PASS
-battlefield-skip | 7/7 | PASS
-full-context | 7/7 | PASS
-mana-spent-explicit-fallback | 7/7 | PASS
-multi-step-stack | 7/7 | PASS
-near-cap-stack | 7/7 | PASS
-simple-interaction | 7/7 | PASS
->>>>>>> origin/main

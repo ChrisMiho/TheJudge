@@ -63,11 +63,7 @@ describe("backend contract tests", () => {
     expect(response.body.answer).toContain("playerCount: 4");
     expect(response.body.answer).toContain("Optional battlefield context:");
     expect(response.body.answer).toContain("items: 1");
-<<<<<<< HEAD
     expect(response.body.answer).toContain("1. [top] Card: Opt");
-=======
-    expect(response.body.answer).toContain("1. [top] Opt (cardId: opt)");
->>>>>>> origin/main
     expect(response.body.answer).toContain("Caster: Player 4 | Targets: none:does-not-target | other:retarget to token copy");
     expect(response.body.answer).toContain("Mana: {U} | MV: 1");
   });

@@ -72,13 +72,8 @@ describe("mock answer ergonomics", () => {
     expect(result.answer).toContain("Prompt chars:");
     expect(result.answer).toContain("Prompt utilization:");
     expect(result.answer).toContain("Prompt near limit:");
-<<<<<<< HEAD
     expect(result.answer).toContain("1. [bottom] Card: Opt");
     expect(result.answer).toContain("2. [top] Card: Lightning Bolt");
-=======
-    expect(result.answer).toContain("1. [bottom] Opt (cardId: opt)");
-    expect(result.answer).toContain("2. [top] Lightning Bolt (cardId: bolt)");
->>>>>>> origin/main
     expect(result.answer).toContain(
       "Caster: Player 3 | Targets: none:does-not-target | player:Player 4 | other:custom target detail"
     );

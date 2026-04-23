@@ -1,7 +1,8 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { createCorrelationId, logFrontendDebug } from "./lib/debugLogger";
 import { apiBaseUrl } from "./lib/env";
-import { getSuggestions, NO_MATCH_COPY } from "./lib/search";
+import { NO_MATCH_COPY } from "./lib/search";
+import { useAutocompleteSuggestions } from "./lib/useAutocompleteSuggestions";
 import {
   appendToStack,
   buildAskAiRequest,
@@ -137,12 +138,14 @@ export default function App() {
     return () => controller.abort();
   }, []);
 
-  const suggestions = useMemo(() => {
-    return getSuggestions(cardMetadata, searchInput);
-  }, [cardMetadata, searchInput]);
-  const battlefieldSuggestions = useMemo(() => {
-    return getSuggestions(cardMetadata, battlefieldSearchInput);
-  }, [cardMetadata, battlefieldSearchInput]);
+  const suggestions = useAutocompleteSuggestions({
+    cards: cardMetadata,
+    query: searchInput
+  });
+  const battlefieldSuggestions = useAutocompleteSuggestions({
+    cards: cardMetadata,
+    query: battlefieldSearchInput
+  });
 
   const addButtonLabel = stack.length === 0 ? "Begin stackening!" : "Add to Stack";
   const canRetry = retryCountdown === 0 && !isSubmitting;

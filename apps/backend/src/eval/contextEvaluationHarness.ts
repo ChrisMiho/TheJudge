@@ -16,12 +16,8 @@ type EvaluationCheckId =
   | "general-game-context-section"
   | "battlefield-context-section"
   | "prompt-section-order"
-<<<<<<< HEAD
   | "mana-spent-output"
   | "llm-prompt-omits-cardid";
-=======
-  | "mana-spent-output";
->>>>>>> origin/main
 
 export type EvaluationFixture = {
   id: string;
@@ -165,7 +161,6 @@ function checkManaSpentOutput(context: PromptContext, promptText: string): Evalu
             ...missing.map((item) => item.cardId),
             ...missingPromptLines.map((item) => `${item.cardId}:prompt-line`)
           ].join(", ")}`
-<<<<<<< HEAD
   };
 }
 
@@ -180,8 +175,6 @@ function checkPromptOmitsCardId(promptText: string): EvaluationCheckResult {
     details: passed
       ? "LLM-facing prompt text omits internal cardId references."
       : "Prompt still contains cardId field lines or stack-target ID suffixes."
-=======
->>>>>>> origin/main
   };
 }
 
@@ -197,12 +190,8 @@ export function evaluateScenario(
     checkGeneralGameContextSection(context, promptText),
     checkBattlefieldContextSection(context, promptText),
     checkPromptSectionOrder(promptText),
-<<<<<<< HEAD
     checkManaSpentOutput(context, promptText),
     checkPromptOmitsCardId(promptText)
-=======
-    checkManaSpentOutput(context, promptText)
->>>>>>> origin/main
   ];
   const score = checks.filter((check) => check.passed).length;
 
