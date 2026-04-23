@@ -148,7 +148,7 @@ describe("context evaluation harness", () => {
       "",
       "ORDERED STACK (BOTTOM TO TOP)",
       "Card 1 (top)",
-      "cardId: top"
+      "stack:Top Spell (top)"
     ].join("\n");
 
     const result = evaluateScenario(fixture, brokenContext, brokenPrompt);
@@ -156,7 +156,7 @@ describe("context evaluation harness", () => {
 
     expect(result.passed).toBe(false);
     expect(failedCheckIds).toEqual(
-      expect.arrayContaining(["stack-order-preserved", "required-guardrails-present"])
+      expect.arrayContaining(["stack-order-preserved", "required-guardrails-present", "llm-prompt-omits-cardid"])
     );
   });
 });

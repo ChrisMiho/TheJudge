@@ -16,7 +16,8 @@ type EvaluationCheckId =
   | "general-game-context-section"
   | "battlefield-context-section"
   | "prompt-section-order"
-  | "mana-spent-output";
+  | "mana-spent-output"
+  | "llm-prompt-omits-cardid";
 
 export type EvaluationFixture = {
   id: string;
@@ -163,6 +164,20 @@ function checkManaSpentOutput(context: PromptContext, promptText: string): Evalu
   };
 }
 
+function checkPromptOmitsCardId(promptText: string): EvaluationCheckResult {
+  const hasCardIdField = promptText.includes("cardId:");
+  const hasStackTargetWithId = /stack:[^\n]+\s\([^)]+\)/.test(promptText);
+  const passed = !hasCardIdField && !hasStackTargetWithId;
+
+  return {
+    id: "llm-prompt-omits-cardid",
+    passed,
+    details: passed
+      ? "LLM-facing prompt text omits internal cardId references."
+      : "Prompt still contains cardId field lines or stack-target ID suffixes."
+  };
+}
+
 export function evaluateScenario(
   fixture: EvaluationFixture,
   context: PromptContext,
@@ -175,7 +190,8 @@ export function evaluateScenario(
     checkGeneralGameContextSection(context, promptText),
     checkBattlefieldContextSection(context, promptText),
     checkPromptSectionOrder(promptText),
-    checkManaSpentOutput(context, promptText)
+    checkManaSpentOutput(context, promptText),
+    checkPromptOmitsCardId(promptText)
   ];
   const score = checks.filter((check) => check.passed).length;
 

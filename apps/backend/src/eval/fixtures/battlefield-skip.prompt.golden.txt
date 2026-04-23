@@ -17,8 +17,8 @@ OPTIONAL BATTLEFIELD CONTEXT
 
 ORDERED STACK CONTEXT (BOTTOM TO TOP)
 Stack item 1 (bottom)
-cardId: opt
-name: Opt
+StackOrder: 1
+card: Opt
 manaCost: (none)
 manaValue: 1
 typeLine: (none)
@@ -32,8 +32,8 @@ contextNotes: (none)
 oracleText: Scry 1, then draw a card.
 
 Stack item 2 (top)
-cardId: counterspell
-name: Counterspell
+StackOrder: 2
+card: Counterspell
 manaCost: (none)
 manaValue: 2
 typeLine: (none)
@@ -41,7 +41,7 @@ colors: (none)
 supertypes: (none)
 subtypes: (none)
 caster: Player 2
-targets: stack:Opt (opt)
+targets: stack:Opt
 manaSpent: 2
 contextNotes: (none)
 oracleText: Counter target spell.
