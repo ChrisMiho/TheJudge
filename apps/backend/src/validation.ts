@@ -18,6 +18,10 @@ const stackTargetSchema = z.discriminatedUnion("kind", [
   }).strict(),
   z.object({
     kind: z.literal("none")
+  }).strict(),
+  z.object({
+    kind: z.literal("other"),
+    targetDescription: z.string().min(1).max(200)
   }).strict()
 ]);
 

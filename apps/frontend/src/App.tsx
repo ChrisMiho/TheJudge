@@ -26,6 +26,7 @@ import type {
 const RETRY_COOLDOWN_SECONDS = 13;
 const METADATA_URL = "/data/cardMetadata.json";
 const EMPTY_STATE_IMAGE_URL = "/assets/cats-homescreen.png";
+const MAX_OTHER_TARGET_CHARS = 200;
 const PLAYER_OPTIONS: PlayerLabel[] = ["Player 1", "Player 2", "Player 3", "Player 4"];
 type TargetKind = StackTarget["kind"];
 type FlowStep = "game-context" | "battlefield-context" | "stack-builder";
@@ -47,6 +48,10 @@ function formatTarget(target: StackTarget): string {
     return "No specific target";
   }
 
+  if (target.kind === "other") {
+    return `Other: ${target.targetDescription}`;
+  }
+
   return `Stack: ${target.targetCardName}`;
 }
 
@@ -66,6 +71,7 @@ export default function App() {
   });
   const [gameContext, setGameContext] = useState<GameContext | null>(null);
   const [battlefieldContext, setBattlefieldContext] = useState<BattlefieldContextItem[]>([]);
+  const [battlefieldSearchInput, setBattlefieldSearchInput] = useState("");
   const [battlefieldEntryName, setBattlefieldEntryName] = useState("");
   const [battlefieldEntryDetails, setBattlefieldEntryDetails] = useState("");
   const [battlefieldEntryTargets, setBattlefieldEntryTargets] = useState<StackTarget[]>([]);
@@ -74,6 +80,7 @@ export default function App() {
   const [battlefieldTargetPlayer, setBattlefieldTargetPlayer] = useState<PlayerLabel>("Player 2");
   const [battlefieldTargetStackName, setBattlefieldTargetStackName] = useState("");
   const [battlefieldTargetStackId, setBattlefieldTargetStackId] = useState("");
+  const [battlefieldTargetOtherDescription, setBattlefieldTargetOtherDescription] = useState("");
   const [stack, setStack] = useState<StackItem[]>([]);
   const [entryCaster, setEntryCaster] = useState<PlayerLabel>(DEFAULT_CASTER);
   const [entryContextNotes, setEntryContextNotes] = useState("");
@@ -83,10 +90,12 @@ export default function App() {
   const [targetStackCardId, setTargetStackCardId] = useState("");
   const [targetBattlefieldName, setTargetBattlefieldName] = useState("");
   const [targetPlayer, setTargetPlayer] = useState<PlayerLabel>("Player 2");
+  const [targetOtherDescription, setTargetOtherDescription] = useState("");
   const [detailTargetKindByCardId, setDetailTargetKindByCardId] = useState<Record<string, TargetKind>>({});
   const [detailStackTargetByCardId, setDetailStackTargetByCardId] = useState<Record<string, string>>({});
   const [detailBattlefieldByCardId, setDetailBattlefieldByCardId] = useState<Record<string, string>>({});
   const [detailPlayerByCardId, setDetailPlayerByCardId] = useState<Record<string, PlayerLabel>>({});
+  const [detailOtherByCardId, setDetailOtherByCardId] = useState<Record<string, string>>({});
   const [showStackDetails, setShowStackDetails] = useState(false);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<string | null>(null);
@@ -131,6 +140,9 @@ export default function App() {
   const suggestions = useMemo(() => {
     return getSuggestions(cardMetadata, searchInput);
   }, [cardMetadata, searchInput]);
+  const battlefieldSuggestions = useMemo(() => {
+    return getSuggestions(cardMetadata, battlefieldSearchInput);
+  }, [cardMetadata, battlefieldSearchInput]);
 
   const addButtonLabel = stack.length === 0 ? "Begin stackening!" : "Add to Stack";
   const canRetry = retryCountdown === 0 && !isSubmitting;
@@ -179,6 +191,7 @@ export default function App() {
     setTargetStackCardId("");
     setTargetBattlefieldName("");
     setTargetPlayer("Player 2");
+    setTargetOtherDescription("");
   }
 
   function addEntryTarget(): void {
@@ -221,6 +234,20 @@ export default function App() {
           targetPlayer
         }
       ]);
+      return;
+    }
+
+    if (targetKind === "other") {
+      const targetDescription = targetOtherDescription.trim();
+      if (targetDescription.length === 0) return;
+      setEntryTargets((current) => [
+        ...current,
+        {
+          kind: "other",
+          targetDescription
+        }
+      ]);
+      setTargetOtherDescription("");
       return;
     }
 
@@ -284,6 +311,14 @@ export default function App() {
       return;
     }
 
+    if (battlefieldTargetKind === "other") {
+      const targetDescription = battlefieldTargetOtherDescription.trim();
+      if (targetDescription.length === 0) return;
+      setBattlefieldEntryTargets((current) => [...current, { kind: "other", targetDescription }]);
+      setBattlefieldTargetOtherDescription("");
+      return;
+    }
+
     setBattlefieldEntryTargets((current) => [...current, { kind: "none" }]);
   }
 
@@ -306,18 +341,25 @@ export default function App() {
         targets: battlefieldEntryTargets
       }
     ]);
+    setBattlefieldSearchInput("");
     setBattlefieldEntryName("");
     setBattlefieldEntryDetails("");
     setBattlefieldEntryTargets([]);
     flashStatus("Battlefield context added.");
   }
 
-  function continueFromBattlefield(): void {
-    setFlowStep("stack-builder");
+  function selectBattlefieldSuggestion(card: CardMetadataItem): void {
+    setBattlefieldEntryName(card.name);
+    setBattlefieldSearchInput(card.name);
+    if (battlefieldEntryDetails.trim().length === 0) {
+      setBattlefieldEntryDetails(card.oracleText.slice(0, 280));
+    }
   }
 
-  function skipBattlefieldStep(): void {
-    setBattlefieldContext([]);
+  function progressFromBattlefieldStep(): void {
+    if (battlefieldContext.length === 0) {
+      setBattlefieldContext([]);
+    }
     setFlowStep("stack-builder");
   }
 
@@ -368,6 +410,10 @@ export default function App() {
     return detailPlayerByCardId[cardId] ?? "Player 2";
   }
 
+  function getDetailOther(cardId: string): string {
+    return detailOtherByCardId[cardId] ?? "";
+  }
+
   function addTargetFromStackDetails(cardId: string): void {
     const kind = getDetailTargetKind(cardId);
     if (kind === "stack") {
@@ -401,6 +447,17 @@ export default function App() {
         kind: "player",
         targetPlayer: getDetailPlayer(cardId)
       });
+      return;
+    }
+
+    if (kind === "other") {
+      const targetDescription = getDetailOther(cardId).trim();
+      if (targetDescription.length === 0) return;
+      addTargetToStackEntry(cardId, {
+        kind: "other",
+        targetDescription
+      });
+      setDetailOtherByCardId((current) => ({ ...current, [cardId]: "" }));
       return;
     }
 
@@ -453,6 +510,11 @@ export default function App() {
       return next;
     });
     setDetailPlayerByCardId((current) => {
+      const next = { ...current };
+      delete next[cardId];
+      return next;
+    });
+    setDetailOtherByCardId((current) => {
       const next = { ...current };
       delete next[cardId];
       return next;
@@ -550,6 +612,18 @@ export default function App() {
     return (
       <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
         <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 md:p-6">
+          <div className="p-2 text-center">
+            {emptyStateImageFailed ? (
+              <p className="text-2xl font-semibold text-slate-200">Cat wizard</p>
+            ) : (
+              <img
+                src={EMPTY_STATE_IMAGE_URL}
+                alt="Cat wizard"
+                onError={() => setEmptyStateImageFailed(true)}
+                className="mx-auto w-56 max-w-full rounded-xl"
+              />
+            )}
+          </div>
           <h1 className="text-2xl font-semibold text-sky-300">Game context</h1>
           <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
             Number of players
@@ -601,7 +675,43 @@ export default function App() {
         <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 md:p-6">
           <h1 className="text-2xl font-semibold text-sky-300">Battlefield context (optional)</h1>
           <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
-            Battlefield item
+            Battlefield search
+            <input
+              aria-label="Battlefield search input"
+              value={battlefieldSearchInput}
+              onChange={(event) => {
+                setBattlefieldSearchInput(event.target.value);
+                setBattlefieldEntryName(event.target.value);
+              }}
+              className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
+              placeholder="Type to begin"
+            />
+          </label>
+          {battlefieldSearchInput.trim().length >= 3 && (
+            <div className="rounded-xl border border-slate-600 bg-slate-800/70 p-2">
+              {isMetadataLoading ? (
+                <p className="px-2 py-1 text-sm text-slate-400">Loading cards...</p>
+              ) : battlefieldSuggestions.length === 0 ? (
+                <p className="px-2 py-1 text-sm text-slate-400">{NO_MATCH_COPY}</p>
+              ) : (
+                <ul className="flex flex-col gap-1">
+                  {battlefieldSuggestions.map((card) => (
+                    <li key={`battlefield-${card.cardId}`}>
+                      <button
+                        type="button"
+                        onClick={() => selectBattlefieldSuggestion(card)}
+                        className="w-full rounded-lg px-2 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-700 hover:text-sky-300"
+                      >
+                        {card.name}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+          <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
+            Battlefield item name
             <input
               aria-label="Battlefield item name"
               value={battlefieldEntryName}
@@ -629,6 +739,7 @@ export default function App() {
               <option value="battlefield">Battlefield target</option>
               <option value="player">Player target</option>
               <option value="stack">Stack target</option>
+              <option value="other">Other target context</option>
               <option value="none">No specific target</option>
             </select>
             {battlefieldTargetKind === "battlefield" && (
@@ -672,6 +783,15 @@ export default function App() {
                 />
               </>
             )}
+            {battlefieldTargetKind === "other" && (
+              <input
+                aria-label="Battlefield target other"
+                value={battlefieldTargetOtherDescription}
+                onChange={(event) => setBattlefieldTargetOtherDescription(event.target.value.slice(0, MAX_OTHER_TARGET_CHARS))}
+                className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                placeholder="Describe target context"
+              />
+            )}
             <button
               type="button"
               onClick={addBattlefieldTarget}
@@ -706,17 +826,10 @@ export default function App() {
             </button>
             <button
               type="button"
-              onClick={continueFromBattlefield}
+              onClick={progressFromBattlefieldStep}
               className="rounded-xl border border-slate-500 px-4 py-2 text-sm font-semibold text-slate-100"
             >
-              Continue to stack
-            </button>
-            <button
-              type="button"
-              onClick={skipBattlefieldStep}
-              className="rounded-xl border border-slate-500 px-4 py-2 text-sm font-semibold text-slate-100"
-            >
-              Skip battlefield context
+              {battlefieldContext.length > 0 ? "Continue to stack" : "Skip battlefield context"}
             </button>
           </div>
           {battlefieldContext.length > 0 && (
@@ -764,21 +877,6 @@ export default function App() {
             <p>{`Game context: ${gameContext.playerCount} players`}</p>
             <p>{gameContext.players.map((player) => `${player.label}=${player.lifeTotal}`).join(" | ")}</p>
             <p>{`Battlefield context entries: ${battlefieldContext.length}`}</p>
-          </div>
-        )}
-
-        {stack.length === 0 && (
-          <div className="p-2 text-center">
-            {emptyStateImageFailed ? (
-              <p className="text-2xl font-semibold text-slate-200">Cat wizard</p>
-            ) : (
-              <img
-                src={EMPTY_STATE_IMAGE_URL}
-                alt="Cat wizard"
-                onError={() => setEmptyStateImageFailed(true)}
-                className="mx-auto w-56 max-w-full rounded-xl"
-              />
-            )}
           </div>
         )}
 
@@ -892,6 +990,7 @@ export default function App() {
                       <option value="stack">Stack target</option>
                       <option value="battlefield">Battlefield target</option>
                       <option value="player">Player target</option>
+                      <option value="other">Other target context</option>
                       <option value="none">No specific target</option>
                     </select>
                     {targetKind === "stack" && (
@@ -931,6 +1030,15 @@ export default function App() {
                           </option>
                         ))}
                       </select>
+                    )}
+                    {targetKind === "other" && (
+                      <input
+                        aria-label="Entry other target"
+                        value={targetOtherDescription}
+                        onChange={(event) => setTargetOtherDescription(event.target.value.slice(0, MAX_OTHER_TARGET_CHARS))}
+                        placeholder="Describe target context"
+                        className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                      />
                     )}
                     <button
                       type="button"
@@ -1128,6 +1236,7 @@ export default function App() {
                         <option value="stack">Stack target</option>
                         <option value="battlefield">Battlefield target</option>
                         <option value="player">Player target</option>
+                        <option value="other">Other target context</option>
                         <option value="none">No specific target</option>
                       </select>
                       {getDetailTargetKind(item.cardId) === "stack" && (
@@ -1184,6 +1293,20 @@ export default function App() {
                             </option>
                           ))}
                         </select>
+                      )}
+                      {getDetailTargetKind(item.cardId) === "other" && (
+                        <input
+                          aria-label={`Other target for ${item.name}`}
+                          value={getDetailOther(item.cardId)}
+                          onChange={(event) =>
+                            setDetailOtherByCardId((current) => ({
+                              ...current,
+                              [item.cardId]: event.target.value.slice(0, MAX_OTHER_TARGET_CHARS)
+                            }))
+                          }
+                          placeholder="Describe target context"
+                          className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                        />
                       )}
                       <button
                         type="button"

@@ -34,6 +34,15 @@ function normalizeStackTarget(
     return { kind: "none" };
   }
 
+  if (target.kind === "other") {
+    const targetDescription = normalizeWhitespace(target.targetDescription);
+    if (targetDescription.length === 0) {
+      return null;
+    }
+
+    return { kind: "other", targetDescription };
+  }
+
   if (target.kind === "player") {
     return { kind: "player", targetPlayer: target.targetPlayer };
   }

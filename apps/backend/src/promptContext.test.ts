@@ -129,6 +129,10 @@ describe("buildPromptContext", () => {
             },
             {
               kind: "none"
+            },
+            {
+              kind: "other",
+              targetDescription: "   custom   target details   "
             }
           ],
           contextNotes: "  kicked  "
@@ -149,7 +153,8 @@ describe("buildPromptContext", () => {
     expect(context.orderedStack[0]?.targets).toEqual([
       { kind: "battlefield", targetPermanent: "Delver of Secrets" },
       { kind: "player", targetPlayer: "Player 1" },
-      { kind: "none" }
+      { kind: "none" },
+      { kind: "other", targetDescription: "custom target details" }
     ]);
     expect(context.orderedStack[0]?.contextNotes).toBe("kicked");
     expect(context.orderedStack[0]?.manaSpent).toBe(2);
