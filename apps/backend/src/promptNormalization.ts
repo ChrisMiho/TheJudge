@@ -66,7 +66,7 @@ function formatTargets(targets: PromptContext["orderedStack"][number]["targets"]
         return `battlefield:${truncatePromptLabel(target.targetPermanent, MAX_TARGET_LABEL_CHARS)}`;
       }
 
-      return `stack:${truncatePromptLabel(target.targetCardName, MAX_TARGET_LABEL_CHARS)} (${target.targetCardId})`;
+      return `stack:${truncatePromptLabel(target.targetCardName, MAX_TARGET_LABEL_CHARS)}`;
     })
     .join(" | ");
 }
@@ -134,8 +134,8 @@ export function buildPromptText(context: PromptContext): string {
       (card, index) =>
         [
           `Stack item ${index + 1} (${card.stackRole})`,
-          `cardId: ${card.cardId}`,
-          `name: ${card.name}`,
+          `StackOrder: ${index + 1}`,
+          `card: ${card.name}`,
           `manaCost: ${card.manaCost || "(none)"}`,
           `manaValue: ${card.manaValue}`,
           `typeLine: ${card.typeLine || "(none)"}`,

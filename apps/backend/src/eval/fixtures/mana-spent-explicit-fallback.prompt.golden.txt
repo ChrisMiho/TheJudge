@@ -16,8 +16,8 @@ OPTIONAL BATTLEFIELD CONTEXT
 
 ORDERED STACK CONTEXT (BOTTOM TO TOP)
 Stack item 1 (bottom)
-cardId: fireball
-name: Fireball
+StackOrder: 1
+card: Fireball
 manaCost: (none)
 manaValue: 1
 typeLine: (none)
@@ -31,8 +31,8 @@ contextNotes: (none)
 oracleText: This spell costs 1 more to cast for each target beyond the first.
 
 Stack item 2 (top)
-cardId: negate
-name: Negate
+StackOrder: 2
+card: Negate
 manaCost: (none)
 manaValue: 2
 typeLine: (none)
@@ -40,7 +40,7 @@ colors: (none)
 supertypes: (none)
 subtypes: (none)
 caster: Player 2
-targets: stack:Fireball (fireball)
+targets: stack:Fireball
 manaSpent: 2
 contextNotes: (none)
 oracleText: Counter target noncreature spell.

@@ -125,16 +125,16 @@ Use the repository’s current default branch as the integration baseline, and o
 - [x] Add lightweight frontend/backend debug logging with end-to-end correlation-id traceability for flow validation (`STORY-019`).
 - [x] Wire enriched stack-entry context fields into deterministic backend prompt/mock output (`STORY-020`).
 - [x] Expand caster/player-target labels to support up to four players across UI/backend contracts (`STORY-021`).
-- [ ] Capture pre-stack general game context (player count + life totals) and include it in prompt input (`STORY-022`).
-- [ ] Capture per-stack-entry mana spent context with fallback to `manaValue` in prompt context (`STORY-023`).
-- [ ] Add optional battlefield-context step after game context, including explicit skip path (`STORY-024`).
-- [ ] Harden expanded Ask-AI context contract end-to-end after staged-context features land (`STORY-025`).
-- [ ] Expand deterministic prompt structure to include staged context sections (`STORY-026`).
-- [ ] Extend eval harness fixtures/checks for staged-context regression detection (`STORY-027`).
-- [ ] Prepare Phase B Bedrock bootstrap/config/provider-selection wiring without contract changes (`STORY-028`).
-- [ ] Add prompt budget and latency guardrails for high-context scenarios (`STORY-029`).
-- [ ] Reuse metadata-backed search behavior in battlefield-context entry flow (`STORY-030`).
-- [ ] Replace battlefield-step dual progression controls with one dynamic skip/continue action (`STORY-031`).
-- [ ] Add `other` target option with 200-char freeform context wired into payload/prompt (`STORY-032`).
-- [ ] Move cat visual placement to game-context first screen (`STORY-033`).
-- [ ] Remove `cardId` from LLM-facing prompt output while preserving deterministic stack-order context (`STORY-034`).
+- [x] Capture pre-stack general game context (player count + life totals) and include it in prompt input (`STORY-022`).
+- [x] Capture per-stack-entry mana spent context with fallback to `manaValue` in prompt context (`STORY-023`).
+- [x] Add optional battlefield-context step after game context, including explicit skip path (`STORY-024`).
+- [x] Harden expanded Ask-AI context contract end-to-end after staged-context features land (`STORY-025`).
+- [x] Expand deterministic prompt structure to include staged context sections (`STORY-026`).
+- [x] Extend eval harness fixtures/checks for staged-context regression detection (`STORY-027`).
+- [x] Prepare Phase B Bedrock bootstrap/config/provider-selection wiring without contract changes (`STORY-028`).
+- [x] Add prompt budget and latency guardrails for high-context scenarios (`STORY-029`).
+- [x] Reuse metadata-backed search behavior in battlefield-context entry flow (`STORY-030`).
+- [x] Replace battlefield-step dual progression controls with one dynamic skip/continue action (`STORY-031`).
+- [x] Add `other` target option with 200-char freeform context wired into payload/prompt (`STORY-032`).
+- [x] Move cat visual placement to game-context first screen (`STORY-033`).
+- [x] Remove `cardId` from LLM-facing prompt output while preserving deterministic stack-order context (`STORY-034`).

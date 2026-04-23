@@ -20,8 +20,8 @@ targets: none:does-not-target
 
 ORDERED STACK CONTEXT (BOTTOM TO TOP)
 Stack item 1 (bottom)
-cardId: lightning-bolt
-name: Lightning Bolt
+StackOrder: 1
+card: Lightning Bolt
 manaCost: (none)
 manaValue: 1
 typeLine: (none)
@@ -35,8 +35,8 @@ contextNotes: (none)
 oracleText: Lightning Bolt deals 3 damage to any target.
 
 Stack item 2 (middle)
-cardId: counterspell
-name: Counterspell
+StackOrder: 2
+card: Counterspell
 manaCost: (none)
 manaValue: 2
 typeLine: (none)
@@ -44,14 +44,14 @@ colors: (none)
 supertypes: (none)
 subtypes: (none)
 caster: Player 2
-targets: stack:Lightning Bolt (lightning-bolt)
+targets: stack:Lightning Bolt
 manaSpent: 2
 contextNotes: (none)
 oracleText: Counter target spell.
 
 Stack item 3 (top)
-cardId: deflecting-swat
-name: Deflecting Swat
+StackOrder: 3
+card: Deflecting Swat
 manaCost: (none)
 manaValue: 3
 typeLine: (none)
@@ -59,7 +59,7 @@ colors: (none)
 supertypes: (none)
 subtypes: (none)
 caster: Player 3
-targets: stack:Counterspell (counterspell)
+targets: stack:Counterspell
 manaSpent: 0
 contextNotes: (none)
 oracleText: You may choose new targets for target spell or ability.
