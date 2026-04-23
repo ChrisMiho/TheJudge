@@ -42,6 +42,10 @@ For each story, include:
 - dependencies
 - exclusions
 
+### Acceptance Criteria Requirements
+- Include at least one acceptance criterion that requires updating the root `README.md` story checklist when the story is implemented.
+- The tracker criterion should reference `README.md` directly so completion status stays implementation-aligned.
+
 ## Dependency Rules
 - If `execution mode` is `parallel-ready`, dependencies should include only requirement/decision references and no blocking story IDs.
 - If `execution mode` is `sequential`, include at least one blocking story ID with explicit reason text.
@@ -52,6 +56,7 @@ For each story, include:
 - Story objective is singular and clear.
 - Story can be picked up without hidden assumptions from other stories.
 - Acceptance criteria can be verified without redefining scope.
+- Acceptance criteria include updating the root `README.md` story tracker entry.
 - Dependency section clearly distinguishes references vs blockers.
 - Parallel viability is explicit and justified.
 
