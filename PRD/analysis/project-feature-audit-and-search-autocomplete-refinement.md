@@ -19,6 +19,7 @@
 - failure handling preserves state and exposes retry cooldown behavior (REQ-014; DEC-014, DEC-016).
 
 Evidence:
+
 - `[apps/frontend/src/App.tsx](../../apps/frontend/src/App.tsx)`
 - `[apps/frontend/src/lib/stackState.ts](../../apps/frontend/src/lib/stackState.ts)`
 - `[apps/frontend/src/App.test.tsx](../../apps/frontend/src/App.test.tsx)`
@@ -34,6 +35,7 @@ Evidence:
 - both stack and battlefield suggestion lists call the same `getSuggestions` utility.
 
 Evidence:
+
 - `[apps/frontend/src/lib/search.ts](../../apps/frontend/src/lib/search.ts)`
 - `[apps/frontend/src/lib/search.test.ts](../../apps/frontend/src/lib/search.test.ts)`
 - `[scripts/build-card-metadata.mjs](../../scripts/build-card-metadata.mjs)`
@@ -47,6 +49,7 @@ Evidence:
 - Phase A mock provider is active.
 
 Evidence:
+
 - `[apps/backend/src/app.ts](../../apps/backend/src/app.ts)`
 - `[apps/backend/src/validation.ts](../../apps/backend/src/validation.ts)`
 - `[apps/backend/src/promptContext.ts](../../apps/backend/src/promptContext.ts)`
@@ -61,6 +64,7 @@ Evidence:
 - prompt regression fixtures and harness support deterministic evaluation checks.
 
 Evidence:
+
 - `[apps/frontend/src/App.test.tsx](../../apps/frontend/src/App.test.tsx)`
 - `[apps/backend/src/app.test.ts](../../apps/backend/src/app.test.ts)`
 - `[apps/backend/src/eval/contextEvaluationHarness.test.ts](../../apps/backend/src/eval/contextEvaluationHarness.test.ts)`
@@ -81,6 +85,7 @@ The following gaps are based on existing roadmap clues and current implementatio
 1. real Bedrock runtime invocation is not implemented yet; current `bedrock` path is readiness-only and intentionally throws.
 
 Evidence:
+
 - `[apps/backend/src/providers/bedrockReadinessProvider.ts](../../apps/backend/src/providers/bedrockReadinessProvider.ts)`
 - `[apps/backend/src/providers/README.md](../../apps/backend/src/providers/README.md)`
 - `[PRD/stories/STORY-028-phase-b-bedrock-readiness-bootstrap.md](../stories/STORY-028-phase-b-bedrock-readiness-bootstrap.md)`
@@ -108,6 +113,7 @@ The perceived difference is mostly from surrounding UI state behavior, not a dif
 5. parity tests currently focus on baseline behavior, not strict cross-flow equivalence guarantees (same query => same ordered output).
 
 Evidence:
+
 - `[apps/frontend/src/App.tsx](../../apps/frontend/src/App.tsx)`
 - `[apps/frontend/src/lib/search.ts](../../apps/frontend/src/lib/search.ts)`
 - `[apps/frontend/src/lib/search.test.ts](../../apps/frontend/src/lib/search.test.ts)`
