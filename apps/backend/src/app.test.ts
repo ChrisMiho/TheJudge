@@ -1,6 +1,8 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
 import { createApp } from "./app.js";
+import { readServerConfig } from "./config.js";
+import { createAskAiProvider } from "./providers/createAskAiProvider.js";
 import type { AskAiRequest } from "./types.js";
 
 const app = createApp();
@@ -302,6 +304,30 @@ describe("backend contract tests", () => {
     expect(response.body.answer).toBe("Provider boundary response");
     expect(providerCalls).toHaveLength(1);
     expect(providerCalls[0].question).toBe("Boundary check");
+  });
+
+  it("preserves API error shape when bedrock readiness provider throws", async () => {
+    const bedrockConfig = readServerConfig({
+      ASK_AI_PROVIDER: "bedrock",
+      AWS_REGION: "us-east-1",
+      BEDROCK_MODEL_ID: "anthropic.claude-v2"
+    });
+    const appWithBedrockReadiness = createApp({
+      askAiProvider: createAskAiProvider(bedrockConfig)
+    });
+
+    const response = await request(appWithBedrockReadiness).post("/api/ask-ai").send({
+      question: "bedrock readiness",
+      gameContext: createGameContext(),
+      battlefieldContext: [],
+      stack: [createStackItem()]
+    });
+
+    expect(response.status).toBe(502);
+    expect(response.body).toEqual({
+      error: "Miho is working on it",
+      retryAfterSeconds: 13
+    });
   });
 
   it("logs lifecycle events with shared correlation id", async () => {
