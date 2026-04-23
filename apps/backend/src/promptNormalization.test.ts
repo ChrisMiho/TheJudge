@@ -94,9 +94,11 @@ describe("buildPromptText", () => {
 
     expect(first).toBe(second);
     expect(first.indexOf("INSTRUCTIONS")).toBeLessThan(first.indexOf("QUESTION"));
-    expect(first.indexOf("QUESTION")).toBeLessThan(first.indexOf("GAME CONTEXT"));
-    expect(first.indexOf("GAME CONTEXT")).toBeLessThan(first.indexOf("BATTLEFIELD CONTEXT"));
-    expect(first.indexOf("BATTLEFIELD CONTEXT")).toBeLessThan(first.indexOf("ORDERED STACK (BOTTOM TO TOP)"));
+    expect(first.indexOf("QUESTION")).toBeLessThan(first.indexOf("GENERAL GAME CONTEXT"));
+    expect(first.indexOf("GENERAL GAME CONTEXT")).toBeLessThan(first.indexOf("OPTIONAL BATTLEFIELD CONTEXT"));
+    expect(first.indexOf("OPTIONAL BATTLEFIELD CONTEXT")).toBeLessThan(
+      first.indexOf("ORDERED STACK CONTEXT (BOTTOM TO TOP)")
+    );
   });
 
   it("includes uncertainty and non-invention guardrails", () => {
@@ -108,6 +110,18 @@ describe("buildPromptText", () => {
     expect(prompt).toContain("caster: Player 3");
     expect(prompt).toContain("manaSpent: 5");
     expect(prompt).toContain("targets: stack:Opt (card-1) | none:does-not-target | other:custom context target");
+    expect(prompt).toContain("Stack item 1 (bottom)");
+    expect(prompt).toContain("Stack item 2 (top)");
+  });
+
+  it("renders optional battlefield section explicitly when empty", () => {
+    const prompt = buildPromptText({
+      ...baseContext,
+      battlefieldContext: []
+    });
+
+    expect(prompt).toContain("OPTIONAL BATTLEFIELD CONTEXT");
+    expect(prompt).toContain("OPTIONAL BATTLEFIELD CONTEXT\n(none)");
   });
 
   it("stays under configured prompt budget for normal payloads", () => {

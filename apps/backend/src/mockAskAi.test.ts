@@ -63,8 +63,12 @@ describe("mock answer ergonomics", () => {
     expect(result.answer).toContain("MOCK RESPONSE");
     expect(result.answer).toContain("Final question: How does this resolve?");
     expect(result.answer).toContain("Stack order convention: bottom-to-top");
-    expect(result.answer).toContain("Players: 2 (Player 1=20, Player 2=18)");
-    expect(result.answer).toContain("Battlefield context items: 1");
+    expect(result.answer).toContain("General game context:");
+    expect(result.answer).toContain("playerCount: 2");
+    expect(result.answer).toContain("Player 1: lifeTotal=20");
+    expect(result.answer).toContain("Player 2: lifeTotal=18");
+    expect(result.answer).toContain("Optional battlefield context:");
+    expect(result.answer).toContain("items: 1");
     expect(result.answer).toContain("1. [bottom] Opt (cardId: opt)");
     expect(result.answer).toContain("2. [top] Lightning Bolt (cardId: bolt)");
     expect(result.answer).toContain(

@@ -173,6 +173,7 @@ Pending implementation backlog:
 - [ ] `STORY-031` simplify battlefield-step progression to one dynamic skip/continue action button
 - [ ] `STORY-032` add target kind `other` with up-to-200-char custom target context wired through payload/prompt
 - [ ] `STORY-033` move cat visual from stack window/empty-state placement to game-context first screen
+- [ ] `STORY-034` remove `cardId` from LLM-facing prompt output while preserving deterministic stack-order context
 
 ## Documentation Notes
 

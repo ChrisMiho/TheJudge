@@ -67,17 +67,18 @@ export function buildMockAnswer(context: PromptContext): AskAiResponse {
     "",
     `Final question: ${context.finalQuestion}`,
     `Stack order convention: bottom-to-top (stack[0] is the bottom spell)`,
-    `Players: ${context.gameContext.playerCount} (${context.gameContext.players
-      .map((player) => `${player.label}=${player.lifeTotal}`)
-      .join(", ")})`,
-    `Battlefield context items: ${context.battlefieldContext.length}`,
     `Stack size: ${context.orderedStack.length}`,
     `Prompt char estimate: ${estimatePromptChars(promptText)}`,
     "",
-    "Battlefield context:",
+    "General game context:",
+    `playerCount: ${context.gameContext.playerCount}`,
+    ...context.gameContext.players.map((player) => `${player.label}: lifeTotal=${player.lifeTotal}`),
+    "",
+    "Optional battlefield context:",
+    `items: ${context.battlefieldContext.length}`,
     battlefieldRows,
     "",
-    "Ordered stack:",
+    "Ordered stack context (bottom to top):",
     stackRows
   ];
 

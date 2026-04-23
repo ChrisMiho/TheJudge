@@ -1,0 +1,64 @@
+{
+  "finalQuestion": "Show mana spent details for these stack entries.",
+  "gameContext": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 28
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 11
+      }
+    ]
+  },
+  "battlefieldContext": [],
+  "orderedStack": [
+    {
+      "cardId": "fireball",
+      "name": "Fireball",
+      "oracleText": "This spell costs 1 more to cast for each target beyond the first.",
+      "imageUrl": "",
+      "manaCost": "",
+      "manaValue": 1,
+      "typeLine": "",
+      "colors": [],
+      "supertypes": [],
+      "subtypes": [],
+      "caster": "Player 1",
+      "targets": [
+        {
+          "kind": "player",
+          "targetPlayer": "Player 2"
+        }
+      ],
+      "manaSpent": 7,
+      "stackIndex": 0,
+      "stackRole": "bottom"
+    },
+    {
+      "cardId": "negate",
+      "name": "Negate",
+      "oracleText": "Counter target noncreature spell.",
+      "imageUrl": "",
+      "manaCost": "",
+      "manaValue": 2,
+      "typeLine": "",
+      "colors": [],
+      "supertypes": [],
+      "subtypes": [],
+      "caster": "Player 2",
+      "targets": [
+        {
+          "kind": "stack",
+          "targetCardId": "fireball",
+          "targetCardName": "Fireball"
+        }
+      ],
+      "manaSpent": 2,
+      "stackIndex": 1,
+      "stackRole": "top"
+    }
+  ]
+}

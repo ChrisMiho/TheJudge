@@ -137,3 +137,4 @@ Use the repository’s current default branch as the integration baseline, and o
 - [ ] Replace battlefield-step dual progression controls with one dynamic skip/continue action (`STORY-031`).
 - [ ] Add `other` target option with 200-char freeform context wired into payload/prompt (`STORY-032`).
 - [ ] Move cat visual placement to game-context first screen (`STORY-033`).
+- [ ] Remove `cardId` from LLM-facing prompt output while preserving deterministic stack-order context (`STORY-034`).

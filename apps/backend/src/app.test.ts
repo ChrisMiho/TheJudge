@@ -57,8 +57,10 @@ describe("backend contract tests", () => {
     expect(response.body.answer).toContain("MOCK RESPONSE");
     expect(response.body.answer).toContain("Final question: How does this resolve?");
     expect(response.body.answer).toContain("Stack order convention: bottom-to-top");
-    expect(response.body.answer).toContain("Players: 4");
-    expect(response.body.answer).toContain("Battlefield context items: 1");
+    expect(response.body.answer).toContain("General game context:");
+    expect(response.body.answer).toContain("playerCount: 4");
+    expect(response.body.answer).toContain("Optional battlefield context:");
+    expect(response.body.answer).toContain("items: 1");
     expect(response.body.answer).toContain("1. [top] Opt (cardId: opt)");
     expect(response.body.answer).toContain("Caster: Player 4 | Targets: none:does-not-target | other:retarget to token copy");
     expect(response.body.answer).toContain("Mana: {U} | MV: 1");

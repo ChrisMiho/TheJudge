@@ -1,0 +1,29 @@
+# STORY-034 - Remove cardId from LLM-facing Prompt Content
+
+- title: Remove internal `cardId` values from LLM-facing prompt text and mock/debug prompt mirrors while preserving stack-order clarity through non-ID labels.
+- user value: As an engineer, I can keep internal identifiers out of model-facing prompt content, reducing unnecessary token usage and avoiding exposure of implementation-specific IDs.
+- scope:
+  - remove `cardId` lines from normalized prompt text sections sent to the model pipeline
+  - remove `cardId` references from deterministic mock/debug prompt mirrors that represent LLM-facing prompt content
+  - preserve deterministic stack-order readability using stable section/ordinal labels and card names
+  - keep API request/response contracts unchanged (`cardId` remains in app/backend request validation and internal context objects where needed)
+  - add/update tests to assert `cardId` omission from LLM-facing prompt output while keeping stack-order semantics intact
+  - add/update eval harness checks/fixtures to fail if LLM-facing prompt output reintroduces `cardId`
+- acceptance criteria:
+  - model-facing prompt text contains no `cardId:` lines or stack target ID suffixes
+  - stack ordering remains explicit and deterministic in prompt output
+  - mock/debug prompt mirrors align with the no-`cardId` policy for LLM-facing sections
+  - request-contract behavior and payload validation remain unchanged
+  - regression tests/eval fixtures fail on `cardId` reintroduction in prompt output
+- execution mode: sequential
+- dependencies:
+  - STORY-026 (blocking): prompt structure and staged section ordering must be stabilized before removing prompt fields
+  - STORY-027 (blocking): eval harness expansion should land first so no-`cardId` regressions are protected by fixture checks
+  - REQ-006, REQ-013, REQ-015, REQ-016, REQ-017
+  - DEC-004, DEC-017, DEC-019
+  - NFR-005
+  - `sections/integrations-and-data.md` (AI prompt context rules)
+- exclusions:
+  - no changes to external API request/response shape
+  - no Bedrock runtime invocation changes
+  - no rules-engine or gameplay-legality behavior
