@@ -185,6 +185,25 @@ describe("backend contract tests", () => {
     expect(response.body.error).toContain("gameContext.players");
   });
 
+  it("returns 400 when gameContext omits required fixed player labels", async () => {
+    const response = await request(app).post("/api/ask-ai").send({
+      question: "bad game labels",
+      gameContext: {
+        playerCount: 2,
+        players: [
+          { label: "Player 1", lifeTotal: 20 },
+          { label: "Player 3", lifeTotal: 20 }
+        ]
+      },
+      battlefieldContext: [],
+      stack: [createStackItem()]
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toContain("gameContext.players");
+    expect(response.body.error).toContain("must use fixed labels");
+  });
+
   it("returns 400 for unknown extra fields in strict contract", async () => {
     const response = await request(app).post("/api/ask-ai").send({
       question: "strict contract",
@@ -195,6 +214,23 @@ describe("backend contract tests", () => {
 
     expect(response.status).toBe(400);
     expect(response.body.error).toContain("stack.0");
+  });
+
+  it("returns 400 for malformed battlefield context targets", async () => {
+    const response = await request(app).post("/api/ask-ai").send({
+      question: "bad battlefield target",
+      gameContext: createGameContext(),
+      battlefieldContext: [
+        {
+          name: "Rhystic Study",
+          targets: [{ kind: "other", targetDescription: "" }]
+        }
+      ],
+      stack: [createStackItem()]
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toContain("battlefieldContext.0.targets.0.targetDescription");
   });
 
   it("returns 400 when prompt budget is exceeded", async () => {

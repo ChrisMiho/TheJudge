@@ -525,6 +525,70 @@ describe("App MVP interaction flows", () => {
 
   });
 
+  it("retries with identical staged context payload after failure", async () => {
+    const user = userEvent.setup();
+    queueAskAiResponses(
+      { status: 502, body: { error: "Miho is working on it", retryAfterSeconds: 13 } },
+      { status: 502, body: { error: "Miho is working on it", retryAfterSeconds: 13 } }
+    );
+    render(<App />);
+
+    await user.selectOptions(screen.getByLabelText("Number of players"), "3");
+    await user.clear(screen.getByLabelText("Player 1 life total"));
+    await user.type(screen.getByLabelText("Player 1 life total"), "38");
+    await user.clear(screen.getByLabelText("Player 2 life total"));
+    await user.type(screen.getByLabelText("Player 2 life total"), "24");
+    await user.clear(screen.getByLabelText("Player 3 life total"));
+    await user.type(screen.getByLabelText("Player 3 life total"), "17");
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+
+    await user.type(screen.getByLabelText("Battlefield search input"), "lig");
+    await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
+    await user.selectOptions(screen.getByLabelText("Battlefield target kind"), "none");
+    await user.click(screen.getByRole("button", { name: "Add battlefield target" }));
+    await user.click(screen.getByRole("button", { name: "Add battlefield item" }));
+    await user.click(screen.getByRole("button", { name: "Continue to stack" }));
+    await waitForMetadataReady();
+
+    await selectCard(user, "opt", "Opt");
+    await user.type(screen.getByLabelText("Entry mana spent"), "4");
+    await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
+
+    vi.useFakeTimers();
+    fireEvent.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(13000);
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(submittedAskAiRequests).toHaveLength(2);
+    expect(submittedAskAiRequests[1]).toEqual(submittedAskAiRequests[0]);
+    expect(submittedAskAiRequests[0]).toMatchObject({
+      gameContext: {
+        playerCount: 3,
+        players: [
+          { label: "Player 1", lifeTotal: 38 },
+          { label: "Player 2", lifeTotal: 24 },
+          { label: "Player 3", lifeTotal: 17 }
+        ]
+      },
+      battlefieldContext: [
+        {
+          name: "Lightning Bolt",
+          targets: [{ kind: "none" }]
+        }
+      ],
+      stack: [{ name: "Opt", manaSpent: 4 }]
+    });
+  });
+
   it("requires game context before showing stack builder", async () => {
     const user = userEvent.setup();
     render(<App />);
