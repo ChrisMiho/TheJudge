@@ -6,20 +6,20 @@ INSTRUCTIONS
 QUESTION
 Walk me through the full stack resolution.
 
-GAME CONTEXT
+GENERAL GAME CONTEXT
 playerCount: 3
 Player 1: lifeTotal=22
 Player 2: lifeTotal=14
 Player 3: lifeTotal=7
 
-BATTLEFIELD CONTEXT
+OPTIONAL BATTLEFIELD CONTEXT
 Battlefield 1
 name: Rule of Law
 details: Each player can cast one spell each turn.
 targets: none:does-not-target
 
-ORDERED STACK (BOTTOM TO TOP)
-Card 1 (bottom)
+ORDERED STACK CONTEXT (BOTTOM TO TOP)
+Stack item 1 (bottom)
 cardId: lightning-bolt
 name: Lightning Bolt
 manaCost: (none)
@@ -34,7 +34,7 @@ manaSpent: 1
 contextNotes: (none)
 oracleText: Lightning Bolt deals 3 damage to any target.
 
-Card 2 (middle)
+Stack item 2 (middle)
 cardId: counterspell
 name: Counterspell
 manaCost: (none)
@@ -49,7 +49,7 @@ manaSpent: 2
 contextNotes: (none)
 oracleText: Counter target spell.
 
-Card 3 (top)
+Stack item 3 (top)
 cardId: deflecting-swat
 name: Deflecting Swat
 manaCost: (none)

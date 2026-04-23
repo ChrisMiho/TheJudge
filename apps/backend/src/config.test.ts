@@ -43,6 +43,18 @@ describe("backend env config", () => {
     expect(config.bedrockModelId).toBe("anthropic.claude-v2");
   });
 
+  it("normalizes provider selection casing and surrounding whitespace", () => {
+    const config = readServerConfig({
+      ASK_AI_PROVIDER: "  BeDrOcK  ",
+      AWS_REGION: " us-east-1 ",
+      BEDROCK_MODEL_ID: " anthropic.claude-v2 "
+    });
+
+    expect(config.askAiProvider).toBe("bedrock");
+    expect(config.awsRegion).toBe("us-east-1");
+    expect(config.bedrockModelId).toBe("anthropic.claude-v2");
+  });
+
   it("throws on invalid port", () => {
     expect(() => readServerConfig({ PORT: "abc" })).toThrow(/Invalid PORT value/);
   });
@@ -67,6 +79,12 @@ describe("backend env config", () => {
 
   it("throws when bedrock provider is missing required env", () => {
     expect(() => readServerConfig({ ASK_AI_PROVIDER: "bedrock", AWS_REGION: "us-east-1" })).toThrow(
+      /requires both AWS_REGION and BEDROCK_MODEL_ID/
+    );
+  });
+
+  it("throws when bedrock provider omits AWS_REGION", () => {
+    expect(() => readServerConfig({ ASK_AI_PROVIDER: "bedrock", BEDROCK_MODEL_ID: "anthropic.claude-v2" })).toThrow(
       /requires both AWS_REGION and BEDROCK_MODEL_ID/
     );
   });

@@ -78,5 +78,34 @@ describe("createAskAiProvider", () => {
         ]
       })
     ).rejects.toThrow(/readiness only/);
+    await expect(
+      provider.generateAnswer({
+        question: "How does this resolve?",
+        gameContext: {
+          playerCount: 2,
+          players: [
+            { label: "Player 1", lifeTotal: 20 },
+            { label: "Player 2", lifeTotal: 20 }
+          ]
+        },
+        battlefieldContext: [],
+        stack: [
+          {
+            cardId: "opt",
+            name: "Opt",
+            oracleText: "Scry 1, then draw a card.",
+            imageUrl: "",
+            manaCost: "{U}",
+            manaValue: 1,
+            typeLine: "Instant",
+            colors: ["U"],
+            supertypes: [],
+            subtypes: [],
+            caster: "Player 1",
+            targets: []
+          }
+        ]
+      })
+    ).rejects.toThrow(/region=us-east-1, model=anthropic\.claude-v2/);
   });
 });

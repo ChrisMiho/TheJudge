@@ -1,0 +1,36 @@
+{
+  "id": "battlefield-skip",
+  "description": "Skip path where optional battlefield context is intentionally omitted.",
+  "request": {
+    "question": "Does this still resolve if no board effects matter?",
+    "gameContext": {
+      "playerCount": 3,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 20 },
+        { "label": "Player 2", "lifeTotal": 16 },
+        { "label": "Player 3", "lifeTotal": 12 }
+      ]
+    },
+    "battlefieldContext": [],
+    "stack": [
+      {
+        "cardId": "opt",
+        "name": "Opt",
+        "oracleText": "Scry 1, then draw a card.",
+        "imageUrl": "",
+        "manaValue": 1,
+        "caster": "Player 1",
+        "targets": []
+      },
+      {
+        "cardId": "counterspell",
+        "name": "Counterspell",
+        "oracleText": "Counter target spell.",
+        "imageUrl": "",
+        "manaValue": 2,
+        "caster": "Player 2",
+        "targets": [{ "kind": "stack", "targetCardId": "opt", "targetCardName": "Opt" }]
+      }
+    ]
+  }
+}

@@ -1,6 +1,8 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
 import { createApp } from "./app.js";
+import { readServerConfig } from "./config.js";
+import { createAskAiProvider } from "./providers/createAskAiProvider.js";
 import type { AskAiRequest } from "./types.js";
 
 const app = createApp();
@@ -57,8 +59,10 @@ describe("backend contract tests", () => {
     expect(response.body.answer).toContain("MOCK RESPONSE");
     expect(response.body.answer).toContain("Final question: How does this resolve?");
     expect(response.body.answer).toContain("Stack order convention: bottom-to-top");
-    expect(response.body.answer).toContain("Players: 4");
-    expect(response.body.answer).toContain("Battlefield context items: 1");
+    expect(response.body.answer).toContain("General game context:");
+    expect(response.body.answer).toContain("playerCount: 4");
+    expect(response.body.answer).toContain("Optional battlefield context:");
+    expect(response.body.answer).toContain("items: 1");
     expect(response.body.answer).toContain("1. [top] Opt (cardId: opt)");
     expect(response.body.answer).toContain("Caster: Player 4 | Targets: none:does-not-target | other:retarget to token copy");
     expect(response.body.answer).toContain("Mana: {U} | MV: 1");
@@ -185,6 +189,25 @@ describe("backend contract tests", () => {
     expect(response.body.error).toContain("gameContext.players");
   });
 
+  it("returns 400 when gameContext omits required fixed player labels", async () => {
+    const response = await request(app).post("/api/ask-ai").send({
+      question: "bad game labels",
+      gameContext: {
+        playerCount: 2,
+        players: [
+          { label: "Player 1", lifeTotal: 20 },
+          { label: "Player 3", lifeTotal: 20 }
+        ]
+      },
+      battlefieldContext: [],
+      stack: [createStackItem()]
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toContain("gameContext.players");
+    expect(response.body.error).toContain("must use fixed labels");
+  });
+
   it("returns 400 for unknown extra fields in strict contract", async () => {
     const response = await request(app).post("/api/ask-ai").send({
       question: "strict contract",
@@ -195,6 +218,23 @@ describe("backend contract tests", () => {
 
     expect(response.status).toBe(400);
     expect(response.body.error).toContain("stack.0");
+  });
+
+  it("returns 400 for malformed battlefield context targets", async () => {
+    const response = await request(app).post("/api/ask-ai").send({
+      question: "bad battlefield target",
+      gameContext: createGameContext(),
+      battlefieldContext: [
+        {
+          name: "Rhystic Study",
+          targets: [{ kind: "other", targetDescription: "" }]
+        }
+      ],
+      stack: [createStackItem()]
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toContain("battlefieldContext.0.targets.0.targetDescription");
   });
 
   it("returns 400 when prompt budget is exceeded", async () => {
@@ -264,6 +304,30 @@ describe("backend contract tests", () => {
     expect(response.body.answer).toBe("Provider boundary response");
     expect(providerCalls).toHaveLength(1);
     expect(providerCalls[0].question).toBe("Boundary check");
+  });
+
+  it("preserves API error shape when bedrock readiness provider throws", async () => {
+    const bedrockConfig = readServerConfig({
+      ASK_AI_PROVIDER: "bedrock",
+      AWS_REGION: "us-east-1",
+      BEDROCK_MODEL_ID: "anthropic.claude-v2"
+    });
+    const appWithBedrockReadiness = createApp({
+      askAiProvider: createAskAiProvider(bedrockConfig)
+    });
+
+    const response = await request(appWithBedrockReadiness).post("/api/ask-ai").send({
+      question: "bedrock readiness",
+      gameContext: createGameContext(),
+      battlefieldContext: [],
+      stack: [createStackItem()]
+    });
+
+    expect(response.status).toBe(502);
+    expect(response.body).toEqual({
+      error: "Miho is working on it",
+      retryAfterSeconds: 13
+    });
   });
 
   it("logs lifecycle events with shared correlation id", async () => {

@@ -4,23 +4,20 @@ INSTRUCTIONS
 - Do not invent hidden state, targets, or board conditions.
 
 QUESTION
-can i do this before that resolves??
+Show mana spent details for these stack entries.
 
 GENERAL GAME CONTEXT
 playerCount: 2
-Player 1: lifeTotal=5
-Player 2: lifeTotal=2
+Player 1: lifeTotal=28
+Player 2: lifeTotal=11
 
 OPTIONAL BATTLEFIELD CONTEXT
-Battlefield 1
-name: Narset, Parter of Veils
-details: Each opponent can't draw more than one card each turn.
-targets: none:does-not-target
+(none)
 
 ORDERED STACK CONTEXT (BOTTOM TO TOP)
 Stack item 1 (bottom)
-cardId: silence
-name: Silence
+cardId: fireball
+name: Fireball
 manaCost: (none)
 manaValue: 1
 typeLine: (none)
@@ -28,22 +25,22 @@ colors: (none)
 supertypes: (none)
 subtypes: (none)
 caster: Player 1
-targets: (none)
-manaSpent: 1
+targets: player:Player 2
+manaSpent: 7
 contextNotes: (none)
-oracleText: Your opponents can't cast spells this turn.
+oracleText: This spell costs 1 more to cast for each target beyond the first.
 
 Stack item 2 (top)
-cardId: mystical-dispute
-name: Mystical Dispute
+cardId: negate
+name: Negate
 manaCost: (none)
-manaValue: 3
+manaValue: 2
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
 caster: Player 2
-targets: stack:Silence (silence)
-manaSpent: 3
+targets: stack:Fireball (fireball)
+manaSpent: 2
 contextNotes: (none)
-oracleText: Counter target spell unless its controller pays 3.
+oracleText: Counter target noncreature spell.

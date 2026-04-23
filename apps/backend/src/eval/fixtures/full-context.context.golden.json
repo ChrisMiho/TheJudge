@@ -1,0 +1,77 @@
+{
+  "finalQuestion": "How does this interaction resolve?",
+  "gameContext": {
+    "playerCount": 4,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 35
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 24
+      },
+      {
+        "label": "Player 3",
+        "lifeTotal": 18
+      },
+      {
+        "label": "Player 4",
+        "lifeTotal": 9
+      }
+    ]
+  },
+  "battlefieldContext": [
+    {
+      "name": "Rhystic Study",
+      "details": "Tax trigger may alter available mana decisions.",
+      "targets": [
+        {
+          "kind": "none"
+        }
+      ]
+    }
+  ],
+  "orderedStack": [
+    {
+      "cardId": "brainstorm",
+      "name": "Brainstorm",
+      "oracleText": "Draw three cards, then put two cards from your hand on top of your library in any order.",
+      "imageUrl": "",
+      "manaCost": "",
+      "manaValue": 1,
+      "typeLine": "",
+      "colors": [],
+      "supertypes": [],
+      "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
+      "manaSpent": 1,
+      "stackIndex": 0,
+      "stackRole": "bottom"
+    },
+    {
+      "cardId": "narsets-reversal",
+      "name": "Narset's Reversal",
+      "oracleText": "Copy target instant or sorcery spell, then return it to its owner's hand. You may choose new targets for the copy.",
+      "imageUrl": "",
+      "manaCost": "",
+      "manaValue": 2,
+      "typeLine": "",
+      "colors": [],
+      "supertypes": [],
+      "subtypes": [],
+      "caster": "Player 2",
+      "targets": [
+        {
+          "kind": "stack",
+          "targetCardId": "brainstorm",
+          "targetCardName": "Brainstorm"
+        }
+      ],
+      "manaSpent": 2,
+      "stackIndex": 1,
+      "stackRole": "top"
+    }
+  ]
+}

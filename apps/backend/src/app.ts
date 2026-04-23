@@ -4,7 +4,7 @@ import { createAppLogger, resolveCorrelationId, type AppLogger } from "./logging
 import { mockAskAiProvider } from "./providers/mockAskAiProvider.js";
 import type { AskAiProvider } from "./providers/askAiProvider.js";
 import { buildPromptContext } from "./promptContext.js";
-import { buildPromptText, MAX_PROMPT_CHAR_BUDGET } from "./promptNormalization.js";
+import { buildPromptText, getPromptDiagnostics } from "./promptNormalization.js";
 import { askAiRequestSchema } from "./validation.js";
 import type { AskAiError } from "./types.js";
 
@@ -86,32 +86,35 @@ export function createApp(options: AppOptions = {}) {
       const promptBuildStartedAt = Date.now();
       const promptContext = buildPromptContext(parsed.data);
       const promptText = buildPromptText(promptContext);
-      const promptChars = promptText.length;
+      const diagnostics = getPromptDiagnostics(promptText);
       logger.info("ask_ai.prompt_context_build_completed", {
         correlationId,
-        promptChars,
+        promptChars: diagnostics.promptChars,
+        promptBudgetChars: diagnostics.promptBudgetChars,
+        promptUtilizationPercent: diagnostics.utilizationPercent,
         promptBuildElapsedMs: Date.now() - promptBuildStartedAt
       });
 
-      if (promptChars > MAX_PROMPT_CHAR_BUDGET) {
+      if (diagnostics.exceedsBudget) {
         logger.info("ask_ai.prompt_budget_exceeded", {
           correlationId,
-          promptChars,
-          promptBudgetChars: MAX_PROMPT_CHAR_BUDGET
+          promptChars: diagnostics.promptChars,
+          promptBudgetChars: diagnostics.promptBudgetChars
         });
         const error: AskAiError = {
-          error: `Invalid request payload: prompt exceeds max budget (${MAX_PROMPT_CHAR_BUDGET} chars)`,
+          error: `Invalid request payload: prompt exceeds max budget (${diagnostics.promptBudgetChars} chars)`,
           retryAfterSeconds
         };
         res.status(400).json(error);
         return;
       }
 
-      if (promptChars > MAX_PROMPT_CHAR_BUDGET - 800) {
+      if (diagnostics.nearLimit) {
         logger.info("ask_ai.prompt_budget_near_limit", {
           correlationId,
-          promptChars,
-          promptBudgetChars: MAX_PROMPT_CHAR_BUDGET
+          promptChars: diagnostics.promptChars,
+          promptBudgetChars: diagnostics.promptBudgetChars,
+          promptRemainingChars: diagnostics.remainingChars
         });
       }
 

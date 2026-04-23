@@ -2,8 +2,12 @@ import type { PromptContext } from "./types.js";
 
 export const MAX_ORACLE_TEXT_CHARS = 480;
 export const MAX_CONTEXT_DETAILS_CHARS = 220;
+export const MAX_CONTEXT_NOTES_CHARS = 180;
+export const MAX_TARGET_LABEL_CHARS = 120;
 export const MAX_PROMPT_CHAR_BUDGET = 12000;
+export const PROMPT_BUDGET_NEAR_LIMIT_BUFFER = 800;
 const TRUNCATION_SUFFIX = " ...(truncated)";
+const PLAYER_LABEL_ORDER = ["Player 1", "Player 2", "Player 3", "Player 4"] as const;
 
 export function normalizeWhitespace(value: string): string {
   return value.replace(/\s+/g, " ").trim();
@@ -18,6 +22,10 @@ export function truncateOracleText(value: string, maxChars = MAX_ORACLE_TEXT_CHA
   return `${value.slice(0, maxWithoutSuffix)}${TRUNCATION_SUFFIX}`;
 }
 
+function truncatePromptLabel(value: string, maxChars: number): string {
+  return truncateOracleText(value, maxChars);
+}
+
 export function normalizeQuestion(value: string): string {
   return normalizeWhitespace(value);
 }
@@ -28,6 +36,11 @@ export function normalizeCardText(value: string): string {
 
 function formatList(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "(none)";
+}
+
+function toPlayerLabelIndex(label: string): number {
+  const index = PLAYER_LABEL_ORDER.indexOf(label as (typeof PLAYER_LABEL_ORDER)[number]);
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 
 function formatTargets(targets: PromptContext["orderedStack"][number]["targets"]): string {
@@ -42,7 +55,7 @@ function formatTargets(targets: PromptContext["orderedStack"][number]["targets"]
       }
 
       if (target.kind === "other") {
-        return `other:${target.targetDescription}`;
+        return `other:${truncatePromptLabel(target.targetDescription, MAX_TARGET_LABEL_CHARS)}`;
       }
 
       if (target.kind === "player") {
@@ -50,10 +63,10 @@ function formatTargets(targets: PromptContext["orderedStack"][number]["targets"]
       }
 
       if (target.kind === "battlefield") {
-        return `battlefield:${target.targetPermanent}`;
+        return `battlefield:${truncatePromptLabel(target.targetPermanent, MAX_TARGET_LABEL_CHARS)}`;
       }
 
-      return `stack:${target.targetCardName} (${target.targetCardId})`;
+      return `stack:${truncatePromptLabel(target.targetCardName, MAX_TARGET_LABEL_CHARS)} (${target.targetCardId})`;
     })
     .join(" | ");
 }
@@ -75,8 +88,44 @@ function formatBattlefieldContext(context: PromptContext): string {
     .join("\n\n");
 }
 
+function formatGameContext(context: PromptContext): string {
+  const players = [...context.gameContext.players].sort(
+    (left, right) => toPlayerLabelIndex(left.label) - toPlayerLabelIndex(right.label)
+  );
+
+  return [
+    `playerCount: ${context.gameContext.playerCount}`,
+    ...players.map((player) => `${player.label}: lifeTotal=${player.lifeTotal}`)
+  ].join("\n");
+}
+
 export function estimatePromptChars(prompt: string): number {
   return prompt.length;
+}
+
+export type PromptDiagnostics = {
+  promptChars: number;
+  promptBudgetChars: number;
+  remainingChars: number;
+  utilizationPercent: number;
+  nearLimit: boolean;
+  exceedsBudget: boolean;
+};
+
+export function getPromptDiagnostics(prompt: string): PromptDiagnostics {
+  const promptChars = estimatePromptChars(prompt);
+  const promptBudgetChars = MAX_PROMPT_CHAR_BUDGET;
+  const remainingChars = promptBudgetChars - promptChars;
+  const utilizationPercent = Math.round((promptChars / promptBudgetChars) * 1000) / 10;
+
+  return {
+    promptChars,
+    promptBudgetChars,
+    remainingChars,
+    utilizationPercent,
+    nearLimit: promptChars > promptBudgetChars - PROMPT_BUDGET_NEAR_LIMIT_BUFFER,
+    exceedsBudget: promptChars > promptBudgetChars
+  };
 }
 
 export function buildPromptText(context: PromptContext): string {
@@ -84,7 +133,7 @@ export function buildPromptText(context: PromptContext): string {
     .map(
       (card, index) =>
         [
-          `Card ${index + 1} (${card.stackRole})`,
+          `Stack item ${index + 1} (${card.stackRole})`,
           `cardId: ${card.cardId}`,
           `name: ${card.name}`,
           `manaCost: ${card.manaCost || "(none)"}`,
@@ -96,7 +145,9 @@ export function buildPromptText(context: PromptContext): string {
           `caster: ${card.caster}`,
           `targets: ${formatTargets(card.targets)}`,
           `manaSpent: ${card.manaSpent ?? card.manaValue}`,
-          `contextNotes: ${card.contextNotes || "(none)"}`,
+          `contextNotes: ${
+            card.contextNotes ? truncatePromptLabel(card.contextNotes, MAX_CONTEXT_NOTES_CHARS) : "(none)"
+          }`,
           `oracleText: ${card.oracleText}`
         ].join("\n")
     )
@@ -111,14 +162,13 @@ export function buildPromptText(context: PromptContext): string {
     "QUESTION",
     context.finalQuestion,
     "",
-    "GAME CONTEXT",
-    `playerCount: ${context.gameContext.playerCount}`,
-    ...context.gameContext.players.map((player) => `${player.label}: lifeTotal=${player.lifeTotal}`),
+    "GENERAL GAME CONTEXT",
+    formatGameContext(context),
     "",
-    "BATTLEFIELD CONTEXT",
+    "OPTIONAL BATTLEFIELD CONTEXT",
     formatBattlefieldContext(context),
     "",
-    "ORDERED STACK (BOTTOM TO TOP)",
+    "ORDERED STACK CONTEXT (BOTTOM TO TOP)",
     cardsSection
   ].join("\n");
 

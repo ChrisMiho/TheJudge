@@ -9,6 +9,13 @@ This folder isolates answer-generation providers behind a stable interface so ro
 - `bedrockReadinessProvider.ts` is a non-invoking bootstrap provider used to verify config wiring in Phase A.
 - `createAskAiProvider.ts` selects provider based on runtime config.
 
+### Bedrock readiness bootstrap
+
+- Provider selection is controlled by `ASK_AI_PROVIDER` (`mock` or `bedrock`).
+- `ASK_AI_PROVIDER=bedrock` requires `AWS_REGION` and `BEDROCK_MODEL_ID`; config fails fast if either is missing.
+- In Phase A, the bedrock provider intentionally throws a readiness-only error so production contract mapping can be tested without live Bedrock calls.
+- Route-level error handling must continue returning the existing API error shape (`{ error, retryAfterSeconds }`) regardless of provider mode.
+
 ## Interface Contract
 
 - `askAiProvider.ts` defines `AskAiProvider.generateAnswer(request)`.

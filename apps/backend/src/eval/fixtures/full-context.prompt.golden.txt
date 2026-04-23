@@ -4,23 +4,25 @@ INSTRUCTIONS
 - Do not invent hidden state, targets, or board conditions.
 
 QUESTION
-can i do this before that resolves??
+How does this interaction resolve?
 
 GENERAL GAME CONTEXT
-playerCount: 2
-Player 1: lifeTotal=5
-Player 2: lifeTotal=2
+playerCount: 4
+Player 1: lifeTotal=35
+Player 2: lifeTotal=24
+Player 3: lifeTotal=18
+Player 4: lifeTotal=9
 
 OPTIONAL BATTLEFIELD CONTEXT
 Battlefield 1
-name: Narset, Parter of Veils
-details: Each opponent can't draw more than one card each turn.
+name: Rhystic Study
+details: Tax trigger may alter available mana decisions.
 targets: none:does-not-target
 
 ORDERED STACK CONTEXT (BOTTOM TO TOP)
 Stack item 1 (bottom)
-cardId: silence
-name: Silence
+cardId: brainstorm
+name: Brainstorm
 manaCost: (none)
 manaValue: 1
 typeLine: (none)
@@ -31,19 +33,19 @@ caster: Player 1
 targets: (none)
 manaSpent: 1
 contextNotes: (none)
-oracleText: Your opponents can't cast spells this turn.
+oracleText: Draw three cards, then put two cards from your hand on top of your library in any order.
 
 Stack item 2 (top)
-cardId: mystical-dispute
-name: Mystical Dispute
+cardId: narsets-reversal
+name: Narset's Reversal
 manaCost: (none)
-manaValue: 3
+manaValue: 2
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
 caster: Player 2
-targets: stack:Silence (silence)
-manaSpent: 3
+targets: stack:Brainstorm (brainstorm)
+manaSpent: 2
 contextNotes: (none)
-oracleText: Counter target spell unless its controller pays 3.
+oracleText: Copy target instant or sorcery spell, then return it to its owner's hand. You may choose new targets for the copy.

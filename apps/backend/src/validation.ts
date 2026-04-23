@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const playerLabelSchema = z.enum(["Player 1", "Player 2", "Player 3", "Player 4"]);
+const orderedPlayerLabels = ["Player 1", "Player 2", "Player 3", "Player 4"] as const;
 
 const stackTargetSchema = z.discriminatedUnion("kind", [
   z.object({
@@ -68,6 +69,17 @@ const gameContextSchema = z
         code: z.ZodIssueCode.custom,
         path: ["players"],
         message: "must use unique player labels"
+      });
+    }
+
+    const expectedLabels = orderedPlayerLabels.slice(0, value.playerCount);
+    const hasExactFixedLabelSet =
+      expectedLabels.every((label) => labels.includes(label)) && labels.every((label) => expectedLabels.includes(label));
+    if (!hasExactFixedLabelSet) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["players"],
+        message: `must use fixed labels ${expectedLabels.join(", ")}`
       });
     }
   });

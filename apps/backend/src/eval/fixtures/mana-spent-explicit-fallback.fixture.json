@@ -1,0 +1,36 @@
+{
+  "id": "mana-spent-explicit-fallback",
+  "description": "Mana spent output should include explicit values and deterministic fallback to manaValue.",
+  "request": {
+    "question": "Show mana spent details for these stack entries.",
+    "gameContext": {
+      "playerCount": 2,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 28 },
+        { "label": "Player 2", "lifeTotal": 11 }
+      ]
+    },
+    "battlefieldContext": [],
+    "stack": [
+      {
+        "cardId": "fireball",
+        "name": "Fireball",
+        "oracleText": "This spell costs 1 more to cast for each target beyond the first.",
+        "imageUrl": "",
+        "manaValue": 1,
+        "manaSpent": 7,
+        "caster": "Player 1",
+        "targets": [{ "kind": "player", "targetPlayer": "Player 2" }]
+      },
+      {
+        "cardId": "negate",
+        "name": "Negate",
+        "oracleText": "Counter target noncreature spell.",
+        "imageUrl": "",
+        "manaValue": 2,
+        "caster": "Player 2",
+        "targets": [{ "kind": "stack", "targetCardId": "fireball", "targetCardName": "Fireball" }]
+      }
+    ]
+  }
+}
