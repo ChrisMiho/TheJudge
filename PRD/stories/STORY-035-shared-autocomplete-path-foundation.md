@@ -1,0 +1,22 @@
+# STORY-035 - Shared Autocomplete Path Foundation
+
+- title: Introduce a shared autocomplete module/hook used by both stack and battlefield entry flows.
+- user value: As a player, I get consistent search behavior regardless of where I enter a card/effect.
+- scope:
+  - extract shared input-to-suggestions behavior from `App.tsx` into a reusable interface
+  - keep existing MVP1 constraints in place: local static metadata, 3-character threshold, no-match copy, max 3 suggestions
+  - adapt both stack and battlefield entry points to call the same shared interface
+  - preserve current request/payload contracts for `POST /api/ask-ai`
+- acceptance criteria:
+  - stack and battlefield suggestions are produced through one shared code path
+  - no regressions to threshold, no-match copy, or suggestion selection behavior
+  - existing request/payload contracts remain unchanged
+- execution mode: parallel-ready
+- dependencies:
+  - REQ-001, REQ-002, REQ-012, REQ-016
+  - DEC-010, DEC-012, DEC-019
+  - NFR-004, NFR-005
+- exclusions:
+  - no new backend endpoints
+  - no runtime metadata synchronization changes
+  - no rules-engine logic additions
