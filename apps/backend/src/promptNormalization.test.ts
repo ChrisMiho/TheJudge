@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  MAX_CONTEXT_NOTES_CHARS,
   MAX_ORACLE_TEXT_CHARS,
   MAX_PROMPT_CHAR_BUDGET,
+  MAX_TARGET_LABEL_CHARS,
   buildPromptText,
+  getPromptDiagnostics,
   normalizeCardText,
   normalizeQuestion,
   normalizeWhitespace,
@@ -127,5 +130,46 @@ describe("buildPromptText", () => {
   it("stays under configured prompt budget for normal payloads", () => {
     const prompt = buildPromptText(baseContext);
     expect(prompt.length).toBeLessThan(MAX_PROMPT_CHAR_BUDGET);
+  });
+
+  it("truncates long context notes and target labels deterministically", () => {
+    const prompt = buildPromptText({
+      ...baseContext,
+      orderedStack: [
+        {
+          ...baseContext.orderedStack[0],
+          targets: [
+            {
+              kind: "other",
+              targetDescription: "z".repeat(MAX_TARGET_LABEL_CHARS + 30)
+            }
+          ],
+          contextNotes: "n".repeat(MAX_CONTEXT_NOTES_CHARS + 40)
+        }
+      ]
+    });
+
+    expect(prompt).toContain("targets: other:");
+    expect(prompt).toContain("...(truncated)");
+    expect(prompt).toContain("contextNotes: ");
+  });
+});
+
+describe("getPromptDiagnostics", () => {
+  it("reports budget diagnostics and near-limit status", () => {
+    const shortDiagnostics = getPromptDiagnostics("hello");
+    expect(shortDiagnostics.promptChars).toBe(5);
+    expect(shortDiagnostics.exceedsBudget).toBe(false);
+    expect(shortDiagnostics.nearLimit).toBe(false);
+
+    const nearLimitPrompt = "x".repeat(MAX_PROMPT_CHAR_BUDGET - 400);
+    const nearLimitDiagnostics = getPromptDiagnostics(nearLimitPrompt);
+    expect(nearLimitDiagnostics.nearLimit).toBe(true);
+    expect(nearLimitDiagnostics.exceedsBudget).toBe(false);
+
+    const exceededPrompt = "y".repeat(MAX_PROMPT_CHAR_BUDGET + 5);
+    const exceededDiagnostics = getPromptDiagnostics(exceededPrompt);
+    expect(exceededDiagnostics.exceedsBudget).toBe(true);
+    expect(exceededDiagnostics.remainingChars).toBe(-5);
   });
 });

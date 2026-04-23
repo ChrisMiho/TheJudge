@@ -1,5 +1,5 @@
 import type { AskAiResponse, PromptContext } from "./types.js";
-import { buildPromptText, estimatePromptChars } from "./promptNormalization.js";
+import { buildPromptText, getPromptDiagnostics } from "./promptNormalization.js";
 
 function formatList(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "N/A";
@@ -52,6 +52,7 @@ function formatStackRows(context: PromptContext): string {
 
 export function buildMockAnswer(context: PromptContext): AskAiResponse {
   const promptText = buildPromptText(context);
+  const promptDiagnostics = getPromptDiagnostics(promptText);
   const stackRows = formatStackRows(context);
   const battlefieldRows =
     context.battlefieldContext.length > 0
@@ -68,7 +69,10 @@ export function buildMockAnswer(context: PromptContext): AskAiResponse {
     `Final question: ${context.finalQuestion}`,
     `Stack order convention: bottom-to-top (stack[0] is the bottom spell)`,
     `Stack size: ${context.orderedStack.length}`,
-    `Prompt char estimate: ${estimatePromptChars(promptText)}`,
+    `Prompt chars: ${promptDiagnostics.promptChars}/${promptDiagnostics.promptBudgetChars}`,
+    `Prompt utilization: ${promptDiagnostics.utilizationPercent}%`,
+    `Prompt near limit: ${promptDiagnostics.nearLimit ? "yes" : "no"}`,
+    `Prompt remaining chars: ${promptDiagnostics.remainingChars}`,
     "",
     "General game context:",
     `playerCount: ${context.gameContext.playerCount}`,

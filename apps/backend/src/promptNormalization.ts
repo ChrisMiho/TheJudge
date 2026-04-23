@@ -2,7 +2,10 @@ import type { PromptContext } from "./types.js";
 
 export const MAX_ORACLE_TEXT_CHARS = 480;
 export const MAX_CONTEXT_DETAILS_CHARS = 220;
+export const MAX_CONTEXT_NOTES_CHARS = 180;
+export const MAX_TARGET_LABEL_CHARS = 120;
 export const MAX_PROMPT_CHAR_BUDGET = 12000;
+export const PROMPT_BUDGET_NEAR_LIMIT_BUFFER = 800;
 const TRUNCATION_SUFFIX = " ...(truncated)";
 const PLAYER_LABEL_ORDER = ["Player 1", "Player 2", "Player 3", "Player 4"] as const;
 
@@ -17,6 +20,10 @@ export function truncateOracleText(value: string, maxChars = MAX_ORACLE_TEXT_CHA
 
   const maxWithoutSuffix = Math.max(0, maxChars - TRUNCATION_SUFFIX.length);
   return `${value.slice(0, maxWithoutSuffix)}${TRUNCATION_SUFFIX}`;
+}
+
+function truncatePromptLabel(value: string, maxChars: number): string {
+  return truncateOracleText(value, maxChars);
 }
 
 export function normalizeQuestion(value: string): string {
@@ -48,7 +55,7 @@ function formatTargets(targets: PromptContext["orderedStack"][number]["targets"]
       }
 
       if (target.kind === "other") {
-        return `other:${target.targetDescription}`;
+        return `other:${truncatePromptLabel(target.targetDescription, MAX_TARGET_LABEL_CHARS)}`;
       }
 
       if (target.kind === "player") {
@@ -56,10 +63,10 @@ function formatTargets(targets: PromptContext["orderedStack"][number]["targets"]
       }
 
       if (target.kind === "battlefield") {
-        return `battlefield:${target.targetPermanent}`;
+        return `battlefield:${truncatePromptLabel(target.targetPermanent, MAX_TARGET_LABEL_CHARS)}`;
       }
 
-      return `stack:${target.targetCardName} (${target.targetCardId})`;
+      return `stack:${truncatePromptLabel(target.targetCardName, MAX_TARGET_LABEL_CHARS)} (${target.targetCardId})`;
     })
     .join(" | ");
 }
@@ -96,6 +103,31 @@ export function estimatePromptChars(prompt: string): number {
   return prompt.length;
 }
 
+export type PromptDiagnostics = {
+  promptChars: number;
+  promptBudgetChars: number;
+  remainingChars: number;
+  utilizationPercent: number;
+  nearLimit: boolean;
+  exceedsBudget: boolean;
+};
+
+export function getPromptDiagnostics(prompt: string): PromptDiagnostics {
+  const promptChars = estimatePromptChars(prompt);
+  const promptBudgetChars = MAX_PROMPT_CHAR_BUDGET;
+  const remainingChars = promptBudgetChars - promptChars;
+  const utilizationPercent = Math.round((promptChars / promptBudgetChars) * 1000) / 10;
+
+  return {
+    promptChars,
+    promptBudgetChars,
+    remainingChars,
+    utilizationPercent,
+    nearLimit: promptChars > promptBudgetChars - PROMPT_BUDGET_NEAR_LIMIT_BUFFER,
+    exceedsBudget: promptChars > promptBudgetChars
+  };
+}
+
 export function buildPromptText(context: PromptContext): string {
   const cardsSection = context.orderedStack
     .map(
@@ -113,7 +145,9 @@ export function buildPromptText(context: PromptContext): string {
           `caster: ${card.caster}`,
           `targets: ${formatTargets(card.targets)}`,
           `manaSpent: ${card.manaSpent ?? card.manaValue}`,
-          `contextNotes: ${card.contextNotes || "(none)"}`,
+          `contextNotes: ${
+            card.contextNotes ? truncatePromptLabel(card.contextNotes, MAX_CONTEXT_NOTES_CHARS) : "(none)"
+          }`,
           `oracleText: ${card.oracleText}`
         ].join("\n")
     )
