@@ -28,7 +28,7 @@ function formatTargets(targets: PromptContext["orderedStack"][number]["targets"]
         return `battlefield:${target.targetPermanent}`;
       }
 
-      return `stack:${target.targetCardName} (${target.targetCardId})`;
+      return `stack:${target.targetCardName}`;
     })
     .join(" | ");
 }
@@ -37,7 +37,7 @@ function formatStackRows(context: PromptContext): string {
   return context.orderedStack
     .map((item) =>
       [
-        `${item.stackIndex + 1}. [${item.stackRole}] ${item.name} (cardId: ${item.cardId})`,
+        `${item.stackIndex + 1}. [${item.stackRole}] Card: ${item.name}`,
         `   Mana: ${item.manaCost || "N/A"} | MV: ${item.manaValue}`,
         `   Type: ${item.typeLine || "N/A"}`,
         `   Colors: ${formatList(item.colors)} | Supertypes: ${formatList(item.supertypes)} | Subtypes: ${formatList(item.subtypes)}`,
