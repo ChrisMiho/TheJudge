@@ -112,12 +112,18 @@ describe("buildPromptText", () => {
     expect(prompt).toContain("playerCount: 2");
     expect(prompt).toContain("caster: Player 3");
     expect(prompt).toContain("manaSpent: 5");
+<<<<<<< HEAD
     expect(prompt).toContain("targets: stack:Opt | none:does-not-target | other:custom context target");
     expect(prompt).toContain("Stack item 1 (bottom)");
     expect(prompt).toContain("Stack item 2 (top)");
     expect(prompt).toContain("card: Opt");
     expect(prompt).toContain("card: Counterspell");
     expect(prompt).not.toContain("cardId:");
+=======
+    expect(prompt).toContain("targets: stack:Opt (card-1) | none:does-not-target | other:custom context target");
+    expect(prompt).toContain("Stack item 1 (bottom)");
+    expect(prompt).toContain("Stack item 2 (top)");
+>>>>>>> origin/main
   });
 
   it("renders optional battlefield section explicitly when empty", () => {

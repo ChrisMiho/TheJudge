@@ -21,7 +21,12 @@ targets: none:does-not-target
 
 ORDERED STACK CONTEXT (BOTTOM TO TOP)
 Stack item 1 (bottom)
+<<<<<<< HEAD
 card: Brainstorm
+=======
+cardId: brainstorm
+name: Brainstorm
+>>>>>>> origin/main
 manaCost: (none)
 manaValue: 1
 typeLine: (none)
@@ -35,7 +40,12 @@ contextNotes: (none)
 oracleText: Draw three cards, then put two cards from your hand on top of your library in any order.
 
 Stack item 2 (top)
+<<<<<<< HEAD
 card: Narset's Reversal
+=======
+cardId: narsets-reversal
+name: Narset's Reversal
+>>>>>>> origin/main
 manaCost: (none)
 manaValue: 2
 typeLine: (none)
@@ -43,7 +53,11 @@ colors: (none)
 supertypes: (none)
 subtypes: (none)
 caster: Player 2
+<<<<<<< HEAD
 targets: stack:Brainstorm
+=======
+targets: stack:Brainstorm (brainstorm)
+>>>>>>> origin/main
 manaSpent: 2
 contextNotes: (none)
 oracleText: Copy target instant or sorcery spell, then return it to its owner's hand. You may choose new targets for the copy.
