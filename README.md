@@ -180,7 +180,7 @@ Pending implementation backlog:
 - [x] `STORY-037` add keyboard interaction parity for autocomplete in both contexts
 - [x] `STORY-038` clean up battlefield input-state path wiring against shared adapters
 - [x] `STORY-039` add cross-flow parity regression suite for stack vs battlefield suggestions
-- [ ] `STORY-040` add lightweight search performance guardrails for responsiveness
+- [x] `STORY-040` add lightweight search performance guardrails for responsiveness
 
 ## Documentation Notes
 
@@ -189,3 +189,4 @@ Pending implementation backlog:
 - Update the checklist above as stories move from planned to implemented.
 - Empty-state artwork is bundled at `apps/frontend/public/assets/cat-wizard.svg`; keep it local/static and retain a text fallback path.
 - Provider integration boundary docs live in `apps/backend/src/providers/README.md`.
+- Search responsiveness guardrails stay frontend-local (debounced query + in-memory pre-normalized index) and must not add runtime metadata sync paths.
