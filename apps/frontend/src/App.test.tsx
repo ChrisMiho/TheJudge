@@ -804,4 +804,23 @@ describe("App MVP interaction flows", () => {
       }
     ]);
   });
+
+  it("keeps battlefield name editable without per-keystroke overwrite from search input", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    const battlefieldSearchInput = screen.getByLabelText("Battlefield search input");
+    const battlefieldNameInput = screen.getByLabelText("Battlefield item name");
+
+    await user.type(battlefieldSearchInput, "lig");
+    expect(battlefieldNameInput).toHaveValue("lig");
+
+    await user.clear(battlefieldNameInput);
+    await user.type(battlefieldNameInput, "Custom Battlefield Name");
+    await user.type(battlefieldSearchInput, "ht");
+
+    expect(battlefieldSearchInput).toHaveValue("light");
+    expect(battlefieldNameInput).toHaveValue("Custom Battlefield Name");
+  });
 });

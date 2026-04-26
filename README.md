@@ -178,7 +178,7 @@ Pending implementation backlog:
 - [x] `STORY-035` introduce a shared autocomplete path foundation across stack and battlefield entry
 - [x] `STORY-036` add deterministic relevance ranking contract for suggestion ordering
 - [x] `STORY-037` add keyboard interaction parity for autocomplete in both contexts
-- [ ] `STORY-038` clean up battlefield input-state path wiring against shared adapters
+- [x] `STORY-038` clean up battlefield input-state path wiring against shared adapters
 - [x] `STORY-039` add cross-flow parity regression suite for stack vs battlefield suggestions
 - [ ] `STORY-040` add lightweight search performance guardrails for responsiveness
 

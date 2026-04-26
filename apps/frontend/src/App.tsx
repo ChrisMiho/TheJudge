@@ -75,6 +75,7 @@ export default function App() {
   const [battlefieldContext, setBattlefieldContext] = useState<BattlefieldContextItem[]>([]);
   const [battlefieldSearchInput, setBattlefieldSearchInput] = useState("");
   const [battlefieldEntryName, setBattlefieldEntryName] = useState("");
+  const [isBattlefieldEntryNameLinked, setIsBattlefieldEntryNameLinked] = useState(true);
   const [battlefieldEntryDetails, setBattlefieldEntryDetails] = useState("");
   const [battlefieldEntryTargets, setBattlefieldEntryTargets] = useState<StackTarget[]>([]);
   const [battlefieldTargetKind, setBattlefieldTargetKind] = useState<TargetKind>("battlefield");
@@ -161,6 +162,13 @@ export default function App() {
   const addButtonLabel = stack.length === 0 ? "Begin stackening!" : "Add to Stack";
   const canRetry = retryCountdown === 0 && !isSubmitting;
   const activePlayers = PLAYER_OPTIONS.slice(0, playerCountInput);
+
+  useEffect(() => {
+    if (!isBattlefieldEntryNameLinked) {
+      return;
+    }
+    setBattlefieldEntryName(battlefieldSearchInput);
+  }, [battlefieldSearchInput, isBattlefieldEntryNameLinked]);
 
   function parseManaSpentInput(rawValue: string): number | undefined {
     const trimmed = rawValue.trim();
@@ -357,6 +365,7 @@ export default function App() {
     ]);
     setBattlefieldSearchInput("");
     setBattlefieldEntryName("");
+    setIsBattlefieldEntryNameLinked(true);
     setBattlefieldEntryDetails("");
     setBattlefieldEntryTargets([]);
     flashStatus("Battlefield context added.");
@@ -364,6 +373,7 @@ export default function App() {
 
   function selectBattlefieldSuggestion(card: CardMetadataItem): void {
     setBattlefieldEntryName(card.name);
+    setIsBattlefieldEntryNameLinked(false);
     if (battlefieldEntryDetails.trim().length === 0) {
       setBattlefieldEntryDetails(card.oracleText.slice(0, 280));
     }
@@ -701,10 +711,7 @@ export default function App() {
             <input
               aria-label="Battlefield search input"
               value={battlefieldSearchInput}
-              onChange={(event) => {
-                setBattlefieldSearchInput(event.target.value);
-                setBattlefieldEntryName(event.target.value);
-              }}
+              onChange={(event) => setBattlefieldSearchInput(event.target.value)}
               onKeyDown={battlefieldKeyboard.handleKeyDown}
               className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
               placeholder="Type to begin"
@@ -744,7 +751,11 @@ export default function App() {
             <input
               aria-label="Battlefield item name"
               value={battlefieldEntryName}
-              onChange={(event) => setBattlefieldEntryName(event.target.value)}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                setBattlefieldEntryName(nextValue);
+                setIsBattlefieldEntryNameLinked(nextValue.length === 0);
+              }}
               className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
               placeholder="Rhystic Study"
             />
