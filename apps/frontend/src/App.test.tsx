@@ -294,14 +294,19 @@ describe("App MVP interaction flows", () => {
     expect(screen.queryByText(NO_MATCH_COPY)).not.toBeInTheDocument();
 
     await user.type(stackInput, "o");
-    const stackOrderedSuggestions = readSuggestionNamesFromPanel(stackInput);
-    expect(stackOrderedSuggestions).toEqual(["Swords to Plowshares", "Sword of Fire and Ice"]);
+    const stackOrderedSuggestions = await waitFor(() => {
+      const names = readSuggestionNamesFromPanel(stackInput);
+      expect(names).toEqual(["Swords to Plowshares", "Sword of Fire and Ice"]);
+      return names;
+    });
 
     await user.clear(stackInput);
     await user.type(stackInput, "zzz");
-    expect(readSuggestionNamesFromPanel(stackInput)).toEqual([]);
-    expect(screen.queryByRole("button", { name: "Swords to Plowshares" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Sword of Fire and Ice" })).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(readSuggestionNamesFromPanel(stackInput)).toEqual([]);
+      expect(screen.queryByRole("button", { name: "Swords to Plowshares" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Sword of Fire and Ice" })).not.toBeInTheDocument();
+    });
 
     stackView.unmount();
 
@@ -314,14 +319,17 @@ describe("App MVP interaction flows", () => {
     expect(screen.queryByText(NO_MATCH_COPY)).not.toBeInTheDocument();
 
     await user.type(battlefieldInput, "o");
-    const battlefieldOrderedSuggestions = readSuggestionNamesFromPanel(battlefieldInput);
-    expect(battlefieldOrderedSuggestions).toEqual(stackOrderedSuggestions);
+    await waitFor(() => {
+      expect(readSuggestionNamesFromPanel(battlefieldInput)).toEqual(stackOrderedSuggestions);
+    });
 
     await user.clear(battlefieldInput);
     await user.type(battlefieldInput, "zzz");
-    expect(readSuggestionNamesFromPanel(battlefieldInput)).toEqual([]);
-    expect(screen.queryByRole("button", { name: "Swords to Plowshares" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Sword of Fire and Ice" })).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(readSuggestionNamesFromPanel(battlefieldInput)).toEqual([]);
+      expect(screen.queryByRole("button", { name: "Swords to Plowshares" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Sword of Fire and Ice" })).not.toBeInTheDocument();
+    });
 
     battlefieldView.unmount();
   });

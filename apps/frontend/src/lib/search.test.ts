@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CardMetadataItem } from "../types";
-import { getSuggestions, isFuzzyMatch, levenshteinDistance, NO_MATCH_COPY } from "./search";
+import { buildSearchIndex, getSuggestions, getSuggestionsFromIndex, isFuzzyMatch, levenshteinDistance, NO_MATCH_COPY } from "./search";
 
 const sampleCards: CardMetadataItem[] = [
   {
@@ -198,5 +198,12 @@ describe("search helpers", () => {
 
     const result = getSuggestions(largeSet, "Card");
     expect(result).toHaveLength(3);
+  });
+
+  it("returns identical ordering from pre-built search index", () => {
+    const query = "bolt";
+    const index = buildSearchIndex(sampleCards);
+
+    expect(getSuggestionsFromIndex(index, query)).toEqual(getSuggestions(sampleCards, query));
   });
 });

@@ -49,8 +49,20 @@ type RankedSuggestion = {
   normalizedName: string;
 };
 
-function rankSuggestion(card: CardMetadataItem, normalizedQuery: string): RankedSuggestion | null {
-  const normalizedName = normalize(card.name);
+export type SearchIndexEntry = {
+  card: CardMetadataItem;
+  normalizedName: string;
+};
+
+export function buildSearchIndex(cards: CardMetadataItem[]): SearchIndexEntry[] {
+  return cards.map((card) => ({
+    card,
+    normalizedName: normalize(card.name)
+  }));
+}
+
+function rankSuggestionFromIndex(entry: SearchIndexEntry, normalizedQuery: string): RankedSuggestion | null {
+  const { card, normalizedName } = entry;
   if (normalizedName.length === 0) {
     return null;
   }
@@ -85,12 +97,12 @@ function rankSuggestion(card: CardMetadataItem, normalizedQuery: string): Ranked
   return { card, matchTier: 3, typoDistance, normalizedName };
 }
 
-export function getSuggestions(cards: CardMetadataItem[], query: string): CardMetadataItem[] {
+export function getSuggestionsFromIndex(index: SearchIndexEntry[], query: string): CardMetadataItem[] {
   const normalizedQuery = normalize(query);
   if (normalizedQuery.length < 3) return [];
 
-  return cards
-    .map((card) => rankSuggestion(card, normalizedQuery))
+  return index
+    .map((entry) => rankSuggestionFromIndex(entry, normalizedQuery))
     .filter((ranked): ranked is RankedSuggestion => ranked !== null)
     .sort((left, right) => {
       if (left.matchTier !== right.matchTier) {
@@ -106,4 +118,8 @@ export function getSuggestions(cards: CardMetadataItem[], query: string): CardMe
     })
     .slice(0, MAX_SUGGESTIONS)
     .map((ranked) => ranked.card);
+}
+
+export function getSuggestions(cards: CardMetadataItem[], query: string): CardMetadataItem[] {
+  return getSuggestionsFromIndex(buildSearchIndex(cards), query);
 }
