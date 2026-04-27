@@ -748,17 +748,12 @@ export default function App() {
           )}
           <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
             Battlefield item name
-            <input
+            <output
               aria-label="Battlefield item name"
-              value={battlefieldEntryName}
-              onChange={(event) => {
-                const nextValue = event.target.value;
-                setBattlefieldEntryName(nextValue);
-                setIsBattlefieldEntryNameLinked(nextValue.length === 0);
-              }}
-              className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
-              placeholder="Rhystic Study"
-            />
+              className="mt-2 block w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm text-slate-100"
+            >
+              {battlefieldEntryName}
+            </output>
           </label>
           <textarea
             aria-label="Battlefield item details"

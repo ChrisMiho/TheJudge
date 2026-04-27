@@ -236,7 +236,7 @@ describe("App MVP interaction flows", () => {
     fireEvent.keyDown(battlefieldSearchInput, { key: "ArrowDown" });
     fireEvent.keyDown(battlefieldSearchInput, { key: "Enter" });
 
-    expect(screen.getByLabelText("Battlefield item name")).toHaveValue("Lightning Bolt");
+    expect(screen.getByLabelText("Battlefield item name")).toHaveTextContent("Lightning Bolt");
     expect(screen.getByLabelText("Battlefield item details")).toHaveValue(
       "Lightning Bolt deals 3 damage to any target."
     );
@@ -354,7 +354,7 @@ describe("App MVP interaction flows", () => {
     await user.type(battlefieldInput, "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 
-    expect(screen.getByLabelText("Battlefield item name")).toHaveValue("Lightning Bolt");
+    expect(screen.getByLabelText("Battlefield item name")).toHaveTextContent("Lightning Bolt");
     expect(screen.getByLabelText("Battlefield item details")).toHaveValue(
       "Lightning Bolt deals 3 damage to any target."
     );
@@ -813,22 +813,23 @@ describe("App MVP interaction flows", () => {
     ]);
   });
 
-  it("keeps battlefield name editable without per-keystroke overwrite from search input", async () => {
+  it("keeps battlefield name display-only while preserving linked and selected behavior", async () => {
     const user = userEvent.setup();
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
     const battlefieldSearchInput = screen.getByLabelText("Battlefield search input");
-    const battlefieldNameInput = screen.getByLabelText("Battlefield item name");
+    const battlefieldNameDisplay = screen.getByLabelText("Battlefield item name");
+
+    expect(battlefieldNameDisplay.tagName).toBe("OUTPUT");
 
     await user.type(battlefieldSearchInput, "lig");
-    expect(battlefieldNameInput).toHaveValue("lig");
+    expect(battlefieldNameDisplay).toHaveTextContent("lig");
 
-    await user.clear(battlefieldNameInput);
-    await user.type(battlefieldNameInput, "Custom Battlefield Name");
+    await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
     await user.type(battlefieldSearchInput, "ht");
 
     expect(battlefieldSearchInput).toHaveValue("light");
-    expect(battlefieldNameInput).toHaveValue("Custom Battlefield Name");
+    expect(battlefieldNameDisplay).toHaveTextContent("Lightning Bolt");
   });
 });

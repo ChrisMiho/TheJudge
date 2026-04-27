@@ -181,6 +181,7 @@ Pending implementation backlog:
 - [x] `STORY-038` clean up battlefield input-state path wiring against shared adapters
 - [x] `STORY-039` add cross-flow parity regression suite for stack vs battlefield suggestions
 - [x] `STORY-040` add lightweight search performance guardrails for responsiveness
+- [ ] `STORY-041` make battlefield item name display-only while keeping search and details editable
 
 ## Documentation Notes
 
