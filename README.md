@@ -145,6 +145,7 @@ Context and prompt quality:
 
 Pending implementation backlog:
 
+- [x] `STORY-005` metadata-transform/search scenario tests (scope merged and completed under `STORY-010`)
 - [x] `STORY-010` define metadata filtering/dedupe policy and lock it with transform/search regression tests (merged scope formerly tracked as `STORY-005`)
 - [x] `STORY-006` add UI-focused frontend coverage for search/add/decrypt
 - [x] `STORY-007` add API base URL environment config and deployment targets
@@ -174,6 +175,13 @@ Pending implementation backlog:
 - [x] `STORY-032` add target kind `other` with up-to-200-char custom target context wired through payload/prompt
 - [x] `STORY-033` move cat visual from stack window/empty-state placement to game-context first screen
 - [x] `STORY-034` remove `cardId` from LLM-facing prompt output while preserving deterministic stack-order context
+- [x] `STORY-035` introduce a shared autocomplete path foundation across stack and battlefield entry
+- [x] `STORY-036` add deterministic relevance ranking contract for suggestion ordering
+- [x] `STORY-037` add keyboard interaction parity for autocomplete in both contexts
+- [x] `STORY-038` clean up battlefield input-state path wiring against shared adapters
+- [x] `STORY-039` add cross-flow parity regression suite for stack vs battlefield suggestions
+- [x] `STORY-040` add lightweight search performance guardrails for responsiveness
+- [ ] `STORY-041` make battlefield item name display-only while keeping search and details editable
 
 ## Documentation Notes
 
@@ -182,3 +190,4 @@ Pending implementation backlog:
 - Update the checklist above as stories move from planned to implemented.
 - Empty-state artwork is bundled at `apps/frontend/public/assets/cat-wizard.svg`; keep it local/static and retain a text fallback path.
 - Provider integration boundary docs live in `apps/backend/src/providers/README.md`.
+- Search responsiveness guardrails stay frontend-local (debounced query + in-memory pre-normalized index) and must not add runtime metadata sync paths.

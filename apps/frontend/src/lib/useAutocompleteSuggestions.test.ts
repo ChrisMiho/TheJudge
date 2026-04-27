@@ -1,8 +1,8 @@
-import { renderHook } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { act, renderHook } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import type { CardMetadataItem } from "../types";
 import { getSuggestions } from "./search";
-import { useAutocompleteSuggestions } from "./useAutocompleteSuggestions";
+import { AUTOCOMPLETE_DEBOUNCE_MS, useAutocompleteSuggestions } from "./useAutocompleteSuggestions";
 
 const cards: CardMetadataItem[] = [
   {
@@ -34,15 +34,34 @@ const cards: CardMetadataItem[] = [
 describe("useAutocompleteSuggestions", () => {
   it("returns the same suggestions as shared search helper", () => {
     const query = "lig";
-    const { result } = renderHook(() => useAutocompleteSuggestions({ cards, query }));
+    const { result } = renderHook(() => useAutocompleteSuggestions({ cards, query, debounceMs: 0 }));
 
     expect(result.current).toEqual(getSuggestions(cards, query));
   });
 
   it("preserves threshold behavior", () => {
     const query = "li";
-    const { result } = renderHook(() => useAutocompleteSuggestions({ cards, query }));
+    const { result } = renderHook(() => useAutocompleteSuggestions({ cards, query, debounceMs: 0 }));
 
     expect(result.current).toEqual([]);
+  });
+
+  it("debounces query updates before computing suggestions", () => {
+    vi.useFakeTimers();
+    const { result, rerender } = renderHook(
+      ({ query }) => useAutocompleteSuggestions({ cards, query, debounceMs: AUTOCOMPLETE_DEBOUNCE_MS }),
+      { initialProps: { query: "li" } }
+    );
+
+    expect(result.current).toEqual([]);
+    rerender({ query: "lig" });
+    expect(result.current).toEqual([]);
+
+    act(() => {
+      vi.advanceTimersByTime(AUTOCOMPLETE_DEBOUNCE_MS);
+    });
+
+    expect(result.current).toEqual(getSuggestions(cards, "lig"));
+    vi.useRealTimers();
   });
 });

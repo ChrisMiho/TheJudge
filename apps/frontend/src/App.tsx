@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { createCorrelationId, logFrontendDebug } from "./lib/debugLogger";
 import { apiBaseUrl } from "./lib/env";
 import { NO_MATCH_COPY } from "./lib/search";
+import { useAutocompleteKeyboard } from "./lib/useAutocompleteKeyboard";
 import { useAutocompleteSuggestions } from "./lib/useAutocompleteSuggestions";
 import {
   appendToStack,
@@ -74,6 +75,7 @@ export default function App() {
   const [battlefieldContext, setBattlefieldContext] = useState<BattlefieldContextItem[]>([]);
   const [battlefieldSearchInput, setBattlefieldSearchInput] = useState("");
   const [battlefieldEntryName, setBattlefieldEntryName] = useState("");
+  const [isBattlefieldEntryNameLinked, setIsBattlefieldEntryNameLinked] = useState(true);
   const [battlefieldEntryDetails, setBattlefieldEntryDetails] = useState("");
   const [battlefieldEntryTargets, setBattlefieldEntryTargets] = useState<StackTarget[]>([]);
   const [battlefieldTargetKind, setBattlefieldTargetKind] = useState<TargetKind>("battlefield");
@@ -146,10 +148,27 @@ export default function App() {
     cards: cardMetadata,
     query: battlefieldSearchInput
   });
+  const stackKeyboard = useAutocompleteKeyboard({
+    query: searchInput,
+    suggestions,
+    onSelect: selectStackSuggestion
+  });
+  const battlefieldKeyboard = useAutocompleteKeyboard({
+    query: battlefieldSearchInput,
+    suggestions: battlefieldSuggestions,
+    onSelect: selectBattlefieldSuggestion
+  });
 
   const addButtonLabel = stack.length === 0 ? "Begin stackening!" : "Add to Stack";
   const canRetry = retryCountdown === 0 && !isSubmitting;
   const activePlayers = PLAYER_OPTIONS.slice(0, playerCountInput);
+
+  useEffect(() => {
+    if (!isBattlefieldEntryNameLinked) {
+      return;
+    }
+    setBattlefieldEntryName(battlefieldSearchInput);
+  }, [battlefieldSearchInput, isBattlefieldEntryNameLinked]);
 
   function parseManaSpentInput(rawValue: string): number | undefined {
     const trimmed = rawValue.trim();
@@ -346,6 +365,7 @@ export default function App() {
     ]);
     setBattlefieldSearchInput("");
     setBattlefieldEntryName("");
+    setIsBattlefieldEntryNameLinked(true);
     setBattlefieldEntryDetails("");
     setBattlefieldEntryTargets([]);
     flashStatus("Battlefield context added.");
@@ -353,10 +373,19 @@ export default function App() {
 
   function selectBattlefieldSuggestion(card: CardMetadataItem): void {
     setBattlefieldEntryName(card.name);
-    setBattlefieldSearchInput(card.name);
+    setIsBattlefieldEntryNameLinked(false);
     if (battlefieldEntryDetails.trim().length === 0) {
       setBattlefieldEntryDetails(card.oracleText.slice(0, 280));
     }
+  }
+
+  function selectStackSuggestion(card: CardMetadataItem): void {
+    setSelectedCard(card);
+    resetEntryContext();
+    logFrontendDebug("card.preview_selected", {
+      cardId: card.cardId,
+      cardName: card.name
+    });
   }
 
   function progressFromBattlefieldStep(): void {
@@ -682,15 +711,13 @@ export default function App() {
             <input
               aria-label="Battlefield search input"
               value={battlefieldSearchInput}
-              onChange={(event) => {
-                setBattlefieldSearchInput(event.target.value);
-                setBattlefieldEntryName(event.target.value);
-              }}
+              onChange={(event) => setBattlefieldSearchInput(event.target.value)}
+              onKeyDown={battlefieldKeyboard.handleKeyDown}
               className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
               placeholder="Type to begin"
             />
           </label>
-          {battlefieldSearchInput.trim().length >= 3 && (
+          {battlefieldSearchInput.trim().length >= 3 && battlefieldKeyboard.isOpen && (
             <div className="rounded-xl border border-slate-600 bg-slate-800/70 p-2">
               {isMetadataLoading ? (
                 <p className="px-2 py-1 text-sm text-slate-400">Loading cards...</p>
@@ -698,12 +725,18 @@ export default function App() {
                 <p className="px-2 py-1 text-sm text-slate-400">{NO_MATCH_COPY}</p>
               ) : (
                 <ul className="flex flex-col gap-1">
-                  {battlefieldSuggestions.map((card) => (
+                  {battlefieldSuggestions.map((card, index) => (
                     <li key={`battlefield-${card.cardId}`}>
                       <button
                         type="button"
-                        onClick={() => selectBattlefieldSuggestion(card)}
-                        className="w-full rounded-lg px-2 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-700 hover:text-sky-300"
+                        onClick={() => {
+                          selectBattlefieldSuggestion(card);
+                          battlefieldKeyboard.closeSuggestions();
+                        }}
+                        onMouseEnter={() => battlefieldKeyboard.setActiveIndex(index)}
+                        className={`w-full rounded-lg px-2 py-2 text-left text-sm text-slate-200 transition hover:text-sky-300 ${
+                          battlefieldKeyboard.activeIndex === index ? "bg-slate-700 text-sky-300" : "hover:bg-slate-700"
+                        }`}
                       >
                         {card.name}
                       </button>
@@ -715,13 +748,12 @@ export default function App() {
           )}
           <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
             Battlefield item name
-            <input
+            <output
               aria-label="Battlefield item name"
-              value={battlefieldEntryName}
-              onChange={(event) => setBattlefieldEntryName(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
-              placeholder="Rhystic Study"
-            />
+              className="mt-2 block w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm text-slate-100"
+            >
+              {battlefieldEntryName}
+            </output>
           </label>
           <textarea
             aria-label="Battlefield item details"
@@ -888,6 +920,7 @@ export default function App() {
           <input
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
+            onKeyDown={stackKeyboard.handleKeyDown}
             placeholder="Type to begin"
             className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-50 placeholder:text-slate-300 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
           />
@@ -900,7 +933,7 @@ export default function App() {
           </p>
         </label>
 
-        {searchInput.trim().length >= 3 && (
+        {searchInput.trim().length >= 3 && stackKeyboard.isOpen && (
           <div className="rounded-xl border border-slate-600 bg-slate-800/70 p-2">
             {isMetadataLoading ? (
               <p className="px-2 py-1 text-sm text-slate-400">Loading cards...</p>
@@ -910,19 +943,18 @@ export default function App() {
               <p className="px-2 py-1 text-sm text-slate-400">{NO_MATCH_COPY}</p>
             ) : (
               <ul className="flex flex-col gap-1">
-                {suggestions.map((card) => (
+                {suggestions.map((card, index) => (
                   <li key={card.cardId}>
                     <button
                       type="button"
                       onClick={() => {
-                        setSelectedCard(card);
-                        resetEntryContext();
-                        logFrontendDebug("card.preview_selected", {
-                          cardId: card.cardId,
-                          cardName: card.name
-                        });
+                        selectStackSuggestion(card);
+                        stackKeyboard.closeSuggestions();
                       }}
-                      className="w-full rounded-lg px-2 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-700 hover:text-sky-300"
+                      onMouseEnter={() => stackKeyboard.setActiveIndex(index)}
+                      className={`w-full rounded-lg px-2 py-2 text-left text-sm text-slate-200 transition hover:text-sky-300 ${
+                        stackKeyboard.activeIndex === index ? "bg-slate-700 text-sky-300" : "hover:bg-slate-700"
+                      }`}
                     >
                       {card.name}
                     </button>

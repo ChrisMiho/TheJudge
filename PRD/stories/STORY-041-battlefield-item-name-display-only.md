@@ -1,0 +1,23 @@
+# STORY-041 - Battlefield Item Name Display-Only
+
+- title: Make battlefield resolved item name display-only while keeping search and details editable.
+- user value: As a player, I avoid accidental edits in the battlefield name box and can trust it as a result preview.
+- scope:
+  - replace the battlefield item name text input with a non-typeable display control
+  - keep the existing linked behavior where the displayed name mirrors search input until selection
+  - preserve selection behavior where chosen suggestion names remain stable while users continue typing
+  - update frontend tests to remove editable-name expectations and keep selection/payload coverage
+- acceptance criteria:
+  - battlefield item name is not directly typeable in the UI
+  - while linked mode is active, the displayed name mirrors the battlefield search input
+  - after selecting a suggestion, the displayed name remains the selected card name until a new selection or add/reset flow
+  - battlefield item details remains editable
+  - add or update tests in `apps/frontend/src/App.test.tsx` to validate non-typeable display behavior and existing selection behavior
+  - update the root `README.md` story checklist with a `STORY-041` entry
+- execution mode: parallel-ready
+- dependencies:
+  - REQ-016
+  - STORY-030, STORY-038
+- exclusions:
+  - no backend `battlefieldContext` contract changes
+  - no additional battlefield context fields

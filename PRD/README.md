@@ -107,34 +107,5 @@ Read in this order:
 - Phase A mock-provider architecture is active; provider boundary remains in place for future Phase B integration.
 - Automated tests and type checks are part of the active workflow; root dev run remains `npm run dev`.
 
-## Next Agent Implementation Focus
-Use the repository’s current default branch as the integration baseline, and open a dedicated feature branch per story slice.
-
-- [x] Keep static metadata strategy (DEC-012) but reduce frontend initial bundle impact from large metadata payloads.
-- [x] Complete merged metadata policy+tests slice (`STORY-010`, with former `STORY-005` scope): deterministic filtering/dedupe plus transform/search regression coverage.
-- [x] Add UI-focused frontend coverage for search/add/decrypt flows (`STORY-006`).
-- [x] Add explicit UI regression stories for stack details/count, duplicate/cap constraints, and Decrypt failure-state resilience (`STORY-011` to `STORY-013`).
-- [x] Add environment configuration/deployment target contract for frontend/backend API origin wiring (`STORY-007`).
-- [x] Prepare a clean interface boundary for eventual Bedrock Phase B integration without changing request/response contracts (`STORY-014`).
-- [x] Improve deterministic Phase A mock-answer readability for prompt/context debugging (`STORY-009`).
-- [x] Replace emoji empty-state visual with bundled static cat-wizard asset (`STORY-008`).
-- [x] Replace empty-state asset with `cats-homescreen.png` and remove surrounding frame so photo is centered-only (`STORY-015`).
-- [x] Establish engineering quality guardrails and enforceable repository-level validation gates (`STORY-016`).
-- [x] Remediate current high-churn hotspots via modular refactor with regression-safe tests (`STORY-017`).
-- [x] Enrich stack entries with explicit caster labels and typed targeting context for improved LLM prompt readiness (`STORY-018`).
-- [x] Add lightweight frontend/backend debug logging with end-to-end correlation-id traceability for flow validation (`STORY-019`).
-- [x] Wire enriched stack-entry context fields into deterministic backend prompt/mock output (`STORY-020`).
-- [x] Expand caster/player-target labels to support up to four players across UI/backend contracts (`STORY-021`).
-- [x] Capture pre-stack general game context (player count + life totals) and include it in prompt input (`STORY-022`).
-- [x] Capture per-stack-entry mana spent context with fallback to `manaValue` in prompt context (`STORY-023`).
-- [x] Add optional battlefield-context step after game context, including explicit skip path (`STORY-024`).
-- [x] Harden expanded Ask-AI context contract end-to-end after staged-context features land (`STORY-025`).
-- [x] Expand deterministic prompt structure to include staged context sections (`STORY-026`).
-- [x] Extend eval harness fixtures/checks for staged-context regression detection (`STORY-027`).
-- [x] Prepare Phase B Bedrock bootstrap/config/provider-selection wiring without contract changes (`STORY-028`).
-- [x] Add prompt budget and latency guardrails for high-context scenarios (`STORY-029`).
-- [x] Reuse metadata-backed search behavior in battlefield-context entry flow (`STORY-030`).
-- [x] Replace battlefield-step dual progression controls with one dynamic skip/continue action (`STORY-031`).
-- [x] Add `other` target option with 200-char freeform context wired into payload/prompt (`STORY-032`).
-- [x] Move cat visual placement to game-context first screen (`STORY-033`).
-- [x] Remove `cardId` from LLM-facing prompt output while preserving deterministic stack-order context (`STORY-034`).
+## Story Progress Tracking
+Story implementation status is tracked only in the root [`README.md`](../README.md).

@@ -74,3 +74,7 @@ This document only adds dependency-field rules for `PRD/stories/` entries:
 - `parallel-ready`: list only non-blocking references (REQ/DEC/NFR, etc.); no prerequisite story IDs.
 - `sequential`: include prerequisite story ID(s) and one-line reason per prerequisite.
 - Always use concrete dependency entries; avoid vague values like "other stories" or "future work".
+
+## Story Acceptance Criteria Rule
+
+For any story in `PRD/stories/`, include an acceptance criterion that updates the corresponding story checkbox in the root `README.md` checklist from pending to complete when implementation lands.

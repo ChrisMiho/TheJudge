@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CardMetadataItem } from "../types";
-import { getSuggestions, isFuzzyMatch, levenshteinDistance, NO_MATCH_COPY } from "./search";
+import { buildSearchIndex, getSuggestions, getSuggestionsFromIndex, isFuzzyMatch, levenshteinDistance, NO_MATCH_COPY } from "./search";
 
 const sampleCards: CardMetadataItem[] = [
   {
@@ -71,6 +71,113 @@ describe("search helpers", () => {
     expect(getSuggestions(sampleCards, "zzzzzzzz")).toEqual([]);
   });
 
+  it("applies deterministic ranking contract: exact > prefix > substring > typo", () => {
+    const rankedCards: CardMetadataItem[] = [
+      {
+        cardId: "exact",
+        name: "Bolt",
+        oracleText: "",
+        imageUrl: "",
+        manaCost: "",
+        manaValue: 0,
+        typeLine: "",
+        colors: [],
+        supertypes: [],
+        subtypes: []
+      },
+      {
+        cardId: "prefix",
+        name: "Boltergeist",
+        oracleText: "",
+        imageUrl: "",
+        manaCost: "",
+        manaValue: 0,
+        typeLine: "",
+        colors: [],
+        supertypes: [],
+        subtypes: []
+      },
+      {
+        cardId: "substring",
+        name: "Firebolt Mage",
+        oracleText: "",
+        imageUrl: "",
+        manaCost: "",
+        manaValue: 0,
+        typeLine: "",
+        colors: [],
+        supertypes: [],
+        subtypes: []
+      },
+      {
+        cardId: "typo",
+        name: "Brolt",
+        oracleText: "",
+        imageUrl: "",
+        manaCost: "",
+        manaValue: 0,
+        typeLine: "",
+        colors: [],
+        supertypes: [],
+        subtypes: []
+      }
+    ];
+
+    expect(getSuggestions(rankedCards, "bolt").map((card) => card.name)).toEqual([
+      "Bolt",
+      "Boltergeist",
+      "Firebolt Mage"
+    ]);
+  });
+
+  it("uses typo distance and deterministic tie-breaks independent of source order", () => {
+    const tieCards: CardMetadataItem[] = [
+      {
+        cardId: "c",
+        name: "Zolt",
+        oracleText: "",
+        imageUrl: "",
+        manaCost: "",
+        manaValue: 0,
+        typeLine: "",
+        colors: [],
+        supertypes: [],
+        subtypes: []
+      },
+      {
+        cardId: "a",
+        name: "Bolo",
+        oracleText: "",
+        imageUrl: "",
+        manaCost: "",
+        manaValue: 0,
+        typeLine: "",
+        colors: [],
+        supertypes: [],
+        subtypes: []
+      },
+      {
+        cardId: "b",
+        name: "Bott",
+        oracleText: "",
+        imageUrl: "",
+        manaCost: "",
+        manaValue: 0,
+        typeLine: "",
+        colors: [],
+        supertypes: [],
+        subtypes: []
+      }
+    ];
+
+    const expectedOrder = ["Bolo", "Bott", "Zolt"];
+    const forwardOrder = getSuggestions(tieCards, "bolt").map((card) => card.name);
+    const reverseOrder = getSuggestions([...tieCards].reverse(), "bolt").map((card) => card.name);
+
+    expect(forwardOrder).toEqual(expectedOrder);
+    expect(reverseOrder).toEqual(expectedOrder);
+  });
+
   it("keeps expected no-match UX copy constant", () => {
     expect(NO_MATCH_COPY).toBe("No matching card found");
   });
@@ -91,5 +198,12 @@ describe("search helpers", () => {
 
     const result = getSuggestions(largeSet, "Card");
     expect(result).toHaveLength(3);
+  });
+
+  it("returns identical ordering from pre-built search index", () => {
+    const query = "bolt";
+    const index = buildSearchIndex(sampleCards);
+
+    expect(getSuggestionsFromIndex(index, query)).toEqual(getSuggestions(sampleCards, query));
   });
 });
