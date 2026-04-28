@@ -396,6 +396,33 @@ describe("App MVP interaction flows", () => {
     expect(battlefieldTargetOptions).toEqual(stackTargetOptions);
   });
 
+  it("keeps add/remove target behavior in parity between stack and battlefield previews", async () => {
+    const user = userEvent.setup();
+    const stackView = render(<App />);
+    await openStackBuilder(user);
+
+    await user.type(screen.getByPlaceholderText("Type to begin"), "opt");
+    await user.click(await screen.findByRole("button", { name: "Opt" }));
+    await user.selectOptions(screen.getByLabelText("Entry target kind"), "player");
+    await user.selectOptions(screen.getByLabelText("Entry player target"), "Player 2");
+    await user.click(screen.getByRole("button", { name: "Add entry target" }));
+    expect(screen.getByText("Player: Player 2")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Remove" }));
+    expect(screen.queryByText("Player: Player 2")).not.toBeInTheDocument();
+    stackView.unmount();
+
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await user.type(screen.getByLabelText("Battlefield search input"), "opt");
+    await user.click(await screen.findByRole("button", { name: "Opt" }));
+    await user.selectOptions(screen.getByLabelText("Battlefield target kind"), "player");
+    await user.selectOptions(screen.getByLabelText("Battlefield target player"), "Player 2");
+    await user.click(screen.getByRole("button", { name: "Add battlefield target" }));
+    expect(screen.getByText("Player: Player 2")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Remove" }));
+    expect(screen.queryByText("Player: Player 2")).not.toBeInTheDocument();
+  });
+
   it("uses first-add then subsequent-add button labels", async () => {
     const user = userEvent.setup();
     render(<App />);
