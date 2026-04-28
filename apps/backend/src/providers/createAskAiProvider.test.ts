@@ -1,34 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { preparePromptInput } from "../promptPreparation.js";
+import { createAskAiRequest } from "../test-utils/requestBuilders.js";
 import { createAskAiProvider } from "./createAskAiProvider.js";
-
-const baseRequest = {
-  question: "How does this resolve?",
-  gameContext: {
-    playerCount: 2 as const,
-    players: [
-      { label: "Player 1" as const, lifeTotal: 20 },
-      { label: "Player 2" as const, lifeTotal: 20 }
-    ]
-  },
-  battlefieldContext: [],
-  stack: [
-    {
-      cardId: "opt",
-      name: "Opt",
-      oracleText: "Scry 1, then draw a card.",
-      imageUrl: "",
-      manaCost: "{U}",
-      manaValue: 1,
-      typeLine: "Instant",
-      colors: ["U"],
-      supertypes: [],
-      subtypes: [],
-      caster: "Player 1" as const,
-      targets: []
-    }
-  ]
-};
 
 describe("createAskAiProvider", () => {
   it("returns mock provider by default", async () => {
@@ -38,7 +11,7 @@ describe("createAskAiProvider", () => {
       askAiProvider: "mock"
     });
 
-    const response = await provider.generateAnswer(preparePromptInput(baseRequest));
+    const response = await provider.generateAnswer(preparePromptInput(createAskAiRequest()));
 
     expect(response.answer).toContain("MOCK RESPONSE");
   });
@@ -53,10 +26,10 @@ describe("createAskAiProvider", () => {
     });
 
     await expect(
-      provider.generateAnswer(preparePromptInput(baseRequest))
+      provider.generateAnswer(preparePromptInput(createAskAiRequest()))
     ).rejects.toThrow(/readiness only/);
     await expect(
-      provider.generateAnswer(preparePromptInput(baseRequest))
+      provider.generateAnswer(preparePromptInput(createAskAiRequest()))
     ).rejects.toThrow(/region=us-east-1, model=anthropic\.claude-v2/);
   });
 });

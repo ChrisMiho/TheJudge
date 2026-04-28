@@ -136,6 +136,13 @@ Baseline status mapping:
   - local debugging: `DEBUG_LOGGING=true`, `LOG_PAYLOADS=true`
   - shared preview/production: `DEBUG_LOGGING=false`, `LOG_PAYLOADS=false`
 
+### Backend Testing Layers
+
+- Route/API contract tests live in `apps/backend/src/app.contract.test.ts` (status codes, payload contracts, core success/failure flows).
+- Route behavior tests live in `apps/backend/src/app.behavior.test.ts` (provider boundary wiring, error mapping behavior, logging toggles).
+- Prompt/context unit and eval harness tests remain in dedicated files (`promptContext`, `promptNormalization`, `eval/*`) for deterministic text/guardrail coverage.
+- Reuse shared request builders from `apps/backend/src/test-utils/requestBuilders.ts` for new backend route/provider tests.
+
 ## Deployment Targets
 
 - Local:
@@ -228,7 +235,7 @@ Pending implementation backlog:
 - [x] `STORY-046` add backend error taxonomy + centralized middleware with stable machine-readable error codes
 - [x] `STORY-047` consolidate prompt/context build ownership into one backend service boundary
 - [x] `STORY-048` standardize backend logging with `pino` JSON output and payload-log toggle docs
-- [ ] `STORY-049` layer backend tests and extract reusable fixture/builders for maintainable contract coverage
+- [x] `STORY-049` layer backend tests and extract reusable fixture/builders for maintainable contract coverage
 - [x] `STORY-044` hide battlefield target-entry controls until a card is selected (preview is the single target-entry surface)
 - [ ] `STORY-050` extract shared target-editor logic used by stack and battlefield selected-card previews
 - [ ] `STORY-051` componentize battlefield step rendering/state wiring out of `App.tsx`
