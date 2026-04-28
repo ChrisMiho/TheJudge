@@ -2,7 +2,7 @@
 
 ## Status
 - Project Status: active
-- Current Drafting Phase: MVP1 implementation in progress (Phase A mock backend)
+- Current Drafting Phase: MVP2 execution active (Bedrock integration roadmap)
 - Overall Documentation Status: active and implementation-aligned
 
 ## Purpose
@@ -13,6 +13,21 @@ Use it to:
 - find the right file for a given task
 - understand source-of-truth precedence
 - navigate product content vs. agent instructions
+
+## MVP2 Read First
+For current implementation work, read in this order:
+1. `analysis/MVP2-bedrock-integration-roadmap.md`
+2. `sections/decisions.md`
+3. `sections/integrations-and-data.md`
+4. `sections/non-functional-requirements.md`
+
+Historical continuity:
+- MVP1 summary: `archive/mvp1/README.md`
+- MVP1 key decisions snapshot: `archive/mvp1/key-decisions.md`
+- MVP1 deep references: `archive/mvp1/reference-links.md`
+
+Archive usage rule:
+- `archive/` content is historical reference only unless explicitly promoted into active `sections/*` files.
 
 ## Source-of-Truth Precedence
 1. `sections/decisions.md` overrides older conflicting draft language
@@ -104,8 +119,9 @@ Read in this order:
 - Current frontend flow supports staged context + stack interaction patterns; canonical behavior is tracked in `sections/user-flows.md`.
 - Prompt/input contract includes structured context beyond stack/question (see `sections/integrations-and-data.md` and `sections/decisions.md`).
 - Metadata pipeline remains static-file based (`npm run data:build` / `npm run data:refresh`) with runtime loading from `/data/cardMetadata.json`.
-- Phase A mock-provider architecture is active; provider boundary remains in place for future Phase B integration.
+- Provider boundary remains in place and is the active seam for MVP2 Bedrock rollout work.
 - Automated tests and type checks are part of the active workflow; root dev run remains `npm run dev`.
 
 ## Story Progress Tracking
-Story implementation status is tracked only in the root [`README.md`](../README.md).
+MVP1 history is archived under `archive/mvp1/`.
+Active MVP2 execution sequencing is tracked in `analysis/MVP2-bedrock-integration-roadmap.md`.
