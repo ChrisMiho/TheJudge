@@ -65,6 +65,7 @@ Archive usage rule:
 | `instructions/requirement-format.md` | complete | Required formatting templates for requirements, flows, decisions, and questions |
 | `instructions/story-generation.md` | complete | Rules for converting requirements into stories and backlog items |
 | `instructions/technical-design-rules.md` | complete | Constraints for architecture and implementation proposals |
+| `instructions/secrets-handling.md` | active | Guardrails for storing secrets in `.secrets/`, never committing them, and validating secret decisions with the user |
 | `instructions/agent-working-rules.md` | active | Behavioral rules for any agent editing or generating content in this PRD set |
 
 ## Which Files to Read for Which Task
@@ -105,6 +106,7 @@ Read in this order:
 2. `sections/integrations-and-data.md`
 3. `sections/non-functional-requirements.md`
 4. `instructions/technical-design-rules.md`
+5. `instructions/secrets-handling.md` (if credentials, env vars, or AWS access are involved)
 
 ## Working Rules Summary
 - Keep product truth in section files.

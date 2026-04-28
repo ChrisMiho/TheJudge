@@ -22,6 +22,7 @@ For most product tasks, read:
 - Do not duplicate the same truth across too many files.
 - Keep product content in section files.
 - Keep process guidance in instruction files.
+- Follow `instructions/secrets-handling.md` for any work touching credentials, secret files, AWS auth, or secret-related env vars.
 
 ## Ambiguity Handling
 
@@ -57,3 +58,4 @@ For most product tasks, read:
 - changing stack ordering semantics
 - removing constraints because they seem inconvenient
 - treating duplicate blocking as permanent long-term truth
+- committing, printing, or documenting real secrets in tracked files
