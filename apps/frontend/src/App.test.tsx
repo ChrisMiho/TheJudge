@@ -218,6 +218,12 @@ describe("App MVP interaction flows", () => {
     expect(screen.getByText("Scry 1, then draw a card.")).toBeInTheDocument();
   });
 
+  it("shows TheJudge title on first render", () => {
+    render(<App />);
+    expect(screen.getByRole("heading", { name: "TheJudge" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
+  });
+
   it("supports keyboard suggestion navigation and selection in stack builder search", async () => {
     const user = userEvent.setup();
     render(<App />);

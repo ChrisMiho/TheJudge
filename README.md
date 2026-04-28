@@ -241,7 +241,7 @@ Pending implementation backlog:
 - [x] `STORY-051` componentize battlefield step rendering/state wiring out of `App.tsx`
 - [x] `STORY-052` componentize stack builder rendering/state wiring out of `App.tsx`
 - [x] `STORY-053` refactor ask-ai submit/retry orchestration and logging lifecycle helpers
-- [ ] `STORY-054` ensure the app title "TheJudge" is visible on the homepage/first screen
+- [x] `STORY-054` ensure the app title "TheJudge" is visible on the homepage/first screen
 
 ## Documentation Notes
 

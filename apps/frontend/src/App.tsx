@@ -594,6 +594,12 @@ export default function App() {
     return (
       <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
         <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 md:p-6">
+          <header>
+            <h1 className="bg-gradient-to-r from-sky-300 to-blue-400 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+              TheJudge
+            </h1>
+            <p className="text-sm text-slate-300">Stack Assistant</p>
+          </header>
           <div className="p-2 text-center">
             {emptyStateImageFailed ? (
               <p className="text-2xl font-semibold text-slate-200">Cat wizard</p>
@@ -606,7 +612,7 @@ export default function App() {
               />
             )}
           </div>
-          <h1 className="text-2xl font-semibold text-sky-300">Game context</h1>
+          <h2 className="text-2xl font-semibold text-sky-300">Game context</h2>
           <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
             Number of players
             <select

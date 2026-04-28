@@ -1,0 +1,23 @@
+# STORY-054 - Homepage App Title Visibility
+
+- implementation area: frontend
+- title: Ensure the app title "TheJudge" is clearly visible on the homepage and remains consistent across the primary flow entry screen.
+- user value: As a user opening the app, I can immediately confirm I am in TheJudge before starting game context and stack actions.
+- scope:
+  - add or restore a clearly visible "TheJudge" title on the initial homepage/game-context screen
+  - preserve existing visual hierarchy so title visibility does not hide or disrupt core first-step actions
+  - keep title styling consistent with existing app branding on later flow steps where applicable
+  - add/update frontend tests to assert title presence on first render
+- acceptance criteria:
+  - "TheJudge" is visible on first load without requiring user interaction
+  - homepage title remains visible and readable on mobile-first layout constraints
+  - frontend tests validate first-render title presence and remain green
+  - root `README.md` story checklist is updated when this story is implemented
+- execution mode: parallel-ready
+- dependencies:
+  - REQ-001
+  - NFR-001, NFR-005
+- exclusions:
+  - no backend API changes
+  - no submit/payload contract changes
+  - no new navigation routes
