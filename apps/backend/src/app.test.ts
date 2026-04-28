@@ -396,6 +396,70 @@ describe("backend contract tests", () => {
     });
   });
 
+  it("includes full request payload in lifecycle logs when payload logging is enabled", async () => {
+    const events: Array<{ level: "info" | "error"; event: string; payload?: Record<string, unknown> }> = [];
+    const appWithPayloadLogging = createApp({
+      debugLoggingEnabled: true,
+      payloadLoggingEnabled: true,
+      logger: {
+        info(event, payload) {
+          events.push({ level: "info", event, payload });
+        },
+        error(event, payload) {
+          events.push({ level: "error", event, payload });
+        }
+      },
+      askAiProvider: {
+        generateAnswer() {
+          return { answer: "ok" };
+        }
+      }
+    });
+
+    await request(appWithPayloadLogging).post("/api/ask-ai").send({
+      question: "payload logging check",
+      gameContext: createGameContext(),
+      battlefieldContext: [],
+      stack: [createStackItem()]
+    });
+
+    const requestReceivedEvent = events.find((entry) => entry.event === "ask_ai.request_received");
+    expect(requestReceivedEvent?.payload?.requestPayload).toMatchObject({
+      question: "payload logging check"
+    });
+  });
+
+  it("omits full request payload from lifecycle logs when payload logging is disabled", async () => {
+    const events: Array<{ level: "info" | "error"; event: string; payload?: Record<string, unknown> }> = [];
+    const appWithoutPayloadLogging = createApp({
+      debugLoggingEnabled: true,
+      payloadLoggingEnabled: false,
+      logger: {
+        info(event, payload) {
+          events.push({ level: "info", event, payload });
+        },
+        error(event, payload) {
+          events.push({ level: "error", event, payload });
+        }
+      },
+      askAiProvider: {
+        generateAnswer() {
+          return { answer: "ok" };
+        }
+      }
+    });
+
+    await request(appWithoutPayloadLogging).post("/api/ask-ai").send({
+      question: "payload logging disabled check",
+      gameContext: createGameContext(),
+      battlefieldContext: [],
+      stack: [createStackItem()]
+    });
+
+    const requestReceivedEvent = events.find((entry) => entry.event === "ask_ai.request_received");
+    expect(requestReceivedEvent?.payload?.requestPayload).toBeUndefined();
+  });
+
   it("logs lifecycle events with shared correlation id", async () => {
     const events: Array<{ level: "info" | "error"; event: string; payload?: Record<string, unknown> }> = [];
     const appWithLogger = createApp({

@@ -91,6 +91,7 @@ Local defaults work out of the box, but deployment targets should set explicit v
   - `PORT` - backend server port (default: `3000`)
   - `FRONTEND_ORIGIN` - optional CORS allow-origin for frontend deployments (example: `https://preview.thejudge.dev`)
   - `DEBUG_LOGGING` - optional backend debug log toggle (`true`/`false`); defaults on in `development`
+  - `LOG_PAYLOADS` - optional backend request payload logging toggle (`true`/`false`); defaults on in `development`, off otherwise
 
 Reference templates:
 
@@ -125,6 +126,15 @@ Baseline status mapping:
 - `503` -> `PROVIDER_UNAVAILABLE`
 - `504` -> `PROVIDER_TIMEOUT`
 - `500` -> `UNEXPECTED_ERROR`
+
+### Backend Logging
+
+- Backend runtime logs use `pino` and emit structured JSON records.
+- Request lifecycle `info` logs are controlled by `DEBUG_LOGGING`; `error` logs are always emitted.
+- Full request payload logging is controlled by `LOG_PAYLOADS` (use carefully in shared environments due to sensitive game context details).
+- Recommended operational defaults:
+  - local debugging: `DEBUG_LOGGING=true`, `LOG_PAYLOADS=true`
+  - shared preview/production: `DEBUG_LOGGING=false`, `LOG_PAYLOADS=false`
 
 ## Deployment Targets
 
@@ -217,7 +227,7 @@ Pending implementation backlog:
 - [x] `STORY-045` eliminate backend contract drift via schema-first typing (`z.infer`) and shared source-of-truth contracts
 - [x] `STORY-046` add backend error taxonomy + centralized middleware with stable machine-readable error codes
 - [x] `STORY-047` consolidate prompt/context build ownership into one backend service boundary
-- [ ] `STORY-048` standardize backend logging with `pino` JSON output and payload-log toggle docs
+- [x] `STORY-048` standardize backend logging with `pino` JSON output and payload-log toggle docs
 - [ ] `STORY-049` layer backend tests and extract reusable fixture/builders for maintainable contract coverage
 - [x] `STORY-044` hide battlefield target-entry controls until a card is selected (preview is the single target-entry surface)
 - [ ] `STORY-050` extract shared target-editor logic used by stack and battlefield selected-card previews

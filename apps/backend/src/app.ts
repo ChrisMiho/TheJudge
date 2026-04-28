@@ -18,6 +18,7 @@ type AppOptions = {
   frontendOrigin?: string;
   askAiProvider?: AskAiProvider;
   debugLoggingEnabled?: boolean;
+  payloadLoggingEnabled?: boolean;
   logger?: AppLogger;
 };
 
@@ -55,6 +56,7 @@ export function createApp(options: AppOptions = {}) {
   const app = express();
   const askAiProvider = options.askAiProvider ?? mockAskAiProvider;
   const isDebug = options.debugLoggingEnabled ?? false;
+  const isPayloadLoggingEnabled = options.payloadLoggingEnabled ?? false;
   const logger = options.logger ?? createAppLogger(isDebug);
 
   app.use(cors(options.frontendOrigin ? { origin: options.frontendOrigin } : undefined));
@@ -72,7 +74,8 @@ export function createApp(options: AppOptions = {}) {
         correlationId,
         method: req.method,
         path: req.path,
-        stackSize: Array.isArray(req.body?.stack) ? req.body.stack.length : undefined
+        stackSize: Array.isArray(req.body?.stack) ? req.body.stack.length : undefined,
+        requestPayload: isPayloadLoggingEnabled ? req.body : undefined
       });
 
       const parsed = askAiRequestSchema.safeParse(req.body);

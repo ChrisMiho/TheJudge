@@ -1,3 +1,5 @@
+import pino from "pino";
+
 export type LogPayload = Record<string, unknown>;
 
 export type AppLogger = {
@@ -30,29 +32,44 @@ export function resolveDebugLoggingEnabled(rawValue: string | undefined, nodeEnv
   );
 }
 
+export function resolvePayloadLoggingEnabled(rawValue: string | undefined, nodeEnv: string | undefined): boolean {
+  const normalizedEnv = nodeEnv?.trim().toLowerCase();
+  const defaultEnabled = normalizedEnv === "development";
+
+  if (!rawValue || rawValue.trim().length === 0) {
+    return defaultEnabled;
+  }
+
+  const normalizedValue = rawValue.trim().toLowerCase();
+  if (TRUE_VALUES.has(normalizedValue)) {
+    return true;
+  }
+
+  if (FALSE_VALUES.has(normalizedValue)) {
+    return false;
+  }
+
+  throw new Error(
+    `Invalid LOG_PAYLOADS value "${rawValue}". Expected true/false style value (for example: "true" or "false").`
+  );
+}
+
 export function createAppLogger(enabled: boolean): AppLogger {
+  const logger = pino({
+    base: { service: "thejudge-backend" },
+    level: enabled ? "info" : "error",
+    timestamp: pino.stdTimeFunctions.isoTime
+  });
+
   return {
     info(event, payload = {}) {
       if (!enabled) {
         return;
       }
-
-      console.info("[TheJudge][backend]", {
-        event,
-        timestamp: new Date().toISOString(),
-        ...payload
-      });
+      logger.info({ event, ...payload });
     },
     error(event, payload = {}) {
-      if (!enabled) {
-        return;
-      }
-
-      console.error("[TheJudge][backend]", {
-        event,
-        timestamp: new Date().toISOString(),
-        ...payload
-      });
+      logger.error({ event, ...payload });
     }
   };
 }

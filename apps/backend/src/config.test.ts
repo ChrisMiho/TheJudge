@@ -8,6 +8,7 @@ describe("backend env config", () => {
       port: 3000,
       frontendOrigin: undefined,
       debugLoggingEnabled: false,
+      payloadLoggingEnabled: false,
       askAiProvider: "mock",
       awsRegion: undefined,
       bedrockModelId: undefined
@@ -25,6 +26,7 @@ describe("backend env config", () => {
       port: 4567,
       frontendOrigin: "https://preview.thejudge.dev",
       debugLoggingEnabled: true,
+      payloadLoggingEnabled: false,
       askAiProvider: "mock",
       awsRegion: undefined,
       bedrockModelId: undefined
@@ -71,6 +73,16 @@ describe("backend env config", () => {
 
   it("throws on invalid DEBUG_LOGGING values", () => {
     expect(() => readServerConfig({ DEBUG_LOGGING: "maybe" })).toThrow(/Invalid DEBUG_LOGGING value/);
+  });
+
+  it("parses LOG_PAYLOADS toggle and defaults to enabled in development", () => {
+    expect(readServerConfig({ NODE_ENV: "development" }).payloadLoggingEnabled).toBe(true);
+    expect(readServerConfig({ LOG_PAYLOADS: "false" }).payloadLoggingEnabled).toBe(false);
+    expect(readServerConfig({ LOG_PAYLOADS: "true" }).payloadLoggingEnabled).toBe(true);
+  });
+
+  it("throws on invalid LOG_PAYLOADS values", () => {
+    expect(() => readServerConfig({ LOG_PAYLOADS: "sometimes" })).toThrow(/Invalid LOG_PAYLOADS value/);
   });
 
   it("throws on invalid provider selection", () => {

@@ -1,4 +1,4 @@
-import { resolveDebugLoggingEnabled } from "./logging.js";
+import { resolveDebugLoggingEnabled, resolvePayloadLoggingEnabled } from "./logging.js";
 
 const DEFAULT_PORT = 3000;
 const DEFAULT_ASK_AI_PROVIDER = "mock";
@@ -9,6 +9,7 @@ export type ServerConfig = {
   port: number;
   frontendOrigin?: string;
   debugLoggingEnabled: boolean;
+  payloadLoggingEnabled: boolean;
   askAiProvider: AskAiProviderMode;
   awsRegion?: string;
   bedrockModelId?: string;
@@ -66,6 +67,7 @@ export function readServerConfig(env: NodeJS.ProcessEnv): ServerConfig {
     port: parsePort(env.PORT),
     frontendOrigin: parseFrontendOrigin(env.FRONTEND_ORIGIN),
     debugLoggingEnabled: resolveDebugLoggingEnabled(env.DEBUG_LOGGING, env.NODE_ENV),
+    payloadLoggingEnabled: resolvePayloadLoggingEnabled(env.LOG_PAYLOADS, env.NODE_ENV),
     askAiProvider: provider,
     awsRegion,
     bedrockModelId
