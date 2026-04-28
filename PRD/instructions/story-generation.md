@@ -35,12 +35,21 @@ These rules govern how to convert PRD content into backlog items, stories, or im
 ## Story Structure
 For each story, include:
 - title
+- implementation area (`frontend`, `backend`, or `full-stack`)
 - user value
 - scope
 - acceptance criteria
 - execution mode (`parallel-ready` or `sequential`)
 - dependencies
 - exclusions
+
+### Implementation Area Rules
+- Every story must explicitly declare `implementation area`.
+- Use:
+  - `frontend` for UI/client-only work
+  - `backend` for API/server-only work
+  - `full-stack` when both runtime layers are required
+- If a story touches docs/tests only, still choose the runtime area where the primary behavior change lands.
 
 ### Acceptance Criteria Requirements
 - Include at least one acceptance criterion that requires updating the root `README.md` story checklist when the story is implemented.
@@ -54,6 +63,7 @@ For each story, include:
 
 ## Story Quality Checklist
 - Story objective is singular and clear.
+- Story explicitly calls out `implementation area` and it matches the scope.
 - Story can be picked up without hidden assumptions from other stories.
 - Acceptance criteria can be verified without redefining scope.
 - Acceptance criteria include updating the root `README.md` story tracker entry.

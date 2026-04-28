@@ -1,0 +1,21 @@
+# STORY-044 - Battlefield Target Controls After Selection Only
+
+- title: Hide battlefield target-entry controls until a battlefield card is selected, using the selected-card preview as the single target-entry surface.
+- user value: As a player, I avoid duplicate controls and only see target-entry actions when they are actionable.
+- scope:
+  - remove pre-selection battlefield target controls from the battlefield step
+  - keep target-entry controls available only inside the selected battlefield card preview
+  - preserve existing battlefield context payload shape and add-entry behavior once a card is selected
+- acceptance criteria:
+  - before selecting a battlefield card, battlefield target controls are not shown
+  - after selecting a battlefield card, target controls appear inside the preview context section
+  - battlefield payload submission tests remain green without contract changes
+  - root `README.md` story checklist is updated when this story is implemented
+- execution mode: parallel-ready
+- dependencies:
+  - REQ-016
+  - DEC-019
+  - NFR-005
+- exclusions:
+  - no backend API contract changes
+  - no new battlefield domain fields

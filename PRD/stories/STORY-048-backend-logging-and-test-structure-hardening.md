@@ -1,0 +1,27 @@
+# STORY-048 - Backend Structured Logging Standardization
+
+- implementation area: backend
+- title: Standardize backend logging with production-grade structured JSON output and consistent runtime toggles.
+- user value: As a maintainer, I get reliable, machine-parseable backend telemetry in every environment while still controlling payload verbosity.
+- scope:
+  - adopt `pino` as the backend logger and emit JSON logs consistently across startup and request lifecycle
+  - keep error-level logs always emitted regardless of debug toggle, while preserving debug-gated info-level flow logs
+  - add an explicit payload-logging toggle so full request payload logging can be turned on/off without code changes
+  - keep full payload logging available for current MVP testing while documenting risks and operational defaults
+- acceptance criteria:
+  - backend logs are JSON and produced through `pino` for startup + request lifecycle paths
+  - backend error logs are emitted even when debug logging is disabled
+  - payload logging can be toggled via documented config/environment setting
+  - root `README.md` includes backend logging docs covering `pino`, JSON log format, and payload-logging toggle usage
+  - backend tests remain green with equivalent endpoint behavior
+  - root `README.md` story checklist is updated when this story is implemented
+- execution mode: sequential
+- dependencies:
+  - STORY-046 (error taxonomy and middleware should be stable before logging consolidation)
+  - REQ-012, REQ-014
+  - NFR-002, NFR-005, NFR-007
+  - after STORY-046 lands, this story is parallelizable with STORY-047 and STORY-049 when endpoint contracts remain stable
+- exclusions:
+  - no external observability platform adoption
+  - no runtime behavior changes to successful `ask-ai` response shape
+  - no frontend feature/UI scope expansion

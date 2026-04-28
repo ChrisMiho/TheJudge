@@ -1,0 +1,27 @@
+# STORY-052 - Stack Builder Componentization
+
+- title: Extract stack-builder rendering/state wiring from `App.tsx` into focused component boundaries.
+- implementation area: frontend
+- user value: As a team, stack-flow polish and bug fixes become lower-risk by reducing monolithic screen complexity.
+- scope:
+  - extract stack builder/search/preview/add surface from `App.tsx` into dedicated component(s)
+  - preserve stack add/remove details behavior and existing context-entry interactions
+  - preserve stack-order, duplicate-block, and stack-cap behavior contracts
+  - keep ask-ai payload emitted from stack flow unchanged
+- acceptance criteria:
+  - stack-builder behavior remains covered by frontend regression tests with no functional regressions
+  - `App.tsx` no longer directly owns the bulk of stack-builder JSX rendering
+  - stack order and validation guardrails (`duplicate`, `10-card cap`) remain unchanged in tests
+  - root `README.md` checklist is updated to mark `STORY-052` complete when implementation lands
+- execution mode: parallel-ready
+- dependencies:
+  - `REQ-005`
+  - `REQ-006`
+  - `REQ-009`
+  - `REQ-010`
+  - `DEC-004`
+  - `DEC-005`
+  - `NFR-005`
+- exclusions:
+  - no backend API changes
+  - no gameplay rules-engine logic additions

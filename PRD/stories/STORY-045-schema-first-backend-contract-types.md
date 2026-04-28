@@ -1,0 +1,24 @@
+# STORY-045 - Schema-First Backend Contract Types
+
+- implementation area: backend
+- title: Eliminate backend request/response contract drift by deriving TypeScript types from runtime schemas.
+- user value: As an engineer iterating quickly toward MVP2, I can change backend contracts in one place and trust compile-time + runtime alignment.
+- scope:
+  - make Zod schema definitions the single source of truth for backend API contracts
+  - derive backend request/response TypeScript types from schema (`z.infer`) instead of maintaining duplicated parallel interfaces
+  - remove now-redundant backend defensive normalization that only exists to compensate for type/schema drift
+  - preserve current `POST /api/ask-ai` payload and response shapes unless explicitly required by follow-on stories
+- acceptance criteria:
+  - backend request and response contract types used by route/provider code are derived from schema definitions
+  - no duplicate contract definitions remain for the same `ask-ai` fields in backend source
+  - backend tests remain green with no behavior change to existing contract validation paths
+  - root `README.md` story checklist is updated when this story is implemented
+- execution mode: parallel-ready
+- dependencies:
+  - REQ-012, REQ-013, REQ-014
+  - DEC-009, DEC-010, DEC-011
+  - NFR-002, NFR-005
+- exclusions:
+  - no user-facing endpoint additions
+  - no provider-selection redesign
+  - no frontend contract expansion

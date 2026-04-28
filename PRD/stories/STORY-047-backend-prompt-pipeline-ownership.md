@@ -1,0 +1,27 @@
+# STORY-047 - Backend Prompt Pipeline Ownership
+
+- implementation area: backend
+- title: Consolidate prompt/context construction ownership in a backend service boundary so provider adapters consume a single prepared prompt input.
+- user value: As an engineer scaling from MVP1 to MVP2 providers, I can extend prompt behavior in one backend layer without duplicating transformations across routes and providers.
+- scope:
+  - define a single backend prompt-preparation service responsible for context normalization, prompt build, and diagnostics
+  - remove duplicate prompt/context transformation steps spread across route and provider paths
+  - keep frontend responsibility limited to structured data capture; backend remains the sole prompt-manipulation owner
+  - make provider adapters consume prepared prompt input from the backend prompt-preparation service boundary (not raw frontend payload shaping logic)
+  - preserve current prompt budget checks and latency guardrails while relocating logic into the shared service boundary
+- acceptance criteria:
+  - prompt preparation has a single backend owner used by `POST /api/ask-ai` flow
+  - provider implementations no longer duplicate context/prompt generation work already done by route/service layer
+  - existing prompt budget and deterministic output tests remain green with equivalent behavior
+  - root `README.md` story checklist is updated when this story is implemented
+- execution mode: sequential
+- dependencies:
+  - STORY-045 (shared schema-first types reduce refactor risk for service boundary contracts)
+  - STORY-046 (centralized error model should already exist for prompt build/provider failure mapping)
+  - REQ-012, REQ-013
+  - NFR-005, NFR-007
+  - after STORY-046 lands, test-layer cleanup can run in parallel
+- exclusions:
+  - no frontend-owned prompt generation
+  - no Bedrock provider feature expansion beyond wiring needed for boundary consistency
+  - no API route proliferation

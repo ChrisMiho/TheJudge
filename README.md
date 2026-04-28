@@ -50,6 +50,7 @@ Validate the end-to-end user flow before full Bedrock integration:
    - `npm run data:build`
 4. Start both apps:
    - `npm run dev`
+   - Backend Ask-AI flow logs print in this terminal when `DEBUG_LOGGING` is unset (defaults on in development; the backend `dev` script sets `NODE_ENV=development`). Frontend `[TheJudge][frontend]` logs appear in the browser DevTools console, not the dev terminal.
 5. Optional checks:
    - frontend: `http://localhost:5173`
    - backend health: `http://localhost:3000/api/health`
@@ -90,11 +91,57 @@ Local defaults work out of the box, but deployment targets should set explicit v
   - `PORT` - backend server port (default: `3000`)
   - `FRONTEND_ORIGIN` - optional CORS allow-origin for frontend deployments (example: `https://preview.thejudge.dev`)
   - `DEBUG_LOGGING` - optional backend debug log toggle (`true`/`false`); defaults on in `development`
+  - `LOG_PAYLOADS` - optional backend request payload logging toggle (`true`/`false`); defaults on in `development`, off otherwise
 
 Reference templates:
 
 - `apps/frontend/.env.example`
 - `apps/backend/.env.example`
+
+## Validating Ask-AI Flow Locally
+
+1. Enable debug logging in both apps (or rely on local defaults):
+   - frontend: set `VITE_DEBUG_LOGGING=true` in `apps/frontend/.env`
+   - backend: set `DEBUG_LOGGING=true` in `apps/backend/.env`
+2. Start both services from repo root:
+   - `npm run dev`
+3. Open the frontend, build a small stack, and click `Decrypt Stack`.
+4. Use the same correlation id to follow one attempt across systems:
+   - browser DevTools console: `[TheJudge][frontend]` `ask_ai.*` events
+   - backend terminal: `[TheJudge][backend]` `ask_ai.*` lifecycle events
+   - network response headers: `X-Correlation-Id` echoed from backend response
+
+### Ask-AI Error Contract
+
+`POST /api/ask-ai` failures return:
+
+- `code` (machine-readable): `VALIDATION_ERROR` | `PROVIDER_UNAVAILABLE` | `PROVIDER_TIMEOUT` | `UNEXPECTED_ERROR`
+- `message` (human-readable)
+- `metadata` (optional): includes `correlationId` when available; includes detailed diagnostics only in development mode
+- `retryAfterSeconds` (optional): present for provider-availability/timeout failures
+
+Baseline status mapping:
+
+- `400` -> `VALIDATION_ERROR`
+- `503` -> `PROVIDER_UNAVAILABLE`
+- `504` -> `PROVIDER_TIMEOUT`
+- `500` -> `UNEXPECTED_ERROR`
+
+### Backend Logging
+
+- Backend runtime logs use `pino` and emit structured JSON records.
+- Request lifecycle `info` logs are controlled by `DEBUG_LOGGING`; `error` logs are always emitted.
+- Full request payload logging is controlled by `LOG_PAYLOADS` (use carefully in shared environments due to sensitive game context details).
+- Recommended operational defaults:
+  - local debugging: `DEBUG_LOGGING=true`, `LOG_PAYLOADS=true`
+  - shared preview/production: `DEBUG_LOGGING=false`, `LOG_PAYLOADS=false`
+
+### Backend Testing Layers
+
+- Route/API contract tests live in `apps/backend/src/app.contract.test.ts` (status codes, payload contracts, core success/failure flows).
+- Route behavior tests live in `apps/backend/src/app.behavior.test.ts` (provider boundary wiring, error mapping behavior, logging toggles).
+- Prompt/context unit and eval harness tests remain in dedicated files (`promptContext`, `promptNormalization`, `eval/*`) for deterministic text/guardrail coverage.
+- Reuse shared request builders from `apps/backend/src/test-utils/requestBuilders.ts` for new backend route/provider tests.
 
 ## Deployment Targets
 
@@ -181,7 +228,20 @@ Pending implementation backlog:
 - [x] `STORY-038` clean up battlefield input-state path wiring against shared adapters
 - [x] `STORY-039` add cross-flow parity regression suite for stack vs battlefield suggestions
 - [x] `STORY-040` add lightweight search performance guardrails for responsiveness
-- [ ] `STORY-041` make battlefield item name display-only while keeping search and details editable
+- [x] `STORY-041` make battlefield item name display-only while keeping search and details editable
+- [x] `STORY-042` strengthen cross-boundary flow validation logging (response correlation echo, staged-flow milestones, README playbook)
+- [x] `STORY-043` unify stack and battlefield selected-card preview UX with shared preview component and target-kind option parity
+- [x] `STORY-045` eliminate backend contract drift via schema-first typing (`z.infer`) and shared source-of-truth contracts
+- [x] `STORY-046` add backend error taxonomy + centralized middleware with stable machine-readable error codes
+- [x] `STORY-047` consolidate prompt/context build ownership into one backend service boundary
+- [x] `STORY-048` standardize backend logging with `pino` JSON output and payload-log toggle docs
+- [x] `STORY-049` layer backend tests and extract reusable fixture/builders for maintainable contract coverage
+- [x] `STORY-044` hide battlefield target-entry controls until a card is selected (preview is the single target-entry surface)
+- [x] `STORY-050` extract shared target-editor logic used by stack and battlefield selected-card previews
+- [x] `STORY-051` componentize battlefield step rendering/state wiring out of `App.tsx`
+- [x] `STORY-052` componentize stack builder rendering/state wiring out of `App.tsx`
+- [x] `STORY-053` refactor ask-ai submit/retry orchestration and logging lifecycle helpers
+- [x] `STORY-054` ensure the app title "TheJudge" is visible on the homepage/first screen
 
 ## Documentation Notes
 

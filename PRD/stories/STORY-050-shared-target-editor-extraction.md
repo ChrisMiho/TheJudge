@@ -1,0 +1,24 @@
+# STORY-050 - Shared Target Editor Extraction
+
+- title: Extract a reusable target-editor surface shared by stack and battlefield card-preview contexts.
+- implementation area: frontend
+- user value: As a player, target-entry controls behave consistently across flows while reducing UI drift risk.
+- scope:
+  - introduce a shared target-editor component/hook that renders target-kind controls and add/remove interactions
+  - reuse the shared target-editor in stack preview context and battlefield preview context
+  - preserve current target payload shapes for both flows (`stack`, `battlefield`, `player`, `other`, `none`)
+  - keep current option labels/order and add-target behavior unchanged
+- acceptance criteria:
+  - stack and battlefield selected-card previews both use the shared target-editor path
+  - target add/remove behavior remains parity-checked in frontend regression tests
+  - no backend request contract changes are required for target data emitted by frontend
+  - root `README.md` checklist is updated to mark `STORY-050` complete when implementation lands
+- execution mode: sequential
+- dependencies:
+  - `STORY-043` must be merged first (shared preview shell is required before shared inner target-editor extraction)
+  - `REQ-016`
+  - `DEC-019`
+  - `NFR-005`
+- exclusions:
+  - no visual redesign of the preview shell
+  - no backend contract or validation changes

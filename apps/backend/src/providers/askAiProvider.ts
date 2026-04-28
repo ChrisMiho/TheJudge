@@ -1,5 +1,6 @@
-import type { AskAiRequest, AskAiResponse } from "../types.js";
+import type { PreparedPromptInput } from "../promptPreparation.js";
+import type { AskAiResponse } from "../types.js";
 
 export type AskAiProvider = {
-  generateAnswer(request: AskAiRequest): Promise<AskAiResponse> | AskAiResponse;
+  generateAnswer(preparedPrompt: PreparedPromptInput): Promise<AskAiResponse> | AskAiResponse;
 };

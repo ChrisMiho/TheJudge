@@ -1,0 +1,25 @@
+# STORY-053 - Ask-AI Submit Orchestration Polish
+
+- title: Refactor ask-ai submit/retry orchestration into focused frontend helpers while preserving behavior and logging contracts.
+- implementation area: frontend
+- user value: As a player, submit/retry behavior stays stable while the codepath becomes easier to maintain and debug.
+- scope:
+  - extract ask-ai submission/retry lifecycle logic from `App.tsx` into focused helper(s) or hook(s)
+  - preserve correlation-id handling and frontend debug-event semantics
+  - preserve failure resilience behavior (state retention + retry cooldown)
+  - keep request/response contract behavior unchanged
+- acceptance criteria:
+  - submit and retry behavior remains regression-safe in frontend integration tests
+  - correlation-id and ask-ai lifecycle debug events remain contract-consistent
+  - no changes to backend API payload/response contracts are required
+  - root `README.md` checklist is updated to mark `STORY-053` complete when implementation lands
+- execution mode: parallel-ready
+- dependencies:
+  - `REQ-012`
+  - `REQ-014`
+  - `DEC-014`
+  - `NFR-005`
+  - `NFR-007`
+- exclusions:
+  - no UI redesign of answer/error/retry surfaces
+  - no backend provider/route contract changes

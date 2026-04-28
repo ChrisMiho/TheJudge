@@ -1,5 +1,5 @@
+import type { PreparedPromptInput } from "./promptPreparation.js";
 import type { AskAiResponse, PromptContext } from "./types.js";
-import { buildPromptText, getPromptDiagnostics } from "./promptNormalization.js";
 
 function formatList(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "N/A";
@@ -50,9 +50,8 @@ function formatStackRows(context: PromptContext): string {
     .join("\n");
 }
 
-export function buildMockAnswer(context: PromptContext): AskAiResponse {
-  const promptText = buildPromptText(context);
-  const promptDiagnostics = getPromptDiagnostics(promptText);
+export function buildMockAnswer(preparedPrompt: PreparedPromptInput): AskAiResponse {
+  const { context, diagnostics: promptDiagnostics } = preparedPrompt;
   const stackRows = formatStackRows(context);
   const battlefieldRows =
     context.battlefieldContext.length > 0

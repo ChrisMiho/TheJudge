@@ -1,0 +1,28 @@
+# STORY-049 - Backend Test Suite Layering and Fixture Reuse
+
+- implementation area: backend
+- title: Split backend tests into layered suites and reusable fixtures for faster, less brittle MVP2 iteration.
+- user value: As a maintainer, I can change backend behavior with clearer test intent and less duplicated setup while preserving API contract confidence.
+- scope:
+  - extract shared backend request/fixture builders (for example `createGameContext`, `createStackItem`) into reusable test utilities
+  - split oversized route integration tests into focused layers:
+    - endpoint contract tests
+    - unit tests for prompt/context helpers and error-mapping behavior
+  - reduce assertions that over-couple tests to long mock text formatting when contract behavior is the real intent
+  - preserve key end-to-end ask-ai contract coverage for success and core failure paths
+- acceptance criteria:
+  - backend tests use shared fixture utilities instead of repeated inline request builders across multiple files
+  - backend test structure clearly separates endpoint contract tests from helper/unit behavior tests
+  - critical ask-ai status/contract/error-shape coverage remains green after restructuring
+  - root `README.md` includes a short backend testing subsection describing test layers and where to add new tests
+  - root `README.md` story checklist is updated when this story is implemented
+- execution mode: sequential
+- dependencies:
+  - STORY-046 (error-shape and middleware behavior should be stable before large-scale test reorganization)
+  - STORY-048 (structured logging updates should land first to avoid immediate assertion churn)
+  - REQ-012, REQ-014
+  - NFR-002, NFR-005
+- exclusions:
+  - no backend endpoint contract expansion
+  - no new observability platform integration
+  - no frontend behavior or UI scope changes

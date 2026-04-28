@@ -1,0 +1,25 @@
+# STORY-051 - Battlefield Step Componentization
+
+- title: Extract battlefield-step rendering and state wiring from `App.tsx` into a dedicated component boundary.
+- implementation area: frontend
+- user value: As a team, battlefield-flow updates become safer and faster to review without changing player-visible behavior.
+- scope:
+  - move battlefield-step UI rendering into a dedicated component (or tightly scoped component set)
+  - keep staged-flow progression behavior identical (`Confirm game context` -> battlefield step -> skip/continue)
+  - keep battlefield preview, details entry, and target-entry behavior unchanged
+  - keep submitted battlefield payload data shape unchanged
+- acceptance criteria:
+  - battlefield-step behavior remains regression-safe via existing and/or updated frontend tests
+  - `App.tsx` no longer directly owns the bulk of battlefield-step JSX rendering
+  - payload snapshots/assertions for battlefield context remain unchanged in test coverage
+  - root `README.md` checklist is updated to mark `STORY-051` complete when implementation lands
+- execution mode: sequential
+- dependencies:
+  - `STORY-050` must merge first (shared target-editor extraction should stabilize battlefield internals before step split)
+  - once merged, stack-focused refactor stories can proceed independently
+  - `REQ-016`
+  - `DEC-019`
+  - `NFR-005`
+- exclusions:
+  - no backend API/prompt contract changes
+  - no new battlefield domain fields

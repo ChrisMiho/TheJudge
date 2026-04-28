@@ -1,0 +1,31 @@
+# STORY-046 - Backend Error Taxonomy and Middleware
+
+- implementation area: backend
+- title: Introduce typed backend error categories and centralized Express error handling to return actionable failure details during MVP validation.
+- user value: As a developer/tester, I can see precise backend failure causes in UI/API responses and logs, making issue triage faster while preserving a stable error contract.
+- scope:
+  - add a typed backend error model (for example validation, provider-unavailable, provider-timeout, unexpected)
+  - centralize route error mapping into Express middleware instead of scattered route-local response shaping
+  - include stable machine-readable error codes in API error responses while keeping existing retry semantics where applicable
+  - adopt response shape `code + message + metadata` where `metadata` is optional when empty
+  - include `correlationId` in API error response payload metadata when available (in addition to existing header/log traceability)
+  - allow meaningful backend error messages to bubble to UI in development mode
+  - map core error statuses as baseline: validation=`400`, provider unavailable=`503`, provider timeout=`504`, unexpected=`500`
+  - keep `correlationId` visible in logs and available for failure traceability
+- acceptance criteria:
+  - `POST /api/ask-ai` failure paths map through centralized error middleware
+  - API error payloads include `code`, `message`, and optional `metadata`; `metadata` includes `correlationId` when present
+  - dev-mode behavior exposes useful failure details for tester-facing diagnostics without requiring log inspection
+  - existing forced-failure and provider-exception scenarios have deterministic status + code coverage in backend tests
+  - root `README.md` includes an error-contract subsection documenting error response shape, status mapping, and environment behavior for detailed messages
+  - root `README.md` story checklist is updated when this story is implemented
+- execution mode: sequential
+- dependencies:
+  - STORY-045 (contract typing should land first so error payload typing and middleware mapping share the same source-of-truth contract)
+  - REQ-012, REQ-014
+  - NFR-002, NFR-005, NFR-007
+  - after STORY-045 lands, error-handling implementation can proceed in parallel with logging/test-structure cleanup stories
+- exclusions:
+  - no external error tracking platform integration
+  - no authentication/authorization layer introduction
+  - no frontend UX redesign beyond consuming richer backend error payloads
