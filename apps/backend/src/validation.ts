@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-const playerLabelSchema = z.enum(["Player 1", "Player 2", "Player 3", "Player 4"]);
+export const playerLabelSchema = z.enum(["Player 1", "Player 2", "Player 3", "Player 4"]);
 const orderedPlayerLabels = ["Player 1", "Player 2", "Player 3", "Player 4"] as const;
 
-const stackTargetSchema = z.discriminatedUnion("kind", [
+export const stackTargetSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("stack"),
     targetCardId: z.string().min(1).max(120),
@@ -26,7 +26,7 @@ const stackTargetSchema = z.discriminatedUnion("kind", [
   }).strict()
 ]);
 
-const stackItemSchema = z.object({
+export const stackItemSchema = z.object({
   cardId: z.string().min(1),
   name: z.string().min(1),
   oracleText: z.string().min(1),
@@ -43,12 +43,12 @@ const stackItemSchema = z.object({
   manaSpent: z.number().min(0).max(99).optional()
 }).strict();
 
-const gamePlayerSchema = z.object({
+export const gamePlayerSchema = z.object({
   label: playerLabelSchema,
   lifeTotal: z.number().int().min(-99).max(999)
 }).strict();
 
-const gameContextSchema = z
+export const gameContextSchema = z
   .object({
     playerCount: z.number().int().min(2).max(4),
     players: z.array(gamePlayerSchema).min(2).max(4)
@@ -84,7 +84,7 @@ const gameContextSchema = z
     }
   });
 
-const battlefieldContextItemSchema = z.object({
+export const battlefieldContextItemSchema = z.object({
   name: z.string().min(1).max(120),
   details: z.string().max(280).optional(),
   targets: z.array(stackTargetSchema).max(8).optional().default([])
@@ -96,3 +96,16 @@ export const askAiRequestSchema = z.object({
   battlefieldContext: z.array(battlefieldContextItemSchema).max(16).optional().default([]),
   stack: z.array(stackItemSchema).min(1).max(10)
 }).strict();
+
+export const askAiResponseSchema = z
+  .object({
+    answer: z.string()
+  })
+  .strict();
+
+export const askAiErrorSchema = z
+  .object({
+    error: z.string(),
+    retryAfterSeconds: z.number().int().positive().optional()
+  })
+  .strict();

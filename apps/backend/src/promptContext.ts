@@ -91,29 +91,16 @@ function normalizeLifeTotal(value: number): number {
   return Number.isFinite(value) ? Math.trunc(value) : 20;
 }
 
-function normalizeCaster(value: AskAiRequest["stack"][number]["caster"]): AskAiRequest["stack"][number]["caster"] {
-  return value === "Player 1" || value === "Player 2" || value === "Player 3" || value === "Player 4"
-    ? value
-    : "Player 1";
-}
-
 export function buildPromptContext(payload: AskAiRequest): PromptContext {
   const normalizedQuestion = normalizeQuestion(payload.question);
-  const rawGameContext = payload.gameContext ?? {
-    playerCount: 2,
-    players: [
-      { label: "Player 1", lifeTotal: 20 },
-      { label: "Player 2", lifeTotal: 20 }
-    ]
-  };
   const normalizedGameContext = {
-    playerCount: rawGameContext.playerCount,
-    players: rawGameContext.players.map((player) => ({
+    playerCount: payload.gameContext.playerCount,
+    players: payload.gameContext.players.map((player) => ({
       label: player.label,
       lifeTotal: normalizeLifeTotal(player.lifeTotal)
     }))
   };
-  const normalizedBattlefieldContext = (payload.battlefieldContext ?? [])
+  const normalizedBattlefieldContext = payload.battlefieldContext
     .map((item) => ({
       name: normalizeWhitespace(item.name),
       details: normalizeOptionalText(item.details) || undefined,
@@ -136,7 +123,7 @@ export function buildPromptContext(payload: AskAiRequest): PromptContext {
       colors: normalizeOptionalList(card.colors),
       supertypes: normalizeOptionalList(card.supertypes),
       subtypes: normalizeOptionalList(card.subtypes),
-      caster: normalizeCaster(card.caster),
+      caster: card.caster,
       targets: normalizeTargets(card.targets),
       contextNotes: normalizeOptionalText(card.contextNotes) || undefined,
       manaSpent:

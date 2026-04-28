@@ -198,7 +198,7 @@ Pending implementation backlog:
 - [x] `STORY-041` make battlefield item name display-only while keeping search and details editable
 - [x] `STORY-042` strengthen cross-boundary flow validation logging (response correlation echo, staged-flow milestones, README playbook)
 - [x] `STORY-043` unify stack and battlefield selected-card preview UX with shared preview component and target-kind option parity
-- [ ] `STORY-045` eliminate backend contract drift via schema-first typing (`z.infer`) and shared source-of-truth contracts
+- [x] `STORY-045` eliminate backend contract drift via schema-first typing (`z.infer`) and shared source-of-truth contracts
 - [ ] `STORY-046` add backend error taxonomy + centralized middleware with stable machine-readable error codes
 - [ ] `STORY-047` consolidate prompt/context build ownership into one backend service boundary
 - [ ] `STORY-048` standardize backend logging with `pino` JSON output and payload-log toggle docs
