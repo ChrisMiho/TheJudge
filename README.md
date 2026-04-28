@@ -239,7 +239,7 @@ Pending implementation backlog:
 - [x] `STORY-044` hide battlefield target-entry controls until a card is selected (preview is the single target-entry surface)
 - [x] `STORY-050` extract shared target-editor logic used by stack and battlefield selected-card previews
 - [x] `STORY-051` componentize battlefield step rendering/state wiring out of `App.tsx`
-- [ ] `STORY-052` componentize stack builder rendering/state wiring out of `App.tsx`
+- [x] `STORY-052` componentize stack builder rendering/state wiring out of `App.tsx`
 - [ ] `STORY-053` refactor ask-ai submit/retry orchestration and logging lifecycle helpers
 - [ ] `STORY-054` ensure the app title "TheJudge" is visible on the homepage/first screen
 
