@@ -1,5 +1,12 @@
 import cors from "cors";
-import express from "express";
+import express, { type NextFunction, type Request, type Response } from "express";
+import {
+  AppError,
+  classifyProviderError,
+  createProviderUnavailableError,
+  createUnexpectedError,
+  createValidationError
+} from "./errors.js";
 import { createAppLogger, resolveCorrelationId, type AppLogger } from "./logging.js";
 import { mockAskAiProvider } from "./providers/mockAskAiProvider.js";
 import type { AskAiProvider } from "./providers/askAiProvider.js";
@@ -7,8 +14,6 @@ import { buildPromptContext } from "./promptContext.js";
 import { buildPromptText, getPromptDiagnostics } from "./promptNormalization.js";
 import { askAiRequestSchema } from "./validation.js";
 import type { AskAiError } from "./types.js";
-
-const retryAfterSeconds = 13;
 
 type AppOptions = {
   frontendOrigin?: string;
@@ -27,10 +32,31 @@ function toValidationErrorMessage(issues: { path: (string | number)[]; message: 
   return `Invalid request payload: ${pathLabel} ${firstIssue.message}`;
 }
 
+function correlationIdFromResponse(res: Response): string {
+  const existing = res.getHeader("X-Correlation-Id");
+  return typeof existing === "string" && existing.trim().length > 0 ? existing : resolveCorrelationId(undefined);
+}
+
+function toApiErrorPayload(error: AppError, correlationId: string, includeDetails: boolean): AskAiError {
+  const metadataEntries: Array<[string, string]> = [["correlationId", correlationId]];
+  if (includeDetails && error.details) {
+    metadataEntries.push(["details", error.details]);
+  }
+
+  const metadata = Object.fromEntries(metadataEntries);
+  return {
+    code: error.code,
+    message: error.message,
+    metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+    retryAfterSeconds: error.retryAfterSeconds
+  };
+}
+
 export function createApp(options: AppOptions = {}) {
   const app = express();
   const askAiProvider = options.askAiProvider ?? mockAskAiProvider;
-  const logger = options.logger ?? createAppLogger(options.debugLoggingEnabled ?? false);
+  const isDebug = options.debugLoggingEnabled ?? false;
+  const logger = options.logger ?? createAppLogger(isDebug);
 
   app.use(cors(options.frontendOrigin ? { origin: options.frontendOrigin } : undefined));
   app.use(express.json());
@@ -39,50 +65,39 @@ export function createApp(options: AppOptions = {}) {
     res.status(200).json({ ok: true });
   });
 
-  app.post("/api/ask-ai", async (req, res) => {
+  app.post("/api/ask-ai", async (req, res, next) => {
     const correlationId = resolveCorrelationId(req.header("x-correlation-id"));
     res.set("X-Correlation-Id", correlationId);
-    logger.info("ask_ai.request_received", {
-      correlationId,
-      method: req.method,
-      path: req.path,
-      stackSize: Array.isArray(req.body?.stack) ? req.body.stack.length : undefined
-    });
-
-    const parsed = askAiRequestSchema.safeParse(req.body);
-    if (!parsed.success) {
-      logger.info("ask_ai.request_validation_failed", {
-        correlationId,
-        issueCount: parsed.error.issues.length
-      });
-      const error: AskAiError = {
-        error: toValidationErrorMessage(parsed.error.issues),
-        retryAfterSeconds
-      };
-      res.status(400).json(error);
-      return;
-    }
-
-    logger.info("ask_ai.request_validation_succeeded", {
-      correlationId,
-      stackSize: parsed.data.stack.length
-    });
-
-    const shouldFail = req.query.fail === "true";
-    if (shouldFail) {
-      logger.info("ask_ai.response_failure", {
-        correlationId,
-        failureType: "forced_fail_query"
-      });
-      const error: AskAiError = {
-        error: "Miho is working on it",
-        retryAfterSeconds
-      };
-      res.status(502).json(error);
-      return;
-    }
-
     try {
+      logger.info("ask_ai.request_received", {
+        correlationId,
+        method: req.method,
+        path: req.path,
+        stackSize: Array.isArray(req.body?.stack) ? req.body.stack.length : undefined
+      });
+
+      const parsed = askAiRequestSchema.safeParse(req.body);
+      if (!parsed.success) {
+        logger.info("ask_ai.request_validation_failed", {
+          correlationId,
+          issueCount: parsed.error.issues.length
+        });
+        throw createValidationError(toValidationErrorMessage(parsed.error.issues));
+      }
+
+      logger.info("ask_ai.request_validation_succeeded", {
+        correlationId,
+        stackSize: parsed.data.stack.length
+      });
+
+      if (req.query.fail === "true") {
+        logger.info("ask_ai.response_failure", {
+          correlationId,
+          failureType: "forced_fail_query"
+        });
+        throw createProviderUnavailableError("Miho is working on it", "forced fail query parameter");
+      }
+
       logger.info("ask_ai.prompt_context_build_started", { correlationId });
       const promptBuildStartedAt = Date.now();
       const promptContext = buildPromptContext(parsed.data);
@@ -102,12 +117,7 @@ export function createApp(options: AppOptions = {}) {
           promptChars: diagnostics.promptChars,
           promptBudgetChars: diagnostics.promptBudgetChars
         });
-        const error: AskAiError = {
-          error: `Invalid request payload: prompt exceeds max budget (${diagnostics.promptBudgetChars} chars)`,
-          retryAfterSeconds
-        };
-        res.status(400).json(error);
-        return;
+        throw createValidationError(`Invalid request payload: prompt exceeds max budget (${diagnostics.promptBudgetChars} chars)`);
       }
 
       if (diagnostics.nearLimit) {
@@ -121,7 +131,13 @@ export function createApp(options: AppOptions = {}) {
 
       logger.info("ask_ai.provider_invocation_started", { correlationId });
       const providerStartedAt = Date.now();
-      const response = await askAiProvider.generateAnswer(parsed.data);
+      let response;
+      try {
+        response = await askAiProvider.generateAnswer(parsed.data);
+      } catch (cause) {
+        throw classifyProviderError(cause);
+      }
+
       const providerElapsedMs = Date.now() - providerStartedAt;
       logger.info("ask_ai.provider_invocation_completed", { correlationId, providerElapsedMs });
       if (providerElapsedMs > 1200) {
@@ -133,18 +149,39 @@ export function createApp(options: AppOptions = {}) {
       }
       logger.info("ask_ai.response_success", { correlationId });
       res.status(200).json(response);
-    } catch (cause) {
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
+    const correlationId = correlationIdFromResponse(res);
+    if (!res.getHeader("X-Correlation-Id")) {
+      res.set("X-Correlation-Id", correlationId);
+    }
+
+    const unexpectedDetails = error instanceof Error ? error.message : String(error);
+    const appError =
+      error instanceof AppError ? error : createUnexpectedError("Miho is working on it", unexpectedDetails);
+    const includeDetails = isDebug;
+    if (appError.status >= 500) {
       logger.error("ask_ai.response_failure", {
         correlationId,
-        failureType: "provider_exception",
-        message: cause instanceof Error ? cause.message : "unknown"
+        code: appError.code,
+        status: appError.status,
+        details: includeDetails ? appError.details : undefined
       });
-      const error: AskAiError = {
-        error: "Miho is working on it",
-        retryAfterSeconds
-      };
-      res.status(502).json(error);
+    } else {
+      logger.info("ask_ai.response_failure", {
+        correlationId,
+        code: appError.code,
+        status: appError.status,
+        details: includeDetails ? appError.details : undefined
+      });
     }
+
+    const payload = toApiErrorPayload(appError, correlationId, includeDetails);
+    res.status(appError.status).json(payload);
   });
 
   return app;

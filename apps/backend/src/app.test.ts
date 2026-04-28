@@ -136,8 +136,10 @@ describe("backend contract tests", () => {
 
     expect(response.status).toBe(400);
     expect(response.header["x-correlation-id"]).toMatch(/^srv-/);
-    expect(response.body.error).toContain("Invalid request payload:");
-    expect(response.body.retryAfterSeconds).toBe(13);
+    expect(response.body.code).toBe("VALIDATION_ERROR");
+    expect(response.body.message).toContain("Invalid request payload:");
+    expect(response.body.metadata.correlationId).toMatch(/^srv-/);
+    expect(response.body.retryAfterSeconds).toBeUndefined();
   });
 
   it("returns 400 for invalid caster labels", async () => {
@@ -149,7 +151,8 @@ describe("backend contract tests", () => {
     });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toContain("stack.0.caster");
+    expect(response.body.code).toBe("VALIDATION_ERROR");
+    expect(response.body.message).toContain("stack.0.caster");
   });
 
   it("returns 400 for malformed typed targets", async () => {
@@ -161,7 +164,8 @@ describe("backend contract tests", () => {
     });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toContain("stack.0.targets.0.targetCardName");
+    expect(response.body.code).toBe("VALIDATION_ERROR");
+    expect(response.body.message).toContain("stack.0.targets.0.targetCardName");
   });
 
   it("returns 400 for malformed other targets", async () => {
@@ -173,7 +177,8 @@ describe("backend contract tests", () => {
     });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toContain("stack.0.targets.0.targetDescription");
+    expect(response.body.code).toBe("VALIDATION_ERROR");
+    expect(response.body.message).toContain("stack.0.targets.0.targetDescription");
   });
 
   it("returns 400 when gameContext players do not match playerCount", async () => {
@@ -191,7 +196,8 @@ describe("backend contract tests", () => {
     });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toContain("gameContext.players");
+    expect(response.body.code).toBe("VALIDATION_ERROR");
+    expect(response.body.message).toContain("gameContext.players");
   });
 
   it("returns 400 when gameContext omits required fixed player labels", async () => {
@@ -209,8 +215,9 @@ describe("backend contract tests", () => {
     });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toContain("gameContext.players");
-    expect(response.body.error).toContain("must use fixed labels");
+    expect(response.body.code).toBe("VALIDATION_ERROR");
+    expect(response.body.message).toContain("gameContext.players");
+    expect(response.body.message).toContain("must use fixed labels");
   });
 
   it("returns 400 for unknown extra fields in strict contract", async () => {
@@ -222,7 +229,8 @@ describe("backend contract tests", () => {
     });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toContain("stack.0");
+    expect(response.body.code).toBe("VALIDATION_ERROR");
+    expect(response.body.message).toContain("stack.0");
   });
 
   it("returns 400 for malformed battlefield context targets", async () => {
@@ -239,7 +247,8 @@ describe("backend contract tests", () => {
     });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toContain("battlefieldContext.0.targets.0.targetDescription");
+    expect(response.body.code).toBe("VALIDATION_ERROR");
+    expect(response.body.message).toContain("battlefieldContext.0.targets.0.targetDescription");
   });
 
   it("returns 400 when prompt budget is exceeded", async () => {
@@ -262,10 +271,11 @@ describe("backend contract tests", () => {
     });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toContain("prompt exceeds max budget");
+    expect(response.body.code).toBe("VALIDATION_ERROR");
+    expect(response.body.message).toContain("prompt exceeds max budget");
   });
 
-  it("returns 502 with retry hint when fail=true", async () => {
+  it("returns 503 provider-unavailable error when fail=true", async () => {
     const response = await request(app).post("/api/ask-ai?fail=true").send({
       question: "fail path",
       gameContext: createGameContext(),
@@ -282,8 +292,10 @@ describe("backend contract tests", () => {
       ]
     });
 
-    expect(response.status).toBe(502);
-    expect(response.body.error).toBe("Miho is working on it");
+    expect(response.status).toBe(503);
+    expect(response.body.code).toBe("PROVIDER_UNAVAILABLE");
+    expect(response.body.message).toBe("Miho is working on it");
+    expect(response.body.metadata.correlationId).toMatch(/^srv-/);
     expect(response.body.retryAfterSeconds).toBe(13);
   });
 
@@ -311,7 +323,7 @@ describe("backend contract tests", () => {
     expect(providerCalls[0].question).toBe("Boundary check");
   });
 
-  it("preserves API error shape when bedrock readiness provider throws", async () => {
+  it("maps provider exceptions to provider-unavailable errors", async () => {
     const bedrockConfig = readServerConfig({
       ASK_AI_PROVIDER: "bedrock",
       AWS_REGION: "us-east-1",
@@ -328,10 +340,57 @@ describe("backend contract tests", () => {
       stack: [createStackItem()]
     });
 
-    expect(response.status).toBe(502);
-    expect(response.body).toEqual({
-      error: "Miho is working on it",
-      retryAfterSeconds: 13
+    expect(response.status).toBe(503);
+    expect(response.body.code).toBe("PROVIDER_UNAVAILABLE");
+    expect(response.body.message).toBe("Miho is working on it");
+    expect(response.body.retryAfterSeconds).toBe(13);
+    expect(response.body.metadata.correlationId).toMatch(/^srv-/);
+  });
+
+  it("maps timeout-like provider exceptions to provider-timeout status/code", async () => {
+    const appWithTimeoutProvider = createApp({
+      askAiProvider: {
+        generateAnswer() {
+          throw new Error("provider timeout while contacting upstream");
+        }
+      }
+    });
+
+    const response = await request(appWithTimeoutProvider).post("/api/ask-ai").send({
+      question: "timeout check",
+      gameContext: createGameContext(),
+      battlefieldContext: [],
+      stack: [createStackItem()]
+    });
+
+    expect(response.status).toBe(504);
+    expect(response.body.code).toBe("PROVIDER_TIMEOUT");
+    expect(response.body.message).toBe("Miho is working on it");
+    expect(response.body.retryAfterSeconds).toBe(13);
+  });
+
+  it("includes provider error details in development mode responses", async () => {
+    const appWithDebugDetails = createApp({
+      debugLoggingEnabled: true,
+      askAiProvider: {
+        generateAnswer() {
+          throw new Error("bedrock client unavailable in this environment");
+        }
+      }
+    });
+
+    const response = await request(appWithDebugDetails).post("/api/ask-ai").send({
+      question: "debug details",
+      gameContext: createGameContext(),
+      battlefieldContext: [],
+      stack: [createStackItem()]
+    });
+
+    expect(response.status).toBe(503);
+    expect(response.body.code).toBe("PROVIDER_UNAVAILABLE");
+    expect(response.body.metadata).toMatchObject({
+      correlationId: expect.any(String),
+      details: "bedrock client unavailable in this environment"
     });
   });
 

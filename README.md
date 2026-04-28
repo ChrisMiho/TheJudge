@@ -110,6 +110,22 @@ Reference templates:
    - backend terminal: `[TheJudge][backend]` `ask_ai.*` lifecycle events
    - network response headers: `X-Correlation-Id` echoed from backend response
 
+### Ask-AI Error Contract
+
+`POST /api/ask-ai` failures return:
+
+- `code` (machine-readable): `VALIDATION_ERROR` | `PROVIDER_UNAVAILABLE` | `PROVIDER_TIMEOUT` | `UNEXPECTED_ERROR`
+- `message` (human-readable)
+- `metadata` (optional): includes `correlationId` when available; includes detailed diagnostics only in development mode
+- `retryAfterSeconds` (optional): present for provider-availability/timeout failures
+
+Baseline status mapping:
+
+- `400` -> `VALIDATION_ERROR`
+- `503` -> `PROVIDER_UNAVAILABLE`
+- `504` -> `PROVIDER_TIMEOUT`
+- `500` -> `UNEXPECTED_ERROR`
+
 ## Deployment Targets
 
 - Local:
@@ -199,7 +215,7 @@ Pending implementation backlog:
 - [x] `STORY-042` strengthen cross-boundary flow validation logging (response correlation echo, staged-flow milestones, README playbook)
 - [x] `STORY-043` unify stack and battlefield selected-card preview UX with shared preview component and target-kind option parity
 - [x] `STORY-045` eliminate backend contract drift via schema-first typing (`z.infer`) and shared source-of-truth contracts
-- [ ] `STORY-046` add backend error taxonomy + centralized middleware with stable machine-readable error codes
+- [x] `STORY-046` add backend error taxonomy + centralized middleware with stable machine-readable error codes
 - [ ] `STORY-047` consolidate prompt/context build ownership into one backend service boundary
 - [ ] `STORY-048` standardize backend logging with `pino` JSON output and payload-log toggle docs
 - [ ] `STORY-049` layer backend tests and extract reusable fixture/builders for maintainable contract coverage
