@@ -23,6 +23,8 @@ This folder isolates answer-generation providers behind a stable interface so ro
 
 ## Phase B Handoff (Bedrock)
 
+Product-wide sequencing and gates: `PRD/analysis/MVP2-bedrock-integration-roadmap.md`. MVP1 closeout context: `PRD/archive/mvp1/README.md`.
+
 When Bedrock invocation begins:
 
 1. Replace readiness provider implementation with real SDK invocation logic.

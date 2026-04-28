@@ -3,7 +3,8 @@
 Use this index when deeper historical detail is needed beyond the closeout summary.
 
 ## Primary Historical Sources
-- Root implementation tracker: `README.md`
+- Root onboarding README: `README.md` (setup, commands, pointers; no story checklist)
+- MVP1 closeout summary (this archive): `PRD/archive/mvp1/README.md`
 - Decision authority: `PRD/sections/decisions.md`
 - Integration/data contracts: `PRD/sections/integrations-and-data.md`
 - Non-functional constraints: `PRD/sections/non-functional-requirements.md`
@@ -13,6 +14,8 @@ Use this index when deeper historical detail is needed beyond the closeout summa
 - Story directory: `PRD/stories/`
 - Definition of Done: `PRD/stories/DEFINITION-OF-DONE.md`
 - Merge/sequencing reference: `PRD/stories/STORY-035-040-agent-assignment-and-merge-order.md`
+
+Some completed story files (roughly `STORY-041` through `STORY-054`) still mention updating a root `README.md` story checklist; that tracker was removed at MVP1 closeout. Current rules live in `PRD/instructions/story-generation.md` and `PRD/instructions/requirement-format.md`.
 
 ## MVP2 Continuity
 - MVP2 execution guide: `PRD/analysis/MVP2-bedrock-integration-roadmap.md`

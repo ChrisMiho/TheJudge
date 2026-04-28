@@ -35,6 +35,13 @@ Archive usage rule:
 3. instruction files define how the agent should process and generate content
 4. `README.md` is the navigation and status layer
 
+## Other PRD folders
+
+| Path | Role |
+|---|---|
+| `analysis/` | Audits, deep dives, and phase execution roadmaps (for example MVP2 Bedrock integration). |
+| `archive/` | Historical closeout snapshots; see `archive/README.md`. Not active requirements unless promoted into `sections/`. |
+
 ## Section Inventory
 
 | File | Status | Description |
@@ -109,10 +116,10 @@ Read in this order:
 - Preserve stable IDs once assigned.
 
 ## Current Editorial Notes
-- MVP1 is intentionally a flow-validation MVP.
+- MVP1 is closed; flow-validation framing and temporary simplifications remain documented in `sections/decisions.md` and `archive/mvp1/`.
 - Duplicate-card blocking is temporary and should not be treated as long-term product truth.
 - Stack ordering is critical and must remain consistent across UI, API payloads, and prompt-building logic.
-- The mock-first delivery strategy is part of current planning and should remain visible in implementation-related work.
+- Phase A mock remains the default local baseline; Bedrock rollout sequencing lives in `analysis/MVP2-bedrock-integration-roadmap.md` and `apps/backend/src/providers/README.md`.
 
 ## Implementation Snapshot
 - Runtime code is split across `apps/frontend` and `apps/backend`, with a single product-facing backend route (`POST /api/ask-ai`) plus health endpoint.

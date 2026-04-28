@@ -31,7 +31,7 @@ It helps players build an ordered stack of cards, ask a question, and receive an
   - `sections/` product truth (requirements, decisions, flows, constraints)
   - `instructions/` generation and editing rules
   - `stories/` implementation slices and Definition of Done
-  - `archive/` historical context snapshots (MVP1 closeout and references)
+  - `archive/` historical context snapshots; start at `PRD/archive/README.md`
 - `apps/frontend/` MVP client app
 - `apps/backend/` API app (`POST /api/ask-ai`, `GET /api/health`)
 - `scripts/` shared dev/data scripts (including metadata build)
@@ -45,9 +45,7 @@ It helps players build an ordered stack of cards, ask a question, and receive an
    - or refresh automatically with `npm run data:refresh`
 3. Build trimmed metadata:
    - `npm run data:build`
-4. Start both apps:
-   - `npm run dev`
-   - Backend Ask-AI flow logs print in this terminal when `DEBUG_LOGGING` is unset (defaults on in development; the backend `dev` script sets `NODE_ENV=development`). Frontend `[TheJudge][frontend]` logs appear in the browser DevTools console, not the dev terminal.
+4. Start both apps: `npm run dev` (logging defaults: see `apps/backend/src/providers/README.md` and env vars under Environment Configuration below).
 5. Optional checks:
    - frontend: `http://localhost:5173`
    - backend health: `http://localhost:3000/api/health`
@@ -120,7 +118,8 @@ For historical detail:
 
 - Keep product truth and planning detail in `PRD/`.
 - Keep this root README concise and onboarding-focused.
-- Track active phase progress in PRD docs and roadmap artifacts.
+- Track active phase progress in `PRD/analysis/MVP2-bedrock-integration-roadmap.md` and `PRD/README.md`.
+- MVP1 history: `PRD/archive/README.md`.
 - Empty-state artwork is bundled at `apps/frontend/public/assets/cat-wizard.svg`; keep it local/static and retain a text fallback path.
 - Provider integration boundary docs live in `apps/backend/src/providers/README.md`.
 - Search responsiveness guardrails stay frontend-local (debounced query + in-memory pre-normalized index) and must not add runtime metadata sync paths.

@@ -28,6 +28,7 @@ Delivered interaction path:
 ## What Moves Forward
 - MVP2 execution is guided by `PRD/analysis/MVP2-bedrock-integration-roadmap.md`.
 - Active read order and source-of-truth routing live in `PRD/README.md`.
+- Parent archive index: `PRD/archive/README.md`.
 
 ## Archive Usage Rule
 This archive captures historical MVP1 context. Treat it as reference material unless a decision is explicitly promoted back into active PRD sections.

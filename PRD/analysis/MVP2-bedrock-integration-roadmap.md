@@ -4,7 +4,7 @@
 
 This document is an execution handoff for agents to:
 
-- close remaining MVP1 engineering debt safely
+- continue from the completed MVP1 baseline without regressing contracts or UX
 - transition the backend from Phase A mock responses to real Amazon Bedrock calls
 - preserve existing API contract and staged UX behavior
 
@@ -13,7 +13,8 @@ This roadmap follows current product truth from:
 - `PRD/sections/decisions.md`
 - `PRD/sections/integrations-and-data.md`
 - `PRD/sections/non-functional-requirements.md`
-- `README.md` story checklist
+- `PRD/README.md` (control plane and read order)
+- `PRD/stories/` (per-story scope and acceptance history)
 
 Historical MVP1 continuity references:
 - `PRD/archive/mvp1/README.md`
@@ -28,7 +29,7 @@ Historical MVP1 continuity references:
   - `POST /api/ask-ai` request shape remains unchanged
   - success response remains `{ "answer": "string" }`
   - error response remains `{ "error": "string", "retryAfterSeconds"?: number }`
-- MVP1 flow and context capture are implemented; outstanding hardening stories remain
+- MVP1 flow, context capture, and closeout hardening (`STORY-046` through `STORY-054`) are complete; this document is the forward execution plan.
 
 ## Hard Rules For MVP2
 
@@ -38,9 +39,9 @@ Historical MVP1 continuity references:
 - Preserve stack order semantics (`stack[0]` bottom, last item top).
 - Do not break existing frontend behavior while changing backend provider internals.
 
-## MVP1 Closeout Gate (Must Finish First)
+## MVP1 Closeout Gate (Complete)
 
-Complete these open stories before beginning live Bedrock rollout:
+The following stories were required before live Bedrock rollout; they are done. Use them as regression anchors when changing provider internals:
 
 - `STORY-046` backend error taxonomy + centralized middleware
 - `STORY-047` prompt/context build ownership consolidation
@@ -50,13 +51,16 @@ Complete these open stories before beginning live Bedrock rollout:
 - `STORY-051` battlefield step componentization
 - `STORY-052` stack builder componentization
 - `STORY-053` ask-ai submit/retry orchestration polish
+- `STORY-054` homepage app title visibility
 
-### Exit Criteria For MVP1 Closeout
+### Exit Criteria For MVP1 Closeout (Met)
 
 - quality gate passes (`npm run quality:check`)
 - no contract regressions in backend tests
 - frontend staged-flow regressions remain green
 - logging/error behavior is deterministic and documented
+
+Operational and contract detail for local debugging lives in `README.md` (Operational References) and `PRD/sections/integrations-and-data.md`, not in a root story checklist.
 
 ## MVP2 Phase Plan
 
@@ -191,7 +195,7 @@ Adopt balanced AWS hosting while keeping frontend/backend independently deployab
 
 ## Suggested Agent Execution Order
 
-1. Finish MVP1 closeout stories (`046` -> `053`) in dependency-aware order.
+1. Confirm MVP1 closeout baseline remains green (`npm run quality:check`).
 2. Implement Phase 1 foundation with no behavior changes in mock mode.
 3. Add Phase 2 reliability/observability before broad Bedrock enablement.
 4. Run Phase 3 prompt quality loop until acceptance criteria are met.
