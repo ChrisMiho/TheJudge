@@ -1,0 +1,22 @@
+# STORY-057 - Bedrock Config Validation and Startup Safety
+
+- title: Add strict Bedrock configuration validation and fail-fast startup behavior for the live-provider path.
+- implementation area: backend
+- user value: As an engineer, I get immediate and actionable startup errors when Bedrock-required configuration is missing or invalid.
+- scope:
+  - validate Bedrock-required environment configuration (region, model id, timeout/retry controls, credential source expectations)
+  - ensure validation is conditional on provider behavior flags and selected runtime path
+  - keep `.env.example` files placeholder-only and aligned with documented required fields
+- acceptance criteria:
+  - backend fails fast with clear messages when Bedrock mode is eligible and required config is missing
+  - backend starts normally in mock mode with no Bedrock config requirement
+  - `.env.example` and provider docs reflect the validated config surface without exposing real values
+  - `PRD/README.md` MVP2 phase checklist marks `STORY-057` complete when implementation lands
+- execution mode: sequential
+- dependencies:
+  - `STORY-056` - provider behavior flags and selection contract must exist before conditional validation rules are finalized
+  - `NFR-003` - credentials and secret management constraints
+  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 1
+- exclusions:
+  - no Bedrock invocation request/response mapping changes
+  - no IAM role provisioning

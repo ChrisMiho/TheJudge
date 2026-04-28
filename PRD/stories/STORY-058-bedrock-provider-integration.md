@@ -1,0 +1,22 @@
+# STORY-058 - Bedrock Provider Integration Path
+
+- title: Implement the Bedrock provider invocation path behind the existing ask-ai provider interface while preserving API contracts.
+- implementation area: backend
+- user value: As a player, I receive live model responses through the same stable endpoint contract already used by the app flow.
+- scope:
+  - implement Bedrock client/factory wiring for provider interface usage
+  - map Bedrock provider success output into the existing `{ "answer": "string" }` response contract
+  - preserve stack-order and staged-context assumptions in prompt preparation boundaries
+- acceptance criteria:
+  - `/api/ask-ai` success contract remains unchanged while live provider path is active
+  - mock provider path remains regression-safe when live provider flag is disabled
+  - backend contract tests validate no schema drift for request/response
+  - `PRD/README.md` MVP2 phase checklist marks `STORY-058` complete when implementation lands
+- execution mode: sequential
+- dependencies:
+  - `STORY-057` - validated Bedrock configuration is required before live invocation can be safely enabled
+  - `DEC-004` and `DEC-005` - stack ordering semantics must remain unchanged
+  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 1
+- exclusions:
+  - no new product-facing endpoints
+  - no prompt-quality tuning beyond existing preparation logic

@@ -134,3 +134,32 @@ Read in this order:
 ## Story Progress Tracking
 MVP1 history is archived under `archive/mvp1/`.
 Active MVP2 execution sequencing is tracked in `analysis/MVP2-bedrock-integration-roadmap.md`.
+
+### MVP2 Story Checklist (Phase-Grouped)
+
+Task 0:
+- [ ] `STORY-055` secrets hygiene baseline
+
+Phase 1 - Bedrock Runtime Foundation:
+- [ ] `STORY-056` provider feature-flag selection contract
+- [ ] `STORY-057` Bedrock config validation and startup safety
+- [ ] `STORY-058` Bedrock provider integration path
+
+Phase 2 - Reliability and Observability:
+- [ ] `STORY-059` Bedrock error mapping to canonical API contract
+- [ ] `STORY-060` provider observability contract
+
+Phase 3 - Prompt Context Pipeline:
+- [ ] `STORY-061` prompt context assembly hardening
+- [ ] `STORY-062` prompt template versioning and ownership
+- [ ] `STORY-063` Bedrock eval harness expansion
+
+Phase 4 - DEV Rollout and Process:
+- [ ] `STORY-064` DEV separate deployment runbook
+- [ ] `STORY-065` DEV fallback and rollback guardrails
+
+Phase 5 - IAM Roles and Access Standards:
+- [ ] `STORY-066` IAM runtime and deploy role baseline
+
+Phase 6 - AWS Deployment Expansion (Deferred Planning):
+- [ ] `STORY-067` Phase 6 production expansion planning package

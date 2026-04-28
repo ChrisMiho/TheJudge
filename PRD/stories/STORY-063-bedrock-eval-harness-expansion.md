@@ -1,0 +1,22 @@
+# STORY-063 - Bedrock Eval Harness Expansion
+
+- title: Expand eval and fixture coverage for Bedrock-enabled prompt/output regressions in high-context and edge-target scenarios.
+- implementation area: backend
+- user value: As an engineer, I can detect context-shape regressions before they impact live DEV Bedrock behavior.
+- scope:
+  - add fixture cases for high-context payloads, awkward targeting combinations, and prompt-budget pressure paths
+  - validate regression checks around prompt shape/guardrails and contract safety under Bedrock-enabled runs
+  - document how eval runs are executed in DEV for repeatable validation
+- acceptance criteria:
+  - new fixture cases cover context-heavy and edge-target scenarios tied to MVP2 roadmap Phase 3 scope
+  - eval/contract suites pass with Bedrock flag-enabled test mode where applicable
+  - documentation explains expected eval signals and failure-triage flow
+  - `PRD/README.md` MVP2 phase checklist marks `STORY-063` complete when implementation lands
+- execution mode: sequential
+- dependencies:
+  - `STORY-058` - Bedrock provider path availability
+  - `STORY-061` and `STORY-062` - prompt assembly and template versioning baselines
+  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 3
+- exclusions:
+  - no production traffic evaluation pipeline
+  - no frontend automation changes outside existing contract validation needs

@@ -1,0 +1,22 @@
+# STORY-059 - Bedrock Error Mapping to Canonical API Contract
+
+- title: Map Bedrock and runtime failures into stable ask-ai error codes, status mappings, and retry hints.
+- implementation area: backend
+- user value: As a player, failures remain predictable and retry-safe instead of surfacing inconsistent backend exceptions.
+- scope:
+  - classify Bedrock SDK/runtime failures into canonical error codes (`VALIDATION_ERROR`, `PROVIDER_UNAVAILABLE`, `PROVIDER_TIMEOUT`, `UNEXPECTED_ERROR`)
+  - preserve centralized error middleware behavior and response payload shape (`code`, `message`, optional `metadata`, optional `retryAfterSeconds`)
+  - ensure correlation id propagation remains available in error metadata/header pathways
+- acceptance criteria:
+  - known Bedrock failure classes resolve to stable code/status semantics
+  - error payload schema remains contract-consistent with `PRD/sections/integrations-and-data.md`
+  - backend tests cover timeout, availability, and unexpected-provider failure mappings
+  - `PRD/README.md` MVP2 phase checklist marks `STORY-059` complete when implementation lands
+- execution mode: sequential
+- dependencies:
+  - `STORY-058` - Bedrock invocation path must exist before provider-specific failure mapping can be completed
+  - `STORY-046` baseline taxonomy/middleware behavior
+  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 2
+- exclusions:
+  - no frontend error-copy redesign
+  - no changes to successful response shape

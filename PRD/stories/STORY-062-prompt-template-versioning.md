@@ -1,0 +1,22 @@
+# STORY-062 - Prompt Template Versioning and Ownership
+
+- title: Introduce versioned prompt templates with explicit ownership and change notes for Bedrock-facing instruction updates.
+- implementation area: backend
+- user value: As an engineer, I can iterate on prompt behavior with clear traceability and safer roll-forward/rollback decisions.
+- scope:
+  - implement prompt template version identifiers and ownership notes
+  - require concise change rationale for template updates that affect output shaping
+  - align instruction text with assistant-not-judge and no-hidden-state constraints
+- acceptance criteria:
+  - prompt template versions are identifiable in code/docs
+  - template updates include documented rationale and maintain guardrail language
+  - versioning approach integrates with existing prompt preparation boundaries
+  - `PRD/README.md` MVP2 phase checklist marks `STORY-062` complete when implementation lands
+- execution mode: sequential
+- dependencies:
+  - `STORY-061` - deterministic context assembly should stabilize before template version policy is finalized
+  - `DEC-002` and `DEC-013`
+  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 3
+- exclusions:
+  - no model/provider switching logic changes
+  - no subjective quality rubric commitments beyond documented guardrails

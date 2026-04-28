@@ -1,0 +1,22 @@
+# STORY-065 - DEV Fallback and Rollback Guardrails
+
+- title: Define DEV fallback and rollback guardrails so Bedrock failures remain visible, predictable, and reversible without contract drift.
+- implementation area: backend
+- user value: As a player and tester, degraded provider behavior is handled consistently and safely while developers can recover quickly.
+- scope:
+  - define explicit DEV fallback policy (error-forward default, optional emergency mock fallback only behind explicit secondary flag)
+  - document rollback steps for flag-off and prior-build redeploy pathways
+  - map provider failure classes to canonical API error behavior in manual smoke scenarios
+- acceptance criteria:
+  - fallback behavior is documented with explicit conditions and default-safe mode
+  - rollback playbook includes both flag rollback and deploy rollback flow
+  - manual validation steps confirm canonical error contract behavior under degraded provider states
+  - `PRD/README.md` MVP2 phase checklist marks `STORY-065` complete when implementation lands
+- execution mode: sequential
+- dependencies:
+  - `STORY-059` - stable error mapping contract must exist first
+  - `STORY-064` - baseline DEV deployment runbook and environment matrix
+  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 4
+- exclusions:
+  - no production failover automation
+  - no user-facing copy redesign

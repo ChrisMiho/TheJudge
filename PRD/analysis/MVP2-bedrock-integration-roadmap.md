@@ -40,7 +40,7 @@ Historical MVP1 continuity references:
 
 ## Canonical `POST /api/ask-ai` error contract (best practice)
 
-Clients should branch on `**code`** (stable machine-readable). `**message**` is for humans and may change copy without a breaking API change. `**metadata**` is optional and intentionally small.
+Clients should branch on `**code`** (stable machine-readable). `**message`** is for humans and may change copy without a breaking API change. `**metadata**` is optional and intentionally small.
 
 **JSON body (strict keys)**
 
@@ -71,7 +71,7 @@ Clients should branch on `**code`** (stable machine-readable). `**message**` is 
 **Why this shape**
 
 - Stable `**code`** supports frontend retry/cooldown logic and observability dashboards without parsing prose.
-- `**message**` stays user- and agent-friendly.
+- `**message`** stays user- and agent-friendly.
 - `**metadata.correlationId**` ties failures to structured logs without widening the contract arbitrarily.
 
 ## Hard Rules For MVP2
