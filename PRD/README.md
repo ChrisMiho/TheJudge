@@ -138,7 +138,7 @@ Active MVP2 execution sequencing is tracked in `analysis/MVP2-bedrock-integratio
 ### MVP2 Story Checklist (Phase-Grouped)
 
 Task 0:
-- [ ] `STORY-055` secrets hygiene baseline
+- [x] `STORY-055` secrets hygiene baseline
 
 Phase 1 - Bedrock Runtime Foundation:
 - [ ] `STORY-056` provider feature-flag selection contract
