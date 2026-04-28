@@ -141,7 +141,7 @@ Task 0:
 - [x] `STORY-055` secrets hygiene baseline
 
 Phase 1 - Bedrock Runtime Foundation:
-- [ ] `STORY-056` provider feature-flag selection contract
+- [x] `STORY-056` provider feature-flag selection contract
 - [ ] `STORY-057` Bedrock config validation and startup safety
 - [ ] `STORY-058` Bedrock provider integration path
 
