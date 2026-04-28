@@ -78,3 +78,20 @@ This document only adds dependency-field rules for `PRD/stories/` entries:
 ## Story Acceptance Criteria Rule
 
 For any story in `PRD/stories/`, include an acceptance criterion that updates the corresponding story checkbox in the root `README.md` checklist from pending to complete when implementation lands.
+
+## Story Template (`PRD/stories/`)
+
+Use this structure for each story file:
+
+- title:
+- implementation area: (`frontend` | `backend` | `full-stack`)
+- user value:
+- scope:
+  - ...
+- acceptance criteria:
+  - ...
+- execution mode: (`parallel-ready` | `sequential`)
+- dependencies:
+  - ...
+- exclusions:
+  - ...
