@@ -1,0 +1,22 @@
+# STORY-066 - IAM Runtime and Deploy Role Baseline
+
+- title: Define least-privilege IAM role boundaries for runtime Bedrock access and deployment operations in the MVP2 AWS DEV footprint.
+- implementation area: backend
+- user value: As the project owner, AWS integration can proceed without unsafe credential sprawl or over-broad role reuse.
+- scope:
+  - document runtime backend role permissions for Bedrock invocation, CloudWatch logging, and secrets/parameter retrieval
+  - document separate deploy/CI role boundaries for build/deploy operations
+  - include trust relationships and policy-scope guidance in an IAM design note referenced by roadmap docs
+- acceptance criteria:
+  - IAM design note exists with runtime-role vs deploy-role separation and least-privilege intent
+  - runtime operation path avoids embedded long-lived credentials in application code/images
+  - exceptions for broad permissions require explicit documented justification
+  - `PRD/README.md` MVP2 phase checklist marks `STORY-066` complete when implementation lands
+- execution mode: sequential
+- dependencies:
+  - `STORY-055` - secrets hygiene controls must be active first
+  - `STORY-064` - DEV deployment footprint must be defined to scope roles correctly
+  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 5
+- exclusions:
+  - no cross-account expansion design
+  - no production SLO/cost targets

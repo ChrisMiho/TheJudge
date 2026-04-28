@@ -1,0 +1,22 @@
+# STORY-060 - Provider Observability Contract
+
+- title: Standardize provider-level logging and timing metrics for Bedrock ask-ai calls with correlation-aware traceability.
+- implementation area: backend
+- user value: As an engineer, I can debug ask-ai failures and latency regressions quickly using consistent structured telemetry.
+- scope:
+  - define required structured log fields for provider lifecycle milestones (request received, validation result, provider invocation, provider failure/success, response completion)
+  - capture provider timing metrics (total latency, provider latency, timeout/retry counts) in a documented contract
+  - keep observability output aligned with correlation-id tracing and existing logging controls
+- acceptance criteria:
+  - backend docs define mandatory observability fields and timing metric names
+  - correlation-id traceability is preserved across provider lifecycle logs
+  - tests or fixtures validate presence/shape of critical log/metric fields in core flows
+  - `PRD/README.md` MVP2 phase checklist marks `STORY-060` complete when implementation lands
+- execution mode: sequential
+- dependencies:
+  - `STORY-059` - stable failure mapping should land before final observability contract tuning
+  - `STORY-048` logging baseline (`pino`, payload toggle)
+  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 2
+- exclusions:
+  - no CloudWatch dashboard provisioning
+  - no production alarm threshold commitments

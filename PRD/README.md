@@ -2,7 +2,7 @@
 
 ## Status
 - Project Status: active
-- Current Drafting Phase: MVP1 implementation in progress (Phase A mock backend)
+- Current Drafting Phase: MVP2 execution active (Bedrock integration roadmap)
 - Overall Documentation Status: active and implementation-aligned
 
 ## Purpose
@@ -14,11 +14,33 @@ Use it to:
 - understand source-of-truth precedence
 - navigate product content vs. agent instructions
 
+## MVP2 Read First
+For current implementation work, read in this order:
+1. `analysis/MVP2-bedrock-integration-roadmap.md`
+2. `sections/decisions.md`
+3. `sections/integrations-and-data.md`
+4. `sections/non-functional-requirements.md`
+
+Historical continuity:
+- MVP1 summary: `archive/mvp1/README.md`
+- MVP1 key decisions snapshot: `archive/mvp1/key-decisions.md`
+- MVP1 deep references: `archive/mvp1/reference-links.md`
+
+Archive usage rule:
+- `archive/` content is historical reference only unless explicitly promoted into active `sections/*` files.
+
 ## Source-of-Truth Precedence
 1. `sections/decisions.md` overrides older conflicting draft language
 2. section files define current product scope
 3. instruction files define how the agent should process and generate content
 4. `README.md` is the navigation and status layer
+
+## Other PRD folders
+
+| Path | Role |
+|---|---|
+| `analysis/` | Audits, deep dives, and phase execution roadmaps (for example MVP2 Bedrock integration). |
+| `archive/` | Historical closeout snapshots; see `archive/README.md`. Not active requirements unless promoted into `sections/`. |
 
 ## Section Inventory
 
@@ -43,6 +65,7 @@ Use it to:
 | `instructions/requirement-format.md` | complete | Required formatting templates for requirements, flows, decisions, and questions |
 | `instructions/story-generation.md` | complete | Rules for converting requirements into stories and backlog items |
 | `instructions/technical-design-rules.md` | complete | Constraints for architecture and implementation proposals |
+| `instructions/secrets-handling.md` | active | Guardrails for storing secrets in `.secrets/`, never committing them, and validating secret decisions with the user |
 | `instructions/agent-working-rules.md` | active | Behavioral rules for any agent editing or generating content in this PRD set |
 
 ## Which Files to Read for Which Task
@@ -83,6 +106,7 @@ Read in this order:
 2. `sections/integrations-and-data.md`
 3. `sections/non-functional-requirements.md`
 4. `instructions/technical-design-rules.md`
+5. `instructions/secrets-handling.md` (if credentials, env vars, or AWS access are involved)
 
 ## Working Rules Summary
 - Keep product truth in section files.
@@ -94,18 +118,48 @@ Read in this order:
 - Preserve stable IDs once assigned.
 
 ## Current Editorial Notes
-- MVP1 is intentionally a flow-validation MVP.
+- MVP1 is closed; flow-validation framing and temporary simplifications remain documented in `sections/decisions.md` and `archive/mvp1/`.
 - Duplicate-card blocking is temporary and should not be treated as long-term product truth.
 - Stack ordering is critical and must remain consistent across UI, API payloads, and prompt-building logic.
-- The mock-first delivery strategy is part of current planning and should remain visible in implementation-related work.
+- Phase A mock remains the default local baseline; Bedrock rollout sequencing lives in `analysis/MVP2-bedrock-integration-roadmap.md` and `apps/backend/src/providers/README.md`.
 
 ## Implementation Snapshot
 - Runtime code is split across `apps/frontend` and `apps/backend`, with a single product-facing backend route (`POST /api/ask-ai`) plus health endpoint.
 - Current frontend flow supports staged context + stack interaction patterns; canonical behavior is tracked in `sections/user-flows.md`.
 - Prompt/input contract includes structured context beyond stack/question (see `sections/integrations-and-data.md` and `sections/decisions.md`).
 - Metadata pipeline remains static-file based (`npm run data:build` / `npm run data:refresh`) with runtime loading from `/data/cardMetadata.json`.
-- Phase A mock-provider architecture is active; provider boundary remains in place for future Phase B integration.
+- Provider boundary remains in place and is the active seam for MVP2 Bedrock rollout work.
 - Automated tests and type checks are part of the active workflow; root dev run remains `npm run dev`.
 
 ## Story Progress Tracking
-Story implementation status is tracked only in the root [`README.md`](../README.md).
+MVP1 history is archived under `archive/mvp1/`.
+Active MVP2 execution sequencing is tracked in `analysis/MVP2-bedrock-integration-roadmap.md`.
+
+### MVP2 Story Checklist (Phase-Grouped)
+
+Task 0:
+- [ ] `STORY-055` secrets hygiene baseline
+
+Phase 1 - Bedrock Runtime Foundation:
+- [ ] `STORY-056` provider feature-flag selection contract
+- [ ] `STORY-057` Bedrock config validation and startup safety
+- [ ] `STORY-058` Bedrock provider integration path
+
+Phase 2 - Reliability and Observability:
+- [ ] `STORY-059` Bedrock error mapping to canonical API contract
+- [ ] `STORY-060` provider observability contract
+
+Phase 3 - Prompt Context Pipeline:
+- [ ] `STORY-061` prompt context assembly hardening
+- [ ] `STORY-062` prompt template versioning and ownership
+- [ ] `STORY-063` Bedrock eval harness expansion
+
+Phase 4 - DEV Rollout and Process:
+- [ ] `STORY-064` DEV separate deployment runbook
+- [ ] `STORY-065` DEV fallback and rollback guardrails
+
+Phase 5 - IAM Roles and Access Standards:
+- [ ] `STORY-066` IAM runtime and deploy role baseline
+
+Phase 6 - AWS Deployment Expansion (Deferred Planning):
+- [ ] `STORY-067` Phase 6 production expansion planning package

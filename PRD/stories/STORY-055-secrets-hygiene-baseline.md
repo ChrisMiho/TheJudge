@@ -1,0 +1,22 @@
+# STORY-055 - Secrets Hygiene Baseline
+
+- title: Establish mandatory MVP2 secret-handling guardrails so credentials never enter tracked files or GitHub history.
+- implementation area: backend
+- user value: As the project owner, I can safely move into AWS and Bedrock integration without risking accidental secret exposure.
+- scope:
+  - enforce `.secrets/` as the local-only credential directory and keep it ignored by git
+  - align MVP2 roadmap and PRD instruction references to the secrets-handling guardrails
+  - define verification steps before commit/push to confirm no secret material is staged
+- acceptance criteria:
+  - `.gitignore` ignores `.secrets/` and no `.secrets/*` files are tracked
+  - `PRD/instructions/secrets-handling.md` is present and referenced by control-plane instructions
+  - MVP2 roadmap Task 0 remains documented as the first execution task
+  - `PRD/README.md` MVP2 phase checklist marks `STORY-055` complete when implementation lands
+- execution mode: parallel-ready
+- dependencies:
+  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Task 0
+  - `NFR-003` (credentials remain backend-only)
+  - `DEC-011` (provider transition strategy)
+- exclusions:
+  - no AWS IAM role creation
+  - no real credential values in repository files

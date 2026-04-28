@@ -1,0 +1,22 @@
+# STORY-064 - DEV Separate Deployment Runbook
+
+- title: Document and validate independent frontend/backend DEV deployment flow with explicit environment matrix and smoke checks.
+- implementation area: full-stack
+- user value: As an engineer, I can deploy and rollback frontend or backend independently in DEV without tribal knowledge.
+- scope:
+  - create/update DEV runbook for separate frontend and backend deployment steps
+  - define DEV environment matrix entries (frontend origin, backend origin, CORS, feature flags, required env vars)
+  - include ordered smoke checks for health endpoint, basic ask-ai success path, and frontend/backend connectivity
+- acceptance criteria:
+  - runbook enables repeatable independent FE and BE deploy/rollback in DEV
+  - environment matrix for DEV is complete and references canonical config locations
+  - smoke-check steps are explicit and verifiable by a new contributor
+  - `PRD/README.md` MVP2 phase checklist marks `STORY-064` complete when implementation lands
+- execution mode: sequential
+- dependencies:
+  - `STORY-056` and `STORY-057` - provider flag/config rules must be documented before operational runbook finalization
+  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 4
+  - `NFR-003`
+- exclusions:
+  - no production/staging rollout execution
+  - no IAM policy authoring in this story

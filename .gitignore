@@ -15,6 +15,7 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+.secrets/
 
 # Dependencies/build
 node_modules/

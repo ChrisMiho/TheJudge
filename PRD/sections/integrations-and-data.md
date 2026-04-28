@@ -56,9 +56,27 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 ### AskAiResponse
 - `answer: string`
 
-### AskAiError
-- `error: string`
-- `retryAfterSeconds?: number`
+### AskAiError (failure JSON body)
+
+Machine-readable codes and a human-readable message; optional metadata for tracing. Source of truth: `apps/backend/src/validation.ts` (`askAiErrorSchema`) and `apps/backend/src/errors.ts`.
+
+- `code`: `VALIDATION_ERROR` | `PROVIDER_UNAVAILABLE` | `PROVIDER_TIMEOUT` | `UNEXPECTED_ERROR`
+- `message`: human-readable string (user-facing copy may include product phrases such as failure handling in `DEC-016`)
+- `metadata?`: optional object (strict keys only when present)
+  - `correlationId?`: echoed request correlation id when available
+  - `details?`: diagnostic string; only included when the server runs in a mode that exposes safe diagnostics (typically development)
+- `retryAfterSeconds?`: positive integer seconds hint for retryable provider failures (e.g. availability / timeout)
+
+HTTP status mapping (baseline):
+
+- `400` with `code: VALIDATION_ERROR`
+- `503` with `code: PROVIDER_UNAVAILABLE`
+- `504` with `code: PROVIDER_TIMEOUT`
+- `500` with `code: UNEXPECTED_ERROR`
+
+Response header:
+
+- `X-Correlation-Id` is set on ask-ai responses when correlation id resolution is used
 
 ## Stack Ordering Rule
 - `stack[0]` represents the bottom of the stack
@@ -137,7 +155,11 @@ Purpose:
 ### Error Response
 
     {
-      "error": "string",
+      "code": "PROVIDER_UNAVAILABLE",
+      "message": "Miho is working on it",
+      "metadata": {
+        "correlationId": "uuid-or-opaque-id"
+      },
       "retryAfterSeconds": 13
     }
 

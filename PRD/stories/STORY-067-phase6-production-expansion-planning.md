@@ -1,0 +1,22 @@
+# STORY-067 - Phase 6 Production Expansion Planning Package
+
+- title: Prepare the deferred production-expansion planning package so AWS scale-up can start later with explicit SLO/cost gates and architecture decisions.
+- implementation area: full-stack
+- user value: As the project owner, I can defer production rollout now while still preserving a clear, decision-ready path for when it becomes active scope.
+- scope:
+  - define Phase 6 planning artifacts required before production expansion begins (SLO targets, cost budget framework, hosting decision record)
+  - document unresolved production-bound decisions as explicit open questions or checklist items, not implicit assumptions
+  - align planning package with frontend/backend independent deployability constraints
+- acceptance criteria:
+  - roadmap references explicit Phase 6 planning artifacts required before production execution starts
+  - production SLO/cost targets are marked as deferred inputs, not silently invented during DEV work
+  - checklist clearly distinguishes deferred planning from active implementation phases
+  - `PRD/README.md` MVP2 phase checklist marks `STORY-067` complete when implementation lands
+- execution mode: parallel-ready
+- dependencies:
+  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 6
+  - `NFR-003`
+  - `DEC-010`
+- exclusions:
+  - no production infrastructure deployment
+  - no mandatory numeric SLO commitments in this story

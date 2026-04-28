@@ -1,0 +1,22 @@
+# STORY-061 - Prompt Context Assembly Hardening
+
+- title: Harden deterministic prompt-context assembly so validated request data is consistently transformed into model-facing sections.
+- implementation area: backend
+- user value: As an engineer, I can evolve Bedrock prompting without breaking deterministic context semantics or stack-order correctness.
+- scope:
+  - refine and document request-field-to-prompt-section mapping rules (game context, battlefield context, ordered stack, fallback handling)
+  - preserve deterministic ordering and omission rules across prompt preparation
+  - keep LLM-facing payload boundaries explicit (what is included/excluded and why)
+- acceptance criteria:
+  - identical validated payloads produce deterministic prompt-context artifacts under test
+  - stack ordering and staged-context section rules remain contract-consistent
+  - prompt mapping documentation is updated for new-agent maintainability
+  - `PRD/README.md` MVP2 phase checklist marks `STORY-061` complete when implementation lands
+- execution mode: parallel-ready
+- dependencies:
+  - `STORY-047` prompt preparation service boundary
+  - `DEC-004`, `DEC-005`, `DEC-019`
+  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 3
+- exclusions:
+  - no API schema changes
+  - no frontend staged-flow UI redesign
