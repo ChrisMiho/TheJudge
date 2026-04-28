@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
+import { BattlefieldStep } from "./components/BattlefieldStep";
 import { CardSelectionPreview } from "./components/CardSelectionPreview";
 import { TargetEditor } from "./components/TargetEditor";
 import { createCorrelationId, logFrontendDebug } from "./lib/debugLogger";
@@ -725,193 +726,49 @@ export default function App() {
 
   if (flowStep === "battlefield-context") {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
-        <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 md:p-6">
-          <h1 className="text-2xl font-semibold text-sky-300">Battlefield context (optional)</h1>
-          <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
-            Battlefield search
-            <input
-              aria-label="Battlefield search input"
-              value={battlefieldSearchInput}
-              onChange={(event) => setBattlefieldSearchInput(event.target.value)}
-              onKeyDown={battlefieldKeyboard.handleKeyDown}
-              className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
-              placeholder="Type to begin"
-            />
-          </label>
-          {battlefieldSearchInput.trim().length >= 3 && battlefieldKeyboard.isOpen && (
-            <div className="rounded-xl border border-slate-600 bg-slate-800/70 p-2">
-              {isMetadataLoading ? (
-                <p className="px-2 py-1 text-sm text-slate-400">Loading cards...</p>
-              ) : battlefieldSuggestions.length === 0 ? (
-                <p className="px-2 py-1 text-sm text-slate-400">{NO_MATCH_COPY}</p>
-              ) : (
-                <ul className="flex flex-col gap-1">
-                  {battlefieldSuggestions.map((card, index) => (
-                    <li key={`battlefield-${card.cardId}`}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          selectBattlefieldSuggestion(card);
-                          battlefieldKeyboard.closeSuggestions();
-                        }}
-                        onMouseEnter={() => battlefieldKeyboard.setActiveIndex(index)}
-                        className={`w-full rounded-lg px-2 py-2 text-left text-sm text-slate-200 transition hover:text-sky-300 ${
-                          battlefieldKeyboard.activeIndex === index ? "bg-slate-700 text-sky-300" : "hover:bg-slate-700"
-                        }`}
-                      >
-                        {card.name}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-          {selectedBattlefieldCard ? (
-            <CardSelectionPreview
-              card={selectedBattlefieldCard}
-              contextTitle="Battlefield context"
-              contextContent={
-                <>
-                  <textarea
-                    aria-label="Battlefield item details"
-                    value={battlefieldEntryDetails}
-                    onChange={(event) => setBattlefieldEntryDetails(event.target.value.slice(0, 280))}
-                    rows={2}
-                    maxLength={280}
-                    className="w-full rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                    placeholder="Optional details"
-                  />
-                  <TargetEditor
-                    kind={battlefieldTargetKind}
-                    onKindChange={setBattlefieldTargetKind}
-                    kindOptions={TARGET_KIND_OPTIONS}
-                    kindLabel="Battlefield target kind"
-                    renderInputsForKind={(kind) => {
-                      if (kind === "stack") {
-                        return (
-                          <>
-                            <input
-                              aria-label="Battlefield target stack name"
-                              value={battlefieldTargetStackName}
-                              onChange={(event) => setBattlefieldTargetStackName(event.target.value)}
-                              className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                              placeholder="Stack card name"
-                            />
-                            <input
-                              aria-label="Battlefield target stack id"
-                              value={battlefieldTargetStackId}
-                              onChange={(event) => setBattlefieldTargetStackId(event.target.value)}
-                              className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                              placeholder="Stack card id (optional)"
-                            />
-                          </>
-                        );
-                      }
-
-                      if (kind === "battlefield") {
-                        return (
-                          <input
-                            aria-label="Battlefield target permanent"
-                            value={battlefieldTargetPermanent}
-                            onChange={(event) => setBattlefieldTargetPermanent(event.target.value)}
-                            className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                            placeholder="Permanent name"
-                          />
-                        );
-                      }
-
-                      if (kind === "player") {
-                        return (
-                          <select
-                            aria-label="Battlefield target player"
-                            value={battlefieldTargetPlayer}
-                            onChange={(event) => setBattlefieldTargetPlayer(event.target.value as PlayerLabel)}
-                            className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                          >
-                            {activePlayers.map((player) => (
-                              <option key={player} value={player}>
-                                {player}
-                              </option>
-                            ))}
-                          </select>
-                        );
-                      }
-
-                      if (kind === "other") {
-                        return (
-                          <input
-                            aria-label="Battlefield target other"
-                            value={battlefieldTargetOtherDescription}
-                            onChange={(event) =>
-                              setBattlefieldTargetOtherDescription(event.target.value.slice(0, MAX_OTHER_TARGET_CHARS))
-                            }
-                            className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                            placeholder="Describe target context"
-                          />
-                        );
-                      }
-
-                      return null;
-                    }}
-                    onAddTarget={addBattlefieldTarget}
-                    addButtonLabel="Add battlefield target"
-                    targets={battlefieldEntryTargets}
-                    formatTarget={formatTarget}
-                    onRemoveTarget={removeBattlefieldTarget}
-                  />
-                </>
-              }
-              action={
-                <button
-                  type="button"
-                  onClick={addBattlefieldEntry}
-                  className="rounded-xl bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:from-sky-500 hover:to-cyan-400"
-                >
-                  Add battlefield item
-                </button>
-              }
-            />
-          ) : (
-            <>
-              <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
-                Battlefield item name
-                <output
-                  aria-label="Battlefield item name"
-                  className="mt-2 block w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm text-slate-100"
-                >
-                  {battlefieldEntryName}
-                </output>
-              </label>
-              <p className="text-xs text-slate-300">
-                Select a suggestion to open preview, details, and target controls.
-              </p>
-            </>
-          )}
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={progressFromBattlefieldStep}
-              className="rounded-xl border border-slate-500 px-4 py-2 text-sm font-semibold text-slate-100"
-            >
-              {battlefieldContext.length > 0 ? "Continue to stack" : "Skip battlefield context"}
-            </button>
-          </div>
-          {battlefieldContext.length > 0 && (
-            <ul className="space-y-1 text-sm text-slate-300">
-              {battlefieldContext.map((item, index) => (
-                <li key={`${item.name}-${index}`}>{`${index + 1}. ${item.name}`}</li>
-              ))}
-            </ul>
-          )}
-          {statusMessage && (
-            <p className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2 text-sm font-medium text-cyan-200">
-              {statusMessage}
-            </p>
-          )}
-        </section>
-      </main>
+      <BattlefieldStep
+        searchInput={battlefieldSearchInput}
+        onSearchInputChange={setBattlefieldSearchInput}
+        onSearchKeyDown={battlefieldKeyboard.handleKeyDown}
+        showSuggestions={battlefieldSearchInput.trim().length >= 3 && battlefieldKeyboard.isOpen}
+        isMetadataLoading={isMetadataLoading}
+        suggestions={battlefieldSuggestions}
+        noMatchCopy={NO_MATCH_COPY}
+        activeSuggestionIndex={battlefieldKeyboard.activeIndex}
+        onSuggestionHover={battlefieldKeyboard.setActiveIndex}
+        onSuggestionSelect={(card) => {
+          selectBattlefieldSuggestion(card);
+          battlefieldKeyboard.closeSuggestions();
+        }}
+        selectedCard={selectedBattlefieldCard}
+        battlefieldEntryName={battlefieldEntryName}
+        battlefieldEntryDetails={battlefieldEntryDetails}
+        onBattlefieldEntryDetailsChange={setBattlefieldEntryDetails}
+        targetKind={battlefieldTargetKind}
+        onTargetKindChange={setBattlefieldTargetKind}
+        targetKindOptions={TARGET_KIND_OPTIONS}
+        targetStackName={battlefieldTargetStackName}
+        onTargetStackNameChange={setBattlefieldTargetStackName}
+        targetStackId={battlefieldTargetStackId}
+        onTargetStackIdChange={setBattlefieldTargetStackId}
+        targetPermanent={battlefieldTargetPermanent}
+        onTargetPermanentChange={setBattlefieldTargetPermanent}
+        targetPlayer={battlefieldTargetPlayer}
+        onTargetPlayerChange={setBattlefieldTargetPlayer}
+        targetOtherDescription={battlefieldTargetOtherDescription}
+        onTargetOtherDescriptionChange={setBattlefieldTargetOtherDescription}
+        activePlayers={activePlayers}
+        maxOtherTargetChars={MAX_OTHER_TARGET_CHARS}
+        onAddTarget={addBattlefieldTarget}
+        targets={battlefieldEntryTargets}
+        formatTarget={formatTarget}
+        onRemoveTarget={removeBattlefieldTarget}
+        onAddBattlefieldItem={addBattlefieldEntry}
+        onProgress={progressFromBattlefieldStep}
+        progressLabel={battlefieldContext.length > 0 ? "Continue to stack" : "Skip battlefield context"}
+        battlefieldContext={battlefieldContext}
+        statusMessage={statusMessage}
+      />
     );
   }
 
