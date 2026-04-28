@@ -41,6 +41,7 @@ export function createApp(options: AppOptions = {}) {
 
   app.post("/api/ask-ai", async (req, res) => {
     const correlationId = resolveCorrelationId(req.header("x-correlation-id"));
+    res.set("X-Correlation-Id", correlationId);
     logger.info("ask_ai.request_received", {
       correlationId,
       method: req.method,

@@ -42,19 +42,23 @@ describe("backend contract tests", () => {
   });
 
   it("returns mock answer on valid ask-ai request", async () => {
-    const response = await request(app).post("/api/ask-ai").send({
-      question: "How does this resolve?",
-      gameContext: createGameContext(4),
-      battlefieldContext: [{ name: "Rhystic Study", targets: [{ kind: "none" }] }],
-      stack: [
-        createStackItem({
-          caster: "Player 4",
-          targets: [{ kind: "none" }, { kind: "other", targetDescription: "retarget to token copy" }]
-        })
-      ]
-    });
+    const response = await request(app)
+      .post("/api/ask-ai")
+      .set("X-Correlation-Id", "corr-success-1")
+      .send({
+        question: "How does this resolve?",
+        gameContext: createGameContext(4),
+        battlefieldContext: [{ name: "Rhystic Study", targets: [{ kind: "none" }] }],
+        stack: [
+          createStackItem({
+            caster: "Player 4",
+            targets: [{ kind: "none" }, { kind: "other", targetDescription: "retarget to token copy" }]
+          })
+        ]
+      });
 
     expect(response.status).toBe(200);
+    expect(response.header["x-correlation-id"]).toBe("corr-success-1");
     expect(typeof response.body.answer).toBe("string");
     expect(response.body.answer).toContain("MOCK RESPONSE");
     expect(response.body.answer).toContain("Final question: How does this resolve?");
@@ -131,6 +135,7 @@ describe("backend contract tests", () => {
     });
 
     expect(response.status).toBe(400);
+    expect(response.header["x-correlation-id"]).toMatch(/^srv-/);
     expect(response.body.error).toContain("Invalid request payload:");
     expect(response.body.retryAfterSeconds).toBe(13);
   });

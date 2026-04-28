@@ -97,6 +97,19 @@ Reference templates:
 - `apps/frontend/.env.example`
 - `apps/backend/.env.example`
 
+## Validating Ask-AI Flow Locally
+
+1. Enable debug logging in both apps (or rely on local defaults):
+   - frontend: set `VITE_DEBUG_LOGGING=true` in `apps/frontend/.env`
+   - backend: set `DEBUG_LOGGING=true` in `apps/backend/.env`
+2. Start both services from repo root:
+   - `npm run dev`
+3. Open the frontend, build a small stack, and click `Decrypt Stack`.
+4. Use the same correlation id to follow one attempt across systems:
+   - browser DevTools console: `[TheJudge][frontend]` `ask_ai.*` events
+   - backend terminal: `[TheJudge][backend]` `ask_ai.*` lifecycle events
+   - network response headers: `X-Correlation-Id` echoed from backend response
+
 ## Deployment Targets
 
 - Local:
@@ -183,8 +196,9 @@ Pending implementation backlog:
 - [x] `STORY-039` add cross-flow parity regression suite for stack vs battlefield suggestions
 - [x] `STORY-040` add lightweight search performance guardrails for responsiveness
 - [x] `STORY-041` make battlefield item name display-only while keeping search and details editable
-- [ ] `STORY-042` strengthen cross-boundary flow validation logging (response correlation echo, staged-flow milestones, README playbook)
+- [x] `STORY-042` strengthen cross-boundary flow validation logging (response correlation echo, staged-flow milestones, README playbook)
 - [x] `STORY-043` unify stack and battlefield selected-card preview UX with shared preview component and target-kind option parity
+- [x] `STORY-044` hide battlefield target-entry controls until a card is selected (preview is the single target-entry surface)
 
 ## Documentation Notes
 

@@ -1,6 +1,16 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+const { createCorrelationIdMock, logFrontendDebugMock } = vi.hoisted(() => ({
+  createCorrelationIdMock: vi.fn(() => "corr-test-id"),
+  logFrontendDebugMock: vi.fn()
+}));
+
+vi.mock("./lib/debugLogger", () => ({
+  createCorrelationId: createCorrelationIdMock,
+  logFrontendDebug: logFrontendDebugMock
+}));
+
 import App from "./App";
 import { NO_MATCH_COPY } from "./lib/search";
 import type { AskAiRequest, CardMetadataItem } from "./types";
@@ -46,14 +56,14 @@ const baseCardMetadataFixture: CardMetadataItem[] = [
 
 let fetchMock: ReturnType<typeof vi.fn>;
 let metadataFixture: CardMetadataItem[] = [];
-let askAiResponseQueue: Array<{ status: number; body: unknown }> = [];
+let askAiResponseQueue: Array<{ status: number; body: unknown; headers?: Record<string, string> }> = [];
 const submittedAskAiRequests: AskAiRequest[] = [];
 const submittedAskAiHeaders: Array<Record<string, string>> = [];
 
-function jsonResponse(payload: unknown, status = 200): Response {
+function jsonResponse(payload: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(payload), {
     status,
-    headers: { "Content-Type": "application/json" }
+    headers: { "Content-Type": "application/json", ...headers }
   });
 }
 
@@ -93,7 +103,7 @@ function normalizeHeaders(initHeaders: RequestInit["headers"]): Record<string, s
   );
 }
 
-function queueAskAiResponses(...responses: Array<{ status: number; body: unknown }>): void {
+function queueAskAiResponses(...responses: Array<{ status: number; body: unknown; headers?: Record<string, string> }>): void {
   askAiResponseQueue = responses;
 }
 
@@ -163,6 +173,8 @@ describe("App MVP interaction flows", () => {
     askAiResponseQueue = [{ status: 200, body: { answer: "Mock answer" } }];
     submittedAskAiRequests.length = 0;
     submittedAskAiHeaders.length = 0;
+    createCorrelationIdMock.mockClear();
+    logFrontendDebugMock.mockClear();
 
     fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
       const url = getUrlFromRequest(input);
@@ -176,7 +188,7 @@ describe("App MVP interaction flows", () => {
         submittedAskAiHeaders.push(normalizeHeaders(init.headers));
 
         const nextResponse = askAiResponseQueue.shift() ?? { status: 200, body: { answer: "Mock answer" } };
-        return jsonResponse(nextResponse.body, nextResponse.status);
+        return jsonResponse(nextResponse.body, nextResponse.status, nextResponse.headers);
       }
 
       return jsonResponse({ error: "not found" }, 404);
@@ -426,6 +438,63 @@ describe("App MVP interaction flows", () => {
     expect(requestBody.battlefieldContext).toEqual([]);
     expect(requestBody.stack.map((card) => card.name)).toEqual(["Opt", "Lightning Bolt"]);
     expect(submittedAskAiHeaders[0]["x-correlation-id"]).toMatch(/\S+/);
+  });
+
+  it("emits staged-flow milestone logs for game-context and battlefield progression", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    expect(logFrontendDebugMock).toHaveBeenCalledWith("game_context.confirmed", { playerCount: 2 });
+
+    await user.click(screen.getByRole("button", { name: "Skip battlefield context" }));
+    expect(logFrontendDebugMock).toHaveBeenCalledWith("battlefield_context.progressed", {
+      progression: "skipped",
+      battlefieldEntryCount: 0
+    });
+  });
+
+  it("logs ask-ai completion with httpStatus and response correlation id", async () => {
+    const user = userEvent.setup();
+    queueAskAiResponses(
+      {
+        status: 200,
+        body: { answer: "Done" },
+        headers: { "X-Correlation-Id": "srv-corr-999" }
+      },
+      {
+        status: 502,
+        body: { error: "Miho is working on it", retryAfterSeconds: 13 },
+        headers: { "X-Correlation-Id": "srv-corr-500" }
+      }
+    );
+    render(<App />);
+    await openStackBuilder(user);
+    await addCardToStack(user, "opt", "Opt");
+
+    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+    await waitFor(() => {
+      expect(logFrontendDebugMock).toHaveBeenCalledWith(
+        "ask_ai.request_succeeded",
+        expect.objectContaining({
+          correlationId: "corr-test-id",
+          responseCorrelationId: "srv-corr-999",
+          httpStatus: 200
+        })
+      );
+    });
+
+    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+    await waitFor(() => {
+      expect(logFrontendDebugMock).toHaveBeenCalledWith(
+        "ask_ai.request_failed",
+        expect.objectContaining({
+          correlationId: "corr-test-id",
+          responseCorrelationId: "srv-corr-500",
+          httpStatus: 502
+        })
+      );
+    });
   });
 
   it("captures caster, typed targets, and notes when adding a stack entry", async () => {
@@ -856,5 +925,23 @@ describe("App MVP interaction flows", () => {
     expect(screen.getByLabelText("Battlefield item details")).toHaveValue(
       "Lightning Bolt deals 3 damage to any target."
     );
+  });
+
+  it("hides battlefield target controls until a card is selected", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+
+    expect(screen.queryByLabelText("Battlefield target kind")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add battlefield target" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add battlefield item" })).not.toBeInTheDocument();
+
+    await user.type(screen.getByLabelText("Battlefield search input"), "lig");
+    await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
+
+    expect(screen.getByLabelText("Battlefield target kind")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add battlefield target" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add battlefield item" })).toBeInTheDocument();
   });
 });

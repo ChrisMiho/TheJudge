@@ -310,6 +310,9 @@ export default function App() {
       playerCount: playerCountInput,
       players
     });
+    logFrontendDebug("game_context.confirmed", {
+      playerCount: playerCountInput
+    });
     setFlowStep("battlefield-context");
     flashStatus("Game context saved.");
   }
@@ -396,6 +399,11 @@ export default function App() {
   }
 
   function progressFromBattlefieldStep(): void {
+    const progression = battlefieldContext.length > 0 ? "continued" : "skipped";
+    logFrontendDebug("battlefield_context.progressed", {
+      progression,
+      battlefieldEntryCount: battlefieldContext.length
+    });
     if (battlefieldContext.length === 0) {
       setBattlefieldContext([]);
     }
@@ -576,9 +584,11 @@ export default function App() {
 
       if (!response.ok) {
         const body = (await response.json()) as AskAiError;
+        const responseCorrelationId = response.headers.get("x-correlation-id")?.trim() || correlationId;
         logFrontendDebug("ask_ai.request_failed", {
           correlationId,
-          status: response.status,
+          responseCorrelationId,
+          httpStatus: response.status,
           retryAfterSeconds: body.retryAfterSeconds ?? RETRY_COOLDOWN_SECONDS
         });
         setError("Miho is working on it");
@@ -587,15 +597,19 @@ export default function App() {
       }
 
       const body = (await response.json()) as AskAiResponse;
+      const responseCorrelationId = response.headers.get("x-correlation-id")?.trim() || correlationId;
       logFrontendDebug("ask_ai.request_succeeded", {
         correlationId,
-        status: response.status
+        responseCorrelationId,
+        httpStatus: response.status
       });
       setAnswer(body.answer);
       setError(null);
     } catch (error) {
       logFrontendDebug("ask_ai.request_failed", {
         correlationId,
+        responseCorrelationId: correlationId,
+        httpStatus: null,
         failureType: "network_or_unexpected",
         message: error instanceof Error ? error.message : "unknown"
       });
@@ -880,111 +894,9 @@ export default function App() {
                   {battlefieldEntryName}
                 </output>
               </label>
-              <textarea
-                aria-label="Battlefield item details"
-                value={battlefieldEntryDetails}
-                onChange={(event) => setBattlefieldEntryDetails(event.target.value.slice(0, 280))}
-                rows={2}
-                maxLength={280}
-                className="w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
-                placeholder="Optional details"
-              />
-              <div className="flex flex-wrap items-center gap-2">
-                <select
-                  aria-label="Battlefield target kind"
-                  value={battlefieldTargetKind}
-                  onChange={(event) => setBattlefieldTargetKind(event.target.value as TargetKind)}
-                  className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                >
-                  {TARGET_KIND_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                {battlefieldTargetKind === "stack" && (
-                  <>
-                    <input
-                      aria-label="Battlefield target stack name"
-                      value={battlefieldTargetStackName}
-                      onChange={(event) => setBattlefieldTargetStackName(event.target.value)}
-                      className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                      placeholder="Stack card name"
-                    />
-                    <input
-                      aria-label="Battlefield target stack id"
-                      value={battlefieldTargetStackId}
-                      onChange={(event) => setBattlefieldTargetStackId(event.target.value)}
-                      className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                      placeholder="Stack card id (optional)"
-                    />
-                  </>
-                )}
-                {battlefieldTargetKind === "battlefield" && (
-                  <input
-                    aria-label="Battlefield target permanent"
-                    value={battlefieldTargetPermanent}
-                    onChange={(event) => setBattlefieldTargetPermanent(event.target.value)}
-                    className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                    placeholder="Permanent name"
-                  />
-                )}
-                {battlefieldTargetKind === "player" && (
-                  <select
-                    aria-label="Battlefield target player"
-                    value={battlefieldTargetPlayer}
-                    onChange={(event) => setBattlefieldTargetPlayer(event.target.value as PlayerLabel)}
-                    className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                  >
-                    {activePlayers.map((player) => (
-                      <option key={player} value={player}>
-                        {player}
-                      </option>
-                    ))}
-                  </select>
-                )}
-                {battlefieldTargetKind === "other" && (
-                  <input
-                    aria-label="Battlefield target other"
-                    value={battlefieldTargetOtherDescription}
-                    onChange={(event) =>
-                      setBattlefieldTargetOtherDescription(event.target.value.slice(0, MAX_OTHER_TARGET_CHARS))
-                    }
-                    className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                    placeholder="Describe target context"
-                  />
-                )}
-                <button
-                  type="button"
-                  onClick={addBattlefieldTarget}
-                  className="rounded-md border border-slate-500 bg-slate-700 px-2 py-1 text-xs text-slate-100"
-                >
-                  Add battlefield target
-                </button>
-              </div>
-              {battlefieldEntryTargets.length > 0 && (
-                <ul className="space-y-1">
-                  {battlefieldEntryTargets.map((target, index) => (
-                    <li key={`${target.kind}-${index}`} className="flex items-center justify-between gap-2 text-xs">
-                      <span>{formatTarget(target)}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeBattlefieldTarget(index)}
-                        className="rounded border border-slate-500 px-1.5 py-0.5 text-[11px] text-slate-100"
-                      >
-                        Remove
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <button
-                type="button"
-                onClick={addBattlefieldEntry}
-                className="rounded-xl bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-2 text-sm font-semibold text-white"
-              >
-                Add battlefield item
-              </button>
+              <p className="text-xs text-slate-300">
+                Select a suggestion to open preview, details, and target controls.
+              </p>
             </>
           )}
           <div className="flex gap-2">
