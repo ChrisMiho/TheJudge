@@ -1,0 +1,28 @@
+# STORY-042 - Cross-Boundary Flow Validation Logging
+
+- title: Strengthen frontend–backend logging so a full MVP1 staged flow (game context, battlefield, stack build, Decrypt) can be validated end-to-end without guesswork.
+- user value: As a developer running the app locally (or inspecting a single user session), I can line up browser console output with server logs using a shared correlation signal and see where each staged step occurred relative to the Ask-AI request.
+- scope:
+  - **Response correlation echo:** for every `POST /api/ask-ai` completion path (success, validation failure, budget failure, forced/provider failure), set the HTTP response header `X-Correlation-Id` to the same correlation id resolved for that request (including generated ids when the client omits the header), so DevTools Network confirms the id returned by the backend matches the id the client sent or adopted.
+  - **Frontend Ask-AI completion logs:** extend existing `ask_ai.`* debug events so successful and failed completions include `httpStatus` and, when present, the response header correlation id (or the client-held id used for the attempt), without logging full response bodies or secrets.
+  - **Staged-flow milestone logs:** add `logFrontendDebug` events for pre-Decrypt steps called out in REQ-015 and REQ-016, with stable event names and small structured fields only (for example: game context confirmed with player count; battlefield step continued vs skipped with battlefield entry count). These events must not change UX behavior and must respect the existing `VITE_DEBUG_LOGGING` / `debugLoggingEnabled` gate.
+  - **Backend consistency:** ensure the first and last lifecycle log lines for a given Ask-AI attempt remain easy to grep by `correlationId` (no redesign of STORY-019 event names required; additive fields or headers only).
+  - **Documentation:** add a short “Validating Ask-AI flow locally” subsection to the root `README.md` describing how to enable `VITE_DEBUG_LOGGING` and `DEBUG_LOGGING`, run frontend and backend together, trigger a Decrypt, and match console + terminal output using correlation id (including the response header echo).
+- acceptance criteria:
+  - every `POST /api/ask-ai` response includes `X-Correlation-Id` echoing the resolved correlation id for that request
+  - frontend debug logs for Decrypt completion include `httpStatus` and remain gated by `VITE_DEBUG_LOGGING` with no user-visible behavior change
+  - frontend emits gated debug logs for game-context confirmation and battlefield skip/continue (or equivalent single action) with stable event names and non-sensitive structured fields
+  - backend tests cover response header correlation echo for at least one success and one error path
+  - frontend tests cover that Ask-AI requests continue to send `X-Correlation-Id` and that completion logging paths remain correct when debug logging is enabled in test setup (extend existing patterns in `App.test.tsx` or focused unit tests as appropriate)
+  - update the root `README.md` story checklist: mark the `STORY-042` entry complete when this story’s implementation lands, and ensure the new “Validating Ask-AI flow locally” README subsection exists as specified in scope
+- execution mode: parallel-ready
+- dependencies:
+  - REQ-011, REQ-012, REQ-013, REQ-014, REQ-015, REQ-016
+  - NFR-002, NFR-005, NFR-007
+  - Baseline logging and correlation behavior from completed `STORY-019` (reference only; not a blocking prerequisite)
+- exclusions:
+  - no third-party observability, OpenTelemetry export, or log shipping pipelines
+  - no new product-facing API routes beyond header and log behavior on existing routes
+  - no change to successful `AskAiResponse` JSON shape for `answer` (header echo satisfies cross-boundary validation without expanding the response body contract)
+  - no Bedrock Phase B or provider-selection changes
+  - no persistent analytics or server-side log retention beyond existing process stdout behavior

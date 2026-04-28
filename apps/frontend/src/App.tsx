@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
+import { CardSelectionPreview } from "./components/CardSelectionPreview";
 import { createCorrelationId, logFrontendDebug } from "./lib/debugLogger";
 import { apiBaseUrl } from "./lib/env";
 import { NO_MATCH_COPY } from "./lib/search";
@@ -31,11 +32,14 @@ const EMPTY_STATE_IMAGE_URL = "/assets/cats-homescreen.png";
 const MAX_OTHER_TARGET_CHARS = 200;
 const PLAYER_OPTIONS: PlayerLabel[] = ["Player 1", "Player 2", "Player 3", "Player 4"];
 type TargetKind = StackTarget["kind"];
+const TARGET_KIND_OPTIONS: Array<{ value: TargetKind; label: string }> = [
+  { value: "stack", label: "Stack target" },
+  { value: "battlefield", label: "Battlefield target" },
+  { value: "player", label: "Player target" },
+  { value: "other", label: "Other target context" },
+  { value: "none", label: "No specific target" }
+];
 type FlowStep = "game-context" | "battlefield-context" | "stack-builder";
-
-function formatMetaList(values: string[]): string {
-  return values.length > 0 ? values.join(", ") : "N/A";
-}
 
 function formatTarget(target: StackTarget): string {
   if (target.kind === "player") {
@@ -74,6 +78,7 @@ export default function App() {
   const [gameContext, setGameContext] = useState<GameContext | null>(null);
   const [battlefieldContext, setBattlefieldContext] = useState<BattlefieldContextItem[]>([]);
   const [battlefieldSearchInput, setBattlefieldSearchInput] = useState("");
+  const [selectedBattlefieldCard, setSelectedBattlefieldCard] = useState<CardMetadataItem | null>(null);
   const [battlefieldEntryName, setBattlefieldEntryName] = useState("");
   const [isBattlefieldEntryNameLinked, setIsBattlefieldEntryNameLinked] = useState(true);
   const [battlefieldEntryDetails, setBattlefieldEntryDetails] = useState("");
@@ -364,6 +369,7 @@ export default function App() {
       }
     ]);
     setBattlefieldSearchInput("");
+    setSelectedBattlefieldCard(null);
     setBattlefieldEntryName("");
     setIsBattlefieldEntryNameLinked(true);
     setBattlefieldEntryDetails("");
@@ -372,6 +378,7 @@ export default function App() {
   }
 
   function selectBattlefieldSuggestion(card: CardMetadataItem): void {
+    setSelectedBattlefieldCard(card);
     setBattlefieldEntryName(card.name);
     setIsBattlefieldEntryNameLinked(false);
     if (battlefieldEntryDetails.trim().length === 0) {
@@ -746,119 +753,241 @@ export default function App() {
               )}
             </div>
           )}
-          <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
-            Battlefield item name
-            <output
-              aria-label="Battlefield item name"
-              className="mt-2 block w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm text-slate-100"
-            >
-              {battlefieldEntryName}
-            </output>
-          </label>
-          <textarea
-            aria-label="Battlefield item details"
-            value={battlefieldEntryDetails}
-            onChange={(event) => setBattlefieldEntryDetails(event.target.value.slice(0, 280))}
-            rows={2}
-            maxLength={280}
-            className="w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
-            placeholder="Optional details"
-          />
-          <div className="flex flex-wrap items-center gap-2">
-            <select
-              aria-label="Battlefield target kind"
-              value={battlefieldTargetKind}
-              onChange={(event) => setBattlefieldTargetKind(event.target.value as TargetKind)}
-              className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-            >
-              <option value="battlefield">Battlefield target</option>
-              <option value="player">Player target</option>
-              <option value="stack">Stack target</option>
-              <option value="other">Other target context</option>
-              <option value="none">No specific target</option>
-            </select>
-            {battlefieldTargetKind === "battlefield" && (
-              <input
-                aria-label="Battlefield target permanent"
-                value={battlefieldTargetPermanent}
-                onChange={(event) => setBattlefieldTargetPermanent(event.target.value)}
-                className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                placeholder="Permanent name"
+          {selectedBattlefieldCard ? (
+            <CardSelectionPreview
+              card={selectedBattlefieldCard}
+              contextTitle="Battlefield context"
+              contextContent={
+                <>
+                  <textarea
+                    aria-label="Battlefield item details"
+                    value={battlefieldEntryDetails}
+                    onChange={(event) => setBattlefieldEntryDetails(event.target.value.slice(0, 280))}
+                    rows={2}
+                    maxLength={280}
+                    className="w-full rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                    placeholder="Optional details"
+                  />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <select
+                      aria-label="Battlefield target kind"
+                      value={battlefieldTargetKind}
+                      onChange={(event) => setBattlefieldTargetKind(event.target.value as TargetKind)}
+                      className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                    >
+                      {TARGET_KIND_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    {battlefieldTargetKind === "stack" && (
+                      <>
+                        <input
+                          aria-label="Battlefield target stack name"
+                          value={battlefieldTargetStackName}
+                          onChange={(event) => setBattlefieldTargetStackName(event.target.value)}
+                          className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                          placeholder="Stack card name"
+                        />
+                        <input
+                          aria-label="Battlefield target stack id"
+                          value={battlefieldTargetStackId}
+                          onChange={(event) => setBattlefieldTargetStackId(event.target.value)}
+                          className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                          placeholder="Stack card id (optional)"
+                        />
+                      </>
+                    )}
+                    {battlefieldTargetKind === "battlefield" && (
+                      <input
+                        aria-label="Battlefield target permanent"
+                        value={battlefieldTargetPermanent}
+                        onChange={(event) => setBattlefieldTargetPermanent(event.target.value)}
+                        className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                        placeholder="Permanent name"
+                      />
+                    )}
+                    {battlefieldTargetKind === "player" && (
+                      <select
+                        aria-label="Battlefield target player"
+                        value={battlefieldTargetPlayer}
+                        onChange={(event) => setBattlefieldTargetPlayer(event.target.value as PlayerLabel)}
+                        className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                      >
+                        {activePlayers.map((player) => (
+                          <option key={player} value={player}>
+                            {player}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    {battlefieldTargetKind === "other" && (
+                      <input
+                        aria-label="Battlefield target other"
+                        value={battlefieldTargetOtherDescription}
+                        onChange={(event) =>
+                          setBattlefieldTargetOtherDescription(event.target.value.slice(0, MAX_OTHER_TARGET_CHARS))
+                        }
+                        className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                        placeholder="Describe target context"
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={addBattlefieldTarget}
+                      className="rounded-md border border-slate-500 bg-slate-700 px-2 py-1 text-xs text-slate-100"
+                    >
+                      Add battlefield target
+                    </button>
+                  </div>
+                  {battlefieldEntryTargets.length > 0 && (
+                    <ul className="space-y-1">
+                      {battlefieldEntryTargets.map((target, index) => (
+                        <li key={`${target.kind}-${index}`} className="flex items-center justify-between gap-2 text-xs">
+                          <span className="text-slate-200">{formatTarget(target)}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeBattlefieldTarget(index)}
+                            className="rounded border border-slate-500 px-1.5 py-0.5 text-[11px] text-slate-100"
+                          >
+                            Remove
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </>
+              }
+              action={
+                <button
+                  type="button"
+                  onClick={addBattlefieldEntry}
+                  className="rounded-xl bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:from-sky-500 hover:to-cyan-400"
+                >
+                  Add battlefield item
+                </button>
+              }
+            />
+          ) : (
+            <>
+              <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
+                Battlefield item name
+                <output
+                  aria-label="Battlefield item name"
+                  className="mt-2 block w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm text-slate-100"
+                >
+                  {battlefieldEntryName}
+                </output>
+              </label>
+              <textarea
+                aria-label="Battlefield item details"
+                value={battlefieldEntryDetails}
+                onChange={(event) => setBattlefieldEntryDetails(event.target.value.slice(0, 280))}
+                rows={2}
+                maxLength={280}
+                className="w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
+                placeholder="Optional details"
               />
-            )}
-            {battlefieldTargetKind === "player" && (
-              <select
-                aria-label="Battlefield target player"
-                value={battlefieldTargetPlayer}
-                onChange={(event) => setBattlefieldTargetPlayer(event.target.value as PlayerLabel)}
-                className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-              >
-                {activePlayers.map((player) => (
-                  <option key={player} value={player}>
-                    {player}
-                  </option>
-                ))}
-              </select>
-            )}
-            {battlefieldTargetKind === "stack" && (
-              <>
-                <input
-                  aria-label="Battlefield target stack name"
-                  value={battlefieldTargetStackName}
-                  onChange={(event) => setBattlefieldTargetStackName(event.target.value)}
-                  className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                  placeholder="Stack card name"
-                />
-                <input
-                  aria-label="Battlefield target stack id"
-                  value={battlefieldTargetStackId}
-                  onChange={(event) => setBattlefieldTargetStackId(event.target.value)}
-                  className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                  placeholder="Stack card id (optional)"
-                />
-              </>
-            )}
-            {battlefieldTargetKind === "other" && (
-              <input
-                aria-label="Battlefield target other"
-                value={battlefieldTargetOtherDescription}
-                onChange={(event) => setBattlefieldTargetOtherDescription(event.target.value.slice(0, MAX_OTHER_TARGET_CHARS))}
-                className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                placeholder="Describe target context"
-              />
-            )}
-            <button
-              type="button"
-              onClick={addBattlefieldTarget}
-              className="rounded-md border border-slate-500 bg-slate-700 px-2 py-1 text-xs text-slate-100"
-            >
-              Add battlefield target
-            </button>
-          </div>
-          {battlefieldEntryTargets.length > 0 && (
-            <ul className="space-y-1">
-              {battlefieldEntryTargets.map((target, index) => (
-                <li key={`${target.kind}-${index}`} className="flex items-center justify-between gap-2 text-xs">
-                  <span>{formatTarget(target)}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeBattlefieldTarget(index)}
-                    className="rounded border border-slate-500 px-1.5 py-0.5 text-[11px] text-slate-100"
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  aria-label="Battlefield target kind"
+                  value={battlefieldTargetKind}
+                  onChange={(event) => setBattlefieldTargetKind(event.target.value as TargetKind)}
+                  className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                >
+                  {TARGET_KIND_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {battlefieldTargetKind === "stack" && (
+                  <>
+                    <input
+                      aria-label="Battlefield target stack name"
+                      value={battlefieldTargetStackName}
+                      onChange={(event) => setBattlefieldTargetStackName(event.target.value)}
+                      className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                      placeholder="Stack card name"
+                    />
+                    <input
+                      aria-label="Battlefield target stack id"
+                      value={battlefieldTargetStackId}
+                      onChange={(event) => setBattlefieldTargetStackId(event.target.value)}
+                      className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                      placeholder="Stack card id (optional)"
+                    />
+                  </>
+                )}
+                {battlefieldTargetKind === "battlefield" && (
+                  <input
+                    aria-label="Battlefield target permanent"
+                    value={battlefieldTargetPermanent}
+                    onChange={(event) => setBattlefieldTargetPermanent(event.target.value)}
+                    className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                    placeholder="Permanent name"
+                  />
+                )}
+                {battlefieldTargetKind === "player" && (
+                  <select
+                    aria-label="Battlefield target player"
+                    value={battlefieldTargetPlayer}
+                    onChange={(event) => setBattlefieldTargetPlayer(event.target.value as PlayerLabel)}
+                    className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
                   >
-                    Remove
-                  </button>
-                </li>
-              ))}
-            </ul>
+                    {activePlayers.map((player) => (
+                      <option key={player} value={player}>
+                        {player}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {battlefieldTargetKind === "other" && (
+                  <input
+                    aria-label="Battlefield target other"
+                    value={battlefieldTargetOtherDescription}
+                    onChange={(event) =>
+                      setBattlefieldTargetOtherDescription(event.target.value.slice(0, MAX_OTHER_TARGET_CHARS))
+                    }
+                    className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                    placeholder="Describe target context"
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={addBattlefieldTarget}
+                  className="rounded-md border border-slate-500 bg-slate-700 px-2 py-1 text-xs text-slate-100"
+                >
+                  Add battlefield target
+                </button>
+              </div>
+              {battlefieldEntryTargets.length > 0 && (
+                <ul className="space-y-1">
+                  {battlefieldEntryTargets.map((target, index) => (
+                    <li key={`${target.kind}-${index}`} className="flex items-center justify-between gap-2 text-xs">
+                      <span>{formatTarget(target)}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeBattlefieldTarget(index)}
+                        className="rounded border border-slate-500 px-1.5 py-0.5 text-[11px] text-slate-100"
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <button
+                type="button"
+                onClick={addBattlefieldEntry}
+                className="rounded-xl bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-2 text-sm font-semibold text-white"
+              >
+                Add battlefield item
+              </button>
+            </>
           )}
           <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={addBattlefieldEntry}
-              className="rounded-xl bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-2 text-sm font-semibold text-white"
-            >
-              Add battlefield item
-            </button>
             <button
               type="button"
               onClick={progressFromBattlefieldStep}
@@ -966,46 +1095,68 @@ export default function App() {
         )}
 
         {selectedCard && (
-          <article className="rounded-2xl border border-slate-600 bg-slate-800/75 p-4 shadow-[0_14px_34px_-24px_rgba(37,99,235,0.9)]">
-            <div className="grid gap-3 sm:grid-cols-[minmax(180px,220px)_1fr]">
-              {selectedCard.imageUrl ? (
-                <img
-                  src={selectedCard.imageUrl}
-                  alt={selectedCard.name}
-                  className="w-full rounded-xl border border-slate-600 bg-slate-950/40 object-contain p-1"
-                />
-              ) : (
-                <div className="flex min-h-56 w-full items-center justify-center rounded-xl border border-dashed border-slate-600 bg-slate-900/40 text-xs text-slate-400">
-                  No image
-                </div>
-              )}
-              <div className="flex flex-col justify-between gap-3 rounded-xl border border-slate-600/80 bg-slate-900/45 p-3">
-                <div>
-                  <h2 className="text-base font-semibold text-slate-100">{selectedCard.name}</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-300">{selectedCard.oracleText}</p>
-                </div>
-                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs text-slate-300">
-                  <dt className="font-semibold text-slate-200">Mana Cost</dt>
-                  <dd>{selectedCard.manaCost || "N/A"}</dd>
-                  <dt className="font-semibold text-slate-200">Mana Value</dt>
-                  <dd>{selectedCard.manaValue}</dd>
-                  <dt className="font-semibold text-slate-200">Type Line</dt>
-                  <dd>{selectedCard.typeLine || "N/A"}</dd>
-                  <dt className="font-semibold text-slate-200">Colors</dt>
-                  <dd>{formatMetaList(selectedCard.colors)}</dd>
-                  <dt className="font-semibold text-slate-200">Supertypes</dt>
-                  <dd>{formatMetaList(selectedCard.supertypes)}</dd>
-                  <dt className="font-semibold text-slate-200">Subtypes</dt>
-                  <dd>{formatMetaList(selectedCard.subtypes)}</dd>
-                </dl>
-                <div className="space-y-2 rounded-lg border border-slate-600/70 bg-slate-900/50 p-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Stack context</p>
-                  <label className="flex items-center gap-2 text-xs text-slate-200">
-                    Caster
+          <CardSelectionPreview
+            card={selectedCard}
+            contextTitle="Stack context"
+            contextContent={
+              <>
+                <label className="flex items-center gap-2 text-xs text-slate-200">
+                  Caster
+                  <select
+                    aria-label="Entry caster"
+                    value={entryCaster}
+                    onChange={(event) => setEntryCaster(event.target.value as PlayerLabel)}
+                    className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                  >
+                    {PLAYER_OPTIONS.map((player) => (
+                      <option key={player} value={player}>
+                        {player}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    aria-label="Entry target kind"
+                    value={targetKind}
+                    onChange={(event) => setTargetKind(event.target.value as TargetKind)}
+                    className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                  >
+                    {TARGET_KIND_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  {targetKind === "stack" && (
                     <select
-                      aria-label="Entry caster"
-                      value={entryCaster}
-                      onChange={(event) => setEntryCaster(event.target.value as PlayerLabel)}
+                      aria-label="Entry stack target"
+                      value={targetStackCardId}
+                      onChange={(event) => setTargetStackCardId(event.target.value)}
+                      className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                    >
+                      <option value="">Select stack item</option>
+                      {stack.map((item) => (
+                        <option key={item.cardId} value={item.cardId}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {targetKind === "battlefield" && (
+                    <input
+                      aria-label="Entry battlefield target"
+                      value={targetBattlefieldName}
+                      onChange={(event) => setTargetBattlefieldName(event.target.value)}
+                      placeholder="Permanent name"
+                      className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                    />
+                  )}
+                  {targetKind === "player" && (
+                    <select
+                      aria-label="Entry player target"
+                      value={targetPlayer}
+                      onChange={(event) => setTargetPlayer(event.target.value as PlayerLabel)}
                       className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
                     >
                       {PLAYER_OPTIONS.map((player) => (
@@ -1014,123 +1165,73 @@ export default function App() {
                         </option>
                       ))}
                     </select>
-                  </label>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <select
-                      aria-label="Entry target kind"
-                      value={targetKind}
-                      onChange={(event) => setTargetKind(event.target.value as TargetKind)}
-                      className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                    >
-                      <option value="stack">Stack target</option>
-                      <option value="battlefield">Battlefield target</option>
-                      <option value="player">Player target</option>
-                      <option value="other">Other target context</option>
-                      <option value="none">No specific target</option>
-                    </select>
-                    {targetKind === "stack" && (
-                      <select
-                        aria-label="Entry stack target"
-                        value={targetStackCardId}
-                        onChange={(event) => setTargetStackCardId(event.target.value)}
-                        className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                      >
-                        <option value="">Select stack item</option>
-                        {stack.map((item) => (
-                          <option key={item.cardId} value={item.cardId}>
-                            {item.name}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                    {targetKind === "battlefield" && (
-                      <input
-                        aria-label="Entry battlefield target"
-                        value={targetBattlefieldName}
-                        onChange={(event) => setTargetBattlefieldName(event.target.value)}
-                        placeholder="Permanent name"
-                        className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                      />
-                    )}
-                    {targetKind === "player" && (
-                      <select
-                        aria-label="Entry player target"
-                        value={targetPlayer}
-                        onChange={(event) => setTargetPlayer(event.target.value as PlayerLabel)}
-                        className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                      >
-                        {PLAYER_OPTIONS.map((player) => (
-                          <option key={player} value={player}>
-                            {player}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                    {targetKind === "other" && (
-                      <input
-                        aria-label="Entry other target"
-                        value={targetOtherDescription}
-                        onChange={(event) => setTargetOtherDescription(event.target.value.slice(0, MAX_OTHER_TARGET_CHARS))}
-                        placeholder="Describe target context"
-                        className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                      />
-                    )}
-                    <button
-                      type="button"
-                      aria-label="Add entry target"
-                      onClick={addEntryTarget}
-                      className="rounded-md border border-slate-500 bg-slate-700 px-2 py-1 text-xs text-slate-100"
-                    >
-                      Add target
-                    </button>
-                  </div>
-                  {entryTargets.length > 0 && (
-                    <ul className="space-y-1">
-                      {entryTargets.map((target, index) => (
-                        <li key={`${target.kind}-${index}`} className="flex items-center justify-between gap-2 text-xs">
-                          <span className="text-slate-200">{formatTarget(target)}</span>
-                          <button
-                            type="button"
-                            onClick={() => removeEntryTarget(index)}
-                            className="rounded border border-slate-500 px-1.5 py-0.5 text-[11px] text-slate-100"
-                          >
-                            Remove
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
                   )}
-                  <label className="flex items-center gap-2 text-xs text-slate-200">
-                    Mana spent
+                  {targetKind === "other" && (
                     <input
-                      aria-label="Entry mana spent"
-                      value={entryManaSpent}
-                      onChange={(event) => setEntryManaSpent(event.target.value)}
-                      inputMode="numeric"
-                      placeholder={`Defaults to MV (${selectedCard.manaValue})`}
-                      className="w-40 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                      aria-label="Entry other target"
+                      value={targetOtherDescription}
+                      onChange={(event) => setTargetOtherDescription(event.target.value.slice(0, MAX_OTHER_TARGET_CHARS))}
+                      placeholder="Describe target context"
+                      className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
                     />
-                  </label>
-                  <textarea
-                    aria-label="Entry context notes"
-                    value={entryContextNotes}
-                    onChange={(event) => setEntryContextNotes(event.target.value.slice(0, 280))}
-                    rows={2}
-                    maxLength={280}
-                    placeholder="Optional notes (kicker, copied spell, alternate cost)"
-                    className="w-full rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs placeholder:text-slate-400"
-                  />
+                  )}
+                  <button
+                    type="button"
+                    aria-label="Add entry target"
+                    onClick={addEntryTarget}
+                    className="rounded-md border border-slate-500 bg-slate-700 px-2 py-1 text-xs text-slate-100"
+                  >
+                    Add target
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleAddSelectedCard}
-                  className="rounded-xl bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:from-sky-500 hover:to-cyan-400"
-                >
-                  {addButtonLabel}
-                </button>
-              </div>
-            </div>
-          </article>
+                {entryTargets.length > 0 && (
+                  <ul className="space-y-1">
+                    {entryTargets.map((target, index) => (
+                      <li key={`${target.kind}-${index}`} className="flex items-center justify-between gap-2 text-xs">
+                        <span className="text-slate-200">{formatTarget(target)}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeEntryTarget(index)}
+                          className="rounded border border-slate-500 px-1.5 py-0.5 text-[11px] text-slate-100"
+                        >
+                          Remove
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <label className="flex items-center gap-2 text-xs text-slate-200">
+                  Mana spent
+                  <input
+                    aria-label="Entry mana spent"
+                    value={entryManaSpent}
+                    onChange={(event) => setEntryManaSpent(event.target.value)}
+                    inputMode="numeric"
+                    placeholder={`Defaults to MV (${selectedCard.manaValue})`}
+                    className="w-40 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                  />
+                </label>
+                <textarea
+                  aria-label="Entry context notes"
+                  value={entryContextNotes}
+                  onChange={(event) => setEntryContextNotes(event.target.value.slice(0, 280))}
+                  rows={2}
+                  maxLength={280}
+                  placeholder="Optional notes (kicker, copied spell, alternate cost)"
+                  className="w-full rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs placeholder:text-slate-400"
+                />
+              </>
+            }
+            action={
+              <button
+                type="button"
+                onClick={handleAddSelectedCard}
+                className="rounded-xl bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:from-sky-500 hover:to-cyan-400"
+              >
+                {addButtonLabel}
+              </button>
+            }
+          />
         )}
 
         <form onSubmit={handleDecryptStack} className="flex flex-col gap-3">

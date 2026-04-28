@@ -135,6 +135,11 @@ function readSuggestionNamesFromPanel(searchInput: HTMLElement): string[] {
     .filter((name) => name.length > 0);
 }
 
+function readSelectOptionLabels(selectLabel: string): string[] {
+  const select = screen.getByLabelText(selectLabel);
+  return within(select).getAllByRole("option").map((option) => option.textContent?.trim() ?? "");
+}
+
 async function selectCard(user: ReturnType<typeof userEvent.setup>, query: string, cardName: string): Promise<void> {
   const searchInput = screen.getByPlaceholderText("Type to begin");
   await user.clear(searchInput);
@@ -236,7 +241,7 @@ describe("App MVP interaction flows", () => {
     fireEvent.keyDown(battlefieldSearchInput, { key: "ArrowDown" });
     fireEvent.keyDown(battlefieldSearchInput, { key: "Enter" });
 
-    expect(screen.getByLabelText("Battlefield item name")).toHaveTextContent("Lightning Bolt");
+    expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
     expect(screen.getByLabelText("Battlefield item details")).toHaveValue(
       "Lightning Bolt deals 3 damage to any target."
     );
@@ -354,10 +359,29 @@ describe("App MVP interaction flows", () => {
     await user.type(battlefieldInput, "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 
-    expect(screen.getByLabelText("Battlefield item name")).toHaveTextContent("Lightning Bolt");
+    expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
     expect(screen.getByLabelText("Battlefield item details")).toHaveValue(
       "Lightning Bolt deals 3 damage to any target."
     );
+  });
+
+  it("keeps target kind option contract in parity between stack and battlefield previews", async () => {
+    const user = userEvent.setup();
+    const stackView = render(<App />);
+    await openStackBuilder(user);
+
+    await user.type(screen.getByPlaceholderText("Type to begin"), "opt");
+    await user.click(await screen.findByRole("button", { name: "Opt" }));
+    const stackTargetOptions = readSelectOptionLabels("Entry target kind");
+    stackView.unmount();
+
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await user.type(screen.getByLabelText("Battlefield search input"), "opt");
+    await user.click(await screen.findByRole("button", { name: "Opt" }));
+    const battlefieldTargetOptions = readSelectOptionLabels("Battlefield target kind");
+
+    expect(battlefieldTargetOptions).toEqual(stackTargetOptions);
   });
 
   it("uses first-add then subsequent-add button labels", async () => {
@@ -813,7 +837,7 @@ describe("App MVP interaction flows", () => {
     ]);
   });
 
-  it("keeps battlefield name display-only while preserving linked and selected behavior", async () => {
+  it("shows display-only battlefield name before selection and shared preview after selection", async () => {
     const user = userEvent.setup();
     render(<App />);
 
@@ -827,9 +851,10 @@ describe("App MVP interaction flows", () => {
     expect(battlefieldNameDisplay).toHaveTextContent("lig");
 
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
-    await user.type(battlefieldSearchInput, "ht");
-
-    expect(battlefieldSearchInput).toHaveValue("light");
-    expect(battlefieldNameDisplay).toHaveTextContent("Lightning Bolt");
+    expect(screen.queryByLabelText("Battlefield item name")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Battlefield item details")).toHaveValue(
+      "Lightning Bolt deals 3 damage to any target."
+    );
   });
 });

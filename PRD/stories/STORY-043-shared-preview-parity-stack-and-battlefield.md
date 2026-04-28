@@ -1,0 +1,24 @@
+# STORY-043 - Shared Preview Parity for Stack and Battlefield
+
+- title: Reuse one card-preview component for both stack and battlefield selection flows, with aligned target-kind option contracts.
+- user value: As a player, selecting a card in either flow gives the same confidence-building preview and interaction pattern.
+- scope:
+  - introduce a shared frontend preview component used by stack and battlefield selection paths
+  - show full card preview (image, oracle text, metadata) on battlefield after suggestion selection, matching stack preview behavior
+  - align target-kind option ordering/labels between stack-entry and battlefield-entry context controls
+  - preserve existing battlefield payload shape and existing stack-target data capture behavior in the battlefield step
+- acceptance criteria:
+  - selecting a battlefield suggestion renders the same preview shell used by stack selection
+  - stack and battlefield target-kind selectors expose the same option contract (`stack`, `battlefield`, `player`, `other`, `none`) with matching labels/order
+  - battlefield submission payload remains contract-compatible with existing backend validation
+  - root `README.md` checklist is updated to mark `STORY-043` implemented when shipped
+- execution mode: parallel-ready
+- dependencies:
+  - REQ-003
+  - REQ-016
+  - DEC-012
+  - DEC-019
+  - NFR-005
+- exclusions:
+  - no backend API contract changes
+  - no gameplay rules-engine logic additions

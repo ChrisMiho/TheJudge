@@ -50,6 +50,7 @@ Validate the end-to-end user flow before full Bedrock integration:
    - `npm run data:build`
 4. Start both apps:
    - `npm run dev`
+   - Backend Ask-AI flow logs print in this terminal when `DEBUG_LOGGING` is unset (defaults on in development; the backend `dev` script sets `NODE_ENV=development`). Frontend `[TheJudge][frontend]` logs appear in the browser DevTools console, not the dev terminal.
 5. Optional checks:
    - frontend: `http://localhost:5173`
    - backend health: `http://localhost:3000/api/health`
@@ -181,7 +182,9 @@ Pending implementation backlog:
 - [x] `STORY-038` clean up battlefield input-state path wiring against shared adapters
 - [x] `STORY-039` add cross-flow parity regression suite for stack vs battlefield suggestions
 - [x] `STORY-040` add lightweight search performance guardrails for responsiveness
-- [ ] `STORY-041` make battlefield item name display-only while keeping search and details editable
+- [x] `STORY-041` make battlefield item name display-only while keeping search and details editable
+- [ ] `STORY-042` strengthen cross-boundary flow validation logging (response correlation echo, staged-flow milestones, README playbook)
+- [x] `STORY-043` unify stack and battlefield selected-card preview UX with shared preview component and target-kind option parity
 
 ## Documentation Notes
 
