@@ -1,9 +1,10 @@
 import { FormEvent, useEffect, useState } from "react";
 import { BattlefieldStep } from "./components/BattlefieldStep";
 import { StackBuilderStep } from "./components/StackBuilderStep";
-import { createCorrelationId, logFrontendDebug } from "./lib/debugLogger";
+import { logFrontendDebug } from "./lib/debugLogger";
 import { apiBaseUrl } from "./lib/env";
 import { NO_MATCH_COPY } from "./lib/search";
+import { useAskAiSubmitOrchestration } from "./lib/useAskAiSubmitOrchestration";
 import { useAutocompleteKeyboard } from "./lib/useAutocompleteKeyboard";
 import { useAutocompleteSuggestions } from "./lib/useAutocompleteSuggestions";
 import {
@@ -16,9 +17,7 @@ import {
   validateStackAdd
 } from "./lib/stackState";
 import type {
-  AskAiError,
   AskAiRequest,
-  AskAiResponse,
   BattlefieldContextItem,
   CardMetadataItem,
   GameContext,
@@ -107,11 +106,7 @@ export default function App() {
   const [detailOtherByCardId, setDetailOtherByCardId] = useState<Record<string, string>>({});
   const [showStackDetails, setShowStackDetails] = useState(false);
   const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [retryCountdown, setRetryCountdown] = useState(0);
   const [emptyStateImageFailed, setEmptyStateImageFailed] = useState(false);
 
   useEffect(() => {
@@ -166,8 +161,11 @@ export default function App() {
   });
 
   const addButtonLabel = stack.length === 0 ? "Begin stackening!" : "Add to Stack";
-  const canRetry = retryCountdown === 0 && !isSubmitting;
   const activePlayers = PLAYER_OPTIONS.slice(0, playerCountInput);
+  const { answer, error, isSubmitting, retryCountdown, canRetry, submitAttempt } = useAskAiSubmitOrchestration({
+    apiBaseUrl,
+    retryCooldownSeconds: RETRY_COOLDOWN_SECONDS
+  });
 
   useEffect(() => {
     if (!isBattlefieldEntryNameLinked) {
@@ -195,19 +193,6 @@ export default function App() {
     window.setTimeout(() => {
       setStatusMessage((current) => (current === message ? null : current));
     }, 1400);
-  }
-
-  function startRetryCooldown(seconds: number): void {
-    setRetryCountdown(seconds);
-    const intervalId = window.setInterval(() => {
-      setRetryCountdown((current) => {
-        if (current <= 1) {
-          window.clearInterval(intervalId);
-          return 0;
-        }
-        return current - 1;
-      });
-    }, 1000);
   }
 
   function resetEntryContext(): void {
@@ -569,58 +554,6 @@ export default function App() {
     });
   }
 
-  async function submitAskAi(payload: AskAiRequest, correlationId: string): Promise<void> {
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`${apiBaseUrl}/api/ask-ai`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Correlation-Id": correlationId
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        const body = (await response.json()) as AskAiError;
-        const responseCorrelationId = response.headers.get("x-correlation-id")?.trim() || correlationId;
-        logFrontendDebug("ask_ai.request_failed", {
-          correlationId,
-          responseCorrelationId,
-          httpStatus: response.status,
-          retryAfterSeconds: body.retryAfterSeconds ?? RETRY_COOLDOWN_SECONDS
-        });
-        setError("Miho is working on it");
-        startRetryCooldown(body.retryAfterSeconds ?? RETRY_COOLDOWN_SECONDS);
-        return;
-      }
-
-      const body = (await response.json()) as AskAiResponse;
-      const responseCorrelationId = response.headers.get("x-correlation-id")?.trim() || correlationId;
-      logFrontendDebug("ask_ai.request_succeeded", {
-        correlationId,
-        responseCorrelationId,
-        httpStatus: response.status
-      });
-      setAnswer(body.answer);
-      setError(null);
-    } catch (error) {
-      logFrontendDebug("ask_ai.request_failed", {
-        correlationId,
-        responseCorrelationId: correlationId,
-        httpStatus: null,
-        failureType: "network_or_unexpected",
-        message: error instanceof Error ? error.message : "unknown"
-      });
-      setError("Miho is working on it");
-      startRetryCooldown(RETRY_COOLDOWN_SECONDS);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
   async function handleDecryptStack(event: FormEvent): Promise<void> {
     event.preventDefault();
 
@@ -634,32 +567,27 @@ export default function App() {
       return;
     }
 
-    const correlationId = createCorrelationId();
     const finalQuestion = getFinalQuestion(question);
     const payload: AskAiRequest = buildAskAiRequest(question, gameContext, battlefieldContext, stack);
-    logFrontendDebug("ask_ai.submit_attempted", {
+    await submitAttempt({
       source: "decrypt",
-      correlationId,
+      payload,
       stackSize: stack.length,
-      questionLength: finalQuestion.length,
+      finalQuestion,
       usedFallbackQuestion: question.trim().length === 0
     });
-
-    await submitAskAi(payload, correlationId);
   }
 
   async function handleRetry(): Promise<void> {
     if (!canRetry || stack.length === 0 || !gameContext) return;
-    const correlationId = createCorrelationId();
     const finalQuestion = getFinalQuestion(question);
-    logFrontendDebug("ask_ai.submit_attempted", {
+    await submitAttempt({
       source: "retry",
-      correlationId,
+      payload: buildAskAiRequest(question, gameContext, battlefieldContext, stack),
       stackSize: stack.length,
-      questionLength: finalQuestion.length,
+      finalQuestion,
       usedFallbackQuestion: question.trim().length === 0
     });
-    await submitAskAi(buildAskAiRequest(question, gameContext, battlefieldContext, stack), correlationId);
   }
 
   if (flowStep === "game-context") {
