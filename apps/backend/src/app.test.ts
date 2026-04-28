@@ -2,6 +2,7 @@ import request from "supertest";
 import { describe, expect, it } from "vitest";
 import { createApp } from "./app.js";
 import { readServerConfig } from "./config.js";
+import type { PreparedPromptInput } from "./promptPreparation.js";
 import { createAskAiProvider } from "./providers/createAskAiProvider.js";
 import type { AskAiRequest } from "./types.js";
 
@@ -300,7 +301,7 @@ describe("backend contract tests", () => {
   });
 
   it("delegates answer generation through provider boundary", async () => {
-    const providerCalls: AskAiRequest[] = [];
+    const providerCalls: PreparedPromptInput[] = [];
     const appWithProvider = createApp({
       askAiProvider: {
         generateAnswer(requestPayload) {
@@ -320,7 +321,8 @@ describe("backend contract tests", () => {
     expect(response.status).toBe(200);
     expect(response.body.answer).toBe("Provider boundary response");
     expect(providerCalls).toHaveLength(1);
-    expect(providerCalls[0].question).toBe("Boundary check");
+    expect(providerCalls[0]?.context.finalQuestion).toBe("Boundary check");
+    expect(providerCalls[0]?.context.orderedStack).toHaveLength(1);
   });
 
   it("maps provider exceptions to provider-unavailable errors", async () => {

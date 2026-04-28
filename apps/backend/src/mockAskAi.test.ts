@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildMockAnswer } from "./mockAskAi.js";
+import { buildPromptText, getPromptDiagnostics } from "./promptNormalization.js";
 import type { PromptContext } from "./types.js";
 
 describe("mock answer ergonomics", () => {
@@ -58,7 +59,11 @@ describe("mock answer ergonomics", () => {
       ]
     };
 
-    const result = buildMockAnswer(context);
+    const result = buildMockAnswer({
+      context,
+      promptText: buildPromptText(context),
+      diagnostics: getPromptDiagnostics(buildPromptText(context))
+    });
 
     expect(result.answer).toContain("MOCK RESPONSE");
     expect(result.answer).toContain("Final question: How does this resolve?");

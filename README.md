@@ -216,7 +216,7 @@ Pending implementation backlog:
 - [x] `STORY-043` unify stack and battlefield selected-card preview UX with shared preview component and target-kind option parity
 - [x] `STORY-045` eliminate backend contract drift via schema-first typing (`z.infer`) and shared source-of-truth contracts
 - [x] `STORY-046` add backend error taxonomy + centralized middleware with stable machine-readable error codes
-- [ ] `STORY-047` consolidate prompt/context build ownership into one backend service boundary
+- [x] `STORY-047` consolidate prompt/context build ownership into one backend service boundary
 - [ ] `STORY-048` standardize backend logging with `pino` JSON output and payload-log toggle docs
 - [ ] `STORY-049` layer backend tests and extract reusable fixture/builders for maintainable contract coverage
 - [x] `STORY-044` hide battlefield target-entry controls until a card is selected (preview is the single target-entry surface)

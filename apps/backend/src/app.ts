@@ -10,8 +10,7 @@ import {
 import { createAppLogger, resolveCorrelationId, type AppLogger } from "./logging.js";
 import { mockAskAiProvider } from "./providers/mockAskAiProvider.js";
 import type { AskAiProvider } from "./providers/askAiProvider.js";
-import { buildPromptContext } from "./promptContext.js";
-import { buildPromptText, getPromptDiagnostics } from "./promptNormalization.js";
+import { preparePromptInput } from "./promptPreparation.js";
 import { askAiRequestSchema } from "./validation.js";
 import type { AskAiError } from "./types.js";
 
@@ -100,9 +99,8 @@ export function createApp(options: AppOptions = {}) {
 
       logger.info("ask_ai.prompt_context_build_started", { correlationId });
       const promptBuildStartedAt = Date.now();
-      const promptContext = buildPromptContext(parsed.data);
-      const promptText = buildPromptText(promptContext);
-      const diagnostics = getPromptDiagnostics(promptText);
+      const preparedPrompt = preparePromptInput(parsed.data);
+      const diagnostics = preparedPrompt.diagnostics;
       logger.info("ask_ai.prompt_context_build_completed", {
         correlationId,
         promptChars: diagnostics.promptChars,
@@ -133,7 +131,7 @@ export function createApp(options: AppOptions = {}) {
       const providerStartedAt = Date.now();
       let response;
       try {
-        response = await askAiProvider.generateAnswer(parsed.data);
+        response = await askAiProvider.generateAnswer(preparedPrompt);
       } catch (cause) {
         throw classifyProviderError(cause);
       }
