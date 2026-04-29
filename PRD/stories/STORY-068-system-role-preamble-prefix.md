@@ -1,0 +1,26 @@
+# STORY-068 - System Role Preamble Prefix for Prompt Context
+
+- title: Add a deterministic system role preamble prefix so every model prompt starts with stable role, boundary, and stack-order instructions before runtime context.
+- implementation area: backend
+- user value: As an engineer, I can harden model behavior with a consistent instruction prefix while Bedrock onboarding/configuration is still in progress.
+- scope:
+  - define a backend-owned prompt preamble that is prepended before game context, battlefield context, ordered stack, and final question sections
+  - encode role and boundary guidance (assistant for stack-resolution support, no hidden-state claims, no rules-engine assertions)
+  - preserve deterministic prompt construction behavior across provider modes (`mock` and `bedrock`)
+  - add targeted tests that validate preamble-first ordering and stable output for identical inputs
+- acceptance criteria:
+  - prepared prompt text always starts with the system role preamble block before all request-derived context sections
+  - preamble text is centralized in the backend prompt template/pipeline and not duplicated across provider implementations
+  - deterministic prompt tests confirm identical validated payloads yield identical preamble-prefixed prompt text
+  - tracker docs are updated when complete by marking `STORY-068` in `PRD/README.md` and adding sequencing context in `PRD/analysis/MVP2-bedrock-integration-roadmap.md` if Phase 3 scope tracking changes
+- execution mode: parallel-ready
+- dependencies:
+  - `REQ-012` request contract remains prompt-facing and backend-built
+  - `REQ-013` mock provider flow remains contract-compatible while prompt hardening lands
+  - `DEC-013` no rules-engine behavior in backend prompt logic
+  - `DEC-019` structured prompt-facing context remains deterministic and ordered
+  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 3 prompt context pipeline
+- exclusions:
+  - no API schema changes to `/api/ask-ai`
+  - no Bedrock credential, IAM, or deployment-runbook work
+  - no frontend staged-flow UI changes

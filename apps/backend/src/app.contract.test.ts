@@ -34,7 +34,9 @@ describe("ask-ai endpoint contract", () => {
     expect(response.status).toBe(200);
     expect(response.header["x-correlation-id"]).toBe("corr-success-1");
     expect(response.body.answer).toContain("MOCK RESPONSE");
-    expect(response.body.answer).toContain("Final question: How does this resolve?");
+    expect(response.body.answer).toContain("PROMPT STATS");
+    expect(response.body.answer).toContain("FULL PROMPT (SENT TO BEDROCK)");
+    expect(response.body.answer).toContain("QUESTION\nHow does this resolve?");
   });
 
   it("applies fallback question when blank question is submitted", async () => {
@@ -43,7 +45,7 @@ describe("ask-ai endpoint contract", () => {
       .send(createAskAiRequest({ question: "   ", stack: [createStackItem({ name: "Counterspell" })] }));
 
     expect(response.status).toBe(200);
-    expect(response.body.answer).toContain("Final question: Resolve the stack");
+    expect(response.body.answer).toContain("QUESTION\nResolve the stack");
   });
 
   it("returns validation error payload for invalid request shape", async () => {

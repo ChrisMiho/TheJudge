@@ -8,6 +8,14 @@ export const MAX_PROMPT_CHAR_BUDGET = 12000;
 export const PROMPT_BUDGET_NEAR_LIMIT_BUFFER = 800;
 const TRUNCATION_SUFFIX = " ...(truncated)";
 const PLAYER_LABEL_ORDER = ["Player 1", "Player 2", "Player 3", "Player 4"] as const;
+export const SYSTEM_ROLE_PREAMBLE_LINES = [
+  "You are TheJudge assistant for Magic: The Gathering stack-resolution support.",
+  "Use only the provided context to explain likely interactions and resolution order.",
+  "Treat ordered stack semantics as authoritative: stack[0] is the bottom spell and the last entry is the top spell.",
+  "State assumptions when context is incomplete.",
+  "Do not claim hidden state, private-zone information, or unseen effects.",
+  "Do not present output as an official tournament ruling."
+] as const;
 
 export function normalizeWhitespace(value: string): string {
   return value.replace(/\s+/g, " ").trim();
@@ -153,6 +161,9 @@ export function buildPromptText(context: PromptContext): string {
     .join("\n\n");
 
   const prompt = [
+    "SYSTEM ROLE PREAMBLE",
+    ...SYSTEM_ROLE_PREAMBLE_LINES,
+    "",
     "INSTRUCTIONS",
     "- Explain reasoning clearly and concisely.",
     "- State uncertainty when context is incomplete.",

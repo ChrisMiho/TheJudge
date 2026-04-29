@@ -66,24 +66,19 @@ describe("mock answer ergonomics", () => {
     });
 
     expect(result.answer).toContain("MOCK RESPONSE");
-    expect(result.answer).toContain("Final question: How does this resolve?");
-    expect(result.answer).toContain("Stack order convention: bottom-to-top");
-    expect(result.answer).toContain("General game context:");
-    expect(result.answer).toContain("playerCount: 2");
-    expect(result.answer).toContain("Player 1: lifeTotal=20");
-    expect(result.answer).toContain("Player 2: lifeTotal=18");
-    expect(result.answer).toContain("Optional battlefield context:");
-    expect(result.answer).toContain("items: 1");
+    expect(result.answer).toContain("PROMPT STATS");
     expect(result.answer).toContain("Prompt chars:");
+    expect(result.answer).toContain("Prompt remaining chars:");
     expect(result.answer).toContain("Prompt utilization:");
     expect(result.answer).toContain("Prompt near limit:");
-    expect(result.answer).toContain("1. [bottom] Card: Opt");
-    expect(result.answer).toContain("2. [top] Card: Lightning Bolt");
-    expect(result.answer).toContain(
-      "Caster: Player 3 | Targets: none:does-not-target | player:Player 4 | other:custom target detail"
-    );
-    expect(result.answer).toContain("Mana Spent: 3");
-    expect(result.answer).toContain("Notes: cast for free");
-    expect(result.answer).toContain("Colors: U | Supertypes: N/A | Subtypes: N/A");
+    expect(result.answer).toContain("Prompt exceeds budget:");
+    expect(result.answer).toContain("Estimated input tokens (~4 chars/token):");
+    expect(result.answer).toContain("Estimated token budget (~4 chars/token):");
+    expect(result.answer).toContain("Estimated remaining tokens (~4 chars/token):");
+    expect(result.answer).toContain("FULL PROMPT (SENT TO BEDROCK)");
+    expect(result.answer).toContain("SYSTEM ROLE PREAMBLE");
+    expect(result.answer).toContain("INSTRUCTIONS");
+    expect(result.answer).toContain("QUESTION");
+    expect(result.answer).toContain("ORDERED STACK CONTEXT (BOTTOM TO TOP)");
   });
 });

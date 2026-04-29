@@ -163,3 +163,9 @@ Phase 5 - IAM Roles and Access Standards:
 
 Phase 6 - AWS Deployment Expansion (Deferred Planning):
 - [ ] `STORY-067` Phase 6 production expansion planning package
+
+### Adhoc Story Checklist (AWS Setup Parallel Work)
+
+Adhoc stories are optional, non-blocking slices we can execute while AWS signup/configuration work is in progress.
+
+- [x] `STORY-068` system role preamble prefix for prompt context
