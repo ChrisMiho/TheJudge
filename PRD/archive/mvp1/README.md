@@ -30,5 +30,8 @@ Delivered interaction path:
 - Active read order and source-of-truth routing live in `PRD/README.md`.
 - Parent archive index: `PRD/archive/README.md`.
 
+## Detailed Story History
+- Detailed MVP1 story history now lives in `PRD/archive/mvp1/stories/`.
+
 ## Archive Usage Rule
 This archive captures historical MVP1 context. Treat it as reference material unless a decision is explicitly promoted back into active PRD sections.

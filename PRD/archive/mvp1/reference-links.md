@@ -11,9 +11,9 @@ Use this index when deeper historical detail is needed beyond the closeout summa
 - Feature audit and backlog refinement: `PRD/analysis/project-feature-audit-and-search-autocomplete-refinement.md`
 
 ## Story and Execution History
-- Story directory: `PRD/stories/`
-- Definition of Done: `PRD/stories/DEFINITION-OF-DONE.md`
-- Merge/sequencing reference: `PRD/stories/STORY-035-040-agent-assignment-and-merge-order.md`
+- Story directory: `PRD/archive/mvp1/stories/`
+- Definition of Done: `PRD/archive/mvp1/stories/DEFINITION-OF-DONE.md`
+- Merge/sequencing reference: `PRD/archive/mvp1/stories/STORY-035-040-agent-assignment-and-merge-order.md`
 
 Some completed story files (roughly `STORY-041` through `STORY-054`) still mention updating a root `README.md` story checklist; that tracker was removed at MVP1 closeout. Current rules live in `PRD/instructions/story-generation.md` and `PRD/instructions/requirement-format.md`.
 

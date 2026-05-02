@@ -30,7 +30,7 @@ It helps players build an ordered stack of cards, ask a question, and receive an
   - `README.md` control plane for product docs and read order
   - `sections/` product truth (requirements, decisions, flows, constraints)
   - `instructions/` generation and editing rules
-  - `stories/` implementation slices and Definition of Done
+  - `stories/` active MVP2+ implementation slices and Definition of Done
   - `archive/` historical context snapshots; start at `PRD/archive/README.md`
 - `apps/frontend/` MVP client app
 - `apps/backend/` API app (`POST /api/ask-ai`, `GET /api/health`)

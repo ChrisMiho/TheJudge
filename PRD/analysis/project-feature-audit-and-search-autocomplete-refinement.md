@@ -88,7 +88,7 @@ Evidence:
 
 - `[apps/backend/src/providers/bedrockReadinessProvider.ts](../../apps/backend/src/providers/bedrockReadinessProvider.ts)`
 - `[apps/backend/src/providers/README.md](../../apps/backend/src/providers/README.md)`
-- `[PRD/stories/STORY-028-phase-b-bedrock-readiness-bootstrap.md](../stories/STORY-028-phase-b-bedrock-readiness-bootstrap.md)`
+- `[PRD/archive/mvp1/stories/STORY-028-phase-b-bedrock-readiness-bootstrap.md](../archive/mvp1/stories/STORY-028-phase-b-bedrock-readiness-bootstrap.md)`
 
 ## Search and Autocomplete Path Diagnosis
 
