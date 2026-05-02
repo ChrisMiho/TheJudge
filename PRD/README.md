@@ -138,10 +138,10 @@ Active MVP2 execution sequencing is tracked in `analysis/MVP2-bedrock-integratio
 ### MVP2 Story Checklist (Phase-Grouped)
 
 Task 0:
-- [ ] `STORY-055` secrets hygiene baseline
+- [x] `STORY-055` secrets hygiene baseline
 
 Phase 1 - Bedrock Runtime Foundation:
-- [ ] `STORY-056` provider feature-flag selection contract
+- [x] `STORY-056` provider feature-flag selection contract
 - [ ] `STORY-057` Bedrock config validation and startup safety
 - [ ] `STORY-058` Bedrock provider integration path
 
@@ -163,3 +163,9 @@ Phase 5 - IAM Roles and Access Standards:
 
 Phase 6 - AWS Deployment Expansion (Deferred Planning):
 - [ ] `STORY-067` Phase 6 production expansion planning package
+
+### Adhoc Story Checklist (AWS Setup Parallel Work)
+
+Adhoc stories are optional, non-blocking slices we can execute while AWS signup/configuration work is in progress.
+
+- [x] `STORY-068` system role preamble prefix for prompt context

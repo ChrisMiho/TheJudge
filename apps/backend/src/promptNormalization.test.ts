@@ -4,6 +4,7 @@ import {
   MAX_ORACLE_TEXT_CHARS,
   MAX_PROMPT_CHAR_BUDGET,
   MAX_TARGET_LABEL_CHARS,
+  SYSTEM_ROLE_PREAMBLE_LINES,
   buildPromptText,
   getPromptDiagnostics,
   normalizeCardText,
@@ -96,6 +97,8 @@ describe("buildPromptText", () => {
     const second = buildPromptText(baseContext);
 
     expect(first).toBe(second);
+    expect(first.startsWith(`SYSTEM ROLE PREAMBLE\n${SYSTEM_ROLE_PREAMBLE_LINES[0]}`)).toBe(true);
+    expect(first.indexOf("SYSTEM ROLE PREAMBLE")).toBeLessThan(first.indexOf("INSTRUCTIONS"));
     expect(first.indexOf("INSTRUCTIONS")).toBeLessThan(first.indexOf("QUESTION"));
     expect(first.indexOf("QUESTION")).toBeLessThan(first.indexOf("GENERAL GAME CONTEXT"));
     expect(first.indexOf("GENERAL GAME CONTEXT")).toBeLessThan(first.indexOf("OPTIONAL BATTLEFIELD CONTEXT"));
@@ -107,6 +110,10 @@ describe("buildPromptText", () => {
   it("includes uncertainty and non-invention guardrails", () => {
     const prompt = buildPromptText(baseContext);
 
+    expect(prompt).toContain("SYSTEM ROLE PREAMBLE");
+    for (const line of SYSTEM_ROLE_PREAMBLE_LINES) {
+      expect(prompt).toContain(line);
+    }
     expect(prompt).toContain("State uncertainty when context is incomplete.");
     expect(prompt).toContain("Do not invent hidden state, targets, or board conditions.");
     expect(prompt).toContain("playerCount: 2");

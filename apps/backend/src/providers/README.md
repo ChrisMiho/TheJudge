@@ -11,7 +11,8 @@ This folder isolates answer-generation providers behind a stable interface so ro
 
 ### Bedrock readiness bootstrap
 
-- Provider selection is controlled by `ASK_AI_PROVIDER` (`mock` or `bedrock`).
+- Provider selection is controlled by the explicit feature flag `ASK_AI_PROVIDER` (`mock` or `bedrock`).
+- Default behavior is always `ASK_AI_PROVIDER=mock` when the flag is unset; this does not auto-switch based on `NODE_ENV` or deploy target.
 - `ASK_AI_PROVIDER=bedrock` requires `AWS_REGION` and `BEDROCK_MODEL_ID`; config fails fast if either is missing.
 - In Phase A, the bedrock provider intentionally throws a readiness-only error so production contract mapping can be tested without live Bedrock calls.
 - Error middleware returns the centralized API error shape (`{ code, message, metadata?, retryAfterSeconds? }`) regardless of provider mode.

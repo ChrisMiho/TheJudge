@@ -77,7 +77,7 @@ This document only adds dependency-field rules for `PRD/stories/` entries:
 
 ## Story Acceptance Criteria Rule
 
-For any story in `PRD/stories/`, include an acceptance criterion that records completion in an auditable place: update `PRD/analysis/MVP2-bedrock-integration-roadmap.md` when a roadmap milestone is met, update `PRD/README.md` when control-plane guidance changes, and/or ensure the story file itself reflects final scope and status. The root `README.md` no longer carries a story checklist (post–MVP1 closeout); see `instructions/story-generation.md` for tracker rules.
+For any story in `PRD/stories/`, include an acceptance criterion that records completion in an auditable place: update `PRD/analysis/MVP2-bedrock-integration-roadmap.md` when a roadmap milestone is met, update `PRD/README.md` when control-plane guidance changes, and/or ensure the story file itself reflects final scope and status. Historical MVP1 completion evidence lives under `PRD/archive/mvp1/stories/`. The root `README.md` no longer carries a story checklist (post–MVP1 closeout); see `instructions/story-generation.md` for tracker rules.
 
 ## Story Template (`PRD/stories/`)
 

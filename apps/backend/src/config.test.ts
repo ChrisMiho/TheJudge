@@ -33,6 +33,11 @@ describe("backend env config", () => {
     });
   });
 
+  it("keeps mock provider as default regardless of NODE_ENV", () => {
+    expect(readServerConfig({ NODE_ENV: "production" }).askAiProvider).toBe("mock");
+    expect(readServerConfig({ NODE_ENV: "test" }).askAiProvider).toBe("mock");
+  });
+
   it("parses bedrock readiness config when requested", () => {
     const config = readServerConfig({
       ASK_AI_PROVIDER: "bedrock",
@@ -55,6 +60,10 @@ describe("backend env config", () => {
     expect(config.askAiProvider).toBe("bedrock");
     expect(config.awsRegion).toBe("us-east-1");
     expect(config.bedrockModelId).toBe("anthropic.claude-v2");
+  });
+
+  it("throws on whitespace-only provider selection", () => {
+    expect(() => readServerConfig({ ASK_AI_PROVIDER: "   " })).toThrow(/Invalid ASK_AI_PROVIDER value/);
   });
 
   it("throws on invalid port", () => {

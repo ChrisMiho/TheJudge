@@ -1,0 +1,23 @@
+# STORY-056 - Provider Feature-Flag Selection Contract
+
+- title: Define and enforce the backend provider feature-flag contract so mock and Bedrock paths are selected explicitly.
+- implementation area: backend
+- user value: As an engineer, I can enable Bedrock intentionally in DEV while keeping mock behavior as the safe default for CI and flag-off environments.
+- scope:
+  - define provider selection through explicit runtime flag values (`ASK_AI_PROVIDER=mock|bedrock`)
+  - ensure default provider remains mock when no provider flag is set
+  - document operator-facing behavior for turning Bedrock mode on in DEV without implying production mode
+  - keep provider selection logic centralized in bootstrap/factory code, not route handlers
+- acceptance criteria:
+  - backend defaults to mock provider when `ASK_AI_PROVIDER` is unset
+  - backend only selects the Bedrock readiness path when `ASK_AI_PROVIDER=bedrock`
+  - provider-selection docs state flag name, allowed values, defaults, and non-coupling to `NODE_ENV`
+  - `PRD/README.md` MVP2 phase checklist marks `STORY-056` complete when implementation lands
+- execution mode: parallel-ready
+- dependencies:
+  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 1 provider selection scope
+  - `STORY-014` provider boundary for backend ask-ai path
+  - `NFR-003` credentials remain backend-only
+- exclusions:
+  - no real Bedrock invocation implementation
+  - no IAM or deployment infrastructure changes

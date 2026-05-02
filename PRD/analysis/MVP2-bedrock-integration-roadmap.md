@@ -14,7 +14,8 @@ This roadmap follows current product truth from:
 - `PRD/sections/integrations-and-data.md`
 - `PRD/sections/non-functional-requirements.md`
 - `PRD/README.md` (control plane and read order)
-- `PRD/stories/` (per-story scope and acceptance history)
+- `PRD/stories/` (active MVP2+ per-story scope)
+- `PRD/archive/mvp1/stories/` (MVP1 acceptance history)
 
 Historical MVP1 continuity references:
 
@@ -40,7 +41,7 @@ Historical MVP1 continuity references:
 
 ## Canonical `POST /api/ask-ai` error contract (best practice)
 
-Clients should branch on `**code`** (stable machine-readable). `**message`** is for humans and may change copy without a breaking API change. `**metadata**` is optional and intentionally small.
+Clients should branch on `**code`** (stable machine-readable). `**message`** is for humans and may change copy without a breaking API change. `**metadata`** is optional and intentionally small.
 
 **JSON body (strict keys)**
 
@@ -72,7 +73,7 @@ Clients should branch on `**code`** (stable machine-readable). `**message`** is 
 
 - Stable `**code`** supports frontend retry/cooldown logic and observability dashboards without parsing prose.
 - `**message`** stays user- and agent-friendly.
-- `**metadata.correlationId**` ties failures to structured logs without widening the contract arbitrarily.
+- `**metadata.correlationId`** ties failures to structured logs without widening the contract arbitrarily.
 
 ## Hard Rules For MVP2
 

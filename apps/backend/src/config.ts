@@ -1,9 +1,9 @@
 import { resolveDebugLoggingEnabled, resolvePayloadLoggingEnabled } from "./logging.js";
 
 const DEFAULT_PORT = 3000;
-const DEFAULT_ASK_AI_PROVIDER = "mock";
-const PROVIDER_OPTIONS = ["mock", "bedrock"] as const;
-type AskAiProviderMode = (typeof PROVIDER_OPTIONS)[number];
+const ASK_AI_PROVIDER_MODES = ["mock", "bedrock"] as const;
+const DEFAULT_ASK_AI_PROVIDER_MODE = "mock";
+type AskAiProviderMode = (typeof ASK_AI_PROVIDER_MODES)[number];
 
 export type ServerConfig = {
   port: number;
@@ -14,6 +14,15 @@ export type ServerConfig = {
   awsRegion?: string;
   bedrockModelId?: string;
 };
+
+function parseAskAiProviderMode(rawProvider: string | undefined): AskAiProviderMode {
+  const provider = (rawProvider?.trim().toLowerCase() ?? DEFAULT_ASK_AI_PROVIDER_MODE) as AskAiProviderMode;
+  if (!ASK_AI_PROVIDER_MODES.includes(provider)) {
+    throw new Error(`Invalid ASK_AI_PROVIDER value "${rawProvider}". Expected one of: mock, bedrock.`);
+  }
+
+  return provider;
+}
 
 function parsePort(rawPort: string | undefined): number {
   if (!rawPort) return DEFAULT_PORT;
@@ -50,10 +59,7 @@ function parseFrontendOrigin(rawOrigin: string | undefined): string | undefined 
 }
 
 export function readServerConfig(env: NodeJS.ProcessEnv): ServerConfig {
-  const provider = (env.ASK_AI_PROVIDER?.trim().toLowerCase() ?? DEFAULT_ASK_AI_PROVIDER) as AskAiProviderMode;
-  if (!PROVIDER_OPTIONS.includes(provider)) {
-    throw new Error(`Invalid ASK_AI_PROVIDER value "${env.ASK_AI_PROVIDER}". Expected one of: mock, bedrock.`);
-  }
+  const provider = parseAskAiProviderMode(env.ASK_AI_PROVIDER);
 
   const awsRegion = env.AWS_REGION?.trim() || undefined;
   const bedrockModelId = env.BEDROCK_MODEL_ID?.trim() || undefined;
