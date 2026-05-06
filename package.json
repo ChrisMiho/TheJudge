@@ -7,7 +7,9 @@
     "apps/backend"
   ],
   "scripts": {
-    "dev": "node scripts/dev.mjs",
+    "dev": "npm run dev:mock",
+    "dev:mock": "ASK_AI_PROVIDER=mock node scripts/dev.mjs",
+    "dev:bedrock": "ASK_AI_PROVIDER=bedrock node scripts/dev.mjs",
     "dev:frontend": "npm --workspace apps/frontend run dev",
     "dev:backend": "npm --workspace apps/backend run dev",
     "typecheck": "npm --workspace apps/frontend run typecheck && npm --workspace apps/backend run typecheck",

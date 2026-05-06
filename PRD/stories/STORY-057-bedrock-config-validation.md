@@ -6,10 +6,12 @@
 - scope:
   - validate Bedrock-required environment configuration (region, model id, timeout/retry controls, credential source expectations)
   - ensure validation is conditional on provider behavior flags and selected runtime path
+  - document local credential strategy for new contributors: AWS SDK default credential chain with profile/SSO-first guidance and explicit env-var fallback
   - keep `.env.example` files placeholder-only and aligned with documented required fields
 - acceptance criteria:
   - backend fails fast with clear messages when Bedrock mode is eligible and required config is missing
   - backend starts normally in mock mode with no Bedrock config requirement
+  - provider docs include a novice-safe setup path that does not require creating long-lived IAM user keys for routine local development
   - `.env.example` and provider docs reflect the validated config surface without exposing real values
   - `PRD/README.md` MVP2 phase checklist marks `STORY-057` complete when implementation lands
 - execution mode: sequential

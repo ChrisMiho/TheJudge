@@ -5,11 +5,13 @@
 - user value: As a player, I receive live model responses through the same stable endpoint contract already used by the app flow.
 - scope:
   - implement Bedrock client/factory wiring for provider interface usage
+  - keep Bedrock SDK calls inside provider implementations only; route handlers and prompt preparation layers stay provider-agnostic
   - map Bedrock provider success output into the existing `{ "answer": "string" }` response contract
   - preserve stack-order and staged-context assumptions in prompt preparation boundaries
 - acceptance criteria:
   - `/api/ask-ai` success contract remains unchanged while live provider path is active
   - mock provider path remains regression-safe when live provider flag is disabled
+  - provider selection and SDK wiring remain centralized at composition/factory boundaries behind `AskAiProvider`
   - backend contract tests validate no schema drift for request/response
   - `PRD/README.md` MVP2 phase checklist marks `STORY-058` complete when implementation lands
 - execution mode: sequential

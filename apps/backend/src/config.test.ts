@@ -11,7 +11,9 @@ describe("backend env config", () => {
       payloadLoggingEnabled: false,
       askAiProvider: "mock",
       awsRegion: undefined,
-      bedrockModelId: undefined
+      bedrockModelId: undefined,
+      bedrockTimeoutMs: undefined,
+      bedrockMaxAttempts: undefined
     });
   });
 
@@ -29,7 +31,9 @@ describe("backend env config", () => {
       payloadLoggingEnabled: false,
       askAiProvider: "mock",
       awsRegion: undefined,
-      bedrockModelId: undefined
+      bedrockModelId: undefined,
+      bedrockTimeoutMs: undefined,
+      bedrockMaxAttempts: undefined
     });
   });
 
@@ -38,7 +42,7 @@ describe("backend env config", () => {
     expect(readServerConfig({ NODE_ENV: "test" }).askAiProvider).toBe("mock");
   });
 
-  it("parses bedrock readiness config when requested", () => {
+  it("parses bedrock config with defaults when requested", () => {
     const config = readServerConfig({
       ASK_AI_PROVIDER: "bedrock",
       AWS_REGION: "us-east-1",
@@ -48,6 +52,8 @@ describe("backend env config", () => {
     expect(config.askAiProvider).toBe("bedrock");
     expect(config.awsRegion).toBe("us-east-1");
     expect(config.bedrockModelId).toBe("anthropic.claude-v2");
+    expect(config.bedrockTimeoutMs).toBe(15000);
+    expect(config.bedrockMaxAttempts).toBe(2);
   });
 
   it("normalizes provider selection casing and surrounding whitespace", () => {
@@ -60,6 +66,21 @@ describe("backend env config", () => {
     expect(config.askAiProvider).toBe("bedrock");
     expect(config.awsRegion).toBe("us-east-1");
     expect(config.bedrockModelId).toBe("anthropic.claude-v2");
+    expect(config.bedrockTimeoutMs).toBe(15000);
+    expect(config.bedrockMaxAttempts).toBe(2);
+  });
+
+  it("parses optional bedrock timeout/retry overrides", () => {
+    const config = readServerConfig({
+      ASK_AI_PROVIDER: "bedrock",
+      AWS_REGION: "us-east-1",
+      BEDROCK_MODEL_ID: "anthropic.claude-v2",
+      BEDROCK_TIMEOUT_MS: "21000",
+      BEDROCK_MAX_ATTEMPTS: "4"
+    });
+
+    expect(config.bedrockTimeoutMs).toBe(21000);
+    expect(config.bedrockMaxAttempts).toBe(4);
   });
 
   it("throws on whitespace-only provider selection", () => {
@@ -108,5 +129,27 @@ describe("backend env config", () => {
     expect(() => readServerConfig({ ASK_AI_PROVIDER: "bedrock", BEDROCK_MODEL_ID: "anthropic.claude-v2" })).toThrow(
       /requires both AWS_REGION and BEDROCK_MODEL_ID/
     );
+  });
+
+  it("throws on invalid BEDROCK_TIMEOUT_MS value", () => {
+    expect(() =>
+      readServerConfig({
+        ASK_AI_PROVIDER: "bedrock",
+        AWS_REGION: "us-east-1",
+        BEDROCK_MODEL_ID: "anthropic.claude-v2",
+        BEDROCK_TIMEOUT_MS: "abc"
+      })
+    ).toThrow(/Invalid BEDROCK_TIMEOUT_MS value/);
+  });
+
+  it("throws on invalid BEDROCK_MAX_ATTEMPTS value", () => {
+    expect(() =>
+      readServerConfig({
+        ASK_AI_PROVIDER: "bedrock",
+        AWS_REGION: "us-east-1",
+        BEDROCK_MODEL_ID: "anthropic.claude-v2",
+        BEDROCK_MAX_ATTEMPTS: "0"
+      })
+    ).toThrow(/Invalid BEDROCK_MAX_ATTEMPTS value/);
   });
 });

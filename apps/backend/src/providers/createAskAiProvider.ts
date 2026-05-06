@@ -1,13 +1,20 @@
 import type { ServerConfig } from "../config.js";
 import type { AskAiProvider } from "./askAiProvider.js";
-import { createBedrockReadinessProvider } from "./bedrockReadinessProvider.js";
+import { createBedrockAskAiProvider, type BedrockConverseClient } from "./bedrockReadinessProvider.js";
 import { mockAskAiProvider } from "./mockAskAiProvider.js";
 
-export function createAskAiProvider(config: ServerConfig): AskAiProvider {
+type CreateAskAiProviderOptions = {
+  bedrockClient?: BedrockConverseClient;
+};
+
+export function createAskAiProvider(config: ServerConfig, options: CreateAskAiProviderOptions = {}): AskAiProvider {
   if (config.askAiProvider === "bedrock") {
-    return createBedrockReadinessProvider({
+    return createBedrockAskAiProvider({
       awsRegion: config.awsRegion ?? "unknown",
-      modelId: config.bedrockModelId ?? "unknown"
+      modelId: config.bedrockModelId ?? "unknown",
+      timeoutMs: config.bedrockTimeoutMs ?? 15000,
+      maxAttempts: config.bedrockMaxAttempts ?? 2,
+      client: options.bedrockClient
     });
   }
 
