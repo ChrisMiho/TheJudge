@@ -67,14 +67,18 @@ describe("ask-ai endpoint contract", () => {
   it("returns validation error for malformed caster and target fields", async () => {
     const badCasterResponse = await request(app)
       .post("/api/ask-ai")
-      .send(createAskAiRequest({ stack: [{ ...createStackItem(), caster: "Player 5" }] }));
+      .send(createAskAiRequest({ stack: [{ ...createStackItem(), caster: "Player 5" as never }] }));
     expect(badCasterResponse.status).toBe(400);
     expect(badCasterResponse.body.code).toBe("VALIDATION_ERROR");
     expect(badCasterResponse.body.message).toContain("stack.0.caster");
 
     const badTargetResponse = await request(app)
       .post("/api/ask-ai")
-      .send(createAskAiRequest({ stack: [{ ...createStackItem(), targets: [{ kind: "other" }] }] }));
+      .send(
+        createAskAiRequest({
+          stack: [{ ...createStackItem(), targets: [{ kind: "other" } as never] }]
+        })
+      );
     expect(badTargetResponse.status).toBe(400);
     expect(badTargetResponse.body.code).toBe("VALIDATION_ERROR");
     expect(badTargetResponse.body.message).toContain("stack.0.targets.0.targetDescription");
@@ -116,18 +120,25 @@ describe("ask-ai endpoint contract", () => {
     expect(response.body.retryAfterSeconds).toBe(13);
   });
 
-  it("maps bedrock readiness provider failures through API error contract", async () => {
-    const appWithBedrockReadiness = createApp({
+  it("maps bedrock provider failures through API error contract", async () => {
+    const fakeBedrockClient = {
+      async send() {
+        return { output: { message: { content: [] } } };
+      }
+    };
+
+    const appWithBedrockProvider = createApp({
       askAiProvider: createAskAiProvider(
         readServerConfig({
           ASK_AI_PROVIDER: "bedrock",
           AWS_REGION: "us-east-1",
           BEDROCK_MODEL_ID: "anthropic.claude-v2"
-        })
+        }),
+        { bedrockClient: fakeBedrockClient }
       )
     });
 
-    const response = await request(appWithBedrockReadiness).post("/api/ask-ai").send(createAskAiRequest());
+    const response = await request(appWithBedrockProvider).post("/api/ask-ai").send(createAskAiRequest());
 
     expect(response.status).toBe(503);
     expect(response.body.code).toBe("PROVIDER_UNAVAILABLE");

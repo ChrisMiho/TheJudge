@@ -155,7 +155,7 @@ export function createApp(options: AppOptions = {}) {
     }
   });
 
-  app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
+  app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
     const correlationId = correlationIdFromResponse(res);
     if (!res.getHeader("X-Correlation-Id")) {
       res.set("X-Correlation-Id", correlationId);

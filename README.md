@@ -52,7 +52,9 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 
 ## Useful Commands
 
-- `npm run dev` - run frontend + backend together
+- `npm run dev` - run frontend + backend together (explicit mock provider mode)
+- `npm run dev:mock` - run frontend + backend with `ASK_AI_PROVIDER=mock`
+- `npm run dev:bedrock` - run frontend + backend with `ASK_AI_PROVIDER=bedrock` (requires Bedrock env config)
 - `npm run dev:frontend` - run frontend only
 - `npm run dev:backend` - run backend only
 - `npm run typecheck` - run frontend + backend TypeScript checks
@@ -87,6 +89,15 @@ Local defaults work out of the box, but deployment targets should set explicit v
   - `FRONTEND_ORIGIN` - optional CORS allow-origin for frontend deployments (example: `https://preview.thejudge.dev`)
   - `DEBUG_LOGGING` - optional backend debug log toggle (`true`/`false`); defaults on in `development`
   - `LOG_PAYLOADS` - optional backend request payload logging toggle (`true`/`false`); defaults on in `development`, off otherwise
+  - `ASK_AI_PROVIDER` - provider mode toggle (`mock` default, `bedrock` for live provider path)
+  - `AWS_REGION` - required when `ASK_AI_PROVIDER=bedrock`
+  - `BEDROCK_MODEL_ID` - required when `ASK_AI_PROVIDER=bedrock`
+  - `BEDROCK_TIMEOUT_MS` - optional Bedrock invoke timeout in ms (default: `15000`)
+  - `BEDROCK_MAX_ATTEMPTS` - optional SDK retry attempts (default: `2`)
+
+Local Bedrock auth guidance:
+- Prefer AWS profile/SSO for human local usage (`aws configure sso`, `aws sso login`, optional `AWS_PROFILE`).
+- Use direct env credentials only as fallback and keep them local-only (never commit keys or session tokens).
 
 Reference templates:
 

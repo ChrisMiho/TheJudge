@@ -122,6 +122,8 @@ Read in this order:
 - Duplicate-card blocking is temporary and should not be treated as long-term product truth.
 - Stack ordering is critical and must remain consistent across UI, API payloads, and prompt-building logic.
 - Phase A mock remains the default local baseline; Bedrock rollout sequencing lives in `analysis/MVP2-bedrock-integration-roadmap.md` and `apps/backend/src/providers/README.md`.
+- Local Bedrock onboarding should default to AWS profile/SSO credential flow for humans; avoid long-lived IAM user keys as the routine local path.
+- Provider modularity remains a hard rule: route handlers stay contract-focused and only consume the provider interface selected in bootstrap/factory composition.
 
 ## Implementation Snapshot
 - Runtime code is split across `apps/frontend` and `apps/backend`, with a single product-facing backend route (`POST /api/ask-ai`) plus health endpoint.

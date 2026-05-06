@@ -143,8 +143,9 @@ Enable real Bedrock invocation behind the existing provider interface without ch
 - finalize **provider selection** at the factory: mock remains the default for CI and for flag-off paths; Bedrock implementation exists behind the same interface.
 - define **feature flag(s)** that choose mock vs live provider at runtime (documented names and defaults); document how operators turn Bedrock on in DEV without implying prod behavior.
 - define required **environment configuration** (region, model id, timeouts, retries, credentials) validated at startup when the Bedrock path is eligible to run.
+- document a **novice-safe local auth path**: AWS SDK default credential chain with profile/SSO-first guidance; explicit env-var credentials are fallback only.
 - add startup validation with clear fail-fast errors when configuration is incomplete for the selected path.
-- implement Bedrock client factory and invoke path in the provider layer
+- implement Bedrock client factory and invoke path in the provider layer (no Bedrock SDK imports in route handlers)
 
 ### Deliverables
 
