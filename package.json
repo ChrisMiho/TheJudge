@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "npm run dev:mock",
     "dev:mock": "ASK_AI_PROVIDER=mock node scripts/dev.mjs",
-    "dev:bedrock": "ASK_AI_PROVIDER=bedrock node scripts/dev.mjs",
+    "dev:openai": "ASK_AI_PROVIDER=openai node scripts/dev.mjs",
     "dev:frontend": "npm --workspace apps/frontend run dev",
     "dev:backend": "npm --workspace apps/backend run dev",
     "typecheck": "npm --workspace apps/frontend run typecheck && npm --workspace apps/backend run typecheck",
@@ -18,6 +18,6 @@
     "build": "npm --workspace apps/frontend run build && npm --workspace apps/backend run build",
     "data:build": "node scripts/build-card-metadata.mjs",
     "data:refresh": "node scripts/refresh-scryfall-data.mjs",
-    "aws:verify": "node scripts/aws-verify.mjs"
+    "openai:verify": "node scripts/openai-verify.mjs"
   }
 }

@@ -47,7 +47,7 @@ describe("ask-ai route behavior", () => {
       debugLoggingEnabled: true,
       askAiProvider: {
         generateAnswer() {
-          throw new Error("bedrock client unavailable in this environment");
+          throw new Error("openai client unavailable in this environment");
         }
       }
     });
@@ -58,7 +58,7 @@ describe("ask-ai route behavior", () => {
     expect(response.body.code).toBe("PROVIDER_UNAVAILABLE");
     expect(response.body.metadata).toMatchObject({
       correlationId: expect.any(String),
-      details: "bedrock client unavailable in this environment"
+      details: "openai client unavailable in this environment"
     });
   });
 

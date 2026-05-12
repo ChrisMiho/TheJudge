@@ -17,46 +17,12 @@ describe("createAskAiProvider", () => {
     expect(response.answer).toContain("MOCK RESPONSE");
   });
 
-  it("returns bedrock provider when bedrock selected", async () => {
-    const fakeBedrockClient = {
-      async send() {
-        return {
-          output: {
-            message: {
-              content: [{ text: "bedrock response body" }]
-            }
-          }
-        };
-      }
-    };
-
-    const provider = createAskAiProvider({
-      port: 3000,
-      debugLoggingEnabled: false,
-      payloadLoggingEnabled: false,
-      askAiProvider: "bedrock",
-      awsRegion: "us-east-1",
-      bedrockModelId: "anthropic.claude-v2",
-      bedrockTimeoutMs: 15000,
-      bedrockMaxAttempts: 2
-    }, {
-      bedrockClient: fakeBedrockClient
-    });
-
-    const response = await provider.generateAnswer(preparePromptInput(createAskAiRequest()));
-    expect(response.answer).toBe("bedrock response body");
-  });
-
-  it("maps empty bedrock text output to provider-unavailable contract errors", async () => {
-    const fakeBedrockClient = {
-      async send() {
-        return {
-          output: {
-            message: {
-              content: []
-            }
-          }
-        };
+  it("returns openai provider when openai selected", async () => {
+    const fakeOpenAiClient = {
+      responses: {
+        async create() {
+          return { output_text: "openai response body" };
+        }
       }
     };
 
@@ -65,19 +31,78 @@ describe("createAskAiProvider", () => {
         port: 3000,
         debugLoggingEnabled: false,
         payloadLoggingEnabled: false,
-        askAiProvider: "bedrock",
-        awsRegion: "us-east-1",
-        bedrockModelId: "anthropic.claude-v2",
-        bedrockTimeoutMs: 15000,
-        bedrockMaxAttempts: 2
+        askAiProvider: "openai",
+        openAiApiKey: "sk-test",
+        openAiModel: "gpt-4.1-mini",
+        openAiTimeoutMs: 15000,
+        openAiMaxRetries: 2
       },
       {
-        bedrockClient: fakeBedrockClient
+        openAiClient: fakeOpenAiClient
+      }
+    );
+
+    const response = await provider.generateAnswer(preparePromptInput(createAskAiRequest()));
+    expect(response.answer).toBe("openai response body");
+  });
+
+  it("maps empty openai text output to provider-unavailable contract errors", async () => {
+    const fakeOpenAiClient = {
+      responses: {
+        async create() {
+          return {};
+        }
+      }
+    };
+
+    const provider = createAskAiProvider(
+      {
+        port: 3000,
+        debugLoggingEnabled: false,
+        payloadLoggingEnabled: false,
+        askAiProvider: "openai",
+        openAiApiKey: "sk-test",
+        openAiModel: "gpt-4.1-mini",
+        openAiTimeoutMs: 15000,
+        openAiMaxRetries: 2
+      },
+      {
+        openAiClient: fakeOpenAiClient
       }
     );
 
     await expect(provider.generateAnswer(preparePromptInput(createAskAiRequest()))).rejects.toMatchObject({
       code: "PROVIDER_UNAVAILABLE"
+    });
+  });
+
+  it("maps openai timeout errors to provider-timeout contract errors", async () => {
+    const fakeOpenAiClient = {
+      responses: {
+        async create() {
+          throw new Error("request timed out");
+        }
+      }
+    };
+
+    const provider = createAskAiProvider(
+      {
+        port: 3000,
+        debugLoggingEnabled: false,
+        payloadLoggingEnabled: false,
+        askAiProvider: "openai",
+        openAiApiKey: "sk-test",
+        openAiModel: "gpt-4.1-mini",
+        openAiTimeoutMs: 15000,
+        openAiMaxRetries: 2
+      },
+      {
+        openAiClient: fakeOpenAiClient
+      }
+    );
+
+    await expect(provider.generateAnswer(preparePromptInput(createAskAiRequest()))).rejects.toMatchObject({
+      code: "PROVIDER_TIMEOUT"
     });
   });
 });

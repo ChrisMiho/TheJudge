@@ -35,7 +35,7 @@ describe("ask-ai endpoint contract", () => {
     expect(response.header["x-correlation-id"]).toBe("corr-success-1");
     expect(response.body.answer).toContain("MOCK RESPONSE");
     expect(response.body.answer).toContain("PROMPT STATS");
-    expect(response.body.answer).toContain("FULL PROMPT (SENT TO BEDROCK)");
+    expect(response.body.answer).toContain("FULL PROMPT (SENT TO PROVIDER)");
     expect(response.body.answer).toContain("QUESTION\nHow does this resolve?");
   });
 
@@ -120,25 +120,27 @@ describe("ask-ai endpoint contract", () => {
     expect(response.body.retryAfterSeconds).toBe(13);
   });
 
-  it("maps bedrock provider failures through API error contract", async () => {
-    const fakeBedrockClient = {
-      async send() {
-        return { output: { message: { content: [] } } };
+  it("maps openai provider failures through API error contract", async () => {
+    const fakeOpenAiClient = {
+      responses: {
+        async create() {
+          return {};
+        }
       }
     };
 
-    const appWithBedrockProvider = createApp({
+    const appWithOpenAiProvider = createApp({
       askAiProvider: createAskAiProvider(
         readServerConfig({
-          ASK_AI_PROVIDER: "bedrock",
-          AWS_REGION: "us-east-1",
-          BEDROCK_MODEL_ID: "anthropic.claude-v2"
+          ASK_AI_PROVIDER: "openai",
+          OPENAI_API_KEY: "sk-test",
+          OPENAI_MODEL: "gpt-4.1-mini"
         }),
-        { bedrockClient: fakeBedrockClient }
+        { openAiClient: fakeOpenAiClient }
       )
     });
 
-    const response = await request(appWithBedrockProvider).post("/api/ask-ai").send(createAskAiRequest());
+    const response = await request(appWithOpenAiProvider).post("/api/ask-ai").send(createAskAiRequest());
 
     expect(response.status).toBe(503);
     expect(response.body.code).toBe("PROVIDER_UNAVAILABLE");

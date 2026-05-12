@@ -75,7 +75,7 @@ describe("mock answer ergonomics", () => {
     expect(result.answer).toContain("Estimated input tokens (~4 chars/token):");
     expect(result.answer).toContain("Estimated token budget (~4 chars/token):");
     expect(result.answer).toContain("Estimated remaining tokens (~4 chars/token):");
-    expect(result.answer).toContain("FULL PROMPT (SENT TO BEDROCK)");
+    expect(result.answer).toContain("FULL PROMPT (SENT TO PROVIDER)");
     expect(result.answer).toContain("SYSTEM ROLE PREAMBLE");
     expect(result.answer).toContain("INSTRUCTIONS");
     expect(result.answer).toContain("QUESTION");

@@ -10,10 +10,10 @@ describe("backend env config", () => {
       debugLoggingEnabled: false,
       payloadLoggingEnabled: false,
       askAiProvider: "mock",
-      awsRegion: undefined,
-      bedrockModelId: undefined,
-      bedrockTimeoutMs: undefined,
-      bedrockMaxAttempts: undefined
+      openAiApiKey: undefined,
+      openAiModel: undefined,
+      openAiTimeoutMs: undefined,
+      openAiMaxRetries: undefined
     });
   });
 
@@ -30,10 +30,10 @@ describe("backend env config", () => {
       debugLoggingEnabled: true,
       payloadLoggingEnabled: false,
       askAiProvider: "mock",
-      awsRegion: undefined,
-      bedrockModelId: undefined,
-      bedrockTimeoutMs: undefined,
-      bedrockMaxAttempts: undefined
+      openAiApiKey: undefined,
+      openAiModel: undefined,
+      openAiTimeoutMs: undefined,
+      openAiMaxRetries: undefined
     });
   });
 
@@ -42,45 +42,45 @@ describe("backend env config", () => {
     expect(readServerConfig({ NODE_ENV: "test" }).askAiProvider).toBe("mock");
   });
 
-  it("parses bedrock config with defaults when requested", () => {
+  it("parses openai config with defaults when requested", () => {
     const config = readServerConfig({
-      ASK_AI_PROVIDER: "bedrock",
-      AWS_REGION: "us-east-1",
-      BEDROCK_MODEL_ID: "anthropic.claude-v2"
+      ASK_AI_PROVIDER: "openai",
+      OPENAI_API_KEY: "sk-test",
+      OPENAI_MODEL: "gpt-4.1-mini"
     });
 
-    expect(config.askAiProvider).toBe("bedrock");
-    expect(config.awsRegion).toBe("us-east-1");
-    expect(config.bedrockModelId).toBe("anthropic.claude-v2");
-    expect(config.bedrockTimeoutMs).toBe(15000);
-    expect(config.bedrockMaxAttempts).toBe(2);
+    expect(config.askAiProvider).toBe("openai");
+    expect(config.openAiApiKey).toBe("sk-test");
+    expect(config.openAiModel).toBe("gpt-4.1-mini");
+    expect(config.openAiTimeoutMs).toBe(15000);
+    expect(config.openAiMaxRetries).toBe(2);
   });
 
   it("normalizes provider selection casing and surrounding whitespace", () => {
     const config = readServerConfig({
-      ASK_AI_PROVIDER: "  BeDrOcK  ",
-      AWS_REGION: " us-east-1 ",
-      BEDROCK_MODEL_ID: " anthropic.claude-v2 "
+      ASK_AI_PROVIDER: "  OpEnAi  ",
+      OPENAI_API_KEY: " sk-test ",
+      OPENAI_MODEL: " gpt-4.1-mini "
     });
 
-    expect(config.askAiProvider).toBe("bedrock");
-    expect(config.awsRegion).toBe("us-east-1");
-    expect(config.bedrockModelId).toBe("anthropic.claude-v2");
-    expect(config.bedrockTimeoutMs).toBe(15000);
-    expect(config.bedrockMaxAttempts).toBe(2);
+    expect(config.askAiProvider).toBe("openai");
+    expect(config.openAiApiKey).toBe("sk-test");
+    expect(config.openAiModel).toBe("gpt-4.1-mini");
+    expect(config.openAiTimeoutMs).toBe(15000);
+    expect(config.openAiMaxRetries).toBe(2);
   });
 
-  it("parses optional bedrock timeout/retry overrides", () => {
+  it("parses optional openai timeout/retry overrides", () => {
     const config = readServerConfig({
-      ASK_AI_PROVIDER: "bedrock",
-      AWS_REGION: "us-east-1",
-      BEDROCK_MODEL_ID: "anthropic.claude-v2",
-      BEDROCK_TIMEOUT_MS: "21000",
-      BEDROCK_MAX_ATTEMPTS: "4"
+      ASK_AI_PROVIDER: "openai",
+      OPENAI_API_KEY: "sk-test",
+      OPENAI_MODEL: "gpt-4.1-mini",
+      OPENAI_TIMEOUT_MS: "21000",
+      OPENAI_MAX_RETRIES: "4"
     });
 
-    expect(config.bedrockTimeoutMs).toBe(21000);
-    expect(config.bedrockMaxAttempts).toBe(4);
+    expect(config.openAiTimeoutMs).toBe(21000);
+    expect(config.openAiMaxRetries).toBe(4);
   });
 
   it("throws on whitespace-only provider selection", () => {
@@ -116,40 +116,40 @@ describe("backend env config", () => {
   });
 
   it("throws on invalid provider selection", () => {
-    expect(() => readServerConfig({ ASK_AI_PROVIDER: "openai" })).toThrow(/Invalid ASK_AI_PROVIDER value/);
+    expect(() => readServerConfig({ ASK_AI_PROVIDER: "bedrock" })).toThrow(/Invalid ASK_AI_PROVIDER value/);
   });
 
-  it("throws when bedrock provider is missing required env", () => {
-    expect(() => readServerConfig({ ASK_AI_PROVIDER: "bedrock", AWS_REGION: "us-east-1" })).toThrow(
-      /requires both AWS_REGION and BEDROCK_MODEL_ID/
+  it("throws when openai provider is missing required env", () => {
+    expect(() => readServerConfig({ ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" })).toThrow(
+      /requires both OPENAI_API_KEY and OPENAI_MODEL/
     );
   });
 
-  it("throws when bedrock provider omits AWS_REGION", () => {
-    expect(() => readServerConfig({ ASK_AI_PROVIDER: "bedrock", BEDROCK_MODEL_ID: "anthropic.claude-v2" })).toThrow(
-      /requires both AWS_REGION and BEDROCK_MODEL_ID/
+  it("throws when openai provider omits OPENAI_API_KEY", () => {
+    expect(() => readServerConfig({ ASK_AI_PROVIDER: "openai", OPENAI_MODEL: "gpt-4.1-mini" })).toThrow(
+      /requires both OPENAI_API_KEY and OPENAI_MODEL/
     );
   });
 
-  it("throws on invalid BEDROCK_TIMEOUT_MS value", () => {
+  it("throws on invalid OPENAI_TIMEOUT_MS value", () => {
     expect(() =>
       readServerConfig({
-        ASK_AI_PROVIDER: "bedrock",
-        AWS_REGION: "us-east-1",
-        BEDROCK_MODEL_ID: "anthropic.claude-v2",
-        BEDROCK_TIMEOUT_MS: "abc"
+        ASK_AI_PROVIDER: "openai",
+        OPENAI_API_KEY: "sk-test",
+        OPENAI_MODEL: "gpt-4.1-mini",
+        OPENAI_TIMEOUT_MS: "abc"
       })
-    ).toThrow(/Invalid BEDROCK_TIMEOUT_MS value/);
+    ).toThrow(/Invalid OPENAI_TIMEOUT_MS value/);
   });
 
-  it("throws on invalid BEDROCK_MAX_ATTEMPTS value", () => {
+  it("throws on invalid OPENAI_MAX_RETRIES value", () => {
     expect(() =>
       readServerConfig({
-        ASK_AI_PROVIDER: "bedrock",
-        AWS_REGION: "us-east-1",
-        BEDROCK_MODEL_ID: "anthropic.claude-v2",
-        BEDROCK_MAX_ATTEMPTS: "0"
+        ASK_AI_PROVIDER: "openai",
+        OPENAI_API_KEY: "sk-test",
+        OPENAI_MODEL: "gpt-4.1-mini",
+        OPENAI_MAX_RETRIES: "0"
       })
-    ).toThrow(/Invalid BEDROCK_MAX_ATTEMPTS value/);
+    ).toThrow(/Invalid OPENAI_MAX_RETRIES value/);
   });
 });

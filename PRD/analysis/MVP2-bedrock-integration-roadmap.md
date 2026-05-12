@@ -1,4 +1,6 @@
-# MVP2 Bedrock Integration Roadmap
+# [ARCHIVED] MVP2 Bedrock Integration Roadmap
+
+> Historical reference only. Active roadmap: `PRD/analysis/MVP2-openai-integration-roadmap.md`.
 
 ## Purpose
 

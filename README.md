@@ -12,8 +12,8 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 ## Current Product Phase
 
 - MVP1: closed and archived
-- MVP2: active (Bedrock integration and reliability hardening)
-- Primary MVP2 execution guide: `PRD/analysis/MVP2-bedrock-integration-roadmap.md`
+- MVP2: active (OpenAI integration and reliability hardening)
+- Primary MVP2 execution guide: `PRD/analysis/MVP2-openai-integration-roadmap.md`
 - For MVP1 history, see `MVP1 Closeout Snapshot` below.
 
 ## Tech Stack
@@ -54,7 +54,7 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 
 - `npm run dev` - run frontend + backend together (explicit mock provider mode)
 - `npm run dev:mock` - run frontend + backend with `ASK_AI_PROVIDER=mock`
-- `npm run dev:bedrock` - run frontend + backend with `ASK_AI_PROVIDER=bedrock` (requires Bedrock env config)
+- `npm run dev:openai` - run frontend + backend with `ASK_AI_PROVIDER=openai` (requires OpenAI env config)
 - `npm run dev:frontend` - run frontend only
 - `npm run dev:backend` - run backend only
 - `npm run typecheck` - run frontend + backend TypeScript checks
@@ -89,32 +89,28 @@ Local defaults work out of the box, but deployment targets should set explicit v
   - `FRONTEND_ORIGIN` - optional CORS allow-origin for frontend deployments (example: `https://preview.thejudge.dev`)
   - `DEBUG_LOGGING` - optional backend debug log toggle (`true`/`false`); defaults on in `development`
   - `LOG_PAYLOADS` - optional backend request payload logging toggle (`true`/`false`); defaults on in `development`, off otherwise
-  - `ASK_AI_PROVIDER` - provider mode toggle (`mock` default, `bedrock` for live provider path)
-  - `AWS_REGION` - required when `ASK_AI_PROVIDER=bedrock`
-  - `BEDROCK_MODEL_ID` - required when `ASK_AI_PROVIDER=bedrock`
-  - `BEDROCK_TIMEOUT_MS` - optional Bedrock invoke timeout in ms (default: `15000`)
-  - `BEDROCK_MAX_ATTEMPTS` - optional SDK retry attempts (default: `2`)
+  - `ASK_AI_PROVIDER` - provider mode toggle (`mock` default, `openai` for live provider path)
+  - `OPENAI_MODEL` - required when `ASK_AI_PROVIDER=openai` (default recommendation: `gpt-4.1-mini`)
+  - `OPENAI_TIMEOUT_MS` - optional OpenAI request timeout in ms (default: `15000`)
+  - `OPENAI_MAX_RETRIES` - optional SDK retry attempts (default: `2`)
 
-Local Bedrock auth guidance:
-- Prefer AWS profile/SSO for human local usage (`aws configure sso`, `aws sso login`, optional `AWS_PROFILE` in `apps/backend/.env`).
-- Temporary access keys or session tokens belong only in **`.secrets/aws-bedrock-dev.env`** (copy from `secrets-templates/aws-bedrock-dev.env.example`); never commit `.secrets/` or put real secrets in `apps/backend/.env`. See `PRD/instructions/secrets-handling.md`.
-- In `development`, the backend loads `apps/backend/.env` first, then `.secrets/aws-bedrock-dev.env` when that file exists (via `dotenv`); shell exports still win for keys set before startup. Run `npm run aws:verify` to confirm STS and list Bedrock foundation model IDs for `BEDROCK_MODEL_ID`.
-- Bedrock startup troubleshooting:
-  - If `npm run dev:bedrock` says `missing: AWS_REGION, BEDROCK_MODEL_ID`, first confirm `apps/backend/.env` exists and sets both keys.
-  - Check for stale empty shell exports (for example `export AWS_REGION=`) because those can override dotenv values in child processes; clear with `unset AWS_REGION BEDROCK_MODEL_ID`.
-  - Re-run `npm run aws:verify` before `npm run dev:bedrock` when debugging local auth/config issues.
+Local OpenAI auth guidance:
+- Keep non-secret configuration in `apps/backend/.env`.
+- Keep real secrets in `.secrets/openai-dev.env` (copy from `secrets-templates/openai-dev.env.example`); never commit `.secrets/`. See `PRD/instructions/secrets-handling.md`.
+- In `development`, the backend loads `apps/backend/.env` first, then `.secrets/openai-dev.env` when that file exists (via `dotenv`).
+- Run `npm run openai:verify` to confirm key/model reachability before `npm run dev:openai`.
 
 Reference templates:
 
 - `apps/frontend/.env.example`
 - `apps/backend/.env.example`
-- `secrets-templates/aws-bedrock-dev.env.example` (copy to `.secrets/aws-bedrock-dev.env` for optional key-based auth)
+- `secrets-templates/openai-dev.env.example` (copy to `.secrets/openai-dev.env` for local secret storage)
 
 ## Operational References
 
 Use these docs for deeper runtime/contract detail instead of expanding the root README:
 - API contract, payload shape, stack-order semantics, and integration constraints: `PRD/sections/integrations-and-data.md`
-- Current MVP2 rollout phases, reliability goals, and environment strategy: `PRD/analysis/MVP2-bedrock-integration-roadmap.md`
+- Current MVP2 rollout phases, reliability goals, and environment strategy: `PRD/analysis/MVP2-openai-integration-roadmap.md`
 - Backend provider boundary and mode intent: `apps/backend/src/providers/README.md`
 
 Quick local verification flow:
@@ -135,7 +131,7 @@ For historical detail:
 
 - Keep product truth and planning detail in `PRD/`.
 - Keep this root README concise and onboarding-focused.
-- Track active phase progress in `PRD/analysis/MVP2-bedrock-integration-roadmap.md` and `PRD/README.md`.
+- Track active phase progress in `PRD/analysis/MVP2-openai-integration-roadmap.md` and `PRD/README.md`.
 - MVP1 history: `PRD/archive/README.md`.
 - Empty-state artwork is bundled at `apps/frontend/public/assets/cat-wizard.svg`; keep it local/static and retain a text fallback path.
 - Provider integration boundary docs live in `apps/backend/src/providers/README.md`.
