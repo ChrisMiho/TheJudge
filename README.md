@@ -96,13 +96,19 @@ Local defaults work out of the box, but deployment targets should set explicit v
   - `BEDROCK_MAX_ATTEMPTS` - optional SDK retry attempts (default: `2`)
 
 Local Bedrock auth guidance:
-- Prefer AWS profile/SSO for human local usage (`aws configure sso`, `aws sso login`, optional `AWS_PROFILE`).
-- Use direct env credentials only as fallback and keep them local-only (never commit keys or session tokens).
+- Prefer AWS profile/SSO for human local usage (`aws configure sso`, `aws sso login`, optional `AWS_PROFILE` in `apps/backend/.env`).
+- Temporary access keys or session tokens belong only in **`.secrets/aws-bedrock-dev.env`** (copy from `secrets-templates/aws-bedrock-dev.env.example`); never commit `.secrets/` or put real secrets in `apps/backend/.env`. See `PRD/instructions/secrets-handling.md`.
+- In `development`, the backend loads `apps/backend/.env` first, then `.secrets/aws-bedrock-dev.env` when that file exists (via `dotenv`); shell exports still win for keys set before startup. Run `npm run aws:verify` to confirm STS and list Bedrock foundation model IDs for `BEDROCK_MODEL_ID`.
+- Bedrock startup troubleshooting:
+  - If `npm run dev:bedrock` says `missing: AWS_REGION, BEDROCK_MODEL_ID`, first confirm `apps/backend/.env` exists and sets both keys.
+  - Check for stale empty shell exports (for example `export AWS_REGION=`) because those can override dotenv values in child processes; clear with `unset AWS_REGION BEDROCK_MODEL_ID`.
+  - Re-run `npm run aws:verify` before `npm run dev:bedrock` when debugging local auth/config issues.
 
 Reference templates:
 
 - `apps/frontend/.env.example`
 - `apps/backend/.env.example`
+- `secrets-templates/aws-bedrock-dev.env.example` (copy to `.secrets/aws-bedrock-dev.env` for optional key-based auth)
 
 ## Operational References
 

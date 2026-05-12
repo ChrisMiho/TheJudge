@@ -17,6 +17,7 @@
     "quality:check": "npm run typecheck && npm run test",
     "build": "npm --workspace apps/frontend run build && npm --workspace apps/backend run build",
     "data:build": "node scripts/build-card-metadata.mjs",
-    "data:refresh": "node scripts/refresh-scryfall-data.mjs"
+    "data:refresh": "node scripts/refresh-scryfall-data.mjs",
+    "aws:verify": "node scripts/aws-verify.mjs"
   }
 }

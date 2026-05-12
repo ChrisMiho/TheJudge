@@ -33,7 +33,9 @@ For local development, use the AWS SDK default credential chain with profile/SSO
 2. Optionally set `AWS_PROFILE` if the profile is not `default`.
 3. Run backend with Bedrock mode enabled (`ASK_AI_PROVIDER=bedrock`) and required non-secret config.
 
-Fallback path (only when needed): set temporary env credentials (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`). Do not commit secrets or long-lived keys.
+Fallback path (only when needed): put temporary session credentials in **`.secrets/aws-bedrock-dev.env`** at the repository root (see `secrets-templates/aws-bedrock-dev.env.example` and `PRD/instructions/secrets-handling.md`). Do not commit secrets or long-lived keys, and do not place them in `apps/backend/.env`.
+
+Troubleshooting note: if Bedrock mode reports missing `AWS_REGION` / `BEDROCK_MODEL_ID` despite being present in `apps/backend/.env`, check for blank shell exports (for example `export AWS_REGION=`) and clear them with `unset AWS_REGION BEDROCK_MODEL_ID`.
 
 ## Product sequencing reference
 

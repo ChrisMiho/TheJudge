@@ -49,13 +49,11 @@ Primary path (recommended):
 3. Optionally set `AWS_PROFILE` when not using `default`
 
 Fallback path (only when needed):
-- temporary env credentials:
-  - `AWS_ACCESS_KEY_ID`
-  - `AWS_SECRET_ACCESS_KEY`
-  - `AWS_SESSION_TOKEN`
+- temporary session credentials in **`.secrets/aws-bedrock-dev.env`** only (copy from `secrets-templates/aws-bedrock-dev.env.example`; see `PRD/instructions/secrets-handling.md`).
+- do not put access keys or session tokens in `apps/backend/.env`.
 
 Security rule:
-- never commit credentials, session tokens, or secret files.
+- never commit credentials, session tokens, or anything under `.secrets/`.
 
 ## 3) Repository Bootstrap
 
@@ -75,6 +73,7 @@ From your workspace directory:
 Create local env files from examples as needed:
 - `apps/frontend/.env` from `apps/frontend/.env.example`
 - `apps/backend/.env` from `apps/backend/.env.example`
+- optional (key-based auth only): `.secrets/aws-bedrock-dev.env` from `secrets-templates/aws-bedrock-dev.env.example` at the repository root
 
 For mock mode, defaults are usually enough.
 
@@ -119,7 +118,7 @@ After startup:
    - `npm run quality:check`
 
 Bedrock-specific verification:
-1. Confirm caller identity (`aws sts get-caller-identity`)
+1. From repo root, run `npm run aws:verify` (merges `apps/backend/.env` then `.secrets/aws-bedrock-dev.env` into the CLI environment, runs `aws sts get-caller-identity`, then lists foundation model IDs in `AWS_REGION` when STS succeeds).
 2. Confirm backend starts without Bedrock config validation errors
 3. Confirm one successful `/api/ask-ai` response in Bedrock mode
 
@@ -127,6 +126,8 @@ Bedrock-specific verification:
 
 - **`ASK_AI_PROVIDER=bedrock` startup error**
   - Missing `AWS_REGION` or `BEDROCK_MODEL_ID`
+  - Ensure `apps/backend/.env` actually exists (not just `.env.example`)
+  - Check for empty shell exports overriding dotenv values (`unset AWS_REGION BEDROCK_MODEL_ID`)
 - **AWS credential resolution failures**
   - SSO session expired; rerun `aws sso login`
   - wrong `AWS_PROFILE`
