@@ -83,8 +83,13 @@ export function readServerConfig(env: NodeJS.ProcessEnv): ServerConfig {
   const bedrockTimeoutMs = parseOptionalPositiveInteger(env.BEDROCK_TIMEOUT_MS, "BEDROCK_TIMEOUT_MS");
   const bedrockMaxAttempts = parseOptionalPositiveInteger(env.BEDROCK_MAX_ATTEMPTS, "BEDROCK_MAX_ATTEMPTS");
   if (provider === "bedrock" && (!awsRegion || !bedrockModelId)) {
+    const missing: string[] = [];
+    if (!awsRegion) missing.push("AWS_REGION");
+    if (!bedrockModelId) missing.push("BEDROCK_MODEL_ID");
     throw new Error(
-      `ASK_AI_PROVIDER=bedrock requires both AWS_REGION and BEDROCK_MODEL_ID to be configured.`
+      `ASK_AI_PROVIDER=bedrock requires both AWS_REGION and BEDROCK_MODEL_ID (missing: ${missing.join(", ")}). ` +
+        `Set them in apps/backend/.env (uncommented) or export them in the shell. ` +
+        `If they are already in .env, check for empty exports (e.g. export AWS_REGION=) which block dotenv from applying the file.`
     );
   }
 
