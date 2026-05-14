@@ -1,4 +1,6 @@
-# Local IAM and AWS Transition Game Plan
+# [ARCHIVED] Local IAM and AWS Transition Game Plan
+
+> Historical reference only for Bedrock/AWS access patterns.
 
 ## Purpose
 

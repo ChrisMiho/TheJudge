@@ -27,7 +27,7 @@ export function buildMockAnswer(preparedPrompt: PreparedPromptInput): AskAiRespo
     `Estimated token budget (~${CHARS_PER_TOKEN_ESTIMATE} chars/token): ${estimatedBudgetTokens}`,
     `Estimated remaining tokens (~${CHARS_PER_TOKEN_ESTIMATE} chars/token): ${estimatedRemainingTokens}`,
     "",
-    "FULL PROMPT (SENT TO BEDROCK)",
+    "FULL PROMPT (SENT TO PROVIDER)",
     "",
     promptText
   ];

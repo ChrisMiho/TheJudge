@@ -2,7 +2,7 @@
 
 ## Status
 - Project Status: active
-- Current Drafting Phase: MVP2 execution active (Bedrock integration roadmap)
+- Current Drafting Phase: MVP2 execution active (OpenAI integration roadmap)
 - Overall Documentation Status: active and implementation-aligned
 
 ## Purpose
@@ -16,7 +16,7 @@ Use it to:
 
 ## MVP2 Read First
 For current implementation work, read in this order:
-1. `analysis/MVP2-bedrock-integration-roadmap.md`
+1. `analysis/MVP2-openai-integration-roadmap.md`
 2. `sections/decisions.md`
 3. `sections/integrations-and-data.md`
 4. `sections/non-functional-requirements.md`
@@ -39,7 +39,7 @@ Archive usage rule:
 
 | Path | Role |
 |---|---|
-| `analysis/` | Audits, deep dives, and phase execution roadmaps (for example MVP2 Bedrock integration). |
+| `analysis/` | Audits, deep dives, and phase execution roadmaps (for example MVP2 OpenAI integration). |
 | `archive/` | Historical closeout snapshots; see `archive/README.md`. Not active requirements unless promoted into `sections/`. |
 
 ## Section Inventory
@@ -121,8 +121,8 @@ Read in this order:
 - MVP1 is closed; flow-validation framing and temporary simplifications remain documented in `sections/decisions.md` and `archive/mvp1/`.
 - Duplicate-card blocking is temporary and should not be treated as long-term product truth.
 - Stack ordering is critical and must remain consistent across UI, API payloads, and prompt-building logic.
-- Phase A mock remains the default local baseline; Bedrock rollout sequencing lives in `analysis/MVP2-bedrock-integration-roadmap.md` and `apps/backend/src/providers/README.md`.
-- Local Bedrock onboarding should default to AWS profile/SSO credential flow for humans; avoid long-lived IAM user keys as the routine local path.
+- Phase A mock remains the default local baseline; OpenAI rollout sequencing lives in `analysis/MVP2-openai-integration-roadmap.md` and `apps/backend/src/providers/README.md`.
+- Local OpenAI onboarding should keep non-secrets in `apps/backend/.env` and real secrets in `.secrets/openai-dev.env`.
 - Provider modularity remains a hard rule: route handlers stay contract-focused and only consume the provider interface selected in bootstrap/factory composition.
 
 ## Implementation Snapshot
@@ -130,31 +130,31 @@ Read in this order:
 - Current frontend flow supports staged context + stack interaction patterns; canonical behavior is tracked in `sections/user-flows.md`.
 - Prompt/input contract includes structured context beyond stack/question (see `sections/integrations-and-data.md` and `sections/decisions.md`).
 - Metadata pipeline remains static-file based (`npm run data:build` / `npm run data:refresh`) with runtime loading from `/data/cardMetadata.json`.
-- Provider boundary remains in place and is the active seam for MVP2 Bedrock rollout work.
+- Provider boundary remains in place and is the active seam for MVP2 OpenAI rollout work.
 - Automated tests and type checks are part of the active workflow; root dev run remains `npm run dev`.
 
 ## Story Progress Tracking
 MVP1 history is archived under `archive/mvp1/`.
-Active MVP2 execution sequencing is tracked in `analysis/MVP2-bedrock-integration-roadmap.md`.
+Active MVP2 execution sequencing is tracked in `analysis/MVP2-openai-integration-roadmap.md`.
 
 ### MVP2 Story Checklist (Phase-Grouped)
 
 Task 0:
 - [x] `STORY-055` secrets hygiene baseline
 
-Phase 1 - Bedrock Runtime Foundation:
+Phase 1 - OpenAI Runtime Foundation:
 - [x] `STORY-056` provider feature-flag selection contract
-- [ ] `STORY-057` Bedrock config validation and startup safety
-- [ ] `STORY-058` Bedrock provider integration path
+- [ ] `STORY-057` OpenAI config validation and startup safety
+- [ ] `STORY-058` OpenAI provider integration path
 
 Phase 2 - Reliability and Observability:
-- [ ] `STORY-059` Bedrock error mapping to canonical API contract
+- [ ] `STORY-059` OpenAI error mapping to canonical API contract
 - [ ] `STORY-060` provider observability contract
 
 Phase 3 - Prompt Context Pipeline:
 - [ ] `STORY-061` prompt context assembly hardening
 - [ ] `STORY-062` prompt template versioning and ownership
-- [ ] `STORY-063` Bedrock eval harness expansion
+- [ ] `STORY-063` provider eval harness expansion (OpenAI path)
 
 Phase 4 - DEV Rollout and Process:
 - [ ] `STORY-064` DEV separate deployment runbook

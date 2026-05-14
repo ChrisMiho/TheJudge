@@ -1,20 +1,20 @@
 import type { ServerConfig } from "../config.js";
 import type { AskAiProvider } from "./askAiProvider.js";
-import { createBedrockAskAiProvider, type BedrockConverseClient } from "./bedrockReadinessProvider.js";
+import { createOpenAiAskAiProvider, type OpenAiResponsesClient } from "./openAiResponsesProvider.js";
 import { mockAskAiProvider } from "./mockAskAiProvider.js";
 
 type CreateAskAiProviderOptions = {
-  bedrockClient?: BedrockConverseClient;
+  openAiClient?: OpenAiResponsesClient;
 };
 
 export function createAskAiProvider(config: ServerConfig, options: CreateAskAiProviderOptions = {}): AskAiProvider {
-  if (config.askAiProvider === "bedrock") {
-    return createBedrockAskAiProvider({
-      awsRegion: config.awsRegion ?? "unknown",
-      modelId: config.bedrockModelId ?? "unknown",
-      timeoutMs: config.bedrockTimeoutMs ?? 15000,
-      maxAttempts: config.bedrockMaxAttempts ?? 2,
-      client: options.bedrockClient
+  if (config.askAiProvider === "openai") {
+    return createOpenAiAskAiProvider({
+      apiKey: config.openAiApiKey ?? "",
+      model: config.openAiModel ?? "gpt-4.1-mini",
+      timeoutMs: config.openAiTimeoutMs ?? 15000,
+      maxRetries: config.openAiMaxRetries ?? 2,
+      client: options.openAiClient
     });
   }
 

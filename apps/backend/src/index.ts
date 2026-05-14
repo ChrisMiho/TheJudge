@@ -12,14 +12,14 @@ if (process.env.NODE_ENV === "development" && process.env.VITEST !== "true") {
   const repoRoot = resolve(backendDir, "../../..");
   const backendEnvPath = resolve(backendDir, "../.env");
   loadDotenv({ path: backendEnvPath });
-  const secretsEnvPath = resolve(repoRoot, ".secrets/aws-bedrock-dev.env");
+  const secretsEnvPath = resolve(repoRoot, ".secrets/openai-dev.env");
   if (existsSync(secretsEnvPath)) {
     loadDotenv({ path: secretsEnvPath, override: true });
   }
 
   /**
    * dotenv does not override keys already present in process.env (including empty string).
-   * Apply selected Bedrock-related keys from apps/backend/.env when the process value is unset or blank.
+   * Apply selected OpenAI-related keys from apps/backend/.env when the process value is unset or blank.
    */
   const fillFromFileIfBlank = (filePath: string, keys: readonly string[]) => {
     if (!existsSync(filePath)) return;
@@ -33,8 +33,8 @@ if (process.env.NODE_ENV === "development" && process.env.VITEST !== "true") {
       }
     }
   };
-  fillFromFileIfBlank(backendEnvPath, ["AWS_REGION", "BEDROCK_MODEL_ID", "BEDROCK_TIMEOUT_MS", "BEDROCK_MAX_ATTEMPTS", "AWS_PROFILE"]);
-  fillFromFileIfBlank(secretsEnvPath, ["AWS_REGION", "BEDROCK_MODEL_ID", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN"]);
+  fillFromFileIfBlank(backendEnvPath, ["ASK_AI_PROVIDER", "OPENAI_MODEL", "OPENAI_TIMEOUT_MS", "OPENAI_MAX_RETRIES"]);
+  fillFromFileIfBlank(secretsEnvPath, ["OPENAI_API_KEY"]);
 }
 
 const config = readServerConfig(process.env);

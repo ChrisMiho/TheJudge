@@ -1,9 +1,9 @@
 import { resolveDebugLoggingEnabled, resolvePayloadLoggingEnabled } from "./logging.js";
 
 const DEFAULT_PORT = 3000;
-const DEFAULT_BEDROCK_TIMEOUT_MS = 15000;
-const DEFAULT_BEDROCK_MAX_ATTEMPTS = 2;
-const ASK_AI_PROVIDER_MODES = ["mock", "bedrock"] as const;
+const DEFAULT_OPENAI_TIMEOUT_MS = 15000;
+const DEFAULT_OPENAI_MAX_RETRIES = 2;
+const ASK_AI_PROVIDER_MODES = ["mock", "openai"] as const;
 const DEFAULT_ASK_AI_PROVIDER_MODE = "mock";
 type AskAiProviderMode = (typeof ASK_AI_PROVIDER_MODES)[number];
 
@@ -13,16 +13,16 @@ export type ServerConfig = {
   debugLoggingEnabled: boolean;
   payloadLoggingEnabled: boolean;
   askAiProvider: AskAiProviderMode;
-  awsRegion?: string;
-  bedrockModelId?: string;
-  bedrockTimeoutMs?: number;
-  bedrockMaxAttempts?: number;
+  openAiApiKey?: string;
+  openAiModel?: string;
+  openAiTimeoutMs?: number;
+  openAiMaxRetries?: number;
 };
 
 function parseAskAiProviderMode(rawProvider: string | undefined): AskAiProviderMode {
   const provider = (rawProvider?.trim().toLowerCase() ?? DEFAULT_ASK_AI_PROVIDER_MODE) as AskAiProviderMode;
   if (!ASK_AI_PROVIDER_MODES.includes(provider)) {
-    throw new Error(`Invalid ASK_AI_PROVIDER value "${rawProvider}". Expected one of: mock, bedrock.`);
+    throw new Error(`Invalid ASK_AI_PROVIDER value "${rawProvider}". Expected one of: mock, openai.`);
   }
 
   return provider;
@@ -77,19 +77,17 @@ function parseOptionalPositiveInteger(rawValue: string | undefined, envName: str
 
 export function readServerConfig(env: NodeJS.ProcessEnv): ServerConfig {
   const provider = parseAskAiProviderMode(env.ASK_AI_PROVIDER);
-
-  const awsRegion = env.AWS_REGION?.trim() || undefined;
-  const bedrockModelId = env.BEDROCK_MODEL_ID?.trim() || undefined;
-  const bedrockTimeoutMs = parseOptionalPositiveInteger(env.BEDROCK_TIMEOUT_MS, "BEDROCK_TIMEOUT_MS");
-  const bedrockMaxAttempts = parseOptionalPositiveInteger(env.BEDROCK_MAX_ATTEMPTS, "BEDROCK_MAX_ATTEMPTS");
-  if (provider === "bedrock" && (!awsRegion || !bedrockModelId)) {
+  const openAiApiKey = env.OPENAI_API_KEY?.trim() || undefined;
+  const openAiModel = env.OPENAI_MODEL?.trim() || undefined;
+  const openAiTimeoutMs = parseOptionalPositiveInteger(env.OPENAI_TIMEOUT_MS, "OPENAI_TIMEOUT_MS");
+  const openAiMaxRetries = parseOptionalPositiveInteger(env.OPENAI_MAX_RETRIES, "OPENAI_MAX_RETRIES");
+  if (provider === "openai" && (!openAiApiKey || !openAiModel)) {
     const missing: string[] = [];
-    if (!awsRegion) missing.push("AWS_REGION");
-    if (!bedrockModelId) missing.push("BEDROCK_MODEL_ID");
+    if (!openAiApiKey) missing.push("OPENAI_API_KEY");
+    if (!openAiModel) missing.push("OPENAI_MODEL");
     throw new Error(
-      `ASK_AI_PROVIDER=bedrock requires both AWS_REGION and BEDROCK_MODEL_ID (missing: ${missing.join(", ")}). ` +
-        `Set them in apps/backend/.env (uncommented) or export them in the shell. ` +
-        `If they are already in .env, check for empty exports (e.g. export AWS_REGION=) which block dotenv from applying the file.`
+      `ASK_AI_PROVIDER=openai requires both OPENAI_API_KEY and OPENAI_MODEL (missing: ${missing.join(", ")}). ` +
+        `Set OPENAI_MODEL in apps/backend/.env and OPENAI_API_KEY in .secrets/openai-dev.env (or export them in your shell).`
     );
   }
 
@@ -99,9 +97,9 @@ export function readServerConfig(env: NodeJS.ProcessEnv): ServerConfig {
     debugLoggingEnabled: resolveDebugLoggingEnabled(env.DEBUG_LOGGING, env.NODE_ENV),
     payloadLoggingEnabled: resolvePayloadLoggingEnabled(env.LOG_PAYLOADS, env.NODE_ENV),
     askAiProvider: provider,
-    awsRegion,
-    bedrockModelId,
-    bedrockTimeoutMs: provider === "bedrock" ? (bedrockTimeoutMs ?? DEFAULT_BEDROCK_TIMEOUT_MS) : undefined,
-    bedrockMaxAttempts: provider === "bedrock" ? (bedrockMaxAttempts ?? DEFAULT_BEDROCK_MAX_ATTEMPTS) : undefined
+    openAiApiKey,
+    openAiModel,
+    openAiTimeoutMs: provider === "openai" ? (openAiTimeoutMs ?? DEFAULT_OPENAI_TIMEOUT_MS) : undefined,
+    openAiMaxRetries: provider === "openai" ? (openAiMaxRetries ?? DEFAULT_OPENAI_MAX_RETRIES) : undefined
   };
 }

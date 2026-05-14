@@ -1,4 +1,6 @@
-# New Machine Setup and Bedrock Onboarding
+# [ARCHIVED] New Machine Setup and Bedrock Onboarding
+
+> Historical reference only. Active onboarding: `PRD/analysis/new-machine-setup-and-openai-onboarding.md`.
 
 ## Purpose
 
