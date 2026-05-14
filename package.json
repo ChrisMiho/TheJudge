@@ -18,6 +18,6 @@
     "build": "npm --workspace apps/frontend run build && npm --workspace apps/backend run build",
     "data:build": "node scripts/build-card-metadata.mjs",
     "data:refresh": "node scripts/refresh-scryfall-data.mjs",
-    "openai:verify": "node scripts/openai-verify.mjs"
+    "openai:verify-credentials": "node scripts/openai-verify-credentials.mjs"
   }
 }

@@ -95,7 +95,7 @@ After startup:
    - `npm run quality:check`
 
 OpenAI-specific verification:
-1. From repo root, run `npm run openai:verify`.
+1. From repo root, run `npm run openai:verify-credentials`.
 2. Confirm backend starts without OpenAI config validation errors.
 3. Confirm one successful `/api/ask-ai` response in OpenAI mode.
 

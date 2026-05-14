@@ -98,7 +98,7 @@ Local OpenAI auth guidance:
 - Keep non-secret configuration in `apps/backend/.env`.
 - Keep real secrets in `.secrets/openai-dev.env` (copy from `secrets-templates/openai-dev.env.example`); never commit `.secrets/`. See `PRD/instructions/secrets-handling.md`.
 - In `development`, the backend loads `apps/backend/.env` first, then `.secrets/openai-dev.env` when that file exists (via `dotenv`).
-- Run `npm run openai:verify` to confirm key/model reachability before `npm run dev:openai`.
+- Run `npm run openai:verify-credentials` to confirm API key and model connectivity before `npm run dev:openai`.
 
 Reference templates:
 

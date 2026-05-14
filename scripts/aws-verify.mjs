@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-console.warn("[ARCHIVED] aws-verify is kept for historical Bedrock rollback only. Use npm run openai:verify for active setup.");
+console.warn("[ARCHIVED] aws-verify is kept for historical Bedrock rollback only. Use npm run openai:verify-credentials for active setup.");
 
 /**
  * Parse KEY=VAL lines from a dotenv-style file.
