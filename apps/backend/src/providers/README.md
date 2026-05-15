@@ -39,4 +39,4 @@ Troubleshooting note: if OpenAI mode reports missing `OPENAI_MODEL`, ensure `app
 
 ## Product sequencing reference
 
-Product-wide sequencing and gates: `PRD/analysis/MVP2-openai-integration-roadmap.md`. MVP1 closeout context: `PRD/archive/mvp1/README.md`.
+Product-wide sequencing and gates: `PRD/analysis/MVP2-openai-integration-roadmap.md`.

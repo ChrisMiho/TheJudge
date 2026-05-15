@@ -14,7 +14,7 @@
   - `PRD/README.md` MVP2 phase checklist marks `STORY-055` complete when implementation lands
 - execution mode: parallel-ready
 - dependencies:
-  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Task 0
+  - `PRD/analysis/MVP2-openai-integration-roadmap.md` Task 0
   - `NFR-003` (credentials remain backend-only)
   - `DEC-011` (provider transition strategy)
 - exclusions:

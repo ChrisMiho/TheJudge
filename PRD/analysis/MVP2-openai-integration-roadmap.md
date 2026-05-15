@@ -79,4 +79,4 @@ Related (frontend context capture and eval, parallel track): `PRD/analysis/EVAL-
 - mock mode remains unchanged
 - canonical error contract remains unchanged and normalized
 - README + provider README + PRD control-plane docs point to OpenAI workflow
-- Bedrock/AWS implementation docs remain archived in-repo, not active guidance
+- Historical Bedrock/AWS implementation docs are not kept as active repo guidance

@@ -16,7 +16,7 @@
 - dependencies:
   - `STORY-061` - deterministic context assembly should stabilize before template version policy is finalized
   - `DEC-002` and `DEC-013`
-  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 3
+  - `PRD/analysis/MVP2-openai-integration-roadmap.md` Phase 3
 - exclusions:
   - no model/provider switching logic changes
   - no subjective quality rubric commitments beyond documented guardrails

@@ -26,7 +26,7 @@ Close the remaining context-flow eval backlog so the assembly -> enrichment -> r
 - Preserve and verify stack ordering and deterministic request/prompt context behavior.
 - Add/finish coverage for cross-list targeting integrity, review-submit parity, gating/picker behavior, submit-retry regression, and navigation-state preservation.
 - Wire frontend debug milestone logging after navigation/state foundations are complete.
-- Keep QA checklist and eval strategy docs synchronized with implemented coverage.
+- Keep eval strategy notes synchronized with implemented coverage.
 
 ## Scope Out
 
@@ -102,7 +102,7 @@ Close the remaining context-flow eval backlog so the assembly -> enrichment -> r
 - goal: Finalize documentation closure and defer optional scope explicitly.
 - tasks:
   - Complete `STORY-078` deferred documentation for optional `D-09` LLM-judge eval.
-  - Update QA checklist and roadmap trackers to reflect completed/remaining work.
+  - Update roadmap trackers to reflect completed/remaining work.
 - dependencies:
   - Previous waves complete so deferral documentation reflects final implemented state.
 - exit criteria:
@@ -129,7 +129,7 @@ Close the remaining context-flow eval backlog so the assembly -> enrichment -> r
 - docs to update:
   - `PRD/README.md` checklist statuses for `STORY-071`, `STORY-073`, `STORY-074`, `STORY-075`, `STORY-076`, `STORY-077`, `STORY-078`
   - `PRD/analysis/EVAL-STRATEGY-context-flow-rework.md`
-  - `docs/qa/context-flow-f3-checklist.md`
+  - `PRD/analysis/EVAL-STRATEGY-context-flow-rework.md`
 
 ## Rollout and Fallback
 

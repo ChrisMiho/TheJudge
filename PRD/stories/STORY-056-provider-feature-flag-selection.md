@@ -15,7 +15,7 @@
   - `PRD/README.md` MVP2 phase checklist marks `STORY-056` complete when implementation lands
 - execution mode: parallel-ready
 - dependencies:
-  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 1 provider selection scope
+  - `PRD/analysis/MVP2-openai-integration-roadmap.md` Phase 1 provider selection scope
   - `STORY-014` provider boundary for backend ask-ai path
   - `NFR-003` credentials remain backend-only
 - exclusions:

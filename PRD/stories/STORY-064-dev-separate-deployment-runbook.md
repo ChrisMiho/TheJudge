@@ -15,7 +15,7 @@
 - execution mode: sequential
 - dependencies:
   - `STORY-056` and `STORY-057` - provider flag/config rules must be documented before operational runbook finalization
-  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 4
+  - `PRD/analysis/MVP2-openai-integration-roadmap.md` Phase 4
   - `NFR-003`
 - exclusions:
   - no production/staging rollout execution

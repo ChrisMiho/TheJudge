@@ -14,20 +14,14 @@ Use it to:
 - understand source-of-truth precedence
 - navigate product content vs. agent instructions
 
-## MVP2 Read First
+## Read First
 For current implementation work, read in this order:
 1. `analysis/MVP2-openai-integration-roadmap.md`
 2. `sections/decisions.md`
 3. `sections/integrations-and-data.md`
 4. `sections/non-functional-requirements.md`
 
-Historical continuity:
-- MVP1 summary: `archive/mvp1/README.md`
-- MVP1 key decisions snapshot: `archive/mvp1/key-decisions.md`
-- MVP1 deep references: `archive/mvp1/reference-links.md`
-
-Archive usage rule:
-- `archive/` content is historical reference only unless explicitly promoted into active `sections/*` files.
+Historical implementation notes have been removed from the active repo. If a past decision still matters, it should appear in `sections/decisions.md` or the current story scope.
 
 ## Source-of-Truth Precedence
 1. `sections/decisions.md` overrides older conflicting draft language
@@ -40,7 +34,6 @@ Archive usage rule:
 | Path | Role |
 |---|---|
 | `analysis/` | Audits, deep dives, and phase execution roadmaps (for example MVP2 OpenAI integration). |
-| `archive/` | Historical closeout snapshots; see `archive/README.md`. Not active requirements unless promoted into `sections/`. |
 
 ## Section Inventory
 
@@ -92,7 +85,7 @@ Read in this order:
 3. `sections/user-flows.md`
 4. `instructions/story-generation.md`
 5. `instructions/requirement-format.md`
-6. For **context-flow eval backlog** (`EVAL-CTX-FLOW-001`): `analysis/EVAL-STRATEGY-context-flow-rework.md` and `stories/STORY-069`–`STORY-078`.
+6. For **context-flow eval backlog** (`EVAL-CTX-FLOW-001`): `analysis/EVAL-STRATEGY-context-flow-rework.md` and `gameplan/features/context-flow-eval-closure.md`.
 
 ### If the task is document editing or extension
 Read in this order:
@@ -119,7 +112,7 @@ Read in this order:
 - Preserve stable IDs once assigned.
 
 ## Current Editorial Notes
-- MVP1 is closed; flow-validation framing and temporary simplifications remain documented in `sections/decisions.md` and `archive/mvp1/`.
+- MVP1 is closed; flow-validation framing and temporary simplifications remain documented only where still active in `sections/decisions.md`.
 - Duplicate-card blocking is temporary and should not be treated as long-term product truth.
 - Stack ordering is critical and must remain consistent across UI, API payloads, and prompt-building logic.
 - Phase A mock remains the default local baseline; OpenAI rollout sequencing lives in `analysis/MVP2-openai-integration-roadmap.md` and `apps/backend/src/providers/README.md`.
@@ -135,7 +128,6 @@ Read in this order:
 - Automated tests and type checks are part of the active workflow; root dev run remains `npm run dev`.
 
 ## Story Progress Tracking
-MVP1 history is archived under `archive/mvp1/`.
 Active MVP2 execution sequencing is tracked in `analysis/MVP2-openai-integration-roadmap.md`.
 
 ### MVP2 Story Checklist (Phase-Grouped)
@@ -161,15 +153,15 @@ Phase 4 - DEV Rollout and Process:
 - [ ] `STORY-064` DEV separate deployment runbook
 - [ ] `STORY-065` DEV fallback and rollback guardrails
 
-Phase 5 - IAM Roles and Access Standards:
+Phase 5 - Deployment Access Standards:
 - [ ] `STORY-066` IAM runtime and deploy role baseline
 
-Phase 6 - AWS Deployment Expansion (Deferred Planning):
+Phase 6 - Deployment Expansion (Deferred Planning):
 - [ ] `STORY-067` Phase 6 production expansion planning package
 
-### Adhoc Story Checklist (AWS Setup Parallel Work)
+### Adhoc Story Checklist
 
-Adhoc stories are optional, non-blocking slices we can execute while AWS signup/configuration work is in progress.
+Adhoc stories are optional, non-blocking slices we can execute alongside roadmap work.
 
 - [x] `STORY-068` system role preamble prefix for prompt context
 
@@ -178,7 +170,7 @@ Adhoc stories are optional, non-blocking slices we can execute while AWS signup/
 Canonical eval strategy: `analysis/EVAL-STRATEGY-context-flow-rework.md`. Stories implement automated coverage, fixtures, logging, and QA docs for the assembly → enrichment → review → submit path.
 
 Wave 0 (docs):
-- [x] `STORY-069` context flow docs and F3 checklist scaffold (`docs/`)
+- [x] `STORY-069` context flow eval scaffold (`analysis/EVAL-STRATEGY-context-flow-rework.md`)
 
 Wave 1 (parallel; coordinate shared request-builder test hotspots):
 - [x] `STORY-070` stack order serialization tests

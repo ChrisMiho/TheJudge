@@ -16,7 +16,7 @@
 - dependencies:
   - `STORY-055` - secrets hygiene controls must be active first
   - `STORY-064` - DEV deployment footprint must be defined to scope roles correctly
-  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 5
+  - `PRD/analysis/MVP2-openai-integration-roadmap.md` Phase 5
 - exclusions:
   - no cross-account expansion design
   - no production SLO/cost targets

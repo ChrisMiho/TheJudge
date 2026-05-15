@@ -88,7 +88,7 @@ Evidence:
 
 - `[apps/backend/src/providers/bedrockReadinessProvider.ts](../../apps/backend/src/providers/bedrockReadinessProvider.ts)`
 - `[apps/backend/src/providers/README.md](../../apps/backend/src/providers/README.md)`
-- `[PRD/archive/mvp1/stories/STORY-028-phase-b-bedrock-readiness-bootstrap.md](../archive/mvp1/stories/STORY-028-phase-b-bedrock-readiness-bootstrap.md)`
+- Historical `STORY-028` detail has been removed from the repo; current provider guidance lives in `PRD/analysis/MVP2-openai-integration-roadmap.md`.
 
 ## Search and Autocomplete Path Diagnosis
 

@@ -16,7 +16,7 @@
 - dependencies:
   - `STORY-058` - Bedrock provider path availability
   - `STORY-061` and `STORY-062` - prompt assembly and template versioning baselines
-  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 3
+  - `PRD/analysis/MVP2-openai-integration-roadmap.md` Phase 3
 - exclusions:
   - no production traffic evaluation pipeline
   - no frontend automation changes outside existing contract validation needs

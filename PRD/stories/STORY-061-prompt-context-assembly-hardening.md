@@ -16,7 +16,7 @@
 - dependencies:
   - `STORY-047` prompt preparation service boundary
   - `DEC-004`, `DEC-005`, `DEC-019`
-  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 3
+  - `PRD/analysis/MVP2-openai-integration-roadmap.md` Phase 3
 - exclusions:
   - no API schema changes
   - no frontend staged-flow UI redesign

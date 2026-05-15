@@ -6,7 +6,7 @@ title: "Context capture rework — evaluation strategy"
 project: TheJudge
 scope: "Frontend assembly → enrichment → review → submit for MTG stack assistant"
 canonical_path: PRD/analysis/EVAL-STRATEGY-context-flow-rework.md
-increment_docs_root: docs/
+increment_docs_root: PRD/analysis/
 related_product_spec_section: 6
 ---
 
@@ -14,7 +14,7 @@ related_product_spec_section: 6
 
 This file is the **canonical** evaluation strategy for the context-flow rework. A parser or skill may split it by **`eval_strategy_id`**, section anchors, and row **`id`** fields in tables.
 
-**Recommended placement (human workflow):** Paste material below into `AI-SPEC.md` as Evaluation Strategy / Guardrails / Production Monitoring (split as needed), or keep this file as the phase artifact. **For AI increments:** keep this path canonical; add child docs under `docs/` per [Increment documentation contract](#increment-documentation-contract).
+**Recommended placement:** Keep this file as the phase artifact. Avoid adding child docs unless a slice needs a current, maintained artifact.
 
 ---
 
@@ -75,7 +75,7 @@ Recommended order for agents (dependencies first):
 5. **Navigation / state** — `FM-05`, `D-05` (integration, Playwright, or `App.test.tsx`).
 6. **Backend prompt regression harness** — `FM-06`, `D-07`, `D-08` (stay green).
 7. **`logFrontendDebug` milestones** — `EP-A` / A3, `MON-F-01`; use [Placeholder A3 milestone keys](#placeholder-a3-milestone-keys-stable-strings) until product renames.
-8. **Docs** — F3 checklist under `docs/`; increment sheets per [Increment documentation contract](#increment-documentation-contract).
+8. **Docs** — Keep the eval strategy and PRD trackers current; avoid separate checklist files unless they are actively maintained.
 
 ---
 
@@ -83,16 +83,16 @@ Recommended order for agents (dependencies first):
 
 **Canonical source:** This file (`eval_strategy_id: EVAL-CTX-FLOW-001`).
 
-**Increment docs:** Prefer **`PRD/stories/STORY-###.md`** as the promoted tracker for each shippable slice (see [Story IDs promoted from parallel plan](#story-ids-promoted-from-parallel-plan)). Optionally mirror a one-line pointer under **`docs/increments/`** for ops-only readers. Each increment or story file **must**:
+**Increment docs:** Prefer **`PRD/README.md`** and the relevant active story file as the tracker for each shippable slice (see [Story IDs promoted from parallel plan](#story-ids-promoted-from-parallel-plan)). Each increment or story entry **must**:
 
 - Link back to this file path and quote `eval_strategy_id: EVAL-CTX-FLOW-001`.
 - List **`covers_ids`**: the `FM-*`, `D-*`, `EP-*`, `SCN-*`, `MON-*`, or `GR-*` rows addressed (use table `id` values).
 - State **definition of done** for that slice: files touched, tests run, and expected green result.
 - **Not** contradict scope in [Scope and hard stops](#scope-and-hard-stops); if scope must change, update **this** canonical file first, then increments.
 
-**Sums-to-whole:** Over the phase, promoted **`PRD/stories/STORY-069`–`STORY-078`** (and optional `docs/increments/` mirrors) should collectively cover every **`FM-*` minimum bar** row and every **`D-*`** with priority Critical / High in the [Appendix — priority tags](#appendix--priority-tags), unless explicitly deferred with reason (see `STORY-078` for `D-09`).
+**Sums-to-whole:** Over the phase, promoted **`STORY-069`–`STORY-078`** tracker entries should collectively cover every **`FM-*` minimum bar** row and every **`D-*`** with priority Critical / High in the [Appendix — priority tags](#appendix--priority-tags), unless explicitly deferred with reason (see `STORY-078` for `D-09`).
 
-**Manual QA (F3):** Maintain the Epic F3 checklist as markdown under **`docs/`** (path is up to the team; e.g. `docs/qa/context-flow-f3-checklist.md`). The ship criterion in `MON-F-01` requires F3 / ops listing of milestone keys.
+**Manual QA (F3):** Keep manual QA notes in this file or the active story tracker. The ship criterion in `MON-F-01` requires F3 / ops listing of milestone keys.
 
 ---
 
@@ -111,7 +111,7 @@ Recommended order for agents (dependencies first):
 
 - **FM-01, FM-02, FM-04, FM-06:** automated coverage in CI ([§3](#3-ci--regression-commands)).
 - **FM-03:** automated Epic F2 tests **and** manual Epic F3 sign-off before release.
-- **FM-05:** at least one automated test (integration, Playwright, or `App.test.tsx`) that exercises back/forward across assembly, enrichment, and review with no data loss; manual F3 only supplements gaps **explicitly listed** in the F3 doc under `docs/` until automation covers them.
+- **FM-05:** at least one automated test (integration, Playwright, or `App.test.tsx`) that exercises back/forward across assembly, enrichment, and review with no data loss; manual F3 only supplements gaps explicitly listed in this file or the active story tracker until automation covers them.
 
 ---
 
@@ -198,7 +198,7 @@ UPDATE_CONTEXT_EVAL_FIXTURES=1 npm --workspace apps/backend run test:eval
 
 | id | Requirement |
 |----|-------------|
-| MON-F-01 | **Ship criterion (A3):** New-flow milestones exist as stable `logFrontendDebug` string keys (see [Placeholder A3 milestone keys](#placeholder-a3-milestone-keys-stable-strings)), fire on the golden path (assembly → enrichment → review → submit), and are listed in the F3 checklist or ops note under **`docs/`** so funnels/dashboards do not depend on ad hoc log archaeology. |
+| MON-F-01 | **Ship criterion (A3):** New-flow milestones exist as stable `logFrontendDebug` string keys (see [Placeholder A3 milestone keys](#placeholder-a3-milestone-keys-stable-strings)), fire on the golden path (assembly → enrichment → review → submit), and are listed in this eval strategy or active story tracker so funnels/dashboards do not depend on ad hoc log archaeology. |
 
 After Epic A3, align milestones with new flow and monitor **counts and funnels**:
 
@@ -209,7 +209,7 @@ After Epic A3, align milestones with new flow and monitor **counts and funnels**
 
 #### Placeholder A3 milestone keys (stable strings)
 
-Use these **or** rename once in a single PR that also updates `docs/` F3 checklist and this table. Agents should implement logging with **one** agreed set of keys.
+Use these **or** rename once in a single PR that also updates this table. Agents should implement logging with **one** agreed set of keys.
 
 | id | `logFrontendDebug` milestone key (placeholder) | Fires when (golden-path contract) |
 |----|--------------------------------------------------|-------------------------------------|
@@ -270,7 +270,7 @@ Add new `*.fixture.json` + run `test:eval` whenever UI starts emitting new targe
 | TL-02 | Frontend flow | **Vitest** + `App.test.tsx` | Milestones, main user journeys |
 | TL-03 | Pickers / gating | **Vitest** (RTL) on `TargetEditor` / assembly components | Epic F2 |
 | TL-04 | E2E (optional) | **Playwright** | Full browser flow if RTL cannot cover focus/scroll; use if Epic C6 a11y risk |
-| TL-05 | Release | **Manual QA** | Epic F3 checklist under `docs/` — align with spec: cross-list picks, empty stack gating, review accuracy, retry |
+| TL-05 | Release | **Manual QA** | Manual QA notes in this file or active story tracker: cross-list picks, empty stack gating, review accuracy, retry |
 
 **No new eval SaaS required** for this phase; repo shows no Langfuse/Phoenix/RAGAS wiring — stay on Vitest + goldens unless product later adds online LLM tracing.
 
@@ -289,7 +289,7 @@ Add new `*.fixture.json` + run `test:eval` whenever UI starts emitting new targe
 
 ## Story IDs promoted from parallel plan
 
-Promoted global backlog IDs (see `PRD/stories/` and `PRD/README.md` — Context flow eval execution). Wave matches recommended execution; `covers_ids` are eval row ids.
+Promoted global backlog IDs (see `PRD/README.md` — Context flow eval execution). Wave matches recommended execution; `covers_ids` are eval row ids.
 
 | story_id | wave | execution mode | covers_ids (primary) |
 |----------|------|------------------|----------------------|

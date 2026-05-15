@@ -33,10 +33,10 @@ For most product tasks, read:
 ## Scope Discipline
 
 - The product remains a flow-validation assistant unless decisions explicitly expand scope.
-- Do not pull ideas from `PRD/archive/` or future roadmap phases into current work unless promoted via `sections/decisions.md` or the active MVP2 roadmap.
+- Do not pull historical or future roadmap ideas into current work unless promoted via `sections/decisions.md` or the active MVP2 roadmap.
 - Do not optimize for long-term architecture at the cost of shipping the current roadmap slice.
 - Preserve stack ordering, contract stability, and “assistant not judge” framing.
-- Active execution context: `PRD/README.md` and `PRD/analysis/MVP2-bedrock-integration-roadmap.md`. Historical MVP1 context: `PRD/archive/mvp1/`.
+- Active execution context: `PRD/README.md` and `PRD/analysis/MVP2-openai-integration-roadmap.md`.
 
 ## Retrieval Discipline
 

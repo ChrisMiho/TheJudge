@@ -14,7 +14,7 @@
   - `PRD/README.md` MVP2 phase checklist marks `STORY-067` complete when implementation lands
 - execution mode: parallel-ready
 - dependencies:
-  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 6
+  - `PRD/analysis/MVP2-openai-integration-roadmap.md` Phase 6
   - `NFR-003`
   - `DEC-010`
 - exclusions:

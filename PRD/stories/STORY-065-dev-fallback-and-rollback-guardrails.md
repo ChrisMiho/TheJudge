@@ -16,7 +16,7 @@
 - dependencies:
   - `STORY-059` - stable error mapping contract must exist first
   - `STORY-064` - baseline DEV deployment runbook and environment matrix
-  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 4
+  - `PRD/analysis/MVP2-openai-integration-roadmap.md` Phase 4
 - exclusions:
   - no production failover automation
   - no user-facing copy redesign

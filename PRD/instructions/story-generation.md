@@ -61,8 +61,8 @@ For each story, include:
 ### Acceptance Criteria Requirements
 
 - Include at least one acceptance criterion that ties completion to **visible documentation or tracking** appropriate to the phase:
-  - **MVP2 and forward:** update `PRD/analysis/MVP2-bedrock-integration-roadmap.md` when a roadmap phase milestone is met, and/or `PRD/README.md` when control-plane guidance changes; add or adjust `PRD/stories/STORY-###` scope if the story file is the source of truth for that slice.
-  - **Historical MVP1:** completion is recorded in `PRD/archive/mvp1/stories/` and summarized under `PRD/archive/mvp1/`; do not require a root `README.md` checklist (removed after MVP1 closeout).
+  - **MVP2 and forward:** update `PRD/analysis/MVP2-openai-integration-roadmap.md` when a roadmap phase milestone is met, and/or `PRD/README.md` when control-plane guidance changes; add or adjust `PRD/stories/STORY-###` scope if the story file is the source of truth for that slice.
+  - **Historical MVP1:** do not add archived story references back into the repo unless the relevant decision or constraint is promoted into active PRD sections.
 - The tracker criterion should name the file(s) to update so completion stays auditable.
 
 ## Dependency Rules

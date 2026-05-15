@@ -19,8 +19,6 @@ Apply this order whenever gameplan docs conflict:
 - `MASTER-ROADMAP.md` - now/next/later execution lanes with dependency notes.
 - `FEATURE-QUEUE.md` - prioritized feature planning queue and links.
 - `OPEN-QUESTIONS-QUEUE.md` - unresolved `Q-*` with impact and owners.
-- `CHANGELOG.md` - append-only history of gameplan updates.
-- `DRIFT-REPORT.md` - latest sync drift audit (created/updated by sync skill).
 - `features/*.md` - feature-specific execution plans.
 
 ## Workflow
