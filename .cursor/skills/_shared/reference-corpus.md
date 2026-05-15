@@ -8,6 +8,8 @@ This file is the single embedded governance source for:
 
 - `.cursor/skills/problem-analysis/SKILL.md`
 - `.cursor/skills/stories-from-analysis/SKILL.md`
+- `.cursor/skills/generate-feature-prd/SKILL.md`
+- `.cursor/skills/prd-to-parallel-stories/SKILL.md`
 
 Use it to avoid re-reading a long chain of repo documents for routine analysis/story drafting while still staying aligned with project rules.
 
