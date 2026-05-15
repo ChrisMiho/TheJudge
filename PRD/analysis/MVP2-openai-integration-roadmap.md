@@ -71,6 +71,8 @@ Scope:
 - no contract changes during provider migration
 - prompt/eval expansion tracked as a separate next step after OpenAI path is stable
 
+Related (frontend context capture and eval, parallel track): `PRD/analysis/EVAL-STRATEGY-context-flow-rework.md` (`EVAL-CTX-FLOW-001`) with promoted stories `STORY-069` through `STORY-078` under `PRD/stories/` and checklist in `PRD/README.md` (Context flow eval execution). Backend fixture work that stays inside frozen prompt assembly belongs in `STORY-072`; do not conflate with OpenAI provider swap scope above.
+
 ## Definition of Done for OpenAI Pivot
 
 - `/api/ask-ai` can run OpenAI in DEV when provider mode is `openai`

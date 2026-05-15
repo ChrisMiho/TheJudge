@@ -92,6 +92,7 @@ Read in this order:
 3. `sections/user-flows.md`
 4. `instructions/story-generation.md`
 5. `instructions/requirement-format.md`
+6. For **context-flow eval backlog** (`EVAL-CTX-FLOW-001`): `analysis/EVAL-STRATEGY-context-flow-rework.md` and `stories/STORY-069`–`STORY-078`.
 
 ### If the task is document editing or extension
 Read in this order:
@@ -171,3 +172,29 @@ Phase 6 - AWS Deployment Expansion (Deferred Planning):
 Adhoc stories are optional, non-blocking slices we can execute while AWS signup/configuration work is in progress.
 
 - [x] `STORY-068` system role preamble prefix for prompt context
+
+### Context flow eval execution (`EVAL-CTX-FLOW-001`)
+
+Canonical eval strategy: `analysis/EVAL-STRATEGY-context-flow-rework.md`. Stories implement automated coverage, fixtures, logging, and QA docs for the assembly → enrichment → review → submit path.
+
+Wave 0 (docs):
+- [x] `STORY-069` context flow docs and F3 checklist scaffold (`docs/`)
+
+Wave 1 (parallel; coordinate shared request-builder test hotspots):
+- [x] `STORY-070` stack order serialization tests
+- [ ] `STORY-071` cross-list target integrity tests
+- [x] `STORY-072` backend eval SCN fixtures
+
+Wave 2:
+- [ ] `STORY-073` review vs submit parity tests (after `STORY-070`; `STORY-071` recommended)
+- [ ] `STORY-074` gating and picker RTL tests
+- [ ] `STORY-077` submit and retry regression tests
+
+Wave 3:
+- [ ] `STORY-075` navigation and state preservation tests (after `STORY-070`)
+
+Wave 4:
+- [ ] `STORY-076` `logFrontendDebug` milestone wiring (after `STORY-075`)
+
+Deferred documentation:
+- [ ] `STORY-078` explicit deferral for optional `D-09` LLM-judge eval

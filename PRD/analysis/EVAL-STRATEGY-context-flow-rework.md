@@ -83,14 +83,14 @@ Recommended order for agents (dependencies first):
 
 **Canonical source:** This file (`eval_strategy_id: EVAL-CTX-FLOW-001`).
 
-**Increment docs:** Create **small** markdown files under **`docs/`** (any subdirectory you prefer, e.g. `docs/increments/`) for each shippable slice. Each increment doc **must**:
+**Increment docs:** Prefer **`PRD/stories/STORY-###.md`** as the promoted tracker for each shippable slice (see [Story IDs promoted from parallel plan](#story-ids-promoted-from-parallel-plan)). Optionally mirror a one-line pointer under **`docs/increments/`** for ops-only readers. Each increment or story file **must**:
 
 - Link back to this file path and quote `eval_strategy_id: EVAL-CTX-FLOW-001`.
 - List **`covers_ids`**: the `FM-*`, `D-*`, `EP-*`, `SCN-*`, `MON-*`, or `GR-*` rows addressed (use table `id` values).
 - State **definition of done** for that slice: files touched, tests run, and expected green result.
 - **Not** contradict scope in [Scope and hard stops](#scope-and-hard-stops); if scope must change, update **this** canonical file first, then increments.
 
-**Sums-to-whole:** Over the phase, increment docs should collectively cover every **`FM-*` minimum bar** row and every **`D-*`** with priority Critical / High in the [Appendix — priority tags](#appendix--priority-tags), unless explicitly deferred with reason.
+**Sums-to-whole:** Over the phase, promoted **`PRD/stories/STORY-069`–`STORY-078`** (and optional `docs/increments/` mirrors) should collectively cover every **`FM-*` minimum bar** row and every **`D-*`** with priority Critical / High in the [Appendix — priority tags](#appendix--priority-tags), unless explicitly deferred with reason (see `STORY-078` for `D-09`).
 
 **Manual QA (F3):** Maintain the Epic F3 checklist as markdown under **`docs/`** (path is up to the team; e.g. `docs/qa/context-flow-f3-checklist.md`). The ship criterion in `MON-F-01` requires F3 / ops listing of milestone keys.
 
@@ -284,3 +284,24 @@ Add new `*.fixture.json` + run `test:eval` whenever UI starts emitting new targe
 | D-03, D-06, D-08 | **High** |
 | D-05 | **High** (Medium if strong integration tests exist) |
 | D-09 | **Medium** (optional) |
+
+---
+
+## Story IDs promoted from parallel plan
+
+Promoted global backlog IDs (see `PRD/stories/` and `PRD/README.md` — Context flow eval execution). Wave matches recommended execution; `covers_ids` are eval row ids.
+
+| story_id | wave | execution mode | covers_ids (primary) |
+|----------|------|------------------|----------------------|
+| STORY-069 | 0 | parallel-ready | `MON-F-01`, `TL-05`, docs scaffold |
+| STORY-070 | 1 | parallel-ready | `FM-01`, `D-01` |
+| STORY-071 | 1 | parallel-ready | `FM-02`, `D-02` |
+| STORY-072 | 1 | parallel-ready | `SCN-01`–`SCN-05`, `FM-06`, `D-07`, `D-08` |
+| STORY-073 | 2 | sequential | `FM-04`, `D-04`, `GR-P-03` |
+| STORY-074 | 2 | parallel-ready | `FM-03`, `D-03`, `EP-C`, `EP-F` |
+| STORY-075 | 3 | sequential | `FM-05`, `D-05`, `EP-A` |
+| STORY-076 | 4 | sequential | `MON-F-01`, `EP-A`, `M-A3-01`–`M-A3-06` |
+| STORY-077 | 2 | parallel-ready | `D-06`, `EP-D` |
+| STORY-078 | 99 | parallel-ready (defer) | `D-09` |
+
+**Sequential edges:** `STORY-073` after `STORY-070` (and ideally `STORY-071`); `STORY-075` after `STORY-070`; `STORY-076` after `STORY-075`.

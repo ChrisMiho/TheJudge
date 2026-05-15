@@ -20,6 +20,7 @@ Required (one of):
 
 - Path to `PRD/features/<feature-id>/prd.md`, or
 - Pasted full PRD including the `## Story decomposition handoff` section
+- (TheJudge) Canonical eval strategy: `PRD/analysis/EVAL-STRATEGY-context-flow-rework.md` (`EVAL-CTX-FLOW-001`). Promoted backlog lives in `PRD/stories/STORY-069`–`STORY-078` and the eval appendix table; derive waves from that file if no feature PRD exists.
 
 If the handoff YAML is missing, derive the same fields from the PRD body before writing stories, then echo the derived YAML at the top of the output for traceability.
 
