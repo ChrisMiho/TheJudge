@@ -18,7 +18,6 @@ type BattlefieldStepProps = {
   onSuggestionHover: (index: number) => void;
   onSuggestionSelect: (card: CardMetadataItem) => void;
   selectedCard: CardMetadataItem | null;
-  battlefieldEntryName: string;
   battlefieldEntryDetails: string;
   onBattlefieldEntryDetailsChange: (value: string) => void;
   targetKind: TargetKind;
@@ -60,7 +59,6 @@ export function BattlefieldStep({
   onSuggestionHover,
   onSuggestionSelect,
   selectedCard,
-  battlefieldEntryName,
   battlefieldEntryDetails,
   onBattlefieldEntryDetailsChange,
   targetKind,
@@ -249,15 +247,6 @@ export function BattlefieldStep({
           />
         ) : (
           <>
-            <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
-              Battlefield item name
-              <output
-                aria-label="Battlefield item name"
-                className="mt-2 block w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm text-slate-100"
-              >
-                {battlefieldEntryName}
-              </output>
-            </label>
             <p className="text-xs text-slate-300">
               {collectCardsOnly
                 ? "Select a suggestion and add cards to build the battlefield list."

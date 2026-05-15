@@ -1,7 +1,7 @@
 import type { FormEvent, KeyboardEvent } from "react";
 import { CardSelectionPreview } from "./CardSelectionPreview";
 import { TargetEditor } from "./TargetEditor";
-import type { CardMetadataItem, GameContext, PlayerLabel, StackItem, StackTarget } from "../types";
+import type { BattlefieldContextItem, CardMetadataItem, GameContext, PlayerLabel, StackItem, StackTarget } from "../types";
 
 type TargetKind = StackTarget["kind"];
 
@@ -36,6 +36,7 @@ type StackBuilderStepProps = {
   targetStackCardId: string;
   onTargetStackCardIdChange: (value: string) => void;
   stack: StackItem[];
+  battlefieldContext: BattlefieldContextItem[];
   targetBattlefieldName: string;
   onTargetBattlefieldNameChange: (value: string) => void;
   targetPlayer: PlayerLabel;
@@ -67,6 +68,8 @@ type StackBuilderStepProps = {
   onShowStackDetailsChange: (next: boolean) => void;
   onRemoveFromStack: (cardId: string) => void;
   onUpdateStackEntry: (cardId: string, updates: Partial<StackItem>) => void;
+  onRemoveBattlefieldEntry: (entryIndex: number) => void;
+  onUpdateBattlefieldEntry: (entryIndex: number, updates: Partial<BattlefieldContextItem>) => void;
   parseManaSpentInput: (rawValue: string) => number | undefined;
   getDetailTargetKind: (cardId: string) => TargetKind;
   onDetailTargetKindChange: (cardId: string, kind: TargetKind) => void;
@@ -80,6 +83,18 @@ type StackBuilderStepProps = {
   onDetailOtherChange: (cardId: string, value: string) => void;
   onAddTargetFromStackDetails: (cardId: string) => void;
   onRemoveTargetFromStackEntry: (cardId: string, targetIndex: number) => void;
+  getDetailTargetKindForBattlefieldEntry: (entryKey: string) => TargetKind;
+  onDetailTargetKindForBattlefieldEntryChange: (entryKey: string, kind: TargetKind) => void;
+  detailStackTargetByBattlefieldKey: Record<string, string>;
+  onDetailStackTargetForBattlefieldEntryChange: (entryKey: string, value: string) => void;
+  detailBattlefieldByBattlefieldKey: Record<string, string>;
+  onDetailBattlefieldForBattlefieldEntryChange: (entryKey: string, value: string) => void;
+  getDetailPlayerForBattlefieldEntry: (entryKey: string) => PlayerLabel;
+  onDetailPlayerForBattlefieldEntryChange: (entryKey: string, value: PlayerLabel) => void;
+  getDetailOtherForBattlefieldEntry: (entryKey: string) => string;
+  onDetailOtherForBattlefieldEntryChange: (entryKey: string, value: string) => void;
+  onAddTargetFromBattlefieldDetails: (entryIndex: number, entryKey: string) => void;
+  onRemoveTargetFromBattlefieldEntry: (entryIndex: number, targetIndex: number) => void;
 };
 
 export function StackBuilderStep({
@@ -113,6 +128,7 @@ export function StackBuilderStep({
   targetStackCardId,
   onTargetStackCardIdChange,
   stack,
+  battlefieldContext,
   targetBattlefieldName,
   onTargetBattlefieldNameChange,
   targetPlayer,
@@ -144,6 +160,8 @@ export function StackBuilderStep({
   onShowStackDetailsChange,
   onRemoveFromStack,
   onUpdateStackEntry,
+  onRemoveBattlefieldEntry,
+  onUpdateBattlefieldEntry,
   parseManaSpentInput,
   getDetailTargetKind,
   onDetailTargetKindChange,
@@ -156,7 +174,19 @@ export function StackBuilderStep({
   getDetailOther,
   onDetailOtherChange,
   onAddTargetFromStackDetails,
-  onRemoveTargetFromStackEntry
+  onRemoveTargetFromStackEntry,
+  getDetailTargetKindForBattlefieldEntry,
+  onDetailTargetKindForBattlefieldEntryChange,
+  detailStackTargetByBattlefieldKey,
+  onDetailStackTargetForBattlefieldEntryChange,
+  detailBattlefieldByBattlefieldKey,
+  onDetailBattlefieldForBattlefieldEntryChange,
+  getDetailPlayerForBattlefieldEntry,
+  onDetailPlayerForBattlefieldEntryChange,
+  getDetailOtherForBattlefieldEntry,
+  onDetailOtherForBattlefieldEntryChange,
+  onAddTargetFromBattlefieldDetails,
+  onRemoveTargetFromBattlefieldEntry
 }: StackBuilderStepProps): JSX.Element {
   const isCollectionMode = hideSubmitControls && !hideCardAssembly;
   const hasStackTargetCandidates = stack.length > 0;
@@ -667,6 +697,174 @@ export function StackBuilderStep({
                   </div>
                 </li>
               ))}
+              {battlefieldContext.length > 0 && (
+                <li className="rounded-xl border border-slate-600 bg-slate-800/80 p-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-[0.08em] text-sky-300/90">Battlefield context</h3>
+                </li>
+              )}
+              {battlefieldContext.map((entry, index) => {
+                const entryKey = `battlefield-${index}`;
+                const detailKind = getDetailTargetKindForBattlefieldEntry(entryKey);
+                const selectedStackTarget = detailStackTargetByBattlefieldKey[entryKey] ?? "";
+                const selectedBattlefieldTarget = detailBattlefieldByBattlefieldKey[entryKey] ?? "";
+                const stackTargetCandidates = stack;
+                const battlefieldTargetCandidates = battlefieldContext.filter((_, targetIndex) => targetIndex !== index);
+                const canAddBattlefieldTarget =
+                  detailKind === "stack"
+                    ? stackTargetCandidates.length > 0 && selectedStackTarget.trim().length > 0
+                    : detailKind === "battlefield"
+                      ? battlefieldTargetCandidates.length > 0 && selectedBattlefieldTarget.trim().length > 0
+                      : detailKind === "other"
+                        ? getDetailOtherForBattlefieldEntry(entryKey).trim().length > 0
+                        : true;
+
+                return (
+                  <li key={entryKey} className="space-y-2 rounded-xl border border-slate-600 bg-slate-800/80 p-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 text-xs font-medium text-sky-300/90">{index + 1}</span>
+                      <input
+                        aria-label={`Battlefield entry name ${index + 1}`}
+                        value={entry.name}
+                        onChange={(event) => onUpdateBattlefieldEntry(index, { name: event.target.value })}
+                        className="flex-1 rounded-md border border-slate-600 bg-slate-900/60 px-2 py-1 text-sm text-slate-100"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => onRemoveBattlefieldEntry(index)}
+                        className="rounded-lg border border-slate-500 bg-slate-700/80 px-2 py-1 text-xs font-medium text-sky-200 transition hover:bg-slate-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                    <textarea
+                      aria-label={`Battlefield details for ${entry.name}`}
+                      value={entry.details ?? ""}
+                      onChange={(event) =>
+                        onUpdateBattlefieldEntry(index, {
+                          details: event.target.value.trim().length > 0 ? event.target.value : undefined
+                        })
+                      }
+                      rows={2}
+                      maxLength={280}
+                      placeholder="Optional battlefield details"
+                      className="w-full rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs placeholder:text-slate-400"
+                    />
+                    <div className="flex flex-wrap items-center gap-2">
+                      <select
+                        aria-label={`Battlefield target kind for ${entry.name}`}
+                        value={detailKind}
+                        onChange={(event) =>
+                          onDetailTargetKindForBattlefieldEntryChange(entryKey, event.target.value as TargetKind)
+                        }
+                        className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                      >
+                        <option value="stack">Stack target</option>
+                        <option value="battlefield">Battlefield target</option>
+                        <option value="player">Player target</option>
+                        <option value="other">Other target context</option>
+                        <option value="none">No specific target</option>
+                      </select>
+                      {detailKind === "stack" && (
+                        <select
+                          aria-label={`Battlefield stack target for ${entry.name}`}
+                          value={selectedStackTarget}
+                          onChange={(event) =>
+                            onDetailStackTargetForBattlefieldEntryChange(entryKey, event.target.value)
+                          }
+                          disabled={stackTargetCandidates.length === 0}
+                          className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                        >
+                          <option value="">
+                            {stackTargetCandidates.length > 0 ? "Select stack item" : "No stack items available"}
+                          </option>
+                          {stackTargetCandidates.map((candidate) => (
+                            <option key={candidate.cardId} value={candidate.cardId}>
+                              {candidate.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      {detailKind === "battlefield" && (
+                        <select
+                          aria-label={`Battlefield target for ${entry.name}`}
+                          value={selectedBattlefieldTarget}
+                          onChange={(event) =>
+                            onDetailBattlefieldForBattlefieldEntryChange(entryKey, event.target.value)
+                          }
+                          disabled={battlefieldTargetCandidates.length === 0}
+                          className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                        >
+                          <option value="">
+                            {battlefieldTargetCandidates.length > 0
+                              ? "Select battlefield item"
+                              : "No battlefield entries available"}
+                          </option>
+                          {battlefieldTargetCandidates.map((candidate) => (
+                            <option key={`${candidate.name}-${index}`} value={candidate.name}>
+                              {candidate.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      {detailKind === "player" && (
+                        <select
+                          aria-label={`Battlefield player target for ${entry.name}`}
+                          value={getDetailPlayerForBattlefieldEntry(entryKey)}
+                          onChange={(event) =>
+                            onDetailPlayerForBattlefieldEntryChange(entryKey, event.target.value as PlayerLabel)
+                          }
+                          className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                        >
+                          {playerOptions.map((player) => (
+                            <option key={player} value={player}>
+                              {player}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      {detailKind === "other" && (
+                        <input
+                          aria-label={`Battlefield other target for ${entry.name}`}
+                          value={getDetailOtherForBattlefieldEntry(entryKey)}
+                          onChange={(event) =>
+                            onDetailOtherForBattlefieldEntryChange(entryKey, event.target.value.slice(0, maxOtherTargetChars))
+                          }
+                          placeholder="Describe target context"
+                          className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                        />
+                      )}
+                      <button
+                        type="button"
+                        aria-label={`Add target for battlefield ${entry.name}`}
+                        onClick={() => onAddTargetFromBattlefieldDetails(index, entryKey)}
+                        disabled={!canAddBattlefieldTarget}
+                        className="rounded-md border border-slate-500 bg-slate-700 px-2 py-1 text-xs text-slate-100"
+                      >
+                        Add target
+                      </button>
+                    </div>
+                    {entry.targets.length > 0 && (
+                      <ul className="space-y-1">
+                        {entry.targets.map((target, targetIndex) => (
+                          <li
+                            key={`${entry.name}-${target.kind}-${targetIndex}`}
+                            className="flex items-center justify-between gap-2 text-xs"
+                          >
+                            <span className="text-slate-200">{formatTarget(target)}</span>
+                            <button
+                              type="button"
+                              onClick={() => onRemoveTargetFromBattlefieldEntry(index, targetIndex)}
+                              className="rounded border border-slate-500 px-1.5 py-0.5 text-[11px] text-slate-100"
+                            >
+                              Remove
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>

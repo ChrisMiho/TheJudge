@@ -935,7 +935,49 @@ describe("App MVP interaction flows", () => {
     expect(requestBody.battlefieldContext).toEqual([
       {
         name: "Lightning Bolt",
+        details: "Lightning Bolt deals 3 damage to any target.",
         targets: []
+      }
+    ]);
+  });
+
+  it("allows battlefield context edits from final stack details menu", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await user.type(screen.getByLabelText("Battlefield search input"), "lig");
+    await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
+    await user.click(screen.getByRole("button", { name: "Add battlefield card" }));
+    await user.click(screen.getByRole("button", { name: "Continue to stack" }));
+    await waitForMetadataReady();
+
+    await addCardToStack(user, "opt", "Opt");
+    await advanceToContextEnrichment(user);
+
+    await user.click(screen.getByRole("button", { name: /^Stack/ }));
+    const battlefieldNameInput = screen.getByLabelText("Battlefield entry name 1");
+    await user.clear(battlefieldNameInput);
+    await user.type(battlefieldNameInput, "Lightning Bolt token");
+    const battlefieldDetailsInput = screen.getByLabelText("Battlefield details for Lightning Bolt token");
+    await user.clear(battlefieldDetailsInput);
+    await user.type(battlefieldDetailsInput, "Created by Storm count");
+    await user.selectOptions(screen.getByLabelText("Battlefield target kind for Lightning Bolt token"), "player");
+    await user.selectOptions(screen.getByLabelText("Battlefield player target for Lightning Bolt token"), "Player 2");
+    await user.click(screen.getByRole("button", { name: "Add target for battlefield Lightning Bolt token" }));
+    await user.click(screen.getByRole("button", { name: "Close" }));
+
+    await clickDecryptStack(user);
+    const requestBody = await waitFor(() => {
+      expect(submittedAskAiRequests.length).toBeGreaterThan(0);
+      return submittedAskAiRequests[0];
+    });
+
+    expect(requestBody.battlefieldContext).toEqual([
+      {
+        name: "Lightning Bolt token",
+        details: "Created by Storm count",
+        targets: [{ kind: "player", targetPlayer: "Player 2" }]
       }
     ]);
   });
@@ -1054,18 +1096,16 @@ describe("App MVP interaction flows", () => {
     expect(requestBody.stack.map((item) => item.name)).toEqual(["Lightning Bolt", "Opt", "Counterspell"]);
   });
 
-  it("shows display-only battlefield name before selection and shared preview after selection", async () => {
+  it("does not show battlefield item name before selection and shows preview after selection", async () => {
     const user = userEvent.setup();
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
     const battlefieldSearchInput = screen.getByLabelText("Battlefield search input");
-    const battlefieldNameDisplay = screen.getByLabelText("Battlefield item name");
-
-    expect(battlefieldNameDisplay.tagName).toBe("OUTPUT");
+    expect(screen.queryByLabelText("Battlefield item name")).not.toBeInTheDocument();
 
     await user.type(battlefieldSearchInput, "lig");
-    expect(battlefieldNameDisplay).toHaveTextContent("lig");
+    expect(screen.queryByLabelText("Battlefield item name")).not.toBeInTheDocument();
 
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
     expect(screen.queryByLabelText("Battlefield item name")).not.toBeInTheDocument();
