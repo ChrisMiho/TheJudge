@@ -145,11 +145,6 @@ function readSuggestionNamesFromPanel(searchInput: HTMLElement): string[] {
     .filter((name) => name.length > 0);
 }
 
-function readSelectOptionLabels(selectLabel: string): string[] {
-  const select = screen.getByLabelText(selectLabel);
-  return within(select).getAllByRole("option").map((option) => option.textContent?.trim() ?? "");
-}
-
 async function selectCard(user: ReturnType<typeof userEvent.setup>, query: string, cardName: string): Promise<void> {
   const searchInput = screen.getByPlaceholderText("Type to begin");
   await user.clear(searchInput);

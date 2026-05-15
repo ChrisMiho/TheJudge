@@ -109,7 +109,7 @@ describe("useAskAiSubmitOrchestration", () => {
     vi.useFakeTimers();
     createCorrelationIdMock.mockReturnValue("corr-fail-1");
     const fetchMock = vi.fn(async () =>
-      jsonResponse({ error: "Miho is working on it", retryAfterSeconds: 3 }, 502, {
+      jsonResponse({ code: "PROVIDER_UNAVAILABLE", message: "Miho is working on it", retryAfterSeconds: 3 }, 502, {
         "X-Correlation-Id": "srv-corr-err"
       })
     );
@@ -136,6 +136,8 @@ describe("useAskAiSubmitOrchestration", () => {
       correlationId: "corr-fail-1",
       responseCorrelationId: "srv-corr-err",
       httpStatus: 502,
+      errorCode: "PROVIDER_UNAVAILABLE",
+      errorMessage: "Miho is working on it",
       retryAfterSeconds: 3
     });
 
@@ -158,9 +160,9 @@ describe("useAskAiSubmitOrchestration", () => {
       .mockReturnValueOnce("corr-attempt-1")
       .mockReturnValueOnce("corr-attempt-2");
     const fetchMock = vi
-      .fn<() => Promise<Response>>()
+      .fn(async (_input: RequestInfo | URL, _init?: RequestInit): Promise<Response> => jsonResponse({ answer: "ok" }))
       .mockResolvedValueOnce(
-        jsonResponse({ error: "Miho is working on it", retryAfterSeconds: 1 }, 502, {
+        jsonResponse({ code: "PROVIDER_UNAVAILABLE", message: "Miho is working on it", retryAfterSeconds: 1 }, 502, {
           "X-Correlation-Id": "srv-corr-err"
         })
       )
@@ -225,6 +227,8 @@ describe("useAskAiSubmitOrchestration", () => {
       correlationId: "corr-attempt-1",
       responseCorrelationId: "srv-corr-err",
       httpStatus: 502,
+      errorCode: "PROVIDER_UNAVAILABLE",
+      errorMessage: "Miho is working on it",
       retryAfterSeconds: 1
     });
     expect(logFrontendDebugMock).toHaveBeenCalledWith("ask_ai.request_succeeded", {

@@ -5,6 +5,7 @@ type CardSelectionPreviewProps = {
   card: CardMetadataItem;
   contextTitle: string;
   contextContent: ReactNode;
+  showContextSection?: boolean;
   action?: ReactNode;
 };
 
@@ -16,6 +17,7 @@ export function CardSelectionPreview({
   card,
   contextTitle,
   contextContent,
+  showContextSection = true,
   action
 }: CardSelectionPreviewProps): JSX.Element {
   return (
@@ -51,10 +53,12 @@ export function CardSelectionPreview({
             <dt className="font-semibold text-slate-200">Subtypes</dt>
             <dd>{formatMetaList(card.subtypes)}</dd>
           </dl>
-          <div className="space-y-2 rounded-lg border border-slate-600/70 bg-slate-900/50 p-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">{contextTitle}</p>
-            {contextContent}
-          </div>
+          {showContextSection && (
+            <div className="space-y-2 rounded-lg border border-slate-600/70 bg-slate-900/50 p-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">{contextTitle}</p>
+              {contextContent}
+            </div>
+          )}
           {action}
         </div>
       </div>

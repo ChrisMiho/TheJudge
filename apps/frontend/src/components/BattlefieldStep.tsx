@@ -140,6 +140,7 @@ export function BattlefieldStep({
           <CardSelectionPreview
             card={selectedCard}
             contextTitle={collectCardsOnly ? "Battlefield card" : "Battlefield context"}
+            showContextSection={!collectCardsOnly}
             contextContent={
               collectCardsOnly ? null : (
                 <>

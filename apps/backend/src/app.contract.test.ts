@@ -84,6 +84,19 @@ describe("ask-ai endpoint contract", () => {
     expect(badTargetResponse.body.message).toContain("stack.0.targets.0.targetDescription");
   });
 
+  it("rejects control characters in free-text input fields", async () => {
+    const response = await request(app).post("/api/ask-ai").send(
+      createAskAiRequest({
+        question: "Can this resolve?\u0007",
+        stack: [createStackItem({ contextNotes: "targets player\u0000 unexpectedly" })]
+      })
+    );
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe("VALIDATION_ERROR");
+    expect(response.body.message).toContain("contains unsupported control characters");
+  });
+
   it("returns validation error when prompt budget is exceeded", async () => {
     const response = await request(app).post("/api/ask-ai").send(
       createAskAiRequest({

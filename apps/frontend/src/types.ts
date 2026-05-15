@@ -70,6 +70,11 @@ export type AskAiResponse = {
 };
 
 export type AskAiError = {
-  error: string;
+  code: string;
+  message: string;
+  metadata?: {
+    correlationId?: string;
+    details?: string;
+  };
   retryAfterSeconds?: number;
 };

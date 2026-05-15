@@ -70,9 +70,11 @@ export function useAskAiSubmitOrchestration({
           correlationId,
           responseCorrelationId,
           httpStatus: response.status,
+          errorCode: body.code,
+          errorMessage: body.message,
           retryAfterSeconds: body.retryAfterSeconds ?? retryCooldownSeconds
         });
-        setError("Miho is working on it");
+        setError(body.message || "Miho is working on it");
         startRetryCooldown(body.retryAfterSeconds ?? retryCooldownSeconds);
         return;
       }

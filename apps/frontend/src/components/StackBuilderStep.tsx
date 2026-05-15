@@ -289,6 +289,7 @@ export function StackBuilderStep({
           <CardSelectionPreview
             card={selectedCard}
             contextTitle={isCollectionMode ? "Stack card" : "Stack context"}
+            showContextSection={!isCollectionMode}
             contextContent={isCollectionMode ? null : (
               <>
                 <label className="flex items-center gap-2 text-xs text-slate-200">

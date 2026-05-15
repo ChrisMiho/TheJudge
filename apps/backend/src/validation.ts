@@ -4,15 +4,48 @@ import { ASK_AI_ERROR_CODES } from "./errors.js";
 export const playerLabelSchema = z.enum(["Player 1", "Player 2", "Player 3", "Player 4"]);
 const orderedPlayerLabels = ["Player 1", "Player 2", "Player 3", "Player 4"] as const;
 
+function noControlCharacterGuardrail(value: string): boolean {
+  for (const char of value) {
+    const code = char.charCodeAt(0);
+    if ((code >= 0 && code <= 8) || (code >= 11 && code <= 12) || (code >= 14 && code <= 31) || code === 127) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function boundedText(maxLength: number, minLength = 1) {
+  return z
+    .string()
+    .trim()
+    .min(minLength)
+    .max(maxLength)
+    .refine(noControlCharacterGuardrail, "contains unsupported control characters");
+}
+
+function optionalBoundedText(maxLength: number) {
+  return boundedText(maxLength).optional();
+}
+
+function optionalBoundedTextWithEmptyDefault(maxLength: number) {
+  return z
+    .string()
+    .trim()
+    .max(maxLength)
+    .refine(noControlCharacterGuardrail, "contains unsupported control characters")
+    .optional()
+    .default("");
+}
+
 export const stackTargetSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("stack"),
-    targetCardId: z.string().min(1).max(120),
-    targetCardName: z.string().min(1).max(120)
+    targetCardId: boundedText(120),
+    targetCardName: boundedText(120)
   }).strict(),
   z.object({
     kind: z.literal("battlefield"),
-    targetPermanent: z.string().min(1).max(160)
+    targetPermanent: boundedText(160)
   }).strict(),
   z.object({
     kind: z.literal("player"),
@@ -23,24 +56,24 @@ export const stackTargetSchema = z.discriminatedUnion("kind", [
   }).strict(),
   z.object({
     kind: z.literal("other"),
-    targetDescription: z.string().min(1).max(200)
+    targetDescription: boundedText(200)
   }).strict()
 ]);
 
 export const stackItemSchema = z.object({
-  cardId: z.string().min(1),
-  name: z.string().min(1),
-  oracleText: z.string().min(1),
-  imageUrl: z.string().optional().default(""),
-  manaCost: z.string().max(40).optional().default(""),
+  cardId: boundedText(120),
+  name: boundedText(120),
+  oracleText: boundedText(2000),
+  imageUrl: optionalBoundedTextWithEmptyDefault(500),
+  manaCost: optionalBoundedTextWithEmptyDefault(40),
   manaValue: z.number().min(0).max(20).optional().default(0),
-  typeLine: z.string().max(200).optional().default(""),
-  colors: z.array(z.string().min(1).max(1)).max(5).optional().default([]),
-  supertypes: z.array(z.string().min(1).max(30)).max(8).optional().default([]),
-  subtypes: z.array(z.string().min(1).max(40)).max(12).optional().default([]),
+  typeLine: optionalBoundedTextWithEmptyDefault(200),
+  colors: z.array(boundedText(1)).max(5).optional().default([]),
+  supertypes: z.array(boundedText(30)).max(8).optional().default([]),
+  subtypes: z.array(boundedText(40)).max(12).optional().default([]),
   caster: playerLabelSchema,
   targets: z.array(stackTargetSchema).max(8).optional().default([]),
-  contextNotes: z.string().max(280).optional(),
+  contextNotes: optionalBoundedText(280),
   manaSpent: z.number().min(0).max(99).optional()
 }).strict();
 
@@ -86,13 +119,17 @@ export const gameContextSchema = z
   });
 
 export const battlefieldContextItemSchema = z.object({
-  name: z.string().min(1).max(120),
-  details: z.string().max(280).optional(),
+  name: boundedText(120),
+  details: optionalBoundedText(280),
   targets: z.array(stackTargetSchema).max(8).optional().default([])
 }).strict();
 
 export const askAiRequestSchema = z.object({
-  question: z.string().max(300),
+  question: z
+    .string()
+    .trim()
+    .max(300)
+    .refine(noControlCharacterGuardrail, "contains unsupported control characters"),
   gameContext: gameContextSchema,
   battlefieldContext: z.array(battlefieldContextItemSchema).max(16).optional().default([]),
   stack: z.array(stackItemSchema).min(1).max(10)
