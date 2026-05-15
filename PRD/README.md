@@ -145,12 +145,12 @@ Task 0:
 
 Phase 1 - OpenAI Runtime Foundation:
 - [x] `STORY-056` provider feature-flag selection contract
-- [ ] `STORY-057` OpenAI config validation and startup safety
-- [ ] `STORY-058` OpenAI provider integration path
+- [x] `STORY-057` OpenAI config validation and startup safety
+- [x] `STORY-058` OpenAI provider integration path
 
 Phase 2 - Reliability and Observability:
-- [ ] `STORY-059` OpenAI error mapping to canonical API contract
-- [ ] `STORY-060` provider observability contract
+- [x] `STORY-059` OpenAI error mapping to canonical API contract
+- [x] `STORY-060` provider observability contract
 
 Phase 3 - Prompt Context Pipeline:
 - [ ] `STORY-061` prompt context assembly hardening
