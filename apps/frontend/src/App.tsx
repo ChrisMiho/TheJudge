@@ -30,7 +30,11 @@ const RETRY_COOLDOWN_SECONDS = 13;
 const METADATA_URL = "/data/cardMetadata.json";
 const EMPTY_STATE_IMAGE_URL = "/assets/cats-homescreen.png";
 const MAX_OTHER_TARGET_CHARS = 200;
-const PLAYER_OPTIONS: PlayerLabel[] = ["Player 1", "Player 2", "Player 3", "Player 4"];
+const MIN_PLAYERS = 2;
+const MAX_PLAYERS = 8;
+const DUEL_STARTING_LIFE_TOTAL = "20";
+const MULTIPLAYER_STARTING_LIFE_TOTAL = "40";
+const PLAYER_OPTIONS: PlayerLabel[] = Array.from({ length: MAX_PLAYERS }, (_, index) => `Player ${index + 1}` as PlayerLabel);
 type TargetKind = StackTarget["kind"];
 const TARGET_KIND_OPTIONS: Array<{ value: TargetKind; label: string }> = [
   { value: "stack", label: "Stack target" },
@@ -68,13 +72,16 @@ export default function App() {
   const [searchInput, setSearchInput] = useState("");
   const [selectedCard, setSelectedCard] = useState<CardMetadataItem | null>(null);
   const [flowStep, setFlowStep] = useState<FlowStep>("game-context");
-  const [playerCountInput, setPlayerCountInput] = useState<2 | 3 | 4>(2);
-  const [lifeTotalsByPlayer, setLifeTotalsByPlayer] = useState<Record<PlayerLabel, string>>({
-    "Player 1": "20",
-    "Player 2": "20",
-    "Player 3": "20",
-    "Player 4": "20"
-  });
+  const [activePlayerCount, setActivePlayerCount] = useState(MIN_PLAYERS);
+  const [lifeTotalsByPlayer, setLifeTotalsByPlayer] = useState<Record<PlayerLabel, string>>(() =>
+    PLAYER_OPTIONS.reduce<Record<PlayerLabel, string>>(
+      (accumulator, player, index) => ({
+        ...accumulator,
+        [player]: index < MIN_PLAYERS ? DUEL_STARTING_LIFE_TOTAL : MULTIPLAYER_STARTING_LIFE_TOTAL
+      }),
+      {} as Record<PlayerLabel, string>
+    )
+  );
   const [gameContext, setGameContext] = useState<GameContext | null>(null);
   const [battlefieldContext, setBattlefieldContext] = useState<BattlefieldContextItem[]>([]);
   const [battlefieldSearchInput, setBattlefieldSearchInput] = useState("");
@@ -165,7 +172,7 @@ export default function App() {
   });
 
   const addButtonLabel = stack.length === 0 ? "Begin stackening!" : "Add to Stack";
-  const activePlayers = PLAYER_OPTIONS.slice(0, playerCountInput);
+  const activePlayers = PLAYER_OPTIONS.slice(0, activePlayerCount);
   const { answer, error, isSubmitting, retryCountdown, canRetry, submitAttempt } = useAskAiSubmitOrchestration({
     apiBaseUrl,
     retryCooldownSeconds: RETRY_COOLDOWN_SECONDS
@@ -275,6 +282,51 @@ export default function App() {
     }));
   }
 
+  function addPlayer(): void {
+    if (activePlayerCount >= MAX_PLAYERS) {
+      return;
+    }
+
+    const nextCount = activePlayerCount + 1;
+    const nextPlayer = PLAYER_OPTIONS[nextCount - 1];
+    if (!nextPlayer) {
+      return;
+    }
+
+    setLifeTotalsByPlayer((current) => {
+      const nextLifeTotals = {
+        ...current,
+        [nextPlayer]: current[nextPlayer] || MULTIPLAYER_STARTING_LIFE_TOTAL
+      };
+
+      if (nextCount === 3) {
+        for (const player of PLAYER_OPTIONS.slice(0, MIN_PLAYERS)) {
+          if (nextLifeTotals[player] === DUEL_STARTING_LIFE_TOTAL) {
+            nextLifeTotals[player] = MULTIPLAYER_STARTING_LIFE_TOTAL;
+          }
+        }
+      }
+
+      return nextLifeTotals;
+    });
+    setActivePlayerCount(nextCount);
+  }
+
+  function removePlayer(): void {
+    if (activePlayerCount <= MIN_PLAYERS) {
+      return;
+    }
+    const nextCount = activePlayerCount - 1;
+    if (nextCount === MIN_PLAYERS) {
+      setLifeTotalsByPlayer((current) => ({
+        ...current,
+        "Player 1": DUEL_STARTING_LIFE_TOTAL,
+        "Player 2": DUEL_STARTING_LIFE_TOTAL
+      }));
+    }
+    setActivePlayerCount(nextCount);
+  }
+
   function confirmGameContext(): void {
     const players = activePlayers.map((player) => {
       const parsed = Number(lifeTotalsByPlayer[player]);
@@ -290,11 +342,11 @@ export default function App() {
     }
 
     setGameContext({
-      playerCount: playerCountInput,
+      playerCount: activePlayers.length,
       players
     });
     logFrontendDebug("game_context.confirmed", {
-      playerCount: playerCountInput
+      playerCount: activePlayers.length
     });
     setFlowStep("battlefield-context");
     flashStatus("Game context saved.");
@@ -622,6 +674,8 @@ export default function App() {
       return nextStack;
     });
     resetEntryContext();
+    setSearchInput("");
+    setSelectedCard(null);
     flashStatus("Stacked");
   }
 
@@ -723,32 +777,53 @@ export default function App() {
             )}
           </div>
           <h2 className="text-2xl font-semibold text-sky-300">Game context</h2>
-          <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
-            Number of players
-            <select
-              aria-label="Number of players"
-              value={playerCountInput}
-              onChange={(event) => setPlayerCountInput(Number(event.target.value) as 2 | 3 | 4)}
-              className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
-            >
-              <option value={2}>2</option>
-              <option value={3}>3</option>
-              <option value={4}>4</option>
-            </select>
-          </label>
-          <div className="space-y-2">
-            {activePlayers.map((player) => (
-              <label key={player} className="flex items-center justify-between gap-3 text-sm">
-                <span>{player} life total</span>
-                <input
-                  aria-label={`${player} life total`}
-                  value={lifeTotalsByPlayer[player]}
-                  onChange={(event) => updateLifeTotal(player, event.target.value)}
-                  inputMode="numeric"
-                  className="w-28 rounded-lg border border-slate-600 bg-slate-800 px-2 py-1 text-right"
-                />
-              </label>
-            ))}
+          <div className="space-y-4 rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Players in game</p>
+                <p className="mt-1 text-xs text-slate-400">2 players start at 20 life. 3+ players default to 40 life.</p>
+              </div>
+              <span className="rounded-full border border-slate-600 bg-slate-800/90 px-3 py-1 text-xs font-semibold text-slate-200">
+                {activePlayerCount} / {MAX_PLAYERS}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={addPlayer}
+                disabled={activePlayerCount >= MAX_PLAYERS}
+                className="rounded-xl border border-cyan-500/50 bg-cyan-500/10 px-3 py-2 text-sm font-semibold text-cyan-200 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Add player
+              </button>
+              <button
+                type="button"
+                onClick={removePlayer}
+                disabled={activePlayerCount <= MIN_PLAYERS}
+                className="rounded-xl border border-slate-500 bg-slate-800/70 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:bg-slate-700/80 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Remove last player
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {activePlayers.map((player) => (
+                <label
+                  key={player}
+                  className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-slate-700/80 bg-slate-950/40 px-3 py-2 text-sm"
+                >
+                  <span className="font-medium text-slate-100">{player} life total</span>
+                  <input
+                    aria-label={`${player} life total`}
+                    value={lifeTotalsByPlayer[player]}
+                    onChange={(event) => updateLifeTotal(player, event.target.value)}
+                    inputMode="numeric"
+                    className="w-28 rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-right font-semibold text-slate-100"
+                  />
+                </label>
+              ))}
+            </div>
           </div>
           <button
             type="button"
@@ -844,7 +919,7 @@ export default function App() {
           stackKeyboard.closeSuggestions();
         }}
         selectedCard={selectedCard}
-        playerOptions={PLAYER_OPTIONS}
+        playerOptions={activePlayers}
         entryCaster={entryCaster}
         onEntryCasterChange={setEntryCaster}
         targetKind={targetKind}
@@ -971,6 +1046,7 @@ export default function App() {
   return (
     <StackBuilderStep
       hideCardAssembly
+      compactTopChrome
       gameContext={gameContext}
       battlefieldContextCount={battlefieldContext.length}
       battlefieldContextNames={battlefieldContext.map((item) => item.name)}
@@ -990,7 +1066,7 @@ export default function App() {
         stackKeyboard.closeSuggestions();
       }}
       selectedCard={selectedCard}
-      playerOptions={PLAYER_OPTIONS}
+      playerOptions={activePlayers}
       entryCaster={entryCaster}
       onEntryCasterChange={setEntryCaster}
       targetKind={targetKind}

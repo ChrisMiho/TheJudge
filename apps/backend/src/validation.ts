@@ -1,8 +1,26 @@
 import { z } from "zod";
 import { ASK_AI_ERROR_CODES } from "./errors.js";
 
-export const playerLabelSchema = z.enum(["Player 1", "Player 2", "Player 3", "Player 4"]);
-const orderedPlayerLabels = ["Player 1", "Player 2", "Player 3", "Player 4"] as const;
+export const playerLabelSchema = z.enum([
+  "Player 1",
+  "Player 2",
+  "Player 3",
+  "Player 4",
+  "Player 5",
+  "Player 6",
+  "Player 7",
+  "Player 8"
+]);
+const orderedPlayerLabels = [
+  "Player 1",
+  "Player 2",
+  "Player 3",
+  "Player 4",
+  "Player 5",
+  "Player 6",
+  "Player 7",
+  "Player 8"
+] as const;
 
 function noControlCharacterGuardrail(value: string): boolean {
   for (const char of value) {
@@ -84,8 +102,8 @@ export const gamePlayerSchema = z.object({
 
 export const gameContextSchema = z
   .object({
-    playerCount: z.number().int().min(2).max(4),
-    players: z.array(gamePlayerSchema).min(2).max(4)
+    playerCount: z.number().int().min(2).max(8),
+    players: z.array(gamePlayerSchema).min(2).max(8)
   })
   .strict()
   .superRefine((value, ctx) => {

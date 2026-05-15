@@ -7,6 +7,7 @@ type TargetKind = StackTarget["kind"];
 
 type StackBuilderStepProps = {
   hideCardAssembly?: boolean;
+  compactTopChrome?: boolean;
   hideSubmitControls?: boolean;
   continueToEnrichmentLabel?: string;
   continueToEnrichmentDisabled?: boolean;
@@ -99,6 +100,7 @@ type StackBuilderStepProps = {
 
 export function StackBuilderStep({
   hideCardAssembly = false,
+  compactTopChrome = false,
   hideSubmitControls = false,
   continueToEnrichmentLabel = "Continue",
   continueToEnrichmentDisabled = false,
@@ -189,6 +191,8 @@ export function StackBuilderStep({
   onRemoveTargetFromBattlefieldEntry
 }: StackBuilderStepProps): JSX.Element {
   const isCollectionMode = hideSubmitControls && !hideCardAssembly;
+  const sectionMaxWidthClass = hideCardAssembly ? "max-w-[59vw]" : "max-w-2xl";
+  const stackDetailsMaxWidthClass = hideCardAssembly ? "max-w-[59vw]" : "max-w-[90vw]";
   const hasStackTargetCandidates = stack.length > 0;
   const hasBattlefieldTargetCandidates = battlefieldContextNames.length > 0;
   const isEntryAddTargetDisabled =
@@ -202,14 +206,18 @@ export function StackBuilderStep({
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
-      <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 shadow-[0_20px_60px_-28px_rgba(30,64,175,0.65)] backdrop-blur-xl md:p-6">
+      <section
+        className={`mx-auto flex w-full ${sectionMaxWidthClass} flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 shadow-[0_20px_60px_-28px_rgba(30,64,175,0.65)] backdrop-blur-xl md:p-6`}
+      >
         <header className="flex items-center justify-between">
-          <div>
-            <h1 className="bg-gradient-to-r from-sky-300 to-blue-400 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
-              TheJudge
-            </h1>
-            <p className="text-sm text-slate-300">Stack Assistant</p>
-          </div>
+          {!compactTopChrome && (
+            <div>
+              <h1 className="bg-gradient-to-r from-sky-300 to-blue-400 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+                TheJudge
+              </h1>
+              <p className="text-sm text-slate-300">Stack Assistant</p>
+            </div>
+          )}
           {stack.length > 0 && (
             <button
               type="button"
@@ -223,14 +231,14 @@ export function StackBuilderStep({
             </button>
           )}
         </header>
-        {gameContext && (
+        {!compactTopChrome && gameContext && (
           <div className="rounded-xl border border-slate-700 bg-slate-800/50 px-3 py-2 text-xs text-slate-200">
             <p>{`Game context: ${gameContext.playerCount} players`}</p>
             <p>{gameContext.players.map((player) => `${player.label}=${player.lifeTotal}`).join(" | ")}</p>
             <p>{`Battlefield context entries: ${battlefieldContextCount}`}</p>
           </div>
         )}
-        {hideCardAssembly && (
+        {hideCardAssembly && !compactTopChrome && (
           <p className="text-sm text-slate-300">
             Context enrichment: review each card and add caster, target, mana, or notes before submitting.
           </p>
@@ -441,7 +449,7 @@ export function StackBuilderStep({
           >
             {continueToEnrichmentLabel}
           </button>
-        ) : (
+        ) : !answer ? (
           <form onSubmit={onDecryptStack} className="flex flex-col gap-3">
             <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
               Optional question
@@ -462,7 +470,7 @@ export function StackBuilderStep({
               {isSubmitting ? "Decrypting..." : "Decrypt Stack"}
             </button>
           </form>
-        )}
+        ) : null}
 
         {statusMessage && (
           <p className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2 text-sm font-medium text-cyan-200">
@@ -494,7 +502,7 @@ export function StackBuilderStep({
 
       {showStackDetails && (
         <div className="fixed inset-0 z-10 flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-slate-600 bg-slate-900/90 p-4 shadow-2xl">
+          <div className={`w-full ${stackDetailsMaxWidthClass} rounded-2xl border border-slate-600 bg-slate-900/90 p-4 shadow-2xl`}>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-slate-100">Stack details</h2>
               <button
@@ -505,7 +513,7 @@ export function StackBuilderStep({
                 Close
               </button>
             </div>
-            <ul className="flex max-h-80 flex-col gap-2 overflow-auto">
+            <ul className="flex max-h-[95vh] flex-col gap-2 overflow-auto">
               {stack.map((item, index) => (
                 <li key={item.cardId} className="space-y-2 rounded-xl border border-slate-600 bg-slate-800/80 p-2">
                   <div className="flex items-center gap-2">

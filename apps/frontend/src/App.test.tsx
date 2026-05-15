@@ -231,6 +231,27 @@ describe("App MVP interaction flows", () => {
     expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
   });
 
+  it("defaults to 20 life for 2 players and 40 for 3+ players", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(screen.getByLabelText("Player 1 life total")).toHaveValue("20");
+    expect(screen.getByLabelText("Player 2 life total")).toHaveValue("20");
+    expect(screen.queryByLabelText("Player 3 life total")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Add player" }));
+
+    expect(screen.getByLabelText("Player 1 life total")).toHaveValue("40");
+    expect(screen.getByLabelText("Player 2 life total")).toHaveValue("40");
+    expect(screen.getByLabelText("Player 3 life total")).toHaveValue("40");
+
+    await user.click(screen.getByRole("button", { name: "Remove last player" }));
+
+    expect(screen.getByLabelText("Player 1 life total")).toHaveValue("20");
+    expect(screen.getByLabelText("Player 2 life total")).toHaveValue("20");
+    expect(screen.queryByLabelText("Player 3 life total")).not.toBeInTheDocument();
+  });
+
   it("supports keyboard suggestion navigation and selection in stack builder search", async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -426,6 +447,22 @@ describe("App MVP interaction flows", () => {
     expect(screen.getByText("Player: Player 2")).toBeInTheDocument();
   });
 
+  it("keeps final context-enrichment chrome compact with only stack access at top", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+
+    await addCardToStack(user, "opt", "Opt");
+    await advanceToContextEnrichment(user);
+
+    expect(screen.queryByRole("heading", { name: "TheJudge" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Game context: 2 players")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Context enrichment: review each card and add caster, target, mana, or notes before submitting.")
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Stack/ })).toBeInTheDocument();
+  });
+
   it("uses first-add then subsequent-add button labels", async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -437,6 +474,7 @@ describe("App MVP interaction flows", () => {
     expect(firstAddButton).toBeInTheDocument();
 
     await user.click(firstAddButton);
+    await selectCard(user, "cou", "Counterspell");
 
     expect(screen.getByRole("button", { name: "Add to Stack" })).toBeInTheDocument();
   });
@@ -484,20 +522,13 @@ describe("App MVP interaction flows", () => {
     });
   });
 
-  it("logs ask-ai completion with httpStatus and response correlation id", async () => {
+  it("logs ask-ai success completion with httpStatus and response correlation id", async () => {
     const user = userEvent.setup();
-    queueAskAiResponses(
-      {
-        status: 200,
-        body: { answer: "Done" },
-        headers: { "X-Correlation-Id": "srv-corr-999" }
-      },
-      {
-        status: 502,
-        body: { error: "Miho is working on it", retryAfterSeconds: 13 },
-        headers: { "X-Correlation-Id": "srv-corr-500" }
-      }
-    );
+    queueAskAiResponses({
+      status: 200,
+      body: { answer: "Done" },
+      headers: { "X-Correlation-Id": "srv-corr-999" }
+    });
     render(<App />);
     await openStackBuilder(user);
     await addCardToStack(user, "opt", "Opt");
@@ -514,23 +545,16 @@ describe("App MVP interaction flows", () => {
       );
     });
 
-    await clickDecryptStack(user);
-    await waitFor(() => {
-      expect(logFrontendDebugMock).toHaveBeenCalledWith(
-        "ask_ai.request_failed",
-        expect.objectContaining({
-          correlationId: "corr-test-id",
-          responseCorrelationId: "srv-corr-500",
-          httpStatus: 502
-        })
-      );
-    });
+    expect(screen.queryByRole("button", { name: "Decrypt Stack" })).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("How does this resolve?")).not.toBeInTheDocument();
   });
 
   it("captures caster, typed targets, and notes when adding a stack entry", async () => {
     const user = userEvent.setup();
     render(<App />);
 
+    await user.click(screen.getByRole("button", { name: "Add player" }));
+    await user.click(screen.getByRole("button", { name: "Add player" }));
     await openStackBuilder(user);
     await selectCard(user, "opt", "Opt");
 
@@ -589,6 +613,8 @@ describe("App MVP interaction flows", () => {
     const user = userEvent.setup();
     render(<App />);
 
+    await user.click(screen.getByRole("button", { name: "Add player" }));
+    await user.click(screen.getByRole("button", { name: "Add player" }));
     await openStackBuilder(user);
     await addCardToStack(user, "opt", "Opt");
 
@@ -714,10 +740,26 @@ describe("App MVP interaction flows", () => {
     await openStackBuilder(user);
 
     await addCardToStack(user, "opt", "Opt");
+    await selectCard(user, "opt", "Opt");
     await user.click(screen.getByRole("button", { name: "Add to Stack" }));
 
     expect(await screen.findByText("Duplicate cards are not supported in MVP1.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Stack/ })).toHaveTextContent("1");
+  });
+
+  it("clears stack search and preview after adding a card", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+
+    const searchInput = screen.getByPlaceholderText("Type to begin");
+    await user.type(searchInput, "opt");
+    await user.click(await screen.findByRole("button", { name: "Opt" }));
+    await user.click(screen.getByRole("button", { name: "Begin stackening!" }));
+
+    expect(screen.getByPlaceholderText("Type to begin")).toHaveValue("");
+    expect(screen.queryByRole("heading", { name: "Opt" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add to Stack" })).not.toBeInTheDocument();
   });
 
   it("blocks an 11th card and keeps existing ordered stack entries unchanged", async () => {
@@ -763,13 +805,9 @@ describe("App MVP interaction flows", () => {
     }
   });
 
-  it("preserves stack/question and keeps prior answer visible after subsequent failures", async () => {
+  it("hides optional-question submit controls after response is received", async () => {
     const user = userEvent.setup();
-    queueAskAiResponses(
-      { status: 200, body: { answer: "First success answer" } },
-      { status: 502, body: { error: "Miho is working on it", retryAfterSeconds: 13 } },
-      { status: 502, body: { error: "Miho is working on it", retryAfterSeconds: 13 } }
-    );
+    queueAskAiResponses({ status: 200, body: { answer: "First success answer" } });
     render(<App />);
     await openStackBuilder(user);
     await addCardToStack(user, "opt", "Opt");
@@ -780,13 +818,11 @@ describe("App MVP interaction flows", () => {
 
     await clickDecryptStack(user);
     expect(await screen.findByText("First success answer")).toBeInTheDocument();
-
-    await clickDecryptStack(user);
-    expect(await screen.findByText("Miho is working on it")).toBeInTheDocument();
-    expect(screen.getByText("First success answer")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Decrypt Stack" })).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("How does this resolve?")).not.toBeInTheDocument();
+    expect(screen.queryByText("Optional question")).not.toBeInTheDocument();
 
     expect(screen.getByRole("button", { name: /^Stack/ })).toHaveTextContent("1");
-    expect(questionInput).toHaveValue("Will this resolve?");
   });
 
   it("enforces retry cooldown and keeps context through repeated failures", async () => {
@@ -845,7 +881,7 @@ describe("App MVP interaction flows", () => {
     );
     render(<App />);
 
-    await user.selectOptions(screen.getByLabelText("Number of players"), "3");
+    await user.click(screen.getByRole("button", { name: "Add player" }));
     await user.clear(screen.getByLabelText("Player 1 life total"));
     await user.type(screen.getByLabelText("Player 1 life total"), "38");
     await user.clear(screen.getByLabelText("Player 2 life total"));
@@ -981,7 +1017,7 @@ describe("App MVP interaction flows", () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.selectOptions(screen.getByLabelText("Number of players"), "3");
+    await user.click(screen.getByRole("button", { name: "Add player" }));
     await user.clear(screen.getByLabelText("Player 1 life total"));
     await user.type(screen.getByLabelText("Player 1 life total"), "35");
     await user.clear(screen.getByLabelText("Player 2 life total"));

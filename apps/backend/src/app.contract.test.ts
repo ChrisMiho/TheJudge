@@ -67,7 +67,7 @@ describe("ask-ai endpoint contract", () => {
   it("returns validation error for malformed caster and target fields", async () => {
     const badCasterResponse = await request(app)
       .post("/api/ask-ai")
-      .send(createAskAiRequest({ stack: [{ ...createStackItem(), caster: "Player 5" as never }] }));
+      .send(createAskAiRequest({ stack: [{ ...createStackItem(), caster: "Player 9" as never }] }));
     expect(badCasterResponse.status).toBe(400);
     expect(badCasterResponse.body.code).toBe("VALIDATION_ERROR");
     expect(badCasterResponse.body.message).toContain("stack.0.caster");
