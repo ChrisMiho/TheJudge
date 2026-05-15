@@ -272,9 +272,7 @@ describe("App MVP interaction flows", () => {
     fireEvent.keyDown(battlefieldSearchInput, { key: "Enter" });
 
     expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Battlefield item details")).toHaveValue(
-      "Lightning Bolt deals 3 damage to any target."
-    );
+    expect(screen.queryByLabelText("Battlefield item details")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Lightning Bolt" })).not.toBeInTheDocument();
   });
 
@@ -390,55 +388,47 @@ describe("App MVP interaction flows", () => {
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 
     expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Battlefield item details")).toHaveValue(
-      "Lightning Bolt deals 3 damage to any target."
-    );
+    expect(screen.queryByLabelText("Battlefield item details")).not.toBeInTheDocument();
   });
 
-  it("keeps target kind option contract in parity between stack and battlefield previews", async () => {
+  it("keeps collection previews free of context-edit controls", async () => {
     const user = userEvent.setup();
-    const stackView = render(<App />);
+    render(<App />);
     await openStackBuilder(user);
 
     await user.type(screen.getByPlaceholderText("Type to begin"), "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
-    const stackTargetOptions = readSelectOptionLabels("Entry target kind");
-    stackView.unmount();
+    expect(screen.queryByLabelText("Entry target kind")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Entry context notes")).not.toBeInTheDocument();
 
+    const firstView = screen.getByRole("heading", { name: "Opt" });
+    expect(firstView).toBeInTheDocument();
+  });
+
+  it("keeps battlefield preview free of context-edit controls", async () => {
+    const user = userEvent.setup();
     render(<App />);
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
     await user.type(screen.getByLabelText("Battlefield search input"), "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
-    const battlefieldTargetOptions = readSelectOptionLabels("Battlefield target kind");
-
-    expect(battlefieldTargetOptions).toEqual(stackTargetOptions);
+    expect(screen.queryByLabelText("Battlefield target kind")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Battlefield item details")).not.toBeInTheDocument();
   });
 
-  it("keeps add/remove target behavior in parity between stack and battlefield previews", async () => {
+  it("enables target editing after entering context enrichment", async () => {
     const user = userEvent.setup();
-    const stackView = render(<App />);
+    render(<App />);
     await openStackBuilder(user);
 
     await user.type(screen.getByPlaceholderText("Type to begin"), "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
-    await user.selectOptions(screen.getByLabelText("Entry target kind"), "player");
-    await user.selectOptions(screen.getByLabelText("Entry player target"), "Player 2");
-    await user.click(screen.getByRole("button", { name: "Add entry target" }));
+    await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
+    await advanceToContextEnrichment(user);
+    await user.click(screen.getByRole("button", { name: /^Stack/ }));
+    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "player");
+    await user.selectOptions(screen.getByLabelText("Player target for Opt"), "Player 2");
+    await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
     expect(screen.getByText("Player: Player 2")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Remove" }));
-    expect(screen.queryByText("Player: Player 2")).not.toBeInTheDocument();
-    stackView.unmount();
-
-    render(<App />);
-    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
-    await user.type(screen.getByLabelText("Battlefield search input"), "opt");
-    await user.click(await screen.findByRole("button", { name: "Opt" }));
-    await user.selectOptions(screen.getByLabelText("Battlefield target kind"), "player");
-    await user.selectOptions(screen.getByLabelText("Battlefield target player"), "Player 2");
-    await user.click(screen.getByRole("button", { name: "Add battlefield target" }));
-    expect(screen.getByText("Player: Player 2")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Remove" }));
-    expect(screen.queryByText("Player: Player 2")).not.toBeInTheDocument();
   });
 
   it("uses first-add then subsequent-add button labels", async () => {
@@ -871,14 +861,11 @@ describe("App MVP interaction flows", () => {
 
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
-    await user.selectOptions(screen.getByLabelText("Battlefield target kind"), "none");
-    await user.click(screen.getByRole("button", { name: "Add battlefield target" }));
-    await user.click(screen.getByRole("button", { name: "Add battlefield item" }));
+    await user.click(screen.getByRole("button", { name: "Add battlefield card" }));
     await user.click(screen.getByRole("button", { name: "Continue to stack" }));
     await waitForMetadataReady();
 
     await selectCard(user, "opt", "Opt");
-    await user.type(screen.getByLabelText("Entry mana spent"), "4");
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
 
     vi.useFakeTimers();
@@ -909,8 +896,7 @@ describe("App MVP interaction flows", () => {
       },
       battlefieldContext: [
         {
-          name: "Lightning Bolt",
-          targets: [{ kind: "none" }]
+          name: "Lightning Bolt"
         }
       ],
       stack: [{ name: "Opt" }]
@@ -933,10 +919,8 @@ describe("App MVP interaction flows", () => {
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
-    await user.selectOptions(screen.getByLabelText("Battlefield target kind"), "none");
-    await user.click(screen.getByRole("button", { name: "Add battlefield target" }));
     expect(screen.getByRole("button", { name: "Skip battlefield context" })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Add battlefield item" }));
+    await user.click(screen.getByRole("button", { name: "Add battlefield card" }));
     expect(screen.getByRole("button", { name: "Continue to stack" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Continue to stack" }));
     await waitForMetadataReady();
@@ -951,8 +935,7 @@ describe("App MVP interaction flows", () => {
     expect(requestBody.battlefieldContext).toEqual([
       {
         name: "Lightning Bolt",
-        details: "Lightning Bolt deals 3 damage to any target.",
-        targets: [{ kind: "none" }]
+        targets: []
       }
     ]);
   });
@@ -972,12 +955,7 @@ describe("App MVP interaction flows", () => {
 
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
-    await user.clear(screen.getByLabelText("Battlefield item details"));
-    await user.type(screen.getByLabelText("Battlefield item details"), "Tracked from earlier turn");
-    await user.selectOptions(screen.getByLabelText("Battlefield target kind"), "player");
-    await user.selectOptions(screen.getByLabelText("Battlefield target player"), "Player 3");
-    await user.click(screen.getByRole("button", { name: "Add battlefield target" }));
-    await user.click(screen.getByRole("button", { name: "Add battlefield item" }));
+    await user.click(screen.getByRole("button", { name: "Add battlefield card" }));
     await user.click(screen.getByRole("button", { name: "Continue to stack" }));
     await waitForMetadataReady();
 
@@ -986,22 +964,9 @@ describe("App MVP interaction flows", () => {
     expect(screen.getByText("Battlefield context entries: 1")).toBeInTheDocument();
 
     await selectCard(user, "opt", "Opt");
-    await user.selectOptions(screen.getByLabelText("Entry caster"), "Player 2");
-    await user.selectOptions(screen.getByLabelText("Entry target kind"), "battlefield");
-    await user.selectOptions(screen.getByLabelText("Entry battlefield target"), "Lightning Bolt");
-    await user.click(screen.getByRole("button", { name: "Add entry target" }));
-    expect(screen.getByText("Battlefield: Lightning Bolt")).toBeInTheDocument();
-    await user.type(screen.getByLabelText("Entry mana spent"), "1");
-    await user.type(screen.getByLabelText("Entry context notes"), "Cast off Treasure");
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
 
     await selectCard(user, "cou", "Counterspell");
-    await user.selectOptions(screen.getByLabelText("Entry caster"), "Player 3");
-    await user.selectOptions(screen.getByLabelText("Entry target kind"), "stack");
-    await user.selectOptions(screen.getByLabelText("Entry stack target"), "opt");
-    await user.click(screen.getByRole("button", { name: "Add entry target" }));
-    await user.type(screen.getByLabelText("Entry mana spent"), "2");
-    await user.type(screen.getByLabelText("Entry context notes"), "Counters Opt");
     await user.click(screen.getByRole("button", { name: "Add to Stack" }));
     await advanceToContextEnrichment(user);
 
@@ -1013,17 +978,13 @@ describe("App MVP interaction flows", () => {
     const counterspellRow = screen.getByLabelText("Caster for Counterspell").closest("li");
     expect(counterspellRow).not.toBeNull();
 
-    expect(within(optRow as HTMLLIElement).getByLabelText("Caster for Opt")).toHaveValue("Player 2");
-    expect(within(optRow as HTMLLIElement).getByLabelText("Mana spent for Opt")).toHaveValue("1");
-    expect(within(optRow as HTMLLIElement).getByLabelText("Context notes for Opt")).toHaveValue("Cast off Treasure");
-    expect(within(optRow as HTMLLIElement).getByText("Battlefield: Lightning Bolt")).toBeInTheDocument();
+    expect(within(optRow as HTMLLIElement).getByLabelText("Caster for Opt")).toHaveValue("Player 1");
+    expect(within(optRow as HTMLLIElement).getByLabelText("Mana spent for Opt")).toHaveValue("");
+    expect(within(optRow as HTMLLIElement).getByLabelText("Context notes for Opt")).toHaveValue("");
 
-    expect(within(counterspellRow as HTMLLIElement).getByLabelText("Caster for Counterspell")).toHaveValue("Player 3");
-    expect(within(counterspellRow as HTMLLIElement).getByLabelText("Mana spent for Counterspell")).toHaveValue("2");
-    expect(within(counterspellRow as HTMLLIElement).getByLabelText("Context notes for Counterspell")).toHaveValue(
-      "Counters Opt"
-    );
-    expect(within(counterspellRow as HTMLLIElement).getByText("Stack: Opt")).toBeInTheDocument();
+    expect(within(counterspellRow as HTMLLIElement).getByLabelText("Caster for Counterspell")).toHaveValue("Player 1");
+    expect(within(counterspellRow as HTMLLIElement).getByLabelText("Mana spent for Counterspell")).toHaveValue("");
+    expect(within(counterspellRow as HTMLLIElement).getByLabelText("Context notes for Counterspell")).toHaveValue("");
     await user.click(screen.getByRole("button", { name: "Close" }));
 
     await clickDecryptStack(user);
@@ -1045,24 +1006,15 @@ describe("App MVP interaction flows", () => {
       battlefieldContext: [
         {
           name: "Lightning Bolt",
-          details: "Tracked from earlier turn",
-          targets: [{ kind: "player", targetPlayer: "Player 3" }]
+          targets: []
         }
       ],
       stack: [
         {
-          name: "Opt",
-          caster: "Player 2",
-          targets: [{ kind: "battlefield", targetPermanent: "Lightning Bolt" }],
-          manaSpent: 1,
-          contextNotes: "Cast off Treasure"
+          name: "Opt"
         },
         {
-          name: "Counterspell",
-          caster: "Player 3",
-          targets: [{ kind: "stack", targetCardId: "opt", targetCardName: "Opt" }],
-          manaSpent: 2,
-          contextNotes: "Counters Opt"
+          name: "Counterspell"
         }
       ]
     });
@@ -1118,9 +1070,7 @@ describe("App MVP interaction flows", () => {
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
     expect(screen.queryByLabelText("Battlefield item name")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Battlefield item details")).toHaveValue(
-      "Lightning Bolt deals 3 damage to any target."
-    );
+    expect(screen.queryByLabelText("Battlefield item details")).not.toBeInTheDocument();
   });
 
   it("hides battlefield target controls until a card is selected", async () => {
@@ -1136,8 +1086,8 @@ describe("App MVP interaction flows", () => {
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 
-    expect(screen.getByLabelText("Battlefield target kind")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Add battlefield target" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Add battlefield item" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Battlefield target kind")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add battlefield target" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add battlefield card" })).toBeInTheDocument();
   });
 });

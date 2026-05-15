@@ -348,13 +348,11 @@ export default function App() {
       return;
     }
 
-    const details = battlefieldEntryDetails.trim();
     setBattlefieldContext((current) => [
       ...current,
       {
         name,
-        details: details.length > 0 ? details : undefined,
-        targets: battlefieldEntryTargets
+        targets: []
       }
     ]);
     setBattlefieldSearchInput("");
@@ -500,12 +498,8 @@ export default function App() {
   function handleAddSelectedCard(): void {
     if (!selectedCard) return;
 
-    const stackEntry = buildStackItemFromMetadata(selectedCard, {
-      caster: entryCaster,
-      contextNotes: entryContextNotes,
-      targets: entryTargets,
-      manaSpent: parseManaSpentInput(entryManaSpent)
-    });
+    // Phase 1 stack assembly captures card identity only.
+    const stackEntry = buildStackItemFromMetadata(selectedCard);
     const validationResult = validateStackAdd(stack, stackEntry);
     if (!validationResult.ok) {
       flashStatus(validationResult.message);
@@ -670,6 +664,7 @@ export default function App() {
   if (flowStep === "battlefield-context") {
     return (
       <BattlefieldStep
+        collectCardsOnly
         searchInput={battlefieldSearchInput}
         onSearchInputChange={setBattlefieldSearchInput}
         onSearchKeyDown={battlefieldKeyboard.handleKeyDown}

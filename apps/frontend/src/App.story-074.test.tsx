@@ -69,83 +69,61 @@ describe("STORY-074 target gating and pickers", () => {
     vi.unstubAllGlobals();
   });
 
-  it("disables stack target entry controls when no stack references exist", async () => {
+  it("keeps battlefield collection in card-only mode", async () => {
     const user = userEvent.setup();
     render(<App />);
-    await openStackBuilder(user);
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await user.type(screen.getByLabelText("Battlefield search input"), "lig");
+    await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 
-    await selectStackCard(user, "opt", "Opt");
-
-    const stackTargetSelect = screen.getByLabelText("Entry stack target");
-    const addTargetButton = screen.getByRole("button", { name: "Add entry target" });
-
-    expect(stackTargetSelect).toBeDisabled();
-    expect(screen.getByRole("option", { name: "No stack items available" })).toBeInTheDocument();
-    expect(addTargetButton).toBeDisabled();
-    expect(screen.getByText("Add a stack item before selecting a stack target.")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Battlefield target kind")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add battlefield target" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Battlefield item details")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add battlefield card" })).toBeInTheDocument();
   });
 
-  it("uses battlefield target picker and empty-state gating in stack entry", async () => {
+  it("keeps stack assembly in card-only mode until enrichment", async () => {
     const user = userEvent.setup();
     render(<App />);
     await openStackBuilder(user);
 
     await selectStackCard(user, "opt", "Opt");
-    await user.selectOptions(screen.getByLabelText("Entry target kind"), "battlefield");
 
-    const battlefieldTargetSelect = screen.getByLabelText("Entry battlefield target");
-    const addTargetButton = screen.getByRole("button", { name: "Add entry target" });
-    expect(battlefieldTargetSelect).toBeDisabled();
-    expect(screen.getByRole("option", { name: "No battlefield entries available" })).toBeInTheDocument();
-    expect(addTargetButton).toBeDisabled();
+    expect(screen.queryByLabelText("Entry target kind")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Entry caster")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Entry context notes")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Decrypt Stack" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Continue to context enrichment" })).toBeDisabled();
+  });
 
+  it("shows enrichment controls only after entering enrichment phase", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+    await selectStackCard(user, "opt", "Opt");
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
+    await user.click(screen.getByRole("button", { name: "Continue to context enrichment" }));
+
+    expect(screen.getByRole("button", { name: "Decrypt Stack" })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("How does this resolve?")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /^Stack/ }));
-    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "battlefield");
-
-    const detailBattlefieldSelect = screen.getByLabelText("Battlefield target for Opt");
-    expect(detailBattlefieldSelect).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Add target for Opt" })).toBeDisabled();
+    expect(screen.getByLabelText("Target kind for Opt")).toBeInTheDocument();
+    expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
   });
 
-  it("disables battlefield-step stack targets to prevent dead-end references", async () => {
+  it("keeps resolve control gated behind enrichment step", async () => {
     const user = userEvent.setup();
     render(<App />);
-
-    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
-    await user.type(screen.getByLabelText("Battlefield search input"), "lig");
-    await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
-
-    const targetKindSelect = screen.getByLabelText("Battlefield target kind");
-    const stackOption = screen.getByRole("option", { name: "Stack target" });
-    expect(stackOption).toBeDisabled();
-
-    fireEvent.change(targetKindSelect, { target: { value: "stack" } });
-    expect(screen.getByLabelText("Battlefield target stack name")).toBeDisabled();
-    expect(screen.getByLabelText("Battlefield target stack id")).toBeDisabled();
-    expect(screen.getByText("Stack targets are added in the stack step.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Add battlefield target" })).toBeDisabled();
-  });
-
-  it("enables battlefield picker options once battlefield context exists", async () => {
-    const user = userEvent.setup();
-    render(<App />);
-
-    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
-    await user.type(screen.getByLabelText("Battlefield search input"), "lig");
-    await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
-    await user.selectOptions(screen.getByLabelText("Battlefield target kind"), "none");
-    await user.click(screen.getByRole("button", { name: "Add battlefield target" }));
-    await user.click(screen.getByRole("button", { name: "Add battlefield item" }));
-    await user.click(screen.getByRole("button", { name: "Continue to stack" }));
+    await openStackBuilder(user);
+    expect(screen.queryByRole("button", { name: "Decrypt Stack" })).not.toBeInTheDocument();
 
     await selectStackCard(user, "opt", "Opt");
-    await user.selectOptions(screen.getByLabelText("Entry target kind"), "battlefield");
-    const battlefieldTargetSelect = screen.getByLabelText("Entry battlefield target");
-    expect(battlefieldTargetSelect).toBeEnabled();
-    expect(screen.getByRole("option", { name: "Lightning Bolt" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
+    expect(screen.getByRole("button", { name: "Continue to context enrichment" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Decrypt Stack" })).not.toBeInTheDocument();
 
-    await user.selectOptions(battlefieldTargetSelect, "Lightning Bolt");
-    expect(screen.getByRole("button", { name: "Add entry target" })).toBeEnabled();
+    await user.click(screen.getByRole("button", { name: "Continue to context enrichment" }));
+    expect(screen.getByRole("button", { name: "Decrypt Stack" })).toBeInTheDocument();
   });
 });

@@ -158,6 +158,7 @@ export function StackBuilderStep({
   onAddTargetFromStackDetails,
   onRemoveTargetFromStackEntry
 }: StackBuilderStepProps): JSX.Element {
+  const isCollectionMode = hideSubmitControls && !hideCardAssembly;
   const hasStackTargetCandidates = stack.length > 0;
   const hasBattlefieldTargetCandidates = battlefieldContextNames.length > 0;
   const isEntryAddTargetDisabled =
@@ -257,8 +258,8 @@ export function StackBuilderStep({
         {!hideCardAssembly && selectedCard && (
           <CardSelectionPreview
             card={selectedCard}
-            contextTitle="Stack context"
-            contextContent={
+            contextTitle={isCollectionMode ? "Stack card" : "Stack context"}
+            contextContent={isCollectionMode ? null : (
               <>
                 <label className="flex items-center gap-2 text-xs text-slate-200">
                   Caster
@@ -387,7 +388,7 @@ export function StackBuilderStep({
                   className="w-full rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs placeholder:text-slate-400"
                 />
               </>
-            }
+            )}
             action={
               <button
                 type="button"
