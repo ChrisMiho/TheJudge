@@ -7,7 +7,16 @@ export const MAX_TARGET_LABEL_CHARS = 120;
 export const MAX_PROMPT_CHAR_BUDGET = 12000;
 export const PROMPT_BUDGET_NEAR_LIMIT_BUFFER = 800;
 const TRUNCATION_SUFFIX = " ...(truncated)";
-const PLAYER_LABEL_ORDER = ["Player 1", "Player 2", "Player 3", "Player 4"] as const;
+const PLAYER_LABEL_ORDER = [
+  "Player 1",
+  "Player 2",
+  "Player 3",
+  "Player 4",
+  "Player 5",
+  "Player 6",
+  "Player 7",
+  "Player 8"
+] as const;
 export const SYSTEM_ROLE_PREAMBLE_LINES = [
   "You are TheJudge assistant for Magic: The Gathering stack-resolution support.",
   "Use only the provided context to explain likely interactions and resolution order.",

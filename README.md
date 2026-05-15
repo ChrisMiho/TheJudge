@@ -59,7 +59,9 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 - `npm run dev:backend` - run backend only
 - `npm run typecheck` - run frontend + backend TypeScript checks
 - `npm run test` - run frontend + backend test suites
-- `npm run quality:check` - run pre-PR quality gate (`typecheck` + `test`)
+- `npm run lint` - run ESLint across workspaces
+- `npm run format:check` - verify formatting for docs/config files
+- `npm run quality:check` - run pre-PR quality gate (`typecheck` + `lint` + `format:check` + `test`)
 - `npm run build` - build both apps
 - `npm --workspace apps/frontend run test` - run frontend tests
 - `npm --workspace apps/backend run test` - run backend tests
@@ -75,7 +77,7 @@ Use this baseline before opening a PR:
 2. If it fails, fix issues and rerun until green.
 3. Optionally run workspace-specific checks while iterating (`npm --workspace apps/frontend run test`, `npm --workspace apps/backend run test`).
 
-`quality:check` is the canonical guardrail command and runs both static typing checks and tests across frontend/backend.
+`quality:check` is the canonical guardrail command and runs static typing, linting, formatting checks, and tests across frontend/backend.
 
 ## Environment Configuration
 

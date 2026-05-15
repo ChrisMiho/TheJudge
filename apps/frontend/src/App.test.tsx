@@ -145,11 +145,6 @@ function readSuggestionNamesFromPanel(searchInput: HTMLElement): string[] {
     .filter((name) => name.length > 0);
 }
 
-function readSelectOptionLabels(selectLabel: string): string[] {
-  const select = screen.getByLabelText(selectLabel);
-  return within(select).getAllByRole("option").map((option) => option.textContent?.trim() ?? "");
-}
-
 async function selectCard(user: ReturnType<typeof userEvent.setup>, query: string, cardName: string): Promise<void> {
   const searchInput = screen.getByPlaceholderText("Type to begin");
   await user.clear(searchInput);
@@ -165,6 +160,18 @@ async function addCardToStack(
   await selectCard(user, query, cardName);
   await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
   await user.clear(screen.getByPlaceholderText("Type to begin"));
+}
+
+async function clickDecryptStack(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  const continueButton = screen.queryByRole("button", { name: "Continue to context enrichment" });
+  if (continueButton) {
+    await user.click(continueButton);
+  }
+  await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+}
+
+async function advanceToContextEnrichment(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(screen.getByRole("button", { name: "Continue to context enrichment" }));
 }
 
 describe("App MVP interaction flows", () => {
@@ -224,6 +231,27 @@ describe("App MVP interaction flows", () => {
     expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
   });
 
+  it("defaults to 20 life for 2 players and 40 for 3+ players", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(screen.getByLabelText("Player 1 life total")).toHaveValue("20");
+    expect(screen.getByLabelText("Player 2 life total")).toHaveValue("20");
+    expect(screen.queryByLabelText("Player 3 life total")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Add player" }));
+
+    expect(screen.getByLabelText("Player 1 life total")).toHaveValue("40");
+    expect(screen.getByLabelText("Player 2 life total")).toHaveValue("40");
+    expect(screen.getByLabelText("Player 3 life total")).toHaveValue("40");
+
+    await user.click(screen.getByRole("button", { name: "Remove last player" }));
+
+    expect(screen.getByLabelText("Player 1 life total")).toHaveValue("20");
+    expect(screen.getByLabelText("Player 2 life total")).toHaveValue("20");
+    expect(screen.queryByLabelText("Player 3 life total")).not.toBeInTheDocument();
+  });
+
   it("supports keyboard suggestion navigation and selection in stack builder search", async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -260,9 +288,7 @@ describe("App MVP interaction flows", () => {
     fireEvent.keyDown(battlefieldSearchInput, { key: "Enter" });
 
     expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Battlefield item details")).toHaveValue(
-      "Lightning Bolt deals 3 damage to any target."
-    );
+    expect(screen.queryByLabelText("Battlefield item details")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Lightning Bolt" })).not.toBeInTheDocument();
   });
 
@@ -378,55 +404,63 @@ describe("App MVP interaction flows", () => {
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 
     expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Battlefield item details")).toHaveValue(
-      "Lightning Bolt deals 3 damage to any target."
-    );
+    expect(screen.queryByLabelText("Battlefield item details")).not.toBeInTheDocument();
   });
 
-  it("keeps target kind option contract in parity between stack and battlefield previews", async () => {
+  it("keeps collection previews free of context-edit controls", async () => {
     const user = userEvent.setup();
-    const stackView = render(<App />);
+    render(<App />);
     await openStackBuilder(user);
 
     await user.type(screen.getByPlaceholderText("Type to begin"), "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
-    const stackTargetOptions = readSelectOptionLabels("Entry target kind");
-    stackView.unmount();
+    expect(screen.queryByLabelText("Entry target kind")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Entry context notes")).not.toBeInTheDocument();
 
+    const firstView = screen.getByRole("heading", { name: "Opt" });
+    expect(firstView).toBeInTheDocument();
+  });
+
+  it("keeps battlefield preview free of context-edit controls", async () => {
+    const user = userEvent.setup();
     render(<App />);
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
     await user.type(screen.getByLabelText("Battlefield search input"), "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
-    const battlefieldTargetOptions = readSelectOptionLabels("Battlefield target kind");
-
-    expect(battlefieldTargetOptions).toEqual(stackTargetOptions);
+    expect(screen.queryByLabelText("Battlefield target kind")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Battlefield item details")).not.toBeInTheDocument();
   });
 
-  it("keeps add/remove target behavior in parity between stack and battlefield previews", async () => {
+  it("enables target editing after entering context enrichment", async () => {
     const user = userEvent.setup();
-    const stackView = render(<App />);
+    render(<App />);
     await openStackBuilder(user);
 
     await user.type(screen.getByPlaceholderText("Type to begin"), "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
-    await user.selectOptions(screen.getByLabelText("Entry target kind"), "player");
-    await user.selectOptions(screen.getByLabelText("Entry player target"), "Player 2");
-    await user.click(screen.getByRole("button", { name: "Add entry target" }));
+    await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
+    await advanceToContextEnrichment(user);
+    await user.click(screen.getByRole("button", { name: /^Stack/ }));
+    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "player");
+    await user.selectOptions(screen.getByLabelText("Player target for Opt"), "Player 2");
+    await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
     expect(screen.getByText("Player: Player 2")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Remove" }));
-    expect(screen.queryByText("Player: Player 2")).not.toBeInTheDocument();
-    stackView.unmount();
+  });
 
+  it("keeps final context-enrichment chrome compact with only stack access at top", async () => {
+    const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
-    await user.type(screen.getByLabelText("Battlefield search input"), "opt");
-    await user.click(await screen.findByRole("button", { name: "Opt" }));
-    await user.selectOptions(screen.getByLabelText("Battlefield target kind"), "player");
-    await user.selectOptions(screen.getByLabelText("Battlefield target player"), "Player 2");
-    await user.click(screen.getByRole("button", { name: "Add battlefield target" }));
-    expect(screen.getByText("Player: Player 2")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Remove" }));
-    expect(screen.queryByText("Player: Player 2")).not.toBeInTheDocument();
+    await openStackBuilder(user);
+
+    await addCardToStack(user, "opt", "Opt");
+    await advanceToContextEnrichment(user);
+
+    expect(screen.queryByRole("heading", { name: "TheJudge" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Game context: 2 players")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Context enrichment: review each card and add caster, target, mana, or notes before submitting.")
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Stack/ })).toBeInTheDocument();
   });
 
   it("uses first-add then subsequent-add button labels", async () => {
@@ -440,6 +474,7 @@ describe("App MVP interaction flows", () => {
     expect(firstAddButton).toBeInTheDocument();
 
     await user.click(firstAddButton);
+    await selectCard(user, "cou", "Counterspell");
 
     expect(screen.getByRole("button", { name: "Add to Stack" })).toBeInTheDocument();
   });
@@ -459,7 +494,7 @@ describe("App MVP interaction flows", () => {
     await user.click(within(counterspellRow as HTMLLIElement).getByRole("button", { name: "Remove" }));
     await user.click(screen.getByRole("button", { name: "Close" }));
 
-    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+    await clickDecryptStack(user);
 
     const requestBody = await waitFor(() => {
       expect(submittedAskAiRequests.length).toBeGreaterThan(0);
@@ -487,25 +522,18 @@ describe("App MVP interaction flows", () => {
     });
   });
 
-  it("logs ask-ai completion with httpStatus and response correlation id", async () => {
+  it("logs ask-ai success completion with httpStatus and response correlation id", async () => {
     const user = userEvent.setup();
-    queueAskAiResponses(
-      {
-        status: 200,
-        body: { answer: "Done" },
-        headers: { "X-Correlation-Id": "srv-corr-999" }
-      },
-      {
-        status: 502,
-        body: { error: "Miho is working on it", retryAfterSeconds: 13 },
-        headers: { "X-Correlation-Id": "srv-corr-500" }
-      }
-    );
+    queueAskAiResponses({
+      status: 200,
+      body: { answer: "Done" },
+      headers: { "X-Correlation-Id": "srv-corr-999" }
+    });
     render(<App />);
     await openStackBuilder(user);
     await addCardToStack(user, "opt", "Opt");
 
-    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+    await clickDecryptStack(user);
     await waitFor(() => {
       expect(logFrontendDebugMock).toHaveBeenCalledWith(
         "ask_ai.request_succeeded",
@@ -517,34 +545,30 @@ describe("App MVP interaction flows", () => {
       );
     });
 
-    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
-    await waitFor(() => {
-      expect(logFrontendDebugMock).toHaveBeenCalledWith(
-        "ask_ai.request_failed",
-        expect.objectContaining({
-          correlationId: "corr-test-id",
-          responseCorrelationId: "srv-corr-500",
-          httpStatus: 502
-        })
-      );
-    });
+    expect(screen.queryByRole("button", { name: "Decrypt Stack" })).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("How does this resolve?")).not.toBeInTheDocument();
   });
 
   it("captures caster, typed targets, and notes when adding a stack entry", async () => {
     const user = userEvent.setup();
     render(<App />);
 
+    await user.click(screen.getByRole("button", { name: "Add player" }));
+    await user.click(screen.getByRole("button", { name: "Add player" }));
     await openStackBuilder(user);
     await selectCard(user, "opt", "Opt");
 
-    await user.selectOptions(screen.getByLabelText("Entry caster"), "Player 4");
-    await user.selectOptions(screen.getByLabelText("Entry target kind"), "player");
-    await user.selectOptions(screen.getByLabelText("Entry player target"), "Player 3");
-    await user.click(screen.getByRole("button", { name: "Add entry target" }));
-    await user.type(screen.getByLabelText("Entry mana spent"), "4");
-    await user.type(screen.getByLabelText("Entry context notes"), "Cast for alternate cost");
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
-    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+    await advanceToContextEnrichment(user);
+    await user.click(screen.getByRole("button", { name: /^Stack/ }));
+    await user.selectOptions(screen.getByLabelText("Caster for Opt"), "Player 4");
+    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "player");
+    await user.selectOptions(screen.getByLabelText("Player target for Opt"), "Player 3");
+    await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
+    await user.type(screen.getByLabelText("Mana spent for Opt"), "4");
+    await user.type(screen.getByLabelText("Context notes for Opt"), "Cast for alternate cost");
+    await user.click(screen.getByRole("button", { name: "Close" }));
+    await clickDecryptStack(user);
 
     const requestBody = await waitFor(() => {
       expect(submittedAskAiRequests.length).toBeGreaterThan(0);
@@ -566,11 +590,14 @@ describe("App MVP interaction flows", () => {
 
     await openStackBuilder(user);
     await selectCard(user, "opt", "Opt");
-    await user.selectOptions(screen.getByLabelText("Entry target kind"), "other");
-    await user.type(screen.getByLabelText("Entry other target"), "Target defined by delayed trigger context");
-    await user.click(screen.getByRole("button", { name: "Add entry target" }));
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
-    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+    await advanceToContextEnrichment(user);
+    await user.click(screen.getByRole("button", { name: /^Stack/ }));
+    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "other");
+    await user.type(screen.getByLabelText("Other target for Opt"), "Target defined by delayed trigger context");
+    await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
+    await user.click(screen.getByRole("button", { name: "Close" }));
+    await clickDecryptStack(user);
 
     const requestBody = await waitFor(() => {
       expect(submittedAskAiRequests.length).toBeGreaterThan(0);
@@ -586,6 +613,8 @@ describe("App MVP interaction flows", () => {
     const user = userEvent.setup();
     render(<App />);
 
+    await user.click(screen.getByRole("button", { name: "Add player" }));
+    await user.click(screen.getByRole("button", { name: "Add player" }));
     await openStackBuilder(user);
     await addCardToStack(user, "opt", "Opt");
 
@@ -596,7 +625,7 @@ describe("App MVP interaction flows", () => {
     await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
     await user.type(screen.getByLabelText("Context notes for Opt"), "Copied from graveyard");
     await user.click(screen.getByRole("button", { name: "Close" }));
-    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+    await clickDecryptStack(user);
 
     const requestBody = await waitFor(() => {
       expect(submittedAskAiRequests.length).toBeGreaterThan(0);
@@ -616,10 +645,13 @@ describe("App MVP interaction flows", () => {
 
     await openStackBuilder(user);
     await selectCard(user, "opt", "Opt");
-    await user.selectOptions(screen.getByLabelText("Entry target kind"), "none");
-    await user.click(screen.getByRole("button", { name: "Add entry target" }));
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
-    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+    await advanceToContextEnrichment(user);
+    await user.click(screen.getByRole("button", { name: /^Stack/ }));
+    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "none");
+    await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
+    await user.click(screen.getByRole("button", { name: "Close" }));
+    await clickDecryptStack(user);
 
     const requestBody = await waitFor(() => {
       expect(submittedAskAiRequests.length).toBeGreaterThan(0);
@@ -631,18 +663,12 @@ describe("App MVP interaction flows", () => {
 
   it("guards Decrypt Stack when stack is empty", async () => {
     const user = userEvent.setup();
-    const { container } = render(<App />);
+    render(<App />);
     await openStackBuilder(user);
 
-    const decryptButton = screen.getByRole("button", { name: "Decrypt Stack" });
-    expect(decryptButton).toBeDisabled();
-    await user.click(decryptButton);
-
-    const form = container.querySelector("form");
-    expect(form).not.toBeNull();
-    fireEvent.submit(form as HTMLFormElement);
-
-    expect(await screen.findByText("Add at least one card before decrypting.")).toBeInTheDocument();
+    const continueButton = screen.getByRole("button", { name: "Continue to context enrichment" });
+    expect(continueButton).toBeDisabled();
+    await user.click(continueButton);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -714,10 +740,26 @@ describe("App MVP interaction flows", () => {
     await openStackBuilder(user);
 
     await addCardToStack(user, "opt", "Opt");
+    await selectCard(user, "opt", "Opt");
     await user.click(screen.getByRole("button", { name: "Add to Stack" }));
 
     expect(await screen.findByText("Duplicate cards are not supported in MVP1.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Stack/ })).toHaveTextContent("1");
+  });
+
+  it("clears stack search and preview after adding a card", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+
+    const searchInput = screen.getByPlaceholderText("Type to begin");
+    await user.type(searchInput, "opt");
+    await user.click(await screen.findByRole("button", { name: "Opt" }));
+    await user.click(screen.getByRole("button", { name: "Begin stackening!" }));
+
+    expect(screen.getByPlaceholderText("Type to begin")).toHaveValue("");
+    expect(screen.queryByRole("heading", { name: "Opt" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add to Stack" })).not.toBeInTheDocument();
   });
 
   it("blocks an 11th card and keeps existing ordered stack entries unchanged", async () => {
@@ -763,29 +805,24 @@ describe("App MVP interaction flows", () => {
     }
   });
 
-  it("preserves stack/question and keeps prior answer visible after subsequent failures", async () => {
+  it("hides optional-question submit controls after response is received", async () => {
     const user = userEvent.setup();
-    queueAskAiResponses(
-      { status: 200, body: { answer: "First success answer" } },
-      { status: 502, body: { error: "Miho is working on it", retryAfterSeconds: 13 } },
-      { status: 502, body: { error: "Miho is working on it", retryAfterSeconds: 13 } }
-    );
+    queueAskAiResponses({ status: 200, body: { answer: "First success answer" } });
     render(<App />);
     await openStackBuilder(user);
     await addCardToStack(user, "opt", "Opt");
+    await advanceToContextEnrichment(user);
 
     const questionInput = screen.getByPlaceholderText("How does this resolve?");
     await user.type(questionInput, "Will this resolve?");
 
-    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+    await clickDecryptStack(user);
     expect(await screen.findByText("First success answer")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
-    expect(await screen.findByText("Miho is working on it")).toBeInTheDocument();
-    expect(screen.getByText("First success answer")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Decrypt Stack" })).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("How does this resolve?")).not.toBeInTheDocument();
+    expect(screen.queryByText("Optional question")).not.toBeInTheDocument();
 
     expect(screen.getByRole("button", { name: /^Stack/ })).toHaveTextContent("1");
-    expect(questionInput).toHaveValue("Will this resolve?");
   });
 
   it("enforces retry cooldown and keeps context through repeated failures", async () => {
@@ -797,6 +834,7 @@ describe("App MVP interaction flows", () => {
     render(<App />);
     await openStackBuilder(user);
     await addCardToStack(user, "opt", "Opt");
+    await advanceToContextEnrichment(user);
 
     const questionInput = screen.getByPlaceholderText("How does this resolve?");
     await user.type(questionInput, "Retry this");
@@ -843,7 +881,7 @@ describe("App MVP interaction flows", () => {
     );
     render(<App />);
 
-    await user.selectOptions(screen.getByLabelText("Number of players"), "3");
+    await user.click(screen.getByRole("button", { name: "Add player" }));
     await user.clear(screen.getByLabelText("Player 1 life total"));
     await user.type(screen.getByLabelText("Player 1 life total"), "38");
     await user.clear(screen.getByLabelText("Player 2 life total"));
@@ -854,17 +892,15 @@ describe("App MVP interaction flows", () => {
 
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
-    await user.selectOptions(screen.getByLabelText("Battlefield target kind"), "none");
-    await user.click(screen.getByRole("button", { name: "Add battlefield target" }));
-    await user.click(screen.getByRole("button", { name: "Add battlefield item" }));
+    await user.click(screen.getByRole("button", { name: "Add battlefield card" }));
     await user.click(screen.getByRole("button", { name: "Continue to stack" }));
     await waitForMetadataReady();
 
     await selectCard(user, "opt", "Opt");
-    await user.type(screen.getByLabelText("Entry mana spent"), "4");
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
 
     vi.useFakeTimers();
+    fireEvent.click(screen.getByRole("button", { name: "Continue to context enrichment" }));
     fireEvent.click(screen.getByRole("button", { name: "Decrypt Stack" }));
     await act(async () => {
       await Promise.resolve();
@@ -891,11 +927,10 @@ describe("App MVP interaction flows", () => {
       },
       battlefieldContext: [
         {
-          name: "Lightning Bolt",
-          targets: [{ kind: "none" }]
+          name: "Lightning Bolt"
         }
       ],
-      stack: [{ name: "Opt", manaSpent: 4 }]
+      stack: [{ name: "Opt" }]
     });
   });
 
@@ -915,16 +950,14 @@ describe("App MVP interaction flows", () => {
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
-    await user.selectOptions(screen.getByLabelText("Battlefield target kind"), "none");
-    await user.click(screen.getByRole("button", { name: "Add battlefield target" }));
     expect(screen.getByRole("button", { name: "Skip battlefield context" })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Add battlefield item" }));
+    await user.click(screen.getByRole("button", { name: "Add battlefield card" }));
     expect(screen.getByRole("button", { name: "Continue to stack" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Continue to stack" }));
     await waitForMetadataReady();
 
     await addCardToStack(user, "opt", "Opt");
-    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+    await clickDecryptStack(user);
 
     const requestBody = await waitFor(() => {
       expect(submittedAskAiRequests.length).toBeGreaterThan(0);
@@ -934,30 +967,181 @@ describe("App MVP interaction flows", () => {
       {
         name: "Lightning Bolt",
         details: "Lightning Bolt deals 3 damage to any target.",
-        targets: [{ kind: "none" }]
+        targets: []
       }
     ]);
   });
 
-  it("shows display-only battlefield name before selection and shared preview after selection", async () => {
+  it("allows battlefield context edits from final stack details menu", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await user.type(screen.getByLabelText("Battlefield search input"), "lig");
+    await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
+    await user.click(screen.getByRole("button", { name: "Add battlefield card" }));
+    await user.click(screen.getByRole("button", { name: "Continue to stack" }));
+    await waitForMetadataReady();
+
+    await addCardToStack(user, "opt", "Opt");
+    await advanceToContextEnrichment(user);
+
+    await user.click(screen.getByRole("button", { name: /^Stack/ }));
+    const battlefieldNameInput = screen.getByLabelText("Battlefield entry name 1");
+    await user.clear(battlefieldNameInput);
+    await user.type(battlefieldNameInput, "Lightning Bolt token");
+    const battlefieldDetailsInput = screen.getByLabelText("Battlefield details for Lightning Bolt token");
+    await user.clear(battlefieldDetailsInput);
+    await user.type(battlefieldDetailsInput, "Created by Storm count");
+    await user.selectOptions(screen.getByLabelText("Battlefield target kind for Lightning Bolt token"), "player");
+    await user.selectOptions(screen.getByLabelText("Battlefield player target for Lightning Bolt token"), "Player 2");
+    await user.click(screen.getByRole("button", { name: "Add target for battlefield Lightning Bolt token" }));
+    await user.click(screen.getByRole("button", { name: "Close" }));
+
+    await clickDecryptStack(user);
+    const requestBody = await waitFor(() => {
+      expect(submittedAskAiRequests.length).toBeGreaterThan(0);
+      return submittedAskAiRequests[0];
+    });
+
+    expect(requestBody.battlefieldContext).toEqual([
+      {
+        name: "Lightning Bolt token",
+        details: "Created by Storm count",
+        targets: [{ kind: "player", targetPlayer: "Player 2" }]
+      }
+    ]);
+  });
+
+  it("keeps game context and battlefield review state in parity with submitted payload", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Add player" }));
+    await user.clear(screen.getByLabelText("Player 1 life total"));
+    await user.type(screen.getByLabelText("Player 1 life total"), "35");
+    await user.clear(screen.getByLabelText("Player 2 life total"));
+    await user.type(screen.getByLabelText("Player 2 life total"), "22");
+    await user.clear(screen.getByLabelText("Player 3 life total"));
+    await user.type(screen.getByLabelText("Player 3 life total"), "19");
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+
+    await user.type(screen.getByLabelText("Battlefield search input"), "lig");
+    await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
+    await user.click(screen.getByRole("button", { name: "Add battlefield card" }));
+    await user.click(screen.getByRole("button", { name: "Continue to stack" }));
+    await waitForMetadataReady();
+
+    expect(screen.getByText("Game context: 3 players")).toBeInTheDocument();
+    expect(screen.getByText("Player 1=35 | Player 2=22 | Player 3=19")).toBeInTheDocument();
+    expect(screen.getByText("Battlefield context entries: 1")).toBeInTheDocument();
+
+    await selectCard(user, "opt", "Opt");
+    await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
+
+    await selectCard(user, "cou", "Counterspell");
+    await user.click(screen.getByRole("button", { name: "Add to Stack" }));
+    await advanceToContextEnrichment(user);
+
+    await user.type(screen.getByPlaceholderText("How does this resolve?"), "Can this be countered now?");
+    await user.click(screen.getByRole("button", { name: /^Stack/ }));
+
+    const optRow = screen.getByLabelText("Caster for Opt").closest("li");
+    expect(optRow).not.toBeNull();
+    const counterspellRow = screen.getByLabelText("Caster for Counterspell").closest("li");
+    expect(counterspellRow).not.toBeNull();
+
+    expect(within(optRow as HTMLLIElement).getByLabelText("Caster for Opt")).toHaveValue("Player 1");
+    expect(within(optRow as HTMLLIElement).getByLabelText("Mana spent for Opt")).toHaveValue("");
+    expect(within(optRow as HTMLLIElement).getByLabelText("Context notes for Opt")).toHaveValue("");
+
+    expect(within(counterspellRow as HTMLLIElement).getByLabelText("Caster for Counterspell")).toHaveValue("Player 1");
+    expect(within(counterspellRow as HTMLLIElement).getByLabelText("Mana spent for Counterspell")).toHaveValue("");
+    expect(within(counterspellRow as HTMLLIElement).getByLabelText("Context notes for Counterspell")).toHaveValue("");
+    await user.click(screen.getByRole("button", { name: "Close" }));
+
+    await clickDecryptStack(user);
+    const requestBody = await waitFor(() => {
+      expect(submittedAskAiRequests.length).toBeGreaterThan(0);
+      return submittedAskAiRequests[0];
+    });
+
+    expect(requestBody).toMatchObject({
+      question: "Can this be countered now?",
+      gameContext: {
+        playerCount: 3,
+        players: [
+          { label: "Player 1", lifeTotal: 35 },
+          { label: "Player 2", lifeTotal: 22 },
+          { label: "Player 3", lifeTotal: 19 }
+        ]
+      },
+      battlefieldContext: [
+        {
+          name: "Lightning Bolt",
+          targets: []
+        }
+      ],
+      stack: [
+        {
+          name: "Opt"
+        },
+        {
+          name: "Counterspell"
+        }
+      ]
+    });
+  });
+
+  it("keeps reviewed stack order and question in parity with submitted payload", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await openStackBuilder(user);
+    await addCardToStack(user, "lig", "Lightning Bolt");
+    await addCardToStack(user, "opt", "Opt");
+    await addCardToStack(user, "cou", "Counterspell");
+    await advanceToContextEnrichment(user);
+
+    await user.click(screen.getByRole("button", { name: /^Stack/ }));
+    const stackDetailsHeading = screen.getByRole("heading", { name: "Stack details" });
+    const detailsContainer = stackDetailsHeading.closest("div")?.parentElement as HTMLElement;
+    const detailsList = within(detailsContainer).getByRole("list");
+    const detailRows = within(detailsList).getAllByRole("listitem");
+
+    expect(within(detailRows[0]).getByText("Lightning Bolt")).toBeInTheDocument();
+    expect(within(detailRows[1]).getByText("Opt")).toBeInTheDocument();
+    expect(within(detailRows[2]).getByText("Counterspell")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Close" }));
+
+    const reviewedQuestion = "Does this ordering resolve correctly?";
+    await user.type(screen.getByPlaceholderText("How does this resolve?"), reviewedQuestion);
+    await clickDecryptStack(user);
+
+    const requestBody = await waitFor(() => {
+      expect(submittedAskAiRequests.length).toBeGreaterThan(0);
+      return submittedAskAiRequests[0];
+    });
+
+    expect(requestBody.question).toBe(reviewedQuestion);
+    expect(requestBody.stack.map((item) => item.name)).toEqual(["Lightning Bolt", "Opt", "Counterspell"]);
+  });
+
+  it("does not show battlefield item name before selection and shows preview after selection", async () => {
     const user = userEvent.setup();
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
     const battlefieldSearchInput = screen.getByLabelText("Battlefield search input");
-    const battlefieldNameDisplay = screen.getByLabelText("Battlefield item name");
-
-    expect(battlefieldNameDisplay.tagName).toBe("OUTPUT");
+    expect(screen.queryByLabelText("Battlefield item name")).not.toBeInTheDocument();
 
     await user.type(battlefieldSearchInput, "lig");
-    expect(battlefieldNameDisplay).toHaveTextContent("lig");
+    expect(screen.queryByLabelText("Battlefield item name")).not.toBeInTheDocument();
 
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
     expect(screen.queryByLabelText("Battlefield item name")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Battlefield item details")).toHaveValue(
-      "Lightning Bolt deals 3 damage to any target."
-    );
+    expect(screen.queryByLabelText("Battlefield item details")).not.toBeInTheDocument();
   });
 
   it("hides battlefield target controls until a card is selected", async () => {
@@ -973,8 +1157,8 @@ describe("App MVP interaction flows", () => {
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 
-    expect(screen.getByLabelText("Battlefield target kind")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Add battlefield target" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Add battlefield item" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Battlefield target kind")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add battlefield target" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add battlefield card" })).toBeInTheDocument();
   });
 });

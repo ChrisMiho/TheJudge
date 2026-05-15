@@ -30,7 +30,11 @@ const RETRY_COOLDOWN_SECONDS = 13;
 const METADATA_URL = "/data/cardMetadata.json";
 const EMPTY_STATE_IMAGE_URL = "/assets/cats-homescreen.png";
 const MAX_OTHER_TARGET_CHARS = 200;
-const PLAYER_OPTIONS: PlayerLabel[] = ["Player 1", "Player 2", "Player 3", "Player 4"];
+const MIN_PLAYERS = 2;
+const MAX_PLAYERS = 8;
+const DUEL_STARTING_LIFE_TOTAL = "20";
+const MULTIPLAYER_STARTING_LIFE_TOTAL = "40";
+const PLAYER_OPTIONS: PlayerLabel[] = Array.from({ length: MAX_PLAYERS }, (_, index) => `Player ${index + 1}` as PlayerLabel);
 type TargetKind = StackTarget["kind"];
 const TARGET_KIND_OPTIONS: Array<{ value: TargetKind; label: string }> = [
   { value: "stack", label: "Stack target" },
@@ -39,7 +43,7 @@ const TARGET_KIND_OPTIONS: Array<{ value: TargetKind; label: string }> = [
   { value: "other", label: "Other target context" },
   { value: "none", label: "No specific target" }
 ];
-type FlowStep = "game-context" | "battlefield-context" | "stack-builder";
+type FlowStep = "game-context" | "battlefield-context" | "stack-assembly" | "context-enrichment";
 
 function formatTarget(target: StackTarget): string {
   if (target.kind === "player") {
@@ -68,19 +72,21 @@ export default function App() {
   const [searchInput, setSearchInput] = useState("");
   const [selectedCard, setSelectedCard] = useState<CardMetadataItem | null>(null);
   const [flowStep, setFlowStep] = useState<FlowStep>("game-context");
-  const [playerCountInput, setPlayerCountInput] = useState<2 | 3 | 4>(2);
-  const [lifeTotalsByPlayer, setLifeTotalsByPlayer] = useState<Record<PlayerLabel, string>>({
-    "Player 1": "20",
-    "Player 2": "20",
-    "Player 3": "20",
-    "Player 4": "20"
-  });
+  const [activePlayerCount, setActivePlayerCount] = useState(MIN_PLAYERS);
+  const [lifeTotalsByPlayer, setLifeTotalsByPlayer] = useState<Record<PlayerLabel, string>>(() =>
+    PLAYER_OPTIONS.reduce<Record<PlayerLabel, string>>(
+      (accumulator, player, index) => ({
+        ...accumulator,
+        [player]: index < MIN_PLAYERS ? DUEL_STARTING_LIFE_TOTAL : MULTIPLAYER_STARTING_LIFE_TOTAL
+      }),
+      {} as Record<PlayerLabel, string>
+    )
+  );
   const [gameContext, setGameContext] = useState<GameContext | null>(null);
   const [battlefieldContext, setBattlefieldContext] = useState<BattlefieldContextItem[]>([]);
   const [battlefieldSearchInput, setBattlefieldSearchInput] = useState("");
   const [selectedBattlefieldCard, setSelectedBattlefieldCard] = useState<CardMetadataItem | null>(null);
   const [battlefieldEntryName, setBattlefieldEntryName] = useState("");
-  const [isBattlefieldEntryNameLinked, setIsBattlefieldEntryNameLinked] = useState(true);
   const [battlefieldEntryDetails, setBattlefieldEntryDetails] = useState("");
   const [battlefieldEntryTargets, setBattlefieldEntryTargets] = useState<StackTarget[]>([]);
   const [battlefieldTargetKind, setBattlefieldTargetKind] = useState<TargetKind>("battlefield");
@@ -104,6 +110,11 @@ export default function App() {
   const [detailBattlefieldByCardId, setDetailBattlefieldByCardId] = useState<Record<string, string>>({});
   const [detailPlayerByCardId, setDetailPlayerByCardId] = useState<Record<string, PlayerLabel>>({});
   const [detailOtherByCardId, setDetailOtherByCardId] = useState<Record<string, string>>({});
+  const [detailTargetKindByBattlefieldKey, setDetailTargetKindByBattlefieldKey] = useState<Record<string, TargetKind>>({});
+  const [detailStackTargetByBattlefieldKey, setDetailStackTargetByBattlefieldKey] = useState<Record<string, string>>({});
+  const [detailBattlefieldByBattlefieldKey, setDetailBattlefieldByBattlefieldKey] = useState<Record<string, string>>({});
+  const [detailPlayerByBattlefieldKey, setDetailPlayerByBattlefieldKey] = useState<Record<string, PlayerLabel>>({});
+  const [detailOtherByBattlefieldKey, setDetailOtherByBattlefieldKey] = useState<Record<string, string>>({});
   const [showStackDetails, setShowStackDetails] = useState(false);
   const [question, setQuestion] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -161,18 +172,11 @@ export default function App() {
   });
 
   const addButtonLabel = stack.length === 0 ? "Begin stackening!" : "Add to Stack";
-  const activePlayers = PLAYER_OPTIONS.slice(0, playerCountInput);
+  const activePlayers = PLAYER_OPTIONS.slice(0, activePlayerCount);
   const { answer, error, isSubmitting, retryCountdown, canRetry, submitAttempt } = useAskAiSubmitOrchestration({
     apiBaseUrl,
     retryCooldownSeconds: RETRY_COOLDOWN_SECONDS
   });
-
-  useEffect(() => {
-    if (!isBattlefieldEntryNameLinked) {
-      return;
-    }
-    setBattlefieldEntryName(battlefieldSearchInput);
-  }, [battlefieldSearchInput, isBattlefieldEntryNameLinked]);
 
   function parseManaSpentInput(rawValue: string): number | undefined {
     const trimmed = rawValue.trim();
@@ -278,6 +282,51 @@ export default function App() {
     }));
   }
 
+  function addPlayer(): void {
+    if (activePlayerCount >= MAX_PLAYERS) {
+      return;
+    }
+
+    const nextCount = activePlayerCount + 1;
+    const nextPlayer = PLAYER_OPTIONS[nextCount - 1];
+    if (!nextPlayer) {
+      return;
+    }
+
+    setLifeTotalsByPlayer((current) => {
+      const nextLifeTotals = {
+        ...current,
+        [nextPlayer]: current[nextPlayer] || MULTIPLAYER_STARTING_LIFE_TOTAL
+      };
+
+      if (nextCount === 3) {
+        for (const player of PLAYER_OPTIONS.slice(0, MIN_PLAYERS)) {
+          if (nextLifeTotals[player] === DUEL_STARTING_LIFE_TOTAL) {
+            nextLifeTotals[player] = MULTIPLAYER_STARTING_LIFE_TOTAL;
+          }
+        }
+      }
+
+      return nextLifeTotals;
+    });
+    setActivePlayerCount(nextCount);
+  }
+
+  function removePlayer(): void {
+    if (activePlayerCount <= MIN_PLAYERS) {
+      return;
+    }
+    const nextCount = activePlayerCount - 1;
+    if (nextCount === MIN_PLAYERS) {
+      setLifeTotalsByPlayer((current) => ({
+        ...current,
+        "Player 1": DUEL_STARTING_LIFE_TOTAL,
+        "Player 2": DUEL_STARTING_LIFE_TOTAL
+      }));
+    }
+    setActivePlayerCount(nextCount);
+  }
+
   function confirmGameContext(): void {
     const players = activePlayers.map((player) => {
       const parsed = Number(lifeTotalsByPlayer[player]);
@@ -293,11 +342,11 @@ export default function App() {
     }
 
     setGameContext({
-      playerCount: playerCountInput,
+      playerCount: activePlayers.length,
       players
     });
     logFrontendDebug("game_context.confirmed", {
-      playerCount: playerCountInput
+      playerCount: activePlayers.length
     });
     setFlowStep("battlefield-context");
     flashStatus("Game context saved.");
@@ -348,19 +397,17 @@ export default function App() {
       return;
     }
 
-    const details = battlefieldEntryDetails.trim();
     setBattlefieldContext((current) => [
       ...current,
       {
         name,
-        details: details.length > 0 ? details : undefined,
+        details: battlefieldEntryDetails.trim().length > 0 ? battlefieldEntryDetails.trim() : undefined,
         targets: battlefieldEntryTargets
       }
     ]);
     setBattlefieldSearchInput("");
     setSelectedBattlefieldCard(null);
     setBattlefieldEntryName("");
-    setIsBattlefieldEntryNameLinked(true);
     setBattlefieldEntryDetails("");
     setBattlefieldEntryTargets([]);
     flashStatus("Battlefield context added.");
@@ -369,7 +416,6 @@ export default function App() {
   function selectBattlefieldSuggestion(card: CardMetadataItem): void {
     setSelectedBattlefieldCard(card);
     setBattlefieldEntryName(card.name);
-    setIsBattlefieldEntryNameLinked(false);
     if (battlefieldEntryDetails.trim().length === 0) {
       setBattlefieldEntryDetails(card.oracleText.slice(0, 280));
     }
@@ -393,7 +439,7 @@ export default function App() {
     if (battlefieldContext.length === 0) {
       setBattlefieldContext([]);
     }
-    setFlowStep("stack-builder");
+    setFlowStep("stack-assembly");
   }
 
   function updateStackEntry(cardId: string, updates: Partial<StackItem>): void {
@@ -403,6 +449,55 @@ export default function App() {
           ? {
               ...item,
               ...updates
+            }
+          : item
+      )
+    );
+  }
+
+  function updateBattlefieldEntry(entryIndex: number, updates: Partial<BattlefieldContextItem>): void {
+    setBattlefieldContext((current) =>
+      current.map((item, index) =>
+        index === entryIndex
+          ? {
+              ...item,
+              ...updates
+            }
+          : item
+      )
+    );
+  }
+
+  function removeBattlefieldEntry(entryIndexToRemove: number): void {
+    setBattlefieldContext((current) => current.filter((_, index) => index !== entryIndexToRemove));
+    // Entry keys are index-based; clear pending detail input state after list shape changes.
+    setDetailTargetKindByBattlefieldKey({});
+    setDetailStackTargetByBattlefieldKey({});
+    setDetailBattlefieldByBattlefieldKey({});
+    setDetailPlayerByBattlefieldKey({});
+    setDetailOtherByBattlefieldKey({});
+  }
+
+  function addTargetToBattlefieldEntry(entryIndex: number, target: StackTarget): void {
+    setBattlefieldContext((current) =>
+      current.map((item, index) =>
+        index === entryIndex
+          ? {
+              ...item,
+              targets: [...item.targets, target]
+            }
+          : item
+      )
+    );
+  }
+
+  function removeTargetFromBattlefieldEntry(entryIndex: number, targetIndexToRemove: number): void {
+    setBattlefieldContext((current) =>
+      current.map((item, index) =>
+        index === entryIndex
+          ? {
+              ...item,
+              targets: item.targets.filter((_, targetIndex) => targetIndex !== targetIndexToRemove)
             }
           : item
       )
@@ -445,6 +540,67 @@ export default function App() {
 
   function getDetailOther(cardId: string): string {
     return detailOtherByCardId[cardId] ?? "";
+  }
+
+  function getDetailTargetKindForBattlefieldEntry(entryKey: string): TargetKind {
+    return detailTargetKindByBattlefieldKey[entryKey] ?? "stack";
+  }
+
+  function getDetailPlayerForBattlefieldEntry(entryKey: string): PlayerLabel {
+    return detailPlayerByBattlefieldKey[entryKey] ?? "Player 2";
+  }
+
+  function getDetailOtherForBattlefieldEntry(entryKey: string): string {
+    return detailOtherByBattlefieldKey[entryKey] ?? "";
+  }
+
+  function addTargetFromBattlefieldDetails(entryIndex: number, entryKey: string): void {
+    const kind = getDetailTargetKindForBattlefieldEntry(entryKey);
+    if (kind === "stack") {
+      const selectedTargetCardId = detailStackTargetByBattlefieldKey[entryKey] ?? "";
+      const targetCard = stack.find((item) => item.cardId === selectedTargetCardId);
+      if (!targetCard) return;
+
+      addTargetToBattlefieldEntry(entryIndex, {
+        kind: "stack",
+        targetCardId: targetCard.cardId,
+        targetCardName: targetCard.name
+      });
+      setDetailStackTargetByBattlefieldKey((current) => ({ ...current, [entryKey]: "" }));
+      return;
+    }
+
+    if (kind === "battlefield") {
+      const targetPermanent = (detailBattlefieldByBattlefieldKey[entryKey] ?? "").trim();
+      if (targetPermanent.length === 0) return;
+      addTargetToBattlefieldEntry(entryIndex, {
+        kind: "battlefield",
+        targetPermanent
+      });
+      setDetailBattlefieldByBattlefieldKey((current) => ({ ...current, [entryKey]: "" }));
+      return;
+    }
+
+    if (kind === "player") {
+      addTargetToBattlefieldEntry(entryIndex, {
+        kind: "player",
+        targetPlayer: getDetailPlayerForBattlefieldEntry(entryKey)
+      });
+      return;
+    }
+
+    if (kind === "other") {
+      const targetDescription = getDetailOtherForBattlefieldEntry(entryKey).trim();
+      if (targetDescription.length === 0) return;
+      addTargetToBattlefieldEntry(entryIndex, {
+        kind: "other",
+        targetDescription
+      });
+      setDetailOtherByBattlefieldKey((current) => ({ ...current, [entryKey]: "" }));
+      return;
+    }
+
+    addTargetToBattlefieldEntry(entryIndex, { kind: "none" });
   }
 
   function addTargetFromStackDetails(cardId: string): void {
@@ -500,12 +656,8 @@ export default function App() {
   function handleAddSelectedCard(): void {
     if (!selectedCard) return;
 
-    const stackEntry = buildStackItemFromMetadata(selectedCard, {
-      caster: entryCaster,
-      contextNotes: entryContextNotes,
-      targets: entryTargets,
-      manaSpent: parseManaSpentInput(entryManaSpent)
-    });
+    // Phase 1 stack assembly captures card identity only.
+    const stackEntry = buildStackItemFromMetadata(selectedCard);
     const validationResult = validateStackAdd(stack, stackEntry);
     if (!validationResult.ok) {
       flashStatus(validationResult.message);
@@ -522,7 +674,19 @@ export default function App() {
       return nextStack;
     });
     resetEntryContext();
+    setSearchInput("");
+    setSelectedCard(null);
     flashStatus("Stacked");
+  }
+
+  function continueToContextEnrichment(): void {
+    if (stack.length === 0) {
+      flashStatus("Add at least one stack card before continuing.");
+      return;
+    }
+    setShowStackDetails(true);
+    setFlowStep("context-enrichment");
+    flashStatus("Now enrich context for each card before submitting.");
   }
 
   function removeFromStack(cardId: string): void {
@@ -613,32 +777,53 @@ export default function App() {
             )}
           </div>
           <h2 className="text-2xl font-semibold text-sky-300">Game context</h2>
-          <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
-            Number of players
-            <select
-              aria-label="Number of players"
-              value={playerCountInput}
-              onChange={(event) => setPlayerCountInput(Number(event.target.value) as 2 | 3 | 4)}
-              className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
-            >
-              <option value={2}>2</option>
-              <option value={3}>3</option>
-              <option value={4}>4</option>
-            </select>
-          </label>
-          <div className="space-y-2">
-            {activePlayers.map((player) => (
-              <label key={player} className="flex items-center justify-between gap-3 text-sm">
-                <span>{player} life total</span>
-                <input
-                  aria-label={`${player} life total`}
-                  value={lifeTotalsByPlayer[player]}
-                  onChange={(event) => updateLifeTotal(player, event.target.value)}
-                  inputMode="numeric"
-                  className="w-28 rounded-lg border border-slate-600 bg-slate-800 px-2 py-1 text-right"
-                />
-              </label>
-            ))}
+          <div className="space-y-4 rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Players in game</p>
+                <p className="mt-1 text-xs text-slate-400">2 players start at 20 life. 3+ players default to 40 life.</p>
+              </div>
+              <span className="rounded-full border border-slate-600 bg-slate-800/90 px-3 py-1 text-xs font-semibold text-slate-200">
+                {activePlayerCount} / {MAX_PLAYERS}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={addPlayer}
+                disabled={activePlayerCount >= MAX_PLAYERS}
+                className="rounded-xl border border-cyan-500/50 bg-cyan-500/10 px-3 py-2 text-sm font-semibold text-cyan-200 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Add player
+              </button>
+              <button
+                type="button"
+                onClick={removePlayer}
+                disabled={activePlayerCount <= MIN_PLAYERS}
+                className="rounded-xl border border-slate-500 bg-slate-800/70 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:bg-slate-700/80 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Remove last player
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {activePlayers.map((player) => (
+                <label
+                  key={player}
+                  className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-slate-700/80 bg-slate-950/40 px-3 py-2 text-sm"
+                >
+                  <span className="font-medium text-slate-100">{player} life total</span>
+                  <input
+                    aria-label={`${player} life total`}
+                    value={lifeTotalsByPlayer[player]}
+                    onChange={(event) => updateLifeTotal(player, event.target.value)}
+                    inputMode="numeric"
+                    className="w-28 rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-right font-semibold text-slate-100"
+                  />
+                </label>
+              ))}
+            </div>
           </div>
           <button
             type="button"
@@ -660,6 +845,7 @@ export default function App() {
   if (flowStep === "battlefield-context") {
     return (
       <BattlefieldStep
+        collectCardsOnly
         searchInput={battlefieldSearchInput}
         onSearchInputChange={setBattlefieldSearchInput}
         onSearchKeyDown={battlefieldKeyboard.handleKeyDown}
@@ -674,12 +860,13 @@ export default function App() {
           battlefieldKeyboard.closeSuggestions();
         }}
         selectedCard={selectedBattlefieldCard}
-        battlefieldEntryName={battlefieldEntryName}
         battlefieldEntryDetails={battlefieldEntryDetails}
         onBattlefieldEntryDetailsChange={setBattlefieldEntryDetails}
         targetKind={battlefieldTargetKind}
         onTargetKindChange={setBattlefieldTargetKind}
-        targetKindOptions={TARGET_KIND_OPTIONS}
+        targetKindOptions={TARGET_KIND_OPTIONS.map((option) =>
+          option.value === "stack" ? { ...option, disabled: true } : option
+        )}
         targetStackName={battlefieldTargetStackName}
         onTargetStackNameChange={setBattlefieldTargetStackName}
         targetStackId={battlefieldTargetStackId}
@@ -705,10 +892,164 @@ export default function App() {
     );
   }
 
+  if (flowStep === "stack-assembly") {
+    return (
+      <StackBuilderStep
+        gameContext={gameContext}
+        battlefieldContextCount={battlefieldContext.length}
+        hideSubmitControls
+        continueToEnrichmentLabel="Continue to context enrichment"
+        onContinueToEnrichment={continueToContextEnrichment}
+        continueToEnrichmentDisabled={stack.length === 0}
+        hideCardAssembly={false}
+        battlefieldContextNames={battlefieldContext.map((item) => item.name)}
+        cardMetadataCount={cardMetadata.length}
+        isMetadataLoading={isMetadataLoading}
+        metadataLoadError={metadataLoadError}
+        searchInput={searchInput}
+        onSearchInputChange={setSearchInput}
+        onSearchKeyDown={stackKeyboard.handleKeyDown}
+        showSuggestions={searchInput.trim().length >= 3 && stackKeyboard.isOpen}
+        suggestions={suggestions}
+        noMatchCopy={NO_MATCH_COPY}
+        activeSuggestionIndex={stackKeyboard.activeIndex}
+        onSuggestionHover={stackKeyboard.setActiveIndex}
+        onSuggestionSelect={(card) => {
+          selectStackSuggestion(card);
+          stackKeyboard.closeSuggestions();
+        }}
+        selectedCard={selectedCard}
+        playerOptions={activePlayers}
+        entryCaster={entryCaster}
+        onEntryCasterChange={setEntryCaster}
+        targetKind={targetKind}
+        onTargetKindChange={setTargetKind}
+        targetKindOptions={TARGET_KIND_OPTIONS.map((option) =>
+          option.value === "stack" && stack.length === 0 ? { ...option, disabled: true } : option
+        )}
+        targetStackCardId={targetStackCardId}
+        onTargetStackCardIdChange={setTargetStackCardId}
+        stack={stack}
+        battlefieldContext={battlefieldContext}
+        targetBattlefieldName={targetBattlefieldName}
+        onTargetBattlefieldNameChange={setTargetBattlefieldName}
+        targetPlayer={targetPlayer}
+        onTargetPlayerChange={setTargetPlayer}
+        targetOtherDescription={targetOtherDescription}
+        onTargetOtherDescriptionChange={setTargetOtherDescription}
+        maxOtherTargetChars={MAX_OTHER_TARGET_CHARS}
+        onAddEntryTarget={addEntryTarget}
+        entryTargets={entryTargets}
+        formatTarget={formatTarget}
+        onRemoveEntryTarget={removeEntryTarget}
+        entryManaSpent={entryManaSpent}
+        onEntryManaSpentChange={setEntryManaSpent}
+        entryContextNotes={entryContextNotes}
+        onEntryContextNotesChange={setEntryContextNotes}
+        addButtonLabel={addButtonLabel}
+        onAddSelectedCard={handleAddSelectedCard}
+        question={question}
+        onQuestionChange={setQuestion}
+        onDecryptStack={handleDecryptStack}
+        isSubmitting={isSubmitting}
+        statusMessage={statusMessage}
+        error={error}
+        canRetry={canRetry}
+        retryCountdown={retryCountdown}
+        onRetry={handleRetry}
+        answer={answer}
+        showStackDetails={showStackDetails}
+        onShowStackDetailsChange={setShowStackDetails}
+        onRemoveFromStack={removeFromStack}
+        onUpdateStackEntry={updateStackEntry}
+        onRemoveBattlefieldEntry={removeBattlefieldEntry}
+        onUpdateBattlefieldEntry={updateBattlefieldEntry}
+        parseManaSpentInput={parseManaSpentInput}
+        getDetailTargetKind={getDetailTargetKind}
+        onDetailTargetKindChange={(cardId, kind) =>
+          setDetailTargetKindByCardId((current) => ({
+            ...current,
+            [cardId]: kind
+          }))
+        }
+        detailStackTargetByCardId={detailStackTargetByCardId}
+        onDetailStackTargetChange={(cardId, value) =>
+          setDetailStackTargetByCardId((current) => ({
+            ...current,
+            [cardId]: value
+          }))
+        }
+        detailBattlefieldByCardId={detailBattlefieldByCardId}
+        onDetailBattlefieldChange={(cardId, value) =>
+          setDetailBattlefieldByCardId((current) => ({
+            ...current,
+            [cardId]: value
+          }))
+        }
+        getDetailPlayer={getDetailPlayer}
+        onDetailPlayerChange={(cardId, value) =>
+          setDetailPlayerByCardId((current) => ({
+            ...current,
+            [cardId]: value
+          }))
+        }
+        getDetailOther={getDetailOther}
+        onDetailOtherChange={(cardId, value) =>
+          setDetailOtherByCardId((current) => ({
+            ...current,
+            [cardId]: value
+          }))
+        }
+        onAddTargetFromStackDetails={addTargetFromStackDetails}
+        onRemoveTargetFromStackEntry={removeTargetFromStackEntry}
+        getDetailTargetKindForBattlefieldEntry={getDetailTargetKindForBattlefieldEntry}
+        onDetailTargetKindForBattlefieldEntryChange={(entryKey, kind) =>
+          setDetailTargetKindByBattlefieldKey((current) => ({
+            ...current,
+            [entryKey]: kind
+          }))
+        }
+        detailStackTargetByBattlefieldKey={detailStackTargetByBattlefieldKey}
+        onDetailStackTargetForBattlefieldEntryChange={(entryKey, value) =>
+          setDetailStackTargetByBattlefieldKey((current) => ({
+            ...current,
+            [entryKey]: value
+          }))
+        }
+        detailBattlefieldByBattlefieldKey={detailBattlefieldByBattlefieldKey}
+        onDetailBattlefieldForBattlefieldEntryChange={(entryKey, value) =>
+          setDetailBattlefieldByBattlefieldKey((current) => ({
+            ...current,
+            [entryKey]: value
+          }))
+        }
+        getDetailPlayerForBattlefieldEntry={getDetailPlayerForBattlefieldEntry}
+        onDetailPlayerForBattlefieldEntryChange={(entryKey, value) =>
+          setDetailPlayerByBattlefieldKey((current) => ({
+            ...current,
+            [entryKey]: value
+          }))
+        }
+        getDetailOtherForBattlefieldEntry={getDetailOtherForBattlefieldEntry}
+        onDetailOtherForBattlefieldEntryChange={(entryKey, value) =>
+          setDetailOtherByBattlefieldKey((current) => ({
+            ...current,
+            [entryKey]: value
+          }))
+        }
+        onAddTargetFromBattlefieldDetails={addTargetFromBattlefieldDetails}
+        onRemoveTargetFromBattlefieldEntry={removeTargetFromBattlefieldEntry}
+      />
+    );
+  }
+
   return (
     <StackBuilderStep
+      hideCardAssembly
+      compactTopChrome
       gameContext={gameContext}
       battlefieldContextCount={battlefieldContext.length}
+      battlefieldContextNames={battlefieldContext.map((item) => item.name)}
       cardMetadataCount={cardMetadata.length}
       isMetadataLoading={isMetadataLoading}
       metadataLoadError={metadataLoadError}
@@ -725,15 +1066,18 @@ export default function App() {
         stackKeyboard.closeSuggestions();
       }}
       selectedCard={selectedCard}
-      playerOptions={PLAYER_OPTIONS}
+      playerOptions={activePlayers}
       entryCaster={entryCaster}
       onEntryCasterChange={setEntryCaster}
       targetKind={targetKind}
       onTargetKindChange={setTargetKind}
-      targetKindOptions={TARGET_KIND_OPTIONS}
+      targetKindOptions={TARGET_KIND_OPTIONS.map((option) =>
+        option.value === "stack" && stack.length === 0 ? { ...option, disabled: true } : option
+      )}
       targetStackCardId={targetStackCardId}
       onTargetStackCardIdChange={setTargetStackCardId}
       stack={stack}
+      battlefieldContext={battlefieldContext}
       targetBattlefieldName={targetBattlefieldName}
       onTargetBattlefieldNameChange={setTargetBattlefieldName}
       targetPlayer={targetPlayer}
@@ -765,6 +1109,8 @@ export default function App() {
       onShowStackDetailsChange={setShowStackDetails}
       onRemoveFromStack={removeFromStack}
       onUpdateStackEntry={updateStackEntry}
+      onRemoveBattlefieldEntry={removeBattlefieldEntry}
+      onUpdateBattlefieldEntry={updateBattlefieldEntry}
       parseManaSpentInput={parseManaSpentInput}
       getDetailTargetKind={getDetailTargetKind}
       onDetailTargetKindChange={(cardId, kind) =>
@@ -803,6 +1149,43 @@ export default function App() {
       }
       onAddTargetFromStackDetails={addTargetFromStackDetails}
       onRemoveTargetFromStackEntry={removeTargetFromStackEntry}
+      getDetailTargetKindForBattlefieldEntry={getDetailTargetKindForBattlefieldEntry}
+      onDetailTargetKindForBattlefieldEntryChange={(entryKey, kind) =>
+        setDetailTargetKindByBattlefieldKey((current) => ({
+          ...current,
+          [entryKey]: kind
+        }))
+      }
+      detailStackTargetByBattlefieldKey={detailStackTargetByBattlefieldKey}
+      onDetailStackTargetForBattlefieldEntryChange={(entryKey, value) =>
+        setDetailStackTargetByBattlefieldKey((current) => ({
+          ...current,
+          [entryKey]: value
+        }))
+      }
+      detailBattlefieldByBattlefieldKey={detailBattlefieldByBattlefieldKey}
+      onDetailBattlefieldForBattlefieldEntryChange={(entryKey, value) =>
+        setDetailBattlefieldByBattlefieldKey((current) => ({
+          ...current,
+          [entryKey]: value
+        }))
+      }
+      getDetailPlayerForBattlefieldEntry={getDetailPlayerForBattlefieldEntry}
+      onDetailPlayerForBattlefieldEntryChange={(entryKey, value) =>
+        setDetailPlayerByBattlefieldKey((current) => ({
+          ...current,
+          [entryKey]: value
+        }))
+      }
+      getDetailOtherForBattlefieldEntry={getDetailOtherForBattlefieldEntry}
+      onDetailOtherForBattlefieldEntryChange={(entryKey, value) =>
+        setDetailOtherByBattlefieldKey((current) => ({
+          ...current,
+          [entryKey]: value
+        }))
+      }
+      onAddTargetFromBattlefieldDetails={addTargetFromBattlefieldDetails}
+      onRemoveTargetFromBattlefieldEntry={removeTargetFromBattlefieldEntry}
     />
   );
 }

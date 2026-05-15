@@ -67,7 +67,7 @@ describe("ask-ai endpoint contract", () => {
   it("returns validation error for malformed caster and target fields", async () => {
     const badCasterResponse = await request(app)
       .post("/api/ask-ai")
-      .send(createAskAiRequest({ stack: [{ ...createStackItem(), caster: "Player 5" as never }] }));
+      .send(createAskAiRequest({ stack: [{ ...createStackItem(), caster: "Player 9" as never }] }));
     expect(badCasterResponse.status).toBe(400);
     expect(badCasterResponse.body.code).toBe("VALIDATION_ERROR");
     expect(badCasterResponse.body.message).toContain("stack.0.caster");
@@ -82,6 +82,19 @@ describe("ask-ai endpoint contract", () => {
     expect(badTargetResponse.status).toBe(400);
     expect(badTargetResponse.body.code).toBe("VALIDATION_ERROR");
     expect(badTargetResponse.body.message).toContain("stack.0.targets.0.targetDescription");
+  });
+
+  it("rejects control characters in free-text input fields", async () => {
+    const response = await request(app).post("/api/ask-ai").send(
+      createAskAiRequest({
+        question: "Can this resolve?\u0007",
+        stack: [createStackItem({ contextNotes: "targets player\u0000 unexpectedly" })]
+      })
+    );
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe("VALIDATION_ERROR");
+    expect(response.body.message).toContain("contains unsupported control characters");
   });
 
   it("returns validation error when prompt budget is exceeded", async () => {

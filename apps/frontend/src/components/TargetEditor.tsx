@@ -6,12 +6,13 @@ type TargetKind = StackTarget["kind"];
 type TargetEditorProps = {
   kind: TargetKind;
   onKindChange: (kind: TargetKind) => void;
-  kindOptions: Array<{ value: TargetKind; label: string }>;
+  kindOptions: Array<{ value: TargetKind; label: string; disabled?: boolean }>;
   kindLabel: string;
   renderInputsForKind: (kind: TargetKind) => ReactNode;
   onAddTarget: () => void;
   addButtonLabel: string;
   addButtonAriaLabel?: string;
+  addButtonDisabled?: boolean;
   targets: StackTarget[];
   formatTarget: (target: StackTarget) => string;
   onRemoveTarget: (targetIndex: number) => void;
@@ -26,6 +27,7 @@ export function TargetEditor({
   onAddTarget,
   addButtonLabel,
   addButtonAriaLabel,
+  addButtonDisabled = false,
   targets,
   formatTarget,
   onRemoveTarget
@@ -40,7 +42,7 @@ export function TargetEditor({
           className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
         >
           {kindOptions.map((option) => (
-            <option key={option.value} value={option.value}>
+            <option key={option.value} value={option.value} disabled={option.disabled}>
               {option.label}
             </option>
           ))}
@@ -50,6 +52,7 @@ export function TargetEditor({
           type="button"
           aria-label={addButtonAriaLabel}
           onClick={onAddTarget}
+          disabled={addButtonDisabled}
           className="rounded-md border border-slate-500 bg-slate-700 px-2 py-1 text-xs text-slate-100"
         >
           {addButtonLabel}

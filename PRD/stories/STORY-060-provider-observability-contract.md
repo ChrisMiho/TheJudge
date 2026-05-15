@@ -1,6 +1,6 @@
-# STORY-060 - Provider Observability Contract
+# STORY-060 - OpenAI Provider Observability Contract
 
-- title: Standardize provider-level logging and timing metrics for Bedrock ask-ai calls with correlation-aware traceability.
+- title: Standardize provider-level logging and timing metrics for OpenAI ask-ai calls with correlation-aware traceability.
 - implementation area: backend
 - user value: As an engineer, I can debug ask-ai failures and latency regressions quickly using consistent structured telemetry.
 - scope:
@@ -16,7 +16,7 @@
 - dependencies:
   - `STORY-059` - stable failure mapping should land before final observability contract tuning
   - `STORY-048` logging baseline (`pino`, payload toggle)
-  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md` Phase 2
+  - `PRD/analysis/MVP2-openai-integration-roadmap.md` Phase 2
 - exclusions:
   - no CloudWatch dashboard provisioning
   - no production alarm threshold commitments
