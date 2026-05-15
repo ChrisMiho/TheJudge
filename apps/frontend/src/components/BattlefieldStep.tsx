@@ -6,6 +6,7 @@ import type { CardMetadataItem, PlayerLabel, StackTarget } from "../types";
 type TargetKind = StackTarget["kind"];
 
 type BattlefieldStepProps = {
+  collectCardsOnly?: boolean;
   searchInput: string;
   onSearchInputChange: (value: string) => void;
   onSearchKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
@@ -22,7 +23,7 @@ type BattlefieldStepProps = {
   onBattlefieldEntryDetailsChange: (value: string) => void;
   targetKind: TargetKind;
   onTargetKindChange: (kind: TargetKind) => void;
-  targetKindOptions: Array<{ value: TargetKind; label: string }>;
+  targetKindOptions: Array<{ value: TargetKind; label: string; disabled?: boolean }>;
   targetStackName: string;
   onTargetStackNameChange: (value: string) => void;
   targetStackId: string;
@@ -47,6 +48,7 @@ type BattlefieldStepProps = {
 };
 
 export function BattlefieldStep({
+  collectCardsOnly = false,
   searchInput,
   onSearchInputChange,
   onSearchKeyDown,
@@ -86,6 +88,15 @@ export function BattlefieldStep({
   battlefieldContext,
   statusMessage
 }: BattlefieldStepProps): JSX.Element {
+  const isAddTargetDisabled =
+    targetKind === "stack"
+      ? true
+      : targetKind === "battlefield"
+        ? targetPermanent.trim().length === 0
+        : targetKind === "other"
+          ? targetOtherDescription.trim().length === 0
+          : false;
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
       <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 md:p-6">
@@ -130,9 +141,10 @@ export function BattlefieldStep({
         {selectedCard ? (
           <CardSelectionPreview
             card={selectedCard}
-            contextTitle="Battlefield context"
+            contextTitle={collectCardsOnly ? "Battlefield card" : "Battlefield context"}
             contextContent={
-              <>
+              collectCardsOnly ? null : (
+                <>
                 <textarea
                   aria-label="Battlefield item details"
                   value={battlefieldEntryDetails}
@@ -155,6 +167,7 @@ export function BattlefieldStep({
                             aria-label="Battlefield target stack name"
                             value={targetStackName}
                             onChange={(event) => onTargetStackNameChange(event.target.value)}
+                            disabled
                             className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
                             placeholder="Stack card name"
                           />
@@ -162,9 +175,11 @@ export function BattlefieldStep({
                             aria-label="Battlefield target stack id"
                             value={targetStackId}
                             onChange={(event) => onTargetStackIdChange(event.target.value)}
+                            disabled
                             className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
                             placeholder="Stack card id (optional)"
                           />
+                          <p className="text-[11px] text-slate-400">Stack targets are added in the stack step.</p>
                         </>
                       );
                     }
@@ -214,11 +229,13 @@ export function BattlefieldStep({
                   }}
                   onAddTarget={onAddTarget}
                   addButtonLabel="Add battlefield target"
+                  addButtonDisabled={isAddTargetDisabled}
                   targets={targets}
                   formatTarget={formatTarget}
                   onRemoveTarget={onRemoveTarget}
                 />
-              </>
+                </>
+              )
             }
             action={
               <button
@@ -226,7 +243,7 @@ export function BattlefieldStep({
                 onClick={onAddBattlefieldItem}
                 className="rounded-xl bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:from-sky-500 hover:to-cyan-400"
               >
-                Add battlefield item
+                {collectCardsOnly ? "Add battlefield card" : "Add battlefield item"}
               </button>
             }
           />
@@ -241,7 +258,11 @@ export function BattlefieldStep({
                 {battlefieldEntryName}
               </output>
             </label>
-            <p className="text-xs text-slate-300">Select a suggestion to open preview, details, and target controls.</p>
+            <p className="text-xs text-slate-300">
+              {collectCardsOnly
+                ? "Select a suggestion and add cards to build the battlefield list."
+                : "Select a suggestion to open preview, details, and target controls."}
+            </p>
           </>
         )}
         <div className="flex gap-2">

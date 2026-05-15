@@ -6,8 +6,14 @@ import type { CardMetadataItem, GameContext, PlayerLabel, StackItem, StackTarget
 type TargetKind = StackTarget["kind"];
 
 type StackBuilderStepProps = {
+  hideCardAssembly?: boolean;
+  hideSubmitControls?: boolean;
+  continueToEnrichmentLabel?: string;
+  continueToEnrichmentDisabled?: boolean;
+  onContinueToEnrichment?: () => void;
   gameContext: GameContext | null;
   battlefieldContextCount: number;
+  battlefieldContextNames: string[];
   cardMetadataCount: number;
   isMetadataLoading: boolean;
   metadataLoadError: string | null;
@@ -26,7 +32,7 @@ type StackBuilderStepProps = {
   onEntryCasterChange: (value: PlayerLabel) => void;
   targetKind: TargetKind;
   onTargetKindChange: (kind: TargetKind) => void;
-  targetKindOptions: Array<{ value: TargetKind; label: string }>;
+  targetKindOptions: Array<{ value: TargetKind; label: string; disabled?: boolean }>;
   targetStackCardId: string;
   onTargetStackCardIdChange: (value: string) => void;
   stack: StackItem[];
@@ -77,8 +83,14 @@ type StackBuilderStepProps = {
 };
 
 export function StackBuilderStep({
+  hideCardAssembly = false,
+  hideSubmitControls = false,
+  continueToEnrichmentLabel = "Continue",
+  continueToEnrichmentDisabled = false,
+  onContinueToEnrichment,
   gameContext,
   battlefieldContextCount,
+  battlefieldContextNames,
   cardMetadataCount,
   isMetadataLoading,
   metadataLoadError,
@@ -146,6 +158,17 @@ export function StackBuilderStep({
   onAddTargetFromStackDetails,
   onRemoveTargetFromStackEntry
 }: StackBuilderStepProps): JSX.Element {
+  const hasStackTargetCandidates = stack.length > 0;
+  const hasBattlefieldTargetCandidates = battlefieldContextNames.length > 0;
+  const isEntryAddTargetDisabled =
+    targetKind === "stack"
+      ? !hasStackTargetCandidates || targetStackCardId.trim().length === 0
+      : targetKind === "battlefield"
+        ? !hasBattlefieldTargetCandidates || targetBattlefieldName.trim().length === 0
+        : targetKind === "other"
+          ? targetOtherDescription.trim().length === 0
+          : false;
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
       <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 shadow-[0_20px_60px_-28px_rgba(30,64,175,0.65)] backdrop-blur-xl md:p-6">
@@ -176,26 +199,33 @@ export function StackBuilderStep({
             <p>{`Battlefield context entries: ${battlefieldContextCount}`}</p>
           </div>
         )}
-
-        <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
-          Card search
-          <input
-            value={searchInput}
-            onChange={(event) => onSearchInputChange(event.target.value)}
-            onKeyDown={onSearchKeyDown}
-            placeholder="Type to begin"
-            className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-50 placeholder:text-slate-300 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
-          />
-          <p className="mt-1 text-[11px] normal-case tracking-normal text-slate-400">
-            {isMetadataLoading
-              ? "Loading card index..."
-              : metadataLoadError
-                ? metadataLoadError
-                : `${cardMetadataCount.toLocaleString()} cards ready`}
+        {hideCardAssembly && (
+          <p className="text-sm text-slate-300">
+            Context enrichment: review each card and add caster, target, mana, or notes before submitting.
           </p>
-        </label>
+        )}
 
-        {showSuggestions && (
+        {!hideCardAssembly && (
+          <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
+            Card search
+            <input
+              value={searchInput}
+              onChange={(event) => onSearchInputChange(event.target.value)}
+              onKeyDown={onSearchKeyDown}
+              placeholder="Type to begin"
+              className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-50 placeholder:text-slate-300 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
+            />
+            <p className="mt-1 text-[11px] normal-case tracking-normal text-slate-400">
+              {isMetadataLoading
+                ? "Loading card index..."
+                : metadataLoadError
+                  ? metadataLoadError
+                  : `${cardMetadataCount.toLocaleString()} cards ready`}
+            </p>
+          </label>
+        )}
+
+        {!hideCardAssembly && showSuggestions && (
           <div className="rounded-xl border border-slate-600 bg-slate-800/70 p-2">
             {isMetadataLoading ? (
               <p className="px-2 py-1 text-sm text-slate-400">Loading cards...</p>
@@ -224,7 +254,7 @@ export function StackBuilderStep({
           </div>
         )}
 
-        {selectedCard && (
+        {!hideCardAssembly && selectedCard && (
           <CardSelectionPreview
             card={selectedCard}
             contextTitle="Stack context"
@@ -257,9 +287,10 @@ export function StackBuilderStep({
                           aria-label="Entry stack target"
                           value={targetStackCardId}
                           onChange={(event) => onTargetStackCardIdChange(event.target.value)}
+                          disabled={!hasStackTargetCandidates}
                           className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
                         >
-                          <option value="">Select stack item</option>
+                          <option value="">{hasStackTargetCandidates ? "Select stack item" : "No stack items available"}</option>
                           {stack.map((item) => (
                             <option key={item.cardId} value={item.cardId}>
                               {item.name}
@@ -271,13 +302,22 @@ export function StackBuilderStep({
 
                     if (kind === "battlefield") {
                       return (
-                        <input
+                        <select
                           aria-label="Entry battlefield target"
                           value={targetBattlefieldName}
                           onChange={(event) => onTargetBattlefieldNameChange(event.target.value)}
-                          placeholder="Permanent name"
-                          className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                        />
+                          disabled={!hasBattlefieldTargetCandidates}
+                          className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                        >
+                          <option value="">
+                            {hasBattlefieldTargetCandidates ? "Select battlefield item" : "No battlefield entries available"}
+                          </option>
+                          {battlefieldContextNames.map((name) => (
+                            <option key={name} value={name}>
+                              {name}
+                            </option>
+                          ))}
+                        </select>
                       );
                     }
 
@@ -315,10 +355,17 @@ export function StackBuilderStep({
                   onAddTarget={onAddEntryTarget}
                   addButtonLabel="Add target"
                   addButtonAriaLabel="Add entry target"
+                  addButtonDisabled={isEntryAddTargetDisabled}
                   targets={entryTargets}
                   formatTarget={formatTarget}
                   onRemoveTarget={onRemoveEntryTarget}
                 />
+                {targetKind === "stack" && !hasStackTargetCandidates && (
+                  <p className="text-[11px] text-slate-400">Add a stack item before selecting a stack target.</p>
+                )}
+                {targetKind === "battlefield" && !hasBattlefieldTargetCandidates && (
+                  <p className="text-[11px] text-slate-400">Add battlefield context to unlock battlefield target selection.</p>
+                )}
                 <label className="flex items-center gap-2 text-xs text-slate-200">
                   Mana spent
                   <input
@@ -353,26 +400,37 @@ export function StackBuilderStep({
           />
         )}
 
-        <form onSubmit={onDecryptStack} className="flex flex-col gap-3">
-          <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
-            Optional question
-            <textarea
-              value={question}
-              onChange={(event) => onQuestionChange(event.target.value.slice(0, 300))}
-              maxLength={300}
-              rows={3}
-              className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-50 placeholder:text-slate-300 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
-              placeholder="How does this resolve?"
-            />
-          </label>
+        {hideSubmitControls ? (
           <button
-            type="submit"
-            disabled={stack.length === 0 || isSubmitting}
+            type="button"
+            onClick={onContinueToEnrichment}
+            disabled={continueToEnrichmentDisabled}
             className="rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:from-cyan-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isSubmitting ? "Decrypting..." : "Decrypt Stack"}
+            {continueToEnrichmentLabel}
           </button>
-        </form>
+        ) : (
+          <form onSubmit={onDecryptStack} className="flex flex-col gap-3">
+            <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
+              Optional question
+              <textarea
+                value={question}
+                onChange={(event) => onQuestionChange(event.target.value.slice(0, 300))}
+                maxLength={300}
+                rows={3}
+                className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-50 placeholder:text-slate-300 shadow-inner outline-none ring-blue-400 transition focus:ring-2"
+                placeholder="How does this resolve?"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={stack.length === 0 || isSubmitting}
+              className="rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:from-cyan-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isSubmitting ? "Decrypting..." : "Decrypt Stack"}
+            </button>
+          </form>
+        )}
 
         {statusMessage && (
           <p className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2 text-sm font-medium text-cyan-200">
@@ -471,9 +529,25 @@ export function StackBuilderStep({
                       />
                     </label>
                     <div className="flex flex-wrap items-center gap-2">
+                      {(() => {
+                        const detailKind = getDetailTargetKind(item.cardId);
+                        const stackTargetCandidates = stack.filter((candidate) => candidate.cardId !== item.cardId);
+                        const selectedStackTarget = detailStackTargetByCardId[item.cardId] ?? "";
+                        const selectedBattlefieldTarget = detailBattlefieldByCardId[item.cardId] ?? "";
+                        const canAddTarget =
+                          detailKind === "stack"
+                            ? stackTargetCandidates.length > 0 && selectedStackTarget.trim().length > 0
+                            : detailKind === "battlefield"
+                              ? battlefieldContextNames.length > 0 && selectedBattlefieldTarget.trim().length > 0
+                              : detailKind === "other"
+                                ? getDetailOther(item.cardId).trim().length > 0
+                                : true;
+
+                        return (
+                          <>
                       <select
                         aria-label={`Target kind for ${item.name}`}
-                        value={getDetailTargetKind(item.cardId)}
+                        value={detailKind}
                         onChange={(event) => onDetailTargetKindChange(item.cardId, event.target.value as TargetKind)}
                         className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
                       >
@@ -483,33 +557,45 @@ export function StackBuilderStep({
                         <option value="other">Other target context</option>
                         <option value="none">No specific target</option>
                       </select>
-                      {getDetailTargetKind(item.cardId) === "stack" && (
+                      {detailKind === "stack" && (
                         <select
                           aria-label={`Stack target for ${item.name}`}
-                          value={detailStackTargetByCardId[item.cardId] ?? ""}
+                          value={selectedStackTarget}
                           onChange={(event) => onDetailStackTargetChange(item.cardId, event.target.value)}
+                          disabled={stackTargetCandidates.length === 0}
                           className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
                         >
-                          <option value="">Select stack item</option>
-                          {stack
-                            .filter((candidate) => candidate.cardId !== item.cardId)
-                            .map((candidate) => (
-                              <option key={candidate.cardId} value={candidate.cardId}>
-                                {candidate.name}
-                              </option>
-                            ))}
+                          <option value="">
+                            {stackTargetCandidates.length > 0 ? "Select stack item" : "No stack items available"}
+                          </option>
+                          {stackTargetCandidates.map((candidate) => (
+                            <option key={candidate.cardId} value={candidate.cardId}>
+                              {candidate.name}
+                            </option>
+                          ))}
                         </select>
                       )}
-                      {getDetailTargetKind(item.cardId) === "battlefield" && (
-                        <input
+                      {detailKind === "battlefield" && (
+                        <select
                           aria-label={`Battlefield target for ${item.name}`}
-                          value={detailBattlefieldByCardId[item.cardId] ?? ""}
+                          value={selectedBattlefieldTarget}
                           onChange={(event) => onDetailBattlefieldChange(item.cardId, event.target.value)}
-                          placeholder="Permanent name"
-                          className="min-w-36 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
-                        />
+                          disabled={battlefieldContextNames.length === 0}
+                          className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-xs"
+                        >
+                          <option value="">
+                            {battlefieldContextNames.length > 0
+                              ? "Select battlefield item"
+                              : "No battlefield entries available"}
+                          </option>
+                          {battlefieldContextNames.map((name) => (
+                            <option key={name} value={name}>
+                              {name}
+                            </option>
+                          ))}
+                        </select>
                       )}
-                      {getDetailTargetKind(item.cardId) === "player" && (
+                      {detailKind === "player" && (
                         <select
                           aria-label={`Player target for ${item.name}`}
                           value={getDetailPlayer(item.cardId)}
@@ -523,7 +609,7 @@ export function StackBuilderStep({
                           ))}
                         </select>
                       )}
-                      {getDetailTargetKind(item.cardId) === "other" && (
+                      {detailKind === "other" && (
                         <input
                           aria-label={`Other target for ${item.name}`}
                           value={getDetailOther(item.cardId)}
@@ -536,10 +622,14 @@ export function StackBuilderStep({
                         type="button"
                         aria-label={`Add target for ${item.name}`}
                         onClick={() => onAddTargetFromStackDetails(item.cardId)}
+                        disabled={!canAddTarget}
                         className="rounded-md border border-slate-500 bg-slate-700 px-2 py-1 text-xs text-slate-100"
                       >
                         Add target
                       </button>
+                          </>
+                        );
+                      })()}
                     </div>
                     {item.targets.length > 0 && (
                       <ul className="space-y-1">

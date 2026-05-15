@@ -10,8 +10,11 @@
 
 - Finish active context-flow eval backlog slices still open in `PRD/README.md`.
 - Execute `PRD/gameplan/features/context-flow-eval-closure.md` wave-by-wave as the primary closure path.
+- Wave 1 closure is complete (`STORY-071`, `STORY-073`, `STORY-074`, `STORY-077`) with frontend test gate green.
+- Advance to Wave 2/3 sequence: `STORY-075` first, then `STORY-076`; keep `STORY-078` as deferred documentation-only closeout.
 - Keep provider reliability hardening as completed baseline; do not reopen without new scope approved in `PRD/sections/decisions.md`.
 - Preserve contract stability while expanding test/eval coverage.
+- Keep scope strict: no runtime contract expansion and no conversion of `Q-*` items into committed implementation.
 
 ## Next
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { BattlefieldContextItem, CardMetadataItem, GameContext, StackItem } from "../types";
+import type { BattlefieldContextItem, CardMetadataItem, GameContext, StackItem, StackTarget } from "../types";
 import {
   appendToStack,
   buildAskAiRequest,
@@ -44,6 +44,14 @@ function createGameContext(): GameContext {
 
 function createBattlefieldContext(): BattlefieldContextItem[] {
   return [];
+}
+
+function createStackTarget(targetCardId: string, targetCardName: string): StackTarget {
+  return {
+    kind: "stack",
+    targetCardId,
+    targetCardName
+  };
 }
 
 describe("stack state helpers", () => {
@@ -106,5 +114,48 @@ describe("stack state helpers", () => {
 
     expect(request.gameContext.playerCount).toBe(2);
     expect(request.battlefieldContext).toHaveLength(1);
+  });
+
+  it("drops orphan stack targets across stack and battlefield payload sections", () => {
+    const stack = [
+      buildStackItemFromMetadata(createMetadataCard("opt", "Opt"), {
+        targets: [createStackTarget("ghost-card", "Ghost Card"), createStackTarget("bolt", "Outdated Name")]
+      }),
+      createStackCard("bolt", "Lightning Bolt")
+    ];
+    const battlefieldContext: BattlefieldContextItem[] = [
+      {
+        name: "Rhystic Study",
+        targets: [createStackTarget("not-on-stack", "Not on stack"), createStackTarget("opt", "Wrong Name")]
+      }
+    ];
+
+    const request = buildAskAiRequest("what now", createGameContext(), battlefieldContext, stack);
+    expect(request.stack[0]?.targets).toEqual([{ kind: "stack", targetCardId: "bolt", targetCardName: "Lightning Bolt" }]);
+    expect(request.battlefieldContext[0]?.targets).toEqual([{ kind: "stack", targetCardId: "opt", targetCardName: "Opt" }]);
+  });
+
+  it("drops off-list battlefield targets and keeps canonical permanent names", () => {
+    const stack = [
+      buildStackItemFromMetadata(createMetadataCard("bolt", "Lightning Bolt"), {
+        targets: [
+          { kind: "battlefield", targetPermanent: "rhystic study" },
+          { kind: "battlefield", targetPermanent: "Ghostly Prison" }
+        ]
+      })
+    ];
+    const battlefieldContext: BattlefieldContextItem[] = [
+      {
+        name: "Rhystic Study",
+        targets: [
+          { kind: "battlefield", targetPermanent: "  rhystic study  " },
+          { kind: "battlefield", targetPermanent: "Unknown Permanent" }
+        ]
+      }
+    ];
+
+    const request = buildAskAiRequest("what now", createGameContext(), battlefieldContext, stack);
+    expect(request.stack[0]?.targets).toEqual([{ kind: "battlefield", targetPermanent: "Rhystic Study" }]);
+    expect(request.battlefieldContext[0]?.targets).toEqual([{ kind: "battlefield", targetPermanent: "Rhystic Study" }]);
   });
 });

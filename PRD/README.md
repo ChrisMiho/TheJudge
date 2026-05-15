@@ -182,13 +182,13 @@ Wave 0 (docs):
 
 Wave 1 (parallel; coordinate shared request-builder test hotspots):
 - [x] `STORY-070` stack order serialization tests
-- [ ] `STORY-071` cross-list target integrity tests
+- [x] `STORY-071` cross-list target integrity tests
 - [x] `STORY-072` backend eval SCN fixtures
 
 Wave 2:
-- [ ] `STORY-073` review vs submit parity tests (after `STORY-070`; `STORY-071` recommended)
-- [ ] `STORY-074` gating and picker RTL tests
-- [ ] `STORY-077` submit and retry regression tests
+- [x] `STORY-073` review vs submit parity tests (after `STORY-070`; `STORY-071` recommended)
+- [x] `STORY-074` gating and picker RTL tests
+- [x] `STORY-077` submit and retry regression tests
 
 Wave 3:
 - [ ] `STORY-075` navigation and state preservation tests (after `STORY-070`)

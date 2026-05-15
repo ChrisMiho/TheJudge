@@ -34,6 +34,15 @@ Close the remaining context-flow eval backlog so the assembly -> enrichment -> r
 - No new product-facing endpoints or architecture expansion beyond current backend seam.
 - No unrelated UI polish or animation-heavy work.
 - No promotion of deferred `D-09` LLM-judge scope into active implementation.
+- No conversion of open questions (`Q-*`) into committed implementation scope in this slice.
+
+## Checklist Reconciliation (with `PRD/README.md`)
+
+- Completed prerequisites confirmed in checklist: `STORY-069`, `STORY-070`, `STORY-072`.
+- Wave 1 closure stories now complete in checklist: `STORY-071`, `STORY-073`, `STORY-074`, `STORY-077`.
+- Remaining open context-flow eval stories in checklist: `STORY-075`, `STORY-076`, `STORY-078`.
+- Active closure path advances to navigation/state first (`STORY-075`), then debug milestone wiring (`STORY-076`), then deferred documentation (`STORY-078`).
+- `STORY-078` remains documentation-only deferred closure for optional `D-09` scope and is not promoted into runtime implementation.
 
 ## Execution Waves
 
@@ -48,20 +57,22 @@ Close the remaining context-flow eval backlog so the assembly -> enrichment -> r
   - Existing story status and dependency notes in PRD docs.
 - exit criteria:
   - Open story set and order are explicit and consistent across PRD trackers.
+  - status: complete
 
 ### Wave 1
 
 - goal: Land integrity and parity coverage that gates later logging and state-path validation.
 - tasks:
-  - Complete `STORY-071` cross-list target integrity tests.
-  - Complete `STORY-073` review vs submit parity tests after target integrity and stack-order baseline checks.
-  - Complete `STORY-074` gating and picker RTL tests.
-  - Complete `STORY-077` submit and retry regression tests.
+  - Start with `STORY-071` cross-list target integrity tests.
+  - Then execute `STORY-073` review vs submit parity tests after target integrity and stack-order baseline checks.
+  - Then execute `STORY-074` gating and picker RTL tests.
+  - Then execute `STORY-077` submit and retry regression tests.
 - dependencies:
   - `STORY-070` (stack serialization baseline) and `STORY-072` (backend eval fixtures) completed.
   - Shared request-builder test hotspots coordinated to avoid conflicting assertions.
 - exit criteria:
   - Wave 1 tests are passing and validate the full review/submit contract with stable ordering semantics.
+  - status: complete (`STORY-071`, `STORY-073`, `STORY-074`, `STORY-077`)
 
 ### Wave 2
 
@@ -128,6 +139,6 @@ Close the remaining context-flow eval backlog so the assembly -> enrichment -> r
 
 ## Next Actions
 
-1. Confirm owner and immediate start story (`STORY-071` recommended).
-2. Execute Wave 1 and update PRD trackers as each story closes.
-3. Continue wave-by-wave until closure, then run a sync pass for `PRD/gameplan/`.
+1. Execute `STORY-075` navigation and state preservation coverage.
+2. Execute `STORY-076` `logFrontendDebug` milestone wiring after `STORY-075`.
+3. Finish with `STORY-078` deferred documentation and tracker sync.

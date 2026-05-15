@@ -28,6 +28,75 @@ type StackAddValidationResult =
       message: string;
     };
 
+type TargetIntegrityRefs = {
+  stackNameById: Map<string, string>;
+  battlefieldNameByNormalizedName: Map<string, string>;
+};
+
+function normalizeReferenceName(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function buildTargetIntegrityRefs(
+  battlefieldContext: BattlefieldContextItem[],
+  stack: StackItem[]
+): TargetIntegrityRefs {
+  const stackNameById = new Map<string, string>();
+  for (const stackItem of stack) {
+    stackNameById.set(stackItem.cardId, stackItem.name);
+  }
+
+  const battlefieldNameByNormalizedName = new Map<string, string>();
+  for (const battlefieldItem of battlefieldContext) {
+    const normalizedName = normalizeReferenceName(battlefieldItem.name);
+    if (!battlefieldNameByNormalizedName.has(normalizedName)) {
+      battlefieldNameByNormalizedName.set(normalizedName, battlefieldItem.name);
+    }
+  }
+
+  return {
+    stackNameById,
+    battlefieldNameByNormalizedName
+  };
+}
+
+function sanitizeTargets(targets: StackTarget[], refs: TargetIntegrityRefs): StackTarget[] {
+  const sanitizedTargets: StackTarget[] = [];
+
+  for (const target of targets) {
+    if (target.kind === "stack") {
+      const canonicalCardName = refs.stackNameById.get(target.targetCardId);
+      if (!canonicalCardName) {
+        continue;
+      }
+      sanitizedTargets.push({
+        kind: "stack",
+        targetCardId: target.targetCardId,
+        targetCardName: canonicalCardName
+      });
+      continue;
+    }
+
+    if (target.kind === "battlefield") {
+      const canonicalPermanentName = refs.battlefieldNameByNormalizedName.get(
+        normalizeReferenceName(target.targetPermanent)
+      );
+      if (!canonicalPermanentName) {
+        continue;
+      }
+      sanitizedTargets.push({
+        kind: "battlefield",
+        targetPermanent: canonicalPermanentName
+      });
+      continue;
+    }
+
+    sanitizedTargets.push(target);
+  }
+
+  return sanitizedTargets;
+}
+
 export function getFinalQuestion(question: string): string {
   const trimmed = question.trim();
   return trimmed.length > 0 ? trimmed : DEFAULT_QUESTION;
@@ -39,11 +108,21 @@ export function buildAskAiRequest(
   battlefieldContext: BattlefieldContextItem[],
   stack: StackItem[]
 ): AskAiRequest {
+  const targetRefs = buildTargetIntegrityRefs(battlefieldContext, stack);
+  const sanitizedBattlefieldContext = battlefieldContext.map((item) => ({
+    ...item,
+    targets: sanitizeTargets(item.targets, targetRefs)
+  }));
+  const sanitizedStack = stack.map((item) => ({
+    ...item,
+    targets: sanitizeTargets(item.targets, targetRefs)
+  }));
+
   return {
     question: getFinalQuestion(question),
     gameContext,
-    battlefieldContext,
-    stack
+    battlefieldContext: sanitizedBattlefieldContext,
+    stack: sanitizedStack
   };
 }
 

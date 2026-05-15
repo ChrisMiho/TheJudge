@@ -1,5 +1,41 @@
 # Gameplan Changelog
 
+## 2026-05-14 (context-flow wave-1 implementation pass)
+
+- Executed parallel implementation agents for Wave 1 closure stories and merged the resulting frontend changes.
+- Completed and marked done in `PRD/README.md`:
+  - `STORY-071` cross-list target integrity tests
+  - `STORY-073` review vs submit parity tests
+  - `STORY-074` gating and picker RTL tests
+  - `STORY-077` submit and retry regression tests
+- Validation:
+  - `npm --workspace apps/frontend run test -- --run` passed (`8` files, `73` tests).
+- Reconciled gameplan trackers for next slice:
+  - `PRD/gameplan/features/context-flow-eval-closure.md`
+  - `PRD/gameplan/FEATURE-QUEUE.md`
+  - `PRD/gameplan/MASTER-ROADMAP.md`
+- Scope guardrails upheld:
+  - no product-scope expansion
+  - no conversion of `Q-*` into committed scope
+
+## 2026-05-14 (context-flow wave-1 closure kickoff planning)
+
+- Reconciled `context-flow-eval-closure` feature plan with current `PRD/README.md` checklist state.
+- Confirmed checklist alignment:
+  - completed prerequisites: `STORY-069`, `STORY-070`, `STORY-072`
+  - open closure set remains: `STORY-071`, `STORY-073`, `STORY-074`, `STORY-075`, `STORY-076`, `STORY-077`, `STORY-078`
+- Planned and started Wave 1 closure sequencing in gameplan trackers:
+  - `STORY-071` first
+  - then `STORY-073` -> `STORY-074` -> `STORY-077`
+- Updated:
+  - `PRD/gameplan/features/context-flow-eval-closure.md`
+  - `PRD/gameplan/FEATURE-QUEUE.md`
+  - `PRD/gameplan/MASTER-ROADMAP.md`
+- Scope guardrails reaffirmed:
+  - no runtime code changes in this slice
+  - no product-scope expansion
+  - no conversion of `Q-*` into committed scope
+
 ## 2026-05-14
 
 - Created initial `PRD/gameplan/` control-plane scaffold:
