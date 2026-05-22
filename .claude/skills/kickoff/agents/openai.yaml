@@ -1,0 +1,7 @@
+interface:
+  display_name: "Kickoff"
+  short_description: "Load TheJudge README + PRD control plane for a new session"
+  default_prompt: "Run kickoff to load minimal project context."
+
+policy:
+  allow_implicit_invocation: false
