@@ -60,10 +60,12 @@ For each story, include:
 
 ### Acceptance Criteria Requirements
 
-- Include at least one acceptance criterion that ties completion to **visible documentation or tracking** appropriate to the phase:
-  - **MVP2 and forward:** update `PRD/analysis/MVP2-bedrock-integration-roadmap.md` when a roadmap phase milestone is met, and/or `PRD/README.md` when control-plane guidance changes; add or adjust `PRD/stories/STORY-###` scope if the story file is the source of truth for that slice.
-  - **Historical MVP1:** completion is recorded in `PRD/archive/mvp1/stories/` and summarized under `PRD/archive/mvp1/`; do not require a root `README.md` checklist (removed after MVP1 closeout).
-- The tracker criterion should name the file(s) to update so completion stays auditable.
+- Include at least one acceptance criterion that ties completion to **visible documentation**:
+  - update `sections/decisions.md` when behavior or constraints change
+  - update affected `sections/*.md` files when product truth changes
+  - update `PRD/README.md` only when navigation or read-order guidance changes
+  - delete `PRD/work/<slug>/` when the slice used ephemeral planning docs (see `instructions/doc-lifecycle.md`)
+- Do not add story checklists or execution roadmaps to `PRD/README.md`.
 
 ## Dependency Rules
 
@@ -78,7 +80,7 @@ For each story, include:
 - Story explicitly calls out `implementation area` and it matches the scope.
 - Story can be picked up without hidden assumptions from other stories.
 - Acceptance criteria can be verified without redefining scope.
-- Acceptance criteria include updating the agreed tracker doc (roadmap, PRD README, or story file) per the rules above.
+- Acceptance criteria include updating the agreed section or instruction files per the rules above.
 - Dependency section clearly distinguishes references vs blockers.
 - Parallel viability is explicit and justified.
 
@@ -93,7 +95,7 @@ Prefer stories aligned to:
 - Decrypt Stack submit flow
 - mock backend integration
 - failure/retry handling
-- real Bedrock integration
+- live provider integration (OpenAI behind provider boundary)
 
 ## Guardrails
 

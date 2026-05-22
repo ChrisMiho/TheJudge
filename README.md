@@ -11,10 +11,9 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 
 ## Current Product Phase
 
-- MVP1: closed and archived
-- MVP2: active (OpenAI integration and reliability hardening)
-- Primary MVP2 execution guide: `PRD/analysis/MVP2-openai-integration-roadmap.md`
-- For MVP1 history, see `MVP1 Closeout Snapshot` below.
+- MVP1: closed
+- Baseline: flow-validation assistant with mock-default backend and optional OpenAI provider mode (`DEC-020` in `PRD/sections/decisions.md`)
+- Product source of truth: `PRD/sections/` (start with `decisions.md`)
 
 ## Tech Stack
 
@@ -30,8 +29,7 @@ It helps players build an ordered stack of cards, ask a question, and receive an
   - `README.md` control plane for product docs and read order
   - `sections/` product truth (requirements, decisions, flows, constraints)
   - `instructions/` generation and editing rules
-  - `stories/` active MVP2+ implementation slices and Definition of Done
-  - `archive/` historical context snapshots; start at `PRD/archive/README.md`
+  - `stories/` Definition of Done for story execution
 - `apps/frontend/` MVP client app
 - `apps/backend/` API app (`POST /api/ask-ai`, `GET /api/health`)
 - `scripts/` shared dev/data scripts (including metadata build)
@@ -112,7 +110,7 @@ Reference templates:
 
 Use these docs for deeper runtime/contract detail instead of expanding the root README:
 - API contract, payload shape, stack-order semantics, and integration constraints: `PRD/sections/integrations-and-data.md`
-- Current MVP2 rollout phases, reliability goals, and environment strategy: `PRD/analysis/MVP2-openai-integration-roadmap.md`
+- Provider rules and integration constraints: `PRD/sections/decisions.md` (`DEC-020`), `PRD/sections/integrations-and-data.md`
 - Backend provider boundary and mode intent: `apps/backend/src/providers/README.md`
 
 Quick local verification flow:
@@ -120,21 +118,12 @@ Quick local verification flow:
 2. Open frontend (`http://localhost:5173`) and backend health (`http://localhost:3000/api/health`).
 3. Run `npm run quality:check` before PRs.
 
-## MVP1 Closeout Snapshot
-
-MVP1 delivered the complete staged flow, deterministic prompt/context construction, stable backend contract behavior, and quality gates required to begin live-provider integration.
-
-For historical detail:
-- MVP1 closeout summary: `PRD/archive/mvp1/README.md`
-- MVP1 key decisions for continuity: `PRD/archive/mvp1/key-decisions.md`
-- MVP1 deep references (stories/analysis/sections): `PRD/archive/mvp1/reference-links.md`
-
 ## Documentation Notes
 
 - Keep product truth and planning detail in `PRD/`.
 - Keep this root README concise and onboarding-focused.
-- Track active phase progress in `PRD/analysis/MVP2-openai-integration-roadmap.md` and `PRD/README.md`.
-- MVP1 history: `PRD/archive/README.md`.
+- Keep product truth in `PRD/sections/`; use `PRD/instructions/doc-lifecycle.md` for ephemeral planning during active slices.
+- Keep historical implementation detail out of the repo unless promoted into active PRD sections.
 - Empty-state artwork is bundled at `apps/frontend/public/assets/cat-wizard.svg`; keep it local/static and retain a text fallback path.
 - Provider integration boundary docs live in `apps/backend/src/providers/README.md`.
 - Search responsiveness guardrails stay frontend-local (debounced query + in-memory pre-normalized index) and must not add runtime metadata sync paths.

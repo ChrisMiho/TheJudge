@@ -2,8 +2,6 @@
 
 This Definition of Done applies to active story execution in `PRD/stories/` (MVP2+).
 
-For historical MVP1 completion criteria and snapshots, use `PRD/archive/mvp1/stories/DEFINITION-OF-DONE.md`.
-
 ## Required Completion Gates
 
 - Scope completed exactly as written in the story file; any scope changes are explicitly documented.
@@ -28,10 +26,11 @@ For historical MVP1 completion criteria and snapshots, use `PRD/archive/mvp1/sto
 ## Documentation and Tracking
 
 - Story file reflects final implementation scope and any finalized dependency notes.
-- Required tracker docs are updated when milestones are reached:
-  - `PRD/analysis/MVP2-bedrock-integration-roadmap.md`
-  - `PRD/README.md` (if control-plane guidance changes)
-- Historical references use archive paths when citing MVP1 story work.
+- Durable docs are updated when product truth or agent guidance changes:
+  - `sections/decisions.md` and affected `sections/*.md`
+  - `PRD/README.md` (only if navigation or read-order guidance changes)
+  - `PRD/work/<slug>/` deleted when ephemeral planning was used
+- Historical references should not be added unless promoted into active PRD sections.
 
 ## Verification Evidence
 

@@ -212,3 +212,23 @@
   - REQ-016
   - REQ-017
 - Notes:
+
+### DEC-020
+- Decision: Live answer generation uses an explicit backend provider flag with OpenAI behind the existing provider interface; HTTP contracts stay frozen across provider swaps.
+- Status: confirmed
+- Context: MVP2 replaced the Phase A mock-only path with a swappable provider boundary while preserving staged UX and request/response shapes.
+- Impact:
+  - `POST /api/ask-ai` request and success/error response shapes remain unchanged when switching providers
+  - provider selection is explicit via `ASK_AI_PROVIDER` (`mock` default, `openai` live); do not infer provider mode from `NODE_ENV` or deploy target
+  - OpenAI credentials and API keys remain backend-only (see `instructions/secrets-handling.md` and `apps/backend/src/providers/README.md`)
+  - upstream provider failures map to normalized API error codes with optional `retryAfterSeconds`
+  - frontend and backend remain independently deployable release units
+  - stack order semantics (`stack[0]` bottom, last item top) must stay consistent across UI, API payloads, and prompt-building logic
+- Related requirements:
+  - REQ-006
+  - REQ-012
+  - REQ-013
+  - REQ-014
+- Notes:
+  - supersedes Bedrock-specific Phase B wording in `sections/integrations-and-data.md` where they conflict
+  - route handlers stay contract-focused; provider SDK wiring lives only in provider/factory composition
