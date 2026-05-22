@@ -12,8 +12,8 @@ These rules govern how agents may propose architecture or implementation details
 - one main backend endpoint
 - Node.js + TypeScript backend
 - Express or Fastify
-- AWS Bedrock through backend only
-- mock-first delivery before real AI integration
+- backend provider boundary with explicit `ASK_AI_PROVIDER` selection (`mock` default, `openai` live)
+- mock-first local baseline before enabling live provider mode
 
 ## Required Constraints
 
@@ -51,3 +51,5 @@ Do not propose or implement:
 - pass documented structured context fields (question, stack, and approved game/battlefield/entry context)
 - do not add hidden-state assumptions beyond documented prompt guidance
 - do not add rules-validation behavior under the label of prompt enrichment
+- do not change `AskAiRequest` shape, Zod schemas, or backend prompt assembly (`buildPromptContext`, `buildPromptText`) without a new confirmed decision in `sections/decisions.md`
+- do not relax `MAX_PROMPT_CHAR_BUDGET` or bypass prompt diagnostics to silence test failures; update eval goldens only for intentional behavior changes

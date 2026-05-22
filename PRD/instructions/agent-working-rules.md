@@ -13,6 +13,8 @@ For most product tasks, read:
 3. any related flow/requirement files
 4. the relevant instruction file
 
+When creating or closing non-section markdown under `PRD/`, also read `instructions/doc-lifecycle.md`.
+
 ## General Rules
 
 - Treat `sections/decisions.md` as the override layer.
@@ -33,10 +35,10 @@ For most product tasks, read:
 ## Scope Discipline
 
 - The product remains a flow-validation assistant unless decisions explicitly expand scope.
-- Do not pull historical or future roadmap ideas into current work unless promoted via `sections/decisions.md` or the active MVP2 roadmap.
-- Do not optimize for long-term architecture at the cost of shipping the current roadmap slice.
+- Do not pull historical or future roadmap ideas into current work unless promoted via `sections/decisions.md`.
+- Do not optimize for long-term architecture at the cost of shipping the current slice.
 - Preserve stack ordering, contract stability, and “assistant not judge” framing.
-- Active execution context: `PRD/README.md` and `PRD/analysis/MVP2-openai-integration-roadmap.md`.
+- Active execution context: `PRD/README.md` plus the relevant `sections/` files for the task.
 
 ## Retrieval Discipline
 

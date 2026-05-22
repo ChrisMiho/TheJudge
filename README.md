@@ -11,9 +11,9 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 
 ## Current Product Phase
 
-- MVP1: closed; detailed historical docs have been removed from the repo
-- MVP2: active (OpenAI integration and reliability hardening)
-- Primary MVP2 execution guide: `PRD/analysis/MVP2-openai-integration-roadmap.md`
+- MVP1: closed
+- Baseline: flow-validation assistant with mock-default backend and optional OpenAI provider mode (`DEC-020` in `PRD/sections/decisions.md`)
+- Product source of truth: `PRD/sections/` (start with `decisions.md`)
 
 ## Tech Stack
 
@@ -29,7 +29,7 @@ It helps players build an ordered stack of cards, ask a question, and receive an
   - `README.md` control plane for product docs and read order
   - `sections/` product truth (requirements, decisions, flows, constraints)
   - `instructions/` generation and editing rules
-  - `stories/` active MVP2+ implementation slices and Definition of Done
+  - `stories/` Definition of Done for story execution
 - `apps/frontend/` MVP client app
 - `apps/backend/` API app (`POST /api/ask-ai`, `GET /api/health`)
 - `scripts/` shared dev/data scripts (including metadata build)
@@ -110,7 +110,7 @@ Reference templates:
 
 Use these docs for deeper runtime/contract detail instead of expanding the root README:
 - API contract, payload shape, stack-order semantics, and integration constraints: `PRD/sections/integrations-and-data.md`
-- Current MVP2 rollout phases, reliability goals, and environment strategy: `PRD/analysis/MVP2-openai-integration-roadmap.md`
+- Provider rules and integration constraints: `PRD/sections/decisions.md` (`DEC-020`), `PRD/sections/integrations-and-data.md`
 - Backend provider boundary and mode intent: `apps/backend/src/providers/README.md`
 
 Quick local verification flow:
@@ -122,8 +122,8 @@ Quick local verification flow:
 
 - Keep product truth and planning detail in `PRD/`.
 - Keep this root README concise and onboarding-focused.
-- Track active phase progress in `PRD/analysis/MVP2-openai-integration-roadmap.md` and `PRD/README.md`.
-- Keep historical implementation detail out of the repo unless it is promoted into active PRD sections or current story scope.
+- Keep product truth in `PRD/sections/`; use `PRD/instructions/doc-lifecycle.md` for ephemeral planning during active slices.
+- Keep historical implementation detail out of the repo unless promoted into active PRD sections.
 - Empty-state artwork is bundled at `apps/frontend/public/assets/cat-wizard.svg`; keep it local/static and retain a text fallback path.
 - Provider integration boundary docs live in `apps/backend/src/providers/README.md`.
 - Search responsiveness guardrails stay frontend-local (debounced query + in-memory pre-normalized index) and must not add runtime metadata sync paths.

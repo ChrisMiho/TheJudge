@@ -40,6 +40,15 @@ This folder stores fixture-driven golden cases for context and prompt evaluation
 }
 ```
 
+## Regression gates
+
+From repo root:
+
+- `npm test` — default gate when frontend or shared logic changes
+- `npm --workspace apps/backend run test:eval` — backend prompt/context goldens
+
+Do not change `AskAiRequest` shape or prompt assembly without a confirmed decision in `PRD/sections/decisions.md`.
+
 ## Adding or updating scenarios
 
 1. Add a new `<scenario-id>.fixture.json` file in this folder.

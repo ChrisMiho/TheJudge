@@ -26,10 +26,11 @@ This Definition of Done applies to active story execution in `PRD/stories/` (MVP
 ## Documentation and Tracking
 
 - Story file reflects final implementation scope and any finalized dependency notes.
-- Required tracker docs are updated when milestones are reached:
-  - `PRD/analysis/MVP2-openai-integration-roadmap.md`
-  - `PRD/README.md` (if control-plane guidance changes)
-- Historical references should not be added unless promoted into active PRD sections or current story scope.
+- Durable docs are updated when product truth or agent guidance changes:
+  - `sections/decisions.md` and affected `sections/*.md`
+  - `PRD/README.md` (only if navigation or read-order guidance changes)
+  - `PRD/work/<slug>/` deleted when ephemeral planning was used
+- Historical references should not be added unless promoted into active PRD sections.
 
 ## Verification Evidence
 

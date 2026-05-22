@@ -37,6 +37,6 @@ Do not commit secrets, and do not place `OPENAI_API_KEY` in `apps/backend/.env`.
 
 Troubleshooting note: if OpenAI mode reports missing `OPENAI_MODEL`, ensure `apps/backend/.env` contains a non-empty value and that there is no blank shell export overriding it.
 
-## Product sequencing reference
+## Product reference
 
-Product-wide sequencing and gates: `PRD/analysis/MVP2-openai-integration-roadmap.md`.
+Provider and contract rules: `PRD/sections/decisions.md` (`DEC-020`) and `PRD/sections/integrations-and-data.md`.

@@ -77,7 +77,7 @@ This document only adds dependency-field rules for `PRD/stories/` entries:
 
 ## Story Acceptance Criteria Rule
 
-For any story in `PRD/stories/`, include an acceptance criterion that records completion in an auditable place: update `PRD/analysis/MVP2-openai-integration-roadmap.md` when a roadmap milestone is met, update `PRD/README.md` when control-plane guidance changes, and/or ensure the story file itself reflects final scope and status. The root `README.md` does not carry a story checklist; see `instructions/story-generation.md` for tracker rules.
+For any story in `PRD/stories/`, include an acceptance criterion that records completion in an auditable place: update `sections/decisions.md` and affected `sections/*.md` when product truth changes, update `PRD/README.md` only when navigation guidance changes, and delete `PRD/work/<slug>/` when ephemeral planning was used. See `instructions/story-generation.md` and `instructions/doc-lifecycle.md`.
 
 ## Story Template (`PRD/stories/`)
 

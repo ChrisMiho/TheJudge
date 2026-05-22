@@ -219,11 +219,13 @@ The backend must not add:
     }
 
 ### Phase B
-- keep same contracts
-- replace mock with real backend + Bedrock integration
+- keep same HTTP contracts (`POST /api/ask-ai` request and response shapes unchanged)
+- add live answer generation via the backend provider boundary (`ASK_AI_PROVIDER=openai`)
+- keep `ASK_AI_PROVIDER=mock` as the default local baseline for flow and payload debugging
+- runtime OpenAI config, env vars, and local auth: `apps/backend/src/providers/README.md`
+- confirmed provider rules: `DEC-020` in `sections/decisions.md`
 
 ## Dependencies
 - Scryfall-derived metadata
-- AWS Bedrock access
-- AWS SDK credentials/config
+- OpenAI API access (when `ASK_AI_PROVIDER=openai`)
 - frontend/backend contract stability

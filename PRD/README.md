@@ -2,38 +2,28 @@
 
 ## Status
 - Project Status: active
-- Current Drafting Phase: MVP2 execution active (OpenAI integration roadmap)
-- Overall Documentation Status: active and implementation-aligned
+- Documentation baseline: product truth in `sections/`; agent process in `instructions/`
+- Next work: start from `sections/decisions.md` and promote new scope there before implementation
 
 ## Purpose
 This file is the control-plane document for the PRD set.
 
 Use it to:
-- understand current drafting status
 - find the right file for a given task
 - understand source-of-truth precedence
 - navigate product content vs. agent instructions
 
 ## Read First
-For current implementation work, read in this order:
-1. `analysis/MVP2-openai-integration-roadmap.md`
-2. `sections/decisions.md`
-3. `sections/integrations-and-data.md`
-4. `sections/non-functional-requirements.md`
-
-Historical implementation notes have been removed from the active repo. If a past decision still matters, it should appear in `sections/decisions.md` or the current story scope.
+For implementation work, read in this order:
+1. `sections/decisions.md`
+2. the relevant target section file(s)
+3. the relevant instruction file(s)
 
 ## Source-of-Truth Precedence
 1. `sections/decisions.md` overrides older conflicting draft language
 2. section files define current product scope
 3. instruction files define how the agent should process and generate content
-4. `README.md` is the navigation and status layer
-
-## Other PRD folders
-
-| Path | Role |
-|---|---|
-| `analysis/` | Audits, deep dives, and phase execution roadmaps (for example MVP2 OpenAI integration). |
+4. `README.md` is the navigation layer only (not a backlog or roadmap)
 
 ## Section Inventory
 
@@ -54,12 +44,13 @@ Historical implementation notes have been removed from the active repo. If a pas
 
 | File | Status | Description |
 |---|---|---|
+| `instructions/agent-working-rules.md` | active | Behavioral rules for any agent editing or generating content in this PRD set |
+| `instructions/doc-lifecycle.md` | active | When to create, promote, and delete ephemeral planning docs |
 | `instructions/writing-rules.md` | complete | Rules for writing and editing these documents |
 | `instructions/requirement-format.md` | complete | Required formatting templates for requirements, flows, decisions, and questions |
 | `instructions/story-generation.md` | complete | Rules for converting requirements into stories and backlog items |
 | `instructions/technical-design-rules.md` | complete | Constraints for architecture and implementation proposals |
 | `instructions/secrets-handling.md` | active | Guardrails for storing secrets in `.secrets/`, never committing them, and validating secret decisions with the user |
-| `instructions/agent-working-rules.md` | active | Behavioral rules for any agent editing or generating content in this PRD set |
 
 ## Which Files to Read for Which Task
 
@@ -70,13 +61,15 @@ Read in this order:
 3. `sections/goals-and-non-goals.md`
 4. `sections/problem-statement.md`
 
-### If the task is feature implementation planning
+### If the task is feature implementation
 Read in this order:
 1. `sections/decisions.md`
 2. `sections/functional-requirements.md`
 3. `sections/user-flows.md`
 4. `sections/integrations-and-data.md`
 5. `sections/non-functional-requirements.md`
+6. `instructions/technical-design-rules.md` (if architecture or code structure is involved)
+7. `instructions/secrets-handling.md` (if credentials, env vars, or provider keys are involved)
 
 ### If the task is story generation or backlog creation
 Read in this order:
@@ -85,26 +78,19 @@ Read in this order:
 3. `sections/user-flows.md`
 4. `instructions/story-generation.md`
 5. `instructions/requirement-format.md`
-6. For **context-flow eval backlog** (`EVAL-CTX-FLOW-001`): `analysis/EVAL-STRATEGY-context-flow-rework.md` and `gameplan/features/context-flow-eval-closure.md`.
 
 ### If the task is document editing or extension
 Read in this order:
 1. `instructions/agent-working-rules.md`
-2. `instructions/writing-rules.md`
-3. `sections/decisions.md`
-4. the relevant target section file
-
-### If the task is architecture or technical design
-Read in this order:
-1. `sections/decisions.md`
-2. `sections/integrations-and-data.md`
-3. `sections/non-functional-requirements.md`
-4. `instructions/technical-design-rules.md`
-5. `instructions/secrets-handling.md` (if credentials, env vars, or AWS access are involved)
+2. `instructions/doc-lifecycle.md` (if creating or closing non-section PRD markdown)
+3. `instructions/writing-rules.md`
+4. `sections/decisions.md`
+5. the relevant target section file
 
 ## Working Rules Summary
 - Keep product truth in section files.
 - Keep workflow and generation guidance in instruction files.
+- Ephemeral slice plans live only in `PRD/work/<slug>/` and must be deleted when the slice ships (see `instructions/doc-lifecycle.md`).
 - Do not guess when the source is ambiguous.
 - Put unresolved ambiguity in `sections/open-questions.md`.
 - Record confirmed decisions in `sections/decisions.md`.
@@ -115,7 +101,7 @@ Read in this order:
 - MVP1 is closed; flow-validation framing and temporary simplifications remain documented only where still active in `sections/decisions.md`.
 - Duplicate-card blocking is temporary and should not be treated as long-term product truth.
 - Stack ordering is critical and must remain consistent across UI, API payloads, and prompt-building logic.
-- Phase A mock remains the default local baseline; OpenAI rollout sequencing lives in `analysis/MVP2-openai-integration-roadmap.md` and `apps/backend/src/providers/README.md`.
+- Default local provider mode is mock (`ASK_AI_PROVIDER=mock`); live OpenAI path is documented in `DEC-020`, `sections/integrations-and-data.md`, and `apps/backend/src/providers/README.md`.
 - Local OpenAI onboarding should keep non-secrets in `apps/backend/.env` and real secrets in `.secrets/openai-dev.env`.
 - Provider modularity remains a hard rule: route handlers stay contract-focused and only consume the provider interface selected in bootstrap/factory composition.
 
@@ -124,69 +110,5 @@ Read in this order:
 - Current frontend flow supports staged context + stack interaction patterns; canonical behavior is tracked in `sections/user-flows.md`.
 - Prompt/input contract includes structured context beyond stack/question (see `sections/integrations-and-data.md` and `sections/decisions.md`).
 - Metadata pipeline remains static-file based (`npm run data:build` / `npm run data:refresh`) with runtime loading from `/data/cardMetadata.json`.
-- Provider boundary remains in place and is the active seam for MVP2 OpenAI rollout work.
+- Context/prompt regression coverage lives in tests and `apps/backend/src/eval/fixtures/README.md`.
 - Automated tests and type checks are part of the active workflow; root dev run remains `npm run dev`.
-
-## Story Progress Tracking
-Active MVP2 execution sequencing is tracked in `analysis/MVP2-openai-integration-roadmap.md`.
-
-### MVP2 Story Checklist (Phase-Grouped)
-
-Task 0:
-- [x] `STORY-055` secrets hygiene baseline
-
-Phase 1 - OpenAI Runtime Foundation:
-- [x] `STORY-056` provider feature-flag selection contract
-- [x] `STORY-057` OpenAI config validation and startup safety
-- [x] `STORY-058` OpenAI provider integration path
-
-Phase 2 - Reliability and Observability:
-- [x] `STORY-059` OpenAI error mapping to canonical API contract
-- [x] `STORY-060` provider observability contract
-
-Phase 3 - Prompt Context Pipeline:
-- [ ] `STORY-061` prompt context assembly hardening
-- [ ] `STORY-062` prompt template versioning and ownership
-- [ ] `STORY-063` provider eval harness expansion (OpenAI path)
-
-Phase 4 - DEV Rollout and Process:
-- [ ] `STORY-064` DEV separate deployment runbook
-- [ ] `STORY-065` DEV fallback and rollback guardrails
-
-Phase 5 - Deployment Access Standards:
-- [ ] `STORY-066` IAM runtime and deploy role baseline
-
-Phase 6 - Deployment Expansion (Deferred Planning):
-- [ ] `STORY-067` Phase 6 production expansion planning package
-
-### Adhoc Story Checklist
-
-Adhoc stories are optional, non-blocking slices we can execute alongside roadmap work.
-
-- [x] `STORY-068` system role preamble prefix for prompt context
-
-### Context flow eval execution (`EVAL-CTX-FLOW-001`)
-
-Canonical eval strategy: `analysis/EVAL-STRATEGY-context-flow-rework.md`. Stories implement automated coverage, fixtures, logging, and QA docs for the assembly → enrichment → review → submit path.
-
-Wave 0 (docs):
-- [x] `STORY-069` context flow eval scaffold (`analysis/EVAL-STRATEGY-context-flow-rework.md`)
-
-Wave 1 (parallel; coordinate shared request-builder test hotspots):
-- [x] `STORY-070` stack order serialization tests
-- [x] `STORY-071` cross-list target integrity tests
-- [x] `STORY-072` backend eval SCN fixtures
-
-Wave 2:
-- [x] `STORY-073` review vs submit parity tests (after `STORY-070`; `STORY-071` recommended)
-- [x] `STORY-074` gating and picker RTL tests
-- [x] `STORY-077` submit and retry regression tests
-
-Wave 3:
-- [ ] `STORY-075` navigation and state preservation tests (after `STORY-070`)
-
-Wave 4:
-- [ ] `STORY-076` `logFrontendDebug` milestone wiring (after `STORY-075`)
-
-Deferred documentation:
-- [ ] `STORY-078` explicit deferral for optional `D-09` LLM-judge eval
