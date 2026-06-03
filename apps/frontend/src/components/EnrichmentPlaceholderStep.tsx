@@ -1,16 +1,28 @@
 import { CANONICAL_ZONE_ORDER } from "../lib/contextFlow";
 import { ZONE_LABELS } from "../lib/zoneLabels";
-import type { ZoneId } from "../types";
+import type { ZoneCardItem, ZoneId } from "../types";
 
-type ZoneConfirmStepProps = {
+type EnrichmentPlaceholderStepProps = {
   selectedZones: ZoneId[];
-  onZoneToggle: (zone: ZoneId) => void;
+  zones: Partial<Record<ZoneId, ZoneCardItem[]>>;
   onBack: () => void;
   onContinue: () => void;
   statusMessage: string | null;
 };
 
-export function ZoneConfirmStep({ selectedZones, onZoneToggle, onBack, onContinue, statusMessage }: ZoneConfirmStepProps) {
+export function EnrichmentPlaceholderStep({
+  selectedZones,
+  zones,
+  onBack,
+  onContinue,
+  statusMessage
+}: EnrichmentPlaceholderStepProps): JSX.Element {
+  const zoneSummaries = CANONICAL_ZONE_ORDER.filter((zone) => selectedZones.includes(zone)).map((zone) => ({
+    zone,
+    count: zones[zone]?.length ?? 0
+  }));
+  const totalCards = zoneSummaries.reduce((sum, entry) => sum + entry.count, 0);
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
       <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 md:p-6">
@@ -21,28 +33,24 @@ export function ZoneConfirmStep({ selectedZones, onZoneToggle, onBack, onContinu
           <p className="text-sm text-slate-300">Stack Assistant</p>
         </header>
 
-        <h2 className="text-2xl font-semibold text-sky-300">Zone confirmation</h2>
-        <p className="text-sm text-slate-400">Select the zones relevant to your question. Defaults are pre-checked based on the turn phase.</p>
+        <h2 className="text-2xl font-semibold text-sky-300">Context enrichment</h2>
+        <p className="text-sm text-slate-400">
+          Review your zone card counts before enriching caster, targets, and notes for each card.
+        </p>
 
         <div className="space-y-2 rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4">
-          {CANONICAL_ZONE_ORDER.map((zone) => {
-            const checked = selectedZones.includes(zone);
-            return (
-              <label
-                key={zone}
-                className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-700/80 bg-slate-950/40 px-3 py-2.5 text-sm transition hover:bg-slate-800/50"
-              >
-                <input
-                  type="checkbox"
-                  aria-label={`Zone: ${ZONE_LABELS[zone]}`}
-                  checked={checked}
-                  onChange={() => onZoneToggle(zone)}
-                  className="h-4 w-4 rounded border-slate-500 accent-cyan-400"
-                />
-                <span className="font-medium text-slate-100">{ZONE_LABELS[zone]}</span>
-              </label>
-            );
-          })}
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
+            {`Total cards: ${totalCards}`}
+          </p>
+          {zoneSummaries.length === 0 ? (
+            <p className="text-sm text-slate-300">No zones selected.</p>
+          ) : (
+            <ul className="space-y-1 text-sm text-slate-300">
+              {zoneSummaries.map(({ zone, count }) => (
+                <li key={zone}>{`${ZONE_LABELS[zone]}: ${count}`}</li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -58,7 +66,7 @@ export function ZoneConfirmStep({ selectedZones, onZoneToggle, onBack, onContinu
             onClick={onContinue}
             className="rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
           >
-            Continue
+            Continue to enrichment
           </button>
         </div>
 
