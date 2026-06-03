@@ -1,6 +1,6 @@
 # Slice 05 — UI zone collection
 
-status: pending
+status: complete
 
 **Prerequisites:** [slice-04-ui-game-setup-and-zones.md](./slice-04-ui-game-setup-and-zones.md)  
 **Next slice:** [slice-06-ui-enrichment-and-submit.md](./slice-06-ui-enrichment-and-submit.md)
@@ -31,10 +31,10 @@ For each **selected** zone, let users add **cards only** (identity/metadata). Ze
 
 ## Tasks
 
-- [ ] `ZoneCollectionStep` (or per-zone subcomponents)
-- [ ] Generalize card search/add from existing stack assembly
-- [ ] Wire Back/Continue through flow shell
-- [ ] Tests: add to stack preserves order; empty zone omits key in `buildAskAiRequest`
+- [x] `ZoneCollectionStep` (or per-zone subcomponents)
+- [x] Generalize card search/add from existing stack assembly
+- [x] Wire Back/Continue through flow shell
+- [x] Tests: add to stack preserves order; empty zone omits key in `buildAskAiRequest`
 
 ## Validation gate
 

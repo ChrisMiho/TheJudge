@@ -1,6 +1,8 @@
 import { FormEvent, useEffect, useState } from "react";
 import { BattlefieldStep } from "./components/BattlefieldStep";
+import { EnrichmentPlaceholderStep } from "./components/EnrichmentPlaceholderStep";
 import { StackBuilderStep } from "./components/StackBuilderStep";
+import { ZoneCollectionStep } from "./components/ZoneCollectionStep";
 import { ZoneConfirmStep } from "./components/ZoneConfirmStep";
 import { logFrontendDebug } from "./lib/debugLogger";
 import { apiBaseUrl } from "./lib/env";
@@ -18,6 +20,7 @@ import {
   removeFromStackById,
   validateStackAdd
 } from "./lib/stackState";
+import { syncZonesToLegacyStackAndBattlefield } from "./lib/zoneCards";
 import type {
   AskAiRequest,
   BattlefieldContextItem,
@@ -27,6 +30,7 @@ import type {
   StackItem,
   StackTarget,
   TurnPhase,
+  ZoneCardItem,
   ZoneId
 } from "./types";
 
@@ -59,7 +63,14 @@ const TURN_PHASE_OPTIONS: Array<{ value: TurnPhase; label: string }> = [
   { value: "stack_resolving", label: "Stack Resolving" }
 ];
 
-type FlowStep = "game-context" | "zone-confirm" | "battlefield-context" | "stack-assembly" | "context-enrichment";
+type FlowStep =
+  | "game-context"
+  | "zone-confirm"
+  | "zone-collection"
+  | "enrichment-placeholder"
+  | "battlefield-context"
+  | "stack-assembly"
+  | "context-enrichment";
 
 function formatTarget(target: StackTarget): string {
   if (target.kind === "player") {
@@ -103,6 +114,7 @@ export default function App() {
   const [confirmedPhase, setConfirmedPhase] = useState<TurnPhase | undefined>(undefined);
   const [activePlayer, setActivePlayer] = useState<PlayerLabel>("Player 1");
   const [selectedZones, setSelectedZones] = useState<ZoneId[]>([]);
+  const [zoneCardsByZone, setZoneCardsByZone] = useState<Partial<Record<ZoneId, ZoneCardItem[]>>>({});
   const [battlefieldContext, setBattlefieldContext] = useState<BattlefieldContextItem[]>([]);
   const [battlefieldSearchInput, setBattlefieldSearchInput] = useState("");
   const [selectedBattlefieldCard, setSelectedBattlefieldCard] = useState<CardMetadataItem | null>(null);
@@ -381,7 +393,47 @@ export default function App() {
   }
 
   function confirmZoneSelection(): void {
-    setFlowStep("battlefield-context");
+    setGameContext((current) => (current ? { ...current, selectedZones } : current));
+    setFlowStep("zone-collection");
+  }
+
+  function backFromZoneCollection(): void {
+    setFlowStep("zone-confirm");
+  }
+
+  function finishZoneCollection(): void {
+    setGameContext((current) =>
+      current
+        ? {
+            ...current,
+            selectedZones,
+            zones: zoneCardsByZone
+          }
+        : current
+    );
+    setFlowStep("enrichment-placeholder");
+  }
+
+  function backFromEnrichmentPlaceholder(): void {
+    setFlowStep("zone-collection");
+  }
+
+  function continueFromEnrichmentPlaceholder(): void {
+    const synced = syncZonesToLegacyStackAndBattlefield(zoneCardsByZone);
+    setStack(synced.stack);
+    setBattlefieldContext(synced.battlefieldContext);
+    setGameContext((current) =>
+      current
+        ? {
+            ...current,
+            selectedZones,
+            zones: zoneCardsByZone
+          }
+        : current
+    );
+    setShowStackDetails(true);
+    setFlowStep("context-enrichment");
+    flashStatus("Now enrich context for each card before submitting.");
   }
 
   function backToGameContext(): void {
@@ -935,6 +987,34 @@ export default function App() {
         }
         onBack={backToGameContext}
         onContinue={confirmZoneSelection}
+        statusMessage={statusMessage}
+      />
+    );
+  }
+
+  if (flowStep === "zone-collection") {
+    return (
+      <ZoneCollectionStep
+        selectedZones={selectedZones}
+        zones={zoneCardsByZone}
+        onZonesChange={setZoneCardsByZone}
+        cardMetadata={cardMetadata}
+        isMetadataLoading={isMetadataLoading}
+        onBack={backFromZoneCollection}
+        onContinue={finishZoneCollection}
+        onFlashStatus={flashStatus}
+        statusMessage={statusMessage}
+      />
+    );
+  }
+
+  if (flowStep === "enrichment-placeholder") {
+    return (
+      <EnrichmentPlaceholderStep
+        selectedZones={selectedZones}
+        zones={zoneCardsByZone}
+        onBack={backFromEnrichmentPlaceholder}
+        onContinue={continueFromEnrichmentPlaceholder}
         statusMessage={statusMessage}
       />
     );

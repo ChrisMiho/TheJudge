@@ -38,10 +38,10 @@ function jsonResponse(payload: unknown, status = 200): Response {
   });
 }
 
-async function openStackBuilder(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+async function openStackZoneCollection(user: ReturnType<typeof userEvent.setup>): Promise<void> {
   await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+  await user.click(screen.getByLabelText("Zone: Stack"));
   await user.click(screen.getByRole("button", { name: "Continue" }));
-  await user.click(screen.getByRole("button", { name: "Skip battlefield context" }));
 }
 
 async function selectStackCard(user: ReturnType<typeof userEvent.setup>, query: string, cardName: string): Promise<void> {
@@ -74,6 +74,7 @@ describe("STORY-074 target gating and pickers", () => {
     const user = userEvent.setup();
     render(<App />);
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await user.click(screen.getByLabelText("Zone: Battlefield"));
     await user.click(screen.getByRole("button", { name: "Continue" }));
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
@@ -81,13 +82,13 @@ describe("STORY-074 target gating and pickers", () => {
     expect(screen.queryByLabelText("Battlefield target kind")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Add battlefield target" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Battlefield item details")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Add battlefield card" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add card" })).toBeInTheDocument();
   });
 
   it("keeps stack assembly in card-only mode until enrichment", async () => {
     const user = userEvent.setup();
     render(<App />);
-    await openStackBuilder(user);
+    await openStackZoneCollection(user);
 
     await selectStackCard(user, "opt", "Opt");
 
@@ -96,16 +97,17 @@ describe("STORY-074 target gating and pickers", () => {
     expect(screen.queryByLabelText("Entry context notes")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Decrypt Stack" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Continue to context enrichment" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Continue to context enrichment" })).not.toBeInTheDocument();
   });
 
   it("shows enrichment controls only after entering enrichment phase", async () => {
     const user = userEvent.setup();
     render(<App />);
-    await openStackBuilder(user);
+    await openStackZoneCollection(user);
     await selectStackCard(user, "opt", "Opt");
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
-    await user.click(screen.getByRole("button", { name: "Continue to context enrichment" }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.click(screen.getByRole("button", { name: "Continue to enrichment" }));
 
     expect(screen.getByRole("button", { name: "Decrypt Stack" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("How does this resolve?")).toBeInTheDocument();
@@ -117,15 +119,16 @@ describe("STORY-074 target gating and pickers", () => {
   it("keeps resolve control gated behind enrichment step", async () => {
     const user = userEvent.setup();
     render(<App />);
-    await openStackBuilder(user);
+    await openStackZoneCollection(user);
     expect(screen.queryByRole("button", { name: "Decrypt Stack" })).not.toBeInTheDocument();
 
     await selectStackCard(user, "opt", "Opt");
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
-    expect(screen.getByRole("button", { name: "Continue to context enrichment" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Continue to context enrichment" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Decrypt Stack" })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Continue to context enrichment" }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.click(screen.getByRole("button", { name: "Continue to enrichment" }));
     expect(screen.getByRole("button", { name: "Decrypt Stack" })).toBeInTheDocument();
   });
 });
