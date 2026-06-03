@@ -113,7 +113,12 @@ async function waitForMetadataReady(): Promise<void> {
 
 async function advanceToStackBuilder(user: ReturnType<typeof userEvent.setup>): Promise<void> {
   await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+  await user.click(screen.getByRole("button", { name: "Continue" }));
   await user.click(screen.getByRole("button", { name: "Skip battlefield context" }));
+}
+
+async function advancePastZoneConfirm(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(screen.getByRole("button", { name: "Continue" }));
 }
 
 async function openStackBuilder(user: ReturnType<typeof userEvent.setup>): Promise<void> {
@@ -273,6 +278,7 @@ describe("App MVP interaction flows", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advancePastZoneConfirm(user);
 
     const battlefieldSearchInput = screen.getByLabelText("Battlefield search input");
     await user.type(battlefieldSearchInput, "lig");
@@ -361,6 +367,7 @@ describe("App MVP interaction flows", () => {
 
     const battlefieldView = render(<App />);
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advancePastZoneConfirm(user);
     const battlefieldInput = screen.getByLabelText("Battlefield search input");
 
     await user.type(battlefieldInput, "sw");
@@ -399,6 +406,7 @@ describe("App MVP interaction flows", () => {
 
     render(<App />);
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advancePastZoneConfirm(user);
     const battlefieldInput = screen.getByLabelText("Battlefield search input");
     await user.type(battlefieldInput, "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
@@ -425,6 +433,7 @@ describe("App MVP interaction flows", () => {
     const user = userEvent.setup();
     render(<App />);
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advancePastZoneConfirm(user);
     await user.type(screen.getByLabelText("Battlefield search input"), "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
     expect(screen.queryByLabelText("Battlefield target kind")).not.toBeInTheDocument();
@@ -515,6 +524,7 @@ describe("App MVP interaction flows", () => {
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
     expect(logFrontendDebugMock).toHaveBeenCalledWith("game_context.confirmed", { playerCount: 2 });
 
+    await advancePastZoneConfirm(user);
     await user.click(screen.getByRole("button", { name: "Skip battlefield context" }));
     expect(logFrontendDebugMock).toHaveBeenCalledWith("battlefield_context.progressed", {
       progression: "skipped",
@@ -889,6 +899,7 @@ describe("App MVP interaction flows", () => {
     await user.clear(screen.getByLabelText("Player 3 life total"));
     await user.type(screen.getByLabelText("Player 3 life total"), "17");
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advancePastZoneConfirm(user);
 
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
@@ -940,6 +951,8 @@ describe("App MVP interaction flows", () => {
 
     expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    expect(screen.getByRole("heading", { name: "Zone confirmation" })).toBeInTheDocument();
+    await advancePastZoneConfirm(user);
     expect(screen.getByRole("heading", { name: "Battlefield context (optional)" })).toBeInTheDocument();
   });
 
@@ -948,6 +961,7 @@ describe("App MVP interaction flows", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advancePastZoneConfirm(user);
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
     expect(screen.getByRole("button", { name: "Skip battlefield context" })).toBeInTheDocument();
@@ -977,6 +991,7 @@ describe("App MVP interaction flows", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advancePastZoneConfirm(user);
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
     await user.click(screen.getByRole("button", { name: "Add battlefield card" }));
@@ -1025,6 +1040,7 @@ describe("App MVP interaction flows", () => {
     await user.clear(screen.getByLabelText("Player 3 life total"));
     await user.type(screen.getByLabelText("Player 3 life total"), "19");
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advancePastZoneConfirm(user);
 
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
@@ -1132,6 +1148,7 @@ describe("App MVP interaction flows", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advancePastZoneConfirm(user);
     const battlefieldSearchInput = screen.getByLabelText("Battlefield search input");
     expect(screen.queryByLabelText("Battlefield item name")).not.toBeInTheDocument();
 
@@ -1149,6 +1166,7 @@ describe("App MVP interaction flows", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advancePastZoneConfirm(user);
 
     expect(screen.queryByLabelText("Battlefield target kind")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Add battlefield target" })).not.toBeInTheDocument();
@@ -1160,5 +1178,128 @@ describe("App MVP interaction flows", () => {
     expect(screen.queryByLabelText("Battlefield target kind")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Add battlefield target" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add battlefield card" })).toBeInTheDocument();
+  });
+});
+
+describe("Slice-04: game setup + zone confirmation", () => {
+  beforeEach(() => {
+    fetchMock = vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
+      const url = getUrlFromRequest(input);
+      if (url === "/data/cardMetadata.json") {
+        return jsonResponse(baseCardMetadataFixture);
+      }
+      return jsonResponse({ answer: "ok" });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("shows zone confirmation step after confirming game context", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+
+    expect(screen.getByRole("heading", { name: "Zone confirmation" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Continue" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Back" })).toBeInTheDocument();
+  });
+
+  it("pre-checks battlefield, library, hand when Draw phase is selected", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Draw" }));
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+
+    expect(screen.getByLabelText("Zone: Battlefield")).toBeChecked();
+    expect(screen.getByLabelText("Zone: Library")).toBeChecked();
+    expect(screen.getByLabelText("Zone: Hand")).toBeChecked();
+    expect(screen.getByLabelText("Zone: Stack")).not.toBeChecked();
+  });
+
+  it("additive merge: unchecking hand, going back to Combat does not restore hand but adds stack", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Draw" }));
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+
+    expect(screen.getByLabelText("Zone: Hand")).toBeChecked();
+    await user.click(screen.getByLabelText("Zone: Hand"));
+    expect(screen.getByLabelText("Zone: Hand")).not.toBeChecked();
+
+    await user.click(screen.getByRole("button", { name: "Back" }));
+    await user.click(screen.getByRole("button", { name: "Draw" }));
+    await user.click(screen.getByRole("button", { name: "Combat" }));
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+
+    expect(screen.getByLabelText("Zone: Stack")).toBeChecked();
+    expect(screen.getByLabelText("Zone: Hand")).not.toBeChecked();
+  });
+
+  it("life totals unchanged after navigating back from zone confirm", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.clear(screen.getByLabelText("Player 1 life total"));
+    await user.type(screen.getByLabelText("Player 1 life total"), "33");
+    await user.clear(screen.getByLabelText("Player 2 life total"));
+    await user.type(screen.getByLabelText("Player 2 life total"), "27");
+
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await user.click(screen.getByRole("button", { name: "Back" }));
+
+    expect(screen.getByLabelText("Player 1 life total")).toHaveValue("33");
+    expect(screen.getByLabelText("Player 2 life total")).toHaveValue("27");
+  });
+
+  it("zone confirm allows continuing with empty zone selection", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+
+    const continueButton = screen.getByRole("button", { name: "Continue" });
+    expect(continueButton).not.toBeDisabled();
+    await user.click(continueButton);
+
+    expect(screen.getByRole("heading", { name: "Battlefield context (optional)" })).toBeInTheDocument();
+  });
+
+  it("shows active player select on game context step", () => {
+    render(<App />);
+    expect(screen.getByLabelText("Active player")).toBeInTheDocument();
+  });
+
+  it("shows all turn phase options on game context step", () => {
+    render(<App />);
+    expect(screen.getByRole("button", { name: "Draw" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Combat" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Main 1" })).toBeInTheDocument();
+  });
+
+  it("shows combat sub-step hint when Combat phase is selected", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(screen.queryByText(/Specify combat sub-step/)).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Combat" }));
+    expect(screen.getByText(/Specify combat sub-step/)).toBeInTheDocument();
+  });
+
+  it("toggles turn phase off when the same phase button is clicked again", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Draw" }));
+    const drawButton = screen.getByRole("button", { name: "Draw" });
+    expect(drawButton).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(drawButton);
+    expect(screen.getByRole("button", { name: "Draw" })).toHaveAttribute("aria-pressed", "false");
   });
 });

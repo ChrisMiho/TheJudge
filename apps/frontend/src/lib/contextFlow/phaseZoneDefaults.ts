@@ -31,16 +31,26 @@ export const PHASE_ZONE_DEFAULTS: Record<TurnPhase, ZoneId[]> = {
   stack_resolving: ["stack", "battlefield"]
 };
 
+export function getPhaseZoneDefaults(phase: TurnPhase): ZoneId[] {
+  return PHASE_ZONE_DEFAULTS[phase];
+}
+
 /**
- * Additive merge: union new phase defaults with existing selected zones.
- * Never removes user-selected zones or deletes cards.
+ * Additive delta merge: adds zones newly assumed in newPhase compared to prevPhase
+ * (or all defaults when prevPhase is undefined). Never removes user-selected zones.
  * Returns zones in canonical order.
+ *
+ * Delta semantics ensure that zones the user explicitly unchecked on zone-confirm
+ * are not re-added simply because the new phase also assumes them — only genuinely
+ * new zones (not present in the previous phase's defaults) are added.
  */
 export function mergeSelectedZonesOnPhaseChange(
   currentSelected: ZoneId[],
-  newPhase: TurnPhase
+  newPhase: TurnPhase,
+  prevPhase?: TurnPhase
 ): ZoneId[] {
-  const defaults = PHASE_ZONE_DEFAULTS[newPhase];
-  const merged = new Set([...currentSelected, ...defaults]);
+  const prevDefaults = prevPhase ? new Set(PHASE_ZONE_DEFAULTS[prevPhase]) : new Set<ZoneId>();
+  const deltaZones = PHASE_ZONE_DEFAULTS[newPhase].filter((zone) => !prevDefaults.has(zone));
+  const merged = new Set([...currentSelected, ...deltaZones]);
   return CANONICAL_ZONE_ORDER.filter((zone) => merged.has(zone));
 }

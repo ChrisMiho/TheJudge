@@ -40,6 +40,7 @@ function jsonResponse(payload: unknown, status = 200): Response {
 
 async function openStackBuilder(user: ReturnType<typeof userEvent.setup>): Promise<void> {
   await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+  await user.click(screen.getByRole("button", { name: "Continue" }));
   await user.click(screen.getByRole("button", { name: "Skip battlefield context" }));
 }
 
@@ -73,6 +74,7 @@ describe("STORY-074 target gating and pickers", () => {
     const user = userEvent.setup();
     render(<App />);
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 
