@@ -1,6 +1,6 @@
 # Slice 00 — Repo housekeeping
 
-status: pending
+status: complete
 
 **Prerequisites:** None  
 **Next slice:** [slice-01-backend-contract.md](./slice-01-backend-contract.md)
@@ -13,32 +13,32 @@ Clean git baseline before product work: kickoff skill on `main`, stale branches 
 
 ### A — Kickoff skill (separate PR)
 
-- [ ] Open PR: `workflow/next-iteration` → `main` (**kickoff skill only** — do not include `PRD/work/` in this PR)
-- [ ] Merge when CI/green
+- [x] Open PR: `workflow/next-iteration` → `main` (**kickoff skill only** — do not include `PRD/work/` in this PR) — PR #21
+- [x] Merge when CI/green
 
 ### B — Feature branch + planning docs (do this before deleting branches)
 
-- [ ] `git checkout main && git pull origin main`
-- [ ] `git checkout -b workflow/ux-wave-2`
-- [ ] Stage and commit planning docs:
+- [x] `git checkout main && git pull origin main`
+- [x] `git checkout -b workflow/ux-wave-2`
+- [x] Stage and commit planning docs:
   ```bash
   git add PRD/work/ux-wave-2/
   git commit -m "Add UX Wave 2 sequential implementation slices."
   ```
-- [ ] `git push -u origin workflow/ux-wave-2`
+- [x] `git push -u origin workflow/ux-wave-2`
 
 > **Why before cleanup:** `PRD/work/ux-wave-2/` is currently **untracked**. Untracked files usually stay in your working tree when switching branches, but they are **not on the remote** until committed and pushed. Pushing now prevents loss if you reset, re-clone, or work from another machine.
 
 ### C — Branch cleanup (after B is pushed)
 
-- [ ] Delete merged/stale branches (local + remote where safe):
+- [x] Delete merged/stale branches (local + remote where safe):
   - `workflow/next-iteration`
   - `skills/workflow-acceleration`
   - `feat/openai-migration`
   - `may-08-2026`
   - `origin/workflow/new-gameplan-iteration` if still present
-- [ ] `git fetch --prune`
-- [ ] Confirm still on `workflow/ux-wave-2` with planning docs present
+- [x] `git fetch --prune`
+- [x] Confirm still on `workflow/ux-wave-2` with planning docs present
 
 ## Validation gate
 
@@ -50,9 +50,9 @@ git log main..HEAD --oneline   # empty or only intentional commits
 
 Manual:
 
-- [ ] Kickoff skill files exist on `main` under `.claude/skills/kickoff/`
-- [ ] `PRD/work/ux-wave-2/` exists on remote `origin/workflow/ux-wave-2`
-- [ ] Stale remote branches from list above are gone (or consciously kept)
+- [x] Kickoff skill files exist on `main` under `.claude/skills/kickoff/`
+- [x] `PRD/work/ux-wave-2/` exists on remote `origin/workflow/ux-wave-2`
+- [x] Stale remote branches from list above are gone (or consciously kept)
 
 ## Done when
 
