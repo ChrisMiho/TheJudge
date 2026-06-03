@@ -1,4 +1,4 @@
-import type { AskAiRequest } from "../types.js";
+import type { AskAiRequest, ZoneCardItem } from "../types.js";
 
 export function createGameContext(playerCount: 2 | 3 | 4 | 5 | 6 | 7 | 8 = 2): AskAiRequest["gameContext"] {
   const labels: AskAiRequest["gameContext"]["players"][number]["label"][] = [
@@ -13,11 +13,14 @@ export function createGameContext(playerCount: 2 | 3 | 4 | 5 | 6 | 7 | 8 = 2): A
   ];
   return {
     playerCount,
-    players: labels.slice(0, playerCount).map((label) => ({ label, lifeTotal: 20 }))
+    players: labels.slice(0, playerCount).map((label) => ({ label, lifeTotal: 20 })),
+    turnPhase: "main_1",
+    selectedZones: ["stack"],
+    zones: {}
   };
 }
 
-export function createStackItem(overrides: Partial<AskAiRequest["stack"][number]> = {}): AskAiRequest["stack"][number] {
+export function createZoneCardItem(overrides: Partial<ZoneCardItem> = {}): ZoneCardItem {
   return {
     cardId: "opt",
     name: "Opt",
@@ -39,9 +42,12 @@ export function createStackItem(overrides: Partial<AskAiRequest["stack"][number]
 export function createAskAiRequest(overrides: Partial<AskAiRequest> = {}): AskAiRequest {
   return {
     question: "How does this resolve?",
-    gameContext: createGameContext(),
-    battlefieldContext: [],
-    stack: [createStackItem()],
+    gameContext: {
+      ...createGameContext(),
+      zones: {
+        stack: [createZoneCardItem()]
+      }
+    },
     ...overrides
   };
 }

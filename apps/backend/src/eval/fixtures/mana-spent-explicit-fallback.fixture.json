@@ -8,29 +8,32 @@
       "players": [
         { "label": "Player 1", "lifeTotal": 28 },
         { "label": "Player 2", "lifeTotal": 11 }
-      ]
-    },
-    "battlefieldContext": [],
-    "stack": [
-      {
-        "cardId": "fireball",
-        "name": "Fireball",
-        "oracleText": "This spell costs 1 more to cast for each target beyond the first.",
-        "imageUrl": "",
-        "manaValue": 1,
-        "manaSpent": 7,
-        "caster": "Player 1",
-        "targets": [{ "kind": "player", "targetPlayer": "Player 2" }]
-      },
-      {
-        "cardId": "negate",
-        "name": "Negate",
-        "oracleText": "Counter target noncreature spell.",
-        "imageUrl": "",
-        "manaValue": 2,
-        "caster": "Player 2",
-        "targets": [{ "kind": "stack", "targetCardId": "fireball", "targetCardName": "Fireball" }]
+      ],
+      "turnPhase": "stack_resolving",
+      "selectedZones": ["stack"],
+      "zones": {
+        "stack": [
+          {
+            "cardId": "fireball",
+            "name": "Fireball",
+            "oracleText": "This spell costs 1 more to cast for each target beyond the first.",
+            "imageUrl": "",
+            "manaValue": 1,
+            "manaSpent": 7,
+            "caster": "Player 1",
+            "targets": [{ "kind": "player", "targetPlayer": "Player 2" }]
+          },
+          {
+            "cardId": "negate",
+            "name": "Negate",
+            "oracleText": "Counter target noncreature spell.",
+            "imageUrl": "",
+            "manaValue": 2,
+            "caster": "Player 2",
+            "targets": [{ "kind": "card", "zone": "stack", "cardId": "fireball", "cardName": "Fireball" }]
+          }
+        ]
       }
-    ]
+    }
   }
 }

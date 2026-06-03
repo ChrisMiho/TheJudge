@@ -55,19 +55,38 @@ function optionalBoundedTextWithEmptyDefault(maxLength: number) {
     .default("");
 }
 
-export const stackTargetSchema = z.discriminatedUnion("kind", [
-  z.object({
-    kind: z.literal("stack"),
-    targetCardId: boundedText(120),
-    targetCardName: boundedText(120)
-  }).strict(),
-  z.object({
-    kind: z.literal("battlefield"),
-    targetPermanent: boundedText(160)
-  }).strict(),
+export const turnPhaseSchema = z.enum([
+  "untap",
+  "upkeep",
+  "draw",
+  "main_1",
+  "main_2",
+  "end_step",
+  "cleanup",
+  "combat",
+  "stack_resolving"
+]);
+
+export const zoneIdSchema = z.enum([
+  "stack",
+  "battlefield",
+  "hand",
+  "graveyard",
+  "exile",
+  "library",
+  "command"
+]);
+
+export const contextTargetSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("player"),
     targetPlayer: playerLabelSchema
+  }).strict(),
+  z.object({
+    kind: z.literal("card"),
+    zone: zoneIdSchema,
+    cardId: boundedText(120),
+    cardName: boundedText(120)
   }).strict(),
   z.object({
     kind: z.literal("none")
@@ -78,7 +97,7 @@ export const stackTargetSchema = z.discriminatedUnion("kind", [
   }).strict()
 ]);
 
-export const stackItemSchema = z.object({
+export const zoneCardItemSchema = z.object({
   cardId: boundedText(120),
   name: boundedText(120),
   oracleText: boundedText(2000),
@@ -89,11 +108,23 @@ export const stackItemSchema = z.object({
   colors: z.array(boundedText(1)).max(5).optional().default([]),
   supertypes: z.array(boundedText(30)).max(8).optional().default([]),
   subtypes: z.array(boundedText(40)).max(12).optional().default([]),
-  caster: playerLabelSchema,
-  targets: z.array(stackTargetSchema).max(8).optional().default([]),
+  caster: playerLabelSchema.optional(),
+  targets: z.array(contextTargetSchema).max(8).optional().default([]),
   contextNotes: optionalBoundedText(280),
   manaSpent: z.number().min(0).max(99).optional()
 }).strict();
+
+const zonesSchema = z
+  .object({
+    stack: z.array(zoneCardItemSchema).min(1).max(10).optional(),
+    battlefield: z.array(zoneCardItemSchema).min(1).max(30).optional(),
+    hand: z.array(zoneCardItemSchema).min(1).max(20).optional(),
+    graveyard: z.array(zoneCardItemSchema).min(1).max(30).optional(),
+    exile: z.array(zoneCardItemSchema).min(1).max(30).optional(),
+    library: z.array(zoneCardItemSchema).min(1).max(10).optional(),
+    command: z.array(zoneCardItemSchema).min(1).max(10).optional()
+  })
+  .strict();
 
 export const gamePlayerSchema = z.object({
   label: playerLabelSchema,
@@ -103,7 +134,11 @@ export const gamePlayerSchema = z.object({
 export const gameContextSchema = z
   .object({
     playerCount: z.number().int().min(2).max(8),
-    players: z.array(gamePlayerSchema).min(2).max(8)
+    players: z.array(gamePlayerSchema).min(2).max(8),
+    turnPhase: turnPhaseSchema,
+    activePlayer: playerLabelSchema.optional(),
+    selectedZones: z.array(zoneIdSchema).min(1).max(7),
+    zones: zonesSchema.optional().default({})
   })
   .strict()
   .superRefine((value, ctx) => {
@@ -134,13 +169,15 @@ export const gameContextSchema = z
         message: `must use fixed labels ${expectedLabels.join(", ")}`
       });
     }
-  });
 
-export const battlefieldContextItemSchema = z.object({
-  name: boundedText(120),
-  details: optionalBoundedText(280),
-  targets: z.array(stackTargetSchema).max(8).optional().default([])
-}).strict();
+    if (value.activePlayer !== undefined && !labels.includes(value.activePlayer)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["activePlayer"],
+        message: "must be one of the players in the game"
+      });
+    }
+  });
 
 export const askAiRequestSchema = z.object({
   question: z
@@ -148,9 +185,7 @@ export const askAiRequestSchema = z.object({
     .trim()
     .max(300)
     .refine(noControlCharacterGuardrail, "contains unsupported control characters"),
-  gameContext: gameContextSchema,
-  battlefieldContext: z.array(battlefieldContextItemSchema).max(16).optional().default([]),
-  stack: z.array(stackItemSchema).min(1).max(10)
+  gameContext: gameContextSchema
 }).strict();
 
 export const askAiResponseSchema = z

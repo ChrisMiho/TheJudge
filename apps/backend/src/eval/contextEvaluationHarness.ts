@@ -40,7 +40,7 @@ export type EvaluationResult = {
 };
 
 function checkStackOrder(fixture: EvaluationFixture, context: PromptContext): EvaluationCheckResult {
-  const expectedOrder = fixture.request.stack.map((card) => card.cardId);
+  const expectedOrder = (fixture.request.gameContext.zones?.stack ?? []).map((card) => card.cardId);
   const actualOrder = context.orderedStack.map((card) => card.cardId);
   const passed = expectedOrder.join("|") === actualOrder.join("|");
 

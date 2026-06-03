@@ -1,6 +1,6 @@
 # Slice 01 — Backend contract
 
-status: pending
+status: complete
 
 **Prerequisites:** [slice-00-repo-housekeeping.md](./slice-00-repo-housekeeping.md)  
 **Next slice:** [slice-02-prompt-and-eval.md](./slice-02-prompt-and-eval.md)
@@ -38,9 +38,8 @@ See [decisions-summary.md](./decisions-summary.md) for shapes.
 
 ## Tasks
 
-- [ ] Add types and Zod schemas
-- [ ] Migration helper (optional): `legacyAskAiToGameContext()` for dev only — delete before ship if unused
-- [ ] Update request builders and contract tests
+- [x] Add types and Zod schemas
+- [x] Update request builders and contract tests
 - [ ] Document breaking change note in slice PR description (DEC-021 draft)
 
 ## Validation gate
@@ -52,9 +51,9 @@ npm --workspace apps/backend run test
 
 Manual:
 
-- [ ] Sample valid payload passes Zod
-- [ ] Payload with empty `zones` object (no keys) validates when `selectedZones` set and question present
-- [ ] Payload with `stack: []` key **fails** validation (empty arrays omitted)
+- [x] Sample valid payload passes Zod
+- [x] Payload with empty `zones` object (no keys) validates when `selectedZones` set and question present
+- [x] Payload with `stack: []` key **fails** validation (empty arrays omitted)
 
 ## Done when
 

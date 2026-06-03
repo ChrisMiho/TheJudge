@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { createApp } from "./app.js";
 import { createAskAiProvider } from "./providers/createAskAiProvider.js";
 import { readServerConfig } from "./config.js";
-import { createAskAiRequest, createGameContext, createStackItem } from "./test-utils/requestBuilders.js";
+import { createAskAiRequest, createGameContext, createZoneCardItem } from "./test-utils/requestBuilders.js";
 
 const app = createApp();
 
@@ -20,14 +20,26 @@ describe("ask-ai endpoint contract", () => {
       .set("X-Correlation-Id", "corr-success-1")
       .send(
         createAskAiRequest({
-          gameContext: createGameContext(4),
-          battlefieldContext: [{ name: "Rhystic Study", targets: [{ kind: "none" }] }],
-          stack: [
-            createStackItem({
-              caster: "Player 4",
-              targets: [{ kind: "none" }, { kind: "other", targetDescription: "retarget to token copy" }]
-            })
-          ]
+          gameContext: {
+            ...createGameContext(4),
+            zones: {
+              battlefield: [
+                createZoneCardItem({
+                  cardId: "rhystic-study",
+                  name: "Rhystic Study",
+                  oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
+                  caster: undefined,
+                  targets: [{ kind: "none" }]
+                })
+              ],
+              stack: [
+                createZoneCardItem({
+                  caster: "Player 4",
+                  targets: [{ kind: "none" }, { kind: "other", targetDescription: "retarget to token copy" }]
+                })
+              ]
+            }
+          }
         })
       );
 
@@ -42,7 +54,15 @@ describe("ask-ai endpoint contract", () => {
   it("applies fallback question when blank question is submitted", async () => {
     const response = await request(app)
       .post("/api/ask-ai")
-      .send(createAskAiRequest({ question: "   ", stack: [createStackItem({ name: "Counterspell" })] }));
+      .send(
+        createAskAiRequest({
+          question: "   ",
+          gameContext: {
+            ...createGameContext(),
+            zones: { stack: [createZoneCardItem({ name: "Counterspell" })] }
+          }
+        })
+      );
 
     expect(response.status).toBe(200);
     expect(response.body.answer).toContain("QUESTION\nResolve the stack");
@@ -51,9 +71,14 @@ describe("ask-ai endpoint contract", () => {
   it("returns validation error payload for invalid request shape", async () => {
     const response = await request(app).post("/api/ask-ai").send({
       question: "oops",
-      gameContext: createGameContext(),
-      battlefieldContext: [],
-      stack: []
+      gameContext: {
+        playerCount: 2,
+        players: [
+          { label: "Player 1", lifeTotal: 20 },
+          { label: "Player 2", lifeTotal: 20 }
+        ]
+        // missing: turnPhase, selectedZones
+      }
     });
 
     expect(response.status).toBe(400);
@@ -67,28 +92,45 @@ describe("ask-ai endpoint contract", () => {
   it("returns validation error for malformed caster and target fields", async () => {
     const badCasterResponse = await request(app)
       .post("/api/ask-ai")
-      .send(createAskAiRequest({ stack: [{ ...createStackItem(), caster: "Player 9" as never }] }));
+      .send(
+        createAskAiRequest({
+          gameContext: {
+            ...createGameContext(),
+            zones: {
+              stack: [{ ...createZoneCardItem(), caster: "Player 9" as never }]
+            }
+          }
+        })
+      );
     expect(badCasterResponse.status).toBe(400);
     expect(badCasterResponse.body.code).toBe("VALIDATION_ERROR");
-    expect(badCasterResponse.body.message).toContain("stack.0.caster");
+    expect(badCasterResponse.body.message).toContain("gameContext.zones.stack.0.caster");
 
     const badTargetResponse = await request(app)
       .post("/api/ask-ai")
       .send(
         createAskAiRequest({
-          stack: [{ ...createStackItem(), targets: [{ kind: "other" } as never] }]
+          gameContext: {
+            ...createGameContext(),
+            zones: {
+              stack: [{ ...createZoneCardItem(), targets: [{ kind: "other" } as never] }]
+            }
+          }
         })
       );
     expect(badTargetResponse.status).toBe(400);
     expect(badTargetResponse.body.code).toBe("VALIDATION_ERROR");
-    expect(badTargetResponse.body.message).toContain("stack.0.targets.0.targetDescription");
+    expect(badTargetResponse.body.message).toContain("gameContext.zones.stack.0.targets.0.targetDescription");
   });
 
   it("rejects control characters in free-text input fields", async () => {
     const response = await request(app).post("/api/ask-ai").send(
       createAskAiRequest({
         question: "Can this resolve?\u0007",
-        stack: [createStackItem({ contextNotes: "targets player\u0000 unexpectedly" })]
+        gameContext: {
+          ...createGameContext(),
+          zones: { stack: [createZoneCardItem({ contextNotes: "targets player\u0000 unexpectedly" })] }
+        }
       })
     );
 
@@ -101,20 +143,28 @@ describe("ask-ai endpoint contract", () => {
     const response = await request(app).post("/api/ask-ai").send(
       createAskAiRequest({
         question: "prompt budget check",
-        gameContext: createGameContext(4),
-        battlefieldContext: Array.from({ length: 16 }, (_, index) => ({
-          name: `Permanent ${index + 1}`,
-          details: "x".repeat(280),
-          targets: [{ kind: "none" }]
-        })),
-        stack: Array.from({ length: 10 }, (_, index) =>
-          createStackItem({
-            cardId: `card-${index}`,
-            name: `Card ${index}`,
-            oracleText: "z".repeat(1000),
-            contextNotes: "y".repeat(280)
-          })
-        )
+        gameContext: {
+          ...createGameContext(4),
+          zones: {
+            battlefield: Array.from({ length: 16 }, (_, index) =>
+              createZoneCardItem({
+                cardId: `permanent-${index + 1}`,
+                name: `Permanent ${index + 1}`,
+                oracleText: "x".repeat(280),
+                contextNotes: "x".repeat(280),
+                caster: undefined
+              })
+            ),
+            stack: Array.from({ length: 10 }, (_, index) =>
+              createZoneCardItem({
+                cardId: `card-${index}`,
+                name: `Card ${index}`,
+                oracleText: "z".repeat(1000),
+                contextNotes: "y".repeat(280)
+              })
+            )
+          }
+        }
       })
     );
 
@@ -159,5 +209,30 @@ describe("ask-ai endpoint contract", () => {
     expect(response.body.code).toBe("PROVIDER_UNAVAILABLE");
     expect(response.body.message).toBe("Miho is working on it");
     expect(response.body.retryAfterSeconds).toBe(13);
+  });
+
+  it("returns validation error when zones object contains an empty array", async () => {
+    const response = await request(app).post("/api/ask-ai").send({
+      question: "oops",
+      gameContext: {
+        ...createGameContext(),
+        zones: { stack: [] }
+      }
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("accepts request with empty zones object when selectedZones is set", async () => {
+    const response = await request(app).post("/api/ask-ai").send({
+      question: "How does this resolve?",
+      gameContext: {
+        ...createGameContext(),
+        zones: {}
+      }
+    });
+
+    expect(response.status).toBe(200);
   });
 });

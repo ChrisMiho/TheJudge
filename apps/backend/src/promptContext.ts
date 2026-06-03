@@ -1,4 +1,4 @@
-import type { AskAiRequest, PromptContext, PromptContextStackItem } from "./types.js";
+import type { AskAiRequest, BattlefieldContextItem, ContextTarget, PromptContext, PromptContextStackItem, PromptContextStackTarget } from "./types.js";
 import { normalizeCardText, normalizeQuestion, normalizeWhitespace } from "./promptNormalization.js";
 
 const fallbackQuestion = "Resolve the stack";
@@ -27,9 +27,7 @@ function normalizeOptionalList(values: string[] | undefined): string[] {
   return normalizeTagList(values ?? []);
 }
 
-function normalizeStackTarget(
-  target: AskAiRequest["stack"][number]["targets"][number]
-): AskAiRequest["stack"][number]["targets"][number] | null {
+function normalizeContextTarget(target: ContextTarget): PromptContextStackTarget | null {
   if (target.kind === "none") {
     return { kind: "none" };
   }
@@ -39,7 +37,6 @@ function normalizeStackTarget(
     if (targetDescription.length === 0) {
       return null;
     }
-
     return { kind: "other", targetDescription };
   }
 
@@ -47,40 +44,25 @@ function normalizeStackTarget(
     return { kind: "player", targetPlayer: target.targetPlayer };
   }
 
-  if (target.kind === "battlefield") {
-    const targetPermanent = normalizeWhitespace(target.targetPermanent);
-    if (targetPermanent.length === 0) {
-      return null;
-    }
+  // kind === "card": map to internal stack or battlefield target based on zone
+  const cardName = normalizeWhitespace(target.cardName);
+  const cardId = normalizeWhitespace(target.cardId);
 
-    return {
-      kind: "battlefield",
-      targetPermanent
-    };
-  }
-
-  const targetCardId = normalizeWhitespace(target.targetCardId);
-  const targetCardName = normalizeWhitespace(target.targetCardName);
-
-  if (targetCardId.length === 0 || targetCardName.length === 0) {
+  if (cardName.length === 0 || cardId.length === 0) {
     return null;
   }
 
-  return {
-    kind: "stack",
-    targetCardId,
-    targetCardName
-  };
+  if (target.zone === "battlefield") {
+    return { kind: "battlefield", targetPermanent: cardName };
+  }
+
+  return { kind: "stack", targetCardId: cardId, targetCardName: cardName };
 }
 
-function normalizeTargets(
-  targets: AskAiRequest["stack"][number]["targets"] | undefined
-): AskAiRequest["stack"][number]["targets"] {
-  const normalized = (targets ?? [])
-    .map((target) => normalizeStackTarget(target))
-    .filter((target): target is AskAiRequest["stack"][number]["targets"][number] => target !== null);
-
-  return normalized;
+function normalizeTargets(targets: ContextTarget[] | undefined): PromptContextStackTarget[] {
+  return (targets ?? [])
+    .map((target) => normalizeContextTarget(target))
+    .filter((target): target is PromptContextStackTarget => target !== null);
 }
 
 function normalizeOptionalNumber(value: number | undefined): number {
@@ -100,11 +82,15 @@ export function buildPromptContext(payload: AskAiRequest): PromptContext {
       lifeTotal: normalizeLifeTotal(player.lifeTotal)
     }))
   };
-  const normalizedBattlefieldContext = payload.battlefieldContext
-    .map((item) => ({
-      name: normalizeWhitespace(item.name),
-      details: normalizeOptionalText(item.details) || undefined,
-      targets: normalizeTargets(item.targets)
+
+  const stackZoneCards = payload.gameContext.zones?.stack ?? [];
+  const battlefieldZoneCards = payload.gameContext.zones?.battlefield ?? [];
+
+  const normalizedBattlefieldContext: BattlefieldContextItem[] = battlefieldZoneCards
+    .map((card) => ({
+      name: normalizeWhitespace(card.name),
+      details: normalizeOptionalText(card.contextNotes) || undefined,
+      targets: normalizeTargets(card.targets)
     }))
     .filter((item) => item.name.length > 0);
 
@@ -112,7 +98,7 @@ export function buildPromptContext(payload: AskAiRequest): PromptContext {
     finalQuestion: normalizedQuestion.length > 0 ? normalizedQuestion : fallbackQuestion,
     gameContext: normalizedGameContext,
     battlefieldContext: normalizedBattlefieldContext,
-    orderedStack: payload.stack.map((card, stackIndex, stack) => ({
+    orderedStack: stackZoneCards.map((card, stackIndex, stack) => ({
       cardId: normalizeWhitespace(card.cardId),
       name: normalizeWhitespace(card.name),
       oracleText: normalizeCardText(card.oracleText),
@@ -123,7 +109,7 @@ export function buildPromptContext(payload: AskAiRequest): PromptContext {
       colors: normalizeOptionalList(card.colors),
       supertypes: normalizeOptionalList(card.supertypes),
       subtypes: normalizeOptionalList(card.subtypes),
-      caster: card.caster,
+      caster: card.caster ?? "Player 1",
       targets: normalizeTargets(card.targets),
       contextNotes: normalizeOptionalText(card.contextNotes) || undefined,
       manaSpent:
