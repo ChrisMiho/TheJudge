@@ -1,6 +1,6 @@
 # Slice 03 — Flow foundation
 
-status: pending
+status: complete
 
 **Prerequisites:** [slice-02-prompt-and-eval.md](./slice-02-prompt-and-eval.md)  
 **Next slice:** [slice-04-ui-game-setup-and-zones.md](./slice-04-ui-game-setup-and-zones.md)
@@ -35,9 +35,9 @@ Suggested files:
 
 ## Tasks
 
-- [ ] Create `contextFlow` module
-- [ ] Port logic from `App.tsx` incrementally where safe
-- [ ] Unit tests for defaults matrix and merge behavior
+- [x] Create `contextFlow` module
+- [x] Port logic from `App.tsx` incrementally where safe
+- [x] Unit tests for defaults matrix and merge behavior
 - [ ] Optional: minimal `ContextFlowShell.tsx` rendering placeholder steps for manual smoke test
 
 ## Validation gate
