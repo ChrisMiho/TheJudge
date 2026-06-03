@@ -1,6 +1,6 @@
 # Slice 02 — Prompt and eval
 
-status: pending
+status: complete
 
 **Prerequisites:** [slice-01-backend-contract.md](./slice-01-backend-contract.md)  
 **Next slice:** [slice-03-flow-foundation.md](./slice-03-flow-foundation.md)
@@ -40,12 +40,12 @@ Build prompt from new `gameContext`, add MTG reference block and scope sentence,
 
 ## Tasks
 
-- [ ] `promptMtgReference.ts` + length test
-- [ ] Scope sentence builder + unit tests
-- [ ] Refactor `promptContext.ts`
-- [ ] Update `promptContext.test.ts`
-- [ ] Migrate eval fixtures and goldens
-- [ ] Remove legacy `battlefieldContext` / top-level `stack` from prompt path
+- [x] `promptMtgReference.ts` + length test
+- [x] Scope sentence builder + unit tests
+- [x] Refactor `promptContext.ts`
+- [x] Update `promptContext.test.ts`
+- [x] Migrate eval fixtures and goldens
+- [x] Remove legacy `battlefieldContext` / top-level `stack` from prompt path
 
 ## Validation gate
 

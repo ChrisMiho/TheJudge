@@ -1,0 +1,66 @@
+{
+  "finalQuestion": "Does Snapcaster Mage's flash-back target survive the graveyard check?",
+  "gameContext": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 14
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "stack_resolving",
+    "selectedZones": [
+      "hand",
+      "graveyard",
+      "stack"
+    ]
+  },
+  "populatedZones": [
+    {
+      "zoneId": "hand",
+      "items": [
+        {
+          "name": "Snapcaster Mage",
+          "targets": []
+        }
+      ]
+    },
+    {
+      "zoneId": "graveyard",
+      "items": [
+        {
+          "name": "Counterspell",
+          "targets": []
+        }
+      ]
+    }
+  ],
+  "orderedStack": [
+    {
+      "cardId": "lightning-bolt",
+      "name": "Lightning Bolt",
+      "oracleText": "Lightning Bolt deals 3 damage to any target.",
+      "imageUrl": "",
+      "manaCost": "",
+      "manaValue": 1,
+      "typeLine": "",
+      "colors": [],
+      "supertypes": [],
+      "subtypes": [],
+      "caster": "Player 2",
+      "targets": [
+        {
+          "kind": "player",
+          "targetPlayer": "Player 1"
+        }
+      ],
+      "manaSpent": 1,
+      "stackIndex": 0,
+      "stackRole": "top"
+    }
+  ]
+}

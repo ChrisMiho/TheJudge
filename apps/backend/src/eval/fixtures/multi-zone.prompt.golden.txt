@@ -31,141 +31,39 @@ Continuous effects and state-based actions use a layer system. When effects conf
 
 GENERAL GAME CONTEXT
 turnPhase: stack_resolving
-playerCount: 4
-Player 1: lifeTotal=20
-Player 2: lifeTotal=19
-Player 3: lifeTotal=17
-Player 4: lifeTotal=14
+playerCount: 2
+Player 1: lifeTotal=14
+Player 2: lifeTotal=20
 
 ZONE: STACK (BOTTOM TO TOP)
-Stack item 1 (bottom)
-card: Card 1
+Stack item 1 (top)
+card: Lightning Bolt
 manaCost: (none)
 manaValue: 1
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
-caster: Player 1
-targets: (none)
+caster: Player 2
+targets: player:Player 1
 manaSpent: 1
 contextNotes: (none)
-oracleText: First effect.
+oracleText: Lightning Bolt deals 3 damage to any target.
 
-Stack item 2 (middle)
-card: Card 2
-manaCost: (none)
-manaValue: 2
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 2
+ZONE: HAND
+Hand 1
+name: Snapcaster Mage
+details: (none)
 targets: (none)
-manaSpent: 2
-contextNotes: (none)
-oracleText: Second effect.
 
-Stack item 3 (middle)
-card: Card 3
-manaCost: (none)
-manaValue: 3
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 3
+ZONE: GRAVEYARD
+Graveyard 1
+name: Counterspell
+details: (none)
 targets: (none)
-manaSpent: 3
-contextNotes: (none)
-oracleText: Third effect.
-
-Stack item 4 (middle)
-card: Card 4
-manaCost: (none)
-manaValue: 4
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 4
-targets: (none)
-manaSpent: 4
-contextNotes: (none)
-oracleText: Fourth effect.
-
-Stack item 5 (middle)
-card: Card 5
-manaCost: (none)
-manaValue: 5
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 1
-targets: (none)
-manaSpent: 5
-contextNotes: (none)
-oracleText: Fifth effect.
-
-Stack item 6 (middle)
-card: Card 6
-manaCost: (none)
-manaValue: 6
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 2
-targets: (none)
-manaSpent: 6
-contextNotes: (none)
-oracleText: Sixth effect.
-
-Stack item 7 (middle)
-card: Card 7
-manaCost: (none)
-manaValue: 7
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 3
-targets: (none)
-manaSpent: 7
-contextNotes: (none)
-oracleText: Seventh effect.
-
-Stack item 8 (middle)
-card: Card 8
-manaCost: (none)
-manaValue: 8
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 4
-targets: (none)
-manaSpent: 8
-contextNotes: (none)
-oracleText: Eighth effect.
-
-Stack item 9 (top)
-card: Card 9
-manaCost: (none)
-manaValue: 9
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 1
-targets: (none)
-manaSpent: 9
-contextNotes: (none)
-oracleText: Ninth effect.
 
 SCOPE
-Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): battlefield, hand, graveyard, exile, library, command.
+Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): battlefield, exile, library, command.
 
 QUESTION
-Resolve the stack
+Does Snapcaster Mage's flash-back target survive the graveyard check?

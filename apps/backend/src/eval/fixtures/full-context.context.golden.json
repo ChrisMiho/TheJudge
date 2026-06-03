@@ -19,15 +19,25 @@
         "label": "Player 4",
         "lifeTotal": 9
       }
+    ],
+    "turnPhase": "stack_resolving",
+    "selectedZones": [
+      "battlefield",
+      "stack"
     ]
   },
-  "battlefieldContext": [
+  "populatedZones": [
     {
-      "name": "Rhystic Study",
-      "details": "Tax trigger may alter available mana decisions.",
-      "targets": [
+      "zoneId": "battlefield",
+      "items": [
         {
-          "kind": "none"
+          "name": "Rhystic Study",
+          "details": "Tax trigger may alter available mana decisions.",
+          "targets": [
+            {
+              "kind": "none"
+            }
+          ]
         }
       ]
     }

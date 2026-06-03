@@ -11,15 +11,25 @@
         "label": "Player 2",
         "lifeTotal": 2
       }
+    ],
+    "turnPhase": "stack_resolving",
+    "selectedZones": [
+      "battlefield",
+      "stack"
     ]
   },
-  "battlefieldContext": [
+  "populatedZones": [
     {
-      "name": "Narset, Parter of Veils",
-      "details": "Each opponent can't draw more than one card each turn.",
-      "targets": [
+      "zoneId": "battlefield",
+      "items": [
         {
-          "kind": "none"
+          "name": "Narset, Parter of Veils",
+          "details": "Each opponent can't draw more than one card each turn.",
+          "targets": [
+            {
+              "kind": "none"
+            }
+          ]
         }
       ]
     }

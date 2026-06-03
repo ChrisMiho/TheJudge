@@ -181,7 +181,9 @@ describe("buildPromptContext", () => {
     expect(context.orderedStack[0]?.contextNotes).toBe("kicked");
     expect(context.orderedStack[0]?.manaSpent).toBe(2);
     expect(context.gameContext.players).toHaveLength(3);
-    expect(context.battlefieldContext[0]?.name).toBe("Rhystic Study");
+    expect(context.gameContext.turnPhase).toBe("combat");
+    expect(context.populatedZones[0]?.zoneId).toBe("battlefield");
+    expect(context.populatedZones[0]?.items[0]?.name).toBe("Rhystic Study");
     expect((context.orderedStack[0]?.oracleText.length ?? 0) <= MAX_ORACLE_TEXT_CHARS).toBe(true);
   });
 });

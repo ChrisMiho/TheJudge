@@ -1,0 +1,59 @@
+{
+  "id": "multi-zone",
+  "description": "Multi-zone submission with stack, hand, and graveyard cards.",
+  "request": {
+    "question": "Does Snapcaster Mage's flash-back target survive the graveyard check?",
+    "gameContext": {
+      "playerCount": 2,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 14 },
+        { "label": "Player 2", "lifeTotal": 20 }
+      ],
+      "turnPhase": "stack_resolving",
+      "selectedZones": ["hand", "graveyard", "stack"],
+      "zones": {
+        "hand": [
+          {
+            "cardId": "snapcaster-mage",
+            "name": "Snapcaster Mage",
+            "oracleText": "Flash. When Snapcaster Mage enters the battlefield, target instant or sorcery card in your graveyard gains flashback until end of turn.",
+            "imageUrl": "",
+            "manaValue": 2,
+            "typeLine": "Creature — Human Wizard",
+            "colors": ["U"],
+            "supertypes": [],
+            "subtypes": ["Human", "Wizard"],
+            "caster": "Player 1",
+            "targets": []
+          }
+        ],
+        "graveyard": [
+          {
+            "cardId": "counterspell",
+            "name": "Counterspell",
+            "oracleText": "Counter target spell.",
+            "imageUrl": "",
+            "manaValue": 2,
+            "typeLine": "Instant",
+            "colors": ["U"],
+            "supertypes": [],
+            "subtypes": [],
+            "targets": []
+          }
+        ],
+        "stack": [
+          {
+            "cardId": "lightning-bolt",
+            "name": "Lightning Bolt",
+            "oracleText": "Lightning Bolt deals 3 damage to any target.",
+            "imageUrl": "",
+            "manaValue": 1,
+            "manaSpent": 1,
+            "caster": "Player 2",
+            "targets": [{ "kind": "player", "targetPlayer": "Player 1" }]
+          }
+        ]
+      }
+    }
+  }
+}

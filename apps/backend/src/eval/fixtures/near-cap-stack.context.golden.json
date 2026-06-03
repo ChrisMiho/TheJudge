@@ -19,9 +19,13 @@
         "label": "Player 4",
         "lifeTotal": 14
       }
+    ],
+    "turnPhase": "stack_resolving",
+    "selectedZones": [
+      "stack"
     ]
   },
-  "battlefieldContext": [],
+  "populatedZones": [],
   "orderedStack": [
     {
       "cardId": "card-1",

@@ -12,9 +12,11 @@ describe("mock answer ergonomics", () => {
         players: [
           { label: "Player 1", lifeTotal: 20 },
           { label: "Player 2", lifeTotal: 18 }
-        ]
+        ],
+        turnPhase: "stack_resolving",
+        selectedZones: ["battlefield", "stack"]
       },
-      battlefieldContext: [{ name: "Rhystic Study", details: "Tax effect", targets: [{ kind: "none" }] }],
+      populatedZones: [{ zoneId: "battlefield", items: [{ name: "Rhystic Study", details: "Tax effect", targets: [{ kind: "none" }] }] }],
       orderedStack: [
         {
           cardId: "opt",
@@ -78,7 +80,9 @@ describe("mock answer ergonomics", () => {
     expect(result.answer).toContain("FULL PROMPT (SENT TO PROVIDER)");
     expect(result.answer).toContain("SYSTEM ROLE PREAMBLE");
     expect(result.answer).toContain("INSTRUCTIONS");
+    expect(result.answer).toContain("MTG REFERENCE");
+    expect(result.answer).toContain("ZONE: STACK (BOTTOM TO TOP)");
+    expect(result.answer).toContain("SCOPE");
     expect(result.answer).toContain("QUESTION");
-    expect(result.answer).toContain("ORDERED STACK CONTEXT (BOTTOM TO TOP)");
   });
 });

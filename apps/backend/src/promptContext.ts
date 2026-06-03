@@ -1,7 +1,16 @@
-import type { AskAiRequest, BattlefieldContextItem, ContextTarget, PromptContext, PromptContextStackItem, PromptContextStackTarget } from "./types.js";
+import type { AskAiRequest, ContextTarget, PromptContext, PromptContextStackItem, PromptContextStackTarget, PromptContextZoneItem, ZoneId } from "./types.js";
 import { normalizeCardText, normalizeQuestion, normalizeWhitespace } from "./promptNormalization.js";
 
 const fallbackQuestion = "Resolve the stack";
+
+const NON_STACK_CANONICAL_ZONE_ORDER: Array<Exclude<ZoneId, "stack">> = [
+  "battlefield",
+  "hand",
+  "graveyard",
+  "exile",
+  "library",
+  "command"
+];
 
 function toStackRole(stackIndex: number, stackLength: number): PromptContextStackItem["stackRole"] {
   if (stackIndex === stackLength - 1) {
@@ -73,31 +82,49 @@ function normalizeLifeTotal(value: number): number {
   return Number.isFinite(value) ? Math.trunc(value) : 20;
 }
 
+function normalizeZoneItem(card: import("./types.js").ZoneCardItem): PromptContextZoneItem | null {
+  const name = normalizeWhitespace(card.name);
+  if (name.length === 0) return null;
+  return {
+    name,
+    details: normalizeOptionalText(card.contextNotes) || undefined,
+    targets: normalizeTargets(card.targets)
+  };
+}
+
 export function buildPromptContext(payload: AskAiRequest): PromptContext {
   const normalizedQuestion = normalizeQuestion(payload.question);
+  const gameCtx = payload.gameContext;
+
   const normalizedGameContext = {
-    playerCount: payload.gameContext.playerCount,
-    players: payload.gameContext.players.map((player) => ({
+    playerCount: gameCtx.playerCount,
+    players: gameCtx.players.map((player) => ({
       label: player.label,
       lifeTotal: normalizeLifeTotal(player.lifeTotal)
-    }))
+    })),
+    turnPhase: gameCtx.turnPhase,
+    selectedZones: gameCtx.selectedZones
   };
 
-  const stackZoneCards = payload.gameContext.zones?.stack ?? [];
-  const battlefieldZoneCards = payload.gameContext.zones?.battlefield ?? [];
+  const stackZoneCards = gameCtx.zones?.stack ?? [];
 
-  const normalizedBattlefieldContext: BattlefieldContextItem[] = battlefieldZoneCards
-    .map((card) => ({
-      name: normalizeWhitespace(card.name),
-      details: normalizeOptionalText(card.contextNotes) || undefined,
-      targets: normalizeTargets(card.targets)
-    }))
-    .filter((item) => item.name.length > 0);
+  const zonesMap = (gameCtx.zones ?? {}) as Record<string, import("./types.js").ZoneCardItem[] | undefined>;
+
+  const populatedZones = NON_STACK_CANONICAL_ZONE_ORDER
+    .map((zoneId) => {
+      const cards = zonesMap[zoneId] ?? [];
+      const items = cards
+        .map((card) => normalizeZoneItem(card))
+        .filter((item): item is PromptContextZoneItem => item !== null);
+      if (items.length === 0) return null;
+      return { zoneId, items };
+    })
+    .filter((z): z is NonNullable<typeof z> => z !== null);
 
   return {
     finalQuestion: normalizedQuestion.length > 0 ? normalizedQuestion : fallbackQuestion,
     gameContext: normalizedGameContext,
-    battlefieldContext: normalizedBattlefieldContext,
+    populatedZones,
     orderedStack: stackZoneCards.map((card, stackIndex, stack) => ({
       cardId: normalizeWhitespace(card.cardId),
       name: normalizeWhitespace(card.name),

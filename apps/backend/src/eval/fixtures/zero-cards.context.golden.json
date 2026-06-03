@@ -1,0 +1,22 @@
+{
+  "finalQuestion": "We just drew our opening hands. Who has priority?",
+  "gameContext": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 20
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "upkeep",
+    "selectedZones": [
+      "stack"
+    ]
+  },
+  "populatedZones": [],
+  "orderedStack": []
+}

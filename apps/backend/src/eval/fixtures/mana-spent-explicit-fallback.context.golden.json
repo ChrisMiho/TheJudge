@@ -11,9 +11,13 @@
         "label": "Player 2",
         "lifeTotal": 11
       }
+    ],
+    "turnPhase": "stack_resolving",
+    "selectedZones": [
+      "stack"
     ]
   },
-  "battlefieldContext": [],
+  "populatedZones": [],
   "orderedStack": [
     {
       "cardId": "fireball",

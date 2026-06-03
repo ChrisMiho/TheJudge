@@ -13,8 +13,10 @@ type EvaluationCheckId =
   | "stack-order-preserved"
   | "final-question-behavior"
   | "required-guardrails-present"
+  | "mtg-reference-present"
   | "general-game-context-section"
-  | "battlefield-context-section"
+  | "populated-zones-section"
+  | "scope-sentence-present"
   | "prompt-section-order"
   | "mana-spent-output"
   | "llm-prompt-omits-cardid";
@@ -80,66 +82,90 @@ function checkRequiredGuardrails(promptText: string): EvaluationCheckResult {
   };
 }
 
+function checkMtgReferencePresent(promptText: string): EvaluationCheckResult {
+  const hasMtgReference = promptText.includes("MTG REFERENCE");
+  const hasLayerSystem = promptText.includes("layer system");
+  const passed = hasMtgReference && hasLayerSystem;
+
+  return {
+    id: "mtg-reference-present",
+    passed,
+    details: passed
+      ? "MTG reference block is present with expected rules content."
+      : "MTG reference block or expected layer-system content is missing."
+  };
+}
+
 function checkPromptSectionOrder(promptText: string): EvaluationCheckResult {
-  const instructionsIndex = promptText.indexOf("INSTRUCTIONS");
-  const questionIndex = promptText.indexOf("QUESTION");
+  const mtgReferenceIndex = promptText.indexOf("MTG REFERENCE");
   const gameContextIndex = promptText.indexOf("GENERAL GAME CONTEXT");
-  const battlefieldContextIndex = promptText.indexOf("OPTIONAL BATTLEFIELD CONTEXT");
-  const stackIndex = promptText.indexOf("ORDERED STACK CONTEXT (BOTTOM TO TOP)");
+  const scopeIndex = promptText.indexOf("SCOPE");
+  const questionIndex = promptText.indexOf("QUESTION");
   const passed =
-    instructionsIndex !== -1 &&
-    questionIndex !== -1 &&
+    mtgReferenceIndex !== -1 &&
     gameContextIndex !== -1 &&
-    battlefieldContextIndex !== -1 &&
-    stackIndex !== -1 &&
-    instructionsIndex < questionIndex &&
-    questionIndex < gameContextIndex &&
-    gameContextIndex < battlefieldContextIndex &&
-    battlefieldContextIndex < stackIndex;
+    scopeIndex !== -1 &&
+    questionIndex !== -1 &&
+    mtgReferenceIndex < gameContextIndex &&
+    gameContextIndex < scopeIndex &&
+    scopeIndex < questionIndex;
 
   return {
     id: "prompt-section-order",
     passed,
     details: passed
       ? "Prompt sections appear in deterministic order."
-      : "Expected section order INSTRUCTIONS -> QUESTION -> GENERAL GAME CONTEXT -> OPTIONAL BATTLEFIELD CONTEXT -> ORDERED STACK CONTEXT (BOTTOM TO TOP)."
+      : "Expected section order MTG REFERENCE -> GENERAL GAME CONTEXT -> SCOPE -> QUESTION."
   };
 }
 
 function checkGeneralGameContextSection(context: PromptContext, promptText: string): EvaluationCheckResult {
   const hasHeader = promptText.includes("GENERAL GAME CONTEXT");
+  const hasTurnPhase = promptText.includes(`turnPhase: ${context.gameContext.turnPhase}`);
   const hasPlayerCount = promptText.includes(`playerCount: ${context.gameContext.playerCount}`);
   const missingPlayerLines = context.gameContext.players.filter(
     (player) => !promptText.includes(`${player.label}: lifeTotal=${player.lifeTotal}`)
   );
-  const passed = hasHeader && hasPlayerCount && missingPlayerLines.length === 0;
+  const passed = hasHeader && hasTurnPhase && hasPlayerCount && missingPlayerLines.length === 0;
 
   return {
     id: "general-game-context-section",
     passed,
     details: passed
-      ? "General game context section is present with deterministic player lines."
-      : "Missing GENERAL GAME CONTEXT header and/or expected playerCount/player life-total lines."
+      ? "General game context section is present with deterministic turnPhase and player lines."
+      : "Missing GENERAL GAME CONTEXT header and/or expected turnPhase/playerCount/player life-total lines."
   };
 }
 
-function checkBattlefieldContextSection(context: PromptContext, promptText: string): EvaluationCheckResult {
-  const hasHeader = promptText.includes("OPTIONAL BATTLEFIELD CONTEXT");
-  const hasExpectedContent =
-    context.battlefieldContext.length === 0
-      ? promptText.includes("OPTIONAL BATTLEFIELD CONTEXT\n(none)")
-      : context.battlefieldContext.every((item, index) => {
-          const marker = `Battlefield ${index + 1}`;
-          return promptText.includes(marker) && promptText.includes(`name: ${item.name}`);
-        });
-  const passed = hasHeader && hasExpectedContent;
+function checkPopulatedZonesSections(context: PromptContext, promptText: string): EvaluationCheckResult {
+  const stackExpected = context.orderedStack.length > 0;
+  const stackPresent = promptText.includes("ZONE: STACK (BOTTOM TO TOP)");
+  const stackOk = stackExpected === stackPresent;
+
+  const zoneSectionsMissing = context.populatedZones
+    .filter((zone) => !promptText.includes(`ZONE: ${zone.zoneId.toUpperCase()}`))
+    .map((zone) => zone.zoneId);
+
+  const passed = stackOk && zoneSectionsMissing.length === 0;
 
   return {
-    id: "battlefield-context-section",
+    id: "populated-zones-section",
     passed,
     details: passed
-      ? "Optional battlefield section is present and matches full/skip scenario expectations."
-      : "Battlefield section header/content does not match expected full-context or skip-path behavior."
+      ? "Populated zone sections appear with correct headers."
+      : `Zone section issues: stack expected=${String(stackExpected)} present=${String(stackPresent)}; missing zones: ${zoneSectionsMissing.join(", ")}`
+  };
+}
+
+function checkScopeSentencePresent(promptText: string): EvaluationCheckResult {
+  const passed = promptText.includes("SCOPE\n");
+
+  return {
+    id: "scope-sentence-present",
+    passed,
+    details: passed
+      ? "Scope sentence section (SCOPE) is present."
+      : "Scope sentence section (SCOPE) is missing from the prompt."
   };
 }
 
@@ -187,8 +213,10 @@ export function evaluateScenario(
     checkStackOrder(fixture, context),
     checkFinalQuestionBehavior(fixture, context),
     checkRequiredGuardrails(promptText),
+    checkMtgReferencePresent(promptText),
     checkGeneralGameContextSection(context, promptText),
-    checkBattlefieldContextSection(context, promptText),
+    checkPopulatedZonesSections(context, promptText),
+    checkScopeSentencePresent(promptText),
     checkPromptSectionOrder(promptText),
     checkManaSpentOutput(context, promptText),
     checkPromptOmitsCardId(promptText)
