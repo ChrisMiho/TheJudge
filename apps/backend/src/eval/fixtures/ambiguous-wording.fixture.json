@@ -8,34 +8,40 @@
       "players": [
         { "label": "Player 1", "lifeTotal": 5 },
         { "label": "Player 2", "lifeTotal": 2 }
-      ]
-    },
-    "battlefieldContext": [
-      {
-        "name": "Narset, Parter of Veils",
-        "details": "Each opponent can't draw more than one card each turn.",
-        "targets": [{ "kind": "none" }]
+      ],
+      "turnPhase": "stack_resolving",
+      "selectedZones": ["battlefield", "stack"],
+      "zones": {
+        "battlefield": [
+          {
+            "cardId": "narset-parter-of-veils",
+            "name": "Narset, Parter of Veils",
+            "oracleText": "Each opponent can't draw more than one card each turn. Whenever you cast a noncreature spell, look at the top four cards of your library. You may reveal a noncreature, nonland card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+            "contextNotes": "Each opponent can't draw more than one card each turn.",
+            "targets": [{ "kind": "none" }]
+          }
+        ],
+        "stack": [
+          {
+            "cardId": "silence",
+            "name": "Silence",
+            "oracleText": "Your opponents can't cast spells this turn.",
+            "imageUrl": "",
+            "manaValue": 1,
+            "caster": "Player 1",
+            "targets": []
+          },
+          {
+            "cardId": "mystical-dispute",
+            "name": "Mystical Dispute",
+            "oracleText": "Counter target spell unless its controller pays 3.",
+            "imageUrl": "",
+            "manaValue": 3,
+            "caster": "Player 2",
+            "targets": [{ "kind": "card", "zone": "stack", "cardId": "silence", "cardName": "Silence" }]
+          }
+        ]
       }
-    ],
-    "stack": [
-      {
-        "cardId": "silence",
-        "name": "Silence",
-        "oracleText": "Your opponents can't cast spells this turn.",
-        "imageUrl": "",
-        "manaValue": 1,
-        "caster": "Player 1",
-        "targets": []
-      },
-      {
-        "cardId": "mystical-dispute",
-        "name": "Mystical Dispute",
-        "oracleText": "Counter target spell unless its controller pays 3.",
-        "imageUrl": "",
-        "manaValue": 3,
-        "caster": "Player 2",
-        "targets": [{ "kind": "stack", "targetCardId": "silence", "targetCardName": "Silence" }]
-      }
-    ]
+    }
   }
 }

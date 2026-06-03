@@ -98,39 +98,42 @@ describe("context evaluation harness", () => {
           players: [
             { label: "Player 1", lifeTotal: 20 },
             { label: "Player 2", lifeTotal: 20 }
-          ]
-        },
-        battlefieldContext: [],
-        stack: [
-          {
-            cardId: "bottom",
-            name: "Bottom Spell",
-            oracleText: "Bottom text",
-            imageUrl: "",
-            manaCost: "{U}",
-            manaValue: 1,
-            typeLine: "Instant",
-            colors: ["U"],
-            supertypes: [],
-            subtypes: [],
-            caster: "Player 1",
-            targets: []
-          },
-          {
-            cardId: "top",
-            name: "Top Spell",
-            oracleText: "Top text",
-            imageUrl: "",
-            manaCost: "{1}{R}",
-            manaValue: 2,
-            typeLine: "Instant",
-            colors: ["R"],
-            supertypes: [],
-            subtypes: [],
-            caster: "Player 2",
-            targets: [{ kind: "stack", targetCardId: "bottom", targetCardName: "Bottom Spell" }]
+          ],
+          turnPhase: "main_1",
+          selectedZones: ["stack"],
+          zones: {
+            stack: [
+              {
+                cardId: "bottom",
+                name: "Bottom Spell",
+                oracleText: "Bottom text",
+                imageUrl: "",
+                manaCost: "{U}",
+                manaValue: 1,
+                typeLine: "Instant",
+                colors: ["U"],
+                supertypes: [],
+                subtypes: [],
+                caster: "Player 1",
+                targets: []
+              },
+              {
+                cardId: "top",
+                name: "Top Spell",
+                oracleText: "Top text",
+                imageUrl: "",
+                manaCost: "{1}{R}",
+                manaValue: 2,
+                typeLine: "Instant",
+                colors: ["R"],
+                supertypes: [],
+                subtypes: [],
+                caster: "Player 2",
+                targets: [{ kind: "card", zone: "stack", cardId: "bottom", cardName: "Bottom Spell" }]
+              }
+            ]
           }
-        ]
+        }
       }
     };
 

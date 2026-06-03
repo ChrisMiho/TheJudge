@@ -74,7 +74,7 @@ export function createApp(options: AppOptions = {}) {
         correlationId,
         method: req.method,
         path: req.path,
-        stackSize: Array.isArray(req.body?.stack) ? req.body.stack.length : undefined,
+        stackSize: (req.body?.gameContext?.zones?.stack as unknown[] | undefined)?.length,
         requestPayload: isPayloadLoggingEnabled ? req.body : undefined
       });
 
@@ -89,7 +89,7 @@ export function createApp(options: AppOptions = {}) {
 
       logger.info("ask_ai.request_validation_succeeded", {
         correlationId,
-        stackSize: parsed.data.stack.length
+        stackSize: parsed.data.gameContext.zones?.stack?.length ?? 0
       });
 
       if (req.query.fail === "true") {
