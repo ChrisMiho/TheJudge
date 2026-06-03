@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   CANONICAL_ZONE_ORDER,
+  getPhaseZoneDefaults,
   mergeSelectedZonesOnPhaseChange,
   PHASE_ZONE_DEFAULTS
 } from "./phaseZoneDefaults";
@@ -38,8 +39,15 @@ describe("PHASE_ZONE_DEFAULTS", () => {
   });
 });
 
+describe("getPhaseZoneDefaults", () => {
+  it("returns the same array as PHASE_ZONE_DEFAULTS for a given phase", () => {
+    expect(getPhaseZoneDefaults("draw")).toEqual(PHASE_ZONE_DEFAULTS.draw);
+    expect(getPhaseZoneDefaults("combat")).toEqual(PHASE_ZONE_DEFAULTS.combat);
+  });
+});
+
 describe("mergeSelectedZonesOnPhaseChange", () => {
-  it("returns defaults when current selection is empty", () => {
+  it("returns defaults when current selection is empty (no prevPhase)", () => {
     const result = mergeSelectedZonesOnPhaseChange([], "draw");
     expect(result).toContain("battlefield");
     expect(result).toContain("library");
@@ -47,7 +55,6 @@ describe("mergeSelectedZonesOnPhaseChange", () => {
   });
 
   it("retains existing user-selected zones after phase change", () => {
-    // user had library selected from draw phase; change to combat does not remove it
     const result = mergeSelectedZonesOnPhaseChange(["library", "battlefield"], "combat");
     expect(result).toContain("library");
     expect(result).toContain("battlefield");
@@ -55,8 +62,6 @@ describe("mergeSelectedZonesOnPhaseChange", () => {
   });
 
   it("adds assumed zones for new phase on top of current selection", () => {
-    // draw defaults: battlefield, library, hand
-    // changing from nothing to draw should add those zones
     const result = mergeSelectedZonesOnPhaseChange([], "draw");
     for (const zone of PHASE_ZONE_DEFAULTS.draw) {
       expect(result).toContain(zone);
@@ -64,7 +69,6 @@ describe("mergeSelectedZonesOnPhaseChange", () => {
   });
 
   it("does not duplicate zones", () => {
-    // battlefield is in both current and main_1 defaults
     const result = mergeSelectedZonesOnPhaseChange(["battlefield", "hand"], "main_1");
     const battlefieldOccurrences = result.filter((z) => z === "battlefield").length;
     expect(battlefieldOccurrences).toBe(1);
@@ -80,10 +84,25 @@ describe("mergeSelectedZonesOnPhaseChange", () => {
     }
   });
 
-  it("phase change from draw to combat adds stack without removing library", () => {
+  it("phase change from draw to combat adds stack without removing library (no prevPhase)", () => {
     const afterDraw = mergeSelectedZonesOnPhaseChange([], "draw");
     const afterCombat = mergeSelectedZonesOnPhaseChange(afterDraw, "combat");
     expect(afterCombat).toContain("stack");
     expect(afterCombat).toContain("library");
+  });
+
+  it("delta merge: hand unchecked in draw stays unchecked when switching to combat with prevPhase", () => {
+    const afterDrawMinusHand: ReturnType<typeof mergeSelectedZonesOnPhaseChange> = ["stack", "battlefield", "library"];
+    const result = mergeSelectedZonesOnPhaseChange(afterDrawMinusHand, "combat", "draw");
+    expect(result).toContain("stack");
+    expect(result).toContain("battlefield");
+    expect(result).toContain("library");
+    expect(result).not.toContain("hand");
+  });
+
+  it("delta merge: adds no new zones when phases share identical defaults", () => {
+    const current: ReturnType<typeof mergeSelectedZonesOnPhaseChange> = ["stack", "battlefield", "hand", "graveyard"];
+    const result = mergeSelectedZonesOnPhaseChange(current, "main_2", "main_1");
+    expect(result).toEqual(current);
   });
 });

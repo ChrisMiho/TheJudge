@@ -1,9 +1,11 @@
 import { FormEvent, useEffect, useState } from "react";
 import { BattlefieldStep } from "./components/BattlefieldStep";
 import { StackBuilderStep } from "./components/StackBuilderStep";
+import { ZoneConfirmStep } from "./components/ZoneConfirmStep";
 import { logFrontendDebug } from "./lib/debugLogger";
 import { apiBaseUrl } from "./lib/env";
 import { NO_MATCH_COPY } from "./lib/search";
+import { mergeSelectedZonesOnPhaseChange } from "./lib/contextFlow";
 import { useAskAiSubmitOrchestration } from "./lib/useAskAiSubmitOrchestration";
 import { useAutocompleteKeyboard } from "./lib/useAutocompleteKeyboard";
 import { useAutocompleteSuggestions } from "./lib/useAutocompleteSuggestions";
@@ -23,7 +25,9 @@ import type {
   GameContext,
   PlayerLabel,
   StackItem,
-  StackTarget
+  StackTarget,
+  TurnPhase,
+  ZoneId
 } from "./types";
 
 const RETRY_COOLDOWN_SECONDS = 13;
@@ -43,7 +47,19 @@ const TARGET_KIND_OPTIONS: Array<{ value: TargetKind; label: string }> = [
   { value: "other", label: "Other target context" },
   { value: "none", label: "No specific target" }
 ];
-type FlowStep = "game-context" | "battlefield-context" | "stack-assembly" | "context-enrichment";
+const TURN_PHASE_OPTIONS: Array<{ value: TurnPhase; label: string }> = [
+  { value: "untap", label: "Untap" },
+  { value: "upkeep", label: "Upkeep" },
+  { value: "draw", label: "Draw" },
+  { value: "main_1", label: "Main 1" },
+  { value: "combat", label: "Combat" },
+  { value: "main_2", label: "Main 2" },
+  { value: "end_step", label: "End Step" },
+  { value: "cleanup", label: "Cleanup" },
+  { value: "stack_resolving", label: "Stack Resolving" }
+];
+
+type FlowStep = "game-context" | "zone-confirm" | "battlefield-context" | "stack-assembly" | "context-enrichment";
 
 function formatTarget(target: StackTarget): string {
   if (target.kind === "player") {
@@ -83,6 +99,10 @@ export default function App() {
     )
   );
   const [gameContext, setGameContext] = useState<GameContext | null>(null);
+  const [turnPhase, setTurnPhase] = useState<TurnPhase | undefined>(undefined);
+  const [confirmedPhase, setConfirmedPhase] = useState<TurnPhase | undefined>(undefined);
+  const [activePlayer, setActivePlayer] = useState<PlayerLabel>("Player 1");
+  const [selectedZones, setSelectedZones] = useState<ZoneId[]>([]);
   const [battlefieldContext, setBattlefieldContext] = useState<BattlefieldContextItem[]>([]);
   const [battlefieldSearchInput, setBattlefieldSearchInput] = useState("");
   const [selectedBattlefieldCard, setSelectedBattlefieldCard] = useState<CardMetadataItem | null>(null);
@@ -343,13 +363,29 @@ export default function App() {
 
     setGameContext({
       playerCount: activePlayers.length,
-      players
+      players,
+      turnPhase,
+      activePlayer
     });
     logFrontendDebug("game_context.confirmed", {
       playerCount: activePlayers.length
     });
-    setFlowStep("battlefield-context");
+
+    if (turnPhase) {
+      setSelectedZones((current) => mergeSelectedZonesOnPhaseChange(current, turnPhase, confirmedPhase));
+      setConfirmedPhase(turnPhase);
+    }
+
+    setFlowStep("zone-confirm");
     flashStatus("Game context saved.");
+  }
+
+  function confirmZoneSelection(): void {
+    setFlowStep("battlefield-context");
+  }
+
+  function backToGameContext(): void {
+    setFlowStep("game-context");
   }
 
   function addBattlefieldTarget(): void {
@@ -825,6 +861,52 @@ export default function App() {
               ))}
             </div>
           </div>
+          <div className="space-y-4 rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Turn phase</p>
+            <div className="flex flex-wrap gap-2">
+              {TURN_PHASE_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={turnPhase === option.value}
+                  onClick={() => setTurnPhase((current) => (current === option.value ? undefined : option.value))}
+                  className={[
+                    "rounded-lg border px-3 py-1.5 text-xs font-semibold transition",
+                    turnPhase === option.value
+                      ? "border-cyan-400/80 bg-cyan-500/20 text-cyan-200"
+                      : "border-slate-600 bg-slate-800/70 text-slate-300 hover:bg-slate-700/80"
+                  ].join(" ")}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            {turnPhase === "combat" && (
+              <p className="text-xs text-slate-400">
+                Specify combat sub-step in your question if it matters.
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-3 rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Active player (recommended)</p>
+            <label className="flex items-center gap-3 text-sm">
+              <span className="text-slate-300 w-28 shrink-0">Active player</span>
+              <select
+                aria-label="Active player"
+                value={activePlayer}
+                onChange={(event) => setActivePlayer(event.target.value as PlayerLabel)}
+                className="flex-1 rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm text-slate-100"
+              >
+                {activePlayers.map((player) => (
+                  <option key={player} value={player}>
+                    {player}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
           <button
             type="button"
             onClick={confirmGameContext}
@@ -839,6 +921,22 @@ export default function App() {
           )}
         </section>
       </main>
+    );
+  }
+
+  if (flowStep === "zone-confirm") {
+    return (
+      <ZoneConfirmStep
+        selectedZones={selectedZones}
+        onZoneToggle={(zone) =>
+          setSelectedZones((current) =>
+            current.includes(zone) ? current.filter((z) => z !== zone) : [...current, zone]
+          )
+        }
+        onBack={backToGameContext}
+        onContinue={confirmZoneSelection}
+        statusMessage={statusMessage}
+      />
     );
   }
 
