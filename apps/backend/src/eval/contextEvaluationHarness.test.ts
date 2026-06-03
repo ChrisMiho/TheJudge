@@ -159,7 +159,7 @@ describe("context evaluation harness", () => {
 
     expect(result.passed).toBe(false);
     expect(failedCheckIds).toEqual(
-      expect.arrayContaining(["stack-order-preserved", "required-guardrails-present", "llm-prompt-omits-cardid"])
+      expect.arrayContaining(["stack-order-preserved", "required-guardrails-present", "llm-prompt-omits-cardid", "mtg-reference-present", "scope-sentence-present"])
     );
   });
 });

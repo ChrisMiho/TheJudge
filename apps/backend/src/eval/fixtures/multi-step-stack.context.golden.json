@@ -15,15 +15,25 @@
         "label": "Player 3",
         "lifeTotal": 7
       }
+    ],
+    "turnPhase": "stack_resolving",
+    "selectedZones": [
+      "battlefield",
+      "stack"
     ]
   },
-  "battlefieldContext": [
+  "populatedZones": [
     {
-      "name": "Rule of Law",
-      "details": "Each player can cast one spell each turn.",
-      "targets": [
+      "zoneId": "battlefield",
+      "items": [
         {
-          "kind": "none"
+          "name": "Rule of Law",
+          "details": "Each player can cast one spell each turn.",
+          "targets": [
+            {
+              "kind": "none"
+            }
+          ]
         }
       ]
     }

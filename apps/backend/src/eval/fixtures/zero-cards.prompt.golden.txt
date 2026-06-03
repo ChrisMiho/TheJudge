@@ -30,42 +30,13 @@ Only zones with cards appear in the user payload. A separate scope note lists em
 Continuous effects and state-based actions use a layer system. When effects conflict, apply in order: (1) Copy effects, (2) Control-changing effects, (3) Text-changing effects, (4) Type-changing effects, (5) Color-changing effects, (6) Ability-adding/removing effects, (7) Power- and toughness-changing effects. Within a layer, timestamp and dependency rules apply. This assistant does not adjudicate officially; use layers as shared vocabulary when explaining interactions.
 
 GENERAL GAME CONTEXT
-turnPhase: stack_resolving
+turnPhase: upkeep
 playerCount: 2
-Player 1: lifeTotal=28
-Player 2: lifeTotal=11
-
-ZONE: STACK (BOTTOM TO TOP)
-Stack item 1 (bottom)
-card: Fireball
-manaCost: (none)
-manaValue: 1
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 1
-targets: player:Player 2
-manaSpent: 7
-contextNotes: (none)
-oracleText: This spell costs 1 more to cast for each target beyond the first.
-
-Stack item 2 (top)
-card: Negate
-manaCost: (none)
-manaValue: 2
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 2
-targets: stack:Fireball
-manaSpent: 2
-contextNotes: (none)
-oracleText: Counter target noncreature spell.
+Player 1: lifeTotal=20
+Player 2: lifeTotal=20
 
 SCOPE
-Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): battlefield, hand, graveyard, exile, library, command.
+Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): stack, battlefield, hand, graveyard, exile, library, command.
 
 QUESTION
-Show mana spent details for these stack entries.
+We just drew our opening hands. Who has priority?

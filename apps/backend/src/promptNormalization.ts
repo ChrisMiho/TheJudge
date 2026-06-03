@@ -1,4 +1,5 @@
-import type { PromptContext } from "./types.js";
+import { MTG_PROMPT_REFERENCE } from "./promptMtgReference.js";
+import type { PromptContext, ZoneId } from "./types.js";
 
 export const MAX_ORACLE_TEXT_CHARS = 480;
 export const MAX_CONTEXT_DETAILS_CHARS = 220;
@@ -25,6 +26,34 @@ export const SYSTEM_ROLE_PREAMBLE_LINES = [
   "Do not claim hidden state, private-zone information, or unseen effects.",
   "Do not present output as an official tournament ruling."
 ] as const;
+
+const CANONICAL_ZONE_ORDER: ZoneId[] = [
+  "stack",
+  "battlefield",
+  "hand",
+  "graveyard",
+  "exile",
+  "library",
+  "command"
+];
+
+const ZONE_SECTION_LABEL: Record<string, string> = {
+  battlefield: "ZONE: BATTLEFIELD",
+  hand: "ZONE: HAND",
+  graveyard: "ZONE: GRAVEYARD",
+  exile: "ZONE: EXILE",
+  library: "ZONE: LIBRARY",
+  command: "ZONE: COMMAND"
+};
+
+const ZONE_ITEM_LABEL: Record<string, string> = {
+  battlefield: "Battlefield",
+  hand: "Hand",
+  graveyard: "Graveyard",
+  exile: "Exile",
+  library: "Library",
+  command: "Command"
+};
 
 export function normalizeWhitespace(value: string): string {
   return value.replace(/\s+/g, " ").trim();
@@ -88,32 +117,84 @@ function formatTargets(targets: PromptContext["orderedStack"][number]["targets"]
     .join(" | ");
 }
 
-function formatBattlefieldContext(context: PromptContext): string {
-  if (context.battlefieldContext.length === 0) {
-    return "(none)";
-  }
-
-  return context.battlefieldContext
-    .map((item, index) =>
-      [
-        `Battlefield ${index + 1}`,
-        `name: ${item.name}`,
-        `details: ${item.details ? truncateOracleText(item.details, MAX_CONTEXT_DETAILS_CHARS) : "(none)"}`,
-        `targets: ${formatTargets(item.targets)}`
-      ].join("\n")
-    )
-    .join("\n\n");
-}
-
 function formatGameContext(context: PromptContext): string {
   const players = [...context.gameContext.players].sort(
     (left, right) => toPlayerLabelIndex(left.label) - toPlayerLabelIndex(right.label)
   );
 
   return [
+    `turnPhase: ${context.gameContext.turnPhase}`,
     `playerCount: ${context.gameContext.playerCount}`,
     ...players.map((player) => `${player.label}: lifeTotal=${player.lifeTotal}`)
   ].join("\n");
+}
+
+function formatStackSection(context: PromptContext): string {
+  if (context.orderedStack.length === 0) {
+    return "";
+  }
+
+  const cardsSection = context.orderedStack
+    .map(
+      (card, index) =>
+        [
+          `Stack item ${index + 1} (${card.stackRole})`,
+          `card: ${card.name}`,
+          `manaCost: ${card.manaCost || "(none)"}`,
+          `manaValue: ${card.manaValue}`,
+          `typeLine: ${card.typeLine || "(none)"}`,
+          `colors: ${formatList(card.colors)}`,
+          `supertypes: ${formatList(card.supertypes)}`,
+          `subtypes: ${formatList(card.subtypes)}`,
+          `caster: ${card.caster}`,
+          `targets: ${formatTargets(card.targets)}`,
+          `manaSpent: ${card.manaSpent ?? card.manaValue}`,
+          `contextNotes: ${
+            card.contextNotes ? truncatePromptLabel(card.contextNotes, MAX_CONTEXT_NOTES_CHARS) : "(none)"
+          }`,
+          `oracleText: ${card.oracleText}`
+        ].join("\n")
+    )
+    .join("\n\n");
+
+  return ["ZONE: STACK (BOTTOM TO TOP)", cardsSection].join("\n");
+}
+
+function formatNonStackZoneSections(context: PromptContext): string {
+  if (context.populatedZones.length === 0) {
+    return "";
+  }
+
+  return context.populatedZones
+    .map((zone) => {
+      const sectionHeader = ZONE_SECTION_LABEL[zone.zoneId] ?? `ZONE: ${zone.zoneId.toUpperCase()}`;
+      const itemLabel = ZONE_ITEM_LABEL[zone.zoneId] ?? zone.zoneId;
+      const itemsText = zone.items
+        .map((item, index) =>
+          [
+            `${itemLabel} ${index + 1}`,
+            `name: ${item.name}`,
+            `details: ${item.details ? truncateOracleText(item.details, MAX_CONTEXT_DETAILS_CHARS) : "(none)"}`,
+            `targets: ${formatTargets(item.targets)}`
+          ].join("\n")
+        )
+        .join("\n\n");
+      return [sectionHeader, itemsText].join("\n");
+    })
+    .join("\n\n");
+}
+
+/**
+ * Builds the scope sentence listing zones with no cards.
+ * Merges unselected zones and selected-but-empty zones in canonical order.
+ */
+export function buildZoneScopeSentence(_selectedZones: ZoneId[], populatedZoneIds: ZoneId[]): string {
+  const populatedSet = new Set<string>(populatedZoneIds);
+  const scopeZones = CANONICAL_ZONE_ORDER.filter((z) => !populatedSet.has(z));
+  if (scopeZones.length === 0) {
+    return "(all zones included)";
+  }
+  return `Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): ${scopeZones.join(", ")}.`;
 }
 
 export function estimatePromptChars(prompt: string): number {
@@ -146,30 +227,19 @@ export function getPromptDiagnostics(prompt: string): PromptDiagnostics {
 }
 
 export function buildPromptText(context: PromptContext): string {
-  const cardsSection = context.orderedStack
-    .map(
-      (card, index) =>
-        [
-          `Stack item ${index + 1} (${card.stackRole})`,
-          `card: ${card.name}`,
-          `manaCost: ${card.manaCost || "(none)"}`,
-          `manaValue: ${card.manaValue}`,
-          `typeLine: ${card.typeLine || "(none)"}`,
-          `colors: ${formatList(card.colors)}`,
-          `supertypes: ${formatList(card.supertypes)}`,
-          `subtypes: ${formatList(card.subtypes)}`,
-          `caster: ${card.caster}`,
-          `targets: ${formatTargets(card.targets)}`,
-          `manaSpent: ${card.manaSpent ?? card.manaValue}`,
-          `contextNotes: ${
-            card.contextNotes ? truncatePromptLabel(card.contextNotes, MAX_CONTEXT_NOTES_CHARS) : "(none)"
-          }`,
-          `oracleText: ${card.oracleText}`
-        ].join("\n")
-    )
-    .join("\n\n");
+  const populatedZoneIds: ZoneId[] = [
+    ...(context.orderedStack.length > 0 ? (["stack"] as ZoneId[]) : []),
+    ...context.populatedZones.map((z) => z.zoneId as ZoneId)
+  ];
 
-  const prompt = [
+  const scopeSentence = buildZoneScopeSentence(context.gameContext.selectedZones, populatedZoneIds);
+
+  const stackSection = formatStackSection(context);
+  const nonStackSections = formatNonStackZoneSections(context);
+
+  const zoneSections = [stackSection, nonStackSections].filter(Boolean).join("\n\n");
+
+  const sections: string[] = [
     "SYSTEM ROLE PREAMBLE",
     ...SYSTEM_ROLE_PREAMBLE_LINES,
     "",
@@ -178,18 +248,18 @@ export function buildPromptText(context: PromptContext): string {
     "- State uncertainty when context is incomplete.",
     "- Do not invent hidden state, targets, or board conditions.",
     "",
-    "QUESTION",
-    context.finalQuestion,
+    "MTG REFERENCE",
+    MTG_PROMPT_REFERENCE,
     "",
     "GENERAL GAME CONTEXT",
-    formatGameContext(context),
-    "",
-    "OPTIONAL BATTLEFIELD CONTEXT",
-    formatBattlefieldContext(context),
-    "",
-    "ORDERED STACK CONTEXT (BOTTOM TO TOP)",
-    cardsSection
-  ].join("\n");
+    formatGameContext(context)
+  ];
 
-  return prompt;
+  if (zoneSections.length > 0) {
+    sections.push("", zoneSections);
+  }
+
+  sections.push("", "SCOPE", scopeSentence, "", "QUESTION", context.finalQuestion);
+
+  return sections.join("\n");
 }

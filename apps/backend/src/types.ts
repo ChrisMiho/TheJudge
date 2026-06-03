@@ -34,7 +34,8 @@ export type PromptContextStackTarget =
   | { kind: "none" }
   | { kind: "other"; targetDescription: string };
 
-export type BattlefieldContextItem = {
+/** Generic per-card item for non-stack zones (battlefield, hand, graveyard, etc.). */
+export type PromptContextZoneItem = {
   name: string;
   details?: string;
   targets: PromptContextStackTarget[];
@@ -64,7 +65,13 @@ export type PromptContext = {
   gameContext: {
     playerCount: number;
     players: GamePlayerContext[];
+    turnPhase: TurnPhase;
+    selectedZones: ZoneId[];
   };
-  battlefieldContext: BattlefieldContextItem[];
+  /** Non-stack zones that have cards, in canonical zone order. */
+  populatedZones: {
+    zoneId: Exclude<ZoneId, "stack">;
+    items: PromptContextZoneItem[];
+  }[];
   orderedStack: PromptContextStackItem[];
 };

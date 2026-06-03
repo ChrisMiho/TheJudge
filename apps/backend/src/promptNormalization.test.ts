@@ -6,6 +6,7 @@ import {
   MAX_TARGET_LABEL_CHARS,
   SYSTEM_ROLE_PREAMBLE_LINES,
   buildPromptText,
+  buildZoneScopeSentence,
   getPromptDiagnostics,
   normalizeCardText,
   normalizeQuestion,
@@ -21,9 +22,11 @@ const baseContext: PromptContext = {
     players: [
       { label: "Player 1", lifeTotal: 20 },
       { label: "Player 2", lifeTotal: 17 }
-    ]
+    ],
+    turnPhase: "main_1",
+    selectedZones: ["battlefield", "stack"]
   },
-  battlefieldContext: [{ name: "Rhystic Study", details: "Tax effect", targets: [{ kind: "none" }] }],
+  populatedZones: [{ zoneId: "battlefield", items: [{ name: "Rhystic Study", details: "Tax effect", targets: [{ kind: "none" }] }] }],
   orderedStack: [
     {
       cardId: "card-1",
@@ -91,6 +94,34 @@ describe("prompt normalization", () => {
   });
 });
 
+describe("buildZoneScopeSentence", () => {
+  it("lists all zones when none are populated", () => {
+    const sentence = buildZoneScopeSentence(["stack"], []);
+    expect(sentence).toContain("stack, battlefield, hand, graveyard, exile, library, command");
+    expect(sentence).toContain("Zones with no cards or not included");
+  });
+
+  it("excludes populated zones from scope sentence", () => {
+    const sentence = buildZoneScopeSentence(["stack", "battlefield"], ["stack", "battlefield"]);
+    expect(sentence).toContain("hand, graveyard, exile, library, command");
+    expect(sentence).not.toContain("stack");
+    expect(sentence).not.toContain("battlefield");
+  });
+
+  it("uses canonical zone order in scope sentence", () => {
+    const sentence = buildZoneScopeSentence(["stack"], ["stack"]);
+    const colonIdx = sentence.indexOf(":");
+    const zonesPart = sentence.slice(colonIdx + 2);
+    expect(zonesPart.startsWith("battlefield")).toBe(true);
+  });
+
+  it("returns all-included string when every zone is populated", () => {
+    const allZones = ["stack", "battlefield", "hand", "graveyard", "exile", "library", "command"] as const;
+    const sentence = buildZoneScopeSentence([...allZones], [...allZones]);
+    expect(sentence).toBe("(all zones included)");
+  });
+});
+
 describe("buildPromptText", () => {
   it("builds deterministic prompt output with fixed section order", () => {
     const first = buildPromptText(baseContext);
@@ -98,13 +129,19 @@ describe("buildPromptText", () => {
 
     expect(first).toBe(second);
     expect(first.startsWith(`SYSTEM ROLE PREAMBLE\n${SYSTEM_ROLE_PREAMBLE_LINES[0]}`)).toBe(true);
-    expect(first.indexOf("SYSTEM ROLE PREAMBLE")).toBeLessThan(first.indexOf("INSTRUCTIONS"));
-    expect(first.indexOf("INSTRUCTIONS")).toBeLessThan(first.indexOf("QUESTION"));
-    expect(first.indexOf("QUESTION")).toBeLessThan(first.indexOf("GENERAL GAME CONTEXT"));
-    expect(first.indexOf("GENERAL GAME CONTEXT")).toBeLessThan(first.indexOf("OPTIONAL BATTLEFIELD CONTEXT"));
-    expect(first.indexOf("OPTIONAL BATTLEFIELD CONTEXT")).toBeLessThan(
-      first.indexOf("ORDERED STACK CONTEXT (BOTTOM TO TOP)")
-    );
+    expect(first.indexOf("SYSTEM ROLE PREAMBLE")).toBeLessThan(first.indexOf("MTG REFERENCE"));
+    expect(first.indexOf("MTG REFERENCE")).toBeLessThan(first.indexOf("GENERAL GAME CONTEXT"));
+    expect(first.indexOf("GENERAL GAME CONTEXT")).toBeLessThan(first.indexOf("ZONE: STACK (BOTTOM TO TOP)"));
+    expect(first.indexOf("ZONE: STACK (BOTTOM TO TOP)")).toBeLessThan(first.indexOf("ZONE: BATTLEFIELD"));
+    expect(first.indexOf("ZONE: BATTLEFIELD")).toBeLessThan(first.indexOf("SCOPE"));
+    expect(first.indexOf("SCOPE")).toBeLessThan(first.indexOf("QUESTION"));
+  });
+
+  it("includes MTG reference block with rules content", () => {
+    const prompt = buildPromptText(baseContext);
+    expect(prompt).toContain("MTG REFERENCE");
+    expect(prompt).toContain("layer system");
+    expect(prompt).toContain("turnPhase: main_1");
   });
 
   it("includes uncertainty and non-invention guardrails", () => {
@@ -127,14 +164,37 @@ describe("buildPromptText", () => {
     expect(prompt).not.toContain("cardId:");
   });
 
-  it("renders optional battlefield section explicitly when empty", () => {
+  it("places question at the end of the prompt", () => {
+    const prompt = buildPromptText(baseContext);
+    const questionIdx = prompt.indexOf("QUESTION");
+    const scopeIdx = prompt.indexOf("SCOPE");
+    expect(scopeIdx).toBeLessThan(questionIdx);
+    expect(prompt.lastIndexOf("QUESTION")).toBe(questionIdx);
+  });
+
+  it("renders ZONE: BATTLEFIELD section when battlefield is populated", () => {
+    const prompt = buildPromptText(baseContext);
+    expect(prompt).toContain("ZONE: BATTLEFIELD");
+    expect(prompt).toContain("name: Rhystic Study");
+  });
+
+  it("renders no zone sections when all zones are empty", () => {
     const prompt = buildPromptText({
       ...baseContext,
-      battlefieldContext: []
+      populatedZones: [],
+      orderedStack: []
     });
+    expect(prompt).not.toContain("ZONE:");
+    expect(prompt).toContain("SCOPE");
+  });
 
-    expect(prompt).toContain("OPTIONAL BATTLEFIELD CONTEXT");
-    expect(prompt).toContain("OPTIONAL BATTLEFIELD CONTEXT\n(none)");
+  it("includes scope sentence listing unpopulated zones", () => {
+    const prompt = buildPromptText(baseContext);
+    expect(prompt).toContain("SCOPE");
+    expect(prompt).toContain("Zones with no cards or not included");
+    expect(prompt).toContain("hand");
+    expect(prompt).not.toContain("stack,");
+    expect(prompt).not.toContain("battlefield,");
   });
 
   it("stays under configured prompt budget for normal payloads", () => {
@@ -147,7 +207,7 @@ describe("buildPromptText", () => {
       ...baseContext,
       orderedStack: [
         {
-          ...baseContext.orderedStack[0],
+          ...baseContext.orderedStack[0]!,
           targets: [
             {
               kind: "other",
