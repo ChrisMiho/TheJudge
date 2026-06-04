@@ -118,8 +118,27 @@ async function advanceToStackBuilder(user: ReturnType<typeof userEvent.setup>): 
   await user.click(screen.getByRole("button", { name: "Continue" }));
 }
 
+async function expandPlayerDetails(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(screen.getByRole("button", { name: "Show player details" }));
+}
+
+async function selectTurnPhase(user: ReturnType<typeof userEvent.setup>, phaseValue: string): Promise<void> {
+  await user.selectOptions(screen.getByLabelText("Turn phase"), phaseValue);
+}
+
 async function advancePastZoneConfirm(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-  await user.click(screen.getByRole("button", { name: "Continue" }));
+  const continueButton = screen.getByRole("button", { name: "Continue" });
+  if (continueButton.hasAttribute("disabled")) {
+    await user.click(screen.getByLabelText("Zone: Stack"));
+  }
+  await user.click(continueButton);
+}
+
+async function openEnrichmentListView(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  const viewAllButton = screen.queryByRole("button", { name: "View all cards" });
+  if (viewAllButton) {
+    await user.click(viewAllButton);
+  }
 }
 
 async function advanceToBattlefieldZoneCollection(user: ReturnType<typeof userEvent.setup>): Promise<void> {
@@ -132,8 +151,25 @@ async function advancePastZoneCollection(user: ReturnType<typeof userEvent.setup
   await user.click(screen.getByRole("button", { name: "Continue" }));
 }
 
+async function finishEnrichmentWizard(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  for (;;) {
+    const finishButton = screen.queryByRole("button", { name: "OK — finish enrichment" });
+    if (finishButton) {
+      await user.click(finishButton);
+      break;
+    }
+    const nextButton = screen.queryByRole("button", { name: "OK — next card" });
+    if (nextButton) {
+      await user.click(nextButton);
+      continue;
+    }
+    break;
+  }
+}
+
 async function advanceToContextEnrichmentFromZones(user: ReturnType<typeof userEvent.setup>): Promise<void> {
   await advancePastZoneCollection(user);
+  await openEnrichmentListView(user);
 }
 
 async function advanceToZoneCollectionWithZones(
@@ -211,7 +247,10 @@ async function addCardToStack(
 
 async function clickDecryptStack(user: ReturnType<typeof userEvent.setup>): Promise<void> {
   if (screen.queryByRole("heading", { name: "Add cards to zones" })) {
-    await advanceToContextEnrichmentFromZones(user);
+    await advancePastZoneCollection(user);
+  }
+  if (!screen.queryByRole("button", { name: "Decrypt Stack" })) {
+    await finishEnrichmentWizard(user);
   }
   await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
 }
@@ -280,6 +319,7 @@ describe("App MVP interaction flows", () => {
   it("defaults to 20 life for 2 players and 40 for 3+ players", async () => {
     const user = userEvent.setup();
     render(<App />);
+    await expandPlayerDetails(user);
 
     expect(screen.getByLabelText("Player 1 life total")).toHaveValue("20");
     expect(screen.getByLabelText("Player 2 life total")).toHaveValue("20");
@@ -478,10 +518,12 @@ describe("App MVP interaction flows", () => {
     await advanceToContextEnrichment(user);
 
     expect(screen.getByRole("heading", { name: "Context enrichment" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Decrypt Stack" })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("How does this resolve?")).toBeInTheDocument();
     expect(screen.getByLabelText("Target kind for Opt")).toBeInTheDocument();
     expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
+
+    await finishEnrichmentWizard(user);
+    expect(screen.getByRole("button", { name: "Decrypt Stack" })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("How does this resolve?")).toBeInTheDocument();
   });
 
   it("uses first-add then subsequent-add button labels", async () => {
@@ -900,6 +942,7 @@ describe("App MVP interaction flows", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Add player" }));
+    await expandPlayerDetails(user);
     await user.clear(screen.getByLabelText("Player 1 life total"));
     await user.type(screen.getByLabelText("Player 1 life total"), "38");
     await user.clear(screen.getByLabelText("Player 2 life total"));
@@ -916,6 +959,7 @@ describe("App MVP interaction flows", () => {
     await advanceToContextEnrichmentFromZones(user);
 
     vi.useFakeTimers();
+    await finishEnrichmentWizard(user);
     fireEvent.click(screen.getByRole("button", { name: "Decrypt Stack" }));
     await act(async () => {
       await Promise.resolve();
@@ -1015,6 +1059,7 @@ describe("App MVP interaction flows", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Add player" }));
+    await expandPlayerDetails(user);
     await user.clear(screen.getByLabelText("Player 1 life total"));
     await user.type(screen.getByLabelText("Player 1 life total"), "35");
     await user.clear(screen.getByLabelText("Player 2 life total"));
@@ -1176,7 +1221,7 @@ describe("Slice-04: game setup + zone confirmation", () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByRole("button", { name: "Draw" }));
+    await selectTurnPhase(user, "draw");
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
 
     expect(screen.getByLabelText("Zone: Battlefield")).toBeChecked();
@@ -1189,7 +1234,7 @@ describe("Slice-04: game setup + zone confirmation", () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByRole("button", { name: "Draw" }));
+    await selectTurnPhase(user, "draw");
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
 
     expect(screen.getByLabelText("Zone: Hand")).toBeChecked();
@@ -1197,8 +1242,7 @@ describe("Slice-04: game setup + zone confirmation", () => {
     expect(screen.getByLabelText("Zone: Hand")).not.toBeChecked();
 
     await user.click(screen.getByRole("button", { name: "Back" }));
-    await user.click(screen.getByRole("button", { name: "Draw" }));
-    await user.click(screen.getByRole("button", { name: "Combat" }));
+    await selectTurnPhase(user, "combat");
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
 
     expect(screen.getByLabelText("Zone: Stack")).toBeChecked();
@@ -1209,6 +1253,7 @@ describe("Slice-04: game setup + zone confirmation", () => {
     const user = userEvent.setup();
     render(<App />);
 
+    await expandPlayerDetails(user);
     await user.clear(screen.getByLabelText("Player 1 life total"));
     await user.type(screen.getByLabelText("Player 1 life total"), "33");
     await user.clear(screen.getByLabelText("Player 2 life total"));
@@ -1221,17 +1266,15 @@ describe("Slice-04: game setup + zone confirmation", () => {
     expect(screen.getByLabelText("Player 2 life total")).toHaveValue("27");
   });
 
-  it("zone confirm allows continuing with empty zone selection", async () => {
+  it("blocks continuing from zone confirm when no zones are selected", async () => {
     const user = userEvent.setup();
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
 
     const continueButton = screen.getByRole("button", { name: "Continue" });
-    expect(continueButton).not.toBeDisabled();
-    await user.click(continueButton);
-
-    expect(screen.getByRole("heading", { name: "Add cards to zones" })).toBeInTheDocument();
+    expect(continueButton).toBeDisabled();
+    expect(screen.getByText(/Select at least one zone/i)).toBeInTheDocument();
   });
 
   it("shows active player select on game context step", () => {
@@ -1241,9 +1284,10 @@ describe("Slice-04: game setup + zone confirmation", () => {
 
   it("shows all turn phase options on game context step", () => {
     render(<App />);
-    expect(screen.getByRole("button", { name: "Draw" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Combat" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Pre Combat Main Phase" })).toBeInTheDocument();
+    const turnPhaseSelect = screen.getByLabelText("Turn phase");
+    expect(within(turnPhaseSelect).getByRole("option", { name: "Draw" })).toBeInTheDocument();
+    expect(within(turnPhaseSelect).getByRole("option", { name: "Combat" })).toBeInTheDocument();
+    expect(within(turnPhaseSelect).getByRole("option", { name: "Pre Combat Main Phase" })).toBeInTheDocument();
   });
 
   it("shows combat sub-step hint when Combat phase is selected", async () => {
@@ -1251,20 +1295,19 @@ describe("Slice-04: game setup + zone confirmation", () => {
     render(<App />);
 
     expect(screen.queryByText(/Specify combat sub-step/)).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Combat" }));
+    await selectTurnPhase(user, "combat");
     expect(screen.getByText(/Specify combat sub-step/)).toBeInTheDocument();
   });
 
-  it("toggles turn phase off when the same phase button is clicked again", async () => {
+  it("clears turn phase when None is selected", async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByRole("button", { name: "Draw" }));
-    const drawButton = screen.getByRole("button", { name: "Draw" });
-    expect(drawButton).toHaveAttribute("aria-pressed", "true");
+    await selectTurnPhase(user, "draw");
+    expect(screen.getByLabelText("Turn phase")).toHaveValue("draw");
 
-    await user.click(drawButton);
-    expect(screen.getByRole("button", { name: "Draw" })).toHaveAttribute("aria-pressed", "false");
+    await user.selectOptions(screen.getByLabelText("Turn phase"), "");
+    expect(screen.getByLabelText("Turn phase")).toHaveValue("");
   });
 });
 
@@ -1312,6 +1355,7 @@ describe("Slice-05: zone collection UI", () => {
     await addCardToActiveZone(user, "lig", "Lightning Bolt");
 
     await advancePastZoneCollection(user);
+    await openEnrichmentListView(user);
     expect(screen.getByRole("heading", { name: "Context enrichment" })).toBeInTheDocument();
     expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
     expect(screen.getByLabelText("Caster for Lightning Bolt")).toBeInTheDocument();
@@ -1327,11 +1371,13 @@ describe("Slice-05: zone collection UI", () => {
     await addCardToActiveZone(user, "opt", "Opt");
     await user.click(screen.getByRole("button", { name: "Back" }));
     await user.click(screen.getByLabelText("Zone: Hand"));
+    await user.click(screen.getByLabelText("Zone: Stack"));
     await advancePastZoneConfirm(user);
     await user.click(screen.getByRole("button", { name: "Back" }));
     await user.click(screen.getByLabelText("Zone: Hand"));
     await advancePastZoneConfirm(user);
 
+    await selectZoneTab(user, "Hand");
     expect(screen.getByText("1. Opt")).toBeInTheDocument();
   });
 });

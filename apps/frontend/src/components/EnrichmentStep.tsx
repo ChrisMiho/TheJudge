@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { buildEnrichmentQueue, CANONICAL_ZONE_ORDER } from "../lib/contextFlow";
 import { ZONE_LABELS } from "../lib/zoneLabels";
 import type { ContextTarget, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
@@ -9,6 +9,8 @@ const DEFAULT_QUESTION_FALLBACK = "Resolve the stack";
 type ContextCardEntry = { zone: ZoneId; cardId: string; cardName: string };
 
 type PendingTargetKind = ContextTarget["kind"];
+
+type EnrichmentViewMode = "wizard" | "list";
 
 type EnrichmentStepProps = {
   gameContext: GameContext | null;
@@ -63,6 +65,10 @@ export function EnrichmentStep({
   const [pendingPlayerByKey, setPendingPlayerByKey] = useState<Record<string, PlayerLabel>>({});
   const [pendingCardIdByKey, setPendingCardIdByKey] = useState<Record<string, string>>({});
   const [pendingOtherByKey, setPendingOtherByKey] = useState<Record<string, string>>({});
+  const [viewMode, setViewMode] = useState<EnrichmentViewMode>("wizard");
+  const [wizardIndex, setWizardIndex] = useState(0);
+  const [wizardFinished, setWizardFinished] = useState(false);
+  const [cardAnimKey, setCardAnimKey] = useState(0);
 
   const enrichmentQueue = useMemo(
     () => (gameContext ? buildEnrichmentQueue({ ...gameContext, zones }) : []),
@@ -80,6 +86,17 @@ export function EnrichmentStep({
   }, [zones]);
 
   const totalCards = enrichmentQueue.length;
+  const currentWizardEntry = enrichmentQueue[wizardIndex];
+
+  useEffect(() => {
+    if (wizardIndex >= totalCards && totalCards > 0) {
+      setWizardIndex(Math.max(totalCards - 1, 0));
+    }
+    if (totalCards === 0) {
+      setWizardFinished(false);
+      setWizardIndex(0);
+    }
+  }, [totalCards, wizardIndex]);
 
   function cardKey(zone: ZoneId, cardId: string): string {
     return `${zone}:${cardId}`;
@@ -136,10 +153,20 @@ export function EnrichmentStep({
     });
   }
 
-  function renderCardRow(zone: ZoneId, card: ZoneCardItem): JSX.Element {
+  function handleWizardNext(): void {
+    if (wizardIndex < totalCards - 1) {
+      setWizardIndex((current) => current + 1);
+      setCardAnimKey((current) => current + 1);
+      return;
+    }
+    setWizardFinished(true);
+  }
+
+  function renderCardRow(zone: ZoneId, card: ZoneCardItem, options?: { showRemove?: boolean }): JSX.Element {
     const key = cardKey(zone, card.cardId);
     const pendingKind = getPendingKind(key);
     const isStackZone = zone === "stack";
+    const showRemove = options?.showRemove ?? true;
 
     return (
       <li
@@ -149,26 +176,27 @@ export function EnrichmentStep({
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="font-semibold text-slate-100">{card.name}</p>
+            <p className="text-xs text-slate-400">{ZONE_LABELS[zone]}</p>
             {card.oracleText && (
               <p className="mt-0.5 text-xs text-slate-400 line-clamp-2">{card.oracleText}</p>
             )}
           </div>
-          <button
-            type="button"
-            aria-label={`Remove ${card.name}`}
-            onClick={() => removeCardFromZone(zone, card.cardId)}
-            className="shrink-0 rounded-lg border border-slate-600 bg-slate-800/70 px-2 py-1 text-xs font-semibold text-slate-300 transition hover:bg-slate-700/80"
-          >
-            Remove
-          </button>
+          {showRemove && (
+            <button
+              type="button"
+              aria-label={`Remove ${card.name}`}
+              onClick={() => removeCardFromZone(zone, card.cardId)}
+              className="shrink-0 rounded-lg border border-slate-600 bg-slate-800/70 px-2 py-1 text-xs font-semibold text-slate-300 transition hover:bg-slate-700/80"
+            >
+              Remove
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {isStackZone && (
             <label className="flex flex-col gap-1 text-xs">
-              <span className="font-semibold uppercase tracking-[0.08em] text-slate-300">
-                Caster
-              </span>
+              <span className="font-semibold uppercase tracking-[0.08em] text-slate-300">Caster</span>
               <select
                 aria-label={`Caster for ${card.name}`}
                 value={card.caster ?? activePlayers[0] ?? "Player 1"}
@@ -188,9 +216,7 @@ export function EnrichmentStep({
 
           {isStackZone && (
             <label className="flex flex-col gap-1 text-xs">
-              <span className="font-semibold uppercase tracking-[0.08em] text-slate-300">
-                Mana spent
-              </span>
+              <span className="font-semibold uppercase tracking-[0.08em] text-slate-300">Mana spent</span>
               <input
                 aria-label={`Mana spent for ${card.name}`}
                 type="text"
@@ -207,9 +233,7 @@ export function EnrichmentStep({
         </div>
 
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
-            Target / context
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Target / context</p>
           <div className="flex flex-wrap gap-2">
             <select
               aria-label={`Target kind for ${card.name}`}
@@ -252,9 +276,7 @@ export function EnrichmentStep({
               <select
                 aria-label={`Card target for ${card.name}`}
                 value={pendingCardIdByKey[key] ?? ""}
-                onChange={(e) =>
-                  setPendingCardIdByKey((c) => ({ ...c, [key]: e.target.value }))
-                }
+                onChange={(e) => setPendingCardIdByKey((c) => ({ ...c, [key]: e.target.value }))}
                 className="rounded-lg border border-slate-600 bg-slate-800 px-2 py-1.5 text-sm text-slate-100"
               >
                 <option value="">Select card…</option>
@@ -271,9 +293,7 @@ export function EnrichmentStep({
                 aria-label={`Other target for ${card.name}`}
                 type="text"
                 value={pendingOtherByKey[key] ?? ""}
-                onChange={(e) =>
-                  setPendingOtherByKey((c) => ({ ...c, [key]: e.target.value }))
-                }
+                onChange={(e) => setPendingOtherByKey((c) => ({ ...c, [key]: e.target.value }))}
                 placeholder="Describe target or context"
                 className="flex-1 rounded-lg border border-slate-600 bg-slate-800 px-2 py-1.5 text-sm text-slate-100"
               />
@@ -312,9 +332,7 @@ export function EnrichmentStep({
         </div>
 
         <label className="flex flex-col gap-1 text-xs">
-          <span className="font-semibold uppercase tracking-[0.08em] text-slate-300">
-            Context notes
-          </span>
+          <span className="font-semibold uppercase tracking-[0.08em] text-slate-300">Context notes</span>
           <textarea
             aria-label={`Context notes for ${card.name}`}
             value={card.contextNotes ?? ""}
@@ -334,6 +352,8 @@ export function EnrichmentStep({
 
   const hasAnswer = Boolean(answer);
   const retryLabel = retryCountdown > 0 ? `Retry in ${retryCountdown}s` : "Retry";
+  const showWizard = totalCards > 0 && viewMode === "wizard" && !wizardFinished;
+  const showQuestionForm = !hasAnswer && (totalCards === 0 || viewMode === "list" || wizardFinished);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
@@ -345,12 +365,46 @@ export function EnrichmentStep({
           <p className="text-sm text-slate-300">Stack Assistant</p>
         </header>
 
-        <h2 className="text-2xl font-semibold text-sky-300">Context enrichment</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-2xl font-semibold text-sky-300">Context enrichment</h2>
+          {totalCards > 0 && !hasAnswer && (
+            <button
+              type="button"
+              onClick={() => {
+                if (viewMode === "wizard") {
+                  setViewMode("list");
+                } else {
+                  setViewMode("wizard");
+                  setWizardFinished(false);
+                }
+              }}
+              className="rounded-lg border border-slate-600 bg-slate-800/70 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-slate-700/80"
+            >
+              {viewMode === "wizard" ? "View all cards" : "Card-by-card"}
+            </button>
+          )}
+        </div>
 
         {totalCards === 0 ? (
           <p className="rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4 text-sm text-slate-300">
             No cards added — ask a timing or rules question below.
           </p>
+        ) : showWizard && currentWizardEntry ? (
+          <div className="space-y-3">
+            <p className="text-sm text-slate-400">
+              Card {wizardIndex + 1} of {totalCards}
+            </p>
+            <ul key={cardAnimKey} className="enrichment-card-enter">
+              {renderCardRow(currentWizardEntry.zone, currentWizardEntry.card, { showRemove: false })}
+            </ul>
+            <button
+              type="button"
+              onClick={handleWizardNext}
+              className="w-full rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              {wizardIndex < totalCards - 1 ? "OK — next card" : "OK — finish enrichment"}
+            </button>
+          </div>
         ) : (
           <div className="space-y-6">
             {CANONICAL_ZONE_ORDER.filter((zone) => (zones[zone]?.length ?? 0) > 0).map((zone) => (
@@ -372,36 +426,38 @@ export function EnrichmentStep({
             <p className="mt-2 whitespace-pre-wrap text-sm text-slate-200">{answer}</p>
           </div>
         ) : (
-          <form onSubmit={(e) => void onDecryptStack(e)} className="space-y-3">
-            <label className="flex flex-col gap-1">
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
-                Optional question
-              </span>
-              <textarea
-                placeholder="How does this resolve?"
-                value={question}
-                onChange={(e) => onQuestionChange(e.target.value.slice(0, MAX_QUESTION_CHARS))}
-                rows={2}
-                maxLength={MAX_QUESTION_CHARS}
-                className="resize-none rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
-              />
-              <span className="text-right text-xs text-slate-500">
-                {question.length}/{MAX_QUESTION_CHARS}
-              </span>
-            </label>
-            {!question.trim() && (
-              <p className="text-xs text-slate-400">
-                No question? Uses fallback: &ldquo;{DEFAULT_QUESTION_FALLBACK}&rdquo;
-              </p>
-            )}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isSubmitting ? "Decrypting…" : "Decrypt Stack"}
-            </button>
-          </form>
+          showQuestionForm && (
+            <form onSubmit={(e) => void onDecryptStack(e)} className="space-y-3">
+              <label className="flex flex-col gap-1">
+                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
+                  Optional question
+                </span>
+                <textarea
+                  placeholder="How does this resolve?"
+                  value={question}
+                  onChange={(e) => onQuestionChange(e.target.value.slice(0, MAX_QUESTION_CHARS))}
+                  rows={2}
+                  maxLength={MAX_QUESTION_CHARS}
+                  className="resize-none rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+                />
+                <span className="text-right text-xs text-slate-500">
+                  {question.length}/{MAX_QUESTION_CHARS}
+                </span>
+              </label>
+              {!question.trim() && (
+                <p className="text-xs text-slate-400">
+                  No question? Uses fallback: &ldquo;{DEFAULT_QUESTION_FALLBACK}&rdquo;
+                </p>
+              )}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isSubmitting ? "Decrypting…" : "Decrypt Stack"}
+              </button>
+            </form>
+          )
         )}
 
         {error && (

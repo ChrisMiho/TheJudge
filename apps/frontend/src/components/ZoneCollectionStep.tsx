@@ -10,7 +10,7 @@ import {
 } from "../lib/zoneCards";
 import { useAutocompleteKeyboard } from "../lib/useAutocompleteKeyboard";
 import { useAutocompleteSuggestions } from "../lib/useAutocompleteSuggestions";
-import type { CardMetadataItem, ZoneCardItem, ZoneId } from "../types";
+import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { ZoneCardPicker } from "./ZoneCardPicker";
 
 type ZoneCollectionStepProps = {
@@ -19,6 +19,8 @@ type ZoneCollectionStepProps = {
   onZonesChange: (zones: Partial<Record<ZoneId, ZoneCardItem[]>>) => void;
   cardMetadata: CardMetadataItem[];
   isMetadataLoading: boolean;
+  activePlayer: PlayerLabel;
+  activePlayers: PlayerLabel[];
   onBack: () => void;
   onContinue: () => void;
   onFlashStatus: (message: string) => void;
@@ -31,6 +33,8 @@ export function ZoneCollectionStep({
   onZonesChange,
   cardMetadata,
   isMetadataLoading,
+  activePlayer,
+  activePlayers,
   onBack,
   onContinue,
   onFlashStatus,
@@ -43,6 +47,7 @@ export function ZoneCollectionStep({
   const [activeZoneIndex, setActiveZoneIndex] = useState(0);
   const [searchInput, setSearchInput] = useState("");
   const [selectedCard, setSelectedCard] = useState<CardMetadataItem | null>(null);
+  const [pendingOwner, setPendingOwner] = useState<PlayerLabel>(activePlayer);
 
   const activeZone = orderedSelectedZones[activeZoneIndex];
   const activeZoneCards = activeZone ? (zones[activeZone] ?? []) : [];
@@ -56,7 +61,8 @@ export function ZoneCollectionStep({
   useEffect(() => {
     setSearchInput("");
     setSelectedCard(null);
-  }, [activeZone]);
+    setPendingOwner(activePlayer);
+  }, [activeZone, activePlayer]);
 
   const suggestions = useAutocompleteSuggestions({
     cards: cardMetadata,
@@ -82,6 +88,9 @@ export function ZoneCollectionStep({
     }
 
     const nextCard = buildZoneCardFromMetadata(selectedCard);
+    if (activeZone !== "stack") {
+      nextCard.owner = pendingOwner;
+    }
     const validation = validateZoneCardAdd(activeZoneCards, nextCard, activeZone);
     if (!validation.ok) {
       onFlashStatus(validation.message);
@@ -153,6 +162,9 @@ export function ZoneCollectionStep({
               <ZoneCardPicker
                 zoneId={activeZone}
                 cards={activeZoneCards}
+                activePlayers={activePlayers}
+                pendingOwner={pendingOwner}
+                onPendingOwnerChange={setPendingOwner}
                 searchInput={searchInput}
                 onSearchInputChange={setSearchInput}
                 onSearchKeyDown={keyboard.handleKeyDown}

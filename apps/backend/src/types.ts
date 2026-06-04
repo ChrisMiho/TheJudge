@@ -37,6 +37,7 @@ export type PromptContextStackTarget =
 /** Generic per-card item for non-stack zones (battlefield, hand, graveyard, etc.). */
 export type PromptContextZoneItem = {
   name: string;
+  owner?: PlayerLabel;
   details?: string;
   targets: PromptContextStackTarget[];
 };

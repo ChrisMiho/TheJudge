@@ -125,7 +125,13 @@ function formatGameContext(context: PromptContext): string {
   return [
     `turnPhase: ${context.gameContext.turnPhase}`,
     `playerCount: ${context.gameContext.playerCount}`,
-    ...players.map((player) => `${player.label}: lifeTotal=${player.lifeTotal}`)
+    ...players.map((player) => {
+      const display =
+        player.displayName && player.displayName !== player.label
+          ? ` displayName=${player.displayName}`
+          : "";
+      return `${player.label}: lifeTotal=${player.lifeTotal}${display}`;
+    })
   ].join("\n");
 }
 
@@ -174,6 +180,7 @@ function formatNonStackZoneSections(context: PromptContext): string {
           [
             `${itemLabel} ${index + 1}`,
             `name: ${item.name}`,
+            `owner: ${item.owner ?? "(none)"}`,
             `details: ${item.details ? truncateOracleText(item.details, MAX_CONTEXT_DETAILS_CHARS) : "(none)"}`,
             `targets: ${formatTargets(item.targets)}`
           ].join("\n")

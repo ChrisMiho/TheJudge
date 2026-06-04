@@ -109,6 +109,7 @@ export const zoneCardItemSchema = z.object({
   supertypes: z.array(boundedText(30)).max(8).optional().default([]),
   subtypes: z.array(boundedText(40)).max(12).optional().default([]),
   caster: playerLabelSchema.optional(),
+  owner: playerLabelSchema.optional(),
   targets: z.array(contextTargetSchema).max(8).optional().default([]),
   contextNotes: optionalBoundedText(280),
   manaSpent: z.number().min(0).max(99).optional()
@@ -128,7 +129,8 @@ const zonesSchema = z
 
 export const gamePlayerSchema = z.object({
   label: playerLabelSchema,
-  lifeTotal: z.number().int().min(-99).max(999)
+  lifeTotal: z.number().int().min(-99).max(999),
+  displayName: optionalBoundedText(40)
 }).strict();
 
 export const gameContextSchema = z

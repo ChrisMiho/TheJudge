@@ -85,8 +85,10 @@ function normalizeLifeTotal(value: number): number {
 function normalizeZoneItem(card: import("./types.js").ZoneCardItem): PromptContextZoneItem | null {
   const name = normalizeWhitespace(card.name);
   if (name.length === 0) return null;
+  const owner = card.owner;
   return {
     name,
+    owner: owner && normalizeWhitespace(owner).length > 0 ? owner : undefined,
     details: normalizeOptionalText(card.contextNotes) || undefined,
     targets: normalizeTargets(card.targets)
   };
@@ -100,7 +102,8 @@ export function buildPromptContext(payload: AskAiRequest): PromptContext {
     playerCount: gameCtx.playerCount,
     players: gameCtx.players.map((player) => ({
       label: player.label,
-      lifeTotal: normalizeLifeTotal(player.lifeTotal)
+      lifeTotal: normalizeLifeTotal(player.lifeTotal),
+      displayName: normalizeOptionalText(player.displayName) || undefined
     })),
     turnPhase: gameCtx.turnPhase,
     selectedZones: gameCtx.selectedZones

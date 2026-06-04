@@ -82,6 +82,7 @@ oracleText: You may choose new targets for target spell or ability.
 ZONE: BATTLEFIELD
 Battlefield 1
 name: Rule of Law
+owner: (none)
 details: Each player can cast one spell each turn.
 targets: none:does-not-target
 

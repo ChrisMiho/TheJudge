@@ -12,7 +12,7 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 ## Current Product Phase
 
 - MVP1: closed
-- UX Wave 2: in progress — backend contract migrated to zone-based `AskAiRequest` (slice 01 complete; see `PRD/work/ux-wave-2/`)
+- UX Wave 2: in progress — zone-based flow with user-flow refinements (compact game context, zone owner, enrichment wizard)
 - Baseline: flow-validation assistant with mock-default backend and optional OpenAI provider mode (`DEC-020` in `PRD/sections/decisions.md`)
 - Product source of truth: `PRD/sections/` (start with `decisions.md`)
 

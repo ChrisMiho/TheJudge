@@ -48,6 +48,7 @@ export type CardMetadataItem = {
 export type GamePlayerContext = {
   label: PlayerLabel;
   lifeTotal: number;
+  displayName?: string;
 };
 
 export type BattlefieldContextItem = {
@@ -110,6 +111,7 @@ export type ZoneCardItem = {
   supertypes?: string[];
   subtypes?: string[];
   caster?: PlayerLabel;
+  owner?: PlayerLabel;
   targets?: ContextTarget[];
   contextNotes?: string;
   manaSpent?: number;

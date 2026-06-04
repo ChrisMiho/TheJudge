@@ -69,6 +69,7 @@ oracleText: Copy target instant or sorcery spell, then return it to its owner's 
 ZONE: BATTLEFIELD
 Battlefield 1
 name: Rhystic Study
+owner: (none)
 details: Tax trigger may alter available mana decisions.
 targets: none:does-not-target
 

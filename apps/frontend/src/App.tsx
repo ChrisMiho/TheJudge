@@ -4,7 +4,7 @@ import { ZoneCollectionStep } from "./components/ZoneCollectionStep";
 import { ZoneConfirmStep } from "./components/ZoneConfirmStep";
 import { logFrontendDebug } from "./lib/debugLogger";
 import { apiBaseUrl } from "./lib/env";
-import { buildAskAiRequest, mergeSelectedZonesOnPhaseChange } from "./lib/contextFlow";
+import { buildAskAiRequest, canAdvance, mergeSelectedZonesOnPhaseChange } from "./lib/contextFlow";
 import { useAskAiSubmitOrchestration } from "./lib/useAskAiSubmitOrchestration";
 import type {
   CardMetadataItem,
@@ -62,6 +62,13 @@ export default function App() {
   const [question, setQuestion] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [emptyStateImageFailed, setEmptyStateImageFailed] = useState(false);
+  const [playersDetailsExpanded, setPlayersDetailsExpanded] = useState(false);
+  const [displayNamesByPlayer, setDisplayNamesByPlayer] = useState<Record<PlayerLabel, string>>(() =>
+    PLAYER_OPTIONS.reduce<Record<PlayerLabel, string>>(
+      (accumulator, player) => ({ ...accumulator, [player]: player }),
+      {} as Record<PlayerLabel, string>
+    )
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -151,12 +158,22 @@ export default function App() {
     setActivePlayerCount(nextCount);
   }
 
+  function updateDisplayName(player: PlayerLabel, value: string): void {
+    setDisplayNamesByPlayer((current) => ({
+      ...current,
+      [player]: value
+    }));
+  }
+
   function buildPlayers(): GamePlayerContext[] {
     return activePlayers.map((player) => {
       const parsed = Number(lifeTotalsByPlayer[player]);
+      const trimmedName = displayNamesByPlayer[player]?.trim() ?? "";
+      const displayName = trimmedName.length > 0 && trimmedName !== player ? trimmedName : undefined;
       return {
         label: player,
-        lifeTotal: Number.isFinite(parsed) ? parsed : NaN
+        lifeTotal: Number.isFinite(parsed) ? parsed : NaN,
+        displayName
       };
     });
   }
@@ -267,74 +284,100 @@ export default function App() {
             )}
           </div>
           <h2 className="text-2xl font-semibold text-sky-300">Game context</h2>
-          <div className="space-y-4 rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Players in game</p>
-                <p className="mt-1 text-xs text-slate-400">2 players start at 20 life. 3+ players default to 40 life.</p>
-              </div>
-              <span className="rounded-full border border-slate-600 bg-slate-800/90 px-3 py-1 text-xs font-semibold text-slate-200">
-                {activePlayerCount} / {MAX_PLAYERS}
-              </span>
-            </div>
+          <div className="space-y-3 rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Players in game</p>
+            <p className="text-xs text-slate-400">2 players start at 20 life. 3+ players default to 40 life.</p>
 
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={addPlayer}
-                disabled={activePlayerCount >= MAX_PLAYERS}
-                className="rounded-xl border border-cyan-500/50 bg-cyan-500/10 px-3 py-2 text-sm font-semibold text-cyan-200 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Add player
-              </button>
-              <button
-                type="button"
-                onClick={removePlayer}
-                disabled={activePlayerCount <= MIN_PLAYERS}
-                className="rounded-xl border border-slate-500 bg-slate-800/70 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:bg-slate-700/80 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Remove last player
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              {activePlayers.map((player) => (
-                <label
-                  key={player}
-                  className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-slate-700/80 bg-slate-950/40 px-3 py-2 text-sm"
-                >
-                  <span className="font-medium text-slate-100">{player} life total</span>
-                  <input
-                    aria-label={`${player} life total`}
-                    value={lifeTotalsByPlayer[player]}
-                    onChange={(event) => updateLifeTotal(player, event.target.value)}
-                    inputMode="numeric"
-                    className="w-28 rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-right font-semibold text-slate-100"
-                  />
-                </label>
-              ))}
-            </div>
-          </div>
-          <div className="space-y-4 rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Turn phase</p>
-            <div className="flex flex-wrap gap-2">
-              {TURN_PHASE_OPTIONS.map((option) => (
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-700/80 bg-slate-950/40 px-3 py-2">
+              <div className="flex items-center gap-2">
                 <button
-                  key={option.value}
                   type="button"
-                  aria-pressed={turnPhase === option.value}
-                  onClick={() => setTurnPhase((current) => (current === option.value ? undefined : option.value))}
-                  className={[
-                    "rounded-lg border px-3 py-1.5 text-xs font-semibold transition",
-                    turnPhase === option.value
-                      ? "border-cyan-400/80 bg-cyan-500/20 text-cyan-200"
-                      : "border-slate-600 bg-slate-800/70 text-slate-300 hover:bg-slate-700/80"
-                  ].join(" ")}
+                  aria-label={playersDetailsExpanded ? "Hide player details" : "Show player details"}
+                  aria-expanded={playersDetailsExpanded}
+                  onClick={() => setPlayersDetailsExpanded((current) => !current)}
+                  className="rounded-lg border border-slate-600 bg-slate-800/70 px-2 py-1 text-sm text-slate-200 transition hover:bg-slate-700/80"
                 >
-                  {option.label}
+                  {playersDetailsExpanded ? "▾" : "▸"}
                 </button>
-              ))}
+                <span className="text-sm font-semibold text-slate-100">
+                  {activePlayerCount} {activePlayerCount === 1 ? "player" : "players"}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  aria-label="Add player"
+                  onClick={addPlayer}
+                  disabled={activePlayerCount >= MAX_PLAYERS}
+                  className="rounded-lg border border-cyan-500/50 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  +
+                </button>
+                <button
+                  type="button"
+                  aria-label="Remove last player"
+                  onClick={removePlayer}
+                  disabled={activePlayerCount <= MIN_PLAYERS}
+                  className="rounded-lg border border-slate-500 bg-slate-800/70 px-3 py-1.5 text-xs font-semibold text-slate-100 transition hover:bg-slate-700/80 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  −
+                </button>
+              </div>
             </div>
+
+            {playersDetailsExpanded && (
+              <div className="space-y-2">
+                {activePlayers.map((player) => (
+                  <div
+                    key={player}
+                    className="space-y-2 rounded-xl border border-slate-700/80 bg-slate-950/40 px-3 py-2 text-sm"
+                  >
+                    <label className="flex flex-col gap-1">
+                      <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
+                        {player} name
+                      </span>
+                      <input
+                        aria-label={`${player} display name`}
+                        value={displayNamesByPlayer[player]}
+                        onChange={(event) => updateDisplayName(player, event.target.value)}
+                        className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-slate-100"
+                      />
+                    </label>
+                    <label className="grid grid-cols-[1fr_auto] items-center gap-3">
+                      <span className="font-medium text-slate-100">Life total</span>
+                      <input
+                        aria-label={`${player} life total`}
+                        value={lifeTotalsByPlayer[player]}
+                        onChange={(event) => updateLifeTotal(player, event.target.value)}
+                        inputMode="numeric"
+                        className="w-28 rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-right font-semibold text-slate-100"
+                      />
+                    </label>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="space-y-3 rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4">
+            <label className="flex flex-col gap-2 text-sm">
+              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Turn phase</span>
+              <select
+                aria-label="Turn phase"
+                value={turnPhase ?? ""}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setTurnPhase(value.length > 0 ? (value as TurnPhase) : undefined);
+                }}
+                className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+              >
+                <option value="">None</option>
+                {TURN_PHASE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
             {turnPhase === "combat" && (
               <p className="text-xs text-slate-400">
                 Specify combat sub-step in your question if it matters.
@@ -379,9 +422,14 @@ export default function App() {
   }
 
   if (flowStep === "zone-confirm") {
+    const canContinueZones = canAdvance("zone-confirm", {
+      gameContext: { selectedZones }
+    });
+
     return (
       <ZoneConfirmStep
         selectedZones={selectedZones}
+        canContinue={canContinueZones}
         onZoneToggle={(zone) =>
           setSelectedZones((current) =>
             current.includes(zone) ? current.filter((z) => z !== zone) : [...current, zone]
@@ -402,6 +450,8 @@ export default function App() {
         onZonesChange={setZoneCardsByZone}
         cardMetadata={cardMetadata}
         isMetadataLoading={isMetadataLoading}
+        activePlayer={activePlayer}
+        activePlayers={activePlayers}
         onBack={() => setFlowStep("zone-confirm")}
         onContinue={finishZoneCollection}
         onFlashStatus={flashStatus}
