@@ -97,6 +97,15 @@ Read in this order:
 - Prefer narrow edits to one file at a time.
 - Preserve stable IDs once assigned.
 
+## Active work packages (`PRD/work/`)
+
+| Slug | Status | Entry |
+|---|---|---|
+| `user-flow-gap-fixes` | planned | [README](work/user-flow-gap-fixes/README.md) → [GAMEPLAN](work/user-flow-gap-fixes/GAMEPLAN.md) → slices A–E |
+| `user-flow-refinements` | complete (2026-06-04) | [README](work/user-flow-refinements/README.md) |
+
+Agents implementing gap fixes must use **`user-flow-gap-fixes`** as the canonical plan; do not use Cursor-only `.cursor/plans/` copies.
+
 ## Current Editorial Notes
 - MVP1 is closed; flow-validation framing and temporary simplifications remain documented only where still active in `sections/decisions.md`.
 - Duplicate-card blocking is temporary and should not be treated as long-term product truth.
