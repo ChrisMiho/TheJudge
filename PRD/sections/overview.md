@@ -5,9 +5,9 @@ MTG Stack Assistant is a mobile-first web application for Magic: The Gathering p
 
 Its purpose is to help users:
 - search for cards quickly
-- capture relevant game context before stack resolution
-- add selected cards to a visual stack
-- ask a contextual question about the stack
+- capture relevant game context before asking a rules question
+- add selected cards to relevant zones, including the stack when applicable
+- ask a contextual question about the game state or stack
 - receive a plain-text AI explanation of the likely interaction
 
 ## Product Positioning
@@ -27,10 +27,10 @@ MVP1 is designed to validate one core hypothesis:
 **Players will use a lightweight stack assistant if it is fast to use during real gameplay.**
 
 MVP1 intentionally keeps context structured but lightweight:
-- pre-stack game context (player count and life totals)
-- optional battlefield context with explicit skip path
-- selected cards with ordered stack positioning
-- per-entry context fields (caster, typed targets, optional notes, optional mana spent with fallback)
+- game context (player count, life totals, active player when known, and turn phase)
+- selected zone checklist with phase-driven defaults
+- selected cards grouped by zone, with ordered stack positioning when stack is populated
+- per-card context fields (caster, context targets, optional notes, optional mana spent with fallback for stack cards)
 - optional user question
 - no full legality validation
 
@@ -46,4 +46,4 @@ MVP1 intentionally keeps context structured but lightweight:
 - single main backend endpoint
 - plain-text response for MVP1
 - static local metadata file
-- mock-first implementation before real Bedrock integration
+- mock-first implementation before live provider integration
