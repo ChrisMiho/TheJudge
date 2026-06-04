@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { createCorrelationId, logFrontendDebug } from "./debugLogger";
-import type { AskAiError, AskAiRequest, AskAiResponse } from "../types";
+import type { ZoneAskAiPayload } from "./contextFlow";
+import type { AskAiError, AskAiResponse } from "../types";
 
 type SubmitSource = "decrypt" | "retry";
 
 type SubmitAttemptOptions = {
   source: SubmitSource;
-  payload: AskAiRequest;
+  payload: ZoneAskAiPayload;
   stackSize: number;
   finalQuestion: string;
   usedFallbackQuestion: boolean;
@@ -49,7 +50,7 @@ export function useAskAiSubmitOrchestration({
     }, 1000);
   }
 
-  async function submitRequest(payload: AskAiRequest, correlationId: string): Promise<void> {
+  async function submitRequest(payload: ZoneAskAiPayload, correlationId: string): Promise<void> {
     setIsSubmitting(true);
     setError(null);
 
