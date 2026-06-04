@@ -1,60 +1,45 @@
 # user-flows.md
 
 ### FLOW-001
-- Name: Build stack and ask a question
-- Trigger: User opens the app to understand a stack interaction
+- Name: Capture game context, zones, and ask a question
+- Trigger: User opens the app to understand an MTG rules or interaction question
 - Preconditions:
   - app is loaded
   - local metadata is available
 - Main Flow:
-  1. User sees home-screen game context capture.
-  2. User sets player count and life totals for included player labels.
-  3. User confirms game context to proceed.
-  4. App presents optional battlefield-context step.
-  5. User either adds relevant battlefield context entries or clicks skip.
-  6. App shows stack-building screen with card search input.
-  7. Before the user types, the search box says **Type to begin**.
-  8. User types at least 3 characters into the search box.
-  9. App shows autocomplete suggestions from local metadata.
-  10. User taps a suggestion.
-  11. App shows a card preview.
-  12. User optionally sets stack-entry context (caster/targets/notes/mana spent).
-  13. User clicks the add button.
-  14. If `stack.length === 0`, the add button text is **Begin stackening!**
-  15. If `stack.length > 0`, the add button text is **Add to Stack**
-  16. App shows a brief success message such as **Stacked**
-  17. Card is appended to the stack array and becomes the top of the stack.
-  18. User repeats until the stack is complete.
-  19. User optionally enters a question.
-  20. User clicks **Decrypt Stack**
-  21. Frontend sends ordered stack, final question, and captured context to backend.
-  22. Backend builds the prompt and returns a plain-text answer.
-  23. Frontend displays the answer.
+  1. Game setup: user sets player count, fixed player life totals, active player when known, and turn phase.
+  2. Zone confirmation: app preselects likely zones from the turn phase, and user adjusts the checklist.
+  3. Per-zone collection: for each selected zone, user may add card identities from local search; stack cards are ordered bottom-to-top.
+  4. Enrichment: app shows one ordered list of all collected cards, and user may add caster, targets, notes, and mana spent where relevant.
+  5. Submit: user enters an optional question, clicks **Decrypt Stack**, and the frontend sends `question` plus `gameContext` to the backend.
+  6. Backend builds the prompt and returns a plain-text answer.
+  7. Frontend displays the answer.
 - Edge Cases:
   - if game-context values are missing/invalid, continue action is blocked
-  - if battlefield context is not relevant, user can explicitly skip step
+  - if a selected zone has no cards, omit that zone key from `gameContext.zones`
+  - if no zones contain cards, submit still succeeds with player, phase, selected-zone, and question context
   - if no matches are found, show **No matching card found**
   - if the question is blank after trimming, use the fallback question **Resolve the stack**
-  - if the stack is empty, do not send the request
   - if the stack has 10 cards, block additional adds
+  - if the user changes phase after selecting zones, newly assumed zones are added and existing cards/enrichment are preserved
 - Notes:
-  - this is the primary MVP1 flow with staged context capture
+  - this is the primary UX Wave 2 flow with staged context capture
 
 ### FLOW-002
-- Name: Inspect and remove cards from stack
-- Trigger: User taps the stack icon
+- Name: Inspect and remove cards from selected zones
+- Trigger: User reviews cards while collecting zone context
 - Preconditions:
-  - at least one card is in the stack
+  - at least one selected zone has a card
 - Main Flow:
-  1. User taps the stack icon.
-  2. App opens a box, panel, or modal.
-  3. App lists cards from bottom to top.
+  1. User opens or views a selected zone's card list.
+  2. App lists cards for that zone.
+  3. Stack-zone cards are shown from bottom to top.
   4. Each row shows card name, optional small thumbnail, and remove button.
   5. User removes one or more cards.
-  6. Stack count updates.
+  6. Zone card count updates.
 - Edge Cases:
   - if a thumbnail does not load, continue to show the row without it
-  - if the last card is removed, the stack becomes empty
+  - if the last card is removed from a zone, that zone remains selected but is omitted from the request payload
 - Notes:
   - manual reorder is out of scope for MVP1
 
@@ -62,11 +47,11 @@
 - Name: Handle failed AI request
 - Trigger: Backend request fails
 - Preconditions:
-  - user has submitted a valid stack
+  - user has submitted a valid `gameContext` and question
 - Main Flow:
   1. Backend returns an error payload.
   2. Frontend shows the message **Miho is working on it**.
-  3. Frontend keeps the existing stack and question intact.
+  3. Frontend keeps the existing game context, zone cards, enrichment, and question intact.
   4. Frontend keeps the previous successful response visible until a new one succeeds.
   5. Frontend shows a retry button.
   6. Retry button is placed on a 13-second cooldown.
@@ -76,7 +61,7 @@
   - this flow is important for live table usability
 
 ### FLOW-004
-- Name: Block duplicate card add in MVP1
+- Name: Block duplicate stack card add in MVP1
 - Trigger: User attempts to add a card already present in the stack
 - Preconditions:
   - the card is already in the stack

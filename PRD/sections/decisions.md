@@ -232,3 +232,86 @@
 - Notes:
   - supersedes Bedrock-specific Phase B wording in `sections/integrations-and-data.md` where they conflict
   - route handlers stay contract-focused; provider SDK wiring lives only in provider/factory composition
+
+### DEC-021
+- Decision: `GameContext` is the parent model for prompt-facing game state.
+- Status: confirmed
+- Context: UX Wave 2 replaces separate top-level stack and battlefield payloads with a single structured game-state container.
+- Impact:
+  - `POST /api/ask-ai` accepts `question` and `gameContext` only
+  - selected zones, turn phase, players, active player, and populated zone cards live under `gameContext`
+  - frontend, backend validation, prompt context, and eval fixtures use the same parent model
+- Related requirements:
+  - REQ-012
+  - REQ-015
+  - REQ-018
+  - REQ-019
+- Notes:
+  - supersedes DEC-003 and DEC-019 where those decisions describe top-level `stack` or `battlefieldContext`
+
+### DEC-022
+- Decision: Turn phase uses the v1 enum `untap`, `upkeep`, `draw`, `main_1`, `combat`, `main_2`, `end_step`, `cleanup`, and `stack_resolving`.
+- Status: confirmed
+- Context: The app needs enough timing context for prompt quality without modeling every Magic sub-step.
+- Impact:
+  - combat is one combined phase
+  - combat sub-step detail belongs in the user's question or notes, not structured fields
+  - `stack_resolving` is a distinct timing value for questions asked while the stack is resolving
+- Related requirements:
+  - REQ-015
+- Notes:
+
+### DEC-023
+- Decision: Zone confirmation is user-controlled and seeded by phase defaults.
+- Status: confirmed
+- Context: The app should help users include likely relevant zones without treating phase defaults as rules-engine truth.
+- Impact:
+  - game setup is followed by a zone checklist
+  - phase defaults preselect likely zones
+  - user changes are preserved across navigation
+  - changing phase adds newly assumed zones without wiping cards or enrichment
+- Related requirements:
+  - REQ-018
+  - REQ-020
+- Notes:
+
+### DEC-024
+- Decision: Zero cards are allowed, and empty zones are omitted from the request payload.
+- Status: confirmed
+- Context: Timing, priority, and layer questions may need player and phase context without any specific cards.
+- Impact:
+  - submit does not require a stack or any other populated zone
+  - `gameContext.zones` contains only zone keys with one or more cards
+  - selected-but-empty zones are represented by `selectedZones` and the prompt scope sentence, not by empty arrays
+- Related requirements:
+  - REQ-012
+  - REQ-018
+  - REQ-019
+- Notes:
+  - the validation contract rejects empty zone arrays; omit the key instead
+
+### DEC-025
+- Decision: Every AI prompt includes the MTG reference block and a merged zone scope sentence.
+- Status: confirmed
+- Context: Prompt quality depends on stable Magic terminology and explicit boundaries around missing or intentionally empty zones.
+- Impact:
+  - prompt text starts from the static Magic reference block
+  - one scope sentence covers both unselected zones and selected zones with no cards
+  - the model is instructed to ignore out-of-scope zones unless the user's question says otherwise
+- Related requirements:
+  - REQ-013
+  - REQ-019
+- Notes:
+
+### DEC-026
+- Decision: `ContextTarget` replaces `StackTarget`.
+- Status: confirmed
+- Context: Targets can now refer to cards from any selected/populated zone, players, no target, or freeform external targets.
+- Impact:
+  - target kinds are `player`, `card`, `none`, and `other`
+  - card targets include `zone`, `cardId`, and `cardName`
+  - stack-specific target serialization is internal prompt-context normalization, not the public API model
+- Related requirements:
+  - REQ-017
+  - REQ-021
+- Notes:

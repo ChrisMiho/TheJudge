@@ -18,9 +18,9 @@
 
 ### NFR-003
 - Title: Secure backend-only model access
-- Description: Bedrock credentials must never be exposed in the client.
+- Description: AI provider credentials must never be exposed in the client.
 - Constraints:
-  - frontend must not call Bedrock directly
+  - frontend must not call AI providers directly
   - backend owns model invocation
 
 ### NFR-004
@@ -49,7 +49,7 @@
 - Title: Failure resilience
 - Description: Errors should not destroy the user’s in-progress work.
 - Constraints:
-  - preserve stack on failure
+  - preserve game context, selected zones, cards, and enrichment on failure
   - preserve question on failure
   - preserve previous successful response until replaced
 

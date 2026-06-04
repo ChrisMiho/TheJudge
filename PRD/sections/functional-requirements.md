@@ -148,7 +148,7 @@
 ### REQ-011
 - Title: Question input
 - Priority: high
-- Description: The app must provide a freeform question field submitted with the stack.
+- Description: The app must provide a freeform question field submitted with the game context.
 - Acceptance Criteria:
   - user can enter up to 300 characters
   - question is trimmed before submit
@@ -163,11 +163,13 @@
 ### REQ-012
 - Title: Decrypt Stack submit action
 - Priority: high
-- Description: The app must submit ordered stack data, final question, and captured contextual inputs to the backend through the main action button.
+- Description: The app must submit the final question and captured `gameContext` to the backend through the main action button.
 - Acceptance Criteria:
   - action button label is **Decrypt Stack**
-  - clicking the button sends ordered stack, final question, and structured context payload fields
-  - if stack is empty, request is not sent
+  - clicking the button sends `question` and `gameContext`
+  - no top-level `stack` or `battlefieldContext` is sent
+  - submit is allowed when no zone has cards
+  - blank trimmed question uses fallback **Resolve the stack** in request/prompt logic
 - Constraints:
   - one main product-facing endpoint in MVP1
 - Dependencies:
@@ -193,7 +195,7 @@
 - Description: The product must preserve user state on AI failure and provide a controlled retry path.
 - Acceptance Criteria:
   - failed request shows **Miho is working on it**
-  - stack is preserved
+  - game context, selected zones, cards, and enrichment are preserved
   - question is preserved
   - previous successful response remains visible
   - retry button is shown
@@ -205,17 +207,20 @@
 - Notes:
 
 ### REQ-015
-- Title: Pre-stack game context capture
+- Title: Game setup context capture
 - Priority: high
-- Description: Before stack construction begins, the app must collect core game context including player count and life totals.
+- Description: Before zone collection begins, the app must collect core game context including player count, life totals, active player when known, and turn phase.
 - Acceptance Criteria:
   - user can set number of players using fixed labels (`Player 1` ... `Player N`)
   - user can enter life totals for each included player label
-  - user must confirm context before proceeding to stack construction
+  - user can set active player from included player labels
+  - user must select one turn phase from `untap`, `upkeep`, `draw`, `main_1`, `combat`, `main_2`, `end_step`, `cleanup`, and `stack_resolving`
+  - user must confirm context before proceeding to zone confirmation
   - invalid or missing required values block progression
 - Constraints:
   - fixed player labels only (no custom names)
   - support range is constrained by current player-label model
+  - combat is a combined phase; combat sub-step details belong in the question or notes
 - Dependencies:
   - frontend staged flow
   - prompt context contract
@@ -223,36 +228,107 @@
   - this context is prompt-facing, not a rules-engine source of truth
 
 ### REQ-016
-- Title: Optional battlefield context step with skip
+- Title: Zone confirmation with phase defaults
 - Priority: medium
-- Description: After general game context capture, the app must provide an optional battlefield-context step that users can fill or skip.
+- Description: After game setup, the app must provide a zone checklist preselected from the chosen turn phase.
 - Acceptance Criteria:
-  - battlefield step appears after pre-stack game context confirmation
-  - user can add/remove relevant battlefield context entries
-  - user can explicitly skip when no relevant battlefield context exists
-  - continue/skip both lead to stack construction flow
+  - zone confirmation appears after game setup
+  - app preselects likely zones from the turn phase
+  - user can toggle any v1 zone on or off
+  - selected zones are stored in `gameContext.selectedZones`
+  - continue leads to per-zone collection
 - Constraints:
-  - do not force placeholder battlefield entries
+  - phase defaults are UX hints, not legality or board-state rules
   - keep interaction lightweight for live gameplay
 - Dependencies:
-  - pre-stack game context step
+  - game setup step
   - prompt context contract
 - Notes:
-  - battlefield context is intended for stack-relevant board effects, not full board simulation
+  - v1 zones are `stack`, `battlefield`, `hand`, `graveyard`, `exile`, `library`, and `command`
 
 ### REQ-017
-- Title: Per-stack mana-spent context with fallback
+- Title: Per-card enrichment with fallback
 - Priority: medium
-- Description: Each stack entry may include mana spent to cast; when omitted, prompt-facing mana spent defaults to the entry's mana value.
+- Description: Each collected card may include prompt-facing enrichment such as caster, targets, notes, and mana spent where relevant.
 - Acceptance Criteria:
-  - user can optionally enter mana-spent context per stack entry
+  - app builds one ordered enrichment list across all populated zones
+  - user can optionally enter context notes per card
+  - user can optionally set targets using `ContextTarget`
+  - user can optionally enter mana-spent context for stack entries
   - backend prompt context always emits deterministic mana-spent value per stack entry
   - omitted user input falls back to `manaValue`
   - prompt/mock output includes mana-spent context in stable formatting
 - Constraints:
   - do not implement comprehensive mana-source legality checks
 - Dependencies:
-  - stack-entry data model
+  - zone card data model
   - backend prompt context builder
 - Notes:
   - X-spell clarity is a primary motivation for this field
+
+### REQ-018
+- Title: Per-zone card collection
+- Priority: high
+- Description: The app must let users add card identities to each selected zone while allowing every zone to remain empty.
+- Acceptance Criteria:
+  - user can search local metadata and add cards to selected zones
+  - before input, the search box says **Type to begin**
+  - suggestions begin at 3 or more typed characters
+  - no-match state shows **No matching card found**
+  - stack-zone cards preserve bottom-to-top append order
+  - selected zones with zero cards are allowed
+- Constraints:
+  - card collection captures identity and metadata first; detailed context is collected during enrichment
+- Dependencies:
+  - local card metadata
+  - zone confirmation
+- Notes:
+
+### REQ-019
+- Title: Ask AI request payload shape
+- Priority: high
+- Description: The backend request contract must use `AskAiRequest = { question, gameContext }`.
+- Acceptance Criteria:
+  - request validation accepts `question` and `gameContext`
+  - request validation rejects top-level `stack` and `battlefieldContext`
+  - `gameContext.zones` includes only non-empty zone arrays
+  - empty zone arrays are rejected; clients omit the zone key instead
+  - zero-card submissions are valid when game context and selected zones are valid
+- Constraints:
+  - `POST /api/ask-ai` route remains unchanged
+- Dependencies:
+  - frontend request builder
+  - backend validation
+- Notes:
+
+### REQ-020
+- Title: Navigation preserves context
+- Priority: medium
+- Description: Back and continue navigation must preserve user-entered game, zone, card, and enrichment context.
+- Acceptance Criteria:
+  - every setup/collection/enrichment step has Back and Continue where applicable
+  - moving back from zone collection to zone confirmation does not delete cards
+  - changing turn phase adds newly assumed zones to the checklist
+  - changing turn phase does not wipe existing cards or enrichment
+- Constraints:
+  - avoid hidden destructive state changes during live gameplay entry
+- Dependencies:
+  - frontend staged flow
+- Notes:
+
+### REQ-021
+- Title: Context targets
+- Priority: medium
+- Description: Prompt-facing card enrichment must use `ContextTarget` for player, card, none, and freeform targets.
+- Acceptance Criteria:
+  - player targets include `targetPlayer`
+  - card targets include `zone`, `cardId`, and `cardName`
+  - none targets use `{ kind: "none" }`
+  - other targets include `targetDescription`
+  - target picker can reference players and collected zone cards
+- Constraints:
+  - public API must not expose legacy `StackTarget`
+- Dependencies:
+  - enrichment UI
+  - backend prompt context normalization
+- Notes:

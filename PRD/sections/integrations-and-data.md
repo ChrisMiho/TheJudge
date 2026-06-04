@@ -12,13 +12,27 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - Backend: Node.js + TypeScript
 - API Framework: Express or Fastify
 - Validation: request validation layer
-- AI Provider: Amazon Bedrock
-- Bedrock Access: AWS SDK
+- AI Provider: backend provider boundary (`ASK_AI_PROVIDER=mock` default, `ASK_AI_PROVIDER=openai` for live answers)
+- Provider Access: provider SDKs are backend-only
 - Storage: none for MVP1
 
 ## Data Model
 
-### StackItem
+### TurnPhase
+- `"untap" | "upkeep" | "draw" | "main_1" | "combat" | "main_2" | "end_step" | "cleanup" | "stack_resolving"`
+- Combat is intentionally combined; combat sub-step details belong in the question or notes.
+
+### ZoneId
+- `"stack" | "battlefield" | "hand" | "graveyard" | "exile" | "library" | "command"`
+
+### ContextTarget
+- one of:
+  - `{ kind: "player"; targetPlayer: PlayerLabel }`
+  - `{ kind: "card"; zone: ZoneId; cardId: string; cardName: string }`
+  - `{ kind: "none" }`
+  - `{ kind: "other"; targetDescription: string }`
+
+### ZoneCardItem
 - `cardId: string`
 - `name: string`
 - `oracleText: string`
@@ -29,29 +43,23 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - `colors: string[]`
 - `supertypes: string[]`
 - `subtypes: string[]`
-- `caster: "Player 1" | "Player 2" | "Player 3" | "Player 4"`
-- `targets: StackTarget[]` where each target is one of:
-  - `{ kind: "stack", targetCardId: string, targetCardName: string }`
-  - `{ kind: "battlefield", targetPermanent: string }`
-  - `{ kind: "player", targetPlayer: "Player 1" | "Player 2" | "Player 3" | "Player 4" }`
-  - `{ kind: "none" }`
+- `caster?: PlayerLabel`
+- `targets?: ContextTarget[]`
 - `contextNotes?: string`
 - `manaSpent?: number` (prompt-facing fallback uses `manaValue` when omitted)
 
 ### GameContext
 - `playerCount: number`
-- `players: Array<{ label: "Player 1" | "Player 2" | "Player 3" | "Player 4"; lifeTotal: number }>`
-
-### BattlefieldContextItem
-- `name: string`
-- `details?: string`
-- `targets?: StackTarget[]`
+- `players: Array<{ label: PlayerLabel; lifeTotal: number }>`
+- `turnPhase: TurnPhase`
+- `activePlayer?: PlayerLabel`
+- `selectedZones: ZoneId[]`
+- `zones?: Partial<Record<ZoneId, ZoneCardItem[]>>`
+- `zones` includes only non-empty zone arrays. Empty selected zones are represented by `selectedZones`, not by empty arrays.
 
 ### AskAiRequest
 - `question: string`
-- `stack: StackItem[]`
 - `gameContext: GameContext`
-- `battlefieldContext: BattlefieldContextItem[]`
 
 ### AskAiResponse
 - `answer: string`
@@ -78,20 +86,22 @@ Response header:
 
 - `X-Correlation-Id` is set on ask-ai responses when correlation id resolution is used
 
-## Stack Ordering Rule
+## Zone and Stack Ordering Rules
 - `stack[0]` represents the bottom of the stack
 - the last item in the array represents the top of the stack
 - each newly added card is appended to the end of the array
 - stack details UI displays cards bottom-to-top
 - prompt builder must preserve this same order
+- non-stack zones are serialized in canonical order: battlefield, hand, graveyard, exile, library, command
+- `gameContext.zones` omits selected zones that contain no cards
 
 ## API Design
 
 ### Endpoint: `POST /api/ask-ai`
 Purpose:
-- accept the final question, ordered stack payload, and captured context payload fields
+- accept the final question and captured `gameContext`
 - validate input
-- build the Bedrock prompt
+- build the AI prompt
 - invoke the model
 - return the response
 
@@ -107,27 +117,6 @@ Purpose:
 
     {
       "question": "string",
-      "stack": [
-        {
-          "cardId": "string",
-          "name": "string",
-          "oracleText": "string",
-          "imageUrl": "string",
-          "manaCost": "string",
-          "manaValue": 0,
-          "typeLine": "string",
-          "colors": ["W", "U"],
-          "supertypes": ["Legendary"],
-          "subtypes": ["Wizard"],
-          "caster": "Player 1",
-          "targets": [
-            { "kind": "player", "targetPlayer": "Player 3" },
-            { "kind": "none" }
-          ],
-          "contextNotes": "optional freeform context",
-          "manaSpent": 5
-        }
-      ],
       "gameContext": {
         "playerCount": 4,
         "players": [
@@ -135,15 +124,49 @@ Purpose:
           { "label": "Player 2", "lifeTotal": 37 },
           { "label": "Player 3", "lifeTotal": 22 },
           { "label": "Player 4", "lifeTotal": 18 }
-        ]
-      },
-      "battlefieldContext": [
-        {
-          "name": "Rhystic Study",
-          "details": "Tax effect relevant to stack decisions",
-          "targets": [{ "kind": "none" }]
+        ],
+        "turnPhase": "main_1",
+        "activePlayer": "Player 1",
+        "selectedZones": ["stack", "battlefield", "hand"],
+        "zones": {
+          "stack": [
+            {
+              "cardId": "uuid-or-stable-card-id",
+              "name": "Counterspell",
+              "oracleText": "Counter target spell.",
+              "imageUrl": "https://example.invalid/counterspell.jpg",
+              "manaCost": "{U}{U}",
+              "manaValue": 2,
+              "typeLine": "Instant",
+              "colors": ["U"],
+              "supertypes": [],
+              "subtypes": [],
+              "caster": "Player 2",
+              "targets": [
+                { "kind": "card", "zone": "stack", "cardId": "bottom-spell", "cardName": "Lightning Bolt" }
+              ],
+              "contextNotes": "Cast in response to Lightning Bolt",
+              "manaSpent": 2
+            }
+          ],
+          "battlefield": [
+            {
+              "cardId": "rhystic-study",
+              "name": "Rhystic Study",
+              "oracleText": "Whenever an opponent casts a spell, you may draw a card unless that player pays {1}.",
+              "imageUrl": "",
+              "manaCost": "{2}{U}",
+              "manaValue": 3,
+              "typeLine": "Enchantment",
+              "colors": ["U"],
+              "supertypes": [],
+              "subtypes": [],
+              "targets": [{ "kind": "none" }],
+              "contextNotes": "Tax effect relevant to stack decisions"
+            }
+          ]
         }
-      ]
+      }
     }
 
 ### Success Response
@@ -175,13 +198,16 @@ Purpose:
 ## AI Prompt Context Rules
 The backend should include:
 - final user question
-- pre-stack game context (player count + life totals)
-- optional battlefield context entries
-- ordered stack
+- game context (player count, life totals, active player when provided, turn phase)
+- selected zones
+- populated zone sections
+- ordered stack zone when populated
 - oracle text for each card
 - mana cost and mana value for each card
 - mana spent per stack item (fallback to `manaValue` when omitted)
 - type line with parsed supertypes/subtypes and colors
+- static MTG reference block
+- merged scope sentence for unselected zones and selected-but-empty zones
 - instructions to explain reasoning
 - instructions to state uncertainty
 - instructions not to invent hidden state
@@ -215,7 +241,7 @@ The backend must not add:
 ### Example Mock Success Response
 
     {
-      "answer": "MOCK RESPONSE\n{\n  \"question\": \"Resolve the stack\",\n  \"stack\": [...]\n}"
+      "answer": "MOCK RESPONSE\n{\n  \"question\": \"Resolve the stack\",\n  \"gameContext\": {...}\n}"
     }
 
 ### Phase B

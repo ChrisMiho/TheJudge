@@ -12,7 +12,7 @@
 
 ### GOAL-003
 - Title: Validate the core product loop
-- Description: The team should prove that users will search for cards, build a stack, ask a question, and use the AI response.
+- Description: The team should prove that users will capture lightweight game context, add relevant zone cards when needed, ask a question, and use the AI response.
 
 ## Success Metrics
 - user can add a card to the stack in under 5 seconds
@@ -25,13 +25,14 @@
 - typed card lookup
 - autocomplete with local metadata
 - card preview before add
-- add-to-stack flow
+- per-zone card collection
 - visual stack icon with count
 - stack details panel with remove capability
 - optional question input
-- pre-stack game context capture (player count + life totals)
-- optional battlefield-context step with explicit skip
-- per-stack-entry context enrichment (caster/targets/notes/mana spent fallback)
+- game context capture (player count, life totals, active player, turn phase)
+- zone confirmation with phase-driven defaults
+- per-card context enrichment (caster/targets/notes/mana spent fallback where relevant)
+- zero-card submit flow for timing and rules questions
 - Decrypt Stack submit flow
 - plain-text AI response
 - mock-first integration path
