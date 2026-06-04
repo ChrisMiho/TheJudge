@@ -4,7 +4,7 @@ import { ZoneCollectionStep } from "./components/ZoneCollectionStep";
 import { ZoneConfirmStep } from "./components/ZoneConfirmStep";
 import { logFrontendDebug } from "./lib/debugLogger";
 import { apiBaseUrl } from "./lib/env";
-import { buildAskAiRequest, canAdvance, mergeSelectedZonesOnPhaseChange } from "./lib/contextFlow";
+import { buildAskAiRequest, canAdvance, DEFAULT_TURN_PHASE, mergeSelectedZonesOnPhaseChange } from "./lib/contextFlow";
 import { useAskAiSubmitOrchestration } from "./lib/useAskAiSubmitOrchestration";
 import type {
   CardMetadataItem,
@@ -54,7 +54,7 @@ export default function App() {
     )
   );
   const [gameContext, setGameContext] = useState<GameContext | null>(null);
-  const [turnPhase, setTurnPhase] = useState<TurnPhase | undefined>(undefined);
+  const [turnPhase, setTurnPhase] = useState<TurnPhase>(DEFAULT_TURN_PHASE);
   const [confirmedPhase, setConfirmedPhase] = useState<TurnPhase | undefined>(undefined);
   const [activePlayer, setActivePlayer] = useState<PlayerLabel>("Player 1");
   const [selectedZones, setSelectedZones] = useState<ZoneId[]>([]);
@@ -186,6 +186,11 @@ export default function App() {
       return;
     }
 
+    if (!turnPhase) {
+      flashStatus("Choose a turn phase.");
+      return;
+    }
+
     setGameContext({
       playerCount: activePlayers.length,
       players,
@@ -196,10 +201,8 @@ export default function App() {
       playerCount: activePlayers.length
     });
 
-    if (turnPhase) {
-      setSelectedZones((current) => mergeSelectedZonesOnPhaseChange(current, turnPhase, confirmedPhase));
-      setConfirmedPhase(turnPhase);
-    }
+    setSelectedZones((current) => mergeSelectedZonesOnPhaseChange(current, turnPhase, confirmedPhase));
+    setConfirmedPhase(turnPhase);
 
     setFlowStep("zone-confirm");
     flashStatus("Game context saved.");
@@ -363,14 +366,10 @@ export default function App() {
               <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Turn phase</span>
               <select
                 aria-label="Turn phase"
-                value={turnPhase ?? ""}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  setTurnPhase(value.length > 0 ? (value as TurnPhase) : undefined);
-                }}
+                value={turnPhase}
+                onChange={(event) => setTurnPhase(event.target.value as TurnPhase)}
                 className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
               >
-                <option value="">None</option>
                 {TURN_PHASE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -423,7 +422,7 @@ export default function App() {
 
   if (flowStep === "zone-confirm") {
     const canContinueZones = canAdvance("zone-confirm", {
-      gameContext: { selectedZones }
+      gameContext: { selectedZones, turnPhase }
     });
 
     return (

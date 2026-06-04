@@ -124,7 +124,7 @@ export type ZoneCardItem = {
 export type GameContext = {
   playerCount: number;
   players: GamePlayerContext[];
-  turnPhase?: TurnPhase;
+  turnPhase: TurnPhase;
   activePlayer?: PlayerLabel;
   selectedZones?: ZoneId[];
   zones?: Partial<Record<ZoneId, ZoneCardItem[]>>;

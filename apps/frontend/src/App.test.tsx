@@ -60,6 +60,7 @@ let metadataFixture: CardMetadataItem[] = [];
 let askAiResponseQueue: Array<{ status: number; body: unknown; headers?: Record<string, string> }> = [];
 const submittedAskAiRequests: ZoneAskAiPayload[] = [];
 const submittedAskAiHeaders: Array<Record<string, string>> = [];
+const ZONE_LABELS_FOR_TESTS = ["Stack", "Battlefield", "Hand", "Graveyard", "Exile", "Library", "Command Zone"];
 
 function jsonResponse(payload: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(payload), {
@@ -114,7 +115,7 @@ async function waitForMetadataReady(): Promise<void> {
 
 async function advanceToStackBuilder(user: ReturnType<typeof userEvent.setup>): Promise<void> {
   await user.click(screen.getByRole("button", { name: "Confirm game context" }));
-  await user.click(screen.getByLabelText("Zone: Stack"));
+  await setSelectedZones(user, ["Stack"]);
   await user.click(screen.getByRole("button", { name: "Continue" }));
 }
 
@@ -143,7 +144,7 @@ async function openEnrichmentListView(user: ReturnType<typeof userEvent.setup>):
 
 async function advanceToBattlefieldZoneCollection(user: ReturnType<typeof userEvent.setup>): Promise<void> {
   await user.click(screen.getByRole("button", { name: "Confirm game context" }));
-  await user.click(screen.getByLabelText("Zone: Battlefield"));
+  await setSelectedZones(user, ["Battlefield"]);
   await advancePastZoneConfirm(user);
 }
 
@@ -176,10 +177,17 @@ async function advanceToZoneCollectionWithZones(
   user: ReturnType<typeof userEvent.setup>,
   zones: string[]
 ): Promise<void> {
-  for (const zone of zones) {
-    await user.click(screen.getByLabelText(`Zone: ${zone}`));
-  }
+  await setSelectedZones(user, zones);
   await advancePastZoneConfirm(user);
+}
+
+async function setSelectedZones(user: ReturnType<typeof userEvent.setup>, zones: string[]): Promise<void> {
+  for (const zone of ZONE_LABELS_FOR_TESTS) {
+    const checkbox = screen.getByLabelText(`Zone: ${zone}`) as HTMLInputElement;
+    if (checkbox.checked !== zones.includes(zone)) {
+      await user.click(checkbox);
+    }
+  }
 }
 
 async function selectZoneTab(user: ReturnType<typeof userEvent.setup>, zone: string): Promise<void> {
@@ -1192,10 +1200,14 @@ describe("App MVP interaction flows", () => {
 
 describe("Slice-04: game setup + zone confirmation", () => {
   beforeEach(() => {
-    fetchMock = vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
+    submittedAskAiRequests.length = 0;
+    fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
       const url = getUrlFromRequest(input);
       if (url === "/data/cardMetadata.json") {
         return jsonResponse(baseCardMetadataFixture);
+      }
+      if (url.endsWith("/api/ask-ai")) {
+        submittedAskAiRequests.push(JSON.parse(String(init?.body)) as ZoneAskAiPayload);
       }
       return jsonResponse({ answer: "ok" });
     });
@@ -1271,6 +1283,7 @@ describe("Slice-04: game setup + zone confirmation", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await setSelectedZones(user, []);
 
     const continueButton = screen.getByRole("button", { name: "Continue" });
     expect(continueButton).toBeDisabled();
@@ -1285,9 +1298,12 @@ describe("Slice-04: game setup + zone confirmation", () => {
   it("shows all turn phase options on game context step", () => {
     render(<App />);
     const turnPhaseSelect = screen.getByLabelText("Turn phase");
+    expect(turnPhaseSelect).toHaveValue("stack_resolving");
+    expect(within(turnPhaseSelect).queryByRole("option", { name: "None" })).not.toBeInTheDocument();
     expect(within(turnPhaseSelect).getByRole("option", { name: "Draw" })).toBeInTheDocument();
     expect(within(turnPhaseSelect).getByRole("option", { name: "Combat" })).toBeInTheDocument();
     expect(within(turnPhaseSelect).getByRole("option", { name: "Pre Combat Main Phase" })).toBeInTheDocument();
+    expect(within(turnPhaseSelect).getByRole("option", { name: "Stack Resolving" })).toBeInTheDocument();
   });
 
   it("shows combat sub-step hint when Combat phase is selected", async () => {
@@ -1299,15 +1315,17 @@ describe("Slice-04: game setup + zone confirmation", () => {
     expect(screen.getByText(/Specify combat sub-step/)).toBeInTheDocument();
   });
 
-  it("clears turn phase when None is selected", async () => {
+  it("submits the default stack resolving turn phase", async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await selectTurnPhase(user, "draw");
-    expect(screen.getByLabelText("Turn phase")).toHaveValue("draw");
+    await advanceToStackBuilder(user);
+    await waitForMetadataReady();
+    await addCardToStack(user, "opt", "Opt");
+    await clickDecryptStack(user);
 
-    await user.selectOptions(screen.getByLabelText("Turn phase"), "");
-    expect(screen.getByLabelText("Turn phase")).toHaveValue("");
+    await waitFor(() => expect(submittedAskAiRequests).toHaveLength(1));
+    expect(submittedAskAiRequests[0]?.gameContext.turnPhase).toBe("stack_resolving");
   });
 });
 

@@ -27,7 +27,8 @@ const payloadFixture: AskAiRequest = {
     players: [
       { label: "Player 1", lifeTotal: 40 },
       { label: "Player 2", lifeTotal: 40 }
-    ]
+    ],
+    turnPhase: "stack_resolving"
   },
   battlefieldContext: [{ name: "Lightning Bolt", targets: [{ kind: "none" }] }],
   stack: [

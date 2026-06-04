@@ -29,6 +29,7 @@ describe("canAdvance", () => {
     expect(
       canAdvance("game-setup", {
         gameContext: {
+          turnPhase: "stack_resolving",
           players: [
             { label: "Player 1", lifeTotal: 20 },
             { label: "Player 2", lifeTotal: 20 }
@@ -42,6 +43,7 @@ describe("canAdvance", () => {
     expect(
       canAdvance("game-setup", {
         gameContext: {
+          turnPhase: "stack_resolving",
           players: [{ label: "Player 1", lifeTotal: 20 }]
         }
       })
@@ -52,6 +54,7 @@ describe("canAdvance", () => {
     expect(
       canAdvance("game-setup", {
         gameContext: {
+          turnPhase: "stack_resolving",
           players: [
             { label: "Player 1", lifeTotal: NaN },
             { label: "Player 2", lifeTotal: 20 }
@@ -62,7 +65,20 @@ describe("canAdvance", () => {
   });
 
   it("game-setup: returns false when players is undefined", () => {
-    expect(canAdvance("game-setup", { gameContext: {} })).toBe(false);
+    expect(canAdvance("game-setup", { gameContext: { turnPhase: "stack_resolving" } })).toBe(false);
+  });
+
+  it("game-setup: returns false when turnPhase is undefined", () => {
+    expect(
+      canAdvance("game-setup", {
+        gameContext: {
+          players: [
+            { label: "Player 1", lifeTotal: 20 },
+            { label: "Player 2", lifeTotal: 20 }
+          ]
+        }
+      })
+    ).toBe(false);
   });
 
   it("zone-confirm: returns true when at least one zone selected", () => {
@@ -231,5 +247,15 @@ describe("buildAskAiRequest", () => {
     expect(payload.gameContext.playerCount).toBe(2);
     expect(payload.gameContext.turnPhase).toBe("main_1");
     expect(payload.gameContext.selectedZones).toEqual(["battlefield", "stack"]);
+  });
+
+  it("defaults missing turnPhase to stack_resolving before sending", () => {
+    const ctxWithoutPhase = {
+      playerCount: BASE_GAME_CONTEXT.playerCount,
+      players: BASE_GAME_CONTEXT.players,
+      selectedZones: BASE_GAME_CONTEXT.selectedZones
+    };
+    const payload = buildAskAiRequest("test", ctxWithoutPhase as GameContext);
+    expect(payload.gameContext.turnPhase).toBe("stack_resolving");
   });
 });

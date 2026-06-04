@@ -1,10 +1,10 @@
-import type { GameContext, ZoneCardItem, ZoneId } from "../../types";
+import type { GameContext, TurnPhase, ZoneCardItem, ZoneId } from "../../types";
 import type { FlowStepId } from "./steps";
 import { CANONICAL_ZONE_ORDER } from "./phaseZoneDefaults";
 
 /** Minimum fields needed by canAdvance for each step. */
 export type FlowNavigationState = {
-  gameContext: Pick<Partial<GameContext>, "players" | "playerCount" | "selectedZones">;
+  gameContext: Pick<Partial<GameContext>, "players" | "playerCount" | "selectedZones" | "turnPhase">;
 };
 
 /**
@@ -23,6 +23,7 @@ export type EnrichmentQueueEntry = {
 };
 
 const DEFAULT_QUESTION = "Resolve the stack";
+export const DEFAULT_TURN_PHASE: TurnPhase = "stack_resolving";
 
 /**
  * Whether the user may advance from a given step.
@@ -34,6 +35,7 @@ export function canAdvance(step: FlowStepId, state: FlowNavigationState): boolea
       return (
         Array.isArray(state.gameContext.players) &&
         state.gameContext.players.length >= 2 &&
+        state.gameContext.turnPhase !== undefined &&
         state.gameContext.players.every((p) => Number.isFinite(p.lifeTotal))
       );
     case "zone-confirm":
@@ -80,6 +82,7 @@ export function buildAskAiRequest(question: string, gameContext: GameContext): Z
     question: question.trim().length > 0 ? question.trim() : DEFAULT_QUESTION,
     gameContext: {
       ...gameContext,
+      turnPhase: gameContext.turnPhase ?? DEFAULT_TURN_PHASE,
       zones: nonEmptyZones
     }
   };

@@ -1,6 +1,6 @@
 # Slice A — Turn phase required and default stack resolving
 
-## Status: planned
+## Status: complete
 
 ## Goal
 
@@ -37,5 +37,5 @@ Eliminate `gameContext.turnPhase Required` API errors and ensure every submit in
 
 ## Acceptance
 
-- [ ] Cannot confirm game context without a phase (None not offered).
-- [ ] Decrypt no longer fails with missing `turnPhase` on normal paths.
+- [x] Cannot confirm game context without a phase (None not offered).
+- [x] Decrypt no longer fails with missing `turnPhase` on normal paths.

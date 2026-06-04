@@ -38,7 +38,8 @@ function createGameContext(): GameContext {
     players: [
       { label: "Player 1", lifeTotal: 20 },
       { label: "Player 2", lifeTotal: 20 }
-    ]
+    ],
+    turnPhase: "stack_resolving"
   };
 }
 
