@@ -1,34 +1,16 @@
 import { FormEvent, useEffect, useState } from "react";
-import { BattlefieldStep } from "./components/BattlefieldStep";
-import { EnrichmentPlaceholderStep } from "./components/EnrichmentPlaceholderStep";
-import { StackBuilderStep } from "./components/StackBuilderStep";
+import { EnrichmentStep } from "./components/EnrichmentStep";
 import { ZoneCollectionStep } from "./components/ZoneCollectionStep";
 import { ZoneConfirmStep } from "./components/ZoneConfirmStep";
 import { logFrontendDebug } from "./lib/debugLogger";
 import { apiBaseUrl } from "./lib/env";
-import { NO_MATCH_COPY } from "./lib/search";
-import { mergeSelectedZonesOnPhaseChange } from "./lib/contextFlow";
+import { buildAskAiRequest, mergeSelectedZonesOnPhaseChange } from "./lib/contextFlow";
 import { useAskAiSubmitOrchestration } from "./lib/useAskAiSubmitOrchestration";
-import { useAutocompleteKeyboard } from "./lib/useAutocompleteKeyboard";
-import { useAutocompleteSuggestions } from "./lib/useAutocompleteSuggestions";
-import {
-  appendToStack,
-  buildAskAiRequest,
-  buildStackItemFromMetadata,
-  DEFAULT_CASTER,
-  getFinalQuestion,
-  removeFromStackById,
-  validateStackAdd
-} from "./lib/stackState";
-import { syncZonesToLegacyStackAndBattlefield } from "./lib/zoneCards";
 import type {
-  AskAiRequest,
-  BattlefieldContextItem,
   CardMetadataItem,
   GameContext,
+  GamePlayerContext,
   PlayerLabel,
-  StackItem,
-  StackTarget,
   TurnPhase,
   ZoneCardItem,
   ZoneId
@@ -37,67 +19,29 @@ import type {
 const RETRY_COOLDOWN_SECONDS = 13;
 const METADATA_URL = "/data/cardMetadata.json";
 const EMPTY_STATE_IMAGE_URL = "/assets/cats-homescreen.png";
-const MAX_OTHER_TARGET_CHARS = 200;
 const MIN_PLAYERS = 2;
 const MAX_PLAYERS = 8;
 const DUEL_STARTING_LIFE_TOTAL = "20";
 const MULTIPLAYER_STARTING_LIFE_TOTAL = "40";
 const PLAYER_OPTIONS: PlayerLabel[] = Array.from({ length: MAX_PLAYERS }, (_, index) => `Player ${index + 1}` as PlayerLabel);
-type TargetKind = StackTarget["kind"];
-const TARGET_KIND_OPTIONS: Array<{ value: TargetKind; label: string }> = [
-  { value: "stack", label: "Stack target" },
-  { value: "battlefield", label: "Battlefield target" },
-  { value: "player", label: "Player target" },
-  { value: "other", label: "Other target context" },
-  { value: "none", label: "No specific target" }
-];
+
 const TURN_PHASE_OPTIONS: Array<{ value: TurnPhase; label: string }> = [
   { value: "untap", label: "Untap" },
   { value: "upkeep", label: "Upkeep" },
   { value: "draw", label: "Draw" },
-  { value: "main_1", label: "Main 1" },
+  { value: "main_1", label: "Pre Combat Main Phase" },
   { value: "combat", label: "Combat" },
-  { value: "main_2", label: "Main 2" },
+  { value: "main_2", label: "Post Combat Main Phase" },
   { value: "end_step", label: "End Step" },
   { value: "cleanup", label: "Cleanup" },
   { value: "stack_resolving", label: "Stack Resolving" }
 ];
 
-type FlowStep =
-  | "game-context"
-  | "zone-confirm"
-  | "zone-collection"
-  | "enrichment-placeholder"
-  | "battlefield-context"
-  | "stack-assembly"
-  | "context-enrichment";
-
-function formatTarget(target: StackTarget): string {
-  if (target.kind === "player") {
-    return `Player: ${target.targetPlayer}`;
-  }
-
-  if (target.kind === "battlefield") {
-    return `Battlefield: ${target.targetPermanent}`;
-  }
-
-  if (target.kind === "none") {
-    return "No specific target";
-  }
-
-  if (target.kind === "other") {
-    return `Other: ${target.targetDescription}`;
-  }
-
-  return `Stack: ${target.targetCardName}`;
-}
+type FlowStep = "game-context" | "zone-confirm" | "zone-collection" | "enrichment";
 
 export default function App() {
   const [cardMetadata, setCardMetadata] = useState<CardMetadataItem[]>([]);
   const [isMetadataLoading, setIsMetadataLoading] = useState(true);
-  const [metadataLoadError, setMetadataLoadError] = useState<string | null>(null);
-  const [searchInput, setSearchInput] = useState("");
-  const [selectedCard, setSelectedCard] = useState<CardMetadataItem | null>(null);
   const [flowStep, setFlowStep] = useState<FlowStep>("game-context");
   const [activePlayerCount, setActivePlayerCount] = useState(MIN_PLAYERS);
   const [lifeTotalsByPlayer, setLifeTotalsByPlayer] = useState<Record<PlayerLabel, string>>(() =>
@@ -115,39 +59,6 @@ export default function App() {
   const [activePlayer, setActivePlayer] = useState<PlayerLabel>("Player 1");
   const [selectedZones, setSelectedZones] = useState<ZoneId[]>([]);
   const [zoneCardsByZone, setZoneCardsByZone] = useState<Partial<Record<ZoneId, ZoneCardItem[]>>>({});
-  const [battlefieldContext, setBattlefieldContext] = useState<BattlefieldContextItem[]>([]);
-  const [battlefieldSearchInput, setBattlefieldSearchInput] = useState("");
-  const [selectedBattlefieldCard, setSelectedBattlefieldCard] = useState<CardMetadataItem | null>(null);
-  const [battlefieldEntryName, setBattlefieldEntryName] = useState("");
-  const [battlefieldEntryDetails, setBattlefieldEntryDetails] = useState("");
-  const [battlefieldEntryTargets, setBattlefieldEntryTargets] = useState<StackTarget[]>([]);
-  const [battlefieldTargetKind, setBattlefieldTargetKind] = useState<TargetKind>("battlefield");
-  const [battlefieldTargetPermanent, setBattlefieldTargetPermanent] = useState("");
-  const [battlefieldTargetPlayer, setBattlefieldTargetPlayer] = useState<PlayerLabel>("Player 2");
-  const [battlefieldTargetStackName, setBattlefieldTargetStackName] = useState("");
-  const [battlefieldTargetStackId, setBattlefieldTargetStackId] = useState("");
-  const [battlefieldTargetOtherDescription, setBattlefieldTargetOtherDescription] = useState("");
-  const [stack, setStack] = useState<StackItem[]>([]);
-  const [entryCaster, setEntryCaster] = useState<PlayerLabel>(DEFAULT_CASTER);
-  const [entryContextNotes, setEntryContextNotes] = useState("");
-  const [entryManaSpent, setEntryManaSpent] = useState("");
-  const [entryTargets, setEntryTargets] = useState<StackTarget[]>([]);
-  const [targetKind, setTargetKind] = useState<TargetKind>("stack");
-  const [targetStackCardId, setTargetStackCardId] = useState("");
-  const [targetBattlefieldName, setTargetBattlefieldName] = useState("");
-  const [targetPlayer, setTargetPlayer] = useState<PlayerLabel>("Player 2");
-  const [targetOtherDescription, setTargetOtherDescription] = useState("");
-  const [detailTargetKindByCardId, setDetailTargetKindByCardId] = useState<Record<string, TargetKind>>({});
-  const [detailStackTargetByCardId, setDetailStackTargetByCardId] = useState<Record<string, string>>({});
-  const [detailBattlefieldByCardId, setDetailBattlefieldByCardId] = useState<Record<string, string>>({});
-  const [detailPlayerByCardId, setDetailPlayerByCardId] = useState<Record<string, PlayerLabel>>({});
-  const [detailOtherByCardId, setDetailOtherByCardId] = useState<Record<string, string>>({});
-  const [detailTargetKindByBattlefieldKey, setDetailTargetKindByBattlefieldKey] = useState<Record<string, TargetKind>>({});
-  const [detailStackTargetByBattlefieldKey, setDetailStackTargetByBattlefieldKey] = useState<Record<string, string>>({});
-  const [detailBattlefieldByBattlefieldKey, setDetailBattlefieldByBattlefieldKey] = useState<Record<string, string>>({});
-  const [detailPlayerByBattlefieldKey, setDetailPlayerByBattlefieldKey] = useState<Record<string, PlayerLabel>>({});
-  const [detailOtherByBattlefieldKey, setDetailOtherByBattlefieldKey] = useState<Record<string, string>>({});
-  const [showStackDetails, setShowStackDetails] = useState(false);
   const [question, setQuestion] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [emptyStateImageFailed, setEmptyStateImageFailed] = useState(false);
@@ -157,7 +68,6 @@ export default function App() {
 
     async function loadMetadata() {
       setIsMetadataLoading(true);
-      setMetadataLoadError(null);
 
       try {
         const response = await fetch(METADATA_URL, { signal: controller.signal });
@@ -169,7 +79,6 @@ export default function App() {
         setCardMetadata(payload);
       } catch (error) {
         if (!controller.signal.aborted) {
-          setMetadataLoadError("Card data could not be loaded. Refresh to try again.");
           console.error(error);
         }
       } finally {
@@ -184,127 +93,17 @@ export default function App() {
     return () => controller.abort();
   }, []);
 
-  const suggestions = useAutocompleteSuggestions({
-    cards: cardMetadata,
-    query: searchInput
-  });
-  const battlefieldSuggestions = useAutocompleteSuggestions({
-    cards: cardMetadata,
-    query: battlefieldSearchInput
-  });
-  const stackKeyboard = useAutocompleteKeyboard({
-    query: searchInput,
-    suggestions,
-    onSelect: selectStackSuggestion
-  });
-  const battlefieldKeyboard = useAutocompleteKeyboard({
-    query: battlefieldSearchInput,
-    suggestions: battlefieldSuggestions,
-    onSelect: selectBattlefieldSuggestion
-  });
-
-  const addButtonLabel = stack.length === 0 ? "Begin stackening!" : "Add to Stack";
   const activePlayers = PLAYER_OPTIONS.slice(0, activePlayerCount);
   const { answer, error, isSubmitting, retryCountdown, canRetry, submitAttempt } = useAskAiSubmitOrchestration({
     apiBaseUrl,
     retryCooldownSeconds: RETRY_COOLDOWN_SECONDS
   });
 
-  function parseManaSpentInput(rawValue: string): number | undefined {
-    const trimmed = rawValue.trim();
-    if (trimmed.length === 0) {
-      return undefined;
-    }
-
-    const parsed = Number(trimmed);
-    if (!Number.isFinite(parsed) || parsed < 0) {
-      return undefined;
-    }
-
-    return parsed;
-  }
-
   function flashStatus(message: string): void {
     setStatusMessage(message);
     window.setTimeout(() => {
       setStatusMessage((current) => (current === message ? null : current));
     }, 1400);
-  }
-
-  function resetEntryContext(): void {
-    setEntryCaster(DEFAULT_CASTER);
-    setEntryContextNotes("");
-    setEntryManaSpent("");
-    setEntryTargets([]);
-    setTargetKind("stack");
-    setTargetStackCardId("");
-    setTargetBattlefieldName("");
-    setTargetPlayer("Player 2");
-    setTargetOtherDescription("");
-  }
-
-  function addEntryTarget(): void {
-    if (targetKind === "stack") {
-      const targetCard = stack.find((item) => item.cardId === targetStackCardId);
-      if (!targetCard) return;
-
-      setEntryTargets((current) => [
-        ...current,
-        {
-          kind: "stack",
-          targetCardId: targetCard.cardId,
-          targetCardName: targetCard.name
-        }
-      ]);
-      setTargetStackCardId("");
-      return;
-    }
-
-    if (targetKind === "battlefield") {
-      const targetPermanent = targetBattlefieldName.trim();
-      if (targetPermanent.length === 0) return;
-
-      setEntryTargets((current) => [
-        ...current,
-        {
-          kind: "battlefield",
-          targetPermanent
-        }
-      ]);
-      setTargetBattlefieldName("");
-      return;
-    }
-
-    if (targetKind === "player") {
-      setEntryTargets((current) => [
-        ...current,
-        {
-          kind: "player",
-          targetPlayer
-        }
-      ]);
-      return;
-    }
-
-    if (targetKind === "other") {
-      const targetDescription = targetOtherDescription.trim();
-      if (targetDescription.length === 0) return;
-      setEntryTargets((current) => [
-        ...current,
-        {
-          kind: "other",
-          targetDescription
-        }
-      ]);
-      setTargetOtherDescription("");
-      return;
-    }
-
-    setEntryTargets((current) => [...current, { kind: "none" }]);
-  }
-
-  function removeEntryTarget(indexToRemove: number): void {
-    setEntryTargets((current) => current.filter((_, index) => index !== indexToRemove));
   }
 
   function updateLifeTotal(player: PlayerLabel, value: string): void {
@@ -315,15 +114,10 @@ export default function App() {
   }
 
   function addPlayer(): void {
-    if (activePlayerCount >= MAX_PLAYERS) {
-      return;
-    }
-
+    if (activePlayerCount >= MAX_PLAYERS) return;
     const nextCount = activePlayerCount + 1;
     const nextPlayer = PLAYER_OPTIONS[nextCount - 1];
-    if (!nextPlayer) {
-      return;
-    }
+    if (!nextPlayer) return;
 
     setLifeTotalsByPlayer((current) => {
       const nextLifeTotals = {
@@ -345,9 +139,7 @@ export default function App() {
   }
 
   function removePlayer(): void {
-    if (activePlayerCount <= MIN_PLAYERS) {
-      return;
-    }
+    if (activePlayerCount <= MIN_PLAYERS) return;
     const nextCount = activePlayerCount - 1;
     if (nextCount === MIN_PLAYERS) {
       setLifeTotalsByPlayer((current) => ({
@@ -359,14 +151,18 @@ export default function App() {
     setActivePlayerCount(nextCount);
   }
 
-  function confirmGameContext(): void {
-    const players = activePlayers.map((player) => {
+  function buildPlayers(): GamePlayerContext[] {
+    return activePlayers.map((player) => {
       const parsed = Number(lifeTotalsByPlayer[player]);
       return {
         label: player,
         lifeTotal: Number.isFinite(parsed) ? parsed : NaN
       };
     });
+  }
+
+  function confirmGameContext(): void {
+    const players = buildPlayers();
 
     if (players.some((player) => Number.isNaN(player.lifeTotal))) {
       flashStatus("Enter numeric life totals for each active player.");
@@ -397,10 +193,6 @@ export default function App() {
     setFlowStep("zone-collection");
   }
 
-  function backFromZoneCollection(): void {
-    setFlowStep("zone-confirm");
-  }
-
   function finishZoneCollection(): void {
     setGameContext((current) =>
       current
@@ -411,432 +203,42 @@ export default function App() {
           }
         : current
     );
-    setFlowStep("enrichment-placeholder");
-  }
-
-  function backFromEnrichmentPlaceholder(): void {
-    setFlowStep("zone-collection");
-  }
-
-  function continueFromEnrichmentPlaceholder(): void {
-    const synced = syncZonesToLegacyStackAndBattlefield(zoneCardsByZone);
-    setStack(synced.stack);
-    setBattlefieldContext(synced.battlefieldContext);
-    setGameContext((current) =>
-      current
-        ? {
-            ...current,
-            selectedZones,
-            zones: zoneCardsByZone
-          }
-        : current
-    );
-    setShowStackDetails(true);
-    setFlowStep("context-enrichment");
-    flashStatus("Now enrich context for each card before submitting.");
-  }
-
-  function backToGameContext(): void {
-    setFlowStep("game-context");
-  }
-
-  function addBattlefieldTarget(): void {
-    if (battlefieldTargetKind === "battlefield") {
-      const targetPermanent = battlefieldTargetPermanent.trim();
-      if (targetPermanent.length === 0) return;
-      setBattlefieldEntryTargets((current) => [...current, { kind: "battlefield", targetPermanent }]);
-      setBattlefieldTargetPermanent("");
-      return;
-    }
-
-    if (battlefieldTargetKind === "player") {
-      setBattlefieldEntryTargets((current) => [...current, { kind: "player", targetPlayer: battlefieldTargetPlayer }]);
-      return;
-    }
-
-    if (battlefieldTargetKind === "stack") {
-      const targetCardName = battlefieldTargetStackName.trim();
-      const targetCardId = battlefieldTargetStackId.trim() || targetCardName.toLowerCase().replace(/\s+/g, "-");
-      if (targetCardName.length === 0 || targetCardId.length === 0) return;
-      setBattlefieldEntryTargets((current) => [...current, { kind: "stack", targetCardId, targetCardName }]);
-      setBattlefieldTargetStackName("");
-      setBattlefieldTargetStackId("");
-      return;
-    }
-
-    if (battlefieldTargetKind === "other") {
-      const targetDescription = battlefieldTargetOtherDescription.trim();
-      if (targetDescription.length === 0) return;
-      setBattlefieldEntryTargets((current) => [...current, { kind: "other", targetDescription }]);
-      setBattlefieldTargetOtherDescription("");
-      return;
-    }
-
-    setBattlefieldEntryTargets((current) => [...current, { kind: "none" }]);
-  }
-
-  function removeBattlefieldTarget(targetIndexToRemove: number): void {
-    setBattlefieldEntryTargets((current) => current.filter((_, index) => index !== targetIndexToRemove));
-  }
-
-  function addBattlefieldEntry(): void {
-    const name = battlefieldEntryName.trim();
-    if (name.length === 0) {
-      return;
-    }
-
-    setBattlefieldContext((current) => [
-      ...current,
-      {
-        name,
-        details: battlefieldEntryDetails.trim().length > 0 ? battlefieldEntryDetails.trim() : undefined,
-        targets: battlefieldEntryTargets
-      }
-    ]);
-    setBattlefieldSearchInput("");
-    setSelectedBattlefieldCard(null);
-    setBattlefieldEntryName("");
-    setBattlefieldEntryDetails("");
-    setBattlefieldEntryTargets([]);
-    flashStatus("Battlefield context added.");
-  }
-
-  function selectBattlefieldSuggestion(card: CardMetadataItem): void {
-    setSelectedBattlefieldCard(card);
-    setBattlefieldEntryName(card.name);
-    if (battlefieldEntryDetails.trim().length === 0) {
-      setBattlefieldEntryDetails(card.oracleText.slice(0, 280));
-    }
-  }
-
-  function selectStackSuggestion(card: CardMetadataItem): void {
-    setSelectedCard(card);
-    resetEntryContext();
-    logFrontendDebug("card.preview_selected", {
-      cardId: card.cardId,
-      cardName: card.name
-    });
-  }
-
-  function progressFromBattlefieldStep(): void {
-    const progression = battlefieldContext.length > 0 ? "continued" : "skipped";
-    logFrontendDebug("battlefield_context.progressed", {
-      progression,
-      battlefieldEntryCount: battlefieldContext.length
-    });
-    if (battlefieldContext.length === 0) {
-      setBattlefieldContext([]);
-    }
-    setFlowStep("stack-assembly");
-  }
-
-  function updateStackEntry(cardId: string, updates: Partial<StackItem>): void {
-    setStack((current) =>
-      current.map((item) =>
-        item.cardId === cardId
-          ? {
-              ...item,
-              ...updates
-            }
-          : item
-      )
-    );
-  }
-
-  function updateBattlefieldEntry(entryIndex: number, updates: Partial<BattlefieldContextItem>): void {
-    setBattlefieldContext((current) =>
-      current.map((item, index) =>
-        index === entryIndex
-          ? {
-              ...item,
-              ...updates
-            }
-          : item
-      )
-    );
-  }
-
-  function removeBattlefieldEntry(entryIndexToRemove: number): void {
-    setBattlefieldContext((current) => current.filter((_, index) => index !== entryIndexToRemove));
-    // Entry keys are index-based; clear pending detail input state after list shape changes.
-    setDetailTargetKindByBattlefieldKey({});
-    setDetailStackTargetByBattlefieldKey({});
-    setDetailBattlefieldByBattlefieldKey({});
-    setDetailPlayerByBattlefieldKey({});
-    setDetailOtherByBattlefieldKey({});
-  }
-
-  function addTargetToBattlefieldEntry(entryIndex: number, target: StackTarget): void {
-    setBattlefieldContext((current) =>
-      current.map((item, index) =>
-        index === entryIndex
-          ? {
-              ...item,
-              targets: [...item.targets, target]
-            }
-          : item
-      )
-    );
-  }
-
-  function removeTargetFromBattlefieldEntry(entryIndex: number, targetIndexToRemove: number): void {
-    setBattlefieldContext((current) =>
-      current.map((item, index) =>
-        index === entryIndex
-          ? {
-              ...item,
-              targets: item.targets.filter((_, targetIndex) => targetIndex !== targetIndexToRemove)
-            }
-          : item
-      )
-    );
-  }
-
-  function addTargetToStackEntry(cardId: string, target: StackTarget): void {
-    setStack((current) =>
-      current.map((item) =>
-        item.cardId === cardId
-          ? {
-              ...item,
-              targets: [...item.targets, target]
-            }
-          : item
-      )
-    );
-  }
-
-  function removeTargetFromStackEntry(cardId: string, targetIndexToRemove: number): void {
-    setStack((current) =>
-      current.map((item) =>
-        item.cardId === cardId
-          ? {
-              ...item,
-              targets: item.targets.filter((_, targetIndex) => targetIndex !== targetIndexToRemove)
-            }
-          : item
-      )
-    );
-  }
-
-  function getDetailTargetKind(cardId: string): TargetKind {
-    return detailTargetKindByCardId[cardId] ?? "stack";
-  }
-
-  function getDetailPlayer(cardId: string): PlayerLabel {
-    return detailPlayerByCardId[cardId] ?? "Player 2";
-  }
-
-  function getDetailOther(cardId: string): string {
-    return detailOtherByCardId[cardId] ?? "";
-  }
-
-  function getDetailTargetKindForBattlefieldEntry(entryKey: string): TargetKind {
-    return detailTargetKindByBattlefieldKey[entryKey] ?? "stack";
-  }
-
-  function getDetailPlayerForBattlefieldEntry(entryKey: string): PlayerLabel {
-    return detailPlayerByBattlefieldKey[entryKey] ?? "Player 2";
-  }
-
-  function getDetailOtherForBattlefieldEntry(entryKey: string): string {
-    return detailOtherByBattlefieldKey[entryKey] ?? "";
-  }
-
-  function addTargetFromBattlefieldDetails(entryIndex: number, entryKey: string): void {
-    const kind = getDetailTargetKindForBattlefieldEntry(entryKey);
-    if (kind === "stack") {
-      const selectedTargetCardId = detailStackTargetByBattlefieldKey[entryKey] ?? "";
-      const targetCard = stack.find((item) => item.cardId === selectedTargetCardId);
-      if (!targetCard) return;
-
-      addTargetToBattlefieldEntry(entryIndex, {
-        kind: "stack",
-        targetCardId: targetCard.cardId,
-        targetCardName: targetCard.name
-      });
-      setDetailStackTargetByBattlefieldKey((current) => ({ ...current, [entryKey]: "" }));
-      return;
-    }
-
-    if (kind === "battlefield") {
-      const targetPermanent = (detailBattlefieldByBattlefieldKey[entryKey] ?? "").trim();
-      if (targetPermanent.length === 0) return;
-      addTargetToBattlefieldEntry(entryIndex, {
-        kind: "battlefield",
-        targetPermanent
-      });
-      setDetailBattlefieldByBattlefieldKey((current) => ({ ...current, [entryKey]: "" }));
-      return;
-    }
-
-    if (kind === "player") {
-      addTargetToBattlefieldEntry(entryIndex, {
-        kind: "player",
-        targetPlayer: getDetailPlayerForBattlefieldEntry(entryKey)
-      });
-      return;
-    }
-
-    if (kind === "other") {
-      const targetDescription = getDetailOtherForBattlefieldEntry(entryKey).trim();
-      if (targetDescription.length === 0) return;
-      addTargetToBattlefieldEntry(entryIndex, {
-        kind: "other",
-        targetDescription
-      });
-      setDetailOtherByBattlefieldKey((current) => ({ ...current, [entryKey]: "" }));
-      return;
-    }
-
-    addTargetToBattlefieldEntry(entryIndex, { kind: "none" });
-  }
-
-  function addTargetFromStackDetails(cardId: string): void {
-    const kind = getDetailTargetKind(cardId);
-    if (kind === "stack") {
-      const selectedTargetCardId = detailStackTargetByCardId[cardId] ?? "";
-      const targetCard = stack.find((item) => item.cardId === selectedTargetCardId);
-      if (!targetCard) return;
-
-      addTargetToStackEntry(cardId, {
-        kind: "stack",
-        targetCardId: targetCard.cardId,
-        targetCardName: targetCard.name
-      });
-      setDetailStackTargetByCardId((current) => ({ ...current, [cardId]: "" }));
-      return;
-    }
-
-    if (kind === "battlefield") {
-      const targetPermanent = (detailBattlefieldByCardId[cardId] ?? "").trim();
-      if (targetPermanent.length === 0) return;
-
-      addTargetToStackEntry(cardId, {
-        kind: "battlefield",
-        targetPermanent
-      });
-      setDetailBattlefieldByCardId((current) => ({ ...current, [cardId]: "" }));
-      return;
-    }
-
-    if (kind === "player") {
-      addTargetToStackEntry(cardId, {
-        kind: "player",
-        targetPlayer: getDetailPlayer(cardId)
-      });
-      return;
-    }
-
-    if (kind === "other") {
-      const targetDescription = getDetailOther(cardId).trim();
-      if (targetDescription.length === 0) return;
-      addTargetToStackEntry(cardId, {
-        kind: "other",
-        targetDescription
-      });
-      setDetailOtherByCardId((current) => ({ ...current, [cardId]: "" }));
-      return;
-    }
-
-    addTargetToStackEntry(cardId, { kind: "none" });
-  }
-
-  function handleAddSelectedCard(): void {
-    if (!selectedCard) return;
-
-    // Phase 1 stack assembly captures card identity only.
-    const stackEntry = buildStackItemFromMetadata(selectedCard);
-    const validationResult = validateStackAdd(stack, stackEntry);
-    if (!validationResult.ok) {
-      flashStatus(validationResult.message);
-      return;
-    }
-
-    setStack((current) => {
-      const nextStack = appendToStack(current, stackEntry);
-      logFrontendDebug("stack.card_added", {
-        cardId: stackEntry.cardId,
-        cardName: stackEntry.name,
-        stackSize: nextStack.length
-      });
-      return nextStack;
-    });
-    resetEntryContext();
-    setSearchInput("");
-    setSelectedCard(null);
-    flashStatus("Stacked");
-  }
-
-  function continueToContextEnrichment(): void {
-    if (stack.length === 0) {
-      flashStatus("Add at least one stack card before continuing.");
-      return;
-    }
-    setShowStackDetails(true);
-    setFlowStep("context-enrichment");
-    flashStatus("Now enrich context for each card before submitting.");
-  }
-
-  function removeFromStack(cardId: string): void {
-    setStack((current) => removeFromStackById(current, cardId));
-    setDetailTargetKindByCardId((current) => {
-      const next = { ...current };
-      delete next[cardId];
-      return next;
-    });
-    setDetailStackTargetByCardId((current) => {
-      const next = { ...current };
-      delete next[cardId];
-      return next;
-    });
-    setDetailBattlefieldByCardId((current) => {
-      const next = { ...current };
-      delete next[cardId];
-      return next;
-    });
-    setDetailPlayerByCardId((current) => {
-      const next = { ...current };
-      delete next[cardId];
-      return next;
-    });
-    setDetailOtherByCardId((current) => {
-      const next = { ...current };
-      delete next[cardId];
-      return next;
-    });
+    setFlowStep("enrichment");
   }
 
   async function handleDecryptStack(event: FormEvent): Promise<void> {
     event.preventDefault();
-
-    if (stack.length === 0) {
-      flashStatus("Add at least one card before decrypting.");
-      return;
-    }
 
     if (!gameContext) {
       flashStatus("Confirm game context before decrypting.");
       return;
     }
 
-    const finalQuestion = getFinalQuestion(question);
-    const payload: AskAiRequest = buildAskAiRequest(question, gameContext, battlefieldContext, stack);
+    const updatedContext: GameContext = { ...gameContext, zones: zoneCardsByZone };
+    const payload = buildAskAiRequest(question, updatedContext);
+    const stackSize = zoneCardsByZone.stack?.length ?? 0;
+    const finalQuestion = payload.question;
+
     await submitAttempt({
       source: "decrypt",
       payload,
-      stackSize: stack.length,
+      stackSize,
       finalQuestion,
       usedFallbackQuestion: question.trim().length === 0
     });
   }
 
   async function handleRetry(): Promise<void> {
-    if (!canRetry || stack.length === 0 || !gameContext) return;
-    const finalQuestion = getFinalQuestion(question);
+    if (!canRetry || !gameContext) return;
+    const updatedContext: GameContext = { ...gameContext, zones: zoneCardsByZone };
+    const payload = buildAskAiRequest(question, updatedContext);
+    const stackSize = zoneCardsByZone.stack?.length ?? 0;
+    const finalQuestion = payload.question;
+
     await submitAttempt({
       source: "retry",
-      payload: buildAskAiRequest(question, gameContext, battlefieldContext, stack),
-      stackSize: stack.length,
+      payload,
+      stackSize,
       finalQuestion,
       usedFallbackQuestion: question.trim().length === 0
     });
@@ -985,7 +387,7 @@ export default function App() {
             current.includes(zone) ? current.filter((z) => z !== zone) : [...current, zone]
           )
         }
-        onBack={backToGameContext}
+        onBack={() => setFlowStep("game-context")}
         onContinue={confirmZoneSelection}
         statusMessage={statusMessage}
       />
@@ -1000,7 +402,7 @@ export default function App() {
         onZonesChange={setZoneCardsByZone}
         cardMetadata={cardMetadata}
         isMetadataLoading={isMetadataLoading}
-        onBack={backFromZoneCollection}
+        onBack={() => setFlowStep("zone-confirm")}
         onContinue={finishZoneCollection}
         onFlashStatus={flashStatus}
         statusMessage={statusMessage}
@@ -1008,362 +410,23 @@ export default function App() {
     );
   }
 
-  if (flowStep === "enrichment-placeholder") {
-    return (
-      <EnrichmentPlaceholderStep
-        selectedZones={selectedZones}
-        zones={zoneCardsByZone}
-        onBack={backFromEnrichmentPlaceholder}
-        onContinue={continueFromEnrichmentPlaceholder}
-        statusMessage={statusMessage}
-      />
-    );
-  }
-
-  if (flowStep === "battlefield-context") {
-    return (
-      <BattlefieldStep
-        collectCardsOnly
-        searchInput={battlefieldSearchInput}
-        onSearchInputChange={setBattlefieldSearchInput}
-        onSearchKeyDown={battlefieldKeyboard.handleKeyDown}
-        showSuggestions={battlefieldSearchInput.trim().length >= 3 && battlefieldKeyboard.isOpen}
-        isMetadataLoading={isMetadataLoading}
-        suggestions={battlefieldSuggestions}
-        noMatchCopy={NO_MATCH_COPY}
-        activeSuggestionIndex={battlefieldKeyboard.activeIndex}
-        onSuggestionHover={battlefieldKeyboard.setActiveIndex}
-        onSuggestionSelect={(card) => {
-          selectBattlefieldSuggestion(card);
-          battlefieldKeyboard.closeSuggestions();
-        }}
-        selectedCard={selectedBattlefieldCard}
-        battlefieldEntryDetails={battlefieldEntryDetails}
-        onBattlefieldEntryDetailsChange={setBattlefieldEntryDetails}
-        targetKind={battlefieldTargetKind}
-        onTargetKindChange={setBattlefieldTargetKind}
-        targetKindOptions={TARGET_KIND_OPTIONS.map((option) =>
-          option.value === "stack" ? { ...option, disabled: true } : option
-        )}
-        targetStackName={battlefieldTargetStackName}
-        onTargetStackNameChange={setBattlefieldTargetStackName}
-        targetStackId={battlefieldTargetStackId}
-        onTargetStackIdChange={setBattlefieldTargetStackId}
-        targetPermanent={battlefieldTargetPermanent}
-        onTargetPermanentChange={setBattlefieldTargetPermanent}
-        targetPlayer={battlefieldTargetPlayer}
-        onTargetPlayerChange={setBattlefieldTargetPlayer}
-        targetOtherDescription={battlefieldTargetOtherDescription}
-        onTargetOtherDescriptionChange={setBattlefieldTargetOtherDescription}
-        activePlayers={activePlayers}
-        maxOtherTargetChars={MAX_OTHER_TARGET_CHARS}
-        onAddTarget={addBattlefieldTarget}
-        targets={battlefieldEntryTargets}
-        formatTarget={formatTarget}
-        onRemoveTarget={removeBattlefieldTarget}
-        onAddBattlefieldItem={addBattlefieldEntry}
-        onProgress={progressFromBattlefieldStep}
-        progressLabel={battlefieldContext.length > 0 ? "Continue to stack" : "Skip battlefield context"}
-        battlefieldContext={battlefieldContext}
-        statusMessage={statusMessage}
-      />
-    );
-  }
-
-  if (flowStep === "stack-assembly") {
-    return (
-      <StackBuilderStep
-        gameContext={gameContext}
-        battlefieldContextCount={battlefieldContext.length}
-        hideSubmitControls
-        continueToEnrichmentLabel="Continue to context enrichment"
-        onContinueToEnrichment={continueToContextEnrichment}
-        continueToEnrichmentDisabled={stack.length === 0}
-        hideCardAssembly={false}
-        battlefieldContextNames={battlefieldContext.map((item) => item.name)}
-        cardMetadataCount={cardMetadata.length}
-        isMetadataLoading={isMetadataLoading}
-        metadataLoadError={metadataLoadError}
-        searchInput={searchInput}
-        onSearchInputChange={setSearchInput}
-        onSearchKeyDown={stackKeyboard.handleKeyDown}
-        showSuggestions={searchInput.trim().length >= 3 && stackKeyboard.isOpen}
-        suggestions={suggestions}
-        noMatchCopy={NO_MATCH_COPY}
-        activeSuggestionIndex={stackKeyboard.activeIndex}
-        onSuggestionHover={stackKeyboard.setActiveIndex}
-        onSuggestionSelect={(card) => {
-          selectStackSuggestion(card);
-          stackKeyboard.closeSuggestions();
-        }}
-        selectedCard={selectedCard}
-        playerOptions={activePlayers}
-        entryCaster={entryCaster}
-        onEntryCasterChange={setEntryCaster}
-        targetKind={targetKind}
-        onTargetKindChange={setTargetKind}
-        targetKindOptions={TARGET_KIND_OPTIONS.map((option) =>
-          option.value === "stack" && stack.length === 0 ? { ...option, disabled: true } : option
-        )}
-        targetStackCardId={targetStackCardId}
-        onTargetStackCardIdChange={setTargetStackCardId}
-        stack={stack}
-        battlefieldContext={battlefieldContext}
-        targetBattlefieldName={targetBattlefieldName}
-        onTargetBattlefieldNameChange={setTargetBattlefieldName}
-        targetPlayer={targetPlayer}
-        onTargetPlayerChange={setTargetPlayer}
-        targetOtherDescription={targetOtherDescription}
-        onTargetOtherDescriptionChange={setTargetOtherDescription}
-        maxOtherTargetChars={MAX_OTHER_TARGET_CHARS}
-        onAddEntryTarget={addEntryTarget}
-        entryTargets={entryTargets}
-        formatTarget={formatTarget}
-        onRemoveEntryTarget={removeEntryTarget}
-        entryManaSpent={entryManaSpent}
-        onEntryManaSpentChange={setEntryManaSpent}
-        entryContextNotes={entryContextNotes}
-        onEntryContextNotesChange={setEntryContextNotes}
-        addButtonLabel={addButtonLabel}
-        onAddSelectedCard={handleAddSelectedCard}
-        question={question}
-        onQuestionChange={setQuestion}
-        onDecryptStack={handleDecryptStack}
-        isSubmitting={isSubmitting}
-        statusMessage={statusMessage}
-        error={error}
-        canRetry={canRetry}
-        retryCountdown={retryCountdown}
-        onRetry={handleRetry}
-        answer={answer}
-        showStackDetails={showStackDetails}
-        onShowStackDetailsChange={setShowStackDetails}
-        onRemoveFromStack={removeFromStack}
-        onUpdateStackEntry={updateStackEntry}
-        onRemoveBattlefieldEntry={removeBattlefieldEntry}
-        onUpdateBattlefieldEntry={updateBattlefieldEntry}
-        parseManaSpentInput={parseManaSpentInput}
-        getDetailTargetKind={getDetailTargetKind}
-        onDetailTargetKindChange={(cardId, kind) =>
-          setDetailTargetKindByCardId((current) => ({
-            ...current,
-            [cardId]: kind
-          }))
-        }
-        detailStackTargetByCardId={detailStackTargetByCardId}
-        onDetailStackTargetChange={(cardId, value) =>
-          setDetailStackTargetByCardId((current) => ({
-            ...current,
-            [cardId]: value
-          }))
-        }
-        detailBattlefieldByCardId={detailBattlefieldByCardId}
-        onDetailBattlefieldChange={(cardId, value) =>
-          setDetailBattlefieldByCardId((current) => ({
-            ...current,
-            [cardId]: value
-          }))
-        }
-        getDetailPlayer={getDetailPlayer}
-        onDetailPlayerChange={(cardId, value) =>
-          setDetailPlayerByCardId((current) => ({
-            ...current,
-            [cardId]: value
-          }))
-        }
-        getDetailOther={getDetailOther}
-        onDetailOtherChange={(cardId, value) =>
-          setDetailOtherByCardId((current) => ({
-            ...current,
-            [cardId]: value
-          }))
-        }
-        onAddTargetFromStackDetails={addTargetFromStackDetails}
-        onRemoveTargetFromStackEntry={removeTargetFromStackEntry}
-        getDetailTargetKindForBattlefieldEntry={getDetailTargetKindForBattlefieldEntry}
-        onDetailTargetKindForBattlefieldEntryChange={(entryKey, kind) =>
-          setDetailTargetKindByBattlefieldKey((current) => ({
-            ...current,
-            [entryKey]: kind
-          }))
-        }
-        detailStackTargetByBattlefieldKey={detailStackTargetByBattlefieldKey}
-        onDetailStackTargetForBattlefieldEntryChange={(entryKey, value) =>
-          setDetailStackTargetByBattlefieldKey((current) => ({
-            ...current,
-            [entryKey]: value
-          }))
-        }
-        detailBattlefieldByBattlefieldKey={detailBattlefieldByBattlefieldKey}
-        onDetailBattlefieldForBattlefieldEntryChange={(entryKey, value) =>
-          setDetailBattlefieldByBattlefieldKey((current) => ({
-            ...current,
-            [entryKey]: value
-          }))
-        }
-        getDetailPlayerForBattlefieldEntry={getDetailPlayerForBattlefieldEntry}
-        onDetailPlayerForBattlefieldEntryChange={(entryKey, value) =>
-          setDetailPlayerByBattlefieldKey((current) => ({
-            ...current,
-            [entryKey]: value
-          }))
-        }
-        getDetailOtherForBattlefieldEntry={getDetailOtherForBattlefieldEntry}
-        onDetailOtherForBattlefieldEntryChange={(entryKey, value) =>
-          setDetailOtherByBattlefieldKey((current) => ({
-            ...current,
-            [entryKey]: value
-          }))
-        }
-        onAddTargetFromBattlefieldDetails={addTargetFromBattlefieldDetails}
-        onRemoveTargetFromBattlefieldEntry={removeTargetFromBattlefieldEntry}
-      />
-    );
-  }
-
   return (
-    <StackBuilderStep
-      hideCardAssembly
-      compactTopChrome
+    <EnrichmentStep
       gameContext={gameContext}
-      battlefieldContextCount={battlefieldContext.length}
-      battlefieldContextNames={battlefieldContext.map((item) => item.name)}
-      cardMetadataCount={cardMetadata.length}
-      isMetadataLoading={isMetadataLoading}
-      metadataLoadError={metadataLoadError}
-      searchInput={searchInput}
-      onSearchInputChange={setSearchInput}
-      onSearchKeyDown={stackKeyboard.handleKeyDown}
-      showSuggestions={searchInput.trim().length >= 3 && stackKeyboard.isOpen}
-      suggestions={suggestions}
-      noMatchCopy={NO_MATCH_COPY}
-      activeSuggestionIndex={stackKeyboard.activeIndex}
-      onSuggestionHover={stackKeyboard.setActiveIndex}
-      onSuggestionSelect={(card) => {
-        selectStackSuggestion(card);
-        stackKeyboard.closeSuggestions();
-      }}
-      selectedCard={selectedCard}
-      playerOptions={activePlayers}
-      entryCaster={entryCaster}
-      onEntryCasterChange={setEntryCaster}
-      targetKind={targetKind}
-      onTargetKindChange={setTargetKind}
-      targetKindOptions={TARGET_KIND_OPTIONS.map((option) =>
-        option.value === "stack" && stack.length === 0 ? { ...option, disabled: true } : option
-      )}
-      targetStackCardId={targetStackCardId}
-      onTargetStackCardIdChange={setTargetStackCardId}
-      stack={stack}
-      battlefieldContext={battlefieldContext}
-      targetBattlefieldName={targetBattlefieldName}
-      onTargetBattlefieldNameChange={setTargetBattlefieldName}
-      targetPlayer={targetPlayer}
-      onTargetPlayerChange={setTargetPlayer}
-      targetOtherDescription={targetOtherDescription}
-      onTargetOtherDescriptionChange={setTargetOtherDescription}
-      maxOtherTargetChars={MAX_OTHER_TARGET_CHARS}
-      onAddEntryTarget={addEntryTarget}
-      entryTargets={entryTargets}
-      formatTarget={formatTarget}
-      onRemoveEntryTarget={removeEntryTarget}
-      entryManaSpent={entryManaSpent}
-      onEntryManaSpentChange={setEntryManaSpent}
-      entryContextNotes={entryContextNotes}
-      onEntryContextNotesChange={setEntryContextNotes}
-      addButtonLabel={addButtonLabel}
-      onAddSelectedCard={handleAddSelectedCard}
+      zones={zoneCardsByZone}
+      onZonesChange={setZoneCardsByZone}
+      activePlayers={activePlayers}
       question={question}
       onQuestionChange={setQuestion}
       onDecryptStack={handleDecryptStack}
+      onBack={() => setFlowStep("zone-collection")}
       isSubmitting={isSubmitting}
-      statusMessage={statusMessage}
+      answer={answer}
       error={error}
       canRetry={canRetry}
       retryCountdown={retryCountdown}
       onRetry={handleRetry}
-      answer={answer}
-      showStackDetails={showStackDetails}
-      onShowStackDetailsChange={setShowStackDetails}
-      onRemoveFromStack={removeFromStack}
-      onUpdateStackEntry={updateStackEntry}
-      onRemoveBattlefieldEntry={removeBattlefieldEntry}
-      onUpdateBattlefieldEntry={updateBattlefieldEntry}
-      parseManaSpentInput={parseManaSpentInput}
-      getDetailTargetKind={getDetailTargetKind}
-      onDetailTargetKindChange={(cardId, kind) =>
-        setDetailTargetKindByCardId((current) => ({
-          ...current,
-          [cardId]: kind
-        }))
-      }
-      detailStackTargetByCardId={detailStackTargetByCardId}
-      onDetailStackTargetChange={(cardId, value) =>
-        setDetailStackTargetByCardId((current) => ({
-          ...current,
-          [cardId]: value
-        }))
-      }
-      detailBattlefieldByCardId={detailBattlefieldByCardId}
-      onDetailBattlefieldChange={(cardId, value) =>
-        setDetailBattlefieldByCardId((current) => ({
-          ...current,
-          [cardId]: value
-        }))
-      }
-      getDetailPlayer={getDetailPlayer}
-      onDetailPlayerChange={(cardId, value) =>
-        setDetailPlayerByCardId((current) => ({
-          ...current,
-          [cardId]: value
-        }))
-      }
-      getDetailOther={getDetailOther}
-      onDetailOtherChange={(cardId, value) =>
-        setDetailOtherByCardId((current) => ({
-          ...current,
-          [cardId]: value
-        }))
-      }
-      onAddTargetFromStackDetails={addTargetFromStackDetails}
-      onRemoveTargetFromStackEntry={removeTargetFromStackEntry}
-      getDetailTargetKindForBattlefieldEntry={getDetailTargetKindForBattlefieldEntry}
-      onDetailTargetKindForBattlefieldEntryChange={(entryKey, kind) =>
-        setDetailTargetKindByBattlefieldKey((current) => ({
-          ...current,
-          [entryKey]: kind
-        }))
-      }
-      detailStackTargetByBattlefieldKey={detailStackTargetByBattlefieldKey}
-      onDetailStackTargetForBattlefieldEntryChange={(entryKey, value) =>
-        setDetailStackTargetByBattlefieldKey((current) => ({
-          ...current,
-          [entryKey]: value
-        }))
-      }
-      detailBattlefieldByBattlefieldKey={detailBattlefieldByBattlefieldKey}
-      onDetailBattlefieldForBattlefieldEntryChange={(entryKey, value) =>
-        setDetailBattlefieldByBattlefieldKey((current) => ({
-          ...current,
-          [entryKey]: value
-        }))
-      }
-      getDetailPlayerForBattlefieldEntry={getDetailPlayerForBattlefieldEntry}
-      onDetailPlayerForBattlefieldEntryChange={(entryKey, value) =>
-        setDetailPlayerByBattlefieldKey((current) => ({
-          ...current,
-          [entryKey]: value
-        }))
-      }
-      getDetailOtherForBattlefieldEntry={getDetailOtherForBattlefieldEntry}
-      onDetailOtherForBattlefieldEntryChange={(entryKey, value) =>
-        setDetailOtherByBattlefieldKey((current) => ({
-          ...current,
-          [entryKey]: value
-        }))
-      }
-      onAddTargetFromBattlefieldDetails={addTargetFromBattlefieldDetails}
-      onRemoveTargetFromBattlefieldEntry={removeTargetFromBattlefieldEntry}
+      statusMessage={statusMessage}
     />
   );
 }

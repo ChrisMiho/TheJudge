@@ -1,6 +1,6 @@
 # Slice 06 — UI enrichment and submit
 
-status: pending
+status: complete
 
 **Prerequisites:** [slice-05-ui-zone-collection.md](./slice-05-ui-zone-collection.md)  
 **Next slice:** [slice-07-promote-and-closeout.md](./slice-07-promote-and-closeout.md)

@@ -17,9 +17,9 @@ Refine rows as you playtest; update frontend tests when this table changes.
 | Untap | battlefield, command | — |
 | Upkeep | battlefield, stack, command | graveyard, hand |
 | Draw | battlefield, library, hand | graveyard, stack, command |
-| Main 1 | battlefield, hand, stack, graveyard | exile, command, library |
+| Pre Combat Main Phase | battlefield, hand, stack, graveyard | exile, command, library |
 | Combat | battlefield, stack, hand | graveyard, exile, command |
-| Main 2 | battlefield, hand, stack, graveyard | exile, command, library |
+| Post Combat Main Phase | battlefield, hand, stack, graveyard | exile, command, library |
 | End step | battlefield, hand, graveyard, stack | exile, command, library |
 | Cleanup | battlefield, graveyard | hand, stack, command |
 | Stack resolving | stack, battlefield | hand, graveyard, exile, command, library |
