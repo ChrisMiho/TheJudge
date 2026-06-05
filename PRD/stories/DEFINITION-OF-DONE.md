@@ -1,6 +1,6 @@
 # Definition of Done (Active Stories)
 
-This Definition of Done applies to active story execution in `PRD/stories/` (MVP2+).
+This Definition of Done applies to active story execution in `PRD/stories/`.
 
 ## Required Completion Gates
 

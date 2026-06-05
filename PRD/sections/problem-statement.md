@@ -24,7 +24,7 @@ There is a gap for a fast, narrow-context tool that helps users:
 - get useful AI guidance quickly
 
 ## Constraints on the Solution
-The solution should not try to solve every MTG rules problem in MVP1.
+The solution should not try to solve every MTG rules problem in the core product.
 
 It should instead:
 - validate the core flow

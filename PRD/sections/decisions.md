@@ -1,9 +1,9 @@
 # decisions.md
 
 ### DEC-001
-- Decision: MVP1 is a flow-validation MVP, not a gameplay-accurate or judge-accurate MVP.
+- Decision: The core product is a flow-validation assistant, not a gameplay-accurate or judge-accurate system.
 - Status: confirmed
-- Context: The first version is meant to prove the core user flow without taking on full MTG rules complexity.
+- Context: Historical MVP1 framing was meant to prove the core user flow without taking on full MTG rules complexity.
 - Impact:
   - temporary simplifications are allowed
   - some real gameplay cases may be excluded
@@ -26,9 +26,9 @@
 - Notes:
 
 ### DEC-003
-- Decision: MVP1 collects only selected cards, stack order, and an optional question.
-- Status: confirmed
-- Context: Additional structured fields like targets, controller, and mode are intentionally out of scope.
+- Decision: The selected-cards-only capture model is superseded by the approved `GameContext` model.
+- Status: superseded
+- Context: Historical MVP1 scope collected only selected cards, stack order, and an optional question.
 - Impact:
   - context remains narrow
   - some answers will necessarily rely on limited input
@@ -37,7 +37,7 @@
   - REQ-011
   - REQ-012
 - Notes:
-  - superseded in part by DEC-019 for approved structured context additions
+  - superseded by DEC-019 and DEC-021 for approved structured context additions
 
 ### DEC-004
 - Decision: Stack ordering is bottom-to-top in the array, with `stack[0]` as bottom and the last item as top.
@@ -73,7 +73,7 @@
 - Notes:
 
 ### DEC-007
-- Decision: Duplicate cards are blocked in MVP1.
+- Decision: Duplicate stack cards are blocked as an intentional constraint.
 - Status: confirmed
 - Context: This reduces complexity while validating the basic flow.
 - Impact:
@@ -82,10 +82,10 @@
 - Related requirements:
   - REQ-009
 - Notes:
-  - this decision overrides gameplay realism for MVP1 scope control
+  - this decision overrides gameplay realism for current scope control
 
 ### DEC-008
-- Decision: The stack is capped at 10 cards in MVP1.
+- Decision: The stack is capped at 10 cards in the core product.
 - Status: confirmed
 - Context: This limits prompt size and reduces abuse risk.
 - Impact:
@@ -105,7 +105,7 @@
 - Notes:
 
 ### DEC-010
-- Decision: MVP1 uses one main product-facing backend endpoint.
+- Decision: The core product uses one main product-facing backend endpoint.
 - Status: confirmed
 - Context: The backend should remain intentionally small.
 - Impact:
@@ -115,18 +115,18 @@
 - Notes:
 
 ### DEC-011
-- Decision: Phase A uses a mock backend response before real Bedrock integration.
-- Status: confirmed
-- Context: This reduces implementation/debugging complexity.
+- Decision: The old staged provider rollout is superseded by explicit provider modes.
+- Status: superseded
+- Context: Historical Phase A used mock responses before planned Bedrock integration.
 - Impact:
-  - frontend flow can be validated before AWS integration
+  - frontend flow can be validated with `ASK_AI_PROVIDER=mock`
 - Related requirements:
   - REQ-013
   - REQ-014
 - Notes:
 
 ### DEC-012
-- Decision: MVP1 uses a static prebuilt metadata file committed with the app.
+- Decision: The core product uses a static prebuilt metadata file committed with the app.
 - Status: confirmed
 - Context: Runtime metadata syncing would add unnecessary complexity.
 - Impact:
@@ -137,7 +137,7 @@
 - Notes:
 
 ### DEC-013
-- Decision: The backend must not implement legality validation, deterministic rules simulation, board-state logic, or format enforcement in MVP1.
+- Decision: The backend must not implement legality validation, deterministic rules simulation, board-state logic, or format enforcement in the core product.
 - Status: confirmed
 - Context: Heavy rules behavior is explicitly out of scope.
 - Impact:
@@ -177,7 +177,7 @@
 - Notes:
 
 ### DEC-017
-- Decision: Phase A mock responses should return the outbound request payload as a debug-friendly JSON-formatted string inside the `answer` field.
+- Decision: Mock provider responses should return the outbound request payload as a debug-friendly JSON-formatted string inside the `answer` field.
 - Status: confirmed
 - Context: The mock flow should help inspect and tune the request shape before real LLM integration.
 - Impact:
@@ -197,9 +197,9 @@
 - Notes:
 
 ### DEC-019
-- Decision: MVP1 includes structured context beyond stack/question for flow validation: pre-stack game context (player count + life totals), optional battlefield context with skip, and per-stack mana-spent context with deterministic fallback behavior.
-- Status: confirmed
-- Context: Story roadmap now requires richer prompt-ready context while still avoiding rules-engine complexity.
+- Decision: Structured context beyond stack/question is approved for flow validation.
+- Status: superseded
+- Context: Earlier roadmap scope required richer prompt-ready context while still avoiding rules-engine complexity.
 - Impact:
   - frontend flow becomes staged: game context -> optional battlefield context -> stack construction/question
   - backend request/prompt context includes approved structured context fields deterministically
@@ -216,7 +216,7 @@
 ### DEC-020
 - Decision: Live answer generation uses an explicit backend provider flag with OpenAI behind the existing provider interface; HTTP contracts stay frozen across provider swaps.
 - Status: confirmed
-- Context: MVP2 replaced the Phase A mock-only path with a swappable provider boundary while preserving staged UX and request/response shapes.
+- Context: The current provider model replaces the earlier mock-only path with a swappable provider boundary while preserving staged UX and request/response shapes.
 - Impact:
   - `POST /api/ask-ai` request and success/error response shapes remain unchanged when switching providers
   - provider selection is explicit via `ASK_AI_PROVIDER` (`mock` default, `openai` live); do not infer provider mode from `NODE_ENV` or deploy target
@@ -230,13 +230,13 @@
   - REQ-013
   - REQ-014
 - Notes:
-  - supersedes Bedrock-specific Phase B wording in `sections/integrations-and-data.md` where they conflict
+  - supersedes retired provider-stage wording in `sections/integrations-and-data.md` where they conflict
   - route handlers stay contract-focused; provider SDK wiring lives only in provider/factory composition
 
 ### DEC-021
 - Decision: `GameContext` is the parent model for prompt-facing game state.
 - Status: confirmed
-- Context: UX Wave 2 replaces separate top-level stack and battlefield payloads with a single structured game-state container.
+- Context: The current staged zone flow replaces separate top-level stack and battlefield payloads with a single structured game-state container.
 - Impact:
   - `POST /api/ask-ai` accepts `question` and `gameContext` only
   - selected zones, turn phase, players, active player, and populated zone cards live under `gameContext`

@@ -1,7 +1,7 @@
 ## Status
 
 - status: **active**
-- parent phase: UX Wave 2 — prompt grounding (WotC rulings)
+- parent scope: core product prompt grounding (WotC rulings)
 - canonical plan: [GAMEPLAN.md](GAMEPLAN.md)
 - source sections: `PRD/sections/integrations-and-data.md`, `PRD/sections/goals-and-non-goals.md`, `PRD/sections/decisions.md`
 
@@ -9,7 +9,7 @@
 
 Inject **Wizards (WotC) official rulings** from Scryfall into the backend LLM prompt for cards present in a submitted `AskAiRequest`. No new API endpoint, no frontend rulings fetch, no rulings UI.
 
-**Implementing agents:** treat this folder as the single source of truth. Do not rely on Cursor-only plan files under `.cursor/plans/`.
+**Implementing agents:** treat this folder as the single source of truth. Do not rely on tool-specific plan files.
 
 ## Agent read order
 

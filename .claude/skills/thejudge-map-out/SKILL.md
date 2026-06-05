@@ -41,7 +41,7 @@ User provides work slug.
 ## Do not
 
 - Write product code
-- Persist to `.cursor/plans/`
+- Persist to tool-specific plan folders
 
 ## Handoff
 

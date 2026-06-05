@@ -32,4 +32,4 @@ Paths: `.cursor/skills/`, `.codex/skills/`, `.claude/skills/` (identical copies)
 ## Out of scope for default reads
 
 - `PRD/archive/`
-- `.cursor/plans/` (not source of truth — use `PRD/work/`)
+- tool-specific plan folders (not source of truth — use `PRD/work/`)

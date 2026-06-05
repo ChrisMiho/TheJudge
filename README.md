@@ -1,6 +1,6 @@
 # TheJudge
 
-TheJudge is an MVP card-stack interaction assistant for Magic gameplay questions.
+TheJudge is a flow-validation card interaction assistant for Magic gameplay questions.
 It helps players build an ordered stack of cards, ask a question, and receive an AI-generated explanation through a backend API.
 
 ## Start Here
@@ -9,12 +9,12 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 - This root README is for fast onboarding, setup, and implementation status.
 - If you are using coding agents, point them to `PRD/README.md` first.
 
-## Current Product Phase
+## Current Product Status
 
-- MVP1: closed
-- UX Wave 2: in progress — zone-based flow with user-flow refinements and gap fixes promoted into `PRD/sections/`
+- Core product: staged zone flow with user-flow refinements and gap fixes promoted into `PRD/sections/`
 - Baseline: flow-validation assistant with mock-default backend and optional OpenAI provider mode (`DEC-020` in `PRD/sections/decisions.md`)
 - Product source of truth: `PRD/sections/` (start with `decisions.md`)
+- Agent workflow skills: `.cursor/skills/thejudge-*`, `.codex/skills/thejudge-*`, and `.claude/skills/thejudge-*`
 
 ## Tech Stack
 
@@ -31,7 +31,7 @@ It helps players build an ordered stack of cards, ask a question, and receive an
   - `sections/` product truth (requirements, decisions, flows, constraints)
   - `instructions/` generation and editing rules
   - `stories/` Definition of Done for story execution
-- `apps/frontend/` MVP client app
+- `apps/frontend/` client app
   - `src/components/` zone-flow step UI
   - `src/hooks/` React hooks (`useAskAiSubmitOrchestration`, autocomplete helpers)
   - `src/lib/` shared utilities and `contextFlow/` state machine

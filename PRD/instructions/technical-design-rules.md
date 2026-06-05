@@ -21,7 +21,7 @@ These rules govern how agents may propose architecture or implementation details
 - keep backend intentionally small
 - use backend-only model invocation
 - keep animations basic
-- preserve plain-text MVP1 response output
+- preserve plain-text core product response output
 
 ## Forbidden Design Drift
 
@@ -30,13 +30,13 @@ Do not propose or implement:
 - deterministic rules engine behavior
 - legality validation
 - board-state simulation
-- full gameplay-rules target/controller/mode simulation for MVP1
+- full gameplay-rules target/controller/mode simulation for the core product
 - extra product-facing endpoints
 - microservices
 - runtime metadata refresh/sync
-- billing/auth/account systems in MVP1
+- billing/auth/account systems in the core product
 - flashy UI animation systems
-- duplicate-card support in MVP1
+- duplicate-card support in the core product
 
 ## Design Proposal Rules
 

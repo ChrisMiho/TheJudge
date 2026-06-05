@@ -14,7 +14,7 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - Validation: request validation layer
 - AI Provider: backend provider boundary (`ASK_AI_PROVIDER=mock` default, `ASK_AI_PROVIDER=openai` for live answers)
 - Provider Access: provider SDKs are backend-only
-- Storage: none for MVP1
+- Storage: none for the core product
 
 ## Data Model
 
@@ -192,8 +192,8 @@ Purpose:
 - local metadata powers autocomplete and preview
 - filter source records to english, paper-playable, non-digital cards with a non-empty name
 - dedupe by normalized card name with deterministic tie-breaks (higher metadata completeness, then later release date, then stable ID)
-- do not implement runtime sync/refresh in MVP1
-- do not cache all card images in MVP1
+- do not implement runtime sync/refresh in the core product
+- do not cache all card images in the core product
 - load images on demand
 
 ## AI Prompt Context Rules
@@ -230,12 +230,20 @@ The backend must not add:
 
 ## Delivery Strategy
 
-### Phase A
-- implement full frontend flow
-- use a mock backend response
-- validate search/add/stack/question/response UX
+### Provider modes
 
-### Phase A Mock Response Rule
+#### `mock`
+- default local provider mode
+- returns a debug-friendly response using the same success contract as live answers
+- validates flow, payload shape, and prompt context without model access
+
+#### `openai`
+- live answer generation through the backend provider boundary
+- keeps `POST /api/ask-ai` request and response shapes unchanged
+- runtime config, env vars, and local auth: `apps/backend/src/providers/README.md`
+- confirmed provider rules: `DEC-020` in `sections/decisions.md`
+
+### Mock Response Rule
 - keep the same success response contract as the real backend
 - return the outbound request data as a debug-friendly JSON-formatted string inside `answer`
 - use this to help inspect the exact payload shape being prepared for the LLM
@@ -245,13 +253,6 @@ The backend must not add:
     {
       "answer": "MOCK RESPONSE\n{\n  \"question\": \"Resolve the stack\",\n  \"gameContext\": {...}\n}"
     }
-
-### Phase B
-- keep same HTTP contracts (`POST /api/ask-ai` request and response shapes unchanged)
-- add live answer generation via the backend provider boundary (`ASK_AI_PROVIDER=openai`)
-- keep `ASK_AI_PROVIDER=mock` as the default local baseline for flow and payload debugging
-- runtime OpenAI config, env vars, and local auth: `apps/backend/src/providers/README.md`
-- confirmed provider rules: `DEC-020` in `sections/decisions.md`
 
 ## Dependencies
 - Scryfall-derived metadata

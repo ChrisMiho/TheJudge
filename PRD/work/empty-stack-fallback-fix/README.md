@@ -1,7 +1,7 @@
 ## Status
 
 - status: **active**
-- parent phase: UX Wave 2 — post-walkthrough gap fix
+- parent scope: core product post-walkthrough gap fix
 - source feedback: manual walkthrough (2026-06-05) — friend skipped targets in enrichment; AI answered that the stack was empty despite battlefield cards being present
 - canonical plan: [GAMEPLAN.md](GAMEPLAN.md)
 - source sections: `PRD/sections/user-flows.md`, `PRD/sections/functional-requirements.md`, `PRD/sections/decisions.md`
@@ -10,7 +10,7 @@
 
 Fix misleading AI responses when users submit **battlefield-only** (or other non-stack) context with a **blank question**, which currently falls back to `"Resolve the stack"` even when no stack cards were added. Skipping targets in enrichment is **not** the root cause; this package addresses the real mismatch between populated zones and the default question.
 
-**Implementing agents:** treat this folder as the single source of truth. Do not rely on Cursor-only plan files under `.cursor/plans/`.
+**Implementing agents:** treat this folder as the single source of truth. Do not rely on tool-specific plan files.
 
 ## Agent read order
 

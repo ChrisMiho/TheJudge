@@ -7,8 +7,8 @@
 - Description: The primary goal is to reduce friction when players need guidance on stack interactions during gameplay.
 
 ### GOAL-002
-- Title: Keep MVP1 fast and lightweight
-- Description: The first version should optimize for speed of use, structured lightweight context, and simple implementation.
+- Title: Keep the core product fast and lightweight
+- Description: The core product should optimize for speed of use, structured lightweight context, and simple implementation.
 
 ### GOAL-003
 - Title: Validate the core product loop
@@ -21,7 +21,7 @@
 - users can retry without losing stack/question state
 - users can correct card selection quickly when suggestions are ambiguous
 
-## MVP1 In-Scope Outcomes
+## Shipped capabilities
 - typed card lookup
 - autocomplete with local metadata
 - card preview before add
@@ -38,6 +38,13 @@
 - mock-first integration path
 - one main backend endpoint
 
+## Intentional constraints
+- duplicate-card blocking is a temporary product constraint, not a gameplay rule
+- stack size is capped at 10 cards to reduce token use and abuse risk
+- the product does not implement a deterministic rules engine or full board-state simulator
+- plain-text answers are used before advanced formatting polish
+- runtime metadata syncing and camera scanning are out of scope
+
 ## Explicit Non-Goals
 - official judge-grade rulings
 - deterministic rules engine behavior
@@ -48,11 +55,11 @@
 - saved sessions
 - account system
 - billing
-- camera scanning in MVP1
+- camera scanning
 - runtime metadata syncing
 - animation-heavy UI
 - multiple product-facing backend endpoints
 
 ## Scope Notes
-MVP1 is a **flow-validation MVP**, not a gameplay-accurate MVP.
-Some simplifications are temporary and intentionally narrow.
+The core product is a **flow-validation assistant**, not a gameplay-accurate rules engine.
+Some constraints are temporary and intentionally narrow.

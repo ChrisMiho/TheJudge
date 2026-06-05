@@ -4,7 +4,7 @@ This folder isolates answer-generation providers behind a stable interface so ro
 
 ## Current Providers
 
-- `mockAskAiProvider.ts` is the Phase A provider used by default.
+- `mockAskAiProvider.ts` is the default local provider.
 - It receives prepared prompt input (`context` + prompt diagnostics) and returns `AskAiResponse` (`answer: string`).
 - `openAiResponsesProvider.ts` implements the OpenAI Responses API runtime invocation path while preserving the same provider interface.
 - `createAskAiProvider.ts` selects provider based on runtime config.

@@ -26,7 +26,7 @@ User provides work slug.
 ## Checklist
 
 - [ ] No contradictions with active `DEC-###` entries
-- [ ] No retired terminology (MVP1/2, Phase A/B, Bedrock) in new/edited content
+- [ ] Current vocabulary is used in new/edited content
 - [ ] Stack ordering consistent if feature touches stack/API/prompt
 - [ ] `technical-design-rules.md` constraints respected (one endpoint, no rules engine, etc.)
 - [ ] Scope is implementable without hidden assumptions

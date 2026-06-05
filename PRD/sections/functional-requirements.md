@@ -33,13 +33,13 @@
 ### REQ-003
 - Title: Card preview before add
 - Priority: high
-- Description: The app must show a preview of the selected card before it can be added to the stack.
+- Description: The app must show a preview of the selected card before it can be added to a selected zone.
 - Acceptance Criteria:
   - selecting a suggestion shows card preview
   - preview includes enough information to confirm the card
   - add action is separate from suggestion selection
 - Constraints:
-  - preview should remain simple in MVP1
+  - preview should remain simple in the core product
 - Dependencies:
   - image URL and oracle text data
 - Notes:
@@ -47,7 +47,7 @@
 ### REQ-004
 - Title: Add button labeling rule
 - Priority: medium
-- Description: The add button text must vary based on whether the stack is empty.
+- Description: The stack add button text must vary based on whether the stack is empty.
 - Acceptance Criteria:
   - if `stack.length === 0`, button text is **Begin stackening!**
   - if `stack.length > 0`, button text is **Add to Stack**
@@ -61,13 +61,13 @@
 ### REQ-005
 - Title: Add card to stack
 - Priority: high
-- Description: The app must allow users to add selected cards to the stack.
+- Description: The app must allow users to add selected cards to the stack zone.
 - Acceptance Criteria:
   - clicking add appends the card to the end of the stack array
   - appended card becomes the top of the stack
   - app shows brief success state such as **Stacked**
 - Constraints:
-  - stack is append-only in MVP1
+  - stack is append-only in the core product
 - Dependencies:
   - stack state
 - Notes:
@@ -96,7 +96,7 @@
   - icon is visible when stack contains cards
   - icon badge reflects current stack size
 - Constraints:
-  - keep visual treatment simple in MVP1
+  - keep visual treatment simple in the core product
 - Dependencies:
   - stack state
 - Notes:
@@ -113,18 +113,18 @@
   - if thumbnail does not load, row still renders correctly
   - user can remove cards from the stack
 - Constraints:
-  - no manual reordering in MVP1
+  - no manual reordering in the core product
 - Dependencies:
   - stack state
 - Notes:
 
 ### REQ-009
-- Title: Block duplicate cards in MVP1
+- Title: Block duplicate stack cards
 - Priority: medium
-- Description: MVP1 must block duplicate cards from being added to the stack.
+- Description: The core product must block duplicate cards from being added to the stack.
 - Acceptance Criteria:
   - if a selected card already exists in the stack, add is blocked
-  - UI shows a message that duplicates are not supported in MVP1
+  - UI shows a message that duplicates are not supported yet
 - Constraints:
   - this is temporary and only for flow validation
 - Dependencies:
@@ -135,10 +135,10 @@
 ### REQ-010
 - Title: Enforce stack size limit
 - Priority: medium
-- Description: MVP1 must cap the stack at 10 cards.
+- Description: The core product must cap the stack at 10 cards.
 - Acceptance Criteria:
   - app blocks adding an 11th card
-  - UI explains that the MVP stack limit has been reached
+  - UI explains that the stack limit has been reached
 - Constraints:
   - limit exists to reduce token use and abuse
 - Dependencies:
@@ -158,7 +158,7 @@
 - Dependencies:
   - submit flow
 - Notes:
-  - question is optional in MVP1
+  - question is optional in the core product
 
 ### REQ-012
 - Title: Decrypt Stack submit action
@@ -171,7 +171,7 @@
   - submit is allowed only when at least one selected zone has a card
   - blank trimmed question uses fallback **Resolve the stack** in request/prompt logic
 - Constraints:
-  - one main product-facing endpoint in MVP1
+  - one main product-facing endpoint in the core product
 - Dependencies:
   - backend API
 - Notes:
@@ -179,7 +179,7 @@
 ### REQ-013
 - Title: Plain-text AI response
 - Priority: high
-- Description: MVP1 must display the AI response as plain text.
+- Description: The core product must display the AI response as plain text.
 - Acceptance Criteria:
   - backend returns an answer string on success
   - frontend renders answer text without advanced formatting
