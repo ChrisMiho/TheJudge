@@ -102,9 +102,10 @@ Read in this order:
 | Slug | Status | Entry |
 |---|---|---|
 | `user-flow-gap-fixes` | planned | [README](work/user-flow-gap-fixes/README.md) → [GAMEPLAN](work/user-flow-gap-fixes/GAMEPLAN.md) → slices A–E |
+| `player-display-names` | planned | [README](work/player-display-names/README.md) → [GAMEPLAN](work/player-display-names/GAMEPLAN.md) → slices A–C |
 | `user-flow-refinements` | complete (2026-06-04) | [README](work/user-flow-refinements/README.md) |
 
-Agents implementing gap fixes must use **`user-flow-gap-fixes`** as the canonical plan; do not use Cursor-only `.cursor/plans/` copies.
+Agents implementing gap fixes must use **`user-flow-gap-fixes`** as the canonical plan; agents implementing player display names must use **`player-display-names`**. Do not use Cursor-only `.cursor/plans/` copies.
 
 ## Current Editorial Notes
 - MVP1 is closed; flow-validation framing and temporary simplifications remain documented only where still active in `sections/decisions.md`.
