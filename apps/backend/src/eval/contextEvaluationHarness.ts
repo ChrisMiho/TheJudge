@@ -1,5 +1,5 @@
-import type { AskAiRequest, PromptContext } from "../types.js";
-import { normalizeQuestion } from "../promptNormalization.js";
+import type { AskAiRequest, PromptContext } from "../types/index.js";
+import { normalizeQuestion } from "../prompt/normalization.js";
 
 const FALLBACK_QUESTION = "Resolve the stack";
 

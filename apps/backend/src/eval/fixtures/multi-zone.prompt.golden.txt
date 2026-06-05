@@ -53,12 +53,14 @@ oracleText: Lightning Bolt deals 3 damage to any target.
 ZONE: HAND
 Hand 1
 name: Snapcaster Mage
+owner: (none)
 details: (none)
 targets: (none)
 
 ZONE: GRAVEYARD
 Graveyard 1
 name: Counterspell
+owner: (none)
 details: (none)
 targets: (none)
 

@@ -4,11 +4,10 @@ import {
   appendZoneCard,
   buildZoneCardFromMetadata,
   removeZoneCardById,
-  syncZonesToLegacyStackAndBattlefield,
   validateZoneCardAdd
 } from "./zoneCards";
 import { buildAskAiRequest } from "./contextFlow/flow";
-import { DUPLICATE_CARD_MESSAGE } from "./stackState";
+import { DUPLICATE_CARD_MESSAGE } from "./stackLimits";
 
 const SAMPLE_CARD: CardMetadataItem = {
   cardId: "opt",
@@ -63,19 +62,6 @@ describe("zoneCards", () => {
     expect(next.map((card) => card.cardId)).toEqual(["lightning-bolt"]);
   });
 
-  it("syncZonesToLegacyStackAndBattlefield maps stack and battlefield zones", () => {
-    const stackCard = buildZoneCardFromMetadata(SAMPLE_CARD);
-    const battlefieldCard = buildZoneCardFromMetadata(BOLT_CARD);
-    const synced = syncZonesToLegacyStackAndBattlefield({
-      stack: [stackCard],
-      battlefield: [battlefieldCard],
-      hand: [stackCard]
-    });
-
-    expect(synced.stack.map((item) => item.cardId)).toEqual(["opt"]);
-    expect(synced.battlefieldContext.map((item) => item.name)).toEqual(["Lightning Bolt"]);
-  });
-
   it("buildAskAiRequest omits empty zone keys from synced game context", () => {
     const stackCard = buildZoneCardFromMetadata(SAMPLE_CARD);
     const ctx = {
@@ -84,6 +70,7 @@ describe("zoneCards", () => {
         { label: "Player 1" as const, lifeTotal: 20 },
         { label: "Player 2" as const, lifeTotal: 20 }
       ],
+      turnPhase: "stack_resolving" as const,
       selectedZones: ["stack", "hand", "battlefield"] as ZoneId[],
       zones: {
         stack: [stackCard],

@@ -276,11 +276,11 @@
 - Notes:
 
 ### DEC-024
-- Decision: Zero cards are allowed, and empty zones are omitted from the request payload.
+- Decision: Submit requires at least one card in at least one selected zone, and empty zones are omitted from the request payload.
 - Status: confirmed
-- Context: Timing, priority, and layer questions may need player and phase context without any specific cards.
+- Context: Manual flow validation showed that users could complete the staged flow without providing any card context, which produced too little information for the flow-validation assistant.
 - Impact:
-  - submit does not require a stack or any other populated zone
+  - frontend submit requires at least one card in at least one selected zone
   - `gameContext.zones` contains only zone keys with one or more cards
   - selected-but-empty zones are represented by `selectedZones` and the prompt scope sentence, not by empty arrays
 - Related requirements:
@@ -314,4 +314,19 @@
 - Related requirements:
   - REQ-017
   - REQ-021
+- Notes:
+
+### DEC-027
+- Decision: Optional player display names are UI- and prompt-facing labels layered over fixed `PlayerLabel` identity.
+- Status: confirmed
+- Context: Users can enter names during game setup, but the API must keep stable player identifiers for validation and downstream contracts.
+- Impact:
+  - API fields such as `label`, `activePlayer`, `caster`, `owner`, and `targetPlayer` remain `PlayerLabel` strings (`Player 1` ... `Player N`)
+  - UI player options show `Player N (Name)` when a trimmed custom display name is set and differs from the label
+  - prompt text resolves player references in roster-adjacent fields, `activePlayer`, caster, owner, and player targets using the same `Player N (Name)` format
+  - empty, whitespace-only, or label-identical display names are treated as unset
+- Related requirements:
+  - REQ-015
+  - REQ-017
+  - REQ-019
 - Notes:

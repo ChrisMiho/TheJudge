@@ -1,5 +1,5 @@
-import type { PreparedPromptInput } from "./promptPreparation.js";
-import type { AskAiResponse } from "./types.js";
+import type { PreparedPromptInput } from "./prompt/preparation.js";
+import type { AskAiResponse } from "./types/index.js";
 
 const CHARS_PER_TOKEN_ESTIMATE = 4;
 

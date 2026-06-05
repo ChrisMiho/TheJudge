@@ -97,6 +97,10 @@ Read in this order:
 - Prefer narrow edits to one file at a time.
 - Preserve stable IDs once assigned.
 
+## Active work packages (`PRD/work/`)
+
+No active work packages are linked from the control plane. Completed work is promoted into `sections/` and temporary work folders are removed per `instructions/doc-lifecycle.md`.
+
 ## Current Editorial Notes
 - MVP1 is closed; flow-validation framing and temporary simplifications remain documented only where still active in `sections/decisions.md`.
 - Duplicate-card blocking is temporary and should not be treated as long-term product truth.

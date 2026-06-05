@@ -1,4 +1,4 @@
-import type { AskAiRequest, ZoneCardItem } from "../types.js";
+import type { AskAiRequest, ZoneCardItem } from "../types/index.js";
 
 export function createGameContext(playerCount: 2 | 3 | 4 | 5 | 6 | 7 | 8 = 2): AskAiRequest["gameContext"] {
   const labels: AskAiRequest["gameContext"]["players"][number]["label"][] = [

@@ -1,11 +1,16 @@
 import type { KeyboardEvent } from "react";
 import { CardSelectionPreview } from "./CardSelectionPreview";
-import type { CardMetadataItem, ZoneCardItem, ZoneId } from "../types";
+import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
+import { formatPlayerDisplayLabel } from "../lib/playerLabels";
 import { ZONE_LABELS } from "../lib/zoneLabels";
 
 type ZoneCardPickerProps = {
   zoneId: ZoneId;
   cards: ZoneCardItem[];
+  activePlayers: PlayerLabel[];
+  displayNamesByPlayer: Record<PlayerLabel, string | undefined>;
+  pendingOwner: PlayerLabel;
+  onPendingOwnerChange: (owner: PlayerLabel) => void;
   searchInput: string;
   onSearchInputChange: (value: string) => void;
   onSearchKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
@@ -38,6 +43,10 @@ function formatStackPosition(index: number, total: number): string {
 export function ZoneCardPicker({
   zoneId,
   cards,
+  activePlayers,
+  displayNamesByPlayer,
+  pendingOwner,
+  onPendingOwnerChange,
   searchInput,
   onSearchInputChange,
   onSearchKeyDown,
@@ -100,6 +109,24 @@ export function ZoneCardPicker({
         </div>
       )}
 
+      {selectedCard && zoneId !== "stack" && (
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="font-semibold uppercase tracking-[0.08em] text-slate-300">Card owner</span>
+          <select
+            aria-label={`Owner for ${selectedCard.name}`}
+            value={pendingOwner}
+            onChange={(event) => onPendingOwnerChange(event.target.value as PlayerLabel)}
+            className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+          >
+            {activePlayers.map((player) => (
+              <option key={player} value={player}>
+                {formatPlayerDisplayLabel(player, displayNamesByPlayer[player])}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+
       {selectedCard ? (
         <CardSelectionPreview
           card={selectedCard}
@@ -133,8 +160,14 @@ export function ZoneCardPicker({
               >
                 <div>
                   <p className="font-medium text-slate-100">{`${index + 1}. ${card.name}`}</p>
-                  {zoneId === "stack" && (
+                  {zoneId === "stack" ? (
                     <p className="text-xs text-slate-400">{formatStackPosition(index, cards.length)}</p>
+                  ) : (
+                    card.owner && (
+                      <p className="text-xs text-slate-400">
+                        Owner: {formatPlayerDisplayLabel(card.owner, displayNamesByPlayer[card.owner])}
+                      </p>
+                    )
                   )}
                 </div>
                 <button

@@ -2,8 +2,8 @@ import { config as loadDotenv, parse as parseDotenv } from "dotenv";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createApp } from "./app.js";
-import { readServerConfig } from "./config.js";
+import { createApp } from "./app/createApp.js";
+import { readServerConfig } from "./config/index.js";
 import { createAppLogger } from "./logging.js";
 import { createAskAiProvider } from "./providers/createAskAiProvider.js";
 

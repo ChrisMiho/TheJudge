@@ -1,10 +1,10 @@
-import type { GameContext, ZoneCardItem, ZoneId } from "../../types";
+import type { GameContext, TurnPhase, ZoneCardItem, ZoneId } from "../../types";
 import type { FlowStepId } from "./steps";
 import { CANONICAL_ZONE_ORDER } from "./phaseZoneDefaults";
 
 /** Minimum fields needed by canAdvance for each step. */
 export type FlowNavigationState = {
-  gameContext: Pick<Partial<GameContext>, "players" | "playerCount" | "selectedZones">;
+  gameContext: Pick<Partial<GameContext>, "players" | "playerCount" | "selectedZones" | "turnPhase" | "zones">;
 };
 
 /**
@@ -23,17 +23,33 @@ export type EnrichmentQueueEntry = {
 };
 
 const DEFAULT_QUESTION = "Resolve the stack";
+export const DEFAULT_TURN_PHASE: TurnPhase = "stack_resolving";
+export const NON_STACK_ZONES_WITH_OWNER: Exclude<ZoneId, "stack">[] = [
+  "battlefield",
+  "hand",
+  "graveyard",
+  "exile",
+  "library",
+  "command"
+];
+
+export function hasAtLeastOneCardInSelectedZones(
+  selectedZones: ZoneId[] | undefined,
+  zones: Partial<Record<ZoneId, ZoneCardItem[]>> | undefined
+): boolean {
+  return selectedZones?.some((zoneId) => (zones?.[zoneId]?.length ?? 0) > 0) ?? false;
+}
 
 /**
  * Whether the user may advance from a given step.
- * No minimum card count at zone-collection — matches slice-03 spec.
  */
 export function canAdvance(step: FlowStepId, state: FlowNavigationState): boolean {
   switch (step) {
-    case "game-setup":
+    case "game-context":
       return (
         Array.isArray(state.gameContext.players) &&
         state.gameContext.players.length >= 2 &&
+        state.gameContext.turnPhase !== undefined &&
         state.gameContext.players.every((p) => Number.isFinite(p.lifeTotal))
       );
     case "zone-confirm":
@@ -41,9 +57,9 @@ export function canAdvance(step: FlowStepId, state: FlowNavigationState): boolea
         Array.isArray(state.gameContext.selectedZones) && state.gameContext.selectedZones.length > 0
       );
     case "zone-collection":
-      return true;
+      return hasAtLeastOneCardInSelectedZones(state.gameContext.selectedZones, state.gameContext.zones);
     case "enrichment":
-      return true;
+      return hasAtLeastOneCardInSelectedZones(state.gameContext.selectedZones, state.gameContext.zones);
   }
 }
 
@@ -80,6 +96,7 @@ export function buildAskAiRequest(question: string, gameContext: GameContext): Z
     question: question.trim().length > 0 ? question.trim() : DEFAULT_QUESTION,
     gameContext: {
       ...gameContext,
+      turnPhase: gameContext.turnPhase ?? DEFAULT_TURN_PHASE,
       zones: nonEmptyZones
     }
   };

@@ -2,9 +2,9 @@ import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { buildPromptContext } from "../promptContext.js";
-import { buildPromptText } from "../promptNormalization.js";
-import type { AskAiRequest } from "../types.js";
+import { buildPromptContext } from "../prompt/context.js";
+import { buildPromptText } from "../prompt/normalization.js";
+import type { AskAiRequest } from "../types/index.js";
 import {
   buildChecklistReport,
   evaluateScenario,

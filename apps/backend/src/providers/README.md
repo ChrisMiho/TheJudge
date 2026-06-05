@@ -23,7 +23,8 @@ This folder isolates answer-generation providers behind a stable interface so ro
 ## Interface Contract
 
 - `askAiProvider.ts` defines `AskAiProvider.generateAnswer(preparedPrompt)`.
-- `createApp()` accepts `askAiProvider` injection for tests and future integrations.
+- `../app/createApp.ts` accepts `askAiProvider` injection for tests and future integrations.
+- Route handlers live in `../routes/`; prompt assembly lives in `../prompt/`.
 
 ## Local OpenAI auth
 

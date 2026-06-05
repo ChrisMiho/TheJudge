@@ -67,6 +67,7 @@ oracleText: Counter target spell unless its controller pays 3.
 ZONE: BATTLEFIELD
 Battlefield 1
 name: Narset, Parter of Veils
+owner: (none)
 details: Each opponent can't draw more than one card each turn.
 targets: none:does-not-target
 

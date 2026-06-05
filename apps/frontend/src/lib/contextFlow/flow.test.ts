@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { GameContext, ZoneCardItem } from "../../types";
-import { buildAskAiRequest, buildEnrichmentQueue, canAdvance } from "./flow";
+import {
+  buildAskAiRequest,
+  buildEnrichmentQueue,
+  canAdvance,
+  hasAtLeastOneCardInSelectedZones
+} from "./flow";
 
 // ── Shared test fixtures ────────────────────────────────────────────────────
 
@@ -25,10 +30,11 @@ function makeCard(id: string, name = id): ZoneCardItem {
 // ── canAdvance ──────────────────────────────────────────────────────────────
 
 describe("canAdvance", () => {
-  it("game-setup: returns true when players have valid life totals", () => {
+  it("game-context: returns true when players have valid life totals", () => {
     expect(
-      canAdvance("game-setup", {
+      canAdvance("game-context", {
         gameContext: {
+          turnPhase: "stack_resolving",
           players: [
             { label: "Player 1", lifeTotal: 20 },
             { label: "Player 2", lifeTotal: 20 }
@@ -38,20 +44,22 @@ describe("canAdvance", () => {
     ).toBe(true);
   });
 
-  it("game-setup: returns false when fewer than 2 players", () => {
+  it("game-context: returns false when fewer than 2 players", () => {
     expect(
-      canAdvance("game-setup", {
+      canAdvance("game-context", {
         gameContext: {
+          turnPhase: "stack_resolving",
           players: [{ label: "Player 1", lifeTotal: 20 }]
         }
       })
     ).toBe(false);
   });
 
-  it("game-setup: returns false when a player has NaN life total", () => {
+  it("game-context: returns false when a player has NaN life total", () => {
     expect(
-      canAdvance("game-setup", {
+      canAdvance("game-context", {
         gameContext: {
+          turnPhase: "stack_resolving",
           players: [
             { label: "Player 1", lifeTotal: NaN },
             { label: "Player 2", lifeTotal: 20 }
@@ -61,8 +69,21 @@ describe("canAdvance", () => {
     ).toBe(false);
   });
 
-  it("game-setup: returns false when players is undefined", () => {
-    expect(canAdvance("game-setup", { gameContext: {} })).toBe(false);
+  it("game-context: returns false when players is undefined", () => {
+    expect(canAdvance("game-context", { gameContext: { turnPhase: "stack_resolving" } })).toBe(false);
+  });
+
+  it("game-context: returns false when turnPhase is undefined", () => {
+    expect(
+      canAdvance("game-context", {
+        gameContext: {
+          players: [
+            { label: "Player 1", lifeTotal: 20 },
+            { label: "Player 2", lifeTotal: 20 }
+          ]
+        }
+      })
+    ).toBe(false);
   });
 
   it("zone-confirm: returns true when at least one zone selected", () => {
@@ -85,12 +106,58 @@ describe("canAdvance", () => {
     expect(canAdvance("zone-confirm", { gameContext: {} })).toBe(false);
   });
 
-  it("zone-collection: always returns true (no min card count)", () => {
-    expect(canAdvance("zone-collection", { gameContext: {} })).toBe(true);
+  it("zone-collection: returns false when selected zones have no cards", () => {
+    expect(
+      canAdvance("zone-collection", {
+        gameContext: { selectedZones: ["stack", "battlefield"], zones: { stack: [], battlefield: [] } }
+      })
+    ).toBe(false);
   });
 
-  it("enrichment: always returns true", () => {
-    expect(canAdvance("enrichment", { gameContext: {} })).toBe(true);
+  it("zone-collection: returns true when one selected zone has a card", () => {
+    expect(
+      canAdvance("zone-collection", {
+        gameContext: {
+          selectedZones: ["stack", "battlefield"],
+          zones: { stack: [], battlefield: [makeCard("bf-1")] }
+        }
+      })
+    ).toBe(true);
+  });
+
+  it("enrichment: returns false when all selected-zone cards were removed", () => {
+    expect(
+      canAdvance("enrichment", {
+        gameContext: { selectedZones: ["stack"], zones: { stack: [] } }
+      })
+    ).toBe(false);
+  });
+
+  it("enrichment: returns true when one selected zone has a card", () => {
+    expect(
+      canAdvance("enrichment", {
+        gameContext: {
+          selectedZones: ["stack", "hand"],
+          zones: { stack: [makeCard("stack-1")], hand: [] }
+        }
+      })
+    ).toBe(true);
+  });
+});
+
+// ── hasAtLeastOneCardInSelectedZones ───────────────────────────────────────
+
+describe("hasAtLeastOneCardInSelectedZones", () => {
+  it("returns false when no selected zone has cards", () => {
+    expect(hasAtLeastOneCardInSelectedZones(["stack", "battlefield"], { stack: [], battlefield: [] })).toBe(false);
+  });
+
+  it("returns true when any selected zone has at least one card", () => {
+    expect(hasAtLeastOneCardInSelectedZones(["stack", "battlefield"], { stack: [], battlefield: [makeCard("bf-1")] })).toBe(true);
+  });
+
+  it("ignores cards in unselected zones", () => {
+    expect(hasAtLeastOneCardInSelectedZones(["stack"], { battlefield: [makeCard("bf-1")] })).toBe(false);
   });
 });
 
@@ -231,5 +298,15 @@ describe("buildAskAiRequest", () => {
     expect(payload.gameContext.playerCount).toBe(2);
     expect(payload.gameContext.turnPhase).toBe("main_1");
     expect(payload.gameContext.selectedZones).toEqual(["battlefield", "stack"]);
+  });
+
+  it("defaults missing turnPhase to stack_resolving before sending", () => {
+    const ctxWithoutPhase = {
+      playerCount: BASE_GAME_CONTEXT.playerCount,
+      players: BASE_GAME_CONTEXT.players,
+      selectedZones: BASE_GAME_CONTEXT.selectedZones
+    };
+    const payload = buildAskAiRequest("test", ctxWithoutPhase as GameContext);
+    expect(payload.gameContext.turnPhase).toBe("stack_resolving");
   });
 });

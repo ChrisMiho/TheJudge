@@ -168,7 +168,7 @@
   - action button label is **Decrypt Stack**
   - clicking the button sends `question` and `gameContext`
   - no top-level `stack` or `battlefieldContext` is sent
-  - submit is allowed when no zone has cards
+  - submit is allowed only when at least one selected zone has a card
   - blank trimmed question uses fallback **Resolve the stack** in request/prompt logic
 - Constraints:
   - one main product-facing endpoint in MVP1
@@ -212,13 +212,16 @@
 - Description: Before zone collection begins, the app must collect core game context including player count, life totals, active player when known, and turn phase.
 - Acceptance Criteria:
   - user can set number of players using fixed labels (`Player 1` ... `Player N`)
+  - user can optionally enter display names for included player labels
   - user can enter life totals for each included player label
   - user can set active player from included player labels
+  - player selects show display names as `Player N (Name)` when a custom display name is set
+  - submitted API values remain fixed `PlayerLabel` strings
   - user must select one turn phase from `untap`, `upkeep`, `draw`, `main_1`, `combat`, `main_2`, `end_step`, `cleanup`, and `stack_resolving`
   - user must confirm context before proceeding to zone confirmation
   - invalid or missing required values block progression
 - Constraints:
-  - fixed player labels only (no custom names)
+  - fixed `PlayerLabel` identity with optional display names for UI labels and prompt text
   - support range is constrained by current player-label model
   - combat is a combined phase; combat sub-step details belong in the question or notes
 - Dependencies:
@@ -269,14 +272,15 @@
 ### REQ-018
 - Title: Per-zone card collection
 - Priority: high
-- Description: The app must let users add card identities to each selected zone while allowing every zone to remain empty.
+- Description: The app must let users add card identities to each selected zone while requiring at least one card across the selected zones before continuing.
 - Acceptance Criteria:
   - user can search local metadata and add cards to selected zones
   - before input, the search box says **Type to begin**
   - suggestions begin at 3 or more typed characters
   - no-match state shows **No matching card found**
   - stack-zone cards preserve bottom-to-top append order
-  - selected zones with zero cards are allowed
+  - selected zones with zero cards are allowed individually
+  - collection cannot continue until at least one selected zone contains a card
 - Constraints:
   - card collection captures identity and metadata first; detailed context is collected during enrichment
 - Dependencies:
@@ -293,7 +297,7 @@
   - request validation rejects top-level `stack` and `battlefieldContext`
   - `gameContext.zones` includes only non-empty zone arrays
   - empty zone arrays are rejected; clients omit the zone key instead
-  - zero-card submissions are valid when game context and selected zones are valid
+  - frontend submit requires at least one selected zone card before building the request
 - Constraints:
   - `POST /api/ask-ai` route remains unchanged
 - Dependencies:

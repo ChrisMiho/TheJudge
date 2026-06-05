@@ -1,6 +1,6 @@
 {
   "id": "zero-cards",
-  "description": "No cards in any zone; scope sentence must list all zones.",
+  "description": "Prompt-builder edge coverage only: API validation rejects no-card submissions, but scope sentence still lists all zones when no populated zones reach prompt assembly.",
   "request": {
     "question": "We just drew our opening hands. Who has priority?",
     "gameContext": {

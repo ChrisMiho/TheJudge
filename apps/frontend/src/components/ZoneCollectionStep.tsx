@@ -8,9 +8,9 @@ import {
   removeZoneCardById,
   validateZoneCardAdd
 } from "../lib/zoneCards";
-import { useAutocompleteKeyboard } from "../lib/useAutocompleteKeyboard";
-import { useAutocompleteSuggestions } from "../lib/useAutocompleteSuggestions";
-import type { CardMetadataItem, ZoneCardItem, ZoneId } from "../types";
+import { useAutocompleteKeyboard } from "../hooks/useAutocompleteKeyboard";
+import { useAutocompleteSuggestions } from "../hooks/useAutocompleteSuggestions";
+import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { ZoneCardPicker } from "./ZoneCardPicker";
 
 type ZoneCollectionStepProps = {
@@ -19,8 +19,12 @@ type ZoneCollectionStepProps = {
   onZonesChange: (zones: Partial<Record<ZoneId, ZoneCardItem[]>>) => void;
   cardMetadata: CardMetadataItem[];
   isMetadataLoading: boolean;
+  activePlayer: PlayerLabel;
+  activePlayers: PlayerLabel[];
+  displayNamesByPlayer: Record<PlayerLabel, string | undefined>;
   onBack: () => void;
   onContinue: () => void;
+  canContinue: boolean;
   onFlashStatus: (message: string) => void;
   statusMessage: string | null;
 };
@@ -31,8 +35,12 @@ export function ZoneCollectionStep({
   onZonesChange,
   cardMetadata,
   isMetadataLoading,
+  activePlayer,
+  activePlayers,
+  displayNamesByPlayer,
   onBack,
   onContinue,
+  canContinue,
   onFlashStatus,
   statusMessage
 }: ZoneCollectionStepProps): JSX.Element {
@@ -43,6 +51,7 @@ export function ZoneCollectionStep({
   const [activeZoneIndex, setActiveZoneIndex] = useState(0);
   const [searchInput, setSearchInput] = useState("");
   const [selectedCard, setSelectedCard] = useState<CardMetadataItem | null>(null);
+  const [pendingOwner, setPendingOwner] = useState<PlayerLabel>(activePlayer);
 
   const activeZone = orderedSelectedZones[activeZoneIndex];
   const activeZoneCards = activeZone ? (zones[activeZone] ?? []) : [];
@@ -56,7 +65,8 @@ export function ZoneCollectionStep({
   useEffect(() => {
     setSearchInput("");
     setSelectedCard(null);
-  }, [activeZone]);
+    setPendingOwner(activePlayer);
+  }, [activeZone, activePlayer]);
 
   const suggestions = useAutocompleteSuggestions({
     cards: cardMetadata,
@@ -82,6 +92,9 @@ export function ZoneCollectionStep({
     }
 
     const nextCard = buildZoneCardFromMetadata(selectedCard);
+    if (activeZone !== "stack") {
+      nextCard.owner = pendingOwner;
+    }
     const validation = validateZoneCardAdd(activeZoneCards, nextCard, activeZone);
     if (!validation.ok) {
       onFlashStatus(validation.message);
@@ -116,7 +129,7 @@ export function ZoneCollectionStep({
 
         <h2 className="text-2xl font-semibold text-sky-300">Add cards to zones</h2>
         <p className="text-sm text-slate-400">
-          Add card identity for each selected zone. You can skip zones with zero cards.
+          Add at least one card in a selected zone. Other selected zones may stay empty.
         </p>
 
         {orderedSelectedZones.length === 0 ? (
@@ -153,6 +166,10 @@ export function ZoneCollectionStep({
               <ZoneCardPicker
                 zoneId={activeZone}
                 cards={activeZoneCards}
+                activePlayers={activePlayers}
+                displayNamesByPlayer={displayNamesByPlayer}
+                pendingOwner={pendingOwner}
+                onPendingOwnerChange={setPendingOwner}
                 searchInput={searchInput}
                 onSearchInputChange={setSearchInput}
                 onSearchKeyDown={keyboard.handleKeyDown}
@@ -186,11 +203,18 @@ export function ZoneCollectionStep({
           <button
             type="button"
             onClick={onContinue}
-            className="rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+            disabled={!canContinue}
+            className="rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Continue
           </button>
         </div>
+
+        {!canContinue && (
+          <p className="text-xs text-slate-400">
+            Add at least one card in a selected zone before continuing.
+          </p>
+        )}
 
         {statusMessage && (
           <p className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2 text-sm font-medium text-cyan-200">
