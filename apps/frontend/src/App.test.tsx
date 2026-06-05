@@ -534,6 +534,24 @@ describe("App MVP interaction flows", () => {
     expect(screen.getByPlaceholderText("How does this resolve?")).toBeInTheDocument();
   });
 
+  it("shows the optional question immediately after finishing the card-by-card enrichment wizard", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+
+    await addCardToStack(user, "opt", "Opt");
+    await addCardToStack(user, "lig", "Lightning Bolt");
+    await advancePastZoneCollection(user);
+
+    expect(screen.getByText("Card 1 of 2")).toBeInTheDocument();
+    await finishEnrichmentWizard(user);
+
+    expect(screen.getByText("Ready to decrypt.")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("How does this resolve?")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Caster for Opt")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Caster for Lightning Bolt")).not.toBeInTheDocument();
+  });
+
   it("uses first-add then subsequent-add button labels", async () => {
     const user = userEvent.setup();
     render(<App />);

@@ -387,6 +387,7 @@ export function EnrichmentStep({
   const hasAnswer = Boolean(answer);
   const retryLabel = retryCountdown > 0 ? `Retry in ${retryCountdown}s` : "Retry";
   const showWizard = totalCards > 0 && viewMode === "wizard" && !wizardFinished;
+  const showWizardFinished = totalCards > 0 && viewMode === "wizard" && wizardFinished;
   const showQuestionForm = !hasAnswer && (totalCards === 0 || viewMode === "list" || wizardFinished);
 
   return (
@@ -438,6 +439,13 @@ export function EnrichmentStep({
             >
               {wizardIndex < totalCards - 1 ? "OK — next card" : "OK — finish enrichment"}
             </button>
+          </div>
+        ) : showWizardFinished ? (
+          <div className="rounded-2xl border border-emerald-500/40 bg-emerald-950/30 p-4">
+            <p className="text-sm font-semibold text-emerald-300">Ready to decrypt.</p>
+            <p className="mt-1 text-sm text-slate-300">
+              Card context reviewed. Use View all cards to make more edits.
+            </p>
           </div>
         ) : (
           <div className="space-y-6">
