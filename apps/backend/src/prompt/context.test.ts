@@ -20,6 +20,22 @@ function createStackZoneCards(size: number): NonNullable<AskAiRequest["gameConte
   }));
 }
 
+function createBattlefieldCard(name = "Rhystic Study"): NonNullable<AskAiRequest["gameContext"]["zones"]["battlefield"]>[number] {
+  return {
+    cardId: name.toLowerCase().replace(/\s+/g, "-"),
+    name,
+    oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
+    imageUrl: "",
+    manaCost: "",
+    manaValue: 0,
+    typeLine: "Enchantment",
+    colors: [],
+    supertypes: [],
+    subtypes: [],
+    targets: []
+  };
+}
+
 describe("buildPromptContext", () => {
   const defaultGameContext: AskAiRequest["gameContext"] = {
     playerCount: 2,
@@ -32,12 +48,43 @@ describe("buildPromptContext", () => {
     zones: {}
   };
 
-  it("applies fallback question for blank input", () => {
+  it("applies stack fallback question for blank input when stack has cards", () => {
     const context = buildPromptContext({
       question: "   ",
       gameContext: {
         ...defaultGameContext,
         zones: { stack: createStackZoneCards(1) }
+      }
+    });
+
+    expect(context.finalQuestion).toBe("Resolve the stack");
+  });
+
+  it("applies board-state fallback question for blank input when only non-stack zones have cards", () => {
+    const context = buildPromptContext({
+      question: "   ",
+      gameContext: {
+        ...defaultGameContext,
+        selectedZones: ["battlefield", "stack"],
+        zones: {
+          battlefield: [createBattlefieldCard()]
+        }
+      }
+    });
+
+    expect(context.finalQuestion).toBe("Explain the interaction with the provided game state");
+  });
+
+  it("applies stack fallback question for blank input when stack and battlefield both have cards", () => {
+    const context = buildPromptContext({
+      question: "",
+      gameContext: {
+        ...defaultGameContext,
+        selectedZones: ["battlefield", "stack"],
+        zones: {
+          battlefield: [createBattlefieldCard()],
+          stack: createStackZoneCards(1)
+        }
       }
     });
 

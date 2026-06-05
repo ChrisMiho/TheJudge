@@ -761,6 +761,55 @@ describe("App MVP interaction flows", () => {
     expect(continueButton).toBeEnabled();
   });
 
+  it("nudges on selected empty stack but continues to enrichment when another zone has cards", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await selectTurnPhase(user, "main_1");
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advancePastZoneConfirm(user);
+    await waitForMetadataReady();
+
+    await selectZoneTab(user, "Battlefield");
+    await addCardToActiveZone(user, "lig", "Lightning Bolt");
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+
+    expect(screen.getByRole("heading", { name: "Context enrichment" })).toBeInTheDocument();
+    expect(screen.getByText(/Stack zone is selected but empty/)).toBeInTheDocument();
+  });
+
+  it("summarizes battlefield-only send context and submits board-state fallback for blank main phase questions", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await selectTurnPhase(user, "main_1");
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advancePastZoneConfirm(user);
+    await waitForMetadataReady();
+
+    await selectZoneTab(user, "Battlefield");
+    await addCardToActiveZone(user, "lig", "Lightning Bolt");
+    await advancePastZoneCollection(user);
+    await finishEnrichmentWizard(user);
+
+    expect(screen.getByText("Sending to TheJudge")).toBeInTheDocument();
+    expect(screen.getByText("Battlefield: 1 card")).toBeInTheDocument();
+    expect(screen.getByText("Stack: selected, no cards added")).toBeInTheDocument();
+    expect(screen.getByText(/Explain the interaction with the provided game state/)).toBeInTheDocument();
+    expect(screen.queryByText(/No question\? Uses fallback: “Resolve the stack”/)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+
+    const requestBody = await waitFor(() => {
+      expect(submittedAskAiRequests.length).toBeGreaterThan(0);
+      return submittedAskAiRequests[0];
+    });
+
+    expect(requestBody.question).toBe("Explain the interaction with the provided game state");
+    expect(requestBody.gameContext.zones?.stack).toBeUndefined();
+    expect(requestBody.gameContext.zones?.battlefield?.map((card) => card.name)).toEqual(["Lightning Bolt"]);
+  });
+
   it("blocks Decrypt Stack after all cards are removed in enrichment", async () => {
     const user = userEvent.setup();
     render(<App />);

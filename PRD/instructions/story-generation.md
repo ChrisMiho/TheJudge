@@ -102,5 +102,5 @@ Prefer stories aligned to:
 - Do not introduce duplicate support unless explicitly approved in product sections.
 - Do not introduce runtime metadata syncing into flow-validation scope unless explicitly approved.
 - Do not introduce heavy rules logic without explicit product approval.
-- Keep Phase A and Phase B separate.
+- Keep provider-mode assumptions explicit.
 - Do not hide blocking relationships; if two stories cannot run in parallel, mark and justify the dependency in both stories.

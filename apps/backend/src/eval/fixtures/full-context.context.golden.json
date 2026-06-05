@@ -31,6 +31,7 @@
       "zoneId": "battlefield",
       "items": [
         {
+          "cardId": "rhystic-study",
           "name": "Rhystic Study",
           "details": "Tax trigger may alter available mana decisions.",
           "targets": [

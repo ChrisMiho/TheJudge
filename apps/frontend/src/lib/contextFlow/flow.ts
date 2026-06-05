@@ -22,7 +22,8 @@ export type EnrichmentQueueEntry = {
   card: ZoneCardItem;
 };
 
-const DEFAULT_QUESTION = "Resolve the stack";
+export const DEFAULT_STACK_QUESTION = "Resolve the stack";
+export const DEFAULT_BOARD_QUESTION = "Explain the interaction with the provided game state";
 export const DEFAULT_TURN_PHASE: TurnPhase = "stack_resolving";
 export const NON_STACK_ZONES_WITH_OWNER: Exclude<ZoneId, "stack">[] = [
   "battlefield",
@@ -38,6 +39,20 @@ export function hasAtLeastOneCardInSelectedZones(
   zones: Partial<Record<ZoneId, ZoneCardItem[]>> | undefined
 ): boolean {
   return selectedZones?.some((zoneId) => (zones?.[zoneId]?.length ?? 0) > 0) ?? false;
+}
+
+export function resolveFallbackQuestion(
+  zones: Partial<Record<ZoneId, ZoneCardItem[]>> | undefined
+): string {
+  if ((zones?.stack?.length ?? 0) > 0) {
+    return DEFAULT_STACK_QUESTION;
+  }
+
+  const hasNonStackCards = CANONICAL_ZONE_ORDER.some(
+    (zoneId) => zoneId !== "stack" && (zones?.[zoneId]?.length ?? 0) > 0
+  );
+
+  return hasNonStackCards ? DEFAULT_BOARD_QUESTION : DEFAULT_STACK_QUESTION;
 }
 
 /**
@@ -93,7 +108,7 @@ export function buildAskAiRequest(question: string, gameContext: GameContext): Z
     }
   }
   return {
-    question: question.trim().length > 0 ? question.trim() : DEFAULT_QUESTION,
+    question: question.trim().length > 0 ? question.trim() : resolveFallbackQuestion(nonEmptyZones),
     gameContext: {
       ...gameContext,
       turnPhase: gameContext.turnPhase ?? DEFAULT_TURN_PHASE,

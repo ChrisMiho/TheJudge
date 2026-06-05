@@ -24,6 +24,7 @@
       "zoneId": "hand",
       "items": [
         {
+          "cardId": "snapcaster-mage",
           "name": "Snapcaster Mage",
           "targets": []
         }
@@ -33,6 +34,7 @@
       "zoneId": "graveyard",
       "items": [
         {
+          "cardId": "counterspell",
           "name": "Counterspell",
           "targets": []
         }

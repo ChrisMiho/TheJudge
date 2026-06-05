@@ -29,7 +29,7 @@ For implementation work, read in this order:
 
 | File | Status | Description |
 |---|---|---|
-| `sections/overview.md` | complete | High-level summary of the product and MVP framing |
+| `sections/overview.md` | complete | High-level summary of the product and current product status |
 | `sections/problem-statement.md` | complete | Problem being solved and why it matters |
 | `sections/goals-and-non-goals.md` | complete | Goals, success metrics, scope boundaries, and out-of-scope items |
 | `sections/personas.md` | complete | Primary user and pain points |
@@ -51,6 +51,7 @@ For implementation work, read in this order:
 | `instructions/story-generation.md` | complete | Rules for converting requirements into stories and backlog items |
 | `instructions/technical-design-rules.md` | complete | Constraints for architecture and implementation proposals |
 | `instructions/secrets-handling.md` | active | Guardrails for storing secrets in `.secrets/`, never committing them, and validating secret decisions with the user |
+| `instructions/workflow-reference.md` | active | Lean five-skill PRD workflow reference, session openers, slice template, and cleanup receipt convention |
 
 ## Which Files to Read for Which Task
 
@@ -96,13 +97,14 @@ Read in this order:
 - Record confirmed decisions in `sections/decisions.md`.
 - Prefer narrow edits to one file at a time.
 - Preserve stable IDs once assigned.
+- Agent workflow skills live under `.cursor/skills/thejudge-*`, `.codex/skills/thejudge-*`, and `.claude/skills/thejudge-*`; humans attach the matching skill manually for each session.
 
 ## Active work packages (`PRD/work/`)
 
 No active work packages are linked from the control plane. Completed work is promoted into `sections/` and temporary work folders are removed per `instructions/doc-lifecycle.md`.
 
 ## Current Editorial Notes
-- MVP1 is closed; flow-validation framing and temporary simplifications remain documented only where still active in `sections/decisions.md`.
+- Current product status is flow validation with staged zone context, mock-default local provider mode, and optional live OpenAI provider mode.
 - Duplicate-card blocking is temporary and should not be treated as long-term product truth.
 - Stack ordering is critical and must remain consistent across UI, API payloads, and prompt-building logic.
 - Default local provider mode is mock (`ASK_AI_PROVIDER=mock`); live OpenAI path is documented in `DEC-020`, `sections/integrations-and-data.md`, and `apps/backend/src/providers/README.md`.

@@ -1,11 +1,15 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { buildEnrichmentQueue, CANONICAL_ZONE_ORDER, NON_STACK_ZONES_WITH_OWNER } from "../lib/contextFlow";
+import {
+  buildEnrichmentQueue,
+  CANONICAL_ZONE_ORDER,
+  NON_STACK_ZONES_WITH_OWNER,
+  resolveFallbackQuestion
+} from "../lib/contextFlow";
 import { buildPlayerDisplayNameMap, formatPlayerDisplayLabel } from "../lib/playerLabels";
 import { ZONE_LABELS } from "../lib/zoneLabels";
 import type { ContextTarget, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 
 const MAX_QUESTION_CHARS = 300;
-const DEFAULT_QUESTION_FALLBACK = "Resolve the stack";
 
 type ContextCardEntry = { zone: ZoneId; cardId: string; cardName: string };
 
@@ -389,6 +393,12 @@ export function EnrichmentStep({
   const showWizard = totalCards > 0 && viewMode === "wizard" && !wizardFinished;
   const showWizardFinished = totalCards > 0 && viewMode === "wizard" && wizardFinished;
   const showQuestionForm = !hasAnswer && (totalCards === 0 || viewMode === "list" || wizardFinished);
+  const populatedZoneSummaries = CANONICAL_ZONE_ORDER
+    .map((zone) => ({ zone, count: zones[zone]?.length ?? 0 }))
+    .filter(({ count }) => count > 0);
+  const stackSelectedButEmpty =
+    gameContext?.selectedZones?.includes("stack") === true && (zones.stack?.length ?? 0) === 0;
+  const fallbackQuestion = resolveFallbackQuestion(zones);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
@@ -470,6 +480,24 @@ export function EnrichmentStep({
         ) : (
           showQuestionForm && (
             <form onSubmit={(e) => void onDecryptStack(e)} className="space-y-3">
+              <div className="space-y-2 rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4">
+                <p className="text-sm font-semibold text-slate-100">Sending to TheJudge</p>
+                <ul className="space-y-1 text-sm text-slate-300">
+                  {populatedZoneSummaries.map(({ zone, count }) => (
+                    <li key={zone}>
+                      {ZONE_LABELS[zone]}: {count} {count === 1 ? "card" : "cards"}
+                    </li>
+                  ))}
+                  {stackSelectedButEmpty && (
+                    <li className="text-slate-400">Stack: selected, no cards added</li>
+                  )}
+                </ul>
+                {!question.trim() && (
+                  <p className="text-xs text-slate-400">
+                    No question? Uses fallback: &ldquo;{fallbackQuestion}&rdquo;
+                  </p>
+                )}
+              </div>
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
                   Optional question
@@ -486,11 +514,6 @@ export function EnrichmentStep({
                   {question.length}/{MAX_QUESTION_CHARS}
                 </span>
               </label>
-              {!question.trim() && (
-                <p className="text-xs text-slate-400">
-                  No question? Uses fallback: &ldquo;{DEFAULT_QUESTION_FALLBACK}&rdquo;
-                </p>
-              )}
               <button
                 type="submit"
                 disabled={isSubmitting || !canDecrypt}

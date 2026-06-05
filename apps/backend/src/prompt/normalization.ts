@@ -1,4 +1,5 @@
 import { MTG_PROMPT_REFERENCE } from "./mtgReference.js";
+import type { ResolvedRulings } from "../cardRulings.js";
 import type { PlayerLabel, PromptContext, ZoneId } from "../types/index.js";
 
 export const MAX_ORACLE_TEXT_CHARS = 480;
@@ -6,6 +7,9 @@ export const MAX_CONTEXT_DETAILS_CHARS = 220;
 export const MAX_CONTEXT_NOTES_CHARS = 180;
 export const MAX_TARGET_LABEL_CHARS = 120;
 export const MAX_PROMPT_CHAR_BUDGET = 12000;
+export const MAX_RULINGS_PER_CARD = 3;
+export const MAX_RULING_COMMENT_CHARS = 480;
+export const MAX_RULINGS_SECTION_CHARS = 2400;
 export const PROMPT_BUDGET_NEAR_LIMIT_BUFFER = 800;
 const TRUNCATION_SUFFIX = " ...(truncated)";
 const PLAYER_LABEL_ORDER = [
@@ -228,6 +232,29 @@ function formatNonStackZoneSections(context: PromptContext): string {
     .join("\n\n");
 }
 
+export function formatOfficialRulingsSection(resolvedRulings: ResolvedRulings | undefined): string {
+  if (!resolvedRulings || resolvedRulings.cards.length === 0) {
+    return "";
+  }
+
+  const cardBlocks = resolvedRulings.cards
+    .filter((card) => card.rulings.length > 0)
+    .map((card) =>
+      [card.name, ...card.rulings.map((ruling) => `- ${ruling.publishedAt}: ${ruling.comment}`)].join("\n")
+    );
+
+  if (cardBlocks.length === 0) {
+    return "";
+  }
+
+  return [
+    "OFFICIAL RULINGS (WotC reference)",
+    "Use these published Oracle rulings as reference for how each card works. They do not override the user's stack order, zones, or stated game state.",
+    "",
+    cardBlocks.join("\n\n")
+  ].join("\n");
+}
+
 /**
  * Builds the scope sentence listing zones with no cards.
  * Merges unselected zones and selected-but-empty zones in canonical order.
@@ -252,9 +279,11 @@ export type PromptDiagnostics = {
   utilizationPercent: number;
   nearLimit: boolean;
   exceedsBudget: boolean;
+  rulingsSectionChars?: number;
+  rulingsCardCount?: number;
 };
 
-export function getPromptDiagnostics(prompt: string): PromptDiagnostics {
+export function getPromptDiagnostics(prompt: string, resolvedRulings?: ResolvedRulings): PromptDiagnostics {
   const promptChars = estimatePromptChars(prompt);
   const promptBudgetChars = MAX_PROMPT_CHAR_BUDGET;
   const remainingChars = promptBudgetChars - promptChars;
@@ -266,11 +295,21 @@ export function getPromptDiagnostics(prompt: string): PromptDiagnostics {
     remainingChars,
     utilizationPercent,
     nearLimit: promptChars > promptBudgetChars - PROMPT_BUDGET_NEAR_LIMIT_BUFFER,
-    exceedsBudget: promptChars > promptBudgetChars
+    exceedsBudget: promptChars > promptBudgetChars,
+    ...(resolvedRulings
+      ? {
+          rulingsSectionChars: resolvedRulings.sectionChars,
+          rulingsCardCount: resolvedRulings.cards.length
+        }
+      : {})
   };
 }
 
-export function buildPromptText(context: PromptContext): string {
+export type BuildPromptTextOptions = {
+  rulings?: ResolvedRulings;
+};
+
+export function buildPromptText(context: PromptContext, options: BuildPromptTextOptions = {}): string {
   const populatedZoneIds: ZoneId[] = [
     ...(context.orderedStack.length > 0 ? (["stack"] as ZoneId[]) : []),
     ...context.populatedZones.map((z) => z.zoneId as ZoneId)
@@ -280,6 +319,7 @@ export function buildPromptText(context: PromptContext): string {
 
   const stackSection = formatStackSection(context);
   const nonStackSections = formatNonStackZoneSections(context);
+  const officialRulingsSection = formatOfficialRulingsSection(options.rulings);
 
   const zoneSections = [stackSection, nonStackSections].filter(Boolean).join("\n\n");
 
@@ -301,6 +341,10 @@ export function buildPromptText(context: PromptContext): string {
 
   if (zoneSections.length > 0) {
     sections.push("", zoneSections);
+  }
+
+  if (officialRulingsSection.length > 0) {
+    sections.push("", officialRulingsSection);
   }
 
   sections.push("", "SCOPE", scopeSentence, "", "QUESTION", context.finalQuestion);

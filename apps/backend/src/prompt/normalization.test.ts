@@ -26,7 +26,12 @@ const baseContext: PromptContext = {
     turnPhase: "main_1",
     selectedZones: ["battlefield", "stack"]
   },
-  populatedZones: [{ zoneId: "battlefield", items: [{ name: "Rhystic Study", details: "Tax effect", targets: [{ kind: "none" }] }] }],
+  populatedZones: [
+    {
+      zoneId: "battlefield",
+      items: [{ cardId: "rhystic-study", name: "Rhystic Study", details: "Tax effect", targets: [{ kind: "none" }] }]
+    }
+  ],
   orderedStack: [
     {
       cardId: "card-1",
@@ -182,6 +187,7 @@ describe("buildPromptText", () => {
           zoneId: "battlefield",
           items: [
             {
+              cardId: "rhystic-study",
               name: "Rhystic Study",
               owner: "Player 1",
               targets: [{ kind: "player", targetPlayer: "Player 2" }]
@@ -231,6 +237,7 @@ describe("buildPromptText", () => {
           zoneId: "battlefield",
           items: [
             {
+              cardId: "rhystic-study",
               name: "Rhystic Study",
               owner: "Player 1",
               targets: [{ kind: "player", targetPlayer: "Player 2" }]
@@ -254,6 +261,37 @@ describe("buildPromptText", () => {
     const scopeIdx = prompt.indexOf("SCOPE");
     expect(scopeIdx).toBeLessThan(questionIdx);
     expect(prompt.lastIndexOf("QUESTION")).toBe(questionIdx);
+  });
+
+  it("inserts official rulings between zones and scope when provided", () => {
+    const prompt = buildPromptText(baseContext, {
+      rulings: {
+        sectionChars: 74,
+        cards: [
+          {
+            cardId: "rhystic-study",
+            name: "Rhystic Study",
+            rulings: [
+              {
+                publishedAt: "2020-04-17",
+                comment: "If an opponent casts a spell, you may draw a card unless that player pays {1}."
+              }
+            ]
+          }
+        ]
+      }
+    });
+
+    expect(prompt).toContain("OFFICIAL RULINGS (WotC reference)");
+    expect(prompt).toContain("Rhystic Study\n- 2020-04-17: If an opponent casts a spell");
+    expect(prompt.indexOf("ZONE: BATTLEFIELD")).toBeLessThan(prompt.indexOf("OFFICIAL RULINGS"));
+    expect(prompt.indexOf("OFFICIAL RULINGS")).toBeLessThan(prompt.indexOf("SCOPE"));
+    expect(prompt).not.toContain("rhystic-study");
+  });
+
+  it("omits official rulings section when no rulings are resolved", () => {
+    const prompt = buildPromptText(baseContext, { rulings: { sectionChars: 0, cards: [] } });
+    expect(prompt).not.toContain("OFFICIAL RULINGS");
   });
 
   it("renders ZONE: BATTLEFIELD section when battlefield is populated", () => {

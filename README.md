@@ -1,6 +1,6 @@
 # TheJudge
 
-TheJudge is an MVP card-stack interaction assistant for Magic gameplay questions.
+TheJudge is a flow-validation card interaction assistant for Magic gameplay questions.
 It helps players build an ordered stack of cards, ask a question, and receive an AI-generated explanation through a backend API.
 
 ## Start Here
@@ -9,19 +9,19 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 - This root README is for fast onboarding, setup, and implementation status.
 - If you are using coding agents, point them to `PRD/README.md` first.
 
-## Current Product Phase
+## Current Product Status
 
-- MVP1: closed
-- UX Wave 2: in progress — zone-based flow with user-flow refinements and gap fixes promoted into `PRD/sections/`
+- Core product: staged zone flow with user-flow refinements and gap fixes promoted into `PRD/sections/`
 - Baseline: flow-validation assistant with mock-default backend and optional OpenAI provider mode (`DEC-020` in `PRD/sections/decisions.md`)
 - Product source of truth: `PRD/sections/` (start with `decisions.md`)
+- Agent workflow skills: `.cursor/skills/thejudge-*`, `.codex/skills/thejudge-*`, and `.claude/skills/thejudge-*`
 
 ## Tech Stack
 
 - Frontend: React + Vite + TypeScript + Tailwind CSS
 - Backend: Node.js + Express + TypeScript + Zod validation
 - Testing: Vitest (frontend and backend)
-- Data: Scryfall-derived local metadata transform pipeline
+- Data: Scryfall-derived local metadata and WotC rulings transform pipeline
 - Architecture: npm workspaces monorepo (`apps/frontend`, `apps/backend`)
 
 ## Repository Layout
@@ -31,7 +31,7 @@ It helps players build an ordered stack of cards, ask a question, and receive an
   - `sections/` product truth (requirements, decisions, flows, constraints)
   - `instructions/` generation and editing rules
   - `stories/` Definition of Done for story execution
-- `apps/frontend/` MVP client app
+- `apps/frontend/` client app
   - `src/components/` zone-flow step UI
   - `src/hooks/` React hooks (`useAskAiSubmitOrchestration`, autocomplete helpers)
   - `src/lib/` shared utilities and `contextFlow/` state machine
@@ -44,6 +44,7 @@ It helps players build an ordered stack of cards, ask a question, and receive an
   - `src/validation/` Zod request schemas
   - `src/providers/` Ask AI provider boundary
   - `src/eval/` prompt/context golden regression harness
+  - `data/cardRulingsByOracleId.json` committed WotC rulings artifact for backend prompt enrichment
 - `scripts/` shared dev/data scripts (including metadata build)
 
 ## Local Setup
@@ -53,8 +54,10 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 2. Prepare card metadata source file:
    - place Scryfall bulk file at `apps/frontend/data/scryfall/default-cards.json`
    - or refresh automatically with `npm run data:refresh`
+   - agent-run refreshes require explicit human approval because they download Scryfall bulk data
 3. Build trimmed metadata:
    - `npm run data:build`
+   - this also rebuilds `apps/backend/data/cardRulingsByOracleId.json` when local rulings bulk data is present
 4. Start both apps: `npm run dev` (logging defaults: see `apps/backend/src/providers/README.md` and env vars under Environment Configuration below).
 5. Optional checks:
    - frontend: `http://localhost:5173`
@@ -77,7 +80,7 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 - `npm --workspace apps/frontend run test` - run frontend tests
 - `npm --workspace apps/backend run test` - run backend tests
 - `npm --workspace apps/backend run test:eval` - run backend eval harness test
-- `npm run data:refresh` - download latest Scryfall `default_cards` and rebuild trimmed metadata
+- `npm run data:refresh` - download latest Scryfall `default_cards` and `rulings` bulk data, then rebuild trimmed metadata and rulings artifacts
 - stop running processes with `Ctrl + C`
 
 ## Quality Gate Workflow
@@ -124,6 +127,7 @@ Reference templates:
 Use these docs for deeper runtime/contract detail instead of expanding the root README:
 - API contract, payload shape, stack-order semantics, and integration constraints: `PRD/sections/integrations-and-data.md`
 - Provider rules and integration constraints: `PRD/sections/decisions.md` (`DEC-020`), `PRD/sections/integrations-and-data.md`
+- WotC rulings prompt enrichment decision: `PRD/sections/decisions.md` (`DEC-029`)
 - Backend provider boundary and mode intent: `apps/backend/src/providers/README.md`
 
 Quick local verification flow:
@@ -140,3 +144,4 @@ Quick local verification flow:
 - Empty-state artwork is bundled at `apps/frontend/public/assets/cats-homescreen.png`; keep it local/static and retain a text fallback path.
 - Provider integration boundary docs live in `apps/backend/src/providers/README.md`.
 - Search responsiveness guardrails stay frontend-local (debounced query + in-memory pre-normalized index) and must not add runtime metadata sync paths.
+- The committed rulings artifact `apps/backend/data/cardRulingsByOracleId.json` lets CI and local prompt tests run without downloading Scryfall data.

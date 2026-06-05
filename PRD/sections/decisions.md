@@ -1,9 +1,9 @@
 # decisions.md
 
 ### DEC-001
-- Decision: MVP1 is a flow-validation MVP, not a gameplay-accurate or judge-accurate MVP.
+- Decision: The core product is a flow-validation assistant, not a gameplay-accurate or judge-accurate system.
 - Status: confirmed
-- Context: The first version is meant to prove the core user flow without taking on full MTG rules complexity.
+- Context: Historical MVP1 framing was meant to prove the core user flow without taking on full MTG rules complexity.
 - Impact:
   - temporary simplifications are allowed
   - some real gameplay cases may be excluded
@@ -26,9 +26,9 @@
 - Notes:
 
 ### DEC-003
-- Decision: MVP1 collects only selected cards, stack order, and an optional question.
-- Status: confirmed
-- Context: Additional structured fields like targets, controller, and mode are intentionally out of scope.
+- Decision: The selected-cards-only capture model is superseded by the approved `GameContext` model.
+- Status: superseded
+- Context: Historical MVP1 scope collected only selected cards, stack order, and an optional question.
 - Impact:
   - context remains narrow
   - some answers will necessarily rely on limited input
@@ -37,7 +37,7 @@
   - REQ-011
   - REQ-012
 - Notes:
-  - superseded in part by DEC-019 for approved structured context additions
+  - superseded by DEC-019 and DEC-021 for approved structured context additions
 
 ### DEC-004
 - Decision: Stack ordering is bottom-to-top in the array, with `stack[0]` as bottom and the last item as top.
@@ -73,7 +73,7 @@
 - Notes:
 
 ### DEC-007
-- Decision: Duplicate cards are blocked in MVP1.
+- Decision: Duplicate stack cards are blocked as an intentional constraint.
 - Status: confirmed
 - Context: This reduces complexity while validating the basic flow.
 - Impact:
@@ -82,10 +82,10 @@
 - Related requirements:
   - REQ-009
 - Notes:
-  - this decision overrides gameplay realism for MVP1 scope control
+  - this decision overrides gameplay realism for current scope control
 
 ### DEC-008
-- Decision: The stack is capped at 10 cards in MVP1.
+- Decision: The stack is capped at 10 cards in the core product.
 - Status: confirmed
 - Context: This limits prompt size and reduces abuse risk.
 - Impact:
@@ -96,16 +96,17 @@
 
 ### DEC-009
 - Decision: Blank questions fall back to **Resolve the stack** in request-building logic.
-- Status: confirmed
+- Status: superseded
 - Context: The question field is optional, but the backend should always receive a final question string.
 - Impact:
   - fallback is not shown as injected UI text
 - Related requirements:
   - REQ-011
 - Notes:
+  - superseded by DEC-028 for zone-aware blank-question fallback behavior
 
 ### DEC-010
-- Decision: MVP1 uses one main product-facing backend endpoint.
+- Decision: The core product uses one main product-facing backend endpoint.
 - Status: confirmed
 - Context: The backend should remain intentionally small.
 - Impact:
@@ -115,18 +116,18 @@
 - Notes:
 
 ### DEC-011
-- Decision: Phase A uses a mock backend response before real Bedrock integration.
-- Status: confirmed
-- Context: This reduces implementation/debugging complexity.
+- Decision: The old staged provider rollout is superseded by explicit provider modes.
+- Status: superseded
+- Context: Historical Phase A used mock responses before planned Bedrock integration.
 - Impact:
-  - frontend flow can be validated before AWS integration
+  - frontend flow can be validated with `ASK_AI_PROVIDER=mock`
 - Related requirements:
   - REQ-013
   - REQ-014
 - Notes:
 
 ### DEC-012
-- Decision: MVP1 uses a static prebuilt metadata file committed with the app.
+- Decision: The core product uses a static prebuilt metadata file committed with the app.
 - Status: confirmed
 - Context: Runtime metadata syncing would add unnecessary complexity.
 - Impact:
@@ -137,7 +138,7 @@
 - Notes:
 
 ### DEC-013
-- Decision: The backend must not implement legality validation, deterministic rules simulation, board-state logic, or format enforcement in MVP1.
+- Decision: The backend must not implement legality validation, deterministic rules simulation, board-state logic, or format enforcement in the core product.
 - Status: confirmed
 - Context: Heavy rules behavior is explicitly out of scope.
 - Impact:
@@ -177,7 +178,7 @@
 - Notes:
 
 ### DEC-017
-- Decision: Phase A mock responses should return the outbound request payload as a debug-friendly JSON-formatted string inside the `answer` field.
+- Decision: Mock provider responses should return the outbound request payload as a debug-friendly JSON-formatted string inside the `answer` field.
 - Status: confirmed
 - Context: The mock flow should help inspect and tune the request shape before real LLM integration.
 - Impact:
@@ -197,9 +198,9 @@
 - Notes:
 
 ### DEC-019
-- Decision: MVP1 includes structured context beyond stack/question for flow validation: pre-stack game context (player count + life totals), optional battlefield context with skip, and per-stack mana-spent context with deterministic fallback behavior.
-- Status: confirmed
-- Context: Story roadmap now requires richer prompt-ready context while still avoiding rules-engine complexity.
+- Decision: Structured context beyond stack/question is approved for flow validation.
+- Status: superseded
+- Context: Earlier roadmap scope required richer prompt-ready context while still avoiding rules-engine complexity.
 - Impact:
   - frontend flow becomes staged: game context -> optional battlefield context -> stack construction/question
   - backend request/prompt context includes approved structured context fields deterministically
@@ -216,7 +217,7 @@
 ### DEC-020
 - Decision: Live answer generation uses an explicit backend provider flag with OpenAI behind the existing provider interface; HTTP contracts stay frozen across provider swaps.
 - Status: confirmed
-- Context: MVP2 replaced the Phase A mock-only path with a swappable provider boundary while preserving staged UX and request/response shapes.
+- Context: The current provider model replaces the earlier mock-only path with a swappable provider boundary while preserving staged UX and request/response shapes.
 - Impact:
   - `POST /api/ask-ai` request and success/error response shapes remain unchanged when switching providers
   - provider selection is explicit via `ASK_AI_PROVIDER` (`mock` default, `openai` live); do not infer provider mode from `NODE_ENV` or deploy target
@@ -230,13 +231,13 @@
   - REQ-013
   - REQ-014
 - Notes:
-  - supersedes Bedrock-specific Phase B wording in `sections/integrations-and-data.md` where they conflict
+  - supersedes retired provider-stage wording in `sections/integrations-and-data.md` where they conflict
   - route handlers stay contract-focused; provider SDK wiring lives only in provider/factory composition
 
 ### DEC-021
 - Decision: `GameContext` is the parent model for prompt-facing game state.
 - Status: confirmed
-- Context: UX Wave 2 replaces separate top-level stack and battlefield payloads with a single structured game-state container.
+- Context: The current staged zone flow replaces separate top-level stack and battlefield payloads with a single structured game-state container.
 - Impact:
   - `POST /api/ask-ai` accepts `question` and `gameContext` only
   - selected zones, turn phase, players, active player, and populated zone cards live under `gameContext`
@@ -330,3 +331,45 @@
   - REQ-017
   - REQ-019
 - Notes:
+
+### DEC-028
+- Decision: Blank-question fallback is zone-aware.
+- Status: confirmed
+- Context: Manual walkthrough on 2026-06-05 showed that default main-phase selected zones can include stack while users may only populate battlefield. The previous unconditional **Resolve the stack** fallback caused the prompt to ask for stack resolution even when no stack cards were submitted.
+- Impact:
+  - blank trimmed questions use **Resolve the stack** when `gameContext.zones.stack` has one or more cards
+  - blank trimmed questions use **Explain the interaction with the provided game state** when stack has no cards and another zone has cards
+  - submit remains allowed when stack is selected but empty as long as another selected zone has a card
+  - skipped targets do not imply an empty stack; `targets: (none)` means no target was specified for that card
+  - enrichment shows a pre-decrypt summary of populated zones and the fallback question when the user leaves the question blank
+  - zone collection shows a non-blocking nudge when stack is selected but empty and another selected zone has cards
+- Related requirements:
+  - REQ-011
+  - REQ-012
+  - REQ-017
+  - REQ-018
+  - REQ-019
+- Notes:
+  - supersedes DEC-009 where it describes an unconditional stack fallback
+
+### DEC-029
+- Decision: Published WotC Oracle rulings may enrich backend prompts for submitted cards without changing the product API or UI.
+- Status: confirmed
+- Context: TheJudge already sends card oracle text and structured game context to the backend prompt. Card-specific WotC rulings can improve grounding for timing, replacement effects, triggered abilities, and card-specific exceptions while preserving the assistant's non-authoritative scope.
+- Impact:
+  - WotC rulings enrichment is prompt-only and backend-only
+  - `POST /api/ask-ai` request and response shapes remain unchanged
+  - no frontend rulings UI or product-facing rulings endpoint is added
+  - rulings are sourced from Scryfall bulk type `rulings`, filtered to `source === "wotc"`, and intersected with the committed card metadata `cardId` / oracle ID set
+  - raw Scryfall rulings bulk data is not committed; the trimmed static backend artifact is `apps/backend/data/cardRulingsByOracleId.json`
+  - existing `POST /api/ask-ai` handling looks up rulings during `preparePromptInput`; there is no separate product-facing rulings endpoint
+  - prompt text may include `OFFICIAL RULINGS (WotC reference)` after populated zone sections and before `SCOPE`
+  - the rulings block is omitted entirely when no submitted card has matching WotC data
+  - ruling output is capped by per-card count, per-comment length, and total-section budget so `MAX_PROMPT_CHAR_BUDGET` remains authoritative
+  - Scryfall download and refresh workflows require explicit human approval before agents run networked download commands
+- Related requirements:
+  - REQ-012
+  - REQ-013
+  - REQ-019
+- Notes:
+  - this decision does not make the product an official judge or rules engine

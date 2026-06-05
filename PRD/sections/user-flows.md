@@ -20,12 +20,13 @@
   - if a selected zone has no cards, omit that zone key from `gameContext.zones`
   - if no selected zone contains at least one card, continue/submit is blocked until the user adds a card to a selected zone
   - if no matches are found, show **No matching card found**
-  - if the question is blank after trimming, use the fallback question **Resolve the stack**
+  - if the question is blank after trimming, use a zone-aware fallback: **Resolve the stack** when the stack zone has cards; otherwise **Explain the interaction with the provided game state** when another selected zone has cards
+  - if stack is selected but has no cards and another selected zone has cards, submit remains allowed; enrichment shows what will be sent before decrypting
   - if a display name is empty, whitespace-only, or matches the fixed player label, treat it as unset
   - if the stack has 10 cards, block additional adds
   - if the user changes phase after selecting zones, newly assumed zones are added and existing cards/enrichment are preserved
 - Notes:
-  - this is the primary UX Wave 2 flow with staged context capture
+  - this is the primary core product flow with staged context capture
 
 ### FLOW-002
 - Name: Inspect and remove cards from selected zones
@@ -43,7 +44,7 @@
   - if a thumbnail does not load, continue to show the row without it
   - if the last card is removed from a zone, that zone remains selected but is omitted from the request payload
 - Notes:
-  - manual reorder is out of scope for MVP1
+  - manual reorder is out of scope for the core product
 
 ### FLOW-003
 - Name: Handle failed AI request
@@ -63,7 +64,7 @@
   - this flow is important for live table usability
 
 ### FLOW-004
-- Name: Block duplicate stack card add in MVP1
+- Name: Block duplicate stack card add
 - Trigger: User attempts to add a card already present in the stack
 - Preconditions:
   - the card is already in the stack
@@ -71,8 +72,8 @@
   1. User selects a card already present in the stack.
   2. User attempts to add it.
   3. UI blocks the add.
-  4. UI shows a message that duplicate cards are not supported in MVP1.
+  4. UI shows a message that duplicate cards are not supported yet.
 - Edge Cases:
   - this may reject some real gameplay scenarios
 - Notes:
-  - this is an MVP1 flow simplification only
+  - this is an intentional constraint only

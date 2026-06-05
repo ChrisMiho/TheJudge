@@ -68,6 +68,35 @@ describe("ask-ai endpoint contract", () => {
     expect(response.body.answer).toContain("QUESTION\nResolve the stack");
   });
 
+  it("applies board-state fallback question for blank battlefield-only submissions", async () => {
+    const response = await request(app)
+      .post("/api/ask-ai")
+      .send(
+        createAskAiRequest({
+          question: "   ",
+          gameContext: {
+            ...createGameContext(),
+            selectedZones: ["battlefield", "stack"],
+            zones: {
+              battlefield: [
+                createZoneCardItem({
+                  cardId: "rhystic-study",
+                  name: "Rhystic Study",
+                  oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
+                  caster: undefined
+                })
+              ]
+            }
+          }
+        })
+      );
+
+    expect(response.status).toBe(200);
+    expect(response.body.answer).toContain(
+      "QUESTION\nExplain the interaction with the provided game state"
+    );
+  });
+
   it("returns validation error payload for invalid request shape", async () => {
     const response = await request(app).post("/api/ask-ai").send({
       question: "oops",

@@ -8,13 +8,14 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - Styling: Tailwind CSS
 - State: React state
 - Card Data: local cached Scryfall-derived metadata
+- Card Rulings: static Scryfall-derived WotC rulings artifact for backend prompt enrichment
 - Images: image URLs, lazy-loaded
 - Backend: Node.js + TypeScript
 - API Framework: Express or Fastify
 - Validation: request validation layer
 - AI Provider: backend provider boundary (`ASK_AI_PROVIDER=mock` default, `ASK_AI_PROVIDER=openai` for live answers)
 - Provider Access: provider SDKs are backend-only
-- Storage: none for MVP1
+- Storage: none for the core product
 
 ## Data Model
 
@@ -192,9 +193,20 @@ Purpose:
 - local metadata powers autocomplete and preview
 - filter source records to english, paper-playable, non-digital cards with a non-empty name
 - dedupe by normalized card name with deterministic tie-breaks (higher metadata completeness, then later release date, then stable ID)
-- do not implement runtime sync/refresh in MVP1
-- do not cache all card images in MVP1
+- do not implement runtime sync/refresh in the core product
+- do not cache all card images in the core product
 - load images on demand
+
+## Rulings Data Strategy
+- WotC rulings enrichment uses Scryfall bulk type `rulings`
+- raw Scryfall rulings bulk data is gitignored and must not be committed
+- Scryfall download or refresh requires explicit human approval before the command runs
+- the committed backend artifact is `apps/backend/data/cardRulingsByOracleId.json`, a trimmed map keyed by Scryfall `oracle_id`
+- the trimmed artifact includes only rows where `source === "wotc"` and the `oracle_id` exists in the committed card metadata `cardId` set
+- `npm run data:build` rebuilds card metadata and the committed rulings artifact from local Scryfall bulk inputs
+- `npm run data:refresh` downloads Scryfall bulk data and then rebuilds local artifacts; agent-run refreshes require explicit human approval before any download command
+- the backend loads the committed artifact at startup and omits rulings enrichment if the artifact is missing or has no matches
+- runtime Scryfall fetches are out of scope for the core product
 
 ## AI Prompt Context Rules
 The backend should include:
@@ -207,12 +219,14 @@ The backend should include:
 - mana cost and mana value for each card
 - mana spent per stack item (fallback to `manaValue` when omitted)
 - type line with parsed supertypes/subtypes and colors
+- published WotC Oracle rulings for submitted cards when available from the static backend artifact
 - static MTG reference block
 - merged scope sentence for unselected zones and selected-but-empty zones
 - instructions to explain reasoning
 - instructions to state uncertainty
 - instructions not to invent hidden state
 - player display names in roster lines and resolved player references (`activePlayer`, caster, owner, player targets) using `Player N (Name)` when set
+- official WotC rulings only as reference context; they do not override the user's submitted stack order, zones, targets, notes, or stated game state
 
 The backend mock/debug response should:
 - include explicit stack-order metadata (`stackOrderConvention`, `stackIndex`, `stackRole`)
@@ -228,14 +242,31 @@ The backend must not add:
 - legality engine logic
 - board-state simulation logic
 
+WotC rulings prompt enrichment must:
+- be omitted entirely when no submitted card has matching WotC rulings
+- include only cards present in the submitted `gameContext`
+- look up submitted cards by `cardId`, which corresponds to Scryfall `oracle_id` in the metadata pipeline
+- preserve submitted card ordering, including bottom-to-top stack order
+- avoid printing `cardId` or `oracle_id` in the model-facing prompt text
+- use per-card and whole-section caps so `MAX_PROMPT_CHAR_BUDGET` remains authoritative
+- appear after populated zone sections and before `SCOPE` and `QUESTION`
+
 ## Delivery Strategy
 
-### Phase A
-- implement full frontend flow
-- use a mock backend response
-- validate search/add/stack/question/response UX
+### Provider modes
 
-### Phase A Mock Response Rule
+#### `mock`
+- default local provider mode
+- returns a debug-friendly response using the same success contract as live answers
+- validates flow, payload shape, and prompt context without model access
+
+#### `openai`
+- live answer generation through the backend provider boundary
+- keeps `POST /api/ask-ai` request and response shapes unchanged
+- runtime config, env vars, and local auth: `apps/backend/src/providers/README.md`
+- confirmed provider rules: `DEC-020` in `sections/decisions.md`
+
+### Mock Response Rule
 - keep the same success response contract as the real backend
 - return the outbound request data as a debug-friendly JSON-formatted string inside `answer`
 - use this to help inspect the exact payload shape being prepared for the LLM
@@ -245,13 +276,6 @@ The backend must not add:
     {
       "answer": "MOCK RESPONSE\n{\n  \"question\": \"Resolve the stack\",\n  \"gameContext\": {...}\n}"
     }
-
-### Phase B
-- keep same HTTP contracts (`POST /api/ask-ai` request and response shapes unchanged)
-- add live answer generation via the backend provider boundary (`ASK_AI_PROVIDER=openai`)
-- keep `ASK_AI_PROVIDER=mock` as the default local baseline for flow and payload debugging
-- runtime OpenAI config, env vars, and local auth: `apps/backend/src/providers/README.md`
-- confirmed provider rules: `DEC-020` in `sections/decisions.md`
 
 ## Dependencies
 - Scryfall-derived metadata

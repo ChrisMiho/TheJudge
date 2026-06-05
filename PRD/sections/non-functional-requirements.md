@@ -25,7 +25,7 @@
 
 ### NFR-004
 - Title: Lightweight architecture
-- Description: MVP1 should use the smallest reasonable architecture.
+- Description: The core product should use the smallest reasonable architecture.
 - Constraints:
   - one main product-facing backend endpoint
   - no microservices
@@ -40,7 +40,7 @@
 
 ### NFR-006
 - Title: Minimal animation complexity
-- Description: UI motion must stay lightweight in MVP1.
+- Description: UI motion must stay lightweight in the core product.
 - Constraints:
   - basic show/hide or simple transitions only
   - no animation-heavy polish work
@@ -55,7 +55,7 @@
 
 ### NFR-008
 - Title: Extensibility for future scanning support
-- Description: The codebase should leave room for future card scanning without requiring MVP1 to implement it.
+- Description: The codebase should leave room for future card scanning without requiring the core product to implement it.
 - Constraints:
-  - no scanning implementation in MVP1
+  - no scanning implementation in the core product
   - card metadata organization should remain reusable
