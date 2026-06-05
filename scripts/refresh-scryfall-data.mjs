@@ -6,8 +6,10 @@ import { spawn } from "node:child_process";
 
 const bulkDataEndpoint = "https://api.scryfall.com/bulk-data";
 const sourceOutputPath = path.resolve("apps/frontend/data/scryfall/default-cards.json");
+const rulingsOutputPath = path.resolve("apps/backend/data/scryfall/rulings.json");
 const metadataOutputPath = path.resolve("apps/frontend/public/data/cardMetadata.json");
 const tempDownloadPath = `${sourceOutputPath}.tmp`;
+const rulingsTempDownloadPath = `${rulingsOutputPath}.tmp`;
 
 function ensureParentDirectory(filePath) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -20,7 +22,7 @@ function formatBytes(bytes) {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
-async function fetchDefaultCardsDownloadUrl() {
+async function fetchBulkDataDownloadRecords() {
   const response = await fetch(bulkDataEndpoint);
   if (!response.ok) {
     throw new Error(`Could not fetch Scryfall bulk metadata: ${response.status} ${response.statusText}`);
@@ -36,22 +38,34 @@ async function fetchDefaultCardsDownloadUrl() {
     throw new Error("Could not find default_cards download URI from Scryfall.");
   }
 
+  const rulingsRecord = payload.data.find((entry) => entry?.type === "rulings");
+  if (!rulingsRecord?.download_uri) {
+    throw new Error("Could not find rulings download URI from Scryfall.");
+  }
+
   return {
-    downloadUrl: defaultCardsRecord.download_uri,
-    updatedAt: defaultCardsRecord.updated_at ?? "unknown",
-    estimatedSize: typeof defaultCardsRecord.size === "number" ? defaultCardsRecord.size : null
+    defaultCards: {
+      downloadUrl: defaultCardsRecord.download_uri,
+      updatedAt: defaultCardsRecord.updated_at ?? "unknown",
+      estimatedSize: typeof defaultCardsRecord.size === "number" ? defaultCardsRecord.size : null
+    },
+    rulings: {
+      downloadUrl: rulingsRecord.download_uri,
+      updatedAt: rulingsRecord.updated_at ?? "unknown",
+      estimatedSize: typeof rulingsRecord.size === "number" ? rulingsRecord.size : null
+    }
   };
 }
 
-async function downloadDefaultCards(downloadUrl) {
+async function downloadBulkFile(downloadUrl, outputPath, tempPath, label) {
   const response = await fetch(downloadUrl);
   if (!response.ok || !response.body) {
-    throw new Error(`Could not download default-cards.json: ${response.status} ${response.statusText}`);
+    throw new Error(`Could not download ${label}: ${response.status} ${response.statusText}`);
   }
 
-  ensureParentDirectory(sourceOutputPath);
-  await pipeline(Readable.fromWeb(response.body), fs.createWriteStream(tempDownloadPath));
-  fs.renameSync(tempDownloadPath, sourceOutputPath);
+  ensureParentDirectory(outputPath);
+  await pipeline(Readable.fromWeb(response.body), fs.createWriteStream(tempPath));
+  fs.renameSync(tempPath, outputPath);
 }
 
 function runDataBuild() {
@@ -74,16 +88,25 @@ function runDataBuild() {
 
 async function main() {
   console.log("Fetching Scryfall bulk-data metadata...");
-  const { downloadUrl, updatedAt, estimatedSize } = await fetchDefaultCardsDownloadUrl();
-  console.log(`Found default_cards feed (updated: ${updatedAt}).`);
-  if (estimatedSize !== null) {
-    console.log(`Estimated source size: ${formatBytes(estimatedSize)}.`);
+  const { defaultCards, rulings } = await fetchBulkDataDownloadRecords();
+  console.log(`Found default_cards feed (updated: ${defaultCards.updatedAt}).`);
+  if (defaultCards.estimatedSize !== null) {
+    console.log(`Estimated default_cards source size: ${formatBytes(defaultCards.estimatedSize)}.`);
+  }
+  console.log(`Found rulings feed (updated: ${rulings.updatedAt}).`);
+  if (rulings.estimatedSize !== null) {
+    console.log(`Estimated rulings source size: ${formatBytes(rulings.estimatedSize)}.`);
   }
 
   console.log(`Downloading default cards to ${sourceOutputPath}...`);
-  await downloadDefaultCards(downloadUrl);
+  await downloadBulkFile(defaultCards.downloadUrl, sourceOutputPath, tempDownloadPath, "default-cards.json");
   const downloadedBytes = fs.statSync(sourceOutputPath).size;
-  console.log(`Download complete (${formatBytes(downloadedBytes)}).`);
+  console.log(`Default cards download complete (${formatBytes(downloadedBytes)}).`);
+
+  console.log(`Downloading rulings to ${rulingsOutputPath}...`);
+  await downloadBulkFile(rulings.downloadUrl, rulingsOutputPath, rulingsTempDownloadPath, "rulings.json");
+  const rulingsBytes = fs.statSync(rulingsOutputPath).size;
+  console.log(`Rulings download complete (${formatBytes(rulingsBytes)}; updated: ${rulings.updatedAt}; path: ${rulingsOutputPath}).`);
 
   console.log("Running metadata transform (npm run data:build)...");
   await runDataBuild();
@@ -99,6 +122,9 @@ async function main() {
 main().catch((error) => {
   if (fs.existsSync(tempDownloadPath)) {
     fs.rmSync(tempDownloadPath, { force: true });
+  }
+  if (fs.existsSync(rulingsTempDownloadPath)) {
+    fs.rmSync(rulingsTempDownloadPath, { force: true });
   }
   console.error(error);
   process.exitCode = 1;

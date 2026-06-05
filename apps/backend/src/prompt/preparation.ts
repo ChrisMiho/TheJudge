@@ -1,5 +1,12 @@
 import { buildPromptContext } from "./context.js";
-import { buildPromptText, getPromptDiagnostics, type PromptDiagnostics } from "./normalization.js";
+import {
+  MAX_RULING_COMMENT_CHARS,
+  MAX_RULINGS_PER_CARD,
+  buildPromptText,
+  getPromptDiagnostics,
+  type PromptDiagnostics
+} from "./normalization.js";
+import { collectCardsForRulings, resolveRulingsForPrompt, type RulingEntry } from "../cardRulings.js";
 import type { AskAiRequest, PromptContext } from "../types/index.js";
 
 export type PreparedPromptInput = {
@@ -8,9 +15,17 @@ export type PreparedPromptInput = {
   diagnostics: PromptDiagnostics;
 };
 
-export function preparePromptInput(request: AskAiRequest): PreparedPromptInput {
+export type PreparePromptInputOptions = {
+  cardRulingsIndex?: Map<string, RulingEntry[]>;
+};
+
+export function preparePromptInput(request: AskAiRequest, options: PreparePromptInputOptions = {}): PreparedPromptInput {
   const context = buildPromptContext(request);
-  const promptText = buildPromptText(context);
+  const rulings = resolveRulingsForPrompt(collectCardsForRulings(context), options.cardRulingsIndex ?? new Map(), {
+    maxRulingsPerCard: MAX_RULINGS_PER_CARD,
+    maxCommentChars: MAX_RULING_COMMENT_CHARS
+  });
+  const promptText = buildPromptText(context, { rulings });
   const diagnostics = getPromptDiagnostics(promptText);
   return {
     context,

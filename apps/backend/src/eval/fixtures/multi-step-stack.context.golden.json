@@ -27,6 +27,7 @@
       "zoneId": "battlefield",
       "items": [
         {
+          "cardId": "rule-of-law",
           "name": "Rule of Law",
           "details": "Each player can cast one spell each turn.",
           "targets": [

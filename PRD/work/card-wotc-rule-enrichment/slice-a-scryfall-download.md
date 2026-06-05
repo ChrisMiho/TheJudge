@@ -1,6 +1,6 @@
 # Slice A — Scryfall rulings download
 
-## Status: planned
+## Status: complete
 
 ## Goal
 
@@ -51,20 +51,20 @@ npm run data:refresh
 
 ## Acceptance criteria
 
-- [ ] Human approval recorded below
-- [ ] `apps/backend/data/scryfall/rulings.json` exists locally
-- [ ] File is gitignored
-- [ ] No Scryfall download runs without approval in the implementing session
+- [x] Human approval recorded below
+- [x] `apps/backend/data/scryfall/rulings.json` exists locally
+- [x] File is gitignored
+- [x] No Scryfall download runs without approval in the implementing session
 
 ## Approval record
 
 | Field | Value |
 | --- | --- |
-| Approved | _pending_ |
-| Date | _pending_ |
-| Commands run | _pending_ |
-| Rulings file size | _pending_ |
-| Scryfall `updated_at` | _pending_ |
+| Approved | product owner |
+| Date | 2026-06-05 |
+| Commands run | `npm.cmd run data:refresh` |
+| Rulings file size | 25,444,525 bytes (24.3 MB) |
+| Scryfall `updated_at` | 2026-06-05T09:00:34.264+00:00 |
 
 ## Files
 

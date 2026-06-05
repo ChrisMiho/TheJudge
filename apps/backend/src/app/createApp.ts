@@ -6,6 +6,7 @@ import { mockAskAiProvider } from "../providers/mockAskAiProvider.js";
 import type { AskAiProvider } from "../providers/askAiProvider.js";
 import { registerAskAiRoute } from "../routes/askAi.js";
 import { registerHealthRoute } from "../routes/health.js";
+import type { RulingEntry } from "../cardRulings.js";
 
 export type AppOptions = {
   frontendOrigin?: string;
@@ -13,6 +14,7 @@ export type AppOptions = {
   debugLoggingEnabled?: boolean;
   payloadLoggingEnabled?: boolean;
   logger?: AppLogger;
+  cardRulingsIndex?: Map<string, RulingEntry[]>;
 };
 
 export function createApp(options: AppOptions = {}) {
@@ -21,6 +23,7 @@ export function createApp(options: AppOptions = {}) {
   const isDebug = options.debugLoggingEnabled ?? false;
   const isPayloadLoggingEnabled = options.payloadLoggingEnabled ?? false;
   const logger = options.logger ?? createAppLogger(isDebug);
+  const cardRulingsIndex = options.cardRulingsIndex ?? new Map<string, RulingEntry[]>();
 
   app.use(cors(options.frontendOrigin ? { origin: options.frontendOrigin } : undefined));
   app.use(express.json());
@@ -29,7 +32,8 @@ export function createApp(options: AppOptions = {}) {
   registerAskAiRoute(app, {
     askAiProvider,
     logger,
-    payloadLoggingEnabled: isPayloadLoggingEnabled
+    payloadLoggingEnabled: isPayloadLoggingEnabled,
+    cardRulingsIndex
   });
 
   app.use(createErrorHandler(logger, isDebug));

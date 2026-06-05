@@ -1,10 +1,14 @@
 import { MTG_PROMPT_REFERENCE } from "./mtgReference.js";
 import type { PlayerLabel, PromptContext, ZoneId } from "../types/index.js";
+import type { ResolvedRulingCard } from "../cardRulings.js";
 
 export const MAX_ORACLE_TEXT_CHARS = 480;
 export const MAX_CONTEXT_DETAILS_CHARS = 220;
 export const MAX_CONTEXT_NOTES_CHARS = 180;
 export const MAX_TARGET_LABEL_CHARS = 120;
+export const MAX_RULINGS_PER_CARD = 3;
+export const MAX_RULING_COMMENT_CHARS = 480;
+export const MAX_RULINGS_SECTION_CHARS = 3000;
 export const MAX_PROMPT_CHAR_BUDGET = 12000;
 export const PROMPT_BUDGET_NEAR_LIMIT_BUFFER = 800;
 const TRUNCATION_SUFFIX = " ...(truncated)";
@@ -228,6 +232,30 @@ function formatNonStackZoneSections(context: PromptContext): string {
     .join("\n\n");
 }
 
+export function formatOfficialRulingsSection(rulings: ResolvedRulingCard[] = []): string {
+  if (rulings.length === 0) {
+    return "";
+  }
+
+  const cardBlocks = rulings.map((card) =>
+    [
+      card.name,
+      ...card.rulings.map(
+        (ruling) => `- ${ruling.publishedAt}: ${truncatePromptLabel(ruling.comment, MAX_RULING_COMMENT_CHARS)}`
+      )
+    ].join("\n")
+  );
+
+  const section = [
+    "OFFICIAL RULINGS (WotC reference)",
+    "Use these published Oracle rulings as reference for how each card works. They do not override the user's stack order, zones, or stated game state. If the user names a card already present in context, treat it as that card in context unless the stack explicitly shows it being cast.",
+    "",
+    cardBlocks.join("\n\n")
+  ].join("\n");
+
+  return truncateOracleText(section, MAX_RULINGS_SECTION_CHARS);
+}
+
 /**
  * Builds the scope sentence listing zones with no cards.
  * Merges unselected zones and selected-but-empty zones in canonical order.
@@ -270,7 +298,11 @@ export function getPromptDiagnostics(prompt: string): PromptDiagnostics {
   };
 }
 
-export function buildPromptText(context: PromptContext): string {
+export type BuildPromptTextOptions = {
+  rulings?: ResolvedRulingCard[];
+};
+
+export function buildPromptText(context: PromptContext, options: BuildPromptTextOptions = {}): string {
   const populatedZoneIds: ZoneId[] = [
     ...(context.orderedStack.length > 0 ? (["stack"] as ZoneId[]) : []),
     ...context.populatedZones.map((z) => z.zoneId as ZoneId)
@@ -280,6 +312,7 @@ export function buildPromptText(context: PromptContext): string {
 
   const stackSection = formatStackSection(context);
   const nonStackSections = formatNonStackZoneSections(context);
+  const officialRulingsSection = formatOfficialRulingsSection(options.rulings);
 
   const zoneSections = [stackSection, nonStackSections].filter(Boolean).join("\n\n");
 
@@ -301,6 +334,10 @@ export function buildPromptText(context: PromptContext): string {
 
   if (zoneSections.length > 0) {
     sections.push("", zoneSections);
+  }
+
+  if (officialRulingsSection.length > 0) {
+    sections.push("", officialRulingsSection);
   }
 
   sections.push("", "SCOPE", scopeSentence, "", "QUESTION", context.finalQuestion);

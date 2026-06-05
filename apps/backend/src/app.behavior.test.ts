@@ -25,6 +25,67 @@ describe("ask-ai route behavior", () => {
     expect(providerCalls[0]?.context.orderedStack).toHaveLength(1);
   });
 
+  it("adds matching WotC rulings to the prepared provider prompt", async () => {
+    const providerCalls: PreparedPromptInput[] = [];
+    const appWithRulings = createApp({
+      cardRulingsIndex: new Map([
+        [
+          "rhystic-study",
+          [
+            {
+              publishedAt: "2023-09-01",
+              comment: "You don't have to decide whether or not to draw until after the player decides whether to pay."
+            }
+          ]
+        ]
+      ]),
+      askAiProvider: {
+        generateAnswer(preparedPrompt) {
+          providerCalls.push(preparedPrompt);
+          return { answer: "Provider boundary response" };
+        }
+      }
+    });
+
+    const response = await request(appWithRulings)
+      .post("/api/ask-ai")
+      .send(
+        createAskAiRequest({
+          gameContext: {
+            playerCount: 2,
+            players: [
+              { label: "Player 1", lifeTotal: 20 },
+              { label: "Player 2", lifeTotal: 20 }
+            ],
+            turnPhase: "main_1",
+            selectedZones: ["battlefield"],
+            zones: {
+              battlefield: [
+                {
+                  cardId: "rhystic-study",
+                  name: "Rhystic Study",
+                  oracleText: "Whenever an opponent casts a spell, you may draw a card unless that player pays {1}.",
+                  imageUrl: "",
+                  manaCost: "{2}{U}",
+                  manaValue: 3,
+                  typeLine: "Enchantment",
+                  colors: ["U"],
+                  supertypes: [],
+                  subtypes: [],
+                  targets: []
+                }
+              ]
+            }
+          }
+        })
+      );
+
+    expect(response.status).toBe(200);
+    expect(providerCalls[0]?.promptText).toContain("OFFICIAL RULINGS (WotC reference)");
+    expect(providerCalls[0]?.promptText).toContain("Rhystic Study\n- 2023-09-01:");
+    expect(providerCalls[0]?.promptText).not.toContain("cardId:");
+  });
+
   it("maps timeout-like provider exceptions to provider-timeout status/code", async () => {
     const appWithTimeoutProvider = createApp({
       askAiProvider: {

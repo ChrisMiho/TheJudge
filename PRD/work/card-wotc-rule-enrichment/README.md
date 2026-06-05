@@ -25,9 +25,9 @@ Inject **Wizards (WotC) official rulings** from Scryfall into the backend LLM pr
 
 | Slice | File | Status | Depends on |
 | --- | --- | --- | --- |
-| A | [slice-a-scryfall-download.md](slice-a-scryfall-download.md) | planned | — |
-| B | [slice-b-trim-artifact.md](slice-b-trim-artifact.md) | planned | A (or pre-existing raw `rulings.json`) |
-| C | [slice-c-backend-prompt.md](slice-c-backend-prompt.md) | planned | B |
+| A | [slice-a-scryfall-download.md](slice-a-scryfall-download.md) | complete | — |
+| B | [slice-b-trim-artifact.md](slice-b-trim-artifact.md) | complete | A (or pre-existing raw `rulings.json`) |
+| C | [slice-c-backend-prompt.md](slice-c-backend-prompt.md) | complete | B |
 | D | [slice-d-prd-and-closeout.md](slice-d-prd-and-closeout.md) | planned | A, B, C |
 
 ## Implementation map

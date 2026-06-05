@@ -36,8 +36,10 @@ It helps players build an ordered stack of cards, ask a question, and receive an
   - `src/hooks/` React hooks (`useAskAiSubmitOrchestration`, autocomplete helpers)
   - `src/lib/` shared utilities and `contextFlow/` state machine
   - `public/data/` runtime card metadata (`cardMetadata.json`)
-  - `data/scryfall/` gitignored Scryfall bulk input for `npm run data:build`
+  - `data/scryfall/` gitignored Scryfall card bulk input for `npm run data:build`
 - `apps/backend/` API app (`POST /api/ask-ai`, `GET /api/health`)
+  - `data/cardRulingsByOracleId.json` trimmed WotC Oracle rulings artifact
+  - `data/scryfall/` gitignored Scryfall rulings bulk input for `npm run data:build`
   - `src/app/` Express app factory and error handler
   - `src/routes/` HTTP route registration
   - `src/prompt/` prompt context, normalization, and preparation
@@ -50,10 +52,11 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 
 1. Install dependencies from repo root:
    - `npm install`
-2. Prepare card metadata source file:
+2. Prepare Scryfall source files:
    - place Scryfall bulk file at `apps/frontend/data/scryfall/default-cards.json`
-   - or refresh automatically with `npm run data:refresh`
-3. Build trimmed metadata:
+   - place Scryfall rulings bulk file at `apps/backend/data/scryfall/rulings.json`
+   - or refresh both automatically with `npm run data:refresh`
+3. Build trimmed metadata and rulings artifacts:
    - `npm run data:build`
 4. Start both apps: `npm run dev` (logging defaults: see `apps/backend/src/providers/README.md` and env vars under Environment Configuration below).
 5. Optional checks:

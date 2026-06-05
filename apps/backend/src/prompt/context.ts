@@ -85,8 +85,10 @@ function normalizeLifeTotal(value: number): number {
 function normalizeZoneItem(card: import("../types/index.js").ZoneCardItem): PromptContextZoneItem | null {
   const name = normalizeWhitespace(card.name);
   if (name.length === 0) return null;
+  const cardId = normalizeWhitespace(card.cardId);
   const owner = card.owner;
   return {
+    cardId,
     name,
     owner: owner && normalizeWhitespace(owner).length > 0 ? owner : undefined,
     details: normalizeOptionalText(card.contextNotes) || undefined,

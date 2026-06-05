@@ -26,7 +26,12 @@ const baseContext: PromptContext = {
     turnPhase: "main_1",
     selectedZones: ["battlefield", "stack"]
   },
-  populatedZones: [{ zoneId: "battlefield", items: [{ name: "Rhystic Study", details: "Tax effect", targets: [{ kind: "none" }] }] }],
+  populatedZones: [
+    {
+      zoneId: "battlefield",
+      items: [{ cardId: "rhystic-study", name: "Rhystic Study", details: "Tax effect", targets: [{ kind: "none" }] }]
+    }
+  ],
   orderedStack: [
     {
       cardId: "card-1",
@@ -182,6 +187,7 @@ describe("buildPromptText", () => {
           zoneId: "battlefield",
           items: [
             {
+              cardId: "rhystic-study",
               name: "Rhystic Study",
               owner: "Player 1",
               targets: [{ kind: "player", targetPlayer: "Player 2" }]
@@ -231,6 +237,7 @@ describe("buildPromptText", () => {
           zoneId: "battlefield",
           items: [
             {
+              cardId: "rhystic-study",
               name: "Rhystic Study",
               owner: "Player 1",
               targets: [{ kind: "player", targetPlayer: "Player 2" }]
@@ -254,6 +261,30 @@ describe("buildPromptText", () => {
     const scopeIdx = prompt.indexOf("SCOPE");
     expect(scopeIdx).toBeLessThan(questionIdx);
     expect(prompt.lastIndexOf("QUESTION")).toBe(questionIdx);
+  });
+
+  it("inserts official rulings after zones and before scope", () => {
+    const prompt = buildPromptText(baseContext, {
+      rulings: [
+        {
+          cardId: "rhystic-study",
+          name: "Rhystic Study",
+          rulings: [
+            {
+              publishedAt: "2023-09-01",
+              comment: "You don't have to decide whether or not to draw until after the player decides whether to pay."
+            }
+          ]
+        }
+      ]
+    });
+
+    expect(prompt).toContain("OFFICIAL RULINGS (WotC reference)");
+    expect(prompt).toContain("If the user names a card already present in context");
+    expect(prompt).toContain("Rhystic Study\n- 2023-09-01:");
+    expect(prompt.indexOf("ZONE: BATTLEFIELD")).toBeLessThan(prompt.indexOf("OFFICIAL RULINGS"));
+    expect(prompt.indexOf("OFFICIAL RULINGS")).toBeLessThan(prompt.indexOf("SCOPE"));
+    expect(prompt).not.toContain("rhystic-study");
   });
 
   it("renders ZONE: BATTLEFIELD section when battlefield is populated", () => {

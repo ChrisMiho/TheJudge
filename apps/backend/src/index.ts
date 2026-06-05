@@ -3,13 +3,15 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createApp } from "./app/createApp.js";
+import { loadCardRulingsIndex } from "./cardRulings.js";
 import { readServerConfig } from "./config/index.js";
 import { createAppLogger } from "./logging.js";
 import { createAskAiProvider } from "./providers/createAskAiProvider.js";
 
+const backendDir = dirname(fileURLToPath(import.meta.url));
+const repoRoot = resolve(backendDir, "../../..");
+
 if (process.env.NODE_ENV === "development" && process.env.VITEST !== "true") {
-  const backendDir = dirname(fileURLToPath(import.meta.url));
-  const repoRoot = resolve(backendDir, "../../..");
   const backendEnvPath = resolve(backendDir, "../.env");
   loadDotenv({ path: backendEnvPath });
   const secretsEnvPath = resolve(repoRoot, ".secrets/openai-dev.env");
@@ -39,11 +41,13 @@ if (process.env.NODE_ENV === "development" && process.env.VITEST !== "true") {
 
 const config = readServerConfig(process.env);
 const startupLogger = createAppLogger(true);
+const cardRulingsIndex = loadCardRulingsIndex(resolve(repoRoot, "apps/backend/data/cardRulingsByOracleId.json"));
 const app = createApp({
   frontendOrigin: config.frontendOrigin,
   debugLoggingEnabled: config.debugLoggingEnabled,
   payloadLoggingEnabled: config.payloadLoggingEnabled,
-  askAiProvider: createAskAiProvider(config)
+  askAiProvider: createAskAiProvider(config),
+  cardRulingsIndex
 });
 
 app.listen(config.port, () => {
@@ -52,6 +56,7 @@ app.listen(config.port, () => {
     frontendOrigin: config.frontendOrigin ?? "(unset)",
     askAiProvider: config.askAiProvider,
     debugLoggingEnabled: config.debugLoggingEnabled,
-    payloadLoggingEnabled: config.payloadLoggingEnabled
+    payloadLoggingEnabled: config.payloadLoggingEnabled,
+    cardRulingsCardCount: cardRulingsIndex.size
   });
 });

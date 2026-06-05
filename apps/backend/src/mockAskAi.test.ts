@@ -16,7 +16,12 @@ describe("mock answer ergonomics", () => {
         turnPhase: "stack_resolving",
         selectedZones: ["battlefield", "stack"]
       },
-      populatedZones: [{ zoneId: "battlefield", items: [{ name: "Rhystic Study", details: "Tax effect", targets: [{ kind: "none" }] }] }],
+      populatedZones: [
+        {
+          zoneId: "battlefield",
+          items: [{ cardId: "rhystic-study", name: "Rhystic Study", details: "Tax effect", targets: [{ kind: "none" }] }]
+        }
+      ],
       orderedStack: [
         {
           cardId: "opt",

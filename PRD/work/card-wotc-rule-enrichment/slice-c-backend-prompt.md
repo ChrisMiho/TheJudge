@@ -1,6 +1,6 @@
 # Slice C — Backend prompt enrichment
 
-## Status: planned
+## Status: complete
 
 ## Goal
 
@@ -72,11 +72,11 @@ Extend `PromptDiagnostics` with `rulingsSectionChars`, `rulingsCardCount` if use
 
 ## Acceptance criteria
 
-- [ ] `POST /api/ask-ai` unchanged request/response contract
-- [ ] Prompt contains rulings section when data exists for submitted cards
-- [ ] Prompt omits section when no rulings match
+- [x] `POST /api/ask-ai` unchanged request/response contract
+- [x] Prompt contains rulings section when data exists for submitted cards
+- [x] Prompt omits section when no rulings match
 - [ ] `npm run quality:check` passes
-- [ ] No frontend file changes required for this slice
+- [x] No frontend file changes required for this slice
 
 ## Files
 

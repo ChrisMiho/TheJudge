@@ -1,6 +1,6 @@
 # Slice B — Trim rulings artifact
 
-## Status: planned
+## Status: complete
 
 ## Goal
 
@@ -60,11 +60,11 @@ Build a `Set` of `cardId` from `cardMetadata.json` (each entry’s `cardId` is S
 
 ## Acceptance criteria
 
-- [ ] `npm run data:build` produces `apps/backend/data/cardRulingsByOracleId.json`
-- [ ] Committed artifact is reasonable size (intersect shrinks vs full bulk)
-- [ ] Spot-check: a known card in metadata (e.g. Lightning Bolt) has expected ruling text if WotC data exists
-- [ ] Script is idempotent (same input → same output)
-- [ ] Root README updated in slice D (or here if B completes alone): documents `data:build` / refresh behavior
+- [x] `npm run data:build` produces `apps/backend/data/cardRulingsByOracleId.json`
+- [x] Committed artifact is reasonable size (intersect shrinks vs full bulk)
+- [x] Spot-check: a known card in metadata (e.g. Lightning Bolt) has expected ruling text if WotC data exists
+- [x] Script is idempotent (same input → same output)
+- [x] Root README updated in slice D (or here if B completes alone): documents `data:build` / refresh behavior
 
 ## Files
 
