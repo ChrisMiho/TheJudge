@@ -64,7 +64,8 @@ describe("mock answer ergonomics", () => {
     const result = buildMockAnswer({
       context,
       promptText: buildPromptText(context),
-      diagnostics: getPromptDiagnostics(buildPromptText(context))
+      diagnostics: getPromptDiagnostics(buildPromptText(context)),
+      relevantRules: []
     });
 
     expect(result.answer).toContain("MOCK RESPONSE");

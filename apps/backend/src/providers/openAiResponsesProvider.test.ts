@@ -24,7 +24,8 @@ describe("createOpenAiAskAiProvider", () => {
     const result = await provider.generateAnswer({
       context: {} as never,
       promptText: "prompt",
-      diagnostics: {} as never
+      diagnostics: {} as never,
+      relevantRules: []
     });
 
     expect(result.answer).toBe("Resolved cleanly");
@@ -44,7 +45,8 @@ describe("createOpenAiAskAiProvider", () => {
       provider.generateAnswer({
         context: {} as never,
         promptText: "prompt",
-        diagnostics: {} as never
+        diagnostics: {} as never,
+        relevantRules: []
       })
     ).rejects.toMatchObject({
       code: "PROVIDER_UNAVAILABLE"
@@ -71,7 +73,8 @@ describe("createOpenAiAskAiProvider", () => {
       provider.generateAnswer({
         context: {} as never,
         promptText: "prompt",
-        diagnostics: {} as never
+        diagnostics: {} as never,
+        relevantRules: []
       })
     ).rejects.toMatchObject({
       code: "PROVIDER_TIMEOUT"

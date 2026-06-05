@@ -1,6 +1,13 @@
 import { spawn } from "node:child_process";
 
 const npmExecutable = process.platform === "win32" ? "npm.cmd" : "npm";
+const providerArg = process.argv.find((arg) => arg.startsWith("--provider="));
+const provider = providerArg?.split("=")[1] ?? process.env.ASK_AI_PROVIDER ?? "mock";
+if (!["mock", "openai"].includes(provider)) {
+  console.error(`[dev] Invalid provider "${provider}". Expected "mock" or "openai".`);
+  process.exit(1);
+}
+
 const services = [
   { name: "backend", args: ["run", "dev", "--workspace", "apps/backend"] },
   { name: "frontend", args: ["run", "dev", "--workspace", "apps/frontend"] }
@@ -13,7 +20,11 @@ function startService(service) {
   const child = spawn(`${npmExecutable} ${service.args.join(" ")}`, {
     shell: true,
     stdio: "inherit",
-    env: process.env
+    env: {
+      ...process.env,
+      ASK_AI_PROVIDER: provider,
+      NODE_ENV: "development"
+    }
   });
 
   children.push({ ...service, process: child });

@@ -1,10 +1,12 @@
 import { MTG_PROMPT_REFERENCE } from "./mtgReference.js";
+import type { RetrievedRuleReference } from "../rules/types.js";
 import type { PlayerLabel, PromptContext, ZoneId } from "../types/index.js";
 
 export const MAX_ORACLE_TEXT_CHARS = 480;
 export const MAX_CONTEXT_DETAILS_CHARS = 220;
 export const MAX_CONTEXT_NOTES_CHARS = 180;
 export const MAX_TARGET_LABEL_CHARS = 120;
+export const MAX_RULE_EXCERPT_CHARS = 700;
 export const MAX_PROMPT_CHAR_BUDGET = 12000;
 export const PROMPT_BUDGET_NEAR_LIMIT_BUFFER = 800;
 const TRUNCATION_SUFFIX = " ...(truncated)";
@@ -228,6 +230,23 @@ function formatNonStackZoneSections(context: PromptContext): string {
     .join("\n\n");
 }
 
+function formatRelevantRulesSection(relevantRules: RetrievedRuleReference[]): string {
+  if (relevantRules.length === 0) {
+    return "";
+  }
+
+  const rulesText = relevantRules
+    .map((rule) =>
+      [
+        `Rule ${rule.ruleId}${rule.sectionTitle ? ` (${rule.sectionTitle})` : ""}`,
+        truncatePromptLabel(rule.text, MAX_RULE_EXCERPT_CHARS)
+      ].join("\n")
+    )
+    .join("\n\n");
+
+  return ["RELEVANT OFFICIAL RULE EXCERPTS", rulesText].join("\n");
+}
+
 /**
  * Builds the scope sentence listing zones with no cards.
  * Merges unselected zones and selected-but-empty zones in canonical order.
@@ -270,7 +289,7 @@ export function getPromptDiagnostics(prompt: string): PromptDiagnostics {
   };
 }
 
-export function buildPromptText(context: PromptContext): string {
+export function buildPromptText(context: PromptContext, relevantRules: RetrievedRuleReference[] = []): string {
   const populatedZoneIds: ZoneId[] = [
     ...(context.orderedStack.length > 0 ? (["stack"] as ZoneId[]) : []),
     ...context.populatedZones.map((z) => z.zoneId as ZoneId)
@@ -280,17 +299,27 @@ export function buildPromptText(context: PromptContext): string {
 
   const stackSection = formatStackSection(context);
   const nonStackSections = formatNonStackZoneSections(context);
+  const relevantRulesSection = formatRelevantRulesSection(relevantRules);
 
   const zoneSections = [stackSection, nonStackSections].filter(Boolean).join("\n\n");
+  const instructionLines = [
+    "- Explain reasoning clearly and concisely.",
+    "- State uncertainty when context is incomplete.",
+    "- Do not invent hidden state, targets, or board conditions."
+  ];
+
+  if (relevantRulesSection.length > 0) {
+    instructionLines.push(
+      "- Use relevant official rule excerpts when provided, but do not force them if they do not apply."
+    );
+  }
 
   const sections: string[] = [
     "SYSTEM ROLE PREAMBLE",
     ...SYSTEM_ROLE_PREAMBLE_LINES,
     "",
     "INSTRUCTIONS",
-    "- Explain reasoning clearly and concisely.",
-    "- State uncertainty when context is incomplete.",
-    "- Do not invent hidden state, targets, or board conditions.",
+    ...instructionLines,
     "",
     "MTG REFERENCE",
     MTG_PROMPT_REFERENCE,
@@ -301,6 +330,10 @@ export function buildPromptText(context: PromptContext): string {
 
   if (zoneSections.length > 0) {
     sections.push("", zoneSections);
+  }
+
+  if (relevantRulesSection.length > 0) {
+    sections.push("", relevantRulesSection);
   }
 
   sections.push("", "SCOPE", scopeSentence, "", "QUESTION", context.finalQuestion);

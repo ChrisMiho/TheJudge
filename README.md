@@ -77,6 +77,7 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 - `npm --workspace apps/frontend run test` - run frontend tests
 - `npm --workspace apps/backend run test` - run backend tests
 - `npm --workspace apps/backend run test:eval` - run backend eval harness test
+- `npm run rules:build` - build experimental backend Comprehensive Rules metadata from the official rules TXT source
 - `npm run data:refresh` - download latest Scryfall `default_cards` and rebuild trimmed metadata
 - stop running processes with `Ctrl + C`
 
@@ -140,3 +141,4 @@ Quick local verification flow:
 - Empty-state artwork is bundled at `apps/frontend/public/assets/cats-homescreen.png`; keep it local/static and retain a text fallback path.
 - Provider integration boundary docs live in `apps/backend/src/providers/README.md`.
 - Search responsiveness guardrails stay frontend-local (debounced query + in-memory pre-normalized index) and must not add runtime metadata sync paths.
+- Experimental Comprehensive Rules enrichment, when generated, stays backend-local and prompt-facing; it must not change the public `POST /api/ask-ai` contract or become a rules engine. This is separate from the planned WotC Oracle rulings work in `PRD/work/card-wotc-rule-enrichment/`.

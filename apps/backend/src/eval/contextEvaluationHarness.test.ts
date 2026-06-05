@@ -50,7 +50,7 @@ async function assertGoldenFile(fileName: string, actualContent: string): Promis
     throw error;
   }
 
-  expect(actualContent).toBe(expectedContent);
+  expect(actualContent.replace(/\r\n/g, "\n")).toBe(expectedContent.replace(/\r\n/g, "\n"));
 }
 
 function formatContextSnapshot(request: AskAiRequest): string {

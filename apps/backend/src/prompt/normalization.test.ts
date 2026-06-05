@@ -3,6 +3,7 @@ import {
   MAX_CONTEXT_NOTES_CHARS,
   MAX_ORACLE_TEXT_CHARS,
   MAX_PROMPT_CHAR_BUDGET,
+  MAX_RULE_EXCERPT_CHARS,
   MAX_TARGET_LABEL_CHARS,
   SYSTEM_ROLE_PREAMBLE_LINES,
   buildPromptText,
@@ -142,6 +143,42 @@ describe("buildPromptText", () => {
     expect(prompt).toContain("MTG REFERENCE");
     expect(prompt).toContain("layer system");
     expect(prompt).toContain("turnPhase: main_1");
+  });
+
+  it("includes retrieved official rule excerpts when provided", () => {
+    const prompt = buildPromptText(baseContext, [
+      {
+        ruleId: "117.3b",
+        sectionTitle: "Timing and Priority",
+        text: "The active player receives priority after a spell or ability resolves.",
+        score: 4
+      }
+    ]);
+
+    expect(prompt).toContain("RELEVANT OFFICIAL RULE EXCERPTS");
+    expect(prompt).toContain("Rule 117.3b (Timing and Priority)");
+    expect(prompt).toContain("The active player receives priority");
+    expect(prompt.indexOf("ZONE: BATTLEFIELD")).toBeLessThan(prompt.indexOf("RELEVANT OFFICIAL RULE EXCERPTS"));
+    expect(prompt.indexOf("RELEVANT OFFICIAL RULE EXCERPTS")).toBeLessThan(prompt.indexOf("SCOPE"));
+  });
+
+  it("omits retrieved rule section when no rules are provided", () => {
+    const prompt = buildPromptText(baseContext);
+    expect(prompt).not.toContain("RELEVANT OFFICIAL RULE EXCERPTS");
+  });
+
+  it("truncates long retrieved rule excerpts deterministically", () => {
+    const prompt = buildPromptText(baseContext, [
+      {
+        ruleId: "999.1",
+        sectionTitle: "Long Rule",
+        text: "r".repeat(MAX_RULE_EXCERPT_CHARS + 100),
+        score: 1
+      }
+    ]);
+
+    expect(prompt).toContain("Rule 999.1 (Long Rule)");
+    expect(prompt).toContain("...(truncated)");
   });
 
   it("includes uncertainty and non-invention guardrails", () => {

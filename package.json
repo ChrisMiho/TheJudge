@@ -8,8 +8,8 @@
   ],
   "scripts": {
     "dev": "npm run dev:mock",
-    "dev:mock": "ASK_AI_PROVIDER=mock node scripts/dev.mjs",
-    "dev:openai": "ASK_AI_PROVIDER=openai node scripts/dev.mjs",
+    "dev:mock": "node scripts/dev.mjs --provider=mock",
+    "dev:openai": "node scripts/dev.mjs --provider=openai",
     "dev:frontend": "npm --workspace apps/frontend run dev",
     "dev:backend": "npm --workspace apps/backend run dev",
     "typecheck": "npm --workspace apps/frontend run typecheck && npm --workspace apps/backend run typecheck",
@@ -23,6 +23,7 @@
     "build": "npm --workspace apps/frontend run build && npm --workspace apps/backend run build",
     "data:build": "node scripts/build-card-metadata.mjs",
     "data:refresh": "node scripts/refresh-scryfall-data.mjs",
+    "rules:build": "node scripts/build-rules-metadata.mjs",
     "openai:verify-credentials": "node scripts/openai-verify-credentials.mjs"
   },
   "devDependencies": {

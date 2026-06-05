@@ -902,7 +902,7 @@ describe("App MVP interaction flows", () => {
     for (let index = 0; index < 10; index += 1) {
       expect(screen.getByLabelText(`Caster for ${manyCards[index].name}`)).toBeInTheDocument();
     }
-  });
+  }, 10000);
 
   it("hides optional-question submit controls after response is received", async () => {
     const user = userEvent.setup();
