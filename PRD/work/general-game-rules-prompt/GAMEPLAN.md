@@ -1,197 +1,132 @@
 # GAMEPLAN — general-game-rules-prompt
 
-Captured from planning session 2026-06-05. Refinement skill should align this with `DESIGN-BRIEF.md` and promote durable decisions to `PRD/sections/`.
+## Status
 
-## Baseline
+Active work package (map-out 2026-06-05). Product truth: [DESIGN-BRIEF.md](./DESIGN-BRIEF.md). Durable PRD already promoted (DEC-030, REQ-022, integrations-and-data, NFR-002 note).
 
-TheJudge is a flow-validation MTG assistant: staged zone context → Ask AI → non-authoritative explanation via `POST /api/ask-ai`.
+## Goal
 
-**Already shipped:**
+Ship verbatim WotC Comprehensive Rules excerpts in every Ask AI prompt via a committed backend artifact and data pipeline — without changing API, frontend, or request shape.
 
-- Static **MTG REFERENCE** — `apps/backend/src/prompt/mtgReference.ts` (DEC-025)
-- Per-card **OFFICIAL RULINGS** — Scryfall WotC rulings artifact (DEC-029)
-- Card lookup/autocomplete — frontend local metadata
+## Architecture
 
-## Problem
+```mermaid
+flowchart LR
+  subgraph refresh["npm run data:refresh (human-approved network)"]
+    WotC["WotC CR TXT"]
+    Scry["Scryfall bulk"]
+    WotC --> CRSource["apps/backend/data/cr/source.txt (gitignored)"]
+    Scry --> ScryLocal["apps/backend/data/scryfall/*.json (gitignored)"]
+  end
 
-Card rulings answer card-specific questions. General CR topics (priority, stack, triggered, replacement, combat, layers) are missing from prompts.
+  subgraph build["npm run data:build (local only)"]
+    Manifest["gameRulesTopicManifest.json"]
+    CRSource --> BuildScript["scripts/build-game-rules.mjs"]
+    Manifest --> BuildScript
+    BuildScript --> Artifact["gameRulesByTopic.json (committed)"]
+  end
 
-## v1 decision (confirmed)
+  subgraph runtime["Backend startup"]
+    Artifact --> Loader["gameRules.ts"]
+    Loader --> Prep["preparePromptInput"]
+    Prep --> Prompt["buildPromptText"]
+    Prompt --> LLM["Ask AI provider"]
+  end
+```
 
-**Ship the full curated game-rules library in every prompt.**
+## Data flow
 
-- ~20–28 topics, verbatim WotC CR text
-- No per-request selection in v1
-- Raise `MAX_PROMPT_CHAR_BUDGET` from 12,000 → **35,000**
-- Measure latency + answer quality manually; selective inclusion is **v2** if needed
+1. **Refresh** — `scripts/refresh-scryfall-data.mjs` downloads Scryfall bulk feeds (existing) and WotC CR TXT (new). Each download is best-effort: failure logs a warning and continues; never aborts the whole refresh for one source.
+2. **Build** — `scripts/build-game-rules.mjs` reads `gameRulesTopicManifest.json` + gitignored `cr/source.txt`, extracts verbatim prose for listed rule numbers, writes `gameRulesByTopic.json`. Missing source or failed per-topic extract → log warning, preserve prior committed excerpt, exit 0.
+3. **Runtime** — `loadGameRulesTopics()` at startup (mirror `loadCardRulingsIndex`). `preparePromptInput` passes the full library to `buildPromptText`. `formatGameRulesSection` renders all topics in stable manifest `id` order.
+4. **Prompt order** — zone sections → **GAME RULES (reference)** → OFFICIAL RULINGS → SCOPE → QUESTION.
+
+## Artifact schemas
+
+**Manifest** (`apps/backend/data/gameRulesTopicManifest.json`):
+
+```json
+[
+  {
+    "id": "stack-basics",
+    "title": "The Stack",
+    "ruleNumbers": ["405.1", "405.2"]
+  }
+]
+```
+
+**Artifact** (`apps/backend/data/gameRulesByTopic.json`):
+
+```json
+[
+  {
+    "id": "stack-basics",
+    "title": "The Stack",
+    "ruleNumbers": ["405.1", "405.2"],
+    "excerpt": "405.1. …\n405.2. …"
+  }
+]
+```
+
+Topics sorted by `id` at build time and runtime. `excerpt` is verbatim WotC CR prose only.
 
 ## Token budget
 
-| Component | Chars (approx) | Tokens (approx) |
-|-----------|----------------|-----------------|
-| Full game-rules library | ~18,000–22,000 | ~4,500–5,500 |
-| Rest of prompt (typical) | ~3,000–3,500 | ~750–875 |
-| Static MTG REFERENCE | ~1,500 | ~375 |
-| Card rulings (max) | up to ~2,400 | ~600 |
-| **Total typical** | **~25,000–27,000** | **~6,500–7,000** |
-| **Worst case (near-cap stack)** | **~29,000–32,000** | **~7,500–8,000** |
+| Component | Chars (approx) |
+|-----------|----------------|
+| Full game-rules library | 18,000–22,000 |
+| Rest of prompt (typical) | 3,000–3,500 |
+| Static MTG REFERENCE | ~1,500 |
+| Card rulings (max) | up to ~2,400 |
+| **Total typical** | **~25,000–27,000** |
+| **Worst case** | **~29,000–32,000** |
 
-Cost on `gpt-4.1-mini` is acceptable; watch **latency** against NFR (~3s).
+`MAX_PROMPT_CHAR_BUDGET` = **35,000** (DEC-030). Active product risk against NFR-002 latency target.
 
-## Data sources
+## Slice sequence
 
-| Data | Source |
-|------|--------|
-| Cards + oracle text | Scryfall `default_cards` → `cardMetadata.json` |
-| Per-card WotC rulings | Scryfall `rulings` → `cardRulingsByOracleId.json` |
-| **General game rules** | **WotC CR TXT** from [magic.wizards.com/en/rules](https://magic.wizards.com/en/rules) |
+| Slice | Objective | Depends on |
+|-------|-----------|------------|
+| [A](./slice-a-cr-pipeline.md) | CR download + `build-game-rules.mjs` + npm scripts | — |
+| [B](./slice-b-topic-curation.md) | Curated manifest + committed artifact | A |
+| [C](./slice-c-backend-prompt.md) | Runtime load + prompt section + 35k cap | B |
+| [D](./slice-d-eval-latency-closeout.md) | Eval goldens + latency spike + closeout | C |
 
-Scryfall does **not** host Comprehensive Rules.
+## Verification checklist (full work)
 
-## npm pipeline (confirmed)
+Run after slice D (or incrementally per slice):
 
-```text
-npm run data:refresh   → download Scryfall + WotC CR, then build
-npm run data:build     → transform local sources only (no network)
+```bash
+# Data pipeline (slice A–B)
+npm run data:build
+
+# Unit + integration tests (slice A–C)
+npm --workspace apps/backend run test -- src/gameRules.test.ts
+npm --workspace apps/backend run test -- src/prompt/normalization.test.ts
+npm --workspace apps/backend run test -- src/prompt/preparation.test.ts
+
+# Eval goldens (slice D)
+npm --workspace apps/backend run test:eval
+
+# Full quality gate (slice D)
+npm run quality:check
 ```
 
-**Graceful degradation (never fail the script):**
+**Manual (slice D):** `npm run dev:openai` — 5–10 live scenarios; record p50/p95 latency and informal accuracy notes in slice D doc.
 
-- Refresh: skip unavailable downloads (Scryfall or CR), log warning, continue
-- Build: if CR source missing → log, use committed `gameRulesByTopic.json`, exit 0
-- Build: per-topic extract pending → log, keep prior committed excerpt
-- Agent-run `data:refresh` still requires human approval before network (existing PRD policy)
+## Out of scope (v1)
 
-**Build chain extension:**
+- Per-request topic selection
+- Rules engine / layer adjudication
+- Format-specific rules
+- Runtime CR fetch
+- Frontend or `AskAiRequest` changes
 
-```text
-data:build = build-card-metadata.mjs && build-card-rulings.mjs && build-game-rules.mjs
-```
+## Agent read order
 
-**Paths:**
-
-- Gitignored CR source: `apps/backend/data/cr/source.txt`
-- Topic manifest: `apps/backend/data/gameRulesTopicManifest.json` (or co-located in build script)
-- Committed artifact: `apps/backend/data/gameRulesByTopic.json`
-
-## Verbatim CR text (confirmed)
-
-- Topic `excerpt` = exact CR prose extracted by rule number (`405.1`, `613.4b`, `702.9a`, etc.)
-- No paraphrase — MTG wording matters
-- One-line prompt disclaimer is fine; rule body is untouched
-
-## Runtime behavior (v1)
-
-1. Load `gameRulesByTopic.json` at startup (like card rulings)
-2. `preparePromptInput` → pass **all topics** to `buildPromptText`
-3. `formatGameRulesSection` → render every topic in stable `id` order
-4. Omit section only if artifact missing/empty (log warning)
-5. No signal selection, pinning, or section char cap in v1
-
-## Prompt section order
-
-```
-SYSTEM ROLE PREAMBLE
-INSTRUCTIONS
-MTG REFERENCE
-GENERAL GAME CONTEXT
-[ZONE sections]
-GAME RULES (reference)   ← NEW
-OFFICIAL RULINGS
-SCOPE
-QUESTION
-```
-
-Disclaimer:
-
-```text
-GAME RULES (reference)
-Use these general Magic rules as shared vocabulary. They do not override the user's submitted game state, stack order, or card oracle text.
-```
-
-Keep static `MTG_PROMPT_REFERENCE` unchanged in v1 (DEC-025).
-
-## Topic library (~20–28 excerpts — all in every prompt)
-
-**Stack & timing:** `405.x`, `117.x`, `601.x` core, flash/instant timing
-
-**Abilities:** triggered `603.x`, replacement `614.x` core, countering, targeting `115.x`, copy `707` core
-
-**Combat:** phase overview, shadow `702.9`, flying, first strike, trample, lifelink, deathtouch
-
-**Layers (curated 613 subsections, not full chapter):** `613.1`–`613.1g`, `613.4` P/T sublayers, `613.7` timestamp, `613.8` dependency, copy layer refs
-
-**Zones & damage:** hidden zones, damage/prevention `120.x`/`615.x`, ETB/dies triggers
-
-## Implementation touchpoints
-
-| Area | File(s) | Change |
-|------|---------|--------|
-| Rule loading | `apps/backend/src/gameRules.ts` (new) | `loadGameRulesTopics()`, format all topics |
-| Prompt assembly | `apps/backend/src/prompt/preparation.ts` | Pass full library |
-| Prompt text | `apps/backend/src/prompt/normalization.ts` | `MAX_PROMPT_CHAR_BUDGET = 35000`, diagnostics |
-| Bootstrap | `apps/backend/src/index.ts`, `createApp.ts` | Load artifact at startup |
-| Eval | `apps/backend/src/eval/contextEvaluationHarness.ts` | Full library present, under 35k |
-| Refresh | `scripts/refresh-scryfall-data.mjs` | Add WotC CR download |
-| Build | `scripts/build-game-rules.mjs` (new) | Extract verbatim excerpts |
-
-No `AskAiRequest` / frontend changes (same boundary as DEC-029).
-
-## Testing
-
-- Unit: load + format all topics in stable order
-- Eval goldens: every fixture includes full GAME RULES block; under 35k cap
-- Diagnostics: `gameRulesSectionChars`, `gameRulesTopicCount`
-- Manual: `npm run dev:openai` — 5–10 scenarios, record latency p50/p95 + informal accuracy notes
-
-## Phased delivery (slice preview)
-
-### Slice A — Data pipeline
-
-- Extend `data:refresh` for WotC CR TXT
-- Add `build-game-rules.mjs` to `data:build`
-- Graceful skip+log behavior
-- Initial topic manifest
-
-### Slice B — Artifact
-
-- Build committed `gameRulesByTopic.json`
-- Document char totals per topic + library sum
-
-### Slice C — Prompt integration
-
-- `gameRules.ts` + `preparePromptInput` / `buildPromptText`
-- Cap → 35k
-- Bootstrap load
-
-### Slice D — Verification
-
-- Eval golden updates
-- Manual latency/accuracy spike
-- Decide v2 selection need
-
-## Deferred v2 (reference)
-
-If all-on latency or answer focus disappoints:
-
-- Context-driven selection: phase → zones → oracle → question
-- Shadow pinning when combat-relevant
-- Layer tier 1/2 with max-one-per-group
-- Score-ranked topics until budget
-
-Trigger metadata can live in manifest without affecting v1 runtime.
-
-## PRD promotion (for refinement / cleanup)
-
-- **DEC-030** in `sections/decisions.md`
-- Update `sections/integrations-and-data.md` AI Prompt Context Rules
-- Possible REQ addition for game-rules prompt enrichment
-
-## Confirmed product choices
-
-- v1: entire curated library every prompt
-- `MAX_PROMPT_CHAR_BUDGET = 35,000`
-- Scryfall for cards/rulings; WotC CR for general rules
-- Verbatim CR wording
-- `data:refresh` / `data:build` unified with graceful degradation
-- Selection engine deferred to v2
+1. [README.md](./README.md)
+2. [DESIGN-BRIEF.md](./DESIGN-BRIEF.md)
+3. This GAMEPLAN
+4. The slice doc being implemented
+5. `PRD/sections/decisions.md` (DEC-030, DEC-029, DEC-025)
+6. `PRD/sections/functional-requirements.md` (REQ-022)

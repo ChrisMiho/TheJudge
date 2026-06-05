@@ -45,6 +45,9 @@
 - plain-text answers are used before advanced formatting polish
 - runtime metadata syncing and camera scanning are out of scope
 
+## Product risks
+- **Prompt size vs AI latency:** Full game-rules library on every request (DEC-030, REQ-022) materially increases prompt size and is an active risk to the 3-second latency success metric. Monitor after ship; context-driven topic selection is the primary mitigation if the risk materializes.
+
 ## Explicit Non-Goals
 - official judge-grade rulings
 - deterministic rules engine behavior

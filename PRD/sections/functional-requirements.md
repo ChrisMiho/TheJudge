@@ -336,3 +336,34 @@
   - enrichment UI
   - backend prompt context normalization
 - Notes:
+
+### REQ-022
+- Title: General game rules prompt enrichment
+- Priority: high
+- Description: Every backend AI prompt must include a curated library of verbatim WotC Comprehensive Rules excerpts as reference context, without changing the product API or UI.
+- Acceptance Criteria:
+  - committed artifact `apps/backend/data/gameRulesByTopic.json` loads at backend startup
+  - every assembled prompt includes `GAME RULES (reference)` with all curated topics in stable `id` order when the artifact is present
+  - excerpts are verbatim WotC CR prose for rule numbers listed in `apps/backend/data/gameRulesTopicManifest.json`
+  - section appears after populated zone sections and before `OFFICIAL RULINGS`, then `SCOPE` and `QUESTION`
+  - section includes a disclaimer that rules are shared vocabulary and do not override submitted game state
+  - section omitted only when artifact missing or empty, with a warning logged
+  - `MAX_PROMPT_CHAR_BUDGET` is 35000 and prompt diagnostics include game-rules section metrics
+  - `npm run data:build` runs `build-game-rules.mjs` with graceful degradation when CR source or extracts are unavailable
+  - `npm run data:refresh` attempts WotC CR download alongside Scryfall refresh with graceful skip when unavailable
+  - eval fixtures assert the full game-rules block and remain under the prompt budget
+  - manual latency sampling (p50/p95) is recorded after integration against the NFR-002 product risk
+- Constraints:
+  - prompt-only and backend-only; no `AskAiRequest`, Zod schema, or frontend changes
+  - no paraphrased rule text
+  - no runtime CR or Scryfall fetch per request
+  - no per-request topic selection in current scope
+  - no rules engine, format-specific rules, or board-state simulation
+- Dependencies:
+  - DEC-025
+  - DEC-029
+  - DEC-030
+  - WotC Comprehensive Rules TXT source
+- Notes:
+  - topic rule numbers are curated during Slice B; refinement locks the pipeline, not the final manifest contents
+  - full-library inclusion is an active product risk against NFR-002 latency; context-driven selection is deferred mitigation

@@ -15,6 +15,8 @@
   - card add flow under 5 seconds
   - Decrypt Stack flow under 20 seconds
   - normal AI latency target under 3 seconds
+- Notes:
+  - **Product risk:** game-rules prompt enrichment (DEC-030, REQ-022) materially increases prompt size (~25–32k chars typical/worst case). This is an active risk to the 3-second AI latency target, not a temporary scope tradeoff. Monitor after ship; context-driven topic selection is the primary mitigation path if the risk materializes.
 
 ### NFR-003
 - Title: Secure backend-only model access
