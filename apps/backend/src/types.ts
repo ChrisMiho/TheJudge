@@ -67,6 +67,7 @@ export type PromptContext = {
     playerCount: number;
     players: GamePlayerContext[];
     turnPhase: TurnPhase;
+    activePlayer?: PlayerLabel;
     selectedZones: ZoneId[];
   };
   /** Non-stack zones that have cards, in canonical zone order. */

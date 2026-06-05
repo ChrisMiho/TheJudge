@@ -65,6 +65,19 @@ describe("buildPromptContext", () => {
     ]);
   });
 
+  it("preserves active player in prompt context", () => {
+    const context = buildPromptContext({
+      question: "Who is active?",
+      gameContext: {
+        ...defaultGameContext,
+        activePlayer: "Player 2",
+        zones: { stack: createStackZoneCards(1) }
+      }
+    });
+
+    expect(context.gameContext.activePlayer).toBe("Player 2");
+  });
+
   it("sets top role on single-card stacks", () => {
     const context = buildPromptContext({
       question: "Single",

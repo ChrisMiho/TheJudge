@@ -315,3 +315,18 @@
   - REQ-017
   - REQ-021
 - Notes:
+
+### DEC-027
+- Decision: Optional player display names are UI- and prompt-facing labels layered over fixed `PlayerLabel` identity.
+- Status: confirmed
+- Context: Users can enter names during game setup, but the API must keep stable player identifiers for validation and downstream contracts.
+- Impact:
+  - API fields such as `label`, `activePlayer`, `caster`, `owner`, and `targetPlayer` remain `PlayerLabel` strings (`Player 1` ... `Player N`)
+  - UI player options show `Player N (Name)` when a trimmed custom display name is set and differs from the label
+  - prompt text resolves player references in roster-adjacent fields, `activePlayer`, caster, owner, and player targets using the same `Player N (Name)` format
+  - empty, whitespace-only, or label-identical display names are treated as unset
+- Related requirements:
+  - REQ-015
+  - REQ-017
+  - REQ-019
+- Notes:

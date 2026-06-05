@@ -5,6 +5,7 @@ import { ZoneConfirmStep } from "./components/ZoneConfirmStep";
 import { logFrontendDebug } from "./lib/debugLogger";
 import { apiBaseUrl } from "./lib/env";
 import { buildAskAiRequest, canAdvance, DEFAULT_TURN_PHASE, mergeSelectedZonesOnPhaseChange } from "./lib/contextFlow";
+import { formatPlayerDisplayLabel } from "./lib/playerLabels";
 import { useAskAiSubmitOrchestration } from "./lib/useAskAiSubmitOrchestration";
 import type {
   CardMetadataItem,
@@ -411,7 +412,7 @@ export default function App() {
               >
                 {activePlayers.map((player) => (
                   <option key={player} value={player}>
-                    {player}
+                    {formatPlayerDisplayLabel(player, displayNamesByPlayer[player])}
                   </option>
                 ))}
               </select>
@@ -470,6 +471,7 @@ export default function App() {
         isMetadataLoading={isMetadataLoading}
         activePlayer={activePlayer}
         activePlayers={activePlayers}
+        displayNamesByPlayer={displayNamesByPlayer}
         onBack={() => setFlowStep("zone-confirm")}
         onContinue={finishZoneCollection}
         canContinue={canContinueCollection}

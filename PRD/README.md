@@ -99,12 +99,7 @@ Read in this order:
 
 ## Active work packages (`PRD/work/`)
 
-| Slug | Status | Entry |
-|---|---|---|
-| `player-display-names` | planned | [README](work/player-display-names/README.md) → [GAMEPLAN](work/player-display-names/GAMEPLAN.md) → slices A–C |
-| `user-flow-refinements` | complete (2026-06-04) | [README](work/user-flow-refinements/README.md) |
-
-Agents implementing player display names must use **`player-display-names`** as the canonical plan. Do not use Cursor-only `.cursor/plans/` copies.
+No active work packages are linked from the control plane. Completed work is promoted into `sections/` and temporary work folders are removed per `instructions/doc-lifecycle.md`.
 
 ## Current Editorial Notes
 - MVP1 is closed; flow-validation framing and temporary simplifications remain documented only where still active in `sections/decisions.md`.

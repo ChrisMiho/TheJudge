@@ -13,7 +13,6 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 
 - MVP1: closed
 - UX Wave 2: in progress — zone-based flow with user-flow refinements and gap fixes promoted into `PRD/sections/`
-- **Active implementation plan (agents):** `PRD/work/player-display-names/` — player display-name capture and payload propagation
 - Baseline: flow-validation assistant with mock-default backend and optional OpenAI provider mode (`DEC-020` in `PRD/sections/decisions.md`)
 - Product source of truth: `PRD/sections/` (start with `decisions.md`)
 

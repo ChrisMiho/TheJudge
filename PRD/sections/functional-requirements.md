@@ -212,13 +212,16 @@
 - Description: Before zone collection begins, the app must collect core game context including player count, life totals, active player when known, and turn phase.
 - Acceptance Criteria:
   - user can set number of players using fixed labels (`Player 1` ... `Player N`)
+  - user can optionally enter display names for included player labels
   - user can enter life totals for each included player label
   - user can set active player from included player labels
+  - player selects show display names as `Player N (Name)` when a custom display name is set
+  - submitted API values remain fixed `PlayerLabel` strings
   - user must select one turn phase from `untap`, `upkeep`, `draw`, `main_1`, `combat`, `main_2`, `end_step`, `cleanup`, and `stack_resolving`
   - user must confirm context before proceeding to zone confirmation
   - invalid or missing required values block progression
 - Constraints:
-  - fixed player labels only (no custom names)
+  - fixed `PlayerLabel` identity with optional display names for UI labels and prompt text
   - support range is constrained by current player-label model
   - combat is a combined phase; combat sub-step details belong in the question or notes
 - Dependencies:

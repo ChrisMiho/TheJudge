@@ -21,6 +21,7 @@ type ZoneCollectionStepProps = {
   isMetadataLoading: boolean;
   activePlayer: PlayerLabel;
   activePlayers: PlayerLabel[];
+  displayNamesByPlayer: Record<PlayerLabel, string | undefined>;
   onBack: () => void;
   onContinue: () => void;
   canContinue: boolean;
@@ -36,6 +37,7 @@ export function ZoneCollectionStep({
   isMetadataLoading,
   activePlayer,
   activePlayers,
+  displayNamesByPlayer,
   onBack,
   onContinue,
   canContinue,
@@ -165,6 +167,7 @@ export function ZoneCollectionStep({
                 zoneId={activeZone}
                 cards={activeZoneCards}
                 activePlayers={activePlayers}
+                displayNamesByPlayer={displayNamesByPlayer}
                 pendingOwner={pendingOwner}
                 onPendingOwnerChange={setPendingOwner}
                 searchInput={searchInput}

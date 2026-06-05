@@ -106,6 +106,7 @@ export function buildPromptContext(payload: AskAiRequest): PromptContext {
       displayName: normalizeOptionalText(player.displayName) || undefined
     })),
     turnPhase: gameCtx.turnPhase,
+    activePlayer: gameCtx.activePlayer,
     selectedZones: gameCtx.selectedZones
   };
 

@@ -50,12 +50,13 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 
 ### GameContext
 - `playerCount: number`
-- `players: Array<{ label: PlayerLabel; lifeTotal: number }>`
+- `players: Array<{ label: PlayerLabel; lifeTotal: number; displayName?: string }>`
 - `turnPhase: TurnPhase`
 - `activePlayer?: PlayerLabel`
 - `selectedZones: ZoneId[]`
 - `zones?: Partial<Record<ZoneId, ZoneCardItem[]>>`
 - `zones` includes only non-empty zone arrays. Empty selected zones are represented by `selectedZones`, not by empty arrays.
+- `displayName` is optional UI/prompt text only. `label`, `activePlayer`, `caster`, `owner`, and player targets remain fixed `PlayerLabel` values.
 
 ### AskAiRequest
 - `question: string`
@@ -211,6 +212,7 @@ The backend should include:
 - instructions to explain reasoning
 - instructions to state uncertainty
 - instructions not to invent hidden state
+- player display names in roster lines and resolved player references (`activePlayer`, caster, owner, player targets) using `Player N (Name)` when set
 
 The backend mock/debug response should:
 - include explicit stack-order metadata (`stackOrderConvention`, `stackIndex`, `stackRole`)

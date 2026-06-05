@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { buildEnrichmentQueue, CANONICAL_ZONE_ORDER, NON_STACK_ZONES_WITH_OWNER } from "../lib/contextFlow";
+import { buildPlayerDisplayNameMap, formatPlayerDisplayLabel } from "../lib/playerLabels";
 import { ZONE_LABELS } from "../lib/zoneLabels";
 import type { ContextTarget, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 
@@ -38,8 +39,10 @@ function parseManaSpent(value: string): number | undefined {
   return Number.isFinite(n) && n >= 0 ? n : undefined;
 }
 
-function formatContextTarget(target: ContextTarget): string {
-  if (target.kind === "player") return `Player: ${target.targetPlayer}`;
+function formatContextTarget(target: ContextTarget, displayNamesByPlayer: Record<PlayerLabel, string | undefined>): string {
+  if (target.kind === "player") {
+    return `Player: ${formatPlayerDisplayLabel(target.targetPlayer, displayNamesByPlayer[target.targetPlayer])}`;
+  }
   if (target.kind === "card") return `${ZONE_LABELS[target.zone]}: ${target.cardName}`;
   if (target.kind === "other") return `Other: ${target.targetDescription}`;
   return "No specific target";
@@ -79,6 +82,10 @@ export function EnrichmentStep({
   const enrichmentQueue = useMemo(
     () => (gameContext ? buildEnrichmentQueue({ ...gameContext, zones }) : []),
     [gameContext, zones]
+  );
+  const displayNamesByPlayer = useMemo(
+    () => buildPlayerDisplayNameMap(gameContext?.players ?? []),
+    [gameContext?.players]
   );
 
   const contextIndex = useMemo((): ContextCardEntry[] => {
@@ -214,7 +221,7 @@ export function EnrichmentStep({
               >
                 {activePlayers.map((p) => (
                   <option key={p} value={p}>
-                    {p}
+                    {formatPlayerDisplayLabel(p, displayNamesByPlayer[p])}
                   </option>
                 ))}
               </select>
@@ -234,7 +241,7 @@ export function EnrichmentStep({
               >
                 {activePlayers.map((p) => (
                   <option key={p} value={p}>
-                    {p}
+                    {formatPlayerDisplayLabel(p, displayNamesByPlayer[p])}
                   </option>
                 ))}
               </select>
@@ -293,7 +300,7 @@ export function EnrichmentStep({
               >
                 {activePlayers.map((p) => (
                   <option key={p} value={p}>
-                    {p}
+                    {formatPlayerDisplayLabel(p, displayNamesByPlayer[p])}
                   </option>
                 ))}
               </select>
@@ -343,7 +350,7 @@ export function EnrichmentStep({
                   key={targetIndex}
                   className="flex items-center justify-between gap-2 rounded-lg border border-slate-700/50 bg-slate-800/50 px-3 py-1.5 text-xs text-slate-300"
                 >
-                  <span>{formatContextTarget(target)}</span>
+                  <span>{formatContextTarget(target, displayNamesByPlayer)}</span>
                   <button
                     type="button"
                     aria-label={`Remove target ${targetIndex + 1} for ${card.name}`}

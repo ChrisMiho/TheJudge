@@ -13,6 +13,7 @@ Reduce vertical stretch on the game context screen.
 - Turn phase: `<select>` dropdown; user-flow-gap-fixes slice A removed the optional "None" value and defaults to **Stack Resolving**
 - Active player: unchanged
 - `GamePlayerContext.displayName?: string` — included in AI prompt when set and differs from label
+- Display name propagation to active player, owner/caster/target selects, and prompt card lines was completed by the player display-names work package.
 
 ## Files
 

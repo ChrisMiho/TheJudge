@@ -1,12 +1,14 @@
 import type { KeyboardEvent } from "react";
 import { CardSelectionPreview } from "./CardSelectionPreview";
 import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
+import { formatPlayerDisplayLabel } from "../lib/playerLabels";
 import { ZONE_LABELS } from "../lib/zoneLabels";
 
 type ZoneCardPickerProps = {
   zoneId: ZoneId;
   cards: ZoneCardItem[];
   activePlayers: PlayerLabel[];
+  displayNamesByPlayer: Record<PlayerLabel, string | undefined>;
   pendingOwner: PlayerLabel;
   onPendingOwnerChange: (owner: PlayerLabel) => void;
   searchInput: string;
@@ -42,6 +44,7 @@ export function ZoneCardPicker({
   zoneId,
   cards,
   activePlayers,
+  displayNamesByPlayer,
   pendingOwner,
   onPendingOwnerChange,
   searchInput,
@@ -117,7 +120,7 @@ export function ZoneCardPicker({
           >
             {activePlayers.map((player) => (
               <option key={player} value={player}>
-                {player}
+                {formatPlayerDisplayLabel(player, displayNamesByPlayer[player])}
               </option>
             ))}
           </select>
@@ -160,7 +163,11 @@ export function ZoneCardPicker({
                   {zoneId === "stack" ? (
                     <p className="text-xs text-slate-400">{formatStackPosition(index, cards.length)}</p>
                   ) : (
-                    card.owner && <p className="text-xs text-slate-400">Owner: {card.owner}</p>
+                    card.owner && (
+                      <p className="text-xs text-slate-400">
+                        Owner: {formatPlayerDisplayLabel(card.owner, displayNamesByPlayer[card.owner])}
+                      </p>
+                    )
                   )}
                 </div>
                 <button

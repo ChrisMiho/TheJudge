@@ -1342,6 +1342,59 @@ describe("Slice-04: game setup + zone confirmation", () => {
     expect(screen.getByLabelText("Active player")).toBeInTheDocument();
   });
 
+  it("shows player display names in selects while keeping submitted player labels canonical", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await expandPlayerDetails(user);
+    await user.clear(screen.getByLabelText("Player 1 display name"));
+    await user.type(screen.getByLabelText("Player 1 display name"), "Alice");
+    await user.clear(screen.getByLabelText("Player 2 display name"));
+    await user.type(screen.getByLabelText("Player 2 display name"), "Bob");
+
+    const activePlayerSelect = screen.getByLabelText("Active player");
+    expect(within(activePlayerSelect).getByRole("option", { name: "Player 1 (Alice)" })).toHaveValue("Player 1");
+    expect(within(activePlayerSelect).getByRole("option", { name: "Player 2 (Bob)" })).toHaveValue("Player 2");
+
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advanceToZoneCollectionWithZones(user, ["Battlefield", "Stack"]);
+
+    await selectZoneTab(user, "Battlefield");
+    await selectCard(user, "lig", "Lightning Bolt");
+    const collectionOwnerSelect = screen.getByLabelText("Owner for Lightning Bolt");
+    expect(within(collectionOwnerSelect).getByRole("option", { name: "Player 1 (Alice)" })).toHaveValue("Player 1");
+    await user.selectOptions(collectionOwnerSelect, "Player 2");
+    await user.click(screen.getByRole("button", { name: "Add card" }));
+
+    await selectZoneTab(user, "Stack");
+    await addCardToActiveZone(user, "opt", "Opt");
+    await advanceToContextEnrichmentFromZones(user);
+
+    const casterSelect = screen.getByLabelText("Caster for Opt");
+    expect(within(casterSelect).getByRole("option", { name: "Player 1 (Alice)" })).toHaveValue("Player 1");
+    await user.selectOptions(casterSelect, "Player 2");
+
+    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "player");
+    const targetSelect = screen.getByLabelText("Player target for Opt");
+    expect(within(targetSelect).getByRole("option", { name: "Player 2 (Bob)" })).toHaveValue("Player 2");
+    await user.selectOptions(targetSelect, "Player 1");
+    await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
+    expect(screen.getByText("Player: Player 1 (Alice)")).toBeInTheDocument();
+
+    await clickDecryptStack(user);
+    await waitFor(() => expect(submittedAskAiRequests).toHaveLength(1));
+    expect(submittedAskAiRequests[0]?.gameContext.players).toEqual([
+      { label: "Player 1", lifeTotal: 20, displayName: "Alice" },
+      { label: "Player 2", lifeTotal: 20, displayName: "Bob" }
+    ]);
+    expect(submittedAskAiRequests[0]?.gameContext.activePlayer).toBe("Player 1");
+    expect(submittedAskAiRequests[0]?.gameContext.zones?.battlefield?.[0]?.owner).toBe("Player 2");
+    expect(submittedAskAiRequests[0]?.gameContext.zones?.stack?.[0]).toMatchObject({
+      caster: "Player 2",
+      targets: [{ kind: "player", targetPlayer: "Player 1" }]
+    });
+  });
+
   it("shows all turn phase options on game context step", () => {
     render(<App />);
     const turnPhaseSelect = screen.getByLabelText("Turn phase");

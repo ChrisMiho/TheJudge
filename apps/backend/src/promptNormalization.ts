@@ -1,5 +1,5 @@
 import { MTG_PROMPT_REFERENCE } from "./promptMtgReference.js";
-import type { PromptContext, ZoneId } from "./types.js";
+import type { PlayerLabel, PromptContext, ZoneId } from "./types.js";
 
 export const MAX_ORACLE_TEXT_CHARS = 480;
 export const MAX_CONTEXT_DETAILS_CHARS = 220;
@@ -84,12 +84,43 @@ function formatList(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "(none)";
 }
 
+function buildPlayerDisplayNameLookup(
+  players: PromptContext["gameContext"]["players"]
+): Record<PlayerLabel, string | undefined> {
+  return players.reduce<Record<PlayerLabel, string | undefined>>(
+    (accumulator, player) => ({
+      ...accumulator,
+      [player.label]: player.displayName
+    }),
+    {} as Record<PlayerLabel, string | undefined>
+  );
+}
+
+function formatPlayerRef(
+  label: PlayerLabel | undefined,
+  displayNamesByPlayer: Record<PlayerLabel, string | undefined>
+): string {
+  if (!label) {
+    return "(none)";
+  }
+
+  const displayName = displayNamesByPlayer[label]?.trim() ?? "";
+  if (displayName.length === 0 || displayName === label) {
+    return label;
+  }
+
+  return `${label} (${displayName})`;
+}
+
 function toPlayerLabelIndex(label: string): number {
   const index = PLAYER_LABEL_ORDER.indexOf(label as (typeof PLAYER_LABEL_ORDER)[number]);
   return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 
-function formatTargets(targets: PromptContext["orderedStack"][number]["targets"]): string {
+function formatTargets(
+  targets: PromptContext["orderedStack"][number]["targets"],
+  displayNamesByPlayer: Record<PlayerLabel, string | undefined>
+): string {
   if (targets.length === 0) {
     return "(none)";
   }
@@ -105,7 +136,7 @@ function formatTargets(targets: PromptContext["orderedStack"][number]["targets"]
       }
 
       if (target.kind === "player") {
-        return `player:${target.targetPlayer}`;
+        return `player:${formatPlayerRef(target.targetPlayer, displayNamesByPlayer)}`;
       }
 
       if (target.kind === "battlefield") {
@@ -121,6 +152,7 @@ function formatGameContext(context: PromptContext): string {
   const players = [...context.gameContext.players].sort(
     (left, right) => toPlayerLabelIndex(left.label) - toPlayerLabelIndex(right.label)
   );
+  const displayNamesByPlayer = buildPlayerDisplayNameLookup(players);
 
   return [
     `turnPhase: ${context.gameContext.turnPhase}`,
@@ -131,7 +163,10 @@ function formatGameContext(context: PromptContext): string {
           ? ` displayName=${player.displayName}`
           : "";
       return `${player.label}: lifeTotal=${player.lifeTotal}${display}`;
-    })
+    }),
+    ...(context.gameContext.activePlayer
+      ? [`activePlayer: ${formatPlayerRef(context.gameContext.activePlayer, displayNamesByPlayer)}`]
+      : [])
   ].join("\n");
 }
 
@@ -140,6 +175,7 @@ function formatStackSection(context: PromptContext): string {
     return "";
   }
 
+  const displayNamesByPlayer = buildPlayerDisplayNameLookup(context.gameContext.players);
   const cardsSection = context.orderedStack
     .map(
       (card, index) =>
@@ -152,8 +188,8 @@ function formatStackSection(context: PromptContext): string {
           `colors: ${formatList(card.colors)}`,
           `supertypes: ${formatList(card.supertypes)}`,
           `subtypes: ${formatList(card.subtypes)}`,
-          `caster: ${card.caster}`,
-          `targets: ${formatTargets(card.targets)}`,
+          `caster: ${formatPlayerRef(card.caster, displayNamesByPlayer)}`,
+          `targets: ${formatTargets(card.targets, displayNamesByPlayer)}`,
           `manaSpent: ${card.manaSpent ?? card.manaValue}`,
           `contextNotes: ${
             card.contextNotes ? truncatePromptLabel(card.contextNotes, MAX_CONTEXT_NOTES_CHARS) : "(none)"
@@ -171,6 +207,7 @@ function formatNonStackZoneSections(context: PromptContext): string {
     return "";
   }
 
+  const displayNamesByPlayer = buildPlayerDisplayNameLookup(context.gameContext.players);
   return context.populatedZones
     .map((zone) => {
       const sectionHeader = ZONE_SECTION_LABEL[zone.zoneId] ?? `ZONE: ${zone.zoneId.toUpperCase()}`;
@@ -180,9 +217,9 @@ function formatNonStackZoneSections(context: PromptContext): string {
           [
             `${itemLabel} ${index + 1}`,
             `name: ${item.name}`,
-            `owner: ${item.owner ?? "(none)"}`,
+            `owner: ${formatPlayerRef(item.owner, displayNamesByPlayer)}`,
             `details: ${item.details ? truncateOracleText(item.details, MAX_CONTEXT_DETAILS_CHARS) : "(none)"}`,
-            `targets: ${formatTargets(item.targets)}`
+            `targets: ${formatTargets(item.targets, displayNamesByPlayer)}`
           ].join("\n")
         )
         .join("\n\n");

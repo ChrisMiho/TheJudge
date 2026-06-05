@@ -164,6 +164,90 @@ describe("buildPromptText", () => {
     expect(prompt).not.toContain("cardId:");
   });
 
+  it("resolves player display names for active player, caster, owner, and player targets", () => {
+    const prompt = buildPromptText({
+      finalQuestion: "How does this resolve?",
+      gameContext: {
+        playerCount: 2,
+        players: [
+          { label: "Player 1", lifeTotal: 40, displayName: "Alice" },
+          { label: "Player 2", lifeTotal: 40, displayName: "Bob" }
+        ],
+        turnPhase: "stack_resolving",
+        activePlayer: "Player 1",
+        selectedZones: ["battlefield", "stack"]
+      },
+      populatedZones: [
+        {
+          zoneId: "battlefield",
+          items: [
+            {
+              name: "Rhystic Study",
+              owner: "Player 1",
+              targets: [{ kind: "player", targetPlayer: "Player 2" }]
+            }
+          ]
+        }
+      ],
+      orderedStack: [
+        {
+          cardId: "card-1",
+          name: "Opt",
+          oracleText: "Scry 1, then draw a card.",
+          imageUrl: "",
+          manaCost: "{U}",
+          manaValue: 1,
+          typeLine: "Instant",
+          colors: ["U"],
+          supertypes: [],
+          subtypes: [],
+          caster: "Player 2",
+          targets: [{ kind: "player", targetPlayer: "Player 1" }],
+          manaSpent: 1,
+          stackIndex: 0,
+          stackRole: "top"
+        }
+      ]
+    });
+
+    expect(prompt).toContain("Player 1: lifeTotal=40 displayName=Alice");
+    expect(prompt).toContain("Player 2: lifeTotal=40 displayName=Bob");
+    expect(prompt).toContain("activePlayer: Player 1 (Alice)");
+    expect(prompt).toContain("caster: Player 2 (Bob)");
+    expect(prompt).toContain("targets: player:Player 1 (Alice)");
+    expect(prompt).toContain("owner: Player 1 (Alice)");
+    expect(prompt).toContain("targets: player:Player 2 (Bob)");
+  });
+
+  it("keeps player references unchanged when no custom display names are set", () => {
+    const prompt = buildPromptText({
+      ...baseContext,
+      gameContext: {
+        ...baseContext.gameContext,
+        activePlayer: "Player 1"
+      },
+      populatedZones: [
+        {
+          zoneId: "battlefield",
+          items: [
+            {
+              name: "Rhystic Study",
+              owner: "Player 1",
+              targets: [{ kind: "player", targetPlayer: "Player 2" }]
+            }
+          ]
+        }
+      ]
+    });
+
+    expect(prompt).toContain("activePlayer: Player 1");
+    expect(prompt).toContain("caster: Player 1");
+    expect(prompt).toContain("owner: Player 1");
+    expect(prompt).toContain("targets: player:Player 2");
+    expect(prompt).not.toContain("Player 1 (");
+    expect(prompt).not.toContain("Player 2 (");
+  });
+
   it("places question at the end of the prompt", () => {
     const prompt = buildPromptText(baseContext);
     const questionIdx = prompt.indexOf("QUESTION");
