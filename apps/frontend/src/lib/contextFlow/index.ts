@@ -14,5 +14,6 @@ export {
   buildEnrichmentQueue,
   buildAskAiRequest,
   DEFAULT_TURN_PHASE,
-  hasAtLeastOneCardInSelectedZones
+  hasAtLeastOneCardInSelectedZones,
+  NON_STACK_ZONES_WITH_OWNER
 } from "./flow";

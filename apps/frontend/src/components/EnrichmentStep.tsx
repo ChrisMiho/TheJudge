@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { buildEnrichmentQueue, CANONICAL_ZONE_ORDER } from "../lib/contextFlow";
+import { buildEnrichmentQueue, CANONICAL_ZONE_ORDER, NON_STACK_ZONES_WITH_OWNER } from "../lib/contextFlow";
 import { ZONE_LABELS } from "../lib/zoneLabels";
 import type { ContextTarget, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 
@@ -43,6 +43,10 @@ function formatContextTarget(target: ContextTarget): string {
   if (target.kind === "card") return `${ZONE_LABELS[target.zone]}: ${target.cardName}`;
   if (target.kind === "other") return `Other: ${target.targetDescription}`;
   return "No specific target";
+}
+
+function hasOwnerControl(zone: ZoneId): boolean {
+  return NON_STACK_ZONES_WITH_OWNER.includes(zone as Exclude<ZoneId, "stack">);
 }
 
 export function EnrichmentStep({
@@ -168,6 +172,7 @@ export function EnrichmentStep({
     const key = cardKey(zone, card.cardId);
     const pendingKind = getPendingKind(key);
     const isStackZone = zone === "stack";
+    const showsOwner = hasOwnerControl(zone);
     const showRemove = options?.showRemove ?? true;
 
     return (
@@ -196,6 +201,26 @@ export function EnrichmentStep({
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {showsOwner && (
+            <label className="flex flex-col gap-1 text-xs">
+              <span className="font-semibold uppercase tracking-[0.08em] text-slate-300">Ownership</span>
+              <select
+                aria-label={`Owner for ${card.name}`}
+                value={card.owner ?? gameContext?.activePlayer ?? activePlayers[0] ?? "Player 1"}
+                onChange={(e) =>
+                  updateZoneCard(zone, card.cardId, { owner: e.target.value as PlayerLabel })
+                }
+                className="rounded-lg border border-slate-600 bg-slate-800 px-2 py-1.5 text-sm text-slate-100"
+              >
+                {activePlayers.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
           {isStackZone && (
             <label className="flex flex-col gap-1 text-xs">
               <span className="font-semibold uppercase tracking-[0.08em] text-slate-300">Caster</span>
@@ -235,7 +260,7 @@ export function EnrichmentStep({
         </div>
 
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Target / context</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Targets</p>
           <div className="flex flex-wrap gap-2">
             <select
               aria-label={`Target kind for ${card.name}`}
@@ -296,7 +321,7 @@ export function EnrichmentStep({
                 type="text"
                 value={pendingOtherByKey[key] ?? ""}
                 onChange={(e) => setPendingOtherByKey((c) => ({ ...c, [key]: e.target.value }))}
-                placeholder="Describe target or context"
+                placeholder="Describe what this points at"
                 className="flex-1 rounded-lg border border-slate-600 bg-slate-800 px-2 py-1.5 text-sm text-slate-100"
               />
             )}

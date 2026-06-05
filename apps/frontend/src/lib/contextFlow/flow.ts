@@ -24,6 +24,14 @@ export type EnrichmentQueueEntry = {
 
 const DEFAULT_QUESTION = "Resolve the stack";
 export const DEFAULT_TURN_PHASE: TurnPhase = "stack_resolving";
+export const NON_STACK_ZONES_WITH_OWNER: Exclude<ZoneId, "stack">[] = [
+  "battlefield",
+  "hand",
+  "graveyard",
+  "exile",
+  "library",
+  "command"
+];
 
 export function hasAtLeastOneCardInSelectedZones(
   selectedZones: ZoneId[] | undefined,

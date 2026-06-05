@@ -1,6 +1,6 @@
 # Slice C — Enrichment ownership vs targets
 
-## Status: planned
+## Status: complete
 
 ## Depends on
 
@@ -36,6 +36,6 @@ No contract change. `owner` optional on `zoneCardItemSchema`; prompt already emi
 
 ## Acceptance
 
-- [ ] Command-zone card in enrichment shows Ownership select separate from Targets.
-- [ ] Zone-card target can reference a card on another zone.
-- [ ] Submit payload includes updated `owner` when changed in enrichment.
+- [x] Command-zone card in enrichment shows Ownership select separate from Targets.
+- [x] Zone-card target can reference a card on another zone.
+- [x] Submit payload includes updated `owner` when changed in enrichment.

@@ -1073,6 +1073,42 @@ describe("App MVP interaction flows", () => {
     expect(battlefieldCard?.targets).toEqual([{ kind: "player", targetPlayer: "Player 2" }]);
   });
 
+  it("edits command card ownership separately from zone-card targets in enrichment", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advanceToZoneCollectionWithZones(user, ["Battlefield", "Command Zone"]);
+
+    await selectZoneTab(user, "Battlefield");
+    await addCardToActiveZone(user, "lig", "Lightning Bolt");
+    await selectZoneTab(user, "Command Zone");
+    await addCardToActiveZone(user, "opt", "Opt");
+    await advanceToContextEnrichmentFromZones(user);
+
+    await user.selectOptions(screen.getByLabelText("Owner for Opt"), "Player 2");
+    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "card");
+    await user.selectOptions(screen.getByLabelText("Card target for Opt"), "lightning-bolt");
+    await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
+
+    await clickDecryptStack(user);
+    const requestBody = await waitFor(() => {
+      expect(submittedAskAiRequests.length).toBeGreaterThan(0);
+      return submittedAskAiRequests[0];
+    });
+
+    const commandCard = requestBody.gameContext.zones?.command?.[0];
+    expect(commandCard?.owner).toBe("Player 2");
+    expect(commandCard?.targets).toEqual([
+      {
+        kind: "card",
+        zone: "battlefield",
+        cardId: "lightning-bolt",
+        cardName: "Lightning Bolt"
+      }
+    ]);
+  });
+
   it("keeps game context and zone card review state in parity with submitted payload", async () => {
     const user = userEvent.setup();
     render(<App />);
