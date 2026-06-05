@@ -1,6 +1,6 @@
 # Slice D — PRD updates and test sweep
 
-## Status: planned
+## Status: complete
 
 ## Depends on
 
@@ -40,6 +40,14 @@ Add/update tests if gaps found during sweep.
 
 ## Acceptance
 
-- [ ] DEC-024 and FLOW-001 match slices A–C behavior.
-- [ ] All targeted tests pass.
-- [ ] [GAMEPLAN.md verification checklist](GAMEPLAN.md#verification-checklist) items checked.
+- [x] DEC-024 and FLOW-001 match slices A–C behavior.
+- [x] All targeted tests pass.
+- [x] [GAMEPLAN.md verification checklist](GAMEPLAN.md#verification-checklist) items checked.
+
+## Verification
+
+- `npm --workspace apps/frontend run test -- src/lib/contextFlow/flow.test.ts src/App.test.tsx` — 79 tests passed.
+- `npm --workspace apps/backend run test -- src/app.contract.test.ts src/promptContext.test.ts src/promptNormalization.test.ts` — 33 tests passed.
+- `npm --workspace apps/frontend run test` — 139 tests passed.
+- `npm --workspace apps/backend run test` — 64 tests passed.
+- Manual checklist coverage is represented by existing App tests for default Stack Resolving phase, card-gated collection/enrichment submit, and command-card owner plus zone-card target enrichment.

@@ -32,7 +32,7 @@
 - game context capture (player count, life totals, active player, turn phase)
 - zone confirmation with phase-driven defaults
 - per-card context enrichment (caster/targets/notes/mana spent fallback where relevant)
-- zero-card submit flow for timing and rules questions
+- card-gated submit flow requiring at least one selected-zone card
 - Decrypt Stack submit flow
 - plain-text AI response
 - mock-first integration path

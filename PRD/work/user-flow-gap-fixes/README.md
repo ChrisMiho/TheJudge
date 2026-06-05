@@ -28,7 +28,7 @@ Close gaps in the staged context flow after UX Wave 2 refinements: require a rea
 | A | [slice-a-turn-phase-required.md](slice-a-turn-phase-required.md) | complete | — |
 | B | [slice-b-card-gate.md](slice-b-card-gate.md) | complete | A |
 | C | [slice-c-enrichment-ownership.md](slice-c-enrichment-ownership.md) | complete | B |
-| D | [slice-d-prd-and-tests.md](slice-d-prd-and-tests.md) | planned | A, B, C |
+| D | [slice-d-prd-and-tests.md](slice-d-prd-and-tests.md) | complete | A, B, C |
 | E | [slice-e-alignment-review.md](slice-e-alignment-review.md) | planned | D |
 
 ## Implementation map

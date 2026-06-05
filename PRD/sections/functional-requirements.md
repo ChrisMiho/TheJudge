@@ -168,7 +168,7 @@
   - action button label is **Decrypt Stack**
   - clicking the button sends `question` and `gameContext`
   - no top-level `stack` or `battlefieldContext` is sent
-  - submit is allowed when no zone has cards
+  - submit is allowed only when at least one selected zone has a card
   - blank trimmed question uses fallback **Resolve the stack** in request/prompt logic
 - Constraints:
   - one main product-facing endpoint in MVP1
@@ -269,14 +269,15 @@
 ### REQ-018
 - Title: Per-zone card collection
 - Priority: high
-- Description: The app must let users add card identities to each selected zone while allowing every zone to remain empty.
+- Description: The app must let users add card identities to each selected zone while requiring at least one card across the selected zones before continuing.
 - Acceptance Criteria:
   - user can search local metadata and add cards to selected zones
   - before input, the search box says **Type to begin**
   - suggestions begin at 3 or more typed characters
   - no-match state shows **No matching card found**
   - stack-zone cards preserve bottom-to-top append order
-  - selected zones with zero cards are allowed
+  - selected zones with zero cards are allowed individually
+  - collection cannot continue until at least one selected zone contains a card
 - Constraints:
   - card collection captures identity and metadata first; detailed context is collected during enrichment
 - Dependencies:
@@ -293,7 +294,7 @@
   - request validation rejects top-level `stack` and `battlefieldContext`
   - `gameContext.zones` includes only non-empty zone arrays
   - empty zone arrays are rejected; clients omit the zone key instead
-  - zero-card submissions are valid when game context and selected zones are valid
+  - frontend submit requires at least one selected zone card before building the request
 - Constraints:
   - `POST /api/ask-ai` route remains unchanged
 - Dependencies:

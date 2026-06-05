@@ -276,11 +276,11 @@
 - Notes:
 
 ### DEC-024
-- Decision: Zero cards are allowed, and empty zones are omitted from the request payload.
+- Decision: Submit requires at least one card in at least one selected zone, and empty zones are omitted from the request payload.
 - Status: confirmed
-- Context: Timing, priority, and layer questions may need player and phase context without any specific cards.
+- Context: Manual flow validation showed that users could complete the staged flow without providing any card context, which produced too little information for the flow-validation assistant.
 - Impact:
-  - submit does not require a stack or any other populated zone
+  - frontend submit requires at least one card in at least one selected zone
   - `gameContext.zones` contains only zone keys with one or more cards
   - selected-but-empty zones are represented by `selectedZones` and the prompt scope sentence, not by empty arrays
 - Related requirements:

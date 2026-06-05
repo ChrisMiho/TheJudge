@@ -7,7 +7,7 @@
   - app is loaded
   - local metadata is available
 - Main Flow:
-  1. Game setup: user sets player count (expandable panel for per-player display name and life), active player when known, and turn phase via dropdown.
+  1. Game setup: user sets player count (expandable panel for per-player display name and life), active player when known, and turn phase via dropdown; turn phase is required and defaults to **Stack Resolving**.
   2. Zone confirmation: app preselects likely zones from the turn phase; user adjusts the checklist; at least one zone is required to continue.
   3. Per-zone collection: for each selected zone, user may add card identities from local search; non-stack cards capture owner; stack cards are ordered bottom-to-top.
   4. Enrichment: default card-by-card wizard (OK advances); optional **View all cards** for full-list edit; user may add caster, targets, notes, and mana spent where relevant.
@@ -18,7 +18,7 @@
   - if game-context values are missing/invalid, continue action is blocked
   - if zone confirmation has zero zones selected, continue action is blocked
   - if a selected zone has no cards, omit that zone key from `gameContext.zones`
-  - if no zones contain cards, submit still succeeds with player, phase, selected-zone, and question context
+  - if no selected zone contains at least one card, continue/submit is blocked until the user adds a card to a selected zone
   - if no matches are found, show **No matching card found**
   - if the question is blank after trimming, use the fallback question **Resolve the stack**
   - if the stack has 10 cards, block additional adds
