@@ -2,7 +2,7 @@
 
 ## Status
 
-`ideation` — planning captured from kickoff session; ready for implementation.
+`active` — GAMEPLAN and slices written; ready to implement.
 
 ## Slug
 
@@ -23,17 +23,20 @@ Frontend-only decrypt wait UX: replace the submit form with an animated waiting 
 | File | Purpose |
 |------|---------|
 | [IDEA.md](./IDEA.md) | Problem, outcome, non-goals |
+| [DESIGN-BRIEF.md](./DESIGN-BRIEF.md) | Scope, decisions, threshold copy, PRD references |
+| [GAMEPLAN.md](./GAMEPLAN.md) | Architecture, data flow, verification checklist |
 
-## Implementation map (from planning session)
+## Slices
 
-| Area | Objective |
-|------|-----------|
-| `lib/askAiWaitStages.ts` | Threshold config, stage selection, elapsed-time formatting |
-| `hooks/useElapsedWaitTimer.ts` | Tick elapsed time while `isSubmitting`; derive current stage |
-| `components/AskAiWaitingPanel.tsx` | Timer, `aria-live` messages, variant-based visuals |
-| `index.css` | `.wait-stage-*` keyframe classes |
-| `EnrichmentStep.tsx` | Swap form for waiting panel when submitting |
-| Tests | Hook, stages, component, and delayed-submit App integration |
+| Slice | File | Status | Depends on |
+|-------|------|--------|------------|
+| A | [slice-a-wait-stages-lib.md](./slice-a-wait-stages-lib.md) | done | — |
+| B | [slice-b-css-keyframes.md](./slice-b-css-keyframes.md) | done | — |
+| C | [slice-c-elapsed-timer-hook.md](./slice-c-elapsed-timer-hook.md) | done | A |
+| D | [slice-d-waiting-panel-component.md](./slice-d-waiting-panel-component.md) | done | A, B, C |
+| E | [slice-e-enrichment-integration.md](./slice-e-enrichment-integration.md) | done | D |
+
+A and B can be implemented in parallel. Ship gates are in Slice E.
 
 ## Threshold stages (draft copy)
 

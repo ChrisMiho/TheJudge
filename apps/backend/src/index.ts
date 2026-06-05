@@ -4,6 +4,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createApp } from "./app/createApp.js";
 import { loadCardRulingsIndex } from "./cardRulings.js";
+import { loadGameRulesTopics } from "./gameRules.js";
 import { readServerConfig } from "./config/index.js";
 import { createAppLogger } from "./logging.js";
 import { createAskAiProvider } from "./providers/createAskAiProvider.js";
@@ -44,12 +45,15 @@ const backendDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(backendDir, "../../..");
 const cardRulingsPath = resolve(repoRoot, "apps/backend/data/cardRulingsByOracleId.json");
 const cardRulingsIndex = loadCardRulingsIndex(cardRulingsPath);
+const gameRulesPath = resolve(repoRoot, "apps/backend/data/gameRulesByTopic.json");
+const gameRulesTopics = loadGameRulesTopics(gameRulesPath);
 const app = createApp({
   frontendOrigin: config.frontendOrigin,
   debugLoggingEnabled: config.debugLoggingEnabled,
   payloadLoggingEnabled: config.payloadLoggingEnabled,
   askAiProvider: createAskAiProvider(config),
-  cardRulingsIndex
+  cardRulingsIndex,
+  gameRulesTopics
 });
 
 app.listen(config.port, () => {
@@ -58,6 +62,7 @@ app.listen(config.port, () => {
     frontendOrigin: config.frontendOrigin ?? "(unset)",
     askAiProvider: config.askAiProvider,
     cardRulingsCardCount: cardRulingsIndex.size,
+    gameRulesTopicCount: gameRulesTopics.length,
     debugLoggingEnabled: config.debugLoggingEnabled,
     payloadLoggingEnabled: config.payloadLoggingEnabled
   });

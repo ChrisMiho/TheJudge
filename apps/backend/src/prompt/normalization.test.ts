@@ -13,7 +13,23 @@ import {
   normalizeWhitespace,
   truncateOracleText
 } from "./normalization.js";
+import type { GameRulesTopic } from "../gameRules.js";
 import type { PromptContext } from "../types/index.js";
+
+const sampleGameRulesTopics: GameRulesTopic[] = [
+  {
+    id: "stack-basics",
+    title: "The Stack",
+    ruleNumbers: ["405.1"],
+    excerpt: "405.1. When a spell is cast, the physical card is put on the stack."
+  },
+  {
+    id: "zone-change",
+    title: "Zone Changes",
+    ruleNumbers: ["400.1"],
+    excerpt: "400.1. A zone is a place where objects can be during a game."
+  }
+];
 
 const baseContext: PromptContext = {
   finalQuestion: "How does this resolve?",
@@ -263,6 +279,35 @@ describe("buildPromptText", () => {
     expect(prompt.lastIndexOf("QUESTION")).toBe(questionIdx);
   });
 
+  it("places GAME RULES section after zones and before OFFICIAL RULINGS", () => {
+    const prompt = buildPromptText(baseContext, {
+      gameRulesTopics: sampleGameRulesTopics,
+      rulings: {
+        sectionChars: 74,
+        cards: [
+          {
+            cardId: "rhystic-study",
+            name: "Rhystic Study",
+            rulings: [{ publishedAt: "2020-04-17", comment: "If an opponent casts a spell, you may draw a card." }]
+          }
+        ]
+      }
+    });
+
+    expect(prompt).toContain("GAME RULES (reference)");
+    expect(prompt).toContain("The Stack");
+    expect(prompt).toContain("405.1. When a spell is cast");
+    expect(prompt).toContain("Use these general Magic rules as shared vocabulary.");
+    expect(prompt.indexOf("ZONE: BATTLEFIELD")).toBeLessThan(prompt.indexOf("GAME RULES (reference)"));
+    expect(prompt.indexOf("GAME RULES (reference)")).toBeLessThan(prompt.indexOf("OFFICIAL RULINGS"));
+    expect(prompt.indexOf("OFFICIAL RULINGS")).toBeLessThan(prompt.indexOf("SCOPE"));
+  });
+
+  it("omits GAME RULES section when no topics provided", () => {
+    const prompt = buildPromptText(baseContext, { gameRulesTopics: [] });
+    expect(prompt).not.toContain("GAME RULES (reference)");
+  });
+
   it("inserts official rulings between zones and scope when provided", () => {
     const prompt = buildPromptText(baseContext, {
       rulings: {
@@ -319,9 +364,10 @@ describe("buildPromptText", () => {
     expect(prompt).not.toContain("battlefield,");
   });
 
-  it("stays under configured prompt budget for normal payloads", () => {
-    const prompt = buildPromptText(baseContext);
+  it("stays under configured prompt budget for normal payloads with game rules", () => {
+    const prompt = buildPromptText(baseContext, { gameRulesTopics: sampleGameRulesTopics });
     expect(prompt.length).toBeLessThan(MAX_PROMPT_CHAR_BUDGET);
+    expect(MAX_PROMPT_CHAR_BUDGET).toBe(35000);
   });
 
   it("truncates long context notes and target labels deterministically", () => {
@@ -363,5 +409,20 @@ describe("getPromptDiagnostics", () => {
     const exceededDiagnostics = getPromptDiagnostics(exceededPrompt);
     expect(exceededDiagnostics.exceedsBudget).toBe(true);
     expect(exceededDiagnostics.remainingChars).toBe(-5);
+  });
+
+  it("includes gameRulesSectionChars and gameRulesTopicCount when game rules topics present", () => {
+    const diagnostics = getPromptDiagnostics("test prompt", {
+      gameRulesTopics: sampleGameRulesTopics,
+      gameRulesSectionChars: 500
+    });
+    expect(diagnostics.gameRulesTopicCount).toBe(2);
+    expect(diagnostics.gameRulesSectionChars).toBe(500);
+  });
+
+  it("omits game rules diagnostics fields when no topics provided", () => {
+    const diagnostics = getPromptDiagnostics("test prompt");
+    expect(diagnostics.gameRulesTopicCount).toBeUndefined();
+    expect(diagnostics.gameRulesSectionChars).toBeUndefined();
   });
 });

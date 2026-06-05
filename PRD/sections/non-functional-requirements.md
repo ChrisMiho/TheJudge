@@ -46,6 +46,7 @@
 - Constraints:
   - basic show/hide or simple transitions only
   - no animation-heavy polish work
+  - CSS keyframe animations are permitted for functional loading and wait states (not decorative polish)
 
 ### NFR-007
 - Title: Failure resilience

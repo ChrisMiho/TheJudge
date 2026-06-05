@@ -1,3 +1,18 @@
+MOCK RESPONSE
+This is deterministic debug output for prompt/cost validation.
+
+PROMPT STATS
+Prompt chars: 26493/35000
+Prompt remaining chars: 8507
+Prompt utilization: 75.7%
+Prompt near limit: no
+Prompt exceeds budget: no
+Estimated input tokens (~4 chars/token): 6624
+Estimated token budget (~4 chars/token): 8750
+Estimated remaining tokens (~4 chars/token): 2127
+
+FULL PROMPT (SENT TO PROVIDER)
+
 SYSTEM ROLE PREAMBLE
 You are TheJudge assistant for Magic: The Gathering stack-resolution support.
 Use only the provided context to explain likely interactions and resolution order.
@@ -31,138 +46,17 @@ Continuous effects and state-based actions use a layer system. When effects conf
 
 GENERAL GAME CONTEXT
 turnPhase: stack_resolving
-playerCount: 4
+playerCount: 2
 Player 1: lifeTotal=20
-Player 2: lifeTotal=19
-Player 3: lifeTotal=17
-Player 4: lifeTotal=14
+Player 2: lifeTotal=20
+activePlayer: Player 1
 
-ZONE: STACK (BOTTOM TO TOP)
-Stack item 1 (bottom)
-card: Card 1
-manaCost: (none)
-manaValue: 1
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 1
-targets: (none)
-manaSpent: 1
-contextNotes: (none)
-oracleText: First effect.
-
-Stack item 2 (middle)
-card: Card 2
-manaCost: (none)
-manaValue: 2
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 2
-targets: (none)
-manaSpent: 2
-contextNotes: (none)
-oracleText: Second effect.
-
-Stack item 3 (middle)
-card: Card 3
-manaCost: (none)
-manaValue: 3
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 3
-targets: (none)
-manaSpent: 3
-contextNotes: (none)
-oracleText: Third effect.
-
-Stack item 4 (middle)
-card: Card 4
-manaCost: (none)
-manaValue: 4
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 4
-targets: (none)
-manaSpent: 4
-contextNotes: (none)
-oracleText: Fourth effect.
-
-Stack item 5 (middle)
-card: Card 5
-manaCost: (none)
-manaValue: 5
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 1
-targets: (none)
-manaSpent: 5
-contextNotes: (none)
-oracleText: Fifth effect.
-
-Stack item 6 (middle)
-card: Card 6
-manaCost: (none)
-manaValue: 6
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 2
-targets: (none)
-manaSpent: 6
-contextNotes: (none)
-oracleText: Sixth effect.
-
-Stack item 7 (middle)
-card: Card 7
-manaCost: (none)
-manaValue: 7
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 3
-targets: (none)
-manaSpent: 7
-contextNotes: (none)
-oracleText: Seventh effect.
-
-Stack item 8 (middle)
-card: Card 8
-manaCost: (none)
-manaValue: 8
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 4
-targets: (none)
-manaSpent: 8
-contextNotes: (none)
-oracleText: Eighth effect.
-
-Stack item 9 (top)
-card: Card 9
-manaCost: (none)
-manaValue: 9
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 1
-targets: (none)
-manaSpent: 9
-contextNotes: (none)
-oracleText: Ninth effect.
+ZONE: BATTLEFIELD
+Battlefield 1
+name: Ulalek, Fused Atrocity
+owner: Player 1
+details: he's just on the board and i want to understand how copy works with layers
+targets: none:does-not-target
 
 GAME RULES (reference)
 Use these general Magic rules as shared vocabulary. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
@@ -285,8 +179,16 @@ Zones and Zone Changes
 400.2. Public zones are zones in which all players can see the cards’ faces, except for those cards that some rule or effect specifically allow to be face down. Graveyard, battlefield, stack, exile, ante, and command are public zones. Hidden zones are zones in which not all players can be expected to see the cards’ faces. Library and hand are hidden zones, even if all the cards in one such zone happen to be revealed.
 400.7. An object that moves from one zone to another becomes a new object with no memory of, or relation to, its previous existence. This rule has the following exceptions.
 
+OFFICIAL RULINGS (WotC reference)
+Use these published Oracle rulings as reference for how each card works. They do not override the user's stack order, zones, or stated game state.
+
+Ulalek, Fused Atrocity
+- 2024-06-07: A card with devoid is just colorless. It's not colorless and the colors of mana in its mana cost.
+- 2024-06-07: Devoid doesn't affect the color identity of the card for the purposes of the Commander variant. For example, while Abstruse Appropriation is colorless because it has devoid, its color identity is still white and black, and it can't be included in a Commander deck where the commander's color identity doesn't include both white and black.
+- 2024-06-07: Devoid works in all zones, not just on the battlefield.
+
 SCOPE
-Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): battlefield, hand, graveyard, exile, library, command.
+Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): stack, hand, graveyard, exile, library, command.
 
 QUESTION
-Resolve the stack
+Ulalek is a complicated creature, can you help me understand how he interacts with the stack, what happens if i copy the stack, and what happens if i am able to copy multiple times with extra triggers, this can get complicated

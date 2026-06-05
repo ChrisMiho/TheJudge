@@ -357,13 +357,23 @@
   - prompt-only and backend-only; no `AskAiRequest`, Zod schema, or frontend changes
   - no paraphrased rule text
   - no runtime CR or Scryfall fetch per request
-  - no per-request topic selection in current scope
-  - no rules engine, format-specific rules, or board-state simulation
+
+### REQ-023
+- Title: Decrypt wait feedback panel
+- Priority: medium
+- Description: While a decrypt request is in flight, the app must replace the submit form with a dedicated waiting panel showing a live elapsed timer and escalating threshold-based messages.
+- Acceptance Criteria:
+  - waiting panel replaces the submit form while `isSubmitting` is true
+  - card list and wizard context above the form remain visible during the wait
+  - elapsed timer increments in real time from the moment of submission
+  - displayed message updates at defined second thresholds: 0s, 3s, 8s, 15s, 25s, 40s
+  - submit form is restored when a response is received or an error occurs
+  - message region uses `aria-live` so screen readers announce updates
+- Constraints:
+  - CSS-only motion; no animation libraries
+  - panel must not block card context above the form
 - Dependencies:
-  - DEC-025
-  - DEC-029
-  - DEC-030
-  - WotC Comprehensive Rules TXT source
+  - REQ-012
+  - NFR-006
 - Notes:
-  - topic rule numbers are curated during Slice B; refinement locks the pipeline, not the final manifest contents
-  - full-library inclusion is an active product risk against NFR-002 latency; context-driven selection is deferred mitigation
+  - approved threshold copy lives in `PRD/work/ask-ai-wait-animation/DESIGN-BRIEF.md`

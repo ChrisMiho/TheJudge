@@ -1,5 +1,5 @@
 import type { AskAiRequest, PromptContext } from "../types/index.js";
-import { normalizeQuestion } from "../prompt/normalization.js";
+import { MAX_PROMPT_CHAR_BUDGET, normalizeQuestion } from "../prompt/normalization.js";
 
 const FALLBACK_QUESTION = "Resolve the stack";
 
@@ -19,7 +19,10 @@ type EvaluationCheckId =
   | "scope-sentence-present"
   | "prompt-section-order"
   | "mana-spent-output"
-  | "llm-prompt-omits-cardid";
+  | "llm-prompt-omits-cardid"
+  | "game-rules-section-present"
+  | "game-rules-before-rulings"
+  | "prompt-under-budget";
 
 export type EvaluationFixture = {
   id: string;
@@ -204,6 +207,47 @@ function checkPromptOmitsCardId(promptText: string): EvaluationCheckResult {
   };
 }
 
+function checkGameRulesSectionPresent(promptText: string): EvaluationCheckResult {
+  const passed = promptText.includes("GAME RULES (reference)");
+
+  return {
+    id: "game-rules-section-present",
+    passed,
+    details: passed
+      ? "GAME RULES (reference) section is present in the prompt."
+      : "GAME RULES (reference) section is missing from the prompt."
+  };
+}
+
+function checkGameRulesBeforeRulings(promptText: string): EvaluationCheckResult {
+  const gameRulesIndex = promptText.indexOf("GAME RULES (reference)");
+  const officialRulingsIndex = promptText.indexOf("OFFICIAL RULINGS");
+  const hasGameRules = gameRulesIndex !== -1;
+  const hasOfficialRulings = officialRulingsIndex !== -1;
+  const passed = hasGameRules && (!hasOfficialRulings || gameRulesIndex < officialRulingsIndex);
+
+  return {
+    id: "game-rules-before-rulings",
+    passed,
+    details: passed
+      ? "GAME RULES (reference) appears before OFFICIAL RULINGS (or no OFFICIAL RULINGS present)."
+      : "GAME RULES (reference) is absent or appears after OFFICIAL RULINGS."
+  };
+}
+
+function checkPromptUnderBudget(promptText: string): EvaluationCheckResult {
+  const chars = promptText.length;
+  const passed = chars < MAX_PROMPT_CHAR_BUDGET;
+
+  return {
+    id: "prompt-under-budget",
+    passed,
+    details: passed
+      ? `Prompt is ${chars} chars, within ${MAX_PROMPT_CHAR_BUDGET} char budget.`
+      : `Prompt is ${chars} chars, exceeds ${MAX_PROMPT_CHAR_BUDGET} char budget.`
+  };
+}
+
 export function evaluateScenario(
   fixture: EvaluationFixture,
   context: PromptContext,
@@ -219,7 +263,10 @@ export function evaluateScenario(
     checkScopeSentencePresent(promptText),
     checkPromptSectionOrder(promptText),
     checkManaSpentOutput(context, promptText),
-    checkPromptOmitsCardId(promptText)
+    checkPromptOmitsCardId(promptText),
+    checkGameRulesSectionPresent(promptText),
+    checkGameRulesBeforeRulings(promptText),
+    checkPromptUnderBudget(promptText)
   ];
   const score = checks.filter((check) => check.passed).length;
 

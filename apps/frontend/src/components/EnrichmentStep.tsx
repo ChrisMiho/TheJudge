@@ -8,6 +8,7 @@ import {
 import { buildPlayerDisplayNameMap, formatPlayerDisplayLabel } from "../lib/playerLabels";
 import { ZONE_LABELS } from "../lib/zoneLabels";
 import type { ContextTarget, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
+import { AskAiWaitingPanel } from "./AskAiWaitingPanel";
 
 const MAX_QUESTION_CHARS = 300;
 
@@ -477,6 +478,8 @@ export function EnrichmentStep({
             <p className="text-sm font-semibold text-emerald-300">Answer</p>
             <p className="mt-2 whitespace-pre-wrap text-sm text-slate-200">{answer}</p>
           </div>
+        ) : isSubmitting ? (
+          <AskAiWaitingPanel isSubmitting={isSubmitting} />
         ) : (
           showQuestionForm && (
             <form onSubmit={(e) => void onDecryptStack(e)} className="space-y-3">

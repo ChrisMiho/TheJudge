@@ -33,3 +33,30 @@ body {
 .enrichment-card-enter {
   animation: enrichment-card-enter 0.28s ease-out forwards;
 }
+
+@keyframes wait-calm {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+@keyframes wait-curious {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+@keyframes wait-absurd {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(0.97); }
+}
+
+.wait-stage-calm {
+  animation: wait-calm 2.5s ease-in-out infinite;
+}
+
+.wait-stage-curious {
+  animation: wait-curious 1.8s ease-in-out infinite;
+}
+
+.wait-stage-absurd {
+  animation: wait-absurd 1.4s ease-in-out infinite;
+}

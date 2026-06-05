@@ -2,6 +2,7 @@ import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { loadGameRulesTopics, type GameRulesTopic } from "../gameRules.js";
 import { buildPromptContext } from "../prompt/context.js";
 import { buildPromptText } from "../prompt/normalization.js";
 import type { AskAiRequest } from "../types/index.js";
@@ -15,6 +16,8 @@ import {
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const fixtureDir = path.join(currentDir, "fixtures");
 const shouldUpdateGoldenFiles = process.env.UPDATE_CONTEXT_EVAL_FIXTURES === "1";
+const gameRulesPath = path.resolve(currentDir, "../../data/gameRulesByTopic.json");
+const gameRulesTopics: GameRulesTopic[] = loadGameRulesTopics(gameRulesPath);
 
 async function readJsonFixture(fileName: string): Promise<EvaluationFixture> {
   const fixturePath = path.join(fixtureDir, fileName);
@@ -60,7 +63,7 @@ function formatContextSnapshot(request: AskAiRequest): string {
 
 function formatPromptSnapshot(request: AskAiRequest): string {
   const context = buildPromptContext(request);
-  const prompt = buildPromptText(context);
+  const prompt = buildPromptText(context, { gameRulesTopics });
   return `${prompt}\n`;
 }
 
@@ -73,7 +76,7 @@ describe("context evaluation harness", () => {
 
     for (const fixture of fixtures) {
       const context = buildPromptContext(fixture.request);
-      const promptText = buildPromptText(context);
+      const promptText = buildPromptText(context, { gameRulesTopics });
       const result = evaluateScenario(fixture, context, promptText);
 
       results.push(result);
@@ -159,7 +162,7 @@ describe("context evaluation harness", () => {
 
     expect(result.passed).toBe(false);
     expect(failedCheckIds).toEqual(
-      expect.arrayContaining(["stack-order-preserved", "required-guardrails-present", "llm-prompt-omits-cardid", "mtg-reference-present", "scope-sentence-present"])
+      expect.arrayContaining(["stack-order-preserved", "required-guardrails-present", "llm-prompt-omits-cardid", "mtg-reference-present", "scope-sentence-present", "game-rules-section-present"])
     );
   });
 });
