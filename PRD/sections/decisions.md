@@ -96,13 +96,14 @@
 
 ### DEC-009
 - Decision: Blank questions fall back to **Resolve the stack** in request-building logic.
-- Status: confirmed
+- Status: superseded
 - Context: The question field is optional, but the backend should always receive a final question string.
 - Impact:
   - fallback is not shown as injected UI text
 - Related requirements:
   - REQ-011
 - Notes:
+  - superseded by DEC-028 for zone-aware blank-question fallback behavior
 
 ### DEC-010
 - Decision: The core product uses one main product-facing backend endpoint.
@@ -330,3 +331,23 @@
   - REQ-017
   - REQ-019
 - Notes:
+
+### DEC-028
+- Decision: Blank-question fallback is zone-aware.
+- Status: confirmed
+- Context: Manual walkthrough on 2026-06-05 showed that default main-phase selected zones can include stack while users may only populate battlefield. The previous unconditional **Resolve the stack** fallback caused the prompt to ask for stack resolution even when no stack cards were submitted.
+- Impact:
+  - blank trimmed questions use **Resolve the stack** when `gameContext.zones.stack` has one or more cards
+  - blank trimmed questions use **Explain the interaction with the provided game state** when stack has no cards and another zone has cards
+  - submit remains allowed when stack is selected but empty as long as another selected zone has a card
+  - skipped targets do not imply an empty stack; `targets: (none)` means no target was specified for that card
+  - enrichment shows a pre-decrypt summary of populated zones and the fallback question when the user leaves the question blank
+  - zone collection shows a non-blocking nudge when stack is selected but empty and another selected zone has cards
+- Related requirements:
+  - REQ-011
+  - REQ-012
+  - REQ-017
+  - REQ-018
+  - REQ-019
+- Notes:
+  - supersedes DEC-009 where it describes an unconditional stack fallback

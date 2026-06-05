@@ -114,6 +114,20 @@ export function ZoneCollectionStep({
     updateZoneCards(activeZone, removeZoneCardById(activeZoneCards, cardId));
   }
 
+  function handleContinue(): void {
+    if (
+      canContinue &&
+      selectedZones.includes("stack") &&
+      (zones.stack?.length ?? 0) === 0
+    ) {
+      onFlashStatus(
+        "Stack zone is selected but empty - fine for board-state questions; add stack cards if you want stack resolution."
+      );
+    }
+
+    onContinue();
+  }
+
   const addButtonLabel =
     activeZone === "stack" ? (activeZoneCards.length === 0 ? "Begin stackening!" : "Add to Stack") : "Add card";
 
@@ -202,7 +216,7 @@ export function ZoneCollectionStep({
           </button>
           <button
             type="button"
-            onClick={onContinue}
+            onClick={handleContinue}
             disabled={!canContinue}
             className="rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >

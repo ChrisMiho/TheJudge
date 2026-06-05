@@ -1,7 +1,8 @@
 import type { AskAiRequest, ContextTarget, PromptContext, PromptContextStackItem, PromptContextStackTarget, PromptContextZoneItem, ZoneId } from "../types/index.js";
 import { normalizeCardText, normalizeQuestion, normalizeWhitespace } from "./normalization.js";
 
-const fallbackQuestion = "Resolve the stack";
+const DEFAULT_STACK_QUESTION = "Resolve the stack";
+const DEFAULT_BOARD_QUESTION = "Explain the interaction with the provided game state";
 
 const NON_STACK_CANONICAL_ZONE_ORDER: Array<Exclude<ZoneId, "stack">> = [
   "battlefield",
@@ -94,6 +95,18 @@ function normalizeZoneItem(card: import("../types/index.js").ZoneCardItem): Prom
   };
 }
 
+function resolveFallbackQuestion(zones: AskAiRequest["gameContext"]["zones"] | undefined): string {
+  if ((zones?.stack?.length ?? 0) > 0) {
+    return DEFAULT_STACK_QUESTION;
+  }
+
+  const hasNonStackCards = NON_STACK_CANONICAL_ZONE_ORDER.some(
+    (zoneId) => (zones?.[zoneId]?.length ?? 0) > 0
+  );
+
+  return hasNonStackCards ? DEFAULT_BOARD_QUESTION : DEFAULT_STACK_QUESTION;
+}
+
 export function buildPromptContext(payload: AskAiRequest): PromptContext {
   const normalizedQuestion = normalizeQuestion(payload.question);
   const gameCtx = payload.gameContext;
@@ -126,7 +139,8 @@ export function buildPromptContext(payload: AskAiRequest): PromptContext {
     .filter((z): z is NonNullable<typeof z> => z !== null);
 
   return {
-    finalQuestion: normalizedQuestion.length > 0 ? normalizedQuestion : fallbackQuestion,
+    finalQuestion:
+      normalizedQuestion.length > 0 ? normalizedQuestion : resolveFallbackQuestion(gameCtx.zones),
     gameContext: normalizedGameContext,
     populatedZones,
     orderedStack: stackZoneCards.map((card, stackIndex, stack) => ({

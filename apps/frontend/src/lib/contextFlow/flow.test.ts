@@ -269,17 +269,34 @@ describe("buildAskAiRequest", () => {
   });
 
   it("uses trimmed question when provided", () => {
-    const payload = buildAskAiRequest("  Does this resolve?  ", BASE_GAME_CONTEXT);
+    const payload = buildAskAiRequest("  Does this resolve?  ", {
+      ...BASE_GAME_CONTEXT,
+      zones: { battlefield: [makeCard("bf-1")] }
+    });
     expect(payload.question).toBe("Does this resolve?");
   });
 
-  it("falls back to default question when question is blank", () => {
-    const payload = buildAskAiRequest("", BASE_GAME_CONTEXT);
+  it("falls back to stack resolution when stack has cards and question is blank", () => {
+    const payload = buildAskAiRequest("", {
+      ...BASE_GAME_CONTEXT,
+      zones: { stack: [makeCard("s1")] }
+    });
     expect(payload.question).toBe("Resolve the stack");
   });
 
-  it("falls back to default question when question is only whitespace", () => {
-    const payload = buildAskAiRequest("   ", BASE_GAME_CONTEXT);
+  it("falls back to board-state interaction when only non-stack zones have cards and question is blank", () => {
+    const payload = buildAskAiRequest("   ", {
+      ...BASE_GAME_CONTEXT,
+      zones: { battlefield: [makeCard("bf-1")], stack: [] }
+    });
+    expect(payload.question).toBe("Explain the interaction with the provided game state");
+  });
+
+  it("falls back to stack resolution when stack and battlefield both have cards", () => {
+    const payload = buildAskAiRequest("", {
+      ...BASE_GAME_CONTEXT,
+      zones: { battlefield: [makeCard("bf-1")], stack: [makeCard("s1")] }
+    });
     expect(payload.question).toBe("Resolve the stack");
   });
 

@@ -152,9 +152,9 @@
 - Acceptance Criteria:
   - user can enter up to 300 characters
   - question is trimmed before submit
-  - blank trimmed question uses fallback **Resolve the stack**
+  - blank trimmed question uses a zone-aware fallback: **Resolve the stack** when the stack zone has cards; otherwise **Explain the interaction with the provided game state** when another selected zone has cards
 - Constraints:
-  - fallback is request logic, not visible UI injection
+  - fallback is request/prompt logic and may be shown as an informational pre-submit hint
 - Dependencies:
   - submit flow
 - Notes:
@@ -169,7 +169,7 @@
   - clicking the button sends `question` and `gameContext`
   - no top-level `stack` or `battlefieldContext` is sent
   - submit is allowed only when at least one selected zone has a card
-  - blank trimmed question uses fallback **Resolve the stack** in request/prompt logic
+  - blank trimmed question uses the zone-aware fallback in request/prompt logic
 - Constraints:
   - one main product-facing endpoint in the core product
 - Dependencies:

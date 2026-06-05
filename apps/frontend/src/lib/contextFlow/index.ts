@@ -13,7 +13,10 @@ export {
   canAdvance,
   buildEnrichmentQueue,
   buildAskAiRequest,
+  DEFAULT_BOARD_QUESTION,
+  DEFAULT_STACK_QUESTION,
   DEFAULT_TURN_PHASE,
   hasAtLeastOneCardInSelectedZones,
-  NON_STACK_ZONES_WITH_OWNER
+  NON_STACK_ZONES_WITH_OWNER,
+  resolveFallbackQuestion
 } from "./flow";
