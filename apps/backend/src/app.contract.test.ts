@@ -224,7 +224,7 @@ describe("ask-ai endpoint contract", () => {
     expect(response.body.code).toBe("VALIDATION_ERROR");
   });
 
-  it("accepts request with empty zones object when selectedZones is set", async () => {
+  it("returns validation error when no selected zone contains a card", async () => {
     const response = await request(app).post("/api/ask-ai").send({
       question: "How does this resolve?",
       gameContext: {
@@ -233,6 +233,8 @@ describe("ask-ai endpoint contract", () => {
       }
     });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe("VALIDATION_ERROR");
+    expect(response.body.message).toContain("gameContext.zones");
   });
 });

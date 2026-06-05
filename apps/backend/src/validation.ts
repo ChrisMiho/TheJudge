@@ -179,6 +179,15 @@ export const gameContextSchema = z
         message: "must be one of the players in the game"
       });
     }
+
+    const hasCardInSelectedZone = value.selectedZones.some((zoneId) => (value.zones[zoneId]?.length ?? 0) > 0);
+    if (!hasCardInSelectedZone) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["zones"],
+        message: "must include at least one card in a selected zone"
+      });
+    }
   });
 
 export const askAiRequestSchema = z.object({
