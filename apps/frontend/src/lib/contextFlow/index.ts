@@ -9,4 +9,10 @@ export {
 } from "./phaseZoneDefaults";
 
 export type { FlowNavigationState, ZoneAskAiPayload, EnrichmentQueueEntry } from "./flow";
-export { canAdvance, buildEnrichmentQueue, buildAskAiRequest, DEFAULT_TURN_PHASE } from "./flow";
+export {
+  canAdvance,
+  buildEnrichmentQueue,
+  buildAskAiRequest,
+  DEFAULT_TURN_PHASE,
+  hasAtLeastOneCardInSelectedZones
+} from "./flow";

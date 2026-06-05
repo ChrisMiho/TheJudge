@@ -730,23 +730,34 @@ describe("App MVP interaction flows", () => {
     expect(requestBody.gameContext.zones?.stack?.[0]?.targets).toEqual([{ kind: "none" }]);
   });
 
-  it("allows Decrypt Stack with zero cards (zero-card flow)", async () => {
+  it("blocks Continue from zone collection until a selected zone has a card", async () => {
     const user = userEvent.setup();
     render(<App />);
     await openStackBuilder(user);
+
+    const continueButton = screen.getByRole("button", { name: "Continue" });
+    expect(continueButton).toBeDisabled();
+    expect(screen.getByText("Add at least one card in a selected zone before continuing.")).toBeInTheDocument();
+
+    await addCardToStack(user, "opt", "Opt");
+    expect(continueButton).toBeEnabled();
+  });
+
+  it("blocks Decrypt Stack after all cards are removed in enrichment", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+    await addCardToStack(user, "opt", "Opt");
     await advanceToContextEnrichmentFromZones(user);
 
-    const decryptButton = screen.getByRole("button", { name: "Decrypt Stack" });
-    expect(decryptButton).not.toBeDisabled();
-    await user.click(decryptButton);
+    await user.click(screen.getByRole("button", { name: "Remove Opt" }));
 
-    const requestBody = await waitFor(() => {
-      expect(submittedAskAiRequests.length).toBeGreaterThan(0);
-      return submittedAskAiRequests[0];
-    });
-    expect(requestBody.question).toBe("Resolve the stack");
-    expect(requestBody.gameContext.playerCount).toBe(2);
-    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/api/ask-ai"), expect.anything());
+    const decryptButton = screen.getByRole("button", { name: "Decrypt Stack" });
+    expect(decryptButton).toBeDisabled();
+    expect(screen.getByText("Add at least one card in a selected zone before decrypting.")).toBeInTheDocument();
+
+    await user.click(decryptButton);
+    expect(submittedAskAiRequests).toHaveLength(0);
   });
 
   it("shows bundled cat-wizard asset on game-context first screen with graceful fallback", async () => {

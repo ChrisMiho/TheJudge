@@ -23,6 +23,7 @@ type ZoneCollectionStepProps = {
   activePlayers: PlayerLabel[];
   onBack: () => void;
   onContinue: () => void;
+  canContinue: boolean;
   onFlashStatus: (message: string) => void;
   statusMessage: string | null;
 };
@@ -37,6 +38,7 @@ export function ZoneCollectionStep({
   activePlayers,
   onBack,
   onContinue,
+  canContinue,
   onFlashStatus,
   statusMessage
 }: ZoneCollectionStepProps): JSX.Element {
@@ -125,7 +127,7 @@ export function ZoneCollectionStep({
 
         <h2 className="text-2xl font-semibold text-sky-300">Add cards to zones</h2>
         <p className="text-sm text-slate-400">
-          Add card identity for each selected zone. You can skip zones with zero cards.
+          Add at least one card in a selected zone. Other selected zones may stay empty.
         </p>
 
         {orderedSelectedZones.length === 0 ? (
@@ -198,11 +200,18 @@ export function ZoneCollectionStep({
           <button
             type="button"
             onClick={onContinue}
-            className="rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+            disabled={!canContinue}
+            className="rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Continue
           </button>
         </div>
+
+        {!canContinue && (
+          <p className="text-xs text-slate-400">
+            Add at least one card in a selected zone before continuing.
+          </p>
+        )}
 
         {statusMessage && (
           <p className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2 text-sm font-medium text-cyan-200">

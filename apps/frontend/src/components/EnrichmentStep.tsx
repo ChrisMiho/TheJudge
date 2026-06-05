@@ -21,6 +21,7 @@ type EnrichmentStepProps = {
   onQuestionChange: (q: string) => void;
   onDecryptStack: (event: FormEvent) => Promise<void>;
   onBack: () => void;
+  canDecrypt: boolean;
   isSubmitting: boolean;
   answer: string | null;
   error: string | null;
@@ -53,6 +54,7 @@ export function EnrichmentStep({
   onQuestionChange,
   onDecryptStack,
   onBack,
+  canDecrypt,
   isSubmitting,
   answer,
   error,
@@ -387,7 +389,7 @@ export function EnrichmentStep({
 
         {totalCards === 0 ? (
           <p className="rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4 text-sm text-slate-300">
-            No cards added — ask a timing or rules question below.
+            Add at least one card in a selected zone before decrypting.
           </p>
         ) : showWizard && currentWizardEntry ? (
           <div className="space-y-3">
@@ -451,7 +453,7 @@ export function EnrichmentStep({
               )}
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !canDecrypt}
                 className="w-full rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmitting ? "Decrypting…" : "Decrypt Stack"}

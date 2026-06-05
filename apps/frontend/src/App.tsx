@@ -214,6 +214,11 @@ export default function App() {
   }
 
   function finishZoneCollection(): void {
+    if (!canAdvance("zone-collection", { gameContext: { selectedZones, zones: zoneCardsByZone } })) {
+      flashStatus("Add at least one card in a selected zone before continuing.");
+      return;
+    }
+
     setGameContext((current) =>
       current
         ? {
@@ -228,6 +233,11 @@ export default function App() {
 
   async function handleDecryptStack(event: FormEvent): Promise<void> {
     event.preventDefault();
+
+    if (!canAdvance("enrichment", { gameContext: { selectedZones, zones: zoneCardsByZone } })) {
+      flashStatus("Add at least one card in a selected zone before decrypting.");
+      return;
+    }
 
     if (!gameContext) {
       flashStatus("Confirm game context before decrypting.");
@@ -250,6 +260,11 @@ export default function App() {
 
   async function handleRetry(): Promise<void> {
     if (!canRetry || !gameContext) return;
+    if (!canAdvance("enrichment", { gameContext: { selectedZones, zones: zoneCardsByZone } })) {
+      flashStatus("Add at least one card in a selected zone before decrypting.");
+      return;
+    }
+
     const updatedContext: GameContext = { ...gameContext, zones: zoneCardsByZone };
     const payload = buildAskAiRequest(question, updatedContext);
     const stackSize = zoneCardsByZone.stack?.length ?? 0;
@@ -442,6 +457,10 @@ export default function App() {
   }
 
   if (flowStep === "zone-collection") {
+    const canContinueCollection = canAdvance("zone-collection", {
+      gameContext: { selectedZones, zones: zoneCardsByZone }
+    });
+
     return (
       <ZoneCollectionStep
         selectedZones={selectedZones}
@@ -453,6 +472,7 @@ export default function App() {
         activePlayers={activePlayers}
         onBack={() => setFlowStep("zone-confirm")}
         onContinue={finishZoneCollection}
+        canContinue={canContinueCollection}
         onFlashStatus={flashStatus}
         statusMessage={statusMessage}
       />
@@ -469,6 +489,9 @@ export default function App() {
       onQuestionChange={setQuestion}
       onDecryptStack={handleDecryptStack}
       onBack={() => setFlowStep("zone-collection")}
+      canDecrypt={canAdvance("enrichment", {
+        gameContext: { selectedZones, zones: zoneCardsByZone }
+      })}
       isSubmitting={isSubmitting}
       answer={answer}
       error={error}

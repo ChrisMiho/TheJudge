@@ -1,6 +1,6 @@
 # Slice B — At least one card in selected zones
 
-## Status: planned
+## Status: complete
 
 ## Depends on
 

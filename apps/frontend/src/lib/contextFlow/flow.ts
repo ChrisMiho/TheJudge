@@ -4,7 +4,7 @@ import { CANONICAL_ZONE_ORDER } from "./phaseZoneDefaults";
 
 /** Minimum fields needed by canAdvance for each step. */
 export type FlowNavigationState = {
-  gameContext: Pick<Partial<GameContext>, "players" | "playerCount" | "selectedZones" | "turnPhase">;
+  gameContext: Pick<Partial<GameContext>, "players" | "playerCount" | "selectedZones" | "turnPhase" | "zones">;
 };
 
 /**
@@ -25,9 +25,15 @@ export type EnrichmentQueueEntry = {
 const DEFAULT_QUESTION = "Resolve the stack";
 export const DEFAULT_TURN_PHASE: TurnPhase = "stack_resolving";
 
+export function hasAtLeastOneCardInSelectedZones(
+  selectedZones: ZoneId[] | undefined,
+  zones: Partial<Record<ZoneId, ZoneCardItem[]>> | undefined
+): boolean {
+  return selectedZones?.some((zoneId) => (zones?.[zoneId]?.length ?? 0) > 0) ?? false;
+}
+
 /**
  * Whether the user may advance from a given step.
- * No minimum card count at zone-collection — matches slice-03 spec.
  */
 export function canAdvance(step: FlowStepId, state: FlowNavigationState): boolean {
   switch (step) {
@@ -43,9 +49,9 @@ export function canAdvance(step: FlowStepId, state: FlowNavigationState): boolea
         Array.isArray(state.gameContext.selectedZones) && state.gameContext.selectedZones.length > 0
       );
     case "zone-collection":
-      return true;
+      return hasAtLeastOneCardInSelectedZones(state.gameContext.selectedZones, state.gameContext.zones);
     case "enrichment":
-      return true;
+      return hasAtLeastOneCardInSelectedZones(state.gameContext.selectedZones, state.gameContext.zones);
   }
 }
 

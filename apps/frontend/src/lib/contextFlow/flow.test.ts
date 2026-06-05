@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { GameContext, ZoneCardItem } from "../../types";
-import { buildAskAiRequest, buildEnrichmentQueue, canAdvance } from "./flow";
+import {
+  buildAskAiRequest,
+  buildEnrichmentQueue,
+  canAdvance,
+  hasAtLeastOneCardInSelectedZones
+} from "./flow";
 
 // ── Shared test fixtures ────────────────────────────────────────────────────
 
@@ -101,12 +106,58 @@ describe("canAdvance", () => {
     expect(canAdvance("zone-confirm", { gameContext: {} })).toBe(false);
   });
 
-  it("zone-collection: always returns true (no min card count)", () => {
-    expect(canAdvance("zone-collection", { gameContext: {} })).toBe(true);
+  it("zone-collection: returns false when selected zones have no cards", () => {
+    expect(
+      canAdvance("zone-collection", {
+        gameContext: { selectedZones: ["stack", "battlefield"], zones: { stack: [], battlefield: [] } }
+      })
+    ).toBe(false);
   });
 
-  it("enrichment: always returns true", () => {
-    expect(canAdvance("enrichment", { gameContext: {} })).toBe(true);
+  it("zone-collection: returns true when one selected zone has a card", () => {
+    expect(
+      canAdvance("zone-collection", {
+        gameContext: {
+          selectedZones: ["stack", "battlefield"],
+          zones: { stack: [], battlefield: [makeCard("bf-1")] }
+        }
+      })
+    ).toBe(true);
+  });
+
+  it("enrichment: returns false when all selected-zone cards were removed", () => {
+    expect(
+      canAdvance("enrichment", {
+        gameContext: { selectedZones: ["stack"], zones: { stack: [] } }
+      })
+    ).toBe(false);
+  });
+
+  it("enrichment: returns true when one selected zone has a card", () => {
+    expect(
+      canAdvance("enrichment", {
+        gameContext: {
+          selectedZones: ["stack", "hand"],
+          zones: { stack: [makeCard("stack-1")], hand: [] }
+        }
+      })
+    ).toBe(true);
+  });
+});
+
+// ── hasAtLeastOneCardInSelectedZones ───────────────────────────────────────
+
+describe("hasAtLeastOneCardInSelectedZones", () => {
+  it("returns false when no selected zone has cards", () => {
+    expect(hasAtLeastOneCardInSelectedZones(["stack", "battlefield"], { stack: [], battlefield: [] })).toBe(false);
+  });
+
+  it("returns true when any selected zone has at least one card", () => {
+    expect(hasAtLeastOneCardInSelectedZones(["stack", "battlefield"], { stack: [], battlefield: [makeCard("bf-1")] })).toBe(true);
+  });
+
+  it("ignores cards in unselected zones", () => {
+    expect(hasAtLeastOneCardInSelectedZones(["stack"], { battlefield: [makeCard("bf-1")] })).toBe(false);
   });
 });
 
