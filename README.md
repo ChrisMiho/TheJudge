@@ -30,7 +30,7 @@ It helps players build an ordered stack of cards, ask a question, and receive an
   - `README.md` control plane for product docs and read order
   - `sections/` product truth (requirements, decisions, flows, constraints)
   - `instructions/` generation and editing rules
-  - `stories/` Definition of Done for story execution
+  - `work/` ephemeral planning folders (deleted when slices ship)
 - `apps/frontend/` client app
   - `src/components/` zone-flow step UI
   - `src/hooks/` React hooks (`useAskAiSubmitOrchestration`, autocomplete helpers)

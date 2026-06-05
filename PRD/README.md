@@ -47,8 +47,7 @@ For implementation work, read in this order:
 | `instructions/agent-working-rules.md` | active | Behavioral rules for any agent editing or generating content in this PRD set |
 | `instructions/doc-lifecycle.md` | active | When to create, promote, and delete ephemeral planning docs |
 | `instructions/writing-rules.md` | complete | Rules for writing and editing these documents |
-| `instructions/requirement-format.md` | complete | Required formatting templates for requirements, flows, decisions, and questions |
-| `instructions/story-generation.md` | complete | Rules for converting requirements into stories and backlog items |
+| `instructions/requirement-format.md` | complete | Required formatting templates for requirements, flows, decisions, questions, and slices |
 | `instructions/technical-design-rules.md` | complete | Constraints for architecture and implementation proposals |
 | `instructions/secrets-handling.md` | active | Guardrails for storing secrets in `.secrets/`, never committing them, and validating secret decisions with the user |
 | `instructions/workflow-reference.md` | active | Lean five-skill PRD workflow reference, session openers, slice template, and cleanup receipt convention |
@@ -72,12 +71,12 @@ Read in this order:
 6. `instructions/technical-design-rules.md` (if architecture or code structure is involved)
 7. `instructions/secrets-handling.md` (if credentials, env vars, or provider keys are involved)
 
-### If the task is story generation or backlog creation
+### If the task is slice planning or map-out
 Read in this order:
 1. `sections/decisions.md`
 2. `sections/functional-requirements.md`
 3. `sections/user-flows.md`
-4. `instructions/story-generation.md`
+4. `instructions/workflow-reference.md`
 5. `instructions/requirement-format.md`
 
 ### If the task is document editing or extension

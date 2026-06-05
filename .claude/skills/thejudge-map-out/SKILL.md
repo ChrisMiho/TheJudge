@@ -34,8 +34,9 @@ User provides work slug.
 - One primary objective per slice
 - Explicit dependencies in README table
 - Each slice: Status, Goal, Requirements, Files touched, Tests, Acceptance criteria
+- Each acceptance criterion must be verifiable (test command or explicit manual check)
 - Include file paths and verification commands
-- Final slice includes PRD promotion checklist (execution in cleanup skill)
+- Final slice includes PRD promotion checklist (execution in cleanup skill) and Ship gates from `workflow-reference.md`
 - Default parallel-ready; sequential only with stated blocker
 
 ## Do not

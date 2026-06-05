@@ -66,32 +66,28 @@
 - Use constraints for anything the agent must not overstep.
 - Use dependencies to show external reliance or coupling.
 
-## Story Dependency Rules
+## Slice Dependency Rules
 
-Behavioral guidance for story writing lives in `instructions/story-generation.md`.
-This document only adds dependency-field rules for `PRD/stories/` entries:
+Slice dependency guidance lives in `instructions/workflow-reference.md` and `thejudge-map-out`.
+This document adds dependency-field rules for `PRD/work/<slug>/slice-*.md` entries:
 
-- `parallel-ready`: list only non-blocking references (REQ/DEC/NFR, etc.); no prerequisite story IDs.
-- `sequential`: include prerequisite story ID(s) and one-line reason per prerequisite.
-- Always use concrete dependency entries; avoid vague values like "other stories" or "future work".
+- `parallel-ready`: list only non-blocking references (REQ/DEC/NFR, etc.); no prerequisite slice IDs.
+- `sequential`: include prerequisite slice ID(s) and one-line reason per prerequisite.
+- Always use concrete dependency entries; avoid vague values like "other slices" or "future work".
 
-## Story Acceptance Criteria Rule
+## Slice Acceptance Criteria Rule
 
-For any story in `PRD/stories/`, include an acceptance criterion that records completion in an auditable place: update `sections/decisions.md` and affected `sections/*.md` when product truth changes, update `PRD/README.md` only when navigation guidance changes, and delete `PRD/work/<slug>/` when ephemeral planning was used. See `instructions/story-generation.md` and `instructions/doc-lifecycle.md`.
+For any slice in `PRD/work/<slug>/`, each acceptance criterion must be verifiable (test command or explicit manual check). The final slice must include ship gates from `workflow-reference.md` and an acceptance criterion that records completion in an auditable place: update `sections/decisions.md` and affected `sections/*.md` when product truth changes, update `PRD/README.md` only when navigation guidance changes, and delete `PRD/work/<slug>/` when ephemeral planning was used. See `instructions/doc-lifecycle.md`.
 
-## Story Template (`PRD/stories/`)
+## Slice Template (`PRD/work/<slug>/`)
 
-Use this structure for each story file:
+Use the structure in `instructions/workflow-reference.md` (Slice Doc Template). Each slice file should include:
 
-- title:
-- implementation area: (`frontend` | `backend` | `full-stack`)
-- user value:
-- scope:
-  - ...
-- acceptance criteria:
-  - ...
-- execution mode: (`parallel-ready` | `sequential`)
-- dependencies:
-  - ...
-- exclusions:
-  - ...
+- Status (`planned` | `in-progress` | `done` | `blocked`)
+- Goal (one objective)
+- Requirements
+- Acceptance criteria (verifiable)
+- Verification (command or manual check)
+- Files touched
+
+Final slice docs append Ship gates from `workflow-reference.md`.
