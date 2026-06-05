@@ -25,6 +25,28 @@ describe("ask-ai route behavior", () => {
     expect(providerCalls[0]?.context.orderedStack).toHaveLength(1);
   });
 
+  it("adds official rulings to prepared prompt through app dependency injection", async () => {
+    const providerCalls: PreparedPromptInput[] = [];
+    const appWithRulings = createApp({
+      cardRulingsIndex: new Map([
+        ["opt", [{ publishedAt: "2020-04-17", comment: "Use the published ruling as reference." }]]
+      ]),
+      askAiProvider: {
+        generateAnswer(preparedPrompt) {
+          providerCalls.push(preparedPrompt);
+          return { answer: "ok" };
+        }
+      }
+    });
+
+    const response = await request(appWithRulings).post("/api/ask-ai").send(createAskAiRequest());
+
+    expect(response.status).toBe(200);
+    expect(providerCalls[0]?.promptText).toContain("OFFICIAL RULINGS (WotC reference)");
+    expect(providerCalls[0]?.promptText).toContain("Opt\n- 2020-04-17: Use the published ruling as reference.");
+    expect(providerCalls[0]?.diagnostics.rulingsCardCount).toBe(1);
+  });
+
   it("maps timeout-like provider exceptions to provider-timeout status/code", async () => {
     const appWithTimeoutProvider = createApp({
       askAiProvider: {

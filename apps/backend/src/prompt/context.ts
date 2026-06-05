@@ -88,6 +88,7 @@ function normalizeZoneItem(card: import("../types/index.js").ZoneCardItem): Prom
   if (name.length === 0) return null;
   const owner = card.owner;
   return {
+    cardId: normalizeWhitespace(card.cardId),
     name,
     owner: owner && normalizeWhitespace(owner).length > 0 ? owner : undefined,
     details: normalizeOptionalText(card.contextNotes) || undefined,

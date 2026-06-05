@@ -27,3 +27,5 @@ coverage/
 
 # Local bulk datasets (do not commit)
 apps/frontend/data/scryfall/default-cards.json
+apps/backend/data/scryfall/rulings.json
+apps/backend/data/scryfall/rulings.json.tmp

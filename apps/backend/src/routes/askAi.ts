@@ -6,6 +6,7 @@ import {
 } from "../errors.js";
 import { resolveCorrelationId, type AppLogger } from "../logging.js";
 import { preparePromptInput } from "../prompt/preparation.js";
+import type { RulingEntry } from "../cardRulings.js";
 import type { AskAiProvider } from "../providers/askAiProvider.js";
 import { askAiRequestSchema } from "../validation/askAiRequest.js";
 import { toValidationErrorMessage } from "../app/errorHandler.js";
@@ -14,10 +15,11 @@ export type AskAiRouteDeps = {
   askAiProvider: AskAiProvider;
   logger: AppLogger;
   payloadLoggingEnabled: boolean;
+  cardRulingsIndex?: Map<string, RulingEntry[]>;
 };
 
 export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
-  const { askAiProvider, logger, payloadLoggingEnabled } = deps;
+  const { askAiProvider, logger, payloadLoggingEnabled, cardRulingsIndex } = deps;
 
   app.post("/api/ask-ai", async (req: Request, res: Response, next: NextFunction) => {
     const correlationId = resolveCorrelationId(req.header("x-correlation-id"));
@@ -55,13 +57,15 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
 
       logger.info("ask_ai.prompt_context_build_started", { correlationId });
       const promptBuildStartedAt = Date.now();
-      const preparedPrompt = preparePromptInput(parsed.data);
+      const preparedPrompt = preparePromptInput(parsed.data, { cardRulingsIndex });
       const diagnostics = preparedPrompt.diagnostics;
       logger.info("ask_ai.prompt_context_build_completed", {
         correlationId,
         promptChars: diagnostics.promptChars,
         promptBudgetChars: diagnostics.promptBudgetChars,
         promptUtilizationPercent: diagnostics.utilizationPercent,
+        rulingsSectionChars: diagnostics.rulingsSectionChars,
+        rulingsCardCount: diagnostics.rulingsCardCount,
         promptBuildElapsedMs: Date.now() - promptBuildStartedAt
       });
 

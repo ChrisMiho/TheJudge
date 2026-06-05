@@ -360,10 +360,13 @@
   - WotC rulings enrichment is prompt-only and backend-only
   - `POST /api/ask-ai` request and response shapes remain unchanged
   - no frontend rulings UI or product-facing rulings endpoint is added
-  - rulings are sourced from Scryfall bulk type `rulings`, filtered to `source === "wotc"`, and intersected with the committed card metadata oracle ID set
-  - raw Scryfall rulings bulk data is not committed; a trimmed static artifact may be committed and loaded at backend startup
-  - missing rulings data degrades by omitting the prompt section
-  - existing prompt budget controls remain authoritative and rulings must be capped to fit within them
+  - rulings are sourced from Scryfall bulk type `rulings`, filtered to `source === "wotc"`, and intersected with the committed card metadata `cardId` / oracle ID set
+  - raw Scryfall rulings bulk data is not committed; the trimmed static backend artifact is `apps/backend/data/cardRulingsByOracleId.json`
+  - existing `POST /api/ask-ai` handling looks up rulings during `preparePromptInput`; there is no separate product-facing rulings endpoint
+  - prompt text may include `OFFICIAL RULINGS (WotC reference)` after populated zone sections and before `SCOPE`
+  - the rulings block is omitted entirely when no submitted card has matching WotC data
+  - ruling output is capped by per-card count, per-comment length, and total-section budget so `MAX_PROMPT_CHAR_BUDGET` remains authoritative
+  - Scryfall download and refresh workflows require explicit human approval before agents run networked download commands
 - Related requirements:
   - REQ-012
   - REQ-013

@@ -201,8 +201,10 @@ Purpose:
 - WotC rulings enrichment uses Scryfall bulk type `rulings`
 - raw Scryfall rulings bulk data is gitignored and must not be committed
 - Scryfall download or refresh requires explicit human approval before the command runs
-- the committed backend artifact is a trimmed map keyed by Scryfall `oracle_id`
+- the committed backend artifact is `apps/backend/data/cardRulingsByOracleId.json`, a trimmed map keyed by Scryfall `oracle_id`
 - the trimmed artifact includes only rows where `source === "wotc"` and the `oracle_id` exists in the committed card metadata `cardId` set
+- `npm run data:build` rebuilds card metadata and the committed rulings artifact from local Scryfall bulk inputs
+- `npm run data:refresh` downloads Scryfall bulk data and then rebuilds local artifacts; agent-run refreshes require explicit human approval before any download command
 - the backend loads the committed artifact at startup and omits rulings enrichment if the artifact is missing or has no matches
 - runtime Scryfall fetches are out of scope for the core product
 
@@ -224,6 +226,7 @@ The backend should include:
 - instructions to state uncertainty
 - instructions not to invent hidden state
 - player display names in roster lines and resolved player references (`activePlayer`, caster, owner, player targets) using `Player N (Name)` when set
+- official WotC rulings only as reference context; they do not override the user's submitted stack order, zones, targets, notes, or stated game state
 
 The backend mock/debug response should:
 - include explicit stack-order metadata (`stackOrderConvention`, `stackIndex`, `stackRole`)
@@ -242,6 +245,7 @@ The backend must not add:
 WotC rulings prompt enrichment must:
 - be omitted entirely when no submitted card has matching WotC rulings
 - include only cards present in the submitted `gameContext`
+- look up submitted cards by `cardId`, which corresponds to Scryfall `oracle_id` in the metadata pipeline
 - preserve submitted card ordering, including bottom-to-top stack order
 - avoid printing `cardId` or `oracle_id` in the model-facing prompt text
 - use per-card and whole-section caps so `MAX_PROMPT_CHAR_BUDGET` remains authoritative

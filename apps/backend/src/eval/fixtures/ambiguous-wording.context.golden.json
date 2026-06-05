@@ -23,6 +23,7 @@
       "zoneId": "battlefield",
       "items": [
         {
+          "cardId": "narset-parter-of-veils",
           "name": "Narset, Parter of Veils",
           "details": "Each opponent can't draw more than one card each turn.",
           "targets": [
