@@ -1,4 +1,4 @@
-import type { ServerConfig } from "../config.js";
+import type { ServerConfig } from "../config/index.js";
 import type { AskAiProvider } from "./askAiProvider.js";
 import { createOpenAiAskAiProvider, type OpenAiResponsesClient } from "./openAiResponsesProvider.js";
 import { mockAskAiProvider } from "./mockAskAiProvider.js";

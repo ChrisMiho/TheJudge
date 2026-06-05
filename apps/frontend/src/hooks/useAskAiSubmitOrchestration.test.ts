@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { AskAiRequest } from "../types";
+import type { ZoneAskAiPayload } from "../lib/contextFlow";
 import { useAskAiSubmitOrchestration } from "./useAskAiSubmitOrchestration";
 
 const { createCorrelationIdMock, logFrontendDebugMock } = vi.hoisted(() => ({
@@ -8,7 +8,7 @@ const { createCorrelationIdMock, logFrontendDebugMock } = vi.hoisted(() => ({
   logFrontendDebugMock: vi.fn()
 }));
 
-vi.mock("./debugLogger", () => ({
+vi.mock("../lib/debugLogger", () => ({
   createCorrelationId: createCorrelationIdMock,
   logFrontendDebug: logFrontendDebugMock
 }));
@@ -20,7 +20,7 @@ function jsonResponse(payload: unknown, status = 200, headers: Record<string, st
   });
 }
 
-const payloadFixture: AskAiRequest = {
+const payloadFixture: ZoneAskAiPayload = {
   question: "How does this resolve?",
   gameContext: {
     playerCount: 2,
@@ -28,25 +28,21 @@ const payloadFixture: AskAiRequest = {
       { label: "Player 1", lifeTotal: 40 },
       { label: "Player 2", lifeTotal: 40 }
     ],
-    turnPhase: "stack_resolving"
-  },
-  battlefieldContext: [{ name: "Lightning Bolt", targets: [{ kind: "none" }] }],
-  stack: [
-    {
-      cardId: "opt",
-      name: "Opt",
-      oracleText: "Scry 1, then draw a card.",
-      imageUrl: "",
-      manaCost: "{U}",
-      manaValue: 1,
-      typeLine: "Instant",
-      colors: ["U"],
-      supertypes: [],
-      subtypes: [],
-      caster: "Player 1",
-      targets: [{ kind: "none" }]
+    turnPhase: "stack_resolving",
+    selectedZones: ["stack", "battlefield"],
+    zones: {
+      stack: [
+        {
+          cardId: "opt",
+          name: "Opt",
+          oracleText: "Scry 1, then draw a card.",
+          caster: "Player 1",
+          targets: [{ kind: "none" }]
+        }
+      ],
+      battlefield: [{ cardId: "bolt", name: "Lightning Bolt", oracleText: "Deals 3 damage." }]
     }
-  ]
+  }
 };
 
 describe("useAskAiSubmitOrchestration", () => {
@@ -76,7 +72,7 @@ describe("useAskAiSubmitOrchestration", () => {
       await result.current.submitAttempt({
         source: "decrypt",
         payload: payloadFixture,
-        stackSize: payloadFixture.stack.length,
+        stackSize: payloadFixture.gameContext.zones?.stack?.length ?? 0,
         finalQuestion: payloadFixture.question,
         usedFallbackQuestion: false
       });
@@ -124,7 +120,7 @@ describe("useAskAiSubmitOrchestration", () => {
       await result.current.submitAttempt({
         source: "decrypt",
         payload: payloadFixture,
-        stackSize: payloadFixture.stack.length,
+        stackSize: payloadFixture.gameContext.zones?.stack?.length ?? 0,
         finalQuestion: payloadFixture.question,
         usedFallbackQuestion: false
       });
@@ -178,7 +174,7 @@ describe("useAskAiSubmitOrchestration", () => {
       await result.current.submitAttempt({
         source: "decrypt",
         payload: payloadFixture,
-        stackSize: payloadFixture.stack.length,
+        stackSize: payloadFixture.gameContext.zones?.stack?.length ?? 0,
         finalQuestion: payloadFixture.question,
         usedFallbackQuestion: false
       });
@@ -192,7 +188,7 @@ describe("useAskAiSubmitOrchestration", () => {
       await result.current.submitAttempt({
         source: "retry",
         payload: payloadFixture,
-        stackSize: payloadFixture.stack.length,
+        stackSize: payloadFixture.gameContext.zones?.stack?.length ?? 0,
         finalQuestion: payloadFixture.question,
         usedFallbackQuestion: false
       });

@@ -10,7 +10,7 @@ import type {
   turnPhaseSchema,
   zoneCardItemSchema,
   zoneIdSchema
-} from "./validation.js";
+} from "../validation/askAiRequest.js";
 
 export type PlayerLabel = z.infer<typeof playerLabelSchema>;
 export type TurnPhase = z.infer<typeof turnPhaseSchema>;

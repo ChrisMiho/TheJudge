@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ASK_AI_ERROR_CODES } from "./errors.js";
+import { ASK_AI_ERROR_CODES } from "../errors.js";
 
 export const playerLabelSchema = z.enum([
   "Player 1",

@@ -32,7 +32,18 @@ It helps players build an ordered stack of cards, ask a question, and receive an
   - `instructions/` generation and editing rules
   - `stories/` Definition of Done for story execution
 - `apps/frontend/` MVP client app
+  - `src/components/` zone-flow step UI
+  - `src/hooks/` React hooks (`useAskAiSubmitOrchestration`, autocomplete helpers)
+  - `src/lib/` shared utilities and `contextFlow/` state machine
+  - `public/data/` runtime card metadata (`cardMetadata.json`)
+  - `data/scryfall/` gitignored Scryfall bulk input for `npm run data:build`
 - `apps/backend/` API app (`POST /api/ask-ai`, `GET /api/health`)
+  - `src/app/` Express app factory and error handler
+  - `src/routes/` HTTP route registration
+  - `src/prompt/` prompt context, normalization, and preparation
+  - `src/validation/` Zod request schemas
+  - `src/providers/` Ask AI provider boundary
+  - `src/eval/` prompt/context golden regression harness
 - `scripts/` shared dev/data scripts (including metadata build)
 
 ## Local Setup
@@ -60,7 +71,8 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 - `npm run test` - run frontend + backend test suites
 - `npm run lint` - run ESLint across workspaces
 - `npm run format:check` - verify formatting for docs/config files
-- `npm run quality:check` - run pre-PR quality gate (`typecheck` + `lint` + `format:check` + `test`)
+- `npm run quality:check` - run pre-PR quality gate (`typecheck` + `lint` + `format:check` + `test` + `coverage:check`)
+- `npm run coverage:check` - run Vitest coverage with conservative line thresholds
 - `npm run build` - build both apps
 - `npm --workspace apps/frontend run test` - run frontend tests
 - `npm --workspace apps/backend run test` - run backend tests
@@ -125,6 +137,6 @@ Quick local verification flow:
 - Keep this root README concise and onboarding-focused.
 - Keep product truth in `PRD/sections/`; use `PRD/instructions/doc-lifecycle.md` for ephemeral planning during active slices.
 - Keep historical implementation detail out of the repo unless promoted into active PRD sections.
-- Empty-state artwork is bundled at `apps/frontend/public/assets/cat-wizard.svg`; keep it local/static and retain a text fallback path.
+- Empty-state artwork is bundled at `apps/frontend/public/assets/cats-homescreen.png`; keep it local/static and retain a text fallback path.
 - Provider integration boundary docs live in `apps/backend/src/providers/README.md`.
 - Search responsiveness guardrails stay frontend-local (debounced query + in-memory pre-normalized index) and must not add runtime metadata sync paths.

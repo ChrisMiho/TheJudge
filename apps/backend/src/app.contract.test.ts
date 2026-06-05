@@ -1,8 +1,8 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
-import { createApp } from "./app.js";
+import { createApp } from "./app/createApp.js";
 import { createAskAiProvider } from "./providers/createAskAiProvider.js";
-import { readServerConfig } from "./config.js";
+import { readServerConfig } from "./config/index.js";
 import { createAskAiRequest, createGameContext, createZoneCardItem } from "./test-utils/requestBuilders.js";
 
 const app = createApp();

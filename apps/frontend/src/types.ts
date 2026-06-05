@@ -8,30 +8,6 @@ export type PlayerLabel =
   | "Player 7"
   | "Player 8";
 
-// ── Legacy types (used by current UI; will migrate in slice 06) ──────────────
-
-export type StackTarget =
-  | {
-      kind: "stack";
-      targetCardId: string;
-      targetCardName: string;
-    }
-  | {
-      kind: "battlefield";
-      targetPermanent: string;
-    }
-  | {
-      kind: "player";
-      targetPlayer: PlayerLabel;
-    }
-  | {
-      kind: "none";
-    }
-  | {
-      kind: "other";
-      targetDescription: string;
-    };
-
 export type CardMetadataItem = {
   cardId: string;
   name: string;
@@ -50,28 +26,6 @@ export type GamePlayerContext = {
   lifeTotal: number;
   displayName?: string;
 };
-
-export type BattlefieldContextItem = {
-  name: string;
-  details?: string;
-  targets: StackTarget[];
-};
-
-export type StackItem = CardMetadataItem & {
-  caster: PlayerLabel;
-  targets: StackTarget[];
-  contextNotes?: string;
-  manaSpent?: number;
-};
-
-export type AskAiRequest = {
-  question: string;
-  gameContext: GameContext;
-  battlefieldContext: BattlefieldContextItem[];
-  stack: StackItem[];
-};
-
-// ── New contract types (UX Wave 2) ────────────────────────────────────────────
 
 export type TurnPhase =
   | "untap"

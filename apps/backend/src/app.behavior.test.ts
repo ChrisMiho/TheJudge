@@ -1,7 +1,7 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
-import { createApp } from "./app.js";
-import type { PreparedPromptInput } from "./promptPreparation.js";
+import { createApp } from "./app/createApp.js";
+import type { PreparedPromptInput } from "./prompt/preparation.js";
 import { createAskAiRequest } from "./test-utils/requestBuilders.js";
 
 describe("ask-ai route behavior", () => {

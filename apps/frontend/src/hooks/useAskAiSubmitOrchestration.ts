@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { createCorrelationId, logFrontendDebug } from "./debugLogger";
-import type { ZoneAskAiPayload } from "./contextFlow";
+import { createCorrelationId, logFrontendDebug } from "../lib/debugLogger";
+import type { ZoneAskAiPayload } from "../lib/contextFlow";
 import type { AskAiError, AskAiResponse } from "../types";
 
 type SubmitSource = "decrypt" | "retry";

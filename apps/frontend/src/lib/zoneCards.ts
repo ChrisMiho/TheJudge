@@ -1,16 +1,5 @@
-import type {
-  BattlefieldContextItem,
-  CardMetadataItem,
-  StackItem,
-  ZoneCardItem,
-  ZoneId
-} from "../types";
-import {
-  buildStackItemFromMetadata,
-  DUPLICATE_CARD_MESSAGE,
-  MAX_STACK_SIZE,
-  STACK_LIMIT_MESSAGE
-} from "./stackState";
+import type { CardMetadataItem, ZoneCardItem, ZoneId } from "../types";
+import { DUPLICATE_CARD_MESSAGE, MAX_STACK_SIZE, STACK_LIMIT_MESSAGE } from "./stackLimits";
 
 export type ZoneCardAddValidationResult =
   | { ok: true }
@@ -73,17 +62,4 @@ export function appendZoneCard(cards: ZoneCardItem[], nextCard: ZoneCardItem): Z
 
 export function removeZoneCardById(cards: ZoneCardItem[], cardId: string): ZoneCardItem[] {
   return cards.filter((item) => item.cardId !== cardId);
-}
-
-export function syncZonesToLegacyStackAndBattlefield(zones: Partial<Record<ZoneId, ZoneCardItem[]>>): {
-  stack: StackItem[];
-  battlefieldContext: BattlefieldContextItem[];
-} {
-  const stack = (zones.stack ?? []).map((card) => buildStackItemFromMetadata(zoneCardToMetadata(card)));
-  const battlefieldContext = (zones.battlefield ?? []).map((card) => ({
-    name: card.name,
-    targets: [] as BattlefieldContextItem["targets"]
-  }));
-
-  return { stack, battlefieldContext };
 }

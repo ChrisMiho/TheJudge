@@ -1,6 +1,6 @@
-import { buildPromptContext } from "./promptContext.js";
-import { buildPromptText, getPromptDiagnostics, type PromptDiagnostics } from "./promptNormalization.js";
-import type { AskAiRequest, PromptContext } from "./types.js";
+import { buildPromptContext } from "./context.js";
+import { buildPromptText, getPromptDiagnostics, type PromptDiagnostics } from "./normalization.js";
+import type { AskAiRequest, PromptContext } from "../types/index.js";
 
 export type PreparedPromptInput = {
   context: PromptContext;

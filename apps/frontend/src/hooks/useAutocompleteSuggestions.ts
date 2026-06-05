@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CardMetadataItem } from "../types";
-import { buildSearchIndex, getSuggestionsFromIndex } from "./search";
+import { buildSearchIndex, getSuggestionsFromIndex } from "../lib/search";
 
 export const AUTOCOMPLETE_DEBOUNCE_MS = 60;
 

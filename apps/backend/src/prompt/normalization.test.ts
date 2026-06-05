@@ -12,8 +12,8 @@ import {
   normalizeQuestion,
   normalizeWhitespace,
   truncateOracleText
-} from "./promptNormalization.js";
-import type { PromptContext } from "./types.js";
+} from "./normalization.js";
+import type { PromptContext } from "../types/index.js";
 
 const baseContext: PromptContext = {
   finalQuestion: "How does this resolve?",

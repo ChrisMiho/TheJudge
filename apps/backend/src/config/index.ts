@@ -1,4 +1,4 @@
-import { resolveDebugLoggingEnabled, resolvePayloadLoggingEnabled } from "./logging.js";
+import { resolveDebugLoggingEnabled, resolvePayloadLoggingEnabled } from "../logging.js";
 
 const DEFAULT_PORT = 3000;
 const DEFAULT_OPENAI_TIMEOUT_MS = 15000;

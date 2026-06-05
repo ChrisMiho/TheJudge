@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildMockAnswer } from "./mockAskAi.js";
-import { buildPromptText, getPromptDiagnostics } from "./promptNormalization.js";
-import type { PromptContext } from "./types.js";
+import { buildPromptText, getPromptDiagnostics } from "./prompt/normalization.js";
+import type { PromptContext } from "./types/index.js";
 
 describe("mock answer ergonomics", () => {
   it("renders deterministic labeled debug output", () => {

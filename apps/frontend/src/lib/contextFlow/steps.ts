@@ -1,14 +1,14 @@
-export type FlowStepId = "game-setup" | "zone-confirm" | "zone-collection" | "enrichment";
+export type FlowStepId = "game-context" | "zone-confirm" | "zone-collection" | "enrichment";
 
 export const FLOW_STEPS: FlowStepId[] = [
-  "game-setup",
+  "game-context",
   "zone-confirm",
   "zone-collection",
   "enrichment"
 ];
 
 export const FLOW_STEP_LABELS: Record<FlowStepId, string> = {
-  "game-setup": "Game Setup",
+  "game-context": "Game Context",
   "zone-confirm": "Confirm Zones",
   "zone-collection": "Add Cards",
   enrichment: "Enrich & Submit"

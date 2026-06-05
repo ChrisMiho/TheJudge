@@ -30,9 +30,9 @@ function makeCard(id: string, name = id): ZoneCardItem {
 // ── canAdvance ──────────────────────────────────────────────────────────────
 
 describe("canAdvance", () => {
-  it("game-setup: returns true when players have valid life totals", () => {
+  it("game-context: returns true when players have valid life totals", () => {
     expect(
-      canAdvance("game-setup", {
+      canAdvance("game-context", {
         gameContext: {
           turnPhase: "stack_resolving",
           players: [
@@ -44,9 +44,9 @@ describe("canAdvance", () => {
     ).toBe(true);
   });
 
-  it("game-setup: returns false when fewer than 2 players", () => {
+  it("game-context: returns false when fewer than 2 players", () => {
     expect(
-      canAdvance("game-setup", {
+      canAdvance("game-context", {
         gameContext: {
           turnPhase: "stack_resolving",
           players: [{ label: "Player 1", lifeTotal: 20 }]
@@ -55,9 +55,9 @@ describe("canAdvance", () => {
     ).toBe(false);
   });
 
-  it("game-setup: returns false when a player has NaN life total", () => {
+  it("game-context: returns false when a player has NaN life total", () => {
     expect(
-      canAdvance("game-setup", {
+      canAdvance("game-context", {
         gameContext: {
           turnPhase: "stack_resolving",
           players: [
@@ -69,13 +69,13 @@ describe("canAdvance", () => {
     ).toBe(false);
   });
 
-  it("game-setup: returns false when players is undefined", () => {
-    expect(canAdvance("game-setup", { gameContext: { turnPhase: "stack_resolving" } })).toBe(false);
+  it("game-context: returns false when players is undefined", () => {
+    expect(canAdvance("game-context", { gameContext: { turnPhase: "stack_resolving" } })).toBe(false);
   });
 
-  it("game-setup: returns false when turnPhase is undefined", () => {
+  it("game-context: returns false when turnPhase is undefined", () => {
     expect(
-      canAdvance("game-setup", {
+      canAdvance("game-context", {
         gameContext: {
           players: [
             { label: "Player 1", lifeTotal: 20 },

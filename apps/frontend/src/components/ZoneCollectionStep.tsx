@@ -8,8 +8,8 @@ import {
   removeZoneCardById,
   validateZoneCardAdd
 } from "../lib/zoneCards";
-import { useAutocompleteKeyboard } from "../lib/useAutocompleteKeyboard";
-import { useAutocompleteSuggestions } from "../lib/useAutocompleteSuggestions";
+import { useAutocompleteKeyboard } from "../hooks/useAutocompleteKeyboard";
+import { useAutocompleteSuggestions } from "../hooks/useAutocompleteSuggestions";
 import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { ZoneCardPicker } from "./ZoneCardPicker";
 

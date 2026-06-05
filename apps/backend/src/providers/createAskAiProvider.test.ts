@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { preparePromptInput } from "../promptPreparation.js";
+import { preparePromptInput } from "../prompt/preparation.js";
 import { createAskAiRequest } from "../test-utils/requestBuilders.js";
 import { createAskAiProvider } from "./createAskAiProvider.js";
 

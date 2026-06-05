@@ -1,5 +1,5 @@
-import type { AskAiRequest, ContextTarget, PromptContext, PromptContextStackItem, PromptContextStackTarget, PromptContextZoneItem, ZoneId } from "./types.js";
-import { normalizeCardText, normalizeQuestion, normalizeWhitespace } from "./promptNormalization.js";
+import type { AskAiRequest, ContextTarget, PromptContext, PromptContextStackItem, PromptContextStackTarget, PromptContextZoneItem, ZoneId } from "../types/index.js";
+import { normalizeCardText, normalizeQuestion, normalizeWhitespace } from "./normalization.js";
 
 const fallbackQuestion = "Resolve the stack";
 
@@ -82,7 +82,7 @@ function normalizeLifeTotal(value: number): number {
   return Number.isFinite(value) ? Math.trunc(value) : 20;
 }
 
-function normalizeZoneItem(card: import("./types.js").ZoneCardItem): PromptContextZoneItem | null {
+function normalizeZoneItem(card: import("../types/index.js").ZoneCardItem): PromptContextZoneItem | null {
   const name = normalizeWhitespace(card.name);
   if (name.length === 0) return null;
   const owner = card.owner;
@@ -112,7 +112,7 @@ export function buildPromptContext(payload: AskAiRequest): PromptContext {
 
   const stackZoneCards = gameCtx.zones?.stack ?? [];
 
-  const zonesMap = (gameCtx.zones ?? {}) as Record<string, import("./types.js").ZoneCardItem[] | undefined>;
+  const zonesMap = (gameCtx.zones ?? {}) as Record<string, import("../types/index.js").ZoneCardItem[] | undefined>;
 
   const populatedZones = NON_STACK_CANONICAL_ZONE_ORDER
     .map((zoneId) => {

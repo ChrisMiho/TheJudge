@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readServerConfig } from "./config.js";
+import { readServerConfig } from "./index.js";
 
 describe("backend env config", () => {
   it("uses local defaults when env is not set", () => {

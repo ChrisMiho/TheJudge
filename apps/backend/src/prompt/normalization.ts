@@ -1,5 +1,5 @@
-import { MTG_PROMPT_REFERENCE } from "./promptMtgReference.js";
-import type { PlayerLabel, PromptContext, ZoneId } from "./types.js";
+import { MTG_PROMPT_REFERENCE } from "./mtgReference.js";
+import type { PlayerLabel, PromptContext, ZoneId } from "../types/index.js";
 
 export const MAX_ORACLE_TEXT_CHARS = 480;
 export const MAX_CONTEXT_DETAILS_CHARS = 220;

@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { CardMetadataItem } from "../types";
-import { getSuggestions } from "./search";
+import { getSuggestions } from "../lib/search";
 import { AUTOCOMPLETE_DEBOUNCE_MS, useAutocompleteSuggestions } from "./useAutocompleteSuggestions";
 
 const cards: CardMetadataItem[] = [

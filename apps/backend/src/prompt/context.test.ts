@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { buildPromptContext } from "./promptContext.js";
-import { MAX_ORACLE_TEXT_CHARS } from "./promptNormalization.js";
-import type { AskAiRequest } from "./types.js";
+import { buildPromptContext } from "./context.js";
+import { MAX_ORACLE_TEXT_CHARS } from "./normalization.js";
+import type { AskAiRequest } from "../types/index.js";
 
 function createStackZoneCards(size: number): NonNullable<AskAiRequest["gameContext"]["zones"]["stack"]> {
   return Array.from({ length: size }, (_, index) => ({

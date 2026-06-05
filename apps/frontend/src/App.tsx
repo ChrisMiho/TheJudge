@@ -4,9 +4,17 @@ import { ZoneCollectionStep } from "./components/ZoneCollectionStep";
 import { ZoneConfirmStep } from "./components/ZoneConfirmStep";
 import { logFrontendDebug } from "./lib/debugLogger";
 import { apiBaseUrl } from "./lib/env";
-import { buildAskAiRequest, canAdvance, DEFAULT_TURN_PHASE, mergeSelectedZonesOnPhaseChange } from "./lib/contextFlow";
+import {
+  buildAskAiRequest,
+  canAdvance,
+  DEFAULT_TURN_PHASE,
+  getNextStep,
+  getPreviousStep,
+  mergeSelectedZonesOnPhaseChange,
+  type FlowStepId
+} from "./lib/contextFlow";
 import { formatPlayerDisplayLabel } from "./lib/playerLabels";
-import { useAskAiSubmitOrchestration } from "./lib/useAskAiSubmitOrchestration";
+import { useAskAiSubmitOrchestration } from "./hooks/useAskAiSubmitOrchestration";
 import type {
   CardMetadataItem,
   GameContext,
@@ -38,12 +46,10 @@ const TURN_PHASE_OPTIONS: Array<{ value: TurnPhase; label: string }> = [
   { value: "stack_resolving", label: "Stack Resolving" }
 ];
 
-type FlowStep = "game-context" | "zone-confirm" | "zone-collection" | "enrichment";
-
 export default function App() {
   const [cardMetadata, setCardMetadata] = useState<CardMetadataItem[]>([]);
   const [isMetadataLoading, setIsMetadataLoading] = useState(true);
-  const [flowStep, setFlowStep] = useState<FlowStep>("game-context");
+  const [flowStep, setFlowStep] = useState<FlowStepId>("game-context");
   const [activePlayerCount, setActivePlayerCount] = useState(MIN_PLAYERS);
   const [lifeTotalsByPlayer, setLifeTotalsByPlayer] = useState<Record<PlayerLabel, string>>(() =>
     PLAYER_OPTIONS.reduce<Record<PlayerLabel, string>>(
@@ -205,13 +211,19 @@ export default function App() {
     setSelectedZones((current) => mergeSelectedZonesOnPhaseChange(current, turnPhase, confirmedPhase));
     setConfirmedPhase(turnPhase);
 
-    setFlowStep("zone-confirm");
+    const nextStep = getNextStep("game-context");
+    if (nextStep) {
+      setFlowStep(nextStep);
+    }
     flashStatus("Game context saved.");
   }
 
   function confirmZoneSelection(): void {
     setGameContext((current) => (current ? { ...current, selectedZones } : current));
-    setFlowStep("zone-collection");
+    const nextStep = getNextStep("zone-confirm");
+    if (nextStep) {
+      setFlowStep(nextStep);
+    }
   }
 
   function finishZoneCollection(): void {
@@ -229,7 +241,10 @@ export default function App() {
           }
         : current
     );
-    setFlowStep("enrichment");
+    const nextStep = getNextStep("zone-collection");
+    if (nextStep) {
+      setFlowStep(nextStep);
+    }
   }
 
   async function handleDecryptStack(event: FormEvent): Promise<void> {
@@ -450,7 +465,12 @@ export default function App() {
             current.includes(zone) ? current.filter((z) => z !== zone) : [...current, zone]
           )
         }
-        onBack={() => setFlowStep("game-context")}
+        onBack={() => {
+          const previousStep = getPreviousStep("zone-confirm");
+          if (previousStep) {
+            setFlowStep(previousStep);
+          }
+        }}
         onContinue={confirmZoneSelection}
         statusMessage={statusMessage}
       />
@@ -472,7 +492,12 @@ export default function App() {
         activePlayer={activePlayer}
         activePlayers={activePlayers}
         displayNamesByPlayer={displayNamesByPlayer}
-        onBack={() => setFlowStep("zone-confirm")}
+        onBack={() => {
+          const previousStep = getPreviousStep("zone-collection");
+          if (previousStep) {
+            setFlowStep(previousStep);
+          }
+        }}
         onContinue={finishZoneCollection}
         canContinue={canContinueCollection}
         onFlashStatus={flashStatus}
@@ -490,7 +515,12 @@ export default function App() {
       question={question}
       onQuestionChange={setQuestion}
       onDecryptStack={handleDecryptStack}
-      onBack={() => setFlowStep("zone-collection")}
+      onBack={() => {
+        const previousStep = getPreviousStep("enrichment");
+        if (previousStep) {
+          setFlowStep(previousStep);
+        }
+      }}
       canDecrypt={canAdvance("enrichment", {
         gameContext: { selectedZones, zones: zoneCardsByZone }
       })}

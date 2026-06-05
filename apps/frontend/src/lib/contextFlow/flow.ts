@@ -45,7 +45,7 @@ export function hasAtLeastOneCardInSelectedZones(
  */
 export function canAdvance(step: FlowStepId, state: FlowNavigationState): boolean {
   switch (step) {
-    case "game-setup":
+    case "game-context":
       return (
         Array.isArray(state.gameContext.players) &&
         state.gameContext.players.length >= 2 &&
