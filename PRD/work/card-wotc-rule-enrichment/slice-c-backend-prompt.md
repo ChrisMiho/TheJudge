@@ -27,16 +27,16 @@ Export at minimum:
 
 ### Wire into app bootstrap
 
-- [`apps/backend/src/index.ts`](../../../apps/backend/src/index.ts) or [`createApp`](../../../apps/backend/src/app.ts): load index from default path `apps/backend/data/cardRulingsByOracleId.json` (resolve relative to repo / `import.meta` / `process.cwd()` consistently with project conventions).
+- [`apps/backend/src/index.ts`](../../../apps/backend/src/index.ts) or [`createApp`](../../../apps/backend/src/app/createApp.ts): load index from default path `apps/backend/data/cardRulingsByOracleId.json` (resolve relative to repo / `import.meta` / `process.cwd()` consistently with project conventions).
 - Pass index into `preparePromptInput` via `AppOptions` (same pattern as `askAiProvider`; allow test injection).
 
-### `preparePromptInput` ([`promptPreparation.ts`](../../../apps/backend/src/promptPreparation.ts))
+### `preparePromptInput` ([`prompt/preparation.ts`](../../../apps/backend/src/prompt/preparation.ts))
 
 1. `buildPromptContext(request)` — unchanged.
 2. Resolve rulings for context.
 3. `buildPromptText(context, { rulings: resolved })` — extend signature as needed.
 
-### `buildPromptText` ([`promptNormalization.ts`](../../../apps/backend/src/promptNormalization.ts))
+### `buildPromptText` ([`prompt/normalization.ts`](../../../apps/backend/src/prompt/normalization.ts))
 
 - Add `formatOfficialRulingsSection(cards, resolved): string`.
 - Insert after zone sections, before `SCOPE` / `QUESTION`.
@@ -54,7 +54,7 @@ Use existing truncation helper / `...(truncated)` suffix.
 
 ### Diagnostics (optional)
 
-Extend `PromptDiagnostics` with `rulingsSectionChars`, `rulingsCardCount` if useful for logging in [`app.ts`](../../../apps/backend/src/app.ts).
+Extend `PromptDiagnostics` with `rulingsSectionChars`, `rulingsCardCount` if useful for logging in [`routes/askAi.ts`](../../../apps/backend/src/routes/askAi.ts).
 
 ### Degraded behavior
 
@@ -67,7 +67,7 @@ Extend `PromptDiagnostics` with `rulingsSectionChars`, `rulingsCardCount` if use
 - Unit: `collectCardsForRulings` order and dedup (multi-zone fixture).
 - Unit: caps truncate comments and limit count per card.
 - Unit: `formatOfficialRulingsSection` golden string for small fixture index.
-- Update [`promptNormalization.test.ts`](../../../apps/backend/src/promptNormalization.test.ts) near-cap cases if needed.
+- Update [`prompt/normalization.test.ts`](../../../apps/backend/src/prompt/normalization.test.ts) near-cap cases if needed.
 - Eval harness: update `*.golden.txt` only where fixture cards have WotC entries in committed artifact.
 
 ## Acceptance criteria
@@ -82,9 +82,10 @@ Extend `PromptDiagnostics` with `rulingsSectionChars`, `rulingsCardCount` if use
 
 - `apps/backend/src/cardRulings.ts` (new)
 - `apps/backend/src/cardRulings.test.ts` (new)
-- [`apps/backend/src/promptPreparation.ts`](../../../apps/backend/src/promptPreparation.ts)
-- [`apps/backend/src/promptNormalization.ts`](../../../apps/backend/src/promptNormalization.ts)
-- [`apps/backend/src/app.ts`](../../../apps/backend/src/app.ts)
+- [`apps/backend/src/prompt/preparation.ts`](../../../apps/backend/src/prompt/preparation.ts)
+- [`apps/backend/src/prompt/normalization.ts`](../../../apps/backend/src/prompt/normalization.ts)
+- [`apps/backend/src/routes/askAi.ts`](../../../apps/backend/src/routes/askAi.ts)
+- [`apps/backend/src/app/createApp.ts`](../../../apps/backend/src/app/createApp.ts)
 - [`apps/backend/src/index.ts`](../../../apps/backend/src/index.ts)
 - [`apps/backend/src/eval/fixtures/`](../../../apps/backend/src/eval/fixtures/) (goldens as needed)
 

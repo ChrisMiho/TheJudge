@@ -4,6 +4,8 @@
 
 TheJudge already sends card `oracleText` and game context from the frontend to `POST /api/ask-ai`. This work adds **published WotC Oracle rulings** as additional **reference text** in the backend-built LLM prompt, keyed by the same `cardId` (Scryfall `oracle_id`) used in [`scripts/build-card-metadata.mjs`](../../../scripts/build-card-metadata.mjs).
 
+This plan was drafted before the current refinement workflow. Use [DESIGN-BRIEF.md](DESIGN-BRIEF.md) as the refinement backfill, then run `thejudge-refinement` and `thejudge-quality-check` before implementing the slices.
+
 Goals:
 
 - Improve model grounding on card-specific Oracle rulings without changing the API contract or frontend flow.
@@ -35,9 +37,9 @@ sequenceDiagram
 
 ### Request path (unchanged endpoint)
 
-1. Frontend posts `AskAiRequest` to **`POST /api/ask-ai`** ([`apps/backend/src/app.ts`](../../../apps/backend/src/app.ts)).
+1. Frontend posts `AskAiRequest` to **`POST /api/ask-ai`** ([`apps/backend/src/routes/askAi.ts`](../../../apps/backend/src/routes/askAi.ts)).
 2. Zod validation (unchanged).
-3. `preparePromptInput(request)` ([`apps/backend/src/promptPreparation.ts`](../../../apps/backend/src/promptPreparation.ts)):
+3. `preparePromptInput(request)` ([`apps/backend/src/prompt/preparation.ts`](../../../apps/backend/src/prompt/preparation.ts)):
    - `buildPromptContext(request)` — normalize stack/zones (unchanged).
    - **New:** collect unique `cardId`s from context; lookup capped WotC rulings from in-memory index.
    - `buildPromptText(context, rulings)` — append rulings section (unchanged response: `{ answer }`).
@@ -65,12 +67,12 @@ No changes to `AskAiRequest` shape for this feature.
 
 ### Scripts (target state)
 
-- `npm run data:build` — runs card metadata build **and** rulings trim (B can run without re-download if raw exists).
+- `npm run data:build` — runs card metadata build **and** rulings trim. B can run without re-download if raw `rulings.json` exists; on clean checkout, it should preserve or validate the committed `cardRulingsByOracleId.json` artifact rather than requiring a network download.
 - `npm run data:refresh` — downloads Scryfall bulks (after approval) then `data:build`.
 
 ## Prompt format spec
 
-**Placement:** after all `ZONE:` blocks, before `SCOPE` and `QUESTION` in [`buildPromptText`](../../../apps/backend/src/promptNormalization.ts).
+**Placement:** after all `ZONE:` blocks, before `SCOPE` and `QUESTION` in [`buildPromptText`](../../../apps/backend/src/prompt/normalization.ts).
 
 **Omit when empty:** if no submitted card has rulings in the index, skip the entire section.
 
@@ -152,4 +154,4 @@ If not approved, proceed only with slices B/C/D using an already-present raw `ru
 
 - Scryfall bulk data: https://scryfall.com/docs/api/bulk-data (type `rulings`)
 - Existing metadata: [`scripts/build-card-metadata.mjs`](../../../scripts/build-card-metadata.mjs), [`scripts/refresh-scryfall-data.mjs`](../../../scripts/refresh-scryfall-data.mjs)
-- Prompt assembly: [`apps/backend/src/promptPreparation.ts`](../../../apps/backend/src/promptPreparation.ts), [`apps/backend/src/promptNormalization.ts`](../../../apps/backend/src/promptNormalization.ts)
+- Prompt assembly: [`apps/backend/src/prompt/preparation.ts`](../../../apps/backend/src/prompt/preparation.ts), [`apps/backend/src/prompt/normalization.ts`](../../../apps/backend/src/prompt/normalization.ts)

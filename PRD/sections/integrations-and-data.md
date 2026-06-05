@@ -8,6 +8,7 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - Styling: Tailwind CSS
 - State: React state
 - Card Data: local cached Scryfall-derived metadata
+- Card Rulings: static Scryfall-derived WotC rulings artifact for backend prompt enrichment
 - Images: image URLs, lazy-loaded
 - Backend: Node.js + TypeScript
 - API Framework: Express or Fastify
@@ -196,6 +197,15 @@ Purpose:
 - do not cache all card images in the core product
 - load images on demand
 
+## Rulings Data Strategy
+- WotC rulings enrichment uses Scryfall bulk type `rulings`
+- raw Scryfall rulings bulk data is gitignored and must not be committed
+- Scryfall download or refresh requires explicit human approval before the command runs
+- the committed backend artifact is a trimmed map keyed by Scryfall `oracle_id`
+- the trimmed artifact includes only rows where `source === "wotc"` and the `oracle_id` exists in the committed card metadata `cardId` set
+- the backend loads the committed artifact at startup and omits rulings enrichment if the artifact is missing or has no matches
+- runtime Scryfall fetches are out of scope for the core product
+
 ## AI Prompt Context Rules
 The backend should include:
 - final user question
@@ -207,6 +217,7 @@ The backend should include:
 - mana cost and mana value for each card
 - mana spent per stack item (fallback to `manaValue` when omitted)
 - type line with parsed supertypes/subtypes and colors
+- published WotC Oracle rulings for submitted cards when available from the static backend artifact
 - static MTG reference block
 - merged scope sentence for unselected zones and selected-but-empty zones
 - instructions to explain reasoning
@@ -227,6 +238,14 @@ The backend must not add:
 - commander-specific validation
 - legality engine logic
 - board-state simulation logic
+
+WotC rulings prompt enrichment must:
+- be omitted entirely when no submitted card has matching WotC rulings
+- include only cards present in the submitted `gameContext`
+- preserve submitted card ordering, including bottom-to-top stack order
+- avoid printing `cardId` or `oracle_id` in the model-facing prompt text
+- use per-card and whole-section caps so `MAX_PROMPT_CHAR_BUDGET` remains authoritative
+- appear after populated zone sections and before `SCOPE` and `QUESTION`
 
 ## Delivery Strategy
 

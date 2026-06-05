@@ -12,7 +12,7 @@ flowchart LR
   K[thejudge-kickoff] --> R[thejudge-refinement]
   R --> Q[thejudge-quality-check]
   Q --> M[thejudge-map-out]
-  M --> I[implementation sessions]
+  M --> I[thejudge-implement]
   I --> C[thejudge-cleanup]
 ```
 
@@ -31,7 +31,8 @@ flowchart LR
 - `Attach thejudge-refinement for PRD/work/<slug>/.`
 - `Attach thejudge-quality-check for PRD/work/<slug>/.`
 - `Attach thejudge-map-out for PRD/work/<slug>/.`
-- `Implement slice A from PRD/work/<slug>/.`
+- `Attach thejudge-implement for PRD/work/<slug>/ slice A.`
+- `Attach thejudge-implement for PRD/work/<slug>/ next slice.`
 - `Attach thejudge-cleanup for PRD/work/<slug>/.`
 
 ## Slice Doc Template

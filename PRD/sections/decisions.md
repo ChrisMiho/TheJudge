@@ -351,3 +351,22 @@
   - REQ-019
 - Notes:
   - supersedes DEC-009 where it describes an unconditional stack fallback
+
+### DEC-029
+- Decision: Published WotC Oracle rulings may enrich backend prompts for submitted cards without changing the product API or UI.
+- Status: confirmed
+- Context: TheJudge already sends card oracle text and structured game context to the backend prompt. Card-specific WotC rulings can improve grounding for timing, replacement effects, triggered abilities, and card-specific exceptions while preserving the assistant's non-authoritative scope.
+- Impact:
+  - WotC rulings enrichment is prompt-only and backend-only
+  - `POST /api/ask-ai` request and response shapes remain unchanged
+  - no frontend rulings UI or product-facing rulings endpoint is added
+  - rulings are sourced from Scryfall bulk type `rulings`, filtered to `source === "wotc"`, and intersected with the committed card metadata oracle ID set
+  - raw Scryfall rulings bulk data is not committed; a trimmed static artifact may be committed and loaded at backend startup
+  - missing rulings data degrades by omitting the prompt section
+  - existing prompt budget controls remain authoritative and rulings must be capped to fit within them
+- Related requirements:
+  - REQ-012
+  - REQ-013
+  - REQ-019
+- Notes:
+  - this decision does not make the product an official judge or rules engine

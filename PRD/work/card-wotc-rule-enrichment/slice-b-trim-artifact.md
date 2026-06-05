@@ -45,7 +45,8 @@ Transform the raw Scryfall rulings bulk into a small, committed JSON map keyed b
 ### Root `package.json`
 
 - `data:build` runs metadata build **and** `build-card-rulings.mjs`.
-- If raw `rulings.json` is missing, `build-card-rulings` should fail with a clear message pointing to slice A (unless committed artifact already satisfies slice C — prefer failing loudly for fresh clones).
+- If raw `rulings.json` is missing but the committed artifact already exists, `build-card-rulings` should preserve or validate that artifact so `npm run data:build` works on clean checkout without network access.
+- If both raw `rulings.json` and the committed artifact are missing, `build-card-rulings` should fail with a clear message pointing to slice A.
 
 ### Prerequisite: metadata oracle set
 
