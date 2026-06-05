@@ -52,4 +52,4 @@ Do not propose or implement:
 - do not add hidden-state assumptions beyond documented prompt guidance
 - do not add rules-validation behavior under the label of prompt enrichment
 - do not change `AskAiRequest` shape, Zod schemas, or backend prompt assembly (`buildPromptContext`, `buildPromptText`) without a new confirmed decision in `sections/decisions.md`
-- do not relax `MAX_PROMPT_CHAR_BUDGET` or bypass prompt diagnostics to silence test failures; update eval goldens only for intentional behavior changes
+- `MAX_PROMPT_CHAR_BUDGET` is **35,000** (DEC-030); do not change it or bypass prompt diagnostics to silence test failures without a new confirmed decision; update eval goldens only for intentional behavior changes

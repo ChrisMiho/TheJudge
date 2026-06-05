@@ -65,6 +65,18 @@ flowchart LR
 - `<path>`
 ```
 
+Final slice docs (or cleanup) may append:
+
+```markdown
+## Ship gates
+
+- [ ] Slice acceptance criteria satisfied and verified
+- [ ] Tests updated; `npm run quality:check` green for touched areas
+- [ ] Public contract unchanged unless slice scoped a change
+- [ ] No secrets committed
+- [ ] Durable outcomes promoted; `PRD/work/<slug>/` ready to delete
+```
+
 ## Quality-Check Checklist
 
 - No contradictions with active `DEC-###` entries.

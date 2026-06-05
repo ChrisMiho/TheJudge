@@ -1,11 +1,11 @@
 fixtureId | score | checks
 ---|---|---
-ambiguous-wording | 10/10 | PASS
-battlefield-skip | 10/10 | PASS
-full-context | 10/10 | PASS
-mana-spent-explicit-fallback | 10/10 | PASS
-multi-step-stack | 10/10 | PASS
-multi-zone | 10/10 | PASS
-near-cap-stack | 10/10 | PASS
-simple-interaction | 10/10 | PASS
-zero-cards | 10/10 | PASS
+ambiguous-wording | 13/13 | PASS
+battlefield-skip | 13/13 | PASS
+full-context | 13/13 | PASS
+mana-spent-explicit-fallback | 13/13 | PASS
+multi-step-stack | 13/13 | PASS
+multi-zone | 13/13 | PASS
+near-cap-stack | 13/13 | PASS
+simple-interaction | 13/13 | PASS
+zero-cards | 13/13 | PASS

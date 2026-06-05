@@ -20,12 +20,21 @@ User provides work slug (or `prd-workflow-skills` for this rollout's self-closeo
 
 1. `PRD/work/<slug>/README.md` + `GAMEPLAN.md` + slice docs
 2. `PRD/instructions/doc-lifecycle.md`
-3. `PRD/stories/DEFINITION-OF-DONE.md`
-4. Relevant codebase paths from slice implementation maps
+3. Relevant codebase paths from slice implementation maps
+
+## Ship checklist
+
+Apply during process step 1:
+
+- Slice acceptance criteria satisfied and verified
+- Tests updated; `npm run quality:check` green for touched areas
+- Public contract unchanged unless a slice scoped a change
+- No secrets committed
+- Durable outcomes promoted; `PRD/work/<slug>/` ready to delete
 
 ## Process
 
-1. Compare each slice acceptance criteria vs codebase — mark done/pending.
+1. Compare each slice acceptance criteria vs codebase — mark done/pending; run ship checklist.
 2. Promote durable outcomes to `PRD/sections/decisions.md` and affected sections.
 3. **Write receipt first** (see below).
 4. Delete `PRD/work/<slug>/` entirely if fully shipped.

@@ -4,6 +4,7 @@ import { createErrorHandler } from "./errorHandler.js";
 import { createAppLogger, type AppLogger } from "../logging.js";
 import { mockAskAiProvider } from "../providers/mockAskAiProvider.js";
 import type { RulingEntry } from "../cardRulings.js";
+import type { GameRulesTopic } from "../gameRules.js";
 import type { AskAiProvider } from "../providers/askAiProvider.js";
 import { registerAskAiRoute } from "../routes/askAi.js";
 import { registerHealthRoute } from "../routes/health.js";
@@ -15,6 +16,7 @@ export type AppOptions = {
   payloadLoggingEnabled?: boolean;
   logger?: AppLogger;
   cardRulingsIndex?: Map<string, RulingEntry[]>;
+  gameRulesTopics?: GameRulesTopic[];
 };
 
 export function createApp(options: AppOptions = {}) {
@@ -32,7 +34,8 @@ export function createApp(options: AppOptions = {}) {
     askAiProvider,
     logger,
     payloadLoggingEnabled: isPayloadLoggingEnabled,
-    cardRulingsIndex: options.cardRulingsIndex
+    cardRulingsIndex: options.cardRulingsIndex,
+    gameRulesTopics: options.gameRulesTopics
   });
 
   app.use(createErrorHandler(logger, isDebug));

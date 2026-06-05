@@ -1565,4 +1565,31 @@ describe("Slice-05: zone collection UI", () => {
     await selectZoneTab(user, "Hand");
     expect(screen.getByText("1. Opt")).toBeInTheDocument();
   });
+
+  it("shows waiting panel while submitting and hides the submit form", async () => {
+    let resolveAskAi!: (value: Response) => void;
+    fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      const url = getUrlFromRequest(input);
+      if (url === "/data/cardMetadata.json") return jsonResponse(metadataFixture);
+      if (url.endsWith("/api/ask-ai") && init?.method === "POST") {
+        return new Promise<Response>((resolve) => { resolveAskAi = resolve; });
+      }
+      return jsonResponse({ error: "not found" }, 404);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+    await addCardToStack(user, "opt", "Opt");
+    await clickDecryptStack(user);
+
+    expect(document.querySelector("[aria-live='polite']")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Decrypt Stack" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Context enrichment" })).toBeInTheDocument();
+
+    resolveAskAi(jsonResponse({ answer: "Mock answer" }));
+    await screen.findByText("Mock answer");
+    expect(document.querySelector("[aria-live='polite']")).not.toBeInTheDocument();
+  });
 });

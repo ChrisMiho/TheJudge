@@ -9,8 +9,11 @@ const bulkDataEndpoint = "https://api.scryfall.com/bulk-data";
 const sourceOutputPath = path.resolve("apps/frontend/data/scryfall/default-cards.json");
 const rulingsOutputPath = path.resolve("apps/backend/data/scryfall/rulings.json");
 const metadataOutputPath = path.resolve("apps/frontend/public/data/cardMetadata.json");
+const comprehensiveRulesPageUrl = "https://magic.wizards.com/en/rules";
+const comprehensiveRulesOutputPath = path.resolve("apps/backend/data/cr/source.txt");
 const tempDownloadPath = `${sourceOutputPath}.tmp`;
 const rulingsTempDownloadPath = `${rulingsOutputPath}.tmp`;
+const comprehensiveRulesTempDownloadPath = `${comprehensiveRulesOutputPath}.tmp`;
 const bulkDownloadConfigs = [
   {
     type: "default_cards",
@@ -33,6 +36,19 @@ export function createScryfallRequestOptions() {
       "User-Agent": "TheJudge/0.0.1 (https://github.com/local/thejudge)"
     }
   };
+}
+
+export function createComprehensiveRulesDownloadTarget(downloadUrl) {
+  return {
+    label: "Comprehensive Rules TXT",
+    downloadUrl,
+    outputPath: comprehensiveRulesOutputPath,
+    tempPath: comprehensiveRulesTempDownloadPath
+  };
+}
+
+export function shouldRunDataBuildAfterRefresh(successfulDownloads) {
+  return successfulDownloads > 0;
 }
 
 function ensureParentDirectory(filePath) {
@@ -94,6 +110,43 @@ async function downloadBulkTarget(target) {
   fs.renameSync(tempPath, outputPath);
 }
 
+async function downloadTextTarget(target) {
+  const { downloadUrl, label, outputPath, tempPath } = target;
+  const response = await fetch(downloadUrl, createScryfallRequestOptions());
+  if (!response.ok || !response.body) {
+    throw new Error(`Could not download ${label}: ${response.status} ${response.statusText}`);
+  }
+
+  ensureParentDirectory(outputPath);
+  await pipeline(Readable.fromWeb(response.body), fs.createWriteStream(tempPath));
+  fs.renameSync(tempPath, outputPath);
+}
+
+export function findComprehensiveRulesTxtUrl(pageHtml, baseUrl = comprehensiveRulesPageUrl) {
+  const hrefPattern = /href=["']([^"']+\.txt(?:\?[^"']*)?)["']/gi;
+  const matches = [...pageHtml.matchAll(hrefPattern)];
+  const preferredMatch =
+    matches.find((match) => /comprehensive|rules/i.test(match[1])) ??
+    matches.find((match) => /magic\.wizards\.com|media\.wizards\.com/i.test(match[1])) ??
+    matches[0];
+
+  if (!preferredMatch) {
+    throw new Error("Could not find a Comprehensive Rules TXT link on the WotC rules page.");
+  }
+
+  return new URL(preferredMatch[1], baseUrl).toString();
+}
+
+async function fetchComprehensiveRulesDownloadTarget() {
+  const response = await fetch(comprehensiveRulesPageUrl, createScryfallRequestOptions());
+  if (!response.ok) {
+    throw new Error(`Could not fetch WotC rules page: ${response.status} ${response.statusText}`);
+  }
+
+  const pageHtml = await response.text();
+  return createComprehensiveRulesDownloadTarget(findComprehensiveRulesTxtUrl(pageHtml));
+}
+
 function runDataBuild() {
   return new Promise((resolve, reject) => {
     const child = spawn("npm", ["run", "data:build"], {
@@ -113,22 +166,50 @@ function runDataBuild() {
 }
 
 async function main() {
+  let successfulDownloads = 0;
+
   console.log("Fetching Scryfall bulk-data metadata...");
-  const targets = await fetchBulkDownloadTargets();
+  try {
+    const targets = await fetchBulkDownloadTargets();
 
-  for (const target of targets) {
-    console.log(`Found ${target.label} feed (updated: ${target.updatedAt}).`);
-    if (target.estimatedSize !== null) {
-      console.log(`Estimated ${target.label} source size: ${formatBytes(target.estimatedSize)}.`);
+    for (const target of targets) {
+      console.log(`Found ${target.label} feed (updated: ${target.updatedAt}).`);
+      if (target.estimatedSize !== null) {
+        console.log(`Estimated ${target.label} source size: ${formatBytes(target.estimatedSize)}.`);
+      }
+
+      try {
+        console.log(`Downloading ${target.label} to ${target.outputPath}...`);
+        await downloadBulkTarget(target);
+        successfulDownloads += 1;
+        const downloadedBytes = fs.statSync(target.outputPath).size;
+        console.log(`Download complete for ${target.label}: ${formatBytes(downloadedBytes)} at ${target.outputPath}.`);
+      } catch (error) {
+        console.warn(`Warning: skipped ${target.label} download. ${error.message}`);
+      }
     }
-
-    console.log(`Downloading ${target.label} to ${target.outputPath}...`);
-    await downloadBulkTarget(target);
-    const downloadedBytes = fs.statSync(target.outputPath).size;
-    console.log(`Download complete for ${target.label}: ${formatBytes(downloadedBytes)} at ${target.outputPath}.`);
+  } catch (error) {
+    console.warn(`Warning: skipped Scryfall bulk downloads. ${error.message}`);
   }
 
-  console.log("Running metadata transform (npm run data:build)...");
+  try {
+    console.log("Fetching WotC Comprehensive Rules TXT target...");
+    const target = await fetchComprehensiveRulesDownloadTarget();
+    console.log(`Downloading ${target.label} to ${target.outputPath}...`);
+    await downloadTextTarget(target);
+    successfulDownloads += 1;
+    const downloadedBytes = fs.statSync(target.outputPath).size;
+    console.log(`Download complete for ${target.label}: ${formatBytes(downloadedBytes)} at ${target.outputPath}.`);
+  } catch (error) {
+    console.warn(`Warning: skipped WotC Comprehensive Rules download. ${error.message}`);
+  }
+
+  if (!shouldRunDataBuildAfterRefresh(successfulDownloads)) {
+    console.warn("No data downloads succeeded; skipping npm run data:build.");
+    return;
+  }
+
+  console.log("Running data transforms (npm run data:build)...");
   await runDataBuild();
 
   if (!fs.existsSync(metadataOutputPath)) {
@@ -146,6 +227,9 @@ if (import.meta.url === invokedPath) {
       if (fs.existsSync(target.tempPath)) {
         fs.rmSync(target.tempPath, { force: true });
       }
+    }
+    if (fs.existsSync(comprehensiveRulesTempDownloadPath)) {
+      fs.rmSync(comprehensiveRulesTempDownloadPath, { force: true });
     }
     console.error(error);
     process.exitCode = 1;

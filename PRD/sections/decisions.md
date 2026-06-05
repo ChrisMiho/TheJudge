@@ -373,3 +373,32 @@
   - REQ-019
 - Notes:
   - this decision does not make the product an official judge or rules engine
+
+### DEC-030
+- Decision: Backend prompts include a curated library of verbatim WotC Comprehensive Rules excerpts on every request, without changing the product API or UI.
+- Status: confirmed
+- Context: Card-specific WotC rulings (DEC-029) do not cover general CR topics such as priority, stack mechanics, layers, and combat keywords. A static committed artifact mirrors the existing card-metadata and rulings pipeline.
+- Impact:
+  - game-rules enrichment is prompt-only and backend-only
+  - `POST /api/ask-ai` request and response shapes remain unchanged
+  - no frontend game-rules UI or product-facing rules endpoint is added
+  - source is WotC Comprehensive Rules TXT from [magic.wizards.com/en/rules](https://magic.wizards.com/en/rules); Scryfall remains the source for cards and per-card rulings only
+  - gitignored source: `apps/backend/data/cr/source.txt`
+  - committed topic manifest: `apps/backend/data/gameRulesTopicManifest.json`
+  - committed artifact: `apps/backend/data/gameRulesByTopic.json`
+  - topic rule numbers and excerpts are curated and human-signed-off during implementation Slice B
+  - current scope includes **all** curated topics on every request; no per-request signal-based selection
+  - `MAX_PROMPT_CHAR_BUDGET` is raised to **35,000**; eval goldens and diagnostics update intentionally
+  - prompt text includes `GAME RULES (reference)` after populated zone sections and before `OFFICIAL RULINGS`, then `SCOPE` and `QUESTION`
+  - disclaimer states rules are shared vocabulary and do not override submitted game state, stack order, zones, targets, notes, or card oracle text
+  - section omitted only when artifact missing or empty (warning logged)
+  - `npm run data:refresh` and `npm run data:build` extend the existing Scryfall pipeline with graceful degradation; agent-run network refresh still requires explicit human approval
+  - larger prompts create active product risk against NFR-002; context-driven topic selection is a deferred mitigation path if latency risk materializes
+- Related requirements:
+  - REQ-012
+  - REQ-013
+  - REQ-019
+  - REQ-022
+- Notes:
+  - static MTG reference block (DEC-025) remains unchanged
+  - this decision does not make the product an official judge or rules engine

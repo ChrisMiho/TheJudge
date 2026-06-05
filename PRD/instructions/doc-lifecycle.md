@@ -20,7 +20,7 @@ These rules govern ephemeral planning markdown under `PRD/` so feature work does
 - Create at most one folder per slice: `PRD/work/<kebab-slug>/`
 - Include `PRD/work/<kebab-slug>/README.md` with `status: active` at the top
 - Do not link scratch folders from root `README.md` or `PRD/README.md` until content is promoted
-- Do not recreate removed patterns: `PRD/analysis/`, `PRD/gameplan/`, feature queues, or story checklists in `PRD/README.md`
+- Do not recreate removed patterns: `PRD/analysis/`, `PRD/gameplan/`, `PRD/stories/`, feature queues, or story checklists in `PRD/README.md`
 
 ## On slice completion
 
@@ -37,4 +37,5 @@ These rules govern ephemeral planning markdown under `PRD/` so feature work does
 
 - Duplicate execution roadmaps outside `sections/`
 - Backlog or story checklists in `PRD/README.md`
+- `PRD/stories/` or other permanent story backlogs under `PRD/`
 - References to out-of-repo Cursor skills as if they were repo source of truth

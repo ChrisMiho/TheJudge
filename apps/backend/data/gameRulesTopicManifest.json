@@ -1,0 +1,117 @@
+[
+  {
+    "id": "abilities-delayed-triggers",
+    "title": "Delayed Triggered Abilities",
+    "ruleNumbers": ["603.7", "603.10"]
+  },
+  {
+    "id": "abilities-trigger-basics",
+    "title": "Triggered Ability Basics",
+    "ruleNumbers": ["603.1", "603.2", "603.3"]
+  },
+  {
+    "id": "abilities-zone-change-triggers",
+    "title": "Zone-Change Triggered Abilities",
+    "ruleNumbers": ["603.6c"]
+  },
+  {
+    "id": "combat-damage-assignment",
+    "title": "Combat Damage Assignment",
+    "ruleNumbers": ["510.1", "702.2c", "702.19a", "702.19d"]
+  },
+  {
+    "id": "combat-declare-attackers",
+    "title": "Declare Attackers",
+    "ruleNumbers": ["508.1", "702.20a"]
+  },
+  {
+    "id": "combat-declare-blockers",
+    "title": "Declare Blockers",
+    "ruleNumbers": ["509.1", "702.9a", "702.9b"]
+  },
+  {
+    "id": "combat-phase-structure",
+    "title": "Combat Phase Structure",
+    "ruleNumbers": ["506.1", "506.3"]
+  },
+  {
+    "id": "copying-spells-abilities",
+    "title": "Copying Spells and Abilities",
+    "ruleNumbers": ["707.10"]
+  },
+  {
+    "id": "damage-basics",
+    "title": "Damage Basics",
+    "ruleNumbers": ["120.1", "120.3"]
+  },
+  {
+    "id": "damage-lifelink-deathtouch",
+    "title": "Lifelink and Deathtouch Damage",
+    "ruleNumbers": ["120.3f", "702.2a", "702.2b", "702.15a", "702.15b", "702.15c"]
+  },
+  {
+    "id": "damage-marked-lethal",
+    "title": "Marked and Lethal Damage",
+    "ruleNumbers": ["120.6"]
+  },
+  {
+    "id": "effects-resolution-targets",
+    "title": "Resolving Targeted Spells and Abilities",
+    "ruleNumbers": ["608.2b"]
+  },
+  {
+    "id": "effects-source-impossible",
+    "title": "Impossible Actions and Sources",
+    "ruleNumbers": ["609.3", "609.7"]
+  },
+  {
+    "id": "layers-order",
+    "title": "Layer Order",
+    "ruleNumbers": ["613.1", "613.1a", "613.1b", "613.1c", "613.1d", "613.1e", "613.1f", "613.1g"]
+  },
+  {
+    "id": "layers-power-toughness",
+    "title": "Power/Toughness Layers",
+    "ruleNumbers": ["613.4", "613.4a", "613.4b", "613.4c"]
+  },
+  {
+    "id": "layers-timestamps-dependencies",
+    "title": "Timestamps and Dependencies",
+    "ruleNumbers": ["613.7", "613.8a"]
+  },
+  {
+    "id": "replacement-effects-basics",
+    "title": "Replacement Effect Basics",
+    "ruleNumbers": ["614.1", "614.5", "614.6"]
+  },
+  {
+    "id": "replacement-etb-effects",
+    "title": "Replacement Effects as Permanents Enter",
+    "ruleNumbers": ["614.12a", "614.12b", "614.12c"]
+  },
+  {
+    "id": "spell-casting-choices",
+    "title": "Casting Spells: Choices and Targets",
+    "ruleNumbers": ["601.2c"]
+  },
+  {
+    "id": "spell-casting-costs",
+    "title": "Casting Spells: Costs and Completion",
+    "ruleNumbers": ["601.2f"]
+  },
+  {
+    "id": "stack-and-priority",
+    "title": "Stack and Priority",
+    "ruleNumbers": ["117.1", "117.3", "117.4", "117.7", "405.1", "405.2"]
+  },
+  {
+    "id": "targets-basics",
+    "title": "Targets",
+    "ruleNumbers": ["115.1", "115.2", "115.10"]
+  },
+  {
+    "id": "zones-basics",
+    "title": "Zones and Zone Changes",
+    "ruleNumbers": ["400.1", "400.2", "400.7"]
+  }
+]

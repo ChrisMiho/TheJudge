@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   createBulkDownloadTargets,
-  createScryfallRequestOptions
+  createComprehensiveRulesDownloadTarget,
+  createScryfallRequestOptions,
+  shouldRunDataBuildAfterRefresh
 } from "../../../../scripts/refresh-scryfall-data.mjs";
 
 describe("Scryfall refresh policy", () => {
@@ -52,5 +54,20 @@ describe("Scryfall refresh policy", () => {
         "User-Agent": expect.stringContaining("TheJudge")
       }
     });
+  });
+
+  it("defines a gitignored WotC Comprehensive Rules TXT download target", () => {
+    expect(createComprehensiveRulesDownloadTarget("https://media.wizards.com/rules.txt")).toEqual({
+      label: "Comprehensive Rules TXT",
+      downloadUrl: "https://media.wizards.com/rules.txt",
+      outputPath: expect.stringContaining("apps/backend/data/cr/source.txt"),
+      tempPath: expect.stringContaining("apps/backend/data/cr/source.txt.tmp")
+    });
+  });
+
+  it("runs local transforms only after at least one refresh download succeeds", () => {
+    expect(shouldRunDataBuildAfterRefresh(0)).toBe(false);
+    expect(shouldRunDataBuildAfterRefresh(1)).toBe(true);
+    expect(shouldRunDataBuildAfterRefresh(3)).toBe(true);
   });
 });

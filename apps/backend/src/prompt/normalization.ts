@@ -1,12 +1,13 @@
 import { MTG_PROMPT_REFERENCE } from "./mtgReference.js";
 import type { ResolvedRulings } from "../cardRulings.js";
+import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
 import type { PlayerLabel, PromptContext, ZoneId } from "../types/index.js";
 
 export const MAX_ORACLE_TEXT_CHARS = 480;
 export const MAX_CONTEXT_DETAILS_CHARS = 220;
 export const MAX_CONTEXT_NOTES_CHARS = 180;
 export const MAX_TARGET_LABEL_CHARS = 120;
-export const MAX_PROMPT_CHAR_BUDGET = 12000;
+export const MAX_PROMPT_CHAR_BUDGET = 35000;
 export const MAX_RULINGS_PER_CARD = 3;
 export const MAX_RULING_COMMENT_CHARS = 480;
 export const MAX_RULINGS_SECTION_CHARS = 2400;
@@ -281,13 +282,34 @@ export type PromptDiagnostics = {
   exceedsBudget: boolean;
   rulingsSectionChars?: number;
   rulingsCardCount?: number;
+  gameRulesSectionChars?: number;
+  gameRulesTopicCount?: number;
 };
 
-export function getPromptDiagnostics(prompt: string, resolvedRulings?: ResolvedRulings): PromptDiagnostics {
+export type GetPromptDiagnosticsOptions = {
+  resolvedRulings?: ResolvedRulings;
+  gameRulesTopics?: GameRulesTopic[];
+  gameRulesSectionChars?: number;
+};
+
+export function getPromptDiagnostics(prompt: string, resolvedRulingsOrOptions?: ResolvedRulings | GetPromptDiagnosticsOptions): PromptDiagnostics {
   const promptChars = estimatePromptChars(prompt);
   const promptBudgetChars = MAX_PROMPT_CHAR_BUDGET;
   const remainingChars = promptBudgetChars - promptChars;
   const utilizationPercent = Math.round((promptChars / promptBudgetChars) * 1000) / 10;
+
+  let resolvedRulings: ResolvedRulings | undefined;
+  let gameRulesTopics: GameRulesTopic[] | undefined;
+  let gameRulesSectionChars: number | undefined;
+
+  if (resolvedRulingsOrOptions && "cards" in resolvedRulingsOrOptions) {
+    resolvedRulings = resolvedRulingsOrOptions;
+  } else if (resolvedRulingsOrOptions) {
+    const opts = resolvedRulingsOrOptions as GetPromptDiagnosticsOptions;
+    resolvedRulings = opts.resolvedRulings;
+    gameRulesTopics = opts.gameRulesTopics;
+    gameRulesSectionChars = opts.gameRulesSectionChars;
+  }
 
   return {
     promptChars,
@@ -301,12 +323,19 @@ export function getPromptDiagnostics(prompt: string, resolvedRulings?: ResolvedR
           rulingsSectionChars: resolvedRulings.sectionChars,
           rulingsCardCount: resolvedRulings.cards.length
         }
+      : {}),
+    ...(gameRulesTopics && gameRulesTopics.length > 0
+      ? {
+          gameRulesSectionChars,
+          gameRulesTopicCount: gameRulesTopics.length
+        }
       : {})
   };
 }
 
 export type BuildPromptTextOptions = {
   rulings?: ResolvedRulings;
+  gameRulesTopics?: GameRulesTopic[];
 };
 
 export function buildPromptText(context: PromptContext, options: BuildPromptTextOptions = {}): string {
@@ -319,6 +348,7 @@ export function buildPromptText(context: PromptContext, options: BuildPromptText
 
   const stackSection = formatStackSection(context);
   const nonStackSections = formatNonStackZoneSections(context);
+  const gameRulesSection = formatGameRulesSection(options.gameRulesTopics ?? []);
   const officialRulingsSection = formatOfficialRulingsSection(options.rulings);
 
   const zoneSections = [stackSection, nonStackSections].filter(Boolean).join("\n\n");
@@ -341,6 +371,10 @@ export function buildPromptText(context: PromptContext, options: BuildPromptText
 
   if (zoneSections.length > 0) {
     sections.push("", zoneSections);
+  }
+
+  if (gameRulesSection.length > 0) {
+    sections.push("", gameRulesSection);
   }
 
   if (officialRulingsSection.length > 0) {

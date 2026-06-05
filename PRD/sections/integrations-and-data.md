@@ -203,10 +203,24 @@ Purpose:
 - Scryfall download or refresh requires explicit human approval before the command runs
 - the committed backend artifact is `apps/backend/data/cardRulingsByOracleId.json`, a trimmed map keyed by Scryfall `oracle_id`
 - the trimmed artifact includes only rows where `source === "wotc"` and the `oracle_id` exists in the committed card metadata `cardId` set
-- `npm run data:build` rebuilds card metadata and the committed rulings artifact from local Scryfall bulk inputs
-- `npm run data:refresh` downloads Scryfall bulk data and then rebuilds local artifacts; agent-run refreshes require explicit human approval before any download command
+- `npm run data:build` rebuilds card metadata, card rulings, and game rules from local inputs
+- `npm run data:refresh` downloads Scryfall bulk data and WotC CR source, then rebuilds local artifacts; agent-run refreshes require explicit human approval before any download command
 - the backend loads the committed artifact at startup and omits rulings enrichment if the artifact is missing or has no matches
 - runtime Scryfall fetches are out of scope for the core product
+
+## Game Rules Data Strategy
+- general game-rules enrichment uses WotC Comprehensive Rules TXT from [magic.wizards.com/en/rules](https://magic.wizards.com/en/rules)
+- Scryfall does not host Comprehensive Rules; cards and per-card rulings remain Scryfall-sourced
+- raw CR source is gitignored at `apps/backend/data/cr/source.txt` and must not be committed
+- WotC CR download or refresh requires explicit human approval before the command runs (same policy as Scryfall refresh)
+- the committed topic manifest is `apps/backend/data/gameRulesTopicManifest.json`
+- the committed backend artifact is `apps/backend/data/gameRulesByTopic.json`, a list of curated topics with verbatim CR excerpts keyed by stable topic `id`
+- topic rule numbers and excerpts are curated and human-signed-off during implementation; the manifest drives `build-game-rules.mjs` extraction
+- `npm run data:build` rebuilds card metadata, card rulings, and game rules from local inputs
+- `npm run data:refresh` downloads Scryfall bulk data and WotC CR source, then rebuilds local artifacts; agent-run refreshes require explicit human approval before any download command
+- build scripts degrade gracefully: missing CR source or failed extract keeps the prior committed artifact and exits 0
+- the backend loads the committed artifact at startup and omits game-rules enrichment if the artifact is missing or empty
+- runtime CR fetches are out of scope for the core product
 
 ## AI Prompt Context Rules
 The backend should include:
@@ -220,6 +234,7 @@ The backend should include:
 - mana spent per stack item (fallback to `manaValue` when omitted)
 - type line with parsed supertypes/subtypes and colors
 - published WotC Oracle rulings for submitted cards when available from the static backend artifact
+- verbatim WotC Comprehensive Rules excerpts for all curated general game-rules topics from the static backend artifact
 - static MTG reference block
 - merged scope sentence for unselected zones and selected-but-empty zones
 - instructions to explain reasoning
@@ -227,6 +242,7 @@ The backend should include:
 - instructions not to invent hidden state
 - player display names in roster lines and resolved player references (`activePlayer`, caster, owner, player targets) using `Player N (Name)` when set
 - official WotC rulings only as reference context; they do not override the user's submitted stack order, zones, targets, notes, or stated game state
+- general game rules only as reference vocabulary; they do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text
 
 The backend mock/debug response should:
 - include explicit stack-order metadata (`stackOrderConvention`, `stackIndex`, `stackRole`)
@@ -250,6 +266,13 @@ WotC rulings prompt enrichment must:
 - avoid printing `cardId` or `oracle_id` in the model-facing prompt text
 - use per-card and whole-section caps so `MAX_PROMPT_CHAR_BUDGET` remains authoritative
 - appear after populated zone sections and before `SCOPE` and `QUESTION`
+
+Game rules prompt enrichment must:
+- include all curated topics from the committed artifact on every request in current scope
+- render topics in stable manifest `id` order with verbatim WotC CR prose only
+- appear after populated zone sections and before `OFFICIAL RULINGS`, then `SCOPE` and `QUESTION`
+- be omitted only when the artifact is missing or empty
+- respect `MAX_PROMPT_CHAR_BUDGET` (35000 after DEC-030)
 
 ## Delivery Strategy
 

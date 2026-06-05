@@ -336,3 +336,44 @@
   - enrichment UI
   - backend prompt context normalization
 - Notes:
+
+### REQ-022
+- Title: General game rules prompt enrichment
+- Priority: high
+- Description: Every backend AI prompt must include a curated library of verbatim WotC Comprehensive Rules excerpts as reference context, without changing the product API or UI.
+- Acceptance Criteria:
+  - committed artifact `apps/backend/data/gameRulesByTopic.json` loads at backend startup
+  - every assembled prompt includes `GAME RULES (reference)` with all curated topics in stable `id` order when the artifact is present
+  - excerpts are verbatim WotC CR prose for rule numbers listed in `apps/backend/data/gameRulesTopicManifest.json`
+  - section appears after populated zone sections and before `OFFICIAL RULINGS`, then `SCOPE` and `QUESTION`
+  - section includes a disclaimer that rules are shared vocabulary and do not override submitted game state
+  - section omitted only when artifact missing or empty, with a warning logged
+  - `MAX_PROMPT_CHAR_BUDGET` is 35000 and prompt diagnostics include game-rules section metrics
+  - `npm run data:build` runs `build-game-rules.mjs` with graceful degradation when CR source or extracts are unavailable
+  - `npm run data:refresh` attempts WotC CR download alongside Scryfall refresh with graceful skip when unavailable
+  - eval fixtures assert the full game-rules block and remain under the prompt budget
+  - manual latency sampling (p50/p95) is recorded after integration against the NFR-002 product risk
+- Constraints:
+  - prompt-only and backend-only; no `AskAiRequest`, Zod schema, or frontend changes
+  - no paraphrased rule text
+  - no runtime CR or Scryfall fetch per request
+
+### REQ-023
+- Title: Decrypt wait feedback panel
+- Priority: medium
+- Description: While a decrypt request is in flight, the app must replace the submit form with a dedicated waiting panel showing a live elapsed timer and escalating threshold-based messages.
+- Acceptance Criteria:
+  - waiting panel replaces the submit form while `isSubmitting` is true
+  - card list and wizard context above the form remain visible during the wait
+  - elapsed timer increments in real time from the moment of submission
+  - displayed message updates at defined second thresholds: 0s, 3s, 8s, 15s, 25s, 40s
+  - submit form is restored when a response is received or an error occurs
+  - message region uses `aria-live` so screen readers announce updates
+- Constraints:
+  - CSS-only motion; no animation libraries
+  - panel must not block card context above the form
+- Dependencies:
+  - REQ-012
+  - NFR-006
+- Notes:
+  - approved threshold copy lives in `PRD/work/ask-ai-wait-animation/DESIGN-BRIEF.md`

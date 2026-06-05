@@ -3,6 +3,7 @@ import {
   resolveRulingsForPrompt,
   type RulingEntry
 } from "../cardRulings.js";
+import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
 import { buildPromptContext } from "./context.js";
 import {
   MAX_RULING_COMMENT_CHARS,
@@ -22,6 +23,7 @@ export type PreparedPromptInput = {
 
 export type PreparePromptInputOptions = {
   cardRulingsIndex?: Map<string, RulingEntry[]>;
+  gameRulesTopics?: GameRulesTopic[];
 };
 
 export function preparePromptInput(request: AskAiRequest, options: PreparePromptInputOptions = {}): PreparedPromptInput {
@@ -32,8 +34,14 @@ export function preparePromptInput(request: AskAiRequest, options: PreparePrompt
     maxCommentChars: MAX_RULING_COMMENT_CHARS,
     maxSectionChars: MAX_RULINGS_SECTION_CHARS
   });
-  const promptText = buildPromptText(context, { rulings: resolvedRulings });
-  const diagnostics = getPromptDiagnostics(promptText, resolvedRulings);
+  const gameRulesTopics = options.gameRulesTopics ?? [];
+  const gameRulesSection = formatGameRulesSection(gameRulesTopics);
+  const promptText = buildPromptText(context, { rulings: resolvedRulings, gameRulesTopics });
+  const diagnostics = getPromptDiagnostics(promptText, {
+    resolvedRulings,
+    gameRulesTopics,
+    gameRulesSectionChars: gameRulesSection.length
+  });
   return {
     context,
     promptText,
