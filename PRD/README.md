@@ -100,7 +100,11 @@ Read in this order:
 
 ## Active work packages (`PRD/work/`)
 
-No active work packages are linked from the control plane. Completed work is promoted into `sections/` and temporary work folders are removed per `instructions/doc-lifecycle.md`.
+| Slug | Status | Summary |
+|------|--------|---------|
+| [supplemental-game-rules-retrieval](./work/supplemental-game-rules-retrieval/) | draft | Context-retrieved supplemental CR rules (max 5) on top of DEC-030 curated baseline |
+
+Completed work is promoted into `sections/` and temporary work folders are removed per `instructions/doc-lifecycle.md`.
 
 ## Current Editorial Notes
 - Current product status is flow validation with staged zone context, mock-default local provider mode, and optional live OpenAI provider mode.

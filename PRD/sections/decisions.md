@@ -402,3 +402,21 @@
 - Notes:
   - static MTG reference block (DEC-025) remains unchanged
   - this decision does not make the product an official judge or rules engine
+
+### DEC-031
+- Decision: Decrypt wait UX uses a pure frontend animated panel with CSS-only motion, a live elapsed timer, and threshold-based escalating messages.
+- Status: confirmed
+- Context: AI responses during decrypt can take several seconds; the submit button going inactive with no feedback creates a perceived hang. A dedicated waiting panel was added to replace the submit form while `isSubmitting` is true.
+- Impact:
+  - `lib/askAiWaitStages.ts` — threshold config and stage selector (pure TS, no React)
+  - `hooks/useElapsedWaitTimer.ts` — setInterval hook returning elapsed seconds and current stage
+  - `components/AskAiWaitingPanel.tsx` — timer display with `aria-live` message region and CSS variant classes
+  - `index.css` — `.wait-stage-calm`, `.wait-stage-curious`, `.wait-stage-absurd` keyframe classes
+  - `components/EnrichmentStep.tsx` — conditionally renders `AskAiWaitingPanel` in place of submit form
+  - CSS carve-out under NFR-006 explicitly permits these keyframe animations for functional wait states
+- Related requirements:
+  - REQ-023
+  - NFR-006
+- Notes:
+  - no animation libraries added; CSS-only constraint satisfied
+  - card list and wizard context above the form remain visible during the wait

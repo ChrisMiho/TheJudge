@@ -376,4 +376,4 @@
   - REQ-012
   - NFR-006
 - Notes:
-  - approved threshold copy lives in `PRD/work/ask-ai-wait-animation/DESIGN-BRIEF.md`
+  - approved threshold copy: 0s "Consulting the stack…" (calm), 3s "Priority is passing to the LLM." (calm), 8s "The judge is reading every layer. Twice." (curious), 15s "Still waiting? The servers are scrying 1." (curious), 25s "At this point we're basically in a MUD subgame." (absurd), 40s "If this were F6, we'd have resolved by now." (absurd)
