@@ -1,4 +1,4 @@
-status: ideation
+status: active
 
 # Post-Decrypt Follow-Up Chat
 
@@ -16,13 +16,17 @@ After Decrypt Stack, users currently hit a dead end: one plain-text answer, no w
 | Thread UX | **Full chat thread** — first visible message is the assistant's initial answer, not the user's decrypt question |
 | Persistence | **Ephemeral in-session only** — aligns with "no saved sessions" non-goal |
 
-## Sub-slices (to be defined during refinement)
+## Implementation map
 
-- **Slice A** — PRD decision + API contract: optional `conversationHistory` on `POST /api/ask-ai`
-- **Slice B** — Backend prompt: `CONVERSATION HISTORY` section, budget caps, validation
-- **Slice C** — Frontend conversation hook: frozen context snapshot, history assembly, follow-up submit
-- **Slice D** — Frontend chat UI: thread, follow-up composer, read-only context, start-over
-- **Slice E** — Tests + closeout: contract/prompt/App tests, optional prompt-preview fixture
+| Slice | Name | Status | Depends on |
+| --- | --- | --- | --- |
+| A | API Contract (types + Zod + validation tests) | planned | — |
+| B | Backend Prompt Assembly | planned | A |
+| C | Frontend Conversation Hook | planned | A |
+| D | Frontend Chat UI | planned | C |
+| E | Tests + Closeout | planned | A, B, C, D |
+
+Slices A, B, C are parallel-ready. D requires C. E requires all.
 
 ## Related PRD sections
 
@@ -37,4 +41,10 @@ After Decrypt Stack, users currently hit a dead end: one plain-text answer, no w
 ## Docs in this folder
 
 - `IDEA.md` — problem, desired outcome, non-goals
-- `DESIGN-BRIEF.md` — technical scope, API shape, UX, slices, risks (draft for refinement)
+- `DESIGN-BRIEF.md` — technical scope, API shape, UX, slices, risks
+- `GAMEPLAN.md` — architecture, data flow, file map, verification checklist
+- `slice-a-api-contract.md` — backend types + Zod + validation tests
+- `slice-b-backend-prompt.md` — CONVERSATION HISTORY section, budget cap, diagnostics
+- `slice-c-frontend-hook.md` — frozen context, history assembly, follow-up submit paths
+- `slice-d-frontend-ui.md` — chat thread, composer, frozen summary, start over
+- `slice-e-tests-closeout.md` — App.test.tsx update, prompt-preview fixture, ship gates

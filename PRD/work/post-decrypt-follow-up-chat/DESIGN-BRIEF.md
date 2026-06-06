@@ -1,6 +1,6 @@
 # Design Brief — Post-Decrypt Follow-Up Chat
 
-> **Status:** draft for refinement. Decisions and requirement IDs below are proposed, not yet confirmed in `sections/decisions.md`.
+> **Status:** refined. Decisions and requirement IDs are confirmed in `sections/decisions.md` and `sections/functional-requirements.md`.
 
 ## Scope
 
@@ -40,18 +40,20 @@ sequenceDiagram
   Note over UI: Append user + assistant bubbles
 ```
 
-## Proposed decisions (to confirm in refinement)
+## Confirmed decisions
 
-- **DEC-0XX** — `POST /api/ask-ai` may accept optional `conversationHistory` for follow-up turns; success/error response shapes unchanged. Amends DEC-020 contract freeze for this additive optional field only.
-- **DEC-0XX** — Follow-up chat uses client-side ephemeral history only; no server-side session store. Consistent with "no saved sessions" non-goal.
-- **DEC-0XX** — Game context is frozen after first successful decrypt for the duration of the in-session conversation; follow-ups are text-only in v1.
+- **DEC-038** — `POST /api/ask-ai` may accept optional `conversationHistory` for follow-up turns; success/error response shapes unchanged. Amends DEC-020 contract freeze for this additive optional field only.
+- **DEC-039** — Follow-up chat uses client-side ephemeral history only; no server-side session store. Consistent with "no saved sessions" non-goal.
+- **DEC-040** — Game context is frozen after first successful decrypt for the duration of the in-session conversation; follow-ups are text-only in v1. Start over clears the thread and unfreezes editing; all previously entered context is preserved.
+- **DEC-041** — Follow-up submit UX is inline within the chat composer; `AskAiWaitingPanel` is not shown for follow-up turns. Send button replaces its content with an inline processing animation while a follow-up request is in flight.
 
-## Proposed requirements (to confirm in refinement)
+## Confirmed requirements
 
-- **REQ-0XX** — After a successful Decrypt Stack, the enrichment step shows a conversation thread whose first visible message is the assistant answer.
-- **REQ-0XX** — Users can submit text follow-ups that append to the thread; each follow-up uses the frozen game context from the initial decrypt.
-- **REQ-0XX** — Follow-up requests include `conversationHistory` with the full prior exchange, including the initial user question (which may be hidden in the UI).
-- **REQ-0XX** — Users can start over from the conversation state, clearing the thread and unfreezing enrichment editing without persisting history.
+- **REQ-025** — After a successful Decrypt Stack, the enrichment step shows a conversation thread whose first visible message is the assistant answer.
+- **REQ-026** — Users can submit text follow-ups from a chat composer (textarea + Send button); each follow-up uses the frozen game context from the initial decrypt.
+- **REQ-027** — Follow-up requests include `conversationHistory` with the full prior exchange including the hidden initial user question; history is assembled client-side and capped at 6000 chars / 20 turns / 2000 chars per message.
+- **REQ-028** — Send button shows an inline processing animation during follow-up submit; `AskAiWaitingPanel` is not shown for follow-ups.
+- **REQ-029** — Start over clears the thread and unfreezes editing; all previously entered context is preserved. Button is visible whenever the first decrypt has succeeded and no request is in flight.
 
 ## API contract extension
 
@@ -77,13 +79,13 @@ conversationHistory?: Array<{
 - Then all visible follow-up user messages and assistant responses in order.
 - Current follow-up text goes in `question`, not duplicated in history.
 
-### Validation (proposed)
+### Validation
 
 In [`askAiRequest.ts`](../../../apps/backend/src/validation/askAiRequest.ts):
 
 - Optional; if present: non-empty array
-- Max turns (e.g. 20)
-- Max chars per message (e.g. 2000)
+- Max 20 turns
+- Max 2000 chars per message
 - Same control-character guardrails as `question`
 - Must start with `role: "user"` and alternate `user` / `assistant`
 - Last entry must be `assistant` (prior answer being continued)
@@ -153,13 +155,13 @@ Primary surface: [`EnrichmentStep.tsx`](../../../apps/frontend/src/components/En
 
 **After first successful decrypt:**
 
-1. **Conversation thread** — scrollable bubbles; first bubble is assistant answer
-2. **Follow-up composer** — textarea + Send; 300-char limit (same as optional question today)
-3. **Frozen enrichment** — disable card editing; show compact read-only context summary (zone counts + card names)
-4. **Hide** initial decrypt form and Decrypt Stack button
-5. **Waiting** — `AskAiWaitingPanel` during follow-up submit
+1. **Conversation thread** — scrollable bubbles; first bubble is assistant answer; initial user question not shown
+2. **Follow-up composer** — textarea + Send button; 300-char limit
+3. **Send button animation** — button content replaced with inline processing animation (e.g. spinner or animated dots) while follow-up is in flight; `AskAiWaitingPanel` not shown for follow-ups
+4. **Frozen enrichment** — disable card/zone editing; show compact read-only context summary (zone counts + card names)
+5. **Hide** initial decrypt form and Decrypt Stack button
 6. **Error + retry** — retry resubmits failed follow-up (or initial decrypt) with same frozen context + history
-7. **Start over** — clears conversation, unfreezes editing, returns to pre-decrypt enrichment (no persistence)
+7. **Start over** — always visible while first decrypt has succeeded and no request is in flight; clears conversation thread, unfreezes enrichment editing, preserves all previously entered context, returns to pre-decrypt enrichment state (no persistence)
 
 [`App.tsx`](../../../apps/frontend/src/App.tsx): wire `handleFollowUp`; pass messages and frozen context into `EnrichmentStep`.
 
@@ -221,13 +223,13 @@ npm run prompt:preview -- --fixture <follow-up-fixture>  # after Slice E
 | User stuck with wrong frozen context | Start over resets in-session state |
 | Latency on follow-ups | Full prompt rebuild each turn; acceptable for v1 with frozen context |
 
-## Open questions for refinement
+## Resolved questions (from refinement)
 
-- Exact max turns and max chars per history message
-- Follow-up button label: "Send" vs "Ask follow-up"
-- Whether start-over should also navigate back to zone collection or only reset enrichment
-- Whether mock provider sidecars should echo `conversationHistory` in prompt-preview artifacts
-- REQ ID numbering and DEC ID assignment
+- **Max turns / chars**: 20 turns, 2000 chars/message, 6000 total history chars budget (tunable with testing)
+- **Follow-up button label**: "Send" — framed as a chat box interaction
+- **Start over destination**: returns to pre-decrypt enrichment state; does not navigate back to zone collection; all entered context preserved
+- **Mock sidecar**: mock provider echoes `conversationHistory` in prompt-preview artifacts for debugging
+- **REQ/DEC IDs**: assigned — DEC-038 through DEC-041, REQ-025 through REQ-029
 
 ## Out of scope (v1)
 

@@ -407,3 +407,93 @@
   - DEC-037
   - REQ-015
 - Notes:
+
+### REQ-025
+- Title: Post-decrypt conversation thread
+- Priority: high
+- Description: After a successful Decrypt Stack, the enrichment step must replace the submit form with a conversation thread whose first visible message is the assistant's initial answer.
+- Acceptance Criteria:
+  - on first decrypt success, the submit form and Decrypt Stack button are hidden
+  - a scrollable conversation thread is shown; first visible bubble is the assistant's answer
+  - the initial user question is not shown in the thread
+  - a compact read-only context summary (frozen zone counts and card names) is visible but not editable
+  - start over button is visible and enabled while no request is in flight
+- Constraints:
+  - thread opens with the assistant answer only; do not show the initial user question as a visible bubble
+- Dependencies:
+  - REQ-012
+  - DEC-040
+- Notes:
+
+### REQ-026
+- Title: Follow-up chat composer
+- Priority: high
+- Description: While a conversation is active, users must be able to submit text follow-ups from a chat composer; each follow-up uses the frozen game context from the initial decrypt.
+- Acceptance Criteria:
+  - chat composer shows a textarea and a Send button
+  - textarea accepts up to 300 characters
+  - on follow-up success, a user bubble and then an assistant bubble are appended to the thread
+  - frozen game context is used unchanged for all follow-up requests
+  - Send button is disabled while a request is in flight
+- Constraints:
+  - no zone or card editing during an active conversation (v1)
+- Dependencies:
+  - REQ-025
+  - DEC-040
+- Notes:
+
+### REQ-027
+- Title: Follow-up history assembly and API contract
+- Priority: high
+- Description: Follow-up requests must include `conversationHistory` containing the full prior exchange; history is assembled client-side from in-memory state.
+- Acceptance Criteria:
+  - follow-up request payload is `{ question, gameContext: frozen, conversationHistory }`
+  - `conversationHistory` includes the hidden initial user question (including fallback) and first assistant answer, then all subsequent user and assistant turns in order
+  - current follow-up text goes in `question`, not duplicated in history
+  - backend validates `conversationHistory` when present: non-empty array, max 20 turns, max 2000 chars/message, alternating user/assistant roles starting with user, last entry must be assistant
+  - backend inserts `CONVERSATION HISTORY` section before `QUESTION` when history is present
+  - history chars budget is capped at `MAX_CONVERSATION_HISTORY_CHARS` (6000); oldest turns truncated first
+  - history budget contribution is included in `getPromptDiagnostics`
+  - no server-side session store; history is discarded on page reload
+- Constraints:
+  - `conversationHistory` is optional on `AskAiRequest`; first decrypt omits it
+  - success and error response shapes unchanged
+- Dependencies:
+  - DEC-038
+  - DEC-039
+  - REQ-026
+- Notes:
+
+### REQ-028
+- Title: Inline follow-up processing animation
+- Priority: medium
+- Description: While a follow-up request is in flight, the Send button must display an inline processing animation; the full AskAiWaitingPanel must not be shown for follow-up turns.
+- Acceptance Criteria:
+  - Send button content is replaced with a processing animation (e.g. spinner or animated dots) while a follow-up request is in flight
+  - Send button is disabled during the animation
+  - animation is removed and button is restored when the response is received or an error occurs
+  - `AskAiWaitingPanel` is not rendered for follow-up submits
+- Constraints:
+  - CSS-only motion consistent with NFR-006; no animation libraries
+- Dependencies:
+  - DEC-041
+  - REQ-023
+  - REQ-026
+- Notes:
+
+### REQ-029
+- Title: Start over from conversation
+- Priority: medium
+- Description: Users must be able to start over from an active conversation, clearing the thread and unfreezing enrichment editing while preserving all previously entered context.
+- Acceptance Criteria:
+  - start over button is visible whenever the first decrypt has succeeded and no request is in flight
+  - clicking start over clears the conversation thread
+  - enrichment editing is unfrozen; all previously entered game context, zones, cards, enrichment, and question are preserved
+  - the user is returned to the pre-decrypt enrichment state (submit form and Decrypt Stack button restored)
+  - no conversation history is persisted after start over
+- Constraints:
+  - do not clear or reset game context, zones, cards, or enrichment on start over
+- Dependencies:
+  - DEC-040
+  - REQ-025
+- Notes:

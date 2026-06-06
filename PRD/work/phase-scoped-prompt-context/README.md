@@ -1,13 +1,21 @@
-status: refined
+status: active
 
 # Phase-Scoped Prompt Context
 
 Parent work package for incremental improvements to how turn phase drives prompt construction.
 
-## Sub-slices
+## Slice Table
 
-- **Slice A** — Frontend + type system: remove `stack_resolving`, update `TurnPhase`, add `CombatStep`, set `DEFAULT_TURN_PHASE = "main_1"`, add inline combat sub-step selector, trim `PHASE_ZONE_DEFAULTS` to 2 zones per phase
-- **Slice B** — Backend prompt: add `PHASE GUIDANCE` block to every prompt, update `mtgReference.ts`
+| Slice | Name | Status | Depends on |
+|-------|------|--------|-----------|
+| A | [Frontend + Type System](slice-a-frontend-types.md) | planned | — |
+| B | [Backend Prompt](slice-b-backend-prompt.md) | planned | A |
+
+## Implementation Map
+
+1. Implement Slice A (type changes, frontend UI, zone defaults)
+2. Implement Slice B (phaseGuidance module, prompt assembly, mtgReference cleanup)
+3. Run `thejudge-cleanup` to promote decisions and delete this folder
 
 ## Related PRD sections
 

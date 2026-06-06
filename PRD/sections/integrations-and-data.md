@@ -66,9 +66,31 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - `zones` includes only non-empty zone arrays. Empty selected zones are represented by `selectedZones`, not by empty arrays.
 - `displayName` is optional UI/prompt text only. `label`, `activePlayer`, `caster`, `owner`, and player targets remain fixed `PlayerLabel` values.
 
+### ConversationTurn
+- `role: "user" | "assistant"`
+- `content: string`
+
 ### AskAiRequest
 - `question: string`
 - `gameContext: GameContext`
+- `conversationHistory?: ConversationTurn[]` — omitted on first decrypt; present on follow-up turns (DEC-038)
+
+#### `conversationHistory` validation (when present)
+- non-empty array
+- max 20 turns
+- max 2000 chars per message
+- same control-character guardrails as `question`
+- must start with `role: "user"` and alternate user/assistant
+- last entry must be `role: "assistant"` (the prior assistant answer being continued)
+
+#### History semantics by turn
+
+| Turn | `question` | `gameContext` | `conversationHistory` |
+| --- | --- | --- | --- |
+| First decrypt | User question or zone-aware fallback | Live context | Omitted |
+| Follow-up N | Current follow-up text | Frozen snapshot from first decrypt | Full prior exchange including hidden initial question |
+
+The hidden initial user question (including fallback) is captured at first decrypt and included as the first entry in `conversationHistory` on follow-up turns; it is not shown in the UI thread.
 
 ### AskAiResponse
 - `answer: string`
@@ -231,6 +253,14 @@ Purpose:
 - runtime CR fetches are out of scope for the core product
 
 ## AI Prompt Context Rules
+
+### Conversation history prompt section
+When `conversationHistory` is present, backend prompt assembly inserts a `CONVERSATION HISTORY` section before `QUESTION`:
+- formats each turn as `User: <content>` / `Assistant: <content>` in order
+- history chars are capped at `MAX_CONVERSATION_HISTORY_CHARS` (6000); oldest turns truncated first
+- an `INSTRUCTIONS` line is added when history is present: treat follow-ups as refinements or clarifications against the frozen game state and prior answers
+- history contribution is included in `getPromptDiagnostics`
+
 The backend should include:
 - final user question
 - game context (player count, life totals, active player when provided, turn phase, combat sub-step when present)
