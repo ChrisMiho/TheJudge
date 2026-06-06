@@ -3,7 +3,6 @@ name: thejudge-refinement
 description: >-
   Shapes a feature idea and writes aligned PRD content — DESIGN-BRIEF plus
   sections/ updates. Use after kickoff when an idea needs product definition.
-disable-model-invocation: true
 ---
 
 # TheJudge Refinement

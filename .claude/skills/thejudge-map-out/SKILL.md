@@ -3,7 +3,6 @@ name: thejudge-map-out
 description: >-
   Creates GAMEPLAN and lettered slice docs in PRD/work/<slug>/ for agent
   implementation. Use after quality-check passes.
-disable-model-invocation: true
 ---
 
 # TheJudge Map Out

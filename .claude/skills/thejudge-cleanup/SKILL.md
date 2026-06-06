@@ -3,7 +3,6 @@ name: thejudge-cleanup
 description: >-
   Post-ship evaluation — promote PRD truth, write durable receipt, delete
   ephemeral PRD/work/ folder. Use when a feature is done or for corpus hygiene.
-disable-model-invocation: true
 ---
 
 # TheJudge Cleanup

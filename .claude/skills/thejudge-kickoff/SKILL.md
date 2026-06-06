@@ -4,7 +4,6 @@ description: >-
   Loads minimal onboarding context for TheJudge (README + PRD control plane).
   Optionally captures a new idea in PRD/work/<slug>/IDEA.md. Use when starting
   a new session or beginning work on a new feature.
-disable-model-invocation: true
 ---
 
 # TheJudge Kickoff
