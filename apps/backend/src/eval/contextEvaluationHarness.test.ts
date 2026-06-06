@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { loadGameRulesTopics, type GameRulesTopic } from "../gameRules.js";
+import { collectCuratedRuleIds, loadGameRulesRuleIndex, retrieveSupplementalRules, type GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
 import { buildPromptContext } from "../prompt/context.js";
 import { buildPromptText } from "../prompt/normalization.js";
 import type { AskAiRequest } from "../types/index.js";
@@ -18,6 +19,9 @@ const fixtureDir = path.join(currentDir, "fixtures");
 const shouldUpdateGoldenFiles = process.env.UPDATE_CONTEXT_EVAL_FIXTURES === "1";
 const gameRulesPath = path.resolve(currentDir, "../../data/gameRulesByTopic.json");
 const gameRulesTopics: GameRulesTopic[] = loadGameRulesTopics(gameRulesPath);
+const ruleIndexPath = path.resolve(currentDir, "../../data/gameRulesRuleIndex.json");
+const ruleIndex: GameRulesRuleIndexEntry[] = loadGameRulesRuleIndex(ruleIndexPath);
+const curatedRuleIds = collectCuratedRuleIds(gameRulesTopics);
 
 async function readJsonFixture(fileName: string): Promise<EvaluationFixture> {
   const fixturePath = path.join(fixtureDir, fileName);
@@ -63,7 +67,8 @@ function formatContextSnapshot(request: AskAiRequest): string {
 
 function formatPromptSnapshot(request: AskAiRequest): string {
   const context = buildPromptContext(request);
-  const prompt = buildPromptText(context, { gameRulesTopics });
+  const supplementalRules = retrieveSupplementalRules(context, ruleIndex, curatedRuleIds);
+  const prompt = buildPromptText(context, { gameRulesTopics, supplementalRules });
   return `${prompt}\n`;
 }
 
@@ -76,7 +81,8 @@ describe("context evaluation harness", () => {
 
     for (const fixture of fixtures) {
       const context = buildPromptContext(fixture.request);
-      const promptText = buildPromptText(context, { gameRulesTopics });
+      const supplementalRules = retrieveSupplementalRules(context, ruleIndex, curatedRuleIds);
+      const promptText = buildPromptText(context, { gameRulesTopics, supplementalRules });
       const result = evaluateScenario(fixture, context, promptText);
 
       results.push(result);

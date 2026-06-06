@@ -194,6 +194,21 @@ Zones and Zone Changes
 400.2. Public zones are zones in which all players can see the cards’ faces, except for those cards that some rule or effect specifically allow to be face down. Graveyard, battlefield, stack, exile, ante, and command are public zones. Hidden zones are zones in which not all players can be expected to see the cards’ faces. Library and hand are hidden zones, even if all the cards in one such zone happen to be revealed.
 400.7. An object that moves from one zone to another becomes a new object with no memory of, or relation to, its previous existence. This rule has the following exceptions.
 
+ADDITIONAL RELEVANT RULE EXCERPTS
+Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
+
+701.57a. 701.57a “Discover N” means “Exile cards from the top of your library until you exile a nonland card with mana value N or less. You may cast that card without paying its mana cost if the resulting spell’s mana value is less than or equal to N. If you don’t cast it, put that card into your hand. Put the remaining exiled cards on the bottom of your library in a random order.”
+
+118.12. 118.12. Some spells, activated abilities, and triggered abilities read, “[Do something]. If [a player] [does, doesn’t, or can’t], [effect].” Or “[A player] may [do something]. If [that player] [does, doesn’t, or can’t], [effect].” The action [do something] is a cost, paid when the spell or ability resolves. The “If [a player] [does, doesn’t, or can’t]” clause checks whether the player chose to pay an optional cost or started to pay a mandatory cost, regardless of what events actually occurred.
+Example: You control Standstill, an enchantment that says “When a player casts a spell, sacrifice this enchantment. If you do, each of that player’s opponents draws three cards.” A spell is cast, causing Standstill’s ability to trigger. Then an ability is activated that exiles Standstill. When Standstill’s ability resolves, you’re unable to pay the “sacrifice Standstill” cost. No player will draw cards.
+Example: Your opponent has cast Gather Specimens, a spell that says “If a creature would enter the battlefield under an opponent’s control this turn, it enters under your control instead.” You control a face-down Dermoplasm, a creature with morph that says “When this creature is turned face up, you may put a creature card with morph from your hand onto the battlefield face up. If you do, return this creature to its owner’s hand.” You turn Dermoplasm face up, and you choose to put a creature card with morph from your hand onto the battlefield. Due to Gather Specimens, it enters the battlefield under your opponent’s control instead of yours. However, since you chose to pay the cost, Dermoplasm is still returned to its owner’s hand.
+
+805.3b. 805.3b The process for handling cards that allow a player to begin the game with them on the battlefield is altered accordingly. First, each player on the starting team, in whatever order that team likes, may put any or all such cards onto the battlefield from that player’s opening hand. Teammates may consult while making their decisions. Then each player on each other team in turn order does the same.
+
+805.3a. 805.3a The process for handling mulligans is altered accordingly. First, each player on the starting team, in whatever order that team likes, declares whether that player will take a mulligan. Then the players on each other team in turn order do the same. Teammates may consult while making their decisions. Then all mulligans are taken at the same time. Teammates may consult while choosing which cards, if any, to put on the bottom of their library. A player may take a mulligan even after a teammate has decided to keep their opening hand. See rule 103.5.
+
+103.6. 103.6. Some cards allow a player to take actions with them from their opening hand. Once the mulligan process (see rule 103.5) is complete, the starting player may take any such actions in any order. Then each other player in turn order may do the same.
+
 SCOPE
 Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): hand, graveyard, exile, library, command.
 

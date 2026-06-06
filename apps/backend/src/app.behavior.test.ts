@@ -1,6 +1,7 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
 import { createApp } from "./app/createApp.js";
+import { mockAskAiProvider } from "./providers/mockAskAiProvider.js";
 import type { PreparedPromptInput } from "./prompt/preparation.js";
 import { createAskAiRequest } from "./test-utils/requestBuilders.js";
 
@@ -138,6 +139,36 @@ describe("ask-ai route behavior", () => {
 
     const requestReceivedEvent = events.find((entry) => entry.event === "ask_ai.request_received");
     expect(requestReceivedEvent?.payload?.requestPayload).toBeUndefined();
+  });
+
+  it("mock provider returns context, diagnostics, and enrichmentDebug sidecars when collectEnrichmentDebug is true", async () => {
+    const appWithMock = createApp({
+      askAiProvider: mockAskAiProvider,
+      collectEnrichmentDebug: true
+    });
+
+    const response = await request(appWithMock).post("/api/ask-ai").send(createAskAiRequest());
+
+    expect(response.status).toBe(200);
+    expect(response.body.answer).toContain("MOCK RESPONSE");
+    expect(response.body.context).toBeDefined();
+    expect(response.body.diagnostics).toBeDefined();
+    expect(response.body.enrichmentDebug).toBeDefined();
+    expect(response.body.enrichmentDebug.supplemental).toBeDefined();
+    expect(response.body.enrichmentDebug.curatedGameRules).toBeDefined();
+    expect(response.body.enrichmentDebug.rulings).toBeDefined();
+  });
+
+  it("mock provider omits sidecars beyond answer when collectEnrichmentDebug is not set", async () => {
+    const appWithMock = createApp({
+      askAiProvider: mockAskAiProvider
+    });
+
+    const response = await request(appWithMock).post("/api/ask-ai").send(createAskAiRequest());
+
+    expect(response.status).toBe(200);
+    expect(response.body.answer).toContain("MOCK RESPONSE");
+    expect(response.body.enrichmentDebug).toBeUndefined();
   });
 
   it("logs lifecycle events with shared correlation id", async () => {

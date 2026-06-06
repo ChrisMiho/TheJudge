@@ -1,10 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { format as prettierFormat } from "prettier";
 
 const manifestPath = path.resolve("apps/backend/data/gameRulesTopicManifest.json");
 const sourcePath = path.resolve("apps/backend/data/cr/source.txt");
 const outputPath = path.resolve("apps/backend/data/gameRulesByTopic.json");
+const indexPath = path.resolve("apps/backend/data/gameRulesRuleIndex.json");
 
 function ensureParentDirectory(filePath) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -65,6 +67,64 @@ export function extractRuleExcerpt(crText, ruleNumber) {
   const nextHeader = nextHeaderPattern.exec(rest.slice(1));
   const end = nextHeader ? 1 + nextHeader.index : rest.length;
   return rest.slice(0, end).trim();
+}
+
+function computeParentRuleIds(ruleId) {
+  const parents = [];
+  const withoutLetter = ruleId.replace(/[a-z]$/, "");
+  if (withoutLetter !== ruleId) {
+    parents.push(withoutLetter);
+  }
+  const parts = withoutLetter.split(".");
+  while (parts.length > 1) {
+    parts.pop();
+    parents.push(parts.join("."));
+  }
+  return parents;
+}
+
+export function parseRuleIndex(crText) {
+  const normalizedText = normalizeNewlines(crText);
+
+  // The TOC also contains a "Glossary" entry; use the LAST occurrence as the actual cutoff.
+  const glossaryPattern = /^Glossary\s*$/gm;
+  let lastGlossaryIndex = -1;
+  let gm;
+  while ((gm = glossaryPattern.exec(normalizedText)) !== null) {
+    lastGlossaryIndex = gm.index;
+  }
+  const text = lastGlossaryIndex >= 0 ? normalizedText.slice(0, lastGlossaryIndex) : normalizedText;
+
+  // Match both `100.1. ` (period+space) and `100.1a ` (space only, lettered sub-rules).
+  const ruleHeaderPattern = /^(\d{3}(?:\.\d+)*(?:[a-z])?)(?:\. | (?=\S))/gm;
+  const matches = [];
+  let m;
+  while ((m = ruleHeaderPattern.exec(text)) !== null) {
+    matches.push({ ruleId: m[1], index: m.index });
+  }
+
+  const entries = [];
+  let currentSectionTitle = "";
+
+  for (let i = 0; i < matches.length; i++) {
+    const { ruleId, index } = matches[i];
+    const end = i + 1 < matches.length ? matches[i + 1].index : text.length;
+    const ruleText = text.slice(index, end).trim();
+
+    if (!ruleId.includes(".")) {
+      const headingMatch = /^\d{3}\. (.+)/.exec(ruleText);
+      if (headingMatch) {
+        currentSectionTitle = headingMatch[1].trim();
+      }
+    }
+
+    const parentRuleIds = computeParentRuleIds(ruleId);
+    const searchText = [ruleId, currentSectionTitle, ruleText].join(" ").toLowerCase();
+
+    entries.push({ ruleId, sectionTitle: currentSectionTitle, text: ruleText, searchText, parentRuleIds });
+  }
+
+  return entries;
 }
 
 function mapPreviousTopics(previousTopics) {
@@ -138,20 +198,29 @@ function readJsonIfPresent(filePath, fallback) {
 }
 
 function validateExistingArtifact() {
-  if (!fs.existsSync(outputPath)) {
-    console.warn(`Comprehensive Rules source not found: ${sourcePath}`);
-    console.warn(`No existing game rules artifact found to preserve: ${outputPath}`);
-    return;
-  }
-
-  const artifact = JSON.parse(fs.readFileSync(outputPath, "utf8"));
-  if (!Array.isArray(artifact)) {
-    throw new Error(`Unexpected game rules artifact shape in ${outputPath}; expected a JSON array.`);
-  }
-
-  const bytes = fs.statSync(outputPath).size;
   console.warn(`Comprehensive Rules source not found: ${sourcePath}`);
-  console.log(`Preserved existing game rules artifact: ${outputPath} (${formatBytes(bytes)}).`);
+
+  if (!fs.existsSync(outputPath)) {
+    console.warn(`No existing game rules artifact found to preserve: ${outputPath}`);
+  } else {
+    const artifact = JSON.parse(fs.readFileSync(outputPath, "utf8"));
+    if (!Array.isArray(artifact)) {
+      throw new Error(`Unexpected game rules artifact shape in ${outputPath}; expected a JSON array.`);
+    }
+    const bytes = fs.statSync(outputPath).size;
+    console.log(`Preserved existing game rules artifact: ${outputPath} (${formatBytes(bytes)}).`);
+  }
+
+  if (!fs.existsSync(indexPath)) {
+    console.warn(`No existing rule index artifact found to preserve: ${indexPath}`);
+  } else {
+    const indexArtifact = JSON.parse(fs.readFileSync(indexPath, "utf8"));
+    if (!Array.isArray(indexArtifact)) {
+      throw new Error(`Unexpected rule index artifact shape in ${indexPath}; expected a JSON array.`);
+    }
+    const bytes = fs.statSync(indexPath).size;
+    console.log(`Preserved existing rule index artifact: ${indexPath} (${formatBytes(bytes)}).`);
+  }
 }
 
 async function main() {
@@ -175,12 +244,21 @@ async function main() {
   }
 
   ensureParentDirectory(outputPath);
-  const output = JSON.stringify(topics, null, 2);
-  fs.writeFileSync(outputPath, `${output}\n`);
+  const output = await prettierFormat(JSON.stringify(topics), { parser: "json", printWidth: 120 });
+  fs.writeFileSync(outputPath, output);
 
   console.log(`Game rules topics: ${topics.length}`);
   console.log(`Output bytes: ${Buffer.byteLength(output)}`);
   console.log(`Wrote: ${outputPath}`);
+
+  const ruleEntries = parseRuleIndex(crText);
+  ensureParentDirectory(indexPath);
+  const indexOutput = await prettierFormat(JSON.stringify(ruleEntries), { parser: "json", printWidth: 120 });
+  fs.writeFileSync(indexPath, indexOutput);
+
+  console.log(`Rule index entries: ${ruleEntries.length}`);
+  console.log(`Rule index bytes: ${Buffer.byteLength(indexOutput)}`);
+  console.log(`Wrote: ${indexPath}`);
 }
 
 const invokedPath = process.argv[1] ? pathToFileURL(process.argv[1]).href : "";

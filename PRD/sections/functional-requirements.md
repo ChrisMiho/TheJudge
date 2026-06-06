@@ -217,18 +217,22 @@
   - user can set active player from included player labels
   - player selects show display names as `Player N (Name)` when a custom display name is set
   - submitted API values remain fixed `PlayerLabel` strings
-  - user must select one turn phase from `untap`, `upkeep`, `draw`, `main_1`, `combat`, `main_2`, `end_step`, `cleanup`, and `stack_resolving`
+  - user must select one turn phase from `untap`, `upkeep`, `draw`, `main_1`, `combat`, `main_2`, `end_step`, `cleanup`
+  - when turn phase is `combat`, an inline sub-step selector offers `beginning_of_combat`, `declare_attackers`, `declare_blockers`, `combat_damage`, and `end_of_combat`
+  - combat sub-step defaults to `declare_blockers` when `combat` is selected
+  - submitted `combatStep` value is the selected `CombatStep` string when turn phase is `combat`; field is omitted otherwise
   - user must confirm context before proceeding to zone confirmation
   - invalid or missing required values block progression
 - Constraints:
   - fixed `PlayerLabel` identity with optional display names for UI labels and prompt text
   - support range is constrained by current player-label model
-  - combat is a combined phase; combat sub-step details belong in the question or notes
+  - combat sub-step is captured as a structured field; the user's question may still add further detail
 - Dependencies:
   - frontend staged flow
   - prompt context contract
 - Notes:
   - this context is prompt-facing, not a rules-engine source of truth
+  - see DEC-034 for phase enum change, DEC-037 for combat sub-step
 
 ### REQ-016
 - Title: Zone confirmation with phase defaults
@@ -248,6 +252,7 @@
   - prompt context contract
 - Notes:
   - v1 zones are `stack`, `battlefield`, `hand`, `graveyard`, `exile`, `library`, and `command`
+  - per-phase 2-zone defaults are defined in DEC-035; empty defaulted zones are excluded from the payload and LLM context per DEC-024 and DEC-035
 
 ### REQ-017
 - Title: Per-card enrichment with fallback
@@ -353,6 +358,12 @@
   - `npm run data:refresh` attempts WotC CR download alongside Scryfall refresh with graceful skip when unavailable
   - eval fixtures assert the full game-rules block and remain under the prompt budget
   - manual latency sampling (p50/p95) is recorded after integration against the NFR-002 product risk
+  - committed artifact `apps/backend/data/gameRulesRuleIndex.json` loads at backend startup alongside the topic artifact
+  - every assembled prompt may include an `ADDITIONAL RELEVANT RULE EXCERPTS` section with up to 5 rules scored against the request context
+  - supplemental rules are excluded from the curated baseline set (deduplicated against `gameRulesTopicManifest.json` rule numbers)
+  - supplemental section appears after `GAME RULES (reference)` and before `OFFICIAL RULINGS`
+  - supplemental section omitted when index missing, empty, or no rules score above 0
+  - eval fixtures `state-based-actions` and `cascade-keyword` assert supplemental retrieval for out-of-manifest rules
 - Constraints:
   - prompt-only and backend-only; no `AskAiRequest`, Zod schema, or frontend changes
   - no paraphrased rule text
@@ -376,4 +387,113 @@
   - REQ-012
   - NFR-006
 - Notes:
-  - approved threshold copy lives in `PRD/work/ask-ai-wait-animation/DESIGN-BRIEF.md`
+  - approved threshold copy: 0s "Consulting the stack…" (calm), 3s "Priority is passing to the LLM." (calm), 8s "The judge is reading every layer. Twice." (curious), 15s "Still waiting? The servers are scrying 1." (curious), 25s "At this point we're basically in a MUD subgame." (absurd), 40s "If this were F6, we'd have resolved by now." (absurd)
+
+### REQ-024
+- Title: Phase-scoped prompt guidance
+- Priority: medium
+- Description: Every backend AI prompt must include a `PHASE GUIDANCE` block containing phase-specific and combat-sub-step-specific reasoning instructions, positioned between `GENERAL GAME CONTEXT` and the zone sections.
+- Acceptance Criteria:
+  - every assembled prompt includes a `PHASE GUIDANCE` section between `GENERAL GAME CONTEXT` and the zone sections
+  - guidance text is specific to the submitted `turnPhase`
+  - when `turnPhase` is `combat`, guidance text is specific to the submitted `combatStep` when present; falls back to generic combat framing when absent
+  - section is never omitted for a valid phase submission
+  - canonical guidance strings per phase match those specified in DEC-036
+- Constraints:
+  - prompt-only and backend-only beyond the `combatStep` field additions in DEC-037
+  - do not add rules-validation behavior under the label of phase guidance
+- Dependencies:
+  - DEC-036
+  - DEC-037
+  - REQ-015
+- Notes:
+
+### REQ-025
+- Title: Post-decrypt conversation thread
+- Priority: high
+- Description: After a successful Decrypt Stack, the enrichment step must replace the submit form with a conversation thread whose first visible message is the assistant's initial answer.
+- Acceptance Criteria:
+  - on first decrypt success, the submit form and Decrypt Stack button are hidden
+  - a scrollable conversation thread is shown; first visible bubble is the assistant's answer
+  - the initial user question is not shown in the thread
+  - a compact read-only context summary (frozen zone counts and card names) is visible but not editable
+  - start over button is visible and enabled while no request is in flight
+- Constraints:
+  - thread opens with the assistant answer only; do not show the initial user question as a visible bubble
+- Dependencies:
+  - REQ-012
+  - DEC-040
+- Notes:
+
+### REQ-026
+- Title: Follow-up chat composer
+- Priority: high
+- Description: While a conversation is active, users must be able to submit text follow-ups from a chat composer; each follow-up uses the frozen game context from the initial decrypt.
+- Acceptance Criteria:
+  - chat composer shows a textarea and a Send button
+  - textarea accepts up to 300 characters
+  - on follow-up success, a user bubble and then an assistant bubble are appended to the thread
+  - frozen game context is used unchanged for all follow-up requests
+  - Send button is disabled while a request is in flight
+- Constraints:
+  - no zone or card editing during an active conversation (v1)
+- Dependencies:
+  - REQ-025
+  - DEC-040
+- Notes:
+
+### REQ-027
+- Title: Follow-up history assembly and API contract
+- Priority: high
+- Description: Follow-up requests must include `conversationHistory` containing the full prior exchange; history is assembled client-side from in-memory state.
+- Acceptance Criteria:
+  - follow-up request payload is `{ question, gameContext: frozen, conversationHistory }`
+  - `conversationHistory` includes the hidden initial user question (including fallback) and first assistant answer, then all subsequent user and assistant turns in order
+  - current follow-up text goes in `question`, not duplicated in history
+  - backend validates `conversationHistory` when present: non-empty array, max 20 turns, max 2000 chars/message, alternating user/assistant roles starting with user, last entry must be assistant
+  - backend inserts `CONVERSATION HISTORY` section before `QUESTION` when history is present
+  - history chars budget is capped at `MAX_CONVERSATION_HISTORY_CHARS` (6000); oldest turns truncated first
+  - history budget contribution is included in `getPromptDiagnostics`
+  - no server-side session store; history is discarded on page reload
+- Constraints:
+  - `conversationHistory` is optional on `AskAiRequest`; first decrypt omits it
+  - success and error response shapes unchanged
+- Dependencies:
+  - DEC-038
+  - DEC-039
+  - REQ-026
+- Notes:
+
+### REQ-028
+- Title: Inline follow-up processing animation
+- Priority: medium
+- Description: While a follow-up request is in flight, the Send button must display an inline processing animation; the full AskAiWaitingPanel must not be shown for follow-up turns.
+- Acceptance Criteria:
+  - Send button content is replaced with a processing animation (e.g. spinner or animated dots) while a follow-up request is in flight
+  - Send button is disabled during the animation
+  - animation is removed and button is restored when the response is received or an error occurs
+  - `AskAiWaitingPanel` is not rendered for follow-up submits
+- Constraints:
+  - CSS-only motion consistent with NFR-006; no animation libraries
+- Dependencies:
+  - DEC-041
+  - REQ-023
+  - REQ-026
+- Notes:
+
+### REQ-029
+- Title: Start over from conversation
+- Priority: medium
+- Description: Users must be able to start over from an active conversation, clearing the thread and unfreezing enrichment editing while preserving all previously entered context.
+- Acceptance Criteria:
+  - start over button is visible whenever the first decrypt has succeeded and no request is in flight
+  - clicking start over clears the conversation thread
+  - enrichment editing is unfrozen; all previously entered game context, zones, cards, enrichment, and question are preserved
+  - the user is returned to the pre-decrypt enrichment state (submit form and Decrypt Stack button restored)
+  - no conversation history is persisted after start over
+- Constraints:
+  - do not clear or reset game context, zones, cards, or enrichment on start over
+- Dependencies:
+  - DEC-040
+  - REQ-025
+- Notes:

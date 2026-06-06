@@ -7,12 +7,14 @@ import {
   SYSTEM_ROLE_PREAMBLE_LINES,
   buildPromptText,
   buildZoneScopeSentence,
+  formatSupplementalRulesSection,
   getPromptDiagnostics,
   normalizeCardText,
   normalizeQuestion,
   normalizeWhitespace,
   truncateOracleText
 } from "./normalization.js";
+import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
 import type { GameRulesTopic } from "../gameRules.js";
 import type { PromptContext } from "../types/index.js";
 
@@ -390,6 +392,102 @@ describe("buildPromptText", () => {
     expect(prompt).toContain("targets: other:");
     expect(prompt).toContain("...(truncated)");
     expect(prompt).toContain("contextNotes: ");
+  });
+});
+
+describe("formatSupplementalRulesSection", () => {
+  it("returns empty string when no rules provided", () => {
+    expect(formatSupplementalRulesSection([])).toBe("");
+  });
+
+  it("renders header, disclaimer, and rule entries", () => {
+    const rules: RetrievedGameRule[] = [
+      { ruleId: "116.1", sectionTitle: "Timing", text: "Unless a spell or ability has a timing restriction.", score: 10 },
+      { ruleId: "116.2a", sectionTitle: "Timing", text: "A player may cast an instant spell any time.", score: 5 }
+    ];
+    const section = formatSupplementalRulesSection(rules);
+    expect(section).toContain("ADDITIONAL RELEVANT RULE EXCERPTS");
+    expect(section).toContain("They do not override the user's submitted game state");
+    expect(section).toContain("116.1. Unless a spell or ability has a timing restriction.");
+    expect(section).toContain("116.2a. A player may cast an instant spell any time.");
+  });
+});
+
+describe("buildPromptText supplemental rules", () => {
+  const sampleSupplementalRules: RetrievedGameRule[] = [
+    { ruleId: "116.1", sectionTitle: "Timing", text: "Unless a spell or ability has a timing restriction.", score: 10 }
+  ];
+
+  it("places ADDITIONAL RELEVANT RULE EXCERPTS after GAME RULES and before OFFICIAL RULINGS", () => {
+    const prompt = buildPromptText(baseContext, {
+      gameRulesTopics: sampleGameRulesTopics,
+      supplementalRules: sampleSupplementalRules,
+      rulings: {
+        sectionChars: 74,
+        cards: [
+          {
+            cardId: "rhystic-study",
+            name: "Rhystic Study",
+            rulings: [{ publishedAt: "2020-04-17", comment: "If an opponent casts a spell, you may draw a card." }]
+          }
+        ]
+      }
+    });
+
+    expect(prompt).toContain("ADDITIONAL RELEVANT RULE EXCERPTS");
+    expect(prompt.indexOf("GAME RULES (reference)")).toBeLessThan(prompt.indexOf("ADDITIONAL RELEVANT RULE EXCERPTS"));
+    expect(prompt.indexOf("ADDITIONAL RELEVANT RULE EXCERPTS")).toBeLessThan(prompt.indexOf("OFFICIAL RULINGS"));
+    expect(prompt.indexOf("OFFICIAL RULINGS")).toBeLessThan(prompt.indexOf("SCOPE"));
+  });
+
+  it("omits ADDITIONAL RELEVANT RULE EXCERPTS section when supplemental rules array is empty", () => {
+    const prompt = buildPromptText(baseContext, {
+      gameRulesTopics: sampleGameRulesTopics,
+      supplementalRules: []
+    });
+    expect(prompt).not.toContain("ADDITIONAL RELEVANT RULE EXCERPTS");
+  });
+
+  it("omits ADDITIONAL RELEVANT RULE EXCERPTS section when supplementalRules not provided", () => {
+    const prompt = buildPromptText(baseContext, { gameRulesTopics: sampleGameRulesTopics });
+    expect(prompt).not.toContain("ADDITIONAL RELEVANT RULE EXCERPTS");
+  });
+
+  it("renders supplemental rules when no GAME RULES section is present", () => {
+    const prompt = buildPromptText(baseContext, { supplementalRules: sampleSupplementalRules });
+    expect(prompt).toContain("ADDITIONAL RELEVANT RULE EXCERPTS");
+    expect(prompt).toContain("116.1. Unless a spell or ability has a timing restriction.");
+    expect(prompt).not.toContain("GAME RULES (reference)");
+    expect(prompt.indexOf("ADDITIONAL RELEVANT RULE EXCERPTS")).toBeLessThan(prompt.indexOf("SCOPE"));
+  });
+});
+
+describe("getPromptDiagnostics supplemental rules", () => {
+  it("includes supplemental diagnostic fields when rules present", () => {
+    const rules: RetrievedGameRule[] = [
+      { ruleId: "116.1", sectionTitle: "Timing", text: "Some text.", score: 10 },
+      { ruleId: "116.2", sectionTitle: "Timing", text: "More text.", score: 5 }
+    ];
+    const diagnostics = getPromptDiagnostics("test prompt", {
+      supplementalRules: rules,
+      supplementalRulesSectionChars: 200
+    });
+    expect(diagnostics.supplementalRuleCount).toBe(2);
+    expect(diagnostics.supplementalRulesSectionChars).toBe(200);
+    expect(diagnostics.supplementalRuleIds).toEqual(["116.1", "116.2"]);
+  });
+
+  it("omits supplemental diagnostic fields when no supplemental rules", () => {
+    const diagnostics = getPromptDiagnostics("test prompt");
+    expect(diagnostics.supplementalRuleCount).toBeUndefined();
+    expect(diagnostics.supplementalRulesSectionChars).toBeUndefined();
+    expect(diagnostics.supplementalRuleIds).toBeUndefined();
+  });
+
+  it("omits supplemental diagnostic fields when supplemental rules array is empty", () => {
+    const diagnostics = getPromptDiagnostics("test prompt", { supplementalRules: [] });
+    expect(diagnostics.supplementalRuleCount).toBeUndefined();
+    expect(diagnostics.supplementalRuleIds).toBeUndefined();
   });
 });
 

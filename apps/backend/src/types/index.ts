@@ -2,7 +2,6 @@ import type { z } from "zod";
 import type {
   askAiErrorSchema,
   askAiRequestSchema,
-  askAiResponseSchema,
   contextTargetSchema,
   gameContextSchema,
   gamePlayerSchema,
@@ -11,6 +10,8 @@ import type {
   zoneCardItemSchema,
   zoneIdSchema
 } from "../validation/askAiRequest.js";
+import type { EnrichmentDebug } from "../prompt/enrichmentDebug.js";
+import type { PromptDiagnostics } from "../prompt/normalization.js";
 
 export type PlayerLabel = z.infer<typeof playerLabelSchema>;
 export type TurnPhase = z.infer<typeof turnPhaseSchema>;
@@ -20,8 +21,14 @@ export type ZoneCardItem = z.infer<typeof zoneCardItemSchema>;
 export type GamePlayerContext = z.infer<typeof gamePlayerSchema>;
 export type GameContext = z.infer<typeof gameContextSchema>;
 export type AskAiRequest = z.infer<typeof askAiRequestSchema>;
-export type AskAiResponse = z.infer<typeof askAiResponseSchema>;
 export type AskAiError = z.infer<typeof askAiErrorSchema>;
+
+export type AskAiResponse = {
+  answer: string;
+  context?: PromptContext;
+  diagnostics?: PromptDiagnostics;
+  enrichmentDebug?: EnrichmentDebug;
+};
 
 /**
  * Internal target shape used by the prompt builder.

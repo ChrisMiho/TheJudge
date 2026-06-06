@@ -22,6 +22,9 @@ type EvaluationCheckId =
   | "llm-prompt-omits-cardid"
   | "game-rules-section-present"
   | "game-rules-before-rulings"
+  | "supplemental-rules-section-present"
+  | "supplemental-rules-after-game-rules"
+  | "supplemental-rules-before-rulings"
   | "prompt-under-budget";
 
 export type EvaluationFixture = {
@@ -235,6 +238,58 @@ function checkGameRulesBeforeRulings(promptText: string): EvaluationCheckResult 
   };
 }
 
+function checkSupplementalRulesSectionPresent(promptText: string): EvaluationCheckResult {
+  const hasSupplemental = promptText.includes("ADDITIONAL RELEVANT RULE EXCERPTS");
+  const disclaimerOk = !hasSupplemental || promptText.includes("Use these additional official rule excerpts");
+  const passed = disclaimerOk;
+
+  return {
+    id: "supplemental-rules-section-present",
+    passed,
+    details: passed
+      ? hasSupplemental
+        ? "ADDITIONAL RELEVANT RULE EXCERPTS section is present with expected disclaimer."
+        : "No supplemental rules retrieved; section correctly omitted."
+      : "ADDITIONAL RELEVANT RULE EXCERPTS section is present but missing expected disclaimer text."
+  };
+}
+
+function checkSupplementalRulesAfterGameRules(promptText: string): EvaluationCheckResult {
+  const gameRulesIndex = promptText.indexOf("GAME RULES (reference)");
+  const supplementalIndex = promptText.indexOf("ADDITIONAL RELEVANT RULE EXCERPTS");
+  const hasGameRules = gameRulesIndex !== -1;
+  const hasSupplemental = supplementalIndex !== -1;
+  const passed = !hasSupplemental || !hasGameRules || supplementalIndex > gameRulesIndex;
+
+  return {
+    id: "supplemental-rules-after-game-rules",
+    passed,
+    details: passed
+      ? hasSupplemental && hasGameRules
+        ? "ADDITIONAL RELEVANT RULE EXCERPTS appears after GAME RULES (reference)."
+        : "Supplemental-to-game-rules ordering not applicable (one or both sections absent)."
+      : "ADDITIONAL RELEVANT RULE EXCERPTS appears before GAME RULES (reference)."
+  };
+}
+
+function checkSupplementalRulesBeforeRulings(promptText: string): EvaluationCheckResult {
+  const supplementalIndex = promptText.indexOf("ADDITIONAL RELEVANT RULE EXCERPTS");
+  const officialRulingsIndex = promptText.indexOf("OFFICIAL RULINGS");
+  const hasSupplemental = supplementalIndex !== -1;
+  const hasOfficialRulings = officialRulingsIndex !== -1;
+  const passed = !hasSupplemental || !hasOfficialRulings || supplementalIndex < officialRulingsIndex;
+
+  return {
+    id: "supplemental-rules-before-rulings",
+    passed,
+    details: passed
+      ? hasSupplemental && hasOfficialRulings
+        ? "ADDITIONAL RELEVANT RULE EXCERPTS appears before OFFICIAL RULINGS."
+        : "Supplemental-to-rulings ordering not applicable (one or both sections absent)."
+      : "ADDITIONAL RELEVANT RULE EXCERPTS appears after OFFICIAL RULINGS."
+  };
+}
+
 function checkPromptUnderBudget(promptText: string): EvaluationCheckResult {
   const chars = promptText.length;
   const passed = chars < MAX_PROMPT_CHAR_BUDGET;
@@ -266,6 +321,9 @@ export function evaluateScenario(
     checkPromptOmitsCardId(promptText),
     checkGameRulesSectionPresent(promptText),
     checkGameRulesBeforeRulings(promptText),
+    checkSupplementalRulesSectionPresent(promptText),
+    checkSupplementalRulesAfterGameRules(promptText),
+    checkSupplementalRulesBeforeRulings(promptText),
     checkPromptUnderBudget(promptText)
   ];
   const score = checks.filter((check) => check.passed).length;

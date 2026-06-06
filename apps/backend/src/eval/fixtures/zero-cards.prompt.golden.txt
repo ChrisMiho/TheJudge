@@ -156,6 +156,19 @@ Zones and Zone Changes
 400.2. Public zones are zones in which all players can see the cards’ faces, except for those cards that some rule or effect specifically allow to be face down. Graveyard, battlefield, stack, exile, ante, and command are public zones. Hidden zones are zones in which not all players can be expected to see the cards’ faces. Library and hand are hidden zones, even if all the cards in one such zone happen to be revealed.
 400.7. An object that moves from one zone to another becomes a new object with no memory of, or relation to, its previous existence. This rule has the following exceptions.
 
+ADDITIONAL RELEVANT RULE EXCERPTS
+Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
+
+727.4. 727.4. The effect that restarts the game finishes resolving just before the first turn’s untap step. If the spell or ability that generated that effect has additional instructions, those instructions are followed at this time. No player has priority, and any triggered abilities that trigger as a result will go on the stack the next time a player receives priority, usually during the first turn’s upkeep step.
+
+116.2g. 116.2g A player who has chosen a companion may pay {3} to put that card from outside the game into their hand. This is a special action. A player can take this action any time they have priority and the stack is empty during a main phase of their turn, but only if they haven’t done so yet this game. (See rule 702.139, “Companion.”)
+
+116.2k. 116.2k A player who has a card with plot in their hand may exile that card. This is a special action. A player can take this action any time they have priority during their own turn while the stack is empty. See rule 702.170, “Plot.”
+
+116.2m. 116.2m A player who controls a permanent that has one or more locked halves (see rule 709.5) may pay the mana cost of a locked half of that permanent to give that permanent the appropriate unlocked designation. This cost is referred to as an “unlock cost.” A player can take this action any time they have priority and the stack is empty during a main phase of their turn.
+
+117.5. 117.5. Each time a player would get priority, the game first performs all applicable state-based actions as a single event (see rule 704, “State-Based Actions”), then repeats this process until no state-based actions are performed. Then triggered abilities are put on the stack (see rule 603, “Handling Triggered Abilities”). These steps repeat in order until no further state-based actions are performed and no abilities trigger. Then the player who would have received priority does so.
+
 SCOPE
 Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): stack, battlefield, hand, graveyard, exile, library, command.
 

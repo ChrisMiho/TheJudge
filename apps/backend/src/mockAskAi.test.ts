@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildMockAnswer } from "./mockAskAi.js";
 import { buildPromptText, getPromptDiagnostics } from "./prompt/normalization.js";
+import type { EnrichmentDebug } from "./prompt/enrichmentDebug.js";
 import type { PromptContext } from "./types/index.js";
 
 describe("mock answer ergonomics", () => {
@@ -66,10 +67,11 @@ describe("mock answer ergonomics", () => {
       ]
     };
 
+    const diagnostics = getPromptDiagnostics(buildPromptText(context));
     const result = buildMockAnswer({
       context,
       promptText: buildPromptText(context),
-      diagnostics: getPromptDiagnostics(buildPromptText(context))
+      diagnostics
     });
 
     expect(result.answer).toContain("MOCK RESPONSE");
@@ -89,5 +91,106 @@ describe("mock answer ergonomics", () => {
     expect(result.answer).toContain("ZONE: STACK (BOTTOM TO TOP)");
     expect(result.answer).toContain("SCOPE");
     expect(result.answer).toContain("QUESTION");
+  });
+
+  it("returns context and diagnostics sidecars from preparedPrompt", () => {
+    const context: PromptContext = {
+      finalQuestion: "Sidecar check",
+      gameContext: {
+        playerCount: 2,
+        players: [
+          { label: "Player 1", lifeTotal: 20 },
+          { label: "Player 2", lifeTotal: 20 }
+        ],
+        turnPhase: "main_1",
+        selectedZones: ["stack"]
+      },
+      populatedZones: [],
+      orderedStack: [
+        {
+          cardId: "opt",
+          name: "Opt",
+          oracleText: "Scry 1, then draw a card.",
+          imageUrl: "",
+          manaCost: "{U}",
+          manaValue: 1,
+          typeLine: "Instant",
+          colors: ["U"],
+          supertypes: [],
+          subtypes: [],
+          caster: "Player 1",
+          targets: [],
+          manaSpent: 1,
+          contextNotes: "",
+          stackIndex: 0,
+          stackRole: "bottom"
+        }
+      ]
+    };
+    const diagnostics = getPromptDiagnostics(buildPromptText(context));
+    const result = buildMockAnswer({ context, promptText: buildPromptText(context), diagnostics });
+
+    expect(result.context).toBe(context);
+    expect(result.diagnostics).toBe(diagnostics);
+    expect(result.enrichmentDebug).toBeUndefined();
+  });
+
+  it("includes enrichmentDebug sidecar when present in preparedPrompt", () => {
+    const context: PromptContext = {
+      finalQuestion: "Enrichment check",
+      gameContext: {
+        playerCount: 2,
+        players: [
+          { label: "Player 1", lifeTotal: 20 },
+          { label: "Player 2", lifeTotal: 20 }
+        ],
+        turnPhase: "main_1",
+        selectedZones: ["stack"]
+      },
+      populatedZones: [],
+      orderedStack: [
+        {
+          cardId: "opt",
+          name: "Opt",
+          oracleText: "Scry 1, then draw a card.",
+          imageUrl: "",
+          manaCost: "{U}",
+          manaValue: 1,
+          typeLine: "Instant",
+          colors: ["U"],
+          supertypes: [],
+          subtypes: [],
+          caster: "Player 1",
+          targets: [],
+          manaSpent: 1,
+          contextNotes: "",
+          stackIndex: 0,
+          stackRole: "bottom"
+        }
+      ]
+    };
+    const diagnostics = getPromptDiagnostics(buildPromptText(context));
+    const enrichmentDebug: EnrichmentDebug = {
+      supplemental: {
+        queryText: "test query",
+        queryTokens: ["test", "query"],
+        queryRuleIds: [],
+        excludedCuratedRuleCount: 0,
+        selected: [{ ruleId: "405.1", sectionTitle: "The Stack", score: 5 }],
+        runnerUp: [],
+        candidatesScored: 1
+      },
+      curatedGameRules: { topicIds: [], topics: [] },
+      rulings: {
+        cardsConsidered: [],
+        cardsIncluded: [],
+        cardsSkippedNoMatch: [],
+        sectionTruncated: false
+      }
+    };
+    const result = buildMockAnswer({ context, promptText: buildPromptText(context), diagnostics, enrichmentDebug });
+
+    expect(result.enrichmentDebug).toBe(enrichmentDebug);
+    expect(result.enrichmentDebug?.supplemental.selected[0]?.score).toBeTypeOf("number");
   });
 });

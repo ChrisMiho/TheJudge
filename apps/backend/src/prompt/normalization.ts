@@ -1,6 +1,7 @@
 import { MTG_PROMPT_REFERENCE } from "./mtgReference.js";
 import type { ResolvedRulings } from "../cardRulings.js";
 import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
+import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
 import type { PlayerLabel, PromptContext, ZoneId } from "../types/index.js";
 
 export const MAX_ORACLE_TEXT_CHARS = 480;
@@ -256,6 +257,22 @@ export function formatOfficialRulingsSection(resolvedRulings: ResolvedRulings | 
   ].join("\n");
 }
 
+const SUPPLEMENTAL_RULES_DISCLAIMER =
+  "Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.";
+
+export function formatSupplementalRulesSection(rules: RetrievedGameRule[]): string {
+  if (rules.length === 0) return "";
+
+  const ruleBlocks = rules.map((rule) => `${rule.ruleId}. ${rule.text}`);
+
+  return [
+    "ADDITIONAL RELEVANT RULE EXCERPTS",
+    SUPPLEMENTAL_RULES_DISCLAIMER,
+    "",
+    ruleBlocks.join("\n\n")
+  ].join("\n");
+}
+
 /**
  * Builds the scope sentence listing zones with no cards.
  * Merges unselected zones and selected-but-empty zones in canonical order.
@@ -284,12 +301,17 @@ export type PromptDiagnostics = {
   rulingsCardCount?: number;
   gameRulesSectionChars?: number;
   gameRulesTopicCount?: number;
+  supplementalRuleCount?: number;
+  supplementalRulesSectionChars?: number;
+  supplementalRuleIds?: string[];
 };
 
 export type GetPromptDiagnosticsOptions = {
   resolvedRulings?: ResolvedRulings;
   gameRulesTopics?: GameRulesTopic[];
   gameRulesSectionChars?: number;
+  supplementalRules?: RetrievedGameRule[];
+  supplementalRulesSectionChars?: number;
 };
 
 export function getPromptDiagnostics(prompt: string, resolvedRulingsOrOptions?: ResolvedRulings | GetPromptDiagnosticsOptions): PromptDiagnostics {
@@ -301,6 +323,8 @@ export function getPromptDiagnostics(prompt: string, resolvedRulingsOrOptions?: 
   let resolvedRulings: ResolvedRulings | undefined;
   let gameRulesTopics: GameRulesTopic[] | undefined;
   let gameRulesSectionChars: number | undefined;
+  let supplementalRules: RetrievedGameRule[] | undefined;
+  let supplementalRulesSectionChars: number | undefined;
 
   if (resolvedRulingsOrOptions && "cards" in resolvedRulingsOrOptions) {
     resolvedRulings = resolvedRulingsOrOptions;
@@ -309,6 +333,8 @@ export function getPromptDiagnostics(prompt: string, resolvedRulingsOrOptions?: 
     resolvedRulings = opts.resolvedRulings;
     gameRulesTopics = opts.gameRulesTopics;
     gameRulesSectionChars = opts.gameRulesSectionChars;
+    supplementalRules = opts.supplementalRules;
+    supplementalRulesSectionChars = opts.supplementalRulesSectionChars;
   }
 
   return {
@@ -329,6 +355,13 @@ export function getPromptDiagnostics(prompt: string, resolvedRulingsOrOptions?: 
           gameRulesSectionChars,
           gameRulesTopicCount: gameRulesTopics.length
         }
+      : {}),
+    ...(supplementalRules && supplementalRules.length > 0
+      ? {
+          supplementalRuleCount: supplementalRules.length,
+          supplementalRulesSectionChars,
+          supplementalRuleIds: supplementalRules.map((r) => r.ruleId)
+        }
       : {})
   };
 }
@@ -336,6 +369,7 @@ export function getPromptDiagnostics(prompt: string, resolvedRulingsOrOptions?: 
 export type BuildPromptTextOptions = {
   rulings?: ResolvedRulings;
   gameRulesTopics?: GameRulesTopic[];
+  supplementalRules?: RetrievedGameRule[];
 };
 
 export function buildPromptText(context: PromptContext, options: BuildPromptTextOptions = {}): string {
@@ -349,6 +383,7 @@ export function buildPromptText(context: PromptContext, options: BuildPromptText
   const stackSection = formatStackSection(context);
   const nonStackSections = formatNonStackZoneSections(context);
   const gameRulesSection = formatGameRulesSection(options.gameRulesTopics ?? []);
+  const supplementalRulesSection = formatSupplementalRulesSection(options.supplementalRules ?? []);
   const officialRulingsSection = formatOfficialRulingsSection(options.rulings);
 
   const zoneSections = [stackSection, nonStackSections].filter(Boolean).join("\n\n");
@@ -375,6 +410,10 @@ export function buildPromptText(context: PromptContext, options: BuildPromptText
 
   if (gameRulesSection.length > 0) {
     sections.push("", gameRulesSection);
+  }
+
+  if (supplementalRulesSection.length > 0) {
+    sections.push("", supplementalRulesSection);
   }
 
   if (officialRulingsSection.length > 0) {

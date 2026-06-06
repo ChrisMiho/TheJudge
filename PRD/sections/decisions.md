@@ -252,7 +252,7 @@
 
 ### DEC-022
 - Decision: Turn phase uses the v1 enum `untap`, `upkeep`, `draw`, `main_1`, `combat`, `main_2`, `end_step`, `cleanup`, and `stack_resolving`.
-- Status: confirmed
+- Status: superseded
 - Context: The app needs enough timing context for prompt quality without modeling every Magic sub-step.
 - Impact:
   - combat is one combined phase
@@ -261,6 +261,7 @@
 - Related requirements:
   - REQ-015
 - Notes:
+  - superseded by DEC-034 which removes `stack_resolving` and by DEC-037 which adds structured `combatStep` capture
 
 ### DEC-023
 - Decision: Zone confirmation is user-controlled and seeded by phase defaults.
@@ -402,3 +403,201 @@
 - Notes:
   - static MTG reference block (DEC-025) remains unchanged
   - this decision does not make the product an official judge or rules engine
+
+### DEC-031
+- Decision: Decrypt wait UX uses a pure frontend animated panel with CSS-only motion, a live elapsed timer, and threshold-based escalating messages.
+- Status: confirmed
+- Context: AI responses during decrypt can take several seconds; the submit button going inactive with no feedback creates a perceived hang. A dedicated waiting panel was added to replace the submit form while `isSubmitting` is true.
+- Impact:
+  - `lib/askAiWaitStages.ts` — threshold config and stage selector (pure TS, no React)
+  - `hooks/useElapsedWaitTimer.ts` — setInterval hook returning elapsed seconds and current stage
+  - `components/AskAiWaitingPanel.tsx` — timer display with `aria-live` message region and CSS variant classes
+  - `index.css` — `.wait-stage-calm`, `.wait-stage-curious`, `.wait-stage-absurd` keyframe classes
+  - `components/EnrichmentStep.tsx` — conditionally renders `AskAiWaitingPanel` in place of submit form
+  - CSS carve-out under NFR-006 explicitly permits these keyframe animations for functional wait states
+- Related requirements:
+  - REQ-023
+  - NFR-006
+- Notes:
+  - no animation libraries added; CSS-only constraint satisfied
+  - card list and wizard context above the form remain visible during the wait
+
+### DEC-032
+- Decision: Backend prompts include up to 5 supplemental WotC Comprehensive Rules excerpts per request, dynamically retrieved from a committed rule index artifact, deduplicated against the curated baseline manifest.
+- Status: confirmed
+- Context: DEC-030 curated baseline covers 23 topic areas but cannot cover every rule. Questions about state-based actions, obscure keywords, or specific rule numbers reference rules outside the curated manifest. Signal-based retrieval against a pre-built index fills this gap without increasing baseline prompt size for unrelated requests.
+- Impact:
+  - supplemental retrieval is prompt-only and backend-only; no API or UI changes
+  - DEC-030 curated baseline always included; supplemental rules coexist and never replace it
+  - max 5 supplemental rules per request; deduplicated against manifest rule numbers so curated rules are never repeated
+  - source is same WotC CR TXT and `build-game-rules.mjs` pipeline used for DEC-030
+  - committed artifact: `apps/backend/data/gameRulesRuleIndex.json` (built alongside `gameRulesByTopic.json`)
+  - `scripts/build-game-rules.mjs` extended with dual-output: topic JSON + rule index JSON
+  - scoring: exact rule ID match (100 pts), parent rule ID match (20 pts), dotted-token match (8 pts), keyword token match (1 pt); rules with score 0 excluded
+  - section label: `ADDITIONAL RELEVANT RULE EXCERPTS`, positioned after `GAME RULES (reference)` and before `OFFICIAL RULINGS`
+  - section omitted when index missing, empty, or no rules score above 0
+  - eval harness extended with checklist IDs: `supplemental-rules-section-present`, `supplemental-rules-after-game-rules`, `supplemental-rules-before-rulings`
+  - eval fixtures added: `state-based-actions` (704.5g SBA scenario), `cascade-keyword` (cascade + prowess interaction)
+- Related requirements:
+  - REQ-022
+- Notes:
+  - supplemental section disclaimer matches DEC-030 curated baseline disclaimer pattern
+  - this decision does not make the product an official judge or rules engine
+
+### DEC-033
+- Decision: The mock provider may return optional debug sidecar fields on `POST /api/ask-ai` success responses; the OpenAI provider and frontend contract remain `{ answer }` only.
+- Status: confirmed
+- Context: Prompt enrichment review today requires reading the mock `answer` blob or eval goldens that skip the full `/api/ask-ai` path. A local `npm run prompt:preview` workflow needs structured artifacts without new routes or frontend changes.
+- Impact:
+  - `askAiResponseSchema` accepts optional `context`, `diagnostics`, and `enrichmentDebug` on success responses
+  - mock provider populates all sidecars from `preparePromptInput` plus enrichment debug collected only when `ASK_AI_PROVIDER=mock`
+  - OpenAI provider continues returning `{ answer }` only
+  - frontend reads `answer` only; no UI or request-shape changes
+  - `enrichmentDebug` exposes supplemental retrieval scores/runner-ups, curated topic manifest snapshot, and rulings inclusion trace not present in aggregate diagnostics
+  - error responses remain the existing `askAiErrorSchema` shape; preview tooling captures them per fixture for frontend-visible error review
+  - DEC-020 frozen success contract for live provider is preserved; optional fields are mock-only additions
+- Related requirements:
+  - NFR-009
+  - REQ-012
+  - REQ-013
+- Notes:
+  - do not add `promptText` as a separate response field; parse from the stable `FULL PROMPT (SENT TO PROVIDER)` section in mock `answer`
+  - `MAX_PROMPT_CHAR_BUDGET` remains 35000 per DEC-030
+
+### DEC-034
+- Decision: `stack_resolving` is removed from the `TurnPhase` enum; the default turn phase on the game setup screen is `main_1`.
+- Status: confirmed
+- Context: `stack_resolving` is not a real MTG turn phase; it was a product invention that caused confusion. The stack can be resolving during any phase. `main_1` is the most common phase where players encounter interactions requiring clarification.
+- Impact:
+  - `TurnPhase` union updated in frontend and backend types to: `untap`, `upkeep`, `draw`, `main_1`, `combat`, `main_2`, `end_step`, `cleanup`
+  - `stack_resolving` removed from `TURN_PHASE_OPTIONS` in `App.tsx`
+  - `DEFAULT_TURN_PHASE` set to `"main_1"` in `apps/frontend/src/lib/contextFlow/flow.ts`
+  - `PHASE_ZONE_DEFAULTS` entry for `stack_resolving` removed from `phaseZoneDefaults.ts`
+  - `MTG_PROMPT_REFERENCE` in `apps/backend/src/prompt/mtgReference.ts` updated to remove `stack_resolving` references
+- Related requirements:
+  - REQ-015
+  - REQ-016
+- Notes:
+  - supersedes DEC-022 where it includes `stack_resolving` in the phase enum
+
+### DEC-035
+- Decision: Phase zone defaults are trimmed to 2 zones per phase; empty phase-defaulted zones are excluded from the payload and LLM context.
+- Status: confirmed
+- Context: Manual testing showed users consistently unchecking more zones than they were adding, indicating defaults were too broad. Tighter defaults reduce friction during live gameplay entry. The empty-zone exclusion rule from DEC-024 applies to all phase-defaulted zones, not only stack.
+- Impact:
+  - `PHASE_ZONE_DEFAULTS` in `phaseZoneDefaults.ts` updated:
+    - untap: `battlefield`, `command`
+    - upkeep: `battlefield`, `stack`
+    - draw: `library`, `hand`
+    - main_1: `battlefield`, `hand`
+    - main_2: `battlefield`, `hand`
+    - combat: `battlefield`, `stack`
+    - end_step: `battlefield`, `hand`
+    - cleanup: `battlefield`, `graveyard`
+  - `stack_resolving` entry removed (per DEC-034)
+  - a defaulted zone with no cards is excluded from the payload and LLM context; the user may still proceed as long as at least one other zone has a card
+- Related requirements:
+  - REQ-016
+- Notes:
+  - `untap`, `cleanup` were already 2 zones; `upkeep`, `draw`, `combat` trimmed from 3; `main_1`, `main_2`, `end_step` trimmed from 4
+
+### DEC-036
+- Decision: Every backend prompt includes a `PHASE GUIDANCE` block positioned between `GENERAL GAME CONTEXT` and the zone sections, with phase-specific and combat-sub-step-specific reasoning instructions.
+- Status: confirmed
+- Context: The LLM receives `turnPhase` as a field in `GENERAL GAME CONTEXT` but has no phase-specific reasoning instructions. Phase guidance improves answer quality by directing the model toward the mechanics and timing rules most relevant for the submitted phase.
+- Impact:
+  - new module `apps/backend/src/prompt/phaseGuidance.ts` maps each `TurnPhase` and optional `CombatStep` to 2–4 sentences of focused guidance
+  - `buildPromptText` in `normalization.ts` emits a `PHASE GUIDANCE` block using this module, always present for a valid phase submission
+  - combat guidance varies by `combatStep` when present; falls back to generic combat framing when absent
+  - canonical guidance strings per phase:
+    - `untap`: "This is the untap step. Players do not normally receive priority during untap — the stack should be empty. Focus on replacement effects that modify untapping, effects that prevent permanents from untapping, and phasing."
+    - `upkeep`: "This is the upkeep step. Upkeep-triggered abilities fire in APNAP order and are placed on the stack before priority is passed. Focus on which upkeep triggers fired, their stacking order, cumulative upkeep costs, and what responses are available."
+    - `draw`: "This is the draw step. The active player draws one card; triggered abilities from drawing then fire. Focus on replacement effects on the draw (the controlling player orders multiple replacement effects), skip-draw effects, and 'whenever a player draws' triggered abilities."
+    - `main_1`: "This is the first main phase. Focus on spell timing restrictions (sorceries require an empty stack and the caster's main phase), ETB trigger ordering, and the legendary rule."
+    - `main_2`: "This is the second main phase, after combat has concluded. The same spell timing rules apply as in the first main phase. Note that 'until end of turn' effects from combat are still active; they end during cleanup, not here."
+    - `combat` + `beginning_of_combat`: "This is the beginning of combat step. Triggered abilities that fire at the beginning of combat are placed on the stack in APNAP order. Attackers have not yet been declared. Players can cast instants and activate abilities."
+    - `combat` + `declare_attackers`: "Attackers have been declared. Attack-triggered abilities (exalted, attack triggers on creatures) fire in APNAP order. Players can cast instants and activate abilities in response before blockers are declared."
+    - `combat` + `declare_blockers` (default): "Blockers have been declared. Focus on damage assignment order, trample, deathtouch, first strike and double strike, and how combat damage is allocated across multiple blockers. Block-triggered abilities fire in APNAP order."
+    - `combat` + `combat_damage`: "Combat damage is being assigned. Focus on first strike vs regular damage steps, lethal damage and deathtouch, trample damage to the defending player, lifelink, and triggered abilities that fire when creatures deal or receive combat damage."
+    - `combat` + `end_of_combat`: "This is the end of combat step. 'Until end of combat' effects are still active. Players can cast instants and activate abilities. Triggered abilities that fire at end of combat are placed on the stack in APNAP order."
+    - `combat` (no sub-step): "The game is in a combat step. Focus on combat keyword interactions, attack and block triggered abilities in APNAP order, damage assignment, and combat tricks. Specify the combat sub-step in your question if precision matters."
+    - `end_step`: "This is the end step. 'At the beginning of your end step' triggered abilities fire in APNAP order. Players can cast instants and activate abilities in response. Note: 'until end of turn' effects have not yet expired — those end during cleanup."
+    - `cleanup`: "This is the cleanup step. The active player discards to hand size, damage is removed from all permanents, and 'until end of turn' effects end. Priority is not normally passed during cleanup — but if a triggered ability fires, state-based actions are checked and players receive priority."
+- Related requirements:
+  - REQ-024
+- Notes:
+  - `PHASE GUIDANCE` section is always emitted for a valid submitted phase; it is never omitted
+  - do not add rules-validation behavior under the label of phase guidance
+  - `main_1` and `main_2` guidance shares a base builder in `phaseGuidance.ts`; `main_2` appends a post-combat addendum rather than duplicating the full string — the distinction is meaningful in the game and must be preserved, but the implementation should not duplicate shared logic
+
+### DEC-037
+- Decision: `combatStep` is an optional structured field on `GameContext`; a combat sub-step selector appears inline in the frontend when `turnPhase === "combat"` and defaults to `declare_blockers`.
+- Status: confirmed
+- Context: Combat has five distinct priority windows requiring different reasoning. A structured field lets the phase guidance block (DEC-036) give precise, sub-step-specific instructions rather than generic combat framing. Most players do not know exactly which combat sub-step they are in, so defaulting to `declare_blockers` covers the most contentious and common moment.
+- Impact:
+  - new type `CombatStep = "beginning_of_combat" | "declare_attackers" | "declare_blockers" | "combat_damage" | "end_of_combat"` added to frontend and backend types
+  - `GameContext` gains optional field `combatStep?: CombatStep`
+  - frontend: inline sub-step selector renders next to the phase picker when combat is selected; default is `declare_blockers`
+  - backend Zod schema updated to accept optional `combatStep` on `gameContext`; field is ignored when `turnPhase !== "combat"`
+  - `PromptContext` passes `combatStep` through to `phaseGuidance.ts` resolution
+  - `POST /api/ask-ai` request shape gains `gameContext.combatStep` as optional; success and error response shapes remain unchanged
+- Related requirements:
+  - REQ-015
+  - REQ-024
+- Notes:
+  - the note in DEC-022 that "combat sub-step detail belongs in the question or notes" is superseded; the user's question may still add further detail
+
+### DEC-038
+- Decision: `POST /api/ask-ai` may accept an optional `conversationHistory` field on follow-up turns; success and error response shapes remain unchanged.
+- Status: confirmed
+- Context: The post-decrypt follow-up chat feature requires prior exchange turns to be sent with each follow-up so the model can reason in context. Adding one optional field is the smallest additive change to the existing contract.
+- Impact:
+  - `AskAiRequest` gains optional `conversationHistory?: Array<{ role: "user" | "assistant"; content: string }>`
+  - first decrypt omits `conversationHistory`; follow-up N sends frozen `gameContext` plus full prior exchange
+  - backend Zod validation accepts the field when present: non-empty array, max 20 turns, max 2000 chars/message, same control-character guardrails as `question`, must start `role: "user"`, must alternate user/assistant, last entry must be `assistant`
+  - success response shape `{ answer }` and error response shape are unchanged for both mock and OpenAI providers
+  - DEC-020 frozen contract is preserved; this is an additive optional extension only
+- Related requirements:
+  - REQ-019
+  - REQ-027
+- Notes:
+  - amends DEC-020 contract freeze for this one optional additive field
+
+### DEC-039
+- Decision: Follow-up conversation history is client-side ephemeral only; no server-side session store, no persistence across page reloads.
+- Status: confirmed
+- Context: The PRD non-goal explicitly excludes saved sessions. Ephemeral client state is sufficient for the in-session follow-up use case and avoids any server-side session complexity.
+- Impact:
+  - `conversationHistory` is assembled in the frontend hook from in-memory state and discarded on page reload
+  - no session IDs, no new backend endpoints, no storage layer
+- Related requirements:
+  - REQ-027
+- Notes:
+
+### DEC-040
+- Decision: Game context is frozen after the first successful decrypt for the duration of the in-session conversation; follow-up turns are text-only in v1.
+- Status: confirmed
+- Context: Allowing zone or card edits mid-conversation would require re-deriving the full context for every history turn, adding complexity without a clear v1 use case. Freezing context keeps the history coherent and the implementation tractable.
+- Impact:
+  - `frozenGameContext` snapshot is taken on first decrypt success and used unchanged for all follow-up requests
+  - enrichment zone/card editing is disabled while a conversation is active
+  - `hiddenInitialQuestion` (including zone-aware fallback) is captured at first decrypt and included in `conversationHistory` on follow-up turns but not shown in the UI thread
+  - start over clears the thread and unfreezes editing; all previously entered context, zones, cards, and enrichment are preserved for re-use
+  - start over button is visible whenever the first decrypt has succeeded and no request is in flight
+- Related requirements:
+  - REQ-025
+  - REQ-029
+- Notes:
+
+### DEC-041
+- Decision: Follow-up submit UX is inline within the chat composer; `AskAiWaitingPanel` is not shown for follow-up turns.
+- Status: confirmed
+- Context: The full waiting panel is appropriate for the initial decrypt which can take several seconds under a cold start. Follow-up turns share frozen context and shorter prompts; replacing the entire form for each follow-up would break the chat flow. An inline button animation is sufficient feedback.
+- Impact:
+  - Send button replaces its content with a processing animation (e.g. spinner or animated dots) while a follow-up request is in flight
+  - `AskAiWaitingPanel` continues to render for the initial decrypt only (REQ-023 unchanged)
+  - Send button is disabled and shows the animation until the response is received or an error occurs
+- Related requirements:
+  - REQ-023
+  - REQ-028
+- Notes:

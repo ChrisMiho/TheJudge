@@ -7,7 +7,7 @@
   - app is loaded
   - local metadata is available
 - Main Flow:
-  1. Game setup: user sets player count (expandable panel for per-player display name and life), active player when known, and turn phase via dropdown; turn phase is required and defaults to **Stack Resolving**. Active player and downstream player selects show display names as `Player N (Name)` when set.
+  1. Game setup: user sets player count (expandable panel for per-player display name and life), active player when known, and turn phase via dropdown; turn phase is required and defaults to **main_1**. Active player and downstream player selects show display names as `Player N (Name)` when set.
   2. Zone confirmation: app preselects likely zones from the turn phase; user adjusts the checklist; at least one zone is required to continue.
   3. Per-zone collection: for each selected zone, user may add card identities from local search; non-stack cards capture owner; stack cards are ordered bottom-to-top.
   4. Enrichment: default card-by-card wizard (OK advances); optional **View all cards** for full-list edit; user may add caster, targets, notes, and mana spent where relevant.
@@ -77,3 +77,25 @@
   - this may reject some real gameplay scenarios
 - Notes:
   - this is an intentional constraint only
+
+### FLOW-005
+- Name: Post-decrypt follow-up chat
+- Trigger: User wants to clarify, question, or correct the assistant after a successful Decrypt Stack
+- Preconditions:
+  - first decrypt has succeeded and the conversation thread is showing
+- Main Flow:
+  1. User reads the assistant's answer in the conversation thread.
+  2. User types a follow-up in the chat composer (up to 300 characters) and clicks Send.
+  3. Send button shows an inline processing animation; button is disabled.
+  4. Frontend sends `{ question: followUpText, gameContext: frozen, conversationHistory: fullPriorExchange }` to `POST /api/ask-ai`.
+  5. Backend inserts `CONVERSATION HISTORY` before `QUESTION` in the prompt and returns a plain-text answer.
+  6. User bubble and then assistant bubble are appended to the thread.
+  7. Send button is restored; user can send another follow-up.
+- Edge Cases:
+  - if the follow-up request fails, the error is shown and a retry button is presented; retry resubmits the failed follow-up with the same frozen context and history
+  - if the user clicks start over, the conversation thread is cleared, enrichment editing is unfrozen, previously entered context is preserved, and the pre-decrypt enrichment state is restored
+  - start over is not available while a request is in flight
+  - if history chars exceed `MAX_CONVERSATION_HISTORY_CHARS` (6000), oldest turns are truncated before the prompt is assembled
+- Notes:
+  - game context, zones, cards, and enrichment are frozen for the duration of the conversation; follow-ups are text-only in v1
+  - the initial user question (including fallback) is included in `conversationHistory` sent to the API but is not shown as a visible bubble in the thread

@@ -1,0 +1,38 @@
+{
+  "id": "cascade-keyword",
+  "description": "Question about cascade and prowess interaction. Keyword tokens trigger supplemental retrieval of cascade (702.85) and prowess (702.108) rules outside the curated manifest.",
+  "request": {
+    "question": "When I cascade into a noncreature spell, does prowess trigger on my creature before or after the cascaded spell resolves?",
+    "gameContext": {
+      "playerCount": 2,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 20 },
+        { "label": "Player 2", "lifeTotal": 20 }
+      ],
+      "turnPhase": "stack_resolving",
+      "selectedZones": ["stack", "battlefield"],
+      "zones": {
+        "battlefield": [
+          {
+            "cardId": "monastery-swiftspear",
+            "name": "Monastery Swiftspear",
+            "oracleText": "Haste\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+            "contextNotes": "1/2 with prowess. Player 1 controls it.",
+            "targets": [{ "kind": "none" }]
+          }
+        ],
+        "stack": [
+          {
+            "cardId": "shardless-agent",
+            "name": "Shardless Agent",
+            "oracleText": "Cascade (When you cast this spell, exile cards from the top of your library until you exile a nonland card that costs less. You may cast it without paying its mana cost. Put the exiled cards on the bottom in a random order.)",
+            "imageUrl": "",
+            "manaValue": 3,
+            "caster": "Player 1",
+            "targets": []
+          }
+        ]
+      }
+    }
+  }
+}

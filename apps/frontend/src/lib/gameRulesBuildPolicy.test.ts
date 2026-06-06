@@ -1,14 +1,29 @@
 import fs from "node:fs";
 import path from "node:path";
+import assert from "node:assert";
 import { describe, expect, it } from "vitest";
 import {
   extractRuleExcerpt,
   normalizeGameRulesManifest,
+  parseRuleIndex,
   transformGameRules
 } from "../../../../scripts/build-game-rules.mjs";
 
 const manifestPath = path.resolve("../../apps/backend/data/gameRulesTopicManifest.json");
 const artifactPath = path.resolve("../../apps/backend/data/gameRulesByTopic.json");
+const indexPath = path.resolve("../../apps/backend/data/gameRulesRuleIndex.json");
+
+const crIndexFixture = [
+  "1. Game Concepts",
+  "100. General",
+  "100.1. These Magic rules apply to any Magic game with two or more players.",
+  "100.1a A two-player game is a game that begins with only two players.",
+  "405. Stack",
+  "405.1. When a spell is cast, the physical card is put on the stack.",
+  "405.2. The stack keeps track of the order.",
+  "Glossary",
+  "Additional Glossary. This line is after the Glossary and must not appear in the index."
+].join("\n");
 
 const crFixture = [
   "100.1. These Magic rules apply to any Magic game with two or more players.",
@@ -80,6 +95,31 @@ describe("game rules build policy", () => {
     expect(result.warnings).toContain("Missing CR excerpt for missing-topic rule 999.1; preserved prior topic excerpt.");
   });
 
+  it("parses individual rules into index entries with correct shape", () => {
+    const entries = parseRuleIndex(crIndexFixture);
+    const ids = entries.map((e: { ruleId: string }) => e.ruleId);
+
+    expect(ids).toContain("100");
+    expect(ids).toContain("100.1");
+    expect(ids).toContain("100.1a");
+    expect(ids).toContain("405.1");
+
+    const entry100_1a = entries.find((e: { ruleId: string }) => e.ruleId === "100.1a");
+    assert(entry100_1a !== undefined, "expected 100.1a entry");
+    expect(entry100_1a.text).toBe("100.1a A two-player game is a game that begins with only two players.");
+    expect(entry100_1a.sectionTitle).toBe("General");
+    expect(entry100_1a.parentRuleIds).toEqual(["100.1", "100"]);
+    expect(entry100_1a.searchText).toContain("100.1a");
+    expect(entry100_1a.searchText).toContain("general");
+    expect(entry100_1a.searchText).toContain("two-player");
+  });
+
+  it("parseRuleIndex stops at the Glossary section and excludes glossary content", () => {
+    const entries = parseRuleIndex(crIndexFixture);
+    const texts = entries.map((e: { text: string }) => e.text).join(" ");
+    expect(texts).not.toContain("Additional Glossary");
+  });
+
   it("keeps the committed curated topic artifact inside the slice B budget", () => {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as Array<{
       id: string;
@@ -109,5 +149,34 @@ describe("game rules build policy", () => {
         expect(topic.excerpt).toMatch(new RegExp(`^${ruleNumber.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:\\.|\\s)`, "m"));
       }
     }
+  });
+
+  it("keeps the committed rule index artifact within expected bounds", () => {
+    const index = JSON.parse(fs.readFileSync(indexPath, "utf8")) as Array<{
+      ruleId: string;
+      sectionTitle: string;
+      text: string;
+      searchText: string;
+      parentRuleIds: string[];
+    }>;
+
+    expect(Array.isArray(index)).toBe(true);
+    expect(index.length).toBeGreaterThanOrEqual(2000);
+    expect(index.length).toBeLessThanOrEqual(5000);
+
+    for (const entry of index.slice(0, 50)) {
+      expect(typeof entry.ruleId).toBe("string");
+      expect(entry.ruleId.length).toBeGreaterThan(0);
+      expect(typeof entry.sectionTitle).toBe("string");
+      expect(typeof entry.text).toBe("string");
+      expect(entry.text.length).toBeGreaterThan(0);
+      expect(typeof entry.searchText).toBe("string");
+      expect(entry.searchText).toBe(entry.searchText.toLowerCase());
+      expect(Array.isArray(entry.parentRuleIds)).toBe(true);
+    }
+
+    const entry704_5 = index.find((e) => e.ruleId === "704.5");
+    expect(entry704_5).toBeDefined();
+    expect(entry704_5!.sectionTitle).toMatch(/state.based/i);
   });
 });

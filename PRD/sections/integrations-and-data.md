@@ -20,8 +20,14 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 ## Data Model
 
 ### TurnPhase
-- `"untap" | "upkeep" | "draw" | "main_1" | "combat" | "main_2" | "end_step" | "cleanup" | "stack_resolving"`
-- Combat is intentionally combined; combat sub-step details belong in the question or notes.
+- `"untap" | "upkeep" | "draw" | "main_1" | "combat" | "main_2" | "end_step" | "cleanup"`
+- `stack_resolving` is removed; it was not a real MTG phase (DEC-034).
+- Combat is one combined phase; sub-step precision is captured via the structured `CombatStep` field (DEC-037).
+
+### CombatStep
+- `"beginning_of_combat" | "declare_attackers" | "declare_blockers" | "combat_damage" | "end_of_combat"`
+- Optional field on `GameContext`; present only when `turnPhase === "combat"`.
+- Frontend default is `declare_blockers` (DEC-037).
 
 ### ZoneId
 - `"stack" | "battlefield" | "hand" | "graveyard" | "exile" | "library" | "command"`
@@ -53,15 +59,38 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - `playerCount: number`
 - `players: Array<{ label: PlayerLabel; lifeTotal: number; displayName?: string }>`
 - `turnPhase: TurnPhase`
+- `combatStep?: CombatStep` — present only when `turnPhase === "combat"`; ignored otherwise
 - `activePlayer?: PlayerLabel`
 - `selectedZones: ZoneId[]`
 - `zones?: Partial<Record<ZoneId, ZoneCardItem[]>>`
 - `zones` includes only non-empty zone arrays. Empty selected zones are represented by `selectedZones`, not by empty arrays.
 - `displayName` is optional UI/prompt text only. `label`, `activePlayer`, `caster`, `owner`, and player targets remain fixed `PlayerLabel` values.
 
+### ConversationTurn
+- `role: "user" | "assistant"`
+- `content: string`
+
 ### AskAiRequest
 - `question: string`
 - `gameContext: GameContext`
+- `conversationHistory?: ConversationTurn[]` — omitted on first decrypt; present on follow-up turns (DEC-038)
+
+#### `conversationHistory` validation (when present)
+- non-empty array
+- max 20 turns
+- max 2000 chars per message
+- same control-character guardrails as `question`
+- must start with `role: "user"` and alternate user/assistant
+- last entry must be `role: "assistant"` (the prior assistant answer being continued)
+
+#### History semantics by turn
+
+| Turn | `question` | `gameContext` | `conversationHistory` |
+| --- | --- | --- | --- |
+| First decrypt | User question or zone-aware fallback | Live context | Omitted |
+| Follow-up N | Current follow-up text | Frozen snapshot from first decrypt | Full prior exchange including hidden initial question |
+
+The hidden initial user question (including fallback) is captured at first decrypt and included as the first entry in `conversationHistory` on follow-up turns; it is not shown in the UI thread.
 
 ### AskAiResponse
 - `answer: string`
@@ -214,18 +243,28 @@ Purpose:
 - raw CR source is gitignored at `apps/backend/data/cr/source.txt` and must not be committed
 - WotC CR download or refresh requires explicit human approval before the command runs (same policy as Scryfall refresh)
 - the committed topic manifest is `apps/backend/data/gameRulesTopicManifest.json`
-- the committed backend artifact is `apps/backend/data/gameRulesByTopic.json`, a list of curated topics with verbatim CR excerpts keyed by stable topic `id`
+- the committed backend artifacts are `apps/backend/data/gameRulesByTopic.json` (curated topic list) and `apps/backend/data/gameRulesRuleIndex.json` (flat rule index for supplemental retrieval); `build-game-rules.mjs` emits both in a single dual-output build
 - topic rule numbers and excerpts are curated and human-signed-off during implementation; the manifest drives `build-game-rules.mjs` extraction
-- `npm run data:build` rebuilds card metadata, card rulings, and game rules from local inputs
+- `gameRulesRuleIndex.json` contains every individual rule entry with `ruleId`, `sectionTitle`, `text`, `searchText`, and `parentRuleIds`; it is used for signal-based supplemental rule retrieval and is excluded from git LFS requirements (JSON, not binary)
+- `npm run data:build` rebuilds card metadata, card rulings, and game rules (topic JSON + rule index) from local inputs
 - `npm run data:refresh` downloads Scryfall bulk data and WotC CR source, then rebuilds local artifacts; agent-run refreshes require explicit human approval before any download command
-- build scripts degrade gracefully: missing CR source or failed extract keeps the prior committed artifact and exits 0
-- the backend loads the committed artifact at startup and omits game-rules enrichment if the artifact is missing or empty
+- build scripts degrade gracefully: missing CR source or failed extract keeps the prior committed artifacts and exits 0
+- the backend loads both committed artifacts at startup and omits game-rules enrichment if the artifacts are missing or empty
 - runtime CR fetches are out of scope for the core product
 
 ## AI Prompt Context Rules
+
+### Conversation history prompt section
+When `conversationHistory` is present, backend prompt assembly inserts a `CONVERSATION HISTORY` section before `QUESTION`:
+- formats each turn as `User: <content>` / `Assistant: <content>` in order
+- history chars are capped at `MAX_CONVERSATION_HISTORY_CHARS` (6000); oldest turns truncated first
+- an `INSTRUCTIONS` line is added when history is present: treat follow-ups as refinements or clarifications against the frozen game state and prior answers
+- history contribution is included in `getPromptDiagnostics`
+
 The backend should include:
 - final user question
-- game context (player count, life totals, active player when provided, turn phase)
+- game context (player count, life totals, active player when provided, turn phase, combat sub-step when present)
+- phase-specific guidance block (`PHASE GUIDANCE`) positioned between `GENERAL GAME CONTEXT` and zone sections; always present for a valid phase submission; combat guidance varies by `combatStep` when present (DEC-036)
 - selected zones
 - populated zone sections
 - ordered stack zone when populated
@@ -235,6 +274,7 @@ The backend should include:
 - type line with parsed supertypes/subtypes and colors
 - published WotC Oracle rulings for submitted cards when available from the static backend artifact
 - verbatim WotC Comprehensive Rules excerpts for all curated general game-rules topics from the static backend artifact
+- up to 5 supplemental WotC CR rule excerpts dynamically retrieved from the committed rule index artifact, scored against the request context and deduplicated against the curated baseline
 - static MTG reference block
 - merged scope sentence for unselected zones and selected-but-empty zones
 - instructions to explain reasoning
@@ -280,8 +320,10 @@ Game rules prompt enrichment must:
 
 #### `mock`
 - default local provider mode
-- returns a debug-friendly response using the same success contract as live answers
-- validates flow, payload shape, and prompt context without model access
+- returns a debug-friendly response using the same success contract as live answers, plus optional mock-only debug sidecars (DEC-033)
+- validates flow, payload shape, prompt context, and enrichment trace without model access
+- mock success response may include optional `context`, `diagnostics`, and `enrichmentDebug` alongside required `answer`
+- frontend and OpenAI provider continue using `{ answer }` only
 
 #### `openai`
 - live answer generation through the backend provider boundary
@@ -290,15 +332,27 @@ Game rules prompt enrichment must:
 - confirmed provider rules: `DEC-020` in `sections/decisions.md`
 
 ### Mock Response Rule
-- keep the same success response contract as the real backend
-- return the outbound request data as a debug-friendly JSON-formatted string inside `answer`
-- use this to help inspect the exact payload shape being prepared for the LLM
+- keep the same required success field as live answers: `answer` (string)
+- embed the exact LLM prompt in `answer` under the stable `FULL PROMPT (SENT TO PROVIDER)` section, preceded by prompt budget stats
+- optionally attach mock-only sidecars for developer review: `context`, `diagnostics`, `enrichmentDebug` (DEC-033)
+- collect enrichment debug only when `ASK_AI_PROVIDER=mock`
+- use `npm run prompt:preview` to materialize per-fixture review files under gitignored `output/prompt-preview/` (NFR-009)
 
 ### Example Mock Success Response
 
     {
-      "answer": "MOCK RESPONSE\n{\n  \"question\": \"Resolve the stack\",\n  \"gameContext\": {...}\n}"
+      "answer": "MOCK RESPONSE\n...\nFULL PROMPT (SENT TO PROVIDER)\n\n<assembled prompt text>",
+      "context": { "...": "normalized PromptContext" },
+      "diagnostics": { "promptChars": 12345, "promptBudgetChars": 35000, "...": "..." },
+      "enrichmentDebug": { "supplemental": { "...": "..." }, "...": "..." }
     }
+
+### Prompt preview developer workflow
+
+- `npm run prompt:preview` — default curated success fixtures
+- `npm run prompt:preview:all` — all eval fixtures including expected API error paths
+- each fixture writes a separate directory with labeled files (`production.prompt.txt`, sidecar JSON, or `api-error.json` for non-2xx)
+- see `apps/backend/src/eval/fixtures/README.md` and NFR-009
 
 ## Dependencies
 - Scryfall-derived metadata

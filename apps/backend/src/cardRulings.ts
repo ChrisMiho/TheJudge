@@ -20,6 +20,15 @@ export type ResolvedRulings = {
   sectionChars: number;
 };
 
+export type RulingsDebug = {
+  cardsConsidered: Array<{ cardId: string; name: string }>;
+  cardsIncluded: Array<{ cardId: string; name: string; rulingCount: number }>;
+  cardsSkippedNoMatch: Array<{ cardId: string; name: string }>;
+  sectionTruncated: boolean;
+};
+
+export type ResolvedRulingsWithDebug = ResolvedRulings & { debug: RulingsDebug };
+
 export type RulingLimits = {
   maxRulingsPerCard: number;
   maxCommentChars: number;
@@ -185,4 +194,64 @@ export function resolveRulingsForPrompt(
   }
 
   return { cards: resolvedCards, sectionChars };
+}
+
+export function resolveRulingsForPromptWithDebug(
+  cards: PromptRulingCard[],
+  index: Map<string, RulingEntry[]>,
+  limits: RulingLimits
+): ResolvedRulingsWithDebug {
+  const resolvedCards: ResolvedRulingCard[] = [];
+  let sectionChars = 0;
+  let sectionTruncated = false;
+
+  const cardsConsidered: Array<{ cardId: string; name: string }> = [];
+  const cardsIncluded: Array<{ cardId: string; name: string; rulingCount: number }> = [];
+  const cardsSkippedNoMatch: Array<{ cardId: string; name: string }> = [];
+
+  for (const card of cards) {
+    cardsConsidered.push({ cardId: card.cardId, name: card.name });
+
+    const sourceRulings = index.get(card.cardId);
+    if (!sourceRulings || sourceRulings.length === 0) {
+      cardsSkippedNoMatch.push({ cardId: card.cardId, name: card.name });
+      continue;
+    }
+
+    const rulings = sourceRulings.slice(0, limits.maxRulingsPerCard).map((ruling) => ({
+      publishedAt: ruling.publishedAt,
+      comment: truncateWithSuffix(ruling.comment, limits.maxCommentChars)
+    }));
+    const candidate = { ...card, rulings };
+    const candidateChars = [card.name, ...rulings.map((ruling) => `- ${ruling.publishedAt}: ${ruling.comment}`)].join("\n").length;
+
+    if (sectionChars + candidateChars > limits.maxSectionChars) {
+      const remainingChars = limits.maxSectionChars - sectionChars;
+      if (remainingChars > card.name.length + 1) {
+        const firstRuling = rulings[0];
+        if (firstRuling) {
+          const prefix = `- ${firstRuling.publishedAt}: `;
+          const maxCommentChars = Math.max(0, remainingChars - card.name.length - 1 - prefix.length);
+          resolvedCards.push({
+            ...card,
+            rulings: [{ ...firstRuling, comment: truncateWithSuffix(firstRuling.comment, maxCommentChars) }]
+          });
+          cardsIncluded.push({ cardId: card.cardId, name: card.name, rulingCount: 1 });
+          sectionChars = limits.maxSectionChars;
+        }
+      }
+      sectionTruncated = true;
+      break;
+    }
+
+    resolvedCards.push(candidate);
+    cardsIncluded.push({ cardId: card.cardId, name: card.name, rulingCount: rulings.length });
+    sectionChars += candidateChars;
+  }
+
+  return {
+    cards: resolvedCards,
+    sectionChars,
+    debug: { cardsConsidered, cardsIncluded, cardsSkippedNoMatch, sectionTruncated }
+  };
 }

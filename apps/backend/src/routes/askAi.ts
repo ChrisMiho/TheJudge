@@ -8,6 +8,7 @@ import { resolveCorrelationId, type AppLogger } from "../logging.js";
 import { preparePromptInput } from "../prompt/preparation.js";
 import type { RulingEntry } from "../cardRulings.js";
 import type { GameRulesTopic } from "../gameRules.js";
+import type { GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
 import type { AskAiProvider } from "../providers/askAiProvider.js";
 import { askAiRequestSchema } from "../validation/askAiRequest.js";
 import { toValidationErrorMessage } from "../app/errorHandler.js";
@@ -18,10 +19,12 @@ export type AskAiRouteDeps = {
   payloadLoggingEnabled: boolean;
   cardRulingsIndex?: Map<string, RulingEntry[]>;
   gameRulesTopics?: GameRulesTopic[];
+  gameRulesRuleIndex?: GameRulesRuleIndexEntry[];
+  collectEnrichmentDebug?: boolean;
 };
 
 export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
-  const { askAiProvider, logger, payloadLoggingEnabled, cardRulingsIndex, gameRulesTopics } = deps;
+  const { askAiProvider, logger, payloadLoggingEnabled, cardRulingsIndex, gameRulesTopics, gameRulesRuleIndex, collectEnrichmentDebug } = deps;
 
   app.post("/api/ask-ai", async (req: Request, res: Response, next: NextFunction) => {
     const correlationId = resolveCorrelationId(req.header("x-correlation-id"));
@@ -59,7 +62,7 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
 
       logger.info("ask_ai.prompt_context_build_started", { correlationId });
       const promptBuildStartedAt = Date.now();
-      const preparedPrompt = preparePromptInput(parsed.data, { cardRulingsIndex, gameRulesTopics });
+      const preparedPrompt = preparePromptInput(parsed.data, { cardRulingsIndex, gameRulesTopics, gameRulesRuleIndex, collectEnrichmentDebug });
       const diagnostics = preparedPrompt.diagnostics;
       logger.info("ask_ai.prompt_context_build_completed", {
         correlationId,
@@ -70,6 +73,13 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
         rulingsCardCount: diagnostics.rulingsCardCount,
         gameRulesSectionChars: diagnostics.gameRulesSectionChars,
         gameRulesTopicCount: diagnostics.gameRulesTopicCount,
+        ...(diagnostics.supplementalRuleCount != null
+          ? {
+              supplementalRuleCount: diagnostics.supplementalRuleCount,
+              supplementalRulesSectionChars: diagnostics.supplementalRulesSectionChars,
+              supplementalRuleIds: diagnostics.supplementalRuleIds
+            }
+          : {}),
         promptBuildElapsedMs: Date.now() - promptBuildStartedAt
       });
 
