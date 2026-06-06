@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { createApp } from "./app/createApp.js";
 import { loadCardRulingsIndex } from "./cardRulings.js";
 import { loadGameRulesTopics } from "./gameRules.js";
+import { loadGameRulesRuleIndex } from "./gameRulesRetrieval.js";
 import { readServerConfig } from "./config/index.js";
 import { createAppLogger } from "./logging.js";
 import { createAskAiProvider } from "./providers/createAskAiProvider.js";
@@ -47,13 +48,16 @@ const cardRulingsPath = resolve(repoRoot, "apps/backend/data/cardRulingsByOracle
 const cardRulingsIndex = loadCardRulingsIndex(cardRulingsPath);
 const gameRulesPath = resolve(repoRoot, "apps/backend/data/gameRulesByTopic.json");
 const gameRulesTopics = loadGameRulesTopics(gameRulesPath);
+const gameRulesRuleIndexPath = resolve(repoRoot, "apps/backend/data/gameRulesRuleIndex.json");
+const gameRulesRuleIndex = loadGameRulesRuleIndex(gameRulesRuleIndexPath);
 const app = createApp({
   frontendOrigin: config.frontendOrigin,
   debugLoggingEnabled: config.debugLoggingEnabled,
   payloadLoggingEnabled: config.payloadLoggingEnabled,
   askAiProvider: createAskAiProvider(config),
   cardRulingsIndex,
-  gameRulesTopics
+  gameRulesTopics,
+  gameRulesRuleIndex
 });
 
 app.listen(config.port, () => {
@@ -63,6 +67,7 @@ app.listen(config.port, () => {
     askAiProvider: config.askAiProvider,
     cardRulingsCardCount: cardRulingsIndex.size,
     gameRulesTopicCount: gameRulesTopics.length,
+    gameRulesRuleCount: gameRulesRuleIndex.length,
     debugLoggingEnabled: config.debugLoggingEnabled,
     payloadLoggingEnabled: config.payloadLoggingEnabled
   });

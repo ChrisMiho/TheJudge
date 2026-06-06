@@ -1,0 +1,57 @@
+{
+  "finalQuestion": "When I cascade into a noncreature spell, does prowess trigger on my creature before or after the cascaded spell resolves?",
+  "gameContext": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 20
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "stack_resolving",
+    "selectedZones": [
+      "stack",
+      "battlefield"
+    ]
+  },
+  "populatedZones": [
+    {
+      "zoneId": "battlefield",
+      "items": [
+        {
+          "cardId": "monastery-swiftspear",
+          "name": "Monastery Swiftspear",
+          "details": "1/2 with prowess. Player 1 controls it.",
+          "targets": [
+            {
+              "kind": "none"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "orderedStack": [
+    {
+      "cardId": "shardless-agent",
+      "name": "Shardless Agent",
+      "oracleText": "Cascade (When you cast this spell, exile cards from the top of your library until you exile a nonland card that costs less. You may cast it without paying its mana cost. Put the exiled cards on the bottom in a random order.)",
+      "imageUrl": "",
+      "manaCost": "",
+      "manaValue": 3,
+      "typeLine": "",
+      "colors": [],
+      "supertypes": [],
+      "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
+      "manaSpent": 3,
+      "stackIndex": 0,
+      "stackRole": "top"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "finalQuestion": "Do state-based actions apply now? My opponent's 2/2 has 2 damage on it — does rule 704.5g cause it to die before my Lightning Bolt resolves?",
+  "gameContext": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 20
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 14
+      }
+    ],
+    "turnPhase": "stack_resolving",
+    "selectedZones": [
+      "stack",
+      "battlefield"
+    ]
+  },
+  "populatedZones": [
+    {
+      "zoneId": "battlefield",
+      "items": [
+        {
+          "cardId": "grizzly-bears",
+          "name": "Grizzly Bears",
+          "details": "2/2 creature. Has 2 damage marked on it from a previous effect.",
+          "targets": [
+            {
+              "kind": "none"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "orderedStack": [
+    {
+      "cardId": "lightning-bolt",
+      "name": "Lightning Bolt",
+      "oracleText": "Lightning Bolt deals 3 damage to any target.",
+      "imageUrl": "",
+      "manaCost": "",
+      "manaValue": 1,
+      "typeLine": "",
+      "colors": [],
+      "supertypes": [],
+      "subtypes": [],
+      "caster": "Player 1",
+      "targets": [
+        {
+          "kind": "battlefield",
+          "targetPermanent": "Grizzly Bears"
+        }
+      ],
+      "manaSpent": 1,
+      "stackIndex": 0,
+      "stackRole": "top"
+    }
+  ]
+}

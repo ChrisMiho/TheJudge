@@ -31,39 +31,31 @@ Continuous effects and state-based actions use a layer system. When effects conf
 
 GENERAL GAME CONTEXT
 turnPhase: stack_resolving
-playerCount: 3
+playerCount: 2
 Player 1: lifeTotal=20
-Player 2: lifeTotal=16
-Player 3: lifeTotal=12
+Player 2: lifeTotal=20
 
 ZONE: STACK (BOTTOM TO TOP)
-Stack item 1 (bottom)
-card: Opt
+Stack item 1 (top)
+card: Shardless Agent
 manaCost: (none)
-manaValue: 1
+manaValue: 3
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
 caster: Player 1
 targets: (none)
-manaSpent: 1
+manaSpent: 3
 contextNotes: (none)
-oracleText: Scry 1, then draw a card.
+oracleText: Cascade (When you cast this spell, exile cards from the top of your library until you exile a nonland card that costs less. You may cast it without paying its mana cost. Put the exiled cards on the bottom in a random order.)
 
-Stack item 2 (top)
-card: Counterspell
-manaCost: (none)
-manaValue: 2
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 2
-targets: stack:Opt
-manaSpent: 2
-contextNotes: (none)
-oracleText: Counter target spell.
+ZONE: BATTLEFIELD
+Battlefield 1
+name: Monastery Swiftspear
+owner: (none)
+details: 1/2 with prowess. Player 1 controls it.
+targets: none:does-not-target
 
 GAME RULES (reference)
 Use these general Magic rules as shared vocabulary. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
@@ -189,21 +181,19 @@ Zones and Zone Changes
 ADDITIONAL RELEVANT RULE EXCERPTS
 Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
 
-603.8. 603.8. Some triggered abilities trigger when a game state (such as a player controlling no permanents of a particular card type) is true, rather than triggering when an event occurs. These abilities trigger as soon as the game state matches the condition. They’ll go onto the stack at the next available opportunity. These are called state triggers. (Note that state triggers aren’t the same as state-based actions.) A state-triggered ability doesn’t trigger again until the ability has resolved, has been countered, or has otherwise left the stack. Then, if the object with the ability is still in the same zone and the game state still matches its trigger condition, the ability will trigger again.
-Example: A permanent’s ability reads, “Whenever you have no cards in hand, draw a card.” If its controller plays the last card from their hand, the ability will trigger once and won’t trigger again until it has left the stack. If its controller casts a spell that reads “Discard your hand, then draw that many cards,” the ability will trigger during the spell’s resolution because the player’s hand was momentarily empty.
+701.57a. 701.57a “Discover N” means “Exile cards from the top of your library until you exile a nonland card with mana value N or less. You may cast that card without paying its mana cost if the resulting spell’s mana value is less than or equal to N. If you don’t cast it, put that card into your hand. Put the remaining exiled cards on the bottom of your library in a random order.”
 
-702.47c. 702.47c The spell has the characteristics of the main spell, plus the rules text of each of the spliced cards. This is a text-changing effect (see rule 612, “Text-Changing Effects”). The spell doesn’t gain any other characteristics (name, mana cost, color, supertypes, card types, subtypes, etc.) of the spliced cards. Text gained by the spell that refers to a card by name refers to the spell on the stack, not the card from which the text was copied.
-Example: Glacial Ray is a red card with splice onto Arcane that reads, “Glacial Ray deals 2 damage to any target.” Suppose Glacial Ray is spliced onto Reach Through Mists, a blue spell. The spell is still blue, and Reach Through Mists deals the damage. This means that the ability can target a creature with protection from red and deal 2 damage to that creature.
+702.168b. 702.168b To cast a card using its disguise ability, turn the card face down and announce that you are using a disguise ability. It becomes a 2/2 face-down creature card with ward {2}, no name, no subtypes, and no mana cost. Any effects or prohibitions that would apply to casting a card with these characteristics (and not the face-up card’s characteristics) are applied to casting this card. These values are the copiable values of that object’s characteristics. (See rule 613, “Interaction of Continuous Effects,” and rule 707, “Copying Objects.”) Put it onto the stack (as a face-down spell with the same characteristics), and pay {3} rather than pay its mana cost. This follows the rules for paying alternative costs. You can use a disguise ability to cast a card from any zone from which you could normally cast it. When the spell resolves, it enters the battlefield with the same characteristics the spell had. The disguise effect applies to the face-down object wherever it is, and it ends when the permanent is turned face up.
 
-608.2c. 608.2c The controller of the spell or ability follows its instructions in the order written. However, replacement effects may modify these actions. In some cases, later text on the card may modify the meaning of earlier text (for example, “Destroy target creature. It can’t be regenerated” or “Counter target spell. If that spell is countered this way, put it on top of its owner’s library instead of into its owner’s graveyard.”) Don’t just apply effects step by step without thinking in these cases—read the whole text and apply the rules of English to the text.
+702.37c. 702.37c To cast a card using its morph ability, turn it face down and announce that you’re using a morph ability. It becomes a 2/2 face-down creature card with no text, no name, no subtypes, and no mana cost. Any effects or prohibitions that would apply to casting a card with these characteristics (and not the face-up card’s characteristics) are applied to casting this card. These values are the copiable values of that object’s characteristics. (See rule 613, “Interaction of Continuous Effects,” and rule 707, “Copying Objects.”) Put it onto the stack (as a face-down spell with the same characteristics), and pay {3} rather than pay its mana cost. This follows the rules for paying alternative costs. You can use a morph ability to cast a card from any zone from which you could normally cast it. When the spell resolves, it enters the battlefield with the same characteristics the spell had. The morph effect applies to the face-down object wherever it is, and it ends when the permanent is turned face up.
 
-712.13a. 712.13a Some abilities may cause a double-faced spell with its front face up on the stack to enter the battlefield transformed or converted. If the back face of the card that represents that spell is an instant or sorcery face, or that spell is a copy of a double-faced card created with an instant or sorcery back face, it doesn’t enter the battlefield, and is instead put into its owner’s graveyard.
-Example: A player controls both Mycosynth Lattice and March of the Machines, the combined effects of which make all permanents artifact creatures in addition to their other types. They also control a Clone on the battlefield that is a copy of Bird Admirer, a creature with daybound. It is currently night, but that permanent can’t transform because it isn’t represented by a double-faced card. Its controller casts Mystic Reflection targeting it, then casts Invasion of Kylem, a Siege battle whose back face is a sorcery. Because Invasion of Kylem is entering the battlefield as a creature, Mystic Reflection’s replacement effect applies to it and it tries to enter the battlefield as a copy of Bird Admirer. Since it is night, the daybound ability would normally cause it to enter with its back face up. However, since its back face is a sorcery, it is instead put into its owner’s graveyard.
+702.85a. 702.85a Cascade is a triggered ability that functions only while the spell with cascade is on the stack. “Cascade” means “When you cast this spell, exile cards from the top of your library until you exile a nonland card whose mana value is less than this spell’s mana value. You may cast that card without paying its mana cost if the resulting spell’s mana value is less than this spell’s mana value. Then put all cards exiled this way that weren’t cast on the bottom of your library in a random order.”
 
-111.10e. 111.10e A Shard token is a colorless Shard enchantment token with “{2}, Sacrifice this token: Scry 1, then draw a card.”
+601.2h. 601.2h The player pays the total cost. First, they pay all costs that don’t involve random elements or moving objects from the library to a public zone, in any order. Then they pay all remaining costs in any order. Partial payments are not allowed. Unpayable costs can’t be paid.
+Example: You cast Altar’s Reap, which costs {1}{B} and has an additional cost of sacrificing a creature. You sacrifice Thunderscape Familiar, whose effect makes your black spells cost {1} less to cast. Because a spell’s total cost is “locked in” before payments are actually made, you pay {B}, not {1}{B}, even though you’re sacrificing the Familiar.
 
 SCOPE
-Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): battlefield, hand, graveyard, exile, library, command.
+Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): hand, graveyard, exile, library, command.
 
 QUESTION
-Does this still resolve if no board effects matter?
+When I cascade into a noncreature spell, does prowess trigger on my creature before or after the cascaded spell resolves?

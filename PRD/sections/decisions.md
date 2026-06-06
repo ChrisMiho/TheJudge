@@ -420,3 +420,25 @@
 - Notes:
   - no animation libraries added; CSS-only constraint satisfied
   - card list and wizard context above the form remain visible during the wait
+
+### DEC-032
+- Decision: Backend prompts include up to 5 supplemental WotC Comprehensive Rules excerpts per request, dynamically retrieved from a committed rule index artifact, deduplicated against the curated baseline manifest.
+- Status: confirmed
+- Context: DEC-030 curated baseline covers 23 topic areas but cannot cover every rule. Questions about state-based actions, obscure keywords, or specific rule numbers reference rules outside the curated manifest. Signal-based retrieval against a pre-built index fills this gap without increasing baseline prompt size for unrelated requests.
+- Impact:
+  - supplemental retrieval is prompt-only and backend-only; no API or UI changes
+  - DEC-030 curated baseline always included; supplemental rules coexist and never replace it
+  - max 5 supplemental rules per request; deduplicated against manifest rule numbers so curated rules are never repeated
+  - source is same WotC CR TXT and `build-game-rules.mjs` pipeline used for DEC-030
+  - committed artifact: `apps/backend/data/gameRulesRuleIndex.json` (built alongside `gameRulesByTopic.json`)
+  - `scripts/build-game-rules.mjs` extended with dual-output: topic JSON + rule index JSON
+  - scoring: exact rule ID match (100 pts), parent rule ID match (20 pts), dotted-token match (8 pts), keyword token match (1 pt); rules with score 0 excluded
+  - section label: `ADDITIONAL RELEVANT RULE EXCERPTS`, positioned after `GAME RULES (reference)` and before `OFFICIAL RULINGS`
+  - section omitted when index missing, empty, or no rules score above 0
+  - eval harness extended with checklist IDs: `supplemental-rules-section-present`, `supplemental-rules-after-game-rules`, `supplemental-rules-before-rulings`
+  - eval fixtures added: `state-based-actions` (704.5g SBA scenario), `cascade-keyword` (cascade + prowess interaction)
+- Related requirements:
+  - REQ-022
+- Notes:
+  - supplemental section disclaimer matches DEC-030 curated baseline disclaimer pattern
+  - this decision does not make the product an official judge or rules engine

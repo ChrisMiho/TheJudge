@@ -102,7 +102,7 @@ Read in this order:
 
 | Slug | Status | Summary |
 |------|--------|---------|
-| [supplemental-game-rules-retrieval](./work/supplemental-game-rules-retrieval/) | draft | Context-retrieved supplemental CR rules (max 5) on top of DEC-030 curated baseline |
+| [supplemental-game-rules-retrieval](./work/supplemental-game-rules-retrieval/) | active | Context-retrieved supplemental CR rules (max 5) on top of DEC-030 curated baseline |
 
 Completed work is promoted into `sections/` and temporary work folders are removed per `instructions/doc-lifecycle.md`.
 

@@ -4,12 +4,18 @@ import {
   type RulingEntry
 } from "../cardRulings.js";
 import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
+import {
+  collectCuratedRuleIds,
+  retrieveSupplementalRules,
+  type GameRulesRuleIndexEntry
+} from "../gameRulesRetrieval.js";
 import { buildPromptContext } from "./context.js";
 import {
   MAX_RULING_COMMENT_CHARS,
   MAX_RULINGS_PER_CARD,
   MAX_RULINGS_SECTION_CHARS,
   buildPromptText,
+  formatSupplementalRulesSection,
   getPromptDiagnostics,
   type PromptDiagnostics
 } from "./normalization.js";
@@ -24,6 +30,7 @@ export type PreparedPromptInput = {
 export type PreparePromptInputOptions = {
   cardRulingsIndex?: Map<string, RulingEntry[]>;
   gameRulesTopics?: GameRulesTopic[];
+  gameRulesRuleIndex?: GameRulesRuleIndexEntry[];
 };
 
 export function preparePromptInput(request: AskAiRequest, options: PreparePromptInputOptions = {}): PreparedPromptInput {
@@ -36,11 +43,16 @@ export function preparePromptInput(request: AskAiRequest, options: PreparePrompt
   });
   const gameRulesTopics = options.gameRulesTopics ?? [];
   const gameRulesSection = formatGameRulesSection(gameRulesTopics);
-  const promptText = buildPromptText(context, { rulings: resolvedRulings, gameRulesTopics });
+  const curatedRuleIds = collectCuratedRuleIds(gameRulesTopics);
+  const supplementalRules = retrieveSupplementalRules(context, options.gameRulesRuleIndex ?? [], curatedRuleIds);
+  const supplementalRulesSection = formatSupplementalRulesSection(supplementalRules);
+  const promptText = buildPromptText(context, { rulings: resolvedRulings, gameRulesTopics, supplementalRules });
   const diagnostics = getPromptDiagnostics(promptText, {
     resolvedRulings,
     gameRulesTopics,
-    gameRulesSectionChars: gameRulesSection.length
+    gameRulesSectionChars: gameRulesSection.length,
+    supplementalRules,
+    supplementalRulesSectionChars: supplementalRulesSection.length
   });
   return {
     context,

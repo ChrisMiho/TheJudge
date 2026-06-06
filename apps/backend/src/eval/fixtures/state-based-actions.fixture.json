@@ -1,0 +1,40 @@
+{
+  "id": "state-based-actions",
+  "description": "Question about state-based actions on a creature with lethal damage. Explicitly references rule 704.5g to trigger supplemental retrieval of SBA rules outside the curated manifest.",
+  "request": {
+    "question": "Do state-based actions apply now? My opponent's 2/2 has 2 damage on it — does rule 704.5g cause it to die before my Lightning Bolt resolves?",
+    "gameContext": {
+      "playerCount": 2,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 20 },
+        { "label": "Player 2", "lifeTotal": 14 }
+      ],
+      "turnPhase": "stack_resolving",
+      "selectedZones": ["stack", "battlefield"],
+      "zones": {
+        "battlefield": [
+          {
+            "cardId": "grizzly-bears",
+            "name": "Grizzly Bears",
+            "oracleText": "",
+            "contextNotes": "2/2 creature. Has 2 damage marked on it from a previous effect.",
+            "targets": [{ "kind": "none" }]
+          }
+        ],
+        "stack": [
+          {
+            "cardId": "lightning-bolt",
+            "name": "Lightning Bolt",
+            "oracleText": "Lightning Bolt deals 3 damage to any target.",
+            "imageUrl": "",
+            "manaValue": 1,
+            "caster": "Player 1",
+            "targets": [
+              { "kind": "card", "zone": "battlefield", "cardId": "grizzly-bears", "cardName": "Grizzly Bears" }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

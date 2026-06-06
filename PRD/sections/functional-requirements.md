@@ -353,6 +353,12 @@
   - `npm run data:refresh` attempts WotC CR download alongside Scryfall refresh with graceful skip when unavailable
   - eval fixtures assert the full game-rules block and remain under the prompt budget
   - manual latency sampling (p50/p95) is recorded after integration against the NFR-002 product risk
+  - committed artifact `apps/backend/data/gameRulesRuleIndex.json` loads at backend startup alongside the topic artifact
+  - every assembled prompt may include an `ADDITIONAL RELEVANT RULE EXCERPTS` section with up to 5 rules scored against the request context
+  - supplemental rules are excluded from the curated baseline set (deduplicated against `gameRulesTopicManifest.json` rule numbers)
+  - supplemental section appears after `GAME RULES (reference)` and before `OFFICIAL RULINGS`
+  - supplemental section omitted when index missing, empty, or no rules score above 0
+  - eval fixtures `state-based-actions` and `cascade-keyword` assert supplemental retrieval for out-of-manifest rules
 - Constraints:
   - prompt-only and backend-only; no `AskAiRequest`, Zod schema, or frontend changes
   - no paraphrased rule text

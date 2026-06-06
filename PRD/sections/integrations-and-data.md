@@ -214,12 +214,13 @@ Purpose:
 - raw CR source is gitignored at `apps/backend/data/cr/source.txt` and must not be committed
 - WotC CR download or refresh requires explicit human approval before the command runs (same policy as Scryfall refresh)
 - the committed topic manifest is `apps/backend/data/gameRulesTopicManifest.json`
-- the committed backend artifact is `apps/backend/data/gameRulesByTopic.json`, a list of curated topics with verbatim CR excerpts keyed by stable topic `id`
+- the committed backend artifacts are `apps/backend/data/gameRulesByTopic.json` (curated topic list) and `apps/backend/data/gameRulesRuleIndex.json` (flat rule index for supplemental retrieval); `build-game-rules.mjs` emits both in a single dual-output build
 - topic rule numbers and excerpts are curated and human-signed-off during implementation; the manifest drives `build-game-rules.mjs` extraction
-- `npm run data:build` rebuilds card metadata, card rulings, and game rules from local inputs
+- `gameRulesRuleIndex.json` contains every individual rule entry with `ruleId`, `sectionTitle`, `text`, `searchText`, and `parentRuleIds`; it is used for signal-based supplemental rule retrieval and is excluded from git LFS requirements (JSON, not binary)
+- `npm run data:build` rebuilds card metadata, card rulings, and game rules (topic JSON + rule index) from local inputs
 - `npm run data:refresh` downloads Scryfall bulk data and WotC CR source, then rebuilds local artifacts; agent-run refreshes require explicit human approval before any download command
-- build scripts degrade gracefully: missing CR source or failed extract keeps the prior committed artifact and exits 0
-- the backend loads the committed artifact at startup and omits game-rules enrichment if the artifact is missing or empty
+- build scripts degrade gracefully: missing CR source or failed extract keeps the prior committed artifacts and exits 0
+- the backend loads both committed artifacts at startup and omits game-rules enrichment if the artifacts are missing or empty
 - runtime CR fetches are out of scope for the core product
 
 ## AI Prompt Context Rules
@@ -235,6 +236,7 @@ The backend should include:
 - type line with parsed supertypes/subtypes and colors
 - published WotC Oracle rulings for submitted cards when available from the static backend artifact
 - verbatim WotC Comprehensive Rules excerpts for all curated general game-rules topics from the static backend artifact
+- up to 5 supplemental WotC CR rule excerpts dynamically retrieved from the committed rule index artifact, scored against the request context and deduplicated against the curated baseline
 - static MTG reference block
 - merged scope sentence for unselected zones and selected-but-empty zones
 - instructions to explain reasoning
