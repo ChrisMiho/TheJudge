@@ -81,6 +81,8 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 - `npm --workspace apps/backend run test` - run backend tests
 - `npm --workspace apps/backend run test:eval` - run backend eval harness test
 - `npm run data:refresh` - download latest Scryfall `default_cards` and `rulings` bulk data, then rebuild trimmed metadata and rulings artifacts
+- `npm run prompt:preview` - spin up mock backend, POST curated fixtures through `/api/ask-ai`, write reviewable prompt artifacts to gitignored `output/prompt-preview/`
+- `npm run prompt:preview:all` - same as above but includes all eval fixtures (including expected error paths); use `--fixture <id>`, `--output-dir`, `--port` for fine-grained runs
 - stop running processes with `Ctrl + C`
 
 ## Quality Gate Workflow

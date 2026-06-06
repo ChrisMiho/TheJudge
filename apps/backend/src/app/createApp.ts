@@ -19,6 +19,7 @@ export type AppOptions = {
   cardRulingsIndex?: Map<string, RulingEntry[]>;
   gameRulesTopics?: GameRulesTopic[];
   gameRulesRuleIndex?: GameRulesRuleIndexEntry[];
+  collectEnrichmentDebug?: boolean;
 };
 
 export function createApp(options: AppOptions = {}) {
@@ -38,7 +39,8 @@ export function createApp(options: AppOptions = {}) {
     payloadLoggingEnabled: isPayloadLoggingEnabled,
     cardRulingsIndex: options.cardRulingsIndex,
     gameRulesTopics: options.gameRulesTopics,
-    gameRulesRuleIndex: options.gameRulesRuleIndex
+    gameRulesRuleIndex: options.gameRulesRuleIndex,
+    collectEnrichmentDebug: options.collectEnrichmentDebug
   });
 
   app.use(createErrorHandler(logger, isDebug));

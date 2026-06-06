@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ASK_AI_ERROR_CODES } from "../errors.js";
+import { enrichmentDebugSchema } from "../prompt/enrichmentDebug.js";
 
 export const playerLabelSchema = z.enum([
   "Player 1",
@@ -201,7 +202,10 @@ export const askAiRequestSchema = z.object({
 
 export const askAiResponseSchema = z
   .object({
-    answer: z.string()
+    answer: z.string(),
+    context: z.record(z.string(), z.unknown()).optional(),
+    diagnostics: z.record(z.string(), z.unknown()).optional(),
+    enrichmentDebug: enrichmentDebugSchema.optional()
   })
   .strict();
 

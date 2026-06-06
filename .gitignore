@@ -32,3 +32,6 @@ apps/backend/data/cr/source.txt
 apps/backend/data/cr/source.txt.tmp
 apps/backend/data/scryfall/rulings.json
 apps/backend/data/scryfall/rulings.json.tmp
+
+# Prompt preview output (developer-local; not committed)
+output/prompt-preview/

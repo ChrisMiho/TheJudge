@@ -33,6 +33,9 @@ export function buildMockAnswer(preparedPrompt: PreparedPromptInput): AskAiRespo
   ];
 
   return {
-    answer: lines.join("\n")
+    answer: lines.join("\n"),
+    context: preparedPrompt.context,
+    diagnostics: preparedPrompt.diagnostics,
+    enrichmentDebug: preparedPrompt.enrichmentDebug
   };
 }

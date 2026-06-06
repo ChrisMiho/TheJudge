@@ -23,7 +23,9 @@
     "build": "npm --workspace apps/frontend run build && npm --workspace apps/backend run build",
     "data:build": "node scripts/build-card-metadata.mjs && node scripts/build-card-rulings.mjs && node scripts/build-game-rules.mjs",
     "data:refresh": "node scripts/refresh-scryfall-data.mjs",
-    "openai:verify-credentials": "node scripts/openai-verify-credentials.mjs"
+    "openai:verify-credentials": "node scripts/openai-verify-credentials.mjs",
+    "prompt:preview": "node scripts/prompt-preview.mjs",
+    "prompt:preview:all": "node scripts/prompt-preview.mjs --all-fixtures"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

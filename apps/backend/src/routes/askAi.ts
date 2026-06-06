@@ -20,10 +20,11 @@ export type AskAiRouteDeps = {
   cardRulingsIndex?: Map<string, RulingEntry[]>;
   gameRulesTopics?: GameRulesTopic[];
   gameRulesRuleIndex?: GameRulesRuleIndexEntry[];
+  collectEnrichmentDebug?: boolean;
 };
 
 export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
-  const { askAiProvider, logger, payloadLoggingEnabled, cardRulingsIndex, gameRulesTopics, gameRulesRuleIndex } = deps;
+  const { askAiProvider, logger, payloadLoggingEnabled, cardRulingsIndex, gameRulesTopics, gameRulesRuleIndex, collectEnrichmentDebug } = deps;
 
   app.post("/api/ask-ai", async (req: Request, res: Response, next: NextFunction) => {
     const correlationId = resolveCorrelationId(req.header("x-correlation-id"));
@@ -61,7 +62,7 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
 
       logger.info("ask_ai.prompt_context_build_started", { correlationId });
       const promptBuildStartedAt = Date.now();
-      const preparedPrompt = preparePromptInput(parsed.data, { cardRulingsIndex, gameRulesTopics, gameRulesRuleIndex });
+      const preparedPrompt = preparePromptInput(parsed.data, { cardRulingsIndex, gameRulesTopics, gameRulesRuleIndex, collectEnrichmentDebug });
       const diagnostics = preparedPrompt.diagnostics;
       logger.info("ask_ai.prompt_context_build_completed", {
         correlationId,

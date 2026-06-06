@@ -57,7 +57,8 @@ const app = createApp({
   askAiProvider: createAskAiProvider(config),
   cardRulingsIndex,
   gameRulesTopics,
-  gameRulesRuleIndex
+  gameRulesRuleIndex,
+  collectEnrichmentDebug: config.askAiProvider !== "openai"
 });
 
 app.listen(config.port, () => {

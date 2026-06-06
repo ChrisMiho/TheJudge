@@ -40,6 +40,10 @@ This folder stores fixture-driven golden cases for context and prompt evaluation
 }
 ```
 
+## Prompt preview
+
+Run `npm run prompt:preview` from the repo root to POST fixtures through the mock backend and write reviewable artifacts to `output/prompt-preview/`. See `scripts/prompt-preview.mjs` for details.
+
 ## Regression gates
 
 From repo root:

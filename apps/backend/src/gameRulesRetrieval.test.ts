@@ -6,6 +6,7 @@ import {
   collectCuratedRuleIds,
   loadGameRulesRuleIndex,
   retrieveSupplementalRules,
+  retrieveSupplementalRulesWithDebug,
   type GameRulesRuleIndexEntry,
   type RetrievedGameRule
 } from "./gameRulesRetrieval.js";
@@ -250,5 +251,91 @@ describe("retrieveSupplementalRules", () => {
       text: "405.1. The stack."
     });
     expect(typeof result[0]!.score).toBe("number");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// retrieveSupplementalRulesWithDebug
+// ---------------------------------------------------------------------------
+
+describe("retrieveSupplementalRulesWithDebug", () => {
+  it("returns selected and runnerUp arrays with debug when index is populated", () => {
+    const index = Array.from({ length: 8 }, (_, i) => {
+      const id = `${400 + i}.1`;
+      return makeEntry({
+        ruleId: id,
+        sectionTitle: `Section ${i}`,
+        text: `${id}. Rule about stack triggered abilities.`,
+        searchText: `${id} rule stack triggered abilities`,
+        parentRuleIds: [String(400 + i)]
+      });
+    });
+    const context = makeContext({ finalQuestion: "How do triggered abilities work on stack?" });
+    const result = retrieveSupplementalRulesWithDebug(context, index, new Set(), 5);
+
+    expect(result.selected.length).toBeLessThanOrEqual(5);
+    expect(result.runnerUp.length).toBeLessThanOrEqual(10);
+    expect(result.selected.length + result.runnerUp.length).toBeLessThanOrEqual(8);
+    expect(result.debug.candidatesScored).toBeGreaterThan(0);
+    expect(typeof result.debug.queryText).toBe("string");
+    expect(Array.isArray(result.debug.queryTokens)).toBe(true);
+    expect(Array.isArray(result.debug.queryRuleIds)).toBe(true);
+  });
+
+  it("debug.selected scores are numbers matching result.selected", () => {
+    const entry = makeEntry({
+      ruleId: "405.1",
+      sectionTitle: "The Stack",
+      text: "405.1. The stack.",
+      searchText: "405.1 stack",
+      parentRuleIds: ["405"]
+    });
+    const context = makeContext({ finalQuestion: "What does rule 405.1 say?" });
+    const result = retrieveSupplementalRulesWithDebug(context, [entry], new Set(), 5);
+
+    expect(result.debug.selected).toHaveLength(result.selected.length);
+    if (result.debug.selected[0]) {
+      expect(typeof result.debug.selected[0].score).toBe("number");
+      expect(result.debug.selected[0].ruleId).toBe(result.selected[0]?.ruleId);
+    }
+  });
+
+  it("excludedCuratedRuleCount matches excluded entries", () => {
+    const index = [
+      makeEntry({ ruleId: "405.1", searchText: "405.1 stack", parentRuleIds: ["405"] }),
+      makeEntry({ ruleId: "405.2", searchText: "405.2 stack more", parentRuleIds: ["405"] })
+    ];
+    const context = makeContext({ finalQuestion: "What does rule 405.1 and 405.2 say?" });
+    const result = retrieveSupplementalRulesWithDebug(context, index, new Set(["405.1"]), 5);
+
+    expect(result.debug.excludedCuratedRuleCount).toBe(1);
+    expect(result.selected.every((r) => r.ruleId !== "405.1")).toBe(true);
+  });
+
+  it("runnerUp length is capped at 10", () => {
+    const index = Array.from({ length: 20 }, (_, i) => {
+      const id = `${400 + i}.1`;
+      return makeEntry({
+        ruleId: id,
+        sectionTitle: `Section ${i}`,
+        text: `${id}. Rule about stack triggered abilities.`,
+        searchText: `${id} rule stack triggered abilities`,
+        parentRuleIds: [String(400 + i)]
+      });
+    });
+    const context = makeContext({ finalQuestion: "How do triggered abilities work on stack?" });
+    const result = retrieveSupplementalRulesWithDebug(context, index, new Set(), 5);
+
+    expect(result.runnerUp.length).toBeLessThanOrEqual(10);
+  });
+
+  it("returns empty selected and runnerUp with debug for empty index", () => {
+    const context = makeContext();
+    const result = retrieveSupplementalRulesWithDebug(context, [], new Set(), 5);
+
+    expect(result.selected).toEqual([]);
+    expect(result.runnerUp).toEqual([]);
+    expect(result.debug.candidatesScored).toBe(0);
+    expect(result.debug.excludedCuratedRuleCount).toBe(0);
   });
 });

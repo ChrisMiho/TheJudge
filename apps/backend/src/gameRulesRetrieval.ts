@@ -158,6 +158,86 @@ function scoreEntry(entry: GameRulesRuleIndexEntry, queryTokens: string[], query
   return score;
 }
 
+export type SupplementalRulesDebug = {
+  queryText: string;
+  queryTokens: string[];
+  queryRuleIds: string[];
+  excludedCuratedRuleCount: number;
+  selected: Array<{ ruleId: string; sectionTitle: string; score: number }>;
+  runnerUp: Array<{ ruleId: string; sectionTitle: string; score: number }>;
+  candidatesScored: number;
+};
+
+export type SupplementalRulesWithDebug = {
+  selected: RetrievedGameRule[];
+  runnerUp: RetrievedGameRule[];
+  debug: SupplementalRulesDebug;
+};
+
+export function retrieveSupplementalRulesWithDebug(
+  context: PromptContext,
+  index: GameRulesRuleIndexEntry[],
+  excludeRuleIds: Set<string>,
+  max = 5
+): SupplementalRulesWithDebug {
+  const queryText = buildQueryText(context);
+  const queryTokens = tokenize(queryText);
+  const queryRuleIds = extractRuleIds(queryText);
+
+  if (index.length === 0) {
+    return {
+      selected: [],
+      runnerUp: [],
+      debug: {
+        queryText,
+        queryTokens,
+        queryRuleIds,
+        excludedCuratedRuleCount: 0,
+        selected: [],
+        runnerUp: [],
+        candidatesScored: 0
+      }
+    };
+  }
+
+  const scored: RetrievedGameRule[] = [];
+  let excludedCuratedRuleCount = 0;
+
+  for (const entry of index) {
+    if (excludeRuleIds.has(entry.ruleId)) {
+      excludedCuratedRuleCount++;
+      continue;
+    }
+
+    const score = scoreEntry(entry, queryTokens, queryRuleIds);
+    if (score > 0) {
+      scored.push({ ruleId: entry.ruleId, sectionTitle: entry.sectionTitle, text: entry.text, score });
+    }
+  }
+
+  scored.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return parseFloat(a.ruleId) - parseFloat(b.ruleId);
+  });
+
+  const selected = scored.slice(0, max);
+  const runnerUp = scored.slice(max, max + 10);
+
+  return {
+    selected,
+    runnerUp,
+    debug: {
+      queryText,
+      queryTokens,
+      queryRuleIds,
+      excludedCuratedRuleCount,
+      selected: selected.map((r) => ({ ruleId: r.ruleId, sectionTitle: r.sectionTitle, score: r.score })),
+      runnerUp: runnerUp.map((r) => ({ ruleId: r.ruleId, sectionTitle: r.sectionTitle, score: r.score })),
+      candidatesScored: scored.length
+    }
+  };
+}
+
 export function retrieveSupplementalRules(
   context: PromptContext,
   index: GameRulesRuleIndexEntry[],

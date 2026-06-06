@@ -83,4 +83,4 @@
   - DEC-020
 - Notes:
   - enrichment debug collection runs only when `ASK_AI_PROVIDER=mock`
-  - see `PRD/work/prompt-preview-command/DESIGN-BRIEF.md` for artifact shapes
+  - artifact shapes documented in `sections/integrations-and-data.md` § Delivery Strategy
