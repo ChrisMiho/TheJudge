@@ -20,8 +20,14 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 ## Data Model
 
 ### TurnPhase
-- `"untap" | "upkeep" | "draw" | "main_1" | "combat" | "main_2" | "end_step" | "cleanup" | "stack_resolving"`
-- Combat is intentionally combined; combat sub-step details belong in the question or notes.
+- `"untap" | "upkeep" | "draw" | "main_1" | "combat" | "main_2" | "end_step" | "cleanup"`
+- `stack_resolving` is removed; it was not a real MTG phase (DEC-034).
+- Combat is one combined phase; sub-step precision is captured via the structured `CombatStep` field (DEC-037).
+
+### CombatStep
+- `"beginning_of_combat" | "declare_attackers" | "declare_blockers" | "combat_damage" | "end_of_combat"`
+- Optional field on `GameContext`; present only when `turnPhase === "combat"`.
+- Frontend default is `declare_blockers` (DEC-037).
 
 ### ZoneId
 - `"stack" | "battlefield" | "hand" | "graveyard" | "exile" | "library" | "command"`
@@ -53,6 +59,7 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - `playerCount: number`
 - `players: Array<{ label: PlayerLabel; lifeTotal: number; displayName?: string }>`
 - `turnPhase: TurnPhase`
+- `combatStep?: CombatStep` — present only when `turnPhase === "combat"`; ignored otherwise
 - `activePlayer?: PlayerLabel`
 - `selectedZones: ZoneId[]`
 - `zones?: Partial<Record<ZoneId, ZoneCardItem[]>>`
@@ -226,7 +233,8 @@ Purpose:
 ## AI Prompt Context Rules
 The backend should include:
 - final user question
-- game context (player count, life totals, active player when provided, turn phase)
+- game context (player count, life totals, active player when provided, turn phase, combat sub-step when present)
+- phase-specific guidance block (`PHASE GUIDANCE`) positioned between `GENERAL GAME CONTEXT` and zone sections; always present for a valid phase submission; combat guidance varies by `combatStep` when present (DEC-036)
 - selected zones
 - populated zone sections
 - ordered stack zone when populated

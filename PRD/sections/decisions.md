@@ -252,7 +252,7 @@
 
 ### DEC-022
 - Decision: Turn phase uses the v1 enum `untap`, `upkeep`, `draw`, `main_1`, `combat`, `main_2`, `end_step`, `cleanup`, and `stack_resolving`.
-- Status: confirmed
+- Status: superseded
 - Context: The app needs enough timing context for prompt quality without modeling every Magic sub-step.
 - Impact:
   - combat is one combined phase
@@ -261,6 +261,7 @@
 - Related requirements:
   - REQ-015
 - Notes:
+  - superseded by DEC-034 which removes `stack_resolving` and by DEC-037 which adds structured `combatStep` capture
 
 ### DEC-023
 - Decision: Zone confirmation is user-controlled and seeded by phase defaults.
@@ -462,3 +463,86 @@
 - Notes:
   - do not add `promptText` as a separate response field; parse from the stable `FULL PROMPT (SENT TO PROVIDER)` section in mock `answer`
   - `MAX_PROMPT_CHAR_BUDGET` remains 35000 per DEC-030
+
+### DEC-034
+- Decision: `stack_resolving` is removed from the `TurnPhase` enum; the default turn phase on the game setup screen is `main_1`.
+- Status: confirmed
+- Context: `stack_resolving` is not a real MTG turn phase; it was a product invention that caused confusion. The stack can be resolving during any phase. `main_1` is the most common phase where players encounter interactions requiring clarification.
+- Impact:
+  - `TurnPhase` union updated in frontend and backend types to: `untap`, `upkeep`, `draw`, `main_1`, `combat`, `main_2`, `end_step`, `cleanup`
+  - `stack_resolving` removed from `TURN_PHASE_OPTIONS` in `App.tsx`
+  - `DEFAULT_TURN_PHASE` set to `"main_1"` in `apps/frontend/src/lib/contextFlow/flow.ts`
+  - `PHASE_ZONE_DEFAULTS` entry for `stack_resolving` removed from `phaseZoneDefaults.ts`
+  - `MTG_PROMPT_REFERENCE` in `apps/backend/src/prompt/mtgReference.ts` updated to remove `stack_resolving` references
+- Related requirements:
+  - REQ-015
+  - REQ-016
+- Notes:
+  - supersedes DEC-022 where it includes `stack_resolving` in the phase enum
+
+### DEC-035
+- Decision: Phase zone defaults are trimmed to 2 zones per phase; empty phase-defaulted zones are excluded from the payload and LLM context.
+- Status: confirmed
+- Context: Manual testing showed users consistently unchecking more zones than they were adding, indicating defaults were too broad. Tighter defaults reduce friction during live gameplay entry. The empty-zone exclusion rule from DEC-024 applies to all phase-defaulted zones, not only stack.
+- Impact:
+  - `PHASE_ZONE_DEFAULTS` in `phaseZoneDefaults.ts` updated:
+    - untap: `battlefield`, `command`
+    - upkeep: `battlefield`, `stack`
+    - draw: `library`, `hand`
+    - main_1: `battlefield`, `hand`
+    - main_2: `battlefield`, `hand`
+    - combat: `battlefield`, `stack`
+    - end_step: `battlefield`, `hand`
+    - cleanup: `battlefield`, `graveyard`
+  - `stack_resolving` entry removed (per DEC-034)
+  - a defaulted zone with no cards is excluded from the payload and LLM context; the user may still proceed as long as at least one other zone has a card
+- Related requirements:
+  - REQ-016
+- Notes:
+  - `untap`, `cleanup` were already 2 zones; `upkeep`, `draw`, `combat` trimmed from 3; `main_1`, `main_2`, `end_step` trimmed from 4
+
+### DEC-036
+- Decision: Every backend prompt includes a `PHASE GUIDANCE` block positioned between `GENERAL GAME CONTEXT` and the zone sections, with phase-specific and combat-sub-step-specific reasoning instructions.
+- Status: confirmed
+- Context: The LLM receives `turnPhase` as a field in `GENERAL GAME CONTEXT` but has no phase-specific reasoning instructions. Phase guidance improves answer quality by directing the model toward the mechanics and timing rules most relevant for the submitted phase.
+- Impact:
+  - new module `apps/backend/src/prompt/phaseGuidance.ts` maps each `TurnPhase` and optional `CombatStep` to 2–4 sentences of focused guidance
+  - `buildPromptText` in `normalization.ts` emits a `PHASE GUIDANCE` block using this module, always present for a valid phase submission
+  - combat guidance varies by `combatStep` when present; falls back to generic combat framing when absent
+  - canonical guidance strings per phase:
+    - `untap`: "This is the untap step. Players do not normally receive priority during untap — the stack should be empty. Focus on replacement effects that modify untapping, effects that prevent permanents from untapping, and phasing."
+    - `upkeep`: "This is the upkeep step. Upkeep-triggered abilities fire in APNAP order and are placed on the stack before priority is passed. Focus on which upkeep triggers fired, their stacking order, cumulative upkeep costs, and what responses are available."
+    - `draw`: "This is the draw step. The active player draws one card; triggered abilities from drawing then fire. Focus on replacement effects on the draw (the controlling player orders multiple replacement effects), skip-draw effects, and 'whenever a player draws' triggered abilities."
+    - `main_1`: "This is the first main phase. Focus on spell timing restrictions (sorceries require an empty stack and the caster's main phase), ETB trigger ordering, and the legendary rule."
+    - `main_2`: "This is the second main phase, after combat has concluded. The same spell timing rules apply as in the first main phase. Note that 'until end of turn' effects from combat are still active; they end during cleanup, not here."
+    - `combat` + `beginning_of_combat`: "This is the beginning of combat step. Triggered abilities that fire at the beginning of combat are placed on the stack in APNAP order. Attackers have not yet been declared. Players can cast instants and activate abilities."
+    - `combat` + `declare_attackers`: "Attackers have been declared. Attack-triggered abilities (exalted, attack triggers on creatures) fire in APNAP order. Players can cast instants and activate abilities in response before blockers are declared."
+    - `combat` + `declare_blockers` (default): "Blockers have been declared. Focus on damage assignment order, trample, deathtouch, first strike and double strike, and how combat damage is allocated across multiple blockers. Block-triggered abilities fire in APNAP order."
+    - `combat` + `combat_damage`: "Combat damage is being assigned. Focus on first strike vs regular damage steps, lethal damage and deathtouch, trample damage to the defending player, lifelink, and triggered abilities that fire when creatures deal or receive combat damage."
+    - `combat` + `end_of_combat`: "This is the end of combat step. 'Until end of combat' effects are still active. Players can cast instants and activate abilities. Triggered abilities that fire at end of combat are placed on the stack in APNAP order."
+    - `combat` (no sub-step): "The game is in a combat step. Focus on combat keyword interactions, attack and block triggered abilities in APNAP order, damage assignment, and combat tricks. Specify the combat sub-step in your question if precision matters."
+    - `end_step`: "This is the end step. 'At the beginning of your end step' triggered abilities fire in APNAP order. Players can cast instants and activate abilities in response. Note: 'until end of turn' effects have not yet expired — those end during cleanup."
+    - `cleanup`: "This is the cleanup step. The active player discards to hand size, damage is removed from all permanents, and 'until end of turn' effects end. Priority is not normally passed during cleanup — but if a triggered ability fires, state-based actions are checked and players receive priority."
+- Related requirements:
+  - REQ-024
+- Notes:
+  - `PHASE GUIDANCE` section is always emitted for a valid submitted phase; it is never omitted
+  - do not add rules-validation behavior under the label of phase guidance
+  - `main_1` and `main_2` guidance shares a base builder in `phaseGuidance.ts`; `main_2` appends a post-combat addendum rather than duplicating the full string — the distinction is meaningful in the game and must be preserved, but the implementation should not duplicate shared logic
+
+### DEC-037
+- Decision: `combatStep` is an optional structured field on `GameContext`; a combat sub-step selector appears inline in the frontend when `turnPhase === "combat"` and defaults to `declare_blockers`.
+- Status: confirmed
+- Context: Combat has five distinct priority windows requiring different reasoning. A structured field lets the phase guidance block (DEC-036) give precise, sub-step-specific instructions rather than generic combat framing. Most players do not know exactly which combat sub-step they are in, so defaulting to `declare_blockers` covers the most contentious and common moment.
+- Impact:
+  - new type `CombatStep = "beginning_of_combat" | "declare_attackers" | "declare_blockers" | "combat_damage" | "end_of_combat"` added to frontend and backend types
+  - `GameContext` gains optional field `combatStep?: CombatStep`
+  - frontend: inline sub-step selector renders next to the phase picker when combat is selected; default is `declare_blockers`
+  - backend Zod schema updated to accept optional `combatStep` on `gameContext`; field is ignored when `turnPhase !== "combat"`
+  - `PromptContext` passes `combatStep` through to `phaseGuidance.ts` resolution
+  - `POST /api/ask-ai` request shape gains `gameContext.combatStep` as optional; success and error response shapes remain unchanged
+- Related requirements:
+  - REQ-015
+  - REQ-024
+- Notes:
+  - the note in DEC-022 that "combat sub-step detail belongs in the question or notes" is superseded; the user's question may still add further detail

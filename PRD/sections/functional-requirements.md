@@ -217,18 +217,22 @@
   - user can set active player from included player labels
   - player selects show display names as `Player N (Name)` when a custom display name is set
   - submitted API values remain fixed `PlayerLabel` strings
-  - user must select one turn phase from `untap`, `upkeep`, `draw`, `main_1`, `combat`, `main_2`, `end_step`, `cleanup`, and `stack_resolving`
+  - user must select one turn phase from `untap`, `upkeep`, `draw`, `main_1`, `combat`, `main_2`, `end_step`, `cleanup`
+  - when turn phase is `combat`, an inline sub-step selector offers `beginning_of_combat`, `declare_attackers`, `declare_blockers`, `combat_damage`, and `end_of_combat`
+  - combat sub-step defaults to `declare_blockers` when `combat` is selected
+  - submitted `combatStep` value is the selected `CombatStep` string when turn phase is `combat`; field is omitted otherwise
   - user must confirm context before proceeding to zone confirmation
   - invalid or missing required values block progression
 - Constraints:
   - fixed `PlayerLabel` identity with optional display names for UI labels and prompt text
   - support range is constrained by current player-label model
-  - combat is a combined phase; combat sub-step details belong in the question or notes
+  - combat sub-step is captured as a structured field; the user's question may still add further detail
 - Dependencies:
   - frontend staged flow
   - prompt context contract
 - Notes:
   - this context is prompt-facing, not a rules-engine source of truth
+  - see DEC-034 for phase enum change, DEC-037 for combat sub-step
 
 ### REQ-016
 - Title: Zone confirmation with phase defaults
@@ -248,6 +252,7 @@
   - prompt context contract
 - Notes:
   - v1 zones are `stack`, `battlefield`, `hand`, `graveyard`, `exile`, `library`, and `command`
+  - per-phase 2-zone defaults are defined in DEC-035; empty defaulted zones are excluded from the payload and LLM context per DEC-024 and DEC-035
 
 ### REQ-017
 - Title: Per-card enrichment with fallback
@@ -383,3 +388,22 @@
   - NFR-006
 - Notes:
   - approved threshold copy: 0s "Consulting the stack…" (calm), 3s "Priority is passing to the LLM." (calm), 8s "The judge is reading every layer. Twice." (curious), 15s "Still waiting? The servers are scrying 1." (curious), 25s "At this point we're basically in a MUD subgame." (absurd), 40s "If this were F6, we'd have resolved by now." (absurd)
+
+### REQ-024
+- Title: Phase-scoped prompt guidance
+- Priority: medium
+- Description: Every backend AI prompt must include a `PHASE GUIDANCE` block containing phase-specific and combat-sub-step-specific reasoning instructions, positioned between `GENERAL GAME CONTEXT` and the zone sections.
+- Acceptance Criteria:
+  - every assembled prompt includes a `PHASE GUIDANCE` section between `GENERAL GAME CONTEXT` and the zone sections
+  - guidance text is specific to the submitted `turnPhase`
+  - when `turnPhase` is `combat`, guidance text is specific to the submitted `combatStep` when present; falls back to generic combat framing when absent
+  - section is never omitted for a valid phase submission
+  - canonical guidance strings per phase match those specified in DEC-036
+- Constraints:
+  - prompt-only and backend-only beyond the `combatStep` field additions in DEC-037
+  - do not add rules-validation behavior under the label of phase guidance
+- Dependencies:
+  - DEC-036
+  - DEC-037
+  - REQ-015
+- Notes:
