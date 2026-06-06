@@ -282,8 +282,10 @@ Game rules prompt enrichment must:
 
 #### `mock`
 - default local provider mode
-- returns a debug-friendly response using the same success contract as live answers
-- validates flow, payload shape, and prompt context without model access
+- returns a debug-friendly response using the same success contract as live answers, plus optional mock-only debug sidecars (DEC-033)
+- validates flow, payload shape, prompt context, and enrichment trace without model access
+- mock success response may include optional `context`, `diagnostics`, and `enrichmentDebug` alongside required `answer`
+- frontend and OpenAI provider continue using `{ answer }` only
 
 #### `openai`
 - live answer generation through the backend provider boundary
@@ -292,15 +294,27 @@ Game rules prompt enrichment must:
 - confirmed provider rules: `DEC-020` in `sections/decisions.md`
 
 ### Mock Response Rule
-- keep the same success response contract as the real backend
-- return the outbound request data as a debug-friendly JSON-formatted string inside `answer`
-- use this to help inspect the exact payload shape being prepared for the LLM
+- keep the same required success field as live answers: `answer` (string)
+- embed the exact LLM prompt in `answer` under the stable `FULL PROMPT (SENT TO PROVIDER)` section, preceded by prompt budget stats
+- optionally attach mock-only sidecars for developer review: `context`, `diagnostics`, `enrichmentDebug` (DEC-033)
+- collect enrichment debug only when `ASK_AI_PROVIDER=mock`
+- use `npm run prompt:preview` to materialize per-fixture review files under gitignored `output/prompt-preview/` (NFR-009)
 
 ### Example Mock Success Response
 
     {
-      "answer": "MOCK RESPONSE\n{\n  \"question\": \"Resolve the stack\",\n  \"gameContext\": {...}\n}"
+      "answer": "MOCK RESPONSE\n...\nFULL PROMPT (SENT TO PROVIDER)\n\n<assembled prompt text>",
+      "context": { "...": "normalized PromptContext" },
+      "diagnostics": { "promptChars": 12345, "promptBudgetChars": 35000, "...": "..." },
+      "enrichmentDebug": { "supplemental": { "...": "..." }, "...": "..." }
     }
+
+### Prompt preview developer workflow
+
+- `npm run prompt:preview` — default curated success fixtures
+- `npm run prompt:preview:all` — all eval fixtures including expected API error paths
+- each fixture writes a separate directory with labeled files (`production.prompt.txt`, sidecar JSON, or `api-error.json` for non-2xx)
+- see `apps/backend/src/eval/fixtures/README.md` and NFR-009
 
 ## Dependencies
 - Scryfall-derived metadata

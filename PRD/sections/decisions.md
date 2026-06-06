@@ -442,3 +442,23 @@
 - Notes:
   - supplemental section disclaimer matches DEC-030 curated baseline disclaimer pattern
   - this decision does not make the product an official judge or rules engine
+
+### DEC-033
+- Decision: The mock provider may return optional debug sidecar fields on `POST /api/ask-ai` success responses; the OpenAI provider and frontend contract remain `{ answer }` only.
+- Status: confirmed
+- Context: Prompt enrichment review today requires reading the mock `answer` blob or eval goldens that skip the full `/api/ask-ai` path. A local `npm run prompt:preview` workflow needs structured artifacts without new routes or frontend changes.
+- Impact:
+  - `askAiResponseSchema` accepts optional `context`, `diagnostics`, and `enrichmentDebug` on success responses
+  - mock provider populates all sidecars from `preparePromptInput` plus enrichment debug collected only when `ASK_AI_PROVIDER=mock`
+  - OpenAI provider continues returning `{ answer }` only
+  - frontend reads `answer` only; no UI or request-shape changes
+  - `enrichmentDebug` exposes supplemental retrieval scores/runner-ups, curated topic manifest snapshot, and rulings inclusion trace not present in aggregate diagnostics
+  - error responses remain the existing `askAiErrorSchema` shape; preview tooling captures them per fixture for frontend-visible error review
+  - DEC-020 frozen success contract for live provider is preserved; optional fields are mock-only additions
+- Related requirements:
+  - NFR-009
+  - REQ-012
+  - REQ-013
+- Notes:
+  - do not add `promptText` as a separate response field; parse from the stable `FULL PROMPT (SENT TO PROVIDER)` section in mock `answer`
+  - `MAX_PROMPT_CHAR_BUDGET` remains 35000 per DEC-030
