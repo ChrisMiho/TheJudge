@@ -556,6 +556,7 @@
   - first decrypt omits `conversationHistory`; follow-up N sends frozen `gameContext` plus full prior exchange
   - backend Zod validation accepts the field when present: non-empty array, max 20 turns, max 2000 chars/message, same control-character guardrails as `question`, must start `role: "user"`, must alternate user/assistant, last entry must be `assistant`
   - success response shape `{ answer }` and error response shape are unchanged for both mock and OpenAI providers
+  - mock-provider follow-up answers include the exact assembled LLM-facing prompt for the submitted user message, allowing the visible chat flow and provider-bound prompt to be validated without live model access
   - DEC-020 frozen contract is preserved; this is an additive optional extension only
 - Related requirements:
   - REQ-019

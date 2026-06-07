@@ -322,6 +322,7 @@ Game rules prompt enrichment must:
 - default local provider mode
 - returns a debug-friendly response using the same success contract as live answers, plus optional mock-only debug sidecars (DEC-033)
 - validates flow, payload shape, prompt context, and enrichment trace without model access
+- for post-decrypt chat, every mock response is still a normal `{ answer }` success response so the frontend preserves and appends to the visible conversation thread
 - mock success response may include optional `context`, `diagnostics`, and `enrichmentDebug` alongside required `answer`
 - frontend and OpenAI provider continue using `{ answer }` only
 
@@ -334,6 +335,7 @@ Game rules prompt enrichment must:
 ### Mock Response Rule
 - keep the same required success field as live answers: `answer` (string)
 - embed the exact LLM prompt in `answer` under the stable `FULL PROMPT (SENT TO PROVIDER)` section, preceded by prompt budget stats
+- for follow-up turns, the embedded prompt is the prompt assembled for that current user message and includes `CONVERSATION HISTORY`, the frozen first-decrypt `gameContext`, and all applicable prompt sections such as `PHASE GUIDANCE`
 - optionally attach mock-only sidecars for developer review: `context`, `diagnostics`, `enrichmentDebug` (DEC-033)
 - collect enrichment debug only when `ASK_AI_PROVIDER=mock`
 - use `npm run prompt:preview` to materialize per-fixture review files under gitignored `output/prompt-preview/` (NFR-009)

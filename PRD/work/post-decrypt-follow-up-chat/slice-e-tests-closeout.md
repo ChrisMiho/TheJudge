@@ -1,6 +1,6 @@
 # Slice E — Tests + Closeout
 
-## Status: planned
+## Status: done
 
 ## Goal
 

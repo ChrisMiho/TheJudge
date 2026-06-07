@@ -48,4 +48,7 @@ Short report:
 
 ## Handoff
 
-On PASS, user runs `thejudge-map-out` with same slug.
+End with **Next step** — all three platforms, in order: Cursor, Codex, Claude Code. Substitute `<slug>` from this session. Templates: `PRD/instructions/workflow-reference.md` (Handoff blocks).
+
+- **PASS** → next skill: `thejudge-map-out`
+- **FAIL** → next skill: `thejudge-refinement` (include issue list above the handoff blocks)

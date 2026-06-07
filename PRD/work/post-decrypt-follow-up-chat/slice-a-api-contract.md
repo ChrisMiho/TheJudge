@@ -1,6 +1,6 @@
 # Slice A — API Contract (Backend types + Zod + validation tests)
 
-## Status: planned
+## Status: done
 
 ## Goal
 

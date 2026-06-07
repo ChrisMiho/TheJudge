@@ -2,7 +2,9 @@ import type { z } from "zod";
 import type {
   askAiErrorSchema,
   askAiRequestSchema,
+  combatStepSchema,
   contextTargetSchema,
+  conversationTurnSchema,
   gameContextSchema,
   gamePlayerSchema,
   playerLabelSchema,
@@ -13,8 +15,10 @@ import type {
 import type { EnrichmentDebug } from "../prompt/enrichmentDebug.js";
 import type { PromptDiagnostics } from "../prompt/normalization.js";
 
+export type ConversationTurn = z.infer<typeof conversationTurnSchema>;
 export type PlayerLabel = z.infer<typeof playerLabelSchema>;
 export type TurnPhase = z.infer<typeof turnPhaseSchema>;
+export type CombatStep = z.infer<typeof combatStepSchema>;
 export type ZoneId = z.infer<typeof zoneIdSchema>;
 export type ContextTarget = z.infer<typeof contextTargetSchema>;
 export type ZoneCardItem = z.infer<typeof zoneCardItemSchema>;
@@ -75,6 +79,7 @@ export type PromptContext = {
     playerCount: number;
     players: GamePlayerContext[];
     turnPhase: TurnPhase;
+    combatStep?: CombatStep;
     activePlayer?: PlayerLabel;
     selectedZones: ZoneId[];
   };

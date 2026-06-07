@@ -1,6 +1,6 @@
 # Slice C — Frontend Conversation Hook
 
-## Status: planned
+## Status: done
 
 ## Goal
 

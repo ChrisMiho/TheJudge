@@ -7,8 +7,9 @@ import {
 } from "../lib/contextFlow";
 import { buildPlayerDisplayNameMap, formatPlayerDisplayLabel } from "../lib/playerLabels";
 import { ZONE_LABELS } from "../lib/zoneLabels";
-import type { ContextTarget, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
+import type { ConversationMessage, ContextTarget, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { AskAiWaitingPanel } from "./AskAiWaitingPanel";
+import { ConversationThread } from "./ConversationThread";
 
 const MAX_QUESTION_CHARS = 300;
 
@@ -35,6 +36,12 @@ type EnrichmentStepProps = {
   retryCountdown: number;
   onRetry: () => Promise<void>;
   statusMessage: string | null;
+  isConversationActive: boolean;
+  isFollowUpSubmitting: boolean;
+  visibleMessages: ConversationMessage[];
+  frozenGameContext: GameContext | null;
+  onFollowUp: (text: string) => Promise<void>;
+  onStartOver: () => void;
 };
 
 function parseManaSpent(value: string): number | undefined {
@@ -73,7 +80,13 @@ export function EnrichmentStep({
   canRetry,
   retryCountdown,
   onRetry,
-  statusMessage
+  statusMessage,
+  isConversationActive,
+  isFollowUpSubmitting,
+  visibleMessages,
+  frozenGameContext,
+  onFollowUp,
+  onStartOver
 }: EnrichmentStepProps): JSX.Element {
   const [pendingKindByKey, setPendingKindByKey] = useState<Record<string, PendingTargetKind>>({});
   const [pendingPlayerByKey, setPendingPlayerByKey] = useState<Record<string, PlayerLabel>>({});
@@ -83,6 +96,7 @@ export function EnrichmentStep({
   const [wizardIndex, setWizardIndex] = useState(0);
   const [wizardFinished, setWizardFinished] = useState(false);
   const [cardAnimKey, setCardAnimKey] = useState(0);
+  const [followUpText, setFollowUpText] = useState("");
 
   const enrichmentQueue = useMemo(
     () => (gameContext ? buildEnrichmentQueue({ ...gameContext, zones }) : []),
@@ -389,6 +403,19 @@ export function EnrichmentStep({
     );
   }
 
+  function handleStartOver(): void {
+    setFollowUpText("");
+    onStartOver();
+  }
+
+  async function handleFollowUpSubmit(e: FormEvent): Promise<void> {
+    e.preventDefault();
+    const text = followUpText.trim();
+    if (!text) return;
+    setFollowUpText("");
+    await onFollowUp(text);
+  }
+
   const hasAnswer = Boolean(answer);
   const retryLabel = retryCountdown > 0 ? `Retry in ${retryCountdown}s` : "Retry";
   const showWizard = totalCards > 0 && viewMode === "wizard" && !wizardFinished;
@@ -400,6 +427,105 @@ export function EnrichmentStep({
   const stackSelectedButEmpty =
     gameContext?.selectedZones?.includes("stack") === true && (zones.stack?.length ?? 0) === 0;
   const fallbackQuestion = resolveFallbackQuestion(zones);
+
+  if (isConversationActive) {
+    const frozenZones = frozenGameContext?.zones ?? {};
+    const frozenZoneSummaries = CANONICAL_ZONE_ORDER
+      .map((zone) => ({ zone, cards: frozenZones[zone] ?? [] }))
+      .filter(({ cards }) => cards.length > 0);
+
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
+        <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 md:p-6">
+          <header>
+            <h1 className="bg-gradient-to-r from-sky-300 to-blue-400 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+              TheJudge
+            </h1>
+            <p className="text-sm text-slate-300">Stack Assistant</p>
+          </header>
+
+          <h2 className="text-2xl font-semibold text-sky-300">Conversation</h2>
+
+          {isSubmitting && <AskAiWaitingPanel isSubmitting={isSubmitting} />}
+
+          <ConversationThread messages={visibleMessages} />
+
+          {frozenZoneSummaries.length > 0 && (
+            <div className="rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
+                Game context (frozen)
+              </p>
+              <ul className="space-y-1 text-sm text-slate-300">
+                {frozenZoneSummaries.map(({ zone, cards }) => (
+                  <li key={zone}>
+                    <span className="font-medium text-slate-200">{ZONE_LABELS[zone]}:</span>{" "}
+                    {cards.map((c) => c.name).join(", ")}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {error && (
+            <div className="space-y-2 rounded-2xl border border-rose-500/40 bg-rose-950/30 p-4">
+              <p className="text-sm text-rose-300">{error}</p>
+              <button
+                type="button"
+                disabled={!canRetry}
+                onClick={() => void onRetry()}
+                className="rounded-xl border border-rose-500/50 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {retryLabel}
+              </button>
+            </div>
+          )}
+
+          <form onSubmit={(e) => void handleFollowUpSubmit(e)} className="space-y-2">
+            <label className="flex flex-col gap-1">
+              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
+                Follow-up question
+              </span>
+              <textarea
+                placeholder="Ask a follow-up…"
+                value={followUpText}
+                onChange={(e) => setFollowUpText(e.target.value.slice(0, MAX_QUESTION_CHARS))}
+                rows={2}
+                maxLength={MAX_QUESTION_CHARS}
+                disabled={isFollowUpSubmitting}
+                className="resize-none rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100 disabled:opacity-60"
+              />
+              <span className="text-right text-xs text-slate-500">
+                {followUpText.length}/{MAX_QUESTION_CHARS}
+              </span>
+            </label>
+            <button
+              type="submit"
+              disabled={isFollowUpSubmitting || !followUpText.trim()}
+              className="w-full rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isFollowUpSubmitting ? <span className="send-spinner" /> : "Send"}
+            </button>
+          </form>
+
+          {!isSubmitting && !isFollowUpSubmitting && (
+            <button
+              type="button"
+              onClick={handleStartOver}
+              className="rounded-xl border border-slate-500 bg-slate-800/70 px-4 py-2.5 text-sm font-semibold text-slate-100 transition hover:bg-slate-700/80"
+            >
+              Start Over
+            </button>
+          )}
+
+          {statusMessage && (
+            <p className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2 text-sm font-medium text-cyan-200">
+              {statusMessage}
+            </p>
+          )}
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">

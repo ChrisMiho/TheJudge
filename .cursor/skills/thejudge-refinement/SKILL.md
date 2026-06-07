@@ -47,4 +47,6 @@ User provides work slug (e.g. `card-wotc-rule-enrichment`).
 
 ## Handoff
 
-User runs `thejudge-quality-check` with same slug when ready.
+After writes and `status: refined`, end with **Next step** — all three platforms, in order: Cursor, Codex, Claude Code. Substitute `<slug>` from this session. Templates: `PRD/instructions/workflow-reference.md` (Handoff blocks).
+
+Next skill: `thejudge-quality-check`.

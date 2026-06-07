@@ -433,6 +433,7 @@
   - chat composer shows a textarea and a Send button
   - textarea accepts up to 300 characters
   - on follow-up success, a user bubble and then an assistant bubble are appended to the thread
+  - mock-provider responses append to the same thread; the chat remains visible after mock responses exactly as it does for live responses
   - frozen game context is used unchanged for all follow-up requests
   - Send button is disabled while a request is in flight
 - Constraints:
@@ -452,6 +453,7 @@
   - current follow-up text goes in `question`, not duplicated in history
   - backend validates `conversationHistory` when present: non-empty array, max 20 turns, max 2000 chars/message, alternating user/assistant roles starting with user, last entry must be assistant
   - backend inserts `CONVERSATION HISTORY` section before `QUESTION` when history is present
+  - when `ASK_AI_PROVIDER=mock`, the assistant answer for each follow-up includes the exact assembled LLM-facing prompt that would have been sent for that user message, including `CONVERSATION HISTORY`, frozen `gameContext`, and any phase guidance
   - history chars budget is capped at `MAX_CONVERSATION_HISTORY_CHARS` (6000); oldest turns truncated first
   - history budget contribution is included in `getPromptDiagnostics`
   - no server-side session store; history is discarded on page reload

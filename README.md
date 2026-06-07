@@ -14,7 +14,7 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 - Core product: staged zone flow with user-flow refinements and gap fixes promoted into `PRD/sections/`
 - Baseline: flow-validation assistant with mock-default backend and optional OpenAI provider mode (`DEC-020` in `PRD/sections/decisions.md`)
 - Product source of truth: `PRD/sections/` (start with `decisions.md`)
-- Agent workflow skills: `.cursor/skills/thejudge-*`, `.codex/skills/thejudge-*`, and `.claude/skills/thejudge-*`
+- Agent workflow skills: see `AGENT-SKILLS.md` (canonical: `.cursor/skills/`)
 
 ## Tech Stack
 
@@ -147,3 +147,7 @@ Quick local verification flow:
 - Provider integration boundary docs live in `apps/backend/src/providers/README.md`.
 - Search responsiveness guardrails stay frontend-local (debounced query + in-memory pre-normalized index) and must not add runtime metadata sync paths.
 - The committed rulings artifact `apps/backend/data/cardRulingsByOracleId.json` lets CI and local prompt tests run without downloading Scryfall data.
+
+## Agent Workflow Skills
+
+See [AGENT-SKILLS.md](AGENT-SKILLS.md) for the skill catalog, workflow sequence, and `npm run skills:ai-sync` sync workflow.

@@ -1,6 +1,6 @@
 # Slice D — Frontend Chat UI
 
-## Status: planned
+## Status: done
 
 ## Goal
 

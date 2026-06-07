@@ -120,6 +120,7 @@ export function buildPromptContext(payload: AskAiRequest): PromptContext {
       displayName: normalizeOptionalText(player.displayName) || undefined
     })),
     turnPhase: gameCtx.turnPhase,
+    ...(gameCtx.combatStep !== undefined ? { combatStep: gameCtx.combatStep } : {}),
     activePlayer: gameCtx.activePlayer,
     selectedZones: gameCtx.selectedZones
   };

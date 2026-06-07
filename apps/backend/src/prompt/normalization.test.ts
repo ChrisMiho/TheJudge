@@ -7,16 +7,18 @@ import {
   SYSTEM_ROLE_PREAMBLE_LINES,
   buildPromptText,
   buildZoneScopeSentence,
+  formatConversationHistorySection,
   formatSupplementalRulesSection,
   getPromptDiagnostics,
   normalizeCardText,
   normalizeQuestion,
   normalizeWhitespace,
+  truncateConversationHistory,
   truncateOracleText
 } from "./normalization.js";
 import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
 import type { GameRulesTopic } from "../gameRules.js";
-import type { PromptContext } from "../types/index.js";
+import type { ConversationTurn, PromptContext } from "../types/index.js";
 
 const sampleGameRulesTopics: GameRulesTopic[] = [
   {
@@ -154,10 +156,53 @@ describe("buildPromptText", () => {
     expect(first.startsWith(`SYSTEM ROLE PREAMBLE\n${SYSTEM_ROLE_PREAMBLE_LINES[0]}`)).toBe(true);
     expect(first.indexOf("SYSTEM ROLE PREAMBLE")).toBeLessThan(first.indexOf("MTG REFERENCE"));
     expect(first.indexOf("MTG REFERENCE")).toBeLessThan(first.indexOf("GENERAL GAME CONTEXT"));
-    expect(first.indexOf("GENERAL GAME CONTEXT")).toBeLessThan(first.indexOf("ZONE: STACK (BOTTOM TO TOP)"));
+    expect(first.indexOf("GENERAL GAME CONTEXT")).toBeLessThan(first.indexOf("PHASE GUIDANCE"));
+    expect(first.indexOf("PHASE GUIDANCE")).toBeLessThan(first.indexOf("ZONE: STACK (BOTTOM TO TOP)"));
     expect(first.indexOf("ZONE: STACK (BOTTOM TO TOP)")).toBeLessThan(first.indexOf("ZONE: BATTLEFIELD"));
     expect(first.indexOf("ZONE: BATTLEFIELD")).toBeLessThan(first.indexOf("SCOPE"));
     expect(first.indexOf("SCOPE")).toBeLessThan(first.indexOf("QUESTION"));
+  });
+
+  it("includes PHASE GUIDANCE for key phases", () => {
+    const phases = ["main_1", "main_2", "combat", "untap"] as const;
+    for (const phase of phases) {
+      const prompt = buildPromptText({ ...baseContext, gameContext: { ...baseContext.gameContext, turnPhase: phase } });
+      expect(prompt, `missing PHASE GUIDANCE for ${phase}`).toContain("PHASE GUIDANCE");
+    }
+  });
+
+  it("includes PHASE GUIDANCE even when no zones are populated", () => {
+    const prompt = buildPromptText({ ...baseContext, populatedZones: [], orderedStack: [] });
+    expect(prompt).toContain("PHASE GUIDANCE");
+  });
+
+  it("PHASE GUIDANCE appears after GENERAL GAME CONTEXT and before any ZONE section", () => {
+    const prompt = buildPromptText(baseContext);
+    const gcIdx = prompt.indexOf("GENERAL GAME CONTEXT");
+    const pgIdx = prompt.indexOf("PHASE GUIDANCE");
+    const zoneIdx = prompt.indexOf("ZONE:");
+    expect(gcIdx).toBeLessThan(pgIdx);
+    expect(pgIdx).toBeLessThan(zoneIdx);
+  });
+
+  it("combat guidance with declare_blockers combatStep differs from generic combat guidance", () => {
+    const genericContext = { ...baseContext, gameContext: { ...baseContext.gameContext, turnPhase: "combat" as const } };
+    const stepContext = { ...baseContext, gameContext: { ...baseContext.gameContext, turnPhase: "combat" as const, combatStep: "declare_blockers" as const } };
+    const genericPrompt = buildPromptText(genericContext);
+    const stepPrompt = buildPromptText(stepContext);
+    const genericGuidance = genericPrompt.slice(genericPrompt.indexOf("PHASE GUIDANCE"), genericPrompt.indexOf("SCOPE"));
+    const stepGuidance = stepPrompt.slice(stepPrompt.indexOf("PHASE GUIDANCE"), stepPrompt.indexOf("SCOPE"));
+    expect(stepGuidance).not.toBe(genericGuidance);
+    expect(stepGuidance).toContain("declare blockers");
+  });
+
+  it("main_2 PHASE GUIDANCE is distinct from and longer than main_1 PHASE GUIDANCE", () => {
+    const main1Prompt = buildPromptText({ ...baseContext, gameContext: { ...baseContext.gameContext, turnPhase: "main_1" } });
+    const main2Prompt = buildPromptText({ ...baseContext, gameContext: { ...baseContext.gameContext, turnPhase: "main_2" } });
+    const main1Guidance = main1Prompt.slice(main1Prompt.indexOf("PHASE GUIDANCE"), main1Prompt.indexOf("ZONE:"));
+    const main2Guidance = main2Prompt.slice(main2Prompt.indexOf("PHASE GUIDANCE"), main2Prompt.indexOf("ZONE:"));
+    expect(main2Guidance.length).toBeGreaterThan(main1Guidance.length);
+    expect(main2Guidance).not.toBe(main1Guidance);
   });
 
   it("includes MTG reference block with rules content", () => {
@@ -196,7 +241,7 @@ describe("buildPromptText", () => {
           { label: "Player 1", lifeTotal: 40, displayName: "Alice" },
           { label: "Player 2", lifeTotal: 40, displayName: "Bob" }
         ],
-        turnPhase: "stack_resolving",
+        turnPhase: "combat",
         activePlayer: "Player 1",
         selectedZones: ["battlefield", "stack"]
       },
@@ -488,6 +533,147 @@ describe("getPromptDiagnostics supplemental rules", () => {
     const diagnostics = getPromptDiagnostics("test prompt", { supplementalRules: [] });
     expect(diagnostics.supplementalRuleCount).toBeUndefined();
     expect(diagnostics.supplementalRuleIds).toBeUndefined();
+  });
+});
+
+describe("truncateConversationHistory", () => {
+  it("returns all turns when total chars are within budget", () => {
+    const turns: ConversationTurn[] = [
+      { role: "user", content: "Hello" },
+      { role: "assistant", content: "World" }
+    ];
+    expect(truncateConversationHistory(turns, 100)).toEqual(turns);
+  });
+
+  it("removes oldest turns first until within budget", () => {
+    const turns: ConversationTurn[] = [
+      { role: "user", content: "a".repeat(3000) },
+      { role: "assistant", content: "b".repeat(3000) },
+      { role: "user", content: "newer question" },
+      { role: "assistant", content: "newer answer" }
+    ];
+    const result = truncateConversationHistory(turns, 6000);
+    expect(result.length).toBeLessThan(turns.length);
+    expect(result[result.length - 1]?.content).toBe("newer answer");
+  });
+
+  it("returns empty array when all turns exceed budget", () => {
+    const turns: ConversationTurn[] = [
+      { role: "user", content: "a".repeat(4000) },
+      { role: "assistant", content: "b".repeat(4000) }
+    ];
+    const result = truncateConversationHistory(turns, 100);
+    expect(result).toEqual([]);
+  });
+});
+
+describe("formatConversationHistorySection", () => {
+  it("returns empty string for empty turns array", () => {
+    expect(formatConversationHistorySection([])).toBe("");
+  });
+
+  it("formats each turn as User:/Assistant: prefixed lines under header", () => {
+    const turns: ConversationTurn[] = [
+      { role: "user", content: "What happens?" },
+      { role: "assistant", content: "It resolves." }
+    ];
+    const section = formatConversationHistorySection(turns);
+    expect(section).toContain("CONVERSATION HISTORY");
+    expect(section).toContain("User: What happens?");
+    expect(section).toContain("Assistant: It resolves.");
+  });
+});
+
+describe("buildPromptText conversation history", () => {
+  it("omits CONVERSATION HISTORY section when no history provided", () => {
+    const prompt = buildPromptText(baseContext);
+    expect(prompt).not.toContain("CONVERSATION HISTORY");
+  });
+
+  it("includes CONVERSATION HISTORY section immediately before QUESTION when history provided", () => {
+    const history: ConversationTurn[] = [
+      { role: "user", content: "First question" },
+      { role: "assistant", content: "First answer" }
+    ];
+    const prompt = buildPromptText(baseContext, { conversationHistory: history });
+    expect(prompt).toContain("CONVERSATION HISTORY");
+    const historyIdx = prompt.indexOf("CONVERSATION HISTORY");
+    const questionIdx = prompt.indexOf("\nQUESTION\n");
+    const scopeIdx = prompt.indexOf("SCOPE");
+    expect(scopeIdx).toBeLessThan(historyIdx);
+    expect(historyIdx).toBeLessThan(questionIdx);
+  });
+
+  it("formats turns as User:/Assistant: lines in array order", () => {
+    const history: ConversationTurn[] = [
+      { role: "user", content: "Turn one" },
+      { role: "assistant", content: "Reply one" },
+      { role: "user", content: "Turn two" },
+      { role: "assistant", content: "Reply two" }
+    ];
+    const prompt = buildPromptText(baseContext, { conversationHistory: history });
+    const historyStart = prompt.indexOf("CONVERSATION HISTORY");
+    const historyEnd = prompt.indexOf("\nQUESTION\n");
+    const historyBlock = prompt.slice(historyStart, historyEnd);
+    expect(historyBlock.indexOf("User: Turn one")).toBeLessThan(historyBlock.indexOf("Assistant: Reply one"));
+    expect(historyBlock.indexOf("Assistant: Reply one")).toBeLessThan(historyBlock.indexOf("User: Turn two"));
+    expect(historyBlock.indexOf("User: Turn two")).toBeLessThan(historyBlock.indexOf("Assistant: Reply two"));
+  });
+
+  it("includes INSTRUCTIONS follow-up tweak line when history is present", () => {
+    const history: ConversationTurn[] = [
+      { role: "user", content: "Follow-up?" },
+      { role: "assistant", content: "Sure." }
+    ];
+    const withHistory = buildPromptText(baseContext, { conversationHistory: history });
+    const withoutHistory = buildPromptText(baseContext);
+    expect(withHistory).toContain("frozen game state and prior answers");
+    expect(withoutHistory).not.toContain("frozen game state and prior answers");
+  });
+
+  it("includes full history when total chars are within 6000", () => {
+    const history: ConversationTurn[] = [
+      { role: "user", content: "short question" },
+      { role: "assistant", content: "short answer" }
+    ];
+    const prompt = buildPromptText(baseContext, { conversationHistory: history });
+    expect(prompt).toContain("User: short question");
+    expect(prompt).toContain("Assistant: short answer");
+  });
+
+  it("truncates oldest turns when history exceeds 6000 chars", () => {
+    // 4 turns × 2000 chars = 8000 + 28 chars for new turns = 8028 > 6000
+    // Removing turn[0] (2000): 6028 > 6000; removing turn[1] (2000): 4028 ≤ 6000 → stop
+    const history: ConversationTurn[] = [
+      { role: "user", content: "OLDEST-USER-" + "x".repeat(1988) },
+      { role: "assistant", content: "OLDEST-ASST-" + "x".repeat(1988) },
+      { role: "user", content: "NEWER-USER-" + "x".repeat(1989) },
+      { role: "assistant", content: "NEWER-ASST-" + "x".repeat(1989) },
+      { role: "user", content: "recent-question" },
+      { role: "assistant", content: "recent-answer" }
+    ];
+    const prompt = buildPromptText(baseContext, { conversationHistory: history });
+    expect(prompt).toContain("recent-question");
+    expect(prompt).toContain("NEWER-USER-");
+    expect(prompt).not.toContain("OLDEST-USER-");
+    expect(prompt).not.toContain("OLDEST-ASST-");
+  });
+});
+
+describe("getPromptDiagnostics conversation history", () => {
+  it("includes conversationHistoryChars as 0 when no history provided", () => {
+    const diagnostics = getPromptDiagnostics("test prompt");
+    expect(diagnostics.conversationHistoryChars).toBe(0);
+  });
+
+  it("includes conversationHistoryChars as 0 when empty options passed", () => {
+    const diagnostics = getPromptDiagnostics("test prompt", {});
+    expect(diagnostics.conversationHistoryChars).toBe(0);
+  });
+
+  it("includes positive conversationHistoryChars when history chars provided", () => {
+    const diagnostics = getPromptDiagnostics("test prompt", { conversationHistoryChars: 350 });
+    expect(diagnostics.conversationHistoryChars).toBe(350);
   });
 });
 

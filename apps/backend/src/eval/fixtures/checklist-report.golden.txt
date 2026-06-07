@@ -3,6 +3,7 @@ fixtureId | score | checks
 ambiguous-wording | 16/16 | PASS
 battlefield-skip | 16/16 | PASS
 cascade-keyword | 16/16 | PASS
+follow-up-chat | 16/16 | PASS
 full-context | 16/16 | PASS
 mana-spent-explicit-fallback | 16/16 | PASS
 multi-step-stack | 16/16 | PASS

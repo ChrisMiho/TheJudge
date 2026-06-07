@@ -21,14 +21,13 @@ export const CANONICAL_ZONE_ORDER: ZoneId[] = [
  */
 export const PHASE_ZONE_DEFAULTS: Record<TurnPhase, ZoneId[]> = {
   untap: ["battlefield", "command"],
-  upkeep: ["battlefield", "stack", "command"],
-  draw: ["battlefield", "library", "hand"],
-  main_1: ["battlefield", "hand", "stack", "graveyard"],
-  main_2: ["battlefield", "hand", "stack", "graveyard"],
-  combat: ["battlefield", "stack", "hand"],
-  end_step: ["battlefield", "hand", "graveyard", "stack"],
-  cleanup: ["battlefield", "graveyard"],
-  stack_resolving: ["stack", "battlefield"]
+  upkeep: ["battlefield", "stack"],
+  draw: ["hand", "library"],
+  main_1: ["battlefield", "hand"],
+  main_2: ["battlefield", "hand"],
+  combat: ["battlefield", "stack"],
+  end_step: ["battlefield", "hand"],
+  cleanup: ["battlefield", "graveyard"]
 };
 
 export function getPhaseZoneDefaults(phase: TurnPhase): ZoneId[] {

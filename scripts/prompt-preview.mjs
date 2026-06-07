@@ -18,7 +18,7 @@ const singleFixture = getFlag("--fixture");
 const outputDir = resolve(getFlag("--output-dir") ?? "output/prompt-preview");
 const port = parseInt(getFlag("--port") ?? "3099", 10);
 
-const DEFAULT_FIXTURES = ["full-context", "cascade-keyword", "state-based-actions", "near-cap-stack"];
+const DEFAULT_FIXTURES = ["full-context", "cascade-keyword", "state-based-actions", "near-cap-stack", "follow-up-chat"];
 const FIXTURES_DIR = resolve("apps/backend/src/eval/fixtures");
 
 // ---------------------------------------------------------------------------

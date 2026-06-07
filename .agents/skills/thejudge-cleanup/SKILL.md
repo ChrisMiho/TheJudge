@@ -64,3 +64,9 @@ When user requests terminology/sections sweep (no feature slug):
 
 - Start new features or slices
 - Delete `PRD/instructions/receipts/`
+
+## Handoff
+
+Terminal skill — no **Next step** required after closeout.
+
+Optional: if the user wants to start new work, offer **Next step** with all three platforms pointing to `thejudge-kickoff`. Templates: `PRD/instructions/workflow-reference.md` (Handoff blocks).

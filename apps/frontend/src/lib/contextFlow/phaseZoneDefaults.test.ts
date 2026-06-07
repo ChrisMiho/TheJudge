@@ -16,8 +16,7 @@ describe("PHASE_ZONE_DEFAULTS", () => {
       "main_2",
       "combat",
       "end_step",
-      "cleanup",
-      "stack_resolving"
+      "cleanup"
     ] as const;
     for (const phase of expectedPhases) {
       expect(PHASE_ZONE_DEFAULTS[phase]).toBeDefined();
@@ -25,11 +24,24 @@ describe("PHASE_ZONE_DEFAULTS", () => {
     }
   });
 
-  it("draw includes battlefield, library, and hand at minimum", () => {
+  it("has exactly 2 zones per phase", () => {
+    for (const [phase, zones] of Object.entries(PHASE_ZONE_DEFAULTS)) {
+      expect(zones).toHaveLength(2);
+      if (zones.length !== 2) {
+        throw new Error(`Phase "${phase}" has ${zones.length} zone(s), expected 2`);
+      }
+    }
+  });
+
+  it("does not include stack_resolving", () => {
+    expect(Object.keys(PHASE_ZONE_DEFAULTS)).not.toContain("stack_resolving");
+  });
+
+  it("draw includes hand and library", () => {
     const zones = PHASE_ZONE_DEFAULTS.draw;
-    expect(zones).toContain("battlefield");
-    expect(zones).toContain("library");
     expect(zones).toContain("hand");
+    expect(zones).toContain("library");
+    expect(zones).not.toContain("battlefield");
   });
 
   it("combat includes battlefield and stack", () => {
@@ -49,9 +61,9 @@ describe("getPhaseZoneDefaults", () => {
 describe("mergeSelectedZonesOnPhaseChange", () => {
   it("returns defaults when current selection is empty (no prevPhase)", () => {
     const result = mergeSelectedZonesOnPhaseChange([], "draw");
-    expect(result).toContain("battlefield");
     expect(result).toContain("library");
     expect(result).toContain("hand");
+    expect(result).not.toContain("battlefield");
   });
 
   it("retains existing user-selected zones after phase change", () => {

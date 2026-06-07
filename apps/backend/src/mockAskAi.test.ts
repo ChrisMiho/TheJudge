@@ -14,7 +14,7 @@ describe("mock answer ergonomics", () => {
           { label: "Player 1", lifeTotal: 20 },
           { label: "Player 2", lifeTotal: 18 }
         ],
-        turnPhase: "stack_resolving",
+        turnPhase: "combat",
         selectedZones: ["battlefield", "stack"]
       },
       populatedZones: [
@@ -88,6 +88,7 @@ describe("mock answer ergonomics", () => {
     expect(result.answer).toContain("SYSTEM ROLE PREAMBLE");
     expect(result.answer).toContain("INSTRUCTIONS");
     expect(result.answer).toContain("MTG REFERENCE");
+    expect(result.answer).toContain("PHASE GUIDANCE");
     expect(result.answer).toContain("ZONE: STACK (BOTTOM TO TOP)");
     expect(result.answer).toContain("SCOPE");
     expect(result.answer).toContain("QUESTION");

@@ -17,9 +17,12 @@ Use **after** kickoff when the user names a task or work slug.
 | `thejudge-refinement` | Shape idea + write PRD sections |
 | `thejudge-quality-check` | Before slicing |
 | `thejudge-map-out` | Create GAMEPLAN + slices |
+| `thejudge-implement` | Execute a lettered slice |
 | `thejudge-cleanup` | Ship feature / corpus hygiene |
 
-Paths: `.cursor/skills/`, `.codex/skills/`, `.claude/skills/` (identical copies).
+**Canonical skills:** edit `.cursor/skills/` only, then run `npm run skills:ai-sync` to copy into `.agents/skills/` (Codex) and `.claude/skills/` (Claude Code). See `AGENT-SKILLS.md`.
+
+Copy-paste handoffs: `PRD/instructions/workflow-reference.md` (Handoff blocks).
 
 ## Task → files
 

@@ -1,0 +1,58 @@
+{
+  "id": "follow-up-chat",
+  "description": "Two-turn follow-up conversation after a Counterspell vs Opt initial decrypt.",
+  "request": {
+    "question": "What if the Opt player had also held a Negate — could they counter the Counterspell?",
+    "gameContext": {
+      "playerCount": 2,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 18 },
+        { "label": "Player 2", "lifeTotal": 20 }
+      ],
+      "turnPhase": "main_1",
+      "selectedZones": ["stack"],
+      "zones": {
+        "stack": [
+          {
+            "cardId": "opt",
+            "name": "Opt",
+            "oracleText": "Scry 1, then draw a card.",
+            "imageUrl": "",
+            "manaCost": "{U}",
+            "manaValue": 1,
+            "typeLine": "Instant",
+            "colors": ["U"],
+            "supertypes": [],
+            "subtypes": [],
+            "caster": "Player 1",
+            "targets": []
+          },
+          {
+            "cardId": "counterspell",
+            "name": "Counterspell",
+            "oracleText": "Counter target spell.",
+            "imageUrl": "",
+            "manaCost": "{U}{U}",
+            "manaValue": 2,
+            "typeLine": "Instant",
+            "colors": ["U"],
+            "supertypes": [],
+            "subtypes": [],
+            "caster": "Player 2",
+            "targets": [{ "kind": "card", "zone": "stack", "cardId": "opt", "cardName": "Opt" }]
+          }
+        ]
+      }
+    },
+    "conversationHistory": [
+      {
+        "role": "user",
+        "content": "Resolve the stack — Player 1 cast Opt, Player 2 responded with Counterspell targeting it."
+      },
+      {
+        "role": "assistant",
+        "content": "The stack resolves top-to-bottom. Counterspell resolves first and counters Opt. Opt never resolves — Player 1 does not scry or draw. Counterspell then goes to the graveyard. With the stack now empty, priority returns to the active player."
+      }
+    ]
+  }
+}

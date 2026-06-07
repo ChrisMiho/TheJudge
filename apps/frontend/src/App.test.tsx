@@ -767,6 +767,7 @@ describe("App MVP interaction flows", () => {
 
     await selectTurnPhase(user, "main_1");
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await user.click(screen.getByLabelText("Zone: Stack"));
     await advancePastZoneConfirm(user);
     await waitForMetadataReady();
 
@@ -784,6 +785,7 @@ describe("App MVP interaction flows", () => {
 
     await selectTurnPhase(user, "main_1");
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await user.click(screen.getByLabelText("Zone: Stack"));
     await advancePastZoneConfirm(user);
     await waitForMetadataReady();
 
@@ -970,7 +972,9 @@ describe("App MVP interaction flows", () => {
     expect(screen.queryByPlaceholderText("How does this resolve?")).not.toBeInTheDocument();
     expect(screen.queryByText("Optional question")).not.toBeInTheDocument();
 
-    expect(screen.getByText("Answer")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Conversation" })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Ask a follow-up…")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
   });
 
   it("enforces retry cooldown and keeps context through repeated failures", async () => {
@@ -1343,16 +1347,16 @@ describe("Slice-04: game setup + zone confirmation", () => {
     expect(screen.getByRole("button", { name: "Back" })).toBeInTheDocument();
   });
 
-  it("pre-checks battlefield, library, hand when Draw phase is selected", async () => {
+  it("pre-checks hand and library when Draw phase is selected", async () => {
     const user = userEvent.setup();
     render(<App />);
 
     await selectTurnPhase(user, "draw");
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
 
-    expect(screen.getByLabelText("Zone: Battlefield")).toBeChecked();
-    expect(screen.getByLabelText("Zone: Library")).toBeChecked();
     expect(screen.getByLabelText("Zone: Hand")).toBeChecked();
+    expect(screen.getByLabelText("Zone: Library")).toBeChecked();
+    expect(screen.getByLabelText("Zone: Battlefield")).not.toBeChecked();
     expect(screen.getByLabelText("Zone: Stack")).not.toBeChecked();
   });
 
@@ -1465,24 +1469,34 @@ describe("Slice-04: game setup + zone confirmation", () => {
   it("shows all turn phase options on game context step", () => {
     render(<App />);
     const turnPhaseSelect = screen.getByLabelText("Turn phase");
-    expect(turnPhaseSelect).toHaveValue("stack_resolving");
+    expect(turnPhaseSelect).toHaveValue("main_1");
     expect(within(turnPhaseSelect).queryByRole("option", { name: "None" })).not.toBeInTheDocument();
+    expect(within(turnPhaseSelect).queryByRole("option", { name: "Stack Resolving" })).not.toBeInTheDocument();
     expect(within(turnPhaseSelect).getByRole("option", { name: "Draw" })).toBeInTheDocument();
     expect(within(turnPhaseSelect).getByRole("option", { name: "Combat" })).toBeInTheDocument();
     expect(within(turnPhaseSelect).getByRole("option", { name: "Pre Combat Main Phase" })).toBeInTheDocument();
-    expect(within(turnPhaseSelect).getByRole("option", { name: "Stack Resolving" })).toBeInTheDocument();
   });
 
-  it("shows combat sub-step hint when Combat phase is selected", async () => {
+  it("shows combat step selector when Combat phase is selected and hides it otherwise", async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    expect(screen.queryByText(/Specify combat sub-step/)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Combat step")).not.toBeInTheDocument();
     await selectTurnPhase(user, "combat");
-    expect(screen.getByText(/Specify combat sub-step/)).toBeInTheDocument();
+    const combatStepSelect = screen.getByLabelText("Combat step");
+    expect(combatStepSelect).toBeInTheDocument();
+    expect(combatStepSelect).toHaveValue("declare_blockers");
+    expect(within(combatStepSelect as HTMLSelectElement).getByRole("option", { name: "Beginning of Combat" })).toBeInTheDocument();
+    expect(within(combatStepSelect as HTMLSelectElement).getByRole("option", { name: "Declare Attackers" })).toBeInTheDocument();
+    expect(within(combatStepSelect as HTMLSelectElement).getByRole("option", { name: "Declare Blockers" })).toBeInTheDocument();
+    expect(within(combatStepSelect as HTMLSelectElement).getByRole("option", { name: "Combat Damage" })).toBeInTheDocument();
+    expect(within(combatStepSelect as HTMLSelectElement).getByRole("option", { name: "End of Combat" })).toBeInTheDocument();
+
+    await selectTurnPhase(user, "draw");
+    expect(screen.queryByLabelText("Combat step")).not.toBeInTheDocument();
   });
 
-  it("submits the default stack resolving turn phase", async () => {
+  it("submits the default main_1 turn phase", async () => {
     const user = userEvent.setup();
     render(<App />);
 
@@ -1492,7 +1506,7 @@ describe("Slice-04: game setup + zone confirmation", () => {
     await clickDecryptStack(user);
 
     await waitFor(() => expect(submittedAskAiRequests).toHaveLength(1));
-    expect(submittedAskAiRequests[0]?.gameContext.turnPhase).toBe("stack_resolving");
+    expect(submittedAskAiRequests[0]?.gameContext.turnPhase).toBe("main_1");
   });
 });
 

@@ -25,7 +25,8 @@
     "data:refresh": "node scripts/refresh-scryfall-data.mjs",
     "openai:verify-credentials": "node scripts/openai-verify-credentials.mjs",
     "prompt:preview": "node scripts/prompt-preview.mjs",
-    "prompt:preview:all": "node scripts/prompt-preview.mjs --all-fixtures"
+    "prompt:preview:all": "node scripts/prompt-preview.mjs --all-fixtures",
+    "skills:ai-sync": "bash scripts/sync-agent-skills.sh"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

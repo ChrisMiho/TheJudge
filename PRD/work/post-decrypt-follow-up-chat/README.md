@@ -20,21 +20,21 @@ After Decrypt Stack, users currently hit a dead end: one plain-text answer, no w
 
 | Slice | Name | Status | Depends on |
 | --- | --- | --- | --- |
-| A | API Contract (types + Zod + validation tests) | planned | — |
-| B | Backend Prompt Assembly | planned | A |
-| C | Frontend Conversation Hook | planned | A |
-| D | Frontend Chat UI | planned | C |
-| E | Tests + Closeout | planned | A, B, C, D |
+| A | API Contract (types + Zod + validation tests) | done | — |
+| B | Backend Prompt Assembly | done | A |
+| C | Frontend Conversation Hook | done | A |
+| D | Frontend Chat UI | done | C |
+| E | Tests + Closeout | done | A, B, C, D |
 
-Slices A, B, C are parallel-ready. D requires C. E requires all.
+Slice A is the unblocker. Once A lands, slices B and C are parallel-ready; D requires C, and E requires all implementation slices.
 
 ## Related PRD sections
 
-- `sections/decisions.md` — DEC-020, DEC-021 (contract freeze; amendment needed)
+- `sections/decisions.md` — DEC-020, DEC-021, DEC-038 through DEC-041
 - `sections/integrations-and-data.md` — `POST /api/ask-ai` payload and response contract
-- `sections/user-flows.md` — FLOW-001 (decrypt), FLOW-003 (retry)
+- `sections/user-flows.md` — FLOW-001 (decrypt), FLOW-003 (retry), FLOW-005 (follow-up chat)
 - `sections/goals-and-non-goals.md` — one endpoint, no saved sessions
-- `sections/functional-requirements.md` — REQ-019
+- `sections/functional-requirements.md` — REQ-019, REQ-025 through REQ-029
 - `apps/frontend/src/components/EnrichmentStep.tsx` — current post-answer terminal UX
 - `apps/backend/src/prompt/normalization.ts` — prompt assembly
 

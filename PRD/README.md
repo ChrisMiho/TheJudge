@@ -96,12 +96,13 @@ Read in this order:
 - Record confirmed decisions in `sections/decisions.md`.
 - Prefer narrow edits to one file at a time.
 - Preserve stable IDs once assigned.
-- Agent workflow skills live under `.cursor/skills/thejudge-*`, `.codex/skills/thejudge-*`, and `.claude/skills/thejudge-*`; humans attach the matching skill manually for each session.
+- Agent workflow skills: edit `.cursor/skills/thejudge-*` (canonical), run `npm run skills:ai-sync` to copy to `.agents/skills/` and `.claude/skills/`; see `AGENT-SKILLS.md`.
 
 ## Active work packages (`PRD/work/`)
 
 | Slug | Status | Summary |
 |------|--------|---------|
+| [full-card-oracle-prompt](./work/full-card-oracle-prompt/) | active | Full card metadata (including oracle text) in every zone section; raise prompt limit constants for testing |
 | [supplemental-game-rules-retrieval](./work/supplemental-game-rules-retrieval/) | active | Context-retrieved supplemental CR rules (max 5) on top of DEC-030 curated baseline |
 
 Completed work is promoted into `sections/` and temporary work folders are removed per `instructions/doc-lifecycle.md`.

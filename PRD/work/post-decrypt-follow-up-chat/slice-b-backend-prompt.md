@@ -1,6 +1,6 @@
 # Slice B — Backend Prompt Assembly
 
-## Status: planned
+## Status: done
 
 ## Goal
 

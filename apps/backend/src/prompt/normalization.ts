@@ -1,10 +1,12 @@
 import { MTG_PROMPT_REFERENCE } from "./mtgReference.js";
+import { getPhaseGuidance } from "./phaseGuidance.js";
 import type { ResolvedRulings } from "../cardRulings.js";
 import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
 import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
-import type { PlayerLabel, PromptContext, ZoneId } from "../types/index.js";
+import type { ConversationTurn, PlayerLabel, PromptContext, ZoneId } from "../types/index.js";
 
 export const MAX_ORACLE_TEXT_CHARS = 480;
+export const MAX_CONVERSATION_HISTORY_CHARS = 6000;
 export const MAX_CONTEXT_DETAILS_CHARS = 220;
 export const MAX_CONTEXT_NOTES_CHARS = 180;
 export const MAX_TARGET_LABEL_CHARS = 120;
@@ -84,6 +86,23 @@ export function normalizeQuestion(value: string): string {
 
 export function normalizeCardText(value: string): string {
   return truncateOracleText(normalizeWhitespace(value));
+}
+
+export function truncateConversationHistory(turns: ConversationTurn[], budget: number): ConversationTurn[] {
+  let total = turns.reduce((sum, t) => sum + t.content.length, 0);
+  if (total <= budget) return turns;
+  const result = [...turns];
+  while (result.length > 0 && total > budget) {
+    total -= result[0]!.content.length;
+    result.shift();
+  }
+  return result;
+}
+
+export function formatConversationHistorySection(turns: ConversationTurn[]): string {
+  if (turns.length === 0) return "";
+  const lines = turns.map((t) => `${t.role === "user" ? "User" : "Assistant"}: ${truncateOracleText(t.content, 2000)}`);
+  return ["CONVERSATION HISTORY", ...lines].join("\n");
 }
 
 function formatList(values: string[]): string {
@@ -297,6 +316,7 @@ export type PromptDiagnostics = {
   utilizationPercent: number;
   nearLimit: boolean;
   exceedsBudget: boolean;
+  conversationHistoryChars: number;
   rulingsSectionChars?: number;
   rulingsCardCount?: number;
   gameRulesSectionChars?: number;
@@ -312,6 +332,7 @@ export type GetPromptDiagnosticsOptions = {
   gameRulesSectionChars?: number;
   supplementalRules?: RetrievedGameRule[];
   supplementalRulesSectionChars?: number;
+  conversationHistoryChars?: number;
 };
 
 export function getPromptDiagnostics(prompt: string, resolvedRulingsOrOptions?: ResolvedRulings | GetPromptDiagnosticsOptions): PromptDiagnostics {
@@ -325,6 +346,7 @@ export function getPromptDiagnostics(prompt: string, resolvedRulingsOrOptions?: 
   let gameRulesSectionChars: number | undefined;
   let supplementalRules: RetrievedGameRule[] | undefined;
   let supplementalRulesSectionChars: number | undefined;
+  let conversationHistoryChars = 0;
 
   if (resolvedRulingsOrOptions && "cards" in resolvedRulingsOrOptions) {
     resolvedRulings = resolvedRulingsOrOptions;
@@ -335,6 +357,7 @@ export function getPromptDiagnostics(prompt: string, resolvedRulingsOrOptions?: 
     gameRulesSectionChars = opts.gameRulesSectionChars;
     supplementalRules = opts.supplementalRules;
     supplementalRulesSectionChars = opts.supplementalRulesSectionChars;
+    conversationHistoryChars = opts.conversationHistoryChars ?? 0;
   }
 
   return {
@@ -344,6 +367,7 @@ export function getPromptDiagnostics(prompt: string, resolvedRulingsOrOptions?: 
     utilizationPercent,
     nearLimit: promptChars > promptBudgetChars - PROMPT_BUDGET_NEAR_LIMIT_BUFFER,
     exceedsBudget: promptChars > promptBudgetChars,
+    conversationHistoryChars,
     ...(resolvedRulings
       ? {
           rulingsSectionChars: resolvedRulings.sectionChars,
@@ -370,6 +394,7 @@ export type BuildPromptTextOptions = {
   rulings?: ResolvedRulings;
   gameRulesTopics?: GameRulesTopic[];
   supplementalRules?: RetrievedGameRule[];
+  conversationHistory?: ConversationTurn[];
 };
 
 export function buildPromptText(context: PromptContext, options: BuildPromptTextOptions = {}): string {
@@ -386,7 +411,13 @@ export function buildPromptText(context: PromptContext, options: BuildPromptText
   const supplementalRulesSection = formatSupplementalRulesSection(options.supplementalRules ?? []);
   const officialRulingsSection = formatOfficialRulingsSection(options.rulings);
 
+  const conversationHistory = options.conversationHistory ?? [];
+  const truncatedHistory = truncateConversationHistory(conversationHistory, MAX_CONVERSATION_HISTORY_CHARS);
+  const conversationHistorySection = formatConversationHistorySection(truncatedHistory);
+
   const zoneSections = [stackSection, nonStackSections].filter(Boolean).join("\n\n");
+
+  const phaseGuidance = getPhaseGuidance(context.gameContext.turnPhase, context.gameContext.combatStep);
 
   const sections: string[] = [
     "SYSTEM ROLE PREAMBLE",
@@ -396,12 +427,18 @@ export function buildPromptText(context: PromptContext, options: BuildPromptText
     "- Explain reasoning clearly and concisely.",
     "- State uncertainty when context is incomplete.",
     "- Do not invent hidden state, targets, or board conditions.",
+    ...(conversationHistory.length > 0
+      ? ["- Treat follow-up questions as refinements or clarifications against the frozen game state and prior answers."]
+      : []),
     "",
     "MTG REFERENCE",
     MTG_PROMPT_REFERENCE,
     "",
     "GENERAL GAME CONTEXT",
-    formatGameContext(context)
+    formatGameContext(context),
+    "",
+    "PHASE GUIDANCE",
+    phaseGuidance
   ];
 
   if (zoneSections.length > 0) {
@@ -420,7 +457,13 @@ export function buildPromptText(context: PromptContext, options: BuildPromptText
     sections.push("", officialRulingsSection);
   }
 
-  sections.push("", "SCOPE", scopeSentence, "", "QUESTION", context.finalQuestion);
+  sections.push("", "SCOPE", scopeSentence);
+
+  if (conversationHistorySection.length > 0) {
+    sections.push("", conversationHistorySection);
+  }
+
+  sections.push("", "QUESTION", context.finalQuestion);
 
   return sections.join("\n");
 }

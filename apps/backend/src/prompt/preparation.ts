@@ -14,21 +14,24 @@ import {
 import { buildPromptContext } from "./context.js";
 import type { EnrichmentDebug } from "./enrichmentDebug.js";
 import {
+  MAX_CONVERSATION_HISTORY_CHARS,
   MAX_RULING_COMMENT_CHARS,
   MAX_RULINGS_PER_CARD,
   MAX_RULINGS_SECTION_CHARS,
   buildPromptText,
   formatSupplementalRulesSection,
   getPromptDiagnostics,
+  truncateConversationHistory,
   type PromptDiagnostics
 } from "./normalization.js";
-import type { AskAiRequest, PromptContext } from "../types/index.js";
+import type { AskAiRequest, ConversationTurn, PromptContext } from "../types/index.js";
 
 export type PreparedPromptInput = {
   context: PromptContext;
   promptText: string;
   diagnostics: PromptDiagnostics;
   enrichmentDebug?: EnrichmentDebug;
+  conversationHistory?: ConversationTurn[];
 };
 
 export type PreparePromptInputOptions = {
@@ -49,6 +52,9 @@ export function preparePromptInput(request: AskAiRequest, options: PreparePrompt
   const gameRulesTopics = options.gameRulesTopics ?? [];
   const gameRulesSection = formatGameRulesSection(gameRulesTopics);
   const curatedRuleIds = collectCuratedRuleIds(gameRulesTopics);
+  const conversationHistory = request.conversationHistory;
+  const truncatedHistory = truncateConversationHistory(conversationHistory ?? [], MAX_CONVERSATION_HISTORY_CHARS);
+  const conversationHistoryChars = truncatedHistory.reduce((sum, t) => sum + t.content.length, 0);
 
   if (options.collectEnrichmentDebug) {
     const rulingsResult = resolveRulingsForPromptWithDebug(cardsForRulings, options.cardRulingsIndex ?? new Map(), limits);
@@ -57,14 +63,16 @@ export function preparePromptInput(request: AskAiRequest, options: PreparePrompt
     const promptText = buildPromptText(context, {
       rulings: rulingsResult,
       gameRulesTopics,
-      supplementalRules: supplementalResult.selected
+      supplementalRules: supplementalResult.selected,
+      conversationHistory
     });
     const diagnostics = getPromptDiagnostics(promptText, {
       resolvedRulings: rulingsResult,
       gameRulesTopics,
       gameRulesSectionChars: gameRulesSection.length,
       supplementalRules: supplementalResult.selected,
-      supplementalRulesSectionChars: supplementalRulesSection.length
+      supplementalRulesSectionChars: supplementalRulesSection.length,
+      conversationHistoryChars
     });
     const enrichmentDebug: EnrichmentDebug = {
       supplemental: supplementalResult.debug,
@@ -74,19 +82,20 @@ export function preparePromptInput(request: AskAiRequest, options: PreparePrompt
       },
       rulings: rulingsResult.debug
     };
-    return { context, promptText, diagnostics, enrichmentDebug };
+    return { context, promptText, diagnostics, enrichmentDebug, conversationHistory };
   }
 
   const resolvedRulings = resolveRulingsForPrompt(cardsForRulings, options.cardRulingsIndex ?? new Map(), limits);
   const supplementalRules = retrieveSupplementalRules(context, options.gameRulesRuleIndex ?? [], curatedRuleIds);
   const supplementalRulesSection = formatSupplementalRulesSection(supplementalRules);
-  const promptText = buildPromptText(context, { rulings: resolvedRulings, gameRulesTopics, supplementalRules });
+  const promptText = buildPromptText(context, { rulings: resolvedRulings, gameRulesTopics, supplementalRules, conversationHistory });
   const diagnostics = getPromptDiagnostics(promptText, {
     resolvedRulings,
     gameRulesTopics,
     gameRulesSectionChars: gameRulesSection.length,
     supplementalRules,
-    supplementalRulesSectionChars: supplementalRulesSection.length
+    supplementalRulesSectionChars: supplementalRulesSection.length,
+    conversationHistoryChars
   });
-  return { context, promptText, diagnostics };
+  return { context, promptText, diagnostics, conversationHistory };
 }
