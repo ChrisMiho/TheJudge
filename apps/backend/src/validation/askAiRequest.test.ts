@@ -119,11 +119,11 @@ describe("askAiRequestSchema — conversationHistory", () => {
     expect(parsed.success).toBe(false);
   });
 
-  it("rejects a message with content longer than 2000 characters", () => {
+  it("rejects a message with content longer than 10000 characters", () => {
     const parsed = askAiRequestSchema.safeParse({
       ...validRequest(),
       conversationHistory: [
-        validTurn("user", "a".repeat(2001)),
+        validTurn("user", "a".repeat(10001)),
         validTurn("assistant")
       ]
     });

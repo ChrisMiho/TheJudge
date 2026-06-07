@@ -201,7 +201,7 @@ export const gameContextSchema = z
 
 export const conversationTurnSchema = z.object({
   role: z.enum(["user", "assistant"]),
-  content: boundedText(2000)
+  content: boundedText(10000)
 }).strict();
 
 const conversationHistorySchema = z
