@@ -104,6 +104,7 @@ Read in this order:
 |------|--------|---------|
 | [full-card-oracle-prompt](./work/full-card-oracle-prompt/) | active | Full card metadata (including oracle text) in every zone section; raise prompt limit constants for testing |
 | [supplemental-game-rules-retrieval](./work/supplemental-game-rules-retrieval/) | active | Context-retrieved supplemental CR rules (max 5) on top of DEC-030 curated baseline |
+| [consolidate-shared-logic](./work/consolidate-shared-logic/) | ideation | Remove accidentally duplicated constants, functions, and logic across apps and within backend modules |
 
 Completed work is promoted into `sections/` and temporary work folders are removed per `instructions/doc-lifecycle.md`.
 
