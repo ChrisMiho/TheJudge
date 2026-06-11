@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # Consolidate Shared Logic and Remove Duplication
 
@@ -122,21 +122,26 @@ Frontend duplicates some type definitions that originate in the backend. Low urg
 
 ---
 
-## Proposed slice decomposition (draft)
+## Implementation map
 
-To be confirmed at refinement.
-
-| Slice | Scope |
-| --- | --- |
-| A | Backend constants: `orderedPlayerLabels`, `CANONICAL_ZONE_ORDER`, truncation (findings 2, 4, 6, 9) |
-| B | Backend module split: `normalization.ts` → 3 files; collapse rulings pair (findings 7, 8) |
-| C | Frontend `EnrichmentStep.tsx`: extract utils + hook (finding 5) |
-| D | Cross-app logic: fallback questions + player display (findings 1, 3) — may stay as documentation only if a shared package is out of scope |
-| E | Ship gates + promote to `sections/` + delete work folder |
+| Slice | Scope | Parallel? | Blocked by | Status |
+| --- | --- | --- | --- | --- |
+| A | Backend constants: create `constants.ts`; consolidate `orderedPlayerLabels`, `CANONICAL_ZONE_ORDER`; fix truncation import | Yes — parallel to C | — | planned |
+| B | Backend module split: `normalization.ts` → 3 files | Yes — parallel to D | A | planned |
+| C | Frontend: extract `EnrichmentStep.tsx` utilities + hook; audit `playerLabels.ts` usage | Yes — parallel to A | — | planned |
+| D | Rulings function collapse: merge `resolveRulingsForPrompt` + `resolveRulingsForPromptWithDebug` | Yes — parallel to B | A | planned |
+| E | Ship gates; verify quality gate; prepare for cleanup | — | B + C + D | planned |
 
 ## Docs in this folder
 
 | Doc | Purpose |
 | --- | --- |
 | `IDEA.md` | Problem, outcome, non-goals |
-| `README.md` | Full findings, summary table, proposed decomposition |
+| `README.md` | Full findings, summary table, implementation map |
+| `DESIGN-BRIEF.md` | Scope, decisions, slice decomposition |
+| `GAMEPLAN.md` | Architecture, data flow, parallel execution plan, verification checklist |
+| `slice-a-backend-constants.md` | Backend constants module |
+| `slice-b-normalization-split.md` | Backend module split |
+| `slice-c-frontend-extraction.md` | Frontend EnrichmentStep extraction |
+| `slice-d-rulings-collapse.md` | Rulings function collapse |
+| `slice-e-ship.md` | Ship gates and PRD promotion checklist |

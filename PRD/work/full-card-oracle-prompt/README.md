@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # Full Card Oracle in Every Zone
 

@@ -257,7 +257,7 @@ Purpose:
 ### Conversation history prompt section
 When `conversationHistory` is present, backend prompt assembly inserts a `CONVERSATION HISTORY` section before `QUESTION`:
 - formats each turn as `User: <content>` / `Assistant: <content>` in order
-- history chars are capped at `MAX_CONVERSATION_HISTORY_CHARS` (6000); oldest turns truncated first
+- history chars are capped at `MAX_CONVERSATION_HISTORY_CHARS` (`EFFECTIVELY_UNLIMITED_CHARS = 1_000_000` per DEC-042 amendment; revisit after latency/cost sampling); oldest turns truncated first
 - an `INSTRUCTIONS` line is added when history is present: treat follow-ups as refinements or clarifications against the frozen game state and prior answers
 - history contribution is included in `getPromptDiagnostics`
 
@@ -343,7 +343,7 @@ Game rules prompt enrichment must:
     {
       "answer": "MOCK RESPONSE\n...\nFULL PROMPT (SENT TO PROVIDER)\n\n<assembled prompt text>",
       "context": { "...": "normalized PromptContext" },
-      "diagnostics": { "promptChars": 12345, "promptBudgetChars": 35000, "...": "..." },
+      "diagnostics": { "promptChars": 12345, "promptBudgetChars": 1000000, "...": "..." },
       "enrichmentDebug": { "supplemental": { "...": "..." }, "...": "..." }
     }
 
