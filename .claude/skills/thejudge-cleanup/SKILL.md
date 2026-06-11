@@ -3,7 +3,6 @@ name: thejudge-cleanup
 description: >-
   Post-ship evaluation — promote PRD truth, write durable receipt, delete
   ephemeral PRD/work/ folder. Use when a feature is done or for corpus hygiene.
-disable-model-invocation: true
 ---
 
 # TheJudge Cleanup
@@ -64,3 +63,9 @@ When user requests terminology/sections sweep (no feature slug):
 
 - Start new features or slices
 - Delete `PRD/instructions/receipts/`
+
+## Handoff
+
+Terminal skill — no **Next step** required after closeout.
+
+Optional: if the user wants to start new work, offer **Next step** with all three platforms pointing to `thejudge-kickoff`. Templates: `PRD/instructions/workflow-reference.md` (Handoff blocks).

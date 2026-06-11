@@ -3,7 +3,6 @@ name: thejudge-map-out
 description: >-
   Creates GAMEPLAN and lettered slice docs in PRD/work/<slug>/ for agent
   implementation. Use after quality-check passes.
-disable-model-invocation: true
 ---
 
 # TheJudge Map Out
@@ -46,10 +45,6 @@ User provides work slug.
 
 ## Handoff
 
-User implements slices via normal agent sessions:
+After GAMEPLAN and slices are written, end with **Next step** — all three platforms, in order: Cursor, Codex, Claude Code. Substitute `<slug>` and the first slice letter from the README slice table (not assumed `A`). Templates: `PRD/instructions/workflow-reference.md` (Handoff blocks).
 
-```
-Implement slice B from PRD/work/<slug>/
-```
-
-When all slices done, user runs `thejudge-cleanup`.
+Next skill: `thejudge-implement` with first slice letter.

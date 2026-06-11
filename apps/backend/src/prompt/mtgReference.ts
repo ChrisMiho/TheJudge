@@ -4,7 +4,7 @@
  */
 export const MTG_PROMPT_REFERENCE = `Magic: The Gathering turns proceed in this order: beginning phase (untap, upkeep, draw), pre-combat main phase, combat phase, post-combat main phase, ending phase (end step, cleanup). The stack is a zone where spells and abilities wait to resolve; items resolve top to bottom.
 
-This app records turn phase as one of: untap, upkeep, draw, main_1, combat, main_2, end_step, cleanup, stack_resolving. Combat is a single combined phase; specify combat sub-steps (declare attackers, declare blockers, combat damage, etc.) in the user's question if relevant. stack_resolving means a stack is currently resolving.
+This app records turn phase as one of: untap, upkeep, draw, main_1, combat, main_2, end_step, cleanup. Combat is a single combined phase; the active combat sub-step (if provided) appears in the phase guidance section below.
 
 Zones (app model):
 - stack — Spells and abilities pending resolution; ordered bottom (first) to top (last).

@@ -35,8 +35,14 @@ export type TurnPhase =
   | "main_2"
   | "end_step"
   | "cleanup"
-  | "combat"
-  | "stack_resolving";
+  | "combat";
+
+export type CombatStep =
+  | "beginning_of_combat"
+  | "declare_attackers"
+  | "declare_blockers"
+  | "combat_damage"
+  | "end_of_combat";
 
 export type ZoneId =
   | "stack"
@@ -71,18 +77,17 @@ export type ZoneCardItem = {
   manaSpent?: number;
 };
 
-/**
- * GameContext extended with new zone-based fields.
- * New fields are optional until the UI migrates in slice 06.
- */
 export type GameContext = {
   playerCount: number;
   players: GamePlayerContext[];
   turnPhase: TurnPhase;
+  combatStep?: CombatStep;
   activePlayer?: PlayerLabel;
   selectedZones?: ZoneId[];
   zones?: Partial<Record<ZoneId, ZoneCardItem[]>>;
 };
+
+export type ConversationMessage = { role: "user" | "assistant"; content: string };
 
 export type AskAiResponse = {
   answer: string;

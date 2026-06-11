@@ -377,7 +377,7 @@
 
 ### DEC-030
 - Decision: Backend prompts include a curated library of verbatim WotC Comprehensive Rules excerpts on every request, without changing the product API or UI.
-- Status: confirmed
+- Status: confirmed (amended — see Notes)
 - Context: Card-specific WotC rulings (DEC-029) do not cover general CR topics such as priority, stack mechanics, layers, and combat keywords. A static committed artifact mirrors the existing card-metadata and rulings pipeline.
 - Impact:
   - game-rules enrichment is prompt-only and backend-only
@@ -403,6 +403,7 @@
 - Notes:
   - static MTG reference block (DEC-025) remains unchanged
   - this decision does not make the product an official judge or rules engine
+  - **Amendment (DEC-042):** `MAX_PROMPT_CHAR_BUDGET` and related truncation/enrichment constants are raised to effectively unlimited test values via a shared `EFFECTIVELY_UNLIMITED_CHARS = 1_000_000` constant; all diagnostic and enforcement infrastructure remains; revisit cap values after latency/cost sampling
 
 ### DEC-031
 - Decision: Decrypt wait UX uses a pure frontend animated panel with CSS-only motion, a live elapsed timer, and threshold-based escalating messages.
@@ -556,6 +557,7 @@
   - first decrypt omits `conversationHistory`; follow-up N sends frozen `gameContext` plus full prior exchange
   - backend Zod validation accepts the field when present: non-empty array, max 20 turns, max 2000 chars/message, same control-character guardrails as `question`, must start `role: "user"`, must alternate user/assistant, last entry must be `assistant`
   - success response shape `{ answer }` and error response shape are unchanged for both mock and OpenAI providers
+  - mock-provider follow-up answers include the exact assembled LLM-facing prompt for the submitted user message, allowing the visible chat flow and provider-bound prompt to be validated without live model access
   - DEC-020 frozen contract is preserved; this is an additive optional extension only
 - Related requirements:
   - REQ-019
@@ -601,3 +603,23 @@
   - REQ-023
   - REQ-028
 - Notes:
+
+### DEC-042
+- Decision: Backend prompt assembly must include full card metadata (including oracle text) for every submitted card in every populated zone, not only stack items. Empty oracle text renders as `(none) — no oracle text recorded for this card`. Prompt-size and truncation constants are raised to effectively unlimited test values via a shared `EFFECTIVELY_UNLIMITED_CHARS = 1_000_000` constant; diagnostic and enforcement infrastructure is preserved.
+- Status: confirmed
+- Context: The PRD contract states "oracle text for each card" but the implementation was stack-only. Phase-scoped zone defaults (DEC-035) increased non-stack submissions, exposing the gap. The frontend already sends full `ZoneCardItem` payloads with oracle and metadata for every zone; the fix is backend prompt assembly only.
+- Impact:
+  - `PromptContextZoneItem` extended with `oracleText`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`; `details` removed in favor of `contextNotes`; `caster` omitted (non-stack cards are not cast)
+  - `normalizeZoneItem()` mirrors the stack card mapping
+  - `formatNonStackZoneSections()` emits the same shared card metadata block as the stack section
+  - empty `oracleText` after trim emits `oracleText: (none) — no oracle text recorded for this card`
+  - `buildQueryText()` in `gameRulesRetrieval.ts` includes `typeLine` and `oracleText` for non-stack items
+  - `normalization.ts` gains exported `EFFECTIVELY_UNLIMITED_CHARS = 1_000_000`; all `MAX_*` constants raised accordingly
+  - eval goldens regenerated; `oracle-text-all-zones` eval harness check added
+  - `POST /api/ask-ai` request and response shapes unchanged
+- Related requirements:
+  - REQ-030
+- Notes:
+  - `cardId` and `imageUrl` continue to be omitted from LLM-facing prompt text
+  - amends DEC-030 cap values — see DEC-030 Notes for the amendment
+  - full card oracle in all zones must not be rolled back when caps are tightened in a future slice

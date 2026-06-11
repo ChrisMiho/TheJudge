@@ -5,7 +5,6 @@ description: >-
   GAMEPLAN.md and lettered slice docs. Use after map-out, or when the work folder
   already has a GAMEPLAN and slices and the user wants to kick off work without
   regenerating planning docs.
-disable-model-invocation: true
 ---
 
 # TheJudge Implement
@@ -13,14 +12,6 @@ disable-model-invocation: true
 ## Goal
 
 Execute one existing implementation slice from `PRD/work/<slug>/` end to end.
-
-Use this for:
-
-```text
-$thejudge-implement PRD/work/<slug> slice A
-$thejudge-implement PRD/work/<slug>
-Implement the next slice from PRD/work/<slug>/
-```
 
 ## Inputs
 
@@ -91,14 +82,7 @@ If a slice uses another existing status format, preserve the local format and up
 
 ## Handoff
 
-When the selected slice is done, suggest the next invocation:
+When the selected slice is done, end with **Next step** — all three platforms, in order: Cursor, Codex, Claude Code. Substitute `<slug>` and slice letters from this session. Templates: `PRD/instructions/workflow-reference.md` (Handoff blocks).
 
-```text
-$thejudge-implement PRD/work/<slug> slice <next-letter>
-```
-
-When all slices are done, hand off to:
-
-```text
-$thejudge-cleanup PRD/work/<slug>
-```
+- More slices remain → next skill: `thejudge-implement` with next slice letter (or `next slice` for Claude)
+- All slices done → next skill: `thejudge-cleanup`

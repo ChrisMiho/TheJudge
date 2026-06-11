@@ -64,8 +64,15 @@ export const turnPhaseSchema = z.enum([
   "main_2",
   "end_step",
   "cleanup",
-  "combat",
-  "stack_resolving"
+  "combat"
+]);
+
+export const combatStepSchema = z.enum([
+  "beginning_of_combat",
+  "declare_attackers",
+  "declare_blockers",
+  "combat_damage",
+  "end_of_combat"
 ]);
 
 export const zoneIdSchema = z.enum([
@@ -139,6 +146,7 @@ export const gameContextSchema = z
     playerCount: z.number().int().min(2).max(8),
     players: z.array(gamePlayerSchema).min(2).max(8),
     turnPhase: turnPhaseSchema,
+    combatStep: combatStepSchema.optional(),
     activePlayer: playerLabelSchema.optional(),
     selectedZones: z.array(zoneIdSchema).min(1).max(7),
     zones: zonesSchema.optional().default({})
@@ -191,13 +199,37 @@ export const gameContextSchema = z
     }
   });
 
+export const conversationTurnSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: boundedText(10000)
+}).strict();
+
+const conversationHistorySchema = z
+  .array(conversationTurnSchema)
+  .min(1)
+  .max(20)
+  .superRefine((turns, ctx) => {
+    if (turns[0]?.role !== "user") {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: [0, "role"], message: "first turn must have role: user" });
+    }
+    if (turns[turns.length - 1]?.role !== "assistant") {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: [turns.length - 1, "role"], message: "last turn must have role: assistant" });
+    }
+    for (let i = 1; i < turns.length; i++) {
+      if (turns[i].role === turns[i - 1].role) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: [i, "role"], message: "roles must alternate between user and assistant" });
+      }
+    }
+  });
+
 export const askAiRequestSchema = z.object({
   question: z
     .string()
     .trim()
     .max(300)
     .refine(noControlCharacterGuardrail, "contains unsupported control characters"),
-  gameContext: gameContextSchema
+  gameContext: gameContextSchema,
+  conversationHistory: conversationHistorySchema.optional()
 }).strict();
 
 export const askAiResponseSchema = z

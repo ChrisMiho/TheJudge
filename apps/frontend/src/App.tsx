@@ -17,6 +17,7 @@ import { formatPlayerDisplayLabel } from "./lib/playerLabels";
 import { useAskAiSubmitOrchestration } from "./hooks/useAskAiSubmitOrchestration";
 import type {
   CardMetadataItem,
+  CombatStep,
   GameContext,
   GamePlayerContext,
   PlayerLabel,
@@ -42,8 +43,15 @@ const TURN_PHASE_OPTIONS: Array<{ value: TurnPhase; label: string }> = [
   { value: "combat", label: "Combat" },
   { value: "main_2", label: "Post Combat Main Phase" },
   { value: "end_step", label: "End Step" },
-  { value: "cleanup", label: "Cleanup" },
-  { value: "stack_resolving", label: "Stack Resolving" }
+  { value: "cleanup", label: "Cleanup" }
+];
+
+const COMBAT_STEP_OPTIONS: Array<{ value: CombatStep; label: string }> = [
+  { value: "beginning_of_combat", label: "Beginning of Combat" },
+  { value: "declare_attackers", label: "Declare Attackers" },
+  { value: "declare_blockers", label: "Declare Blockers" },
+  { value: "combat_damage", label: "Combat Damage" },
+  { value: "end_of_combat", label: "End of Combat" }
 ];
 
 export default function App() {
@@ -62,6 +70,7 @@ export default function App() {
   );
   const [gameContext, setGameContext] = useState<GameContext | null>(null);
   const [turnPhase, setTurnPhase] = useState<TurnPhase>(DEFAULT_TURN_PHASE);
+  const [combatStep, setCombatStep] = useState<CombatStep>("declare_blockers");
   const [confirmedPhase, setConfirmedPhase] = useState<TurnPhase | undefined>(undefined);
   const [activePlayer, setActivePlayer] = useState<PlayerLabel>("Player 1");
   const [selectedZones, setSelectedZones] = useState<ZoneId[]>([]);
@@ -108,7 +117,20 @@ export default function App() {
   }, []);
 
   const activePlayers = PLAYER_OPTIONS.slice(0, activePlayerCount);
-  const { answer, error, isSubmitting, retryCountdown, canRetry, submitAttempt } = useAskAiSubmitOrchestration({
+  const {
+    answer,
+    error,
+    isSubmitting,
+    isFollowUpSubmitting,
+    retryCountdown,
+    canRetry,
+    visibleMessages,
+    frozenGameContext,
+    isConversationActive,
+    submitAttempt,
+    submitFollowUp,
+    startOver
+  } = useAskAiSubmitOrchestration({
     apiBaseUrl,
     retryCooldownSeconds: RETRY_COOLDOWN_SECONDS
   });
@@ -202,6 +224,7 @@ export default function App() {
       playerCount: activePlayers.length,
       players,
       turnPhase,
+      ...(turnPhase === "combat" ? { combatStep } : {}),
       activePlayer
     });
     logFrontendDebug("game_context.confirmed", {
@@ -293,6 +316,10 @@ export default function App() {
       finalQuestion,
       usedFallbackQuestion: question.trim().length === 0
     });
+  }
+
+  async function handleFollowUp(text: string): Promise<void> {
+    await submitFollowUp(text);
   }
 
   if (flowStep === "game-context") {
@@ -409,9 +436,21 @@ export default function App() {
               </select>
             </label>
             {turnPhase === "combat" && (
-              <p className="text-xs text-slate-400">
-                Specify combat sub-step in your question if it matters.
-              </p>
+              <label className="flex flex-col gap-2 text-sm">
+                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Combat step</span>
+                <select
+                  aria-label="Combat step"
+                  value={combatStep}
+                  onChange={(event) => setCombatStep(event.target.value as CombatStep)}
+                  className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+                >
+                  {COMBAT_STEP_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
             )}
           </div>
 
@@ -531,6 +570,12 @@ export default function App() {
       retryCountdown={retryCountdown}
       onRetry={handleRetry}
       statusMessage={statusMessage}
+      isConversationActive={isConversationActive}
+      isFollowUpSubmitting={isFollowUpSubmitting}
+      visibleMessages={visibleMessages}
+      frozenGameContext={frozenGameContext}
+      onFollowUp={handleFollowUp}
+      onStartOver={startOver}
     />
   );
 }

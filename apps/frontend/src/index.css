@@ -60,3 +60,18 @@ body {
 .wait-stage-absurd {
   animation: wait-absurd 1.4s ease-in-out infinite;
 }
+
+@keyframes send-spin {
+  to { transform: rotate(360deg); }
+}
+
+.send-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: send-spin 0.7s linear infinite;
+  vertical-align: middle;
+}

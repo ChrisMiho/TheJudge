@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
+import { PHASE_ZONE_DEFAULTS } from "./lib/contextFlow/phaseZoneDefaults";
 import type { CardMetadataItem } from "./types";
 
 const metadataFixture: CardMetadataItem[] = [
@@ -40,6 +41,10 @@ function jsonResponse(payload: unknown, status = 200): Response {
 
 async function openStackZoneCollection(user: ReturnType<typeof userEvent.setup>): Promise<void> {
   await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+  const stackCheckbox = screen.getByLabelText("Zone: Stack") as HTMLInputElement;
+  if (!stackCheckbox.checked) {
+    await user.click(stackCheckbox);
+  }
   await user.click(screen.getByRole("button", { name: "Continue" }));
 }
 
@@ -49,6 +54,18 @@ async function selectStackCard(user: ReturnType<typeof userEvent.setup>, query: 
   await user.type(searchInput, query);
   await user.click(await screen.findByRole("button", { name: cardName }));
 }
+
+describe("Phase zone defaults", () => {
+  it("produces exactly 2 zones per phase", () => {
+    for (const [phase, zones] of Object.entries(PHASE_ZONE_DEFAULTS)) {
+      expect(zones, `phase "${phase}"`).toHaveLength(2);
+    }
+  });
+
+  it("does not include stack_resolving as a phase", () => {
+    expect(Object.keys(PHASE_ZONE_DEFAULTS)).not.toContain("stack_resolving");
+  });
+});
 
 describe("STORY-074 target gating and pickers", () => {
   beforeEach(() => {

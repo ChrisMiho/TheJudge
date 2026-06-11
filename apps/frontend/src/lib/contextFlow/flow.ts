@@ -1,4 +1,4 @@
-import type { GameContext, TurnPhase, ZoneCardItem, ZoneId } from "../../types";
+import type { ConversationMessage, GameContext, TurnPhase, ZoneCardItem, ZoneId } from "../../types";
 import type { FlowStepId } from "./steps";
 import { CANONICAL_ZONE_ORDER } from "./phaseZoneDefaults";
 
@@ -14,6 +14,7 @@ export type FlowNavigationState = {
 export type ZoneAskAiPayload = {
   question: string;
   gameContext: GameContext;
+  conversationHistory?: ConversationMessage[];
 };
 
 /** One card entry in the enrichment queue, with its source zone. */
@@ -24,7 +25,7 @@ export type EnrichmentQueueEntry = {
 
 export const DEFAULT_STACK_QUESTION = "Resolve the stack";
 export const DEFAULT_BOARD_QUESTION = "Explain the interaction with the provided game state";
-export const DEFAULT_TURN_PHASE: TurnPhase = "stack_resolving";
+export const DEFAULT_TURN_PHASE: TurnPhase = "main_1";
 export const NON_STACK_ZONES_WITH_OWNER: Exclude<ZoneId, "stack">[] = [
   "battlefield",
   "hand",

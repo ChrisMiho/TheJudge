@@ -20,11 +20,37 @@ flowchart LR
 
 | Platform | Path |
 | --- | --- |
-| Cursor | `.cursor/skills/thejudge-*/` |
-| Codex | `.codex/skills/thejudge-*/` |
-| Claude Code | `.claude/skills/thejudge-*/` |
+| Cursor | `.cursor/skills/thejudge-*/` (canonical — edit here) |
+| Codex | `.agents/skills/thejudge-*/` (synced copy) |
+| Claude Code | `.claude/skills/thejudge-*/` (synced copy) |
+
+After any edit under `.cursor/skills/`, run `npm run skills:ai-sync` before commit. See `AGENT-SKILLS.md`.
 
 ## Session Openers
+
+### Cursor
+
+- `$thejudge-kickoff` — orient on this repo
+- `$thejudge-kickoff` — capture this idea: `<idea>`
+- `$thejudge-refinement PRD/work/<slug>/`
+- `$thejudge-quality-check PRD/work/<slug>/`
+- `$thejudge-map-out PRD/work/<slug>/`
+- `$thejudge-implement PRD/work/<slug>/ slice A`
+- `$thejudge-implement PRD/work/<slug>/`
+- `$thejudge-cleanup PRD/work/<slug>/`
+
+### Codex
+
+- `$thejudge-kickoff` — orient on this repo
+- `$thejudge-kickoff` — capture this idea: `<idea>`
+- `$thejudge-refinement PRD/work/<slug>/`
+- `$thejudge-quality-check PRD/work/<slug>/`
+- `$thejudge-map-out PRD/work/<slug>/`
+- `$thejudge-implement PRD/work/<slug>/ slice A`
+- `$thejudge-implement PRD/work/<slug>/`
+- `$thejudge-cleanup PRD/work/<slug>/`
+
+### Claude Code
 
 - `Attach thejudge-kickoff and orient on this repo.`
 - `Attach thejudge-kickoff and capture this idea: <idea>.`
@@ -34,6 +60,183 @@ flowchart LR
 - `Attach thejudge-implement for PRD/work/<slug>/ slice A.`
 - `Attach thejudge-implement for PRD/work/<slug>/ next slice.`
 - `Attach thejudge-cleanup for PRD/work/<slug>/.`
+
+## Handoff blocks
+
+Every skill that hands off must end the session with a **Next step** section:
+
+1. One sentence: what finished and what to run next.
+2. **Cursor** fenced block (`$thejudge-*` syntax).
+3. **Codex** fenced block (`$thejudge-*` syntax).
+4. **Claude Code** fenced block (`Attach thejudge-* for ...` syntax).
+
+Substitute `<slug>`, slice letters, and skill names from the session.
+
+### kickoff → refinement (idea captured)
+
+**Cursor**
+
+```text
+$thejudge-refinement PRD/work/<slug>/
+```
+
+**Codex**
+
+```text
+$thejudge-refinement PRD/work/<slug>/
+```
+
+**Claude Code**
+
+```text
+Attach thejudge-refinement for PRD/work/<slug>/.
+```
+
+### refinement → quality-check
+
+**Cursor**
+
+```text
+$thejudge-quality-check PRD/work/<slug>/
+```
+
+**Codex**
+
+```text
+$thejudge-quality-check PRD/work/<slug>/
+```
+
+**Claude Code**
+
+```text
+Attach thejudge-quality-check for PRD/work/<slug>/.
+```
+
+### quality-check PASS → map-out
+
+**Cursor**
+
+```text
+$thejudge-map-out PRD/work/<slug>/
+```
+
+**Codex**
+
+```text
+$thejudge-map-out PRD/work/<slug>/
+```
+
+**Claude Code**
+
+```text
+Attach thejudge-map-out for PRD/work/<slug>/.
+```
+
+### quality-check FAIL → refinement
+
+**Cursor**
+
+```text
+$thejudge-refinement PRD/work/<slug>/
+```
+
+**Codex**
+
+```text
+$thejudge-refinement PRD/work/<slug>/
+```
+
+**Claude Code**
+
+```text
+Attach thejudge-refinement for PRD/work/<slug>/.
+```
+
+### map-out → implement (first slice)
+
+**Cursor**
+
+```text
+$thejudge-implement PRD/work/<slug>/ slice <letter>
+```
+
+**Codex**
+
+```text
+$thejudge-implement PRD/work/<slug>/ slice <letter>
+```
+
+**Claude Code**
+
+```text
+Attach thejudge-implement for PRD/work/<slug>/ slice <letter>.
+```
+
+### implement → next slice
+
+**Cursor**
+
+```text
+$thejudge-implement PRD/work/<slug>/ slice <letter>
+```
+
+**Codex**
+
+```text
+$thejudge-implement PRD/work/<slug>/ slice <letter>
+```
+
+**Claude Code**
+
+```text
+Attach thejudge-implement for PRD/work/<slug>/ slice <letter>.
+```
+
+Or when the next letter is unknown:
+
+```text
+Attach thejudge-implement for PRD/work/<slug>/ next slice.
+```
+
+### implement → cleanup (all slices done)
+
+**Cursor**
+
+```text
+$thejudge-cleanup PRD/work/<slug>/
+```
+
+**Codex**
+
+```text
+$thejudge-cleanup PRD/work/<slug>/
+```
+
+**Claude Code**
+
+```text
+Attach thejudge-cleanup for PRD/work/<slug>/.
+```
+
+### cleanup → kickoff (optional restart)
+
+**Cursor**
+
+```text
+$thejudge-kickoff
+```
+
+**Codex**
+
+```text
+$thejudge-kickoff
+```
+
+**Claude Code**
+
+```text
+Attach thejudge-kickoff and orient on this repo.
+```
 
 ## Slice Doc Template
 

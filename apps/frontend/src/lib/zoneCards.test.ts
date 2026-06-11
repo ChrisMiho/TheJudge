@@ -70,7 +70,7 @@ describe("zoneCards", () => {
         { label: "Player 1" as const, lifeTotal: 20 },
         { label: "Player 2" as const, lifeTotal: 20 }
       ],
-      turnPhase: "stack_resolving" as const,
+      turnPhase: "main_1" as const,
       selectedZones: ["stack", "hand", "battlefield"] as ZoneId[],
       zones: {
         stack: [stackCard],

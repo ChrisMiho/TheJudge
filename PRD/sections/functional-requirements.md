@@ -353,7 +353,7 @@
   - section appears after populated zone sections and before `OFFICIAL RULINGS`, then `SCOPE` and `QUESTION`
   - section includes a disclaimer that rules are shared vocabulary and do not override submitted game state
   - section omitted only when artifact missing or empty, with a warning logged
-  - `MAX_PROMPT_CHAR_BUDGET` is 35000 and prompt diagnostics include game-rules section metrics
+  - `MAX_PROMPT_CHAR_BUDGET` is set to `EFFECTIVELY_UNLIMITED_CHARS` (1,000,000) per DEC-042 amendment to DEC-030; prompt diagnostics continue to track prompt size and utilization
   - `npm run data:build` runs `build-game-rules.mjs` with graceful degradation when CR source or extracts are unavailable
   - `npm run data:refresh` attempts WotC CR download alongside Scryfall refresh with graceful skip when unavailable
   - eval fixtures assert the full game-rules block and remain under the prompt budget
@@ -433,6 +433,7 @@
   - chat composer shows a textarea and a Send button
   - textarea accepts up to 300 characters
   - on follow-up success, a user bubble and then an assistant bubble are appended to the thread
+  - mock-provider responses append to the same thread; the chat remains visible after mock responses exactly as it does for live responses
   - frozen game context is used unchanged for all follow-up requests
   - Send button is disabled while a request is in flight
 - Constraints:
@@ -452,7 +453,8 @@
   - current follow-up text goes in `question`, not duplicated in history
   - backend validates `conversationHistory` when present: non-empty array, max 20 turns, max 2000 chars/message, alternating user/assistant roles starting with user, last entry must be assistant
   - backend inserts `CONVERSATION HISTORY` section before `QUESTION` when history is present
-  - history chars budget is capped at `MAX_CONVERSATION_HISTORY_CHARS` (6000); oldest turns truncated first
+  - when `ASK_AI_PROVIDER=mock`, the assistant answer for each follow-up includes the exact assembled LLM-facing prompt that would have been sent for that user message, including `CONVERSATION HISTORY`, frozen `gameContext`, and any phase guidance
+  - history chars budget is capped at `MAX_CONVERSATION_HISTORY_CHARS` (`EFFECTIVELY_UNLIMITED_CHARS = 1_000_000` per DEC-042 amendment; revisit after latency/cost sampling); oldest turns truncated first
   - history budget contribution is included in `getPromptDiagnostics`
   - no server-side session store; history is discarded on page reload
 - Constraints:
@@ -497,3 +499,20 @@
   - DEC-040
   - REQ-025
 - Notes:
+
+### REQ-030
+- Title: Prompt assembly includes full card metadata in every populated zone
+- Priority: high
+- Description: The backend must include full card metadata — including oracle text — for every card in every populated zone section of the assembled LLM prompt, not only stack items.
+- Acceptance Criteria:
+  - every card in every populated zone section includes `oracleText`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`, `targets`, and `contextNotes` lines in the assembled prompt
+  - empty oracle text after whitespace trim emits `oracleText: (none) — no oracle text recorded for this card`
+  - stack section retains stack-specific fields (`stackRole`, `caster`, `manaSpent`)
+  - non-stack sections use `owner` and zone item labels (`Hand 1`, `Battlefield 1`, etc.); `caster` is not emitted for non-stack items
+  - `buildPromptContext` preserves oracle and full metadata for non-stack zone items
+  - eval harness `oracle-text-all-zones` check confirms every populated non-stack card block contains an `oracleText:` line
+  - `cardId` and `imageUrl` continue to be omitted from LLM-facing prompt text
+- Constraints:
+  - prompt-only and backend-only; no `AskAiRequest`, Zod schema, or frontend changes
+- Dependencies:
+  - DEC-042

@@ -4,7 +4,6 @@ description: >-
   Loads minimal onboarding context for TheJudge (README + PRD control plane).
   Optionally captures a new idea in PRD/work/<slug>/IDEA.md. Use when starting
   a new session or beginning work on a new feature.
-disable-model-invocation: true
 ---
 
 # TheJudge Kickoff
@@ -41,8 +40,15 @@ Short paragraph (2–3 sentences):
 
 - Pre-load `sections/` or instructions
 - Summarize full PRD during kickoff
-- Route to other skills (user picks manually)
 - Write code
+
+## Handoff
+
+If orient-only (no `IDEA.md` created), skip **Next step** blocks. Point the user to `AGENT-SKILLS.md` and [reference.md](reference.md) for the workflow.
+
+If `IDEA.md` was created, end with **Next step** — all three platforms, in order: Cursor, Codex, Claude Code. Substitute `<slug>` from this session. Templates: `PRD/instructions/workflow-reference.md` (Handoff blocks).
+
+Next skill: `thejudge-refinement`.
 
 ## Reference
 

@@ -34,7 +34,7 @@ describe("canAdvance", () => {
     expect(
       canAdvance("game-context", {
         gameContext: {
-          turnPhase: "stack_resolving",
+          turnPhase: "main_1",
           players: [
             { label: "Player 1", lifeTotal: 20 },
             { label: "Player 2", lifeTotal: 20 }
@@ -48,7 +48,7 @@ describe("canAdvance", () => {
     expect(
       canAdvance("game-context", {
         gameContext: {
-          turnPhase: "stack_resolving",
+          turnPhase: "main_1",
           players: [{ label: "Player 1", lifeTotal: 20 }]
         }
       })
@@ -59,7 +59,7 @@ describe("canAdvance", () => {
     expect(
       canAdvance("game-context", {
         gameContext: {
-          turnPhase: "stack_resolving",
+          turnPhase: "main_1",
           players: [
             { label: "Player 1", lifeTotal: NaN },
             { label: "Player 2", lifeTotal: 20 }
@@ -70,7 +70,7 @@ describe("canAdvance", () => {
   });
 
   it("game-context: returns false when players is undefined", () => {
-    expect(canAdvance("game-context", { gameContext: { turnPhase: "stack_resolving" } })).toBe(false);
+    expect(canAdvance("game-context", { gameContext: { turnPhase: "main_1" } })).toBe(false);
   });
 
   it("game-context: returns false when turnPhase is undefined", () => {
@@ -317,13 +317,13 @@ describe("buildAskAiRequest", () => {
     expect(payload.gameContext.selectedZones).toEqual(["battlefield", "stack"]);
   });
 
-  it("defaults missing turnPhase to stack_resolving before sending", () => {
+  it("defaults missing turnPhase to main_1 before sending", () => {
     const ctxWithoutPhase = {
       playerCount: BASE_GAME_CONTEXT.playerCount,
       players: BASE_GAME_CONTEXT.players,
       selectedZones: BASE_GAME_CONTEXT.selectedZones
     };
     const payload = buildAskAiRequest("test", ctxWithoutPhase as GameContext);
-    expect(payload.gameContext.turnPhase).toBe("stack_resolving");
+    expect(payload.gameContext.turnPhase).toBe("main_1");
   });
 });

@@ -1,0 +1,67 @@
+{
+  "finalQuestion": "What if the Opt player had also held a Negate — could they counter the Counterspell?",
+  "gameContext": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 18
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "main_1",
+    "selectedZones": [
+      "stack"
+    ]
+  },
+  "populatedZones": [],
+  "orderedStack": [
+    {
+      "cardId": "opt",
+      "name": "Opt",
+      "oracleText": "Scry 1, then draw a card.",
+      "imageUrl": "",
+      "manaCost": "{U}",
+      "manaValue": 1,
+      "typeLine": "Instant",
+      "colors": [
+        "U"
+      ],
+      "supertypes": [],
+      "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
+      "manaSpent": 1,
+      "stackIndex": 0,
+      "stackRole": "bottom"
+    },
+    {
+      "cardId": "counterspell",
+      "name": "Counterspell",
+      "oracleText": "Counter target spell.",
+      "imageUrl": "",
+      "manaCost": "{U}{U}",
+      "manaValue": 2,
+      "typeLine": "Instant",
+      "colors": [
+        "U"
+      ],
+      "supertypes": [],
+      "subtypes": [],
+      "caster": "Player 2",
+      "targets": [
+        {
+          "kind": "stack",
+          "targetCardId": "opt",
+          "targetCardName": "Opt"
+        }
+      ],
+      "manaSpent": 2,
+      "stackIndex": 1,
+      "stackRole": "top"
+    }
+  ]
+}

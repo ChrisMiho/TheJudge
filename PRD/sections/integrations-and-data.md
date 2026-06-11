@@ -257,7 +257,7 @@ Purpose:
 ### Conversation history prompt section
 When `conversationHistory` is present, backend prompt assembly inserts a `CONVERSATION HISTORY` section before `QUESTION`:
 - formats each turn as `User: <content>` / `Assistant: <content>` in order
-- history chars are capped at `MAX_CONVERSATION_HISTORY_CHARS` (6000); oldest turns truncated first
+- history chars are capped at `MAX_CONVERSATION_HISTORY_CHARS` (`EFFECTIVELY_UNLIMITED_CHARS = 1_000_000` per DEC-042 amendment; revisit after latency/cost sampling); oldest turns truncated first
 - an `INSTRUCTIONS` line is added when history is present: treat follow-ups as refinements or clarifications against the frozen game state and prior answers
 - history contribution is included in `getPromptDiagnostics`
 
@@ -266,12 +266,10 @@ The backend should include:
 - game context (player count, life totals, active player when provided, turn phase, combat sub-step when present)
 - phase-specific guidance block (`PHASE GUIDANCE`) positioned between `GENERAL GAME CONTEXT` and zone sections; always present for a valid phase submission; combat guidance varies by `combatStep` when present (DEC-036)
 - selected zones
-- populated zone sections
-- ordered stack zone when populated
-- oracle text for each card
-- mana cost and mana value for each card
+- populated zone sections — each card in every populated zone (stack and non-stack) includes the full card metadata block: oracle text, mana cost/value, type line, colors, supertypes/subtypes, targets, and context notes; empty oracle emits `(none) — no oracle text recorded for this card`
+- ordered stack zone when populated; stack section additionally includes stack role, caster, and mana spent per item
+- non-stack sections use owner and zone item labels (`Hand 1`, `Battlefield 1`, etc.); `caster` is omitted for non-stack items
 - mana spent per stack item (fallback to `manaValue` when omitted)
-- type line with parsed supertypes/subtypes and colors
 - published WotC Oracle rulings for submitted cards when available from the static backend artifact
 - verbatim WotC Comprehensive Rules excerpts for all curated general game-rules topics from the static backend artifact
 - up to 5 supplemental WotC CR rule excerpts dynamically retrieved from the committed rule index artifact, scored against the request context and deduplicated against the curated baseline
@@ -312,7 +310,7 @@ Game rules prompt enrichment must:
 - render topics in stable manifest `id` order with verbatim WotC CR prose only
 - appear after populated zone sections and before `OFFICIAL RULINGS`, then `SCOPE` and `QUESTION`
 - be omitted only when the artifact is missing or empty
-- respect `MAX_PROMPT_CHAR_BUDGET` (35000 after DEC-030)
+- respect `MAX_PROMPT_CHAR_BUDGET` (`EFFECTIVELY_UNLIMITED_CHARS = 1_000_000` per DEC-042 amendment; revisit after latency/cost sampling)
 
 ## Delivery Strategy
 
@@ -322,6 +320,7 @@ Game rules prompt enrichment must:
 - default local provider mode
 - returns a debug-friendly response using the same success contract as live answers, plus optional mock-only debug sidecars (DEC-033)
 - validates flow, payload shape, prompt context, and enrichment trace without model access
+- for post-decrypt chat, every mock response is still a normal `{ answer }` success response so the frontend preserves and appends to the visible conversation thread
 - mock success response may include optional `context`, `diagnostics`, and `enrichmentDebug` alongside required `answer`
 - frontend and OpenAI provider continue using `{ answer }` only
 
@@ -334,6 +333,7 @@ Game rules prompt enrichment must:
 ### Mock Response Rule
 - keep the same required success field as live answers: `answer` (string)
 - embed the exact LLM prompt in `answer` under the stable `FULL PROMPT (SENT TO PROVIDER)` section, preceded by prompt budget stats
+- for follow-up turns, the embedded prompt is the prompt assembled for that current user message and includes `CONVERSATION HISTORY`, the frozen first-decrypt `gameContext`, and all applicable prompt sections such as `PHASE GUIDANCE`
 - optionally attach mock-only sidecars for developer review: `context`, `diagnostics`, `enrichmentDebug` (DEC-033)
 - collect enrichment debug only when `ASK_AI_PROVIDER=mock`
 - use `npm run prompt:preview` to materialize per-fixture review files under gitignored `output/prompt-preview/` (NFR-009)
@@ -343,7 +343,7 @@ Game rules prompt enrichment must:
     {
       "answer": "MOCK RESPONSE\n...\nFULL PROMPT (SENT TO PROVIDER)\n\n<assembled prompt text>",
       "context": { "...": "normalized PromptContext" },
-      "diagnostics": { "promptChars": 12345, "promptBudgetChars": 35000, "...": "..." },
+      "diagnostics": { "promptChars": 12345, "promptBudgetChars": 1000000, "...": "..." },
       "enrichmentDebug": { "supplemental": { "...": "..." }, "...": "..." }
     }
 
