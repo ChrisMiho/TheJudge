@@ -63,6 +63,7 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - `activePlayer?: PlayerLabel`
 - `selectedZones: ZoneId[]`
 - `zones?: Partial<Record<ZoneId, ZoneCardItem[]>>`
+- `gameStateNotes?: string` — optional freeform annotation for cross-card, transient game-state context not inferrable from submitted card oracle text (e.g. priority holder, active replacement/continuous effects, pending delayed triggers, casting restrictions). Omitted when blank. (DEC-043)
 - `zones` includes only non-empty zone arrays. Empty selected zones are represented by `selectedZones`, not by empty arrays.
 - `displayName` is optional UI/prompt text only. `label`, `activePlayer`, `caster`, `owner`, and player targets remain fixed `PlayerLabel` values.
 
@@ -264,7 +265,8 @@ When `conversationHistory` is present, backend prompt assembly inserts a `CONVER
 The backend should include:
 - final user question
 - game context (player count, life totals, active player when provided, turn phase, combat sub-step when present)
-- phase-specific guidance block (`PHASE GUIDANCE`) positioned between `GENERAL GAME CONTEXT` and zone sections; always present for a valid phase submission; combat guidance varies by `combatStep` when present (DEC-036)
+- `ADDITIONAL GAME STATE` section containing `gameStateNotes` content, positioned after `GENERAL GAME CONTEXT` and before `PHASE GUIDANCE`; omitted entirely when `gameStateNotes` is absent or blank after trim (DEC-043)
+- phase-specific guidance block (`PHASE GUIDANCE`) positioned between `GENERAL GAME CONTEXT` (and `ADDITIONAL GAME STATE` when present) and zone sections; always present for a valid phase submission; combat guidance varies by `combatStep` when present (DEC-036)
 - selected zones
 - populated zone sections — each card in every populated zone (stack and non-stack) includes the full card metadata block: oracle text, mana cost/value, type line, colors, supertypes/subtypes, targets, and context notes; empty oracle emits `(none) — no oracle text recorded for this card`
 - ordered stack zone when populated; stack section additionally includes stack role, caster, and mana spent per item

@@ -623,3 +623,22 @@
   - `cardId` and `imageUrl` continue to be omitted from LLM-facing prompt text
   - amends DEC-030 cap values — see DEC-030 Notes for the amendment
   - full card oracle in all zones must not be rolled back when caps are tightened in a future slice
+
+### DEC-043
+- Decision: `gameStateNotes` is a single freeform optional string on `GameContext`, not structured sub-fields per feedback category.
+- Status: confirmed
+- Context: AI feedback identified 6 categories of missing prompt context (continuous/replacement effects, target legality flags, priority holder, alternative costs, board state specifics, pending delayed triggers). Structuring these as individual fields would add form friction during live gameplay and produce brittle data models for inherently freeform game state. Per-card transient state is already addressable via existing `contextNotes` on `ZoneCardItem`. The genuine gap is cross-card, global game-state context with no existing capture point.
+- Impact:
+  - `GameContext` gains optional field `gameStateNotes?: string`
+  - backend prompt emits `ADDITIONAL GAME STATE` section containing `gameStateNotes` content, positioned after `GENERAL GAME CONTEXT` and before `PHASE GUIDANCE`
+  - section omitted entirely when `gameStateNotes` is absent or blank after trim
+  - `POST /api/ask-ai` request shape gains `gameContext.gameStateNotes` as optional; success and error response shapes remain unchanged
+  - no structured sub-fields for individual categories (`priorityHolder`, `activeEffects[]`, `pendingTriggers[]` are not added)
+  - per-card transient state (counters, tapped status, gained abilities, kicker paid, X value) remains in existing `contextNotes` on `ZoneCardItem`; stack item `contextNotes` UI gains placeholder copy to surface this intent
+  - `gameStateNotes` has no character length cap; only the control-character guardrails from `question` apply
+  - `gameStateNotes` UI surface is a collapsible dropdown within the context collection step; collapsed by default; expanding reveals the freeform textarea
+- Related requirements:
+  - REQ-031
+  - REQ-017
+- Notes:
+  - live gameplay entry speed is the dominant constraint; freeform captures all 6 feedback categories without forcing structured input during play

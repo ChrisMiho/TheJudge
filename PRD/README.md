@@ -104,6 +104,7 @@ Read in this order:
 |------|--------|---------|
 | [supplemental-game-rules-retrieval](./work/supplemental-game-rules-retrieval/) | active | Context-retrieved supplemental CR rules (max 5) on top of DEC-030 curated baseline |
 | [consolidate-shared-logic](./work/consolidate-shared-logic/) | ideation | Remove accidentally duplicated constants, functions, and logic across apps and within backend modules |
+| [prompt-game-state-enrichment](./work/prompt-game-state-enrichment/) | ideation | Enrich LLM prompt with missing game-state context categories (effects, targets, priority, costs, board state) to reduce ruling ambiguity |
 
 Completed work is promoted into `sections/` and temporary work folders are removed per `instructions/doc-lifecycle.md`.
 
