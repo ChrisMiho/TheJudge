@@ -30,7 +30,7 @@ Categories 2, 4, and 5 — when tied to a specific submitted card — are alread
 
 ## Requirements
 
-- **REQ-031** (new) — `gameStateNotes?: string` on `GameContext`; backend emits `ADDITIONAL GAME STATE` section after `GENERAL GAME CONTEXT` and before `PHASE GUIDANCE` when non-empty after trim; section omitted entirely when absent or blank; no character length cap (control-character guardrails only); UI surface is a collapsible dropdown within the context collection step — collapsed by default, expanding reveals the optional textarea with example placeholder copy.
+- **REQ-031** (new) — `gameStateNotes?: string` on `GameContext`; backend emits `ADDITIONAL GAME STATE` section after `GENERAL GAME CONTEXT` and before `PHASE GUIDANCE` when non-empty after trim; section omitted entirely when absent or blank; capped at 2000 characters (matching `oracleText`) with control-character guardrails; blank/whitespace accepted at validation and omitted by normalization rather than rejected; UI surface is a collapsible dropdown within the context collection step — collapsed by default, expanding reveals the optional textarea with example placeholder copy.
 - **REQ-017** (amended) — `contextNotes` UI for stack items gains placeholder copy that names transient card-level annotations: kicker or buyback paid, X value used, counters added this turn, tapped status, gained abilities this turn.
 
 ## Non-goals

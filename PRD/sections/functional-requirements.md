@@ -523,14 +523,14 @@
 - Description: The app must accept an optional freeform game-state notes field on `GameContext` for cross-card, transient context not inferrable from submitted card oracle text — including active replacement effects, priority holder during stack resolution, pending delayed triggered abilities, and casting restrictions.
 - Acceptance Criteria:
   - `GameContext` includes optional `gameStateNotes?: string`
-  - backend Zod schema validates `gameStateNotes` when present: non-empty string after trim, same control-character guardrails as `question`, no character length cap
+  - backend Zod schema validates `gameStateNotes` when present: trimmed, same control-character guardrails as `question`, capped at 2000 characters; blank/whitespace is accepted and omitted by normalization rather than rejected
   - backend prompt emits `ADDITIONAL GAME STATE` section containing `gameStateNotes` content, positioned after `GENERAL GAME CONTEXT` and before `PHASE GUIDANCE`
   - section is omitted entirely when `gameStateNotes` is absent or blank after trim
   - UI surface is a collapsible dropdown within the context collection step; collapsed by default; expanding reveals an optional text area for `gameStateNotes` with placeholder copy that names example use cases: active replacement or continuous effects, who has priority, pending delayed triggers, casting restrictions
   - `POST /api/ask-ai` request and success/error response shapes otherwise unchanged
 - Constraints:
   - no structured sub-fields per category; field is freeform
-  - no character length cap; control-character guardrails only
+  - capped at 2000 characters; control-character guardrails
   - prompt-facing only; no rules-validation behavior under this field
 - Dependencies:
   - DEC-043

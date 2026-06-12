@@ -63,7 +63,7 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - `activePlayer?: PlayerLabel`
 - `selectedZones: ZoneId[]`
 - `zones?: Partial<Record<ZoneId, ZoneCardItem[]>>`
-- `gameStateNotes?: string` — optional freeform annotation for cross-card, transient game-state context not inferrable from submitted card oracle text (e.g. priority holder, active replacement/continuous effects, pending delayed triggers, casting restrictions). Omitted when blank. (DEC-043)
+- `gameStateNotes?: string` — optional freeform annotation for cross-card, transient game-state context not inferrable from submitted card oracle text (e.g. priority holder, active replacement/continuous effects, pending delayed triggers, casting restrictions). Omitted when blank; capped at 2000 characters. (DEC-043)
 - `zones` includes only non-empty zone arrays. Empty selected zones are represented by `selectedZones`, not by empty arrays.
 - `displayName` is optional UI/prompt text only. `label`, `activePlayer`, `caster`, `owner`, and player targets remain fixed `PlayerLabel` values.
 

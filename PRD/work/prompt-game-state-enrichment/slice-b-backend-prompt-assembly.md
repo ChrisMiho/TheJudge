@@ -33,25 +33,44 @@ export function formatGameStateNotesSection(gameStateNotes: string | undefined):
 }
 ```
 
-Integrate into `buildPromptText()`. Current structure around that section:
+Integrate into `buildPromptText()`. NOTE: these sections are built as a single
+array literal (`normalization.ts:450-458`), **not** separate `sections.push(...)`
+calls. The relevant slice of the literal:
 
 ```ts
-sections.push("", "GENERAL GAME CONTEXT", formatGameContext(context));
-sections.push("", "PHASE GUIDANCE", phaseGuidance);
+const sections = [
+  ...
+  "MTG REFERENCE",
+  MTG_PROMPT_REFERENCE,
+  "",
+  "GENERAL GAME CONTEXT",
+  formatGameContext(context),
+  "",
+  "PHASE GUIDANCE",
+  phaseGuidance
+];
 ```
 
-Update to:
+Hoist the formatted section to a `const` before the array, then insert it as a
+conditional spread between `formatGameContext(context)` and `PHASE GUIDANCE` —
+mirroring the existing `conversationHistory` spread idiom (`normalization.ts:446`):
 
 ```ts
-sections.push("", "GENERAL GAME CONTEXT", formatGameContext(context));
-
 const gameStateNotesSection = formatGameStateNotesSection(context.gameContext.gameStateNotes);
-if (gameStateNotesSection.length > 0) {
-  sections.push("", gameStateNotesSection);
-}
 
-sections.push("", "PHASE GUIDANCE", phaseGuidance);
+const sections = [
+  ...
+  "GENERAL GAME CONTEXT",
+  formatGameContext(context),
+  ...(gameStateNotesSection ? ["", gameStateNotesSection] : []),
+  "",
+  "PHASE GUIDANCE",
+  phaseGuidance
+];
 ```
+
+(The trailing `sections.push("", zoneSections)` etc. calls below the literal are
+unchanged.)
 
 ### `prompt/normalization.test.ts`
 

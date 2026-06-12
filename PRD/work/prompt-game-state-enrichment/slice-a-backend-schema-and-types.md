@@ -8,7 +8,7 @@ Wire `gameStateNotes` through Zod validation, backend TypeScript types, and the 
 
 ## Requirements
 
-- REQ-031: `GameContext` includes optional `gameStateNotes?: string`; backend Zod schema validates when present (non-empty string after trim, control-character guardrails, no character length cap)
+- REQ-031: `GameContext` includes optional `gameStateNotes?: string`; backend Zod schema validates when present (trimmed, control-character guardrails, 2000-character cap matching `oracleText`); blank/whitespace is accepted and omitted by normalization rather than rejected
 - DEC-043: field is freeform; no structured sub-fields
 
 ## Files touched
@@ -22,18 +22,23 @@ Wire `gameStateNotes` through Zod validation, backend TypeScript types, and the 
 
 ### `validation/askAiRequest.ts`
 
-Add to `gameContextSchema` (inside the `.object({...})` body, after `zones`):
+Add to `gameContextSchema` (inside the `.object({...})` body, after `zones`). Reuse
+the existing `optionalBoundedTextWithEmptyDefault` helper (`askAiRequest.ts:49`) —
+the same one `manaCost`/`imageUrl`/`typeLine` use — rather than hand-rolling a chain:
 
 ```ts
-gameStateNotes: z
-  .string()
-  .trim()
-  .min(1)
-  .refine(noControlCharacterGuardrail, "contains unsupported control characters")
-  .optional()
+gameStateNotes: optionalBoundedTextWithEmptyDefault(2000)
 ```
 
-No `.max()` — per DEC-043 there is no character length cap.
+Why this helper:
+- No `.min(1)`, so blank/whitespace is **accepted** (omission semantics per DEC-043),
+  then dropped in the normalization step below — not rejected with a 400.
+- `2000` cap matches `oracleText` (`boundedText(2000)`), keeping `gameStateNotes`
+  inside the codebase's "all text is bounded" invariant while staying generous for
+  freeform notes.
+- Applies the same `noControlCharacterGuardrail` refinement as other text fields.
+- The helper's `.default("")` means an absent field parses to `""`; the normalization
+  below omits it, so `PromptContext.gameContext.gameStateNotes` ends up absent.
 
 ### `types/index.ts`
 
@@ -72,11 +77,12 @@ const normalizedGameContext = {
 ## Acceptance criteria
 
 - [ ] `gameContextSchema` accepts a request with `gameStateNotes: "some notes"`
-- [ ] `gameContextSchema` accepts a request without `gameStateNotes`
-- [ ] `gameContextSchema` rejects `gameStateNotes: ""` (empty string fails `min(1)` after trim)
+- [ ] `gameContextSchema` accepts a request without `gameStateNotes` (parses to `""`)
+- [ ] `gameContextSchema` accepts `gameStateNotes: ""` / whitespace-only (no `min(1)`; omission is handled in normalization, not by rejection)
+- [ ] `gameContextSchema` rejects `gameStateNotes` longer than 2000 characters
 - [ ] `gameContextSchema` rejects `gameStateNotes` containing control characters
 - [ ] `buildPromptContext()` returns `gameContext.gameStateNotes` when non-empty after normalization
-- [ ] `buildPromptContext()` omits `gameStateNotes` when input is absent or whitespace-only
+- [ ] `buildPromptContext()` omits `gameStateNotes` when input is absent, empty, or whitespace-only
 
 ## Verification
 

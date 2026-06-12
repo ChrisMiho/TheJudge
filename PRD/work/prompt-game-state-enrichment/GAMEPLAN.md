@@ -11,7 +11,7 @@ Add `gameStateNotes` freeform field to `GameContext` for cross-card, global game
 ```
 Frontend (GameContext.gameStateNotes)
   → POST /api/ask-ai (gameContext.gameStateNotes: optional string)
-  → Backend Zod validation (gameContextSchema, control-char guardrails, no length cap)
+  → Backend Zod validation (gameContextSchema, control-char guardrails, 2000-char cap; blank accepted then omitted)
   → buildPromptContext() → PromptContext.gameContext.gameStateNotes
   → buildPromptText() → "ADDITIONAL GAME STATE" section
       positioned: after GENERAL GAME CONTEXT, before PHASE GUIDANCE
