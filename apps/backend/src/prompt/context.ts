@@ -90,9 +90,17 @@ function normalizeZoneItem(card: import("../types/index.js").ZoneCardItem): Prom
   return {
     cardId: normalizeWhitespace(card.cardId),
     name,
+    oracleText: normalizeCardText(card.oracleText),
+    imageUrl: normalizeOptionalText(card.imageUrl),
+    manaCost: normalizeOptionalText(card.manaCost),
+    manaValue: normalizeOptionalNumber(card.manaValue),
+    typeLine: normalizeOptionalText(card.typeLine),
+    colors: normalizeOptionalList(card.colors),
+    supertypes: normalizeOptionalList(card.supertypes),
+    subtypes: normalizeOptionalList(card.subtypes),
     owner: owner && normalizeWhitespace(owner).length > 0 ? owner : undefined,
-    details: normalizeOptionalText(card.contextNotes) || undefined,
-    targets: normalizeTargets(card.targets)
+    targets: normalizeTargets(card.targets),
+    contextNotes: normalizeOptionalText(card.contextNotes) || undefined
   };
 }
 

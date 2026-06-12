@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
+  buildQueryText,
   collectCuratedRuleIds,
   loadGameRulesRuleIndex,
   retrieveSupplementalRules,
@@ -337,5 +338,74 @@ describe("retrieveSupplementalRulesWithDebug", () => {
     expect(result.runnerUp).toEqual([]);
     expect(result.debug.candidatesScored).toBe(0);
     expect(result.debug.excludedCuratedRuleCount).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildQueryText
+// ---------------------------------------------------------------------------
+
+describe("buildQueryText", () => {
+  it("includes oracle text and typeLine for non-stack zone items", () => {
+    const context = makeContext({
+      populatedZones: [
+        {
+          zoneId: "battlefield",
+          items: [
+            {
+              cardId: "rhystic-study",
+              name: "Rhystic Study",
+              oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
+              typeLine: "Enchantment",
+              contextNotes: "Tax effect",
+              imageUrl: "",
+              manaCost: "{2}{U}",
+              manaValue: 3,
+              colors: ["U"],
+              supertypes: [],
+              subtypes: [],
+              owner: "Player 1",
+              targets: []
+            }
+          ]
+        }
+      ]
+    });
+
+    const queryText = buildQueryText(context);
+    expect(queryText).toContain("Rhystic Study");
+    expect(queryText).toContain("Enchantment");
+    expect(queryText).toContain("Whenever a player casts a spell");
+    expect(queryText).toContain("Tax effect");
+  });
+
+  it("includes contextNotes only when present on non-stack items", () => {
+    const context = makeContext({
+      populatedZones: [
+        {
+          zoneId: "hand",
+          items: [
+            {
+              cardId: "lightning-bolt",
+              name: "Lightning Bolt",
+              oracleText: "Lightning Bolt deals 3 damage to any target.",
+              typeLine: "Instant",
+              imageUrl: "",
+              manaCost: "{R}",
+              manaValue: 1,
+              colors: ["R"],
+              supertypes: [],
+              subtypes: [],
+              targets: []
+            }
+          ]
+        }
+      ]
+    });
+
+    const queryText = buildQueryText(context);
+    expect(queryText).toContain("Lightning Bolt");
+    expect(queryText).toContain("Lightning Bolt deals 3 damage");
+    expect(queryText).toContain("Instant");
   });
 });

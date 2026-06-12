@@ -20,7 +20,22 @@ describe("mock answer ergonomics", () => {
       populatedZones: [
         {
           zoneId: "battlefield",
-          items: [{ cardId: "rhystic-study", name: "Rhystic Study", details: "Tax effect", targets: [{ kind: "none" }] }]
+          items: [
+            {
+              cardId: "rhystic-study",
+              name: "Rhystic Study",
+              oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
+              imageUrl: "",
+              manaCost: "{2}{U}",
+              manaValue: 3,
+              typeLine: "Enchantment",
+              colors: ["U"],
+              supertypes: [],
+              subtypes: [],
+              targets: [{ kind: "none" }],
+              contextNotes: "Tax effect"
+            }
+          ]
         }
       ],
       orderedStack: [

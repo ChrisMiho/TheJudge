@@ -49,9 +49,17 @@ export type PromptContextStackTarget =
 export type PromptContextZoneItem = {
   cardId: string;
   name: string;
+  oracleText: string;
+  imageUrl: string;
+  manaCost: string;
+  manaValue: number;
+  typeLine: string;
+  colors: string[];
+  supertypes: string[];
+  subtypes: string[];
   owner?: PlayerLabel;
-  details?: string;
   targets: PromptContextStackTarget[];
+  contextNotes?: string;
 };
 
 export type PromptContextStackItem = {

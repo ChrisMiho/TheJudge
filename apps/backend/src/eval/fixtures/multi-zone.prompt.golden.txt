@@ -57,15 +57,29 @@ ZONE: HAND
 Hand 1
 name: Snapcaster Mage
 owner: (none)
-details: (none)
+manaCost: (none)
+manaValue: 2
+typeLine: Creature — Human Wizard
+colors: U
+supertypes: (none)
+subtypes: Human, Wizard
 targets: (none)
+contextNotes: (none)
+oracleText: Flash. When Snapcaster Mage enters the battlefield, target instant or sorcery card in your graveyard gains flashback until end of turn.
 
 ZONE: GRAVEYARD
 Graveyard 1
 name: Counterspell
 owner: (none)
-details: (none)
+manaCost: (none)
+manaValue: 2
+typeLine: Instant
+colors: U
+supertypes: (none)
+subtypes: (none)
 targets: (none)
+contextNotes: (none)
+oracleText: Counter target spell.
 
 GAME RULES (reference)
 Use these general Magic rules as shared vocabulary. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
@@ -191,6 +205,14 @@ Zones and Zone Changes
 ADDITIONAL RELEVANT RULE EXCERPTS
 Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
 
+201.5b. 201.5b If an ability of an object refers to that object by name, and an object with a different name gains that ability, each instance of the first name in the gained ability that refers to the first object by name should be treated as the second name.
+Example: Quicksilver Elemental says, in part, “{U}: This creature gains all activated abilities of target creature until end of turn.” If it gains an ability that says “{BB}: Regenerate Skithiryx,” activating that ability will regenerate Quicksilver Elemental, not the Skithiryx, the Blight Dragon it gained the ability from.
+Example: Glacial Ray is an instant with splice onto Arcane that says “Glacial Ray deals 2 damage to any target.” If it’s spliced onto a Kodama’s Reach, that Kodama’s Reach deals 2 damage to the target.
+Example: The Ever-Changing ’Dane says “{1}, Sacrifice another creature: The Ever-Changing ’Dane becomes a copy of the sacrificed creature, except it has this ability.” Its ability is activated sacrificing a Runeclaw Bear. The Ever-Changing ’Dane becomes a copy of Runeclaw Bear and gains an ability that should be treated as saying “{1}, Sacrifice another creature: Runeclaw Bear becomes a copy of the sacrificed creature, except it has this ability.”
+
+607.5. 607.5. If an object acquires a pair of linked abilities as part of the same effect, the abilities will be similarly linked to one another on that object even though they weren’t printed on that object. They can’t be linked to any other ability, regardless of what other abilities the object may currently have or may have had in the past.
+Example: Arc-Slogger has the ability “{R}, Exile the top ten cards of your library: This creature deals 2 damage to any target.” Sisters of Stone Death has the ability “{B}{G}: Exile target creature blocking or blocked by Sisters of Stone Death” and the ability “{2}{B}: Put a creature card exiled with Sisters of Stone Death onto the battlefield under your control.” Quicksilver Elemental has the ability “{U}: This creature gains all activated abilities of target creature until end of turn.” If a player has Quicksilver Elemental gain Arc-Slogger’s ability, activates it, then has Quicksilver Elemental gain Sisters of Stone Death’s abilities, activates the exile ability, and then activates the return-to-the-battlefield ability, only the creature card Quicksilver Elemental exiled with Sisters of Stone Death’s ability can be returned to the battlefield. Creature cards Quicksilver Elemental exiled with Arc-Slogger’s ability can’t be returned.
+
 702.47c. 702.47c The spell has the characteristics of the main spell, plus the rules text of each of the spliced cards. This is a text-changing effect (see rule 612, “Text-Changing Effects”). The spell doesn’t gain any other characteristics (name, mana cost, color, supertypes, card types, subtypes, etc.) of the spliced cards. Text gained by the spell that refers to a card by name refers to the spell on the stack, not the card from which the text was copied.
 Example: Glacial Ray is a red card with splice onto Arcane that reads, “Glacial Ray deals 2 damage to any target.” Suppose Glacial Ray is spliced onto Reach Through Mists, a blue spell. The spell is still blue, and Reach Through Mists deals the damage. This means that the ability can target a creature with protection from red and deal 2 damage to that creature.
 
@@ -199,17 +221,11 @@ Example: Rob is within Alex’s range of influence, but Carissa is not. Alex con
 Example: Rob is within Alex’s range of influence, but Carissa is not. Carissa casts Lightning Blast (“Lightning Blast deals 4 damage to any target.”) targeting Rob. In response, Alex casts Mending Hands (“Prevent the next 4 damage that would be dealt to any target this turn.”) targeting Rob. The damage to Rob is prevented.
 Example: Rob is within Alex’s range of influence, but Carissa is not. Carissa attacks Rob with a creature, and Rob blocks with a creature. Alex casts Fog (“Prevent all combat damage that would be dealt this turn.”) Carissa and Rob’s creatures deal combat damage to each other.
 
-608.2f. 608.2f Some spells and abilities include actions taken on multiple players and/or objects. In most cases, each such action is processed simultaneously. If the action can’t be processed simultaneously, it’s instead processed considering each affected player or object individually. APNAP order is used to make the primary determination of the order of those actions. Secondarily, if the action is to be taken on both a player and an object they control or on multiple objects controlled by the same player, the player who controls the resolving spell or ability chooses the relative order of those actions.
-Example: Blatant Thievery says “For each opponent, gain control of target permanent that player controls.” As Blatant Thievery resolves, its controller gains control of all permanents chosen as targets simultaneously.
-Example: Soulfire Eruption says, in part, “Choose any number of target creatures, planeswalkers, and/or players. For each of them, exile the top card of your library, then Soulfire Eruption deals damage equal to that card’s mana value to that permanent or player.” A player casts Soulfire Eruption targeting an opponent and a creature that opponent controls. As Soulfire Eruption resolves, the player can’t exile the top card of their library multiple times at the same time, so they first choose which target they are considering, then they exile the top card of their library, and finally Soulfire Eruption deals damage to that target. They then repeat this process for the remaining target.
-
-115.7e. 115.7e When changing targets or choosing new targets for a spell or ability, only the final set of targets is evaluated to determine whether the change is legal.
-Example: Arc Trail is a sorcery that reads “Arc Trail deals 2 damage to any target and 1 damage to any other target.” The current targets of Arc Trail are Runeclaw Bear and Llanowar Elves, in that order. You cast Redirect, an instant that reads “You may choose new targets for target spell,” targeting Arc Trail. You can change the first target to Llanowar Elves and change the second target to Runeclaw Bear.
-
-201.5b. 201.5b If an ability of an object refers to that object by name, and an object with a different name gains that ability, each instance of the first name in the gained ability that refers to the first object by name should be treated as the second name.
-Example: Quicksilver Elemental says, in part, “{U}: This creature gains all activated abilities of target creature until end of turn.” If it gains an ability that says “{BB}: Regenerate Skithiryx,” activating that ability will regenerate Quicksilver Elemental, not the Skithiryx, the Blight Dragon it gained the ability from.
-Example: Glacial Ray is an instant with splice onto Arcane that says “Glacial Ray deals 2 damage to any target.” If it’s spliced onto a Kodama’s Reach, that Kodama’s Reach deals 2 damage to the target.
-Example: The Ever-Changing ’Dane says “{1}, Sacrifice another creature: The Ever-Changing ’Dane becomes a copy of the sacrificed creature, except it has this ability.” Its ability is activated sacrificing a Runeclaw Bear. The Ever-Changing ’Dane becomes a copy of Runeclaw Bear and gains an ability that should be treated as saying “{1}, Sacrifice another creature: Runeclaw Bear becomes a copy of the sacrificed creature, except it has this ability.”
+613.6. 613.6. If an effect should be applied in different layers and/or sublayers, the parts of the effect each apply in their appropriate ones. If an effect starts to apply in one layer and/or sublayer, it will continue to be applied to the same set of objects in each other applicable layer and/or sublayer, even if the ability generating the effect is removed during this process.
+Example: An effect that reads “This creature gets +1/+1 and becomes the color of your choice until end of turn” is both a power- and toughness-changing effect and a color-changing effect. The “becomes the color of your choice” part is applied in layer 5, and then the “gets +1/+1” part is applied in layer 7c.
+Example: Act of Treason has an effect that reads “Gain control of target creature until end of turn. Untap that creature. It gains haste until end of turn.” This is both a control-changing effect and an effect that adds an ability to an object. The “gain control” part is applied in layer 2, and then the “it gains haste” part is applied in layer 6.
+Example: An effect that reads “All noncreature artifacts become 2/2 artifact creatures until end of turn” is both a type-changing effect and a power- and toughness-setting effect. The type-changing effect is applied to all noncreature artifacts in layer 4 and the power- and toughness-setting effect is applied to those same permanents in layer 7b, even though those permanents aren’t noncreature artifacts by then.
+Example: Svogthos, the Restless Tomb, is on the battlefield. An effect that says “Until end of turn, target land becomes a 3/3 creature that’s still a land” is applied to it (layers 4 and 7b). An effect that says “Target creature gets +1/+1 until end of turn” is applied to it (layer 7c), making it a 4/4 land creature. Then while you have ten creature cards in your graveyard, you activate Svogthos’s ability: “Until end of turn, this land becomes a black and green Plant Zombie creature with ‘This creature’s power and toughness are each equal to the number of creature cards in your graveyard.’ It’s still a land.” (layers 4, 5, and 7b). It becomes an 11/11 land creature. If a creature card enters or leaves your graveyard, Svogthos’s power and toughness will be modified accordingly. If the first effect is applied to it again, it will become a 4/4 land creature again.
 
 SCOPE
 Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): battlefield, exile, library, command.

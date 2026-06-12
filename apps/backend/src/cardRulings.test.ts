@@ -61,15 +61,15 @@ const context: PromptContext = {
     {
       zoneId: "graveyard",
       items: [
-        { cardId: "graveyard-id", name: "Graveyard Card", targets: [] },
-        { cardId: "top-id", name: "Duplicate Top Spell", targets: [] }
+        { cardId: "graveyard-id", name: "Graveyard Card", oracleText: "", imageUrl: "", manaCost: "", manaValue: 0, typeLine: "", colors: [], supertypes: [], subtypes: [], targets: [] },
+        { cardId: "top-id", name: "Duplicate Top Spell", oracleText: "", imageUrl: "", manaCost: "", manaValue: 0, typeLine: "", colors: [], supertypes: [], subtypes: [], targets: [] }
       ]
     },
     {
       zoneId: "battlefield",
       items: [
-        { cardId: "battlefield-id", name: "Battlefield Card", targets: [] },
-        { cardId: "", name: "No ID", targets: [] }
+        { cardId: "battlefield-id", name: "Battlefield Card", oracleText: "", imageUrl: "", manaCost: "", manaValue: 0, typeLine: "", colors: [], supertypes: [], subtypes: [], targets: [] },
+        { cardId: "", name: "No ID", oracleText: "", imageUrl: "", manaCost: "", manaValue: 0, typeLine: "", colors: [], supertypes: [], subtypes: [], targets: [] }
       ]
     }
   ]

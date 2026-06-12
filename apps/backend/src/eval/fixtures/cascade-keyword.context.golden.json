@@ -25,12 +25,20 @@
         {
           "cardId": "monastery-swiftspear",
           "name": "Monastery Swiftspear",
-          "details": "1/2 with prowess. Player 1 controls it.",
+          "oracleText": "Haste Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+          "imageUrl": "",
+          "manaCost": "",
+          "manaValue": 0,
+          "typeLine": "",
+          "colors": [],
+          "supertypes": [],
+          "subtypes": [],
           "targets": [
             {
               "kind": "none"
             }
-          ]
+          ],
+          "contextNotes": "1/2 with prowess. Player 1 controls it."
         }
       ]
     }
