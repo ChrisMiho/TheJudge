@@ -635,7 +635,7 @@
   - `POST /api/ask-ai` request shape gains `gameContext.gameStateNotes` as optional; success and error response shapes remain unchanged
   - no structured sub-fields for individual categories (`priorityHolder`, `activeEffects[]`, `pendingTriggers[]` are not added)
   - per-card transient state (counters, tapped status, gained abilities, kicker paid, X value) remains in existing `contextNotes` on `ZoneCardItem`; stack item `contextNotes` UI gains placeholder copy to surface this intent
-  - `gameStateNotes` has no character length cap; only the control-character guardrails from `question` apply
+  - `gameStateNotes` is capped at 2000 characters (matching `oracleText`); the control-character guardrails from `question` also apply; blank/whitespace input is accepted at validation and omitted by normalization rather than rejected
   - `gameStateNotes` UI surface is a collapsible dropdown within the context collection step; collapsed by default; expanding reveals the freeform textarea
 - Related requirements:
   - REQ-031
