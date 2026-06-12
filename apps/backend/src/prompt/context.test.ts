@@ -246,4 +246,123 @@ describe("buildPromptContext", () => {
     expect(context.populatedZones[0]?.items[0]?.name).toBe("Rhystic Study");
     expect((context.orderedStack[0]?.oracleText.length ?? 0) <= MAX_ORACLE_TEXT_CHARS).toBe(true);
   });
+
+  it("populates oracleText and metadata on non-stack zone items", () => {
+    const context = buildPromptContext({
+      question: "What does this do?",
+      gameContext: {
+        playerCount: 2,
+        players: [
+          { label: "Player 1", lifeTotal: 20 },
+          { label: "Player 2", lifeTotal: 20 }
+        ],
+        turnPhase: "main_1",
+        selectedZones: ["hand", "battlefield"],
+        zones: {
+          hand: [
+            {
+              cardId: "lightning-bolt",
+              name: "Lightning Bolt",
+              oracleText: "Lightning Bolt deals 3 damage to any target.",
+              imageUrl: "https://example.com/bolt.png",
+              manaCost: "{R}",
+              manaValue: 1,
+              typeLine: "Instant",
+              colors: ["R"],
+              supertypes: [],
+              subtypes: [],
+              contextNotes: "in hand",
+              targets: []
+            }
+          ],
+          battlefield: [createBattlefieldCard()]
+        }
+      }
+    });
+
+    const handZone = context.populatedZones.find((z) => z.zoneId === "hand");
+    expect(handZone).toBeDefined();
+    const handCard = handZone?.items[0];
+    expect(handCard?.oracleText).toBe("Lightning Bolt deals 3 damage to any target.");
+    expect(handCard?.manaCost).toBe("{R}");
+    expect(handCard?.manaValue).toBe(1);
+    expect(handCard?.typeLine).toBe("Instant");
+    expect(handCard?.colors).toEqual(["R"]);
+    expect(handCard?.supertypes).toEqual([]);
+    expect(handCard?.subtypes).toEqual([]);
+    expect(handCard?.contextNotes).toBe("in hand");
+  });
+
+  it("normalizes non-stack oracle text whitespace and truncates at cap", () => {
+    const longOracle = `\n${"z".repeat(MAX_ORACLE_TEXT_CHARS + 40)}\n`;
+    const context = buildPromptContext({
+      question: "?",
+      gameContext: {
+        playerCount: 2,
+        players: [
+          { label: "Player 1", lifeTotal: 20 },
+          { label: "Player 2", lifeTotal: 20 }
+        ],
+        turnPhase: "main_1",
+        selectedZones: ["battlefield"],
+        zones: {
+          battlefield: [
+            {
+              cardId: "test-card",
+              name: "Test Card",
+              oracleText: longOracle,
+              imageUrl: "",
+              manaCost: "",
+              manaValue: 0,
+              typeLine: "Creature",
+              colors: [],
+              supertypes: [],
+              subtypes: [],
+              targets: []
+            }
+          ]
+        }
+      }
+    });
+
+    const item = context.populatedZones[0]?.items[0];
+    expect(item?.oracleText.includes("\n")).toBe(false);
+    expect((item?.oracleText.length ?? 0) <= MAX_ORACLE_TEXT_CHARS).toBe(true);
+  });
+
+  it("sets contextNotes on non-stack items from request contextNotes field", () => {
+    const context = buildPromptContext({
+      question: "?",
+      gameContext: {
+        playerCount: 2,
+        players: [
+          { label: "Player 1", lifeTotal: 20 },
+          { label: "Player 2", lifeTotal: 20 }
+        ],
+        turnPhase: "main_1",
+        selectedZones: ["graveyard"],
+        zones: {
+          graveyard: [
+            {
+              cardId: "snapcaster-mage",
+              name: "Snapcaster Mage",
+              oracleText: "Flash. When Snapcaster Mage enters, target instant or sorcery card in your graveyard gains flashback until end of turn.",
+              imageUrl: "",
+              manaCost: "{1}{U}",
+              manaValue: 2,
+              typeLine: "Creature — Human Wizard",
+              colors: ["U"],
+              supertypes: [],
+              subtypes: ["Human", "Wizard"],
+              contextNotes: "  flashback target  ",
+              targets: []
+            }
+          ]
+        }
+      }
+    });
+
+    const item = context.populatedZones[0]?.items[0];
+    expect(item?.contextNotes).toBe("flashback target");
+  });
 });

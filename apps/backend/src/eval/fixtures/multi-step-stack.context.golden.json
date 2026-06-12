@@ -29,12 +29,20 @@
         {
           "cardId": "rule-of-law",
           "name": "Rule of Law",
-          "details": "Each player can cast one spell each turn.",
+          "oracleText": "Each player can't cast more than one spell each turn.",
+          "imageUrl": "",
+          "manaCost": "",
+          "manaValue": 0,
+          "typeLine": "",
+          "colors": [],
+          "supertypes": [],
+          "subtypes": [],
           "targets": [
             {
               "kind": "none"
             }
-          ]
+          ],
+          "contextNotes": "Each player can cast one spell each turn."
         }
       ]
     }

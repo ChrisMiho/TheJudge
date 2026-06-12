@@ -5,16 +5,17 @@ import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
 import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
 import type { ConversationTurn, PlayerLabel, PromptContext, ZoneId } from "../types/index.js";
 
-export const MAX_ORACLE_TEXT_CHARS = 480;
-export const MAX_CONVERSATION_HISTORY_CHARS = 6000;
-export const MAX_CONTEXT_DETAILS_CHARS = 220;
-export const MAX_CONTEXT_NOTES_CHARS = 180;
-export const MAX_TARGET_LABEL_CHARS = 120;
-export const MAX_PROMPT_CHAR_BUDGET = 35000;
-export const MAX_RULINGS_PER_CARD = 3;
-export const MAX_RULING_COMMENT_CHARS = 480;
-export const MAX_RULINGS_SECTION_CHARS = 2400;
-export const PROMPT_BUDGET_NEAR_LIMIT_BUFFER = 800;
+export const EFFECTIVELY_UNLIMITED_CHARS = 1_000_000;
+export const MAX_ORACLE_TEXT_CHARS = EFFECTIVELY_UNLIMITED_CHARS / 10;
+export const MAX_CONVERSATION_HISTORY_CHARS = EFFECTIVELY_UNLIMITED_CHARS;
+export const MAX_CONTEXT_DETAILS_CHARS = EFFECTIVELY_UNLIMITED_CHARS / 10;
+export const MAX_CONTEXT_NOTES_CHARS = EFFECTIVELY_UNLIMITED_CHARS / 10;
+export const MAX_TARGET_LABEL_CHARS = EFFECTIVELY_UNLIMITED_CHARS / 10;
+export const MAX_PROMPT_CHAR_BUDGET = EFFECTIVELY_UNLIMITED_CHARS;
+export const MAX_RULINGS_PER_CARD = 100;
+export const MAX_RULING_COMMENT_CHARS = EFFECTIVELY_UNLIMITED_CHARS / 10;
+export const MAX_RULINGS_SECTION_CHARS = EFFECTIVELY_UNLIMITED_CHARS;
+export const PROMPT_BUDGET_NEAR_LIMIT_BUFFER = 10_000;
 const TRUNCATION_SUFFIX = " ...(truncated)";
 const PLAYER_LABEL_ORDER = [
   "Player 1",
@@ -101,7 +102,7 @@ export function truncateConversationHistory(turns: ConversationTurn[], budget: n
 
 export function formatConversationHistorySection(turns: ConversationTurn[]): string {
   if (turns.length === 0) return "";
-  const lines = turns.map((t) => `${t.role === "user" ? "User" : "Assistant"}: ${truncateOracleText(t.content, 2000)}`);
+  const lines = turns.map((t) => `${t.role === "user" ? "User" : "Assistant"}: ${truncateOracleText(t.content, EFFECTIVELY_UNLIMITED_CHARS / 10)}`);
   return ["CONVERSATION HISTORY", ...lines].join("\n");
 }
 
@@ -195,6 +196,35 @@ function formatGameContext(context: PromptContext): string {
   ].join("\n");
 }
 
+function formatZoneCardMetadataLines(
+  card: {
+    manaCost: string;
+    manaValue: number;
+    typeLine: string;
+    colors: string[];
+    supertypes: string[];
+    subtypes: string[];
+    targets: PromptContext["orderedStack"][number]["targets"];
+    contextNotes?: string;
+    oracleText: string;
+  },
+  displayNamesByPlayer: Record<PlayerLabel, string | undefined>
+): string[] {
+  return [
+    `manaCost: ${card.manaCost || "(none)"}`,
+    `manaValue: ${card.manaValue}`,
+    `typeLine: ${card.typeLine || "(none)"}`,
+    `colors: ${formatList(card.colors)}`,
+    `supertypes: ${formatList(card.supertypes)}`,
+    `subtypes: ${formatList(card.subtypes)}`,
+    `targets: ${formatTargets(card.targets, displayNamesByPlayer)}`,
+    `contextNotes: ${
+      card.contextNotes ? truncatePromptLabel(card.contextNotes, MAX_CONTEXT_NOTES_CHARS) : "(none)"
+    }`,
+    `oracleText: ${card.oracleText || "(none) — no oracle text recorded for this card"}`
+  ];
+}
+
 function formatStackSection(context: PromptContext): string {
   if (context.orderedStack.length === 0) {
     return "";
@@ -202,26 +232,13 @@ function formatStackSection(context: PromptContext): string {
 
   const displayNamesByPlayer = buildPlayerDisplayNameLookup(context.gameContext.players);
   const cardsSection = context.orderedStack
-    .map(
-      (card, index) =>
-        [
-          `Stack item ${index + 1} (${card.stackRole})`,
-          `card: ${card.name}`,
-          `manaCost: ${card.manaCost || "(none)"}`,
-          `manaValue: ${card.manaValue}`,
-          `typeLine: ${card.typeLine || "(none)"}`,
-          `colors: ${formatList(card.colors)}`,
-          `supertypes: ${formatList(card.supertypes)}`,
-          `subtypes: ${formatList(card.subtypes)}`,
-          `caster: ${formatPlayerRef(card.caster, displayNamesByPlayer)}`,
-          `targets: ${formatTargets(card.targets, displayNamesByPlayer)}`,
-          `manaSpent: ${card.manaSpent ?? card.manaValue}`,
-          `contextNotes: ${
-            card.contextNotes ? truncatePromptLabel(card.contextNotes, MAX_CONTEXT_NOTES_CHARS) : "(none)"
-          }`,
-          `oracleText: ${card.oracleText}`
-        ].join("\n")
-    )
+    .map((card, index) => {
+      const metaLines = formatZoneCardMetadataLines(card, displayNamesByPlayer);
+      // Insert stack-only fields: caster after subtypes (index 6), manaSpent after targets (index 8)
+      metaLines.splice(6, 0, `caster: ${formatPlayerRef(card.caster, displayNamesByPlayer)}`);
+      metaLines.splice(8, 0, `manaSpent: ${card.manaSpent ?? card.manaValue}`);
+      return [`Stack item ${index + 1} (${card.stackRole})`, `card: ${card.name}`, ...metaLines].join("\n");
+    })
     .join("\n\n");
 
   return ["ZONE: STACK (BOTTOM TO TOP)", cardsSection].join("\n");
@@ -243,8 +260,7 @@ function formatNonStackZoneSections(context: PromptContext): string {
             `${itemLabel} ${index + 1}`,
             `name: ${item.name}`,
             `owner: ${formatPlayerRef(item.owner, displayNamesByPlayer)}`,
-            `details: ${item.details ? truncateOracleText(item.details, MAX_CONTEXT_DETAILS_CHARS) : "(none)"}`,
-            `targets: ${formatTargets(item.targets, displayNamesByPlayer)}`
+            ...formatZoneCardMetadataLines(item, displayNamesByPlayer)
           ].join("\n")
         )
         .join("\n\n");

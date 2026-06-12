@@ -168,38 +168,6 @@ describe("ask-ai endpoint contract", () => {
     expect(response.body.message).toContain("contains unsupported control characters");
   });
 
-  it("returns validation error when prompt budget is exceeded", async () => {
-    const largeCard = (id: string, name: string) =>
-      createZoneCardItem({ cardId: id, name, contextNotes: "x".repeat(280), caster: undefined });
-    const response = await request(app).post("/api/ask-ai").send(
-      createAskAiRequest({
-        question: "prompt budget check",
-        gameContext: {
-          ...createGameContext(4),
-          selectedZones: ["stack", "battlefield", "hand", "graveyard", "exile"],
-          zones: {
-            stack: Array.from({ length: 10 }, (_, i) =>
-              createZoneCardItem({
-                cardId: `card-${i}`,
-                name: `Card ${i}`,
-                oracleText: "z".repeat(1000),
-                contextNotes: "y".repeat(280)
-              })
-            ),
-            battlefield: Array.from({ length: 30 }, (_, i) => largeCard(`bf-${i}`, `Permanent ${i}`)),
-            hand: Array.from({ length: 20 }, (_, i) => largeCard(`hand-${i}`, `Hand Card ${i}`)),
-            graveyard: Array.from({ length: 30 }, (_, i) => largeCard(`gy-${i}`, `Graveyard Card ${i}`)),
-            exile: Array.from({ length: 30 }, (_, i) => largeCard(`ex-${i}`, `Exile Card ${i}`))
-          }
-        }
-      })
-    );
-
-    expect(response.status).toBe(400);
-    expect(response.body.code).toBe("VALIDATION_ERROR");
-    expect(response.body.message).toContain("prompt exceeds max budget");
-  });
-
   it("returns provider-unavailable contract for forced fail query", async () => {
     const response = await request(app).post("/api/ask-ai?fail=true").send(createAskAiRequest());
 

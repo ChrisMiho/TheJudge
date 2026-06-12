@@ -463,7 +463,7 @@
   - REQ-013
 - Notes:
   - do not add `promptText` as a separate response field; parse from the stable `FULL PROMPT (SENT TO PROVIDER)` section in mock `answer`
-  - `MAX_PROMPT_CHAR_BUDGET` remains 35000 per DEC-030
+  - `MAX_PROMPT_CHAR_BUDGET` raised to `EFFECTIVELY_UNLIMITED_CHARS` (1,000,000) per DEC-042 amendment to DEC-030
 
 ### DEC-034
 - Decision: `stack_resolving` is removed from the `TurnPhase` enum; the default turn phase on the game setup screen is `main_1`.

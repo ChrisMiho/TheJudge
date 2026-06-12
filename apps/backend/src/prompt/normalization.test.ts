@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   MAX_CONTEXT_NOTES_CHARS,
-  MAX_ORACLE_TEXT_CHARS,
   MAX_PROMPT_CHAR_BUDGET,
   MAX_TARGET_LABEL_CHARS,
   SYSTEM_ROLE_PREAMBLE_LINES,
@@ -49,7 +48,22 @@ const baseContext: PromptContext = {
   populatedZones: [
     {
       zoneId: "battlefield",
-      items: [{ cardId: "rhystic-study", name: "Rhystic Study", details: "Tax effect", targets: [{ kind: "none" }] }]
+      items: [
+        {
+          cardId: "rhystic-study",
+          name: "Rhystic Study",
+          oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
+          imageUrl: "",
+          manaCost: "{2}{U}",
+          manaValue: 3,
+          typeLine: "Enchantment",
+          colors: ["U"],
+          supertypes: [],
+          subtypes: [],
+          targets: [{ kind: "none" }],
+          contextNotes: "Tax effect"
+        }
+      ]
     }
   ],
   orderedStack: [
@@ -103,19 +117,19 @@ describe("prompt normalization", () => {
   });
 
   it("truncates long oracle text with deterministic suffix", () => {
-    const longText = "x".repeat(MAX_ORACLE_TEXT_CHARS + 50);
-    const truncated = truncateOracleText(longText);
+    const longText = "x".repeat(550);
+    const truncated = truncateOracleText(longText, 500);
 
-    expect(truncated.length).toBe(MAX_ORACLE_TEXT_CHARS);
+    expect(truncated.length).toBe(500);
     expect(truncated.endsWith(" ...(truncated)")).toBe(true);
   });
 
   it("normalizes and truncates card text", () => {
-    const longText = `  line one\n\n${"y".repeat(MAX_ORACLE_TEXT_CHARS + 10)}  `;
+    const longText = `  line one\n\n${"y".repeat(600)}  `;
     const normalized = normalizeCardText(longText);
 
     expect(normalized.includes("\n")).toBe(false);
-    expect(normalized.length).toBe(MAX_ORACLE_TEXT_CHARS);
+    expect(normalized.trim().length).toBeGreaterThan(0);
   });
 });
 
@@ -252,6 +266,14 @@ describe("buildPromptText", () => {
             {
               cardId: "rhystic-study",
               name: "Rhystic Study",
+              oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
+              imageUrl: "",
+              manaCost: "{2}{U}",
+              manaValue: 3,
+              typeLine: "Enchantment",
+              colors: ["U"],
+              supertypes: [],
+              subtypes: [],
               owner: "Player 1",
               targets: [{ kind: "player", targetPlayer: "Player 2" }]
             }
@@ -302,6 +324,14 @@ describe("buildPromptText", () => {
             {
               cardId: "rhystic-study",
               name: "Rhystic Study",
+              oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
+              imageUrl: "",
+              manaCost: "{2}{U}",
+              manaValue: 3,
+              typeLine: "Enchantment",
+              colors: ["U"],
+              supertypes: [],
+              subtypes: [],
               owner: "Player 1",
               targets: [{ kind: "player", targetPlayer: "Player 2" }]
             }
@@ -392,6 +422,60 @@ describe("buildPromptText", () => {
     expect(prompt).toContain("name: Rhystic Study");
   });
 
+  it("renders oracleText in non-stack zone sections", () => {
+    const prompt = buildPromptText(baseContext);
+    expect(prompt).toContain("ZONE: BATTLEFIELD");
+    expect(prompt).toContain("oracleText: Whenever a player casts a spell");
+  });
+
+  it("renders contextNotes (not details) in non-stack zone sections", () => {
+    const prompt = buildPromptText(baseContext);
+    expect(prompt).toContain("contextNotes: Tax effect");
+    expect(prompt).not.toContain("details:");
+  });
+
+  it("renders full metadata block in non-stack zone sections", () => {
+    const prompt = buildPromptText(baseContext);
+    expect(prompt).toContain("manaCost: {2}{U}");
+    expect(prompt).toContain("manaValue: 3");
+    expect(prompt).toContain("typeLine: Enchantment");
+    expect(prompt).toContain("colors: U");
+  });
+
+  it("renders oracleText sentinel when non-stack card oracle is empty", () => {
+    const context: PromptContext = {
+      ...baseContext,
+      populatedZones: [
+        {
+          zoneId: "hand",
+          items: [
+            {
+              cardId: "token-id",
+              name: "Bear Token",
+              oracleText: "",
+              imageUrl: "",
+              manaCost: "",
+              manaValue: 0,
+              typeLine: "Token Creature — Bear",
+              colors: [],
+              supertypes: [],
+              subtypes: ["Bear"],
+              targets: []
+            }
+          ]
+        }
+      ]
+    };
+    const prompt = buildPromptText(context);
+    expect(prompt).toContain("oracleText: (none) — no oracle text recorded for this card");
+  });
+
+  it("renders oracleText in stack section", () => {
+    const prompt = buildPromptText(baseContext);
+    expect(prompt).toContain("ZONE: STACK (BOTTOM TO TOP)");
+    expect(prompt).toContain("oracleText: Scry 1, then draw a card.");
+  });
+
   it("renders no zone sections when all zones are empty", () => {
     const prompt = buildPromptText({
       ...baseContext,
@@ -414,7 +498,7 @@ describe("buildPromptText", () => {
   it("stays under configured prompt budget for normal payloads with game rules", () => {
     const prompt = buildPromptText(baseContext, { gameRulesTopics: sampleGameRulesTopics });
     expect(prompt.length).toBeLessThan(MAX_PROMPT_CHAR_BUDGET);
-    expect(MAX_PROMPT_CHAR_BUDGET).toBe(35000);
+    expect(MAX_PROMPT_CHAR_BUDGET).toBe(1_000_000);
   });
 
   it("truncates long context notes and target labels deterministically", () => {
@@ -631,7 +715,7 @@ describe("buildPromptText conversation history", () => {
     expect(withoutHistory).not.toContain("frozen game state and prior answers");
   });
 
-  it("includes full history when total chars are within 6000", () => {
+  it("includes full history when total chars are within budget", () => {
     const history: ConversationTurn[] = [
       { role: "user", content: "short question" },
       { role: "assistant", content: "short answer" }
@@ -641,9 +725,7 @@ describe("buildPromptText conversation history", () => {
     expect(prompt).toContain("Assistant: short answer");
   });
 
-  it("truncates oldest turns when history exceeds 6000 chars", () => {
-    // 4 turns × 2000 chars = 8000 + 28 chars for new turns = 8028 > 6000
-    // Removing turn[0] (2000): 6028 > 6000; removing turn[1] (2000): 4028 ≤ 6000 → stop
+  it("includes all turns when history is well within the 1M budget", () => {
     const history: ConversationTurn[] = [
       { role: "user", content: "OLDEST-USER-" + "x".repeat(1988) },
       { role: "assistant", content: "OLDEST-ASST-" + "x".repeat(1988) },
@@ -655,8 +737,8 @@ describe("buildPromptText conversation history", () => {
     const prompt = buildPromptText(baseContext, { conversationHistory: history });
     expect(prompt).toContain("recent-question");
     expect(prompt).toContain("NEWER-USER-");
-    expect(prompt).not.toContain("OLDEST-USER-");
-    expect(prompt).not.toContain("OLDEST-ASST-");
+    expect(prompt).toContain("OLDEST-USER-");
+    expect(prompt).toContain("OLDEST-ASST-");
   });
 });
 

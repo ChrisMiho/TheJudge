@@ -57,8 +57,15 @@ ZONE: BATTLEFIELD
 Battlefield 1
 name: Grizzly Bears
 owner: (none)
-details: 2/2 creature. Has 2 damage marked on it from a previous effect.
+manaCost: (none)
+manaValue: 0
+typeLine: (none)
+colors: (none)
+supertypes: (none)
+subtypes: (none)
 targets: none:does-not-target
+contextNotes: 2/2 creature. Has 2 damage marked on it from a previous effect.
+oracleText: (none) — no oracle text recorded for this card
 
 GAME RULES (reference)
 Use these general Magic rules as shared vocabulary. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.

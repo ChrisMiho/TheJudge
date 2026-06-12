@@ -33,12 +33,20 @@
         {
           "cardId": "rhystic-study",
           "name": "Rhystic Study",
-          "details": "Tax trigger may alter available mana decisions.",
+          "oracleText": "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
+          "imageUrl": "",
+          "manaCost": "",
+          "manaValue": 0,
+          "typeLine": "",
+          "colors": [],
+          "supertypes": [],
+          "subtypes": [],
           "targets": [
             {
               "kind": "none"
             }
-          ]
+          ],
+          "contextNotes": "Tax trigger may alter available mana decisions."
         }
       ]
     }

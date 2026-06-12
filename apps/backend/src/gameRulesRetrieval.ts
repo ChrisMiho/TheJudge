@@ -121,9 +121,9 @@ export function buildQueryText(context: PromptContext): string {
 
   for (const zone of context.populatedZones) {
     for (const item of zone.items) {
-      const itemParts = [zone.zoneId, item.name];
-      if (item.details) {
-        itemParts.push(item.details);
+      const itemParts = [zone.zoneId, item.name, item.typeLine, item.oracleText];
+      if (item.contextNotes) {
+        itemParts.push(item.contextNotes);
       }
       parts.push(itemParts.join(" "));
     }

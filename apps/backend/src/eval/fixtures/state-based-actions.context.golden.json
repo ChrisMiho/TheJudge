@@ -25,12 +25,20 @@
         {
           "cardId": "grizzly-bears",
           "name": "Grizzly Bears",
-          "details": "2/2 creature. Has 2 damage marked on it from a previous effect.",
+          "oracleText": "",
+          "imageUrl": "",
+          "manaCost": "",
+          "manaValue": 0,
+          "typeLine": "",
+          "colors": [],
+          "supertypes": [],
+          "subtypes": [],
           "targets": [
             {
               "kind": "none"
             }
-          ]
+          ],
+          "contextNotes": "2/2 creature. Has 2 damage marked on it from a previous effect."
         }
       ]
     }
