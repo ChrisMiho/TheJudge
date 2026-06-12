@@ -29,47 +29,64 @@ Add two eval check IDs to the harness for the new `ADDITIONAL GAME STATE` sectio
 Add two new check IDs to `EvaluationCheckId`:
 
 ```ts
-| "game-state-notes-section-present"
-| "game-state-notes-omitted-when-absent"
+| "game-state-notes-section"
+| "game-state-notes-section-order"
 ```
 
-Add check functions:
+Add check functions. Use **one biconditional presence check** (`notes set ⇔ section
+present`) rather than a present/absent pair — the two-inverse pattern is a tautology
+(one always trivially passes while the other governs) and overstates coverage:
 
 ```ts
-function checkGameStateNotesSectionPresent(fixture: EvaluationFixture, promptText: string): EvaluationCheckResult {
+function checkGameStateNotesSection(fixture: EvaluationFixture, promptText: string): EvaluationCheckResult {
   const hasNotes = Boolean(fixture.request.gameContext.gameStateNotes?.trim());
   const sectionPresent = promptText.includes("ADDITIONAL GAME STATE");
-  const passed = !hasNotes || sectionPresent;
+  const passed = hasNotes === sectionPresent;
   return {
-    id: "game-state-notes-section-present",
+    id: "game-state-notes-section",
     passed,
     details: passed
       ? hasNotes
-        ? "ADDITIONAL GAME STATE section is present when gameStateNotes is set."
-        : "No gameStateNotes in fixture; section correctly omitted."
-      : "gameStateNotes is set but ADDITIONAL GAME STATE section is missing from prompt."
-  };
-}
-
-function checkGameStateNotesOmittedWhenAbsent(fixture: EvaluationFixture, promptText: string): EvaluationCheckResult {
-  const hasNotes = Boolean(fixture.request.gameContext.gameStateNotes?.trim());
-  const sectionPresent = promptText.includes("ADDITIONAL GAME STATE");
-  const passed = hasNotes || !sectionPresent;
-  return {
-    id: "game-state-notes-omitted-when-absent",
-    passed,
-    details: passed
-      ? !sectionPresent
-        ? "No gameStateNotes; ADDITIONAL GAME STATE section correctly absent."
-        : "gameStateNotes is present; section-present check governs instead."
-      : "ADDITIONAL GAME STATE section appears in prompt but gameStateNotes is absent/blank."
+        ? "ADDITIONAL GAME STATE present when gameStateNotes is set."
+        : "ADDITIONAL GAME STATE correctly absent when gameStateNotes is unset."
+      : hasNotes
+        ? "gameStateNotes is set but ADDITIONAL GAME STATE section is missing."
+        : "ADDITIONAL GAME STATE section present but gameStateNotes is absent/blank."
   };
 }
 ```
 
-Add a section-order check for `ADDITIONAL GAME STATE` (between `GENERAL GAME CONTEXT` and `PHASE GUIDANCE`) when section is present.
+Add the section-order check as a first-class, registered check (no-op pass when the
+section is absent, so existing fixtures don't regress):
 
-Wire new checks into `runEvaluationChecks()`.
+```ts
+function checkGameStateNotesSectionOrder(promptText: string): EvaluationCheckResult {
+  const sectionIndex = promptText.indexOf("ADDITIONAL GAME STATE");
+  if (sectionIndex === -1) {
+    return {
+      id: "game-state-notes-section-order",
+      passed: true,
+      details: "Section absent; order check not applicable."
+    };
+  }
+  const gameContextIndex = promptText.indexOf("GENERAL GAME CONTEXT");
+  const phaseGuidanceIndex = promptText.indexOf("PHASE GUIDANCE");
+  const passed =
+    gameContextIndex !== -1 &&
+    phaseGuidanceIndex !== -1 &&
+    gameContextIndex < sectionIndex &&
+    sectionIndex < phaseGuidanceIndex;
+  return {
+    id: "game-state-notes-section-order",
+    passed,
+    details: passed
+      ? "ADDITIONAL GAME STATE appears between GENERAL GAME CONTEXT and PHASE GUIDANCE."
+      : "ADDITIONAL GAME STATE is not positioned between GENERAL GAME CONTEXT and PHASE GUIDANCE."
+  };
+}
+```
+
+Wire both new checks into `runEvaluationChecks()`.
 
 ### New fixture: `game-state-notes.fixture.json`
 
@@ -121,8 +138,9 @@ Generate `game-state-notes.prompt.golden.txt` by running `npm run prompt:preview
 
 ## Acceptance criteria
 
-- [ ] `checkGameStateNotesSectionPresent` passes for the new fixture (section present)
-- [ ] `checkGameStateNotesOmittedWhenAbsent` passes for all existing fixtures (none have `gameStateNotes`)
+- [ ] `checkGameStateNotesSection` passes for the new fixture (notes set ⇔ section present)
+- [ ] `checkGameStateNotesSection` passes for all existing fixtures (no `gameStateNotes` ⇔ section absent)
+- [ ] `checkGameStateNotesSectionOrder` passes for the new fixture (section between `GENERAL GAME CONTEXT` and `PHASE GUIDANCE`) and is a no-op pass for fixtures without the section
 - [ ] `ADDITIONAL GAME STATE` appears between `GENERAL GAME CONTEXT` and `PHASE GUIDANCE` in the new fixture's golden
 - [ ] Eval harness test suite passes for all fixtures: `npm run quality:check`
 
