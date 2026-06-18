@@ -15,7 +15,7 @@ Two rule-retrieval systems feed the prompt with general (non-card-specific) Magi
 
 The boundary is defined **by signal source**:
 
-- **System 2 — card-agnostic, game-context-driven curated baseline.** Answers *"What rules does this game situation always need?"* Selected deterministically from structural game-state signals only — turn phase / combat step, populated zones, stack non-empty, priority — **independent of which specific cards are present.** Human-curated mapping; explainable; no scoring.
+- **System 2 — card-agnostic, game-context-driven curated baseline.** Answers *"What rules does this game situation always need?"* Selected deterministically from structural game-state signals only — `turnPhase`, `combatStep`, and populated zone presence (including stack non-empty) — **independent of which specific cards are present.** Human-curated mapping; explainable; no scoring. There is no structured priority-holder field on `GameContext`; priority mechanics are covered via curated topics (e.g. `stack-and-priority`) and phase guidance, not as a separate retrieval signal.
 - **System 3 — card/question-driven adaptive catch-all.** Answers *"What additional rules do these specific cards and this question need that System 2 didn't already cover?"* Owns **all card-driven retrieval, including oracle-text keyword signals** (e.g. deathtouch, trample, replacement wording). To preserve the quality that curated topics would have given for known keywords, keyword matches must carry **strong scoring weight** in System 3 rather than being curated into System 2.
 
 The code already enforces the catch-all relationship: System 2's curated rule IDs are excluded from System 3's candidate pool (`collectCuratedRuleIds` → `excludeRuleIds`). The systems are therefore **coupled** — slimming System 2 shifts responsibility onto System 3, so they must be tuned and measured together.
@@ -29,7 +29,7 @@ System 1 (official card rulings — exact oracle-ID lookup in `cardRulings.ts`) 
 
 ## Desired Outcome
 
-- **System 2:** a slim always-on core plus conditional expansion driven only by card-agnostic game-state signals (turn phase / combat step, populated zones, stack/priority), so prompts carry the rules the situation needs and fewer irrelevant ones.
+- **System 2:** a slim always-on core plus conditional expansion driven only by card-agnostic game-state signals (`turnPhase`, `combatStep`, populated zones), so prompts carry the rules the situation needs and fewer irrelevant ones.
 - **System 3:** more relevant card/question-driven selection. Candidate levers: rarity/IDF-style weighting; weighting the question above card oracle text; **strong weight for oracle-keyword matches**; a less arbitrary tie-break. Lexical tuning first; semantic/embeddings retrieval only as a measured follow-up if needed.
 - **Measurement:** the existing eval harness is extended with scenario fixtures and expected-rule assertions so before/after relevance is verifiable for both systems together, not asserted.
 
@@ -41,9 +41,6 @@ System 1 (official card rulings — exact oracle-ID lookup in `cardRulings.ts`) 
 - System 1 (official card rulings) behavior is unchanged.
 - PRD/documentation hygiene is out of scope here (moved to `prd-doc-traceability`).
 
-## Open scoping questions (for refinement)
+## Resolved in DESIGN-BRIEF (refinement 2026-06-18)
 
-- The precise always-on core vs. conditional split for System 2, and the exact game-state → topic mapping.
-- The concrete System 3 scoring formula (IDF vs other weighting; keyword weight; question-vs-oracle weighting; tie-break).
-- Whether System 2 and System 3 ship as one slice sequence or separately, given their coupling.
-- Eval-harness design: which scenarios and how "expected rules" are defined to judge relevance.
+Always-on core vs conditional split, game-state → topic mapping, System 3 scoring direction (IDF + question/keyword boosts + tie-break), eval fixture `expected` block and harness checks, and slice sequencing note are locked in `DESIGN-BRIEF.md`. Numeric boost multipliers and slice letter breakdown remain map-out decisions.

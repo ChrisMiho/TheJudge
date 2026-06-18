@@ -273,8 +273,8 @@ The backend should include:
 - non-stack sections use owner and zone item labels (`Hand 1`, `Battlefield 1`, etc.); `caster` is omitted for non-stack items
 - mana spent per stack item (fallback to `manaValue` when omitted)
 - published WotC Oracle rulings for submitted cards when available from the static backend artifact
-- verbatim WotC Comprehensive Rules excerpts for all curated general game-rules topics from the static backend artifact
-- up to 5 supplemental WotC CR rule excerpts dynamically retrieved from the committed rule index artifact, scored against the request context and deduplicated against the curated baseline
+- verbatim WotC Comprehensive Rules excerpts for curated general game-rules topics selected per DEC-045 (always-on core plus game-state-gated expansion) from the static backend artifact
+- up to 5 supplemental WotC CR rule excerpts dynamically retrieved from the committed rule index artifact, scored per DEC-046 against the request context and deduplicated against selected System 2 baseline rule numbers
 - static MTG reference block
 - merged scope sentence for unselected zones and selected-but-empty zones
 - instructions to explain reasoning
@@ -308,8 +308,8 @@ WotC rulings prompt enrichment must:
 - appear after populated zone sections and before `SCOPE` and `QUESTION`
 
 Game rules prompt enrichment must:
-- include all curated topics from the committed artifact on every request in current scope
-- render topics in stable manifest `id` order with verbatim WotC CR prose only
+- include curated topics selected per DEC-045 (always-on core plus game-state-gated expansion) from the committed artifact
+- render selected topics in stable manifest `id` order with verbatim WotC CR prose only
 - appear after populated zone sections and before `OFFICIAL RULINGS`, then `SCOPE` and `QUESTION`
 - be omitted only when the artifact is missing or empty
 - respect `MAX_PROMPT_CHAR_BUDGET` (`EFFECTIVELY_UNLIMITED_CHARS = 1_000_000` per DEC-042 amendment; revisit after latency/cost sampling)
