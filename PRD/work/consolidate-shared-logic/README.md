@@ -4,6 +4,8 @@ status: active
 
 Codebase cleanup to eliminate accidentally duplicated constants, functions, and logic across the frontend/backend boundary and within individual modules. No behavior changes — refactor only.
 
+> **Re-derive after retrieval work (noted 2026-06-18).** Do not act on these findings as-is. The `prompt-context-retrieval-tuning` package will rewrite several of the same modules these findings target — `normalization.ts` (proposed split), `gameRules.ts` / `gameRulesRetrieval.ts`, and the rulings functions in `cardRulings.ts`. Findings #2, #4, #7, and #8 (and their line numbers) will likely be stale once retrieval ships. Re-run the duplication analysis and refine this package **after** the retrieval work lands.
+
 ## Findings
 
 Produced by a full codebase analysis on 2026-06-09. Grouped by severity.

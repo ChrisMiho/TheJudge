@@ -86,7 +86,11 @@ function checkGameStateNotesSectionOrder(promptText: string): EvaluationCheckRes
 }
 ```
 
-Wire both new checks into `runEvaluationChecks()`.
+Wire both new checks into the checks array inside `evaluateScenario()`
+(`contextEvaluationHarness.ts:306`) — the same array that already lists
+`checkPromptSectionOrder(promptText)` (~line 319). There is no `runEvaluationChecks`
+function; `evaluateScenario` is the single registration point. `checkGameStateNotesSection`
+takes `(fixture, promptText)`; `checkGameStateNotesSectionOrder` takes `(promptText)`.
 
 ### New fixture: `game-state-notes.fixture.json`
 

@@ -51,7 +51,13 @@ Pass to `EnrichmentStep` (prop additions for Slice E):
 />
 ```
 
-Wire into `handleDecryptStack` — `buildAskAiRequest` receives a `GameContext` that already spreads from `gameContext`. Include `gameStateNotes` in `updatedContext`:
+There are **two** identical `updatedContext` build sites, both of which must include
+`gameStateNotes`:
+- `handleDecryptStack` (`App.tsx:286`)
+- `handleRetry` (`App.tsx:307`)
+
+Each currently reads `const updatedContext: GameContext = { ...gameContext, zones: zoneCardsByZone };`
+Add the conditional spread to both:
 
 ```ts
 const updatedContext: GameContext = {
@@ -61,9 +67,16 @@ const updatedContext: GameContext = {
 };
 ```
 
-The same pattern applies in `handleFollowUpGameContext` (the frozen context snapshot) — `gameStateNotes` is captured at first decrypt and frozen alongside zones.
+The frozen-context snapshot used for follow-ups is captured automatically by
+`useAskAiSubmitOrchestration` (`App.tsx:17`, exposed as `frozenGameContext` at `App.tsx:128`)
+from the first decrypt's `payload.gameContext` — since `gameStateNotes` is now part of
+`updatedContext`, it is frozen alongside zones with no extra wiring.
 
-Check `buildAskAiRequest` in `lib/contextFlow/flow.ts` — it spreads `...gameContext` into the payload, so `gameStateNotes` passes through automatically when present. No change needed to `buildAskAiRequest`.
+`buildAskAiRequest` in `lib/contextFlow/flow.ts:102` takes the full `GameContext` and
+spreads `...gameContext` into the payload, so `gameStateNotes` passes through automatically
+when present. No change needed to `buildAskAiRequest` or its `ZoneAskAiPayload` type. (Note:
+the `Pick<Partial<GameContext>, ...>` at `flow.ts:7` is `FlowNavigationState` for `canAdvance`
+only — it does not gate the request payload and does not need `gameStateNotes`.)
 
 ### `start over` behavior
 

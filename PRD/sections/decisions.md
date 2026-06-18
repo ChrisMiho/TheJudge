@@ -642,3 +642,27 @@
   - REQ-017
 - Notes:
   - live gameplay entry speed is the dominant constraint; freeform captures all 6 feedback categories without forcing structured input during play
+
+### DEC-044
+- Decision: Adopt a durable feature/subsystem catalog at `sections/system-map.md` so the truth layer states what is built, how it behaves at a glance, and where it lives — without re-deriving behavior from code.
+- Status: confirmed
+- Context: The PRD promotes decisions into the `sections/` truth layer during planning, and the `Status:` field tracks decision lifecycle (`confirmed`/`superseded`), not whether code shipped. As a result the truth layer mixes "decided" with "built," and answering "is this real / how does it work / where does it live?" requires a code-reading journey. A single consolidated catalog answers all three in one read and gives a low-maintenance shipped-vs-planned signal without overloading `Status:` or sprinkling a new field across every entry.
+- Impact:
+  - new durable artifact `sections/system-map.md`; two levels — subsystems, with features grouped under each subsystem
+  - each entry records: `Status` (`shipped` | `planned` | `partial`), a one-line behavior summary, coarse file/module location (subsystem level, not per-line), and backing `DEC`/`REQ` IDs
+  - the shipped-vs-planned signal lives in the catalog only; existing `Status: confirmed/superseded` semantics on `DEC`/`REQ` entries are unchanged and not overloaded
+  - additive-first: the catalog is built and validated against real questions before any reconciliation of stale navigation or change to existing status conventions
+  - lightweight promotion gate: a catalog entry is marked `shipped` only when code and a cleanup receipt exist; enforced at cleanup time and documented in `instructions/`
+  - commit-message convention (conventional-commits-lite): `docs(prd):` for doc/plan-only changes, `feat:`/`fix:` for changes that ship product behavior; documented in `instructions/`
+  - stale navigation is reconciled only after the catalog is validated: the `PRD/README.md` work-package table is corrected and a pointer to the catalog is added to the `PRD/README.md` Section Inventory
+  - `DEC-043`/`REQ-031` (`gameStateNotes` / `ADDITIONAL GAME STATE`) are reconciled by representing them as `planned` in the catalog — their `Status: confirmed` lifecycle field is left unchanged, because shipped-vs-planned lives in the catalog only and `Status:` semantics are not overloaded
+  - deep per-subsystem behavior prose is out of scope here and deferred to `PRD/work/system-map-detail/` (it covers prompt assembly and the System 2 / System 3 retrieval mechanics that `prompt-context-retrieval-tuning` will rewrite); the catalog links to it once it exists
+  - no per-decision → code-line link maintenance is introduced (explicit non-goal preserved)
+  - documentation and process only: no `POST /api/ask-ai` request/response, UI, or prompt-assembly behavior change
+- Related requirements:
+  - (none — documentation and process decision; no functional requirement is added or changed)
+- Notes:
+  - the promotion gate and commit convention are process rules implemented in instruction files (`instructions/doc-lifecycle.md`, `instructions/agent-working-rules.md`) during map-out/implement, not in section files
+  - DEC-044 itself is tracked as `planned` in the catalog until the catalog ships, then flipped to `shipped` per the promotion gate
+  - "correcting `DEC-043`" means giving it a `planned` catalog entry, not editing its `Status:` field; `DEC-043`/`REQ-031` prose stays in the normative present tense used across the truth layer, since disambiguating decided-vs-built is precisely the catalog's job
+  - this decision does not change the "assistant, not judge" framing or any prompt behavior

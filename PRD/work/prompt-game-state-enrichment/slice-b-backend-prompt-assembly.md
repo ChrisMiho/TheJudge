@@ -34,8 +34,9 @@ export function formatGameStateNotesSection(gameStateNotes: string | undefined):
 ```
 
 Integrate into `buildPromptText()`. NOTE: these sections are built as a single
-array literal (`normalization.ts:450-458`), **not** separate `sections.push(...)`
-calls. The relevant slice of the literal:
+array literal (`const sections: string[] = [...]` starting at `normalization.ts:438`),
+**not** separate `sections.push(...)` calls. `formatGameContext(context)` is at line 454
+and `"PHASE GUIDANCE"` at line 456. The relevant slice of the literal:
 
 ```ts
 const sections = [
