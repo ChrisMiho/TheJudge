@@ -28,6 +28,17 @@ These rules govern ephemeral planning markdown under `PRD/` so feature work does
 2. Delete `PRD/work/<kebab-slug>/` entirely
 3. Update `PRD/README.md` only if navigation or read-order guidance changed
 
+## System-map promotion gate
+
+A `sections/system-map.md` entry reflects shipped reality, not intent. It flips to `shipped` only when both conditions hold:
+
+- product code exists and is wired in (under `apps/`, `scripts/`, or runtime data artifacts), **and**
+- a cleanup receipt has been written at `PRD/instructions/receipts/<slug>-<YYYY-MM-DD>.md`.
+
+Until both hold, the entry stays `planned` (decided/docs-only) or `partial` (some features shipped, others planned). The gate is enforced at cleanup time (`thejudge-cleanup`): on ship, flip the relevant entry/entries to `shipped`.
+
+The shipped-vs-planned signal lives in the catalog only. Never edit a `DEC`/`REQ` `Status:` field to express it — those track decision lifecycle (`confirmed`/`superseded`) and are unchanged by this gate.
+
 ## On abandoned work
 
 - Delete the `PRD/work/<kebab-slug>/` folder without promoting

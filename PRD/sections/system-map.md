@@ -1,0 +1,315 @@
+# system-map.md
+
+Durable feature/subsystem catalog for the product. Answers "is it real / how does it behave / where does it live?" in one read, without re-deriving behavior from code (`DEC-044`).
+
+## How to read this
+
+Two levels: a subsystem is a `##` heading; features are `###` sub-entries grouped beneath their subsystem. Every entry records four fields:
+
+- **Status** — `shipped` (code exists and is wired in), `planned` (decided/docs-only, no code under `apps/` yet), or `partial` (some features shipped, others planned).
+- **Summary** — one-line behavior statement.
+- **Lives in** — coarse file/module location (a directory or 1–3 key files), never per-line.
+- **Backed by** — the most directly relevant `DEC`/`REQ` IDs.
+
+This catalog is the only place the shipped-vs-planned signal lives. It does **not** override or restate `DEC`/`REQ` `Status:` lifecycle semantics (`confirmed`/`superseded`); those track decision history and are unchanged by anything here.
+
+## Prompt assembly
+
+- Status: shipped
+- Summary: Builds the LLM prompt from game context, zones, phase guidance, MTG rules/rulings, and conversation history, within a token budget.
+- Lives in: `apps/backend/src/prompt/` (`preparation.ts`, `context.ts`, `normalization.ts`, `mtgReference.ts`, `phaseGuidance.ts`)
+- Backed by: DEC-021, DEC-025, DEC-042
+
+### Context normalization
+
+- Status: shipped
+- Summary: Normalizes incoming game context and zone data into the canonical shape the prompt builder consumes.
+- Lives in: `apps/backend/src/prompt/normalization.ts`, `context.ts`
+- Backed by: DEC-021, DEC-025
+
+### MTG reference block
+
+- Status: shipped
+- Summary: Injects curated MTG reference text (rules/rulings framing) into the prompt.
+- Lives in: `apps/backend/src/prompt/mtgReference.ts`
+- Backed by: DEC-030, DEC-032
+
+### Phase / combat guidance block
+
+- Status: shipped
+- Summary: Phase- and combat-step reasoning hints injected per turn phase.
+- Lives in: `apps/backend/src/prompt/phaseGuidance.ts`
+- Backed by: DEC-036, DEC-037, REQ-024
+
+### Budget & enrichment diagnostics
+
+- Status: shipped
+- Summary: Enforces the prompt token budget and emits an enrichment-debug sidecar for diagnostics.
+- Lives in: `apps/backend/src/prompt/enrichmentDebug.ts`, `preparation.ts`
+- Backed by: DEC-025, DEC-042
+
+### `gameStateNotes` / `ADDITIONAL GAME STATE`
+
+- Status: planned
+- Summary: Optional freeform global game-state note rendered as an `ADDITIONAL GAME STATE` prompt section between general context and phase guidance; decided and documented, no code under `apps/` yet.
+- Lives in: (planned) `apps/backend/src/prompt/` + `GameContext` request shape
+- Backed by: DEC-043, REQ-031
+
+## Game rules retrieval
+
+- Status: shipped
+- Summary: Retrieves card rulings, curated game rules, and supplemental rules text to ground prompt reasoning.
+- Lives in: `apps/backend/src/cardRulings.ts`, `gameRules.ts`, `gameRulesRetrieval.ts`
+- Backed by: DEC-029, DEC-030, DEC-032, REQ-022
+
+### Card rulings
+
+- Status: shipped
+- Summary: Looks up per-card rulings for cards present in the game context.
+- Lives in: `apps/backend/src/cardRulings.ts`
+- Backed by: DEC-029
+
+### Curated game rules
+
+- Status: shipped
+- Summary: Provides curated comprehensive-rules excerpts for prompt grounding.
+- Lives in: `apps/backend/src/gameRules.ts`
+- Backed by: DEC-030, REQ-022
+
+### Supplemental retrieval
+
+- Status: shipped
+- Summary: Supplemental rules-text retrieval layered on top of curated rules and rulings.
+- Lives in: `apps/backend/src/gameRulesRetrieval.ts`
+- Backed by: DEC-032
+
+## Provider boundary
+
+- Status: shipped
+- Summary: Selects and constructs the ask-AI provider (mock vs OpenAI) behind a shared interface.
+- Lives in: `apps/backend/src/providers/`
+- Backed by: DEC-011, DEC-017, DEC-020, DEC-033
+
+### Provider factory & selection
+
+- Status: shipped
+- Summary: Factory chooses mock or OpenAI provider based on configuration/credentials.
+- Lives in: `apps/backend/src/providers/createAskAiProvider.ts`
+- Backed by: DEC-011, DEC-017
+
+### Mock provider
+
+- Status: shipped
+- Summary: Deterministic mock provider for local/dev and tests.
+- Lives in: `apps/backend/src/providers/mockAskAiProvider.ts`, `apps/backend/src/mockAskAi.ts`
+- Backed by: DEC-011
+
+### OpenAI provider
+
+- Status: shipped
+- Summary: OpenAI Responses-API provider implementing the shared provider interface.
+- Lives in: `apps/backend/src/providers/openAiResponsesProvider.ts`, `askAiProvider.ts`
+- Backed by: DEC-020, DEC-033
+
+## Backend API & validation
+
+- Status: shipped
+- Summary: Hosts `POST /api/ask-ai`, validates requests with Zod, applies the error taxonomy, and exposes health + logging.
+- Lives in: `apps/backend/src/routes/askAi.ts`, `validation/askAiRequest.ts`, `errors.ts`
+- Backed by: DEC-010, DEC-013, DEC-020, DEC-038, DEC-033
+
+### `POST /api/ask-ai` route
+
+- Status: shipped
+- Summary: Primary ask-AI endpoint orchestrating validation, prompt assembly, and provider invocation.
+- Lives in: `apps/backend/src/routes/askAi.ts`
+- Backed by: DEC-010, DEC-038
+
+### Request validation schemas
+
+- Status: shipped
+- Summary: Zod schemas validating the ask-AI request shape and constraints.
+- Lives in: `apps/backend/src/validation/askAiRequest.ts`
+- Backed by: DEC-013
+
+### Error taxonomy
+
+- Status: shipped
+- Summary: Structured error types and mapping for consistent API error responses.
+- Lives in: `apps/backend/src/errors.ts`
+- Backed by: DEC-020
+
+### Health route & logging
+
+- Status: shipped
+- Summary: Health-check route and request/response logging.
+- Lives in: `apps/backend/src/routes/health.ts`, `apps/backend/src/logging.ts`
+- Backed by: DEC-010
+
+## Frontend staged context flow
+
+- Status: shipped
+- Summary: Staged state machine that collects game context, phase/zone defaults, zone confirmation/collection, and enrichment, then builds the request payload under stack limits.
+- Lives in: `apps/frontend/src/lib/contextFlow/`, `apps/frontend/src/components/`, `App.tsx`
+- Backed by: DEC-021, DEC-023, DEC-024, DEC-028, DEC-034, DEC-035, DEC-037
+
+### Flow state machine
+
+- Status: shipped
+- Summary: Drives step transitions across the staged context-collection flow.
+- Lives in: `apps/frontend/src/lib/contextFlow/flow.ts`, `steps.ts`
+- Backed by: DEC-021, DEC-023
+
+### Phase zone defaults
+
+- Status: shipped
+- Summary: Derives default zones to collect based on the selected phase.
+- Lives in: `apps/frontend/src/lib/contextFlow/phaseZoneDefaults.ts`
+- Backed by: DEC-037
+
+### Zone confirm & collection steps
+
+- Status: shipped
+- Summary: UI steps to confirm relevant zones and collect cards per zone.
+- Lives in: `apps/frontend/src/components/ZoneConfirmStep.tsx`, `ZoneCollectionStep.tsx`, `ZoneCardPicker.tsx`
+- Backed by: DEC-024, DEC-028
+
+### Enrichment step
+
+- Status: shipped
+- Summary: Optional enrichment step for additional per-card/context detail before submit.
+- Lives in: `apps/frontend/src/components/EnrichmentStep.tsx`
+- Backed by: DEC-034, DEC-035
+
+### Stack limits
+
+- Status: shipped
+- Summary: Enforces stack-size limits on collected context before payload assembly.
+- Lives in: `apps/frontend/src/lib/stackLimits.ts`
+- Backed by: DEC-035
+
+## Card search & metadata
+
+- Status: shipped
+- Summary: Runtime card metadata fetch, fuzzy autocomplete, and zone-card construction in the frontend.
+- Lives in: `apps/frontend/src/lib/search.ts`, `lib/zoneCards.ts`
+- Backed by: DEC-012, REQ-002, REQ-003
+
+### Fuzzy autocomplete
+
+- Status: shipped
+- Summary: Keyboard-navigable fuzzy card-name autocomplete.
+- Lives in: `apps/frontend/src/lib/search.ts`, `hooks/useAutocompleteSuggestions.ts`, `hooks/useAutocompleteKeyboard.ts`
+- Backed by: REQ-002, REQ-003
+
+### Zone-card construction
+
+- Status: shipped
+- Summary: Builds zone-card items from selected metadata for the context flow.
+- Lives in: `apps/frontend/src/lib/zoneCards.ts`
+- Backed by: DEC-012
+
+## Follow-up chat
+
+- Status: shipped
+- Summary: Submit orchestration that freezes context and carries conversation history, with a conversation thread UI and retry/cooldown.
+- Lives in: `apps/frontend/src/hooks/useAskAiSubmitOrchestration.ts`, `components/ConversationThread.tsx`
+- Backed by: DEC-038, DEC-039, DEC-040, DEC-041, REQ-027
+
+### Submit orchestration (context freeze + history)
+
+- Status: shipped
+- Summary: Freezes the game context on first submit and threads conversation history into follow-up requests.
+- Lives in: `apps/frontend/src/hooks/useAskAiSubmitOrchestration.ts`
+- Backed by: DEC-038, DEC-039
+
+### Conversation thread UI
+
+- Status: shipped
+- Summary: Renders the multi-turn conversation thread.
+- Lives in: `apps/frontend/src/components/ConversationThread.tsx`
+- Backed by: DEC-040
+
+### Retry / cooldown
+
+- Status: shipped
+- Summary: Retry affordance with cooldown after failed or rate-limited submits.
+- Lives in: `apps/frontend/src/hooks/useAskAiSubmitOrchestration.ts`
+- Backed by: DEC-041, REQ-027
+
+## Decrypt waiting panel
+
+- Status: shipped
+- Summary: Waiting-panel UI showing staged elapsed-time messages while a request is in flight.
+- Lives in: `apps/frontend/src/components/AskAiWaitingPanel.tsx`, `lib/askAiWaitStages.ts`
+- Backed by: DEC-031, REQ-023
+
+### Staged elapsed-time messages
+
+- Status: shipped
+- Summary: Time-based staged copy driven by an elapsed-wait timer.
+- Lives in: `apps/frontend/src/lib/askAiWaitStages.ts`, `hooks/useElapsedWaitTimer.ts`
+- Backed by: REQ-023
+
+## Data pipeline
+
+- Status: shipped
+- Summary: Build scripts that refresh Scryfall + comprehensive-rules data and produce card metadata, card rulings, and game-rules artifacts, plus a prompt preview.
+- Lives in: `scripts/` (`refresh-scryfall-data.mjs`, `build-card-metadata.mjs`, `build-card-rulings.mjs`, `build-game-rules.mjs`, `prompt-preview.mjs`)
+- Backed by: DEC-012, DEC-029, DEC-030, DEC-032
+
+### Scryfall + CR refresh
+
+- Status: shipped
+- Summary: Downloads/refreshes Scryfall data and comprehensive-rules source (network refresh is human-approved only).
+- Lives in: `scripts/refresh-scryfall-data.mjs`
+- Backed by: DEC-012
+
+### Artifact builders
+
+- Status: shipped
+- Summary: Builds card-metadata, card-rulings, and game-rules artifacts consumed at runtime.
+- Lives in: `scripts/build-card-metadata.mjs`, `build-card-rulings.mjs`, `build-game-rules.mjs`
+- Backed by: DEC-029, DEC-030, DEC-032
+
+### Prompt preview
+
+- Status: shipped
+- Summary: Renders an assembled prompt preview for inspection.
+- Lives in: `scripts/prompt-preview.mjs`
+- Backed by: DEC-025
+
+## Eval harness
+
+- Status: shipped
+- Summary: Context-evaluation harness with fixtures and golden comparisons over prompt assembly and retrieval.
+- Lives in: `apps/backend/src/eval/`
+- Backed by: DEC-025, DEC-030, DEC-032
+
+### Context evaluation harness
+
+- Status: shipped
+- Summary: Runs prompt-assembly/retrieval evaluations against fixtures.
+- Lives in: `apps/backend/src/eval/contextEvaluationHarness.ts`
+- Backed by: DEC-025
+
+### Fixtures & golden comparisons
+
+- Status: shipped
+- Summary: Fixture inputs and golden expectations for the eval harness.
+- Lives in: `apps/backend/src/eval/fixtures/`
+- Backed by: DEC-030, DEC-032
+
+## PRD doc traceability (meta)
+
+- Status: shipped
+- Summary: The `system-map.md` catalog plus the promotion gate and commit convention that keep the truth layer reflecting shipped reality (the promotion gate applied to itself; catalog + guardrails shipped, cleanup receipt written 2026-06-18).
+- Lives in: `PRD/sections/system-map.md`, `PRD/instructions/`
+- Backed by: DEC-044
+
+### Feature/subsystem catalog
+
+- Status: shipped
+- Summary: This catalog — the durable, single-read answer to "is it real / how / where".
+- Lives in: `PRD/sections/system-map.md`
+- Backed by: DEC-044
