@@ -46,7 +46,8 @@
 - runtime metadata syncing and camera scanning are out of scope
 
 ## Product risks
-- **Prompt size vs AI latency:** Full game-rules library on every request (DEC-030, REQ-022) materially increases prompt size and is an active risk to the 3-second latency success metric. Monitor after ship; context-driven topic selection is the primary mitigation if the risk materializes.
+- **Prompt size vs AI latency:** Game-rules prompt enrichment (DEC-030, REQ-022) materially increases prompt size (~25–32k chars typical/worst case when all 23 curated topics ship). This is an active risk to the 3-second latency success metric, not a temporary scope tradeoff. Monitor after ship.
+- **Mitigation (planned):** context-driven System 2 topic selection (DEC-045) reduces baseline prompt size for phase-irrelevant requests; ship and re-sample p50/p95 after implementation. `MAX_PROMPT_CHAR_BUDGET` remains at `EFFECTIVELY_UNLIMITED_CHARS` (DEC-042) during tuning; revisit cap values after latency/cost sampling.
 
 ## Explicit Non-Goals
 - official judge-grade rulings

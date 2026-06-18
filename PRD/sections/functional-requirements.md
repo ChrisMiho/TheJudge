@@ -260,7 +260,7 @@
 - Description: Each collected card may include prompt-facing enrichment such as caster, targets, notes, and mana spent where relevant.
 - Acceptance Criteria:
   - app builds one ordered enrichment list across all populated zones
-  - user can optionally enter context notes per card
+  - user can optionally enter context notes per card; stack item `contextNotes` UI uses placeholder copy that names transient card-level annotations: kicker or buyback paid, X value used, counters added this turn, tapped status, gained abilities this turn
   - user can optionally set targets using `ContextTarget`
   - user can optionally enter mana-spent context for stack entries
   - backend prompt context always emits deterministic mana-spent value per stack entry
@@ -345,10 +345,10 @@
 ### REQ-022
 - Title: General game rules prompt enrichment
 - Priority: high
-- Description: Every backend AI prompt must include a curated library of verbatim WotC Comprehensive Rules excerpts as reference context, without changing the product API or UI.
+- Description: Every backend AI prompt must include a curated library of verbatim WotC Comprehensive Rules excerpts as reference context, selected by card-agnostic game-state signals for the baseline and by card/question-driven relevance scoring for supplemental rules, without changing the product API or UI.
 - Acceptance Criteria:
   - committed artifact `apps/backend/data/gameRulesByTopic.json` loads at backend startup
-  - every assembled prompt includes `GAME RULES (reference)` with all curated topics in stable `id` order when the artifact is present
+  - every assembled prompt includes `GAME RULES (reference)` with curated topics selected per DEC-045 (always-on core plus game-state-gated expansion) in stable `id` order when the artifact is present
   - excerpts are verbatim WotC CR prose for rule numbers listed in `apps/backend/data/gameRulesTopicManifest.json`
   - section appears after populated zone sections and before `OFFICIAL RULINGS`, then `SCOPE` and `QUESTION`
   - section includes a disclaimer that rules are shared vocabulary and do not override submitted game state
@@ -356,18 +356,26 @@
   - `MAX_PROMPT_CHAR_BUDGET` is set to `EFFECTIVELY_UNLIMITED_CHARS` (1,000,000) per DEC-042 amendment to DEC-030; prompt diagnostics continue to track prompt size and utilization
   - `npm run data:build` runs `build-game-rules.mjs` with graceful degradation when CR source or extracts are unavailable
   - `npm run data:refresh` attempts WotC CR download alongside Scryfall refresh with graceful skip when unavailable
-  - eval fixtures assert the full game-rules block and remain under the prompt budget
+  - eval fixtures assert conditional System 2 topic selection per scenario (see REQ-032)
   - manual latency sampling (p50/p95) is recorded after integration against the NFR-002 product risk
   - committed artifact `apps/backend/data/gameRulesRuleIndex.json` loads at backend startup alongside the topic artifact
-  - every assembled prompt may include an `ADDITIONAL RELEVANT RULE EXCERPTS` section with up to 5 rules scored against the request context
-  - supplemental rules are excluded from the curated baseline set (deduplicated against `gameRulesTopicManifest.json` rule numbers)
+  - every assembled prompt may include an `ADDITIONAL RELEVANT RULE EXCERPTS` section with up to 5 rules scored per DEC-046 against the request context
+  - supplemental rules are excluded from the curated baseline set (deduplicated against selected System 2 topic rule numbers)
   - supplemental section appears after `GAME RULES (reference)` and before `OFFICIAL RULINGS`
   - supplemental section omitted when index missing, empty, or no rules score above 0
-  - eval fixtures `state-based-actions` and `cascade-keyword` assert supplemental retrieval for out-of-manifest rules
+  - eval fixtures assert labeled supplemental recall per REQ-032
 - Constraints:
   - prompt-only and backend-only; no `AskAiRequest`, Zod schema, or frontend changes
   - no paraphrased rule text
   - no runtime CR or Scryfall fetch per request
+  - System 2 selection uses only card-agnostic game-state signals (`turnPhase`, `combatStep`, populated zones); no card names, oracle text, or keywords
+  - System 3 owns all card/question-driven retrieval including oracle-keyword signals
+- Dependencies:
+  - DEC-045
+  - DEC-046
+  - REQ-032
+- Notes:
+  - supersedes REQ-022 acceptance criteria that required all curated topics on every request
 
 ### REQ-023
 - Title: Decrypt wait feedback panel
@@ -516,3 +524,46 @@
   - prompt-only and backend-only; no `AskAiRequest`, Zod schema, or frontend changes
 - Dependencies:
   - DEC-042
+
+### REQ-031
+- Title: Global game-state notes
+- Priority: medium
+- Description: The app must accept an optional freeform game-state notes field on `GameContext` for cross-card, transient context not inferrable from submitted card oracle text — including active replacement effects, priority holder during stack resolution, pending delayed triggered abilities, and casting restrictions.
+- Acceptance Criteria:
+  - `GameContext` includes optional `gameStateNotes?: string`
+  - backend Zod schema validates `gameStateNotes` when present: trimmed, same control-character guardrails as `question`, capped at 2000 characters; blank/whitespace is accepted and omitted by normalization rather than rejected
+  - backend prompt emits `ADDITIONAL GAME STATE` section containing `gameStateNotes` content, positioned after `GENERAL GAME CONTEXT` and before `PHASE GUIDANCE`
+  - section is omitted entirely when `gameStateNotes` is absent or blank after trim
+  - UI surface is a collapsible dropdown within the context collection step; collapsed by default; expanding reveals an optional text area for `gameStateNotes` with placeholder copy that names example use cases: active replacement or continuous effects, who has priority, pending delayed triggers, casting restrictions
+  - `POST /api/ask-ai` request and success/error response shapes otherwise unchanged
+- Constraints:
+  - no structured sub-fields per category; field is freeform
+  - capped at 2000 characters; control-character guardrails
+  - prompt-facing only; no rules-validation behavior under this field
+- Dependencies:
+  - DEC-043
+  - GameContext model
+- Notes:
+
+### REQ-032
+- Title: Game rules retrieval relevance measurement
+- Priority: high
+- Description: The eval harness must verify that System 2 conditional topic selection and System 3 supplemental rule retrieval pull the right rules for representative scenarios, using labeled expected outcomes rather than structural checks alone.
+- Acceptance Criteria:
+  - eval fixtures may include an `expected` block with `expectedSystem2TopicIds`, `expectedSupplementalRuleIds`, and optional `forbiddenSupplementalRuleIds`
+  - harness check `system2-conditional-selection` passes when selected curated topics match `expectedSystem2TopicIds` for fixtures that define them
+  - harness check `system3-expected-recall` passes when every `expectedSupplementalRuleIds` entry appears in System 3 top-5 retrieval results
+  - harness check `system3-noise-excluded` passes when no `forbiddenSupplementalRuleIds` entry appears in System 3 top-5
+  - scenario fixtures cover the signal taxonomy: stack-resolution (e.g. counterspell), combat-damage/deathtouch, upkeep-trigger, keyword interaction (extend `cascade-keyword`), out-of-manifest SBA (extend `state-based-actions`)
+  - a digestible before/after relevance report is available for tuning review (one table per scenario: System 2 topics selected, System 3 top-5 with scores, recall hit/miss); may be a script output or harness report artifact
+  - existing structural checks (section presence, ordering, budget) remain unchanged
+  - `npm run test:eval` remains the automated regression gate
+- Constraints:
+  - no live AI provider calls in relevance checks
+  - expected rule IDs are human-labeled ground truth, not inferred from current scorer output
+  - do not assert full prompt golden text for relevance scenarios unless structural sections change intentionally
+- Dependencies:
+  - DEC-047
+  - REQ-022
+- Notes:
+  - replaces reliance on manual multi-file `prompt:preview` review as the sole relevance verification path

@@ -3,6 +3,7 @@ name: thejudge-cleanup
 description: >-
   Post-ship evaluation — promote PRD truth, write durable receipt, delete
   ephemeral PRD/work/ folder. Use when a feature is done or for corpus hygiene.
+disable-model-invocation: true
 ---
 
 # TheJudge Cleanup
@@ -30,14 +31,16 @@ Apply during process step 1:
 - Public contract unchanged unless a slice scoped a change
 - No secrets committed
 - Durable outcomes promoted; `PRD/work/<slug>/` ready to delete
+- System-map promotion gate applied — shipped subsystem's `sections/system-map.md` entry flipped to `shipped` (code + receipt exist)
 
 ## Process
 
 1. Compare each slice acceptance criteria vs codebase — mark done/pending; run ship checklist.
 2. Promote durable outcomes to `PRD/sections/decisions.md` and affected sections.
 3. **Write receipt first** (see below).
-4. Delete `PRD/work/<slug>/` entirely if fully shipped.
-5. Update `PRD/README.md` only if navigation changed.
+4. Apply the system-map promotion gate (`PRD/instructions/doc-lifecycle.md`): now that code exists and the receipt is written, flip the shipped subsystem's `PRD/sections/system-map.md` entry/entries from `planned`/`partial` to `shipped`. The shipped-vs-planned signal lives in the catalog only — never edit a `DEC`/`REQ` `Status:` field.
+5. Delete `PRD/work/<slug>/` entirely if fully shipped.
+6. Update `PRD/README.md` only if navigation changed.
 
 ## Receipt (required before delete)
 

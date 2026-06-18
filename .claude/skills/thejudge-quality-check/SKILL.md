@@ -3,6 +3,7 @@ name: thejudge-quality-check
 description: >-
   Validates PRD alignment and agent-readiness before slicing work. Use after
   refinement, before map-out.
+disable-model-invocation: true
 ---
 
 # TheJudge Quality Check

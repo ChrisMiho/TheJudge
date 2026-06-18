@@ -63,6 +63,7 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - `activePlayer?: PlayerLabel`
 - `selectedZones: ZoneId[]`
 - `zones?: Partial<Record<ZoneId, ZoneCardItem[]>>`
+- `gameStateNotes?: string` — optional freeform annotation for cross-card, transient game-state context not inferrable from submitted card oracle text (e.g. priority holder, active replacement/continuous effects, pending delayed triggers, casting restrictions). Omitted when blank; capped at 2000 characters. (DEC-043)
 - `zones` includes only non-empty zone arrays. Empty selected zones are represented by `selectedZones`, not by empty arrays.
 - `displayName` is optional UI/prompt text only. `label`, `activePlayer`, `caster`, `owner`, and player targets remain fixed `PlayerLabel` values.
 
@@ -264,15 +265,16 @@ When `conversationHistory` is present, backend prompt assembly inserts a `CONVER
 The backend should include:
 - final user question
 - game context (player count, life totals, active player when provided, turn phase, combat sub-step when present)
-- phase-specific guidance block (`PHASE GUIDANCE`) positioned between `GENERAL GAME CONTEXT` and zone sections; always present for a valid phase submission; combat guidance varies by `combatStep` when present (DEC-036)
+- `ADDITIONAL GAME STATE` section containing `gameStateNotes` content, positioned after `GENERAL GAME CONTEXT` and before `PHASE GUIDANCE`; omitted entirely when `gameStateNotes` is absent or blank after trim (DEC-043)
+- phase-specific guidance block (`PHASE GUIDANCE`) positioned between `GENERAL GAME CONTEXT` (and `ADDITIONAL GAME STATE` when present) and zone sections; always present for a valid phase submission; combat guidance varies by `combatStep` when present (DEC-036)
 - selected zones
 - populated zone sections — each card in every populated zone (stack and non-stack) includes the full card metadata block: oracle text, mana cost/value, type line, colors, supertypes/subtypes, targets, and context notes; empty oracle emits `(none) — no oracle text recorded for this card`
 - ordered stack zone when populated; stack section additionally includes stack role, caster, and mana spent per item
 - non-stack sections use owner and zone item labels (`Hand 1`, `Battlefield 1`, etc.); `caster` is omitted for non-stack items
 - mana spent per stack item (fallback to `manaValue` when omitted)
 - published WotC Oracle rulings for submitted cards when available from the static backend artifact
-- verbatim WotC Comprehensive Rules excerpts for all curated general game-rules topics from the static backend artifact
-- up to 5 supplemental WotC CR rule excerpts dynamically retrieved from the committed rule index artifact, scored against the request context and deduplicated against the curated baseline
+- verbatim WotC Comprehensive Rules excerpts for curated general game-rules topics selected per DEC-045 (always-on core plus game-state-gated expansion) from the static backend artifact
+- up to 5 supplemental WotC CR rule excerpts dynamically retrieved from the committed rule index artifact, scored per DEC-046 against the request context and deduplicated against selected System 2 baseline rule numbers
 - static MTG reference block
 - merged scope sentence for unselected zones and selected-but-empty zones
 - instructions to explain reasoning
@@ -306,8 +308,8 @@ WotC rulings prompt enrichment must:
 - appear after populated zone sections and before `SCOPE` and `QUESTION`
 
 Game rules prompt enrichment must:
-- include all curated topics from the committed artifact on every request in current scope
-- render topics in stable manifest `id` order with verbatim WotC CR prose only
+- include curated topics selected per DEC-045 (always-on core plus game-state-gated expansion) from the committed artifact
+- render selected topics in stable manifest `id` order with verbatim WotC CR prose only
 - appear after populated zone sections and before `OFFICIAL RULINGS`, then `SCOPE` and `QUESTION`
 - be omitted only when the artifact is missing or empty
 - respect `MAX_PROMPT_CHAR_BUDGET` (`EFFECTIVELY_UNLIMITED_CHARS = 1_000_000` per DEC-042 amendment; revisit after latency/cost sampling)

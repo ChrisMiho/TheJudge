@@ -53,6 +53,15 @@ When creating or closing non-section markdown under `PRD/`, also read `instructi
 - If a rule changes how agents should behave, update an instruction file, not a section file.
 - If new uncertainty is introduced, add a `Q-###` entry.
 
+## Commit Message Convention
+
+Conventional-commits-lite — a prefix convention only, not a validated commit-lint pipeline:
+
+- `docs(prd):` — PRD/doc/plan-only changes with no product behavior change, including edits under `PRD/` (truth-layer sections, instructions) and `PRD/work/` planning.
+- `feat:` / `fix:` — changes that ship or fix product behavior (code under `apps/`, `scripts/`, or runtime data artifacts).
+
+Lite by intent: no full conventional-commits enforcement and no tooling.
+
 ## Prohibited Behaviors
 
 - inventing scope

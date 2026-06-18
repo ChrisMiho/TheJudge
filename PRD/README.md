@@ -39,6 +39,7 @@ For implementation work, read in this order:
 | `sections/integrations-and-data.md` | complete | API contracts, stack ordering, integrations, data notes, and dependencies |
 | `sections/open-questions.md` | needs review | Unresolved items that need human decisions |
 | `sections/decisions.md` | active | Confirmed decisions that override older draft wording |
+| `sections/system-map.md` | active | Feature/subsystem catalog: shipped-vs-planned status, behavior summary, and coarse location per subsystem |
 
 ## Instruction Inventory
 
@@ -102,8 +103,10 @@ Read in this order:
 
 | Slug | Status | Summary |
 |------|--------|---------|
-| [supplemental-game-rules-retrieval](./work/supplemental-game-rules-retrieval/) | active | Context-retrieved supplemental CR rules (max 5) on top of DEC-030 curated baseline |
-| [consolidate-shared-logic](./work/consolidate-shared-logic/) | ideation | Remove accidentally duplicated constants, functions, and logic across apps and within backend modules |
+| [consolidate-shared-logic](./work/consolidate-shared-logic/) | active | Remove accidentally duplicated constants, functions, and logic across apps and within backend modules (re-derive after retrieval work) |
+| [prompt-context-retrieval-tuning](./work/prompt-context-retrieval-tuning/) | ideation | Draw a clear boundary between the curated rule baseline and card/question-driven adaptive retrieval, and prove it with the eval harness |
+| [system-map-detail](./work/system-map-detail/) | ideation | Deep per-subsystem behavior prose that the shallow `sections/system-map.md` catalog links to |
+| [prompt-game-state-enrichment](./work/prompt-game-state-enrichment/) | deferred | Add `gameStateNotes` freeform game-state field and `ADDITIONAL GAME STATE` prompt section (revisit after retrieval + consolidation work) |
 
 Completed work is promoted into `sections/` and temporary work folders are removed per `instructions/doc-lifecycle.md`.
 
