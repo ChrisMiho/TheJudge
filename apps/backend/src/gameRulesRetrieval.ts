@@ -1,4 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { GameRulesTopic } from "./gameRules.js";
 import type { PromptContext } from "./types/index.js";
 
@@ -68,6 +70,102 @@ export function loadGameRulesRuleIndex(filePath: string): GameRulesRuleIndexEntr
   }
 }
 
+// ---------------------------------------------------------------------------
+// IDF token stats + keyword vocabulary (DEC-046)
+// ---------------------------------------------------------------------------
+
+/** Per-token document frequency for IDF scoring. `N` = total rules in the index. */
+export type GameRulesTokenStats = { N: number; df: Map<string, number> };
+
+const tokenStatsCache = new Map<string, GameRulesTokenStats | null>();
+
+export function loadGameRulesTokenStats(filePath: string): GameRulesTokenStats | null {
+  const cached = tokenStatsCache.get(filePath);
+  if (cached !== undefined) return cached;
+
+  if (!existsSync(filePath)) {
+    warnOnce(filePath, `Game rules token stats missing; falling back to df=1 IDF: ${filePath}`);
+    tokenStatsCache.set(filePath, null);
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(readFileSync(filePath, "utf8")) as { N?: unknown; tokens?: unknown };
+    const N = typeof parsed.N === "number" && parsed.N > 0 ? parsed.N : 0;
+    const df = new Map<string, number>();
+    if (parsed.tokens && typeof parsed.tokens === "object") {
+      for (const [token, value] of Object.entries(parsed.tokens as Record<string, unknown>)) {
+        const dfValue = (value as { df?: unknown })?.df;
+        if (typeof dfValue === "number" && dfValue > 0) df.set(token, dfValue);
+      }
+    }
+    if (N === 0) {
+      warnOnce(filePath, `Game rules token stats had no usable N; falling back to df=1 IDF: ${filePath}`);
+      tokenStatsCache.set(filePath, null);
+      return null;
+    }
+    const stats: GameRulesTokenStats = { N, df };
+    tokenStatsCache.set(filePath, stats);
+    return stats;
+  } catch (error) {
+    warnOnce(filePath, `Game rules token stats could not be parsed; falling back to df=1 IDF: ${filePath}`, error);
+    tokenStatsCache.set(filePath, null);
+    return null;
+  }
+}
+
+const keywordVocabularyCache = new Map<string, Set<string>>();
+
+export function loadGameRulesKeywordVocabulary(filePath: string): Set<string> {
+  const cached = keywordVocabularyCache.get(filePath);
+  if (cached !== undefined) return cached;
+
+  if (!existsSync(filePath)) {
+    warnOnce(filePath, `Game rules keyword vocabulary missing; keyword boost disabled: ${filePath}`);
+    const empty = new Set<string>();
+    keywordVocabularyCache.set(filePath, empty);
+    return empty;
+  }
+
+  try {
+    const parsed = JSON.parse(readFileSync(filePath, "utf8")) as unknown;
+    const rawTokens = Array.isArray(parsed)
+      ? parsed
+      : Array.isArray((parsed as { tokens?: unknown })?.tokens)
+        ? (parsed as { tokens: unknown[] }).tokens
+        : [];
+    const vocabulary = new Set<string>();
+    for (const token of rawTokens) {
+      if (typeof token === "string" && token.trim().length > 0) vocabulary.add(token.trim().toLowerCase());
+    }
+    keywordVocabularyCache.set(filePath, vocabulary);
+    return vocabulary;
+  } catch (error) {
+    warnOnce(filePath, `Game rules keyword vocabulary could not be parsed; keyword boost disabled: ${filePath}`, error);
+    const empty = new Set<string>();
+    keywordVocabularyCache.set(filePath, empty);
+    return empty;
+  }
+}
+
+/** Scoring resources used by System 3 retrieval. */
+export type ScoringResources = {
+  tokenStats: GameRulesTokenStats | null;
+  keywordVocabulary: Set<string>;
+};
+
+let defaultResources: ScoringResources | null = null;
+
+function getDefaultScoringResources(): ScoringResources {
+  if (defaultResources) return defaultResources;
+  const dataDir = resolve(dirname(fileURLToPath(import.meta.url)), "../data");
+  defaultResources = {
+    tokenStats: loadGameRulesTokenStats(resolve(dataDir, "gameRulesTokenStats.json")),
+    keywordVocabulary: loadGameRulesKeywordVocabulary(resolve(dataDir, "gameRulesKeywordVocabulary.json"))
+  };
+  return defaultResources;
+}
+
 export function collectCuratedRuleIds(topics: GameRulesTopic[]): Set<string> {
   const ids = new Set<string>();
   for (const topic of topics) {
@@ -78,10 +176,14 @@ export function collectCuratedRuleIds(topics: GameRulesTopic[]): Set<string> {
   return ids;
 }
 
+// ---------------------------------------------------------------------------
+// Scoring constants (DEC-046, tunable defaults)
+// ---------------------------------------------------------------------------
+
+const QUESTION_TOKEN_MULTIPLIER = 3;
+const KEYWORD_TOKEN_MULTIPLIER = 6;
 const SCORE_EXACT_RULE_ID = 100;
 const SCORE_PARENT_RULE_ID = 20;
-const SCORE_DOTTED_TOKEN_MATCH = 8;
-const SCORE_TOKEN_MATCH = 1;
 
 const STOP_WORDS = new Set([
   "and", "are", "can", "card", "cards", "does", "for", "from",
@@ -104,19 +206,30 @@ function extractRuleIds(value: string): string[] {
   return [...ids];
 }
 
-export function buildQueryText(context: PromptContext): string {
-  const parts: string[] = [];
+// ---------------------------------------------------------------------------
+// Query provenance (DEC-046)
+// ---------------------------------------------------------------------------
 
-  parts.push(context.finalQuestion);
-  parts.push(context.gameContext.turnPhase);
-  parts.push(context.gameContext.selectedZones.join(" "));
+export type QueryTokenSource = "question" | "oracle";
+export type QueryToken = { token: string; source: QueryTokenSource; isKeyword: boolean };
+
+/**
+ * Split the prompt context into a question-sourced string (the user's question)
+ * and an oracle-sourced string (turn phase, zones, card fields, and context notes).
+ */
+function buildQueryParts(context: PromptContext): { questionText: string; oracleText: string } {
+  const questionText = context.finalQuestion;
+
+  const oracleParts: string[] = [];
+  oracleParts.push(context.gameContext.turnPhase);
+  oracleParts.push(context.gameContext.selectedZones.join(" "));
 
   for (const stackItem of context.orderedStack) {
     const stackParts = [stackItem.name, stackItem.typeLine, stackItem.oracleText];
     if (stackItem.contextNotes) {
       stackParts.push(stackItem.contextNotes);
     }
-    parts.push(stackParts.join(" "));
+    oracleParts.push(stackParts.join(" "));
   }
 
   for (const zone of context.populatedZones) {
@@ -125,15 +238,60 @@ export function buildQueryText(context: PromptContext): string {
       if (item.contextNotes) {
         itemParts.push(item.contextNotes);
       }
-      parts.push(itemParts.join(" "));
+      oracleParts.push(itemParts.join(" "));
     }
   }
 
-  return parts.join(" ");
+  return { questionText, oracleText: oracleParts.join(" ") };
 }
 
-function scoreEntry(entry: GameRulesRuleIndexEntry, queryTokens: string[], queryRuleIds: string[]): number {
+/** Thin concatenation of question + oracle parts, retained for debug output. */
+export function buildQueryText(context: PromptContext): string {
+  const { questionText, oracleText } = buildQueryParts(context);
+  return `${questionText} ${oracleText}`;
+}
+
+export function buildQueryTokens(
+  context: PromptContext,
+  keywordVocabulary: Set<string> = getDefaultScoringResources().keywordVocabulary
+): { queryText: string; tokens: QueryToken[]; queryRuleIds: string[] } {
+  const { questionText, oracleText } = buildQueryParts(context);
+  const queryText = `${questionText} ${oracleText}`;
+
+  // Dedupe by token; the question source (higher multiplier) wins over oracle.
+  const byToken = new Map<string, QueryToken>();
+  const addToken = (token: string, source: QueryTokenSource): void => {
+    const isKeyword = keywordVocabulary.has(token);
+    const existing = byToken.get(token);
+    if (!existing) {
+      byToken.set(token, { token, source, isKeyword });
+      return;
+    }
+    if (source === "question") existing.source = "question";
+    existing.isKeyword = existing.isKeyword || isKeyword;
+  };
+
+  for (const token of tokenize(questionText)) addToken(token, "question");
+  for (const token of tokenize(oracleText)) addToken(token, "oracle");
+
+  return { queryText, tokens: [...byToken.values()], queryRuleIds: extractRuleIds(queryText) };
+}
+
+// ---------------------------------------------------------------------------
+// Scoring (DEC-046)
+// ---------------------------------------------------------------------------
+
+type ScoredEntry = { entry: GameRulesRuleIndexEntry; score: number; topTokenIdf: number };
+
+function scoreEntry(
+  entry: GameRulesRuleIndexEntry,
+  tokens: QueryToken[],
+  queryRuleIds: string[],
+  N: number,
+  df: Map<string, number> | null
+): { score: number; topTokenIdf: number } {
   let score = 0;
+  let topTokenIdf = 0;
 
   if (queryRuleIds.includes(entry.ruleId)) {
     score += SCORE_EXACT_RULE_ID;
@@ -146,16 +304,62 @@ function scoreEntry(entry: GameRulesRuleIndexEntry, queryTokens: string[], query
     }
   }
 
-  const searchTextTokens = tokenize(entry.searchText);
-  const searchTextTokenSet = new Set(searchTextTokens);
+  const searchTextTokenSet = new Set(tokenize(entry.searchText));
 
-  for (const token of queryTokens) {
-    if (searchTextTokenSet.has(token)) {
-      score += token.includes(".") ? SCORE_DOTTED_TOKEN_MATCH : SCORE_TOKEN_MATCH;
+  for (const { token, source, isKeyword } of tokens) {
+    if (!searchTextTokenSet.has(token)) continue;
+    const tokenDf = df?.get(token) ?? 1;
+    const baseIdf = Math.log(N / Math.max(tokenDf, 1));
+    let weight = baseIdf;
+    if (source === "question") weight *= QUESTION_TOKEN_MULTIPLIER;
+    if (isKeyword) weight *= KEYWORD_TOKEN_MULTIPLIER;
+    score += weight;
+    if (baseIdf > topTokenIdf) topTokenIdf = baseIdf;
+  }
+
+  return { score, topTokenIdf };
+}
+
+function scoreIndex(
+  context: PromptContext,
+  index: GameRulesRuleIndexEntry[],
+  excludeRuleIds: Set<string>,
+  resources: ScoringResources
+): { scored: ScoredEntry[]; tokens: QueryToken[]; queryText: string; queryRuleIds: string[]; excludedCuratedRuleCount: number } {
+  const { queryText, tokens, queryRuleIds } = buildQueryTokens(context, resources.keywordVocabulary);
+  const N = resources.tokenStats?.N ?? index.length;
+  const df = resources.tokenStats?.df ?? null;
+
+  const scored: ScoredEntry[] = [];
+  let excludedCuratedRuleCount = 0;
+
+  for (const entry of index) {
+    if (excludeRuleIds.has(entry.ruleId)) {
+      excludedCuratedRuleCount++;
+      continue;
+    }
+    const { score, topTokenIdf } = scoreEntry(entry, tokens, queryRuleIds, N, df);
+    if (score > 0) {
+      scored.push({ entry, score, topTokenIdf });
     }
   }
 
-  return score;
+  scored.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    if (b.topTokenIdf !== a.topTokenIdf) return b.topTokenIdf - a.topTokenIdf;
+    return parseFloat(a.entry.ruleId) - parseFloat(b.entry.ruleId);
+  });
+
+  return { scored, tokens, queryText, queryRuleIds, excludedCuratedRuleCount };
+}
+
+function toRetrievedGameRule(scored: ScoredEntry): RetrievedGameRule {
+  return {
+    ruleId: scored.entry.ruleId,
+    sectionTitle: scored.entry.sectionTitle,
+    text: scored.entry.text,
+    score: scored.score
+  };
 }
 
 export type SupplementalRulesDebug = {
@@ -178,19 +382,17 @@ export function retrieveSupplementalRulesWithDebug(
   context: PromptContext,
   index: GameRulesRuleIndexEntry[],
   excludeRuleIds: Set<string>,
-  max = 5
+  max = 5,
+  resources: ScoringResources = getDefaultScoringResources()
 ): SupplementalRulesWithDebug {
-  const queryText = buildQueryText(context);
-  const queryTokens = tokenize(queryText);
-  const queryRuleIds = extractRuleIds(queryText);
-
   if (index.length === 0) {
+    const { queryText, tokens, queryRuleIds } = buildQueryTokens(context, resources.keywordVocabulary);
     return {
       selected: [],
       runnerUp: [],
       debug: {
         queryText,
-        queryTokens,
+        queryTokens: tokens.map((t) => t.token),
         queryRuleIds,
         excludedCuratedRuleCount: 0,
         selected: [],
@@ -200,35 +402,22 @@ export function retrieveSupplementalRulesWithDebug(
     };
   }
 
-  const scored: RetrievedGameRule[] = [];
-  let excludedCuratedRuleCount = 0;
+  const { scored, tokens, queryText, queryRuleIds, excludedCuratedRuleCount } = scoreIndex(
+    context,
+    index,
+    excludeRuleIds,
+    resources
+  );
 
-  for (const entry of index) {
-    if (excludeRuleIds.has(entry.ruleId)) {
-      excludedCuratedRuleCount++;
-      continue;
-    }
-
-    const score = scoreEntry(entry, queryTokens, queryRuleIds);
-    if (score > 0) {
-      scored.push({ ruleId: entry.ruleId, sectionTitle: entry.sectionTitle, text: entry.text, score });
-    }
-  }
-
-  scored.sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
-    return parseFloat(a.ruleId) - parseFloat(b.ruleId);
-  });
-
-  const selected = scored.slice(0, max);
-  const runnerUp = scored.slice(max, max + 10);
+  const selected = scored.slice(0, max).map(toRetrievedGameRule);
+  const runnerUp = scored.slice(max, max + 10).map(toRetrievedGameRule);
 
   return {
     selected,
     runnerUp,
     debug: {
       queryText,
-      queryTokens,
+      queryTokens: tokens.map((t) => t.token),
       queryRuleIds,
       excludedCuratedRuleCount,
       selected: selected.map((r) => ({ ruleId: r.ruleId, sectionTitle: r.sectionTitle, score: r.score })),
@@ -242,35 +431,11 @@ export function retrieveSupplementalRules(
   context: PromptContext,
   index: GameRulesRuleIndexEntry[],
   excludeRuleIds: Set<string>,
-  max = 5
+  max = 5,
+  resources: ScoringResources = getDefaultScoringResources()
 ): RetrievedGameRule[] {
   if (index.length === 0) return [];
 
-  const queryText = buildQueryText(context);
-  const queryTokens = tokenize(queryText);
-  const queryRuleIds = extractRuleIds(queryText);
-
-  const scored: RetrievedGameRule[] = [];
-
-  for (const entry of index) {
-    if (excludeRuleIds.has(entry.ruleId)) continue;
-
-    const score = scoreEntry(entry, queryTokens, queryRuleIds);
-    if (score > 0) {
-      scored.push({
-        ruleId: entry.ruleId,
-        sectionTitle: entry.sectionTitle,
-        text: entry.text,
-        score
-      });
-    }
-  }
-
-  scored.sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
-    // Ties: sort by ruleId numerically ascending
-    return parseFloat(a.ruleId) - parseFloat(b.ruleId);
-  });
-
-  return scored.slice(0, max);
+  const { scored } = scoreIndex(context, index, excludeRuleIds, resources);
+  return scored.slice(0, max).map(toRetrievedGameRule);
 }

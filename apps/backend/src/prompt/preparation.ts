@@ -5,6 +5,7 @@ import {
   type RulingEntry
 } from "../cardRulings.js";
 import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
+import { selectGameRulesTopics } from "../gameRulesTopicSelection.js";
 import {
   collectCuratedRuleIds,
   retrieveSupplementalRules,
@@ -49,7 +50,8 @@ export function preparePromptInput(request: AskAiRequest, options: PreparePrompt
     maxCommentChars: MAX_RULING_COMMENT_CHARS,
     maxSectionChars: MAX_RULINGS_SECTION_CHARS
   };
-  const gameRulesTopics = options.gameRulesTopics ?? [];
+  const allGameRulesTopics = options.gameRulesTopics ?? [];
+  const gameRulesTopics = selectGameRulesTopics(context, allGameRulesTopics);
   const gameRulesSection = formatGameRulesSection(gameRulesTopics);
   const curatedRuleIds = collectCuratedRuleIds(gameRulesTopics);
   const conversationHistory = request.conversationHistory;

@@ -30,32 +30,17 @@ Only zones with cards appear in the user payload. A separate scope note lists em
 Continuous effects and state-based actions use a layer system. When effects conflict, apply in order: (1) Copy effects, (2) Control-changing effects, (3) Text-changing effects, (4) Type-changing effects, (5) Color-changing effects, (6) Ability-adding/removing effects, (7) Power- and toughness-changing effects. Within a layer, timestamp and dependency rules apply. This assistant does not adjudicate officially; use layers as shared vocabulary when explaining interactions.
 
 GENERAL GAME CONTEXT
-turnPhase: stack_resolving
+turnPhase: combat
 playerCount: 2
 Player 1: lifeTotal=20
 Player 2: lifeTotal=20
 
 PHASE GUIDANCE
-
-
-ZONE: STACK (BOTTOM TO TOP)
-Stack item 1 (top)
-card: Shardless Agent
-manaCost: (none)
-manaValue: 3
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 1
-targets: (none)
-manaSpent: 3
-contextNotes: (none)
-oracleText: Cascade (When you cast this spell, exile cards from the top of your library until you exile a nonland card that costs less. You may cast it without paying its mana cost. Put the exiled cards on the bottom in a random order.)
+You are in the combat damage step. Creatures deal their power as combat damage simultaneously (unless first strike or double strike applies a separate first-strike damage step). State-based actions are checked after damage is dealt.
 
 ZONE: BATTLEFIELD
 Battlefield 1
-name: Monastery Swiftspear
+name: Charging Rhino
 owner: (none)
 manaCost: (none)
 manaValue: 0
@@ -64,8 +49,21 @@ colors: (none)
 supertypes: (none)
 subtypes: (none)
 targets: none:does-not-target
-contextNotes: 1/2 with prowess. Player 1 controls it.
-oracleText: Haste Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)
+contextNotes: 4/4 attacking creature with trample. Player 1 controls it.
+oracleText: Trample
+
+Battlefield 2
+name: Vampire Nighthawk
+owner: (none)
+manaCost: (none)
+manaValue: 0
+typeLine: (none)
+colors: (none)
+supertypes: (none)
+subtypes: (none)
+targets: none:does-not-target
+contextNotes: 1/1 (for this scenario) blocking creature with deathtouch. Player 2 controls it.
+oracleText: Flying, deathtouch, lifelink
 
 GAME RULES (reference)
 Use these general Magic rules as shared vocabulary. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
@@ -78,21 +76,30 @@ Triggered Ability Basics
 Zone-Change Triggered Abilities
 603.6c Leaves-the-battlefield abilities trigger when a permanent moves from the battlefield to another zone, or when a phased-in permanent leaves the game because its owner leaves the game. These are written as, but aren’t limited to, “When [this object] leaves the battlefield, . . .” or “Whenever [something] is put into a graveyard from the battlefield, . . . .” (See also rule 603.10.) An ability that attempts to do something to the card that left the battlefield checks for it only in the first zone that it went to. An ability that triggers when a card is put into a certain zone “from anywhere” is never treated as a leaves-the-battlefield ability, even if an object is put into that zone from the battlefield.
 
-Copying Spells and Abilities
-707.10. To copy a spell, activated ability, or triggered ability means to put a copy of it onto the stack; a copy of a spell isn’t cast and a copy of an activated ability isn’t activated. A copy of a spell or ability copies both the characteristics of the spell or ability and all decisions made for it, including modes, targets, the value of X, and additional or alternative costs. (See rule 601, “Casting Spells.”) Choices that are normally made on resolution are not copied. If an effect of the copy refers to objects used to pay its costs, it uses the objects used to pay the costs of the original spell or ability. A copy of a spell is owned by the player under whose control it was put on the stack. A copy of a spell or ability is controlled by the player under whose control it was put on the stack. A copy of a spell is itself a spell, even though it has no spell card associated with it. A copy of an ability is itself an ability.
-Example: A player casts Fork, targeting an Emerald Charm. Fork reads, “Copy target instant or sorcery spell, except that the copy is red. You may choose new targets for the copy.” Emerald Charm is a modal green instant. When the Fork resolves, it puts a copy of the Emerald Charm on the stack except the copy is red, not green. The copy has the same mode that was chosen for the original Emerald Charm. It does not necessarily have the same target, but only because Fork allows choosing of new targets.
-Example: Fling is an instant that reads, “As an additional cost to cast this spell, sacrifice a creature” and “Fling deals damage equal to the sacrificed creature’s power to any target.” When determining how much damage a copy of Fling deals, it checks the power of the creature sacrificed to pay for the original Fling.
-Example: Dawnglow Infusion is a sorcery that reads, “You gain X life if {G} was spent to cast this spell and X life if {W} was spent to cast it.” Because mana isn’t an object, a copy of Dawnglow Infusion won’t cause you to gain any life, no matter what mana was spent to cast the original spell.
+Combat Damage Assignment
+510.1. First, the active player announces how each attacking creature assigns its combat damage, then the defending player announces how each blocking creature assigns its combat damage. This turn-based action doesn’t use the stack. A player assigns a creature’s combat damage according to the following rules:
+702.2c Any nonzero amount of combat damage assigned to a creature by a source with deathtouch is considered to be lethal damage for the purposes of determining if excess damage is being dealt.
+702.19a Trample is a static ability that modifies the rules for assigning an attacking creature’s combat damage. The ability has no effect when a creature with trample is blocking or is dealing noncombat damage. (See rule 510, “Combat Damage Step.”)
+702.19d If an attacking creature with trample or trample over planeswalkers is blocked, but there are no creatures blocking it when damage is assigned, its damage is assigned to the defending player and/or planeswalker as though all blocking creatures have been assigned lethal damage.
 
-Resolving Targeted Spells and Abilities
-608.2b If the spell or ability specifies targets, it checks whether the targets are still legal. A target that’s no longer in the zone it was in when it was targeted is illegal. Other changes to the game state may cause a target to no longer be legal; for example, its characteristics may have changed or an effect may have changed the text of the spell. If the source of an ability has left the zone it was in, its last known information is used during this process. If all its targets, for every instance of the word “target,” are now illegal, the spell or ability doesn’t resolve. It’s removed from the stack and, if it’s a spell, put into its owner’s graveyard. Otherwise, the spell or ability will resolve normally. Illegal targets, if any, won’t be affected by parts of a resolving spell’s effect for which they’re illegal. Other parts of the effect for which those targets are not illegal may still affect them. If the spell or ability creates any continuous effects that affect game rules (see rule 613.11), those effects don’t apply to illegal targets. If part of the effect requires information about an illegal target, it fails to determine any such information. Any part of the effect that requires that information won’t happen.
-Example: Sorin’s Thirst is a black instant that reads, “Sorin’s Thirst deals 2 damage to target creature and you gain 2 life.” If the creature isn’t a legal target during the resolution of Sorin’s Thirst (say, if the creature has gained protection from black or left the battlefield), then Sorin’s Thirst doesn’t resolve. Its controller doesn’t gain any life.
-Example: Plague Spores reads, “Destroy target nonblack creature and target land. They can’t be regenerated.” Suppose the same creature land is chosen both as the nonblack creature and as the land, and the color of the creature land is changed to black before Plague Spores resolves. Plague Spores still resolves because the black creature land is still a legal target for the “target land” part of the spell. The “destroy target nonblack creature” part of the spell won’t affect that permanent, but the “destroy target land” part of the spell will still destroy it. It can’t be regenerated.
+Combat Phase Structure
+506.1. The combat phase has five steps, which proceed in order: beginning of combat, declare attackers, declare blockers, combat damage, and end of combat. The declare blockers and combat damage steps are skipped if no creatures are declared as attackers or put onto the battlefield attacking (see rule 508.8). There are two combat damage steps if any attacking or blocking creature has first strike (see rule 702.7) or double strike (see rule 702.4).
+506.3. Only a creature can attack or block. Only a player, a planeswalker, or a battle can be attacked.
 
-Impossible Actions and Sources
-609.3. If an effect attempts to do something impossible, it does only as much as possible.
-Example: If a player is holding only one card, an effect that reads “Discard two cards” causes them to discard only that card. If an effect moves cards out of the library (as opposed to drawing), it moves as many as possible.
-609.7. Some effects apply to damage from a source—for example, “The next time a red source of your choice would deal damage to you this turn, prevent that damage.”
+Damage Basics
+120.1. Objects can deal damage to battles, creatures, planeswalkers, and players. This is generally detrimental to the object or player that receives that damage. An object that deals damage is the source of that damage.
+120.3. Damage may have one or more of the following results, depending on whether the recipient of the damage is a player or permanent, the characteristics of the damage’s source, and the characteristics of the damage’s recipient (if it’s a permanent).
+
+Lifelink and Deathtouch Damage
+120.3f Damage dealt by a source with lifelink causes that source’s controller to gain that much life, in addition to the damage’s other results.
+702.2a Deathtouch is a static ability.
+702.2b A creature with toughness greater than 0 that’s been dealt damage by a source with deathtouch since the last time state-based actions were checked is destroyed as a state-based action. See rule 704.
+702.15a Lifelink is a static ability.
+702.15b Damage dealt by a source with lifelink causes that source’s controller, or its owner if it has no controller, to gain that much life (in addition to any other results that damage causes). See rule 120.3.
+702.15c If an object changes zones before an effect causes it to deal damage, its last known information is used to determine whether it had lifelink.
+
+Marked and Lethal Damage
+120.6. Damage marked on a creature remains until the cleanup step, even if that permanent stops being a creature. If the total damage marked on a creature is greater than or equal to its toughness, that creature has been dealt lethal damage and is destroyed as a state-based action (see rule 704). All damage marked on a permanent is removed when it regenerates (see rule 701.19, “Regenerate”) and during the cleanup step (see rule 514.2).
 
 Layer Order
 613.1. The values of an object’s characteristics are determined by starting with the actual object. For a card, that means the values of the characteristics printed on that card. For a token or a copy of a spell or card, that means the values of the characteristics defined by the effect that created it. Then all applicable continuous effects are applied in a series of layers in the following order:
@@ -125,13 +132,6 @@ Replacement Effects as Permanents Enter
 614.12b If multiple replacement effects that require choices from a player would modify how multiple permanents enter the battlefield simultaneously, that player may not make choices for those effects that would cause the combined costs of those effects to not be payable.
 614.12c Some replacement effects cause a permanent to enter the battlefield with its controller’s choice of one of two abilities, each marked with an anchor word and preceded by a bullet point. “[Anchor word] — [ability]” means “As long as [anchor word] was chosen as this permanent entered the battlefield, this permanent has [ability].” The abilities preceded by anchor words are each linked to the ability that causes a player to choose between them. See rule 607, “Linked Abilities.”
 
-Casting Spells: Choices and Targets
-601.2c The player announces their choice of an appropriate object or player for each target the spell requires. A spell may require some targets only if an alternative or additional cost (such as a kicker cost) or a particular mode was chosen for it; otherwise, the spell is cast as though it did not require those targets. Similarly, a spell may require alternative targets only if an alternative or additional cost was chosen for it. If the spell has a variable number of targets, the player announces how many targets they will choose before they announce those targets. In some cases, the number of targets will be defined by the spell’s text. Once the number of targets the spell has is determined, that number doesn’t change, even if the information used to determine the number of targets does. The same target can’t be chosen multiple times for any one instance of the word “target” on the spell. However, if the spell uses the word “target” in multiple places, the same object or player can be chosen once for each instance of the word “target” (as long as it fits the targeting criteria). If any effects say that an object or player must be chosen as a target, the player chooses targets so that they obey the maximum possible number of such effects without violating any rules or effects that say that an object or player can’t be chosen as a target. The chosen objects and/or players each become a target of that spell. (Any abilities that trigger when those objects and/or players become the target of a spell trigger at this point; they’ll wait to be put on the stack until the spell has finished being cast.)
-Example: If a spell says “Tap two target creatures,” then the same creature can’t be chosen twice; the spell requires two different legal targets. A spell that says “Destroy target artifact and target land,” however, can target the same artifact land twice because it uses the word “target” in multiple places.
-
-Casting Spells: Costs and Completion
-601.2f The player determines the total cost of the spell. Usually this is just the mana cost. Some spells have additional or alternative costs. Some effects may increase or reduce the cost to pay, or may provide other alternative costs. Costs may include paying mana, tapping permanents, sacrificing permanents, discarding cards, and so on. The total cost is the mana cost or alternative cost (as determined in rule 601.2b), plus all additional costs and cost increases, and minus all cost reductions. If multiple cost reductions apply, the player may apply them in any order. If the mana component of the total cost is reduced to nothing by cost reduction effects, it is considered to be {0}. It can’t be reduced to less than {0}. Once the total cost is determined, any effects that directly affect the total cost are applied. Then the resulting total cost becomes “locked in.” If effects would change the total cost after this time, they have no effect.
-
 Stack and Priority
 117.1. Unless a spell or ability is instructing a player to take an action, which player can take actions at any given time is determined by a system of priority. The player with priority may cast spells, activate abilities, and take special actions.
 117.3. Which player has priority is determined by the following rules:
@@ -153,18 +153,21 @@ Zones and Zone Changes
 ADDITIONAL RELEVANT RULE EXCERPTS
 Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
 
-702.85a. 702.85a Cascade is a triggered ability that functions only while the spell with cascade is on the stack. “Cascade” means “When you cast this spell, exile cards from the top of your library until you exile a nonland card whose mana value is less than this spell’s mana value. You may cast that card without paying its mana cost if the resulting spell’s mana value is less than this spell’s mana value. Then put all cards exiled this way that weren’t cast on the bottom of your library in a random order.”
+702.19b. 702.19b The controller of an attacking creature with trample first assigns damage to the creature(s) blocking it. Once all those blocking creatures are assigned lethal damage, any excess damage is assigned as its controller chooses among those blocking creatures and the player, planeswalker, or battle the creature is attacking. When checking for assigned lethal damage, take into account damage already marked on the creature and damage from other creatures that’s being assigned during the same combat damage step, but not any abilities or effects that might change the amount of damage that’s actually dealt. The attacking creature’s controller need not assign lethal damage to all those blocking creatures but in that case can’t assign any damage to the player or planeswalker it’s attacking.
+Example: A 2/2 creature that can block an additional creature blocks two attackers: a 1/1 with no abilities and a 3/3 with trample. The active player could assign 1 damage from the first attacker and 1 damage from the second to the blocking creature, and 2 damage to the defending player from the creature with trample.
+Example: A 6/6 green creature with trample is blocked by a 2/2 creature with protection from green. The attacking creature’s controller must assign at least 2 damage to the blocker, even though that damage will be prevented by the blocker’s protection ability. The attacking creature’s controller can divide the rest of the damage as they choose between the blocking creature and the defending player.
 
-702.108a. 702.108a Prowess is a triggered ability. “Prowess” means “Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.”
+122.1b. 122.1b A keyword counter on a permanent or on a card in a zone other than the battlefield causes that object to gain that keyword. The keywords that a keyword counter can be are flying, first strike, double strike, deathtouch, decayed, exalted, haste, hexproof, indestructible, lifelink, menace, reach, shadow, trample, and vigilance, as well as any variants of those keywords. See rule 613.1f.
 
-702.85b. 702.85b If an effect allows a player to take an action with one or more of the exiled cards “as you cascade,” the player may take that action after they have finished exiling cards due to the cascade ability. This action is taken before choosing whether to cast the last exiled card or, if no appropriate card was exiled, before putting the exiled cards on the bottom of their library in a random order.
+702.19c. 702.19c Trample over planeswalkers is a variant of trample that modifies the rules for assigning combat damage to planeswalkers. The controller of a creature with trample over planeswalkers assigns that creature’s combat damage as described in rule 702.19b, with one exception. If that creature is attacking a planeswalker, after lethal damage is assigned to all blocking creatures and damage at least equal to the loyalty of the planeswalker the creature is attacking is assigned to that planeswalker, further excess damage may be assigned as the attacking creature’s controller chooses among those blocking creatures, that planeswalker, and that planeswalker’s controller. When checking for assigned damage equal to a planeswalker’s loyalty, take into account damage from other creatures that’s being assigned during the same combat damage step, but not any abilities or effects that might change the amount of damage that’s actually dealt.
+Example: A player controls a planeswalker with three loyalty counters that is being attacked by a 1/1 with no abilities and a 7/7 with trample over planeswalkers. The active player could assign 1 damage from the first attacker and 2 damage from the second to the planeswalker and 5 damage to the defending player from the creature with trample over planeswalkers.
 
-702.108b. 702.108b If a creature has multiple instances of prowess, each triggers separately.
+702.19f. 702.19f If a creature without trample over planeswalkers is attacking a planeswalker, none of its combat damage can be assigned to the defending player, even if that planeswalker has been removed from combat or the damage the attacking creature could assign is greater than the planeswalker’s loyalty.
 
-702.85c. 702.85c If a spell has multiple instances of cascade, each triggers separately.
+702.19e. 702.19e If a creature with trample over planeswalkers is attacking a planeswalker and that planeswalker is removed from combat, the creature’s damage may be assigned to the defending player once all blocking creatures have been dealt lethal damage or, if there are no blocking creatures when damage is assigned, all its damage is assigned to the defending player. This is an exception to rule 506.4c, and it does not cause the creature to be attacking that player.
 
 SCOPE
-Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): hand, graveyard, exile, library, command.
+Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): stack, hand, graveyard, exile, library, command.
 
 QUESTION
-When I cascade into a noncreature spell, does prowess trigger on my creature before or after the cascaded spell resolves?
+My 4/4 attacker is blocked by a 1/1 with deathtouch. How much combat damage do I have to assign to the blocker, and can I trample the rest over?

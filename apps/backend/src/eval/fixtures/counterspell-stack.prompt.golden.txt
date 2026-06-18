@@ -32,54 +32,40 @@ Continuous effects and state-based actions use a layer system. When effects conf
 GENERAL GAME CONTEXT
 turnPhase: stack_resolving
 playerCount: 2
-Player 1: lifeTotal=5
-Player 2: lifeTotal=2
+Player 1: lifeTotal=20
+Player 2: lifeTotal=20
 
 PHASE GUIDANCE
 
 
 ZONE: STACK (BOTTOM TO TOP)
 Stack item 1 (bottom)
-card: Silence
-manaCost: (none)
-manaValue: 1
-typeLine: (none)
-colors: (none)
-supertypes: (none)
-subtypes: (none)
-caster: Player 1
-targets: (none)
-manaSpent: 1
-contextNotes: (none)
-oracleText: Your opponents can't cast spells this turn.
-
-Stack item 2 (top)
-card: Mystical Dispute
+card: Divination
 manaCost: (none)
 manaValue: 3
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
-caster: Player 2
-targets: stack:Silence
+caster: Player 1
+targets: (none)
 manaSpent: 3
 contextNotes: (none)
-oracleText: Counter target spell unless its controller pays 3.
+oracleText: Draw two cards.
 
-ZONE: BATTLEFIELD
-Battlefield 1
-name: Narset, Parter of Veils
-owner: (none)
+Stack item 2 (top)
+card: Counterspell
 manaCost: (none)
-manaValue: 0
+manaValue: 2
 typeLine: (none)
 colors: (none)
 supertypes: (none)
 subtypes: (none)
-targets: none:does-not-target
-contextNotes: Each opponent can't draw more than one card each turn.
-oracleText: Each opponent can't draw more than one card each turn. Whenever you cast a noncreature spell, look at the top four cards of your library. You may reveal a noncreature, nonland card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.
+caster: Player 2
+targets: stack:Divination
+manaSpent: 2
+contextNotes: (none)
+oracleText: Counter target spell.
 
 GAME RULES (reference)
 Use these general Magic rules as shared vocabulary. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
@@ -88,9 +74,6 @@ Triggered Ability Basics
 603.1. Triggered abilities have a trigger condition and an effect. They are written as “[When/Whenever/At] [trigger condition or event], [effect]. [Instructions (if any).]”
 603.2. Whenever a game event or game state matches a triggered ability’s trigger event, that ability automatically triggers. The ability doesn’t do anything at this point.
 603.3. Once an ability has triggered, its controller puts it on the stack as an object that’s not a card the next time a player would receive priority. See rule 117, “Timing and Priority.” The ability becomes the topmost object on the stack. It has the text of the ability that created it, and no other characteristics. It remains on the stack until it’s countered, it resolves, a rule causes it to be removed from the stack, or an effect moves it elsewhere.
-
-Zone-Change Triggered Abilities
-603.6c Leaves-the-battlefield abilities trigger when a permanent moves from the battlefield to another zone, or when a phased-in permanent leaves the game because its owner leaves the game. These are written as, but aren’t limited to, “When [this object] leaves the battlefield, . . .” or “Whenever [something] is put into a graveyard from the battlefield, . . . .” (See also rule 603.10.) An ability that attempts to do something to the card that left the battlefield checks for it only in the first zone that it went to. An ability that triggers when a card is put into a certain zone “from anywhere” is never treated as a leaves-the-battlefield ability, even if an object is put into that zone from the battlefield.
 
 Copying Spells and Abilities
 707.10. To copy a spell, activated ability, or triggered ability means to put a copy of it onto the stack; a copy of a spell isn’t cast and a copy of an activated ability isn’t activated. A copy of a spell or ability copies both the characteristics of the spell or ability and all decisions made for it, including modes, targets, the value of X, and additional or alternative costs. (See rule 601, “Casting Spells.”) Choices that are normally made on resolution are not copied. If an effect of the copy refers to objects used to pay its costs, it uses the objects used to pay the costs of the original spell or ability. A copy of a spell is owned by the player under whose control it was put on the stack. A copy of a spell or ability is controlled by the player under whose control it was put on the stack. A copy of a spell is itself a spell, even though it has no spell card associated with it. A copy of an ability is itself an ability.
@@ -107,37 +90,6 @@ Impossible Actions and Sources
 609.3. If an effect attempts to do something impossible, it does only as much as possible.
 Example: If a player is holding only one card, an effect that reads “Discard two cards” causes them to discard only that card. If an effect moves cards out of the library (as opposed to drawing), it moves as many as possible.
 609.7. Some effects apply to damage from a source—for example, “The next time a red source of your choice would deal damage to you this turn, prevent that damage.”
-
-Layer Order
-613.1. The values of an object’s characteristics are determined by starting with the actual object. For a card, that means the values of the characteristics printed on that card. For a token or a copy of a spell or card, that means the values of the characteristics defined by the effect that created it. Then all applicable continuous effects are applied in a series of layers in the following order:
-613.1a Layer 1: Rules and effects that modify copiable values are applied.
-613.1b Layer 2: Control-changing effects are applied.
-613.1c Layer 3: Text-changing effects are applied. See rule 612, “Text-Changing Effects.”
-613.1d Layer 4: Type-changing effects are applied. These include effects that change an object’s card type, subtype, and/or supertype.
-613.1e Layer 5: Color-changing effects are applied.
-613.1f Layer 6: Ability-adding effects, keyword counters, ability-removing effects, and effects that say an object can’t have an ability are applied.
-613.1g Layer 7: Power- and/or toughness-changing effects are applied.
-
-Power/Toughness Layers
-613.4. Within layer 7, apply effects in a series of sublayers in the order described below. Within each sublayer, apply effects in timestamp order. (See rule 613.7.) Note that dependency may alter the order in which effects are applied within a sublayer. (See rule 613.8.)
-613.4a Layer 7a: Effects from characteristic-defining abilities that define power and/or toughness are applied. See rule 604.3.
-613.4b Layer 7b: Effects that set power and/or toughness to a specific number or value are applied. Effects that refer to the base power and/or toughness of a creature apply in this layer.
-613.4c Layer 7c: Effects and counters that modify power and/or toughness (but don’t set power and/or toughness to a specific number or value) are applied.
-
-Timestamps and Dependencies
-613.7. Within a layer or sublayer, determining which order effects are applied in is usually done using a timestamp system. An effect with an earlier timestamp is applied before an effect with a later timestamp.
-613.8a An effect is said to “depend on” another if (a) it’s applied in the same layer (and, if applicable, sublayer) as the other effect; (b) applying the other would change the text or the existence of the first effect, what it applies to, or what it does to any of the things it applies to; and (c) neither effect is from a characteristic-defining ability or both effects are from characteristic-defining abilities. Otherwise, the effect is considered to be independent of the other effect.
-
-Replacement Effect Basics
-614.1. Some continuous effects are replacement effects. Like prevention effects (see rule 615), replacement effects apply continuously as events happen—they aren’t locked in ahead of time. Such effects watch for a particular event that would happen and completely or partially replace that event with a different event. They act like “shields” around whatever they’re affecting.
-614.5. A replacement effect doesn’t invoke itself repeatedly; it gets only one opportunity to affect an event or any modified events that may replace that event.
-Example: A player controls two permanents, each with an ability that reads “If a creature you control would deal damage to a permanent or player, it deals double that damage to that permanent or player instead.” A creature that normally deals 2 damage will deal 8 damage—not just 4, and not an infinite amount.
-614.6. If an event is replaced, it never happens. A modified event occurs instead, which may in turn trigger abilities. Note that the modified event may contain instructions that can’t be carried out, in which case the impossible instruction is simply ignored.
-
-Replacement Effects as Permanents Enter
-614.12a If a replacement effect that modifies how a permanent enters the battlefield requires a choice, that choice is made before the permanent enters the battlefield.
-614.12b If multiple replacement effects that require choices from a player would modify how multiple permanents enter the battlefield simultaneously, that player may not make choices for those effects that would cause the combined costs of those effects to not be payable.
-614.12c Some replacement effects cause a permanent to enter the battlefield with its controller’s choice of one of two abilities, each marked with an anchor word and preceded by a bullet point. “[Anchor word] — [ability]” means “As long as [anchor word] was chosen as this permanent entered the battlefield, this permanent has [ability].” The abilities preceded by anchor words are each linked to the ability that causes a player to choose between them. See rule 607, “Linked Abilities.”
 
 Casting Spells: Choices and Targets
 601.2c The player announces their choice of an appropriate object or player for each target the spell requires. A spell may require some targets only if an alternative or additional cost (such as a kicker cost) or a particular mode was chosen for it; otherwise, the spell is cast as though it did not require those targets. Similarly, a spell may require alternative targets only if an alternative or additional cost was chosen for it. If the spell has a variable number of targets, the player announces how many targets they will choose before they announce those targets. In some cases, the number of targets will be defined by the spell’s text. Once the number of targets the spell has is determined, that number doesn’t change, even if the information used to determine the number of targets does. The same target can’t be chosen multiple times for any one instance of the word “target” on the spell. However, if the spell uses the word “target” in multiple places, the same object or player can be chosen once for each instance of the word “target” (as long as it fits the targeting criteria). If any effects say that an object or player must be chosen as a target, the player chooses targets so that they obey the maximum possible number of such effects without violating any rules or effects that say that an object or player can’t be chosen as a target. The chosen objects and/or players each become a target of that spell. (Any abilities that trigger when those objects and/or players become the target of a spell trigger at this point; they’ll wait to be put on the stack until the spell has finished being cast.)
@@ -167,25 +119,29 @@ Zones and Zone Changes
 ADDITIONAL RELEVANT RULE EXCERPTS
 Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
 
+800.4a. 800.4a When a player leaves the game, all objects (see rule 109) owned by that player leave the game and any effects which give that player control of any objects or players end. Then, if that player controlled any objects on the stack not represented by cards, those objects cease to exist. Then, if there are any objects still controlled by that player, those objects are exiled. This is not a state-based action. It happens as soon as the player leaves the game. If the player who left the game had priority at the time they left, priority passes to the next player in turn order who’s still in the game.
+Example: Alex casts Mind Control, an Aura that reads, “You control enchanted creature,” on Bianca’s Assault Griffin. If Alex leaves the game, so does Mind Control, and Assault Griffin reverts to Bianca’s control. If, instead, Bianca leaves the game, so does Assault Griffin, and Mind Control is put into Alex’s graveyard.
+Example: Alex casts Act of Treason, which reads, in part, “Gain control of target creature until end of turn,” targeting Bianca’s Runeclaw Bears. If Alex leaves the game, Act of Treason’s change-of-control effect ends and Runeclaw Bears reverts to Bianca’s control.
+Example: Alex casts Bribery, which reads, “Search target opponent’s library for a creature card and put that card onto the battlefield under your control. Then that player shuffles their library,” targeting Bianca. Alex puts Serra Angel onto the battlefield from Bianca’s library. If Bianca leaves the game, Serra Angel also leaves the game. If, instead, Alex leaves the game, Serra Angel is exiled.
+Example: Alex controls Genesis Chamber, which reads, “Whenever a nontoken creature enters, if Genesis Chamber is untapped, that creature’s controller creates a 1/1 colorless Myr artifact creature token.” If Alex leaves the game, all such Myr tokens that entered the battlefield under Alex’s control leave the game, and all such Myr tokens that entered the battlefield under any other player’s control remain in the game.
+
 712.21c. 712.21c If an effect can find the new object that a melded permanent becomes as it leaves the battlefield, it finds both cards. (See rule 400.7.) If that effect causes actions to be taken upon those cards, the same actions are taken upon each of them.
 Example: Otherworldly Journey is an instant that reads “Exile target creature. At the beginning of the next end step, return that card to the battlefield under its owner’s control with a +1/+1 counter on it.” A player casts Otherworldly Journey targeting Chittering Host, a melded permanent. Chittering Host is exiled. At the beginning of the next end step, Midnight Scavengers and Graf Rats are both returned to the battlefield, each with a +1/+1 counter on it.
 Example: False Demise is an Aura with the ability “When enchanted creature dies, return that card to the battlefield under your control.” A Chittering Host enchanted by False Demise dies. The triggered ability returns both Midnight Scavengers and Graf Rats to the battlefield.
 Example: Mimic Vat is an artifact that reads, in part, “Whenever a nontoken creature dies, you may exile that card.” A Chittering Host dies. As Mimic Vat’s triggered ability resolves, its controller makes a single choice and both cards that represented Chittering Host are either exiled or not.
 
-702.24a. 702.24a Cumulative upkeep is a triggered ability that imposes an increasing cost on a permanent. “Cumulative upkeep [cost]” means “At the beginning of your upkeep, if this permanent is on the battlefield, put an age counter on this permanent. Then you may pay [cost] for each age counter on it. If you don’t, sacrifice it.” If [cost] has choices associated with it, each choice is made separately for each age counter, then either the entire set of costs is paid, or none of them is paid. Partial payments aren’t allowed.
-Example: A creature has “Cumulative upkeep {W} or {U}” and two age counters on it. When its ability next triggers and resolves, the creature’s controller puts an age counter on it and then may pay {W}{W}{W}, {W}{W}{U}, {W}{U}{U}, or {U}{U}{U} to keep the creature on the battlefield.
-Example: A creature has “Cumulative upkeep—Sacrifice a creature” and one age counter on it. When its ability next triggers and resolves, its controller can’t choose the same creature to sacrifice twice. Either two different creatures must be sacrificed, or the creature with cumulative upkeep must be sacrificed.
+608.2f. 608.2f Some spells and abilities include actions taken on multiple players and/or objects. In most cases, each such action is processed simultaneously. If the action can’t be processed simultaneously, it’s instead processed considering each affected player or object individually. APNAP order is used to make the primary determination of the order of those actions. Secondarily, if the action is to be taken on both a player and an object they control or on multiple objects controlled by the same player, the player who controls the resolving spell or ability chooses the relative order of those actions.
+Example: Blatant Thievery says “For each opponent, gain control of target permanent that player controls.” As Blatant Thievery resolves, its controller gains control of all permanents chosen as targets simultaneously.
+Example: Soulfire Eruption says, in part, “Choose any number of target creatures, planeswalkers, and/or players. For each of them, exile the top card of your library, then Soulfire Eruption deals damage equal to that card’s mana value to that permanent or player.” A player casts Soulfire Eruption targeting an opponent and a creature that opponent controls. As Soulfire Eruption resolves, the player can’t exile the top card of their library multiple times at the same time, so they first choose which target they are considering, then they exile the top card of their library, and finally Soulfire Eruption deals damage to that target. They then repeat this process for the remaining target.
+
+613.5. 613.5. The application of continuous effects as described by the layer system is continually and automatically performed by the game. All resulting changes to an object’s characteristics are instantaneous.
+Example: Honor of the Pure is an enchantment that reads “White creatures you control get +1/+1.” Honor of the Pure and a 2/2 black creature are on the battlefield under your control. If an effect then turns the creature white (layer 5), it gets +1/+1 from Honor of the Pure (layer 7c), becoming 3/3. If the creature’s color is later changed to red (layer 5), Honor of the Pure’s effect stops applying to it, and it will return to being 2/2.
+Example: Gray Ogre, a 2/2 creature, is on the battlefield. An effect puts a +1/+1 counter on it (layer 7c), making it 3/3. A spell targeting it that says “Target creature gets +4/+4 until end of turn” resolves (layer 7c), making it 7/7. An enchantment that says “Creatures you control get +0/+2” enters the battlefield (layer 7c), making it 7/9. An effect that says “Target creature becomes 0/1 until end of turn” is applied to it (layer 7b), making it 5/8 (0/1, with +4/+4 from the resolved spell, +0/+2 from the enchantment, and +1/+1 from the counter).
 
 608.2c. 608.2c The controller of the spell or ability follows its instructions in the order written. However, replacement effects may modify these actions. In some cases, later text on the card may modify the meaning of earlier text (for example, “Destroy target creature. It can’t be regenerated” or “Counter target spell. If that spell is countered this way, put it on top of its owner’s library instead of into its owner’s graveyard.”) Don’t just apply effects step by step without thinking in these cases—read the whole text and apply the rules of English to the text.
 
-701.57a. 701.57a “Discover N” means “Exile cards from the top of your library until you exile a nonland card with mana value N or less. You may cast that card without paying its mana cost if the resulting spell’s mana value is less than or equal to N. If you don’t cast it, put that card into your hand. Put the remaining exiled cards on the bottom of your library in a random order.”
-
-118.12. 118.12. Some spells, activated abilities, and triggered abilities read, “[Do something]. If [a player] [does, doesn’t, or can’t], [effect].” Or “[A player] may [do something]. If [that player] [does, doesn’t, or can’t], [effect].” The action [do something] is a cost, paid when the spell or ability resolves. The “If [a player] [does, doesn’t, or can’t]” clause checks whether the player chose to pay an optional cost or started to pay a mandatory cost, regardless of what events actually occurred.
-Example: You control Standstill, an enchantment that says “When a player casts a spell, sacrifice this enchantment. If you do, each of that player’s opponents draws three cards.” A spell is cast, causing Standstill’s ability to trigger. Then an ability is activated that exiles Standstill. When Standstill’s ability resolves, you’re unable to pay the “sacrifice Standstill” cost. No player will draw cards.
-Example: Your opponent has cast Gather Specimens, a spell that says “If a creature would enter the battlefield under an opponent’s control this turn, it enters under your control instead.” You control a face-down Dermoplasm, a creature with morph that says “When this creature is turned face up, you may put a creature card with morph from your hand onto the battlefield face up. If you do, return this creature to its owner’s hand.” You turn Dermoplasm face up, and you choose to put a creature card with morph from your hand onto the battlefield. Due to Gather Specimens, it enters the battlefield under your opponent’s control instead of yours. However, since you chose to pay the cost, Dermoplasm is still returned to its owner’s hand.
-
 SCOPE
-Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): hand, graveyard, exile, library, command.
+Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): battlefield, hand, graveyard, exile, library, command.
 
 QUESTION
-can i do this before that resolves??
+Counterspell is on top of the stack targeting my Divination. When everyone passes priority, what resolves first and does Divination still resolve?

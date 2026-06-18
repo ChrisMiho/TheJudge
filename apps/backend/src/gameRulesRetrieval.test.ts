@@ -4,12 +4,16 @@ import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
   buildQueryText,
+  buildQueryTokens,
   collectCuratedRuleIds,
+  loadGameRulesKeywordVocabulary,
   loadGameRulesRuleIndex,
+  loadGameRulesTokenStats,
   retrieveSupplementalRules,
   retrieveSupplementalRulesWithDebug,
   type GameRulesRuleIndexEntry,
-  type RetrievedGameRule
+  type RetrievedGameRule,
+  type ScoringResources
 } from "./gameRulesRetrieval.js";
 import type { GameRulesTopic } from "./gameRules.js";
 import type { PromptContext } from "./types/index.js";
@@ -48,6 +52,34 @@ function makeContext(overrides: Partial<PromptContext> = {}): PromptContext {
     populatedZones: [],
     orderedStack: [],
     ...overrides
+  };
+}
+
+function makeResources(N: number, df: Record<string, number>, keywords: string[] = []): ScoringResources {
+  return {
+    tokenStats: { N, df: new Map(Object.entries(df)) },
+    keywordVocabulary: new Set(keywords)
+  };
+}
+
+function battlefieldCard(oracleText: string, name = "Test Card", typeLine = "Creature") {
+  return {
+    zoneId: "battlefield" as const,
+    items: [
+      {
+        cardId: "test-card",
+        name,
+        oracleText,
+        typeLine,
+        imageUrl: "",
+        manaCost: "",
+        manaValue: 0,
+        colors: [],
+        supertypes: [],
+        subtypes: [],
+        targets: []
+      }
+    ]
   };
 }
 
@@ -407,5 +439,190 @@ describe("buildQueryText", () => {
     expect(queryText).toContain("Lightning Bolt");
     expect(queryText).toContain("Lightning Bolt deals 3 damage");
     expect(queryText).toContain("Instant");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildQueryTokens (provenance, DEC-046)
+// ---------------------------------------------------------------------------
+
+describe("buildQueryTokens", () => {
+  it("tags question tokens as question source and flags vocabulary keywords", () => {
+    const context = makeContext({
+      finalQuestion: "Does cascade trigger here",
+      populatedZones: [battlefieldCard("flying creature")]
+    });
+    const { tokens } = buildQueryTokens(context, new Set(["cascade"]));
+    const cascade = tokens.find((t) => t.token === "cascade");
+    const flying = tokens.find((t) => t.token === "flying");
+
+    expect(cascade).toMatchObject({ source: "question", isKeyword: true });
+    expect(flying).toMatchObject({ source: "oracle", isKeyword: false });
+  });
+
+  it("dedupes a token across sources, preferring question provenance", () => {
+    const context = makeContext({
+      finalQuestion: "flying matters",
+      populatedZones: [battlefieldCard("flying ability")]
+    });
+    const { tokens } = buildQueryTokens(context, new Set());
+    const flyingEntries = tokens.filter((t) => t.token === "flying");
+    expect(flyingEntries).toHaveLength(1);
+    expect(flyingEntries[0]!.source).toBe("question");
+  });
+
+  it("extracts rule ids from the combined query text", () => {
+    const context = makeContext({ finalQuestion: "What does 702.85 mean for cascade?" });
+    const { queryRuleIds } = buildQueryTokens(context, new Set());
+    expect(queryRuleIds).toContain("702.85");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// IDF scoring, boosts, and tie-break (DEC-046)
+// ---------------------------------------------------------------------------
+
+describe("retrieveSupplementalRules — IDF scoring (DEC-046)", () => {
+  it("ranks a question keyword above oracle-sourced noise", () => {
+    const index = [
+      makeEntry({ ruleId: "702.85", sectionTitle: "Cascade", text: "702.85. Cascade.", searchText: "702.85 cascade", parentRuleIds: ["702"] }),
+      makeEntry({ ruleId: "100.1", sectionTitle: "General", text: "100.1. General.", searchText: "100.1 resolve", parentRuleIds: ["100"] })
+    ];
+    const context = makeContext({
+      finalQuestion: "How does cascade work",
+      populatedZones: [battlefieldCard("resolve")]
+    });
+    const resources = makeResources(3432, { cascade: 4, resolve: 100 }, ["cascade"]);
+    const result = retrieveSupplementalRules(context, index, new Set(), 5, resources);
+
+    expect(result[0]!.ruleId).toBe("702.85");
+    const cascadeScore = result.find((r) => r.ruleId === "702.85")!.score;
+    const noiseScore = result.find((r) => r.ruleId === "100.1")!.score;
+    expect(cascadeScore).toBeGreaterThan(noiseScore);
+  });
+
+  it("boosts a keyword found in oracle text above generic low-IDF rules", () => {
+    const index = [
+      makeEntry({ ruleId: "702.2", sectionTitle: "Deathtouch", text: "702.2. Deathtouch.", searchText: "702.2 deathtouch lethal damage", parentRuleIds: ["702"] }),
+      makeEntry({ ruleId: "100.6", sectionTitle: "General", text: "100.6. General.", searchText: "100.6 general rules game", parentRuleIds: ["100"] })
+    ];
+    const context = makeContext({
+      finalQuestion: "What about damage rules",
+      populatedZones: [battlefieldCard("Deathtouch")]
+    });
+    const resources = makeResources(3432, { deathtouch: 9, damage: 179, rules: 50 }, ["deathtouch"]);
+    const result = retrieveSupplementalRules(context, index, new Set(), 5, resources);
+
+    expect(result[0]!.ruleId).toBe("702.2");
+    expect(result[0]!.score).toBeGreaterThan(result[1]!.score);
+  });
+
+  it("retains the exact rule-id (+100) and parent-id (+20) bonuses", () => {
+    const index = [
+      makeEntry({ ruleId: "405.1", sectionTitle: "The Stack", text: "405.1.", searchText: "405.1 stack", parentRuleIds: ["405"] }),
+      makeEntry({ ruleId: "405.6", sectionTitle: "The Stack", text: "405.6.", searchText: "405.6 stack", parentRuleIds: ["405"] })
+    ];
+    // Exact mention of 405.1; bare "405" present so 405.6 gets the parent bonus.
+    const context = makeContext({ finalQuestion: "Explain rules 405 and 405.1" });
+    const resources = makeResources(3432, { stack: 201 }, []);
+    const result = retrieveSupplementalRules(context, index, new Set(), 5, resources);
+
+    const exact = result.find((r) => r.ruleId === "405.1")!;
+    const parent = result.find((r) => r.ruleId === "405.6")!;
+    expect(exact.score).toBeGreaterThanOrEqual(100);
+    expect(parent.score).toBeGreaterThanOrEqual(20);
+    expect(exact.score).toBeGreaterThan(parent.score);
+  });
+
+  it("breaks score ties by highest matched-token IDF before rule id", () => {
+    // df products are equal (2*18 == 6*6) so the weighted totals are bit-identical,
+    // but entry X has a higher single-token IDF than entry Y.
+    const index = [
+      makeEntry({ ruleId: "400.1", sectionTitle: "X", text: "400.1.", searchText: "alpha bravo", parentRuleIds: ["400"] }),
+      makeEntry({ ruleId: "300.1", sectionTitle: "Y", text: "300.1.", searchText: "charlie delta", parentRuleIds: ["300"] })
+    ];
+    const context = makeContext({ finalQuestion: "alpha bravo charlie delta", gameContext: { playerCount: 2, players: [], turnPhase: "main_1", selectedZones: [] } });
+    const resources = makeResources(1000, { alpha: 2, bravo: 18, charlie: 6, delta: 6 }, []);
+    const result = retrieveSupplementalRules(context, index, new Set(), 5, resources);
+
+    expect(result[0]!.ruleId).toBe("400.1");
+    expect(result[0]!.score).toBeCloseTo(result[1]!.score, 10);
+  });
+
+  it("falls back to rule id ascending when score and top-token IDF tie", () => {
+    const index = [
+      makeEntry({ ruleId: "300.1", sectionTitle: "P", text: "300.1.", searchText: "alpha", parentRuleIds: ["300"] }),
+      makeEntry({ ruleId: "200.1", sectionTitle: "Q", text: "200.1.", searchText: "alpha", parentRuleIds: ["200"] })
+    ];
+    const context = makeContext({ finalQuestion: "alpha", gameContext: { playerCount: 2, players: [], turnPhase: "main_1", selectedZones: [] } });
+    const resources = makeResources(1000, { alpha: 2 }, []);
+    const result = retrieveSupplementalRules(context, index, new Set(), 5, resources);
+
+    expect(result.map((r) => r.ruleId)).toEqual(["200.1", "300.1"]);
+  });
+
+  it("still excludes curated rule ids from the supplemental pool", () => {
+    const index = [
+      makeEntry({ ruleId: "702.85", searchText: "702.85 cascade", parentRuleIds: ["702"] }),
+      makeEntry({ ruleId: "702.86", searchText: "702.86 cascade", parentRuleIds: ["702"] })
+    ];
+    const context = makeContext({ finalQuestion: "cascade", gameContext: { playerCount: 2, players: [], turnPhase: "main_1", selectedZones: [] } });
+    const resources = makeResources(3432, { cascade: 4 }, ["cascade"]);
+    const result = retrieveSupplementalRules(context, index, new Set(["702.85"]), 5, resources);
+
+    expect(result.map((r) => r.ruleId)).not.toContain("702.85");
+    expect(result.map((r) => r.ruleId)).toContain("702.86");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Resource loaders (token stats + keyword vocabulary)
+// ---------------------------------------------------------------------------
+
+describe("loadGameRulesTokenStats", () => {
+  it("parses N and per-token df into a map", () => {
+    const dir = mkdtempSync(join(tmpdir(), "game-rules-stats-test-"));
+    const filePath = join(dir, "stats.json");
+    writeFileSync(filePath, JSON.stringify({ N: 3432, tokens: { cascade: { df: 4 }, damage: { df: 179 } } }), "utf8");
+    const stats = loadGameRulesTokenStats(filePath);
+    expect(stats?.N).toBe(3432);
+    expect(stats?.df.get("cascade")).toBe(4);
+    expect(stats?.df.get("damage")).toBe(179);
+  });
+
+  it("returns null and warns when the file is missing", () => {
+    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const result = loadGameRulesTokenStats("/tmp/does-not-exist-token-stats-xyz789.json");
+    expect(result).toBeNull();
+    expect(spy).toHaveBeenCalledOnce();
+    spy.mockRestore();
+  });
+});
+
+describe("loadGameRulesKeywordVocabulary", () => {
+  it("parses a { tokens: [...] } shape and lowercases entries", () => {
+    const dir = mkdtempSync(join(tmpdir(), "game-rules-vocab-test-"));
+    const filePath = join(dir, "vocab.json");
+    writeFileSync(filePath, JSON.stringify({ tokens: ["Cascade", "DEATHTOUCH"] }), "utf8");
+    const vocab = loadGameRulesKeywordVocabulary(filePath);
+    expect(vocab.has("cascade")).toBe(true);
+    expect(vocab.has("deathtouch")).toBe(true);
+  });
+
+  it("parses a bare array shape", () => {
+    const dir = mkdtempSync(join(tmpdir(), "game-rules-vocab-test-"));
+    const filePath = join(dir, "vocab-array.json");
+    writeFileSync(filePath, JSON.stringify(["trample", "lifelink"]), "utf8");
+    const vocab = loadGameRulesKeywordVocabulary(filePath);
+    expect(vocab.has("trample")).toBe(true);
+    expect(vocab.has("lifelink")).toBe(true);
+  });
+
+  it("returns an empty set and warns when the file is missing", () => {
+    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const vocab = loadGameRulesKeywordVocabulary("/tmp/does-not-exist-vocab-xyz789.json");
+    expect(vocab.size).toBe(0);
+    expect(spy).toHaveBeenCalledOnce();
+    spy.mockRestore();
   });
 });

@@ -58,9 +58,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ## Game rules retrieval
 
 - Status: shipped
-- Summary: Retrieves card rulings, curated game rules, and supplemental rules text to ground prompt reasoning.
-- Lives in: `apps/backend/src/cardRulings.ts`, `gameRules.ts`, `gameRulesRetrieval.ts`
-- Backed by: DEC-029, DEC-030, DEC-032, REQ-022
+- Summary: Retrieves card rulings, a card-agnostic curated game-rules baseline, and relevance-scored supplemental rules text to ground prompt reasoning; System 2 (curated) and System 3 (supplemental) are tuned and measured together.
+- Lives in: `apps/backend/src/cardRulings.ts`, `gameRules.ts`, `gameRulesTopicSelection.ts`, `gameRulesRetrieval.ts`
+- Backed by: DEC-029, DEC-030, DEC-032, DEC-045, DEC-046, DEC-047, REQ-022, REQ-032
 
 ### Card rulings
 
@@ -69,19 +69,19 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: `apps/backend/src/cardRulings.ts`
 - Backed by: DEC-029
 
-### Curated game rules
+### Curated game rules (System 2)
 
 - Status: shipped
-- Summary: Provides curated comprehensive-rules excerpts for prompt grounding.
-- Lives in: `apps/backend/src/gameRules.ts`
-- Backed by: DEC-030, REQ-022
+- Summary: Selects an always-on core plus card-agnostic, game-state-gated conditional topics (`turnPhase`, `combatStep`, populated zones) per request, replacing the prior "all topics every request" baseline.
+- Lives in: `apps/backend/src/gameRulesTopicSelection.ts`, `gameRules.ts`
+- Backed by: DEC-030, DEC-045, REQ-022
 
-### Supplemental retrieval
+### Supplemental retrieval (System 3)
 
 - Status: shipped
-- Summary: Supplemental rules-text retrieval layered on top of curated rules and rulings.
-- Lives in: `apps/backend/src/gameRulesRetrieval.ts`
-- Backed by: DEC-032
+- Summary: Scores up to 5 supplemental rule excerpts per request with IDF weighting, question/keyword boosts, and rule-id tie-break; deduplicated against the System 2 selection.
+- Lives in: `apps/backend/src/gameRulesRetrieval.ts`, `apps/backend/data/gameRulesKeywordVocabulary.json`, `apps/backend/data/gameRulesTokenStats.json`
+- Backed by: DEC-032, DEC-046
 
 ## Provider boundary
 
@@ -282,23 +282,30 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ## Eval harness
 
 - Status: shipped
-- Summary: Context-evaluation harness with fixtures and golden comparisons over prompt assembly and retrieval.
+- Summary: Context-evaluation harness with fixtures, golden comparisons, and labeled retrieval-relevance checks over prompt assembly and retrieval.
 - Lives in: `apps/backend/src/eval/`
-- Backed by: DEC-025, DEC-030, DEC-032
+- Backed by: DEC-025, DEC-030, DEC-032, DEC-047, REQ-032
 
 ### Context evaluation harness
 
 - Status: shipped
-- Summary: Runs prompt-assembly/retrieval evaluations against fixtures.
+- Summary: Runs prompt-assembly/retrieval evaluations against fixtures, including `system2-conditional-selection`, `system3-expected-recall`, and `system3-noise-excluded` relevance checks.
 - Lives in: `apps/backend/src/eval/contextEvaluationHarness.ts`
-- Backed by: DEC-025
+- Backed by: DEC-025, DEC-047, REQ-032
 
 ### Fixtures & golden comparisons
 
 - Status: shipped
-- Summary: Fixture inputs and golden expectations for the eval harness.
+- Summary: Fixture inputs and golden expectations for the eval harness, including labeled `expected` recall blocks for retrieval scenarios.
 - Lives in: `apps/backend/src/eval/fixtures/`
-- Backed by: DEC-030, DEC-032
+- Backed by: DEC-030, DEC-032, DEC-047
+
+### Retrieval relevance report
+
+- Status: shipped
+- Summary: Digestible before/after report (System 2 topics, System 3 top-5 with scores, recall hit/miss) for tuning review; shares scoring logic with the harness so report output cannot drift.
+- Lives in: `scripts/retrieval-relevance-report.mjs`, `apps/backend/src/eval/contextEvaluationHarness.ts` (`buildRelevanceReport`)
+- Backed by: DEC-047, REQ-032
 
 ## PRD doc traceability (meta)
 

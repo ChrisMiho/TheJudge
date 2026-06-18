@@ -26,6 +26,7 @@
     "openai:verify-credentials": "node scripts/openai-verify-credentials.mjs",
     "prompt:preview": "node scripts/prompt-preview.mjs",
     "prompt:preview:all": "node scripts/prompt-preview.mjs --all-fixtures",
+    "retrieval:report": "tsx scripts/retrieval-relevance-report.mjs",
     "skills:ai-sync": "bash scripts/sync-agent-skills.sh"
   },
   "devDependencies": {
@@ -36,6 +37,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "prettier": "^3.8.3",
+    "tsx": "^4.19.1",
     "typescript-eslint": "^8.59.3"
   }
 }

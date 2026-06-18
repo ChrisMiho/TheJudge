@@ -1,0 +1,65 @@
+{
+  "finalQuestion": "My 4/4 attacker is blocked by a 1/1 with deathtouch. How much combat damage do I have to assign to the blocker, and can I trample the rest over?",
+  "gameContext": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 20
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "combat",
+    "combatStep": "combat_damage",
+    "selectedZones": [
+      "battlefield"
+    ]
+  },
+  "populatedZones": [
+    {
+      "zoneId": "battlefield",
+      "items": [
+        {
+          "cardId": "ravenous-chupacabra",
+          "name": "Charging Rhino",
+          "oracleText": "Trample",
+          "imageUrl": "",
+          "manaCost": "",
+          "manaValue": 0,
+          "typeLine": "",
+          "colors": [],
+          "supertypes": [],
+          "subtypes": [],
+          "targets": [
+            {
+              "kind": "none"
+            }
+          ],
+          "contextNotes": "4/4 attacking creature with trample. Player 1 controls it."
+        },
+        {
+          "cardId": "deathtouch-blocker",
+          "name": "Vampire Nighthawk",
+          "oracleText": "Flying, deathtouch, lifelink",
+          "imageUrl": "",
+          "manaCost": "",
+          "manaValue": 0,
+          "typeLine": "",
+          "colors": [],
+          "supertypes": [],
+          "subtypes": [],
+          "targets": [
+            {
+              "kind": "none"
+            }
+          ],
+          "contextNotes": "1/1 (for this scenario) blocking creature with deathtouch. Player 2 controls it."
+        }
+      ]
+    }
+  ],
+  "orderedStack": []
+}

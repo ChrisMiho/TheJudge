@@ -1,0 +1,63 @@
+{
+  "finalQuestion": "Counterspell is on top of the stack targeting my Divination. When everyone passes priority, what resolves first and does Divination still resolve?",
+  "gameContext": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 20
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "stack_resolving",
+    "selectedZones": [
+      "stack"
+    ]
+  },
+  "populatedZones": [],
+  "orderedStack": [
+    {
+      "cardId": "divination",
+      "name": "Divination",
+      "oracleText": "Draw two cards.",
+      "imageUrl": "",
+      "manaCost": "",
+      "manaValue": 3,
+      "typeLine": "",
+      "colors": [],
+      "supertypes": [],
+      "subtypes": [],
+      "caster": "Player 1",
+      "targets": [],
+      "manaSpent": 3,
+      "stackIndex": 0,
+      "stackRole": "bottom"
+    },
+    {
+      "cardId": "counterspell",
+      "name": "Counterspell",
+      "oracleText": "Counter target spell.",
+      "imageUrl": "",
+      "manaCost": "",
+      "manaValue": 2,
+      "typeLine": "",
+      "colors": [],
+      "supertypes": [],
+      "subtypes": [],
+      "caster": "Player 2",
+      "targets": [
+        {
+          "kind": "stack",
+          "targetCardId": "divination",
+          "targetCardName": "Divination"
+        }
+      ],
+      "manaSpent": 2,
+      "stackIndex": 1,
+      "stackRole": "top"
+    }
+  ]
+}
