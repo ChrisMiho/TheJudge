@@ -772,3 +772,77 @@
   - REQ-033
 - Notes:
   - preserves DEC-020 live provider contract stability and DEC-033's mock-only sidecar boundary
+
+### DEC-050
+- Decision: Camera card scanning is an optional, separately-scoped, frontend-only alternate input path into existing zone card fields — not a replacement for manual search and not part of the core product loop.
+- Status: confirmed
+- Context: `goals-and-non-goals.md` previously listed camera scanning as an Explicit Non-Goal and Intentional Constraint, and `NFR-008` framed it as future-only and not in the core product. A friend exported a proven, self-contained on-device art-identification engine (Cardomancer), making scanning feasible now as a convenience input. Typed-only card entry (`FLOW-001` step 3) is slow at a live table and discourages players from feeding a complete board before asking, weakening prompt context. This decision reframes scanning from out-of-scope to a scoped optional feature; it does not change the flow-validation core-product framing (`GOAL-001..003`).
+- Impact:
+  - scanning reuses the existing select → preview → add → owner → duplicate-block → stack-limit path and produces the same `ZoneCardItem` output as manual add
+  - scanning is frontend-only and makes zero network calls at identification time
+  - no change to `AskAiRequest`, `GameContext`, prompt assembly (`buildPromptContext`/`buildPromptText`), provider boundary, or any product-facing endpoint
+  - manual card search remains the default input and a permanent fallback
+  - supersedes the "camera scanning is out of scope" non-goal/constraint in `goals-and-non-goals.md`; realizes the `NFR-008` "leave room for future scanning" intent
+  - shipped-vs-planned signal lives in `system-map.md` (entry starts `planned`)
+- Related requirements:
+  - REQ-034
+  - REQ-035
+  - REQ-036
+  - REQ-037
+  - REQ-038
+  - NFR-010
+- Notes:
+  - art-only identification yields a ranked candidate list, not a definitive printing (DEC-053)
+  - does not introduce duplicate-card support (inherits `FLOW-004` block) or manual reorder (`FLOW-002`)
+
+### DEC-051
+- Decision: The card-art perceptual-hash "recipe" (64×64 resize + DCT hash) is implemented once in TypeScript as the single authoritative module, used both on-device at scan time and by TheJudge's own offline build that generates the fingerprint library (`cardhashes.bin`); TheJudge owns and refreshes the library via the existing data pipeline.
+- Status: confirmed
+- Context: Perceptual-hash matching only works if the hasher and the database builder use an identical resize+hash, or distances silently shift and matching degrades with no error. The friend's reference built the database with PIL Lanczos. Rather than depend on a second image stack matching it (or on the friend re-exporting the library), TheJudge uses one TS implementation on both sides, making parity true by construction. This fits the repo "single authoritative definition / reuse before creating" rule and the "no runtime metadata sync" constraint.
+- Impact:
+  - one TS module owns resize + DCT perceptual hash; both the on-device scanner and the build step import it (no FE↔build duplication)
+  - golden parity vectors are regenerated from the TS recipe and used as the byte-exact regression gate (REQ-034)
+  - TheJudge generates `cardhashes.bin` + a manifest from Scryfall images during a build/refresh step; no dependence on an externally prebuilt database
+  - identification never fetches Scryfall or card images at runtime; the library is a lazy-loaded static artifact (REQ-035, NFR-010)
+  - card-image download for the build requires explicit human approval before the command runs (same policy as Scryfall/CR refresh)
+  - supersedes the SOURCE-ANALYSIS "consume a prebuilt DB first" recommendation
+- Related requirements:
+  - REQ-034
+  - REQ-035
+  - NFR-010
+- Notes:
+  - canonical constants, parity gotchas, and DB format are in `PRD/work/cardomancer-card-detection-summary/SOURCE-ANALYSIS.md` and the friend's `SPEC.md`
+
+### DEC-052
+- Decision: The scanner opens a camera screen with continuous auto-scan plus an always-available manual tap-to-capture fallback, runs a batch accept-and-rescan loop per zone, and handles card backs and low-confidence results without leaving the camera or calling the backend.
+- Status: confirmed
+- Context: Scanning is meant to speed batch context capture at a live table. A single deliberate shot is reliable; continuous auto-scan is faster when it works; combining them gives speed with a reliable fallback. Unhappy paths must never strand the user, who can always fall back to manual search.
+- Impact:
+  - camera shows a card-shaped guide overlay; auto-scans continuously; a manual capture button is always available
+  - on a candidate, the user taps Accept to add the card to the current zone via the existing add path; the camera immediately re-opens to scanning for the next card
+  - a Back/Exit control closes the camera and returns to zone collection
+  - a detected card back shows "Flip the card over" (not a generic no-match)
+  - on low confidence, scanning continues and manual capture stays available; after a few consecutive low-confidence attempts a non-blocking prompt offers manual name entry (existing search) without stopping the scan
+  - stack cards land in scan order, bottom-to-top; manual reorder remains out of scope (`FLOW-002`)
+  - the "few attempts" count, detector area fractions, and confidence/card-back thresholds are calibration constants validated by outcome (detect-rate / top-1 accuracy), not product open questions
+- Related requirements:
+  - REQ-037
+  - REQ-038
+- Notes:
+  - first implementation may land manual tap-capture before continuous auto-scan; the target experience is both (map-out sequences this)
+
+### DEC-053
+- Decision: Scan matches are art-level (printing-level) and resolve through `Scryfall printing id → oracle_id → existing CardMetadataItem`; the engine returns a ranked candidate list, duplicate oracle ids collapse to one candidate by best distance, and unresolvable candidates are dropped.
+- Status: confirmed
+- Context: Reprints share artwork, so an art hash identifies an illustration, not a single printing — several printings can match near-identically. TheJudge's gameplay/prompt identity is oracle-level (`CardMetadataItem.cardId` is the oracle id). A printing-level scan result must therefore be bridged to oracle-level metadata rather than forced into zone/prompt state as a printing id.
+- Impact:
+  - the engine output contract is a ranked candidate list (best first), not a single answer
+  - a build-time printing-id → oracle-id bridge artifact maps each match to an oracle id, then to the committed `CardMetadataItem`
+  - candidates with the same oracle id collapse to one, keyed by best (lowest) distance; candidates that do not resolve to committed metadata are dropped
+  - resolved candidates feed the existing picker preview exactly like typed suggestions; downstream zone/prompt identity stays oracle-level and unchanged
+  - the bridge artifact is static and committed (consistent with `cardMetadata.json`); identity resolution makes no runtime network call
+- Related requirements:
+  - REQ-034
+  - REQ-036
+- Notes:
+  - printing-level identity is not pushed into `ZoneCardItem`, prompt context, or rulings lookup
