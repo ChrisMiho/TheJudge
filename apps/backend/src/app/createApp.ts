@@ -13,6 +13,7 @@ import { registerHealthRoute } from "../routes/health.js";
 export type AppOptions = {
   frontendOrigin?: string;
   askAiProvider?: AskAiProvider;
+  askAiProviderMode?: "mock" | "openai";
   debugLoggingEnabled?: boolean;
   payloadLoggingEnabled?: boolean;
   logger?: AppLogger;
@@ -35,6 +36,7 @@ export function createApp(options: AppOptions = {}) {
   registerHealthRoute(app);
   registerAskAiRoute(app, {
     askAiProvider,
+    askAiProviderMode: options.askAiProviderMode,
     logger,
     payloadLoggingEnabled: isPayloadLoggingEnabled,
     cardRulingsIndex: options.cardRulingsIndex,

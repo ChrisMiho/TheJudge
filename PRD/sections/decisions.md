@@ -755,3 +755,20 @@
   - extends DEC-044; does not supersede it — the shallow catalog and its shipped-vs-planned signal are unchanged
   - the priority detail files must reflect the assembled prompt section order and the System 1/2/3 mechanics as defined by DEC-025, DEC-029, DEC-030, DEC-036, DEC-042, DEC-043 (planned), DEC-045, DEC-046, DEC-047; `Q-001` (keyword-vocabulary derivation) is the live open question for System 3 and should be referenced, not resolved, by the detail prose
   - this decision does not change the "assistant, not judge" framing or any prompt behavior
+
+### DEC-049
+- Decision: Live LLM response-size diagnostics are log-only statistics computed from the returned answer text; they are not prompt input, product answer text, frontend UI, or response sidecars.
+- Status: confirmed
+- Context: Mock mode already exposes prompt-size stats for local debugging, but the live provider path lacks lightweight visibility into how large model answers are. This makes it harder to compare real provider behavior against mock/local expectations after prompt-size and retrieval-tuning work. The debug need is response-size observability, not a product-facing contract change.
+- Impact:
+  - after a successful live provider invocation, backend lifecycle logs include answer-size fields derived from the final `answer` string returned to the caller
+  - required fields are `answerChars`, `estimatedAnswerTokens`, and `charsPerTokenEstimate`
+  - `estimatedAnswerTokens` uses the same 4-characters-per-token heuristic as the existing mock prompt stats; this remains an estimate, not provider-native token accounting
+  - `POST /api/ask-ai` success responses from the OpenAI/live provider remain `{ answer }`
+  - response-size stats are not appended to `answer`, not included in `context`, `diagnostics`, or `enrichmentDebug`, and not added to `conversationHistory`
+  - prompt construction and prompt diagnostics remain unchanged; this decision does not add hidden prompt context or provider-response metadata to the model input
+  - provider-native usage metadata, exact billing token accounting, durable analytics storage, and frontend debug displays remain out of scope unless a later decision adds them
+- Related requirements:
+  - REQ-033
+- Notes:
+  - preserves DEC-020 live provider contract stability and DEC-033's mock-only sidecar boundary

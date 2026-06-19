@@ -12,9 +12,11 @@ import type { GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
 import type { AskAiProvider } from "../providers/askAiProvider.js";
 import { askAiRequestSchema } from "../validation/askAiRequest.js";
 import { toValidationErrorMessage } from "../app/errorHandler.js";
+import { getAnswerSizeDiagnostics } from "../responseSizeDiagnostics.js";
 
 export type AskAiRouteDeps = {
   askAiProvider: AskAiProvider;
+  askAiProviderMode?: "mock" | "openai";
   logger: AppLogger;
   payloadLoggingEnabled: boolean;
   cardRulingsIndex?: Map<string, RulingEntry[]>;
@@ -24,7 +26,16 @@ export type AskAiRouteDeps = {
 };
 
 export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
-  const { askAiProvider, logger, payloadLoggingEnabled, cardRulingsIndex, gameRulesTopics, gameRulesRuleIndex, collectEnrichmentDebug } = deps;
+  const {
+    askAiProvider,
+    askAiProviderMode = "mock",
+    logger,
+    payloadLoggingEnabled,
+    cardRulingsIndex,
+    gameRulesTopics,
+    gameRulesRuleIndex,
+    collectEnrichmentDebug
+  } = deps;
 
   app.post("/api/ask-ai", async (req: Request, res: Response, next: NextFunction) => {
     const correlationId = resolveCorrelationId(req.header("x-correlation-id"));
@@ -111,7 +122,11 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
       }
 
       const providerElapsedMs = Date.now() - providerStartedAt;
-      logger.info("ask_ai.provider_invocation_completed", { correlationId, providerElapsedMs });
+      logger.info("ask_ai.provider_invocation_completed", {
+        correlationId,
+        providerElapsedMs,
+        ...(askAiProviderMode === "openai" ? getAnswerSizeDiagnostics(response.answer) : {})
+      });
       if (providerElapsedMs > 1200) {
         logger.info("ask_ai.provider_latency_warning", {
           correlationId,
