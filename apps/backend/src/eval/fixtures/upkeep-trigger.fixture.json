@@ -1,0 +1,44 @@
+{
+  "id": "upkeep-trigger",
+  "description": "Upkeep phase with an 'at the beginning of your upkeep' triggered ability source on the battlefield; empty stack. Core + delayed-trigger + battlefield buckets (no stack bucket). System 3 should surface triggered-ability/upkeep rules.",
+  "request": {
+    "question": "It's my upkeep. My Phyrexian Arena's beginning-of-upkeep trigger and my opponent's beginning-of-upkeep trigger both want to go on the stack — who chooses the order and when do they trigger?",
+    "gameContext": {
+      "playerCount": 2,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 20 },
+        { "label": "Player 2", "lifeTotal": 20 }
+      ],
+      "turnPhase": "upkeep",
+      "selectedZones": ["battlefield"],
+      "zones": {
+        "battlefield": [
+          {
+            "cardId": "phyrexian-arena",
+            "name": "Phyrexian Arena",
+            "oracleText": "At the beginning of your upkeep, you draw a card and you lose 1 life.",
+            "contextNotes": "Enchantment. Player 1 controls it.",
+            "targets": [{ "kind": "none" }]
+          }
+        ]
+      }
+    }
+  },
+  "expected": {
+    "expectedSystem2TopicIds": [
+      "abilities-delayed-triggers",
+      "abilities-trigger-basics",
+      "abilities-zone-change-triggers",
+      "layers-order",
+      "layers-power-toughness",
+      "layers-timestamps-dependencies",
+      "replacement-effects-basics",
+      "replacement-etb-effects",
+      "stack-and-priority",
+      "targets-basics",
+      "zones-basics"
+    ],
+    "expectedSupplementalRuleIds": ["500.6", "603.3b"],
+    "forbiddenSupplementalRuleIds": ["100.1"]
+  }
+}

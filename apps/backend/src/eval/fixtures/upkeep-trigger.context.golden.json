@@ -1,0 +1,46 @@
+{
+  "finalQuestion": "It's my upkeep. My Phyrexian Arena's beginning-of-upkeep trigger and my opponent's beginning-of-upkeep trigger both want to go on the stack — who chooses the order and when do they trigger?",
+  "gameContext": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 20
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "upkeep",
+    "selectedZones": [
+      "battlefield"
+    ]
+  },
+  "populatedZones": [
+    {
+      "zoneId": "battlefield",
+      "items": [
+        {
+          "cardId": "phyrexian-arena",
+          "name": "Phyrexian Arena",
+          "oracleText": "At the beginning of your upkeep, you draw a card and you lose 1 life.",
+          "imageUrl": "",
+          "manaCost": "",
+          "manaValue": 0,
+          "typeLine": "",
+          "colors": [],
+          "supertypes": [],
+          "subtypes": [],
+          "targets": [
+            {
+              "kind": "none"
+            }
+          ],
+          "contextNotes": "Enchantment. Player 1 controls it."
+        }
+      ]
+    }
+  ],
+  "orderedStack": []
+}

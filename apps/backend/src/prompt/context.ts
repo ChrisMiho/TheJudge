@@ -1,17 +1,10 @@
-import type { AskAiRequest, ContextTarget, PromptContext, PromptContextStackItem, PromptContextStackTarget, PromptContextZoneItem, ZoneId } from "../types/index.js";
+import {
+  DEFAULT_BOARD_QUESTION,
+  DEFAULT_STACK_QUESTION,
+  NON_STACK_CANONICAL_ZONE_ORDER
+} from "../constants.js";
+import type { AskAiRequest, ContextTarget, PromptContext, PromptContextStackItem, PromptContextStackTarget, PromptContextZoneItem } from "../types/index.js";
 import { normalizeCardText, normalizeQuestion, normalizeWhitespace } from "./normalization.js";
-
-const DEFAULT_STACK_QUESTION = "Resolve the stack";
-const DEFAULT_BOARD_QUESTION = "Explain the interaction with the provided game state";
-
-const NON_STACK_CANONICAL_ZONE_ORDER: Array<Exclude<ZoneId, "stack">> = [
-  "battlefield",
-  "hand",
-  "graveyard",
-  "exile",
-  "library",
-  "command"
-];
 
 function toStackRole(stackIndex: number, stackLength: number): PromptContextStackItem["stackRole"] {
   if (stackIndex === stackLength - 1) {

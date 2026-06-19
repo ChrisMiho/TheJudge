@@ -30,14 +30,14 @@ After any edit under `.cursor/skills/`, run `npm run skills:ai-sync` before comm
 
 ### Cursor
 
-- `$thejudge-kickoff` — orient on this repo
-- `$thejudge-kickoff` — capture this idea: `<idea>`
-- `$thejudge-refinement PRD/work/<slug>/`
-- `$thejudge-quality-check PRD/work/<slug>/`
-- `$thejudge-map-out PRD/work/<slug>/`
-- `$thejudge-implement PRD/work/<slug>/ slice A`
-- `$thejudge-implement PRD/work/<slug>/`
-- `$thejudge-cleanup PRD/work/<slug>/`
+- `/thejudge-kickoff` — orient on this repo
+- `/thejudge-kickoff` — capture this idea: `<idea>`
+- `/thejudge-refinement PRD/work/<slug>/`
+- `/thejudge-quality-check PRD/work/<slug>/`
+- `/thejudge-map-out PRD/work/<slug>/`
+- `/thejudge-implement PRD/work/<slug>/ slice A`
+- `/thejudge-implement PRD/work/<slug>/`
+- `/thejudge-cleanup PRD/work/<slug>/`
 
 ### Codex
 
@@ -52,23 +52,23 @@ After any edit under `.cursor/skills/`, run `npm run skills:ai-sync` before comm
 
 ### Claude Code
 
-- `Attach thejudge-kickoff and orient on this repo.`
-- `Attach thejudge-kickoff and capture this idea: <idea>.`
-- `Attach thejudge-refinement for PRD/work/<slug>/.`
-- `Attach thejudge-quality-check for PRD/work/<slug>/.`
-- `Attach thejudge-map-out for PRD/work/<slug>/.`
-- `Attach thejudge-implement for PRD/work/<slug>/ slice A.`
-- `Attach thejudge-implement for PRD/work/<slug>/ next slice.`
-- `Attach thejudge-cleanup for PRD/work/<slug>/.`
+- `/thejudge-kickoff` — orient on this repo
+- `/thejudge-kickoff` — capture this idea: `<idea>`
+- `/thejudge-refinement PRD/work/<slug>/`
+- `/thejudge-quality-check PRD/work/<slug>/`
+- `/thejudge-map-out PRD/work/<slug>/`
+- `/thejudge-implement PRD/work/<slug>/ slice A`
+- `/thejudge-implement PRD/work/<slug>/`
+- `/thejudge-cleanup PRD/work/<slug>/`
 
 ## Handoff blocks
 
 Every skill that hands off must end the session with a **Next step** section:
 
 1. One sentence: what finished and what to run next.
-2. **Cursor** fenced block (`$thejudge-*` syntax).
+2. **Cursor** fenced block (`/thejudge-*` syntax).
 3. **Codex** fenced block (`$thejudge-*` syntax).
-4. **Claude Code** fenced block (`Attach thejudge-* for ...` syntax).
+4. **Claude Code** fenced block (`/thejudge-* <args>` syntax).
 
 Substitute `<slug>`, slice letters, and skill names from the session.
 
@@ -77,7 +77,7 @@ Substitute `<slug>`, slice letters, and skill names from the session.
 **Cursor**
 
 ```text
-$thejudge-refinement PRD/work/<slug>/
+/thejudge-refinement PRD/work/<slug>/
 ```
 
 **Codex**
@@ -89,7 +89,7 @@ $thejudge-refinement PRD/work/<slug>/
 **Claude Code**
 
 ```text
-Attach thejudge-refinement for PRD/work/<slug>/.
+/thejudge-refinement PRD/work/<slug>/
 ```
 
 ### refinement → quality-check
@@ -97,7 +97,7 @@ Attach thejudge-refinement for PRD/work/<slug>/.
 **Cursor**
 
 ```text
-$thejudge-quality-check PRD/work/<slug>/
+/thejudge-quality-check PRD/work/<slug>/
 ```
 
 **Codex**
@@ -109,7 +109,7 @@ $thejudge-quality-check PRD/work/<slug>/
 **Claude Code**
 
 ```text
-Attach thejudge-quality-check for PRD/work/<slug>/.
+/thejudge-quality-check PRD/work/<slug>/
 ```
 
 ### quality-check PASS → map-out
@@ -117,7 +117,7 @@ Attach thejudge-quality-check for PRD/work/<slug>/.
 **Cursor**
 
 ```text
-$thejudge-map-out PRD/work/<slug>/
+/thejudge-map-out PRD/work/<slug>/
 ```
 
 **Codex**
@@ -129,7 +129,7 @@ $thejudge-map-out PRD/work/<slug>/
 **Claude Code**
 
 ```text
-Attach thejudge-map-out for PRD/work/<slug>/.
+/thejudge-map-out PRD/work/<slug>/
 ```
 
 ### quality-check FAIL → refinement
@@ -137,7 +137,7 @@ Attach thejudge-map-out for PRD/work/<slug>/.
 **Cursor**
 
 ```text
-$thejudge-refinement PRD/work/<slug>/
+/thejudge-refinement PRD/work/<slug>/
 ```
 
 **Codex**
@@ -149,7 +149,7 @@ $thejudge-refinement PRD/work/<slug>/
 **Claude Code**
 
 ```text
-Attach thejudge-refinement for PRD/work/<slug>/.
+/thejudge-refinement PRD/work/<slug>/
 ```
 
 ### map-out → implement (first slice)
@@ -157,7 +157,7 @@ Attach thejudge-refinement for PRD/work/<slug>/.
 **Cursor**
 
 ```text
-$thejudge-implement PRD/work/<slug>/ slice <letter>
+/thejudge-implement PRD/work/<slug>/ slice <letter>
 ```
 
 **Codex**
@@ -169,7 +169,7 @@ $thejudge-implement PRD/work/<slug>/ slice <letter>
 **Claude Code**
 
 ```text
-Attach thejudge-implement for PRD/work/<slug>/ slice <letter>.
+/thejudge-implement PRD/work/<slug>/ slice <letter>
 ```
 
 ### implement → next slice
@@ -177,7 +177,7 @@ Attach thejudge-implement for PRD/work/<slug>/ slice <letter>.
 **Cursor**
 
 ```text
-$thejudge-implement PRD/work/<slug>/ slice <letter>
+/thejudge-implement PRD/work/<slug>/ slice <letter>
 ```
 
 **Codex**
@@ -189,13 +189,13 @@ $thejudge-implement PRD/work/<slug>/ slice <letter>
 **Claude Code**
 
 ```text
-Attach thejudge-implement for PRD/work/<slug>/ slice <letter>.
+/thejudge-implement PRD/work/<slug>/ slice <letter>
 ```
 
 Or when the next letter is unknown:
 
 ```text
-Attach thejudge-implement for PRD/work/<slug>/ next slice.
+/thejudge-implement PRD/work/<slug>/ next slice
 ```
 
 ### implement → cleanup (all slices done)
@@ -203,7 +203,7 @@ Attach thejudge-implement for PRD/work/<slug>/ next slice.
 **Cursor**
 
 ```text
-$thejudge-cleanup PRD/work/<slug>/
+/thejudge-cleanup PRD/work/<slug>/
 ```
 
 **Codex**
@@ -215,7 +215,7 @@ $thejudge-cleanup PRD/work/<slug>/
 **Claude Code**
 
 ```text
-Attach thejudge-cleanup for PRD/work/<slug>/.
+/thejudge-cleanup PRD/work/<slug>/
 ```
 
 ### cleanup → kickoff (optional restart)
@@ -223,7 +223,7 @@ Attach thejudge-cleanup for PRD/work/<slug>/.
 **Cursor**
 
 ```text
-$thejudge-kickoff
+/thejudge-kickoff
 ```
 
 **Codex**
@@ -235,7 +235,7 @@ $thejudge-kickoff
 **Claude Code**
 
 ```text
-Attach thejudge-kickoff and orient on this repo.
+/thejudge-kickoff
 ```
 
 ## Slice Doc Template

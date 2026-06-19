@@ -1,0 +1,98 @@
+import {
+  MAX_CONVERSATION_HISTORY_CHARS,
+  truncateConversationHistory
+} from "./normalization.js";
+import {
+  SYSTEM_ROLE_PREAMBLE_LINES,
+  buildZoneScopeSentence,
+  formatConversationHistorySection,
+  formatGameContext,
+  formatNonStackZoneSections,
+  formatOfficialRulingsSection,
+  formatStackSection,
+  formatSupplementalRulesSection
+} from "./promptFormatting.js";
+import { MTG_PROMPT_REFERENCE } from "./mtgReference.js";
+import { getPhaseGuidance } from "./phaseGuidance.js";
+import type { ResolvedRulings } from "../cardRulings.js";
+import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
+import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
+import type { ConversationTurn, PromptContext, ZoneId } from "../types/index.js";
+
+export type BuildPromptTextOptions = {
+  rulings?: ResolvedRulings;
+  gameRulesTopics?: GameRulesTopic[];
+  supplementalRules?: RetrievedGameRule[];
+  conversationHistory?: ConversationTurn[];
+};
+
+export function buildPromptText(context: PromptContext, options: BuildPromptTextOptions = {}): string {
+  const populatedZoneIds: ZoneId[] = [
+    ...(context.orderedStack.length > 0 ? (["stack"] as ZoneId[]) : []),
+    ...context.populatedZones.map((z) => z.zoneId as ZoneId)
+  ];
+
+  const scopeSentence = buildZoneScopeSentence(context.gameContext.selectedZones, populatedZoneIds);
+
+  const stackSection = formatStackSection(context);
+  const nonStackSections = formatNonStackZoneSections(context);
+  const gameRulesSection = formatGameRulesSection(options.gameRulesTopics ?? []);
+  const supplementalRulesSection = formatSupplementalRulesSection(options.supplementalRules ?? []);
+  const officialRulingsSection = formatOfficialRulingsSection(options.rulings);
+
+  const conversationHistory = options.conversationHistory ?? [];
+  const truncatedHistory = truncateConversationHistory(conversationHistory, MAX_CONVERSATION_HISTORY_CHARS);
+  const conversationHistorySection = formatConversationHistorySection(truncatedHistory);
+
+  const zoneSections = [stackSection, nonStackSections].filter(Boolean).join("\n\n");
+
+  const phaseGuidance = getPhaseGuidance(context.gameContext.turnPhase, context.gameContext.combatStep);
+
+  const sections: string[] = [
+    "SYSTEM ROLE PREAMBLE",
+    ...SYSTEM_ROLE_PREAMBLE_LINES,
+    "",
+    "INSTRUCTIONS",
+    "- Explain reasoning clearly and concisely.",
+    "- State uncertainty when context is incomplete.",
+    "- Do not invent hidden state, targets, or board conditions.",
+    ...(conversationHistory.length > 0
+      ? ["- Treat follow-up questions as refinements or clarifications against the frozen game state and prior answers."]
+      : []),
+    "",
+    "MTG REFERENCE",
+    MTG_PROMPT_REFERENCE,
+    "",
+    "GENERAL GAME CONTEXT",
+    formatGameContext(context),
+    "",
+    "PHASE GUIDANCE",
+    phaseGuidance
+  ];
+
+  if (zoneSections.length > 0) {
+    sections.push("", zoneSections);
+  }
+
+  if (gameRulesSection.length > 0) {
+    sections.push("", gameRulesSection);
+  }
+
+  if (supplementalRulesSection.length > 0) {
+    sections.push("", supplementalRulesSection);
+  }
+
+  if (officialRulingsSection.length > 0) {
+    sections.push("", officialRulingsSection);
+  }
+
+  sections.push("", "SCOPE", scopeSentence);
+
+  if (conversationHistorySection.length > 0) {
+    sections.push("", conversationHistorySection);
+  }
+
+  sections.push("", "QUESTION", context.finalQuestion);
+
+  return sections.join("\n");
+}

@@ -1,0 +1,53 @@
+{
+  "id": "counterspell-stack",
+  "description": "Counterspell on the stack targeting a spell beneath it; question about resolution order. Stack bucket only (no battlefield). System 3 should surface countering/resolution rules.",
+  "request": {
+    "question": "Counterspell is on top of the stack targeting my Divination. When everyone passes priority, what resolves first and does Divination still resolve?",
+    "gameContext": {
+      "playerCount": 2,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 20 },
+        { "label": "Player 2", "lifeTotal": 20 }
+      ],
+      "turnPhase": "stack_resolving",
+      "selectedZones": ["stack"],
+      "zones": {
+        "stack": [
+          {
+            "cardId": "divination",
+            "name": "Divination",
+            "oracleText": "Draw two cards.",
+            "imageUrl": "",
+            "manaValue": 3,
+            "caster": "Player 1",
+            "targets": []
+          },
+          {
+            "cardId": "counterspell",
+            "name": "Counterspell",
+            "oracleText": "Counter target spell.",
+            "imageUrl": "",
+            "manaValue": 2,
+            "caster": "Player 2",
+            "targets": [{ "kind": "card", "zone": "stack", "cardId": "divination", "cardName": "Divination" }]
+          }
+        ]
+      }
+    }
+  },
+  "expected": {
+    "expectedSystem2TopicIds": [
+      "abilities-trigger-basics",
+      "copying-spells-abilities",
+      "effects-resolution-targets",
+      "effects-source-impossible",
+      "spell-casting-choices",
+      "spell-casting-costs",
+      "stack-and-priority",
+      "targets-basics",
+      "zones-basics"
+    ],
+    "expectedSupplementalRuleIds": ["608.2c"],
+    "forbiddenSupplementalRuleIds": ["100.1"]
+  }
+}

@@ -1,4 +1,6 @@
 import type { AskAiRequest, PromptContext } from "../types/index.js";
+import type { GameRulesTopic } from "../gameRules.js";
+import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
 import { MAX_PROMPT_CHAR_BUDGET, normalizeQuestion } from "../prompt/normalization.js";
 
 const FALLBACK_QUESTION = "Resolve the stack";
@@ -25,12 +27,36 @@ type EvaluationCheckId =
   | "supplemental-rules-section-present"
   | "supplemental-rules-after-game-rules"
   | "supplemental-rules-before-rulings"
-  | "prompt-under-budget";
+  | "prompt-under-budget"
+  | "system2-conditional-selection"
+  | "system3-expected-recall"
+  | "system3-noise-excluded";
+
+/**
+ * Optional human-labeled relevance expectations (DEC-047, REQ-032). Each field is
+ * independent — a check runs only when its field is present, so legacy fixtures
+ * without an `expected` block keep their original structural-only score.
+ */
+export type EvaluationFixtureExpected = {
+  /** Exact set of System 2 topic ids `selectGameRulesTopics` should choose. */
+  expectedSystem2TopicIds?: string[];
+  /** Rule ids that must all appear in the System 3 supplemental top-5. */
+  expectedSupplementalRuleIds?: string[];
+  /** Rule ids that must NOT appear in the System 3 supplemental top-5. */
+  forbiddenSupplementalRuleIds?: string[];
+};
 
 export type EvaluationFixture = {
   id: string;
   description: string;
   request: AskAiRequest;
+  expected?: EvaluationFixtureExpected;
+};
+
+/** Slice A/B outputs needed to evaluate the labeled relevance checks. */
+export type ScenarioRelevance = {
+  selectedTopics: GameRulesTopic[];
+  supplementalRules: RetrievedGameRule[];
 };
 
 export type EvaluationCheckResult = {
@@ -303,10 +329,61 @@ function checkPromptUnderBudget(promptText: string): EvaluationCheckResult {
   };
 }
 
+function checkSystem2ConditionalSelection(
+  selectedTopicIds: Set<string>,
+  expectedTopicIds: string[]
+): EvaluationCheckResult {
+  const expectedSet = new Set(expectedTopicIds);
+  const missing = [...expectedSet].filter((id) => !selectedTopicIds.has(id)).sort();
+  const unexpected = [...selectedTopicIds].filter((id) => !expectedSet.has(id)).sort();
+  const passed = missing.length === 0 && unexpected.length === 0;
+
+  return {
+    id: "system2-conditional-selection",
+    passed,
+    details: passed
+      ? "Selected System 2 topics exactly match the expected set."
+      : `System 2 selection mismatch. Missing: [${missing.join(", ")}]; unexpected: [${unexpected.join(", ")}].`
+  };
+}
+
+function checkSystem3ExpectedRecall(
+  retrievedRuleIds: Set<string>,
+  expectedRuleIds: string[]
+): EvaluationCheckResult {
+  const missing = expectedRuleIds.filter((id) => !retrievedRuleIds.has(id));
+  const passed = missing.length === 0;
+
+  return {
+    id: "system3-expected-recall",
+    passed,
+    details: passed
+      ? "All expected supplemental rule ids appear in the System 3 top-5."
+      : `Missing expected supplemental rule ids from top-5: [${missing.join(", ")}].`
+  };
+}
+
+function checkSystem3NoiseExcluded(
+  retrievedRuleIds: Set<string>,
+  forbiddenRuleIds: string[]
+): EvaluationCheckResult {
+  const present = forbiddenRuleIds.filter((id) => retrievedRuleIds.has(id));
+  const passed = present.length === 0;
+
+  return {
+    id: "system3-noise-excluded",
+    passed,
+    details: passed
+      ? "No forbidden noise rule ids appear in the System 3 top-5."
+      : `Forbidden noise rule ids present in top-5: [${present.join(", ")}].`
+  };
+}
+
 export function evaluateScenario(
   fixture: EvaluationFixture,
   context: PromptContext,
-  promptText: string
+  promptText: string,
+  relevance?: ScenarioRelevance
 ): EvaluationResult {
   const checks = [
     checkStackOrder(fixture, context),
@@ -326,6 +403,26 @@ export function evaluateScenario(
     checkSupplementalRulesBeforeRulings(promptText),
     checkPromptUnderBudget(promptText)
   ];
+
+  // Labeled relevance checks (DEC-047) only run when the fixture supplies the
+  // corresponding `expected` field and the harness passes Slice A/B outputs.
+  if (relevance && fixture.expected) {
+    const { expected } = fixture;
+    if (expected.expectedSystem2TopicIds) {
+      const selectedTopicIds = new Set(relevance.selectedTopics.map((topic) => topic.id));
+      checks.push(checkSystem2ConditionalSelection(selectedTopicIds, expected.expectedSystem2TopicIds));
+    }
+    if (expected.expectedSupplementalRuleIds || expected.forbiddenSupplementalRuleIds) {
+      const retrievedRuleIds = new Set(relevance.supplementalRules.map((rule) => rule.ruleId));
+      if (expected.expectedSupplementalRuleIds) {
+        checks.push(checkSystem3ExpectedRecall(retrievedRuleIds, expected.expectedSupplementalRuleIds));
+      }
+      if (expected.forbiddenSupplementalRuleIds) {
+        checks.push(checkSystem3NoiseExcluded(retrievedRuleIds, expected.forbiddenSupplementalRuleIds));
+      }
+    }
+  }
+
   const score = checks.filter((check) => check.passed).length;
 
   return {
@@ -335,6 +432,94 @@ export function evaluateScenario(
     maxScore: checks.length,
     checks
   };
+}
+
+/**
+ * Per-scenario inputs for the relevance report (Slice D, REQ-032). Carries the
+ * Slice A selection and Slice B top-5 retrieval so the report mirrors production
+ * scoring rather than a legacy all-topics / flat scorer.
+ */
+export type RelevanceReportInput = {
+  fixtureId: string;
+  selectedTopics: GameRulesTopic[];
+  supplementalRules: RetrievedGameRule[];
+  expected?: EvaluationFixtureExpected;
+};
+
+export type RelevanceReport = {
+  text: string;
+  allPassed: boolean;
+};
+
+function renderRelevanceScenario(input: RelevanceReportInput): { text: string; passed: boolean } {
+  const { fixtureId, selectedTopics, supplementalRules, expected } = input;
+  const lines: string[] = [`=== ${fixtureId} ===`];
+  let passed = true;
+
+  const topicIds = selectedTopics.map((topic) => topic.id);
+  lines.push(`System 2 topics (${topicIds.length}): ${topicIds.length > 0 ? topicIds.join(", ") : "(none)"}`);
+
+  if (expected?.expectedSystem2TopicIds) {
+    const expectedSet = new Set(expected.expectedSystem2TopicIds);
+    const selectedSet = new Set(topicIds);
+    const missing = [...expectedSet].filter((id) => !selectedSet.has(id)).sort();
+    const unexpected = [...selectedSet].filter((id) => !expectedSet.has(id)).sort();
+    if (missing.length > 0 || unexpected.length > 0) {
+      passed = false;
+      lines.push(`  System 2 MISMATCH — missing: [${missing.join(", ")}]; unexpected: [${unexpected.join(", ")}]`);
+    }
+  }
+
+  const expectedRuleIds = new Set(expected?.expectedSupplementalRuleIds ?? []);
+  const forbiddenRuleIds = new Set(expected?.forbiddenSupplementalRuleIds ?? []);
+
+  lines.push("System 3 top-5:");
+  if (supplementalRules.length === 0) {
+    lines.push("  (none)");
+  } else {
+    for (const rule of supplementalRules) {
+      let tag = "";
+      if (expectedRuleIds.has(rule.ruleId)) tag = "  [RECALL HIT]";
+      else if (forbiddenRuleIds.has(rule.ruleId)) tag = "  [NOISE FAIL]";
+      lines.push(`  ${rule.ruleId}  score=${rule.score.toFixed(2)}${tag}`);
+    }
+  }
+
+  const retrievedRuleIds = new Set(supplementalRules.map((rule) => rule.ruleId));
+
+  if (expected?.expectedSupplementalRuleIds) {
+    const missing = expected.expectedSupplementalRuleIds.filter((id) => !retrievedRuleIds.has(id));
+    if (missing.length > 0) passed = false;
+    lines.push(
+      `Expected supplemental: ${expected.expectedSupplementalRuleIds.join(", ")} — ${missing.length > 0 ? `MISSING: ${missing.join(", ")}` : "all hit"}`
+    );
+  }
+
+  if (expected?.forbiddenSupplementalRuleIds) {
+    const present = expected.forbiddenSupplementalRuleIds.filter((id) => retrievedRuleIds.has(id));
+    if (present.length > 0) passed = false;
+    lines.push(
+      `Forbidden supplemental: ${expected.forbiddenSupplementalRuleIds.join(", ")} — ${present.length > 0 ? `PRESENT: ${present.join(", ")}` : "all excluded"}`
+    );
+  }
+
+  lines.push(`Scenario: ${passed ? "PASS" : "FAIL"}`);
+
+  return { text: lines.join("\n"), passed };
+}
+
+/**
+ * Build a digestible before/after relevance report (Slice D, REQ-032, DEC-047):
+ * one section per labeled scenario with System 2 topic ids, System 3 top-5 with
+ * scores, recall hit/miss per expected id, and forbidden exclusion status.
+ */
+export function buildRelevanceReport(inputs: RelevanceReportInput[]): RelevanceReport {
+  const sections = inputs.map((input) => renderRelevanceScenario(input));
+  const passedCount = sections.filter((section) => section.passed).length;
+  const summary = `=== Summary: ${passedCount}/${sections.length} scenarios passed ===`;
+  const text = [...sections.map((section) => section.text), summary].join("\n\n");
+
+  return { text, allPassed: passedCount === sections.length };
 }
 
 export function buildChecklistReport(results: EvaluationResult[]): string {

@@ -13,7 +13,7 @@ import type {
   zoneIdSchema
 } from "../validation/askAiRequest.js";
 import type { EnrichmentDebug } from "../prompt/enrichmentDebug.js";
-import type { PromptDiagnostics } from "../prompt/normalization.js";
+import type { PromptDiagnostics } from "../prompt/promptDiagnostics.js";
 
 export type ConversationTurn = z.infer<typeof conversationTurnSchema>;
 export type PlayerLabel = z.infer<typeof playerLabelSchema>;

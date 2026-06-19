@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildMockAnswer } from "./mockAskAi.js";
-import { buildPromptText, getPromptDiagnostics } from "./prompt/normalization.js";
+import { buildPromptText } from "./prompt/promptAssembly.js";
+import { getPromptDiagnostics } from "./prompt/promptDiagnostics.js";
 import type { EnrichmentDebug } from "./prompt/enrichmentDebug.js";
 import type { PromptContext } from "./types/index.js";
 

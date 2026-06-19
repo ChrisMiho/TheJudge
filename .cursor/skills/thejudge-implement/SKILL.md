@@ -5,7 +5,6 @@ description: >-
   GAMEPLAN.md and lettered slice docs. Use after map-out, or when the work folder
   already has a GAMEPLAN and slices and the user wants to kick off work without
   regenerating planning docs.
-disable-model-invocation: true
 ---
 
 # TheJudge Implement

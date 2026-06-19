@@ -7,6 +7,44 @@ const manifestPath = path.resolve("apps/backend/data/gameRulesTopicManifest.json
 const sourcePath = path.resolve("apps/backend/data/cr/source.txt");
 const outputPath = path.resolve("apps/backend/data/gameRulesByTopic.json");
 const indexPath = path.resolve("apps/backend/data/gameRulesRuleIndex.json");
+const tokenStatsPath = path.resolve("apps/backend/data/gameRulesTokenStats.json");
+
+// Keep this stopword set + tokenizer in sync with `tokenize` in
+// apps/backend/src/gameRulesRetrieval.ts so token-frequency stats match the scorer.
+const STOP_WORDS = new Set([
+  "and", "are", "can", "card", "cards", "does", "for", "from",
+  "has", "have", "how", "one", "that", "the", "this", "what",
+  "when", "will", "with"
+]);
+
+function tokenizeForStats(value) {
+  return value
+    .toLowerCase()
+    .split(/[^a-z0-9.]+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 3 && !STOP_WORDS.has(token));
+}
+
+/**
+ * Document-frequency stats for IDF scoring (DEC-046). `df` counts the number of
+ * rule entries whose `searchText` contains the token (deduped per rule), `N` is the
+ * total rule count. Mirrors the scorer's tokenization.
+ * @param {Array<{ searchText: string }>} ruleEntries
+ */
+function buildTokenStats(ruleEntries) {
+  const df = new Map();
+  for (const entry of ruleEntries) {
+    const seen = new Set(tokenizeForStats(entry.searchText));
+    for (const token of seen) {
+      df.set(token, (df.get(token) ?? 0) + 1);
+    }
+  }
+  const tokens = {};
+  for (const token of [...df.keys()].sort((a, b) => a.localeCompare(b))) {
+    tokens[token] = { df: df.get(token) };
+  }
+  return { N: ruleEntries.length, tokens };
+}
 
 function ensureParentDirectory(filePath) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -259,6 +297,15 @@ async function main() {
   console.log(`Rule index entries: ${ruleEntries.length}`);
   console.log(`Rule index bytes: ${Buffer.byteLength(indexOutput)}`);
   console.log(`Wrote: ${indexPath}`);
+
+  const tokenStats = buildTokenStats(ruleEntries);
+  ensureParentDirectory(tokenStatsPath);
+  const tokenStatsOutput = await prettierFormat(JSON.stringify(tokenStats), { parser: "json", printWidth: 120 });
+  fs.writeFileSync(tokenStatsPath, tokenStatsOutput);
+
+  console.log(`Token stats tokens: ${Object.keys(tokenStats.tokens).length} (N=${tokenStats.N})`);
+  console.log(`Token stats bytes: ${Buffer.byteLength(tokenStatsOutput)}`);
+  console.log(`Wrote: ${tokenStatsPath}`);
 }
 
 const invokedPath = process.argv[1] ? pathToFileURL(process.argv[1]).href : "";

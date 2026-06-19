@@ -1,27 +1,9 @@
 import { z } from "zod";
+import { PLAYER_LABELS } from "../constants.js";
 import { ASK_AI_ERROR_CODES } from "../errors.js";
 import { enrichmentDebugSchema } from "../prompt/enrichmentDebug.js";
 
-export const playerLabelSchema = z.enum([
-  "Player 1",
-  "Player 2",
-  "Player 3",
-  "Player 4",
-  "Player 5",
-  "Player 6",
-  "Player 7",
-  "Player 8"
-]);
-const orderedPlayerLabels = [
-  "Player 1",
-  "Player 2",
-  "Player 3",
-  "Player 4",
-  "Player 5",
-  "Player 6",
-  "Player 7",
-  "Player 8"
-] as const;
+export const playerLabelSchema = z.enum(PLAYER_LABELS);
 
 function noControlCharacterGuardrail(value: string): boolean {
   for (const char of value) {
@@ -170,7 +152,7 @@ export const gameContextSchema = z
       });
     }
 
-    const expectedLabels = orderedPlayerLabels.slice(0, value.playerCount);
+    const expectedLabels = PLAYER_LABELS.slice(0, value.playerCount);
     const hasExactFixedLabelSet =
       expectedLabels.every((label) => labels.includes(label)) && labels.every((label) => expectedLabels.includes(label));
     if (!hasExactFixedLabelSet) {

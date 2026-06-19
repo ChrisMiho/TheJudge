@@ -2,7 +2,9 @@ fixtureId | score | checks
 ---|---|---
 ambiguous-wording | 16/16 | PASS
 battlefield-skip | 16/16 | PASS
-cascade-keyword | 16/16 | PASS
+cascade-keyword | 19/19 | PASS
+combat-deathtouch | 19/19 | PASS
+counterspell-stack | 19/19 | PASS
 follow-up-chat | 16/16 | PASS
 full-context | 16/16 | PASS
 mana-spent-explicit-fallback | 16/16 | PASS
@@ -10,5 +12,6 @@ multi-step-stack | 16/16 | PASS
 multi-zone | 16/16 | PASS
 near-cap-stack | 16/16 | PASS
 simple-interaction | 16/16 | PASS
-state-based-actions | 16/16 | PASS
+state-based-actions | 19/19 | PASS
+upkeep-trigger | 19/19 | PASS
 zero-cards | 16/16 | PASS

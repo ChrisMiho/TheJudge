@@ -1,0 +1,56 @@
+{
+  "id": "combat-deathtouch",
+  "description": "Combat damage step with a deathtouch blocker on the battlefield; question about damage assignment order and lethal. Combat + damage + battlefield buckets. System 3 should surface deathtouch/lethal-damage rules.",
+  "request": {
+    "question": "My 4/4 attacker is blocked by a 1/1 with deathtouch. How much combat damage do I have to assign to the blocker, and can I trample the rest over?",
+    "gameContext": {
+      "playerCount": 2,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 20 },
+        { "label": "Player 2", "lifeTotal": 20 }
+      ],
+      "turnPhase": "combat",
+      "combatStep": "combat_damage",
+      "selectedZones": ["battlefield"],
+      "zones": {
+        "battlefield": [
+          {
+            "cardId": "ravenous-chupacabra",
+            "name": "Charging Rhino",
+            "oracleText": "Trample",
+            "contextNotes": "4/4 attacking creature with trample. Player 1 controls it.",
+            "targets": [{ "kind": "none" }]
+          },
+          {
+            "cardId": "deathtouch-blocker",
+            "name": "Vampire Nighthawk",
+            "oracleText": "Flying, deathtouch, lifelink",
+            "contextNotes": "1/1 (for this scenario) blocking creature with deathtouch. Player 2 controls it.",
+            "targets": [{ "kind": "none" }]
+          }
+        ]
+      }
+    }
+  },
+  "expected": {
+    "expectedSystem2TopicIds": [
+      "abilities-trigger-basics",
+      "abilities-zone-change-triggers",
+      "combat-damage-assignment",
+      "combat-phase-structure",
+      "damage-basics",
+      "damage-lifelink-deathtouch",
+      "damage-marked-lethal",
+      "layers-order",
+      "layers-power-toughness",
+      "layers-timestamps-dependencies",
+      "replacement-effects-basics",
+      "replacement-etb-effects",
+      "stack-and-priority",
+      "targets-basics",
+      "zones-basics"
+    ],
+    "expectedSupplementalRuleIds": ["702.19b"],
+    "forbiddenSupplementalRuleIds": ["100.1"]
+  }
+}

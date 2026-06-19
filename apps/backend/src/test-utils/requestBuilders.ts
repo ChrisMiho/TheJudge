@@ -1,19 +1,10 @@
+import { PLAYER_LABELS } from "../constants.js";
 import type { AskAiRequest, ZoneCardItem } from "../types/index.js";
 
 export function createGameContext(playerCount: 2 | 3 | 4 | 5 | 6 | 7 | 8 = 2): AskAiRequest["gameContext"] {
-  const labels: AskAiRequest["gameContext"]["players"][number]["label"][] = [
-    "Player 1",
-    "Player 2",
-    "Player 3",
-    "Player 4",
-    "Player 5",
-    "Player 6",
-    "Player 7",
-    "Player 8"
-  ];
   return {
     playerCount,
-    players: labels.slice(0, playerCount).map((label) => ({ label, lifeTotal: 20 })),
+    players: PLAYER_LABELS.slice(0, playerCount).map((label) => ({ label, lifeTotal: 20 })),
     turnPhase: "main_1",
     selectedZones: ["stack"],
     zones: {}

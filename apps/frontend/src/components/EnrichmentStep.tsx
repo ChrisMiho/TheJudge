@@ -2,11 +2,12 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   buildEnrichmentQueue,
   CANONICAL_ZONE_ORDER,
-  NON_STACK_ZONES_WITH_OWNER,
   resolveFallbackQuestion
 } from "../lib/contextFlow";
+import { formatContextTarget, hasOwnerControl, parseManaSpent } from "../lib/enrichmentFormat";
 import { buildPlayerDisplayNameMap, formatPlayerDisplayLabel } from "../lib/playerLabels";
 import { ZONE_LABELS } from "../lib/zoneLabels";
+import { useEnrichmentTargets } from "../hooks/useEnrichmentTargets";
 import type { ConversationMessage, ContextTarget, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { AskAiWaitingPanel } from "./AskAiWaitingPanel";
 import { ConversationThread } from "./ConversationThread";
@@ -44,26 +45,6 @@ type EnrichmentStepProps = {
   onStartOver: () => void;
 };
 
-function parseManaSpent(value: string): number | undefined {
-  const trimmed = value.trim();
-  if (!trimmed) return undefined;
-  const n = Number(trimmed);
-  return Number.isFinite(n) && n >= 0 ? n : undefined;
-}
-
-function formatContextTarget(target: ContextTarget, displayNamesByPlayer: Record<PlayerLabel, string | undefined>): string {
-  if (target.kind === "player") {
-    return `Player: ${formatPlayerDisplayLabel(target.targetPlayer, displayNamesByPlayer[target.targetPlayer])}`;
-  }
-  if (target.kind === "card") return `${ZONE_LABELS[target.zone]}: ${target.cardName}`;
-  if (target.kind === "other") return `Other: ${target.targetDescription}`;
-  return "No specific target";
-}
-
-function hasOwnerControl(zone: ZoneId): boolean {
-  return NON_STACK_ZONES_WITH_OWNER.includes(zone as Exclude<ZoneId, "stack">);
-}
-
 export function EnrichmentStep({
   gameContext,
   zones,
@@ -88,10 +69,6 @@ export function EnrichmentStep({
   onFollowUp,
   onStartOver
 }: EnrichmentStepProps): JSX.Element {
-  const [pendingKindByKey, setPendingKindByKey] = useState<Record<string, PendingTargetKind>>({});
-  const [pendingPlayerByKey, setPendingPlayerByKey] = useState<Record<string, PlayerLabel>>({});
-  const [pendingCardIdByKey, setPendingCardIdByKey] = useState<Record<string, string>>({});
-  const [pendingOtherByKey, setPendingOtherByKey] = useState<Record<string, string>>({});
   const [viewMode, setViewMode] = useState<EnrichmentViewMode>("wizard");
   const [wizardIndex, setWizardIndex] = useState(0);
   const [wizardFinished, setWizardFinished] = useState(false);
@@ -134,14 +111,6 @@ export function EnrichmentStep({
     return `${zone}:${cardId}`;
   }
 
-  function getPendingKind(key: string): PendingTargetKind {
-    return pendingKindByKey[key] ?? "player";
-  }
-
-  function getPendingPlayer(key: string): PlayerLabel {
-    return pendingPlayerByKey[key] ?? (activePlayers[1] ?? activePlayers[0] ?? "Player 2");
-  }
-
   function updateZoneCard(zone: ZoneId, cardId: string, updates: Partial<ZoneCardItem>): void {
     const zoneCards = zones[zone] ?? [];
     const updated = zoneCards.map((c) => (c.cardId === cardId ? { ...c, ...updates } : c));
@@ -153,37 +122,18 @@ export function EnrichmentStep({
     onZonesChange({ ...zones, [zone]: updated });
   }
 
-  function handleAddTarget(zone: ZoneId, card: ZoneCardItem, key: string): void {
-    const kind = getPendingKind(key);
-    let newTarget: ContextTarget;
-
-    if (kind === "player") {
-      newTarget = { kind: "player", targetPlayer: getPendingPlayer(key) };
-    } else if (kind === "card") {
-      const selectedCardId = pendingCardIdByKey[key] ?? "";
-      const entry = contextIndex.find((e) => e.cardId === selectedCardId);
-      if (!entry) return;
-      newTarget = { kind: "card", zone: entry.zone, cardId: entry.cardId, cardName: entry.cardName };
-      setPendingCardIdByKey((c) => ({ ...c, [key]: "" }));
-    } else if (kind === "other") {
-      const text = (pendingOtherByKey[key] ?? "").trim();
-      if (!text) return;
-      newTarget = { kind: "other", targetDescription: text };
-      setPendingOtherByKey((c) => ({ ...c, [key]: "" }));
-    } else {
-      newTarget = { kind: "none" };
-    }
-
-    updateZoneCard(zone, card.cardId, {
-      targets: [...(card.targets ?? []), newTarget]
-    });
-  }
-
-  function handleRemoveTarget(zone: ZoneId, card: ZoneCardItem, targetIndex: number): void {
-    updateZoneCard(zone, card.cardId, {
-      targets: (card.targets ?? []).filter((_, i) => i !== targetIndex)
-    });
-  }
+  const {
+    setPendingKindByKey,
+    setPendingPlayerByKey,
+    pendingCardIdByKey,
+    setPendingCardIdByKey,
+    pendingOtherByKey,
+    setPendingOtherByKey,
+    getPendingKind,
+    getPendingPlayer,
+    handleAddTarget,
+    handleRemoveTarget
+  } = useEnrichmentTargets({ activePlayers, contextIndex, updateZoneCard });
 
   function handleWizardNext(): void {
     if (wizardIndex < totalCards - 1) {

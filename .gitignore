@@ -35,3 +35,6 @@ apps/backend/data/scryfall/rulings.json.tmp
 
 # Prompt preview output (developer-local; not committed)
 output/prompt-preview/
+
+# Retrieval relevance report (developer-local; not committed)
+output/retrieval-relevance-report.txt

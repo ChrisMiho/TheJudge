@@ -40,6 +40,7 @@ Do not propose or implement:
 
 ## Design Proposal Rules
 
+- **reuse before creating** — before writing a new constant, helper, or type, search for an existing one and reuse or extend it rather than re-implementing; shared logic must have a single authoritative definition imported wherever needed, and duplicated constants/functions across files or the FE↔BE boundary are a defect, not a style preference
 - tie proposals back to existing requirements and decisions
 - prefer the smallest solution that satisfies current scope
 - keep future extensibility notes separate from current implementation scope
