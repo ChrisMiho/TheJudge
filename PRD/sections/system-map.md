@@ -11,6 +11,10 @@ Two levels: a subsystem is a `##` heading; features are `###` sub-entries groupe
 - **Lives in** — coarse file/module location (a directory or 1–3 key files), never per-line.
 - **Backed by** — the most directly relevant `DEC`/`REQ` IDs.
 
+A subsystem may also carry an optional fifth field:
+
+- **Details** — pointer to a deep behavior writeup under `PRD/sections/system-map/` for subsystems that warrant a one-read explanation of how they actually work (`DEC-048`). Present only when such a file exists; absent otherwise. The detail file never changes this catalog's shallow shape — it is the depth layer beneath it.
+
 This catalog is the only place the shipped-vs-planned signal lives. It does **not** override or restate `DEC`/`REQ` `Status:` lifecycle semantics (`confirmed`/`superseded`); those track decision history and are unchanged by anything here.
 
 ## Prompt assembly

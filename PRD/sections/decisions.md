@@ -735,3 +735,23 @@
 - Notes:
   - does not replace `prompt:preview` for general prompt inspection; adds automated relevance regression
   - full prompt golden regeneration only for intentional structural changes
+
+### DEC-048
+- Decision: The deep per-subsystem behavior layer deferred by DEC-044 lives as separate detail files under `PRD/sections/system-map/`, one file per catalog subsystem, each linked from the catalog by an optional `Details:` field and written to a fixed lightweight template.
+- Status: confirmed
+- Context: DEC-044 ships the shallow `sections/system-map.md` catalog (status + one-liner + location + backing IDs) and explicitly defers the depth layer — the prose explaining how a subsystem actually works — to `PRD/work/system-map-detail/`, because the highest-value subsystems to document (prompt assembly, System 2 / System 3 retrieval) were about to be rewritten by `prompt-context-retrieval-tuning`. That package has landed (DEC-045, DEC-046, DEC-047 confirmed), so the volatile detail can now be written once. The catalog is already optimized for one-read scanning; embedding deep prose inline would grow it past readability and mix the index with its detail.
+- Impact:
+  - documentation and process only: no `apps/` code, no `POST /api/ask-ai` request/response, UI, or prompt-assembly behavior change
+  - depth prose lives in separate files under `PRD/sections/system-map/`, one detail file per catalog `##` subsystem (e.g. `system-map/prompt-assembly.md`); the catalog keeps its existing four-field shallow shape
+  - the catalog format gains one optional, additive `Details:` field on a subsystem entry pointing to its detail file; this does not change or overload `Status:` semantics and is omitted for subsystems with no detail file
+  - no dangling links: a `Details:` pointer and the detail file it references land together in the same change; a subsystem without a detail file has no `Details:` line
+  - each detail file follows a fixed lightweight template: a `Backed by:` DEC/REQ line, then `How it works`, `Data flow`, `Where it lives` (coarse modules), one `Worked example`, and `Invariants / gotchas`
+  - behavior-level prose only; no per-decision → code-line link maintenance (inherits the DEC-044 non-goal); prose that merely restates code is not added
+  - coverage is by need, not exhaustive: this package writes detail files for the priority subsystems only — `prompt-assembly.md` and `game-rules-retrieval.md` (the latter covering System 1 card rulings, System 2 curated baseline, and System 3 supplemental retrieval, which the catalog groups together and which interrelate via dedup); other subsystems get a detail file and `Details:` link only when one is later written
+  - maintenance rule: a detail file is revisited only when its subsystem's behavior changes, governed by the existing DEC-044 commit convention (`feat:`/`fix:` for behavior changes, `docs(prd):` for doc-only changes)
+- Related requirements:
+  - (none — documentation and process decision; no functional requirement is added or changed)
+- Notes:
+  - extends DEC-044; does not supersede it — the shallow catalog and its shipped-vs-planned signal are unchanged
+  - the priority detail files must reflect the assembled prompt section order and the System 1/2/3 mechanics as defined by DEC-025, DEC-029, DEC-030, DEC-036, DEC-042, DEC-043 (planned), DEC-045, DEC-046, DEC-047; `Q-001` (keyword-vocabulary derivation) is the live open question for System 3 and should be referenced, not resolved, by the detail prose
+  - this decision does not change the "assistant, not judge" framing or any prompt behavior

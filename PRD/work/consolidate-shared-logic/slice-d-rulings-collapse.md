@@ -2,77 +2,50 @@
 
 ## Status: planned
 
+## Blocked by: Slice A (truncation helper consolidation lands first; parallel to Slice B)
+
 ## Goal
 
-Collapse `resolveRulingsForPrompt` and `resolveRulingsForPromptWithDebug` in
-`apps/backend/src/cardRulings.ts` into a single overloaded function with an optional
-`debug` flag, eliminating the duplicated resolution algorithm.
+Collapse `resolveRulingsForPrompt` (`cardRulings.ts:154-197`) and `resolveRulingsForPromptWithDebug` (`:199-257`) into a single overloaded function with an optional `debug` flag. The debug variant is a strict superset that additionally collects trace; no change to the resolution algorithm or its output.
 
 ## Requirements
 
-1. Replace the two exported functions in `cardRulings.ts` (lines 154–257) with a single
-   overloaded implementation:
-
+1. Replace the two exported functions in `cardRulings.ts` with one overloaded implementation:
    ```typescript
    export function resolveRulingsForPrompt(
-     cards: PromptRulingCard[],
-     index: Map<string, RulingEntry[]>,
-     limits: RulingLimits
+     cards: PromptRulingCard[], index: Map<string, RulingEntry[]>, limits: RulingLimits
    ): ResolvedRulings;
    export function resolveRulingsForPrompt(
-     cards: PromptRulingCard[],
-     index: Map<string, RulingEntry[]>,
-     limits: RulingLimits,
-     debug: true
+     cards: PromptRulingCard[], index: Map<string, RulingEntry[]>, limits: RulingLimits, debug: true
    ): ResolvedRulingsWithDebug;
    export function resolveRulingsForPrompt(
-     cards: PromptRulingCard[],
-     index: Map<string, RulingEntry[]>,
-     limits: RulingLimits,
-     debug?: true
+     cards: PromptRulingCard[], index: Map<string, RulingEntry[]>, limits: RulingLimits, debug?: true
    ): ResolvedRulings | ResolvedRulingsWithDebug
    ```
-
-   The implementation merges both bodies: always runs the core resolution algorithm;
-   when `debug === true`, also collects `cardsConsidered`, `cardsIncluded`,
-   `cardsSkippedNoMatch`, and `sectionTruncated`, returning a `ResolvedRulingsWithDebug`.
-
-2. Update `apps/backend/src/prompt/preparation.ts`:
-   - Remove `resolveRulingsForPromptWithDebug` from the import list.
-   - Replace the debug call (line 60) with `resolveRulingsForPrompt(..., true)`.
-
-3. Update `apps/backend/src/cardRulings.test.ts`:
-   - Remove `resolveRulingsForPromptWithDebug` from import if it was imported.
-   - Existing tests of the non-debug path require no structural changes.
-   - Add or confirm there is at least one test exercising the `debug: true` path to verify
-     debug fields are populated.
-
-4. Zero behavior changes to the resolution algorithm.
+   The body always runs the core resolution loop; when `debug === true` it also collects `cardsConsidered`, `cardsIncluded`, `cardsSkippedNoMatch`, `sectionTruncated` and returns `ResolvedRulingsWithDebug`. The non-debug path returns `{ cards, sectionChars }` exactly as today (no `debug` key).
+2. Update `prompt/preparation.ts`: drop `resolveRulingsForPromptWithDebug` from the import (`:4`); change the debug call (`:62`) to `resolveRulingsForPrompt(cardsForRulings, options.cardRulingsIndex ?? new Map(), limits, true)`; leave the non-debug call (`:90`) as-is.
+3. Update `cardRulings.test.ts`: remove any `resolveRulingsForPromptWithDebug` import; keep non-debug coverage; ensure at least one test exercises the `debug: true` path and asserts the debug fields populate.
+4. Zero behavior change to resolution output (debug and non-debug results identical to current functions for the same inputs).
 
 ## Acceptance criteria
 
-- [ ] `grep -r "resolveRulingsForPromptWithDebug" apps/backend/src/` returns no results
-- [ ] `preparation.ts` calls `resolveRulingsForPrompt(cardsForRulings, ..., true)` for the
-      debug path (manual inspect)
-- [ ] `cardRulings.test.ts` exercises the debug path at least once
-- [ ] `npm run typecheck` exits 0
-- [ ] `npm run test` exits 0
+- [ ] `grep -rn "resolveRulingsForPromptWithDebug" apps/backend/src` returns nothing
+- [ ] `preparation.ts:62` calls `resolveRulingsForPrompt(..., true)`; `:90` keeps the 3-arg call
+- [ ] `cardRulings.test.ts` exercises both the debug and non-debug paths
+- [ ] Non-debug return shape unchanged (no stray `debug` key)
+- [ ] Backend typecheck and tests green
 
 ## Verification
 
 ```bash
-grep -r "resolveRulingsForPromptWithDebug" apps/backend/src/
-# Should return 0 lines
-
-grep -n "resolveRulingsForPrompt" apps/backend/src/prompt/preparation.ts
-# Should show only one import line and two call sites (debug=true and non-debug)
-
 npm --workspace apps/backend run typecheck
 npm --workspace apps/backend run test
+grep -rn "resolveRulingsForPromptWithDebug" apps/backend/src
+grep -n "resolveRulingsForPrompt" apps/backend/src/prompt/preparation.ts
 ```
 
 ## Files touched
 
-- MOD `apps/backend/src/cardRulings.ts`
-- MOD `apps/backend/src/prompt/preparation.ts`
-- MOD `apps/backend/src/cardRulings.test.ts`
+- `apps/backend/src/cardRulings.ts`
+- `apps/backend/src/prompt/preparation.ts`
+- `apps/backend/src/cardRulings.test.ts`

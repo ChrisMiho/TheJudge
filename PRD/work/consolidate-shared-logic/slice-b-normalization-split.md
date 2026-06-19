@@ -1,77 +1,54 @@
-# Slice B — Backend module split
+# Slice B — Backend prompt module split (4-way)
 
 ## Status: planned
 
+## Blocked by: Slice A (constants module + truncation collapse must land first)
+
 ## Goal
 
-Split `apps/backend/src/prompt/normalization.ts` (470 lines, three mixed concerns) into three
-focused files — `normalization.ts` (normalization only), `promptFormatting.ts` (display
-formatting), and `promptDiagnostics.ts` (diagnostics) — updating all import sites.
+Split `apps/backend/src/prompt/normalization.ts` (485 lines, now the prompt-assembly hub) into four cohesive files, leaving `normalization.ts` a pure text/normalization + budget-constants leaf. No behavior change.
 
 ## Requirements
 
-1. Create `apps/backend/src/prompt/promptFormatting.ts` containing:
-   - `ZONE_SECTION_LABEL`, `ZONE_ITEM_LABEL` (currently private to normalization.ts)
-   - `buildPlayerDisplayNameLookup`, `formatPlayerRef`, `toPlayerLabelIndex` (lines 112–143)
-   - `formatTargets`, `formatGameContext`, `formatStackSection`, `formatNonStackZoneSections`
-     (lines 145–254)
-   - `formatList` helper (line 108–110)
-   All are currently private; export what `normalization.ts`'s `buildPromptText` calls.
+1. Create `apps/backend/src/prompt/promptFormatting.ts` with the section formatters and their private helpers:
+   `formatPlayerRef`, `buildPlayerDisplayNameLookup`, `toPlayerLabelIndex`, `formatTargets`, `formatGameContext`, `formatZoneCardMetadataLines`, `formatStackSection`, `formatNonStackZoneSections`, `formatOfficialRulingsSection`, `formatSupplementalRulesSection`, `formatConversationHistorySection`, `buildZoneScopeSentence`, `SYSTEM_ROLE_PREAMBLE_LINES`, `ZONE_SECTION_LABEL`, `ZONE_ITEM_LABEL`, plus the private `formatList`, `truncatePromptLabel`, `SUPPLEMENTAL_RULES_DISCLAIMER`. Imports: `truncateOracleText` + `MAX_*` from `./normalization.js`; `PLAYER_LABELS` + `CANONICAL_ZONE_ORDER` from `../constants.js`; types from `../cardRulings.js`, `../gameRules.js`, `../gameRulesRetrieval.js`, `../types/index.js`.
+2. Create `apps/backend/src/prompt/promptDiagnostics.ts` with: `PromptDiagnostics` type, `GetPromptDiagnosticsOptions` type, `getPromptDiagnostics`, `estimatePromptChars`. Imports `MAX_PROMPT_CHAR_BUDGET` + `PROMPT_BUDGET_NEAR_LIMIT_BUFFER` from `./normalization.js`; types from `../cardRulings.js`, `../gameRules.js`, `../gameRulesRetrieval.js`.
+3. Create `apps/backend/src/prompt/promptAssembly.ts` with `buildPromptText` + `BuildPromptTextOptions`. Imports formatters + `SYSTEM_ROLE_PREAMBLE_LINES` from `./promptFormatting.js`; `truncateConversationHistory` + `MAX_CONVERSATION_HISTORY_CHARS` from `./normalization.js`; `formatGameRulesSection` from `../gameRules.js`; `getPhaseGuidance` from `./phaseGuidance.js`; `MTG_PROMPT_REFERENCE` from `./mtgReference.js`.
+4. Reduce `apps/backend/src/prompt/normalization.ts` to a pure leaf: `normalizeWhitespace`, `truncateOracleText`, `normalizeQuestion`, `normalizeCardText`, `truncateConversationHistory`; the `MAX_*` / `EFFECTIVELY_UNLIMITED_CHARS` / `PROMPT_BUDGET_NEAR_LIMIT_BUFFER` budget consts; private `TRUNCATION_SUFFIX`. Remove the `ResolvedRulings` / `GameRulesTopic` / `RetrievedGameRule` / `PromptContext` type imports that are no longer used here.
+5. Update all import sites for moved symbols:
+   - `types/index.ts:16` — `type PromptDiagnostics` → `../prompt/promptDiagnostics.js`
+   - `prompt/preparation.ts` — `formatSupplementalRulesSection` → `./promptFormatting.js`; `getPromptDiagnostics` + `type PromptDiagnostics` → `./promptDiagnostics.js`; `buildPromptText` → `./promptAssembly.js`; keep budget consts + `truncateConversationHistory` on `./normalization.js`
+   - `eval/contextEvaluationHarness.ts` + `.test.ts`, `mockAskAi.test.ts`, `app.budget.test.ts`, `prompt/normalization.test.ts`, `prompt/context.test.ts` — repoint each imported symbol to its new file
+6. Optionally add colocated `promptFormatting.test.ts` / `promptDiagnostics.test.ts` / `promptAssembly.test.ts`; leave `normalization.test.ts` covering only the pure helpers it still owns.
 
-2. Create `apps/backend/src/prompt/promptDiagnostics.ts` containing:
-   - `estimatePromptChars` (line 308)
-   - `PromptDiagnostics` type (lines 312–327)
-   - `GetPromptDiagnosticsOptions` type (lines 329–337)
-   - `getPromptDiagnostics` function (lines 338–391)
-
-3. Trim `apps/backend/src/prompt/normalization.ts` to keep only:
-   - All `MAX_*` constants and `SYSTEM_ROLE_PREAMBLE_LINES`
-   - `normalizeWhitespace`, `truncateOracleText`, `truncatePromptLabel`, `normalizeQuestion`,
-     `normalizeCardText`, `truncateConversationHistory`, `formatConversationHistorySection`
-   - `formatOfficialRulingsSection`, `formatSupplementalRulesSection`, `buildZoneScopeSentence`
-   - `buildPromptText` (imports display helpers from `./promptFormatting.js`)
-   Add imports from `./promptFormatting.js` and remove the deleted sections.
-
-4. Update external callers — files that import `getPromptDiagnostics` or `PromptDiagnostics`
-   from `normalization.ts` must update to import from `./promptDiagnostics.js` (or
-   `../prompt/promptDiagnostics.js` from the backend root level):
-   - `apps/backend/src/prompt/normalization.test.ts` — `getPromptDiagnostics`
-   - `apps/backend/src/mockAskAi.test.ts` — `getPromptDiagnostics`
-   - `apps/backend/src/types/index.ts` — `type PromptDiagnostics`
-   - `apps/backend/src/prompt/preparation.ts` — `getPromptDiagnostics`, `type PromptDiagnostics`
-
-5. Zero behavior changes — all functions operate identically; only file boundaries change.
+**Dependency DAG (must stay acyclic):** `constants.ts` ← `normalization.ts` ← `promptFormatting.ts` / `promptDiagnostics.ts` ← `promptAssembly.ts`.
 
 ## Acceptance criteria
 
-- [ ] `apps/backend/src/prompt/promptFormatting.ts` and `promptDiagnostics.ts` exist
-- [ ] `normalization.ts` no longer contains the formatting block (lines 112–254) or the
-      diagnostics block (lines 308–391)
-- [ ] `normalization.test.ts` imports compile cleanly; `getPromptDiagnostics` is imported
-      from `./promptDiagnostics.js`
-- [ ] `types/index.ts` imports `PromptDiagnostics` from `../prompt/promptDiagnostics.js`
-- [ ] `npm run typecheck` exits 0
-- [ ] `npm run test` exits 0 (all existing normalization tests still pass)
+- [ ] `promptFormatting.ts`, `promptDiagnostics.ts`, `promptAssembly.ts` exist with the symbols above
+- [ ] `prompt/normalization.ts` contains no formatters, no diagnostics, no `buildPromptText` — only text helpers + budget constants
+- [ ] `grep -n "getPromptDiagnostics\|buildPromptText\|formatGameContext" apps/backend/src/prompt/normalization.ts` returns nothing
+- [ ] No import cycle introduced (typecheck passes; `promptAssembly` → `promptFormatting`/`normalization` only)
+- [ ] All backend source and test imports resolve to the new paths
+- [ ] Backend typecheck and tests green; prompt output byte-identical (existing snapshot/budget tests unchanged)
 
 ## Verification
 
 ```bash
-grep -n "getPromptDiagnostics\|PromptDiagnostics" apps/backend/src/prompt/normalization.ts
-# Should return 0 lines (both have moved to promptDiagnostics.ts)
-
-grep -rn "from.*normalization" apps/backend/src/ | grep -v "normalization\.ts\|normalization\.test"
-# Spot-check: remaining callers of normalization.ts should be for non-split symbols only
-
-npm run typecheck
-npm run test
+npm --workspace apps/backend run typecheck
+npm --workspace apps/backend run test
+grep -n "getPromptDiagnostics\|buildPromptText\|formatGameContext" apps/backend/src/prompt/normalization.ts
 ```
 
 ## Files touched
 
-- NEW `apps/backend/src/prompt/promptFormatting.ts`
-- NEW `apps/backend/src/prompt/promptDiagnostics.ts`
-- MOD `apps/backend/src/prompt/normalization.ts`
-- MOD `apps/backend/src/prompt/normalization.test.ts`
-- MOD `apps/backend/src/mockAskAi.test.ts`
-- MOD `apps/backend/src/types/index.ts`
-- MOD `apps/backend/src/prompt/preparation.ts`
+- `apps/backend/src/prompt/promptFormatting.ts` (new)
+- `apps/backend/src/prompt/promptDiagnostics.ts` (new)
+- `apps/backend/src/prompt/promptAssembly.ts` (new)
+- `apps/backend/src/prompt/normalization.ts`
+- `apps/backend/src/prompt/preparation.ts`
+- `apps/backend/src/types/index.ts`
+- `apps/backend/src/eval/contextEvaluationHarness.ts` + `.test.ts`
+- `apps/backend/src/mockAskAi.test.ts`, `apps/backend/src/app.budget.test.ts`
+- `apps/backend/src/prompt/normalization.test.ts`, `apps/backend/src/prompt/context.test.ts`
+- Optional new test files for the three new modules
