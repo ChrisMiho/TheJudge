@@ -5,8 +5,8 @@ import { vi } from "vitest";
 // We mock the function itself to force exceedsBudget: true, which exercises the route's
 // budget-rejection code path. This is the only way to hit the 1M budget with valid input
 // (schema caps mean a valid payload tops out at ~353K chars, well under 1M).
-vi.mock("./prompt/normalization.js", async (importOriginal) => {
-  const module = await importOriginal<typeof import("./prompt/normalization.js")>();
+vi.mock("./prompt/promptDiagnostics.js", async (importOriginal) => {
+  const module = await importOriginal<typeof import("./prompt/promptDiagnostics.js")>();
   return {
     ...module,
     getPromptDiagnostics: (...args: Parameters<typeof module.getPromptDiagnostics>) => ({

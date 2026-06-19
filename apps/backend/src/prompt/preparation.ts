@@ -1,7 +1,6 @@
 import {
   collectCardsForRulings,
   resolveRulingsForPrompt,
-  resolveRulingsForPromptWithDebug,
   type RulingEntry
 } from "../cardRulings.js";
 import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
@@ -19,12 +18,11 @@ import {
   MAX_RULING_COMMENT_CHARS,
   MAX_RULINGS_PER_CARD,
   MAX_RULINGS_SECTION_CHARS,
-  buildPromptText,
-  formatSupplementalRulesSection,
-  getPromptDiagnostics,
-  truncateConversationHistory,
-  type PromptDiagnostics
+  truncateConversationHistory
 } from "./normalization.js";
+import { formatSupplementalRulesSection } from "./promptFormatting.js";
+import { getPromptDiagnostics, type PromptDiagnostics } from "./promptDiagnostics.js";
+import { buildPromptText } from "./promptAssembly.js";
 import type { AskAiRequest, ConversationTurn, PromptContext } from "../types/index.js";
 
 export type PreparedPromptInput = {
@@ -59,7 +57,7 @@ export function preparePromptInput(request: AskAiRequest, options: PreparePrompt
   const conversationHistoryChars = truncatedHistory.reduce((sum, t) => sum + t.content.length, 0);
 
   if (options.collectEnrichmentDebug) {
-    const rulingsResult = resolveRulingsForPromptWithDebug(cardsForRulings, options.cardRulingsIndex ?? new Map(), limits);
+    const rulingsResult = resolveRulingsForPrompt(cardsForRulings, options.cardRulingsIndex ?? new Map(), limits, true);
     const supplementalResult = retrieveSupplementalRulesWithDebug(context, options.gameRulesRuleIndex ?? [], curatedRuleIds);
     const supplementalRulesSection = formatSupplementalRulesSection(supplementalResult.selected);
     const promptText = buildPromptText(context, {

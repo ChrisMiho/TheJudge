@@ -103,7 +103,6 @@ Read in this order:
 
 | Slug | Status | Summary |
 |------|--------|---------|
-| [consolidate-shared-logic](./work/consolidate-shared-logic/) | active | Remove accidentally duplicated constants, functions, and logic across apps and within backend modules |
 | [system-map-detail](./work/system-map-detail/) | ideation | Deep per-subsystem behavior prose that the shallow `sections/system-map.md` catalog links to |
 | [prompt-game-state-enrichment](./work/prompt-game-state-enrichment/) | deferred | Add `gameStateNotes` freeform game-state field and `ADDITIONAL GAME STATE` prompt section (revisit after retrieval + consolidation work) |
 

@@ -6,7 +6,7 @@ import { loadGameRulesTopics, type GameRulesTopic } from "../gameRules.js";
 import { selectGameRulesTopics } from "../gameRulesTopicSelection.js";
 import { collectCuratedRuleIds, loadGameRulesRuleIndex, retrieveSupplementalRules, type GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
 import { buildPromptContext } from "../prompt/context.js";
-import { buildPromptText } from "../prompt/normalization.js";
+import { buildPromptText } from "../prompt/promptAssembly.js";
 import type { AskAiRequest } from "../types/index.js";
 import {
   buildChecklistReport,

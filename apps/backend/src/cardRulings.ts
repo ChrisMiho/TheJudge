@@ -1,5 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
-import type { PromptContext, ZoneId } from "./types/index.js";
+import { NON_STACK_CANONICAL_ZONE_ORDER } from "./constants.js";
+import { truncateOracleText } from "./prompt/normalization.js";
+import type { PromptContext } from "./types/index.js";
 
 export type RulingEntry = {
   publishedAt: string;
@@ -35,33 +37,7 @@ export type RulingLimits = {
   maxSectionChars: number;
 };
 
-const NON_STACK_CANONICAL_ZONE_ORDER: Array<Exclude<ZoneId, "stack">> = [
-  "battlefield",
-  "hand",
-  "graveyard",
-  "exile",
-  "library",
-  "command"
-];
 const warnedLoadFailures = new Set<string>();
-
-function truncateWithSuffix(value: string, maxChars: number): string {
-  const suffix = " ...(truncated)";
-  if (value.length <= maxChars) {
-    return value;
-  }
-
-  if (maxChars <= 0) {
-    return "";
-  }
-
-  if (maxChars <= suffix.length) {
-    return suffix.slice(0, maxChars);
-  }
-
-  const maxWithoutSuffix = Math.max(0, maxChars - suffix.length);
-  return `${value.slice(0, maxWithoutSuffix)}${suffix}`;
-}
 
 function isRulingEntry(value: unknown): value is RulingEntry {
   if (typeof value !== "object" || value === null) {
@@ -155,52 +131,19 @@ export function resolveRulingsForPrompt(
   cards: PromptRulingCard[],
   index: Map<string, RulingEntry[]>,
   limits: RulingLimits
-): ResolvedRulings {
-  const resolvedCards: ResolvedRulingCard[] = [];
-  let sectionChars = 0;
-
-  for (const card of cards) {
-    const sourceRulings = index.get(card.cardId);
-    if (!sourceRulings || sourceRulings.length === 0) {
-      continue;
-    }
-
-    const rulings = sourceRulings.slice(0, limits.maxRulingsPerCard).map((ruling) => ({
-      publishedAt: ruling.publishedAt,
-      comment: truncateWithSuffix(ruling.comment, limits.maxCommentChars)
-    }));
-    const candidate = { ...card, rulings };
-    const candidateChars = [card.name, ...rulings.map((ruling) => `- ${ruling.publishedAt}: ${ruling.comment}`)].join("\n").length;
-
-    if (sectionChars + candidateChars > limits.maxSectionChars) {
-      const remainingChars = limits.maxSectionChars - sectionChars;
-      if (remainingChars > card.name.length + 1) {
-        const firstRuling = rulings[0];
-        if (firstRuling) {
-          const prefix = `- ${firstRuling.publishedAt}: `;
-          const maxCommentChars = Math.max(0, remainingChars - card.name.length - 1 - prefix.length);
-          resolvedCards.push({
-            ...card,
-            rulings: [{ ...firstRuling, comment: truncateWithSuffix(firstRuling.comment, maxCommentChars) }]
-          });
-          sectionChars = limits.maxSectionChars;
-        }
-      }
-      break;
-    }
-
-    resolvedCards.push(candidate);
-    sectionChars += candidateChars;
-  }
-
-  return { cards: resolvedCards, sectionChars };
-}
-
-export function resolveRulingsForPromptWithDebug(
+): ResolvedRulings;
+export function resolveRulingsForPrompt(
   cards: PromptRulingCard[],
   index: Map<string, RulingEntry[]>,
-  limits: RulingLimits
-): ResolvedRulingsWithDebug {
+  limits: RulingLimits,
+  debug: true
+): ResolvedRulingsWithDebug;
+export function resolveRulingsForPrompt(
+  cards: PromptRulingCard[],
+  index: Map<string, RulingEntry[]>,
+  limits: RulingLimits,
+  debug?: true
+): ResolvedRulings | ResolvedRulingsWithDebug {
   const resolvedCards: ResolvedRulingCard[] = [];
   let sectionChars = 0;
   let sectionTruncated = false;
@@ -210,17 +153,21 @@ export function resolveRulingsForPromptWithDebug(
   const cardsSkippedNoMatch: Array<{ cardId: string; name: string }> = [];
 
   for (const card of cards) {
-    cardsConsidered.push({ cardId: card.cardId, name: card.name });
+    if (debug) {
+      cardsConsidered.push({ cardId: card.cardId, name: card.name });
+    }
 
     const sourceRulings = index.get(card.cardId);
     if (!sourceRulings || sourceRulings.length === 0) {
-      cardsSkippedNoMatch.push({ cardId: card.cardId, name: card.name });
+      if (debug) {
+        cardsSkippedNoMatch.push({ cardId: card.cardId, name: card.name });
+      }
       continue;
     }
 
     const rulings = sourceRulings.slice(0, limits.maxRulingsPerCard).map((ruling) => ({
       publishedAt: ruling.publishedAt,
-      comment: truncateWithSuffix(ruling.comment, limits.maxCommentChars)
+      comment: truncateOracleText(ruling.comment, limits.maxCommentChars)
     }));
     const candidate = { ...card, rulings };
     const candidateChars = [card.name, ...rulings.map((ruling) => `- ${ruling.publishedAt}: ${ruling.comment}`)].join("\n").length;
@@ -234,9 +181,11 @@ export function resolveRulingsForPromptWithDebug(
           const maxCommentChars = Math.max(0, remainingChars - card.name.length - 1 - prefix.length);
           resolvedCards.push({
             ...card,
-            rulings: [{ ...firstRuling, comment: truncateWithSuffix(firstRuling.comment, maxCommentChars) }]
+            rulings: [{ ...firstRuling, comment: truncateOracleText(firstRuling.comment, maxCommentChars) }]
           });
-          cardsIncluded.push({ cardId: card.cardId, name: card.name, rulingCount: 1 });
+          if (debug) {
+            cardsIncluded.push({ cardId: card.cardId, name: card.name, rulingCount: 1 });
+          }
           sectionChars = limits.maxSectionChars;
         }
       }
@@ -245,13 +194,19 @@ export function resolveRulingsForPromptWithDebug(
     }
 
     resolvedCards.push(candidate);
-    cardsIncluded.push({ cardId: card.cardId, name: card.name, rulingCount: rulings.length });
+    if (debug) {
+      cardsIncluded.push({ cardId: card.cardId, name: card.name, rulingCount: rulings.length });
+    }
     sectionChars += candidateChars;
   }
 
-  return {
-    cards: resolvedCards,
-    sectionChars,
-    debug: { cardsConsidered, cardsIncluded, cardsSkippedNoMatch, sectionTruncated }
-  };
+  if (debug) {
+    return {
+      cards: resolvedCards,
+      sectionChars,
+      debug: { cardsConsidered, cardsIncluded, cardsSkippedNoMatch, sectionTruncated }
+    };
+  }
+
+  return { cards: resolvedCards, sectionChars };
 }

@@ -150,4 +150,46 @@ describe("card rulings", () => {
 
     expect(resolved.cards.map((card) => card.name)).toEqual(["Known"]);
   });
+
+  it("does not attach a debug key on the non-debug path", () => {
+    const resolved = resolveRulingsForPrompt(
+      [{ cardId: "known-id", name: "Known" }],
+      new Map([["known-id", [{ publishedAt: "2020-04-17", comment: "Known ruling." }]]]),
+      { maxRulingsPerCard: 3, maxCommentChars: 480, maxSectionChars: 1000 }
+    );
+
+    expect(resolved).not.toHaveProperty("debug");
+  });
+
+  it("collects trace on the debug path while resolving identical cards", () => {
+    const cards = [
+      { cardId: "missing-id", name: "Missing" },
+      { cardId: "known-id", name: "Known" }
+    ];
+    const index = new Map([["known-id", [{ publishedAt: "2020-04-17", comment: "Known ruling." }]]]);
+    const limits = { maxRulingsPerCard: 3, maxCommentChars: 480, maxSectionChars: 1000 };
+
+    const resolved = resolveRulingsForPrompt(cards, index, limits, true);
+
+    expect(resolved.cards.map((card) => card.name)).toEqual(["Known"]);
+    expect(resolved.debug.cardsConsidered.map((card) => card.name)).toEqual(["Missing", "Known"]);
+    expect(resolved.debug.cardsIncluded.map((card) => card.name)).toEqual(["Known"]);
+    expect(resolved.debug.cardsSkippedNoMatch.map((card) => card.name)).toEqual(["Missing"]);
+    expect(resolved.debug.sectionTruncated).toBe(false);
+  });
+
+  it("flags sectionTruncated in debug when the section budget is exceeded", () => {
+    const cards = [
+      { cardId: "first-id", name: "First" },
+      { cardId: "second-id", name: "Second" }
+    ];
+    const index = new Map([
+      ["first-id", [{ publishedAt: "2024-01-01", comment: "a".repeat(60) }]],
+      ["second-id", [{ publishedAt: "2024-01-02", comment: "b".repeat(60) }]]
+    ]);
+
+    const resolved = resolveRulingsForPrompt(cards, index, { maxRulingsPerCard: 3, maxCommentChars: 480, maxSectionChars: 80 }, true);
+
+    expect(resolved.debug.sectionTruncated).toBe(true);
+  });
 });
