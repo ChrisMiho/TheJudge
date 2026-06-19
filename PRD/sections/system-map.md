@@ -243,6 +243,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: `apps/frontend/src/components/ConversationThread.tsx`
 - Backed by: DEC-040
 
+### Frozen context summary
+
+- Status: shipped
+- Summary: Read-only compact frozen game-context summary shown above the conversation thread in the answered state, with a disclosure that expands full setup, zone, card, and enrichment detail.
+- Lives in: `apps/frontend/src/components/FrozenContextSummary.tsx`
+- Backed by: REQ-025, DEC-040
+
 ### Retry / cooldown
 
 - Status: shipped
