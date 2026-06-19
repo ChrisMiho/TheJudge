@@ -103,7 +103,6 @@ Read in this order:
 
 | Slug | Status | Summary |
 |------|--------|---------|
-| [system-map-detail](./work/system-map-detail/) | ideation | Deep per-subsystem behavior prose that the shallow `sections/system-map.md` catalog links to |
 | [prompt-game-state-enrichment](./work/prompt-game-state-enrichment/) | deferred | Add `gameStateNotes` freeform game-state field and `ADDITIONAL GAME STATE` prompt section (revisit after retrieval + consolidation work) |
 
 Completed work is promoted into `sections/` and temporary work folders are removed per `instructions/doc-lifecycle.md`.

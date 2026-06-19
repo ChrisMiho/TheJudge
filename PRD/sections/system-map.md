@@ -23,6 +23,7 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Summary: Builds the LLM prompt from game context, zones, phase guidance, MTG rules/rulings, and conversation history, within a token budget.
 - Lives in: `apps/backend/src/prompt/` (`preparation.ts`, `context.ts`, `normalization.ts`, `mtgReference.ts`, `phaseGuidance.ts`)
 - Backed by: DEC-021, DEC-025, DEC-042
+- Details: `system-map/prompt-assembly.md`
 
 ### Context normalization
 
@@ -65,6 +66,7 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Summary: Retrieves card rulings, a card-agnostic curated game-rules baseline, and relevance-scored supplemental rules text to ground prompt reasoning; System 2 (curated) and System 3 (supplemental) are tuned and measured together.
 - Lives in: `apps/backend/src/cardRulings.ts`, `gameRules.ts`, `gameRulesTopicSelection.ts`, `gameRulesRetrieval.ts`
 - Backed by: DEC-029, DEC-030, DEC-032, DEC-045, DEC-046, DEC-047, REQ-022, REQ-032
+- Details: `system-map/game-rules-retrieval.md`
 
 ### Card rulings
 
