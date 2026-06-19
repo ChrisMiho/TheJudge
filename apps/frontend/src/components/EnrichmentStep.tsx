@@ -11,6 +11,7 @@ import { useEnrichmentTargets } from "../hooks/useEnrichmentTargets";
 import type { ConversationMessage, ContextTarget, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { AskAiWaitingPanel } from "./AskAiWaitingPanel";
 import { ConversationThread } from "./ConversationThread";
+import { FrozenContextSummary } from "./FrozenContextSummary";
 
 const MAX_QUESTION_CHARS = 300;
 
@@ -379,11 +380,6 @@ export function EnrichmentStep({
   const fallbackQuestion = resolveFallbackQuestion(zones);
 
   if (isConversationActive) {
-    const frozenZones = frozenGameContext?.zones ?? {};
-    const frozenZoneSummaries = CANONICAL_ZONE_ORDER
-      .map((zone) => ({ zone, cards: frozenZones[zone] ?? [] }))
-      .filter(({ cards }) => cards.length > 0);
-
     return (
       <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
         <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 md:p-6">
@@ -391,30 +387,13 @@ export function EnrichmentStep({
             <h1 className="bg-gradient-to-r from-sky-300 to-blue-400 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
               TheJudge
             </h1>
-            <p className="text-sm text-slate-300">Stack Assistant</p>
           </header>
 
-          <h2 className="text-2xl font-semibold text-sky-300">Conversation</h2>
+          {frozenGameContext && <FrozenContextSummary frozenGameContext={frozenGameContext} />}
 
           {isSubmitting && <AskAiWaitingPanel isSubmitting={isSubmitting} />}
 
           <ConversationThread messages={visibleMessages} />
-
-          {frozenZoneSummaries.length > 0 && (
-            <div className="rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
-                Game context (frozen)
-              </p>
-              <ul className="space-y-1 text-sm text-slate-300">
-                {frozenZoneSummaries.map(({ zone, cards }) => (
-                  <li key={zone}>
-                    <span className="font-medium text-slate-200">{ZONE_LABELS[zone]}:</span>{" "}
-                    {cards.map((c) => c.name).join(", ")}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
 
           {error && (
             <div className="space-y-2 rounded-2xl border border-rose-500/40 bg-rose-950/30 p-4">

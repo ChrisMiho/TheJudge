@@ -419,15 +419,20 @@
 ### REQ-025
 - Title: Post-decrypt conversation thread
 - Priority: high
-- Description: After a successful Decrypt Stack, the enrichment step must replace the submit form with a conversation thread whose first visible message is the assistant's initial answer.
+- Description: After a successful Decrypt Stack, the enrichment step must replace the submit form with a compact answered-state layout, a read-only frozen context summary, and a conversation thread whose first visible message is the assistant's initial answer.
 - Acceptance Criteria:
   - on first decrypt success, the submit form and Decrypt Stack button are hidden
+  - answered-state header shows only **TheJudge** and omits redundant subtitle or conversation-heading copy
+  - compact read-only frozen context summary appears above the conversation thread
+  - compact summary highlights turn phase, active player when known, and populated zones with card names
+  - summary includes a disclosure arrow/control that expands to show the full frozen game context, including setup, zones, cards, and enrichment details
+  - expanded frozen context remains read-only and does not allow zone, card, or enrichment edits
   - a scrollable conversation thread is shown; first visible bubble is the assistant's answer
   - the initial user question is not shown in the thread
-  - a compact read-only context summary (frozen zone counts and card names) is visible but not editable
   - start over button is visible and enabled while no request is in flight
 - Constraints:
   - thread opens with the assistant answer only; do not show the initial user question as a visible bubble
+  - layout changes must not change request payloads, prompt assembly, answer rendering, or conversation-history behavior
 - Dependencies:
   - REQ-012
   - DEC-040
@@ -567,3 +572,26 @@
   - REQ-022
 - Notes:
   - replaces reliance on manual multi-file `prompt:preview` review as the sole relevance verification path
+
+### REQ-033
+- Title: Live response-size diagnostic logs
+- Priority: medium
+- Description: The backend must log lightweight size statistics for successful live LLM answers without changing prompt construction, frontend behavior, or the `POST /api/ask-ai` success response contract.
+- Acceptance Criteria:
+  - after a successful provider invocation, backend lifecycle logs include `correlationId`, `providerElapsedMs`, `answerChars`, `estimatedAnswerTokens`, and `charsPerTokenEstimate`
+  - `answerChars` is computed from the final `answer` string returned by the provider boundary after trimming/extraction and before the API response is sent
+  - `estimatedAnswerTokens` uses the same 4-characters-per-token estimate convention as existing mock prompt stats
+  - OpenAI/live provider success responses remain `{ answer }` only; no live `context`, `diagnostics`, `enrichmentDebug`, or response-size sidecar is returned
+  - response-size stats are not appended to the prompt, the answer text, frontend UI, or follow-up `conversationHistory`
+  - tests assert both the emitted log fields and the unchanged live-provider response body shape
+- Constraints:
+  - debug/log-only; no frontend UI changes
+  - do not depend on provider-native usage metadata
+  - do not change `AskAiRequest`, prompt assembly, or eval prompt goldens for this work
+- Dependencies:
+  - DEC-049
+  - DEC-020
+  - DEC-033
+  - backend lifecycle logging
+- Notes:
+  - mock prompt-size stats remain unchanged; this requirement adds comparable visibility for live answer size

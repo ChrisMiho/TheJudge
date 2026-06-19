@@ -329,8 +329,16 @@ Game rules prompt enrichment must:
 #### `openai`
 - live answer generation through the backend provider boundary
 - keeps `POST /api/ask-ai` request and response shapes unchanged
+- successful live answers emit log-only response-size diagnostics (`answerChars`, `estimatedAnswerTokens`, `charsPerTokenEstimate`) per DEC-049 / REQ-033
 - runtime config, env vars, and local auth: `apps/backend/src/providers/README.md`
 - confirmed provider rules: `DEC-020` in `sections/decisions.md`
+
+### Live Response Size Diagnostics
+- response-size diagnostics are computed from the final `answer` string returned by the provider boundary after provider text extraction
+- diagnostics are emitted only through backend lifecycle logs, correlated by `X-Correlation-Id`
+- diagnostics use the same 4-characters-per-token estimate convention as mock prompt stats
+- diagnostics are not included in `AskAiResponse`, prompt text, assistant answer text, frontend UI, prompt preview artifacts, or conversation history
+- provider-native usage metadata and exact billing token accounting are out of scope for this diagnostic surface
 
 ### Mock Response Rule
 - keep the same required success field as live answers: `answer` (string)

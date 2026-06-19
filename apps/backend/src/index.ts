@@ -55,6 +55,7 @@ const app = createApp({
   debugLoggingEnabled: config.debugLoggingEnabled,
   payloadLoggingEnabled: config.payloadLoggingEnabled,
   askAiProvider: createAskAiProvider(config),
+  askAiProviderMode: config.askAiProvider,
   cardRulingsIndex,
   gameRulesTopics,
   gameRulesRuleIndex,

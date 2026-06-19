@@ -122,7 +122,7 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Status: shipped
 - Summary: Hosts `POST /api/ask-ai`, validates requests with Zod, applies the error taxonomy, and exposes health + logging.
 - Lives in: `apps/backend/src/routes/askAi.ts`, `validation/askAiRequest.ts`, `errors.ts`
-- Backed by: DEC-010, DEC-013, DEC-020, DEC-038, DEC-033
+- Backed by: DEC-010, DEC-013, DEC-020, DEC-038, DEC-033, DEC-049
 
 ### `POST /api/ask-ai` route
 
@@ -151,6 +151,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Summary: Health-check route and request/response logging.
 - Lives in: `apps/backend/src/routes/health.ts`, `apps/backend/src/logging.ts`
 - Backed by: DEC-010
+
+### Live response-size diagnostics
+
+- Status: shipped
+- Summary: Logs answer-size stats for successful live LLM provider responses without returning debug sidecars or changing prompt input.
+- Lives in: `apps/backend/src/routes/askAi.ts`, `apps/backend/src/responseSizeDiagnostics.ts`, `apps/backend/src/app/createApp.ts`
+- Backed by: DEC-049, REQ-033
 
 ## Frontend staged context flow
 
@@ -235,6 +242,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Summary: Renders the multi-turn conversation thread.
 - Lives in: `apps/frontend/src/components/ConversationThread.tsx`
 - Backed by: DEC-040
+
+### Frozen context summary
+
+- Status: shipped
+- Summary: Read-only compact frozen game-context summary shown above the conversation thread in the answered state, with a disclosure that expands full setup, zone, card, and enrichment detail.
+- Lives in: `apps/frontend/src/components/FrozenContextSummary.tsx`
+- Backed by: REQ-025, DEC-040
 
 ### Retry / cooldown
 

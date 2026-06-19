@@ -1,11 +1,6 @@
 import type { PreparedPromptInput } from "./prompt/preparation.js";
 import type { AskAiResponse } from "./types/index.js";
-
-const CHARS_PER_TOKEN_ESTIMATE = 4;
-
-function estimateTokensFromChars(charCount: number): number {
-  return Math.ceil(charCount / CHARS_PER_TOKEN_ESTIMATE);
-}
+import { CHARS_PER_TOKEN_ESTIMATE, estimateTokensFromChars } from "./responseSizeDiagnostics.js";
 
 export function buildMockAnswer(preparedPrompt: PreparedPromptInput): AskAiResponse {
   const { promptText, diagnostics: promptDiagnostics } = preparedPrompt;

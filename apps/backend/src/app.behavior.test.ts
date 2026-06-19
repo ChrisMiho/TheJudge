@@ -210,4 +210,74 @@ describe("ask-ai route behavior", () => {
     expect(correlationIds.length).toBeGreaterThan(0);
     expect(new Set(correlationIds)).toEqual(new Set(["corr-test-123"]));
   });
+
+  it("logs answer-size diagnostics when provider invocation completes", async () => {
+    const events: Array<{ level: "info" | "error"; event: string; payload?: Record<string, unknown> }> = [];
+    const providerAnswer = "123456789";
+    const appWithLogger = createApp({
+      askAiProviderMode: "openai",
+      logger: {
+        info(event, payload) {
+          events.push({ level: "info", event, payload });
+        },
+        error(event, payload) {
+          events.push({ level: "error", event, payload });
+        }
+      },
+      askAiProvider: {
+        generateAnswer() {
+          return { answer: providerAnswer };
+        }
+      }
+    });
+
+    const response = await request(appWithLogger)
+      .post("/api/ask-ai")
+      .set("X-Correlation-Id", "corr-size-123")
+      .send(createAskAiRequest({ question: "Answer size check" }));
+
+    expect(response.status).toBe(200);
+    const completedEvent = events.find((entry) => entry.event === "ask_ai.provider_invocation_completed");
+    expect(completedEvent?.payload).toMatchObject({
+      correlationId: "corr-size-123",
+      providerElapsedMs: expect.any(Number),
+      answerChars: providerAnswer.length,
+      estimatedAnswerTokens: Math.ceil(providerAnswer.length / 4),
+      charsPerTokenEstimate: 4
+    });
+  });
+
+  it("omits answer-size diagnostics outside live openai provider mode", async () => {
+    const events: Array<{ level: "info" | "error"; event: string; payload?: Record<string, unknown> }> = [];
+    const appWithLogger = createApp({
+      logger: {
+        info(event, payload) {
+          events.push({ level: "info", event, payload });
+        },
+        error(event, payload) {
+          events.push({ level: "error", event, payload });
+        }
+      },
+      askAiProvider: {
+        generateAnswer() {
+          return { answer: "default provider answer" };
+        }
+      }
+    });
+
+    const response = await request(appWithLogger)
+      .post("/api/ask-ai")
+      .set("X-Correlation-Id", "corr-mock-size-123")
+      .send(createAskAiRequest({ question: "Default provider size check" }));
+
+    expect(response.status).toBe(200);
+    const completedEvent = events.find((entry) => entry.event === "ask_ai.provider_invocation_completed");
+    expect(completedEvent?.payload).toMatchObject({
+      correlationId: "corr-mock-size-123",
+      providerElapsedMs: expect.any(Number)
+    });
+    expect(completedEvent?.payload).not.toHaveProperty("answerChars");
+    expect(completedEvent?.payload).not.toHaveProperty("estimatedAnswerTokens");
+    expect(completedEvent?.payload).not.toHaveProperty("charsPerTokenEstimate");
+  });
 });

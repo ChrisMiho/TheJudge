@@ -188,6 +188,7 @@ describe("ask-ai endpoint contract", () => {
     };
 
     const appWithOpenAiProvider = createApp({
+      askAiProviderMode: "openai",
       askAiProvider: createAskAiProvider(
         readServerConfig({
           ASK_AI_PROVIDER: "openai",
@@ -204,6 +205,48 @@ describe("ask-ai endpoint contract", () => {
     expect(response.body.code).toBe("PROVIDER_UNAVAILABLE");
     expect(response.body.message).toBe("Miho is working on it");
     expect(response.body.retryAfterSeconds).toBe(13);
+  });
+
+  it("keeps live openai success responses limited to answer only", async () => {
+    const providerInputs: string[] = [];
+    const fakeOpenAiClient = {
+      responses: {
+        async create(params: { input: string }) {
+          providerInputs.push(params.input);
+          return { output_text: "Live provider answer" };
+        }
+      }
+    };
+
+    const appWithOpenAiProvider = createApp({
+      askAiProvider: createAskAiProvider(
+        readServerConfig({
+          ASK_AI_PROVIDER: "openai",
+          OPENAI_API_KEY: "sk-test",
+          OPENAI_MODEL: "gpt-4.1-mini"
+        }),
+        { openAiClient: fakeOpenAiClient }
+      )
+    });
+
+    const response = await request(appWithOpenAiProvider).post("/api/ask-ai").send(createAskAiRequest());
+
+    expect(response.status).toBe(200);
+    expect(Object.keys(response.body)).toEqual(["answer"]);
+    expect(response.body).toEqual({ answer: "Live provider answer" });
+    expect(response.body).not.toHaveProperty("context");
+    expect(response.body).not.toHaveProperty("diagnostics");
+    expect(response.body).not.toHaveProperty("enrichmentDebug");
+    expect(response.body).not.toHaveProperty("answerChars");
+    expect(response.body).not.toHaveProperty("estimatedAnswerTokens");
+    expect(response.body).not.toHaveProperty("charsPerTokenEstimate");
+    expect(response.body.answer).not.toContain("answerChars");
+    expect(response.body.answer).not.toContain("estimatedAnswerTokens");
+    expect(response.body.answer).not.toContain("charsPerTokenEstimate");
+    expect(providerInputs).toHaveLength(1);
+    expect(providerInputs[0]).not.toContain("answerChars");
+    expect(providerInputs[0]).not.toContain("estimatedAnswerTokens");
+    expect(providerInputs[0]).not.toContain("charsPerTokenEstimate");
   });
 
   it("returns validation error when zones object contains an empty array", async () => {
