@@ -10,6 +10,7 @@ import {
 } from "../lib/zoneCards";
 import { useAutocompleteKeyboard } from "../hooks/useAutocompleteKeyboard";
 import { useAutocompleteSuggestions } from "../hooks/useAutocompleteSuggestions";
+import { useScanCapture } from "../hooks/useScanCapture";
 import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { ZoneCardPicker } from "./ZoneCardPicker";
 
@@ -78,6 +79,20 @@ export function ZoneCollectionStep({
     suggestions,
     onSelect: (card) => setSelectedCard(card)
   });
+
+  const scanCapture = useScanCapture({
+    cardMetadata,
+    onScanCandidateSelected: (card) => {
+      setSelectedCard(card);
+      setSearchInput("");
+      keyboard.closeSuggestions();
+    }
+  });
+  const closeScan = scanCapture.closeScan;
+
+  useEffect(() => {
+    closeScan();
+  }, [activeZone, closeScan]);
 
   function updateZoneCards(zoneId: ZoneId, cards: ZoneCardItem[]): void {
     onZonesChange({
@@ -201,6 +216,23 @@ export function ZoneCollectionStep({
                 addButtonLabel={addButtonLabel}
                 onAddSelectedCard={handleAddSelectedCard}
                 onRemoveCard={handleRemoveCard}
+                scan={{
+                  isOpen: scanCapture.isOpen,
+                  isLoading: scanCapture.isLoading,
+                  error: scanCapture.error,
+                  cameraStatus: scanCapture.cameraStatus,
+                  isCardBack: scanCapture.isCardBack,
+                  resolvedCandidates: scanCapture.resolvedCandidates,
+                  showManualEntryPrompt: scanCapture.showManualEntryPrompt,
+                  onOpen: async () => {
+                    setSelectedCard(null);
+                    await scanCapture.openScan();
+                  },
+                  onExitToManual: scanCapture.closeScan,
+                  identify: scanCapture.identify,
+                  onCameraStatusChange: scanCapture.setCameraStatus,
+                  onAcceptCandidate: scanCapture.acceptCandidate
+                }}
               />
             )}
           </>

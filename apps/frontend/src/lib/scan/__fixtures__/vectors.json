@@ -1,0 +1,62 @@
+{
+  "phash": [
+    {
+      "input": "phash_1.rgb.bin",
+      "r": "9555aaaa2aa9aaab52aaaaa5552a6abd2556ab55a54aa955a9eaea81abd4a955",
+      "g": "981f62ea1917e6ea1517ee601193ee6c1393ec7413cbfd2432eb4f14b2eb0f10",
+      "b": "85502aa95552295552aa255f4a97156b8af75560ea9d2beb5557aaaa5551aaf6"
+    },
+    {
+      "input": "phash_2.rgb.bin",
+      "r": "9551542a556aab57a550abd55555a9527554ad55b55552a956aa56aa752aeaa9",
+      "g": "b65241ad3e56c1a93c56cba93c568be96d35aac04d3fb2804d7f3890c76f3894",
+      "b": "85552aaa55542a6a56b52d5a56a52fc656eaa5550aaa5554baadaafa5555aaaa"
+    },
+    {
+      "input": "phash_3.rgb.bin",
+      "r": "9550562b54a8554aaad56aaafaf5a95562ad56ab5555aaa950aa554aaa5d573a",
+      "g": "dd692a96156bee911b6ee8991b6ee1913f6ec190266ed1106fef181066df9830",
+      "b": "850a2aa7557baa5554aa2d554aa715680a153fe9d99a1d15aeaa7555eaba2d6c"
+    }
+  ],
+  "autoLevels": {
+    "input": "autolevels_in.rgb.bin",
+    "expectedOutput": "autolevels_out.rgb.bin"
+  },
+  "identify": {
+    "db": [
+      {
+        "id": "card_10",
+        "hash": "955455aa8aaaaaaad55455a855545575aaaaaff5aaaaaaaaaa56a8ee54555507ba6d34fe917b4f87110c36bbda011a7828c63eb8a6e556be26b294ad792920f280287af9905c57f6b69d1fc5ecb302f86d8a4d20936e5555ab0e70b9e564f590"
+      },
+      {
+        "id": "card_11",
+        "hash": "95552aaa555555f2aaaaaaaa5575aaaa5544556a836ad155ad55aad5d5552aaa9f5647d7857d1fda95cc16e00c6277a80865291142295cd475fb759c2ec2363f88b04ba37cba3fb013ba372dff766e69565460d22f41409e680e66ad5133a3e6"
+      },
+      {
+        "id": "card_12",
+        "hash": "95545555a8ab54aaaaaa2c5554ae56aab56aaad555ab555caaa9aaaaaac6aa95e78e4725d294467b23145e93e60e7f10b3626c9c451a5531ec9c33df97cb5348a8881cc59fc47a18671373409232346dd7850dff8f74af35192f7c88f2d03f4e"
+      }
+    ],
+    "query": "card_10.rgb.bin",
+    "topN": 3,
+    "expected": {
+      "matched": true,
+      "was_rotated": false,
+      "candidates": [
+        {
+          "card_id": "card_10",
+          "distance": 2
+        },
+        {
+          "card_id": "card_11",
+          "distance": 125.33333333333333
+        },
+        {
+          "card_id": "card_12",
+          "distance": 128
+        }
+      ]
+    }
+  }
+}

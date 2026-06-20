@@ -692,3 +692,34 @@
   - DEC-052
 - Notes:
   - performance budgets (NFR-010) are measured during this phase
+
+### REQ-039
+- Title: Resumable, budget-bounded fingerprint-library build (default), with non-destructive fresh rebuild
+- Priority: medium
+- Description: Make `scripts/build-card-hashes.mjs` resumable by default: the no-flag run uses the existing (or in-progress partial) `cardhashes.bin` as the record of already-fingerprinted entries, downloads only missing card images to a transient temp path, hashes them with the shared `recipe.ts`, deletes each image immediately, and rewrites the bin + manifest — so the full gameplay-card corpus can be fingerprinted across many short, bounded, resumable runs without retaining the full image corpus. A from-scratch rebuild is opt-in via `--fresh` and is non-destructive: it writes a new file and never deletes or overwrites the live bin.
+- Acceptance Criteria:
+  - the default (no-flag) run diffs the filtered Scryfall printing ids (same `shouldIncludeScanPrinting` filter) against the existing/partial bin and downloads only missing entries to a transient temp path that is deleted per image immediately after hashing; a cold start with no existing bin runs against an empty diff with no special flag
+  - hashing uses the existing shared `cropRegionA` + `phashRegionPacked` recipe (no second resize/hash implementation); the emitted bin still round-trips byte-identical through `readDb` (REQ-034 / DEC-051 parity preserved)
+  - `--fresh` builds from scratch ignoring the existing bin and writes to a separate new output file (default a sibling such as `cardhashes.fresh.bin` + matching manifest); it does not delete or overwrite the live `cardhashes.bin` and refuses to clobber an existing target unless explicitly directed (`--output <path>` and/or `--force`)
+  - every bin/manifest write (default checkpoint and `--fresh`) is atomic (temp file then rename) so a killed or interrupted run cannot corrupt or truncate the live bin
+  - `--limit N` and `--max-minutes M` are both optional and may be used independently or together; with both set the run stops at whichever ceiling is reached first; with neither set the run continues to completion; a budget stop finishes the in-flight entry, then checkpoints before exit
+  - a valid partial bin + manifest is checkpointed every K newly hashed entries and on every clean budget-stop; a re-run resumes losslessly by diffing against the partial; entries are processed in a stable id order
+  - per-image downloads are paced for Scryfall politeness (fixed inter-request delay, ~50–100ms Scryfall guideline, `--rate-ms` override) with bounded retry-and-backoff on `429`/`5xx`/network errors honoring `Retry-After`
+  - a per-image download/hash failure logs and skips without aborting the run; the entry stays missing and is retried next run; only permanent failures (`404`, decode/dimension) count toward parking while transient failures (`429`/`5xx`/network, retries exhausted) do not; a sidecar skip-list (`apps/frontend/public/data/cardhashSkiplist.json`) tracks attempt counts and parks an entry after N attempts; `--retry-parked` re-includes parked entries
+  - merge is append-only (no pruning); an unsupported bin version is rejected before any rewrite; `<id>`, `<id>__back`, and `_card_back` are treated as distinct entry ids
+  - npm alias `data:scan-fingerprints` runs the default resumable build and prints a labeled progress readout (total target, already fingerprinted, done this run, remaining, parked, rough ETA) at start and end; `data:scan-fingerprints:fresh` runs the non-destructive `--fresh` rebuild; the prior `data:scan-hashes` alias is reconciled (repointed or retired)
+  - run documentation exists in the root `README.md` and the script `--help`: it states that the default (via `data:scan-fingerprints`) resumes and extends the existing bin and is the normal day-to-day path, that `--fresh` rebuilds into a new file without touching the live bin, and explains the budget flags, resume/checkpoint and atomic-write safety, skip-list/parking with `--retry-parked`, and the human-approval network posture
+- Constraints:
+  - the transient download path must never be the retained image cache dir
+  - `--fresh` must never delete or overwrite the live `cardhashes.bin` implicitly
+  - no change to the shipped artifact format/size (`CARDHSH1` v1, ~14 MB), the runtime scanner, `loadHashDb.ts`, `recipe.ts`, the `dbformat.ts` round-trip, or DEC-051 parity
+  - every run downloads images and therefore requires explicit human approval = the operator running the command; no scheduled/automated/CI refresh is added
+  - per-image downloads must be paced and back off on `429`/`5xx` (honoring `Retry-After`) so a long multi-thousand-image run does not overload Scryfall or get the operator rate-limited; downloads are sequential (no added concurrency)
+  - checkpoint cadence K, parking-attempt threshold N, and the rate-limit pace are outcome-validated calibration constants, not product open questions
+- Dependencies:
+  - REQ-035
+  - DEC-051
+  - DEC-054
+- Notes:
+  - a future recipe/geometry change still forces a full re-download/re-hash
+  - this realizes the `cardhashes.bin` production build deferred in `cardomancer-card-detection-summary` Slice B

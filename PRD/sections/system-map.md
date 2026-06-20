@@ -55,7 +55,7 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 
 ### `gameStateNotes` / `ADDITIONAL GAME STATE`
 
-- Status: planned
+- Status: shipped
 - Summary: Optional freeform global game-state note rendered as an `ADDITIONAL GAME STATE` prompt section between general context and phase guidance; decided and documented, no code under `apps/` yet.
 - Lives in: (planned) `apps/backend/src/prompt/` + `GameContext` request shape
 - Backed by: DEC-043, REQ-031
@@ -238,10 +238,10 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 
 ### Fingerprint library build
 
-- Status: planned
-- Summary: Offline build that generates `cardhashes.bin` + manifest from Scryfall images using the same TS recipe; human-approved image download; lazy-loaded on first scan.
-- Lives in: (planned) `scripts/` + `apps/frontend/public/data/cardhashes.bin`
-- Backed by: REQ-035, DEC-051
+- Status: shipped
+- Summary: Offline build that generates `cardhashes.bin` + manifest from Scryfall images using the same TS recipe; human-approved image download; lazy-loaded on first scan. Resumable by default (`data:scan-fingerprints`): uses the bin as memory, downloads only missing images to a transient path, hashes and discards them immediately, bounded per run by optional `--limit`/`--max-minutes` budgets with atomic checkpoint/resume, rate-limited (paced + `429`/`5xx` backoff) downloads, and a capped skip-list — so the full corpus is built over many short daily runs without retaining the ~100 GB image corpus or overloading Scryfall. A from-scratch rebuild is opt-in via `--fresh` and is non-destructive (writes a new file, never deletes/overwrites the live bin).
+- Lives in: `scripts/build-card-hashes.mjs` + `apps/frontend/public/data/cardhashes.bin` + sidecar `cardhashSkiplist.json`
+- Backed by: REQ-035, REQ-039, DEC-051, DEC-054
 
 ### Scan-to-metadata resolver
 
