@@ -1,0 +1,47 @@
+name: Deploy AWS
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCOUNT_ID: "979135883660"
+      AWS_REGION: us-east-1
+      AWS_S3_BUCKET: thejudge-web-979135883660
+      AWS_LAMBDA_FUNCTION_NAME: thejudge-api
+      AWS_CLOUDFRONT_COMMENT: thejudge-web
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install packaging tools
+        run: sudo apt-get update && sudo apt-get install -y zip
+
+      - name: Build project
+        run: npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::979135883660:role/thejudge-github-deploy
+          aws-region: us-east-1
+
+      - name: Deploy
+        run: bash scripts/aws-deploy.sh
