@@ -59,10 +59,12 @@
 
 ### NFR-008
 - Title: Extensibility for future scanning support
-- Description: The codebase should leave room for future card scanning without requiring the core product to implement it.
+- Description: The codebase should leave room for card scanning without requiring the core product loop to implement it.
 - Constraints:
-  - no scanning implementation in the core product
+  - no scanning implementation inside the core product loop
   - card metadata organization should remain reusable
+- Notes:
+  - the "future scanning" intent is now realized as a scoped, optional, frontend-only feature outside the core loop (DEC-050); its performance budgets live in NFR-010
 
 ### NFR-009
 - Title: Local prompt preview developer workflow
@@ -85,3 +87,20 @@
 - Notes:
   - enrichment debug collection runs only when `ASK_AI_PROVIDER=mock`
   - artifact shapes documented in `sections/integrations-and-data.md` § Delivery Strategy
+
+### NFR-010
+- Title: Card scanning performance and footprint
+- Description: Optional card scanning must stay fast and lightweight on mobile and must not cost users who never scan.
+- Constraints:
+  - the fingerprint library and bridge artifacts are lazy-loaded only on first scan; app startup is unaffected for non-scanning users
+  - identification should feel near-instant on a mid-range mobile device (target a fraction of a second per identify)
+  - `cardhashes.bin` size, lazy-load time, memory use, and match latency are measured on a representative device and recorded as acceptance evidence
+  - continuous auto-scan degrades gracefully (throttle / drop frames) rather than freezing the UI on slower devices
+- Dependencies:
+  - DEC-050
+  - DEC-051
+  - REQ-035
+  - REQ-037
+  - REQ-038
+- Notes:
+  - relates to NFR-001 (mobile-first) and NFR-002 (fast interaction loop); scanning is an optional input and does not change core-loop latency metrics

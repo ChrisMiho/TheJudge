@@ -1,8 +1,25 @@
 import type { KeyboardEvent } from "react";
 import { CardSelectionPreview } from "./CardSelectionPreview";
+import { ScanCameraSurface, type ScanCameraStatus } from "./ScanCameraSurface";
+import type { IdentifyResult, RgbImage } from "../lib/scan/types";
 import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { formatPlayerDisplayLabel } from "../lib/playerLabels";
 import { ZONE_LABELS } from "../lib/zoneLabels";
+
+type ZoneCardPickerScanProps = {
+  isOpen: boolean;
+  isLoading: boolean;
+  error: string | null;
+  cameraStatus: ScanCameraStatus;
+  isCardBack: boolean;
+  resolvedCandidates: CardMetadataItem[];
+  showManualEntryPrompt: boolean;
+  onOpen: () => void | Promise<void>;
+  onExitToManual: () => void;
+  identify: (image: RgbImage) => IdentifyResult | Promise<IdentifyResult>;
+  onCameraStatusChange: (status: ScanCameraStatus) => void;
+  onAcceptCandidate: (card: CardMetadataItem) => void;
+};
 
 type ZoneCardPickerProps = {
   zoneId: ZoneId;
@@ -25,6 +42,7 @@ type ZoneCardPickerProps = {
   addButtonLabel: string;
   onAddSelectedCard: () => void;
   onRemoveCard: (cardId: string) => void;
+  scan?: ZoneCardPickerScanProps;
 };
 
 function formatStackPosition(index: number, total: number): string {
@@ -60,8 +78,12 @@ export function ZoneCardPicker({
   selectedCard,
   addButtonLabel,
   onAddSelectedCard,
-  onRemoveCard
+  onRemoveCard,
+  scan
 }: ZoneCardPickerProps): JSX.Element {
+  const isScanOpen = scan?.isOpen ?? false;
+  const showRankedScanCandidates = Boolean(scan?.isOpen && scan.resolvedCandidates.length > 1 && !selectedCard);
+
   return (
     <div className="space-y-4">
       {zoneId === "stack" && (
@@ -72,17 +94,101 @@ export function ZoneCardPicker({
 
       <label className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
         {`${ZONE_LABELS[zoneId]} search`}
-        <input
-          aria-label={`${ZONE_LABELS[zoneId]} search input`}
-          value={searchInput}
-          onChange={(event) => onSearchInputChange(event.target.value)}
-          onKeyDown={onSearchKeyDown}
-          className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
-          placeholder="Type to begin"
-        />
+        <span className="mt-2 grid gap-2 normal-case tracking-normal sm:grid-cols-[1fr_auto] sm:items-center">
+          <input
+            aria-label={`${ZONE_LABELS[zoneId]} search input`}
+            value={searchInput}
+            onChange={(event) => onSearchInputChange(event.target.value)}
+            onKeyDown={onSearchKeyDown}
+            className="w-full rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2 text-sm"
+            placeholder="Type to begin"
+          />
+          {scan && (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.preventDefault();
+                void scan.onOpen();
+              }}
+              className="rounded-xl border border-emerald-400/70 bg-emerald-500/15 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-500/25"
+            >
+              Scan
+            </button>
+          )}
+        </span>
       </label>
 
-      {showSuggestions && (
+      {isScanOpen && scan && (
+        <div className="space-y-3 rounded-2xl border border-slate-700/70 bg-slate-900/55 p-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Scan card</p>
+            <button
+              type="button"
+              onClick={scan.onExitToManual}
+              className="rounded-lg border border-slate-600 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-slate-800"
+            >
+              Exit scan
+            </button>
+          </div>
+          {scan.isLoading ? (
+            <p className="rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-2 text-sm text-slate-300">
+              Loading scan data...
+            </p>
+          ) : (
+            <ScanCameraSurface
+              onCapture={() => undefined}
+              identify={scan.identify}
+              onStatusChange={scan.onCameraStatusChange}
+              autoScanFps={3}
+            />
+          )}
+          {scan.error && (
+            <p className="rounded-xl border border-red-500/50 bg-red-950/40 px-3 py-2 text-sm text-red-100">
+              {scan.error}
+            </p>
+          )}
+          {scan.isCardBack && (
+            <p className="rounded-xl border border-amber-400/60 bg-amber-500/15 px-3 py-2 text-sm text-amber-100">
+              Flip the card over.
+            </p>
+          )}
+          {showRankedScanCandidates && (
+            <div className="rounded-xl border border-slate-600 bg-slate-800/70 p-2">
+              <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
+                Pick the scanned card
+              </p>
+              <ul className="flex flex-col gap-1">
+                {scan.resolvedCandidates.map((card) => (
+                  <li key={`scan-${zoneId}-${card.cardId}`}>
+                    <button
+                      type="button"
+                      onClick={() => scan.onAcceptCandidate(card)}
+                      className="w-full rounded-lg px-2 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-700 hover:text-sky-300"
+                    >
+                      {card.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {scan.showManualEntryPrompt && (
+            <div className="flex flex-col gap-2 rounded-xl border border-cyan-500/40 bg-cyan-950/40 px-3 py-2 text-sm text-cyan-100 sm:flex-row sm:items-center sm:justify-between">
+              <span>Still no confident scan match. Manual search is available.</span>
+              <button
+                type="button"
+                onClick={scan.onExitToManual}
+                className="rounded-lg border border-cyan-400/70 px-3 py-1.5 text-xs font-semibold text-cyan-100 transition hover:bg-cyan-500/15"
+              >
+                Use manual search
+              </button>
+            </div>
+          )}
+          <p className="text-xs text-slate-400">{`Camera: ${scan.cameraStatus}`}</p>
+        </div>
+      )}
+
+      {!isScanOpen && showSuggestions && (
         <div className="rounded-xl border border-slate-600 bg-slate-800/70 p-2">
           {isMetadataLoading ? (
             <p className="px-2 py-1 text-sm text-slate-400">Loading cards...</p>

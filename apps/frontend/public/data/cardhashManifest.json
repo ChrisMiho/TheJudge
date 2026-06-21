@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "count": 97311,
+  "sourceSnapshot": {
+    "path": "apps/frontend/data/scryfall/default-cards.json",
+    "sha256": "07f75dcce6c54d21c7b8ed1c679cd6b78e5fce459e13e385a64db670c76430e6"
+  },
+  "byteSize": 13047744,
+  "generatedAt": "2026-06-20T02:13:32.761Z"
+}

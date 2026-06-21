@@ -1,0 +1,62 @@
+{
+  "399bf36a-5901-437f-b5d3-32283cedbbcb": {
+    "attempts": 1,
+    "parked": false,
+    "lastError": "Could not download https://cards.scryfall.io/png/front/3/9/399bf36a-5901-437f-b5d3-32283cedbbcb.png?1774780385: 404 "
+  },
+  "399bf36a-5901-437f-b5d3-32283cedbbcb__back": {
+    "attempts": 1,
+    "parked": false,
+    "lastError": "Could not download https://cards.scryfall.io/png/back/3/9/399bf36a-5901-437f-b5d3-32283cedbbcb.png?1774780385: 404 "
+  },
+  "40a01679-3224-427e-bd1d-b797b0ab68b7": {
+    "attempts": 1,
+    "parked": false,
+    "lastError": "Expected canonical 745x1040 PNG, got 1040x1490: /var/folders/2l/zg6lb1z54wb67_vgvz_w5z700000gn/T/cardhash-build-uffMBc/40a01679-3224-427e-bd1d-b797b0ab68b7.png"
+  },
+  "4fbb0db6-6f10-4231-8a7c-6fc15cbe54a6__back": {
+    "attempts": 1,
+    "parked": false,
+    "lastError": "Could not download https://cards.scryfall.io/png/back/4/f/4fbb0db6-6f10-4231-8a7c-6fc15cbe54a6.png?1770843985: 404 "
+  },
+  "96d67007-109a-4150-895c-560364a4d8a3": {
+    "attempts": 1,
+    "parked": false,
+    "lastError": "Could not download https://cards.scryfall.io/png/front/9/6/96d67007-109a-4150-895c-560364a4d8a3.png?1770844093: 404 "
+  },
+  "ac33334d-54ef-4cc5-9ade-3f492a4618cb": {
+    "attempts": 1,
+    "parked": false,
+    "lastError": "Could not download https://cards.scryfall.io/png/front/a/c/ac33334d-54ef-4cc5-9ade-3f492a4618cb.png?1769126047: 404 "
+  },
+  "b8c7b8e9-2eac-4a60-a21e-0e2433969c1b": {
+    "attempts": 1,
+    "parked": false,
+    "lastError": "Could not download https://cards.scryfall.io/png/front/b/8/b8c7b8e9-2eac-4a60-a21e-0e2433969c1b.png?1769126004: 404 "
+  },
+  "bda9ad99-cff6-4a9b-9c10-ed123e7d7619__back": {
+    "attempts": 1,
+    "parked": false,
+    "lastError": "Could not download https://cards.scryfall.io/png/back/b/d/bda9ad99-cff6-4a9b-9c10-ed123e7d7619.png?1770844029: 404 "
+  },
+  "be117bfa-63d3-4b0f-8289-8d3a7788cc5f__back": {
+    "attempts": 1,
+    "parked": false,
+    "lastError": "Could not download https://cards.scryfall.io/png/back/b/e/be117bfa-63d3-4b0f-8289-8d3a7788cc5f.png?1779245093: 404 "
+  },
+  "be7e9b54-c74e-408c-bc0d-4ce18409b5af__back": {
+    "attempts": 1,
+    "parked": false,
+    "lastError": "Could not download https://cards.scryfall.io/png/back/b/e/be7e9b54-c74e-408c-bc0d-4ce18409b5af.png?1770843963: 404 "
+  },
+  "ddbbefa0-74c7-4095-a22d-ed38a956408f": {
+    "attempts": 1,
+    "parked": false,
+    "lastError": "Could not download https://cards.scryfall.io/png/front/d/d/ddbbefa0-74c7-4095-a22d-ed38a956408f.png?1770844129: 404 "
+  },
+  "ddbbefa0-74c7-4095-a22d-ed38a956408f__back": {
+    "attempts": 1,
+    "parked": false,
+    "lastError": "Could not download https://cards.scryfall.io/png/back/d/d/ddbbefa0-74c7-4095-a22d-ed38a956408f.png?1770844129: 404 "
+  }
+}

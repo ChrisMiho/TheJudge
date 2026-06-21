@@ -55,7 +55,7 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 
 ### `gameStateNotes` / `ADDITIONAL GAME STATE`
 
-- Status: planned
+- Status: shipped
 - Summary: Optional freeform global game-state note rendered as an `ADDITIONAL GAME STATE` prompt section between general context and phase guidance; decided and documented, no code under `apps/` yet.
 - Lives in: (planned) `apps/backend/src/prompt/` + `GameContext` request shape
 - Backed by: DEC-043, REQ-031
@@ -221,6 +221,48 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Summary: Builds zone-card items from selected metadata for the context flow.
 - Lives in: `apps/frontend/src/lib/zoneCards.ts`
 - Backed by: DEC-012
+
+## Card scanning
+
+- Status: planned
+- Summary: Optional on-device camera scanner that identifies a Magic card by artwork (perceptual hash → ranked candidates) and adds it to a zone via the existing add path; frontend-only, zero network calls, no backend/API/prompt change. Decided and documented, no code under `apps/` yet.
+- Lives in: (planned) `apps/frontend/src/` scan module + camera UI in `ZoneCardPicker.tsx`; build script under `scripts/`; artifacts under `apps/frontend/public/data/`
+- Backed by: DEC-050, DEC-051, DEC-052, DEC-053, REQ-034, REQ-035, REQ-036, REQ-037, REQ-038, NFR-010
+
+### Identification core
+
+- Status: planned
+- Summary: Single authoritative TS perceptual-hash + matching module (DB reader, auto-levels, Region A pHash, two-orientation match, card-back rejection, ranked candidates), validated byte-for-byte against regenerated golden vectors.
+- Lives in: (planned) `apps/frontend/src/` scan module; vectors under test fixtures
+- Backed by: REQ-034, DEC-051, DEC-053
+
+### Fingerprint library build
+
+- Status: shipped
+- Summary: Offline build that generates `cardhashes.bin` + manifest from Scryfall images using the same TS recipe; human-approved image download; lazy-loaded on first scan. Resumable by default (`data:scan-fingerprints`): uses the bin as memory, downloads only missing images to a transient path, hashes and discards them immediately, bounded per run by optional `--limit`/`--max-minutes` budgets with atomic checkpoint/resume, rate-limited (paced + `429`/`5xx` backoff) downloads, and a capped skip-list — so the full corpus is built over many short daily runs without retaining the ~100 GB image corpus or overloading Scryfall. A from-scratch rebuild is opt-in via `--fresh` and is non-destructive (writes a new file, never deletes/overwrites the live bin).
+- Lives in: `scripts/build-card-hashes.mjs` + `apps/frontend/public/data/cardhashes.bin` + sidecar `cardhashSkiplist.json`
+- Backed by: REQ-035, REQ-039, DEC-051, DEC-054
+
+### Scan-to-metadata resolver
+
+- Status: planned
+- Summary: Maps ranked printing-id candidates → oracle id → existing `CardMetadataItem`, collapsing duplicates by best distance and dropping unresolvable candidates.
+- Lives in: (planned) `apps/frontend/src/` scan resolver + `public/data/` bridge artifact
+- Backed by: REQ-036, DEC-053
+
+### Camera capture & detector
+
+- Status: planned
+- Summary: Live camera capture with card-shaped overlay; detects and perspective-warps the card to the canonical image; continuous auto-scan plus manual tap fallback; outcome-validated tuning.
+- Lives in: (planned) `apps/frontend/src/` camera/detector module
+- Backed by: REQ-037, DEC-052
+
+### Scan UX in zone picker
+
+- Status: planned
+- Summary: Scan entry point beside manual search; batch scan → Accept → re-scan loop; card-back and low-confidence handling; feeds the existing preview/add/owner/duplicate-block/stack-limit flow unchanged.
+- Lives in: (planned) `apps/frontend/src/components/ZoneCardPicker.tsx`
+- Backed by: REQ-038, DEC-052
 
 ## Follow-up chat
 

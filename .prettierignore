@@ -7,5 +7,6 @@ package-lock.json
 PRD
 apps/frontend/data/scryfall/default-cards.json
 apps/frontend/public/data/cardMetadata.json
+apps/frontend/public/data/cardScanMap.json
 apps/backend/data/cardRulingsByOracleId.json
 apps/backend/src/eval/fixtures/*.context.golden.json

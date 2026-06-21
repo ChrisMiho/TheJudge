@@ -1,0 +1,192 @@
+import { act, renderHook } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import type { CardScanMap } from "../lib/scan/resolveScanCandidates";
+import type { HashDb, IdentifyResult, RgbImage } from "../lib/scan/types";
+import type { CardMetadataItem } from "../types";
+import { LOW_CONFIDENCE_ESCALATION_COUNT, useScanCapture } from "./useScanCapture";
+
+function makeCard(cardId: string, name: string): CardMetadataItem {
+  return {
+    cardId,
+    name,
+    oracleText: `${name} text`,
+    imageUrl: "",
+    manaCost: "",
+    manaValue: 0,
+    typeLine: "Instant",
+    colors: [],
+    supertypes: [],
+    subtypes: []
+  };
+}
+
+const image: RgbImage = { width: 1, height: 1, data: new Uint8Array([0, 0, 0]) };
+const db: HashDb = { ids: [], hashes: new Uint8Array(), count: 0 };
+const scanMap: CardScanMap = {
+  "printing-opt": { oracleId: "opt", name: "Opt" },
+  "printing-bolt": { oracleId: "lightning-bolt", name: "Lightning Bolt" }
+};
+const cardMetadata = [makeCard("opt", "Opt"), makeCard("lightning-bolt", "Lightning Bolt")];
+
+function makeIdentifier(result: IdentifyResult, back = { isBack: false, distance: 999 }) {
+  return {
+    isCardBack: vi.fn(() => back),
+    identify: vi.fn(() => result)
+  };
+}
+
+describe("useScanCapture", () => {
+  it("lazily loads scan resources once when scan mode opens", async () => {
+    const identifier = makeIdentifier({ matched: false, was_rotated: false, candidates: [] });
+    const loadHashDb = vi.fn(async () => db);
+    const loadScanMap = vi.fn(async () => scanMap);
+    const createIdentifier = vi.fn(() => identifier);
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected: vi.fn(),
+        dependencies: { loadHashDb, loadScanMap, createIdentifier }
+      })
+    );
+
+    expect(loadHashDb).not.toHaveBeenCalled();
+    expect(loadScanMap).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await result.current.openScan();
+    });
+    await act(async () => {
+      await result.current.closeScan();
+      await result.current.openScan();
+    });
+
+    expect(result.current.isOpen).toBe(true);
+    expect(loadHashDb).toHaveBeenCalledTimes(1);
+    expect(loadScanMap).toHaveBeenCalledTimes(1);
+    expect(createIdentifier).toHaveBeenCalledTimes(1);
+  });
+
+  it("detects card backs before identifying and keeps scanning without candidates", async () => {
+    const identifier = makeIdentifier(
+      { matched: true, was_rotated: false, candidates: [{ card_id: "printing-opt", distance: 1 }] },
+      { isBack: true, distance: 3 }
+    );
+    const onScanCandidateSelected = vi.fn();
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected,
+        dependencies: {
+          loadHashDb: vi.fn(async () => db),
+          loadScanMap: vi.fn(async () => scanMap),
+          createIdentifier: vi.fn(() => identifier)
+        }
+      })
+    );
+
+    let identifyResult: IdentifyResult | undefined;
+    await act(async () => {
+      await result.current.openScan();
+      identifyResult = await result.current.identify(image);
+    });
+
+    expect(identifier.isCardBack).toHaveBeenCalledWith(image);
+    expect(identifier.identify).not.toHaveBeenCalled();
+    expect(identifyResult).toEqual({ matched: false, was_rotated: false, candidates: [] });
+    expect(result.current.isCardBack).toBe(true);
+    expect(result.current.resolvedCandidates).toEqual([]);
+    expect(onScanCandidateSelected).not.toHaveBeenCalled();
+  });
+
+  it("resolves matched candidates and auto-selects a single resolved card for the existing preview", async () => {
+    const identifier = makeIdentifier({
+      matched: true,
+      was_rotated: false,
+      candidates: [{ card_id: "printing-opt", distance: 7 }]
+    });
+    const onScanCandidateSelected = vi.fn();
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected,
+        dependencies: {
+          loadHashDb: vi.fn(async () => db),
+          loadScanMap: vi.fn(async () => scanMap),
+          createIdentifier: vi.fn(() => identifier)
+        }
+      })
+    );
+
+    await act(async () => {
+      await result.current.openScan();
+      await result.current.identify(image);
+    });
+
+    expect(result.current.resolvedCandidates.map((card) => card.name)).toEqual(["Opt"]);
+    expect(onScanCandidateSelected).toHaveBeenCalledWith(cardMetadata[0]);
+    expect(result.current.showManualEntryPrompt).toBe(false);
+  });
+
+  it("keeps multiple resolved candidates for user selection before previewing", async () => {
+    const identifier = makeIdentifier({
+      matched: true,
+      was_rotated: false,
+      candidates: [
+        { card_id: "printing-bolt", distance: 5 },
+        { card_id: "printing-opt", distance: 8 }
+      ]
+    });
+    const onScanCandidateSelected = vi.fn();
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected,
+        dependencies: {
+          loadHashDb: vi.fn(async () => db),
+          loadScanMap: vi.fn(async () => scanMap),
+          createIdentifier: vi.fn(() => identifier)
+        }
+      })
+    );
+
+    await act(async () => {
+      await result.current.openScan();
+      await result.current.identify(image);
+    });
+
+    expect(result.current.resolvedCandidates.map((card) => card.name)).toEqual(["Lightning Bolt", "Opt"]);
+    expect(onScanCandidateSelected).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.acceptCandidate(cardMetadata[1]);
+    });
+
+    expect(onScanCandidateSelected).toHaveBeenCalledWith(cardMetadata[1]);
+    expect(result.current.resolvedCandidates).toEqual([]);
+  });
+
+  it("shows the manual-entry prompt after consecutive low-confidence captures", async () => {
+    const identifier = makeIdentifier({ matched: false, was_rotated: false, candidates: [] });
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected: vi.fn(),
+        dependencies: {
+          loadHashDb: vi.fn(async () => db),
+          loadScanMap: vi.fn(async () => scanMap),
+          createIdentifier: vi.fn(() => identifier)
+        }
+      })
+    );
+
+    await act(async () => {
+      await result.current.openScan();
+      for (let index = 0; index < LOW_CONFIDENCE_ESCALATION_COUNT; index++) {
+        await result.current.identify(image);
+      }
+    });
+
+    expect(result.current.showManualEntryPrompt).toBe(true);
+    expect(result.current.isOpen).toBe(true);
+  });
+});

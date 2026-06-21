@@ -595,3 +595,131 @@
   - backend lifecycle logging
 - Notes:
   - mock prompt-size stats remain unchanged; this requirement adds comparable visibility for live answer size
+
+### REQ-034
+- Title: On-device card identification core (parity-critical)
+- Priority: high
+- Description: Port the Cardomancer art-identification core to TypeScript as a single authoritative module that, given a canonical 745×1040 card image, returns a ranked candidate list, fully on-device with no network calls.
+- Acceptance Criteria:
+  - implements the binary `cardhashes.bin` reader, query-only auto-levels (per-channel black-point stretch), Region A crop `(30,105,715,520)`, the canonical per-channel DCT perceptual hash (64×64 resize → DCT-II → top-left 16×16 → median including DC → `>median` row-major → 32 bytes MSB-first per channel), both-orientation (0°/180°) matching, mean R/G/B Hamming distance on a 0..256 scale, match threshold 120, card-back rejection threshold 100, and `__back` suffix stripping
+  - exposes the resize + hash "recipe" as a reusable export consumed by the library builder (REQ-035)
+  - golden-vector parity tests run under `npm test` (Vitest) and pass: DB load (ids/count/byte lengths), pHash byte-for-byte, auto-levels pixel-for-pixel, end-to-end identify (candidate order, ids, distances, `matched`, `was_rotated`)
+  - golden vectors are regenerated from this module's recipe (DEC-051) and committed as the regression fixtures
+- Constraints:
+  - no network calls and no camera dependency in this core or its tests
+  - byte-exact pHash behavior is the gate; if vectors fail, the resize/DCT/median/packing convention is wrong and must be fixed before proceeding
+  - the recipe must have a single authoritative definition imported by both scanner and builder (no FE↔build duplication)
+- Dependencies:
+  - DEC-051
+  - DEC-053
+- Notes:
+  - algorithm/constants/parity gotchas: `PRD/work/cardomancer-card-detection-summary/SOURCE-ANALYSIS.md` and the friend's `SPEC.md`
+
+### REQ-035
+- Title: TheJudge-owned fingerprint library build and lazy load
+- Priority: high
+- Description: Add a build step that generates the fingerprint library (`cardhashes.bin`) plus a manifest from Scryfall card images using the same TypeScript recipe as REQ-034, and have the frontend lazy-load it only when scanning is first used.
+- Acceptance Criteria:
+  - a build script (alongside `data:build` / `data:refresh`) emits a versioned `cardhashes.bin` + manifest from local card images, excluding non-gameplay layouts (art_series, planar, scheme, vanguard, oversized, memorabilia "Card" types, substitute/checklist, minigame) and including a `_card_back` reference entry
+  - the emitted library round-trips byte-identical through the REQ-034 TS DB reader
+  - library + bridge artifacts ship under `apps/frontend/public/data/` and are lazy-loaded only on first scan; app startup is unaffected for users who never scan
+  - card-image download required for the build is gated behind explicit human approval before the command runs (same policy as Scryfall/CR refresh)
+- Constraints:
+  - the build hashes with the same authoritative recipe as the on-device scanner (DEC-051)
+  - no runtime network fetch of card images or the library; no runtime metadata/library sync
+  - raw downloaded images are gitignored and not committed
+- Dependencies:
+  - REQ-034
+  - DEC-051
+  - data pipeline (`scripts/`)
+- Notes:
+  - re-run on each new Scryfall release to keep the library current; the on-device app only ever reads the committed artifact
+
+### REQ-036
+- Title: Scan-to-metadata candidate resolver
+- Priority: high
+- Description: Resolve ranked engine candidates (Scryfall printing ids) into existing `CardMetadataItem` records so scan results feed the picker exactly like typed suggestions.
+- Acceptance Criteria:
+  - a build-time printing-id → oracle-id bridge artifact maps each candidate to an oracle id, then to a committed `CardMetadataItem` (keyed by `cardId`)
+  - duplicate oracle ids collapse to a single candidate keyed by best (lowest) distance
+  - candidates that do not resolve to committed metadata are dropped without breaking the picker
+  - returns ranked `CardMetadataItem` candidates to the scan UI; no backend route or request-schema change is introduced
+- Constraints:
+  - identity resolution makes no runtime network call (static committed bridge artifact)
+  - printing-level identity is not pushed into `ZoneCardItem`, prompt context, or rulings lookup
+- Dependencies:
+  - REQ-034
+  - DEC-053
+- Notes:
+  - the bridge artifact follows the committed `cardMetadata.json` static pattern
+
+### REQ-037
+- Title: Camera capture and card detector
+- Priority: high
+- Description: Add a camera capture surface that locates a single card in the live frame, perspective-warps it to the canonical 745×1040 image, and feeds the identification core, supporting continuous auto-scan and manual tap capture.
+- Acceptance Criteria:
+  - live camera preview with a card-shaped guide overlay; continuous auto-scan plus an always-available manual tap-to-capture (DEC-052)
+  - the detector finds the card quad and warps it to a usable canonical image for representative real mobile captures
+  - identification top-1 after warp is plausible on a representative capture set; a measured detect-rate / top-1 accuracy result is recorded
+  - card-back and no-match states are handled with no backend call
+- Constraints:
+  - detector area fractions and capture/confidence thresholds are tuned and validated by outcome, not bit-equality (calibration constants, not product open questions)
+  - single card per frame; no multi-card detection
+  - continuous scanning degrades gracefully (throttle/drop frames) rather than freezing the UI (NFR-010)
+- Dependencies:
+  - REQ-034
+  - DEC-052
+- Notes:
+  - first implementation may land manual tap-capture before continuous auto-scan
+
+### REQ-038
+- Title: Scan UX integrated into the zone card picker
+- Priority: high
+- Description: Add a Scan entry point beside the existing search input in `ZoneCardPicker` and implement the batch scan loop and unhappy-path handling, reusing the existing add flow unchanged.
+- Acceptance Criteria:
+  - a Scan entry point sits beside the existing search input; manual search remains unchanged
+  - batch loop: scan → Accept (adds via existing add path) → camera re-opens for the next card → Back/Exit returns to zone collection; the zone's existing card list shows the running count
+  - card back shows "Flip the card over"; after a few consecutive low-confidence attempts a non-blocking prompt offers manual name entry while auto-scan continues
+  - an accepted scan candidate reaches the existing preview/add/owner/duplicate-block/stack-limit behavior and produces the same `ZoneCardItem` shape as a manually added card
+  - stack cards land in scan order (bottom-to-top); manual reorder remains out of scope (`FLOW-002`)
+  - existing zone-collection tests are extended, not replaced
+- Constraints:
+  - reuse the existing add path; do not duplicate owner/duplicate-block/stack-limit logic
+  - no backend/API/prompt change
+- Dependencies:
+  - REQ-036
+  - REQ-037
+  - DEC-052
+- Notes:
+  - performance budgets (NFR-010) are measured during this phase
+
+### REQ-039
+- Title: Resumable, budget-bounded fingerprint-library build (default), with non-destructive fresh rebuild
+- Priority: medium
+- Description: Make `scripts/build-card-hashes.mjs` resumable by default: the no-flag run uses the existing (or in-progress partial) `cardhashes.bin` as the record of already-fingerprinted entries, downloads only missing card images to a transient temp path, hashes them with the shared `recipe.ts`, deletes each image immediately, and rewrites the bin + manifest — so the full gameplay-card corpus can be fingerprinted across many short, bounded, resumable runs without retaining the full image corpus. A from-scratch rebuild is opt-in via `--fresh` and is non-destructive: it writes a new file and never deletes or overwrites the live bin.
+- Acceptance Criteria:
+  - the default (no-flag) run diffs the filtered Scryfall printing ids (same `shouldIncludeScanPrinting` filter) against the existing/partial bin and downloads only missing entries to a transient temp path that is deleted per image immediately after hashing; a cold start with no existing bin runs against an empty diff with no special flag
+  - hashing uses the existing shared `cropRegionA` + `phashRegionPacked` recipe (no second resize/hash implementation); the emitted bin still round-trips byte-identical through `readDb` (REQ-034 / DEC-051 parity preserved)
+  - `--fresh` builds from scratch ignoring the existing bin and writes to a separate new output file (default a sibling such as `cardhashes.fresh.bin` + matching manifest); it does not delete or overwrite the live `cardhashes.bin` and refuses to clobber an existing target unless explicitly directed (`--output <path>` and/or `--force`)
+  - every bin/manifest write (default checkpoint and `--fresh`) is atomic (temp file then rename) so a killed or interrupted run cannot corrupt or truncate the live bin
+  - `--limit N` and `--max-minutes M` are both optional and may be used independently or together; with both set the run stops at whichever ceiling is reached first; with neither set the run continues to completion; a budget stop finishes the in-flight entry, then checkpoints before exit
+  - a valid partial bin + manifest is checkpointed every K newly hashed entries and on every clean budget-stop; a re-run resumes losslessly by diffing against the partial; entries are processed in a stable id order
+  - per-image downloads are paced for Scryfall politeness (fixed inter-request delay, ~50–100ms Scryfall guideline, `--rate-ms` override) with bounded retry-and-backoff on `429`/`5xx`/network errors honoring `Retry-After`
+  - a per-image download/hash failure logs and skips without aborting the run; the entry stays missing and is retried next run; only permanent failures (`404`, decode/dimension) count toward parking while transient failures (`429`/`5xx`/network, retries exhausted) do not; a sidecar skip-list (`apps/frontend/public/data/cardhashSkiplist.json`) tracks attempt counts and parks an entry after N attempts; `--retry-parked` re-includes parked entries
+  - merge is append-only (no pruning); an unsupported bin version is rejected before any rewrite; `<id>`, `<id>__back`, and `_card_back` are treated as distinct entry ids
+  - npm alias `data:scan-fingerprints` runs the default resumable build and prints a labeled progress readout (total target, already fingerprinted, done this run, remaining, parked, rough ETA) at start and end; `data:scan-fingerprints:fresh` runs the non-destructive `--fresh` rebuild; the prior `data:scan-hashes` alias is reconciled (repointed or retired)
+  - run documentation exists in the root `README.md` and the script `--help`: it states that the default (via `data:scan-fingerprints`) resumes and extends the existing bin and is the normal day-to-day path, that `--fresh` rebuilds into a new file without touching the live bin, and explains the budget flags, resume/checkpoint and atomic-write safety, skip-list/parking with `--retry-parked`, and the human-approval network posture
+- Constraints:
+  - the transient download path must never be the retained image cache dir
+  - `--fresh` must never delete or overwrite the live `cardhashes.bin` implicitly
+  - no change to the shipped artifact format/size (`CARDHSH1` v1, ~14 MB), the runtime scanner, `loadHashDb.ts`, `recipe.ts`, the `dbformat.ts` round-trip, or DEC-051 parity
+  - every run downloads images and therefore requires explicit human approval = the operator running the command; no scheduled/automated/CI refresh is added
+  - per-image downloads must be paced and back off on `429`/`5xx` (honoring `Retry-After`) so a long multi-thousand-image run does not overload Scryfall or get the operator rate-limited; downloads are sequential (no added concurrency)
+  - checkpoint cadence K, parking-attempt threshold N, and the rate-limit pace are outcome-validated calibration constants, not product open questions
+- Dependencies:
+  - REQ-035
+  - DEC-051
+  - DEC-054
+- Notes:
+  - a future recipe/geometry change still forces a full re-download/re-hash
+  - this realizes the `cardhashes.bin` production build deferred in `cardomancer-card-detection-summary` Slice B

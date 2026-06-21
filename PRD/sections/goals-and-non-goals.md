@@ -43,7 +43,11 @@
 - stack size is capped at 10 cards to reduce token use and abuse risk
 - the product does not implement a deterministic rules engine or full board-state simulator
 - plain-text answers are used before advanced formatting polish
-- runtime metadata syncing and camera scanning are out of scope
+- runtime metadata syncing is out of scope
+- camera scanning is out of the **core product loop**, but is a scoped, optional, frontend-only input feature (DEC-050)
+
+## Planned capabilities (optional, outside the core loop)
+- optional on-device camera card scanning as an alternate input path into existing zone fields (DEC-050..DEC-053); see `system-map.md` "Card scanning" (status: planned)
 
 ## Product risks
 - **Prompt size vs AI latency:** Game-rules prompt enrichment (DEC-030, REQ-022) materially increases prompt size (~25–32k chars typical/worst case when all 23 curated topics ship). This is an active risk to the 3-second latency success metric, not a temporary scope tradeoff. Monitor after ship.
@@ -59,10 +63,10 @@
 - saved sessions
 - account system
 - billing
-- camera scanning
 - runtime metadata syncing
 - animation-heavy UI
 - multiple product-facing backend endpoints
+- printing disambiguation, grading, pricing, or multi-card-per-frame detection in card scanning (DEC-053)
 
 ## Scope Notes
 The core product is a **flow-validation assistant**, not a gameplay-accurate rules engine.

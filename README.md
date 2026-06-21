@@ -81,6 +81,8 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 - `npm --workspace apps/backend run test` - run backend tests
 - `npm --workspace apps/backend run test:eval` - run backend eval harness test
 - `npm run data:refresh` - download latest Scryfall `default_cards` and `rulings` bulk data, then rebuild trimmed metadata and rulings artifacts
+- `npm run data:scan-fingerprints` - resume and extend `apps/frontend/public/data/cardhashes.bin`, downloading only missing Scryfall PNGs to transient temp files that are deleted after hashing
+- `npm run data:scan-fingerprints:fresh` - rebuild scan fingerprints into `cardhashes.fresh.bin` / `cardhashManifest.fresh.json` without touching the live artifact
 - `npm run prompt:preview` - spin up mock backend, POST curated fixtures through `/api/ask-ai`, write reviewable prompt artifacts to gitignored `output/prompt-preview/`
 - `npm run prompt:preview:all` - same as above but includes all eval fixtures (including expected error paths); use `--fixture <id>`, `--output-dir`, `--port` for fine-grained runs
 - stop running processes with `Ctrl + C`
@@ -131,6 +133,13 @@ Use these docs for deeper runtime/contract detail instead of expanding the root 
 - Provider rules and integration constraints: `PRD/sections/decisions.md` (`DEC-020`), `PRD/sections/integrations-and-data.md`
 - WotC rulings prompt enrichment decision: `PRD/sections/decisions.md` (`DEC-029`)
 - Backend provider boundary and mode intent: `apps/backend/src/providers/README.md`
+
+Card-scan fingerprint operations:
+- `npm run data:scan-fingerprints` is the day-to-day path. It treats the shipped `cardhashes.bin` as resume state, downloads only missing filtered printings, checkpoints partial progress, and writes the bin, manifest, and skip-list atomically.
+- `npm run data:scan-fingerprints -- --limit 500` and `npm run data:scan-fingerprints -- --max-minutes 30` bound a run; either budget can be combined with the other, and the current entry finishes before the stop checkpoint.
+- Downloads use polite `--rate-ms` pacing plus automatic `429` / `5xx` / network retry backoff. Running the command is the required human approval for Scryfall network access; agents should not run it without explicit approval.
+- Permanent per-image failures are recorded in `apps/frontend/public/data/cardhashSkiplist.json` and parked after repeated attempts. Use `npm run data:scan-fingerprints -- --retry-parked` to re-attempt parked entries.
+- `npm run data:scan-fingerprints:fresh` writes separate `.fresh` artifacts and never overwrites the live bin. Promote a fresh build to `cardhashes.bin` / `cardhashManifest.json` only as a deliberate manual step after review; use `--force` or an explicit `--output` only when replacing a chosen fresh target is intentional.
 
 Quick local verification flow:
 1. Start services with `npm run dev`.
