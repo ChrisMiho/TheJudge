@@ -28,6 +28,10 @@ coverage/
 # Local bulk datasets (do not commit)
 apps/frontend/data/scryfall/default-cards.json
 apps/frontend/data/scryfall/default-cards.json.tmp
+# Raw card-scan image inputs / download cache (build inputs only; the hashed
+# output ships under apps/frontend/public/data/). Keep card_back_reference.png
+# locally here to enable _card_back fingerprinting — it is intentionally ignored.
+apps/frontend/data/scryfall/card-images/
 apps/backend/data/cr/source.txt
 apps/backend/data/cr/source.txt.tmp
 apps/backend/data/scryfall/rulings.json
@@ -38,3 +42,6 @@ output/prompt-preview/
 
 # Retrieval relevance report (developer-local; not committed)
 output/retrieval-relevance-report.txt
+
+# Card-scan fingerprint build logs / pid (transient; the bin ships under public/data/)
+output/cardhash-build/
