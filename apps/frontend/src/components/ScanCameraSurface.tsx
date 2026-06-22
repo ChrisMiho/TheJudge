@@ -10,6 +10,7 @@ export type ScanCameraSurfaceProps = {
   onStatusChange?: (status: ScanCameraStatus) => void
   identify?: (image: RgbImage) => IdentifyResult | Promise<IdentifyResult>
   autoScanFps?: number
+  paused?: boolean
   className?: string
 }
 
@@ -29,6 +30,7 @@ export function ScanCameraSurface({
   onStatusChange,
   identify,
   autoScanFps = 4,
+  paused = false,
   className = ""
 }: ScanCameraSurfaceProps): JSX.Element {
   const videoRef = useRef<HTMLVideoElement | null>(null)
@@ -38,6 +40,8 @@ export function ScanCameraSurface({
   const lastScanRef = useRef(0)
   const detectionBusyRef = useRef(false)
   const mountedRef = useRef(true)
+  const pausedRef = useRef(paused)
+  pausedRef.current = paused
   const [status, setStatus] = useState<ScanCameraStatus>("idle")
 
   const updateStatus = useCallback(
@@ -132,7 +136,7 @@ export function ScanCameraSurface({
   useEffect(() => {
     const minMs = 1000 / Math.max(1, autoScanFps)
     const tick = (now: number) => {
-      if (now - lastScanRef.current >= minMs && !detectionBusyRef.current) {
+      if (!pausedRef.current && now - lastScanRef.current >= minMs && !detectionBusyRef.current) {
         lastScanRef.current = now
         void scanCurrentFrame(false)
       }

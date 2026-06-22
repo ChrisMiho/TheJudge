@@ -14,21 +14,29 @@ export interface CardScanMapEntry {
 /** cardScanMap.json shape: Scryfall printing id -> { oracleId, name }. */
 export type CardScanMap = Record<string, CardScanMapEntry>;
 
+/** A resolved metadata candidate paired with its best engine distance. */
+export interface ResolvedScanCandidate {
+  card: CardMetadataItem;
+  distance: number;
+}
+
 /**
- * Resolve ranked engine candidates to existing CardMetadataItem records.
- * Collapses repeated oracle ids to the single best (lowest-distance) candidate
- * and drops anything that doesn't resolve to a committed metadata record.
- * Returns candidates ranked ascending by distance.
+ * Resolve ranked engine candidates (Scryfall printing ids) to existing
+ * CardMetadataItem records, collapsing repeated oracle ids to the single best
+ * (lowest-distance) candidate and dropping anything that doesn't resolve to a
+ * committed metadata record. Distances are preserved so the caller can apply
+ * confidence gating and temporal voting on the *oracle* identity (different
+ * printings of one card must not split a vote). Ranked ascending by distance.
  */
-export function resolveScanCandidates(
+export function resolveScanCandidatesRanked(
   candidates: Candidate[],
   scanMap: CardScanMap,
   cardMetadata: CardMetadataItem[]
-): CardMetadataItem[] {
+): ResolvedScanCandidate[] {
   const metadataByCardId = new Map(cardMetadata.map((item) => [item.cardId, item]));
   const ordered = [...candidates].sort((a, b) => a.distance - b.distance);
 
-  const resolved: CardMetadataItem[] = [];
+  const resolved: ResolvedScanCandidate[] = [];
   const seenOracleIds = new Set<string>();
 
   for (const candidate of ordered) {
@@ -40,8 +48,20 @@ export function resolveScanCandidates(
     if (!metadataItem) continue;
 
     seenOracleIds.add(scanEntry.oracleId);
-    resolved.push(metadataItem);
+    resolved.push({ card: metadataItem, distance: candidate.distance });
   }
 
   return resolved;
+}
+
+/**
+ * Resolve ranked engine candidates to existing CardMetadataItem records
+ * (distances dropped). Thin wrapper over resolveScanCandidatesRanked.
+ */
+export function resolveScanCandidates(
+  candidates: Candidate[],
+  scanMap: CardScanMap,
+  cardMetadata: CardMetadataItem[]
+): CardMetadataItem[] {
+  return resolveScanCandidatesRanked(candidates, scanMap, cardMetadata).map((entry) => entry.card);
 }

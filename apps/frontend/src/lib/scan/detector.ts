@@ -12,6 +12,14 @@ export const CANNY_HI = 90
 export const MIN_AREA_FRAC = 0.05
 export const MAX_AREA_FRAC = 0.95
 
+// Corner detection runs the full pure-JS CV pipeline per frame; on full-res
+// phone captures that is slow and the warp jitters frame-to-frame. Detect on a
+// frame downscaled so its longest side is at most this many px (a no-op for
+// frames already at or below it), then scale corners back and warp from the
+// FULL-res frame so hash quality is preserved. Higher effective FPS also gives
+// the temporal stabilizer more votes per second.
+export const MAX_DETECT_DIMENSION = 640
+
 const EPSILON_PCTS = [0.02, 0.04, 0.06, 0.08] as const
 
 export type Point = { x: number; y: number }
@@ -689,10 +697,44 @@ export function warpPerspective(frame: RgbImage, quad: Point[]): RgbImage {
   return warped.width > warped.height ? rotate90Clockwise(warped) : warped
 }
 
+/** Bilinear downscale of an RGB frame by a uniform scale factor (0 < scale <= 1). */
+function downscaleRgb(frame: RgbImage, scale: number): RgbImage {
+  const w = Math.max(1, Math.round(frame.width * scale))
+  const h = Math.max(1, Math.round(frame.height * scale))
+  const data = new Uint8Array(w * h * 3)
+  const sx = frame.width / w
+  const sy = frame.height / h
+  for (let y = 0; y < h; y++) {
+    const fy = (y + 0.5) * sy - 0.5
+    for (let x = 0; x < w; x++) {
+      const fx = (x + 0.5) * sx - 0.5
+      const off = (y * w + x) * 3
+      data[off] = bilinearSample(frame, fx, fy, 0)
+      data[off + 1] = bilinearSample(frame, fx, fy, 1)
+      data[off + 2] = bilinearSample(frame, fx, fy, 2)
+    }
+  }
+  return { width: w, height: h, data }
+}
+
 export function detectCard(
   frame: RgbImage,
-  opts: { minAreaFrac?: number; maxAreaFrac?: number } = {}
+  opts: { minAreaFrac?: number; maxAreaFrac?: number; maxDetectDimension?: number } = {}
 ): RgbImage | null {
+  const longSide = Math.max(frame.width, frame.height)
+  const maxDim = opts.maxDetectDimension ?? MAX_DETECT_DIMENSION
+
+  if (longSide > maxDim) {
+    // Detect on a downscaled copy (area fractions are scale-invariant), then map
+    // corners back to full-res and warp from the original frame.
+    const scale = maxDim / longSide
+    const small = downscaleRgb(frame, scale)
+    const cornersSmall = detectCardCorners(small, opts)
+    if (!cornersSmall) return null
+    const corners = cornersSmall.map((p) => ({ x: p.x / scale, y: p.y / scale }))
+    return warpPerspective(frame, corners)
+  }
+
   const corners = detectCardCorners(frame, opts)
   return corners ? warpPerspective(frame, corners) : null
 }
