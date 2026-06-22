@@ -11,14 +11,16 @@ type ZoneCardPickerScanProps = {
   isLoading: boolean;
   error: string | null;
   cameraStatus: ScanCameraStatus;
-  isCardBack: boolean;
   resolvedCandidates: CardMetadataItem[];
+  lockedCandidate: CardMetadataItem | null;
+  scanPhase: "searching" | "locked";
   showManualEntryPrompt: boolean;
   onOpen: () => void | Promise<void>;
   onExitToManual: () => void;
   identify: (image: RgbImage) => IdentifyResult | Promise<IdentifyResult>;
   onCameraStatusChange: (status: ScanCameraStatus) => void;
   onAcceptCandidate: (card: CardMetadataItem) => void;
+  onRescan: () => void;
 };
 
 type ZoneCardPickerProps = {
@@ -82,7 +84,10 @@ export function ZoneCardPicker({
   scan
 }: ZoneCardPickerProps): JSX.Element {
   const isScanOpen = scan?.isOpen ?? false;
-  const showRankedScanCandidates = Boolean(scan?.isOpen && scan.resolvedCandidates.length > 1 && !selectedCard);
+  const isScanLocked = Boolean(scan?.isOpen && scan.scanPhase === "locked" && scan.lockedCandidate);
+  const showRankedScanCandidates = Boolean(
+    scan?.isOpen && scan.scanPhase === "searching" && scan.resolvedCandidates.length > 0 && !selectedCard
+  );
 
   return (
     <div className="space-y-4">
@@ -140,6 +145,7 @@ export function ZoneCardPicker({
               identify={scan.identify}
               onStatusChange={scan.onCameraStatusChange}
               autoScanFps={3}
+              paused={isScanLocked}
             />
           )}
           {scan.error && (
@@ -147,15 +153,32 @@ export function ZoneCardPicker({
               {scan.error}
             </p>
           )}
-          {scan.isCardBack && (
-            <p className="rounded-xl border border-amber-400/60 bg-amber-500/15 px-3 py-2 text-sm text-amber-100">
-              Flip the card over.
-            </p>
+          {isScanLocked && scan.lockedCandidate && (
+            <div className="rounded-xl border border-emerald-400/70 bg-emerald-500/15 p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-emerald-200/90">Locked on</p>
+              <p className="mt-1 text-base font-semibold text-emerald-50">{scan.lockedCandidate.name}</p>
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => scan.onAcceptCandidate(scan.lockedCandidate as CardMetadataItem)}
+                  className="flex-1 rounded-lg border border-emerald-400/70 bg-emerald-500/25 px-3 py-2 text-sm font-semibold text-emerald-50 transition hover:bg-emerald-500/40"
+                >
+                  Add card
+                </button>
+                <button
+                  type="button"
+                  onClick={scan.onRescan}
+                  className="rounded-lg border border-slate-500 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
+                >
+                  Rescan
+                </button>
+              </div>
+            </div>
           )}
           {showRankedScanCandidates && (
             <div className="rounded-xl border border-slate-600 bg-slate-800/70 p-2">
               <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
-                Pick the scanned card
+                Possible matches — hold steady
               </p>
               <ul className="flex flex-col gap-1">
                 {scan.resolvedCandidates.map((card) => (

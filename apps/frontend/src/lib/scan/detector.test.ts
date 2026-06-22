@@ -158,4 +158,18 @@ describe("detectCard", () => {
     expect(card?.width).toBe(CARD_WIDTH)
     expect(card?.height).toBe(CARD_HEIGHT)
   })
+
+  it("detects via the downscale path and still warps to canonical dimensions", () => {
+    const frame = makeImage(320, 420, [25, 25, 25])
+    fillRect(frame, 80, 40, 160, 280, [235, 235, 235])
+    fillRect(frame, 92, 55, 136, 250, [180, 40, 90])
+
+    // Force the downscale branch (longest side 420 > 200): corners are detected
+    // on the shrunk copy, scaled back, and warped from the full-res frame.
+    const card = detectCard(frame, { maxDetectDimension: 200 })
+
+    expect(card).not.toBeNull()
+    expect(card?.width).toBe(CARD_WIDTH)
+    expect(card?.height).toBe(CARD_HEIGHT)
+  })
 })

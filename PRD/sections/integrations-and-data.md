@@ -260,7 +260,7 @@ involve the backend, `POST /api/ask-ai`, or any prompt assembly.
 
 - identification is by perceptual hash of the card artwork; matching runs entirely in the frontend with no network calls (DEC-051)
 - the resize + perceptual-hash "recipe" has a single authoritative TypeScript definition, imported by both the on-device scanner and the offline library builder (no FE↔build duplication)
-- the shipped fingerprint library is `apps/frontend/public/data/cardhashes.bin` — a little-endian binary file (`CARDHSH1` v1): per entry a UTF-8 id and a 96-byte hash (`R[32] || G[32] || B[32]`, packed MSB-first), plus a `_card_back` reference entry; canonical card geometry is 745×1040 and Region A is `(30,105,715,520)` (see `PRD/work/cardomancer-card-detection-summary/SOURCE-ANALYSIS.md`)
+- the shipped fingerprint library is `apps/frontend/public/data/cardhashes.bin` — a little-endian binary file (`CARDHSH1` v1): per entry a UTF-8 id and a 96-byte hash (`R[32] || G[32] || B[32]`, packed MSB-first); the live bin holds 97,311 entries and does **not** include a `_card_back` reference (no canonical card-back asset; card-back detection is descoped — DEC-055); canonical card geometry is 745×1040 and Region A is `(30,105,715,520)`
 - a companion `cardScanMap` bridge artifact (and a manifest) ship under `apps/frontend/public/data/`; the bridge maps Scryfall printing id → oracle id so matches resolve to existing `CardMetadataItem` records (DEC-053)
 - scan artifacts are lazy-loaded only when the user first scans; users who never scan pay no startup cost (NFR-010)
 - art-only matching returns a ranked candidate list; duplicate oracle ids collapse to one candidate by best distance; unresolvable candidates are dropped; resolved candidates feed the existing picker preview/add path and produce the same `ZoneCardItem` output as manual add
@@ -268,7 +268,8 @@ involve the backend, `POST /api/ask-ai`, or any prompt assembly.
 - `cardhashes.bin`, `cardScanMap`, and the manifest are generated offline from Scryfall card images using the same TS recipe; the build hashes Region A without auto-levels and excludes non-gameplay layouts (art_series, planar, scheme, vanguard, oversized, memorabilia, substitute/checklist, minigame)
 - raw downloaded card images are gitignored and must not be committed; card-image download/refresh requires explicit human approval before the command runs (same policy as Scryfall/CR refresh)
 - TheJudge owns and refreshes the library via the data pipeline; there is no runtime Scryfall fetch, no runtime library sync, and no dependence on an externally prebuilt database
-- query-side processing applies auto-levels to the captured image only (never to database images); both 0°/180° orientations are hashed and the better match is chosen; a card-back reference enables back-face detection
+- query-side processing applies auto-levels to the captured image only (never to database images); both 0°/180° orientations are hashed and the better match is chosen; the engine retains a dormant card-back detection method (`isCardBack()`) but back-face detection is inactive until a `_card_back` reference is added to the bin (DEC-055)
+- the live scanner converges via a temporal lock-in control layer (vote top-1 oracle identity across a rolling window, confidence + margin gated) that pauses auto-scan on lock and presents one confident card for one-tap Add; convergence knobs live in `apps/frontend/src/lib/scan/tuning.ts` (DEC-055)
 
 ## AI Prompt Context Rules
 

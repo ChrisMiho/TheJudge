@@ -221,8 +221,9 @@ export function ZoneCollectionStep({
                   isLoading: scanCapture.isLoading,
                   error: scanCapture.error,
                   cameraStatus: scanCapture.cameraStatus,
-                  isCardBack: scanCapture.isCardBack,
                   resolvedCandidates: scanCapture.resolvedCandidates,
+                  lockedCandidate: scanCapture.lockedCandidate,
+                  scanPhase: scanCapture.scanPhase,
                   showManualEntryPrompt: scanCapture.showManualEntryPrompt,
                   onOpen: async () => {
                     setSelectedCard(null);
@@ -231,7 +232,8 @@ export function ZoneCollectionStep({
                   onExitToManual: scanCapture.closeScan,
                   identify: scanCapture.identify,
                   onCameraStatusChange: scanCapture.setCameraStatus,
-                  onAcceptCandidate: scanCapture.acceptCandidate
+                  onAcceptCandidate: scanCapture.acceptCandidate,
+                  onRescan: scanCapture.rescan
                 }}
               />
             )}

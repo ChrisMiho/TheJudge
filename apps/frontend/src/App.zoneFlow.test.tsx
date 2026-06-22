@@ -11,7 +11,6 @@ const { cardIdentifierConstructorMock, identifierMock } = vi.hoisted(() => {
     candidates: [{ card_id: "printing-opt", distance: 4 }]
   };
   const identifier = {
-    isCardBack: vi.fn(() => ({ isBack: false, distance: 999 })),
     identify: vi.fn(() => identifyResult)
   };
 
@@ -140,7 +139,6 @@ describe("Phase zone defaults", () => {
 describe("STORY-074 target gating and pickers", () => {
   beforeEach(() => {
     cardIdentifierConstructorMock.mockClear();
-    identifierMock.isCardBack.mockClear();
     identifierMock.identify.mockClear();
     vi.stubGlobal(
       "fetch",
@@ -209,13 +207,23 @@ describe("STORY-074 target gating and pickers", () => {
 
     await user.click(screen.getByRole("button", { name: "Scan" }));
     await screen.findByLabelText("Mock scan camera");
-    await user.click(screen.getByRole("button", { name: "Fake scan capture" }));
 
-    expect(await screen.findByRole("button", { name: /Begin stackening!|Add to Stack/ })).toBeInTheDocument();
-    expect(screen.getByText("Opt")).toBeInTheDocument();
+    // Lock-in needs sustained agreement across frames, not a single capture.
+    for (let i = 0; i < 4; i++) {
+      await user.click(screen.getByRole("button", { name: "Fake scan capture" }));
+    }
+
+    // The scanner locks on the consistent match and waits for the user to confirm.
+    const addCardButton = await screen.findByRole("button", { name: "Add card" });
+    expect(screen.getByText("Locked on")).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledWith("/data/cardScanMap.json");
     expect(fetchMock).toHaveBeenCalledWith("/data/cardhashes.bin");
     expect(cardIdentifierConstructorMock).toHaveBeenCalledTimes(1);
+
+    await user.click(addCardButton);
+
+    expect(await screen.findByRole("button", { name: /Begin stackening!|Add to Stack/ })).toBeInTheDocument();
+    expect(screen.getByText("Opt")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
 
