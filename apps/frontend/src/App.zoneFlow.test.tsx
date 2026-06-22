@@ -11,7 +11,6 @@ const { cardIdentifierConstructorMock, identifierMock } = vi.hoisted(() => {
     candidates: [{ card_id: "printing-opt", distance: 4 }]
   };
   const identifier = {
-    isCardBack: vi.fn(() => ({ isBack: false, distance: 999 })),
     identify: vi.fn(() => identifyResult)
   };
 
@@ -140,7 +139,6 @@ describe("Phase zone defaults", () => {
 describe("STORY-074 target gating and pickers", () => {
   beforeEach(() => {
     cardIdentifierConstructorMock.mockClear();
-    identifierMock.isCardBack.mockClear();
     identifierMock.identify.mockClear();
     vi.stubGlobal(
       "fetch",

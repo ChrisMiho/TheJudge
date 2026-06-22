@@ -11,7 +11,6 @@ type ZoneCardPickerScanProps = {
   isLoading: boolean;
   error: string | null;
   cameraStatus: ScanCameraStatus;
-  isCardBack: boolean;
   resolvedCandidates: CardMetadataItem[];
   lockedCandidate: CardMetadataItem | null;
   scanPhase: "searching" | "locked";
@@ -152,11 +151,6 @@ export function ZoneCardPicker({
           {scan.error && (
             <p className="rounded-xl border border-red-500/50 bg-red-950/40 px-3 py-2 text-sm text-red-100">
               {scan.error}
-            </p>
-          )}
-          {scan.isCardBack && !isScanLocked && (
-            <p className="rounded-xl border border-amber-400/60 bg-amber-500/15 px-3 py-2 text-sm text-amber-100">
-              Flip the card over.
             </p>
           )}
           {isScanLocked && scan.lockedCandidate && (

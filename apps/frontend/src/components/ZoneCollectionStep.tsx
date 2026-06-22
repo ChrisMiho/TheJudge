@@ -221,7 +221,6 @@ export function ZoneCollectionStep({
                   isLoading: scanCapture.isLoading,
                   error: scanCapture.error,
                   cameraStatus: scanCapture.cameraStatus,
-                  isCardBack: scanCapture.isCardBack,
                   resolvedCandidates: scanCapture.resolvedCandidates,
                   lockedCandidate: scanCapture.lockedCandidate,
                   scanPhase: scanCapture.scanPhase,

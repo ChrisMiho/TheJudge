@@ -874,3 +874,21 @@
   - extends REQ-035 / DEC-051 (the same TheJudge-owned library and single-recipe parity); does not supersede them
   - this is the maintainable path to actually produce and keep `cardhashes.bin` current after its Slice B deferral
   - related prior exploration: a Codex read-only feasibility pass confirmed `readDb`/`writeDb` round-trip losslessly and the build already hashes via the same `recipe.ts` as runtime
+
+### DEC-055
+- Decision: The live scanner converges via a temporal lock-in control layer rather than streaming a fresh ranked list every frame, and card-back detection is descoped from the shipped scan UX (no canonical card-back reference asset is available). This refines DEC-052's capture/batch UX; it does not supersede it.
+- Status: confirmed
+- Context: The first shipped scanner (`cardomancer-card-detection`) wholesale-replaced the candidate list every auto-scan frame with a near-random top-10, so it visibly "never honed in": the correct card surfaced only occasionally amid churn, and the only auto-accept path (`resolved.length === 1`) effectively never fired. Separately, card-back detection requires a canonical 745×1040 `card_back_reference.png` in the library; that asset does not exist, so `CardIdentifier.isCardBack()` always returned `{ isBack: false }` and the "Flip the card over" UX was inert dead code. Reporter validation on a laptop camera confirmed identification itself works; the defect was convergence/confidence gating around the engine, not the engine.
+- Impact:
+  - a pure, unit-tested temporal stabilizer votes the top-1 ORACLE identity across a short rolling window and emits `searching` / `locked`; a frame only votes when the best distance is within a tight confidence bound AND beats the runner-up by a margin, so noise dilutes rather than accumulates (`apps/frontend/src/lib/scan/stabilizer.ts`)
+  - on lock, auto-scan pauses and the picker presents one confident card for one-tap Add, with Rescan to resume — preserving the DEC-052 accept → re-scan loop while ending the list churn
+  - while searching, per-frame candidates are confidence-gated and capped (top 3) as a subdued hint rather than a flooding top-10; the degenerate single-candidate auto-accept is removed
+  - detection runs on a downscaled frame and warps from full resolution, raising effective FPS (more votes) and steadying the quad with no engine/geometry/hash change
+  - all convergence knobs (window size, vote count, lock distance, margin, surface distance, detect downscale) live in one file (`apps/frontend/src/lib/scan/tuning.ts`) so calibration is a single-file edit
+  - card-back detection is removed from the scan-time path: the `isCardBack` hook state, the "Flip the card over" prompt, and the picker wiring + their tests are deleted. The engine method `CardIdentifier.isCardBack()` and the build-side `_card_back` / `hasCardBackReference` support remain in place but dormant, so the feature can be re-enabled by supplying the asset, re-running `data:scan-fingerprints`, and rewiring the UI
+- Related requirements:
+  - REQ-037
+  - REQ-038
+- Notes:
+  - validated end-to-end on a laptop camera (detection + identification + single-card lock-in); formal NFR-010 device metrics were not separately recorded and some scan UX refinement remains as future work
+  - lock-in tuning constants are outcome-validated calibration values (DEC-052 precedent), not product open questions

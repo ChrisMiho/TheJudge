@@ -28,9 +28,8 @@ const scanMap: CardScanMap = {
 };
 const cardMetadata = [makeCard("opt", "Opt"), makeCard("lightning-bolt", "Lightning Bolt")];
 
-function makeIdentifier(result: IdentifyResult, back = { isBack: false, distance: 999 }) {
+function makeIdentifier(result: IdentifyResult) {
   return {
-    isCardBack: vi.fn(() => back),
     identify: vi.fn(() => result)
   };
 }
@@ -64,38 +63,6 @@ describe("useScanCapture", () => {
     expect(loadHashDb).toHaveBeenCalledTimes(1);
     expect(loadScanMap).toHaveBeenCalledTimes(1);
     expect(createIdentifier).toHaveBeenCalledTimes(1);
-  });
-
-  it("detects card backs before identifying and keeps scanning without candidates", async () => {
-    const identifier = makeIdentifier(
-      { matched: true, was_rotated: false, candidates: [{ card_id: "printing-opt", distance: 1 }] },
-      { isBack: true, distance: 3 }
-    );
-    const onScanCandidateSelected = vi.fn();
-    const { result } = renderHook(() =>
-      useScanCapture({
-        cardMetadata,
-        onScanCandidateSelected,
-        dependencies: {
-          loadHashDb: vi.fn(async () => db),
-          loadScanMap: vi.fn(async () => scanMap),
-          createIdentifier: vi.fn(() => identifier)
-        }
-      })
-    );
-
-    let identifyResult: IdentifyResult | undefined;
-    await act(async () => {
-      await result.current.openScan();
-      identifyResult = await result.current.identify(image);
-    });
-
-    expect(identifier.isCardBack).toHaveBeenCalledWith(image);
-    expect(identifier.identify).not.toHaveBeenCalled();
-    expect(identifyResult).toEqual({ matched: false, was_rotated: false, candidates: [] });
-    expect(result.current.isCardBack).toBe(true);
-    expect(result.current.resolvedCandidates).toEqual([]);
-    expect(onScanCandidateSelected).not.toHaveBeenCalled();
   });
 
   it("surfaces a confident match as a hint without auto-selecting on a single frame", async () => {
@@ -143,7 +110,7 @@ describe("useScanCapture", () => {
         was_rotated: false,
         candidates: [{ card_id: "printing-bolt", distance: 200 }]
       });
-    const identifier = { isCardBack: vi.fn(() => ({ isBack: false, distance: 999 })), identify };
+    const identifier = { identify };
     const { result } = renderHook(() =>
       useScanCapture({
         cardMetadata,

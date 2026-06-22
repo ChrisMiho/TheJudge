@@ -114,13 +114,13 @@
 - Main Flow:
   1. Camera opens as its own screen with a card-shaped guide overlay and stays open for the session.
   2. The scanner auto-scans continuously; a manual capture button is always available.
-  3. On a match, the identified card (or a short ranked candidate list for shared-art reprints) is shown in the existing card preview.
+  3. While searching, confident frames surface a short, confidence-gated candidate hint; once one card is consistently the best over a short window it **locks in** — auto-scan pauses and a single confident card is presented for one-tap Add, with **Rescan** to resume (DEC-055).
   4. User taps **Accept**; the card is added to the current zone via the existing add path (owner selection for non-stack zones, duplicate-stack block, stack-size limit, `ZoneCardItem` output).
   5. The camera immediately re-opens to scanning for the next card; the zone's card list shows the running count.
   6. User repeats scan → Accept as needed, then taps **Back/Exit** to return to zone collection and pick another zone or move forward in the flow.
 - Edge Cases:
-  - if the captured image is a card back, show **Flip the card over** and keep scanning
   - if no confident match, keep auto-scanning with manual capture available; after a few consecutive low-confidence attempts, show a non-blocking prompt offering manual name entry (the existing search) without stopping the scan
+  - card-back detection is descoped from the shipped UX (no canonical reference asset); a scanned card back falls through to the normal low-confidence path (DEC-055)
   - if a scanned card would duplicate a card already in the stack, the existing duplicate block applies (`FLOW-004`)
   - if the stack already has 10 cards, additional adds are blocked (same as manual)
   - if camera permission is denied or unavailable, fall back to manual search and surface the reason

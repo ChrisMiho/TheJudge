@@ -661,7 +661,7 @@
   - live camera preview with a card-shaped guide overlay; continuous auto-scan plus an always-available manual tap-to-capture (DEC-052)
   - the detector finds the card quad and warps it to a usable canonical image for representative real mobile captures
   - identification top-1 after warp is plausible on a representative capture set; a measured detect-rate / top-1 accuracy result is recorded
-  - card-back and no-match states are handled with no backend call
+  - no-match states are handled with no backend call (card-back detection descoped from the shipped UX — DEC-055)
 - Constraints:
   - detector area fractions and capture/confidence thresholds are tuned and validated by outcome, not bit-equality (calibration constants, not product open questions)
   - single card per frame; no multi-card detection
@@ -679,7 +679,7 @@
 - Acceptance Criteria:
   - a Scan entry point sits beside the existing search input; manual search remains unchanged
   - batch loop: scan → Accept (adds via existing add path) → camera re-opens for the next card → Back/Exit returns to zone collection; the zone's existing card list shows the running count
-  - card back shows "Flip the card over"; after a few consecutive low-confidence attempts a non-blocking prompt offers manual name entry while auto-scan continues
+  - after a few consecutive low-confidence attempts a non-blocking prompt offers manual name entry while auto-scan continues (card-back "Flip the card over" prompt descoped — DEC-055); a sustained confident match locks in a single card for one-tap Add with Rescan to resume (DEC-055)
   - an accepted scan candidate reaches the existing preview/add/owner/duplicate-block/stack-limit behavior and produces the same `ZoneCardItem` shape as a manually added card
   - stack cards land in scan order (bottom-to-top); manual reorder remains out of scope (`FLOW-002`)
   - existing zone-collection tests are extended, not replaced

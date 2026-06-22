@@ -16,7 +16,7 @@ export const LOW_CONFIDENCE_ESCALATION_COUNT = 3;
 
 export type ScanPhase = "searching" | "locked";
 
-type ScanIdentifier = Pick<CardIdentifier, "identify" | "isCardBack">;
+type ScanIdentifier = Pick<CardIdentifier, "identify">;
 
 type ScanResources = {
   identifier: ScanIdentifier;
@@ -56,7 +56,6 @@ export function useScanCapture({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cameraStatus, setCameraStatus] = useState<ScanCameraStatus>("idle");
-  const [isCardBack, setIsCardBack] = useState(false);
   const [resolvedCandidates, setResolvedCandidates] = useState<CardMetadataItem[]>([]);
   const [lockedCandidate, setLockedCandidate] = useState<CardMetadataItem | null>(null);
   const [scanPhase, setScanPhase] = useState<ScanPhase>("searching");
@@ -89,7 +88,6 @@ export function useScanCapture({
 
   const resetScanState = useCallback((): void => {
     stabilizerRef.current.reset();
-    setIsCardBack(false);
     setResolvedCandidates([]);
     setLockedCandidate(null);
     setScanPhase("searching");
@@ -137,14 +135,6 @@ export function useScanCapture({
       if (stabilizerRef.current.isLocked()) {
         return EMPTY_IDENTIFY_RESULT;
       }
-
-      const backResult = resources.identifier.isCardBack(image);
-      if (backResult.isBack) {
-        setIsCardBack(true);
-        setResolvedCandidates([]);
-        return EMPTY_IDENTIFY_RESULT;
-      }
-      setIsCardBack(false);
 
       const result = resources.identifier.identify(image);
 
@@ -206,7 +196,6 @@ export function useScanCapture({
     error,
     cameraStatus,
     setCameraStatus,
-    isCardBack,
     resolvedCandidates,
     lockedCandidate,
     scanPhase,

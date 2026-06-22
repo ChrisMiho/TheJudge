@@ -224,16 +224,16 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 
 ## Card scanning
 
-- Status: planned
-- Summary: Optional on-device camera scanner that identifies a Magic card by artwork (perceptual hash → ranked candidates) and adds it to a zone via the existing add path; frontend-only, zero network calls, no backend/API/prompt change. Decided and documented, no code under `apps/` yet.
-- Lives in: (planned) `apps/frontend/src/` scan module + camera UI in `ZoneCardPicker.tsx`; build script under `scripts/`; artifacts under `apps/frontend/public/data/`
-- Backed by: DEC-050, DEC-051, DEC-052, DEC-053, REQ-034, REQ-035, REQ-036, REQ-037, REQ-038, NFR-010
+- Status: shipped
+- Summary: Optional on-device camera scanner that identifies a Magic card by artwork (perceptual hash → ranked candidates), converges via a temporal lock-in control layer, and adds the locked card to a zone via the existing add path; frontend-only, zero network calls at scan time, no backend/API/prompt change. Card-back detection is descoped (no reference asset). Validated end-to-end on a laptop camera; formal NFR-010 device metrics not separately recorded.
+- Lives in: `apps/frontend/src/lib/scan/` + camera/lock-in UI in `apps/frontend/src/components/{ScanCameraSurface,ZoneCardPicker,ZoneCollectionStep}.tsx` + `hooks/useScanCapture.ts`; build scripts under `scripts/`; artifacts under `apps/frontend/public/data/`
+- Backed by: DEC-050, DEC-051, DEC-052, DEC-053, DEC-055, REQ-034, REQ-035, REQ-036, REQ-037, REQ-038, NFR-010
 
 ### Identification core
 
-- Status: planned
-- Summary: Single authoritative TS perceptual-hash + matching module (DB reader, auto-levels, Region A pHash, two-orientation match, card-back rejection, ranked candidates), validated byte-for-byte against regenerated golden vectors.
-- Lives in: (planned) `apps/frontend/src/` scan module; vectors under test fixtures
+- Status: shipped
+- Summary: Single authoritative TS perceptual-hash + matching module (DB reader, auto-levels, Region A pHash, two-orientation match, ranked candidates), validated byte-for-byte against regenerated golden vectors. Retains a dormant card-back rejection method (inactive until a `_card_back` reference is added — DEC-055).
+- Lives in: `apps/frontend/src/lib/scan/{recipe,identify,dbformat,types}.ts`; golden vectors under `apps/frontend/src/lib/scan/__fixtures__/`
 - Backed by: REQ-034, DEC-051, DEC-053
 
 ### Fingerprint library build
@@ -245,24 +245,31 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 
 ### Scan-to-metadata resolver
 
-- Status: planned
+- Status: shipped
 - Summary: Maps ranked printing-id candidates → oracle id → existing `CardMetadataItem`, collapsing duplicates by best distance and dropping unresolvable candidates.
-- Lives in: (planned) `apps/frontend/src/` scan resolver + `public/data/` bridge artifact
+- Lives in: `apps/frontend/src/lib/scan/resolveScanCandidates.ts` + `apps/frontend/public/data/cardScanMap.json`
 - Backed by: REQ-036, DEC-053
 
 ### Camera capture & detector
 
-- Status: planned
-- Summary: Live camera capture with card-shaped overlay; detects and perspective-warps the card to the canonical image; continuous auto-scan plus manual tap fallback; outcome-validated tuning.
-- Lives in: (planned) `apps/frontend/src/` camera/detector module
-- Backed by: REQ-037, DEC-052
+- Status: shipped
+- Summary: Live camera capture with card-shaped overlay; detects and perspective-warps the card to the canonical image (detection runs on a downscaled frame, warps from full-res for steadier quads and higher effective FPS); continuous auto-scan plus manual tap fallback, paused on lock-in.
+- Lives in: `apps/frontend/src/lib/scan/detector.ts`, `apps/frontend/src/components/ScanCameraSurface.tsx`
+- Backed by: REQ-037, DEC-052, DEC-055
+
+### Scan lock-in control layer
+
+- Status: shipped
+- Summary: Temporal stabilizer votes the top-1 oracle identity across a rolling window (confidence + margin gated) and emits `searching`/`locked`; on lock, auto-scan pauses and one confident card is presented for one-tap Add with Rescan. Replaces the prior per-frame list churn. Convergence knobs are isolated in `tuning.ts`.
+- Lives in: `apps/frontend/src/lib/scan/{stabilizer,tuning}.ts`, `apps/frontend/src/hooks/useScanCapture.ts`
+- Backed by: DEC-055, REQ-037, REQ-038
 
 ### Scan UX in zone picker
 
-- Status: planned
-- Summary: Scan entry point beside manual search; batch scan → Accept → re-scan loop; card-back and low-confidence handling; feeds the existing preview/add/owner/duplicate-block/stack-limit flow unchanged.
-- Lives in: (planned) `apps/frontend/src/components/ZoneCardPicker.tsx`
-- Backed by: REQ-038, DEC-052
+- Status: shipped
+- Summary: Scan entry point beside manual search; batch scan → lock-in → Add → re-scan loop; confidence-gated candidate hints and low-confidence manual-entry escalation; feeds the existing preview/add/owner/duplicate-block/stack-limit flow unchanged. Card-back prompt descoped (DEC-055).
+- Lives in: `apps/frontend/src/components/{ZoneCardPicker,ZoneCollectionStep}.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`
+- Backed by: REQ-038, DEC-052, DEC-055
 
 ## Follow-up chat
 
