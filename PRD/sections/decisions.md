@@ -983,3 +983,24 @@
 - Notes:
   - distinct from the raw status-string leaks removed by DEC-057: this is an opt-in, user-summoned diagnostic, not an always-on leak
   - primarily a calibration/diagnostic aid supporting DEC-059's outcome validation
+
+### DEC-061
+- Decision: Each successful scan auto-add plays a short audio "ding", on by default, with a mute toggle on the scan screen; muting suppresses the sound only and never the visual thumbs-up confirmation. This realizes the audio half deferred out of DEC-057.
+- Status: confirmed
+- Context: DEC-057 specified both a visual thumbs-up popup and an audio "ding" on each hands-free auto-add (DEC-056), but split the audio half out to `PRD/work/scan-audio-confirmation/` so the visual work could ship scoped. At a live table a player's eyes are on the cards, not the screen, so an audio cue confirms an add without requiring the user to watch the popup. The confirmation event already exists: the visual popup fires off the monotonic `ScanAddConfirmation.id` signal the scan hook emits on each auto-add.
+- Impact:
+  - scanning stays frontend-only with zero network calls at scan time; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly (`buildPromptContext`/`buildPromptText`), the provider boundary, or any product-facing endpoint
+  - no change to the stabilizer, lock/convergence logic, the add path, or the visual thumbs-up popup (DEC-056, DEC-057)
+  - the ding plays off the same monotonic `ScanAddConfirmation.id` auto-add event that drives the visual popup, so sound and popup fire together and a repeat add of the same card re-fires both
+  - the sound is on by default; a mute toggle (speaker/mute icon) sits top-left on the scan screen, paired with the convergence status indicator, leaving the top-right cluster (scanned-cards review bubble + Debug toggle) unchanged
+  - muting suppresses the audio only; the visual thumbs-up popup is unaffected by mute state
+  - the mute preference persists across reloads via `localStorage` — the first `localStorage` use in the repo, isolated in a small dedicated helper (`apps/frontend/src/lib/scan/audioPrefs.ts`) with its own unit test; a corrupt/unavailable store falls back to the default (unmuted) and never throws
+  - the sound is played from the bundled static asset `apps/frontend/public/assets/scanSuccess.wav` (served at `/assets/scanSuccess.wav`), a short 16-bit mono PCM WAV; no audio or animation library is added and no runtime tone synthesis is used
+  - audio is functional confirmation feedback, not animation; it is explicitly outside the NFR-006 animation carve-out (which governs the popup motion only), so no carve-out and no library are required for the audio path
+  - mobile browsers gate audio playback on a prior user gesture; entering the scanner is itself a tap, so the audio element is primed on scanner open and a failed/blocked play degrades silently — it never throws and never blocks or pauses scanning
+- Related requirements:
+  - REQ-040
+  - REQ-042
+- Notes:
+  - completes the deferral in DEC-057; the visual half (popup, three-state indicator, list-to-indicator replacement) is unchanged
+  - no volume control, no per-zone sound variation, and no device-silent-switch detection (not reliably available on the web platform; the in-app mute is the control)

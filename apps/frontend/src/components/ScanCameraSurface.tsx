@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { detectCard, type Point } from "../lib/scan/detector"
+import { loadScanAudioMuted, saveScanAudioMuted } from "../lib/scan/audioPrefs"
 import type { IdentifyResult, RgbImage } from "../lib/scan/types"
 import { ScanDebugOverlay } from "./ScanDebugOverlay"
 // Type-only import (erased at build): the hook owns the convergence/confirmation
@@ -45,6 +46,7 @@ export function ScanCameraSurface({
   className = ""
 }: ScanCameraSurfaceProps): JSX.Element {
   const videoRef = useRef<HTMLVideoElement | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const rafRef = useRef<number | null>(null)
@@ -55,6 +57,9 @@ export function ScanCameraSurface({
   pausedRef.current = paused
   const [status, setStatus] = useState<ScanCameraStatus>("idle")
   const [popup, setPopup] = useState<ScanAddConfirmation | null>(null)
+  const [muted, setMuted] = useState(() => loadScanAudioMuted())
+  const mutedRef = useRef(muted)
+  mutedRef.current = muted
   // Opt-in debug overlay (DEC-060 / REQ-041). Ephemeral and OFF on each scanner
   // open: this component mounts fresh when the scanner opens, so `useState(false)`
   // already resets it; the camera-open effect re-asserts off on a camera re-open.
@@ -65,10 +70,17 @@ export function ScanCameraSurface({
   const [debugFrame, setDebugFrame] = useState<{ width: number; height: number } | null>(null)
 
   // Momentary thumbs-up on each successful auto-add; keyed on the monotonic id so
-  // repeat adds re-trigger the CSS fade. Visual confirmation only (audio deferred).
+  // repeat adds re-trigger the CSS fade and ding.
   useEffect(() => {
     if (!confirmation) return
     setPopup(confirmation)
+    if (!mutedRef.current) {
+      const audio = audioRef.current
+      if (audio) {
+        audio.currentTime = 0
+        void audio.play().catch(() => {})
+      }
+    }
     const timer = window.setTimeout(() => setPopup(null), 1400)
     return () => window.clearTimeout(timer)
     // Trigger on the monotonic id only: a fresh add must re-fire even for the same card.
@@ -146,6 +158,7 @@ export function ScanCameraSurface({
     setDebugEnabled(false)
     setDebugCorners(null)
     setDebugFrame(null)
+    audioRef.current?.load()
 
     async function openCamera(): Promise<void> {
       try {
@@ -202,11 +215,17 @@ export function ScanCameraSurface({
       : isLocking
         ? `Locking on ${convergence?.leaderName}`
         : "Searching for a card…"
+  const handleMutedChange = (): void => {
+    const next = !muted
+    setMuted(next)
+    saveScanAudioMuted(next)
+  }
 
   return (
     <section className={`space-y-3 ${className}`}>
       <div className="relative overflow-hidden rounded-2xl border border-slate-600 bg-slate-950">
         <video ref={videoRef} className="aspect-[3/4] w-full bg-slate-950 object-cover" muted playsInline />
+        <audio ref={audioRef} src="/assets/scanSuccess.wav" preload="auto" />
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="h-[82%] aspect-[745/1040] rounded-xl border-2 border-emerald-300/90 shadow-[0_0_0_999px_rgba(15,23,42,0.35)]" />
         </div>
@@ -232,6 +251,15 @@ export function ScanCameraSurface({
             </span>
           )}
         </div>
+        <button
+          type="button"
+          onClick={handleMutedChange}
+          aria-pressed={muted}
+          aria-label={muted ? "Unmute scan sound" : "Mute scan sound"}
+          className="absolute left-3 top-[4.75rem] rounded-full bg-slate-950/70 px-2.5 py-1 text-sm font-semibold text-slate-300 transition hover:bg-slate-800/80 focus:outline-none focus:ring-2 focus:ring-slate-300"
+        >
+          <span aria-hidden="true">{muted ? "🔇" : "🔊"}</span>
+        </button>
         {debugEnabled && (
           <ScanDebugOverlay
             metrics={debug ?? null}

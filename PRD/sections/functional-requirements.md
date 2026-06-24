@@ -733,7 +733,7 @@
   - the lock/auto-add thresholds in `apps/frontend/src/lib/scan/tuning.ts` are tuned to lock readily on a clearly-leading card (DEC-059) and validated by outcome on both intended (phone, card presented) and adverse (webcam, fingers near edges, noisy background) capture conditions: cards lock quickly and reliably; wrong auto-adds stay rare and are removable in one tap (DEC-058); the runner-up distinctness/margin guard still prevents near-random locks; an ambiguous frame keeps searching rather than committing
   - while running, the scan screen shows a legible three-state convergence indicator — `searching`, `locking` on a named card with a progress/confidence cue, and a momentary `locked` — driven by an additive, pure progress signal from the stabilizer (no change to distance/confidence/margin logic) (DEC-057)
   - the selectable top-3 candidate list is replaced by a single non-selectable "locking on: <name>" indicator; the raw status pill copy and the debug `Camera: <status>` line are replaced with user-facing state copy (DEC-057)
-  - each successful auto-add plays a thumbs-up confirmation popup that pops up and fades out; the popup motion uses a CSS-only functional animation permitted under NFR-006 (DEC-057); audio confirmation (a "ding" + mute toggle) is out of scope here and deferred to `PRD/work/scan-audio-confirmation/`
+  - each successful auto-add plays a thumbs-up confirmation popup that pops up and fades out; the popup motion uses a CSS-only functional animation permitted under NFR-006 (DEC-057); audio confirmation (a "ding" + mute toggle) is realized separately by REQ-042 / DEC-061 (`PRD/work/scan-audio-confirmation/`)
   - a counter bubble in the top-right of the scan screen expands to list the cards added to the current zone during this scan session, each with a single-tap remove and no confirmation step (DEC-058)
   - when auto-add would hit the duplicate-stack block or the 10-card stack limit, a non-blocking notice is shown and scanning continues; the card is not silently dropped
   - manual tap-capture and the low-confidence manual-search escalation remain available; the user is never stranded
@@ -779,3 +779,30 @@
 - Notes:
   - supports DEC-059 gate calibration by making the scanner's perception visible
   - the live detected-card outline differs from the static alignment-template guide frame (which shows where to place the card, not what the scanner detects)
+
+### REQ-042
+- Title: Audio confirmation for scan auto-add
+- Priority: medium
+- Description: Each successful hands-free scan auto-add plays a short "ding", on by default, with a mute toggle on the scan screen, so a player at a live table can confirm an add by ear without watching the screen. Realizes the audio half deferred out of DEC-057/REQ-040. Frontend-only.
+- Acceptance Criteria:
+  - on each successful auto-add the scanner plays a short "ding" from the bundled asset `apps/frontend/public/assets/scanSuccess.wav` (served at `/assets/scanSuccess.wav`), fired off the same monotonic `ScanAddConfirmation.id` auto-add event that drives the visual thumbs-up popup, so sound and popup fire together and a repeat add of the same card re-fires both (DEC-061)
+  - the sound is ON by default; a mute toggle (speaker/mute icon) appears top-left on the scan screen, paired with the convergence status indicator, leaving the top-right review-bubble/Debug cluster unchanged (DEC-061)
+  - muting suppresses the audio only and never the visual thumbs-up popup; the popup is unaffected by mute state (DEC-061)
+  - the mute preference persists across reloads via `localStorage`, isolated in `apps/frontend/src/lib/scan/audioPrefs.ts`; a corrupt or unavailable store falls back to the default (unmuted) and never throws (DEC-061)
+  - the audio element is primed on scanner open (the open is itself a user gesture); a blocked or failed play degrades silently and never throws, pauses, or blocks scanning (DEC-061)
+  - the `audioPrefs` load/save helper is unit-tested; existing scan/zone-collection tests are extended, not replaced
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - no change to the stabilizer, lock/convergence logic, the add path, or the visual thumbs-up popup (DEC-056, DEC-057)
+  - no audio or animation library and no runtime tone synthesis; play the bundled WAV asset only
+  - audio is functional confirmation feedback, not animation; it is outside the NFR-006 carve-out (which governs the popup motion only)
+  - no volume control, no per-zone sound variation, no device-silent-switch detection
+- Dependencies:
+  - REQ-040
+  - DEC-056
+  - DEC-057
+  - DEC-061
+  - NFR-010
+- Notes:
+  - completes the audio deferral noted in REQ-040 and FLOW-006 step 4
+  - `localStorage` for the mute preference is the first such use in the repo; keep it confined to `audioPrefs.ts`

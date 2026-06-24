@@ -60,18 +60,24 @@ know what "done" means before dispatching.
 
 Use the `codex` CLI from the repo root. Capture the final message with `-o`.
 
+**Always redirect stdin from `/dev/null` (`</dev/null`).** The prompt is passed as
+an argument, so Codex needs nothing from stdin — but if stdin is an open pipe
+(which it is when dispatched as a background run), `codex exec` treats it as
+piped input and blocks forever on "Reading additional input from stdin...",
+never starting the task and never exiting. `</dev/null` gives it immediate EOF.
+
 - **Exploration / code investigation** (read-only sandbox):
 
   ```bash
   codex exec -C "$REPO_ROOT" -s read-only \
-    -o "$SCRATCH/explore-<topic>.txt" "<question or investigation task>"
+    -o "$SCRATCH/explore-<topic>.txt" "<question or investigation task>" </dev/null
   ```
 
 - **Slice implementation** (workspace-write sandbox):
 
   ```bash
   codex exec -C "$REPO_ROOT" -s workspace-write \
-    -o "$SCRATCH/slice-<letter>.txt" "<slice implementation prompt>"
+    -o "$SCRATCH/slice-<letter>.txt" "<slice implementation prompt>" </dev/null
   ```
 
 - **Concurrent wave**: launch one background `codex exec` per independent slice,

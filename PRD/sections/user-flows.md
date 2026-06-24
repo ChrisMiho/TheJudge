@@ -115,7 +115,7 @@
   1. Camera opens as its own screen with a card-shaped guide overlay and stays open for the session.
   2. The scanner auto-scans continuously; a manual capture button is always available. A live convergence indicator shows `searching`, then `locking` on a named card with a progress/confidence cue as evidence accumulates (DEC-057).
   3. Once one card is consistently the best over a short window with high confidence, it **locks in** and is **auto-added** to the current zone via the existing add path (owner via the sticky owner selector, duplicate-stack block, stack-size limit, `ZoneCardItem` output) — no Accept tap and no selecting from a list (DEC-056).
-  4. A thumbs-up confirmation popup fades in and out; auto-scan immediately resumes for the next card and the zone's card list shows the running count (DEC-057). Audio confirmation (a "ding") is deferred to `PRD/work/scan-audio-confirmation/`.
+  4. A thumbs-up confirmation popup fades in and out and a short "ding" plays (on by default; a top-left mute toggle silences the sound only, not the popup); auto-scan immediately resumes for the next card and the zone's card list shows the running count (DEC-057, DEC-061).
   5. To remove a wrong auto-add, the user taps the scanned-cards bubble in the top-right and removes the card in one tap (no confirmation) without leaving the camera (DEC-058).
   6. User repeats as needed, then taps **Back/Exit** to return to zone collection and pick another zone or move forward in the flow.
 - Edge Cases:
