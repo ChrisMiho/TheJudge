@@ -267,15 +267,15 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Scan UX in zone picker
 
 - Status: shipped
-- Summary: Hands-free scan entry point beside manual search: batch scan → confident lock → auto-add → resume loop with no Accept tap and no candidate-list pick. A live `searching`/`locking on: <name>`/`locked` indicator (replacing the raw status pill and `Camera: <status>` debug line) shows convergence; each auto-add plays a CSS-only thumbs-up confirmation popup (NFR-006); a top-right scanned-cards review bubble lists this-session adds with one-tap, no-confirmation removal of a wrong auto-add. Duplicate-stack/stack-limit blocks surface as non-blocking notices and scanning continues. Feeds the existing preview/add/owner/duplicate-block/stack-limit/removal flow unchanged; low-confidence manual-entry escalation and manual tap-capture remain. Card-back prompt descoped (DEC-055). Audio "ding" confirmation is tracked separately under **Scan audio confirmation** (REQ-042 / DEC-061, planned).
+- Summary: Hands-free scan entry point beside manual search: batch scan → confident lock → auto-add → resume loop with no Accept tap and no candidate-list pick. A live `searching`/`locking on: <name>`/`locked` indicator (replacing the raw status pill and `Camera: <status>` debug line) shows convergence; each auto-add plays a CSS-only thumbs-up confirmation popup (NFR-006); a top-right scanned-cards review bubble lists this-session adds with one-tap, no-confirmation removal of a wrong auto-add. Duplicate-stack/stack-limit blocks surface as non-blocking notices and scanning continues. Feeds the existing preview/add/owner/duplicate-block/stack-limit/removal flow unchanged; low-confidence manual-entry escalation and manual tap-capture remain. Card-back prompt descoped (DEC-055). Audio "ding" confirmation is tracked separately under **Scan audio confirmation** (REQ-042 / DEC-061, shipped).
 - Lives in: `apps/frontend/src/components/{ZoneCardPicker,ZoneCollectionStep,ScanReviewBubble}.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`, `apps/frontend/src/index.css`
 - Backed by: REQ-038, REQ-040, DEC-052, DEC-055, DEC-056, DEC-057, DEC-058
 
 ### Scan audio confirmation
 
-- Status: planned
+- Status: shipped
 - Summary: A short "ding" plays on each successful auto-add, on by default, with a top-left mute toggle on the scan screen; fired off the same monotonic `ScanAddConfirmation.id` event as the visual thumbs-up popup. Muting silences the sound only, never the popup. The mute preference persists across reloads via `localStorage` (first repo use, isolated in `lib/scan/audioPrefs.ts`). Played from the bundled `apps/frontend/public/assets/scanSuccess.wav`; no audio/animation library, no tone synthesis. Audio is functional confirmation, outside the NFR-006 animation carve-out. Frontend-only; no backend/API/prompt change. The audio half deferred out of DEC-057.
-- Lives in: `apps/frontend/src/components/ScanCameraSurface.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`, `apps/frontend/src/lib/scan/audioPrefs.ts`; asset `apps/frontend/public/assets/scanSuccess.wav`
+- Lives in: `apps/frontend/src/components/ScanCameraSurface.tsx`, `apps/frontend/src/lib/scan/audioPrefs.ts`; asset `apps/frontend/public/assets/scanSuccess.wav`
 - Backed by: REQ-042, DEC-061
 
 ### Scanner debug overlay

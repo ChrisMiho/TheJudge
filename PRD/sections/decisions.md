@@ -916,7 +916,7 @@
   - **Superseded in part (DEC-059):** the "lock bar high enough that a wrong card is essentially never auto-added" strict-bar intent is rebalanced toward ease-of-lock with one-tap removal (DEC-058) as the safety net; the auto-add mechanism and hands-free model this decision introduces are unchanged
 
 ### DEC-057
-- Decision: The scan screen shows a live three-state convergence indicator (`searching` -> `locking` -> `locked`) driven by an additive, pure progress signal from the stabilizer, replaces the selectable candidate list with a single non-selectable "locking on" indicator, removes the raw status-string leaks, and plays positive visual confirmation feedback (a thumbs-up popup that fades out) on each successful auto-add. Audio confirmation (a "ding" + mute toggle) is split out of this decision and tracked separately in `PRD/work/scan-audio-confirmation/`, to be completed later.
+- Decision: The scan screen shows a live three-state convergence indicator (`searching` -> `locking` -> `locked`) driven by an additive, pure progress signal from the stabilizer, replaces the selectable candidate list with a single non-selectable "locking on" indicator, removes the raw status-string leaks, and plays positive visual confirmation feedback (a thumbs-up popup that fades out) on each successful auto-add. Audio confirmation (a "ding" + mute toggle) is split out of this decision and realized separately by DEC-061 / REQ-042.
 - Status: confirmed
 - Context: The shipped scan UX surfaces a raw status pill (`Scanning`, `No card found`, `No match`, `captured`) and a debug `Camera: <status>` line, and renders a capped top-3 selectable candidate list while searching. With auto-add (DEC-056) the user no longer picks from a list, and the experience needs to communicate "how it is doing" while converging and confirm clearly when a card lands. The stabilizer currently emits only `searching`/`locked` with no visible progress toward lock.
 - Impact:
@@ -925,14 +925,14 @@
   - the capped top-3 selectable candidate list is replaced by a single non-selectable "locking on: <name>" indicator; the user does not select from a list
   - the raw status pill copy and the debug `Camera: <status>` line are replaced with legible user-facing state copy
   - on each successful auto-add a thumbs-up confirmation popup pops up and fades out; the popup fade is a functional CSS animation permitted under the NFR-006 carve-out and adds no animation library
-  - audio confirmation (a "ding" on by default with a mute toggle on the scan screen) is out of scope here and deferred to `PRD/work/scan-audio-confirmation/`
+  - audio confirmation (a "ding" on by default with a mute toggle on the scan screen) is out of scope here and realized separately by DEC-061 / REQ-042
   - no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
 - Related requirements:
   - REQ-040
   - NFR-006
 - Notes:
   - refines DEC-055's "while searching, candidates are confidence-gated and capped (top 3) as a subdued hint" — the hint becomes a single informational indicator, not a selectable list
-  - NFR-006 governs the popup motion only; audio is functional confirmation feedback (not animation) and is scoped to `PRD/work/scan-audio-confirmation/`
+  - NFR-006 governs the popup motion only; audio is functional confirmation feedback (not animation) and is scoped to DEC-061 / REQ-042
 
 ### DEC-058
 - Decision: The scan screen shows a scanned-cards review control (a counter bubble in the top-right) that expands to list the cards added to the current zone during this scan session, each with a single-tap remove. Removal has no confirmation step.
@@ -987,7 +987,7 @@
 ### DEC-061
 - Decision: Each successful scan auto-add plays a short audio "ding", on by default, with a mute toggle on the scan screen; muting suppresses the sound only and never the visual thumbs-up confirmation. This realizes the audio half deferred out of DEC-057.
 - Status: confirmed
-- Context: DEC-057 specified both a visual thumbs-up popup and an audio "ding" on each hands-free auto-add (DEC-056), but split the audio half out to `PRD/work/scan-audio-confirmation/` so the visual work could ship scoped. At a live table a player's eyes are on the cards, not the screen, so an audio cue confirms an add without requiring the user to watch the popup. The confirmation event already exists: the visual popup fires off the monotonic `ScanAddConfirmation.id` signal the scan hook emits on each auto-add.
+- Context: DEC-057 specified both a visual thumbs-up popup and an audio "ding" on each hands-free auto-add (DEC-056), but split the audio half out (this decision) so the visual work could ship scoped. At a live table a player's eyes are on the cards, not the screen, so an audio cue confirms an add without requiring the user to watch the popup. The confirmation event already exists: the visual popup fires off the monotonic `ScanAddConfirmation.id` signal the scan hook emits on each auto-add.
 - Impact:
   - scanning stays frontend-only with zero network calls at scan time; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly (`buildPromptContext`/`buildPromptText`), the provider boundary, or any product-facing endpoint
   - no change to the stabilizer, lock/convergence logic, the add path, or the visual thumbs-up popup (DEC-056, DEC-057)
