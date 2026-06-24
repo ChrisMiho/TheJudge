@@ -83,7 +83,7 @@ From repo root:
 - `npm test` — default gate when frontend or shared logic changes
 - `npm --workspace apps/backend run test:eval` — backend prompt/context goldens
 
-Do not change `AskAiRequest` shape or prompt assembly without a confirmed decision in `PRD/sections/decisions.md`.
+Do not change `AskAiRequest` shape or prompt assembly without a confirmed decision in the relevant `PRD/sections/decisions/<domain>.md` file and a router index line in `PRD/sections/decisions.md`.
 
 ## Adding or updating scenarios
 

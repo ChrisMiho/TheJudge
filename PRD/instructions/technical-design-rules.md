@@ -52,5 +52,5 @@ Do not propose or implement:
 - pass documented structured context fields (question, stack, and approved game/battlefield/entry context)
 - do not add hidden-state assumptions beyond documented prompt guidance
 - do not add rules-validation behavior under the label of prompt enrichment
-- do not change `AskAiRequest` shape, Zod schemas, or backend prompt assembly (`buildPromptContext`, `buildPromptText`) without a new confirmed decision in `sections/decisions.md`
+- do not change `AskAiRequest` shape, Zod schemas, or backend prompt assembly (`buildPromptContext`, `buildPromptText`) without a new confirmed decision in the relevant `sections/decisions/<domain>.md` file and a router index line in `sections/decisions.md`
 - `MAX_PROMPT_CHAR_BUDGET` is set to `EFFECTIVELY_UNLIMITED_CHARS = 1_000_000` (DEC-042 amendment to DEC-030); do not bypass prompt diagnostics to silence test failures; update eval goldens only for intentional behavior changes; revisit cap values after latency/cost sampling

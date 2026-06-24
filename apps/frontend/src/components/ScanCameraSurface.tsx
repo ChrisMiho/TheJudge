@@ -1,14 +1,34 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { detectCard } from "../lib/scan/detector"
+import { detectCard, type Point } from "../lib/scan/detector"
+import { loadScanAudioMuted, saveScanAudioMuted } from "../lib/scan/audioPrefs"
+import type { ConditionReason } from "../lib/scan/frameQuality"
 import type { IdentifyResult, RgbImage } from "../lib/scan/types"
+import { ScanDebugOverlay } from "./ScanDebugOverlay"
+// Type-only import (erased at build): the hook owns the convergence/confirmation
+// view-model shapes; this presentational component just renders them.
+import type { ScanAddConfirmation, ScanConvergence, ScanDebugMetrics } from "../hooks/useScanCapture"
 
 export type ScanCameraStatus = "idle" | "camera-error" | "scanning" | "no-card" | "captured" | "no-match"
+
+// Cause-aware searching hints (DEC-062 / REQ-043 / FLOW-006). Maps the frame
+// quality reason to a short, action-oriented nudge. Only shown while searching;
+// the locking state stays focused on the named leader and vote progress.
+const CONDITION_HINT_COPY: Record<ConditionReason, string> = {
+  glare: "Too much glare — tilt the card",
+  blur: "Hold steady",
+  occlusion: "Keep the card edges in view",
+  "low-detail": "Move closer"
+}
 
 export type ScanCameraSurfaceProps = {
   onCapture: (image: RgbImage) => void
   onResult?: (result: IdentifyResult | null) => void
   onStatusChange?: (status: ScanCameraStatus) => void
   identify?: (image: RgbImage) => IdentifyResult | Promise<IdentifyResult>
+  convergence?: ScanConvergence
+  confirmation?: ScanAddConfirmation | null
+  /** Read-only per-frame diagnostics for the opt-in debug overlay (DEC-060 / REQ-041). */
+  debug?: ScanDebugMetrics | null
   autoScanFps?: number
   paused?: boolean
   className?: string
@@ -29,11 +49,15 @@ export function ScanCameraSurface({
   onResult,
   onStatusChange,
   identify,
+  convergence,
+  confirmation,
+  debug,
   autoScanFps = 4,
   paused = false,
   className = ""
 }: ScanCameraSurfaceProps): JSX.Element {
   const videoRef = useRef<HTMLVideoElement | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const rafRef = useRef<number | null>(null)
@@ -43,6 +67,36 @@ export function ScanCameraSurface({
   const pausedRef = useRef(paused)
   pausedRef.current = paused
   const [status, setStatus] = useState<ScanCameraStatus>("idle")
+  const [popup, setPopup] = useState<ScanAddConfirmation | null>(null)
+  const [muted, setMuted] = useState(() => loadScanAudioMuted())
+  const mutedRef = useRef(muted)
+  mutedRef.current = muted
+  // Opt-in debug overlay (DEC-060 / REQ-041). Ephemeral and OFF on each scanner
+  // open: this component mounts fresh when the scanner opens, so `useState(false)`
+  // already resets it; the camera-open effect re-asserts off on a camera re-open.
+  const [debugEnabled, setDebugEnabled] = useState(false)
+  const debugEnabledRef = useRef(false)
+  debugEnabledRef.current = debugEnabled
+  const [debugCorners, setDebugCorners] = useState<Point[] | null>(null)
+  const [debugFrame, setDebugFrame] = useState<{ width: number; height: number } | null>(null)
+
+  // Momentary thumbs-up on each successful auto-add; keyed on the monotonic id so
+  // repeat adds re-trigger the CSS fade and ding.
+  useEffect(() => {
+    if (!confirmation) return
+    setPopup(confirmation)
+    if (!mutedRef.current) {
+      const audio = audioRef.current
+      if (audio) {
+        audio.currentTime = 0
+        void audio.play().catch(() => {})
+      }
+    }
+    const timer = window.setTimeout(() => setPopup(null), 1400)
+    return () => window.clearTimeout(timer)
+    // Trigger on the monotonic id only: a fresh add must re-fire even for the same card.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [confirmation?.id])
 
   const updateStatus = useCallback(
     (next: ScanCameraStatus) => {
@@ -70,8 +124,19 @@ export function ScanCameraSurface({
         if (!ctx) return
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
         const frame = imageDataToRgb(ctx.getImageData(0, 0, canvas.width, canvas.height))
-        const card = detectCard(frame)
+        // Only ask the detector to surface corners while the overlay is enabled,
+        // so disabled-overlay scanning keeps the round-1 cost (NFR-010).
+        let capturedCorners: Point[] | null = null
+        const card = detectCard(
+          frame,
+          debugEnabledRef.current ? { onCorners: (corners) => (capturedCorners = corners) } : {}
+        )
         if (!mountedRef.current) return
+
+        if (debugEnabledRef.current) {
+          setDebugCorners(capturedCorners)
+          setDebugFrame({ width: frame.width, height: frame.height })
+        }
 
         if (!card) {
           if (force) onResult?.(null)
@@ -100,6 +165,11 @@ export function ScanCameraSurface({
   useEffect(() => {
     mountedRef.current = true
     let cancelled = false
+    // Debug overlay is ephemeral: re-assert OFF whenever the camera (re)opens.
+    setDebugEnabled(false)
+    setDebugCorners(null)
+    setDebugFrame(null)
+    audioRef.current?.load()
 
     async function openCamera(): Promise<void> {
       try {
@@ -149,29 +219,101 @@ export function ScanCameraSurface({
     }
   }, [autoScanFps, scanCurrentFrame])
 
-  const statusText =
+  const isLocking = convergence?.phase === "locking" && Boolean(convergence.leaderName)
+  const isSearching = status !== "camera-error" && !isLocking
+  // Cause-aware hint only while searching under poor frame conditions; never
+  // during locking (keeps locking copy clean) or a camera error.
+  const conditionHint =
+    isSearching && convergence?.conditionHint ? CONDITION_HINT_COPY[convergence.conditionHint] : null
+  const indicatorText =
     status === "camera-error"
       ? "Camera unavailable"
-      : status === "scanning"
-        ? "Scanning"
-        : status === "no-card"
-          ? "No card found"
-          : status === "no-match"
-            ? "No match"
-            : status === "captured"
-              ? "Captured"
-              : "Ready"
+      : isLocking
+        ? `Locking on ${convergence?.leaderName}`
+        : "Searching for a card…"
+  const handleMutedChange = (): void => {
+    const next = !muted
+    setMuted(next)
+    saveScanAudioMuted(next)
+  }
 
   return (
     <section className={`space-y-3 ${className}`}>
       <div className="relative overflow-hidden rounded-2xl border border-slate-600 bg-slate-950">
         <video ref={videoRef} className="aspect-[3/4] w-full bg-slate-950 object-cover" muted playsInline />
+        <audio ref={audioRef} src="/assets/scanSuccess.wav" preload="auto" />
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="h-[82%] aspect-[745/1040] rounded-xl border-2 border-emerald-300/90 shadow-[0_0_0_999px_rgba(15,23,42,0.35)]" />
         </div>
-        <div className="absolute left-3 top-3 rounded-full bg-slate-950/80 px-3 py-1 text-xs font-semibold text-slate-100">
-          {statusText}
+        <div
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none absolute left-3 top-3 flex max-w-[80%] flex-col gap-1 rounded-xl bg-slate-950/80 px-3 py-2 text-xs font-semibold text-slate-100"
+        >
+          <span>{indicatorText}</span>
+          {isLocking && (
+            <span className="flex items-center gap-2">
+              <span className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-700/80">
+                <span
+                  className="block h-full rounded-full bg-emerald-400 transition-[width] duration-150"
+                  style={{
+                    width: `${Math.min(100, Math.round((convergence!.votes / Math.max(1, convergence!.votesNeeded)) * 100))}%`
+                  }}
+                />
+              </span>
+              <span className="text-[11px] font-medium text-emerald-200/90">
+                {`${convergence!.votes}/${convergence!.votesNeeded}`}
+              </span>
+            </span>
+          )}
+          {conditionHint && (
+            <span className="text-[11px] font-medium text-amber-200/90">{conditionHint}</span>
+          )}
         </div>
+        <button
+          type="button"
+          onClick={handleMutedChange}
+          aria-pressed={muted}
+          aria-label={muted ? "Unmute scan sound" : "Mute scan sound"}
+          className="absolute left-3 top-[4.75rem] rounded-full bg-slate-950/70 px-2.5 py-1 text-sm font-semibold text-slate-300 transition hover:bg-slate-800/80 focus:outline-none focus:ring-2 focus:ring-slate-300"
+        >
+          <span aria-hidden="true">{muted ? "🔇" : "🔊"}</span>
+        </button>
+        {debugEnabled && (
+          <ScanDebugOverlay
+            metrics={debug ?? null}
+            corners={debugCorners}
+            frameWidth={debugFrame?.width ?? null}
+            frameHeight={debugFrame?.height ?? null}
+          />
+        )}
+        <button
+          type="button"
+          onClick={() => setDebugEnabled((on) => !on)}
+          aria-pressed={debugEnabled}
+          className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-semibold transition ${
+            debugEnabled
+              ? "bg-sky-500/90 text-sky-50"
+              : "bg-slate-950/70 text-slate-300 hover:bg-slate-800/80"
+          }`}
+        >
+          Debug
+        </button>
+        {popup && (
+          <div
+            key={popup.id}
+            role="status"
+            aria-live="polite"
+            className="scan-confirm-popup pointer-events-none absolute inset-0 flex items-center justify-center"
+          >
+            <div className="flex flex-col items-center gap-1 rounded-2xl bg-emerald-500/90 px-5 py-4 text-emerald-50 shadow-lg">
+              <span className="text-4xl" aria-hidden="true">
+                👍
+              </span>
+              <span className="text-sm font-semibold">{`Added ${popup.cardName}`}</span>
+            </div>
+          </div>
+        )}
         <div className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-slate-950/60 px-2.5 py-1 text-[10px] font-medium text-slate-300/80">
           Powered by Cardomancer
         </div>

@@ -260,16 +260,37 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Scan lock-in control layer
 
 - Status: shipped
-- Summary: Temporal stabilizer votes the top-1 oracle identity across a rolling window (confidence + margin gated) and emits `searching`/`locked`; on lock, auto-scan pauses and one confident card is presented for one-tap Add with Rescan. Replaces the prior per-frame list churn. Convergence knobs are isolated in `tuning.ts`.
+- Summary: Temporal stabilizer votes the top-1 oracle identity across a rolling window (confidence + margin gated) and emits `searching`/`locked`; on a confident lock the card auto-adds and auto-scan resumes hands-free (no Accept tap). Replaces the prior per-frame list churn. Convergence knobs are isolated in `tuning.ts`. The stabilizer exposes an additive, pure progress signal (leader id + votes accumulated/needed, plus `bestDistance`/`runnerUpDistance`/`margin` on the `searching` state) that drives the `searching`/`locking`/`locked` indicator and the debug overlay, with no change to distance/confidence/margin logic. The lock gate is rebalanced toward ease-of-lock (DEC-059): the loosened window/votes/distance knobs (`windowSize 6 / minVotes 4 / lockDistance 78`) let a clearly-leading card lock readily while `marginMin 14` retains the runner-up distinctness guard; one-tap removal is the safety net. These are the shipped baseline; finer tuning + on-device (mobile) validation are carried to a dedicated tuning story.
 - Lives in: `apps/frontend/src/lib/scan/{stabilizer,tuning}.ts`, `apps/frontend/src/hooks/useScanCapture.ts`
-- Backed by: DEC-055, REQ-037, REQ-038
+- Backed by: REQ-037, REQ-038, REQ-040, DEC-055, DEC-056, DEC-057, DEC-059
 
 ### Scan UX in zone picker
 
 - Status: shipped
-- Summary: Scan entry point beside manual search; batch scan → lock-in → Add → re-scan loop; confidence-gated candidate hints and low-confidence manual-entry escalation; feeds the existing preview/add/owner/duplicate-block/stack-limit flow unchanged. Card-back prompt descoped (DEC-055).
-- Lives in: `apps/frontend/src/components/{ZoneCardPicker,ZoneCollectionStep}.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`
-- Backed by: REQ-038, DEC-052, DEC-055
+- Summary: Hands-free scan entry point beside manual search: batch scan → confident lock → auto-add → resume loop with no Accept tap and no candidate-list pick. A live `searching`/`locking on: <name>`/`locked` indicator (replacing the raw status pill and `Camera: <status>` debug line) shows convergence; each auto-add plays a CSS-only thumbs-up confirmation popup (NFR-006); a top-right scanned-cards review bubble lists this-session adds with one-tap, no-confirmation removal of a wrong auto-add. Duplicate-stack/stack-limit blocks surface as non-blocking notices and scanning continues. Feeds the existing preview/add/owner/duplicate-block/stack-limit/removal flow unchanged; low-confidence manual-entry escalation and manual tap-capture remain. Card-back prompt descoped (DEC-055). Audio "ding" confirmation is tracked separately under **Scan audio confirmation** (REQ-042 / DEC-061, shipped).
+- Lives in: `apps/frontend/src/components/{ZoneCardPicker,ZoneCollectionStep,ScanReviewBubble}.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`, `apps/frontend/src/index.css`
+- Backed by: REQ-038, REQ-040, DEC-052, DEC-055, DEC-056, DEC-057, DEC-058
+
+### Scan audio confirmation
+
+- Status: shipped
+- Summary: A short "ding" plays on each successful auto-add, on by default, with a top-left mute toggle on the scan screen; fired off the same monotonic `ScanAddConfirmation.id` event as the visual thumbs-up popup. Muting silences the sound only, never the popup. The mute preference persists across reloads via `localStorage` (first repo use, isolated in `lib/scan/audioPrefs.ts`). Played from the bundled `apps/frontend/public/assets/scanSuccess.wav`; no audio/animation library, no tone synthesis. Audio is functional confirmation, outside the NFR-006 animation carve-out. Frontend-only; no backend/API/prompt change. The audio half deferred out of DEC-057.
+- Lives in: `apps/frontend/src/components/ScanCameraSurface.tsx`, `apps/frontend/src/lib/scan/audioPrefs.ts`; asset `apps/frontend/public/assets/scanSuccess.wav`
+- Backed by: REQ-042, DEC-061
+
+### Scanner debug overlay
+
+- Status: shipped
+- Summary: Opt-in, user-summoned diagnostic on the scan screen (toggle defaults off, resets each time the scanner is opened) that visualizes how the scanner perceives the current card. When enabled it draws a live outline of the detected card region (from the detector's full-res `corners`, surfaced additively from `detectCard` rather than discarded after warp) plus the art-crop read region on the feed, and text metrics: best/runner-up candidate + distances, margin, votes accumulated/needed, phase, and the active `lockDistance`/`marginMin` thresholds. Read-only from existing detector/stabilizer signals; if geometry can't be cheaply surfaced it degrades to text metrics. Distinct from the static alignment-template guide frame and from the always-on raw status leaks removed by DEC-057. Renders only when enabled (no scan-perf regression off). Built primarily to diagnose poor locks and calibrate the DEC-059 thresholds.
+- Lives in: `apps/frontend/src/components/ScanDebugOverlay.tsx` + toggle/threading in `apps/frontend/src/components/ScanCameraSurface.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`, `apps/frontend/src/lib/scan/{stabilizer,detector}.ts`
+- Backed by: REQ-041, DEC-060
+
+### Scan robustness conditioning
+
+- Status: shipped
+- Summary: Makes the scan vote lock reliably under real-world conditions (glare/gloss, uneven/dim lighting, handheld shake, finger occlusion) by feeding the unchanged matching engine a cleaner, better-chosen query image — never by loosening the lock gate. Three query-only, frontend-only levers: (1) extended query frame conditioning beyond the black-point `autoLevels` stretch to full auto-contrast + specular/glare suppression + white-balance/color-cast normalization (DB images stay clean and un-conditioned, so parity-by-construction holds); (2) best-frame selection — per-frame quality scoring (sharpness, glare fraction, art-crop detail/occlusion) prefers the best frame in the stabilizer window and skips blurred/occluded frames, an additive pure signal with no distance/margin logic change and `marginMin` retained; (3) condition-aware feedback — the `searching` indicator gains cause hints ("too much glare — tilt", "hold steady", "move closer") and the debug overlay surfaces the new quality metrics. Finger occlusion is a frame-quality penalty only (no masked hashing). The recipe, `cardhashes.bin`, the DB build, the matching/distance logic, and the byte-exact parity gate are untouched; the lock gate stays at DEC-059 values. New thresholds isolated in `tuning.ts`, validated on a Mac-webcam device pass (qualitative owner acceptance; counted adverse capture-set table left optional).
+- Lives in: `apps/frontend/src/lib/scan/identify.ts` + `tuning.ts` (query-only conditioning), new `apps/frontend/src/lib/scan/frameQuality.ts` + `frameSelection.ts` (pure frame-quality scoring + best-frame selection), `apps/frontend/src/hooks/useScanCapture.ts` (frame selection + condition-hint/quality view-models), `apps/frontend/src/components/{ScanCameraSurface,ScanDebugOverlay}.tsx` (searching hint + debug quality metrics). `recipe.ts`, `stabilizer.ts`, and `cardhashes.bin` are intentionally unchanged.
+- Backed by: REQ-043, DEC-062
 
 ## Follow-up chat
 

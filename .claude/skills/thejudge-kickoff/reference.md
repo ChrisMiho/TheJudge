@@ -4,7 +4,7 @@ Use **after** kickoff when the user names a task or work slug.
 
 ## Source-of-truth precedence
 
-1. `PRD/sections/decisions.md` overrides conflicting older language
+1. `PRD/sections/decisions.md` is the read-first router; indexed `PRD/sections/decisions/<domain>.md` entries override conflicting older language
 2. `PRD/sections/*.md` — product scope
 3. `PRD/instructions/*.md` — agent process
 4. `PRD/README.md` — navigation only

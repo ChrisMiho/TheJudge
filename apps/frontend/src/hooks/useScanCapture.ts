@@ -1,4 +1,6 @@
 import { useCallback, useRef, useState } from "react";
+import type { ConditionReason } from "../lib/scan/frameQuality";
+import { FrameSelector } from "../lib/scan/frameSelection";
 import { CardIdentifier } from "../lib/scan/identify";
 import { loadHashDb } from "../lib/scan/loadHashDb";
 import { loadScanMap } from "../lib/scan/loadScanMap";
@@ -7,7 +9,12 @@ import {
   type CardScanMap
 } from "../lib/scan/resolveScanCandidates";
 import { ScanStabilizer } from "../lib/scan/stabilizer";
-import { MAX_SURFACED_CANDIDATES, SCAN_STABILIZER_CONFIG, SURFACE_DISTANCE } from "../lib/scan/tuning";
+import {
+  FRAME_SELECTOR_WINDOW_SIZE,
+  MAX_SURFACED_CANDIDATES,
+  SCAN_STABILIZER_CONFIG,
+  SURFACE_DISTANCE
+} from "../lib/scan/tuning";
 import type { Candidate, HashDb, IdentifyResult, RgbImage } from "../lib/scan/types";
 import type { ScanCameraStatus } from "../components/ScanCameraSurface";
 import type { CardMetadataItem } from "../types";
@@ -15,6 +22,56 @@ import type { CardMetadataItem } from "../types";
 export const LOW_CONFIDENCE_ESCALATION_COUNT = 3;
 
 export type ScanPhase = "searching" | "locked";
+
+export type ScanAddOutcome = { added: true } | { added: false; message: string };
+
+export type ScanConvergence = {
+  phase: "searching" | "locking" | "locked";
+  leaderName: string | null;
+  votes: number;
+  votesNeeded: number;
+  /** Additive (Slice B/C, DEC-062/REQ-043/FLOW-006): adverse-capture hint while searching. */
+  conditionHint: ConditionReason | null;
+};
+
+/**
+ * Read-only per-frame diagnostics for the opt-in debug overlay (DEC-060 /
+ * REQ-041). Derived from the same stabilizer signals as `convergence`; plays no
+ * part in gating. `null` when not searching (locked / reset). The geometry
+ * (card outline + read region) is owned by the camera surface, not here.
+ */
+export type ScanDebugMetrics = {
+  phase: "searching" | "locking";
+  bestName: string | null;
+  bestDistance: number | null;
+  runnerUpName: string | null;
+  runnerUpDistance: number | null;
+  margin: number | null;
+  votes: number;
+  votesNeeded: number;
+  lockDistance: number;
+  marginMin: number;
+  /** Additive (Slice B, DEC-062/REQ-043): frame-quality signals for the opt-in debug overlay. */
+  glareFraction: number | null;
+  sharpness: number | null;
+  frameQualityScore: number | null;
+  conditionReason: ConditionReason | null;
+};
+
+/**
+ * One-shot signal emitted on each successful auto-add so the UI can fire a
+ * momentary confirmation (thumbs-up popup). `id` is monotonic so the same card
+ * added twice still re-triggers the effect.
+ */
+export type ScanAddConfirmation = { id: number; cardName: string };
+
+const INITIAL_CONVERGENCE: ScanConvergence = {
+  phase: "searching",
+  leaderName: null,
+  votes: 0,
+  votesNeeded: SCAN_STABILIZER_CONFIG.minVotes,
+  conditionHint: null
+};
 
 type ScanIdentifier = Pick<CardIdentifier, "identify">;
 
@@ -31,7 +88,7 @@ export type UseScanCaptureDependencies = {
 
 type UseScanCaptureOptions = {
   cardMetadata: CardMetadataItem[];
-  onScanCandidateSelected: (card: CardMetadataItem) => void;
+  onScanCandidateSelected: (card: CardMetadataItem) => ScanAddOutcome;
   dependencies?: UseScanCaptureDependencies;
 };
 
@@ -59,10 +116,18 @@ export function useScanCapture({
   const [resolvedCandidates, setResolvedCandidates] = useState<CardMetadataItem[]>([]);
   const [lockedCandidate, setLockedCandidate] = useState<CardMetadataItem | null>(null);
   const [scanPhase, setScanPhase] = useState<ScanPhase>("searching");
+  const [convergence, setConvergence] = useState<ScanConvergence>(INITIAL_CONVERGENCE);
+  const [scanDebug, setScanDebug] = useState<ScanDebugMetrics | null>(null);
+  const [blockedNotice, setBlockedNotice] = useState<string | null>(null);
+  const [addConfirmation, setAddConfirmation] = useState<ScanAddConfirmation | null>(null);
   const [lowConfidenceCount, setLowConfidenceCount] = useState(0);
+  const addCounterRef = useRef(0);
   const resourcesRef = useRef<ScanResources | null>(null);
   const resourcesPromiseRef = useRef<Promise<ScanResources> | null>(null);
   const stabilizerRef = useRef<ScanStabilizer>(new ScanStabilizer(SCAN_STABILIZER_CONFIG));
+  const frameSelectorRef = useRef<FrameSelector>(new FrameSelector(FRAME_SELECTOR_WINDOW_SIZE));
+  const onSelectRef = useRef(onScanCandidateSelected);
+  onSelectRef.current = onScanCandidateSelected;
 
   const ensureResources = useCallback(async (): Promise<ScanResources> => {
     if (resourcesRef.current) {
@@ -88,9 +153,13 @@ export function useScanCapture({
 
   const resetScanState = useCallback((): void => {
     stabilizerRef.current.reset();
+    frameSelectorRef.current.reset();
     setResolvedCandidates([]);
     setLockedCandidate(null);
     setScanPhase("searching");
+    setConvergence(INITIAL_CONVERGENCE);
+    setScanDebug(null);
+    setBlockedNotice(null);
     setLowConfidenceCount(0);
   }, []);
 
@@ -136,7 +205,45 @@ export function useScanCapture({
         return EMPTY_IDENTIFY_RESULT;
       }
 
-      const result = resources.identifier.identify(image);
+      // Best-frame selection (DEC-062): poor frames abstain rather than feeding
+      // a noisy candidate into the stabilizer. The selector retains a short
+      // recent window, so a poor current frame can still defer to a better one
+      // already in hand.
+      const selection = frameSelectorRef.current.push(image);
+      if (selection.abstain) {
+        const state = stabilizerRef.current.push([]);
+        setResolvedCandidates([]);
+        setLowConfidenceCount((count) => count + 1);
+        if (state.phase === "searching") {
+          const phase: ScanConvergence["phase"] = state.votes > 0 ? "locking" : "searching";
+          setConvergence({
+            phase,
+            leaderName: null,
+            votes: state.votes,
+            votesNeeded: state.votesNeeded,
+            conditionHint: selection.quality.reason
+          });
+          setScanDebug({
+            phase,
+            bestName: null,
+            bestDistance: null,
+            runnerUpName: null,
+            runnerUpDistance: null,
+            margin: null,
+            votes: state.votes,
+            votesNeeded: state.votesNeeded,
+            lockDistance: SCAN_STABILIZER_CONFIG.lockDistance,
+            marginMin: SCAN_STABILIZER_CONFIG.marginMin,
+            glareFraction: selection.quality.glareFraction,
+            sharpness: selection.quality.sharpness,
+            frameQualityScore: selection.quality.qualityScore,
+            conditionReason: selection.quality.reason
+          });
+        }
+        return EMPTY_IDENTIFY_RESULT;
+      }
+
+      const result = resources.identifier.identify(selection.image);
 
       // Vote on the resolved ORACLE identity, not printing ids -- different
       // printings of one card must not split a vote. Distances are preserved.
@@ -150,10 +257,18 @@ export function useScanCapture({
 
       if (state.phase === "locked") {
         const locked = ranked.find((entry) => entry.card.cardId === state.cardId)?.card ?? null;
-        setLockedCandidate(locked);
-        setScanPhase("locked");
-        setResolvedCandidates([]);
-        setLowConfidenceCount(0);
+        if (locked) {
+          const outcome = onSelectRef.current(locked);
+          resetScanState();
+          if (outcome && outcome.added === false) {
+            setBlockedNotice(outcome.message);
+          } else {
+            addCounterRef.current += 1;
+            setAddConfirmation({ id: addCounterRef.current, cardName: locked.name });
+          }
+        } else {
+          resetScanState();
+        }
         return result;
       }
 
@@ -164,30 +279,51 @@ export function useScanCapture({
         .slice(0, MAX_SURFACED_CANDIDATES)
         .map((entry) => entry.card);
 
+      setResolvedCandidates([]);
       if (surfaced.length > 0) {
-        // A confident frame refreshes the suggestion.
-        setResolvedCandidates(surfaced);
         setLowConfidenceCount(0);
       } else {
-        // Weak / blurry frame (e.g. the card is mid-move). Keep the last good
-        // suggestion on screen so it stays tappable instead of flickering away;
-        // no-card frames never reach here (identify is skipped when no card is
-        // detected), so the suggestion also persists when the card leaves frame.
-        // Still track low confidence for the manual-entry escalation.
         setLowConfidenceCount((count) => count + 1);
       }
+      const nameOf = (cardId: string | null): string | null =>
+        cardId ? (ranked.find((entry) => entry.card.cardId === cardId)?.card.name ?? null) : null;
+      const leaderName = nameOf(state.topCardId);
+      const phase: ScanConvergence["phase"] = state.votes > 0 ? "locking" : "searching";
+      setConvergence({
+        phase,
+        leaderName,
+        votes: state.votes,
+        votesNeeded: state.votesNeeded,
+        conditionHint: selection.quality.reason
+      });
+      setScanDebug({
+        phase,
+        bestName: nameOf(state.bestCardId),
+        bestDistance: state.bestDistance,
+        runnerUpName: nameOf(state.runnerUpCardId),
+        runnerUpDistance: state.runnerUpDistance,
+        margin: state.margin,
+        votes: state.votes,
+        votesNeeded: state.votesNeeded,
+        lockDistance: SCAN_STABILIZER_CONFIG.lockDistance,
+        marginMin: SCAN_STABILIZER_CONFIG.marginMin,
+        glareFraction: selection.quality.glareFraction,
+        sharpness: selection.quality.sharpness,
+        frameQualityScore: selection.quality.qualityScore,
+        conditionReason: selection.quality.reason
+      });
 
       return result;
     },
-    [cardMetadata, ensureResources]
+    [cardMetadata, ensureResources, resetScanState]
   );
 
   const acceptCandidate = useCallback(
     (card: CardMetadataItem): void => {
-      onScanCandidateSelected(card);
+      onSelectRef.current(card);
       resetScanState();
     },
-    [onScanCandidateSelected, resetScanState]
+    [resetScanState]
   );
 
   return {
@@ -199,6 +335,10 @@ export function useScanCapture({
     resolvedCandidates,
     lockedCandidate,
     scanPhase,
+    convergence,
+    scanDebug,
+    blockedNotice,
+    addConfirmation,
     showManualEntryPrompt: lowConfidenceCount >= LOW_CONFIDENCE_ESCALATION_COUNT,
     openScan,
     closeScan,

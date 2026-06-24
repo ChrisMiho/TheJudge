@@ -19,12 +19,12 @@ User provides work slug.
 
 1. `PRD/work/<slug>/DESIGN-BRIEF.md`
 2. Affected `PRD/sections/*.md`
-3. `PRD/sections/decisions.md`
+3. `PRD/sections/decisions.md` router, then relevant `PRD/sections/decisions/<domain>.md` files
 4. `PRD/instructions/workflow-reference.md` (checklist section)
 
 ## Checklist
 
-- [ ] No contradictions with active `DEC-###` entries
+- [ ] No contradictions with active `DEC-###` entries in the relevant `decisions/<domain>.md` files
 - [ ] Current vocabulary is used in new/edited content
 - [ ] Stack ordering consistent if feature touches stack/API/prompt
 - [ ] `technical-design-rules.md` constraints respected (one endpoint, no rules engine, etc.)

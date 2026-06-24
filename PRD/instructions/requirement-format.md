@@ -50,6 +50,8 @@
 
 ## Decision Template
 
+Decision bodies live in the relevant `sections/decisions/<domain>.md` file. Add or update the matching router index line in `sections/decisions.md` whenever recording a decision.
+
 ### DEC-###
 - Decision:
 - Status: confirmed
@@ -77,7 +79,7 @@ This document adds dependency-field rules for `PRD/work/<slug>/slice-*.md` entri
 
 ## Slice Acceptance Criteria Rule
 
-For any slice in `PRD/work/<slug>/`, each acceptance criterion must be verifiable (test command or explicit manual check). The final slice must include ship gates from `workflow-reference.md` and an acceptance criterion that records completion in an auditable place: update `sections/decisions.md` and affected `sections/*.md` when product truth changes, update `PRD/README.md` only when navigation guidance changes, and delete `PRD/work/<slug>/` when ephemeral planning was used. See `instructions/doc-lifecycle.md`.
+For any slice in `PRD/work/<slug>/`, each acceptance criterion must be verifiable (test command or explicit manual check). The final slice must include ship gates from `workflow-reference.md` and an acceptance criterion that records completion in an auditable place: update the relevant `sections/decisions/<domain>.md` file, the router index line in `sections/decisions.md`, and affected `sections/*.md` when product truth changes; update `PRD/README.md` only when navigation guidance changes; and delete `PRD/work/<slug>/` when ephemeral planning was used. See `instructions/doc-lifecycle.md`.
 
 ## Slice Template (`PRD/work/<slug>/`)
 

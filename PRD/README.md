@@ -3,7 +3,7 @@
 ## Status
 - Project Status: active
 - Documentation baseline: product truth in `sections/`; agent process in `instructions/`
-- Next work: start from `sections/decisions.md` and promote new scope there before implementation
+- Next work: start from the `sections/decisions.md` router and promote new scope to the relevant `sections/decisions/<domain>.md` file plus the router index line before implementation
 
 ## Purpose
 This file is the control-plane document for the PRD set.
@@ -38,7 +38,8 @@ For implementation work, read in this order:
 | `sections/non-functional-requirements.md` | complete | Performance, security, maintainability, and system quality constraints |
 | `sections/integrations-and-data.md` | complete | API contracts, stack ordering, integrations, data notes, and dependencies |
 | `sections/open-questions.md` | needs review | Unresolved items that need human decisions |
-| `sections/decisions.md` | active | Confirmed decisions that override older draft wording |
+| `sections/decisions.md` | active | Read-first router for confirmed decisions that override older draft wording |
+| `sections/decisions/` | active | Domain decision files that hold confirmed DEC bodies |
 | `sections/system-map.md` | active | Feature/subsystem catalog: shipped-vs-planned status, behavior summary, and coarse location per subsystem |
 
 ## Instruction Inventory
@@ -94,7 +95,7 @@ Read in this order:
 - Ephemeral slice plans live only in `PRD/work/<slug>/` and must be deleted when the slice ships (see `instructions/doc-lifecycle.md`).
 - Do not guess when the source is ambiguous.
 - Put unresolved ambiguity in `sections/open-questions.md`.
-- Record confirmed decisions in `sections/decisions.md`.
+- Record confirmed decision bodies in the relevant `sections/decisions/<domain>.md` file and keep the router index line in `sections/decisions.md` current.
 - Prefer narrow edits to one file at a time.
 - Preserve stable IDs once assigned.
 - Agent workflow skills: edit `.cursor/skills/thejudge-*` (canonical), run `npm run skills:ai-sync` to copy to `.agents/skills/` and `.claude/skills/`; see `AGENT-SKILLS.md`.
@@ -118,7 +119,7 @@ Completed work is promoted into `sections/` and temporary work folders are remov
 ## Implementation Snapshot
 - Runtime code is split across `apps/frontend` and `apps/backend`, with a single product-facing backend route (`POST /api/ask-ai`) plus health endpoint.
 - Current frontend flow supports staged context + stack interaction patterns; canonical behavior is tracked in `sections/user-flows.md`.
-- Prompt/input contract includes structured context beyond stack/question (see `sections/integrations-and-data.md` and `sections/decisions.md`).
+- Prompt/input contract includes structured context beyond stack/question (see `sections/integrations-and-data.md`, the `sections/decisions.md` router, and relevant `sections/decisions/<domain>.md` files).
 - Metadata pipeline remains static-file based (`npm run data:build` / `npm run data:refresh`) with runtime loading from `/data/cardMetadata.json`.
 - Context/prompt regression coverage lives in tests and `apps/backend/src/eval/fixtures/README.md`.
 - Automated tests and type checks are part of the active workflow; root dev run remains `npm run dev`.

@@ -61,6 +61,18 @@ body {
   animation: wait-absurd 1.4s ease-in-out infinite;
 }
 
+@keyframes scan-confirm-pop {
+  0% { opacity: 0; transform: scale(0.8); }
+  15% { opacity: 1; transform: scale(1.06); }
+  30% { transform: scale(1); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: scale(0.96); }
+}
+
+.scan-confirm-popup {
+  animation: scan-confirm-pop 1.4s ease-out forwards;
+}
+
 @keyframes send-spin {
   to { transform: rotate(360deg); }
 }

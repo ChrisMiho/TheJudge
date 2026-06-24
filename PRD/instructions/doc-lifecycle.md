@@ -24,9 +24,15 @@ These rules govern ephemeral planning markdown under `PRD/` so feature work does
 
 ## On slice completion
 
-1. Promote durable outcomes into `sections/decisions.md` and affected `sections/*.md`
+1. Promote durable outcomes into the relevant `sections/decisions/<domain>.md` file, the router index line in `sections/decisions.md`, and affected `sections/*.md`
 2. Delete `PRD/work/<kebab-slug>/` entirely
 3. Update `PRD/README.md` only if navigation or read-order guidance changed
+
+## Decision lifecycle
+
+- New decisions land in their relevant `sections/decisions/<domain>.md` file and get a router index line in `sections/decisions.md`.
+- A fully superseded decision body trims to a one-line tombstone with the original ID and `superseded by DEC-XXX`, kept in its domain file so the ID stays resolvable.
+- Deep "how the code behaves" detail belongs in `sections/system-map.md` or related system-map detail files (DEC-044 / DEC-048), not in decision `Impact:` blocks.
 
 ## System-map promotion gate
 

@@ -10,7 +10,7 @@ import {
 } from "../lib/zoneCards";
 import { useAutocompleteKeyboard } from "../hooks/useAutocompleteKeyboard";
 import { useAutocompleteSuggestions } from "../hooks/useAutocompleteSuggestions";
-import { useScanCapture } from "../hooks/useScanCapture";
+import { useScanCapture, type ScanAddOutcome } from "../hooks/useScanCapture";
 import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { ZoneCardPicker } from "./ZoneCardPicker";
 
@@ -53,6 +53,9 @@ export function ZoneCollectionStep({
   const [searchInput, setSearchInput] = useState("");
   const [selectedCard, setSelectedCard] = useState<CardMetadataItem | null>(null);
   const [pendingOwner, setPendingOwner] = useState<PlayerLabel>(activePlayer);
+  // cardIds auto-added to the active zone during the current scan session; feeds the
+  // top-right review bubble. Resets when the scan screen opens or the zone changes.
+  const [scanSessionCardIds, setScanSessionCardIds] = useState<string[]>([]);
 
   const activeZone = orderedSelectedZones[activeZoneIndex];
   const activeZoneCards = activeZone ? (zones[activeZone] ?? []) : [];
@@ -83,15 +86,18 @@ export function ZoneCollectionStep({
   const scanCapture = useScanCapture({
     cardMetadata,
     onScanCandidateSelected: (card) => {
-      setSelectedCard(card);
-      setSearchInput("");
-      keyboard.closeSuggestions();
+      const outcome = addCardToActiveZone(card);
+      if (outcome.added) {
+        setScanSessionCardIds((ids) => (ids.includes(card.cardId) ? ids : [...ids, card.cardId]));
+      }
+      return outcome;
     }
   });
   const closeScan = scanCapture.closeScan;
 
   useEffect(() => {
     closeScan();
+    setScanSessionCardIds([]);
   }, [activeZone, closeScan]);
 
   function updateZoneCards(zoneId: ZoneId, cards: ZoneCardItem[]): void {
@@ -101,22 +107,35 @@ export function ZoneCollectionStep({
     });
   }
 
-  function handleAddSelectedCard(): void {
-    if (!activeZone || !selectedCard) {
-      return;
+  function addCardToActiveZone(card: CardMetadataItem): ScanAddOutcome {
+    if (!activeZone) {
+      return { added: false, message: "No active zone" };
     }
 
-    const nextCard = buildZoneCardFromMetadata(selectedCard);
+    const nextCard = buildZoneCardFromMetadata(card);
     if (activeZone !== "stack") {
       nextCard.owner = pendingOwner;
     }
     const validation = validateZoneCardAdd(activeZoneCards, nextCard, activeZone);
     if (!validation.ok) {
-      onFlashStatus(validation.message);
-      return;
+      return { added: false, message: validation.message };
     }
 
     updateZoneCards(activeZone, appendZoneCard(activeZoneCards, nextCard));
+    return { added: true };
+  }
+
+  function handleAddSelectedCard(): void {
+    if (!activeZone || !selectedCard) {
+      return;
+    }
+
+    const outcome = addCardToActiveZone(selectedCard);
+    if (!outcome.added) {
+      onFlashStatus(outcome.message);
+      return;
+    }
+
     setSearchInput("");
     setSelectedCard(null);
     onFlashStatus(activeZone === "stack" ? "Stacked" : "Card added");
@@ -220,20 +239,19 @@ export function ZoneCollectionStep({
                   isOpen: scanCapture.isOpen,
                   isLoading: scanCapture.isLoading,
                   error: scanCapture.error,
-                  cameraStatus: scanCapture.cameraStatus,
-                  resolvedCandidates: scanCapture.resolvedCandidates,
-                  lockedCandidate: scanCapture.lockedCandidate,
-                  scanPhase: scanCapture.scanPhase,
+                  convergence: scanCapture.convergence,
+                  addConfirmation: scanCapture.addConfirmation,
+                  scanDebug: scanCapture.scanDebug,
                   showManualEntryPrompt: scanCapture.showManualEntryPrompt,
+                  sessionCardIds: scanSessionCardIds,
                   onOpen: async () => {
                     setSelectedCard(null);
+                    setScanSessionCardIds([]);
                     await scanCapture.openScan();
                   },
                   onExitToManual: scanCapture.closeScan,
                   identify: scanCapture.identify,
-                  onCameraStatusChange: scanCapture.setCameraStatus,
-                  onAcceptCandidate: scanCapture.acceptCandidate,
-                  onRescan: scanCapture.rescan
+                  onCameraStatusChange: scanCapture.setCameraStatus
                 }}
               />
             )}

@@ -17,7 +17,7 @@ When creating or closing non-section markdown under `PRD/`, also read `instructi
 
 ## General Rules
 
-- Treat `sections/decisions.md` as the override layer.
+- Treat `sections/decisions.md` as the read-first override layer and router to domain decision files.
 - Do not assume older wording is correct if a decision conflicts with it.
 - Keep edits narrow and local.
 - Preserve stable IDs.
@@ -35,7 +35,7 @@ When creating or closing non-section markdown under `PRD/`, also read `instructi
 ## Scope Discipline
 
 - The product remains a flow-validation assistant unless decisions explicitly expand scope.
-- Do not pull historical or future roadmap ideas into current work unless promoted via `sections/decisions.md`.
+- Do not pull historical or future roadmap ideas into current work unless promoted via the relevant `sections/decisions/<domain>.md` file and router index line in `sections/decisions.md`.
 - Do not optimize for long-term architecture at the cost of shipping the current slice.
 - Preserve stack ordering, contract stability, and “assistant not judge” framing.
 - Active execution context: `PRD/README.md` plus the relevant `sections/` files for the task.
@@ -44,11 +44,11 @@ When creating or closing non-section markdown under `PRD/`, also read `instructi
 
 - Read only the files needed for the task.
 - Do not load the full PRD set when a smaller subset is enough.
-- Prefer `decisions.md` plus one or two section files for focused tasks.
+- Prefer the `decisions.md` router, the relevant `decisions/<domain>.md` file, and one or two section files for focused tasks.
 
 ## Change Management Rules
 
-- If a confirmed decision changes behavior, update `sections/decisions.md` first.
+- If a confirmed decision changes behavior, update the relevant `sections/decisions/<domain>.md` body and router index line in `sections/decisions.md` first.
 - Then update any affected section files.
 - If a rule changes how agents should behave, update an instruction file, not a section file.
 - If new uncertainty is introduced, add a `Q-###` entry.

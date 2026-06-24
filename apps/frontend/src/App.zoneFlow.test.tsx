@@ -2,7 +2,29 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { writeDb } from "./lib/scan/dbformat";
+import { CARD_HEIGHT, CARD_WIDTH } from "./lib/scan/identify";
 import type { IdentifyResult, RgbImage } from "./lib/scan/types";
+
+/** Deterministic per-pixel noise: a frame-quality-acceptable image for the mocked scan camera. */
+function noiseChannel(x: number, y: number, seed: number): number {
+  let h = (x * 374761393 + y * 668265263 + seed * 2147483647) | 0;
+  h = (h ^ (h >>> 13)) * 1274126177;
+  h = (h ^ (h >>> 16)) >>> 0;
+  return 20 + (h % 200);
+}
+
+function makeGoodImage(): RgbImage {
+  const data = new Uint8Array(CARD_WIDTH * CARD_HEIGHT * 3);
+  for (let y = 0; y < CARD_HEIGHT; y++) {
+    for (let x = 0; x < CARD_WIDTH; x++) {
+      const p = (y * CARD_WIDTH + x) * 3;
+      data[p] = noiseChannel(x, y, 1);
+      data[p + 1] = noiseChannel(x, y, 2);
+      data[p + 2] = noiseChannel(x, y, 3);
+    }
+  }
+  return { width: CARD_WIDTH, height: CARD_HEIGHT, data };
+}
 
 const { cardIdentifierConstructorMock, identifierMock } = vi.hoisted(() => {
   const identifyResult = {
@@ -20,9 +42,13 @@ const { cardIdentifierConstructorMock, identifierMock } = vi.hoisted(() => {
   };
 });
 
-vi.mock("./lib/scan/identify", () => ({
-  CardIdentifier: cardIdentifierConstructorMock
-}));
+vi.mock("./lib/scan/identify", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./lib/scan/identify")>();
+  return {
+    ...actual,
+    CardIdentifier: cardIdentifierConstructorMock
+  };
+});
 
 vi.mock("./components/ScanCameraSurface", () => ({
   ScanCameraSurface: ({
@@ -36,7 +62,7 @@ vi.mock("./components/ScanCameraSurface", () => ({
     onResult?: (result: IdentifyResult | null) => void;
     onStatusChange?: (status: string) => void;
   }) => {
-    const image: RgbImage = { width: 1, height: 1, data: new Uint8Array([0, 0, 0]) };
+    const image: RgbImage = makeGoodImage();
 
     return (
       <section aria-label="Mock scan camera">
@@ -195,7 +221,7 @@ describe("STORY-074 target gating and pickers", () => {
     expect(screen.queryByRole("button", { name: "Continue to context enrichment" })).not.toBeInTheDocument();
   });
 
-  it("accepts a scanned card through the existing stack add path", async () => {
+  it("auto-adds a scanned card through the existing stack add path and keeps scanning", async () => {
     const user = userEvent.setup();
     render(<App />);
     await openStackZoneCollection(user);
@@ -208,27 +234,46 @@ describe("STORY-074 target gating and pickers", () => {
     await user.click(screen.getByRole("button", { name: "Scan" }));
     await screen.findByLabelText("Mock scan camera");
 
-    // Lock-in needs sustained agreement across frames, not a single capture.
-    for (let i = 0; i < 4; i++) {
+    // Lock-in needs sustained agreement across frames (strict minVotes), not a single capture.
+    for (let i = 0; i < 6; i++) {
       await user.click(screen.getByRole("button", { name: "Fake scan capture" }));
     }
 
-    // The scanner locks on the consistent match and waits for the user to confirm.
-    const addCardButton = await screen.findByRole("button", { name: "Add card" });
-    expect(screen.getByText("Locked on")).toBeInTheDocument();
+    // On a confident lock the card is added hands-free (no Accept tap) and scanning resumes.
+    expect(await screen.findByText("1. Opt")).toBeInTheDocument();
+    expect(screen.getByText("bottom & top")).toBeInTheDocument();
+    expect(screen.queryByText("Locked on")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add card" })).not.toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledWith("/data/cardScanMap.json");
     expect(fetchMock).toHaveBeenCalledWith("/data/cardhashes.bin");
     expect(cardIdentifierConstructorMock).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText("Mock scan camera")).toBeInTheDocument();
+  });
 
-    await user.click(addCardButton);
+  it("tracks auto-added scans in the review bubble and removes one in a single tap", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackZoneCollection(user);
 
-    expect(await screen.findByRole("button", { name: /Begin stackening!|Add to Stack/ })).toBeInTheDocument();
-    expect(screen.getByText("Opt")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Scan" }));
+    await screen.findByLabelText("Mock scan camera");
 
-    await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
+    for (let i = 0; i < 6; i++) {
+      await user.click(screen.getByRole("button", { name: "Fake scan capture" }));
+    }
 
+    // The auto-add lands in the zone and the review bubble counts this-session scans.
     expect(await screen.findByText("1. Opt")).toBeInTheDocument();
-    expect(screen.getByText("bottom & top")).toBeInTheDocument();
+    const bubble = await screen.findByLabelText("Scanned this session: 1");
+
+    // One tap to expand, one tap to remove — no confirmation step (DEC-058).
+    await user.click(bubble);
+    await user.click(screen.getByRole("button", { name: "Remove Opt from scan review" }));
+
+    // Removal flows through the existing zone-card path; count/list update live.
+    expect(screen.queryByText("1. Opt")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^Scanned this session:/)).not.toBeInTheDocument();
+    // Scanning continues after the undo.
     expect(screen.getByLabelText("Mock scan camera")).toBeInTheDocument();
   });
 

@@ -679,7 +679,7 @@
 - Acceptance Criteria:
   - a Scan entry point sits beside the existing search input; manual search remains unchanged
   - batch loop: scan → Accept (adds via existing add path) → camera re-opens for the next card → Back/Exit returns to zone collection; the zone's existing card list shows the running count
-  - after a few consecutive low-confidence attempts a non-blocking prompt offers manual name entry while auto-scan continues (card-back "Flip the card over" prompt descoped — DEC-055); a sustained confident match locks in a single card for one-tap Add with Rescan to resume (DEC-055)
+  - after a few consecutive low-confidence attempts a non-blocking prompt offers manual name entry while auto-scan continues (card-back "Flip the card over" prompt descoped — DEC-055); a sustained confident match locks in a single card (the one-tap Add / Rescan presentation is superseded by auto-add — see REQ-040 / DEC-056)
   - an accepted scan candidate reaches the existing preview/add/owner/duplicate-block/stack-limit behavior and produces the same `ZoneCardItem` shape as a manually added card
   - stack cards land in scan order (bottom-to-top); manual reorder remains out of scope (`FLOW-002`)
   - existing zone-collection tests are extended, not replaced
@@ -723,3 +723,116 @@
 - Notes:
   - a future recipe/geometry change still forces a full re-download/re-hash
   - this realizes the `cardhashes.bin` production build deferred in `cardomancer-card-detection-summary` Slice B
+
+### REQ-040
+- Title: Responsive scan experience with hands-free auto-add
+- Priority: high
+- Description: Refine the shipped scan UX so a confident lock auto-adds the card and the scanner resumes hands-free, the user can see the scanner converging in real time, each successful add is confirmed with positive feedback, and a wrong auto-add can be removed in one tap — all frontend-only with no backend/API/prompt change.
+- Acceptance Criteria:
+  - on a high-confidence lock the locked card is added to the current zone via the existing add path (owner via the sticky `pendingOwner` selector, duplicate-stack block, stack-size limit, `ZoneCardItem` output) with no Accept tap, and auto-scan immediately resumes for the next card (DEC-056)
+  - the lock/auto-add thresholds in `apps/frontend/src/lib/scan/tuning.ts` are tuned to lock readily on a clearly-leading card (DEC-059) and validated by outcome on both intended (phone, card presented) and adverse (webcam, fingers near edges, noisy background) capture conditions: cards lock quickly and reliably; wrong auto-adds stay rare and are removable in one tap (DEC-058); the runner-up distinctness/margin guard still prevents near-random locks; an ambiguous frame keeps searching rather than committing
+  - while running, the scan screen shows a legible three-state convergence indicator — `searching`, `locking` on a named card with a progress/confidence cue, and a momentary `locked` — driven by an additive, pure progress signal from the stabilizer (no change to distance/confidence/margin logic) (DEC-057)
+  - the selectable top-3 candidate list is replaced by a single non-selectable "locking on: <name>" indicator; the raw status pill copy and the debug `Camera: <status>` line are replaced with user-facing state copy (DEC-057)
+  - each successful auto-add plays a thumbs-up confirmation popup that pops up and fades out; the popup motion uses a CSS-only functional animation permitted under NFR-006 (DEC-057); audio confirmation (a "ding" + mute toggle) is realized separately by REQ-042 / DEC-061
+  - a counter bubble in the top-right of the scan screen expands to list the cards added to the current zone during this scan session, each with a single-tap remove and no confirmation step (DEC-058)
+  - when auto-add would hit the duplicate-stack block or the 10-card stack limit, a non-blocking notice is shown and scanning continues; the card is not silently dropped
+  - manual tap-capture and the low-confidence manual-search escalation remain available; the user is never stranded
+  - existing scan/zone-collection tests are extended, not replaced; the stabilizer progress signal is unit-tested
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - reuse the existing add and zone-card removal paths; do not duplicate owner/duplicate-block/stack-limit/removal logic
+  - do not change the identification/hashing/distance accuracy logic; only the control-layer calibration constants and the UX layer change
+  - lock thresholds and convergence knobs are outcome-validated calibration constants, not product open questions (DEC-052/DEC-055 precedent); calibration is re-balanced toward ease-of-lock per DEC-059
+  - no animation library; the confirmation popup uses CSS keyframes only (NFR-006)
+- Dependencies:
+  - REQ-037
+  - REQ-038
+  - DEC-056
+  - DEC-057
+  - DEC-058
+  - DEC-059
+- Notes:
+  - supersedes the one-tap Add / Rescan presentation in REQ-038 / DEC-055
+  - NFR-010 performance budgets (lazy-load, identify latency, graceful frame throttling) continue to apply
+  - REQ-041 adds an optional debug overlay used to diagnose poor locks and calibrate the DEC-059 thresholds
+
+### REQ-041
+- Title: Optional scanner debug overlay
+- Priority: medium
+- Description: An opt-in, user-toggleable debug overlay on the scan screen that visualizes how the scanner perceives the current card — a live outline of the detected card region and the area it actually reads, plus the live match/convergence metrics — so the user can diagnose poor locks and calibrate the DEC-059 thresholds. Frontend-only, read-only from existing signals.
+- Acceptance Criteria:
+  - a debug toggle on the scan screen defaults to off and resets to off each time the scanner is opened; the overlay renders only while enabled (DEC-060)
+  - when enabled, the overlay shows the current best candidate and distance, the distinct runner-up and distance, the margin between them, votes accumulated / votes needed, the current phase, and the active `lockDistance`/`marginMin` thresholds (DEC-060)
+  - when enabled, the overlay draws a live outline of the detected card region on the camera feed (from the detector's computed card corners) and highlights the area the scanner actually reads/hashes (the art-crop region); this is distinct from and does not replace the static alignment-template guide frame (DEC-060)
+  - if the detected geometry cannot be cheaply surfaced to the UI, the overlay degrades to the text metrics above and records the wiring gap for follow-up rather than blocking the feature (DEC-060)
+  - the overlay reads existing detector/stabilizer signals only; any new stabilizer field is additive and pure, with no change to distance/confidence/margin logic
+  - overlay rendering stays within the NFR-010 scan performance budget (renders only when enabled; no animation library; no new data store)
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - do not change the identification/hashing/distance accuracy logic; the overlay is read-only visualization
+  - distinct from the always-on raw status leaks removed by DEC-057; this overlay is opt-in and user-summoned
+- Dependencies:
+  - REQ-037
+  - REQ-040
+  - DEC-060
+  - NFR-010
+- Notes:
+  - supports DEC-059 gate calibration by making the scanner's perception visible
+  - the live detected-card outline differs from the static alignment-template guide frame (which shows where to place the card, not what the scanner detects)
+
+### REQ-042
+- Title: Audio confirmation for scan auto-add
+- Priority: medium
+- Description: Each successful hands-free scan auto-add plays a short "ding", on by default, with a mute toggle on the scan screen, so a player at a live table can confirm an add by ear without watching the screen. Realizes the audio half deferred out of DEC-057/REQ-040. Frontend-only.
+- Acceptance Criteria:
+  - on each successful auto-add the scanner plays a short "ding" from the bundled asset `apps/frontend/public/assets/scanSuccess.wav` (served at `/assets/scanSuccess.wav`), fired off the same monotonic `ScanAddConfirmation.id` auto-add event that drives the visual thumbs-up popup, so sound and popup fire together and a repeat add of the same card re-fires both (DEC-061)
+  - the sound is ON by default; a mute toggle (speaker/mute icon) appears top-left on the scan screen, paired with the convergence status indicator, leaving the top-right review-bubble/Debug cluster unchanged (DEC-061)
+  - muting suppresses the audio only and never the visual thumbs-up popup; the popup is unaffected by mute state (DEC-061)
+  - the mute preference persists across reloads via `localStorage`, isolated in `apps/frontend/src/lib/scan/audioPrefs.ts`; a corrupt or unavailable store falls back to the default (unmuted) and never throws (DEC-061)
+  - the audio element is primed on scanner open (the open is itself a user gesture); a blocked or failed play degrades silently and never throws, pauses, or blocks scanning (DEC-061)
+  - the `audioPrefs` load/save helper is unit-tested; existing scan/zone-collection tests are extended, not replaced
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - no change to the stabilizer, lock/convergence logic, the add path, or the visual thumbs-up popup (DEC-056, DEC-057)
+  - no audio or animation library and no runtime tone synthesis; play the bundled WAV asset only
+  - audio is functional confirmation feedback, not animation; it is outside the NFR-006 carve-out (which governs the popup motion only)
+  - no volume control, no per-zone sound variation, no device-silent-switch detection
+- Dependencies:
+  - REQ-040
+  - DEC-056
+  - DEC-057
+  - DEC-061
+  - NFR-010
+- Notes:
+  - completes the audio deferral noted in REQ-040 and FLOW-006 step 4
+  - `localStorage` for the mute preference is the first such use in the repo; keep it confined to `audioPrefs.ts`
+
+### REQ-043
+- Title: Real-world scan robustness (query conditioning, best-frame selection, condition feedback)
+- Priority: high
+- Description: Make the scan vote lock reliably under real capture conditions — glare/gloss, uneven or dim lighting, handheld camera shake, and finger occlusion of card edges — so a card locks without the user finding a perfect angle. Robustness is achieved by feeding the existing matching engine a cleaner, better-chosen query image, plus condition-aware feedback when conditions are poor. Frontend-only and query-only: no change to the perceptual-hash recipe, the fingerprint library, the matching/distance logic, or the lock gate as the primary lever (DEC-062).
+- Acceptance Criteria:
+  - the query conditioning stage is extended beyond black-point stretch to full auto-contrast (white and black point), specular/glare suppression on the warped art crop, and white-balance / color-cast normalization; conditioning is applied to the query only and leaves the database hashes, the shared `recipe.ts` resize+DCT+hash, and `cardhashes.bin` unchanged (DEC-062)
+  - each captured frame is scored for quality (sharpness / high-frequency energy, glare fraction, art-crop detail-vs-occlusion) and the best frame in the stabilizer window is preferred for hashing; motion-blurred or occluded frames are skipped or down-weighted so they do not waste votes or inject noise; this is an additive, pure signal with no change to the stabilizer's distance/confidence/margin logic and the `marginMin` runner-up guard is retained (DEC-062)
+  - finger occlusion is handled only as a frame-quality penalty; no masked or partial-region hashing is introduced and the comparison stays full-Region-A against the full-region DB hashes
+  - the `searching` state of the three-state convergence indicator gains a cause-aware reason derived from the frame-quality signals (e.g. "too much glare — tilt the card", "hold steady", "move closer"), reusing the DEC-057 indicator; the opt-in debug overlay (DEC-060) additionally surfaces the new per-frame quality metrics (glare fraction, sharpness, frame-quality score) alongside the existing distance/margin/votes
+  - the lock gate (`lockDistance`, `marginMin`) is held at its DEC-059 values; gate-loosening is not the primary lever and the gate is re-tuned only if outcome data demands it
+  - all new thresholds and conditioning parameters live in `apps/frontend/src/lib/scan/tuning.ts`; a before/after detect-then-lock rate and top-1 accuracy result on a representative adverse capture set (shake, finger occlusion, busy background, glare, uneven/dim light) is recorded as acceptance evidence (NFR-010)
+  - the query-conditioning golden/eval fixtures (end-to-end identify path and auto-levels conditioning vectors) are regenerated for the intentional change; the byte-exact DB-load and canonical-image pHash parity vectors are unchanged and still pass (REQ-034)
+  - existing scan/zone-collection/stabilizer tests are extended, not replaced; the frame-quality and condition-reason signals are unit-tested as pure functions
+- Constraints:
+  - frontend-only and query-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - do not change the shared resize+DCT+hash recipe, `cardhashes.bin`, the DB build (REQ-035/REQ-039), the matching/orientation/distance logic, or the byte-exact parity gate (REQ-034/DEC-051)
+  - do not introduce masked/partial-region hashing; occlusion is a frame-quality signal only
+  - conditioning, frame-quality, and threshold values are outcome-validated calibration constants, not product open questions (DEC-052/DEC-055/DEC-059 precedent)
+  - card-back detection stays descoped (DEC-055); the webcam pipeline is not replaced and recognition stays client-side
+  - reuse the existing add path, stabilizer, and three-state indicator; do not duplicate gating or add logic
+- Dependencies:
+  - REQ-037
+  - REQ-040
+  - DEC-062
+  - DEC-051
+  - NFR-010
+- Notes:
+  - root cause addressed: detection/warp already work; the vote failed because the corrupted query hash kept the true card's distance above `lockDistance` (DEC-062)
+  - the debug overlay (REQ-041) is the calibration aid for validating the conditioning and frame-quality thresholds

@@ -665,13 +665,24 @@ function rotate90Clockwise(img: RgbImage): RgbImage {
   return { width: img.height, height: img.width, data: out }
 }
 
-export function warpPerspective(frame: RgbImage, quad: Point[]): RgbImage {
+/**
+ * Order a detected quad into the canonical [TL, TR, BR, BL] used by the warp,
+ * including the portrait swap a landscape detection needs. Exported so the
+ * read-only debug overlay (DEC-060 / REQ-041) can map the canonical art-crop
+ * region back onto the live frame through the *same* quad the warp consumes.
+ */
+export function orientCardQuad(quad: Point[]): Point[] {
   let [topLeft, topRight, bottomRight, bottomLeft] = orderQuadCorners(quad)
   const topLen = distance(topLeft, topRight)
   const leftLen = distance(topLeft, bottomLeft)
   if (topLen > leftLen) {
     ;[topLeft, topRight, bottomRight, bottomLeft] = [bottomLeft, topLeft, topRight, bottomRight]
   }
+  return [topLeft, topRight, bottomRight, bottomLeft]
+}
+
+export function warpPerspective(frame: RgbImage, quad: Point[]): RgbImage {
+  const [topLeft, topRight, bottomRight, bottomLeft] = orientCardQuad(quad)
 
   const src = [topLeft, topRight, bottomRight, bottomLeft]
   const dst = [
@@ -719,7 +730,18 @@ function downscaleRgb(frame: RgbImage, scale: number): RgbImage {
 
 export function detectCard(
   frame: RgbImage,
-  opts: { minAreaFrac?: number; maxAreaFrac?: number; maxDetectDimension?: number } = {}
+  opts: {
+    minAreaFrac?: number
+    maxAreaFrac?: number
+    maxDetectDimension?: number
+    /**
+     * Additive, optional. Invoked with the canonical-oriented full-res corners
+     * the warp consumes, so the read-only debug overlay (DEC-060 / REQ-041) can
+     * draw the tracked card outline + art-crop read region. Changes no
+     * detection/warp behavior; not called when no card is found.
+     */
+    onCorners?: (corners: Point[]) => void
+  } = {}
 ): RgbImage | null {
   const longSide = Math.max(frame.width, frame.height)
   const maxDim = opts.maxDetectDimension ?? MAX_DETECT_DIMENSION
@@ -732,9 +754,12 @@ export function detectCard(
     const cornersSmall = detectCardCorners(small, opts)
     if (!cornersSmall) return null
     const corners = cornersSmall.map((p) => ({ x: p.x / scale, y: p.y / scale }))
+    opts.onCorners?.(orientCardQuad(corners))
     return warpPerspective(frame, corners)
   }
 
   const corners = detectCardCorners(frame, opts)
-  return corners ? warpPerspective(frame, corners) : null
+  if (!corners) return null
+  opts.onCorners?.(orientCardQuad(corners))
+  return warpPerspective(frame, corners)
 }

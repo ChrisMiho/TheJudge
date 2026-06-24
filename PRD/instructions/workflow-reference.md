@@ -35,8 +35,10 @@ After any edit under `.cursor/skills/`, run `npm run skills:ai-sync` before comm
 - `/thejudge-refinement PRD/work/<slug>/`
 - `/thejudge-quality-check PRD/work/<slug>/`
 - `/thejudge-map-out PRD/work/<slug>/`
+- `/thejudge-map-out-parallel PRD/work/<slug>/` — wave-grouped slices for concurrent work
 - `/thejudge-implement PRD/work/<slug>/ slice A`
 - `/thejudge-implement PRD/work/<slug>/`
+- `/thejudge-implement-codex PRD/work/<slug>/ wave 1` — delegate to Codex CLI, verify inline
 - `/thejudge-cleanup PRD/work/<slug>/`
 
 ### Codex
@@ -46,9 +48,12 @@ After any edit under `.cursor/skills/`, run `npm run skills:ai-sync` before comm
 - `$thejudge-refinement PRD/work/<slug>/`
 - `$thejudge-quality-check PRD/work/<slug>/`
 - `$thejudge-map-out PRD/work/<slug>/`
+- `$thejudge-map-out-parallel PRD/work/<slug>/` — wave-grouped slices (Codex implements them one wave-slice at a time)
 - `$thejudge-implement PRD/work/<slug>/ slice A`
 - `$thejudge-implement PRD/work/<slug>/`
 - `$thejudge-cleanup PRD/work/<slug>/`
+
+> `thejudge-implement-codex` is orchestrator-only and is intentionally not synced into the Codex runtime. In Codex, use `$thejudge-implement`.
 
 ### Claude Code
 
@@ -57,8 +62,10 @@ After any edit under `.cursor/skills/`, run `npm run skills:ai-sync` before comm
 - `/thejudge-refinement PRD/work/<slug>/`
 - `/thejudge-quality-check PRD/work/<slug>/`
 - `/thejudge-map-out PRD/work/<slug>/`
+- `/thejudge-map-out-parallel PRD/work/<slug>/` — wave-grouped slices for concurrent work
 - `/thejudge-implement PRD/work/<slug>/ slice A`
 - `/thejudge-implement PRD/work/<slug>/`
+- `/thejudge-implement-codex PRD/work/<slug>/ wave 1` — delegate to Codex CLI, verify inline
 - `/thejudge-cleanup PRD/work/<slug>/`
 
 ## Handoff blocks
@@ -170,6 +177,48 @@ $thejudge-implement PRD/work/<slug>/ slice <letter>
 
 ```text
 /thejudge-implement PRD/work/<slug>/ slice <letter>
+```
+
+### map-out-parallel → implement-codex (first wave)
+
+Cursor/Claude delegate the wave to the Codex CLI; Codex runs slices one at a time.
+
+**Cursor**
+
+```text
+/thejudge-implement-codex PRD/work/<slug>/ wave <n>
+```
+
+**Codex**
+
+```text
+$thejudge-implement PRD/work/<slug>/ slice <letter>
+```
+
+**Claude Code**
+
+```text
+/thejudge-implement-codex PRD/work/<slug>/ wave <n>
+```
+
+### implement-codex → next wave
+
+**Cursor**
+
+```text
+/thejudge-implement-codex PRD/work/<slug>/ wave <n>
+```
+
+**Codex**
+
+```text
+$thejudge-implement PRD/work/<slug>/ slice <letter>
+```
+
+**Claude Code**
+
+```text
+/thejudge-implement-codex PRD/work/<slug>/ wave <n>
 ```
 
 ### implement → next slice

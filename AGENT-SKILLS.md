@@ -1,6 +1,6 @@
 # Agent Workflow Skills
 
-TheJudge uses six project skills to drive PRD-based feature work. Attach the matching skill manually at the start of each agent session.
+TheJudge uses six core project skills to drive PRD-based feature work, plus two optional flavors (`thejudge-map-out-parallel` and `thejudge-implement-codex`) for parallel, Codex-delegated execution. Attach the matching skill manually at the start of each agent session.
 
 ## Single source + sync
 
@@ -21,6 +21,8 @@ npm run skills:ai-sync
 | Claude Code | `.claude/skills/` | Synced copy |
 
 Run `npm run skills:ai-sync` after any skill change, then commit `.cursor/skills/`, `.agents/skills/`, and `.claude/skills/` together.
+
+**Orchestrator-only skills:** `thejudge-implement-codex` drives the `codex` CLI, so the sync script deliberately excludes it from `.agents/skills/` (the Codex runtime). It exists only under `.cursor/skills/` and `.claude/skills/`. The exclude list lives in `scripts/sync-agent-skills.sh` (`CODEX_RUNTIME_EXCLUDES`).
 
 ## Workflow sequence
 
@@ -83,6 +85,18 @@ flowchart LR
 
 **Next:** `thejudge-implement` (first slice).
 
+### thejudge-map-out-parallel (flavor)
+
+**When:** After quality-check passes and the work has independent slices worth running concurrently.
+
+**Synopsis:** Like `thejudge-map-out`, but groups slices into numbered dependency **waves** (same-wave slices are independent and touch disjoint files).
+
+**Inputs:** Work slug.
+
+**Writes:** `GAMEPLAN.md` (with wave plan), `slice-*.md`, `README.md` slice table with wave/depends-on columns → `status: active`.
+
+**Next:** `thejudge-implement-codex` (Cursor/Claude) or `thejudge-implement` (Codex).
+
 ### thejudge-implement
 
 **When:** Executing a planned slice (usually in Codex or Claude).
@@ -94,6 +108,20 @@ flowchart LR
 **Writes:** Product code and tests per slice scope.
 
 **Next:** `thejudge-implement` (next slice) or `thejudge-cleanup` (all done).
+
+### thejudge-implement-codex (flavor, orchestrator-only)
+
+**When:** From Cursor or Claude Code, executing planned slices while conserving orchestrator tokens.
+
+**Synopsis:** Delegates heavy coding to the Codex CLI (`codex exec`); the orchestrator dispatches a wave's independent slices concurrently and **re-verifies every result inline** before marking anything `done`.
+
+**Inputs:** Work slug; optional wave number or slice letter.
+
+**Writes:** Product code and tests per slice scope (written by Codex, verified by the orchestrator).
+
+**Next:** `thejudge-implement-codex` (next wave) or `thejudge-cleanup` (all done).
+
+> Not synced into the Codex runtime (`.agents/skills/`) — it drives the `codex` CLI, so it is meaningless inside Codex. In Codex, use `thejudge-implement`.
 
 ### thejudge-cleanup
 
@@ -115,7 +143,7 @@ Every skill that hands off ends with a **Next step** section containing copy-pas
 
 1. Create or edit under `.cursor/skills/<skill-name>/`.
 2. Run `npm run skills:ai-sync`.
-3. Verify: `diff -rq .cursor/skills .agents/skills` and `diff -rq .cursor/skills .claude/skills` (no output = identical).
+3. Verify: `diff -rq .cursor/skills .claude/skills` (no output = identical). For `.agents/skills`, the only expected difference is `Only in .cursor/skills: thejudge-implement-codex` (orchestrator-only — see above); anything else means re-sync.
 4. Commit all three skill trees.
 
 ## Related docs
