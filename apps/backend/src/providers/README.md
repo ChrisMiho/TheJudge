@@ -40,4 +40,4 @@ Troubleshooting note: if OpenAI mode reports missing `OPENAI_MODEL`, ensure `app
 
 ## Product reference
 
-Provider and contract rules: `PRD/sections/decisions.md` (`DEC-020`) and `PRD/sections/integrations-and-data.md`.
+Provider and contract rules: `PRD/sections/decisions/providers-and-contract.md` (`DEC-020`, indexed from `PRD/sections/decisions.md`) and `PRD/sections/integrations-and-data.md`.

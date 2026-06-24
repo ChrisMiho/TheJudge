@@ -18,7 +18,7 @@ User provides work slug (e.g. `card-wotc-rule-enrichment`).
 ## Reads
 
 1. `PRD/work/<slug>/IDEA.md` (or user description)
-2. `PRD/sections/decisions.md`
+2. `PRD/sections/decisions.md` router, then relevant `PRD/sections/decisions/<domain>.md` files
 3. Relevant `PRD/sections/*.md` for the feature
 4. `PRD/instructions/requirement-format.md`
 5. `PRD/instructions/technical-design-rules.md`
@@ -33,13 +33,13 @@ User provides work slug (e.g. `card-wotc-rule-enrichment`).
 ## Writes
 
 - `PRD/work/<slug>/DESIGN-BRIEF.md` — scope, decisions, non-goals, REQ/FLOW references
-- Updates to `PRD/sections/` (`REQ-###`, `FLOW-###`, `DEC-###` as needed)
+- Updates to `PRD/sections/` (`REQ-###`, `FLOW-###`; promote `DEC-###` into the relevant `PRD/sections/decisions/<domain>.md` and add the router index line in `PRD/sections/decisions.md` as needed)
 - `PRD/sections/open-questions.md` only for genuine ambiguity (`Q-###`)
 - `PRD/work/<slug>/README.md` → `status: refined`
 
 ## Rules
 
-- `decisions.md` is override layer
+- `decisions.md` is the read-first override router; DEC bodies live in `decisions/<domain>.md`
 - No code, no slice docs
 - No scope from open questions without user confirmation
 - Preserve stable IDs; add new IDs, do not renumber

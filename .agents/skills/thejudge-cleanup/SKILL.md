@@ -35,7 +35,7 @@ Apply during process step 1:
 ## Process
 
 1. Compare each slice acceptance criteria vs codebase — mark done/pending; run ship checklist.
-2. Promote durable outcomes to `PRD/sections/decisions.md` and affected sections.
+2. Promote durable outcomes to affected sections; for decisions, promote into the relevant `PRD/sections/decisions/<domain>.md` and add the router index line in `PRD/sections/decisions.md`.
 3. **Write receipt first** (see below).
 4. Apply the system-map promotion gate (`PRD/instructions/doc-lifecycle.md`): now that code exists and the receipt is written, flip the shipped subsystem's `PRD/sections/system-map.md` entry/entries from `planned`/`partial` to `shipped`. The shipped-vs-planned signal lives in the catalog only — never edit a `DEC`/`REQ` `Status:` field.
 5. Delete `PRD/work/<slug>/` entirely if fully shipped.

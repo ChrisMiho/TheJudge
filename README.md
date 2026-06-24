@@ -12,8 +12,8 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 ## Current Product Status
 
 - Core product: staged zone flow with user-flow refinements and gap fixes promoted into `PRD/sections/`
-- Baseline: flow-validation assistant with mock-default backend and optional OpenAI provider mode (`DEC-020` in `PRD/sections/decisions.md`)
-- Product source of truth: `PRD/sections/` (start with `decisions.md`)
+- Baseline: flow-validation assistant with mock-default backend and optional OpenAI provider mode (`DEC-020` in `PRD/sections/decisions/providers-and-contract.md`, indexed from `PRD/sections/decisions.md`)
+- Product source of truth: `PRD/sections/` (start with the `decisions.md` router)
 - Agent workflow skills: see `AGENT-SKILLS.md` (canonical: `.cursor/skills/`)
 
 ## Tech Stack
@@ -130,8 +130,8 @@ Reference templates:
 
 Use these docs for deeper runtime/contract detail instead of expanding the root README:
 - API contract, payload shape, stack-order semantics, and integration constraints: `PRD/sections/integrations-and-data.md`
-- Provider rules and integration constraints: `PRD/sections/decisions.md` (`DEC-020`), `PRD/sections/integrations-and-data.md`
-- WotC rulings prompt enrichment decision: `PRD/sections/decisions.md` (`DEC-029`)
+- Provider rules and integration constraints: `PRD/sections/decisions/providers-and-contract.md` (`DEC-020`, indexed from `PRD/sections/decisions.md`), `PRD/sections/integrations-and-data.md`
+- WotC rulings prompt enrichment decision: `PRD/sections/decisions/rules-retrieval.md` (`DEC-029`, indexed from `PRD/sections/decisions.md`)
 - Backend provider boundary and mode intent: `apps/backend/src/providers/README.md`
 
 Card-scan fingerprint operations:
@@ -150,7 +150,7 @@ Quick local verification flow:
 
 - Keep product truth and planning detail in `PRD/`.
 - Keep this root README concise and onboarding-focused.
-- Keep product truth in `PRD/sections/`; use `PRD/instructions/doc-lifecycle.md` for ephemeral planning during active slices.
+- Keep product truth in `PRD/sections/`; record new DEC bodies in the relevant `PRD/sections/decisions/<domain>.md` file and keep the `PRD/sections/decisions.md` router index current.
 - Keep historical implementation detail out of the repo unless promoted into active PRD sections.
 - Empty-state artwork is bundled at `apps/frontend/public/assets/cats-homescreen.png`; keep it local/static and retain a text fallback path.
 - Provider integration boundary docs live in `apps/backend/src/providers/README.md`.
