@@ -29,8 +29,47 @@ export const DEFAULT_STABILIZER_CONFIG: StabilizerConfig = {
 };
 
 export type StabilizerState =
-  | { phase: "searching"; topCardId: string | null; votes: number }
+  | {
+      phase: "searching";
+      topCardId: string | null;
+      votes: number;
+      votesNeeded: number;
+      /**
+       * Additive, read-only diagnostics for the latest frame (DEC-060 / REQ-041
+       * debug overlay; DEC-057 additive-pure precedent). These describe the
+       * current frame's raw ranking and play NO part in vote/lock gating.
+       */
+      bestCardId: string | null;
+      bestDistance: number | null;
+      runnerUpCardId: string | null;
+      runnerUpDistance: number | null;
+      margin: number | null;
+    }
   | { phase: "locked"; cardId: string; bestDistance: number };
+
+/** Read-only per-frame diagnostics (best / distinct runner-up / margin). Pure: no gating. */
+type FrameMetrics = {
+  bestCardId: string | null;
+  bestDistance: number | null;
+  runnerUpCardId: string | null;
+  runnerUpDistance: number | null;
+  margin: number | null;
+};
+
+function frameMetrics(candidates: Candidate[]): FrameMetrics {
+  const best = candidates[0] ?? null;
+  if (!best) {
+    return { bestCardId: null, bestDistance: null, runnerUpCardId: null, runnerUpDistance: null, margin: null };
+  }
+  const runnerUp = candidates.find((c) => c.card_id !== best.card_id) ?? null;
+  return {
+    bestCardId: best.card_id,
+    bestDistance: best.distance,
+    runnerUpCardId: runnerUp?.card_id ?? null,
+    runnerUpDistance: runnerUp?.distance ?? null,
+    margin: runnerUp ? runnerUp.distance - best.distance : null
+  };
+}
 
 /** A single window slot: a confident vote for a card, or an abstention (null). */
 type Vote = { cardId: string; distance: number } | null;
@@ -68,6 +107,7 @@ export class ScanStabilizer {
       return { phase: "locked", cardId: this.locked.cardId, bestDistance: this.locked.bestDistance };
     }
 
+    const metrics = frameMetrics(candidates);
     this.window.push(evaluateFrame(candidates, this.config));
     while (this.window.length > this.config.windowSize) this.window.shift();
 
@@ -100,7 +140,13 @@ export class ScanStabilizer {
       return { phase: "locked", cardId: leadId, bestDistance: leadBest };
     }
 
-    return { phase: "searching", topCardId: leadId, votes: leadCount };
+    return {
+      phase: "searching",
+      topCardId: leadId,
+      votes: leadCount,
+      votesNeeded: this.config.minVotes,
+      ...metrics
+    };
   }
 
   /** Non-mutating: whether a card is currently locked in. */

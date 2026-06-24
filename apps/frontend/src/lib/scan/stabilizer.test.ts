@@ -118,4 +118,98 @@ describe("ScanStabilizer", () => {
       expect(state.votes).toBe(1);
     }
   });
+
+  describe("search progress report", () => {
+    it("reports accumulating votes and needed votes before locking", () => {
+      const stab = new ScanStabilizer();
+
+      for (let votes = 1; votes <= 3; votes++) {
+        expect(stab.push(confident("alpha"))).toMatchObject({
+          phase: "searching",
+          topCardId: "alpha",
+          votes,
+          votesNeeded: 4
+        });
+      }
+
+      expect(stab.push(confident("alpha"))).toMatchObject({ phase: "locked", cardId: "alpha" });
+    });
+
+    it("reports progress without locking on ambiguous or noisy input", () => {
+      const alternating = new ScanStabilizer();
+      for (let i = 0; i < 20; i++) {
+        expect(alternating.push(confident(i % 2 === 0 ? "alpha" : "beta"))).toMatchObject({
+          phase: "searching",
+          votesNeeded: 4
+        });
+      }
+
+      const noisy = new ScanStabilizer();
+      for (let i = 0; i < 20; i++) {
+        expect(noisy.push(confident("alpha", 79))).toMatchObject({
+          phase: "searching",
+          votesNeeded: 4
+        });
+      }
+    });
+
+    it("exposes additive per-frame metrics (best / runner-up / margin) without affecting gating", () => {
+      const stab = new ScanStabilizer();
+      const state = stab.push([
+        { card_id: "alpha", distance: 30 },
+        { card_id: "beta", distance: 95 }
+      ]);
+      expect(state.phase).toBe("searching");
+      if (state.phase === "searching") {
+        expect(state.bestCardId).toBe("alpha");
+        expect(state.bestDistance).toBe(30);
+        expect(state.runnerUpCardId).toBe("beta");
+        expect(state.runnerUpDistance).toBe(95);
+        expect(state.margin).toBe(65);
+        // Pure: one confident frame must not have locked.
+        expect(state.votes).toBe(1);
+      }
+    });
+
+    it("reports the distinct runner-up, skipping a closer same-card printing, in metrics", () => {
+      const stab = new ScanStabilizer();
+      const state = stab.push([
+        { card_id: "alpha", distance: 30 },
+        { card_id: "alpha", distance: 31 },
+        { card_id: "beta", distance: 95 }
+      ]);
+      if (state.phase === "searching") {
+        expect(state.runnerUpCardId).toBe("beta");
+        expect(state.margin).toBe(65);
+      }
+    });
+
+    it("null metrics on an empty frame, and no lock", () => {
+      const stab = new ScanStabilizer();
+      const state = stab.push([]);
+      expect(state.phase).toBe("searching");
+      if (state.phase === "searching") {
+        expect(state.bestCardId).toBeNull();
+        expect(state.bestDistance).toBeNull();
+        expect(state.runnerUpCardId).toBeNull();
+        expect(state.runnerUpDistance).toBeNull();
+        expect(state.margin).toBeNull();
+      }
+    });
+
+    it("reports the leading card from the current window", () => {
+      const stab = new ScanStabilizer();
+
+      stab.push(confident("beta"));
+      stab.push(confident("alpha"));
+      const state = stab.push(confident("alpha"));
+
+      expect(state).toMatchObject({
+        phase: "searching",
+        topCardId: "alpha",
+        votes: 2,
+        votesNeeded: 4
+      });
+    });
+  });
 });

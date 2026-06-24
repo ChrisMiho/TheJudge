@@ -113,16 +113,17 @@
   - the fingerprint library has loaded (lazy-loaded on first scan)
 - Main Flow:
   1. Camera opens as its own screen with a card-shaped guide overlay and stays open for the session.
-  2. The scanner auto-scans continuously; a manual capture button is always available.
-  3. While searching, confident frames surface a short, confidence-gated candidate hint; once one card is consistently the best over a short window it **locks in** — auto-scan pauses and a single confident card is presented for one-tap Add, with **Rescan** to resume (DEC-055).
-  4. User taps **Accept**; the card is added to the current zone via the existing add path (owner selection for non-stack zones, duplicate-stack block, stack-size limit, `ZoneCardItem` output).
-  5. The camera immediately re-opens to scanning for the next card; the zone's card list shows the running count.
-  6. User repeats scan → Accept as needed, then taps **Back/Exit** to return to zone collection and pick another zone or move forward in the flow.
+  2. The scanner auto-scans continuously; a manual capture button is always available. A live convergence indicator shows `searching`, then `locking` on a named card with a progress/confidence cue as evidence accumulates (DEC-057).
+  3. Once one card is consistently the best over a short window with high confidence, it **locks in** and is **auto-added** to the current zone via the existing add path (owner via the sticky owner selector, duplicate-stack block, stack-size limit, `ZoneCardItem` output) — no Accept tap and no selecting from a list (DEC-056).
+  4. A thumbs-up confirmation popup fades in and out; auto-scan immediately resumes for the next card and the zone's card list shows the running count (DEC-057). Audio confirmation (a "ding") is deferred to `PRD/work/scan-audio-confirmation/`.
+  5. To remove a wrong auto-add, the user taps the scanned-cards bubble in the top-right and removes the card in one tap (no confirmation) without leaving the camera (DEC-058).
+  6. User repeats as needed, then taps **Back/Exit** to return to zone collection and pick another zone or move forward in the flow.
 - Edge Cases:
+  - lock thresholds are tuned strict so a wrong card is essentially never auto-added; an ambiguous frame keeps searching rather than committing (DEC-056)
   - if no confident match, keep auto-scanning with manual capture available; after a few consecutive low-confidence attempts, show a non-blocking prompt offering manual name entry (the existing search) without stopping the scan
   - card-back detection is descoped from the shipped UX (no canonical reference asset); a scanned card back falls through to the normal low-confidence path (DEC-055)
-  - if a scanned card would duplicate a card already in the stack, the existing duplicate block applies (`FLOW-004`)
-  - if the stack already has 10 cards, additional adds are blocked (same as manual)
+  - if a scanned card would duplicate a card already in the stack, the existing duplicate block applies and a non-blocking notice is shown while scanning continues (`FLOW-004`, DEC-056)
+  - if the stack already has 10 cards, additional adds are blocked (same as manual) with a non-blocking notice while scanning continues
   - if camera permission is denied or unavailable, fall back to manual search and surface the reason
   - stack cards are added in scan order, bottom-to-top; manual reorder remains out of scope (`FLOW-002`)
 - Notes:

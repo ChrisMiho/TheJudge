@@ -679,7 +679,7 @@
 - Acceptance Criteria:
   - a Scan entry point sits beside the existing search input; manual search remains unchanged
   - batch loop: scan → Accept (adds via existing add path) → camera re-opens for the next card → Back/Exit returns to zone collection; the zone's existing card list shows the running count
-  - after a few consecutive low-confidence attempts a non-blocking prompt offers manual name entry while auto-scan continues (card-back "Flip the card over" prompt descoped — DEC-055); a sustained confident match locks in a single card for one-tap Add with Rescan to resume (DEC-055)
+  - after a few consecutive low-confidence attempts a non-blocking prompt offers manual name entry while auto-scan continues (card-back "Flip the card over" prompt descoped — DEC-055); a sustained confident match locks in a single card (the one-tap Add / Rescan presentation is superseded by auto-add — see REQ-040 / DEC-056)
   - an accepted scan candidate reaches the existing preview/add/owner/duplicate-block/stack-limit behavior and produces the same `ZoneCardItem` shape as a manually added card
   - stack cards land in scan order (bottom-to-top); manual reorder remains out of scope (`FLOW-002`)
   - existing zone-collection tests are extended, not replaced
@@ -723,3 +723,59 @@
 - Notes:
   - a future recipe/geometry change still forces a full re-download/re-hash
   - this realizes the `cardhashes.bin` production build deferred in `cardomancer-card-detection-summary` Slice B
+
+### REQ-040
+- Title: Responsive scan experience with hands-free auto-add
+- Priority: high
+- Description: Refine the shipped scan UX so a confident lock auto-adds the card and the scanner resumes hands-free, the user can see the scanner converging in real time, each successful add is confirmed with positive feedback, and a wrong auto-add can be removed in one tap — all frontend-only with no backend/API/prompt change.
+- Acceptance Criteria:
+  - on a high-confidence lock the locked card is added to the current zone via the existing add path (owner via the sticky `pendingOwner` selector, duplicate-stack block, stack-size limit, `ZoneCardItem` output) with no Accept tap, and auto-scan immediately resumes for the next card (DEC-056)
+  - the lock/auto-add thresholds in `apps/frontend/src/lib/scan/tuning.ts` are tuned to lock readily on a clearly-leading card (DEC-059) and validated by outcome on both intended (phone, card presented) and adverse (webcam, fingers near edges, noisy background) capture conditions: cards lock quickly and reliably; wrong auto-adds stay rare and are removable in one tap (DEC-058); the runner-up distinctness/margin guard still prevents near-random locks; an ambiguous frame keeps searching rather than committing
+  - while running, the scan screen shows a legible three-state convergence indicator — `searching`, `locking` on a named card with a progress/confidence cue, and a momentary `locked` — driven by an additive, pure progress signal from the stabilizer (no change to distance/confidence/margin logic) (DEC-057)
+  - the selectable top-3 candidate list is replaced by a single non-selectable "locking on: <name>" indicator; the raw status pill copy and the debug `Camera: <status>` line are replaced with user-facing state copy (DEC-057)
+  - each successful auto-add plays a thumbs-up confirmation popup that pops up and fades out; the popup motion uses a CSS-only functional animation permitted under NFR-006 (DEC-057); audio confirmation (a "ding" + mute toggle) is out of scope here and deferred to `PRD/work/scan-audio-confirmation/`
+  - a counter bubble in the top-right of the scan screen expands to list the cards added to the current zone during this scan session, each with a single-tap remove and no confirmation step (DEC-058)
+  - when auto-add would hit the duplicate-stack block or the 10-card stack limit, a non-blocking notice is shown and scanning continues; the card is not silently dropped
+  - manual tap-capture and the low-confidence manual-search escalation remain available; the user is never stranded
+  - existing scan/zone-collection tests are extended, not replaced; the stabilizer progress signal is unit-tested
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - reuse the existing add and zone-card removal paths; do not duplicate owner/duplicate-block/stack-limit/removal logic
+  - do not change the identification/hashing/distance accuracy logic; only the control-layer calibration constants and the UX layer change
+  - lock thresholds and convergence knobs are outcome-validated calibration constants, not product open questions (DEC-052/DEC-055 precedent); calibration is re-balanced toward ease-of-lock per DEC-059
+  - no animation library; the confirmation popup uses CSS keyframes only (NFR-006)
+- Dependencies:
+  - REQ-037
+  - REQ-038
+  - DEC-056
+  - DEC-057
+  - DEC-058
+  - DEC-059
+- Notes:
+  - supersedes the one-tap Add / Rescan presentation in REQ-038 / DEC-055
+  - NFR-010 performance budgets (lazy-load, identify latency, graceful frame throttling) continue to apply
+  - REQ-041 adds an optional debug overlay used to diagnose poor locks and calibrate the DEC-059 thresholds
+
+### REQ-041
+- Title: Optional scanner debug overlay
+- Priority: medium
+- Description: An opt-in, user-toggleable debug overlay on the scan screen that visualizes how the scanner perceives the current card — a live outline of the detected card region and the area it actually reads, plus the live match/convergence metrics — so the user can diagnose poor locks and calibrate the DEC-059 thresholds. Frontend-only, read-only from existing signals.
+- Acceptance Criteria:
+  - a debug toggle on the scan screen defaults to off and resets to off each time the scanner is opened; the overlay renders only while enabled (DEC-060)
+  - when enabled, the overlay shows the current best candidate and distance, the distinct runner-up and distance, the margin between them, votes accumulated / votes needed, the current phase, and the active `lockDistance`/`marginMin` thresholds (DEC-060)
+  - when enabled, the overlay draws a live outline of the detected card region on the camera feed (from the detector's computed card corners) and highlights the area the scanner actually reads/hashes (the art-crop region); this is distinct from and does not replace the static alignment-template guide frame (DEC-060)
+  - if the detected geometry cannot be cheaply surfaced to the UI, the overlay degrades to the text metrics above and records the wiring gap for follow-up rather than blocking the feature (DEC-060)
+  - the overlay reads existing detector/stabilizer signals only; any new stabilizer field is additive and pure, with no change to distance/confidence/margin logic
+  - overlay rendering stays within the NFR-010 scan performance budget (renders only when enabled; no animation library; no new data store)
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - do not change the identification/hashing/distance accuracy logic; the overlay is read-only visualization
+  - distinct from the always-on raw status leaks removed by DEC-057; this overlay is opt-in and user-summoned
+- Dependencies:
+  - REQ-037
+  - REQ-040
+  - DEC-060
+  - NFR-010
+- Notes:
+  - supports DEC-059 gate calibration by making the scanner's perception visible
+  - the live detected-card outline differs from the static alignment-template guide frame (which shows where to place the card, not what the scanner detects)

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { CardScanMap } from "../lib/scan/resolveScanCandidates";
 import type { HashDb, IdentifyResult, RgbImage } from "../lib/scan/types";
 import type { CardMetadataItem } from "../types";
+import { SCAN_STABILIZER_CONFIG } from "../lib/scan/tuning";
 import { LOW_CONFIDENCE_ESCALATION_COUNT, useScanCapture } from "./useScanCapture";
 
 function makeCard(cardId: string, name: string): CardMetadataItem {
@@ -43,7 +44,7 @@ describe("useScanCapture", () => {
     const { result } = renderHook(() =>
       useScanCapture({
         cardMetadata,
-        onScanCandidateSelected: vi.fn(),
+        onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
         dependencies: { loadHashDb, loadScanMap, createIdentifier }
       })
     );
@@ -65,13 +66,111 @@ describe("useScanCapture", () => {
     expect(createIdentifier).toHaveBeenCalledTimes(1);
   });
 
-  it("surfaces a confident match as a hint without auto-selecting on a single frame", async () => {
+  it("auto-adds the locked card via the add path and resumes searching", async () => {
     const identifier = makeIdentifier({
       matched: true,
       was_rotated: false,
       candidates: [{ card_id: "printing-opt", distance: 7 }]
     });
-    const onScanCandidateSelected = vi.fn();
+    const onScanCandidateSelected = vi.fn(() => ({ added: true } as const));
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected,
+        dependencies: {
+          loadHashDb: vi.fn(async () => db),
+          loadScanMap: vi.fn(async () => scanMap),
+          createIdentifier: vi.fn(() => identifier)
+        }
+      })
+    );
+
+    await act(async () => {
+      await result.current.openScan();
+      for (let i = 0; i < 6; i++) {
+        await result.current.identify(image);
+      }
+    });
+
+    expect(onScanCandidateSelected).toHaveBeenCalledTimes(1);
+    expect(onScanCandidateSelected).toHaveBeenCalledWith(cardMetadata[0]);
+    expect(result.current.scanPhase).toBe("searching");
+    expect(result.current.lockedCandidate).toBeNull();
+    expect(result.current.blockedNotice).toBeNull();
+  });
+
+  it("a blocked add surfaces a non-blocking notice and keeps scanning", async () => {
+    const identifier = makeIdentifier({
+      matched: true,
+      was_rotated: false,
+      candidates: [{ card_id: "printing-opt", distance: 7 }]
+    });
+    const onScanCandidateSelected = vi.fn(() => ({ added: false, message: "Card already in stack" } as const));
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected,
+        dependencies: {
+          loadHashDb: vi.fn(async () => db),
+          loadScanMap: vi.fn(async () => scanMap),
+          createIdentifier: vi.fn(() => identifier)
+        }
+      })
+    );
+
+    await act(async () => {
+      await result.current.openScan();
+      for (let i = 0; i < 6; i++) {
+        await result.current.identify(image);
+      }
+    });
+
+    expect(onScanCandidateSelected).toHaveBeenCalledTimes(1);
+    expect(result.current.scanPhase).toBe("searching");
+    expect(result.current.lockedCandidate).toBeNull();
+    expect(result.current.blockedNotice).toBe("Card already in stack");
+  });
+
+  it("ambiguous frames never auto-add", async () => {
+    const identifier = makeIdentifier({
+      matched: true,
+      was_rotated: false,
+      candidates: [
+        { card_id: "printing-bolt", distance: 50 },
+        { card_id: "printing-opt", distance: 55 }
+      ]
+    });
+    const onScanCandidateSelected = vi.fn(() => ({ added: true } as const));
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected,
+        dependencies: {
+          loadHashDb: vi.fn(async () => db),
+          loadScanMap: vi.fn(async () => scanMap),
+          createIdentifier: vi.fn(() => identifier)
+        }
+      })
+    );
+
+    await act(async () => {
+      await result.current.openScan();
+      for (let i = 0; i < 8; i++) {
+        await result.current.identify(image);
+      }
+    });
+
+    expect(onScanCandidateSelected).not.toHaveBeenCalled();
+    expect(result.current.scanPhase).toBe("searching");
+  });
+
+  it("single confident frame converges (locking) without auto-adding", async () => {
+    const identifier = makeIdentifier({
+      matched: true,
+      was_rotated: false,
+      candidates: [{ card_id: "printing-opt", distance: 7 }]
+    });
+    const onScanCandidateSelected = vi.fn(() => ({ added: true } as const));
     const { result } = renderHook(() =>
       useScanCapture({
         cardMetadata,
@@ -89,57 +188,21 @@ describe("useScanCapture", () => {
       await result.current.identify(image);
     });
 
-    // One frame is a hint only -- lock-in requires sustained agreement.
-    expect(result.current.resolvedCandidates.map((card) => card.name)).toEqual(["Opt"]);
-    expect(result.current.scanPhase).toBe("searching");
-    expect(result.current.lockedCandidate).toBeNull();
     expect(onScanCandidateSelected).not.toHaveBeenCalled();
-    expect(result.current.showManualEntryPrompt).toBe(false);
-  });
-
-  it("keeps the last confident suggestion through a following weak frame", async () => {
-    const identify = vi
-      .fn()
-      .mockReturnValueOnce({
-        matched: true,
-        was_rotated: false,
-        candidates: [{ card_id: "printing-opt", distance: 7 }]
-      })
-      .mockReturnValueOnce({
-        matched: false,
-        was_rotated: false,
-        candidates: [{ card_id: "printing-bolt", distance: 200 }]
-      });
-    const identifier = { identify };
-    const { result } = renderHook(() =>
-      useScanCapture({
-        cardMetadata,
-        onScanCandidateSelected: vi.fn(),
-        dependencies: {
-          loadHashDb: vi.fn(async () => db),
-          loadScanMap: vi.fn(async () => scanMap),
-          createIdentifier: vi.fn(() => identifier)
-        }
-      })
-    );
-
-    await act(async () => {
-      await result.current.openScan();
-      await result.current.identify(image); // confident -> surfaces Opt
-      await result.current.identify(image); // weak -> must NOT wipe the suggestion
-    });
-
-    expect(result.current.resolvedCandidates.map((card) => card.name)).toEqual(["Opt"]);
     expect(result.current.scanPhase).toBe("searching");
+    expect(result.current.convergence.phase).toBe("locking");
+    expect(result.current.convergence.leaderName).toBe("Opt");
+    expect(result.current.convergence.votes).toBe(1);
+    expect(result.current.convergence.votesNeeded).toBe(SCAN_STABILIZER_CONFIG.minVotes);
   });
 
-  it("locks in after sustained agreement and accepts on user confirm", async () => {
+  it("rescan() resets convergence and notice to a clean searching state", async () => {
     const identifier = makeIdentifier({
       matched: true,
       was_rotated: false,
       candidates: [{ card_id: "printing-opt", distance: 7 }]
     });
-    const onScanCandidateSelected = vi.fn();
+    const onScanCandidateSelected = vi.fn(() => ({ added: true } as const));
     const { result } = renderHook(() =>
       useScanCapture({
         cardMetadata,
@@ -154,96 +217,19 @@ describe("useScanCapture", () => {
 
     await act(async () => {
       await result.current.openScan();
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 2; i++) {
         await result.current.identify(image);
       }
     });
-
-    expect(result.current.scanPhase).toBe("locked");
-    expect(result.current.lockedCandidate?.name).toBe("Opt");
-    expect(result.current.resolvedCandidates).toEqual([]);
-    // Lock-in does not auto-add: the user confirms.
-    expect(onScanCandidateSelected).not.toHaveBeenCalled();
-
-    act(() => {
-      result.current.acceptCandidate(result.current.lockedCandidate as CardMetadataItem);
-    });
-
-    expect(onScanCandidateSelected).toHaveBeenCalledWith(cardMetadata[0]);
-    expect(result.current.scanPhase).toBe("searching");
-    expect(result.current.lockedCandidate).toBeNull();
-  });
-
-  it("rescan() clears a lock and resumes searching", async () => {
-    const identifier = makeIdentifier({
-      matched: true,
-      was_rotated: false,
-      candidates: [{ card_id: "printing-opt", distance: 7 }]
-    });
-    const { result } = renderHook(() =>
-      useScanCapture({
-        cardMetadata,
-        onScanCandidateSelected: vi.fn(),
-        dependencies: {
-          loadHashDb: vi.fn(async () => db),
-          loadScanMap: vi.fn(async () => scanMap),
-          createIdentifier: vi.fn(() => identifier)
-        }
-      })
-    );
-
-    await act(async () => {
-      await result.current.openScan();
-      for (let i = 0; i < 4; i++) {
-        await result.current.identify(image);
-      }
-    });
-    expect(result.current.scanPhase).toBe("locked");
 
     act(() => {
       result.current.rescan();
     });
 
+    expect(result.current.convergence.phase).toBe("searching");
+    expect(result.current.convergence.leaderName).toBeNull();
+    expect(result.current.blockedNotice).toBeNull();
     expect(result.current.scanPhase).toBe("searching");
-    expect(result.current.lockedCandidate).toBeNull();
-  });
-
-  it("keeps multiple resolved candidates for user selection before previewing", async () => {
-    const identifier = makeIdentifier({
-      matched: true,
-      was_rotated: false,
-      candidates: [
-        { card_id: "printing-bolt", distance: 5 },
-        { card_id: "printing-opt", distance: 8 }
-      ]
-    });
-    const onScanCandidateSelected = vi.fn();
-    const { result } = renderHook(() =>
-      useScanCapture({
-        cardMetadata,
-        onScanCandidateSelected,
-        dependencies: {
-          loadHashDb: vi.fn(async () => db),
-          loadScanMap: vi.fn(async () => scanMap),
-          createIdentifier: vi.fn(() => identifier)
-        }
-      })
-    );
-
-    await act(async () => {
-      await result.current.openScan();
-      await result.current.identify(image);
-    });
-
-    expect(result.current.resolvedCandidates.map((card) => card.name)).toEqual(["Lightning Bolt", "Opt"]);
-    expect(onScanCandidateSelected).not.toHaveBeenCalled();
-
-    act(() => {
-      result.current.acceptCandidate(cardMetadata[1]);
-    });
-
-    expect(onScanCandidateSelected).toHaveBeenCalledWith(cardMetadata[1]);
-    expect(result.current.resolvedCandidates).toEqual([]);
   });
 
   it("shows the manual-entry prompt after consecutive low-confidence captures", async () => {
@@ -251,7 +237,7 @@ describe("useScanCapture", () => {
     const { result } = renderHook(() =>
       useScanCapture({
         cardMetadata,
-        onScanCandidateSelected: vi.fn(),
+        onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
         dependencies: {
           loadHashDb: vi.fn(async () => db),
           loadScanMap: vi.fn(async () => scanMap),

@@ -892,3 +892,94 @@
 - Notes:
   - validated end-to-end on a laptop camera (detection + identification + single-card lock-in); formal NFR-010 device metrics were not separately recorded and some scan UX refinement remains as future work
   - lock-in tuning constants are outcome-validated calibration values (DEC-052 precedent), not product open questions
+  - **Superseded in part (DEC-056):** the "one confident card is presented for one-tap Add with Rescan" lock behavior is replaced by auto-add on a high-confidence lock; the lock-in/convergence mechanism this decision introduces is unchanged and is the foundation DEC-056 builds on
+
+### DEC-056
+- Decision: A confident scan lock auto-adds the card to the current zone with no tap and immediately resumes scanning for the next card, replacing the one-tap Accept gate. Lock thresholds are tuned strict so that lock genuinely means "this is the card," and correctness is biased hard toward a false-negative (keep searching) over a false-positive (wrong auto-add).
+- Status: confirmed
+- Context: The shipped scanner (DEC-055) converges on the correct oracle identity but still requires the user to tap Accept on a presented card before it is added. At a live table the goal is to present card after card and have each one added hands-free. Reporter testing showed the engine does eventually lock the right card as it is brought closer to the camera, but interim frames can surface a wrong leader — so auto-add is only safe if the lock bar is high enough that a wrong card is essentially never auto-added.
+- Impact:
+  - scanning stays frontend-only with zero network calls at scan time; no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - on lock, the locked card is added via the existing add path (owner, duplicate-stack block, stack-size limit, `ZoneCardItem` output) and auto-scan immediately resumes for the next card; no Accept tap and no selecting from a candidate list
+  - owner is supplied by the existing sticky `pendingOwner` selector (defaults to `activePlayer`, changeable in the scan screen); auto-add does not introduce a per-card owner prompt
+  - the lock/auto-add threshold is tuned stricter than the DEC-055 first-pass values (stabilizer window, vote count, lock distance, runner-up margin in `apps/frontend/src/lib/scan/tuning.ts`); the product intent is to prefer continued searching over a wrong auto-add, validated by outcome (no wrong auto-adds on a representative capture set), not by bit-equality
+  - when auto-add would hit the duplicate-stack block (`FLOW-004`) or the 10-card stack limit, a non-blocking notice is shown and scanning continues; the card is not silently dropped and the user is never stranded
+  - manual fallbacks are preserved: manual tap-capture remains available, and after a few consecutive low-confidence frames the existing manual-search escalation still appears (DEC-052, DEC-055)
+  - supersedes the "one confident card is presented for one-tap Add" behavior in DEC-052, DEC-055, FLOW-006, and REQ-038; Rescan as a discard-and-resume control is no longer needed because there is no pending-accept state (correction is handled by DEC-058)
+- Related requirements:
+  - REQ-038
+  - REQ-040
+  - NFR-010
+- Notes:
+  - refines DEC-052/DEC-055; it does not change the identification/hashing/distance accuracy logic, only the control-layer calibration constants and the accept gate
+  - the strict lock thresholds remain outcome-validated calibration constants (DEC-052/DEC-055 precedent), not product open questions
+  - **Superseded in part (DEC-059):** the "lock bar high enough that a wrong card is essentially never auto-added" strict-bar intent is rebalanced toward ease-of-lock with one-tap removal (DEC-058) as the safety net; the auto-add mechanism and hands-free model this decision introduces are unchanged
+
+### DEC-057
+- Decision: The scan screen shows a live three-state convergence indicator (`searching` -> `locking` -> `locked`) driven by an additive, pure progress signal from the stabilizer, replaces the selectable candidate list with a single non-selectable "locking on" indicator, removes the raw status-string leaks, and plays positive visual confirmation feedback (a thumbs-up popup that fades out) on each successful auto-add. Audio confirmation (a "ding" + mute toggle) is split out of this decision and tracked separately in `PRD/work/scan-audio-confirmation/`, to be completed later.
+- Status: confirmed
+- Context: The shipped scan UX surfaces a raw status pill (`Scanning`, `No card found`, `No match`, `captured`) and a debug `Camera: <status>` line, and renders a capped top-3 selectable candidate list while searching. With auto-add (DEC-056) the user no longer picks from a list, and the experience needs to communicate "how it is doing" while converging and confirm clearly when a card lands. The stabilizer currently emits only `searching`/`locked` with no visible progress toward lock.
+- Impact:
+  - the stabilizer gains a small additive, pure change to expose intermediate convergence progress (current leading oracle identity plus votes-accumulated / votes-needed); distance, confidence, and margin gating logic are unchanged
+  - the scan UI shows a legible three-state cue: `searching` (no confident leader), `locking` on a named card with a progress/confidence indicator, and a momentary `locked` before auto-add fires
+  - the capped top-3 selectable candidate list is replaced by a single non-selectable "locking on: <name>" indicator; the user does not select from a list
+  - the raw status pill copy and the debug `Camera: <status>` line are replaced with legible user-facing state copy
+  - on each successful auto-add a thumbs-up confirmation popup pops up and fades out; the popup fade is a functional CSS animation permitted under the NFR-006 carve-out and adds no animation library
+  - audio confirmation (a "ding" on by default with a mute toggle on the scan screen) is out of scope here and deferred to `PRD/work/scan-audio-confirmation/`
+  - no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+- Related requirements:
+  - REQ-040
+  - NFR-006
+- Notes:
+  - refines DEC-055's "while searching, candidates are confidence-gated and capped (top 3) as a subdued hint" — the hint becomes a single informational indicator, not a selectable list
+  - NFR-006 governs the popup motion only; audio is functional confirmation feedback (not animation) and is scoped to `PRD/work/scan-audio-confirmation/`
+
+### DEC-058
+- Decision: The scan screen shows a scanned-cards review control (a counter bubble in the top-right) that expands to list the cards added to the current zone during this scan session, each with a single-tap remove. Removal has no confirmation step.
+- Status: confirmed
+- Context: With auto-add (DEC-056) there is no manual Accept moment to catch a wrong card before it lands, so the user needs a low-friction way to remove a mistaken auto-add without leaving the camera. Minimizing taps is the dominant constraint for live-table use.
+- Impact:
+  - a counter bubble sits in the top-right of the scan screen; tapping it expands a list of the cards added to the current zone during this scan session
+  - each listed card has a single remove button that removes it from the zone via the existing zone-card removal path; there is no confirmation prompt on removal
+  - the control operates on the current zone's cards (the same `ZoneCardItem` list the zone collection already maintains); it does not introduce a separate scan-only data store
+  - no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+- Related requirements:
+  - REQ-040
+- Notes:
+  - the no-confirmation removal is a deliberate click-minimizing choice; revisit only if feedback shows accidental removals are a problem
+
+### DEC-059
+- Decision: Rebalance the auto-add lock gate toward ease-of-lock, treating one-tap removal (DEC-058) as the safety net rather than holding the lock bar high enough that a wrong card is essentially never auto-added.
+- Status: confirmed
+- Context: Device validation of DEC-056's strict gate produced zero wrong auto-adds but made locking impractical — held to a webcam with fingers near the card edges and a noisy background it required delicate holding and a long wait and often failed to lock at all. Because DEC-058 (one-tap, no-confirmation removal) shipped after DEC-056 was written, the cost of a wrong auto-add is now a single tap, which removes the justification for an extreme-strict bar.
+- Impact:
+  - the product intent shifts from "a wrong card is essentially never auto-added" to "lock readily on a clearly-leading card; a rare wrong auto-add is acceptable because it is removable in one tap (DEC-058)"
+  - the loosening is applied to the attainability knobs in `apps/frontend/src/lib/scan/tuning.ts` (stabilizer window, vote count, lock distance); the runner-up distinctness/margin guard is retained as the primary false-lock protection — easier locks without inviting near-random wrong cards
+  - the scan interaction is unchanged and stays fully hands-free: same stabilizer, same auto-add path, no manual confirm tap and no candidate-list pick
+  - the tuning constants remain outcome-validated calibration (DEC-052/DEC-055 precedent), now validated against two outcomes — cards lock quickly and reliably in normal phone presentation, and remain lockable in the adverse webcam/fingers/noise case — with wrong auto-adds staying rare across both
+  - manual tap-capture and the low-confidence manual-search escalation remain available (DEC-052, DEC-055, DEC-056)
+  - no change to identification/hashing/distance accuracy logic, `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+- Related requirements:
+  - REQ-040
+  - NFR-010
+- Notes:
+  - supersedes in part DEC-056's "lock bar high enough that a wrong card is essentially never auto-added" intent; the auto-add mechanism, hands-free model, and the rest of DEC-056 are unchanged
+  - validated by outcome on both intended and adverse capture conditions, not by bit-equality
+
+### DEC-060
+- Decision: The scan screen offers an optional, user-toggleable debug overlay (default off, reset each time the scanner is opened) that visualizes how the scanner is perceiving the current card — a live outline of the detected card region and the area it actually reads, plus the live match/convergence metrics — drawn read-only from existing detector/stabilizer signals.
+- Status: confirmed
+- Context: Tuning the lock gate (DEC-059) and diagnosing why locking is hard need visibility into what the scanner actually "sees." The shipped UX deliberately removed always-on raw status leaks (DEC-057) for legibility; this is the opposite — an opt-in diagnostic the user summons on purpose, so it does not reopen DEC-057. Today the only on-feed outline is a static alignment template, which shows where to place the card, not what the scanner is detecting or reading.
+- Impact:
+  - a debug toggle on the scan screen (default off) enables the overlay; the toggle state is ephemeral and resets to off each time the scanner is opened
+  - the overlay surfaces, read-only from existing signals: the current best candidate and its distance, the distinct runner-up and its distance, the margin between them, votes accumulated / votes needed, the current phase, and the active `lockDistance`/`marginMin` thresholds for reference
+  - the overlay draws a live geometry layer on the camera feed from the detector's computed card corners (`detectCardCorners`): the detected card boundary the scanner is tracking, plus a highlight of the region it actually reads/hashes (the art-crop region per the shared recipe) — so the user can see whether fingers or edges are clipping the read area; the static alignment template is unaffected
+  - feasibility of surfacing the corners/crop geometry to the UI is confirmed at map-out; if any piece is not cheaply available, the overlay falls back to the text metrics above and records what wiring is needed rather than blocking the feature
+  - rendering happens only while the overlay is enabled, preserving the NFR-010 scan performance budget; no animation library; no new data store
+  - any extra field the stabilizer must expose for the overlay is an additive, pure change (DEC-057 precedent); no change to identification/hashing/distance accuracy logic, `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+- Related requirements:
+  - REQ-041
+  - NFR-010
+- Notes:
+  - distinct from the raw status-string leaks removed by DEC-057: this is an opt-in, user-summoned diagnostic, not an always-on leak
+  - primarily a calibration/diagnostic aid supporting DEC-059's outcome validation

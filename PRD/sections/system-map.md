@@ -260,16 +260,23 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Scan lock-in control layer
 
 - Status: shipped
-- Summary: Temporal stabilizer votes the top-1 oracle identity across a rolling window (confidence + margin gated) and emits `searching`/`locked`; on lock, auto-scan pauses and one confident card is presented for one-tap Add with Rescan. Replaces the prior per-frame list churn. Convergence knobs are isolated in `tuning.ts`.
+- Summary: Temporal stabilizer votes the top-1 oracle identity across a rolling window (confidence + margin gated) and emits `searching`/`locked`; on a confident lock the card auto-adds and auto-scan resumes hands-free (no Accept tap). Replaces the prior per-frame list churn. Convergence knobs are isolated in `tuning.ts`. The stabilizer exposes an additive, pure progress signal (leader id + votes accumulated/needed, plus `bestDistance`/`runnerUpDistance`/`margin` on the `searching` state) that drives the `searching`/`locking`/`locked` indicator and the debug overlay, with no change to distance/confidence/margin logic. The lock gate is rebalanced toward ease-of-lock (DEC-059): the loosened window/votes/distance knobs (`windowSize 6 / minVotes 4 / lockDistance 78`) let a clearly-leading card lock readily while `marginMin 14` retains the runner-up distinctness guard; one-tap removal is the safety net. These are the shipped baseline; finer tuning + on-device (mobile) validation are carried to a dedicated tuning story.
 - Lives in: `apps/frontend/src/lib/scan/{stabilizer,tuning}.ts`, `apps/frontend/src/hooks/useScanCapture.ts`
-- Backed by: DEC-055, REQ-037, REQ-038
+- Backed by: REQ-037, REQ-038, REQ-040, DEC-055, DEC-056, DEC-057, DEC-059
 
 ### Scan UX in zone picker
 
 - Status: shipped
-- Summary: Scan entry point beside manual search; batch scan → lock-in → Add → re-scan loop; confidence-gated candidate hints and low-confidence manual-entry escalation; feeds the existing preview/add/owner/duplicate-block/stack-limit flow unchanged. Card-back prompt descoped (DEC-055).
-- Lives in: `apps/frontend/src/components/{ZoneCardPicker,ZoneCollectionStep}.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`
-- Backed by: REQ-038, DEC-052, DEC-055
+- Summary: Hands-free scan entry point beside manual search: batch scan → confident lock → auto-add → resume loop with no Accept tap and no candidate-list pick. A live `searching`/`locking on: <name>`/`locked` indicator (replacing the raw status pill and `Camera: <status>` debug line) shows convergence; each auto-add plays a CSS-only thumbs-up confirmation popup (NFR-006); a top-right scanned-cards review bubble lists this-session adds with one-tap, no-confirmation removal of a wrong auto-add. Duplicate-stack/stack-limit blocks surface as non-blocking notices and scanning continues. Feeds the existing preview/add/owner/duplicate-block/stack-limit/removal flow unchanged; low-confidence manual-entry escalation and manual tap-capture remain. Card-back prompt descoped (DEC-055). Audio "ding" confirmation is split out to `PRD/work/scan-audio-confirmation/` (planned).
+- Lives in: `apps/frontend/src/components/{ZoneCardPicker,ZoneCollectionStep,ScanReviewBubble}.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`, `apps/frontend/src/index.css`
+- Backed by: REQ-038, REQ-040, DEC-052, DEC-055, DEC-056, DEC-057, DEC-058
+
+### Scanner debug overlay
+
+- Status: shipped
+- Summary: Opt-in, user-summoned diagnostic on the scan screen (toggle defaults off, resets each time the scanner is opened) that visualizes how the scanner perceives the current card. When enabled it draws a live outline of the detected card region (from the detector's full-res `corners`, surfaced additively from `detectCard` rather than discarded after warp) plus the art-crop read region on the feed, and text metrics: best/runner-up candidate + distances, margin, votes accumulated/needed, phase, and the active `lockDistance`/`marginMin` thresholds. Read-only from existing detector/stabilizer signals; if geometry can't be cheaply surfaced it degrades to text metrics. Distinct from the static alignment-template guide frame and from the always-on raw status leaks removed by DEC-057. Renders only when enabled (no scan-perf regression off). Built primarily to diagnose poor locks and calibrate the DEC-059 thresholds.
+- Lives in: `apps/frontend/src/components/ScanDebugOverlay.tsx` + toggle/threading in `apps/frontend/src/components/ScanCameraSurface.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`, `apps/frontend/src/lib/scan/{stabilizer,detector}.ts`
+- Backed by: REQ-041, DEC-060
 
 ## Follow-up chat
 
