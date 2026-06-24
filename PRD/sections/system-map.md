@@ -285,6 +285,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: `apps/frontend/src/components/ScanDebugOverlay.tsx` + toggle/threading in `apps/frontend/src/components/ScanCameraSurface.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`, `apps/frontend/src/lib/scan/{stabilizer,detector}.ts`
 - Backed by: REQ-041, DEC-060
 
+### Scan robustness conditioning
+
+- Status: shipped
+- Summary: Makes the scan vote lock reliably under real-world conditions (glare/gloss, uneven/dim lighting, handheld shake, finger occlusion) by feeding the unchanged matching engine a cleaner, better-chosen query image — never by loosening the lock gate. Three query-only, frontend-only levers: (1) extended query frame conditioning beyond the black-point `autoLevels` stretch to full auto-contrast + specular/glare suppression + white-balance/color-cast normalization (DB images stay clean and un-conditioned, so parity-by-construction holds); (2) best-frame selection — per-frame quality scoring (sharpness, glare fraction, art-crop detail/occlusion) prefers the best frame in the stabilizer window and skips blurred/occluded frames, an additive pure signal with no distance/margin logic change and `marginMin` retained; (3) condition-aware feedback — the `searching` indicator gains cause hints ("too much glare — tilt", "hold steady", "move closer") and the debug overlay surfaces the new quality metrics. Finger occlusion is a frame-quality penalty only (no masked hashing). The recipe, `cardhashes.bin`, the DB build, the matching/distance logic, and the byte-exact parity gate are untouched; the lock gate stays at DEC-059 values. New thresholds isolated in `tuning.ts`, validated on a Mac-webcam device pass (qualitative owner acceptance; counted adverse capture-set table left optional).
+- Lives in: `apps/frontend/src/lib/scan/identify.ts` + `tuning.ts` (query-only conditioning), new `apps/frontend/src/lib/scan/frameQuality.ts` + `frameSelection.ts` (pure frame-quality scoring + best-frame selection), `apps/frontend/src/hooks/useScanCapture.ts` (frame selection + condition-hint/quality view-models), `apps/frontend/src/components/{ScanCameraSurface,ScanDebugOverlay}.tsx` (searching hint + debug quality metrics). `recipe.ts`, `stabilizer.ts`, and `cardhashes.bin` are intentionally unchanged.
+- Backed by: REQ-043, DEC-062
+
 ## Follow-up chat
 
 - Status: shipped

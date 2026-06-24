@@ -1,4 +1,6 @@
 import { useCallback, useRef, useState } from "react";
+import type { ConditionReason } from "../lib/scan/frameQuality";
+import { FrameSelector } from "../lib/scan/frameSelection";
 import { CardIdentifier } from "../lib/scan/identify";
 import { loadHashDb } from "../lib/scan/loadHashDb";
 import { loadScanMap } from "../lib/scan/loadScanMap";
@@ -7,7 +9,12 @@ import {
   type CardScanMap
 } from "../lib/scan/resolveScanCandidates";
 import { ScanStabilizer } from "../lib/scan/stabilizer";
-import { MAX_SURFACED_CANDIDATES, SCAN_STABILIZER_CONFIG, SURFACE_DISTANCE } from "../lib/scan/tuning";
+import {
+  FRAME_SELECTOR_WINDOW_SIZE,
+  MAX_SURFACED_CANDIDATES,
+  SCAN_STABILIZER_CONFIG,
+  SURFACE_DISTANCE
+} from "../lib/scan/tuning";
 import type { Candidate, HashDb, IdentifyResult, RgbImage } from "../lib/scan/types";
 import type { ScanCameraStatus } from "../components/ScanCameraSurface";
 import type { CardMetadataItem } from "../types";
@@ -23,6 +30,8 @@ export type ScanConvergence = {
   leaderName: string | null;
   votes: number;
   votesNeeded: number;
+  /** Additive (Slice B/C, DEC-062/REQ-043/FLOW-006): adverse-capture hint while searching. */
+  conditionHint: ConditionReason | null;
 };
 
 /**
@@ -42,6 +51,11 @@ export type ScanDebugMetrics = {
   votesNeeded: number;
   lockDistance: number;
   marginMin: number;
+  /** Additive (Slice B, DEC-062/REQ-043): frame-quality signals for the opt-in debug overlay. */
+  glareFraction: number | null;
+  sharpness: number | null;
+  frameQualityScore: number | null;
+  conditionReason: ConditionReason | null;
 };
 
 /**
@@ -55,7 +69,8 @@ const INITIAL_CONVERGENCE: ScanConvergence = {
   phase: "searching",
   leaderName: null,
   votes: 0,
-  votesNeeded: SCAN_STABILIZER_CONFIG.minVotes
+  votesNeeded: SCAN_STABILIZER_CONFIG.minVotes,
+  conditionHint: null
 };
 
 type ScanIdentifier = Pick<CardIdentifier, "identify">;
@@ -110,6 +125,7 @@ export function useScanCapture({
   const resourcesRef = useRef<ScanResources | null>(null);
   const resourcesPromiseRef = useRef<Promise<ScanResources> | null>(null);
   const stabilizerRef = useRef<ScanStabilizer>(new ScanStabilizer(SCAN_STABILIZER_CONFIG));
+  const frameSelectorRef = useRef<FrameSelector>(new FrameSelector(FRAME_SELECTOR_WINDOW_SIZE));
   const onSelectRef = useRef(onScanCandidateSelected);
   onSelectRef.current = onScanCandidateSelected;
 
@@ -137,6 +153,7 @@ export function useScanCapture({
 
   const resetScanState = useCallback((): void => {
     stabilizerRef.current.reset();
+    frameSelectorRef.current.reset();
     setResolvedCandidates([]);
     setLockedCandidate(null);
     setScanPhase("searching");
@@ -188,7 +205,45 @@ export function useScanCapture({
         return EMPTY_IDENTIFY_RESULT;
       }
 
-      const result = resources.identifier.identify(image);
+      // Best-frame selection (DEC-062): poor frames abstain rather than feeding
+      // a noisy candidate into the stabilizer. The selector retains a short
+      // recent window, so a poor current frame can still defer to a better one
+      // already in hand.
+      const selection = frameSelectorRef.current.push(image);
+      if (selection.abstain) {
+        const state = stabilizerRef.current.push([]);
+        setResolvedCandidates([]);
+        setLowConfidenceCount((count) => count + 1);
+        if (state.phase === "searching") {
+          const phase: ScanConvergence["phase"] = state.votes > 0 ? "locking" : "searching";
+          setConvergence({
+            phase,
+            leaderName: null,
+            votes: state.votes,
+            votesNeeded: state.votesNeeded,
+            conditionHint: selection.quality.reason
+          });
+          setScanDebug({
+            phase,
+            bestName: null,
+            bestDistance: null,
+            runnerUpName: null,
+            runnerUpDistance: null,
+            margin: null,
+            votes: state.votes,
+            votesNeeded: state.votesNeeded,
+            lockDistance: SCAN_STABILIZER_CONFIG.lockDistance,
+            marginMin: SCAN_STABILIZER_CONFIG.marginMin,
+            glareFraction: selection.quality.glareFraction,
+            sharpness: selection.quality.sharpness,
+            frameQualityScore: selection.quality.qualityScore,
+            conditionReason: selection.quality.reason
+          });
+        }
+        return EMPTY_IDENTIFY_RESULT;
+      }
+
+      const result = resources.identifier.identify(selection.image);
 
       // Vote on the resolved ORACLE identity, not printing ids -- different
       // printings of one card must not split a vote. Distances are preserved.
@@ -238,7 +293,8 @@ export function useScanCapture({
         phase,
         leaderName,
         votes: state.votes,
-        votesNeeded: state.votesNeeded
+        votesNeeded: state.votesNeeded,
+        conditionHint: selection.quality.reason
       });
       setScanDebug({
         phase,
@@ -250,7 +306,11 @@ export function useScanCapture({
         votes: state.votes,
         votesNeeded: state.votesNeeded,
         lockDistance: SCAN_STABILIZER_CONFIG.lockDistance,
-        marginMin: SCAN_STABILIZER_CONFIG.marginMin
+        marginMin: SCAN_STABILIZER_CONFIG.marginMin,
+        glareFraction: selection.quality.glareFraction,
+        sharpness: selection.quality.sharpness,
+        frameQualityScore: selection.quality.qualityScore,
+        conditionReason: selection.quality.reason
       });
 
       return result;

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { detectCard, type Point } from "../lib/scan/detector"
 import { loadScanAudioMuted, saveScanAudioMuted } from "../lib/scan/audioPrefs"
+import type { ConditionReason } from "../lib/scan/frameQuality"
 import type { IdentifyResult, RgbImage } from "../lib/scan/types"
 import { ScanDebugOverlay } from "./ScanDebugOverlay"
 // Type-only import (erased at build): the hook owns the convergence/confirmation
@@ -8,6 +9,16 @@ import { ScanDebugOverlay } from "./ScanDebugOverlay"
 import type { ScanAddConfirmation, ScanConvergence, ScanDebugMetrics } from "../hooks/useScanCapture"
 
 export type ScanCameraStatus = "idle" | "camera-error" | "scanning" | "no-card" | "captured" | "no-match"
+
+// Cause-aware searching hints (DEC-062 / REQ-043 / FLOW-006). Maps the frame
+// quality reason to a short, action-oriented nudge. Only shown while searching;
+// the locking state stays focused on the named leader and vote progress.
+const CONDITION_HINT_COPY: Record<ConditionReason, string> = {
+  glare: "Too much glare — tilt the card",
+  blur: "Hold steady",
+  occlusion: "Keep the card edges in view",
+  "low-detail": "Move closer"
+}
 
 export type ScanCameraSurfaceProps = {
   onCapture: (image: RgbImage) => void
@@ -209,6 +220,11 @@ export function ScanCameraSurface({
   }, [autoScanFps, scanCurrentFrame])
 
   const isLocking = convergence?.phase === "locking" && Boolean(convergence.leaderName)
+  const isSearching = status !== "camera-error" && !isLocking
+  // Cause-aware hint only while searching under poor frame conditions; never
+  // during locking (keeps locking copy clean) or a camera error.
+  const conditionHint =
+    isSearching && convergence?.conditionHint ? CONDITION_HINT_COPY[convergence.conditionHint] : null
   const indicatorText =
     status === "camera-error"
       ? "Camera unavailable"
@@ -249,6 +265,9 @@ export function ScanCameraSurface({
                 {`${convergence!.votes}/${convergence!.votesNeeded}`}
               </span>
             </span>
+          )}
+          {conditionHint && (
+            <span className="text-[11px] font-medium text-amber-200/90">{conditionHint}</span>
           )}
         </div>
         <button

@@ -2,7 +2,29 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { writeDb } from "./lib/scan/dbformat";
+import { CARD_HEIGHT, CARD_WIDTH } from "./lib/scan/identify";
 import type { IdentifyResult, RgbImage } from "./lib/scan/types";
+
+/** Deterministic per-pixel noise: a frame-quality-acceptable image for the mocked scan camera. */
+function noiseChannel(x: number, y: number, seed: number): number {
+  let h = (x * 374761393 + y * 668265263 + seed * 2147483647) | 0;
+  h = (h ^ (h >>> 13)) * 1274126177;
+  h = (h ^ (h >>> 16)) >>> 0;
+  return 20 + (h % 200);
+}
+
+function makeGoodImage(): RgbImage {
+  const data = new Uint8Array(CARD_WIDTH * CARD_HEIGHT * 3);
+  for (let y = 0; y < CARD_HEIGHT; y++) {
+    for (let x = 0; x < CARD_WIDTH; x++) {
+      const p = (y * CARD_WIDTH + x) * 3;
+      data[p] = noiseChannel(x, y, 1);
+      data[p + 1] = noiseChannel(x, y, 2);
+      data[p + 2] = noiseChannel(x, y, 3);
+    }
+  }
+  return { width: CARD_WIDTH, height: CARD_HEIGHT, data };
+}
 
 const { cardIdentifierConstructorMock, identifierMock } = vi.hoisted(() => {
   const identifyResult = {
@@ -20,9 +42,13 @@ const { cardIdentifierConstructorMock, identifierMock } = vi.hoisted(() => {
   };
 });
 
-vi.mock("./lib/scan/identify", () => ({
-  CardIdentifier: cardIdentifierConstructorMock
-}));
+vi.mock("./lib/scan/identify", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./lib/scan/identify")>();
+  return {
+    ...actual,
+    CardIdentifier: cardIdentifierConstructorMock
+  };
+});
 
 vi.mock("./components/ScanCameraSurface", () => ({
   ScanCameraSurface: ({
@@ -36,7 +62,7 @@ vi.mock("./components/ScanCameraSurface", () => ({
     onResult?: (result: IdentifyResult | null) => void;
     onStatusChange?: (status: string) => void;
   }) => {
-    const image: RgbImage = { width: 1, height: 1, data: new Uint8Array([0, 0, 0]) };
+    const image: RgbImage = makeGoodImage();
 
     return (
       <section aria-label="Mock scan camera">

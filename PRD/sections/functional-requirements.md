@@ -806,3 +806,33 @@
 - Notes:
   - completes the audio deferral noted in REQ-040 and FLOW-006 step 4
   - `localStorage` for the mute preference is the first such use in the repo; keep it confined to `audioPrefs.ts`
+
+### REQ-043
+- Title: Real-world scan robustness (query conditioning, best-frame selection, condition feedback)
+- Priority: high
+- Description: Make the scan vote lock reliably under real capture conditions — glare/gloss, uneven or dim lighting, handheld camera shake, and finger occlusion of card edges — so a card locks without the user finding a perfect angle. Robustness is achieved by feeding the existing matching engine a cleaner, better-chosen query image, plus condition-aware feedback when conditions are poor. Frontend-only and query-only: no change to the perceptual-hash recipe, the fingerprint library, the matching/distance logic, or the lock gate as the primary lever (DEC-062).
+- Acceptance Criteria:
+  - the query conditioning stage is extended beyond black-point stretch to full auto-contrast (white and black point), specular/glare suppression on the warped art crop, and white-balance / color-cast normalization; conditioning is applied to the query only and leaves the database hashes, the shared `recipe.ts` resize+DCT+hash, and `cardhashes.bin` unchanged (DEC-062)
+  - each captured frame is scored for quality (sharpness / high-frequency energy, glare fraction, art-crop detail-vs-occlusion) and the best frame in the stabilizer window is preferred for hashing; motion-blurred or occluded frames are skipped or down-weighted so they do not waste votes or inject noise; this is an additive, pure signal with no change to the stabilizer's distance/confidence/margin logic and the `marginMin` runner-up guard is retained (DEC-062)
+  - finger occlusion is handled only as a frame-quality penalty; no masked or partial-region hashing is introduced and the comparison stays full-Region-A against the full-region DB hashes
+  - the `searching` state of the three-state convergence indicator gains a cause-aware reason derived from the frame-quality signals (e.g. "too much glare — tilt the card", "hold steady", "move closer"), reusing the DEC-057 indicator; the opt-in debug overlay (DEC-060) additionally surfaces the new per-frame quality metrics (glare fraction, sharpness, frame-quality score) alongside the existing distance/margin/votes
+  - the lock gate (`lockDistance`, `marginMin`) is held at its DEC-059 values; gate-loosening is not the primary lever and the gate is re-tuned only if outcome data demands it
+  - all new thresholds and conditioning parameters live in `apps/frontend/src/lib/scan/tuning.ts`; a before/after detect-then-lock rate and top-1 accuracy result on a representative adverse capture set (shake, finger occlusion, busy background, glare, uneven/dim light) is recorded as acceptance evidence (NFR-010)
+  - the query-conditioning golden/eval fixtures (end-to-end identify path and auto-levels conditioning vectors) are regenerated for the intentional change; the byte-exact DB-load and canonical-image pHash parity vectors are unchanged and still pass (REQ-034)
+  - existing scan/zone-collection/stabilizer tests are extended, not replaced; the frame-quality and condition-reason signals are unit-tested as pure functions
+- Constraints:
+  - frontend-only and query-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - do not change the shared resize+DCT+hash recipe, `cardhashes.bin`, the DB build (REQ-035/REQ-039), the matching/orientation/distance logic, or the byte-exact parity gate (REQ-034/DEC-051)
+  - do not introduce masked/partial-region hashing; occlusion is a frame-quality signal only
+  - conditioning, frame-quality, and threshold values are outcome-validated calibration constants, not product open questions (DEC-052/DEC-055/DEC-059 precedent)
+  - card-back detection stays descoped (DEC-055); the webcam pipeline is not replaced and recognition stays client-side
+  - reuse the existing add path, stabilizer, and three-state indicator; do not duplicate gating or add logic
+- Dependencies:
+  - REQ-037
+  - REQ-040
+  - DEC-062
+  - DEC-051
+  - NFR-010
+- Notes:
+  - root cause addressed: detection/warp already work; the vote failed because the corrupted query hash kept the true card's distance above `lockDistance` (DEC-062)
+  - the debug overlay (REQ-041) is the calibration aid for validating the conditioning and frame-quality thresholds

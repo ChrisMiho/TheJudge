@@ -35,6 +35,14 @@ function formatDistance(value: number | null): string {
   return value === null ? "—" : value.toFixed(0)
 }
 
+function formatPercent(value: number | null): string {
+  return value === null ? "—" : `${Math.round(value * 100)}%`
+}
+
+function formatScore(value: number | null): string {
+  return value === null ? "—" : value.toFixed(2)
+}
+
 function MetricRow({ label, value }: { label: string; value: string }): JSX.Element {
   return (
     <div className="flex items-baseline justify-between gap-3">
@@ -109,6 +117,11 @@ export function ScanDebugOverlay({
         <MetricRow label="votes" value={`${metrics.votes}/${metrics.votesNeeded}`} />
         <MetricRow label="lockDistance" value={`${metrics.lockDistance}`} />
         <MetricRow label="marginMin" value={`${metrics.marginMin}`} />
+        {/* Frame-quality signals (Slice C, DEC-062/REQ-043): same per-frame metrics that drive best-frame selection and the searching hint. */}
+        <MetricRow label="glare%" value={formatPercent(metrics.glareFraction)} />
+        <MetricRow label="sharpness" value={formatScore(metrics.sharpness)} />
+        <MetricRow label="quality" value={formatScore(metrics.frameQualityScore)} />
+        <MetricRow label="reason" value={metrics.conditionReason ?? "—"} />
         {!hasGeometry && <p className="pt-0.5 text-[10px] italic text-slate-400">no card geometry</p>}
       </div>
     </div>

@@ -13,7 +13,13 @@ vi.mock("./ScanCameraSurface", () => ({
 
 afterEach(cleanup);
 
-const searching: ScanConvergence = { phase: "searching", leaderName: null, votes: 0, votesNeeded: 6 };
+const searching: ScanConvergence = {
+  phase: "searching",
+  leaderName: null,
+  votes: 0,
+  votesNeeded: 6,
+  conditionHint: null
+};
 
 function makeZoneCard(cardId: string, name: string): ZoneCardItem {
   return { cardId, name, oracleText: "", imageUrl: "", manaCost: "", manaValue: 0, typeLine: "", colors: [], supertypes: [], subtypes: [] };

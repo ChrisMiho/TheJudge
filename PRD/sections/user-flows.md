@@ -113,14 +113,16 @@
   - the fingerprint library has loaded (lazy-loaded on first scan)
 - Main Flow:
   1. Camera opens as its own screen with a card-shaped guide overlay and stays open for the session.
-  2. The scanner auto-scans continuously; a manual capture button is always available. A live convergence indicator shows `searching`, then `locking` on a named card with a progress/confidence cue as evidence accumulates (DEC-057).
+  2. The scanner auto-scans continuously; a manual capture button is always available. A live convergence indicator shows `searching`, then `locking` on a named card with a progress/confidence cue as evidence accumulates (DEC-057). While searching under poor conditions, the indicator surfaces a cause-aware hint derived from per-frame quality signals — e.g. "too much glare — tilt the card", "hold steady", "move closer" — to guide the user toward a lockable frame (DEC-062). Behind the scenes the query frame is conditioned (glare suppression, auto-contrast, white-balance) and the best frame in the window is preferred for hashing so a card locks without needing a perfect angle.
   3. Once one card is consistently the best over a short window with high confidence, it **locks in** and is **auto-added** to the current zone via the existing add path (owner via the sticky owner selector, duplicate-stack block, stack-size limit, `ZoneCardItem` output) — no Accept tap and no selecting from a list (DEC-056).
   4. A thumbs-up confirmation popup fades in and out and a short "ding" plays (on by default; a top-left mute toggle silences the sound only, not the popup); auto-scan immediately resumes for the next card and the zone's card list shows the running count (DEC-057, DEC-061).
   5. To remove a wrong auto-add, the user taps the scanned-cards bubble in the top-right and removes the card in one tap (no confirmation) without leaving the camera (DEC-058).
   6. User repeats as needed, then taps **Back/Exit** to return to zone collection and pick another zone or move forward in the flow.
 - Edge Cases:
-  - lock thresholds are tuned strict so a wrong card is essentially never auto-added; an ambiguous frame keeps searching rather than committing (DEC-056)
+  - lock/convergence thresholds are tuned to lock readily on a clearly-leading card while retaining the runner-up margin guard; rare wrong auto-adds are acceptable because they are removable in one tap, and an ambiguous frame keeps searching rather than committing (DEC-059, DEC-058)
   - if no confident match, keep auto-scanning with manual capture available; after a few consecutive low-confidence attempts, show a non-blocking prompt offering manual name entry (the existing search) without stopping the scan
+  - under glare/gloss, uneven or dim lighting, camera shake, or finger occlusion, the query is conditioned and the best frame is selected so the true card's hash distance drops below the lock gate; the gate itself is held (DEC-059 values) — robustness comes from a cleaner query, not a looser gate (DEC-062)
+  - finger occlusion is treated as a frame-quality penalty (the scanner prefers an unoccluded frame); there is no masked/partial-region matching (DEC-062)
   - card-back detection is descoped from the shipped UX (no canonical reference asset); a scanned card back falls through to the normal low-confidence path (DEC-055)
   - if a scanned card would duplicate a card already in the stack, the existing duplicate block applies and a non-blocking notice is shown while scanning continues (`FLOW-004`, DEC-056)
   - if the stack already has 10 cards, additional adds are blocked (same as manual) with a non-blocking notice while scanning continues

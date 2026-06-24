@@ -21,8 +21,20 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const searching: ScanConvergence = { phase: "searching", leaderName: null, votes: 0, votesNeeded: 6 };
-const locking: ScanConvergence = { phase: "locking", leaderName: "Lightning Bolt", votes: 3, votesNeeded: 6 };
+const searching: ScanConvergence = {
+  phase: "searching",
+  leaderName: null,
+  votes: 0,
+  votesNeeded: 6,
+  conditionHint: null
+};
+const locking: ScanConvergence = {
+  phase: "locking",
+  leaderName: "Lightning Bolt",
+  votes: 3,
+  votesNeeded: 6,
+  conditionHint: null
+};
 
 describe("ScanCameraSurface convergence indicator", () => {
   it("shows searching copy when there is no confident leader", () => {
@@ -45,6 +57,66 @@ describe("ScanCameraSurface convergence indicator", () => {
   });
 });
 
+describe("ScanCameraSurface condition hints", () => {
+  it("renders a glare hint while searching under glare conditions", () => {
+    render(
+      <ScanCameraSurface
+        onCapture={() => undefined}
+        convergence={{ ...searching, conditionHint: "glare" }}
+      />
+    );
+    expect(screen.getByText("Searching for a card…")).toBeInTheDocument();
+    expect(screen.getByText("Too much glare — tilt the card")).toBeInTheDocument();
+  });
+
+  it("renders a hold-steady hint for a blur reason while searching", () => {
+    render(
+      <ScanCameraSurface
+        onCapture={() => undefined}
+        convergence={{ ...searching, conditionHint: "blur" }}
+      />
+    );
+    expect(screen.getByText("Hold steady")).toBeInTheDocument();
+  });
+
+  it("renders a move-closer hint for a low-detail reason while searching", () => {
+    render(
+      <ScanCameraSurface
+        onCapture={() => undefined}
+        convergence={{ ...searching, conditionHint: "low-detail" }}
+      />
+    );
+    expect(screen.getByText("Move closer")).toBeInTheDocument();
+  });
+
+  it("renders an edges-in-view hint for an occlusion reason while searching", () => {
+    render(
+      <ScanCameraSurface
+        onCapture={() => undefined}
+        convergence={{ ...searching, conditionHint: "occlusion" }}
+      />
+    );
+    expect(screen.getByText("Keep the card edges in view")).toBeInTheDocument();
+  });
+
+  it("does not show a condition hint while locking", () => {
+    render(
+      <ScanCameraSurface
+        onCapture={() => undefined}
+        convergence={{ ...locking, conditionHint: "glare" }}
+      />
+    );
+    expect(screen.getByText("Locking on Lightning Bolt")).toBeInTheDocument();
+    expect(screen.queryByText("Too much glare — tilt the card")).not.toBeInTheDocument();
+  });
+
+  it("does not show a condition hint when there is no reason", () => {
+    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+    expect(screen.queryByText("Too much glare — tilt the card")).not.toBeInTheDocument();
+    expect(screen.queryByText("Hold steady")).not.toBeInTheDocument();
+  });
+});
+
 const debugMetrics: ScanDebugMetrics = {
   phase: "locking",
   bestName: "Lightning Bolt",
@@ -55,7 +127,11 @@ const debugMetrics: ScanDebugMetrics = {
   votes: 3,
   votesNeeded: 4,
   lockDistance: 78,
-  marginMin: 14
+  marginMin: 14,
+  glareFraction: null,
+  sharpness: null,
+  frameQualityScore: null,
+  conditionReason: null
 };
 
 describe("ScanCameraSurface debug overlay toggle", () => {

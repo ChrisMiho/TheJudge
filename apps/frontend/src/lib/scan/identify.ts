@@ -5,6 +5,16 @@
 // injected image backend -- the shared recipe is the only resize/hash path).
 
 import { phashRegionPacked } from "./recipe";
+import {
+  QUERY_AUTO_CONTRAST_BLACK_PERCENTILE,
+  QUERY_AUTO_CONTRAST_WHITE_PERCENTILE,
+  QUERY_GLARE_CHROMA_MAX,
+  QUERY_GLARE_COMPRESSION,
+  QUERY_GLARE_LUMA_THRESHOLD,
+  QUERY_GLARE_TARGET,
+  QUERY_WHITE_BALANCE_MAX_SCALE,
+  QUERY_WHITE_BALANCE_MIN_SCALE
+} from "./tuning";
 import type { Candidate, HashDb, IdentifyResult, RgbImage } from "./types";
 
 // --- Canonical geometry (SPEC.md section 2) ---
@@ -38,8 +48,18 @@ function canonicalize(id: string): string {
   return id.endsWith(BACK_FACE_SUFFIX) ? id.slice(0, -BACK_FACE_SUFFIX.length) : id;
 }
 
-// --- numpy-compatible 0.5th-percentile (method "linear"), via histogram. ---
-function percentile05(channelData: Uint8Array, strideStart: number): number {
+function clampByte(value: number): number {
+  if (value <= 0) return 0;
+  if (value >= 255) return 255;
+  return Math.trunc(value);
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+// --- numpy-compatible percentile (method "linear"), via histogram. ---
+function percentile(channelData: Uint8Array, strideStart: number, percent: number): number {
   const n = channelData.length / 3; // RGB interleaved
   const hist = new Uint32Array(256);
   for (let i = strideStart; i < channelData.length; i += 3) hist[channelData[i]]++;
@@ -52,7 +72,7 @@ function percentile05(channelData: Uint8Array, strideStart: number): number {
     }
     return 255;
   };
-  const r = 0.005 * (n - 1); // (0.5/100)*(N-1)
+  const r = (percent / 100) * (n - 1);
   const i = Math.floor(r);
   const frac = r - i;
   const a0 = orderStat(i);
@@ -61,24 +81,84 @@ function percentile05(channelData: Uint8Array, strideStart: number): number {
 }
 
 /**
- * Per-channel black-point stretch (SPEC.md section 4). QUERY ONLY.
- * Matches reference/identify.py _auto_levels, including the uint8 TRUNCATION
- * (not rounding) of the remapped values.
+ * Per-channel black/white-point stretch. QUERY ONLY.
+ * Uses uint8 TRUNCATION, not rounding, to keep generated fixtures byte-stable.
  */
 export function autoLevels(img: RgbImage): RgbImage {
   const { width, height, data } = img;
   const out = new Uint8Array(data); // copy
   for (let ch = 0; ch < 3; ch++) {
-    const lo = percentile05(data, ch);
-    if (lo < 1) continue;
+    const lo = percentile(data, ch, QUERY_AUTO_CONTRAST_BLACK_PERCENTILE);
+    const hi = percentile(data, ch, QUERY_AUTO_CONTRAST_WHITE_PERCENTILE);
+    if (hi <= lo) continue;
     const lut = new Uint8Array(256);
-    const scale = 255.0 / (255 - lo);
+    const scale = 255.0 / (hi - lo);
     for (let v = 0; v < 256; v++) {
-      lut[v] = v < lo ? 0 : Math.min(255, Math.trunc((v - lo) * scale));
+      lut[v] = v <= lo ? 0 : v >= hi ? 255 : clampByte((v - lo) * scale);
     }
     for (let p = ch; p < out.length; p += 3) out[p] = lut[data[p]];
   }
   return { width, height, data: out };
+}
+
+/** Gray-world per-query white balance with bounded channel scales. */
+export function whiteBalanceQueryImage(img: RgbImage): RgbImage {
+  const { width, height, data } = img;
+  const pixels = width * height;
+  if (pixels === 0) return { width, height, data: new Uint8Array(data) };
+
+  let rSum = 0;
+  let gSum = 0;
+  let bSum = 0;
+  for (let p = 0; p < data.length; p += 3) {
+    rSum += data[p];
+    gSum += data[p + 1];
+    bSum += data[p + 2];
+  }
+
+  const means = [rSum / pixels, gSum / pixels, bSum / pixels];
+  const target = (means[0] + means[1] + means[2]) / 3;
+  const scales = means.map((mean) =>
+    mean <= 0
+      ? 1
+      : clamp(target / mean, QUERY_WHITE_BALANCE_MIN_SCALE, QUERY_WHITE_BALANCE_MAX_SCALE)
+  );
+
+  const out = new Uint8Array(data.length);
+  for (let p = 0; p < data.length; p += 3) {
+    out[p] = clampByte(data[p] * scales[0]);
+    out[p + 1] = clampByte(data[p + 1] * scales[1]);
+    out[p + 2] = clampByte(data[p + 2] * scales[2]);
+  }
+  return { width, height, data: out };
+}
+
+/** Compress neutral specular highlights in the query image before Region A hashing. */
+export function suppressQueryGlare(img: RgbImage): RgbImage {
+  const { width, height, data } = img;
+  const out = new Uint8Array(data);
+  for (let p = 0; p < data.length; p += 3) {
+    const r = data[p];
+    const g = data[p + 1];
+    const b = data[p + 2];
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    if (max < QUERY_GLARE_LUMA_THRESHOLD || max - min > QUERY_GLARE_CHROMA_MAX) continue;
+
+    out[p] = clampByte(QUERY_GLARE_TARGET + (r - QUERY_GLARE_TARGET) * QUERY_GLARE_COMPRESSION);
+    out[p + 1] = clampByte(
+      QUERY_GLARE_TARGET + (g - QUERY_GLARE_TARGET) * QUERY_GLARE_COMPRESSION
+    );
+    out[p + 2] = clampByte(
+      QUERY_GLARE_TARGET + (b - QUERY_GLARE_TARGET) * QUERY_GLARE_COMPRESSION
+    );
+  }
+  return { width, height, data: out };
+}
+
+/** Query-only conditioning pipeline. DB images and persisted hashes must not use this. */
+export function conditionQueryImage(img: RgbImage): RgbImage {
+  return suppressQueryGlare(autoLevels(whiteBalanceQueryImage(img)));
 }
 
 /** Rotate an RGB image 180 degrees. */
@@ -150,9 +230,9 @@ export class CardIdentifier {
   /** (is_back, distance). Returns (false, 999) if the DB has no card back. */
   isCardBack(cardImg: RgbImage): { isBack: boolean; distance: number } {
     if (!this.cardBack) return { isBack: false, distance: 999.0 };
-    const leveled = autoLevels(cardImg);
-    const hUp = phashRegionPacked(cropRegionA(leveled));
-    const hRot = phashRegionPacked(cropRegionA(rotate180(leveled)));
+    const conditioned = conditionQueryImage(cardImg);
+    const hUp = phashRegionPacked(cropRegionA(conditioned));
+    const hRot = phashRegionPacked(cropRegionA(rotate180(conditioned)));
     const dist = Math.min(
       regionDistance(hUp, this.cardBack, 0),
       regionDistance(hRot, this.cardBack, 0)
@@ -165,9 +245,9 @@ export class CardIdentifier {
     const n = this.ids.length;
     if (n === 0) return { matched: false, was_rotated: false, candidates: [] };
 
-    const leveled = autoLevels(cardImg);
-    const hUp = phashRegionPacked(cropRegionA(leveled));
-    const hRot = phashRegionPacked(cropRegionA(rotate180(leveled)));
+    const conditioned = conditionQueryImage(cardImg);
+    const hUp = phashRegionPacked(cropRegionA(conditioned));
+    const hRot = phashRegionPacked(cropRegionA(rotate180(conditioned)));
 
     const dUp = new Float64Array(n);
     const dRot = new Float64Array(n);

@@ -16,7 +16,11 @@ const metrics: ScanDebugMetrics = {
   votes: 3,
   votesNeeded: 4,
   lockDistance: 78,
-  marginMin: 14
+  marginMin: 14,
+  glareFraction: null,
+  sharpness: null,
+  frameQualityScore: null,
+  conditionReason: null
 };
 
 // A plausible quad in native frame pixels (TL, TR, BR, BL).
@@ -58,5 +62,26 @@ describe("ScanDebugOverlay", () => {
     expect(screen.getByText("no card geometry")).toBeInTheDocument();
     // Text metrics still render.
     expect(screen.getByText("Lightning Bolt (28)")).toBeInTheDocument();
+  });
+
+  it("renders the frame-quality metrics when present", () => {
+    const qualityMetrics: ScanDebugMetrics = {
+      ...metrics,
+      glareFraction: 0.18,
+      sharpness: 0.42,
+      frameQualityScore: 0.73,
+      conditionReason: "glare"
+    };
+    render(<ScanDebugOverlay metrics={qualityMetrics} corners={null} frameWidth={null} frameHeight={null} />);
+    expect(screen.getByText("18%")).toBeInTheDocument(); // glare fraction
+    expect(screen.getByText("0.42")).toBeInTheDocument(); // sharpness
+    expect(screen.getByText("0.73")).toBeInTheDocument(); // frame quality score
+    expect(screen.getByText("glare")).toBeInTheDocument(); // condition reason
+  });
+
+  it("shows em-dashes for absent frame-quality metrics", () => {
+    render(<ScanDebugOverlay metrics={metrics} corners={null} frameWidth={null} frameHeight={null} />);
+    // glare/sharpness/quality/reason all fall back to "—" alongside the existing rows.
+    expect(screen.getAllByText("—").length).toBeGreaterThanOrEqual(4);
   });
 });
