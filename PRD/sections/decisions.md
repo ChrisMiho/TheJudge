@@ -1028,3 +1028,23 @@
 - Notes:
   - refines DEC-052/DEC-055/DEC-056/DEC-057/DEC-059/DEC-060; the identification/hashing/distance accuracy logic, the hands-free auto-add model, and the lock-in mechanism are unchanged — only the query signal feeding them and the searching-state copy change
   - the conditioning, frame-quality, and threshold values are outcome-validated calibration constants, not product open questions
+
+### DEC-063
+- Decision: `PRD/sections/decisions.md` is split into a thin router/index plus per-domain decision files under `PRD/sections/decisions/`, organized by topic/subsystem (not by flow stage). The router keeps the `decisions.md` path and the precedence/lifecycle preamble, plus a `DEC-ID → domain file → one-line summary` table; decision bodies move verbatim into nine topic files. DEC-IDs stay globally unique and resolvable across files.
+- Status: confirmed
+- Context: `decisions.md` is a ~1,030-line / 62-decision monolith that is Read-First #1 and source-of-truth precedence #1 in every workflow. Because it loads whole, every feature pays the full context cost of every other feature's decision history (the trigger was the scan saga DEC-050→062 being relevant while ~750 unrelated lines loaded anyway). The root cause is structural — one file, loaded whole — not a readability bug; in-place hygiene alone was rejected as too small, and consolidating the supersession sagas was rejected as high-risk and unjustified by the trigger.
+- Impact:
+  - the router path `PRD/sections/decisions.md` is preserved, so every existing reference across skills, instructions, READMEs, and receipts stays valid — wording tweaks only, no path surgery
+  - nine topic files under `sections/decisions/`: `framing` (001, 002, 013), `capture-and-stack` (004–009, 015, 018, 028), `game-context-model` (003, 019, 021–024, 026, 027, 034, 035, 037, 043), `prompt-assembly` (025, 036, 042), `rules-retrieval` (029, 030, 032, 045–047), `providers-and-contract` (010–012, 014, 016, 017, 020, 033, 049), `conversation-ux` (031, 038–041), `scanning` (050–062), `doc-process` (044, 048, 063)
+  - the organizing axis is topic/subsystem, not flow stage: reusable topics that span the flow (notably `game-context-model`) stay unified rather than scattered across journey stages
+  - DEC bodies move verbatim — no rewording or saga consolidation; `Status:` and cross-references are preserved; new IDs are added and existing IDs are never renumbered
+  - `decisions.md` becomes a ~60–80-line router: the precedence/lifecycle preamble plus the DEC-ID index table; the `Read First #1` step then loads a thin map and the agent pulls only the one domain file it needs
+  - lifecycle rule folded into `instructions/doc-lifecycle.md`: new decisions land in their domain file **and** get a router index line; fully-superseded bodies trim to a one-line tombstone kept in-domain (ID stays resolvable); deep "how the code behaves" detail belongs in `system-map/` detail files (DEC-044 / DEC-048), not in decision `Impact:` blocks
+  - documentation and process only: no `apps/` code, prompt-assembly, API, or UI behavior change; receipts that pin literal `decisions.md` line numbers are frozen historical artifacts and left as-is
+  - no `system-map.md` entry is added: the catalog tracks product/code subsystems, not the PRD's own doc tooling (consistent with how DEC-044 / DEC-048 are handled)
+- Related requirements:
+  - (none — documentation and process decision; no functional requirement is added or changed)
+- Notes:
+  - DEC-063 itself lives in the `doc-process` domain file once the split lands
+  - taxonomy finalized 2026-06-24 during refinement; `framing` and `conversation-ux` were renamed from the provisional `foundations` / `follow-up-and-wait` to keep every file on the topic/subsystem axis
+  - this decision does not change the "assistant, not judge" framing or any prompt behavior
