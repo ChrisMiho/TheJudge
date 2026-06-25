@@ -762,6 +762,7 @@
 - Description: An opt-in, user-toggleable debug overlay on the scan screen that visualizes how the scanner perceives the current card — a live outline of the detected card region and the area it actually reads, plus the live match/convergence metrics — so the user can diagnose poor locks and calibrate the DEC-059 thresholds. Frontend-only, read-only from existing signals.
 - Acceptance Criteria:
   - a debug toggle on the scan screen defaults to off and resets to off each time the scanner is opened; the overlay renders only while enabled (DEC-060)
+  - the debug toggle is placed outside the top-right scanned-cards review/remove hit area; at mobile and desktop scan-screen sizes it must not visually overlap, sit under, or intercept taps for the review bubble, expanded review panel, or per-card remove buttons (DEC-065)
   - when enabled, the overlay shows the current best candidate and distance, the distinct runner-up and distance, the margin between them, votes accumulated / votes needed, the current phase, and the active `lockDistance`/`marginMin` thresholds (DEC-060)
   - when enabled, the overlay draws a live outline of the detected card region on the camera feed (from the detector's computed card corners) and highlights the area the scanner actually reads/hashes (the art-crop region); this is distinct from and does not replace the static alignment-template guide frame (DEC-060)
   - if the detected geometry cannot be cheaply surfaced to the UI, the overlay degrades to the text metrics above and records the wiring gap for follow-up rather than blocking the feature (DEC-060)
@@ -775,6 +776,7 @@
   - REQ-037
   - REQ-040
   - DEC-060
+  - DEC-065
   - NFR-010
 - Notes:
   - supports DEC-059 gate calibration by making the scanner's perception visible
@@ -786,7 +788,7 @@
 - Description: Each successful hands-free scan auto-add plays a short "ding", on by default, with a mute toggle on the scan screen, so a player at a live table can confirm an add by ear without watching the screen. Realizes the audio half deferred out of DEC-057/REQ-040. Frontend-only.
 - Acceptance Criteria:
   - on each successful auto-add the scanner plays a short "ding" from the bundled asset `apps/frontend/public/assets/scanSuccess.wav` (served at `/assets/scanSuccess.wav`), fired off the same monotonic `ScanAddConfirmation.id` auto-add event that drives the visual thumbs-up popup, so sound and popup fire together and a repeat add of the same card re-fires both (DEC-061)
-  - the sound is ON by default; a mute toggle (speaker/mute icon) appears top-left on the scan screen, paired with the convergence status indicator, leaving the top-right review-bubble/Debug cluster unchanged (DEC-061)
+  - the sound is ON by default; a mute toggle (speaker/mute icon) appears top-left on the scan screen, paired with the convergence status indicator; debug-toggle placement is governed by DEC-065 and must not share the top-right scanned-cards review/remove hit area (DEC-061, DEC-065)
   - muting suppresses the audio only and never the visual thumbs-up popup; the popup is unaffected by mute state (DEC-061)
   - the mute preference persists across reloads via `localStorage`, isolated in `apps/frontend/src/lib/scan/audioPrefs.ts`; a corrupt or unavailable store falls back to the default (unmuted) and never throws (DEC-061)
   - the audio element is primed on scanner open (the open is itself a user gesture); a blocked or failed play degrades silently and never throws, pauses, or blocks scanning (DEC-061)
@@ -802,6 +804,7 @@
   - DEC-056
   - DEC-057
   - DEC-061
+  - DEC-065
   - NFR-010
 - Notes:
   - completes the audio deferral noted in REQ-040 and FLOW-006 step 4
@@ -836,3 +839,205 @@
 - Notes:
   - root cause addressed: detection/warp already work; the vote failed because the corrupted query hash kept the true card's distance above `lockDistance` (DEC-062)
   - the debug overlay (REQ-041) is the calibration aid for validating the conditioning and frame-quality thresholds
+
+### REQ-044
+- Title: Theme palette customization
+- Priority: medium
+- Description: The frontend must let users choose from a predefined set of app color palettes through a compact global theme/settings control, with the selection applied immediately and persisted for that browser.
+- Acceptance Criteria:
+  - a theme/settings affordance is available from the app chrome across the primary staged flow and answered-state conversation view
+  - opening the control shows named predefined palette choices as swatches, including the existing blue theme as the default
+  - selecting a palette immediately restyles primary accent surfaces such as primary buttons, active controls, focus/selection accents, badges, and prominent status highlights
+  - selected palette persists across page reloads for the same browser
+  - missing, corrupt, or unsupported persisted values fall back to the default blue palette without throwing or blocking app load
+  - palette changes do not reset game setup, selected zones, cards, enrichment, question text, answers, conversation state, scanner state, or retry cooldowns
+  - tests cover palette selection, persistence, fallback, and at least one representative themed control
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, or data-pipeline behavior
+  - no arbitrary RGB/hex picker, per-component theme overrides, server-synced preferences, accounts, or dark/light mode redesign
+  - palette styling must preserve readable contrast and touch-friendly mobile controls
+  - palette definitions must have one authoritative frontend source rather than duplicated color constants
+- Dependencies:
+  - DEC-066
+  - NFR-001
+  - NFR-011
+- Notes:
+  - this is personalization only; it must not imply gameplay state or rules confidence
+  - REQ-046 (DEC-068) broadens this requirement's reach to additional surfaces, semantic states, and the scanner UI without changing the selection mechanism
+
+### REQ-045
+- Title: Inline step label in the staged header
+- Priority: low
+- Description: On each staged data-collection screen, the active step name must render inline to the right of the `TheJudge` / `Stack Assistant` brand block in a single header row instead of as a standalone heading stacked below it.
+- Acceptance Criteria:
+  - the brand block remains the dominant element on the left of the header; the step name aligns to the right of the same row and is vertically centered against the brand block
+  - the step name is styled as a secondary label that is smaller than the `TheJudge` title yet remains legible
+  - the inline step name appears on all four staged steps: game context, zone confirmation, zone collection, and enrichment, with their existing step names unchanged
+  - on the enrichment screen, the `View all cards` / `Card-by-card` view-mode toggle remains in its own row below the header and is not moved into the header row
+  - when the viewport is too narrow to fit the brand block and step name on one line, the step name wraps/stacks under the brand block without clipping or truncation
+  - the answered-state conversation header remains a slim brand-only header with no step name
+  - tests cover that a representative staged step renders its step name within the brand header region
+- Constraints:
+  - presentation only; no change to step names, step ordering, flow logic, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, or data-pipeline behavior
+  - must preserve readable contrast and touch-friendly mobile layout
+- Dependencies:
+  - DEC-067
+  - FLOW-001
+- Notes:
+  - refines header chrome only; the cat-wizard image and per-section description copy on the game-context screen stay below the header
+
+### REQ-046
+- Title: Expanded theme palette reach
+- Priority: medium
+- Description: The frontend must broaden the reach of the existing single-color palette personalization (REQ-044) so one palette choice produces a coherent themed experience: remaining hardcoded primary-accent surfaces, the previously-fixed semantic green states, and the camera scanner UI all respond to the selected palette, while the dominant page background is neutralized to a palette-agnostic slate backdrop.
+- Acceptance Criteria:
+  - the page background gradient on every staged screen and the answered view no longer uses a hardcoded blue end-stop; the backdrop is a neutral slate that does not visibly bias toward any palette and is not palette-tinted
+  - previously-fixed semantic green surfaces — success/confirmation states, the `Ready to decrypt` indicator, the `Answer` panel framing, the scan-lock/convergence indicators, the scan thumbs-up confirmation, and the add-to-stack confirm control — restyle with the selected palette
+  - the camera scan screen's accent visuals (capture pill, card reticle, lock/progress bar, confirmation popup, review bubble) restyle with the selected palette rather than fixed sky/emerald
+  - where two palette-driven elements sit adjacent, visual hierarchy is preserved using accent-token weight variants (`accent` vs `accent-soft`/`accent-strong`) rather than a second hue
+  - re-themed surfaces preserve readable contrast and touch-friendly controls across every palette, explicitly including amber and rose
+  - the selection control, swatch list, immediate-apply behavior, persistence, and default/fallback behavior from REQ-044 and FLOW-007 are unchanged
+  - tests cover at least one re-themed semantic-state surface and one re-themed scanner surface resolving to the active palette
+- Constraints:
+  - reuse the existing four palette tokens (`accent`, `accent-strong`, `accent-soft`, `accent-contrast`); do not add new token roles or new per-palette color values
+  - palette definitions retain a single authoritative frontend source; no duplicated color constants introduced by the migration
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, the scan-matching engine, or data-pipeline behavior
+  - no arbitrary RGB/hex picker, per-component theme overrides, palette-tinted backgrounds, server-synced preferences, accounts, dark/light mode redesign, or theming-framework migration
+  - neutral slate chrome (cards, panels, borders, body text) stays neutral by design and is not migrated onto accent tokens
+- Dependencies:
+  - DEC-068
+  - DEC-066
+  - REQ-044
+  - NFR-011
+  - DEC-050
+- Notes:
+  - this extends the reach of REQ-044; it does not change the theme selection mechanism or introduce a new theming model
+  - scanner inclusion is an approved exception to DEC-050's separate scoping for presentation tokens only; it does not alter scan capture, matching, or lock behavior
+
+### REQ-047
+- Title: Non-English / alt-art scan corpus coverage and coverage diagnostics
+- Priority: medium
+- Description: Ensure the scan fingerprint corpus (`cardhashes.bin`) covers every paper gameplay printing that carries distinct artwork — including non-English-only printings such as alternate-art Japanese cards — and make corpus coverage observable so a scan "no match" can be attributed to a real coverage gap rather than guessed at. Addresses the real-world failure where a Japanese-language card could not be identified at all, which query-side conditioning (REQ-043/DEC-062) structurally cannot fix because the art was not in the library. Build/data-pipeline scoped; the only scan-robustness work permitted to touch the data-build (DEC-069).
+- Acceptance Criteria:
+  - the build keeps Scryfall Default Cards (`default-cards.json`) as its source; it does not switch to the every-language `all-cards` bulk
+  - the gameplay/corpus filter (`isGameplay`, `EXCLUDED_SET_TYPES`, layout/oversized/checklist exclusions) is audited and adjusted only as needed so paper gameplay printings carrying distinct artwork — including non-English-only alt-art printings — are included rather than silently dropped; each filter change is justified against the gameplay-card intent, not loosened wholesale
+  - coverage is observable from the build's existing manifest/skip-list/run summary: the operator can determine whether a given target printing or illustration is present in `cardhashes.bin`, and whether the corpus is fully built versus a partial DEC-054 in-progress state
+  - the previously-unidentifiable Japanese card is identified once its art is fingerprinted, confirmed by qualitative owner on-device acceptance (no counted capture-set table required)
+  - existing build/scan tests are extended, not replaced; any filter-logic change is unit-tested
+- Constraints:
+  - do not change the shared resize+DCT+hash recipe (`recipe.ts` `cropRegionA`/`phashRegionPacked`), the `CARDHSH1` bin format, the matching/orientation/distance logic (`identify.ts`), the runtime scanner/lock gate, or the DEC-051/REQ-034 byte-exact parity gates; Region A stays frozen
+  - if diagnosis shows Region A bleeds into language-variant frame/text (so a shared-art non-English printing cannot match without a recipe/geometry change), that is a recipe + full DB-rebuild escalation and is out of scope for this requirement — flag and record it, do not fold it in
+  - no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint; the oracle-level identity model (DEC-053) is unchanged
+  - human-approval network posture unchanged: a coverage-extending build run downloads missing images and is itself the explicit approval (DEC-054); no scheduled/automated refresh is added
+  - corpus-coverage targeting and filter adjustments are outcome-validated calibration against gameplay-card intent, not product open questions
+- Dependencies:
+  - DEC-069
+  - REQ-035
+  - REQ-039
+  - DEC-051
+  - DEC-054
+  - NFR-010
+- Notes:
+  - glare/conditioning recalibration for the co-reported glare-affected English card is separate: it is execution-level calibration under REQ-043/DEC-062 (`tuning.ts` constants), carries no new product truth, and is tracked in the work DESIGN-BRIEF
+  - Default Cards already covers every distinct illustration (one object per printing, English-preferred; a printing existing only in a non-English language appears as that language's object), so the coverage levers are the filter audit and measurability, not the bulk source
+
+### REQ-048
+- Title: Scanned card displays the scanned printing's art
+- Priority: medium
+- Description: A scanned card must display the specific printing's artwork that was scanned — in the scan preview and persisted on the added card's thumbnail — so the on-screen art matches the physical card. The printing image is carried as presentation only; card identity, prompt context, and rulings stay oracle-level and unchanged (DEC-070, refining DEC-053/REQ-036).
+- Acceptance Criteria:
+  - the build-time bridge artifact `cardScanMap.json` carries a per-printing image so each printing id resolves to its own art; the entry shape becomes `{ oracleId, name, imageUrl }`, produced by `build-card-scan-map.mjs` from the same Scryfall printing object it already reads
+  - the scan candidate resolver (`resolveScanCandidatesRanked`, REQ-036) threads the best-distance printing's image through to the locked candidate alongside the resolved oracle-level `CardMetadataItem`
+  - the scan preview shows the scanned printing's art (not the oracle-level representative image)
+  - on auto-add (DEC-056), the scanned printing image is written to `ZoneCardItem.imageUrl` for that card so the stack/zone thumbnail (REQ-008/DEC-018) matches the scanned printing
+  - graceful fallback: when a printing image is missing/empty in the bridge, the card still previews and adds using the oracle-level `CardMetadataItem.imageUrl`; the DEC-053 collapse-by-best-distance and drop-unresolvable behavior is otherwise unchanged
+  - oracle-level identity is unchanged: `cardId`, the duplicate-stack key, prompt context (`buildPromptContext`/`buildPromptText`), and rulings lookup remain keyed on the oracle id; no printing-level data other than the display image is pushed into `ZoneCardItem`, prompt, or rulings
+  - existing scan/zone-collection/resolver tests are extended, not replaced; the resolver image carry-through is unit-tested including the missing-image fallback
+- Constraints:
+  - frontend-only at scan time with zero network calls; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - presentation only and not a scan-robustness lever: no change to the shared resize+DCT+hash recipe (`recipe.ts`), `cardhashes.bin`, the matching/orientation/distance logic (`identify.ts`), the stabilizer/lock gate, or the byte-exact parity gates (REQ-034/DEC-051) (distinct from DEC-062/DEC-069)
+  - the bridge file grows by one URL per printing but stays lazy-loaded on first scan (NFR-010); app startup is unaffected for users who never scan
+- Dependencies:
+  - DEC-070
+  - DEC-053
+  - REQ-036
+  - REQ-008
+  - NFR-010
+- Notes:
+  - `imageUrl` is already omitted from LLM-facing prompt text (REQ-030), so displaying a different image has no effect on the Ask AI contract — satisfying the IDEA non-goal
+  - typed-search representative-printing selection is separate (REQ-049 / DEC-071); the scan path shows the scanned art directly and does not depend on the representative print
+
+### REQ-049
+- Title: Standard-print bias in representative-printing selection
+- Priority: medium
+- Description: When the card-metadata build picks the single representative printing per oracle id for typed search, it must bias toward a standard paper printing and demote special treatments (Secret Lair, promos, `funny`/joke sets, and special-frame treatments such as borderless/extended/showcase), keeping "most recent among standard prints" rather than letting a special treatment win on recency (DEC-071, refining DEC-012).
+- Acceptance Criteria:
+  - `choosePreferredCard` applies a standard-print preference after the existing metadata-quality score and before the `released_at` recency tiebreak: among equal-quality candidates, a standard paper printing is preferred over a special-treatment printing
+  - "standard" vs "special" is classified from Scryfall printing signals (e.g. `set_type` for Secret Lair/`funny`/promo classes, promo flags, and special `frame_effects`/`border_color` such as borderless/extended/showcase); the classification is a build-time detail validated by outcome (representative images look standard), not a product open question
+  - behavior remains "most recent among standard prints": ties within the same standard/special class fall through to the existing recency then deterministic-key tiebreaks, and a special printing is chosen only when no standard printing exists for that oracle id
+  - the change affects the typed-search representative `CardMetadataItem` (image and fields) only; the scan path is unaffected because it displays the scanned printing directly (REQ-048)
+  - `cardMetadata.json` is regenerated by the existing `data:build` step; the metadata file format and runtime load are unchanged
+  - the standard-print preference and classification are unit-tested (including the no-standard-printing fallback); existing metadata-build tests are extended, not replaced
+- Constraints:
+  - build-time only; no change to `AskAiRequest`, the metadata file format/runtime load, card search behavior beyond which printing represents a card, the provider boundary, or any product-facing endpoint
+  - keep "most recent" search behavior except for the standard-print bias; do not build a printing-picker UI
+- Dependencies:
+  - DEC-071
+  - DEC-012
+  - REQ-001
+  - REQ-002
+- Notes:
+  - refines DEC-012's representative-printing selection; the static committed metadata artifact and no-runtime-sync posture are unchanged
+
+### REQ-050
+- Title: Detector robustness for hard real-world card captures
+- Priority: high
+- Description: Make the card-scan **detector** reliably find and lock the 4-corner card outline under hard real-world conditions — ornate/etched-foil/full-art printings and cards whose border barely contrasts the play surface — so these cards reach the existing (unchanged) warp → Region A crop → fingerprint match → lock pipeline instead of failing at `detectCard()` with status `no-card`. Robustness is achieved by raising detector recall in `detector.ts`, leaning on the downstream stabilizer lock gate as the precision guard. Frontend-only; the perceptual-hash recipe and fingerprint library stay frozen (DEC-072).
+- Acceptance Criteria:
+  - `detectCard()` finds a stable 4-corner quad and returns a warp on the previously-failing fixtures (the ornate/etched-foil Japanese `Akroma's Will` and a plain English card held centered), so the warp→fingerprint→stabilizer pipeline runs instead of returning `no-card` (DEC-072)
+  - detector recall is raised via loosened/adaptive edge + contour gates (Canny thresholds, solidity/rectangularity/aspect/area), foil/glare-tolerant edge sourcing, and a low-contrast-border fallback detection path that runs only when the primary pipeline finds nothing; all detector tuning lives in `detector.ts` (DEC-072)
+  - the temporal stabilizer lock gate (`lockDistance`/`marginMin`, DEC-059) is unchanged; looser detection must not increase wrong auto-adds — a detected quad still auto-adds only if it passes the unchanged identity gate, and one-tap removal (DEC-058) remains the safety net (DEC-072)
+  - when the detector cannot find a card outline over a sustained period, the scan UI surfaces a condition-aware nudge rather than a silent `no-card`, reusing the searching-state feedback path (DEC-057/DEC-062); manual search remains available
+  - before/after detect-then-lock rate across the committed detector fixture corpus (REQ-051) and on-device is recorded as acceptance evidence; detector gate/threshold values are outcome-validated calibration constants, not product open questions (DEC-052/DEC-055/DEC-059 precedent)
+  - existing detector/scan tests are extended, not replaced; the detector's pure geometry helpers stay unit-tested and the new fallback path is covered against representative fixtures
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - do not change the shared resize+DCT+hash recipe (`recipe.ts` `cropRegionA`/`phashRegionPacked`), the `CARDHSH1` bin format, `cardhashes.bin`, the matching/orientation/distance logic (`identify.ts`), or the DEC-051/REQ-034 byte-exact parity gates; the warp from new corners feeds the same unchanged recipe
+  - do not loosen the stabilizer lock/identity gate as a detection lever; detection recall and identity precision are separate concerns (DEC-072)
+  - if a card is genuinely unfindable without a Region A recipe/geometry or bin change, flag-and-record it as a separate escalation rather than changing the recipe here (DEC-069 precedent)
+  - no OCR/text recognition; no corpus rebuild
+- Dependencies:
+  - DEC-072
+  - REQ-037
+  - REQ-051
+  - DEC-059
+  - NFR-010
+- Notes:
+  - this is the detection-side robustness lever, upstream of and complementary to query conditioning (DEC-062/REQ-043) and corpus coverage (DEC-069/REQ-047)
+  - "loosen first, tighten if too loose" is the directed tuning posture; the debug overlay (REQ-041) and frame export (REQ-051) are the calibration aids
+
+### REQ-051
+- Title: Detector fixture corpus and debug-gated raw-frame export
+- Priority: high
+- Description: Provide the evidence basis for outcome-validated detector tuning (REQ-050): a committed real-world detector fixture corpus plus a way to capture the exact camera frame a failing on-device scan produced. The frame export reuses the existing scan **Capture** button under the opt-in debug overlay rather than adding a control. Frontend/build tooling only; the export itself changes no runtime detection behavior (DEC-072).
+- Acceptance Criteria:
+  - a committed detector fixture corpus exists with a controllable, license-clean backbone of synthetic degradations of the already-committed clean Scryfall art (glare/specular, low-contrast border vs. surface, perspective skew, foil-like highlights), layered with downloaded real-world card-on-table photos and any owner-exported frames (DEC-072)
+  - synthetic degradation is generated deterministically/parameterizably so the corpus spans many capture conditions on purpose rather than depending on one device's camera (DEC-072)
+  - while the opt-in debug overlay (DEC-060/REQ-041) is enabled, the existing scan **Capture** button additionally saves/downloads the exact raw frame it grabbed (e.g. a PNG of the camera pixel buffer); with the overlay off (default) Capture behaves exactly as today and the normal scan flow and UI are unchanged (DEC-065)
+  - the export changes no detection/warp/identify behavior and makes no network call; it is a diagnostic capture only (DEC-072)
+  - downloaded/owner fixture images follow the existing human-approval network posture (the operator running the fetch is the approval) and prefer clearly-usable/owned sources; committed fixtures carry provenance suitable for the repo
+  - the detector robustness tests (REQ-050) run against this corpus; fixture generation/loading is covered by tests where it is code
+- Constraints:
+  - frontend/build tooling only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - reuse the existing Capture button and debug overlay; do not add a new scan-screen control (DEC-065 no-clutter intent)
+  - the export is debug-gated and read-only to detection; it must not alter the shipped scan UX when the overlay is off
+  - do not commit fixtures with unclear licensing; prefer synthetic-degraded owned art and owner captures
+- Dependencies:
+  - DEC-072
+  - REQ-041
+  - REQ-050
+  - DEC-060
+  - DEC-065
+- Notes:
+  - answers the IDEA's "no frame-export today" blocker by reusing Capture rather than adding UI
+  - the synthetic-degradation backbone addresses the "every camera differs" concern by spanning conditions deterministically

@@ -1,5 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { EnrichmentStep } from "./components/EnrichmentStep";
+import { StagedStepHeader } from "./components/StagedStepHeader";
+import { ThemeControl } from "./components/ThemeControl";
 import { ZoneCollectionStep } from "./components/ZoneCollectionStep";
 import { ZoneConfirmStep } from "./components/ZoneConfirmStep";
 import { logFrontendDebug } from "./lib/debugLogger";
@@ -15,6 +17,7 @@ import {
 } from "./lib/contextFlow";
 import { formatPlayerDisplayLabel } from "./lib/playerLabels";
 import { useAskAiSubmitOrchestration } from "./hooks/useAskAiSubmitOrchestration";
+import { useThemePalette } from "./hooks/useThemePalette";
 import type {
   CardMetadataItem,
   CombatStep,
@@ -85,6 +88,7 @@ export default function App() {
       {} as Record<PlayerLabel, string>
     )
   );
+  const { paletteId, setPalette } = useThemePalette();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -322,19 +326,16 @@ export default function App() {
     await submitFollowUp(text);
   }
 
+  let content: JSX.Element;
+
   if (flowStep === "game-context") {
-    return (
-      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
-        <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 md:p-6">
-          <header>
-            <h1 className="bg-gradient-to-r from-sky-300 to-blue-400 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
-              TheJudge
-            </h1>
-            <p className="text-sm text-slate-300">Stack Assistant</p>
-          </header>
+    content = (
+      <main className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 px-4 py-6 text-zinc-100">
+        <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-zinc-700/70 bg-zinc-900/70 p-4 md:p-6">
+          <StagedStepHeader stepName="Game context" />
           <div className="p-2 text-center">
             {emptyStateImageFailed ? (
-              <p className="text-2xl font-semibold text-slate-200">Cat wizard</p>
+              <p className="text-2xl font-semibold text-zinc-200">Cat wizard</p>
             ) : (
               <img
                 src={EMPTY_STATE_IMAGE_URL}
@@ -344,23 +345,22 @@ export default function App() {
               />
             )}
           </div>
-          <h2 className="text-2xl font-semibold text-sky-300">Game context</h2>
-          <div className="space-y-3 rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Players in game</p>
-            <p className="text-xs text-slate-400">2 players start at 20 life. 3+ players default to 40 life.</p>
+          <div className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Players in game</p>
+            <p className="text-xs text-zinc-400">2 players start at 20 life. 3+ players default to 40 life.</p>
 
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-700/80 bg-slate-950/40 px-3 py-2">
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   aria-label={playersDetailsExpanded ? "Hide player details" : "Show player details"}
                   aria-expanded={playersDetailsExpanded}
                   onClick={() => setPlayersDetailsExpanded((current) => !current)}
-                  className="rounded-lg border border-slate-600 bg-slate-800/70 px-2 py-1 text-sm text-slate-200 transition hover:bg-slate-700/80"
+                  className="rounded-lg border border-zinc-600 bg-zinc-800/70 px-2 py-1 text-sm text-zinc-200 transition hover:bg-zinc-700/80"
                 >
                   {playersDetailsExpanded ? "▾" : "▸"}
                 </button>
-                <span className="text-sm font-semibold text-slate-100">
+                <span className="text-sm font-semibold text-zinc-100">
                   {activePlayerCount} {activePlayerCount === 1 ? "player" : "players"}
                 </span>
               </div>
@@ -370,7 +370,7 @@ export default function App() {
                   aria-label="Add player"
                   onClick={addPlayer}
                   disabled={activePlayerCount >= MAX_PLAYERS}
-                  className="rounded-lg border border-cyan-500/50 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-lg border border-accent/50 bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent-soft transition hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   +
                 </button>
@@ -379,7 +379,7 @@ export default function App() {
                   aria-label="Remove last player"
                   onClick={removePlayer}
                   disabled={activePlayerCount <= MIN_PLAYERS}
-                  className="rounded-lg border border-slate-500 bg-slate-800/70 px-3 py-1.5 text-xs font-semibold text-slate-100 transition hover:bg-slate-700/80 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-lg border border-zinc-500 bg-zinc-800/70 px-3 py-1.5 text-xs font-semibold text-zinc-100 transition hover:bg-zinc-700/80 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   −
                 </button>
@@ -391,27 +391,27 @@ export default function App() {
                 {activePlayers.map((player) => (
                   <div
                     key={player}
-                    className="space-y-2 rounded-xl border border-slate-700/80 bg-slate-950/40 px-3 py-2 text-sm"
+                    className="space-y-2 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2 text-sm"
                   >
                     <label className="flex flex-col gap-1">
-                      <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
+                      <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
                         {player} name
                       </span>
                       <input
                         aria-label={`${player} display name`}
                         value={displayNamesByPlayer[player]}
                         onChange={(event) => updateDisplayName(player, event.target.value)}
-                        className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-slate-100"
+                        className="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-zinc-100"
                       />
                     </label>
                     <label className="grid grid-cols-[1fr_auto] items-center gap-3">
-                      <span className="font-medium text-slate-100">Life total</span>
+                      <span className="font-medium text-zinc-100">Life total</span>
                       <input
                         aria-label={`${player} life total`}
                         value={lifeTotalsByPlayer[player]}
                         onChange={(event) => updateLifeTotal(player, event.target.value)}
                         inputMode="numeric"
-                        className="w-28 rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-right font-semibold text-slate-100"
+                        className="w-28 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-right font-semibold text-zinc-100"
                       />
                     </label>
                   </div>
@@ -419,14 +419,14 @@ export default function App() {
               </div>
             )}
           </div>
-          <div className="space-y-3 rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4">
+          <div className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
             <label className="flex flex-col gap-2 text-sm">
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Turn phase</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Turn phase</span>
               <select
                 aria-label="Turn phase"
                 value={turnPhase}
                 onChange={(event) => setTurnPhase(event.target.value as TurnPhase)}
-                className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+                className="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
               >
                 {TURN_PHASE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -437,12 +437,12 @@ export default function App() {
             </label>
             {turnPhase === "combat" && (
               <label className="flex flex-col gap-2 text-sm">
-                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Combat step</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Combat step</span>
                 <select
                   aria-label="Combat step"
                   value={combatStep}
                   onChange={(event) => setCombatStep(event.target.value as CombatStep)}
-                  className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+                  className="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
                 >
                   {COMBAT_STEP_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -454,15 +454,15 @@ export default function App() {
             )}
           </div>
 
-          <div className="space-y-3 rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Active player (recommended)</p>
+          <div className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Active player (recommended)</p>
             <label className="flex items-center gap-3 text-sm">
-              <span className="text-slate-300 w-28 shrink-0">Active player</span>
+              <span className="text-zinc-300 w-28 shrink-0">Active player</span>
               <select
                 aria-label="Active player"
                 value={activePlayer}
                 onChange={(event) => setActivePlayer(event.target.value as PlayerLabel)}
-                className="flex-1 rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm text-slate-100"
+                className="flex-1 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100"
               >
                 {activePlayers.map((player) => (
                   <option key={player} value={player}>
@@ -476,26 +476,24 @@ export default function App() {
           <button
             type="button"
             onClick={confirmGameContext}
-            className="rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white"
+            className="rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast"
           >
             Confirm game context
           </button>
           {statusMessage && (
-            <p className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2 text-sm font-medium text-cyan-200">
+            <p className="rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
               {statusMessage}
             </p>
           )}
         </section>
       </main>
     );
-  }
-
-  if (flowStep === "zone-confirm") {
+  } else if (flowStep === "zone-confirm") {
     const canContinueZones = canAdvance("zone-confirm", {
       gameContext: { selectedZones, turnPhase }
     });
 
-    return (
+    content = (
       <ZoneConfirmStep
         selectedZones={selectedZones}
         canContinue={canContinueZones}
@@ -514,14 +512,12 @@ export default function App() {
         statusMessage={statusMessage}
       />
     );
-  }
-
-  if (flowStep === "zone-collection") {
+  } else if (flowStep === "zone-collection") {
     const canContinueCollection = canAdvance("zone-collection", {
       gameContext: { selectedZones, zones: zoneCardsByZone }
     });
 
-    return (
+    content = (
       <ZoneCollectionStep
         selectedZones={selectedZones}
         zones={zoneCardsByZone}
@@ -543,39 +539,48 @@ export default function App() {
         statusMessage={statusMessage}
       />
     );
+  } else {
+    content = (
+      <EnrichmentStep
+        gameContext={gameContext}
+        zones={zoneCardsByZone}
+        onZonesChange={setZoneCardsByZone}
+        activePlayers={activePlayers}
+        question={question}
+        onQuestionChange={setQuestion}
+        onDecryptStack={handleDecryptStack}
+        onBack={() => {
+          const previousStep = getPreviousStep("enrichment");
+          if (previousStep) {
+            setFlowStep(previousStep);
+          }
+        }}
+        canDecrypt={canAdvance("enrichment", {
+          gameContext: { selectedZones, zones: zoneCardsByZone }
+        })}
+        isSubmitting={isSubmitting}
+        answer={answer}
+        error={error}
+        canRetry={canRetry}
+        retryCountdown={retryCountdown}
+        onRetry={handleRetry}
+        statusMessage={statusMessage}
+        isConversationActive={isConversationActive}
+        isFollowUpSubmitting={isFollowUpSubmitting}
+        visibleMessages={visibleMessages}
+        frozenGameContext={frozenGameContext}
+        onFollowUp={handleFollowUp}
+        onStartOver={startOver}
+      />
+    );
   }
 
   return (
-    <EnrichmentStep
-      gameContext={gameContext}
-      zones={zoneCardsByZone}
-      onZonesChange={setZoneCardsByZone}
-      activePlayers={activePlayers}
-      question={question}
-      onQuestionChange={setQuestion}
-      onDecryptStack={handleDecryptStack}
-      onBack={() => {
-        const previousStep = getPreviousStep("enrichment");
-        if (previousStep) {
-          setFlowStep(previousStep);
-        }
-      }}
-      canDecrypt={canAdvance("enrichment", {
-        gameContext: { selectedZones, zones: zoneCardsByZone }
-      })}
-      isSubmitting={isSubmitting}
-      answer={answer}
-      error={error}
-      canRetry={canRetry}
-      retryCountdown={retryCountdown}
-      onRetry={handleRetry}
-      statusMessage={statusMessage}
-      isConversationActive={isConversationActive}
-      isFollowUpSubmitting={isFollowUpSubmitting}
-      visibleMessages={visibleMessages}
-      frozenGameContext={frozenGameContext}
-      onFollowUp={handleFollowUp}
-      onStartOver={startOver}
-    />
+    <>
+      <div className="fixed right-3 top-3 z-30">
+        <ThemeControl paletteId={paletteId} onSelect={setPalette} />
+      </div>
+      {content}
+    </>
   );
 }

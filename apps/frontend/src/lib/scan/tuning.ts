@@ -42,7 +42,7 @@ export const QUERY_WHITE_BALANCE_MIN_SCALE = 0.65;
 export const QUERY_WHITE_BALANCE_MAX_SCALE = 1.45;
 
 /** Neutral high-luma pixels above this point are treated as likely specular glare. */
-export const QUERY_GLARE_LUMA_THRESHOLD = 240;
+export const QUERY_GLARE_LUMA_THRESHOLD = 232;
 export const QUERY_GLARE_CHROMA_MAX = 12;
 export const QUERY_GLARE_TARGET = 220;
 export const QUERY_GLARE_COMPRESSION = 0.25;
@@ -62,7 +62,7 @@ export const FRAME_QUALITY_SHARPNESS_NORM = 230;
 export const FRAME_QUALITY_DETAIL_NORM = 40;
 
 /** Neutral high-luma pixels above this point count toward a frame's glareFraction. */
-export const FRAME_QUALITY_GLARE_LUMA_THRESHOLD = 235;
+export const FRAME_QUALITY_GLARE_LUMA_THRESHOLD = 232;
 export const FRAME_QUALITY_GLARE_CHROMA_MAX = 18;
 
 /** Below this mean interior Sobel magnitude, the crop is treated as too flat to judge occlusion (it's a blur/low-detail problem instead). */

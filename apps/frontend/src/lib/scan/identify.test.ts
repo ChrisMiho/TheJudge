@@ -97,17 +97,19 @@ describe("query conditioning", () => {
   });
 
   it("compresses neutral specular highlights without dimming saturated bright art", () => {
-    const input = makeImage(3, 1, (index) => {
+    const input = makeImage(4, 1, (index) => {
       if (index === 0) return [252, 250, 248];
-      if (index === 1) return [250, 120, 60];
+      if (index === 1) return [236, 235, 234];
+      if (index === 2) return [250, 120, 60];
       return [100, 100, 100];
     });
 
     const actual = suppressQueryGlare(input);
 
     expect(pixelAt(actual, 0)).toEqual([228, 227, 227]);
-    expect(pixelAt(actual, 1)).toEqual([250, 120, 60]);
-    expect(pixelAt(actual, 2)).toEqual([100, 100, 100]);
+    expect(pixelAt(actual, 1)).toEqual([224, 223, 223]);
+    expect(pixelAt(actual, 2)).toEqual([250, 120, 60]);
+    expect(pixelAt(actual, 3)).toEqual([100, 100, 100]);
   });
 
   it("runs white balance, full auto-contrast, and glare suppression in the query path", () => {

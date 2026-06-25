@@ -46,8 +46,8 @@ function formatScore(value: number | null): string {
 function MetricRow({ label, value }: { label: string; value: string }): JSX.Element {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <span className="text-slate-400">{label}</span>
-      <span className="font-semibold tabular-nums text-slate-100">{value}</span>
+      <span className="text-zinc-400">{label}</span>
+      <span className="font-semibold tabular-nums text-zinc-100">{value}</span>
     </div>
   )
 }
@@ -103,7 +103,7 @@ export function ScanDebugOverlay({
         </svg>
       )}
 
-      <div className="absolute left-3 bottom-3 max-w-[80%] space-y-1 rounded-xl bg-slate-950/85 px-3 py-2 text-[11px] font-medium text-slate-200 shadow-lg">
+      <div className="absolute left-3 bottom-3 max-w-[80%] space-y-1 rounded-xl bg-zinc-950/85 px-3 py-2 text-[11px] font-medium text-zinc-200 shadow-lg">
         <MetricRow label="phase" value={metrics.phase} />
         <MetricRow
           label="best"
@@ -122,7 +122,7 @@ export function ScanDebugOverlay({
         <MetricRow label="sharpness" value={formatScore(metrics.sharpness)} />
         <MetricRow label="quality" value={formatScore(metrics.frameQualityScore)} />
         <MetricRow label="reason" value={metrics.conditionReason ?? "—"} />
-        {!hasGeometry && <p className="pt-0.5 text-[10px] italic text-slate-400">no card geometry</p>}
+        {!hasGeometry && <p className="pt-0.5 text-[10px] italic text-zinc-400">no card geometry</p>}
       </div>
     </div>
   )

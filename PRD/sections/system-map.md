@@ -201,6 +201,20 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: `apps/frontend/src/lib/stackLimits.ts`
 - Backed by: DEC-035
 
+## Frontend personalization
+
+- Status: shipped
+- Summary: Global theme/settings control for predefined color palettes, applied to frontend accent tokens and persisted per browser. Reach extends beyond primary-accent surfaces to the page background end-stop (neutralized to slate, not palette-tinted), previously-fixed semantic green states, and the camera scanner UI, all of which now consume the same four accent tokens.
+- Lives in: `apps/frontend/src/lib/theme/` (palettes, themePrefs, applyPalette), `apps/frontend/src/hooks/useThemePalette.ts`, `apps/frontend/src/components/ThemeControl.tsx`, `apps/frontend/tailwind.config.ts`, `apps/frontend/src/index.css`, plus re-themed surfaces in `App.tsx`, `EnrichmentStep.tsx`, `ZoneConfirmStep.tsx`, `ZoneCollectionStep.tsx`, `ZoneCardPicker.tsx`, `ScanCameraSurface.tsx`, `ScanReviewBubble.tsx`
+- Backed by: DEC-066, DEC-068, REQ-044, REQ-046, FLOW-007, NFR-011
+
+### Theme palettes
+
+- Status: shipped
+- Summary: Named palette swatches including the default blue theme; selection applies immediately, persists in browser storage, and falls back safely when stored data is unavailable or unsupported.
+- Lives in: `apps/frontend/src/lib/theme/palettes.ts`, `apps/frontend/src/lib/theme/themePrefs.ts`, `apps/frontend/src/components/ThemeControl.tsx`, accent CSS variables in `apps/frontend/src/index.css` + `apps/frontend/tailwind.config.ts`
+- Backed by: DEC-066, REQ-044
+
 ## Card search & metadata
 
 - Status: shipped
@@ -241,7 +255,8 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Status: shipped
 - Summary: Offline build that generates `cardhashes.bin` + manifest from Scryfall images using the same TS recipe; human-approved image download; lazy-loaded on first scan. Resumable by default (`data:scan-fingerprints`): uses the bin as memory, downloads only missing images to a transient path, hashes and discards them immediately, bounded per run by optional `--limit`/`--max-minutes` budgets with atomic checkpoint/resume, rate-limited (paced + `429`/`5xx` backoff) downloads, and a capped skip-list — so the full corpus is built over many short daily runs without retaining the ~100 GB image corpus or overloading Scryfall. A from-scratch rebuild is opt-in via `--fresh` and is non-destructive (writes a new file, never deletes/overwrites the live bin).
 - Lives in: `scripts/build-card-hashes.mjs` + `apps/frontend/public/data/cardhashes.bin` + sidecar `cardhashSkiplist.json`
-- Backed by: REQ-035, REQ-039, DEC-051, DEC-054
+- Backed by: REQ-035, REQ-039, DEC-051, DEC-054, REQ-047, DEC-069
+- Shipped (REQ-047 / DEC-069): corpus explicitly targets every paper gameplay printing with distinct artwork incl. non-English-only alt-art (keeps Default Cards as source — no `all-cards` switch); gameplay/corpus inclusion moved into a tested helper (`hashLibBuild.ts` `shouldIncludeScanPrinting`) so legitimate art is not silently dropped; coverage is now measurable without network via `data:scan-fingerprints --coverage-summary` / `--diagnose-id <id>` / `--diagnose-illustration-id <id>` (reports included/excluded, fingerprinted/parked/missing, and full-vs-partial corpus) plus manifest `targetCount`/`fingerprintedTargetCount`/`missingCount`/`parkedCount`/`corpusStatus`. Live corpus is `partial` under DEC-054 (97311/97323 fingerprinted at closeout); closing the remaining gap is a human-approved coverage-extending build, not a code change. Recipe, bin format, distance logic, and Region A stay frozen; Region-A language bleed would be a separate recipe/rebuild escalation, out of scope.
 
 ### Scan-to-metadata resolver
 
@@ -256,6 +271,7 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Summary: Live camera capture with card-shaped overlay; detects and perspective-warps the card to the canonical image (detection runs on a downscaled frame, warps from full-res for steadier quads and higher effective FPS); continuous auto-scan plus manual tap fallback, paused on lock-in.
 - Lives in: `apps/frontend/src/lib/scan/detector.ts`, `apps/frontend/src/components/ScanCameraSurface.tsx`
 - Backed by: REQ-037, DEC-052, DEC-055
+- Known limitation (owner validation, 2026-06-25): `detectCard()` can fail to find a stable 4-corner quad — so the scanner "never locks onto the card's shape" and the warp/fingerprint/stabilizer pipeline downstream never runs (`ScanCameraSurface.tsx` returns `no-card`). Observed on an ornate/etched-foil full-art printing (Strixhaven Mystical Archive `Akroma's Will`, ja) and on a plain non-Japanese English card held centered, so it is **language- and corpus-agnostic** — the corpus confirms the card is `included`+`fingerprinted`. Likely mechanisms: foil reflections add spurious internal edges that fail `SOLIDITY_MIN 0.65`/`RECTANGULARITY_MIN 0.7`; low outer-border contrast against the play surface makes Canny (`CANNY_LO/HI 30/90`) miss the boundary. This is the geometry layer upstream of query-side glare conditioning (DEC-062/REQ-043) and corpus coverage (DEC-069/REQ-047), so neither lever can address it. A dedicated detector-robustness work package owns the fix; the Region A recipe/geometry and `CARDHSH1` bin format stay frozen (a recipe change forces a full DB rebuild).
 
 ### Scan lock-in control layer
 
@@ -281,9 +297,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Scanner debug overlay
 
 - Status: shipped
-- Summary: Opt-in, user-summoned diagnostic on the scan screen (toggle defaults off, resets each time the scanner is opened) that visualizes how the scanner perceives the current card. When enabled it draws a live outline of the detected card region (from the detector's full-res `corners`, surfaced additively from `detectCard` rather than discarded after warp) plus the art-crop read region on the feed, and text metrics: best/runner-up candidate + distances, margin, votes accumulated/needed, phase, and the active `lockDistance`/`marginMin` thresholds. Read-only from existing detector/stabilizer signals; if geometry can't be cheaply surfaced it degrades to text metrics. Distinct from the static alignment-template guide frame and from the always-on raw status leaks removed by DEC-057. Renders only when enabled (no scan-perf regression off). Built primarily to diagnose poor locks and calibrate the DEC-059 thresholds.
+- Summary: Opt-in, user-summoned diagnostic on the scan screen (toggle defaults off, resets each time the scanner is opened) that visualizes how the scanner perceives the current card. The toggle lives outside the top-right scanned-cards review/remove hit area so it cannot overlap or intercept the one-tap correction path. When enabled it draws a live outline of the detected card region (from the detector's full-res `corners`, surfaced additively from `detectCard` rather than discarded after warp) plus the art-crop read region on the feed, and text metrics: best/runner-up candidate + distances, margin, votes accumulated/needed, phase, and the active `lockDistance`/`marginMin` thresholds. Read-only from existing detector/stabilizer signals; if geometry can't be cheaply surfaced it degrades to text metrics. Distinct from the static alignment-template guide frame and from the always-on raw status leaks removed by DEC-057. Renders only when enabled (no scan-perf regression off). Built primarily to diagnose poor locks and calibrate the DEC-059 thresholds.
 - Lives in: `apps/frontend/src/components/ScanDebugOverlay.tsx` + toggle/threading in `apps/frontend/src/components/ScanCameraSurface.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`, `apps/frontend/src/lib/scan/{stabilizer,detector}.ts`
-- Backed by: REQ-041, DEC-060
+- Backed by: REQ-041, DEC-060, DEC-065
 
 ### Scan robustness conditioning
 

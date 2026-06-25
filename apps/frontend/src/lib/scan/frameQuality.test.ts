@@ -55,6 +55,14 @@ function glareImage(): RgbImage {
   });
 }
 
+/** A smaller washed-out neutral patch: still glare, but below the old blown-out cutoff. */
+function washedGlareImage(): RgbImage {
+  return makeImage(CARD_WIDTH, CARD_HEIGHT, (x, y) => {
+    if (y >= REGION_A.y1 && y < REGION_A.y1 + (REGION_A.y2 - REGION_A.y1) * 0.15) return [232, 232, 232];
+    return crispPixel(x, y);
+  });
+}
+
 /** Crisp interior, but the entire Region A border band is smoothed flat -- a finger over the edge. */
 function occludedImage(): RgbImage {
   const regionWidth = REGION_A.x2 - REGION_A.x1;
@@ -86,6 +94,13 @@ describe("scoreFrameQuality", () => {
     const quality = scoreFrameQuality(glareImage());
     expect(quality.glareFraction).toBeGreaterThan(0.2);
     expect(quality.reason).toBe("glare");
+  });
+
+  it("flags washed neutral glare before it becomes fully clipped", () => {
+    const quality = scoreFrameQuality(washedGlareImage());
+    expect(quality.glareFraction).toBeGreaterThan(0.12);
+    expect(quality.reason).toBe("glare");
+    expect(quality.acceptable).toBe(true);
   });
 
   it("gives a blurred frame lower sharpness and qualityScore than a crisp frame", () => {

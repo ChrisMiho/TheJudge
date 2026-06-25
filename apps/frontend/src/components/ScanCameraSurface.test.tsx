@@ -135,6 +135,15 @@ const debugMetrics: ScanDebugMetrics = {
 };
 
 describe("ScanCameraSurface debug overlay toggle", () => {
+  it("keeps the debug toggle out of the top-right review control area", () => {
+    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} debug={debugMetrics} />);
+    const button = screen.getByRole("button", { name: "Debug" });
+
+    expect(button).not.toHaveClass("right-3");
+    expect(button).not.toHaveClass("top-3");
+    expect(button).toHaveClass("bottom-3", "left-1/2");
+  });
+
   it("defaults the debug overlay off (toggle present, overlay not rendered)", () => {
     render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} debug={debugMetrics} />);
     expect(screen.getByRole("button", { name: "Debug" })).toHaveAttribute("aria-pressed", "false");
@@ -165,6 +174,36 @@ describe("ScanCameraSurface confirmation popup", () => {
   it("does not render the popup without a confirmation", () => {
     render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
     expect(screen.queryByText("👍")).not.toBeInTheDocument();
+  });
+
+  it("renders the thumbs-up popup with accent palette tokens and no hardcoded hue", () => {
+    render(
+      <ScanCameraSurface
+        onCapture={() => undefined}
+        convergence={searching}
+        confirmation={{ id: 1, cardName: "Opt" }}
+      />
+    );
+    const popup = screen.getByText("Added Opt").closest("div");
+
+    expect(popup).toHaveClass("bg-accent/90", "text-accent-contrast");
+    expect(popup?.className).not.toMatch(/\b(sky|emerald)-/);
+  });
+});
+
+describe("ScanCameraSurface scanner palette surfaces", () => {
+  it("reticle border uses accent-soft token, not a fixed hue", () => {
+    const { container } = render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+    const reticle = container.querySelector(".rounded-xl.border-2");
+    expect(reticle).toHaveClass("border-accent-soft/90");
+    expect(reticle?.className).not.toMatch(/\b(sky|emerald)-/);
+  });
+
+  it("lock progress fill uses accent token, not a fixed hue", () => {
+    const { container } = render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
+    const fill = container.querySelector("span.block.h-full");
+    expect(fill).toHaveClass("bg-accent");
+    expect(fill?.className).not.toMatch(/\b(sky|emerald)-/);
   });
 });
 

@@ -239,29 +239,29 @@ export function ScanCameraSurface({
 
   return (
     <section className={`space-y-3 ${className}`}>
-      <div className="relative overflow-hidden rounded-2xl border border-slate-600 bg-slate-950">
-        <video ref={videoRef} className="aspect-[3/4] w-full bg-slate-950 object-cover" muted playsInline />
+      <div className="relative overflow-hidden rounded-2xl border border-zinc-600 bg-zinc-950">
+        <video ref={videoRef} className="aspect-[3/4] w-full bg-zinc-950 object-cover" muted playsInline />
         <audio ref={audioRef} src="/assets/scanSuccess.wav" preload="auto" />
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-[82%] aspect-[745/1040] rounded-xl border-2 border-emerald-300/90 shadow-[0_0_0_999px_rgba(15,23,42,0.35)]" />
+          <div className="h-[82%] aspect-[745/1040] rounded-xl border-2 border-accent-soft/90 shadow-[0_0_0_999px_rgba(15,23,42,0.35)]" />
         </div>
         <div
           role="status"
           aria-live="polite"
-          className="pointer-events-none absolute left-3 top-3 flex max-w-[80%] flex-col gap-1 rounded-xl bg-slate-950/80 px-3 py-2 text-xs font-semibold text-slate-100"
+          className="pointer-events-none absolute left-3 top-3 flex max-w-[80%] flex-col gap-1 rounded-xl bg-zinc-950/80 px-3 py-2 text-xs font-semibold text-zinc-100"
         >
           <span>{indicatorText}</span>
           {isLocking && (
             <span className="flex items-center gap-2">
-              <span className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-700/80">
+              <span className="h-1.5 w-20 overflow-hidden rounded-full bg-zinc-700/80">
                 <span
-                  className="block h-full rounded-full bg-emerald-400 transition-[width] duration-150"
+                  className="block h-full rounded-full bg-accent transition-[width] duration-150"
                   style={{
                     width: `${Math.min(100, Math.round((convergence!.votes / Math.max(1, convergence!.votesNeeded)) * 100))}%`
                   }}
                 />
               </span>
-              <span className="text-[11px] font-medium text-emerald-200/90">
+              <span className="text-[11px] font-medium text-accent-soft/90">
                 {`${convergence!.votes}/${convergence!.votesNeeded}`}
               </span>
             </span>
@@ -275,7 +275,7 @@ export function ScanCameraSurface({
           onClick={handleMutedChange}
           aria-pressed={muted}
           aria-label={muted ? "Unmute scan sound" : "Mute scan sound"}
-          className="absolute left-3 top-[4.75rem] rounded-full bg-slate-950/70 px-2.5 py-1 text-sm font-semibold text-slate-300 transition hover:bg-slate-800/80 focus:outline-none focus:ring-2 focus:ring-slate-300"
+          className="absolute left-3 top-[4.75rem] rounded-full bg-zinc-950/70 px-2.5 py-1 text-sm font-semibold text-zinc-300 transition hover:bg-zinc-800/80 focus:outline-none focus:ring-2 focus:ring-zinc-300"
         >
           <span aria-hidden="true">{muted ? "🔇" : "🔊"}</span>
         </button>
@@ -291,10 +291,10 @@ export function ScanCameraSurface({
           type="button"
           onClick={() => setDebugEnabled((on) => !on)}
           aria-pressed={debugEnabled}
-          className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-semibold transition ${
+          className={`absolute bottom-3 left-1/2 -tranzinc-x-1/2 rounded-full px-2.5 py-1 text-[10px] font-semibold transition ${
             debugEnabled
-              ? "bg-sky-500/90 text-sky-50"
-              : "bg-slate-950/70 text-slate-300 hover:bg-slate-800/80"
+              ? "bg-accent/90 text-accent-contrast"
+              : "bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800/80"
           }`}
         >
           Debug
@@ -306,7 +306,7 @@ export function ScanCameraSurface({
             aria-live="polite"
             className="scan-confirm-popup pointer-events-none absolute inset-0 flex items-center justify-center"
           >
-            <div className="flex flex-col items-center gap-1 rounded-2xl bg-emerald-500/90 px-5 py-4 text-emerald-50 shadow-lg">
+            <div className="flex flex-col items-center gap-1 rounded-2xl bg-accent/90 px-5 py-4 text-accent-contrast shadow-lg">
               <span className="text-4xl" aria-hidden="true">
                 👍
               </span>
@@ -314,7 +314,7 @@ export function ScanCameraSurface({
             </div>
           </div>
         )}
-        <div className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-slate-950/60 px-2.5 py-1 text-[10px] font-medium text-slate-300/80">
+        <div className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-zinc-950/60 px-2.5 py-1 text-[10px] font-medium text-zinc-300/80">
           Powered by Cardomancer
         </div>
       </div>
@@ -322,7 +322,7 @@ export function ScanCameraSurface({
       <button
         type="button"
         onClick={() => void scanCurrentFrame(true)}
-        className="w-full rounded-lg border border-emerald-400/70 bg-emerald-500/15 px-4 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-500/25 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+        className="w-full rounded-lg border border-accent/70 bg-accent/15 px-4 py-2 text-sm font-semibold text-accent-soft hover:bg-accent/25 focus:outline-none focus:ring-2 focus:ring-accent-soft"
       >
         Capture
       </button>

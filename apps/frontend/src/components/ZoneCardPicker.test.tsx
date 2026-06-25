@@ -86,6 +86,13 @@ describe("ZoneCardPicker scan chrome", () => {
     expect(screen.queryByText(/^Camera:/)).not.toBeInTheDocument();
   });
 
+  it("renders the Scan confirm control with accent palette tokens, not a hardcoded emerald hue", () => {
+    renderPicker({ isOpen: false });
+    const scanButton = screen.getByRole("button", { name: "Scan" });
+    expect(scanButton).toHaveClass("border-accent/70", "bg-accent/15", "text-accent-soft", "hover:bg-accent/25");
+    expect(scanButton.className).not.toMatch(/emerald/);
+  });
+
   it("still escalates to manual entry after the low-confidence threshold", async () => {
     const user = userEvent.setup();
     const { onExitToManual } = renderPicker({ showManualEntryPrompt: true });
@@ -110,6 +117,7 @@ describe("ZoneCardPicker scan review bubble", () => {
 
     const counter = screen.getByLabelText("Scanned this session: 2");
     expect(counter).toBeInTheDocument();
+    expect(counter.parentElement).toHaveClass("absolute", "right-3", "top-3", "z-10");
     // Counter reflects only this-session scans, not the manually added card.
     expect(within(counter).getByText("2")).toBeInTheDocument();
 
@@ -118,6 +126,16 @@ describe("ZoneCardPicker scan review bubble", () => {
     expect(screen.getByRole("button", { name: "Remove Opt from scan review" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove Lightning Bolt from scan review" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Remove Counterspell from scan review" })).not.toBeInTheDocument();
+  });
+
+  it("renders the review bubble counter with accent palette tokens, not a fixed hue", () => {
+    renderPicker(
+      { sessionCardIds: ["opt"] },
+      { cards: [makeZoneCard("opt", "Opt")] }
+    );
+    const bubble = screen.getByLabelText("Scanned this session: 1");
+    expect(bubble).toHaveClass("bg-accent/90", "text-accent-contrast");
+    expect(bubble.className).not.toMatch(/\b(sky|emerald)-/);
   });
 
   it("removes a scanned card in one tap via the existing removal path with no confirmation", async () => {

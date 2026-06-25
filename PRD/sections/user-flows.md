@@ -27,6 +27,7 @@
   - if the user changes phase after selecting zones, newly assumed zones are added and existing cards/enrichment are preserved
 - Notes:
   - this is the primary core product flow with staged context capture
+  - each staged step's header presents the active step name inline to the right of the `TheJudge` / `Stack Assistant` brand block in a single row (DEC-067, REQ-045); the answered-state conversation header stays a slim brand-only header with no step name
 
 ### FLOW-002
 - Name: Inspect and remove cards from selected zones
@@ -128,6 +129,28 @@
   - if the stack already has 10 cards, additional adds are blocked (same as manual) with a non-blocking notice while scanning continues
   - if camera permission is denied or unavailable, fall back to manual search and surface the reason
   - stack cards are added in scan order, bottom-to-top; manual reorder remains out of scope (`FLOW-002`)
+  - the preview and the added card's thumbnail show the **scanned printing's** art, not the oracle-level representative image, so the on-screen art matches the physical card; if the scanned printing has no image in the bridge, it falls back to the oracle-level image (DEC-070)
+  - on hard captures (ornate/etched-foil/full-art printings, or a card whose border barely contrasts the play surface) the detector raises its recall to still lock the 4-corner outline; if it persistently cannot find a card, the scan surfaces a condition-aware nudge rather than a silent `no-card`, and manual search stays available — the stabilizer lock gate is unchanged so looser detection does not cause wrong auto-adds (DEC-072)
+  - while the opt-in debug overlay is enabled, the **Capture** button additionally exports the exact failing camera frame for detector tuning; with the overlay off (default) this is invisible and Capture behaves normally (DEC-072, DEC-065)
 - Notes:
   - scanning is an optional alternate input path (DEC-050); manual search remains the default and a permanent fallback
-  - identification runs fully on-device with no network calls (DEC-051); art-only matching yields ranked candidates resolved to oracle-level `CardMetadataItem` (DEC-053)
+  - identification runs fully on-device with no network calls (DEC-051); art-only matching yields ranked candidates resolved to oracle-level `CardMetadataItem` (DEC-053), with the scanned printing's image carried as presentation only (DEC-070)
+
+### FLOW-007
+- Name: Choose and persist app theme palette
+- Trigger: User wants to personalize the app's visual style
+- Preconditions:
+  - app is loaded
+- Main Flow:
+  1. User opens the global theme/settings affordance from the app chrome.
+  2. App shows the predefined palette choices as named swatches, with the current palette indicated.
+  3. User selects a palette.
+  4. App immediately applies the selected palette to primary accent surfaces without leaving the current workflow step.
+  5. App stores the selected palette for the browser.
+  6. On later reloads, app restores the stored palette before or during initial render without resetting user workflow state.
+- Edge Cases:
+  - if the stored palette id is missing, corrupt, or unsupported, app falls back to the default blue palette
+  - if browser storage is unavailable or write fails, the selected palette may apply for the current session but app continues normally
+  - selecting the current palette is a no-op and does not close or reset the main gameplay workflow unless the implemented control naturally closes after selection
+- Notes:
+  - theme selection is frontend-only personalization and never changes submitted game context, prompt text, backend API behavior, or AI responses

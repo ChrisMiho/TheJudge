@@ -5,6 +5,13 @@
     "path": "apps/frontend/data/scryfall/default-cards.json",
     "sha256": "07f75dcce6c54d21c7b8ed1c679cd6b78e5fce459e13e385a64db670c76430e6"
   },
+  "coverage": {
+    "targetCount": 97323,
+    "fingerprintedTargetCount": 97311,
+    "missingCount": 12,
+    "parkedCount": 0,
+    "corpusStatus": "partial"
+  },
   "byteSize": 13047744,
   "generatedAt": "2026-06-20T02:13:32.761Z"
 }

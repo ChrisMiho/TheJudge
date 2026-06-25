@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -15,6 +17,8 @@ import App from "./App";
 import { NO_MATCH_COPY } from "./lib/search";
 import type { ZoneAskAiPayload } from "./lib/contextFlow";
 import type { CardMetadataItem } from "./types";
+
+const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
 
 const baseCardMetadataFixture: CardMetadataItem[] = [
   {
@@ -1828,5 +1832,187 @@ describe("Slice-05: zone collection UI", () => {
     resolveAskAi(jsonResponse({ answer: "Mock answer" }));
     await screen.findByText("Mock answer");
     expect(document.querySelector("[aria-live='polite']")).not.toBeInTheDocument();
+  });
+});
+
+describe("Slice-C: theme palette changes preserve workflow state", () => {
+  beforeEach(() => {
+    metadataFixture = [...baseCardMetadataFixture];
+    askAiResponseQueue = [{ status: 200, body: { answer: "Mock answer" } }];
+    submittedAskAiRequests.length = 0;
+    submittedAskAiHeaders.length = 0;
+
+    fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      const url = getUrlFromRequest(input);
+
+      if (url === "/data/cardMetadata.json") {
+        return jsonResponse(metadataFixture);
+      }
+
+      if (url.endsWith("/api/ask-ai") && init?.method === "POST") {
+        submittedAskAiRequests.push(JSON.parse(String(init.body)) as ZoneAskAiPayload);
+        const nextResponse = askAiResponseQueue.shift() ?? { status: 200, body: { answer: "Mock answer" } };
+        return jsonResponse(nextResponse.body, nextResponse.status, nextResponse.headers);
+      }
+
+      return jsonResponse({ error: "not found" }, 404);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    delete document.documentElement.dataset.theme;
+    document.documentElement.style.removeProperty("--accent");
+    document.documentElement.style.removeProperty("--accent-strong");
+    document.documentElement.style.removeProperty("--accent-soft");
+    document.documentElement.style.removeProperty("--accent-contrast");
+  });
+
+  it("applies a non-default palette's resolved accent variable to a themed control", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Theme: Violet" }));
+
+    expect(document.documentElement.dataset.theme).toBe("violet");
+    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("139 92 246");
+    expect(screen.getByRole("button", { name: "Confirm game context" }).className).toContain("from-accent");
+  });
+
+  it("does not reset game setup, zones, cards, question, or conversation state when the palette changes", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await expandPlayerDetails(user);
+    await user.clear(screen.getByLabelText("Player 1 life total"));
+    await user.type(screen.getByLabelText("Player 1 life total"), "33");
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advanceToZoneCollectionWithZones(user, ["Stack"]);
+    await waitForMetadataReady();
+    await addCardToActiveZone(user, "opt", "Opt");
+    await advanceToContextEnrichmentFromZones(user);
+    await user.type(screen.getByPlaceholderText("How does this resolve?"), "Will this resolve?");
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Theme: Emerald" }));
+
+    expect(screen.getByPlaceholderText("How does this resolve?")).toHaveValue("Will this resolve?");
+    expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
+
+    await clickDecryptStack(user);
+    const requestBody = await waitFor(() => {
+      expect(submittedAskAiRequests.length).toBeGreaterThan(0);
+      return submittedAskAiRequests[0];
+    });
+    expect(requestBody.gameContext.players[0]).toMatchObject({ lifeTotal: 33 });
+    expect(requestBody.gameContext.zones?.stack?.[0]).toMatchObject({ name: "Opt" });
+    expect(requestBody.question).toBe("Will this resolve?");
+
+    await screen.findByText("Mock answer");
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Theme: Blue" }));
+
+    expect(screen.getByText("Mock answer")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
+  });
+});
+
+describe("Slice-A: neutral palette backdrop", () => {
+  it("does not leave the app shell background biased toward blue-950", () => {
+    expect(appCss).not.toContain("#172554");
+    expect(appCss).toContain("background: linear-gradient(135deg, #09090b 0%, #18181b 45%, #09090b 100%);");
+  });
+});
+
+describe("Slice-B: accent token coverage for staged and answered semantic surfaces", () => {
+  beforeEach(() => {
+    metadataFixture = [...baseCardMetadataFixture];
+    askAiResponseQueue = [{ status: 200, body: { answer: "The stack resolves." } }];
+    submittedAskAiRequests.length = 0;
+    submittedAskAiHeaders.length = 0;
+
+    fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      const url = getUrlFromRequest(input);
+      if (url === "/data/cardMetadata.json") return jsonResponse(metadataFixture);
+      if (url.endsWith("/api/ask-ai") && init?.method === "POST") {
+        submittedAskAiRequests.push(JSON.parse(String(init.body)) as ZoneAskAiPayload);
+        const nextResponse = askAiResponseQueue.shift() ?? { status: 200, body: { answer: "Mock answer" } };
+        return jsonResponse(nextResponse.body, nextResponse.status, nextResponse.headers);
+      }
+      return jsonResponse({ error: "not found" }, 404);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    delete document.documentElement.dataset.theme;
+    document.documentElement.style.removeProperty("--accent");
+    document.documentElement.style.removeProperty("--accent-strong");
+    document.documentElement.style.removeProperty("--accent-soft");
+    document.documentElement.style.removeProperty("--accent-contrast");
+  });
+
+  it("uses accent tokens for the Ready to decrypt panel, not a hardcoded hue", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+    await addCardToStack(user, "opt", "Opt");
+    await addCardToStack(user, "cou", "Counterspell");
+    await advancePastZoneCollection(user);
+    await finishEnrichmentWizard(user);
+
+    const readyText = screen.getByText("Ready to decrypt.");
+    const panel = readyText.closest("div");
+    expect(panel).not.toBeNull();
+    expect(panel!.className).toContain("border-accent");
+    expect(panel!.className).toContain("bg-accent");
+    expect(readyText.className).toContain("text-accent-soft");
+    expect(panel!.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
+  });
+
+  it("uses accent-strong tokens for user message bubbles in the conversation thread, not a hardcoded hue", async () => {
+    const user = userEvent.setup();
+    queueAskAiResponses(
+      { status: 200, body: { answer: "The stack resolves." } },
+      { status: 200, body: { answer: "Follow-up answer." } }
+    );
+    render(<App />);
+    await openStackBuilder(user);
+    await addCardToStack(user, "opt", "Opt");
+    await clickDecryptStack(user);
+    await screen.findByText("The stack resolves.");
+
+    await user.type(screen.getByPlaceholderText("Ask a follow-up…"), "What about hexproof?");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    const userMessage = await screen.findByText("What about hexproof?");
+
+    const bubble = userMessage.closest("div");
+    expect(bubble).not.toBeNull();
+    expect(bubble!.className).toContain("border-accent-strong");
+    expect(bubble!.className).toContain("bg-accent-strong");
+    expect(bubble!.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
+  });
+
+  it("preserves answered-state conversation data across a palette switch", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+    await addCardToStack(user, "opt", "Opt");
+    await clickDecryptStack(user);
+    await screen.findByText("The stack resolves.");
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Theme: Emerald" }));
+
+    expect(screen.getByText("The stack resolves.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Ask a follow-up…")).toBeInTheDocument();
   });
 });

@@ -9,17 +9,22 @@ import { phashRegionPacked } from "../apps/frontend/src/lib/scan/recipe.ts";
 import { CARD_HEIGHT, CARD_WIDTH, cropRegionA } from "../apps/frontend/src/lib/scan/identify.ts";
 import { readDb, writeDb } from "../apps/frontend/src/lib/scan/dbformat.ts";
 import {
+  BACK_FACE_SUFFIX,
+  CARD_BACK_ID,
   applySkiplistOutcome,
   backoffDelayMs,
   classifyFetchFailure,
   diffMissingEntries,
   evaluateBudget,
+  evaluateScanPrintingInclusion,
+  listScanCoverageEntries,
   mergeEntries,
   parseRetryAfterMs,
   planTargetEntryIds,
   readSkiplist,
   resolveBuildTargets,
   serializeSkiplist,
+  summarizeScanCoverage,
   writeFileAtomic
 } from "../apps/frontend/src/lib/scan/hashLibBuild.ts";
 
@@ -31,24 +36,11 @@ const DEFAULT_OUTPUT = path.resolve("apps/frontend/public/data/cardhashes.bin");
 const DEFAULT_MANIFEST = path.resolve("apps/frontend/public/data/cardhashManifest.json");
 const DEFAULT_SKIPLIST = path.resolve("apps/frontend/public/data/cardhashSkiplist.json");
 const CARD_BACK_REFERENCE_NAME = "card_back_reference.png";
-const CARD_BACK_ID = "_card_back";
-const BACK_FACE_SUFFIX = "__back";
 const DEFAULT_RATE_MS = 75;
 const CHECKPOINT_EVERY = 50;
 const MAX_RETRIES = 4;
 const PARK_THRESHOLD = 3;
 const PROGRESS_BANNER = "Building card-scan fingerprint library (cardhashes.bin) — resume + extend";
-
-const EXCLUDED_LAYOUTS = new Set([
-  "art_series",
-  "planar",
-  "scheme",
-  "vanguard",
-  "token",
-  "double_faced_token",
-  "emblem"
-]);
-const EXCLUDED_SET_TYPES = new Set(["memorabilia", "minigame"]);
 
 function printHelp() {
   console.log(`Usage: npx tsx scripts/build-card-hashes.mjs [options]
@@ -68,6 +60,10 @@ Options:
   --retry-parked       Re-include parked entries in this run's diff
   --fresh              Rebuild from scratch into sibling cardhashes.fresh.bin / manifest
   --force              Allow --fresh to replace an existing fresh target
+  --coverage-summary   Print target/fingerprinted/missing/parked counts; no writes or network
+  --diagnose-id <id>   Report filter and fingerprint status for a Scryfall printing id; no writes or network
+  --diagnose-illustration-id <id>
+                       Report filter and fingerprint status for matching illustration id; no writes or network
   --self-test          Run an in-memory writer/readDb round-trip check; no files or network
   --help               Show this help; no files or network
 
@@ -115,6 +111,9 @@ function parseArgs(argv) {
     force: false,
     outputExplicit: false,
     manifestExplicit: false,
+    coverageSummary: false,
+    diagnoseId: undefined,
+    diagnoseIllustrationId: undefined,
     selfTest: false,
     help: false
   };
@@ -149,6 +148,12 @@ function parseArgs(argv) {
       options.fresh = true;
     } else if (arg === "--force") {
       options.force = true;
+    } else if (arg === "--coverage-summary") {
+      options.coverageSummary = true;
+    } else if (arg === "--diagnose-id") {
+      options.diagnoseId = readArgValue(argv, ++i, arg);
+    } else if (arg === "--diagnose-illustration-id") {
+      options.diagnoseIllustrationId = readArgValue(argv, ++i, arg);
     } else {
       throw new Error(`Unknown option: ${arg}`);
     }
@@ -186,29 +191,6 @@ function createScryfallRequestOptions() {
       "User-Agent": "TheJudge/0.0.1 (https://github.com/local/thejudge)"
     }
   };
-}
-
-function hasPaperPrinting(card) {
-  return Array.isArray(card?.games) && card.games.includes("paper") && card.digital !== true;
-}
-
-function textIncludesChecklistOrSubstitute(card) {
-  const haystack = [card?.name, card?.type_line, card?.oracle_text]
-    .filter((value) => typeof value === "string")
-    .join(" ");
-  return /\b(checklist|substitute)\s+card\b/i.test(haystack);
-}
-
-export function shouldIncludeScanPrinting(card) {
-  // Exclude non-paper or non-gameplay Scryfall objects by layout, set_type, oversized flag, and checklist/substitute "Card" labels.
-  if (typeof card?.id !== "string" || card.id.length === 0) return false;
-  if (!hasPaperPrinting(card)) return false;
-  if (card?.oversized === true) return false;
-  if (EXCLUDED_LAYOUTS.has(String(card?.layout ?? ""))) return false;
-  if (EXCLUDED_SET_TYPES.has(String(card?.set_type ?? ""))) return false;
-  if (textIncludesChecklistOrSubstitute(card)) return false;
-  if (String(card?.type_line ?? "").trim() === "Card") return false;
-  return true;
 }
 
 function getFrontImageUrl(card) {
@@ -291,6 +273,33 @@ async function* readScryfallCards(inputPath) {
   }
 }
 
+async function collectScanBuildPlan(inputPath, visitCard) {
+  const stats = {
+    parsed: 0,
+    skippedByFilter: 0
+  };
+  const imageMap = new Map();
+  const planCards = [];
+
+  for await (const card of readScryfallCards(inputPath)) {
+    stats.parsed += 1;
+    const inclusion = evaluateScanPrintingInclusion(card);
+    if (visitCard) visitCard(card, inclusion);
+
+    if (!inclusion.included) {
+      stats.skippedByFilter += 1;
+      continue;
+    }
+
+    const frontUrl = getFrontImageUrl(card);
+    const backUrl = getBackImageUrl(card);
+    imageMap.set(card.id, { frontUrl, backUrl });
+    planCards.push({ id: card.id, hasBack: backUrl.length > 0 });
+  }
+
+  return { stats, imageMap, planCards };
+}
+
 function decodeCanonicalPng(filePath) {
   const png = PNG.sync.read(fs.readFileSync(filePath));
   const { width, height, data: rgba } = png;
@@ -326,6 +335,114 @@ function entriesFromDb(db) {
     id,
     hash: db.hashes.slice(index * HASH_BYTES, index * HASH_BYTES + HASH_BYTES)
   }));
+}
+
+function readExistingEntryIds(outputPath) {
+  if (!fs.existsSync(outputPath)) return [];
+  return readDb(new Uint8Array(fs.readFileSync(outputPath))).ids;
+}
+
+function hasCoverageDiagnosticOptions(options) {
+  return options.coverageSummary || typeof options.diagnoseId === "string" || typeof options.diagnoseIllustrationId === "string";
+}
+
+function sameIdentifier(actual, expected) {
+  return typeof actual === "string" && actual.toLowerCase() === String(expected).toLowerCase();
+}
+
+function cardMatchesCoverageDiagnostic(card, options) {
+  if (typeof options.diagnoseId === "string" && sameIdentifier(card?.id, options.diagnoseId)) return true;
+  if (
+    typeof options.diagnoseIllustrationId === "string" &&
+    sameIdentifier(card?.illustration_id, options.diagnoseIllustrationId)
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function formatCardField(value) {
+  return typeof value === "string" && value.length > 0 ? value : "n/a";
+}
+
+function formatInclusionResult(inclusion) {
+  if (inclusion.included) return "included";
+  return inclusion.detail ? `excluded (${inclusion.reason}: ${inclusion.detail})` : `excluded (${inclusion.reason})`;
+}
+
+function formatSkiplistSuffix(skiplistEntry) {
+  if (!skiplistEntry) return "";
+  const lastError = skiplistEntry.lastError ?? "none";
+  return ` (attempts=${skiplistEntry.attempts}, parked=${skiplistEntry.parked}, lastError=${lastError})`;
+}
+
+function printCoverageDiagnosticCard({ card, inclusion, existingIds, skiplist }) {
+  const cardId = typeof card?.id === "string" ? card.id : "";
+  const hasBack = getBackImageUrl(card).length > 0;
+  const entryIds = cardId.length > 0 ? planTargetEntryIds([{ id: cardId, hasBack }]) : [];
+  const entries = listScanCoverageEntries(entryIds, existingIds, skiplist);
+
+  console.log(`[build-card-hashes] Target printing: ${formatCardField(cardId)}`);
+  console.log(`[build-card-hashes]   Name: ${formatCardField(card?.name)}`);
+  console.log(`[build-card-hashes]   Language: ${formatCardField(card?.lang)}`);
+  console.log(`[build-card-hashes]   Illustration id: ${formatCardField(card?.illustration_id)}`);
+  console.log(`[build-card-hashes]   Filter status: ${formatInclusionResult(inclusion)}`);
+  console.log(`[build-card-hashes]   Current corpus target: ${inclusion.included ? "yes" : "no"}`);
+
+  if (entries.length === 0) {
+    console.log("[build-card-hashes]   Fingerprint entries: none");
+    return;
+  }
+
+  for (const entry of entries) {
+    console.log(`[build-card-hashes]   Entry ${entry.id}: ${entry.status}${formatSkiplistSuffix(entry.skiplistEntry)}`);
+  }
+}
+
+function printCoverageSummary({ summary, stats, input, output, skiplist }) {
+  console.log("[build-card-hashes] Coverage diagnostics (no network, no writes)");
+  console.log(`[build-card-hashes] Input: ${path.relative(process.cwd(), input)}`);
+  console.log(`[build-card-hashes] Bin: ${path.relative(process.cwd(), output)}`);
+  console.log(`[build-card-hashes] Skip-list: ${path.relative(process.cwd(), skiplist)}`);
+  console.log(`[build-card-hashes] Parsed cards: ${stats.parsed}`);
+  console.log(`[build-card-hashes] Skipped by filter: ${stats.skippedByFilter}`);
+  console.log(`[build-card-hashes] Target entries: ${summary.targetCount}`);
+  console.log(`[build-card-hashes] Fingerprinted target entries: ${summary.fingerprintedTargetCount}`);
+  console.log(`[build-card-hashes] Missing target entries: ${summary.missingCount}`);
+  console.log(`[build-card-hashes] Parked target entries: ${summary.parkedCount}`);
+  console.log(`[build-card-hashes] Corpus status: ${summary.corpusStatus}`);
+}
+
+async function runCoverageDiagnostics(options) {
+  if (!fs.existsSync(options.input)) {
+    throw new Error(`Input file not found: ${options.input}`);
+  }
+
+  const diagnosticMatches = [];
+  const { stats, planCards } = await collectScanBuildPlan(options.input, (card, inclusion) => {
+    if (cardMatchesCoverageDiagnostic(card, options)) {
+      diagnosticMatches.push({ card, inclusion });
+    }
+  });
+  const cardBackReferencePath = path.join(options.imageDir, CARD_BACK_REFERENCE_NAME);
+  const targetIds = planTargetEntryIds(planCards, { hasCardBackReference: fs.existsSync(cardBackReferencePath) });
+  const existingIds = readExistingEntryIds(options.output);
+  const skiplist = readSkiplist(options.skiplist);
+  const summary = summarizeScanCoverage(targetIds, existingIds, skiplist);
+
+  printCoverageSummary({ summary, stats, input: options.input, output: options.output, skiplist: options.skiplist });
+
+  if (typeof options.diagnoseId !== "string" && typeof options.diagnoseIllustrationId !== "string") return;
+
+  if (diagnosticMatches.length === 0) {
+    const targets = [options.diagnoseId, options.diagnoseIllustrationId].filter((value) => typeof value === "string").join(", ");
+    console.log(`[build-card-hashes] No Default Cards entry matched diagnostic target: ${targets}`);
+    return;
+  }
+
+  for (const match of diagnosticMatches) {
+    printCoverageDiagnosticCard({ ...match, existingIds, skiplist });
+  }
 }
 
 function sanitizeTempName(id) {
@@ -391,21 +508,6 @@ function logSkipped(kind, id, error) {
   console.warn(`[build-card-hashes] Skipped ${kind} ${id}: ${errorMessage(error)}`);
 }
 
-function countTargetExisting(targetIds, existingEntries) {
-  const existingIds = new Set(existingEntries.map((entry) => entry.id));
-  return targetIds.filter((id) => existingIds.has(id)).length;
-}
-
-function countTargetParked(targetIds, existingEntries, skiplist) {
-  const existingIds = new Set(existingEntries.map((entry) => entry.id));
-  return targetIds.filter((id) => !existingIds.has(id) && skiplist[id]?.parked).length;
-}
-
-function countTargetRemaining(targetIds, existingEntries, skiplist, { retryParked = false } = {}) {
-  const existingIds = new Set(existingEntries.map((entry) => entry.id));
-  return targetIds.filter((id) => !existingIds.has(id) && (retryParked || !skiplist[id]?.parked)).length;
-}
-
 function formatDuration(ms) {
   if (!Number.isFinite(ms) || ms < 0) return "n/a";
   const totalSeconds = Math.ceil(ms / 1000);
@@ -428,18 +530,23 @@ function formatEta({ hashedNew, remaining, startedAtMs }, nowMs = Date.now()) {
 }
 
 function printProgressReadout({ phase, mode, targetIds, existingEntries, skiplist, stats, startedAtMs, retryParked }) {
-  const alreadyFingerprinted = countTargetExisting(targetIds, existingEntries);
-  const parked = countTargetParked(targetIds, existingEntries, skiplist);
-  const remaining = countTargetRemaining(targetIds, existingEntries, skiplist, { retryParked });
+  const summary = summarizeScanCoverage(
+    targetIds,
+    existingEntries.map((entry) => entry.id),
+    skiplist
+  );
+  const remaining = retryParked ? summary.missingCount + summary.parkedCount : summary.missingCount;
 
   console.log(`[build-card-hashes] ${PROGRESS_BANNER}`);
   console.log(`[build-card-hashes] Progress (${phase})`);
   if (mode) console.log(`[build-card-hashes] Mode: ${mode}`);
-  console.log(`[build-card-hashes] Total target: ${targetIds.length}`);
-  console.log(`[build-card-hashes] Already fingerprinted: ${alreadyFingerprinted}`);
+  console.log(`[build-card-hashes] Total target: ${summary.targetCount}`);
+  console.log(`[build-card-hashes] Fingerprinted target: ${summary.fingerprintedTargetCount}`);
+  console.log(`[build-card-hashes] Missing target: ${summary.missingCount}`);
+  console.log(`[build-card-hashes] Parked target: ${summary.parkedCount}`);
+  console.log(`[build-card-hashes] Corpus status: ${summary.corpusStatus}`);
   console.log(`[build-card-hashes] Done this run: ${stats.hashedNew}`);
-  console.log(`[build-card-hashes] Remaining: ${remaining}`);
-  console.log(`[build-card-hashes] Parked: ${parked}`);
+  console.log(`[build-card-hashes] Remaining this run: ${remaining}`);
   console.log(`[build-card-hashes] Rough ETA at current run rate: ${formatEta({ hashedNew: stats.hashedNew, remaining, startedAtMs })}`);
 }
 
@@ -517,8 +624,6 @@ async function buildResumable(options) {
   const startedAtMs = Date.now();
 
   const stats = {
-    parsed: 0,
-    skippedByFilter: 0,
     hashedNew: 0,
     skippedTransient: 0,
     skippedPermanent: 0
@@ -528,25 +633,12 @@ async function buildResumable(options) {
   const existingIds = new Set(existingEntries.map((entry) => entry.id));
   let skiplist = readSkiplist(options.skiplist);
   let skiplistDirty = false;
-  const imageMap = new Map();
-  const planCards = [];
-
-  for await (const card of readScryfallCards(options.input)) {
-    stats.parsed += 1;
-    if (!shouldIncludeScanPrinting(card)) {
-      stats.skippedByFilter += 1;
-      continue;
-    }
-
-    const frontUrl = getFrontImageUrl(card);
-    const backUrl = getBackImageUrl(card);
-    imageMap.set(card.id, { frontUrl, backUrl });
-    planCards.push({ id: card.id, hasBack: backUrl.length > 0 });
-  }
+  const plan = await collectScanBuildPlan(options.input);
+  Object.assign(stats, plan.stats);
 
   const cardBackReferencePath = path.join(options.imageDir, CARD_BACK_REFERENCE_NAME);
   const hasCardBackReference = fs.existsSync(cardBackReferencePath);
-  const targetIds = planTargetEntryIds(planCards, { hasCardBackReference });
+  const targetIds = planTargetEntryIds(plan.planCards, { hasCardBackReference });
   const parkedIds = Object.entries(skiplist)
     .filter(([, entry]) => entry.parked)
     .map(([id]) => id);
@@ -578,6 +670,7 @@ async function buildResumable(options) {
         path: path.relative(process.cwd(), options.input),
         sha256: sourceSha256
       },
+      coverage: summarizeScanCoverage(targetIds, db.ids, skiplist),
       byteSize: bytes.length,
       generatedAt: new Date().toISOString()
     };
@@ -648,7 +741,7 @@ async function buildResumable(options) {
 
       const isBack = id.endsWith(BACK_FACE_SUFFIX);
       const baseId = isBack ? id.slice(0, -BACK_FACE_SUFFIX.length) : id;
-      const urls = imageMap.get(baseId);
+      const urls = plan.imageMap.get(baseId);
       const url = isBack ? urls?.backUrl : urls?.frontUrl;
       const tempFile = path.join(tempDir, `${sanitizeTempName(id)}.png`);
 
@@ -739,6 +832,10 @@ async function main() {
   }
   if (options.selfTest) {
     runSelfTest();
+    return;
+  }
+  if (hasCoverageDiagnosticOptions(options)) {
+    await runCoverageDiagnostics(options);
     return;
   }
 

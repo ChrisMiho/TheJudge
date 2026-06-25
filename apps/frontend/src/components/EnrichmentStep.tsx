@@ -12,6 +12,7 @@ import type { ConversationMessage, ContextTarget, GameContext, PlayerLabel, Zone
 import { AskAiWaitingPanel } from "./AskAiWaitingPanel";
 import { ConversationThread } from "./ConversationThread";
 import { FrozenContextSummary } from "./FrozenContextSummary";
+import { StagedStepHeader } from "./StagedStepHeader";
 
 const MAX_QUESTION_CHARS = 300;
 
@@ -155,14 +156,14 @@ export function EnrichmentStep({
     return (
       <li
         key={key}
-        className="space-y-3 rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4"
+        className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="font-semibold text-slate-100">{card.name}</p>
-            <p className="text-xs text-slate-400">{ZONE_LABELS[zone]}</p>
+            <p className="font-semibold text-zinc-100">{card.name}</p>
+            <p className="text-xs text-zinc-400">{ZONE_LABELS[zone]}</p>
             {card.oracleText && (
-              <p className="mt-0.5 text-xs text-slate-400 line-clamp-2">{card.oracleText}</p>
+              <p className="mt-0.5 text-xs text-zinc-400 line-clamp-2">{card.oracleText}</p>
             )}
           </div>
           {showRemove && (
@@ -170,7 +171,7 @@ export function EnrichmentStep({
               type="button"
               aria-label={`Remove ${card.name}`}
               onClick={() => removeCardFromZone(zone, card.cardId)}
-              className="shrink-0 rounded-lg border border-slate-600 bg-slate-800/70 px-2 py-1 text-xs font-semibold text-slate-300 transition hover:bg-slate-700/80"
+              className="shrink-0 rounded-lg border border-zinc-600 bg-zinc-800/70 px-2 py-1 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-700/80"
             >
               Remove
             </button>
@@ -180,14 +181,14 @@ export function EnrichmentStep({
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {showsOwner && (
             <label className="flex flex-col gap-1 text-xs">
-              <span className="font-semibold uppercase tracking-[0.08em] text-slate-300">Ownership</span>
+              <span className="font-semibold uppercase tracking-[0.08em] text-zinc-300">Ownership</span>
               <select
                 aria-label={`Owner for ${card.name}`}
                 value={card.owner ?? gameContext?.activePlayer ?? activePlayers[0] ?? "Player 1"}
                 onChange={(e) =>
                   updateZoneCard(zone, card.cardId, { owner: e.target.value as PlayerLabel })
                 }
-                className="rounded-lg border border-slate-600 bg-slate-800 px-2 py-1.5 text-sm text-slate-100"
+                className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
               >
                 {activePlayers.map((p) => (
                   <option key={p} value={p}>
@@ -200,14 +201,14 @@ export function EnrichmentStep({
 
           {isStackZone && (
             <label className="flex flex-col gap-1 text-xs">
-              <span className="font-semibold uppercase tracking-[0.08em] text-slate-300">Caster</span>
+              <span className="font-semibold uppercase tracking-[0.08em] text-zinc-300">Caster</span>
               <select
                 aria-label={`Caster for ${card.name}`}
                 value={card.caster ?? activePlayers[0] ?? "Player 1"}
                 onChange={(e) =>
                   updateZoneCard(zone, card.cardId, { caster: e.target.value as PlayerLabel })
                 }
-                className="rounded-lg border border-slate-600 bg-slate-800 px-2 py-1.5 text-sm text-slate-100"
+                className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
               >
                 {activePlayers.map((p) => (
                   <option key={p} value={p}>
@@ -220,7 +221,7 @@ export function EnrichmentStep({
 
           {isStackZone && (
             <label className="flex flex-col gap-1 text-xs">
-              <span className="font-semibold uppercase tracking-[0.08em] text-slate-300">Mana spent</span>
+              <span className="font-semibold uppercase tracking-[0.08em] text-zinc-300">Mana spent</span>
               <input
                 aria-label={`Mana spent for ${card.name}`}
                 type="text"
@@ -230,14 +231,14 @@ export function EnrichmentStep({
                   updateZoneCard(zone, card.cardId, { manaSpent: parseManaSpent(e.target.value) })
                 }
                 placeholder="e.g. 3"
-                className="rounded-lg border border-slate-600 bg-slate-800 px-2 py-1.5 text-sm text-slate-100"
+                className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
               />
             </label>
           )}
         </div>
 
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">Targets</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Targets</p>
           <div className="flex flex-wrap gap-2">
             <select
               aria-label={`Target kind for ${card.name}`}
@@ -248,7 +249,7 @@ export function EnrichmentStep({
                   [key]: e.target.value as PendingTargetKind
                 }))
               }
-              className="rounded-lg border border-slate-600 bg-slate-800 px-2 py-1.5 text-sm text-slate-100"
+              className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
             >
               <option value="player">Player</option>
               <option value="card">Zone card</option>
@@ -266,7 +267,7 @@ export function EnrichmentStep({
                     [key]: e.target.value as PlayerLabel
                   }))
                 }
-                className="rounded-lg border border-slate-600 bg-slate-800 px-2 py-1.5 text-sm text-slate-100"
+                className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
               >
                 {activePlayers.map((p) => (
                   <option key={p} value={p}>
@@ -281,7 +282,7 @@ export function EnrichmentStep({
                 aria-label={`Card target for ${card.name}`}
                 value={pendingCardIdByKey[key] ?? ""}
                 onChange={(e) => setPendingCardIdByKey((c) => ({ ...c, [key]: e.target.value }))}
-                className="rounded-lg border border-slate-600 bg-slate-800 px-2 py-1.5 text-sm text-slate-100"
+                className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
               >
                 <option value="">Select card…</option>
                 {contextIndex.map((entry) => (
@@ -299,7 +300,7 @@ export function EnrichmentStep({
                 value={pendingOtherByKey[key] ?? ""}
                 onChange={(e) => setPendingOtherByKey((c) => ({ ...c, [key]: e.target.value }))}
                 placeholder="Describe what this points at"
-                className="flex-1 rounded-lg border border-slate-600 bg-slate-800 px-2 py-1.5 text-sm text-slate-100"
+                className="flex-1 rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
               />
             )}
 
@@ -307,7 +308,7 @@ export function EnrichmentStep({
               type="button"
               aria-label={`Add target for ${card.name}`}
               onClick={() => handleAddTarget(zone, card, key)}
-              className="rounded-lg border border-cyan-500/50 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/20"
+              className="rounded-lg border border-accent/50 bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent-soft transition hover:bg-accent/20"
             >
               Add target
             </button>
@@ -318,14 +319,14 @@ export function EnrichmentStep({
               {(card.targets ?? []).map((target, targetIndex) => (
                 <li
                   key={targetIndex}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-slate-700/50 bg-slate-800/50 px-3 py-1.5 text-xs text-slate-300"
+                  className="flex items-center justify-between gap-2 rounded-lg border border-zinc-700/50 bg-zinc-800/50 px-3 py-1.5 text-xs text-zinc-300"
                 >
                   <span>{formatContextTarget(target, displayNamesByPlayer)}</span>
                   <button
                     type="button"
                     aria-label={`Remove target ${targetIndex + 1} for ${card.name}`}
                     onClick={() => handleRemoveTarget(zone, card, targetIndex)}
-                    className="text-slate-400 hover:text-slate-200"
+                    className="text-zinc-400 hover:text-zinc-200"
                   >
                     ×
                   </button>
@@ -336,7 +337,7 @@ export function EnrichmentStep({
         </div>
 
         <label className="flex flex-col gap-1 text-xs">
-          <span className="font-semibold uppercase tracking-[0.08em] text-slate-300">Context notes</span>
+          <span className="font-semibold uppercase tracking-[0.08em] text-zinc-300">Context notes</span>
           <textarea
             aria-label={`Context notes for ${card.name}`}
             value={card.contextNotes ?? ""}
@@ -347,7 +348,7 @@ export function EnrichmentStep({
             }
             rows={2}
             placeholder="Optional notes about this card's context"
-            className="resize-none rounded-lg border border-slate-600 bg-slate-800 px-2 py-1.5 text-sm text-slate-100"
+            className="resize-none rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
           />
         </label>
       </li>
@@ -381,10 +382,10 @@ export function EnrichmentStep({
 
   if (isConversationActive) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
-        <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 md:p-6">
+      <main className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 px-4 py-6 text-zinc-100">
+        <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-zinc-700/70 bg-zinc-900/70 p-4 md:p-6">
           <header>
-            <h1 className="bg-gradient-to-r from-sky-300 to-blue-400 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+            <h1 className="bg-gradient-to-r from-accent-soft to-accent-strong bg-clip-text text-3xl font-bold tracking-tight text-transparent">
               TheJudge
             </h1>
           </header>
@@ -411,7 +412,7 @@ export function EnrichmentStep({
 
           <form onSubmit={(e) => void handleFollowUpSubmit(e)} className="space-y-2">
             <label className="flex flex-col gap-1">
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
+              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
                 Follow-up question
               </span>
               <textarea
@@ -421,16 +422,16 @@ export function EnrichmentStep({
                 rows={2}
                 maxLength={MAX_QUESTION_CHARS}
                 disabled={isFollowUpSubmitting}
-                className="resize-none rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100 disabled:opacity-60"
+                className="resize-none rounded-xl border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 disabled:opacity-60"
               />
-              <span className="text-right text-xs text-slate-500">
+              <span className="text-right text-xs text-zinc-500">
                 {followUpText.length}/{MAX_QUESTION_CHARS}
               </span>
             </label>
             <button
               type="submit"
               disabled={isFollowUpSubmitting || !followUpText.trim()}
-              className="w-full rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isFollowUpSubmitting ? <span className="send-spinner" /> : "Send"}
             </button>
@@ -440,14 +441,14 @@ export function EnrichmentStep({
             <button
               type="button"
               onClick={handleStartOver}
-              className="rounded-xl border border-slate-500 bg-slate-800/70 px-4 py-2.5 text-sm font-semibold text-slate-100 transition hover:bg-slate-700/80"
+              className="rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
             >
               Start Over
             </button>
           )}
 
           {statusMessage && (
-            <p className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2 text-sm font-medium text-cyan-200">
+            <p className="rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
               {statusMessage}
             </p>
           )}
@@ -457,17 +458,11 @@ export function EnrichmentStep({
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
-      <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 md:p-6">
-        <header>
-          <h1 className="bg-gradient-to-r from-sky-300 to-blue-400 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
-            TheJudge
-          </h1>
-          <p className="text-sm text-slate-300">Stack Assistant</p>
-        </header>
+    <main className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 px-4 py-6 text-zinc-100">
+      <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-zinc-700/70 bg-zinc-900/70 p-4 md:p-6">
+        <StagedStepHeader stepName="Context enrichment" />
 
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-2xl font-semibold text-sky-300">Context enrichment</h2>
           {totalCards > 0 && !hasAnswer && (
             <button
               type="button"
@@ -479,7 +474,7 @@ export function EnrichmentStep({
                   setWizardFinished(false);
                 }
               }}
-              className="rounded-lg border border-slate-600 bg-slate-800/70 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-slate-700/80"
+              className="rounded-lg border border-zinc-600 bg-zinc-800/70 px-3 py-1.5 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-700/80"
             >
               {viewMode === "wizard" ? "View all cards" : "Card-by-card"}
             </button>
@@ -487,12 +482,12 @@ export function EnrichmentStep({
         </div>
 
         {totalCards === 0 ? (
-          <p className="rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4 text-sm text-slate-300">
+          <p className="rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4 text-sm text-zinc-300">
             Add at least one card in a selected zone before decrypting.
           </p>
         ) : showWizard && currentWizardEntry ? (
           <div className="space-y-3">
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-zinc-400">
               Card {wizardIndex + 1} of {totalCards}
             </p>
             <ul key={cardAnimKey} className="enrichment-card-enter">
@@ -501,15 +496,15 @@ export function EnrichmentStep({
             <button
               type="button"
               onClick={handleWizardNext}
-              className="w-full rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+              className="w-full rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90"
             >
               {wizardIndex < totalCards - 1 ? "OK — next card" : "OK — finish enrichment"}
             </button>
           </div>
         ) : showWizardFinished ? (
-          <div className="rounded-2xl border border-emerald-500/40 bg-emerald-950/30 p-4">
-            <p className="text-sm font-semibold text-emerald-300">Ready to decrypt.</p>
-            <p className="mt-1 text-sm text-slate-300">
+          <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4">
+            <p className="text-sm font-semibold text-accent-soft">Ready to decrypt.</p>
+            <p className="mt-1 text-sm text-zinc-300">
               Card context reviewed. Use View all cards to make more edits.
             </p>
           </div>
@@ -517,7 +512,7 @@ export function EnrichmentStep({
           <div className="space-y-6">
             {CANONICAL_ZONE_ORDER.filter((zone) => (zones[zone]?.length ?? 0) > 0).map((zone) => (
               <div key={zone} className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
                   {ZONE_LABELS[zone]}
                 </p>
                 <ul className="space-y-3">
@@ -529,35 +524,35 @@ export function EnrichmentStep({
         )}
 
         {hasAnswer ? (
-          <div className="rounded-2xl border border-emerald-500/40 bg-emerald-950/30 p-4">
-            <p className="text-sm font-semibold text-emerald-300">Answer</p>
-            <p className="mt-2 whitespace-pre-wrap text-sm text-slate-200">{answer}</p>
+          <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4">
+            <p className="text-sm font-semibold text-accent-soft">Answer</p>
+            <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-200">{answer}</p>
           </div>
         ) : isSubmitting ? (
           <AskAiWaitingPanel isSubmitting={isSubmitting} />
         ) : (
           showQuestionForm && (
             <form onSubmit={(e) => void onDecryptStack(e)} className="space-y-3">
-              <div className="space-y-2 rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4">
-                <p className="text-sm font-semibold text-slate-100">Sending to TheJudge</p>
-                <ul className="space-y-1 text-sm text-slate-300">
+              <div className="space-y-2 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
+                <p className="text-sm font-semibold text-zinc-100">Sending to TheJudge</p>
+                <ul className="space-y-1 text-sm text-zinc-300">
                   {populatedZoneSummaries.map(({ zone, count }) => (
                     <li key={zone}>
                       {ZONE_LABELS[zone]}: {count} {count === 1 ? "card" : "cards"}
                     </li>
                   ))}
                   {stackSelectedButEmpty && (
-                    <li className="text-slate-400">Stack: selected, no cards added</li>
+                    <li className="text-zinc-400">Stack: selected, no cards added</li>
                   )}
                 </ul>
                 {!question.trim() && (
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-zinc-400">
                     No question? Uses fallback: &ldquo;{fallbackQuestion}&rdquo;
                   </p>
                 )}
               </div>
               <label className="flex flex-col gap-1">
-                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
+                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
                   Optional question
                 </span>
                 <textarea
@@ -566,16 +561,16 @@ export function EnrichmentStep({
                   onChange={(e) => onQuestionChange(e.target.value.slice(0, MAX_QUESTION_CHARS))}
                   rows={2}
                   maxLength={MAX_QUESTION_CHARS}
-                  className="resize-none rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+                  className="resize-none rounded-xl border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
                 />
-                <span className="text-right text-xs text-slate-500">
+                <span className="text-right text-xs text-zinc-500">
                   {question.length}/{MAX_QUESTION_CHARS}
                 </span>
               </label>
               <button
                 type="submit"
                 disabled={isSubmitting || !canDecrypt}
-                className="w-full rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmitting ? "Decrypting…" : "Decrypt Stack"}
               </button>
@@ -598,7 +593,7 @@ export function EnrichmentStep({
         )}
 
         {statusMessage && (
-          <p className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2 text-sm font-medium text-cyan-200">
+          <p className="rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
             {statusMessage}
           </p>
         )}
@@ -607,7 +602,7 @@ export function EnrichmentStep({
           <button
             type="button"
             onClick={onBack}
-            className="rounded-xl border border-slate-500 bg-slate-800/70 px-4 py-2.5 text-sm font-semibold text-slate-100 transition hover:bg-slate-700/80"
+            className="rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
           >
             Back to zones
           </button>

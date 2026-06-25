@@ -2,9 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Default (blue) accent tokens — mirrors the app's existing sky/blue accent
+     treatment so the default palette is a visual no-op. Overridden per-palette
+     by applyPalette.ts via inline custom properties on the document root. */
+  --accent: 14 165 233;
+  --accent-strong: 37 99 235;
+  --accent-soft: 125 211 252;
+  --accent-contrast: 255 255 255;
+}
+
 body {
   margin: 0;
-  background: linear-gradient(135deg, #020617 0%, #0f172a 45%, #172554 100%);
+  background: linear-gradient(135deg, #09090b 0%, #18181b 45%, #09090b 100%);
   color: #e2e8f0;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   min-height: 100vh;
@@ -15,8 +25,8 @@ body {
 }
 
 ::selection {
-  background: #1d4ed8;
-  color: #e0f2fe;
+  background: rgb(var(--accent-strong));
+  color: rgb(var(--accent-contrast));
 }
 
 @keyframes enrichment-card-enter {
