@@ -9,6 +9,8 @@ export const SOLIDITY_MIN = 0.65
 export const RECTANGULARITY_MIN = 0.7
 export const CANNY_LO = 30
 export const CANNY_HI = 90
+export const LOW_CONTRAST_CANNY_LO = 18
+export const LOW_CONTRAST_CANNY_HI = 42
 export const MIN_AREA_FRAC = 0.05
 export const MAX_AREA_FRAC = 0.95
 
@@ -33,6 +35,12 @@ export type MinAreaRect = {
 }
 
 type Candidate = { quad: Point[]; area: number }
+
+type DetectCardCornersOptions = {
+  minAreaFrac?: number
+  maxAreaFrac?: number
+  onFallback?: (used: boolean) => void
+}
 
 function distance(a: Point, b: Point): number {
   return Math.hypot(a.x - b.x, a.y - b.y)
@@ -290,6 +298,31 @@ function cannyEdges(plane: Plane, lo = CANNY_LO, hi = CANNY_HI): Plane {
   return { width, height, data: out }
 }
 
+function contrastStretch(plane: Plane): Plane {
+  const { width, height, data } = plane
+  let min = 255
+  let max = 0
+  for (const value of data) {
+    min = Math.min(min, value)
+    max = Math.max(max, value)
+  }
+  const range = max - min
+  if (range < 1) return plane
+
+  const out = new Uint8Array(data.length)
+  for (let i = 0; i < data.length; i++) out[i] = Math.round(((data[i] - min) / range) * 255)
+  return { width, height, data: out }
+}
+
+function thresholdPlane(plane: Plane, threshold: number, mode: "above" | "below"): Plane {
+  const out = new Uint8Array(plane.data.length)
+  for (let i = 0; i < plane.data.length; i++) {
+    const hit = mode === "above" ? plane.data[i] >= threshold : plane.data[i] <= threshold
+    out[i] = hit ? 255 : 0
+  }
+  return { width: plane.width, height: plane.height, data: out }
+}
+
 function orPlanes(a: Plane, b: Plane, c?: Plane): Plane {
   const out = new Uint8Array(a.data.length)
   for (let i = 0; i < out.length; i++) out[i] = a.data[i] || b.data[i] || (c?.data[i] ?? 0) ? 255 : 0
@@ -542,22 +575,18 @@ function refinePolygonOutward(frame: RgbImage, polygon: Point[], searchBand = 40
   return ratio < 0.98 || ratio > 1.3 ? polygon : refined
 }
 
-export function detectCardCorners(
-  frame: RgbImage,
-  opts: { minAreaFrac?: number; maxAreaFrac?: number } = {}
-): Point[] | null {
-  const minArea = frame.width * frame.height * (opts.minAreaFrac ?? MIN_AREA_FRAC)
-  const maxArea = frame.width * frame.height * (opts.maxAreaFrac ?? MAX_AREA_FRAC)
+function detectCardCornersPrimary(frame: RgbImage, minArea: number, maxArea: number): Point[] | null {
   const { gray, r, g, b } = splitPlanes(frame)
   const edgesGray = cannyEdges(gray)
   const edgesB = cannyEdges(b)
   const edgesG = cannyEdges(g)
   const edgesR = cannyEdges(r)
   const edgesMc = orPlanes(edgesB, edgesG, edgesR)
+  const edgesPrimary = orPlanes(edgesMc, edgesGray)
 
   let best: Candidate | null = null
   for (const iter of [1, 3]) {
-    best = findBestCardInEdges(edgesMc, minArea, maxArea, iter)
+    best = findBestCardInEdges(edgesPrimary, minArea, maxArea, iter)
     if (best) break
   }
 
@@ -580,6 +609,36 @@ export function detectCardCorners(
   }
 
   return best ? refinePolygonOutward(frame, best.quad) : null
+}
+
+function detectLowContrastCardCorners(frame: RgbImage, minArea: number, maxArea: number): Point[] | null {
+  const { gray } = splitPlanes(frame)
+  const stretchedGray = contrastStretch(gray)
+  const edges = cannyEdges(stretchedGray, LOW_CONTRAST_CANNY_LO, LOW_CONTRAST_CANNY_HI)
+  const lowThreshold = 64
+  const highThreshold = 191
+  const lightBlob = thresholdPlane(stretchedGray, lowThreshold, "above")
+  const darkBlob = thresholdPlane(stretchedGray, highThreshold, "below")
+  const best =
+    findBestCardInEdges(edges, minArea, maxArea, 2) ??
+    findBestCardInEdges(lightBlob, minArea, maxArea, 1) ??
+    findBestCardInEdges(darkBlob, minArea, maxArea, 1) ??
+    findBestCardInEdges(edges, minArea, maxArea, 4)
+  return best ? refinePolygonOutward(frame, best.quad, 24) : null
+}
+
+export function detectCardCorners(frame: RgbImage, opts: DetectCardCornersOptions = {}): Point[] | null {
+  const minArea = frame.width * frame.height * (opts.minAreaFrac ?? MIN_AREA_FRAC)
+  const maxArea = frame.width * frame.height * (opts.maxAreaFrac ?? MAX_AREA_FRAC)
+  const primary = detectCardCornersPrimary(frame, minArea, maxArea)
+  if (primary) {
+    opts.onFallback?.(false)
+    return primary
+  }
+
+  const fallback = detectLowContrastCardCorners(frame, minArea, maxArea)
+  opts.onFallback?.(fallback !== null)
+  return fallback
 }
 
 function solve8x8(a: number[][], b: number[]): number[] {

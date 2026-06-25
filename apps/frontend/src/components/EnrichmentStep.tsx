@@ -159,12 +159,21 @@ export function EnrichmentStep({
         className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
       >
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="font-semibold text-zinc-100">{card.name}</p>
-            <p className="text-xs text-zinc-400">{ZONE_LABELS[zone]}</p>
-            {card.oracleText && (
-              <p className="mt-0.5 text-xs text-zinc-400 line-clamp-2">{card.oracleText}</p>
+          <div className="flex items-start gap-3">
+            {card.imageUrl && (
+              <img
+                src={card.imageUrl}
+                alt={card.name}
+                className="h-24 w-16 shrink-0 rounded object-cover"
+              />
             )}
+            <div>
+              <p className="font-semibold text-zinc-100">{card.name}</p>
+              <p className="text-xs text-zinc-400">{ZONE_LABELS[zone]}</p>
+              {card.oracleText && (
+                <p className="mt-0.5 text-xs text-zinc-400 line-clamp-2">{card.oracleText}</p>
+              )}
+            </div>
           </div>
           {showRemove && (
             <button

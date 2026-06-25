@@ -41,6 +41,13 @@ export function ScanReviewBubble({ cards, onRemove }: ScanReviewBubbleProps): JS
                 key={`${card.cardId}-${index}`}
                 className="flex items-center justify-between gap-2 rounded-lg border border-zinc-700/70 bg-zinc-900/60 px-2.5 py-1.5 text-sm text-zinc-100"
               >
+                {card.imageUrl && (
+                  <img
+                    src={card.imageUrl}
+                    alt={card.name}
+                    className="h-20 w-14 shrink-0 rounded object-cover"
+                  />
+                )}
                 <span className="truncate">{card.name}</span>
                 <button
                   type="button"

@@ -39,6 +39,28 @@ describe("zoneCards", () => {
     expect(zoneCard.oracleText).toBe("Scry 1, then draw a card.");
   });
 
+  it("buildZoneCardFromMetadata uses scanImageUrl override when provided", () => {
+    const card: CardMetadataItem = { ...SAMPLE_CARD, imageUrl: "https://img/opt-oracle.jpg" };
+    const scannedUrl = "https://img/opt-print.jpg";
+    const zoneCard = buildZoneCardFromMetadata(card, scannedUrl);
+    expect(zoneCard.imageUrl).toBe(scannedUrl);
+  });
+
+  it("buildZoneCardFromMetadata falls back to card.imageUrl when scanImageUrl is omitted", () => {
+    const card: CardMetadataItem = { ...SAMPLE_CARD, imageUrl: "https://img/opt-oracle.jpg" };
+    const zoneCard = buildZoneCardFromMetadata(card);
+    expect(zoneCard.imageUrl).toBe("https://img/opt-oracle.jpg");
+  });
+
+  it("buildZoneCardFromMetadata does not carry non-image fields from oracle into printed override", () => {
+    const card: CardMetadataItem = { ...SAMPLE_CARD, imageUrl: "https://img/opt-oracle.jpg" };
+    const scannedUrl = "https://img/opt-print.jpg";
+    const zoneCard = buildZoneCardFromMetadata(card, scannedUrl);
+    // Only imageUrl is overridden; identity fields stay oracle-level
+    expect(zoneCard.cardId).toBe(card.cardId);
+    expect(zoneCard.name).toBe(card.name);
+  });
+
   it("appendZoneCard preserves bottom-to-top stack order", () => {
     const first = buildZoneCardFromMetadata(SAMPLE_CARD);
     const second = buildZoneCardFromMetadata(BOLT_CARD);

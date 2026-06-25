@@ -18,7 +18,8 @@ const searching: ScanConvergence = {
   leaderName: null,
   votes: 0,
   votesNeeded: 6,
-  conditionHint: null
+  conditionHint: null,
+  detectorNudge: null
 };
 
 function makeZoneCard(cardId: string, name: string): ZoneCardItem {

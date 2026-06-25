@@ -9,15 +9,18 @@ import type { Candidate } from "./types";
 export interface CardScanMapEntry {
   oracleId: string;
   name: string;
+  imageUrl: string;
 }
 
 /** cardScanMap.json shape: Scryfall printing id -> { oracleId, name }. */
 export type CardScanMap = Record<string, CardScanMapEntry>;
 
-/** A resolved metadata candidate paired with its best engine distance. */
+/** A resolved metadata candidate paired with its best engine distance and scanned printing image. */
 export interface ResolvedScanCandidate {
   card: CardMetadataItem;
   distance: number;
+  /** Scanned printing's imageUrl; falls back to card.imageUrl when printing image is absent. */
+  scanImageUrl: string;
 }
 
 /**
@@ -48,7 +51,8 @@ export function resolveScanCandidatesRanked(
     if (!metadataItem) continue;
 
     seenOracleIds.add(scanEntry.oracleId);
-    resolved.push({ card: metadataItem, distance: candidate.distance });
+    const scanImageUrl = scanEntry.imageUrl || metadataItem.imageUrl;
+    resolved.push({ card: metadataItem, distance: candidate.distance, scanImageUrl });
   }
 
   return resolved;

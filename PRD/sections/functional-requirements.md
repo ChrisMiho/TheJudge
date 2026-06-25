@@ -1019,9 +1019,10 @@
 ### REQ-051
 - Title: Detector fixture corpus and debug-gated raw-frame export
 - Priority: high
-- Description: Provide the evidence basis for outcome-validated detector tuning (REQ-050): a committed real-world detector fixture corpus plus a way to capture the exact camera frame a failing on-device scan produced. The frame export reuses the existing scan **Capture** button under the opt-in debug overlay rather than adding a control. Frontend/build tooling only; the export itself changes no runtime detection behavior (DEC-072).
+- Description: Provide the evidence basis for outcome-validated detector tuning (REQ-050): a committed detector fixture corpus with recorded provenance plus a way to capture the exact camera frame a failing on-device scan produced. The frame export reuses the existing scan **Capture** button under the opt-in debug overlay rather than adding a control. Frontend/build tooling only; the export itself changes no runtime detection behavior (DEC-072).
 - Acceptance Criteria:
-  - a committed detector fixture corpus exists with a controllable, license-clean backbone of synthetic degradations of the already-committed clean Scryfall art (glare/specular, low-contrast border vs. surface, perspective skew, foil-like highlights), layered with downloaded real-world card-on-table photos and any owner-exported frames (DEC-072)
+  - a committed detector fixture corpus exists with a controllable, provenance-recorded backbone: committed clean seed images and/or committed generated synthetic degradations (glare/specular, low-contrast border vs. surface, perspective skew, foil-like highlights), layered with downloaded real-world card-on-table photos and any owner-exported frames (DEC-072)
+  - if Scryfall art is used to seed synthetic fixtures, the selected seed images or generated derived fixtures and their provenance manifest are committed explicitly; tests and acceptance runs must not rely on untracked files in the ignored `apps/frontend/data/scryfall/card-images/` download cache (DEC-072)
   - synthetic degradation is generated deterministically/parameterizably so the corpus spans many capture conditions on purpose rather than depending on one device's camera (DEC-072)
   - while the opt-in debug overlay (DEC-060/REQ-041) is enabled, the existing scan **Capture** button additionally saves/downloads the exact raw frame it grabbed (e.g. a PNG of the camera pixel buffer); with the overlay off (default) Capture behaves exactly as today and the normal scan flow and UI are unchanged (DEC-065)
   - the export changes no detection/warp/identify behavior and makes no network call; it is a diagnostic capture only (DEC-072)
@@ -1031,7 +1032,8 @@
   - frontend/build tooling only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
   - reuse the existing Capture button and debug overlay; do not add a new scan-screen control (DEC-065 no-clutter intent)
   - the export is debug-gated and read-only to detection; it must not alter the shipped scan UX when the overlay is off
-  - do not commit fixtures with unclear licensing; prefer synthetic-degraded owned art and owner captures
+  - do not commit fixtures with unclear licensing/provenance; prefer owner captures and committed seed/generated fixture assets with recorded provenance
+  - do not make the ignored Scryfall card-image download cache a required fixture source or acceptance prerequisite
 - Dependencies:
   - DEC-072
   - REQ-041

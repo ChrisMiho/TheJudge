@@ -86,8 +86,8 @@ export function ZoneCollectionStep({
 
   const scanCapture = useScanCapture({
     cardMetadata,
-    onScanCandidateSelected: (card) => {
-      const outcome = addCardToActiveZone(card);
+    onScanCandidateSelected: (card, scanImageUrl) => {
+      const outcome = addCardToActiveZone(card, scanImageUrl);
       if (outcome.added) {
         setScanSessionCardIds((ids) => (ids.includes(card.cardId) ? ids : [...ids, card.cardId]));
       }
@@ -108,12 +108,12 @@ export function ZoneCollectionStep({
     });
   }
 
-  function addCardToActiveZone(card: CardMetadataItem): ScanAddOutcome {
+  function addCardToActiveZone(card: CardMetadataItem, scanImageUrl?: string): ScanAddOutcome {
     if (!activeZone) {
       return { added: false, message: "No active zone" };
     }
 
-    const nextCard = buildZoneCardFromMetadata(card);
+    const nextCard = buildZoneCardFromMetadata(card, scanImageUrl);
     if (activeZone !== "stack") {
       nextCard.owner = pendingOwner;
     }

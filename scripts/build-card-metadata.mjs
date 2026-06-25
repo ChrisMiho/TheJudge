@@ -157,6 +157,29 @@ function ensureParentDirectory(filePath) {
   fs.mkdirSync(parent, { recursive: true });
 }
 
+const SPECIAL_FRAME_EFFECTS = new Set([
+  "extendedart",
+  "showcase",
+  "borderless",
+  "inverted",
+  "fullart",
+  "etched",
+  "gilded",
+  "textless"
+]);
+
+const SPECIAL_SET_TYPES = new Set(["funny", "memorabilia", "promo", "token"]);
+
+export function isStandardPrinting(card) {
+  if (SPECIAL_SET_TYPES.has(card?.set_type)) return false;
+  if (card?.promo === true) return false;
+  if (Array.isArray(card?.promo_types) && card.promo_types.length > 0) return false;
+  if (Array.isArray(card?.frame_effects) && card.frame_effects.some((e) => SPECIAL_FRAME_EFFECTS.has(e))) return false;
+  if (card?.border_color === "borderless") return false;
+  if (card?.border_color === "gold") return false;
+  return true;
+}
+
 function getMetadataQualityScore(card) {
   const hasOracleText = getOracleText(card).length > 0;
   const hasImage = getImageUrl(card).length > 0;
@@ -186,6 +209,12 @@ export function choosePreferredCard(existingCard, candidateCard) {
   const candidateScore = getMetadataQualityScore(candidateCard);
   if (candidateScore > existingScore) return candidateCard;
   if (candidateScore < existingScore) return existingCard;
+
+  // Standard-print preference (DEC-071): standard beats special at equal quality score.
+  const existingIsStandard = isStandardPrinting(existingCard);
+  const candidateIsStandard = isStandardPrinting(candidateCard);
+  if (candidateIsStandard && !existingIsStandard) return candidateCard;
+  if (!candidateIsStandard && existingIsStandard) return existingCard;
 
   const existingRelease = getReleaseDate(existingCard);
   const candidateRelease = getReleaseDate(candidateCard);

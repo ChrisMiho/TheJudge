@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-06-25",
+  "command": "npx tsx -e \"import { evaluateDetectorFixtures, loadDetectorFixtures } from './apps/frontend/src/lib/scan/detectorFixtures.ts'; console.log(JSON.stringify(evaluateDetectorFixtures(loadDetectorFixtures()), null, 2));\"",
+  "detectorScope": "Pre-Slice-C baseline for detector-only recall tuning. No recipe, identify, tuning lock gate, cardhash, API, prompt, or backend surfaces changed.",
+  "total": 5,
+  "detected": 4,
+  "detectRate": 0.8,
+  "results": [
+    {
+      "id": "synthetic-obvious-baseline",
+      "conditionClass": "obvious baseline card",
+      "detected": true
+    },
+    {
+      "id": "synthetic-glare-specular",
+      "conditionClass": "glare/specular highlight",
+      "detected": true
+    },
+    {
+      "id": "synthetic-low-contrast-border",
+      "conditionClass": "low-contrast border vs. surface",
+      "detected": false
+    },
+    {
+      "id": "synthetic-perspective-skew",
+      "conditionClass": "perspective skew",
+      "detected": true
+    },
+    {
+      "id": "synthetic-foil-internal-edge-distraction",
+      "conditionClass": "foil-like/internal-edge distraction",
+      "detected": true
+    }
+  ]
+}

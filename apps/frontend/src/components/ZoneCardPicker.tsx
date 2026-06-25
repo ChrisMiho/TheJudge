@@ -253,17 +253,26 @@ export function ZoneCardPicker({
                 key={`${zoneId}-${card.cardId}-${index}`}
                 className="flex items-center justify-between gap-3 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2 text-sm"
               >
-                <div>
-                  <p className="font-medium text-zinc-100">{`${index + 1}. ${card.name}`}</p>
-                  {zoneId === "stack" ? (
-                    <p className="text-xs text-zinc-400">{formatStackPosition(index, cards.length)}</p>
-                  ) : (
-                    card.owner && (
-                      <p className="text-xs text-zinc-400">
-                        Owner: {formatPlayerDisplayLabel(card.owner, displayNamesByPlayer[card.owner])}
-                      </p>
-                    )
+                <div className="flex min-w-0 items-center gap-2">
+                  {card.imageUrl && (
+                    <img
+                      src={card.imageUrl}
+                      alt={card.name}
+                      className="h-20 w-14 shrink-0 rounded object-cover"
+                    />
                   )}
+                  <div>
+                    <p className="font-medium text-zinc-100">{`${index + 1}. ${card.name}`}</p>
+                    {zoneId === "stack" ? (
+                      <p className="text-xs text-zinc-400">{formatStackPosition(index, cards.length)}</p>
+                    ) : (
+                      card.owner && (
+                        <p className="text-xs text-zinc-400">
+                          Owner: {formatPlayerDisplayLabel(card.owner, displayNamesByPlayer[card.owner])}
+                        </p>
+                      )
+                    )}
+                  </div>
                 </div>
                 <button
                   type="button"

@@ -18,18 +18,19 @@ A detected quad **never auto-adds** a card — the temporal stabilizer's distanc
 
 ## Scope (broad — owner directed "as large as it needs to be")
 
-In `detector.ts` (and `tuning.ts` where a constant belongs there):
-1. **Calibration** — loosen/adapt the existing gates against the fixture corpus: `CANNY_LO/HI`, `SOLIDITY_MIN`, `RECTANGULARITY_MIN`, `ASPECT_TOLERANCE`, `MIN/MAX_AREA_FRAC`, morphology iterations.
-2. **Foil/glare-tolerant edge sourcing** — strengthen the multi-channel edge combination so speculars and internal foil edges don't starve the outer-border contour.
-3. **Low-contrast-border fallback path** — a secondary detection assist (e.g. adaptive thresholding) that runs **only when the primary pipeline finds nothing**, for cards whose border barely contrasts the table.
-4. **Frame-export + fixture corpus** (evidence tooling, REQ-051) — see below.
-5. **Condition-aware "can't find a card" feedback** — a persistent `no-card` surfaces a user nudge (reusing the DEC-057/DEC-062 searching-state feedback path) instead of silent failure.
+Detector behavior itself is owned in `apps/frontend/src/lib/scan/detector.ts` only; all detector gate/threshold constants for this work live there, matching DEC-072 / REQ-050. `apps/frontend/src/lib/scan/tuning.ts` remains the stabilizer/frame-selection tuning home and is not a detector-tuning surface for this slice.
+
+1. **Detector calibration (`detector.ts`)** — loosen/adapt the existing gates against the fixture corpus: `CANNY_LO/HI`, `SOLIDITY_MIN`, `RECTANGULARITY_MIN`, `ASPECT_TOLERANCE`, `MIN/MAX_AREA_FRAC`, morphology iterations.
+2. **Foil/glare-tolerant edge sourcing (`detector.ts`)** — strengthen the multi-channel edge combination so speculars and internal foil edges don't starve the outer-border contour.
+3. **Low-contrast-border fallback path (`detector.ts`)** — a secondary detection assist (e.g. adaptive thresholding) that runs **only when the primary pipeline finds nothing**, for cards whose border barely contrasts the table.
+4. **Frame-export + fixture corpus** (evidence tooling, REQ-051) — this may touch scan UI/hook surfaces such as `ScanCameraSurface.tsx` / `useScanCapture.ts` for debug-gated Capture export, plus frontend/build fixture tooling for corpus generation/loading. See below.
+5. **Condition-aware "can't find a card" feedback** — a persistent `no-card` surfaces a user nudge (reusing the DEC-057/DEC-062 searching-state feedback path) instead of silent failure; this may touch the scan searching-state UI/hook path, not just `detector.ts`.
 
 ### Evidence basis
 
 The detector is tuned against a **diverse committed fixture corpus**, not one device's frame (every camera differs):
-- **Backbone:** synthetic degradation of the already-committed clean Scryfall art (glare/specular, low-contrast border vs. surface, perspective skew, foil-like highlights) — owned, license-clean, deterministic, parameterizable, spans many "cameras" on purpose.
-- **Realism layer:** downloaded real-world card-on-table photos (human-approval network posture; prefer clearly-usable/owned sources).
+- **Backbone:** committed detector-fixture seeds plus a provenance manifest, with deterministic synthetic degradations (glare/specular, low-contrast border vs. surface, perspective skew, foil-like highlights) generated from committed seeds and/or committed as generated fixtures. `apps/frontend/data/scryfall/card-images/` may be used as a local ignored download cache while selecting seeds, but it is not the fixture source of truth and tests must not depend on untracked cache files.
+- **Realism layer:** downloaded real-world card-on-table photos (human-approval network posture; prefer clearly-usable/owned sources, and record provenance for committed fixtures).
 - **Owner device:** an optional raw-frame export. **Reuses the existing scan Capture button** — while the opt-in debug overlay (DEC-060/REQ-041) is enabled, Capture additionally saves/downloads the exact frame it grabbed. Overlay off (default) → Capture is unchanged, no new control (DEC-065 no-clutter intent).
 
 ## Decisions
@@ -61,4 +62,4 @@ Outcome-based (DEC-052/DEC-055/DEC-059 precedent): before/after **detect-then-lo
 
 ## Open questions
 
-None blocking. Fixture-image licensing is handled by preferring synthetic-degraded owned art + owner captures and only committing clearly-usable downloads — a constraint in REQ-051, not an open question.
+None blocking. Fixture-image licensing/provenance is handled by committing only clearly-usable fixture seeds/generated fixtures with a provenance manifest, preferring owner captures where available, and never depending on the ignored Scryfall image cache as the reproducible source — a constraint in REQ-051, not an open question.

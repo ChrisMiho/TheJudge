@@ -6,9 +6,23 @@ import type { IdentifyResult, RgbImage } from "../lib/scan/types"
 import { ScanDebugOverlay } from "./ScanDebugOverlay"
 // Type-only import (erased at build): the hook owns the convergence/confirmation
 // view-model shapes; this presentational component just renders them.
-import type { ScanAddConfirmation, ScanConvergence, ScanDebugMetrics } from "../hooks/useScanCapture"
+import type { ScanAddConfirmation, ScanConvergence, ScanDebugMetrics, ScanDetectorNudge } from "../hooks/useScanCapture"
 
 export type ScanCameraStatus = "idle" | "camera-error" | "scanning" | "no-card" | "captured" | "no-match"
+
+function downloadCanvasAsPng(canvas: HTMLCanvasElement): void {
+  canvas.toBlob((blob) => {
+    if (!blob) return
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `scan-frame-${Date.now()}.png`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }, "image/png")
+}
 
 // Cause-aware searching hints (DEC-062 / REQ-043 / FLOW-006). Maps the frame
 // quality reason to a short, action-oriented nudge. Only shown while searching;
@@ -18,6 +32,10 @@ const CONDITION_HINT_COPY: Record<ConditionReason, string> = {
   blur: "Hold steady",
   occlusion: "Keep the card edges in view",
   "low-detail": "Move closer"
+}
+
+const DETECTOR_NUDGE_COPY: Record<ScanDetectorNudge, string> = {
+  "card-outline": "Center the card with clear edges against the surface"
 }
 
 export type ScanCameraSurfaceProps = {
@@ -32,6 +50,8 @@ export type ScanCameraSurfaceProps = {
   autoScanFps?: number
   paused?: boolean
   className?: string
+  /** Test seam: overrides the default raw-frame PNG download. Injected in unit tests; omit in production. */
+  _frameExporter?: (canvas: HTMLCanvasElement) => void
 }
 
 function imageDataToRgb(imageData: ImageData): RgbImage {
@@ -54,7 +74,8 @@ export function ScanCameraSurface({
   debug,
   autoScanFps = 4,
   paused = false,
-  className = ""
+  className = "",
+  _frameExporter
 }: ScanCameraSurfaceProps): JSX.Element {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -79,6 +100,8 @@ export function ScanCameraSurface({
   debugEnabledRef.current = debugEnabled
   const [debugCorners, setDebugCorners] = useState<Point[] | null>(null)
   const [debugFrame, setDebugFrame] = useState<{ width: number; height: number } | null>(null)
+  const frameExporterRef = useRef(_frameExporter ?? downloadCanvasAsPng)
+  frameExporterRef.current = _frameExporter ?? downloadCanvasAsPng
 
   // Momentary thumbs-up on each successful auto-add; keyed on the monotonic id so
   // repeat adds re-trigger the CSS fade and ding.
@@ -124,6 +147,9 @@ export function ScanCameraSurface({
         if (!ctx) return
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
         const frame = imageDataToRgb(ctx.getImageData(0, 0, canvas.width, canvas.height))
+        if (force && debugEnabledRef.current) {
+          frameExporterRef.current(canvas)
+        }
         // Only ask the detector to surface corners while the overlay is enabled,
         // so disabled-overlay scanning keeps the round-1 cost (NFR-010).
         let capturedCorners: Point[] | null = null
@@ -225,6 +251,9 @@ export function ScanCameraSurface({
   // during locking (keeps locking copy clean) or a camera error.
   const conditionHint =
     isSearching && convergence?.conditionHint ? CONDITION_HINT_COPY[convergence.conditionHint] : null
+  const detectorNudge =
+    isSearching && convergence?.detectorNudge ? DETECTOR_NUDGE_COPY[convergence.detectorNudge] : null
+  const searchingNudge = detectorNudge ?? conditionHint
   const indicatorText =
     status === "camera-error"
       ? "Camera unavailable"
@@ -266,8 +295,8 @@ export function ScanCameraSurface({
               </span>
             </span>
           )}
-          {conditionHint && (
-            <span className="text-[11px] font-medium text-amber-200/90">{conditionHint}</span>
+          {searchingNudge && (
+            <span className="text-[11px] font-medium text-amber-200/90">{searchingNudge}</span>
           )}
         </div>
         <button

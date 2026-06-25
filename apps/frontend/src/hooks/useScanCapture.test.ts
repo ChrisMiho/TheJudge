@@ -5,7 +5,7 @@ import type { CardScanMap } from "../lib/scan/resolveScanCandidates";
 import type { HashDb, IdentifyResult, RgbImage } from "../lib/scan/types";
 import type { CardMetadataItem } from "../types";
 import { SCAN_STABILIZER_CONFIG } from "../lib/scan/tuning";
-import { LOW_CONFIDENCE_ESCALATION_COUNT, useScanCapture } from "./useScanCapture";
+import { DETECTOR_FAILURE_NUDGE_COUNT, LOW_CONFIDENCE_ESCALATION_COUNT, useScanCapture } from "./useScanCapture";
 
 function makeImage(
   width: number,
@@ -65,8 +65,8 @@ function makeCard(cardId: string, name: string): CardMetadataItem {
 const image: RgbImage = makeGoodImage();
 const db: HashDb = { ids: [], hashes: new Uint8Array(), count: 0 };
 const scanMap: CardScanMap = {
-  "printing-opt": { oracleId: "opt", name: "Opt" },
-  "printing-bolt": { oracleId: "lightning-bolt", name: "Lightning Bolt" }
+  "printing-opt": { oracleId: "opt", name: "Opt", imageUrl: "https://img/opt-print.jpg" },
+  "printing-bolt": { oracleId: "lightning-bolt", name: "Lightning Bolt", imageUrl: "https://img/bolt-print.jpg" }
 };
 const cardMetadata = [makeCard("opt", "Opt"), makeCard("lightning-bolt", "Lightning Bolt")];
 
@@ -134,7 +134,7 @@ describe("useScanCapture", () => {
     });
 
     expect(onScanCandidateSelected).toHaveBeenCalledTimes(1);
-    expect(onScanCandidateSelected).toHaveBeenCalledWith(cardMetadata[0]);
+    expect(onScanCandidateSelected).toHaveBeenCalledWith(cardMetadata[0], "https://img/opt-print.jpg");
     expect(result.current.scanPhase).toBe("searching");
     expect(result.current.lockedCandidate).toBeNull();
     expect(result.current.blockedNotice).toBeNull();
@@ -271,6 +271,86 @@ describe("useScanCapture", () => {
     expect(result.current.convergence.leaderName).toBeNull();
     expect(result.current.blockedNotice).toBeNull();
     expect(result.current.scanPhase).toBe("searching");
+  });
+
+  it("surfaces and resets a detector nudge after sustained no-card statuses", async () => {
+    const identifier = makeIdentifier({ matched: false, was_rotated: false, candidates: [] });
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
+        dependencies: {
+          loadHashDb: vi.fn(async () => db),
+          loadScanMap: vi.fn(async () => scanMap),
+          createIdentifier: vi.fn(() => identifier)
+        }
+      })
+    );
+
+    await act(async () => {
+      await result.current.openScan();
+    });
+
+    act(() => {
+      for (let index = 0; index < DETECTOR_FAILURE_NUDGE_COUNT - 1; index++) {
+        result.current.setCameraStatus("no-card");
+      }
+    });
+    expect(result.current.convergence.detectorNudge).toBeNull();
+
+    act(() => {
+      result.current.setCameraStatus("no-card");
+    });
+    expect(result.current.convergence.detectorNudge).toBe("card-outline");
+
+    act(() => {
+      result.current.setCameraStatus("captured");
+    });
+    expect(result.current.convergence.detectorNudge).toBeNull();
+
+    act(() => {
+      for (let index = 0; index < DETECTOR_FAILURE_NUDGE_COUNT; index++) {
+        result.current.setCameraStatus("no-card");
+      }
+      result.current.closeScan();
+    });
+    expect(result.current.convergence.detectorNudge).toBeNull();
+  });
+
+  it("replaces stale locking copy with the detector nudge after sustained no-card statuses", async () => {
+    const identifier = makeIdentifier({
+      matched: true,
+      was_rotated: false,
+      candidates: [{ card_id: "printing-opt", distance: 7 }]
+    });
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
+        dependencies: {
+          loadHashDb: vi.fn(async () => db),
+          loadScanMap: vi.fn(async () => scanMap),
+          createIdentifier: vi.fn(() => identifier)
+        }
+      })
+    );
+
+    await act(async () => {
+      await result.current.openScan();
+      await result.current.identify(image);
+    });
+    expect(result.current.convergence.phase).toBe("locking");
+    expect(result.current.convergence.leaderName).toBe("Opt");
+
+    act(() => {
+      for (let index = 0; index < DETECTOR_FAILURE_NUDGE_COUNT; index++) {
+        result.current.setCameraStatus("no-card");
+      }
+    });
+
+    expect(result.current.convergence.phase).toBe("searching");
+    expect(result.current.convergence.leaderName).toBeNull();
+    expect(result.current.convergence.detectorNudge).toBe("card-outline");
   });
 
   it("shows the manual-entry prompt after consecutive low-confidence captures", async () => {

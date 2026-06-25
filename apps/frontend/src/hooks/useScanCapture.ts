@@ -20,10 +20,12 @@ import type { ScanCameraStatus } from "../components/ScanCameraSurface";
 import type { CardMetadataItem } from "../types";
 
 export const LOW_CONFIDENCE_ESCALATION_COUNT = 3;
+export const DETECTOR_FAILURE_NUDGE_COUNT = 3;
 
 export type ScanPhase = "searching" | "locked";
 
 export type ScanAddOutcome = { added: true } | { added: false; message: string };
+export type ScanDetectorNudge = "card-outline";
 
 export type ScanConvergence = {
   phase: "searching" | "locking" | "locked";
@@ -32,6 +34,8 @@ export type ScanConvergence = {
   votesNeeded: number;
   /** Additive (Slice B/C, DEC-062/REQ-043/FLOW-006): adverse-capture hint while searching. */
   conditionHint: ConditionReason | null;
+  /** Detector-boundary nudge when the camera repeatedly fails to find a card outline. */
+  detectorNudge: ScanDetectorNudge | null;
 };
 
 /**
@@ -70,7 +74,8 @@ const INITIAL_CONVERGENCE: ScanConvergence = {
   leaderName: null,
   votes: 0,
   votesNeeded: SCAN_STABILIZER_CONFIG.minVotes,
-  conditionHint: null
+  conditionHint: null,
+  detectorNudge: null
 };
 
 type ScanIdentifier = Pick<CardIdentifier, "identify">;
@@ -88,7 +93,7 @@ export type UseScanCaptureDependencies = {
 
 type UseScanCaptureOptions = {
   cardMetadata: CardMetadataItem[];
-  onScanCandidateSelected: (card: CardMetadataItem) => ScanAddOutcome;
+  onScanCandidateSelected: (card: CardMetadataItem, scanImageUrl: string) => ScanAddOutcome;
   dependencies?: UseScanCaptureDependencies;
 };
 
@@ -112,7 +117,7 @@ export function useScanCapture({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cameraStatus, setCameraStatus] = useState<ScanCameraStatus>("idle");
+  const [cameraStatus, setCameraStatusState] = useState<ScanCameraStatus>("idle");
   const [resolvedCandidates, setResolvedCandidates] = useState<CardMetadataItem[]>([]);
   const [lockedCandidate, setLockedCandidate] = useState<CardMetadataItem | null>(null);
   const [scanPhase, setScanPhase] = useState<ScanPhase>("searching");
@@ -128,6 +133,39 @@ export function useScanCapture({
   const frameSelectorRef = useRef<FrameSelector>(new FrameSelector(FRAME_SELECTOR_WINDOW_SIZE));
   const onSelectRef = useRef(onScanCandidateSelected);
   onSelectRef.current = onScanCandidateSelected;
+  const noCardStatusCountRef = useRef(0);
+
+  const setCameraStatus = useCallback((next: ScanCameraStatus): void => {
+    setCameraStatusState(next);
+
+    if (next === "no-card") {
+      noCardStatusCountRef.current += 1;
+      if (noCardStatusCountRef.current >= DETECTOR_FAILURE_NUDGE_COUNT) {
+        setConvergence((current) => ({
+          ...current,
+          phase: "searching",
+          leaderName: null,
+          votes: 0,
+          detectorNudge: "card-outline"
+        }));
+      }
+      return;
+    }
+
+    if (next === "scanning") {
+      return;
+    }
+
+    noCardStatusCountRef.current = 0;
+    setConvergence((current) =>
+      current.detectorNudge === null
+        ? current
+        : {
+            ...current,
+            detectorNudge: null
+          }
+    );
+  }, []);
 
   const ensureResources = useCallback(async (): Promise<ScanResources> => {
     if (resourcesRef.current) {
@@ -154,6 +192,7 @@ export function useScanCapture({
   const resetScanState = useCallback((): void => {
     stabilizerRef.current.reset();
     frameSelectorRef.current.reset();
+    noCardStatusCountRef.current = 0;
     setResolvedCandidates([]);
     setLockedCandidate(null);
     setScanPhase("searching");
@@ -182,7 +221,7 @@ export function useScanCapture({
     setIsOpen(false);
     setCameraStatus("idle");
     resetScanState();
-  }, [resetScanState]);
+  }, [resetScanState, setCameraStatus]);
 
   /** Discard the current lock-in and resume the auto-scan loop. */
   const rescan = useCallback((): void => {
@@ -221,7 +260,8 @@ export function useScanCapture({
             leaderName: null,
             votes: state.votes,
             votesNeeded: state.votesNeeded,
-            conditionHint: selection.quality.reason
+            conditionHint: selection.quality.reason,
+            detectorNudge: null
           });
           setScanDebug({
             phase,
@@ -256,9 +296,11 @@ export function useScanCapture({
       const state = stabilizerRef.current.push(votingCandidates);
 
       if (state.phase === "locked") {
-        const locked = ranked.find((entry) => entry.card.cardId === state.cardId)?.card ?? null;
+        const lockedEntry = ranked.find((entry) => entry.card.cardId === state.cardId);
+        const locked = lockedEntry?.card ?? null;
         if (locked) {
-          const outcome = onSelectRef.current(locked);
+          const scanImageUrl = lockedEntry?.scanImageUrl ?? locked.imageUrl;
+          const outcome = onSelectRef.current(locked, scanImageUrl);
           resetScanState();
           if (outcome && outcome.added === false) {
             setBlockedNotice(outcome.message);
@@ -294,7 +336,8 @@ export function useScanCapture({
         leaderName,
         votes: state.votes,
         votesNeeded: state.votesNeeded,
-        conditionHint: selection.quality.reason
+        conditionHint: selection.quality.reason,
+        detectorNudge: null
       });
       setScanDebug({
         phase,
@@ -320,7 +363,7 @@ export function useScanCapture({
 
   const acceptCandidate = useCallback(
     (card: CardMetadataItem): void => {
-      onSelectRef.current(card);
+      onSelectRef.current(card, card.imageUrl);
       resetScanState();
     },
     [resetScanState]

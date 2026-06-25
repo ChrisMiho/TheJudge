@@ -308,6 +308,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: `apps/frontend/src/lib/scan/identify.ts` + `tuning.ts` (query-only conditioning), new `apps/frontend/src/lib/scan/frameQuality.ts` + `frameSelection.ts` (pure frame-quality scoring + best-frame selection), `apps/frontend/src/hooks/useScanCapture.ts` (frame selection + condition-hint/quality view-models), `apps/frontend/src/components/{ScanCameraSurface,ScanDebugOverlay}.tsx` (searching hint + debug quality metrics). `recipe.ts`, `stabilizer.ts`, and `cardhashes.bin` are intentionally unchanged.
 - Backed by: REQ-043, DEC-062
 
+### Scan art fidelity
+
+- Status: shipped
+- Summary: A scanned card displays the specific printing's art that was physically scanned by separating printing-level image presentation from oracle-level identity. `cardScanMap.json` entry shape extended to `{ oracleId, name, imageUrl }` (build-time). At scan time, `resolveScanCandidatesRanked` carries the best-distance printing's `imageUrl` through to the locked candidate; `useScanCapture` surfaces it alongside the oracle-level `CardMetadataItem`; `buildZoneCardFromMetadata` writes it to `ZoneCardItem.imageUrl` for the auto-added card only. The scan preview (`ScanReviewBubble`) and the zone thumbnail both show scanned art. Graceful fallback to oracle-level `CardMetadataItem.imageUrl` when the printing image is absent. Oracle identity, prompt context, rulings, and all scan-engine boundaries are untouched.
+- Lives in: `scripts/build-card-scan-map.mjs`; `apps/frontend/public/data/cardScanMap.json`; `apps/frontend/src/lib/scan/resolveScanCandidates.ts`; `apps/frontend/src/hooks/useScanCapture.ts`; `apps/frontend/src/components/{ScanReviewBubble,ZoneCollectionStep}.tsx`; `apps/frontend/src/lib/zoneCards.ts`
+- Backed by: DEC-070, REQ-048, REQ-036, REQ-008, NFR-010
+
 ## Follow-up chat
 
 - Status: shipped
@@ -377,6 +384,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Summary: Builds card-metadata, card-rulings, and game-rules artifacts consumed at runtime.
 - Lives in: `scripts/build-card-metadata.mjs`, `build-card-rulings.mjs`, `build-game-rules.mjs`
 - Backed by: DEC-029, DEC-030, DEC-032
+
+### Standard-print bias
+
+- Status: shipped
+- Summary: `choosePreferredCard` in `build-card-metadata.mjs` biases the representative printing per oracle id toward a standard paper printing. An `isStandardPrinting` predicate demotes Secret Lair, promos, funny/joke sets, and special-frame treatments (borderless/extended/showcase) and applies after the metadata-quality score but before the most-recent tiebreak — so the selected representative is "most recent among standard prints." A special printing is chosen only when no standard printing exists for that oracle id. Affects `cardMetadata.json` only; runtime load, metadata format, and all other build artifacts unchanged.
+- Lives in: `scripts/build-card-metadata.mjs` (`isStandardPrinting` predicate + tiebreak insertion in `choosePreferredCard`); `apps/frontend/public/data/cardMetadata.json` (regenerated artifact)
+- Backed by: DEC-071, REQ-049, REQ-001, REQ-002
 
 ### Prompt preview
 

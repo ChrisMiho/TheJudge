@@ -1,8 +1,13 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ScanCameraSurface } from "./ScanCameraSurface";
 import type { ScanConvergence, ScanDebugMetrics } from "../hooks/useScanCapture";
 import * as audioPrefs from "../lib/scan/audioPrefs";
+import { detectCard } from "../lib/scan/detector";
+
+vi.mock("../lib/scan/detector", () => ({
+  detectCard: vi.fn().mockReturnValue(null)
+}));
 
 // jsdom has no camera; resolve getUserMedia + play so the surface settles to a
 // non-error state and the convergence indicator (not "Camera unavailable") shows.
@@ -26,14 +31,16 @@ const searching: ScanConvergence = {
   leaderName: null,
   votes: 0,
   votesNeeded: 6,
-  conditionHint: null
+  conditionHint: null,
+  detectorNudge: null
 };
 const locking: ScanConvergence = {
   phase: "locking",
   leaderName: "Lightning Bolt",
   votes: 3,
   votesNeeded: 6,
-  conditionHint: null
+  conditionHint: null,
+  detectorNudge: null
 };
 
 describe("ScanCameraSurface convergence indicator", () => {
@@ -114,6 +121,33 @@ describe("ScanCameraSurface condition hints", () => {
     render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
     expect(screen.queryByText("Too much glare — tilt the card")).not.toBeInTheDocument();
     expect(screen.queryByText("Hold steady")).not.toBeInTheDocument();
+  });
+});
+
+describe("ScanCameraSurface detector nudge", () => {
+  it("renders an edge/contrast nudge while searching after sustained detector failure", () => {
+    render(
+      <ScanCameraSurface
+        onCapture={() => undefined}
+        convergence={{ ...searching, detectorNudge: "card-outline" }}
+      />
+    );
+
+    expect(screen.getByText("Searching for a card…")).toBeInTheDocument();
+    expect(screen.getByText("Center the card with clear edges against the surface")).toBeInTheDocument();
+  });
+
+  it("does not show the detector nudge or raw status copy while locking", () => {
+    render(
+      <ScanCameraSurface
+        onCapture={() => undefined}
+        convergence={{ ...locking, detectorNudge: "card-outline" }}
+      />
+    );
+
+    expect(screen.getByText("Locking on Lightning Bolt")).toBeInTheDocument();
+    expect(screen.queryByText("Center the card with clear edges against the surface")).not.toBeInTheDocument();
+    expect(screen.queryByText("No card found")).not.toBeInTheDocument();
   });
 });
 
@@ -276,5 +310,64 @@ describe("ScanCameraSurface audio confirmation", () => {
       )
     ).not.toThrow();
     expect(screen.getByText("Added Opt")).toBeInTheDocument();
+  });
+});
+
+describe("ScanCameraSurface debug-gated frame export", () => {
+  beforeEach(() => {
+    vi.mocked(detectCard).mockReturnValue(null);
+    // Give video valid dimensions and readyState to bypass early-return guards in scanCurrentFrame.
+    vi.spyOn(HTMLVideoElement.prototype, "videoWidth", "get").mockReturnValue(320);
+    vi.spyOn(HTMLVideoElement.prototype, "videoHeight", "get").mockReturnValue(240);
+    vi.spyOn(HTMLMediaElement.prototype, "readyState", "get").mockReturnValue(
+      HTMLMediaElement.HAVE_ENOUGH_DATA
+    );
+    // Provide a minimal canvas context so getContext("2d") doesn't return null.
+    // Use a plain object for ImageData — it is not available in this jsdom setup.
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
+      drawImage: vi.fn(),
+      getImageData: vi.fn().mockReturnValue({
+        data: new Uint8ClampedArray(320 * 240 * 4),
+        width: 320,
+        height: 240,
+      }),
+    } as unknown as CanvasRenderingContext2D);
+  });
+
+  it("does not call the frame exporter when debug is disabled", async () => {
+    const exporter = vi.fn();
+    render(<ScanCameraSurface onCapture={() => undefined} _frameExporter={exporter} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+    });
+    expect(exporter).not.toHaveBeenCalled();
+  });
+
+  it("calls the frame exporter once with the canvas when debug is enabled and Capture is pressed", async () => {
+    const exporter = vi.fn();
+    render(<ScanCameraSurface onCapture={() => undefined} _frameExporter={exporter} />);
+    fireEvent.click(screen.getByRole("button", { name: "Debug" }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+    });
+    expect(exporter).toHaveBeenCalledOnce();
+    expect(exporter).toHaveBeenCalledWith(expect.any(HTMLCanvasElement));
+  });
+
+  it("passes the detector-warped card to onCapture, not the raw canvas frame", async () => {
+    const mockCard = { width: 100, height: 140, data: new Uint8Array(100 * 140 * 3) };
+    vi.mocked(detectCard).mockReturnValueOnce(mockCard);
+
+    const onCapture = vi.fn();
+    const exporter = vi.fn();
+    render(<ScanCameraSurface onCapture={onCapture} _frameExporter={exporter} />);
+    fireEvent.click(screen.getByRole("button", { name: "Debug" }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+    });
+    // Exporter receives the raw canvas; onCapture receives the detector output.
+    expect(exporter).toHaveBeenCalledWith(expect.any(HTMLCanvasElement));
+    expect(onCapture).toHaveBeenCalledWith(mockCard);
+    expect(exporter.mock.calls[0][0]).not.toBe(onCapture.mock.calls[0][0]);
   });
 });
