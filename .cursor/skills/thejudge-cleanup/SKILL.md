@@ -11,6 +11,10 @@ description: >-
 
 Close out a work package: verify what's done, promote durable docs, receipt, delete `PRD/work/<slug>/`.
 
+## Shared output guidance
+
+Read the shared response guidance at `../thejudge-output-guidance.md` (canonical path: `.cursor/skills/thejudge-output-guidance.md`) and apply it to this workflow's user-facing output. This affects response length only; preserve all reads, writes, gates, verification, and handoff requirements below.
+
 ## Inputs
 
 User provides work slug (or `prd-workflow-skills` for this rollout's self-closeout).

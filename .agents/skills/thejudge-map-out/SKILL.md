@@ -11,6 +11,10 @@ description: >-
 
 Produce an implementation-ready work package with lettered slices.
 
+## Shared output guidance
+
+Read the shared response guidance at `../thejudge-output-guidance.md` (canonical path: `.cursor/skills/thejudge-output-guidance.md`) and apply it to this workflow's user-facing output. This affects response length only; preserve all reads, writes, gates, verification, and handoff requirements below.
+
 ## Inputs
 
 User provides work slug.

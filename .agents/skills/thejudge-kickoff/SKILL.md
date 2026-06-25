@@ -12,6 +12,10 @@ description: >-
 
 Orient the agent without pre-loading the full PRD. Optionally seed a new work package when the user describes an idea.
 
+## Shared output guidance
+
+Read the shared response guidance at `../thejudge-output-guidance.md` (canonical path: `.cursor/skills/thejudge-output-guidance.md`) and apply it to this workflow's user-facing output. This affects response length only; preserve all reads, writes, gates, verification, and handoff requirements below.
+
 ## Required reads
 
 1. `README.md` — stack, layout, quality gates, current product status

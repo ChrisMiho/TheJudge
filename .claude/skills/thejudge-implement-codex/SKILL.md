@@ -20,6 +20,10 @@ This is the Codex-delegation flavor of `thejudge-implement`. It is
 orchestrator-only — it drives the `codex` CLI, so it does **not** run inside the
 Codex runtime. In Codex, use plain `thejudge-implement`.
 
+## Shared output guidance
+
+Read the shared response guidance at `../thejudge-output-guidance.md` (canonical path: `.cursor/skills/thejudge-output-guidance.md`) and apply it to this workflow's user-facing output. This affects response length only; preserve all reads, writes, gates, verification, and handoff requirements below.
+
 ## Inputs
 
 User provides a work slug or `PRD/work/<slug>/`.

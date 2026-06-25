@@ -1,6 +1,6 @@
 # Doc process decisions
 
-PRD documentation tooling: system-map catalog, detail files, and the decisions.md router split.
+PRD documentation tooling: system-map catalog, detail files, the decisions.md router split, and agent workflow output guidance.
 
 ### DEC-044
 - Decision: Adopt a durable feature/subsystem catalog at `sections/system-map.md` so the truth layer states what is built, how it behaves at a glance, and where it lives — without re-deriving behavior from code.
@@ -66,3 +66,22 @@ PRD documentation tooling: system-map catalog, detail files, and the decisions.m
   - taxonomy finalized 2026-06-24 during refinement; `framing` and `conversation-ux` were renamed from the provisional `foundations` / `follow-up-and-wait` to keep every file on the topic/subsystem axis
   - this decision does not change the "assistant, not judge" framing or any prompt behavior
 
+### DEC-064
+- Decision: TheJudge workflow skills use shared, user-tunable output-verbosity guidance so session responses can be lean, standard, or detailed without changing the work each skill performs.
+- Status: confirmed
+- Context: The `thejudge-*` agent workflow skills can generate expensive user-facing output across a long PRD workflow: long summaries, full document dumps, repeated context restatement, and verbose closeouts. Output tokens cost materially more than input tokens, so response verbosity has a disproportionate cost while providing little value when the user only needs status, blockers, verification, and the next command. The skills need a consistent output contract that users can tune per session without changing the underlying PRD reads, writes, approval gates, verification, or handoff sequence.
+- Impact:
+  - documentation/process only: no `apps/` code, product UI, backend API, prompt assembly, provider behavior, or PRD content model change
+  - add one shared canonical output-guidance artifact under `.cursor/skills/`, then sync it to `.agents/skills/` and `.claude/skills/` through the existing `npm run skills:ai-sync` workflow; individual skills reference that shared guidance instead of duplicating verbosity rules
+  - output profiles are `lean`, `standard`, and `detailed`; `standard` is the default and should be shorter than the pre-decision baseline
+  - a user may override the profile per session with plain-language instructions such as "use lean output" or "detailed output is OK"; no persistent settings store, config file, CLI flag, or workflow router is introduced
+  - profile choice changes only response shape and amount of explanation; it never changes required reads, writes, approval gates, PASS/FAIL calls, blocker reporting, verification commands, status updates, or required `Next step` handoff blocks
+  - skills avoid full document dumps, restated background, long command output, and broad summaries unless the user explicitly asks or the material is needed to explain a blocker or approval decision
+  - mandatory output remains mandatory in every profile: approval requests, selected options/tradeoffs when required, PASS/FAIL outcomes, blocker details, verification results, files changed, and the required platform handoff blocks
+  - canonical editing remains `.cursor/skills/thejudge-*`; synced copies remain implementation artifacts per `AGENT-SKILLS.md` and `PRD/instructions/workflow-reference.md`
+- Related requirements:
+  - (none — documentation and process decision; no functional requirement is added or changed)
+- Notes:
+  - this extends the same token-discipline theme as DEC-063, but targets response output rather than input retrieval structure
+  - no `system-map.md` entry is added: the catalog tracks product/code subsystems, not the PRD's own agent workflow tooling
+  - final implementation should update skill-maintenance docs only if needed to make the shared guidance artifact discoverable
