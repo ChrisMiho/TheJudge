@@ -1,6 +1,6 @@
 # Slice G — PRD Promotion and Ship Gates
 
-## Status: in-progress
+## Status: done
 
 ## Goal
 

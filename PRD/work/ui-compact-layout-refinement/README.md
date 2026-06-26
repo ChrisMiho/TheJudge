@@ -46,6 +46,6 @@ Captured from an interactive planning session (2026-06-25) covering game context
 | D | `slice-d-enrichment-list-scroll-cap.md` | done | View all cards: 4 rows per zone then scroll | 1 | None |
 | E | `slice-e-layout-density-foundation.md` | done | Density prefs, theme toggle, `PageShell`, CSS tokens | 2 | None |
 | F | `slice-f-slim-density-surfaces.md` | done | Slim overrides on high-scroll components | 3 | E |
-| G | `slice-g-prd-promotion-and-ship-gates.md` | pending | DEC/REQ promotion, integration tests, verification | 4 | A–F |
+| G | `slice-g-prd-promotion-and-ship-gates.md` | done | DEC/REQ promotion, integration tests, verification | 4 | A–F |
 
 Wave 1 slices (A–D) are independent screen refinements and can run in parallel. Slice E can also start in parallel with wave 1 but slice F requires E. Slice G is last.
