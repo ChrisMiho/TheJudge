@@ -17,7 +17,9 @@ import {
 } from "./lib/contextFlow";
 import { formatPlayerDisplayLabel } from "./lib/playerLabels";
 import { useAskAiSubmitOrchestration } from "./hooks/useAskAiSubmitOrchestration";
+import { useLayoutDensity } from "./hooks/useLayoutDensity";
 import { useThemePalette } from "./hooks/useThemePalette";
+import { PageShell } from "./components/PageShell";
 import type {
   CardMetadataItem,
   CombatStep,
@@ -81,6 +83,8 @@ export default function App() {
   const [question, setQuestion] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [emptyStateImageFailed, setEmptyStateImageFailed] = useState(false);
+  const [brandClickCount, setBrandClickCount] = useState(0);
+  const showCatEasterEgg = brandClickCount >= 10;
   const [playersDetailsExpanded, setPlayersDetailsExpanded] = useState(false);
   const [displayNamesByPlayer, setDisplayNamesByPlayer] = useState<Record<PlayerLabel, string>>(() =>
     PLAYER_OPTIONS.reduce<Record<PlayerLabel, string>>(
@@ -89,6 +93,7 @@ export default function App() {
     )
   );
   const { paletteId, setPalette } = useThemePalette();
+  const { density, setDensity } = useLayoutDensity();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -330,22 +335,23 @@ export default function App() {
 
   if (flowStep === "game-context") {
     content = (
-      <main className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 px-4 py-6 text-zinc-100">
-        <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-zinc-700/70 bg-zinc-900/70 p-4 md:p-6">
-          <StagedStepHeader stepName="Game context" />
-          <div className="p-2 text-center">
-            {emptyStateImageFailed ? (
-              <p className="text-2xl font-semibold text-zinc-200">Cat wizard</p>
-            ) : (
-              <img
-                src={EMPTY_STATE_IMAGE_URL}
-                alt="Cat wizard"
-                onError={() => setEmptyStateImageFailed(true)}
-                className="mx-auto w-56 max-w-full rounded-xl"
-              />
-            )}
-          </div>
-          <div className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
+      <PageShell>
+          <StagedStepHeader stepName="Game context" onBrandClick={() => setBrandClickCount((c) => c + 1)} />
+          {showCatEasterEgg && (
+            <div className="p-2 text-center">
+              {emptyStateImageFailed ? (
+                <p className="text-2xl font-semibold text-zinc-200">Cat wizard</p>
+              ) : (
+                <img
+                  src={EMPTY_STATE_IMAGE_URL}
+                  alt="Cat wizard"
+                  onError={() => setEmptyStateImageFailed(true)}
+                  className="mx-auto w-56 max-w-full rounded-xl"
+                />
+              )}
+            </div>
+          )}
+          <div className="panel-inner">
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Players in game</p>
             <p className="text-xs text-zinc-400">2 players start at 20 life. 3+ players default to 40 life.</p>
 
@@ -356,7 +362,7 @@ export default function App() {
                   aria-label={playersDetailsExpanded ? "Hide player details" : "Show player details"}
                   aria-expanded={playersDetailsExpanded}
                   onClick={() => setPlayersDetailsExpanded((current) => !current)}
-                  className="rounded-lg border border-zinc-600 bg-zinc-800/70 px-2 py-1 text-sm text-zinc-200 transition hover:bg-zinc-700/80"
+                  className="rounded-lg border border-zinc-600 bg-zinc-800/70 px-3 py-1.5 min-w-[2.4rem] text-sm text-zinc-200 transition hover:bg-zinc-700/80"
                 >
                   {playersDetailsExpanded ? "▾" : "▸"}
                 </button>
@@ -370,7 +376,7 @@ export default function App() {
                   aria-label="Add player"
                   onClick={addPlayer}
                   disabled={activePlayerCount >= MAX_PLAYERS}
-                  className="rounded-lg border border-accent/50 bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent-soft transition hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-lg border border-accent/50 bg-accent/10 px-4 py-1.5 min-w-[2.75rem] text-xs font-semibold text-accent-soft transition hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   +
                 </button>
@@ -379,7 +385,7 @@ export default function App() {
                   aria-label="Remove last player"
                   onClick={removePlayer}
                   disabled={activePlayerCount <= MIN_PLAYERS}
-                  className="rounded-lg border border-zinc-500 bg-zinc-800/70 px-3 py-1.5 text-xs font-semibold text-zinc-100 transition hover:bg-zinc-700/80 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-lg border border-zinc-500 bg-zinc-800/70 px-4 py-1.5 min-w-[2.75rem] text-xs font-semibold text-zinc-100 transition hover:bg-zinc-700/80 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   −
                 </button>
@@ -419,22 +425,39 @@ export default function App() {
               </div>
             )}
           </div>
-          <div className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
-            <label className="flex flex-col gap-2 text-sm">
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Turn phase</span>
-              <select
-                aria-label="Turn phase"
-                value={turnPhase}
-                onChange={(event) => setTurnPhase(event.target.value as TurnPhase)}
-                className="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
-              >
-                {TURN_PHASE_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+          <div className="panel-inner">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label className="flex flex-col gap-2 text-sm">
+                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Turn phase</span>
+                <select
+                  aria-label="Turn phase"
+                  value={turnPhase}
+                  onChange={(event) => setTurnPhase(event.target.value as TurnPhase)}
+                  className="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
+                >
+                  {TURN_PHASE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-col gap-2 text-sm">
+                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Active player</span>
+                <select
+                  aria-label="Active player"
+                  value={activePlayer}
+                  onChange={(event) => setActivePlayer(event.target.value as PlayerLabel)}
+                  className="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
+                >
+                  {activePlayers.map((player) => (
+                    <option key={player} value={player}>
+                      {formatPlayerDisplayLabel(player, displayNamesByPlayer[player])}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
             {turnPhase === "combat" && (
               <label className="flex flex-col gap-2 text-sm">
                 <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Combat step</span>
@@ -454,25 +477,6 @@ export default function App() {
             )}
           </div>
 
-          <div className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Active player (recommended)</p>
-            <label className="flex items-center gap-3 text-sm">
-              <span className="text-zinc-300 w-28 shrink-0">Active player</span>
-              <select
-                aria-label="Active player"
-                value={activePlayer}
-                onChange={(event) => setActivePlayer(event.target.value as PlayerLabel)}
-                className="flex-1 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100"
-              >
-                {activePlayers.map((player) => (
-                  <option key={player} value={player}>
-                    {formatPlayerDisplayLabel(player, displayNamesByPlayer[player])}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
           <button
             type="button"
             onClick={confirmGameContext}
@@ -485,8 +489,7 @@ export default function App() {
               {statusMessage}
             </p>
           )}
-        </section>
-      </main>
+      </PageShell>
     );
   } else if (flowStep === "zone-confirm") {
     const canContinueZones = canAdvance("zone-confirm", {
@@ -578,7 +581,7 @@ export default function App() {
   return (
     <>
       <div className="fixed right-3 top-3 z-30">
-        <ThemeControl paletteId={paletteId} onSelect={setPalette} />
+        <ThemeControl paletteId={paletteId} onSelect={setPalette} density={density} onDensityChange={setDensity} />
       </div>
       {content}
     </>

@@ -6,7 +6,7 @@ type ConversationThreadProps = {
 
 export function ConversationThread({ messages }: ConversationThreadProps): JSX.Element {
   return (
-    <div className="flex max-h-96 flex-col gap-3 overflow-y-auto rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
+    <div className="conversation-thread flex max-h-96 flex-col gap-3 overflow-y-auto rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
       {messages.map((message, index) => (
         <div
           key={index}

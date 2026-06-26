@@ -78,7 +78,7 @@ export function FrozenContextSummary({ frozenGameContext }: FrozenContextSummary
   return (
     <section
       aria-label="Frozen game context"
-      className="rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+      className="frozen-context-summary rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
@@ -144,7 +144,7 @@ export function FrozenContextSummary({ frozenGameContext }: FrozenContextSummary
                   return (
                     <li
                       key={`${zone}:${card.cardId}`}
-                      className="space-y-1 rounded-xl border border-zinc-700/60 bg-zinc-900/50 p-3 text-sm text-zinc-300"
+                      className="frozen-context-detail-row space-y-1 rounded-xl border border-zinc-700/60 bg-zinc-900/50 p-3 text-sm text-zinc-300"
                     >
                       <p className="font-semibold text-zinc-100">{card.name}</p>
                       {card.typeLine && <p className="text-xs text-zinc-400">{card.typeLine}</p>}

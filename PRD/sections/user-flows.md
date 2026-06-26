@@ -7,10 +7,10 @@
   - app is loaded
   - local metadata is available
 - Main Flow:
-  1. Game setup: user sets player count (expandable panel for per-player display name and life), active player when known, and turn phase via dropdown; turn phase is required and defaults to **main_1**. Active player and downstream player selects show display names as `Player N (Name)` when set.
+  1. Game setup: user sets player count (expandable panel for per-player display name and life), active player when known, and turn phase via dropdown; turn phase is required and defaults to **main_1**. Active player and downstream player selects show display names as `Player N (Name)` when set. Turn phase and active player appear in one merged panel; the cat-wizard hero image is hidden until the user clicks the brand title 10 times on this step (session-only reveal).
   2. Zone confirmation: app preselects likely zones from the turn phase; user adjusts the checklist; at least one zone is required to continue.
-  3. Per-zone collection: for each selected zone, user may add card identities from local search; non-stack cards capture owner; stack cards are ordered bottom-to-top.
-  4. Enrichment: default card-by-card wizard (OK advances); optional **View all cards** for full-list edit; user may add caster, targets, notes, and mana spent where relevant.
+  3. Per-zone collection: for each selected zone, user may add card identities from local search; non-stack cards capture owner; stack cards are ordered bottom-to-top. Added cards appear in a compact 2-column tile grid (max 4 visible, scroll the rest). While scan is open, search and the card list are hidden; user exits scan to return to manual search.
+  4. Enrichment: default card-by-card wizard (OK advances); optional **View all cards** for full-list edit with per-zone scroll cap (4 rows visible, scroll the rest); user may add caster, targets, notes, and mana spent where relevant.
   5. Submit: user enters an optional question, clicks **Decrypt Stack**, and the frontend sends `question` plus `gameContext` to the backend.
   6. Backend builds the prompt and returns a plain-text answer.
   7. Frontend displays the answer.
@@ -28,6 +28,7 @@
 - Notes:
   - this is the primary core product flow with staged context capture
   - each staged step's header presents the active step name inline to the right of the `TheJudge` / `Stack Assistant` brand block in a single row (DEC-067, REQ-045); the answered-state conversation header stays a slim brand-only header with no step name
+  - staged-flow screen compaction (DEC-076, REQ-056) and optional layout density (DEC-075, REQ-055, FLOW-008) are presentation-only and do not change this flow's logic or payloads
 
 ### FLOW-002
 - Name: Inspect and remove cards from selected zones
@@ -36,9 +37,9 @@
   - at least one selected zone has a card
 - Main Flow:
   1. User opens or views a selected zone's card list.
-  2. App lists cards for that zone.
+  2. App lists cards for that zone in a compact 2-column tile grid (max 4 visible, scroll the rest).
   3. Stack-zone cards are shown from bottom to top.
-  4. Each row shows card name, optional small thumbnail, and remove button.
+  4. Each tile shows card name, optional small thumbnail, stack position or owner label, and remove button.
   5. User removes one or more cards.
   6. Zone card count updates.
 - Edge Cases:
@@ -46,6 +47,7 @@
   - if the last card is removed from a zone, that zone remains selected but is omitted from the request payload
 - Notes:
   - manual reorder is out of scope for the core product
+  - tile grid layout and scroll cap are presentation only (DEC-076, REQ-056)
 
 ### FLOW-003
 - Name: Handle failed AI request
@@ -116,12 +118,12 @@
   1. Camera opens as its own screen with a card-shaped guide overlay and stays open for the session.
   2. The scanner auto-scans continuously; a manual capture button is always available. A live convergence indicator shows `searching`, then `locking` on a named card with a progress/confidence cue as evidence accumulates (DEC-057). While searching under poor conditions, the indicator surfaces a cause-aware hint derived from per-frame quality signals — e.g. "too much glare — tilt the card", "hold steady", "move closer" — to guide the user toward a lockable frame (DEC-062). Behind the scenes the query frame is conditioned (glare suppression, auto-contrast, white-balance) and the best frame in the window is preferred for hashing so a card locks without needing a perfect angle.
   3. Once one card is consistently the best over a short window with high confidence, it **locks in** and is **auto-added** to the current zone via the existing add path (owner via the sticky owner selector, duplicate-stack block, stack-size limit, `ZoneCardItem` output) — no Accept tap and no selecting from a list (DEC-056).
-  4. A thumbs-up confirmation popup fades in and out and a short "ding" plays (on by default; a top-left mute toggle silences the sound only, not the popup); auto-scan immediately resumes for the next card and the zone's card list shows the running count (DEC-057, DEC-061).
+  4. A thumbs-up confirmation popup fades in and out and a short "ding" plays (on by default; a top-left mute toggle silences the sound only, not the popup); auto-scan immediately resumes for the next card and the scan review bubble shows the running count of cards added this session (DEC-058, DEC-057, DEC-061).
   5. To remove a wrong auto-add, the user taps the scanned-cards bubble in the top-right and removes the card in one tap (no confirmation) without leaving the camera (DEC-058).
-  6. User repeats as needed, then taps **Back/Exit** to return to zone collection and pick another zone or move forward in the flow.
+  6. User repeats as needed, then taps **Exit scan** (top-right on the camera surface) to return to zone collection and pick another zone or move forward in the flow.
 - Edge Cases:
   - lock/convergence thresholds are tuned to lock readily on a clearly-leading card while retaining the runner-up margin guard; rare wrong auto-adds are acceptable because they are removable in one tap, and an ambiguous frame keeps searching rather than committing (DEC-059, DEC-058)
-  - if no confident match, keep auto-scanning with manual capture available; after a few consecutive low-confidence attempts, show a non-blocking prompt offering manual name entry (the existing search) without stopping the scan
+  - if no confident match, keep auto-scanning with manual capture available; manual search is reached by exiting scan — the in-scan low-confidence manual-search escalation prompt is not shown (DEC-076)
   - under glare/gloss, uneven or dim lighting, camera shake, or finger occlusion, the query is conditioned and the best frame is selected so the true card's hash distance drops below the lock gate; the gate itself is held (DEC-059 values) — robustness comes from a cleaner query, not a looser gate (DEC-062)
   - finger occlusion is treated as a frame-quality penalty (the scanner prefers an unoccluded frame); there is no masked/partial-region matching (DEC-062)
   - card-back detection is descoped from the shipped UX (no canonical reference asset); a scanned card back falls through to the normal low-confidence path (DEC-055)
@@ -133,8 +135,10 @@
   - on hard captures (ornate/etched-foil/full-art printings, a card whose border barely contrasts the play surface, or a card **held up to the camera, tilted and finger-occluded, against a cluttered background**) the detector raises its recall to still lock the 4-corner outline; detection is **biased toward the on-screen card-shaped guide** the user aligns to, so background clutter outside the guide does not win selection, and the searching-state copy actively coaches the easy regime (fill the guide, flat contrasting surface, fingers off the edges); if it persistently cannot find a card, the scan surfaces a condition-aware nudge rather than a silent `no-card`, and manual search stays available — the stabilizer lock gate is unchanged so looser detection does not cause wrong auto-adds (DEC-072, DEC-073)
   - while the opt-in debug overlay is enabled, the **Capture** button additionally exports the exact failing camera frame for detector tuning; with the overlay off (default) this is invisible and Capture behaves normally (DEC-072, DEC-065)
   - the camera is opened in a higher-resolution capture mode (continuous autofocus where supported, graceful fallback) so the warp reads a sharper source and a card locks across a wider range of distances and lighting instead of only a narrow sweet spot; once a frame is good enough to lock the searching indicator shows a positive "good — hold steady" cue so the user can find and hold the lockable zone, and the matching recipe/bin/identify/lock boundary is unchanged (DEC-074)
+  - scanner acquisition is validated against both the hard Mac-webcam baseline and a stand-assisted controlled setup when available; this is a QA/diagnostic matrix, not a different user mode, and failures should identify the blocking stage before more tuning is baked in (DEC-077)
 - Notes:
   - scanning is an optional alternate input path (DEC-050); manual search remains the default and a permanent fallback
+  - while scan is open, zone-collection search and the card list are hidden; Exit scan is the path back to manual search (DEC-076)
   - identification runs fully on-device with no network calls (DEC-051); art-only matching yields ranked candidates resolved to oracle-level `CardMetadataItem` (DEC-053), with the scanned printing's image carried as presentation only (DEC-070)
 
 ### FLOW-007
@@ -155,3 +159,23 @@
   - selecting the current palette is a no-op and does not close or reset the main gameplay workflow unless the implemented control naturally closes after selection
 - Notes:
   - theme selection is frontend-only personalization and never changes submitted game context, prompt text, backend API behavior, or AI responses
+
+### FLOW-008
+- Name: Choose and persist layout density
+- Trigger: User wants a tighter or roomier layout spacing
+- Preconditions:
+  - app is loaded
+- Main Flow:
+  1. User opens the global theme/settings affordance from the app chrome.
+  2. App shows the Chunky / Slim density choices below the palette swatches, with the current density indicated.
+  3. User selects a density.
+  4. App immediately applies the selected density via `data-layout-density` on `document.documentElement` without leaving the current workflow step.
+  5. App stores the selected density for the browser.
+  6. On later reloads, app restores the stored density before or during initial render without resetting user workflow state.
+- Edge Cases:
+  - if the stored density value is missing, corrupt, or unsupported, app falls back to chunky
+  - if browser storage is unavailable or write fails, the selected density may apply for the current session but app continues normally
+  - selecting the current density is a no-op and does not close or reset the main gameplay workflow unless the implemented control naturally closes after selection
+- Notes:
+  - density selection is frontend-only personalization and never changes submitted game context, prompt text, backend API behavior, or AI responses
+  - chunky is the default and must match pre-change spacing on reference screens (DEC-075, REQ-055)

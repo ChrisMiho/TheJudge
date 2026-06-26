@@ -1,6 +1,6 @@
 # Slice D — On-device validation, PRD promotion, ship gates
 
-## Status: planned
+## Status: in-progress
 
 ## Goal
 

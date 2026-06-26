@@ -1,6 +1,6 @@
 # Slice A — Game Context Refinements
 
-## Status: pending
+## Status: done
 
 ## Goal
 

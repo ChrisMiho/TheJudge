@@ -1,6 +1,6 @@
 # Slice B — Positive in-zone "hold steady" cue
 
-## Status: planned
+## Status: done
 
 ## Goal
 

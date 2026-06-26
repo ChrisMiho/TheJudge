@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { CARD_HEIGHT, CARD_WIDTH, detectCard, type GuideRect, type Point } from "../lib/scan/detector"
+import { CARD_HEIGHT, CARD_WIDTH, MAX_DETECT_DIMENSION, detectCard, type GuideRect, type Point } from "../lib/scan/detector"
 import { loadScanAudioMuted, saveScanAudioMuted } from "../lib/scan/audioPrefs"
 import type { ConditionReason } from "../lib/scan/frameQuality"
 import type { IdentifyResult, RgbImage } from "../lib/scan/types"
+import type { AcquisitionFrameDiagnostic, CaptureDiagnostic } from "../lib/scan/acquisitionDiagnostics"
 import { ScanDebugOverlay } from "./ScanDebugOverlay"
 // Type-only import (erased at build): the hook owns the convergence/confirmation
 // view-model shapes; this presentational component just renders them.
@@ -22,6 +23,19 @@ function downloadCanvasAsPng(canvas: HTMLCanvasElement): void {
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
   }, "image/png")
+}
+
+function downloadDiagnosticAsJson(diagnostic: AcquisitionFrameDiagnostic): void {
+  if (typeof URL.createObjectURL !== "function") return
+  const blob = new Blob([JSON.stringify(diagnostic, null, 2)], { type: "application/json" })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement("a")
+  a.href = url
+  a.download = `scan-frame-${Date.now()}.json`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
 }
 
 // Cause-aware searching hints (DEC-062 / REQ-043 / FLOW-006). Maps the frame
@@ -47,11 +61,15 @@ export type ScanCameraSurfaceProps = {
   confirmation?: ScanAddConfirmation | null
   /** Read-only per-frame diagnostics for the opt-in debug overlay (DEC-060 / REQ-041). */
   debug?: ScanDebugMetrics | null
+  /** Debug-gated, read-only capture/detector diagnostics for acquisition tuning (DEC-077 / REQ-057). */
+  onAcquisitionDiagnostic?: (diagnostic: AcquisitionFrameDiagnostic) => void
   autoScanFps?: number
   paused?: boolean
   className?: string
   /** Test seam: overrides the default raw-frame PNG download. Injected in unit tests; omit in production. */
   _frameExporter?: (canvas: HTMLCanvasElement) => void
+  /** Test seam: overrides the default diagnostic JSON download. Injected in unit tests; omit in production. */
+  _diagnosticExporter?: (diagnostic: AcquisitionFrameDiagnostic) => void
 }
 
 function imageDataToRgb(imageData: ImageData): RgbImage {
@@ -75,6 +93,32 @@ function frameGuideRect(frameWidth: number, frameHeight: number): GuideRect {
   }
 }
 
+function getVideoTrackSettings(stream: MediaStream | null): MediaTrackSettings | null {
+  const track = stream?.getVideoTracks?.()[0] ?? stream?.getTracks().find((candidate) => candidate.kind === "video")
+  return track?.getSettings?.() ?? null
+}
+
+function captureDiagnosticFromFrame(
+  frameIndex: number,
+  frame: RgbImage,
+  settings: MediaTrackSettings | null
+): CaptureDiagnostic {
+  const extendedSettings = settings as (MediaTrackSettings & { focusMode?: string }) | null
+  return {
+    frameIndex,
+    timestampMs: Math.round(performance.now()),
+    nativeWidth: frame.width,
+    nativeHeight: frame.height,
+    trackWidth: settings?.width,
+    trackHeight: settings?.height,
+    trackFrameRate: settings?.frameRate,
+    trackFacingMode: settings?.facingMode,
+    trackDeviceId: settings?.deviceId,
+    trackGroupId: settings?.groupId,
+    trackFocusMode: extendedSettings?.focusMode
+  }
+}
+
 export function ScanCameraSurface({
   onCapture,
   onResult,
@@ -83,10 +127,12 @@ export function ScanCameraSurface({
   convergence,
   confirmation,
   debug,
+  onAcquisitionDiagnostic,
   autoScanFps = 4,
   paused = false,
   className = "",
-  _frameExporter
+  _frameExporter,
+  _diagnosticExporter
 }: ScanCameraSurfaceProps): JSX.Element {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -111,8 +157,13 @@ export function ScanCameraSurface({
   debugEnabledRef.current = debugEnabled
   const [debugCorners, setDebugCorners] = useState<Point[] | null>(null)
   const [debugFrame, setDebugFrame] = useState<{ width: number; height: number } | null>(null)
+  const [debugAcquisitionDiagnostic, setDebugAcquisitionDiagnostic] =
+    useState<AcquisitionFrameDiagnostic | null>(null)
+  const frameIndexRef = useRef(0)
   const frameExporterRef = useRef(_frameExporter ?? downloadCanvasAsPng)
   frameExporterRef.current = _frameExporter ?? downloadCanvasAsPng
+  const diagnosticExporterRef = useRef(_diagnosticExporter ?? downloadDiagnosticAsJson)
+  diagnosticExporterRef.current = _diagnosticExporter ?? downloadDiagnosticAsJson
 
   // Momentary thumbs-up on each successful auto-add; keyed on the monotonic id so
   // repeat adds re-trigger the CSS fade and ding.
@@ -158,22 +209,48 @@ export function ScanCameraSurface({
         if (!ctx) return
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
         const frame = imageDataToRgb(ctx.getImageData(0, 0, canvas.width, canvas.height))
+        const frameIndex = frameIndexRef.current + 1
+        frameIndexRef.current = frameIndex
+        const guide = frameGuideRect(frame.width, frame.height)
+        const captureDiagnostic =
+          debugEnabledRef.current
+            ? captureDiagnosticFromFrame(frameIndex, frame, getVideoTrackSettings(streamRef.current))
+            : null
         if (force && debugEnabledRef.current) {
           frameExporterRef.current(canvas)
         }
         // Only ask the detector to surface corners while the overlay is enabled,
         // so disabled-overlay scanning keeps the round-1 cost (NFR-010).
-        let capturedCorners: Point[] | null = null
+        const capturedCorners: { current: Point[] | null } = { current: null }
         const detectorOptions = {
-          guide: frameGuideRect(frame.width, frame.height),
-          ...(debugEnabledRef.current ? { onCorners: (corners: Point[]) => (capturedCorners = corners) } : {})
+          guide,
+          maxDetectDimension: MAX_DETECT_DIMENSION,
+          ...(debugEnabledRef.current ? { onCorners: (corners: Point[]) => (capturedCorners.current = corners) } : {})
         }
         const card = detectCard(frame, detectorOptions)
         if (!mountedRef.current) return
 
         if (debugEnabledRef.current) {
-          setDebugCorners(capturedCorners)
+          const detectorCorners = capturedCorners.current
+          const diagnostic: AcquisitionFrameDiagnostic = {
+            ...(captureDiagnostic ? { capture: captureDiagnostic } : {}),
+            detector: {
+              success: Boolean(card),
+              nativeWidth: frame.width,
+              nativeHeight: frame.height,
+              maxDetectDimension: MAX_DETECT_DIMENSION,
+              guideRect: guide,
+              ...(detectorCorners ? { corners: detectorCorners.map((point) => [point.x, point.y] as const) } : {})
+            },
+            ...(!card ? { reason: "detector-miss" as const } : {})
+          }
+          setDebugCorners(detectorCorners)
           setDebugFrame({ width: frame.width, height: frame.height })
+          setDebugAcquisitionDiagnostic(diagnostic)
+          onAcquisitionDiagnostic?.(diagnostic)
+          if (force) {
+            diagnosticExporterRef.current(diagnostic)
+          }
         }
 
         if (!card) {
@@ -197,7 +274,7 @@ export function ScanCameraSurface({
         detectionBusyRef.current = false
       }
     },
-    [identify, onCapture, onResult, updateStatus]
+    [identify, onAcquisitionDiagnostic, onCapture, onResult, updateStatus]
   )
 
   useEffect(() => {
@@ -207,12 +284,17 @@ export function ScanCameraSurface({
     setDebugEnabled(false)
     setDebugCorners(null)
     setDebugFrame(null)
+    setDebugAcquisitionDiagnostic(null)
     audioRef.current?.load()
 
     async function openCamera(): Promise<void> {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: "environment" } },
+          video: {
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            facingMode: { ideal: "environment" },
+          },
           audio: false
         })
         if (cancelled) {
@@ -266,6 +348,7 @@ export function ScanCameraSurface({
   const detectorNudge =
     isSearching && convergence?.detectorNudge ? DETECTOR_NUDGE_COPY[convergence.detectorNudge] : null
   const searchingNudge = detectorNudge ?? conditionHint
+  const inZoneCue = isSearching && !searchingNudge && convergence?.inZone ? "Good — hold steady" : null
   const indicatorText =
     status === "camera-error"
       ? "Camera unavailable"
@@ -281,7 +364,7 @@ export function ScanCameraSurface({
   return (
     <section className={`space-y-3 ${className}`}>
       <div className="relative overflow-hidden rounded-2xl border border-zinc-600 bg-zinc-950">
-        <video ref={videoRef} className="aspect-[3/4] w-full bg-zinc-950 object-cover" muted playsInline />
+        <video ref={videoRef} className="scan-video aspect-[3/4] w-full bg-zinc-950 object-cover" muted playsInline />
         <audio ref={audioRef} src="/assets/scanSuccess.wav" preload="auto" />
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="h-[82%] aspect-[745/1040] rounded-xl border-2 border-accent-soft/90 shadow-[0_0_0_999px_rgba(15,23,42,0.35)]" />
@@ -310,6 +393,9 @@ export function ScanCameraSurface({
           {searchingNudge && (
             <span className="text-[11px] font-medium text-amber-200/90">{searchingNudge}</span>
           )}
+          {inZoneCue && (
+            <span className="text-[11px] font-medium text-emerald-300/90">{inZoneCue}</span>
+          )}
         </div>
         <button
           type="button"
@@ -323,6 +409,7 @@ export function ScanCameraSurface({
         {debugEnabled && (
           <ScanDebugOverlay
             metrics={debug ?? null}
+            acquisitionDiagnostic={debugAcquisitionDiagnostic}
             corners={debugCorners}
             frameWidth={debugFrame?.width ?? null}
             frameHeight={debugFrame?.height ?? null}
@@ -330,7 +417,13 @@ export function ScanCameraSurface({
         )}
         <button
           type="button"
-          onClick={() => setDebugEnabled((on) => !on)}
+          onClick={() =>
+            setDebugEnabled((on) => {
+              const next = !on
+              if (!next) setDebugAcquisitionDiagnostic(null)
+              return next
+            })
+          }
           aria-pressed={debugEnabled}
           className={`absolute bottom-3 left-1/2 -tranzinc-x-1/2 rounded-full px-2.5 py-1 text-[10px] font-semibold transition ${
             debugEnabled

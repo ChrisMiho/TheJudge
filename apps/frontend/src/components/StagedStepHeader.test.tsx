@@ -12,4 +12,11 @@ describe("StagedStepHeader", () => {
     expect(screen.getByText("Stack Assistant")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Zone confirmation" })).toBeInTheDocument();
   });
+
+  it("exposes density surface hooks for slim typography overrides", () => {
+    render(<StagedStepHeader stepName="Zone confirmation" />);
+
+    expect(screen.getByRole("heading", { name: "TheJudge" })).toHaveClass("staged-step-brand");
+    expect(screen.getByRole("heading", { name: "Zone confirmation" })).toHaveClass("staged-step-name");
+  });
 });

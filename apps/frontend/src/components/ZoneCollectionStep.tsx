@@ -12,6 +12,7 @@ import { useAutocompleteKeyboard } from "../hooks/useAutocompleteKeyboard";
 import { useAutocompleteSuggestions } from "../hooks/useAutocompleteSuggestions";
 import { useScanCapture, type ScanAddOutcome } from "../hooks/useScanCapture";
 import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
+import { PageShell } from "./PageShell";
 import { StagedStepHeader } from "./StagedStepHeader";
 import { ZoneCardPicker } from "./ZoneCardPicker";
 
@@ -167,8 +168,7 @@ export function ZoneCollectionStep({
     activeZone === "stack" ? (activeZoneCards.length === 0 ? "Begin stackening!" : "Add to Stack") : "Add card";
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 px-4 py-6 text-zinc-100">
-      <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-zinc-700/70 bg-zinc-900/70 p-4 md:p-6">
+    <PageShell>
         <StagedStepHeader stepName="Add cards to zones" />
         <p className="text-sm text-zinc-400">
           Add at least one card in a selected zone. Other selected zones may stay empty.
@@ -236,7 +236,6 @@ export function ZoneCollectionStep({
                   convergence: scanCapture.convergence,
                   addConfirmation: scanCapture.addConfirmation,
                   scanDebug: scanCapture.scanDebug,
-                  showManualEntryPrompt: scanCapture.showManualEntryPrompt,
                   sessionCardIds: scanSessionCardIds,
                   onOpen: async () => {
                     setSelectedCard(null);
@@ -245,7 +244,8 @@ export function ZoneCollectionStep({
                   },
                   onExitToManual: scanCapture.closeScan,
                   identify: scanCapture.identify,
-                  onCameraStatusChange: scanCapture.setCameraStatus
+                  onCameraStatusChange: scanCapture.setCameraStatus,
+                  onAcquisitionDiagnostic: scanCapture.recordAcquisitionDiagnostic
                 }}
               />
             )}
@@ -281,7 +281,6 @@ export function ZoneCollectionStep({
             {statusMessage}
           </p>
         )}
-      </section>
-    </main>
+    </PageShell>
   );
 }

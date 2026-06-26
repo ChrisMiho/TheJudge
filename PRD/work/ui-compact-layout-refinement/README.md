@@ -1,30 +1,40 @@
 ---
-status: ideation
+status: active
 ---
 
 # ui-compact-layout-refinement
 
 Frontend presentation pass to reduce vertical scroll across the staged flow: compact game context, zone card list grid, focused scan UI, enrichment list scroll caps, and a global **Chunky / Slim** layout density toggle in the theme panel.
 
-See [IDEA.md](IDEA.md) for problem, outcome, and non-goals.
+See [IDEA.md](IDEA.md) for problem, outcome, and non-goals. See [DESIGN-BRIEF.md](DESIGN-BRIEF.md) for approved scope, decisions, and REQ/FLOW references.
 
 ## Origin
 
 Captured from an interactive planning session (2026-06-25) covering game context layout, zone collection card list, scan-mode chrome, enrichment list mode, and layout density personalization. Zone confirmation (`ZoneConfirmStep`) was reviewed and explicitly excluded.
+
+## PRD references
+
+| ID | Title |
+| --- | --- |
+| DEC-075 | Chunky / Slim layout density toggle |
+| DEC-076 | Staged-flow presentation compaction |
+| REQ-055 | Layout density preference |
+| REQ-056 | Staged-flow screen compaction |
+| FLOW-008 | Choose and persist layout density |
 
 ## Scope summary
 
 | Screen / area | Change |
 | --- | --- |
 | Game context | Cat-wizard Easter egg; turn phase + active player side-by-side; wider player-control buttons |
-| Zone collection | 2×2 card tile grid (max 4 visible, scroll rest); scan mode hides search + list; Exit scan on camera |
+| Zone collection | 2×2 card tile grid (max 4 visible, scroll rest); remove empty-state suggestion placeholder; scan mode hides search + list; Exit scan on camera |
 | Enrichment | View all cards: per-zone scroll cap (4 rows) |
 | Global | Chunky/Slim toggle in `ThemeControl`; shared `PageShell` + CSS density tokens |
 | Unchanged | Zone confirmation step |
 
 ## Implementation map
 
-[GAMEPLAN.md](GAMEPLAN.md) is the authoritative architecture and sequencing doc. Slices are grouped into waves for optional parallel implementation after refinement.
+[GAMEPLAN.md](GAMEPLAN.md) is the authoritative architecture and sequencing doc. Slices are grouped into waves for optional parallel implementation.
 
 ## Slice table
 

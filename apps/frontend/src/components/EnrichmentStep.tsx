@@ -12,6 +12,7 @@ import type { ConversationMessage, ContextTarget, GameContext, PlayerLabel, Zone
 import { AskAiWaitingPanel } from "./AskAiWaitingPanel";
 import { ConversationThread } from "./ConversationThread";
 import { FrozenContextSummary } from "./FrozenContextSummary";
+import { PageShell } from "./PageShell";
 import { StagedStepHeader } from "./StagedStepHeader";
 
 const MAX_QUESTION_CHARS = 300;
@@ -156,7 +157,7 @@ export function EnrichmentStep({
     return (
       <li
         key={key}
-        className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+        className="enrichment-card-row space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
@@ -391,8 +392,7 @@ export function EnrichmentStep({
 
   if (isConversationActive) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 px-4 py-6 text-zinc-100">
-        <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-zinc-700/70 bg-zinc-900/70 p-4 md:p-6">
+      <PageShell>
           <header>
             <h1 className="bg-gradient-to-r from-accent-soft to-accent-strong bg-clip-text text-3xl font-bold tracking-tight text-transparent">
               TheJudge
@@ -461,14 +461,12 @@ export function EnrichmentStep({
               {statusMessage}
             </p>
           )}
-        </section>
-      </main>
+      </PageShell>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 px-4 py-6 text-zinc-100">
-      <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-zinc-700/70 bg-zinc-900/70 p-4 md:p-6">
+    <PageShell>
         <StagedStepHeader stepName="Context enrichment" />
 
         <div className="flex items-center justify-between gap-3">
@@ -524,7 +522,7 @@ export function EnrichmentStep({
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
                   {ZONE_LABELS[zone]}
                 </p>
-                <ul className="space-y-3">
+                <ul className="scroll-cap-4-enrichment space-y-3">
                   {(zones[zone] ?? []).map((card) => renderCardRow(zone, card))}
                 </ul>
               </div>
@@ -616,7 +614,6 @@ export function EnrichmentStep({
             Back to zones
           </button>
         )}
-      </section>
-    </main>
+    </PageShell>
   );
 }

@@ -1,6 +1,6 @@
 # Slice C — Best-frame window 5→3 + frame-quality recalibration
 
-## Status: planned
+## Status: done
 
 ## Goal
 

@@ -11,10 +11,15 @@ import {
 import { ScanStabilizer } from "../lib/scan/stabilizer";
 import {
   FRAME_SELECTOR_WINDOW_SIZE,
-  MAX_SURFACED_CANDIDATES,
-  SCAN_STABILIZER_CONFIG,
-  SURFACE_DISTANCE
+  SCAN_STABILIZER_CONFIG
 } from "../lib/scan/tuning";
+import { classifyVoteReason } from "../lib/scan/acquisitionDiagnostics";
+import type {
+  AcquisitionFrameDiagnostic,
+  FrameSelectionDiagnostic,
+  IdentityDiagnostic,
+  StabilizerDiagnostic
+} from "../lib/scan/acquisitionDiagnostics";
 import type { Candidate, HashDb, IdentifyResult, RgbImage } from "../lib/scan/types";
 import type { ScanCameraStatus } from "../components/ScanCameraSurface";
 import type { CardMetadataItem } from "../types";
@@ -36,6 +41,8 @@ export type ScanConvergence = {
   conditionHint: ConditionReason | null;
   /** Detector-boundary nudge when the camera repeatedly fails to find a card outline. */
   detectorNudge: ScanDetectorNudge | null;
+  /** Positive in-zone cue (Slice B / REQ-054): frame acceptable, not yet locked. */
+  inZone: boolean;
 };
 
 /**
@@ -75,7 +82,8 @@ const INITIAL_CONVERGENCE: ScanConvergence = {
   votes: 0,
   votesNeeded: SCAN_STABILIZER_CONFIG.minVotes,
   conditionHint: null,
-  detectorNudge: null
+  detectorNudge: null,
+  inZone: false
 };
 
 type ScanIdentifier = Pick<CardIdentifier, "identify">;
@@ -109,6 +117,11 @@ const EMPTY_IDENTIFY_RESULT: IdentifyResult = {
   candidates: []
 };
 
+const ACQUISITION_THRESHOLDS = {
+  lockDistance: SCAN_STABILIZER_CONFIG.lockDistance,
+  marginMin: SCAN_STABILIZER_CONFIG.marginMin
+};
+
 export function useScanCapture({
   cardMetadata,
   onScanCandidateSelected,
@@ -123,9 +136,10 @@ export function useScanCapture({
   const [scanPhase, setScanPhase] = useState<ScanPhase>("searching");
   const [convergence, setConvergence] = useState<ScanConvergence>(INITIAL_CONVERGENCE);
   const [scanDebug, setScanDebug] = useState<ScanDebugMetrics | null>(null);
+  const [scanAcquisitionDiagnostic, setScanAcquisitionDiagnostic] =
+    useState<AcquisitionFrameDiagnostic | null>(null);
   const [blockedNotice, setBlockedNotice] = useState<string | null>(null);
   const [addConfirmation, setAddConfirmation] = useState<ScanAddConfirmation | null>(null);
-  const [lowConfidenceCount, setLowConfidenceCount] = useState(0);
   const addCounterRef = useRef(0);
   const resourcesRef = useRef<ScanResources | null>(null);
   const resourcesPromiseRef = useRef<Promise<ScanResources> | null>(null);
@@ -134,6 +148,12 @@ export function useScanCapture({
   const onSelectRef = useRef(onScanCandidateSelected);
   onSelectRef.current = onScanCandidateSelected;
   const noCardStatusCountRef = useRef(0);
+  const acquisitionDiagnosticRef = useRef<AcquisitionFrameDiagnostic | null>(null);
+
+  const updateAcquisitionDiagnostic = useCallback((diagnostic: AcquisitionFrameDiagnostic | null): void => {
+    acquisitionDiagnosticRef.current = diagnostic;
+    setScanAcquisitionDiagnostic(diagnostic);
+  }, []);
 
   const setCameraStatus = useCallback((next: ScanCameraStatus): void => {
     setCameraStatusState(next);
@@ -198,9 +218,9 @@ export function useScanCapture({
     setScanPhase("searching");
     setConvergence(INITIAL_CONVERGENCE);
     setScanDebug(null);
+    updateAcquisitionDiagnostic(null);
     setBlockedNotice(null);
-    setLowConfidenceCount(0);
-  }, []);
+  }, [updateAcquisitionDiagnostic]);
 
   const openScan = useCallback(async (): Promise<void> => {
     setIsOpen(true);
@@ -249,19 +269,37 @@ export function useScanCapture({
       // recent window, so a poor current frame can still defer to a better one
       // already in hand.
       const selection = frameSelectorRef.current.push(image);
+      const baseDiagnostic = acquisitionDiagnosticRef.current;
+      const diagnosticBase: AcquisitionFrameDiagnostic = {
+        ...(baseDiagnostic?.capture ? { capture: baseDiagnostic.capture } : {}),
+        ...(baseDiagnostic?.detector?.success ? { detector: baseDiagnostic.detector } : {})
+      };
+
       if (selection.abstain) {
         const state = stabilizerRef.current.push([]);
         setResolvedCandidates([]);
-        setLowConfidenceCount((count) => count + 1);
         if (state.phase === "searching") {
           const phase: ScanConvergence["phase"] = state.votes > 0 ? "locking" : "searching";
+          const frameSelectionDiagnostic: FrameSelectionDiagnostic = {
+            abstain: true,
+            source: "abstain",
+            qualityScore: selection.quality.qualityScore,
+            qualityReason: selection.quality.reason
+          };
+          const stabilizerDiagnostic: StabilizerDiagnostic = {
+            votesAccumulated: state.votes,
+            votesNeeded: state.votesNeeded,
+            lockDistance: SCAN_STABILIZER_CONFIG.lockDistance,
+            marginMin: SCAN_STABILIZER_CONFIG.marginMin
+          };
           setConvergence({
             phase,
             leaderName: null,
             votes: state.votes,
             votesNeeded: state.votesNeeded,
             conditionHint: selection.quality.reason,
-            detectorNudge: null
+            detectorNudge: null,
+            inZone: false
           });
           setScanDebug({
             phase,
@@ -279,6 +317,21 @@ export function useScanCapture({
             frameQualityScore: selection.quality.qualityScore,
             conditionReason: selection.quality.reason
           });
+          updateAcquisitionDiagnostic({
+            ...diagnosticBase,
+            frameSelection: frameSelectionDiagnostic,
+            stabilizer: stabilizerDiagnostic,
+            reason: classifyVoteReason(
+              {
+                detectorHit: true,
+                qualityAbstain: true,
+                resolved: false,
+                bestDistance: null,
+                margin: null
+              },
+              ACQUISITION_THRESHOLDS
+            )
+          });
         }
         return EMPTY_IDENTIFY_RESULT;
       }
@@ -294,8 +347,55 @@ export function useScanCapture({
       }));
 
       const state = stabilizerRef.current.push(votingCandidates);
+      const bestEntry = ranked[0] ?? null;
+      const runnerUpEntry = ranked[1] ?? null;
+      const margin = bestEntry && runnerUpEntry ? runnerUpEntry.distance - bestEntry.distance : null;
+      const identityDiagnostic: IdentityDiagnostic = {
+        bestName: bestEntry?.card.name ?? null,
+        bestDistance: bestEntry?.distance ?? null,
+        runnerUpName: runnerUpEntry?.card.name ?? null,
+        runnerUpDistance: runnerUpEntry?.distance ?? null,
+        margin,
+        unresolved: ranked.length === 0
+      };
+      const frameSelectionDiagnostic: FrameSelectionDiagnostic = {
+        abstain: false,
+        source: selection.provenance,
+        qualityScore: selection.quality.qualityScore,
+        qualityReason: selection.quality.reason,
+        provenance: selection.provenance,
+        selectedFrameAge: selection.selectedFrameAge,
+        selectedFrameIndex: selection.selectedFrameIndex
+      };
+      const acquisitionReason = classifyVoteReason(
+        {
+          detectorHit: true,
+          qualityAbstain: false,
+          resolved: ranked.length > 0,
+          bestDistance: identityDiagnostic.bestDistance,
+          margin: identityDiagnostic.margin
+        },
+        ACQUISITION_THRESHOLDS
+      );
+
+      const searchingStabilizerDiagnostic = (votes: number, votesNeeded: number): StabilizerDiagnostic => ({
+        votesAccumulated: votes,
+        votesNeeded,
+        lockDistance: SCAN_STABILIZER_CONFIG.lockDistance,
+        marginMin: SCAN_STABILIZER_CONFIG.marginMin
+      });
 
       if (state.phase === "locked") {
+        updateAcquisitionDiagnostic({
+          ...diagnosticBase,
+          frameSelection: frameSelectionDiagnostic,
+          identity: identityDiagnostic,
+          stabilizer: {
+            ...searchingStabilizerDiagnostic(SCAN_STABILIZER_CONFIG.minVotes, SCAN_STABILIZER_CONFIG.minVotes),
+            acceptedLock: { cardId: state.cardId, bestDistance: state.bestDistance }
+          },
+          reason: acquisitionReason
+        });
         const lockedEntry = ranked.find((entry) => entry.card.cardId === state.cardId);
         const locked = lockedEntry?.card ?? null;
         if (locked) {
@@ -314,19 +414,7 @@ export function useScanCapture({
         return result;
       }
 
-      // Still searching: surface only confident hints, capped, so the picker
-      // no longer floods with near-random names.
-      const surfaced = ranked
-        .filter((entry) => entry.distance <= SURFACE_DISTANCE)
-        .slice(0, MAX_SURFACED_CANDIDATES)
-        .map((entry) => entry.card);
-
       setResolvedCandidates([]);
-      if (surfaced.length > 0) {
-        setLowConfidenceCount(0);
-      } else {
-        setLowConfidenceCount((count) => count + 1);
-      }
       const nameOf = (cardId: string | null): string | null =>
         cardId ? (ranked.find((entry) => entry.card.cardId === cardId)?.card.name ?? null) : null;
       const leaderName = nameOf(state.topCardId);
@@ -337,7 +425,8 @@ export function useScanCapture({
         votes: state.votes,
         votesNeeded: state.votesNeeded,
         conditionHint: selection.quality.reason,
-        detectorNudge: null
+        detectorNudge: null,
+        inZone: true
       });
       setScanDebug({
         phase,
@@ -355,10 +444,17 @@ export function useScanCapture({
         frameQualityScore: selection.quality.qualityScore,
         conditionReason: selection.quality.reason
       });
+      updateAcquisitionDiagnostic({
+        ...diagnosticBase,
+        frameSelection: frameSelectionDiagnostic,
+        identity: identityDiagnostic,
+        stabilizer: searchingStabilizerDiagnostic(state.votes, state.votesNeeded),
+        reason: acquisitionReason
+      });
 
       return result;
     },
-    [cardMetadata, ensureResources, resetScanState]
+    [cardMetadata, ensureResources, resetScanState, updateAcquisitionDiagnostic]
   );
 
   const acceptCandidate = useCallback(
@@ -367,6 +463,13 @@ export function useScanCapture({
       resetScanState();
     },
     [resetScanState]
+  );
+
+  const recordAcquisitionDiagnostic = useCallback(
+    (diagnostic: AcquisitionFrameDiagnostic): void => {
+      updateAcquisitionDiagnostic(diagnostic);
+    },
+    [updateAcquisitionDiagnostic]
   );
 
   return {
@@ -380,13 +483,14 @@ export function useScanCapture({
     scanPhase,
     convergence,
     scanDebug,
+    scanAcquisitionDiagnostic,
     blockedNotice,
     addConfirmation,
-    showManualEntryPrompt: lowConfidenceCount >= LOW_CONFIDENCE_ESCALATION_COUNT,
     openScan,
     closeScan,
     rescan,
     identify,
+    recordAcquisitionDiagnostic,
     acceptCandidate
   };
 }

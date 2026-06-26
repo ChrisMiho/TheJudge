@@ -85,7 +85,7 @@ describe("scoreFrameQuality", () => {
     const quality = scoreFrameQuality(crispImage());
     expect(quality.acceptable).toBe(true);
     expect(quality.reason).toBeNull();
-    expect(quality.sharpness).toBeGreaterThan(0.5);
+    expect(quality.sharpness).toBeGreaterThan(0.45);
     expect(quality.glareFraction).toBe(0);
     expect(quality.occlusionPenalty).toBeLessThan(0.1);
   });

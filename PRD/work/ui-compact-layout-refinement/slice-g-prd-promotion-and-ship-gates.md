@@ -4,16 +4,18 @@
 
 ## Goal
 
-Promote shipped behavior to PRD product truth, run full quality gates, and prepare the work package for cleanup.
+Align durable PRD scan UX with DEC-076 (post-ship refinement notes and REQ amendments), run full quality gates, and prepare the work package for cleanup.
 
 ## Requirements
 
-### PRD promotion
+### PRD alignment (DEC-076 scan contradictions)
 
-- `PRD/sections/decisions/personalization.md` — **DEC-069**: layout density toggle (`chunky` default, `slim` compact), theme panel, localStorage, presentation-only
-- `PRD/sections/functional-requirements.md` — **REQ-047** (or next available ID): density preference acceptance criteria
-- `PRD/sections/decisions.md` — router index line for DEC-069
-- Optional FLOW note if user-flow touches are needed for scan hide/show behavior (presentation only)
+DEC-075, DEC-076, REQ-055, REQ-056, and FLOW-008 are already in `sections/` from refinement. Slice G verifies and completes the remaining scan-domain alignment:
+
+- `PRD/sections/decisions/scanning.md` — add **DEC-076 refines DEC-052/055/056** tombstone notes (escalation prompt removed; manual search via Exit scan; manual tap-capture unchanged)
+- `PRD/sections/functional-requirements.md` — amend **REQ-038** and **REQ-040** acceptance criteria to match **REQ-056** (no in-scan escalation prompt; review-bubble running count)
+- `PRD/sections/user-flows.md` — fix **FLOW-006** step 4 to reference the review bubble, not the hidden zone list
+- `PRD/sections/system-map.md` — update **Scan UX in zone picker** summary for DEC-076
 
 ### Integration tests
 
@@ -39,7 +41,7 @@ npm run quality:check
 ## Acceptance criteria
 
 - [ ] All slices A–F marked done in README slice table.
-- [ ] DEC-069 and REQ-047 promoted to `sections/`.
+- [ ] Scan-domain PRD alignment complete: scanning.md refinement notes, REQ-038/040 amendments, FLOW-006 step 4, system-map scan summary — consistent with DEC-076 and REQ-056.
 - [ ] `npm run quality:check` passes.
 - [ ] Manual spot-check list completed.
 

@@ -68,7 +68,7 @@ Two surfaces share “max 4 visible, scroll the rest” with different row geome
 | D | Enrichment: per-zone 4-row scroll cap in list mode | None |
 | E | Density infra, theme toggle, `PageShell`, CSS density tokens | None |
 | F | Slim overrides on high-scroll components | E |
-| G | PRD promotion (DEC-069, REQ-047), tests, ship gates | A–F |
+| G | PRD scan-domain alignment (DEC-076 tombstones, REQ-038/040, FLOW-006, system-map), tests, ship gates | A–F |
 
 **Parallelism:** A, B, C, D, and E can start together. F needs E. G needs all prior slices.
 
@@ -96,10 +96,13 @@ npm run quality:check
 - No viewport locking, sticky footers, or `dvh` page-shell redesign in this package
 - Cat Easter egg: session-only reveal (no localStorage); game context step only
 
-## PRD promotion (Slice G)
+## PRD alignment (Slice G)
 
-- `PRD/sections/decisions/personalization.md` — **DEC-069**: layout density toggle (`chunky` default, `slim` compact), theme panel, localStorage
-- `PRD/sections/functional-requirements.md` — **REQ-047** (or next available)
-- Router line in `PRD/sections/decisions.md`
+DEC-075, DEC-076, REQ-055, REQ-056, and FLOW-008 are already in `sections/` from refinement. Slice G completes scan-domain alignment:
+
+- `PRD/sections/decisions/scanning.md` — **DEC-076 refines DEC-052/055/056** tombstone notes
+- `PRD/sections/functional-requirements.md` — amend **REQ-038** and **REQ-040** to match **REQ-056**
+- `PRD/sections/user-flows.md` — fix **FLOW-006** step 4 (review bubble running count)
+- `PRD/sections/system-map.md` — update **Scan UX in zone picker** summary
 
 Note: DEC-066 non-goals for *palette* (“per-component overrides”) do not block this separate density feature.

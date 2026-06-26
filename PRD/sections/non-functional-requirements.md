@@ -107,18 +107,21 @@
 
 ### NFR-011
 - Title: Lightweight theme personalization
-- Description: Theme customization must preserve mobile usability, readable contrast, and the lightweight frontend architecture while adding browser-local personalization.
+- Description: Theme and layout-density customization must preserve mobile usability, readable contrast, and the lightweight frontend architecture while adding browser-local personalization.
 - Constraints:
-  - theme selection must not add backend services, product-facing endpoints, account systems, or server-side storage
-  - palette application should use lightweight CSS/token plumbing and basic React state only; no animation-heavy theme transitions or theming framework migration
-  - themed controls must remain readable and touch-friendly on mobile viewports
-  - palette persistence must degrade gracefully when browser storage is unavailable
+  - theme and density selection must not add backend services, product-facing endpoints, account systems, or server-side storage
+  - palette and density application should use lightweight CSS/token plumbing and basic React state only; no animation-heavy theme or density transitions or theming framework migration
+  - themed and density-adjusted controls must remain readable and touch-friendly on mobile viewports
+  - palette and density persistence must degrade gracefully when browser storage is unavailable
   - re-themed surfaces and semantic states (DEC-068 / REQ-046) must keep readable contrast across every palette, explicitly including amber and rose, and must reuse the existing accent tokens rather than adding token roles or duplicated color constants
+  - slim density must not shrink body text below existing `text-sm` / `text-xs` or primary control touch targets below `min-h-[2.75rem]` (DEC-075)
 - Dependencies:
   - DEC-066
   - DEC-068
+  - DEC-075
   - REQ-044
   - REQ-046
+  - REQ-055
   - NFR-001
   - NFR-004
   - NFR-006

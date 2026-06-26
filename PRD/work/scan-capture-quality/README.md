@@ -32,9 +32,9 @@ See [GAMEPLAN.md](GAMEPLAN.md) for architecture and data flow.
 
 | Slice | Objective | DEC/REQ | Depends on |
 | --- | --- | --- | --- |
-| [A](slice-a-capture-resolution-prior.md) | Higher-resolution capture request + graceful fallback | DEC-074 / REQ-053 | — |
-| [B](slice-b-positive-in-zone-cue.md) | Positive in-zone "hold steady" cue while searching | DEC-074 / REQ-054 | — |
-| [C](slice-c-window-and-recalibration.md) | Best-frame window 5→3 + frame-quality recalibration | DEC-062 (calibration) | A |
+| [A](slice-a-capture-resolution-prior.md) ✓ | Higher-resolution capture request + graceful fallback | DEC-074 / REQ-053 | — |
+| [B](slice-b-positive-in-zone-cue.md) ✓ | Positive in-zone "hold steady" cue while searching | DEC-074 / REQ-054 | — |
+| [C](slice-c-window-and-recalibration.md) ✓ | Best-frame window 5→3 + frame-quality recalibration | DEC-062 (calibration) | A |
 | [D](slice-d-validation-and-ship-gates.md) | On-device validation, PRD promotion, ship gates | DEC-074 validation gate | A, B, C |
 
 A and B are parallel-ready; C is sequenced after A; D is the validation/cleanup gate.

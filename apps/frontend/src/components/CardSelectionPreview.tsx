@@ -30,7 +30,7 @@ export function CardSelectionPreview({
             className="w-full rounded-xl border border-zinc-600 bg-zinc-950/40 object-contain p-1"
           />
         ) : (
-          <div className="flex min-h-56 w-full items-center justify-center rounded-xl border border-dashed border-zinc-600 bg-zinc-900/40 text-xs text-zinc-400">
+          <div className="card-preview-placeholder flex min-h-56 w-full items-center justify-center rounded-xl border border-dashed border-zinc-600 bg-zinc-900/40 text-xs text-zinc-400">
             No image
           </div>
         )}

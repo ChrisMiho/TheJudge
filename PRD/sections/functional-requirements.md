@@ -678,8 +678,8 @@
 - Description: Add a Scan entry point beside the existing search input in `ZoneCardPicker` and implement the batch scan loop and unhappy-path handling, reusing the existing add flow unchanged.
 - Acceptance Criteria:
   - a Scan entry point sits beside the existing search input; manual search remains unchanged
-  - batch loop: scan → Accept (adds via existing add path) → camera re-opens for the next card → Back/Exit returns to zone collection; the zone's existing card list shows the running count
-  - after a few consecutive low-confidence attempts a non-blocking prompt offers manual name entry while auto-scan continues (card-back "Flip the card over" prompt descoped — DEC-055); a sustained confident match locks in a single card (the one-tap Add / Rescan presentation is superseded by auto-add — see REQ-040 / DEC-056)
+  - batch loop: scan → auto-add on confident lock (DEC-056) → camera immediately resumes for the next card → Exit scan returns to zone collection; the scan review bubble shows the running count of cards added this session (DEC-058)
+  - on low confidence, scanning continues and manual capture stays available; manual search is reached by exiting scan — the in-scan low-confidence manual-search escalation prompt does not render (DEC-076); card-back "Flip the card over" prompt descoped — DEC-055
   - an accepted scan candidate reaches the existing preview/add/owner/duplicate-block/stack-limit behavior and produces the same `ZoneCardItem` shape as a manually added card
   - stack cards land in scan order (bottom-to-top); manual reorder remains out of scope (`FLOW-002`)
   - existing zone-collection tests are extended, not replaced
@@ -736,7 +736,7 @@
   - each successful auto-add plays a thumbs-up confirmation popup that pops up and fades out; the popup motion uses a CSS-only functional animation permitted under NFR-006 (DEC-057); audio confirmation (a "ding" + mute toggle) is realized separately by REQ-042 / DEC-061
   - a counter bubble in the top-right of the scan screen expands to list the cards added to the current zone during this scan session, each with a single-tap remove and no confirmation step (DEC-058)
   - when auto-add would hit the duplicate-stack block or the 10-card stack limit, a non-blocking notice is shown and scanning continues; the card is not silently dropped
-  - manual tap-capture and the low-confidence manual-search escalation remain available; the user is never stranded
+  - manual tap-capture remains available; manual search is reached by exiting scan — the in-scan low-confidence manual-search escalation prompt does not render (DEC-076); the user is never stranded
   - existing scan/zone-collection tests are extended, not replaced; the stabilizer progress signal is unit-tested
 - Constraints:
   - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
@@ -884,7 +884,7 @@
   - DEC-067
   - FLOW-001
 - Notes:
-  - refines header chrome only; the cat-wizard image and per-section description copy on the game-context screen stay below the header
+  - refines header chrome only; the cat-wizard image is hidden by default on the game-context screen and revealed session-only after 10 brand clicks (DEC-076, REQ-056)
 
 ### REQ-046
 - Title: Expanded theme palette reach
@@ -1117,3 +1117,91 @@
   - DEC-065
 - Notes:
   - pairs with REQ-053: higher-resolution capture widens the in-zone band, and this cue makes that band discoverable to the user
+
+### REQ-055
+- Title: Layout density preference
+- Priority: medium
+- Description: The frontend must let users choose a global **Chunky / Slim** layout density through the existing theme panel, with the selection applied immediately and persisted for that browser. Chunky is the default and must match pre-change spacing on reference screens.
+- Acceptance Criteria:
+  - the theme panel exposes a Chunky / Slim segmented control below the palette swatches
+  - selecting a density immediately applies spacing via `data-layout-density` on `document.documentElement` and shared semantic CSS classes (`page-shell`, `page-card`, `panel-inner`, etc.)
+  - default density is chunky; missing, unset, corrupt, or unsupported stored values fall back to chunky without throwing or blocking app load
+  - chunky mode on reference staged screens matches pre-change spacing (regression guard)
+  - slim mode visibly tightens shell padding, card gaps, and panel inner spacing without breaking touch targets or readability
+  - selected density persists across page reloads for the same browser
+  - density changes do not reset game setup, selected zones, cards, enrichment, question text, answers, conversation state, scanner state, or retry cooldowns
+  - tests cover density selection, persistence, fallback, chunky regression on at least one reference screen, and state safety
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, or data-pipeline behavior
+  - no server-synced preferences, account settings, viewport locking, sticky footers, or animation-heavy density transitions
+  - primary controls keep touch-friendly minimum heights (`min-h-[2.75rem]` on primary actions); body text is not shrunk below existing `text-sm` / `text-xs`
+  - density definitions must have one authoritative frontend source (`layoutDensityPrefs.ts`, `applyLayoutDensity.ts`, `index.css`) rather than duplicated spacing constants
+- Dependencies:
+  - DEC-075
+  - FLOW-008
+  - NFR-011
+  - DEC-066
+- Notes:
+  - distinct from DEC-066's per-component theme-override non-goal — this is a global density token system
+  - REQ-056 screen compaction scroll caps apply in both densities; slim further tightens component-level spacing in a follow-on surface pass
+
+### REQ-056
+- Title: Staged-flow screen compaction
+- Priority: medium
+- Description: The frontend must compact the staged data-collection screens to reduce vertical scroll through presentation-only layout changes on game context, zone collection, enrichment list mode, and scan-focused zone-collection chrome. Zone confirmation is excluded.
+- Acceptance Criteria:
+  - **game context:** the cat-wizard hero image is not in the document on initial render; after 10 clicks on the `TheJudge` brand title on the game-context step it appears (`/assets/cats-homescreen.png`) and stays visible for the browser session only; turn phase and active player render in one merged panel side-by-side on `sm+` widths with combat sub-step full-width below when phase is `combat`; `(recommended)` does not appear in active-player labeling; player expand/collapse and add/remove controls use wider tap targets
+  - **zone collection:** cards render in a 2-column tile grid with at most 4 tiles (2 rows) visible before the grid scrolls, for every zone including stack; remove buttons, thumbnails, truncated names, and stack-position labels are preserved; with 5+ cards the 5th is reachable via scroll; the empty-state `Select a suggestion to preview and add a card to …` placeholder is removed
+  - **scan focus:** while scan is open, search input, scan entry button, zone card list, owner select, and card preview are not in the document; the `Scan card` heading is removed; **Exit scan** is reachable on the camera surface top-right; the low-confidence manual-search escalation prompt does not render; manual tap-to-capture remains available
+  - **enrichment:** in **View all cards** mode, each zone's card list shows at most 4 full-width edit rows before internal scroll; card-by-card wizard mode is unchanged; all enrichment fields remain reachable by scrolling within the zone list
+  - **zone confirmation:** no layout changes
+  - tests cover representative cases for game-context Easter egg, zone grid scroll, scan chrome hide/show, and enrichment list scroll cap
+- Constraints:
+  - presentation only; no change to step names, step ordering, flow logic, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, or data-pipeline behavior
+  - scroll caps (4 zone tiles, 4 enrichment rows per zone) apply in both chunky and slim density
+  - no viewport locking, sticky footers, or `dvh` page-shell redesign
+- Dependencies:
+  - DEC-076
+  - FLOW-001
+  - FLOW-002
+  - FLOW-006
+  - DEC-067
+  - DEC-050
+  - DEC-052
+- Notes:
+  - incremental improvement — pages with many zones or the decrypt form below enrichment may still scroll; this requirement targets the worst vertical offenders
+  - slim density (REQ-055 / DEC-075) tightens spacing further without changing these functional caps
+
+### REQ-057
+- Title: Scanner acquisition diagnostics and validation matrix
+- Priority: high
+- Description: Instrument and validate the scanner acquisition path so hard-to-scan behavior is attributed to a concrete stage before further tuning. The scanner should keep one user-facing behavior path, but validation must distinguish the hard Mac-webcam baseline from a stand-assisted controlled setup: the Mac webcam should be usable without repeated hunting, and the scan stand should be fast and highly consistent. Diagnostic-first tuning targets the path from live capture to the first reliable identity vote; lock convergence after votes exist is already covered by the stabilizer and recent `tuning.ts` calibration (DEC-077).
+- Acceptance Criteria:
+  - the scan debug/export path can report, for each inspected frame or frame sequence: native capture resolution and relevant camera track settings where available, detector success/failure and corners/geometry, frame-quality score/reason, whether the frame selector chose the current frame or a retained prior frame, best/runner-up identity distances and margin, stabilizer votes accumulated/needed, and the concrete vote/no-vote reason (e.g. detector miss, quality abstain, unresolved candidate, distance over `lockDistance`, margin under `marginMin`)
+  - a DB-registered card is tested under the **Mac-webcam baseline** (built-in webcam, hand-held or lightly supported card, normal room lighting, card reasonably filling the guide); outcome evidence records whether it reaches a first reliable identity vote and lock without repeated distance/lighting hunting, plus the diagnostic stage responsible for any miss
+  - the same card is testable under a **stand-assisted controlled setup** (fixed card/camera geometry, flat contrasting surface, stable lighting); if the stand is not immediately available, the package records this as pending validation rather than treating Mac-webcam-only evidence as the ideal-case pass
+  - diagnostics support reversible acquisition experiments after baseline capture, including at least these candidates: continuous-focus request verification/fix, current-frame-only frame-selector trial, adaptive higher detector-resolution retry after low-confidence identity, and positive/negative cue precedence cleanup
+  - existing scan/debug tests are extended, not replaced; diagnostics are additive/read-only and do not alter scan behavior when the debug path is off
+- Constraints:
+  - validation matrix only; do not create separate scanner modes, hardware-specific UI, or a scan-stand dependency for normal product use
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - no change to the shared resize+DCT+hash recipe (`recipe.ts`), `CARDHSH1` bin format, `cardhashes.bin`, scan map artifacts, `identify.ts`, or the DEC-051/REQ-034 parity gates
+  - do not loosen `lockDistance` or `marginMin` as an acquisition shortcut without diagnostic evidence and a separate confirmed decision; the final identity precision guard remains held
+  - diagnostics must stay within NFR-010: off by default or debug-gated, no scan-time network calls, and no meaningful performance cost for users who never enable debugging
+- Dependencies:
+  - DEC-077
+  - DEC-060
+  - DEC-062
+  - DEC-072
+  - DEC-073
+  - DEC-074
+  - REQ-037
+  - REQ-041
+  - REQ-050
+  - REQ-052
+  - REQ-053
+  - REQ-054
+  - NFR-010
+- Notes:
+  - this requirement intentionally focuses on acquisition — getting to the first trustworthy identity vote — because owner retest showed lock is quick once the card identifies
+  - scan stand validation is an ideal-case check and operator recommendation, not a prerequisite for Mac-webcam usability

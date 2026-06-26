@@ -49,6 +49,7 @@
 ## Planned capabilities (optional, outside the core loop)
 - optional on-device camera card scanning as an alternate input path into existing zone fields (DEC-050..DEC-053); see `system-map.md` "Card scanning" (status: planned)
 - frontend-only theme palette customization as browser-local personalization, using predefined swatches rather than arbitrary color input (DEC-066, REQ-044); see `system-map.md` "Frontend personalization" (status: planned)
+- optional global Chunky / Slim layout density as browser-local personalization in the theme panel (DEC-075, REQ-055); see `system-map.md` "Frontend personalization"
 
 ## Product risks
 - **Prompt size vs AI latency:** Game-rules prompt enrichment (DEC-030, REQ-022) materially increases prompt size (~25–32k chars typical/worst case when all 23 curated topics ship). This is an active risk to the 3-second latency success metric, not a temporary scope tradeoff. Monitor after ship.
@@ -69,6 +70,7 @@
 - multiple product-facing backend endpoints
 - printing disambiguation, grading, pricing, or multi-card-per-frame detection in card scanning (DEC-053)
 - arbitrary theme color input, per-component theme overrides, server-synced theme preferences, account-based theme settings, and dark/light mode redesign for theme customization (DEC-066)
+- server-synced layout-density preferences, account-based density settings, viewport locking, and sticky-footers redesign for layout compaction (DEC-075, DEC-076)
 
 ## Scope Notes
 The core product is a **flow-validation assistant**, not a gameplay-accurate rules engine.

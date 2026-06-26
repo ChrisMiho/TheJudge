@@ -21,7 +21,7 @@ export function ScanReviewBubble({ cards, onRemove }: ScanReviewBubbleProps): JS
   }
 
   return (
-    <div className="absolute right-3 top-3 z-10 flex flex-col items-end gap-2">
+    <div className="absolute right-3 top-12 z-10 flex flex-col items-end gap-2">
       <button
         type="button"
         aria-label={`Scanned this session: ${cards.length}`}

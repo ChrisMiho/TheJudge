@@ -51,7 +51,7 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
   - on a candidate, the user taps Accept to add the card to the current zone via the existing add path; the camera immediately re-opens to scanning for the next card
   - a Back/Exit control closes the camera and returns to zone collection
   - a detected card back shows "Flip the card over" (not a generic no-match)
-  - on low confidence, scanning continues and manual capture stays available; after a few consecutive low-confidence attempts a non-blocking prompt offers manual name entry (existing search) without stopping the scan
+  - on low confidence, scanning continues and manual capture stays available; manual search is reached by exiting scan (DEC-076 refines this bullet — the in-scan low-confidence manual-search escalation prompt is removed)
   - stack cards land in scan order, bottom-to-top; manual reorder remains out of scope (`FLOW-002`)
   - the "few attempts" count, detector area fractions, and confidence/card-back thresholds are calibration constants validated by outcome (detect-rate / top-1 accuracy), not product open questions
 - Related requirements:
@@ -59,6 +59,7 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
   - REQ-038
 - Notes:
   - first implementation may land manual tap-capture before continuous auto-scan; the target experience is both (map-out sequences this)
+  - **Refined in part (DEC-076):** the in-scan low-confidence manual-search escalation prompt is removed; manual search is reached via **Exit scan** while the camera is open (DEC-050 fallback); manual tap-to-capture is unchanged
 
 ### DEC-053
 - Decision: Scan matches are art-level (printing-level) and resolve through `Scryfall printing id → oracle_id → existing CardMetadataItem`; the engine returns a ranked candidate list, duplicate oracle ids collapse to one candidate by best distance, and unresolvable candidates are dropped.
@@ -122,6 +123,7 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
   - validated end-to-end on a laptop camera (detection + identification + single-card lock-in); formal NFR-010 device metrics were not separately recorded and some scan UX refinement remains as future work
   - lock-in tuning constants are outcome-validated calibration values (DEC-052 precedent), not product open questions
   - **Superseded in part (DEC-056):** the "one confident card is presented for one-tap Add with Rescan" lock behavior is replaced by auto-add on a high-confidence lock; the lock-in/convergence mechanism this decision introduces is unchanged and is the foundation DEC-056 builds on
+  - **Refined in part (DEC-076):** the in-scan low-confidence manual-search escalation prompt inherited from DEC-052 is removed; manual tap-to-capture and Exit scan to manual search remain
 
 ### DEC-056
 - Decision: A confident scan lock auto-adds the card to the current zone with no tap and immediately resumes scanning for the next card, replacing the one-tap Accept gate. Lock thresholds are tuned strict so that lock genuinely means "this is the card," and correctness is biased hard toward a false-negative (keep searching) over a false-positive (wrong auto-add).
@@ -133,7 +135,7 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
   - owner is supplied by the existing sticky `pendingOwner` selector (defaults to `activePlayer`, changeable in the scan screen); auto-add does not introduce a per-card owner prompt
   - the lock/auto-add threshold is tuned stricter than the DEC-055 first-pass values (stabilizer window, vote count, lock distance, runner-up margin in `apps/frontend/src/lib/scan/tuning.ts`); the product intent is to prefer continued searching over a wrong auto-add, validated by outcome (no wrong auto-adds on a representative capture set), not by bit-equality
   - when auto-add would hit the duplicate-stack block (`FLOW-004`) or the 10-card stack limit, a non-blocking notice is shown and scanning continues; the card is not silently dropped and the user is never stranded
-  - manual fallbacks are preserved: manual tap-capture remains available, and after a few consecutive low-confidence frames the existing manual-search escalation still appears (DEC-052, DEC-055)
+  - manual fallbacks are preserved: manual tap-capture remains available; manual search is reached by exiting scan — the in-scan low-confidence manual-search escalation prompt does not render (DEC-076 refines DEC-052/DEC-055)
   - supersedes the "one confident card is presented for one-tap Add" behavior in DEC-052, DEC-055, FLOW-006, and REQ-038; Rescan as a discard-and-resume control is no longer needed because there is no pending-accept state (correction is handled by DEC-058)
 - Related requirements:
   - REQ-038
@@ -143,6 +145,7 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
   - refines DEC-052/DEC-055; it does not change the identification/hashing/distance accuracy logic, only the control-layer calibration constants and the accept gate
   - the strict lock thresholds remain outcome-validated calibration constants (DEC-052/DEC-055 precedent), not product open questions
   - **Superseded in part (DEC-059):** the "lock bar high enough that a wrong card is essentially never auto-added" strict-bar intent is rebalanced toward ease-of-lock with one-tap removal (DEC-058) as the safety net; the auto-add mechanism and hands-free model this decision introduces are unchanged
+  - **Refined in part (DEC-076):** the in-scan manual-search escalation prompt is removed; manual tap-to-capture and Exit scan to manual search remain
 
 ### DEC-057
 - Decision: The scan screen shows a live three-state convergence indicator (`searching` -> `locking` -> `locked`) driven by an additive, pure progress signal from the stabilizer, replaces the selectable candidate list with a single non-selectable "locking on" indicator, removes the raw status-string leaks, and plays positive visual confirmation feedback (a thumbs-up popup that fades out) on each successful auto-add. Audio confirmation (a "ding" + mute toggle) is split out of this decision and realized separately by DEC-061 / REQ-042.
@@ -186,7 +189,7 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
   - the loosening is applied to the attainability knobs in `apps/frontend/src/lib/scan/tuning.ts` (stabilizer window, vote count, lock distance); the runner-up distinctness/margin guard is retained as the primary false-lock protection — easier locks without inviting near-random wrong cards
   - the scan interaction is unchanged and stays fully hands-free: same stabilizer, same auto-add path, no manual confirm tap and no candidate-list pick
   - the tuning constants remain outcome-validated calibration (DEC-052/DEC-055 precedent), now validated against two outcomes — cards lock quickly and reliably in normal phone presentation, and remain lockable in the adverse webcam/fingers/noise case — with wrong auto-adds staying rare across both
-  - manual tap-capture and the low-confidence manual-search escalation remain available (DEC-052, DEC-055, DEC-056)
+  - manual tap-capture remains available; manual search is reached by exiting scan (DEC-076); the in-scan low-confidence manual-search escalation prompt does not render
   - no change to identification/hashing/distance accuracy logic, `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
 - Related requirements:
   - REQ-040
@@ -389,3 +392,28 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
   - low-light affordances (a torch/flash toggle, explicit exposure constraints) were considered and **deferred** this round to keep the lever to resolution + continuous autofocus with no new scan-screen control (DEC-065); a torch toggle remains a clean future extension
   - validated by outcome — a DB-registered card locks across a broader distance/light range than before with no new false auto-adds, and exported frames report native resolution above 640×480 — not by bit-equality (DEC-052/DEC-055/DEC-059/DEC-062 precedent)
   - complements DEC-062 (this sharpens the source the query conditioning and best-frame selection operate on) and DEC-072/DEC-073 (detection is already handled; this is the capture-quality layer feeding the matcher)
+
+### DEC-077
+- Decision: Scanner acquisition tuning proceeds **diagnostic-first** and is validated against a two-condition capture matrix: (1) a hard **Mac-webcam baseline** (built-in webcam, hand-held or lightly supported card, normal room lighting) that should be usable without repeated hunting, and (2) a **stand-assisted controlled setup** (fixed card/camera geometry, flat contrasting surface, stable lighting) that should be fast and highly consistent. These are validation conditions, not product modes: the scanner keeps one behavior path and one user flow. The next acquisition work instruments the capture → detector → frame selector → identify → stabilizer vote path before more threshold tuning, so remaining failures can be attributed to camera focus/resolution, detector quad quality, frame-selector choice, frame-quality gates/cues, identity confidence, or vote eligibility. The recipe/bin/identify boundary and the final lock precision guard (`lockDistance`/`marginMin`) stay frozen unless diagnostics prove a separate escalation is required.
+- Status: confirmed
+- Context: After the latest stabilizer tuning trial (`windowSize 13` / `minVotes 3`, with `lockDistance 78` and `marginMin 14` retained), owner retest found that scanning remained difficult to acquire but became quick once the card identified. That means the final temporal convergence layer is likely less of a bottleneck than the earlier path that produces the first reliable identity vote. Separately, a friend's scan success uses a webcam with a different physical setup, and the owner has access to a 3D-printed scan stand. Physical setup matters substantially for this pure-JS camera pipeline: fixed geometry removes motion, distance drift, perspective wobble, finger occlusion, focus hunting, and background clutter. But the product should not require special hardware to feel usable, so validation must distinguish the hard baseline from the ideal controlled case without creating two scanner modes.
+- Impact:
+  - acquisition diagnostics are promoted from ad hoc debugging into the next scanner tuning lever: for a live or exported frame sequence, the scanner should report native capture resolution / relevant track settings where available, detector corners/geometry, frame-quality score/reason, whether the selected frame is current or retained from the frame-selector window, best/runner-up identity distances and margin, stabilizer votes, and the concrete vote/no-vote reason
+  - the Mac-webcam baseline is the minimum usability bar: with a DB-registered card reasonably filling the guide under normal room lighting, the scanner should reach a first reliable identity vote and lock without repeated distance/lighting hunting; if it cannot, diagnostics must show which stage is blocking acquisition
+  - the stand-assisted controlled setup is the ideal validation bar: the same scanner path should lock quickly and consistently when geometry/lighting are controlled; if it does not, the failure is treated as a stronger signal that a pipeline stage is wrong rather than user/setup variability
+  - tuning experiments after diagnostics must be reversible and stage-specific, such as fixing the missing continuous-focus request, temporarily simplifying frame selection to current-frame-only, or retrying detection at a higher `maxDetectDimension` only after a low-confidence 640px pass; experiments must record before/after evidence rather than silently baking in more constants
+  - the final identity precision guard stays held: do not loosen `lockDistance` or `marginMin` as an acquisition shortcut without diagnostic evidence and an explicit follow-up decision; one-tap removal remains the safety net for rare wrong auto-adds, but not a reason to remove the distinct-runner-up guard
+  - scan-stand support is a validation condition and operator recommendation, not a new hardware dependency, separate UI mode, or product requirement for normal use
+  - **frozen boundaries:** no change to the shared resize+DCT+hash recipe (`recipe.ts`), the `CARDHSH1` bin format, `cardhashes.bin`, the scan map artifacts, or `identify.ts`; scanning remains frontend-only with zero scan-time network calls and no backend/API/prompt change
+- Related requirements:
+  - REQ-057
+  - REQ-037
+  - REQ-041
+  - REQ-050
+  - REQ-052
+  - REQ-053
+  - REQ-054
+  - NFR-010
+- Notes:
+  - refines DEC-059/DEC-062/DEC-072/DEC-073/DEC-074 by separating "getting to a first reliable vote" from "converging once votes exist"
+  - the two validation conditions are a boundary-setting device for refinement and QA, not two user-facing modes

@@ -1,6 +1,6 @@
 # Slice D — Enrichment List Scroll Cap
 
-## Status: pending
+## Status: done
 
 ## Goal
 

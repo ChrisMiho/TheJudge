@@ -1,6 +1,6 @@
 # Slice B — Zone Card List Grid
 
-## Status: pending
+## Status: done
 
 ## Goal
 

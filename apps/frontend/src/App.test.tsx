@@ -324,7 +324,7 @@ describe("App MVP interaction flows", () => {
 
   it("shows TheJudge title on first render", () => {
     render(<App />);
-    expect(screen.getByRole("heading", { name: "TheJudge" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "TheJudge" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
   });
 
@@ -833,13 +833,37 @@ describe("App MVP interaction flows", () => {
     expect(submittedAskAiRequests).toHaveLength(0);
   });
 
-  it("shows bundled cat-wizard asset on game-context first screen with graceful fallback", async () => {
+  it("hides cat wizard image by default on game-context render", () => {
+    render(<App />);
+    expect(screen.queryByRole("img", { name: "Cat wizard" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
+  });
+
+  it("reveals cat wizard image after exactly 10 brand clicks, not before", async () => {
+    const user = userEvent.setup();
     render(<App />);
 
+    const brandButton = screen.getByRole("button", { name: "TheJudge" });
+    for (let i = 0; i < 9; i++) {
+      await user.click(brandButton);
+    }
+    expect(screen.queryByRole("img", { name: "Cat wizard" })).not.toBeInTheDocument();
+
+    await user.click(brandButton);
     const emptyStateImage = screen.getByRole("img", { name: "Cat wizard" });
     expect(emptyStateImage).toHaveAttribute("src", "/assets/cats-homescreen.png");
-    expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
+  });
 
+  it("shows cat wizard text fallback when image fails after easter egg reveal", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const brandButton = screen.getByRole("button", { name: "TheJudge" });
+    for (let i = 0; i < 10; i++) {
+      await user.click(brandButton);
+    }
+
+    const emptyStateImage = screen.getByRole("img", { name: "Cat wizard" });
     fireEvent.error(emptyStateImage);
     expect(screen.getByText("Cat wizard")).toBeInTheDocument();
   });
@@ -885,6 +909,20 @@ describe("App MVP interaction flows", () => {
     await user.click(screen.getByRole("button", { name: "Remove Lightning Bolt" }));
     expect(screen.queryByLabelText("Caster for Lightning Bolt")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
+  });
+
+  it("applies scroll-cap-4-enrichment class to zone card list in list view", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+
+    await addCardToStack(user, "opt", "Opt");
+
+    await advanceToContextEnrichmentFromZones(user);
+
+    const casterSelect = screen.getByLabelText("Caster for Opt");
+    const cardList = casterSelect.closest("ul");
+    expect(cardList).toHaveClass("scroll-cap-4-enrichment");
   });
 
   it("blocks duplicate adds and preserves stack entries", async () => {
@@ -1804,7 +1842,7 @@ describe("Slice-05: zone collection UI", () => {
     await advancePastZoneConfirm(user);
 
     await selectZoneTab(user, "Hand");
-    expect(screen.getByText("1. Opt")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove Opt from Hand" })).toBeInTheDocument();
   });
 
   it("shows waiting panel while submitting and hides the submit form", async () => {
@@ -2014,5 +2052,123 @@ describe("Slice-B: accent token coverage for staged and answered semantic surfac
     expect(screen.getByText("The stack resolves.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Ask a follow-up…")).toBeInTheDocument();
+  });
+});
+
+describe("Slice-E: layout density toggle", () => {
+  beforeEach(() => {
+    metadataFixture = [...baseCardMetadataFixture];
+    askAiResponseQueue = [{ status: 200, body: { answer: "Mock answer" } }];
+    submittedAskAiRequests.length = 0;
+    submittedAskAiHeaders.length = 0;
+
+    fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      const url = getUrlFromRequest(input);
+
+      if (url === "/data/cardMetadata.json") {
+        return jsonResponse(metadataFixture);
+      }
+
+      if (url.endsWith("/api/ask-ai") && init?.method === "POST") {
+        submittedAskAiRequests.push(JSON.parse(String(init.body)) as ZoneAskAiPayload);
+        const nextResponse = askAiResponseQueue.shift() ?? { status: 200, body: { answer: "Mock answer" } };
+        return jsonResponse(nextResponse.body, nextResponse.status, nextResponse.headers);
+      }
+
+      return jsonResponse({ error: "not found" }, 404);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    delete document.documentElement.dataset.theme;
+    delete document.documentElement.dataset.layoutDensity;
+    document.documentElement.style.removeProperty("--accent");
+    document.documentElement.style.removeProperty("--accent-strong");
+    document.documentElement.style.removeProperty("--accent-soft");
+    document.documentElement.style.removeProperty("--accent-contrast");
+  });
+
+  it("sets data-layout-density=slim on document root when Slim is selected", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
+
+    expect(document.documentElement.dataset.layoutDensity).toBe("slim");
+  });
+
+  it("indicates the active density in the theme panel", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+
+    expect(screen.getByRole("button", { name: "Layout: Chunky" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Layout: Slim" })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("does not reset game setup, zones, cards, or conversation state when density changes", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await expandPlayerDetails(user);
+    await user.clear(screen.getByLabelText("Player 1 life total"));
+    await user.type(screen.getByLabelText("Player 1 life total"), "33");
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await setSelectedZones(user, ["Stack"]);
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await waitForMetadataReady();
+    await addCardToActiveZone(user, "opt", "Opt");
+    await advanceToContextEnrichmentFromZones(user);
+    await user.type(screen.getByPlaceholderText("How does this resolve?"), "Will this resolve?");
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
+
+    expect(screen.getByPlaceholderText("How does this resolve?")).toHaveValue("Will this resolve?");
+    expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
+  });
+
+  it("preserves answered-state conversation data across a density switch", async () => {
+    const user = userEvent.setup();
+    queueAskAiResponses({ status: 200, body: { answer: "The stack resolves." } });
+    render(<App />);
+    await openStackBuilder(user);
+    await addCardToStack(user, "opt", "Opt");
+    await clickDecryptStack(user);
+    await screen.findByText("The stack resolves.");
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
+
+    expect(screen.getByText("The stack resolves.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Ask a follow-up…")).toBeInTheDocument();
+  });
+});
+
+describe("Slice-F: slim density surfaces", () => {
+  it("defines slim overrides for the high-scroll and camera surfaces", () => {
+    expect(appCss).toContain('[data-layout-density="slim"] .staged-step-brand');
+    expect(appCss).toContain('[data-layout-density="slim"] .staged-step-name');
+    expect(appCss).toContain('[data-layout-density="slim"] .scroll-cap-4-enrichment');
+    expect(appCss).toContain('[data-layout-density="slim"] .zone-card-grid');
+    expect(appCss).toContain('[data-layout-density="slim"] .zone-card-tile');
+    expect(appCss).toContain('[data-layout-density="slim"] .scan-video');
+    expect(appCss).toContain("aspect-ratio: 4 / 5;");
+    expect(appCss).toContain("max-height: 50dvh;");
+    expect(appCss).toContain('[data-layout-density="slim"] .card-preview-placeholder');
+    expect(appCss).toContain('[data-layout-density="slim"] .conversation-thread');
+    expect(appCss).toContain('[data-layout-density="slim"] .frozen-context-summary');
+  });
+
+  it("keeps the zone card grid capped at four visible cards through density variables", () => {
+    expect(appCss).toContain("max-height: calc(2 * var(--zone-card-tile-height, 10.5rem) + var(--zone-card-grid-gap, 0.5rem));");
+    expect(appCss).toContain("--zone-card-tile-height: 9.25rem;");
+    expect(appCss).toContain("--zone-card-grid-gap: 0.375rem;");
   });
 });

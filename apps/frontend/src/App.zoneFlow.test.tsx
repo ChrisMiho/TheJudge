@@ -240,14 +240,19 @@ describe("STORY-074 target gating and pickers", () => {
     }
 
     // On a confident lock the card is added hands-free (no Accept tap) and scanning resumes.
-    expect(await screen.findByText("1. Opt")).toBeInTheDocument();
-    expect(screen.getByText("bottom & top")).toBeInTheDocument();
+    expect(await screen.findByLabelText("Scanned this session: 1")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack (1)");
+    expect(screen.queryByText("Stack cards (1)")).not.toBeInTheDocument();
     expect(screen.queryByText("Locked on")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Add card" })).not.toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledWith("/data/cardScanMap.json");
     expect(fetchMock).toHaveBeenCalledWith("/data/cardhashes.bin");
     expect(cardIdentifierConstructorMock).toHaveBeenCalledTimes(1);
     expect(screen.getByLabelText("Mock scan camera")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Exit scan" }));
+    expect(screen.getByText("Opt")).toBeInTheDocument();
+    expect(screen.getByText("bottom & top")).toBeInTheDocument();
   });
 
   it("tracks auto-added scans in the review bubble and removes one in a single tap", async () => {
@@ -263,7 +268,7 @@ describe("STORY-074 target gating and pickers", () => {
     }
 
     // The auto-add lands in the zone and the review bubble counts this-session scans.
-    expect(await screen.findByText("1. Opt")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack (1)");
     const bubble = await screen.findByLabelText("Scanned this session: 1");
 
     // One tap to expand, one tap to remove — no confirmation step (DEC-058).
@@ -271,7 +276,7 @@ describe("STORY-074 target gating and pickers", () => {
     await user.click(screen.getByRole("button", { name: "Remove Opt from scan review" }));
 
     // Removal flows through the existing zone-card path; count/list update live.
-    expect(screen.queryByText("1. Opt")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack");
     expect(screen.queryByLabelText(/^Scanned this session:/)).not.toBeInTheDocument();
     // Scanning continues after the undo.
     expect(screen.getByLabelText("Mock scan camera")).toBeInTheDocument();

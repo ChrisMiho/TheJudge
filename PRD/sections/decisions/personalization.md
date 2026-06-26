@@ -59,3 +59,48 @@ Frontend-only user personalization behavior that changes app presentation withou
 - Notes:
   - approved scope calls: background stays neutral (blue bias removed), semantic green states re-themed, scanner UI included in theme reach, existing token set reused
   - non-goals (unchanged from DEC-066): arbitrary RGB/hex picker, per-component overrides, server-synced preferences, account settings, dark/light mode redesign, palette-tinted backgrounds, new theming framework
+
+### DEC-075
+- Decision: Layout density customization uses a global frontend-only **Chunky / Slim** control in the theme panel, with browser-local persistence and `data-layout-density` on `document.documentElement`. **Chunky** is the default and must be a visual no-op versus pre-change spacing.
+- Status: confirmed
+- Context: DEC-066 ships palette personalization but not spacing density. Staged-flow screens remain vertically tall even after screen-specific compaction; users need a global compact layout preference without a settings system or account layer. The palette infrastructure (`ThemeControl`, localStorage prefs, immediate apply) is the pattern to mirror.
+- Impact:
+  - `layoutDensityPrefs.ts` stores `thejudge.theme.layoutDensity` (`"chunky"` | `"slim"`)
+  - `applyLayoutDensity.ts` sets `document.documentElement.dataset.layoutDensity` only
+  - `ThemeControl` exposes a Chunky / Slim segmented control below palette swatches
+  - shared `PageShell` and semantic CSS classes in `index.css` define chunky defaults plus `[data-layout-density="slim"]` overrides for shell padding, card gaps, and panel inner spacing
+  - slim mode additionally tightens high-scroll surfaces (header scale, scan video aspect, conversation thread cap, etc.) via attribute selectors; chunky regression is guarded on reference screens
+  - missing, corrupt, or unsupported stored values fall back to chunky
+  - primary controls keep touch-friendly minimum heights; body text is not shrunk below existing `text-sm` / `text-xs`
+  - no `AskAiRequest`, Zod schema, backend route, prompt assembly, provider, card metadata, or data-pipeline behavior changes
+- Related requirements:
+  - REQ-055
+  - FLOW-008
+  - NFR-011
+- Notes:
+  - distinct from DEC-066's "per-component theme overrides" non-goal — this is a global density token system, not arbitrary per-widget theming
+  - non-goals: server-synced preferences, account settings, viewport locking / sticky footers, animation-heavy density transitions
+
+### DEC-076
+- Decision: The staged data-collection flow receives a presentation-only compaction pass across game context, zone collection, enrichment list mode, and scan-focused zone-collection chrome. Zone confirmation is excluded.
+- Status: confirmed
+- Context: Routine setup work forces document scroll on desktop and mobile because screens stack generous padding, unbounded lists, and redundant chrome — especially enrichment list mode, zone collection with scan open, and game context (hero image, duplicate panels). This pass reduces vertical space without changing flow logic or payloads.
+- Impact:
+  - **game context:** cat-wizard hero hidden by default; revealed after 10 clicks on the `TheJudge` brand title during the game-context step only, session-only with no localStorage and no hint; turn phase and active player merged into one panel (`grid-cols-1 sm:grid-cols-2`); combat sub-step remains full-width below when phase is `combat`; `(recommended)` removed from active-player labeling; wider expand/collapse and add/remove player buttons
+  - **zone collection:** card list becomes a 2-column tile grid showing at most 4 cards (2×2) before internal scroll, including stack; remove buttons and stack-position labels preserved
+  - **zone collection chrome:** remove the empty-state `Select a suggestion to preview and add a card to …` placeholder; search and suggestions are sufficient affordance
+  - **scan focus:** while scan is open, hide search input, scan entry button, zone card list, owner select, and card preview; remove the `Scan card` heading; place **Exit scan** at the camera top-right; offset the scan review bubble so controls do not overlap; remove the low-confidence "Use manual search" escalation prompt — manual search is reached via **Exit scan** while the camera is open (DEC-050); manual tap-to-capture on the scan screen is unchanged (DEC-052)
+  - **enrichment:** in **View all cards** mode only, each zone's card list caps at 4 visible full-width edit rows with internal scroll; card-by-card wizard mode unchanged
+  - **zone confirmation:** no layout changes
+  - presentation only — no change to step names, step ordering, flow logic, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, or data-pipeline behavior
+- Related requirements:
+  - REQ-056
+  - FLOW-001
+  - FLOW-002
+  - FLOW-006
+  - DEC-067
+  - DEC-050
+  - DEC-052
+- Notes:
+  - scroll caps (4 zone tiles, 4 enrichment rows per zone) apply in both chunky and slim density; slim tightens spacing further (DEC-075)
+  - non-goals: viewport locking, sticky footers, `dvh` page-shell redesign, changing zone confirmation, scan-engine changes

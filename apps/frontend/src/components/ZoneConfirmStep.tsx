@@ -1,6 +1,7 @@
 import { CANONICAL_ZONE_ORDER } from "../lib/contextFlow";
 import { ZONE_LABELS } from "../lib/zoneLabels";
 import type { ZoneId } from "../types";
+import { PageShell } from "./PageShell";
 import { StagedStepHeader } from "./StagedStepHeader";
 
 type ZoneConfirmStepProps = {
@@ -21,8 +22,7 @@ export function ZoneConfirmStep({
   statusMessage
 }: ZoneConfirmStepProps): JSX.Element {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 px-4 py-6 text-zinc-100">
-      <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-zinc-700/70 bg-zinc-900/70 p-4 md:p-6">
+    <PageShell>
         <StagedStepHeader stepName="Zone confirmation" />
         <p className="text-sm text-zinc-400">Select the zones relevant to your question. Defaults are pre-checked based on the turn phase.</p>
 
@@ -74,7 +74,6 @@ export function ZoneConfirmStep({
             {statusMessage}
           </p>
         )}
-      </section>
-    </main>
+    </PageShell>
   );
 }

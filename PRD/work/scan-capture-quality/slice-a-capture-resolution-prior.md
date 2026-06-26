@@ -1,6 +1,6 @@
 # Slice A — Higher-resolution capture request
 
-## Status: planned
+## Status: done
 
 ## Goal
 

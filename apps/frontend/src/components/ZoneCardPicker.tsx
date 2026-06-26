@@ -3,6 +3,7 @@ import { CardSelectionPreview } from "./CardSelectionPreview";
 import { ScanCameraSurface, type ScanCameraStatus } from "./ScanCameraSurface";
 import { ScanReviewBubble } from "./ScanReviewBubble";
 import type { ScanAddConfirmation, ScanConvergence, ScanDebugMetrics } from "../hooks/useScanCapture";
+import type { AcquisitionFrameDiagnostic } from "../lib/scan/acquisitionDiagnostics";
 import type { IdentifyResult, RgbImage } from "../lib/scan/types";
 import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { formatPlayerDisplayLabel } from "../lib/playerLabels";
@@ -15,13 +16,13 @@ type ZoneCardPickerScanProps = {
   convergence: ScanConvergence;
   addConfirmation: ScanAddConfirmation | null;
   scanDebug: ScanDebugMetrics | null;
-  showManualEntryPrompt: boolean;
   /** cardIds auto-added to this zone during the current scan session (review bubble). */
   sessionCardIds: string[];
   onOpen: () => void | Promise<void>;
   onExitToManual: () => void;
   identify: (image: RgbImage) => IdentifyResult | Promise<IdentifyResult>;
   onCameraStatusChange: (status: ScanCameraStatus) => void;
+  onAcquisitionDiagnostic?: (diagnostic: AcquisitionFrameDiagnostic) => void;
 };
 
 type ZoneCardPickerProps = {
@@ -101,54 +102,54 @@ export function ZoneCardPicker({
         </p>
       )}
 
-      <label className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
-        {`${ZONE_LABELS[zoneId]} search`}
-        <span className="mt-2 grid gap-2 normal-case tracking-normal sm:grid-cols-[1fr_auto] sm:items-center">
-          <input
-            aria-label={`${ZONE_LABELS[zoneId]} search input`}
-            value={searchInput}
-            onChange={(event) => onSearchInputChange(event.target.value)}
-            onKeyDown={onSearchKeyDown}
-            className="w-full rounded-xl border border-zinc-600 bg-zinc-800/80 px-3 py-2 text-sm"
-            placeholder="Type to begin"
-          />
-          {scan && (
-            <button
-              type="button"
-              onClick={(event) => {
-                event.preventDefault();
-                void scan.onOpen();
-              }}
-              className="rounded-xl border border-accent/70 bg-accent/15 px-4 py-2 text-sm font-semibold text-accent-soft transition hover:bg-accent/25"
-            >
-              Scan
-            </button>
-          )}
-        </span>
-      </label>
+      {!isScanOpen && (
+        <label className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
+          {`${ZONE_LABELS[zoneId]} search`}
+          <span className="mt-2 grid gap-2 normal-case tracking-normal sm:grid-cols-[1fr_auto] sm:items-center">
+            <input
+              aria-label={`${ZONE_LABELS[zoneId]} search input`}
+              value={searchInput}
+              onChange={(event) => onSearchInputChange(event.target.value)}
+              onKeyDown={onSearchKeyDown}
+              className="w-full rounded-xl border border-zinc-600 bg-zinc-800/80 px-3 py-2 text-sm"
+              placeholder="Type to begin"
+            />
+            {scan && (
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.preventDefault();
+                  void scan.onOpen();
+                }}
+                className="rounded-xl border border-accent/70 bg-accent/15 px-4 py-2 text-sm font-semibold text-accent-soft transition hover:bg-accent/25"
+              >
+                Scan
+              </button>
+            )}
+          </span>
+        </label>
+      )}
 
       {isScanOpen && scan && (
         <div className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-3">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Scan card</p>
-            <button
-              type="button"
-              onClick={scan.onExitToManual}
-              className="rounded-lg border border-zinc-600 px-3 py-1.5 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
-            >
-              Exit scan
-            </button>
-          </div>
           {scan.isLoading ? (
             <p className="rounded-xl border border-zinc-700 bg-zinc-950/40 px-3 py-2 text-sm text-zinc-300">
               Loading scan data...
             </p>
           ) : (
             <div className="relative">
+              <button
+                type="button"
+                onClick={scan.onExitToManual}
+                className="absolute right-3 top-3 z-20 rounded-lg border border-zinc-600 bg-zinc-950/60 px-3 py-1.5 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
+              >
+                Exit scan
+              </button>
               <ScanCameraSurface
                 onCapture={() => undefined}
                 identify={scan.identify}
                 onStatusChange={scan.onCameraStatusChange}
+                onAcquisitionDiagnostic={scan.onAcquisitionDiagnostic}
                 convergence={scan.convergence}
                 confirmation={scan.addConfirmation}
                 debug={scan.scanDebug}
@@ -161,18 +162,6 @@ export function ZoneCardPicker({
             <p className="rounded-xl border border-red-500/50 bg-red-950/40 px-3 py-2 text-sm text-red-100">
               {scan.error}
             </p>
-          )}
-          {scan.showManualEntryPrompt && (
-            <div className="flex flex-col gap-2 rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm text-accent-soft sm:flex-row sm:items-center sm:justify-between">
-              <span>Still no confident scan match. Manual search is available.</span>
-              <button
-                type="button"
-                onClick={scan.onExitToManual}
-                className="rounded-lg border border-accent-soft/70 px-3 py-1.5 text-xs font-semibold text-accent-soft transition hover:bg-accent/15"
-              >
-                Use manual search
-              </button>
-            </div>
           )}
         </div>
       )}
@@ -204,7 +193,7 @@ export function ZoneCardPicker({
         </div>
       )}
 
-      {selectedCard && zoneId !== "stack" && (
+      {!isScanOpen && selectedCard && zoneId !== "stack" && (
         <label className="flex flex-col gap-1 text-xs">
           <span className="font-semibold uppercase tracking-[0.08em] text-zinc-300">Card owner</span>
           <select
@@ -222,7 +211,7 @@ export function ZoneCardPicker({
         </label>
       )}
 
-      {selectedCard ? (
+      {!isScanOpen && selectedCard && (
         <CardSelectionPreview
           card={selectedCard}
           contextTitle={`${ZONE_LABELS[zoneId]} card`}
@@ -238,53 +227,47 @@ export function ZoneCardPicker({
             </button>
           }
         />
-      ) : (
-        <p className="text-xs text-zinc-300">Select a suggestion to preview and add a card to {ZONE_LABELS[zoneId]}.</p>
       )}
 
-      {cards.length > 0 && (
+      {!isScanOpen && cards.length > 0 && (
         <div className="space-y-2 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
             {`${ZONE_LABELS[zoneId]} cards (${cards.length})`}
           </p>
-          <ul className="space-y-2">
+          <div className="zone-card-grid grid grid-cols-2 gap-2 overflow-y-auto">
             {cards.map((card, index) => (
-              <li
+              <div
                 key={`${zoneId}-${card.cardId}-${index}`}
-                className="flex items-center justify-between gap-3 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2 text-sm"
+                className="zone-card-tile flex flex-col gap-1 rounded-xl border border-zinc-700/80 bg-zinc-950/40 p-2"
               >
-                <div className="flex min-w-0 items-center gap-2">
-                  {card.imageUrl && (
-                    <img
-                      src={card.imageUrl}
-                      alt={card.name}
-                      className="h-20 w-14 shrink-0 rounded object-cover"
-                    />
-                  )}
-                  <div>
-                    <p className="font-medium text-zinc-100">{`${index + 1}. ${card.name}`}</p>
-                    {zoneId === "stack" ? (
-                      <p className="text-xs text-zinc-400">{formatStackPosition(index, cards.length)}</p>
-                    ) : (
-                      card.owner && (
-                        <p className="text-xs text-zinc-400">
-                          Owner: {formatPlayerDisplayLabel(card.owner, displayNamesByPlayer[card.owner])}
-                        </p>
-                      )
-                    )}
-                  </div>
-                </div>
+                {card.imageUrl && (
+                  <img
+                    src={card.imageUrl}
+                    alt={card.name}
+                    className="zone-card-tile-image h-20 w-14 shrink-0 self-center rounded object-cover"
+                  />
+                )}
+                <p className="truncate text-xs font-medium text-zinc-100">{card.name}</p>
+                {zoneId === "stack" ? (
+                  <p className="text-xs text-zinc-400">{formatStackPosition(index, cards.length)}</p>
+                ) : (
+                  card.owner && (
+                    <p className="truncate text-xs text-zinc-400">
+                      {formatPlayerDisplayLabel(card.owner, displayNamesByPlayer[card.owner])}
+                    </p>
+                  )
+                )}
                 <button
                   type="button"
                   aria-label={`Remove ${card.name} from ${ZONE_LABELS[zoneId]}`}
                   onClick={() => onRemoveCard(card.cardId)}
-                  className="rounded-lg border border-zinc-600 px-2 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
+                  className="mt-auto rounded-lg border border-zinc-600 px-2 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
                 >
                   Remove
                 </button>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
     </div>
