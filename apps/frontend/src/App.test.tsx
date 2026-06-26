@@ -79,6 +79,42 @@ function getUrlFromRequest(input: RequestInfo | URL): string {
   return input.url;
 }
 
+function createMemoryStorage(): Storage {
+  const map = new Map<string, string>();
+  return {
+    get length() {
+      return map.size;
+    },
+    clear: () => map.clear(),
+    getItem: (key: string) => (map.has(key) ? (map.get(key) as string) : null),
+    setItem: (key: string, value: string) => {
+      map.set(key, String(value));
+    },
+    removeItem: (key: string) => {
+      map.delete(key);
+    },
+    key: (index: number) => Array.from(map.keys())[index] ?? null
+  };
+}
+
+function installMemoryLocalStorage(): void {
+  const storage = createMemoryStorage();
+  Object.defineProperty(globalThis, "localStorage", {
+    configurable: true,
+    writable: true,
+    value: storage
+  });
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    value: storage
+  });
+}
+
+function uninstallMemoryLocalStorage(): void {
+  Reflect.deleteProperty(globalThis, "localStorage");
+  Reflect.deleteProperty(window, "localStorage");
+}
+
 function createStackItem(name: string, index: number): CardMetadataItem {
   return {
     cardId: `card-${index}`,
@@ -2061,6 +2097,7 @@ describe("Slice-E: layout density toggle", () => {
     askAiResponseQueue = [{ status: 200, body: { answer: "Mock answer" } }];
     submittedAskAiRequests.length = 0;
     submittedAskAiHeaders.length = 0;
+    installMemoryLocalStorage();
 
     fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
       const url = getUrlFromRequest(input);
@@ -2082,6 +2119,7 @@ describe("Slice-E: layout density toggle", () => {
   });
 
   afterEach(() => {
+    uninstallMemoryLocalStorage();
     vi.unstubAllGlobals();
     delete document.documentElement.dataset.theme;
     delete document.documentElement.dataset.layoutDensity;
@@ -2099,6 +2137,26 @@ describe("Slice-E: layout density toggle", () => {
     await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
 
     expect(document.documentElement.dataset.layoutDensity).toBe("slim");
+  });
+
+  it("restores the persisted Slim density on a fresh app mount", async () => {
+    const user = userEvent.setup();
+    const firstRender = render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
+    await waitFor(() => {
+      expect(globalThis.localStorage.getItem("thejudge.theme.layoutDensity")).toBe("slim");
+      expect(document.documentElement.dataset.layoutDensity).toBe("slim");
+    });
+    firstRender.unmount();
+    delete document.documentElement.dataset.layoutDensity;
+
+    render(<App />);
+
+    await waitFor(() => expect(document.documentElement.dataset.layoutDensity).toBe("slim"));
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    expect(screen.getByRole("button", { name: "Layout: Slim" })).toHaveAttribute("aria-pressed", "true");
   });
 
   it("indicates the active density in the theme panel", async () => {

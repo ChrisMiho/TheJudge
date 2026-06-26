@@ -64,7 +64,7 @@ Two surfaces share “max 4 visible, scroll the rest” with different row geome
 | --- | --- | --- |
 | A | Game context: cat Easter egg, turn phase + active player row, wider player buttons | None |
 | B | Zone collection: 2-col card grid, scroll after 4 cards | None |
-| C | Zone scan: hide search/list while open; Exit on camera; remove manual-entry prompt | None |
+| C | Zone scan: hide search/list and outer flow actions while open; keep Capture and Exit on camera; remove manual-entry prompt | None |
 | D | Enrichment: per-zone 4-row scroll cap in list mode | None |
 | E | Density infra, theme toggle, `PageShell`, CSS density tokens | None |
 | F | Slim overrides on high-scroll components | E |
@@ -83,7 +83,7 @@ npm run quality:check
 ### Manual spot-check
 
 - Game context: players expanded; Easter egg after 10 brand clicks; turn phase + active player side-by-side; no `(recommended)` text
-- Zone collection: 5+ cards → grid scrolls at 4; scan open hides search + list; Exit scan top-right on camera
+- Zone collection: 5+ cards → grid scrolls at 4; scan open hides search, list, and outer flow actions; Capture and Exit scan remain on camera
 - Enrichment: View all cards with 5+ cards in one zone → zone list scrolls
 - Theme panel: Slim toggles `data-layout-density`; chunky matches pre-change layout; preference survives reload
 - Answered state: density toggle does not reset conversation or game context

@@ -19,7 +19,7 @@ Apply slim-density overrides to high-scroll components via CSS attribute selecto
 | `FrozenContextSummary.tsx` | Tighter disclosure padding in slim |
 | `App.tsx` game-context | Adopt `.panel-inner` for players section |
 
-Lower priority: `ZoneConfirmStep` checkbox gaps, `AskAiWaitingPanel` padding.
+Lower priority: `AskAiWaitingPanel` padding. `ZoneConfirmStep` is explicitly excluded from this package; do not adjust checkbox gaps or other zone-confirmation layout as part of slim density work.
 
 ## Acceptance criteria
 

@@ -1,6 +1,6 @@
 # Slice G — PRD Promotion and Ship Gates
 
-## Status: pending
+## Status: in-progress
 
 ## Goal
 
@@ -30,6 +30,14 @@ DEC-075, DEC-076, REQ-055, REQ-056, and FLOW-008 are already in `sections/` from
 npm run quality:check
 ```
 
+Use the `workflow-reference.md` ship gates before cleanup:
+
+- [ ] Slice acceptance criteria satisfied and verified
+- [ ] Tests updated; `npm run quality:check` green for touched areas
+- [ ] Public contract unchanged unless slice scoped a change
+- [ ] No secrets committed
+- [ ] Durable outcomes promoted; `PRD/work/ui-compact-layout-refinement/` ready to delete
+
 ### Manual acceptance
 
 - Game context (players expanded, Easter egg)
@@ -48,6 +56,16 @@ npm run quality:check
 ## Dependencies
 
 - `sequential`: Slices A, B, C, D, E, F — all implementation complete
+
+## PRD promotion checklist
+
+Execution belongs to `thejudge-cleanup` after Slice G passes:
+
+- [ ] Confirm durable outcomes are promoted into `PRD/sections/`.
+- [ ] Write receipt at `PRD/instructions/receipts/ui-compact-layout-refinement-<YYYY-MM-DD>.md`.
+- [ ] Apply the system-map promotion gate: after code exists and receipt is written, flip the relevant `PRD/sections/system-map.md` entry from `planned`/`partial` to `shipped`.
+- [ ] Delete `PRD/work/ui-compact-layout-refinement/` entirely if fully shipped.
+- [ ] Update `PRD/README.md` only if navigation changed.
 
 ## Cleanup
 

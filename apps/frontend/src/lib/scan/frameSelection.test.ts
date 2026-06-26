@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CARD_HEIGHT, CARD_WIDTH, REGION_A } from "./identify";
 import { FrameSelector } from "./frameSelection";
+import { FRAME_SELECTOR_CURRENT_FRAME_ONLY_WINDOW_SIZE, FRAME_SELECTOR_WINDOW_SIZE } from "./tuning";
 import type { RgbImage } from "./types";
 
 function makeImage(
@@ -95,6 +96,32 @@ describe("FrameSelector", () => {
       expect(selection.provenance).toBe("retained-prior");
       expect(selection.selectedFrameAge).toBe(1);
       expect(selection.selectedFrameIndex).toBe(1);
+    }
+  });
+
+  it("keeps the default rolling selector window while exposing a current-frame-only trial path", () => {
+    expect(FRAME_SELECTOR_WINDOW_SIZE).toBeGreaterThan(FRAME_SELECTOR_CURRENT_FRAME_ONLY_WINDOW_SIZE);
+
+    const rolling = new FrameSelector();
+    const currentOnly = new FrameSelector(FRAME_SELECTOR_CURRENT_FRAME_ONLY_WINDOW_SIZE);
+    const best = bestImage();
+    const good = goodImage();
+
+    rolling.push(best);
+    currentOnly.push(best);
+
+    const rollingSelection = rolling.push(good);
+    const currentOnlySelection = currentOnly.push(good);
+
+    expect(rollingSelection.abstain).toBe(false);
+    expect(currentOnlySelection.abstain).toBe(false);
+    if (!rollingSelection.abstain && !currentOnlySelection.abstain) {
+      expect(rollingSelection.image).toBe(best);
+      expect(rollingSelection.provenance).toBe("retained-prior");
+      expect(rollingSelection.selectionMode).toBe("rolling");
+      expect(currentOnlySelection.image).toBe(good);
+      expect(currentOnlySelection.provenance).toBe("current");
+      expect(currentOnlySelection.selectionMode).toBe("current-frame-only");
     }
   });
 

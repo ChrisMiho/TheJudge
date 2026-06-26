@@ -93,15 +93,40 @@ function frameGuideRect(frameWidth: number, frameHeight: number): GuideRect {
   }
 }
 
-function getVideoTrackSettings(stream: MediaStream | null): MediaTrackSettings | null {
+type FocusCapableTrack = MediaStreamTrack & {
+  getCapabilities?: () => MediaTrackCapabilities & { focusMode?: string[] }
+  getSettings?: () => MediaTrackSettings & { focusMode?: string }
+}
+
+function getVideoTrack(stream: MediaStream | null): FocusCapableTrack | null {
   const track = stream?.getVideoTracks?.()[0] ?? stream?.getTracks().find((candidate) => candidate.kind === "video")
+  return (track as FocusCapableTrack | undefined) ?? null
+}
+
+function getVideoTrackSettings(stream: MediaStream | null): MediaTrackSettings | null {
+  const track = getVideoTrack(stream)
   return track?.getSettings?.() ?? null
+}
+
+async function requestContinuousFocusIfSupported(stream: MediaStream): Promise<string | null> {
+  const track = getVideoTrack(stream)
+  const capabilities = track?.getCapabilities?.() as (MediaTrackCapabilities & { focusMode?: string[] }) | undefined
+  const focusModes = capabilities?.focusMode
+  if (!track?.applyConstraints || !focusModes?.includes("continuous")) return null
+  try {
+    const constraints = { advanced: [{ focusMode: "continuous" }] } as unknown as MediaTrackConstraints
+    await track.applyConstraints(constraints)
+    return "continuous"
+  } catch {
+    return null
+  }
 }
 
 function captureDiagnosticFromFrame(
   frameIndex: number,
   frame: RgbImage,
-  settings: MediaTrackSettings | null
+  settings: MediaTrackSettings | null,
+  requestedFocusMode: string | null
 ): CaptureDiagnostic {
   const extendedSettings = settings as (MediaTrackSettings & { focusMode?: string }) | null
   return {
@@ -115,6 +140,7 @@ function captureDiagnosticFromFrame(
     trackFacingMode: settings?.facingMode,
     trackDeviceId: settings?.deviceId,
     trackGroupId: settings?.groupId,
+    trackFocusModeRequested: requestedFocusMode ?? undefined,
     trackFocusMode: extendedSettings?.focusMode
   }
 }
@@ -160,6 +186,7 @@ export function ScanCameraSurface({
   const [debugAcquisitionDiagnostic, setDebugAcquisitionDiagnostic] =
     useState<AcquisitionFrameDiagnostic | null>(null)
   const frameIndexRef = useRef(0)
+  const requestedFocusModeRef = useRef<string | null>(null)
   const frameExporterRef = useRef(_frameExporter ?? downloadCanvasAsPng)
   frameExporterRef.current = _frameExporter ?? downloadCanvasAsPng
   const diagnosticExporterRef = useRef(_diagnosticExporter ?? downloadDiagnosticAsJson)
@@ -214,7 +241,12 @@ export function ScanCameraSurface({
         const guide = frameGuideRect(frame.width, frame.height)
         const captureDiagnostic =
           debugEnabledRef.current
-            ? captureDiagnosticFromFrame(frameIndex, frame, getVideoTrackSettings(streamRef.current))
+            ? captureDiagnosticFromFrame(
+                frameIndex,
+                frame,
+                getVideoTrackSettings(streamRef.current),
+                requestedFocusModeRef.current
+              )
             : null
         if (force && debugEnabledRef.current) {
           frameExporterRef.current(canvas)
@@ -285,6 +317,7 @@ export function ScanCameraSurface({
     setDebugCorners(null)
     setDebugFrame(null)
     setDebugAcquisitionDiagnostic(null)
+    requestedFocusModeRef.current = null
     audioRef.current?.load()
 
     async function openCamera(): Promise<void> {
@@ -297,6 +330,11 @@ export function ScanCameraSurface({
           },
           audio: false
         })
+        if (cancelled) {
+          stream.getTracks().forEach((track) => track.stop())
+          return
+        }
+        requestedFocusModeRef.current = await requestContinuousFocusIfSupported(stream)
         if (cancelled) {
           stream.getTracks().forEach((track) => track.stop())
           return

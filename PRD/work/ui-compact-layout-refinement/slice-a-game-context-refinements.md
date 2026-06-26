@@ -30,11 +30,11 @@ Compact the game context step (`App.tsx` game-context branch) with three present
 
 ## Acceptance criteria
 
-- [ ] Cat image not in document on initial game-context render.
-- [ ] 10 clicks on `TheJudge` brand reveals image with `src="/assets/cats-homescreen.png"`.
-- [ ] Fewer than 10 clicks does not reveal image.
-- [ ] `getByLabelText("Turn phase")` and `getByLabelText("Active player")` still work; `recommended` not in document.
-- [ ] Existing add/remove player tests pass.
+- [x] Cat image not in document on initial game-context render.
+- [x] 10 clicks on `TheJudge` brand reveals image with `src="/assets/cats-homescreen.png"`.
+- [x] Fewer than 10 clicks does not reveal image.
+- [x] `getByLabelText("Turn phase")` and `getByLabelText("Active player")` still work; `recommended` not in document.
+- [x] Existing add/remove player tests pass.
 
 ## Dependencies
 

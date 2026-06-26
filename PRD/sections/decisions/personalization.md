@@ -68,7 +68,8 @@ Frontend-only user personalization behavior that changes app presentation withou
   - `layoutDensityPrefs.ts` stores `thejudge.theme.layoutDensity` (`"chunky"` | `"slim"`)
   - `applyLayoutDensity.ts` sets `document.documentElement.dataset.layoutDensity` only
   - `ThemeControl` exposes a Chunky / Slim segmented control below palette swatches
-  - shared `PageShell` and semantic CSS classes in `index.css` define chunky defaults plus `[data-layout-density="slim"]` overrides for shell padding, card gaps, and panel inner spacing
+  - shared `PageShell` and semantic CSS classes in `index.css` define chunky defaults plus `[data-layout-density="slim"]` overrides for shell padding, card gaps, and panel inner spacing on participating density surfaces
+  - `ZoneConfirmStep` is not a participating slim-density surface; it may share shell plumbing only when the rendered layout, spacing, and density behavior remain visually unchanged, otherwise its existing shell markup stays in place
   - slim mode additionally tightens high-scroll surfaces (header scale, scan video aspect, conversation thread cap, etc.) via attribute selectors; chunky regression is guarded on reference screens
   - missing, corrupt, or unsupported stored values fall back to chunky
   - primary controls keep touch-friendly minimum heights; body text is not shrunk below existing `text-sm` / `text-xs`
@@ -89,9 +90,9 @@ Frontend-only user personalization behavior that changes app presentation withou
   - **game context:** cat-wizard hero hidden by default; revealed after 10 clicks on the `TheJudge` brand title during the game-context step only, session-only with no localStorage and no hint; turn phase and active player merged into one panel (`grid-cols-1 sm:grid-cols-2`); combat sub-step remains full-width below when phase is `combat`; `(recommended)` removed from active-player labeling; wider expand/collapse and add/remove player buttons
   - **zone collection:** card list becomes a 2-column tile grid showing at most 4 cards (2×2) before internal scroll, including stack; remove buttons and stack-position labels preserved
   - **zone collection chrome:** remove the empty-state `Select a suggestion to preview and add a card to …` placeholder; search and suggestions are sufficient affordance
-  - **scan focus:** while scan is open, hide search input, scan entry button, zone card list, owner select, and card preview; remove the `Scan card` heading; place **Exit scan** at the camera top-right; offset the scan review bubble so controls do not overlap; remove the low-confidence "Use manual search" escalation prompt — manual search is reached via **Exit scan** while the camera is open (DEC-050); manual tap-to-capture on the scan screen is unchanged (DEC-052)
+  - **scan focus:** while scan is open, hide search input, scan entry button, zone card list, owner select, card preview, and outer staged-flow navigation/action buttons outside the camera surface; remove the `Scan card` heading; place **Exit scan** at the camera top-right; keep the scan-local **Capture** button and other scan-local controls available; offset the scan review bubble so controls do not overlap; remove the low-confidence "Use manual search" escalation prompt — manual search is reached via **Exit scan** while the camera is open (DEC-050); manual tap-to-capture on the scan screen is unchanged (DEC-052)
   - **enrichment:** in **View all cards** mode only, each zone's card list caps at 4 visible full-width edit rows with internal scroll; card-by-card wizard mode unchanged
-  - **zone confirmation:** no layout changes
+  - **zone confirmation:** no layout, spacing, or slim-density visual changes; shared shell plumbing is allowed only as a rendered visual no-op
   - presentation only — no change to step names, step ordering, flow logic, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, or data-pipeline behavior
 - Related requirements:
   - REQ-056
@@ -103,4 +104,4 @@ Frontend-only user personalization behavior that changes app presentation withou
   - DEC-052
 - Notes:
   - scroll caps (4 zone tiles, 4 enrichment rows per zone) apply in both chunky and slim density; slim tightens spacing further (DEC-075)
-  - non-goals: viewport locking, sticky footers, `dvh` page-shell redesign, changing zone confirmation, scan-engine changes
+  - non-goals: viewport locking, sticky footers, `dvh` page-shell redesign, changing zone confirmation visuals or density behavior, scan-engine changes

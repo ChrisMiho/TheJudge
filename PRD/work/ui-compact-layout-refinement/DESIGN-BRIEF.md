@@ -2,7 +2,7 @@
 
 ## Goal
 
-Reduce vertical scroll across the staged flow through a presentation-only compaction pass: smarter list layouts, scan-mode focus, and an optional global **Chunky / Slim** layout-density toggle in the theme panel. **Chunky** is the default and must match current spacing (regression guard). Zone confirmation (`ZoneConfirmStep`) is explicitly unchanged.
+Reduce vertical scroll across the staged flow through a presentation-only compaction pass: smarter list layouts, scan-mode focus, and an optional global **Chunky / Slim** layout-density toggle in the theme panel. **Chunky** is the default and must match current spacing (regression guard). Zone confirmation (`ZoneConfirmStep`) is explicitly unchanged: it is excluded from slim-density visual changes, though it may use shared shell plumbing only if the rendered layout remains visually unchanged.
 
 ## Problem
 
@@ -13,10 +13,10 @@ Every flow screen duplicates a tall page shell (`min-h-screen` + `max-w-2xl` car
 | Screen / area | Change |
 | --- | --- |
 | **Game context** | Hide cat-wizard hero by default; reveal after 10 brand clicks (session-only, no hint); merge turn phase + active player into one panel; wider player +/- buttons; remove `(recommended)` from active-player labeling |
-| **Zone collection** | 2×2 card tile grid (max 4 visible, scroll rest) for all zones including stack; remove the empty-state **"Select a suggestion to preview and add a card to …"** placeholder; while scan is open, hide search, list, preview, and owner select; **Exit scan** on camera top-right; remove `Scan card` heading |
+| **Zone collection** | 2×2 card tile grid (max 4 visible, scroll rest) for all zones including stack; remove the empty-state **"Select a suggestion to preview and add a card to …"** placeholder; while scan is open, hide search, list, preview, owner select, and outer staged-flow action buttons; **Exit scan** on camera top-right; keep the scan-local **Capture** control available; remove `Scan card` heading |
 | **Enrichment** | View all cards: per-zone cap of 4 full-width edit rows then scroll; card-by-card wizard unchanged |
-| **Global density** | Chunky / Slim toggle in `ThemeControl`; `data-layout-density` on `document.documentElement`; shared `PageShell` + CSS density tokens; slim pass tightens high-scroll surfaces |
-| **Unchanged** | Zone confirmation step; flow logic; `AskAiRequest` / Zod / prompt / backend; scan matching / stabilizer |
+| **Global density** | Chunky / Slim toggle in `ThemeControl`; `data-layout-density` on `document.documentElement`; shared `PageShell` + CSS density tokens for participating density surfaces; slim pass tightens high-scroll surfaces |
+| **Unchanged** | Zone confirmation step visuals and spacing; flow logic; `AskAiRequest` / Zod / prompt / backend; scan matching / stabilizer |
 
 ### Scroll-cap pattern (both densities)
 
@@ -29,7 +29,7 @@ Slim density (slice F) tightens spacing further but keeps the same 4-item caps.
 
 ### Scan UX (approved)
 
-The low-confidence **"Still no confident scan match / Use manual search"** prompt is removed. While the camera is open, manual search is reached only via **Exit scan** (DEC-050 fallback). Manual tap-to-capture on the scan screen is unchanged (DEC-052).
+The low-confidence **"Still no confident scan match / Use manual search"** prompt is removed. While the camera is open, manual search is reached only via **Exit scan** (DEC-050 fallback). Non-camera page controls, including the staged-flow navigation/action buttons below the picker, are hidden to keep the camera surface short and focused. Manual tap-to-capture on the scan screen is unchanged (DEC-052), so the scan-local **Capture** button remains visible.
 
 ### Cat Easter egg (approved)
 
@@ -53,6 +53,7 @@ Session-only (`useState` in `App.tsx`); no localStorage; no hint text; game cont
 - No viewport locking, sticky footers, or `dvh` page-shell redesign
 - No server-synced preferences or account settings
 - No full design-system rewrite of every Tailwind utility
+- No slim-density spacing changes on `ZoneConfirmStep`; shared shell extraction is allowed there only as a visual no-op, otherwise leave its shell markup unchanged
 - Touch targets stay ≥ `min-h-[2.75rem]` on primary controls; body text not below existing `text-sm` / `text-xs`
 - Chunky mode must match pre-change visuals on reference screens
 
@@ -72,4 +73,4 @@ None blocking.
 
 ## Implementation map
 
-[GAMEPLAN.md](GAMEPLAN.md) and lettered slices remain the implementation plan. Slice G promotes DEC-075/REQ-055/REQ-056 and runs ship gates after slices A–F.
+[GAMEPLAN.md](GAMEPLAN.md) and lettered slices remain the implementation plan. DEC-075, DEC-076, REQ-055, REQ-056, and FLOW-008 are already promoted in `sections/`; Slice G verifies those references, completes the remaining scan-domain PRD alignment, and runs ship gates after slices A–F.

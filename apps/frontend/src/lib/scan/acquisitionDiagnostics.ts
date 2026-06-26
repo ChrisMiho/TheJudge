@@ -28,6 +28,7 @@ export interface CaptureDiagnostic {
   trackFacingMode?: string;
   trackDeviceId?: string;
   trackGroupId?: string;
+  trackFocusModeRequested?: string;
   trackFocusMode?: string;
 }
 
@@ -59,6 +60,8 @@ export interface FrameSelectionDiagnostic {
   source: FrameSelectionSource;
   qualityScore: number;
   qualityReason: ConditionReason | null;
+  /** Selector experiment path used for this choice; diagnostic-only. */
+  selectionMode?: "rolling" | "current-frame-only";
   /** Only present when abstain is false. */
   provenance?: FrameProvenance;
   /** Frames ago the selected frame was pushed; 0 = current frame. */

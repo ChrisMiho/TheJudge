@@ -1128,6 +1128,7 @@
   - default density is chunky; missing, unset, corrupt, or unsupported stored values fall back to chunky without throwing or blocking app load
   - chunky mode on reference staged screens matches pre-change spacing (regression guard)
   - slim mode visibly tightens shell padding, card gaps, and panel inner spacing without breaking touch targets or readability
+  - slim density applies only to participating density surfaces; `ZoneConfirmStep` is excluded from slim visual changes, and any shared shell extraction there must render visually unchanged
   - selected density persists across page reloads for the same browser
   - density changes do not reset game setup, selected zones, cards, enrichment, question text, answers, conversation state, scanner state, or retry cooldowns
   - tests cover density selection, persistence, fallback, chunky regression on at least one reference screen, and state safety
@@ -1152,9 +1153,9 @@
 - Acceptance Criteria:
   - **game context:** the cat-wizard hero image is not in the document on initial render; after 10 clicks on the `TheJudge` brand title on the game-context step it appears (`/assets/cats-homescreen.png`) and stays visible for the browser session only; turn phase and active player render in one merged panel side-by-side on `sm+` widths with combat sub-step full-width below when phase is `combat`; `(recommended)` does not appear in active-player labeling; player expand/collapse and add/remove controls use wider tap targets
   - **zone collection:** cards render in a 2-column tile grid with at most 4 tiles (2 rows) visible before the grid scrolls, for every zone including stack; remove buttons, thumbnails, truncated names, and stack-position labels are preserved; with 5+ cards the 5th is reachable via scroll; the empty-state `Select a suggestion to preview and add a card to …` placeholder is removed
-  - **scan focus:** while scan is open, search input, scan entry button, zone card list, owner select, and card preview are not in the document; the `Scan card` heading is removed; **Exit scan** is reachable on the camera surface top-right; the low-confidence manual-search escalation prompt does not render; manual tap-to-capture remains available
+  - **scan focus:** while scan is open, search input, scan entry button, zone card list, owner select, card preview, and outer staged-flow navigation/action buttons outside the camera surface are not in the document; the `Scan card` heading is removed; **Exit scan** is reachable on the camera surface top-right; the scan-local **Capture** button remains available; the low-confidence manual-search escalation prompt does not render; manual tap-to-capture remains available
   - **enrichment:** in **View all cards** mode, each zone's card list shows at most 4 full-width edit rows before internal scroll; card-by-card wizard mode is unchanged; all enrichment fields remain reachable by scrolling within the zone list
-  - **zone confirmation:** no layout changes
+  - **zone confirmation:** no layout, spacing, or slim-density visual changes; shared shell plumbing is permitted only if it is a rendered visual no-op for this step
   - tests cover representative cases for game-context Easter egg, zone grid scroll, scan chrome hide/show, and enrichment list scroll cap
 - Constraints:
   - presentation only; no change to step names, step ordering, flow logic, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, or data-pipeline behavior

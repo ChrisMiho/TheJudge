@@ -410,6 +410,38 @@ describe("ScanCameraSurface getUserMedia constraints (slice A / REQ-053)", () =>
     expect(screen.queryByText("Camera unavailable")).not.toBeInTheDocument();
   });
 
+  it("requests continuous focus only after the opened track reports support", async () => {
+    const applyConstraints = vi.fn().mockResolvedValue(undefined);
+    const getCapabilities = vi.fn().mockReturnValue({ focusMode: ["manual", "continuous"] });
+    const getSettings = vi.fn().mockReturnValue({ focusMode: "continuous" });
+    vi.mocked(navigator.mediaDevices.getUserMedia).mockResolvedValueOnce({
+      getTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }],
+      getVideoTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }]
+    } as unknown as MediaStream);
+
+    await act(async () => {
+      render(<ScanCameraSurface onCapture={() => undefined} />);
+    });
+
+    expect(applyConstraints).toHaveBeenCalledWith({ advanced: [{ focusMode: "continuous" }] });
+  });
+
+  it("skips continuous focus constraints when the opened track does not report support", async () => {
+    const applyConstraints = vi.fn().mockResolvedValue(undefined);
+    const getCapabilities = vi.fn().mockReturnValue({ focusMode: ["manual"] });
+    const getSettings = vi.fn().mockReturnValue({ focusMode: "manual" });
+    vi.mocked(navigator.mediaDevices.getUserMedia).mockResolvedValueOnce({
+      getTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }],
+      getVideoTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }]
+    } as unknown as MediaStream);
+
+    await act(async () => {
+      render(<ScanCameraSurface onCapture={() => undefined} />);
+    });
+
+    expect(applyConstraints).not.toHaveBeenCalled();
+  });
+
   it("surfaces camera-error when getUserMedia rejects", async () => {
     vi.mocked(navigator.mediaDevices.getUserMedia).mockRejectedValueOnce(new Error("NotAllowedError"));
     await act(async () => {
@@ -520,6 +552,7 @@ describe("ScanCameraSurface debug-gated frame export", () => {
   });
 
   it("emits and exports detector-miss diagnostics when debug is enabled", async () => {
+    const applyConstraints = vi.fn().mockResolvedValue(undefined);
     const getSettings = vi.fn().mockReturnValue({
       width: 1920,
       height: 1080,
@@ -529,9 +562,10 @@ describe("ScanCameraSurface debug-gated frame export", () => {
       groupId: "group-a",
       focusMode: "continuous"
     });
+    const getCapabilities = vi.fn().mockReturnValue({ focusMode: ["continuous"] });
     vi.mocked(navigator.mediaDevices.getUserMedia).mockResolvedValueOnce({
-      getTracks: () => [{ stop: vi.fn(), getSettings }],
-      getVideoTracks: () => [{ stop: vi.fn(), getSettings }]
+      getTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }],
+      getVideoTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }]
     } as unknown as MediaStream);
     const onAcquisitionDiagnostic = vi.fn();
     const diagnosticExporter = vi.fn();
@@ -563,6 +597,7 @@ describe("ScanCameraSurface debug-gated frame export", () => {
         trackFrameRate: 30,
         trackDeviceId: "device-a",
         trackGroupId: "group-a",
+        trackFocusModeRequested: "continuous",
         trackFocusMode: "continuous"
       }),
       detector: expect.objectContaining({

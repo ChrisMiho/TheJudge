@@ -96,6 +96,7 @@ export function ZoneCollectionStep({
     }
   });
   const closeScan = scanCapture.closeScan;
+  const isScanOpen = scanCapture.isOpen;
 
   useEffect(() => {
     closeScan();
@@ -230,7 +231,7 @@ export function ZoneCollectionStep({
                 onAddSelectedCard={handleAddSelectedCard}
                 onRemoveCard={handleRemoveCard}
                 scan={{
-                  isOpen: scanCapture.isOpen,
+                  isOpen: isScanOpen,
                   isLoading: scanCapture.isLoading,
                   error: scanCapture.error,
                   convergence: scanCapture.convergence,
@@ -252,28 +253,32 @@ export function ZoneCollectionStep({
           </>
         )}
 
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={onBack}
-            className="rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
-          >
-            Back
-          </button>
-          <button
-            type="button"
-            onClick={handleContinue}
-            disabled={!canContinue}
-            className="rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Continue
-          </button>
-        </div>
+        {!isScanOpen && (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={onBack}
+                className="rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={handleContinue}
+                disabled={!canContinue}
+                className="rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Continue
+              </button>
+            </div>
 
-        {!canContinue && (
-          <p className="text-xs text-zinc-400">
-            Add at least one card in a selected zone before continuing.
-          </p>
+            {!canContinue && (
+              <p className="text-xs text-zinc-400">
+                Add at least one card in a selected zone before continuing.
+              </p>
+            )}
+          </>
         )}
 
         {statusMessage && (

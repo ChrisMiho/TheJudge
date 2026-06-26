@@ -283,6 +283,7 @@ export function useScanCapture({
           const frameSelectionDiagnostic: FrameSelectionDiagnostic = {
             abstain: true,
             source: "abstain",
+            selectionMode: selection.selectionMode,
             qualityScore: selection.quality.qualityScore,
             qualityReason: selection.quality.reason
           };
@@ -361,6 +362,7 @@ export function useScanCapture({
       const frameSelectionDiagnostic: FrameSelectionDiagnostic = {
         abstain: false,
         source: selection.provenance,
+        selectionMode: selection.selectionMode,
         qualityScore: selection.quality.qualityScore,
         qualityReason: selection.quality.reason,
         provenance: selection.provenance,

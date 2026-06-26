@@ -4,7 +4,7 @@
 
 ## Goal
 
-When scan mode is open on the add-cards screen, dedicate the viewport to the camera by hiding redundant chrome and simplifying scan panel headers. Manual search fallback remains via Exit scan. Also remove the stale empty-state suggestion placeholder from zone collection entirely.
+When scan mode is open on the add-cards screen, dedicate the viewport to the camera by hiding redundant picker and staged-flow chrome and simplifying scan panel headers. Manual search fallback remains via Exit scan. Manual tap-to-capture remains available on the camera. Also remove the stale empty-state suggestion placeholder from zone collection entirely.
 
 ## Requirements
 
@@ -18,12 +18,14 @@ When scan mode is open on the add-cards screen, dedicate the viewport to the cam
 - Zone card list grid
 - Autocomplete suggestions (already partially guarded)
 - Card owner select and `CardSelectionPreview`
+- Outer staged-flow navigation/action buttons for the add-cards screen, including Back/Continue-style controls outside the camera surface
 
 ### Camera chrome
 
 - Remove `Scan card` heading row above the video.
 - Move **Exit scan** button to `absolute right-3 top-3 z-20` inside the `relative` wrapper around `ScanCameraSurface`.
 - Offset `ScanReviewBubble` downward (e.g. `top-12`) so it does not overlap Exit scan.
+- Keep the scan-local **Capture** button and other scan-local controls available on the camera surface.
 
 ### Remove manual-entry prompt
 
@@ -35,7 +37,9 @@ When scan mode is open on the add-cards screen, dedicate the viewport to the cam
 
 - [ ] When `scan.isOpen`, search input and Scan button are not in the document.
 - [ ] When `scan.isOpen` with cards present, zone card list is not in the document.
+- [ ] When `scan.isOpen`, outer staged-flow navigation/action buttons outside the camera surface are not in the document.
 - [ ] `getByRole("button", { name: "Exit scan" })` remains findable and closes scan.
+- [ ] `getByRole("button", { name: "Capture" })` remains findable while scan is open.
 - [ ] Manual-entry prompt and "Use manual search" button never render.
 - [ ] `Select a suggestion to preview and add a card` copy is not in the document (scan open or closed).
 - [ ] Scan review bubble tests pass (adjust positioning assertions if needed).

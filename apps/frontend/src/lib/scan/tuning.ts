@@ -92,3 +92,6 @@ export const FRAME_QUALITY_ACCEPT_THRESHOLD = 0.45;
 /** Recent warped frames retained by the best-frame selector when choosing which one to identify. */
 // Reduced from 5: a 3-frame window is sufficient at higher source resolution (sharper frames converge faster).
 export const FRAME_SELECTOR_WINDOW_SIZE = 3;
+
+/** Reversible diagnostic trial: compare against rolling selection without adding a user-facing scanner mode. */
+export const FRAME_SELECTOR_CURRENT_FRAME_ONLY_WINDOW_SIZE = 1;

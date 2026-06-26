@@ -14,6 +14,8 @@ import { FRAME_SELECTOR_WINDOW_SIZE } from "./tuning";
 import type { FrameProvenance } from "./acquisitionDiagnostics";
 import type { RgbImage } from "./types";
 
+export type FrameSelectionMode = "rolling" | "current-frame-only";
+
 export type FrameSelection =
   | {
       abstain: false;
@@ -22,18 +24,28 @@ export type FrameSelection =
       provenance: FrameProvenance;
       selectedFrameAge: number;
       selectedFrameIndex: number;
+      selectionMode: FrameSelectionMode;
     }
-  | { abstain: true; quality: FrameQuality; provenance: "abstain"; selectedFrameAge: null; selectedFrameIndex: null };
+  | {
+      abstain: true;
+      quality: FrameQuality;
+      provenance: "abstain";
+      selectedFrameAge: null;
+      selectedFrameIndex: null;
+      selectionMode: FrameSelectionMode;
+    };
 
 type WindowEntry = { image: RgbImage; quality: FrameQuality; frameIndex: number };
 
 export class FrameSelector {
   private readonly windowSize: number;
+  private readonly selectionMode: FrameSelectionMode;
   private readonly window: WindowEntry[] = [];
   private frameIndex = 0;
 
   constructor(windowSize: number = FRAME_SELECTOR_WINDOW_SIZE) {
-    this.windowSize = windowSize;
+    this.windowSize = Math.max(1, windowSize);
+    this.selectionMode = this.windowSize === 1 ? "current-frame-only" : "rolling";
   }
 
   /** Score and retain one warped frame; return the best acceptable frame in the window, or abstain. */
@@ -58,10 +70,18 @@ export class FrameSelector {
         quality: best.quality,
         provenance: selectedFrameAge === 0 ? "current" : "retained-prior",
         selectedFrameAge,
-        selectedFrameIndex: best.frameIndex
+        selectedFrameIndex: best.frameIndex,
+        selectionMode: this.selectionMode
       };
     }
-    return { abstain: true, quality, provenance: "abstain", selectedFrameAge: null, selectedFrameIndex: null };
+    return {
+      abstain: true,
+      quality,
+      provenance: "abstain",
+      selectedFrameAge: null,
+      selectedFrameIndex: null,
+      selectionMode: this.selectionMode
+    };
   }
 
   /** Clear the retained window (called on accept / rescan / close, alongside the stabilizer). */
