@@ -26,6 +26,8 @@ const EPSILON_PCTS = [0.02, 0.04, 0.06, 0.08] as const
 
 export type Point = { x: number; y: number }
 
+export type GuideRect = { x: number; y: number; width: number; height: number }
+
 export type MinAreaRect = {
   center: Point
   width: number
@@ -39,6 +41,7 @@ type Candidate = { quad: Point[]; area: number }
 type DetectCardCornersOptions = {
   minAreaFrac?: number
   maxAreaFrac?: number
+  guide?: GuideRect
   onFallback?: (used: boolean) => void
 }
 
@@ -462,11 +465,68 @@ function approxPolyDPClosed(points: Point[], epsilon: number): Point[] {
   return simplified
 }
 
-function findBestCardInEdges(edges: Plane, minArea: number, maxArea: number, morphIter: number): Candidate | null {
+function boundingRect(points: Point[]): GuideRect {
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+  for (const p of points) {
+    minX = Math.min(minX, p.x)
+    minY = Math.min(minY, p.y)
+    maxX = Math.max(maxX, p.x)
+    maxY = Math.max(maxY, p.y)
+  }
+  return { x: minX, y: minY, width: Math.max(0, maxX - minX), height: Math.max(0, maxY - minY) }
+}
+
+function rectIntersectionArea(a: GuideRect, b: GuideRect): number {
+  const x0 = Math.max(a.x, b.x)
+  const y0 = Math.max(a.y, b.y)
+  const x1 = Math.min(a.x + a.width, b.x + b.width)
+  const y1 = Math.min(a.y + a.height, b.y + b.height)
+  return Math.max(0, x1 - x0) * Math.max(0, y1 - y0)
+}
+
+function guideOverlapScore(candidate: Candidate, guide?: GuideRect): number {
+  if (!guide) return 0
+  const box = boundingRect(candidate.quad)
+  const boxArea = box.width * box.height
+  if (boxArea < 1) return 0
+  return rectIntersectionArea(box, guide) / boxArea
+}
+
+function candidateScore(candidate: Candidate, frameWidth: number, frameHeight: number, guide?: GuideRect): number {
+  const c = centroid(candidate.quad)
+  const dx = (c.x - frameWidth / 2) / Math.max(1, frameWidth / 2)
+  const dy = (c.y - frameHeight / 2) / Math.max(1, frameHeight / 2)
+  const centerScore = Math.max(0, 1 - Math.hypot(dx, dy) / Math.SQRT2)
+  return Math.sqrt(candidate.area) * (0.35 + centerScore + guideOverlapScore(candidate, guide) * 2.4)
+}
+
+function chooseBestCandidate(
+  candidates: Candidate[],
+  frameWidth: number,
+  frameHeight: number,
+  guide?: GuideRect
+): Candidate | null {
+  return (
+    candidates.sort(
+      (a, b) => candidateScore(b, frameWidth, frameHeight, guide) - candidateScore(a, frameWidth, frameHeight, guide)
+    )[0] ?? null
+  )
+}
+
+function findBestCardInEdges(
+  edges: Plane,
+  minArea: number,
+  maxArea: number,
+  morphIter: number,
+  guide?: GuideRect
+): Candidate | null {
   const closed = morphCloseCascade(edges, morphIter)
   const contours = findExternalContours(closed)
-  let best: Candidate | null = null
-  let fallback: Candidate | null = null
+  const exactCandidates: Candidate[] = []
+  const fallbackCandidates: Candidate[] = []
 
   for (const contour of contours) {
     const hull = convexHull(contour)
@@ -486,15 +546,18 @@ function findBestCardInEdges(edges: Plane, minArea: number, maxArea: number, mor
     for (const epsPct of EPSILON_PCTS) {
       const poly = approxPolyDPClosed(contour, epsPct * peri)
       if (poly.length === 4 && polygonArea(poly) >= minArea * 0.8) {
-        if (!best || area > best.area) best = { quad: poly, area }
+        exactCandidates.push({ quad: poly, area })
         polyFound = true
         break
       }
     }
-    if (!polyFound && (!fallback || area > fallback.area)) fallback = { quad: rect.box, area }
+    if (!polyFound) fallbackCandidates.push({ quad: rect.box, area })
   }
 
-  return best ?? fallback
+  return (
+    chooseBestCandidate(exactCandidates, edges.width, edges.height, guide) ??
+    chooseBestCandidate(fallbackCandidates, edges.width, edges.height, guide)
+  )
 }
 
 function combinedColorEdges(frame: RgbImage): Plane {
@@ -575,7 +638,7 @@ function refinePolygonOutward(frame: RgbImage, polygon: Point[], searchBand = 40
   return ratio < 0.98 || ratio > 1.3 ? polygon : refined
 }
 
-function detectCardCornersPrimary(frame: RgbImage, minArea: number, maxArea: number): Point[] | null {
+function detectCardCornersPrimary(frame: RgbImage, minArea: number, maxArea: number, guide?: GuideRect): Point[] | null {
   const { gray, r, g, b } = splitPlanes(frame)
   const edgesGray = cannyEdges(gray)
   const edgesB = cannyEdges(b)
@@ -586,7 +649,7 @@ function detectCardCornersPrimary(frame: RgbImage, minArea: number, maxArea: num
 
   let best: Candidate | null = null
   for (const iter of [1, 3]) {
-    best = findBestCardInEdges(edgesPrimary, minArea, maxArea, iter)
+    best = findBestCardInEdges(edgesPrimary, minArea, maxArea, iter, guide)
     if (best) break
   }
 
@@ -594,24 +657,18 @@ function detectCardCornersPrimary(frame: RgbImage, minArea: number, maxArea: num
     const candidates: Candidate[] = []
     for (const edges of [edgesGray, edgesB, edgesG, edgesR]) {
       const candidate =
-        findBestCardInEdges(edges, minArea, maxArea, 1) ?? findBestCardInEdges(edges, minArea, maxArea, 3)
+        findBestCardInEdges(edges, minArea, maxArea, 1, guide) ?? findBestCardInEdges(edges, minArea, maxArea, 3, guide)
       if (candidate) candidates.push(candidate)
     }
     if (candidates.length) {
-      const areas = candidates.map((c) => c.area).sort((a, b) => a - b)
-      const mid = Math.floor(areas.length / 2)
-      const median = areas.length % 2 ? areas[mid] : (areas[mid - 1] + areas[mid]) / 2
-      best =
-        candidates
-          .filter((c) => candidates.length === 1 || c.area <= median * 1.15)
-          .sort((a, b) => b.area - a.area)[0] ?? null
+      best = chooseBestCandidate(candidates, frame.width, frame.height, guide)
     }
   }
 
   return best ? refinePolygonOutward(frame, best.quad) : null
 }
 
-function detectLowContrastCardCorners(frame: RgbImage, minArea: number, maxArea: number): Point[] | null {
+function detectLowContrastCardCorners(frame: RgbImage, minArea: number, maxArea: number, guide?: GuideRect): Point[] | null {
   const { gray } = splitPlanes(frame)
   const stretchedGray = contrastStretch(gray)
   const edges = cannyEdges(stretchedGray, LOW_CONTRAST_CANNY_LO, LOW_CONTRAST_CANNY_HI)
@@ -620,23 +677,23 @@ function detectLowContrastCardCorners(frame: RgbImage, minArea: number, maxArea:
   const lightBlob = thresholdPlane(stretchedGray, lowThreshold, "above")
   const darkBlob = thresholdPlane(stretchedGray, highThreshold, "below")
   const best =
-    findBestCardInEdges(edges, minArea, maxArea, 2) ??
-    findBestCardInEdges(lightBlob, minArea, maxArea, 1) ??
-    findBestCardInEdges(darkBlob, minArea, maxArea, 1) ??
-    findBestCardInEdges(edges, minArea, maxArea, 4)
+    findBestCardInEdges(edges, minArea, maxArea, 2, guide) ??
+    findBestCardInEdges(lightBlob, minArea, maxArea, 1, guide) ??
+    findBestCardInEdges(darkBlob, minArea, maxArea, 1, guide) ??
+    findBestCardInEdges(edges, minArea, maxArea, 4, guide)
   return best ? refinePolygonOutward(frame, best.quad, 24) : null
 }
 
 export function detectCardCorners(frame: RgbImage, opts: DetectCardCornersOptions = {}): Point[] | null {
   const minArea = frame.width * frame.height * (opts.minAreaFrac ?? MIN_AREA_FRAC)
   const maxArea = frame.width * frame.height * (opts.maxAreaFrac ?? MAX_AREA_FRAC)
-  const primary = detectCardCornersPrimary(frame, minArea, maxArea)
+  const primary = detectCardCornersPrimary(frame, minArea, maxArea, opts.guide)
   if (primary) {
     opts.onFallback?.(false)
     return primary
   }
 
-  const fallback = detectLowContrastCardCorners(frame, minArea, maxArea)
+  const fallback = detectLowContrastCardCorners(frame, minArea, maxArea, opts.guide)
   opts.onFallback?.(fallback !== null)
   return fallback
 }
@@ -793,6 +850,7 @@ export function detectCard(
     minAreaFrac?: number
     maxAreaFrac?: number
     maxDetectDimension?: number
+    guide?: GuideRect
     /**
      * Additive, optional. Invoked with the canonical-oriented full-res corners
      * the warp consumes, so the read-only debug overlay (DEC-060 / REQ-041) can
@@ -810,7 +868,15 @@ export function detectCard(
     // corners back to full-res and warp from the original frame.
     const scale = maxDim / longSide
     const small = downscaleRgb(frame, scale)
-    const cornersSmall = detectCardCorners(small, opts)
+    const guide = opts.guide
+      ? {
+          x: opts.guide.x * scale,
+          y: opts.guide.y * scale,
+          width: opts.guide.width * scale,
+          height: opts.guide.height * scale
+        }
+      : undefined
+    const cornersSmall = detectCardCorners(small, { ...opts, guide })
     if (!cornersSmall) return null
     const corners = cornersSmall.map((p) => ({ x: p.x / scale, y: p.y / scale }))
     opts.onCorners?.(orientCardQuad(corners))

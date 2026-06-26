@@ -992,13 +992,14 @@
 ### REQ-050
 - Title: Detector robustness for hard real-world card captures
 - Priority: high
-- Description: Make the card-scan **detector** reliably find and lock the 4-corner card outline under hard real-world conditions — ornate/etched-foil/full-art printings and cards whose border barely contrasts the play surface — so these cards reach the existing (unchanged) warp → Region A crop → fingerprint match → lock pipeline instead of failing at `detectCard()` with status `no-card`. Robustness is achieved by raising detector recall in `detector.ts`, leaning on the downstream stabilizer lock gate as the precision guard. Frontend-only; the perceptual-hash recipe and fingerprint library stay frozen (DEC-072).
+- Description: Make the card-scan **detector** reliably find and lock the 4-corner card outline under hard real-world conditions — ornate/etched-foil/full-art printings, cards whose border barely contrasts the play surface, and **hand-held cards held up to the camera against a cluttered background with partial finger occlusion of the border** — so these cards reach the existing (unchanged) warp → Region A crop → fingerprint match → lock pipeline instead of failing at `detectCard()` with status `no-card`. The hand-held case **regressed from a previously-working state** (owner-confirmed 2026-06-25), so robustness is achieved **regression-first**: identify and loosen/revert the recent detector change(s) that degraded hand-held recall before adding new logic, then raise recall in `detector.ts` with the downstream stabilizer lock gate as the precision guard. Detection is additionally **biased toward the on-screen card-shaped framing guide** the user aligns to (REQ-052/DEC-073), so off-guide background clutter stops competing for selection. Frontend-only; the perceptual-hash recipe and fingerprint library stay frozen (DEC-072).
 - Acceptance Criteria:
-  - `detectCard()` finds a stable 4-corner quad and returns a warp on the previously-failing fixtures (the ornate/etched-foil Japanese `Akroma's Will` and a plain English card held centered), so the warp→fingerprint→stabilizer pipeline runs instead of returning `no-card` (DEC-072)
-  - detector recall is raised via loosened/adaptive edge + contour gates (Canny thresholds, solidity/rectangularity/aspect/area), foil/glare-tolerant edge sourcing, and a low-contrast-border fallback detection path that runs only when the primary pipeline finds nothing; all detector tuning lives in `detector.ts` (DEC-072)
+  - `detectCard()` finds a stable 4-corner quad and returns a warp on the **committed real on-device frames** (`scan-frame-1782432138658.png`, `scan-frame-1782432169082.png` — a hand-held card, tilted, finger-occluded, against a cluttered room background) as well as the prior failing cases (the ornate/etched-foil Japanese `Akroma's Will` and a plain English card held centered), so the warp→fingerprint→stabilizer pipeline runs instead of returning `no-card` (DEC-072)
+  - the recent detector change(s) that degraded the previously-working hand-held case are identified against the real frames and loosened/reverted — primary suspects to verify and rule in/out are the `MAX_DETECT_DIMENSION` detection downscale (which can wash out the thin outer-border edge while preserving strong background edges) and the multi-channel median-area filter (which can reject the card when background quads skew the median) — and the regression is recorded (DEC-072)
+  - detector recall is raised via loosened/adaptive edge + contour gates (Canny thresholds, solidity/rectangularity/aspect/area), foil/glare-tolerant edge sourcing, clutter-resistant contour selection that does not simply prefer the largest gate-passing quad anywhere in frame, and a low-contrast-border fallback detection path that runs only when the primary pipeline finds nothing; all detector tuning lives in `detector.ts` (DEC-072)
   - the temporal stabilizer lock gate (`lockDistance`/`marginMin`, DEC-059) is unchanged; looser detection must not increase wrong auto-adds — a detected quad still auto-adds only if it passes the unchanged identity gate, and one-tap removal (DEC-058) remains the safety net (DEC-072)
   - when the detector cannot find a card outline over a sustained period, the scan UI surfaces a condition-aware nudge rather than a silent `no-card`, reusing the searching-state feedback path (DEC-057/DEC-062); manual search remains available
-  - before/after detect-then-lock rate across the committed detector fixture corpus (REQ-051) and on-device is recorded as acceptance evidence; detector gate/threshold values are outcome-validated calibration constants, not product open questions (DEC-052/DEC-055/DEC-059 precedent)
+  - the acceptance gate is **detect-then-lock on the committed real on-device frames plus a fresh on-device pass**; the synthetic fixture corpus (REQ-051) is necessary-but-not-sufficient evidence (it has uniform backgrounds and fully-visible cards and so cannot reproduce clutter/occlusion/hand-held), and a passing synthetic rate must not be reported as feature completion while the real-frame/on-device outcome is unmet; before/after detect-then-lock rate across both is recorded; detector gate/threshold values are outcome-validated calibration constants, not product open questions (DEC-052/DEC-055/DEC-059 precedent)
   - existing detector/scan tests are extended, not replaced; the detector's pure geometry helpers stay unit-tested and the new fallback path is covered against representative fixtures
 - Constraints:
   - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
@@ -1008,13 +1009,16 @@
   - no OCR/text recognition; no corpus rebuild
 - Dependencies:
   - DEC-072
+  - DEC-073
   - REQ-037
   - REQ-051
+  - REQ-052
   - DEC-059
   - NFR-010
 - Notes:
   - this is the detection-side robustness lever, upstream of and complementary to query conditioning (DEC-062/REQ-043) and corpus coverage (DEC-069/REQ-047)
-  - "loosen first, tighten if too loose" is the directed tuning posture; the debug overlay (REQ-041) and frame export (REQ-051) are the calibration aids
+  - "loosen first, tighten if too loose" is the directed tuning posture, here applied **regression-first** (restore the degraded hand-held recall, do not only loosen blindly); the debug overlay (REQ-041) and frame export (REQ-051) are the calibration aids
+  - the capture-framing guide prior (REQ-052/DEC-073) is the cheapest, highest-leverage lever and is pursued alongside threshold tuning, not instead of it
 
 ### REQ-051
 - Title: Detector fixture corpus and debug-gated raw-frame export
@@ -1022,6 +1026,7 @@
 - Description: Provide the evidence basis for outcome-validated detector tuning (REQ-050): a committed detector fixture corpus with recorded provenance plus a way to capture the exact camera frame a failing on-device scan produced. The frame export reuses the existing scan **Capture** button under the opt-in debug overlay rather than adding a control. Frontend/build tooling only; the export itself changes no runtime detection behavior (DEC-072).
 - Acceptance Criteria:
   - a committed detector fixture corpus exists with a controllable, provenance-recorded backbone: committed clean seed images and/or committed generated synthetic degradations (glare/specular, low-contrast border vs. surface, perspective skew, foil-like highlights), layered with downloaded real-world card-on-table photos and any owner-exported frames (DEC-072)
+  - the two owner-captured on-device frames (`scan-frame-1782432138658.png`, `scan-frame-1782432169082.png`: hand-held, tilted, finger-occluded, cluttered background) are committed as **real-frame fixtures** with provenance and are part of the acceptance gate (REQ-050); synthetic fixtures alone are explicitly insufficient because their uniform backgrounds and fully-visible cards do not reproduce clutter, finger occlusion, or the hand-held regime (DEC-072)
   - if Scryfall art is used to seed synthetic fixtures, the selected seed images or generated derived fixtures and their provenance manifest are committed explicitly; tests and acceptance runs must not rely on untracked files in the ignored `apps/frontend/data/scryfall/card-images/` download cache (DEC-072)
   - synthetic degradation is generated deterministically/parameterizably so the corpus spans many capture conditions on purpose rather than depending on one device's camera (DEC-072)
   - while the opt-in debug overlay (DEC-060/REQ-041) is enabled, the existing scan **Capture** button additionally saves/downloads the exact raw frame it grabbed (e.g. a PNG of the camera pixel buffer); with the overlay off (default) Capture behaves exactly as today and the normal scan flow and UI are unchanged (DEC-065)
@@ -1043,3 +1048,72 @@
 - Notes:
   - answers the IDEA's "no frame-export today" blocker by reusing Capture rather than adding UI
   - the synthetic-degradation backbone addresses the "every camera differs" concern by spanning conditions deterministically
+
+### REQ-052
+- Title: Capture-framing guide as a detection prior and condition-aware scan guidance
+- Priority: high
+- Description: Turn the existing on-screen card-shaped framing guide (`ScanCameraSurface.tsx` renders a `745/1040` reticle with a dimmed surround) into an actual detection prior and an explicit user instruction, because owner validation (2026-06-25) found scanning improved markedly when the card was fitted to the guide. Detection should prefer the card the user is aligning to the reticle over off-guide background clutter, and the guidance copy should actively coach the user into the easy capture regime. Frontend-only; no change to the warp/identify/lock pipeline (DEC-073).
+- Acceptance Criteria:
+  - `detectCard()`/`detectCardCorners()` bias selection toward the reticle region — e.g. constrain the effective area-fraction/position window to the on-screen guide and/or score candidates by overlap with it — so a gate-passing quad from a TV, shelf, or picture frame outside the guide no longer wins over the card inside it; this is a recall/selection prior, not a new identity gate (DEC-073)
+  - the detection prior is derived from the same guide geometry the UI draws, so the thing the user aligns to and the thing the detector prefers are one and the same (DEC-073)
+  - the searching-state guidance copy is condition-aware and actively coaches the easy regime — fill the guide with the card, use a flat contrasting surface, keep fingers off the card edges — replacing the generic "Center the card with clear edges against the surface"; it reuses the DEC-057/DEC-062 searching-state feedback path and stays non-blocking with manual search available (DEC-073)
+  - the stabilizer lock/identity gate (`lockDistance`/`marginMin`, DEC-059) is unchanged; biasing detection toward the guide does not loosen identity precision and does not increase wrong auto-adds (DEC-073)
+  - behavior with the guide is validated against the committed real on-device frames (REQ-051) and on-device, alongside REQ-050
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - no change to the shared resize+DCT+hash recipe (`recipe.ts`), the `CARDHSH1` bin format, `cardhashes.bin`, or `identify.ts`; the warp still consumes the same unchanged recipe from whatever corners detection selects
+  - the guide prior must not hard-require the card to be perfectly inside the reticle — it biases selection, it does not reject otherwise-valid detections outright, so a slightly misaligned card still has a path to lock
+  - keep the scan screen uncluttered (DEC-065); this strengthens the existing guide and copy rather than adding new controls
+- Dependencies:
+  - DEC-073
+  - REQ-050
+  - REQ-037
+  - DEC-057
+  - DEC-059
+  - DEC-062
+  - DEC-065
+- Notes:
+  - this is the cheapest, highest-leverage robustness lever found in refinement: it converts "detect an arbitrary hand-held card against clutter" (hard in pure-JS CV) into "prefer the card the user is already framing" (easy)
+
+### REQ-053
+- Title: Higher-resolution camera capture request with graceful fallback
+- Priority: high
+- Description: The scanner must request a higher-resolution camera capture mode (and continuous autofocus where supported) rather than accepting the browser's unconstrained default, so the warp → Region A → hash → lock pipeline reads a sharper source and cards lock across a wider range of distances and lighting. Today `ScanCameraSurface.openCamera` calls `getUserMedia({ video: { facingMode: { ideal: "environment" } } })` with no resolution constraint, so every captured frame is 640×480 and the warp upscales a ~390px card to the 1040px canonical height (~2.6×), leaving only a narrow sweet spot where Region A is sharp enough to lock. Capture-quality lever only; the matching boundary stays frozen (DEC-074).
+- Acceptance Criteria:
+  - `ScanCameraSurface.openCamera` passes `MediaTrackConstraints` to `getUserMedia` requesting `width`/`height` `{ ideal: 1920/1080 }` (or the device's best available), `facingMode { ideal: "environment" }`, and continuous `focusMode` where the platform supports it; all constraints use `ideal` (never `exact`) so an unsupported device negotiates its best mode instead of throwing (DEC-074)
+  - when the camera cannot deliver a higher mode, capture degrades gracefully to whatever resolution it provides and scanning still works; a denied/unavailable camera still surfaces the existing `camera-error` path and manual search remains available
+  - the hidden capture canvas continues to grab at native `videoWidth`/`videoHeight`, so the larger stream flows into the warp with no other capture-path change; the live `<video>` preview keeps its existing CSS size/`object-cover`
+  - on-device, an exported frame reports a native resolution above 640×480 on a device that supports it, and a DB-registered card locks across a broader distance/light range than before with no new false auto-adds (validated alongside DEC-074's outcome bar)
+  - the resolution ceiling and focus mode are isolated as outcome-validated calibration values near the camera-open constraints (not in `recipe.ts`), tunable if a device class shows performance/memory pressure
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint; zero scan-time network calls
+  - no change to the shared resize+DCT+hash recipe (`recipe.ts` `cropRegionA`/`phashRegionPacked`), the `CARDHSH1` bin format, `cardhashes.bin`, the bridge/manifest artifacts, `identify.ts`, or the stabilizer/lock gate (`lockDistance`/`marginMin`, DEC-059); the higher-resolution source warps through the same unchanged recipe (DEC-051/REQ-034 parity held)
+  - detection must keep running on the `MAX_DETECT_DIMENSION`-downscaled frame so there is no detection-stage slowdown; the only added cost is the fixed-output warp and `getImageData` sampling a larger source, which must stay within the NFR-010 scan performance budget (re-checked on-device)
+  - no torch/flash or explicit exposure control in this requirement (deferred, DEC-074)
+- Dependencies:
+  - DEC-074
+  - REQ-037
+  - NFR-010
+- Notes:
+  - this is the headline new lever; it also raises the borderline best-frame and frame-quality signals (DEC-062) that the recalibrated `tuning.ts` constants depend on
+
+### REQ-054
+- Title: Positive in-zone capture cue while searching
+- Priority: medium
+- Description: While the scanner is still searching, it must give the user a positive signal once the current capture is good enough to lock — so the user knows when they have found the lockable distance/light zone instead of blindly hunting for it. The searching-state feedback today only surfaces *negative* cause-aware hints (glare/blur/occlusion/low-detail via `conditionHint`); this adds the affirmative half. Reuses the existing searching-state feedback path; non-blocking; no new control (DEC-074, extends DEC-062/DEC-057).
+- Acceptance Criteria:
+  - when a frame's `qualityScore` clears `FRAME_QUALITY_ACCEPT_THRESHOLD` and the card has not yet locked, the searching-state convergence indicator shows a positive "good — hold steady" cue (distinct from the negative condition hints), routed through the existing convergence/nudge view-model rather than a new surface (DEC-074)
+  - the positive cue is suppressed once the card locks (the locking/locked states keep their existing copy) and yields to a higher-priority adverse condition hint or detector nudge when one is active, so the user never sees conflicting guidance
+  - the cue is non-blocking, adds no new scan-screen control, and respects the uncluttered scan layout (DEC-065); manual search stays available (DEC-050)
+  - the stabilizer lock/identity gate (`lockDistance`/`marginMin`, DEC-059) is unchanged; this is a display cue only and does not alter gating, frame selection, or matching
+- Constraints:
+  - frontend-only; additive, pure view-model signal (DEC-057 precedent); no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - no change to `recipe.ts`, the `CARDHSH1` bin, `identify.ts`, or the lock gate; reuses the existing `FrameQuality`/convergence signals, introduces no new data store
+- Dependencies:
+  - DEC-074
+  - DEC-062
+  - DEC-057
+  - REQ-053
+  - DEC-065
+- Notes:
+  - pairs with REQ-053: higher-resolution capture widens the in-zone band, and this cue makes that band discoverable to the user

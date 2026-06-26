@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "notes": "Synthetic detector fixtures. No entry depends on ignored Scryfall image caches or network refreshes.",
+  "notes": "Detector fixtures split into synthetic proxy frames and real owner-captured frames. Synthetic results are necessary-but-not-sufficient for ship decisions. No entry depends on ignored Scryfall image caches or network refreshes.",
   "fixtures": [
     {
       "id": "synthetic-obvious-baseline",
@@ -106,6 +106,34 @@
         ],
         "degradation": { "kind": "foilStripes", "stripeCount": 18, "strength": 0.72 }
       }
+    },
+    {
+      "id": "real-scan-frame-1782432138658",
+      "conditionClass": "hand-held, tilted, finger-occluded, cluttered background",
+      "source": "real",
+      "provenance": "Owner on-device capture 2026-06-25, committed as a real detector fixture.",
+      "file": "real/scan-frame-1782432138658.png"
+    },
+    {
+      "id": "real-scan-frame-1782432169082",
+      "conditionClass": "hand-held, tilted, finger-occluded, cluttered background",
+      "source": "real",
+      "provenance": "Owner on-device capture 2026-06-25, committed as a real detector fixture.",
+      "file": "real/scan-frame-1782432169082.png"
+    },
+    {
+      "id": "real-scan-frame-1782437922190",
+      "conditionClass": "hand-held, white-paper background, plain English card",
+      "source": "real",
+      "provenance": "Owner on-device capture 2026-06-25, committed as a real detector fixture (Slice E validation attempt). Weapons Vendor on white paper background. detectCard() returns non-null; card not in cardhashes.bin so full lock pipeline cannot be verified with this card.",
+      "file": "real/scan-frame-1782437922190.png"
+    },
+    {
+      "id": "real-scan-frame-1782437902936",
+      "conditionClass": "hand-held, white-paper background, plain English card (tilted)",
+      "source": "real",
+      "provenance": "Owner on-device capture 2026-06-25, committed as a real detector fixture (Slice E validation attempt). Weapons Vendor on white paper background, tilted. detectCard() returns non-null; card not in cardhashes.bin so full lock pipeline cannot be verified with this card.",
+      "file": "real/scan-frame-1782437902936.png"
     }
   ]
 }

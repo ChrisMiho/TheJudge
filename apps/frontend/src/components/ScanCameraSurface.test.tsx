@@ -6,6 +6,8 @@ import * as audioPrefs from "../lib/scan/audioPrefs";
 import { detectCard } from "../lib/scan/detector";
 
 vi.mock("../lib/scan/detector", () => ({
+  CARD_WIDTH: 745,
+  CARD_HEIGHT: 1040,
   detectCard: vi.fn().mockReturnValue(null)
 }));
 
@@ -125,7 +127,7 @@ describe("ScanCameraSurface condition hints", () => {
 });
 
 describe("ScanCameraSurface detector nudge", () => {
-  it("renders an edge/contrast nudge while searching after sustained detector failure", () => {
+  it("renders guide coaching while searching after sustained detector failure", () => {
     render(
       <ScanCameraSurface
         onCapture={() => undefined}
@@ -134,7 +136,8 @@ describe("ScanCameraSurface detector nudge", () => {
     );
 
     expect(screen.getByText("Searching for a card…")).toBeInTheDocument();
-    expect(screen.getByText("Center the card with clear edges against the surface")).toBeInTheDocument();
+    expect(screen.getByText("Fill the guide on a flat contrasting surface; keep fingers off the edges")).toBeInTheDocument();
+    expect(screen.queryByText("Center the card with clear edges against the surface")).not.toBeInTheDocument();
   });
 
   it("does not show the detector nudge or raw status copy while locking", () => {
@@ -146,7 +149,9 @@ describe("ScanCameraSurface detector nudge", () => {
     );
 
     expect(screen.getByText("Locking on Lightning Bolt")).toBeInTheDocument();
-    expect(screen.queryByText("Center the card with clear edges against the surface")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Fill the guide on a flat contrasting surface; keep fingers off the edges")
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("No card found")).not.toBeInTheDocument();
   });
 });
@@ -369,5 +374,26 @@ describe("ScanCameraSurface debug-gated frame export", () => {
     expect(exporter).toHaveBeenCalledWith(expect.any(HTMLCanvasElement));
     expect(onCapture).toHaveBeenCalledWith(mockCard);
     expect(exporter.mock.calls[0][0]).not.toBe(onCapture.mock.calls[0][0]);
+  });
+
+  it("passes a detector guide rect derived from the rendered reticle geometry", async () => {
+    vi.mocked(detectCard).mockClear();
+
+    render(<ScanCameraSurface onCapture={() => undefined} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+    });
+
+    expect(detectCard).toHaveBeenCalledWith(
+      expect.objectContaining({ width: 320, height: 240 }),
+      expect.objectContaining({
+        guide: expect.objectContaining({
+          x: expect.closeTo(89.5, 1),
+          y: expect.closeTo(21.6, 1),
+          width: expect.closeTo(141, 1),
+          height: expect.closeTo(196.8, 1)
+        })
+      })
+    );
   });
 });

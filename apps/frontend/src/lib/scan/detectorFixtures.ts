@@ -1,4 +1,7 @@
-import { detectCardCorners } from "./detector"
+import { existsSync, readFileSync } from "node:fs"
+import { resolve } from "node:path"
+import { PNG } from "pngjs"
+import { detectCard } from "./detector"
 import manifestJson from "./__fixtures__/detector/manifest.json"
 import type { RgbImage } from "./types"
 
@@ -12,7 +15,9 @@ type Degradation =
   | { kind: "shadowGradient"; strength: number }
   | { kind: "foilStripes"; stripeCount: number; strength: number }
 
-export type DetectorFixtureManifestEntry = {
+export type DetectorFixtureSource = "synthetic" | "real"
+
+export type SyntheticDetectorFixtureManifestEntry = {
   id: string
   conditionClass: string
   source: "synthetic"
@@ -29,6 +34,16 @@ export type DetectorFixtureManifestEntry = {
   }
 }
 
+export type RealDetectorFixtureManifestEntry = {
+  id: string
+  conditionClass: string
+  source: "real"
+  provenance: string
+  file: string
+}
+
+export type DetectorFixtureManifestEntry = SyntheticDetectorFixtureManifestEntry | RealDetectorFixtureManifestEntry
+
 export type DetectorFixtureManifest = {
   schemaVersion: 1
   notes: string
@@ -38,6 +53,7 @@ export type DetectorFixtureManifest = {
 export type DetectorFixture = {
   id: string
   conditionClass: string
+  source: DetectorFixtureSource
   image: RgbImage
   manifestEntry: DetectorFixtureManifestEntry
 }
@@ -45,13 +61,23 @@ export type DetectorFixture = {
 export type DetectorFixtureEvalResult = {
   id: string
   conditionClass: string
+  source: DetectorFixtureSource
   detected: boolean
+}
+
+export type DetectorFixtureEvalGroup = {
+  label: string
+  total: number
+  detected: number
+  detectRate: number
+  results: DetectorFixtureEvalResult[]
 }
 
 export type DetectorFixtureEvalReport = {
   total: number
   detected: number
   detectRate: number
+  groups: Record<DetectorFixtureSource, DetectorFixtureEvalGroup>
   results: DetectorFixtureEvalResult[]
 }
 
@@ -178,7 +204,7 @@ function applyFoilStripes(image: RgbImage, quad: Point[], stripeCount: number, s
   }
 }
 
-function applyDegradation(image: RgbImage, entry: DetectorFixtureManifestEntry, outerQuad: Point[]): void {
+function applyDegradation(image: RgbImage, entry: SyntheticDetectorFixtureManifestEntry, outerQuad: Point[]): void {
   const { degradation } = entry.generation
   if (degradation.kind === "glare") {
     applyGlare(image, degradation.center, degradation.radius, degradation.strength)
@@ -196,6 +222,10 @@ export function loadDetectorFixtureManifest(): DetectorFixtureManifest {
 }
 
 export function generateDetectorFixtureImage(entry: DetectorFixtureManifestEntry): RgbImage {
+  if (entry.source !== "synthetic") {
+    throw new Error(`Cannot generate non-synthetic detector fixture: ${entry.id}`)
+  }
+
   const { frameWidth, frameHeight, surfaceRgb, borderRgb, artRgb, seed } = entry.generation
   const outerQuad = toPoints(entry.generation.quad)
   const innerQuad = insetQuad(outerQuad, 0.1)
@@ -216,26 +246,82 @@ export function generateDetectorFixtureImage(entry: DetectorFixtureManifestEntry
   return image
 }
 
-export function loadDetectorFixtures(): DetectorFixture[] {
-  return manifest.fixtures.map((entry) => ({
+function detectorFixturePath(file: string): string {
+  const candidates = [
+    resolve(process.cwd(), "src/lib/scan/__fixtures__/detector", file),
+    resolve(process.cwd(), "apps/frontend/src/lib/scan/__fixtures__/detector", file)
+  ]
+  const fixturePath = candidates.find((candidate) => existsSync(candidate))
+  if (!fixturePath) {
+    throw new Error(`Detector fixture file not found: ${file}`)
+  }
+  return fixturePath
+}
+
+function pngToRgbImage(png: PNG): RgbImage {
+  const rgb = new Uint8Array(png.width * png.height * 3)
+  for (let source = 0, target = 0; source < png.data.length; source += 4, target += 3) {
+    rgb[target] = png.data[source]
+    rgb[target + 1] = png.data[source + 1]
+    rgb[target + 2] = png.data[source + 2]
+  }
+  return { width: png.width, height: png.height, data: rgb }
+}
+
+export function loadDetectorRealFrameFixture(entry: RealDetectorFixtureManifestEntry): DetectorFixture {
+  const image = pngToRgbImage(PNG.sync.read(readFileSync(detectorFixturePath(entry.file))))
+  return {
     id: entry.id,
     conditionClass: entry.conditionClass,
-    image: generateDetectorFixtureImage(entry),
+    source: entry.source,
+    image,
     manifestEntry: entry
-  }))
+  }
+}
+
+export function loadDetectorFixtures(): DetectorFixture[] {
+  return manifest.fixtures.map((entry) =>
+    entry.source === "real"
+      ? loadDetectorRealFrameFixture(entry)
+      : {
+          id: entry.id,
+          conditionClass: entry.conditionClass,
+          source: entry.source,
+          image: generateDetectorFixtureImage(entry),
+          manifestEntry: entry
+        }
+  )
+}
+
+function summarizeGroup(label: string, results: DetectorFixtureEvalResult[]): DetectorFixtureEvalGroup {
+  const detected = results.filter((result) => result.detected).length
+  return {
+    label,
+    total: results.length,
+    detected,
+    detectRate: results.length === 0 ? 0 : detected / results.length,
+    results
+  }
 }
 
 export function evaluateDetectorFixtures(fixtures: DetectorFixture[] = loadDetectorFixtures()): DetectorFixtureEvalReport {
   const results = fixtures.map<DetectorFixtureEvalResult>((fixture) => ({
     id: fixture.id,
     conditionClass: fixture.conditionClass,
-    detected: detectCardCorners(fixture.image) !== null
+    source: fixture.source,
+    detected: detectCard(fixture.image) !== null
   }))
   const detected = results.filter((result) => result.detected).length
+  const syntheticResults = results.filter((result) => result.source === "synthetic")
+  const realResults = results.filter((result) => result.source === "real")
   return {
     total: results.length,
     detected,
     detectRate: results.length === 0 ? 0 : detected / results.length,
+    groups: {
+      synthetic: summarizeGroup("synthetic detector fixtures (necessary-but-not-sufficient)", syntheticResults),
+      real: summarizeGroup("real owner-captured frames", realResults)
+    },
     results
   }
 }

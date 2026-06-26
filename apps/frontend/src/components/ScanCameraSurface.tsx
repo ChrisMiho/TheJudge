@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { detectCard, type Point } from "../lib/scan/detector"
+import { CARD_HEIGHT, CARD_WIDTH, detectCard, type GuideRect, type Point } from "../lib/scan/detector"
 import { loadScanAudioMuted, saveScanAudioMuted } from "../lib/scan/audioPrefs"
 import type { ConditionReason } from "../lib/scan/frameQuality"
 import type { IdentifyResult, RgbImage } from "../lib/scan/types"
@@ -35,7 +35,7 @@ const CONDITION_HINT_COPY: Record<ConditionReason, string> = {
 }
 
 const DETECTOR_NUDGE_COPY: Record<ScanDetectorNudge, string> = {
-  "card-outline": "Center the card with clear edges against the surface"
+  "card-outline": "Fill the guide on a flat contrasting surface; keep fingers off the edges"
 }
 
 export type ScanCameraSurfaceProps = {
@@ -62,6 +62,17 @@ function imageDataToRgb(imageData: ImageData): RgbImage {
     out[dst + 2] = imageData.data[src + 2]
   }
   return { width: imageData.width, height: imageData.height, data: out }
+}
+
+function frameGuideRect(frameWidth: number, frameHeight: number): GuideRect {
+  const height = frameHeight * 0.82
+  const width = height * (CARD_WIDTH / CARD_HEIGHT)
+  return {
+    x: (frameWidth - width) / 2,
+    y: (frameHeight - height) / 2,
+    width,
+    height
+  }
 }
 
 export function ScanCameraSurface({
@@ -153,10 +164,11 @@ export function ScanCameraSurface({
         // Only ask the detector to surface corners while the overlay is enabled,
         // so disabled-overlay scanning keeps the round-1 cost (NFR-010).
         let capturedCorners: Point[] | null = null
-        const card = detectCard(
-          frame,
-          debugEnabledRef.current ? { onCorners: (corners) => (capturedCorners = corners) } : {}
-        )
+        const detectorOptions = {
+          guide: frameGuideRect(frame.width, frame.height),
+          ...(debugEnabledRef.current ? { onCorners: (corners: Point[]) => (capturedCorners = corners) } : {})
+        }
+        const card = detectCard(frame, detectorOptions)
         if (!mountedRef.current) return
 
         if (debugEnabledRef.current) {
