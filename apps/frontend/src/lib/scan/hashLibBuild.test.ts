@@ -8,12 +8,16 @@ import {
   classifyFetchFailure,
   diffMissingEntries,
   evaluateBudget,
+  evaluateScanPrintingInclusion,
+  listScanCoverageEntries,
   mergeEntries,
   parseRetryAfterMs,
   planTargetEntryIds,
   readSkiplist,
   resolveBuildTargets,
   serializeSkiplist,
+  shouldIncludeScanPrinting,
+  summarizeScanCoverage,
   writeFileAtomic
 } from "./hashLibBuild";
 
@@ -70,6 +74,91 @@ describe("diffMissingEntries", () => {
   it("re-includes parked ids when retryParked is true", () => {
     const missing = diffMissingEntries(["b", "a", "c", "d"], ["a"], ["c"], { retryParked: true });
     expect(missing).toEqual(["b", "c", "d"]);
+  });
+});
+
+describe("evaluateScanPrintingInclusion / shouldIncludeScanPrinting", () => {
+  function scanCard(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
+      id: "paper-gameplay-printing",
+      games: ["paper"],
+      digital: false,
+      oversized: false,
+      layout: "normal",
+      set_type: "expansion",
+      name: "Alt-Art Test Card",
+      type_line: "Legendary Creature",
+      oracle_text: "Flying",
+      lang: "en",
+      illustration_id: "shared-art",
+      ...overrides
+    };
+  }
+
+  it("includes paper gameplay non-English alt-art-style printings from Default Cards", () => {
+    const card = scanCard({
+      id: "jp-alt-art-printing",
+      lang: "ja",
+      illustration_id: "non-english-only-alt-art"
+    });
+
+    expect(evaluateScanPrintingInclusion(card)).toEqual({ included: true, reason: "included" });
+    expect(shouldIncludeScanPrinting(card)).toBe(true);
+  });
+
+  it.each([
+    [scanCard({ id: "digital-only", games: ["arena"], digital: true }), "digital"],
+    [scanCard({ id: "not-paper", games: ["mtgo"] }), "non-paper"],
+    [scanCard({ id: "oversized", oversized: true }), "oversized"],
+    [scanCard({ id: "art-series", layout: "art_series" }), "excluded-layout"],
+    [scanCard({ id: "memorabilia-card", set_type: "memorabilia" }), "excluded-set-type"],
+    [scanCard({ id: "checklist-card", oracle_text: "This is a checklist card." }), "checklist-or-substitute"],
+    [scanCard({ id: "card-placeholder", type_line: "Card" }), "card-placeholder"]
+  ])("excludes non-gameplay scan objects with reason %s", (card, reason) => {
+    expect(evaluateScanPrintingInclusion(card).reason).toBe(reason);
+    expect(shouldIncludeScanPrinting(card)).toBe(false);
+  });
+});
+
+describe("summarizeScanCoverage", () => {
+  it("counts target, fingerprinted, missing, and parked entries separately", () => {
+    const summary = summarizeScanCoverage(["a", "b", "c", "d"], ["a", "stale-id"], {
+      b: { attempts: 3, parked: true, lastError: "404" },
+      c: { attempts: 1, parked: false, lastError: "503" }
+    });
+
+    expect(summary).toEqual({
+      targetCount: 4,
+      fingerprintedTargetCount: 1,
+      missingCount: 2,
+      parkedCount: 1,
+      corpusStatus: "partial"
+    });
+  });
+
+  it("marks coverage full only when every target is fingerprinted", () => {
+    expect(summarizeScanCoverage(["a", "b"], ["a", "b"], {})).toEqual({
+      targetCount: 2,
+      fingerprintedTargetCount: 2,
+      missingCount: 0,
+      parkedCount: 0,
+      corpusStatus: "full"
+    });
+  });
+});
+
+describe("listScanCoverageEntries", () => {
+  it("reports per-entry fingerprint status and skip-list details", () => {
+    const entries = listScanCoverageEntries(["front", "parked", "missing"], ["front"], {
+      parked: { attempts: 3, parked: true, lastError: "404" },
+      missing: { attempts: 1, parked: false, lastError: "503" }
+    });
+
+    expect(entries).toEqual([
+      { id: "front", status: "fingerprinted", skiplistEntry: null },
+      { id: "parked", status: "parked", skiplistEntry: { attempts: 3, parked: true, lastError: "404" } },
+      { id: "missing", status: "missing", skiplistEntry: { attempts: 1, parked: false, lastError: "503" } }
+    ]);
   });
 });
 

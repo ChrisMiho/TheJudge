@@ -18,7 +18,9 @@ const searching: ScanConvergence = {
   leaderName: null,
   votes: 0,
   votesNeeded: 6,
-  conditionHint: null
+  conditionHint: null,
+  detectorNudge: null,
+  inZone: false
 };
 
 function makeZoneCard(cardId: string, name: string): ZoneCardItem {
@@ -59,12 +61,12 @@ function renderPicker(
         convergence: searching,
         addConfirmation: null,
         scanDebug: null,
-        showManualEntryPrompt: false,
         sessionCardIds: [],
         onOpen: () => undefined,
         onExitToManual,
         identify: () => ({ matched: false, was_rotated: false, candidates: [] }),
         onCameraStatusChange: () => undefined,
+        onAcquisitionDiagnostic: () => undefined,
         ...scanOverrides
       }}
     />
@@ -86,12 +88,90 @@ describe("ZoneCardPicker scan chrome", () => {
     expect(screen.queryByText(/^Camera:/)).not.toBeInTheDocument();
   });
 
-  it("still escalates to manual entry after the low-confidence threshold", async () => {
+  it("renders the Scan confirm control with accent palette tokens, not a hardcoded emerald hue", () => {
+    renderPicker({ isOpen: false });
+    const scanButton = screen.getByRole("button", { name: "Scan" });
+    expect(scanButton).toHaveClass("border-accent/70", "bg-accent/15", "text-accent-soft", "hover:bg-accent/25");
+    expect(scanButton.className).not.toMatch(/emerald/);
+  });
+
+  it("never renders a manual-entry prompt or 'Use manual search' button (DEC-065: prompt removed)", () => {
+    renderPicker();
+    expect(screen.queryByText("Still no confident scan match. Manual search is available.")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Use manual search" })).not.toBeInTheDocument();
+  });
+});
+
+describe("ZoneCardPicker scan focus (Slice C)", () => {
+  it("hides search input and Scan button when scan is open", () => {
+    renderPicker({ isOpen: true });
+    expect(screen.queryByText("Stack order is bottom to top. The first card you add is the bottom; each new card is added on top.")).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Scan" })).not.toBeInTheDocument();
+  });
+
+  it("hides zone card list when scan is open with cards present", () => {
+    renderPicker({ isOpen: true }, { cards: [makeZoneCard("opt", "Opt"), makeZoneCard("bolt", "Lightning Bolt")] });
+    expect(screen.queryByText("Stack cards (2)")).not.toBeInTheDocument();
+    expect(document.querySelector(".zone-card-grid")).toBeNull();
+  });
+
+  it("renders Exit scan as an absolute overlay button on the camera", () => {
+    renderPicker({ isOpen: true });
+    const exitBtn = screen.getByRole("button", { name: "Exit scan" });
+    expect(exitBtn).toBeInTheDocument();
+    expect(exitBtn).toHaveClass("absolute", "right-3", "top-3", "z-20");
+  });
+
+  it("Exit scan closes scan when clicked", async () => {
     const user = userEvent.setup();
-    const { onExitToManual } = renderPicker({ showManualEntryPrompt: true });
-    expect(screen.getByText("Still no confident scan match. Manual search is available.")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Use manual search" }));
+    const { onExitToManual } = renderPicker({ isOpen: true });
+    await user.click(screen.getByRole("button", { name: "Exit scan" }));
     expect(onExitToManual).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("ZoneCardPicker card grid", () => {
+  it("renders zone cards in a 2-column grid with overflow-y-auto and zone-card-grid class", () => {
+    renderPicker(
+      { isOpen: false },
+      { cards: [makeZoneCard("opt", "Opt"), makeZoneCard("bolt", "Lightning Bolt")] }
+    );
+    const grid = document.querySelector(".zone-card-grid");
+    expect(grid).not.toBeNull();
+    expect(grid).toHaveClass("grid", "grid-cols-2", "overflow-y-auto");
+  });
+
+  it("exposes slim density hooks on zone card tiles", () => {
+    renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt")] });
+    const tile = screen.getByText("Opt").closest("div");
+    expect(tile).toHaveClass("zone-card-tile");
+  });
+
+  it("calls onRemoveCard with the correct cardId when Remove is clicked", async () => {
+    const user = userEvent.setup();
+    const onRemoveCard = vi.fn();
+    renderPicker(
+      { isOpen: false },
+      { cards: [makeZoneCard("opt", "Opt"), makeZoneCard("bolt", "Lightning Bolt")], onRemoveCard }
+    );
+    await user.click(screen.getByRole("button", { name: "Remove Opt from Stack" }));
+    expect(onRemoveCard).toHaveBeenCalledTimes(1);
+    expect(onRemoveCard).toHaveBeenCalledWith("opt");
+  });
+
+  it("renders stack position labels on tiles", () => {
+    renderPicker(
+      { isOpen: false },
+      { cards: [makeZoneCard("opt", "Opt"), makeZoneCard("bolt", "Lightning Bolt")] }
+    );
+    expect(screen.getByText("bottom")).toBeInTheDocument();
+    expect(screen.getByText("top")).toBeInTheDocument();
+  });
+
+  it("renders tile for a single card with 'bottom & top' label", () => {
+    renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt")] });
+    expect(screen.getByText("bottom & top")).toBeInTheDocument();
   });
 });
 
@@ -110,6 +190,7 @@ describe("ZoneCardPicker scan review bubble", () => {
 
     const counter = screen.getByLabelText("Scanned this session: 2");
     expect(counter).toBeInTheDocument();
+    expect(counter.parentElement).toHaveClass("absolute", "right-3", "top-12", "z-10");
     // Counter reflects only this-session scans, not the manually added card.
     expect(within(counter).getByText("2")).toBeInTheDocument();
 
@@ -118,6 +199,16 @@ describe("ZoneCardPicker scan review bubble", () => {
     expect(screen.getByRole("button", { name: "Remove Opt from scan review" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove Lightning Bolt from scan review" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Remove Counterspell from scan review" })).not.toBeInTheDocument();
+  });
+
+  it("renders the review bubble counter with accent palette tokens, not a fixed hue", () => {
+    renderPicker(
+      { sessionCardIds: ["opt"] },
+      { cards: [makeZoneCard("opt", "Opt")] }
+    );
+    const bubble = screen.getByLabelText("Scanned this session: 1");
+    expect(bubble).toHaveClass("bg-accent/90", "text-accent-contrast");
+    expect(bubble.className).not.toMatch(/\b(sky|emerald)-/);
   });
 
   it("removes a scanned card in one tap via the existing removal path with no confirmation", async () => {

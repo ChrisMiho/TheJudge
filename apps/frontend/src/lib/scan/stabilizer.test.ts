@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Candidate } from "./types";
 import { ScanStabilizer } from "./stabilizer";
+import { SCAN_STABILIZER_CONFIG } from "./tuning";
 
 // A confident frame: best card clearly ahead of a distinct runner-up, under lockDistance.
 function confident(cardId: string, distance = 30): Candidate[] {
@@ -210,6 +211,31 @@ describe("ScanStabilizer", () => {
         votes: 2,
         votesNeeded: 4
       });
+    });
+  });
+
+  describe("scanner tuning config", () => {
+    it("locks after three confident votes retained across the longer scanner window", () => {
+      const stab = new ScanStabilizer(SCAN_STABILIZER_CONFIG);
+
+      expect(stab.push(confident("alpha"))).toMatchObject({
+        phase: "searching",
+        topCardId: "alpha",
+        votes: 1,
+        votesNeeded: 3
+      });
+
+      for (let i = 0; i < 9; i++) {
+        expect(stab.push([])).toMatchObject({ phase: "searching", votesNeeded: 3 });
+      }
+
+      expect(stab.push(confident("alpha"))).toMatchObject({
+        phase: "searching",
+        topCardId: "alpha",
+        votes: 2,
+        votesNeeded: 3
+      });
+      expect(stab.push(confident("alpha"))).toMatchObject({ phase: "locked", cardId: "alpha" });
     });
   });
 });

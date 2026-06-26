@@ -201,6 +201,20 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: `apps/frontend/src/lib/stackLimits.ts`
 - Backed by: DEC-035
 
+## Frontend personalization
+
+- Status: shipped
+- Summary: Global theme/settings control for predefined color palettes and optional Chunky / Slim layout density, applied to frontend tokens and persisted per browser. Palette reach extends beyond primary-accent surfaces to the page background end-stop (neutralized to slate, not palette-tinted), previously-fixed semantic green states, and the camera scanner UI. Layout density mirrors the palette pattern via `data-layout-density` and shared shell CSS classes for participating density surfaces; `ZoneConfirmStep` is excluded from slim-density visual changes and may use shared shell plumbing only as a rendered visual no-op. Staged-flow screen compaction reduces vertical scroll on game context, zone collection, enrichment list mode, and scan-focused chrome.
+- Lives in: `apps/frontend/src/lib/theme/` (palettes, themePrefs, layoutDensityPrefs, applyPalette, applyLayoutDensity), `apps/frontend/src/hooks/useThemePalette.ts`, `apps/frontend/src/hooks/useLayoutDensity.ts`, `apps/frontend/src/components/ThemeControl.tsx`, `apps/frontend/src/components/PageShell.tsx`, `apps/frontend/tailwind.config.ts`, `apps/frontend/src/index.css`, plus surfaces in `App.tsx`, `EnrichmentStep.tsx`, `ZoneCollectionStep.tsx`, `ZoneCardPicker.tsx`, `ScanCameraSurface.tsx`, `ScanReviewBubble.tsx`, `ConversationThread.tsx`, `FrozenContextSummary.tsx`
+- Backed by: DEC-066, DEC-068, DEC-075, DEC-076, REQ-044, REQ-046, REQ-055, REQ-056, FLOW-007, FLOW-008, NFR-011
+
+### Theme palettes
+
+- Status: shipped
+- Summary: Named palette swatches including the default blue theme; selection applies immediately, persists in browser storage, and falls back safely when stored data is unavailable or unsupported.
+- Lives in: `apps/frontend/src/lib/theme/palettes.ts`, `apps/frontend/src/lib/theme/themePrefs.ts`, `apps/frontend/src/components/ThemeControl.tsx`, accent CSS variables in `apps/frontend/src/index.css` + `apps/frontend/tailwind.config.ts`
+- Backed by: DEC-066, REQ-044
+
 ## Card search & metadata
 
 - Status: shipped
@@ -241,7 +255,8 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Status: shipped
 - Summary: Offline build that generates `cardhashes.bin` + manifest from Scryfall images using the same TS recipe; human-approved image download; lazy-loaded on first scan. Resumable by default (`data:scan-fingerprints`): uses the bin as memory, downloads only missing images to a transient path, hashes and discards them immediately, bounded per run by optional `--limit`/`--max-minutes` budgets with atomic checkpoint/resume, rate-limited (paced + `429`/`5xx` backoff) downloads, and a capped skip-list — so the full corpus is built over many short daily runs without retaining the ~100 GB image corpus or overloading Scryfall. A from-scratch rebuild is opt-in via `--fresh` and is non-destructive (writes a new file, never deletes/overwrites the live bin).
 - Lives in: `scripts/build-card-hashes.mjs` + `apps/frontend/public/data/cardhashes.bin` + sidecar `cardhashSkiplist.json`
-- Backed by: REQ-035, REQ-039, DEC-051, DEC-054
+- Backed by: REQ-035, REQ-039, DEC-051, DEC-054, REQ-047, DEC-069
+- Shipped (REQ-047 / DEC-069): corpus explicitly targets every paper gameplay printing with distinct artwork incl. non-English-only alt-art (keeps Default Cards as source — no `all-cards` switch); gameplay/corpus inclusion moved into a tested helper (`hashLibBuild.ts` `shouldIncludeScanPrinting`) so legitimate art is not silently dropped; coverage is now measurable without network via `data:scan-fingerprints --coverage-summary` / `--diagnose-id <id>` / `--diagnose-illustration-id <id>` (reports included/excluded, fingerprinted/parked/missing, and full-vs-partial corpus) plus manifest `targetCount`/`fingerprintedTargetCount`/`missingCount`/`parkedCount`/`corpusStatus`. Live corpus is `partial` under DEC-054 (97311/97323 fingerprinted at closeout); closing the remaining gap is a human-approved coverage-extending build, not a code change. Recipe, bin format, distance logic, and Region A stay frozen; Region-A language bleed would be a separate recipe/rebuild escalation, out of scope.
 
 ### Scan-to-metadata resolver
 
@@ -253,23 +268,25 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Camera capture & detector
 
 - Status: shipped
-- Summary: Live camera capture with card-shaped overlay; detects and perspective-warps the card to the canonical image (detection runs on a downscaled frame, warps from full-res for steadier quads and higher effective FPS); continuous auto-scan plus manual tap fallback, paused on lock-in.
-- Lives in: `apps/frontend/src/lib/scan/detector.ts`, `apps/frontend/src/components/ScanCameraSurface.tsx`
-- Backed by: REQ-037, DEC-052, DEC-055
+- Summary: Live camera capture with card-shaped overlay; detects and perspective-warps the card to the canonical image (detection runs on a downscaled frame, warps from full-res for steadier quads and higher effective FPS); continuous auto-scan plus manual tap fallback, paused on lock-in. Detector selection is clutter-resistant (centered card-likeness scoring rather than largest gate-passing quad anywhere) and biased toward the on-screen framing-guide reticle the user aligns to, with condition-aware coaching copy when no card is found.
+- Lives in: `apps/frontend/src/lib/scan/detector.ts`, `apps/frontend/src/components/ScanCameraSurface.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`; detector fixtures under `apps/frontend/src/lib/scan/__fixtures__/detector/`
+- Backed by: REQ-037, DEC-052, DEC-055, DEC-072, DEC-073, REQ-050, REQ-051, REQ-052
+- Detector robustness (shipped 2026-06-25, `scan-detector-foil-robustness`): the recall fixes for ornate/etched-foil and hand-held/cluttered/finger-occluded captures shipped — `findBestCardInEdges` now scores centered card-likeness instead of taking the largest quad anywhere, the multi-channel `median * 1.15` candidate cap was removed, and `detectCard({ guide })` biases (never hard-rejects) selection toward the reticle region; the searching-state copy coaches fill-the-guide / flat surface / fingers-off-edges. The two owner frames are committed real-frame fixtures (`__fixtures__/detector/real/`), and the eval harness reports synthetic vs. real distinctly with synthetic labelled necessary-but-not-sufficient. The Region A recipe/geometry, `CARDHSH1` bin, `identify.ts`, and the DEC-059 lock gate stayed frozen.
+- Reassigned validation (DEC-074, `scan-capture-quality`): the package's on-device **detect-then-lock** gate was never met because the residual failure is **capture quality, not detection** — every owner frame is 640×480 (unconstrained `getUserMedia`), so the warp upscales Region A ~2.6× and quality scores sit at the 0.45 edge. That outcome gate (a DB-registered card locks across a wider distance/light range, no new false auto-adds) moved to the `scan-capture-quality` package (higher-resolution capture request + positive in-zone cue + `tuning.ts` recalibration). Detector recall itself is shipped and not reopened by that work.
 
 ### Scan lock-in control layer
 
 - Status: shipped
-- Summary: Temporal stabilizer votes the top-1 oracle identity across a rolling window (confidence + margin gated) and emits `searching`/`locked`; on a confident lock the card auto-adds and auto-scan resumes hands-free (no Accept tap). Replaces the prior per-frame list churn. Convergence knobs are isolated in `tuning.ts`. The stabilizer exposes an additive, pure progress signal (leader id + votes accumulated/needed, plus `bestDistance`/`runnerUpDistance`/`margin` on the `searching` state) that drives the `searching`/`locking`/`locked` indicator and the debug overlay, with no change to distance/confidence/margin logic. The lock gate is rebalanced toward ease-of-lock (DEC-059): the loosened window/votes/distance knobs (`windowSize 6 / minVotes 4 / lockDistance 78`) let a clearly-leading card lock readily while `marginMin 14` retains the runner-up distinctness guard; one-tap removal is the safety net. These are the shipped baseline; finer tuning + on-device (mobile) validation are carried to a dedicated tuning story.
+- Summary: Temporal stabilizer votes the top-1 oracle identity across a rolling window (confidence + margin gated) and emits `searching`/`locked`; on a confident lock the card auto-adds and auto-scan resumes hands-free (no Accept tap). Replaces the prior per-frame list churn. Convergence knobs are isolated in `tuning.ts`. The stabilizer exposes an additive, pure progress signal (leader id + votes accumulated/needed, plus `bestDistance`/`runnerUpDistance`/`margin` on the `searching` state) that drives the `searching`/`locking`/`locked` indicator and the debug overlay, with no change to distance/confidence/margin logic. The current acquisition-tuning trial uses the easier convergence shape (`windowSize 13 / minVotes 3 / lockDistance 78`) while `marginMin 14` retains the runner-up distinctness guard; owner retest found lock is quick once identity votes exist, so remaining work moves upstream to acquisition diagnostics (DEC-077). One-tap removal remains the safety net.
 - Lives in: `apps/frontend/src/lib/scan/{stabilizer,tuning}.ts`, `apps/frontend/src/hooks/useScanCapture.ts`
-- Backed by: REQ-037, REQ-038, REQ-040, DEC-055, DEC-056, DEC-057, DEC-059
+- Backed by: REQ-037, REQ-038, REQ-040, DEC-055, DEC-056, DEC-057, DEC-059, DEC-077
 
 ### Scan UX in zone picker
 
 - Status: shipped
-- Summary: Hands-free scan entry point beside manual search: batch scan → confident lock → auto-add → resume loop with no Accept tap and no candidate-list pick. A live `searching`/`locking on: <name>`/`locked` indicator (replacing the raw status pill and `Camera: <status>` debug line) shows convergence; each auto-add plays a CSS-only thumbs-up confirmation popup (NFR-006); a top-right scanned-cards review bubble lists this-session adds with one-tap, no-confirmation removal of a wrong auto-add. Duplicate-stack/stack-limit blocks surface as non-blocking notices and scanning continues. Feeds the existing preview/add/owner/duplicate-block/stack-limit/removal flow unchanged; low-confidence manual-entry escalation and manual tap-capture remain. Card-back prompt descoped (DEC-055). Audio "ding" confirmation is tracked separately under **Scan audio confirmation** (REQ-042 / DEC-061, shipped).
+- Summary: Hands-free scan entry point beside manual search: batch scan → confident lock → auto-add → resume loop with no Accept tap and no candidate-list pick. A live `searching`/`locking on: <name>`/`locked` indicator (replacing the raw status pill and `Camera: <status>` debug line) shows convergence; each auto-add plays a CSS-only thumbs-up confirmation popup (NFR-006); a top-right scanned-cards review bubble lists this-session adds, shows the running count, and offers one-tap, no-confirmation removal of a wrong auto-add. Duplicate-stack/stack-limit blocks surface as non-blocking notices and scanning continues. Feeds the existing preview/add/owner/duplicate-block/stack-limit/removal flow unchanged. Manual tap-capture remains; manual search is reached via Exit scan — the in-scan low-confidence manual-search escalation prompt does not render (DEC-076). While scan is open, zone-collection search, card list, and outer staged-flow navigation/action buttons are hidden; scan-local controls including Capture remain available (DEC-076). Card-back prompt descoped (DEC-055). Audio "ding" confirmation is tracked separately under **Scan audio confirmation** (REQ-042 / DEC-061, shipped).
 - Lives in: `apps/frontend/src/components/{ZoneCardPicker,ZoneCollectionStep,ScanReviewBubble}.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`, `apps/frontend/src/index.css`
-- Backed by: REQ-038, REQ-040, DEC-052, DEC-055, DEC-056, DEC-057, DEC-058
+- Backed by: REQ-038, REQ-040, REQ-056, DEC-052, DEC-055, DEC-056, DEC-057, DEC-058, DEC-076
 
 ### Scan audio confirmation
 
@@ -281,9 +298,16 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Scanner debug overlay
 
 - Status: shipped
-- Summary: Opt-in, user-summoned diagnostic on the scan screen (toggle defaults off, resets each time the scanner is opened) that visualizes how the scanner perceives the current card. When enabled it draws a live outline of the detected card region (from the detector's full-res `corners`, surfaced additively from `detectCard` rather than discarded after warp) plus the art-crop read region on the feed, and text metrics: best/runner-up candidate + distances, margin, votes accumulated/needed, phase, and the active `lockDistance`/`marginMin` thresholds. Read-only from existing detector/stabilizer signals; if geometry can't be cheaply surfaced it degrades to text metrics. Distinct from the static alignment-template guide frame and from the always-on raw status leaks removed by DEC-057. Renders only when enabled (no scan-perf regression off). Built primarily to diagnose poor locks and calibrate the DEC-059 thresholds.
+- Summary: Opt-in, user-summoned diagnostic on the scan screen (toggle defaults off, resets each time the scanner is opened) that visualizes how the scanner perceives the current card. The toggle lives outside the top-right scanned-cards review/remove hit area so it cannot overlap or intercept the one-tap correction path. When enabled it draws a live outline of the detected card region (from the detector's full-res `corners`, surfaced additively from `detectCard` rather than discarded after warp) plus the art-crop read region on the feed, and text metrics: best/runner-up candidate + distances, margin, votes accumulated/needed, phase, and the active `lockDistance`/`marginMin` thresholds. Read-only from existing detector/stabilizer signals; if geometry can't be cheaply surfaced it degrades to text metrics. Distinct from the static alignment-template guide frame and from the always-on raw status leaks removed by DEC-057. Renders only when enabled (no scan-perf regression off). Built primarily to diagnose poor locks and calibrate the DEC-059 thresholds.
 - Lives in: `apps/frontend/src/components/ScanDebugOverlay.tsx` + toggle/threading in `apps/frontend/src/components/ScanCameraSurface.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`, `apps/frontend/src/lib/scan/{stabilizer,detector}.ts`
-- Backed by: REQ-041, DEC-060
+- Backed by: REQ-041, DEC-060, DEC-065
+
+### Scan acquisition diagnostics
+
+- Status: shipped
+- Summary: Diagnostic-first follow-up for scanner acquisition after the stabilizer was tuned to lock quickly once identity votes exist. Uses one scanner behavior path but validates it under two capture conditions: Mac-webcam baseline (hard, should be usable without repeated hunting) and stand-assisted controlled setup (ideal, should be fast and consistent). Extends debug evidence from capture through detector, frame selector, quality, identity distance/margin, and vote/no-vote reason before additional acquisition tuning is baked in.
+- Lives in: `apps/frontend/src/components/{ScanCameraSurface,ScanDebugOverlay}.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`, `apps/frontend/src/lib/scan/{detector,frameSelection,frameQuality,stabilizer,tuning}.ts`
+- Backed by: DEC-077, REQ-057, DEC-060, DEC-062, DEC-072, DEC-073, DEC-074, NFR-010
 
 ### Scan robustness conditioning
 
@@ -291,6 +315,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Summary: Makes the scan vote lock reliably under real-world conditions (glare/gloss, uneven/dim lighting, handheld shake, finger occlusion) by feeding the unchanged matching engine a cleaner, better-chosen query image — never by loosening the lock gate. Three query-only, frontend-only levers: (1) extended query frame conditioning beyond the black-point `autoLevels` stretch to full auto-contrast + specular/glare suppression + white-balance/color-cast normalization (DB images stay clean and un-conditioned, so parity-by-construction holds); (2) best-frame selection — per-frame quality scoring (sharpness, glare fraction, art-crop detail/occlusion) prefers the best frame in the stabilizer window and skips blurred/occluded frames, an additive pure signal with no distance/margin logic change and `marginMin` retained; (3) condition-aware feedback — the `searching` indicator gains cause hints ("too much glare — tilt", "hold steady", "move closer") and the debug overlay surfaces the new quality metrics. Finger occlusion is a frame-quality penalty only (no masked hashing). The recipe, `cardhashes.bin`, the DB build, the matching/distance logic, and the byte-exact parity gate are untouched; the lock gate stays at DEC-059 values. New thresholds isolated in `tuning.ts`, validated on a Mac-webcam device pass (qualitative owner acceptance; counted adverse capture-set table left optional).
 - Lives in: `apps/frontend/src/lib/scan/identify.ts` + `tuning.ts` (query-only conditioning), new `apps/frontend/src/lib/scan/frameQuality.ts` + `frameSelection.ts` (pure frame-quality scoring + best-frame selection), `apps/frontend/src/hooks/useScanCapture.ts` (frame selection + condition-hint/quality view-models), `apps/frontend/src/components/{ScanCameraSurface,ScanDebugOverlay}.tsx` (searching hint + debug quality metrics). `recipe.ts`, `stabilizer.ts`, and `cardhashes.bin` are intentionally unchanged.
 - Backed by: REQ-043, DEC-062
+
+### Scan art fidelity
+
+- Status: shipped
+- Summary: A scanned card displays the specific printing's art that was physically scanned by separating printing-level image presentation from oracle-level identity. `cardScanMap.json` entry shape extended to `{ oracleId, name, imageUrl }` (build-time). At scan time, `resolveScanCandidatesRanked` carries the best-distance printing's `imageUrl` through to the locked candidate; `useScanCapture` surfaces it alongside the oracle-level `CardMetadataItem`; `buildZoneCardFromMetadata` writes it to `ZoneCardItem.imageUrl` for the auto-added card only. The scan preview (`ScanReviewBubble`) and the zone thumbnail both show scanned art. Graceful fallback to oracle-level `CardMetadataItem.imageUrl` when the printing image is absent. Oracle identity, prompt context, rulings, and all scan-engine boundaries are untouched.
+- Lives in: `scripts/build-card-scan-map.mjs`; `apps/frontend/public/data/cardScanMap.json`; `apps/frontend/src/lib/scan/resolveScanCandidates.ts`; `apps/frontend/src/hooks/useScanCapture.ts`; `apps/frontend/src/components/{ScanReviewBubble,ZoneCollectionStep}.tsx`; `apps/frontend/src/lib/zoneCards.ts`
+- Backed by: DEC-070, REQ-048, REQ-036, REQ-008, NFR-010
 
 ## Follow-up chat
 
@@ -361,6 +392,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Summary: Builds card-metadata, card-rulings, and game-rules artifacts consumed at runtime.
 - Lives in: `scripts/build-card-metadata.mjs`, `build-card-rulings.mjs`, `build-game-rules.mjs`
 - Backed by: DEC-029, DEC-030, DEC-032
+
+### Standard-print bias
+
+- Status: shipped
+- Summary: `choosePreferredCard` in `build-card-metadata.mjs` biases the representative printing per oracle id toward a standard paper printing. An `isStandardPrinting` predicate demotes Secret Lair, promos, funny/joke sets, and special-frame treatments (borderless/extended/showcase) and applies after the metadata-quality score but before the most-recent tiebreak — so the selected representative is "most recent among standard prints." A special printing is chosen only when no standard printing exists for that oracle id. Affects `cardMetadata.json` only; runtime load, metadata format, and all other build artifacts unchanged.
+- Lives in: `scripts/build-card-metadata.mjs` (`isStandardPrinting` predicate + tiebreak insertion in `choosePreferredCard`); `apps/frontend/public/data/cardMetadata.json` (regenerated artifact)
+- Backed by: DEC-071, REQ-049, REQ-001, REQ-002
 
 ### Prompt preview
 

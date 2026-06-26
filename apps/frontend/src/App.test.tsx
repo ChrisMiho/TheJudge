@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -15,6 +17,8 @@ import App from "./App";
 import { NO_MATCH_COPY } from "./lib/search";
 import type { ZoneAskAiPayload } from "./lib/contextFlow";
 import type { CardMetadataItem } from "./types";
+
+const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
 
 const baseCardMetadataFixture: CardMetadataItem[] = [
   {
@@ -73,6 +77,42 @@ function getUrlFromRequest(input: RequestInfo | URL): string {
   if (typeof input === "string") return input;
   if (input instanceof URL) return input.toString();
   return input.url;
+}
+
+function createMemoryStorage(): Storage {
+  const map = new Map<string, string>();
+  return {
+    get length() {
+      return map.size;
+    },
+    clear: () => map.clear(),
+    getItem: (key: string) => (map.has(key) ? (map.get(key) as string) : null),
+    setItem: (key: string, value: string) => {
+      map.set(key, String(value));
+    },
+    removeItem: (key: string) => {
+      map.delete(key);
+    },
+    key: (index: number) => Array.from(map.keys())[index] ?? null
+  };
+}
+
+function installMemoryLocalStorage(): void {
+  const storage = createMemoryStorage();
+  Object.defineProperty(globalThis, "localStorage", {
+    configurable: true,
+    writable: true,
+    value: storage
+  });
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    value: storage
+  });
+}
+
+function uninstallMemoryLocalStorage(): void {
+  Reflect.deleteProperty(globalThis, "localStorage");
+  Reflect.deleteProperty(window, "localStorage");
 }
 
 function createStackItem(name: string, index: number): CardMetadataItem {
@@ -320,7 +360,7 @@ describe("App MVP interaction flows", () => {
 
   it("shows TheJudge title on first render", () => {
     render(<App />);
-    expect(screen.getByRole("heading", { name: "TheJudge" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "TheJudge" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
   });
 
@@ -829,13 +869,37 @@ describe("App MVP interaction flows", () => {
     expect(submittedAskAiRequests).toHaveLength(0);
   });
 
-  it("shows bundled cat-wizard asset on game-context first screen with graceful fallback", async () => {
+  it("hides cat wizard image by default on game-context render", () => {
+    render(<App />);
+    expect(screen.queryByRole("img", { name: "Cat wizard" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
+  });
+
+  it("reveals cat wizard image after exactly 10 brand clicks, not before", async () => {
+    const user = userEvent.setup();
     render(<App />);
 
+    const brandButton = screen.getByRole("button", { name: "TheJudge" });
+    for (let i = 0; i < 9; i++) {
+      await user.click(brandButton);
+    }
+    expect(screen.queryByRole("img", { name: "Cat wizard" })).not.toBeInTheDocument();
+
+    await user.click(brandButton);
     const emptyStateImage = screen.getByRole("img", { name: "Cat wizard" });
     expect(emptyStateImage).toHaveAttribute("src", "/assets/cats-homescreen.png");
-    expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
+  });
 
+  it("shows cat wizard text fallback when image fails after easter egg reveal", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const brandButton = screen.getByRole("button", { name: "TheJudge" });
+    for (let i = 0; i < 10; i++) {
+      await user.click(brandButton);
+    }
+
+    const emptyStateImage = screen.getByRole("img", { name: "Cat wizard" });
     fireEvent.error(emptyStateImage);
     expect(screen.getByText("Cat wizard")).toBeInTheDocument();
   });
@@ -881,6 +945,20 @@ describe("App MVP interaction flows", () => {
     await user.click(screen.getByRole("button", { name: "Remove Lightning Bolt" }));
     expect(screen.queryByLabelText("Caster for Lightning Bolt")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
+  });
+
+  it("applies scroll-cap-4-enrichment class to zone card list in list view", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+
+    await addCardToStack(user, "opt", "Opt");
+
+    await advanceToContextEnrichmentFromZones(user);
+
+    const casterSelect = screen.getByLabelText("Caster for Opt");
+    const cardList = casterSelect.closest("ul");
+    expect(cardList).toHaveClass("scroll-cap-4-enrichment");
   });
 
   it("blocks duplicate adds and preserves stack entries", async () => {
@@ -1800,7 +1878,7 @@ describe("Slice-05: zone collection UI", () => {
     await advancePastZoneConfirm(user);
 
     await selectZoneTab(user, "Hand");
-    expect(screen.getByText("1. Opt")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove Opt from Hand" })).toBeInTheDocument();
   });
 
   it("shows waiting panel while submitting and hides the submit form", async () => {
@@ -1828,5 +1906,327 @@ describe("Slice-05: zone collection UI", () => {
     resolveAskAi(jsonResponse({ answer: "Mock answer" }));
     await screen.findByText("Mock answer");
     expect(document.querySelector("[aria-live='polite']")).not.toBeInTheDocument();
+  });
+});
+
+describe("Slice-C: theme palette changes preserve workflow state", () => {
+  beforeEach(() => {
+    metadataFixture = [...baseCardMetadataFixture];
+    askAiResponseQueue = [{ status: 200, body: { answer: "Mock answer" } }];
+    submittedAskAiRequests.length = 0;
+    submittedAskAiHeaders.length = 0;
+
+    fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      const url = getUrlFromRequest(input);
+
+      if (url === "/data/cardMetadata.json") {
+        return jsonResponse(metadataFixture);
+      }
+
+      if (url.endsWith("/api/ask-ai") && init?.method === "POST") {
+        submittedAskAiRequests.push(JSON.parse(String(init.body)) as ZoneAskAiPayload);
+        const nextResponse = askAiResponseQueue.shift() ?? { status: 200, body: { answer: "Mock answer" } };
+        return jsonResponse(nextResponse.body, nextResponse.status, nextResponse.headers);
+      }
+
+      return jsonResponse({ error: "not found" }, 404);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    delete document.documentElement.dataset.theme;
+    document.documentElement.style.removeProperty("--accent");
+    document.documentElement.style.removeProperty("--accent-strong");
+    document.documentElement.style.removeProperty("--accent-soft");
+    document.documentElement.style.removeProperty("--accent-contrast");
+  });
+
+  it("applies a non-default palette's resolved accent variable to a themed control", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Theme: Violet" }));
+
+    expect(document.documentElement.dataset.theme).toBe("violet");
+    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("139 92 246");
+    expect(screen.getByRole("button", { name: "Confirm game context" }).className).toContain("from-accent");
+  });
+
+  it("does not reset game setup, zones, cards, question, or conversation state when the palette changes", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await expandPlayerDetails(user);
+    await user.clear(screen.getByLabelText("Player 1 life total"));
+    await user.type(screen.getByLabelText("Player 1 life total"), "33");
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advanceToZoneCollectionWithZones(user, ["Stack"]);
+    await waitForMetadataReady();
+    await addCardToActiveZone(user, "opt", "Opt");
+    await advanceToContextEnrichmentFromZones(user);
+    await user.type(screen.getByPlaceholderText("How does this resolve?"), "Will this resolve?");
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Theme: Emerald" }));
+
+    expect(screen.getByPlaceholderText("How does this resolve?")).toHaveValue("Will this resolve?");
+    expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
+
+    await clickDecryptStack(user);
+    const requestBody = await waitFor(() => {
+      expect(submittedAskAiRequests.length).toBeGreaterThan(0);
+      return submittedAskAiRequests[0];
+    });
+    expect(requestBody.gameContext.players[0]).toMatchObject({ lifeTotal: 33 });
+    expect(requestBody.gameContext.zones?.stack?.[0]).toMatchObject({ name: "Opt" });
+    expect(requestBody.question).toBe("Will this resolve?");
+
+    await screen.findByText("Mock answer");
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Theme: Blue" }));
+
+    expect(screen.getByText("Mock answer")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
+  });
+});
+
+describe("Slice-A: neutral palette backdrop", () => {
+  it("does not leave the app shell background biased toward blue-950", () => {
+    expect(appCss).not.toContain("#172554");
+    expect(appCss).toContain("background: linear-gradient(135deg, #09090b 0%, #18181b 45%, #09090b 100%);");
+  });
+});
+
+describe("Slice-B: accent token coverage for staged and answered semantic surfaces", () => {
+  beforeEach(() => {
+    metadataFixture = [...baseCardMetadataFixture];
+    askAiResponseQueue = [{ status: 200, body: { answer: "The stack resolves." } }];
+    submittedAskAiRequests.length = 0;
+    submittedAskAiHeaders.length = 0;
+
+    fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      const url = getUrlFromRequest(input);
+      if (url === "/data/cardMetadata.json") return jsonResponse(metadataFixture);
+      if (url.endsWith("/api/ask-ai") && init?.method === "POST") {
+        submittedAskAiRequests.push(JSON.parse(String(init.body)) as ZoneAskAiPayload);
+        const nextResponse = askAiResponseQueue.shift() ?? { status: 200, body: { answer: "Mock answer" } };
+        return jsonResponse(nextResponse.body, nextResponse.status, nextResponse.headers);
+      }
+      return jsonResponse({ error: "not found" }, 404);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    delete document.documentElement.dataset.theme;
+    document.documentElement.style.removeProperty("--accent");
+    document.documentElement.style.removeProperty("--accent-strong");
+    document.documentElement.style.removeProperty("--accent-soft");
+    document.documentElement.style.removeProperty("--accent-contrast");
+  });
+
+  it("uses accent tokens for the Ready to decrypt panel, not a hardcoded hue", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+    await addCardToStack(user, "opt", "Opt");
+    await addCardToStack(user, "cou", "Counterspell");
+    await advancePastZoneCollection(user);
+    await finishEnrichmentWizard(user);
+
+    const readyText = screen.getByText("Ready to decrypt.");
+    const panel = readyText.closest("div");
+    expect(panel).not.toBeNull();
+    expect(panel!.className).toContain("border-accent");
+    expect(panel!.className).toContain("bg-accent");
+    expect(readyText.className).toContain("text-accent-soft");
+    expect(panel!.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
+  });
+
+  it("uses accent-strong tokens for user message bubbles in the conversation thread, not a hardcoded hue", async () => {
+    const user = userEvent.setup();
+    queueAskAiResponses(
+      { status: 200, body: { answer: "The stack resolves." } },
+      { status: 200, body: { answer: "Follow-up answer." } }
+    );
+    render(<App />);
+    await openStackBuilder(user);
+    await addCardToStack(user, "opt", "Opt");
+    await clickDecryptStack(user);
+    await screen.findByText("The stack resolves.");
+
+    await user.type(screen.getByPlaceholderText("Ask a follow-up…"), "What about hexproof?");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    const userMessage = await screen.findByText("What about hexproof?");
+
+    const bubble = userMessage.closest("div");
+    expect(bubble).not.toBeNull();
+    expect(bubble!.className).toContain("border-accent-strong");
+    expect(bubble!.className).toContain("bg-accent-strong");
+    expect(bubble!.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
+  });
+
+  it("preserves answered-state conversation data across a palette switch", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+    await addCardToStack(user, "opt", "Opt");
+    await clickDecryptStack(user);
+    await screen.findByText("The stack resolves.");
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Theme: Emerald" }));
+
+    expect(screen.getByText("The stack resolves.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Ask a follow-up…")).toBeInTheDocument();
+  });
+});
+
+describe("Slice-E: layout density toggle", () => {
+  beforeEach(() => {
+    metadataFixture = [...baseCardMetadataFixture];
+    askAiResponseQueue = [{ status: 200, body: { answer: "Mock answer" } }];
+    submittedAskAiRequests.length = 0;
+    submittedAskAiHeaders.length = 0;
+    installMemoryLocalStorage();
+
+    fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      const url = getUrlFromRequest(input);
+
+      if (url === "/data/cardMetadata.json") {
+        return jsonResponse(metadataFixture);
+      }
+
+      if (url.endsWith("/api/ask-ai") && init?.method === "POST") {
+        submittedAskAiRequests.push(JSON.parse(String(init.body)) as ZoneAskAiPayload);
+        const nextResponse = askAiResponseQueue.shift() ?? { status: 200, body: { answer: "Mock answer" } };
+        return jsonResponse(nextResponse.body, nextResponse.status, nextResponse.headers);
+      }
+
+      return jsonResponse({ error: "not found" }, 404);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    uninstallMemoryLocalStorage();
+    vi.unstubAllGlobals();
+    delete document.documentElement.dataset.theme;
+    delete document.documentElement.dataset.layoutDensity;
+    document.documentElement.style.removeProperty("--accent");
+    document.documentElement.style.removeProperty("--accent-strong");
+    document.documentElement.style.removeProperty("--accent-soft");
+    document.documentElement.style.removeProperty("--accent-contrast");
+  });
+
+  it("sets data-layout-density=slim on document root when Slim is selected", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
+
+    expect(document.documentElement.dataset.layoutDensity).toBe("slim");
+  });
+
+  it("restores the persisted Slim density on a fresh app mount", async () => {
+    const user = userEvent.setup();
+    const firstRender = render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
+    await waitFor(() => {
+      expect(globalThis.localStorage.getItem("thejudge.theme.layoutDensity")).toBe("slim");
+      expect(document.documentElement.dataset.layoutDensity).toBe("slim");
+    });
+    firstRender.unmount();
+    delete document.documentElement.dataset.layoutDensity;
+
+    render(<App />);
+
+    await waitFor(() => expect(document.documentElement.dataset.layoutDensity).toBe("slim"));
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    expect(screen.getByRole("button", { name: "Layout: Slim" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("indicates the active density in the theme panel", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+
+    expect(screen.getByRole("button", { name: "Layout: Chunky" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Layout: Slim" })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("does not reset game setup, zones, cards, or conversation state when density changes", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await expandPlayerDetails(user);
+    await user.clear(screen.getByLabelText("Player 1 life total"));
+    await user.type(screen.getByLabelText("Player 1 life total"), "33");
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await setSelectedZones(user, ["Stack"]);
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await waitForMetadataReady();
+    await addCardToActiveZone(user, "opt", "Opt");
+    await advanceToContextEnrichmentFromZones(user);
+    await user.type(screen.getByPlaceholderText("How does this resolve?"), "Will this resolve?");
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
+
+    expect(screen.getByPlaceholderText("How does this resolve?")).toHaveValue("Will this resolve?");
+    expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
+  });
+
+  it("preserves answered-state conversation data across a density switch", async () => {
+    const user = userEvent.setup();
+    queueAskAiResponses({ status: 200, body: { answer: "The stack resolves." } });
+    render(<App />);
+    await openStackBuilder(user);
+    await addCardToStack(user, "opt", "Opt");
+    await clickDecryptStack(user);
+    await screen.findByText("The stack resolves.");
+
+    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
+
+    expect(screen.getByText("The stack resolves.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Ask a follow-up…")).toBeInTheDocument();
+  });
+});
+
+describe("Slice-F: slim density surfaces", () => {
+  it("defines slim overrides for the high-scroll and camera surfaces", () => {
+    expect(appCss).toContain('[data-layout-density="slim"] .staged-step-brand');
+    expect(appCss).toContain('[data-layout-density="slim"] .staged-step-name');
+    expect(appCss).toContain('[data-layout-density="slim"] .scroll-cap-4-enrichment');
+    expect(appCss).toContain('[data-layout-density="slim"] .zone-card-grid');
+    expect(appCss).toContain('[data-layout-density="slim"] .zone-card-tile');
+    expect(appCss).toContain('[data-layout-density="slim"] .scan-video');
+    expect(appCss).toContain("aspect-ratio: 4 / 5;");
+    expect(appCss).toContain("max-height: 50dvh;");
+    expect(appCss).toContain('[data-layout-density="slim"] .card-preview-placeholder');
+    expect(appCss).toContain('[data-layout-density="slim"] .conversation-thread');
+    expect(appCss).toContain('[data-layout-density="slim"] .frozen-context-summary');
+  });
+
+  it("keeps the zone card grid capped at four visible cards through density variables", () => {
+    expect(appCss).toContain("max-height: calc(2 * var(--zone-card-tile-height, 10.5rem) + var(--zone-card-grid-gap, 0.5rem));");
+    expect(appCss).toContain("--zone-card-tile-height: 9.25rem;");
+    expect(appCss).toContain("--zone-card-grid-gap: 0.375rem;");
   });
 });

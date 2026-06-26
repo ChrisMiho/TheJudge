@@ -32,6 +32,38 @@ export interface SkiplistEntry {
 
 export type Skiplist = Record<string, SkiplistEntry>;
 export type SkiplistOutcome = "permanent" | "success";
+export type ScanPrintingInclusionReason =
+  | "included"
+  | "missing-id"
+  | "digital"
+  | "non-paper"
+  | "oversized"
+  | "excluded-layout"
+  | "excluded-set-type"
+  | "checklist-or-substitute"
+  | "card-placeholder";
+export type ScanCoverageStatus = "full" | "partial";
+export type ScanFingerprintStatus = "fingerprinted" | "parked" | "missing";
+
+export interface ScanPrintingInclusionResult {
+  included: boolean;
+  reason: ScanPrintingInclusionReason;
+  detail?: string;
+}
+
+export interface ScanCoverageSummary {
+  targetCount: number;
+  fingerprintedTargetCount: number;
+  missingCount: number;
+  parkedCount: number;
+  corpusStatus: ScanCoverageStatus;
+}
+
+export interface ScanCoverageEntry {
+  id: string;
+  status: ScanFingerprintStatus;
+  skiplistEntry: SkiplistEntry | null;
+}
 
 export interface BuildTargetOptions {
   output: string;
@@ -52,12 +84,52 @@ export interface BuildTargets {
   readExistingOutput: boolean;
 }
 
-const BACK_FACE_SUFFIX = "__back";
-const CARD_BACK_ID = "_card_back";
+export const BACK_FACE_SUFFIX = "__back";
+export const CARD_BACK_ID = "_card_back";
+export const EXCLUDED_SCAN_LAYOUTS: ReadonlySet<string> = new Set([
+  "art_series",
+  "planar",
+  "scheme",
+  "vanguard",
+  "token",
+  "double_faced_token",
+  "emblem"
+]);
+export const EXCLUDED_SCAN_SET_TYPES: ReadonlySet<string> = new Set(["memorabilia", "minigame"]);
 const CARDHASHES_BASENAME = "cardhashes.bin";
 const CARDHASH_MANIFEST_BASENAME = "cardhashManifest.json";
 const DEFAULT_BACKOFF_BASE_MS = 500;
 const DEFAULT_BACKOFF_CAP_MS = 30_000;
+
+export function evaluateScanPrintingInclusion(card: unknown): ScanPrintingInclusionResult {
+  const id = readCardField(card, "id");
+  if (typeof id !== "string" || id.length === 0) return { included: false, reason: "missing-id" };
+
+  if (readCardField(card, "digital") === true) return { included: false, reason: "digital" };
+
+  const games = readCardField(card, "games");
+  if (!Array.isArray(games) || !games.includes("paper")) return { included: false, reason: "non-paper" };
+
+  if (readCardField(card, "oversized") === true) return { included: false, reason: "oversized" };
+
+  const layout = String(readCardField(card, "layout") ?? "");
+  if (EXCLUDED_SCAN_LAYOUTS.has(layout)) return { included: false, reason: "excluded-layout", detail: layout };
+
+  const setType = String(readCardField(card, "set_type") ?? "");
+  if (EXCLUDED_SCAN_SET_TYPES.has(setType)) return { included: false, reason: "excluded-set-type", detail: setType };
+
+  if (textIncludesChecklistOrSubstitute(card)) return { included: false, reason: "checklist-or-substitute" };
+
+  if (String(readCardField(card, "type_line") ?? "").trim() === "Card") {
+    return { included: false, reason: "card-placeholder" };
+  }
+
+  return { included: true, reason: "included" };
+}
+
+export function shouldIncludeScanPrinting(card: unknown): boolean {
+  return evaluateScanPrintingInclusion(card).included;
+}
 
 export function planTargetEntryIds(cards: PlanCard[], opts?: { hasCardBackReference?: boolean }): string[] {
   const ids = new Set<string>();
@@ -78,6 +150,41 @@ export function diffMissingEntries(
   const existing = new Set(existingIds);
   const parked = opts?.retryParked ? new Set<string>() : new Set(parkedIds);
   return targetIds.filter((id) => !existing.has(id) && !parked.has(id));
+}
+
+export function listScanCoverageEntries(
+  targetIds: string[],
+  existingIds: Iterable<string>,
+  skiplist: Skiplist
+): ScanCoverageEntry[] {
+  const existing = new Set(existingIds);
+  return targetIds.map((id) => {
+    if (existing.has(id)) {
+      return { id, status: "fingerprinted", skiplistEntry: null };
+    }
+
+    const skiplistEntry = skiplist[id] ?? null;
+    if (skiplistEntry?.parked) {
+      return { id, status: "parked", skiplistEntry };
+    }
+
+    return { id, status: "missing", skiplistEntry };
+  });
+}
+
+export function summarizeScanCoverage(targetIds: string[], existingIds: Iterable<string>, skiplist: Skiplist): ScanCoverageSummary {
+  const entries = listScanCoverageEntries(targetIds, existingIds, skiplist);
+  const fingerprintedTargetCount = entries.filter((entry) => entry.status === "fingerprinted").length;
+  const missingCount = entries.filter((entry) => entry.status === "missing").length;
+  const parkedCount = entries.filter((entry) => entry.status === "parked").length;
+
+  return {
+    targetCount: targetIds.length,
+    fingerprintedTargetCount,
+    missingCount,
+    parkedCount,
+    corpusStatus: missingCount === 0 && parkedCount === 0 ? "full" : "partial"
+  };
 }
 
 export function mergeEntries(existingEntries: HashEntry[], newEntries: HashEntry[]): HashEntry[] {
@@ -261,6 +368,18 @@ function errorMessage(error: unknown): string {
 
 function isMarkedPermanent(error: unknown): boolean {
   return typeof error === "object" && error !== null && "permanent" in error && Boolean((error as { permanent?: unknown }).permanent);
+}
+
+function readCardField(card: unknown, key: string): unknown {
+  if (typeof card !== "object" || card === null) return undefined;
+  return (card as Record<string, unknown>)[key];
+}
+
+function textIncludesChecklistOrSubstitute(card: unknown): boolean {
+  const haystack = [readCardField(card, "name"), readCardField(card, "type_line"), readCardField(card, "oracle_text")]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ");
+  return /\b(checklist|substitute)\s+card\b/i.test(haystack);
 }
 
 function defaultFreshOutputPath(output: string): string {

@@ -22,6 +22,8 @@ npm run skills:ai-sync
 
 Run `npm run skills:ai-sync` after any skill change, then commit `.cursor/skills/`, `.agents/skills/`, and `.claude/skills/` together.
 
+Shared response-length guidance lives at `.cursor/skills/thejudge-output-guidance.md` and is synced to each runtime skill tree. Individual `thejudge-*` skills reference that file; edit the shared artifact instead of duplicating output-profile rules in each skill.
+
 **Orchestrator-only skills:** `thejudge-implement-codex` drives the `codex` CLI, so the sync script deliberately excludes it from `.agents/skills/` (the Codex runtime). It exists only under `.cursor/skills/` and `.claude/skills/`. The exclude list lives in `scripts/sync-agent-skills.sh` (`CODEX_RUNTIME_EXCLUDES`).
 
 ## Workflow sequence
@@ -149,5 +151,6 @@ Every skill that hands off ends with a **Next step** section containing copy-pas
 ## Related docs
 
 - `PRD/instructions/workflow-reference.md` — handoff templates, slice format, checklists
+- `.cursor/skills/thejudge-output-guidance.md` — shared response-length profiles for workflow skills
 - `PRD/README.md` — product control plane
 - `.cursor/skills/thejudge-kickoff/reference.md` — PRD quick map

@@ -11,19 +11,26 @@ import {
 import { ScanStabilizer } from "../lib/scan/stabilizer";
 import {
   FRAME_SELECTOR_WINDOW_SIZE,
-  MAX_SURFACED_CANDIDATES,
-  SCAN_STABILIZER_CONFIG,
-  SURFACE_DISTANCE
+  SCAN_STABILIZER_CONFIG
 } from "../lib/scan/tuning";
+import { classifyVoteReason } from "../lib/scan/acquisitionDiagnostics";
+import type {
+  AcquisitionFrameDiagnostic,
+  FrameSelectionDiagnostic,
+  IdentityDiagnostic,
+  StabilizerDiagnostic
+} from "../lib/scan/acquisitionDiagnostics";
 import type { Candidate, HashDb, IdentifyResult, RgbImage } from "../lib/scan/types";
 import type { ScanCameraStatus } from "../components/ScanCameraSurface";
 import type { CardMetadataItem } from "../types";
 
 export const LOW_CONFIDENCE_ESCALATION_COUNT = 3;
+export const DETECTOR_FAILURE_NUDGE_COUNT = 3;
 
 export type ScanPhase = "searching" | "locked";
 
 export type ScanAddOutcome = { added: true } | { added: false; message: string };
+export type ScanDetectorNudge = "card-outline";
 
 export type ScanConvergence = {
   phase: "searching" | "locking" | "locked";
@@ -32,6 +39,10 @@ export type ScanConvergence = {
   votesNeeded: number;
   /** Additive (Slice B/C, DEC-062/REQ-043/FLOW-006): adverse-capture hint while searching. */
   conditionHint: ConditionReason | null;
+  /** Detector-boundary nudge when the camera repeatedly fails to find a card outline. */
+  detectorNudge: ScanDetectorNudge | null;
+  /** Positive in-zone cue (Slice B / REQ-054): frame acceptable, not yet locked. */
+  inZone: boolean;
 };
 
 /**
@@ -70,7 +81,9 @@ const INITIAL_CONVERGENCE: ScanConvergence = {
   leaderName: null,
   votes: 0,
   votesNeeded: SCAN_STABILIZER_CONFIG.minVotes,
-  conditionHint: null
+  conditionHint: null,
+  detectorNudge: null,
+  inZone: false
 };
 
 type ScanIdentifier = Pick<CardIdentifier, "identify">;
@@ -88,7 +101,7 @@ export type UseScanCaptureDependencies = {
 
 type UseScanCaptureOptions = {
   cardMetadata: CardMetadataItem[];
-  onScanCandidateSelected: (card: CardMetadataItem) => ScanAddOutcome;
+  onScanCandidateSelected: (card: CardMetadataItem, scanImageUrl: string) => ScanAddOutcome;
   dependencies?: UseScanCaptureDependencies;
 };
 
@@ -104,6 +117,11 @@ const EMPTY_IDENTIFY_RESULT: IdentifyResult = {
   candidates: []
 };
 
+const ACQUISITION_THRESHOLDS = {
+  lockDistance: SCAN_STABILIZER_CONFIG.lockDistance,
+  marginMin: SCAN_STABILIZER_CONFIG.marginMin
+};
+
 export function useScanCapture({
   cardMetadata,
   onScanCandidateSelected,
@@ -112,15 +130,16 @@ export function useScanCapture({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cameraStatus, setCameraStatus] = useState<ScanCameraStatus>("idle");
+  const [cameraStatus, setCameraStatusState] = useState<ScanCameraStatus>("idle");
   const [resolvedCandidates, setResolvedCandidates] = useState<CardMetadataItem[]>([]);
   const [lockedCandidate, setLockedCandidate] = useState<CardMetadataItem | null>(null);
   const [scanPhase, setScanPhase] = useState<ScanPhase>("searching");
   const [convergence, setConvergence] = useState<ScanConvergence>(INITIAL_CONVERGENCE);
   const [scanDebug, setScanDebug] = useState<ScanDebugMetrics | null>(null);
+  const [scanAcquisitionDiagnostic, setScanAcquisitionDiagnostic] =
+    useState<AcquisitionFrameDiagnostic | null>(null);
   const [blockedNotice, setBlockedNotice] = useState<string | null>(null);
   const [addConfirmation, setAddConfirmation] = useState<ScanAddConfirmation | null>(null);
-  const [lowConfidenceCount, setLowConfidenceCount] = useState(0);
   const addCounterRef = useRef(0);
   const resourcesRef = useRef<ScanResources | null>(null);
   const resourcesPromiseRef = useRef<Promise<ScanResources> | null>(null);
@@ -128,6 +147,45 @@ export function useScanCapture({
   const frameSelectorRef = useRef<FrameSelector>(new FrameSelector(FRAME_SELECTOR_WINDOW_SIZE));
   const onSelectRef = useRef(onScanCandidateSelected);
   onSelectRef.current = onScanCandidateSelected;
+  const noCardStatusCountRef = useRef(0);
+  const acquisitionDiagnosticRef = useRef<AcquisitionFrameDiagnostic | null>(null);
+
+  const updateAcquisitionDiagnostic = useCallback((diagnostic: AcquisitionFrameDiagnostic | null): void => {
+    acquisitionDiagnosticRef.current = diagnostic;
+    setScanAcquisitionDiagnostic(diagnostic);
+  }, []);
+
+  const setCameraStatus = useCallback((next: ScanCameraStatus): void => {
+    setCameraStatusState(next);
+
+    if (next === "no-card") {
+      noCardStatusCountRef.current += 1;
+      if (noCardStatusCountRef.current >= DETECTOR_FAILURE_NUDGE_COUNT) {
+        setConvergence((current) => ({
+          ...current,
+          phase: "searching",
+          leaderName: null,
+          votes: 0,
+          detectorNudge: "card-outline"
+        }));
+      }
+      return;
+    }
+
+    if (next === "scanning") {
+      return;
+    }
+
+    noCardStatusCountRef.current = 0;
+    setConvergence((current) =>
+      current.detectorNudge === null
+        ? current
+        : {
+            ...current,
+            detectorNudge: null
+          }
+    );
+  }, []);
 
   const ensureResources = useCallback(async (): Promise<ScanResources> => {
     if (resourcesRef.current) {
@@ -154,14 +212,15 @@ export function useScanCapture({
   const resetScanState = useCallback((): void => {
     stabilizerRef.current.reset();
     frameSelectorRef.current.reset();
+    noCardStatusCountRef.current = 0;
     setResolvedCandidates([]);
     setLockedCandidate(null);
     setScanPhase("searching");
     setConvergence(INITIAL_CONVERGENCE);
     setScanDebug(null);
+    updateAcquisitionDiagnostic(null);
     setBlockedNotice(null);
-    setLowConfidenceCount(0);
-  }, []);
+  }, [updateAcquisitionDiagnostic]);
 
   const openScan = useCallback(async (): Promise<void> => {
     setIsOpen(true);
@@ -182,7 +241,7 @@ export function useScanCapture({
     setIsOpen(false);
     setCameraStatus("idle");
     resetScanState();
-  }, [resetScanState]);
+  }, [resetScanState, setCameraStatus]);
 
   /** Discard the current lock-in and resume the auto-scan loop. */
   const rescan = useCallback((): void => {
@@ -210,18 +269,38 @@ export function useScanCapture({
       // recent window, so a poor current frame can still defer to a better one
       // already in hand.
       const selection = frameSelectorRef.current.push(image);
+      const baseDiagnostic = acquisitionDiagnosticRef.current;
+      const diagnosticBase: AcquisitionFrameDiagnostic = {
+        ...(baseDiagnostic?.capture ? { capture: baseDiagnostic.capture } : {}),
+        ...(baseDiagnostic?.detector?.success ? { detector: baseDiagnostic.detector } : {})
+      };
+
       if (selection.abstain) {
         const state = stabilizerRef.current.push([]);
         setResolvedCandidates([]);
-        setLowConfidenceCount((count) => count + 1);
         if (state.phase === "searching") {
           const phase: ScanConvergence["phase"] = state.votes > 0 ? "locking" : "searching";
+          const frameSelectionDiagnostic: FrameSelectionDiagnostic = {
+            abstain: true,
+            source: "abstain",
+            selectionMode: selection.selectionMode,
+            qualityScore: selection.quality.qualityScore,
+            qualityReason: selection.quality.reason
+          };
+          const stabilizerDiagnostic: StabilizerDiagnostic = {
+            votesAccumulated: state.votes,
+            votesNeeded: state.votesNeeded,
+            lockDistance: SCAN_STABILIZER_CONFIG.lockDistance,
+            marginMin: SCAN_STABILIZER_CONFIG.marginMin
+          };
           setConvergence({
             phase,
             leaderName: null,
             votes: state.votes,
             votesNeeded: state.votesNeeded,
-            conditionHint: selection.quality.reason
+            conditionHint: selection.quality.reason,
+            detectorNudge: null,
+            inZone: false
           });
           setScanDebug({
             phase,
@@ -239,6 +318,21 @@ export function useScanCapture({
             frameQualityScore: selection.quality.qualityScore,
             conditionReason: selection.quality.reason
           });
+          updateAcquisitionDiagnostic({
+            ...diagnosticBase,
+            frameSelection: frameSelectionDiagnostic,
+            stabilizer: stabilizerDiagnostic,
+            reason: classifyVoteReason(
+              {
+                detectorHit: true,
+                qualityAbstain: true,
+                resolved: false,
+                bestDistance: null,
+                margin: null
+              },
+              ACQUISITION_THRESHOLDS
+            )
+          });
         }
         return EMPTY_IDENTIFY_RESULT;
       }
@@ -254,11 +348,61 @@ export function useScanCapture({
       }));
 
       const state = stabilizerRef.current.push(votingCandidates);
+      const bestEntry = ranked[0] ?? null;
+      const runnerUpEntry = ranked[1] ?? null;
+      const margin = bestEntry && runnerUpEntry ? runnerUpEntry.distance - bestEntry.distance : null;
+      const identityDiagnostic: IdentityDiagnostic = {
+        bestName: bestEntry?.card.name ?? null,
+        bestDistance: bestEntry?.distance ?? null,
+        runnerUpName: runnerUpEntry?.card.name ?? null,
+        runnerUpDistance: runnerUpEntry?.distance ?? null,
+        margin,
+        unresolved: ranked.length === 0
+      };
+      const frameSelectionDiagnostic: FrameSelectionDiagnostic = {
+        abstain: false,
+        source: selection.provenance,
+        selectionMode: selection.selectionMode,
+        qualityScore: selection.quality.qualityScore,
+        qualityReason: selection.quality.reason,
+        provenance: selection.provenance,
+        selectedFrameAge: selection.selectedFrameAge,
+        selectedFrameIndex: selection.selectedFrameIndex
+      };
+      const acquisitionReason = classifyVoteReason(
+        {
+          detectorHit: true,
+          qualityAbstain: false,
+          resolved: ranked.length > 0,
+          bestDistance: identityDiagnostic.bestDistance,
+          margin: identityDiagnostic.margin
+        },
+        ACQUISITION_THRESHOLDS
+      );
+
+      const searchingStabilizerDiagnostic = (votes: number, votesNeeded: number): StabilizerDiagnostic => ({
+        votesAccumulated: votes,
+        votesNeeded,
+        lockDistance: SCAN_STABILIZER_CONFIG.lockDistance,
+        marginMin: SCAN_STABILIZER_CONFIG.marginMin
+      });
 
       if (state.phase === "locked") {
-        const locked = ranked.find((entry) => entry.card.cardId === state.cardId)?.card ?? null;
+        updateAcquisitionDiagnostic({
+          ...diagnosticBase,
+          frameSelection: frameSelectionDiagnostic,
+          identity: identityDiagnostic,
+          stabilizer: {
+            ...searchingStabilizerDiagnostic(SCAN_STABILIZER_CONFIG.minVotes, SCAN_STABILIZER_CONFIG.minVotes),
+            acceptedLock: { cardId: state.cardId, bestDistance: state.bestDistance }
+          },
+          reason: acquisitionReason
+        });
+        const lockedEntry = ranked.find((entry) => entry.card.cardId === state.cardId);
+        const locked = lockedEntry?.card ?? null;
         if (locked) {
-          const outcome = onSelectRef.current(locked);
+          const scanImageUrl = lockedEntry?.scanImageUrl ?? locked.imageUrl;
+          const outcome = onSelectRef.current(locked, scanImageUrl);
           resetScanState();
           if (outcome && outcome.added === false) {
             setBlockedNotice(outcome.message);
@@ -272,19 +416,7 @@ export function useScanCapture({
         return result;
       }
 
-      // Still searching: surface only confident hints, capped, so the picker
-      // no longer floods with near-random names.
-      const surfaced = ranked
-        .filter((entry) => entry.distance <= SURFACE_DISTANCE)
-        .slice(0, MAX_SURFACED_CANDIDATES)
-        .map((entry) => entry.card);
-
       setResolvedCandidates([]);
-      if (surfaced.length > 0) {
-        setLowConfidenceCount(0);
-      } else {
-        setLowConfidenceCount((count) => count + 1);
-      }
       const nameOf = (cardId: string | null): string | null =>
         cardId ? (ranked.find((entry) => entry.card.cardId === cardId)?.card.name ?? null) : null;
       const leaderName = nameOf(state.topCardId);
@@ -294,7 +426,9 @@ export function useScanCapture({
         leaderName,
         votes: state.votes,
         votesNeeded: state.votesNeeded,
-        conditionHint: selection.quality.reason
+        conditionHint: selection.quality.reason,
+        detectorNudge: null,
+        inZone: true
       });
       setScanDebug({
         phase,
@@ -312,18 +446,32 @@ export function useScanCapture({
         frameQualityScore: selection.quality.qualityScore,
         conditionReason: selection.quality.reason
       });
+      updateAcquisitionDiagnostic({
+        ...diagnosticBase,
+        frameSelection: frameSelectionDiagnostic,
+        identity: identityDiagnostic,
+        stabilizer: searchingStabilizerDiagnostic(state.votes, state.votesNeeded),
+        reason: acquisitionReason
+      });
 
       return result;
     },
-    [cardMetadata, ensureResources, resetScanState]
+    [cardMetadata, ensureResources, resetScanState, updateAcquisitionDiagnostic]
   );
 
   const acceptCandidate = useCallback(
     (card: CardMetadataItem): void => {
-      onSelectRef.current(card);
+      onSelectRef.current(card, card.imageUrl);
       resetScanState();
     },
     [resetScanState]
+  );
+
+  const recordAcquisitionDiagnostic = useCallback(
+    (diagnostic: AcquisitionFrameDiagnostic): void => {
+      updateAcquisitionDiagnostic(diagnostic);
+    },
+    [updateAcquisitionDiagnostic]
   );
 
   return {
@@ -337,13 +485,14 @@ export function useScanCapture({
     scanPhase,
     convergence,
     scanDebug,
+    scanAcquisitionDiagnostic,
     blockedNotice,
     addConfirmation,
-    showManualEntryPrompt: lowConfidenceCount >= LOW_CONFIDENCE_ESCALATION_COUNT,
     openScan,
     closeScan,
     rescan,
     identify,
+    recordAcquisitionDiagnostic,
     acceptCandidate
   };
 }

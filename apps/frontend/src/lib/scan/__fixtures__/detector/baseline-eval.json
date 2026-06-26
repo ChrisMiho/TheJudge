@@ -1,0 +1,113 @@
+{
+  "generatedAt": "2026-06-26",
+  "command": "npx tsx -e \"import { evaluateDetectorFixtures, loadDetectorFixtures } from './apps/frontend/src/lib/scan/detectorFixtures.ts'; console.log(JSON.stringify(evaluateDetectorFixtures(loadDetectorFixtures()), null, 2));\"",
+  "detectorScope": "Pre-Slice-B detector-only baseline after committing real owner-captured frames. The report uses detectCard() and does not exercise recipe, identify, tuning lock gate, cardhash, API, prompt, or backend surfaces.",
+  "baselineNotes": "The committed real PNG frames currently pass detector-only detectCard() 2/2, so they do not reproduce the live on-device shape-lock miss by themselves. Keep real-vs-synthetic reporting distinct; Slice E still gates on detect-then-lock plus a fresh on-device pass.",
+  "total": 7,
+  "detected": 7,
+  "detectRate": 1,
+  "groups": {
+    "synthetic": {
+      "label": "synthetic detector fixtures (necessary-but-not-sufficient)",
+      "total": 5,
+      "detected": 5,
+      "detectRate": 1,
+      "results": [
+        {
+          "id": "synthetic-obvious-baseline",
+          "conditionClass": "obvious baseline card",
+          "source": "synthetic",
+          "detected": true
+        },
+        {
+          "id": "synthetic-glare-specular",
+          "conditionClass": "glare/specular highlight",
+          "source": "synthetic",
+          "detected": true
+        },
+        {
+          "id": "synthetic-low-contrast-border",
+          "conditionClass": "low-contrast border vs. surface",
+          "source": "synthetic",
+          "detected": true
+        },
+        {
+          "id": "synthetic-perspective-skew",
+          "conditionClass": "perspective skew",
+          "source": "synthetic",
+          "detected": true
+        },
+        {
+          "id": "synthetic-foil-internal-edge-distraction",
+          "conditionClass": "foil-like/internal-edge distraction",
+          "source": "synthetic",
+          "detected": true
+        }
+      ]
+    },
+    "real": {
+      "label": "real owner-captured frames",
+      "total": 2,
+      "detected": 2,
+      "detectRate": 1,
+      "results": [
+        {
+          "id": "real-scan-frame-1782432138658",
+          "conditionClass": "hand-held, tilted, finger-occluded, cluttered background",
+          "source": "real",
+          "detected": true
+        },
+        {
+          "id": "real-scan-frame-1782432169082",
+          "conditionClass": "hand-held, tilted, finger-occluded, cluttered background",
+          "source": "real",
+          "detected": true
+        }
+      ]
+    }
+  },
+  "results": [
+    {
+      "id": "synthetic-obvious-baseline",
+      "conditionClass": "obvious baseline card",
+      "source": "synthetic",
+      "detected": true
+    },
+    {
+      "id": "synthetic-glare-specular",
+      "conditionClass": "glare/specular highlight",
+      "source": "synthetic",
+      "detected": true
+    },
+    {
+      "id": "synthetic-low-contrast-border",
+      "conditionClass": "low-contrast border vs. surface",
+      "source": "synthetic",
+      "detected": true
+    },
+    {
+      "id": "synthetic-perspective-skew",
+      "conditionClass": "perspective skew",
+      "source": "synthetic",
+      "detected": true
+    },
+    {
+      "id": "synthetic-foil-internal-edge-distraction",
+      "conditionClass": "foil-like/internal-edge distraction",
+      "source": "synthetic",
+      "detected": true
+    },
+    {
+      "id": "real-scan-frame-1782432138658",
+      "conditionClass": "hand-held, tilted, finger-occluded, cluttered background",
+      "source": "real",
+      "detected": true
+    },
+    {
+      "id": "real-scan-frame-1782432169082",
+      "conditionClass": "hand-held, tilted, finger-occluded, cluttered background",
+      "source": "real",
+      "detected": true
+    }
+  ]
+}

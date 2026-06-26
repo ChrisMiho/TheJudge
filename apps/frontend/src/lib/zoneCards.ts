@@ -8,12 +8,12 @@ export type ZoneCardAddValidationResult =
       message: string;
     };
 
-export function buildZoneCardFromMetadata(card: CardMetadataItem): ZoneCardItem {
+export function buildZoneCardFromMetadata(card: CardMetadataItem, scanImageUrl?: string): ZoneCardItem {
   return {
     cardId: card.cardId,
     name: card.name,
     oracleText: card.oracleText,
-    imageUrl: card.imageUrl,
+    imageUrl: scanImageUrl ?? card.imageUrl,
     manaCost: card.manaCost,
     manaValue: card.manaValue,
     typeLine: card.typeLine,

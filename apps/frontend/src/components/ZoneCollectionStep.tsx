@@ -12,6 +12,8 @@ import { useAutocompleteKeyboard } from "../hooks/useAutocompleteKeyboard";
 import { useAutocompleteSuggestions } from "../hooks/useAutocompleteSuggestions";
 import { useScanCapture, type ScanAddOutcome } from "../hooks/useScanCapture";
 import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
+import { PageShell } from "./PageShell";
+import { StagedStepHeader } from "./StagedStepHeader";
 import { ZoneCardPicker } from "./ZoneCardPicker";
 
 type ZoneCollectionStepProps = {
@@ -85,8 +87,8 @@ export function ZoneCollectionStep({
 
   const scanCapture = useScanCapture({
     cardMetadata,
-    onScanCandidateSelected: (card) => {
-      const outcome = addCardToActiveZone(card);
+    onScanCandidateSelected: (card, scanImageUrl) => {
+      const outcome = addCardToActiveZone(card, scanImageUrl);
       if (outcome.added) {
         setScanSessionCardIds((ids) => (ids.includes(card.cardId) ? ids : [...ids, card.cardId]));
       }
@@ -94,6 +96,7 @@ export function ZoneCollectionStep({
     }
   });
   const closeScan = scanCapture.closeScan;
+  const isScanOpen = scanCapture.isOpen;
 
   useEffect(() => {
     closeScan();
@@ -107,12 +110,12 @@ export function ZoneCollectionStep({
     });
   }
 
-  function addCardToActiveZone(card: CardMetadataItem): ScanAddOutcome {
+  function addCardToActiveZone(card: CardMetadataItem, scanImageUrl?: string): ScanAddOutcome {
     if (!activeZone) {
       return { added: false, message: "No active zone" };
     }
 
-    const nextCard = buildZoneCardFromMetadata(card);
+    const nextCard = buildZoneCardFromMetadata(card, scanImageUrl);
     if (activeZone !== "stack") {
       nextCard.owner = pendingOwner;
     }
@@ -166,26 +169,25 @@ export function ZoneCollectionStep({
     activeZone === "stack" ? (activeZoneCards.length === 0 ? "Begin stackening!" : "Add to Stack") : "Add card";
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-4 py-6 text-slate-100">
-      <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 md:p-6">
-        <header>
-          <h1 className="bg-gradient-to-r from-sky-300 to-blue-400 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
-            TheJudge
-          </h1>
-          <p className="text-sm text-slate-300">Stack Assistant</p>
-        </header>
+    <PageShell>
+      {!isScanOpen && (
+        <>
+          <StagedStepHeader stepName="Add cards to zones" />
+          <p className="text-sm text-zinc-400">
+            Add at least one card in a selected zone. Other selected zones may stay empty.
+          </p>
+        </>
+      )}
 
-        <h2 className="text-2xl font-semibold text-sky-300">Add cards to zones</h2>
-        <p className="text-sm text-slate-400">
-          Add at least one card in a selected zone. Other selected zones may stay empty.
-        </p>
-
-        {orderedSelectedZones.length === 0 ? (
-          <p className="rounded-2xl border border-slate-700/70 bg-slate-900/55 p-4 text-sm text-slate-300">
+      {orderedSelectedZones.length === 0 ? (
+        !isScanOpen && (
+          <p className="rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4 text-sm text-zinc-300">
             No zones selected. Continue when you are ready to enrich context or ask a timing question.
           </p>
-        ) : (
-          <>
+        )
+      ) : (
+        <>
+          {!isScanOpen && (
             <div className="flex flex-wrap gap-2">
               {orderedSelectedZones.map((zone, index) => {
                 const count = zones[zone]?.length ?? 0;
@@ -200,8 +202,8 @@ export function ZoneCollectionStep({
                     className={[
                       "rounded-lg border px-3 py-1.5 text-xs font-semibold transition",
                       isActive
-                        ? "border-cyan-400/80 bg-cyan-500/20 text-cyan-200"
-                        : "border-slate-600 bg-slate-800/70 text-slate-300 hover:bg-slate-700/80"
+                        ? "border-accent-soft/80 bg-accent/20 text-accent-soft"
+                        : "border-zinc-600 bg-zinc-800/70 text-zinc-300 hover:bg-zinc-700/80"
                     ].join(" ")}
                   >
                     {`${ZONE_LABELS[zone]}${count > 0 ? ` (${count})` : ""}`}
@@ -209,85 +211,89 @@ export function ZoneCollectionStep({
                 );
               })}
             </div>
+          )}
 
-            {activeZone && (
-              <ZoneCardPicker
-                zoneId={activeZone}
-                cards={activeZoneCards}
-                activePlayers={activePlayers}
-                displayNamesByPlayer={displayNamesByPlayer}
-                pendingOwner={pendingOwner}
-                onPendingOwnerChange={setPendingOwner}
-                searchInput={searchInput}
-                onSearchInputChange={setSearchInput}
-                onSearchKeyDown={keyboard.handleKeyDown}
-                showSuggestions={searchInput.trim().length >= 3 && keyboard.isOpen}
-                isMetadataLoading={isMetadataLoading}
-                suggestions={suggestions}
-                noMatchCopy={NO_MATCH_COPY}
-                activeSuggestionIndex={keyboard.activeIndex}
-                onSuggestionHover={keyboard.setActiveIndex}
-                onSuggestionSelect={(card) => {
-                  setSelectedCard(card);
-                  keyboard.closeSuggestions();
-                }}
-                selectedCard={selectedCard}
-                addButtonLabel={addButtonLabel}
-                onAddSelectedCard={handleAddSelectedCard}
-                onRemoveCard={handleRemoveCard}
-                scan={{
-                  isOpen: scanCapture.isOpen,
-                  isLoading: scanCapture.isLoading,
-                  error: scanCapture.error,
-                  convergence: scanCapture.convergence,
-                  addConfirmation: scanCapture.addConfirmation,
-                  scanDebug: scanCapture.scanDebug,
-                  showManualEntryPrompt: scanCapture.showManualEntryPrompt,
-                  sessionCardIds: scanSessionCardIds,
-                  onOpen: async () => {
-                    setSelectedCard(null);
-                    setScanSessionCardIds([]);
-                    await scanCapture.openScan();
-                  },
-                  onExitToManual: scanCapture.closeScan,
-                  identify: scanCapture.identify,
-                  onCameraStatusChange: scanCapture.setCameraStatus
-                }}
-              />
-            )}
-          </>
-        )}
+          {activeZone && (
+            <ZoneCardPicker
+              zoneId={activeZone}
+              cards={activeZoneCards}
+              activePlayers={activePlayers}
+              displayNamesByPlayer={displayNamesByPlayer}
+              pendingOwner={pendingOwner}
+              onPendingOwnerChange={setPendingOwner}
+              searchInput={searchInput}
+              onSearchInputChange={setSearchInput}
+              onSearchKeyDown={keyboard.handleKeyDown}
+              showSuggestions={searchInput.trim().length >= 3 && keyboard.isOpen}
+              isMetadataLoading={isMetadataLoading}
+              suggestions={suggestions}
+              noMatchCopy={NO_MATCH_COPY}
+              activeSuggestionIndex={keyboard.activeIndex}
+              onSuggestionHover={keyboard.setActiveIndex}
+              onSuggestionSelect={(card) => {
+                setSelectedCard(card);
+                keyboard.closeSuggestions();
+              }}
+              selectedCard={selectedCard}
+              addButtonLabel={addButtonLabel}
+              onAddSelectedCard={handleAddSelectedCard}
+              onRemoveCard={handleRemoveCard}
+              scan={{
+                isOpen: isScanOpen,
+                isLoading: scanCapture.isLoading,
+                error: scanCapture.error,
+                convergence: scanCapture.convergence,
+                addConfirmation: scanCapture.addConfirmation,
+                scanDebug: scanCapture.scanDebug,
+                sessionCardIds: scanSessionCardIds,
+                onOpen: async () => {
+                  setSelectedCard(null);
+                  setScanSessionCardIds([]);
+                  await scanCapture.openScan();
+                },
+                onExitToManual: scanCapture.closeScan,
+                identify: scanCapture.identify,
+                onCameraStatusChange: scanCapture.setCameraStatus,
+                onAcquisitionDiagnostic: scanCapture.recordAcquisitionDiagnostic
+              }}
+            />
+          )}
+        </>
+      )}
 
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={onBack}
-            className="rounded-xl border border-slate-500 bg-slate-800/70 px-4 py-2.5 text-sm font-semibold text-slate-100 transition hover:bg-slate-700/80"
-          >
-            Back
-          </button>
-          <button
-            type="button"
-            onClick={handleContinue}
-            disabled={!canContinue}
-            className="rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Continue
-          </button>
-        </div>
+      {!isScanOpen && (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={onBack}
+              className="rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
+            >
+              Back
+            </button>
+            <button
+              type="button"
+              onClick={handleContinue}
+              disabled={!canContinue}
+              className="rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Continue
+            </button>
+          </div>
 
-        {!canContinue && (
-          <p className="text-xs text-slate-400">
-            Add at least one card in a selected zone before continuing.
-          </p>
-        )}
+          {!canContinue && (
+            <p className="text-xs text-zinc-400">
+              Add at least one card in a selected zone before continuing.
+            </p>
+          )}
+        </>
+      )}
 
-        {statusMessage && (
-          <p className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2 text-sm font-medium text-cyan-200">
-            {statusMessage}
-          </p>
-        )}
-      </section>
-    </main>
+      {!isScanOpen && statusMessage && (
+        <p className="rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
+          {statusMessage}
+        </p>
+      )}
+    </PageShell>
   );
 }

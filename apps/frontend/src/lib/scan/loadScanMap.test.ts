@@ -20,7 +20,7 @@ describe("loadScanMap", () => {
 
   it("fetches once across repeated calls and returns the parsed scan map", async () => {
     const payload = {
-      "printing-opt": { oracleId: "opt", name: "Opt" }
+      "printing-opt": { oracleId: "opt", name: "Opt", imageUrl: "https://img/opt.jpg" }
     };
     const fetchMock = vi.fn(async () => new Response(JSON.stringify(payload)));
     vi.stubGlobal("fetch", fetchMock);

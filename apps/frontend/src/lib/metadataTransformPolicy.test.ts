@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   choosePreferredCard,
+  isStandardPrinting,
   shouldIncludeCard,
   transformCards
 } from "../../../../scripts/build-card-metadata.mjs";
@@ -27,6 +28,56 @@ type TransformResult = {
     skippedByFilter: number;
   };
 };
+
+describe("isStandardPrinting", () => {
+  it("returns true for a normal non-promo printing", () => {
+    expect(
+      isStandardPrinting({
+        set_type: "expansion",
+        promo: false,
+        border_color: "black",
+        frame_effects: []
+      })
+    ).toBe(true);
+  });
+
+  it("returns false for a Secret Lair (set_type funny)", () => {
+    expect(isStandardPrinting({ set_type: "funny" })).toBe(false);
+  });
+
+  it("returns false for a memorabilia set", () => {
+    expect(isStandardPrinting({ set_type: "memorabilia" })).toBe(false);
+  });
+
+  it("returns false for a promo-flagged card", () => {
+    expect(isStandardPrinting({ promo: true, set_type: "expansion" })).toBe(false);
+  });
+
+  it("returns false when promo_types is non-empty", () => {
+    expect(isStandardPrinting({ promo_types: ["release"], set_type: "expansion" })).toBe(false);
+  });
+
+  it("returns false for showcase frame effect", () => {
+    expect(isStandardPrinting({ set_type: "expansion", frame_effects: ["showcase"] })).toBe(false);
+  });
+
+  it("returns false for extendedart frame effect", () => {
+    expect(isStandardPrinting({ set_type: "expansion", frame_effects: ["extendedart"] })).toBe(false);
+  });
+
+  it("returns false for borderless border_color", () => {
+    expect(isStandardPrinting({ set_type: "expansion", border_color: "borderless" })).toBe(false);
+  });
+
+  it("returns false for gold border_color", () => {
+    expect(isStandardPrinting({ set_type: "expansion", border_color: "gold" })).toBe(false);
+  });
+
+  it("returns true when frame_effects is absent or empty", () => {
+    expect(isStandardPrinting({ set_type: "expansion" })).toBe(true);
+    expect(isStandardPrinting({ set_type: "expansion", frame_effects: [] })).toBe(true);
+  });
+});
 
 describe("metadata transform policy", () => {
   it("filters cards to english paper records with valid names", () => {
@@ -66,6 +117,87 @@ describe("metadata transform policy", () => {
 
     const sameQualityNewer = { ...higherQuality, id: "b-id", released_at: "2024-08-05" };
     expect(choosePreferredCard(higherQuality, sameQualityNewer)).toBe(sameQualityNewer);
+  });
+
+  it("prefers a standard printing over a same-quality special printing even when the special one is newer", () => {
+    const standardBase = {
+      id: "standard-id",
+      oracle_id: "oracle-opt",
+      lang: "en",
+      games: ["paper"],
+      digital: false,
+      released_at: "2020-01-01",
+      name: "Opt",
+      oracle_text: "Scry 1, then draw a card.",
+      image_uris: { normal: "https://img/opt-standard.jpg" },
+      set_type: "expansion",
+      promo: false,
+      border_color: "black",
+      frame_effects: []
+    };
+
+    const showcaseNewer = {
+      ...standardBase,
+      id: "showcase-id",
+      released_at: "2024-01-01",
+      image_uris: { normal: "https://img/opt-showcase.jpg" },
+      frame_effects: ["showcase"]
+    };
+
+    expect(choosePreferredCard(standardBase, showcaseNewer)).toBe(standardBase);
+    expect(choosePreferredCard(showcaseNewer, standardBase)).toBe(standardBase);
+  });
+
+  it("prefers the newer standard printing when both are standard", () => {
+    const olderStandard = {
+      id: "older-id",
+      oracle_id: "oracle-opt",
+      lang: "en",
+      games: ["paper"],
+      digital: false,
+      released_at: "2020-01-01",
+      name: "Opt",
+      oracle_text: "Scry 1, then draw a card.",
+      image_uris: { normal: "https://img/opt-old.jpg" },
+      set_type: "expansion",
+      promo: false,
+      border_color: "black",
+      frame_effects: []
+    };
+
+    const newerStandard = {
+      ...olderStandard,
+      id: "newer-id",
+      released_at: "2024-01-01",
+      image_uris: { normal: "https://img/opt-new.jpg" }
+    };
+
+    expect(choosePreferredCard(olderStandard, newerStandard)).toBe(newerStandard);
+  });
+
+  it("falls through to recency tiebreak when both candidates are special", () => {
+    const olderSpecial = {
+      id: "older-special",
+      oracle_id: "oracle-bolt",
+      lang: "en",
+      games: ["paper"],
+      digital: false,
+      released_at: "2020-01-01",
+      name: "Lightning Bolt",
+      oracle_text: "Lightning Bolt deals 3 damage to any target.",
+      image_uris: { normal: "https://img/bolt-old.jpg" },
+      set_type: "expansion",
+      frame_effects: ["showcase"]
+    };
+
+    const newerSpecial = {
+      ...olderSpecial,
+      id: "newer-special",
+      released_at: "2024-01-01",
+      image_uris: { normal: "https://img/bolt-new.jpg" }
+    };
+
+    expect(choosePreferredCard(olderSpecial, newerSpecial)).toBe(newerSpecial);
   });
 
   it("produces stable output shape and representative search-ready data", () => {

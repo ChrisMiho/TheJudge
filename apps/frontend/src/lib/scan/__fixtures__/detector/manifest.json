@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "notes": "Detector fixtures split into synthetic proxy frames and real owner-captured frames. Synthetic results are necessary-but-not-sufficient for ship decisions. No entry depends on ignored Scryfall image caches or network refreshes.",
+  "fixtures": [
+    {
+      "id": "synthetic-obvious-baseline",
+      "conditionClass": "obvious baseline card",
+      "source": "synthetic",
+      "provenance": "Generated from committed geometric and color parameters in this manifest.",
+      "generation": {
+        "seed": 101,
+        "frameWidth": 320,
+        "frameHeight": 420,
+        "surfaceRgb": [25, 25, 25],
+        "borderRgb": [235, 235, 235],
+        "artRgb": [180, 40, 90],
+        "quad": [
+          [80, 40],
+          [240, 40],
+          [240, 320],
+          [80, 320]
+        ],
+        "degradation": { "kind": "none" }
+      }
+    },
+    {
+      "id": "synthetic-glare-specular",
+      "conditionClass": "glare/specular highlight",
+      "source": "synthetic",
+      "provenance": "Generated from committed geometric and color parameters in this manifest.",
+      "generation": {
+        "seed": 202,
+        "frameWidth": 320,
+        "frameHeight": 420,
+        "surfaceRgb": [28, 28, 30],
+        "borderRgb": [230, 230, 225],
+        "artRgb": [45, 72, 165],
+        "quad": [
+          [76, 48],
+          [242, 36],
+          [250, 330],
+          [70, 318]
+        ],
+        "degradation": { "kind": "glare", "center": [160, 155], "radius": 58, "strength": 0.82 }
+      }
+    },
+    {
+      "id": "synthetic-low-contrast-border",
+      "conditionClass": "low-contrast border vs. surface",
+      "source": "synthetic",
+      "provenance": "Generated from committed geometric and color parameters in this manifest.",
+      "generation": {
+        "seed": 303,
+        "frameWidth": 320,
+        "frameHeight": 420,
+        "surfaceRgb": [88, 86, 82],
+        "borderRgb": [96, 94, 90],
+        "artRgb": [108, 96, 102],
+        "quad": [
+          [82, 46],
+          [238, 44],
+          [244, 318],
+          [78, 322]
+        ],
+        "degradation": { "kind": "lowContrastNoise", "amplitude": 4 }
+      }
+    },
+    {
+      "id": "synthetic-perspective-skew",
+      "conditionClass": "perspective skew",
+      "source": "synthetic",
+      "provenance": "Generated from committed geometric and color parameters in this manifest.",
+      "generation": {
+        "seed": 404,
+        "frameWidth": 340,
+        "frameHeight": 440,
+        "surfaceRgb": [24, 24, 24],
+        "borderRgb": [232, 232, 228],
+        "artRgb": [52, 135, 86],
+        "quad": [
+          [108, 38],
+          [252, 72],
+          [222, 356],
+          [54, 308]
+        ],
+        "degradation": { "kind": "shadowGradient", "strength": 0.32 }
+      }
+    },
+    {
+      "id": "synthetic-foil-internal-edge-distraction",
+      "conditionClass": "foil-like/internal-edge distraction",
+      "source": "synthetic",
+      "provenance": "Generated from committed geometric and color parameters in this manifest.",
+      "generation": {
+        "seed": 505,
+        "frameWidth": 320,
+        "frameHeight": 420,
+        "surfaceRgb": [30, 31, 35],
+        "borderRgb": [215, 210, 222],
+        "artRgb": [72, 40, 142],
+        "quad": [
+          [78, 42],
+          [244, 50],
+          [238, 326],
+          [72, 316]
+        ],
+        "degradation": { "kind": "foilStripes", "stripeCount": 18, "strength": 0.72 }
+      }
+    },
+    {
+      "id": "real-scan-frame-1782432138658",
+      "conditionClass": "hand-held, tilted, finger-occluded, cluttered background",
+      "source": "real",
+      "provenance": "Owner on-device capture 2026-06-25, committed as a real detector fixture.",
+      "file": "real/scan-frame-1782432138658.png"
+    },
+    {
+      "id": "real-scan-frame-1782432169082",
+      "conditionClass": "hand-held, tilted, finger-occluded, cluttered background",
+      "source": "real",
+      "provenance": "Owner on-device capture 2026-06-25, committed as a real detector fixture.",
+      "file": "real/scan-frame-1782432169082.png"
+    },
+    {
+      "id": "real-scan-frame-1782437922190",
+      "conditionClass": "hand-held, white-paper background, plain English card",
+      "source": "real",
+      "provenance": "Owner on-device capture 2026-06-25, committed as a real detector fixture (Slice E validation attempt). Weapons Vendor on white paper background. detectCard() returns non-null; card not in cardhashes.bin so full lock pipeline cannot be verified with this card.",
+      "file": "real/scan-frame-1782437922190.png"
+    },
+    {
+      "id": "real-scan-frame-1782437902936",
+      "conditionClass": "hand-held, white-paper background, plain English card (tilted)",
+      "source": "real",
+      "provenance": "Owner on-device capture 2026-06-25, committed as a real detector fixture (Slice E validation attempt). Weapons Vendor on white paper background, tilted. detectCard() returns non-null; card not in cardhashes.bin so full lock pipeline cannot be verified with this card.",
+      "file": "real/scan-frame-1782437902936.png"
+    }
+  ]
+}

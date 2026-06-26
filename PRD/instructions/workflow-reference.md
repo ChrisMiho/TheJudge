@@ -26,6 +26,8 @@ flowchart LR
 
 After any edit under `.cursor/skills/`, run `npm run skills:ai-sync` before commit. See `AGENT-SKILLS.md`.
 
+Shared response-length guidance lives at `.cursor/skills/thejudge-output-guidance.md` and syncs to `.agents/skills/thejudge-output-guidance.md` and `.claude/skills/thejudge-output-guidance.md`. Skill-specific instructions should reference that shared file instead of duplicating lean/standard/detailed profile rules.
+
 ## Session Openers
 
 ### Cursor

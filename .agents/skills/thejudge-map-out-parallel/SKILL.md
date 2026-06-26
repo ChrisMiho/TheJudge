@@ -17,6 +17,10 @@ dependency **waves**, so independent slices can be implemented concurrently.
 This is the parallel-oriented flavor of `thejudge-map-out`. Use the plain
 `thejudge-map-out` when the work is inherently sequential or too small to wave.
 
+## Shared output guidance
+
+Read the shared response guidance at `../thejudge-output-guidance.md` (canonical path: `.cursor/skills/thejudge-output-guidance.md`) and apply it to this workflow's user-facing output. This affects response length only; preserve all reads, writes, gates, verification, and handoff requirements below.
+
 ## Inputs
 
 User provides work slug.

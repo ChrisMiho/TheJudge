@@ -5,7 +5,7 @@ import type { CardScanMap } from "../lib/scan/resolveScanCandidates";
 import type { HashDb, IdentifyResult, RgbImage } from "../lib/scan/types";
 import type { CardMetadataItem } from "../types";
 import { SCAN_STABILIZER_CONFIG } from "../lib/scan/tuning";
-import { LOW_CONFIDENCE_ESCALATION_COUNT, useScanCapture } from "./useScanCapture";
+import { DETECTOR_FAILURE_NUDGE_COUNT, LOW_CONFIDENCE_ESCALATION_COUNT, useScanCapture } from "./useScanCapture";
 
 function makeImage(
   width: number,
@@ -65,8 +65,8 @@ function makeCard(cardId: string, name: string): CardMetadataItem {
 const image: RgbImage = makeGoodImage();
 const db: HashDb = { ids: [], hashes: new Uint8Array(), count: 0 };
 const scanMap: CardScanMap = {
-  "printing-opt": { oracleId: "opt", name: "Opt" },
-  "printing-bolt": { oracleId: "lightning-bolt", name: "Lightning Bolt" }
+  "printing-opt": { oracleId: "opt", name: "Opt", imageUrl: "https://img/opt-print.jpg" },
+  "printing-bolt": { oracleId: "lightning-bolt", name: "Lightning Bolt", imageUrl: "https://img/bolt-print.jpg" }
 };
 const cardMetadata = [makeCard("opt", "Opt"), makeCard("lightning-bolt", "Lightning Bolt")];
 
@@ -128,13 +128,13 @@ describe("useScanCapture", () => {
 
     await act(async () => {
       await result.current.openScan();
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < SCAN_STABILIZER_CONFIG.minVotes; i++) {
         await result.current.identify(image);
       }
     });
 
     expect(onScanCandidateSelected).toHaveBeenCalledTimes(1);
-    expect(onScanCandidateSelected).toHaveBeenCalledWith(cardMetadata[0]);
+    expect(onScanCandidateSelected).toHaveBeenCalledWith(cardMetadata[0], "https://img/opt-print.jpg");
     expect(result.current.scanPhase).toBe("searching");
     expect(result.current.lockedCandidate).toBeNull();
     expect(result.current.blockedNotice).toBeNull();
@@ -161,7 +161,7 @@ describe("useScanCapture", () => {
 
     await act(async () => {
       await result.current.openScan();
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < SCAN_STABILIZER_CONFIG.minVotes; i++) {
         await result.current.identify(image);
       }
     });
@@ -273,7 +273,87 @@ describe("useScanCapture", () => {
     expect(result.current.scanPhase).toBe("searching");
   });
 
-  it("shows the manual-entry prompt after consecutive low-confidence captures", async () => {
+  it("surfaces and resets a detector nudge after sustained no-card statuses", async () => {
+    const identifier = makeIdentifier({ matched: false, was_rotated: false, candidates: [] });
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
+        dependencies: {
+          loadHashDb: vi.fn(async () => db),
+          loadScanMap: vi.fn(async () => scanMap),
+          createIdentifier: vi.fn(() => identifier)
+        }
+      })
+    );
+
+    await act(async () => {
+      await result.current.openScan();
+    });
+
+    act(() => {
+      for (let index = 0; index < DETECTOR_FAILURE_NUDGE_COUNT - 1; index++) {
+        result.current.setCameraStatus("no-card");
+      }
+    });
+    expect(result.current.convergence.detectorNudge).toBeNull();
+
+    act(() => {
+      result.current.setCameraStatus("no-card");
+    });
+    expect(result.current.convergence.detectorNudge).toBe("card-outline");
+
+    act(() => {
+      result.current.setCameraStatus("captured");
+    });
+    expect(result.current.convergence.detectorNudge).toBeNull();
+
+    act(() => {
+      for (let index = 0; index < DETECTOR_FAILURE_NUDGE_COUNT; index++) {
+        result.current.setCameraStatus("no-card");
+      }
+      result.current.closeScan();
+    });
+    expect(result.current.convergence.detectorNudge).toBeNull();
+  });
+
+  it("replaces stale locking copy with the detector nudge after sustained no-card statuses", async () => {
+    const identifier = makeIdentifier({
+      matched: true,
+      was_rotated: false,
+      candidates: [{ card_id: "printing-opt", distance: 7 }]
+    });
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
+        dependencies: {
+          loadHashDb: vi.fn(async () => db),
+          loadScanMap: vi.fn(async () => scanMap),
+          createIdentifier: vi.fn(() => identifier)
+        }
+      })
+    );
+
+    await act(async () => {
+      await result.current.openScan();
+      await result.current.identify(image);
+    });
+    expect(result.current.convergence.phase).toBe("locking");
+    expect(result.current.convergence.leaderName).toBe("Opt");
+
+    act(() => {
+      for (let index = 0; index < DETECTOR_FAILURE_NUDGE_COUNT; index++) {
+        result.current.setCameraStatus("no-card");
+      }
+    });
+
+    expect(result.current.convergence.phase).toBe("searching");
+    expect(result.current.convergence.leaderName).toBeNull();
+    expect(result.current.convergence.detectorNudge).toBe("card-outline");
+  });
+
+  it("remains open after consecutive low-confidence captures", async () => {
     const identifier = makeIdentifier({ matched: false, was_rotated: false, candidates: [] });
     const { result } = renderHook(() =>
       useScanCapture({
@@ -294,7 +374,6 @@ describe("useScanCapture", () => {
       }
     });
 
-    expect(result.current.showManualEntryPrompt).toBe(true);
     expect(result.current.isOpen).toBe(true);
   });
 
@@ -359,5 +438,228 @@ describe("useScanCapture", () => {
 
     expect(identifier.identify).toHaveBeenCalledTimes(1);
     expect(result.current.convergence.conditionHint).toBeNull();
+  });
+
+  it("reports quality-abstain acquisition diagnostics when the frame selector abstains", async () => {
+    const identifier = makeIdentifier({
+      matched: true,
+      was_rotated: false,
+      candidates: [{ card_id: "printing-opt", distance: 7 }]
+    });
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
+        dependencies: {
+          loadHashDb: vi.fn(async () => db),
+          loadScanMap: vi.fn(async () => scanMap),
+          createIdentifier: vi.fn(() => identifier)
+        }
+      })
+    );
+
+    await act(async () => {
+      await result.current.openScan();
+      await result.current.identify(makePoorImage());
+    });
+
+    expect(identifier.identify).not.toHaveBeenCalled();
+    expect(result.current.scanAcquisitionDiagnostic).toMatchObject({
+      reason: "quality-abstain",
+      frameSelection: {
+        abstain: true,
+        source: "abstain",
+        qualityReason: "blur"
+      },
+      stabilizer: {
+        votesAccumulated: 0,
+        votesNeeded: SCAN_STABILIZER_CONFIG.minVotes
+      }
+    });
+    expect(result.current.scanAcquisitionDiagnostic?.identity).toBeUndefined();
+  });
+
+  it("reports unresolved-candidate when identify returns no resolved ranked card", async () => {
+    const identifier = makeIdentifier({
+      matched: true,
+      was_rotated: false,
+      candidates: [{ card_id: "unknown-printing", distance: 7 }]
+    });
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
+        dependencies: {
+          loadHashDb: vi.fn(async () => db),
+          loadScanMap: vi.fn(async () => scanMap),
+          createIdentifier: vi.fn(() => identifier)
+        }
+      })
+    );
+
+    await act(async () => {
+      await result.current.openScan();
+      await result.current.identify(image);
+    });
+
+    expect(result.current.scanAcquisitionDiagnostic).toMatchObject({
+      reason: "unresolved-candidate",
+      frameSelection: { source: "current", selectedFrameAge: 0 },
+      identity: {
+        bestName: null,
+        bestDistance: null,
+        runnerUpName: null,
+        runnerUpDistance: null,
+        margin: null,
+        unresolved: true
+      },
+      stabilizer: {
+        votesAccumulated: 0,
+        votesNeeded: SCAN_STABILIZER_CONFIG.minVotes
+      }
+    });
+  });
+
+  it("reports distance and margin vote-gate diagnostics without locking", async () => {
+    const identifier = makeIdentifier({
+      matched: true,
+      was_rotated: false,
+      candidates: [{ card_id: "printing-opt", distance: SCAN_STABILIZER_CONFIG.lockDistance + 1 }]
+    });
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
+        dependencies: {
+          loadHashDb: vi.fn(async () => db),
+          loadScanMap: vi.fn(async () => scanMap),
+          createIdentifier: vi.fn(() => identifier)
+        }
+      })
+    );
+
+    await act(async () => {
+      await result.current.openScan();
+      await result.current.identify(image);
+    });
+
+    expect(result.current.scanAcquisitionDiagnostic).toMatchObject({
+      reason: "distance-above-lock",
+      identity: {
+        bestName: "Opt",
+        bestDistance: SCAN_STABILIZER_CONFIG.lockDistance + 1,
+        margin: null,
+        unresolved: false
+      },
+      stabilizer: { votesAccumulated: 0 }
+    });
+
+    identifier.identify.mockReturnValue({
+      matched: true,
+      was_rotated: false,
+      candidates: [
+        { card_id: "printing-opt", distance: 50 },
+        { card_id: "printing-bolt", distance: 55 }
+      ]
+    });
+
+    await act(async () => {
+      await result.current.identify(image);
+    });
+
+    expect(result.current.scanAcquisitionDiagnostic).toMatchObject({
+      reason: "margin-below-min",
+      identity: {
+        bestName: "Opt",
+        bestDistance: 50,
+        runnerUpName: "Lightning Bolt",
+        runnerUpDistance: 55,
+        margin: 5,
+        unresolved: false
+      },
+      stabilizer: { votesAccumulated: 0 }
+    });
+  });
+
+  it("reports accepted-vote diagnostics with current stabilizer progress", async () => {
+    const identifier = makeIdentifier({
+      matched: true,
+      was_rotated: false,
+      candidates: [
+        { card_id: "printing-opt", distance: 7 },
+        { card_id: "printing-bolt", distance: 30 }
+      ]
+    });
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
+        dependencies: {
+          loadHashDb: vi.fn(async () => db),
+          loadScanMap: vi.fn(async () => scanMap),
+          createIdentifier: vi.fn(() => identifier)
+        }
+      })
+    );
+
+    await act(async () => {
+      await result.current.openScan();
+      await result.current.identify(image);
+    });
+
+    expect(result.current.scanAcquisitionDiagnostic).toMatchObject({
+      reason: "accepted-vote",
+      frameSelection: {
+        source: "current",
+        selectedFrameAge: 0,
+        selectedFrameIndex: 1
+      },
+      identity: {
+        bestName: "Opt",
+        bestDistance: 7,
+        runnerUpName: "Lightning Bolt",
+        runnerUpDistance: 30,
+        margin: 23,
+        unresolved: false
+      },
+      stabilizer: {
+        votesAccumulated: 1,
+        votesNeeded: SCAN_STABILIZER_CONFIG.minVotes,
+        lockDistance: SCAN_STABILIZER_CONFIG.lockDistance,
+        marginMin: SCAN_STABILIZER_CONFIG.marginMin
+      }
+    });
+  });
+
+  it("does not let a stale detector-miss diagnostic hide a later close-to-voting identity state", async () => {
+    const identifier = makeIdentifier({
+      matched: true,
+      was_rotated: false,
+      candidates: [{ card_id: "printing-opt", distance: 7 }]
+    });
+    const { result } = renderHook(() =>
+      useScanCapture({
+        cardMetadata,
+        onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
+        dependencies: {
+          loadHashDb: vi.fn(async () => db),
+          loadScanMap: vi.fn(async () => scanMap),
+          createIdentifier: vi.fn(() => identifier)
+        }
+      })
+    );
+
+    await act(async () => {
+      await result.current.openScan();
+      result.current.recordAcquisitionDiagnostic({
+        reason: "detector-miss",
+        detector: { success: false, nativeWidth: 320, nativeHeight: 240, maxDetectDimension: 640 }
+      });
+      await result.current.identify(image);
+    });
+
+    expect(result.current.scanAcquisitionDiagnostic?.reason).toBe("accepted-vote");
+    expect(result.current.scanAcquisitionDiagnostic?.detector).toBeUndefined();
+    expect(result.current.convergence.inZone).toBe(true);
   });
 });

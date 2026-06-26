@@ -13,11 +13,11 @@ import type { StabilizerConfig } from "./stabilizer";
 // but too hard to lock on real devices, so the attainability knobs (window / votes /
 // lockDistance) are loosened from 8 / 6 / 70 toward the stabilizer defaults, while the
 // runner-up margin guard (marginMin) is retained as the primary false-lock protection.
-// First-pass loosened starting points; final values are outcome-validated in Slice E
-// against both intended (phone) and adverse (webcam / fingers / noise) conditions.
+// Current on-device tuning trial: lock after fewer consistent votes, while retaining
+// a longer rolling history so brief no-vote frames do not reset a real card.
 export const SCAN_STABILIZER_CONFIG: StabilizerConfig = {
-  windowSize: 6,
-  minVotes: 4,
+  windowSize: 13,
+  minVotes: 3,
   lockDistance: 78,
   marginMin: 14
 };
@@ -42,7 +42,7 @@ export const QUERY_WHITE_BALANCE_MIN_SCALE = 0.65;
 export const QUERY_WHITE_BALANCE_MAX_SCALE = 1.45;
 
 /** Neutral high-luma pixels above this point are treated as likely specular glare. */
-export const QUERY_GLARE_LUMA_THRESHOLD = 240;
+export const QUERY_GLARE_LUMA_THRESHOLD = 232;
 export const QUERY_GLARE_CHROMA_MAX = 12;
 export const QUERY_GLARE_TARGET = 220;
 export const QUERY_GLARE_COMPRESSION = 0.25;
@@ -56,13 +56,17 @@ export const QUERY_GLARE_COMPRESSION = 0.25;
 export const FRAME_QUALITY_BORDER_BAND_FRACTION = 0.12;
 
 /** Normalizes raw Laplacian-variance sharpness into a 0..1 score. */
+// 1080p and 640×480 warps produce similar raw Laplacian variance (~2–3); the sharpness contribution
+// is small in both cases and the detail score is the dominant quality signal.
 export const FRAME_QUALITY_SHARPNESS_NORM = 230;
 
 /** Normalizes raw mean Sobel-magnitude interior detail into a 0..1 score. */
+// Real 1080p warp detail scores are ~9–12 raw, same order as 640×480; the assumed 2–3× improvement
+// did not materialise in measured frames, so the norm stays at the validated 640×480 baseline.
 export const FRAME_QUALITY_DETAIL_NORM = 40;
 
 /** Neutral high-luma pixels above this point count toward a frame's glareFraction. */
-export const FRAME_QUALITY_GLARE_LUMA_THRESHOLD = 235;
+export const FRAME_QUALITY_GLARE_LUMA_THRESHOLD = 232;
 export const FRAME_QUALITY_GLARE_CHROMA_MAX = 18;
 
 /** Below this mean interior Sobel magnitude, the crop is treated as too flat to judge occlusion (it's a blur/low-detail problem instead). */
@@ -81,7 +85,13 @@ export const FRAME_QUALITY_BLUR_REASON_THRESHOLD = 0.3;
 export const FRAME_QUALITY_LOW_DETAIL_REASON_THRESHOLD = 0.25;
 
 /** A frame is acceptable for identification only once its qualityScore clears this bar. */
+// 0.45 is the outcome-validated baseline from real device captures; frames that identify correctly
+// (e.g. close-up captures at dist≈60) score 0.45–0.47 with the current norms.
 export const FRAME_QUALITY_ACCEPT_THRESHOLD = 0.45;
 
 /** Recent warped frames retained by the best-frame selector when choosing which one to identify. */
-export const FRAME_SELECTOR_WINDOW_SIZE = 5;
+// Reduced from 5: a 3-frame window is sufficient at higher source resolution (sharper frames converge faster).
+export const FRAME_SELECTOR_WINDOW_SIZE = 3;
+
+/** Reversible diagnostic trial: compare against rolling selection without adding a user-facing scanner mode. */
+export const FRAME_SELECTOR_CURRENT_FRAME_ONLY_WINDOW_SIZE = 1;

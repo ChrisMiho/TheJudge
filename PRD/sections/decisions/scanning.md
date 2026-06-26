@@ -51,7 +51,7 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
   - on a candidate, the user taps Accept to add the card to the current zone via the existing add path; the camera immediately re-opens to scanning for the next card
   - a Back/Exit control closes the camera and returns to zone collection
   - a detected card back shows "Flip the card over" (not a generic no-match)
-  - on low confidence, scanning continues and manual capture stays available; after a few consecutive low-confidence attempts a non-blocking prompt offers manual name entry (existing search) without stopping the scan
+  - on low confidence, scanning continues and manual capture stays available; manual search is reached by exiting scan (DEC-076 refines this bullet — the in-scan low-confidence manual-search escalation prompt is removed)
   - stack cards land in scan order, bottom-to-top; manual reorder remains out of scope (`FLOW-002`)
   - the "few attempts" count, detector area fractions, and confidence/card-back thresholds are calibration constants validated by outcome (detect-rate / top-1 accuracy), not product open questions
 - Related requirements:
@@ -59,6 +59,7 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
   - REQ-038
 - Notes:
   - first implementation may land manual tap-capture before continuous auto-scan; the target experience is both (map-out sequences this)
+  - **Refined in part (DEC-076):** the in-scan low-confidence manual-search escalation prompt is removed; manual search is reached via **Exit scan** while the camera is open (DEC-050 fallback); manual tap-to-capture is unchanged
 
 ### DEC-053
 - Decision: Scan matches are art-level (printing-level) and resolve through `Scryfall printing id → oracle_id → existing CardMetadataItem`; the engine returns a ranked candidate list, duplicate oracle ids collapse to one candidate by best distance, and unresolvable candidates are dropped.
@@ -122,6 +123,7 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
   - validated end-to-end on a laptop camera (detection + identification + single-card lock-in); formal NFR-010 device metrics were not separately recorded and some scan UX refinement remains as future work
   - lock-in tuning constants are outcome-validated calibration values (DEC-052 precedent), not product open questions
   - **Superseded in part (DEC-056):** the "one confident card is presented for one-tap Add with Rescan" lock behavior is replaced by auto-add on a high-confidence lock; the lock-in/convergence mechanism this decision introduces is unchanged and is the foundation DEC-056 builds on
+  - **Refined in part (DEC-076):** the in-scan low-confidence manual-search escalation prompt inherited from DEC-052 is removed; manual tap-to-capture and Exit scan to manual search remain
 
 ### DEC-056
 - Decision: A confident scan lock auto-adds the card to the current zone with no tap and immediately resumes scanning for the next card, replacing the one-tap Accept gate. Lock thresholds are tuned strict so that lock genuinely means "this is the card," and correctness is biased hard toward a false-negative (keep searching) over a false-positive (wrong auto-add).
@@ -133,7 +135,7 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
   - owner is supplied by the existing sticky `pendingOwner` selector (defaults to `activePlayer`, changeable in the scan screen); auto-add does not introduce a per-card owner prompt
   - the lock/auto-add threshold is tuned stricter than the DEC-055 first-pass values (stabilizer window, vote count, lock distance, runner-up margin in `apps/frontend/src/lib/scan/tuning.ts`); the product intent is to prefer continued searching over a wrong auto-add, validated by outcome (no wrong auto-adds on a representative capture set), not by bit-equality
   - when auto-add would hit the duplicate-stack block (`FLOW-004`) or the 10-card stack limit, a non-blocking notice is shown and scanning continues; the card is not silently dropped and the user is never stranded
-  - manual fallbacks are preserved: manual tap-capture remains available, and after a few consecutive low-confidence frames the existing manual-search escalation still appears (DEC-052, DEC-055)
+  - manual fallbacks are preserved: manual tap-capture remains available; manual search is reached by exiting scan — the in-scan low-confidence manual-search escalation prompt does not render (DEC-076 refines DEC-052/DEC-055)
   - supersedes the "one confident card is presented for one-tap Add" behavior in DEC-052, DEC-055, FLOW-006, and REQ-038; Rescan as a discard-and-resume control is no longer needed because there is no pending-accept state (correction is handled by DEC-058)
 - Related requirements:
   - REQ-038
@@ -143,6 +145,7 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
   - refines DEC-052/DEC-055; it does not change the identification/hashing/distance accuracy logic, only the control-layer calibration constants and the accept gate
   - the strict lock thresholds remain outcome-validated calibration constants (DEC-052/DEC-055 precedent), not product open questions
   - **Superseded in part (DEC-059):** the "lock bar high enough that a wrong card is essentially never auto-added" strict-bar intent is rebalanced toward ease-of-lock with one-tap removal (DEC-058) as the safety net; the auto-add mechanism and hands-free model this decision introduces are unchanged
+  - **Refined in part (DEC-076):** the in-scan manual-search escalation prompt is removed; manual tap-to-capture and Exit scan to manual search remain
 
 ### DEC-057
 - Decision: The scan screen shows a live three-state convergence indicator (`searching` -> `locking` -> `locked`) driven by an additive, pure progress signal from the stabilizer, replaces the selectable candidate list with a single non-selectable "locking on" indicator, removes the raw status-string leaks, and plays positive visual confirmation feedback (a thumbs-up popup that fades out) on each successful auto-add. Audio confirmation (a "ding" + mute toggle) is split out of this decision and realized separately by DEC-061 / REQ-042.
@@ -186,7 +189,7 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
   - the loosening is applied to the attainability knobs in `apps/frontend/src/lib/scan/tuning.ts` (stabilizer window, vote count, lock distance); the runner-up distinctness/margin guard is retained as the primary false-lock protection — easier locks without inviting near-random wrong cards
   - the scan interaction is unchanged and stays fully hands-free: same stabilizer, same auto-add path, no manual confirm tap and no candidate-list pick
   - the tuning constants remain outcome-validated calibration (DEC-052/DEC-055 precedent), now validated against two outcomes — cards lock quickly and reliably in normal phone presentation, and remain lockable in the adverse webcam/fingers/noise case — with wrong auto-adds staying rare across both
-  - manual tap-capture and the low-confidence manual-search escalation remain available (DEC-052, DEC-055, DEC-056)
+  - manual tap-capture remains available; manual search is reached by exiting scan (DEC-076); the in-scan low-confidence manual-search escalation prompt does not render
   - no change to identification/hashing/distance accuracy logic, `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
 - Related requirements:
   - REQ-040
@@ -221,7 +224,7 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
   - scanning stays frontend-only with zero network calls at scan time; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly (`buildPromptContext`/`buildPromptText`), the provider boundary, or any product-facing endpoint
   - no change to the stabilizer, lock/convergence logic, the add path, or the visual thumbs-up popup (DEC-056, DEC-057)
   - the ding plays off the same monotonic `ScanAddConfirmation.id` auto-add event that drives the visual popup, so sound and popup fire together and a repeat add of the same card re-fires both
-  - the sound is on by default; a mute toggle (speaker/mute icon) sits top-left on the scan screen, paired with the convergence status indicator, leaving the top-right cluster (scanned-cards review bubble + Debug toggle) unchanged
+  - the sound is on by default; a mute toggle (speaker/mute icon) sits top-left on the scan screen, paired with the convergence status indicator; debug toggle placement is governed by DEC-065 and must not share the scanned-cards review/remove hit area
   - muting suppresses the audio only; the visual thumbs-up popup is unaffected by mute state
   - the mute preference persists across reloads via `localStorage` — the first `localStorage` use in the repo, isolated in a small dedicated helper (`apps/frontend/src/lib/scan/audioPrefs.ts`) with its own unit test; a corrupt/unavailable store falls back to the default (unmuted) and never throws
   - the sound is played from the bundled static asset `apps/frontend/public/assets/scanSuccess.wav` (served at `/assets/scanSuccess.wav`), a short 16-bit mono PCM WAV; no audio or animation library is added and no runtime tone synthesis is used
@@ -258,3 +261,159 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
   - refines DEC-052/DEC-055/DEC-056/DEC-057/DEC-059/DEC-060; the identification/hashing/distance accuracy logic, the hands-free auto-add model, and the lock-in mechanism are unchanged — only the query signal feeding them and the searching-state copy change
   - the conditioning, frame-quality, and threshold values are outcome-validated calibration constants, not product open questions
 
+### DEC-065
+- Decision: The scanned-cards review/remove control keeps the top-right scan-screen position; the debug overlay toggle must live in a separate non-overlapping scan control area so both controls remain independently tappable.
+- Status: confirmed
+- Context: DEC-058 intentionally makes the top-right scanned-cards bubble the fast correction path for wrong auto-adds. DEC-060 later added a debug toggle for scanner diagnostics, and DEC-061 described a shared top-right review-bubble/Debug cluster. In the shipped layout those controls can overlap on-screen, putting two clickable targets in the same region and making the one-tap remove safety net easy to misclick.
+- Impact:
+  - the top-right scan-screen region remains reserved for the scanned-cards review bubble and its expanded remove affordances (DEC-058)
+  - the debug overlay toggle remains available, default-off, ephemeral, and behaviorally unchanged, but is moved to a separate scan control area outside the review/remove hit area
+  - at mobile and desktop scan-screen sizes, the debug toggle, review bubble, expanded review panel, and per-card remove buttons must have non-overlapping visual bounds and pointer hit areas
+  - the debug toggle may be grouped with other diagnostic or scan controls, but must not cover, sit under, or intercept taps meant for the review/remove control
+  - this is a frontend scan-screen layout refinement only; no change to scanner behavior, overlay metrics, detector/stabilizer signals, `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+- Related requirements:
+  - REQ-040
+  - REQ-041
+  - NFR-001
+- Notes:
+  - refines DEC-060's debug-toggle placement and supersedes only DEC-061's "top-right review-bubble/Debug cluster" placement phrase; all debug-overlay and audio behavior remains unchanged
+
+### DEC-069
+- Decision: The scan fingerprint corpus explicitly targets every paper **gameplay** printing that carries distinct artwork — including non-English-only printings (e.g. alternate-art Japanese cards) — and corpus coverage is made measurable rather than a silent miss. The build keeps Scryfall **Default Cards** (`default-cards.json`) as its source; the gameplay/corpus filter is audited so legitimate gameplay art is not dropped, and coverage diagnostics expose whether a given printing/illustration is fingerprinted and whether the corpus is fully built or still partial. This refines DEC-051/DEC-054 (the same TheJudge-owned library and incremental build) and is the **only** scan-robustness lever that may touch the data-build; it supersedes none of them and does not relax DEC-062's query-only posture.
+- Status: confirmed
+- Context: A real-world failure surfaced a Japanese-language card that could not be identified at all, alongside a glare-affected English card that struggled. Query-side robustness (DEC-062) is explicitly query-only and cannot help a card whose artwork is not in `cardhashes.bin`: if the printing was never fingerprinted, there is no entry to match against at any distance. `scripts/build-card-hashes.mjs` sources Scryfall Default Cards (one object per printing, English-preferred; a printing that exists only in a non-English language appears as that language's object), so Default Cards already covers every distinct *illustration*, and a standard non-English printing shares the English printing's art, which Region A reads language-agnostically. The plausible coverage gaps are therefore (a) the gameplay/corpus filter (`isGameplay`, `EXCLUDED_SET_TYPES`) silently excluding printings that carry distinct gameplay-relevant art, and (b) the DEC-054 incremental build being only partially complete — both currently invisible to the operator, who sees only "no match." The IDEA framed the data-build as a non-goal; that local non-goal is overridden here because coverage is the one robustness problem the query-only levers structurally cannot solve. Switching to the every-language `all-cards` bulk was considered and rejected: it is roughly 10× the corpus of mostly-duplicate art that collapses through the existing oracle bridge (DEC-053), so it adds build/retention cost with no distinct-art coverage gain.
+- Impact:
+  - the build keeps Default Cards (`default-cards.json`) as its source; no switch to the `all-cards` every-language bulk
+  - the gameplay/corpus filter (`isGameplay`, `EXCLUDED_SET_TYPES`, layout/oversized/checklist exclusions) is audited and adjusted only as needed so paper gameplay printings carrying distinct artwork — including non-English-only alt-art printings — are included rather than silently dropped; any filter change is justified against the gameplay-card intent, not loosened wholesale
+  - coverage is made observable: the build reports/surfaces whether a target printing or illustration is present in `cardhashes.bin` and distinguishes a fully-built corpus from a partial DEC-054 in-progress one, so a "no match" can be attributed to a coverage gap rather than guessed at; this reuses the existing manifest/skip-list artifacts and run summary rather than adding a new data store
+  - **frozen boundaries:** no change to the shared resize+DCT+hash recipe (`recipe.ts` `cropRegionA`/`phashRegionPacked`), the `CARDHSH1` bin format, the matching/orientation/distance logic (`identify.ts`), the runtime scanner/lock gate, or the DEC-051/REQ-034 byte-exact parity gates; Region A stays frozen and is the language-agnostic illustration window, so standard non-English printings match their shared art by construction
+  - **escalation, not silent absorption:** if diagnosis shows Region A bleeds into language-variant frame/text (so a shared-art non-English printing genuinely cannot match without a recipe/geometry change), that is a recipe + full DB-rebuild escalation and is explicitly **out of scope** for this story — it is flagged and recorded, never folded in silently
+  - the human-approval network posture is unchanged: a coverage-extending build run downloads missing images and is itself the explicit approval (DEC-054); no scheduled/automated refresh is added
+  - no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint; scanning stays frontend-only at scan time and the oracle-level identity model (DEC-053) is unchanged
+  - glare/conditioning recalibration for the English-card failure is **not** part of this decision: it is execution-level calibration under DEC-062/REQ-043 (outcome-validated `tuning.ts` constants), carries no new product truth, and is recorded in the work DESIGN-BRIEF
+- Related requirements:
+  - REQ-047
+  - REQ-035
+  - REQ-039
+  - NFR-010
+- Notes:
+  - overrides only the local "no data-build change" non-goal in this work's IDEA; it does not touch any committed non-goal in `goals-and-non-goals.md`
+  - validated by outcome (the previously-unidentifiable Japanese card becomes identifiable once its art is fingerprinted), qualitative owner on-device acceptance, not by a counted table
+  - corpus-coverage targeting and any filter adjustments are calibration validated against gameplay-card intent, not product open questions (DEC-052 precedent)
+
+### DEC-070
+- Decision: A scanned card displays the **specific printing's art that was scanned** by separating printing-level *image presentation* from oracle-level *identity*. The scanned printing's image flows into the scan preview and is persisted onto the added `ZoneCardItem.imageUrl`; `cardId`/oracle identity, prompt context, and rulings stay oracle-level and unchanged. This refines DEC-053/REQ-036 (which pushed only oracle-level metadata to the picker and kept printing-level identity out of `ZoneCardItem`) by carving out the image as presentation, not identity; it does not supersede DEC-053's oracle-level identity model.
+- Status: confirmed
+- Context: DEC-053 resolves an art match through `printing id → oracle_id → CardMetadataItem` and collapses duplicate oracle ids to one candidate by best distance, then feeds the picker "exactly like typed suggestions." Because `CardMetadataItem.imageUrl` is the build's single representative printing (most-recent/highest-quality per `choosePreferredCard`), the on-screen art after a scan is frequently a different printing than the physical card in front of the user — the reported defect. The scanned printing id is available at scan time (it is the best-distance engine `Candidate.card_id` for the locked oracle identity), and that printing's image URL is available at build time in `build-card-scan-map.mjs` from the same Scryfall printing object. So fidelity is achievable purely by carrying the printing image as presentation; identity stays oracle-level so prompt/rulings/duplicate-block/stack behavior are untouched. Critically, `imageUrl` is already omitted from LLM-facing prompt text (REQ-030), so displaying a different image has zero effect on the Ask AI contract — satisfying this work's IDEA non-goal.
+- Impact:
+  - the build-time bridge artifact `cardScanMap.json` gains a per-printing `imageUrl` (the scanned printing's Scryfall image), produced by `build-card-scan-map.mjs` from the same printing object it already reads; the entry shape becomes `{ oracleId, name, imageUrl }`
+  - `resolveScanCandidatesRanked` (REQ-036) threads the best-distance printing's `imageUrl` through to the locked candidate so the scan capture hook can surface it alongside the resolved oracle-level `CardMetadataItem`
+  - on auto-add (DEC-056), the scanned printing image is written to `ZoneCardItem.imageUrl` for that card only; the existing add path, owner, duplicate-stack block, stack-size limit, and the `ZoneCardItem` shape are otherwise unchanged, and the thumbnail in stack/zone details (REQ-008/DEC-018) then matches the scanned printing
+  - graceful fallback: if a printing image is missing/empty in the bridge, the resolver falls back to the oracle-level `CardMetadataItem.imageUrl` so the card still previews and adds (DEC-053 drop/collapse behavior is otherwise unchanged)
+  - oracle-level identity is unchanged: `cardId`, the duplicate-stack key, prompt context (`buildPromptContext`/`buildPromptText`), and rulings lookup remain keyed on the oracle id — printing-level data other than the display image is not pushed into `ZoneCardItem`, prompt, or rulings
+  - scanning stays frontend-only with zero network calls at scan time; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - **frozen scan-engine boundaries:** no change to the shared resize+DCT+hash recipe (`recipe.ts`), `cardhashes.bin`, the matching/orientation/distance logic (`identify.ts`), the stabilizer/lock gate, or the byte-exact parity gates (REQ-034/DEC-051); this is presentation only and is explicitly **not** a scan-robustness lever (distinct from DEC-062/DEC-069)
+  - cost: the lazy-loaded bridge file grows by one URL per printing; it loads only on first scan, so app startup is unaffected and the growth stays within the NFR-010 lazy-load posture
+- Related requirements:
+  - REQ-048
+  - REQ-036
+  - REQ-008
+  - NFR-010
+- Notes:
+  - refines DEC-053/REQ-036; the oracle-level identity model, candidate collapse-by-best-distance, and drop-unresolvable behavior are unchanged — only a presentation image is added to the carried data
+  - typed-search representative-printing selection is a separate concern handled by DEC-071; the scan path shows the scanned art directly and does not depend on the representative print
+
+### DEC-072
+- Decision: Real-world card **detection** robustness — finding and locking the 4-corner card outline before any matching runs — is achieved by raising detector recall in `detector.ts` (loosened/adaptive edge + contour gates, foil/glare-tolerant edge sourcing, and a low-contrast-border fallback detection path), while the downstream temporal stabilizer lock gate stays the precision guard against wrong auto-adds. It is validated by outcome against a committed detector fixture corpus — committed seed/generated synthetic fixtures with recorded provenance as the controllable backbone, plus downloaded/owner real-world photos and an optional debug-gated raw-frame export folded in. The ignored Scryfall card-image download cache may help select seeds, but it is not the reproducible fixture source of truth. The Region A perceptual-hash recipe geometry (`recipe.ts`) and the `CARDHSH1` bin format stay frozen; a fix that genuinely requires them is flagged-and-recorded as a separate escalation, never folded in. Refines DEC-052/DEC-055; complements DEC-062 (query-only conditioning) and DEC-069 (corpus coverage) as the third, detection-side robustness lever; supersedes none.
+- Status: confirmed
+- Context: Shipped query-side robustness (DEC-062) and corpus coverage (DEC-069) both run strictly downstream of detection and cannot help a card the detector never finds. Owner on-device validation (2026-06-25, receipt `scan-robustness-tuning-2026-06-25.md`) reproduced a hard `detectCard()` shape-lock failure on two physically different cards: an ornate/etched-foil full-art Japanese Strixhaven Mystical Archive `Akroma's Will` and a plain non-Japanese English card held centered — so the failure is language- and corpus-agnostic and the corpus already contains both cards (`included`+`fingerprinted`). `detectCard()` returns `null`, status goes `no-card`, and the warp→fingerprint→stabilizer pipeline never runs (`ScanCameraSurface.tsx:130-145`). Likely mechanisms: foil reflections inject spurious internal edges that fail `SOLIDITY_MIN 0.65`/`RECTANGULARITY_MIN 0.7`, and a low-contrast outer border against the play surface makes Canny (`CANNY_LO/HI 30/90`) miss the boundary, so no 4-corner contour passes the gates. Because a detected quad never auto-adds a card — the stabilizer's distance+margin vote (`lockDistance 78`/`marginMin 14`, DEC-059) is the precision guard — detector recall can be raised liberally first and tightened only if spurious warps actually appear; over-detection costs at most a wasted frame, not a wrong card. Evidence-based tuning was previously blocked because `ScanCameraSurface` had no way to export the exact failing frame; rather than depend on one device's frame (every camera differs), the evidence basis is a diverse fixture corpus.
+- Impact:
+  - detection robustness is pursued in `detector.ts` only, raising recall via: (a) loosened/adaptive Canny + solidity/rectangularity/aspect/area gates tuned against the fixture corpus; (b) foil/glare-tolerant edge sourcing so speculars and internal foil edges do not starve the outer-border contour; (c) a low-contrast-border fallback detection path (e.g. adaptive thresholding) that runs only when the primary pipeline finds nothing; (d) condition-aware feedback so a persistent `no-card` surfaces a user nudge instead of a silent failure
+  - the temporal stabilizer lock gate (`lockDistance`/`marginMin`, DEC-059) is unchanged and remains the precision guard: loosening detection does not loosen the card-identity gate, so wrong auto-adds stay protected and one-tap removal (DEC-058) remains the safety net
+  - evidence + validation: the outcome bar is **detect-then-lock on committed real on-device frames plus a fresh on-device pass**; the synthetic fixture corpus (committed fixture seeds and/or committed generated synthetic degradations — glare/specular, low-contrast border, perspective skew, foil-like highlights — with recorded provenance, plus downloaded real-world card-on-table photos) is necessary-but-not-sufficient and **must not be reported as completion** while the real-frame/on-device outcome is unmet. The 2026-06-25 implementation passed the synthetic corpus 5/5 yet still failed on-device precisely because the synthetic fixtures have uniform backgrounds and fully-visible cards and so cannot reproduce background clutter, finger occlusion, or the hand-held regime; before/after detect-then-lock rate across both the corpus and the real frames is recorded as acceptance evidence
+  - **regression-aware tuning:** owner-confirmed (2026-06-25) that the hand-held "card held up to the camera" case used to work better and recent tuning degraded it, so recall work is regression-first — identify and loosen/revert the degrading change(s) (primary suspects: the `MAX_DETECT_DIMENSION` detection downscale washing out the thin outer border, and the multi-channel median-area filter rejecting the card under clutter) and record the regression — rather than only loosening blindly
+  - **capture-framing guide prior:** detection is biased toward the on-screen card-shaped reticle the user aligns to (DEC-073/REQ-052) so off-guide background clutter stops competing for selection; this is the cheapest, highest-leverage recall lever and is pursued alongside threshold tuning
+  - the raw-frame export reuses the existing scan **Capture** button rather than adding a control: while the opt-in debug overlay (DEC-060/REQ-041) is enabled, Capture additionally saves/downloads the exact frame it grabbed; with the overlay off (default) Capture behaves exactly as today and the normal scan flow is unchanged (DEC-065 no-clutter intent)
+  - **frozen boundaries:** no change to the shared resize+DCT+hash recipe (`recipe.ts` `cropRegionA`/`phashRegionPacked`), the `CARDHSH1` bin format, `cardhashes.bin`, the bridge/manifest artifacts, the matching/orientation/distance logic (`identify.ts`), or the DEC-051/REQ-034 byte-exact pHash and DB-load parity gates; a perspective-warp from new corners feeds the same unchanged recipe
+  - **escalation, not silent absorption:** if a real failing frame proves a card is unfindable without a Region A recipe/geometry or bin-format change (which forces a full DB re-download/re-hash), that is a separate recipe escalation, explicitly out of scope here — flagged and recorded, never folded in
+  - scanning stays frontend-only with zero network calls at scan time; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - the fixture-corpus image downloads follow the existing human-approval network posture (the operator running the build/fetch is the approval); committed fixtures must have clear provenance, and the ignored `apps/frontend/data/scryfall/card-images/` cache is only a local input convenience, not a test or acceptance prerequisite
+- Related requirements:
+  - REQ-050
+  - REQ-051
+  - REQ-052
+  - REQ-037
+  - REQ-041
+  - NFR-010
+- Notes:
+  - refines DEC-052/DEC-055 (the detect→warp stage they introduced); complements DEC-062 and DEC-069 as the detection-side lever the query-only and corpus levers structurally cannot cover; extended by DEC-073 (capture-framing guide prior)
+  - all detector gate/threshold and fixture-degradation values are outcome-validated calibration constants (DEC-052/DEC-055/DEC-059 precedent), not product open questions
+  - root-cause evidence preserved in `PRD/instructions/receipts/scan-robustness-tuning-2026-06-25.md`; "loosen first, tighten if too loose" is the explicit owner-directed tuning posture, applied regression-first per the 2026-06-25 re-test (the hand-held case degraded from a previously-working state)
+
+### DEC-073
+- Decision: The on-screen card-shaped framing guide (the `745/1040` reticle the scan surface already draws) is promoted from a passive visual hint into a **detection prior and an explicit capture instruction**. `detectCard()`/`detectCardCorners()` bias candidate selection toward the guide region — constraining the effective area-fraction/position window to the reticle and/or scoring candidates by overlap with it — so a gate-passing quad from background clutter (TV, shelf, picture frame) outside the guide no longer wins over the card the user is aligning inside it. In parallel, the searching-state guidance copy actively coaches the easy capture regime (fill the guide, flat contrasting surface, fingers off the edges). This is the cheapest, highest-leverage detection-recall lever: it converts "detect an arbitrary hand-held card against clutter" — hard in pure-JS CV — into "prefer the card the user is already framing." Extends DEC-072 (detection-side robustness) on the UI/affordance axis; complements DEC-057/DEC-062 (searching-state feedback) whose path the guidance copy reuses; changes no identity/lock gate (DEC-059) and no recipe/bin boundary.
+- Status: confirmed
+- Context: Owner re-validation (2026-06-25) of `scan-detector-foil-robustness` found that the failing case is a card held up to the camera, tilted, with fingers over the border, against a cluttered room background, and — critically — that **scanning improved markedly when the card was fitted to the on-screen guide**. The guide already exists (`ScanCameraSurface.tsx` renders a card-aspect reticle with a dimmed surround) but detection does not use it: `findBestCardInEdges` accepts the largest gate-passing quad anywhere in frame (`MIN_AREA_FRAC 0.05`/`MAX_AREA_FRAC 0.95`), so off-guide clutter competes on equal footing with the card. Aligning the detector's selection to the affordance the user is already using is both reliable and nearly free.
+- Impact:
+  - detection selection is biased to the guide region (area-fraction/position window and/or overlap scoring) rather than "largest quad anywhere"; the prior is derived from the same geometry the UI draws so the user's target and the detector's preference are identical
+  - the guide prior biases but does not hard-reject: a slightly misaligned card still has a path to lock, so the prior raises recall without becoming a new gate
+  - searching-state guidance copy becomes condition-aware and coaches the easy regime (fill the guide, flat contrasting surface, fingers off edges), reusing the DEC-057/DEC-062 feedback path; it stays non-blocking with manual search always available (DEC-050)
+  - the stabilizer lock/identity gate (`lockDistance`/`marginMin`, DEC-059) is unchanged — the guide prior is a recall/selection lever only and does not loosen identity precision or increase wrong auto-adds; one-tap removal (DEC-058) remains the safety net
+  - **frozen boundaries:** no change to `recipe.ts`, the `CARDHSH1` bin, `cardhashes.bin`, `identify.ts`, or the DEC-051/REQ-034 parity gates; scanning stays frontend-only with zero scan-time network calls and no new scan-screen control (DEC-065)
+- Related requirements:
+  - REQ-052
+  - REQ-050
+  - REQ-037
+  - DEC-059
+  - DEC-065
+- Notes:
+  - extends DEC-072; the guide prior (this decision) and the regression-aware threshold/edge tuning (DEC-072) are pursued together, not as alternatives
+
+### DEC-074
+- Decision: The scanner requests a **higher-resolution camera capture mode** (and continuous autofocus where the device supports it) instead of accepting the browser's unconstrained default, so the warp → Region A → hash → lock pipeline reads a sharper source image and cards lock across a wider range of distances and lighting rather than only a narrow sweet spot. `ScanCameraSurface` passes `MediaTrackConstraints` to `getUserMedia` (`width`/`height` `{ ideal: 1920/1080 }`, `facingMode { ideal: "environment" }`, continuous `focusMode` where available), always using `ideal` (never `exact`) so unsupported or locked-down devices degrade gracefully to whatever mode they can deliver. This is a **capture-quality lever upstream of the frozen matching boundary**: the perceptual-hash recipe (`recipe.ts`), the `CARDHSH1` bin, `cardhashes.bin`, the matching/orientation/distance logic (`identify.ts`), and the DEC-059 stabilizer lock gate are all unchanged. Complements DEC-062 (query-only conditioning), DEC-072/DEC-073 (detection-side recall); supersedes none.
+- Status: confirmed
+- Context: Owner re-test (2026-06-25) reported that scanning works only in a narrow band of distance and lighting — "a game of finding the right spot and holding still." Diagnosis traced this not to detection (which `detectCard()` already handles on the real frames per DEC-072/DEC-073) but to **capture quality**: every owner-exported frame, including the one captured at the distance that scanned well (`scan-frame-1782439377948.png` and the committed `real/` frames), is **640×480**, because `getUserMedia` is called with only `facingMode` and no resolution constraint, so the browser hands back its low default. With the card filling ~82% of frame height it is only ~390px tall natively and the warp **upscales it to the 1040px canonical height (~2.6×)** before hashing Region A; the captured frames' Region A quality scored 0.501/0.451 against the 0.45 accept threshold (`FRAME_QUALITY_ACCEPT_THRESHOLD`), i.e. right at the edge. Requesting a higher capture resolution feeds the same unchanged warp far more real pixels (card height ~885px at 1080p, cutting the Region A upscale toward ~1.2×), which widens the lockable distance/light window and lifts the borderline best-frame and quality signals (DEC-062) without touching any frozen surface. Because corner detection already runs on a frame downscaled to `MAX_DETECT_DIMENSION` (640) and warps from the full-resolution frame, the higher capture resolution adds no detection-stage cost; only the fixed-output warp samples a larger source.
+- Impact:
+  - `ScanCameraSurface.openCamera` requests a higher-resolution environment-facing stream via `MediaTrackConstraints` (`width`/`height` `{ ideal: 1920, ideal: 1080 }` or device best, continuous `focusMode` where supported), using `ideal` so a device that cannot honor it falls back to its best available mode rather than throwing; a denied/failed `getUserMedia` still surfaces the existing `camera-error` path
+  - the hidden capture canvas already grabs at native `videoWidth`/`videoHeight`, so the larger stream flows into the warp with no other capture-path change; the live `<video>` preview keeps its existing CSS size and `object-cover`
+  - **resolution ceiling and focus mode are outcome-validated calibration constants** (DEC-052/DEC-055/DEC-059 precedent), tunable if a device class shows perf/memory pressure — not product open questions; they live with the camera-open constraints, not in the frozen recipe
+  - **best-frame + frame-quality recalibration (execution-level, not new product truth):** because the `FRAME_QUALITY_*` norms and `FRAME_SELECTOR_WINDOW_SIZE` (`tuning.ts`) were tuned at 640×480, they are recalibrated against the higher-resolution frames (notably `FRAME_QUALITY_SHARPNESS_NORM` and the accept threshold), and the best-frame window is retuned (`5 → 3`); this is outcome-validated `tuning.ts` calibration under DEC-062, recorded in the work DESIGN-BRIEF, and carries no new product truth
+  - **positive in-zone capture cue (REQ-054):** once a frame's `qualityScore` clears the accept threshold but the card has not yet locked, the searching-state indicator shows a positive "good — hold steady" cue so the user knows when they have found the lockable zone instead of hunting blind; it reuses the existing DEC-057/DEC-062 searching-state feedback path, is non-blocking, and adds no new control
+  - **frozen boundaries:** no change to the shared resize+DCT+hash recipe (`recipe.ts` `cropRegionA`/`phashRegionPacked`), the `CARDHSH1` bin format, `cardhashes.bin`, the bridge/manifest artifacts, `identify.ts` (Hamming + 0°/180° + ranking), the stabilizer/lock gate (`lockDistance`/`marginMin`, DEC-059), or the DEC-051/REQ-034 byte-exact pHash and DB-load parity gates; a higher-resolution source warps through the same unchanged recipe
+  - **NFR-010 posture:** detection still runs on the `MAX_DETECT_DIMENSION`-downscaled frame (no detection slowdown); the added cost is the fixed-size warp sampling a larger source and a larger `getImageData` per scanned frame at the auto-scan cadence, which stays within the scan performance budget and is re-checked on-device
+  - scanning stays frontend-only with zero scan-time network calls; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - **escalation, not silent absorption:** if on-device data shows the higher resolution genuinely needs a recipe/geometry change to help (it should not — the warp is recipe-frozen), that is a separate recipe + full DB-rebuild escalation, flagged and recorded, never folded in (DEC-069/DEC-072 precedent)
+- Related requirements:
+  - REQ-053
+  - REQ-054
+  - REQ-037
+  - NFR-010
+- Notes:
+  - low-light affordances (a torch/flash toggle, explicit exposure constraints) were considered and **deferred** this round to keep the lever to resolution + continuous autofocus with no new scan-screen control (DEC-065); a torch toggle remains a clean future extension
+  - validated by outcome — a DB-registered card locks across a broader distance/light range than before with no new false auto-adds, and exported frames report native resolution above 640×480 — not by bit-equality (DEC-052/DEC-055/DEC-059/DEC-062 precedent)
+  - complements DEC-062 (this sharpens the source the query conditioning and best-frame selection operate on) and DEC-072/DEC-073 (detection is already handled; this is the capture-quality layer feeding the matcher)
+
+### DEC-077
+- Decision: Scanner acquisition tuning proceeds **diagnostic-first** and is validated against a two-condition capture matrix: (1) a hard **Mac-webcam baseline** (built-in webcam, hand-held or lightly supported card, normal room lighting) that should be usable without repeated hunting, and (2) a **stand-assisted controlled setup** (fixed card/camera geometry, flat contrasting surface, stable lighting) that should be fast and highly consistent. These are validation conditions, not product modes: the scanner keeps one behavior path and one user flow. The next acquisition work instruments the capture → detector → frame selector → identify → stabilizer vote path before more threshold tuning, so remaining failures can be attributed to camera focus/resolution, detector quad quality, frame-selector choice, frame-quality gates/cues, identity confidence, or vote eligibility. The recipe/bin/identify boundary and the final lock precision guard (`lockDistance`/`marginMin`) stay frozen unless diagnostics prove a separate escalation is required.
+- Status: confirmed
+- Context: After the latest stabilizer tuning trial (`windowSize 13` / `minVotes 3`, with `lockDistance 78` and `marginMin 14` retained), owner retest found that scanning remained difficult to acquire but became quick once the card identified. That means the final temporal convergence layer is likely less of a bottleneck than the earlier path that produces the first reliable identity vote. Separately, a friend's scan success uses a webcam with a different physical setup, and the owner has access to a 3D-printed scan stand. Physical setup matters substantially for this pure-JS camera pipeline: fixed geometry removes motion, distance drift, perspective wobble, finger occlusion, focus hunting, and background clutter. But the product should not require special hardware to feel usable, so validation must distinguish the hard baseline from the ideal controlled case without creating two scanner modes.
+- Impact:
+  - acquisition diagnostics are promoted from ad hoc debugging into the next scanner tuning lever: for a live or exported frame sequence, the scanner should report native capture resolution / relevant track settings where available, detector corners/geometry, frame-quality score/reason, whether the selected frame is current or retained from the frame-selector window, best/runner-up identity distances and margin, stabilizer votes, and the concrete vote/no-vote reason
+  - the Mac-webcam baseline is the minimum usability bar: with a DB-registered card reasonably filling the guide under normal room lighting, the scanner should reach a first reliable identity vote and lock without repeated distance/lighting hunting; if it cannot, diagnostics must show which stage is blocking acquisition
+  - the stand-assisted controlled setup is the ideal validation bar: the same scanner path should lock quickly and consistently when geometry/lighting are controlled; if it does not, the failure is treated as a stronger signal that a pipeline stage is wrong rather than user/setup variability
+  - tuning experiments after diagnostics must be reversible and stage-specific, such as fixing the missing continuous-focus request, temporarily simplifying frame selection to current-frame-only, or retrying detection at a higher `maxDetectDimension` only after a low-confidence 640px pass; experiments must record before/after evidence rather than silently baking in more constants
+  - the final identity precision guard stays held: do not loosen `lockDistance` or `marginMin` as an acquisition shortcut without diagnostic evidence and an explicit follow-up decision; one-tap removal remains the safety net for rare wrong auto-adds, but not a reason to remove the distinct-runner-up guard
+  - scan-stand support is a validation condition and operator recommendation, not a new hardware dependency, separate UI mode, or product requirement for normal use
+  - **frozen boundaries:** no change to the shared resize+DCT+hash recipe (`recipe.ts`), the `CARDHSH1` bin format, `cardhashes.bin`, the scan map artifacts, or `identify.ts`; scanning remains frontend-only with zero scan-time network calls and no backend/API/prompt change
+- Related requirements:
+  - REQ-057
+  - REQ-037
+  - REQ-041
+  - REQ-050
+  - REQ-052
+  - REQ-053
+  - REQ-054
+  - NFR-010
+- Notes:
+  - refines DEC-059/DEC-062/DEC-072/DEC-073/DEC-074 by separating "getting to a first reliable vote" from "converging once votes exist"
+  - the two validation conditions are a boundary-setting device for refinement and QA, not two user-facing modes
