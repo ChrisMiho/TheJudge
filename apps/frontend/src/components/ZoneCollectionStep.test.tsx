@@ -66,7 +66,7 @@ function mockScanCapture(isOpen: boolean): void {
   });
 }
 
-function renderStep(cards: ZoneCardItem[] = [makeZoneCard("opt", "Opt")]): void {
+function renderStep(cards: ZoneCardItem[] = [makeZoneCard("opt", "Opt")], statusMessage: string | null = null): void {
   render(
     <ZoneCollectionStep
       selectedZones={["stack"]}
@@ -81,7 +81,7 @@ function renderStep(cards: ZoneCardItem[] = [makeZoneCard("opt", "Opt")]): void 
       onContinue={() => undefined}
       canContinue={true}
       onFlashStatus={() => undefined}
-      statusMessage={null}
+      statusMessage={statusMessage}
     />
   );
 }
@@ -112,12 +112,16 @@ describe("ZoneCollectionStep scan focus", () => {
   });
 
   it("hides outer flow actions while scan is open and keeps camera-local controls", () => {
-    renderStep();
+    renderStep([makeZoneCard("opt", "Opt")], "Stacked");
 
+    expect(screen.queryByRole("heading", { name: "Add cards to zones" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Add at least one card in a selected zone. Other selected zones may stay empty.")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Zone tab: Stack" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Stack search input")).not.toBeInTheDocument();
     expect(screen.queryByText("Stack cards (1)")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Back" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Continue" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Stacked")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Exit scan" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Capture" })).toBeInTheDocument();
   });

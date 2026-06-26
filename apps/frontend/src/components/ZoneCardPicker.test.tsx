@@ -105,6 +105,7 @@ describe("ZoneCardPicker scan chrome", () => {
 describe("ZoneCardPicker scan focus (Slice C)", () => {
   it("hides search input and Scan button when scan is open", () => {
     renderPicker({ isOpen: true });
+    expect(screen.queryByText("Stack order is bottom to top. The first card you add is the bottom; each new card is added on top.")).not.toBeInTheDocument();
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Scan" })).not.toBeInTheDocument();
   });

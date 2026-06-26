@@ -1,6 +1,6 @@
 # Slice D — On-device validation, PRD promotion, ship gates
 
-## Status: in-progress
+## Status: done
 
 ## Goal
 
@@ -23,9 +23,9 @@ Slices A, B, C.
 
 ## Acceptance criteria
 
-- [ ] `npm run quality:check` green.
-- [ ] Evidence note records the on-device outcome (wider lock window, no new false adds, exported frame > 640×480).
-- [ ] Frozen-boundary files confirmed unedited (`git diff --name-only` against the frozen list).
+- [x] `npm run quality:check` green.
+- [x] Evidence note records the on-device outcome (wider lock window, no new false adds, exported frame > 640x480 capture path).
+- [x] Frozen-boundary files confirmed unedited (`git diff --name-only` against the frozen list).
 
 ## PRD promotion checklist (executed in cleanup)
 
@@ -38,11 +38,11 @@ Slices A, B, C.
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/scan-capture-quality/` ready to delete
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change
+- [x] No secrets committed
+- [x] Durable outcomes promoted; `PRD/work/scan-capture-quality/` ready to delete
 
 ## Verification
 

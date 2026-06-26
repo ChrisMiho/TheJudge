@@ -96,7 +96,7 @@ export function ZoneCardPicker({
 
   return (
     <div className="space-y-4">
-      {zoneId === "stack" && (
+      {!isScanOpen && zoneId === "stack" && (
         <p className="text-xs text-zinc-400">
           Stack order is bottom to top. The first card you add is the bottom; each new card is added on top.
         </p>

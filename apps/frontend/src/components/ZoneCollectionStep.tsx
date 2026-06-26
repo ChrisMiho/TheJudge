@@ -170,17 +170,24 @@ export function ZoneCollectionStep({
 
   return (
     <PageShell>
-        <StagedStepHeader stepName="Add cards to zones" />
-        <p className="text-sm text-zinc-400">
-          Add at least one card in a selected zone. Other selected zones may stay empty.
-        </p>
+      {!isScanOpen && (
+        <>
+          <StagedStepHeader stepName="Add cards to zones" />
+          <p className="text-sm text-zinc-400">
+            Add at least one card in a selected zone. Other selected zones may stay empty.
+          </p>
+        </>
+      )}
 
-        {orderedSelectedZones.length === 0 ? (
+      {orderedSelectedZones.length === 0 ? (
+        !isScanOpen && (
           <p className="rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4 text-sm text-zinc-300">
             No zones selected. Continue when you are ready to enrich context or ask a timing question.
           </p>
-        ) : (
-          <>
+        )
+      ) : (
+        <>
+          {!isScanOpen && (
             <div className="flex flex-wrap gap-2">
               {orderedSelectedZones.map((zone, index) => {
                 const count = zones[zone]?.length ?? 0;
@@ -204,88 +211,89 @@ export function ZoneCollectionStep({
                 );
               })}
             </div>
+          )}
 
-            {activeZone && (
-              <ZoneCardPicker
-                zoneId={activeZone}
-                cards={activeZoneCards}
-                activePlayers={activePlayers}
-                displayNamesByPlayer={displayNamesByPlayer}
-                pendingOwner={pendingOwner}
-                onPendingOwnerChange={setPendingOwner}
-                searchInput={searchInput}
-                onSearchInputChange={setSearchInput}
-                onSearchKeyDown={keyboard.handleKeyDown}
-                showSuggestions={searchInput.trim().length >= 3 && keyboard.isOpen}
-                isMetadataLoading={isMetadataLoading}
-                suggestions={suggestions}
-                noMatchCopy={NO_MATCH_COPY}
-                activeSuggestionIndex={keyboard.activeIndex}
-                onSuggestionHover={keyboard.setActiveIndex}
-                onSuggestionSelect={(card) => {
-                  setSelectedCard(card);
-                  keyboard.closeSuggestions();
-                }}
-                selectedCard={selectedCard}
-                addButtonLabel={addButtonLabel}
-                onAddSelectedCard={handleAddSelectedCard}
-                onRemoveCard={handleRemoveCard}
-                scan={{
-                  isOpen: isScanOpen,
-                  isLoading: scanCapture.isLoading,
-                  error: scanCapture.error,
-                  convergence: scanCapture.convergence,
-                  addConfirmation: scanCapture.addConfirmation,
-                  scanDebug: scanCapture.scanDebug,
-                  sessionCardIds: scanSessionCardIds,
-                  onOpen: async () => {
-                    setSelectedCard(null);
-                    setScanSessionCardIds([]);
-                    await scanCapture.openScan();
-                  },
-                  onExitToManual: scanCapture.closeScan,
-                  identify: scanCapture.identify,
-                  onCameraStatusChange: scanCapture.setCameraStatus,
-                  onAcquisitionDiagnostic: scanCapture.recordAcquisitionDiagnostic
-                }}
-              />
-            )}
-          </>
-        )}
+          {activeZone && (
+            <ZoneCardPicker
+              zoneId={activeZone}
+              cards={activeZoneCards}
+              activePlayers={activePlayers}
+              displayNamesByPlayer={displayNamesByPlayer}
+              pendingOwner={pendingOwner}
+              onPendingOwnerChange={setPendingOwner}
+              searchInput={searchInput}
+              onSearchInputChange={setSearchInput}
+              onSearchKeyDown={keyboard.handleKeyDown}
+              showSuggestions={searchInput.trim().length >= 3 && keyboard.isOpen}
+              isMetadataLoading={isMetadataLoading}
+              suggestions={suggestions}
+              noMatchCopy={NO_MATCH_COPY}
+              activeSuggestionIndex={keyboard.activeIndex}
+              onSuggestionHover={keyboard.setActiveIndex}
+              onSuggestionSelect={(card) => {
+                setSelectedCard(card);
+                keyboard.closeSuggestions();
+              }}
+              selectedCard={selectedCard}
+              addButtonLabel={addButtonLabel}
+              onAddSelectedCard={handleAddSelectedCard}
+              onRemoveCard={handleRemoveCard}
+              scan={{
+                isOpen: isScanOpen,
+                isLoading: scanCapture.isLoading,
+                error: scanCapture.error,
+                convergence: scanCapture.convergence,
+                addConfirmation: scanCapture.addConfirmation,
+                scanDebug: scanCapture.scanDebug,
+                sessionCardIds: scanSessionCardIds,
+                onOpen: async () => {
+                  setSelectedCard(null);
+                  setScanSessionCardIds([]);
+                  await scanCapture.openScan();
+                },
+                onExitToManual: scanCapture.closeScan,
+                identify: scanCapture.identify,
+                onCameraStatusChange: scanCapture.setCameraStatus,
+                onAcquisitionDiagnostic: scanCapture.recordAcquisitionDiagnostic
+              }}
+            />
+          )}
+        </>
+      )}
 
-        {!isScanOpen && (
-          <>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={onBack}
-                className="rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
-              >
-                Back
-              </button>
-              <button
-                type="button"
-                onClick={handleContinue}
-                disabled={!canContinue}
-                className="rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Continue
-              </button>
-            </div>
+      {!isScanOpen && (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={onBack}
+              className="rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
+            >
+              Back
+            </button>
+            <button
+              type="button"
+              onClick={handleContinue}
+              disabled={!canContinue}
+              className="rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Continue
+            </button>
+          </div>
 
-            {!canContinue && (
-              <p className="text-xs text-zinc-400">
-                Add at least one card in a selected zone before continuing.
-              </p>
-            )}
-          </>
-        )}
+          {!canContinue && (
+            <p className="text-xs text-zinc-400">
+              Add at least one card in a selected zone before continuing.
+            </p>
+          )}
+        </>
+      )}
 
-        {statusMessage && (
-          <p className="rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
-            {statusMessage}
-          </p>
-        )}
+      {!isScanOpen && statusMessage && (
+        <p className="rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
+          {statusMessage}
+        </p>
+      )}
     </PageShell>
   );
 }

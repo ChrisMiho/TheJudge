@@ -203,7 +203,7 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 
 ## Frontend personalization
 
-- Status: shipped (palette); planned (layout density, screen compaction)
+- Status: shipped
 - Summary: Global theme/settings control for predefined color palettes and optional Chunky / Slim layout density, applied to frontend tokens and persisted per browser. Palette reach extends beyond primary-accent surfaces to the page background end-stop (neutralized to slate, not palette-tinted), previously-fixed semantic green states, and the camera scanner UI. Layout density mirrors the palette pattern via `data-layout-density` and shared shell CSS classes for participating density surfaces; `ZoneConfirmStep` is excluded from slim-density visual changes and may use shared shell plumbing only as a rendered visual no-op. Staged-flow screen compaction reduces vertical scroll on game context, zone collection, enrichment list mode, and scan-focused chrome.
 - Lives in: `apps/frontend/src/lib/theme/` (palettes, themePrefs, layoutDensityPrefs, applyPalette, applyLayoutDensity), `apps/frontend/src/hooks/useThemePalette.ts`, `apps/frontend/src/hooks/useLayoutDensity.ts`, `apps/frontend/src/components/ThemeControl.tsx`, `apps/frontend/src/components/PageShell.tsx`, `apps/frontend/tailwind.config.ts`, `apps/frontend/src/index.css`, plus surfaces in `App.tsx`, `EnrichmentStep.tsx`, `ZoneCollectionStep.tsx`, `ZoneCardPicker.tsx`, `ScanCameraSurface.tsx`, `ScanReviewBubble.tsx`, `ConversationThread.tsx`, `FrozenContextSummary.tsx`
 - Backed by: DEC-066, DEC-068, DEC-075, DEC-076, REQ-044, REQ-046, REQ-055, REQ-056, FLOW-007, FLOW-008, NFR-011
