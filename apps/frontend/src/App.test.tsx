@@ -923,6 +923,106 @@ describe("App MVP interaction flows", () => {
     expect(screen.getByLabelText("Caster for Counterspell")).toBeInTheDocument();
   });
 
+  it("uses the image-first presentation and complete-row identity ring in wizard mode", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+
+    await addCardToStack(user, "lig", "Lightning Bolt");
+    await advancePastZoneCollection(user);
+
+    const image = screen.getByRole("img", { name: "Lightning Bolt" });
+    expect(image).toHaveClass("mx-auto", "w-4/5", "h-auto", "object-contain");
+
+    const row = screen.getByLabelText("Caster for Lightning Bolt").closest("li");
+    expect(row).toHaveClass("enrichment-card-row", "card-identity-ring");
+    expect(row).toHaveStyle("--card-identity-ring: rgb(239 68 68 / 0.55)");
+
+    const header = image.closest(".enrichment-card-header");
+    expect(header).not.toBeNull();
+    expect(within(header as HTMLElement).queryByText("Lightning Bolt")).not.toBeInTheDocument();
+    expect(within(header as HTMLElement).queryByText("Stack")).not.toBeInTheDocument();
+    expect(within(header as HTMLElement).queryByText("Lightning Bolt deals 3 damage to any target.")).not.toBeInTheDocument();
+
+    await user.click(
+      within(header as HTMLElement).getByRole("button", {
+        name: "Show card metadata for Lightning Bolt"
+      })
+    );
+    expect(within(header as HTMLElement).getByText("Lightning Bolt")).toBeInTheDocument();
+    expect(within(header as HTMLElement).getByText("Lightning Bolt deals 3 damage to any target.")).toBeInTheDocument();
+
+    expect(within(row as HTMLElement).getByLabelText("Caster for Lightning Bolt")).toBeInTheDocument();
+    expect(within(row as HTMLElement).getByLabelText("Mana spent for Lightning Bolt")).toBeInTheDocument();
+    expect(within(row as HTMLElement).getByLabelText("Target kind for Lightning Bolt")).toBeInTheDocument();
+    expect(within(row as HTMLElement).getByLabelText("Context notes for Lightning Bolt")).toBeInTheDocument();
+  });
+
+  it("uses the same shared presentation and header controls in list mode", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+
+    await addCardToStack(user, "lig", "Lightning Bolt");
+    await advanceToContextEnrichmentFromZones(user);
+
+    const image = screen.getByRole("img", { name: "Lightning Bolt" });
+    expect(image).toHaveClass("mx-auto", "w-4/5", "h-auto", "object-contain");
+
+    const row = screen.getByLabelText("Caster for Lightning Bolt").closest("li");
+    const header = image.closest(".enrichment-card-header");
+    expect(header).not.toBeNull();
+    expect(within(header as HTMLElement).getByRole("button", { name: "Remove Lightning Bolt" })).toBeInTheDocument();
+    expect(within(header as HTMLElement).queryByText("Lightning Bolt")).not.toBeInTheDocument();
+    expect(row?.closest("ul")).toHaveClass("scroll-cap-4-enrichment");
+
+    fireEvent.error(image);
+
+    const fallback = within(row as HTMLElement).getByTestId("card-presentation-fallback");
+    expect(fallback).toHaveClass("w-full");
+    expect(within(fallback).getByText("Lightning Bolt")).toBeInTheDocument();
+    expect(within(fallback).getByText("{R}")).toBeInTheDocument();
+    expect(within(fallback).getByText("1")).toBeInTheDocument();
+    expect(within(fallback).getByText("Instant")).toBeInTheDocument();
+    expect(within(fallback).getByText("Lightning Bolt deals 3 damage to any target.")).toBeInTheDocument();
+    expect(within(fallback).getByText("R")).toBeInTheDocument();
+    expect(within(row as HTMLElement).getByRole("button", { name: "Remove Lightning Bolt" })).toBeEnabled();
+  });
+
+  it("renders every present local field in the empty-image enrichment fallback", async () => {
+    metadataFixture = baseCardMetadataFixture.map((card) =>
+      card.cardId === "opt"
+        ? {
+            ...card,
+            manaValue: 0,
+            supertypes: ["Legendary"],
+            subtypes: ["Wizard"]
+          }
+        : card
+    );
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+
+    await addCardToStack(user, "opt", "Opt");
+    await advanceToContextEnrichmentFromZones(user);
+
+    const row = screen.getByLabelText("Caster for Opt").closest("li");
+    const fallback = within(row as HTMLElement).getByTestId("card-presentation-fallback");
+    expect(screen.queryByRole("img", { name: "Opt" })).not.toBeInTheDocument();
+    expect(fallback).toHaveClass("w-full");
+    expect(within(fallback).getByText("Opt")).toBeInTheDocument();
+    expect(within(fallback).getByText("{U}")).toBeInTheDocument();
+    expect(within(fallback).getByText("0")).toBeInTheDocument();
+    expect(within(fallback).getByText("Instant")).toBeInTheDocument();
+    expect(within(fallback).getByText("Scry 1, then draw a card.")).toBeInTheDocument();
+    expect(within(fallback).getByText("U")).toBeInTheDocument();
+    expect(within(fallback).getByText("Legendary")).toBeInTheDocument();
+    expect(within(fallback).getByText("Wizard")).toBeInTheDocument();
+    expect(row).toHaveClass("card-identity-ring");
+    expect(row).toHaveStyle("--card-identity-ring: rgb(14 165 233 / 0.55)");
+  });
+
   it("shows zone cards in enrichment order (bottom-to-top) and removal is usable", async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -2224,9 +2324,9 @@ describe("Slice-F: slim density surfaces", () => {
     expect(appCss).toContain('[data-layout-density="slim"] .frozen-context-summary');
   });
 
-  it("keeps the zone card grid capped at four visible cards through density variables", () => {
-    expect(appCss).toContain("max-height: calc(2 * var(--zone-card-tile-height, 10.5rem) + var(--zone-card-grid-gap, 0.5rem));");
-    expect(appCss).toContain("--zone-card-tile-height: 9.25rem;");
+  it("keeps the zone card grid viewport-capped in both densities", () => {
+    expect(appCss).toMatch(/\.zone-card-grid \{[^}]*max-height: 70dvh;/);
+    expect(appCss).not.toContain("--zone-card-tile-height");
     expect(appCss).toContain("--zone-card-grid-gap: 0.375rem;");
   });
 });

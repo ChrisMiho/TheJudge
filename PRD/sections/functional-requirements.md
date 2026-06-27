@@ -1206,3 +1206,44 @@
 - Notes:
   - this requirement intentionally focuses on acquisition — getting to the first trustworthy identity vote — because owner retest showed lock is quick once the card identifies
   - scan stand validation is an ideal-case check and operator recommendation, not a prerequisite for Mac-webcam usability
+
+### REQ-058
+- Title: Consistent legible card presentation and identity highlighting
+- Priority: medium
+- Description: Card containers in zone collection, expanded scan review, and enrichment must use one responsive image-first presentation, on-demand local metadata, and a restrained ring derived from the existing card colors (DEC-078).
+- Acceptance Criteria:
+  - `ZoneCardPicker`, expanded `ScanReviewBubble`, and `EnrichmentStep` use the same shared card-presentation boundary
+  - an available card image is centered at 80% of its card container width, preserves its intrinsic aspect ratio, and renders without cropping
+  - image mode hides duplicated name, owner/zone, and oracle labels while retaining Remove, stack position where applicable, enrichment inputs, and other workflow controls
+  - an accessible three-dot control replaces an available image with local metadata and toggles back to the image
+  - `ZoneCardPicker` preserves its two-column grid, bottom-to-top stack ordering, Remove behavior, and viewport-relative internal scroll cap
+  - expanded `ScanReviewBubble` uses a 320px width with a viewport-safe cap and retains its counter and one-tap Remove behavior
+  - long scan-review sessions scroll inside the expanded panel before the panel would exceed the available camera viewport; the top-right counter and one-tap removal behavior remain unchanged
+  - `EnrichmentStep` uses the shared presentation in both **View all cards** and **Card-by-card** modes; enrichment fields remain full-width below without changing either mode's behavior
+  - when `imageUrl` is empty or the image emits a load error, no broken-image icon or empty image gap remains; the surface replaces the image with a text-first card panel
+  - the metadata panel expands to the available card-container width and renders every locally carried field that is present: name, mana cost, mana value, type line, oracle text, colors, supertypes, and subtypes
+  - the fallback never invents values for absent optional fields and does not fetch additional metadata; Remove, stack position where applicable, enrichment fields, and other workflow controls remain rendered and usable
+  - mixed image/metadata content may produce different tile or row heights, but the zone, enrichment, and scan-review internal scroll boundaries remain effective
+  - every complete card tile, scan-review entry, and enrichment row uses a thin, low-opacity identity ring around the container whether it contains an image or the text-first fallback
+  - single-color cards map W/U/B/R/G to warm ivory, blue, muted violet-charcoal, red, and green; white remains visually distinguishable from the cool light silver-gray colorless treatment
+  - multicolor cards use a stable WUBRG-ordered gradient containing every recognized color present in the existing `colors` array
+  - cards with an empty, missing, or wholly unrecognized `colors` value use the cool light silver-gray ring without failing rendering
+  - identity rings remain decorative: card text continues to identify the card, and the ring adds no glow, background tint, animation, or dependency on the selected app theme palette
+  - automated tests cover shared 80%-width responsive sizing, uncropped rendering, metadata toggle/reset behavior, empty-URL and image-error fallback paths, complete available-metadata rendering, absence of a broken image/empty gap, zone and enrichment viewport caps, scan-panel viewport containment/internal scrolling, both enrichment modes, all five single-color mappings, stable multicolor ordering, silver-gray empty/missing/unknown fallback, and ring application to image-bearing and text-fallback containers on all three surfaces
+- Constraints:
+  - presentation only; use existing `colors` and do not add true `colorIdentity`, image caching, connectivity detection, explicit image retry, runtime metadata refresh, or any change to `CardSelectionPreview`, card identity, printing-image selection, `ZoneCardItem`, `CardMetadataItem`, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, scan matching/stabilizer logic, or data-pipeline behavior
+  - preserve internal scrolling in zone collection, enrichment, and scan review
+  - define shared image sizing, metadata-toggle/error handling, fallback rendering, semantic color mapping, and ring treatment once and reuse them across all three surfaces; do not duplicate sizing, image-fit, fallback-field, or card-color logic
+  - card-color presentation constants stay separate from user-selectable theme palette tokens
+- Dependencies:
+  - DEC-078
+  - REQ-008
+  - REQ-048
+  - DEC-018
+  - DEC-070
+  - DEC-076
+  - FLOW-001
+  - FLOW-002
+  - FLOW-006
+- Notes:
+  - `CardSelectionPreview` remains the visual calibration reference, not an additional implementation target

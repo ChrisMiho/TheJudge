@@ -79,40 +79,35 @@
   line-height: 1.5rem;
 }
 
-/* 2-column zone card tile grid — max 2 rows (4 tiles) visible before scroll */
+/* Full-width card images vary with the responsive tile width, so the grid uses
+   a viewport cap instead of a fixed row-height estimate. */
 .zone-card-grid {
-  max-height: calc(2 * var(--zone-card-tile-height, 10.5rem) + var(--zone-card-grid-gap, 0.5rem));
+  --zone-card-grid-gap: 0.5rem;
+  max-height: 70dvh;
 }
 
 [data-layout-density="slim"] .zone-card-grid {
-  --zone-card-tile-height: 9.25rem;
   --zone-card-grid-gap: 0.375rem;
   gap: var(--zone-card-grid-gap);
 }
 
 [data-layout-density="slim"] .zone-card-tile {
-  min-height: var(--zone-card-tile-height);
   gap: 0.25rem;
   padding: 0.375rem;
 }
 
-[data-layout-density="slim"] .zone-card-tile-image {
-  height: 4rem;
-  width: 2.75rem;
-}
-
-/* Enrichment list mode — cap each zone's card list to 4 visible rows before scroll */
+/* Full-width presentation plus enrichment controls makes row height responsive. */
 .scroll-cap-4-enrichment {
-  max-height: calc(4 * var(--enrichment-card-row-height, 15rem) + 3 * var(--enrichment-card-row-gap, 0.75rem));
+  --enrichment-card-row-gap: 0.75rem;
+  max-height: 70dvh;
   overflow-y: auto;
 }
 
 .scroll-cap-4-enrichment > * + * {
-  margin-top: var(--enrichment-card-row-gap, 0.75rem);
+  margin-top: var(--enrichment-card-row-gap);
 }
 
 [data-layout-density="slim"] .scroll-cap-4-enrichment {
-  --enrichment-card-row-height: 13rem;
   --enrichment-card-row-gap: 0.5rem;
 }
 
@@ -149,6 +144,29 @@
 
 [data-layout-density="slim"] .frozen-context-detail-row {
   padding: 0.5rem;
+}
+
+.card-identity-ring {
+  position: relative;
+  isolation: isolate;
+}
+
+.card-identity-ring::before {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--card-identity-ring, rgb(148 163 184 / 0.55));
+  content: "";
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
 }
 
 :root {

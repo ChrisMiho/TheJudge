@@ -4,12 +4,14 @@ import {
   CANONICAL_ZONE_ORDER,
   resolveFallbackQuestion
 } from "../lib/contextFlow";
+import { getCardIdentityRingStyle } from "../lib/cardIdentityRing";
 import { formatContextTarget, hasOwnerControl, parseManaSpent } from "../lib/enrichmentFormat";
 import { buildPlayerDisplayNameMap, formatPlayerDisplayLabel } from "../lib/playerLabels";
 import { ZONE_LABELS } from "../lib/zoneLabels";
 import { useEnrichmentTargets } from "../hooks/useEnrichmentTargets";
 import type { ConversationMessage, ContextTarget, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { AskAiWaitingPanel } from "./AskAiWaitingPanel";
+import { CardPresentation } from "./CardPresentation";
 import { ConversationThread } from "./ConversationThread";
 import { FrozenContextSummary } from "./FrozenContextSummary";
 import { PageShell } from "./PageShell";
@@ -157,35 +159,27 @@ export function EnrichmentStep({
     return (
       <li
         key={key}
-        className="enrichment-card-row space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+        className="card-identity-ring enrichment-card-row space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+        style={getCardIdentityRingStyle(card.colors)}
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3">
-            {card.imageUrl && (
-              <img
-                src={card.imageUrl}
-                alt={card.name}
-                className="h-24 w-16 shrink-0 rounded object-cover"
-              />
-            )}
-            <div>
-              <p className="font-semibold text-zinc-100">{card.name}</p>
-              <p className="text-xs text-zinc-400">{ZONE_LABELS[zone]}</p>
-              {card.oracleText && (
-                <p className="mt-0.5 text-xs text-zinc-400 line-clamp-2">{card.oracleText}</p>
-              )}
-            </div>
-          </div>
-          {showRemove && (
-            <button
-              type="button"
-              aria-label={`Remove ${card.name}`}
-              onClick={() => removeCardFromZone(zone, card.cardId)}
-              className="shrink-0 rounded-lg border border-zinc-600 bg-zinc-800/70 px-2 py-1 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-700/80"
-            >
-              Remove
-            </button>
-          )}
+        <div className="enrichment-card-header">
+          <CardPresentation
+            card={card}
+            className="enrichment-card-presentation w-full min-w-0"
+            imageClassName="shrink-0 rounded"
+            actions={
+              showRemove ? (
+                <button
+                  type="button"
+                  aria-label={`Remove ${card.name}`}
+                  onClick={() => removeCardFromZone(zone, card.cardId)}
+                  className="w-full rounded-lg border border-zinc-600 bg-zinc-800/70 px-2 py-1 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-700/80"
+                >
+                  Remove
+                </button>
+              ) : undefined
+            }
+          />
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

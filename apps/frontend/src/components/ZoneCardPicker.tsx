@@ -1,10 +1,12 @@
 import type { KeyboardEvent } from "react";
+import { CardPresentation } from "./CardPresentation";
 import { CardSelectionPreview } from "./CardSelectionPreview";
 import { ScanCameraSurface, type ScanCameraStatus } from "./ScanCameraSurface";
 import { ScanReviewBubble } from "./ScanReviewBubble";
 import type { ScanAddConfirmation, ScanConvergence, ScanDebugMetrics } from "../hooks/useScanCapture";
 import type { AcquisitionFrameDiagnostic } from "../lib/scan/acquisitionDiagnostics";
 import type { IdentifyResult, RgbImage } from "../lib/scan/types";
+import { getCardIdentityRingStyle } from "../lib/cardIdentityRing";
 import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { formatPlayerDisplayLabel } from "../lib/playerLabels";
 import { ZONE_LABELS } from "../lib/zoneLabels";
@@ -238,33 +240,31 @@ export function ZoneCardPicker({
             {cards.map((card, index) => (
               <div
                 key={`${zoneId}-${card.cardId}-${index}`}
-                className="zone-card-tile flex flex-col gap-1 rounded-xl border border-zinc-700/80 bg-zinc-950/40 p-2"
+                className="card-identity-ring zone-card-tile flex flex-col gap-1 rounded-xl border border-zinc-700/80 bg-zinc-950/40 p-2"
+                style={getCardIdentityRingStyle(card.colors)}
               >
-                {card.imageUrl && (
-                  <img
-                    src={card.imageUrl}
-                    alt={card.name}
-                    className="zone-card-tile-image h-20 w-14 shrink-0 self-center rounded object-cover"
-                  />
-                )}
-                <p className="truncate text-xs font-medium text-zinc-100">{card.name}</p>
-                {zoneId === "stack" ? (
-                  <p className="text-xs text-zinc-400">{formatStackPosition(index, cards.length)}</p>
-                ) : (
-                  card.owner && (
-                    <p className="truncate text-xs text-zinc-400">
-                      {formatPlayerDisplayLabel(card.owner, displayNamesByPlayer[card.owner])}
-                    </p>
-                  )
-                )}
-                <button
-                  type="button"
-                  aria-label={`Remove ${card.name} from ${ZONE_LABELS[zoneId]}`}
-                  onClick={() => onRemoveCard(card.cardId)}
-                  className="mt-auto rounded-lg border border-zinc-600 px-2 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
-                >
-                  Remove
-                </button>
+                <CardPresentation
+                  card={card}
+                  className="w-full"
+                  imageClassName="zone-card-tile-image shrink-0 rounded"
+                  actions={
+                    <div className="space-y-1">
+                      {zoneId === "stack" ? (
+                        <p className="text-xs text-zinc-400">
+                          {formatStackPosition(index, cards.length)}
+                        </p>
+                      ) : null}
+                      <button
+                        type="button"
+                        aria-label={`Remove ${card.name} from ${ZONE_LABELS[zoneId]}`}
+                        onClick={() => onRemoveCard(card.cardId)}
+                        className="w-full rounded-lg border border-zinc-600 px-2 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  }
+                />
               </div>
             ))}
           </div>

@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
@@ -7,6 +9,8 @@ import { FrozenContextSummary } from "./FrozenContextSummary";
 import type { CardMetadataItem, ConversationMessage, GameContext } from "../types";
 
 afterEach(cleanup);
+
+const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
 
 const cardWithoutImage: CardMetadataItem = {
   cardId: "opt",
@@ -42,6 +46,17 @@ const frozenContext: GameContext = {
 };
 
 describe("density surface hooks", () => {
+  it("uses a viewport-safe zone scroll cap without imposing a stale fixed tile height", () => {
+    expect(appCss).toMatch(/\.zone-card-grid \{[^}]*max-height: 70dvh;/);
+    expect(appCss).not.toContain("--zone-card-tile-height");
+    expect(appCss).not.toContain('[data-layout-density="slim"] .zone-card-tile-image');
+  });
+
+  it("uses a viewport-safe enrichment scroll cap for full-width card images", () => {
+    expect(appCss).toContain(".scroll-cap-4-enrichment {\n  --enrichment-card-row-gap: 0.75rem;\n  max-height: 70dvh;");
+    expect(appCss).not.toContain("--enrichment-card-row-height");
+  });
+
   it("marks the no-image card preview placeholder for slim height overrides", () => {
     render(
       <CardSelectionPreview

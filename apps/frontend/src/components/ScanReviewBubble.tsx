@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { getCardIdentityRingStyle } from "../lib/cardIdentityRing";
 import type { ZoneCardItem } from "../types";
+import { CardPresentation } from "./CardPresentation";
 
 type ScanReviewBubbleProps = {
   /** Cards added to the zone during this scan session, in add order. */
@@ -33,30 +35,32 @@ export function ScanReviewBubble({ cards, onRemove }: ScanReviewBubbleProps): JS
         <span>{cards.length}</span>
       </button>
       {expanded && (
-        <div className="w-60 max-w-[80vw] rounded-2xl border border-zinc-700/80 bg-zinc-950/90 p-3 text-left shadow-xl">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Added this session</p>
-          <ul className="space-y-2">
+        <div className="flex max-h-[calc(100dvh-6.25rem)] w-80 max-w-[calc(100vw-1.5rem)] flex-col rounded-2xl border border-zinc-700/80 bg-zinc-950/90 p-3 text-left shadow-xl">
+          <p className="mb-2 shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
+            Added this session
+          </p>
+          <ul className="min-h-0 flex-1 space-y-2 overflow-y-auto">
             {cards.map((card, index) => (
               <li
                 key={`${card.cardId}-${index}`}
-                className="flex items-center justify-between gap-2 rounded-lg border border-zinc-700/70 bg-zinc-900/60 px-2.5 py-1.5 text-sm text-zinc-100"
+                className="card-identity-ring rounded-lg border border-zinc-700/70 bg-zinc-900/60 px-2.5 py-1.5 text-sm text-zinc-100"
+                style={getCardIdentityRingStyle(card.colors)}
               >
-                {card.imageUrl && (
-                  <img
-                    src={card.imageUrl}
-                    alt={card.name}
-                    className="h-20 w-14 shrink-0 rounded object-cover"
-                  />
-                )}
-                <span className="truncate">{card.name}</span>
-                <button
-                  type="button"
-                  aria-label={`Remove ${card.name} from scan review`}
-                  onClick={() => onRemove(card.cardId)}
-                  className="shrink-0 rounded-lg border border-zinc-600 px-2 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
-                >
-                  Remove
-                </button>
+                <CardPresentation
+                  card={card}
+                  className="scan-review-card-presentation w-full min-w-0"
+                  imageClassName="shrink-0 rounded"
+                  actions={
+                    <button
+                      type="button"
+                      aria-label={`Remove ${card.name} from scan review`}
+                      onClick={() => onRemove(card.cardId)}
+                      className="w-full rounded-lg border border-zinc-600 px-2 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
+                    >
+                      Remove
+                    </button>
+                  }
+                />
               </li>
             ))}
           </ul>

@@ -105,3 +105,42 @@ Frontend-only user personalization behavior that changes app presentation withou
 - Notes:
   - scroll caps (4 zone tiles, 4 enrichment rows per zone) apply in both chunky and slim density; slim tightens spacing further (DEC-075)
   - non-goals: viewport locking, sticky footers, `dvh` page-shell redesign, changing zone confirmation visuals or density behavior, scan-engine changes
+
+### DEC-078
+- Decision: Card presentation in zone collection, expanded scan review, and enrichment is image-first and responsive. An available card image is centered at **80% of its card container width**, preserves the source card's intrinsic aspect ratio, and shows the complete image without cropping. Image mode hides duplicated card identity labels; an accessible three-dot control swaps the image for every available locally carried metadata field and back again. When an image URL is absent or the image fails to load, including offline, the same readable metadata panel appears directly and expands to the available card container width. Remove and workflow-specific controls remain visible. Every image-bearing or metadata card container also uses a restrained thin ring derived from the existing card `colors`: one identity color, a stable WUBRG-ordered multicolor gradient, or cool light silver-gray when colors are empty, missing, or unrecognized.
+- Status: confirmed
+- Context: The existing 56px zone/scan thumbnails and 64px enrichment thumbnails were too small to make the specific printing art legible. Initial implementation at a fixed 96px still left printed cards unreadable and duplicated labels crowded the surfaces. Responsive manual review established an image-first layout at 80% of each container as the usable balance across narrow and desktop widths. Existing `colors` metadata adds a light identity cue without adding true color-identity data or changing any product contract.
+- Impact:
+  - applies to card images in `ZoneCardPicker` card tiles, expanded `ScanReviewBubble` entries, and `EnrichmentStep` card rows
+  - all three surfaces use the same centered 80%-of-container image width rather than fixed or surface-specific thumbnail sizes
+  - images preserve intrinsic card aspect ratio and use uncropped rendering so the complete printing remains visible
+  - image mode omits duplicated name, owner/zone, and oracle labels; the printed card remains the primary identity presentation
+  - an accessible three-dot metadata control replaces an available image with every locally carried field that is present—name, mana cost, mana value, type line, oracle text, colors, supertypes, and subtypes—and toggles back to the image
+  - a missing or failed image never renders a broken-image icon or reserves an empty image gap; it enters the same metadata presentation directly
+  - metadata expands to the available width of its zone tile, scan-review entry, or enrichment header
+  - Remove, stack position where applicable, enrichment fields, and other workflow controls remain rendered and usable
+  - **zone collection:** preserve the two-column grid and bottom-to-top stack ordering; center the responsive image; keep the grid as the internal scroll owner within a viewport-relative cap
+  - **scan review:** use a 320px panel with a viewport-safe width cap; each entry uses the shared responsive presentation and Remove control; long sessions scroll inside the panel before it exceeds the camera viewport
+  - **enrichment:** use the shared responsive presentation in both **View all cards** and **Card-by-card** modes; keep enrichment fields full-width below
+  - the complete card container—not only the image—uses a thin, low-opacity ring; the same boundary applies when the image is replaced by the text-first fallback
+  - white, blue, black, red, and green map to warm ivory, blue, muted violet-charcoal, red, and green; multicolor cards use a stable WUBRG-ordered gradient containing their present colors
+  - empty, missing, or unrecognized colors use a cool light silver-gray ring that remains visually distinct from the warm ivory used for white cards
+  - identity rings are decorative and independent from the active app theme; they do not replace the card name/text, tint the container background, add a glow or animation, or become the sole card-identity cue
+  - responsive image sizing, metadata-toggle/error handling, color mapping, and ring treatment are defined once and reused by all three surfaces
+  - `CardSelectionPreview` is unchanged
+  - presentation only — no image caching, connectivity detection, explicit image retry, runtime metadata refresh, or change to card identity, printing-image selection, `ZoneCardItem`, `CardMetadataItem`, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, scan matching/stabilizer logic, or data-pipeline behavior
+- Related requirements:
+  - REQ-058
+  - REQ-008
+  - REQ-048
+  - DEC-018
+  - DEC-070
+  - DEC-076
+  - FLOW-001
+  - FLOW-002
+  - FLOW-006
+- Notes:
+  - responsive card heights use viewport-relative internal scroll caps in zone collection and enrichment
+  - fallback content renders only fields already present on the card; absent optional metadata does not produce invented values or require a fetch
+  - this uses the existing `colors` array, not true MTG color identity; adding a `colorIdentity` field is out of scope
+  - card colors use stable semantic presentation constants rather than the user-selectable palette tokens
