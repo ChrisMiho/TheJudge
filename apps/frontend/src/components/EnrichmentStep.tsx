@@ -159,7 +159,7 @@ export function EnrichmentStep({
     return (
       <li
         key={key}
-        className="card-identity-ring enrichment-card-row space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+        className="card-identity-ring enrichment-card-row enrichment-card-enter card-state-remove space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
         style={getCardIdentityRingStyle(card.colors)}
       >
         <div className="enrichment-card-header">
@@ -173,7 +173,7 @@ export function EnrichmentStep({
                   type="button"
                   aria-label={`Remove ${card.name}`}
                   onClick={() => removeCardFromZone(zone, card.cardId)}
-                  className="w-full rounded-lg border border-zinc-600 bg-zinc-800/70 px-2 py-1 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-700/80"
+                  className="card-state-remove-trigger w-full rounded-lg border border-zinc-600 bg-zinc-800/70 px-2 py-1 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-700/80"
                 >
                   Remove
                 </button>
@@ -400,7 +400,7 @@ export function EnrichmentStep({
           <ConversationThread messages={visibleMessages} />
 
           {error && (
-            <div className="space-y-2 rounded-2xl border border-rose-500/40 bg-rose-950/30 p-4">
+            <div className="motion-error space-y-2 rounded-2xl border border-rose-500/40 bg-rose-950/30 p-4">
               <p className="text-sm text-rose-300">{error}</p>
               <button
                 type="button"
@@ -451,7 +451,7 @@ export function EnrichmentStep({
           )}
 
           {statusMessage && (
-            <p className="rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
+            <p className="motion-success rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
               {statusMessage}
             </p>
           )}
@@ -503,7 +503,7 @@ export function EnrichmentStep({
             </button>
           </div>
         ) : showWizardFinished ? (
-          <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4">
+          <div className="motion-success rounded-2xl border border-accent/40 bg-accent/10 p-4">
             <p className="text-sm font-semibold text-accent-soft">Ready to decrypt.</p>
             <p className="mt-1 text-sm text-zinc-300">
               Card context reviewed. Use View all cards to make more edits.
@@ -525,7 +525,7 @@ export function EnrichmentStep({
         )}
 
         {hasAnswer ? (
-          <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4">
+          <div className="motion-success rounded-2xl border border-accent/40 bg-accent/10 p-4">
             <p className="text-sm font-semibold text-accent-soft">Answer</p>
             <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-200">{answer}</p>
           </div>
@@ -580,7 +580,7 @@ export function EnrichmentStep({
         )}
 
         {error && (
-          <div className="space-y-2 rounded-2xl border border-rose-500/40 bg-rose-950/30 p-4">
+          <div className="motion-error space-y-2 rounded-2xl border border-rose-500/40 bg-rose-950/30 p-4">
             <p className="text-sm text-rose-300">{error}</p>
             <button
               type="button"
@@ -594,7 +594,7 @@ export function EnrichmentStep({
         )}
 
         {statusMessage && (
-          <p className="rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
+          <p className="motion-success rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
             {statusMessage}
           </p>
         )}

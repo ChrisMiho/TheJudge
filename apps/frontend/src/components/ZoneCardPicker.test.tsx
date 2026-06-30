@@ -164,6 +164,17 @@ describe("ZoneCardPicker card grid", () => {
     expect(tile).toHaveClass("zone-card-tile");
   });
 
+  it("adds token-driven entrance and remove-exit hooks to card tiles", () => {
+    renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt")] });
+
+    const removeButton = screen.getByRole("button", { name: "Remove Opt from Stack" });
+    expect(removeButton.closest(".zone-card-tile")).toHaveClass(
+      "enrichment-card-enter",
+      "card-state-remove"
+    );
+    expect(removeButton).toHaveClass("card-state-remove-trigger");
+  });
+
   it("uses a centered 80%-width image with no duplicated card name and keeps controls below it", async () => {
     const user = userEvent.setup();
     renderPicker(

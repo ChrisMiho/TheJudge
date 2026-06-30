@@ -46,7 +46,11 @@ export function CardPresentation({
         />
       ) : (
         <div
-          className={joinClasses("w-full text-sm text-zinc-200", fallbackClassName)}
+          className={joinClasses(
+            "w-full text-sm text-zinc-200",
+            imageFailed ? "motion-error" : undefined,
+            fallbackClassName
+          )}
           data-testid="card-presentation-fallback"
         >
           <p className="font-semibold text-zinc-100">{card.name}</p>

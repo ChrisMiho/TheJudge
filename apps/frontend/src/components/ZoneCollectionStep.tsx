@@ -200,7 +200,7 @@ export function ZoneCollectionStep({
                     aria-pressed={isActive}
                     onClick={() => setActiveZoneIndex(index)}
                     className={[
-                      "rounded-lg border px-3 py-1.5 text-xs font-semibold transition",
+                      "motion-hover motion-press motion-focus rounded-lg border px-3 py-1.5 text-xs font-semibold transition",
                       isActive
                         ? "border-accent-soft/80 bg-accent/20 text-accent-soft"
                         : "border-zinc-600 bg-zinc-800/70 text-zinc-300 hover:bg-zinc-700/80"
@@ -267,7 +267,7 @@ export function ZoneCollectionStep({
             <button
               type="button"
               onClick={onBack}
-              className="rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
+              className="motion-hover motion-press motion-focus rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
             >
               Back
             </button>
@@ -275,7 +275,7 @@ export function ZoneCollectionStep({
               type="button"
               onClick={handleContinue}
               disabled={!canContinue}
-              className="rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="motion-hover motion-press motion-focus rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Continue
             </button>

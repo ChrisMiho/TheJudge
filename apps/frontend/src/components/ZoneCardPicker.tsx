@@ -161,7 +161,7 @@ export function ZoneCardPicker({
             </div>
           )}
           {scan.error && (
-            <p className="rounded-xl border border-red-500/50 bg-red-950/40 px-3 py-2 text-sm text-red-100">
+            <p className="motion-error rounded-xl border border-red-500/50 bg-red-950/40 px-3 py-2 text-sm text-red-100">
               {scan.error}
             </p>
           )}
@@ -240,7 +240,7 @@ export function ZoneCardPicker({
             {cards.map((card, index) => (
               <div
                 key={`${zoneId}-${card.cardId}-${index}`}
-                className="card-identity-ring zone-card-tile flex flex-col gap-1 rounded-xl border border-zinc-700/80 bg-zinc-950/40 p-2"
+                className="card-identity-ring zone-card-tile enrichment-card-enter card-state-remove flex flex-col gap-1 rounded-xl border border-zinc-700/80 bg-zinc-950/40 p-2"
                 style={getCardIdentityRingStyle(card.colors)}
               >
                 <CardPresentation
@@ -258,7 +258,7 @@ export function ZoneCardPicker({
                         type="button"
                         aria-label={`Remove ${card.name} from ${ZONE_LABELS[zoneId]}`}
                         onClick={() => onRemoveCard(card.cardId)}
-                        className="w-full rounded-lg border border-zinc-600 px-2 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
+                        className="card-state-remove-trigger w-full rounded-lg border border-zinc-600 px-2 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
                       >
                         Remove
                       </button>

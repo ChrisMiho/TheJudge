@@ -126,7 +126,7 @@
   - if a selected card already exists in the stack, add is blocked
   - UI shows a message that duplicates are not supported yet
 - Constraints:
-  - this is temporary and only for flow validation
+  - this is a temporary product constraint, not a long-term gameplay rule
 - Dependencies:
   - stack state
 - Notes:
@@ -1247,3 +1247,35 @@
   - FLOW-006
 - Notes:
   - `CardSelectionPreview` remains the visual calibration reference, not an additional implementation target
+
+### REQ-059
+- Title: App-wide UI motion & visual-feedback polish pass
+- Priority: medium
+- Description: The full staged flow (game context, zone confirmation, zone collection, enrichment) and the answered/conversation view receive a decorative-motion and visual-feedback polish pass so interactions, transitions, and state changes feel smooth and intentional rather than abrupt — micro-transitions, easing, hover/press/focus states, and add/remove/success/error state-change cues — with no behavior, contract, stack-ordering, or scan-engine change (DEC-079).
+- Acceptance Criteria:
+  - the four staged steps and the answered/conversation view present decorative motion on at least: interactive control hover/press/focus, mounting/unmounting of panels and cards, and add/remove/success/error state changes
+  - motion is implemented with CSS (transitions and/or keyframes); no animation library or animation-framework dependency is added
+  - when `prefers-reduced-motion: reduce` is set, decorative motion is reduced or disabled and every flow remains fully completable; no decorative motion gates any action
+  - motion uses transform/opacity-driven techniques where practical and does not introduce visible jank or regress the card-add (<5s) or Decrypt Stack (<20s) interaction targets (NFR-001, NFR-002)
+  - the existing functional wait-state motion (`AskAiWaitingPanel`, inline follow-up Send spinner) continues to render unchanged (DEC-031, DEC-041)
+  - the scan camera surface convergence/lock/thumbs-up motion is left unchanged (no re-animation of `ScanCameraSurface` internals)
+  - no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, stack-ordering semantics, or data-pipeline behavior
+  - a `prefers-reduced-motion` verification is recorded (automated test and/or explicit manual check) demonstrating decorative motion is suppressed and flows still complete
+- Constraints:
+  - presentation only; do not add new screens, reorder or rename steps, or alter flow logic
+  - reuse shared motion tokens/utilities/CSS rather than duplicating per-component easing/duration constants; shared motion values have a single authoritative definition
+  - stay within the lightweight React + Vite + Tailwind stack; no JS animation library/framework without a new confirmed decision
+  - do not re-animate or otherwise disturb the tuned scan camera convergence UX (DEC-057, DEC-062, DEC-072, DEC-073)
+- Dependencies:
+  - DEC-079
+  - NFR-006
+  - NFR-001
+  - NFR-002
+  - DEC-031
+  - DEC-041
+  - FLOW-001
+  - FLOW-002
+  - FLOW-006
+- Notes:
+  - "broad motion freedom" was the approved direction; guardrails (CSS-only, reduced-motion-aware, performance-safe) keep the pass lightweight
+  - the proximity-driven scan-outline idea is deferred to its own refinement (Q-002), not part of this requirement

@@ -96,6 +96,27 @@ afterEach(() => {
 });
 
 describe("ZoneCollectionStep scan focus", () => {
+  it("adds shared interaction feedback to zone tabs and flow actions", () => {
+    mockScanCapture(false);
+    renderStep();
+
+    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveClass(
+      "motion-hover",
+      "motion-press",
+      "motion-focus"
+    );
+    expect(screen.getByRole("button", { name: "Back" })).toHaveClass(
+      "motion-hover",
+      "motion-press",
+      "motion-focus"
+    );
+    expect(screen.getByRole("button", { name: "Continue" })).toHaveClass(
+      "motion-hover",
+      "motion-press",
+      "motion-focus"
+    );
+  });
+
   it("renders the zone card list as a capped 2-column scroll grid before scan opens", () => {
     mockScanCapture(false);
     renderStep([

@@ -222,6 +222,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: `apps/frontend/src/lib/theme/palettes.ts`, `apps/frontend/src/lib/theme/themePrefs.ts`, `apps/frontend/src/components/ThemeControl.tsx`, accent CSS variables in `apps/frontend/src/index.css` + `apps/frontend/tailwind.config.ts`
 - Backed by: DEC-066, REQ-044
 
+## UI motion & feedback
+
+- Status: shipped
+- Summary: A broadened, app-wide decorative-motion and visual-feedback baseline across the full staged flow (game context, zone confirmation, zone collection, enrichment) and the answered/conversation view — micro-transitions, easing, hover/press/focus states, entrance/exit transitions, and add/remove/success/error state-change cues. CSS-based (no animation library), honors `prefers-reduced-motion`, performance-safe, and changes no behavior, contract, stack ordering, or scan-engine logic. Extends the existing functional wait-state motion (`AskAiWaitingPanel`, inline follow-up spinner); the scan camera convergence UI is excluded.
+- Lives in: shared motion tokens/utilities in `apps/frontend/src/index.css`; staged-flow surfaces in `apps/frontend/src/App.tsx` and `apps/frontend/src/components/{StagedStepHeader,ZoneConfirmStep,ZoneCollectionStep,ZoneCardPicker,CardSelectionPreview,EnrichmentStep,CardPresentation}.tsx`; answered-view surfaces in `apps/frontend/src/components/{ConversationThread,FrozenContextSummary}.tsx`
+- Backed by: DEC-079, REQ-059, NFR-006, FLOW-001, FLOW-002, FLOW-006
+
 ## Card search & metadata
 
 - Status: shipped

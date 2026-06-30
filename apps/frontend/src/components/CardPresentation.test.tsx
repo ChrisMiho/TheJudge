@@ -92,7 +92,7 @@ describe("CardPresentation", () => {
     fireEvent.error(screen.getByRole("img"));
 
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
-    expect(screen.getByTestId("card-presentation-fallback")).toBeInTheDocument();
+    expect(screen.getByTestId("card-presentation-fallback")).toHaveClass("motion-error");
     expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /card (metadata|image)/i })).not.toBeInTheDocument();
   });

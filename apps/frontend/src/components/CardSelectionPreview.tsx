@@ -21,7 +21,7 @@ export function CardSelectionPreview({
   action
 }: CardSelectionPreviewProps): JSX.Element {
   return (
-    <article className="rounded-2xl border border-zinc-600 bg-zinc-800/75 p-4 shadow-[0_14px_34px_-24px_rgba(0,0,0,0.5)]">
+    <article className="motion-enter rounded-2xl border border-zinc-600 bg-zinc-800/75 p-4 shadow-[0_14px_34px_-24px_rgba(0,0,0,0.5)]">
       <div className="grid gap-3 sm:grid-cols-[minmax(180px,220px)_1fr]">
         {card.imageUrl ? (
           <img

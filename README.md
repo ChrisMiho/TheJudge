@@ -1,6 +1,6 @@
 # TheJudge
 
-TheJudge is a flow-validation card interaction assistant for Magic gameplay questions.
+TheJudge is a rules assistant for Magic gameplay questions — it helps players navigate MTG rules, and is not an official judge or deterministic rules engine.
 It helps players build an ordered stack of cards, ask a question, and receive an AI-generated explanation through a backend API.
 
 ## Start Here
@@ -11,8 +11,8 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 
 ## Current Product Status
 
-- Core product: staged zone flow with user-flow refinements and gap fixes promoted into `PRD/sections/`
-- Baseline: flow-validation assistant with mock-default backend and optional OpenAI provider mode (`DEC-020` in `PRD/sections/decisions/providers-and-contract.md`, indexed from `PRD/sections/decisions.md`)
+- Core product: staged zone flow with user-flow refinements and gap fixes promoted into `PRD/sections/`; the core loop is validated (past MVP) and is now being refined toward a first production deployment, not yet deployed to production (`DEC-080`)
+- Baseline: rules assistant with mock-default backend and optional OpenAI provider mode (`DEC-020` in `PRD/sections/decisions/providers-and-contract.md`, indexed from `PRD/sections/decisions.md`)
 - Product source of truth: `PRD/sections/` (start with the `decisions.md` router)
 - Agent workflow skills: see `AGENT-SKILLS.md` (canonical: `.cursor/skills/`)
 

@@ -29,7 +29,7 @@ See `instructions/doc-lifecycle.md` for the authoritative lifecycle rule.
 
 | DEC-ID | Domain file | Decision |
 |---|---|---|
-| DEC-001 | `decisions/framing.md` | The core product is a flow-validation assistant, not a gameplay-accurate or judge-accurate system. |
+| DEC-001 | `decisions/framing.md` | The core product is a rules assistant that helps players navigate MTG rules, not an official judge or deterministic rules engine. (Label updated by DEC-080.) |
 | DEC-002 | `decisions/framing.md` | The product is an assistant, not an authoritative judge. |
 | DEC-003 | `decisions/game-context-model.md` | The selected-cards-only capture model is superseded by the approved `GameContext` model. |
 | DEC-004 | `decisions/capture-and-stack.md` | Stack ordering is bottom-to-top in the array, with `stack[0]` as bottom and the last item as top. |
@@ -107,3 +107,5 @@ See `instructions/doc-lifecycle.md` for the authoritative lifecycle rule.
 | DEC-076 | `decisions/personalization.md` | Staged-flow presentation compaction: game-context layout, zone card grid, enrichment list scroll cap, and scan-focused zone-collection chrome; zone confirmation excluded. |
 | DEC-077 | `decisions/scanning.md` | Scanner acquisition tuning is diagnostic-first and validated against two capture conditions — Mac-webcam baseline and stand-assisted controlled setup — while preserving one scanner behavior path and the frozen matching/lock precision boundary. |
 | DEC-078 | `decisions/personalization.md` | Card containers in zone collection, scan review, and enrichment use responsive image-first presentation, on-demand local metadata, and restrained rings derived from existing card colors. |
+| DEC-079 | `decisions/ui-presentation.md` | The app adopts a broadened, app-wide decorative-motion and visual-feedback baseline across the full staged flow and answered view (CSS-only, reduced-motion-aware, performance-safe, no library), excluding scan camera internals; amends NFR-006 and the "animation-heavy UI" non-goal. |
+| DEC-080 | `decisions/framing.md` | Retire the "flow-validation" product label for a "rules assistant" framing and update lifecycle status from validating to refining toward a first production deployment; preserves DEC-001/002/013 scope guardrails and replaces GOAL-003. |

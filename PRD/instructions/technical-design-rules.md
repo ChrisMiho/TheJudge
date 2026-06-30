@@ -20,7 +20,7 @@ These rules govern how agents may propose architecture or implementation details
 - preserve stack ordering exactly
 - keep backend intentionally small
 - use backend-only model invocation
-- keep animations basic
+- decorative UI motion is permitted app-wide but must stay CSS-based, `prefers-reduced-motion`-aware, and performance-safe (DEC-079, NFR-006); do not introduce an animation library/framework without a new confirmed decision
 - preserve plain-text core product response output
 
 ## Forbidden Design Drift
@@ -35,7 +35,7 @@ Do not propose or implement:
 - microservices
 - runtime metadata refresh/sync
 - billing/auth/account systems in the core product
-- flashy UI animation systems
+- dependency-driven/heavyweight animation frameworks, or motion that ignores `prefers-reduced-motion` or regresses mobile performance (decorative CSS motion is permitted per DEC-079/NFR-006; this narrows the prior blanket "flashy UI animation systems" exclusion)
 - duplicate-card support in the core product
 
 ## Design Proposal Rules

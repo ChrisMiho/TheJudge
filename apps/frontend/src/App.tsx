@@ -362,7 +362,7 @@ export default function App() {
                   aria-label={playersDetailsExpanded ? "Hide player details" : "Show player details"}
                   aria-expanded={playersDetailsExpanded}
                   onClick={() => setPlayersDetailsExpanded((current) => !current)}
-                  className="rounded-lg border border-zinc-600 bg-zinc-800/70 px-3 py-1.5 min-w-[2.4rem] text-sm text-zinc-200 transition hover:bg-zinc-700/80"
+                  className="motion-hover motion-press motion-focus rounded-lg border border-zinc-600 bg-zinc-800/70 px-3 py-1.5 min-w-[2.4rem] text-sm text-zinc-200 transition hover:bg-zinc-700/80"
                 >
                   {playersDetailsExpanded ? "▾" : "▸"}
                 </button>
@@ -376,7 +376,7 @@ export default function App() {
                   aria-label="Add player"
                   onClick={addPlayer}
                   disabled={activePlayerCount >= MAX_PLAYERS}
-                  className="rounded-lg border border-accent/50 bg-accent/10 px-4 py-1.5 min-w-[2.75rem] text-xs font-semibold text-accent-soft transition hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="motion-hover motion-press motion-focus rounded-lg border border-accent/50 bg-accent/10 px-4 py-1.5 min-w-[2.75rem] text-xs font-semibold text-accent-soft transition hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   +
                 </button>
@@ -385,7 +385,7 @@ export default function App() {
                   aria-label="Remove last player"
                   onClick={removePlayer}
                   disabled={activePlayerCount <= MIN_PLAYERS}
-                  className="rounded-lg border border-zinc-500 bg-zinc-800/70 px-4 py-1.5 min-w-[2.75rem] text-xs font-semibold text-zinc-100 transition hover:bg-zinc-700/80 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="motion-hover motion-press motion-focus rounded-lg border border-zinc-500 bg-zinc-800/70 px-4 py-1.5 min-w-[2.75rem] text-xs font-semibold text-zinc-100 transition hover:bg-zinc-700/80 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   −
                 </button>
@@ -407,7 +407,7 @@ export default function App() {
                         aria-label={`${player} display name`}
                         value={displayNamesByPlayer[player]}
                         onChange={(event) => updateDisplayName(player, event.target.value)}
-                        className="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-zinc-100"
+                        className="motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-zinc-100"
                       />
                     </label>
                     <label className="grid grid-cols-[1fr_auto] items-center gap-3">
@@ -417,7 +417,7 @@ export default function App() {
                         value={lifeTotalsByPlayer[player]}
                         onChange={(event) => updateLifeTotal(player, event.target.value)}
                         inputMode="numeric"
-                        className="w-28 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-right font-semibold text-zinc-100"
+                        className="motion-focus w-28 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-right font-semibold text-zinc-100"
                       />
                     </label>
                   </div>
@@ -433,7 +433,7 @@ export default function App() {
                   aria-label="Turn phase"
                   value={turnPhase}
                   onChange={(event) => setTurnPhase(event.target.value as TurnPhase)}
-                  className="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
+                  className="motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
                 >
                   {TURN_PHASE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -448,7 +448,7 @@ export default function App() {
                   aria-label="Active player"
                   value={activePlayer}
                   onChange={(event) => setActivePlayer(event.target.value as PlayerLabel)}
-                  className="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
+                  className="motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
                 >
                   {activePlayers.map((player) => (
                     <option key={player} value={player}>
@@ -465,7 +465,7 @@ export default function App() {
                   aria-label="Combat step"
                   value={combatStep}
                   onChange={(event) => setCombatStep(event.target.value as CombatStep)}
-                  className="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
+                  className="motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
                 >
                   {COMBAT_STEP_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -480,7 +480,7 @@ export default function App() {
           <button
             type="button"
             onClick={confirmGameContext}
-            className="rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast"
+            className="motion-hover motion-press motion-focus rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast"
           >
             Confirm game context
           </button>
@@ -583,7 +583,9 @@ export default function App() {
       <div className="fixed right-3 top-3 z-30">
         <ThemeControl paletteId={paletteId} onSelect={setPalette} density={density} onDensityChange={setDensity} />
       </div>
-      {content}
+      <div key={flowStep} className="motion-enter">
+        {content}
+      </div>
     </>
   );
 }

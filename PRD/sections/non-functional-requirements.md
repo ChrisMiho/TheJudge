@@ -42,12 +42,21 @@
   - preserve stack-ordering logic consistently
 
 ### NFR-006
-- Title: Minimal animation complexity
-- Description: UI motion must stay lightweight in the core product.
+- Title: Lightweight, performant UI motion
+- Description: UI motion may be expressive and decorative app-wide (DEC-079), but must stay lightweight, performant, and accessible. Decorative micro-transitions, easing, entrance/exit transitions, and state-change cues are permitted across the full staged flow and answered/conversation view; motion must not become a heavyweight dependency-driven system or regress the live-table loop.
 - Constraints:
-  - basic show/hide or simple transitions only
-  - no animation-heavy polish work
-  - CSS keyframe animations are permitted for functional loading and wait states (not decorative polish)
+  - decorative CSS motion (transitions and keyframe animations) is permitted across the full staged flow and answered view (DEC-079); it is no longer limited to functional loading/wait states
+  - implementation stays CSS-based — no animation library or animation-framework migration without a separate confirmed decision
+  - motion must honor `prefers-reduced-motion` (reduced or disabled decorative motion); no decorative motion is required to complete any flow
+  - motion must be mobile-performance-safe (prefer transform/opacity, avoid layout thrash and main-thread jank) and must not regress NFR-001 (mobile-first) or NFR-002 (fast interaction loop)
+  - scan camera surface convergence/lock/thumbs-up motion is excluded and stays as tuned (DEC-057, DEC-062, DEC-072, DEC-073)
+  - existing functional wait-state motion (DEC-031, DEC-041) is unchanged
+- Dependencies:
+  - DEC-079
+  - DEC-031
+  - DEC-041
+  - NFR-001
+  - NFR-002
 
 ### NFR-007
 - Title: Failure resilience

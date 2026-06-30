@@ -364,6 +364,33 @@ describe("App MVP interaction flows", () => {
     expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
   });
 
+  it("applies staged entrance motion and shared feedback to game-context controls", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: "Game context" }).closest(".motion-enter")).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Add player" })).toHaveClass(
+      "motion-hover",
+      "motion-press",
+      "motion-focus"
+    );
+    expect(screen.getByLabelText("Turn phase")).toHaveClass("motion-focus");
+    expect(screen.getByRole("button", { name: "Confirm game context" })).toHaveClass(
+      "motion-hover",
+      "motion-press",
+      "motion-focus"
+    );
+
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    expect(screen.getByRole("heading", { name: "Zone confirmation" }).closest(".motion-enter")).not.toBeNull();
+  });
+
+  it("defines a visible focus treatment for the shared motion utility", () => {
+    expect(appCss).toMatch(
+      /\.motion-focus:focus-visible\s*\{[^}]*outline:\s*2px solid rgb\(var\(--accent-soft\)\);[^}]*outline-offset:\s*2px;/
+    );
+  });
+
   it("defaults to 20 life for 2 players and 40 for 3+ players", async () => {
     const user = userEvent.setup();
     render(<App />);

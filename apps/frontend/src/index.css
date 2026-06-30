@@ -177,6 +177,14 @@
   --accent-strong: 37 99 235;
   --accent-soft: 125 211 252;
   --accent-contrast: 255 255 255;
+
+  /* Authoritative decorative-motion vocabulary. Functional wait, scan, and
+     send animations retain their independently tuned timings below. */
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 280ms;
+  --motion-ease-out: ease-out;
+  --motion-ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
 }
 
 body {
@@ -196,6 +204,123 @@ body {
   color: rgb(var(--accent-contrast));
 }
 
+@keyframes motion-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes motion-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+}
+
+@keyframes motion-success {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes motion-error {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  35% {
+    transform: translateX(-0.2rem);
+  }
+  70% {
+    transform: translateX(0.2rem);
+  }
+}
+
+.motion-enter {
+  animation: motion-enter var(--motion-base) var(--motion-ease-out) both;
+}
+
+.motion-exit {
+  animation: motion-exit var(--motion-fast) var(--motion-ease-out) both;
+}
+
+.motion-hover,
+.motion-press,
+.motion-focus {
+  transition:
+    opacity var(--motion-fast) var(--motion-ease-out),
+    transform var(--motion-fast) var(--motion-ease-emphasized);
+}
+
+.motion-hover:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.motion-focus:focus-visible {
+  outline: 2px solid rgb(var(--accent-soft));
+  outline-offset: 2px;
+  transform: scale(1.01);
+}
+
+.motion-press:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+.motion-success {
+  animation: motion-success var(--motion-slow) var(--motion-ease-emphasized);
+}
+
+.motion-error {
+  animation: motion-error var(--motion-base) var(--motion-ease-emphasized);
+}
+
+.frozen-context-summary {
+  transform-origin: top;
+  transition:
+    opacity var(--motion-base) var(--motion-ease-out),
+    transform var(--motion-base) var(--motion-ease-emphasized);
+}
+
+.frozen-context-summary[data-expanded="false"] {
+  opacity: 0.98;
+  transform: scale(0.998);
+}
+
+.frozen-context-summary[data-expanded="true"] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@keyframes frozen-context-expand {
+  from {
+    clip-path: inset(0 0 100%);
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+  to {
+    clip-path: inset(0);
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.frozen-context-disclosure {
+  animation: frozen-context-expand var(--motion-base) var(--motion-ease-emphasized) both;
+}
+
 @keyframes enrichment-card-enter {
   from {
     opacity: 0;
@@ -208,7 +333,11 @@ body {
 }
 
 .enrichment-card-enter {
-  animation: enrichment-card-enter 0.28s ease-out forwards;
+  animation: enrichment-card-enter var(--motion-slow) var(--motion-ease-out) forwards;
+}
+
+.card-state-remove:has(.card-state-remove-trigger:active) {
+  animation: motion-exit var(--motion-fast) var(--motion-ease-out) both;
 }
 
 @keyframes wait-calm {
@@ -263,4 +392,24 @@ body {
   border-radius: 50%;
   animation: send-spin 0.7s linear infinite;
   vertical-align: middle;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-enter,
+  .motion-exit,
+  .motion-hover,
+  .motion-press,
+  .motion-focus,
+  .motion-success,
+  .motion-error,
+  .frozen-context-summary,
+  .frozen-context-disclosure,
+  .enrichment-card-enter,
+  .card-state-remove {
+    animation-delay: 0ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
