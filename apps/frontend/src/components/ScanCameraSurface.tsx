@@ -4,6 +4,7 @@ import { loadScanAudioMuted, saveScanAudioMuted } from "../lib/scan/audioPrefs"
 import type { ConditionReason } from "../lib/scan/frameQuality"
 import type { IdentifyResult, RgbImage } from "../lib/scan/types"
 import type { AcquisitionFrameDiagnostic, CaptureDiagnostic } from "../lib/scan/acquisitionDiagnostics"
+import { ScanCardOutline } from "./ScanCardOutline"
 import { ScanDebugOverlay } from "./ScanDebugOverlay"
 // Type-only import (erased at build): the hook owns the convergence/confirmation
 // view-model shapes; this presentational component just renders them.
@@ -170,6 +171,8 @@ export function ScanCameraSurface({
   const mountedRef = useRef(true)
   const pausedRef = useRef(paused)
   pausedRef.current = paused
+  const phaseRef = useRef(convergence?.phase)
+  phaseRef.current = convergence?.phase
   const [status, setStatus] = useState<ScanCameraStatus>("idle")
   const [popup, setPopup] = useState<ScanAddConfirmation | null>(null)
   const [muted, setMuted] = useState(() => loadScanAudioMuted())
@@ -185,6 +188,15 @@ export function ScanCameraSurface({
   const [debugFrame, setDebugFrame] = useState<{ width: number; height: number } | null>(null)
   const [debugAcquisitionDiagnostic, setDebugAcquisitionDiagnostic] =
     useState<AcquisitionFrameDiagnostic | null>(null)
+  // Always-on locking outline (DEC-083 / REQ-062). The oriented quad is captured
+  // into this ref on every detected frame regardless of the debug toggle (cheap:
+  // detection/warp already run every frame). It is only pushed into React state
+  // — which triggers the SVG render — while `convergence.phase === "locking"`, so
+  // scanning with the overlay off and phase "searching" adds zero re-renders.
+  const lockCornersRef = useRef<{ corners: Point[]; frameWidth: number; frameHeight: number } | null>(null)
+  const [lockOutline, setLockOutline] = useState<{ corners: Point[]; frameWidth: number; frameHeight: number } | null>(
+    null
+  )
   const frameIndexRef = useRef(0)
   const requestedFocusModeRef = useRef<string | null>(null)
   const frameExporterRef = useRef(_frameExporter ?? downloadCanvasAsPng)
@@ -251,16 +263,24 @@ export function ScanCameraSurface({
         if (force && debugEnabledRef.current) {
           frameExporterRef.current(canvas)
         }
-        // Only ask the detector to surface corners while the overlay is enabled,
-        // so disabled-overlay scanning keeps the round-1 cost (NFR-010).
+        // Always ask the detector to surface corners (DEC-083 / REQ-062): the quad
+        // is already computed for the warp regardless of debug, so this only adds
+        // one cheap `orientCardQuad` reorder — no extra detection cost (NFR-010).
         const capturedCorners: { current: Point[] | null } = { current: null }
         const detectorOptions = {
           guide,
           maxDetectDimension: MAX_DETECT_DIMENSION,
-          ...(debugEnabledRef.current ? { onCorners: (corners: Point[]) => (capturedCorners.current = corners) } : {})
+          onCorners: (corners: Point[]) => (capturedCorners.current = corners)
         }
         const card = detectCard(frame, detectorOptions)
         if (!mountedRef.current) return
+
+        lockCornersRef.current = capturedCorners.current
+          ? { corners: capturedCorners.current, frameWidth: frame.width, frameHeight: frame.height }
+          : null
+        if (phaseRef.current === "locking") {
+          setLockOutline(lockCornersRef.current)
+        }
 
         if (debugEnabledRef.current) {
           const detectorCorners = capturedCorners.current
@@ -317,6 +337,8 @@ export function ScanCameraSurface({
     setDebugCorners(null)
     setDebugFrame(null)
     setDebugAcquisitionDiagnostic(null)
+    lockCornersRef.current = null
+    setLockOutline(null)
     requestedFocusModeRef.current = null
     audioRef.current?.load()
 
@@ -376,6 +398,14 @@ export function ScanCameraSurface({
       rafRef.current = null
     }
   }, [autoScanFps, scanCurrentFrame])
+
+  // Clear the outline once, exactly when phase leaves "locking" — both a drop
+  // back to "searching" and a lock-complete/auto-add reset land here.
+  useEffect(() => {
+    if (convergence?.phase !== "locking") {
+      setLockOutline(null)
+    }
+  }, [convergence?.phase])
 
   const isLocking = convergence?.phase === "locking" && Boolean(convergence.leaderName)
   const isSearching = status !== "camera-error" && !isLocking
@@ -444,6 +474,14 @@ export function ScanCameraSurface({
         >
           <span aria-hidden="true">{muted ? "🔇" : "🔊"}</span>
         </button>
+        {lockOutline && (
+          <ScanCardOutline
+            corners={lockOutline.corners}
+            frameWidth={lockOutline.frameWidth}
+            frameHeight={lockOutline.frameHeight}
+            variant="affirmative"
+          />
+        )}
         {debugEnabled && (
           <ScanDebugOverlay
             metrics={debug ?? null}

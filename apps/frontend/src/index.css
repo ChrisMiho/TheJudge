@@ -111,6 +111,11 @@
   --enrichment-card-row-gap: 0.5rem;
 }
 
+/* Scale the enrichment card image down (80% -> 51.2% of the row width). */
+.enrichment-card-presentation img {
+  width: 51.2%;
+}
+
 [data-layout-density="slim"] .enrichment-card-row {
   padding: 0.75rem;
 }
