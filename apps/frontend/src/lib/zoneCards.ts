@@ -1,5 +1,6 @@
 import type { CardMetadataItem, ZoneCardItem, ZoneId } from "../types";
 import { DUPLICATE_CARD_MESSAGE, MAX_STACK_SIZE, STACK_LIMIT_MESSAGE } from "./stackLimits";
+import { createCorrelationId } from "./debugLogger";
 
 export type ZoneCardAddValidationResult =
   | { ok: true }
@@ -10,6 +11,7 @@ export type ZoneCardAddValidationResult =
 
 export function buildZoneCardFromMetadata(card: CardMetadataItem, scanImageUrl?: string): ZoneCardItem {
   return {
+    instanceId: createCorrelationId(),
     cardId: card.cardId,
     name: card.name,
     oracleText: card.oracleText,
@@ -60,6 +62,6 @@ export function appendZoneCard(cards: ZoneCardItem[], nextCard: ZoneCardItem): Z
   return [...cards, nextCard];
 }
 
-export function removeZoneCardById(cards: ZoneCardItem[], cardId: string): ZoneCardItem[] {
-  return cards.filter((item) => item.cardId !== cardId);
+export function removeZoneCardByInstanceId(cards: ZoneCardItem[], instanceId: string): ZoneCardItem[] {
+  return cards.filter((item) => item.instanceId !== instanceId);
 }

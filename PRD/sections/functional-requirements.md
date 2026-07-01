@@ -903,7 +903,7 @@
   - palette definitions retain a single authoritative frontend source; no duplicated color constants introduced by the migration
   - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, the scan-matching engine, or data-pipeline behavior
   - no arbitrary RGB/hex picker, per-component theme overrides, palette-tinted backgrounds, server-synced preferences, accounts, dark/light mode redesign, or theming-framework migration
-  - neutral slate chrome (cards, panels, borders, body text) stays neutral by design and is not migrated onto accent tokens
+  - static neutral slate chrome stays neutral by design; DEC-081 / REQ-060 permits restrained palette-derived treatment only on REQ-060's closed minimum surface inventory
 - Dependencies:
   - DEC-068
   - DEC-066
@@ -1279,3 +1279,105 @@
 - Notes:
   - "broad motion freedom" was the approved direction; guardrails (CSS-only, reduced-motion-aware, performance-safe) keep the pass lightweight
   - the proximity-driven scan-outline idea is deferred to its own refinement (Q-002), not part of this requirement
+
+### REQ-060
+- Title: Restrained ambient palette accents
+- Priority: medium
+- Description: The frontend must make the selected theme palette feel cohesive across the four staged screens and the answered/conversation view by giving the closed minimum surface inventory below a faint palette accent at rest, strengthening it during hover/focus where interactive, and sustaining a stronger restrained treatment for selected/current states.
+- Acceptance Criteria:
+  - game context applies the resting treatment to the player-count disclosure row and the phase/active-player control group, including the conditional combat-step control; focused controls strengthen the treatment
+  - zone confirmation applies the resting treatment to every zone option row; hover/focus strengthens it, and each checked row retains the stronger selected treatment
+  - zone collection applies the resting treatment to every zone tab and the active zone card-picker container; hover/focus strengthens interactive tabs, and the active tab and card-picker container retain the stronger current treatment
+  - enrichment applies the resting treatment to the view-mode control and each rendered card-enrichment/question-submission working container; hover/focus strengthens interactive controls
+  - enrichment current-state treatment follows the rendered mode: during wizard card editing only the card-enrichment container retains the stronger treatment; in list mode both the card-enrichment and question-submission containers retain it simultaneously; after wizard completion only the question-submission container retains it
+  - the answered/conversation view applies the resting treatment to the frozen-context disclosure and follow-up composer; hover/focus strengthens their interactive controls, and the open frozen-context disclosure retains the stronger current treatment
+  - this inventory is exhaustive for REQ-060; surfaces outside it remain neutral unless another existing requirement, especially REQ-046, already themes them
+  - hovering an inventoried interactive item strengthens its palette-derived border/glow/icon treatment without obscuring text, controls, or content
+  - keyboard `focus-visible`, touch active state where applicable, and selected/current state provide equivalent enhanced feedback; no state or meaning is communicated by hover alone
+  - selected/current surfaces retain the stronger restrained treatment after pointer hover ends while that state remains true
+  - switching palettes through FLOW-007 immediately retints both resting and enhanced accent treatments without resetting or changing workflow state
+  - the dominant page background remains palette-agnostic slate and is not palette-tinted
+  - DEC-078 card-identity rings remain derived from card colors, keep their existing no-glow/no-animation behavior, and are not replaced, recolored, or obscured by the ambient palette treatment
+  - existing DEC-079 transitions and state-change cues may carry brief palette-colored emphasis, but no new motion trigger or timing system is introduced; `prefers-reduced-motion` continues to reduce or disable decorative motion
+  - scanner reticle, convergence, lock/progress, and thumbs-up confirmation motion remain unchanged; existing scanner palette styling from REQ-046 remains valid
+  - automated coverage verifies the shared resting/enhanced/current treatment and every inventoried surface across the staged flow and answered view; a visual review checks the full inventory with all five palettes, explicitly including amber and rose, for restraint and readable contrast
+- Constraints:
+  - reuse only the existing `accent`, `accent-strong`, `accent-soft`, and `accent-contrast` palette tokens; do not add token roles or per-palette values
+  - define resting, enhanced, and selected/current treatment once through shared semantic styling and reuse it; do not duplicate intensity values across components
+  - presentation only; no new screens, flow changes, theme control behavior, `AskAiRequest`, Zod schema, `GameContext`, prompt, backend, card metadata, scanner engine, stack-ordering, or data-pipeline changes
+  - stay CSS-based and within the existing React/Vite/Tailwind stack; no theming or animation framework
+  - preserve readable contrast, touch-friendly controls, mobile performance, and `prefers-reduced-motion`
+- Dependencies:
+  - DEC-081
+  - DEC-066
+  - DEC-068
+  - DEC-078
+  - DEC-079
+  - REQ-044
+  - REQ-046
+  - REQ-059
+  - NFR-006
+  - NFR-011
+  - FLOW-001
+  - FLOW-007
+- Notes:
+  - this expands palette expression, not the palette model or selection mechanism
+
+### REQ-061
+- Title: Per-instance identity for duplicate zone cards
+- Priority: medium
+- Description: Each zone card must have a stable per-instance identity so that when the same card is added more than once to a non-stack zone, each copy is an independent instance that renders, is removed, and is edited on its own without affecting its siblings. Oracle-level identity (`cardId`) and the backend payload contract are unchanged.
+- Acceptance Criteria:
+  - every `ZoneCardItem` is assigned a stable, unique `instanceId` once at add time, via the single add path used by both manual add and scan auto-add
+  - when the same card is added twice to a non-stack zone, two independent entries exist; removing one leaves the other intact
+  - editing one duplicate's enrichment fields (owner, targets, notes, mana spent) does not change any other copy
+  - React list keys for zone cards, scan-review entries, and enrichment card rows are derived from `instanceId` (no `cardId`-based key collisions across duplicates)
+  - the outbound `POST /api/ask-ai` payload contains no `instanceId` field on any zone card; the request validates against the existing `.strict()` `zoneCardItemSchema` unchanged
+  - the stack duplicate block (REQ-009/FLOW-004) still blocks duplicate stack adds; `instanceId` does not enable duplicate stack cards
+- Constraints:
+  - `instanceId` is frontend-only and non-semantic: not persisted to the backend, not shown to the user, not part of prompt, rulings, or duplicate-stack identity
+  - generate `instanceId` with `crypto.randomUUID()` plus a guarded fallback (reuse the existing `debugLogger.ts` id pattern); do not add a dependency
+  - strip `instanceId` at the single serialization boundary `buildAskAiRequest`; do not alter `AskAiRequest`, the Zod request schema, `buildPromptContext`/`buildPromptText`, the provider boundary, or any product-facing endpoint
+  - do not change duplicate-add policy, scan capture/fingerprinting/matching, or stack-order semantics (DEC-004/DEC-005)
+  - `ContextTarget` "card" references remain oracle-level (zone + `cardId` + `cardName`); instance-specific card targeting is out of scope
+- Dependencies:
+  - DEC-082
+  - DEC-007
+  - REQ-009
+  - FLOW-002
+  - FLOW-004
+  - FLOW-006
+- Notes:
+  - bug fix: scanned/manually-added duplicates currently share one `cardId`-keyed identity, so removing one removes all and editing one edits all
+
+### REQ-062
+- Title: Positive lock-on alignment outline
+- Priority: medium
+- Description: While scanning, draw an affirmative outline on the detected card in the viewfinder whenever the stabilizer is in the `locking` convergence state, as an always-on positive "you're close — hold this angle" cue that helps the user hold the right angle and complete the match faster. It reuses the detector's computed 4-corner geometry (already surfaced additively for the debug overlay) and is triggered by the existing `locking` state — no new confidence threshold and no change to match-acceptance logic (DEC-083). Frontend-only, read-only from existing detector/stabilizer signals.
+- Acceptance Criteria:
+  - during scan, whenever the stabilizer reports `locking` (a confident leader accumulating votes, DEC-057), the viewfinder draws an affirmative outline on the detected card region from the detector's computed corners; the outline clears when the scanner returns to `searching` and when the lock completes/auto-adds (DEC-083)
+  - the cue draws the card outline only — not the art-crop read region and not the text metrics, which remain exclusive to the opt-in debug overlay (REQ-041/DEC-060); the debug overlay stays default-off and behaviorally unchanged
+  - the cue is always active during scan with no toggle, setting, or mode, and adds no new scan-screen control; it must not overlap or intercept the top-right scanned-cards review/remove hit area (DEC-065)
+  - styling is a static affirmative treatment consistent with the scanner UI theming (DEC-068); it is reduced-motion-safe, and any optional subtle emphasis stays within the NFR-006 CSS-only, `prefers-reduced-motion`-aware carve-out with no animation library
+  - the outline is distinct from the static alignment-template reticle (which shows where to place the card, DEC-073); this outline tracks the card the scanner is actually locking on
+  - the cue reads existing detector/stabilizer signals only; any field the stabilizer or camera surface must expose to pair the `locking` state with the current corners is additive and pure, with no change to distance/confidence/margin logic
+  - graceful degrade: if the detector corners cannot be cheaply threaded to the surface while the debug overlay is off, the outline does not draw and the three-state text indicator still communicates `locking`; the wiring gap is recorded rather than blocking the feature (DEC-060 degrade precedent)
+  - rendering happens only while `locking`, staying within the NFR-010 scan performance budget; existing scan/zone-collection/stabilizer tests are extended, not replaced
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - do not change the identification/hashing/distance accuracy logic, the shared `recipe.ts` recipe, `cardhashes.bin`, `identify.ts`, or the stabilizer lock gate (`lockDistance`/`marginMin`, DEC-059); the cue is read-only visualization
+  - trigger off the existing `locking` state only; do not introduce a new confidence threshold or match-acceptance threshold (this work's non-goal)
+  - do not make the opt-in developer debug overlay a permanent feature; reuse only its detector-corner geometry mechanism
+  - the affirmative color and any subtle emphasis are outcome-validated presentation calibration, not product open questions (DEC-052/DEC-068 precedent)
+- Dependencies:
+  - REQ-037
+  - REQ-040
+  - REQ-041
+  - DEC-083
+  - DEC-057
+  - DEC-060
+  - NFR-010
+  - NFR-006
+- Notes:
+  - refines DEC-057's three-state convergence indicator by adding a spatial on-card cue alongside the existing text indicator
+  - the live locking outline differs from the static alignment-template guide frame (REQ-041 note) and from the opt-in debug overlay's full geometry + metrics

@@ -60,6 +60,8 @@ export type ContextTarget =
   | { kind: "other"; targetDescription: string };
 
 export type ZoneCardItem = {
+  /** Per-copy identity; frontend-only — stripped at buildAskAiRequest before the wire. */
+  instanceId?: string;
   cardId: string;
   name: string;
   oracleText: string;

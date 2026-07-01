@@ -32,7 +32,8 @@ export function ZoneConfirmStep({
             return (
               <label
                 key={zone}
-                className="motion-hover motion-press flex min-h-[2.75rem] cursor-pointer items-center gap-3 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2.5 text-sm transition hover:bg-zinc-800/50"
+                data-accent-current={checked}
+                className="ambient-accent-surface ambient-accent-interactive motion-hover motion-press flex min-h-[2.75rem] cursor-pointer items-center gap-3 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2.5 text-sm transition hover:bg-zinc-800/50"
               >
                 <input
                   type="checkbox"

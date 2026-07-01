@@ -7,7 +7,7 @@ type ScanReviewBubbleProps = {
   /** Cards added to the zone during this scan session, in add order. */
   cards: ZoneCardItem[];
   /** Existing zone-card removal path; removal is immediate (no confirmation, DEC-058). */
-  onRemove: (cardId: string) => void;
+  onRemove: (instanceId: string) => void;
 };
 
 /**
@@ -42,7 +42,7 @@ export function ScanReviewBubble({ cards, onRemove }: ScanReviewBubbleProps): JS
           <ul className="min-h-0 flex-1 space-y-2 overflow-y-auto">
             {cards.map((card, index) => (
               <li
-                key={`${card.cardId}-${index}`}
+                key={card.instanceId ?? `${card.cardId}-${index}`}
                 className="card-identity-ring rounded-lg border border-zinc-700/70 bg-zinc-900/60 px-2.5 py-1.5 text-sm text-zinc-100"
                 style={getCardIdentityRingStyle(card.colors)}
               >
@@ -54,7 +54,7 @@ export function ScanReviewBubble({ cards, onRemove }: ScanReviewBubbleProps): JS
                     <button
                       type="button"
                       aria-label={`Remove ${card.name} from scan review`}
-                      onClick={() => onRemove(card.cardId)}
+                      onClick={() => onRemove(card.instanceId ?? card.cardId)}
                       className="w-full rounded-lg border border-zinc-600 px-2 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
                     >
                       Remove

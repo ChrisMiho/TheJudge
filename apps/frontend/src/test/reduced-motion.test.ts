@@ -37,6 +37,7 @@ describe("reduced-motion CSS contract", () => {
       ".motion-focus",
       ".motion-success",
       ".motion-error",
+      ".ambient-accent-surface",
       ".frozen-context-summary",
       ".frozen-context-disclosure",
       ".enrichment-card-enter",

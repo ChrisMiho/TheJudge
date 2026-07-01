@@ -79,7 +79,8 @@ export function FrozenContextSummary({ frozenGameContext }: FrozenContextSummary
     <section
       aria-label="Frozen game context"
       data-expanded={expanded}
-      className="frozen-context-summary rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+      data-accent-current={expanded}
+      className="frozen-context-summary ambient-accent-surface ambient-accent-interactive rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">

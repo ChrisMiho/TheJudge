@@ -108,3 +108,22 @@ Stack entry UX, ordering, limits, and request-building fallback behavior.
 - Notes:
   - supersedes DEC-009 where it describes an unconditional stack fallback
 
+### DEC-082
+- Decision: Each `ZoneCardItem` carries a stable, frontend-only per-instance identity (`instanceId`) assigned once when the card is added, and all UI list keys, removal, and per-instance enrichment edits key on that `instanceId` instead of the oracle `cardId`. So when the same card is added more than once to a non-stack zone, each copy is an independent, individually removable and individually editable instance. `cardId` remains the oracle-level identity used for prompt/rulings/duplicate-stack behavior, and `instanceId` is stripped at the single request-serialization boundary so the backend payload contract is unchanged.
+- Status: confirmed
+- Context: Non-stack zones already permit duplicate cards (the duplicate block in `validateZoneCardAdd` is stack-only, DEC-007/FLOW-004/REQ-009), but every operation keys on `cardId` (the oracle id): `removeZoneCardById` (`zoneCards.ts`) and `removeCardFromZone` (`EnrichmentStep.tsx`) filter by `cardId`, so deleting one copy deletes every copy; `updateZoneCard` (`EnrichmentStep.tsx`) maps by `cardId`, so editing one copy's owner/targets/notes edits every copy; and React list keys use `cardId` (`ZoneCardPicker.tsx`, `ScanReviewBubble.tsx`, `EnrichmentStep.tsx`), so duplicate copies collide on key. The reported defect is that scanning (or manually adding) the same card twice produces two visible entries that share one identity, so removing one removes both. The fix is a per-instance identity, not a change to duplicate-add policy.
+- Impact:
+  - `ZoneCardItem` gains a required `instanceId: string`, generated once in the single add path `buildZoneCardFromMetadata` (used by both manual add and scan auto-add) via `crypto.randomUUID()` with a guarded fallback when `crypto.randomUUID` is unavailable; reuse the existing `debugLogger.ts` id pattern rather than adding a dependency
+  - UI list keys (`ZoneCardPicker`, `ScanReviewBubble`, the `EnrichmentStep` card lists) key on `instanceId`; removal is by `instanceId` (a new `removeZoneCardByInstanceId` replacing/aliasing the `cardId` filter in `removeZoneCardById`, and the `EnrichmentStep` `removeCardFromZone` path); per-instance enrichment edit (`updateZoneCard`) matches on `instanceId` so editing one duplicate's owner/targets/notes does not affect its siblings
+  - **contract guard:** `zoneCardItemSchema` is `.strict()`, so `instanceId` must never reach the wire. It is stripped from every zone card at the single serialization boundary `buildAskAiRequest` (`contextFlow/flow.ts`); `AskAiRequest`, the Zod request schema, `buildPromptContext`/`buildPromptText`, the provider boundary, and the product-facing endpoint stay byte-for-byte unchanged
+  - the stack duplicate block (DEC-007/FLOW-004/REQ-009) is unchanged and still keyed on `cardId`, so duplicates remain confined to non-stack zones; `instanceId` does not enable duplicate stack cards
+  - stack ordering (DEC-004/DEC-005) is unchanged: `instanceId` is identity, not order; append order is preserved
+  - oracle-level identity is unchanged for prompt, rulings, scan oracle-bridge (DEC-053), and the duplicate-stack key — all stay keyed on `cardId`; `instanceId` is purely a frontend list/instance key
+  - `ContextTarget` "card" references remain oracle-level (zone + `cardId` + `cardName`); making a target point at a specific duplicate instance is explicitly out of scope and recorded as a constraint, not solved here
+- Related requirements:
+  - REQ-061
+  - REQ-009
+- Notes:
+  - this is a frontend identity fix; it does not change duplicate-add policy, scan capture/fingerprinting/matching, stack-order semantics, or the backend payload contract (the work's IDEA non-goals)
+  - `instanceId` is non-semantic (a UI instance key only); it is not persisted to the backend, not shown to the user, and not part of prompt or rulings identity
+

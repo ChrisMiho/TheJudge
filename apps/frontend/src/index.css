@@ -187,6 +187,35 @@
   --motion-ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
 }
 
+/* Ambient accent surface contract */
+.ambient-accent-surface {
+  border-color: rgb(var(--accent) / 0.24);
+  box-shadow:
+    0 0 0 1px rgb(var(--accent-soft) / 0.04),
+    0 0.5rem 1.5rem rgb(var(--accent-strong) / 0.05);
+  transition:
+    border-color var(--motion-base) var(--motion-ease-out),
+    box-shadow var(--motion-base) var(--motion-ease-out);
+}
+
+.ambient-accent-interactive:not(:disabled):hover,
+.ambient-accent-interactive:focus-visible,
+.ambient-accent-interactive:focus-within,
+.ambient-accent-interactive:not(:disabled):active {
+  border-color: rgb(var(--accent) / 0.44);
+  box-shadow:
+    0 0 0 1px rgb(var(--accent-soft) / 0.08),
+    0 0.5rem 1.5rem rgb(var(--accent-strong) / 0.1);
+}
+
+.ambient-accent-surface[data-accent-current="true"] {
+  border-color: rgb(var(--accent) / 0.58);
+  box-shadow:
+    0 0 0 1px rgb(var(--accent-soft) / 0.12),
+    0 0.5rem 1.5rem rgb(var(--accent-strong) / 0.14);
+}
+/* End ambient accent surface contract */
+
 body {
   margin: 0;
   background: linear-gradient(135deg, #09090b 0%, #18181b 45%, #09090b 100%);
@@ -402,6 +431,7 @@ body {
   .motion-focus,
   .motion-success,
   .motion-error,
+  .ambient-accent-surface,
   .frozen-context-summary,
   .frozen-context-disclosure,
   .enrichment-card-enter,

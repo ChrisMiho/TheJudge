@@ -123,14 +123,18 @@
   - themed and density-adjusted controls must remain readable and touch-friendly on mobile viewports
   - palette and density persistence must degrade gracefully when browser storage is unavailable
   - re-themed surfaces and semantic states (DEC-068 / REQ-046) must keep readable contrast across every palette, explicitly including amber and rose, and must reuse the existing accent tokens rather than adding token roles or duplicated color constants
+  - restrained ambient accents (DEC-081 / REQ-060) apply only to REQ-060's closed minimum surface inventory and must define resting, enhanced hover/focus, and selected/current intensity once through shared semantic styling; hover must not be the sole carrier of state or meaning
+  - card-identity rings remain independent from the selected palette, and scanner convergence/lock/confirmation motion remains unchanged
   - slim density must not shrink body text below existing `text-sm` / `text-xs` or primary control touch targets below `min-h-[2.75rem]` (DEC-075)
 - Dependencies:
   - DEC-066
   - DEC-068
   - DEC-075
+  - DEC-081
   - REQ-044
   - REQ-046
   - REQ-055
+  - REQ-060
   - NFR-001
   - NFR-004
   - NFR-006

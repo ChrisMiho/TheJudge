@@ -16,6 +16,7 @@ vi.mock("./lib/debugLogger", () => ({
 import App from "./App";
 import { NO_MATCH_COPY } from "./lib/search";
 import type { ZoneAskAiPayload } from "./lib/contextFlow";
+import { PALETTES } from "./lib/theme/palettes";
 import type { CardMetadataItem } from "./types";
 
 const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
@@ -383,6 +384,26 @@ describe("App MVP interaction flows", () => {
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
     expect(screen.getByRole("heading", { name: "Zone confirmation" }).closest(".motion-enter")).not.toBeNull();
+  });
+
+  it("opts only the game-context disclosure row and phase control group into ambient accent surfaces", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const playerDisclosure = screen
+      .getByRole("button", { name: "Show player details" })
+      .closest(".ambient-accent-surface");
+    const phaseGroup = screen.getByLabelText("Turn phase").closest(".ambient-accent-surface");
+
+    expect(playerDisclosure).toHaveClass("ambient-accent-interactive");
+    expect(phaseGroup).toHaveClass("ambient-accent-interactive");
+    expect(phaseGroup).toContainElement(screen.getByLabelText("Active player"));
+
+    await selectTurnPhase(user, "combat");
+    expect(phaseGroup).toContainElement(screen.getByLabelText("Combat step"));
+
+    await expandPlayerDetails(user);
+    expect(screen.getByLabelText("Player 1 life total").closest(".ambient-accent-surface")).toBeNull();
   });
 
   it("defines a visible focus treatment for the shared motion utility", () => {
@@ -2119,6 +2140,60 @@ describe("Slice-C: theme palette changes preserve workflow state", () => {
 
     expect(screen.getByText("Mock answer")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
+  });
+
+  it("retints all five palettes without changing an in-progress flow or its current surfaces", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await selectTurnPhase(user, "combat");
+    await user.selectOptions(screen.getByLabelText("Combat step"), "declare_attackers");
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advanceToZoneCollectionWithZones(user, ["Stack"]);
+    await waitForMetadataReady();
+    await addCardToActiveZone(user, "opt", "Opt");
+    await advanceToContextEnrichmentFromZones(user);
+    await user.type(screen.getByPlaceholderText("How does this resolve?"), "Does Opt resolve?");
+
+    const cardSurface = document.querySelector<HTMLElement>(".enrichment-card-surface");
+    const questionSurface = document.querySelector<HTMLElement>(".enrichment-question-surface");
+    expect(cardSurface).toHaveAttribute("data-accent-current", "true");
+    expect(questionSurface).toHaveAttribute("data-accent-current", "true");
+
+    for (const palette of PALETTES) {
+      await user.click(screen.getByRole("button", { name: "Theme" }));
+      await user.click(screen.getByRole("button", { name: `Theme: ${palette.name}` }));
+
+      expect(document.documentElement.dataset.theme).toBe(palette.id);
+      expect(document.documentElement.style.getPropertyValue("--accent")).toBe(palette.accent);
+      expect(document.documentElement.style.getPropertyValue("--accent-strong")).toBe(
+        palette.accentStrong
+      );
+      expect(document.documentElement.style.getPropertyValue("--accent-soft")).toBe(
+        palette.accentSoft
+      );
+      expect(document.documentElement.style.getPropertyValue("--accent-contrast")).toBe(
+        palette.accentContrast
+      );
+      expect(screen.getByRole("heading", { name: "Context enrichment" })).toBeInTheDocument();
+      expect(screen.getByText("Opt")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("How does this resolve?")).toHaveValue(
+        "Does Opt resolve?"
+      );
+      expect(cardSurface).toHaveAttribute("data-accent-current", "true");
+      expect(questionSurface).toHaveAttribute("data-accent-current", "true");
+    }
+
+    await clickDecryptStack(user);
+    const requestBody = await waitFor(() => {
+      expect(submittedAskAiRequests.length).toBeGreaterThan(0);
+      return submittedAskAiRequests[0];
+    });
+    expect(requestBody.gameContext.turnPhase).toBe("combat");
+    expect(requestBody.gameContext.combatStep).toBe("declare_attackers");
+    expect(requestBody.gameContext.selectedZones).toEqual(["stack"]);
+    expect(requestBody.gameContext.zones?.stack?.[0]).toMatchObject({ name: "Opt" });
+    expect(requestBody.question).toBe("Does Opt resolve?");
   });
 });
 

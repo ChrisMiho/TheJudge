@@ -201,6 +201,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: `apps/frontend/src/components/CardPresentation.tsx`, `apps/frontend/src/lib/cardIdentityRing.ts`, consumers in `apps/frontend/src/components/{ZoneCardPicker,ScanReviewBubble,EnrichmentStep}.tsx`, ring and responsive scroll styling in `apps/frontend/src/index.css`
 - Backed by: DEC-078, REQ-058, FLOW-001, FLOW-002, FLOW-006
 
+### Per-instance zone-card identity
+
+- Status: shipped
+- Summary: Each `ZoneCardItem` carries a stable frontend-only `instanceId` assigned once at add time (via `buildZoneCardFromMetadata`), so duplicate non-stack cards are independently removable and independently editable. UI list keys, removal filters, and per-instance enrichment edits (`updateZoneCard`) key on `instanceId`; `cardId` stays the oracle identity for prompts, rulings, duplicate-stack logic, and scan oracle-bridge. `instanceId` is stripped at the single serialization boundary (`buildAskAiRequest`) so the backend `.strict()` payload schema is unchanged.
+- Lives in: `apps/frontend/src/lib/zoneCards.ts` (generation + removal), `apps/frontend/src/lib/contextFlow/flow.ts` (strip), `apps/frontend/src/components/{ZoneCardPicker,ScanReviewBubble,ZoneCollectionStep,EnrichmentStep}.tsx`, `apps/frontend/src/hooks/{useScanCapture,useEnrichmentTargets}.ts`
+- Backed by: DEC-082, REQ-061
+
 ### Stack limits
 
 - Status: shipped
@@ -211,9 +218,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ## Frontend personalization
 
 - Status: shipped
-- Summary: Global theme/settings control for predefined color palettes and optional Chunky / Slim layout density, applied to frontend tokens and persisted per browser. Palette reach extends beyond primary-accent surfaces to the page background end-stop (neutralized to slate, not palette-tinted), previously-fixed semantic green states, and the camera scanner UI. Layout density mirrors the palette pattern via `data-layout-density` and shared shell CSS classes for participating density surfaces; `ZoneConfirmStep` is excluded from slim-density visual changes and may use shared shell plumbing only as a rendered visual no-op. Staged-flow screen compaction reduces vertical scroll on game context, zone collection, enrichment list mode, and scan-focused chrome.
-- Lives in: `apps/frontend/src/lib/theme/` (palettes, themePrefs, layoutDensityPrefs, applyPalette, applyLayoutDensity), `apps/frontend/src/hooks/useThemePalette.ts`, `apps/frontend/src/hooks/useLayoutDensity.ts`, `apps/frontend/src/components/ThemeControl.tsx`, `apps/frontend/src/components/PageShell.tsx`, `apps/frontend/tailwind.config.ts`, `apps/frontend/src/index.css`, plus surfaces in `App.tsx`, `EnrichmentStep.tsx`, `ZoneCollectionStep.tsx`, `ZoneCardPicker.tsx`, `ScanCameraSurface.tsx`, `ScanReviewBubble.tsx`, `ConversationThread.tsx`, `FrozenContextSummary.tsx`
-- Backed by: DEC-066, DEC-068, DEC-075, DEC-076, REQ-044, REQ-046, REQ-055, REQ-056, FLOW-007, FLOW-008, NFR-011
+- Summary: Global theme/settings control for predefined color palettes and optional Chunky / Slim layout density, applied to frontend tokens and persisted per browser. Palette reach extends beyond primary-accent surfaces to the page background end-stop (neutralized to slate, not palette-tinted), previously-fixed semantic green states, and the camera scanner UI. A restrained ambient-accent layer (DEC-081 / REQ-060) extends the palette across the four staged screens and the answered/conversation view: one shared semantic CSS contract (`.ambient-accent-surface` / `.ambient-accent-interactive` / `[data-accent-current="true"]`) defines resting, enhanced hover/focus, and selected/current intensities once from the four existing accent tokens, and only REQ-060's closed surface inventory opts in — static chrome, card-identity rings, and tuned scanner motion stay neutral/unchanged. Layout density mirrors the palette pattern via `data-layout-density` and shared shell CSS classes for participating density surfaces; `ZoneConfirmStep` is excluded from slim-density visual changes and may use shared shell plumbing only as a rendered visual no-op. Staged-flow screen compaction reduces vertical scroll on game context, zone collection, enrichment list mode, and scan-focused chrome.
+- Lives in: `apps/frontend/src/lib/theme/` (palettes, themePrefs, layoutDensityPrefs, applyPalette, applyLayoutDensity), `apps/frontend/src/hooks/useThemePalette.ts`, `apps/frontend/src/hooks/useLayoutDensity.ts`, `apps/frontend/src/components/ThemeControl.tsx`, `apps/frontend/src/components/PageShell.tsx`, `apps/frontend/tailwind.config.ts`, `apps/frontend/src/index.css` (incl. the shared ambient-accent contract), plus surfaces in `App.tsx`, `EnrichmentStep.tsx`, `ZoneCollectionStep.tsx`, `ZoneCardPicker.tsx`, `ZoneConfirmStep.tsx`, `ScanCameraSurface.tsx`, `ScanReviewBubble.tsx`, `ConversationThread.tsx`, `FrozenContextSummary.tsx`
+- Backed by: DEC-066, DEC-068, DEC-075, DEC-076, DEC-081, REQ-044, REQ-046, REQ-055, REQ-056, REQ-060, FLOW-007, FLOW-008, NFR-011
 
 ### Theme palettes
 
@@ -292,8 +299,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 
 - Status: shipped
 - Summary: Temporal stabilizer votes the top-1 oracle identity across a rolling window (confidence + margin gated) and emits `searching`/`locked`; on a confident lock the card auto-adds and auto-scan resumes hands-free (no Accept tap). Replaces the prior per-frame list churn. Convergence knobs are isolated in `tuning.ts`, including the outcome-validated 3-frame best-frame selector for capture-quality work. The stabilizer exposes an additive, pure progress signal (leader id + votes accumulated/needed, plus `bestDistance`/`runnerUpDistance`/`margin` on the `searching` state) that drives the `searching`/`locking`/`locked` indicator and the debug overlay, with no change to distance/confidence/margin logic. The current acquisition-tuning trial uses the easier convergence shape (`windowSize 13 / minVotes 3 / lockDistance 78`) while `marginMin 14` retains the runner-up distinctness guard; owner retest found lock is quick once identity votes exist, so remaining work moves upstream to acquisition diagnostics (DEC-077). One-tap removal remains the safety net.
-- Lives in: `apps/frontend/src/lib/scan/{stabilizer,tuning}.ts`, `apps/frontend/src/hooks/useScanCapture.ts`
-- Backed by: REQ-037, REQ-038, REQ-040, DEC-055, DEC-056, DEC-057, DEC-059, DEC-062, DEC-074, DEC-077
+- Planned (REQ-062 / DEC-083, refined): a positive alignment outline drawn on the detected card in the viewfinder whenever the stabilizer is in the `locking` state, as an always-on affirmative "you're close — hold this angle" cue. Reuses the existing `locking` trigger (DEC-057) and the detector's 4-corner geometry already surfaced for the debug overlay (DEC-060) — outline only, no new threshold, no debug metrics, no toggle, no match-logic/lock-gate change; degrades to the text indicator if corners can't be cheaply threaded while the overlay is off.
+- Lives in: `apps/frontend/src/lib/scan/{stabilizer,tuning}.ts`, `apps/frontend/src/hooks/useScanCapture.ts`, `apps/frontend/src/components/ScanCameraSurface.tsx`
+- Backed by: REQ-037, REQ-038, REQ-040, REQ-062, DEC-055, DEC-056, DEC-057, DEC-059, DEC-062, DEC-074, DEC-077, DEC-083
 
 ### Scan UX in zone picker
 

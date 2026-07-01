@@ -8,7 +8,7 @@ type ContextCardEntry = { zone: ZoneId; cardId: string; cardName: string };
 type UseEnrichmentTargetsParams = {
   activePlayers: PlayerLabel[];
   contextIndex: ContextCardEntry[];
-  updateZoneCard: (zone: ZoneId, cardId: string, updates: Partial<ZoneCardItem>) => void;
+  updateZoneCard: (zone: ZoneId, instanceId: string, updates: Partial<ZoneCardItem>) => void;
 };
 
 type UseEnrichmentTargetsResult = {
@@ -65,13 +65,13 @@ export function useEnrichmentTargets({
       newTarget = { kind: "none" };
     }
 
-    updateZoneCard(zone, card.cardId, {
+    updateZoneCard(zone, card.instanceId ?? card.cardId, {
       targets: [...(card.targets ?? []), newTarget]
     });
   }
 
   function handleRemoveTarget(zone: ZoneId, card: ZoneCardItem, targetIndex: number): void {
-    updateZoneCard(zone, card.cardId, {
+    updateZoneCard(zone, card.instanceId ?? card.cardId, {
       targets: (card.targets ?? []).filter((_, i) => i !== targetIndex)
     });
   }

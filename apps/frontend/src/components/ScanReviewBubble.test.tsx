@@ -146,15 +146,15 @@ describe("ScanReviewBubble", () => {
     expect(screen.getByRole("button", { name: /Remove Opt/i })).toBeEnabled();
   });
 
-  it("calls onRemove with the correct cardId", async () => {
+  it("calls onRemove with the instanceId of the removed card", async () => {
     const user = userEvent.setup();
     const onRemove = vi.fn();
-    const cards = [makeZoneCard({ cardId: "opt", name: "Opt" })];
+    const cards = [makeZoneCard({ cardId: "opt", name: "Opt", instanceId: "iid-opt" })];
     render(<ScanReviewBubble cards={cards} onRemove={onRemove} />);
 
     await user.click(screen.getByRole("button", { name: /Scanned this session/i }));
     await user.click(screen.getByRole("button", { name: /Remove Opt/i }));
 
-    expect(onRemove).toHaveBeenCalledWith("opt");
+    expect(onRemove).toHaveBeenCalledWith("iid-opt");
   });
 });

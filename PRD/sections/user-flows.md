@@ -50,6 +50,7 @@
 - Notes:
   - manual reorder is out of scope for the core product
   - tile grid layout, image presentation, and scroll cap are presentation only (DEC-076, DEC-078, REQ-056, REQ-058)
+  - each card is an independent instance keyed on its `instanceId`: when the same card appears more than once in a non-stack zone, removing or editing one copy targets only that copy and leaves its siblings intact (DEC-082, REQ-061)
 
 ### FLOW-003
 - Name: Handle failed AI request
@@ -119,7 +120,7 @@
 - Main Flow:
   1. Camera opens as its own screen with a card-shaped guide overlay and stays open for the session.
   2. The scanner auto-scans continuously; a manual capture button is always available. A live convergence indicator shows `searching`, then `locking` on a named card with a progress/confidence cue as evidence accumulates (DEC-057). While searching under poor conditions, the indicator surfaces a cause-aware hint derived from per-frame quality signals — e.g. "too much glare — tilt the card", "hold steady", "move closer" — to guide the user toward a lockable frame (DEC-062). Behind the scenes the query frame is conditioned (glare suppression, auto-contrast, white-balance) and the best frame in the window is preferred for hashing so a card locks without needing a perfect angle.
-  3. Once one card is consistently the best over a short window with high confidence, it **locks in** and is **auto-added** to the current zone via the existing add path (owner via the sticky owner selector, duplicate-stack block, stack-size limit, `ZoneCardItem` output) — no Accept tap and no selecting from a list (DEC-056).
+  3. As the scanner enters the `locking` state (a confident leader accumulating votes), an affirmative outline is drawn on the detected card in the viewfinder as a positive "you're close — hold this angle" alignment cue; it clears if the scanner drops back to `searching` (DEC-083). Once one card is consistently the best over a short window with high confidence, it **locks in** and is **auto-added** to the current zone via the existing add path (owner via the sticky owner selector, duplicate-stack block, stack-size limit, `ZoneCardItem` output) — no Accept tap and no selecting from a list (DEC-056).
   4. A thumbs-up confirmation popup fades in and out and a short "ding" plays (on by default; a top-left mute toggle silences the sound only, not the popup); auto-scan immediately resumes for the next card and the scan review bubble shows the running count of cards added this session (DEC-058, DEC-057, DEC-061).
   5. To remove a wrong auto-add, the user taps the scanned-cards bubble in the top-right. Its viewport-capped 320px panel lists each card with the shared responsive image/metadata presentation and a persistent Remove control. An available uncropped image is centered at 80% of the entry width and can be swapped for local metadata; if the image is unavailable, the metadata appears directly. Each complete entry has the same restrained identity ring used by zone collection and enrichment. Long sessions scroll inside the panel. The user removes the card in one tap (no confirmation) without leaving the camera (DEC-058, DEC-078).
   6. User repeats as needed, then taps **Exit scan** (top-right on the camera surface) to return to zone collection and pick another zone or move forward in the flow; normal staged-flow navigation/actions return only after scan closes.
@@ -142,6 +143,7 @@
 - Notes:
   - scanning is an optional alternate input path (DEC-050); manual search remains the default and a permanent fallback
   - scan-review image sizing, panel layout, and identity ring are presentation only (DEC-078, REQ-058); the counter, removal, and scan loop behavior are unchanged
+  - each auto-added card is an independent instance keyed on `instanceId`; scanning the same card twice into a non-stack zone yields two scan-review entries, and one-tap removal targets only the chosen instance (DEC-082, REQ-061)
   - while scan is open, zone-collection search, the card list, and outer staged-flow navigation/action buttons are hidden; scan-local controls including **Capture** remain available, and **Exit scan** is the path back to manual search or normal flow navigation (DEC-076)
   - identification runs fully on-device with no network calls (DEC-051); art-only matching yields ranked candidates resolved to oracle-level `CardMetadataItem` (DEC-053), with the scanned printing's image carried as presentation only (DEC-070)
 
@@ -154,7 +156,7 @@
   1. User opens the global theme/settings affordance from the app chrome.
   2. App shows the predefined palette choices as named swatches, with the current palette indicated.
   3. User selects a palette.
-  4. App immediately applies the selected palette to primary accent surfaces without leaving the current workflow step.
+  4. App immediately applies the selected palette to primary accents and the restrained resting/hover/focus/current treatments on REQ-060's closed minimum surface inventory without leaving the current workflow step.
   5. App stores the selected palette for the browser.
   6. On later reloads, app restores the stored palette before or during initial render without resetting user workflow state.
 - Edge Cases:
@@ -163,6 +165,7 @@
   - selecting the current palette is a no-op and does not close or reset the main gameplay workflow unless the implemented control naturally closes after selection
 - Notes:
   - theme selection is frontend-only personalization and never changes submitted game context, prompt text, backend API behavior, or AI responses
+  - only REQ-060's closed minimum surface inventory uses the restrained ambient hierarchy from DEC-081; static chrome and the dominant page background remain neutral
 
 ### FLOW-008
 - Name: Choose and persist layout density

@@ -29,7 +29,7 @@ export const DETECTOR_FAILURE_NUDGE_COUNT = 3;
 
 export type ScanPhase = "searching" | "locked";
 
-export type ScanAddOutcome = { added: true } | { added: false; message: string };
+export type ScanAddOutcome = { added: true; instanceId?: string } | { added: false; message: string };
 export type ScanDetectorNudge = "card-outline";
 
 export type ScanConvergence = {

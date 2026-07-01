@@ -300,6 +300,18 @@ describe("buildAskAiRequest", () => {
     expect(payload.question).toBe("Resolve the stack");
   });
 
+  it("strips instanceId from every zone card before serialization", () => {
+    const card: ZoneCardItem = { instanceId: "inst-abc", cardId: "s1", name: "s1", oracleText: "" };
+    const ctx: GameContext = {
+      ...BASE_GAME_CONTEXT,
+      zones: { stack: [card] }
+    };
+    const payload = buildAskAiRequest("test", ctx);
+    const wireCard = payload.gameContext.zones?.stack?.[0];
+    expect(wireCard).toBeDefined();
+    expect(Object.prototype.hasOwnProperty.call(wireCard, "instanceId")).toBe(false);
+  });
+
   it("does not mutate the input gameContext", () => {
     const ctx: GameContext = {
       ...BASE_GAME_CONTEXT,

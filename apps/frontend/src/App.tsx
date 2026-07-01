@@ -355,7 +355,7 @@ export default function App() {
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Players in game</p>
             <p className="text-xs text-zinc-400">2 players start at 20 life. 3+ players default to 40 life.</p>
 
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2">
+            <div className="ambient-accent-surface ambient-accent-interactive flex items-center justify-between gap-3 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -425,7 +425,7 @@ export default function App() {
               </div>
             )}
           </div>
-          <div className="panel-inner">
+          <div className="panel-inner ambient-accent-surface ambient-accent-interactive">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label className="flex flex-col gap-2 text-sm">
                 <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Turn phase</span>

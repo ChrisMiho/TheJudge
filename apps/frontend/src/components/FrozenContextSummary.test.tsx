@@ -31,16 +31,20 @@ describe("FrozenContextSummary", () => {
     render(<FrozenContextSummary frozenGameContext={frozenContext} />);
 
     const summary = screen.getByRole("region", { name: "Frozen game context" });
+    expect(summary).toHaveClass("ambient-accent-surface", "ambient-accent-interactive");
+    expect(summary).toHaveAttribute("data-accent-current", "false");
     expect(summary).toHaveAttribute("data-expanded", "false");
     expect(screen.queryByText("Setup")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Show full game context" }));
 
+    expect(summary).toHaveAttribute("data-accent-current", "true");
     expect(summary).toHaveAttribute("data-expanded", "true");
     expect(screen.getByText("Setup").closest(".frozen-context-disclosure")).not.toBeNull();
 
     await user.click(screen.getByRole("button", { name: "Hide full game context" }));
 
+    expect(summary).toHaveAttribute("data-accent-current", "false");
     expect(summary).toHaveAttribute("data-expanded", "false");
     expect(screen.queryByText("Setup")).not.toBeInTheDocument();
   });

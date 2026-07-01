@@ -112,18 +112,18 @@ export function EnrichmentStep({
     }
   }, [totalCards, wizardIndex]);
 
-  function cardKey(zone: ZoneId, cardId: string): string {
-    return `${zone}:${cardId}`;
+  function cardKey(zone: ZoneId, instanceId: string): string {
+    return `${zone}:${instanceId}`;
   }
 
-  function updateZoneCard(zone: ZoneId, cardId: string, updates: Partial<ZoneCardItem>): void {
+  function updateZoneCard(zone: ZoneId, instanceId: string, updates: Partial<ZoneCardItem>): void {
     const zoneCards = zones[zone] ?? [];
-    const updated = zoneCards.map((c) => (c.cardId === cardId ? { ...c, ...updates } : c));
+    const updated = zoneCards.map((c) => (c.instanceId === instanceId ? { ...c, ...updates } : c));
     onZonesChange({ ...zones, [zone]: updated });
   }
 
-  function removeCardFromZone(zone: ZoneId, cardId: string): void {
-    const updated = (zones[zone] ?? []).filter((c) => c.cardId !== cardId);
+  function removeCardFromZone(zone: ZoneId, instanceId: string): void {
+    const updated = (zones[zone] ?? []).filter((c) => c.instanceId !== instanceId);
     onZonesChange({ ...zones, [zone]: updated });
   }
 
@@ -150,7 +150,7 @@ export function EnrichmentStep({
   }
 
   function renderCardRow(zone: ZoneId, card: ZoneCardItem, options?: { showRemove?: boolean }): JSX.Element {
-    const key = cardKey(zone, card.cardId);
+    const key = cardKey(zone, card.instanceId ?? card.cardId);
     const pendingKind = getPendingKind(key);
     const isStackZone = zone === "stack";
     const showsOwner = hasOwnerControl(zone);
@@ -172,7 +172,7 @@ export function EnrichmentStep({
                 <button
                   type="button"
                   aria-label={`Remove ${card.name}`}
-                  onClick={() => removeCardFromZone(zone, card.cardId)}
+                  onClick={() => removeCardFromZone(zone, card.instanceId ?? card.cardId)}
                   className="card-state-remove-trigger w-full rounded-lg border border-zinc-600 bg-zinc-800/70 px-2 py-1 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-700/80"
                 >
                   Remove
@@ -190,7 +190,7 @@ export function EnrichmentStep({
                 aria-label={`Owner for ${card.name}`}
                 value={card.owner ?? gameContext?.activePlayer ?? activePlayers[0] ?? "Player 1"}
                 onChange={(e) =>
-                  updateZoneCard(zone, card.cardId, { owner: e.target.value as PlayerLabel })
+                  updateZoneCard(zone, card.instanceId ?? card.cardId, { owner: e.target.value as PlayerLabel })
                 }
                 className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
               >
@@ -210,7 +210,7 @@ export function EnrichmentStep({
                 aria-label={`Caster for ${card.name}`}
                 value={card.caster ?? activePlayers[0] ?? "Player 1"}
                 onChange={(e) =>
-                  updateZoneCard(zone, card.cardId, { caster: e.target.value as PlayerLabel })
+                  updateZoneCard(zone, card.instanceId ?? card.cardId, { caster: e.target.value as PlayerLabel })
                 }
                 className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
               >
@@ -232,7 +232,7 @@ export function EnrichmentStep({
                 inputMode="numeric"
                 value={card.manaSpent !== undefined ? String(card.manaSpent) : ""}
                 onChange={(e) =>
-                  updateZoneCard(zone, card.cardId, { manaSpent: parseManaSpent(e.target.value) })
+                  updateZoneCard(zone, card.instanceId ?? card.cardId, { manaSpent: parseManaSpent(e.target.value) })
                 }
                 placeholder="e.g. 3"
                 className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
@@ -346,7 +346,7 @@ export function EnrichmentStep({
             aria-label={`Context notes for ${card.name}`}
             value={card.contextNotes ?? ""}
             onChange={(e) =>
-              updateZoneCard(zone, card.cardId, {
+              updateZoneCard(zone, card.instanceId ?? card.cardId, {
                 contextNotes: e.target.value || undefined
               })
             }
@@ -413,7 +413,11 @@ export function EnrichmentStep({
             </div>
           )}
 
-          <form onSubmit={(e) => void handleFollowUpSubmit(e)} className="space-y-2">
+          <form
+            onSubmit={(e) => void handleFollowUpSubmit(e)}
+            data-accent-current={false}
+            className="ambient-accent-surface ambient-accent-interactive space-y-2 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+          >
             <label className="flex flex-col gap-1">
               <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
                 Follow-up question
@@ -475,7 +479,7 @@ export function EnrichmentStep({
                   setWizardFinished(false);
                 }
               }}
-              className="rounded-lg border border-zinc-600 bg-zinc-800/70 px-3 py-1.5 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-700/80"
+              className="ambient-accent-surface ambient-accent-interactive rounded-lg border border-zinc-600 bg-zinc-800/70 px-3 py-1.5 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-700/80"
             >
               {viewMode === "wizard" ? "View all cards" : "Card-by-card"}
             </button>
@@ -487,7 +491,10 @@ export function EnrichmentStep({
             Add at least one card in a selected zone before decrypting.
           </p>
         ) : showWizard && currentWizardEntry ? (
-          <div className="space-y-3">
+          <div
+            data-accent-current="true"
+            className="enrichment-card-surface ambient-accent-surface ambient-accent-interactive space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+          >
             <p className="text-sm text-zinc-400">
               Card {wizardIndex + 1} of {totalCards}
             </p>
@@ -503,14 +510,20 @@ export function EnrichmentStep({
             </button>
           </div>
         ) : showWizardFinished ? (
-          <div className="motion-success rounded-2xl border border-accent/40 bg-accent/10 p-4">
+          <div
+            data-accent-current="false"
+            className="enrichment-card-surface ambient-accent-surface motion-success rounded-2xl border border-accent/40 bg-accent/10 p-4"
+          >
             <p className="text-sm font-semibold text-accent-soft">Ready to decrypt.</p>
             <p className="mt-1 text-sm text-zinc-300">
               Card context reviewed. Use View all cards to make more edits.
             </p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div
+            data-accent-current="true"
+            className="enrichment-card-surface ambient-accent-surface ambient-accent-interactive space-y-6 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+          >
             {CANONICAL_ZONE_ORDER.filter((zone) => (zones[zone]?.length ?? 0) > 0).map((zone) => (
               <div key={zone} className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
@@ -533,7 +546,11 @@ export function EnrichmentStep({
           <AskAiWaitingPanel isSubmitting={isSubmitting} />
         ) : (
           showQuestionForm && (
-            <form onSubmit={(e) => void onDecryptStack(e)} className="space-y-3">
+            <form
+              onSubmit={(e) => void onDecryptStack(e)}
+              data-accent-current="true"
+              className="enrichment-question-surface ambient-accent-surface ambient-accent-interactive space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+            >
               <div className="space-y-2 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
                 <p className="text-sm font-semibold text-zinc-100">Sending to TheJudge</p>
                 <ul className="space-y-1 text-sm text-zinc-300">

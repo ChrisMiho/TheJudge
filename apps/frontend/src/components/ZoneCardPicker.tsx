@@ -18,8 +18,8 @@ type ZoneCardPickerScanProps = {
   convergence: ScanConvergence;
   addConfirmation: ScanAddConfirmation | null;
   scanDebug: ScanDebugMetrics | null;
-  /** cardIds auto-added to this zone during the current scan session (review bubble). */
-  sessionCardIds: string[];
+  /** instanceIds auto-added to this zone during the current scan session (review bubble). */
+  sessionInstanceIds: string[];
   onOpen: () => void | Promise<void>;
   onExitToManual: () => void;
   identify: (image: RgbImage) => IdentifyResult | Promise<IdentifyResult>;
@@ -91,13 +91,16 @@ export function ZoneCardPicker({
   // Derive the review-bubble cards from the live zone list + this-session id set,
   // so removals (here or in the main list) drop out automatically — no scan-only store.
   const scanSessionCards = scan
-    ? scan.sessionCardIds
-        .map((cardId) => cards.find((card) => card.cardId === cardId))
+    ? scan.sessionInstanceIds
+        .map((instanceId) => cards.find((card) => card.instanceId === instanceId))
         .filter((card): card is ZoneCardItem => Boolean(card))
     : [];
 
   return (
-    <div className="space-y-4">
+    <div
+      data-accent-current="true"
+      className="ambient-accent-surface space-y-4 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+    >
       {!isScanOpen && zoneId === "stack" && (
         <p className="text-xs text-zinc-400">
           Stack order is bottom to top. The first card you add is the bottom; each new card is added on top.
@@ -239,7 +242,7 @@ export function ZoneCardPicker({
           <div className="zone-card-grid grid grid-cols-2 gap-2 overflow-y-auto">
             {cards.map((card, index) => (
               <div
-                key={`${zoneId}-${card.cardId}-${index}`}
+                key={card.instanceId ?? `${zoneId}-${card.cardId}-${index}`}
                 className="card-identity-ring zone-card-tile enrichment-card-enter card-state-remove flex flex-col gap-1 rounded-xl border border-zinc-700/80 bg-zinc-950/40 p-2"
                 style={getCardIdentityRingStyle(card.colors)}
               >
@@ -257,7 +260,7 @@ export function ZoneCardPicker({
                       <button
                         type="button"
                         aria-label={`Remove ${card.name} from ${ZONE_LABELS[zoneId]}`}
-                        onClick={() => onRemoveCard(card.cardId)}
+                        onClick={() => onRemoveCard(card.instanceId ?? card.cardId)}
                         className="card-state-remove-trigger w-full rounded-lg border border-zinc-600 px-2 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
                       >
                         Remove
