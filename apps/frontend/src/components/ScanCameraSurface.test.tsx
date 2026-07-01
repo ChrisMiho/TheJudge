@@ -454,6 +454,14 @@ describe("ScanCameraSurface getUserMedia constraints (slice A / REQ-053)", () =>
 describe("ScanCameraSurface locking outline (slice B / DEC-083)", () => {
   beforeEach(() => {
     vi.mocked(detectCard).mockReturnValue(null);
+    // Isolate the capture-driven outline from the background auto-scan loop.
+    // The RAF tick calls scanCurrentFrame(false) with the default detectCard ->
+    // null, which during "locking" runs setLockOutline(null) and clobbers the
+    // outline the Capture click just drew. Stubbing rAF to a no-op stops the
+    // loop from scheduling; the onClick capture path (scanCurrentFrame(true))
+    // is invoked directly and is unaffected. Without this the outline
+    // assertions race the loop and flake under load (observed in CI).
+    vi.spyOn(window, "requestAnimationFrame").mockReturnValue(0);
     vi.spyOn(HTMLVideoElement.prototype, "videoWidth", "get").mockReturnValue(320);
     vi.spyOn(HTMLVideoElement.prototype, "videoHeight", "get").mockReturnValue(240);
     vi.spyOn(HTMLMediaElement.prototype, "readyState", "get").mockReturnValue(
