@@ -1179,7 +1179,11 @@ describe("App MVP interaction flows", () => {
     for (let index = 0; index < 10; index += 1) {
       expect(screen.getByLabelText(`Caster for ${manyCards[index].name}`)).toBeInTheDocument();
     }
-  });
+    // Outlier test: fills the whole 10-card stack through the UI (~10 sequential
+    // userEvent add flows), far more than any sibling. It runs ~1.5s locally but
+    // crosses the default 5000ms testTimeout on slower/contended CI runners, so it
+    // gets explicit headroom.
+  }, 20000);
 
   it("hides optional-question submit controls after response is received", async () => {
     const user = userEvent.setup();
