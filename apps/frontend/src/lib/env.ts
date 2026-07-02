@@ -45,9 +45,17 @@ export function resolveDebugLoggingEnabled(rawValue: string | undefined, isDev: 
   );
 }
 
+export function resolveIsMockProvider(rawValue: string | undefined): boolean {
+  // Fail-safe: never claim mock unless the provider is explicitly "mock".
+  // Unrecognized values (including "openai", empty, undefined) hide the banner
+  // and must not throw — an unknown provider should degrade quietly.
+  return rawValue?.trim().toLowerCase() === "mock";
+}
+
 export const apiBaseUrl = resolveApiBaseUrl(import.meta.env.VITE_API_URL);
 export const debugLoggingEnabled = resolveDebugLoggingEnabled(
   import.meta.env.VITE_DEBUG_LOGGING,
   import.meta.env.DEV,
   import.meta.env.MODE
 );
+export const isMockProvider = resolveIsMockProvider(import.meta.env.VITE_ASK_AI_PROVIDER);

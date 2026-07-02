@@ -236,6 +236,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: shared motion tokens/utilities in `apps/frontend/src/index.css`; staged-flow surfaces in `apps/frontend/src/App.tsx` and `apps/frontend/src/components/{StagedStepHeader,ZoneConfirmStep,ZoneCollectionStep,ZoneCardPicker,CardSelectionPreview,EnrichmentStep,CardPresentation}.tsx`; answered-view surfaces in `apps/frontend/src/components/{ConversationThread,FrozenContextSummary}.tsx`
 - Backed by: DEC-079, REQ-059, NFR-006, FLOW-001, FLOW-002, FLOW-006
 
+## Mock-mode banner
+
+- Status: shipped
+- Summary: Persistent, non-dismissible banner shown at the top of every screen when the app is built/run with the mock AI provider. The mock/live signal is build-time configuration-driven from the single `ASK_AI_PROVIDER` source of truth — `vite.config.ts` bridges `process.env.VITE_ASK_AI_PROVIDER ?? process.env.ASK_AI_PROVIDER` into the client as `import.meta.env.VITE_ASK_AI_PROVIDER`, and `env.ts` resolves it to the `isMockProvider` boolean (mirroring the `resolveDebugLoggingEnabled` pattern; never inferred from `DEV`/`MODE`/`NODE_ENV`/host/answer text, never throws on unknown values). `MockModeBanner` mounts once in `PageShell`, so it covers the empty/home state, all four staged steps, and the answered/conversation view; `PageShell` applies a conditional top-offset (`data-mock-banner`) so the fixed banner never obscures the header, and the banner sits below `ThemeControl`'s z-index. Static, high-contrast, CSS-only (no motion), presentation only — no backend endpoint, ask-AI contract, or mock-response-content change.
+- Lives in: `apps/frontend/vite.config.ts` (define bridge), `apps/frontend/src/lib/env.ts` (`resolveIsMockProvider` + `isMockProvider`), `apps/frontend/src/components/MockModeBanner.tsx`, `apps/frontend/src/components/PageShell.tsx` (mount + offset), `apps/frontend/src/index.css` (`.mock-mode-banner` + `data-mock-banner` offset)
+- Backed by: DEC-084, REQ-063, NFR-006, DEC-020, DEC-017
+
 ## Card search & metadata
 
 - Status: shipped
