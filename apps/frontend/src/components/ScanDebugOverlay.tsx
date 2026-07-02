@@ -9,6 +9,7 @@ import { CARD_HEIGHT, CARD_WIDTH, type Point } from "../lib/scan/detector"
 import { REGION_A } from "../lib/scan/identify"
 import type { ScanDebugMetrics } from "../hooks/useScanCapture"
 import type { AcquisitionFrameDiagnostic } from "../lib/scan/acquisitionDiagnostics"
+import { ScanCardOutline } from "./ScanCardOutline"
 
 export type ScanDebugOverlayProps = {
   metrics: ScanDebugMetrics | null
@@ -93,31 +94,26 @@ export function ScanDebugOverlay({
   return (
     <div className="pointer-events-none absolute inset-0" data-testid="scan-debug-overlay">
       {hasGeometry && corners && readRegion && (
-        <svg
-          className="absolute inset-0 h-full w-full"
-          viewBox={`0 0 ${frameWidth} ${frameHeight}`}
-          preserveAspectRatio="xMidYMid slice"
-          aria-hidden="true"
-          data-testid="scan-debug-geometry"
-        >
+        <div className="absolute inset-0" data-testid="scan-debug-geometry">
           {/* Detected-card outline the scanner is tracking (sky — distinct from the emerald template). */}
-          <polygon
-            points={pointsAttr(corners)}
-            fill="none"
-            stroke="#38bdf8"
-            strokeWidth={2}
-            vectorEffect="non-scaling-stroke"
-          />
+          <ScanCardOutline corners={corners} frameWidth={frameWidth} frameHeight={frameHeight} variant="debug" />
           {/* Art-crop region actually read/hashed (Region A mapped through the same quad). */}
-          <polygon
-            points={pointsAttr(readRegion)}
-            fill="rgba(244,114,182,0.18)"
-            stroke="#f472b6"
-            strokeWidth={2}
-            strokeDasharray="6 4"
-            vectorEffect="non-scaling-stroke"
-          />
-        </svg>
+          <svg
+            className="absolute inset-0 h-full w-full"
+            viewBox={`0 0 ${frameWidth} ${frameHeight}`}
+            preserveAspectRatio="xMidYMid slice"
+            aria-hidden="true"
+          >
+            <polygon
+              points={pointsAttr(readRegion)}
+              fill="rgba(244,114,182,0.18)"
+              stroke="#f472b6"
+              strokeWidth={2}
+              strokeDasharray="6 4"
+              vectorEffect="non-scaling-stroke"
+            />
+          </svg>
+        </div>
       )}
 
       <div className="absolute left-3 bottom-3 max-w-[80%] space-y-1 rounded-xl bg-zinc-950/85 px-3 py-2 text-[11px] font-medium text-zinc-200 shadow-lg">

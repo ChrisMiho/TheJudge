@@ -16,6 +16,7 @@ vi.mock("./lib/debugLogger", () => ({
 import App from "./App";
 import { NO_MATCH_COPY } from "./lib/search";
 import type { ZoneAskAiPayload } from "./lib/contextFlow";
+import { PALETTES } from "./lib/theme/palettes";
 import type { CardMetadataItem } from "./types";
 
 const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
@@ -362,6 +363,53 @@ describe("App MVP interaction flows", () => {
     render(<App />);
     expect(screen.getByRole("button", { name: "TheJudge" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
+  });
+
+  it("applies staged entrance motion and shared feedback to game-context controls", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: "Game context" }).closest(".motion-enter")).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Add player" })).toHaveClass(
+      "motion-hover",
+      "motion-press",
+      "motion-focus"
+    );
+    expect(screen.getByLabelText("Turn phase")).toHaveClass("motion-focus");
+    expect(screen.getByRole("button", { name: "Confirm game context" })).toHaveClass(
+      "motion-hover",
+      "motion-press",
+      "motion-focus"
+    );
+
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    expect(screen.getByRole("heading", { name: "Zone confirmation" }).closest(".motion-enter")).not.toBeNull();
+  });
+
+  it("opts only the game-context disclosure row and phase control group into ambient accent surfaces", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const playerDisclosure = screen
+      .getByRole("button", { name: "Show player details" })
+      .closest(".ambient-accent-surface");
+    const phaseGroup = screen.getByLabelText("Turn phase").closest(".ambient-accent-surface");
+
+    expect(playerDisclosure).toHaveClass("ambient-accent-interactive");
+    expect(phaseGroup).toHaveClass("ambient-accent-interactive");
+    expect(phaseGroup).toContainElement(screen.getByLabelText("Active player"));
+
+    await selectTurnPhase(user, "combat");
+    expect(phaseGroup).toContainElement(screen.getByLabelText("Combat step"));
+
+    await expandPlayerDetails(user);
+    expect(screen.getByLabelText("Player 1 life total").closest(".ambient-accent-surface")).toBeNull();
+  });
+
+  it("defines a visible focus treatment for the shared motion utility", () => {
+    expect(appCss).toMatch(
+      /\.motion-focus:focus-visible\s*\{[^}]*outline:\s*2px solid rgb\(var\(--accent-soft\)\);[^}]*outline-offset:\s*2px;/
+    );
   });
 
   it("defaults to 20 life for 2 players and 40 for 3+ players", async () => {
@@ -923,6 +971,106 @@ describe("App MVP interaction flows", () => {
     expect(screen.getByLabelText("Caster for Counterspell")).toBeInTheDocument();
   });
 
+  it("uses the image-first presentation and complete-row identity ring in wizard mode", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+
+    await addCardToStack(user, "lig", "Lightning Bolt");
+    await advancePastZoneCollection(user);
+
+    const image = screen.getByRole("img", { name: "Lightning Bolt" });
+    expect(image).toHaveClass("mx-auto", "w-4/5", "h-auto", "object-contain");
+
+    const row = screen.getByLabelText("Caster for Lightning Bolt").closest("li");
+    expect(row).toHaveClass("enrichment-card-row", "card-identity-ring");
+    expect(row).toHaveStyle("--card-identity-ring: rgb(239 68 68 / 0.55)");
+
+    const header = image.closest(".enrichment-card-header");
+    expect(header).not.toBeNull();
+    expect(within(header as HTMLElement).queryByText("Lightning Bolt")).not.toBeInTheDocument();
+    expect(within(header as HTMLElement).queryByText("Stack")).not.toBeInTheDocument();
+    expect(within(header as HTMLElement).queryByText("Lightning Bolt deals 3 damage to any target.")).not.toBeInTheDocument();
+
+    await user.click(
+      within(header as HTMLElement).getByRole("button", {
+        name: "Show card metadata for Lightning Bolt"
+      })
+    );
+    expect(within(header as HTMLElement).getByText("Lightning Bolt")).toBeInTheDocument();
+    expect(within(header as HTMLElement).getByText("Lightning Bolt deals 3 damage to any target.")).toBeInTheDocument();
+
+    expect(within(row as HTMLElement).getByLabelText("Caster for Lightning Bolt")).toBeInTheDocument();
+    expect(within(row as HTMLElement).getByLabelText("Mana spent for Lightning Bolt")).toBeInTheDocument();
+    expect(within(row as HTMLElement).getByLabelText("Target kind for Lightning Bolt")).toBeInTheDocument();
+    expect(within(row as HTMLElement).getByLabelText("Context notes for Lightning Bolt")).toBeInTheDocument();
+  });
+
+  it("uses the same shared presentation and header controls in list mode", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+
+    await addCardToStack(user, "lig", "Lightning Bolt");
+    await advanceToContextEnrichmentFromZones(user);
+
+    const image = screen.getByRole("img", { name: "Lightning Bolt" });
+    expect(image).toHaveClass("mx-auto", "w-4/5", "h-auto", "object-contain");
+
+    const row = screen.getByLabelText("Caster for Lightning Bolt").closest("li");
+    const header = image.closest(".enrichment-card-header");
+    expect(header).not.toBeNull();
+    expect(within(header as HTMLElement).getByRole("button", { name: "Remove Lightning Bolt" })).toBeInTheDocument();
+    expect(within(header as HTMLElement).queryByText("Lightning Bolt")).not.toBeInTheDocument();
+    expect(row?.closest("ul")).toHaveClass("scroll-cap-4-enrichment");
+
+    fireEvent.error(image);
+
+    const fallback = within(row as HTMLElement).getByTestId("card-presentation-fallback");
+    expect(fallback).toHaveClass("w-full");
+    expect(within(fallback).getByText("Lightning Bolt")).toBeInTheDocument();
+    expect(within(fallback).getByText("{R}")).toBeInTheDocument();
+    expect(within(fallback).getByText("1")).toBeInTheDocument();
+    expect(within(fallback).getByText("Instant")).toBeInTheDocument();
+    expect(within(fallback).getByText("Lightning Bolt deals 3 damage to any target.")).toBeInTheDocument();
+    expect(within(fallback).getByText("R")).toBeInTheDocument();
+    expect(within(row as HTMLElement).getByRole("button", { name: "Remove Lightning Bolt" })).toBeEnabled();
+  });
+
+  it("renders every present local field in the empty-image enrichment fallback", async () => {
+    metadataFixture = baseCardMetadataFixture.map((card) =>
+      card.cardId === "opt"
+        ? {
+            ...card,
+            manaValue: 0,
+            supertypes: ["Legendary"],
+            subtypes: ["Wizard"]
+          }
+        : card
+    );
+    const user = userEvent.setup();
+    render(<App />);
+    await openStackBuilder(user);
+
+    await addCardToStack(user, "opt", "Opt");
+    await advanceToContextEnrichmentFromZones(user);
+
+    const row = screen.getByLabelText("Caster for Opt").closest("li");
+    const fallback = within(row as HTMLElement).getByTestId("card-presentation-fallback");
+    expect(screen.queryByRole("img", { name: "Opt" })).not.toBeInTheDocument();
+    expect(fallback).toHaveClass("w-full");
+    expect(within(fallback).getByText("Opt")).toBeInTheDocument();
+    expect(within(fallback).getByText("{U}")).toBeInTheDocument();
+    expect(within(fallback).getByText("0")).toBeInTheDocument();
+    expect(within(fallback).getByText("Instant")).toBeInTheDocument();
+    expect(within(fallback).getByText("Scry 1, then draw a card.")).toBeInTheDocument();
+    expect(within(fallback).getByText("U")).toBeInTheDocument();
+    expect(within(fallback).getByText("Legendary")).toBeInTheDocument();
+    expect(within(fallback).getByText("Wizard")).toBeInTheDocument();
+    expect(row).toHaveClass("card-identity-ring");
+    expect(row).toHaveStyle("--card-identity-ring: rgb(14 165 233 / 0.55)");
+  });
+
   it("shows zone cards in enrichment order (bottom-to-top) and removal is usable", async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -1031,7 +1179,11 @@ describe("App MVP interaction flows", () => {
     for (let index = 0; index < 10; index += 1) {
       expect(screen.getByLabelText(`Caster for ${manyCards[index].name}`)).toBeInTheDocument();
     }
-  });
+    // Outlier test: fills the whole 10-card stack through the UI (~10 sequential
+    // userEvent add flows), far more than any sibling. It runs ~1.5s locally but
+    // crosses the default 5000ms testTimeout on slower/contended CI runners, so it
+    // gets explicit headroom.
+  }, 20000);
 
   it("hides optional-question submit controls after response is received", async () => {
     const user = userEvent.setup();
@@ -1993,6 +2145,60 @@ describe("Slice-C: theme palette changes preserve workflow state", () => {
     expect(screen.getByText("Mock answer")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
   });
+
+  it("retints all five palettes without changing an in-progress flow or its current surfaces", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await selectTurnPhase(user, "combat");
+    await user.selectOptions(screen.getByLabelText("Combat step"), "declare_attackers");
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advanceToZoneCollectionWithZones(user, ["Stack"]);
+    await waitForMetadataReady();
+    await addCardToActiveZone(user, "opt", "Opt");
+    await advanceToContextEnrichmentFromZones(user);
+    await user.type(screen.getByPlaceholderText("How does this resolve?"), "Does Opt resolve?");
+
+    const cardSurface = document.querySelector<HTMLElement>(".enrichment-card-surface");
+    const questionSurface = document.querySelector<HTMLElement>(".enrichment-question-surface");
+    expect(cardSurface).toHaveAttribute("data-accent-current", "true");
+    expect(questionSurface).toHaveAttribute("data-accent-current", "true");
+
+    for (const palette of PALETTES) {
+      await user.click(screen.getByRole("button", { name: "Theme" }));
+      await user.click(screen.getByRole("button", { name: `Theme: ${palette.name}` }));
+
+      expect(document.documentElement.dataset.theme).toBe(palette.id);
+      expect(document.documentElement.style.getPropertyValue("--accent")).toBe(palette.accent);
+      expect(document.documentElement.style.getPropertyValue("--accent-strong")).toBe(
+        palette.accentStrong
+      );
+      expect(document.documentElement.style.getPropertyValue("--accent-soft")).toBe(
+        palette.accentSoft
+      );
+      expect(document.documentElement.style.getPropertyValue("--accent-contrast")).toBe(
+        palette.accentContrast
+      );
+      expect(screen.getByRole("heading", { name: "Context enrichment" })).toBeInTheDocument();
+      expect(screen.getByText("Opt")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("How does this resolve?")).toHaveValue(
+        "Does Opt resolve?"
+      );
+      expect(cardSurface).toHaveAttribute("data-accent-current", "true");
+      expect(questionSurface).toHaveAttribute("data-accent-current", "true");
+    }
+
+    await clickDecryptStack(user);
+    const requestBody = await waitFor(() => {
+      expect(submittedAskAiRequests.length).toBeGreaterThan(0);
+      return submittedAskAiRequests[0];
+    });
+    expect(requestBody.gameContext.turnPhase).toBe("combat");
+    expect(requestBody.gameContext.combatStep).toBe("declare_attackers");
+    expect(requestBody.gameContext.selectedZones).toEqual(["stack"]);
+    expect(requestBody.gameContext.zones?.stack?.[0]).toMatchObject({ name: "Opt" });
+    expect(requestBody.question).toBe("Does Opt resolve?");
+  });
 });
 
 describe("Slice-A: neutral palette backdrop", () => {
@@ -2224,9 +2430,9 @@ describe("Slice-F: slim density surfaces", () => {
     expect(appCss).toContain('[data-layout-density="slim"] .frozen-context-summary');
   });
 
-  it("keeps the zone card grid capped at four visible cards through density variables", () => {
-    expect(appCss).toContain("max-height: calc(2 * var(--zone-card-tile-height, 10.5rem) + var(--zone-card-grid-gap, 0.5rem));");
-    expect(appCss).toContain("--zone-card-tile-height: 9.25rem;");
+  it("keeps the zone card grid viewport-capped in both densities", () => {
+    expect(appCss).toMatch(/\.zone-card-grid \{[^}]*max-height: 70dvh;/);
+    expect(appCss).not.toContain("--zone-card-tile-height");
     expect(appCss).toContain("--zone-card-grid-gap: 0.375rem;");
   });
 });

@@ -11,8 +11,8 @@
 - Description: The core product should optimize for speed of use, structured lightweight context, and simple implementation.
 
 ### GOAL-003
-- Title: Validate the core product loop
-- Description: The team should prove that users will capture lightweight game context, add relevant zone cards when needed, ask a question, and use the AI response.
+- Title: Reach production readiness for a first deployment
+- Description: Refine and harden the existing core loop (lightweight game context capture, zone cards when needed, question, and AI response) to production-ready quality so the app can be deployed and gather real user feedback. The original core-loop hypothesis is considered validated (past MVP); the focus is now refinement toward deployment, not proving the loop (`DEC-080`).
 
 ## Success Metrics
 - user can add a card to the stack in under 5 seconds
@@ -37,6 +37,7 @@
 - plain-text AI response
 - mock-first integration path
 - one main backend endpoint
+- app-wide CSS decorative-motion and visual-feedback baseline with reduced-motion support (DEC-079, REQ-059, NFR-006)
 
 ## Intentional constraints
 - duplicate-card blocking is a temporary product constraint, not a gameplay rule
@@ -66,12 +67,12 @@
 - account system
 - billing
 - runtime metadata syncing
-- animation-heavy UI
+- dependency-heavy or performance-harming animation systems, and motion that ignores `prefers-reduced-motion` (decorative CSS motion itself is in scope per DEC-079, NFR-006; this non-goal narrows the prior blanket "animation-heavy UI" exclusion)
 - multiple product-facing backend endpoints
 - printing disambiguation, grading, pricing, or multi-card-per-frame detection in card scanning (DEC-053)
 - arbitrary theme color input, per-component theme overrides, server-synced theme preferences, account-based theme settings, and dark/light mode redesign for theme customization (DEC-066)
 - server-synced layout-density preferences, account-based density settings, viewport locking, and sticky-footers redesign for layout compaction (DEC-075, DEC-076)
 
 ## Scope Notes
-The core product is a **flow-validation assistant**, not a gameplay-accurate rules engine.
+The core product is a **rules assistant** that helps players navigate MTG rules, not an official judge or a deterministic/gameplay-accurate rules engine.
 Some constraints are temporary and intentionally narrow.

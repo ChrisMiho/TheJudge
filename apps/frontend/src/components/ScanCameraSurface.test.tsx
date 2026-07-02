@@ -451,6 +451,120 @@ describe("ScanCameraSurface getUserMedia constraints (slice A / REQ-053)", () =>
   });
 });
 
+describe("ScanCameraSurface locking outline (slice B / DEC-083)", () => {
+  beforeEach(() => {
+    vi.mocked(detectCard).mockReturnValue(null);
+    // Isolate the capture-driven outline from the background auto-scan loop.
+    // The RAF tick calls scanCurrentFrame(false) with the default detectCard ->
+    // null, which during "locking" runs setLockOutline(null) and clobbers the
+    // outline the Capture click just drew. Stubbing rAF to a no-op stops the
+    // loop from scheduling; the onClick capture path (scanCurrentFrame(true))
+    // is invoked directly and is unaffected. Without this the outline
+    // assertions race the loop and flake under load (observed in CI).
+    vi.spyOn(window, "requestAnimationFrame").mockReturnValue(0);
+    vi.spyOn(HTMLVideoElement.prototype, "videoWidth", "get").mockReturnValue(320);
+    vi.spyOn(HTMLVideoElement.prototype, "videoHeight", "get").mockReturnValue(240);
+    vi.spyOn(HTMLMediaElement.prototype, "readyState", "get").mockReturnValue(
+      HTMLMediaElement.HAVE_ENOUGH_DATA
+    );
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
+      drawImage: vi.fn(),
+      getImageData: vi.fn().mockReturnValue({
+        data: new Uint8ClampedArray(320 * 240 * 4),
+        width: 320,
+        height: 240,
+      }),
+    } as unknown as CanvasRenderingContext2D);
+  });
+
+  const lockingCorners = [
+    { x: 20, y: 30 },
+    { x: 300, y: 28 },
+    { x: 302, y: 220 },
+    { x: 18, y: 222 }
+  ];
+  const mockCard = { width: 100, height: 140, data: new Uint8Array(100 * 140 * 3) };
+
+  it("draws the affirmative outline while locking, with no read region and the debug overlay off", async () => {
+    vi.mocked(detectCard).mockImplementationOnce((_frame, options) => {
+      options?.onCorners?.(lockingCorners);
+      return mockCard;
+    });
+    render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+    });
+
+    const outline = screen.getByTestId("scan-card-outline");
+    expect(outline.querySelector("polygon")).toHaveAttribute("stroke", "#34d399");
+    expect(screen.queryByTestId("scan-debug-overlay")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("scan-debug-geometry")).not.toBeInTheDocument();
+  });
+
+  it("does not draw the outline while searching, even with corners captured", async () => {
+    vi.mocked(detectCard).mockImplementationOnce((_frame, options) => {
+      options?.onCorners?.(lockingCorners);
+      return mockCard;
+    });
+    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+    });
+
+    expect(screen.queryByTestId("scan-card-outline")).not.toBeInTheDocument();
+  });
+
+  it("clears the outline once phase leaves locking (drop back to searching)", async () => {
+    vi.mocked(detectCard).mockImplementationOnce((_frame, options) => {
+      options?.onCorners?.(lockingCorners);
+      return mockCard;
+    });
+    const { rerender } = render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+    });
+    expect(screen.getByTestId("scan-card-outline")).toBeInTheDocument();
+
+    rerender(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+
+    expect(screen.queryByTestId("scan-card-outline")).not.toBeInTheDocument();
+  });
+
+  it("clears the outline on lock-complete/auto-add reset back to searching", async () => {
+    vi.mocked(detectCard).mockImplementationOnce((_frame, options) => {
+      options?.onCorners?.(lockingCorners);
+      return mockCard;
+    });
+    const { rerender } = render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+    });
+    expect(screen.getByTestId("scan-card-outline")).toBeInTheDocument();
+
+    // Hook auto-adds and resets convergence to its initial searching shape.
+    rerender(
+      <ScanCameraSurface
+        onCapture={() => undefined}
+        convergence={searching}
+        confirmation={{ id: 1, cardName: "Lightning Bolt" }}
+      />
+    );
+
+    expect(screen.queryByTestId("scan-card-outline")).not.toBeInTheDocument();
+  });
+
+  it("degrades to no outline when a locking frame has no captured corners", async () => {
+    vi.mocked(detectCard).mockReturnValueOnce(null);
+    render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+    });
+
+    expect(screen.queryByTestId("scan-card-outline")).not.toBeInTheDocument();
+    expect(screen.getByText("Locking on Lightning Bolt")).toBeInTheDocument();
+  });
+});
+
 describe("ScanCameraSurface debug-gated frame export", () => {
   beforeEach(() => {
     vi.mocked(detectCard).mockReturnValue(null);

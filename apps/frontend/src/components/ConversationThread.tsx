@@ -12,8 +12,8 @@ export function ConversationThread({ messages }: ConversationThreadProps): JSX.E
           key={index}
           className={
             message.role === "assistant"
-              ? "max-w-[85%] self-start rounded-2xl rounded-tl-sm bg-zinc-800/80 px-4 py-3 text-sm text-zinc-100"
-              : "max-w-[85%] self-end rounded-2xl rounded-tr-sm border border-accent-strong/30 bg-accent-strong/30 px-4 py-3 text-sm text-zinc-100"
+              ? "conversation-message motion-enter max-w-[85%] self-start rounded-2xl rounded-tl-sm bg-zinc-800/80 px-4 py-3 text-sm text-zinc-100"
+              : "conversation-message motion-enter max-w-[85%] self-end rounded-2xl rounded-tr-sm border border-accent-strong/30 bg-accent-strong/30 px-4 py-3 text-sm text-zinc-100"
           }
         >
           <p className="whitespace-pre-wrap">{message.content}</p>

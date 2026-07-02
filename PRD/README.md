@@ -104,12 +104,13 @@ Read in this order:
 
 | Slug | Status | Summary |
 |------|--------|---------|
+| [mock-mode-banner](./work/mock-mode-banner/) | ideation | Persistent top-of-screen banner when frontend starts in mock AI provider mode |
 | [prompt-game-state-enrichment](./work/prompt-game-state-enrichment/) | deferred | Add `gameStateNotes` freeform game-state field and `ADDITIONAL GAME STATE` prompt section (revisit after retrieval + consolidation work) |
 
 Completed work is promoted into `sections/` and temporary work folders are removed per `instructions/doc-lifecycle.md`.
 
 ## Current Editorial Notes
-- Current product status is flow validation with staged zone context, mock-default local provider mode, and optional live OpenAI provider mode.
+- Current product status: the core loop is validated (past MVP) and is being refined toward a first production deployment (not yet in production); it ships staged zone context, mock-default local provider mode, and optional live OpenAI provider mode (`DEC-080`).
 - Duplicate-card blocking is temporary and should not be treated as long-term product truth.
 - Stack ordering is critical and must remain consistent across UI, API payloads, and prompt-building logic.
 - Default local provider mode is mock (`ASK_AI_PROVIDER=mock`); live OpenAI path is documented in `DEC-020`, `sections/integrations-and-data.md`, and `apps/backend/src/providers/README.md`.

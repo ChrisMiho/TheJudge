@@ -5,7 +5,7 @@ import { ZONE_LABELS } from "../lib/zoneLabels";
 import {
   appendZoneCard,
   buildZoneCardFromMetadata,
-  removeZoneCardById,
+  removeZoneCardByInstanceId,
   validateZoneCardAdd
 } from "../lib/zoneCards";
 import { useAutocompleteKeyboard } from "../hooks/useAutocompleteKeyboard";
@@ -55,9 +55,9 @@ export function ZoneCollectionStep({
   const [searchInput, setSearchInput] = useState("");
   const [selectedCard, setSelectedCard] = useState<CardMetadataItem | null>(null);
   const [pendingOwner, setPendingOwner] = useState<PlayerLabel>(activePlayer);
-  // cardIds auto-added to the active zone during the current scan session; feeds the
+  // instanceIds auto-added to the active zone during the current scan session; feeds the
   // top-right review bubble. Resets when the scan screen opens or the zone changes.
-  const [scanSessionCardIds, setScanSessionCardIds] = useState<string[]>([]);
+  const [scanSessionInstanceIds, setScanSessionInstanceIds] = useState<string[]>([]);
 
   const activeZone = orderedSelectedZones[activeZoneIndex];
   const activeZoneCards = activeZone ? (zones[activeZone] ?? []) : [];
@@ -90,7 +90,10 @@ export function ZoneCollectionStep({
     onScanCandidateSelected: (card, scanImageUrl) => {
       const outcome = addCardToActiveZone(card, scanImageUrl);
       if (outcome.added) {
-        setScanSessionCardIds((ids) => (ids.includes(card.cardId) ? ids : [...ids, card.cardId]));
+        const instanceId = outcome.instanceId;
+        if (instanceId) {
+          setScanSessionInstanceIds((ids) => (ids.includes(instanceId) ? ids : [...ids, instanceId]));
+        }
       }
       return outcome;
     }
@@ -100,7 +103,7 @@ export function ZoneCollectionStep({
 
   useEffect(() => {
     closeScan();
-    setScanSessionCardIds([]);
+    setScanSessionInstanceIds([]);
   }, [activeZone, closeScan]);
 
   function updateZoneCards(zoneId: ZoneId, cards: ZoneCardItem[]): void {
@@ -125,7 +128,7 @@ export function ZoneCollectionStep({
     }
 
     updateZoneCards(activeZone, appendZoneCard(activeZoneCards, nextCard));
-    return { added: true };
+    return { added: true, instanceId: nextCard.instanceId };
   }
 
   function handleAddSelectedCard(): void {
@@ -144,11 +147,11 @@ export function ZoneCollectionStep({
     onFlashStatus(activeZone === "stack" ? "Stacked" : "Card added");
   }
 
-  function handleRemoveCard(cardId: string): void {
+  function handleRemoveCard(instanceId: string): void {
     if (!activeZone) {
       return;
     }
-    updateZoneCards(activeZone, removeZoneCardById(activeZoneCards, cardId));
+    updateZoneCards(activeZone, removeZoneCardByInstanceId(activeZoneCards, instanceId));
   }
 
   function handleContinue(): void {
@@ -198,13 +201,9 @@ export function ZoneCollectionStep({
                     type="button"
                     aria-label={`Zone tab: ${ZONE_LABELS[zone]}`}
                     aria-pressed={isActive}
+                    data-accent-current={isActive}
                     onClick={() => setActiveZoneIndex(index)}
-                    className={[
-                      "rounded-lg border px-3 py-1.5 text-xs font-semibold transition",
-                      isActive
-                        ? "border-accent-soft/80 bg-accent/20 text-accent-soft"
-                        : "border-zinc-600 bg-zinc-800/70 text-zinc-300 hover:bg-zinc-700/80"
-                    ].join(" ")}
+                    className="ambient-accent-surface ambient-accent-interactive motion-hover motion-press motion-focus rounded-lg border border-zinc-600 bg-zinc-800/70 px-3 py-1.5 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-700/80"
                   >
                     {`${ZONE_LABELS[zone]}${count > 0 ? ` (${count})` : ""}`}
                   </button>
@@ -245,10 +244,10 @@ export function ZoneCollectionStep({
                 convergence: scanCapture.convergence,
                 addConfirmation: scanCapture.addConfirmation,
                 scanDebug: scanCapture.scanDebug,
-                sessionCardIds: scanSessionCardIds,
+                sessionInstanceIds: scanSessionInstanceIds,
                 onOpen: async () => {
                   setSelectedCard(null);
-                  setScanSessionCardIds([]);
+                  setScanSessionInstanceIds([]);
                   await scanCapture.openScan();
                 },
                 onExitToManual: scanCapture.closeScan,
@@ -267,7 +266,7 @@ export function ZoneCollectionStep({
             <button
               type="button"
               onClick={onBack}
-              className="rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
+              className="motion-hover motion-press motion-focus rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
             >
               Back
             </button>
@@ -275,7 +274,7 @@ export function ZoneCollectionStep({
               type="button"
               onClick={handleContinue}
               disabled={!canContinue}
-              className="rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="motion-hover motion-press motion-focus rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Continue
             </button>

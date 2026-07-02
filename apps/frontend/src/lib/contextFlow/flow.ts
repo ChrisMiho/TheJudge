@@ -105,7 +105,12 @@ export function buildAskAiRequest(question: string, gameContext: GameContext): Z
   for (const zoneId of CANONICAL_ZONE_ORDER) {
     const cards = rawZones[zoneId];
     if (cards && cards.length > 0) {
-      nonEmptyZones[zoneId] = cards;
+      // Strip instanceId (frontend-only; backend schema is .strict())
+      nonEmptyZones[zoneId] = cards.map((card) => {
+        const wireCard = { ...card };
+        delete wireCard.instanceId;
+        return wireCard;
+      });
     }
   }
   return {

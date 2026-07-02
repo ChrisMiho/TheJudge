@@ -59,6 +59,7 @@ Frontend-only user personalization behavior that changes app presentation withou
 - Notes:
   - approved scope calls: background stays neutral (blue bias removed), semantic green states re-themed, scanner UI included in theme reach, existing token set reused
   - non-goals (unchanged from DEC-066): arbitrary RGB/hex picker, per-component overrides, server-synced preferences, account settings, dark/light mode redesign, palette-tinted backgrounds, new theming framework
+  - DEC-081 later narrows the "neutral slate chrome stays neutral" boundary: static chrome remains neutral, while only the closed surface inventory in REQ-060 may use restrained palette-derived borders, glows, and icon accents
 
 ### DEC-075
 - Decision: Layout density customization uses a global frontend-only **Chunky / Slim** control in the theme panel, with browser-local persistence and `data-layout-density` on `document.documentElement`. **Chunky** is the default and must be a visual no-op versus pre-change spacing.
@@ -105,3 +106,73 @@ Frontend-only user personalization behavior that changes app presentation withou
 - Notes:
   - scroll caps (4 zone tiles, 4 enrichment rows per zone) apply in both chunky and slim density; slim tightens spacing further (DEC-075)
   - non-goals: viewport locking, sticky footers, `dvh` page-shell redesign, changing zone confirmation visuals or density behavior, scan-engine changes
+
+### DEC-078
+- Decision: Card presentation in zone collection, expanded scan review, and enrichment is image-first and responsive. An available card image is centered at **80% of its card container width**, preserves the source card's intrinsic aspect ratio, and shows the complete image without cropping. Image mode hides duplicated card identity labels; an accessible three-dot control swaps the image for every available locally carried metadata field and back again. When an image URL is absent or the image fails to load, including offline, the same readable metadata panel appears directly and expands to the available card container width. Remove and workflow-specific controls remain visible. Every image-bearing or metadata card container also uses a restrained thin ring derived from the existing card `colors`: one identity color, a stable WUBRG-ordered multicolor gradient, or cool light silver-gray when colors are empty, missing, or unrecognized.
+- Status: confirmed
+- Context: The existing 56px zone/scan thumbnails and 64px enrichment thumbnails were too small to make the specific printing art legible. Initial implementation at a fixed 96px still left printed cards unreadable and duplicated labels crowded the surfaces. Responsive manual review established an image-first layout at 80% of each container as the usable balance across narrow and desktop widths. Existing `colors` metadata adds a light identity cue without adding true color-identity data or changing any product contract.
+- Impact:
+  - applies to card images in `ZoneCardPicker` card tiles, expanded `ScanReviewBubble` entries, and `EnrichmentStep` card rows
+  - all three surfaces use the same centered 80%-of-container image width rather than fixed or surface-specific thumbnail sizes
+  - images preserve intrinsic card aspect ratio and use uncropped rendering so the complete printing remains visible
+  - image mode omits duplicated name, owner/zone, and oracle labels; the printed card remains the primary identity presentation
+  - an accessible three-dot metadata control replaces an available image with every locally carried field that is present—name, mana cost, mana value, type line, oracle text, colors, supertypes, and subtypes—and toggles back to the image
+  - a missing or failed image never renders a broken-image icon or reserves an empty image gap; it enters the same metadata presentation directly
+  - metadata expands to the available width of its zone tile, scan-review entry, or enrichment header
+  - Remove, stack position where applicable, enrichment fields, and other workflow controls remain rendered and usable
+  - **zone collection:** preserve the two-column grid and bottom-to-top stack ordering; center the responsive image; keep the grid as the internal scroll owner within a viewport-relative cap
+  - **scan review:** use a 320px panel with a viewport-safe width cap; each entry uses the shared responsive presentation and Remove control; long sessions scroll inside the panel before it exceeds the camera viewport
+  - **enrichment:** use the shared responsive presentation in both **View all cards** and **Card-by-card** modes; keep enrichment fields full-width below
+  - the complete card container—not only the image—uses a thin, low-opacity ring; the same boundary applies when the image is replaced by the text-first fallback
+  - white, blue, black, red, and green map to warm ivory, blue, muted violet-charcoal, red, and green; multicolor cards use a stable WUBRG-ordered gradient containing their present colors
+  - empty, missing, or unrecognized colors use a cool light silver-gray ring that remains visually distinct from the warm ivory used for white cards
+  - identity rings are decorative and independent from the active app theme; they do not replace the card name/text, tint the container background, add a glow or animation, or become the sole card-identity cue
+  - responsive image sizing, metadata-toggle/error handling, color mapping, and ring treatment are defined once and reused by all three surfaces
+  - `CardSelectionPreview` is unchanged
+  - presentation only — no image caching, connectivity detection, explicit image retry, runtime metadata refresh, or change to card identity, printing-image selection, `ZoneCardItem`, `CardMetadataItem`, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, scan matching/stabilizer logic, or data-pipeline behavior
+- Related requirements:
+  - REQ-058
+  - REQ-008
+  - REQ-048
+  - DEC-018
+  - DEC-070
+  - DEC-076
+  - FLOW-001
+  - FLOW-002
+  - FLOW-006
+- Notes:
+  - responsive card heights use viewport-relative internal scroll caps in zone collection and enrichment
+  - fallback content renders only fields already present on the card; absent optional metadata does not produce invented values or require a fetch
+  - this uses the existing `colors` array, not true MTG color identity; adding a `colorIdentity` field is out of scope
+  - card colors use stable semantic presentation constants rather than the user-selectable palette tokens
+
+### DEC-081
+- Decision: The selected theme palette extends into a restrained ambient accent layer across the four staged screens and the answered/conversation view. Only the closed minimum surface inventory in REQ-060 shows a low-intensity palette accent at rest, strengthens that accent on hover/focus where interactive, and retains a stronger restrained treatment while selected or current. Static chrome stays neutral. This extends DEC-066/DEC-068 and uses DEC-079's existing motion baseline; it supersedes only DEC-068's blanket exclusion of neutral borders for the listed surfaces.
+- Status: confirmed
+- Context: The shipped theme palette reaches primary actions, status states, and scanner chrome, but much of the surrounding experience remains visually disconnected from the selected palette. The approved direction is restrained ambient theming: enough persistent accent to make the palette feel coherent, with enhanced feedback during interaction, without tinting the page background or turning every neutral surface into saturated theme chrome.
+- Impact:
+  - applies across game context, zone confirmation, zone collection, enrichment, and the answered/conversation view
+  - the exhaustive REQ-060 inventory is: game context's player-count disclosure row and phase/active-player control group (including conditional combat step); every zone-confirmation option row; every zone-collection tab and the active zone card-picker container; enrichment's view-mode control and rendered card-enrichment/question-submission working containers; and the answered/conversation view's frozen-context disclosure and follow-up composer
+  - enrichment current-state treatment follows the rendered mode: wizard card editing makes only the card-enrichment container current, list mode makes both the card-enrichment and question-submission containers current simultaneously, and completed wizard work makes only the question-submission container current
+  - agents must not infer additional ambient-accent surfaces from broad categories; surfaces outside that inventory remain neutral unless another existing requirement already themes them
+  - hover and `focus-visible` strengthen the same palette treatment; selected/current states may sustain the stronger restrained treatment so interaction hierarchy remains legible
+  - touch and keyboard users receive equivalent active/focus/current-state feedback; hover is never the sole carrier of state or meaning
+  - generic non-interactive page chrome, the dominant slate background, body text, and inactive structural containers remain neutral
+  - card-identity rings from DEC-078 remain derived from card colors, independent from the app palette, and free of palette glow/animation; surrounding interactive treatment must not replace or obscure those rings
+  - palette emphasis may color existing DEC-079 transitions and state-change cues, but adds no new motion trigger, timing system, animation library, or required animation; `prefers-reduced-motion` behavior remains authoritative
+  - reuses the existing four palette tokens (`accent`, `accent-strong`, `accent-soft`, `accent-contrast`) through shared semantic styling; no new palette values or token roles
+  - scanner reticle, convergence, lock/progress, and thumbs-up confirmation motion remain unchanged; existing DEC-068 scanner palette reach is preserved
+  - frontend presentation only — no change to workflow logic, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, stack ordering, or data-pipeline behavior
+- Related requirements:
+  - REQ-060
+  - REQ-044
+  - REQ-046
+  - REQ-059
+  - NFR-006
+  - NFR-011
+  - FLOW-001
+  - FLOW-007
+- Notes:
+  - approved visual direction: restrained ambient accents (Option B), with a baseline accent at rest and stronger hover/focus/current treatment
+  - rejected alternatives: interaction-only accents were too subtle to make the selected palette feel cohesive; full themed chrome was too loud and conflicted with the neutral-background hierarchy
+  - non-goals: new palettes, picker changes, palette-tinted page backgrounds, theme-specific component overrides, changing card-identity colors, re-animating scanner internals, or introducing a theming/animation framework

@@ -417,3 +417,29 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
 - Notes:
   - refines DEC-059/DEC-062/DEC-072/DEC-073/DEC-074 by separating "getting to a first reliable vote" from "converging once votes exist"
   - the two validation conditions are a boundary-setting device for refinement and QA, not two user-facing modes
+
+### DEC-083
+- Decision: While scanning, a positive alignment outline is drawn on the detected card in the viewfinder whenever the temporal stabilizer is in the `locking` convergence state, as an always-on affirmative "you're close — hold this angle" cue. The cue reuses the detector's computed 4-corner geometry (the same signal already surfaced additively for the DEC-060 debug overlay) and is triggered by the existing `locking` state (DEC-057) — no new confidence threshold and no change to the match-acceptance logic. It draws a clean card outline only (not the debug overlay's art-crop read region or text metrics), is styled as a static affirmative cue, is always active during scan with no toggle/setting/mode, and clears when the scanner returns to `searching` or completes the lock. This refines DEC-057 (the three-state convergence indicator) by adding a spatial on-card signal alongside the existing text indicator, and reuses the DEC-060 geometry mechanism without turning the opt-in developer debug overlay into a permanent feature; it supersedes none.
+- Status: confirmed
+- Context: With hands-free auto-add (DEC-056) and ease-of-lock tuning (DEC-059), the user's job at the table is to hold the card at an angle the scanner can lock — but nothing on the feed tells them when they are close. The three-state text indicator (DEC-057) reports `searching`/`locking`/`locked` in words and the frame-quality "good — hold steady" cue (DEC-074) reports capture quality, but neither points at the card on-screen, so the user still hunts for the sweet spot blind. The detector already computes the card's 4-corner outline every frame and it is already surfaced to the UI additively for the opt-in debug overlay (DEC-060); the stabilizer already exposes the `locking` state. So a positive on-card alignment cue is achievable purely by drawing the existing corner geometry, gated to the existing `locking` state, with affirmative styling — no new signal, threshold, or match-logic change. The opt-in debug overlay stays a developer diagnostic (DEC-060/DEC-065): this cue is the always-on, user-facing, single-purpose subset (outline only, no metrics), which is why it does not reopen DEC-057's removal of always-on raw status leaks.
+- Impact:
+  - during scan, whenever the stabilizer reports `locking` (a confident leader accumulating votes, DEC-057), the viewfinder draws an affirmative outline on the detected card region from the detector's computed corners; the outline clears on `searching` and when the lock completes/auto-adds
+  - the cue draws the card outline only — not the art-crop read region and not the text metrics that belong to the opt-in debug overlay (DEC-060/REQ-041), which remains default-off and behaviorally unchanged
+  - the cue is always active during scan with no toggle, setting, or mode; it is not gated behind the debug overlay and adds no new scan-screen control (DEC-065 no-clutter intent preserved)
+  - styling is a static affirmative treatment (palette/semantic-affirmative color consistent with the scanner UI theming, DEC-068); it is reduced-motion-safe by construction and adds no animation library — any optional subtle emphasis stays within the NFR-006 CSS-only, `prefers-reduced-motion`-aware carve-out
+  - the cue is read-only from existing detector/stabilizer signals; any field the stabilizer or camera surface must expose to pair `locking` with the current corners is an additive, pure change (DEC-057/DEC-060 precedent) with no change to distance/confidence/margin logic
+  - graceful degrade: if the detector corners cannot be cheaply threaded to the surface while the debug overlay is off, the outline simply does not draw and the three-state text indicator still communicates `locking`; the feature degrades rather than blocking (DEC-060 degrade precedent), and map-out confirms the corner wiring
+  - rendering happens only while `locking`, staying within the NFR-010 scan performance budget; no new data store
+  - frontend-only with zero scan-time network calls; no change to the shared resize+DCT+hash recipe (`recipe.ts`), `cardhashes.bin`, the matching/orientation/distance logic (`identify.ts`), the stabilizer lock gate (`lockDistance`/`marginMin`, DEC-059), the DEC-051/REQ-034 parity gates, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+- Related requirements:
+  - REQ-062
+  - REQ-040
+  - REQ-041
+  - REQ-037
+  - NFR-010
+  - NFR-006
+- Notes:
+  - refines DEC-057 (adds a spatial on-card convergence cue alongside the text indicator) and reuses the DEC-060 detector-corner geometry; it does not make the opt-in developer debug overlay a permanent feature
+  - distinct from the static alignment-template reticle (DEC-073), which shows where to place the card; this outline tracks the card the scanner is actually locking on
+  - triggering off the existing `locking` state (not a new threshold) honors this work's non-goal of not touching the fingerprint/matching algorithm or its match-acceptance thresholds
+  - the exact affirmative color and any subtle emphasis are outcome-validated presentation calibration (DEC-052/DEC-068 precedent), not product open questions

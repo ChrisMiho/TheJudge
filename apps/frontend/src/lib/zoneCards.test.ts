@@ -3,7 +3,7 @@ import type { CardMetadataItem, ZoneCardItem, ZoneId } from "../types";
 import {
   appendZoneCard,
   buildZoneCardFromMetadata,
-  removeZoneCardById,
+  removeZoneCardByInstanceId,
   validateZoneCardAdd
 } from "./zoneCards";
 import { buildAskAiRequest } from "./contextFlow/flow";
@@ -77,11 +77,21 @@ describe("zoneCards", () => {
     expect(validateZoneCardAdd([card], card, "hand")).toEqual({ ok: true });
   });
 
-  it("removeZoneCardById removes the matching card", () => {
-    const first = buildZoneCardFromMetadata(SAMPLE_CARD);
-    const second = buildZoneCardFromMetadata(BOLT_CARD);
-    const next = removeZoneCardById([first, second], "opt");
-    expect(next.map((card) => card.cardId)).toEqual(["lightning-bolt"]);
+  it("buildZoneCardFromMetadata assigns a unique instanceId per call", () => {
+    const a = buildZoneCardFromMetadata(SAMPLE_CARD);
+    const b = buildZoneCardFromMetadata(SAMPLE_CARD);
+    expect(a.instanceId).toBeDefined();
+    expect(b.instanceId).toBeDefined();
+    expect(a.instanceId).not.toBe(b.instanceId);
+  });
+
+  it("removeZoneCardByInstanceId removes only the matching instance, leaving same-cardId duplicate intact", () => {
+    const copy1 = buildZoneCardFromMetadata(SAMPLE_CARD);
+    const copy2 = buildZoneCardFromMetadata(SAMPLE_CARD);
+    const result = removeZoneCardByInstanceId([copy1, copy2], copy1.instanceId!);
+    expect(result).toHaveLength(1);
+    expect(result[0]?.instanceId).toBe(copy2.instanceId);
+    expect(result[0]?.cardId).toBe("opt");
   });
 
   it("buildAskAiRequest omits empty zone keys from synced game context", () => {

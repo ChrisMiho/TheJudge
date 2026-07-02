@@ -11,7 +11,7 @@ export function StagedStepHeader({ stepName, onBrandClick }: StagedStepHeaderPro
           <button
             type="button"
             onClick={onBrandClick}
-            className="staged-step-brand bg-gradient-to-r from-accent-soft to-accent-strong bg-clip-text text-3xl font-bold tracking-tight text-transparent"
+            className="staged-step-brand motion-hover motion-press motion-focus bg-gradient-to-r from-accent-soft to-accent-strong bg-clip-text text-3xl font-bold tracking-tight text-transparent"
           >
             TheJudge
           </button>

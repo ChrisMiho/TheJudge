@@ -14,7 +14,7 @@ Its purpose is to help users:
 This product is:
 - an assistant
 - a stack-focused gameplay aid
-- a flow-validation tool in its current core product form
+- a rules assistant that helps players navigate MTG rules
 
 This product is not:
 - an official judge
@@ -22,11 +22,11 @@ This product is not:
 - a full board-state simulator
 
 ## Current Product Status
-The core product validates one primary hypothesis:
+The core product's primary hypothesis is considered validated (past MVP):
 
-**Players will use a lightweight stack assistant if it is fast to use during real gameplay.**
+**Players will use a lightweight rules assistant if it is fast to use during real gameplay.**
 
-The shipped baseline includes staged zone flow, `GameContext`, and plain-text answers. Local development uses `ASK_AI_PROVIDER=mock` by default, while live answer generation is available through `ASK_AI_PROVIDER=openai` under `DEC-020`.
+The shipped baseline includes staged zone flow, `GameContext`, and plain-text answers. The focus now is refining the existing functionality toward a first production deployment to gather real user feedback; the app is not yet deployed to production (`DEC-080`). Local development uses `ASK_AI_PROVIDER=mock` by default, while live answer generation is available through `ASK_AI_PROVIDER=openai` under `DEC-020`.
 
 The product intentionally keeps context structured but lightweight:
 - game context (player count, life totals, active player when known, and turn phase)

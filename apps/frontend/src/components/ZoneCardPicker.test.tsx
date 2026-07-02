@@ -1,9 +1,9 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ZoneCardPicker } from "./ZoneCardPicker";
 import type { ScanConvergence } from "../hooks/useScanCapture";
-import type { ZoneCardItem } from "../types";
+import type { ZoneCardItem, ZoneId } from "../types";
 
 // The camera surface is exercised in ScanCameraSurface.test.tsx; here we only
 // care about the picker chrome around it (no selectable list, no Accept gate).
@@ -23,18 +23,34 @@ const searching: ScanConvergence = {
   inZone: false
 };
 
-function makeZoneCard(cardId: string, name: string): ZoneCardItem {
-  return { cardId, name, oracleText: "", imageUrl: "", manaCost: "", manaValue: 0, typeLine: "", colors: [], supertypes: [], subtypes: [] };
+function makeZoneCard(cardId: string, name: string, overrides: Partial<ZoneCardItem> = {}): ZoneCardItem {
+  return {
+    cardId,
+    name,
+    oracleText: "",
+    imageUrl: "",
+    manaCost: "",
+    manaValue: 0,
+    typeLine: "",
+    colors: [],
+    supertypes: [],
+    subtypes: [],
+    ...overrides
+  };
 }
 
 function renderPicker(
   scanOverrides: Partial<Parameters<typeof ZoneCardPicker>[0]["scan"]> = {},
-  pickerOverrides: { cards?: ZoneCardItem[]; onRemoveCard?: (cardId: string) => void } = {}
+  pickerOverrides: {
+    zoneId?: ZoneId;
+    cards?: ZoneCardItem[];
+    onRemoveCard?: (cardId: string) => void;
+  } = {}
 ) {
   const onExitToManual = vi.fn();
   render(
     <ZoneCardPicker
-      zoneId="stack"
+      zoneId={pickerOverrides.zoneId ?? "stack"}
       cards={pickerOverrides.cards ?? []}
       activePlayers={["Player 1"]}
       displayNamesByPlayer={{ "Player 1": undefined } as never}
@@ -61,7 +77,7 @@ function renderPicker(
         convergence: searching,
         addConfirmation: null,
         scanDebug: null,
-        sessionCardIds: [],
+        sessionInstanceIds: [],
         onOpen: () => undefined,
         onExitToManual,
         identify: () => ({ matched: false, was_rotated: false, candidates: [] }),
@@ -132,6 +148,15 @@ describe("ZoneCardPicker scan focus (Slice C)", () => {
 });
 
 describe("ZoneCardPicker card grid", () => {
+  it("marks the rendered active-zone picker as a current ambient accent surface", () => {
+    renderPicker({ isOpen: false });
+
+    expect(screen.getByLabelText("Stack search input").closest(".ambient-accent-surface")).toHaveAttribute(
+      "data-accent-current",
+      "true"
+    );
+  });
+
   it("renders zone cards in a 2-column grid with overflow-y-auto and zone-card-grid class", () => {
     renderPicker(
       { isOpen: false },
@@ -144,20 +169,159 @@ describe("ZoneCardPicker card grid", () => {
 
   it("exposes slim density hooks on zone card tiles", () => {
     renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt")] });
-    const tile = screen.getByText("Opt").closest("div");
+    const tile = screen.getByRole("button", { name: "Remove Opt from Stack" }).closest(".zone-card-tile");
     expect(tile).toHaveClass("zone-card-tile");
   });
 
-  it("calls onRemoveCard with the correct cardId when Remove is clicked", async () => {
+  it("adds token-driven entrance and remove-exit hooks to card tiles", () => {
+    renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt")] });
+
+    const removeButton = screen.getByRole("button", { name: "Remove Opt from Stack" });
+    expect(removeButton.closest(".zone-card-tile")).toHaveClass(
+      "enrichment-card-enter",
+      "card-state-remove"
+    );
+    expect(removeButton).toHaveClass("card-state-remove-trigger");
+  });
+
+  it("uses a centered 80%-width image with no duplicated card name and keeps controls below it", async () => {
+    const user = userEvent.setup();
+    renderPicker(
+      { isOpen: false },
+      { cards: [makeZoneCard("opt", "Opt", { imageUrl: "https://img.example/opt.jpg" })] }
+    );
+
+    const image = screen.getByRole("img", { name: "Opt" });
+    const tile = image.closest(".zone-card-tile") as HTMLElement;
+    expect(image).toHaveClass(
+      "zone-card-tile-image",
+      "mx-auto",
+      "w-4/5",
+      "h-auto",
+      "object-contain"
+    );
+    expect(within(tile).queryByText("Opt")).not.toBeInTheDocument();
+    expect(screen.getByText("bottom & top")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove Opt from Stack" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Show card metadata for Opt" })
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Show card metadata for Opt" }));
+    expect(within(tile).getByTestId("card-presentation-fallback")).toBeInTheDocument();
+    expect(within(tile).getByText("Opt")).toBeInTheDocument();
+  });
+
+  it("does not duplicate the owner label on an image-bearing non-stack card", () => {
+    renderPicker(
+      { isOpen: false },
+      {
+        zoneId: "battlefield",
+        cards: [
+          makeZoneCard("opt", "Opt", {
+            imageUrl: "https://img.example/opt.jpg",
+            owner: "Player 1"
+          })
+        ]
+      }
+    );
+
+    const tile = screen.getByRole("img", { name: "Opt" }).closest(".zone-card-tile") as HTMLElement;
+    expect(within(tile).queryByText("Opt")).not.toBeInTheDocument();
+    expect(within(tile).queryByText("Player 1")).not.toBeInTheDocument();
+  });
+
+  it("applies the identity ring to the complete image-bearing tile", () => {
+    renderPicker(
+      { isOpen: false },
+      {
+        cards: [
+          makeZoneCard("opt", "Opt", {
+            imageUrl: "https://img.example/opt.jpg",
+            colors: ["U"]
+          })
+        ]
+      }
+    );
+
+    const tile = screen.getByRole("img", { name: "Opt" }).closest(".zone-card-tile");
+    expect(tile).toHaveClass("card-identity-ring");
+    expect(tile).not.toHaveClass("ambient-accent-surface");
+    expect(tile).toHaveStyle("--card-identity-ring: rgb(14 165 233 / 0.55)");
+  });
+
+  it("uses a full-width metadata fallback while preserving stack position and controls", () => {
+    renderPicker(
+      { isOpen: false },
+      {
+        cards: [
+          makeZoneCard("urza", "Urza, Lord High Artificer", {
+            manaCost: "{2}{U}{U}",
+            manaValue: 0,
+            typeLine: "Legendary Creature — Human Artificer",
+            oracleText: "When Urza enters, create a Construct.",
+            colors: ["U", "W"],
+            supertypes: ["Legendary"],
+            subtypes: ["Human", "Artificer"]
+          })
+        ]
+      }
+    );
+
+    const fallback = screen.getByTestId("card-presentation-fallback");
+    const tile = fallback.closest(".zone-card-tile");
+    expect(fallback).toHaveClass("w-full");
+    expect(tile).toHaveClass("card-identity-ring");
+    expect(tile).toHaveStyle(
+      "--card-identity-ring: linear-gradient(90deg, rgb(248 231 185 / 0.55), rgb(14 165 233 / 0.55))"
+    );
+    expect(within(fallback).getByText("Urza, Lord High Artificer")).toBeInTheDocument();
+    expect(within(fallback).getByText("{2}{U}{U}")).toBeInTheDocument();
+    expect(within(fallback).getByText("0")).toBeInTheDocument();
+    expect(within(fallback).getByText("Legendary Creature — Human Artificer")).toBeInTheDocument();
+    expect(within(fallback).getByText("When Urza enters, create a Construct.")).toBeInTheDocument();
+    expect(within(fallback).getByText("U, W")).toBeInTheDocument();
+    expect(within(fallback).getByText("Legendary")).toBeInTheDocument();
+    expect(within(fallback).getByText("Human, Artificer")).toBeInTheDocument();
+    expect(screen.getByText("bottom & top")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove Urza, Lord High Artificer from Stack" })).toBeInTheDocument();
+  });
+
+  it("replaces a failed tile image with the readable fallback", () => {
+    renderPicker(
+      { isOpen: false },
+      {
+        cards: [
+          makeZoneCard("opt", "Opt", {
+            imageUrl: "https://img.example/missing.jpg",
+            oracleText: "Scry 1, then draw a card."
+          })
+        ]
+      }
+    );
+
+    fireEvent.error(screen.getByRole("img", { name: "Opt" }));
+
+    expect(screen.queryByRole("img", { name: "Opt" })).not.toBeInTheDocument();
+    expect(within(screen.getByTestId("card-presentation-fallback")).getByText("Scry 1, then draw a card.")).toBeInTheDocument();
+  });
+
+  it("calls onRemoveCard with the instanceId of the removed card", async () => {
     const user = userEvent.setup();
     const onRemoveCard = vi.fn();
     renderPicker(
       { isOpen: false },
-      { cards: [makeZoneCard("opt", "Opt"), makeZoneCard("bolt", "Lightning Bolt")], onRemoveCard }
+      {
+        cards: [
+          makeZoneCard("opt", "Opt", { instanceId: "iid-opt" }),
+          makeZoneCard("bolt", "Lightning Bolt", { instanceId: "iid-bolt" })
+        ],
+        onRemoveCard
+      }
     );
     await user.click(screen.getByRole("button", { name: "Remove Opt from Stack" }));
     expect(onRemoveCard).toHaveBeenCalledTimes(1);
-    expect(onRemoveCard).toHaveBeenCalledWith("opt");
+    expect(onRemoveCard).toHaveBeenCalledWith("iid-opt");
   });
 
   it("renders stack position labels on tiles", () => {
@@ -177,15 +341,18 @@ describe("ZoneCardPicker card grid", () => {
 
 describe("ZoneCardPicker scan review bubble", () => {
   it("does not render the bubble when nothing was scanned this session", () => {
-    renderPicker({ sessionCardIds: [] }, { cards: [makeZoneCard("opt", "Opt")] });
+    renderPicker({ sessionInstanceIds: [] }, { cards: [makeZoneCard("opt", "Opt")] });
     expect(screen.queryByLabelText(/^Scanned this session:/)).not.toBeInTheDocument();
   });
 
   it("counts this-session adds and expands to the scanned cards", async () => {
     const user = userEvent.setup();
+    const optCard = makeZoneCard("opt", "Opt", { instanceId: "iid-opt" });
+    const boltCard = makeZoneCard("bolt", "Lightning Bolt", { instanceId: "iid-bolt" });
+    const manualCard = makeZoneCard("manual", "Counterspell");
     renderPicker(
-      { sessionCardIds: ["opt", "bolt"] },
-      { cards: [makeZoneCard("opt", "Opt"), makeZoneCard("bolt", "Lightning Bolt"), makeZoneCard("manual", "Counterspell")] }
+      { sessionInstanceIds: ["iid-opt", "iid-bolt"] },
+      { cards: [optCard, boltCard, manualCard] }
     );
 
     const counter = screen.getByLabelText("Scanned this session: 2");
@@ -203,8 +370,8 @@ describe("ZoneCardPicker scan review bubble", () => {
 
   it("renders the review bubble counter with accent palette tokens, not a fixed hue", () => {
     renderPicker(
-      { sessionCardIds: ["opt"] },
-      { cards: [makeZoneCard("opt", "Opt")] }
+      { sessionInstanceIds: ["iid-opt"] },
+      { cards: [makeZoneCard("opt", "Opt", { instanceId: "iid-opt" })] }
     );
     const bubble = screen.getByLabelText("Scanned this session: 1");
     expect(bubble).toHaveClass("bg-accent/90", "text-accent-contrast");
@@ -215,19 +382,22 @@ describe("ZoneCardPicker scan review bubble", () => {
     const user = userEvent.setup();
     const onRemoveCard = vi.fn();
     const confirmSpy = vi.spyOn(window, "confirm");
-    renderPicker({ sessionCardIds: ["opt"] }, { cards: [makeZoneCard("opt", "Opt")], onRemoveCard });
+    renderPicker(
+      { sessionInstanceIds: ["iid-opt"] },
+      { cards: [makeZoneCard("opt", "Opt", { instanceId: "iid-opt" })], onRemoveCard }
+    );
 
     await user.click(screen.getByLabelText("Scanned this session: 1"));
     await user.click(screen.getByRole("button", { name: "Remove Opt from scan review" }));
 
     expect(onRemoveCard).toHaveBeenCalledTimes(1);
-    expect(onRemoveCard).toHaveBeenCalledWith("opt");
+    expect(onRemoveCard).toHaveBeenCalledWith("iid-opt");
     expect(confirmSpy).not.toHaveBeenCalled();
     confirmSpy.mockRestore();
   });
 
   it("drops a card from the bubble once it leaves the zone list (live update)", () => {
-    renderPicker({ sessionCardIds: ["opt"] }, { cards: [] });
+    renderPicker({ sessionInstanceIds: ["iid-opt"] }, { cards: [] });
     expect(screen.queryByLabelText(/^Scanned this session:/)).not.toBeInTheDocument();
   });
 });

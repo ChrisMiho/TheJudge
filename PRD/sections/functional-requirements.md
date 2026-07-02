@@ -126,7 +126,7 @@
   - if a selected card already exists in the stack, add is blocked
   - UI shows a message that duplicates are not supported yet
 - Constraints:
-  - this is temporary and only for flow validation
+  - this is a temporary product constraint, not a long-term gameplay rule
 - Dependencies:
   - stack state
 - Notes:
@@ -903,7 +903,7 @@
   - palette definitions retain a single authoritative frontend source; no duplicated color constants introduced by the migration
   - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, the scan-matching engine, or data-pipeline behavior
   - no arbitrary RGB/hex picker, per-component theme overrides, palette-tinted backgrounds, server-synced preferences, accounts, dark/light mode redesign, or theming-framework migration
-  - neutral slate chrome (cards, panels, borders, body text) stays neutral by design and is not migrated onto accent tokens
+  - static neutral slate chrome stays neutral by design; DEC-081 / REQ-060 permits restrained palette-derived treatment only on REQ-060's closed minimum surface inventory
 - Dependencies:
   - DEC-068
   - DEC-066
@@ -1206,3 +1206,178 @@
 - Notes:
   - this requirement intentionally focuses on acquisition — getting to the first trustworthy identity vote — because owner retest showed lock is quick once the card identifies
   - scan stand validation is an ideal-case check and operator recommendation, not a prerequisite for Mac-webcam usability
+
+### REQ-058
+- Title: Consistent legible card presentation and identity highlighting
+- Priority: medium
+- Description: Card containers in zone collection, expanded scan review, and enrichment must use one responsive image-first presentation, on-demand local metadata, and a restrained ring derived from the existing card colors (DEC-078).
+- Acceptance Criteria:
+  - `ZoneCardPicker`, expanded `ScanReviewBubble`, and `EnrichmentStep` use the same shared card-presentation boundary
+  - an available card image is centered at 80% of its card container width, preserves its intrinsic aspect ratio, and renders without cropping
+  - image mode hides duplicated name, owner/zone, and oracle labels while retaining Remove, stack position where applicable, enrichment inputs, and other workflow controls
+  - an accessible three-dot control replaces an available image with local metadata and toggles back to the image
+  - `ZoneCardPicker` preserves its two-column grid, bottom-to-top stack ordering, Remove behavior, and viewport-relative internal scroll cap
+  - expanded `ScanReviewBubble` uses a 320px width with a viewport-safe cap and retains its counter and one-tap Remove behavior
+  - long scan-review sessions scroll inside the expanded panel before the panel would exceed the available camera viewport; the top-right counter and one-tap removal behavior remain unchanged
+  - `EnrichmentStep` uses the shared presentation in both **View all cards** and **Card-by-card** modes; enrichment fields remain full-width below without changing either mode's behavior
+  - when `imageUrl` is empty or the image emits a load error, no broken-image icon or empty image gap remains; the surface replaces the image with a text-first card panel
+  - the metadata panel expands to the available card-container width and renders every locally carried field that is present: name, mana cost, mana value, type line, oracle text, colors, supertypes, and subtypes
+  - the fallback never invents values for absent optional fields and does not fetch additional metadata; Remove, stack position where applicable, enrichment fields, and other workflow controls remain rendered and usable
+  - mixed image/metadata content may produce different tile or row heights, but the zone, enrichment, and scan-review internal scroll boundaries remain effective
+  - every complete card tile, scan-review entry, and enrichment row uses a thin, low-opacity identity ring around the container whether it contains an image or the text-first fallback
+  - single-color cards map W/U/B/R/G to warm ivory, blue, muted violet-charcoal, red, and green; white remains visually distinguishable from the cool light silver-gray colorless treatment
+  - multicolor cards use a stable WUBRG-ordered gradient containing every recognized color present in the existing `colors` array
+  - cards with an empty, missing, or wholly unrecognized `colors` value use the cool light silver-gray ring without failing rendering
+  - identity rings remain decorative: card text continues to identify the card, and the ring adds no glow, background tint, animation, or dependency on the selected app theme palette
+  - automated tests cover shared 80%-width responsive sizing, uncropped rendering, metadata toggle/reset behavior, empty-URL and image-error fallback paths, complete available-metadata rendering, absence of a broken image/empty gap, zone and enrichment viewport caps, scan-panel viewport containment/internal scrolling, both enrichment modes, all five single-color mappings, stable multicolor ordering, silver-gray empty/missing/unknown fallback, and ring application to image-bearing and text-fallback containers on all three surfaces
+- Constraints:
+  - presentation only; use existing `colors` and do not add true `colorIdentity`, image caching, connectivity detection, explicit image retry, runtime metadata refresh, or any change to `CardSelectionPreview`, card identity, printing-image selection, `ZoneCardItem`, `CardMetadataItem`, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, scan matching/stabilizer logic, or data-pipeline behavior
+  - preserve internal scrolling in zone collection, enrichment, and scan review
+  - define shared image sizing, metadata-toggle/error handling, fallback rendering, semantic color mapping, and ring treatment once and reuse them across all three surfaces; do not duplicate sizing, image-fit, fallback-field, or card-color logic
+  - card-color presentation constants stay separate from user-selectable theme palette tokens
+- Dependencies:
+  - DEC-078
+  - REQ-008
+  - REQ-048
+  - DEC-018
+  - DEC-070
+  - DEC-076
+  - FLOW-001
+  - FLOW-002
+  - FLOW-006
+- Notes:
+  - `CardSelectionPreview` remains the visual calibration reference, not an additional implementation target
+
+### REQ-059
+- Title: App-wide UI motion & visual-feedback polish pass
+- Priority: medium
+- Description: The full staged flow (game context, zone confirmation, zone collection, enrichment) and the answered/conversation view receive a decorative-motion and visual-feedback polish pass so interactions, transitions, and state changes feel smooth and intentional rather than abrupt — micro-transitions, easing, hover/press/focus states, and add/remove/success/error state-change cues — with no behavior, contract, stack-ordering, or scan-engine change (DEC-079).
+- Acceptance Criteria:
+  - the four staged steps and the answered/conversation view present decorative motion on at least: interactive control hover/press/focus, mounting/unmounting of panels and cards, and add/remove/success/error state changes
+  - motion is implemented with CSS (transitions and/or keyframes); no animation library or animation-framework dependency is added
+  - when `prefers-reduced-motion: reduce` is set, decorative motion is reduced or disabled and every flow remains fully completable; no decorative motion gates any action
+  - motion uses transform/opacity-driven techniques where practical and does not introduce visible jank or regress the card-add (<5s) or Decrypt Stack (<20s) interaction targets (NFR-001, NFR-002)
+  - the existing functional wait-state motion (`AskAiWaitingPanel`, inline follow-up Send spinner) continues to render unchanged (DEC-031, DEC-041)
+  - the scan camera surface convergence/lock/thumbs-up motion is left unchanged (no re-animation of `ScanCameraSurface` internals)
+  - no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, stack-ordering semantics, or data-pipeline behavior
+  - a `prefers-reduced-motion` verification is recorded (automated test and/or explicit manual check) demonstrating decorative motion is suppressed and flows still complete
+- Constraints:
+  - presentation only; do not add new screens, reorder or rename steps, or alter flow logic
+  - reuse shared motion tokens/utilities/CSS rather than duplicating per-component easing/duration constants; shared motion values have a single authoritative definition
+  - stay within the lightweight React + Vite + Tailwind stack; no JS animation library/framework without a new confirmed decision
+  - do not re-animate or otherwise disturb the tuned scan camera convergence UX (DEC-057, DEC-062, DEC-072, DEC-073)
+- Dependencies:
+  - DEC-079
+  - NFR-006
+  - NFR-001
+  - NFR-002
+  - DEC-031
+  - DEC-041
+  - FLOW-001
+  - FLOW-002
+  - FLOW-006
+- Notes:
+  - "broad motion freedom" was the approved direction; guardrails (CSS-only, reduced-motion-aware, performance-safe) keep the pass lightweight
+  - the proximity-driven scan-outline idea is deferred to its own refinement (Q-002), not part of this requirement
+
+### REQ-060
+- Title: Restrained ambient palette accents
+- Priority: medium
+- Description: The frontend must make the selected theme palette feel cohesive across the four staged screens and the answered/conversation view by giving the closed minimum surface inventory below a faint palette accent at rest, strengthening it during hover/focus where interactive, and sustaining a stronger restrained treatment for selected/current states.
+- Acceptance Criteria:
+  - game context applies the resting treatment to the player-count disclosure row and the phase/active-player control group, including the conditional combat-step control; focused controls strengthen the treatment
+  - zone confirmation applies the resting treatment to every zone option row; hover/focus strengthens it, and each checked row retains the stronger selected treatment
+  - zone collection applies the resting treatment to every zone tab and the active zone card-picker container; hover/focus strengthens interactive tabs, and the active tab and card-picker container retain the stronger current treatment
+  - enrichment applies the resting treatment to the view-mode control and each rendered card-enrichment/question-submission working container; hover/focus strengthens interactive controls
+  - enrichment current-state treatment follows the rendered mode: during wizard card editing only the card-enrichment container retains the stronger treatment; in list mode both the card-enrichment and question-submission containers retain it simultaneously; after wizard completion only the question-submission container retains it
+  - the answered/conversation view applies the resting treatment to the frozen-context disclosure and follow-up composer; hover/focus strengthens their interactive controls, and the open frozen-context disclosure retains the stronger current treatment
+  - this inventory is exhaustive for REQ-060; surfaces outside it remain neutral unless another existing requirement, especially REQ-046, already themes them
+  - hovering an inventoried interactive item strengthens its palette-derived border/glow/icon treatment without obscuring text, controls, or content
+  - keyboard `focus-visible`, touch active state where applicable, and selected/current state provide equivalent enhanced feedback; no state or meaning is communicated by hover alone
+  - selected/current surfaces retain the stronger restrained treatment after pointer hover ends while that state remains true
+  - switching palettes through FLOW-007 immediately retints both resting and enhanced accent treatments without resetting or changing workflow state
+  - the dominant page background remains palette-agnostic slate and is not palette-tinted
+  - DEC-078 card-identity rings remain derived from card colors, keep their existing no-glow/no-animation behavior, and are not replaced, recolored, or obscured by the ambient palette treatment
+  - existing DEC-079 transitions and state-change cues may carry brief palette-colored emphasis, but no new motion trigger or timing system is introduced; `prefers-reduced-motion` continues to reduce or disable decorative motion
+  - scanner reticle, convergence, lock/progress, and thumbs-up confirmation motion remain unchanged; existing scanner palette styling from REQ-046 remains valid
+  - automated coverage verifies the shared resting/enhanced/current treatment and every inventoried surface across the staged flow and answered view; a visual review checks the full inventory with all five palettes, explicitly including amber and rose, for restraint and readable contrast
+- Constraints:
+  - reuse only the existing `accent`, `accent-strong`, `accent-soft`, and `accent-contrast` palette tokens; do not add token roles or per-palette values
+  - define resting, enhanced, and selected/current treatment once through shared semantic styling and reuse it; do not duplicate intensity values across components
+  - presentation only; no new screens, flow changes, theme control behavior, `AskAiRequest`, Zod schema, `GameContext`, prompt, backend, card metadata, scanner engine, stack-ordering, or data-pipeline changes
+  - stay CSS-based and within the existing React/Vite/Tailwind stack; no theming or animation framework
+  - preserve readable contrast, touch-friendly controls, mobile performance, and `prefers-reduced-motion`
+- Dependencies:
+  - DEC-081
+  - DEC-066
+  - DEC-068
+  - DEC-078
+  - DEC-079
+  - REQ-044
+  - REQ-046
+  - REQ-059
+  - NFR-006
+  - NFR-011
+  - FLOW-001
+  - FLOW-007
+- Notes:
+  - this expands palette expression, not the palette model or selection mechanism
+
+### REQ-061
+- Title: Per-instance identity for duplicate zone cards
+- Priority: medium
+- Description: Each zone card must have a stable per-instance identity so that when the same card is added more than once to a non-stack zone, each copy is an independent instance that renders, is removed, and is edited on its own without affecting its siblings. Oracle-level identity (`cardId`) and the backend payload contract are unchanged.
+- Acceptance Criteria:
+  - every `ZoneCardItem` is assigned a stable, unique `instanceId` once at add time, via the single add path used by both manual add and scan auto-add
+  - when the same card is added twice to a non-stack zone, two independent entries exist; removing one leaves the other intact
+  - editing one duplicate's enrichment fields (owner, targets, notes, mana spent) does not change any other copy
+  - React list keys for zone cards, scan-review entries, and enrichment card rows are derived from `instanceId` (no `cardId`-based key collisions across duplicates)
+  - the outbound `POST /api/ask-ai` payload contains no `instanceId` field on any zone card; the request validates against the existing `.strict()` `zoneCardItemSchema` unchanged
+  - the stack duplicate block (REQ-009/FLOW-004) still blocks duplicate stack adds; `instanceId` does not enable duplicate stack cards
+- Constraints:
+  - `instanceId` is frontend-only and non-semantic: not persisted to the backend, not shown to the user, not part of prompt, rulings, or duplicate-stack identity
+  - generate `instanceId` with `crypto.randomUUID()` plus a guarded fallback (reuse the existing `debugLogger.ts` id pattern); do not add a dependency
+  - strip `instanceId` at the single serialization boundary `buildAskAiRequest`; do not alter `AskAiRequest`, the Zod request schema, `buildPromptContext`/`buildPromptText`, the provider boundary, or any product-facing endpoint
+  - do not change duplicate-add policy, scan capture/fingerprinting/matching, or stack-order semantics (DEC-004/DEC-005)
+  - `ContextTarget` "card" references remain oracle-level (zone + `cardId` + `cardName`); instance-specific card targeting is out of scope
+- Dependencies:
+  - DEC-082
+  - DEC-007
+  - REQ-009
+  - FLOW-002
+  - FLOW-004
+  - FLOW-006
+- Notes:
+  - bug fix: scanned/manually-added duplicates currently share one `cardId`-keyed identity, so removing one removes all and editing one edits all
+
+### REQ-062
+- Title: Positive lock-on alignment outline
+- Priority: medium
+- Description: While scanning, draw an affirmative outline on the detected card in the viewfinder whenever the stabilizer is in the `locking` convergence state, as an always-on positive "you're close — hold this angle" cue that helps the user hold the right angle and complete the match faster. It reuses the detector's computed 4-corner geometry (already surfaced additively for the debug overlay) and is triggered by the existing `locking` state — no new confidence threshold and no change to match-acceptance logic (DEC-083). Frontend-only, read-only from existing detector/stabilizer signals.
+- Acceptance Criteria:
+  - during scan, whenever the stabilizer reports `locking` (a confident leader accumulating votes, DEC-057), the viewfinder draws an affirmative outline on the detected card region from the detector's computed corners; the outline clears when the scanner returns to `searching` and when the lock completes/auto-adds (DEC-083)
+  - the cue draws the card outline only — not the art-crop read region and not the text metrics, which remain exclusive to the opt-in debug overlay (REQ-041/DEC-060); the debug overlay stays default-off and behaviorally unchanged
+  - the cue is always active during scan with no toggle, setting, or mode, and adds no new scan-screen control; it must not overlap or intercept the top-right scanned-cards review/remove hit area (DEC-065)
+  - styling is a static affirmative treatment consistent with the scanner UI theming (DEC-068); it is reduced-motion-safe, and any optional subtle emphasis stays within the NFR-006 CSS-only, `prefers-reduced-motion`-aware carve-out with no animation library
+  - the outline is distinct from the static alignment-template reticle (which shows where to place the card, DEC-073); this outline tracks the card the scanner is actually locking on
+  - the cue reads existing detector/stabilizer signals only; any field the stabilizer or camera surface must expose to pair the `locking` state with the current corners is additive and pure, with no change to distance/confidence/margin logic
+  - graceful degrade: if the detector corners cannot be cheaply threaded to the surface while the debug overlay is off, the outline does not draw and the three-state text indicator still communicates `locking`; the wiring gap is recorded rather than blocking the feature (DEC-060 degrade precedent)
+  - rendering happens only while `locking`, staying within the NFR-010 scan performance budget; existing scan/zone-collection/stabilizer tests are extended, not replaced
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - do not change the identification/hashing/distance accuracy logic, the shared `recipe.ts` recipe, `cardhashes.bin`, `identify.ts`, or the stabilizer lock gate (`lockDistance`/`marginMin`, DEC-059); the cue is read-only visualization
+  - trigger off the existing `locking` state only; do not introduce a new confidence threshold or match-acceptance threshold (this work's non-goal)
+  - do not make the opt-in developer debug overlay a permanent feature; reuse only its detector-corner geometry mechanism
+  - the affirmative color and any subtle emphasis are outcome-validated presentation calibration, not product open questions (DEC-052/DEC-068 precedent)
+- Dependencies:
+  - REQ-037
+  - REQ-040
+  - REQ-041
+  - DEC-083
+  - DEC-057
+  - DEC-060
+  - NFR-010
+  - NFR-006
+- Notes:
+  - refines DEC-057's three-state convergence indicator by adding a spatial on-card cue alongside the existing text indicator
+  - the live locking outline differs from the static alignment-template guide frame (REQ-041 note) and from the opt-in debug overlay's full geometry + metrics

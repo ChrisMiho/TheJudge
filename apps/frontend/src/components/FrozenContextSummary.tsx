@@ -78,7 +78,9 @@ export function FrozenContextSummary({ frozenGameContext }: FrozenContextSummary
   return (
     <section
       aria-label="Frozen game context"
-      className="frozen-context-summary rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+      data-expanded={expanded}
+      data-accent-current={expanded}
+      className="frozen-context-summary ambient-accent-surface ambient-accent-interactive rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
@@ -119,7 +121,7 @@ export function FrozenContextSummary({ frozenGameContext }: FrozenContextSummary
       )}
 
       {expanded && (
-        <div className="mt-4 space-y-4 border-t border-zinc-700/60 pt-4">
+        <div className="frozen-context-disclosure mt-4 space-y-4 border-t border-zinc-700/60 pt-4">
           {players.length > 0 && (
             <div className="space-y-1">
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">Setup</p>

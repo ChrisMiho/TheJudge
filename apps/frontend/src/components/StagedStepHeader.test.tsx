@@ -19,4 +19,14 @@ describe("StagedStepHeader", () => {
     expect(screen.getByRole("heading", { name: "TheJudge" })).toHaveClass("staged-step-brand");
     expect(screen.getByRole("heading", { name: "Zone confirmation" })).toHaveClass("staged-step-name");
   });
+
+  it("adds shared interaction feedback when the brand is clickable", () => {
+    render(<StagedStepHeader stepName="Game context" onBrandClick={() => undefined} />);
+
+    expect(screen.getByRole("button", { name: "TheJudge" })).toHaveClass(
+      "motion-hover",
+      "motion-press",
+      "motion-focus"
+    );
+  });
 });

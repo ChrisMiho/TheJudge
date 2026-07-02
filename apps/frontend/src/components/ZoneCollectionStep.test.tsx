@@ -1,4 +1,5 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ZoneCollectionStep } from "./ZoneCollectionStep";
 import type { ScanConvergence } from "../hooks/useScanCapture";
@@ -27,7 +28,7 @@ const searching: ScanConvergence = {
   inZone: false
 };
 
-function makeZoneCard(cardId: string, name: string): ZoneCardItem {
+function makeZoneCard(cardId: string, name: string, overrides: Partial<ZoneCardItem> = {}): ZoneCardItem {
   return {
     cardId,
     name,
@@ -38,7 +39,8 @@ function makeZoneCard(cardId: string, name: string): ZoneCardItem {
     typeLine: "",
     colors: [],
     supertypes: [],
-    subtypes: []
+    subtypes: [],
+    ...overrides
   };
 }
 
@@ -66,10 +68,14 @@ function mockScanCapture(isOpen: boolean): void {
   });
 }
 
-function renderStep(cards: ZoneCardItem[] = [makeZoneCard("opt", "Opt")], statusMessage: string | null = null): void {
+function renderStep(
+  cards: ZoneCardItem[] = [makeZoneCard("opt", "Opt")],
+  statusMessage: string | null = null,
+  selectedZones: Parameters<typeof ZoneCollectionStep>[0]["selectedZones"] = ["stack"]
+): void {
   render(
     <ZoneCollectionStep
-      selectedZones={["stack"]}
+      selectedZones={selectedZones}
       zones={{ stack: cards }}
       onZonesChange={() => undefined}
       cardMetadata={[]}
@@ -96,6 +102,50 @@ afterEach(() => {
 });
 
 describe("ZoneCollectionStep scan focus", () => {
+  it("adds shared interaction feedback to zone tabs and flow actions", () => {
+    mockScanCapture(false);
+    renderStep();
+
+    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveClass(
+      "motion-hover",
+      "motion-press",
+      "motion-focus"
+    );
+    expect(screen.getByRole("button", { name: "Back" })).toHaveClass(
+      "motion-hover",
+      "motion-press",
+      "motion-focus"
+    );
+    expect(screen.getByRole("button", { name: "Continue" })).toHaveClass(
+      "motion-hover",
+      "motion-press",
+      "motion-focus"
+    );
+  });
+
+  it("marks every zone tab interactive and transfers current state when the active tab changes", async () => {
+    const user = userEvent.setup();
+    mockScanCapture(false);
+    renderStep([makeZoneCard("opt", "Opt")], null, ["stack", "battlefield"]);
+
+    const stackTab = screen.getByRole("button", { name: "Zone tab: Stack" });
+    const battlefieldTab = screen.getByRole("button", { name: "Zone tab: Battlefield" });
+
+    expect(stackTab).toHaveClass("ambient-accent-surface", "ambient-accent-interactive");
+    expect(battlefieldTab).toHaveClass("ambient-accent-surface", "ambient-accent-interactive");
+    expect(stackTab).toHaveAttribute("data-accent-current", "true");
+    expect(battlefieldTab).toHaveAttribute("data-accent-current", "false");
+
+    await user.click(battlefieldTab);
+
+    expect(stackTab).toHaveAttribute("data-accent-current", "false");
+    expect(battlefieldTab).toHaveAttribute("data-accent-current", "true");
+    expect(screen.getByLabelText("Battlefield search input").closest(".ambient-accent-surface")).toHaveAttribute(
+      "data-accent-current",
+      "true"
+    );
+  });
+
   it("renders the zone card list as a capped 2-column scroll grid before scan opens", () => {
     mockScanCapture(false);
     renderStep([
@@ -124,5 +174,40 @@ describe("ZoneCollectionStep scan focus", () => {
     expect(screen.queryByText("Stacked")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Exit scan" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Capture" })).toBeInTheDocument();
+  });
+
+  it("removes only the matching instance when duplicate cardIds are present in a non-stack zone", async () => {
+    const user = userEvent.setup();
+    mockScanCapture(false);
+
+    const card1 = makeZoneCard("opt", "Opt", { instanceId: "iid-1" });
+    const card2 = makeZoneCard("opt", "Opt", { instanceId: "iid-2" });
+    const onZonesChange = vi.fn();
+
+    render(
+      <ZoneCollectionStep
+        selectedZones={["battlefield"]}
+        zones={{ battlefield: [card1, card2] }}
+        onZonesChange={onZonesChange}
+        cardMetadata={[]}
+        isMetadataLoading={false}
+        activePlayer="Player 1"
+        activePlayers={["Player 1"]}
+        displayNamesByPlayer={{ "Player 1": undefined } as never}
+        onBack={() => undefined}
+        onContinue={() => undefined}
+        canContinue={true}
+        onFlashStatus={() => undefined}
+        statusMessage={null}
+      />
+    );
+
+    const grid = document.querySelector(".zone-card-grid") as HTMLElement;
+    const removals = within(grid).getAllByRole("button", { name: "Remove Opt from Battlefield" });
+    expect(removals).toHaveLength(2);
+
+    await user.click(removals[0]!);
+
+    expect(onZonesChange).toHaveBeenCalledWith({ battlefield: [card2] });
   });
 });
