@@ -105,6 +105,7 @@ Read in this order:
 | Slug | Status | Summary |
 |------|--------|---------|
 | [mock-mode-banner](./work/mock-mode-banner/) | ideation | Persistent top-of-screen banner when frontend starts in mock AI provider mode |
+| [test-suite-hygiene](./work/test-suite-hygiene/) | ideation | Speed up CI test runs and organize the growing Vitest suite without weakening coverage or regression gates |
 | [prompt-game-state-enrichment](./work/prompt-game-state-enrichment/) | deferred | Add `gameStateNotes` freeform game-state field and `ADDITIONAL GAME STATE` prompt section (revisit after retrieval + consolidation work) |
 
 Completed work is promoted into `sections/` and temporary work folders are removed per `instructions/doc-lifecycle.md`.

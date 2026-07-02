@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { phashRegionHex } from "./recipe";
-import { decodeRawImageFixture } from "./rawImageFixture";
+import { phashRegionHex } from "../recipe";
+import { decodeRawImageFixture } from "../rawImageFixture";
 
-const fixturesDir = resolve(__dirname, "__fixtures__");
+const fixturesDir = resolve(__dirname, "..", "__fixtures__");
 const vectors = JSON.parse(readFileSync(resolve(fixturesDir, "vectors.json"), "utf8")) as {
   phash: Array<{ input: string; r: string; g: string; b: string }>;
 };

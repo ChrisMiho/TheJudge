@@ -1381,3 +1381,35 @@
 - Notes:
   - refines DEC-057's three-state convergence indicator by adding a spatial on-card cue alongside the existing text indicator
   - the live locking outline differs from the static alignment-template guide frame (REQ-041 note) and from the opt-in debug overlay's full geometry + metrics
+
+### REQ-063
+- Title: Mock-mode environment banner
+- Priority: medium
+- Description: When the app is built or run with the mock AI provider, the frontend must show a persistent, non-dismissible banner at the top of every screen so developers immediately know they are on the simulated path rather than live OpenAI. The mock/live signal is build-time configuration-driven from the single `ASK_AI_PROVIDER` source of truth; it is never inferred from a runtime heuristic and never requires a backend endpoint. Presentation only — no backend, contract, or mock-response-content change (DEC-084).
+- Acceptance Criteria:
+  - when the resolved provider is `mock`, a banner reading `⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend` renders fixed at the top of every screen: the empty/home state, all four staged steps (FLOW-001, FLOW-002, FLOW-006), and the answered/conversation view
+  - when the resolved provider is not `mock` (e.g. `openai`), the banner does not render anywhere
+  - the banner is mounted once (in `PageShell`) rather than per-screen; page content is offset so the fixed banner never obscures the header or `ThemeControl`
+  - the banner is persistent and non-dismissible: no close button, toggle, setting, or auto-hide
+  - the mock/live value is resolved from `import.meta.env.VITE_ASK_AI_PROVIDER` via a single authoritative resolver in `env.ts` (same shape as `resolveDebugLoggingEnabled`), which `vite.config.ts` populates from `process.env.ASK_AI_PROVIDER`; a directly-set `VITE_ASK_AI_PROVIDER` build var overrides it
+  - the signal is not derived from `import.meta.env.DEV`, `MODE`, `NODE_ENV`, the deploy host, or the "MOCK RESPONSE" answer text
+  - running `npm run dev` / `dev:mock` shows the banner on load; a build/run with `ASK_AI_PROVIDER=openai` shows no banner
+  - styling is static, high-contrast, and unmistakable, uses existing theme tokens, is CSS-only and reduced-motion-safe (NFR-006), and introduces no animation library
+  - `MockModeBanner` has unit coverage for both mock (renders, correct copy) and non-mock (absent) resolutions; the `env.ts` resolver is unit-tested for `mock`, `openai`, empty/undefined, and override cases
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, backend routes, or mock-response content
+  - do not add a backend health/status endpoint or any runtime provider-mode fetch (explicit non-goal)
+  - keep `ASK_AI_PROVIDER` as the single mode source of truth; do not introduce a second independently-maintained frontend mode flag that could drift
+  - no banner in a production build unless mock mode is explicitly configured at build time
+  - reuse the existing `env.ts` resolver pattern; do not duplicate provider-mode parsing across files
+- Dependencies:
+  - DEC-084
+  - DEC-020
+  - DEC-017
+  - NFR-006
+  - FLOW-001
+  - FLOW-002
+  - FLOW-006
+- Notes:
+  - build-time-only by necessity: a static frontend cannot read runtime provider state without a backend endpoint, which is a non-goal
+  - `PageShell` is the single global wrapper for all screens, so one mount covers the full flow plus the answered view

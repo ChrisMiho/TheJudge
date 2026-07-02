@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { loadScanAudioMuted, saveScanAudioMuted } from "./audioPrefs";
+import { loadScanAudioMuted, saveScanAudioMuted } from "../audioPrefs";
 
 const storageKey = "thejudge.scan.audioMuted";
 

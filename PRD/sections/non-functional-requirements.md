@@ -141,3 +141,20 @@
   - NFR-005
 - Notes:
   - personalization should add delight without slowing the live-table interaction loop
+
+### NFR-012
+- Title: Test-suite hygiene and CI efficiency
+- Description: The Vitest test suite (~800 cases across ~82 source test files) and its CI gate should stay fast to run and easy to navigate as they grow, without weakening any coverage or regression protection.
+- Constraints:
+  - `npm run quality:check` executes the full test suite exactly once per CI job: coverage-mode execution is the single canonical regression + coverage gate, and the redundant standalone `test` step is removed from the aggregate (DEC-085)
+  - `npm test` and `npm run test:coverage` remain available for fast local iteration; workspace- and file-level targeting during development is preserved
+  - no coverage threshold is lowered — frontend `lines: 45`; backend `lines: 45` plus `src/prompt/** lines: 60` and `src/validation/** lines: 60` stay at or above current values
+  - the eval golden regression gate (`test:eval`, NFR-009) is unchanged; no prompt/eval golden update is bypassed to hit a timing target
+  - no test is deleted purely to reduce runtime, and no product behavior changes as part of hygiene work
+  - test-file reorganization (splitting oversized files, extracting shared fixtures/setup, grouping related suites) preserves existing assertions and case count — it is a test refactor only
+- Dependencies:
+  - NFR-005
+  - NFR-009
+  - DEC-085
+- Notes:
+  - workspace-level (frontend + backend) parallelism and vitest sharding are an explicit deferral, not part of this requirement; a later package may revisit them with CI-runner-core data (DEC-085)

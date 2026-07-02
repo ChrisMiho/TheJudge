@@ -13,7 +13,7 @@ describe("loadScanMap", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
-    await import("./loadScanMap");
+    await import("../loadScanMap");
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -24,7 +24,7 @@ describe("loadScanMap", () => {
     };
     const fetchMock = vi.fn(async () => new Response(JSON.stringify(payload)));
     vi.stubGlobal("fetch", fetchMock);
-    const { loadScanMap } = await import("./loadScanMap");
+    const { loadScanMap } = await import("../loadScanMap");
 
     const first = loadScanMap();
     const second = loadScanMap();
@@ -40,7 +40,7 @@ describe("loadScanMap", () => {
       "fetch",
       vi.fn(async () => new Response("missing", { status: 404, statusText: "Not Found" }))
     );
-    const { loadScanMap } = await import("./loadScanMap");
+    const { loadScanMap } = await import("../loadScanMap");
 
     await expect(loadScanMap()).rejects.toThrow("Could not load card scan map: 404 Not Found");
   });

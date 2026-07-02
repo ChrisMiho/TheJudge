@@ -3,7 +3,7 @@ import {
   classifyVoteReason,
   type AcquisitionThresholds,
   type VoteReasonInput
-} from "./acquisitionDiagnostics";
+} from "../acquisitionDiagnostics";
 
 const THRESHOLDS: AcquisitionThresholds = { lockDistance: 78, marginMin: 14 };
 

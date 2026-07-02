@@ -85,3 +85,21 @@ PRD documentation tooling: system-map catalog, detail files, the decisions.md ro
   - this extends the same token-discipline theme as DEC-063, but targets response output rather than input retrieval structure
   - no `system-map.md` entry is added: the catalog tracks product/code subsystems, not the PRD's own agent workflow tooling
   - final implementation should update skill-maintenance docs only if needed to make the shared guidance artifact discoverable
+
+### DEC-085
+- Decision: `npm run quality:check` runs the Vitest suite exactly once — coverage-mode execution is the single canonical regression + coverage gate and the redundant standalone `test` step is removed from the aggregate; alongside this, test files are reorganized for clarity (split the oversized `App.test.tsx`, extract shared EnrichmentStep fixtures/setup, group scan suites) as an assertion-preserving test refactor. Coverage thresholds, the eval golden gate, and product behavior are unchanged, and cross-workspace parallelism/sharding is explicitly deferred.
+- Status: confirmed
+- Context: The suite has grown to ~800 cases across ~82 source test files and GitHub Actions time is rising. `quality:check` chains `test` (`vitest run`) then `coverage:check` (`vitest run --coverage`); the coverage pass is a strict superset that re-executes every test, so CI runs the whole suite twice per job for no added protection. Navigation has also degraded: `App.test.tsx` is ~2,438 lines, EnrichmentStep setup is duplicated across three test files, and scan coverage is spread across ~10 colocated files. The fix must not weaken any gate — the IDEA forbids threshold reductions, arbitrary test deletion, eval-golden bypass, and product-behavior change. Workspace parallelism was considered but deferred: the single-pass collapse already ~halves test execution, and parallelism adds interleaved logs and config to maintain, better justified later with runner-core data.
+- Impact:
+  - CI/tooling and test-code only: no `apps/` product source, `POST /api/ask-ai` request/response, UI, or prompt-assembly behavior change
+  - `quality:check` drops the standalone `test` step and relies on coverage-mode execution as the one suite run; `npm test` and `npm run test:coverage` remain for local iteration, and workspace/file-level targeting is preserved
+  - all coverage thresholds stay at or above current values (frontend `lines: 45`; backend `lines: 45`, `src/prompt/** lines: 60`, `src/validation/** lines: 60`); the eval golden gate (`test:eval`, NFR-009) is untouched
+  - test reorganization preserves existing assertions and case count: `App.test.tsx` is split into behavior-focused files, shared EnrichmentStep fixtures/setup are extracted to a single reusable helper (reuse-before-creating, technical-design-rules), and scan suites are grouped coherently
+  - no test is removed to hit a timing target; hygiene never trades coverage for speed
+  - cross-workspace (frontend + backend) parallelism and vitest sharding are deferred as a named follow-up, not part of this decision
+- Related requirements:
+  - NFR-012
+- Notes:
+  - continues the token/tooling-discipline lineage of DEC-063 (input structure) and DEC-064 (output verbosity); this decision targets test-execution and test-file structure
+  - no `system-map.md` entry is added: the catalog tracks product/code subsystems, not the repo's own test/CI tooling (consistent with DEC-044 / DEC-063 / DEC-064)
+  - this decision does not change the "assistant, not judge" framing or any prompt behavior
