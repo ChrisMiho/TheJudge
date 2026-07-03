@@ -1,6 +1,6 @@
 # Slice F — First live deployment + verification
 
-## Status: planned
+## Status: in-progress
 
 ## Goal
 
@@ -28,7 +28,7 @@ Execute the first production deployment to the owner's new AWS account and verif
 - [ ] `POST <function-url>/api/ask-ai` with a sample stack + question returns a **real OpenAI answer** (distinguishable from the mock canned response)
 - [ ] The CloudFront URL serves the SPA and a full ask flow completes end-to-end in the browser
 - [ ] `aws lambda get-function-configuration --function-name thejudge-api` shows env vars **without** `OPENAI_API_KEY` (only `OPENAI_API_KEY_SSM_PARAM` + non-secrets)
-- [ ] `aws lambda get-function-concurrency --function-name thejudge-api` returns the configured reserved-concurrency ceiling
+- [ ] `aws lambda get-function-concurrency --function-name thejudge-api` returns the configured reserved-concurrency ceiling — **N/A on this account:** the new account launched with the default Lambda concurrency limit of 10, so reserving any would drop the unreserved pool below AWS's required 10. Bootstrap now skips reserved concurrency gracefully; the account-wide limit of 10 is the effective cap. Follow-up after a Service Quotas increase: `aws lambda put-function-concurrency --function-name thejudge-api --reserved-concurrent-executions 5 --region us-east-1`
 - [ ] `aws budgets describe-budgets --account-id <id>` lists the budget with an email alert (or the documented manual budget exists)
 - [ ] A push to `main` runs `quality:check` first and only deploys when green
 - [ ] `git grep -nE "[0-9]{12}|sk-[A-Za-z0-9]{20,}"` finds no committed account ID or key
@@ -44,6 +44,17 @@ aws lambda get-function-configuration --function-name thejudge-api --region us-e
   --query 'Environment.Variables' --output json
 aws lambda get-function-concurrency --function-name thejudge-api --region us-east-1
 ```
+
+## First-deploy results (2026-07-03)
+
+- **Frontend:** https://d36yuv4ycof5gd.cloudfront.net (CloudFront Deployed, serves the SPA, HTTP 200)
+- **API:** https://24yhnhknx5sc24cvtb7szdz76q0uruif.lambda-url.us-east-1.on.aws
+- `/api/health` → 200 `{"ok":true}`; `/api/ask-ai` → real OpenAI answer (cited CR 608.2b, ~10s), provider `openai`
+- Lambda env carries `OPENAI_API_KEY_SSM_PARAM` only — **no** `OPENAI_API_KEY`; key read from SSM at cold start
+- Budget `thejudge-monthly` ($5/mo, alert 80% → owner email) created
+- Reserved concurrency skipped (account limit 10 — see acceptance note); account cap is the guard
+- Bootstrap ran key-first (SSM SecureString set before bootstrap); `AWS_ACCOUNT_ID` in GitHub repo variable, not committed
+- Small supporting change: `scripts/aws-bootstrap.sh` now skips reserved concurrency when the account limit can't accommodate it (forced by the fresh-account 10-concurrency default)
 
 ## PRD promotion checklist (execute in cleanup)
 

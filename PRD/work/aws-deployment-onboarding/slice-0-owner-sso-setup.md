@@ -1,6 +1,6 @@
 # Slice 0 — Owner AWS SSO setup (OWNER-RUN, not for agents)
 
-## Status: planned
+## Status: done
 
 ## Who runs this
 

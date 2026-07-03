@@ -131,12 +131,28 @@ aws lambda wait function-updated --function-name "$lambda_name" --region "$aws_r
 
 # Gap 2 — hard-cap parallel executions so the public Function URL cannot scale
 # to runaway compute cost. Excess requests throttle (429) instead of scaling out.
-aws lambda put-function-concurrency \
-  --function-name "$lambda_name" \
-  --reserved-concurrent-executions "$reserved_concurrency" \
+# AWS requires the account's unreserved pool to stay >= 10, so reserving is only
+# possible when (account concurrency limit - reserved) >= 10. Brand-new accounts
+# ship with a limit of 10, which itself caps parallelism; skip gracefully there.
+account_concurrency_limit_raw="$(aws lambda get-account-settings \
   --region "$aws_region" \
-  >/dev/null
-echo "Lambda reserved concurrency: $reserved_concurrency"
+  --query 'AccountLimit.ConcurrentExecutions' \
+  --output text)"
+account_concurrency_limit="${account_concurrency_limit_raw%.*}"
+if [[ "$account_concurrency_limit" =~ ^[0-9]+$ ]] \
+  && (( account_concurrency_limit - reserved_concurrency >= 10 )); then
+  aws lambda put-function-concurrency \
+    --function-name "$lambda_name" \
+    --reserved-concurrent-executions "$reserved_concurrency" \
+    --region "$aws_region" \
+    >/dev/null
+  echo "Lambda reserved concurrency: $reserved_concurrency"
+else
+  echo "Skipping reserved concurrency: account concurrency limit ($account_concurrency_limit_raw) is too low to reserve $reserved_concurrency while keeping the required 10 unreserved."
+  echo "  The account-wide limit of $account_concurrency_limit_raw is the effective parallelism cap for now."
+  echo "  After a Service Quotas increase for Lambda 'Concurrent executions', run:"
+  echo "    aws lambda put-function-concurrency --function-name $lambda_name --reserved-concurrent-executions $reserved_concurrency --region $aws_region"
+fi
 
 # Gap 2 — cost visibility: a low monthly budget with an email alert. Guarded on
 # NOTIFICATION_EMAIL; when unset, print the manual console fallback (no failure).

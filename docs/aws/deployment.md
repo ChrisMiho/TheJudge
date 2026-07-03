@@ -127,6 +127,15 @@ No custom domain is configured. Two AWS-provided URLs:
 
 Both `aws-bootstrap.sh` and `aws-deploy.sh` print these on completion.
 
-<!-- Record the actual URLs here after the first live deploy (Slice F): -->
-<!-- Frontend: https://<dist>.cloudfront.net -->
-<!-- API:      https://<id>.lambda-url.us-east-1.on.aws -->
+### Live URLs (first deploy — 2026-07-03)
+
+- **Frontend:** https://d36yuv4ycof5gd.cloudfront.net
+- **API:** https://24yhnhknx5sc24cvtb7szdz76q0uruif.lambda-url.us-east-1.on.aws
+
+> **Reserved concurrency note:** the account launched with the default Lambda
+> concurrency limit of **10**, so `aws-bootstrap.sh` skips setting reserved
+> concurrency (reserving any would drop the unreserved pool below AWS's required
+> 10). The account-wide limit of 10 is the effective parallelism cap for now.
+> After a Service Quotas increase for Lambda "Concurrent executions", set the
+> intended ceiling:
+> `aws lambda put-function-concurrency --function-name thejudge-api --reserved-concurrent-executions 5 --region us-east-1`
