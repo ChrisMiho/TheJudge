@@ -397,6 +397,7 @@ cat > "$tmp_dir/github-deploy-policy.json" <<JSON
       "Effect": "Allow",
       "Action": [
         "lambda:GetFunction",
+        "lambda:GetFunctionConfiguration",
         "lambda:GetFunctionUrlConfig",
         "lambda:UpdateFunctionCode",
         "lambda:UpdateFunctionConfiguration"
