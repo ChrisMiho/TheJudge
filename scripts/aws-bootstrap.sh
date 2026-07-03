@@ -4,7 +4,7 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 aws_region="${AWS_REGION:-us-east-1}"
-account_id="${AWS_ACCOUNT_ID:-979135883660}"
+account_id="${AWS_ACCOUNT_ID:?AWS_ACCOUNT_ID must be set (GitHub repo variable or shell export)}"
 github_repo="${GITHUB_REPOSITORY:-ChrisMiho/TheJudge}"
 app_name="${APP_NAME:-thejudge}"
 bucket_name="${AWS_S3_BUCKET:-$app_name-web-$account_id}"

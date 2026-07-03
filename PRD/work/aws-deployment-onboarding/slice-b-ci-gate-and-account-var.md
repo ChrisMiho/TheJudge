@@ -1,6 +1,6 @@
 # Slice B — Deploy test gate + account ID → GitHub repo variable
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -37,12 +37,12 @@ Harden `deploy-aws.yml` so a red build cannot ship, and remove the hardcoded AWS
 
 ## Acceptance criteria
 
-- [ ] `grep -rnE '[0-9]{12}' .github/ scripts/` returns no hardcoded account ID
-- [ ] `deploy-aws.yml` runs `npm run quality:check` before the `Deploy` step (or via a `needs:` job dependency), so a failing check blocks deploy
-- [ ] Running any script with `AWS_ACCOUNT_ID` unset exits non-zero with the clear message
-- [ ] `bash -n scripts/aws-bootstrap.sh scripts/aws-deploy.sh scripts/package-lambda.sh` reports no syntax errors
-- [ ] Workflow YAML is valid (parses without error)
-- [ ] Required repo variable `AWS_ACCOUNT_ID` is documented (covered in Slice E `docs/aws/secrets.md`)
+- [x] `grep -rnE '[0-9]{12}' .github/ scripts/` returns no hardcoded account ID
+- [x] `deploy-aws.yml` runs `npm run quality:check` before the `Deploy` step (steps: Install deps → **Quality gate** → … → Deploy)
+- [x] Running any script with `AWS_ACCOUNT_ID` unset exits non-zero with the clear message (both scripts exit 1)
+- [x] `bash -n scripts/aws-bootstrap.sh scripts/aws-deploy.sh scripts/package-lambda.sh` reports no syntax errors
+- [x] Workflow YAML is valid (parses without error)
+- [ ] Required repo variable `AWS_ACCOUNT_ID` is documented — **deferred to Slice E** (`docs/aws/secrets.md`)
 
 ## Verification
 
