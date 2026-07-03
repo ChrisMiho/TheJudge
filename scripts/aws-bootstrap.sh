@@ -10,6 +10,10 @@ app_name="${APP_NAME:-thejudge}"
 bucket_name="${AWS_S3_BUCKET:-$app_name-web-$account_id}"
 lambda_name="${AWS_LAMBDA_FUNCTION_NAME:-$app_name-api}"
 lambda_role_name="${AWS_LAMBDA_ROLE_NAME:-$app_name-lambda-exec}"
+ssm_param_name="${OPENAI_API_KEY_SSM_PARAM:-/thejudge/openai-api-key}"
+openai_model="${OPENAI_MODEL:-gpt-4.1-mini}"
+openai_timeout_ms="${OPENAI_TIMEOUT_MS:-15000}"
+openai_max_retries="${OPENAI_MAX_RETRIES:-2}"
 github_role_name="${AWS_GITHUB_ROLE_NAME:-$app_name-github-deploy}"
 distribution_comment="${AWS_CLOUDFRONT_COMMENT:-$app_name-web}"
 tmp_dir="$repo_root/.tmp/aws-bootstrap"
@@ -68,6 +72,32 @@ aws iam attach-role-policy \
   --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole \
   >/dev/null || true
 
+# Least-privilege access to the OpenAI key: read the SSM SecureString and
+# decrypt it via the aws/ssm managed key (scoped to the SSM service).
+cat > "$tmp_dir/lambda-openai-secret-policy.json" <<JSON
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "ssm:GetParameter",
+      "Resource": "arn:aws:ssm:$aws_region:$account_id:parameter$ssm_param_name"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "kms:Decrypt",
+      "Resource": "*",
+      "Condition": { "StringEquals": { "kms:ViaService": "ssm.$aws_region.amazonaws.com" } }
+    }
+  ]
+}
+JSON
+
+aws iam put-role-policy \
+  --role-name "$lambda_role_name" \
+  --policy-name "$app_name-openai-secret" \
+  --policy-document "$(aws_file_uri "$tmp_dir/lambda-openai-secret-policy.json")"
+
 lambda_role_arn="arn:aws:iam::$account_id:role/$lambda_role_name"
 
 npm run build
@@ -83,7 +113,7 @@ if ! aws lambda get-function --function-name "$lambda_name" --region "$aws_regio
     --zip-file "$(aws_fileb_uri "$artifact_path")" \
     --timeout 20 \
     --memory-size 512 \
-    --environment "Variables={NODE_ENV=production,ASK_AI_PROVIDER=mock,DEBUG_LOGGING=false,LOG_PAYLOADS=false}" \
+    --environment "Variables={NODE_ENV=production,ASK_AI_PROVIDER=openai,DEBUG_LOGGING=false,LOG_PAYLOADS=false,OPENAI_MODEL=$openai_model,OPENAI_TIMEOUT_MS=$openai_timeout_ms,OPENAI_MAX_RETRIES=$openai_max_retries,OPENAI_API_KEY_SSM_PARAM=$ssm_param_name}" \
     --region "$aws_region" \
     >/dev/null
 else
@@ -241,7 +271,7 @@ cloudfront_domain="$(aws cloudfront get-distribution \
 
 aws lambda update-function-configuration \
   --function-name "$lambda_name" \
-  --environment "Variables={NODE_ENV=production,ASK_AI_PROVIDER=mock,DEBUG_LOGGING=false,LOG_PAYLOADS=false,FRONTEND_ORIGIN=https://$cloudfront_domain}" \
+  --environment "Variables={NODE_ENV=production,ASK_AI_PROVIDER=openai,DEBUG_LOGGING=false,LOG_PAYLOADS=false,OPENAI_MODEL=$openai_model,OPENAI_TIMEOUT_MS=$openai_timeout_ms,OPENAI_MAX_RETRIES=$openai_max_retries,OPENAI_API_KEY_SSM_PARAM=$ssm_param_name,FRONTEND_ORIGIN=https://$cloudfront_domain}" \
   --region "$aws_region" \
   >/dev/null
 

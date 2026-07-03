@@ -1,6 +1,6 @@
 # Slice C — Secure live OpenAI via SSM SecureString + Lambda cold-start read
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -55,13 +55,13 @@ export const handler = async (event, context) => (await init)(event, context);
 
 ## Acceptance criteria
 
-- [ ] `loadOpenAiKeyFromSsm` unit test (mocked `SSMClient`) sets `process.env.OPENAI_API_KEY` for `openai`, no-ops for `mock`, and throws a clear error on missing parameter
-- [ ] `handler` awaits init before handling a request (unit/integration test or explicit code check)
-- [ ] `apps/backend/src/index.ts`, `createConfiguredApp.ts`, `config/index.ts`, and provider files are unchanged by this slice (`git diff` scope check)
-- [ ] `@aws-sdk/client-ssm` is under `devDependencies`; after `scripts/package-lambda.sh`, `.tmp/lambda-package/node_modules/@aws-sdk/client-ssm` is **absent**
-- [ ] `grep -rn "OPENAI_API_KEY" scripts/ .github/` finds no key value and no `OPENAI_API_KEY=` in any env block (only `OPENAI_API_KEY_SSM_PARAM`)
-- [ ] `aws-bootstrap.sh` policy JSON grants `ssm:GetParameter` + `kms:Decrypt` (grep)
-- [ ] `npm run quality:check` green
+- [x] `loadOpenAiKeyFromSsm` unit test (mocked `SSMClient`) sets `OPENAI_API_KEY` for `openai`, no-ops for `mock`, throws a clear error on missing/empty parameter, defaults the path, and skips when a key is already present (5 tests)
+- [x] `handler` awaits init before handling a request (`lambda.ts`: `const configured = await init; return configured(...args)`)
+- [x] `apps/backend/src/index.ts`, `createConfiguredApp.ts`, `config/index.ts`, and provider files are unchanged by this slice (git status scope check)
+- [x] `@aws-sdk/client-ssm` is under `devDependencies` (`^3.1079.0`); after `scripts/package-lambda.sh`, `.tmp/lambda-package/node_modules/@aws-sdk/client-ssm` is **absent**
+- [x] AWS scripts/workflow carry only `OPENAI_API_KEY_SSM_PARAM`, no bare `OPENAI_API_KEY=` env block or key value (pre-existing local-dev `openai-verify-credentials.mjs` mentions `OPENAI_API_KEY` for `.secrets` validation only — out of scope)
+- [x] `aws-bootstrap.sh` policy JSON grants `ssm:GetParameter` + `kms:Decrypt` (KMS scoped via `kms:ViaService=ssm.<region>.amazonaws.com`)
+- [x] `npm run quality:check` green (582 tests)
 
 ## Verification
 
