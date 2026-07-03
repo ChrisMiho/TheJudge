@@ -136,6 +136,11 @@ Use these docs for deeper runtime/contract detail instead of expanding the root 
 - WotC rulings prompt enrichment decision: `PRD/sections/decisions/rules-retrieval.md` (`DEC-029`, indexed from `PRD/sections/decisions.md`)
 - Backend provider boundary and mode intent: `apps/backend/src/providers/README.md`
 
+AWS deployment & operations:
+- Deploying to AWS (architecture, one-time bootstrap, how deploys work, URLs): `docs/aws/deployment.md`
+- Day-2 runbook (logs, key rotation, cost, scale cap, rollback, teardown): `docs/aws/operations.md`
+- Secrets & identity (SSM SecureString, OIDC, `AWS_ACCOUNT_ID` repo variable): `docs/aws/secrets.md`
+
 Card-scan fingerprint operations:
 - `npm run data:scan-fingerprints` is the day-to-day path. It treats the shipped `cardhashes.bin` as resume state, downloads only missing filtered printings, checkpoints partial progress, and writes the bin, manifest, and skip-list atomically.
 - `npm run data:scan-fingerprints -- --coverage-summary` reports corpus `targetCount`, `fingerprintedTargetCount`, `missingCount`, `parkedCount`, and full/partial status from local artifacts only.

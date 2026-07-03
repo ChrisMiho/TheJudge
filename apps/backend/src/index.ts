@@ -2,13 +2,8 @@ import { config as loadDotenv, parse as parseDotenv } from "dotenv";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createApp } from "./app/createApp.js";
-import { loadCardRulingsIndex } from "./cardRulings.js";
-import { loadGameRulesTopics } from "./gameRules.js";
-import { loadGameRulesRuleIndex } from "./gameRulesRetrieval.js";
-import { readServerConfig } from "./config/index.js";
 import { createAppLogger } from "./logging.js";
-import { createAskAiProvider } from "./providers/createAskAiProvider.js";
+import { createConfiguredApp } from "./runtime/createConfiguredApp.js";
 
 if (process.env.NODE_ENV === "development" && process.env.VITEST !== "true") {
   const backendDir = dirname(fileURLToPath(import.meta.url));
@@ -40,37 +35,20 @@ if (process.env.NODE_ENV === "development" && process.env.VITEST !== "true") {
   fillFromFileIfBlank(secretsEnvPath, ["OPENAI_API_KEY"]);
 }
 
-const config = readServerConfig(process.env);
 const startupLogger = createAppLogger(true);
 const backendDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(backendDir, "../../..");
-const cardRulingsPath = resolve(repoRoot, "apps/backend/data/cardRulingsByOracleId.json");
-const cardRulingsIndex = loadCardRulingsIndex(cardRulingsPath);
-const gameRulesPath = resolve(repoRoot, "apps/backend/data/gameRulesByTopic.json");
-const gameRulesTopics = loadGameRulesTopics(gameRulesPath);
-const gameRulesRuleIndexPath = resolve(repoRoot, "apps/backend/data/gameRulesRuleIndex.json");
-const gameRulesRuleIndex = loadGameRulesRuleIndex(gameRulesRuleIndexPath);
-const app = createApp({
-  frontendOrigin: config.frontendOrigin,
-  debugLoggingEnabled: config.debugLoggingEnabled,
-  payloadLoggingEnabled: config.payloadLoggingEnabled,
-  askAiProvider: createAskAiProvider(config),
-  askAiProviderMode: config.askAiProvider,
-  cardRulingsIndex,
-  gameRulesTopics,
-  gameRulesRuleIndex,
-  collectEnrichmentDebug: config.askAiProvider !== "openai"
-});
+const runtime = createConfiguredApp(repoRoot, process.env);
 
-app.listen(config.port, () => {
+runtime.app.listen(runtime.config.port, () => {
   startupLogger.info("backend.startup", {
-    port: config.port,
-    frontendOrigin: config.frontendOrigin ?? "(unset)",
-    askAiProvider: config.askAiProvider,
-    cardRulingsCardCount: cardRulingsIndex.size,
-    gameRulesTopicCount: gameRulesTopics.length,
-    gameRulesRuleCount: gameRulesRuleIndex.length,
-    debugLoggingEnabled: config.debugLoggingEnabled,
-    payloadLoggingEnabled: config.payloadLoggingEnabled
+    port: runtime.config.port,
+    frontendOrigin: runtime.config.frontendOrigin ?? "(unset)",
+    askAiProvider: runtime.config.askAiProvider,
+    cardRulingsCardCount: runtime.cardRulingsCardCount,
+    gameRulesTopicCount: runtime.gameRulesTopicCount,
+    gameRulesRuleCount: runtime.gameRulesRuleCount,
+    debugLoggingEnabled: runtime.config.debugLoggingEnabled,
+    payloadLoggingEnabled: runtime.config.payloadLoggingEnabled
   });
 });
