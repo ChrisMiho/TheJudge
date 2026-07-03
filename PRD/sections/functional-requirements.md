@@ -1413,3 +1413,105 @@
 - Notes:
   - build-time-only by necessity: a static frontend cannot read runtime provider state without a backend endpoint, which is a non-goal
   - `PageShell` is the single global wrapper for all screens, so one mount covers the full flow plus the answered view
+
+### REQ-064
+- Title: Two-sided trade balancer screen
+- Priority: high
+- Description: The app must provide a standalone Trade Balancer view where two traders each build a list of cards and the app shows each side's total USD value and the live difference between the two sides, so players can see whether a trade is balanced and by how much. Frontend-only and ephemeral; no backend, endpoint, or contract change (DEC-086).
+- Acceptance Criteria:
+  - the view presents two sides (**Side A** and **Side B**), each an ordered list of card entries
+  - each side shows a running **total** = `Σ qty × (foil ? usdFoil : usd)` across its entries, updating live as entries are added, removed, re-priced, foil-toggled, or quantity-changed
+  - the view shows the **difference** between the two totals as an amount and indicates which side is higher (or that the sides are equal)
+  - totals and the difference are displayed in USD
+  - an entry whose selected-mode price is missing contributes **$0** to its side total and is visibly flagged per REQ-065 (distinct color + caution triangle)
+  - the view is reachable from the top-level navigation menu (REQ-067) and the Stack Assistant flow is unaffected
+  - the trade state is **ephemeral**: no history, no persistence across reload, no marketplace/transaction handling, and no automated balancing suggestions
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, `POST /api/ask-ai`, or any product-facing endpoint
+  - USD only (Scryfall `usd` / `usd_foil`); EUR, tix, etched-foil, and grading/condition are out of scope for v1
+  - mobile-first, touch-friendly layout (NFR-001)
+- Dependencies:
+  - DEC-086
+  - REQ-065
+  - REQ-066
+  - REQ-067
+  - NFR-013
+  - FLOW-009
+- Notes:
+  - a trade side is a value list, not the stack: the duplicate-block (REQ-009/FLOW-004) and 10-card cap (REQ-010) do not apply
+
+### REQ-065
+- Title: Trade card entry — printing selection, foil toggle, quantity
+- Priority: high
+- Description: Each card added to a trade side must resolve to a specific printing carrying its own USD price, support switching between non-foil and foil price, and support a quantity/multiples so the same card can appear more than once on a side. Entries are built via the existing scan and manual-search input paths (DEC-086).
+- Acceptance Criteria:
+  - each entry carries a chosen **printing** (printing id, set, collector number, image, non-foil `usd`, foil `usd_foil`), a **foil** flag, and a **quantity** ≥ 1
+  - **scan input:** the existing scan engine identifies the card and the **scanned printing** (its `Candidate.card_id`, DEC-070) is the entry's default printing; the user can **change the printing** to any other printing of that card
+  - **manual search input:** the user finds a card by name via the existing local search (DEC-012), then **chooses the correct printing** from that card's printing list before it is added; the chosen printing's price applies
+  - the **foil toggle** switches the entry's contribution between `usd` and `usd_foil`; default is non-foil
+  - **quantity/multiples:** the same card (or printing) may appear multiple times on a side, via repeated adds and/or a per-entry quantity control; each unit counts toward the side total; the stack duplicate-block does not apply
+  - **missing price:** when the selected foil mode has no price for the chosen printing, the entry's contribution defaults to **$0**, the entry's price is rendered in a **distinct color** from priced entries, and the entry shows a **caution-triangle** indicator communicating that the value is unknown
+  - each entry can be **removed** from its side
+  - the printing shown and priced uses the price artifact (REQ-066); no runtime network call is made to price or list printings
+- Constraints:
+  - printing selection is a pricing/display layer only; it is never pushed into prompt context, rulings lookup, or the Decrypt-Stack request payload, and does not change the DEC-053 oracle-level scan-identity model
+  - USD only; foil handling is non-foil vs `usd_foil` (etched-foil out of scope for v1)
+- Dependencies:
+  - DEC-086
+  - DEC-087
+  - REQ-066
+  - REQ-036
+  - REQ-064
+  - FLOW-009
+- Notes:
+  - reuses the existing scan resolver (REQ-036) and manual search (REQ-002/REQ-003) as input; the printing pick and pricing are the new layer
+
+### REQ-066
+- Title: Printing-level price data artifact
+- Priority: high
+- Description: Add a build step that emits a committed, printing-level USD price artifact from the existing Scryfall bulk source, covering every paper printing with its non-foil and foil price plus the fields needed to identify, display, and list printings, so the trade balancer can price scanned and manually chosen printings with no runtime network calls (DEC-087).
+- Acceptance Criteria:
+  - a build script (alongside `data:build` / `data:refresh`) emits a committed printing-level price artifact under `apps/frontend/public/data/` from the local Scryfall bulk source
+  - per printing the artifact carries at least: printing id, oracle id, card name, set code, set name, collector number, image url, `usd` (non-foil), and `usd_foil`
+  - entries are **indexable by oracle id** (to list a card's printings for the manual picker) and resolvable **by printing id** (so a scanned printing prices directly)
+  - missing prices are stored as null/absent (consumed as $0 + caution per REQ-065); the artifact records a **snapshot date**
+  - the artifact is **lazy-loaded only when the Trade Balancer is first opened**; app startup and the Stack Assistant flow are unaffected for users who never open it
+  - `npm run data:build` regenerates the artifact from local inputs; `npm run data:refresh` refreshes the Scryfall bulk source (download is human-approved before it runs) then rebuilds
+  - the build degrades gracefully: a missing/failed source keeps the prior committed artifact and does not break other artifact builds
+- Constraints:
+  - static committed snapshot; no runtime price fetch and no runtime metadata/library sync (DEC-012 posture)
+  - raw downloaded bulk data remains gitignored and is not committed; only the trimmed price artifact is committed
+  - no change to `cardMetadata.json`, `cardScanMap.json`, `cardhashes.bin`, the scan recipe/identify/lock boundary, `AskAiRequest`, prompt assembly, the provider boundary, or any endpoint
+- Dependencies:
+  - DEC-087
+  - DEC-012
+  - REQ-065
+  - NFR-013
+  - data pipeline (`scripts/`)
+- Notes:
+  - source-bulk choice and the exact filter/field set are build-time details validated by outcome (every priced gameplay printing present, prices display correctly); `all-cards` (every language) is unnecessary because prices are per printing
+
+### REQ-067
+- Title: Top-level app navigation menu
+- Priority: high
+- Description: The app must provide a top-level navigation menu — a menu affordance in the top-right header, distinct from and non-overlapping with the corner `ThemeControl`/palette affordance — that opens a menu to switch between Stack Assistant (the existing flow / start screen) and Trade Balancer, with the same menu as the path back. Switching is a frontend-only view switch that preserves each mode's in-session state (DEC-088).
+- Acceptance Criteria:
+  - a navigation-menu button sits in the **top-right header** on every screen and is visually distinct from `ThemeControl`, which stays where it is
+  - the navigation button and its opened menu have **non-overlapping** visual bounds and pointer hit areas with `ThemeControl` at mobile and desktop sizes (DEC-065 precedent)
+  - opening the menu lists the destinations **Stack Assistant** and **Trade Balancer** with the current mode indicated
+  - selecting a destination switches the active view; selecting the current mode is a no-op that does not reset in-progress state
+  - switching to Trade Balancer and back to Stack Assistant (or vice versa) **preserves each mode's in-session state** while the app stays loaded; nothing is persisted across a page reload
+  - the Stack Assistant start screen, staged flow, and answered/conversation view are unchanged by adding the menu
+  - any open/close motion is CSS-only and reduced-motion-aware (NFR-006)
+- Constraints:
+  - chrome only; no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, `POST /api/ask-ai`, or any product-facing endpoint; no backend route and no server-side navigation state
+  - mobile-first: the menu must stay touch-friendly and not crowd the header (NFR-001)
+- Dependencies:
+  - DEC-088
+  - DEC-066
+  - REQ-064
+  - NFR-001
+  - NFR-006
+  - FLOW-010
+- Notes:
+  - extensible to future top-level destinations; v1 lists only Stack Assistant and Trade Balancer

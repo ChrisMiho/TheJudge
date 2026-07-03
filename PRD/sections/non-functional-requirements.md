@@ -158,3 +158,22 @@
   - DEC-085
 - Notes:
   - workspace-level (frontend + backend) parallelism and vitest sharding are an explicit deferral, not part of this requirement; a later package may revisit them with CI-runner-core data (DEC-085)
+
+### NFR-013
+- Title: Trade-price data footprint and freshness
+- Description: The printing-level price artifact (REQ-066) must not cost users who never open the Trade Balancer, and its static-snapshot nature must be honest and clearly bounded.
+- Constraints:
+  - the price artifact is lazy-loaded only when the Trade Balancer is first opened; app startup and the Stack Assistant flow are unaffected for users who never open it (mirrors the NFR-010 scan-artifact posture)
+  - prices are a static build-time snapshot: no runtime price fetch, no runtime sync, and no automated/scheduled refresh; the committed snapshot is refreshed only through the human-approved data pipeline (`data:refresh` then `data:build`)
+  - the artifact records a snapshot date, and the UI may surface it so users understand prices are point-in-time, not live
+  - artifact size, lazy-load time, and lookup latency should stay within a mobile-friendly budget; loading and pricing must not block or jank the trade UI
+  - USD-only price fields (`usd`, `usd_foil`); no live market integration
+- Dependencies:
+  - DEC-086
+  - DEC-087
+  - REQ-066
+  - NFR-001
+  - NFR-004
+  - NFR-010
+- Notes:
+  - the trade balancer is an optional top-level feature; like scanning, its data budget is scoped to users who actually use it

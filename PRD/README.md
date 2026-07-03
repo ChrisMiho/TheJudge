@@ -104,6 +104,7 @@ Read in this order:
 
 | Slug | Status | Summary |
 |------|--------|---------|
+| [aws-deployment-onboarding](./work/aws-deployment-onboarding/) | active | Adopt and harden the collaborator's AWS serverless deployment (Lambda + S3/CloudFront + GitHub OIDC), close secrets/cost/test-gate gaps, go live on OpenAI, and ship operator docs |
 | [test-suite-hygiene](./work/test-suite-hygiene/) | ideation | Speed up CI test runs and organize the growing Vitest suite without weakening coverage or regression gates |
 | [prompt-game-state-enrichment](./work/prompt-game-state-enrichment/) | deferred | Add `gameStateNotes` freeform game-state field and `ADDITIONAL GAME STATE` prompt section (revisit after retrieval + consolidation work) |
 

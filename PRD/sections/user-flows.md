@@ -186,3 +186,50 @@
 - Notes:
   - density selection is frontend-only personalization and never changes submitted game context, prompt text, backend API behavior, or AI responses
   - chunky is the default and must match pre-change spacing on reference screens (DEC-075, REQ-055)
+
+### FLOW-009
+- Name: Build a two-sided trade and read the balance
+- Trigger: User opens the Trade Balancer from the top-level navigation menu (FLOW-010) to compare the value of two lists of cards
+- Preconditions:
+  - app is loaded
+  - the printing-level price artifact loads on first open (lazy-loaded, REQ-066)
+- Main Flow:
+  1. The Trade Balancer opens with two sides (**Side A** and **Side B**), each an empty card list, and a running total per side plus the difference between them.
+  2. For a side, the user adds a card by **scanning** or by **manual search**:
+     - Scan: the existing engine identifies the card and the **scanned printing** becomes the entry's default printing; the user can change the printing if it is wrong (DEC-070, REQ-065).
+     - Manual search: the user finds the card by name and then **chooses the correct printing** from that card's printing list; that printing's price applies (DEC-012, REQ-065).
+  3. The added entry shows its printing (set/collector/image), its USD price, a **foil toggle** (non-foil ↔ `usd_foil`), and a **quantity** control; the same card may be added multiple times or carry a quantity ≥ 1.
+  4. Each side total updates live as `Σ qty × (foil ? usdFoil : usd)`, and the difference between the two sides updates with an amount and which side is higher (or equal).
+  5. The user adds cards to the other side the same way, adjusts foil/quantity, and removes entries as needed until the difference reflects the trade.
+  6. The user reads the balance at a glance and returns to Stack Assistant via the navigation menu when done; trade state is not persisted.
+- Edge Cases:
+  - if the chosen printing has no price for the selected foil mode, the entry contributes **$0**, its price is shown in a distinct color, and a **caution-triangle** indicator marks it so the user knows the value is unknown (REQ-065)
+  - the same card may appear more than once on a side; the stack duplicate-block (FLOW-004) and 10-card cap do not apply to trade sides (DEC-086)
+  - toggling foil on an entry with no `usd_foil` (or off with no `usd`) applies the $0 + caution treatment for that mode
+  - a scanned printing that resolves but is the wrong print is corrected by changing the printing on the entry, not by re-scanning
+  - if scanning is unavailable (no camera/permission), manual search remains the full input path (DEC-050 fallback)
+  - if the price artifact fails to load, the view surfaces the reason and entries show the $0 + caution treatment rather than a broken screen
+- Notes:
+  - the trade balancer is a standalone, frontend-only, ephemeral feature outside the Decrypt-Stack core loop; it makes no backend call and no `AskAiRequest`/prompt change (DEC-086)
+  - printing selection is a pricing/display layer only and does not change scan oracle-level identity, prompt context, or rulings (DEC-053, DEC-086)
+  - prices are a static build-time snapshot; the UI may show the snapshot date (DEC-087, NFR-013)
+
+### FLOW-010
+- Name: Switch between Stack Assistant and Trade Balancer
+- Trigger: User wants to move between the main Stack Assistant flow and the Trade Balancer
+- Preconditions:
+  - app is loaded
+- Main Flow:
+  1. User taps the navigation-menu button in the **top-right header** (distinct from the corner palette/`ThemeControl` affordance).
+  2. The menu opens and lists **Stack Assistant** and **Trade Balancer**, with the current mode indicated.
+  3. User selects the other destination.
+  4. App switches the active view to the selected mode without leaving the app or reloading.
+  5. To return, the user opens the same menu and selects the other mode.
+- Edge Cases:
+  - selecting the current mode is a no-op and does not reset in-progress state
+  - switching modes preserves each mode's in-session state while the app stays loaded (an in-progress Stack Assistant flow survives a trip to the Trade Balancer and back); nothing is persisted across a page reload
+  - the navigation button and its menu must not overlap or intercept taps meant for `ThemeControl` (DEC-088, DEC-065)
+- Notes:
+  - navigation is frontend-only chrome and never changes submitted game context, prompt text, backend API behavior, or AI responses (DEC-088)
+  - the Stack Assistant start screen and staged flow are unchanged; the menu is additive
+  - `ThemeControl` (FLOW-007 / FLOW-008) placement and behavior are unchanged

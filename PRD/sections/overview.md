@@ -36,6 +36,8 @@ The product intentionally keeps context structured but lightweight:
 - optional user question
 - no full legality validation
 
+Beyond the core loop, a standalone **Card Trade Balancer** is a planned optional feature: a frontend-only, ephemeral two-sided card-value comparison (static-snapshot USD prices, per-entry printing + foil + quantity), reached via a top-level navigation menu that switches between it and the Stack Assistant flow (DEC-086, DEC-088). It adds no backend endpoint or prompt/contract change.
+
 Intentional constraints are tracked in `goals-and-non-goals.md`.
 
 ## Product Principles

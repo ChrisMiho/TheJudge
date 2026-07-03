@@ -71,6 +71,18 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - `role: "user" | "assistant"`
 - `content: string`
 
+### CardPrintingPrice (Trade Balancer, frontend-only)
+- `printingId: string` — Scryfall printing id
+- `oracleId: string` — oracle identity the printing belongs to
+- `name: string`
+- `set: string` — set code
+- `setName: string`
+- `collectorNumber: string`
+- `imageUrl: string`
+- `usd: number | null` — non-foil USD market price (null when unavailable)
+- `usdFoil: number | null` — foil USD market price (null when unavailable)
+- committed static artifact (DEC-087); not part of `AskAiRequest` or any prompt/response contract. A trade entry references one `CardPrintingPrice` plus a `foil: boolean` and `quantity: number` (≥ 1).
+
 ### AskAiRequest
 - `question: string`
 - `gameContext: GameContext`
@@ -270,6 +282,19 @@ involve the backend, `POST /api/ask-ai`, or any prompt assembly.
 - TheJudge owns and refreshes the library via the data pipeline; there is no runtime Scryfall fetch, no runtime library sync, and no dependence on an externally prebuilt database
 - query-side processing applies auto-levels to the captured image only (never to database images); both 0°/180° orientations are hashed and the better match is chosen; the engine retains a dormant card-back detection method (`isCardBack()`) but back-face detection is inactive until a `_card_back` reference is added to the bin (DEC-055)
 - the live scanner converges via a temporal lock-in control layer (vote top-1 oracle identity across a rolling window, confidence + margin gated) that pauses auto-scan on lock and presents one confident card for one-tap Add; convergence knobs live in `apps/frontend/src/lib/scan/tuning.ts` (DEC-055)
+
+## Trade Balancer Data Strategy
+
+The Trade Balancer (DEC-086) is an optional, standalone, frontend-only, ephemeral feature; it does not involve the backend, `POST /api/ask-ai`, or any prompt assembly.
+
+- pricing uses a committed, printing-level static price artifact under `apps/frontend/public/data/` (e.g. `cardPrintingPrices.json`), built offline from the Scryfall bulk source by a new build script alongside `data:build` / `data:refresh` (DEC-087, REQ-066)
+- per printing the artifact carries at least: printing id, oracle id, card name, set code, set name, collector number, image url, `usd` (non-foil), and `usd_foil`; entries are indexable by oracle id (list a card's printings for the manual picker) and by printing id (a scanned printing prices directly)
+- missing `usd`/`usd_foil` values are stored as null/absent and consumed as a $0 contribution with a distinct color and caution-triangle indicator in the UI (REQ-065)
+- the artifact records a snapshot date; prices are a static build-time snapshot with **no runtime price fetch and no runtime sync** — refreshed only via the human-approved `data:refresh` then `data:build` (DEC-012 posture, NFR-013)
+- the artifact is lazy-loaded only when the Trade Balancer is first opened; users who never open it pay no startup cost (NFR-013)
+- raw downloaded bulk data remains gitignored; only the trimmed price artifact is committed
+- a side total is `Σ qty × (foil ? usd_foil : usd)`; USD only (EUR/tix/etched-foil and grading/condition out of scope for v1)
+- input reuses the existing scan resolver (DEC-053, REQ-036) and manual card search (DEC-012); the chosen printing is a pricing/display layer only and is never pushed into prompt context, rulings lookup, or the Decrypt-Stack request payload
 
 ## AI Prompt Context Rules
 

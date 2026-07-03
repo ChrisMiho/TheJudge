@@ -429,6 +429,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: `scripts/build-card-metadata.mjs` (`isStandardPrinting` predicate + tiebreak insertion in `choosePreferredCard`); `apps/frontend/public/data/cardMetadata.json` (regenerated artifact)
 - Backed by: DEC-071, REQ-049, REQ-001, REQ-002
 
+### Printing-price artifact build
+
+- Status: planned
+- Summary: Offline build that emits the committed, printing-level USD price artifact from the Scryfall bulk source for the Trade Balancer — per printing `usd`/`usd_foil` plus set/collector/image, indexable by oracle and printing id, with a snapshot date; static snapshot, human-approved refresh, lazy-loaded on first Trade Balancer open. Decided/docs-only, no code under `scripts/` yet.
+- Lives in: (planned) new `scripts/build-card-printing-prices.mjs` (or equivalent) → `apps/frontend/public/data/cardPrintingPrices.json`
+- Backed by: DEC-087, REQ-066, NFR-013
+
 ### Prompt preview
 
 - Status: shipped
@@ -463,6 +470,20 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Summary: Digestible before/after report (System 2 topics, System 3 top-5 with scores, recall hit/miss) for tuning review; shares scoring logic with the harness so report output cannot drift.
 - Lives in: `scripts/retrieval-relevance-report.mjs`, `apps/backend/src/eval/contextEvaluationHarness.ts` (`buildRelevanceReport`)
 - Backed by: DEC-047, REQ-032
+
+## Trade balancer
+
+- Status: planned
+- Summary: Standalone, frontend-only, ephemeral two-sided card-value comparison. Each side is a list of card entries built via scan or manual search; each entry resolves to a specific printing (editable on scans, picked after name-match on manual search), with a foil toggle (non-foil ↔ `usd_foil`), a quantity/multiples, and one-tap removal. Side total = `Σ qty × (foil ? usdFoil : usd)`; the view shows each side's total and the live difference. Missing prices default to $0 with a distinct color + caution-triangle indicator. Decided/docs-only, no code under `apps/` yet.
+- Lives in: (planned) new Trade Balancer view + entry model under `apps/frontend/src/`, reusing the scan resolver (`lib/scan/resolveScanCandidates.ts`) and manual search (`lib/search.ts`); consumes the printing-price artifact `apps/frontend/public/data/cardPrintingPrices.json`
+- Backed by: DEC-086, DEC-087, REQ-064, REQ-065, REQ-066, NFR-013, FLOW-009
+
+## App navigation
+
+- Status: planned
+- Summary: Top-level in-app navigation menu in the top-right header (distinct from and non-overlapping with the corner `ThemeControl`) that switches between Stack Assistant (the existing flow) and Trade Balancer. Frontend-only view switch preserving each mode's in-session state; no persistence across reload, no backend/contract change. Decided/docs-only, no code under `apps/` yet.
+- Lives in: (planned) navigation menu + mode switch in app chrome under `apps/frontend/src/` (`PageShell.tsx` / `App.tsx` area), alongside the existing `ThemeControl.tsx`
+- Backed by: DEC-088, REQ-067, FLOW-010, NFR-001
 
 ## PRD doc traceability (meta)
 
