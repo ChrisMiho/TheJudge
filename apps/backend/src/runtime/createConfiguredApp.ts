@@ -30,6 +30,7 @@ export function createConfiguredApp(repoRoot: string, env: NodeJS.ProcessEnv = p
       debugLoggingEnabled: config.debugLoggingEnabled,
       payloadLoggingEnabled: config.payloadLoggingEnabled,
       askAiProvider: createAskAiProvider(config),
+      askAiProviderMode: config.askAiProvider,
       cardRulingsIndex,
       gameRulesTopics,
       gameRulesRuleIndex,
