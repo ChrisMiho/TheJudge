@@ -1,6 +1,6 @@
 # Slice D — Cost & scale guardrails
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -34,11 +34,11 @@ Bound how far AWS can scale the app up (so a public URL can't generate runaway c
 
 ## Acceptance criteria
 
-- [ ] `aws-bootstrap.sh` contains `put-function-concurrency` using `RESERVED_CONCURRENCY` (default 5)
-- [ ] After bootstrap, `aws lambda get-function-concurrency --function-name thejudge-api` returns the configured ceiling
-- [ ] Budget creation is guarded on `NOTIFICATION_EMAIL`; when set, `aws budgets describe-budgets --account-id <id>` lists the budget; when unset, the script prints the manual fallback and does not fail
-- [ ] CloudFront distribution `PriceClass` remains `PriceClass_100`
-- [ ] `bash -n scripts/aws-bootstrap.sh` reports no syntax errors
+- [x] `aws-bootstrap.sh` contains `put-function-concurrency` using `RESERVED_CONCURRENCY` (default 5)
+- [ ] After bootstrap, `aws lambda get-function-concurrency --function-name thejudge-api` returns the configured ceiling — **verified live in Slice F**
+- [x] Budget creation is guarded on `NOTIFICATION_EMAIL`; idempotent (`describe-budget` before `create-budget`); when unset the script prints the manual console fallback and does not fail. Live `describe-budgets` check deferred to Slice F.
+- [x] CloudFront distribution `PriceClass` remains `PriceClass_100` (unchanged, line ~241)
+- [x] `bash -n scripts/aws-bootstrap.sh` reports no syntax errors; budget JSON parses as valid JSON
 
 ## Verification
 

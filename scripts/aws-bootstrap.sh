@@ -14,6 +14,9 @@ ssm_param_name="${OPENAI_API_KEY_SSM_PARAM:-/thejudge/openai-api-key}"
 openai_model="${OPENAI_MODEL:-gpt-4.1-mini}"
 openai_timeout_ms="${OPENAI_TIMEOUT_MS:-15000}"
 openai_max_retries="${OPENAI_MAX_RETRIES:-2}"
+reserved_concurrency="${RESERVED_CONCURRENCY:-5}"
+budget_limit_usd="${BUDGET_LIMIT_USD:-5}"
+notification_email="${NOTIFICATION_EMAIL:-}"
 github_role_name="${AWS_GITHUB_ROLE_NAME:-$app_name-github-deploy}"
 distribution_comment="${AWS_CLOUDFRONT_COMMENT:-$app_name-web}"
 tmp_dir="$repo_root/.tmp/aws-bootstrap"
@@ -125,6 +128,57 @@ else
 fi
 
 aws lambda wait function-updated --function-name "$lambda_name" --region "$aws_region"
+
+# Gap 2 — hard-cap parallel executions so the public Function URL cannot scale
+# to runaway compute cost. Excess requests throttle (429) instead of scaling out.
+aws lambda put-function-concurrency \
+  --function-name "$lambda_name" \
+  --reserved-concurrent-executions "$reserved_concurrency" \
+  --region "$aws_region" \
+  >/dev/null
+echo "Lambda reserved concurrency: $reserved_concurrency"
+
+# Gap 2 — cost visibility: a low monthly budget with an email alert. Guarded on
+# NOTIFICATION_EMAIL; when unset, print the manual console fallback (no failure).
+if [[ -n "$notification_email" ]]; then
+  cat > "$tmp_dir/budget.json" <<JSON
+{
+  "BudgetName": "$app_name-monthly",
+  "BudgetLimit": { "Amount": "$budget_limit_usd", "Unit": "USD" },
+  "TimeUnit": "MONTHLY",
+  "BudgetType": "COST"
+}
+JSON
+  cat > "$tmp_dir/budget-notifications.json" <<JSON
+[
+  {
+    "Notification": {
+      "NotificationType": "ACTUAL",
+      "ComparisonOperator": "GREATER_THAN",
+      "Threshold": 80,
+      "ThresholdType": "PERCENTAGE"
+    },
+    "Subscribers": [
+      { "SubscriptionType": "EMAIL", "Address": "$notification_email" }
+    ]
+  }
+]
+JSON
+  if aws budgets describe-budget --account-id "$account_id" --budget-name "$app_name-monthly" >/dev/null 2>&1; then
+    echo "AWS budget '$app_name-monthly' already exists; leaving it unchanged."
+  else
+    aws budgets create-budget \
+      --account-id "$account_id" \
+      --budget "$(aws_file_uri "$tmp_dir/budget.json")" \
+      --notifications-with-subscribers "$(aws_file_uri "$tmp_dir/budget-notifications.json")" \
+      >/dev/null
+    echo "AWS budget '$app_name-monthly' created (\$$budget_limit_usd/mo, alert at 80% -> $notification_email)."
+  fi
+else
+  echo "NOTIFICATION_EMAIL unset: skipping AWS Budgets creation."
+  echo "  Manual step: Billing console -> Budgets -> Create budget -> Cost budget,"
+  echo "  monthly limit \$$budget_limit_usd, add an email alert at 80% to your address."
+fi
 
 if ! aws lambda get-function-url-config --function-name "$lambda_name" --region "$aws_region" >/dev/null 2>&1; then
   aws lambda create-function-url-config \
