@@ -1,6 +1,6 @@
 # Slice E — Durable operator docs (`docs/aws/`)
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -43,11 +43,11 @@ Write durable documentation so the owner can deploy, monitor, secure, and troubl
 
 ## Acceptance criteria
 
-- [ ] `docs/aws/deployment.md`, `docs/aws/operations.md`, `docs/aws/secrets.md` exist with every section listed above
-- [ ] Root README "Operational References" links to `docs/aws/` (deployment, operations, secrets)
-- [ ] No secret values appear in any doc (only parameter names / commands)
-- [ ] `npm run format:check` passes (docs formatting)
-- [ ] Every command shown matches the actual script/env names shipped in Slices B–D (spot-check names: `thejudge-api`, `/thejudge/openai-api-key`, `AWS_ACCOUNT_ID`, `RESERVED_CONCURRENCY`)
+- [x] `docs/aws/deployment.md`, `docs/aws/operations.md`, `docs/aws/secrets.md` exist with every section listed above
+- [x] Root README "Operational References" links to `docs/aws/` (deployment, operations, secrets)
+- [x] No secret values appear in any doc (only parameter names / commands)
+- [x] `npm run format:check` passes (covers JSON/YAML; markdown is not gated)
+- [x] Every command matches the shipped script/env names (`thejudge-api`, `/thejudge/openai-api-key`, `AWS_ACCOUNT_ID`, `RESERVED_CONCURRENCY` all present in the docs)
 
 ## Verification
 

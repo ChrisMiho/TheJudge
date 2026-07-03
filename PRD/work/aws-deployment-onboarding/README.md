@@ -82,7 +82,7 @@ These are durable references (survive after the work ships), distinct from this 
 | B | Gap 3 — `quality:check` deploy gate; AWS account ID → GitHub repo variable | done | A | [slice-b](./slice-b-ci-gate-and-account-var.md) |
 | C | Gap 1 — SSM SecureString + Lambda cold-start read; flip to `openai`; IAM grants | done | A | [slice-c](./slice-c-openai-secret-ssm.md) |
 | D | Gap 2 — Lambda reserved concurrency + AWS Budgets alarm | done | A | [slice-d](./slice-d-cost-scale-guardrails.md) |
-| E | `docs/aws/` operator docs (deployment, operations, secrets) + root README link | planned | B, C, D | [slice-e](./slice-e-operator-docs.md) |
+| E | `docs/aws/` operator docs (deployment, operations, secrets) + root README link | done | B, C, D | [slice-e](./slice-e-operator-docs.md) |
 | F | First live deploy + verification on AWS URLs | planned | C, D, E | [slice-f](./slice-f-first-live-deploy.md) |
 
 ## Implementation map
