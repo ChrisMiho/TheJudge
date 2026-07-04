@@ -68,25 +68,24 @@ export function FeaturePortalMenu({ destinations, activeDestinationId, onSelect,
   }
 
   const trigger = (
-    <div ref={containerRef} className={effectiveSlotNode ? "relative" : "fixed left-1/2 top-0 z-30 -translate-x-1/2"}>
+    <div
+      ref={containerRef}
+      className={effectiveSlotNode ? "portal-slot-tab relative" : "fixed left-1/2 top-0 z-30 -translate-x-1/2"}
+    >
       <button
         type="button"
         aria-label="Switch feature"
         aria-haspopup="true"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((current) => !current)}
-        className={
-          effectiveSlotNode
-            ? "motion-hover motion-press motion-focus flex h-11 items-center gap-2 rounded-2xl border border-accent/55 bg-zinc-900/80 px-4 text-sm font-medium text-zinc-100 transition hover:bg-zinc-800/90"
-            : "motion-hover motion-press motion-focus flex h-11 items-center gap-2 rounded-b-2xl border border-t-0 border-accent/55 bg-zinc-900/95 px-4 text-sm font-medium text-zinc-100 transition hover:bg-zinc-800/90"
-        }
+        className="motion-hover motion-press motion-focus flex h-11 items-center gap-2 rounded-b-2xl border border-t-0 border-accent/55 bg-zinc-900/95 px-4 text-sm font-medium text-zinc-100 transition hover:bg-zinc-800/90"
       >
         <span aria-hidden="true">☰</span>
         <span>Menu</span>
       </button>
 
       {isOpen && (
-        <div className="absolute left-1/2 top-full w-56 -translate-x-1/2 pt-2">
+        <div className="absolute left-1/2 top-full z-20 w-56 -translate-x-1/2 pt-2">
           {/* Animation lives on this inner box, not the positioned wrapper above — motion-enter's
               keyframe sets `transform` directly, which would otherwise clobber -translate-x-1/2. */}
           <div

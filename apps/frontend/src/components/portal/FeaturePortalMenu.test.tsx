@@ -140,8 +140,12 @@ describe("Slice B: portal chrome integration", () => {
 
     expect(brand).toBeInTheDocument();
     // A header slot is available (StagedStepHeader renders <PortalSlot />), so the button
-    // portals in as an inline element rather than falling back to the fixed floating tab.
-    expect(portalButton.closest("div")?.className).toBe("relative");
+    // renders in normal flow inside the header grid, then lifts via `.portal-slot-tab`'s
+    // negative margin to meet .page-card's own top border (see index.css) — rather than
+    // falling back to the viewport-fixed floating tab.
+    const portalContainerClassName = portalButton.closest("div")?.className ?? "";
+    expect(portalContainerClassName).toContain("portal-slot-tab");
+    expect(portalContainerClassName).not.toContain("fixed");
     expect(brand.compareDocumentPosition(portalButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(portalButton.compareDocumentPosition(stepHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(themeButton.closest("div")?.parentElement?.className).toContain("right-3");
