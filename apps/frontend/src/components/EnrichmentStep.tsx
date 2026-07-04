@@ -488,7 +488,7 @@ export function EnrichmentStep({
 
         {totalCards === 0 ? (
           <p className="rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4 text-sm text-zinc-300">
-            Add at least one card in a selected zone before decrypting.
+            Add at least one card by searching or scanning before decrypting.
           </p>
         ) : showWizard && currentWizardEntry ? (
           <div

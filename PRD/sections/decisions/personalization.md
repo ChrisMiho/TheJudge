@@ -21,11 +21,11 @@ Frontend-only user personalization behavior that changes app presentation withou
   - non-goals: arbitrary RGB/hex picker, per-component overrides, server-synced preferences, account settings, dark/light mode redesign
 
 ### DEC-067
-- Decision: The staged data-collection screens present the active step name inline to the right of the `TheJudge` / `Stack Assistant` brand block in a single header row, rather than stacked below it as a standalone heading.
+- Decision: The staged data-collection screens present the active step name inline to the right of the `TheJudge` / `MTG Assistant` brand block in a single header row, rather than stacked below it as a standalone heading.
 - Status: confirmed
 - Context: Each staged step screen (game context, zone confirmation, zone collection, enrichment) previously rendered the step name as a separate heading below the brand block, consuming vertical space above the working area on small mobile screens. Promoting the step name into the brand header row tightens the chrome and keeps the active step legible at a glance without changing step names, ordering, or flow logic.
 - Impact:
-  - the brand block (`TheJudge` + `Stack Assistant` subtitle) stays the dominant element on the left; the step name aligns to the right of the same row, vertically centered and styled as a secondary label that is smaller than the brand title but clearly legible
+  - the brand block (`TheJudge` + `MTG Assistant` subtitle) stays the dominant element on the left; the step name aligns to the right of the same row, vertically centered and styled as a secondary label that is smaller than the brand title but clearly legible
   - applies to the four staged steps: game context, zone confirmation, zone collection, and enrichment
   - the enrichment screen's `View all cards` / `Card-by-card` view-mode toggle stays in its own row below the header; only the step name moves into the header row
   - on widths too narrow for a single row, the step name wraps/stacks under the brand block rather than clipping or truncating

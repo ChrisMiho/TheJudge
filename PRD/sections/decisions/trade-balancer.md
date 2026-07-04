@@ -17,7 +17,7 @@ Two-sided card-value trade balancer: a standalone frontend-only feature that com
   - prices are a **static build-time snapshot** (DEC-088); there is no live/real-time price lookup, no runtime sync, and the UI may surface the snapshot date ("prices as of …")
   - the feature is **ephemeral**: no trade history, no persistence across reload, no marketplace/transaction handling, and no automated "suggest cards to balance" logic
   - **frontend-only, contract-frozen:** no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly (`buildPromptContext`/`buildPromptText`), the provider boundary, `POST /api/ask-ai`, or any product-facing endpoint (DEC-010); the chosen printing is a pricing/display layer and is never pushed into prompt context, rulings lookup, or the Decrypt-Stack `ZoneCardItem` request payload
-  - reached via the top-level navigation menu (DEC-089); the Stack Assistant start screen and its flow are unchanged
+  - reached via the top-level navigation menu (DEC-089); the MTG Assistant start screen and its flow are unchanged
 - Related requirements:
   - REQ-064
   - REQ-065
@@ -50,14 +50,14 @@ Two-sided card-value trade balancer: a standalone frontend-only feature that com
   - source-bulk choice and the exact filter/field set are build-time details validated by outcome (every priced gameplay printing is present and prices display correctly), not product open questions (DEC-071 precedent); `all-cards` (every language) is unnecessary because prices are per printing, not per language
 
 ### DEC-089
-- Decision: TheJudge adds a **top-level in-app navigation menu** — a menu affordance in the top-right header chrome (visually distinct from, and non-overlapping with, the corner `ThemeControl`/palette affordance) that opens a menu the user taps to switch between **Stack Assistant** (the existing Decrypt-Stack flow / start screen) and **Trade Balancer** (DEC-087), with the same menu as the path back. Mode switching is a frontend-only view switch that preserves each mode's in-session state; there is no persistence across reload and no backend/contract change.
+- Decision: TheJudge adds a **top-level in-app navigation menu** — a menu affordance in the top-right header chrome (visually distinct from, and non-overlapping with, the corner `ThemeControl`/palette affordance) that opens a menu the user taps to switch between **MTG Assistant** (the existing Decrypt-Stack flow / start screen) and **Trade Balancer** (DEC-087), with the same menu as the path back. Mode switching is a frontend-only view switch that preserves each mode's in-session state; there is no persistence across reload and no backend/contract change.
 - Status: confirmed
 - Context: The trade balancer is a second top-level surface alongside the existing core flow, so the app needs a way to move between them. The user asked for a deliberate menu button in the top-right header — not tucked in the corner like the palette selector — that opens a menu and offers the destinations. `ThemeControl` already occupies a global corner affordance and must keep working; a scan-control overlap once caused a misclick hazard (DEC-065), so the new menu must be positioned so it never overlaps the palette control. The existing start screen and staged flow are unchanged — this is additive chrome and routing, not a redesign of either surface.
 - Impact:
   - a navigation-menu affordance sits in the **top-right header** on every screen, distinct from `ThemeControl` (which stays where it is); the two controls have non-overlapping visual bounds and pointer hit areas (DEC-065 precedent)
-  - opening the menu lists the destinations — **Stack Assistant** and **Trade Balancer** — with the current mode indicated; selecting one switches the active view, and the same menu returns the user to the other mode
-  - switching modes is a **frontend-only view switch**: each mode's in-session state is preserved while the app stays loaded (a user can move to Trade Balancer and back without losing an in-progress Stack Assistant flow, and vice versa); nothing is persisted across a page reload (consistent with the ephemeral posture of both the core loop and DEC-087)
-  - the Stack Assistant start screen, staged flow, and answered/conversation view are unchanged; the menu is additive and does not alter any step logic or payload
+  - opening the menu lists the destinations — **MTG Assistant** and **Trade Balancer** — with the current mode indicated; selecting one switches the active view, and the same menu returns the user to the other mode
+  - switching modes is a **frontend-only view switch**: each mode's in-session state is preserved while the app stays loaded (a user can move to Trade Balancer and back without losing an in-progress MTG Assistant flow, and vice versa); nothing is persisted across a page reload (consistent with the ephemeral posture of both the core loop and DEC-087)
+  - the MTG Assistant start screen, staged flow, and answered/conversation view are unchanged; the menu is additive and does not alter any step logic or payload
   - the menu is chrome only: no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, `POST /api/ask-ai`, or any product-facing endpoint; it adds no backend route and no server-side navigation state
   - mobile-first: the menu button and its opened menu stay touch-friendly and within the mobile chrome without crowding the header (NFR-001), and any open/close motion stays within the CSS-only, reduced-motion-aware carve-out (NFR-006)
 - Related requirements:
@@ -65,5 +65,5 @@ Two-sided card-value trade balancer: a standalone frontend-only feature that com
   - FLOW-010
   - NFR-001
 - Notes:
-  - the menu is intentionally extensible (future top-level destinations can be added) but v1 lists only Stack Assistant and Trade Balancer
+  - the menu is intentionally extensible (future top-level destinations can be added) but v1 lists only MTG Assistant and Trade Balancer
   - supersedes nothing; `ThemeControl` (DEC-066) placement and behavior are unchanged

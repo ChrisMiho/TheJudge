@@ -177,7 +177,7 @@ export function ZoneCollectionStep({
         <>
           <StagedStepHeader stepName="Add cards to zones" />
           <p className="text-sm text-zinc-400">
-            Add at least one card in a selected zone. Other selected zones may stay empty.
+            Select a zone, then add cards by searching or scanning.
           </p>
         </>
       )}
@@ -282,7 +282,7 @@ export function ZoneCollectionStep({
 
           {!canContinue && (
             <p className="text-xs text-zinc-400">
-              Add at least one card in a selected zone before continuing.
+              Add at least one card by searching or scanning before continuing.
             </p>
           )}
         </>

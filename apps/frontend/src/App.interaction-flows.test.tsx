@@ -612,7 +612,7 @@ describe("App MVP interaction flows", () => {
 
     const continueButton = screen.getByRole("button", { name: "Continue" });
     expect(continueButton).toBeDisabled();
-    expect(screen.getByText("Add at least one card in a selected zone before continuing.")).toBeInTheDocument();
+    expect(screen.getByText("Add at least one card by searching or scanning before continuing.")).toBeInTheDocument();
 
     await addCardToStack(user, "opt", "Opt");
     expect(continueButton).toBeEnabled();
@@ -680,7 +680,7 @@ describe("App MVP interaction flows", () => {
 
     const decryptButton = screen.getByRole("button", { name: "Decrypt Stack" });
     expect(decryptButton).toBeDisabled();
-    expect(screen.getByText("Add at least one card in a selected zone before decrypting.")).toBeInTheDocument();
+    expect(screen.getByText("Add at least one card by searching or scanning before decrypting.")).toBeInTheDocument();
 
     await user.click(decryptButton);
     expect(submittedAskAiRequests).toHaveLength(0);
@@ -972,7 +972,7 @@ describe("App MVP interaction flows", () => {
     expect(screen.queryByText("Optional question")).not.toBeInTheDocument();
 
     expect(screen.queryByRole("heading", { name: "Conversation" })).not.toBeInTheDocument();
-    expect(screen.queryByText("Stack Assistant")).not.toBeInTheDocument();
+    expect(screen.queryByText("MTG Assistant")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "TheJudge" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Ask a follow-up…")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();

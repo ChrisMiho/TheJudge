@@ -9,7 +9,7 @@ describe("StagedStepHeader", () => {
     render(<StagedStepHeader stepName="Zone confirmation" />);
 
     expect(screen.getByRole("heading", { name: "TheJudge" })).toBeInTheDocument();
-    expect(screen.getByText("Stack Assistant")).toBeInTheDocument();
+    expect(screen.getByText("MTG Assistant")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Zone confirmation" })).toBeInTheDocument();
   });
 

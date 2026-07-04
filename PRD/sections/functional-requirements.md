@@ -868,7 +868,7 @@
 ### REQ-045
 - Title: Inline step label in the staged header
 - Priority: low
-- Description: On each staged data-collection screen, the active step name must render inline to the right of the `TheJudge` / `Stack Assistant` brand block in a single header row instead of as a standalone heading stacked below it.
+- Description: On each staged data-collection screen, the active step name must render inline to the right of the `TheJudge` / `MTG Assistant` brand block in a single header row instead of as a standalone heading stacked below it.
 - Acceptance Criteria:
   - the brand block remains the dominant element on the left of the header; the step name aligns to the right of the same row and is vertically centered against the brand block
   - the step name is styled as a secondary label that is smaller than the `TheJudge` title yet remains legible
@@ -1424,7 +1424,7 @@
   - the view shows the **difference** between the two totals as an amount and indicates which side is higher (or that the sides are equal)
   - totals and the difference are displayed in USD
   - an entry whose selected-mode price is missing contributes **$0** to its side total and is visibly flagged per REQ-065 (distinct color + caution triangle)
-  - the view is reachable from the top-level navigation menu (REQ-067) and the Stack Assistant flow is unaffected
+  - the view is reachable from the top-level navigation menu (REQ-067) and the MTG Assistant flow is unaffected
   - the trade state is **ephemeral**: no history, no persistence across reload, no marketplace/transaction handling, and no automated balancing suggestions
 - Constraints:
   - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, `POST /api/ask-ai`, or any product-facing endpoint
@@ -1475,7 +1475,7 @@
   - per printing the artifact carries at least: printing id, oracle id, card name, set code, set name, collector number, image url, `usd` (non-foil), and `usd_foil`
   - entries are **indexable by oracle id** (to list a card's printings for the manual picker) and resolvable **by printing id** (so a scanned printing prices directly)
   - missing prices are stored as null/absent (consumed as $0 + caution per REQ-065); the artifact records a **snapshot date**
-  - the artifact is **lazy-loaded only when the Trade Balancer is first opened**; app startup and the Stack Assistant flow are unaffected for users who never open it
+  - the artifact is **lazy-loaded only when the Trade Balancer is first opened**; app startup and the MTG Assistant flow are unaffected for users who never open it
   - `npm run data:build` regenerates the artifact from local inputs; `npm run data:refresh` refreshes the Scryfall bulk source (download is human-approved before it runs) then rebuilds
   - the build degrades gracefully: a missing/failed source keeps the prior committed artifact and does not break other artifact builds
 - Constraints:
@@ -1494,14 +1494,14 @@
 ### REQ-067
 - Title: Top-level app navigation menu
 - Priority: high
-- Description: The app must provide a top-level navigation menu — a menu affordance in the top-right header, distinct from and non-overlapping with the corner `ThemeControl`/palette affordance — that opens a menu to switch between Stack Assistant (the existing flow / start screen) and Trade Balancer, with the same menu as the path back. Switching is a frontend-only view switch that preserves each mode's in-session state (DEC-089).
+- Description: The app must provide a top-level navigation menu — a menu affordance in the top-right header, distinct from and non-overlapping with the corner `ThemeControl`/palette affordance — that opens a menu to switch between MTG Assistant (the existing flow / start screen) and Trade Balancer, with the same menu as the path back. Switching is a frontend-only view switch that preserves each mode's in-session state (DEC-089).
 - Acceptance Criteria:
   - a navigation-menu button sits in the **top-right header** on every screen and is visually distinct from `ThemeControl`, which stays where it is
   - the navigation button and its opened menu have **non-overlapping** visual bounds and pointer hit areas with `ThemeControl` at mobile and desktop sizes (DEC-065 precedent)
-  - opening the menu lists the destinations **Stack Assistant** and **Trade Balancer** with the current mode indicated
+  - opening the menu lists the destinations **MTG Assistant** and **Trade Balancer** with the current mode indicated
   - selecting a destination switches the active view; selecting the current mode is a no-op that does not reset in-progress state
-  - switching to Trade Balancer and back to Stack Assistant (or vice versa) **preserves each mode's in-session state** while the app stays loaded; nothing is persisted across a page reload
-  - the Stack Assistant start screen, staged flow, and answered/conversation view are unchanged by adding the menu
+  - switching to Trade Balancer and back to MTG Assistant (or vice versa) **preserves each mode's in-session state** while the app stays loaded; nothing is persisted across a page reload
+  - the MTG Assistant start screen, staged flow, and answered/conversation view are unchanged by adding the menu
   - any open/close motion is CSS-only and reduced-motion-aware (NFR-006)
 - Constraints:
   - chrome only; no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, `POST /api/ask-ai`, or any product-facing endpoint; no backend route and no server-side navigation state
@@ -1514,7 +1514,7 @@
   - NFR-006
   - FLOW-010
 - Notes:
-  - extensible to future top-level destinations; v1 lists only Stack Assistant and Trade Balancer
+  - extensible to future top-level destinations; v1 lists only MTG Assistant and Trade Balancer
 
 ### REQ-068
 - Title: Responsive scan-view layout
@@ -1597,3 +1597,30 @@
   - NFR-001
 - Notes:
   - triggered by post-AWS-release feedback that the per-screen usage statements were not landing; scope was deliberately narrowed by the product owner from a broad per-screen rewrite to enhancing only the two helper lines that under-explain, leaving self-explanatory screens alone
+
+### REQ-071
+- Title: Remove redundant searching-state label to clear mute-toggle overlap
+- Priority: medium
+- Description: The scan screen's top-left status/convergence indicator must stop visually overlapping the DEC-090 mute toggle (placed in the alignment guide's top-left corner) when the indicator box grows to its two-line searching state. The generic `"Searching for a card…"` label is dropped entirely while searching; the box shows only whichever specific hint/nudge/cue line already applies, or nothing. Copy-only; no repositioning, no scanner-behavior change (DEC-093, refines DEC-090/REQ-068).
+- Acceptance Criteria:
+  - while `isSearching`, the indicator box never renders the literal string `"Searching for a card…"`
+  - when a cause-aware condition hint (DEC-062), detector nudge (DEC-073), or the positive in-zone `"Good — hold steady"` cue (DEC-074/REQ-054) is active, that line renders alone at the top of the box (no generic label above it), shrinking the box to its existing single-hint-line height
+  - when none of those are active while searching, the indicator box renders no text content
+  - `locking` state copy (`Locking on <name>` plus the existing progress bar/vote count) and `camera-error` copy (`Camera unavailable`) are byte-for-byte unchanged
+  - hint/nudge/cue text, wording, and priority order are unchanged (DEC-062/DEC-073/DEC-074 untouched)
+  - tests cover: no "Searching for a card…" text renders during searching (with and without an active hint), the locking and camera-error indicator text are unchanged, and hint/nudge/cue text still renders correctly
+- Constraints:
+  - copy-only change to `indicatorText` in `ScanCameraSurface`; does not reposition the mute toggle, alignment guide, status box, or any other scan control, and does not alter REQ-068's non-overlap acceptance criteria for other control pairs
+  - no change to detection/warp, `recipe.ts`, `cardhashes.bin`, `identify.ts`, the stabilizer/lock gate, auto-add, audio, or the scanned-cards review/remove behavior
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - if this alone does not fully clear the overlap at a given device width, a follow-up positioning fix is out of scope here (DEC-093 note)
+- Dependencies:
+  - DEC-093
+  - DEC-090
+  - REQ-068
+  - DEC-062
+  - DEC-074
+  - REQ-054
+- Notes:
+  - triggered by a real-device screenshot after DEC-090 shipped, showing the mute toggle still visually clipped by the two-line indicator box in its top-left corner
+  - narrower in scope than REQ-068's full non-overlap sweep: this addresses the indicator-box/mute-toggle pairing via copy only, not layout

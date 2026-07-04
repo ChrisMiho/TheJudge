@@ -1,6 +1,6 @@
 # GAMEPLAN — card-trade-balancer
 
-Standalone, frontend-only, ephemeral Card Trade Balancer: two sides, each a card list; per-side USD total and the live difference. New top-level nav menu switches between Stack Assistant and Trade Balancer. Powered by a new committed, lazy-loaded printing-level price artifact. No backend / endpoint / contract change.
+Standalone, frontend-only, ephemeral Card Trade Balancer: two sides, each a card list; per-side USD total and the live difference. New top-level nav menu switches between MTG Assistant and Trade Balancer. Powered by a new committed, lazy-loaded printing-level price artifact. No backend / endpoint / contract change.
 
 Source of truth: `DESIGN-BRIEF.md`, REQ-064–067, NFR-013, FLOW-009/010, DEC-087/088/089.
 
@@ -9,7 +9,7 @@ Source of truth: `DESIGN-BRIEF.md`, REQ-064–067, NFR-013, FLOW-009/010, DEC-08
 Three additive layers, none of which touch the Decrypt-Stack core loop, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any endpoint:
 
 1. **Data layer (Slice A)** — a new build script emits `apps/frontend/public/data/cardPrintingPrices.json` from the local Scryfall bulk source (`apps/frontend/data/scryfall/default-cards.json`), one entry per paper printing with `usd`/`usd_foil` + set/collector/image, plus a snapshot date. A lazy loader (`loadCardPrices.ts`, mirroring `loadScanMap.ts`) fetches it only when the Trade Balancer first opens.
-2. **Chrome layer (Slice B)** — a `NavMenu` in the top-right header (non-overlapping with `ThemeControl`), plus an `appMode` view switch in `App.tsx` that mounts either the existing Stack Assistant flow or the Trade Balancer while preserving each mode's in-session state.
+2. **Chrome layer (Slice B)** — a `NavMenu` in the top-right header (non-overlapping with `ThemeControl`), plus an `appMode` view switch in `App.tsx` that mounts either the existing MTG Assistant flow or the Trade Balancer while preserving each mode's in-session state.
 3. **Feature layer (Slices C, D)** — the Trade Balancer view: two sides, entry model (printing + foil + quantity), a pure pricing engine, manual-search printing picker (C), and scan input with the scanned printing as the default (D).
 
 ### Data flow

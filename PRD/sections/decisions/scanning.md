@@ -467,3 +467,23 @@ Camera card scanning: identification engine, fingerprint library, lock-in UX, an
 - Notes:
   - refines the scan-screen layout established across DEC-057/DEC-060/DEC-061/DEC-065/DEC-083 on the placement/sizing axis only; the behavior each of those decisions specifies is unchanged
   - the exact responsive height bounds and control positions are outcome-validated presentation calibration (DEC-065/DEC-068 precedent), not product open questions — validated by non-overlap at the target widths and by the frame filling the gap on a tall phone without pushing capture off-screen
+
+### DEC-093
+- Decision: The searching-state convergence indicator drops its generic `"Searching for a card…"` label entirely. While `isSearching`, the top-left indicator box shows only whichever specific line already exists in the view-model — a cause-aware condition hint (DEC-062), a detector nudge (DEC-073), or the positive in-zone cue (DEC-074/REQ-054) — and renders nothing when none of those apply. The `locking` copy (`Locking on <name>`) and the `camera-error` copy (`Camera unavailable`) are unchanged. This is a copy-only change to `indicatorText`/`ScanCameraSurface`; no layout, positioning, or scanner-behavior change. Refines DEC-090/REQ-068; supersedes none.
+- Status: confirmed
+- Context: DEC-090 moved the mute toggle from a fixed position into the alignment guide's top-left corner, off the guide's own outline edge, but the guide is a separate, independently-positioned element from the top-left status/convergence indicator box, which anchors to the outer container. On narrower rendered video boxes the guide's left/top inset shrinks toward the container's corner, so the guide-anchored mute toggle can land underneath the container-anchored indicator box. The box grows to two lines whenever a searching-state hint is active (`"Searching for a card…"` plus the hint/nudge/cue line beneath it), and a real-device screenshot after DEC-090 shipped showed the mute toggle's icon still visually clipped by the box in exactly that two-line case — DEC-090 solved debug-toggle/watermark and exit-scan/review-bubble overlap but left this corner pairing unaddressed. Removing the redundant generic label (redundant because the hint/nudge/cue line already communicates that the scanner is actively working) shrinks the box in the situation that causes the overlap.
+- Impact:
+  - `CONDITION_HINT_COPY`-driven hints, the `DETECTOR_NUDGE_COPY` nudge, and the `"Good — hold steady"` in-zone cue keep their existing text and priority (nudge/hint over in-zone cue); only the always-on `"Searching for a card…"` line is removed
+  - while searching with no hint, nudge, or in-zone cue active, the indicator box shows nothing — the box does not render an empty/placeholder line; scanning is still evidenced by the live video feed and the alignment guide
+  - `locking` and `camera-error` indicator copy are unchanged; the locking-state progress bar/vote count is unchanged
+  - this is a text-content change only; it does not reposition the mute toggle, the alignment guide, the status box, or any other scan-screen control, and does not alter REQ-068's non-overlap acceptance criteria for the other control pairs
+  - no scanner-behavior change: no change to detection/warp, `recipe.ts`, `cardhashes.bin`, `identify.ts`, the stabilizer/lock gate (`lockDistance`/`marginMin`), auto-add, audio, or the scanned-cards review/remove behavior
+  - frontend-only with zero scan-time network calls; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+- Related requirements:
+  - REQ-071
+  - REQ-068
+  - REQ-040
+  - NFR-001
+- Notes:
+  - if removing the label alone does not fully clear the overlap on some device width, that is a follow-up layout/positioning fix, out of scope here — this decision is the copy-simplification lever only
+  - refines DEC-090/REQ-068 on the indicator-copy axis; does not reopen DEC-057's three-state indicator or DEC-062/DEC-073/DEC-074's hint/nudge/cue copy or priority

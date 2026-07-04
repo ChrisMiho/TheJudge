@@ -1,7 +1,7 @@
 # overview.md
 
 ## Summary
-MTG Stack Assistant is a mobile-first web application for Magic: The Gathering players.
+MTG Assistant is a mobile-first web application for Magic: The Gathering players.
 
 Its purpose is to help users:
 - search for cards quickly
@@ -36,7 +36,7 @@ The product intentionally keeps context structured but lightweight:
 - optional user question
 - no full legality validation
 
-Beyond the core loop, a standalone **Card Trade Balancer** is a planned optional feature: a frontend-only, ephemeral two-sided card-value comparison (static-snapshot USD prices, per-entry printing + foil + quantity), reached via a top-level navigation menu that switches between it and the Stack Assistant flow (DEC-087, DEC-089). It adds no backend endpoint or prompt/contract change.
+Beyond the core loop, a standalone **Card Trade Balancer** is a planned optional feature: a frontend-only, ephemeral two-sided card-value comparison (static-snapshot USD prices, per-entry printing + foil + quantity), reached via a top-level navigation menu that switches between it and the MTG Assistant flow (DEC-087, DEC-089). It adds no backend endpoint or prompt/contract change.
 
 Intentional constraints are tracked in `goals-and-non-goals.md`.
 

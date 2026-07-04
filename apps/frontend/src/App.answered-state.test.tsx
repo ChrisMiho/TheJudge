@@ -207,12 +207,12 @@ describe("Slice-B: answered-state layout integration", () => {
     expect(await screen.findByText("Initial answer")).toBeInTheDocument();
   }
 
-  it("shows only the TheJudge header without Stack Assistant or Conversation heading", async () => {
+  it("shows only the TheJudge header without MTG Assistant or Conversation heading", async () => {
     const user = userEvent.setup();
     await reachAnsweredState(user);
 
     expect(screen.getByRole("heading", { name: "TheJudge" })).toBeInTheDocument();
-    expect(screen.queryByText("Stack Assistant")).not.toBeInTheDocument();
+    expect(screen.queryByText("MTG Assistant")).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Conversation" })).not.toBeInTheDocument();
   });
 

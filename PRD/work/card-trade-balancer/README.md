@@ -4,7 +4,7 @@ status: active
 
 # card-trade-balancer
 
-Standalone, frontend-only, ephemeral two-sided trade balancer: build two card lists (scan or manual search), each entry a specific printing with foil toggle + quantity, and show each side's total USD value and the live diff so players can trade fairly. Reached via a new top-level navigation menu that switches between it and the Stack Assistant flow.
+Standalone, frontend-only, ephemeral two-sided trade balancer: build two card lists (scan or manual search), each entry a specific printing with foil toggle + quantity, and show each side's total USD value and the live diff so players can trade fairly. Reached via a new top-level navigation menu that switches between it and the MTG Assistant flow.
 
 See `IDEA.md` for the original idea, `DESIGN-BRIEF.md` for the refined scope, and `GAMEPLAN.md` for architecture, data flow, and the verification checklist.
 

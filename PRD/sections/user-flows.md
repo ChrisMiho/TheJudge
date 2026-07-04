@@ -29,7 +29,7 @@
   - if the user changes phase after selecting zones, newly assumed zones are added and existing cards/enrichment are preserved
 - Notes:
   - this is the primary core product flow with staged context capture
-  - each staged step's header presents the active step name inline to the right of the `TheJudge` / `Stack Assistant` brand block in a single row (DEC-067, REQ-045); the answered-state conversation header stays a slim brand-only header with no step name
+  - each staged step's header presents the active step name inline to the right of the `TheJudge` / `MTG Assistant` brand block in a single row (DEC-067, REQ-045); the answered-state conversation header stays a slim brand-only header with no step name
   - staged-flow screen compaction (DEC-076, REQ-056) and optional layout density (DEC-075, REQ-055, FLOW-008) are presentation-only and do not change this flow's logic or payloads
 
 ### FLOW-002
@@ -201,7 +201,7 @@
   3. The added entry shows its printing (set/collector/image), its USD price, a **foil toggle** (non-foil ↔ `usd_foil`), and a **quantity** control; the same card may be added multiple times or carry a quantity ≥ 1.
   4. Each side total updates live as `Σ qty × (foil ? usdFoil : usd)`, and the difference between the two sides updates with an amount and which side is higher (or equal).
   5. The user adds cards to the other side the same way, adjusts foil/quantity, and removes entries as needed until the difference reflects the trade.
-  6. The user reads the balance at a glance and returns to Stack Assistant via the navigation menu when done; trade state is not persisted.
+  6. The user reads the balance at a glance and returns to MTG Assistant via the navigation menu when done; trade state is not persisted.
 - Edge Cases:
   - if the chosen printing has no price for the selected foil mode, the entry contributes **$0**, its price is shown in a distinct color, and a **caution-triangle** indicator marks it so the user knows the value is unknown (REQ-065)
   - the same card may appear more than once on a side; the stack duplicate-block (FLOW-004) and 10-card cap do not apply to trade sides (DEC-087)
@@ -215,21 +215,21 @@
   - prices are a static build-time snapshot; the UI may show the snapshot date (DEC-088, NFR-013)
 
 ### FLOW-010
-- Name: Switch between Stack Assistant and Trade Balancer
-- Trigger: User wants to move between the main Stack Assistant flow and the Trade Balancer
+- Name: Switch between MTG Assistant and Trade Balancer
+- Trigger: User wants to move between the main MTG Assistant flow and the Trade Balancer
 - Preconditions:
   - app is loaded
 - Main Flow:
   1. User taps the navigation-menu button in the **top-right header** (distinct from the corner palette/`ThemeControl` affordance).
-  2. The menu opens and lists **Stack Assistant** and **Trade Balancer**, with the current mode indicated.
+  2. The menu opens and lists **MTG Assistant** and **Trade Balancer**, with the current mode indicated.
   3. User selects the other destination.
   4. App switches the active view to the selected mode without leaving the app or reloading.
   5. To return, the user opens the same menu and selects the other mode.
 - Edge Cases:
   - selecting the current mode is a no-op and does not reset in-progress state
-  - switching modes preserves each mode's in-session state while the app stays loaded (an in-progress Stack Assistant flow survives a trip to the Trade Balancer and back); nothing is persisted across a page reload
+  - switching modes preserves each mode's in-session state while the app stays loaded (an in-progress MTG Assistant flow survives a trip to the Trade Balancer and back); nothing is persisted across a page reload
   - the navigation button and its menu must not overlap or intercept taps meant for `ThemeControl` (DEC-089, DEC-065)
 - Notes:
   - navigation is frontend-only chrome and never changes submitted game context, prompt text, backend API behavior, or AI responses (DEC-089)
-  - the Stack Assistant start screen and staged flow are unchanged; the menu is additive
+  - the MTG Assistant start screen and staged flow are unchanged; the menu is additive
   - `ThemeControl` (FLOW-007 / FLOW-008) placement and behavior are unchanged
