@@ -24,9 +24,9 @@ There is a gap for a fast, narrow-context tool that helps users:
 - get useful AI guidance quickly
 
 ## Constraints on the Solution
-The solution should not try to solve every MTG rules problem in the core product.
+The solution should not try to solve every MTG rules problem, and it is not limited to a single rules-only loop.
 
 It should instead:
-- validate the core flow
-- prove that fast stack-context entry is useful
+- keep stack-context entry fast and useful as the primary MTG Assistant path
+- grow a suite of player-help features without becoming a rules engine
 - avoid heavy rules-engine complexity

@@ -34,7 +34,7 @@ When creating or closing non-section markdown under `PRD/`, also read `instructi
 
 ## Scope Discipline
 
-- The product remains a rules assistant (an assistant, not an official judge or rules engine) unless decisions explicitly expand scope.
+- The product remains an MTG assistant suite (an assistant with player-help features, not an official judge or rules engine) unless decisions explicitly expand scope.
 - Do not pull historical or future roadmap ideas into current work unless promoted via the relevant `sections/decisions/<domain>.md` file and router index line in `sections/decisions.md`.
 - Do not optimize for long-term architecture at the cost of shipping the current slice.
 - Preserve stack ordering, contract stability, and “assistant not judge” framing.

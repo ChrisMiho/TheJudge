@@ -20,7 +20,7 @@ export function StagedStepHeader({ stepName, onBrandClick }: StagedStepHeaderPro
             TheJudge
           </h1>
         )}
-        <p className="text-sm text-zinc-300">Stack Assistant</p>
+        <p className="text-sm text-zinc-300">MTG Assistant</p>
       </div>
       <h2 className="staged-step-name ml-auto text-right text-lg font-semibold text-accent-soft sm:text-xl">{stepName}</h2>
     </header>

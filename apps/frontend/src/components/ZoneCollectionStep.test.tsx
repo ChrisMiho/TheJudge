@@ -165,7 +165,7 @@ describe("ZoneCollectionStep scan focus", () => {
     renderStep([makeZoneCard("opt", "Opt")], "Stacked");
 
     expect(screen.queryByRole("heading", { name: "Add cards to zones" })).not.toBeInTheDocument();
-    expect(screen.queryByText("Add at least one card in a selected zone. Other selected zones may stay empty.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Select a zone, then add cards by searching or scanning.")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Zone tab: Stack" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Stack search input")).not.toBeInTheDocument();
     expect(screen.queryByText("Stack cards (1)")).not.toBeInTheDocument();

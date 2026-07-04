@@ -260,7 +260,7 @@ export default function App() {
 
   function finishZoneCollection(): void {
     if (!canAdvance("zone-collection", { gameContext: { selectedZones, zones: zoneCardsByZone } })) {
-      flashStatus("Add at least one card in a selected zone before continuing.");
+      flashStatus("Add at least one card by searching or scanning before continuing.");
       return;
     }
 
@@ -283,7 +283,7 @@ export default function App() {
     event.preventDefault();
 
     if (!canAdvance("enrichment", { gameContext: { selectedZones, zones: zoneCardsByZone } })) {
-      flashStatus("Add at least one card in a selected zone before decrypting.");
+      flashStatus("Add at least one card by searching or scanning before decrypting.");
       return;
     }
 
@@ -309,7 +309,7 @@ export default function App() {
   async function handleRetry(): Promise<void> {
     if (!canRetry || !gameContext) return;
     if (!canAdvance("enrichment", { gameContext: { selectedZones, zones: zoneCardsByZone } })) {
-      flashStatus("Add at least one card in a selected zone before decrypting.");
+      flashStatus("Add at least one card by searching or scanning before decrypting.");
       return;
     }
 

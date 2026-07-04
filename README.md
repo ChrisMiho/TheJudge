@@ -1,7 +1,7 @@
 # TheJudge
 
-TheJudge is a rules assistant for Magic gameplay questions — it helps players navigate MTG rules, and is not an official judge or deterministic rules engine.
-It helps players build an ordered stack of cards, ask a question, and receive an AI-generated explanation through a backend API.
+TheJudge is an MTG assistant with a suite of features that help players — not an official judge or a deterministic rules engine.
+Its primary feature, **MTG Assistant**, helps players build staged game context, ask a question, and receive an AI-generated explanation through a backend API. Other features (card scanning, personalization, and planned tools such as Trade Balancer) sit alongside it.
 
 ## Start Here
 
@@ -11,8 +11,8 @@ It helps players build an ordered stack of cards, ask a question, and receive an
 
 ## Current Product Status
 
-- Core product: staged zone flow with user-flow refinements and gap fixes promoted into `PRD/sections/`; the core loop is validated (past MVP) and is now being refined toward a first production deployment, not yet deployed to production (`DEC-080`)
-- Baseline: rules assistant with mock-default backend and optional OpenAI provider mode (`DEC-020` in `PRD/sections/decisions/providers-and-contract.md`, indexed from `PRD/sections/decisions.md`)
+- Product: MTG assistant suite (`DEC-094`); primary MTG Assistant loop is validated (past MVP), deployed on AWS with live OpenAI (`DEC-084`), and being refined from real user feedback
+- Baseline: MTG Assistant (staged zone flow + Ask AI), card scanning, personalization, and planned Trade Balancer; mock-default local backend with optional OpenAI provider mode (`DEC-020` in `PRD/sections/decisions/providers-and-contract.md`, indexed from `PRD/sections/decisions.md`)
 - Product source of truth: `PRD/sections/` (start with the `decisions.md` router)
 - Agent workflow skills: see `AGENT-SKILLS.md` (canonical: `.cursor/skills/`)
 

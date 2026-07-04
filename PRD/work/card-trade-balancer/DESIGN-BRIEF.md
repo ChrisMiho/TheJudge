@@ -2,7 +2,7 @@
 
 ## Summary
 
-A standalone, frontend-only, **ephemeral** Card Trade Balancer: two traders each build a list of cards; the app shows each side's total USD value and the live difference so a trade can be balanced at a glance. Reached via a new top-level navigation menu that switches between the existing Stack Assistant flow and the Trade Balancer. No backend, endpoint, or contract change.
+A standalone, frontend-only, **ephemeral** Card Trade Balancer: two traders each build a list of cards; the app shows each side's total USD value and the live difference so a trade can be balanced at a glance. Reached via a new top-level navigation menu that switches between the existing MTG Assistant flow and the Trade Balancer. No backend, endpoint, or contract change.
 
 ## Scope
 
@@ -13,7 +13,7 @@ A standalone, frontend-only, **ephemeral** Card Trade Balancer: two traders each
   - **Duplicates/multiples allowed** on a side (stack duplicate-block and 10-card cap do not apply).
   - **Missing price** for the selected foil mode → contributes **$0**, price shown in a distinct color, plus a **caution-triangle** indicator.
 - **Printing-level price artifact** (REQ-066, DEC-088): new committed, lazy-loaded artifact built offline from the Scryfall bulk source; per printing `usd`/`usd_foil` + set/collector/image; indexable by oracle id (picker) and printing id (scan); records a snapshot date; static snapshot, human-approved refresh only.
-- **Top-level navigation menu** (REQ-067, DEC-089, FLOW-010): a menu affordance in the **top-right header**, distinct from and non-overlapping with `ThemeControl`; lists Stack Assistant and Trade Balancer; switching preserves each mode's in-session state; no reload persistence.
+- **Top-level navigation menu** (REQ-067, DEC-089, FLOW-010): a menu affordance in the **top-right header**, distinct from and non-overlapping with `ThemeControl`; lists MTG Assistant and Trade Balancer; switching preserves each mode's in-session state; no reload persistence.
 
 ## Key decisions
 
@@ -37,7 +37,7 @@ A standalone, frontend-only, **ephemeral** Card Trade Balancer: two traders each
 - REQ-067 — Top-level app navigation menu
 - NFR-013 — Trade-price data footprint and freshness
 - FLOW-009 — Build a two-sided trade and read the balance
-- FLOW-010 — Switch between Stack Assistant and Trade Balancer
+- FLOW-010 — Switch between MTG Assistant and Trade Balancer
 
 ## Reuse (before creating)
 

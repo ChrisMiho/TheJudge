@@ -510,7 +510,7 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ## App navigation
 
 - Status: planned
-- Summary: Top-level in-app navigation menu in the top-right header (distinct from and non-overlapping with the corner `ThemeControl`) that switches between Stack Assistant (the existing flow) and Trade Balancer. Frontend-only view switch preserving each mode's in-session state; no persistence across reload, no backend/contract change. Decided/docs-only, no code under `apps/` yet.
+- Summary: Top-level in-app navigation menu in the top-right header (distinct from and non-overlapping with the corner `ThemeControl`) that switches between MTG Assistant (the existing flow) and Trade Balancer. Frontend-only view switch preserving each mode's in-session state; no persistence across reload, no backend/contract change. Decided/docs-only, no code under `apps/` yet.
 - Lives in: (planned) navigation menu + mode switch in app chrome under `apps/frontend/src/` (`PageShell.tsx` / `App.tsx` area), alongside the existing `ThemeControl.tsx`
 - Backed by: DEC-089, REQ-067, FLOW-010, NFR-001
 

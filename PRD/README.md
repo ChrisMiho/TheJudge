@@ -110,7 +110,7 @@ Read in this order:
 Completed work is promoted into `sections/` and temporary work folders are removed per `instructions/doc-lifecycle.md`.
 
 ## Current Editorial Notes
-- Current product status: the core loop is validated (past MVP) and deployed on AWS with the live OpenAI provider; local development remains mock-default (`DEC-020`, `DEC-084`).
+- Current product status: TheJudge is an MTG assistant suite (`DEC-094`); the primary MTG Assistant loop is validated (past MVP) and deployed on AWS with the live OpenAI provider; local development remains mock-default (`DEC-020`, `DEC-084`).
 - Duplicate-card blocking is temporary and should not be treated as long-term product truth.
 - Stack ordering is critical and must remain consistent across UI, API payloads, and prompt-building logic.
 - Default local provider mode is mock (`ASK_AI_PROVIDER=mock`); live OpenAI path is documented in `DEC-020`, `sections/integrations-and-data.md`, and `apps/backend/src/providers/README.md`.
