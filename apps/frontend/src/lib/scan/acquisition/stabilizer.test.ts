@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { Candidate } from "./types";
-import { ScanStabilizer } from "./stabilizer";
-import { SCAN_STABILIZER_CONFIG } from "./tuning";
+import type { Candidate } from "../types";
+import { ScanStabilizer } from "../stabilizer";
+import { SCAN_STABILIZER_CONFIG } from "../tuning";
 
 // A confident frame: best card clearly ahead of a distinct runner-up, under lockDistance.
 function confident(cardId: string, distance = 30): Candidate[] {

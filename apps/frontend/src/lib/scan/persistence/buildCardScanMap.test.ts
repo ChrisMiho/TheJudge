@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildScanMapEntry } from "../../../../../scripts/build-card-scan-map.mjs";
+import { buildScanMapEntry } from "../../../../../../scripts/build-card-scan-map.mjs";
 
 describe("buildScanMapEntry", () => {
   it("returns oracleId, name, and imageUrl from image_uris.normal", () => {

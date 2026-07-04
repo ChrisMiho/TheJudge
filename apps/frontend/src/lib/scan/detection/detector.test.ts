@@ -9,9 +9,9 @@ import {
   orderQuadCorners,
   polygonArea,
   warpPerspective
-} from "./detector"
-import { loadDetectorFixtures } from "./detectorFixtures"
-import type { RgbImage } from "./types"
+} from "../detector"
+import { loadDetectorFixtures } from "../detectorFixtures"
+import type { RgbImage } from "../types"
 
 function makeImage(width: number, height: number, fill: [number, number, number]): RgbImage {
   const data = new Uint8Array(width * height * 3)

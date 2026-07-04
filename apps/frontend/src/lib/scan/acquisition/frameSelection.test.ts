@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { CARD_HEIGHT, CARD_WIDTH, REGION_A } from "./identify";
-import { FrameSelector } from "./frameSelection";
-import { FRAME_SELECTOR_CURRENT_FRAME_ONLY_WINDOW_SIZE, FRAME_SELECTOR_WINDOW_SIZE } from "./tuning";
-import type { RgbImage } from "./types";
+import { CARD_HEIGHT, CARD_WIDTH, REGION_A } from "../identify";
+import { FrameSelector } from "../frameSelection";
+import { FRAME_SELECTOR_CURRENT_FRAME_ONLY_WINDOW_SIZE, FRAME_SELECTOR_WINDOW_SIZE } from "../tuning";
+import type { RgbImage } from "../types";
 
 function makeImage(
   width: number,

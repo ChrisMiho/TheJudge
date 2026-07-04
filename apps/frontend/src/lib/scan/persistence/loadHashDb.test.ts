@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { readDb, writeDb } from "./dbformat";
+import { readDb, writeDb } from "../dbformat";
 
 function makeDbBytes(): Uint8Array {
   const hashes = new Uint8Array(2 * 96);
@@ -24,7 +24,7 @@ describe("loadHashDb", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
-    await import("./loadHashDb");
+    await import("../loadHashDb");
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -35,7 +35,7 @@ describe("loadHashDb", () => {
     new Uint8Array(responseBody).set(bytes);
     const fetchMock = vi.fn(async () => new Response(responseBody));
     vi.stubGlobal("fetch", fetchMock);
-    const { loadHashDb } = await import("./loadHashDb");
+    const { loadHashDb } = await import("../loadHashDb");
 
     const first = loadHashDb();
     const second = loadHashDb();

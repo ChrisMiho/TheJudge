@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { CARD_HEIGHT, CARD_WIDTH, REGION_A } from "./identify";
-import { scoreFrameQuality } from "./frameQuality";
-import { FRAME_QUALITY_BORDER_BAND_FRACTION } from "./tuning";
-import type { RgbImage } from "./types";
+import { CARD_HEIGHT, CARD_WIDTH, REGION_A } from "../identify";
+import { scoreFrameQuality } from "../frameQuality";
+import { FRAME_QUALITY_BORDER_BAND_FRACTION } from "../tuning";
+import type { RgbImage } from "../types";
 
 function makeImage(
   width: number,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { CardMetadataItem } from "../../types";
-import type { Candidate } from "./types";
-import { resolveScanCandidates, resolveScanCandidatesRanked, type CardScanMap } from "./resolveScanCandidates";
+import type { CardMetadataItem } from "../../../types";
+import type { Candidate } from "../types";
+import { resolveScanCandidates, resolveScanCandidatesRanked, type CardScanMap } from "../resolveScanCandidates";
 
 function makeMetadata(cardId: string, name: string, imageUrl = ""): CardMetadataItem {
   return {

@@ -18,6 +18,34 @@
   padding-bottom: 0.75rem;
 }
 
+/* Mock-mode banner — persistent, non-dismissible bar shown only when the app is
+   built/run with the mock AI provider. Static, high-contrast, no motion. */
+.mock-mode-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;   /* below ThemeControl's z-30 so it stays on top and clickable */
+  padding: 0.5rem 1rem;
+  background-color: rgb(var(--accent-strong));
+  color: rgb(var(--accent-contrast));
+  border-bottom: 1px solid rgb(var(--accent-soft) / 0.6);
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Offset shell content so the fixed banner never covers the header. Applied
+   only in mock builds; live builds render no banner and no offset. */
+.page-shell[data-mock-banner="true"] {
+  padding-top: 3.5rem;
+}
+
+[data-layout-density="slim"] .page-shell[data-mock-banner="true"] {
+  padding-top: 2.75rem;
+}
+
 .page-card {
   margin-left: auto;
   margin-right: auto;

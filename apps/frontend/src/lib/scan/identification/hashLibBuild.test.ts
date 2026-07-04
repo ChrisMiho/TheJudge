@@ -19,7 +19,7 @@ import {
   shouldIncludeScanPrinting,
   summarizeScanCoverage,
   writeFileAtomic
-} from "./hashLibBuild";
+} from "../hashLibBuild";
 
 const tmpDirs: string[] = [];
 

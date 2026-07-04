@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest"
-import baselineEval from "./__fixtures__/detector/baseline-eval.json"
-import { detectCard, detectCardCorners } from "./detector"
+import baselineEval from "../__fixtures__/detector/baseline-eval.json"
+import { detectCard, detectCardCorners } from "../detector"
 import {
   evaluateDetectorFixtures,
   generateDetectorFixtureImage,
   loadDetectorFixtureManifest,
   loadDetectorFixtures,
   loadDetectorRealFrameFixture
-} from "./detectorFixtures"
+} from "../detectorFixtures"
 
 describe("detector fixture corpus", () => {
   it("loads committed provenance for all required detector condition classes", () => {

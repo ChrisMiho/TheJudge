@@ -7,11 +7,11 @@ import {
   conditionQueryImage,
   suppressQueryGlare,
   whiteBalanceQueryImage
-} from "./identify";
-import { decodeRawImageFixture } from "./rawImageFixture";
-import type { HashDb, RgbImage } from "./types";
+} from "../identify";
+import { decodeRawImageFixture } from "../rawImageFixture";
+import type { HashDb, RgbImage } from "../types";
 
-const fixturesDir = resolve(__dirname, "__fixtures__");
+const fixturesDir = resolve(__dirname, "..", "__fixtures__");
 const vectors = JSON.parse(readFileSync(resolve(fixturesDir, "vectors.json"), "utf8")) as {
   autoLevels: { input: string; expectedOutput: string };
   identify: {

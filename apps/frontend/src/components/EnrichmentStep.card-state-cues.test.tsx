@@ -1,65 +1,12 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import type { GameContext, ZoneCardItem } from "../types";
+import { afterEach, describe, expect, it } from "vitest";
+import type { ZoneCardItem } from "../types";
+import { card, renderEnrichment } from "../test/enrichmentStep";
 import { CardSelectionPreview } from "./CardSelectionPreview";
-import { EnrichmentStep } from "./EnrichmentStep";
 
 afterEach(cleanup);
-
-const card: ZoneCardItem = {
-  cardId: "opt",
-  name: "Opt",
-  oracleText: "Scry 1, then draw a card.",
-  imageUrl: "",
-  manaCost: "{U}",
-  manaValue: 1,
-  typeLine: "Instant",
-  colors: ["U"],
-  supertypes: [],
-  subtypes: []
-};
-
-const gameContext: GameContext = {
-  playerCount: 1,
-  players: [{ label: "Player 1", lifeTotal: 20 }],
-  turnPhase: "main_1",
-  activePlayer: "Player 1",
-  selectedZones: ["stack"]
-};
-
-function renderEnrichment(
-  overrides: Partial<Parameters<typeof EnrichmentStep>[0]> = {}
-): void {
-  render(
-    <EnrichmentStep
-      gameContext={gameContext}
-      zones={{ stack: [card] }}
-      onZonesChange={vi.fn()}
-      activePlayers={["Player 1"]}
-      question=""
-      onQuestionChange={vi.fn()}
-      onDecryptStack={vi.fn()}
-      onBack={vi.fn()}
-      canDecrypt
-      isSubmitting={false}
-      answer={null}
-      error={null}
-      canRetry
-      retryCountdown={0}
-      onRetry={vi.fn()}
-      statusMessage={null}
-      isConversationActive={false}
-      isFollowUpSubmitting={false}
-      visibleMessages={[]}
-      frozenGameContext={null}
-      onFollowUp={vi.fn()}
-      onStartOver={vi.fn()}
-      {...overrides}
-    />
-  );
-}
 
 describe("card state motion cues", () => {
   it("animates a newly selected card preview", () => {

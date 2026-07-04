@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveApiBaseUrl, resolveDebugLoggingEnabled } from "./env";
+import { resolveApiBaseUrl, resolveDebugLoggingEnabled, resolveIsMockProvider } from "./env";
 
 describe("frontend env config", () => {
   it("uses localhost backend default when unset", () => {
@@ -33,5 +33,22 @@ describe("frontend env config", () => {
 
   it("throws for invalid debug logging values", () => {
     expect(() => resolveDebugLoggingEnabled("maybe", true, "development")).toThrow(/Invalid VITE_DEBUG_LOGGING value/);
+  });
+
+  it("resolves mock provider only for the mock value", () => {
+    expect(resolveIsMockProvider("mock")).toBe(true);
+    expect(resolveIsMockProvider("openai")).toBe(false);
+    expect(resolveIsMockProvider("")).toBe(false);
+    expect(resolveIsMockProvider(undefined)).toBe(false);
+    expect(resolveIsMockProvider("anthropic")).toBe(false);
+  });
+
+  it("normalizes case and whitespace when resolving mock provider", () => {
+    expect(resolveIsMockProvider(" Mock ")).toBe(true);
+    expect(resolveIsMockProvider("MOCK")).toBe(true);
+  });
+
+  it("never throws on unrecognized provider values", () => {
+    expect(() => resolveIsMockProvider("something-weird")).not.toThrow();
   });
 });

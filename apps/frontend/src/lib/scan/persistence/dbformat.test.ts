@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { readDb, writeDb } from "./dbformat";
+import { readDb, writeDb } from "../dbformat";
 
-const fixturesDir = resolve(__dirname, "__fixtures__");
+const fixturesDir = resolve(__dirname, "..", "__fixtures__");
 
 describe("dbformat readDb", () => {
   it("parses the committed fixture DB (pure binary, decoder-independent)", () => {

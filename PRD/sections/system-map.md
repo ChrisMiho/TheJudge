@@ -236,6 +236,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: shared motion tokens/utilities in `apps/frontend/src/index.css`; staged-flow surfaces in `apps/frontend/src/App.tsx` and `apps/frontend/src/components/{StagedStepHeader,ZoneConfirmStep,ZoneCollectionStep,ZoneCardPicker,CardSelectionPreview,EnrichmentStep,CardPresentation}.tsx`; answered-view surfaces in `apps/frontend/src/components/{ConversationThread,FrozenContextSummary}.tsx`
 - Backed by: DEC-079, REQ-059, NFR-006, FLOW-001, FLOW-002, FLOW-006
 
+## Mock-mode banner
+
+- Status: shipped
+- Summary: Persistent, non-dismissible banner shown at the top of every screen when the app is built/run with the mock AI provider. The mock/live signal is build-time configuration-driven from the single `ASK_AI_PROVIDER` source of truth — `vite.config.ts` bridges `process.env.VITE_ASK_AI_PROVIDER ?? process.env.ASK_AI_PROVIDER` into the client as `import.meta.env.VITE_ASK_AI_PROVIDER`, and `env.ts` resolves it to the `isMockProvider` boolean (mirroring the `resolveDebugLoggingEnabled` pattern; never inferred from `DEV`/`MODE`/`NODE_ENV`/host/answer text, never throws on unknown values). `MockModeBanner` mounts once in `PageShell`, so it covers the empty/home state, all four staged steps, and the answered/conversation view; `PageShell` applies a conditional top-offset (`data-mock-banner`) so the fixed banner never obscures the header, and the banner sits below `ThemeControl`'s z-index. Static, high-contrast, CSS-only (no motion), presentation only — no backend endpoint, ask-AI contract, or mock-response-content change.
+- Lives in: `apps/frontend/vite.config.ts` (define bridge), `apps/frontend/src/lib/env.ts` (`resolveIsMockProvider` + `isMockProvider`), `apps/frontend/src/components/MockModeBanner.tsx`, `apps/frontend/src/components/PageShell.tsx` (mount + offset), `apps/frontend/src/index.css` (`.mock-mode-banner` + `data-mock-banner` offset)
+- Backed by: DEC-085, REQ-063, NFR-006, DEC-020, DEC-017
+
 ## Card search & metadata
 
 - Status: shipped
@@ -422,6 +429,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: `scripts/build-card-metadata.mjs` (`isStandardPrinting` predicate + tiebreak insertion in `choosePreferredCard`); `apps/frontend/public/data/cardMetadata.json` (regenerated artifact)
 - Backed by: DEC-071, REQ-049, REQ-001, REQ-002
 
+### Printing-price artifact build
+
+- Status: planned
+- Summary: Offline build that emits the committed, printing-level USD price artifact from the Scryfall bulk source for the Trade Balancer — per printing `usd`/`usd_foil` plus set/collector/image, indexable by oracle and printing id, with a snapshot date; static snapshot, human-approved refresh, lazy-loaded on first Trade Balancer open. Decided/docs-only, no code under `scripts/` yet.
+- Lives in: (planned) new `scripts/build-card-printing-prices.mjs` (or equivalent) → `apps/frontend/public/data/cardPrintingPrices.json`
+- Backed by: DEC-088, REQ-066, NFR-013
+
 ### Prompt preview
 
 - Status: shipped
@@ -484,6 +498,20 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Summary: Gates every main-branch deploy on `quality:check`, caps Lambda concurrency when the account quota permits, retains the account limit as the fallback cap, and configures a low monthly AWS Budget alert.
 - Lives in: `.github/workflows/deploy-aws.yml`, `scripts/aws-bootstrap.sh`
 - Backed by: DEC-084, NFR-004
+
+## Trade balancer
+
+- Status: planned
+- Summary: Standalone, frontend-only, ephemeral two-sided card-value comparison. Each side is a list of card entries built via scan or manual search; each entry resolves to a specific printing (editable on scans, picked after name-match on manual search), with a foil toggle (non-foil ↔ `usd_foil`), a quantity/multiples, and one-tap removal. Side total = `Σ qty × (foil ? usdFoil : usd)`; the view shows each side's total and the live difference. Missing prices default to $0 with a distinct color + caution-triangle indicator. Decided/docs-only, no code under `apps/` yet.
+- Lives in: (planned) new Trade Balancer view + entry model under `apps/frontend/src/`, reusing the scan resolver (`lib/scan/resolveScanCandidates.ts`) and manual search (`lib/search.ts`); consumes the printing-price artifact `apps/frontend/public/data/cardPrintingPrices.json`
+- Backed by: DEC-087, DEC-088, REQ-064, REQ-065, REQ-066, NFR-013, FLOW-009
+
+## App navigation
+
+- Status: planned
+- Summary: Top-level in-app navigation menu in the top-right header (distinct from and non-overlapping with the corner `ThemeControl`) that switches between Stack Assistant (the existing flow) and Trade Balancer. Frontend-only view switch preserving each mode's in-session state; no persistence across reload, no backend/contract change. Decided/docs-only, no code under `apps/` yet.
+- Lives in: (planned) navigation menu + mode switch in app chrome under `apps/frontend/src/` (`PageShell.tsx` / `App.tsx` area), alongside the existing `ThemeControl.tsx`
+- Backed by: DEC-089, REQ-067, FLOW-010, NFR-001
 
 ## PRD doc traceability (meta)
 
