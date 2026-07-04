@@ -176,3 +176,26 @@ Frontend-only user personalization behavior that changes app presentation withou
   - approved visual direction: restrained ambient accents (Option B), with a baseline accent at rest and stronger hover/focus/current treatment
   - rejected alternatives: interaction-only accents were too subtle to make the selected palette feel cohesive; full themed chrome was too loud and conflicted with the neutral-background hierarchy
   - non-goals: new palettes, picker changes, palette-tinted page backgrounds, theme-specific component overrides, changing card-identity colors, re-animating scanner internals, or introducing a theming/animation framework
+
+### DEC-091
+- Decision: The game-context "Players in game" disclosure row's three controls (expand/collapse toggle, add-player, remove-player) are enlarged to reliably-tappable targets, the expand/collapse arrow is made visibly larger and more prominent as an expander affordance, and the add/remove pair is reordered to `−` (remove) on the left and `+` (add) on the right to match stepper intuition. Presentation/ergonomics only. Refines DEC-076; supersedes none of it.
+- Status: confirmed
+- Context: DEC-076 tightened game-context chrome and called for "wider expand/collapse and add/remove player buttons," but in practice the three controls remain small and hard to tap accurately, the expander glyph (`▸`/`▾`) is too small to notice as an affordance, and the current add-then-remove (`+` left, `−` right) order reads as backwards versus the conventional minus-left/plus-right stepper. This is a focused ergonomics pass on those three controls and the arrow only; it changes no game-context logic, values, player min/max, or data model.
+- Impact:
+  - the three controls in the "Players in game" disclosure row (`App.tsx`) — the expand/collapse toggle, the add-player button, and the remove-last-player button — are enlarged so each presents a comfortable touch target of at least 44×44px, in both chunky and slim density (DEC-075)
+  - the expand/collapse arrow is rendered at a visibly larger, more prominent size so it reads clearly as an expander; its `aria-label`/`aria-expanded` semantics are unchanged
+  - the add/remove pair is reordered so `−` (remove last player) is on the left and `+` (add player) is on the right, matching the conventional stepper layout; button labels, `aria-label`s, handlers (`addPlayer`/`removePlayer`), disabled logic (`MIN_PLAYERS`/`MAX_PLAYERS`), and accent/zinc styling roles are otherwise unchanged
+  - existing ambient-accent treatment on the player-count disclosure row (DEC-081/REQ-060) and its motion classes (DEC-079/NFR-006) are preserved
+  - frontend presentation only — no change to game-context logic, life-total/display-name behavior, player count bounds, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan logic, or data-pipeline behavior
+- Related requirements:
+  - REQ-069
+  - REQ-056
+  - REQ-060
+  - DEC-076
+  - DEC-075
+  - DEC-081
+  - NFR-001
+  - FLOW-001
+- Notes:
+  - approved swap direction: minus-left / plus-right
+  - non-goals: changing player min/max, life-total or display-name logic, redesigning the game-context screen beyond these three controls and the arrow, or any contract/prompt change

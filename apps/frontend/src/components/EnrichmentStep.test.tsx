@@ -1,80 +1,9 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { cleanup, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { GameContext, ZoneCardItem } from "../types";
-import { EnrichmentStep } from "./EnrichmentStep";
+import type { ZoneCardItem } from "../types";
+import { card1, card2, renderEnrichmentWithDuplicates } from "../test/enrichmentStep";
 
 afterEach(cleanup);
-
-const card1: ZoneCardItem = {
-  instanceId: "inst-1",
-  cardId: "opt",
-  name: "Opt",
-  oracleText: "Scry 1, then draw a card.",
-  imageUrl: "",
-  manaCost: "{U}",
-  manaValue: 1,
-  typeLine: "Instant",
-  colors: ["U"],
-  supertypes: [],
-  subtypes: []
-};
-
-const card2: ZoneCardItem = {
-  instanceId: "inst-2",
-  cardId: "opt",
-  name: "Opt",
-  oracleText: "Scry 1, then draw a card.",
-  imageUrl: "",
-  manaCost: "{U}",
-  manaValue: 1,
-  typeLine: "Instant",
-  colors: ["U"],
-  supertypes: [],
-  subtypes: []
-};
-
-const gameContext: GameContext = {
-  playerCount: 2,
-  players: [
-    { label: "Player 1", lifeTotal: 20 },
-    { label: "Player 2", lifeTotal: 20 }
-  ],
-  turnPhase: "main_1",
-  activePlayer: "Player 1",
-  selectedZones: ["stack"]
-};
-
-function renderEnrichmentWithDuplicates(onZonesChange = vi.fn()): ReturnType<typeof userEvent.setup> {
-  const user = userEvent.setup();
-  render(
-    <EnrichmentStep
-      gameContext={gameContext}
-      zones={{ stack: [card1, card2] }}
-      onZonesChange={onZonesChange}
-      activePlayers={["Player 1", "Player 2"]}
-      question=""
-      onQuestionChange={vi.fn()}
-      onDecryptStack={vi.fn()}
-      onBack={vi.fn()}
-      canDecrypt
-      isSubmitting={false}
-      answer={null}
-      error={null}
-      canRetry
-      retryCountdown={0}
-      onRetry={vi.fn()}
-      statusMessage={null}
-      isConversationActive={false}
-      isFollowUpSubmitting={false}
-      visibleMessages={[]}
-      frozenGameContext={null}
-      onFollowUp={vi.fn()}
-      onStartOver={vi.fn()}
-    />
-  );
-  return user;
-}
 
 describe("EnrichmentStep per-instance identity (Slice C)", () => {
   it("removing one duplicate card calls onZonesChange with only the other remaining", async () => {

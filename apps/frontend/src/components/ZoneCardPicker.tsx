@@ -142,25 +142,29 @@ export function ZoneCardPicker({
               Loading scan data...
             </p>
           ) : (
-            <div className="relative">
-              <button
-                type="button"
-                onClick={scan.onExitToManual}
-                className="absolute right-3 top-3 z-20 rounded-lg border border-zinc-600 bg-zinc-950/60 px-3 py-1.5 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
-              >
-                Exit scan
-              </button>
-              <ScanCameraSurface
-                onCapture={() => undefined}
-                identify={scan.identify}
-                onStatusChange={scan.onCameraStatusChange}
-                onAcquisitionDiagnostic={scan.onAcquisitionDiagnostic}
-                convergence={scan.convergence}
-                confirmation={scan.addConfirmation}
-                debug={scan.scanDebug}
-                autoScanFps={3}
-              />
-              <ScanReviewBubble cards={scanSessionCards} onRemove={onRemoveCard} />
+            <div className="space-y-2">
+              <div className="flex min-h-10 items-center justify-end">
+                <button
+                  type="button"
+                  onClick={scan.onExitToManual}
+                  className="min-h-10 rounded-lg border border-zinc-600 bg-zinc-950/60 px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
+                >
+                  Exit scan
+                </button>
+              </div>
+              <div className="relative">
+                <ScanCameraSurface
+                  onCapture={() => undefined}
+                  identify={scan.identify}
+                  onStatusChange={scan.onCameraStatusChange}
+                  onAcquisitionDiagnostic={scan.onAcquisitionDiagnostic}
+                  convergence={scan.convergence}
+                  confirmation={scan.addConfirmation}
+                  debug={scan.scanDebug}
+                  autoScanFps={3}
+                />
+                <ScanReviewBubble cards={scanSessionCards} onRemove={onRemoveCard} />
+              </div>
             </div>
           )}
           {scan.error && (

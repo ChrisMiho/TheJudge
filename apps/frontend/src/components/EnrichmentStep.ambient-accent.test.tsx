@@ -1,63 +1,8 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import type { GameContext, ZoneCardItem } from "../types";
-import { EnrichmentStep } from "./EnrichmentStep";
+import { cleanup, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
+import { renderEnrichment } from "../test/enrichmentStep";
 
 afterEach(cleanup);
-
-const card: ZoneCardItem = {
-  cardId: "opt",
-  name: "Opt",
-  oracleText: "Scry 1, then draw a card.",
-  imageUrl: "",
-  manaCost: "{U}",
-  manaValue: 1,
-  typeLine: "Instant",
-  colors: ["U"],
-  supertypes: [],
-  subtypes: []
-};
-
-const gameContext: GameContext = {
-  playerCount: 1,
-  players: [{ label: "Player 1", lifeTotal: 20 }],
-  turnPhase: "main_1",
-  activePlayer: "Player 1",
-  selectedZones: ["stack"]
-};
-
-function renderEnrichment(
-  overrides: Partial<Parameters<typeof EnrichmentStep>[0]> = {}
-): void {
-  render(
-    <EnrichmentStep
-      gameContext={gameContext}
-      zones={{ stack: [card] }}
-      onZonesChange={vi.fn()}
-      activePlayers={["Player 1"]}
-      question=""
-      onQuestionChange={vi.fn()}
-      onDecryptStack={vi.fn()}
-      onBack={vi.fn()}
-      canDecrypt
-      isSubmitting={false}
-      answer={null}
-      error={null}
-      canRetry
-      retryCountdown={0}
-      onRetry={vi.fn()}
-      statusMessage={null}
-      isConversationActive={false}
-      isFollowUpSubmitting={false}
-      visibleMessages={[]}
-      frozenGameContext={null}
-      onFollowUp={vi.fn()}
-      onStartOver={vi.fn()}
-      {...overrides}
-    />
-  );
-}
 
 function cardSurface(): HTMLElement {
   const surface = document.querySelector<HTMLElement>(".enrichment-card-surface");
@@ -81,8 +26,7 @@ describe("EnrichmentStep ambient accent surfaces", () => {
   });
 
   it("marks card enrichment and question submission current in list mode", async () => {
-    const user = userEvent.setup();
-    renderEnrichment();
+    const user = renderEnrichment();
 
     const viewModeControl = screen.getByRole("button", { name: "View all cards" });
     expect(viewModeControl).toHaveClass("ambient-accent-surface", "ambient-accent-interactive");
@@ -95,8 +39,7 @@ describe("EnrichmentStep ambient accent surfaces", () => {
   });
 
   it("leaves card enrichment resting and marks question submission current after wizard completion", async () => {
-    const user = userEvent.setup();
-    renderEnrichment();
+    const user = renderEnrichment();
 
     await user.click(screen.getByRole("button", { name: "OK — finish enrichment" }));
 

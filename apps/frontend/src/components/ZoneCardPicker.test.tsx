@@ -132,11 +132,16 @@ describe("ZoneCardPicker scan focus (Slice C)", () => {
     expect(document.querySelector(".zone-card-grid")).toBeNull();
   });
 
-  it("renders Exit scan as an absolute overlay button on the camera", () => {
+  it("renders Exit scan above and outside the camera overlay", () => {
     renderPicker({ isOpen: true });
     const exitBtn = screen.getByRole("button", { name: "Exit scan" });
-    expect(exitBtn).toBeInTheDocument();
-    expect(exitBtn).toHaveClass("absolute", "right-3", "top-3", "z-20");
+    const camera = screen.getByTestId("scan-camera");
+    const cameraOverlay = camera.parentElement;
+
+    expect(exitBtn.compareDocumentPosition(camera) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(cameraOverlay).not.toContainElement(exitBtn);
+    expect(exitBtn).not.toHaveClass("absolute", "right-3", "top-3", "z-20");
+    expect(exitBtn).toHaveClass("min-h-10");
   });
 
   it("Exit scan closes scan when clicked", async () => {

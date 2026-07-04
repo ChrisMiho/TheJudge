@@ -11,8 +11,8 @@
 - Description: The core product should optimize for speed of use, structured lightweight context, and simple implementation.
 
 ### GOAL-003
-- Title: Reach production readiness for a first deployment
-- Description: Refine and harden the existing core loop (lightweight game context capture, zone cards when needed, question, and AI response) to production-ready quality so the app can be deployed and gather real user feedback. The original core-loop hypothesis is considered validated (past MVP); the focus is now refinement toward deployment, not proving the loop (`DEC-080`).
+- Title: Operate the first production deployment and gather feedback
+- Description: Keep the deployed core loop reliable, inexpensive, and secure while gathering real user feedback. The original core-loop hypothesis is validated (past MVP), and the first AWS production deployment is live (`DEC-084`).
 
 ## Success Metrics
 - user can add a card to the stack in under 5 seconds
@@ -38,6 +38,7 @@
 - mock-first integration path
 - one main backend endpoint
 - app-wide CSS decorative-motion and visual-feedback baseline with reduced-motion support (DEC-079, REQ-059, NFR-006)
+- AWS production deployment with live OpenAI, automated quality-gated deploys, backend-only secret loading, and cost/scale guardrails (DEC-084)
 
 ## Intentional constraints
 - duplicate-card blocking is a temporary product constraint, not a gameplay rule
@@ -51,6 +52,7 @@
 - optional on-device camera card scanning as an alternate input path into existing zone fields (DEC-050..DEC-053); see `system-map.md` "Card scanning" (status: planned)
 - frontend-only theme palette customization as browser-local personalization, using predefined swatches rather than arbitrary color input (DEC-066, REQ-044); see `system-map.md` "Frontend personalization" (status: planned)
 - optional global Chunky / Slim layout density as browser-local personalization in the theme panel (DEC-075, REQ-055); see `system-map.md` "Frontend personalization"
+- standalone **Card Trade Balancer**: a two-sided, frontend-only, ephemeral card-value comparison (per-entry printing + foil toggle + quantity, scan or manual-search input, static-snapshot USD prices) reached via a top-level navigation menu (DEC-087, DEC-088, DEC-089; REQ-064..REQ-067); see `system-map.md` "Trade balancer" and "App navigation" (status: planned)
 
 ## Product risks
 - **Prompt size vs AI latency:** Game-rules prompt enrichment (DEC-030, REQ-022) materially increases prompt size (~25–32k chars typical/worst case when all 23 curated topics ship). This is an active risk to the 3-second latency success metric, not a temporary scope tradeoff. Monitor after ship.
@@ -69,7 +71,9 @@
 - runtime metadata syncing
 - dependency-heavy or performance-harming animation systems, and motion that ignores `prefers-reduced-motion` (decorative CSS motion itself is in scope per DEC-079, NFR-006; this non-goal narrows the prior blanket "animation-heavy UI" exclusion)
 - multiple product-facing backend endpoints
-- printing disambiguation, grading, pricing, or multi-card-per-frame detection in card scanning (DEC-053)
+- grading and multi-card-per-frame detection in card scanning (DEC-053)
+- pricing and printing disambiguation remain out of the **card-scanning** feature (DEC-053), but are **in scope for the Trade Balancer** as a static-snapshot USD value aid and printing picker (DEC-087); this narrows the prior blanket pricing/printing-disambiguation exclusion — live/real-time price sync stays out of scope
+- live/real-time card price sync, price history, marketplace/transaction handling, and automated "suggest cards to balance" logic in the Trade Balancer (DEC-087)
 - arbitrary theme color input, per-component theme overrides, server-synced theme preferences, account-based theme settings, and dark/light mode redesign for theme customization (DEC-066)
 - server-synced layout-density preferences, account-based density settings, viewport locking, and sticky-footers redesign for layout compaction (DEC-075, DEC-076)
 

@@ -1381,3 +1381,219 @@
 - Notes:
   - refines DEC-057's three-state convergence indicator by adding a spatial on-card cue alongside the existing text indicator
   - the live locking outline differs from the static alignment-template guide frame (REQ-041 note) and from the opt-in debug overlay's full geometry + metrics
+
+### REQ-063
+- Title: Mock-mode environment banner
+- Priority: medium
+- Description: When the app is built or run with the mock AI provider, the frontend must show a persistent, non-dismissible banner at the top of every screen so developers immediately know they are on the simulated path rather than live OpenAI. The mock/live signal is build-time configuration-driven from the single `ASK_AI_PROVIDER` source of truth; it is never inferred from a runtime heuristic and never requires a backend endpoint. Presentation only — no backend, contract, or mock-response-content change (DEC-085).
+- Acceptance Criteria:
+  - when the resolved provider is `mock`, a banner reading `⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend` renders fixed at the top of every screen: the empty/home state, all four staged steps (FLOW-001, FLOW-002, FLOW-006), and the answered/conversation view
+  - when the resolved provider is not `mock` (e.g. `openai`), the banner does not render anywhere
+  - the banner is mounted once (in `PageShell`) rather than per-screen; page content is offset so the fixed banner never obscures the header or `ThemeControl`
+  - the banner is persistent and non-dismissible: no close button, toggle, setting, or auto-hide
+  - the mock/live value is resolved from `import.meta.env.VITE_ASK_AI_PROVIDER` via a single authoritative resolver in `env.ts` (same shape as `resolveDebugLoggingEnabled`), which `vite.config.ts` populates from `process.env.ASK_AI_PROVIDER`; a directly-set `VITE_ASK_AI_PROVIDER` build var overrides it
+  - the signal is not derived from `import.meta.env.DEV`, `MODE`, `NODE_ENV`, the deploy host, or the "MOCK RESPONSE" answer text
+  - running `npm run dev` / `dev:mock` shows the banner on load; a build/run with `ASK_AI_PROVIDER=openai` shows no banner
+  - styling is static, high-contrast, and unmistakable, uses existing theme tokens, is CSS-only and reduced-motion-safe (NFR-006), and introduces no animation library
+  - `MockModeBanner` has unit coverage for both mock (renders, correct copy) and non-mock (absent) resolutions; the `env.ts` resolver is unit-tested for `mock`, `openai`, empty/undefined, and override cases
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, backend routes, or mock-response content
+  - do not add a backend health/status endpoint or any runtime provider-mode fetch (explicit non-goal)
+  - keep `ASK_AI_PROVIDER` as the single mode source of truth; do not introduce a second independently-maintained frontend mode flag that could drift
+  - no banner in a production build unless mock mode is explicitly configured at build time
+  - reuse the existing `env.ts` resolver pattern; do not duplicate provider-mode parsing across files
+- Dependencies:
+  - DEC-085
+  - DEC-020
+  - DEC-017
+  - NFR-006
+  - FLOW-001
+  - FLOW-002
+  - FLOW-006
+- Notes:
+  - build-time-only by necessity: a static frontend cannot read runtime provider state without a backend endpoint, which is a non-goal
+  - `PageShell` is the single global wrapper for all screens, so one mount covers the full flow plus the answered view
+
+### REQ-064
+- Title: Two-sided trade balancer screen
+- Priority: high
+- Description: The app must provide a standalone Trade Balancer view where two traders each build a list of cards and the app shows each side's total USD value and the live difference between the two sides, so players can see whether a trade is balanced and by how much. Frontend-only and ephemeral; no backend, endpoint, or contract change (DEC-087).
+- Acceptance Criteria:
+  - the view presents two sides (**Side A** and **Side B**), each an ordered list of card entries
+  - each side shows a running **total** = `Σ qty × (foil ? usdFoil : usd)` across its entries, updating live as entries are added, removed, re-priced, foil-toggled, or quantity-changed
+  - the view shows the **difference** between the two totals as an amount and indicates which side is higher (or that the sides are equal)
+  - totals and the difference are displayed in USD
+  - an entry whose selected-mode price is missing contributes **$0** to its side total and is visibly flagged per REQ-065 (distinct color + caution triangle)
+  - the view is reachable from the top-level navigation menu (REQ-067) and the Stack Assistant flow is unaffected
+  - the trade state is **ephemeral**: no history, no persistence across reload, no marketplace/transaction handling, and no automated balancing suggestions
+- Constraints:
+  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, `POST /api/ask-ai`, or any product-facing endpoint
+  - USD only (Scryfall `usd` / `usd_foil`); EUR, tix, etched-foil, and grading/condition are out of scope for v1
+  - mobile-first, touch-friendly layout (NFR-001)
+- Dependencies:
+  - DEC-087
+  - REQ-065
+  - REQ-066
+  - REQ-067
+  - NFR-013
+  - FLOW-009
+- Notes:
+  - a trade side is a value list, not the stack: the duplicate-block (REQ-009/FLOW-004) and 10-card cap (REQ-010) do not apply
+
+### REQ-065
+- Title: Trade card entry — printing selection, foil toggle, quantity
+- Priority: high
+- Description: Each card added to a trade side must resolve to a specific printing carrying its own USD price, support switching between non-foil and foil price, and support a quantity/multiples so the same card can appear more than once on a side. Entries are built via the existing scan and manual-search input paths (DEC-087).
+- Acceptance Criteria:
+  - each entry carries a chosen **printing** (printing id, set, collector number, image, non-foil `usd`, foil `usd_foil`), a **foil** flag, and a **quantity** ≥ 1
+  - **scan input:** the existing scan engine identifies the card and the **scanned printing** (its `Candidate.card_id`, DEC-070) is the entry's default printing; the user can **change the printing** to any other printing of that card
+  - **manual search input:** the user finds a card by name via the existing local search (DEC-012), then **chooses the correct printing** from that card's printing list before it is added; the chosen printing's price applies
+  - the **foil toggle** switches the entry's contribution between `usd` and `usd_foil`; default is non-foil
+  - **quantity/multiples:** the same card (or printing) may appear multiple times on a side, via repeated adds and/or a per-entry quantity control; each unit counts toward the side total; the stack duplicate-block does not apply
+  - **missing price:** when the selected foil mode has no price for the chosen printing, the entry's contribution defaults to **$0**, the entry's price is rendered in a **distinct color** from priced entries, and the entry shows a **caution-triangle** indicator communicating that the value is unknown
+  - each entry can be **removed** from its side
+  - the printing shown and priced uses the price artifact (REQ-066); no runtime network call is made to price or list printings
+- Constraints:
+  - printing selection is a pricing/display layer only; it is never pushed into prompt context, rulings lookup, or the Decrypt-Stack request payload, and does not change the DEC-053 oracle-level scan-identity model
+  - USD only; foil handling is non-foil vs `usd_foil` (etched-foil out of scope for v1)
+- Dependencies:
+  - DEC-087
+  - DEC-088
+  - REQ-066
+  - REQ-036
+  - REQ-064
+  - FLOW-009
+- Notes:
+  - reuses the existing scan resolver (REQ-036) and manual search (REQ-002/REQ-003) as input; the printing pick and pricing are the new layer
+
+### REQ-066
+- Title: Printing-level price data artifact
+- Priority: high
+- Description: Add a build step that emits a committed, printing-level USD price artifact from the existing Scryfall bulk source, covering every paper printing with its non-foil and foil price plus the fields needed to identify, display, and list printings, so the trade balancer can price scanned and manually chosen printings with no runtime network calls (DEC-088).
+- Acceptance Criteria:
+  - a build script (alongside `data:build` / `data:refresh`) emits a committed printing-level price artifact under `apps/frontend/public/data/` from the local Scryfall bulk source
+  - per printing the artifact carries at least: printing id, oracle id, card name, set code, set name, collector number, image url, `usd` (non-foil), and `usd_foil`
+  - entries are **indexable by oracle id** (to list a card's printings for the manual picker) and resolvable **by printing id** (so a scanned printing prices directly)
+  - missing prices are stored as null/absent (consumed as $0 + caution per REQ-065); the artifact records a **snapshot date**
+  - the artifact is **lazy-loaded only when the Trade Balancer is first opened**; app startup and the Stack Assistant flow are unaffected for users who never open it
+  - `npm run data:build` regenerates the artifact from local inputs; `npm run data:refresh` refreshes the Scryfall bulk source (download is human-approved before it runs) then rebuilds
+  - the build degrades gracefully: a missing/failed source keeps the prior committed artifact and does not break other artifact builds
+- Constraints:
+  - static committed snapshot; no runtime price fetch and no runtime metadata/library sync (DEC-012 posture)
+  - raw downloaded bulk data remains gitignored and is not committed; only the trimmed price artifact is committed
+  - no change to `cardMetadata.json`, `cardScanMap.json`, `cardhashes.bin`, the scan recipe/identify/lock boundary, `AskAiRequest`, prompt assembly, the provider boundary, or any endpoint
+- Dependencies:
+  - DEC-088
+  - DEC-012
+  - REQ-065
+  - NFR-013
+  - data pipeline (`scripts/`)
+- Notes:
+  - source-bulk choice and the exact filter/field set are build-time details validated by outcome (every priced gameplay printing present, prices display correctly); `all-cards` (every language) is unnecessary because prices are per printing
+
+### REQ-067
+- Title: Top-level app navigation menu
+- Priority: high
+- Description: The app must provide a top-level navigation menu — a menu affordance in the top-right header, distinct from and non-overlapping with the corner `ThemeControl`/palette affordance — that opens a menu to switch between Stack Assistant (the existing flow / start screen) and Trade Balancer, with the same menu as the path back. Switching is a frontend-only view switch that preserves each mode's in-session state (DEC-089).
+- Acceptance Criteria:
+  - a navigation-menu button sits in the **top-right header** on every screen and is visually distinct from `ThemeControl`, which stays where it is
+  - the navigation button and its opened menu have **non-overlapping** visual bounds and pointer hit areas with `ThemeControl` at mobile and desktop sizes (DEC-065 precedent)
+  - opening the menu lists the destinations **Stack Assistant** and **Trade Balancer** with the current mode indicated
+  - selecting a destination switches the active view; selecting the current mode is a no-op that does not reset in-progress state
+  - switching to Trade Balancer and back to Stack Assistant (or vice versa) **preserves each mode's in-session state** while the app stays loaded; nothing is persisted across a page reload
+  - the Stack Assistant start screen, staged flow, and answered/conversation view are unchanged by adding the menu
+  - any open/close motion is CSS-only and reduced-motion-aware (NFR-006)
+- Constraints:
+  - chrome only; no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, `POST /api/ask-ai`, or any product-facing endpoint; no backend route and no server-side navigation state
+  - mobile-first: the menu must stay touch-friendly and not crowd the header (NFR-001)
+- Dependencies:
+  - DEC-089
+  - DEC-066
+  - REQ-064
+  - NFR-001
+  - NFR-006
+  - FLOW-010
+- Notes:
+  - extensible to future top-level destinations; v1 lists only Stack Assistant and Trade Balancer
+
+### REQ-068
+- Title: Responsive scan-view layout
+- Priority: medium
+- Description: The camera scan view must lay out its overlay controls so every element (status/convergence indicator, mute toggle, exit-scan control, scanned-cards review bubble, debug toggle, capture button, and the "Powered by Cardomancer" watermark) stays legible and non-overlapping across common phone widths, and the camera frame must consume the available vertical space on tall phones instead of leaving a large gap below it. Presentation-only; scanner behavior is unchanged.
+- Acceptance Criteria:
+  - at representative phone widths (≤360px, 390px, 414px), no two scan controls share overlapping visual bounds or pointer hit areas: the status/convergence indicator and mute toggle (top-left), the exit-scan control, the scanned-cards review bubble (top-right, DEC-065), the debug toggle, the capture button, and the Cardomancer watermark are all independently visible and tappable
+  - the debug toggle is correctly centered (the corrupted `-tranzinc-x-1/2` utility is fixed to a valid centering transform) and its bounds/hit area do not overlap the Cardomancer watermark at any supported width — extending DEC-065's non-overlap guarantee to include the watermark
+  - the exit-scan control is lifted out of the camera-feed overlay into a slim control row above the frame, so the top-right region reserved for the scanned-cards review bubble (DEC-065) is no longer intruded upon and the top edge is not crowded
+  - the mute toggle sits in the alignment guide's top-left corner (off the guide's outline edge) and the "Powered by Cardomancer" watermark sits centered inside the guide's lower edge; both render at ~90% opacity so a hint of the card shows through while they stay clearly legible. Placement is overlay-only and has no effect on detection (the detector reads the raw camera frame, not the composited DOM)
+  - the camera frame is responsive: on tall phones it grows to consume available viewport height (replacing the fixed `aspect-[3/4]`), bounded by a max/min so the exit row and the capture button remain visible without page scroll; the card-shaped alignment guide scales with the frame
+  - the camera feed keeps `object-cover`, so a taller frame shows more vertical field rather than distorting the image; the guide, lock outline (DEC-083), and debug overlay (DEC-060) continue to align to the rendered frame
+  - the layout degrades gracefully on short viewports and desktop: where there is no excess vertical space the frame falls back toward its prior sizing and nothing clips or scrolls unexpectedly
+  - scanner behavior is unchanged — no change to detection, warp, identify, the stabilizer/lock gate, auto-add, audio, or the scanned-cards review/remove behavior
+  - tests cover that the exit control renders outside the camera overlay and that the debug toggle and watermark do not share a container/position that overlaps
+- Constraints:
+  - presentation/layout only; frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - not a scan-robustness lever: no change to the shared resize+DCT+hash recipe (`recipe.ts`), `cardhashes.bin`, the matching/orientation/distance logic (`identify.ts`), the stabilizer lock gate (`lockDistance`/`marginMin`), or the DEC-051/REQ-034 parity gates (distinct from DEC-062/DEC-069/DEC-072/DEC-073/DEC-074)
+  - preserve the DEC-065 reserved top-right review-bubble region and the DEC-058 one-tap removal hit area
+  - any layout motion stays CSS-only and `prefers-reduced-motion`-aware (NFR-006); no animation library
+  - preserve readable contrast and touch-friendly controls (NFR-001)
+- Dependencies:
+  - DEC-090
+  - DEC-065
+  - REQ-040
+  - REQ-041
+  - NFR-001
+  - NFR-010
+- Notes:
+  - root causes found in `ScanCameraSurface.tsx`: the debug toggle's `-tranzinc-x-1/2` is a corrupted `-translate-x-1/2` (no transform applied, so the button pins its left edge at center and bleeds into the `bottom-3 right-3` watermark), and the parent's `Exit scan` at `right-3 top-3` shares the top-right with the review bubble at `top-12`
+  - deadspace resolved by stretching the frame (chosen over an inline scanned-cards strip to avoid re-litigating DEC-058's compact-bubble model)
+
+### REQ-069
+- Title: Game-context players-section control ergonomics
+- Priority: low
+- Description: The game-context "Players in game" disclosure row's three controls — the expand/collapse toggle, the add-player button, and the remove-last-player button — must be enlarged for reliable tapping, the expand/collapse arrow must be more visually prominent as an expander affordance, and the add/remove buttons must be reordered to `−` (remove) on the left and `+` (add) on the right to match stepper intuition. Presentation/ergonomics only.
+- Acceptance Criteria:
+  - each of the three disclosure-row controls presents a touch target of at least 44×44px, in both chunky and slim density (DEC-075)
+  - the expand/collapse arrow renders at a visibly larger, more prominent size than before so it clearly reads as an expander; `aria-label` and `aria-expanded` semantics are unchanged and still reflect the collapsed/expanded state
+  - the add/remove pair is ordered `−` (remove last player) on the left and `+` (add player) on the right
+  - each button keeps its existing label, `aria-label`, click handler, disabled behavior at `MIN_PLAYERS`/`MAX_PLAYERS`, and accent/zinc styling role
+  - the existing ambient-accent treatment (REQ-060) and decorative motion classes (NFR-006) on the disclosure row are preserved
+  - tests cover that the remove-player control precedes the add-player control in the players disclosure row and that all three controls render with the enlarged sizing
+- Constraints:
+  - presentation only; no change to game-context logic, life totals, display names, player-count bounds, step names, step ordering, flow logic, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, or data-pipeline behavior
+  - preserve readable contrast and touch-friendly controls (NFR-001) across all palettes and densities
+  - CSS/Tailwind within the existing React/Vite stack; no new component library or framework
+- Dependencies:
+  - DEC-091
+  - DEC-076
+  - DEC-075
+  - REQ-056
+  - REQ-060
+  - NFR-001
+  - FLOW-001
+- Notes:
+  - refines the game-context player controls only; the broader compaction pass (REQ-056) and ambient accents (REQ-060) are otherwise unchanged
+
+### REQ-070
+- Title: Enhance existing per-screen guidance copy
+- Priority: low
+- Description: Sharpen the existing on-screen helper statements that under-explain how to use a screen, so a first-time user understands the control and its behavior from one concise line. This is a copy-only pass that enhances text already rendered; it adds no net-new guidance text, tooltips, popovers, onboarding chrome, or intro lines, and it leaves self-explanatory screens and the playful themed labels/buttons unchanged (DEC-092).
+- Acceptance Criteria:
+  - the game-context "Players in game" helper text reads exactly `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.` (replacing `2 players start at 20 life. 3+ players default to 40 life.`), naming the `▾` expander control while preserving the 20/40 defaults behavior in a single line
+  - the zone-confirmation helper text reads exactly `Select all zones that apply to your question.` (replacing `Select the zones relevant to your question. Defaults are pre-checked based on the turn phase.`); the prior turn-phase-defaults clause is intentionally dropped
+  - no other on-screen guidance/helper text is changed: the "Add cards to zones" helper, the context-enrichment screen, the answered/follow-up view, the scan on-open state, the stack-order note, the tuned scan cause-hints, and the fallback-question note are byte-for-byte unchanged
+  - no net-new guidance text is introduced anywhere — no new intro/orientation lines, tooltips, popovers, coachmarks, modals, or onboarding flow
+  - the `▾`/`▸` expander control referenced by the enhanced game-context copy retains its existing `aria-label`/`aria-expanded` semantics and toggle behavior (REQ-069); the copy change is text-only
+  - tests assert the two enhanced strings render on their respective screens and that the replaced strings no longer appear
+- Constraints:
+  - text/presentation only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, stack-ordering semantics, step names, step ordering, flow logic, or data-pipeline behavior
+  - preserve the themed labels/buttons (`Decrypt Stack`, `Begin stackening!`, `Context enrichment`, `Consulting the stack…`) unchanged
+  - do not reword the tuned scan condition-aware feedback (DEC-062/DEC-072 cause-hints)
+  - keep each enhanced helper to a single concise line, readable in both chunky and slim density and across all palettes (NFR-001)
+- Dependencies:
+  - DEC-092
+  - REQ-069
+  - FLOW-001
+  - FLOW-002
+  - NFR-001
+- Notes:
+  - triggered by post-AWS-release feedback that the per-screen usage statements were not landing; scope was deliberately narrowed by the product owner from a broad per-screen rewrite to enhancing only the two helper lines that under-explain, leaving self-explanatory screens alone

@@ -218,9 +218,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ## Frontend personalization
 
 - Status: shipped
-- Summary: Global theme/settings control for predefined color palettes and optional Chunky / Slim layout density, applied to frontend tokens and persisted per browser. Palette reach extends beyond primary-accent surfaces to the page background end-stop (neutralized to slate, not palette-tinted), previously-fixed semantic green states, and the camera scanner UI. A restrained ambient-accent layer (DEC-081 / REQ-060) extends the palette across the four staged screens and the answered/conversation view: one shared semantic CSS contract (`.ambient-accent-surface` / `.ambient-accent-interactive` / `[data-accent-current="true"]`) defines resting, enhanced hover/focus, and selected/current intensities once from the four existing accent tokens, and only REQ-060's closed surface inventory opts in — static chrome, card-identity rings, and tuned scanner motion stay neutral/unchanged. Layout density mirrors the palette pattern via `data-layout-density` and shared shell CSS classes for participating density surfaces; `ZoneConfirmStep` is excluded from slim-density visual changes and may use shared shell plumbing only as a rendered visual no-op. Staged-flow screen compaction reduces vertical scroll on game context, zone collection, enrichment list mode, and scan-focused chrome.
+- Summary: Global theme/settings control for predefined color palettes and optional Chunky / Slim layout density, applied to frontend tokens and persisted per browser. Palette reach extends beyond primary-accent surfaces to the page background end-stop (neutralized to slate, not palette-tinted), previously-fixed semantic green states, and the camera scanner UI. A restrained ambient-accent layer (DEC-081 / REQ-060) extends the palette across the four staged screens and the answered/conversation view: one shared semantic CSS contract (`.ambient-accent-surface` / `.ambient-accent-interactive` / `[data-accent-current="true"]`) defines resting, enhanced hover/focus, and selected/current intensities once from the four existing accent tokens, and only REQ-060's closed surface inventory opts in — static chrome, card-identity rings, and tuned scanner motion stay neutral/unchanged. Layout density mirrors the palette pattern via `data-layout-density` and shared shell CSS classes for participating density surfaces; `ZoneConfirmStep` is excluded from slim-density visual changes and may use shared shell plumbing only as a rendered visual no-op. Staged-flow screen compaction reduces vertical scroll on game context, zone collection, enrichment list mode, and scan-focused chrome. The game-context player disclosure uses density-safe 44×44px minimum controls, a prominent accessible expander, and conventional `−`/`+` stepper order.
 - Lives in: `apps/frontend/src/lib/theme/` (palettes, themePrefs, layoutDensityPrefs, applyPalette, applyLayoutDensity), `apps/frontend/src/hooks/useThemePalette.ts`, `apps/frontend/src/hooks/useLayoutDensity.ts`, `apps/frontend/src/components/ThemeControl.tsx`, `apps/frontend/src/components/PageShell.tsx`, `apps/frontend/tailwind.config.ts`, `apps/frontend/src/index.css` (incl. the shared ambient-accent contract), plus surfaces in `App.tsx`, `EnrichmentStep.tsx`, `ZoneCollectionStep.tsx`, `ZoneCardPicker.tsx`, `ZoneConfirmStep.tsx`, `ScanCameraSurface.tsx`, `ScanReviewBubble.tsx`, `ConversationThread.tsx`, `FrozenContextSummary.tsx`
-- Backed by: DEC-066, DEC-068, DEC-075, DEC-076, DEC-081, REQ-044, REQ-046, REQ-055, REQ-056, REQ-060, FLOW-007, FLOW-008, NFR-011
+- Backed by: DEC-066, DEC-068, DEC-075, DEC-076, DEC-081, DEC-091, REQ-044, REQ-046, REQ-055, REQ-056, REQ-060, REQ-069, FLOW-007, FLOW-008, NFR-011
 
 ### Theme palettes
 
@@ -235,6 +235,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Summary: A broadened, app-wide decorative-motion and visual-feedback baseline across the full staged flow (game context, zone confirmation, zone collection, enrichment) and the answered/conversation view — micro-transitions, easing, hover/press/focus states, entrance/exit transitions, and add/remove/success/error state-change cues. CSS-based (no animation library), honors `prefers-reduced-motion`, performance-safe, and changes no behavior, contract, stack ordering, or scan-engine logic. Extends the existing functional wait-state motion (`AskAiWaitingPanel`, inline follow-up spinner); the scan camera convergence UI is excluded.
 - Lives in: shared motion tokens/utilities in `apps/frontend/src/index.css`; staged-flow surfaces in `apps/frontend/src/App.tsx` and `apps/frontend/src/components/{StagedStepHeader,ZoneConfirmStep,ZoneCollectionStep,ZoneCardPicker,CardSelectionPreview,EnrichmentStep,CardPresentation}.tsx`; answered-view surfaces in `apps/frontend/src/components/{ConversationThread,FrozenContextSummary}.tsx`
 - Backed by: DEC-079, REQ-059, NFR-006, FLOW-001, FLOW-002, FLOW-006
+
+## Mock-mode banner
+
+- Status: shipped
+- Summary: Persistent, non-dismissible banner shown at the top of every screen when the app is built/run with the mock AI provider. The mock/live signal is build-time configuration-driven from the single `ASK_AI_PROVIDER` source of truth — `vite.config.ts` bridges `process.env.VITE_ASK_AI_PROVIDER ?? process.env.ASK_AI_PROVIDER` into the client as `import.meta.env.VITE_ASK_AI_PROVIDER`, and `env.ts` resolves it to the `isMockProvider` boolean (mirroring the `resolveDebugLoggingEnabled` pattern; never inferred from `DEV`/`MODE`/`NODE_ENV`/host/answer text, never throws on unknown values). `MockModeBanner` mounts once in `PageShell`, so it covers the empty/home state, all four staged steps, and the answered/conversation view; `PageShell` applies a conditional top-offset (`data-mock-banner`) so the fixed banner never obscures the header, and the banner sits below `ThemeControl`'s z-index. Static, high-contrast, CSS-only (no motion), presentation only — no backend endpoint, ask-AI contract, or mock-response-content change.
+- Lives in: `apps/frontend/vite.config.ts` (define bridge), `apps/frontend/src/lib/env.ts` (`resolveIsMockProvider` + `isMockProvider`), `apps/frontend/src/components/MockModeBanner.tsx`, `apps/frontend/src/components/PageShell.tsx` (mount + offset), `apps/frontend/src/index.css` (`.mock-mode-banner` + `data-mock-banner` offset)
+- Backed by: DEC-085, REQ-063, NFR-006, DEC-020, DEC-017
 
 ## Card search & metadata
 
@@ -308,7 +315,8 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Status: shipped
 - Summary: Hands-free scan entry point beside manual search: batch scan → confident lock → auto-add → resume loop with no Accept tap and no candidate-list pick. A live `searching`/`locking on: <name>`/`locked` indicator (replacing the raw status pill and `Camera: <status>` debug line) shows convergence, including a positive "Good — hold steady" cue when the current frame is good enough to lock but has not yet accumulated the votes. Each auto-add plays a CSS-only thumbs-up confirmation popup (NFR-006); a top-right scanned-cards review bubble lists this-session adds, shows the running count, and offers one-tap, no-confirmation removal of a wrong auto-add. Duplicate-stack/stack-limit blocks surface as non-blocking notices and scanning continues. Feeds the existing preview/add/owner/duplicate-block/stack-limit/removal flow unchanged. Manual tap-capture remains; manual search is reached via Exit scan — the in-scan low-confidence manual-search escalation prompt does not render (DEC-076). While scan is open, zone-collection search, card list, and outer staged-flow navigation/action buttons are hidden; scan-local controls including Capture remain available (DEC-076). Card-back prompt descoped (DEC-055). Audio "ding" confirmation is tracked separately under **Scan audio confirmation** (REQ-042 / DEC-061, shipped).
 - Lives in: `apps/frontend/src/components/{ZoneCardPicker,ZoneCollectionStep,ScanReviewBubble}.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`, `apps/frontend/src/index.css`
-- Backed by: REQ-038, REQ-040, REQ-054, REQ-056, DEC-052, DEC-055, DEC-056, DEC-057, DEC-058, DEC-074, DEC-076
+- Backed by: REQ-038, REQ-040, REQ-054, REQ-056, REQ-068, DEC-052, DEC-055, DEC-056, DEC-057, DEC-058, DEC-074, DEC-076, DEC-090
+- Responsive scan-layout closeout (shipped 2026-07-03, `mobile-scan-layout`): the debug toggle is correctly centered; mute and Cardomancer attribution are anchored inside the alignment guide with separate non-overlapping bounds; `Exit scan` sits in a normal-flow row above the feed and outside the DEC-065 review-bubble region; and the camera frame uses a bounded dynamic-viewport height while preserving `object-cover`. The guide, lock outline, and debug overlay continue to scale with the shared frame wrapper. Scanner behavior and public contracts are unchanged.
 
 ### Scan audio confirmation
 
@@ -422,6 +430,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: `scripts/build-card-metadata.mjs` (`isStandardPrinting` predicate + tiebreak insertion in `choosePreferredCard`); `apps/frontend/public/data/cardMetadata.json` (regenerated artifact)
 - Backed by: DEC-071, REQ-049, REQ-001, REQ-002
 
+### Printing-price artifact build
+
+- Status: planned
+- Summary: Offline build that emits the committed, printing-level USD price artifact from the Scryfall bulk source for the Trade Balancer — per printing `usd`/`usd_foil` plus set/collector/image, indexable by oracle and printing id, with a snapshot date; static snapshot, human-approved refresh, lazy-loaded on first Trade Balancer open. Decided/docs-only, no code under `scripts/` yet.
+- Lives in: (planned) new `scripts/build-card-printing-prices.mjs` (or equivalent) → `apps/frontend/public/data/cardPrintingPrices.json`
+- Backed by: DEC-088, REQ-066, NFR-013
+
 ### Prompt preview
 
 - Status: shipped
@@ -456,6 +471,48 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Summary: Digestible before/after report (System 2 topics, System 3 top-5 with scores, recall hit/miss) for tuning review; shares scoring logic with the harness so report output cannot drift.
 - Lives in: `scripts/retrieval-relevance-report.mjs`, `apps/backend/src/eval/contextEvaluationHarness.ts` (`buildRelevanceReport`)
 - Backed by: DEC-047, REQ-032
+
+## AWS production deployment
+
+- Status: shipped
+- Summary: Runs the live OpenAI-backed app on a low-cost AWS serverless stack using AWS-provided URLs, automated quality-gated deploys, backend-only secret loading, and explicit cost/scale guardrails.
+- Lives in: `.github/workflows/deploy-aws.yml`, `scripts/aws-{bootstrap,deploy}.sh`, `scripts/package-lambda.sh`, `apps/backend/src/lambda.ts`, `docs/aws/`
+- Backed by: DEC-084, GOAL-003, NFR-003, NFR-004
+
+### Serverless hosting
+
+- Status: shipped
+- Summary: Serves the static frontend from a private S3 origin through CloudFront and the backend from Lambda through a public Function URL, without a custom domain.
+- Lives in: `scripts/aws-bootstrap.sh`, `scripts/aws-deploy.sh`, `apps/backend/src/lambda.ts`
+- Backed by: DEC-084, NFR-004
+
+### Production secrets and deployment identity
+
+- Status: shipped
+- Summary: Loads the OpenAI key from an SSM SecureString once per Lambda container and deploys from GitHub through OIDC with no static AWS credentials.
+- Lives in: `apps/backend/src/runtime/loadOpenAiKeyFromSsm.ts`, `.github/workflows/deploy-aws.yml`, `scripts/aws-bootstrap.sh`
+- Backed by: DEC-020, DEC-084, NFR-003
+
+### Deploy and cost guardrails
+
+- Status: shipped
+- Summary: Gates every main-branch deploy on `quality:check`, caps Lambda concurrency when the account quota permits, retains the account limit as the fallback cap, and configures a low monthly AWS Budget alert.
+- Lives in: `.github/workflows/deploy-aws.yml`, `scripts/aws-bootstrap.sh`
+- Backed by: DEC-084, NFR-004
+
+## Trade balancer
+
+- Status: planned
+- Summary: Standalone, frontend-only, ephemeral two-sided card-value comparison. Each side is a list of card entries built via scan or manual search; each entry resolves to a specific printing (editable on scans, picked after name-match on manual search), with a foil toggle (non-foil ↔ `usd_foil`), a quantity/multiples, and one-tap removal. Side total = `Σ qty × (foil ? usdFoil : usd)`; the view shows each side's total and the live difference. Missing prices default to $0 with a distinct color + caution-triangle indicator. Decided/docs-only, no code under `apps/` yet.
+- Lives in: (planned) new Trade Balancer view + entry model under `apps/frontend/src/`, reusing the scan resolver (`lib/scan/resolveScanCandidates.ts`) and manual search (`lib/search.ts`); consumes the printing-price artifact `apps/frontend/public/data/cardPrintingPrices.json`
+- Backed by: DEC-087, DEC-088, REQ-064, REQ-065, REQ-066, NFR-013, FLOW-009
+
+## App navigation
+
+- Status: planned
+- Summary: Top-level in-app navigation menu in the top-right header (distinct from and non-overlapping with the corner `ThemeControl`) that switches between Stack Assistant (the existing flow) and Trade Balancer. Frontend-only view switch preserving each mode's in-session state; no persistence across reload, no backend/contract change. Decided/docs-only, no code under `apps/` yet.
+- Lives in: (planned) navigation menu + mode switch in app chrome under `apps/frontend/src/` (`PageShell.tsx` / `App.tsx` area), alongside the existing `ThemeControl.tsx`
+- Backed by: DEC-089, REQ-067, FLOW-010, NFR-001
 
 ## PRD doc traceability (meta)
 
