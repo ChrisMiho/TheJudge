@@ -1,6 +1,6 @@
 # Slice F — First live deployment + verification
 
-## Status: in-progress
+## Status: done
 
 ## Goal
 
