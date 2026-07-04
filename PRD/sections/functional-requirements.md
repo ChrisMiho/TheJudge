@@ -1492,29 +1492,31 @@
   - source-bulk choice and the exact filter/field set are build-time details validated by outcome (every priced gameplay printing present, prices display correctly); `all-cards` (every language) is unnecessary because prices are per printing
 
 ### REQ-067
-- Title: Top-level app navigation menu
+- Title: Feature portal — top-level app navigation
 - Priority: high
-- Description: The app must provide a top-level navigation menu — a menu affordance in the top-right header, distinct from and non-overlapping with the corner `ThemeControl`/palette affordance — that opens a menu to switch between MTG Assistant (the existing flow / start screen) and Trade Balancer, with the same menu as the path back. Switching is a frontend-only view switch that preserves each mode's in-session state (DEC-089).
+- Description: The app must provide a first-class **feature portal** that owns top-level navigation chrome — a menu button in the **top-middle** of the header, distinct from and non-overlapping with both the left brand block and the top-right `ThemeControl`/palette affordance — that opens a dropdown to switch between destinations, with the same menu as the path back. Destinations are supplied by an **extensible registry** so features register as destinations rather than shipping their own entry chrome; v1 registers MTG Assistant (the existing flow / start screen) and Trade Balancer. Switching is a frontend-only view switch that preserves each mode's in-session state (DEC-095, refines DEC-089).
 - Acceptance Criteria:
-  - a navigation-menu button sits in the **top-right header** on every screen and is visually distinct from `ThemeControl`, which stays where it is
-  - the navigation button and its opened menu have **non-overlapping** visual bounds and pointer hit areas with `ThemeControl` at mobile and desktop sizes (DEC-065 precedent)
-  - opening the menu lists the destinations **MTG Assistant** and **Trade Balancer** with the current mode indicated
+  - a navigation menu button sits in the **top-middle** of the header on every screen and is visually distinct from both the brand block and `ThemeControl`, which stays at the top-right corner
+  - the portal button, the brand block, and `ThemeControl` (with its opened menu) have **non-overlapping** visual bounds and pointer hit areas at mobile and desktop sizes (DEC-065 precedent)
+  - destinations come from an **extensible registry** (a feature registers a destination entry rather than adding its own nav chrome); adding a destination requires no portal redesign
+  - opening the menu lists the registered destinations — v1 **MTG Assistant** and **Trade Balancer** — with the current mode indicated
   - selecting a destination switches the active view; selecting the current mode is a no-op that does not reset in-progress state
-  - switching to Trade Balancer and back to MTG Assistant (or vice versa) **preserves each mode's in-session state** while the app stays loaded; nothing is persisted across a page reload
-  - the MTG Assistant start screen, staged flow, and answered/conversation view are unchanged by adding the menu
+  - switching between destinations **preserves each mode's in-session state** while the app stays loaded; nothing is persisted across a page reload
+  - the MTG Assistant start screen, staged flow, and answered/conversation view are unchanged by adding the portal
   - any open/close motion is CSS-only and reduced-motion-aware (NFR-006)
 - Constraints:
   - chrome only; no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, `POST /api/ask-ai`, or any product-facing endpoint; no backend route and no server-side navigation state
-  - mobile-first: the menu must stay touch-friendly and not crowd the header (NFR-001)
+  - mobile-first: the button and its menu must stay touch-friendly and not crowd the header (NFR-001)
 - Dependencies:
+  - DEC-095
   - DEC-089
   - DEC-066
-  - REQ-064
   - NFR-001
   - NFR-006
   - FLOW-010
 - Notes:
-  - extensible to future top-level destinations; v1 lists only MTG Assistant and Trade Balancer
+  - owned by the `feature-portal` work package (elevated out of `card-trade-balancer`); the Trade Balancer registers as a destination and depends on the portal
+  - registry is extensible to future destinations (e.g. `card-lookup-qa`, `rules-lookup`); v1 lists only MTG Assistant and Trade Balancer
 
 ### REQ-068
 - Title: Responsive scan-view layout
@@ -1624,3 +1626,302 @@
 - Notes:
   - triggered by a real-device screenshot after DEC-090 shipped, showing the mute toggle still visually clipped by the two-line indicator box in its top-left corner
   - narrower in scope than REQ-068's full non-overlap sweep: this addresses the indicator-box/mute-toggle pairing via copy only, not layout
+
+### REQ-072
+- Title: Ask AI request mode discriminator
+- Priority: high
+- Description: `POST /api/ask-ai` must accept a `mode`-discriminated `AskAiRequest` supporting the existing staged game flow and a new single-card lookup, on the same endpoint, without breaking existing clients.
+- Acceptance Criteria:
+  - `AskAiRequest` accepts an optional `mode` field; when absent it defaults to `"game"` so existing `{ question, gameContext, conversationHistory? }` payloads validate and behave unchanged
+  - `mode: "game"` payload is `{ mode?: "game", question, gameContext, conversationHistory? }` with today's validation rules (REQ-019) unchanged
+  - `mode: "card"` payload is `{ mode: "card", question, card, conversationHistory? }` where `card` is a single oracle-level card reference resolvable to a committed `CardMetadataItem`; `gameContext` is rejected in card mode
+  - backend Zod validation rejects a `card` field on game mode and a `gameContext` field on card mode
+  - `question` character cap and control-character guardrails are identical across modes
+  - `conversationHistory` is optional in both modes and validated by the existing DEC-038 rules (non-empty array, alternating roles starting with user, last entry assistant, per-message and count caps) unchanged
+  - success `{ answer }` and error response shapes are unchanged for both modes and both `ASK_AI_PROVIDER` providers
+  - `POST /api/ask-ai` route path and provider boundary are unchanged
+- Constraints:
+  - one product-facing endpoint only (DEC-010); no new route
+  - additive amendment to the DEC-020 frozen contract; no existing field changes meaning
+  - `mode: "rules"` is reserved for `rules-lookup` and is out of scope here
+- Dependencies:
+  - DEC-096
+  - DEC-020
+  - DEC-038
+  - REQ-019
+- Notes:
+  - future optional lightweight context on the card branch is tracked as Q-003 and is out of scope
+
+### REQ-073
+- Title: Card Lookup entry and single-card input
+- Priority: high
+- Description: Card Lookup must be reachable as a feature-portal destination and let the user resolve exactly one card by typed search or camera scan, then read its oracle text before asking a question.
+- Acceptance Criteria:
+  - Card Lookup is registered as a feature-portal destination (DEC-095) and opens as a frontend-only view switch with no reload; it ships no navigation menu of its own
+  - the user can find a card by typed autocomplete search reusing REQ-001/REQ-002 behavior (suggestions at 3+ characters, **No matching card found** on no match) and select one card
+  - the user can alternatively scan a card with the existing camera scanner (FLOW-006 engine), which resolves to one oracle-level `CardMetadataItem`
+  - the selected card's name, image when available, and oracle text (including full metadata) are shown before the user submits a question
+  - only one card is active at a time; there are no zones, stack, phase, multi-card setup, or per-card enrichment-editing controls
+  - a freeform question field accepts up to the same character cap as the main flow question (REQ-011)
+- Constraints:
+  - reuse existing search, scan, and card-presentation components; do not fork new identity or metadata models
+  - printing-level scan identity stays presentation-only and is not pushed into the request, prompt, or rulings (DEC-053)
+- Dependencies:
+  - DEC-097
+  - DEC-095
+  - REQ-001
+  - REQ-002
+  - FLOW-006
+- Notes:
+
+### REQ-074
+- Title: Card-mode prompt assembly
+- Priority: high
+- Description: For `mode: "card"`, the backend must assemble a prompt for the single looked-up card that reuses the same per-card enrichment the game flow applies, and omit the game-state-only sections that have no inputs in card mode.
+- Acceptance Criteria:
+  - the assembled card-mode prompt includes the looked-up card's full metadata including oracle text using the same per-card formatting as populated-zone cards (REQ-030), plus that card's WotC rulings (DEC-029)
+  - the assembled prompt includes card/question-driven supplemental rules (System 3, DEC-046 / REQ-022) scored against the card and question
+  - the assembled prompt includes the user `QUESTION` and, when present, the `CONVERSATION HISTORY` section (REQ-027) using the existing placement rules
+  - the assembled prompt omits zone sections, `PHASE GUIDANCE` (REQ-024), System 2 game-state topic gating (DEC-045), and the merged zone scope sentence (DEC-025), because card mode carries no game state
+  - the same enrichment helper functions used by the game flow are reused (single authoritative definitions), not re-implemented for card mode
+  - success `{ answer }` and error response shapes are unchanged; plain-text answer output is preserved (REQ-013)
+  - mock provider card-mode responses expose the exact assembled LLM-facing prompt consistent with existing mock behavior (DEC-017 / DEC-038)
+- Constraints:
+  - backend-only prompt assembly; no `AskAiRequest` change beyond REQ-072, no new endpoint
+  - do not add rules-validation, legality, or board-state behavior under card-mode enrichment
+- Dependencies:
+  - DEC-097
+  - DEC-096
+  - REQ-030
+  - DEC-029
+  - REQ-022
+- Notes:
+
+### REQ-075
+- Title: Card Lookup conversation thread
+- Priority: high
+- Description: After the first answer, Card Lookup must reuse the shipped conversation chrome with the single looked-up card frozen as context, under the same conversation limits as the main flow.
+- Acceptance Criteria:
+  - on first successful answer, the surface reuses the conversation thread, follow-up composer, inline processing animation, and start-over controls (REQ-025 / REQ-026 / REQ-027 / REQ-028 / REQ-029)
+  - the frozen "context" is the single looked-up card (no `GameContext`); the card is frozen for the duration of the conversation and follow-ups are text-only
+  - the first visible thread bubble is the assistant's answer; the initial user question is included in `conversationHistory` sent to the API but is not shown as a visible bubble
+  - follow-up requests send `{ mode: "card", question, card: frozen, conversationHistory }` and reuse the same message-count and per-message/character limits as the main flow (REQ-027); Card Lookup defines no separate limit policy
+  - start over clears the thread and returns to the pre-ask state with the looked-up card preserved
+  - mock-provider follow-ups append to the same thread exactly as live responses do
+- Constraints:
+  - reuse existing conversation components; no new conversation-limit constants or divergent chrome
+  - no zone/card-context editing mid-conversation (v1)
+- Dependencies:
+  - DEC-097
+  - REQ-025
+  - REQ-026
+  - REQ-027
+  - REQ-072
+- Notes:
+
+### REQ-076
+- Title: Rules Lookup entry and rules-mode request
+- Priority: high
+- Description: Rules Lookup must be reachable as a feature-portal destination and let the user ask a freeform rules question with no game state, submitted on the existing endpoint in rules mode.
+- Acceptance Criteria:
+  - Rules Lookup is registered as a feature-portal destination (DEC-095) and opens as a frontend-only view switch with no reload; it ships no navigation menu of its own
+  - the primary control is a freeform rules-question field accepting up to the same character cap and control-character guardrails as the main flow question (REQ-011)
+  - submitting sends `{ mode: "rules", question, conversationHistory? }` to `POST /api/ask-ai` (REQ-072 / DEC-098); no `gameContext` and no `card` are sent
+  - there are no zones, stack, phase, card, or multi-card setup controls; there is no game state to stage or edit
+  - the empty state (no question typed yet) offers the local core-topics browse fallback (REQ-079) rather than a blank screen
+- Constraints:
+  - one product-facing endpoint only (DEC-010); no new route; rules-mode payload adds no new request field beyond DEC-098
+  - reuse existing question-input and view-switch components; no separate conversation-limit policy
+- Dependencies:
+  - DEC-099
+  - DEC-098
+  - DEC-095
+  - REQ-072
+- Notes:
+
+### REQ-077
+- Title: Rules-mode prompt assembly and verbatim rule surfacing
+- Priority: high
+- Description: In rules mode the backend must assemble a question-driven rules prompt (no game state, no card rulings) and instruct the model to surface the relevant verbatim Comprehensive Rules excerpts plus an explanation.
+- Acceptance Criteria:
+  - the rules-mode prompt includes the static MTG reference block (DEC-025), the always-on core game-rules topics (DEC-045 core set), and System 3 supplemental rules (DEC-046) scored on the question text
+  - the prompt omits zone sections, `PHASE GUIDANCE`, DEC-045 game-state topic gating, and the merged zone scope sentence, and omits the `OFFICIAL RULINGS` block (no card is submitted)
+  - the prompt instructs the model to quote only from the provided rule excerpts and to present the genuinely relevant ones verbatim with an explanation
+  - the same authoritative System 2 / System 3 helper functions are reused (single definitions), not re-implemented for rules mode
+  - success `{ answer }` and error response shapes are unchanged; plain-text answer output is preserved (REQ-013)
+  - mock provider rules-mode responses expose the exact assembled LLM-facing prompt consistent with existing mock behavior (DEC-017 / DEC-033)
+- Constraints:
+  - backend-only prompt assembly; no `AskAiRequest` change beyond REQ-072 / DEC-098, no new endpoint
+  - do not add rules-validation, legality, or board-state behavior under rules-mode enrichment (DEC-002 / DEC-013)
+- Dependencies:
+  - DEC-100
+  - DEC-099
+  - DEC-025
+  - DEC-045
+  - DEC-046
+  - REQ-022
+- Notes:
+
+### REQ-078
+- Title: Answer-seeded second-pass rule retrieval
+- Priority: high
+- Description: After the first rules-mode answer, the backend must re-query the committed rule index using the model's answer text to recover rules the question-driven first pass missed, and append them to the returned answer.
+- Acceptance Criteria:
+  - after the provider returns, the backend runs a single local re-query of the rule index (DEC-046 scorer) using the answer text as the query
+  - recovered rules are deduplicated against the rule IDs already included in the first-pass prompt (curated core + supplemental) so nothing is repeated
+  - the addition is capped consistently with the existing supplemental-rule budget
+  - the recovered verbatim excerpts are appended to the plain-text `answer` string returned to the caller; there is no new response field, response key, or endpoint (success `{ answer }` and error shapes unchanged)
+  - the re-query reuses the single authoritative System 3 scorer and rule-index artifact; no forked matcher is introduced
+  - the answer explanation is not regenerated in v1 (single AI call); the second pass adds only local scoring
+  - mock provider / enrichment debug exposes second-pass selections and runner-ups (DEC-033 pattern)
+- Constraints:
+  - backend-only; one AI call per rules lookup; no contract or endpoint change
+  - preserve plain-text answer output (REQ-013); no structured rules payload
+- Dependencies:
+  - DEC-100
+  - REQ-077
+  - DEC-046
+  - REQ-032
+- Notes:
+  - two-call regenerate (rebuild the explanation on the expanded set) is a deferred follow-up, not in v1
+
+### REQ-079
+- Title: Local core-topics browse fallback
+- Priority: medium
+- Description: Rules Lookup must offer a small always-local list of core rules topics the user can read with no AI call, built from the same curated rules excerpts the prompt uses.
+- Acceptance Criteria:
+  - the empty state shows a short browsable list of core rules topics (e.g. the stack & priority, targeting, combat, layers)
+  - the topic content is a committed frontend subset of the same curated `gameRulesByTopic` excerpts used by prompt assembly (single source of truth; no hand-authored second copy)
+  - reading a topic is fully client-side with no backend call and no AI cost
+  - an "ask about this" affordance on a topic pre-fills a question into the primary rules-question path (REQ-076); it does not itself call the model
+  - the list is a discoverability fallback, not a full Comprehensive Rules browser
+- Constraints:
+  - frontend-bundled static data (DEC-012 pattern); no runtime rules sync and no new endpoint
+  - do not fork or hand-author rules text that could drift from the curated corpus
+- Dependencies:
+  - DEC-099
+  - DEC-030
+  - DEC-012
+- Notes:
+  - the committed core-topics subset is regenerated from the curated manifest by the existing data build; topic selection is a build-time sign-off like DEC-030
+
+### REQ-080
+- Title: Rules Lookup conversation thread and limits
+- Priority: high
+- Description: After the first answer, Rules Lookup must reuse the shipped conversation chrome for text follow-ups under the same conversation limits as the main flow, with no frozen context object.
+- Acceptance Criteria:
+  - on first successful answer, the surface reuses the conversation thread, follow-up composer, inline processing animation, and start-over controls (REQ-025 / REQ-026 / REQ-027 / REQ-028 / REQ-029)
+  - rules mode carries no frozen context object (no `GameContext`, no frozen card); follow-ups send `{ mode: "rules", question, conversationHistory }` (DEC-098)
+  - the first visible thread bubble is the assistant's answer; the initial user question is included in `conversationHistory` sent to the API but is not shown as a visible bubble
+  - follow-ups reuse the same message-count and per-message/character limits as the main flow (REQ-027); Rules Lookup defines no separate limit policy
+  - start over clears the thread and returns to the pre-ask state (empty question with the core-topics fallback visible)
+  - mock-provider follow-ups append to the same thread exactly as live responses do
+- Constraints:
+  - reuse existing conversation components; no new conversation-limit constants or divergent chrome
+- Dependencies:
+  - DEC-099
+  - REQ-025
+  - REQ-027
+  - REQ-076
+- Notes:
+
+### REQ-081
+- Title: Player Life Tracker surface and life screen
+- Priority: high
+- Description: Provide a feature-portal destination that renders a live multiplayer life screen with full table orientation, life adjustment, basic game setup, reset, and a death indicator.
+- Acceptance Criteria:
+  - Player Life Tracker appears as a destination in the feature-portal registry (DEC-095); selecting it switches to the tracker view frontend-only with no reload
+  - the main screen renders one card per player (2–8) with a large life total rotated to face that player's seat, using a default seat arrangement per player count
+  - each card exposes `+`/`−` controls (edge tap zones) that adjust that player's life
+  - a player whose life is ≤ 0 shows a skull death indicator overlay on their card; the indicator clears when life returns above 0; no elimination or auto-KO occurs
+  - basic game setup lets the user choose player count (2–8) and a starting-life preset (20, 25, 30, 40, 60, or custom); starting life seeds every player
+  - a reset returns all players' life and counters to the current starting values with no winner-selection step
+  - the roster (player count and display names) is the shared roster component used by the MTG Assistant game-setup step (REQ-015)
+- Constraints:
+  - presentation/tracking only; not a rules engine, no board/zone tracking, no elimination logic (DEC-013)
+  - decorative motion stays CSS-only and reduced-motion-aware (DEC-079, NFR-006)
+- Dependencies:
+  - DEC-101
+  - DEC-095
+  - NFR-001
+- Notes:
+  - UI direction is driven by the reference photos under `PRD/work/player-life-tracker/references/`
+  - deferred surfaces (game history, mana counter, dice & misc, per-player theming, saved profiles, reset-with-winner, layout toggle) are out of v1
+
+### REQ-082
+- Title: Player counter tracking and commander-damage matrix
+- Priority: high
+- Description: Each player tracks all player-level counters via a per-player counter panel, including a per-opponent commander-damage matrix, a palette of named counters, and generic custom counters.
+- Acceptance Criteria:
+  - tapping a player's counter area opens a counter panel for that player
+  - the panel tracks a per-opponent commander-damage value for each other player in the game (a "me" cell marks the player's own seat)
+  - the panel offers the reference counter palette — Monarch, Treasure, Initiative, Poison, Ascend, Rad, Day/night, C.Tax, K.O., Energy, Exp — each independently increment/decrementable
+  - the user can add a generic named custom counter
+  - tap increments a counter; a hold/secondary action exposes decrement and set options
+  - an optional per-game setting makes incrementing an opponent's commander damage also decrement that player's life; when off, commander damage and life are independent; all other counters are always manual
+  - counter values persist with the game per DEC-103
+- Constraints:
+  - counters are captured values only; no automatic rules resolution beyond the explicit commander-damage→life option (DEC-013)
+- Dependencies:
+  - DEC-101
+  - REQ-081
+  - REQ-083
+- Notes:
+  - "all trackable player counters" per product direction; commander damage is per-opponent
+
+### REQ-083
+- Title: GameContext per-player counter contract extension
+- Priority: high
+- Description: Extend the game-context contract with additive optional per-player counter fields so tracker state can inform Ask-AI prompts without breaking existing clients.
+- Acceptance Criteria:
+  - `GamePlayerContext` gains optional `poison`, `experience`, `energy`, `commanderDamage` (per-source list), and `counters` (named-counter list) fields on both frontend and backend types
+  - backend Zod (`gamePlayerSchema`) accepts the new optional fields with bounds mirroring existing guardrails (non-negative integer counts; string-length and control-character guards on counter names)
+  - existing `{ label, lifeTotal, displayName? }` payloads remain valid (fields optional; omitted when unset or zero)
+  - prompt assembly emits a per-player counter line for populated counters and omits players with no counters
+  - `POST /api/ask-ai` success `{ answer }` and error shapes are unchanged; no new endpoint
+  - eval fixtures/goldens are updated only for this intentional prompt change
+- Constraints:
+  - additive amendment to DEC-021/DEC-027; do not restructure existing GameContext fields
+  - captured numbers only; no legality/board-state/rules simulation (DEC-013)
+- Dependencies:
+  - DEC-102
+  - REQ-015
+- Notes:
+  - follows the additive pattern of DEC-037 (combatStep) and DEC-043 (gameStateNotes)
+
+### REQ-084
+- Title: Player Life Tracker persistence and cleanup
+- Priority: medium
+- Description: Persist tracker game state to browser-local storage so a live game survives reload/phone-lock, with explicit cleanup boundaries.
+- Acceptance Criteria:
+  - tracker state (roster, each player's life and counters, commander-damage matrix, commander-damage→life option, starting-life setting) is saved to browser-local storage
+  - on load, the tracker restores the last saved game state
+  - an explicit New Game / reset clears persisted state and returns to starting values
+  - persistence is frontend-only and single-device; no server store and no cross-device sync
+- Constraints:
+  - diverges from the in-session-only suite convention (DEC-089/DEC-095) for this feature only; other suite modes are unchanged
+- Dependencies:
+  - DEC-103
+  - DEC-101
+- Notes:
+  - reuses the browser-local persistence pattern established by ThemeControl (DEC-066)
+
+### REQ-085
+- Title: Tracker to MTG Assistant game-context seed
+- Priority: medium
+- Description: Switching from the tracker into MTG Assistant seeds the game-setup roster from current tracker state as a one-way handoff.
+- Acceptance Criteria:
+  - selecting MTG Assistant from the portal while tracker state exists pre-fills the game-setup player count, display names, life totals, and counters from the current tracker state
+  - the user can still edit any seeded value before Decrypt
+  - the seed is one-way (tracker → Assistant); edits in Assistant do not write back to the tracker
+  - returning to the tracker preserves its live state
+  - the tracker's player count is constrained to 2–8 so seeded values never violate the game-context contract
+- Constraints:
+  - handoff is frontend-only; no backend/contract change beyond the additive counter fields (DEC-102)
+- Dependencies:
+  - DEC-101
+  - REQ-081
+  - REQ-083
+  - REQ-015
+- Notes:
+  - seeded counters ride the additive GameContext fields (REQ-083); life uses the existing `lifeTotal`

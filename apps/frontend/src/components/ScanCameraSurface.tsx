@@ -422,7 +422,7 @@ export function ScanCameraSurface({
       ? "Camera unavailable"
       : isLocking
         ? `Locking on ${convergence?.leaderName}`
-        : "Searching for a card…"
+        : (searchingNudge ?? inZoneCue)
   const handleMutedChange = (): void => {
     const next = !muted
     setMuted(next)
@@ -434,7 +434,7 @@ export function ScanCameraSurface({
       <div className="relative overflow-hidden rounded-2xl border border-zinc-600 bg-zinc-950">
         <video
           ref={videoRef}
-          className="scan-video h-[clamp(20rem,calc(100dvh-17rem),42rem)] !max-h-none w-full bg-zinc-950 object-cover"
+          className="scan-video h-[clamp(20rem,calc(100dvh-17rem),42rem)] !max-h-none w-full bg-zinc-950 object-cover md:aspect-[3/4] md:h-auto md:!max-h-none"
           muted
           playsInline
         />
@@ -463,7 +463,7 @@ export function ScanCameraSurface({
           aria-live="polite"
           className="pointer-events-none absolute left-3 top-3 flex max-w-[80%] flex-col gap-1 rounded-xl bg-zinc-950/80 px-3 py-2 text-xs font-semibold text-zinc-100"
         >
-          <span>{indicatorText}</span>
+          {indicatorText && <span>{indicatorText}</span>}
           {isLocking && (
             <span className="flex items-center gap-2">
               <span className="h-1.5 w-20 overflow-hidden rounded-full bg-zinc-700/80">
@@ -478,12 +478,6 @@ export function ScanCameraSurface({
                 {`${convergence!.votes}/${convergence!.votesNeeded}`}
               </span>
             </span>
-          )}
-          {searchingNudge && (
-            <span className="text-[11px] font-medium text-amber-200/90">{searchingNudge}</span>
-          )}
-          {inZoneCue && (
-            <span className="text-[11px] font-medium text-emerald-300/90">{inZoneCue}</span>
           )}
         </div>
         {lockOutline && (

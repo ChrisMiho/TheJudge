@@ -192,3 +192,21 @@ The structured GameContext model: zones, targets, players, turn phase, and comba
 - Notes:
   - live gameplay entry speed is the dominant constraint; freeform captures all 6 feedback categories without forcing structured input during play
 
+### DEC-102
+- Decision: `GameContext.players` (`GamePlayerContext`) gains **additive, optional structured per-player counter fields** so player-life-tracker state (DEC-101) can inform Ask-AI prompts without breaking the frozen contract: `poison?`, `experience?`, and `energy?` (non-negative integers), `commanderDamage?` (a list of `{ from: PlayerLabel, amount }` received from each opponent), and `counters?` (a list of `{ name: string, amount: number }` for the remaining palette and generic named counters). Every field is **optional and omitted when unset or zero**, so existing `{ label, lifeTotal, displayName? }` payloads remain valid. The backend Zod schema (`gamePlayerSchema`) accepts the new optional fields with bounds mirroring existing guardrails, and prompt assembly emits a **per-player counter line** for populated counters. `POST /api/ask-ai` success `{ answer }` and error shapes are unchanged and no new endpoint is added. This is an **additive amendment to DEC-021 / DEC-027**, in the manner of DEC-037 (`combatStep`) and DEC-043 (`gameStateNotes`).
+- Status: confirmed
+- Context: player-life-tracker (DEC-101) tracks all player-level counters and seeds them into MTG Assistant game context on handoff. `lifeTotal` already exists in the contract, but poison, experience, energy, commander damage, and generic counters do not; `technical-design-rules.md` requires a confirmed decision before changing `AskAiRequest`, the Zod schemas, or prompt assembly. The counters are captured numbers passed as prompt context only — no legality, board-state, or rules simulation (DEC-013).
+- Impact:
+  - `GamePlayerContext` gains optional `poison`, `experience`, `energy`, `commanderDamage`, and `counters` fields on both the frontend (`apps/frontend/src/types.ts`) and backend (`gamePlayerSchema` in `apps/backend/src/validation/askAiRequest.ts`, and the inferred `GamePlayerContext` type)
+  - Zod bounds mirror existing guardrails: non-negative integer counts, and string-length plus control-character guards on counter names (matching the `question` / `oracleText` guardrails)
+  - normalization omits zero/unset counters and players with no counters from the payload and prompt
+  - prompt assembly emits a per-player counter line within the existing player / general game context; success and error response shapes are unchanged
+  - eval fixtures / goldens are updated only for this intentional prompt change
+- Related requirements:
+  - REQ-083
+  - REQ-082
+  - DEC-101
+- Notes:
+  - captured values only; not a rules-engine source of truth (DEC-013)
+  - prefer landing the additive contract with or before the tracker's seeding UI
+

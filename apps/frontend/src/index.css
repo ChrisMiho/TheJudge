@@ -319,6 +319,11 @@ body {
   animation: motion-exit var(--motion-fast) var(--motion-ease-out) both;
 }
 
+/* Feature portal dropdown open motion — reuses the motion-enter keyframe timing. */
+.portal-menu-motion {
+  animation: motion-enter var(--motion-fast) var(--motion-ease-out) both;
+}
+
 .motion-hover,
 .motion-press,
 .motion-focus {
@@ -464,6 +469,7 @@ body {
   .motion-focus,
   .motion-success,
   .motion-error,
+  .portal-menu-motion,
   .ambient-accent-surface,
   .frozen-context-summary,
   .frozen-context-disclosure,

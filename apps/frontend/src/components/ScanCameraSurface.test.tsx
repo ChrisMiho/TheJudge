@@ -65,12 +65,20 @@ describe("ScanCameraSurface convergence indicator", () => {
       "w-full",
       "object-cover"
     );
-    expect(video).not.toHaveClass("aspect-[3/4]");
   });
 
-  it("shows searching copy when there is no confident leader", () => {
+  it("falls back to proportion-stable aspect-ratio sizing at the md breakpoint and above", () => {
     render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-    expect(screen.getByText("Searching for a card…")).toBeInTheDocument();
+    const video = document.querySelector("video");
+
+    expect(video).toHaveClass("md:aspect-[3/4]", "md:h-auto", "md:!max-h-none");
+  });
+
+  it("renders no indicator text while searching with no hint, nudge, or cue active", () => {
+    const { container } = render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+    expect(screen.queryByText("Searching for a card…")).not.toBeInTheDocument();
+    const status = container.querySelector('[role="status"]');
+    expect(status).toHaveTextContent("");
   });
 
   it("shows the named leader and vote progress while locking", () => {
@@ -96,7 +104,7 @@ describe("ScanCameraSurface condition hints", () => {
         convergence={{ ...searching, conditionHint: "glare" }}
       />
     );
-    expect(screen.getByText("Searching for a card…")).toBeInTheDocument();
+    expect(screen.queryByText("Searching for a card…")).not.toBeInTheDocument();
     expect(screen.getByText("Too much glare — tilt the card")).toBeInTheDocument();
   });
 
@@ -157,7 +165,7 @@ describe("ScanCameraSurface detector nudge", () => {
       />
     );
 
-    expect(screen.getByText("Searching for a card…")).toBeInTheDocument();
+    expect(screen.queryByText("Searching for a card…")).not.toBeInTheDocument();
     expect(screen.getByText("Fill the guide on a flat contrasting surface; keep fingers off the edges")).toBeInTheDocument();
     expect(screen.queryByText("Center the card with clear edges against the surface")).not.toBeInTheDocument();
   });
@@ -187,7 +195,7 @@ describe("ScanCameraSurface positive in-zone cue (slice B / REQ-054)", () => {
       />
     );
     expect(screen.getByText("Good — hold steady")).toBeInTheDocument();
-    expect(screen.getByText("Searching for a card…")).toBeInTheDocument();
+    expect(screen.queryByText("Searching for a card…")).not.toBeInTheDocument();
   });
 
   it("does not render the positive cue when inZone is false", () => {

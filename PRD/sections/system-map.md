@@ -315,8 +315,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Status: shipped
 - Summary: Hands-free scan entry point beside manual search: batch scan → confident lock → auto-add → resume loop with no Accept tap and no candidate-list pick. A live `searching`/`locking on: <name>`/`locked` indicator (replacing the raw status pill and `Camera: <status>` debug line) shows convergence, including a positive "Good — hold steady" cue when the current frame is good enough to lock but has not yet accumulated the votes. Each auto-add plays a CSS-only thumbs-up confirmation popup (NFR-006); a top-right scanned-cards review bubble lists this-session adds, shows the running count, and offers one-tap, no-confirmation removal of a wrong auto-add. Duplicate-stack/stack-limit blocks surface as non-blocking notices and scanning continues. Feeds the existing preview/add/owner/duplicate-block/stack-limit/removal flow unchanged. Manual tap-capture remains; manual search is reached via Exit scan — the in-scan low-confidence manual-search escalation prompt does not render (DEC-076). While scan is open, zone-collection search, card list, and outer staged-flow navigation/action buttons are hidden; scan-local controls including Capture remain available (DEC-076). Card-back prompt descoped (DEC-055). Audio "ding" confirmation is tracked separately under **Scan audio confirmation** (REQ-042 / DEC-061, shipped).
 - Lives in: `apps/frontend/src/components/{ZoneCardPicker,ZoneCollectionStep,ScanReviewBubble}.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`, `apps/frontend/src/index.css`
-- Backed by: REQ-038, REQ-040, REQ-054, REQ-056, REQ-068, DEC-052, DEC-055, DEC-056, DEC-057, DEC-058, DEC-074, DEC-076, DEC-090
+- Backed by: REQ-038, REQ-040, REQ-054, REQ-056, REQ-068, REQ-071, DEC-052, DEC-055, DEC-056, DEC-057, DEC-058, DEC-074, DEC-076, DEC-090, DEC-093
 - Responsive scan-layout closeout (shipped 2026-07-03, `mobile-scan-layout`): the debug toggle is correctly centered; mute and Cardomancer attribution are anchored inside the alignment guide with separate non-overlapping bounds; `Exit scan` sits in a normal-flow row above the feed and outside the DEC-065 review-bubble region; and the camera frame uses a bounded dynamic-viewport height while preserving `object-cover`. The guide, lock outline, and debug overlay continue to scale with the shared frame wrapper. Scanner behavior and public contracts are unchanged.
+- Desktop sizing/searching-label regression fix (shipped 2026-07-04, `scan-camera-desktop-sizing-regression`): the mobile-tuned `100dvh` clamp on the scan video now only applies below the `md:` breakpoint; at `md:` and above the video falls back to the pre-regression `aspect-[3/4]`-equivalent proportion-stable sizing (REQ-068's own desktop-fallback acceptance criterion). Separately, the generic `"Searching for a card…"` label no longer renders while `isSearching` (DEC-093/REQ-071) — the top-left indicator box shows only the active condition hint, detector nudge, or in-zone cue (or nothing), clearing the box-over-mute-toggle overlap that a real-device screenshot surfaced after the prior closeout shipped. `locking` and `camera-error` copy are unchanged; both fixes are presentation-only.
 
 ### Scan audio confirmation
 
@@ -507,12 +508,12 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: (planned) new Trade Balancer view + entry model under `apps/frontend/src/`, reusing the scan resolver (`lib/scan/resolveScanCandidates.ts`) and manual search (`lib/search.ts`); consumes the printing-price artifact `apps/frontend/public/data/cardPrintingPrices.json`
 - Backed by: DEC-087, DEC-088, REQ-064, REQ-065, REQ-066, NFR-013, FLOW-009
 
-## App navigation
+## Feature portal (app navigation)
 
 - Status: planned
-- Summary: Top-level in-app navigation menu in the top-right header (distinct from and non-overlapping with the corner `ThemeControl`) that switches between MTG Assistant (the existing flow) and Trade Balancer. Frontend-only view switch preserving each mode's in-session state; no persistence across reload, no backend/contract change. Decided/docs-only, no code under `apps/` yet.
-- Lives in: (planned) navigation menu + mode switch in app chrome under `apps/frontend/src/` (`PageShell.tsx` / `App.tsx` area), alongside the existing `ThemeControl.tsx`
-- Backed by: DEC-089, REQ-067, FLOW-010, NFR-001
+- Summary: First-class **feature-portal** package that owns top-level navigation chrome: a menu button in the **top-middle** of the header (distinct from and non-overlapping with the left brand block and the top-right `ThemeControl`) opens a dropdown of destinations backed by an extensible registry, so features register as destinations rather than shipping their own chrome. v1 destinations: MTG Assistant (the existing flow) and Trade Balancer. Frontend-only view switch preserving each mode's in-session state; no persistence across reload, no backend/contract change. Elevated out of `card-trade-balancer`; the balancer depends on the portal. Decided/docs-only, no code under `apps/` yet.
+- Lives in: (planned) feature-portal chrome + destination registry + mode switch under `apps/frontend/src/` (`PageShell.tsx` / `App.tsx` area), alongside the existing `ThemeControl.tsx`
+- Backed by: DEC-095, DEC-089, REQ-067, FLOW-010, NFR-001
 
 ## PRD doc traceability (meta)
 

@@ -215,21 +215,104 @@
   - prices are a static build-time snapshot; the UI may show the snapshot date (DEC-088, NFR-013)
 
 ### FLOW-010
-- Name: Switch between MTG Assistant and Trade Balancer
-- Trigger: User wants to move between the main MTG Assistant flow and the Trade Balancer
+- Name: Switch destinations via the feature portal
+- Trigger: User wants to move between suite destinations (v1: the MTG Assistant flow and the Trade Balancer)
 - Preconditions:
   - app is loaded
 - Main Flow:
-  1. User taps the navigation-menu button in the **top-right header** (distinct from the corner palette/`ThemeControl` affordance).
-  2. The menu opens and lists **MTG Assistant** and **Trade Balancer**, with the current mode indicated.
-  3. User selects the other destination.
-  4. App switches the active view to the selected mode without leaving the app or reloading.
-  5. To return, the user opens the same menu and selects the other mode.
+  1. User taps the portal menu button in the **top-middle** of the header (distinct from the left brand block and the top-right palette/`ThemeControl` affordance).
+  2. The menu opens and lists the registered destinations — v1 **MTG Assistant** and **Trade Balancer** — with the current mode indicated.
+  3. User selects another destination.
+  4. App switches the active view to the selected destination without leaving the app or reloading.
+  5. To return, the user opens the same menu and selects the other destination.
 - Edge Cases:
   - selecting the current mode is a no-op and does not reset in-progress state
-  - switching modes preserves each mode's in-session state while the app stays loaded (an in-progress MTG Assistant flow survives a trip to the Trade Balancer and back); nothing is persisted across a page reload
-  - the navigation button and its menu must not overlap or intercept taps meant for `ThemeControl` (DEC-089, DEC-065)
+  - switching destinations preserves each mode's in-session state while the app stays loaded (an in-progress MTG Assistant flow survives a trip to the Trade Balancer and back); nothing is persisted across a page reload
+  - the portal button and its menu must not overlap or intercept taps meant for the brand block or `ThemeControl` (DEC-095, DEC-065)
 - Notes:
-  - navigation is frontend-only chrome and never changes submitted game context, prompt text, backend API behavior, or AI responses (DEC-089)
-  - the MTG Assistant start screen and staged flow are unchanged; the menu is additive
-  - `ThemeControl` (FLOW-007 / FLOW-008) placement and behavior are unchanged
+  - navigation is frontend-only chrome and never changes submitted game context, prompt text, backend API behavior, or AI responses (DEC-095, DEC-089)
+  - the MTG Assistant start screen and staged flow are unchanged; the portal is additive
+  - `ThemeControl` (FLOW-007 / FLOW-008) placement and behavior are unchanged; it keeps the top-right corner
+
+### FLOW-011
+- Name: Look up one card and ask a question
+- Trigger: User opens **Card Lookup** from the feature portal (FLOW-010) to ask about a single card without staging any game state
+- Preconditions:
+  - app is loaded
+  - local card metadata is available
+  - for scan input: the device has a usable camera with permission and the fingerprint library loads on first scan (FLOW-006)
+- Main Flow:
+  1. User selects Card Lookup from the feature portal; the app switches to the lookup view (frontend-only, no reload).
+  2. User resolves one card either by typed autocomplete search (reusing REQ-001/REQ-002 behavior) or by scanning it with the existing camera scanner (FLOW-006 engine); the result is a single oracle-level card.
+  3. App shows the resolved card's name, image when available, oracle text, and full metadata so the user can confirm the card.
+  4. User enters a freeform question (same character cap as the main flow) and submits.
+  5. Frontend sends `{ mode: "card", question, card }` to `POST /api/ask-ai`; no `gameContext` is sent.
+  6. Backend assembles the card-mode prompt — reusing the same per-card enrichment (rulings, full metadata incl. oracle text, System-3 supplemental rules) and omitting game-state-only sections — and returns a plain-text answer.
+  7. Frontend shows the answer in the reused conversation thread (first visible bubble is the assistant answer; the initial question is not shown as a bubble).
+  8. User may send text follow-ups from the reused composer; each follow-up sends `{ mode: "card", question, card: frozen, conversationHistory }` under the same conversation limits as the main flow.
+  9. User may start over, which clears the thread and returns to the pre-ask state with the looked-up card preserved.
+- Edge Cases:
+  - if no card is resolved yet, submit is blocked
+  - if the question is blank after trimming, apply the main flow's blank-question handling (REQ-011) adapted to single-card context
+  - AI failure reuses the main flow's failure handling (FLOW-003): the message **Miho is working on it**, preserved card and question, retry with cooldown
+  - if the follow-up request fails, the error is shown and retry resubmits with the same frozen card and history (FLOW-005)
+  - if history chars exceed the shared cap, oldest turns are truncated first (REQ-027)
+  - in mock provider mode, the assistant bubble still appends in the same thread and its answer contains the exact assembled LLM-facing prompt for that submitted message
+  - scan input inherits FLOW-006 behavior (permission fallback to manual search, scanned-printing art as presentation only); scan resolves to one card rather than adding into a zone
+- Notes:
+  - single-card lookup carries no zones, stack, phase, or multi-card setup (DEC-097); the looked-up card is the entire context
+  - reuses existing search, scan, and conversation components; the conversation is frozen on the single card and follow-ups are text-only in v1
+  - shares the main flow's conversation and text limits; Card Lookup defines no separate limit policy
+  - a future option to attach optional lightweight game context to card lookup is tracked as Q-003 and is out of v1 scope
+
+### FLOW-012
+- Name: Look up a rules concept and ask a question
+- Trigger: User opens **Rules Lookup** from the feature portal (FLOW-010) to understand a rules concept without staging any game state
+- Preconditions:
+  - app is loaded
+  - the committed core-topics browse data is bundled with the app
+- Main Flow:
+  1. User selects Rules Lookup from the feature portal; the app switches to the lookup view (frontend-only, no reload).
+  2. The empty state shows a short list of core rules topics (the stack & priority, targeting, combat, layers) the user can read locally with no AI call.
+  3. User either reads a core topic (fully client-side) and taps "ask about this" to pre-fill a question, or types a freeform rules question directly.
+  4. User submits; the frontend sends `{ mode: "rules", question }` to `POST /api/ask-ai` — no `gameContext`, no `card`.
+  5. Backend assembles the rules-mode prompt (MTG reference block + always-on core game-rules topics + question-driven System 3 supplemental; no game-state sections, no card rulings) and asks the model to present the relevant verbatim rules from that set plus an explanation.
+  6. Backend runs a free answer-seeded second-pass re-query of the rule index using the model's answer, dedups against rules already included, and appends any recovered verbatim excerpts to the plain-text answer.
+  7. Frontend shows the answer in the reused conversation thread (first visible bubble is the assistant answer; the initial question is not shown as a bubble).
+  8. User may send text follow-ups from the reused composer; each follow-up sends `{ mode: "rules", question, conversationHistory }` under the same conversation limits as the main flow.
+  9. User may start over, which clears the thread and returns to the empty state with the core-topics list visible.
+- Edge Cases:
+  - if the question is blank after trimming, submit is blocked and the core-topics fallback remains visible
+  - if no rule scores above the retrieval threshold, the model still answers from the always-on core topics and the MTG reference block; the second pass simply appends nothing
+  - AI failure reuses the main flow's failure handling (FLOW-003): the message **Miho is working on it**, preserved question, retry with cooldown
+  - if a follow-up request fails, the error is shown and retry resubmits with the same question and history (FLOW-005)
+  - if history chars exceed the shared cap, oldest turns are truncated first (REQ-027)
+  - in mock provider mode, the assistant bubble still appends in the same thread and its answer contains the exact assembled LLM-facing rules-mode prompt for that submitted message
+- Notes:
+  - rules lookup carries no zones, stack, phase, card, or multi-card setup (DEC-099); it is not a full Comprehensive Rules browser and not official judge authority (DEC-002 / DEC-013)
+  - there is no frozen context object (unlike Card Lookup's frozen card); rules-mode follow-ups carry only the question and history
+  - reuses Card Lookup's conversation chrome (DEC-097); shares the main flow's conversation and text limits, and defines no separate limit policy
+  - the recovered second-pass rules are composed into the plain-text `answer` server-side; the response contract stays `{ answer }` (DEC-100)
+
+### FLOW-013
+- Name: Track a game on the life tracker and hand off to MTG Assistant
+- Trigger: User opens **Player Life Tracker** from the feature portal (FLOW-010) to track life and counters during a game
+- Preconditions:
+  - app is loaded
+- Main Flow:
+  1. User selects Player Life Tracker from the feature portal; the app switches to the tracker view (frontend-only, no reload).
+  2. User sets player count (2–8) and a starting-life preset in basic game setup; each player card seeds to the starting life, arranged in full table orientation facing each seat.
+  3. During play, users tap each card's `+`/`−` zones to adjust life; a card shows a skull when that player's life reaches ≤ 0 and clears it if life returns above 0.
+  4. Users open a player's counter panel to track the per-opponent commander-damage matrix and named counters (poison, energy, exp, and the rest of the palette) plus any generic custom counter; with the commander-damage→life option on, opponent commander damage also decrements that player's life.
+  5. Tracker state persists to browser-local storage, so a reload or phone-lock restores the in-progress game (DEC-103).
+  6. When the user switches to MTG Assistant, the game-setup roster is seeded one-way from current tracker state (count, names, life, counters); the user may edit before Decrypt.
+  7. Returning to the tracker preserves its live state; an explicit reset / New Game returns counters to starting values and clears persistence.
+- Edge Cases:
+  - the tracker's player count is constrained to 2–8, so the seeded roster always conforms to the game-context contract
+  - counters left at zero or unset are omitted from the seeded `gameContext` payload (REQ-083)
+  - a page reload mid-game restores tracker state rather than losing it (DEC-103)
+  - the skull at life ≤ 0 is a visual death cue only; the player card remains and life can still be adjusted back up
+- Notes:
+  - the tracker is a life/counter tracker, not a rules engine or board/zone tracker (DEC-013); it does not replace the staged zone / Ask AI flow, only seeds player-facing context into it
+  - deferred surfaces: game history, mana counter, dice & misc, per-player theming, saved profiles, reset-with-winner, layout toggle; Planechase / Archenemy / Bounty are out of scope
+  - UI direction is driven by the reference photos under `PRD/work/player-life-tracker/references/`

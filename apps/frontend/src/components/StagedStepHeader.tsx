@@ -1,3 +1,5 @@
+import { PortalSlot } from "./portal/PortalSlot";
+
 type StagedStepHeaderProps = {
   stepName: string;
   onBrandClick?: () => void;
@@ -5,7 +7,7 @@ type StagedStepHeaderProps = {
 
 export function StagedStepHeader({ stepName, onBrandClick }: StagedStepHeaderProps): JSX.Element {
   return (
-    <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+    <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-1">
       <div>
         {onBrandClick ? (
           <button
@@ -22,7 +24,13 @@ export function StagedStepHeader({ stepName, onBrandClick }: StagedStepHeaderPro
         )}
         <p className="text-sm text-zinc-300">MTG Assistant</p>
       </div>
-      <h2 className="staged-step-name ml-auto text-right text-lg font-semibold text-accent-soft sm:text-xl">{stepName}</h2>
+      <PortalSlot />
+      {/* min-w-0 lets this column shrink and wrap across its two words instead of
+          overflowing — the brand block deliberately keeps its default min-content
+          floor since "TheJudge" is a single word that can't wrap. */}
+      <h2 className="staged-step-name min-w-0 justify-self-end text-right text-lg font-semibold text-accent-soft sm:text-xl">
+        {stepName}
+      </h2>
     </header>
   );
 }
