@@ -362,7 +362,7 @@ export default function App() {
                   aria-label={playersDetailsExpanded ? "Hide player details" : "Show player details"}
                   aria-expanded={playersDetailsExpanded}
                   onClick={() => setPlayersDetailsExpanded((current) => !current)}
-                  className="motion-hover motion-press motion-focus rounded-lg border border-zinc-600 bg-zinc-800/70 px-3 py-1.5 min-w-[2.4rem] text-sm text-zinc-200 transition hover:bg-zinc-700/80"
+                  className="motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] min-w-[3.5rem] items-center justify-center rounded-lg border border-zinc-600 bg-zinc-800/70 px-3 py-1.5 text-xl leading-none text-zinc-200 transition hover:bg-zinc-700/80"
                 >
                   {playersDetailsExpanded ? "▾" : "▸"}
                 </button>
@@ -373,21 +373,21 @@ export default function App() {
               <div className="flex gap-2">
                 <button
                   type="button"
-                  aria-label="Add player"
-                  onClick={addPlayer}
-                  disabled={activePlayerCount >= MAX_PLAYERS}
-                  className="motion-hover motion-press motion-focus rounded-lg border border-accent/50 bg-accent/10 px-4 py-1.5 min-w-[2.75rem] text-xs font-semibold text-accent-soft transition hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  +
-                </button>
-                <button
-                  type="button"
                   aria-label="Remove last player"
                   onClick={removePlayer}
                   disabled={activePlayerCount <= MIN_PLAYERS}
-                  className="motion-hover motion-press motion-focus rounded-lg border border-zinc-500 bg-zinc-800/70 px-4 py-1.5 min-w-[2.75rem] text-xs font-semibold text-zinc-100 transition hover:bg-zinc-700/80 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] min-w-[3.5rem] items-center justify-center rounded-lg border border-zinc-500 bg-zinc-800/70 px-4 py-1.5 text-xs font-semibold text-zinc-100 transition hover:bg-zinc-700/80 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   −
+                </button>
+                <button
+                  type="button"
+                  aria-label="Add player"
+                  onClick={addPlayer}
+                  disabled={activePlayerCount >= MAX_PLAYERS}
+                  className="motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] min-w-[3.5rem] items-center justify-center rounded-lg border border-accent/50 bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent-soft transition hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  +
                 </button>
               </div>
             </div>

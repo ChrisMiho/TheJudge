@@ -109,6 +109,31 @@ describe("App MVP interaction flows", () => {
     expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
   });
 
+  it("renders ergonomic player controls in conventional stepper order", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const toggle = screen.getByRole("button", { name: "Show player details" });
+    const remove = screen.getByRole("button", { name: "Remove last player" });
+    const add = screen.getByRole("button", { name: "Add player" });
+
+    for (const control of [toggle, remove, add]) {
+      expect(control).toHaveClass("min-h-[2.75rem]", "min-w-[3.5rem]");
+    }
+    expect(remove.compareDocumentPosition(add) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
+    expect(toggle).toHaveClass("text-xl", "leading-none");
+    expect(toggle).toHaveTextContent("▸");
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(toggle);
+
+    const expandedToggle = screen.getByRole("button", { name: "Hide player details" });
+    expect(expandedToggle).toHaveTextContent("▾");
+    expect(expandedToggle).toHaveAttribute("aria-expanded", "true");
+  });
+
   it("applies staged entrance motion and shared feedback to game-context controls", async () => {
     const user = userEvent.setup();
     render(<App />);

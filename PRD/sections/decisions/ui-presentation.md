@@ -56,3 +56,27 @@ Frontend-only motion, transition, and visual-feedback polish that changes how th
   - approved approach: single source of truth (`ASK_AI_PROVIDER`), chosen over a separate hand-set `VITE_MOCK_MODE` frontend flag
   - build-time-only by necessity: the static frontend cannot read runtime provider state without a backend endpoint, which is an explicit non-goal
   - non-goals: backend health/status endpoint, dismissible banner, changes to mock-response content, changes to the ask-AI contract, and any banner in a production build unless mock mode is explicitly configured at build time
+
+### DEC-092
+- Decision: Post-release first-time-user confusion about "how do I use this screen" is addressed by **enhancing existing on-screen guidance copy only** — sharpening the helper statements that are already rendered — **without introducing any net-new guidance text, intro lines, tooltips, popups, or onboarding chrome**, and without touching self-explanatory screens. Two existing helper lines are enhanced in this pass; every other screen (context enrichment, answered/follow-up view, scan on-open) is intentionally left with no added guidance text, and the playful themed labels/buttons (`Decrypt Stack`, `Begin stackening!`, `Context enrichment`, `Consulting the stack…`) are preserved unchanged.
+- Status: confirmed
+- Context: After the AWS release to friends, early feedback surfaced that users struggle to figure out how to use each screen — the per-screen statements intended to explain usage were not landing. The product owner reviewed the full set of existing guidance statements and chose a deliberately surgical copy-only pass: enhance the statements that under-explain (notably a helper that described life-total defaults but never mentioned the `▾` expander control that opens the name/life editing panel), state control usage and behavior together in one concise single line, and leave genuinely self-explanatory screens alone rather than padding them with new text. New orientation lines, per-control micro-copy on screens that lack it today, and any onboarding overlay were explicitly rejected as out of scope: the goal is clearer existing words, not more words. Themed voice is kept because it is product character, not a comprehension blocker once the plain helper lines do the orienting.
+- Impact:
+  - the game-context "Players in game" helper changes from `2 players start at 20 life. 3+ players default to 40 life.` to `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.` — naming the expander control's purpose and keeping the defaults behavior in one line
+  - the zone-confirmation helper changes from `Select the zones relevant to your question. Defaults are pre-checked based on the turn phase.` to `Select each zone at the top of the screen to add cards to it.` — a direct action-oriented line; the turn-phase-defaults clause is intentionally dropped
+  - the "Add cards to zones" helper, the context-enrichment screen, the answered/follow-up view, the scan on-open state, the stack-order note, the tuned scan cause-hints, and the fallback-question note are **not changed** by this pass
+  - **no net-new guidance text** is added anywhere — no new intro/orientation lines, tooltips, popovers, coachmarks, modals, or onboarding flow
+  - themed labels/buttons are unchanged; the tuned scan condition-aware feedback (DEC-062/DEC-072 cause-hints like "Too much glare — tilt", "Hold steady", "Good — hold steady") is out of scope and left as tuned
+  - presentation/text only — no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, stack-ordering semantics, step names, step ordering, flow logic, or data-pipeline behavior
+  - no new screens, no flow/step reordering, no renamed steps (FLOW-001, FLOW-002, FLOW-006 and the answered view are unchanged)
+- Related requirements:
+  - REQ-070
+  - FLOW-001
+  - FLOW-002
+  - FLOW-006
+  - NFR-001
+  - DEC-079
+- Notes:
+  - approved approach: enhance existing copy only (chosen over adding per-screen intro lines / per-control micro-copy, and over an onboarding overlay)
+  - guardrails: no net-new guidance text, themed labels preserved, tuned scan cause-hints untouched, single concise line per enhanced helper
+  - non-goals: new intro/orientation lines on screens that lack them today, tooltips/popovers/coachmarks/onboarding chrome, renaming themed labels or steps, rewording the tuned scan convergence feedback, and any behavior/contract/flow change

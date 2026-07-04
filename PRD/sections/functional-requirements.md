@@ -1515,3 +1515,85 @@
   - FLOW-010
 - Notes:
   - extensible to future top-level destinations; v1 lists only Stack Assistant and Trade Balancer
+
+### REQ-068
+- Title: Responsive scan-view layout
+- Priority: medium
+- Description: The camera scan view must lay out its overlay controls so every element (status/convergence indicator, mute toggle, exit-scan control, scanned-cards review bubble, debug toggle, capture button, and the "Powered by Cardomancer" watermark) stays legible and non-overlapping across common phone widths, and the camera frame must consume the available vertical space on tall phones instead of leaving a large gap below it. Presentation-only; scanner behavior is unchanged.
+- Acceptance Criteria:
+  - at representative phone widths (≤360px, 390px, 414px), no two scan controls share overlapping visual bounds or pointer hit areas: the status/convergence indicator and mute toggle (top-left), the exit-scan control, the scanned-cards review bubble (top-right, DEC-065), the debug toggle, the capture button, and the Cardomancer watermark are all independently visible and tappable
+  - the debug toggle is correctly centered (the corrupted `-tranzinc-x-1/2` utility is fixed to a valid centering transform) and its bounds/hit area do not overlap the Cardomancer watermark at any supported width — extending DEC-065's non-overlap guarantee to include the watermark
+  - the exit-scan control is lifted out of the camera-feed overlay into a slim control row above the frame, so the top-right region reserved for the scanned-cards review bubble (DEC-065) is no longer intruded upon and the top edge is not crowded
+  - the mute toggle sits in the alignment guide's top-left corner (off the guide's outline edge) and the "Powered by Cardomancer" watermark sits centered inside the guide's lower edge; both render at ~90% opacity so a hint of the card shows through while they stay clearly legible. Placement is overlay-only and has no effect on detection (the detector reads the raw camera frame, not the composited DOM)
+  - the camera frame is responsive: on tall phones it grows to consume available viewport height (replacing the fixed `aspect-[3/4]`), bounded by a max/min so the exit row and the capture button remain visible without page scroll; the card-shaped alignment guide scales with the frame
+  - the camera feed keeps `object-cover`, so a taller frame shows more vertical field rather than distorting the image; the guide, lock outline (DEC-083), and debug overlay (DEC-060) continue to align to the rendered frame
+  - the layout degrades gracefully on short viewports and desktop: where there is no excess vertical space the frame falls back toward its prior sizing and nothing clips or scrolls unexpectedly
+  - scanner behavior is unchanged — no change to detection, warp, identify, the stabilizer/lock gate, auto-add, audio, or the scanned-cards review/remove behavior
+  - tests cover that the exit control renders outside the camera overlay and that the debug toggle and watermark do not share a container/position that overlaps
+- Constraints:
+  - presentation/layout only; frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
+  - not a scan-robustness lever: no change to the shared resize+DCT+hash recipe (`recipe.ts`), `cardhashes.bin`, the matching/orientation/distance logic (`identify.ts`), the stabilizer lock gate (`lockDistance`/`marginMin`), or the DEC-051/REQ-034 parity gates (distinct from DEC-062/DEC-069/DEC-072/DEC-073/DEC-074)
+  - preserve the DEC-065 reserved top-right review-bubble region and the DEC-058 one-tap removal hit area
+  - any layout motion stays CSS-only and `prefers-reduced-motion`-aware (NFR-006); no animation library
+  - preserve readable contrast and touch-friendly controls (NFR-001)
+- Dependencies:
+  - DEC-090
+  - DEC-065
+  - REQ-040
+  - REQ-041
+  - NFR-001
+  - NFR-010
+- Notes:
+  - root causes found in `ScanCameraSurface.tsx`: the debug toggle's `-tranzinc-x-1/2` is a corrupted `-translate-x-1/2` (no transform applied, so the button pins its left edge at center and bleeds into the `bottom-3 right-3` watermark), and the parent's `Exit scan` at `right-3 top-3` shares the top-right with the review bubble at `top-12`
+  - deadspace resolved by stretching the frame (chosen over an inline scanned-cards strip to avoid re-litigating DEC-058's compact-bubble model)
+
+### REQ-069
+- Title: Game-context players-section control ergonomics
+- Priority: low
+- Description: The game-context "Players in game" disclosure row's three controls — the expand/collapse toggle, the add-player button, and the remove-last-player button — must be enlarged for reliable tapping, the expand/collapse arrow must be more visually prominent as an expander affordance, and the add/remove buttons must be reordered to `−` (remove) on the left and `+` (add) on the right to match stepper intuition. Presentation/ergonomics only.
+- Acceptance Criteria:
+  - each of the three disclosure-row controls presents a touch target of at least 44×44px, in both chunky and slim density (DEC-075)
+  - the expand/collapse arrow renders at a visibly larger, more prominent size than before so it clearly reads as an expander; `aria-label` and `aria-expanded` semantics are unchanged and still reflect the collapsed/expanded state
+  - the add/remove pair is ordered `−` (remove last player) on the left and `+` (add player) on the right
+  - each button keeps its existing label, `aria-label`, click handler, disabled behavior at `MIN_PLAYERS`/`MAX_PLAYERS`, and accent/zinc styling role
+  - the existing ambient-accent treatment (REQ-060) and decorative motion classes (NFR-006) on the disclosure row are preserved
+  - tests cover that the remove-player control precedes the add-player control in the players disclosure row and that all three controls render with the enlarged sizing
+- Constraints:
+  - presentation only; no change to game-context logic, life totals, display names, player-count bounds, step names, step ordering, flow logic, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, or data-pipeline behavior
+  - preserve readable contrast and touch-friendly controls (NFR-001) across all palettes and densities
+  - CSS/Tailwind within the existing React/Vite stack; no new component library or framework
+- Dependencies:
+  - DEC-091
+  - DEC-076
+  - DEC-075
+  - REQ-056
+  - REQ-060
+  - NFR-001
+  - FLOW-001
+- Notes:
+  - refines the game-context player controls only; the broader compaction pass (REQ-056) and ambient accents (REQ-060) are otherwise unchanged
+
+### REQ-070
+- Title: Enhance existing per-screen guidance copy
+- Priority: low
+- Description: Sharpen the existing on-screen helper statements that under-explain how to use a screen, so a first-time user understands the control and its behavior from one concise line. This is a copy-only pass that enhances text already rendered; it adds no net-new guidance text, tooltips, popovers, onboarding chrome, or intro lines, and it leaves self-explanatory screens and the playful themed labels/buttons unchanged (DEC-092).
+- Acceptance Criteria:
+  - the game-context "Players in game" helper text reads exactly `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.` (replacing `2 players start at 20 life. 3+ players default to 40 life.`), naming the `▾` expander control while preserving the 20/40 defaults behavior in a single line
+  - the zone-confirmation helper text reads exactly `Select each zone at the top of the screen to add cards to it.` (replacing `Select the zones relevant to your question. Defaults are pre-checked based on the turn phase.`); the prior turn-phase-defaults clause is intentionally dropped
+  - no other on-screen guidance/helper text is changed: the "Add cards to zones" helper, the context-enrichment screen, the answered/follow-up view, the scan on-open state, the stack-order note, the tuned scan cause-hints, and the fallback-question note are byte-for-byte unchanged
+  - no net-new guidance text is introduced anywhere — no new intro/orientation lines, tooltips, popovers, coachmarks, modals, or onboarding flow
+  - the `▾`/`▸` expander control referenced by the enhanced game-context copy retains its existing `aria-label`/`aria-expanded` semantics and toggle behavior (REQ-069); the copy change is text-only
+  - tests assert the two enhanced strings render on their respective screens and that the replaced strings no longer appear
+- Constraints:
+  - text/presentation only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, stack-ordering semantics, step names, step ordering, flow logic, or data-pipeline behavior
+  - preserve the themed labels/buttons (`Decrypt Stack`, `Begin stackening!`, `Context enrichment`, `Consulting the stack…`) unchanged
+  - do not reword the tuned scan condition-aware feedback (DEC-062/DEC-072 cause-hints)
+  - keep each enhanced helper to a single concise line, readable in both chunky and slim density and across all palettes (NFR-001)
+- Dependencies:
+  - DEC-092
+  - REQ-069
+  - FLOW-001
+  - FLOW-002
+  - NFR-001
+- Notes:
+  - triggered by post-AWS-release feedback that the per-screen usage statements were not landing; scope was deliberately narrowed by the product owner from a broad per-screen rewrite to enhancing only the two helper lines that under-explain, leaving self-explanatory screens alone

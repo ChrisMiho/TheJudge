@@ -55,6 +55,19 @@ describe("ScanCameraSurface convergence indicator", () => {
     expect(document.querySelector("video")).toHaveClass("scan-video");
   });
 
+  it("uses a bounded viewport-responsive frame height without the fixed aspect ratio", () => {
+    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+    const video = document.querySelector("video");
+
+    expect(video).toHaveClass(
+      "h-[clamp(20rem,calc(100dvh-17rem),42rem)]",
+      "!max-h-none",
+      "w-full",
+      "object-cover"
+    );
+    expect(video).not.toHaveClass("aspect-[3/4]");
+  });
+
   it("shows searching copy when there is no confident leader", () => {
     render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
     expect(screen.getByText("Searching for a card…")).toBeInTheDocument();
@@ -247,7 +260,24 @@ describe("ScanCameraSurface debug overlay toggle", () => {
 
     expect(button).not.toHaveClass("right-3");
     expect(button).not.toHaveClass("top-3");
-    expect(button).toHaveClass("bottom-3", "left-1/2");
+    expect(button).toHaveClass("bottom-3", "left-1/2", "-translate-x-1/2");
+    expect(button).not.toHaveClass("-tranzinc-x-1/2");
+  });
+
+  it("anchors mute and watermark inside the guide without sharing the debug anchor", () => {
+    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} debug={debugMetrics} />);
+
+    const guide = screen.getByTestId("scan-alignment-guide");
+    const mute = screen.getByRole("button", { name: "Mute scan sound" });
+    const watermark = screen.getByText("Powered by Cardomancer");
+    const debug = screen.getByRole("button", { name: "Debug" });
+
+    expect(guide).toContainElement(mute);
+    expect(mute).toHaveClass("absolute", "left-2", "top-2", "pointer-events-auto", "opacity-90");
+    expect(guide).toContainElement(watermark);
+    expect(watermark).toHaveClass("absolute", "bottom-2", "left-1/2", "-translate-x-1/2", "opacity-90");
+    expect(watermark).not.toHaveClass("right-3", "bottom-3");
+    expect(debug.parentElement).not.toBe(guide);
   });
 
   it("defaults the debug overlay off (toggle present, overlay not rendered)", () => {

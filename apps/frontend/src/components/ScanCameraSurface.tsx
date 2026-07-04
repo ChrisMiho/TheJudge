@@ -432,10 +432,31 @@ export function ScanCameraSurface({
   return (
     <section className={`space-y-3 ${className}`}>
       <div className="relative overflow-hidden rounded-2xl border border-zinc-600 bg-zinc-950">
-        <video ref={videoRef} className="scan-video aspect-[3/4] w-full bg-zinc-950 object-cover" muted playsInline />
+        <video
+          ref={videoRef}
+          className="scan-video h-[clamp(20rem,calc(100dvh-17rem),42rem)] !max-h-none w-full bg-zinc-950 object-cover"
+          muted
+          playsInline
+        />
         <audio ref={audioRef} src="/assets/scanSuccess.wav" preload="auto" />
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-[82%] aspect-[745/1040] rounded-xl border-2 border-accent-soft/90 shadow-[0_0_0_999px_rgba(15,23,42,0.35)]" />
+          <div
+            className="relative h-[82%] aspect-[745/1040] rounded-xl border-2 border-accent-soft/90 shadow-[0_0_0_999px_rgba(15,23,42,0.35)]"
+            data-testid="scan-alignment-guide"
+          >
+            <button
+              type="button"
+              onClick={handleMutedChange}
+              aria-pressed={muted}
+              aria-label={muted ? "Unmute scan sound" : "Mute scan sound"}
+              className="pointer-events-auto absolute left-2 top-2 rounded-full bg-zinc-950/70 px-2.5 py-1 text-sm font-semibold text-zinc-300 opacity-90 transition hover:bg-zinc-800/80 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+            >
+              <span aria-hidden="true">{muted ? "🔇" : "🔊"}</span>
+            </button>
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-zinc-950/60 px-2.5 py-1 text-[10px] font-medium text-zinc-300/80 opacity-90">
+              Powered by Cardomancer
+            </div>
+          </div>
         </div>
         <div
           role="status"
@@ -465,15 +486,6 @@ export function ScanCameraSurface({
             <span className="text-[11px] font-medium text-emerald-300/90">{inZoneCue}</span>
           )}
         </div>
-        <button
-          type="button"
-          onClick={handleMutedChange}
-          aria-pressed={muted}
-          aria-label={muted ? "Unmute scan sound" : "Mute scan sound"}
-          className="absolute left-3 top-[4.75rem] rounded-full bg-zinc-950/70 px-2.5 py-1 text-sm font-semibold text-zinc-300 transition hover:bg-zinc-800/80 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-        >
-          <span aria-hidden="true">{muted ? "🔇" : "🔊"}</span>
-        </button>
         {lockOutline && (
           <ScanCardOutline
             corners={lockOutline.corners}
@@ -501,7 +513,7 @@ export function ScanCameraSurface({
             })
           }
           aria-pressed={debugEnabled}
-          className={`absolute bottom-3 left-1/2 -tranzinc-x-1/2 rounded-full px-2.5 py-1 text-[10px] font-semibold transition ${
+          className={`absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full px-2.5 py-1 text-[10px] font-semibold transition ${
             debugEnabled
               ? "bg-accent/90 text-accent-contrast"
               : "bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800/80"
@@ -524,9 +536,6 @@ export function ScanCameraSurface({
             </div>
           </div>
         )}
-        <div className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-zinc-950/60 px-2.5 py-1 text-[10px] font-medium text-zinc-300/80">
-          Powered by Cardomancer
-        </div>
       </div>
       <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
       <button
