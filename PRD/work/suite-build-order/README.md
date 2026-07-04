@@ -10,7 +10,6 @@ This package does not ship product code. After refinement and map-out, its `GAME
 
 Participating packages (order finalized in GAMEPLAN):
 
-- `scan-camera-desktop-sizing-regression`
 - `feature-portal`
 - `card-trade-balancer`
 - `card-lookup-qa` / `rules-lookup` (Ask AI mode contract + lookup suite)

@@ -77,6 +77,30 @@
   }
 }
 
+/* Lifts the inline feature-portal tab (rendered in normal flow inside the header's
+   grid, see FeaturePortalMenu/PortalSlot) up so its top edge meets .page-card's
+   border — the negated mirror of .page-card's own padding-top at each
+   breakpoint/density, so the tab stays flush with the border everywhere. */
+.portal-slot-tab {
+  margin-top: -1rem;
+}
+
+@media (min-width: 768px) {
+  .portal-slot-tab {
+    margin-top: -1.5rem;
+  }
+}
+
+[data-layout-density="slim"] .portal-slot-tab {
+  margin-top: -0.75rem;
+}
+
+@media (min-width: 768px) {
+  [data-layout-density="slim"] .portal-slot-tab {
+    margin-top: -1rem;
+  }
+}
+
 /* Inner panel — standard bordered content block; absorbs space-y */
 .panel-inner {
   border-radius: 1rem;
@@ -319,6 +343,11 @@ body {
   animation: motion-exit var(--motion-fast) var(--motion-ease-out) both;
 }
 
+/* Feature portal dropdown open motion — reuses the motion-enter keyframe timing. */
+.portal-menu-motion {
+  animation: motion-enter var(--motion-fast) var(--motion-ease-out) both;
+}
+
 .motion-hover,
 .motion-press,
 .motion-focus {
@@ -464,6 +493,7 @@ body {
   .motion-focus,
   .motion-success,
   .motion-error,
+  .portal-menu-motion,
   .ambient-accent-surface,
   .frozen-context-summary,
   .frozen-context-disclosure,

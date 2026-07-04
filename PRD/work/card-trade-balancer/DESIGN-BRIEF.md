@@ -2,7 +2,7 @@
 
 ## Summary
 
-A standalone, frontend-only, **ephemeral** Card Trade Balancer: two traders each build a list of cards; the app shows each side's total USD value and the live difference so a trade can be balanced at a glance. Reached via a new top-level navigation menu that switches between the existing MTG Assistant flow and the Trade Balancer. No backend, endpoint, or contract change.
+A standalone, frontend-only, **ephemeral** Card Trade Balancer: two traders each build a list of cards; the app shows each side's total USD value and the live difference so a trade can be balanced at a glance. Reached as a destination registered in the `feature-portal` (which owns the nav chrome + mode switch); this package no longer builds nav chrome. No backend, endpoint, or contract change.
 
 ## Scope
 
@@ -13,13 +13,13 @@ A standalone, frontend-only, **ephemeral** Card Trade Balancer: two traders each
   - **Duplicates/multiples allowed** on a side (stack duplicate-block and 10-card cap do not apply).
   - **Missing price** for the selected foil mode → contributes **$0**, price shown in a distinct color, plus a **caution-triangle** indicator.
 - **Printing-level price artifact** (REQ-066, DEC-088): new committed, lazy-loaded artifact built offline from the Scryfall bulk source; per printing `usd`/`usd_foil` + set/collector/image; indexable by oracle id (picker) and printing id (scan); records a snapshot date; static snapshot, human-approved refresh only.
-- **Top-level navigation menu** (REQ-067, DEC-089, FLOW-010): a menu affordance in the **top-right header**, distinct from and non-overlapping with `ThemeControl`; lists MTG Assistant and Trade Balancer; switching preserves each mode's in-session state; no reload persistence.
+- **Portal destination** (depends on `feature-portal`; REQ-067, FLOW-010, DEC-095): the Trade Balancer registers as a destination in the `feature-portal` and mounts in its Trade Balancer slot. Nav chrome + the mode switch are **built by `feature-portal`, not here**; the portal is a prerequisite (ships first).
 
 ## Key decisions
 
 - **DEC-087** — Card Trade Balancer feature: standalone, frontend-only, ephemeral; per-entry printing + foil toggle + quantity; scan or manual-search input; missing price → $0 + caution; USD only; **narrows** the pricing and printing-disambiguation non-goals (live/real-time price sync stays out); no `AskAiRequest`/prompt/endpoint change; scan identity stays oracle-level (DEC-053).
 - **DEC-088** — Printing-level static price artifact built from Scryfall bulk; lazy-loaded; no runtime price fetch/sync; extends DEC-012 with a second static artifact.
-- **DEC-089** — Top-level navigation menu (mode switcher) in the top-right header; distinct from `ThemeControl`; frontend-only view switch preserving in-session state.
+- **DEC-095 (dependency, owned by `feature-portal`)** — top-level nav elevated into the feature-portal package: top-middle menu button + extensible destination registry; the balancer registers as a destination. Refines DEC-089. Not built in this package.
 
 ## Non-goals (this work)
 
@@ -34,16 +34,15 @@ A standalone, frontend-only, **ephemeral** Card Trade Balancer: two traders each
 - REQ-064 — Two-sided trade balancer screen
 - REQ-065 — Trade card entry: printing selection, foil toggle, quantity
 - REQ-066 — Printing-level price data artifact
-- REQ-067 — Top-level app navigation menu
 - NFR-013 — Trade-price data footprint and freshness
 - FLOW-009 — Build a two-sided trade and read the balance
-- FLOW-010 — Switch between MTG Assistant and Trade Balancer
+- REQ-067 / FLOW-010 (dependency, owned by `feature-portal`) — the balancer registers as a portal destination; the portal provides the nav + mode switch
 
 ## Reuse (before creating)
 
 - Scan resolver `apps/frontend/src/lib/scan/resolveScanCandidates.ts` (REQ-036) + scanned-printing provenance (DEC-070) for scan input and the printing default.
 - Manual card search `apps/frontend/src/lib/search.ts` (DEC-012, REQ-002/003) for name lookup.
-- Existing app chrome (`PageShell.tsx` / `ThemeControl.tsx`) for placing the navigation menu without overlapping the palette control (DEC-065 non-overlap precedent).
+- `feature-portal` destination registry + Trade Balancer mount slot (DEC-095, REQ-067) — register here instead of building nav chrome.
 - Data pipeline (`scripts/`, `data:build`/`data:refresh`) and the committed-static-artifact + human-approved-download posture (DEC-012, DEC-054) for the price artifact.
 
 ## Open questions

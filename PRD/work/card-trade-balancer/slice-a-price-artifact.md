@@ -4,7 +4,7 @@
 
 ## Dependencies
 
-None. Parallel-ready with Slice B.
+None. Parallel-ready (data layer; runs alongside the separate `feature-portal` package).
 
 ## Goal
 

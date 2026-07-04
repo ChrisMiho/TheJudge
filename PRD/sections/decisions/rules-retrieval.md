@@ -145,3 +145,26 @@ WotC rulings and Comprehensive Rules enrichment: curated baseline, supplemental 
   - does not replace `prompt:preview` for general prompt inspection; adds automated relevance regression
   - full prompt golden regeneration only for intentional structural changes
 
+### DEC-100
+- Decision: Rules-mode (`mode: "rules"`, DEC-098) enrichment is **question-driven only**, because rules lookup carries no game state and no card. The prompt includes the static MTG reference block (DEC-025), an **always-on core** game-rules topic set (the DEC-045 core: `stack-and-priority`, `targets-basics`, `zones-basics`, `abilities-trigger-basics`), and **System 3** supplemental retrieval (DEC-046) scored on the question text. It **omits** the game-state-only sections — zone sections, `PHASE GUIDANCE`, DEC-045 game-state topic gating, the merged zone scope sentence — and **omits** card-specific WotC rulings (DEC-029), since no card is submitted. The rules-mode prompt instructs the model to surface the genuinely relevant **verbatim** rule excerpts **drawn only from the provided set** (a verbatim-fidelity guard against invented rule numbers) and explain them. After the first answer, the backend runs a single **answer-seeded second-pass retrieval**: it re-queries the committed rule index (DEC-032/DEC-046 scorer) using the model's answer text as the query, deduplicates against rules already included, and **appends** any newly surfaced verbatim excerpts to the plain-text `answer` string. This is a single AI call plus a free local re-query; the answer text itself is not regenerated in v1.
+- Status: confirmed
+- Context: The user's raw question is often a weak retrieval signal (it may not contain the governing rule's keywords or number), but the model's first answer names the real concepts, keywords, and rule numbers — a much stronger query. Re-querying with the answer catches rules the first pass missed and surfaces them to the player, at the cost of only a local lexical pass (DEC-046 already gives exact rule-ID a +100 boost, so a cited "704.5g" resolves precisely). Regenerating the explanation with the expanded set would double latency/cost for marginal gain, so v1 appends the recovered verbatim rules rather than re-answering. Because rules mode has no zones, stack, phase, or card, DEC-045's game-state gating and DEC-029 rulings have no inputs and are omitted rather than adapted.
+- Impact:
+  - rules-mode prompt = MTG reference block (DEC-025) + always-on core game-rules topics (DEC-045 core set) + System 3 supplemental (DEC-046, question-scored); no zone/`PHASE GUIDANCE`/game-state-gated sections and no `OFFICIAL RULINGS` block
+  - the model is instructed to quote only from the provided rule excerpts and to present the relevant ones verbatim plus an explanation; verbatim fidelity is guaranteed by construction (the model only ever sees committed CR text)
+  - **answer-seeded second-pass retrieval**: after the provider returns, the backend re-queries the rule index with the answer text, dedups against the already-included curated + supplemental rule IDs, caps the addition consistent with the existing supplemental budget, and appends the new verbatim excerpts to the `answer` string returned to the caller
+  - the appended rules are composed into the plain-text `answer` server-side; success `{ answer }` and error shapes are unchanged (no structured rules field, no new response key, no new endpoint) — preserves DEC-020 / DEC-098 contract stability and plain-text output
+  - reuses the existing System 3 scorer and rule-index artifact as the single authoritative retrieval implementation (no forked matcher); the same helpers build both the initial and second-pass rule sets
+  - enrichment stays prompt/retrieval-only and backend-only; no rules-engine, legality, or board-state behavior (DEC-002 / DEC-013 preserved)
+  - mock provider exposes the assembled rules-mode prompt and enrichment debug (DEC-033 pattern), including second-pass selections/runner-ups; OpenAI provider returns `{ answer }` (with appended verbatim rules) only
+  - the eval harness (DEC-047) extends to rules-mode scenarios: core-topic presence, question-driven supplemental recall, and answer-seeded second-pass recovery of a rule the raw question missed
+- Related requirements:
+  - REQ-077
+  - REQ-078
+  - REQ-022
+  - REQ-032
+- Notes:
+  - two-call **regenerate** (rebuild the explanation on the expanded rule set) is a deferred follow-up, promoted only if v1 answers prove thin after latency/cost sampling (NFR-002)
+  - single AI call per rules lookup keeps rules mode within the main flow's latency envelope (NFR-002); the second pass adds only local scoring
+  - core-topic set and keyword vocabulary reuse the same curated artifacts and human sign-off as DEC-045 / DEC-046
+

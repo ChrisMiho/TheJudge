@@ -4,7 +4,7 @@
 
 ## Dependencies
 
-Depends on **Slice A** (price loader `loadCardPrices`) and **Slice B** (Trade Balancer mount slot). Wave 2.
+Depends on **Slice A** (price loader `loadCardPrices`) and the **`feature-portal`** package (its destination registry + Trade Balancer mount slot; DEC-095, REQ-067 — a cross-package prerequisite, ships first). Wave 2.
 
 ## Goal
 
@@ -18,7 +18,7 @@ Build the two-sided Trade Balancer view with a pure pricing engine, manual-searc
    - `entryContribution(entry)` → `(entryUnitPrice ?? 0) × quantity`.
    - `sideTotal(entries)` → `Σ entryContribution`.
    - `difference(totalA, totalB)` → `{ amount: |A−B|, higher: 'A' | 'B' | 'equal' }`.
-2. New `apps/frontend/src/components/trade/TradeBalancer.tsx` replaces the Slice B placeholder: two sides (**Side A**, **Side B**), each an ordered `TradeEntry[]` in component state; each side shows its running total; the view shows the difference (amount + which side is higher, or equal). Totals/difference update live on add, remove, foil toggle, and quantity change. Ephemeral: no persistence, no history, no suggestions.
+2. New `apps/frontend/src/components/trade/TradeBalancer.tsx` mounts in the `feature-portal` Trade Balancer destination slot: two sides (**Side A**, **Side B**), each an ordered `TradeEntry[]` in component state; each side shows its running total; the view shows the difference (amount + which side is higher, or equal). Totals/difference update live on add, remove, foil toggle, and quantity change. Ephemeral: no persistence, no history, no suggestions.
 3. On first open, lazy-load prices via `loadCardPrices` (Slice A). While loading, show a lightweight loading state; on load failure surface the reason and let entries render with the $0 + caution treatment rather than a broken screen (FLOW-009 edge case). The view may display `snapshotDate` ("prices as of …").
 4. **Manual-search input** (`TradeSide` / picker): reuse `search.ts` to find a card by name, then `PrintingPicker` lists that card's printings via `listPrintingsForOracle(oracleId)`; the user chooses a printing before the entry is added, and that printing's price applies. Duplicates allowed (repeated adds and/or a per-entry quantity ≥ 1); the stack duplicate-block and 10-card cap do **not** apply.
 5. Per-entry controls (`TradeEntryRow.tsx`): foil toggle (default non-foil), quantity control (≥ 1), remove. **Missing price** for the selected mode → entry contributes $0, price rendered in a distinct color, and a caution-triangle indicator shown. A `PrintingPicker`-backed "change printing" control on an existing entry re-prices it (shared with Slice D's scan default).
@@ -46,10 +46,10 @@ npm --workspace apps/frontend run typecheck
 
 - `apps/frontend/src/lib/trade/pricing.ts` (new)
 - `apps/frontend/src/lib/trade/pricing.test.ts` (new)
-- `apps/frontend/src/components/trade/TradeBalancer.tsx` (new, replaces Slice B stub)
+- `apps/frontend/src/components/trade/TradeBalancer.tsx` (new)
 - `apps/frontend/src/components/trade/TradeSide.tsx` (new)
 - `apps/frontend/src/components/trade/TradeEntryRow.tsx` (new)
 - `apps/frontend/src/components/trade/PrintingPicker.tsx` (new)
 - `apps/frontend/src/components/trade/TradeBalancer.test.tsx` (new)
-- `apps/frontend/src/App.tsx` (wire real `TradeBalancer` into the Slice B mount slot)
+- Register `TradeBalancer` as the Trade Balancer destination in the `feature-portal` registry (the portal owns the `App.tsx` mount + mode switch; no nav chrome built here)
 </content>

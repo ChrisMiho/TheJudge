@@ -19,3 +19,12 @@
   - Fold a minimal version into the existing debug overlay (DEC-060) only
   - Promote to a shipped, always-on convergence affordance (largest scope)
 - Recommended next step: Keep deferred; open a dedicated refinement if/when scanner-feedback work is prioritized. Do not add to the UI motion polish scope (REQ-059) without explicit confirmation.
+
+### Q-003
+- Question: Should Card Lookup later accept optional lightweight game context (e.g. a few surrounding cards or a phase hint) in `mode: "card"`?
+- Context: v1 Card Lookup is deliberately single-card with no `gameContext` (DEC-097), which keeps the payload small and the non-goal clean. The user has expressed future interest in adding a small amount of surrounding game context to a card lookup. The DEC-096 `mode`-discriminated union was chosen specifically so this can be added to the card branch additively — no new endpoint and no break to existing clients.
+- Why it matters: Adding context changes what enrichment runs (some game-state-only sections become applicable again) and risks re-importing the game-flow complexity the lookup entry was meant to avoid. It deserves its own refinement rather than riding along with v1.
+- Options under consideration:
+  - Keep card mode strictly single-card in v1 and revisit later (recommended)
+  - Add an optional lightweight context field to the card branch now (larger scope; blurs the non-goal)
+- Recommended next step: Ship single-card v1; open a dedicated refinement if/when contextual card lookup is prioritized. Do not expand `mode: "card"` payload without explicit confirmation.
