@@ -3,7 +3,7 @@
 Core product framing: what the assistant is and is not.
 
 ### DEC-001
-- Decision: The core product is a rules assistant that helps players navigate MTG rules — not an official judge or a deterministic/gameplay-accurate rules engine. (Product label updated by DEC-080; the scope guardrail is unchanged.)
+- Decision: TheJudge is an MTG assistant with a suite of features that help players — not an official judge or a deterministic/gameplay-accurate rules engine. (Product label updated by DEC-094; the scope guardrail is unchanged.)
 - Status: confirmed
 - Context: Historical MVP1 framing was meant to prove the core user flow without taking on full MTG rules complexity.
 - Impact:
@@ -52,5 +52,21 @@ Core product framing: what the assistant is and is not.
   - GOAL-002
   - GOAL-003 (replaced)
   - REQ-009 (constraint wording)
-- Notes: Documentation/framing change only. Refines the label of DEC-001; does not supersede DEC-001/DEC-002/DEC-013.
+- Notes: Documentation/framing change only. Refines the label of DEC-001; does not supersede DEC-001/DEC-002/DEC-013. Label further refined by DEC-094.
+
+### DEC-094
+- Decision: Retire current-tense "rules assistant" and any remaining "flow-validation" product labels as the app identity. TheJudge is positioned as an MTG assistant with a suite of player-help features. **MTG Assistant** is the primary feature (staged game context + Ask AI for rules/gameplay guidance), not the name of the whole app. Other features (card scanning, personalization, planned Trade Balancer, and future tools) sit alongside it. Scope guardrails from DEC-001, DEC-002, and DEC-013 are preserved: assistant, not an official judge or deterministic rules engine. Production is live on AWS (`DEC-084`); focus is gathering feedback and refining the suite.
+- Status: confirmed
+- Context: DEC-080 correctly retired the "flow-validation" label but replaced it with "rules assistant," which still undersells the product as a single-purpose rules tool and conflates the app (TheJudge) with its primary feature (MTG Assistant). Agents and onboarding docs kept echoing "flow-validation MTG assistant (staged zone flow + Ask AI)" because kickoff skills and README status bullets never fully adopted suite framing. Trade Balancer, scanning, personalization, and feature-portal work already treat TheJudge as a multi-feature app.
+- Impact:
+  - current-tense app identity uses suite framing in `overview.md`, `goals-and-non-goals.md`, `problem-statement.md`, root and PRD `README` files, `agent-working-rules.md`, and kickoff skills
+  - **MTG Assistant** is reserved for the primary staged-context + Ask AI feature; **TheJudge** is the app
+  - DEC-001 label pointer updated to DEC-094; DEC-080 body retained as historical record of retiring flow-validation
+  - historical "flow-validation" and "rules assistant" references inside past decision contexts remain verbatim
+  - no product behavior, contract, endpoint, prompt-assembly, or stack-ordering change; no new rules-engine capability
+- Related requirements:
+  - GOAL-001
+  - GOAL-002
+  - GOAL-003
+- Notes: Documentation/framing change only. Refines the label of DEC-001 and DEC-080; does not supersede DEC-001/DEC-002/DEC-013.
 

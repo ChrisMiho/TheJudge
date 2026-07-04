@@ -36,8 +36,8 @@ If the user only wants orientation, skip writes.
 
 Short paragraph (2–3 sentences):
 
-1. Product in one phrase (flow-validation MTG assistant)
-2. Current baseline from README + PRD/README (core product, not MVP framing)
+1. Product in one phrase (MTG assistant with a suite of player-help features)
+2. Current baseline from README + PRD/README (suite framing, not flow-validation or MVP)
 3. Ready for next task — or confirm idea captured at `PRD/work/<slug>/`
 
 ## Do not

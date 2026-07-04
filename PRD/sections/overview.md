@@ -1,20 +1,22 @@
 # overview.md
 
 ## Summary
-MTG Assistant is a mobile-first web application for Magic: The Gathering players.
+TheJudge is a mobile-first web application for Magic: The Gathering players — an MTG assistant with a suite of features that help at the table.
 
-Its purpose is to help users:
+Its primary feature, **MTG Assistant**, helps users:
 - search for cards quickly
 - capture relevant game context before asking a rules question
 - add selected cards to relevant zones, including the stack when applicable
 - ask a contextual question about the game state or stack
 - receive a plain-text AI explanation of the likely interaction
 
+Other features (optional or planned) sit alongside MTG Assistant — for example card scanning as an alternate input path, browser-local personalization, and a Card Trade Balancer.
+
 ## Product Positioning
 This product is:
-- an assistant
-- a stack-focused gameplay aid
-- a rules assistant that helps players navigate MTG rules
+- an MTG assistant with a suite of player-help features
+- a stack-focused gameplay aid via the MTG Assistant feature
+- not limited to a single rules-only loop
 
 This product is not:
 - an official judge
@@ -22,13 +24,13 @@ This product is not:
 - a full board-state simulator
 
 ## Current Product Status
-The core product's primary hypothesis is considered validated (past MVP):
+The primary MTG Assistant loop is considered validated (past MVP):
 
-**Players will use a lightweight rules assistant if it is fast to use during real gameplay.**
+**Players will use a lightweight MTG assistant if it is fast to use during real gameplay.**
 
-The shipped baseline includes staged zone flow, `GameContext`, and plain-text answers. The app is deployed to production on AWS-provided URLs and runs the live OpenAI provider (`DEC-084`); the focus now is gathering real user feedback and refining the existing functionality. Local development continues to use `ASK_AI_PROVIDER=mock` by default under `DEC-020`.
+The shipped baseline includes the MTG Assistant staged zone flow, `GameContext`, plain-text answers, card scanning, and personalization. The app is deployed to production on AWS-provided URLs and runs the live OpenAI provider (`DEC-084`); the focus now is gathering real user feedback and refining the suite. Local development continues to use `ASK_AI_PROVIDER=mock` by default under `DEC-020`.
 
-The product intentionally keeps context structured but lightweight:
+MTG Assistant intentionally keeps context structured but lightweight:
 - game context (player count, life totals, active player when known, and turn phase)
 - selected zone checklist with phase-driven defaults
 - selected cards grouped by zone, with ordered stack positioning when stack is populated
@@ -36,7 +38,7 @@ The product intentionally keeps context structured but lightweight:
 - optional user question
 - no full legality validation
 
-Beyond the core loop, a standalone **Card Trade Balancer** is a planned optional feature: a frontend-only, ephemeral two-sided card-value comparison (static-snapshot USD prices, per-entry printing + foil + quantity), reached via a top-level navigation menu that switches between it and the MTG Assistant flow (DEC-087, DEC-089). It adds no backend endpoint or prompt/contract change.
+Beyond MTG Assistant, a standalone **Card Trade Balancer** is a planned optional feature: a frontend-only, ephemeral two-sided card-value comparison (static-snapshot USD prices, per-entry printing + foil + quantity), reached via a top-level navigation menu that switches between it and the MTG Assistant flow (DEC-087, DEC-089). It adds no backend endpoint or prompt/contract change.
 
 Intentional constraints are tracked in `goals-and-non-goals.md`.
 

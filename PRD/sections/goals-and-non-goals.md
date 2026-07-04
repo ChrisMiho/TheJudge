@@ -78,5 +78,5 @@
 - server-synced layout-density preferences, account-based density settings, viewport locking, and sticky-footers redesign for layout compaction (DEC-075, DEC-076)
 
 ## Scope Notes
-The core product is a **rules assistant** that helps players navigate MTG rules, not an official judge or a deterministic/gameplay-accurate rules engine.
+TheJudge is an **MTG assistant with a suite of features** that help players — not an official judge or a deterministic/gameplay-accurate rules engine. **MTG Assistant** (staged game context + Ask AI) is the primary feature; other tools (scanning, personalization, planned Trade Balancer) sit alongside it (`DEC-094`).
 Some constraints are temporary and intentionally narrow.
