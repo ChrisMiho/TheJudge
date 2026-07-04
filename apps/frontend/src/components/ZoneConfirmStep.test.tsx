@@ -7,6 +7,35 @@ import { ZoneConfirmStep } from "./ZoneConfirmStep";
 afterEach(cleanup);
 
 describe("ZoneConfirmStep", () => {
+  it("shows direct guidance for selecting relevant zones", () => {
+    render(
+      <ZoneConfirmStep
+        selectedZones={["stack"]}
+        canContinue={true}
+        onZoneToggle={() => undefined}
+        onBack={() => undefined}
+        onContinue={() => undefined}
+        statusMessage={null}
+      />
+    );
+
+    expect(
+      screen.getByText("Select all zones that apply to your question.")
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        [
+          "Select the zones relevant",
+          "to your question.",
+          "Defaults are pre-checked based on the turn phase."
+        ].join(" ")
+      )
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Select each zone at the top of the screen to add cards to it.")
+    ).not.toBeInTheDocument();
+  });
+
   it("adds shared interaction feedback to zone choices and flow actions", () => {
     render(
       <ZoneConfirmStep

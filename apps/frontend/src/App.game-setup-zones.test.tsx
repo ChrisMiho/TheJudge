@@ -140,6 +140,17 @@ describe("Slice-04: game setup + zone confirmation", () => {
     expect(screen.getByLabelText("Active player")).toBeInTheDocument();
   });
 
+  it("shows the player setup control guidance on the game context step", () => {
+    render(<App />);
+
+    expect(
+      screen.getByText("Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.")
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(["2 players start at 20", "life. 3+ players default to 40 life."].join(" "))
+    ).not.toBeInTheDocument();
+  });
+
   it("shows player display names in selects while keeping submitted player labels canonical", async () => {
     const user = userEvent.setup();
     render(<App />);

@@ -24,7 +24,7 @@ export function ZoneConfirmStep({
   return (
     <PageShell>
         <StagedStepHeader stepName="Zone confirmation" />
-        <p className="text-sm text-zinc-400">Select the zones relevant to your question. Defaults are pre-checked based on the turn phase.</p>
+        <p className="text-sm text-zinc-400">Select all zones that apply to your question.</p>
 
         <div className="grid grid-cols-1 gap-2 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4 sm:grid-cols-2">
           {CANONICAL_ZONE_ORDER.map((zone) => {
