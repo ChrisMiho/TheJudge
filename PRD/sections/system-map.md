@@ -457,6 +457,34 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: `scripts/retrieval-relevance-report.mjs`, `apps/backend/src/eval/contextEvaluationHarness.ts` (`buildRelevanceReport`)
 - Backed by: DEC-047, REQ-032
 
+## AWS production deployment
+
+- Status: shipped
+- Summary: Runs the live OpenAI-backed app on a low-cost AWS serverless stack using AWS-provided URLs, automated quality-gated deploys, backend-only secret loading, and explicit cost/scale guardrails.
+- Lives in: `.github/workflows/deploy-aws.yml`, `scripts/aws-{bootstrap,deploy}.sh`, `scripts/package-lambda.sh`, `apps/backend/src/lambda.ts`, `docs/aws/`
+- Backed by: DEC-084, GOAL-003, NFR-003, NFR-004
+
+### Serverless hosting
+
+- Status: shipped
+- Summary: Serves the static frontend from a private S3 origin through CloudFront and the backend from Lambda through a public Function URL, without a custom domain.
+- Lives in: `scripts/aws-bootstrap.sh`, `scripts/aws-deploy.sh`, `apps/backend/src/lambda.ts`
+- Backed by: DEC-084, NFR-004
+
+### Production secrets and deployment identity
+
+- Status: shipped
+- Summary: Loads the OpenAI key from an SSM SecureString once per Lambda container and deploys from GitHub through OIDC with no static AWS credentials.
+- Lives in: `apps/backend/src/runtime/loadOpenAiKeyFromSsm.ts`, `.github/workflows/deploy-aws.yml`, `scripts/aws-bootstrap.sh`
+- Backed by: DEC-020, DEC-084, NFR-003
+
+### Deploy and cost guardrails
+
+- Status: shipped
+- Summary: Gates every main-branch deploy on `quality:check`, caps Lambda concurrency when the account quota permits, retains the account limit as the fallback cap, and configures a low monthly AWS Budget alert.
+- Lives in: `.github/workflows/deploy-aws.yml`, `scripts/aws-bootstrap.sh`
+- Backed by: DEC-084, NFR-004
+
 ## PRD doc traceability (meta)
 
 - Status: shipped

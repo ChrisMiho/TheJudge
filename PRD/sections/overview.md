@@ -26,7 +26,7 @@ The core product's primary hypothesis is considered validated (past MVP):
 
 **Players will use a lightweight rules assistant if it is fast to use during real gameplay.**
 
-The shipped baseline includes staged zone flow, `GameContext`, and plain-text answers. The focus now is refining the existing functionality toward a first production deployment to gather real user feedback; the app is not yet deployed to production (`DEC-080`). Local development uses `ASK_AI_PROVIDER=mock` by default, while live answer generation is available through `ASK_AI_PROVIDER=openai` under `DEC-020`.
+The shipped baseline includes staged zone flow, `GameContext`, and plain-text answers. The app is deployed to production on AWS-provided URLs and runs the live OpenAI provider (`DEC-084`); the focus now is gathering real user feedback and refining the existing functionality. Local development continues to use `ASK_AI_PROVIDER=mock` by default under `DEC-020`.
 
 The product intentionally keeps context structured but lightweight:
 - game context (player count, life totals, active player when known, and turn phase)

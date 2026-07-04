@@ -11,8 +11,8 @@
 - Description: The core product should optimize for speed of use, structured lightweight context, and simple implementation.
 
 ### GOAL-003
-- Title: Reach production readiness for a first deployment
-- Description: Refine and harden the existing core loop (lightweight game context capture, zone cards when needed, question, and AI response) to production-ready quality so the app can be deployed and gather real user feedback. The original core-loop hypothesis is considered validated (past MVP); the focus is now refinement toward deployment, not proving the loop (`DEC-080`).
+- Title: Operate the first production deployment and gather feedback
+- Description: Keep the deployed core loop reliable, inexpensive, and secure while gathering real user feedback. The original core-loop hypothesis is validated (past MVP), and the first AWS production deployment is live (`DEC-084`).
 
 ## Success Metrics
 - user can add a card to the stack in under 5 seconds
@@ -38,6 +38,7 @@
 - mock-first integration path
 - one main backend endpoint
 - app-wide CSS decorative-motion and visual-feedback baseline with reduced-motion support (DEC-079, REQ-059, NFR-006)
+- AWS production deployment with live OpenAI, automated quality-gated deploys, backend-only secret loading, and cost/scale guardrails (DEC-084)
 
 ## Intentional constraints
 - duplicate-card blocking is a temporary product constraint, not a gameplay rule
