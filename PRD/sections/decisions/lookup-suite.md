@@ -86,4 +86,4 @@ Lightweight Ask AI lookup entries that reuse existing search, scan, and conversa
 - Related requirements:
   - REQ-074
 - Notes:
-  - copy/tone for the "confused" persona is a build-time content concern (system-prompt wording), not a product-behavior contract; wording may be tuned during implementation as long as the persona and no-direct-answer behavior hold
+  - copy/tone for the "confused" persona is a build-time content concern (system-prompt wording), not a product-behavior contract; future wording changes may tune it as long as the persona and no-direct-answer behavior hold

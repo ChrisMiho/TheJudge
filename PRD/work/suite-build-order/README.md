@@ -12,7 +12,7 @@ Participating packages (order finalized in GAMEPLAN):
 
 - `feature-portal`
 - `card-trade-balancer`
-- `quick-lookup` (Ask AI mode contract + lookup suite)
+- Quick Lookup — shipped (DEC-106 / DEC-107; receipt: `PRD/instructions/receipts/quick-lookup-2026-08-01.md`)
 - `card-collection-manager`
 - `commander-spellbook-combos`
 - `player-life-tracker`

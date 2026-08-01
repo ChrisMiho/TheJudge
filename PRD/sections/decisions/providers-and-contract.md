@@ -191,7 +191,7 @@ Backend provider boundary, API contract shape, and response sidecars/diagnostics
   - `question` character cap and control-character guardrails are identical across both modes
   - `conversationHistory` stays optional and is validated identically in both modes (DEC-038 rules unchanged)
   - success `{ answer }` and error response shapes are unchanged; `POST /api/ask-ai` route path and provider boundary are unchanged
-  - card-mode-shaped and rules-mode-shaped prompt assembly are both specified by DEC-107; this decision governs the request contract only
+  - lookup-mode prompt assembly is specified by DEC-107; this decision governs the request contract only
 - Related requirements:
   - REQ-072
   - REQ-019
