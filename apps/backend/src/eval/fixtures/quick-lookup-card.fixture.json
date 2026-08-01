@@ -1,0 +1,24 @@
+{
+  "id": "quick-lookup-card",
+  "description": "Lookup mode uses attached card oracle text to retrieve a rule absent from the question.",
+  "request": {
+    "mode": "lookup",
+    "question": "What does this ability do?",
+    "card": {
+      "cardId": "fixture-questing-beast",
+      "name": "Questing Beast",
+      "oracleText": "Deathtouch",
+      "imageUrl": "",
+      "manaCost": "{2}{G}{G}",
+      "manaValue": 4,
+      "typeLine": "Legendary Creature — Beast",
+      "colors": ["G"],
+      "supertypes": ["Legendary"],
+      "subtypes": ["Beast"]
+    }
+  },
+  "expected": {
+    "expectedSystem2TopicIds": ["stack-and-priority", "targets-basics", "zones-basics", "abilities-trigger-basics"],
+    "expectedSupplementalRuleIds": ["702.2b"]
+  }
+}

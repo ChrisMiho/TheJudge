@@ -12,7 +12,7 @@ Participating packages (order finalized in GAMEPLAN):
 
 - `feature-portal`
 - `card-trade-balancer`
-- `card-lookup-qa` / `rules-lookup` (Ask AI mode contract + lookup suite)
+- `quick-lookup` (Ask AI mode contract + lookup suite)
 - `card-collection-manager`
 - `commander-spellbook-combos`
 - `player-life-tracker`

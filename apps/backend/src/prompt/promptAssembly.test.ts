@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildPromptText } from "./promptAssembly.js";
+import { buildLookupPromptText, buildPromptText } from "./promptAssembly.js";
 import { SYSTEM_ROLE_PREAMBLE_LINES } from "./promptFormatting.js";
 import { MAX_CONTEXT_NOTES_CHARS, MAX_PROMPT_CHAR_BUDGET, MAX_TARGET_LABEL_CHARS } from "./normalization.js";
 import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
 import type { GameRulesTopic } from "../gameRules.js";
-import type { ConversationTurn, PromptContext } from "../types/index.js";
+import type { ConversationTurn, LookupPromptContext, PromptContext } from "../types/index.js";
 
 const sampleGameRulesTopics: GameRulesTopic[] = [
   {
@@ -580,5 +580,101 @@ describe("buildPromptText conversation history", () => {
     expect(prompt).toContain("NEWER-USER-");
     expect(prompt).toContain("OLDEST-USER-");
     expect(prompt).toContain("OLDEST-ASST-");
+  });
+});
+
+describe("buildLookupPromptText", () => {
+  const lookupContext: LookupPromptContext = {
+    finalQuestion: "How does deathtouch work?"
+  };
+
+  it("assembles the no-card lookup sections in order with lookup guardrails", () => {
+    const prompt = buildLookupPromptText(lookupContext, {
+      gameRulesTopics: sampleGameRulesTopics,
+      supplementalRules: [
+        {
+          ruleId: "702.2",
+          sectionTitle: "Deathtouch",
+          text: "Deathtouch is a static ability.",
+          score: 12
+        }
+      ]
+    });
+
+    const headers = [
+      "SYSTEM ROLE PREAMBLE\n",
+      "\nINSTRUCTIONS\n",
+      "\nMTG REFERENCE\n",
+      "\nGAME RULES (reference)\n",
+      "\nADDITIONAL RELEVANT RULE EXCERPTS\n",
+      "\nQUESTION\n"
+    ];
+    for (let index = 1; index < headers.length; index++) {
+      expect(prompt.indexOf(headers[index - 1]!)).toBeLessThan(prompt.indexOf(headers[index]!));
+    }
+    expect(prompt).toContain("quote rule text only from the provided GAME RULES");
+    expect(prompt).toContain("not found in the rules corpus");
+    expect(prompt).toContain("never answer the off-domain question directly");
+    expect(prompt).not.toContain("GENERAL GAME CONTEXT");
+    expect(prompt).not.toContain("PHASE GUIDANCE");
+    expect(prompt).not.toContain("ZONE:");
+    expect(prompt).not.toContain("\nSCOPE\n");
+    expect(prompt).not.toContain("CARD (looked up)");
+    expect(prompt).not.toContain("OFFICIAL RULINGS");
+  });
+
+  it("adds normalized card metadata and official rulings only for an attached card", () => {
+    const prompt = buildLookupPromptText(
+      {
+        ...lookupContext,
+        card: {
+          cardId: "questing-beast",
+          name: "Questing Beast",
+          oracleText: "Vigilance, deathtouch, haste",
+          imageUrl: "https://example.com/questing-beast.png",
+          manaCost: "{2}{G}{G}",
+          manaValue: 4,
+          typeLine: "Legendary Creature — Beast",
+          colors: ["G"],
+          supertypes: ["Legendary"],
+          subtypes: ["Beast"],
+          targets: []
+        }
+      },
+      {
+        rulings: {
+          sectionChars: 42,
+          cards: [
+            {
+              cardId: "questing-beast",
+              name: "Questing Beast",
+              rulings: [{ publishedAt: "2019-10-04", comment: "Combat damage can't be prevented." }]
+            }
+          ]
+        }
+      }
+    );
+
+    expect(prompt).toContain("CARD (looked up)\nname: Questing Beast");
+    expect(prompt).toContain("manaCost: {2}{G}{G}");
+    expect(prompt).toContain("manaValue: 4");
+    expect(prompt).toContain("typeLine: Legendary Creature — Beast");
+    expect(prompt).toContain("oracleText: Vigilance, deathtouch, haste");
+    expect(prompt).not.toContain("targets:");
+    expect(prompt).not.toContain("contextNotes:");
+    expect(prompt.indexOf("CARD (looked up)")).toBeLessThan(prompt.indexOf("OFFICIAL RULINGS"));
+  });
+
+  it("places conversation history immediately before the lookup question", () => {
+    const prompt = buildLookupPromptText({
+      ...lookupContext,
+      conversationHistory: [
+        { role: "user", content: "Earlier question" },
+        { role: "assistant", content: "Earlier answer" }
+      ]
+    });
+
+    expect(prompt).toContain("CONVERSATION HISTORY\nUser: Earlier question\nAssistant: Earlier answer");
+    expect(prompt.indexOf("CONVERSATION HISTORY")).toBeLessThan(prompt.indexOf("\nQUESTION\n"));
   });
 });

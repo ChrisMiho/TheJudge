@@ -84,6 +84,16 @@ Payload shape (integrations-and-data.md, Feedback Delivery Strategy):
 
 A, B, C are parallel-ready. D starts once B + C land. E is the integration + PRD-promotion slice.
 
+## Owner action required — runs in parallel with implementation, not before it
+
+None of Slices A–E need a real Formspree id to be built, tested, or merged. Delivery (Slice C) is written and verified against an unset/mocked id from the start — the no-op path and the POST path are both exercised with mocked `fetch`, never a live network call — so **UI implementation can kick off immediately** while the owner does Formspree onboarding on their own timeline:
+
+1. **Engineering track (starts now):** implement Slices A–E per the dependency map below. `VITE_FEEDBACK_FORMSPREE_ID` stays unset in `.env.example`/local `.env` throughout; every verification-checklist item, including the delivery POST, is satisfied with mocked/no-op config. This track is not blocked on step 2 at any point.
+2. **Owner track (in parallel):** create a Formspree account and a form at formspree.io (the recipient email is registered there, directly with Formspree — it is never entered into the codebase, `.env.example`, or any secret store), producing a form id.
+3. **Convergence (after both land):** the owner drops the real id into local `.env` (and the equivalent build-time env var in the prod deploy) — a config-only change, no code edit. Do one manual live-send smoke check (submit the modal for real, confirm the email arrives) to close out the feature; this is the only step that needs the real id.
+
+If the owner's id isn't ready when Slice E finishes, ship as-is (no-op) and do step 3 whenever the id lands — it's a drop-in, not a redeploy blocker.
+
 ## Verification checklist
 
 - [ ] `npm --workspace apps/frontend run test` green (new specs for A–E plus unchanged portal specs).
@@ -97,3 +107,4 @@ A, B, C are parallel-ready. D starts once B + C land. E is the integration + PRD
 - [ ] Snapshot shown in expandable summary == content serialized to `appState`.
 - [ ] `apps/frontend/.env.example` documents `VITE_FEEDBACK_FORMSPREE_ID`; no secret committed.
 - [ ] `npm run quality:check` green for touched areas (final slice).
+- [ ] **Post-onboarding, owner-only:** once the owner supplies a real `VITE_FEEDBACK_FORMSPREE_ID`, one manual live-send smoke check confirms the email arrives — not required to close out Slices A–E, only to confirm delivery is live.

@@ -141,7 +141,7 @@ Backend provider boundary, API contract shape, and response sidecars/diagnostics
 
 ### DEC-096
 - Decision: `AskAiRequest` gains a `mode` discriminator on the existing `POST /api/ask-ai` endpoint, keeping one product-facing endpoint (DEC-010). `mode: "game"` is the current staged flow and is the default when `mode` is absent (back-compat for existing clients). `mode: "card"` is single-card lookup: it carries a dedicated single-card reference and **no** `gameContext`. This is an additive amendment to the DEC-020 frozen contract (same pattern as DEC-038's optional `conversationHistory` field); success `{ answer }` and error response shapes are unchanged for both modes and both providers.
-- Status: confirmed
+- Status: superseded
 - Context: The lookup suite (card-lookup-qa, later rules-lookup) needs a lightweight Ask AI entry that asks about one card with no user-staged zones, stack, or phase. DEC-010 and the technical-design rules forbid extra product-facing endpoints, so the shape must ride the existing endpoint. A discriminated union keyed on `mode` keeps `game` untouched while giving `card` a smaller, purpose-fit payload, and leaves room to add optional lightweight context to the card branch additively in the future (Q-003) without a new endpoint or a breaking change.
 - Impact:
   - `AskAiRequest` becomes a `mode`-discriminated union; `mode` is optional-with-default `"game"` so existing `{ question, gameContext, conversationHistory? }` requests remain valid unchanged
@@ -158,10 +158,11 @@ Backend provider boundary, API contract shape, and response sidecars/diagnostics
 - Notes:
   - amends DEC-020 contract freeze additively, exactly as DEC-038 did; no existing field changes meaning
   - future extension of card mode to carry optional lightweight game context is tracked as Q-003 and is explicitly out of v1 scope
+  - superseded by DEC-106: quick-lookup refinement unifies card-lookup-qa and rules-lookup into one Quick Lookup destination with one `mode: "lookup"` branch, replacing this `mode: "card"` branch before it shipped
 
 ### DEC-098
 - Decision: The DEC-096 `mode` discriminator on `POST /api/ask-ai` gains the third reserved branch `mode: "rules"` for `rules-lookup`. The `mode: "rules"` payload is `{ mode: "rules", question, conversationHistory? }` — no `gameContext` and no `card`, because rules lookup carries neither game state nor a single-card reference. This is an additive amendment to the DEC-020 / DEC-096 contract in the same pattern as DEC-096 itself; success `{ answer }` and error response shapes are unchanged for all three modes and both providers.
-- Status: confirmed
+- Status: superseded
 - Context: DEC-096 introduced the `mode` union and explicitly reserved `mode: "rules"` for `rules-lookup` as out-of-scope-there. Rules lookup asks a general rules question with no user-staged zones, stack, phase, or card, so its branch is the smallest of the three: just the question plus optional follow-up history. Riding the existing endpoint keeps DEC-010's single product-facing endpoint intact.
 - Impact:
   - `AskAiRequest`'s `mode`-discriminated union adds a third variant; `mode: "rules"` payload is `{ mode: "rules", question, conversationHistory? }`
@@ -177,4 +178,24 @@ Backend provider boundary, API contract shape, and response sidecars/diagnostics
 - Notes:
   - amends DEC-096 / DEC-020 additively; no existing field changes meaning
   - completes the three-mode union (`game`, `card`, `rules`); no further modes are introduced here
+  - superseded by DEC-106: this reserved slot is retired before shipping, replaced by the unified `mode: "lookup"` branch
 
+### DEC-106
+- Decision: `AskAiRequest` uses a `"game" | "lookup"` mode discriminator (DEC-096). `mode: "game"` (default, absent = back-compat) is unchanged from DEC-096/DEC-020. `mode: "lookup"` is the single Quick Lookup entry: `{ mode: "lookup", question, card?: <single oracle-level card reference>, conversationHistory? }`. `card` is optional — its presence or absence is what the backend branches on (DEC-107); `gameContext` is rejected on lookup mode. This replaced DEC-096's `mode: "card"` branch and retired the `mode: "rules"` slot DEC-098 reserved, since Quick Lookup (DEC-107) unifies what would have been separate card-lookup and rules-lookup destinations into one entry with one wire shape.
+- Status: confirmed
+- Context: card-lookup-qa and rules-lookup were originally scoped as two destinations with two wire shapes (`mode: "card"` carrying a card, `mode: "rules"` carrying only a question) before either shipped. Refining them into one Quick Lookup destination — one "optionally attach a card" ask path — makes two wire shapes for one product surface an unnecessary fork; a single `mode: "lookup"` branch with an optional `card` field matches the product shape exactly and keeps the additive-amendment pattern DEC-096/DEC-038 established.
+- Impact:
+  - `AskAiRequest` union is `{ mode?: "game", question, gameContext, conversationHistory? } | { mode: "lookup", question, card?: <card reference>, conversationHistory? }`
+  - backend Zod rejects `gameContext` on lookup mode; `card` and `gameContext` are mutually exclusive with each other across both modes
+  - the single-card reference reuses the existing committed card identity (oracle-level `cardId`/`CardMetadataItem`); no new identity model and no printing-level identity in the prompt
+  - `question` character cap and control-character guardrails are identical across both modes
+  - `conversationHistory` stays optional and is validated identically in both modes (DEC-038 rules unchanged)
+  - success `{ answer }` and error response shapes are unchanged; `POST /api/ask-ai` route path and provider boundary are unchanged
+  - card-mode-shaped and rules-mode-shaped prompt assembly are both specified by DEC-107; this decision governs the request contract only
+- Related requirements:
+  - REQ-072
+  - REQ-019
+  - REQ-012
+- Notes:
+  - supersedes DEC-096's `mode: "card"` branch and DEC-098's `mode: "rules"` reservation; `mode: "game"` default/back-compat behavior originally introduced by DEC-096 is restated here unchanged
+  - future extension of the `card` field to carry optional lightweight game context is tracked as Q-003 and is out of v1 scope

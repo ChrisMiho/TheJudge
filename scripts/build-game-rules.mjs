@@ -8,6 +8,18 @@ const sourcePath = path.resolve("apps/backend/data/cr/source.txt");
 const outputPath = path.resolve("apps/backend/data/gameRulesByTopic.json");
 const indexPath = path.resolve("apps/backend/data/gameRulesRuleIndex.json");
 const tokenStatsPath = path.resolve("apps/backend/data/gameRulesTokenStats.json");
+const coreTopicsPath = path.resolve("apps/frontend/public/data/gameRulesCoreTopics.json");
+
+// Mirrors ALWAYS_ON_TOPIC_IDS in apps/backend/src/gameRulesTopicSelection.ts;
+// the build-policy test guards this Node-script boundary against drift.
+export const CORE_TOPIC_IDS = Object.freeze([
+  "stack-and-priority",
+  "targets-basics",
+  "zones-basics",
+  "abilities-trigger-basics",
+  "combat-phase-structure",
+  "layers-order"
+]);
 
 // Keep this stopword set + tokenizer in sync with `tokenize` in
 // apps/backend/src/gameRulesRetrieval.ts so token-frequency stats match the scorer.
@@ -230,6 +242,34 @@ export function transformGameRules({ crText, manifest, previousTopics = [] }) {
   return { topics, warnings };
 }
 
+/**
+ * Select the signed-off frontend browse subset from the generated topic artifact.
+ * @param {Array<{id: string, title: string, ruleNumbers: string[], excerpt: string}>} topics
+ * @param {readonly string[]} topicIds
+ */
+export function buildCoreTopics(topics, topicIds = CORE_TOPIC_IDS) {
+  const topicsById = new Map(topics.map((topic) => [topic.id, topic]));
+  const coreTopics = [];
+  const warnings = [];
+
+  for (const id of topicIds) {
+    const topic = topicsById.get(id);
+    if (!topic) {
+      warnings.push(`Core rules topic ${id} not found in generated topic artifact; skipped.`);
+      continue;
+    }
+
+    coreTopics.push({
+      id: topic.id,
+      title: topic.title,
+      ruleNumbers: topic.ruleNumbers,
+      excerpt: topic.excerpt
+    });
+  }
+
+  return { topics: coreTopics, warnings };
+}
+
 function readJsonIfPresent(filePath, fallback) {
   if (!fs.existsSync(filePath)) return fallback;
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -306,6 +346,18 @@ async function main() {
   console.log(`Token stats tokens: ${Object.keys(tokenStats.tokens).length} (N=${tokenStats.N})`);
   console.log(`Token stats bytes: ${Buffer.byteLength(tokenStatsOutput)}`);
   console.log(`Wrote: ${tokenStatsPath}`);
+
+  const { topics: coreTopics, warnings: coreTopicWarnings } = buildCoreTopics(topics);
+  for (const warning of coreTopicWarnings) {
+    console.warn(warning);
+  }
+  ensureParentDirectory(coreTopicsPath);
+  const coreTopicsOutput = await prettierFormat(JSON.stringify(coreTopics), { parser: "json", printWidth: 120 });
+  fs.writeFileSync(coreTopicsPath, coreTopicsOutput);
+
+  console.log(`Core rules topics: ${coreTopics.length}`);
+  console.log(`Core rules topics bytes: ${Buffer.byteLength(coreTopicsOutput)}`);
+  console.log(`Wrote: ${coreTopicsPath}`);
 }
 
 const invokedPath = process.argv[1] ? pathToFileURL(process.argv[1]).href : "";

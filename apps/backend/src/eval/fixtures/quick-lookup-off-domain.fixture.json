@@ -1,0 +1,11 @@
+{
+  "id": "quick-lookup-off-domain",
+  "description": "Lookup mode always includes the confused-rules-lookup guardrail for an off-domain question.",
+  "request": {
+    "mode": "lookup",
+    "question": "How do I bake sourdough bread?"
+  },
+  "expected": {
+    "expectedSystem2TopicIds": ["stack-and-priority", "targets-basics", "zones-basics", "abilities-trigger-basics"]
+  }
+}

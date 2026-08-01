@@ -29,7 +29,7 @@
   - if the user changes phase after selecting zones, newly assumed zones are added and existing cards/enrichment are preserved
 - Notes:
   - this is the primary core product flow with staged context capture
-  - each staged step's header presents the active step name inline to the right of the `TheJudge` / `MTG Assistant` brand block in a single row (DEC-067, REQ-045); the answered-state conversation header stays a slim brand-only header with no step name
+  - each staged step's header presents the active step name inline to the right of the `TheJudge` / `MTG Assistant` brand block in a single row (DEC-067, REQ-045); the answered-state conversation header stays a slim brand-only header with no step name, and now also carries an inline feature-portal Menu slot (DEC-109, REQ-089) so Menu docks and scrolls with this header exactly as on the staged steps rather than floating fixed
   - staged-flow screen compaction (DEC-076, REQ-056) and optional layout density (DEC-075, REQ-055, FLOW-008) are presentation-only and do not change this flow's logic or payloads
 
 ### FLOW-002
@@ -235,64 +235,41 @@
   - `ThemeControl` (FLOW-007 / FLOW-008) placement and behavior are unchanged; it keeps the top-right corner
 
 ### FLOW-011
-- Name: Look up one card and ask a question
-- Trigger: User opens **Card Lookup** from the feature portal (FLOW-010) to ask about a single card without staging any game state
+- Name: Look up a card or ask a rules question in Quick Lookup
+- Trigger: User opens **Quick Lookup** from the feature portal (FLOW-010) to ask about a single card, or ask a freeform Magic rules question, without staging any game state
 - Preconditions:
   - app is loaded
-  - local card metadata is available
+  - local card metadata and the committed core-topics browse data are available
   - for scan input: the device has a usable camera with permission and the fingerprint library loads on first scan (FLOW-006)
 - Main Flow:
-  1. User selects Card Lookup from the feature portal; the app switches to the lookup view (frontend-only, no reload).
-  2. User resolves one card either by typed autocomplete search (reusing REQ-001/REQ-002 behavior) or by scanning it with the existing camera scanner (FLOW-006 engine); the result is a single oracle-level card.
-  3. App shows the resolved card's name, image when available, oracle text, and full metadata so the user can confirm the card.
-  4. User enters a freeform question (same character cap as the main flow) and submits.
-  5. Frontend sends `{ mode: "card", question, card }` to `POST /api/ask-ai`; no `gameContext` is sent.
-  6. Backend assembles the card-mode prompt — reusing the same per-card enrichment (rulings, full metadata incl. oracle text, System-3 supplemental rules) and omitting game-state-only sections — and returns a plain-text answer.
+  1. User selects Quick Lookup from the feature portal; the app switches to the lookup view (frontend-only, no reload).
+  2. The empty state shows a short list of core rules topics (the stack & priority, targeting, combat, layers) the user can read locally with no AI call, alongside the option to attach a card or type a question.
+  3. User optionally resolves one card either by typed autocomplete search (reusing REQ-001/REQ-002 behavior) or by scanning it with the existing camera scanner (FLOW-006 engine); the result is a single oracle-level card, shown with name, image when available, oracle text, and full metadata. The user may instead skip card input, and may tap "ask about this" on a core topic to pre-fill a question.
+  4. User enters a freeform question (same character cap as the main flow) and submits, with or without a card attached.
+  5. Frontend sends `{ mode: "lookup", question, card? }` to `POST /api/ask-ai`; `card` is present only if one was attached; no `gameContext` is sent.
+  6. Backend assembles one lookup-mode prompt: question-driven rules retrieval (MTG reference block, always-on core game-rules topics, System 3 supplemental) always runs; when a card is attached, per-card enrichment (WotC rulings, full metadata incl. oracle text, card-scored System 3) layers in; game-state-only sections are always omitted. Off-domain questions get the "confused rules lookup" persona response rather than a direct answer. Backend returns a plain-text answer.
   7. Frontend shows the answer in the reused conversation thread (first visible bubble is the assistant answer; the initial question is not shown as a bubble).
-  8. User may send text follow-ups from the reused composer; each follow-up sends `{ mode: "card", question, card: frozen, conversationHistory }` under the same conversation limits as the main flow.
-  9. User may start over, which clears the thread and returns to the pre-ask state with the looked-up card preserved.
+  8. User may send text follow-ups from the reused composer; each follow-up sends `{ mode: "lookup", question, card: frozen (if one was attached), conversationHistory }` under the same conversation limits as the main flow.
+  9. User may start over, which clears the thread and returns to the pre-ask state — with the looked-up card preserved if one was attached, or the core-topics list visible if not.
 - Edge Cases:
-  - if no card is resolved yet, submit is blocked
-  - if the question is blank after trimming, apply the main flow's blank-question handling (REQ-011) adapted to single-card context
-  - AI failure reuses the main flow's failure handling (FLOW-003): the message **Miho is working on it**, preserved card and question, retry with cooldown
-  - if the follow-up request fails, the error is shown and retry resubmits with the same frozen card and history (FLOW-005)
+  - if the question is blank after trimming, submit is blocked and the core-topics fallback remains visible
+  - AI failure reuses the main flow's failure handling (FLOW-003): the message **Miho is working on it**, preserved card/question, retry with cooldown
+  - if the follow-up request fails, the error is shown and retry resubmits with the same frozen card (if any) and history (FLOW-005)
   - if history chars exceed the shared cap, oldest turns are truncated first (REQ-027)
   - in mock provider mode, the assistant bubble still appends in the same thread and its answer contains the exact assembled LLM-facing prompt for that submitted message
   - scan input inherits FLOW-006 behavior (permission fallback to manual search, scanned-printing art as presentation only); scan resolves to one card rather than adding into a zone
+  - an off-domain question (with or without a card attached) gets the "confused rules lookup" persona response (DEC-108), not a direct answer
 - Notes:
-  - single-card lookup carries no zones, stack, phase, or multi-card setup (DEC-097); the looked-up card is the entire context
-  - reuses existing search, scan, and conversation components; the conversation is frozen on the single card and follow-ups are text-only in v1
-  - shares the main flow's conversation and text limits; Card Lookup defines no separate limit policy
-  - a future option to attach optional lightweight game context to card lookup is tracked as Q-003 and is out of v1 scope
+  - Quick Lookup carries no zones, stack, phase, or multi-card setup (DEC-107); it is not a full Comprehensive Rules browser and not official judge authority (DEC-002 / DEC-013)
+  - reuses existing search, scan, core-topics, and conversation components; when a card is attached the conversation is frozen on it, otherwise there is no frozen context object; follow-ups are text-only in v1
+  - shares the main flow's conversation and text limits; Quick Lookup defines no separate limit policy
+  - no answer-seeded second-pass retrieval in v1 (deferred, tracked as Q-004); the model still surfaces relevant verbatim rules from the first-pass provided set
+  - a future option to attach optional lightweight game context to the card branch is tracked as Q-003 and is out of v1 scope
+  - during quick-lookup refinement this flow was rewritten to merge the prior separate Card Lookup flow (this ID) and Rules Lookup flow (former FLOW-012) into one; see FLOW-012
 
 ### FLOW-012
 - Name: Look up a rules concept and ask a question
-- Trigger: User opens **Rules Lookup** from the feature portal (FLOW-010) to understand a rules concept without staging any game state
-- Preconditions:
-  - app is loaded
-  - the committed core-topics browse data is bundled with the app
-- Main Flow:
-  1. User selects Rules Lookup from the feature portal; the app switches to the lookup view (frontend-only, no reload).
-  2. The empty state shows a short list of core rules topics (the stack & priority, targeting, combat, layers) the user can read locally with no AI call.
-  3. User either reads a core topic (fully client-side) and taps "ask about this" to pre-fill a question, or types a freeform rules question directly.
-  4. User submits; the frontend sends `{ mode: "rules", question }` to `POST /api/ask-ai` — no `gameContext`, no `card`.
-  5. Backend assembles the rules-mode prompt (MTG reference block + always-on core game-rules topics + question-driven System 3 supplemental; no game-state sections, no card rulings) and asks the model to present the relevant verbatim rules from that set plus an explanation.
-  6. Backend runs a free answer-seeded second-pass re-query of the rule index using the model's answer, dedups against rules already included, and appends any recovered verbatim excerpts to the plain-text answer.
-  7. Frontend shows the answer in the reused conversation thread (first visible bubble is the assistant answer; the initial question is not shown as a bubble).
-  8. User may send text follow-ups from the reused composer; each follow-up sends `{ mode: "rules", question, conversationHistory }` under the same conversation limits as the main flow.
-  9. User may start over, which clears the thread and returns to the empty state with the core-topics list visible.
-- Edge Cases:
-  - if the question is blank after trimming, submit is blocked and the core-topics fallback remains visible
-  - if no rule scores above the retrieval threshold, the model still answers from the always-on core topics and the MTG reference block; the second pass simply appends nothing
-  - AI failure reuses the main flow's failure handling (FLOW-003): the message **Miho is working on it**, preserved question, retry with cooldown
-  - if a follow-up request fails, the error is shown and retry resubmits with the same question and history (FLOW-005)
-  - if history chars exceed the shared cap, oldest turns are truncated first (REQ-027)
-  - in mock provider mode, the assistant bubble still appends in the same thread and its answer contains the exact assembled LLM-facing rules-mode prompt for that submitted message
-- Notes:
-  - rules lookup carries no zones, stack, phase, card, or multi-card setup (DEC-099); it is not a full Comprehensive Rules browser and not official judge authority (DEC-002 / DEC-013)
-  - there is no frozen context object (unlike Card Lookup's frozen card); rules-mode follow-ups carry only the question and history
-  - reuses Card Lookup's conversation chrome (DEC-097); shares the main flow's conversation and text limits, and defines no separate limit policy
-  - the recovered second-pass rules are composed into the plain-text `answer` server-side; the response contract stays `{ answer }` (DEC-100)
+- Merged into FLOW-011 (Look up a card or ask a rules question in Quick Lookup) during quick-lookup refinement, which unified Card Lookup and Rules Lookup into one feature-portal destination (DEC-107). See FLOW-011.
 
 ### FLOW-013
 - Name: Track a game on the life tracker and hand off to MTG Assistant

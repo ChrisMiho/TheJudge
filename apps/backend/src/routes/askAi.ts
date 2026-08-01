@@ -10,6 +10,7 @@ import type { RulingEntry } from "../cardRulings.js";
 import type { GameRulesTopic } from "../gameRules.js";
 import type { GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
 import type { AskAiProvider } from "../providers/askAiProvider.js";
+import type { AskAiRequest } from "../types/index.js";
 import { askAiRequestSchema } from "../validation/askAiRequest.js";
 import { toValidationErrorMessage } from "../app/errorHandler.js";
 import { getAnswerSizeDiagnostics } from "../responseSizeDiagnostics.js";
@@ -57,10 +58,11 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
         });
         throw createValidationError(toValidationErrorMessage(parsed.error.issues));
       }
+      const askAiRequest = parsed.data as AskAiRequest;
 
       logger.info("ask_ai.request_validation_succeeded", {
         correlationId,
-        stackSize: parsed.data.gameContext.zones?.stack?.length ?? 0
+        stackSize: askAiRequest.mode === "lookup" ? 0 : askAiRequest.gameContext.zones?.stack?.length ?? 0
       });
 
       if (req.query.fail === "true") {
@@ -73,7 +75,7 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
 
       logger.info("ask_ai.prompt_context_build_started", { correlationId });
       const promptBuildStartedAt = Date.now();
-      const preparedPrompt = preparePromptInput(parsed.data, { cardRulingsIndex, gameRulesTopics, gameRulesRuleIndex, collectEnrichmentDebug });
+      const preparedPrompt = preparePromptInput(askAiRequest, { cardRulingsIndex, gameRulesTopics, gameRulesRuleIndex, collectEnrichmentDebug });
       const diagnostics = preparedPrompt.diagnostics;
       logger.info("ask_ai.prompt_context_build_completed", {
         correlationId,

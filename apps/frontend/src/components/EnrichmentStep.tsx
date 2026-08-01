@@ -13,6 +13,7 @@ import type { ConversationMessage, ContextTarget, GameContext, PlayerLabel, Zone
 import { AskAiWaitingPanel } from "./AskAiWaitingPanel";
 import { CardPresentation } from "./CardPresentation";
 import { ConversationThread } from "./ConversationThread";
+import { FollowUpComposer } from "./FollowUpComposer";
 import { FrozenContextSummary } from "./FrozenContextSummary";
 import { PageShell } from "./PageShell";
 import { StagedStepHeader } from "./StagedStepHeader";
@@ -78,7 +79,6 @@ export function EnrichmentStep({
   const [wizardIndex, setWizardIndex] = useState(0);
   const [wizardFinished, setWizardFinished] = useState(false);
   const [cardAnimKey, setCardAnimKey] = useState(0);
-  const [followUpText, setFollowUpText] = useState("");
 
   const enrichmentQueue = useMemo(
     () => (gameContext ? buildEnrichmentQueue({ ...gameContext, zones }) : []),
@@ -359,19 +359,6 @@ export function EnrichmentStep({
     );
   }
 
-  function handleStartOver(): void {
-    setFollowUpText("");
-    onStartOver();
-  }
-
-  async function handleFollowUpSubmit(e: FormEvent): Promise<void> {
-    e.preventDefault();
-    const text = followUpText.trim();
-    if (!text) return;
-    setFollowUpText("");
-    await onFollowUp(text);
-  }
-
   const hasAnswer = Boolean(answer);
   const retryLabel = retryCountdown > 0 ? `Retry in ${retryCountdown}s` : "Retry";
   const showWizard = totalCards > 0 && viewMode === "wizard" && !wizardFinished;
@@ -413,41 +400,12 @@ export function EnrichmentStep({
             </div>
           )}
 
-          <form
-            onSubmit={(e) => void handleFollowUpSubmit(e)}
-            data-accent-current={false}
-            className="ambient-accent-surface ambient-accent-interactive space-y-2 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
-          >
-            <label className="flex flex-col gap-1">
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
-                Follow-up question
-              </span>
-              <textarea
-                placeholder="Ask a follow-up…"
-                value={followUpText}
-                onChange={(e) => setFollowUpText(e.target.value.slice(0, MAX_QUESTION_CHARS))}
-                rows={2}
-                maxLength={MAX_QUESTION_CHARS}
-                disabled={isFollowUpSubmitting}
-                className="resize-none rounded-xl border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 disabled:opacity-60"
-              />
-              <span className="text-right text-xs text-zinc-500">
-                {followUpText.length}/{MAX_QUESTION_CHARS}
-              </span>
-            </label>
-            <button
-              type="submit"
-              disabled={isFollowUpSubmitting || !followUpText.trim()}
-              className="w-full rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isFollowUpSubmitting ? <span className="send-spinner" /> : "Send"}
-            </button>
-          </form>
+          <FollowUpComposer isSubmitting={isFollowUpSubmitting} onSubmit={onFollowUp} />
 
           {!isSubmitting && !isFollowUpSubmitting && (
             <button
               type="button"
-              onClick={handleStartOver}
+              onClick={onStartOver}
               className="rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
             >
               Start Over

@@ -5,12 +5,15 @@ import { describe, expect, it, vi } from "vitest";
 import {
   buildQueryText,
   buildQueryTokens,
+  buildQueryTokensFromParts,
   collectCuratedRuleIds,
   loadGameRulesKeywordVocabulary,
   loadGameRulesRuleIndex,
   loadGameRulesTokenStats,
   retrieveSupplementalRules,
   retrieveSupplementalRulesWithDebug,
+  retrieveRulesForQuery,
+  retrieveRulesForQueryWithDebug,
   type GameRulesRuleIndexEntry,
   type RetrievedGameRule,
   type ScoringResources
@@ -475,6 +478,80 @@ describe("buildQueryTokens", () => {
     const context = makeContext({ finalQuestion: "What does 702.85 mean for cascade?" });
     const { queryRuleIds } = buildQueryTokens(context, new Set());
     expect(queryRuleIds).toContain("702.85");
+  });
+});
+
+describe("query-based retrieval", () => {
+  it("builds provenance-aware tokens directly from question and oracle parts", () => {
+    const result = buildQueryTokensFromParts(
+      { questionText: "What happens here?", oracleText: "Deathtouch creature" },
+      new Set(["deathtouch"])
+    );
+
+    expect(result.tokens.find((token) => token.token === "happens")).toMatchObject({
+      source: "question",
+      isKeyword: false
+    });
+    expect(result.tokens.find((token) => token.token === "deathtouch")).toMatchObject({
+      source: "oracle",
+      isKeyword: true
+    });
+  });
+
+  it("retrieves a rule from card-only query text", () => {
+    const index = [
+      makeEntry({
+        ruleId: "702.2",
+        sectionTitle: "Deathtouch",
+        text: "702.2. Deathtouch is a static ability.",
+        searchText: "702.2 deathtouch static ability lethal damage",
+        parentRuleIds: ["702"]
+      })
+    ];
+    const resources = makeResources(3432, { deathtouch: 9 }, ["deathtouch"]);
+    const query = buildQueryTokensFromParts(
+      { questionText: "What does this ability do?", oracleText: "Deathtouch Creature" },
+      resources.keywordVocabulary
+    );
+
+    const result = retrieveRulesForQuery(
+      query.tokens,
+      query.queryRuleIds,
+      index,
+      new Set(),
+      5,
+      resources
+    );
+
+    expect(result.map((rule) => rule.ruleId)).toEqual(["702.2"]);
+  });
+
+  it("keeps game-context wrappers identical to the query entry points", () => {
+    const context = makeContext({
+      finalQuestion: "How does cascade work?",
+      populatedZones: [battlefieldCard("Deathtouch")]
+    });
+    const index = [
+      makeEntry({ ruleId: "702.85", searchText: "702.85 cascade", parentRuleIds: ["702"] }),
+      makeEntry({ ruleId: "702.2", searchText: "702.2 deathtouch", parentRuleIds: ["702"] })
+    ];
+    const resources = makeResources(3432, { cascade: 4, deathtouch: 9 }, ["cascade", "deathtouch"]);
+    const query = buildQueryTokens(context, resources.keywordVocabulary);
+
+    expect(
+      retrieveRulesForQuery(query.tokens, query.queryRuleIds, index, new Set(), 5, resources)
+    ).toEqual(retrieveSupplementalRules(context, index, new Set(), 5, resources));
+    expect(
+      retrieveRulesForQueryWithDebug(
+        query.tokens,
+        query.queryRuleIds,
+        index,
+        new Set(),
+        5,
+        resources,
+        query.queryText
+      )
+    ).toEqual(retrieveSupplementalRulesWithDebug(context, index, new Set(), 5, resources));
   });
 });
 

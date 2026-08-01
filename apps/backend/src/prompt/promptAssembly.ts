@@ -10,14 +10,15 @@ import {
   formatNonStackZoneSections,
   formatOfficialRulingsSection,
   formatStackSection,
-  formatSupplementalRulesSection
+  formatSupplementalRulesSection,
+  formatZoneCardMetadataLines
 } from "./promptFormatting.js";
 import { MTG_PROMPT_REFERENCE } from "./mtgReference.js";
 import { getPhaseGuidance } from "./phaseGuidance.js";
 import type { ResolvedRulings } from "../cardRulings.js";
 import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
 import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
-import type { ConversationTurn, PromptContext, ZoneId } from "../types/index.js";
+import type { ConversationTurn, LookupPromptContext, PlayerLabel, PromptContext, ZoneId } from "../types/index.js";
 
 export type BuildPromptTextOptions = {
   rulings?: ResolvedRulings;
@@ -94,5 +95,56 @@ export function buildPromptText(context: PromptContext, options: BuildPromptText
 
   sections.push("", "QUESTION", context.finalQuestion);
 
+  return sections.join("\n");
+}
+
+export function buildLookupPromptText(
+  context: LookupPromptContext,
+  options: BuildPromptTextOptions = {}
+): string {
+  const gameRulesSection = formatGameRulesSection(options.gameRulesTopics ?? []);
+  const supplementalRulesSection = formatSupplementalRulesSection(options.supplementalRules ?? []);
+  const cardSection = context.card
+    ? [
+        "CARD (looked up)",
+        `name: ${context.card.name}`,
+        ...formatZoneCardMetadataLines(
+          { ...context.card, targets: [] },
+          {} as Record<PlayerLabel, string | undefined>
+        ).filter((line) => !line.startsWith("targets:") && !line.startsWith("contextNotes:"))
+      ].join("\n")
+    : "";
+  const officialRulingsSection = context.card ? formatOfficialRulingsSection(options.rulings) : "";
+  const conversationHistory = context.conversationHistory ?? [];
+  const conversationHistorySection = formatConversationHistorySection(
+    truncateConversationHistory(conversationHistory, MAX_CONVERSATION_HISTORY_CHARS)
+  );
+
+  const sections = [
+    "SYSTEM ROLE PREAMBLE",
+    ...SYSTEM_ROLE_PREAMBLE_LINES,
+    "",
+    "INSTRUCTIONS",
+    "- Explain reasoning clearly and concisely.",
+    "- State uncertainty when context is incomplete.",
+    "- Do not invent hidden state, targets, or board conditions.",
+    "- For verbatim fidelity, quote rule text only from the provided GAME RULES / ADDITIONAL RELEVANT RULE EXCERPTS sections; present genuinely relevant excerpts verbatim with an explanation; never invent rule numbers or text.",
+    "- Treat unrecognized or off-domain terms as not found in the rules corpus; ask the user to check spelling or rephrase toward a Magic term; never answer the off-domain question directly.",
+    "",
+    "MTG REFERENCE",
+    MTG_PROMPT_REFERENCE
+  ];
+
+  for (const section of [
+    gameRulesSection,
+    supplementalRulesSection,
+    cardSection,
+    officialRulingsSection,
+    conversationHistorySection
+  ]) {
+    if (section.length > 0) sections.push("", section);
+  }
+
+  sections.push("", "QUESTION", context.finalQuestion);
   return sections.join("\n");
 }

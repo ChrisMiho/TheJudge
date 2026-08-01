@@ -1,21 +1,38 @@
 import { useState } from "react";
 import { createCorrelationId, logFrontendDebug } from "../lib/debugLogger";
-import type { ZoneAskAiPayload } from "../lib/contextFlow";
-import type { AskAiError, AskAiResponse, ConversationMessage, GameContext } from "../types";
+import { buildLookupAskAiRequest } from "../lib/contextFlow";
+import type { LookupAskAiPayload, ZoneAskAiPayload } from "../lib/contextFlow";
+import type {
+  AskAiError,
+  AskAiResponse,
+  CardMetadataItem,
+  ConversationMessage,
+  GameContext
+} from "../types";
 
 type SubmitSource = "decrypt" | "retry";
 
+type AskAiPayload = ZoneAskAiPayload | LookupAskAiPayload;
+
+export type FrozenAskAiContext =
+  | { kind: "game"; gameContext: GameContext }
+  | { kind: "lookup"; card: CardMetadataItem | null };
+
+function isLookupAskAiPayload(payload: AskAiPayload): payload is LookupAskAiPayload {
+  return "mode" in payload && payload.mode === "lookup";
+}
+
 type SubmitAttemptOptions = {
   source: SubmitSource;
-  payload: ZoneAskAiPayload;
+  payload: AskAiPayload;
   stackSize: number;
   finalQuestion: string;
   usedFallbackQuestion: boolean;
 };
 
 type PendingRetry =
-  | { kind: "decrypt"; payload: ZoneAskAiPayload; stackSize: number; finalQuestion: string; usedFallbackQuestion: boolean }
-  | { kind: "followup"; payload: ZoneAskAiPayload; text: string };
+  | { kind: "decrypt"; payload: AskAiPayload; stackSize: number; finalQuestion: string; usedFallbackQuestion: boolean }
+  | { kind: "followup"; payload: AskAiPayload; text: string };
 
 type UseAskAiSubmitOrchestrationOptions = {
   apiBaseUrl: string;
@@ -30,6 +47,7 @@ type UseAskAiSubmitOrchestrationResult = {
   retryCountdown: number;
   canRetry: boolean;
   visibleMessages: ConversationMessage[];
+  frozenContext: FrozenAskAiContext | null;
   frozenGameContext: GameContext | null;
   isConversationActive: boolean;
   submitAttempt: (options: SubmitAttemptOptions) => Promise<void>;
@@ -47,12 +65,13 @@ export function useAskAiSubmitOrchestration({
   const [isFollowUpSubmitting, setIsFollowUpSubmitting] = useState(false);
   const [retryCountdown, setRetryCountdown] = useState(0);
   const [visibleMessages, setVisibleMessages] = useState<ConversationMessage[]>([]);
-  const [frozenGameContext, setFrozenGameContext] = useState<GameContext | null>(null);
+  const [frozenContext, setFrozenContext] = useState<FrozenAskAiContext | null>(null);
   const [hiddenInitialQuestion, setHiddenInitialQuestion] = useState<string | null>(null);
   const [pendingRetry, setPendingRetry] = useState<PendingRetry | null>(null);
 
   const canRetry = retryCountdown === 0 && !isSubmitting && !isFollowUpSubmitting;
-  const isConversationActive = frozenGameContext !== null;
+  const frozenGameContext = frozenContext?.kind === "game" ? frozenContext.gameContext : null;
+  const isConversationActive = visibleMessages.length > 0;
 
   function startRetryCooldown(seconds: number): void {
     setRetryCountdown(seconds);
@@ -68,7 +87,7 @@ export function useAskAiSubmitOrchestration({
   }
 
   async function doDecryptRequest(
-    payload: ZoneAskAiPayload,
+    payload: AskAiPayload,
     correlationId: string,
     stackSize: number,
     finalQuestion: string,
@@ -114,7 +133,11 @@ export function useAskAiSubmitOrchestration({
       setAnswer(body.answer);
       setError(null);
       setPendingRetry(null);
-      setFrozenGameContext(payload.gameContext);
+      setFrozenContext(
+        isLookupAskAiPayload(payload)
+          ? { kind: "lookup", card: payload.card ?? null }
+          : { kind: "game", gameContext: payload.gameContext }
+      );
       setHiddenInitialQuestion(payload.question);
       setVisibleMessages([{ role: "assistant", content: body.answer }]);
     } catch (submitError) {
@@ -134,7 +157,7 @@ export function useAskAiSubmitOrchestration({
   }
 
   async function doFollowUpRequest(
-    payload: ZoneAskAiPayload,
+    payload: AskAiPayload,
     text: string,
     correlationId: string
   ): Promise<void> {
@@ -207,15 +230,33 @@ export function useAskAiSubmitOrchestration({
   }: SubmitAttemptOptions): Promise<void> {
     const correlationId = createCorrelationId();
 
-    if (source === "retry" && pendingRetry?.kind === "followup") {
+    if (source === "retry" && pendingRetry) {
+      if (pendingRetry.kind === "followup") {
+        logFrontendDebug("ask_ai.submit_attempted", {
+          source: "retry",
+          correlationId,
+          stackSize: 0,
+          questionLength: pendingRetry.text.length,
+          usedFallbackQuestion: false
+        });
+        await doFollowUpRequest(pendingRetry.payload, pendingRetry.text, correlationId);
+        return;
+      }
+
       logFrontendDebug("ask_ai.submit_attempted", {
         source: "retry",
         correlationId,
-        stackSize: 0,
-        questionLength: pendingRetry.text.length,
-        usedFallbackQuestion: false
+        stackSize: pendingRetry.stackSize,
+        questionLength: pendingRetry.finalQuestion.length,
+        usedFallbackQuestion: pendingRetry.usedFallbackQuestion
       });
-      await doFollowUpRequest(pendingRetry.payload, pendingRetry.text, correlationId);
+      await doDecryptRequest(
+        pendingRetry.payload,
+        correlationId,
+        pendingRetry.stackSize,
+        pendingRetry.finalQuestion,
+        pendingRetry.usedFallbackQuestion
+      );
       return;
     }
 
@@ -230,7 +271,7 @@ export function useAskAiSubmitOrchestration({
   }
 
   async function submitFollowUp(text: string): Promise<void> {
-    if (!frozenGameContext || !hiddenInitialQuestion) return;
+    if (!frozenContext || !hiddenInitialQuestion) return;
 
     const correlationId = createCorrelationId();
 
@@ -240,11 +281,14 @@ export function useAskAiSubmitOrchestration({
       ...visibleMessages
     ];
 
-    const followUpPayload: ZoneAskAiPayload = {
-      question: text,
-      gameContext: frozenGameContext,
-      conversationHistory
-    };
+    const followUpPayload: AskAiPayload =
+      frozenContext.kind === "lookup"
+        ? buildLookupAskAiRequest(text, frozenContext.card, conversationHistory)
+        : {
+            question: text,
+            gameContext: frozenContext.gameContext,
+            conversationHistory
+          };
 
     logFrontendDebug("ask_ai.submit_attempted", {
       source: "followup",
@@ -259,7 +303,7 @@ export function useAskAiSubmitOrchestration({
 
   function startOver(): void {
     setVisibleMessages([]);
-    setFrozenGameContext(null);
+    setFrozenContext(null);
     setHiddenInitialQuestion(null);
     setPendingRetry(null);
     setAnswer(null);
@@ -274,6 +318,7 @@ export function useAskAiSubmitOrchestration({
     retryCountdown,
     canRetry,
     visibleMessages,
+    frozenContext,
     frozenGameContext,
     isConversationActive,
     submitAttempt,

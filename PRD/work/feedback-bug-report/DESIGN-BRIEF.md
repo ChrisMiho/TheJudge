@@ -28,7 +28,7 @@ A frontend-only "Send feedback" feature reachable from the existing feature port
 - `buildFeedbackContext()` — pure app-state snapshot builder; the app shell passes a lazy `getFeedbackContext()` callback so the modal never reaches into flow internals.
 - `submitFeedback(payload)` — POSTs JSON to Formspree; resolves success / network error / rate-limit; snapshot rides as one JSON-stringified field.
 - `useFeedbackForm` — field state, validation (message required, email format if present), submit lifecycle.
-- Config: `VITE_FEEDBACK_FORMSPREE_ID` in `apps/frontend/.env.example` (public, non-secret); empty in local/mock → graceful no-op.
+- Config: `VITE_FEEDBACK_FORMSPREE_ID` in `apps/frontend/.env.example` (public, non-secret); empty in local/mock → graceful no-op. Getting a real id is an **owner action, not an engineering task**: the owner creates a Formspree account + form on formspree.io (that's where the recipient email is registered — it never enters the codebase or a secret store) and supplies the resulting id for local `.env` and the prod build config. Implementation ships complete and functional in the no-op state without it.
 
 ## Non-goals (v1)
 

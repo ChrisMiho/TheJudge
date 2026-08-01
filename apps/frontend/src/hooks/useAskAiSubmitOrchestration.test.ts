@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ZoneAskAiPayload } from "../lib/contextFlow";
+import type { LookupAskAiPayload, ZoneAskAiPayload } from "../lib/contextFlow";
 import { useAskAiSubmitOrchestration } from "./useAskAiSubmitOrchestration";
 
 const { createCorrelationIdMock, logFrontendDebugMock } = vi.hoisted(() => ({
@@ -42,6 +42,27 @@ const payloadFixture: ZoneAskAiPayload = {
       ],
       battlefield: [{ cardId: "bolt", name: "Lightning Bolt", oracleText: "Deals 3 damage." }]
     }
+  }
+};
+
+const lookupPayloadFixture: LookupAskAiPayload = {
+  mode: "lookup",
+  question: "How does priority work?"
+};
+
+const lookupCardPayloadFixture: LookupAskAiPayload = {
+  ...lookupPayloadFixture,
+  card: {
+    cardId: "oracle-lightning-bolt",
+    name: "Lightning Bolt",
+    oracleText: "Lightning Bolt deals 3 damage to any target.",
+    imageUrl: "https://cards.example/lightning-bolt.jpg",
+    manaCost: "{R}",
+    manaValue: 1,
+    typeLine: "Instant",
+    colors: ["R"],
+    supertypes: [],
+    subtypes: []
   }
 };
 
@@ -187,9 +208,9 @@ describe("useAskAiSubmitOrchestration", () => {
     await act(async () => {
       await result.current.submitAttempt({
         source: "retry",
-        payload: payloadFixture,
-        stackSize: payloadFixture.gameContext.zones?.stack?.length ?? 0,
-        finalQuestion: payloadFixture.question,
+        payload: { ...payloadFixture, question: "A changed live question" },
+        stackSize: 0,
+        finalQuestion: "A changed live question",
         usedFallbackQuestion: false
       });
     });
@@ -238,6 +259,88 @@ describe("useAskAiSubmitOrchestration", () => {
   });
 
   describe("conversation state", () => {
+    it("activates a cardless lookup conversation and builds lookup follow-ups", async () => {
+      createCorrelationIdMock.mockReturnValueOnce("corr-lookup-1").mockReturnValueOnce("corr-lookup-2");
+      const fetchMock = vi
+        .fn(async (_input: RequestInfo | URL, _init?: RequestInit): Promise<Response> =>
+          jsonResponse({ answer: "Lookup answer" }, 200)
+        )
+        .mockResolvedValueOnce(jsonResponse({ answer: "Lookup answer" }, 200))
+        .mockResolvedValueOnce(jsonResponse({ answer: "Follow-up answer" }, 200));
+      vi.stubGlobal("fetch", fetchMock);
+
+      const { result } = renderHook(() =>
+        useAskAiSubmitOrchestration({ apiBaseUrl: "https://api.test", retryCooldownSeconds: 13 })
+      );
+
+      await act(async () => {
+        await result.current.submitAttempt({
+          source: "decrypt",
+          payload: lookupPayloadFixture,
+          stackSize: 0,
+          finalQuestion: lookupPayloadFixture.question,
+          usedFallbackQuestion: false
+        });
+      });
+
+      expect(result.current.isConversationActive).toBe(true);
+      expect(result.current.frozenContext).toEqual({ kind: "lookup", card: null });
+      expect(result.current.frozenGameContext).toBeNull();
+
+      await act(async () => {
+        await result.current.submitFollowUp("Can you give an example?");
+      });
+
+      expect(JSON.parse(fetchMock.mock.calls[1]?.[1]?.body as string)).toEqual({
+        mode: "lookup",
+        question: "Can you give an example?",
+        conversationHistory: [
+          { role: "user", content: lookupPayloadFixture.question },
+          { role: "assistant", content: "Lookup answer" }
+        ]
+      });
+    });
+
+    it("freezes an attached lookup card across follow-ups", async () => {
+      createCorrelationIdMock.mockReturnValueOnce("corr-card-1").mockReturnValueOnce("corr-card-2");
+      const fetchMock = vi
+        .fn(async (_input: RequestInfo | URL, _init?: RequestInit): Promise<Response> =>
+          jsonResponse({ answer: "Card answer" }, 200)
+        )
+        .mockResolvedValueOnce(jsonResponse({ answer: "Card answer" }, 200))
+        .mockResolvedValueOnce(jsonResponse({ answer: "Follow-up answer" }, 200));
+      vi.stubGlobal("fetch", fetchMock);
+
+      const { result } = renderHook(() =>
+        useAskAiSubmitOrchestration({ apiBaseUrl: "https://api.test", retryCooldownSeconds: 13 })
+      );
+
+      await act(async () => {
+        await result.current.submitAttempt({
+          source: "decrypt",
+          payload: lookupCardPayloadFixture,
+          stackSize: 0,
+          finalQuestion: lookupCardPayloadFixture.question,
+          usedFallbackQuestion: false
+        });
+      });
+
+      expect(result.current.frozenContext).toEqual({
+        kind: "lookup",
+        card: lookupCardPayloadFixture.card
+      });
+
+      await act(async () => {
+        await result.current.submitFollowUp("What if it is copied?");
+      });
+
+      expect(JSON.parse(fetchMock.mock.calls[1]?.[1]?.body as string)).toMatchObject({
+        mode: "lookup",
+        question: "What if it is copied?",
+        card: lookupCardPayloadFixture.card
+      });
+    });
+
     it("seeds visibleMessages with assistant bubble on first decrypt success", async () => {
       createCorrelationIdMock.mockReturnValue("corr-1");
       vi.stubGlobal("fetch", vi.fn(async () => jsonResponse({ answer: "First answer" }, 200)));

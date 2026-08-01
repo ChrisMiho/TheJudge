@@ -1,0 +1,38 @@
+[
+  {
+    "id": "stack-and-priority",
+    "title": "Stack and Priority",
+    "ruleNumbers": ["117.1", "117.3", "117.4", "117.7", "405.1", "405.2"],
+    "excerpt": "117.1. Unless a spell or ability is instructing a player to take an action, which player can take actions at any given time is determined by a system of priority. The player with priority may cast spells, activate abilities, and take special actions.\n117.3. Which player has priority is determined by the following rules:\n117.4. If all players pass in succession (that is, if all players pass without taking any actions in between passing), the spell or ability on top of the stack resolves or, if the stack is empty, the phase or step ends.\n117.7. If a player with priority casts a spell or activates an activated ability while another spell or ability is already on the stack, the new spell or ability has been cast or activated “in response to” the earlier spell or ability. The new spell or ability will resolve first. See rule 608, “Resolving Spells and Abilities.”\n405.1. When a spell is cast, the physical card is put on the stack (see rule 601.2a). When an ability is activated or triggers, it goes on top of the stack without any card associated with it (see rules 602.2a and 603.3).\n405.2. The stack keeps track of the order that spells and/or abilities were added to it. Each time an object is put on the stack, it’s put on top of all objects already there."
+  },
+  {
+    "id": "targets-basics",
+    "title": "Targets",
+    "ruleNumbers": ["115.1", "115.2", "115.10"],
+    "excerpt": "115.1. Some spells and abilities require their controller to choose one or more targets for them. The targets are object(s) and/or player(s) the spell or ability will affect. These targets are declared as part of the process of putting the spell or ability on the stack. The targets can’t be changed except by another spell or ability that explicitly says it can do so.\n115.2. Only permanents are legal targets for spells and abilities, unless a spell or ability (a) specifies that it can target an object in another zone or a player, or (b) targets an object that can’t exist on the battlefield, such as a spell or ability. See also rule 115.4.\n115.10. Spells and abilities can affect objects and players they don’t target. In general, those objects and players aren’t chosen until the spell or ability resolves. See rule 608, “Resolving Spells and Abilities.”"
+  },
+  {
+    "id": "zones-basics",
+    "title": "Zones and Zone Changes",
+    "ruleNumbers": ["400.1", "400.2", "400.7"],
+    "excerpt": "400.1. A zone is a place where objects can be during a game. There are normally seven zones: library, hand, battlefield, graveyard, stack, exile, and command. Some older cards also use the ante zone. Each player has their own library, hand, and graveyard. The other zones are shared by all players.\n400.2. Public zones are zones in which all players can see the cards’ faces, except for those cards that some rule or effect specifically allow to be face down. Graveyard, battlefield, stack, exile, ante, and command are public zones. Hidden zones are zones in which not all players can be expected to see the cards’ faces. Library and hand are hidden zones, even if all the cards in one such zone happen to be revealed.\n400.7. An object that moves from one zone to another becomes a new object with no memory of, or relation to, its previous existence. This rule has the following exceptions."
+  },
+  {
+    "id": "abilities-trigger-basics",
+    "title": "Triggered Ability Basics",
+    "ruleNumbers": ["603.1", "603.2", "603.3"],
+    "excerpt": "603.1. Triggered abilities have a trigger condition and an effect. They are written as “[When/Whenever/At] [trigger condition or event], [effect]. [Instructions (if any).]”\n603.2. Whenever a game event or game state matches a triggered ability’s trigger event, that ability automatically triggers. The ability doesn’t do anything at this point.\n603.3. Once an ability has triggered, its controller puts it on the stack as an object that’s not a card the next time a player would receive priority. See rule 117, “Timing and Priority.” The ability becomes the topmost object on the stack. It has the text of the ability that created it, and no other characteristics. It remains on the stack until it’s countered, it resolves, a rule causes it to be removed from the stack, or an effect moves it elsewhere."
+  },
+  {
+    "id": "combat-phase-structure",
+    "title": "Combat Phase Structure",
+    "ruleNumbers": ["506.1", "506.3"],
+    "excerpt": "506.1. The combat phase has five steps, which proceed in order: beginning of combat, declare attackers, declare blockers, combat damage, and end of combat. The declare blockers and combat damage steps are skipped if no creatures are declared as attackers or put onto the battlefield attacking (see rule 508.8). There are two combat damage steps if any attacking or blocking creature has first strike (see rule 702.7) or double strike (see rule 702.4).\n506.3. Only a creature can attack or block. Only a player, a planeswalker, or a battle can be attacked."
+  },
+  {
+    "id": "layers-order",
+    "title": "Layer Order",
+    "ruleNumbers": ["613.1", "613.1a", "613.1b", "613.1c", "613.1d", "613.1e", "613.1f", "613.1g"],
+    "excerpt": "613.1. The values of an object’s characteristics are determined by starting with the actual object. For a card, that means the values of the characteristics printed on that card. For a token or a copy of a spell or card, that means the values of the characteristics defined by the effect that created it. Then all applicable continuous effects are applied in a series of layers in the following order:\n613.1a Layer 1: Rules and effects that modify copiable values are applied.\n613.1b Layer 2: Control-changing effects are applied.\n613.1c Layer 3: Text-changing effects are applied. See rule 612, “Text-Changing Effects.”\n613.1d Layer 4: Type-changing effects are applied. These include effects that change an object’s card type, subtype, and/or supertype.\n613.1e Layer 5: Color-changing effects are applied.\n613.1f Layer 6: Ability-adding effects, keyword counters, ability-removing effects, and effects that say an object can’t have an ability are applied.\n613.1g Layer 7: Power- and/or toughness-changing effects are applied."
+  }
+]

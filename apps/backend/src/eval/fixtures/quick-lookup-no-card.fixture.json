@@ -1,0 +1,12 @@
+{
+  "id": "quick-lookup-no-card",
+  "description": "Lookup mode retrieves rules from a Magic question without attached card context.",
+  "request": {
+    "mode": "lookup",
+    "question": "How does cascade work?"
+  },
+  "expected": {
+    "expectedSystem2TopicIds": ["stack-and-priority", "targets-basics", "zones-basics", "abilities-trigger-basics"],
+    "expectedSupplementalRuleIds": ["702.85"]
+  }
+}

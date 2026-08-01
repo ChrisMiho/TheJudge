@@ -1,4 +1,11 @@
-import type { ConversationMessage, GameContext, TurnPhase, ZoneCardItem, ZoneId } from "../../types";
+import type {
+  CardMetadataItem,
+  ConversationMessage,
+  GameContext,
+  TurnPhase,
+  ZoneCardItem,
+  ZoneId
+} from "../../types";
 import type { FlowStepId } from "./steps";
 import { CANONICAL_ZONE_ORDER } from "./phaseZoneDefaults";
 
@@ -14,6 +21,13 @@ export type FlowNavigationState = {
 export type ZoneAskAiPayload = {
   question: string;
   gameContext: GameContext;
+  conversationHistory?: ConversationMessage[];
+};
+
+export type LookupAskAiPayload = {
+  mode: "lookup";
+  question: string;
+  card?: CardMetadataItem;
   conversationHistory?: ConversationMessage[];
 };
 
@@ -120,5 +134,33 @@ export function buildAskAiRequest(question: string, gameContext: GameContext): Z
       turnPhase: gameContext.turnPhase ?? DEFAULT_TURN_PHASE,
       zones: nonEmptyZones
     }
+  };
+}
+
+export function buildLookupAskAiRequest(
+  question: string,
+  card?: CardMetadataItem | null,
+  conversationHistory?: ConversationMessage[]
+): LookupAskAiPayload {
+  const wireCard = card
+    ? {
+        cardId: card.cardId,
+        name: card.name,
+        oracleText: card.oracleText,
+        imageUrl: card.imageUrl,
+        manaCost: card.manaCost,
+        manaValue: card.manaValue,
+        typeLine: card.typeLine,
+        colors: card.colors,
+        supertypes: card.supertypes,
+        subtypes: card.subtypes
+      }
+    : undefined;
+
+  return {
+    mode: "lookup",
+    question: question.trim(),
+    ...(wireCard ? { card: wireCard } : {}),
+    ...(conversationHistory ? { conversationHistory } : {})
   };
 }

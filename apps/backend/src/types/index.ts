@@ -7,6 +7,7 @@ import type {
   conversationTurnSchema,
   gameContextSchema,
   gamePlayerSchema,
+  lookupCardReferenceSchema,
   playerLabelSchema,
   turnPhaseSchema,
   zoneCardItemSchema,
@@ -22,14 +23,17 @@ export type CombatStep = z.infer<typeof combatStepSchema>;
 export type ZoneId = z.infer<typeof zoneIdSchema>;
 export type ContextTarget = z.infer<typeof contextTargetSchema>;
 export type ZoneCardItem = z.infer<typeof zoneCardItemSchema>;
+export type LookupCardReference = z.infer<typeof lookupCardReferenceSchema>;
 export type GamePlayerContext = z.infer<typeof gamePlayerSchema>;
 export type GameContext = z.infer<typeof gameContextSchema>;
 export type AskAiRequest = z.infer<typeof askAiRequestSchema>;
+export type GameAskAiRequest = Extract<AskAiRequest, { gameContext: GameContext }>;
+export type LookupAskAiRequest = Extract<AskAiRequest, { mode: "lookup" }>;
 export type AskAiError = z.infer<typeof askAiErrorSchema>;
 
 export type AskAiResponse = {
   answer: string;
-  context?: PromptContext;
+  context?: PromptInputContext;
   diagnostics?: PromptDiagnostics;
   enrichmentDebug?: EnrichmentDebug;
 };
@@ -98,3 +102,13 @@ export type PromptContext = {
   }[];
   orderedStack: PromptContextStackItem[];
 };
+
+export type LookupPromptCard = Omit<PromptContextZoneItem, "owner" | "contextNotes">;
+
+export type LookupPromptContext = {
+  finalQuestion: string;
+  card?: LookupPromptCard;
+  conversationHistory?: ConversationTurn[];
+};
+
+export type PromptInputContext = PromptContext | LookupPromptContext;

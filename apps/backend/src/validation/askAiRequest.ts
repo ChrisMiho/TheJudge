@@ -87,7 +87,7 @@ export const contextTargetSchema = z.discriminatedUnion("kind", [
   }).strict()
 ]);
 
-export const zoneCardItemSchema = z.object({
+const cardReferenceShape = {
   cardId: boundedText(120),
   name: boundedText(120),
   oracleText: boundedText(2000),
@@ -97,12 +97,20 @@ export const zoneCardItemSchema = z.object({
   typeLine: optionalBoundedTextWithEmptyDefault(200),
   colors: z.array(boundedText(1)).max(5).optional().default([]),
   supertypes: z.array(boundedText(30)).max(8).optional().default([]),
-  subtypes: z.array(boundedText(40)).max(12).optional().default([]),
+  subtypes: z.array(boundedText(40)).max(12).optional().default([])
+};
+
+export const zoneCardItemSchema = z.object({
+  ...cardReferenceShape,
   caster: playerLabelSchema.optional(),
   owner: playerLabelSchema.optional(),
   targets: z.array(contextTargetSchema).max(8).optional().default([]),
   contextNotes: optionalBoundedText(280),
   manaSpent: z.number().min(0).max(99).optional()
+}).strict();
+
+export const lookupCardReferenceSchema = z.object({
+  ...cardReferenceShape
 }).strict();
 
 const zonesSchema = z
@@ -204,15 +212,37 @@ const conversationHistorySchema = z
     }
   });
 
-export const askAiRequestSchema = z.object({
-  question: z
-    .string()
-    .trim()
-    .max(300)
-    .refine(noControlCharacterGuardrail, "contains unsupported control characters"),
+const questionSchema = boundedText(300, 0);
+
+const gameAskAiRequestSchema = z.object({
+  mode: z.literal("game").optional(),
+  question: questionSchema,
   gameContext: gameContextSchema,
   conversationHistory: conversationHistorySchema.optional()
 }).strict();
+
+const lookupAskAiRequestSchema = z.object({
+  mode: z.literal("lookup"),
+  question: questionSchema,
+  card: lookupCardReferenceSchema.optional(),
+  conversationHistory: conversationHistorySchema.optional()
+}).strict();
+
+export const askAiRequestSchema = z.preprocess(
+  (input) => {
+    if (
+      typeof input !== "object" ||
+      input === null ||
+      Array.isArray(input) ||
+      ("mode" in input && input.mode !== undefined)
+    ) {
+      return input;
+    }
+
+    return { ...input, mode: "game" };
+  },
+  z.discriminatedUnion("mode", [gameAskAiRequestSchema, lookupAskAiRequestSchema])
+);
 
 export const askAiResponseSchema = z
   .object({

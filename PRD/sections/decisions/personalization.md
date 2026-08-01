@@ -18,6 +18,7 @@ Frontend-only user personalization behavior that changes app presentation withou
   - NFR-011
 - Notes:
   - approved approach: Option A, global theme control
+  - placement superseded by DEC-110 (`decisions/navigation.md`): the picker no longer lives in its own corner control and is hosted inside the feature-portal Menu instead; the palette-token/persistence/fallback content on this page is otherwise unchanged
   - non-goals: arbitrary RGB/hex picker, per-component overrides, server-synced preferences, account settings, dark/light mode redesign
 
 ### DEC-067
@@ -59,6 +60,7 @@ Frontend-only user personalization behavior that changes app presentation withou
 - Notes:
   - approved scope calls: background stays neutral (blue bias removed), semantic green states re-themed, scanner UI included in theme reach, existing token set reused
   - non-goals (unchanged from DEC-066): arbitrary RGB/hex picker, per-component overrides, server-synced preferences, account settings, dark/light mode redesign, palette-tinted backgrounds, new theming framework
+  - placement superseded by DEC-110 (`decisions/navigation.md`): the picker's host moves from its own corner control into the feature-portal Menu; the broadened token-reach content on this page is otherwise unchanged
   - DEC-081 later narrows the "neutral slate chrome stays neutral" boundary: static chrome remains neutral, while only the closed surface inventory in REQ-060 may use restrained palette-derived borders, glows, and icon accents
 
 ### DEC-075

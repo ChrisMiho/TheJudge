@@ -8,11 +8,17 @@ export {
   mergeSelectedZonesOnPhaseChange
 } from "./phaseZoneDefaults";
 
-export type { FlowNavigationState, ZoneAskAiPayload, EnrichmentQueueEntry } from "./flow";
+export type {
+  FlowNavigationState,
+  LookupAskAiPayload,
+  ZoneAskAiPayload,
+  EnrichmentQueueEntry
+} from "./flow";
 export {
   canAdvance,
   buildEnrichmentQueue,
   buildAskAiRequest,
+  buildLookupAskAiRequest,
   DEFAULT_BOARD_QUESTION,
   DEFAULT_STACK_QUESTION,
   DEFAULT_TURN_PHASE,

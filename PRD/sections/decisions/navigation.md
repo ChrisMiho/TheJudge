@@ -46,3 +46,51 @@ portal owns app chrome and every feature reaches it as a registered destination.
 - Notes:
   - additive amendment to DEC-095/REQ-067; DEC-095 stays fully resolvable and its semantics carry forward unchanged
   - the feedback feature that consumes this entry kind lives in `decisions/feedback.md` (DEC-105)
+
+### DEC-109
+- Decision: The feature-portal Menu control is the suite's single floating/attached app-chrome affordance. Every feature-portal destination screen renders its own lightweight header row containing a `PortalSlot`, so the Menu trigger always docks inline within that screen's own header — flush to its content card, scrolling away with the page like the rest of that screen's chrome — and never renders as a floating fixed overlay by design; the existing `fixed`-position fallback in `FeaturePortalMenu` remains only as a defensive safety net for a destination that ships with literally no header, not an intended UX state. The trigger itself becomes **icon-only** (drops the visible "Menu" text label, keeping the existing `aria-label="Switch feature"` for the accessible name). This refines DEC-095; it does not change destination semantics, the registry, or the top-middle placement established there.
+- Status: confirmed
+- Context: DEC-095 placed the Menu button top-middle and had it portal inline into a `PortalSlot` registered by a destination's own header — but only the 4 staged MTG Assistant steps register one. The answered/conversation screen renders its own slim brand-only header with no slot, so Menu fell back to `fixed left-1/2 top-0`, glued to the raw viewport edge above the content card (which is narrower than the viewport and begins with its own top padding) rather than docked flush to the card border like everywhere else. This read as disconnected, appeared misaligned with the actual centered content column, and stayed pinned in place while the user scrolled a growing conversation thread beneath it — the "doesn't feel elegant" first attempt this refines. Because the underlying fallback mechanism is a legitimate safety net (a hypothetical destination could ship with zero header), the fix is not to delete it but to make sure every actual screen exercises the inline path instead, and to make the trigger itself lighter (icon-only) as a further tidy-up.
+- Impact:
+  - the answered/conversation view (`isConversationActive` in `EnrichmentStep`) gains a minimal header row (brand block + `PortalSlot`) mirroring `StagedStepHeader`'s pattern, so Menu docks flush to the content card there exactly as it does on the 4 staged steps, using the existing `.portal-slot-tab` flush treatment
+  - Menu never renders as a floating fixed pill on any currently-shipped screen; the `fixed left-1/2 top-0` fallback in `FeaturePortalMenu` is retained in code only as a defensive fallback for a future headerless destination, not as a designed-for state
+  - the Menu trigger drops its visible "Menu" text label and renders icon-only (the existing `☰` glyph); `aria-label="Switch feature"` carries the accessible name unchanged; `aria-haspopup`/`aria-expanded` and keyboard/focus behavior are unchanged
+  - Menu's top-middle placement, the destination/action-entry registry, dropdown contents, non-overlap bounds, and CSS-only reduced-motion behavior (DEC-095/DEC-104/NFR-006) are unchanged
+  - presentation only — no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, or data-pipeline behavior; no change to conversation logic, message history, or any flow step
+- Related requirements:
+  - REQ-089
+  - REQ-067
+  - REQ-045
+  - DEC-067
+  - DEC-095
+  - NFR-001
+  - NFR-006
+  - FLOW-001
+- Notes:
+  - refines DEC-095; DEC-095's placement, registry, and semantics stay fully resolvable and unchanged
+  - non-goals: relocating Menu off top-middle on the 4 staged screens, removing the code-level fixed fallback, redesigning the dropdown contents or destination list, adding scroll-direction-aware show/hide behavior
+
+### DEC-110
+- Decision: `ThemeControl`'s palette-swatch and Chunky/Slim density picker retires as an independent fixed top-right corner control and folds into the feature-portal Menu dropdown as a **Theme** section, rendered below the destination list. This removes the top-right floating orb entirely, leaving the feature-portal Menu as the suite's one floating/attached chrome affordance (DEC-109). Palette values, persistence, fallback behavior, density values, and every surface that already consumes the palette tokens (DEC-066/068/075/078/081) are unchanged — only where the picker lives moves. This supersedes DEC-066/068/095's "`ThemeControl` stays at `fixed right-3 top-3`, top-right corner" placement clause; their token/persistence/reach content stays valid and unchanged.
+- Status: confirmed
+- Context: `ThemeControl`'s independent `fixed right-3 top-3 z-30` placement (DEC-066) competed with the staged-step header's step-name column, which had no reserved clearance for it — at mobile widths, once the step name wrapped to two lines it rendered directly under the orb (the reported bug). Rather than carve out clearance around a second floating control, removing the second control at its root and hosting theme selection inside the Menu that already exists leaves exactly one floating affordance in the header, eliminating the collision outright and reading as more consolidated and tidy. The existing action-entry pattern (DEC-104) already generalized the portal registry to host non-destination content, so a Theme section fits the same registry rather than inventing a new subsystem.
+- Impact:
+  - the palette-swatch grid and Chunky/Slim segmented control (currently `ThemeControl`'s dropdown body) render as a **Theme** section inside the feature-portal Menu dropdown, below the destination (and action-entry) list, separated by the same divider treatment the dropdown already uses
+  - the standalone `fixed right-3 top-3` `ThemeControl` corner button is removed from the app root; no floating control remains at the top-right corner
+  - palette selection, browser-local persistence, corrupt/missing-value fallback to the default palette, density selection and persistence, and every existing palette-token-consuming surface (DEC-066/068/075/078/081) are unchanged in behavior — only the picker's host/location changes
+  - selecting a palette swatch keeps its existing immediate-apply behavior; the interaction details of whether the Menu closes on palette vs. density selection mirror `ThemeControl`'s current behavior and are preserved, not redesigned
+  - `PageShell`'s mock-mode banner offset and z-index layering (previously keyed to "below `ThemeControl`'s z-30") is re-keyed to the Menu's existing z-index; no visual regression to the banner
+  - presentation only — no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan logic, or data-pipeline behavior
+- Related requirements:
+  - REQ-089
+  - REQ-044
+  - REQ-067
+  - DEC-066
+  - DEC-068
+  - DEC-095
+  - DEC-104
+  - NFR-001
+  - NFR-006
+- Notes:
+  - supersedes only the placement clause of DEC-066/068/095 ("stays top-right corner" / "`ThemeControl` unchanged"); their palette-token, persistence, and reach content carries forward unchanged and stays resolvable under this new hosting
+  - non-goals: changing palette values/tokens, changing density behavior, arbitrary color picker, per-component theme overrides, account-level/server-synced preferences
