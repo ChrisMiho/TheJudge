@@ -515,6 +515,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: `apps/frontend/src/components/portal/` (`FeaturePortalMenu.tsx`, `PortalSlot.tsx`, `DestinationOutlet.tsx`, `destinationRegistry.tsx`, `MtgAssistantApp.tsx`, `TradeBalancerPlaceholder.tsx`), `apps/frontend/src/lib/portal/` (`types.ts`, `slotContext.tsx`), `apps/frontend/src/App.tsx` (shell), `apps/frontend/src/index.css` (motion + `.portal-slot-tab` positioning)
 - Backed by: DEC-095, DEC-089, REQ-067, FLOW-010, NFR-001
 
+## Feedback & bug report
+
+- Status: planned
+- Summary: Frontend-only feedback + bug-report feature. A **Send feedback** portal **action entry** (a new registry entry kind alongside destinations) opens an accessible modal over the current screen — category (Bug/Suggestion/Other), required message, optional reply email — plus a **disclosed app-state snapshot** (screen/step, game context + typed question, zones/cards/enrichment, conversation history, provider mode, active destination, environment) surfaced as a one-line disclosure + expandable summary. Delivered to the owner's inbox via **Formspree** with a **public form id** (`VITE_FEEDBACK_FORMSPREE_ID`); the snapshot rides as one JSON-stringified field. No backend route, no secret, no contract change; graceful no-op when no form id is configured. Deferred: screenshots/file uploads, persistence, auth, history, analytics.
+- Lives in: planned under `apps/frontend/src/components/portal/` (portal action-entry registry extension) and a new feedback module (`FeedbackModal`, `useFeedbackForm`, `buildFeedbackContext()`, `submitFeedback()`); `apps/frontend/.env.example` (`VITE_FEEDBACK_FORMSPREE_ID`) — no code under `apps/` yet
+- Backed by: DEC-105, DEC-104, REQ-086, REQ-087, REQ-088, FLOW-014, DEC-095, NFR-001, NFR-006
+
 ## PRD doc traceability (meta)
 
 - Status: shipped
