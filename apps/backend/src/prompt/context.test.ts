@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildPromptContext } from "./context.js";
+import { buildLookupPromptContext, buildPromptContext } from "./context.js";
 import { MAX_ORACLE_TEXT_CHARS } from "./normalization.js";
-import type { AskAiRequest } from "../types/index.js";
+import type { GameAskAiRequest, LookupAskAiRequest } from "../types/index.js";
 
-function createStackZoneCards(size: number): NonNullable<AskAiRequest["gameContext"]["zones"]["stack"]> {
+function createStackZoneCards(size: number): NonNullable<GameAskAiRequest["gameContext"]["zones"]["stack"]> {
   return Array.from({ length: size }, (_, index) => ({
     cardId: `card-${index + 1}`,
     name: `Card ${index + 1}`,
@@ -20,7 +20,7 @@ function createStackZoneCards(size: number): NonNullable<AskAiRequest["gameConte
   }));
 }
 
-function createBattlefieldCard(name = "Rhystic Study"): NonNullable<AskAiRequest["gameContext"]["zones"]["battlefield"]>[number] {
+function createBattlefieldCard(name = "Rhystic Study"): NonNullable<GameAskAiRequest["gameContext"]["zones"]["battlefield"]>[number] {
   return {
     cardId: name.toLowerCase().replace(/\s+/g, "-"),
     name,
@@ -37,7 +37,7 @@ function createBattlefieldCard(name = "Rhystic Study"): NonNullable<AskAiRequest
 }
 
 describe("buildPromptContext", () => {
-  const defaultGameContext: AskAiRequest["gameContext"] = {
+  const defaultGameContext: GameAskAiRequest["gameContext"] = {
     playerCount: 2,
     players: [
       { label: "Player 1", lifeTotal: 20 },
@@ -364,5 +364,54 @@ describe("buildPromptContext", () => {
 
     const item = context.populatedZones[0]?.items[0];
     expect(item?.contextNotes).toBe("flashback target");
+  });
+});
+
+describe("buildLookupPromptContext", () => {
+  it("normalizes the question, conversation history, and complete card metadata", () => {
+    const request: LookupAskAiRequest = {
+      mode: "lookup",
+      question: "  How   does this work? ",
+      card: {
+        cardId: "  questing-beast ",
+        name: "  Questing   Beast ",
+        oracleText: "  Vigilance,   deathtouch, haste  ",
+        imageUrl: " https://example.com/questing-beast.png ",
+        manaCost: " {2}{G}{G} ",
+        manaValue: 4,
+        typeLine: " Legendary   Creature — Beast ",
+        colors: ["G", "G", " "],
+        supertypes: ["Legendary", " "],
+        subtypes: ["Beast", "Beast"]
+      },
+      conversationHistory: [
+        { role: "user", content: "Earlier question" },
+        { role: "assistant", content: "Earlier answer" }
+      ]
+    };
+
+    expect(buildLookupPromptContext(request)).toEqual({
+      finalQuestion: "How does this work?",
+      card: {
+        cardId: "questing-beast",
+        name: "Questing Beast",
+        oracleText: "Vigilance, deathtouch, haste",
+        imageUrl: "https://example.com/questing-beast.png",
+        manaCost: "{2}{G}{G}",
+        manaValue: 4,
+        typeLine: "Legendary Creature — Beast",
+        colors: ["G"],
+        supertypes: ["Legendary"],
+        subtypes: ["Beast"],
+        targets: []
+      },
+      conversationHistory: request.conversationHistory
+    });
+  });
+
+  it("does not apply the game-mode fallback question when lookup text is blank", () => {
+    expect(buildLookupPromptContext({ mode: "lookup", question: "   " })).toEqual({
+      finalQuestion: ""
+    });
   });
 });

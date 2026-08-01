@@ -29,6 +29,13 @@ function validRequest() {
   };
 }
 
+function validLookupRequest() {
+  return {
+    mode: "lookup" as const,
+    question: "What does trample do?"
+  };
+}
+
 describe("askAiRequestSchema", () => {
   it("accepts a minimal valid zone-based payload", () => {
     const parsed = askAiRequestSchema.safeParse(validRequest());
@@ -70,6 +77,115 @@ describe("askAiRequestSchema", () => {
       question: `bad${controlChar}question`
     });
     expect(parsed.success).toBe(false);
+  });
+
+  it("defaults an omitted mode to game", () => {
+    const parsed = askAiRequestSchema.safeParse(validRequest());
+
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.mode).toBe("game");
+    }
+  });
+
+  it("accepts an explicit game mode", () => {
+    expect(
+      askAiRequestSchema.safeParse({
+        ...validRequest(),
+        mode: "game"
+      }).success
+    ).toBe(true);
+  });
+
+  it("accepts lookup mode without a card", () => {
+    expect(askAiRequestSchema.safeParse(validLookupRequest()).success).toBe(true);
+  });
+
+  it("accepts and normalizes a lookup card reference", () => {
+    const parsed = askAiRequestSchema.safeParse({
+      ...validLookupRequest(),
+      card: {
+        cardId: "opt",
+        name: "Opt",
+        oracleText: "Scry 1, then draw a card."
+      }
+    });
+
+    expect(parsed.success).toBe(true);
+    if (parsed.success && parsed.data.mode === "lookup") {
+      expect(parsed.data.card).toEqual({
+        cardId: "opt",
+        name: "Opt",
+        oracleText: "Scry 1, then draw a card.",
+        imageUrl: "",
+        manaCost: "",
+        manaValue: 0,
+        typeLine: "",
+        colors: [],
+        supertypes: [],
+        subtypes: []
+      });
+    }
+  });
+
+  it("rejects gameContext in lookup mode", () => {
+    expect(
+      askAiRequestSchema.safeParse({
+        ...validLookupRequest(),
+        gameContext: validRequest().gameContext
+      }).success
+    ).toBe(false);
+  });
+
+  it("rejects a card in game mode", () => {
+    expect(
+      askAiRequestSchema.safeParse({
+        ...validRequest(),
+        mode: "game",
+        card: {
+          cardId: "opt",
+          name: "Opt",
+          oracleText: "Scry 1, then draw a card."
+        }
+      }).success
+    ).toBe(false);
+  });
+
+  it.each([
+    ["targets", []],
+    ["caster", "Player 1"],
+    ["owner", "Player 1"],
+    ["contextNotes", "Cast during combat"],
+    ["manaSpent", 1]
+  ])(
+    "rejects the game-state card field %s in lookup mode",
+    (field, value) => {
+      expect(
+        askAiRequestSchema.safeParse({
+          ...validLookupRequest(),
+          card: {
+            cardId: "opt",
+            name: "Opt",
+            oracleText: "Scry 1, then draw a card.",
+            [field]: value
+          }
+        }).success
+      ).toBe(false);
+    }
+  );
+
+  it.each([
+    ["game", () => ({ ...validRequest(), question: "x".repeat(301) })],
+    ["lookup", () => ({ ...validLookupRequest(), question: "x".repeat(301) })]
+  ])("rejects questions over 300 characters in %s mode", (_mode, createRequest) => {
+    expect(askAiRequestSchema.safeParse(createRequest()).success).toBe(false);
+  });
+
+  it.each([
+    ["game", () => ({ ...validRequest(), question: `bad${String.fromCharCode(7)}question` })],
+    ["lookup", () => ({ ...validLookupRequest(), question: `bad${String.fromCharCode(7)}question` })]
+  ])("rejects question control characters in %s mode", (_mode, createRequest) => {
+    expect(askAiRequestSchema.safeParse(createRequest()).success).toBe(false);
   });
 });
 
@@ -164,5 +280,26 @@ describe("askAiRequestSchema — conversationHistory", () => {
       ]
     });
     expect(parsed.success).toBe(false);
+  });
+
+  it.each([
+    ["game", () => validRequest()],
+    ["lookup", () => validLookupRequest()]
+  ])("applies conversationHistory validation in %s mode", (_mode, createRequest) => {
+    const validHistory = [validTurn("user"), validTurn("assistant")];
+    const invalidHistory = [validTurn("assistant"), validTurn("user")];
+
+    expect(
+      askAiRequestSchema.safeParse({
+        ...createRequest(),
+        conversationHistory: validHistory
+      }).success
+    ).toBe(true);
+    expect(
+      askAiRequestSchema.safeParse({
+        ...createRequest(),
+        conversationHistory: invalidHistory
+      }).success
+    ).toBe(false);
   });
 });

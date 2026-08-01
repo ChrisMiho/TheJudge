@@ -1,10 +1,10 @@
 # Lookup suite decisions
 
-Lightweight Ask AI lookup entries that reuse existing search, scan, and conversation UI without user-staged game state. Card Lookup lands first; Rules Lookup extends this file later.
+Lightweight Ask AI lookup entries that reuse existing search, scan, and conversation UI without user-staged game state. Card Lookup (DEC-097) and Rules Lookup (DEC-099) were refined as two separate destinations before either shipped; quick-lookup refinement reconciled them into one Quick Lookup destination (DEC-107/DEC-108).
 
 ### DEC-097
 - Decision: Card Lookup is a lightweight Ask AI entry that reuses existing components end to end. It registers as a **feature-portal** destination (the portal owns navigation per DEC-095; Card Lookup ships no menu of its own). Its single-card input reuses **both** the existing typed card search and the existing camera scanner, each resolving to one oracle-level card. Its Q&A surface reuses the shipped conversation chrome (thread, follow-up composer, inline processing animation, start over) with the **single looked-up card frozen** as the conversation context, under the **same** message-count and text-length limits as the main MTG Assistant flow. The backend runs the **same per-card enrichment** the main flow already applies — WotC rulings (DEC-029), full card metadata including oracle text (DEC-042 / REQ-030), and card/question-driven supplemental rules (System 3, DEC-046) — via the same helper functions, and omits the game-state-only prompt sections (zone sections, `PHASE GUIDANCE`, System 2 game-state topic gating per DEC-045, and the merged zone scope sentence) because card mode carries no game state.
-- Status: confirmed
+- Status: superseded
 - Context: Players often need rules help on a single card without building full game state. The value is highest reuse: the client already has card search, the scanner, and a full conversation UI, and the backend already enriches each submitted card. Card Lookup repackages those into a `mode: "card"` (DEC-095) entry rather than new subsystems, so the only genuinely new work is the entry surface, the card-mode request/prompt skeleton, and portal registration.
 - Impact:
   - Card Lookup appears as a destination in the feature-portal registry (owned by `feature-portal`, DEC-095); selecting it opens the lookup entry as a frontend-only view switch, no reload
@@ -23,10 +23,11 @@ Lightweight Ask AI lookup entries that reuse existing search, scan, and conversa
   - depends on `feature-portal` (DEC-095) for entry chrome and on DEC-096 for the `mode` contract; prefer landing the mode contract with or before this UI
   - `rules-lookup` (`mode: "rules"`) reuses this feature's conversation chrome and extends this domain file later
   - a future option to accept optional lightweight game context in card mode is tracked as Q-003 and is out of v1 scope
+  - superseded by DEC-107: quick-lookup refinement unifies Card Lookup and Rules Lookup into one Quick Lookup destination before either shipped
 
 ### DEC-099
 - Decision: Rules Lookup is a lightweight Ask AI entry for general rules questions that carries **no** user-staged game state and no card. It registers as a **feature-portal** destination (the portal owns navigation per DEC-095; Rules Lookup ships no menu of its own) and reuses the shipped conversation chrome (thread, follow-up composer, inline processing animation, start over) that Card Lookup (DEC-097) already repackages, under the **same** message-count and text-length limits as the main MTG Assistant flow. Its primary path is **AI-mediated**: the player types a rules question, the backend runs rules-mode enrichment and answer composition (DEC-100), and the answer surfaces the relevant **verbatim** Comprehensive Rules excerpts plus an explanation. As a zero-cost secondary path, the empty state offers a **small committed local copy** of the core rules topics (a frontend-bundled subset of the same curated `gameRulesByTopic` excerpts the prompt uses — one source of truth, no hand-authored second copy) that the player can read locally with no AI call, and "ask about this" seeds a question into the primary path.
-- Status: confirmed
+- Status: superseded
 - Context: Players often need to understand a rules concept (priority, the stack, layers) without building game state and without tying the question to a card. Manual keyword lookup is hard to get right, so the primary path leans on the AI to interpret the question and surface the governing rules rather than making the player hunt. The value is reuse: the client already has the full conversation UI and the backend already retrieves curated + supplemental rules, so the only genuinely new work is the entry surface, the rules-mode request/prompt skeleton (DEC-098 / DEC-100), the answer-seeded second-pass retrieval (DEC-100), the small local core-topics browse artifact, and portal registration.
 - Impact:
   - Rules Lookup appears as a destination in the feature-portal registry (owned by `feature-portal`, DEC-095); selecting it opens the lookup entry as a frontend-only view switch, no reload, no menu of its own
@@ -47,3 +48,42 @@ Lightweight Ask AI lookup entries that reuse existing search, scan, and conversa
   - depends on `feature-portal` (DEC-095) for entry chrome, on DEC-098 for the `mode: "rules"` contract, and on DEC-100 for enrichment/answer composition
   - reuses Card Lookup's (DEC-097) conversation chrome; prefer landing the `mode` contract and Card Lookup's conversation reuse with or before this UI
   - the local core-topics list is a discoverability fallback, not a full Comprehensive Rules browser (explicit non-goal); topic curation is a build-time sign-off like DEC-030
+  - superseded by DEC-107: quick-lookup refinement unifies Card Lookup and Rules Lookup into one Quick Lookup destination before either shipped
+
+### DEC-107
+- Decision: Quick Lookup is a single reuse-first Ask AI entry combining what card-lookup-qa and rules-lookup would have shipped as two destinations. It registers as **one** feature-portal destination (DEC-095) with no menu of its own. The user optionally resolves a single card (typed search or camera scan, both existing) before asking, or asks a freeform Magic question with no card. Its Q&A surface reuses the shipped conversation chrome (thread, follow-up composer, inline processing animation, start over) under the **same** message-count and text-length limits as the main MTG Assistant flow, with the attached card (if any) frozen as context. The backend runs **one** prompt-assembly path (DEC-106's `mode: "lookup"`) rather than forking enrichment by mode: question-driven rules retrieval — the static MTG reference block (DEC-025), always-on core game-rules topics (DEC-045 core set), and System 3 supplemental (DEC-046) scored on the question — always runs; when a card is attached, per-card enrichment layers in — WotC rulings (DEC-029) and full card metadata including oracle text (DEC-042 / REQ-030), with System 3 additionally scored against the card. Game-state-only sections (zone sections, `PHASE GUIDANCE`, DEC-045 game-state topic gating, the merged zone scope sentence) are always omitted, because this path never carries game state. Off-domain questions are guarded per DEC-108. The empty state (no card, no question yet) offers the small local core-topics browse fallback (REQ-079) already scoped for rules lookup. The answer-seeded second-pass retrieval DEC-100 specified for rules-mode is **not** carried into Quick Lookup v1 — deferred to a dedicated future feature (Q-004) so it can get its own tuning pass.
+- Status: confirmed
+- Context: card-lookup-qa and rules-lookup were refined and promoted separately (DEC-097 / DEC-099) before either shipped, each as its own destination and its own wire shape. Product framing has since converged on one short-ask path: the player either has a card in mind or doesn't, but the value proposition — skip staging full game state, get a fast answer in the shared conversation chrome — is identical either way. Two destinations and two forked backend enrichment paths for one user intent duplicates surface area for no product benefit and risks the two prompt-assembly implementations drifting apart; DEC-107 reconciles them into one destination, one wire mode, and one branching (not forked) enrichment path.
+- Impact:
+  - Quick Lookup is registered as a single destination in the feature-portal registry (DEC-095); selecting it opens the lookup entry as a frontend-only view switch, no reload
+  - single-card input is optional: typed autocomplete search (REQ-001 / REQ-002 behavior) and the camera scanner (FLOW-006 engine, DEC-050 / DEC-053) both resolve to one `CardMetadataItem`; the user may instead skip card input and ask directly
+  - no zones, no stack, no phase, no multi-card setup, no per-card enrichment-editing UI, and not a full Comprehensive Rules browser or judge authority (DEC-002 / DEC-013)
+  - empty state (no card attached, no question submitted yet) shows the local core-topics browse fallback (REQ-079); attaching a card or typing a question both replace it
+  - Q&A reuses REQ-025 / REQ-026 / REQ-027 / REQ-028 / REQ-029 chrome; frozen context is the attached card if one was resolved, otherwise none; the initial user question is included in `conversationHistory` but not shown as a visible bubble
+  - conversation limits (message count, per-message and question character caps) are shared with the main flow; Quick Lookup defines no separate limit policy
+  - backend prompt assembly reuses the same rulings / metadata / System-2 / System-3 helper functions the main flow and each other use — single authoritative definitions, no duplicated enrichment implementations
+  - the answer-seeded second-pass retrieval is out of v1; the model still surfaces relevant verbatim rules from the first-pass provided set (DEC-100's verbatim-fidelity guard carries forward)
+- Related requirements:
+  - REQ-072
+  - REQ-073
+  - REQ-074
+  - REQ-075
+  - REQ-079
+- Notes:
+  - supersedes DEC-097 (Card Lookup) and DEC-099 (Rules Lookup); depends on `feature-portal` (DEC-095) and DEC-106 for the `mode: "lookup"` contract
+  - supersedes DEC-100's enrichment shape for this feature; DEC-100's answer-seeded second-pass is deferred and tracked as Q-004, not dropped
+  - a future option to accept optional lightweight game context when a card is attached is tracked as Q-003 and is out of v1 scope
+
+### DEC-108
+- Decision: Quick Lookup's prompt instructs the model to treat itself as searching the game's rules corpus, not as a general-purpose assistant. When a question — with or without an attached card — is off-domain / non-MTG, the model must respond in a **"confused rules lookup"** persona, as though it searched for the concept in the rules and found nothing, rather than a generic capability refusal. For example, asking for a cookie recipe should get a reply in the spirit of "I couldn't find any rules covering a mechanic called 'cookies' — did you mean a different card or rules term, or maybe misspell something?", and any other off-domain question gets an analogous "I'm not familiar with that / it isn't in the rules" response. This is enforced entirely through prompt instruction; no new backend detection, classification, or validation code is added.
+- Status: confirmed
+- Context: Quick Lookup's freeform question field with no game state and no card requirement makes it easy to ask it as a general chatbot, which both the IDEA's non-goals and existing framing (DEC-002 / DEC-013) forbid. A flat "I can only answer Magic questions" refusal is accurate but breaks the "rules lookup" framing the feature is built around; playing dumb in-character ("not found in the rules") keeps every response — on-domain or not — consistent with what the feature actually is: a rules search, not a chat assistant.
+- Impact:
+  - the lookup-mode system prompt includes an explicit instruction: treat unrecognized / off-domain terms as "not found in the rules corpus," ask the user to check spelling or rephrase toward a Magic term, and never answer the off-domain question directly
+  - applies identically whether or not a card is attached; no separate off-domain handling for the card-attached branch
+  - no backend-visible signal, log flag, or debug sidecar field is added for refusals (mock provider still exposes the full assembled prompt per existing DEC-017 / DEC-033 behavior, which is sufficient to inspect the instruction)
+  - no rules-validation, legality, or classification logic is added under this guardrail; it is prompt copy only (DEC-002 / DEC-013 preserved)
+- Related requirements:
+  - REQ-074
+- Notes:
+  - copy/tone for the "confused" persona is a build-time content concern (system-prompt wording), not a product-behavior contract; wording may be tuned during implementation as long as the persona and no-direct-answer behavior hold

@@ -3,7 +3,17 @@ import {
   DEFAULT_STACK_QUESTION,
   NON_STACK_CANONICAL_ZONE_ORDER
 } from "../constants.js";
-import type { AskAiRequest, ContextTarget, PromptContext, PromptContextStackItem, PromptContextStackTarget, PromptContextZoneItem } from "../types/index.js";
+import type {
+  ContextTarget,
+  GameAskAiRequest,
+  LookupAskAiRequest,
+  LookupPromptCard,
+  LookupPromptContext,
+  PromptContext,
+  PromptContextStackItem,
+  PromptContextStackTarget,
+  PromptContextZoneItem
+} from "../types/index.js";
 import { normalizeCardText, normalizeQuestion, normalizeWhitespace } from "./normalization.js";
 
 function toStackRole(stackIndex: number, stackLength: number): PromptContextStackItem["stackRole"] {
@@ -97,7 +107,17 @@ function normalizeZoneItem(card: import("../types/index.js").ZoneCardItem): Prom
   };
 }
 
-function resolveFallbackQuestion(zones: AskAiRequest["gameContext"]["zones"] | undefined): string {
+function normalizeLookupCard(card: LookupAskAiRequest["card"]): LookupPromptCard | undefined {
+  if (!card) return undefined;
+  const normalized = normalizeZoneItem({ ...card, targets: [] });
+  if (!normalized) return undefined;
+  const lookupCard = { ...normalized };
+  delete lookupCard.owner;
+  delete lookupCard.contextNotes;
+  return lookupCard;
+}
+
+function resolveFallbackQuestion(zones: GameAskAiRequest["gameContext"]["zones"] | undefined): string {
   if ((zones?.stack?.length ?? 0) > 0) {
     return DEFAULT_STACK_QUESTION;
   }
@@ -109,7 +129,7 @@ function resolveFallbackQuestion(zones: AskAiRequest["gameContext"]["zones"] | u
   return hasNonStackCards ? DEFAULT_BOARD_QUESTION : DEFAULT_STACK_QUESTION;
 }
 
-export function buildPromptContext(payload: AskAiRequest): PromptContext {
+export function buildPromptContext(payload: GameAskAiRequest): PromptContext {
   const normalizedQuestion = normalizeQuestion(payload.question);
   const gameCtx = payload.gameContext;
 
@@ -167,5 +187,14 @@ export function buildPromptContext(payload: AskAiRequest): PromptContext {
       stackIndex,
       stackRole: toStackRole(stackIndex, stack.length)
     }))
+  };
+}
+
+export function buildLookupPromptContext(payload: LookupAskAiRequest): LookupPromptContext {
+  const card = normalizeLookupCard(payload.card);
+  return {
+    finalQuestion: normalizeQuestion(payload.question),
+    ...(card ? { card } : {}),
+    ...(payload.conversationHistory ? { conversationHistory: payload.conversationHistory } : {})
   };
 }

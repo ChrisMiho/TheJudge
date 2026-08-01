@@ -21,10 +21,20 @@
 - Recommended next step: Keep deferred; open a dedicated refinement if/when scanner-feedback work is prioritized. Do not add to the UI motion polish scope (REQ-059) without explicit confirmation.
 
 ### Q-003
-- Question: Should Card Lookup later accept optional lightweight game context (e.g. a few surrounding cards or a phase hint) in `mode: "card"`?
-- Context: v1 Card Lookup is deliberately single-card with no `gameContext` (DEC-097), which keeps the payload small and the non-goal clean. The user has expressed future interest in adding a small amount of surrounding game context to a card lookup. The DEC-096 `mode`-discriminated union was chosen specifically so this can be added to the card branch additively — no new endpoint and no break to existing clients.
+- Question: Should Quick Lookup later accept optional lightweight game context (e.g. a few surrounding cards or a phase hint) on its `card` field in `mode: "lookup"`?
+- Context: v1 Quick Lookup's card branch is deliberately single-card with no `gameContext` (DEC-107), which keeps the payload small and the non-goal clean. The user has expressed future interest in adding a small amount of surrounding game context to a card lookup. The DEC-106 `mode`-discriminated union was chosen specifically so this can be added to the `card` field additively — no new endpoint and no break to existing clients.
 - Why it matters: Adding context changes what enrichment runs (some game-state-only sections become applicable again) and risks re-importing the game-flow complexity the lookup entry was meant to avoid. It deserves its own refinement rather than riding along with v1.
 - Options under consideration:
-  - Keep card mode strictly single-card in v1 and revisit later (recommended)
+  - Keep the card branch strictly single-card in v1 and revisit later (recommended)
   - Add an optional lightweight context field to the card branch now (larger scope; blurs the non-goal)
-- Recommended next step: Ship single-card v1; open a dedicated refinement if/when contextual card lookup is prioritized. Do not expand `mode: "card"` payload without explicit confirmation.
+- Recommended next step: Ship single-card v1; open a dedicated refinement if/when contextual card lookup is prioritized. Do not expand the `card` field's payload without explicit confirmation.
+- Notes: originally raised against Card Lookup (DEC-097, superseded); carried forward unchanged in substance to Quick Lookup (DEC-107) during quick-lookup refinement.
+
+### Q-004
+- Question: Should the answer-seeded second-pass rules retrieval (re-query the rule index using the model's first answer, append missed verbatim rules to the response) be shipped as its own dedicated feature?
+- Context: DEC-100 originally specified this for rules-mode as part of rules-lookup. During quick-lookup refinement, the user asked to table it rather than carry it into Quick Lookup v1, expecting it will need its own tuning pass and preferring it get a dedicated feature rather than ride along with the card/rules destination merge.
+- Why it matters: The mechanism (local re-query, dedup, append to `answer`) is fully specified and low-risk, but its retrieval-quality tuning is independent of Quick Lookup's scope; bundling it back in later without a decision would silently expand Quick Lookup's prompt-assembly behavior.
+- Options under consideration:
+  - Open a dedicated refinement for answer-seeded second-pass retrieval when prioritized, scoped as its own feature (recommended)
+  - Drop the idea permanently and rely on the first-pass question-driven retrieval only
+- Recommended next step: Do not add second-pass retrieval to Quick Lookup (DEC-107) without a new confirmed decision. Open a dedicated refinement if/when prioritized.

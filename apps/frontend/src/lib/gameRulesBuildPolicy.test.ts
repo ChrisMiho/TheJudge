@@ -3,11 +3,14 @@ import path from "node:path";
 import assert from "node:assert";
 import { describe, expect, it } from "vitest";
 import {
+  CORE_TOPIC_IDS,
+  buildCoreTopics,
   extractRuleExcerpt,
   normalizeGameRulesManifest,
   parseRuleIndex,
   transformGameRules
 } from "../../../../scripts/build-game-rules.mjs";
+import { ALWAYS_ON_TOPIC_IDS } from "../../../backend/src/gameRulesTopicSelection.js";
 
 const manifestPath = path.resolve("../../apps/backend/data/gameRulesTopicManifest.json");
 const artifactPath = path.resolve("../../apps/backend/data/gameRulesByTopic.json");
@@ -36,6 +39,52 @@ const crFixture = [
 ].join("\n");
 
 describe("game rules build policy", () => {
+  it("builds the signed-off core topics in fixed order from the curated source", () => {
+    expect(CORE_TOPIC_IDS).toEqual([...ALWAYS_ON_TOPIC_IDS, "combat-phase-structure", "layers-order"]);
+
+    const sourceTopics = [...CORE_TOPIC_IDS]
+      .reverse()
+      .map((id, index) => ({
+        id,
+        title: `Topic ${id}`,
+        ruleNumbers: [`${index + 100}.1`],
+        excerpt: `${index + 100}.1. Source excerpt for ${id}.`,
+        ignored: "not part of the frontend artifact"
+      }));
+
+    const result = buildCoreTopics(sourceTopics);
+
+    expect(result.warnings).toEqual([]);
+    expect(result.topics.map((topic: { id: string }) => topic.id)).toEqual(CORE_TOPIC_IDS);
+    expect(result.topics).toEqual(
+      CORE_TOPIC_IDS.map((id) => {
+        const source = sourceTopics.find((topic) => topic.id === id)!;
+        return {
+          id: source.id,
+          title: source.title,
+          ruleNumbers: source.ruleNumbers,
+          excerpt: source.excerpt
+        };
+      })
+    );
+  });
+
+  it("skips a missing signed-off core topic and reports a build warning", () => {
+    const presentTopic = {
+      id: CORE_TOPIC_IDS[0],
+      title: "Present topic",
+      ruleNumbers: ["100.1"],
+      excerpt: "100.1. Present source excerpt."
+    };
+
+    const result = buildCoreTopics([presentTopic], CORE_TOPIC_IDS.slice(0, 2));
+
+    expect(result.topics).toEqual([presentTopic]);
+    expect(result.warnings).toEqual([
+      `Core rules topic ${CORE_TOPIC_IDS[1]} not found in generated topic artifact; skipped.`
+    ]);
+  });
+
   it("extracts exact Comprehensive Rules excerpts by rule number", () => {
     expect(extractRuleExcerpt(crFixture, "405.1")).toBe(
       "405.1. When a spell is cast, the physical card is put on the stack."

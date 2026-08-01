@@ -23,7 +23,11 @@ describe("ask-ai route behavior", () => {
     expect(response.body.answer).toBe("Provider boundary response");
     expect(providerCalls).toHaveLength(1);
     expect(providerCalls[0]?.context.finalQuestion).toBe("Boundary check");
-    expect(providerCalls[0]?.context.orderedStack).toHaveLength(1);
+    expect(
+      providerCalls[0] && "orderedStack" in providerCalls[0].context
+        ? providerCalls[0].context.orderedStack
+        : undefined
+    ).toHaveLength(1);
   });
 
   it("adds official rulings to prepared prompt through app dependency injection", async () => {

@@ -255,7 +255,13 @@ export function buildQueryTokens(
   context: PromptContext,
   keywordVocabulary: Set<string> = getDefaultScoringResources().keywordVocabulary
 ): { queryText: string; tokens: QueryToken[]; queryRuleIds: string[] } {
-  const { questionText, oracleText } = buildQueryParts(context);
+  return buildQueryTokensFromParts(buildQueryParts(context), keywordVocabulary);
+}
+
+export function buildQueryTokensFromParts(
+  { questionText, oracleText }: { questionText: string; oracleText: string },
+  keywordVocabulary: Set<string> = getDefaultScoringResources().keywordVocabulary
+): { queryText: string; tokens: QueryToken[]; queryRuleIds: string[] } {
   const queryText = `${questionText} ${oracleText}`;
 
   // Dedupe by token; the question source (higher multiplier) wins over oracle.
@@ -321,12 +327,12 @@ function scoreEntry(
 }
 
 function scoreIndex(
-  context: PromptContext,
+  tokens: QueryToken[],
+  queryRuleIds: string[],
   index: GameRulesRuleIndexEntry[],
   excludeRuleIds: Set<string>,
   resources: ScoringResources
-): { scored: ScoredEntry[]; tokens: QueryToken[]; queryText: string; queryRuleIds: string[]; excludedCuratedRuleCount: number } {
-  const { queryText, tokens, queryRuleIds } = buildQueryTokens(context, resources.keywordVocabulary);
+): { scored: ScoredEntry[]; excludedCuratedRuleCount: number } {
   const N = resources.tokenStats?.N ?? index.length;
   const df = resources.tokenStats?.df ?? null;
 
@@ -350,7 +356,7 @@ function scoreIndex(
     return parseFloat(a.entry.ruleId) - parseFloat(b.entry.ruleId);
   });
 
-  return { scored, tokens, queryText, queryRuleIds, excludedCuratedRuleCount };
+  return { scored, excludedCuratedRuleCount };
 }
 
 function toRetrievedGameRule(scored: ScoredEntry): RetrievedGameRule {
@@ -378,21 +384,22 @@ export type SupplementalRulesWithDebug = {
   debug: SupplementalRulesDebug;
 };
 
-export function retrieveSupplementalRulesWithDebug(
-  context: PromptContext,
+export function retrieveRulesForQueryWithDebug(
+  queryTokens: QueryToken[],
+  queryRuleIds: string[],
   index: GameRulesRuleIndexEntry[],
   excludeRuleIds: Set<string>,
   max = 5,
-  resources: ScoringResources = getDefaultScoringResources()
+  resources: ScoringResources = getDefaultScoringResources(),
+  queryText = queryTokens.map((token) => token.token).join(" ")
 ): SupplementalRulesWithDebug {
   if (index.length === 0) {
-    const { queryText, tokens, queryRuleIds } = buildQueryTokens(context, resources.keywordVocabulary);
     return {
       selected: [],
       runnerUp: [],
       debug: {
         queryText,
-        queryTokens: tokens.map((t) => t.token),
+        queryTokens: queryTokens.map((token) => token.token),
         queryRuleIds,
         excludedCuratedRuleCount: 0,
         selected: [],
@@ -402,13 +409,13 @@ export function retrieveSupplementalRulesWithDebug(
     };
   }
 
-  const { scored, tokens, queryText, queryRuleIds, excludedCuratedRuleCount } = scoreIndex(
-    context,
+  const { scored, excludedCuratedRuleCount } = scoreIndex(
+    queryTokens,
+    queryRuleIds,
     index,
     excludeRuleIds,
     resources
   );
-
   const selected = scored.slice(0, max).map(toRetrievedGameRule);
   const runnerUp = scored.slice(max, max + 10).map(toRetrievedGameRule);
 
@@ -417,14 +424,46 @@ export function retrieveSupplementalRulesWithDebug(
     runnerUp,
     debug: {
       queryText,
-      queryTokens: tokens.map((t) => t.token),
+      queryTokens: queryTokens.map((token) => token.token),
       queryRuleIds,
       excludedCuratedRuleCount,
-      selected: selected.map((r) => ({ ruleId: r.ruleId, sectionTitle: r.sectionTitle, score: r.score })),
-      runnerUp: runnerUp.map((r) => ({ ruleId: r.ruleId, sectionTitle: r.sectionTitle, score: r.score })),
+      selected: selected.map((rule) => ({ ruleId: rule.ruleId, sectionTitle: rule.sectionTitle, score: rule.score })),
+      runnerUp: runnerUp.map((rule) => ({ ruleId: rule.ruleId, sectionTitle: rule.sectionTitle, score: rule.score })),
       candidatesScored: scored.length
     }
   };
+}
+
+export function retrieveRulesForQuery(
+  queryTokens: QueryToken[],
+  queryRuleIds: string[],
+  index: GameRulesRuleIndexEntry[],
+  excludeRuleIds: Set<string>,
+  max = 5,
+  resources: ScoringResources = getDefaultScoringResources()
+): RetrievedGameRule[] {
+  if (index.length === 0) return [];
+  const { scored } = scoreIndex(queryTokens, queryRuleIds, index, excludeRuleIds, resources);
+  return scored.slice(0, max).map(toRetrievedGameRule);
+}
+
+export function retrieveSupplementalRulesWithDebug(
+  context: PromptContext,
+  index: GameRulesRuleIndexEntry[],
+  excludeRuleIds: Set<string>,
+  max = 5,
+  resources: ScoringResources = getDefaultScoringResources()
+): SupplementalRulesWithDebug {
+  const query = buildQueryTokens(context, resources.keywordVocabulary);
+  return retrieveRulesForQueryWithDebug(
+    query.tokens,
+    query.queryRuleIds,
+    index,
+    excludeRuleIds,
+    max,
+    resources,
+    query.queryText
+  );
 }
 
 export function retrieveSupplementalRules(
@@ -434,8 +473,6 @@ export function retrieveSupplementalRules(
   max = 5,
   resources: ScoringResources = getDefaultScoringResources()
 ): RetrievedGameRule[] {
-  if (index.length === 0) return [];
-
-  const { scored } = scoreIndex(context, index, excludeRuleIds, resources);
-  return scored.slice(0, max).map(toRetrievedGameRule);
+  const query = buildQueryTokens(context, resources.keywordVocabulary);
+  return retrieveRulesForQuery(query.tokens, query.queryRuleIds, index, excludeRuleIds, max, resources);
 }

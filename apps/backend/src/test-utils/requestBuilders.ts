@@ -1,7 +1,7 @@
 import { PLAYER_LABELS } from "../constants.js";
-import type { AskAiRequest, ZoneCardItem } from "../types/index.js";
+import type { GameAskAiRequest, ZoneCardItem } from "../types/index.js";
 
-export function createGameContext(playerCount: 2 | 3 | 4 | 5 | 6 | 7 | 8 = 2): AskAiRequest["gameContext"] {
+export function createGameContext(playerCount: 2 | 3 | 4 | 5 | 6 | 7 | 8 = 2): GameAskAiRequest["gameContext"] {
   return {
     playerCount,
     players: PLAYER_LABELS.slice(0, playerCount).map((label) => ({ label, lifeTotal: 20 })),
@@ -30,7 +30,7 @@ export function createZoneCardItem(overrides: Partial<ZoneCardItem> = {}): ZoneC
   };
 }
 
-export function createAskAiRequest(overrides: Partial<AskAiRequest> = {}): AskAiRequest {
+export function createAskAiRequest(overrides: Partial<GameAskAiRequest> = {}): GameAskAiRequest {
   return {
     question: "How does this resolve?",
     gameContext: {

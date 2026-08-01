@@ -1,41 +1,58 @@
-status: refined
+status: active
 
 # Feedback & Bug Report
 
-Frontend-only user feedback + bug-report feature. Delivered via Formspree to the owner's inbox; no backend change.
+Frontend-only "Send feedback" feature. A portal **action entry** (DEC-104) opens an accessible
+modal that captures a category, a required message, and an optional reply email, discloses an
+app-state snapshot, and delivers to the owner's inbox via **Formspree** (DEC-105). No backend
+route or contract change.
 
-## Shaped decisions (from brainstorming)
+Sources of truth: DEC-104/DEC-105, REQ-086/087/088, FLOW-014 — see `GAMEPLAN.md` for architecture,
+data flow, and the full verification checklist.
 
-- **Destination:** Third-party form backend — **Formspree** (`https://formspree.io/f/<id>`), delivers email + dashboard entry. No backend route, no SES, no secret (public form ID).
-- **Entry point:** A **"Send feedback" action item in the existing feature-portal dropdown menu** that opens a **modal over the current screen** (not a full portal view-switch), so the user keeps their place. Requires extending the portal registry to support an *action* entry alongside *destination* entries.
-- **Capture set (v1):**
-  - Category select — Bug / Suggestion / Other
-  - Required freeform message
-  - Optional reply email (blank = anonymous)
-  - Silent, disclosed **app-state snapshot**: current screen/step, in-progress game context + typed question, zones/cards/enrichment, conversation history (if answered), provider mode (mock/live), active portal destination, environment (user-agent, viewport, route, timestamp, build/version)
-- **Deferred:** screenshots/file uploads.
+## Slice table
 
-## Proposed components
+| Slice | Name | Depends on | Status |
+| --- | --- | --- | --- |
+| A | Portal action-entry union | — | planned |
+| B | Snapshot builder + seam contract | — | planned |
+| C | Delivery + config | — | planned |
+| D | FeedbackModal + form | B, C | planned |
+| E | Portal wiring + integration | A, B, C, D | planned |
 
-- Portal action item (extend `apps/frontend/src/components/portal/` registry for non-destination actions)
-- `FeedbackModal` — theme-aware, accessible (focus trap, Esc, CSS-only motion), overlays any screen
-- `buildFeedbackContext()` — pure app-state snapshot builder
-- `submitFeedback(payload)` — POSTs JSON to Formspree, handles success / network error / rate-limit; app-state snapshot rides as one JSON-stringified field
-- `useFeedbackForm` — field state, validation (message required, email format if present), submit lifecycle
-- Decoupling seam: app shell passes a lazy `getFeedbackContext()` callback to the modal so it never reaches into flow internals
+A, B, C are parallel-ready. D starts once B + C land. E is the integration + PRD-promotion slice.
 
-## Config
+## Implementation map
 
-- `VITE_FEEDBACK_FORMSPREE_ID` in `apps/frontend/.env.example` (public, not a secret); empty in local/mock → graceful no-op
+| Slice | New files | Files edited |
+| --- | --- | --- |
+| A | — | `lib/portal/types.ts`, `components/portal/destinationRegistry.tsx`, `components/portal/FeaturePortalMenu.tsx` (+ test), `App.tsx` |
+| B | `lib/feedback/types.ts`, `lib/feedback/environment.ts`, `lib/feedback/buildFeedbackContext.ts` (+ test), `lib/feedback/FeedbackContextProvider.tsx` (+ test) | — |
+| C | `lib/feedback/submitFeedback.ts` (+ test) | `lib/env.ts` (+ test), `.env.example` |
+| D | `lib/feedback/summarizeFeedbackContext.ts` (+ test), `hooks/useFeedbackForm.ts` (+ test), `components/feedback/FeedbackModal.tsx` (+ test) | — |
+| E | `App.feedback.test.tsx` | `App.tsx`, `components/portal/MtgAssistantApp.tsx` |
 
-## Non-goals (v1)
+All paths relative to `apps/frontend/src/`.
 
-No backend route/contract change, no screenshots, no persistence, no auth, no in-app history, no analytics.
+## Next step
 
-## Open items for refinement
+Map-out complete — five lettered slices are written with dependencies A/B/C parallel-ready, D
+gated on B+C, E gated on all four. Start with slice A (or run A/B/C concurrently).
 
-- New DEC(s) for frontend-only Formspree feedback delivery + REQ(s) for the modal/capture behavior
-- `user-flows.md` FLOW entry for open → fill → submit → success/error
-- `system-map.md` catalog entry
-- Portal registry extension: how action entries coexist with destination entries (`DEC-095`/`REQ-067` portal contract)
-- Exact serialized payload shape for Formspree readability
+**Cursor**
+
+```text
+/thejudge-implement PRD/work/feedback-bug-report/ slice A
+```
+
+**Codex**
+
+```text
+$thejudge-implement PRD/work/feedback-bug-report/ slice A
+```
+
+**Claude Code**
+
+```text
+/thejudge-implement PRD/work/feedback-bug-report/ slice A
+```

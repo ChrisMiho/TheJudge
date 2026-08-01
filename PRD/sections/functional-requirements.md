@@ -1628,14 +1628,14 @@
   - narrower in scope than REQ-068's full non-overlap sweep: this addresses the indicator-box/mute-toggle pairing via copy only, not layout
 
 ### REQ-072
-- Title: Ask AI request mode discriminator
+- Title: Ask AI lookup-mode request contract
 - Priority: high
-- Description: `POST /api/ask-ai` must accept a `mode`-discriminated `AskAiRequest` supporting the existing staged game flow and a new single-card lookup, on the same endpoint, without breaking existing clients.
+- Description: `POST /api/ask-ai` must accept a `mode`-discriminated `AskAiRequest` supporting the existing staged game flow and the Quick Lookup entry, on the same endpoint, without breaking existing clients.
 - Acceptance Criteria:
   - `AskAiRequest` accepts an optional `mode` field; when absent it defaults to `"game"` so existing `{ question, gameContext, conversationHistory? }` payloads validate and behave unchanged
   - `mode: "game"` payload is `{ mode?: "game", question, gameContext, conversationHistory? }` with today's validation rules (REQ-019) unchanged
-  - `mode: "card"` payload is `{ mode: "card", question, card, conversationHistory? }` where `card` is a single oracle-level card reference resolvable to a committed `CardMetadataItem`; `gameContext` is rejected in card mode
-  - backend Zod validation rejects a `card` field on game mode and a `gameContext` field on card mode
+  - `mode: "lookup"` payload is `{ mode: "lookup", question, card?, conversationHistory? }` where `card`, when present, is a single oracle-level card reference resolvable to a committed `CardMetadataItem`; `card` is optional and its presence or absence is what the backend branches on (REQ-074)
+  - backend Zod validation rejects a `gameContext` field on lookup mode and rejects a `card` field on game mode
   - `question` character cap and control-character guardrails are identical across modes
   - `conversationHistory` is optional in both modes and validated by the existing DEC-038 rules (non-empty array, alternating roles starting with user, last entry assistant, per-message and count caps) unchanged
   - success `{ answer }` and error response shapes are unchanged for both modes and both `ASK_AI_PROVIDER` providers
@@ -1643,186 +1643,156 @@
 - Constraints:
   - one product-facing endpoint only (DEC-010); no new route
   - additive amendment to the DEC-020 frozen contract; no existing field changes meaning
-  - `mode: "rules"` is reserved for `rules-lookup` and is out of scope here
 - Dependencies:
-  - DEC-096
+  - DEC-106
   - DEC-020
   - DEC-038
   - REQ-019
 - Notes:
+  - during quick-lookup refinement this requirement's `mode: "card"` / reserved `mode: "rules"` scope (DEC-096 / DEC-098) was replaced with the unified `mode: "lookup"` scope (DEC-106); the ID carries forward since it is the same "mode discriminator" requirement evolving before ship
   - future optional lightweight context on the card branch is tracked as Q-003 and is out of scope
 
 ### REQ-073
-- Title: Card Lookup entry and single-card input
+- Title: Quick Lookup entry and optional single-card input
 - Priority: high
-- Description: Card Lookup must be reachable as a feature-portal destination and let the user resolve exactly one card by typed search or camera scan, then read its oracle text before asking a question.
+- Description: Quick Lookup must be reachable as a single feature-portal destination and let the user optionally resolve one card by typed search or camera scan, or skip card input and ask a freeform Magic question directly.
 - Acceptance Criteria:
-  - Card Lookup is registered as a feature-portal destination (DEC-095) and opens as a frontend-only view switch with no reload; it ships no navigation menu of its own
-  - the user can find a card by typed autocomplete search reusing REQ-001/REQ-002 behavior (suggestions at 3+ characters, **No matching card found** on no match) and select one card
-  - the user can alternatively scan a card with the existing camera scanner (FLOW-006 engine), which resolves to one oracle-level `CardMetadataItem`
-  - the selected card's name, image when available, and oracle text (including full metadata) are shown before the user submits a question
+  - Quick Lookup is registered as a single feature-portal destination (DEC-095) and opens as a frontend-only view switch with no reload; it ships no navigation menu of its own
+  - the user can find a card by typed autocomplete search reusing REQ-001/REQ-002 behavior (suggestions at 3+ characters, **No matching card found** on no match) and select one card, or scan a card with the existing camera scanner (FLOW-006 engine), which resolves to one oracle-level `CardMetadataItem`
+  - card input is optional: the user may submit a question with no card attached
+  - when a card is resolved, its name, image when available, and oracle text (including full metadata) are shown before the user submits a question, and the user can remove or replace it before submitting
   - only one card is active at a time; there are no zones, stack, phase, multi-card setup, or per-card enrichment-editing controls
   - a freeform question field accepts up to the same character cap as the main flow question (REQ-011)
+  - the empty state (no card attached, no question typed yet) shows the local core-topics browse fallback (REQ-079) instead of a blank screen
 - Constraints:
-  - reuse existing search, scan, and card-presentation components; do not fork new identity or metadata models
+  - reuse existing search, scan, card-presentation, and core-topics components; do not fork new identity or metadata models
   - printing-level scan identity stays presentation-only and is not pushed into the request, prompt, or rulings (DEC-053)
 - Dependencies:
-  - DEC-097
+  - DEC-107
   - DEC-095
   - REQ-001
   - REQ-002
   - FLOW-006
+  - REQ-079
 - Notes:
+  - during quick-lookup refinement this requirement was rewritten to merge the prior separate Card Lookup entry (this ID) and Rules Lookup entry (former REQ-076) into one destination; see REQ-076
 
 ### REQ-074
-- Title: Card-mode prompt assembly
+- Title: Quick Lookup prompt assembly and domain guardrail
 - Priority: high
-- Description: For `mode: "card"`, the backend must assemble a prompt for the single looked-up card that reuses the same per-card enrichment the game flow applies, and omit the game-state-only sections that have no inputs in card mode.
+- Description: For `mode: "lookup"`, the backend must assemble one prompt that always runs question-driven rules retrieval, layers in per-card enrichment when a card is attached, omits game-state-only sections, and guards against off-domain questions.
 - Acceptance Criteria:
-  - the assembled card-mode prompt includes the looked-up card's full metadata including oracle text using the same per-card formatting as populated-zone cards (REQ-030), plus that card's WotC rulings (DEC-029)
-  - the assembled prompt includes card/question-driven supplemental rules (System 3, DEC-046 / REQ-022) scored against the card and question
+  - the assembled prompt always includes the static MTG reference block (DEC-025), the always-on core game-rules topics (DEC-045 core set), and question-scored System 3 supplemental rules (DEC-046 / REQ-022)
+  - when a card is attached, the assembled prompt additionally includes that card's full metadata including oracle text using the same per-card formatting as populated-zone cards (REQ-030), that card's WotC rulings (DEC-029), and System 3 scored against the card as well as the question
+  - the assembled prompt omits zone sections, `PHASE GUIDANCE` (REQ-024), System 2 game-state topic gating (DEC-045), and the merged zone scope sentence (DEC-025), because this path never carries game state
+  - the prompt instructs the model to quote only from the provided rule excerpts and to present the relevant ones verbatim plus an explanation
+  - the prompt instructs the model to respond to off-domain / non-MTG questions in the "confused rules lookup" persona (DEC-108) rather than a direct answer or a generic capability refusal
   - the assembled prompt includes the user `QUESTION` and, when present, the `CONVERSATION HISTORY` section (REQ-027) using the existing placement rules
-  - the assembled prompt omits zone sections, `PHASE GUIDANCE` (REQ-024), System 2 game-state topic gating (DEC-045), and the merged zone scope sentence (DEC-025), because card mode carries no game state
-  - the same enrichment helper functions used by the game flow are reused (single authoritative definitions), not re-implemented for card mode
+  - the same enrichment helper functions used by the game flow and by each other are reused (single authoritative definitions), not re-implemented for lookup mode
   - success `{ answer }` and error response shapes are unchanged; plain-text answer output is preserved (REQ-013)
-  - mock provider card-mode responses expose the exact assembled LLM-facing prompt consistent with existing mock behavior (DEC-017 / DEC-038)
+  - mock provider lookup-mode responses expose the exact assembled LLM-facing prompt consistent with existing mock behavior (DEC-017 / DEC-038)
+  - no answer-seeded second-pass retrieval runs in v1 (deferred, tracked as Q-004)
 - Constraints:
   - backend-only prompt assembly; no `AskAiRequest` change beyond REQ-072, no new endpoint
-  - do not add rules-validation, legality, or board-state behavior under card-mode enrichment
+  - do not add rules-validation, legality, or board-state behavior under lookup-mode enrichment or the domain guardrail
 - Dependencies:
-  - DEC-097
-  - DEC-096
+  - DEC-107
+  - DEC-108
   - REQ-030
   - DEC-029
   - REQ-022
+  - DEC-025
+  - DEC-045
+  - DEC-046
 - Notes:
+  - during quick-lookup refinement this requirement was rewritten to merge the prior card-mode assembly (this ID) and rules-mode assembly (former REQ-077) into one branching prompt-assembly path, and to add the off-domain guardrail; see REQ-077
 
 ### REQ-075
-- Title: Card Lookup conversation thread
+- Title: Quick Lookup conversation thread
 - Priority: high
-- Description: After the first answer, Card Lookup must reuse the shipped conversation chrome with the single looked-up card frozen as context, under the same conversation limits as the main flow.
+- Description: After the first answer, Quick Lookup must reuse the shipped conversation chrome for text follow-ups under the same conversation limits as the main flow, with the attached card (if any) frozen as context.
 - Acceptance Criteria:
   - on first successful answer, the surface reuses the conversation thread, follow-up composer, inline processing animation, and start-over controls (REQ-025 / REQ-026 / REQ-027 / REQ-028 / REQ-029)
-  - the frozen "context" is the single looked-up card (no `GameContext`); the card is frozen for the duration of the conversation and follow-ups are text-only
+  - the frozen "context" is the attached card if the user resolved one before asking; otherwise there is no frozen context object (no `GameContext` either way); a card, once submitted, is frozen for the duration of the conversation and follow-ups are text-only
   - the first visible thread bubble is the assistant's answer; the initial user question is included in `conversationHistory` sent to the API but is not shown as a visible bubble
-  - follow-up requests send `{ mode: "card", question, card: frozen, conversationHistory }` and reuse the same message-count and per-message/character limits as the main flow (REQ-027); Card Lookup defines no separate limit policy
-  - start over clears the thread and returns to the pre-ask state with the looked-up card preserved
+  - follow-up requests send `{ mode: "lookup", question, card: frozen (when one was attached), conversationHistory }` and reuse the same message-count and per-message/character limits as the main flow (REQ-027); Quick Lookup defines no separate limit policy
+  - start over clears the thread and returns to the pre-ask state — with the looked-up card preserved if one was attached, or the core-topics fallback (REQ-079) visible if not
   - mock-provider follow-ups append to the same thread exactly as live responses do
 - Constraints:
   - reuse existing conversation components; no new conversation-limit constants or divergent chrome
   - no zone/card-context editing mid-conversation (v1)
 - Dependencies:
-  - DEC-097
+  - DEC-107
   - REQ-025
   - REQ-026
   - REQ-027
   - REQ-072
 - Notes:
+  - during quick-lookup refinement this requirement was rewritten to merge the prior Card Lookup thread (this ID) and Rules Lookup thread (former REQ-080) into one; see REQ-080
 
 ### REQ-076
 - Title: Rules Lookup entry and rules-mode request
-- Priority: high
-- Description: Rules Lookup must be reachable as a feature-portal destination and let the user ask a freeform rules question with no game state, submitted on the existing endpoint in rules mode.
+- Priority: —
+- Description: Merged into REQ-073 (Quick Lookup entry and optional single-card input) during quick-lookup refinement, which unified Card Lookup and Rules Lookup into one feature-portal destination (DEC-107).
 - Acceptance Criteria:
-  - Rules Lookup is registered as a feature-portal destination (DEC-095) and opens as a frontend-only view switch with no reload; it ships no navigation menu of its own
-  - the primary control is a freeform rules-question field accepting up to the same character cap and control-character guardrails as the main flow question (REQ-011)
-  - submitting sends `{ mode: "rules", question, conversationHistory? }` to `POST /api/ask-ai` (REQ-072 / DEC-098); no `gameContext` and no `card` are sent
-  - there are no zones, stack, phase, card, or multi-card setup controls; there is no game state to stage or edit
-  - the empty state (no question typed yet) offers the local core-topics browse fallback (REQ-079) rather than a blank screen
+  - merged — see REQ-073
 - Constraints:
-  - one product-facing endpoint only (DEC-010); no new route; rules-mode payload adds no new request field beyond DEC-098
-  - reuse existing question-input and view-switch components; no separate conversation-limit policy
 - Dependencies:
-  - DEC-099
-  - DEC-098
-  - DEC-095
-  - REQ-072
+  - REQ-073
 - Notes:
 
 ### REQ-077
 - Title: Rules-mode prompt assembly and verbatim rule surfacing
-- Priority: high
-- Description: In rules mode the backend must assemble a question-driven rules prompt (no game state, no card rulings) and instruct the model to surface the relevant verbatim Comprehensive Rules excerpts plus an explanation.
+- Priority: —
+- Description: Merged into REQ-074 (Quick Lookup prompt assembly and domain guardrail) during quick-lookup refinement, which unified card-mode and rules-mode prompt assembly into one branching path (DEC-107).
 - Acceptance Criteria:
-  - the rules-mode prompt includes the static MTG reference block (DEC-025), the always-on core game-rules topics (DEC-045 core set), and System 3 supplemental rules (DEC-046) scored on the question text
-  - the prompt omits zone sections, `PHASE GUIDANCE`, DEC-045 game-state topic gating, and the merged zone scope sentence, and omits the `OFFICIAL RULINGS` block (no card is submitted)
-  - the prompt instructs the model to quote only from the provided rule excerpts and to present the genuinely relevant ones verbatim with an explanation
-  - the same authoritative System 2 / System 3 helper functions are reused (single definitions), not re-implemented for rules mode
-  - success `{ answer }` and error response shapes are unchanged; plain-text answer output is preserved (REQ-013)
-  - mock provider rules-mode responses expose the exact assembled LLM-facing prompt consistent with existing mock behavior (DEC-017 / DEC-033)
+  - merged — see REQ-074
 - Constraints:
-  - backend-only prompt assembly; no `AskAiRequest` change beyond REQ-072 / DEC-098, no new endpoint
-  - do not add rules-validation, legality, or board-state behavior under rules-mode enrichment (DEC-002 / DEC-013)
 - Dependencies:
-  - DEC-100
-  - DEC-099
-  - DEC-025
-  - DEC-045
-  - DEC-046
-  - REQ-022
+  - REQ-074
 - Notes:
 
 ### REQ-078
 - Title: Answer-seeded second-pass rule retrieval
-- Priority: high
-- Description: After the first rules-mode answer, the backend must re-query the committed rule index using the model's answer text to recover rules the question-driven first pass missed, and append them to the returned answer.
+- Priority: —
+- Description: Descoped from Quick Lookup during refinement — the answer-seeded second-pass retrieval this requirement specified is deferred to a dedicated future feature so it can get its own tuning pass, rather than merged into another Quick Lookup requirement. Tracked as Q-004.
 - Acceptance Criteria:
-  - after the provider returns, the backend runs a single local re-query of the rule index (DEC-046 scorer) using the answer text as the query
-  - recovered rules are deduplicated against the rule IDs already included in the first-pass prompt (curated core + supplemental) so nothing is repeated
-  - the addition is capped consistently with the existing supplemental-rule budget
-  - the recovered verbatim excerpts are appended to the plain-text `answer` string returned to the caller; there is no new response field, response key, or endpoint (success `{ answer }` and error shapes unchanged)
-  - the re-query reuses the single authoritative System 3 scorer and rule-index artifact; no forked matcher is introduced
-  - the answer explanation is not regenerated in v1 (single AI call); the second pass adds only local scoring
-  - mock provider / enrichment debug exposes second-pass selections and runner-ups (DEC-033 pattern)
+  - descoped — see Q-004
 - Constraints:
-  - backend-only; one AI call per rules lookup; no contract or endpoint change
-  - preserve plain-text answer output (REQ-013); no structured rules payload
 - Dependencies:
-  - DEC-100
-  - REQ-077
-  - DEC-046
-  - REQ-032
+  - Q-004
 - Notes:
-  - two-call regenerate (rebuild the explanation on the expanded set) is a deferred follow-up, not in v1
 
 ### REQ-079
 - Title: Local core-topics browse fallback
 - Priority: medium
-- Description: Rules Lookup must offer a small always-local list of core rules topics the user can read with no AI call, built from the same curated rules excerpts the prompt uses.
+- Description: Quick Lookup must offer a small always-local list of core rules topics the user can read with no AI call, built from the same curated rules excerpts the prompt uses, shown whenever no card is attached and no question has been submitted yet.
 - Acceptance Criteria:
   - the empty state shows a short browsable list of core rules topics (e.g. the stack & priority, targeting, combat, layers)
   - the topic content is a committed frontend subset of the same curated `gameRulesByTopic` excerpts used by prompt assembly (single source of truth; no hand-authored second copy)
   - reading a topic is fully client-side with no backend call and no AI cost
-  - an "ask about this" affordance on a topic pre-fills a question into the primary rules-question path (REQ-076); it does not itself call the model
+  - an "ask about this" affordance on a topic pre-fills a question into the primary Quick Lookup question path (REQ-073); it does not itself call the model
   - the list is a discoverability fallback, not a full Comprehensive Rules browser
 - Constraints:
   - frontend-bundled static data (DEC-012 pattern); no runtime rules sync and no new endpoint
   - do not fork or hand-author rules text that could drift from the curated corpus
 - Dependencies:
-  - DEC-099
+  - DEC-107
   - DEC-030
   - DEC-012
 - Notes:
   - the committed core-topics subset is regenerated from the curated manifest by the existing data build; topic selection is a build-time sign-off like DEC-030
+  - during quick-lookup refinement this requirement's dependency moved from DEC-099 (Rules Lookup, superseded) to DEC-107 (Quick Lookup); its content is otherwise unchanged
 
 ### REQ-080
 - Title: Rules Lookup conversation thread and limits
-- Priority: high
-- Description: After the first answer, Rules Lookup must reuse the shipped conversation chrome for text follow-ups under the same conversation limits as the main flow, with no frozen context object.
+- Priority: —
+- Description: Merged into REQ-075 (Quick Lookup conversation thread) during quick-lookup refinement, which unified Card Lookup and Rules Lookup conversation handling into one thread behavior (DEC-107).
 - Acceptance Criteria:
-  - on first successful answer, the surface reuses the conversation thread, follow-up composer, inline processing animation, and start-over controls (REQ-025 / REQ-026 / REQ-027 / REQ-028 / REQ-029)
-  - rules mode carries no frozen context object (no `GameContext`, no frozen card); follow-ups send `{ mode: "rules", question, conversationHistory }` (DEC-098)
-  - the first visible thread bubble is the assistant's answer; the initial user question is included in `conversationHistory` sent to the API but is not shown as a visible bubble
-  - follow-ups reuse the same message-count and per-message/character limits as the main flow (REQ-027); Rules Lookup defines no separate limit policy
-  - start over clears the thread and returns to the pre-ask state (empty question with the core-topics fallback visible)
-  - mock-provider follow-ups append to the same thread exactly as live responses do
+  - merged — see REQ-075
 - Constraints:
-  - reuse existing conversation components; no new conversation-limit constants or divergent chrome
 - Dependencies:
-  - DEC-099
-  - REQ-025
-  - REQ-027
-  - REQ-076
+  - REQ-075
 - Notes:
 
 ### REQ-081
@@ -1991,3 +1961,30 @@
 - Notes:
   - `VITE_FEEDBACK_FORMSPREE_ID` and the payload shape are documented in `integrations-and-data.md` (Feedback Delivery Strategy)
   - screenshots/file uploads are a deferred extension, not part of this payload in v1
+
+### REQ-089
+- Title: Mobile header consolidation — retire floating theme control, attach Menu everywhere
+- Priority: medium
+- Description: Fix the mobile header collision between the floating theme/palette control and staged-step text, and the disconnected floating Menu tab on the answered/conversation screen, by consolidating the header's two independent floating controls into one: theme/density selection folds into the feature-portal Menu (DEC-110), and every destination screen — including the answered/conversation view — renders its own inline header slot so Menu always docks flush to its content card rather than floating fixed (DEC-109). The Menu trigger becomes icon-only.
+- Acceptance Criteria:
+  - at mobile widths, no staged-step name (game context, zone confirmation, zone collection, enrichment) ever renders under or behind another control, because the standalone top-right theme control no longer exists
+  - the answered/conversation screen's Menu tab docks flush to its content card's top border (matching the 4 staged screens' `.portal-slot-tab` treatment) and scrolls away with the page instead of remaining fixed at the viewport top while the user scrolls the conversation
+  - opening the feature-portal Menu shows the existing destination list plus a **Theme** section with the same palette swatches and Chunky/Slim density control `ThemeControl` previously exposed, with identical selection/persistence/fallback behavior
+  - no standalone floating theme control remains anywhere in the app
+  - the Menu trigger renders icon-only (no visible "Menu" text); `aria-label="Switch feature"` continues to name it for assistive tech
+  - the 4 staged screens' existing inline Menu docking, top-middle placement, and step-name presentation (DEC-067/DEC-076) are visually unchanged aside from the trigger losing its text label
+- Constraints:
+  - presentation only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan logic, conversation/message logic, or data-pipeline behavior
+  - reuse `ThemeControl`'s existing palette/density logic and tokens as-is; do not introduce a second palette or density implementation
+  - mobile-first: verify at common narrow mobile widths (e.g. ~360–414px) in addition to desktop (NFR-001)
+- Dependencies:
+  - DEC-109
+  - DEC-110
+  - DEC-095
+  - DEC-066
+  - DEC-067
+  - NFR-001
+  - NFR-006
+  - FLOW-001
+- Notes:
+  - this is a bug-fix/consolidation pass over existing chrome (feature-portal Menu, `ThemeControl`, `StagedStepHeader`), not a new feature; no new screens or destinations are added

@@ -4,10 +4,17 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { loadGameRulesTopics, type GameRulesTopic } from "../gameRules.js";
 import { selectGameRulesTopics } from "../gameRulesTopicSelection.js";
-import { collectCuratedRuleIds, loadGameRulesRuleIndex, retrieveSupplementalRules, type GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
+import {
+  collectCuratedRuleIds,
+  loadGameRulesRuleIndex,
+  retrieveSupplementalRules,
+  type GameRulesRuleIndexEntry,
+  type RetrievedGameRule
+} from "../gameRulesRetrieval.js";
 import { buildPromptContext } from "../prompt/context.js";
 import { buildPromptText } from "../prompt/promptAssembly.js";
-import type { AskAiRequest } from "../types/index.js";
+import { preparePromptInput } from "../prompt/preparation.js";
+import type { AskAiRequest, GameAskAiRequest } from "../types/index.js";
 import {
   buildChecklistReport,
   evaluateScenario,
@@ -22,6 +29,9 @@ const gameRulesPath = path.resolve(currentDir, "../../data/gameRulesByTopic.json
 const allGameRulesTopics: GameRulesTopic[] = loadGameRulesTopics(gameRulesPath);
 const ruleIndexPath = path.resolve(currentDir, "../../data/gameRulesRuleIndex.json");
 const ruleIndex: GameRulesRuleIndexEntry[] = loadGameRulesRuleIndex(ruleIndexPath);
+const fixtureRulings = new Map([
+  ["fixture-questing-beast", [{ publishedAt: "2019-10-04", comment: "Combat damage can't be prevented." }]]
+]);
 
 async function readJsonFixture(fileName: string): Promise<EvaluationFixture> {
   const fixturePath = path.join(fixtureDir, fileName);
@@ -60,18 +70,54 @@ async function assertGoldenFile(fileName: string, actualContent: string): Promis
   expect(actualContent).toBe(expectedContent);
 }
 
-function formatContextSnapshot(request: AskAiRequest): string {
-  const context = buildPromptContext(request);
-  return `${JSON.stringify(context, null, 2)}\n`;
+function relevanceFromPrepared(prepared: ReturnType<typeof preparePromptInput>) {
+  const topicIds = new Set(prepared.enrichmentDebug?.curatedGameRules.topicIds ?? []);
+  const selectedTopics = allGameRulesTopics.filter((topic) => topicIds.has(topic.id));
+  const supplementalRules: RetrievedGameRule[] = (prepared.enrichmentDebug?.supplemental.selected ?? []).map((selected) => {
+    const source = ruleIndex.find((entry) => entry.ruleId === selected.ruleId);
+    return {
+      ruleId: selected.ruleId,
+      sectionTitle: selected.sectionTitle,
+      text: source?.text ?? "",
+      score: selected.score
+    };
+  });
+  return { selectedTopics, supplementalRules };
 }
 
-function formatPromptSnapshot(request: AskAiRequest): string {
-  const context = buildPromptContext(request);
+function evaluateFixtureRequest(request: AskAiRequest) {
+  if (request.mode === "lookup") {
+    const prepared = preparePromptInput(request, {
+      gameRulesTopics: allGameRulesTopics,
+      gameRulesRuleIndex: ruleIndex,
+      cardRulingsIndex: fixtureRulings,
+      collectEnrichmentDebug: true
+    });
+    return {
+      context: prepared.context,
+      promptText: prepared.promptText,
+      relevance: relevanceFromPrepared(prepared)
+    };
+  }
+
+  const gameRequest = request as GameAskAiRequest;
+  const context = buildPromptContext(gameRequest);
   const selectedTopics = selectGameRulesTopics(context, allGameRulesTopics);
   const curatedRuleIds = collectCuratedRuleIds(selectedTopics);
   const supplementalRules = retrieveSupplementalRules(context, ruleIndex, curatedRuleIds);
-  const prompt = buildPromptText(context, { gameRulesTopics: selectedTopics, supplementalRules });
-  return `${prompt}\n`;
+  return {
+    context,
+    promptText: buildPromptText(context, { gameRulesTopics: selectedTopics, supplementalRules }),
+    relevance: { selectedTopics, supplementalRules }
+  };
+}
+
+function formatContextSnapshot(request: AskAiRequest): string {
+  return `${JSON.stringify(evaluateFixtureRequest(request).context, null, 2)}\n`;
+}
+
+function formatPromptSnapshot(request: AskAiRequest): string {
+  return `${evaluateFixtureRequest(request).promptText}\n`;
 }
 
 describe("context evaluation harness", () => {
@@ -82,12 +128,8 @@ describe("context evaluation harness", () => {
     const results: EvaluationResult[] = [];
 
     for (const fixture of fixtures) {
-      const context = buildPromptContext(fixture.request);
-      const selectedTopics = selectGameRulesTopics(context, allGameRulesTopics);
-      const curatedRuleIds = collectCuratedRuleIds(selectedTopics);
-      const supplementalRules = retrieveSupplementalRules(context, ruleIndex, curatedRuleIds);
-      const promptText = buildPromptText(context, { gameRulesTopics: selectedTopics, supplementalRules });
-      const result = evaluateScenario(fixture, context, promptText, { selectedTopics, supplementalRules });
+      const evaluated = evaluateFixtureRequest(fixture.request);
+      const result = evaluateScenario(fixture, evaluated.context, evaluated.promptText, evaluated.relevance);
 
       results.push(result);
 
@@ -150,7 +192,7 @@ describe("context evaluation harness", () => {
       }
     };
 
-    const context = buildPromptContext(fixture.request);
+    const context = buildPromptContext(fixture.request as GameAskAiRequest);
     const brokenContext = {
       ...context,
       orderedStack: [...context.orderedStack].reverse()

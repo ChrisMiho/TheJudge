@@ -1,4 +1,9 @@
-import type { AskAiRequest, PromptContext } from "../types/index.js";
+import type {
+  AskAiRequest,
+  LookupPromptContext,
+  PromptContext,
+  PromptInputContext
+} from "../types/index.js";
 import type { GameRulesTopic } from "../gameRules.js";
 import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
 import { MAX_PROMPT_CHAR_BUDGET, normalizeQuestion } from "../prompt/normalization.js";
@@ -30,7 +35,11 @@ type EvaluationCheckId =
   | "prompt-under-budget"
   | "system2-conditional-selection"
   | "system3-expected-recall"
-  | "system3-noise-excluded";
+  | "system3-noise-excluded"
+  | "lookup-guardrails-present"
+  | "lookup-game-state-sections-omitted"
+  | "lookup-card-enrichment"
+  | "lookup-prompt-section-order";
 
 /**
  * Optional human-labeled relevance expectations (DEC-047, REQ-032). Each field is
@@ -74,7 +83,9 @@ export type EvaluationResult = {
 };
 
 function checkStackOrder(fixture: EvaluationFixture, context: PromptContext): EvaluationCheckResult {
-  const expectedOrder = (fixture.request.gameContext.zones?.stack ?? []).map((card) => card.cardId);
+  const expectedOrder = (
+    "gameContext" in fixture.request ? fixture.request.gameContext.zones?.stack ?? [] : []
+  ).map((card) => card.cardId);
   const actualOrder = context.orderedStack.map((card) => card.cardId);
   const passed = expectedOrder.join("|") === actualOrder.join("|");
 
@@ -87,9 +98,14 @@ function checkStackOrder(fixture: EvaluationFixture, context: PromptContext): Ev
   };
 }
 
-function checkFinalQuestionBehavior(fixture: EvaluationFixture, context: PromptContext): EvaluationCheckResult {
+function checkFinalQuestionBehavior(fixture: EvaluationFixture, context: PromptInputContext): EvaluationCheckResult {
   const normalizedInput = normalizeQuestion(fixture.request.question);
-  const expectedQuestion = normalizedInput.length > 0 ? normalizedInput : FALLBACK_QUESTION;
+  const expectedQuestion =
+    fixture.request.mode === "lookup"
+      ? normalizedInput
+      : normalizedInput.length > 0
+        ? normalizedInput
+        : FALLBACK_QUESTION;
   const passed = context.finalQuestion === expectedQuestion;
 
   return {
@@ -98,6 +114,84 @@ function checkFinalQuestionBehavior(fixture: EvaluationFixture, context: PromptC
     details: passed
       ? `Final question resolved correctly to "${context.finalQuestion}".`
       : `Expected final question "${expectedQuestion}", received "${context.finalQuestion}".`
+  };
+}
+
+function checkLookupGuardrails(promptText: string): EvaluationCheckResult {
+  const required = [
+    "quote rule text only from the provided GAME RULES / ADDITIONAL RELEVANT RULE EXCERPTS sections",
+    "not found in the rules corpus",
+    "never answer the off-domain question directly"
+  ];
+  const missing = required.filter((line) => !promptText.includes(line));
+  return {
+    id: "lookup-guardrails-present",
+    passed: missing.length === 0,
+    details:
+      missing.length === 0
+        ? "Lookup verbatim-fidelity and off-domain guardrails are present."
+        : `Missing lookup guardrails: ${missing.join(" | ")}`
+  };
+}
+
+function checkLookupGameStateSectionsOmitted(promptText: string): EvaluationCheckResult {
+  const forbidden = ["GENERAL GAME CONTEXT", "PHASE GUIDANCE", "ZONE:", "\nSCOPE\n"];
+  const present = forbidden.filter((section) => promptText.includes(section));
+  return {
+    id: "lookup-game-state-sections-omitted",
+    passed: present.length === 0,
+    details:
+      present.length === 0
+        ? "Lookup prompt omits every game-state-only section."
+        : `Lookup prompt contains game-state-only sections: ${present.join(", ")}`
+  };
+}
+
+function checkLookupCardEnrichment(
+  fixture: EvaluationFixture,
+  context: LookupPromptContext,
+  promptText: string
+): EvaluationCheckResult {
+  const expectsCard = fixture.request.mode === "lookup" && fixture.request.card !== undefined;
+  const hasCardSection = promptText.includes("CARD (looked up)");
+  const hasOfficialRulings = promptText.includes("OFFICIAL RULINGS");
+  const cardMetadataPresent = !expectsCard || (
+    context.card !== undefined &&
+    promptText.includes(`name: ${context.card.name}`) &&
+    promptText.includes(`oracleText: ${context.card.oracleText}`)
+  );
+  const passed = expectsCard
+    ? hasCardSection && hasOfficialRulings && cardMetadataPresent
+    : !hasCardSection && !hasOfficialRulings;
+  return {
+    id: "lookup-card-enrichment",
+    passed,
+    details: passed
+      ? expectsCard
+        ? "Attached lookup card metadata and official rulings are present."
+        : "Card-only sections are omitted when lookup has no card."
+      : "Lookup card/rulings section presence does not match the fixture request."
+  };
+}
+
+function checkLookupPromptSectionOrder(promptText: string): EvaluationCheckResult {
+  const orderedHeaders = [
+    "SYSTEM ROLE PREAMBLE\n",
+    "\nINSTRUCTIONS\n",
+    "\nMTG REFERENCE\n",
+    "\nGAME RULES (reference)\n",
+    "\nQUESTION\n"
+  ];
+  const indexes = orderedHeaders.map((header) => promptText.indexOf(header));
+  const passed = indexes.every((index) => index !== -1) && indexes.every((index, position) =>
+    position === 0 || indexes[position - 1]! < index
+  );
+  return {
+    id: "lookup-prompt-section-order",
+    passed,
+    details: passed
+      ? "Lookup prompt sections appear in deterministic order."
+      : "Expected lookup section order SYSTEM ROLE -> INSTRUCTIONS -> MTG REFERENCE -> GAME RULES -> QUESTION."
   };
 }
 
@@ -265,7 +359,7 @@ function checkGameRulesBeforeRulings(promptText: string): EvaluationCheckResult 
 }
 
 function checkSupplementalRulesSectionPresent(promptText: string): EvaluationCheckResult {
-  const hasSupplemental = promptText.includes("ADDITIONAL RELEVANT RULE EXCERPTS");
+  const hasSupplemental = promptText.includes("\nADDITIONAL RELEVANT RULE EXCERPTS\n");
   const disclaimerOk = !hasSupplemental || promptText.includes("Use these additional official rule excerpts");
   const passed = disclaimerOk;
 
@@ -281,8 +375,8 @@ function checkSupplementalRulesSectionPresent(promptText: string): EvaluationChe
 }
 
 function checkSupplementalRulesAfterGameRules(promptText: string): EvaluationCheckResult {
-  const gameRulesIndex = promptText.indexOf("GAME RULES (reference)");
-  const supplementalIndex = promptText.indexOf("ADDITIONAL RELEVANT RULE EXCERPTS");
+  const gameRulesIndex = promptText.indexOf("\nGAME RULES (reference)\n");
+  const supplementalIndex = promptText.indexOf("\nADDITIONAL RELEVANT RULE EXCERPTS\n");
   const hasGameRules = gameRulesIndex !== -1;
   const hasSupplemental = supplementalIndex !== -1;
   const passed = !hasSupplemental || !hasGameRules || supplementalIndex > gameRulesIndex;
@@ -299,8 +393,8 @@ function checkSupplementalRulesAfterGameRules(promptText: string): EvaluationChe
 }
 
 function checkSupplementalRulesBeforeRulings(promptText: string): EvaluationCheckResult {
-  const supplementalIndex = promptText.indexOf("ADDITIONAL RELEVANT RULE EXCERPTS");
-  const officialRulingsIndex = promptText.indexOf("OFFICIAL RULINGS");
+  const supplementalIndex = promptText.indexOf("\nADDITIONAL RELEVANT RULE EXCERPTS\n");
+  const officialRulingsIndex = promptText.indexOf("\nOFFICIAL RULINGS");
   const hasSupplemental = supplementalIndex !== -1;
   const hasOfficialRulings = officialRulingsIndex !== -1;
   const passed = !hasSupplemental || !hasOfficialRulings || supplementalIndex < officialRulingsIndex;
@@ -381,28 +475,46 @@ function checkSystem3NoiseExcluded(
 
 export function evaluateScenario(
   fixture: EvaluationFixture,
-  context: PromptContext,
+  context: PromptInputContext,
   promptText: string,
   relevance?: ScenarioRelevance
 ): EvaluationResult {
-  const checks = [
-    checkStackOrder(fixture, context),
-    checkFinalQuestionBehavior(fixture, context),
-    checkRequiredGuardrails(promptText),
-    checkMtgReferencePresent(promptText),
-    checkGeneralGameContextSection(context, promptText),
-    checkPopulatedZonesSections(context, promptText),
-    checkScopeSentencePresent(promptText),
-    checkPromptSectionOrder(promptText),
-    checkManaSpentOutput(context, promptText),
-    checkPromptOmitsCardId(promptText),
-    checkGameRulesSectionPresent(promptText),
-    checkGameRulesBeforeRulings(promptText),
-    checkSupplementalRulesSectionPresent(promptText),
-    checkSupplementalRulesAfterGameRules(promptText),
-    checkSupplementalRulesBeforeRulings(promptText),
-    checkPromptUnderBudget(promptText)
-  ];
+  const isLookup = fixture.request.mode === "lookup";
+  const checks = isLookup
+    ? [
+        checkFinalQuestionBehavior(fixture, context),
+        checkRequiredGuardrails(promptText),
+        checkLookupGuardrails(promptText),
+        checkMtgReferencePresent(promptText),
+        checkLookupGameStateSectionsOmitted(promptText),
+        checkLookupCardEnrichment(fixture, context as LookupPromptContext, promptText),
+        checkLookupPromptSectionOrder(promptText),
+        checkPromptOmitsCardId(promptText),
+        checkGameRulesSectionPresent(promptText),
+        checkGameRulesBeforeRulings(promptText),
+        checkSupplementalRulesSectionPresent(promptText),
+        checkSupplementalRulesAfterGameRules(promptText),
+        checkSupplementalRulesBeforeRulings(promptText),
+        checkPromptUnderBudget(promptText)
+      ]
+    : [
+        checkStackOrder(fixture, context as PromptContext),
+        checkFinalQuestionBehavior(fixture, context),
+        checkRequiredGuardrails(promptText),
+        checkMtgReferencePresent(promptText),
+        checkGeneralGameContextSection(context as PromptContext, promptText),
+        checkPopulatedZonesSections(context as PromptContext, promptText),
+        checkScopeSentencePresent(promptText),
+        checkPromptSectionOrder(promptText),
+        checkManaSpentOutput(context as PromptContext, promptText),
+        checkPromptOmitsCardId(promptText),
+        checkGameRulesSectionPresent(promptText),
+        checkGameRulesBeforeRulings(promptText),
+        checkSupplementalRulesSectionPresent(promptText),
+        checkSupplementalRulesAfterGameRules(promptText),
+        checkSupplementalRulesBeforeRulings(promptText),
+        checkPromptUnderBudget(promptText)
+      ];
 
   // Labeled relevance checks (DEC-047) only run when the fixture supplies the
   // corresponding `expected` field and the harness passes Slice A/B outputs.

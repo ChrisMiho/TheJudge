@@ -51,6 +51,19 @@ describe("ask-ai endpoint contract", () => {
     expect(response.body.answer).toContain("QUESTION\nHow does this resolve?");
   });
 
+  it("returns the exact assembled lookup prompt through the mock provider", async () => {
+    const response = await request(app).post("/api/ask-ai").send({
+      mode: "lookup",
+      question: "How does deathtouch work?"
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.answer).toContain("FULL PROMPT (SENT TO PROVIDER)");
+    expect(response.body.answer).toContain("not found in the rules corpus");
+    expect(response.body.answer).toContain("QUESTION\nHow does deathtouch work?");
+    expect(response.body.answer).not.toContain("GENERAL GAME CONTEXT");
+  });
+
   it("applies fallback question when blank question is submitted", async () => {
     const response = await request(app)
       .post("/api/ask-ai")

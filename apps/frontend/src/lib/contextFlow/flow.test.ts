@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { GameContext, ZoneCardItem } from "../../types";
+import type { CardMetadataItem, GameContext, ZoneCardItem } from "../../types";
 import {
   buildAskAiRequest,
   buildEnrichmentQueue,
+  buildLookupAskAiRequest,
   canAdvance,
   hasAtLeastOneCardInSelectedZones
 } from "./flow";
@@ -337,5 +338,48 @@ describe("buildAskAiRequest", () => {
     };
     const payload = buildAskAiRequest("test", ctxWithoutPhase as GameContext);
     expect(payload.gameContext.turnPhase).toBe("main_1");
+  });
+});
+
+describe("buildLookupAskAiRequest", () => {
+  const lookupCard: CardMetadataItem = {
+    cardId: "oracle-lightning-bolt",
+    name: "Lightning Bolt",
+    oracleText: "Lightning Bolt deals 3 damage to any target.",
+    imageUrl: "https://cards.example/lightning-bolt.jpg",
+    manaCost: "{R}",
+    manaValue: 1,
+    typeLine: "Instant",
+    colors: ["R"],
+    supertypes: [],
+    subtypes: []
+  };
+
+  it("builds a trimmed lookup payload without a card", () => {
+    expect(buildLookupAskAiRequest("  How does priority work?  ")).toEqual({
+      mode: "lookup",
+      question: "How does priority work?"
+    });
+  });
+
+  it("includes only lookup-card wire fields and preserves conversation history", () => {
+    const cardWithFrontendField = {
+      ...lookupCard,
+      instanceId: "frontend-only"
+    } as CardMetadataItem & { instanceId: string };
+    const conversationHistory = [
+      { role: "user" as const, content: "First question" },
+      { role: "assistant" as const, content: "First answer" }
+    ];
+
+    const payload = buildLookupAskAiRequest("Follow up", cardWithFrontendField, conversationHistory);
+
+    expect(payload).toEqual({
+      mode: "lookup",
+      question: "Follow up",
+      card: lookupCard,
+      conversationHistory
+    });
+    expect(payload.card).not.toHaveProperty("instanceId");
   });
 });

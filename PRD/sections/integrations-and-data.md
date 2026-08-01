@@ -307,6 +307,7 @@ Feedback & Bug Report (DEC-105) is a frontend-only feature; it does not involve 
 - the snapshot is read-only presentation of existing app state; building or sending it never mutates app state, and the same content is shown to the user via the modal's expandable summary (REQ-087)
 - submit distinguishes success, network error, and rate-limit; the draft is preserved on error for retry
 - v1 sends no screenshots/file uploads (deferred) and performs no persistence, auth, in-app history, or analytics
+- **owner setup (out-of-band, not code):** the product owner creates a Formspree account and a form directly on formspree.io — this is where the recipient email is registered, and it never enters the codebase, bundle, or any secret store — then supplies the resulting form id as `VITE_FEEDBACK_FORMSPREE_ID` (local `.env`, and the equivalent build-time env var in the prod deploy). Implementation ships complete and functional in the graceful-no-op state without this step; the owner's onboarding + id handoff is what turns delivery on, not an engineering task
 
 ## AI Prompt Context Rules
 
