@@ -316,3 +316,26 @@
   - the tracker is a life/counter tracker, not a rules engine or board/zone tracker (DEC-013); it does not replace the staged zone / Ask AI flow, only seeds player-facing context into it
   - deferred surfaces: game history, mana counter, dice & misc, per-player theming, saved profiles, reset-with-winner, layout toggle; Planechase / Archenemy / Bounty are out of scope
   - UI direction is driven by the reference photos under `PRD/work/player-life-tracker/references/`
+
+### FLOW-014
+- Name: Send feedback / report a bug
+- Trigger: User opens the feature portal (FLOW-010) and selects the **Send feedback** action entry
+- Preconditions:
+  - app is loaded
+- Main Flow:
+  1. User opens the top-middle feature-portal menu and selects **Send feedback** (an action entry, DEC-104); the app opens the feedback modal over the current screen without switching the active destination or losing in-progress state.
+  2. User picks a category (Bug / Suggestion / Other) and writes a message; the message is required.
+  3. User optionally enters a reply email (blank = anonymous); if present, it must be a valid email format.
+  4. The modal shows a one-line disclosure that current app state is attached and, on demand, an **expandable summary** of exactly what is included (screen/step, game context + typed question, zones/cards/enrichment, conversation history, provider mode, active destination, environment).
+  5. User submits; the modal goes to a sending state and posts the report plus the JSON-stringified snapshot to Formspree.
+  6. On success the modal shows an acknowledgement and can be dismissed; on error it shows an inline error and preserves the draft for retry.
+- Edge Cases:
+  - message empty (after trim) → submit is blocked with an inline message-required prompt
+  - reply email present but malformed → submit is blocked with an inline format prompt
+  - no Formspree form id configured (local/mock) → submit is disabled/no-op with an explanatory hint; dev never crashes
+  - network error or rate-limit on submit → inline error, draft preserved, retry available
+  - Esc or the close control dismisses the modal and restores focus to the portal trigger; the underlying screen state is unchanged
+- Notes:
+  - feedback is frontend-only chrome + delivery; it never changes submitted game context, prompt text, backend API behavior, or AI responses (DEC-105)
+  - the snapshot is read-only and disclosed; screenshots/file uploads are out of v1 scope
+  - the same expandable summary content is what is serialized and delivered (REQ-088)

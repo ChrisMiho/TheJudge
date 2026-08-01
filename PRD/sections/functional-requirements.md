@@ -1925,3 +1925,69 @@
   - REQ-015
 - Notes:
   - seeded counters ride the additive GameContext fields (REQ-083); life uses the existing `lifeTotal`
+
+### REQ-086
+- Title: Feature-portal action entries
+- Priority: medium
+- Description: The feature-portal registry must support **action entries** alongside destination entries (REQ-067). An action entry, when selected, invokes a handler (v1: open the feedback modal) instead of switching the active view; it does not mount a destination view or alter mode state. Action entries appear in the same top-middle portal dropdown and obey the same layout and motion constraints as destinations (DEC-104, additive amendment to DEC-095/REQ-067).
+- Acceptance Criteria:
+  - the portal registry accepts entries of kind `action` (`{ id, label, onSelect }`) in addition to `destination` entries; both render in the same portal dropdown
+  - selecting an action entry runs its handler and closes the menu, and does **not** switch the active destination or reset any mode's in-session state
+  - action entries share the destination entries' non-overlap bounds (brand block / `ThemeControl`, DEC-065/DEC-095) and touch-friendly sizing (NFR-001)
+  - any open/close motion is CSS-only and reduced-motion-aware (NFR-006)
+  - v1 registers exactly one action entry — **Send feedback** (REQ-087); destination entries and the v1 destination list (REQ-067) are unchanged
+- Constraints:
+  - chrome only; no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, `POST /api/ask-ai`, or any product-facing endpoint; no backend route and no server-side state
+- Dependencies:
+  - DEC-104
+  - REQ-067
+  - DEC-095
+  - NFR-001
+  - NFR-006
+- Notes:
+  - owned by the `feature-portal` package; the feedback feature (REQ-087) registers the v1 action entry
+
+### REQ-087
+- Title: Feedback & bug-report modal and capture
+- Priority: medium
+- Description: Selecting the **Send feedback** portal action (REQ-086) opens an accessible modal over the current screen (the user keeps their place; no view switch). The modal captures a **category** (Bug / Suggestion / Other), a **required freeform message**, and an **optional reply email**, and discloses the attached app-state snapshot (REQ-088) to the user before submit (DEC-105).
+- Acceptance Criteria:
+  - the modal opens over the current screen without switching the active destination or resetting in-progress state
+  - fields: a category select (Bug / Suggestion / Other), a required freeform message, and an optional reply email; blank email = anonymous
+  - validation: submit is blocked until the message is non-empty (after trim); when a reply email is present it must be a valid email format; validation messages are shown inline
+  - the modal shows a one-line disclosure that current app state is attached, plus an **expandable human-readable summary** of what is included (screen/step, game context + typed question, zones/cards/enrichment, conversation history, provider mode, active destination, environment)
+  - accessibility: focus is trapped within the modal, Esc closes it, focus is restored to the trigger on close, and open/close motion is CSS-only and reduced-motion-aware (NFR-006)
+  - submit lifecycle: idle → sending → success acknowledgement or inline error; the draft (fields) is preserved on error so the user can retry
+  - the modal is theme-aware and touch-friendly on mobile (NFR-001)
+- Constraints:
+  - the modal reads app state only through a lazy `getFeedbackContext()` callback supplied by the app shell and never reaches into flow internals or mutates app state
+  - no persistence, auth, in-app history, or analytics; no screenshots/file uploads in v1
+- Dependencies:
+  - DEC-105
+  - REQ-086
+  - REQ-088
+  - NFR-001
+  - NFR-006
+  - FLOW-014
+- Notes:
+  - the expandable summary shows the same content that REQ-088 serializes for delivery
+
+### REQ-088
+- Title: Feedback delivery and app-state snapshot
+- Priority: medium
+- Description: The feedback modal (REQ-087) delivers the report to the owner's inbox via **Formspree** using a **public form id**, attaching a **disclosed app-state snapshot** as one JSON-stringified field so reports are actionable and reproducible. Delivery is frontend-only and degrades to a graceful no-op when no form id is configured (DEC-105).
+- Acceptance Criteria:
+  - a pure snapshot builder produces the disclosed app state — current screen/step, in-progress game context and typed question, zones/cards/enrichment, conversation history (if any), provider mode (mock/live), active portal destination, and environment (user-agent, viewport, route, timestamp, build/version)
+  - submit POSTs a JSON payload to `https://formspree.io/f/<id>` where `<id>` = `VITE_FEEDBACK_FORMSPREE_ID`; the snapshot rides as a single JSON-stringified field alongside category, message, and reply email
+  - the form id is treated as **public, non-secret** configuration (committed to `.env.example`, allowed in the client bundle)
+  - submit resolves success, network error, and rate-limit distinctly, surfacing inline success/error state to the modal (REQ-087)
+  - when `VITE_FEEDBACK_FORMSPREE_ID` is empty/unset (local/mock), submit is disabled/no-op with an explanatory hint and never throws or crashes dev
+- Constraints:
+  - frontend-only; no backend route, no SES, no secret, and no change to any existing contract or product-facing endpoint
+  - the snapshot is read-only; building or sending it never mutates app state
+- Dependencies:
+  - DEC-105
+  - REQ-087
+- Notes:
+  - `VITE_FEEDBACK_FORMSPREE_ID` and the payload shape are documented in `integrations-and-data.md` (Feedback Delivery Strategy)
+  - screenshots/file uploads are a deferred extension, not part of this payload in v1

@@ -296,6 +296,18 @@ The Trade Balancer (DEC-087) is an optional, standalone, frontend-only, ephemera
 - a side total is `Σ qty × (foil ? usd_foil : usd)`; USD only (EUR/tix/etched-foil and grading/condition out of scope for v1)
 - input reuses the existing scan resolver (DEC-053, REQ-036) and manual card search (DEC-012); the chosen printing is a pricing/display layer only and is never pushed into prompt context, rulings lookup, or the Decrypt-Stack request payload
 
+## Feedback Delivery Strategy
+
+Feedback & Bug Report (DEC-105) is a frontend-only feature; it does not involve the backend, `POST /api/ask-ai`, any prompt assembly, or any server-side state.
+
+- delivery uses **Formspree** at `https://formspree.io/f/<id>`, where `<id>` is a **public, non-secret** form id read from `VITE_FEEDBACK_FORMSPREE_ID`; there is no backend route, no SES, and no secret
+- `VITE_FEEDBACK_FORMSPREE_ID` is documented in `apps/frontend/.env.example` and may be committed and shipped in the client bundle (it is configuration, not a credential); when empty/unset (local/mock baseline) submit is a graceful no-op (disabled with a hint) and never throws (REQ-088)
+- the client POSTs a JSON body: `category` (`"bug" | "suggestion" | "other"`), `message` (required freeform string), `email` (optional reply address; omitted/blank = anonymous), and `appState` — a single **JSON-stringified** field carrying the disclosed app-state snapshot
+- the `appState` snapshot (built by a pure builder from a lazy `getFeedbackContext()` callback) includes: current screen/step, in-progress game context + typed question, zones/cards/enrichment, conversation history (if any), provider mode (mock/live), active portal destination, and environment (user-agent, viewport, route, timestamp, build/version)
+- the snapshot is read-only presentation of existing app state; building or sending it never mutates app state, and the same content is shown to the user via the modal's expandable summary (REQ-087)
+- submit distinguishes success, network error, and rate-limit; the draft is preserved on error for retry
+- v1 sends no screenshots/file uploads (deferred) and performs no persistence, auth, in-app history, or analytics
+
 ## AI Prompt Context Rules
 
 ### Conversation history prompt section
