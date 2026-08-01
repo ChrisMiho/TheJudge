@@ -8,7 +8,8 @@ import { CardSelectionPreview } from "./CardSelectionPreview";
 
 afterEach(cleanup);
 
-describe("card state motion cues", () => {
+describe("Frontend - MTG Assistant", () => {
+describe("Card state motion cues", () => {
   it("animates a newly selected card preview", () => {
     render(
       <CardSelectionPreview
@@ -49,4 +50,5 @@ describe("card state motion cues", () => {
     const reducedMotion = css.slice(css.indexOf("@media (prefers-reduced-motion: reduce)"));
     expect(reducedMotion).toContain(".card-state-remove");
   });
+});
 });

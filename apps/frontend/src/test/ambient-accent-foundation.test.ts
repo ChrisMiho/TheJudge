@@ -30,7 +30,8 @@ function ambientContract(): string {
   return appCss.slice(start, end + contractEnd.length);
 }
 
-describe("ambient accent surface CSS contract", () => {
+describe("Frontend - Shared", () => {
+describe("Ambient accent surface CSS contract", () => {
   it("defines centralized resting, interactive, and current treatments", () => {
     const contract = ambientContract();
 
@@ -94,4 +95,5 @@ describe("ambient accent surface CSS contract", () => {
       "background: var(--card-identity-ring"
     );
   });
+});
 });

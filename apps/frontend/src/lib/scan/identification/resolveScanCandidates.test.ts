@@ -34,6 +34,7 @@ const cardMetadata: CardMetadataItem[] = [
   makeMetadata(LIGHTNING_BOLT_ORACLE_ID, "Lightning Bolt", "https://img/lightning-bolt-oracle.jpg")
 ];
 
+describe("Frontend - Card Scan", () => {
 describe("resolveScanCandidates", () => {
   it("resolves a known printing id to the expected CardMetadataItem", () => {
     const candidates: Candidate[] = [{ card_id: "printing-lightning-bolt", distance: 10 }];
@@ -123,4 +124,5 @@ describe("resolveScanCandidatesRanked — scanImageUrl", () => {
     expect(ranked).toHaveLength(1);
     expect(ranked[0].scanImageUrl).toBe("https://img/lightning-bolt-oracle.jpg");
   });
+});
 });

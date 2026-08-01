@@ -6,6 +6,7 @@ import { getPaletteById } from "./palettes";
 const blue = getPaletteById("blue")!;
 const violet = getPaletteById("violet")!;
 
+describe("Frontend - Theme", () => {
 describe("applyPalette", () => {
   afterEach(() => {
     delete document.documentElement.dataset.theme;
@@ -43,4 +44,5 @@ describe("applyPalette", () => {
     expect(root.dataset.theme).toBe("violet");
     expect(root.style.getPropertyValue("--accent")).toBe(violet.accent);
   });
+});
 });

@@ -120,101 +120,103 @@ function formatPromptSnapshot(request: AskAiRequest): string {
   return `${evaluateFixtureRequest(request).promptText}\n`;
 }
 
-describe("context evaluation harness", () => {
-  it("validates golden scenarios and checklist report", async () => {
-    const fixtures = await readFixtures();
-    expect(fixtures.length).toBeGreaterThan(0);
+describe("Backend - Eval", () => {
+  describe("context evaluation harness", () => {
+    it("validates golden scenarios and checklist report", async () => {
+      const fixtures = await readFixtures();
+      expect(fixtures.length).toBeGreaterThan(0);
 
-    const results: EvaluationResult[] = [];
+      const results: EvaluationResult[] = [];
 
-    for (const fixture of fixtures) {
-      const evaluated = evaluateFixtureRequest(fixture.request);
-      const result = evaluateScenario(fixture, evaluated.context, evaluated.promptText, evaluated.relevance);
+      for (const fixture of fixtures) {
+        const evaluated = evaluateFixtureRequest(fixture.request);
+        const result = evaluateScenario(fixture, evaluated.context, evaluated.promptText, evaluated.relevance);
 
-      results.push(result);
+        results.push(result);
 
-      await assertGoldenFile(`${fixture.id}.context.golden.json`, formatContextSnapshot(fixture.request));
-      await assertGoldenFile(`${fixture.id}.prompt.golden.txt`, formatPromptSnapshot(fixture.request));
-    }
+        await assertGoldenFile(`${fixture.id}.context.golden.json`, formatContextSnapshot(fixture.request));
+        await assertGoldenFile(`${fixture.id}.prompt.golden.txt`, formatPromptSnapshot(fixture.request));
+      }
 
-    const checklistReport = `${buildChecklistReport(results)}\n`;
-    await assertGoldenFile("checklist-report.golden.txt", checklistReport);
-    expect(results.every((result) => result.passed), `Evaluation report:\n${checklistReport}`).toBe(true);
-  });
+      const checklistReport = `${buildChecklistReport(results)}\n`;
+      await assertGoldenFile("checklist-report.golden.txt", checklistReport);
+      expect(results.every((result) => result.passed), `Evaluation report:\n${checklistReport}`).toBe(true);
+    });
 
-  it("detects ordering and guardrail regressions", () => {
-    const fixture: EvaluationFixture = {
-      id: "regression-sample",
-      description: "Synthetic fixture used to prove regression detection",
-      request: {
-        question: "How does this resolve?",
-        gameContext: {
-          playerCount: 2,
-          players: [
-            { label: "Player 1", lifeTotal: 20 },
-            { label: "Player 2", lifeTotal: 20 }
-          ],
-          turnPhase: "main_1",
-          selectedZones: ["stack"],
-          zones: {
-            stack: [
-              {
-                cardId: "bottom",
-                name: "Bottom Spell",
-                oracleText: "Bottom text",
-                imageUrl: "",
-                manaCost: "{U}",
-                manaValue: 1,
-                typeLine: "Instant",
-                colors: ["U"],
-                supertypes: [],
-                subtypes: [],
-                caster: "Player 1",
-                targets: []
-              },
-              {
-                cardId: "top",
-                name: "Top Spell",
-                oracleText: "Top text",
-                imageUrl: "",
-                manaCost: "{1}{R}",
-                manaValue: 2,
-                typeLine: "Instant",
-                colors: ["R"],
-                supertypes: [],
-                subtypes: [],
-                caster: "Player 2",
-                targets: [{ kind: "card", zone: "stack", cardId: "bottom", cardName: "Bottom Spell" }]
-              }
-            ]
+    it("detects ordering and guardrail regressions", () => {
+      const fixture: EvaluationFixture = {
+        id: "regression-sample",
+        description: "Synthetic fixture used to prove regression detection",
+        request: {
+          question: "How does this resolve?",
+          gameContext: {
+            playerCount: 2,
+            players: [
+              { label: "Player 1", lifeTotal: 20 },
+              { label: "Player 2", lifeTotal: 20 }
+            ],
+            turnPhase: "main_1",
+            selectedZones: ["stack"],
+            zones: {
+              stack: [
+                {
+                  cardId: "bottom",
+                  name: "Bottom Spell",
+                  oracleText: "Bottom text",
+                  imageUrl: "",
+                  manaCost: "{U}",
+                  manaValue: 1,
+                  typeLine: "Instant",
+                  colors: ["U"],
+                  supertypes: [],
+                  subtypes: [],
+                  caster: "Player 1",
+                  targets: []
+                },
+                {
+                  cardId: "top",
+                  name: "Top Spell",
+                  oracleText: "Top text",
+                  imageUrl: "",
+                  manaCost: "{1}{R}",
+                  manaValue: 2,
+                  typeLine: "Instant",
+                  colors: ["R"],
+                  supertypes: [],
+                  subtypes: [],
+                  caster: "Player 2",
+                  targets: [{ kind: "card", zone: "stack", cardId: "bottom", cardName: "Bottom Spell" }]
+                }
+              ]
+            }
           }
         }
-      }
-    };
+      };
 
-    const context = buildPromptContext(fixture.request as GameAskAiRequest);
-    const brokenContext = {
-      ...context,
-      orderedStack: [...context.orderedStack].reverse()
-    };
-    const brokenPrompt = [
-      "INSTRUCTIONS",
-      "- Explain reasoning clearly and concisely.",
-      "",
-      "QUESTION",
-      context.finalQuestion,
-      "",
-      "ORDERED STACK (BOTTOM TO TOP)",
-      "Card 1 (top)",
-      "stack:Top Spell (top)"
-    ].join("\n");
+      const context = buildPromptContext(fixture.request as GameAskAiRequest);
+      const brokenContext = {
+        ...context,
+        orderedStack: [...context.orderedStack].reverse()
+      };
+      const brokenPrompt = [
+        "INSTRUCTIONS",
+        "- Explain reasoning clearly and concisely.",
+        "",
+        "QUESTION",
+        context.finalQuestion,
+        "",
+        "ORDERED STACK (BOTTOM TO TOP)",
+        "Card 1 (top)",
+        "stack:Top Spell (top)"
+      ].join("\n");
 
-    const result = evaluateScenario(fixture, brokenContext, brokenPrompt);
-    const failedCheckIds = result.checks.filter((check) => !check.passed).map((check) => check.id);
+      const result = evaluateScenario(fixture, brokenContext, brokenPrompt);
+      const failedCheckIds = result.checks.filter((check) => !check.passed).map((check) => check.id);
 
-    expect(result.passed).toBe(false);
-    expect(failedCheckIds).toEqual(
-      expect.arrayContaining(["stack-order-preserved", "required-guardrails-present", "llm-prompt-omits-cardid", "mtg-reference-present", "scope-sentence-present", "game-rules-section-present"])
-    );
+      expect(result.passed).toBe(false);
+      expect(failedCheckIds).toEqual(
+        expect.arrayContaining(["stack-order-preserved", "required-guardrails-present", "llm-prompt-omits-cardid", "mtg-reference-present", "scope-sentence-present", "game-rules-section-present"])
+      );
+    });
   });
 });

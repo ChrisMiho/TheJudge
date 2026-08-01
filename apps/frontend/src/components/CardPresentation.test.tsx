@@ -22,6 +22,7 @@ function makeCard(overrides: Partial<ZoneCardItem> = {}): ZoneCardItem {
   };
 }
 
+describe("Frontend - MTG Assistant", () => {
 describe("CardPresentation", () => {
   it("renders an uncropped centered card image at 80% width with its source and meaningful alt", () => {
     render(
@@ -145,4 +146,5 @@ describe("CardPresentation", () => {
     expect(screen.queryByText("Subtypes")).not.toBeInTheDocument();
     expect(screen.queryByText("N/A")).not.toBeInTheDocument();
   });
+});
 });

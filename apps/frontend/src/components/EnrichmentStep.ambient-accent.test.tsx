@@ -16,7 +16,8 @@ function questionSurface(): HTMLElement {
   return surface!;
 }
 
-describe("EnrichmentStep ambient accent surfaces", () => {
+describe("Frontend - Theme", () => {
+describe("Ambient accent surfaces", () => {
   it("marks only card enrichment current while the wizard is editing", () => {
     renderEnrichment();
 
@@ -62,4 +63,5 @@ describe("EnrichmentStep ambient accent surfaces", () => {
       "ambient-accent-surface"
     );
   });
+});
 });

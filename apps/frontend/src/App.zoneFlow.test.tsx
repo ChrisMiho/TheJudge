@@ -150,6 +150,7 @@ async function selectStackCard(user: ReturnType<typeof userEvent.setup>, query: 
   await user.click(await screen.findByRole("button", { name: cardName }));
 }
 
+describe("Frontend - MTG Assistant", () => {
 describe("Phase zone defaults", () => {
   it("produces exactly 2 zones per phase", () => {
     for (const [phase, zones] of Object.entries(PHASE_ZONE_DEFAULTS)) {
@@ -162,7 +163,7 @@ describe("Phase zone defaults", () => {
   });
 });
 
-describe("STORY-074 target gating and pickers", () => {
+describe("Target gating and pickers", () => {
   beforeEach(() => {
     cardIdentifierConstructorMock.mockClear();
     identifierMock.identify.mockClear();
@@ -317,4 +318,5 @@ describe("STORY-074 target gating and pickers", () => {
     await user.click(screen.getByRole("button", { name: "OK — finish enrichment" }));
     expect(screen.getByRole("button", { name: "Decrypt Stack" })).toBeInTheDocument();
   });
+});
 });

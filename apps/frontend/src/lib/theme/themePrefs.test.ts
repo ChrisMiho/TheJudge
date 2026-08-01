@@ -26,6 +26,7 @@ function createMemoryStorage(): Storage {
   };
 }
 
+describe("Frontend - Theme", () => {
 describe("themePrefs", () => {
   beforeEach(() => {
     vi.stubGlobal("localStorage", createMemoryStorage());
@@ -77,4 +78,5 @@ describe("themePrefs", () => {
 
     expect(() => saveThemePaletteId("violet")).not.toThrow();
   });
+});
 });

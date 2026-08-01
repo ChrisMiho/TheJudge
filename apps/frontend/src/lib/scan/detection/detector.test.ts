@@ -50,6 +50,7 @@ function quadCentroid(points: { x: number; y: number }[]): { x: number; y: numbe
   }
 }
 
+describe("Frontend - Card Scan", () => {
 describe("orderQuadCorners", () => {
   it("orders upright points as top-left, top-right, bottom-right, bottom-left", () => {
     const ordered = orderQuadCorners([
@@ -312,4 +313,5 @@ describe("detectCard", () => {
     expect(corners).not.toBeNull()
     expect(detectCard(frame, { guide: { x: 110, y: 80, width: 180, height: 250 } })?.width).toBe(CARD_WIDTH)
   })
+})
 })

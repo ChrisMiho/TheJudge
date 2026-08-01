@@ -23,22 +23,24 @@ import { createAskAiRequest, createGameContext, createZoneCardItem } from "./tes
 
 const app = createApp();
 
-describe("budget-exceeded contract", () => {
-  it("returns validation error when prompt budget is exceeded", async () => {
-    const response = await request(app)
-      .post("/api/ask-ai")
-      .send(
-        createAskAiRequest({
-          question: "prompt budget check",
-          gameContext: {
-            ...createGameContext(2),
-            zones: { stack: [createZoneCardItem({ name: "Counterspell" })] }
-          }
-        })
-      );
+describe("Backend - Ask AI", () => {
+  describe("budget-exceeded contract", () => {
+    it("returns validation error when prompt budget is exceeded", async () => {
+      const response = await request(app)
+        .post("/api/ask-ai")
+        .send(
+          createAskAiRequest({
+            question: "prompt budget check",
+            gameContext: {
+              ...createGameContext(2),
+              zones: { stack: [createZoneCardItem({ name: "Counterspell" })] }
+            }
+          })
+        );
 
-    expect(response.status).toBe(400);
-    expect(response.body.code).toBe("VALIDATION_ERROR");
-    expect(response.body.message).toContain("prompt exceeds max budget");
+      expect(response.status).toBe(400);
+      expect(response.body.code).toBe("VALIDATION_ERROR");
+      expect(response.body.message).toContain("prompt exceeds max budget");
+    });
   });
 });

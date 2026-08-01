@@ -52,6 +52,7 @@ For implementation work, read in this order:
 | `instructions/requirement-format.md` | complete | Required formatting templates for requirements, flows, decisions, questions, and slices |
 | `instructions/technical-design-rules.md` | complete | Constraints for architecture and implementation proposals |
 | `instructions/secrets-handling.md` | active | Guardrails for storing secrets in `.secrets/`, never committing them, and validating secret decisions with the user |
+| `instructions/test-naming.md` | active | Hierarchical Vitest title convention (`Layer - Feature` outer describe, nested area + behavior) |
 | `instructions/workflow-reference.md` | active | Lean five-skill PRD workflow reference, session openers, slice template, and cleanup receipt convention |
 
 ## Which Files to Read for Which Task
@@ -80,6 +81,11 @@ Read in this order:
 3. `sections/user-flows.md`
 4. `instructions/workflow-reference.md`
 5. `instructions/requirement-format.md`
+
+### If the task is writing or renaming tests
+Read in this order:
+1. `instructions/test-naming.md`
+2. `instructions/technical-design-rules.md` (if architecture or shared helpers are involved)
 
 ### If the task is document editing or extension
 Read in this order:

@@ -44,7 +44,8 @@ function queueAskAiResponses(...responses: Array<{ status: number; body: unknown
   askAiResponseQueue = responses;
 }
 
-describe("Slice-C: theme palette changes preserve workflow state", () => {
+describe("Frontend - Theme", () => {
+describe("Theme palette changes preserve workflow state", () => {
   beforeEach(() => {
     metadataFixture = [...baseCardMetadataFixture];
     askAiResponseQueue = [{ status: 200, body: { answer: "Mock answer" } }];
@@ -183,14 +184,14 @@ describe("Slice-C: theme palette changes preserve workflow state", () => {
     expect(requestBody.question).toBe("Does Opt resolve?");
   });
 });
-describe("Slice-A: neutral palette backdrop", () => {
+describe("Neutral palette backdrop", () => {
   it("does not leave the app shell background biased toward blue-950", () => {
     expect(appCss).not.toContain("#172554");
     expect(appCss).toContain("background: linear-gradient(135deg, #09090b 0%, #18181b 45%, #09090b 100%);");
   });
 });
 
-describe("Slice-B: accent token coverage for staged and answered semantic surfaces", () => {
+describe("Accent token coverage for staged and answered semantic surfaces", () => {
   beforeEach(() => {
     metadataFixture = [...baseCardMetadataFixture];
     askAiResponseQueue = [{ status: 200, body: { answer: "The stack resolves." } }];
@@ -277,4 +278,5 @@ describe("Slice-B: accent token coverage for staged and answered semantic surfac
     expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Ask a follow-up…")).toBeInTheDocument();
   });
+});
 });

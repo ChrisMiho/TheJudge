@@ -38,6 +38,7 @@ const crFixture = [
   "700.1. Anything that happens in a game is an event."
 ].join("\n");
 
+describe("Frontend - Shared", () => {
 describe("game rules build policy", () => {
   it("builds the signed-off core topics in fixed order from the curated source", () => {
     expect(CORE_TOPIC_IDS).toEqual([...ALWAYS_ON_TOPIC_IDS, "combat-phase-structure", "layers-order"]);
@@ -169,7 +170,7 @@ describe("game rules build policy", () => {
     expect(texts).not.toContain("Additional Glossary");
   });
 
-  it("keeps the committed curated topic artifact inside the slice B budget", () => {
+  it("keeps the committed curated topic artifact inside the budget", () => {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as Array<{
       id: string;
       title: string;
@@ -228,4 +229,5 @@ describe("game rules build policy", () => {
     expect(entry704_5).toBeDefined();
     expect(entry704_5!.sectionTitle).toMatch(/state.based/i);
   });
+});
 });

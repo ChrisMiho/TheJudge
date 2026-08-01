@@ -23,6 +23,7 @@ function createMemoryStorage(): Storage {
   };
 }
 
+describe("Frontend - Theme", () => {
 describe("layoutDensityPrefs", () => {
   beforeEach(() => {
     vi.stubGlobal("localStorage", createMemoryStorage());
@@ -80,4 +81,5 @@ describe("layoutDensityPrefs", () => {
 
     expect(() => saveLayoutDensity("slim")).not.toThrow();
   });
+});
 });

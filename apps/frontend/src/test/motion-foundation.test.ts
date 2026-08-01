@@ -20,7 +20,8 @@ function cssBlock(startMarker: string): string {
   return "";
 }
 
-describe("decorative motion foundation CSS", () => {
+describe("Frontend - Shared", () => {
+describe("Decorative motion foundation CSS", () => {
   it("defines one shared duration and easing vocabulary", () => {
     const root = cssBlock(":root");
 
@@ -83,4 +84,5 @@ describe("decorative motion foundation CSS", () => {
     expect(reducedMotion).not.toContain(".scan-confirm-popup");
     expect(reducedMotion).not.toContain(".send-spinner");
   });
+});
 });

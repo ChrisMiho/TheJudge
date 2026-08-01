@@ -49,769 +49,771 @@ const locking: ScanConvergence = {
   inZone: false
 };
 
-describe("ScanCameraSurface convergence indicator", () => {
-  it("exposes a slim density hook on the camera video", () => {
-    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-    expect(document.querySelector("video")).toHaveClass("scan-video");
+describe("Frontend - Card Scan", () => {
+  describe("Convergence indicator", () => {
+    it("exposes a slim density hook on the camera video", () => {
+      render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+      expect(document.querySelector("video")).toHaveClass("scan-video");
+    });
+
+    it("uses a bounded viewport-responsive frame height without the fixed aspect ratio", () => {
+      render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+      const video = document.querySelector("video");
+
+      expect(video).toHaveClass(
+        "h-[clamp(20rem,calc(100dvh-17rem),42rem)]",
+        "!max-h-none",
+        "w-full",
+        "object-cover"
+      );
+    });
+
+    it("falls back to proportion-stable aspect-ratio sizing at the md breakpoint and above", () => {
+      render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+      const video = document.querySelector("video");
+
+      expect(video).toHaveClass("md:aspect-[3/4]", "md:h-auto", "md:!max-h-none");
+    });
+
+    it("renders no indicator text while searching with no hint, nudge, or cue active", () => {
+      const { container } = render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+      expect(screen.queryByText("Searching for a card…")).not.toBeInTheDocument();
+      const status = container.querySelector('[role="status"]');
+      expect(status).toHaveTextContent("");
+    });
+
+    it("shows the named leader and vote progress while locking", () => {
+      render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
+      expect(screen.getByText("Locking on Lightning Bolt")).toBeInTheDocument();
+      expect(screen.getByText("3/6")).toBeInTheDocument();
+    });
+
+    it("no longer leaks the raw camera status copy", () => {
+      render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+      expect(screen.queryByText("Scanning")).not.toBeInTheDocument();
+      expect(screen.queryByText("No card found")).not.toBeInTheDocument();
+      expect(screen.queryByText("No match")).not.toBeInTheDocument();
+      expect(screen.queryByText("Ready")).not.toBeInTheDocument();
+    });
   });
 
-  it("uses a bounded viewport-responsive frame height without the fixed aspect ratio", () => {
-    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-    const video = document.querySelector("video");
+  describe("Condition hints", () => {
+    it("renders a glare hint while searching under glare conditions", () => {
+      render(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          convergence={{ ...searching, conditionHint: "glare" }}
+        />
+      );
+      expect(screen.queryByText("Searching for a card…")).not.toBeInTheDocument();
+      expect(screen.getByText("Too much glare — tilt the card")).toBeInTheDocument();
+    });
 
-    expect(video).toHaveClass(
-      "h-[clamp(20rem,calc(100dvh-17rem),42rem)]",
-      "!max-h-none",
-      "w-full",
-      "object-cover"
-    );
+    it("renders a hold-steady hint for a blur reason while searching", () => {
+      render(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          convergence={{ ...searching, conditionHint: "blur" }}
+        />
+      );
+      expect(screen.getByText("Hold steady")).toBeInTheDocument();
+    });
+
+    it("renders a move-closer hint for a low-detail reason while searching", () => {
+      render(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          convergence={{ ...searching, conditionHint: "low-detail" }}
+        />
+      );
+      expect(screen.getByText("Move closer")).toBeInTheDocument();
+    });
+
+    it("renders an edges-in-view hint for an occlusion reason while searching", () => {
+      render(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          convergence={{ ...searching, conditionHint: "occlusion" }}
+        />
+      );
+      expect(screen.getByText("Keep the card edges in view")).toBeInTheDocument();
+    });
+
+    it("does not show a condition hint while locking", () => {
+      render(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          convergence={{ ...locking, conditionHint: "glare" }}
+        />
+      );
+      expect(screen.getByText("Locking on Lightning Bolt")).toBeInTheDocument();
+      expect(screen.queryByText("Too much glare — tilt the card")).not.toBeInTheDocument();
+    });
+
+    it("does not show a condition hint when there is no reason", () => {
+      render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+      expect(screen.queryByText("Too much glare — tilt the card")).not.toBeInTheDocument();
+      expect(screen.queryByText("Hold steady")).not.toBeInTheDocument();
+    });
   });
 
-  it("falls back to proportion-stable aspect-ratio sizing at the md breakpoint and above", () => {
-    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-    const video = document.querySelector("video");
+  describe("Detector nudge", () => {
+    it("renders guide coaching while searching after sustained detector failure", () => {
+      render(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          convergence={{ ...searching, detectorNudge: "card-outline" }}
+        />
+      );
 
-    expect(video).toHaveClass("md:aspect-[3/4]", "md:h-auto", "md:!max-h-none");
+      expect(screen.queryByText("Searching for a card…")).not.toBeInTheDocument();
+      expect(screen.getByText("Fill the guide on a flat contrasting surface; keep fingers off the edges")).toBeInTheDocument();
+      expect(screen.queryByText("Center the card with clear edges against the surface")).not.toBeInTheDocument();
+    });
+
+    it("does not show the detector nudge or raw status copy while locking", () => {
+      render(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          convergence={{ ...locking, detectorNudge: "card-outline" }}
+        />
+      );
+
+      expect(screen.getByText("Locking on Lightning Bolt")).toBeInTheDocument();
+      expect(
+        screen.queryByText("Fill the guide on a flat contrasting surface; keep fingers off the edges")
+      ).not.toBeInTheDocument();
+      expect(screen.queryByText("No card found")).not.toBeInTheDocument();
+    });
   });
 
-  it("renders no indicator text while searching with no hint, nudge, or cue active", () => {
-    const { container } = render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-    expect(screen.queryByText("Searching for a card…")).not.toBeInTheDocument();
-    const status = container.querySelector('[role="status"]');
-    expect(status).toHaveTextContent("");
+  describe("Positive in-zone cue", () => {
+    it("renders 'Good — hold steady' while searching with an acceptable frame", () => {
+      render(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          convergence={{ ...searching, inZone: true }}
+        />
+      );
+      expect(screen.getByText("Good — hold steady")).toBeInTheDocument();
+      expect(screen.queryByText("Searching for a card…")).not.toBeInTheDocument();
+    });
+
+    it("does not render the positive cue when inZone is false", () => {
+      render(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          convergence={{ ...searching, inZone: false }}
+        />
+      );
+      expect(screen.queryByText("Good — hold steady")).not.toBeInTheDocument();
+    });
+
+    it("does not render the positive cue while locking (named leader present)", () => {
+      render(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          convergence={{ ...locking, inZone: true }}
+        />
+      );
+      expect(screen.queryByText("Good — hold steady")).not.toBeInTheDocument();
+      expect(screen.getByText("Locking on Lightning Bolt")).toBeInTheDocument();
+    });
+
+    it("suppresses the positive cue when a conditionHint (negative) is present", () => {
+      render(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          convergence={{ ...searching, inZone: true, conditionHint: "glare" }}
+        />
+      );
+      expect(screen.queryByText("Good — hold steady")).not.toBeInTheDocument();
+      expect(screen.getByText("Too much glare — tilt the card")).toBeInTheDocument();
+    });
+
+    it("suppresses the positive cue when a detectorNudge (negative) is present", () => {
+      render(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          convergence={{ ...searching, inZone: true, detectorNudge: "card-outline" }}
+        />
+      );
+      expect(screen.queryByText("Good — hold steady")).not.toBeInTheDocument();
+      expect(
+        screen.getByText("Fill the guide on a flat contrasting surface; keep fingers off the edges")
+      ).toBeInTheDocument();
+    });
   });
 
-  it("shows the named leader and vote progress while locking", () => {
-    render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
-    expect(screen.getByText("Locking on Lightning Bolt")).toBeInTheDocument();
-    expect(screen.getByText("3/6")).toBeInTheDocument();
+  const debugMetrics: ScanDebugMetrics = {
+    phase: "locking",
+    bestName: "Lightning Bolt",
+    bestDistance: 28,
+    runnerUpName: "Shock",
+    runnerUpDistance: 95,
+    margin: 67,
+    votes: 3,
+    votesNeeded: 4,
+    lockDistance: 78,
+    marginMin: 14,
+    glareFraction: null,
+    sharpness: null,
+    frameQualityScore: null,
+    conditionReason: null
+  };
+
+  describe("Debug overlay toggle", () => {
+    it("keeps the debug toggle out of the top-right review control area", () => {
+      render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} debug={debugMetrics} />);
+      const button = screen.getByRole("button", { name: "Debug" });
+
+      expect(button).not.toHaveClass("right-3");
+      expect(button).not.toHaveClass("top-3");
+      expect(button).toHaveClass("bottom-3", "left-1/2", "-translate-x-1/2");
+      expect(button).not.toHaveClass("-tranzinc-x-1/2");
+    });
+
+    it("anchors mute and watermark inside the guide without sharing the debug anchor", () => {
+      render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} debug={debugMetrics} />);
+
+      const guide = screen.getByTestId("scan-alignment-guide");
+      const mute = screen.getByRole("button", { name: "Mute scan sound" });
+      const watermark = screen.getByText("Powered by Cardomancer");
+      const debug = screen.getByRole("button", { name: "Debug" });
+
+      expect(guide).toContainElement(mute);
+      expect(mute).toHaveClass("absolute", "left-2", "top-2", "pointer-events-auto", "opacity-90");
+      expect(guide).toContainElement(watermark);
+      expect(watermark).toHaveClass("absolute", "bottom-2", "left-1/2", "-translate-x-1/2", "opacity-90");
+      expect(watermark).not.toHaveClass("right-3", "bottom-3");
+      expect(debug.parentElement).not.toBe(guide);
+    });
+
+    it("defaults the debug overlay off (toggle present, overlay not rendered)", () => {
+      render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} debug={debugMetrics} />);
+      expect(screen.getByRole("button", { name: "Debug" })).toHaveAttribute("aria-pressed", "false");
+      expect(screen.queryByTestId("scan-debug-overlay")).not.toBeInTheDocument();
+    });
+
+    it("renders the overlay metrics only after the toggle is enabled", () => {
+      render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} debug={debugMetrics} />);
+      fireEvent.click(screen.getByRole("button", { name: "Debug" }));
+      expect(screen.getByTestId("scan-debug-overlay")).toBeInTheDocument();
+      expect(screen.getByText("Lightning Bolt (28)")).toBeInTheDocument();
+    });
   });
 
-  it("no longer leaks the raw camera status copy", () => {
-    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-    expect(screen.queryByText("Scanning")).not.toBeInTheDocument();
-    expect(screen.queryByText("No card found")).not.toBeInTheDocument();
-    expect(screen.queryByText("No match")).not.toBeInTheDocument();
-    expect(screen.queryByText("Ready")).not.toBeInTheDocument();
-  });
-});
+  describe("Confirmation popup", () => {
+    it("pops a thumbs-up with the added card name on confirmation", () => {
+      render(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          convergence={searching}
+          confirmation={{ id: 1, cardName: "Opt" }}
+        />
+      );
+      expect(screen.getByText("Added Opt")).toBeInTheDocument();
+      expect(screen.getByText("👍")).toBeInTheDocument();
+    });
 
-describe("ScanCameraSurface condition hints", () => {
-  it("renders a glare hint while searching under glare conditions", () => {
-    render(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={{ ...searching, conditionHint: "glare" }}
-      />
-    );
-    expect(screen.queryByText("Searching for a card…")).not.toBeInTheDocument();
-    expect(screen.getByText("Too much glare — tilt the card")).toBeInTheDocument();
-  });
+    it("does not render the popup without a confirmation", () => {
+      render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+      expect(screen.queryByText("👍")).not.toBeInTheDocument();
+    });
 
-  it("renders a hold-steady hint for a blur reason while searching", () => {
-    render(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={{ ...searching, conditionHint: "blur" }}
-      />
-    );
-    expect(screen.getByText("Hold steady")).toBeInTheDocument();
-  });
+    it("renders the thumbs-up popup with accent palette tokens and no hardcoded hue", () => {
+      render(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          convergence={searching}
+          confirmation={{ id: 1, cardName: "Opt" }}
+        />
+      );
+      const popup = screen.getByText("Added Opt").closest("div");
 
-  it("renders a move-closer hint for a low-detail reason while searching", () => {
-    render(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={{ ...searching, conditionHint: "low-detail" }}
-      />
-    );
-    expect(screen.getByText("Move closer")).toBeInTheDocument();
+      expect(popup).toHaveClass("bg-accent/90", "text-accent-contrast");
+      expect(popup?.className).not.toMatch(/\b(sky|emerald)-/);
+    });
   });
 
-  it("renders an edges-in-view hint for an occlusion reason while searching", () => {
-    render(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={{ ...searching, conditionHint: "occlusion" }}
-      />
-    );
-    expect(screen.getByText("Keep the card edges in view")).toBeInTheDocument();
+  describe("Scanner palette surfaces", () => {
+    it("reticle border uses accent-soft token, not a fixed hue", () => {
+      const { container } = render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+      const reticle = container.querySelector(".rounded-xl.border-2");
+      expect(reticle).toHaveClass("border-accent-soft/90");
+      expect(reticle?.className).not.toMatch(/\b(sky|emerald)-/);
+    });
+
+    it("lock progress fill uses accent token, not a fixed hue", () => {
+      const { container } = render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
+      const fill = container.querySelector("span.block.h-full");
+      expect(fill).toHaveClass("bg-accent");
+      expect(fill?.className).not.toMatch(/\b(sky|emerald)-/);
+    });
   });
 
-  it("does not show a condition hint while locking", () => {
-    render(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={{ ...locking, conditionHint: "glare" }}
-      />
-    );
-    expect(screen.getByText("Locking on Lightning Bolt")).toBeInTheDocument();
-    expect(screen.queryByText("Too much glare — tilt the card")).not.toBeInTheDocument();
-  });
+  describe("Audio confirmation", () => {
+    it("plays the bundled ding on a confirmation change when sound is on", () => {
+      const playSpy = vi.mocked(HTMLMediaElement.prototype.play);
+      const { container, rerender } = render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
 
-  it("does not show a condition hint when there is no reason", () => {
-    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-    expect(screen.queryByText("Too much glare — tilt the card")).not.toBeInTheDocument();
-    expect(screen.queryByText("Hold steady")).not.toBeInTheDocument();
-  });
-});
+      expect(container.querySelector('audio[src="/assets/scanSuccess.wav"]')).toBeInTheDocument();
 
-describe("ScanCameraSurface detector nudge", () => {
-  it("renders guide coaching while searching after sustained detector failure", () => {
-    render(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={{ ...searching, detectorNudge: "card-outline" }}
-      />
-    );
-
-    expect(screen.queryByText("Searching for a card…")).not.toBeInTheDocument();
-    expect(screen.getByText("Fill the guide on a flat contrasting surface; keep fingers off the edges")).toBeInTheDocument();
-    expect(screen.queryByText("Center the card with clear edges against the surface")).not.toBeInTheDocument();
-  });
-
-  it("does not show the detector nudge or raw status copy while locking", () => {
-    render(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={{ ...locking, detectorNudge: "card-outline" }}
-      />
-    );
-
-    expect(screen.getByText("Locking on Lightning Bolt")).toBeInTheDocument();
-    expect(
-      screen.queryByText("Fill the guide on a flat contrasting surface; keep fingers off the edges")
-    ).not.toBeInTheDocument();
-    expect(screen.queryByText("No card found")).not.toBeInTheDocument();
-  });
-});
-
-describe("ScanCameraSurface positive in-zone cue (slice B / REQ-054)", () => {
-  it("renders 'Good — hold steady' while searching with an acceptable frame", () => {
-    render(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={{ ...searching, inZone: true }}
-      />
-    );
-    expect(screen.getByText("Good — hold steady")).toBeInTheDocument();
-    expect(screen.queryByText("Searching for a card…")).not.toBeInTheDocument();
-  });
-
-  it("does not render the positive cue when inZone is false", () => {
-    render(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={{ ...searching, inZone: false }}
-      />
-    );
-    expect(screen.queryByText("Good — hold steady")).not.toBeInTheDocument();
-  });
-
-  it("does not render the positive cue while locking (named leader present)", () => {
-    render(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={{ ...locking, inZone: true }}
-      />
-    );
-    expect(screen.queryByText("Good — hold steady")).not.toBeInTheDocument();
-    expect(screen.getByText("Locking on Lightning Bolt")).toBeInTheDocument();
-  });
-
-  it("suppresses the positive cue when a conditionHint (negative) is present", () => {
-    render(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={{ ...searching, inZone: true, conditionHint: "glare" }}
-      />
-    );
-    expect(screen.queryByText("Good — hold steady")).not.toBeInTheDocument();
-    expect(screen.getByText("Too much glare — tilt the card")).toBeInTheDocument();
-  });
-
-  it("suppresses the positive cue when a detectorNudge (negative) is present", () => {
-    render(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={{ ...searching, inZone: true, detectorNudge: "card-outline" }}
-      />
-    );
-    expect(screen.queryByText("Good — hold steady")).not.toBeInTheDocument();
-    expect(
-      screen.getByText("Fill the guide on a flat contrasting surface; keep fingers off the edges")
-    ).toBeInTheDocument();
-  });
-});
-
-const debugMetrics: ScanDebugMetrics = {
-  phase: "locking",
-  bestName: "Lightning Bolt",
-  bestDistance: 28,
-  runnerUpName: "Shock",
-  runnerUpDistance: 95,
-  margin: 67,
-  votes: 3,
-  votesNeeded: 4,
-  lockDistance: 78,
-  marginMin: 14,
-  glareFraction: null,
-  sharpness: null,
-  frameQualityScore: null,
-  conditionReason: null
-};
-
-describe("ScanCameraSurface debug overlay toggle", () => {
-  it("keeps the debug toggle out of the top-right review control area", () => {
-    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} debug={debugMetrics} />);
-    const button = screen.getByRole("button", { name: "Debug" });
-
-    expect(button).not.toHaveClass("right-3");
-    expect(button).not.toHaveClass("top-3");
-    expect(button).toHaveClass("bottom-3", "left-1/2", "-translate-x-1/2");
-    expect(button).not.toHaveClass("-tranzinc-x-1/2");
-  });
-
-  it("anchors mute and watermark inside the guide without sharing the debug anchor", () => {
-    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} debug={debugMetrics} />);
-
-    const guide = screen.getByTestId("scan-alignment-guide");
-    const mute = screen.getByRole("button", { name: "Mute scan sound" });
-    const watermark = screen.getByText("Powered by Cardomancer");
-    const debug = screen.getByRole("button", { name: "Debug" });
-
-    expect(guide).toContainElement(mute);
-    expect(mute).toHaveClass("absolute", "left-2", "top-2", "pointer-events-auto", "opacity-90");
-    expect(guide).toContainElement(watermark);
-    expect(watermark).toHaveClass("absolute", "bottom-2", "left-1/2", "-translate-x-1/2", "opacity-90");
-    expect(watermark).not.toHaveClass("right-3", "bottom-3");
-    expect(debug.parentElement).not.toBe(guide);
-  });
-
-  it("defaults the debug overlay off (toggle present, overlay not rendered)", () => {
-    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} debug={debugMetrics} />);
-    expect(screen.getByRole("button", { name: "Debug" })).toHaveAttribute("aria-pressed", "false");
-    expect(screen.queryByTestId("scan-debug-overlay")).not.toBeInTheDocument();
-  });
-
-  it("renders the overlay metrics only after the toggle is enabled", () => {
-    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} debug={debugMetrics} />);
-    fireEvent.click(screen.getByRole("button", { name: "Debug" }));
-    expect(screen.getByTestId("scan-debug-overlay")).toBeInTheDocument();
-    expect(screen.getByText("Lightning Bolt (28)")).toBeInTheDocument();
-  });
-});
-
-describe("ScanCameraSurface confirmation popup", () => {
-  it("pops a thumbs-up with the added card name on confirmation", () => {
-    render(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={searching}
-        confirmation={{ id: 1, cardName: "Opt" }}
-      />
-    );
-    expect(screen.getByText("Added Opt")).toBeInTheDocument();
-    expect(screen.getByText("👍")).toBeInTheDocument();
-  });
-
-  it("does not render the popup without a confirmation", () => {
-    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-    expect(screen.queryByText("👍")).not.toBeInTheDocument();
-  });
-
-  it("renders the thumbs-up popup with accent palette tokens and no hardcoded hue", () => {
-    render(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={searching}
-        confirmation={{ id: 1, cardName: "Opt" }}
-      />
-    );
-    const popup = screen.getByText("Added Opt").closest("div");
-
-    expect(popup).toHaveClass("bg-accent/90", "text-accent-contrast");
-    expect(popup?.className).not.toMatch(/\b(sky|emerald)-/);
-  });
-});
-
-describe("ScanCameraSurface scanner palette surfaces", () => {
-  it("reticle border uses accent-soft token, not a fixed hue", () => {
-    const { container } = render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-    const reticle = container.querySelector(".rounded-xl.border-2");
-    expect(reticle).toHaveClass("border-accent-soft/90");
-    expect(reticle?.className).not.toMatch(/\b(sky|emerald)-/);
-  });
-
-  it("lock progress fill uses accent token, not a fixed hue", () => {
-    const { container } = render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
-    const fill = container.querySelector("span.block.h-full");
-    expect(fill).toHaveClass("bg-accent");
-    expect(fill?.className).not.toMatch(/\b(sky|emerald)-/);
-  });
-});
-
-describe("ScanCameraSurface audio confirmation", () => {
-  it("plays the bundled ding on a confirmation change when sound is on", () => {
-    const playSpy = vi.mocked(HTMLMediaElement.prototype.play);
-    const { container, rerender } = render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-
-    expect(container.querySelector('audio[src="/assets/scanSuccess.wav"]')).toBeInTheDocument();
-
-    playSpy.mockClear();
-    rerender(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={searching}
-        confirmation={{ id: 1, cardName: "Opt" }}
-      />
-    );
-
-    expect(playSpy).toHaveBeenCalled();
-    expect(screen.getByText("Added Opt")).toBeInTheDocument();
-  });
-
-  it("does not play the ding on confirmation when sound starts muted", () => {
-    vi.spyOn(audioPrefs, "loadScanAudioMuted").mockReturnValue(true);
-    const playSpy = vi.mocked(HTMLMediaElement.prototype.play);
-    const { rerender } = render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-
-    playSpy.mockClear();
-    rerender(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={searching}
-        confirmation={{ id: 1, cardName: "Opt" }}
-      />
-    );
-
-    expect(playSpy).not.toHaveBeenCalled();
-    expect(screen.getByText("Added Opt")).toBeInTheDocument();
-  });
-
-  it("persists mute toggle changes through an accessible pressed button", () => {
-    const saveSpy = vi.spyOn(audioPrefs, "saveScanAudioMuted").mockImplementation(() => undefined);
-    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-
-    const button = screen.getByRole("button", { name: "Mute scan sound" });
-    expect(button).toHaveAttribute("aria-pressed", "false");
-
-    fireEvent.click(button);
-
-    expect(button).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button", { name: "Unmute scan sound" })).toBeInTheDocument();
-    expect(saveSpy).toHaveBeenCalledWith(true);
-  });
-
-  it("silently ignores rejected ding playback while keeping the popup visible", () => {
-    const playSpy = vi.mocked(HTMLMediaElement.prototype.play);
-    const { rerender } = render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-
-    playSpy.mockClear();
-    playSpy.mockRejectedValue(new Error("blocked"));
-
-    expect(() =>
+      playSpy.mockClear();
       rerender(
         <ScanCameraSurface
           onCapture={() => undefined}
           convergence={searching}
           confirmation={{ id: 1, cardName: "Opt" }}
         />
-      )
-    ).not.toThrow();
-    expect(screen.getByText("Added Opt")).toBeInTheDocument();
-  });
-});
+      );
 
-describe("ScanCameraSurface getUserMedia constraints (slice A / REQ-053)", () => {
-  it("requests 1920×1080 ideal resolution and environment face (all ideal, never exact)", async () => {
-    const getMock = vi.mocked(navigator.mediaDevices.getUserMedia);
-    await act(async () => {
-      render(<ScanCameraSurface onCapture={() => undefined} />);
+      expect(playSpy).toHaveBeenCalled();
+      expect(screen.getByText("Added Opt")).toBeInTheDocument();
     });
 
-    expect(getMock).toHaveBeenCalledOnce();
-    const video = (getMock.mock.calls[0][0] as MediaStreamConstraints).video as Record<string, unknown>;
+    it("does not play the ding on confirmation when sound starts muted", () => {
+      vi.spyOn(audioPrefs, "loadScanAudioMuted").mockReturnValue(true);
+      const playSpy = vi.mocked(HTMLMediaElement.prototype.play);
+      const { rerender } = render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
 
-    expect(video).toMatchObject({
-      width: { ideal: 1920 },
-      height: { ideal: 1080 },
-      facingMode: { ideal: "environment" },
-    });
-    expect(JSON.stringify(video)).not.toContain('"exact"');
-  });
-
-  it("camera reaches a non-error state when getUserMedia resolves regardless of actual resolution", async () => {
-    await act(async () => {
-      render(<ScanCameraSurface onCapture={() => undefined} />);
-    });
-    expect(screen.queryByText("Camera unavailable")).not.toBeInTheDocument();
-  });
-
-  it("requests continuous focus only after the opened track reports support", async () => {
-    const applyConstraints = vi.fn().mockResolvedValue(undefined);
-    const getCapabilities = vi.fn().mockReturnValue({ focusMode: ["manual", "continuous"] });
-    const getSettings = vi.fn().mockReturnValue({ focusMode: "continuous" });
-    vi.mocked(navigator.mediaDevices.getUserMedia).mockResolvedValueOnce({
-      getTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }],
-      getVideoTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }]
-    } as unknown as MediaStream);
-
-    await act(async () => {
-      render(<ScanCameraSurface onCapture={() => undefined} />);
-    });
-
-    expect(applyConstraints).toHaveBeenCalledWith({ advanced: [{ focusMode: "continuous" }] });
-  });
-
-  it("skips continuous focus constraints when the opened track does not report support", async () => {
-    const applyConstraints = vi.fn().mockResolvedValue(undefined);
-    const getCapabilities = vi.fn().mockReturnValue({ focusMode: ["manual"] });
-    const getSettings = vi.fn().mockReturnValue({ focusMode: "manual" });
-    vi.mocked(navigator.mediaDevices.getUserMedia).mockResolvedValueOnce({
-      getTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }],
-      getVideoTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }]
-    } as unknown as MediaStream);
-
-    await act(async () => {
-      render(<ScanCameraSurface onCapture={() => undefined} />);
-    });
-
-    expect(applyConstraints).not.toHaveBeenCalled();
-  });
-
-  it("surfaces camera-error when getUserMedia rejects", async () => {
-    vi.mocked(navigator.mediaDevices.getUserMedia).mockRejectedValueOnce(new Error("NotAllowedError"));
-    await act(async () => {
-      render(<ScanCameraSurface onCapture={() => undefined} />);
-    });
-    expect(screen.getByText("Camera unavailable")).toBeInTheDocument();
-  });
-});
-
-describe("ScanCameraSurface locking outline (slice B / DEC-083)", () => {
-  beforeEach(() => {
-    vi.mocked(detectCard).mockReturnValue(null);
-    // Isolate the capture-driven outline from the background auto-scan loop.
-    // The RAF tick calls scanCurrentFrame(false) with the default detectCard ->
-    // null, which during "locking" runs setLockOutline(null) and clobbers the
-    // outline the Capture click just drew. Stubbing rAF to a no-op stops the
-    // loop from scheduling; the onClick capture path (scanCurrentFrame(true))
-    // is invoked directly and is unaffected. Without this the outline
-    // assertions race the loop and flake under load (observed in CI).
-    vi.spyOn(window, "requestAnimationFrame").mockReturnValue(0);
-    vi.spyOn(HTMLVideoElement.prototype, "videoWidth", "get").mockReturnValue(320);
-    vi.spyOn(HTMLVideoElement.prototype, "videoHeight", "get").mockReturnValue(240);
-    vi.spyOn(HTMLMediaElement.prototype, "readyState", "get").mockReturnValue(
-      HTMLMediaElement.HAVE_ENOUGH_DATA
-    );
-    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
-      drawImage: vi.fn(),
-      getImageData: vi.fn().mockReturnValue({
-        data: new Uint8ClampedArray(320 * 240 * 4),
-        width: 320,
-        height: 240,
-      }),
-    } as unknown as CanvasRenderingContext2D);
-  });
-
-  const lockingCorners = [
-    { x: 20, y: 30 },
-    { x: 300, y: 28 },
-    { x: 302, y: 220 },
-    { x: 18, y: 222 }
-  ];
-  const mockCard = { width: 100, height: 140, data: new Uint8Array(100 * 140 * 3) };
-
-  it("draws the affirmative outline while locking, with no read region and the debug overlay off", async () => {
-    vi.mocked(detectCard).mockImplementationOnce((_frame, options) => {
-      options?.onCorners?.(lockingCorners);
-      return mockCard;
-    });
-    render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
-    });
-
-    const outline = screen.getByTestId("scan-card-outline");
-    expect(outline.querySelector("polygon")).toHaveAttribute("stroke", "#34d399");
-    expect(screen.queryByTestId("scan-debug-overlay")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("scan-debug-geometry")).not.toBeInTheDocument();
-  });
-
-  it("does not draw the outline while searching, even with corners captured", async () => {
-    vi.mocked(detectCard).mockImplementationOnce((_frame, options) => {
-      options?.onCorners?.(lockingCorners);
-      return mockCard;
-    });
-    render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
-    });
-
-    expect(screen.queryByTestId("scan-card-outline")).not.toBeInTheDocument();
-  });
-
-  it("clears the outline once phase leaves locking (drop back to searching)", async () => {
-    vi.mocked(detectCard).mockImplementationOnce((_frame, options) => {
-      options?.onCorners?.(lockingCorners);
-      return mockCard;
-    });
-    const { rerender } = render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
-    });
-    expect(screen.getByTestId("scan-card-outline")).toBeInTheDocument();
-
-    rerender(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-
-    expect(screen.queryByTestId("scan-card-outline")).not.toBeInTheDocument();
-  });
-
-  it("clears the outline on lock-complete/auto-add reset back to searching", async () => {
-    vi.mocked(detectCard).mockImplementationOnce((_frame, options) => {
-      options?.onCorners?.(lockingCorners);
-      return mockCard;
-    });
-    const { rerender } = render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
-    });
-    expect(screen.getByTestId("scan-card-outline")).toBeInTheDocument();
-
-    // Hook auto-adds and resets convergence to its initial searching shape.
-    rerender(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        convergence={searching}
-        confirmation={{ id: 1, cardName: "Lightning Bolt" }}
-      />
-    );
-
-    expect(screen.queryByTestId("scan-card-outline")).not.toBeInTheDocument();
-  });
-
-  it("degrades to no outline when a locking frame has no captured corners", async () => {
-    vi.mocked(detectCard).mockReturnValueOnce(null);
-    render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
-    });
-
-    expect(screen.queryByTestId("scan-card-outline")).not.toBeInTheDocument();
-    expect(screen.getByText("Locking on Lightning Bolt")).toBeInTheDocument();
-  });
-});
-
-describe("ScanCameraSurface debug-gated frame export", () => {
-  beforeEach(() => {
-    vi.mocked(detectCard).mockReturnValue(null);
-    // Give video valid dimensions and readyState to bypass early-return guards in scanCurrentFrame.
-    vi.spyOn(HTMLVideoElement.prototype, "videoWidth", "get").mockReturnValue(320);
-    vi.spyOn(HTMLVideoElement.prototype, "videoHeight", "get").mockReturnValue(240);
-    vi.spyOn(HTMLMediaElement.prototype, "readyState", "get").mockReturnValue(
-      HTMLMediaElement.HAVE_ENOUGH_DATA
-    );
-    // Provide a minimal canvas context so getContext("2d") doesn't return null.
-    // Use a plain object for ImageData — it is not available in this jsdom setup.
-    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
-      drawImage: vi.fn(),
-      getImageData: vi.fn().mockReturnValue({
-        data: new Uint8ClampedArray(320 * 240 * 4),
-        width: 320,
-        height: 240,
-      }),
-    } as unknown as CanvasRenderingContext2D);
-  });
-
-  it("does not call the frame exporter when debug is disabled", async () => {
-    const exporter = vi.fn();
-    render(<ScanCameraSurface onCapture={() => undefined} _frameExporter={exporter} />);
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
-    });
-    expect(exporter).not.toHaveBeenCalled();
-  });
-
-  it("calls the frame exporter once with the canvas when debug is enabled and Capture is pressed", async () => {
-    const exporter = vi.fn();
-    render(
-      <ScanCameraSurface onCapture={() => undefined} _frameExporter={exporter} _diagnosticExporter={vi.fn()} />
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Debug" }));
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
-    });
-    expect(exporter).toHaveBeenCalledOnce();
-    expect(exporter).toHaveBeenCalledWith(expect.any(HTMLCanvasElement));
-  });
-
-  it("passes the detector-warped card to onCapture, not the raw canvas frame", async () => {
-    const mockCard = { width: 100, height: 140, data: new Uint8Array(100 * 140 * 3) };
-    vi.mocked(detectCard).mockReturnValueOnce(mockCard);
-
-    const onCapture = vi.fn();
-    const exporter = vi.fn();
-    render(<ScanCameraSurface onCapture={onCapture} _frameExporter={exporter} _diagnosticExporter={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: "Debug" }));
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
-    });
-    // Exporter receives the raw canvas; onCapture receives the detector output.
-    expect(exporter).toHaveBeenCalledWith(expect.any(HTMLCanvasElement));
-    expect(onCapture).toHaveBeenCalledWith(mockCard);
-    expect(exporter.mock.calls[0][0]).not.toBe(onCapture.mock.calls[0][0]);
-  });
-
-  it("passes a detector guide rect derived from the rendered reticle geometry", async () => {
-    vi.mocked(detectCard).mockClear();
-
-    render(<ScanCameraSurface onCapture={() => undefined} />);
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
-    });
-
-    expect(detectCard).toHaveBeenCalledWith(
-      expect.objectContaining({ width: 320, height: 240 }),
-      expect.objectContaining({
-        guide: expect.objectContaining({
-          x: expect.closeTo(89.5, 1),
-          y: expect.closeTo(21.6, 1),
-          width: expect.closeTo(141, 1),
-          height: expect.closeTo(196.8, 1)
-        })
-      })
-    );
-  });
-
-  it("does not emit or export acquisition diagnostics when debug is disabled", async () => {
-    const onAcquisitionDiagnostic = vi.fn();
-    const diagnosticExporter = vi.fn();
-
-    render(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        onAcquisitionDiagnostic={onAcquisitionDiagnostic}
-        _diagnosticExporter={diagnosticExporter}
-      />
-    );
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
-    });
-
-    expect(onAcquisitionDiagnostic).not.toHaveBeenCalled();
-    expect(diagnosticExporter).not.toHaveBeenCalled();
-  });
-
-  it("emits and exports detector-miss diagnostics when debug is enabled", async () => {
-    const applyConstraints = vi.fn().mockResolvedValue(undefined);
-    const getSettings = vi.fn().mockReturnValue({
-      width: 1920,
-      height: 1080,
-      facingMode: "environment",
-      frameRate: 30,
-      deviceId: "device-a",
-      groupId: "group-a",
-      focusMode: "continuous"
-    });
-    const getCapabilities = vi.fn().mockReturnValue({ focusMode: ["continuous"] });
-    vi.mocked(navigator.mediaDevices.getUserMedia).mockResolvedValueOnce({
-      getTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }],
-      getVideoTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }]
-    } as unknown as MediaStream);
-    const onAcquisitionDiagnostic = vi.fn();
-    const diagnosticExporter = vi.fn();
-
-    await act(async () => {
-      render(
+      playSpy.mockClear();
+      rerender(
         <ScanCameraSurface
           onCapture={() => undefined}
-          onAcquisitionDiagnostic={onAcquisitionDiagnostic}
-          _frameExporter={vi.fn()}
-          _diagnosticExporter={diagnosticExporter}
+          convergence={searching}
+          confirmation={{ id: 1, cardName: "Opt" }}
         />
       );
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Debug" }));
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+
+      expect(playSpy).not.toHaveBeenCalled();
+      expect(screen.getByText("Added Opt")).toBeInTheDocument();
     });
 
-    const expectedDiagnostic = expect.objectContaining({
-      reason: "detector-miss",
-      capture: expect.objectContaining({
-        frameIndex: 1,
-        nativeWidth: 320,
-        nativeHeight: 240,
-        trackWidth: 1920,
-        trackHeight: 1080,
-        trackFacingMode: "environment",
-        trackFrameRate: 30,
-        trackDeviceId: "device-a",
-        trackGroupId: "group-a",
-        trackFocusModeRequested: "continuous",
-        trackFocusMode: "continuous"
-      }),
-      detector: expect.objectContaining({
-        success: false,
-        nativeWidth: 320,
-        nativeHeight: 240,
-        maxDetectDimension: 640,
-        guideRect: expect.objectContaining({
-          x: expect.closeTo(89.5, 1),
-          y: expect.closeTo(21.6, 1),
-          width: expect.closeTo(141, 1),
-          height: expect.closeTo(196.8, 1)
-        })
-      })
+    it("persists mute toggle changes through an accessible pressed button", () => {
+      const saveSpy = vi.spyOn(audioPrefs, "saveScanAudioMuted").mockImplementation(() => undefined);
+      render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+
+      const button = screen.getByRole("button", { name: "Mute scan sound" });
+      expect(button).toHaveAttribute("aria-pressed", "false");
+
+      fireEvent.click(button);
+
+      expect(button).toHaveAttribute("aria-pressed", "true");
+      expect(screen.getByRole("button", { name: "Unmute scan sound" })).toBeInTheDocument();
+      expect(saveSpy).toHaveBeenCalledWith(true);
     });
-    expect(onAcquisitionDiagnostic).toHaveBeenCalledWith(expectedDiagnostic);
-    expect(diagnosticExporter).toHaveBeenCalledWith(expectedDiagnostic);
+
+    it("silently ignores rejected ding playback while keeping the popup visible", () => {
+      const playSpy = vi.mocked(HTMLMediaElement.prototype.play);
+      const { rerender } = render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+
+      playSpy.mockClear();
+      playSpy.mockRejectedValue(new Error("blocked"));
+
+      expect(() =>
+        rerender(
+          <ScanCameraSurface
+            onCapture={() => undefined}
+            convergence={searching}
+            confirmation={{ id: 1, cardName: "Opt" }}
+          />
+        )
+      ).not.toThrow();
+      expect(screen.getByText("Added Opt")).toBeInTheDocument();
+    });
   });
 
-  it("emits detector success diagnostics with full-res corners when debug is enabled", async () => {
-    const corners = [
+  describe("getUserMedia constraints", () => {
+    it("requests 1920×1080 ideal resolution and environment face (all ideal, never exact)", async () => {
+      const getMock = vi.mocked(navigator.mediaDevices.getUserMedia);
+      await act(async () => {
+        render(<ScanCameraSurface onCapture={() => undefined} />);
+      });
+
+      expect(getMock).toHaveBeenCalledOnce();
+      const video = (getMock.mock.calls[0][0] as MediaStreamConstraints).video as Record<string, unknown>;
+
+      expect(video).toMatchObject({
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        facingMode: { ideal: "environment" },
+      });
+      expect(JSON.stringify(video)).not.toContain('"exact"');
+    });
+
+    it("camera reaches a non-error state when getUserMedia resolves regardless of actual resolution", async () => {
+      await act(async () => {
+        render(<ScanCameraSurface onCapture={() => undefined} />);
+      });
+      expect(screen.queryByText("Camera unavailable")).not.toBeInTheDocument();
+    });
+
+    it("requests continuous focus only after the opened track reports support", async () => {
+      const applyConstraints = vi.fn().mockResolvedValue(undefined);
+      const getCapabilities = vi.fn().mockReturnValue({ focusMode: ["manual", "continuous"] });
+      const getSettings = vi.fn().mockReturnValue({ focusMode: "continuous" });
+      vi.mocked(navigator.mediaDevices.getUserMedia).mockResolvedValueOnce({
+        getTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }],
+        getVideoTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }]
+      } as unknown as MediaStream);
+
+      await act(async () => {
+        render(<ScanCameraSurface onCapture={() => undefined} />);
+      });
+
+      expect(applyConstraints).toHaveBeenCalledWith({ advanced: [{ focusMode: "continuous" }] });
+    });
+
+    it("skips continuous focus constraints when the opened track does not report support", async () => {
+      const applyConstraints = vi.fn().mockResolvedValue(undefined);
+      const getCapabilities = vi.fn().mockReturnValue({ focusMode: ["manual"] });
+      const getSettings = vi.fn().mockReturnValue({ focusMode: "manual" });
+      vi.mocked(navigator.mediaDevices.getUserMedia).mockResolvedValueOnce({
+        getTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }],
+        getVideoTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }]
+      } as unknown as MediaStream);
+
+      await act(async () => {
+        render(<ScanCameraSurface onCapture={() => undefined} />);
+      });
+
+      expect(applyConstraints).not.toHaveBeenCalled();
+    });
+
+    it("surfaces camera-error when getUserMedia rejects", async () => {
+      vi.mocked(navigator.mediaDevices.getUserMedia).mockRejectedValueOnce(new Error("NotAllowedError"));
+      await act(async () => {
+        render(<ScanCameraSurface onCapture={() => undefined} />);
+      });
+      expect(screen.getByText("Camera unavailable")).toBeInTheDocument();
+    });
+  });
+
+  describe("Locking outline", () => {
+    beforeEach(() => {
+      vi.mocked(detectCard).mockReturnValue(null);
+      // Isolate the capture-driven outline from the background auto-scan loop.
+      // The RAF tick calls scanCurrentFrame(false) with the default detectCard ->
+      // null, which during "locking" runs setLockOutline(null) and clobbers the
+      // outline the Capture click just drew. Stubbing rAF to a no-op stops the
+      // loop from scheduling; the onClick capture path (scanCurrentFrame(true))
+      // is invoked directly and is unaffected. Without this the outline
+      // assertions race the loop and flake under load (observed in CI).
+      vi.spyOn(window, "requestAnimationFrame").mockReturnValue(0);
+      vi.spyOn(HTMLVideoElement.prototype, "videoWidth", "get").mockReturnValue(320);
+      vi.spyOn(HTMLVideoElement.prototype, "videoHeight", "get").mockReturnValue(240);
+      vi.spyOn(HTMLMediaElement.prototype, "readyState", "get").mockReturnValue(
+        HTMLMediaElement.HAVE_ENOUGH_DATA
+      );
+      vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
+        drawImage: vi.fn(),
+        getImageData: vi.fn().mockReturnValue({
+          data: new Uint8ClampedArray(320 * 240 * 4),
+          width: 320,
+          height: 240,
+        }),
+      } as unknown as CanvasRenderingContext2D);
+    });
+
+    const lockingCorners = [
       { x: 20, y: 30 },
       { x: 300, y: 28 },
       { x: 302, y: 220 },
       { x: 18, y: 222 }
     ];
     const mockCard = { width: 100, height: 140, data: new Uint8Array(100 * 140 * 3) };
-    vi.mocked(detectCard).mockImplementationOnce((_frame, options) => {
-      options?.onCorners?.(corners);
-      return mockCard;
-    });
-    const onAcquisitionDiagnostic = vi.fn<(diagnostic: AcquisitionFrameDiagnostic) => void>();
 
-    render(
-      <ScanCameraSurface
-        onCapture={() => undefined}
-        onAcquisitionDiagnostic={onAcquisitionDiagnostic}
-        _frameExporter={vi.fn()}
-        _diagnosticExporter={vi.fn()}
-      />
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Debug" }));
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+    it("draws the affirmative outline while locking, with no read region and the debug overlay off", async () => {
+      vi.mocked(detectCard).mockImplementationOnce((_frame, options) => {
+        options?.onCorners?.(lockingCorners);
+        return mockCard;
+      });
+      render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+      });
+
+      const outline = screen.getByTestId("scan-card-outline");
+      expect(outline.querySelector("polygon")).toHaveAttribute("stroke", "#34d399");
+      expect(screen.queryByTestId("scan-debug-overlay")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("scan-debug-geometry")).not.toBeInTheDocument();
     });
 
-    expect(onAcquisitionDiagnostic).toHaveBeenCalledWith(
-      expect.objectContaining({
-        detector: expect.objectContaining({
-          success: true,
-          corners: [
-            [20, 30],
-            [300, 28],
-            [302, 220],
-            [18, 222]
-          ],
-          guideRect: expect.any(Object),
+    it("does not draw the outline while searching, even with corners captured", async () => {
+      vi.mocked(detectCard).mockImplementationOnce((_frame, options) => {
+        options?.onCorners?.(lockingCorners);
+        return mockCard;
+      });
+      render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+      });
+
+      expect(screen.queryByTestId("scan-card-outline")).not.toBeInTheDocument();
+    });
+
+    it("clears the outline once phase leaves locking (drop back to searching)", async () => {
+      vi.mocked(detectCard).mockImplementationOnce((_frame, options) => {
+        options?.onCorners?.(lockingCorners);
+        return mockCard;
+      });
+      const { rerender } = render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+      });
+      expect(screen.getByTestId("scan-card-outline")).toBeInTheDocument();
+
+      rerender(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
+
+      expect(screen.queryByTestId("scan-card-outline")).not.toBeInTheDocument();
+    });
+
+    it("clears the outline on lock-complete/auto-add reset back to searching", async () => {
+      vi.mocked(detectCard).mockImplementationOnce((_frame, options) => {
+        options?.onCorners?.(lockingCorners);
+        return mockCard;
+      });
+      const { rerender } = render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+      });
+      expect(screen.getByTestId("scan-card-outline")).toBeInTheDocument();
+
+      // Hook auto-adds and resets convergence to its initial searching shape.
+      rerender(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          convergence={searching}
+          confirmation={{ id: 1, cardName: "Lightning Bolt" }}
+        />
+      );
+
+      expect(screen.queryByTestId("scan-card-outline")).not.toBeInTheDocument();
+    });
+
+    it("degrades to no outline when a locking frame has no captured corners", async () => {
+      vi.mocked(detectCard).mockReturnValueOnce(null);
+      render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+      });
+
+      expect(screen.queryByTestId("scan-card-outline")).not.toBeInTheDocument();
+      expect(screen.getByText("Locking on Lightning Bolt")).toBeInTheDocument();
+    });
+  });
+
+  describe("Debug-gated frame export", () => {
+    beforeEach(() => {
+      vi.mocked(detectCard).mockReturnValue(null);
+      // Give video valid dimensions and readyState to bypass early-return guards in scanCurrentFrame.
+      vi.spyOn(HTMLVideoElement.prototype, "videoWidth", "get").mockReturnValue(320);
+      vi.spyOn(HTMLVideoElement.prototype, "videoHeight", "get").mockReturnValue(240);
+      vi.spyOn(HTMLMediaElement.prototype, "readyState", "get").mockReturnValue(
+        HTMLMediaElement.HAVE_ENOUGH_DATA
+      );
+      // Provide a minimal canvas context so getContext("2d") doesn't return null.
+      // Use a plain object for ImageData — it is not available in this jsdom setup.
+      vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
+        drawImage: vi.fn(),
+        getImageData: vi.fn().mockReturnValue({
+          data: new Uint8ClampedArray(320 * 240 * 4),
+          width: 320,
+          height: 240,
+        }),
+      } as unknown as CanvasRenderingContext2D);
+    });
+
+    it("does not call the frame exporter when debug is disabled", async () => {
+      const exporter = vi.fn();
+      render(<ScanCameraSurface onCapture={() => undefined} _frameExporter={exporter} />);
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+      });
+      expect(exporter).not.toHaveBeenCalled();
+    });
+
+    it("calls the frame exporter once with the canvas when debug is enabled and Capture is pressed", async () => {
+      const exporter = vi.fn();
+      render(
+        <ScanCameraSurface onCapture={() => undefined} _frameExporter={exporter} _diagnosticExporter={vi.fn()} />
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Debug" }));
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+      });
+      expect(exporter).toHaveBeenCalledOnce();
+      expect(exporter).toHaveBeenCalledWith(expect.any(HTMLCanvasElement));
+    });
+
+    it("passes the detector-warped card to onCapture, not the raw canvas frame", async () => {
+      const mockCard = { width: 100, height: 140, data: new Uint8Array(100 * 140 * 3) };
+      vi.mocked(detectCard).mockReturnValueOnce(mockCard);
+
+      const onCapture = vi.fn();
+      const exporter = vi.fn();
+      render(<ScanCameraSurface onCapture={onCapture} _frameExporter={exporter} _diagnosticExporter={vi.fn()} />);
+      fireEvent.click(screen.getByRole("button", { name: "Debug" }));
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+      });
+      // Exporter receives the raw canvas; onCapture receives the detector output.
+      expect(exporter).toHaveBeenCalledWith(expect.any(HTMLCanvasElement));
+      expect(onCapture).toHaveBeenCalledWith(mockCard);
+      expect(exporter.mock.calls[0][0]).not.toBe(onCapture.mock.calls[0][0]);
+    });
+
+    it("passes a detector guide rect derived from the rendered reticle geometry", async () => {
+      vi.mocked(detectCard).mockClear();
+
+      render(<ScanCameraSurface onCapture={() => undefined} />);
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+      });
+
+      expect(detectCard).toHaveBeenCalledWith(
+        expect.objectContaining({ width: 320, height: 240 }),
+        expect.objectContaining({
+          guide: expect.objectContaining({
+            x: expect.closeTo(89.5, 1),
+            y: expect.closeTo(21.6, 1),
+            width: expect.closeTo(141, 1),
+            height: expect.closeTo(196.8, 1)
+          })
+        })
+      );
+    });
+
+    it("does not emit or export acquisition diagnostics when debug is disabled", async () => {
+      const onAcquisitionDiagnostic = vi.fn();
+      const diagnosticExporter = vi.fn();
+
+      render(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          onAcquisitionDiagnostic={onAcquisitionDiagnostic}
+          _diagnosticExporter={diagnosticExporter}
+        />
+      );
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+      });
+
+      expect(onAcquisitionDiagnostic).not.toHaveBeenCalled();
+      expect(diagnosticExporter).not.toHaveBeenCalled();
+    });
+
+    it("emits and exports detector-miss diagnostics when debug is enabled", async () => {
+      const applyConstraints = vi.fn().mockResolvedValue(undefined);
+      const getSettings = vi.fn().mockReturnValue({
+        width: 1920,
+        height: 1080,
+        facingMode: "environment",
+        frameRate: 30,
+        deviceId: "device-a",
+        groupId: "group-a",
+        focusMode: "continuous"
+      });
+      const getCapabilities = vi.fn().mockReturnValue({ focusMode: ["continuous"] });
+      vi.mocked(navigator.mediaDevices.getUserMedia).mockResolvedValueOnce({
+        getTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }],
+        getVideoTracks: () => [{ stop: vi.fn(), getSettings, getCapabilities, applyConstraints }]
+      } as unknown as MediaStream);
+      const onAcquisitionDiagnostic = vi.fn();
+      const diagnosticExporter = vi.fn();
+
+      await act(async () => {
+        render(
+          <ScanCameraSurface
+            onCapture={() => undefined}
+            onAcquisitionDiagnostic={onAcquisitionDiagnostic}
+            _frameExporter={vi.fn()}
+            _diagnosticExporter={diagnosticExporter}
+          />
+        );
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Debug" }));
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+      });
+
+      const expectedDiagnostic = expect.objectContaining({
+        reason: "detector-miss",
+        capture: expect.objectContaining({
+          frameIndex: 1,
           nativeWidth: 320,
           nativeHeight: 240,
-          maxDetectDimension: 640
+          trackWidth: 1920,
+          trackHeight: 1080,
+          trackFacingMode: "environment",
+          trackFrameRate: 30,
+          trackDeviceId: "device-a",
+          trackGroupId: "group-a",
+          trackFocusModeRequested: "continuous",
+          trackFocusMode: "continuous"
+        }),
+        detector: expect.objectContaining({
+          success: false,
+          nativeWidth: 320,
+          nativeHeight: 240,
+          maxDetectDimension: 640,
+          guideRect: expect.objectContaining({
+            x: expect.closeTo(89.5, 1),
+            y: expect.closeTo(21.6, 1),
+            width: expect.closeTo(141, 1),
+            height: expect.closeTo(196.8, 1)
+          })
         })
-      })
-    );
+      });
+      expect(onAcquisitionDiagnostic).toHaveBeenCalledWith(expectedDiagnostic);
+      expect(diagnosticExporter).toHaveBeenCalledWith(expectedDiagnostic);
+    });
+
+    it("emits detector success diagnostics with full-res corners when debug is enabled", async () => {
+      const corners = [
+        { x: 20, y: 30 },
+        { x: 300, y: 28 },
+        { x: 302, y: 220 },
+        { x: 18, y: 222 }
+      ];
+      const mockCard = { width: 100, height: 140, data: new Uint8Array(100 * 140 * 3) };
+      vi.mocked(detectCard).mockImplementationOnce((_frame, options) => {
+        options?.onCorners?.(corners);
+        return mockCard;
+      });
+      const onAcquisitionDiagnostic = vi.fn<(diagnostic: AcquisitionFrameDiagnostic) => void>();
+
+      render(
+        <ScanCameraSurface
+          onCapture={() => undefined}
+          onAcquisitionDiagnostic={onAcquisitionDiagnostic}
+          _frameExporter={vi.fn()}
+          _diagnosticExporter={vi.fn()}
+        />
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Debug" }));
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+      });
+
+      expect(onAcquisitionDiagnostic).toHaveBeenCalledWith(
+        expect.objectContaining({
+          detector: expect.objectContaining({
+            success: true,
+            corners: [
+              [20, 30],
+              [300, 28],
+              [302, 220],
+              [18, 222]
+            ],
+            guideRect: expect.any(Object),
+            nativeWidth: 320,
+            nativeHeight: 240,
+            maxDetectDimension: 640
+          })
+        })
+      );
+    });
   });
 });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { formatElapsed, selectStage, WAIT_STAGES } from "./askAiWaitStages";
 
+describe("Frontend - MTG Assistant", () => {
 describe("selectStage", () => {
   it("returns threshold-0 stage at 0s", () => {
     expect(selectStage(0, WAIT_STAGES).threshold).toBe(0);
@@ -47,4 +48,5 @@ describe("formatElapsed", () => {
   it("formats 63 as 1:03", () => {
     expect(formatElapsed(63)).toBe("1:03");
   });
+});
 });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FLOW_STEPS, FLOW_STEP_LABELS, getNextStep, getPreviousStep } from "./steps";
 
+describe("Frontend - MTG Assistant", () => {
 describe("contextFlow steps", () => {
   it("FLOW_STEPS lists the zone-based flow in order", () => {
     expect(FLOW_STEPS).toEqual(["game-context", "zone-confirm", "zone-collection", "enrichment"]);
@@ -24,4 +25,5 @@ describe("contextFlow steps", () => {
     expect(getPreviousStep("zone-confirm")).toBe("game-context");
     expect(getPreviousStep("game-context")).toBeNull();
   });
+});
 });

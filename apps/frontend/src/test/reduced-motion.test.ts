@@ -20,7 +20,8 @@ function cssBlock(startMarker: string): string {
   return "";
 }
 
-describe("reduced-motion CSS contract", () => {
+describe("Frontend - Shared", () => {
+describe("Reduced-motion CSS contract", () => {
   it("neutralizes every decorative motion surface", () => {
     const reducedMotion = cssBlock("@media (prefers-reduced-motion: reduce)");
 
@@ -54,4 +55,5 @@ describe("reduced-motion CSS contract", () => {
     expect(reducedMotion).not.toContain(".scan-confirm-popup");
     expect(reducedMotion).not.toContain(".send-spinner");
   });
+});
 });

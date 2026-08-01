@@ -16,6 +16,7 @@ const ACCEPTED: VoteReasonInput = {
   margin: 20
 };
 
+describe("Frontend - Card Scan", () => {
 describe("classifyVoteReason", () => {
   it("returns detector-miss when no card outline was found", () => {
     expect(classifyVoteReason({ ...ACCEPTED, detectorHit: false }, THRESHOLDS)).toBe("detector-miss");
@@ -79,4 +80,5 @@ describe("classifyVoteReason", () => {
     // bestDistance=60 passes the default threshold but fails the tight one
     expect(classifyVoteReason(ACCEPTED, tight)).toBe("distance-above-lock");
   });
+});
 });

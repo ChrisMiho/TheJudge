@@ -30,6 +30,7 @@ function makeCard(id: string, name = id): ZoneCardItem {
 
 // ── canAdvance ──────────────────────────────────────────────────────────────
 
+describe("Frontend - MTG Assistant", () => {
 describe("canAdvance", () => {
   it("game-context: returns true when players have valid life totals", () => {
     expect(
@@ -382,4 +383,5 @@ describe("buildLookupAskAiRequest", () => {
     });
     expect(payload.card).not.toHaveProperty("instanceId");
   });
+});
 });

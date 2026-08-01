@@ -29,6 +29,7 @@ type TransformResult = {
   };
 };
 
+describe("Frontend - Shared", () => {
 describe("isStandardPrinting", () => {
   it("returns true for a normal non-promo printing", () => {
     expect(
@@ -307,4 +308,5 @@ describe("metadata transform policy", () => {
       subtypes: ["Goblin", "Wizard"]
     });
   });
+});
 });

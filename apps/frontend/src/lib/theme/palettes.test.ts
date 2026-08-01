@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { DEFAULT_PALETTE_ID, getPaletteById, isValidPaletteId, PALETTES } from "./palettes";
 
+describe("Frontend - Theme", () => {
 describe("palettes", () => {
   it("exports an ordered, non-empty palette list", () => {
     expect(PALETTES.length).toBeGreaterThan(0);
@@ -41,4 +42,5 @@ describe("palettes", () => {
     expect(isValidPaletteId("blue")).toBe(true);
     expect(isValidPaletteId("not-a-real-palette")).toBe(false);
   });
+});
 });

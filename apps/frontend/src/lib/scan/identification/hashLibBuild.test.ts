@@ -40,6 +40,7 @@ afterEach(() => {
   }
 });
 
+describe("Frontend - Card Scan", () => {
 describe("planTargetEntryIds", () => {
   it("returns distinct, deduped ids in stable lexicographic order", () => {
     const ids = planTargetEntryIds(
@@ -385,4 +386,5 @@ describe("resolveBuildTargets", () => {
       }).manifest
     ).toBe("/tmp/operator-chosen.manifest.json");
   });
+});
 });

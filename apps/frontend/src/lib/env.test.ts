@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveApiBaseUrl, resolveDebugLoggingEnabled, resolveIsMockProvider } from "./env";
 
+describe("Frontend - Shared", () => {
 describe("frontend env config", () => {
   it("uses localhost backend default when unset", () => {
     expect(resolveApiBaseUrl(undefined)).toBe("http://localhost:3000");
@@ -51,4 +52,5 @@ describe("frontend env config", () => {
   it("never throws on unrecognized provider values", () => {
     expect(() => resolveIsMockProvider("something-weird")).not.toThrow();
   });
+});
 });

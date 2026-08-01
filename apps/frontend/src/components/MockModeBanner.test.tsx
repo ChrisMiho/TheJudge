@@ -17,6 +17,7 @@ afterEach(() => {
   mockProviderValue = false;
 });
 
+describe("Frontend - MTG Assistant", () => {
 describe("MockModeBanner", () => {
   it("renders the exact banner copy when the mock provider is active", () => {
     mockProviderValue = true;
@@ -40,4 +41,5 @@ describe("MockModeBanner", () => {
     expect(container).toBeEmptyDOMElement();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
+});
 });

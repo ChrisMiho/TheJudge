@@ -101,6 +101,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+describe("Frontend - MTG Assistant", () => {
 describe("ZoneCollectionStep scan focus", () => {
   it("adds shared interaction feedback to zone tabs and flow actions", () => {
     mockScanCapture(false);
@@ -210,4 +211,5 @@ describe("ZoneCollectionStep scan focus", () => {
 
     expect(onZonesChange).toHaveBeenCalledWith({ battlefield: [card2] });
   });
+});
 });

@@ -22,6 +22,7 @@ function createMemoryStorage(): Storage {
   };
 }
 
+describe("Frontend - Theme", () => {
 describe("useThemePalette", () => {
   beforeEach(() => {
     vi.stubGlobal("localStorage", createMemoryStorage());
@@ -63,4 +64,5 @@ describe("useThemePalette", () => {
     expect(document.documentElement.dataset.theme).toBe("emerald");
     expect(localStorage.getItem("thejudge.theme.paletteId")).toBe("emerald");
   });
+});
 });

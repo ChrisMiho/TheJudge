@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+describe("Frontend - Card Scan", () => {
 describe("loadScanMap", () => {
   beforeEach(() => {
     vi.resetModules();
@@ -44,4 +45,5 @@ describe("loadScanMap", () => {
 
     await expect(loadScanMap()).rejects.toThrow("Could not load card scan map: 404 Not Found");
   });
+});
 });

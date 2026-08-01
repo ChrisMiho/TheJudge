@@ -107,6 +107,7 @@ function appFetchMock(answers: string[]): ReturnType<typeof vi.fn> {
   });
 }
 
+describe("Frontend - Quick Lookup", () => {
 describe("QuickLookupApp", () => {
   beforeEach(() => {
     vi.stubGlobal(
@@ -290,4 +291,5 @@ describe("QuickLookupApp", () => {
     expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove Lightning Bolt" })).toBeInTheDocument();
   });
+});
 });

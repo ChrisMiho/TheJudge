@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildPlayerDisplayNameMap, formatPlayerDisplayLabel } from "./playerLabels";
 import type { GamePlayerContext } from "../types";
 
+describe("Frontend - MTG Assistant", () => {
 describe("playerLabels", () => {
   it("keeps the canonical label when display name is unset, blank, or the same as the label", () => {
     expect(formatPlayerDisplayLabel("Player 1")).toBe("Player 1");
@@ -24,4 +25,5 @@ describe("playerLabels", () => {
       "Player 2": undefined
     });
   });
+});
 });

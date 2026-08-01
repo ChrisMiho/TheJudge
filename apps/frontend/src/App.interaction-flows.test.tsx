@@ -52,7 +52,8 @@ function queueAskAiResponses(...responses: Array<{ status: number; body: unknown
   askAiResponseQueue = responses;
 }
 
-describe("App MVP interaction flows", () => {
+describe("Frontend - MTG Assistant", () => {
+describe("Interaction flows", () => {
   beforeEach(() => {
     metadataFixture = [...baseCardMetadataFixture];
     askAiResponseQueue = [{ status: 200, body: { answer: "Mock answer" } }];
@@ -1315,4 +1316,5 @@ describe("App MVP interaction flows", () => {
     expect(screen.queryByRole("button", { name: "Add battlefield target" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add card" })).toBeInTheDocument();
   });
+});
 });

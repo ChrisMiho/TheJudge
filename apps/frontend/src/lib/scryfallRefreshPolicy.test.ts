@@ -6,6 +6,7 @@ import {
   shouldRunDataBuildAfterRefresh
 } from "../../../../scripts/refresh-scryfall-data.mjs";
 
+describe("Frontend - Shared", () => {
 describe("Scryfall refresh policy", () => {
   it("selects default cards and rulings bulk targets with local output paths", () => {
     const payload = {
@@ -70,4 +71,5 @@ describe("Scryfall refresh policy", () => {
     expect(shouldRunDataBuildAfterRefresh(1)).toBe(true);
     expect(shouldRunDataBuildAfterRefresh(3)).toBe(true);
   });
+});
 });
