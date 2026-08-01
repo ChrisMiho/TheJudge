@@ -501,6 +501,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: `.github/workflows/deploy-aws.yml`, `scripts/aws-bootstrap.sh`
 - Backed by: DEC-084, NFR-004
 
+## Quick Lookup
+
+- Status: shipped
+- Summary: Unified short-form MTG Ask AI destination for a freeform rules question with an optional single card resolved by typed search or camera scan. It uses the additive `mode: "lookup"` branch on `POST /api/ask-ai`, always runs question-driven rules retrieval, layers in card metadata/rulings when a card is attached, omits staged-game sections, and reuses the shared conversation thread, follow-up, retry, and start-over behavior. The empty state includes a collapsed, fully local six-topic rules disclosure generated from the curated rules corpus.
+- Lives in: `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx`, `apps/frontend/src/components/portal/destinationRegistry.tsx`, `apps/frontend/src/hooks/useAskAiSubmitOrchestration.ts`, `apps/frontend/public/data/gameRulesCoreTopics.json`, `apps/backend/src/validation/askAiRequest.ts`, `apps/backend/src/prompt/`, `apps/backend/src/gameRulesRetrieval.ts`, `apps/backend/src/eval/fixtures/quick-lookup-*`, `scripts/build-game-rules.mjs`
+- Backed by: DEC-106, DEC-107, DEC-108, REQ-072, REQ-073, REQ-074, REQ-075, REQ-079, FLOW-011
+
 ## Trade balancer
 
 - Status: planned

@@ -8,7 +8,7 @@ Integrate Commander Spellbook community combos into TheJudge (static artifact pi
 
 ## Related work
 
-- May attach to or follow `card-lookup-qa` / `feature-portal` for card-centric UI entry.
+- May attach to the shipped Quick Lookup / feature-portal surfaces (DEC-107 / DEC-095) for card-centric UI entry.
 - Prompt enrichment would follow the existing backend rulings pattern (`DEC-029` style), not a new product API.
 
 ## Exploration notes (for refinement)
