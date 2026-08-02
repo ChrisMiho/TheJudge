@@ -1664,7 +1664,7 @@
   - only one card is active at a time; there are no zones, stack, phase, multi-card setup, or per-card enrichment-editing controls
   - a freeform question field accepts up to the same character cap as the main flow question (REQ-011)
   - the pre-submit view's guidance copy, directly under the header, reads exactly **"Add a card for context or ask any Magic related question."**
-  - the pre-submit view is laid out top to bottom as: optional card-attach control, then the Question field, then the "General rules topics" section (REQ-079), which is always visible regardless of whether a card is attached or the question field already has text
+  - the pre-submit view is laid out top to bottom as: optional card-attach control, then the Question field, then the "General rules topics" outer disclosure (REQ-079), whose collapsed summary remains visible regardless of whether a card is attached or the question field already has text
 - Constraints:
   - reuse existing search, scan, card-presentation, and core-topics components; do not fork new identity or metadata models
   - printing-level scan identity stays presentation-only and is not pushed into the request, prompt, or rulings (DEC-053)
@@ -1678,7 +1678,7 @@
   - REQ-079
 - Notes:
   - during quick-lookup refinement this requirement was rewritten to merge the prior separate Card Lookup entry (this ID) and Rules Lookup entry (former REQ-076) into one destination; see REQ-076
-  - during quick-question-ui-refinement, the guidance-copy wording and the card/question/topics section order were confirmed (DEC-112); the prior "empty state shows the fallback" framing is superseded by REQ-079's always-visible section
+  - during quick-question-ui-refinement, the guidance-copy wording and the card/question/topics section order were confirmed (DEC-112); the prior "empty state shows the fallback" framing is superseded by REQ-079's always-rendered collapsed outer disclosure
 
 ### REQ-074
 - Title: Quick Lookup prompt assembly and domain guardrail
@@ -1769,10 +1769,10 @@
 ### REQ-079
 - Title: General rules topics browse fallback
 - Priority: medium
-- Description: Quick Lookup must offer a small always-local list of core rules topics (labeled "General rules topics") the user can read with no AI call, built from the same curated rules excerpts the prompt uses, positioned below the Question field and visible regardless of whether a card is attached or the question field already has text.
+- Description: Quick Lookup must offer a small always-local list of core rules topics (labeled "General rules topics") the user can read with no AI call, built from the same curated rules excerpts the prompt uses and positioned below the Question field. Its outer disclosure summary remains visible regardless of card/question state while the topic list is collapsed by default.
 - Acceptance Criteria:
-  - the pre-submit view shows the "General rules topics" section below the Question field, listing a short set of core rules topics (e.g. the stack & priority, targeting, combat, layers)
-  - the section is always visible — attaching a card and/or typing into the question field does not hide it
+  - the pre-submit view shows a collapsed-by-default outer "General rules topics" disclosure below the Question field; expanding it reveals a short set of core rules topics (e.g. the stack & priority, targeting, combat, layers)
+  - the outer disclosure's summary is always visible — attaching a card and/or typing into the question field does not hide it — while its helper copy and topic list stay hidden when collapsed
   - topic rows are collapsed by default: each row shows its title, an action button (REQ-091), and an expand/collapse toggle, all visible without expanding
   - expanding a row reveals that topic's rule numbers and excerpt; opening one topic auto-collapses any other currently-open topic (accordion — at most one excerpt visible at a time)
   - the topic content is a committed frontend subset of the same curated `gameRulesByTopic` excerpts used by prompt assembly (single source of truth; no hand-authored second copy)
@@ -1791,7 +1791,7 @@
 - Notes:
   - the committed core-topics subset is regenerated from the curated manifest by the existing data build; topic selection is a build-time sign-off like DEC-030
   - during quick-lookup refinement this requirement's dependency moved from DEC-099 (Rules Lookup, superseded) to DEC-107 (Quick Lookup); its content is otherwise unchanged
-  - during the quick-question-ui-refinement work this requirement's section title ("Browse core rules topics" → "General rules topics"), placement (below the Question field), always-visible gate removal, and row-level accordion disclosure were confirmed (DEC-112); the row action button's behavior superseded its original "pre-fills a freely editable textarea" criterion — see REQ-091
+  - during the quick-question-ui-refinement work this requirement's section title ("Browse core rules topics" → "General rules topics"), placement (below the Question field), always-rendered outer-summary gate change, collapsed outer disclosure, and nested row-level accordion were confirmed (DEC-112); the row action button's behavior superseded its original "pre-fills a freely editable textarea" criterion — see REQ-091
 
 ### REQ-080
 - Title: Rules Lookup conversation thread and limits
@@ -2034,9 +2034,9 @@
   - the textarea's placeholder text changes while a pill is locked, inviting optional additional detail or an as-is submit (e.g. "Add anything specific — or leave this blank and just ask.")
   - submit is enabled whenever a pill is locked, a card is attached, or the textarea has non-empty trimmed text — not only on non-empty textarea content
   - tapping "Use this topic" smooth-scrolls the view so the Question field (with its new pill) is visible, and focuses the textarea
-  - on submit, the request's `question` value is: the pill phrase plus the trimmed textarea content (space-joined) when both are present; the pill phrase alone when the textarea is empty; or the plain textarea content when no pill is locked — composed client-side with no `AskAiRequest` shape change
+  - on submit, the request's `question` value is composed client-side with no `AskAiRequest` shape change: the pill phrase plus the trimmed textarea content (space-joined) when both are present; the pill phrase alone when the textarea is empty; the trimmed textarea content alone when no pill is locked and the textarea is non-empty; or, when no pill is locked, the textarea is empty, and a card is attached, the silent fallback phrase `Tell me about {Card Name}.` (not shown to the user; mirrors the locked-pill's phrasing convention and the game-context flow's existing silent-fallback-question precedent)
   - the shared 300-character cap (REQ-011) applies to the composed question string, and the visible character counter reflects the composed length
-  - a locked topic pill and an attached card may both be present at submit time; the general rules topics section's always-visible behavior (REQ-079) is unaffected by whether a pill is locked
+  - a locked topic pill and an attached card may both be present at submit time; the collapsed outer general-rules-topics summary remains rendered (REQ-079) whether or not a pill is locked
 - Constraints:
   - no `AskAiRequest` / Zod / backend prompt-assembly contract change; composition is frontend-only string concatenation
   - reuses the existing curated `gameRulesByTopic` / `gameRulesCoreTopics.json` source; no new topic data
