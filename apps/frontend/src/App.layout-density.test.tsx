@@ -85,7 +85,7 @@ describe("Layout density toggle", () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
     await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
 
     expect(document.documentElement.dataset.layoutDensity).toBe("slim");
@@ -95,7 +95,7 @@ describe("Layout density toggle", () => {
     const user = userEvent.setup();
     const firstRender = render(<App />);
 
-    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
     await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
     await waitFor(() => {
       expect(globalThis.localStorage.getItem("thejudge.theme.layoutDensity")).toBe("slim");
@@ -107,7 +107,7 @@ describe("Layout density toggle", () => {
     render(<App />);
 
     await waitFor(() => expect(document.documentElement.dataset.layoutDensity).toBe("slim"));
-    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
     expect(screen.getByRole("button", { name: "Layout: Slim" })).toHaveAttribute("aria-pressed", "true");
   });
 
@@ -115,7 +115,7 @@ describe("Layout density toggle", () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
 
     expect(screen.getByRole("button", { name: "Layout: Chunky" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: "Layout: Slim" })).toHaveAttribute("aria-pressed", "false");
@@ -136,7 +136,7 @@ describe("Layout density toggle", () => {
     await advanceToContextEnrichmentFromZones(user);
     await user.type(screen.getByPlaceholderText("How does this resolve?"), "Will this resolve?");
 
-    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
     await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
 
     expect(screen.getByPlaceholderText("How does this resolve?")).toHaveValue("Will this resolve?");
@@ -152,7 +152,7 @@ describe("Layout density toggle", () => {
     await clickDecryptStack(user);
     await screen.findByText("The stack resolves.");
 
-    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
     await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
 
     expect(screen.getByText("The stack resolves.")).toBeInTheDocument();

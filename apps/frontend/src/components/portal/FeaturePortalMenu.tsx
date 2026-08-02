@@ -2,11 +2,17 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { PortalSlotContext } from "../../lib/portal/slotContext";
 import type { DestinationId, PortalDestination } from "../../lib/portal/types";
+import type { LayoutDensity } from "../../lib/theme/layoutDensity";
+import { ThemeSection } from "./ThemeSection";
 
 export interface FeaturePortalMenuProps {
   destinations: PortalDestination[];
   activeDestinationId: DestinationId;
   onSelect: (id: DestinationId) => void;
+  paletteId: string;
+  onPaletteSelect: (id: string) => void;
+  density: LayoutDensity;
+  onDensityChange: (density: LayoutDensity) => void;
   /**
    * Rendered as this component's own children. When the active destination renders a
    * <PortalSlot />, the button portals into it (inline with that destination's own header,
@@ -17,7 +23,16 @@ export interface FeaturePortalMenuProps {
   children: ReactNode;
 }
 
-export function FeaturePortalMenu({ destinations, activeDestinationId, onSelect, children }: FeaturePortalMenuProps): JSX.Element {
+export function FeaturePortalMenu({
+  destinations,
+  activeDestinationId,
+  onSelect,
+  paletteId,
+  onPaletteSelect,
+  density,
+  onDensityChange,
+  children
+}: FeaturePortalMenuProps): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const [slotNode, setSlotNode] = useState<HTMLDivElement | null>(null);
   const [isSlotVisible, setIsSlotVisible] = useState(false);
@@ -67,6 +82,16 @@ export function FeaturePortalMenu({ destinations, activeDestinationId, onSelect,
     setIsOpen(false);
   }
 
+  function handlePaletteSelect(id: string): void {
+    onPaletteSelect(id);
+    setIsOpen(false);
+  }
+
+  function handleDensityChange(nextDensity: LayoutDensity): void {
+    onDensityChange(nextDensity);
+    setIsOpen(false);
+  }
+
   const trigger = (
     <div
       ref={containerRef}
@@ -81,7 +106,6 @@ export function FeaturePortalMenu({ destinations, activeDestinationId, onSelect,
         className="motion-hover motion-press motion-focus flex h-11 items-center gap-2 rounded-b-2xl border border-t-0 border-accent/55 bg-zinc-900/95 px-4 text-sm font-medium text-zinc-100 transition hover:bg-zinc-800/90"
       >
         <span aria-hidden="true">☰</span>
-        <span>Menu</span>
       </button>
 
       {isOpen && (
@@ -114,6 +138,15 @@ export function FeaturePortalMenu({ destinations, activeDestinationId, onSelect,
                 </button>
               );
             })}
+            <div className="mt-1 flex flex-col gap-1 border-t border-zinc-700/60 pt-2">
+              <p className="px-1 pb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">Theme</p>
+              <ThemeSection
+                paletteId={paletteId}
+                onSelect={handlePaletteSelect}
+                density={density}
+                onDensityChange={handleDensityChange}
+              />
+            </div>
           </div>
         </div>
       )}
