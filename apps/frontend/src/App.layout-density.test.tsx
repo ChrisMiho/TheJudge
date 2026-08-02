@@ -81,44 +81,44 @@ describe("Layout density toggle", () => {
     document.documentElement.style.removeProperty("--accent-contrast");
   });
 
-  it("sets data-layout-density=slim on document root when Slim is selected", async () => {
+  it("sets data-layout-density=chunky on document root when Desktop is selected", async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByRole("button", { name: "Theme" }));
-    await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    await user.click(screen.getByRole("button", { name: "Layout: Desktop" }));
 
-    expect(document.documentElement.dataset.layoutDensity).toBe("slim");
+    expect(document.documentElement.dataset.layoutDensity).toBe("chunky");
   });
 
-  it("restores the persisted Slim density on a fresh app mount", async () => {
+  it("restores the persisted Desktop density on a fresh app mount", async () => {
     const user = userEvent.setup();
     const firstRender = render(<App />);
 
-    await user.click(screen.getByRole("button", { name: "Theme" }));
-    await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    await user.click(screen.getByRole("button", { name: "Layout: Desktop" }));
     await waitFor(() => {
-      expect(globalThis.localStorage.getItem("thejudge.theme.layoutDensity")).toBe("slim");
-      expect(document.documentElement.dataset.layoutDensity).toBe("slim");
+      expect(globalThis.localStorage.getItem("thejudge.theme.layoutDensity")).toBe("chunky");
+      expect(document.documentElement.dataset.layoutDensity).toBe("chunky");
     });
     firstRender.unmount();
     delete document.documentElement.dataset.layoutDensity;
 
     render(<App />);
 
-    await waitFor(() => expect(document.documentElement.dataset.layoutDensity).toBe("slim"));
-    await user.click(screen.getByRole("button", { name: "Theme" }));
-    expect(screen.getByRole("button", { name: "Layout: Slim" })).toHaveAttribute("aria-pressed", "true");
+    await waitFor(() => expect(document.documentElement.dataset.layoutDensity).toBe("chunky"));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    expect(screen.getByRole("button", { name: "Layout: Desktop" })).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("indicates the active density in the theme panel", async () => {
+  it("indicates the default Mobile density in the theme panel", async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
 
-    expect(screen.getByRole("button", { name: "Layout: Chunky" })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button", { name: "Layout: Slim" })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: "Layout: Mobile" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Layout: Desktop" })).toHaveAttribute("aria-pressed", "false");
   });
 
   it("does not reset game setup, zones, cards, or conversation state when density changes", async () => {
@@ -136,8 +136,8 @@ describe("Layout density toggle", () => {
     await advanceToContextEnrichmentFromZones(user);
     await user.type(screen.getByPlaceholderText("How does this resolve?"), "Will this resolve?");
 
-    await user.click(screen.getByRole("button", { name: "Theme" }));
-    await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    await user.click(screen.getByRole("button", { name: "Layout: Desktop" }));
 
     expect(screen.getByPlaceholderText("How does this resolve?")).toHaveValue("Will this resolve?");
     expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
@@ -152,8 +152,8 @@ describe("Layout density toggle", () => {
     await clickDecryptStack(user);
     await screen.findByText("The stack resolves.");
 
-    await user.click(screen.getByRole("button", { name: "Theme" }));
-    await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    await user.click(screen.getByRole("button", { name: "Layout: Desktop" }));
 
     expect(screen.getByText("The stack resolves.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();

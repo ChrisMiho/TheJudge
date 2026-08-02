@@ -1121,17 +1121,17 @@
 ### REQ-055
 - Title: Layout density preference
 - Priority: medium
-- Description: The frontend must let users choose a global **Chunky / Slim** layout density through the existing theme panel, with the selection applied immediately and persisted for that browser. Chunky is the default and must match pre-change spacing on reference screens.
+- Description: The frontend must let users choose a global **Desktop / Mobile** layout density (labels; stored internally as `"chunky"` / `"slim"`) through the existing theme panel, with the selection applied immediately and persisted for that browser. Mobile (`"slim"`) is the default as of 2026-08-02 (previously Desktop/`"chunky"`; see DEC-075) and must match pre-change slim spacing on reference screens.
 - Acceptance Criteria:
-  - the theme panel exposes a Chunky / Slim segmented control below the palette swatches
+  - the theme panel exposes a Desktop / Mobile segmented control below the palette swatches
   - selecting a density immediately applies spacing via `data-layout-density` on `document.documentElement` and shared semantic CSS classes (`page-shell`, `page-card`, `panel-inner`, etc.)
-  - default density is chunky; missing, unset, corrupt, or unsupported stored values fall back to chunky without throwing or blocking app load
-  - chunky mode on reference staged screens matches pre-change spacing (regression guard)
-  - slim mode visibly tightens shell padding, card gaps, and panel inner spacing without breaking touch targets or readability
-  - slim density applies only to participating density surfaces; `ZoneConfirmStep` is excluded from slim visual changes, and any shared shell extraction there must render visually unchanged
+  - default density is Mobile (`"slim"`); missing, unset, corrupt, or unsupported stored values fall back to Mobile (`"slim"`) without throwing or blocking app load
+  - Desktop (`"chunky"`) mode on reference staged screens matches pre-change spacing (regression guard)
+  - Mobile (`"slim"`) mode visibly tightens shell padding, card gaps, and panel inner spacing without breaking touch targets or readability
+  - Mobile density applies only to participating density surfaces; `ZoneConfirmStep` is excluded from slim visual changes, and any shared shell extraction there must render visually unchanged
   - selected density persists across page reloads for the same browser
   - density changes do not reset game setup, selected zones, cards, enrichment, question text, answers, conversation state, scanner state, or retry cooldowns
-  - tests cover density selection, persistence, fallback, chunky regression on at least one reference screen, and state safety
+  - tests cover density selection, persistence, fallback, Desktop regression on at least one reference screen, and state safety
 - Constraints:
   - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, or data-pipeline behavior
   - no server-synced preferences, account settings, viewport locking, sticky footers, or animation-heavy density transitions
@@ -1663,12 +1663,14 @@
   - when a card is resolved, its name, image when available, and oracle text (including full metadata) are shown before the user submits a question, and the user can remove or replace it before submitting
   - only one card is active at a time; there are no zones, stack, phase, multi-card setup, or per-card enrichment-editing controls
   - a freeform question field accepts up to the same character cap as the main flow question (REQ-011)
-  - the empty state (no card attached, no question typed yet) shows the local core-topics browse fallback (REQ-079) instead of a blank screen
+  - the pre-submit view's guidance copy, directly under the header, reads exactly **"Add a card for context or ask any Magic related question."**
+  - the pre-submit view is laid out top to bottom as: optional card-attach control, then the Question field, then the "General rules topics" outer disclosure (REQ-079), whose collapsed summary remains visible regardless of whether a card is attached or the question field already has text
 - Constraints:
   - reuse existing search, scan, card-presentation, and core-topics components; do not fork new identity or metadata models
   - printing-level scan identity stays presentation-only and is not pushed into the request, prompt, or rulings (DEC-053)
 - Dependencies:
   - DEC-107
+  - DEC-112
   - DEC-095
   - REQ-001
   - REQ-002
@@ -1676,6 +1678,7 @@
   - REQ-079
 - Notes:
   - during quick-lookup refinement this requirement was rewritten to merge the prior separate Card Lookup entry (this ID) and Rules Lookup entry (former REQ-076) into one destination; see REQ-076
+  - during quick-question-ui-refinement, the guidance-copy wording and the card/question/topics section order were confirmed (DEC-112); the prior "empty state shows the fallback" framing is superseded by REQ-079's always-rendered collapsed outer disclosure
 
 ### REQ-074
 - Title: Quick Lookup prompt assembly and domain guardrail
@@ -1764,25 +1767,31 @@
 - Notes:
 
 ### REQ-079
-- Title: Local core-topics browse fallback
+- Title: General rules topics browse fallback
 - Priority: medium
-- Description: Quick Lookup must offer a small always-local list of core rules topics the user can read with no AI call, built from the same curated rules excerpts the prompt uses, shown whenever no card is attached and no question has been submitted yet.
+- Description: Quick Lookup must offer a small always-local list of core rules topics (labeled "General rules topics") the user can read with no AI call, built from the same curated rules excerpts the prompt uses and positioned below the Question field. Its outer disclosure summary remains visible regardless of card/question state while the topic list is collapsed by default.
 - Acceptance Criteria:
-  - the empty state shows a short browsable list of core rules topics (e.g. the stack & priority, targeting, combat, layers)
+  - the pre-submit view shows a collapsed-by-default outer "General rules topics" disclosure below the Question field; expanding it reveals a short set of core rules topics (e.g. the stack & priority, targeting, combat, layers)
+  - the outer disclosure's summary is always visible — attaching a card and/or typing into the question field does not hide it — while its helper copy and topic list stay hidden when collapsed
+  - topic rows are collapsed by default: each row shows its title, an action button (REQ-091), and an expand/collapse toggle, all visible without expanding
+  - expanding a row reveals that topic's rule numbers and excerpt; opening one topic auto-collapses any other currently-open topic (accordion — at most one excerpt visible at a time)
   - the topic content is a committed frontend subset of the same curated `gameRulesByTopic` excerpts used by prompt assembly (single source of truth; no hand-authored second copy)
-  - reading a topic is fully client-side with no backend call and no AI cost
-  - an "ask about this" affordance on a topic pre-fills a question into the primary Quick Lookup question path (REQ-073); it does not itself call the model
+  - reading (expanding) a topic is fully client-side with no backend call and no AI cost
+  - the topic row's action button behavior (locking a phrase into the question) is specified by REQ-091; it does not itself call the model
   - the list is a discoverability fallback, not a full Comprehensive Rules browser
 - Constraints:
   - frontend-bundled static data (DEC-012 pattern); no runtime rules sync and no new endpoint
   - do not fork or hand-author rules text that could drift from the curated corpus
 - Dependencies:
   - DEC-107
+  - DEC-112
+  - REQ-091
   - DEC-030
   - DEC-012
 - Notes:
   - the committed core-topics subset is regenerated from the curated manifest by the existing data build; topic selection is a build-time sign-off like DEC-030
   - during quick-lookup refinement this requirement's dependency moved from DEC-099 (Rules Lookup, superseded) to DEC-107 (Quick Lookup); its content is otherwise unchanged
+  - during the quick-question-ui-refinement work this requirement's section title ("Browse core rules topics" → "General rules topics"), placement (below the Question field), always-rendered outer-summary gate change, collapsed outer disclosure, and nested row-level accordion were confirmed (DEC-112); the row action button's behavior superseded its original "pre-fills a freely editable textarea" criterion — see REQ-091
 
 ### REQ-080
 - Title: Rules Lookup conversation thread and limits
@@ -1988,3 +1997,52 @@
   - FLOW-001
 - Notes:
   - this is a bug-fix/consolidation pass over existing chrome (feature-portal Menu, `ThemeControl`, `StagedStepHeader`), not a new feature; no new screens or destinations are added
+
+### REQ-090
+- Title: Persist active feature-portal destination across a page refresh
+- Priority: medium
+- Description: On a page refresh, the app must restore whichever feature-portal destination (REQ-067) the user last had active, instead of always resetting to the first registered destination. This narrowly amends DEC-095/REQ-067/FLOW-010's "nothing is persisted across a page reload" clause (DEC-111): only the choice of which destination screen mounts is restored — each destination's in-session state (staged flow, conversation, follow-ups) still resets fresh on refresh, unchanged.
+- Acceptance Criteria:
+  - refreshing the page while a non-default destination (e.g. Quick Lookup) is active restores that same destination on reload, instead of resetting to the first registered destination (`mtg-assistant`)
+  - a brand-new browser tab/window with no prior activity in that tab still opens on the first registered destination — session-scoped persistence, not a durable cross-session preference
+  - the persisted value is stored under a dedicated `sessionStorage` key, validated against the currently registered destination ids on load; a missing, corrupted, or unregistered value falls back to the first registered destination, mirroring the existing theme-palette fallback pattern (`themePrefs.ts`)
+  - no other state persists across a refresh: each destination's staged/conversation/follow-up state resets to its normal fresh-start behavior on reload, unchanged
+  - switching destinations within a live session (no refresh) keeps all existing DEC-095/REQ-067 behavior unchanged — in-session state preservation, no-op on reselecting the current mode, etc.
+- Constraints:
+  - frontend-only; `sessionStorage`, not `localStorage` — must not survive closing the tab/browser (distinguishes this from the theme-palette/density preference)
+  - no URL-based routing / react-router
+  - no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint/backend route
+  - no change to which destination is the default for a brand-new session
+- Dependencies:
+  - DEC-111
+  - DEC-095
+  - REQ-067
+  - FLOW-010
+- Notes:
+  - reuse the established preference pattern already used for theme palette / layout density (try/catch-guarded load/save, validated against known ids, graceful fallback to default) — `sessionStorage` instead of `localStorage` is the only mechanism difference
+
+### REQ-091
+- Title: Locked topic-phrase pill in Quick Lookup's general rules topics
+- Priority: medium
+- Description: Selecting a topic in Quick Lookup's "General rules topics" section (REQ-079) locks that topic's fixed phrase into a non-editable pill inline with the Question field, rather than pre-filling the freeform textarea, so the topic choice always reaches the submitted question while the user can still add their own supplementary text.
+- Acceptance Criteria:
+  - each topic row's action button reads "Use this topic" (renamed from "Ask about this"); its label and `aria-label` communicate adding to the question, not submitting
+  - tapping "Use this topic" adds a pill inline next to the Question field's label showing the literal, non-editable phrase `Tell me about {Topic}.`
+  - the pill has its own visible remove control; activating it clears the locked phrase and returns the Question field to its plain (no-pill) state
+  - only one topic pill may be locked at a time; tapping a different topic's "Use this topic" replaces the current pill without altering any text already typed in the textarea
+  - the textarea remains available and editable at all times as optional supplementary context; its content is never overwritten by locking, swapping, or removing a pill
+  - the textarea's placeholder text changes while a pill is locked, inviting optional additional detail or an as-is submit (e.g. "Add anything specific — or leave this blank and just ask.")
+  - submit is enabled whenever a pill is locked, a card is attached, or the textarea has non-empty trimmed text — not only on non-empty textarea content
+  - tapping "Use this topic" smooth-scrolls the view so the Question field (with its new pill) is visible, and focuses the textarea
+  - on submit, the request's `question` value is composed client-side with no `AskAiRequest` shape change: the pill phrase plus the trimmed textarea content (space-joined) when both are present; the pill phrase alone when the textarea is empty; the trimmed textarea content alone when no pill is locked and the textarea is non-empty; or, when no pill is locked, the textarea is empty, and a card is attached, the silent fallback phrase `Tell me about {Card Name}.` (not shown to the user; mirrors the locked-pill's phrasing convention and the game-context flow's existing silent-fallback-question precedent)
+  - the shared 300-character cap (REQ-011) applies to the composed question string, and the visible character counter reflects the composed length
+  - a locked topic pill and an attached card may both be present at submit time; the collapsed outer general-rules-topics summary remains rendered (REQ-079) whether or not a pill is locked
+- Constraints:
+  - no `AskAiRequest` / Zod / backend prompt-assembly contract change; composition is frontend-only string concatenation
+  - reuses the existing curated `gameRulesByTopic` / `gameRulesCoreTopics.json` source; no new topic data
+- Dependencies:
+  - REQ-079
+  - REQ-011
+  - DEC-112
+- Notes:
+  - supersedes REQ-079's prior "ask about this pre-fills an editable textarea" acceptance criterion for the topic-row action button; REQ-079 was amended alongside this requirement

@@ -11,10 +11,24 @@ const DESTINATIONS: PortalDestination[] = [
   { id: "trade-balancer", label: "Trade", render: () => <div /> }
 ];
 
-function Harness({ initialId = "mtg-assistant" }: { initialId?: DestinationId }): JSX.Element {
+interface HarnessProps {
+  initialId?: DestinationId;
+  onPaletteSelect?: (id: string) => void;
+  onDensityChange?: (density: "chunky" | "slim") => void;
+}
+
+function Harness({ initialId = "mtg-assistant", onPaletteSelect = vi.fn(), onDensityChange = vi.fn() }: HarnessProps): JSX.Element {
   const [activeDestinationId, setActiveDestinationId] = useState<DestinationId>(initialId);
   return (
-    <FeaturePortalMenu destinations={DESTINATIONS} activeDestinationId={activeDestinationId} onSelect={setActiveDestinationId}>
+    <FeaturePortalMenu
+      destinations={DESTINATIONS}
+      activeDestinationId={activeDestinationId}
+      onSelect={setActiveDestinationId}
+      paletteId="blue"
+      onPaletteSelect={onPaletteSelect}
+      density="chunky"
+      onDensityChange={onDensityChange}
+    >
       <div>content</div>
     </FeaturePortalMenu>
   );
@@ -28,6 +42,8 @@ describe("FeaturePortalMenu", () => {
     const button = screen.getByRole("button", { name: "Switch feature" });
     expect(button).toHaveAttribute("aria-haspopup", "true");
     expect(button).toHaveAttribute("aria-expanded", "false");
+    expect(button).toHaveTextContent("☰");
+    expect(button).not.toHaveTextContent("Menu");
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
 
@@ -40,6 +56,32 @@ describe("FeaturePortalMenu", () => {
     expect(screen.getByRole("button", { name: "Switch feature" })).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("menuitem", { name: "MTG Assistant" })).toHaveAttribute("aria-current", "true");
     expect(screen.getByRole("menuitem", { name: "Trade" })).not.toHaveAttribute("aria-current");
+    expect(screen.getByText("Theme")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Theme: Blue" })).toBeInTheDocument();
+  });
+
+  it("selects a palette and closes the menu", async () => {
+    const user = userEvent.setup();
+    const onPaletteSelect = vi.fn();
+    render(<Harness onPaletteSelect={onPaletteSelect} />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    await user.click(screen.getByRole("button", { name: "Theme: Emerald" }));
+
+    expect(onPaletteSelect).toHaveBeenCalledWith("emerald");
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+  });
+
+  it("selects a density and closes the menu", async () => {
+    const user = userEvent.setup();
+    const onDensityChange = vi.fn();
+    render(<Harness onDensityChange={onDensityChange} />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    await user.click(screen.getByRole("button", { name: "Layout: Mobile" }));
+
+    expect(onDensityChange).toHaveBeenCalledWith("slim");
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
 
   it("switches the active destination and closes the menu when a non-active item is selected", async () => {
@@ -137,7 +179,6 @@ describe("Chrome integration", () => {
     const brand = screen.getByRole("button", { name: "TheJudge" });
     const portalButton = screen.getByRole("button", { name: "Switch feature" });
     const stepHeading = screen.getByRole("heading", { name: "Game context" });
-    const themeButton = screen.getByRole("button", { name: "Theme" });
 
     expect(brand).toBeInTheDocument();
     // A header slot is available (StagedStepHeader renders <PortalSlot />), so the button
@@ -149,36 +190,28 @@ describe("Chrome integration", () => {
     expect(portalContainerClassName).not.toContain("fixed");
     expect(brand.compareDocumentPosition(portalButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(portalButton.compareDocumentPosition(stepHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(themeButton.closest("div")?.parentElement?.className).toContain("right-3");
+
+    const user = userEvent.setup();
+    await user.click(portalButton);
+    expect(screen.getByRole("menuitem", { name: "In-Depth Question" })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /^Theme: / }).length).toBeGreaterThan(0);
+    expect(portalButton).not.toHaveTextContent("Menu");
   });
 
-  it("falls back to the fixed floating tab on the Trade destination, which has no header slot", async () => {
+  it("switches to Quick Question and back via the portal menu", async () => {
     const user = userEvent.setup();
     const { default: App } = await import("../../App");
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    await user.click(screen.getByRole("menuitem", { name: "Trade" }));
+    await user.click(screen.getByRole("menuitem", { name: "Quick Question" }));
 
-    const portalButton = screen.getByRole("button", { name: "Switch feature" });
-    expect(portalButton.closest("div")?.className).toContain("fixed");
-    expect(portalButton.closest("div")?.className).toContain("left-1/2");
-  });
-
-  it("switches to the Trade placeholder and back via the portal menu", async () => {
-    const user = userEvent.setup();
-    const { default: App } = await import("../../App");
-    render(<App />);
+    expect(screen.getByLabelText("Card search")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    await user.click(screen.getByRole("menuitem", { name: "Trade" }));
+    await user.click(screen.getByRole("menuitem", { name: "In-Depth Question" }));
 
-    expect(screen.getByText("Trade — coming soon")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    await user.click(screen.getByRole("menuitem", { name: "MTG Assistant" }));
-
-    expect(screen.getByText("Trade — coming soon")).not.toBeVisible();
+    expect(screen.getByLabelText("Card search")).not.toBeVisible();
   });
 });
 });

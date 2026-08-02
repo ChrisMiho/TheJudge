@@ -16,6 +16,7 @@ import { ConversationThread } from "./ConversationThread";
 import { FollowUpComposer } from "./FollowUpComposer";
 import { FrozenContextSummary } from "./FrozenContextSummary";
 import { PageShell } from "./PageShell";
+import { PortalSlot } from "./portal/PortalSlot";
 import { StagedStepHeader } from "./StagedStepHeader";
 
 const MAX_QUESTION_CHARS = 300;
@@ -374,10 +375,12 @@ export function EnrichmentStep({
   if (isConversationActive) {
     return (
       <PageShell>
-          <header>
+          <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-1">
             <h1 className="bg-gradient-to-r from-accent-soft to-accent-strong bg-clip-text text-3xl font-bold tracking-tight text-transparent">
               TheJudge
             </h1>
+            <PortalSlot />
+            <div />
           </header>
 
           {frozenGameContext && <FrozenContextSummary frozenGameContext={frozenGameContext} />}

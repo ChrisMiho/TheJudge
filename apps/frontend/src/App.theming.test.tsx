@@ -84,7 +84,7 @@ describe("Theme palette changes preserve workflow state", () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
     await user.click(screen.getByRole("button", { name: "Theme: Violet" }));
 
     expect(document.documentElement.dataset.theme).toBe("violet");
@@ -106,7 +106,7 @@ describe("Theme palette changes preserve workflow state", () => {
     await advanceToContextEnrichmentFromZones(user);
     await user.type(screen.getByPlaceholderText("How does this resolve?"), "Will this resolve?");
 
-    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
     await user.click(screen.getByRole("button", { name: "Theme: Emerald" }));
 
     expect(screen.getByPlaceholderText("How does this resolve?")).toHaveValue("Will this resolve?");
@@ -123,7 +123,7 @@ describe("Theme palette changes preserve workflow state", () => {
 
     await screen.findByText("Mock answer");
 
-    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
     await user.click(screen.getByRole("button", { name: "Theme: Blue" }));
 
     expect(screen.getByText("Mock answer")).toBeInTheDocument();
@@ -149,7 +149,7 @@ describe("Theme palette changes preserve workflow state", () => {
     expect(questionSurface).toHaveAttribute("data-accent-current", "true");
 
     for (const palette of PALETTES) {
-      await user.click(screen.getByRole("button", { name: "Theme" }));
+      await user.click(screen.getByRole("button", { name: "Switch feature" }));
       await user.click(screen.getByRole("button", { name: `Theme: ${palette.name}` }));
 
       expect(document.documentElement.dataset.theme).toBe(palette.id);
@@ -271,7 +271,7 @@ describe("Accent token coverage for staged and answered semantic surfaces", () =
     await clickDecryptStack(user);
     await screen.findByText("The stack resolves.");
 
-    await user.click(screen.getByRole("button", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
     await user.click(screen.getByRole("button", { name: "Theme: Emerald" }));
 
     expect(screen.getByText("The stack resolves.")).toBeInTheDocument();

@@ -97,6 +97,24 @@ export function uninstallMemoryLocalStorage(): void {
   Reflect.deleteProperty(window, "localStorage");
 }
 
+export function installMemorySessionStorage(): void {
+  const storage = createMemoryStorage();
+  Object.defineProperty(globalThis, "sessionStorage", {
+    configurable: true,
+    writable: true,
+    value: storage
+  });
+  Object.defineProperty(window, "sessionStorage", {
+    configurable: true,
+    value: storage
+  });
+}
+
+export function uninstallMemorySessionStorage(): void {
+  Reflect.deleteProperty(globalThis, "sessionStorage");
+  Reflect.deleteProperty(window, "sessionStorage");
+}
+
 export function createStackItem(name: string, index: number): CardMetadataItem {
   return {
     cardId: `card-${index}`,

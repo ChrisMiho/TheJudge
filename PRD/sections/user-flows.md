@@ -227,7 +227,9 @@
   5. To return, the user opens the same menu and selects the other destination.
 - Edge Cases:
   - selecting the current mode is a no-op and does not reset in-progress state
-  - switching destinations preserves each mode's in-session state while the app stays loaded (an in-progress MTG Assistant flow survives a trip to the Trade Balancer and back); nothing is persisted across a page reload
+  - switching destinations preserves each mode's in-session state while the app stays loaded (an in-progress MTG Assistant flow survives a trip to the Trade Balancer and back)
+  - refreshing the page restores whichever destination was last active in that browser tab (DEC-111, REQ-090); each destination's in-session state (staged flow, conversation, follow-ups) still resets fresh on refresh — only the choice of which destination screen mounts is persisted
+  - a brand-new tab/window with no prior activity opens on the first registered destination, unchanged
   - the portal button and its menu must not overlap or intercept taps meant for the brand block or `ThemeControl` (DEC-095, DEC-065)
 - Notes:
   - navigation is frontend-only chrome and never changes submitted game context, prompt text, backend API behavior, or AI responses (DEC-095, DEC-089)
@@ -243,28 +245,31 @@
   - for scan input: the device has a usable camera with permission and the fingerprint library loads on first scan (FLOW-006)
 - Main Flow:
   1. User selects Quick Lookup from the feature portal; the app switches to the lookup view (frontend-only, no reload).
-  2. The empty state shows a short list of core rules topics (the stack & priority, targeting, combat, layers) the user can read locally with no AI call, alongside the option to attach a card or type a question.
-  3. User optionally resolves one card either by typed autocomplete search (reusing REQ-001/REQ-002 behavior) or by scanning it with the existing camera scanner (FLOW-006 engine); the result is a single oracle-level card, shown with name, image when available, oracle text, and full metadata. The user may instead skip card input, and may tap "ask about this" on a core topic to pre-fill a question.
-  4. User enters a freeform question (same character cap as the main flow) and submits, with or without a card attached.
-  5. Frontend sends `{ mode: "lookup", question, card? }` to `POST /api/ask-ai`; `card` is present only if one was attached; no `gameContext` is sent.
-  6. Backend assembles one lookup-mode prompt: question-driven rules retrieval (MTG reference block, always-on core game-rules topics, System 3 supplemental) always runs; when a card is attached, per-card enrichment (WotC rulings, full metadata incl. oracle text, card-scored System 3) layers in; game-state-only sections are always omitted. Off-domain questions get the "confused rules lookup" persona response rather than a direct answer. Backend returns a plain-text answer.
-  7. Frontend shows the answer in the reused conversation thread (first visible bubble is the assistant answer; the initial question is not shown as a bubble).
-  8. User may send text follow-ups from the reused composer; each follow-up sends `{ mode: "lookup", question, card: frozen (if one was attached), conversationHistory }` under the same conversation limits as the main flow.
-  9. User may start over, which clears the thread and returns to the pre-ask state — with the looked-up card preserved if one was attached, or the core-topics list visible if not.
+  2. The pre-submit view shows, top to bottom: an optional card-attach control, the Question field, then a collapsed-by-default "General rules topics" outer disclosure. Its summary remains visible regardless of whether a card is attached or the Question field already has text; expanding it reveals a short list of core rules topics (the stack & priority, targeting, combat, layers) the user can read locally with no AI call.
+  3. User optionally resolves one card either by typed autocomplete search (reusing REQ-001/REQ-002 behavior) or by scanning it with the existing camera scanner (FLOW-006 engine); the result is a single oracle-level card, shown with name, image when available, oracle text, and full metadata. The user may instead skip card input.
+  4. After expanding the outer "General rules topics" disclosure, each topic row shows its title, a "Use this topic" button, and an expand/collapse toggle without needing to expand the row; expanding a row reveals that topic's rule numbers and excerpt and auto-collapses any other open topic (accordion). Tapping "Use this topic" locks that topic's phrase (`Tell me about {Topic}.`) into a non-editable pill next to the Question field's label (with its own remove control), smooth-scrolls the view to the Question field, and focuses the textarea; any text the user already typed in the textarea is preserved as optional supplementary context (REQ-091).
+  5. User enters or continues a freeform question (subject to the same character cap as the main flow, applied to the pill phrase plus textarea content combined when a pill is locked) and submits, with or without a card attached and with or without a locked topic pill.
+  6. Frontend sends `{ mode: "lookup", question, card? }` to `POST /api/ask-ai`; `question` is the client-composed string (the locked pill phrase plus any supplementary textarea text, the textarea alone when no pill is locked and it has text, or — when no pill is locked and the textarea is empty but a card is attached — a silent `Tell me about {Card Name}.` fallback, per REQ-091); `card` is present only if one was attached; no `gameContext` is sent.
+  7. Backend assembles one lookup-mode prompt: question-driven rules retrieval (MTG reference block, always-on core game-rules topics, System 3 supplemental) always runs; when a card is attached, per-card enrichment (WotC rulings, full metadata incl. oracle text, card-scored System 3) layers in; game-state-only sections are always omitted. Off-domain questions get the "confused rules lookup" persona response rather than a direct answer. Backend returns a plain-text answer.
+  8. Frontend shows the answer in the reused conversation thread (first visible bubble is the assistant answer; the initial question is not shown as a bubble).
+  9. User may send text follow-ups from the reused composer; each follow-up sends `{ mode: "lookup", question, card: frozen (if one was attached), conversationHistory }` under the same conversation limits as the main flow.
+  10. User may start over, which clears the thread, any locked topic pill, and returns to the pre-ask state — with the looked-up card preserved if one was attached; the collapsed outer "General rules topics" summary remains visible either way.
 - Edge Cases:
-  - if the question is blank after trimming, submit is blocked and the core-topics fallback remains visible
-  - AI failure reuses the main flow's failure handling (FLOW-003): the message **Miho is working on it**, preserved card/question, retry with cooldown
+  - if no pill is locked, the question is blank after trimming, and no card is attached, submit is blocked; if a card is attached in that same state, submit is enabled and the composed question silently falls back to `Tell me about {Card Name}.` (REQ-091); the collapsed outer "General rules topics" summary remains visible regardless (it is not a fallback state, per REQ-079)
+  - AI failure reuses the main flow's failure handling (FLOW-003): the message **Miho is working on it**, preserved card/question/pill, retry with cooldown
   - if the follow-up request fails, the error is shown and retry resubmits with the same frozen card (if any) and history (FLOW-005)
   - if history chars exceed the shared cap, oldest turns are truncated first (REQ-027)
   - in mock provider mode, the assistant bubble still appends in the same thread and its answer contains the exact assembled LLM-facing prompt for that submitted message
   - scan input inherits FLOW-006 behavior (permission fallback to manual search, scanned-printing art as presentation only); scan resolves to one card rather than adding into a zone
   - an off-domain question (with or without a card attached) gets the "confused rules lookup" persona response (DEC-108), not a direct answer
+  - selecting a second topic before submitting swaps the locked pill without touching any text already typed in the textarea (REQ-091)
 - Notes:
   - Quick Lookup carries no zones, stack, phase, or multi-card setup (DEC-107); it is not a full Comprehensive Rules browser and not official judge authority (DEC-002 / DEC-013)
   - reuses existing search, scan, core-topics, and conversation components; when a card is attached the conversation is frozen on it, otherwise there is no frozen context object; follow-ups are text-only in v1
   - shares the main flow's conversation and text limits; Quick Lookup defines no separate limit policy
   - no answer-seeded second-pass retrieval in v1 (deferred, tracked as Q-004); the model still surfaces relevant verbatim rules from the first-pass provided set
   - a future option to attach optional lightweight game context to the card branch is tracked as Q-003 and is out of v1 scope
+  - the "General rules topics" section's placement, always-rendered collapsed outer summary, nested row-level accordion disclosure, and the "Use this topic" locked-pill mechanism were confirmed during quick-question-ui-refinement (DEC-112 / REQ-091)
   - during quick-lookup refinement this flow was rewritten to merge the prior separate Card Lookup flow (this ID) and Rules Lookup flow (former FLOW-012) into one; see FLOW-012
 
 ### FLOW-012

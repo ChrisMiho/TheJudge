@@ -25,7 +25,7 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: 20;   /* below ThemeControl's z-30 so it stays on top and clickable */
+  z-index: 20;   /* below the Menu's z-30 so it stays on top and clickable */
   padding: 0.5rem 1rem;
   background-color: rgb(var(--accent-strong));
   color: rgb(var(--accent-contrast));

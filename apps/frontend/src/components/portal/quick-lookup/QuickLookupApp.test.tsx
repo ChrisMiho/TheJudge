@@ -37,8 +37,16 @@ const coreTopics = [
     title: "Stack and Priority",
     ruleNumbers: ["117.1", "405.1"],
     excerpt: "Players use priority to add spells and abilities to the stack."
+  },
+  {
+    id: "combat",
+    title: "Combat",
+    ruleNumbers: ["506.1"],
+    excerpt: "Combat proceeds through five steps."
   }
 ];
+
+const scrollIntoView = vi.fn();
 
 vi.mock("../../../hooks/useScanCapture", () => ({
   useScanCapture: ({
@@ -107,9 +115,23 @@ function appFetchMock(answers: string[]): ReturnType<typeof vi.fn> {
   });
 }
 
+async function openGeneralRulesTopics(
+  user: ReturnType<typeof userEvent.setup>
+): Promise<void> {
+  await user.click(
+    await screen.findByRole("heading", { name: "General rules topics" })
+  );
+}
+
 describe("Frontend - Quick Lookup", () => {
 describe("QuickLookupApp", () => {
   beforeEach(() => {
+    scrollIntoView.mockClear();
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoView
+    });
+    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: false })));
     vi.stubGlobal(
       "fetch",
       vi.fn((input: RequestInfo | URL) => {
@@ -125,26 +147,130 @@ describe("QuickLookupApp", () => {
     );
   });
 
-  it("keeps core topics collapsed until opened and pre-fills a question without calling Ask AI", async () => {
+  it("renders the confirmed guidance and orders card, question, then collapsed general topics", async () => {
     const user = userEvent.setup();
     render(<QuickLookupApp />);
 
-    const disclosureLabel = await screen.findByText("Browse core rules topics");
-    const disclosure = disclosureLabel.closest("details");
-    expect(disclosure).not.toHaveAttribute("open");
-    expect(screen.getByText(coreTopics[0].excerpt)).not.toBeVisible();
+    expect(
+      screen.getByText("Add a card for context or ask any Magic related question.")
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Browse core rules topics")).not.toBeInTheDocument();
 
-    await user.click(disclosureLabel);
+    const cardSection = screen.getByText("Optional card").closest("section");
+    const questionForm = screen.getByRole("textbox", { name: "Magic question" }).closest("form");
+    const topicsHeading = await screen.findByRole("heading", {
+      name: "General rules topics"
+    });
+    const topicsDisclosure = topicsHeading.closest("details");
 
-    expect(disclosure).toHaveAttribute("open");
+    expect(cardSection).not.toBeNull();
+    expect(questionForm).not.toBeNull();
+    expect(topicsDisclosure).not.toBeNull();
+    expect(
+      cardSection!.compareDocumentPosition(questionForm!) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(
+      questionForm!.compareDocumentPosition(topicsDisclosure!) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(topicsDisclosure).not.toHaveAttribute("open");
+    expect(screen.getByText("Choose a topic to start a question without calling the model.")).not.toBeVisible();
+
+    await user.click(topicsHeading);
+
+    expect(topicsDisclosure).toHaveAttribute("open");
+    expect(screen.getByText("Choose a topic to start a question without calling the model.")).toBeVisible();
     expect(screen.getByRole("heading", { name: "Stack and Priority" })).toBeVisible();
+  });
+
+  it("shows one topic excerpt at a time and keeps action clicks from toggling the row", async () => {
+    const user = userEvent.setup();
+    render(<QuickLookupApp />);
+    await openGeneralRulesTopics(user);
+
+    const stackHeading = await screen.findByRole("heading", { name: "Stack and Priority" });
+    const combatHeading = screen.getByRole("heading", { name: "Combat" });
+    const stackDisclosure = stackHeading.closest("details");
+    const combatDisclosure = combatHeading.closest("details");
+    const stackAction = screen.getByRole("button", { name: "Add Stack and Priority to question" });
+
+    expect(stackHeading).toBeVisible();
+    expect(stackHeading.closest("summary")).toBeVisible();
+    expect(stackAction).toBeVisible();
+    expect(stackDisclosure).not.toHaveAttribute("open");
+    expect(combatDisclosure).not.toHaveAttribute("open");
+    expect(screen.getByText(coreTopics[0].excerpt)).not.toBeVisible();
+    expect(screen.getByText(coreTopics[1].excerpt)).not.toBeVisible();
+
+    await user.click(stackAction);
+
+    expect(stackDisclosure).not.toHaveAttribute("open");
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    await user.click(stackHeading);
+
+    expect(stackDisclosure).toHaveAttribute("open");
     expect(screen.getByText(coreTopics[0].excerpt)).toBeVisible();
 
-    await user.click(screen.getByRole("button", { name: "Ask about Stack and Priority" }));
+    await user.click(combatHeading);
 
-    expect(screen.getByRole("textbox", { name: "Magic question" })).toHaveValue("Tell me about Stack and Priority.");
-    expect(fetch).toHaveBeenCalledTimes(2);
-    expect(screen.queryByRole("heading", { name: "Stack and Priority" })).not.toBeInTheDocument();
+    expect(stackDisclosure).not.toHaveAttribute("open");
+    expect(combatDisclosure).toHaveAttribute("open");
+    expect(screen.getByText(coreTopics[0].excerpt)).not.toBeVisible();
+    expect(screen.getByText(coreTopics[1].excerpt)).toBeVisible();
+  });
+
+  it("locks, swaps, removes, and composes a topic without overwriting textarea text", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<QuickLookupApp onSubmit={onSubmit} />);
+    await openGeneralRulesTopics(user);
+
+    const questionInput = screen.getByRole("textbox", { name: "Magic question" });
+    await user.type(questionInput, "Keep this detail");
+    await user.click(
+      await screen.findByRole("button", { name: "Add Stack and Priority to question" })
+    );
+
+    expect(screen.getByText("Tell me about Stack and Priority.")).toBeInTheDocument();
+    expect(questionInput).toHaveValue("Keep this detail");
+    expect(questionInput).toHaveAttribute(
+      "placeholder",
+      "Add anything specific — or leave this blank and just ask."
+    );
+    expect(document.activeElement).toBe(questionInput);
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "center" });
+
+    await user.click(screen.getByRole("button", { name: "Add Combat to question" }));
+
+    expect(screen.queryByText("Tell me about Stack and Priority.")).not.toBeInTheDocument();
+    expect(screen.getByText("Tell me about Combat.")).toBeInTheDocument();
+    expect(questionInput).toHaveValue("Keep this detail");
+
+    await user.click(screen.getByRole("button", { name: "Ask TheJudge" }));
+    expect(onSubmit).toHaveBeenLastCalledWith("Tell me about Combat. Keep this detail", null);
+
+    await user.clear(questionInput);
+    await user.click(screen.getByRole("button", { name: "Ask TheJudge" }));
+    expect(onSubmit).toHaveBeenLastCalledWith("Tell me about Combat.", null);
+
+    await user.click(screen.getByRole("button", { name: "Remove Combat topic" }));
+
+    expect(screen.queryByText("Tell me about Combat.")).not.toBeInTheDocument();
+    expect(questionInput).toHaveAttribute("placeholder", "What would you like to know?");
+    expect(screen.getByRole("button", { name: "Ask TheJudge" })).toBeDisabled();
+  });
+
+  it("uses non-animated scrolling when reduced motion is preferred", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true })));
+    render(<QuickLookupApp />);
+    await openGeneralRulesTopics(user);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Add Stack and Priority to question" })
+    );
+
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "auto", block: "center" });
   });
 
   it("resolves one card from autocomplete and supports removal", async () => {
@@ -157,7 +283,9 @@ describe("QuickLookupApp", () => {
 
     expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
     expect(screen.getByText(lightningBolt.oracleText)).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Stack and Priority" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "General rules topics" })).toBeVisible();
+    await openGeneralRulesTopics(user);
+    expect(screen.getByRole("heading", { name: "Stack and Priority" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Remove Lightning Bolt" }));
 
@@ -201,9 +329,37 @@ describe("QuickLookupApp", () => {
     await user.type(questionInput, "a".repeat(301));
     expect(questionInput).toHaveValue("a".repeat(300));
     expect(submitButton).toBeEnabled();
+    await openGeneralRulesTopics(user);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Add Stack and Priority to question" })
+    );
+    expect(
+      screen.getByText(`${"Tell me about Stack and Priority.".length + 1 + 300}/300`)
+    ).toBeInTheDocument();
+    expect(submitButton).toBeDisabled();
+
+    await user.click(screen.getByRole("button", { name: "Remove Stack and Priority topic" }));
+    expect(screen.getByText("300/300")).toBeInTheDocument();
+    expect(submitButton).toBeEnabled();
 
     await user.click(submitButton);
     expect(onSubmit).toHaveBeenCalledWith("a".repeat(300), null);
+  });
+
+  it("submits a silent card-name fallback when only a card is attached", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<QuickLookupApp onSubmit={onSubmit} />);
+
+    await user.type(screen.getByRole("textbox", { name: "Card search" }), "lig");
+    await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
+
+    const submitButton = screen.getByRole("button", { name: "Ask TheJudge" });
+    expect(submitButton).toBeEnabled();
+    await user.click(submitButton);
+
+    expect(onSubmit).toHaveBeenCalledWith("Tell me about Lightning Bolt.", lightningBolt);
   });
 
   it("runs a cardless assistant-first conversation and restores core topics on start over", async () => {
@@ -246,7 +402,8 @@ describe("QuickLookupApp", () => {
 
     expect(screen.queryByText("First lookup answer")).not.toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Magic question" })).toHaveValue("");
-    expect(await screen.findByRole("heading", { name: "Stack and Priority" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "General rules topics" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Stack and Priority" })).not.toBeVisible();
   });
 
   it("freezes an attached card for the thread and follow-ups, then preserves it on start over", async () => {
@@ -257,6 +414,10 @@ describe("QuickLookupApp", () => {
 
     await user.type(screen.getByRole("textbox", { name: "Card search" }), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
+    await openGeneralRulesTopics(user);
+    await user.click(
+      await screen.findByRole("button", { name: "Add Stack and Priority to question" })
+    );
     await user.type(screen.getByRole("textbox", { name: "Magic question" }), "What can this target?");
     await user.click(screen.getByRole("button", { name: "Ask TheJudge" }));
 
@@ -268,7 +429,7 @@ describe("QuickLookupApp", () => {
     );
     expect(JSON.parse(initialAskRequest?.[1]?.body as string)).toEqual({
       mode: "lookup",
-      question: "What can this target?",
+      question: "Tell me about Stack and Priority. What can this target?",
       card: lightningBolt
     });
 
@@ -290,6 +451,8 @@ describe("QuickLookupApp", () => {
     expect(screen.queryByText("Card lookup answer")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove Lightning Bolt" })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Magic question" })).toHaveValue("");
+    expect(screen.queryByText("Tell me about Stack and Priority.")).not.toBeInTheDocument();
   });
 });
 });

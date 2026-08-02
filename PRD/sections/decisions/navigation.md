@@ -94,3 +94,21 @@ portal owns app chrome and every feature reaches it as a registered destination.
 - Notes:
   - supersedes only the placement clause of DEC-066/068/095 ("stays top-right corner" / "`ThemeControl` unchanged"); their palette-token, persistence, and reach content carries forward unchanged and stays resolvable under this new hosting
   - non-goals: changing palette values/tokens, changing density behavior, arbitrary color picker, per-component theme overrides, account-level/server-synced preferences
+
+### DEC-111
+- Decision: DEC-095/REQ-067/FLOW-010's "nothing is persisted across a page reload" clause is narrowly amended: the feature-portal's **active destination selection** now persists across a page refresh within the same browser tab, using `sessionStorage`. A refresh restores whichever destination the user was last viewing instead of always resetting to the first registered destination (`mtg-assistant`). This is the only change — the frontend-only view switch, in-session state preservation while the app stays loaded, the no-op on reselecting the current mode, and the extensible registry model (DEC-095) are all unchanged. Because `sessionStorage` does not carry across tabs, windows, or browser restarts, a brand-new tab with no prior activity still opens on the first registered destination — the existing new-session default is unchanged.
+- Status: confirmed
+- Context: `App.tsx` tracked the active destination in plain `useState`, defaulting to `PORTAL_DESTINATIONS[0].id` on every mount. A full page refresh always dropped the user back onto MTG Assistant even if they were mid-session on Quick Lookup, with no way to resume where they left off. DEC-095 had deliberately scoped out reload persistence for v1's simpler frontend-only view switch, but that blanket exclusion now costs users their place on refresh. Reusing the theme-palette/density preference pattern (`themePrefs.ts` / `layoutDensityPrefs.ts`: try/catch-guarded storage read, validated against known values, fallback to default) was the smallest fit, with `sessionStorage` chosen over that pattern's `localStorage` specifically so this reads as resuming a session rather than a durable cross-session preference, and so a brand-new tab still lands on the default destination.
+- Impact:
+  - the active destination id is read from `sessionStorage` on mount, validated against the currently registered `PORTAL_DESTINATIONS` ids; a missing, corrupted, or unregistered value falls back to `PORTAL_DESTINATIONS[0].id`, mirroring the existing theme-palette fallback behavior
+  - selecting a destination (existing DEC-095 flow) additionally writes the selection to `sessionStorage`, guarded the same try/catch way as the theme/density prefs so storage failures never interfere with navigation
+  - each destination's own in-session state (staged flow, conversation, follow-ups) still resets fresh on every reload, unchanged — only the choice of which destination screen mounts is restored
+  - a brand-new tab/window with no prior activity in that tab opens on the first registered destination, unchanged from today
+  - no URL-based routing is introduced; no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or any backend route
+- Related requirements:
+  - REQ-090
+  - REQ-067
+  - DEC-095
+- Notes:
+  - supersedes only the "nothing is persisted across a page reload" clause of DEC-095/REQ-067/FLOW-010, scoped strictly to the active-destination choice; their registry, placement, and in-session state-preservation content is otherwise unchanged and stays resolvable
+  - non-goals: persisting in-progress conversation/staged-context content across a refresh (stays ephemeral, `decisions/conversation-ux.md`), `localStorage`/cross-session durability, URL-based routing, changing the new-session default destination

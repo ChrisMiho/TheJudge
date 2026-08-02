@@ -41,7 +41,11 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
   const [searchInput, setSearchInput] = useState("");
   const [selectedCard, setSelectedCard] = useState<CardMetadataItem | null>(null);
   const [question, setQuestion] = useState("");
+  const [lockedTopic, setLockedTopic] = useState<Pick<CoreTopic, "id" | "title"> | null>(null);
+  const [openTopicId, setOpenTopicId] = useState<string | null>(null);
   const closeScanRef = useRef<() => void>(() => undefined);
+  const questionContainerRef = useRef<HTMLFormElement>(null);
+  const questionInputRef = useRef<HTMLTextAreaElement>(null);
   const {
     error,
     isSubmitting,
@@ -131,30 +135,46 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
   const normalizedSearchLength = searchInput.trim().length;
   const showSuggestionPanel =
     normalizedSearchLength >= 3 && (isMetadataLoading || keyboard.isOpen || suggestions.length === 0);
-  const showCoreTopics = selectedCard === null && question.length === 0;
-  const canSubmit = question.trim().length > 0;
+  const trimmedQuestion = question.trim();
+  const composedQuestion =
+    [lockedTopic ? `Tell me about ${lockedTopic.title}.` : null, trimmedQuestion || null]
+      .filter((part): part is string => part !== null)
+      .join(" ") || (selectedCard ? `Tell me about ${selectedCard.name}.` : "");
+  const hasQuestionContent =
+    lockedTopic !== null || selectedCard !== null || trimmedQuestion.length > 0;
+  const canSubmit = hasQuestionContent && composedQuestion.length <= MAX_QUESTION_LENGTH;
+
+  function handleTopicSelection(topic: CoreTopic): void {
+    setLockedTopic({ id: topic.id, title: topic.title });
+    const prefersReducedMotion =
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    questionContainerRef.current?.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "center"
+    });
+    questionInputRef.current?.focus();
+  }
 
   async function submitLookup(source: "decrypt" | "retry"): Promise<void> {
-    const trimmedQuestion = question.trim();
-    if (!trimmedQuestion) return;
-    const payload = buildLookupAskAiRequest(trimmedQuestion, selectedCard);
+    if (!canSubmit) return;
+    const payload = buildLookupAskAiRequest(composedQuestion, selectedCard);
     await submitAttempt({
       source,
       payload,
       stackSize: 0,
       finalQuestion: payload.question,
-      usedFallbackQuestion: false
+      usedFallbackQuestion:
+        lockedTopic === null && trimmedQuestion.length === 0 && selectedCard !== null
     });
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
-    const trimmedQuestion = question.trim();
-    if (!trimmedQuestion) {
+    if (!canSubmit) {
       return;
     }
     if (onSubmit) {
-      onSubmit(trimmedQuestion, selectedCard);
+      onSubmit(composedQuestion, selectedCard);
       return;
     }
     void submitLookup("decrypt");
@@ -163,6 +183,7 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
   function handleStartOver(): void {
     startOver();
     setQuestion("");
+    setLockedTopic(null);
   }
 
   const retryLabel = retryCountdown > 0 ? `Retry in ${retryCountdown}s` : "Retry";
@@ -172,7 +193,7 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
   if (isConversationActive) {
     return (
       <PageShell>
-        <StagedStepHeader stepName="Quick Lookup" />
+        <StagedStepHeader stepName="Quick Question" />
 
         {frozenLookupCard && (
           <CardSelectionPreview
@@ -218,9 +239,9 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
     <PageShell>
       {!scanCapture.isOpen && (
         <>
-          <StagedStepHeader stepName="Quick Lookup" />
+          <StagedStepHeader stepName="Quick Question" />
           <p className="text-sm text-zinc-400">
-            Attach one card for context, or ask any Magic rules question without one.
+            Add a card for context or ask any Magic related question.
           </p>
         </>
       )}
@@ -339,53 +360,48 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
             )}
           </section>
 
-          {showCoreTopics && (
-            <details className="rounded-2xl border border-zinc-700/70 bg-zinc-900/55" aria-label="Core rules topics">
-              <summary className="cursor-pointer px-4 py-3 text-base font-semibold text-zinc-100">
-                Browse core rules topics
-              </summary>
-              <div className="space-y-3 border-t border-zinc-700/70 p-4">
-                <p className="text-sm text-zinc-400">Choose a topic to start a question without calling the model.</p>
-                {isTopicsLoading ? (
-                  <p className="text-sm text-zinc-400">Loading core topics...</p>
-                ) : topicsError ? (
-                  <p className="text-sm text-amber-200">{topicsError}</p>
-                ) : (
-                  <div className="space-y-3">
-                    {coreTopics.map((topic) => (
-                      <article key={topic.id} className="rounded-xl border border-zinc-700 bg-zinc-950/35 p-3">
-                        <h4 className="font-semibold text-zinc-100">{topic.title}</h4>
-                        <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-zinc-300">{topic.excerpt}</p>
-                        <button
-                          type="button"
-                          aria-label={`Ask about ${topic.title}`}
-                          onClick={() => setQuestion(`Tell me about ${topic.title}.`)}
-                          className="mt-3 rounded-lg border border-accent/70 bg-accent/15 px-3 py-2 text-sm font-semibold text-accent-soft transition hover:bg-accent/25"
-                        >
-                          Ask about this
-                        </button>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </details>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
-            <label className="block text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
-              Question
-              <textarea
-                aria-label="Magic question"
-                value={question}
-                maxLength={MAX_QUESTION_LENGTH}
-                onChange={(event) => setQuestion(event.target.value)}
-                className="mt-2 min-h-28 w-full resize-y rounded-xl border border-zinc-600 bg-zinc-800/80 px-3 py-2 text-sm normal-case tracking-normal text-zinc-100"
-                placeholder="What would you like to know?"
-              />
-            </label>
+          <form
+            ref={questionContainerRef}
+            onSubmit={handleSubmit}
+            className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <label
+                htmlFor="quick-lookup-question"
+                className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300"
+              >
+                Question
+              </label>
+              {lockedTopic && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-accent/70 bg-accent/15 px-3 py-1 text-xs font-semibold text-accent-soft">
+                  <span>{`Tell me about ${lockedTopic.title}.`}</span>
+                  <button
+                    type="button"
+                    aria-label={`Remove ${lockedTopic.title} topic`}
+                    onClick={() => setLockedTopic(null)}
+                    className="rounded-full px-1 text-sm leading-none text-accent-soft transition hover:bg-accent/25"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+            </div>
+            <textarea
+              ref={questionInputRef}
+              id="quick-lookup-question"
+              aria-label="Magic question"
+              value={question}
+              maxLength={MAX_QUESTION_LENGTH}
+              onChange={(event) => setQuestion(event.target.value)}
+              className="min-h-28 w-full resize-y rounded-xl border border-zinc-600 bg-zinc-800/80 px-3 py-2 text-sm normal-case tracking-normal text-zinc-100"
+              placeholder={
+                lockedTopic
+                  ? "Add anything specific — or leave this blank and just ask."
+                  : "What would you like to know?"
+              }
+            />
             <div className="flex items-center justify-between gap-3">
-              <p className="text-xs text-zinc-400">{question.length}/{MAX_QUESTION_LENGTH}</p>
+              <p className="text-xs text-zinc-400">{composedQuestion.length}/{MAX_QUESTION_LENGTH}</p>
               <button
                 type="submit"
                 disabled={!canSubmit || isSubmitting}
@@ -395,6 +411,60 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
               </button>
             </div>
           </form>
+
+          <details className="rounded-2xl border border-zinc-700/70 bg-zinc-900/55">
+            <summary className="cursor-pointer px-4 py-3 text-zinc-100 marker:text-zinc-400">
+              <h3 className="ml-2 inline text-base font-semibold">General rules topics</h3>
+            </summary>
+            <div className="space-y-3 border-t border-zinc-700/70 p-4">
+              <p className="text-sm text-zinc-400">Choose a topic to start a question without calling the model.</p>
+              {isTopicsLoading ? (
+                <p className="text-sm text-zinc-400">Loading core topics...</p>
+              ) : topicsError ? (
+                <p className="text-sm text-amber-200">{topicsError}</p>
+              ) : (
+                <div className="space-y-3">
+                  {coreTopics.map((topic) => (
+                    <details
+                      key={topic.id}
+                      open={openTopicId === topic.id}
+                      onToggle={(event) => {
+                        if (event.currentTarget.open) {
+                          setOpenTopicId(topic.id);
+                          return;
+                        }
+                        setOpenTopicId((currentTopicId) =>
+                          currentTopicId === topic.id ? null : currentTopicId
+                        );
+                      }}
+                      className="rounded-xl border border-zinc-700 bg-zinc-950/35"
+                    >
+                      <summary className="cursor-pointer px-3 py-3 text-zinc-100 marker:text-zinc-400">
+                        <div className="ml-2 inline-flex w-[calc(100%_-_2rem)] items-center justify-between gap-3 align-middle">
+                          <h4 className="font-semibold text-zinc-100">{topic.title}</h4>
+                          <button
+                            type="button"
+                            aria-label={`Add ${topic.title} to question`}
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              handleTopicSelection(topic);
+                            }}
+                            className="rounded-lg border border-accent/70 bg-accent/15 px-3 py-2 text-sm font-semibold text-accent-soft transition hover:bg-accent/25"
+                          >
+                            Use this topic
+                          </button>
+                        </div>
+                      </summary>
+                      <p className="border-t border-zinc-700/70 p-3 whitespace-pre-wrap text-sm leading-relaxed text-zinc-300">
+                        {topic.excerpt}
+                      </p>
+                    </details>
+                  ))}
+                </div>
+              )}
+            </div>
+          </details>
 
           {isSubmitting && <AskAiWaitingPanel isSubmitting={isSubmitting} />}
 

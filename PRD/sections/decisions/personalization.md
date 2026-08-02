@@ -64,17 +64,17 @@ Frontend-only user personalization behavior that changes app presentation withou
   - DEC-081 later narrows the "neutral slate chrome stays neutral" boundary: static chrome remains neutral, while only the closed surface inventory in REQ-060 may use restrained palette-derived borders, glows, and icon accents
 
 ### DEC-075
-- Decision: Layout density customization uses a global frontend-only **Chunky / Slim** control in the theme panel, with browser-local persistence and `data-layout-density` on `document.documentElement`. **Chunky** is the default and must be a visual no-op versus pre-change spacing.
+- Decision: Layout density customization uses a global frontend-only **Desktop / Mobile** control in the theme panel (labels; stored internally as `"chunky"` / `"slim"`), with browser-local persistence and `data-layout-density` on `document.documentElement`. **Mobile** (`"slim"`) is the default, adjusted 2026-08-02 from the original `"chunky"` default (see `receipts/adhoc-2026-08-02.md`); **Mobile** must remain a visual no-op versus pre-change slim spacing.
 - Status: confirmed
 - Context: DEC-066 ships palette personalization but not spacing density. Staged-flow screens remain vertically tall even after screen-specific compaction; users need a global compact layout preference without a settings system or account layer. The palette infrastructure (`ThemeControl`, localStorage prefs, immediate apply) is the pattern to mirror.
 - Impact:
-  - `layoutDensityPrefs.ts` stores `thejudge.theme.layoutDensity` (`"chunky"` | `"slim"`)
+  - `layoutDensityPrefs.ts` stores `thejudge.theme.layoutDensity` (`"chunky"` | `"slim"`) — internal values unchanged by the 2026-08-02 label rename
   - `applyLayoutDensity.ts` sets `document.documentElement.dataset.layoutDensity` only
-  - `ThemeControl` exposes a Chunky / Slim segmented control below palette swatches
+  - the theme panel (`ThemeSection`, folded into the feature-portal Menu per DEC-110) exposes a Desktop / Mobile segmented control below palette swatches, mapped to `"chunky"` / `"slim"` respectively
   - shared `PageShell` and semantic CSS classes in `index.css` define chunky defaults plus `[data-layout-density="slim"]` overrides for shell padding, card gaps, and panel inner spacing on participating density surfaces
   - `ZoneConfirmStep` is not a participating slim-density surface; it may share shell plumbing only when the rendered layout, spacing, and density behavior remain visually unchanged, otherwise its existing shell markup stays in place
   - slim mode additionally tightens high-scroll surfaces (header scale, scan video aspect, conversation thread cap, etc.) via attribute selectors; chunky regression is guarded on reference screens
-  - missing, corrupt, or unsupported stored values fall back to chunky
+  - missing, corrupt, or unsupported stored values fall back to slim (Mobile)
   - primary controls keep touch-friendly minimum heights; body text is not shrunk below existing `text-sm` / `text-xs`
   - no `AskAiRequest`, Zod schema, backend route, prompt assembly, provider, card metadata, or data-pipeline behavior changes
 - Related requirements:
