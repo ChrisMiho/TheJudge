@@ -1121,17 +1121,17 @@
 ### REQ-055
 - Title: Layout density preference
 - Priority: medium
-- Description: The frontend must let users choose a global **Chunky / Slim** layout density through the existing theme panel, with the selection applied immediately and persisted for that browser. Chunky is the default and must match pre-change spacing on reference screens.
+- Description: The frontend must let users choose a global **Desktop / Mobile** layout density (labels; stored internally as `"chunky"` / `"slim"`) through the existing theme panel, with the selection applied immediately and persisted for that browser. Mobile (`"slim"`) is the default as of 2026-08-02 (previously Desktop/`"chunky"`; see DEC-075) and must match pre-change slim spacing on reference screens.
 - Acceptance Criteria:
-  - the theme panel exposes a Chunky / Slim segmented control below the palette swatches
+  - the theme panel exposes a Desktop / Mobile segmented control below the palette swatches
   - selecting a density immediately applies spacing via `data-layout-density` on `document.documentElement` and shared semantic CSS classes (`page-shell`, `page-card`, `panel-inner`, etc.)
-  - default density is chunky; missing, unset, corrupt, or unsupported stored values fall back to chunky without throwing or blocking app load
-  - chunky mode on reference staged screens matches pre-change spacing (regression guard)
-  - slim mode visibly tightens shell padding, card gaps, and panel inner spacing without breaking touch targets or readability
-  - slim density applies only to participating density surfaces; `ZoneConfirmStep` is excluded from slim visual changes, and any shared shell extraction there must render visually unchanged
+  - default density is Mobile (`"slim"`); missing, unset, corrupt, or unsupported stored values fall back to Mobile (`"slim"`) without throwing or blocking app load
+  - Desktop (`"chunky"`) mode on reference staged screens matches pre-change spacing (regression guard)
+  - Mobile (`"slim"`) mode visibly tightens shell padding, card gaps, and panel inner spacing without breaking touch targets or readability
+  - Mobile density applies only to participating density surfaces; `ZoneConfirmStep` is excluded from slim visual changes, and any shared shell extraction there must render visually unchanged
   - selected density persists across page reloads for the same browser
   - density changes do not reset game setup, selected zones, cards, enrichment, question text, answers, conversation state, scanner state, or retry cooldowns
-  - tests cover density selection, persistence, fallback, chunky regression on at least one reference screen, and state safety
+  - tests cover density selection, persistence, fallback, Desktop regression on at least one reference screen, and state safety
 - Constraints:
   - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, or data-pipeline behavior
   - no server-synced preferences, account settings, viewport locking, sticky footers, or animation-heavy density transitions

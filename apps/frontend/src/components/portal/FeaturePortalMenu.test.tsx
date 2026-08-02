@@ -78,7 +78,7 @@ describe("FeaturePortalMenu", () => {
     render(<Harness onDensityChange={onDensityChange} />);
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
+    await user.click(screen.getByRole("button", { name: "Layout: Mobile" }));
 
     expect(onDensityChange).toHaveBeenCalledWith("slim");
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
@@ -193,38 +193,25 @@ describe("Chrome integration", () => {
 
     const user = userEvent.setup();
     await user.click(portalButton);
-    expect(screen.getByRole("menuitem", { name: "MTG Assistant" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "In-Depth Question" })).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: /^Theme: / }).length).toBeGreaterThan(0);
     expect(portalButton).not.toHaveTextContent("Menu");
   });
 
-  it("falls back to the fixed floating tab on the Trade destination, which has no header slot", async () => {
+  it("switches to Quick Question and back via the portal menu", async () => {
     const user = userEvent.setup();
     const { default: App } = await import("../../App");
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    await user.click(screen.getByRole("menuitem", { name: "Trade" }));
+    await user.click(screen.getByRole("menuitem", { name: "Quick Question" }));
 
-    const portalButton = screen.getByRole("button", { name: "Switch feature" });
-    expect(portalButton.closest("div")?.className).toContain("fixed");
-    expect(portalButton.closest("div")?.className).toContain("left-1/2");
-  });
-
-  it("switches to the Trade placeholder and back via the portal menu", async () => {
-    const user = userEvent.setup();
-    const { default: App } = await import("../../App");
-    render(<App />);
+    expect(screen.getByLabelText("Card search")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    await user.click(screen.getByRole("menuitem", { name: "Trade" }));
+    await user.click(screen.getByRole("menuitem", { name: "In-Depth Question" }));
 
-    expect(screen.getByText("Trade — coming soon")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    await user.click(screen.getByRole("menuitem", { name: "MTG Assistant" }));
-
-    expect(screen.getByText("Trade — coming soon")).not.toBeVisible();
+    expect(screen.getByLabelText("Card search")).not.toBeVisible();
   });
 });
 });

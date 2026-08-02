@@ -172,7 +172,7 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
   if (isConversationActive) {
     return (
       <PageShell>
-        <StagedStepHeader stepName="Quick Lookup" />
+        <StagedStepHeader stepName="Quick Question" />
 
         {frozenLookupCard && (
           <CardSelectionPreview
@@ -218,7 +218,7 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
     <PageShell>
       {!scanCapture.isOpen && (
         <>
-          <StagedStepHeader stepName="Quick Lookup" />
+          <StagedStepHeader stepName="Quick Question" />
           <p className="text-sm text-zinc-400">
             Attach one card for context, or ask any Magic rules question without one.
           </p>

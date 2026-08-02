@@ -33,9 +33,9 @@ describe("layoutDensityPrefs", () => {
     vi.unstubAllGlobals();
   });
 
-  it("defaults to chunky when nothing is stored", () => {
+  it("defaults to slim when nothing is stored", () => {
     expect(loadLayoutDensity()).toBe(DEFAULT_LAYOUT_DENSITY);
-    expect(loadLayoutDensity()).toBe("chunky");
+    expect(loadLayoutDensity()).toBe("slim");
   });
 
   it("round-trips a valid density value", () => {
@@ -48,19 +48,19 @@ describe("layoutDensityPrefs", () => {
     expect(loadLayoutDensity()).toBe("chunky");
   });
 
-  it("falls back to chunky for an unsupported stored value", () => {
+  it("falls back to slim for an unsupported stored value", () => {
     localStorage.setItem(storageKey, "ultra-compact");
 
-    expect(loadLayoutDensity()).toBe("chunky");
+    expect(loadLayoutDensity()).toBe("slim");
   });
 
-  it("falls back to chunky when localStorage is unavailable", () => {
+  it("falls back to slim when localStorage is unavailable", () => {
     vi.stubGlobal("localStorage", undefined);
 
-    expect(loadLayoutDensity()).toBe("chunky");
+    expect(loadLayoutDensity()).toBe("slim");
   });
 
-  it("falls back to chunky when localStorage reads throw", () => {
+  it("falls back to slim when localStorage reads throw", () => {
     vi.stubGlobal("localStorage", {
       ...createMemoryStorage(),
       getItem: () => {
@@ -68,7 +68,7 @@ describe("layoutDensityPrefs", () => {
       }
     });
 
-    expect(loadLayoutDensity()).toBe("chunky");
+    expect(loadLayoutDensity()).toBe("slim");
   });
 
   it("does not throw when localStorage writes throw", () => {

@@ -74,18 +74,18 @@ describe("Frontend - Theme", () => {
       expect(onSelect).toHaveBeenCalledWith("blue");
     });
 
-    it("renders Chunky and Slim density buttons", () => {
+    it("renders Desktop and Mobile density buttons", () => {
       renderThemeSection();
 
-      expect(screen.getByRole("button", { name: "Layout: Chunky" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Layout: Slim" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Layout: Desktop" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Layout: Mobile" })).toBeInTheDocument();
     });
 
     it("indicates the active density", () => {
       renderThemeSection({ density: "slim" });
 
-      expect(screen.getByRole("button", { name: "Layout: Slim" })).toHaveAttribute("aria-pressed", "true");
-      expect(screen.getByRole("button", { name: "Layout: Chunky" })).toHaveAttribute("aria-pressed", "false");
+      expect(screen.getByRole("button", { name: "Layout: Mobile" })).toHaveAttribute("aria-pressed", "true");
+      expect(screen.getByRole("button", { name: "Layout: Desktop" })).toHaveAttribute("aria-pressed", "false");
     });
 
     it("calls onDensityChange when a density option is clicked", async () => {
@@ -93,7 +93,7 @@ describe("Frontend - Theme", () => {
       const onDensityChange = vi.fn();
       renderThemeSection({ onDensityChange });
 
-      await user.click(screen.getByRole("button", { name: "Layout: Slim" }));
+      await user.click(screen.getByRole("button", { name: "Layout: Mobile" }));
 
       expect(onDensityChange).toHaveBeenCalledWith("slim");
     });

@@ -9,8 +9,8 @@ export interface ThemeSectionProps {
 }
 
 const DENSITY_OPTIONS: Array<{ value: LayoutDensity; label: string }> = [
-  { value: "chunky", label: "Chunky" },
-  { value: "slim", label: "Slim" }
+  { value: "chunky", label: "Desktop" },
+  { value: "slim", label: "Mobile" }
 ];
 
 export function ThemeSection({ paletteId, onSelect, density, onDensityChange }: ThemeSectionProps): JSX.Element {

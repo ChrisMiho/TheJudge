@@ -1,6 +1,6 @@
 export type LayoutDensity = "chunky" | "slim";
 
-export const DEFAULT_LAYOUT_DENSITY: LayoutDensity = "chunky";
+export const DEFAULT_LAYOUT_DENSITY: LayoutDensity = "slim";
 
 const VALID_DENSITIES: ReadonlySet<string> = new Set(["chunky", "slim"]);
 
