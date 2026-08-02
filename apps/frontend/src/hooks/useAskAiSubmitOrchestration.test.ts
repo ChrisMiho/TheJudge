@@ -66,6 +66,7 @@ const lookupCardPayloadFixture: LookupAskAiPayload = {
   }
 };
 
+describe("Frontend - MTG Assistant", () => {
 describe("useAskAiSubmitOrchestration", () => {
   beforeEach(() => {
     vi.useRealTimers();
@@ -681,4 +682,5 @@ describe("useAskAiSubmitOrchestration", () => {
       expect(submittingDuringFollowUp.every((v) => v === false)).toBe(true);
     });
   });
+});
 });

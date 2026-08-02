@@ -9,6 +9,7 @@ import {
   loadDetectorRealFrameFixture
 } from "../detectorFixtures"
 
+describe("Frontend - Card Scan", () => {
 describe("detector fixture corpus", () => {
   it("loads committed provenance for all required detector condition classes", () => {
     const manifest = loadDetectorFixtureManifest()
@@ -113,4 +114,5 @@ describe("detector fixture corpus", () => {
       expect.objectContaining({ id: "real-scan-frame-1782432169082", detected: true })
     ])
   })
+})
 })

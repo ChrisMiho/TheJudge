@@ -5,6 +5,7 @@ import { readDb, writeDb } from "../dbformat";
 
 const fixturesDir = resolve(__dirname, "..", "__fixtures__");
 
+describe("Frontend - Card Scan", () => {
 describe("dbformat readDb", () => {
   it("parses the committed fixture DB (pure binary, decoder-independent)", () => {
     const bytes = readFileSync(resolve(fixturesDir, "fixture_db.bin"));
@@ -37,4 +38,5 @@ describe("dbformat readDb", () => {
     expect(Array.from(db.hashes)).toEqual(Array.from(hashes));
     expect(Array.from(writeDb(db))).toEqual(Array.from(bytes));
   });
+});
 });

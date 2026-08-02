@@ -17,6 +17,7 @@ function pushN(stab: ScanStabilizer, frames: Candidate[][]) {
   return state;
 }
 
+describe("Frontend - Card Scan", () => {
 describe("ScanStabilizer", () => {
   it("locks after minVotes consecutive confident frames for one card", () => {
     const stab = new ScanStabilizer();
@@ -238,4 +239,5 @@ describe("ScanStabilizer", () => {
       expect(stab.push(confident("alpha"))).toMatchObject({ phase: "locked", cardId: "alpha" });
     });
   });
+});
 });

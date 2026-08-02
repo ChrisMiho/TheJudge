@@ -9,6 +9,7 @@ import {
   getCardIdentityRingStyle
 } from "./cardIdentityRing";
 
+describe("Frontend - MTG Assistant", () => {
 describe("getCardIdentityRing", () => {
   it("exports the stable WUBRG order", () => {
     expect(CARD_COLOR_ORDER).toEqual(["W", "U", "B", "R", "G"]);
@@ -58,4 +59,5 @@ describe("card identity ring CSS", () => {
     expect(ringRule).not.toContain("animation");
     expect(ringRule).not.toContain("--accent");
   });
+});
 });

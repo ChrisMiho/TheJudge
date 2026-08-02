@@ -5,6 +5,7 @@ import type { ConversationMessage } from "../types";
 
 afterEach(cleanup);
 
+describe("Frontend - MTG Assistant", () => {
 describe("ConversationThread", () => {
   it("adds the shared entrance cue to messages appended to the thread", () => {
     const messages: ConversationMessage[] = [
@@ -23,4 +24,5 @@ describe("ConversationThread", () => {
       "motion-enter"
     );
   });
+});
 });

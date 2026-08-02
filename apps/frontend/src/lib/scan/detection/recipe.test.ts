@@ -9,6 +9,7 @@ const vectors = JSON.parse(readFileSync(resolve(fixturesDir, "vectors.json"), "u
   phash: Array<{ input: string; r: string; g: string; b: string }>;
 };
 
+describe("Frontend - Card Scan", () => {
 describe("recipe phashRegionHex", () => {
   it.each(vectors.phash)(
     "matches the regenerated packed hash byte-for-byte ($input)",
@@ -23,4 +24,5 @@ describe("recipe phashRegionHex", () => {
       expect(hexB).toBe(b);
     }
   );
+});
 });

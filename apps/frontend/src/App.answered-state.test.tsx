@@ -37,7 +37,8 @@ function queueAskAiResponses(...responses: Array<{ status: number; body: unknown
   askAiResponseQueue = responses;
 }
 
-describe("Slice-A: frozen context summary in answered state", () => {
+describe("Frontend - MTG Assistant", () => {
+describe("Frozen context summary in answered state", () => {
   beforeEach(() => {
     metadataFixture = [...baseCardMetadataFixture];
     askAiResponseQueue = [{ status: 200, body: { answer: "Mock answer" } }];
@@ -164,7 +165,7 @@ describe("Slice-A: frozen context summary in answered state", () => {
     ).toHaveAttribute("aria-expanded", "true");
   });
 });
-describe("Slice-B: answered-state layout integration", () => {
+describe("Answered-state layout integration", () => {
   beforeEach(() => {
     metadataFixture = [...baseCardMetadataFixture];
     askAiResponseQueue = [{ status: 200, body: { answer: "Mock answer" } }];
@@ -255,4 +256,5 @@ describe("Slice-B: answered-state layout integration", () => {
     expect(startOver).toBeInTheDocument();
     expect(startOver).toBeEnabled();
   });
+});
 });

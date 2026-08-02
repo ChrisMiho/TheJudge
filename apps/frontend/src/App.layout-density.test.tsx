@@ -42,7 +42,8 @@ function queueAskAiResponses(...responses: Array<{ status: number; body: unknown
   askAiResponseQueue = responses;
 }
 
-describe("Slice-E: layout density toggle", () => {
+describe("Frontend - Theme", () => {
+describe("Layout density toggle", () => {
   beforeEach(() => {
     metadataFixture = [...baseCardMetadataFixture];
     askAiResponseQueue = [{ status: 200, body: { answer: "Mock answer" } }];
@@ -160,7 +161,7 @@ describe("Slice-E: layout density toggle", () => {
   });
 });
 
-describe("Slice-F: slim density surfaces", () => {
+describe("Slim density surfaces", () => {
   it("defines slim overrides for the high-scroll and camera surfaces", () => {
     expect(appCss).toContain('[data-layout-density="slim"] .staged-step-brand');
     expect(appCss).toContain('[data-layout-density="slim"] .staged-step-name');
@@ -180,4 +181,5 @@ describe("Slice-F: slim density surfaces", () => {
     expect(appCss).not.toContain("--zone-card-tile-height");
     expect(appCss).toContain("--zone-card-grid-gap: 0.375rem;");
   });
+});
 });

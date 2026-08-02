@@ -11,6 +11,7 @@ function makeDbBytes(): Uint8Array {
   });
 }
 
+describe("Frontend - Card Scan", () => {
 describe("loadHashDb", () => {
   beforeEach(() => {
     vi.resetModules();
@@ -49,4 +50,5 @@ describe("loadHashDb", () => {
     expect(firstDb.count).toBe(2);
     expect(Array.from(firstDb.hashes)).toEqual(Array.from(readDb(bytes).hashes));
   });
+});
 });

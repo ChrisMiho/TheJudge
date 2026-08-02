@@ -25,6 +25,7 @@ const frozenContext: GameContext = {
   }
 };
 
+describe("Frontend - MTG Assistant", () => {
 describe("FrozenContextSummary", () => {
   it("toggles the animated expanded state without changing disclosure semantics", async () => {
     const user = userEvent.setup();
@@ -57,4 +58,5 @@ describe("FrozenContextSummary", () => {
       /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*\.frozen-context-summary/
     );
   });
+});
 });

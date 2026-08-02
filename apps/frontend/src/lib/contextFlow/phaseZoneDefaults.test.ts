@@ -6,6 +6,7 @@ import {
   PHASE_ZONE_DEFAULTS
 } from "./phaseZoneDefaults";
 
+describe("Frontend - MTG Assistant", () => {
 describe("PHASE_ZONE_DEFAULTS", () => {
   it("covers all TurnPhase values", () => {
     const expectedPhases = [
@@ -117,4 +118,5 @@ describe("mergeSelectedZonesOnPhaseChange", () => {
     const result = mergeSelectedZonesOnPhaseChange(current, "main_2", "main_1");
     expect(result).toEqual(current);
   });
+});
 });

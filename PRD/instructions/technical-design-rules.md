@@ -45,6 +45,7 @@ Do not propose or implement:
 - prefer the smallest solution that satisfies current scope
 - keep future extensibility notes separate from current implementation scope
 - if a proposal adds product behavior, update product section files rather than burying it in technical notes
+- Vitest titles follow `PRD/instructions/test-naming.md` — outermost `describe` is `Frontend|Backend - <Feature>`; do not use Slice / STORY / REQ / DEC / MVP labels in suite titles
 
 ## Prompt-Related Rules
 

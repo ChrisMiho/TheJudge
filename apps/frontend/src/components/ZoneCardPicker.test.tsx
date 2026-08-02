@@ -90,6 +90,7 @@ function renderPicker(
   return { onExitToManual };
 }
 
+describe("Frontend - MTG Assistant", () => {
 describe("ZoneCardPicker scan chrome", () => {
   it("renders the camera surface but no selectable candidate list or Accept gate", () => {
     renderPicker();
@@ -111,14 +112,14 @@ describe("ZoneCardPicker scan chrome", () => {
     expect(scanButton.className).not.toMatch(/emerald/);
   });
 
-  it("never renders a manual-entry prompt or 'Use manual search' button (DEC-065: prompt removed)", () => {
+  it("never renders a manual-entry prompt or 'Use manual search' button", () => {
     renderPicker();
     expect(screen.queryByText("Still no confident scan match. Manual search is available.")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Use manual search" })).not.toBeInTheDocument();
   });
 });
 
-describe("ZoneCardPicker scan focus (Slice C)", () => {
+describe("ZoneCardPicker scan focus", () => {
   it("hides search input and Scan button when scan is open", () => {
     renderPicker({ isOpen: true });
     expect(screen.queryByText("Stack order is bottom to top. The first card you add is the bottom; each new card is added on top.")).not.toBeInTheDocument();
@@ -405,4 +406,5 @@ describe("ZoneCardPicker scan review bubble", () => {
     renderPicker({ sessionInstanceIds: ["iid-opt"] }, { cards: [] });
     expect(screen.queryByLabelText(/^Scanned this session:/)).not.toBeInTheDocument();
   });
+});
 });

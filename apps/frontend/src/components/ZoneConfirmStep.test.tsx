@@ -6,6 +6,7 @@ import { ZoneConfirmStep } from "./ZoneConfirmStep";
 
 afterEach(cleanup);
 
+describe("Frontend - MTG Assistant", () => {
 describe("ZoneConfirmStep", () => {
   it("shows direct guidance for selecting relevant zones", () => {
     render(
@@ -121,4 +122,5 @@ describe("ZoneConfirmStep", () => {
       "false"
     );
   });
+});
 });

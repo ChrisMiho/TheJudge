@@ -5,209 +5,211 @@ import { getPromptDiagnostics } from "./prompt/promptDiagnostics.js";
 import type { EnrichmentDebug } from "./prompt/enrichmentDebug.js";
 import type { PromptContext } from "./types/index.js";
 
-describe("mock answer ergonomics", () => {
-  it("renders deterministic labeled debug output", () => {
-    const context: PromptContext = {
-      finalQuestion: "How does this resolve?",
-      gameContext: {
-        playerCount: 2,
-        players: [
-          { label: "Player 1", lifeTotal: 20 },
-          { label: "Player 2", lifeTotal: 18 }
-        ],
-        turnPhase: "combat",
-        selectedZones: ["battlefield", "stack"]
-      },
-      populatedZones: [
-        {
-          zoneId: "battlefield",
-          items: [
-            {
-              cardId: "rhystic-study",
-              name: "Rhystic Study",
-              oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
-              imageUrl: "",
-              manaCost: "{2}{U}",
-              manaValue: 3,
-              typeLine: "Enchantment",
-              colors: ["U"],
-              supertypes: [],
-              subtypes: [],
-              targets: [{ kind: "none" }],
-              contextNotes: "Tax effect"
-            }
-          ]
-        }
-      ],
-      orderedStack: [
-        {
-          cardId: "opt",
-          name: "Opt",
-          oracleText: "Scry 1, then draw a card.",
-          imageUrl: "",
-          manaCost: "{U}",
-          manaValue: 1,
-          typeLine: "Instant",
-          colors: ["U"],
-          supertypes: [],
-          subtypes: [],
-          caster: "Player 1",
-          targets: [],
-          manaSpent: 1,
-          contextNotes: "",
-          stackIndex: 0,
-          stackRole: "bottom"
-        },
-        {
-          cardId: "bolt",
-          name: "Lightning Bolt",
-          oracleText: "Lightning Bolt deals 3 damage to any target.",
-          imageUrl: "",
-          manaCost: "{R}",
-          manaValue: 1,
-          typeLine: "Instant",
-          colors: ["R"],
-          supertypes: [],
-          subtypes: [],
-          caster: "Player 3",
-          targets: [
-            { kind: "none" },
-            { kind: "player", targetPlayer: "Player 4" },
-            { kind: "other", targetDescription: "custom target detail" }
+describe("Backend - Ask AI", () => {
+  describe("mock answer ergonomics", () => {
+    it("renders deterministic labeled debug output", () => {
+      const context: PromptContext = {
+        finalQuestion: "How does this resolve?",
+        gameContext: {
+          playerCount: 2,
+          players: [
+            { label: "Player 1", lifeTotal: 20 },
+            { label: "Player 2", lifeTotal: 18 }
           ],
-          manaSpent: 3,
-          contextNotes: "cast for free",
-          stackIndex: 1,
-          stackRole: "top"
-        }
-      ]
-    };
+          turnPhase: "combat",
+          selectedZones: ["battlefield", "stack"]
+        },
+        populatedZones: [
+          {
+            zoneId: "battlefield",
+            items: [
+              {
+                cardId: "rhystic-study",
+                name: "Rhystic Study",
+                oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
+                imageUrl: "",
+                manaCost: "{2}{U}",
+                manaValue: 3,
+                typeLine: "Enchantment",
+                colors: ["U"],
+                supertypes: [],
+                subtypes: [],
+                targets: [{ kind: "none" }],
+                contextNotes: "Tax effect"
+              }
+            ]
+          }
+        ],
+        orderedStack: [
+          {
+            cardId: "opt",
+            name: "Opt",
+            oracleText: "Scry 1, then draw a card.",
+            imageUrl: "",
+            manaCost: "{U}",
+            manaValue: 1,
+            typeLine: "Instant",
+            colors: ["U"],
+            supertypes: [],
+            subtypes: [],
+            caster: "Player 1",
+            targets: [],
+            manaSpent: 1,
+            contextNotes: "",
+            stackIndex: 0,
+            stackRole: "bottom"
+          },
+          {
+            cardId: "bolt",
+            name: "Lightning Bolt",
+            oracleText: "Lightning Bolt deals 3 damage to any target.",
+            imageUrl: "",
+            manaCost: "{R}",
+            manaValue: 1,
+            typeLine: "Instant",
+            colors: ["R"],
+            supertypes: [],
+            subtypes: [],
+            caster: "Player 3",
+            targets: [
+              { kind: "none" },
+              { kind: "player", targetPlayer: "Player 4" },
+              { kind: "other", targetDescription: "custom target detail" }
+            ],
+            manaSpent: 3,
+            contextNotes: "cast for free",
+            stackIndex: 1,
+            stackRole: "top"
+          }
+        ]
+      };
 
-    const diagnostics = getPromptDiagnostics(buildPromptText(context));
-    const result = buildMockAnswer({
-      context,
-      promptText: buildPromptText(context),
-      diagnostics
+      const diagnostics = getPromptDiagnostics(buildPromptText(context));
+      const result = buildMockAnswer({
+        context,
+        promptText: buildPromptText(context),
+        diagnostics
+      });
+
+      expect(result.answer).toContain("MOCK RESPONSE");
+      expect(result.answer).toContain("PROMPT STATS");
+      expect(result.answer).toContain("Prompt chars:");
+      expect(result.answer).toContain("Prompt remaining chars:");
+      expect(result.answer).toContain("Prompt utilization:");
+      expect(result.answer).toContain("Prompt near limit:");
+      expect(result.answer).toContain("Prompt exceeds budget:");
+      expect(result.answer).toContain("Estimated input tokens (~4 chars/token):");
+      expect(result.answer).toContain("Estimated token budget (~4 chars/token):");
+      expect(result.answer).toContain("Estimated remaining tokens (~4 chars/token):");
+      expect(result.answer).toContain("FULL PROMPT (SENT TO PROVIDER)");
+      expect(result.answer).toContain("SYSTEM ROLE PREAMBLE");
+      expect(result.answer).toContain("INSTRUCTIONS");
+      expect(result.answer).toContain("MTG REFERENCE");
+      expect(result.answer).toContain("PHASE GUIDANCE");
+      expect(result.answer).toContain("ZONE: STACK (BOTTOM TO TOP)");
+      expect(result.answer).toContain("SCOPE");
+      expect(result.answer).toContain("QUESTION");
     });
 
-    expect(result.answer).toContain("MOCK RESPONSE");
-    expect(result.answer).toContain("PROMPT STATS");
-    expect(result.answer).toContain("Prompt chars:");
-    expect(result.answer).toContain("Prompt remaining chars:");
-    expect(result.answer).toContain("Prompt utilization:");
-    expect(result.answer).toContain("Prompt near limit:");
-    expect(result.answer).toContain("Prompt exceeds budget:");
-    expect(result.answer).toContain("Estimated input tokens (~4 chars/token):");
-    expect(result.answer).toContain("Estimated token budget (~4 chars/token):");
-    expect(result.answer).toContain("Estimated remaining tokens (~4 chars/token):");
-    expect(result.answer).toContain("FULL PROMPT (SENT TO PROVIDER)");
-    expect(result.answer).toContain("SYSTEM ROLE PREAMBLE");
-    expect(result.answer).toContain("INSTRUCTIONS");
-    expect(result.answer).toContain("MTG REFERENCE");
-    expect(result.answer).toContain("PHASE GUIDANCE");
-    expect(result.answer).toContain("ZONE: STACK (BOTTOM TO TOP)");
-    expect(result.answer).toContain("SCOPE");
-    expect(result.answer).toContain("QUESTION");
-  });
+    it("returns context and diagnostics sidecars from preparedPrompt", () => {
+      const context: PromptContext = {
+        finalQuestion: "Sidecar check",
+        gameContext: {
+          playerCount: 2,
+          players: [
+            { label: "Player 1", lifeTotal: 20 },
+            { label: "Player 2", lifeTotal: 20 }
+          ],
+          turnPhase: "main_1",
+          selectedZones: ["stack"]
+        },
+        populatedZones: [],
+        orderedStack: [
+          {
+            cardId: "opt",
+            name: "Opt",
+            oracleText: "Scry 1, then draw a card.",
+            imageUrl: "",
+            manaCost: "{U}",
+            manaValue: 1,
+            typeLine: "Instant",
+            colors: ["U"],
+            supertypes: [],
+            subtypes: [],
+            caster: "Player 1",
+            targets: [],
+            manaSpent: 1,
+            contextNotes: "",
+            stackIndex: 0,
+            stackRole: "bottom"
+          }
+        ]
+      };
+      const diagnostics = getPromptDiagnostics(buildPromptText(context));
+      const result = buildMockAnswer({ context, promptText: buildPromptText(context), diagnostics });
 
-  it("returns context and diagnostics sidecars from preparedPrompt", () => {
-    const context: PromptContext = {
-      finalQuestion: "Sidecar check",
-      gameContext: {
-        playerCount: 2,
-        players: [
-          { label: "Player 1", lifeTotal: 20 },
-          { label: "Player 2", lifeTotal: 20 }
-        ],
-        turnPhase: "main_1",
-        selectedZones: ["stack"]
-      },
-      populatedZones: [],
-      orderedStack: [
-        {
-          cardId: "opt",
-          name: "Opt",
-          oracleText: "Scry 1, then draw a card.",
-          imageUrl: "",
-          manaCost: "{U}",
-          manaValue: 1,
-          typeLine: "Instant",
-          colors: ["U"],
-          supertypes: [],
-          subtypes: [],
-          caster: "Player 1",
-          targets: [],
-          manaSpent: 1,
-          contextNotes: "",
-          stackIndex: 0,
-          stackRole: "bottom"
+      expect(result.context).toBe(context);
+      expect(result.diagnostics).toBe(diagnostics);
+      expect(result.enrichmentDebug).toBeUndefined();
+    });
+
+    it("includes enrichmentDebug sidecar when present in preparedPrompt", () => {
+      const context: PromptContext = {
+        finalQuestion: "Enrichment check",
+        gameContext: {
+          playerCount: 2,
+          players: [
+            { label: "Player 1", lifeTotal: 20 },
+            { label: "Player 2", lifeTotal: 20 }
+          ],
+          turnPhase: "main_1",
+          selectedZones: ["stack"]
+        },
+        populatedZones: [],
+        orderedStack: [
+          {
+            cardId: "opt",
+            name: "Opt",
+            oracleText: "Scry 1, then draw a card.",
+            imageUrl: "",
+            manaCost: "{U}",
+            manaValue: 1,
+            typeLine: "Instant",
+            colors: ["U"],
+            supertypes: [],
+            subtypes: [],
+            caster: "Player 1",
+            targets: [],
+            manaSpent: 1,
+            contextNotes: "",
+            stackIndex: 0,
+            stackRole: "bottom"
+          }
+        ]
+      };
+      const diagnostics = getPromptDiagnostics(buildPromptText(context));
+      const enrichmentDebug: EnrichmentDebug = {
+        supplemental: {
+          queryText: "test query",
+          queryTokens: ["test", "query"],
+          queryRuleIds: [],
+          excludedCuratedRuleCount: 0,
+          selected: [{ ruleId: "405.1", sectionTitle: "The Stack", score: 5 }],
+          runnerUp: [],
+          candidatesScored: 1
+        },
+        curatedGameRules: { topicIds: [], topics: [] },
+        rulings: {
+          cardsConsidered: [],
+          cardsIncluded: [],
+          cardsSkippedNoMatch: [],
+          sectionTruncated: false
         }
-      ]
-    };
-    const diagnostics = getPromptDiagnostics(buildPromptText(context));
-    const result = buildMockAnswer({ context, promptText: buildPromptText(context), diagnostics });
+      };
+      const result = buildMockAnswer({ context, promptText: buildPromptText(context), diagnostics, enrichmentDebug });
 
-    expect(result.context).toBe(context);
-    expect(result.diagnostics).toBe(diagnostics);
-    expect(result.enrichmentDebug).toBeUndefined();
-  });
-
-  it("includes enrichmentDebug sidecar when present in preparedPrompt", () => {
-    const context: PromptContext = {
-      finalQuestion: "Enrichment check",
-      gameContext: {
-        playerCount: 2,
-        players: [
-          { label: "Player 1", lifeTotal: 20 },
-          { label: "Player 2", lifeTotal: 20 }
-        ],
-        turnPhase: "main_1",
-        selectedZones: ["stack"]
-      },
-      populatedZones: [],
-      orderedStack: [
-        {
-          cardId: "opt",
-          name: "Opt",
-          oracleText: "Scry 1, then draw a card.",
-          imageUrl: "",
-          manaCost: "{U}",
-          manaValue: 1,
-          typeLine: "Instant",
-          colors: ["U"],
-          supertypes: [],
-          subtypes: [],
-          caster: "Player 1",
-          targets: [],
-          manaSpent: 1,
-          contextNotes: "",
-          stackIndex: 0,
-          stackRole: "bottom"
-        }
-      ]
-    };
-    const diagnostics = getPromptDiagnostics(buildPromptText(context));
-    const enrichmentDebug: EnrichmentDebug = {
-      supplemental: {
-        queryText: "test query",
-        queryTokens: ["test", "query"],
-        queryRuleIds: [],
-        excludedCuratedRuleCount: 0,
-        selected: [{ ruleId: "405.1", sectionTitle: "The Stack", score: 5 }],
-        runnerUp: [],
-        candidatesScored: 1
-      },
-      curatedGameRules: { topicIds: [], topics: [] },
-      rulings: {
-        cardsConsidered: [],
-        cardsIncluded: [],
-        cardsSkippedNoMatch: [],
-        sectionTruncated: false
-      }
-    };
-    const result = buildMockAnswer({ context, promptText: buildPromptText(context), diagnostics, enrichmentDebug });
-
-    expect(result.enrichmentDebug).toBe(enrichmentDebug);
-    expect(result.enrichmentDebug?.supplemental.selected[0]?.score).toBeTypeOf("number");
+      expect(result.enrichmentDebug).toBe(enrichmentDebug);
+      expect(result.enrichmentDebug?.supplemental.selected[0]?.score).toBeTypeOf("number");
+    });
   });
 });

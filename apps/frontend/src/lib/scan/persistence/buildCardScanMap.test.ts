@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildScanMapEntry } from "../../../../../../scripts/build-card-scan-map.mjs";
 
+describe("Frontend - Card Scan", () => {
 describe("buildScanMapEntry", () => {
   it("returns oracleId, name, and imageUrl from image_uris.normal", () => {
     const card = {
@@ -76,4 +77,5 @@ describe("buildScanMapEntry", () => {
 
     expect(entry.name).toBe("Brainstorm");
   });
+});
 });

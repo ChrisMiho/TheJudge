@@ -103,116 +103,118 @@ function selectedIds(context: PromptContext): string[] {
   return selectGameRulesTopics(context, ALL_TOPICS).map((t) => t.id);
 }
 
-describe("selectGameRulesTopics", () => {
-  it("returns exactly the four always-on topics for main_1 with empty zones", () => {
-    const ids = selectedIds(makeContext({ turnPhase: "main_1" }));
-    expect(ids).toEqual([...ALWAYS_ON_TOPIC_IDS].sort((a, b) => a.localeCompare(b)));
-  });
+describe("Backend - Game Rules", () => {
+  describe("selectGameRulesTopics", () => {
+    it("returns exactly the four always-on topics for main_1 with empty zones", () => {
+      const ids = selectedIds(makeContext({ turnPhase: "main_1" }));
+      expect(ids).toEqual([...ALWAYS_ON_TOPIC_IDS].sort((a, b) => a.localeCompare(b)));
+    });
 
-  it("output is stable id-ascending order", () => {
-    const ids = selectedIds(makeContext({ stack: true, battlefield: true }));
-    expect(ids).toEqual([...ids].sort((a, b) => a.localeCompare(b)));
-  });
+    it("produces stable id-ascending output order", () => {
+      const ids = selectedIds(makeContext({ stack: true, battlefield: true }));
+      expect(ids).toEqual([...ids].sort((a, b) => a.localeCompare(b)));
+    });
 
-  it("non-empty stack adds all five stack conditional topics", () => {
-    const ids = selectedIds(makeContext({ stack: true }));
-    for (const id of [
-      "spell-casting-choices",
-      "spell-casting-costs",
-      "effects-resolution-targets",
-      "copying-spells-abilities",
-      "effects-source-impossible"
-    ]) {
-      expect(ids).toContain(id);
-    }
-  });
+    it("adds all five stack conditional topics when the stack is non-empty", () => {
+      const ids = selectedIds(makeContext({ stack: true }));
+      for (const id of [
+        "spell-casting-choices",
+        "spell-casting-costs",
+        "effects-resolution-targets",
+        "copying-spells-abilities",
+        "effects-source-impossible"
+      ]) {
+        expect(ids).toContain(id);
+      }
+    });
 
-  it("populated battlefield adds all six battlefield conditional topics", () => {
-    const ids = selectedIds(makeContext({ battlefield: true }));
-    for (const id of [
-      "replacement-effects-basics",
-      "replacement-etb-effects",
-      "layers-order",
-      "layers-power-toughness",
-      "layers-timestamps-dependencies",
-      "abilities-zone-change-triggers"
-    ]) {
-      expect(ids).toContain(id);
-    }
-  });
+    it("adds all six battlefield conditional topics when the battlefield is populated", () => {
+      const ids = selectedIds(makeContext({ battlefield: true }));
+      for (const id of [
+        "replacement-effects-basics",
+        "replacement-etb-effects",
+        "layers-order",
+        "layers-power-toughness",
+        "layers-timestamps-dependencies",
+        "abilities-zone-change-triggers"
+      ]) {
+        expect(ids).toContain(id);
+      }
+    });
 
-  it("stack + battlefield unions both bucket sets with core", () => {
-    const ids = selectedIds(makeContext({ stack: true, battlefield: true }));
-    expect(ids).toContain("spell-casting-choices");
-    expect(ids).toContain("layers-order");
-    for (const id of ALWAYS_ON_TOPIC_IDS) expect(ids).toContain(id);
-  });
+    it("unions stack and battlefield bucket sets with the core topics", () => {
+      const ids = selectedIds(makeContext({ stack: true, battlefield: true }));
+      expect(ids).toContain("spell-casting-choices");
+      expect(ids).toContain("layers-order");
+      for (const id of ALWAYS_ON_TOPIC_IDS) expect(ids).toContain(id);
+    });
 
-  it("combat + declare_attackers adds combat-phase-structure and combat-declare-attackers", () => {
-    const ids = selectedIds(makeContext({ turnPhase: "combat", combatStep: "declare_attackers" }));
-    expect(ids).toContain("combat-phase-structure");
-    expect(ids).toContain("combat-declare-attackers");
-    expect(ids).not.toContain("combat-declare-blockers");
-    expect(ids).not.toContain("damage-basics");
-  });
+    it("adds combat-phase-structure and combat-declare-attackers for combat + declare_attackers", () => {
+      const ids = selectedIds(makeContext({ turnPhase: "combat", combatStep: "declare_attackers" }));
+      expect(ids).toContain("combat-phase-structure");
+      expect(ids).toContain("combat-declare-attackers");
+      expect(ids).not.toContain("combat-declare-blockers");
+      expect(ids).not.toContain("damage-basics");
+    });
 
-  it("combat + declare_blockers adds combat-phase-structure and combat-declare-blockers", () => {
-    const ids = selectedIds(makeContext({ turnPhase: "combat", combatStep: "declare_blockers" }));
-    expect(ids).toContain("combat-phase-structure");
-    expect(ids).toContain("combat-declare-blockers");
-    expect(ids).not.toContain("combat-declare-attackers");
-  });
+    it("adds combat-phase-structure and combat-declare-blockers for combat + declare_blockers", () => {
+      const ids = selectedIds(makeContext({ turnPhase: "combat", combatStep: "declare_blockers" }));
+      expect(ids).toContain("combat-phase-structure");
+      expect(ids).toContain("combat-declare-blockers");
+      expect(ids).not.toContain("combat-declare-attackers");
+    });
 
-  it("combat + combat_damage adds combat-phase plus all damage topics", () => {
-    const ids = selectedIds(makeContext({ turnPhase: "combat", combatStep: "combat_damage" }));
-    for (const id of [
-      "combat-phase-structure",
-      "combat-damage-assignment",
-      "damage-basics",
-      "damage-marked-lethal",
-      "damage-lifelink-deathtouch"
-    ]) {
-      expect(ids).toContain(id);
-    }
-    expect(ids).not.toContain("combat-declare-attackers");
-  });
+    it("adds combat-phase-structure plus all damage topics for combat + combat_damage", () => {
+      const ids = selectedIds(makeContext({ turnPhase: "combat", combatStep: "combat_damage" }));
+      for (const id of [
+        "combat-phase-structure",
+        "combat-damage-assignment",
+        "damage-basics",
+        "damage-marked-lethal",
+        "damage-lifelink-deathtouch"
+      ]) {
+        expect(ids).toContain(id);
+      }
+      expect(ids).not.toContain("combat-declare-attackers");
+    });
 
-  it("combat without recognized combatStep adds full combat+damage set", () => {
-    const expectedCombat = [
-      "combat-phase-structure",
-      "combat-declare-attackers",
-      "combat-declare-blockers",
-      "combat-damage-assignment",
-      "damage-basics",
-      "damage-marked-lethal",
-      "damage-lifelink-deathtouch"
-    ];
+    it("adds the full combat+damage set when combatStep is unrecognized", () => {
+      const expectedCombat = [
+        "combat-phase-structure",
+        "combat-declare-attackers",
+        "combat-declare-blockers",
+        "combat-damage-assignment",
+        "damage-basics",
+        "damage-marked-lethal",
+        "damage-lifelink-deathtouch"
+      ];
 
-    const absentStep = selectedIds(makeContext({ turnPhase: "combat" }));
-    for (const id of expectedCombat) expect(absentStep).toContain(id);
+      const absentStep = selectedIds(makeContext({ turnPhase: "combat" }));
+      for (const id of expectedCombat) expect(absentStep).toContain(id);
 
-    const otherStep = selectedIds(
-      makeContext({ turnPhase: "combat", combatStep: "beginning_of_combat" })
-    );
-    for (const id of expectedCombat) expect(otherStep).toContain(id);
-  });
+      const otherStep = selectedIds(
+        makeContext({ turnPhase: "combat", combatStep: "beginning_of_combat" })
+      );
+      for (const id of expectedCombat) expect(otherStep).toContain(id);
+    });
 
-  it("upkeep/draw/end_step/cleanup add abilities-delayed-triggers", () => {
-    for (const phase of ["upkeep", "draw", "end_step", "cleanup"] as const) {
-      expect(selectedIds(makeContext({ turnPhase: phase }))).toContain("abilities-delayed-triggers");
-    }
-  });
+    it("adds abilities-delayed-triggers for upkeep/draw/end_step/cleanup phases", () => {
+      for (const phase of ["upkeep", "draw", "end_step", "cleanup"] as const) {
+        expect(selectedIds(makeContext({ turnPhase: phase }))).toContain("abilities-delayed-triggers");
+      }
+    });
 
-  it("does not add abilities-delayed-triggers outside those phases", () => {
-    expect(selectedIds(makeContext({ turnPhase: "main_1" }))).not.toContain(
-      "abilities-delayed-triggers"
-    );
-  });
+    it("does not add abilities-delayed-triggers outside those phases", () => {
+      expect(selectedIds(makeContext({ turnPhase: "main_1" }))).not.toContain(
+        "abilities-delayed-triggers"
+      );
+    });
 
-  it("ignores selected ids missing from the provided topic list", () => {
-    const partial = ALL_TOPICS.filter((t) => t.id !== "zones-basics");
-    const ids = selectGameRulesTopics(makeContext({ turnPhase: "main_1" }), partial).map((t) => t.id);
-    expect(ids).not.toContain("zones-basics");
-    expect(ids).toContain("stack-and-priority");
+    it("ignores selected ids missing from the provided topic list", () => {
+      const partial = ALL_TOPICS.filter((t) => t.id !== "zones-basics");
+      const ids = selectGameRulesTopics(makeContext({ turnPhase: "main_1" }), partial).map((t) => t.id);
+      expect(ids).not.toContain("zones-basics");
+      expect(ids).toContain("stack-and-priority");
+    });
   });
 });

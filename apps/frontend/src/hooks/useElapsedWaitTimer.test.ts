@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useElapsedWaitTimer } from "./useElapsedWaitTimer";
 
+describe("Frontend - MTG Assistant", () => {
 describe("useElapsedWaitTimer", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -56,4 +57,5 @@ describe("useElapsedWaitTimer", () => {
     });
     expect(result.current.elapsed).toBe(0);
   });
+});
 });

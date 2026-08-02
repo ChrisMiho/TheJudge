@@ -4,6 +4,7 @@ import { StagedStepHeader } from "./StagedStepHeader";
 
 afterEach(cleanup);
 
+describe("Frontend - MTG Assistant", () => {
 describe("StagedStepHeader", () => {
   it("renders the brand block and the step name", () => {
     render(<StagedStepHeader stepName="Zone confirmation" />);
@@ -29,4 +30,5 @@ describe("StagedStepHeader", () => {
       "motion-focus"
     );
   });
+});
 });

@@ -33,6 +33,7 @@ function Harness(): JSX.Element {
   );
 }
 
+describe("Frontend - Portal", () => {
 describe("DestinationOutlet", () => {
   it("mounts only the active destination at startup and lazily mounts others on first activation", () => {
     render(<Harness />);
@@ -77,4 +78,5 @@ describe("DestinationOutlet", () => {
     expect(screen.getByTestId("alpha-input")).toHaveValue("keep-me");
     expect(screen.queryByTestId("beta-input")).not.toBeInTheDocument();
   });
+});
 });

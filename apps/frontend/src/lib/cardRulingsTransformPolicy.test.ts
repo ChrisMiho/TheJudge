@@ -13,6 +13,7 @@ type RulingTransformResult = {
   };
 };
 
+describe("Frontend - Shared", () => {
 describe("card rulings transform policy", () => {
   it("keeps WotC rulings for metadata card IDs with normalized comments newest first", () => {
     const metadataCardIds = new Set(["oracle-bolt", "oracle-opt"]);
@@ -78,4 +79,5 @@ describe("card rulings transform policy", () => {
       ]
     });
   });
+});
 });

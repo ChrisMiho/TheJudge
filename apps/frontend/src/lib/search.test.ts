@@ -41,6 +41,7 @@ const sampleCards: CardMetadataItem[] = [
   }
 ];
 
+describe("Frontend - Shared", () => {
 describe("search helpers", () => {
   it("calculates Levenshtein distance correctly", () => {
     expect(levenshteinDistance("bolt", "bolts")).toBe(1);
@@ -206,4 +207,5 @@ describe("search helpers", () => {
 
     expect(getSuggestionsFromIndex(index, query)).toEqual(getSuggestions(sampleCards, query));
   });
+});
 });

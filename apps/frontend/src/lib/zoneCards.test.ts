@@ -31,6 +31,7 @@ const BOLT_CARD: CardMetadataItem = {
   colors: ["R"]
 };
 
+describe("Frontend - MTG Assistant", () => {
 describe("zoneCards", () => {
   it("buildZoneCardFromMetadata copies identity fields", () => {
     const zoneCard = buildZoneCardFromMetadata(SAMPLE_CARD);
@@ -116,4 +117,5 @@ describe("zoneCards", () => {
     expect(payload.gameContext.zones?.battlefield?.map((card) => card.name)).toEqual(["Lightning Bolt"]);
     expect(payload.gameContext.zones).not.toHaveProperty("hand");
   });
+});
 });

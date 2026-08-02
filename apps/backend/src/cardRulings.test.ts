@@ -75,121 +75,123 @@ const context: PromptContext = {
   ]
 };
 
-describe("card rulings", () => {
-  it("loads a rulings index from a committed artifact shape", () => {
-    const tempDir = mkdtempSync(join(tmpdir(), "thejudge-rulings-"));
-    const filePath = join(tempDir, "cardRulingsByOracleId.json");
-    writeFileSync(
-      filePath,
-      JSON.stringify({
-        "oracle-id": [{ publishedAt: "2020-04-17", comment: "Official note." }],
-        invalid: [{ publishedAt: "2020-04-17" }]
-      })
-    );
+describe("Backend - Ask AI", () => {
+  describe("card rulings", () => {
+    it("loads a rulings index from a committed artifact shape", () => {
+      const tempDir = mkdtempSync(join(tmpdir(), "thejudge-rulings-"));
+      const filePath = join(tempDir, "cardRulingsByOracleId.json");
+      writeFileSync(
+        filePath,
+        JSON.stringify({
+          "oracle-id": [{ publishedAt: "2020-04-17", comment: "Official note." }],
+          invalid: [{ publishedAt: "2020-04-17" }]
+        })
+      );
 
-    const index = loadCardRulingsIndex(filePath);
+      const index = loadCardRulingsIndex(filePath);
 
-    expect(index.get("oracle-id")).toEqual([{ publishedAt: "2020-04-17", comment: "Official note." }]);
-    expect(index.has("invalid")).toBe(false);
-  });
+      expect(index.get("oracle-id")).toEqual([{ publishedAt: "2020-04-17", comment: "Official note." }]);
+      expect(index.has("invalid")).toBe(false);
+    });
 
-  it("returns an empty index and warns when the rulings file is missing", () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-    const missingPath = join(tmpdir(), `missing-card-rulings-${randomUUID()}.json`);
+    it("returns an empty index and warns when the rulings file is missing", () => {
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const missingPath = join(tmpdir(), `missing-card-rulings-${randomUUID()}.json`);
 
-    const index = loadCardRulingsIndex(missingPath);
-    const secondIndex = loadCardRulingsIndex(missingPath);
+      const index = loadCardRulingsIndex(missingPath);
+      const secondIndex = loadCardRulingsIndex(missingPath);
 
-    expect(index.size).toBe(0);
-    expect(secondIndex.size).toBe(0);
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("Card rulings file missing"));
-    expect(warnSpy).toHaveBeenCalledTimes(1);
-    warnSpy.mockRestore();
-  });
+      expect(index.size).toBe(0);
+      expect(secondIndex.size).toBe(0);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("Card rulings file missing"));
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      warnSpy.mockRestore();
+    });
 
-  it("collects unique cards in stack then canonical non-stack zone order", () => {
-    expect(collectCardsForRulings(context)).toEqual([
-      { cardId: "bottom-id", name: "Bottom Spell" },
-      { cardId: "top-id", name: "Top Spell" },
-      { cardId: "battlefield-id", name: "Battlefield Card" },
-      { cardId: "graveyard-id", name: "Graveyard Card" }
-    ]);
-  });
+    it("collects unique cards in stack then canonical non-stack zone order", () => {
+      expect(collectCardsForRulings(context)).toEqual([
+        { cardId: "bottom-id", name: "Bottom Spell" },
+        { cardId: "top-id", name: "Top Spell" },
+        { cardId: "battlefield-id", name: "Battlefield Card" },
+        { cardId: "graveyard-id", name: "Graveyard Card" }
+      ]);
+    });
 
-  it("resolves matching rulings with per-card and comment caps", () => {
-    const resolved = resolveRulingsForPrompt(
-      [{ cardId: "card-id", name: "Capped Card" }],
-      new Map([
-        [
-          "card-id",
+    it("resolves matching rulings with per-card and comment caps", () => {
+      const resolved = resolveRulingsForPrompt(
+        [{ cardId: "card-id", name: "Capped Card" }],
+        new Map([
           [
-            { publishedAt: "2024-01-01", comment: "a".repeat(80) },
-            { publishedAt: "2023-01-01", comment: "second" },
-            { publishedAt: "2022-01-01", comment: "third" }
+            "card-id",
+            [
+              { publishedAt: "2024-01-01", comment: "a".repeat(80) },
+              { publishedAt: "2023-01-01", comment: "second" },
+              { publishedAt: "2022-01-01", comment: "third" }
+            ]
           ]
-        ]
-      ]),
-      { maxRulingsPerCard: 2, maxCommentChars: 40, maxSectionChars: 1000 }
-    );
+        ]),
+        { maxRulingsPerCard: 2, maxCommentChars: 40, maxSectionChars: 1000 }
+      );
 
-    expect(resolved.cards).toHaveLength(1);
-    expect(resolved.cards[0]?.rulings).toHaveLength(2);
-    expect(resolved.cards[0]?.rulings[0]?.comment).toHaveLength(40);
-    expect(resolved.cards[0]?.rulings[0]?.comment.endsWith(" ...(truncated)")).toBe(true);
-  });
+      expect(resolved.cards).toHaveLength(1);
+      expect(resolved.cards[0]?.rulings).toHaveLength(2);
+      expect(resolved.cards[0]?.rulings[0]?.comment).toHaveLength(40);
+      expect(resolved.cards[0]?.rulings[0]?.comment.endsWith(" ...(truncated)")).toBe(true);
+    });
 
-  it("omits cards without matching rulings", () => {
-    const resolved = resolveRulingsForPrompt(
-      [
+    it("omits cards without matching rulings", () => {
+      const resolved = resolveRulingsForPrompt(
+        [
+          { cardId: "missing-id", name: "Missing" },
+          { cardId: "known-id", name: "Known" }
+        ],
+        new Map([["known-id", [{ publishedAt: "2020-04-17", comment: "Known ruling." }]]]),
+        { maxRulingsPerCard: 3, maxCommentChars: 480, maxSectionChars: 1000 }
+      );
+
+      expect(resolved.cards.map((card) => card.name)).toEqual(["Known"]);
+    });
+
+    it("does not attach a debug key on the non-debug path", () => {
+      const resolved = resolveRulingsForPrompt(
+        [{ cardId: "known-id", name: "Known" }],
+        new Map([["known-id", [{ publishedAt: "2020-04-17", comment: "Known ruling." }]]]),
+        { maxRulingsPerCard: 3, maxCommentChars: 480, maxSectionChars: 1000 }
+      );
+
+      expect(resolved).not.toHaveProperty("debug");
+    });
+
+    it("collects trace on the debug path while resolving identical cards", () => {
+      const cards = [
         { cardId: "missing-id", name: "Missing" },
         { cardId: "known-id", name: "Known" }
-      ],
-      new Map([["known-id", [{ publishedAt: "2020-04-17", comment: "Known ruling." }]]]),
-      { maxRulingsPerCard: 3, maxCommentChars: 480, maxSectionChars: 1000 }
-    );
+      ];
+      const index = new Map([["known-id", [{ publishedAt: "2020-04-17", comment: "Known ruling." }]]]);
+      const limits = { maxRulingsPerCard: 3, maxCommentChars: 480, maxSectionChars: 1000 };
 
-    expect(resolved.cards.map((card) => card.name)).toEqual(["Known"]);
-  });
+      const resolved = resolveRulingsForPrompt(cards, index, limits, true);
 
-  it("does not attach a debug key on the non-debug path", () => {
-    const resolved = resolveRulingsForPrompt(
-      [{ cardId: "known-id", name: "Known" }],
-      new Map([["known-id", [{ publishedAt: "2020-04-17", comment: "Known ruling." }]]]),
-      { maxRulingsPerCard: 3, maxCommentChars: 480, maxSectionChars: 1000 }
-    );
+      expect(resolved.cards.map((card) => card.name)).toEqual(["Known"]);
+      expect(resolved.debug.cardsConsidered.map((card) => card.name)).toEqual(["Missing", "Known"]);
+      expect(resolved.debug.cardsIncluded.map((card) => card.name)).toEqual(["Known"]);
+      expect(resolved.debug.cardsSkippedNoMatch.map((card) => card.name)).toEqual(["Missing"]);
+      expect(resolved.debug.sectionTruncated).toBe(false);
+    });
 
-    expect(resolved).not.toHaveProperty("debug");
-  });
+    it("flags sectionTruncated in debug when the section budget is exceeded", () => {
+      const cards = [
+        { cardId: "first-id", name: "First" },
+        { cardId: "second-id", name: "Second" }
+      ];
+      const index = new Map([
+        ["first-id", [{ publishedAt: "2024-01-01", comment: "a".repeat(60) }]],
+        ["second-id", [{ publishedAt: "2024-01-02", comment: "b".repeat(60) }]]
+      ]);
 
-  it("collects trace on the debug path while resolving identical cards", () => {
-    const cards = [
-      { cardId: "missing-id", name: "Missing" },
-      { cardId: "known-id", name: "Known" }
-    ];
-    const index = new Map([["known-id", [{ publishedAt: "2020-04-17", comment: "Known ruling." }]]]);
-    const limits = { maxRulingsPerCard: 3, maxCommentChars: 480, maxSectionChars: 1000 };
+      const resolved = resolveRulingsForPrompt(cards, index, { maxRulingsPerCard: 3, maxCommentChars: 480, maxSectionChars: 80 }, true);
 
-    const resolved = resolveRulingsForPrompt(cards, index, limits, true);
-
-    expect(resolved.cards.map((card) => card.name)).toEqual(["Known"]);
-    expect(resolved.debug.cardsConsidered.map((card) => card.name)).toEqual(["Missing", "Known"]);
-    expect(resolved.debug.cardsIncluded.map((card) => card.name)).toEqual(["Known"]);
-    expect(resolved.debug.cardsSkippedNoMatch.map((card) => card.name)).toEqual(["Missing"]);
-    expect(resolved.debug.sectionTruncated).toBe(false);
-  });
-
-  it("flags sectionTruncated in debug when the section budget is exceeded", () => {
-    const cards = [
-      { cardId: "first-id", name: "First" },
-      { cardId: "second-id", name: "Second" }
-    ];
-    const index = new Map([
-      ["first-id", [{ publishedAt: "2024-01-01", comment: "a".repeat(60) }]],
-      ["second-id", [{ publishedAt: "2024-01-02", comment: "b".repeat(60) }]]
-    ]);
-
-    const resolved = resolveRulingsForPrompt(cards, index, { maxRulingsPerCard: 3, maxCommentChars: 480, maxSectionChars: 80 }, true);
-
-    expect(resolved.debug.sectionTruncated).toBe(true);
+      expect(resolved.debug.sectionTruncated).toBe(true);
+    });
   });
 });

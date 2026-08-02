@@ -7,285 +7,287 @@ import { createAskAiRequest, createGameContext, createZoneCardItem } from "./tes
 
 const app = createApp();
 
-describe("ask-ai endpoint contract", () => {
-  it("returns health ok", async () => {
-    const response = await request(app).get("/api/health");
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual({ ok: true });
-  });
-
-  it("returns deterministic mock answer for valid ask-ai request", async () => {
-    const response = await request(app)
-      .post("/api/ask-ai")
-      .set("X-Correlation-Id", "corr-success-1")
-      .send(
-        createAskAiRequest({
-          gameContext: {
-            ...createGameContext(4),
-            zones: {
-              battlefield: [
-                createZoneCardItem({
-                  cardId: "rhystic-study",
-                  name: "Rhystic Study",
-                  oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
-                  caster: undefined,
-                  targets: [{ kind: "none" }]
-                })
-              ],
-              stack: [
-                createZoneCardItem({
-                  caster: "Player 4",
-                  targets: [{ kind: "none" }, { kind: "other", targetDescription: "retarget to token copy" }]
-                })
-              ]
-            }
-          }
-        })
-      );
-
-    expect(response.status).toBe(200);
-    expect(response.header["x-correlation-id"]).toBe("corr-success-1");
-    expect(response.body.answer).toContain("MOCK RESPONSE");
-    expect(response.body.answer).toContain("PROMPT STATS");
-    expect(response.body.answer).toContain("FULL PROMPT (SENT TO PROVIDER)");
-    expect(response.body.answer).toContain("QUESTION\nHow does this resolve?");
-  });
-
-  it("returns the exact assembled lookup prompt through the mock provider", async () => {
-    const response = await request(app).post("/api/ask-ai").send({
-      mode: "lookup",
-      question: "How does deathtouch work?"
+describe("Backend - Ask AI", () => {
+  describe("endpoint contract", () => {
+    it("returns health ok", async () => {
+      const response = await request(app).get("/api/health");
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ ok: true });
     });
 
-    expect(response.status).toBe(200);
-    expect(response.body.answer).toContain("FULL PROMPT (SENT TO PROVIDER)");
-    expect(response.body.answer).toContain("not found in the rules corpus");
-    expect(response.body.answer).toContain("QUESTION\nHow does deathtouch work?");
-    expect(response.body.answer).not.toContain("GENERAL GAME CONTEXT");
-  });
-
-  it("applies fallback question when blank question is submitted", async () => {
-    const response = await request(app)
-      .post("/api/ask-ai")
-      .send(
-        createAskAiRequest({
-          question: "   ",
-          gameContext: {
-            ...createGameContext(),
-            zones: { stack: [createZoneCardItem({ name: "Counterspell" })] }
-          }
-        })
-      );
-
-    expect(response.status).toBe(200);
-    expect(response.body.answer).toContain("QUESTION\nResolve the stack");
-  });
-
-  it("applies board-state fallback question for blank battlefield-only submissions", async () => {
-    const response = await request(app)
-      .post("/api/ask-ai")
-      .send(
-        createAskAiRequest({
-          question: "   ",
-          gameContext: {
-            ...createGameContext(),
-            selectedZones: ["battlefield", "stack"],
-            zones: {
-              battlefield: [
-                createZoneCardItem({
-                  cardId: "rhystic-study",
-                  name: "Rhystic Study",
-                  oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
-                  caster: undefined
-                })
-              ]
+    it("returns deterministic mock answer for valid ask-ai request", async () => {
+      const response = await request(app)
+        .post("/api/ask-ai")
+        .set("X-Correlation-Id", "corr-success-1")
+        .send(
+          createAskAiRequest({
+            gameContext: {
+              ...createGameContext(4),
+              zones: {
+                battlefield: [
+                  createZoneCardItem({
+                    cardId: "rhystic-study",
+                    name: "Rhystic Study",
+                    oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
+                    caster: undefined,
+                    targets: [{ kind: "none" }]
+                  })
+                ],
+                stack: [
+                  createZoneCardItem({
+                    caster: "Player 4",
+                    targets: [{ kind: "none" }, { kind: "other", targetDescription: "retarget to token copy" }]
+                  })
+                ]
+              }
             }
-          }
-        })
-      );
+          })
+        );
 
-    expect(response.status).toBe(200);
-    expect(response.body.answer).toContain(
-      "QUESTION\nExplain the interaction with the provided game state"
-    );
-  });
-
-  it("returns validation error payload for invalid request shape", async () => {
-    const response = await request(app).post("/api/ask-ai").send({
-      question: "oops",
-      gameContext: {
-        playerCount: 2,
-        players: [
-          { label: "Player 1", lifeTotal: 20 },
-          { label: "Player 2", lifeTotal: 20 }
-        ]
-        // missing: turnPhase, selectedZones
-      }
+      expect(response.status).toBe(200);
+      expect(response.header["x-correlation-id"]).toBe("corr-success-1");
+      expect(response.body.answer).toContain("MOCK RESPONSE");
+      expect(response.body.answer).toContain("PROMPT STATS");
+      expect(response.body.answer).toContain("FULL PROMPT (SENT TO PROVIDER)");
+      expect(response.body.answer).toContain("QUESTION\nHow does this resolve?");
     });
 
-    expect(response.status).toBe(400);
-    expect(response.header["x-correlation-id"]).toMatch(/^srv-/);
-    expect(response.body.code).toBe("VALIDATION_ERROR");
-    expect(response.body.message).toContain("Invalid request payload:");
-    expect(response.body.metadata.correlationId).toMatch(/^srv-/);
-    expect(response.body.retryAfterSeconds).toBeUndefined();
-  });
+    it("returns the exact assembled lookup prompt through the mock provider", async () => {
+      const response = await request(app).post("/api/ask-ai").send({
+        mode: "lookup",
+        question: "How does deathtouch work?"
+      });
 
-  it("returns validation error for malformed caster and target fields", async () => {
-    const badCasterResponse = await request(app)
-      .post("/api/ask-ai")
-      .send(
+      expect(response.status).toBe(200);
+      expect(response.body.answer).toContain("FULL PROMPT (SENT TO PROVIDER)");
+      expect(response.body.answer).toContain("not found in the rules corpus");
+      expect(response.body.answer).toContain("QUESTION\nHow does deathtouch work?");
+      expect(response.body.answer).not.toContain("GENERAL GAME CONTEXT");
+    });
+
+    it("applies fallback question when blank question is submitted", async () => {
+      const response = await request(app)
+        .post("/api/ask-ai")
+        .send(
+          createAskAiRequest({
+            question: "   ",
+            gameContext: {
+              ...createGameContext(),
+              zones: { stack: [createZoneCardItem({ name: "Counterspell" })] }
+            }
+          })
+        );
+
+      expect(response.status).toBe(200);
+      expect(response.body.answer).toContain("QUESTION\nResolve the stack");
+    });
+
+    it("applies board-state fallback question for blank battlefield-only submissions", async () => {
+      const response = await request(app)
+        .post("/api/ask-ai")
+        .send(
+          createAskAiRequest({
+            question: "   ",
+            gameContext: {
+              ...createGameContext(),
+              selectedZones: ["battlefield", "stack"],
+              zones: {
+                battlefield: [
+                  createZoneCardItem({
+                    cardId: "rhystic-study",
+                    name: "Rhystic Study",
+                    oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
+                    caster: undefined
+                  })
+                ]
+              }
+            }
+          })
+        );
+
+      expect(response.status).toBe(200);
+      expect(response.body.answer).toContain(
+        "QUESTION\nExplain the interaction with the provided game state"
+      );
+    });
+
+    it("returns validation error payload for invalid request shape", async () => {
+      const response = await request(app).post("/api/ask-ai").send({
+        question: "oops",
+        gameContext: {
+          playerCount: 2,
+          players: [
+            { label: "Player 1", lifeTotal: 20 },
+            { label: "Player 2", lifeTotal: 20 }
+          ]
+          // missing: turnPhase, selectedZones
+        }
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.header["x-correlation-id"]).toMatch(/^srv-/);
+      expect(response.body.code).toBe("VALIDATION_ERROR");
+      expect(response.body.message).toContain("Invalid request payload:");
+      expect(response.body.metadata.correlationId).toMatch(/^srv-/);
+      expect(response.body.retryAfterSeconds).toBeUndefined();
+    });
+
+    it("returns validation error for malformed caster and target fields", async () => {
+      const badCasterResponse = await request(app)
+        .post("/api/ask-ai")
+        .send(
+          createAskAiRequest({
+            gameContext: {
+              ...createGameContext(),
+              zones: {
+                stack: [{ ...createZoneCardItem(), caster: "Player 9" as never }]
+              }
+            }
+          })
+        );
+      expect(badCasterResponse.status).toBe(400);
+      expect(badCasterResponse.body.code).toBe("VALIDATION_ERROR");
+      expect(badCasterResponse.body.message).toContain("gameContext.zones.stack.0.caster");
+
+      const badTargetResponse = await request(app)
+        .post("/api/ask-ai")
+        .send(
+          createAskAiRequest({
+            gameContext: {
+              ...createGameContext(),
+              zones: {
+                stack: [{ ...createZoneCardItem(), targets: [{ kind: "other" } as never] }]
+              }
+            }
+          })
+        );
+      expect(badTargetResponse.status).toBe(400);
+      expect(badTargetResponse.body.code).toBe("VALIDATION_ERROR");
+      expect(badTargetResponse.body.message).toContain("gameContext.zones.stack.0.targets.0.targetDescription");
+    });
+
+    it("rejects control characters in free-text input fields", async () => {
+      const response = await request(app).post("/api/ask-ai").send(
         createAskAiRequest({
+          question: "Can this resolve?\u0007",
           gameContext: {
             ...createGameContext(),
-            zones: {
-              stack: [{ ...createZoneCardItem(), caster: "Player 9" as never }]
-            }
+            zones: { stack: [createZoneCardItem({ contextNotes: "targets player\u0000 unexpectedly" })] }
           }
         })
       );
-    expect(badCasterResponse.status).toBe(400);
-    expect(badCasterResponse.body.code).toBe("VALIDATION_ERROR");
-    expect(badCasterResponse.body.message).toContain("gameContext.zones.stack.0.caster");
 
-    const badTargetResponse = await request(app)
-      .post("/api/ask-ai")
-      .send(
-        createAskAiRequest({
-          gameContext: {
-            ...createGameContext(),
-            zones: {
-              stack: [{ ...createZoneCardItem(), targets: [{ kind: "other" } as never] }]
-            }
+      expect(response.status).toBe(400);
+      expect(response.body.code).toBe("VALIDATION_ERROR");
+      expect(response.body.message).toContain("contains unsupported control characters");
+    });
+
+    it("returns provider-unavailable contract for forced fail query", async () => {
+      const response = await request(app).post("/api/ask-ai?fail=true").send(createAskAiRequest());
+
+      expect(response.status).toBe(503);
+      expect(response.body.code).toBe("PROVIDER_UNAVAILABLE");
+      expect(response.body.message).toBe("Miho is working on it");
+      expect(response.body.metadata.correlationId).toMatch(/^srv-/);
+      expect(response.body.retryAfterSeconds).toBe(13);
+    });
+
+    it("maps openai provider failures through API error contract", async () => {
+      const fakeOpenAiClient = {
+        responses: {
+          async create() {
+            return {};
           }
-        })
-      );
-    expect(badTargetResponse.status).toBe(400);
-    expect(badTargetResponse.body.code).toBe("VALIDATION_ERROR");
-    expect(badTargetResponse.body.message).toContain("gameContext.zones.stack.0.targets.0.targetDescription");
-  });
+        }
+      };
 
-  it("rejects control characters in free-text input fields", async () => {
-    const response = await request(app).post("/api/ask-ai").send(
-      createAskAiRequest({
-        question: "Can this resolve?\u0007",
+      const appWithOpenAiProvider = createApp({
+        askAiProviderMode: "openai",
+        askAiProvider: createAskAiProvider(
+          readServerConfig({
+            ASK_AI_PROVIDER: "openai",
+            OPENAI_API_KEY: "sk-test",
+            OPENAI_MODEL: "gpt-4.1-mini"
+          }),
+          { openAiClient: fakeOpenAiClient }
+        )
+      });
+
+      const response = await request(appWithOpenAiProvider).post("/api/ask-ai").send(createAskAiRequest());
+
+      expect(response.status).toBe(503);
+      expect(response.body.code).toBe("PROVIDER_UNAVAILABLE");
+      expect(response.body.message).toBe("Miho is working on it");
+      expect(response.body.retryAfterSeconds).toBe(13);
+    });
+
+    it("keeps live openai success responses limited to answer only", async () => {
+      const providerInputs: string[] = [];
+      const fakeOpenAiClient = {
+        responses: {
+          async create(params: { input: string }) {
+            providerInputs.push(params.input);
+            return { output_text: "Live provider answer" };
+          }
+        }
+      };
+
+      const appWithOpenAiProvider = createApp({
+        askAiProvider: createAskAiProvider(
+          readServerConfig({
+            ASK_AI_PROVIDER: "openai",
+            OPENAI_API_KEY: "sk-test",
+            OPENAI_MODEL: "gpt-4.1-mini"
+          }),
+          { openAiClient: fakeOpenAiClient }
+        )
+      });
+
+      const response = await request(appWithOpenAiProvider).post("/api/ask-ai").send(createAskAiRequest());
+
+      expect(response.status).toBe(200);
+      expect(Object.keys(response.body)).toEqual(["answer"]);
+      expect(response.body).toEqual({ answer: "Live provider answer" });
+      expect(response.body).not.toHaveProperty("context");
+      expect(response.body).not.toHaveProperty("diagnostics");
+      expect(response.body).not.toHaveProperty("enrichmentDebug");
+      expect(response.body).not.toHaveProperty("answerChars");
+      expect(response.body).not.toHaveProperty("estimatedAnswerTokens");
+      expect(response.body).not.toHaveProperty("charsPerTokenEstimate");
+      expect(response.body.answer).not.toContain("answerChars");
+      expect(response.body.answer).not.toContain("estimatedAnswerTokens");
+      expect(response.body.answer).not.toContain("charsPerTokenEstimate");
+      expect(providerInputs).toHaveLength(1);
+      expect(providerInputs[0]).not.toContain("answerChars");
+      expect(providerInputs[0]).not.toContain("estimatedAnswerTokens");
+      expect(providerInputs[0]).not.toContain("charsPerTokenEstimate");
+    });
+
+    it("returns validation error when zones object contains an empty array", async () => {
+      const response = await request(app).post("/api/ask-ai").send({
+        question: "oops",
         gameContext: {
           ...createGameContext(),
-          zones: { stack: [createZoneCardItem({ contextNotes: "targets player\u0000 unexpectedly" })] }
+          zones: { stack: [] }
         }
-      })
-    );
+      });
 
-    expect(response.status).toBe(400);
-    expect(response.body.code).toBe("VALIDATION_ERROR");
-    expect(response.body.message).toContain("contains unsupported control characters");
-  });
+      expect(response.status).toBe(400);
+      expect(response.body.code).toBe("VALIDATION_ERROR");
+    });
 
-  it("returns provider-unavailable contract for forced fail query", async () => {
-    const response = await request(app).post("/api/ask-ai?fail=true").send(createAskAiRequest());
-
-    expect(response.status).toBe(503);
-    expect(response.body.code).toBe("PROVIDER_UNAVAILABLE");
-    expect(response.body.message).toBe("Miho is working on it");
-    expect(response.body.metadata.correlationId).toMatch(/^srv-/);
-    expect(response.body.retryAfterSeconds).toBe(13);
-  });
-
-  it("maps openai provider failures through API error contract", async () => {
-    const fakeOpenAiClient = {
-      responses: {
-        async create() {
-          return {};
+    it("returns validation error when no selected zone contains a card", async () => {
+      const response = await request(app).post("/api/ask-ai").send({
+        question: "How does this resolve?",
+        gameContext: {
+          ...createGameContext(),
+          zones: {}
         }
-      }
-    };
+      });
 
-    const appWithOpenAiProvider = createApp({
-      askAiProviderMode: "openai",
-      askAiProvider: createAskAiProvider(
-        readServerConfig({
-          ASK_AI_PROVIDER: "openai",
-          OPENAI_API_KEY: "sk-test",
-          OPENAI_MODEL: "gpt-4.1-mini"
-        }),
-        { openAiClient: fakeOpenAiClient }
-      )
+      expect(response.status).toBe(400);
+      expect(response.body.code).toBe("VALIDATION_ERROR");
+      expect(response.body.message).toContain("gameContext.zones");
     });
-
-    const response = await request(appWithOpenAiProvider).post("/api/ask-ai").send(createAskAiRequest());
-
-    expect(response.status).toBe(503);
-    expect(response.body.code).toBe("PROVIDER_UNAVAILABLE");
-    expect(response.body.message).toBe("Miho is working on it");
-    expect(response.body.retryAfterSeconds).toBe(13);
-  });
-
-  it("keeps live openai success responses limited to answer only", async () => {
-    const providerInputs: string[] = [];
-    const fakeOpenAiClient = {
-      responses: {
-        async create(params: { input: string }) {
-          providerInputs.push(params.input);
-          return { output_text: "Live provider answer" };
-        }
-      }
-    };
-
-    const appWithOpenAiProvider = createApp({
-      askAiProvider: createAskAiProvider(
-        readServerConfig({
-          ASK_AI_PROVIDER: "openai",
-          OPENAI_API_KEY: "sk-test",
-          OPENAI_MODEL: "gpt-4.1-mini"
-        }),
-        { openAiClient: fakeOpenAiClient }
-      )
-    });
-
-    const response = await request(appWithOpenAiProvider).post("/api/ask-ai").send(createAskAiRequest());
-
-    expect(response.status).toBe(200);
-    expect(Object.keys(response.body)).toEqual(["answer"]);
-    expect(response.body).toEqual({ answer: "Live provider answer" });
-    expect(response.body).not.toHaveProperty("context");
-    expect(response.body).not.toHaveProperty("diagnostics");
-    expect(response.body).not.toHaveProperty("enrichmentDebug");
-    expect(response.body).not.toHaveProperty("answerChars");
-    expect(response.body).not.toHaveProperty("estimatedAnswerTokens");
-    expect(response.body).not.toHaveProperty("charsPerTokenEstimate");
-    expect(response.body.answer).not.toContain("answerChars");
-    expect(response.body.answer).not.toContain("estimatedAnswerTokens");
-    expect(response.body.answer).not.toContain("charsPerTokenEstimate");
-    expect(providerInputs).toHaveLength(1);
-    expect(providerInputs[0]).not.toContain("answerChars");
-    expect(providerInputs[0]).not.toContain("estimatedAnswerTokens");
-    expect(providerInputs[0]).not.toContain("charsPerTokenEstimate");
-  });
-
-  it("returns validation error when zones object contains an empty array", async () => {
-    const response = await request(app).post("/api/ask-ai").send({
-      question: "oops",
-      gameContext: {
-        ...createGameContext(),
-        zones: { stack: [] }
-      }
-    });
-
-    expect(response.status).toBe(400);
-    expect(response.body.code).toBe("VALIDATION_ERROR");
-  });
-
-  it("returns validation error when no selected zone contains a card", async () => {
-    const response = await request(app).post("/api/ask-ai").send({
-      question: "How does this resolve?",
-      gameContext: {
-        ...createGameContext(),
-        zones: {}
-      }
-    });
-
-    expect(response.status).toBe(400);
-    expect(response.body.code).toBe("VALIDATION_ERROR");
-    expect(response.body.message).toContain("gameContext.zones");
   });
 });

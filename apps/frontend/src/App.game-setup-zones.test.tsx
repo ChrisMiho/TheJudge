@@ -43,7 +43,8 @@ let fetchMock: ReturnType<typeof vi.fn>;
 const metadataFixture: CardMetadataItem[] = [...baseCardMetadataFixture];
 const submittedAskAiRequests: ZoneAskAiPayload[] = [];
 
-describe("Slice-04: game setup + zone confirmation", () => {
+describe("Frontend - MTG Assistant", () => {
+describe("Game setup and zone confirmation", () => {
   beforeEach(() => {
     submittedAskAiRequests.length = 0;
     fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
@@ -247,7 +248,7 @@ describe("Slice-04: game setup + zone confirmation", () => {
     expect(submittedAskAiRequests[0]?.gameContext.turnPhase).toBe("main_1");
   });
 });
-describe("Slice-05: zone collection UI", () => {
+describe("Zone collection UI", () => {
   beforeEach(() => {
     fetchMock = vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
       const url = getUrlFromRequest(input);
@@ -343,4 +344,5 @@ describe("Slice-05: zone collection UI", () => {
     await screen.findByText("Mock answer");
     expect(document.querySelector("[aria-live='polite']")).not.toBeInTheDocument();
   });
+});
 });

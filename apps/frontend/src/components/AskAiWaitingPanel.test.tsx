@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AskAiWaitingPanel } from "./AskAiWaitingPanel";
 import { WAIT_STAGES } from "../lib/askAiWaitStages";
 
+describe("Frontend - MTG Assistant", () => {
 describe("AskAiWaitingPanel", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -57,4 +58,5 @@ describe("AskAiWaitingPanel", () => {
     });
     expect(container.firstChild).toHaveClass("wait-stage-absurd");
   });
+});
 });

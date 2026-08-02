@@ -45,7 +45,8 @@ const frozenContext: GameContext = {
   }
 };
 
-describe("density surface hooks", () => {
+describe("Frontend - Theme", () => {
+describe("Density surface hooks", () => {
   it("uses a viewport-safe zone scroll cap without imposing a stale fixed tile height", () => {
     expect(appCss).toMatch(/\.zone-card-grid \{[^}]*max-height: 70dvh;/);
     expect(appCss).not.toContain("--zone-card-tile-height");
@@ -83,4 +84,5 @@ describe("density surface hooks", () => {
     await user.click(screen.getByRole("button", { name: "Show full game context" }));
     expect(screen.getAllByText("Opt").at(-1)?.closest("li")).toHaveClass("frozen-context-detail-row");
   });
+});
 });

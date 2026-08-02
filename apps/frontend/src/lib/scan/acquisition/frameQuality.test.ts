@@ -80,6 +80,7 @@ function occludedImage(): RgbImage {
   });
 }
 
+describe("Frontend - Card Scan", () => {
 describe("scoreFrameQuality", () => {
   it("scores a crisp, evenly lit frame as acceptable with no condition reason", () => {
     const quality = scoreFrameQuality(crispImage());
@@ -129,4 +130,5 @@ describe("scoreFrameQuality", () => {
       ["acceptable", "detailScore", "glareFraction", "occlusionPenalty", "qualityScore", "reason", "sharpness"].sort()
     );
   });
+});
 });

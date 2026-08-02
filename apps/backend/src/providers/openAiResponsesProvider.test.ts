@@ -10,71 +10,73 @@ function createMockClient(response: { output_text?: string }): OpenAiResponsesCl
   };
 }
 
-describe("createOpenAiAskAiProvider", () => {
-  it("returns answer text from OpenAI response output", async () => {
-    const client = createMockClient({ output_text: "  Resolved cleanly  " });
-    const provider = createOpenAiAskAiProvider({
-      apiKey: "test-key",
-      model: "gpt-test",
-      timeoutMs: 1000,
-      maxRetries: 0,
-      client
-    });
+describe("Backend - Providers", () => {
+  describe("createOpenAiAskAiProvider", () => {
+    it("returns answer text from OpenAI response output", async () => {
+      const client = createMockClient({ output_text: "  Resolved cleanly  " });
+      const provider = createOpenAiAskAiProvider({
+        apiKey: "test-key",
+        model: "gpt-test",
+        timeoutMs: 1000,
+        maxRetries: 0,
+        client
+      });
 
-    const result = await provider.generateAnswer({
-      context: {} as never,
-      promptText: "prompt",
-      diagnostics: {} as never
-    });
-
-    expect(result.answer).toBe("Resolved cleanly");
-  });
-
-  it("throws provider unavailable when response has no text", async () => {
-    const client = createMockClient({});
-    const provider = createOpenAiAskAiProvider({
-      apiKey: "test-key",
-      model: "gpt-test",
-      timeoutMs: 1000,
-      maxRetries: 0,
-      client
-    });
-
-    await expect(
-      provider.generateAnswer({
+      const result = await provider.generateAnswer({
         context: {} as never,
         promptText: "prompt",
         diagnostics: {} as never
-      })
-    ).rejects.toMatchObject({
-      code: "PROVIDER_UNAVAILABLE"
-    } satisfies Partial<AppError>);
-  });
+      });
 
-  it("maps timeout failures to provider timeout errors", async () => {
-    const client: OpenAiResponsesClient = {
-      responses: {
-        create: vi.fn(async () => {
-          throw new Error("request timed out");
+      expect(result.answer).toBe("Resolved cleanly");
+    });
+
+    it("throws provider unavailable when response has no text", async () => {
+      const client = createMockClient({});
+      const provider = createOpenAiAskAiProvider({
+        apiKey: "test-key",
+        model: "gpt-test",
+        timeoutMs: 1000,
+        maxRetries: 0,
+        client
+      });
+
+      await expect(
+        provider.generateAnswer({
+          context: {} as never,
+          promptText: "prompt",
+          diagnostics: {} as never
         })
-      }
-    };
-    const provider = createOpenAiAskAiProvider({
-      apiKey: "test-key",
-      model: "gpt-test",
-      timeoutMs: 1000,
-      maxRetries: 0,
-      client
+      ).rejects.toMatchObject({
+        code: "PROVIDER_UNAVAILABLE"
+      } satisfies Partial<AppError>);
     });
 
-    await expect(
-      provider.generateAnswer({
-        context: {} as never,
-        promptText: "prompt",
-        diagnostics: {} as never
-      })
-    ).rejects.toMatchObject({
-      code: "PROVIDER_TIMEOUT"
-    } satisfies Partial<AppError>);
+    it("maps timeout failures to provider timeout errors", async () => {
+      const client: OpenAiResponsesClient = {
+        responses: {
+          create: vi.fn(async () => {
+            throw new Error("request timed out");
+          })
+        }
+      };
+      const provider = createOpenAiAskAiProvider({
+        apiKey: "test-key",
+        model: "gpt-test",
+        timeoutMs: 1000,
+        maxRetries: 0,
+        client
+      });
+
+      await expect(
+        provider.generateAnswer({
+          context: {} as never,
+          promptText: "prompt",
+          diagnostics: {} as never
+        })
+      ).rejects.toMatchObject({
+        code: "PROVIDER_TIMEOUT"
+      } satisfies Partial<AppError>);
+    });
   });
 });

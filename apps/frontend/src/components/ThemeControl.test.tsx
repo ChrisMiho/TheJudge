@@ -18,6 +18,7 @@ function renderThemeControl(overrides: Partial<React.ComponentProps<typeof Theme
   );
 }
 
+describe("Frontend - Theme", () => {
 describe("ThemeControl", () => {
   it("renders one swatch per palette, labeled by name, once opened", async () => {
     const user = userEvent.setup();
@@ -92,4 +93,5 @@ describe("ThemeControl", () => {
 
     expect(onDensityChange).toHaveBeenCalledWith("slim");
   });
+});
 });

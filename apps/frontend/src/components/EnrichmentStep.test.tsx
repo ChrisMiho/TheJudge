@@ -5,7 +5,8 @@ import { card1, card2, renderEnrichmentWithDuplicates } from "../test/enrichment
 
 afterEach(cleanup);
 
-describe("EnrichmentStep per-instance identity (Slice C)", () => {
+describe("Frontend - MTG Assistant", () => {
+describe("EnrichmentStep per-instance identity", () => {
   it("removing one duplicate card calls onZonesChange with only the other remaining", async () => {
     const onZonesChange = vi.fn();
     const user = renderEnrichmentWithDuplicates(onZonesChange);
@@ -64,4 +65,5 @@ describe("EnrichmentStep per-instance identity (Slice C)", () => {
 
     expect(targetKindSelects[1]).toHaveValue("player");
   });
+});
 });

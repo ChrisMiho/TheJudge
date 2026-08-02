@@ -4,6 +4,7 @@ import { useAutocompleteKeyboard } from "./useAutocompleteKeyboard";
 
 const suggestions = ["Alpha", "Beta", "Gamma"];
 
+describe("Frontend - MTG Assistant", () => {
 describe("useAutocompleteKeyboard", () => {
   it("opens suggestions when query and list are long enough", () => {
     const onSelect = vi.fn();
@@ -62,4 +63,5 @@ describe("useAutocompleteKeyboard", () => {
 
     expect(result.current.isOpen).toBe(false);
   });
+});
 });

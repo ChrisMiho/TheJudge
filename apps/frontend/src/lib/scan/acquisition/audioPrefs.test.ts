@@ -25,6 +25,7 @@ function createMemoryStorage(): Storage {
   };
 }
 
+describe("Frontend - Card Scan", () => {
 describe("audioPrefs", () => {
   beforeEach(() => {
     vi.stubGlobal("localStorage", createMemoryStorage());
@@ -79,4 +80,5 @@ describe("audioPrefs", () => {
 
     expect(() => saveScanAudioMuted(true)).not.toThrow();
   });
+});
 });

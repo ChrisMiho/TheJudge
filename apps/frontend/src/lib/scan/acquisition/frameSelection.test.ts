@@ -51,6 +51,7 @@ function poorImage(): RgbImage {
   return makeImage(CARD_WIDTH, CARD_HEIGHT, () => [130, 130, 130]);
 }
 
+describe("Frontend - Card Scan", () => {
 describe("FrameSelector", () => {
   it("returns the single acceptable frame pushed", () => {
     const selector = new FrameSelector();
@@ -157,6 +158,7 @@ describe("FrameSelector", () => {
 
     expect(selection.abstain).toBe(true);
   });
+});
 });
 
 function scoreOf(image: RgbImage): number {

@@ -54,6 +54,7 @@ function expectImageDataEqual(actual: Uint8Array, expected: Uint8Array) {
   expect(mismatch).toBe(-1);
 }
 
+describe("Frontend - Card Scan", () => {
 describe("identify autoLevels", () => {
   it("matches the regenerated expected output pixel-for-pixel", () => {
     const input = loadFixtureImage(vectors.autoLevels.input);
@@ -158,4 +159,5 @@ describe("CardIdentifier.identify", () => {
       expect(candidate.distance).toBeCloseTo(expected.candidates[i].distance, 2);
     });
   });
+});
 });

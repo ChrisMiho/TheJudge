@@ -20,6 +20,7 @@ function Harness({ initialId = "mtg-assistant" }: { initialId?: DestinationId })
   );
 }
 
+describe("Frontend - Portal", () => {
 describe("FeaturePortalMenu", () => {
   it("renders a labelled, closed button with aria-haspopup", () => {
     render(<Harness />);
@@ -111,7 +112,7 @@ describe("FeaturePortalMenu reduced motion", () => {
   });
 });
 
-describe("Slice B: portal chrome integration", () => {
+describe("Chrome integration", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
@@ -179,4 +180,5 @@ describe("Slice B: portal chrome integration", () => {
 
     expect(screen.getByText("Trade — coming soon")).not.toBeVisible();
   });
+});
 });

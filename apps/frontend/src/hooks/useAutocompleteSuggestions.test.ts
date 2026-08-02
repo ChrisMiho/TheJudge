@@ -31,6 +31,7 @@ const cards: CardMetadataItem[] = [
   }
 ];
 
+describe("Frontend - MTG Assistant", () => {
 describe("useAutocompleteSuggestions", () => {
   it("returns the same suggestions as shared search helper", () => {
     const query = "lig";
@@ -64,4 +65,5 @@ describe("useAutocompleteSuggestions", () => {
     expect(result.current).toEqual(getSuggestions(cards, "lig"));
     vi.useRealTimers();
   });
+});
 });
