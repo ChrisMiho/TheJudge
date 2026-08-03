@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-02
 **Status:** approved for planning
-**Scope:** `.cursor/skills/` (canonical) + synced trees, `AGENT-SKILLS.md`, `scripts/sync-agent-skills.sh`, one narrow edit to `PRD/instructions/workflow-reference.md`, and stale global config cleanup.
+**Scope:** `.cursor/skills/` (canonical) + synced trees, `AGENT-SKILLS.md`, `scripts/sync-agent-skills.sh`, a rewrite of `PRD/instructions/workflow-reference.md`, a DEC-064 supersession in `PRD/sections/decisions/doc-process.md` + its router line, two one-line cross-reference corrections (`PRD/instructions/requirement-format.md`, `PRD/README.md`), and stale global config cleanup.
 
 ## Motivation
 
@@ -24,7 +24,11 @@ This is a recalibration, not a redesign. The pipeline, the skill names, the thre
 | `thejudge-map-out-parallel` | Rewritten platform-neutral (was Codex-oriented) |
 | Parallel skills | Remain separate from their base siblings, distinguished by description |
 | `thejudge-output-guidance.md` | Deleted, along with its boilerplate reference in every skill |
-| `PRD/` | Untouched except `workflow-reference.md`; receipts never edited |
+| Output profiles | `lean` / `standard` / `detailed` vocabulary retired; terseness is inherent to how each skill is written |
+| DEC-064 | Superseded by a new DEC — the shared-artifact mechanism it mandates is what this refresh removes |
+| Shared material across sibling pairs | Each skill carries its own `reference.md`; no cross-skill file references |
+| Runtime dispatch recipes | None. Skills describe the contract; the human picks the runtime and starts the session |
+| `PRD/` | `workflow-reference.md` rewritten; DEC-064 superseded; two one-line cross-reference fixes; one abandoned work package deleted. Receipts never edited |
 
 ## Target skill set
 
@@ -79,7 +83,7 @@ What is deliberately **absent** compared to the current skills:
 - Numbered "Process" narration where the model can sequence itself
 - The `Rationalization | Reality` table
 - Three-platform handoff blocks per skill
-- Rule lists restated verbatim across sibling skills
+- Rule lists restated verbatim *inside* `SKILL.md` bodies (see `reference.md` below)
 
 What is deliberately **denser**:
 
@@ -88,11 +92,33 @@ What is deliberately **denser**:
 - Status vocabulary
 - The single Next step command
 
+### Where shared material lives
+
+Two sibling pairs need the same supporting material, and one skill needs a PRD map. There is no shared top-level file: a skill referencing `../other-skill/` is the fragile pattern `thejudge-output-guidance.md` proved out, and it breaks differently in each runtime.
+
+**Each skill that needs supporting material gets its own `reference.md` inside its own directory.** Duplication between siblings is accepted deliberately — it is the price of every skill being self-contained in every runtime.
+
+| Skill | `reference.md` holds |
+|---|---|
+| `thejudge-kickoff` | Source-of-truth precedence, task → read-order table, out-of-scope paths |
+| `thejudge-map-out` | Slice doc template, Ship gates block |
+| `thejudge-map-out-parallel` | Slice doc template, Ship gates block, wave table format |
+| `thejudge-implement` | Implementation constraints (preserved specifics 11–16), status vocabulary |
+| `thejudge-implement-parallel` | Implementation constraints (preserved specifics 11–16), status vocabulary |
+
+The remaining three skills (`refinement`, `quality-check`, `cleanup`) have no `reference.md` — their material fits in the body.
+
+When the paired files drift, canonical is whichever the base skill carries; the `-parallel` copy adds to it and never contradicts it.
+
 ## Invocation model
 
 No skill carries `disable-model-invocation`. All 8 are model-invocable, and all 8 remain explicitly callable (`/thejudge-map-out`, `$thejudge-map-out`). The agent may select a workflow skill when context clearly matches.
 
-This resolves a standing contradiction in the opposite direction from the docs: `AGENT-SKILLS.md` says "attach the matching skill manually at the start of each agent session," and `workflow-reference.md` says "no router or orchestrator is part of the workflow" — while the flag was stripped from the skills three separate times in git history (`a957abd`, `36a24e1`, `bc5b77b`). The frontmatter was right; the docs were stale. Both files get corrected to describe model-invocable skills that can also be attached explicitly.
+This resolves a standing contradiction with the docs: `AGENT-SKILLS.md` says "attach the matching skill manually at the start of each agent session," and `workflow-reference.md` says "no router or orchestrator is part of the workflow."
+
+Git history does **not** settle this and should not be cited as if it does. `disable-model-invocation` was added in `bfb0df9` (06-06) and `0399eae` (06-18), and removed in `36a24e1` (06-06), `a957abd` (06-09), and `bc5b77b` (06-18) — a tug-of-war, not a trend. Two of the three removals (`36a24e1`, `a957abd`) touched only `.claude/skills/`, never canonical `.cursor/skills/`, so they are sync drift rather than intent.
+
+The decision rests on the owner's call in `f787a7b`, not on the history. Nothing in `PRD/sections/` mandates manual attachment — verified: no `DEC` anywhere asserts it. The claim lives only in `AGENT-SKILLS.md`, `workflow-reference.md`, and `thejudge-kickoff/reference.md`, and all three get corrected to describe model-invocable skills that can also be called explicitly.
 
 ### Descriptions are load-bearing
 
@@ -131,7 +157,11 @@ Writes a wave table into `GAMEPLAN.md` and mirrors it in the work-package `READM
 
 ### `thejudge-implement-parallel`
 
-Consumes a wave and dispatches one agent per slice using **whatever parallel-agent mechanism the host runtime provides**. Claude Code, Cursor, and Codex each have one; the skill names none of them.
+Consumes a wave and dispatches one agent per slice using **whatever parallel-agent mechanism the host runtime provides**. The skill names no CLI, no flag, and no tool.
+
+**No dispatch recipes.** The skill describes the contract — what each dispatched agent must receive and what must be true before and after — and stops there. It does not tell the agent how to invoke anything. The human chooses which runtime to run this in and starts the session there.
+
+**Runtime without a parallel mechanism.** Not every runtime has one; the Codex CLI in particular has no in-session subagent primitive. When the host provides no way to run slices concurrently, the skill degrades explicitly: it states that the runtime is sequential, then executes the wave's slices one at a time under the same gates. It never improvises a dispatch mechanism — no shelling out to another agent CLI, no background process juggling. Every rule below still binds in sequential mode; only the concurrency is lost.
 
 Binding rules:
 
@@ -166,11 +196,55 @@ The 218-line handoff section encodes exactly one fact:
 
 Target: ~50 lines covering purpose, the handoff prefix rule, work-folder lifecycle and status vocabulary, and a pointer to `AGENT-SKILLS.md` for paths and sync.
 
-This is the **only** file in `PRD/` that gets edited. Receipts under `PRD/instructions/receipts/` are historical records and are never modified, even where they reference deleted skills — they correctly describe what was true when written.
+Receipts under `PRD/instructions/receipts/` are historical records and are never modified, even where they reference deleted skills — they correctly describe what was true when written.
+
+## DEC-064 supersession
+
+**This is a blocking prerequisite, not cleanup. Do it before touching the skill tree.**
+
+`PRD/sections/decisions/doc-process.md` holds `DEC-064`, status `confirmed`, indexed in the router at `PRD/sections/decisions.md`. Its Impact block mandates the exact artifact this refresh deletes:
+
+> add one shared canonical output-guidance artifact under `.cursor/skills/`, then sync it to `.agents/skills/` and `.claude/skills/` through the existing `npm run skills:ai-sync` workflow; individual skills reference that shared guidance instead of duplicating verbosity rules
+
+Deleting `thejudge-output-guidance.md` while leaving DEC-064 confirmed puts the corpus in contradiction with itself, and a later `thejudge-quality-check` would correctly return FAIL against it.
+
+Follow the decision lifecycle in `PRD/instructions/doc-lifecycle.md`:
+
+1. Trim the `DEC-064` body in `PRD/sections/decisions/doc-process.md` to a one-line tombstone: the original ID plus `superseded by DEC-###`. The ID stays resolvable; the body does not survive.
+2. Add a new `DEC-###` body in the same file (next free ID — check the router; do not renumber anything).
+3. Add the router index line in `PRD/sections/decisions.md`.
+
+What the new decision says:
+
+- DEC-064's **outcome is retained**: workflow skill responses stay terse and high-signal — status, decisions, files/IDs touched, verification, handoff. No document dumps, no restated background, no long command output.
+- DEC-064's **mechanism is retired**: the shared output-guidance artifact and its per-skill boilerplate reference are removed. Response discipline is inherent to how each skill is written rather than delegated to a referenced file.
+- The `lean` / `standard` / `detailed` profile vocabulary and its per-session override are **dropped**. A plain-language instruction to be more or less verbose needs no named profile system.
+- Unchanged from DEC-064 and still binding: profile or phrasing never alters required reads, writes, approval gates, PASS/FAIL calls, blocker reporting, verification, status updates, or the `Next step` handoff. Mandatory output stays mandatory.
+- Unchanged: canonical editing remains `.cursor/skills/thejudge-*`; synced copies remain implementation artifacts.
+- No `system-map.md` entry — the catalog tracks product subsystems, not the PRD's own tooling (consistent with DEC-044 / DEC-063 / DEC-064).
+
+`DEC-063` (decisions router split) and `DEC-086` reference DEC-064 in their Notes as lineage. Those are historical mentions of a real decision that still resolves by ID — leave them alone.
+
+## PRD cross-reference corrections
+
+Two files inside `PRD/` describe `workflow-reference.md` as it exists today and go stale the moment it is rewritten. One line each.
+
+| File | Current | Problem |
+|---|---|---|
+| `PRD/instructions/requirement-format.md:73` | "Slice dependency guidance lives in `instructions/workflow-reference.md` and `thejudge-map-out`." | The slice template moves out of `workflow-reference.md` into the map-out skills' `reference.md` |
+| `PRD/README.md:56` | "Lean five-skill PRD workflow reference, session openers, slice template, and cleanup receipt convention" | Wrong skill count (8, not five) and the slice template is no longer there |
+
+`PRD/README.md:82` (read-order list) and `PRD/README.md:107` (sync note) stay as they are — both remain accurate.
+
+## Abandoned work package
+
+`PRD/work/prompt-game-state-enrichment/` was `status: deferred` with all five slices `planned`, no code shipped and no receipt. Deleted per the abandoned-work rule in `doc-lifecycle.md` — delete without promoting; no receipt is owed for work that never shipped. No `Q-###` added; no ambiguity remained.
+
+This removes the only work package using a status outside the documented vocabulary. The remaining seven are `ideation` or `active`.
 
 ## `thejudge-kickoff/reference.md`
 
-The one sub-file in the skill tree. Survives, rewritten. It holds genuine content the skill body should not carry: source-of-truth precedence, the task → read-order table, and out-of-scope paths.
+The only sub-file that exists today. Survives, rewritten. It holds genuine content the skill body should not carry: source-of-truth precedence, the task → read-order table, and out-of-scope paths. Four more `reference.md` files join it — see "Where shared material lives" above.
 
 Three fixes required: its skill table lists only 6 skills and must cover all 8, that table is headed "Workflow skills (manual attach)" which the model-invocable decision contradicts, and its sync note points at `AGENT-SKILLS.md` for a contract that is itself being rewritten.
 
@@ -190,11 +264,30 @@ Corrects the opening claim that skills are manually attached each session — th
 
 ## Global config cleanup
 
-Outside the repo. All three are stale or empty:
+Outside the repo, and **outside git — there is no revert.** Back up first:
 
-- `~/.cursor/skills/kickoff/` — **delete.** A pre-`thejudge-` copy of kickoff dated 2026-06-03. Describes the product as "a flow-validation assistant for MTG stack questions; MVP1 is closed" — framing removed by commit `2d66f20`. Points at `PRD/gameplan/`, `PRD/stories/`, `PRD/features/`, none of which exist. Being global, it loads into every Cursor session and injects obsolete product truth.
-- `~/.codex/skills/kickoff/` — **delete.** Empty directory.
-- `~/.agents/skills/` — **delete.** Empty directory.
+```bash
+cp -R ~/.cursor/skills/kickoff /tmp/kickoff-backup-$(date +%Y%m%d)
+```
+
+There is **one** real directory and **two symlinks pointing at it** — not three independent stale dirs:
+
+- `~/.cursor/skills/kickoff/` — the real directory. Contains `SKILL.md`, `reference.md`, and an `agents/` subdirectory. A pre-`thejudge-` copy of kickoff dated 2026-06-03. Describes the product as "a flow-validation assistant for MTG stack questions; MVP1 is closed" — framing removed by commit `2d66f20`. Points at `PRD/gameplan/`, `PRD/stories/`, `PRD/features/`, none of which exist. Being global, it loads into every Cursor session in every repo and injects obsolete product truth.
+- `~/.codex/skills/kickoff` — a **symlink** to the above.
+- `~/.agents/skills/kickoff` — a **symlink** to the above.
+
+Order matters. Unlink the symlinks first, then remove the target:
+
+```bash
+rm ~/.codex/skills/kickoff        # no trailing slash — unlinks, does not follow
+rm ~/.agents/skills/kickoff       # no trailing slash
+rm -rf ~/.cursor/skills/kickoff   # the real directory
+rmdir ~/.agents/skills ~/.agents  # now empty
+```
+
+**Never write a trailing slash on the symlink paths.** `rm -rf ~/.codex/skills/kickoff/` resolves through the link and destroys the target's contents before the intended step runs, with behavior that varies by shell.
+
+Leave `~/.codex/skills/.system/` in place — vendor-bundled, and removing `kickoff` does not touch it.
 
 Not touched: `~/.cursor/skills-cursor/` and `~/.codex/skills/.system/` are vendor-bundled. `~/.codex/rules/default.rules` has stale hardcoded `git add` allowlists from the finished `user-flow-gap-fixes` package, but it is a permission file, not agent context — out of scope.
 
@@ -214,7 +307,7 @@ These are load-bearing details earned through use. The rewrite must carry every 
 
 **Work package lifecycle**
 
-6. Statuses: `ideation` → `refined` → `active` → deleted.
+6. Work-package statuses: `ideation` → `refined` → `active` → deleted. The status line's *format* varies across live packages — some use YAML frontmatter (`---\nstatus: active\n---`), some a bare first line (`status: active`). Preserve whichever format a package already uses and change only the value, exactly as rule 7 requires for slice docs. Never normalize a live work folder's format as a side effect.
 7. Slice statuses: `planned` / `in-progress` / `done` / `blocked`, as a single status line near the top of the slice doc. If a slice already uses another format, preserve the format and change only the value.
 8. The receipt is written **before** the work folder is deleted. Receipts live at `PRD/instructions/receipts/<slug>-<YYYY-MM-DD>.md` and are durable — never deleted with the work folder.
 9. Final slice carries the PRD promotion checklist and Ship gates; execution happens in cleanup.
@@ -244,23 +337,55 @@ These are load-bearing details earned through use. The rewrite must carry every 
 
 ## Verification
 
+Automated — all must pass before handoff:
+
 - `npm run skills:ai-sync` runs clean.
 - `diff -rq .cursor/skills .claude/skills` → no output.
 - `diff -rq .cursor/skills .agents/skills` → no output (previously had an expected exclusion).
 - All 8 skills present in all three trees; `thejudge-implement-codex` and `thejudge-output-guidance.md` absent from all three.
-- `grep -rn "implement-codex\|output-guidance" --include="*.md" --include="*.sh" .` returns hits only under `PRD/instructions/receipts/`.
+- The five `reference.md` files exist in all three trees.
+- Residual-reference sweep, scoped past the two files that legitimately still name the deleted artifacts — this spec (it documents the deletion) and the receipts (historical records):
+
+  ```bash
+  grep -rn "implement-codex\|output-guidance" --include="*.md" --include="*.sh" . \
+    | grep -v node_modules \
+    | grep -v "PRD/instructions/receipts/" \
+    | grep -v "docs/superpowers/specs/"
+  ```
+
+  Do not anchor those exclusions with `^./` — macOS `grep -r .` emits paths without a `./` prefix, so anchored patterns silently match nothing and the check appears to fail forever.
+
+  Must return **nothing**. Note the unscoped version of this command does *not* come back clean even after a correct implementation — that is why it is scoped here.
+- `grep -rn "DEC-064" PRD/sections/` shows the tombstone, the router line, and the lineage mentions in DEC-063 / DEC-086 — and no surviving Impact block.
 - Every skill's Next step names a command that resolves to an existing skill.
-- Each of the 23 preserved specifics is locatable in the new skill set.
-- No skill carries `disable-model-invocation`; all 8 appear in the runtime's available-skills listing.
+- `PRD/work/prompt-game-state-enrichment/` no longer exists.
+- `~/.cursor/skills/kickoff`, `~/.codex/skills/kickoff`, `~/.agents/skills` no longer exist; `~/.codex/skills/.system/` still does.
+
+Traceability — fill this table in, do not assert it:
+
+| # | Preserved specific | Owning skill | Section / file |
+|---|---|---|---|
+| 1–5 | PRD contract | | |
+| 6–10 | Work package lifecycle | | |
+| 11–16 | Implementation constraints | | |
+| 17–20 | Process gates | | |
+| 21–23 | Parallel execution | | |
+
+Every one of the 23 gets its own row with a concrete file and section. A specific with no home is a dropped specific — the table is the whole point of the exercise, not a formality.
+
+Manual, post-merge — these cannot be checked from a shell and must not be claimed without doing them:
+
+- Open a session in each of Cursor, Codex, and Claude Code; confirm all 8 skills appear in the available-skills listing and none carries `disable-model-invocation`.
 - Each description names the artifact its skill produces, and each `-parallel` description states what separates it from its base sibling.
 - `cleanup`'s description does not fire on generic tidying language.
-- `~/.cursor/skills/kickoff`, `~/.codex/skills/kickoff`, `~/.agents/skills` no longer exist.
 
 ## Non-goals
 
-- No change to `PRD/sections/` product truth.
-- No change to `PRD/instructions/` beyond `workflow-reference.md`.
+- No change to `PRD/sections/` product truth. The DEC-064 supersession is process/tooling only — it touches no `REQ`, no `FLOW`, no `system-map.md` entry, and no product behavior.
+- No change to `PRD/instructions/` beyond the `workflow-reference.md` rewrite and the one-line cross-reference fix in `requirement-format.md`.
 - No edits to existing receipts.
 - No change to the workflow's stages or their order.
 - No merging of parallel skills into base skills.
+- No dispatch recipes, CLI invocations, or runtime-specific tooling instructions in any skill.
 - No changes to `~/.codex/rules/default.rules` or vendor-bundled skill trees.
+- No deletion of work packages beyond the already-removed `prompt-game-state-enrichment`. The other seven are live.
