@@ -77,7 +77,6 @@ describe("Frontend - Portal", () => {
     const user = userEvent.setup();
     const firstMount = render(<App />);
 
-    expect(screen.getByRole("heading", { name: "Player Life Tracker" })).toBeInTheDocument();
     expect(screen.getByTestId("life-tracker-table")).toHaveAttribute("aria-label", "4-player life table");
     expect(within(lifeCard("Player 1")).getByText("40")).toBeInTheDocument();
     expect(within(lifeCard("Player 2")).getByText("40")).toBeInTheDocument();

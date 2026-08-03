@@ -6,22 +6,22 @@ Written 2026-08-03 at the end of a session, for whoever picks this up next.
 
 Branch: `feature/life-tracker-more`. PR: [#59](https://github.com/ChrisMiho/TheJudge/pull/59) (**open, not merged** — leave it that way unless the user explicitly says to merge). Working tree has uncommitted changes from this session (see below) — not yet committed or pushed.
 
-This session (seventh) fixed three mobile-viewport layout bugs the user found by reviewing the shipped build (from PR #59's prior six sessions of work) live in Chrome at a genuine ~390px width:
+This session (eighth) removed the "Player Life Tracker" header text that the seventh session had added: the user found it could wrap to three lines on narrower mobile widths, wasting vertical space that should go to the life-tracking grid. Fix, in `PlayerLifeTrackerApp.tsx`:
 
-1. **Rotated-card content clipping**: `PlayerLifeCard.tsx`'s rotated content block (name pill/life number/commander-damage grid, rotated 90/270deg for left/right seats) was sized off the card's own un-rotated width/height, so on non-square cards the rotated footprint overflowed and got clipped by `overflow-hidden`. Fixed with CSS container queries (`container-type: size` on the card, `100cqh`/`100cqw`-swapped sizing on the content div) so the rotated box is always exactly card-sized regardless of aspect ratio, rotation, or content length.
-2. **Settings-cog overlap**: the "Open game setup" button was absolutely centered against the *entire* (many-row-tall on mobile) grid section, landing mid-scroll on top of whatever card happened to be at the vertical midpoint. Moved into the page header next to "Player Life Tracker" — a normal, non-overlapping control.
-3. **List-mode +/- placement**: decrease/increase bands were hardcoded top/bottom regardless of layout mode. `PlayerLifeCard` now takes an explicit `layoutMode` prop and renders left/right bands in list mode, top/bottom in grid mode (unchanged).
+1. Deleted the `<h1>Player Life Tracker</h1>` and its wrapping flex div outright. The "Open game setup" gear button (which shared that div) now sits alone in the header's third grid column, right-justified directly on the button.
+2. Kept the "TheJudge" wordmark per explicit user request, but shrank it (`text-lg` → `text-sm`) to reduce the header's overall footprint, not just remove the other label.
+3. Dropped the header's now-unneeded `gap-y-1` (was reserved for the heading's wrap case).
 
-Full reasoning, root-cause evidence, and the "not touched" boundaries are in `DESIGN-BRIEF.md`'s newest addendum ("mobile-viewport layout fixes") — read it before changing anything in this area.
+Full reasoning and the "not touched" boundaries are in `DESIGN-BRIEF.md`'s newest addendum ("header \"Player Life Tracker\" heading removed") — read it before changing anything in this area.
 
 ## Verified before handing off
 
 - `npm --workspace apps/frontend run typecheck` — clean
-- `npm --workspace apps/frontend run test` — 835/835 passing (2 new cases: list-mode band placement, sideways-vs-upright content sizing)
-- Scoped `eslint` on every touched file — clean
-- Root-caused with `getBoundingClientRect()` measurements taken directly in a running Chrome tab (via the Claude-in-Chrome plugin) *before* the fix — confirmed the gear button's box literally overlapped the Player 2/5 cards' boxes, and that renaming a seat to "Christopher" clipped the name pill by 7px
-- Re-verified the same way *after* the fix, at a true narrow viewport (the plugin's `resize_window` didn't reliably stick this session — worked around it by temporarily constraining the app's root wrapper to 390px width via injected CSS for measurement purposes only, then removed it): gear no longer overlaps any card, "Player 1 (Christopher)" renders with ~40px of clearance (was +7px overflow before), list mode's `-`/`+` sit on the card's left/right edges
-- Left the dev app's persisted state (localStorage) back the way it was found (grid layout, default player names) after testing
+- `npm --workspace apps/frontend run test` — 835/835 passing (two heading assertions updated, not added/removed — see below)
+- Scoped `eslint` on all four touched files — clean
+- Updated two test specs that asserted the now-removed heading: `App.player-life-tracker-flow.test.tsx` (dropped the assertion, an adjacent `life-tracker-table` testid check already covers "did the tracker view mount") and `PlayerLifeTrackerApp.test.tsx` (replaced with `getByText("TheJudge")`)
+- Verified live in a running Chrome tab (via the Claude-in-Chrome plugin) at 390px width directly, and at 320px via the same temporary root-wrapper-width CSS-injection workaround documented in the seventh session's handoff (`resize_window` still doesn't reliably stick to a new size this session either) — header renders as a single row at both widths, "TheJudge" left, gear button right, no wrap
+- Left the dev app's persisted state back the way it was found (cleared the `sessionStorage` active-destination key this session set for testing, removed the injected temporary CSS)
 
 ## What's still open / intentionally deferred
 
@@ -31,7 +31,7 @@ Not bugs — documented non-goals or explicitly parked follow-ups, carried forwa
 - **Gameplay-section toggles** from `IMG_9509.PNG` (Planechase, Archenemy, Bounty, Auto-KO, Turn timer, Game history) are still explicitly out of scope — those map to features that don't exist in this app.
 - **No dedicated full-screen Settings route** — Game Setup is a modal now (not inline), but still not real navigation. Revisit only if the user asks for it explicitly.
 - Per-player custom theming/pastel colors, saved profiles, game history, mana counter, dice & misc, full auto-KO — all still deferred per the original brief's non-goals, untouched this session.
-- The life card's own on-card commander-damage preview grid (`PlayerLifeCard.tsx`) keeps its existing layout; this session touched its *sizing/positioning* math (the container-query fix applies to the whole rotated content block, including this grid) but not its visual design.
+- The life card's own on-card commander-damage preview grid (`PlayerLifeCard.tsx`) is unchanged this session.
 
 ## Possible next steps (not started, no decision made either way)
 

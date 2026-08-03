@@ -68,7 +68,7 @@ describe("Frontend - Shared", () => {
       render(<PlayerLifeTrackerApp />);
 
       expect(screen.getByRole("main")).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: "Player Life Tracker" })).toBeInTheDocument();
+      expect(screen.getByText("TheJudge")).toBeInTheDocument();
 
       await openGameSetup(user);
       expect(screen.getByLabelText("Player count")).toBeInTheDocument();

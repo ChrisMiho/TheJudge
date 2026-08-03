@@ -114,28 +114,23 @@ export function PlayerLifeTrackerApp({
   return (
     <PageShell variant="full-bleed">
       <div className="mx-auto flex min-h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col gap-2">
-        <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-1">
+        <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3">
           <div>
-            <p className="bg-gradient-to-r from-accent-soft to-accent-strong bg-clip-text text-lg font-black tracking-tight text-transparent">
+            <p className="bg-gradient-to-r from-accent-soft to-accent-strong bg-clip-text text-sm font-black tracking-tight text-transparent">
               TheJudge
             </p>
           </div>
           <PortalSlot />
-          <div className="flex min-w-0 items-center justify-self-end gap-2">
-            <h1 className="min-w-0 text-right text-sm font-black uppercase tracking-[0.1em] text-accent-soft">
-              Player Life Tracker
-            </h1>
-            <button
-              type="button"
-              aria-label="Open game setup"
-              aria-haspopup="dialog"
-              aria-expanded={isSettingsExpanded}
-              onClick={() => setIsSettingsExpanded(true)}
-              className="motion-focus flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-600 bg-zinc-900/95 text-lg text-zinc-100 shadow-lg shadow-black/40 backdrop-blur hover:bg-zinc-800"
-            >
-              <span aria-hidden="true">⚙</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            aria-label="Open game setup"
+            aria-haspopup="dialog"
+            aria-expanded={isSettingsExpanded}
+            onClick={() => setIsSettingsExpanded(true)}
+            className="motion-focus flex h-9 w-9 shrink-0 items-center justify-center justify-self-end rounded-full border border-zinc-600 bg-zinc-900/95 text-lg text-zinc-100 shadow-lg shadow-black/40 backdrop-blur hover:bg-zinc-800"
+          >
+            <span aria-hidden="true">⚙</span>
+          </button>
         </header>
 
         <section
