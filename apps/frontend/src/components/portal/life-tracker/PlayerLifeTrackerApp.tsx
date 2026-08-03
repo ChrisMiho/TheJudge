@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BrandMark } from "../../BrandMark";
 import { PageShell } from "../../PageShell";
 import type { PlayerLabel } from "../../../types";
 import {
@@ -68,7 +69,7 @@ function GameSetupModal({ tracker, onClose }: GameSetupModalProps): JSX.Element 
       >
         <header className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-strong">Life Tracker</p>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-soft">Life Tracker</p>
             <h2 id="game-setup-modal-title" className="text-xl font-black text-zinc-100">
               Game Setup
             </h2>
@@ -127,9 +128,7 @@ export function PlayerLifeTrackerApp({
       <div className="mx-auto flex min-h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col gap-2">
         <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3">
           <div>
-            <p className="bg-gradient-to-r from-accent-soft to-accent-strong bg-clip-text text-sm font-black tracking-tight text-transparent">
-              TheJudge
-            </p>
+            <BrandMark />
           </div>
           <PortalSlot />
           <button

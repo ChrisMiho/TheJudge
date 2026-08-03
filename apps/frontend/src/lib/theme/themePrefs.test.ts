@@ -1,9 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DEFAULT_PALETTE_ID } from "./palettes";
-import { loadThemePaletteId, saveThemePaletteId } from "./themePrefs";
+import {
+  loadColorlessCustomRgb,
+  loadThemePaletteId,
+  removeColorlessCustomRgb,
+  saveColorlessCustomRgb,
+  saveThemePaletteId
+} from "./themePrefs";
 
-const storageKey = "thejudge.theme.paletteId";
+const paletteIdStorageKey = "thejudge.theme.paletteId";
+const colorlessCustomRgbStorageKey = "thejudge.theme.colorlessCustomRgb";
 
 // This project's jsdom environment runs on an opaque origin (no URL configured),
 // so `localStorage` is undefined by default. Provide a self-contained in-memory
@@ -36,47 +43,121 @@ describe("themePrefs", () => {
     vi.unstubAllGlobals();
   });
 
-  it("defaults to the default palette id when nothing is stored", () => {
-    expect(loadThemePaletteId()).toBe(DEFAULT_PALETTE_ID);
-  });
-
-  it("round-trips a valid palette id", () => {
-    saveThemePaletteId("violet");
-    expect(loadThemePaletteId()).toBe("violet");
-  });
-
-  it("falls back to the default id for an unsupported stored id", () => {
-    localStorage.setItem(storageKey, "not-a-real-palette");
-
-    expect(loadThemePaletteId()).toBe(DEFAULT_PALETTE_ID);
-  });
-
-  it("falls back to the default id when localStorage is unavailable", () => {
-    vi.stubGlobal("localStorage", undefined);
-
-    expect(loadThemePaletteId()).toBe(DEFAULT_PALETTE_ID);
-  });
-
-  it("falls back to the default id when localStorage reads throw", () => {
-    vi.stubGlobal("localStorage", {
-      ...createMemoryStorage(),
-      getItem: () => {
-        throw new Error("blocked");
-      }
+  describe("selected palette id", () => {
+    it("defaults to the default palette id when nothing is stored", () => {
+      expect(loadThemePaletteId()).toBe(DEFAULT_PALETTE_ID);
     });
 
-    expect(loadThemePaletteId()).toBe(DEFAULT_PALETTE_ID);
-  });
-
-  it("does not throw when localStorage writes throw", () => {
-    vi.stubGlobal("localStorage", {
-      ...createMemoryStorage(),
-      setItem: () => {
-        throw new Error("blocked");
-      }
+    it("round-trips a valid palette id", () => {
+      saveThemePaletteId("white");
+      expect(loadThemePaletteId()).toBe("white");
     });
 
-    expect(() => saveThemePaletteId("violet")).not.toThrow();
+    it("deletes an unsupported stored id and falls back to the default id", () => {
+      localStorage.setItem(paletteIdStorageKey, "not-a-real-palette");
+
+      expect(loadThemePaletteId()).toBe(DEFAULT_PALETTE_ID);
+      expect(localStorage.getItem(paletteIdStorageKey)).toBeNull();
+    });
+
+    it("deletes a retired palette id and falls back to the default id", () => {
+      localStorage.setItem(paletteIdStorageKey, "violet");
+
+      expect(loadThemePaletteId()).toBe(DEFAULT_PALETTE_ID);
+      expect(localStorage.getItem(paletteIdStorageKey)).toBeNull();
+    });
+
+    it("falls back to the default id when localStorage is unavailable", () => {
+      vi.stubGlobal("localStorage", undefined);
+
+      expect(loadThemePaletteId()).toBe(DEFAULT_PALETTE_ID);
+    });
+
+    it("falls back to the default id when localStorage reads throw", () => {
+      vi.stubGlobal("localStorage", {
+        ...createMemoryStorage(),
+        getItem: () => {
+          throw new Error("blocked");
+        }
+      });
+
+      expect(loadThemePaletteId()).toBe(DEFAULT_PALETTE_ID);
+    });
+
+    it("does not throw when localStorage writes throw", () => {
+      vi.stubGlobal("localStorage", {
+        ...createMemoryStorage(),
+        setItem: () => {
+          throw new Error("blocked");
+        }
+      });
+
+      expect(() => saveThemePaletteId("white")).not.toThrow();
+    });
+  });
+
+  describe("Colorless custom RGB", () => {
+    it("returns no custom value when nothing is stored", () => {
+      expect(loadColorlessCustomRgb()).toBeUndefined();
+    });
+
+    it("round-trips a valid custom hex value, independently of the selected id", () => {
+      saveThemePaletteId("colorless");
+      saveColorlessCustomRgb("#ff8800");
+
+      expect(loadColorlessCustomRgb()).toBe("#ff8800");
+      expect(localStorage.getItem(paletteIdStorageKey)).toBe("colorless");
+      expect(localStorage.getItem(colorlessCustomRgbStorageKey)).toBe("#ff8800");
+    });
+
+    it("deletes a malformed stored custom value and returns no custom value", () => {
+      localStorage.setItem(colorlessCustomRgbStorageKey, "not-a-hex");
+
+      expect(loadColorlessCustomRgb()).toBeUndefined();
+      expect(localStorage.getItem(colorlessCustomRgbStorageKey)).toBeNull();
+    });
+
+    it("removes only the custom RGB key on reset", () => {
+      saveThemePaletteId("colorless");
+      saveColorlessCustomRgb("#ff8800");
+
+      removeColorlessCustomRgb();
+
+      expect(loadColorlessCustomRgb()).toBeUndefined();
+      expect(localStorage.getItem(paletteIdStorageKey)).toBe("colorless");
+    });
+
+    it("falls back to no custom value when localStorage is unavailable", () => {
+      vi.stubGlobal("localStorage", undefined);
+
+      expect(loadColorlessCustomRgb()).toBeUndefined();
+    });
+
+    it("falls back to no custom value when localStorage reads throw", () => {
+      vi.stubGlobal("localStorage", {
+        ...createMemoryStorage(),
+        getItem: () => {
+          throw new Error("blocked");
+        }
+      });
+
+      expect(loadColorlessCustomRgb()).toBeUndefined();
+    });
+
+    it("does not throw when localStorage writes or removals throw", () => {
+      vi.stubGlobal("localStorage", {
+        ...createMemoryStorage(),
+        setItem: () => {
+          throw new Error("blocked");
+        },
+        removeItem: () => {
+          throw new Error("blocked");
+        }
+      });
+
+      expect(() => saveColorlessCustomRgb("#ff8800")).not.toThrow();
+      expect(() => removeColorlessCustomRgb()).not.toThrow();
+    });
   });
 });
 });

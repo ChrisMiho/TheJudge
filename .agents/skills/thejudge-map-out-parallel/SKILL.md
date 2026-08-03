@@ -45,3 +45,5 @@ Work slug.
 ## Next step
 
 `/thejudge-implement-parallel PRD/work/<slug>/ wave 1` (Cursor / Claude Code) or `$thejudge-implement-parallel PRD/work/<slug>/ wave 1` (Codex, sequential — no in-session subagent primitive).
+
+For one unattended agent executing dependency-ready slices sequentially, use `/thejudge-implement-all PRD/work/<slug>/` (`$thejudge-implement-all` in Codex).

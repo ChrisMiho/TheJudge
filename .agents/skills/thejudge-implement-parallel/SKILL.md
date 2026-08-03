@@ -5,8 +5,9 @@ description: >-
   agents using the host runtime's parallel-agent mechanism (or sequentially if
   the runtime has none), then independently re-verifies each result before
   marking it done. Use after map-out-parallel, when a whole wave — not a
-  single slice — is ready to implement. For executing one slice in this
-  session, use thejudge-implement instead.
+  single slice — is ready to implement. For one slice, use thejudge-implement;
+  for one agent completing all remaining slices unattended, use
+  thejudge-implement-all.
 ---
 
 # TheJudge Implement (Parallel)

@@ -9,7 +9,8 @@ import { AssistantSeedProvider, useAssistantSeed } from "./lib/portal/seedContex
 import type { DestinationId } from "./lib/portal/types";
 
 function PortalShell(): JSX.Element {
-  const { paletteId, setPalette } = useThemePalette();
+  const { paletteId, setPalette, colorlessCustomHex, setColorlessCustom, resetColorlessCustom } =
+    useThemePalette();
   const { activeDestinationId, setActiveDestinationId } = useActiveDestination(
     PORTAL_DESTINATIONS.map((destination) => destination.id)
   );
@@ -33,6 +34,9 @@ function PortalShell(): JSX.Element {
       onSelect={handleDestinationSelect}
       paletteId={paletteId}
       onPaletteSelect={setPalette}
+      colorlessCustomHex={colorlessCustomHex}
+      onColorlessCustomChange={setColorlessCustom}
+      onColorlessReset={resetColorlessCustom}
     >
       <DestinationOutlet destinations={PORTAL_DESTINATIONS} activeDestinationId={activeDestinationId} />
     </FeaturePortalMenu>

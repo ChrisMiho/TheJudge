@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -13,18 +13,31 @@ const DESTINATIONS: PortalDestination[] = [
 
 interface HarnessProps {
   initialId?: DestinationId;
+  initialPaletteId?: string;
   onPaletteSelect?: (id: string) => void;
 }
 
-function Harness({ initialId = "mtg-assistant", onPaletteSelect = vi.fn() }: HarnessProps): JSX.Element {
+function Harness({
+  initialId = "mtg-assistant",
+  initialPaletteId = "blue",
+  onPaletteSelect = vi.fn()
+}: HarnessProps): JSX.Element {
   const [activeDestinationId, setActiveDestinationId] = useState<DestinationId>(initialId);
+  const [paletteId, setPaletteId] = useState(initialPaletteId);
+  const [colorlessCustomHex, setColorlessCustomHex] = useState<string | undefined>(undefined);
   return (
     <FeaturePortalMenu
       destinations={DESTINATIONS}
       activeDestinationId={activeDestinationId}
       onSelect={setActiveDestinationId}
-      paletteId="blue"
-      onPaletteSelect={onPaletteSelect}
+      paletteId={paletteId}
+      onPaletteSelect={(id) => {
+        setPaletteId(id);
+        onPaletteSelect(id);
+      }}
+      colorlessCustomHex={colorlessCustomHex}
+      onColorlessCustomChange={setColorlessCustomHex}
+      onColorlessReset={() => setColorlessCustomHex(undefined)}
     >
       <div>content</div>
     </FeaturePortalMenu>
@@ -57,16 +70,59 @@ describe("FeaturePortalMenu", () => {
     expect(screen.getByRole("button", { name: "Theme: Blue" })).toBeInTheDocument();
   });
 
-  it("selects a palette and closes the menu", async () => {
+  it("selects a palette and keeps the menu open", async () => {
     const user = userEvent.setup();
     const onPaletteSelect = vi.fn();
     render(<Harness onPaletteSelect={onPaletteSelect} />);
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    await user.click(screen.getByRole("button", { name: "Theme: Emerald" }));
+    await user.click(screen.getByRole("button", { name: "Theme: Green" }));
 
-    expect(onPaletteSelect).toHaveBeenCalledWith("emerald");
-    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    expect(onPaletteSelect).toHaveBeenCalledWith("green");
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+  });
+
+  it("exposes Colorless inline controls immediately after selecting Colorless", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    await user.click(screen.getByRole("button", { name: "Theme: Colorless" }));
+
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+    expect(screen.getByLabelText("Customize Colorless color")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Reset to gray" })).toBeInTheDocument();
+  });
+
+  it("changes and resets the Colorless custom color inline without closing the menu", async () => {
+    const user = userEvent.setup();
+    const onColorlessCustomChange = vi.fn();
+    const onColorlessReset = vi.fn();
+    render(
+      <FeaturePortalMenu
+        destinations={DESTINATIONS}
+        activeDestinationId="mtg-assistant"
+        onSelect={vi.fn()}
+        paletteId="colorless"
+        onPaletteSelect={vi.fn()}
+        colorlessCustomHex={undefined}
+        onColorlessCustomChange={onColorlessCustomChange}
+        onColorlessReset={onColorlessReset}
+      >
+        <div>content</div>
+      </FeaturePortalMenu>
+    );
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    fireEvent.change(screen.getByLabelText("Customize Colorless color"), {
+      target: { value: "#123456" }
+    });
+    expect(onColorlessCustomChange).toHaveBeenCalledWith("#123456");
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Reset to gray" }));
+    expect(onColorlessReset).toHaveBeenCalled();
+    expect(screen.getByRole("menu")).toBeInTheDocument();
   });
 
   it("keeps the menu Theme section palette-only", async () => {

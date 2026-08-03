@@ -306,5 +306,13 @@ describe("Frontend - Shared", () => {
       expect(screen.getByRole("button", { name: "Increment Poison" })).toHaveTextContent("1");
       expect(screen.getByRole("button", { name: "Increment Storm" })).toHaveTextContent("1");
     });
+
+    it("uses accent-soft for the dark Game Setup modal's accent heading", async () => {
+      const user = userEvent.setup();
+      render(<PlayerLifeTrackerApp />);
+      await openGameSetup(user);
+
+      expect(screen.getByText("Life Tracker")).toHaveClass("text-accent-soft");
+    });
   });
 });

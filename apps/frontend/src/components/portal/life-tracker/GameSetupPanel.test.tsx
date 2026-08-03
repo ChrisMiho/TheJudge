@@ -195,5 +195,19 @@ describe("Frontend - Shared", () => {
       expect(props.onDisplayNameChange).toHaveBeenCalledWith("Player 1", "Player 1!");
     });
 
+    it("uses accent-soft for dark-surface accent text and accent-contrast for the filled New Game control", async () => {
+      const user = userEvent.setup();
+      renderPanel();
+
+      expect(screen.getByRole("button", { name: "Edit player names" })).toHaveClass("text-accent-soft");
+      expect(screen.getByRole("button", { name: "Start new game" })).toHaveClass(
+        "bg-accent-strong",
+        "text-accent-contrast"
+      );
+
+      await user.click(screen.getByRole("button", { name: "Set custom starting life" }));
+      expect(screen.getByRole("button", { name: "Apply custom starting life" })).toHaveClass("text-accent-soft");
+    });
+
   });
 });

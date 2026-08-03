@@ -146,7 +146,7 @@ function CounterControl({
           <span
             data-testid={labelTestId}
             className={`truncate text-[0.65rem] font-bold uppercase tracking-wide ${
-              isActive ? "text-accent-strong" : "text-zinc-400"
+              isActive ? "text-accent-soft" : "text-zinc-400"
             }`}
           >
             {label}
@@ -189,7 +189,7 @@ function CounterControl({
             <button
               type="submit"
               aria-label={`Apply ${label} value`}
-              className="motion-focus min-h-11 rounded-lg border border-accent/50 bg-accent/10 px-3 text-sm font-bold text-accent-strong"
+              className="motion-focus min-h-11 rounded-lg border border-accent/50 bg-accent/10 px-3 text-sm font-bold text-accent-soft"
             >
               Set
             </button>
@@ -327,7 +327,7 @@ export function CounterPanel({
       >
         <header className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-strong">Life Tracker</p>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-soft">Life Tracker</p>
             <h2 id="counter-panel-title" className="text-xl font-black text-zinc-100">
               Counters for {displayLabel}
             </h2>
@@ -349,7 +349,7 @@ export function CounterPanel({
             aria-selected={activeTab === "player"}
             onClick={() => setActiveTab("player")}
             className={`motion-focus min-h-11 rounded-lg text-sm font-black ${
-              activeTab === "player" ? "bg-zinc-950 text-accent-strong shadow-sm" : "text-zinc-400"
+              activeTab === "player" ? "bg-zinc-950 text-accent-soft shadow-sm" : "text-zinc-400"
             }`}
           >
             Player
@@ -360,7 +360,7 @@ export function CounterPanel({
             aria-selected={activeTab === "counters"}
             onClick={() => setActiveTab("counters")}
             className={`motion-focus min-h-11 rounded-lg text-sm font-black ${
-              activeTab === "counters" ? "bg-zinc-950 text-accent-strong shadow-sm" : "text-zinc-400"
+              activeTab === "counters" ? "bg-zinc-950 text-accent-soft shadow-sm" : "text-zinc-400"
             }`}
           >
             Counters
@@ -461,7 +461,7 @@ export function CounterPanel({
               <button
                 type="submit"
                 aria-label="Add custom counter"
-                className="motion-focus mt-auto min-h-11 rounded-xl border border-accent/50 bg-accent/10 px-4 text-sm font-black text-accent-strong"
+                className="motion-focus mt-auto min-h-11 rounded-xl border border-accent/50 bg-accent/10 px-4 text-sm font-black text-accent-soft"
               >
                 Add
               </button>

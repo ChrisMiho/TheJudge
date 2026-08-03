@@ -7,7 +7,7 @@
   - app is loaded
   - local metadata is available
 - Main Flow:
-  1. Game setup: user sets player count (expandable panel for per-player display name and life), active player when known, and turn phase via dropdown; turn phase is required and defaults to **main_1**. Active player and downstream player selects show display names as `Player N (Name)` when set. Turn phase and active player appear in one merged panel; the cat-wizard hero image is hidden until the user clicks the brand title 10 times on this step (session-only reveal).
+  1. Game setup: user sets player count, active player when known, and turn phase via dropdown; turn phase is required and defaults to **main_1**. The expandable **Players in game** panel renders each active player as a compact card with display name and life visible. A secondary-details arrow on every player card controls one synchronized state: activating any arrow expands or collapses Poison, Energy, Experience, Commander damage, and named counters for all active players. Active player and downstream player selects show display names as `Player N (Name)` when set. Turn phase and active player appear in one merged panel; the cat-wizard hero image is hidden until the user clicks the brand title 10 times on this step (session-only reveal).
   2. Zone confirmation: app preselects likely zones from the turn phase; user adjusts the checklist; at least one zone is required to continue.
   3. Per-zone collection: for each selected zone, user may add card identities from local search; non-stack cards capture owner; stack cards are ordered bottom-to-top. Added cards appear in a compact 2-column tile grid with internal scrolling. An available uncropped card image is centered at 80% of its tile width; a three-dot control swaps it for locally carried metadata. If the image is unavailable, the readable full-tile-width metadata panel appears directly. Remove and stack position remain available. Each complete tile has a restrained ring derived from the card's existing colors, with a light silver-gray treatment for colorless/missing colors. While scan is open, search and the card list are hidden; user exits scan to return to manual search.
   4. Enrichment: default card-by-card wizard (OK advances); optional **View all cards** for full-list edit with per-zone internal scrolling; user may add caster, targets, notes, and mana spent where relevant. In both modes, the same responsive image/metadata presentation appears above full-width enrichment fields. The complete image-bearing or fallback card row uses the same identity-ring treatment as zone collection.
@@ -27,10 +27,13 @@
   - if card colors are empty, missing, or unrecognized, use the light silver-gray ring; card rendering and workflow behavior continue unchanged
   - if the stack has 10 cards, block additional adds
   - if the user changes phase after selecting zones, newly assumed zones are added and existing cards/enrichment are preserved
+  - player secondary details default collapsed; every per-player arrow reflects and toggles the same all-player expanded state, so mixed open/closed player cards cannot occur
+  - closing the outer player panel or leaving and returning to In-Depth Question resets secondary details collapsed without clearing player values or other in-progress flow state
 - Notes:
   - this is the primary core product flow with staged context capture
   - each staged step's header presents the active step name inline to the right of the `TheJudge` / `MTG Assistant` brand block in a single row (DEC-067, REQ-045); the answered-state conversation header stays a slim brand-only header with no step name and carries an inline feature-portal Menu slot (DEC-109, REQ-089)
   - staged-flow compaction (DEC-076, REQ-056) and automatic fluid responsive presentation (DEC-117, REQ-096) are presentation-only and do not change this flow's logic or payloads; users select no layout profile
+  - compact synchronized player-secondary disclosure (DEC-120, REQ-100) changes only the visibility of existing player inputs; submitted game context is unchanged for unchanged values
 
 ### FLOW-002
 - Name: Inspect and remove cards from selected zones
@@ -149,24 +152,29 @@
   - identification runs fully on-device with no network calls (DEC-051); art-only matching yields ranked candidates resolved to oracle-level `CardMetadataItem` (DEC-053), with the scanned printing's image carried as presentation only (DEC-070)
 
 ### FLOW-007
-- Name: Choose and persist app theme palette
+- Name: Choose, customize, and persist app color profile
 - Trigger: User wants to personalize the app's visual style
 - Preconditions:
   - app is loaded
 - Main Flow:
   1. User opens the feature-portal Menu and finds its palette-only **Theme** section.
-  2. App shows the predefined palette choices as named swatches, with the current palette indicated.
-  3. User selects a palette.
-  4. App immediately applies the selected palette to primary accents and the restrained resting/hover/focus/current treatments on REQ-060's closed minimum surface inventory without leaving the current workflow step.
-  5. App stores the selected palette for the browser.
-  6. On later reloads, app restores the stored palette before or during initial render without resetting user workflow state.
+  2. App shows White, Blue, Black, Red, Green, and Colorless in that order as named swatches, with the current profile indicated and Blue as the default.
+  3. User selects a profile.
+  4. App immediately applies the selected profile to primary accents and the restrained resting/hover/focus/current treatments on REQ-060's closed minimum surface inventory without leaving the current workflow step.
+  5. If the user selects Colorless, the Theme section exposes an inline full-spectrum color input and `Reset to gray`.
+  6. If the user chooses a custom color, app immediately applies the exact RGB without validation or contrast correction and remembers it independently; if the user selects Reset, app deletes only the custom value and restores fixed neutral gray.
+  7. App stores the selected profile for the browser.
+  8. On later reloads, app restores the selected profile and any remembered Colorless custom RGB before or during initial render without resetting user workflow state.
 - Edge Cases:
-  - if the stored palette id is missing, corrupt, or unsupported, app falls back to the default blue palette
-  - if browser storage is unavailable or write fails, the selected palette may apply for the current session but app continues normally
-  - selecting the current palette is a no-op and does not close or reset the main gameplay workflow unless the implemented control naturally closes after selection
+  - if the stored profile id is missing or corrupt, app falls back to Blue; if it is Violet, Emerald, Amber, Rose, or otherwise unsupported, app deletes that selected-profile value and falls back to Blue
+  - if a saved custom RGB is malformed, app deletes the custom value and uses fixed Colorless gray
+  - if browser storage is unavailable or write fails, the selected profile/custom RGB may apply for the current session but app continues normally
+  - selecting the current fixed profile is a no-op and does not close or reset the main gameplay workflow unless the implemented control naturally closes after selection
+  - a low-contrast custom Colorless choice is applied as chosen; the app does not warn, reject, or repair it
 - Notes:
   - theme selection is frontend-only personalization and never changes submitted game context, prompt text, backend API behavior, or AI responses
   - only REQ-060's closed minimum surface inventory uses the restrained ambient hierarchy from DEC-081; static chrome and the dominant page background remain neutral
+  - DEC-119 / REQ-099 define the exact fixed token matrix and Colorless persistence/reset contract
 
 ### FLOW-008
 - Name: Retired — choose and persist layout density
@@ -212,13 +220,13 @@
   5. To return, the user opens the same Menu and selects the other destination. Palette selection may also be changed in place without switching destinations.
 - Edge Cases:
   - selecting the current mode is a no-op and does not reset in-progress state
-  - switching destinations preserves each mode's in-session state while the app stays loaded (an in-progress In-Depth Question flow survives a trip to Quick Question and back)
+  - switching destinations preserves each destination's in-session state while the app stays loaded (an in-progress In-Depth Question flow survives a trip to Quick Question and back), except that returning to In-Depth Question resets only its ephemeral player secondary-details disclosure to collapsed (DEC-120); the outer roster-disclosure state, player count, display names, life totals, counter values, current staged-flow step, and every other in-progress destination value remain preserved
   - refreshing the page restores whichever destination was last active in that browser tab (DEC-111, REQ-090); each destination's in-session state (staged flow, conversation, follow-ups) still resets fresh on refresh — only the choice of which destination screen mounts is persisted
   - a brand-new tab/window with no prior activity opens on the first registered destination, unchanged
   - the portal button and Menu must not overlap or intercept taps meant for the brand or step-name columns (DEC-095, DEC-109)
 - Notes:
   - navigation is frontend-only chrome and never changes submitted game context, prompt text, backend API behavior, or AI responses (DEC-095, DEC-089)
-  - In-Depth Question's staged flow and Quick Question's lookup behavior are unchanged by navigation
+  - In-Depth Question's staged data/flow and Quick Question's lookup behavior are unchanged by navigation apart from DEC-120's presentation-only reset exception
   - palette selection follows FLOW-007; layout density FLOW-008 is retired and responsive presentation is automatic (DEC-117 / REQ-096)
 
 ### FLOW-011

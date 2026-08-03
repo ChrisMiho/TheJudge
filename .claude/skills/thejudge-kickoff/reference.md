@@ -11,7 +11,7 @@ Use after kickoff, once the user names a task or work slug.
 
 ## Workflow skills
 
-All 8 are model-invocable and may also be called explicitly (`/thejudge-*` in Cursor/Claude Code, `$thejudge-*` in Codex).
+All 9 are model-invocable and may also be called explicitly (`/thejudge-*` in Cursor/Claude Code, `$thejudge-*` in Codex).
 
 | Skill | Use when |
 | ----- | -------- |
@@ -21,6 +21,7 @@ All 8 are model-invocable and may also be called explicitly (`/thejudge-*` in Cu
 | `thejudge-map-out` | Create GAMEPLAN + slices, sequential |
 | `thejudge-map-out-parallel` | Create GAMEPLAN + slices, grouped into dependency waves |
 | `thejudge-implement` | Execute one lettered slice |
+| `thejudge-implement-all` | Execute every remaining slice unattended with one agent |
 | `thejudge-implement-parallel` | Dispatch a whole wave across agents |
 | `thejudge-cleanup` | Ship feature / corpus hygiene |
 

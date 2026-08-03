@@ -851,27 +851,30 @@
 ### REQ-044
 - Title: Theme palette customization
 - Priority: medium
-- Description: The frontend must let users choose from a predefined set of app color palettes through a compact global theme/settings control, with the selection applied immediately and persisted for that browser.
+- Description: The frontend must let users choose an app color profile through a compact global theme/settings control, with the selection applied immediately and persisted for that browser; DEC-119/REQ-099 define the current six-profile catalog and Colorless-only customization.
 - Acceptance Criteria:
   - a theme/settings affordance is available from the app chrome across the primary staged flow and answered-state conversation view
-  - opening the control shows named predefined palette choices as swatches, including the existing blue theme as the default
+  - opening the control shows the named profiles as swatches, including Blue as the default and Colorless customization per REQ-099
   - selecting a palette immediately restyles primary accent surfaces such as primary buttons, active controls, focus/selection accents, badges, and prominent status highlights
   - selected palette persists across page reloads for the same browser
-  - missing, corrupt, or unsupported persisted values fall back to the default blue palette without throwing or blocking app load
+  - missing or corrupt persisted values fall back to Blue; retired or unsupported selected IDs are deleted before falling back, without throwing or blocking app load
   - palette changes do not reset game setup, selected zones, cards, enrichment, question text, answers, conversation state, scanner state, or retry cooldowns
   - tests cover palette selection, persistence, fallback, and at least one representative themed control
 - Constraints:
   - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, or data-pipeline behavior
-  - no arbitrary RGB/hex picker, per-component theme overrides, server-synced preferences, accounts, or dark/light mode redesign
-  - palette styling must preserve readable contrast and touch-friendly mobile controls
+  - arbitrary RGB input is permitted only for Colorless under REQ-099; no per-component theme overrides, server-synced preferences, accounts, or dark/light mode redesign
+  - the six curated profiles must preserve readable contrast and touch-friendly mobile controls; deliberately uncorrected custom Colorless RGB is the only contrast-quality exception
   - palette definitions must have one authoritative frontend source rather than duplicated color constants
 - Dependencies:
   - DEC-066
+  - DEC-119
+  - REQ-099
   - NFR-001
   - NFR-011
 - Notes:
   - this is personalization only; it must not imply gameplay state or rules confidence
   - REQ-046 (DEC-068) broadens this requirement's reach to additional surfaces, semantic states, and the scanner UI without changing the selection mechanism
+  - DEC-119 / REQ-099 supersede the former predefined catalog and no-arbitrary-color constraint while preserving this requirement's global-control, immediate-apply, persistence, and state-preservation behavior
 
 ### REQ-045
 - Title: Inline step label in the staged header
@@ -903,23 +906,25 @@
   - previously-fixed semantic green surfaces — success/confirmation states, the `Ready to decrypt` indicator, the `Answer` panel framing, the scan-lock/convergence indicators, the scan thumbs-up confirmation, and the add-to-stack confirm control — restyle with the selected palette
   - the camera scan screen's accent visuals (capture pill, card reticle, lock/progress bar, confirmation popup, review bubble) restyle with the selected palette rather than fixed sky/emerald
   - where two palette-driven elements sit adjacent, visual hierarchy is preserved using accent-token weight variants (`accent` vs `accent-soft`/`accent-strong`) rather than a second hue
-  - re-themed surfaces preserve readable contrast and touch-friendly controls across every palette, explicitly including amber and rose
-  - the selection control, swatch list, immediate-apply behavior, persistence, and default/fallback behavior from REQ-044 and FLOW-007 are unchanged
+  - re-themed surfaces preserve readable contrast and touch-friendly controls across all six curated profiles from REQ-099; deliberately uncorrected custom Colorless RGB is excluded from that contrast guarantee
+  - the immediate-apply, global-reach, and workflow-state-preservation behavior from REQ-044 and FLOW-007 is unchanged; DEC-119/REQ-099 replace the catalog, add Colorless customization, and refine persisted-value cleanup
   - tests cover at least one re-themed semantic-state surface and one re-themed scanner surface resolving to the active palette
 - Constraints:
-  - reuse the existing four palette tokens (`accent`, `accent-strong`, `accent-soft`, `accent-contrast`); do not add new token roles or new per-palette color values
+  - reuse the existing four palette tokens (`accent`, `accent-strong`, `accent-soft`, `accent-contrast`); do not add token roles; fixed values remain authoritative in REQ-099
   - palette definitions retain a single authoritative frontend source; no duplicated color constants introduced by the migration
   - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, the scan-matching engine, or data-pipeline behavior
-  - no arbitrary RGB/hex picker, per-component theme overrides, palette-tinted backgrounds, server-synced preferences, accounts, dark/light mode redesign, or theming-framework migration
+  - arbitrary RGB input is permitted only for Colorless under REQ-099; no per-component theme overrides, palette-tinted backgrounds, server-synced preferences, accounts, dark/light mode redesign, or theming-framework migration
   - static neutral slate chrome stays neutral by design; DEC-081 / REQ-060 permits restrained palette-derived treatment only on REQ-060's closed minimum surface inventory
 - Dependencies:
   - DEC-068
+  - DEC-119
   - DEC-066
   - REQ-044
+  - REQ-099
   - NFR-011
   - DEC-050
 - Notes:
-  - this extends the reach of REQ-044; it does not change the theme selection mechanism or introduce a new theming model
+  - this extends the reach of REQ-044; DEC-119/REQ-099 separately refine the catalog and Colorless selection interaction without changing this reach
   - scanner inclusion is an approved exception to DEC-050's separate scoping for presentation tokens only; it does not alter scan capture, matching, or lock behavior
 
 ### REQ-047
@@ -1295,21 +1300,23 @@
   - DEC-078 card-identity rings remain derived from card colors, keep their existing no-glow/no-animation behavior, and are not replaced, recolored, or obscured by the ambient palette treatment
   - existing DEC-079 transitions and state-change cues may carry brief palette-colored emphasis, but no new motion trigger or timing system is introduced; `prefers-reduced-motion` continues to reduce or disable decorative motion
   - scanner reticle, convergence, lock/progress, and thumbs-up confirmation motion remain unchanged; existing scanner palette styling from REQ-046 remains valid
-  - automated coverage verifies the shared resting/enhanced/current treatment and every inventoried surface across the staged flow and answered view; a visual review checks the full inventory with all five palettes, explicitly including amber and rose, for restraint and readable contrast
+  - automated coverage verifies the shared resting/enhanced/current treatment and every inventoried surface across the staged flow and answered view; a visual review checks the full inventory with all six curated REQ-099 profiles for restraint and readable contrast; arbitrary custom Colorless RGB is excluded from that visual quality gate
 - Constraints:
-  - reuse only the existing `accent`, `accent-strong`, `accent-soft`, and `accent-contrast` palette tokens; do not add token roles or per-palette values
+  - reuse only the existing `accent`, `accent-strong`, `accent-soft`, and `accent-contrast` palette tokens; do not add token roles; fixed profile values remain authoritative in REQ-099
   - define resting, enhanced, and selected/current treatment once through shared semantic styling and reuse it; do not duplicate intensity values across components
   - presentation only; no new screens, flow changes, theme control behavior, `AskAiRequest`, Zod schema, `GameContext`, prompt, backend, card metadata, scanner engine, stack-ordering, or data-pipeline changes
   - stay CSS-based and within the existing React/Vite/Tailwind stack; no theming or animation framework
   - preserve readable contrast, touch-friendly controls, mobile performance, and `prefers-reduced-motion`
 - Dependencies:
   - DEC-081
+  - DEC-119
   - DEC-066
   - DEC-068
   - DEC-078
   - DEC-079
   - REQ-044
   - REQ-046
+  - REQ-099
   - REQ-059
   - NFR-006
   - NFR-011
@@ -1318,7 +1325,7 @@
   - DEC-118
   - REQ-097
 - Notes:
-  - this expands palette expression, not the palette model or selection mechanism
+  - this defines ambient expression, not the palette model or selection mechanism; DEC-119/REQ-099 own the expanded catalog and Colorless interaction
 
 ### REQ-061
 - Title: Per-instance identity for duplicate zone cards
@@ -2257,3 +2264,81 @@
   - NFR-006
 - Notes:
   - focused scope excludes new palette-switch/Menu signature animation and all scan-camera internals
+
+### REQ-099
+- Title: Unified MTG color profiles and customizable Colorless
+- Priority: medium
+- Description: The frontend must replace the retired generic preset catalog with one globally shared White/Blue/Black/Red/Green/Colorless profile catalog, preserve the existing four-token theme architecture and global reach, and let Colorless alone carry a remembered, resettable, deliberately uncorrected custom RGB.
+- Acceptance Criteria:
+  - the Theme section renders exactly six profiles in this order: White, Blue, Black, Red, Green, Colorless; Blue is the default
+  - the authoritative fixed token matrix is:
+    - White: `accent #F3E6B3`, `accent-strong #C6A15B`, `accent-soft #FFF8DC`, `accent-contrast #09090B`
+    - Blue: `accent #0369A1`, `accent-strong #1D4ED8`, `accent-soft #7DD3FC`, `accent-contrast #FFFFFF`
+    - Black: `accent #6B4F70`, `accent-strong #241F29`, `accent-soft #D8B4E2`, `accent-contrast #FFFFFF`
+    - Red: `accent #B91C1C`, `accent-strong #7F1D1D`, `accent-soft #FCA5A5`, `accent-contrast #FFFFFF`
+    - Green: `accent #15803D`, `accent-strong #14532D`, `accent-soft #86EFAC`, `accent-contrast #FFFFFF`
+    - Colorless: `accent #52525B`, `accent-strong #27272A`, `accent-soft #D4D4D8`, `accent-contrast #FFFFFF`
+  - each curated profile's `accent-contrast` pairing clears a 4.5:1 contrast ratio at both primary gradient endpoints; Black is manually reviewed on representative dark and light surfaces and remains visibly distinct from Colorless and the slate shell
+  - selecting any fixed profile immediately retints every existing accent-token consumer without resetting destination or workflow state; automated representative coverage includes In-Depth Question, Quick Question, Player Life Tracker, feature-portal chrome, and scanner accents
+  - fixed-profile token use follows the existing semantic roles: accent text on dark surfaces uses `accent-soft`, accent text on light surfaces uses `accent-strong`, and text on filled accent controls uses `accent-contrast`
+  - selecting Colorless with no saved custom value applies its fixed gray tokens and exposes an inline native full-spectrum color input plus `Reset to gray`
+  - choosing a custom color assigns the exact RGB unchanged to `accent`, `accent-strong`, and `accent-soft`, leaves `accent-contrast` white, applies immediately, persists separately, and is restored after switching away from and back to Colorless
+  - custom Colorless applies with no validation, warning, rejection, derived tint/shade, or contrast correction; low-contrast custom results are accepted
+  - `Reset to gray` removes only the saved custom RGB and immediately reapplies the fixed Colorless values
+  - Violet, Emerald, Amber, and Rose are absent from the catalog; loading one of those or any unsupported selected ID deletes the stored selection and falls back to Blue
+  - malformed saved custom RGB is deleted and Colorless uses its fixed gray values; unavailable storage or failed reads/writes do not block render or reset app state
+  - tests cover exact catalog/order/values, Blue default, fixed-profile contrast, Black-versus-Colorless distinction, global representative reach, custom apply/persist/restore/reset, legacy/unknown deletion, malformed custom deletion, and unavailable storage
+- Constraints:
+  - reuse the single authoritative four-token frontend theme system; do not add token roles, per-flow palettes, per-profile component overrides, or a generated theming/contrast engine
+  - do not broaden REQ-060's closed ambient-surface inventory, tint the neutral slate page background, recolor card-identity rings, or change scanner behavior/motion
+  - frontend presentation and browser-local persistence only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, backend routes, card metadata, scan matching/stabilizer logic, stack ordering, or data pipeline
+  - no per-player themes, Magic mana symbols/logos/card art, customization of the five fixed Magic profiles, custom-Colorless contrast guarantee, light mode, accounts, or server synchronization
+- Dependencies:
+  - DEC-119
+  - DEC-066
+  - DEC-068
+  - DEC-081
+  - DEC-110
+  - REQ-044
+  - REQ-046
+  - REQ-060
+  - FLOW-007
+  - NFR-011
+- Notes:
+  - approved Black direction: near-black strong token with muted plum/mauve identity, not a bright purple theme
+  - the refinement comparison image is preview-only and is not a shipped product asset
+
+### REQ-100
+- Title: Compact synchronized player-secondary disclosure
+- Priority: medium
+- Description: In-Depth Question must keep each open player card compact by showing display name and life total as its baseline, while gating all secondary player fields behind repeated per-player arrows that control one synchronized, collapsed-by-default all-player disclosure state (DEC-120).
+- Acceptance Criteria:
+  - the existing section-wide **Players in game** disclosure remains collapsed by default and retains its current player-count, add/remove, helper-copy, and outer toggle behavior
+  - when the outer disclosure is open, every active player card visibly retains its editable display-name and life-total fields whether secondary details are collapsed or expanded
+  - Poison, Energy, Experience, Commander damage, and populated named-counter fields are absent from every player card while the shared secondary state is collapsed
+  - every active player card exposes a secondary-details arrow with at least a 44×44px touch target; all arrows expose the same current `aria-expanded` value and an accessible name that communicates the all-player effect
+  - activating any player's arrow while collapsed expands secondary fields for every active player; activating any player's arrow while expanded collapses secondary fields for every active player
+  - only one synchronized secondary-details state exists; mixed per-player expanded/collapsed states cannot be produced
+  - a player added while the shared state is expanded renders expanded; player removal preserves the shared state for the remaining active cards and retains existing player-count boundary behavior
+  - closing the outer **Players in game** disclosure resets the secondary state; reopening it shows all active player cards in their compact state
+  - switching from In-Depth Question to another destination and back resets secondary details collapsed while preserving the outer roster-disclosure state, player count, display names, life totals, all counter values, current staged-flow step, and every other in-progress destination value
+  - expanding, collapsing, closing/reopening the outer disclosure, and completing a destination round trip never mutate the eventual `gameContext.players` values submitted for unchanged inputs
+  - the helper copy remains exactly `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.`; no new visible guidance text is introduced
+  - automated coverage verifies compact default rendering, synchronized expand from more than one player's arrow, synchronized collapse, add/remove behavior, outer-disclosure reset, destination-return reset, value preservation, accessible shared state, and minimum touch sizing
+- Constraints:
+  - frontend presentation/local disclosure state only; no change to player validation, starting-life defaults, `AskAiRequest`, Zod schemas, `GameContext`, tracker persistence/seed semantics, prompt assembly, providers, backend routes, card metadata, scanner behavior, or data pipeline
+  - use the existing React/Vite/Tailwind component tree and automatic responsive rules; no duplicate mobile/desktop tree, new UI library, or persisted disclosure preference
+  - do not introduce independent per-player expansion, new counter types, new guidance copy, or Player Life Tracker presentation changes
+- Dependencies:
+  - DEC-120
+  - DEC-117
+  - DEC-092
+  - REQ-015
+  - REQ-069
+  - REQ-070
+  - REQ-096
+  - FLOW-001
+  - FLOW-010
+  - NFR-001
+- Notes:
+  - approved visual direction: `PRD/work/excess-ui/mock-a-nested-player-accordion.png`; the mock's generated text is non-normative

@@ -140,7 +140,7 @@ export function GameSetupPanel({
           aria-label={isEditingNames ? "Hide player names" : "Edit player names"}
           aria-expanded={isEditingNames}
           onClick={() => setIsEditingNames((current) => !current)}
-          className="motion-focus mt-3 inline-flex items-center gap-1 rounded-md text-xs font-bold text-accent-strong hover:underline"
+          className="motion-focus mt-3 inline-flex items-center gap-1 rounded-md text-xs font-bold text-accent-soft hover:underline"
         >
           <span aria-hidden="true">{isEditingNames ? "▾" : "▸"}</span>
           Edit names
@@ -256,7 +256,7 @@ export function GameSetupPanel({
                 type="submit"
                 aria-label="Apply custom starting life"
                 onPointerDown={(event) => event.preventDefault()}
-                className="motion-focus absolute right-1 top-1/2 flex min-h-8 min-w-8 -translate-y-1/2 items-center justify-center rounded-full text-sm font-black text-accent-strong hover:bg-zinc-800"
+                className="motion-focus absolute right-1 top-1/2 flex min-h-8 min-w-8 -translate-y-1/2 items-center justify-center rounded-full text-sm font-black text-accent-soft hover:bg-zinc-800"
               >
                 <span aria-hidden="true">✓</span>
               </button>

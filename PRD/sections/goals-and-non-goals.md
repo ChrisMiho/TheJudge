@@ -76,7 +76,7 @@
 - grading and multi-card-per-frame detection in card scanning (DEC-053)
 - pricing and printing disambiguation remain out of the **card-scanning** feature (DEC-053), but are **in scope for the Trade Balancer** as a static-snapshot USD value aid and printing picker (DEC-087); this narrows the prior blanket pricing/printing-disambiguation exclusion — live/real-time price sync stays out of scope
 - live/real-time card price sync, price history, marketplace/transaction handling, and automated "suggest cards to balance" logic in the Trade Balancer (DEC-087)
-- arbitrary theme color input, per-component theme overrides, server-synced theme preferences, account-based theme settings, and dark/light mode redesign for theme customization (DEC-066)
+- arbitrary theme color input outside the Colorless-only custom RGB exception in DEC-119/REQ-099, per-component theme overrides, server-synced theme preferences, account-based theme settings, and dark/light mode redesign for theme customization (DEC-066, DEC-119)
 - user-visible layout/profile overrides, saved layout preferences, UA-sniffed or JavaScript-selected device modes, separate mobile/desktop component trees, viewport locking, fixed-to-viewport chat composers, and sticky-footer redesign outside the shared conversation workspace (DEC-117, DEC-118)
 - visible Known Combos panels, a combo browser/portal destination, find-my-combos deck analysis, bracket estimation, runtime Commander Spellbook calls, a public combo mirror, and deterministic combo legality/executability validation (DEC-116)
 

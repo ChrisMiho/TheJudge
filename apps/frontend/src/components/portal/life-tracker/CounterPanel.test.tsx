@@ -200,5 +200,28 @@ describe("Frontend - Shared", () => {
       expect(props.onAddCustomCounter).toHaveBeenCalledOnce();
       expect(props.onAddCustomCounter).toHaveBeenCalledWith("Player 1", "Shield");
     });
+
+    it("uses accent-soft for dark-surface accent text on headings, active tab, and active counter labels", async () => {
+      const user = userEvent.setup();
+      const state = populatedState();
+      const activeState: TrackerState = {
+        ...state,
+        players: state.players.map((player, index) =>
+          index === 0 ? { ...player, namedCounters: { ...player.namedCounters, poison: 1 } } : player
+        )
+      };
+      const props = panelProps(activeState);
+      render(<CounterPanel {...props} />);
+
+      expect(screen.getByText("Life Tracker")).toHaveClass("text-accent-soft");
+      expect(screen.getByRole("tab", { name: "Player" })).toHaveClass("text-accent-soft");
+
+      await user.click(screen.getByRole("tab", { name: "Counters" }));
+      expect(screen.getByRole("tab", { name: "Counters" })).toHaveClass("text-accent-soft");
+      expect(screen.getByTestId("counter-label-poison")).toHaveClass("text-accent-soft");
+
+      await user.type(screen.getByRole("textbox", { name: "Custom counter name" }), "Shield");
+      expect(screen.getByRole("button", { name: "Add custom counter" })).toHaveClass("text-accent-soft");
+    });
   });
 });

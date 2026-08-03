@@ -305,6 +305,17 @@ describe("QuickLookupApp", () => {
     expect(await screen.findByText(NO_MATCH_COPY)).toBeInTheDocument();
   });
 
+  it("uses accent palette tokens for the Scan and Ask controls, not a fixed hue", async () => {
+    render(<QuickLookupApp />);
+
+    const scanButton = screen.getByRole("button", { name: "Scan a card" });
+    const askButton = screen.getByRole("button", { name: "Ask TheJudge" });
+    expect(scanButton).toHaveClass("border-accent/70", "bg-accent/15", "text-accent-soft");
+    expect(askButton).toHaveClass("from-accent", "to-accent-strong", "text-accent-contrast");
+    expect(scanButton.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
+    expect(askButton.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
+  });
+
   it("uses the shared scan flow to resolve a single card", async () => {
     const user = userEvent.setup();
     render(<QuickLookupApp />);

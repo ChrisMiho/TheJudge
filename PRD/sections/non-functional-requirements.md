@@ -121,14 +121,15 @@
 
 ### NFR-011
 - Title: Lightweight theme personalization and automatic responsive presentation
-- Description: Palette personalization and automatic responsive presentation must preserve mobile usability, readable contrast, and the lightweight frontend architecture without asking users to configure device spacing.
+- Description: Color-profile personalization and automatic responsive presentation must preserve mobile usability, readable contrast for the curated profiles, and the lightweight frontend architecture without asking users to configure device spacing.
 - Constraints:
   - palette selection must not add backend services, product-facing endpoints, account systems, or server-side storage
   - palette application uses lightweight CSS/token plumbing and basic React state; responsive presentation uses CSS rather than a stored React/JavaScript viewport mode
-  - no layout/profile control, layout persistence, UA sniffing, or separate mobile/desktop component trees
+  - no layout-density/device-profile control, layout persistence, UA sniffing, or separate mobile/desktop component trees
   - themed and automatically responsive controls must remain readable and touch-friendly across supported viewports
   - palette persistence must degrade gracefully when browser storage is unavailable; the retired density key is ignored and never required for app load
-  - re-themed surfaces and semantic states (DEC-068 / REQ-046) must keep readable contrast across every palette, explicitly including amber and rose, and must reuse the existing accent tokens rather than adding token roles or duplicated color constants
+  - re-themed surfaces and semantic states (DEC-068 / REQ-046) must keep readable contrast across all six curated DEC-119/REQ-099 profiles and must reuse the existing accent tokens rather than adding token roles or duplicated color constants
+  - arbitrary custom Colorless RGB is deliberately exempt from the curated-profile contrast guarantee: it is applied unchanged with no warning, validation, rejection, or correction; the fixed Colorless gray profile remains inside the quality gate
   - restrained ambient accents (DEC-081 / REQ-060) apply only to REQ-060's closed minimum surface inventory, including DEC-118's context trigger/sheet/drawer and shared composer/workspace replacement surfaces, and must define resting, enhanced hover/focus, and selected/current intensity once through shared semantic styling
   - card-identity rings remain independent from the selected palette, and scanner convergence/lock/confirmation motion remains unchanged
   - fluid responsive rules must not shrink body/supporting text below existing `text-sm` / `text-xs` or applicable primary controls below 44px touch targets
@@ -137,11 +138,13 @@
   - DEC-066
   - DEC-068
   - DEC-081
+  - DEC-119
   - DEC-117
   - DEC-118
   - REQ-044
   - REQ-046
   - REQ-060
+  - REQ-099
   - REQ-096
   - REQ-097
   - REQ-098
@@ -151,6 +154,7 @@
   - NFR-005
 - Notes:
   - palette personalization should add delight without slowing the live-table interaction loop; viewport-appropriate spacing is automatic product behavior, not personalization
+  - the fixed White/Blue/Black/Red/Green/Colorless profiles are polished product UI; only user-supplied Colorless RGB is permitted to produce poor contrast
 
 ### NFR-012
 - Title: Test-suite hygiene and CI efficiency

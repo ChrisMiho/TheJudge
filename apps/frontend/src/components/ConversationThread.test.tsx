@@ -196,5 +196,22 @@ describe("Frontend - MTG Assistant", () => {
 
       expect(scrollToMock).toHaveBeenLastCalledWith({ top: 640, behavior: "auto" });
     });
+
+    it("uses accent-contrast text on the filled user bubble and a neutral assistant bubble", () => {
+      render(
+        <ConversationThread
+          messages={[
+            ...initialMessages,
+            { role: "user", content: "What about hexproof?" }
+          ]}
+        />
+      );
+
+      const assistantBubble = screen.getByText("The stack resolves.").parentElement;
+      const userBubble = screen.getByText("What about hexproof?").parentElement;
+      expect(userBubble).toHaveClass("bg-accent-strong/30", "text-accent-contrast");
+      expect(assistantBubble).toHaveClass("bg-zinc-800/80");
+      expect(assistantBubble).not.toHaveClass("text-accent-contrast");
+    });
   });
 });

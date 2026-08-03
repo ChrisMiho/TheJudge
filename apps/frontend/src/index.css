@@ -237,11 +237,12 @@
   --layout-surface-gap: clamp(0.5rem, 1.25vw, 1rem);
   --layout-compact-gap: clamp(0.375rem, 1vw, 0.75rem);
 
-  /* Default (blue) accent tokens — mirrors the app's existing sky/blue accent
-     treatment so the default palette is a visual no-op. Overridden per-palette
-     by applyPalette.ts via inline custom properties on the document root. */
-  --accent: 14 165 233;
-  --accent-strong: 37 99 235;
+  /* Default (blue) accent tokens — mirrors the approved Blue profile so first
+     paint matches the default palette before applyPalette.ts's effect runs.
+     Overridden per-palette by applyPalette.ts via inline custom properties on
+     the document root. */
+  --accent: 3 105 161;
+  --accent-strong: 29 78 216;
   --accent-soft: 125 211 252;
   --accent-contrast: 255 255 255;
 
