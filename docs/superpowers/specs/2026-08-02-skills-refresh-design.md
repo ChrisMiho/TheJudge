@@ -17,12 +17,12 @@ This is a recalibration, not a redesign. The pipeline, the skill names, the thre
 | Decision | Choice |
 |---|---|
 | Approach | Contract-first rewrite, blank-page per skill |
-| Invocation | Model-invocable — no `disable-model-invocation` flag |
+| Invocation | Model-invocable, and callable explicitly in all three runtimes |
 | Runtimes | All three: Cursor, Codex, Claude Code |
 | Skill count | 8 |
 | `thejudge-implement-codex` | Deleted, replaced by platform-neutral `thejudge-implement-parallel` |
 | `thejudge-map-out-parallel` | Rewritten platform-neutral (was Codex-oriented) |
-| Parallel skills | Stay separate from base skills — explicit choice at call site |
+| Parallel skills | Remain separate from their base siblings, distinguished by description |
 | `thejudge-output-guidance.md` | Deleted, along with its boilerplate reference in every skill |
 | `PRD/` | Untouched except `workflow-reference.md`; receipts never edited |
 
