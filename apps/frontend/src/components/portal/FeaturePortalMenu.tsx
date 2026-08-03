@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { PortalSlotContext } from "../../lib/portal/slotContext";
 import type { DestinationId, PortalDestination } from "../../lib/portal/types";
@@ -34,23 +34,29 @@ export function FeaturePortalMenu({
   children
 }: FeaturePortalMenuProps): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
-  const [slotNode, setSlotNode] = useState<HTMLDivElement | null>(null);
-  const [isSlotVisible, setIsSlotVisible] = useState(false);
+  const [slotNodes, setSlotNodes] = useState<HTMLDivElement[]>([]);
+  const [visibleSlotNode, setVisibleSlotNode] = useState<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // DestinationOutlet keeps inactive destinations mounted and hides them via the `hidden`
-  // attribute (for in-session state preservation) instead of unmounting — so a registered slot
-  // can still exist in the DOM after its destination becomes inactive. Re-check visibility
-  // whenever the slot changes or the active destination changes, after the DOM has committed.
-  useEffect(() => {
-    if (!slotNode) {
-      setIsSlotVisible(false);
-      return;
-    }
-    setIsSlotVisible(slotNode.closest("[hidden]") === null);
-  }, [slotNode, activeDestinationId]);
+  const registerSlot = useCallback((node: HTMLDivElement) => {
+    setSlotNodes((current) => (current.includes(node) ? current : [...current, node]));
+  }, []);
 
-  const effectiveSlotNode = isSlotVisible ? slotNode : null;
+  const unregisterSlot = useCallback((node: HTMLDivElement) => {
+    setSlotNodes((current) => current.filter((registered) => registered !== node));
+  }, []);
+
+  // DestinationOutlet keeps inactive destinations mounted and hides them via the `hidden`
+  // attribute (for in-session state preservation) instead of unmounting — so a destination's
+  // <PortalSlot /> registers once on mount and stays registered while hidden, and more than one
+  // slot can be registered at a time once multiple destinations have been visited. Re-derive
+  // which registered slot is actually visible whenever the registered set or the active
+  // destination changes, after the DOM has committed.
+  useEffect(() => {
+    setVisibleSlotNode(slotNodes.find((node) => node.closest("[hidden]") === null) ?? null);
+  }, [slotNodes, activeDestinationId]);
+
+  const effectiveSlotNode = visibleSlotNode;
 
   useEffect(() => {
     if (!isOpen) {
@@ -154,7 +160,7 @@ export function FeaturePortalMenu({
   );
 
   return (
-    <PortalSlotContext.Provider value={{ slotNode, registerSlot: setSlotNode }}>
+    <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot }}>
       {effectiveSlotNode ? createPortal(trigger, effectiveSlotNode) : trigger}
       <div className={effectiveSlotNode ? undefined : "pt-14"}>{children}</div>
     </PortalSlotContext.Provider>

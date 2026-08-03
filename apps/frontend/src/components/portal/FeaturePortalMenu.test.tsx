@@ -213,5 +213,26 @@ describe("Chrome integration", () => {
 
     expect(screen.getByLabelText("Card search")).not.toBeVisible();
   });
+
+  it("keeps the portal button docked in-flow after flipping between destinations and back", async () => {
+    const user = userEvent.setup();
+    const { default: App } = await import("../../App");
+    render(<App />);
+
+    // Both destinations stay mounted (hidden, not unmounted) once visited, so their
+    // <PortalSlot /> headers only register once on first mount. Flipping back to a
+    // previously-visited destination must not leave the button pointed at a slot that's
+    // now hidden inside the other, inactive destination. Re-query the button fresh after
+    // each switch since portaling into a new container can replace the DOM node.
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    await user.click(screen.getByRole("menuitem", { name: "Quick Question" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    await user.click(screen.getByRole("menuitem", { name: "In-Depth Question" }));
+
+    const portalButton = screen.getByRole("button", { name: "Switch feature" });
+    const portalContainerClassName = portalButton.closest("div")?.className ?? "";
+    expect(portalContainerClassName).toContain("portal-slot-tab");
+    expect(portalContainerClassName).not.toContain("fixed");
+  });
 });
 });

@@ -3,9 +3,13 @@ import { usePortalSlot } from "../../lib/portal/slotContext";
 
 /**
  * Marks where FeaturePortalMenu's button should render inline instead of its
- * fixed-position fallback. A destination header renders this once; the button
- * portals into it while mounted and the header falls back to the fixed tab
- * the moment this unmounts (e.g. a destination with no header at all).
+ * fixed-position fallback. A destination header renders this once and stays
+ * registered for as long as it's mounted — including while its destination is
+ * inactive and hidden, since DestinationOutlet keeps visited destinations
+ * mounted rather than unmounting them. FeaturePortalMenu tracks every
+ * registered slot and picks whichever one is currently visible, so the button
+ * only falls back to the fixed tab when none of the registered slots are
+ * visible (e.g. a destination with no header at all).
  *
  * `self-start`: the host header grid uses `items-center` so its row is
  * vertically centered against the tallest column (the brand block) — without
@@ -15,12 +19,16 @@ import { usePortalSlot } from "../../lib/portal/slotContext";
  */
 export function PortalSlot(): JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
-  const { registerSlot } = usePortalSlot();
+  const { registerSlot, unregisterSlot } = usePortalSlot();
 
   useEffect(() => {
-    registerSlot(ref.current);
-    return () => registerSlot(null);
-  }, [registerSlot]);
+    const node = ref.current;
+    if (!node) {
+      return;
+    }
+    registerSlot(node);
+    return () => unregisterSlot(node);
+  }, [registerSlot, unregisterSlot]);
 
   return <div ref={ref} className="self-start" />;
 }
