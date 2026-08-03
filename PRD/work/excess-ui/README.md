@@ -25,7 +25,7 @@ rejected alternatives. See `GAMEPLAN.md` for the implementation architecture and
 
 | Slice | Name | Depends on | Status |
 | --- | --- | --- | --- |
-| A | Synchronized player-card disclosure contract | — | planned |
+| A | Synchronized player-card disclosure contract | — | done |
 | B | In-Depth roster orchestration and preservation | A | planned |
 | C | Destination reset, integration proof, and ship closure | A, B | planned |
 
@@ -44,22 +44,22 @@ All implementation paths are relative to `apps/frontend/src/`.
 
 ## Next step
 
-Implement Slice A first.
+Implement Slice B next.
 
 **Cursor**
 
 ```text
-/thejudge-implement PRD/work/excess-ui/ slice A
+/thejudge-implement PRD/work/excess-ui/ slice B
 ```
 
 **Codex**
 
 ```text
-$thejudge-implement PRD/work/excess-ui/ slice A
+$thejudge-implement PRD/work/excess-ui/ slice B
 ```
 
 **Claude Code**
 
 ```text
-/thejudge-implement PRD/work/excess-ui/ slice A
+/thejudge-implement PRD/work/excess-ui/ slice B
 ```
