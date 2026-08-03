@@ -82,6 +82,7 @@ describe("Frontend - Portal", () => {
     expect(within(lifeCard("Player 1")).getByText("40")).toBeInTheDocument();
     expect(within(lifeCard("Player 2")).getByText("40")).toBeInTheDocument();
 
+    await user.click(screen.getByRole("button", { name: "Show game setup" }));
     await user.click(screen.getByRole("button", { name: "Show player details" }));
     const playerOneName = screen.getByLabelText("Player 1 display name");
     await user.clear(playerOneName);

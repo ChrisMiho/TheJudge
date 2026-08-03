@@ -29,6 +29,7 @@ const LONG_PRESS_MOVE_TOLERANCE = 8;
 
 interface CounterControlProps {
   label: string;
+  icon?: string;
   value: number;
   testId?: string;
   labelTestId?: string;
@@ -39,6 +40,7 @@ interface CounterControlProps {
 
 function CounterControl({
   label,
+  icon,
   value,
   testId,
   labelTestId,
@@ -105,7 +107,7 @@ function CounterControl({
   }
 
   return (
-    <div data-testid={testId} className="rounded-xl border border-zinc-700 bg-zinc-900/75 p-2">
+    <div data-testid={testId} className="rounded-xl border border-zinc-200 bg-zinc-100/80 p-2">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1">
         <button
           type="button"
@@ -127,31 +129,36 @@ function CounterControl({
           onPointerUp={cancelLongPress}
           onPointerCancel={cancelLongPress}
           onPointerLeave={cancelLongPress}
-          className="motion-focus flex min-h-16 min-w-0 flex-col items-start justify-center rounded-lg px-2 text-left hover:bg-accent/10 active:bg-accent/20"
+          className="motion-focus flex min-h-16 min-w-0 flex-col items-start justify-center rounded-lg px-2 text-left hover:bg-accent/10 active:bg-accent/15"
         >
-          <span data-testid={labelTestId} className="truncate text-xs font-bold text-zinc-300">
+          <span data-testid={labelTestId} className="flex items-center gap-1 truncate text-xs font-bold text-zinc-500">
+            {icon && (
+              <span aria-hidden="true" className="text-sm leading-none">
+                {icon}
+              </span>
+            )}
             {label}
           </span>
-          <span className="text-2xl font-black tabular-nums text-zinc-50">{value}</span>
+          <span className="text-2xl font-black tabular-nums text-zinc-900">{value}</span>
         </button>
         <button
           type="button"
           aria-label={`Options for ${label}`}
           aria-expanded={showOptions}
           onClick={() => setShowOptions((current) => !current)}
-          className="motion-focus min-h-11 min-w-11 rounded-lg text-xl text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+          className="motion-focus min-h-11 min-w-11 rounded-lg text-xl text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700"
         >
           ⋯
         </button>
       </div>
 
       {showOptions && (
-        <div role="group" aria-label={`${label} options`} className="mt-2 space-y-2 border-t border-zinc-700 pt-2">
+        <div role="group" aria-label={`${label} options`} className="mt-2 space-y-2 border-t border-zinc-200 pt-2">
           <button
             type="button"
             aria-label={`Decrease ${label}`}
             onClick={onDecrement}
-            className="motion-focus min-h-11 w-full rounded-lg border border-zinc-600 bg-zinc-800 text-sm font-bold text-zinc-100"
+            className="motion-focus min-h-11 w-full rounded-lg border border-zinc-300 bg-white text-sm font-bold text-zinc-800 hover:bg-zinc-50"
           >
             Decrease by 1
           </button>
@@ -163,12 +170,12 @@ function CounterControl({
               aria-label={`Set ${label}`}
               value={draftValue}
               onChange={(event) => setDraftValue(event.target.value)}
-              className="motion-focus min-w-0 rounded-lg border border-zinc-600 bg-zinc-950 px-2 text-zinc-100"
+              className="motion-focus min-w-0 rounded-lg border border-zinc-300 bg-white px-2 text-zinc-900"
             />
             <button
               type="submit"
               aria-label={`Apply ${label} value`}
-              className="motion-focus min-h-11 rounded-lg border border-accent/50 bg-accent/15 px-3 text-sm font-bold text-accent-soft"
+              className="motion-focus min-h-11 rounded-lg border border-accent/50 bg-accent/10 px-3 text-sm font-bold text-accent-strong"
             >
               Set
             </button>
@@ -253,12 +260,12 @@ export function CounterPanel({
         aria-modal="true"
         aria-labelledby="counter-panel-title"
         tabIndex={-1}
-        className="max-h-[94dvh] w-full max-w-xl overflow-y-auto rounded-3xl border border-zinc-600 bg-zinc-950 p-4 text-zinc-100 shadow-2xl shadow-black/60"
+        className="max-h-[94dvh] w-full max-w-xl overflow-y-auto rounded-3xl border border-zinc-200 bg-white p-4 text-zinc-900 shadow-2xl shadow-black/40"
       >
         <header className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-soft">Life Tracker</p>
-            <h2 id="counter-panel-title" className="text-xl font-black">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-strong">Life Tracker</p>
+            <h2 id="counter-panel-title" className="text-xl font-black text-zinc-900">
               Counters for {displayLabel}
             </h2>
           </div>
@@ -266,20 +273,20 @@ export function CounterPanel({
             type="button"
             aria-label="Close counters"
             onClick={onClose}
-            className="motion-focus min-h-11 min-w-11 rounded-full border border-zinc-600 bg-zinc-800 text-2xl text-zinc-100"
+            className="motion-focus min-h-11 min-w-11 rounded-full border border-zinc-200 bg-zinc-100 text-2xl text-zinc-600 hover:bg-zinc-200"
           >
             ×
           </button>
         </header>
 
-        <div role="tablist" aria-label="Counter panel sections" className="mt-4 grid grid-cols-2 rounded-xl bg-zinc-900 p-1">
+        <div role="tablist" aria-label="Counter panel sections" className="mt-4 grid grid-cols-2 rounded-xl bg-zinc-100 p-1">
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === "player"}
             onClick={() => setActiveTab("player")}
             className={`motion-focus min-h-11 rounded-lg text-sm font-black ${
-              activeTab === "player" ? "bg-accent/20 text-accent-soft" : "text-zinc-400"
+              activeTab === "player" ? "bg-white text-accent-strong shadow-sm" : "text-zinc-500"
             }`}
           >
             Player
@@ -290,7 +297,7 @@ export function CounterPanel({
             aria-selected={activeTab === "counters"}
             onClick={() => setActiveTab("counters")}
             className={`motion-focus min-h-11 rounded-lg text-sm font-black ${
-              activeTab === "counters" ? "bg-accent/20 text-accent-soft" : "text-zinc-400"
+              activeTab === "counters" ? "bg-white text-accent-strong shadow-sm" : "text-zinc-500"
             }`}
           >
             Counters
@@ -299,7 +306,7 @@ export function CounterPanel({
 
         {activeTab === "player" ? (
           <div role="tabpanel" aria-label="Player counters" className="mt-4">
-            <p className="mb-3 text-sm text-zinc-400">Commander damage received from each seat.</p>
+            <p className="mb-3 text-sm text-zinc-500">Commander damage received from each seat.</p>
             <div role="group" aria-label="Commander damage by source" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {players.map((source) => {
                 const sourceName = formatPlayerDisplayLabel(source.label, source.displayName);
@@ -308,10 +315,10 @@ export function CounterPanel({
                     <div
                       key={source.label}
                       data-testid={`commander-cell-${source.label}`}
-                      className="flex min-h-20 flex-col items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900/75 p-2"
+                      className="flex min-h-20 flex-col items-center justify-center rounded-xl border border-zinc-200 bg-zinc-100/80 p-2"
                     >
-                      <span className="text-xs font-bold text-zinc-400">{sourceName}</span>
-                      <span className="text-2xl font-black text-zinc-100">me</span>
+                      <span className="text-xs font-bold text-zinc-500">{sourceName}</span>
+                      <span className="text-2xl font-black text-zinc-900">me</span>
                     </div>
                   );
                 }
@@ -338,6 +345,7 @@ export function CounterPanel({
                 <CounterControl
                   key={definition.id}
                   label={definition.label}
+                  icon={definition.icon}
                   labelTestId={`counter-label-${definition.id}`}
                   value={player.namedCounters[definition.id]}
                   onIncrement={() => onAdjustNamedCounter(player.label, definition.id, 1)}
@@ -348,8 +356,8 @@ export function CounterPanel({
             </div>
 
             {player.customCounters.length > 0 && (
-              <section aria-label="Custom counters" className="space-y-2 border-t border-zinc-700 pt-4">
-                <h3 className="text-sm font-black text-zinc-200">Custom counters</h3>
+              <section aria-label="Custom counters" className="space-y-2 border-t border-zinc-200 pt-4">
+                <h3 className="text-sm font-black text-zinc-700">Custom counters</h3>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {player.customCounters.map((counter) => (
                     <div key={counter.id} className="space-y-1">
@@ -364,7 +372,7 @@ export function CounterPanel({
                         type="button"
                         aria-label={`Remove ${counter.name}`}
                         onClick={() => onRemoveCustomCounter(player.label, counter.id)}
-                        className="motion-focus min-h-11 w-full rounded-lg text-xs font-bold text-rose-300 hover:bg-rose-950/50"
+                        className="motion-focus min-h-11 w-full rounded-lg text-xs font-bold text-rose-600 hover:bg-rose-50"
                       >
                         Remove
                       </button>
@@ -374,9 +382,9 @@ export function CounterPanel({
               </section>
             )}
 
-            <form onSubmit={addCustom} className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 border-t border-zinc-700 pt-4">
+            <form onSubmit={addCustom} className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 border-t border-zinc-200 pt-4">
               <label className="flex flex-col gap-1">
-                <span className="text-xs font-bold text-zinc-400">Custom counter name</span>
+                <span className="text-xs font-bold text-zinc-500">Custom counter name</span>
                 <input
                   aria-label="Custom counter name"
                   aria-invalid={customNameError !== null}
@@ -385,18 +393,18 @@ export function CounterPanel({
                     setCustomName(event.target.value);
                     setCustomNameError(null);
                   }}
-                  className="motion-focus min-h-11 rounded-xl border border-zinc-600 bg-zinc-900 px-3 text-zinc-100"
+                  className="motion-focus min-h-11 rounded-xl border border-zinc-300 bg-white px-3 text-zinc-900"
                 />
               </label>
               <button
                 type="submit"
                 aria-label="Add custom counter"
-                className="motion-focus mt-auto min-h-11 rounded-xl border border-accent/50 bg-accent/15 px-4 text-sm font-black text-accent-soft"
+                className="motion-focus mt-auto min-h-11 rounded-xl border border-accent/50 bg-accent/10 px-4 text-sm font-black text-accent-strong"
               >
                 Add
               </button>
               {customNameError && (
-                <p role="alert" className="col-span-2 text-sm text-rose-300">
+                <p role="alert" className="col-span-2 text-sm text-rose-600">
                   {customNameError}
                 </p>
               )}

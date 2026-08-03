@@ -19,6 +19,7 @@ export function PlayerLifeTrackerApp({
 }: PlayerLifeTrackerAppProps): JSX.Element {
   const tracker = useLifeTracker();
   const [isRosterExpanded, setIsRosterExpanded] = useState(false);
+  const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
   const [selectedPlayerLabel, setSelectedPlayerLabel] = useState<PlayerLabel | null>(null);
   const layout = seatArrangement(tracker.state.playerCount);
   const selectedPlayer = tracker.state.players.find((player) => player.label === selectedPlayerLabel);
@@ -29,71 +30,94 @@ export function PlayerLifeTrackerApp({
   }
 
   return (
-    <PageShell>
-      <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-1">
-        <div>
-          <p className="bg-gradient-to-r from-accent-soft to-accent-strong bg-clip-text text-2xl font-black tracking-tight text-transparent">
-            TheJudge
-          </p>
-          <p className="text-sm text-zinc-400">Live table</p>
-        </div>
-        <PortalSlot />
-        <h1 className="min-w-0 justify-self-end text-right text-lg font-black text-accent-soft sm:text-xl">
-          Player Life Tracker
-        </h1>
-      </header>
+    <PageShell variant="full-bleed">
+      <div className="mx-auto flex min-h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col gap-2">
+        <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-1">
+          <div>
+            <p className="bg-gradient-to-r from-accent-soft to-accent-strong bg-clip-text text-lg font-black tracking-tight text-transparent">
+              TheJudge
+            </p>
+          </div>
+          <PortalSlot />
+          <h1 className="min-w-0 justify-self-end text-right text-sm font-black uppercase tracking-[0.1em] text-accent-soft">
+            Player Life Tracker
+          </h1>
+        </header>
 
-      <GameSetupPanel
-        startingLife={tracker.state.startingLife}
-        commanderDamageToLife={tracker.state.commanderDamageToLife}
-        onStartingLifeChange={tracker.setStartingLife}
-        onCommanderDamageToLifeChange={tracker.setCommanderDamageToLife}
-        onReset={tracker.reset}
-        onNewGame={tracker.newGame}
-      />
+        <button
+          type="button"
+          aria-label={isSettingsExpanded ? "Hide game setup" : "Show game setup"}
+          aria-expanded={isSettingsExpanded}
+          onClick={() => setIsSettingsExpanded((current) => !current)}
+          className="motion-hover motion-press motion-focus flex min-h-11 items-center justify-between gap-3 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2 text-left"
+        >
+          <span className="flex items-center gap-2 text-sm font-semibold text-zinc-100">
+            <span aria-hidden="true" className="text-lg leading-none text-zinc-400">
+              ⚙
+            </span>
+            Game setup
+          </span>
+          <span aria-hidden="true" className="text-sm text-zinc-400">
+            {isSettingsExpanded ? "▾" : "▸"}
+          </span>
+        </button>
 
-      <section aria-label="Player roster" className="space-y-2">
-        <PlayerRosterEditor
-          players={tracker.state.players.map((player) => ({
-            label: player.label,
-            displayName: player.displayName
-          }))}
-          playerCount={tracker.state.playerCount}
-          isExpanded={isRosterExpanded}
-          onToggleExpanded={() => setIsRosterExpanded((current) => !current)}
-          onAddPlayer={() => tracker.setPlayerCount(tracker.state.playerCount + 1)}
-          onRemovePlayer={() => tracker.setPlayerCount(tracker.state.playerCount - 1)}
-          onDisplayNameChange={tracker.setPlayerDisplayName}
-          showLifeTotals={false}
-        />
-      </section>
-
-      <section
-        aria-label={`${tracker.state.playerCount}-player life table`}
-        data-testid="life-tracker-table"
-        style={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${layout.columns}, minmax(0, 1fr))`,
-          gridTemplateRows: `repeat(${layout.rows}, minmax(12rem, 1fr))`,
-          minHeight: `${layout.rows * 13}rem`
-        }}
-        className="gap-2"
-      >
-        {layout.seats.map((placement) => {
-          const player = tracker.state.players.find((candidate) => candidate.label === placement.label);
-          if (!player) return null;
-
-          return (
-            <PlayerLifeCard
-              key={player.label}
-              player={player}
-              placement={placement}
-              onAdjustLife={tracker.adjustPlayerLife}
-              onOpenCounters={openCounters}
+        {isSettingsExpanded && (
+          <div className="space-y-2">
+            <GameSetupPanel
+              startingLife={tracker.state.startingLife}
+              commanderDamageToLife={tracker.state.commanderDamageToLife}
+              onStartingLifeChange={tracker.setStartingLife}
+              onCommanderDamageToLifeChange={tracker.setCommanderDamageToLife}
+              onReset={tracker.reset}
+              onNewGame={tracker.newGame}
             />
-          );
-        })}
-      </section>
+
+            <section aria-label="Player roster" className="space-y-2">
+              <PlayerRosterEditor
+                players={tracker.state.players.map((player) => ({
+                  label: player.label,
+                  displayName: player.displayName
+                }))}
+                playerCount={tracker.state.playerCount}
+                isExpanded={isRosterExpanded}
+                onToggleExpanded={() => setIsRosterExpanded((current) => !current)}
+                onAddPlayer={() => tracker.setPlayerCount(tracker.state.playerCount + 1)}
+                onRemovePlayer={() => tracker.setPlayerCount(tracker.state.playerCount - 1)}
+                onDisplayNameChange={tracker.setPlayerDisplayName}
+                showLifeTotals={false}
+              />
+            </section>
+          </div>
+        )}
+
+        <section
+          aria-label={`${tracker.state.playerCount}-player life table`}
+          data-testid="life-tracker-table"
+          style={{
+            display: "grid",
+            gridTemplateColumns: `repeat(${layout.columns}, minmax(0, 1fr))`,
+            gridTemplateRows: `repeat(${layout.rows}, minmax(15rem, 1fr))`,
+            minHeight: `${layout.rows * 16}rem`
+          }}
+          className="flex-1 gap-2 pb-1"
+        >
+          {layout.seats.map((placement) => {
+            const player = tracker.state.players.find((candidate) => candidate.label === placement.label);
+            if (!player) return null;
+
+            return (
+              <PlayerLifeCard
+                key={player.label}
+                player={player}
+                placement={placement}
+                onAdjustLife={tracker.adjustPlayerLife}
+                onOpenCounters={openCounters}
+              />
+            );
+          })}
+        </section>
+      </div>
 
       {selectedPlayer && (
         <CounterPanel

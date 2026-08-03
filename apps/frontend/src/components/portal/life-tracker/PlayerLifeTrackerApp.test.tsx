@@ -28,6 +28,10 @@ function trackerCards(): HTMLElement[] {
   return screen.getAllByTestId(/^life-card-Player /);
 }
 
+async function openGameSetup(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(screen.getByRole("button", { name: "Show game setup" }));
+}
+
 function DestinationHarness(): JSX.Element {
   const [activeDestinationId, setActiveDestinationId] = useState<DestinationId>("player-life-tracker");
   const destinations: PortalDestination[] = [
@@ -64,6 +68,9 @@ describe("Frontend - Shared", () => {
 
       expect(screen.getByRole("main")).toBeInTheDocument();
       expect(screen.getByRole("heading", { name: "Player Life Tracker" })).toBeInTheDocument();
+      expect(screen.queryByRole("heading", { name: "Game setup" })).not.toBeInTheDocument();
+
+      await openGameSetup(user);
       expect(screen.getByRole("heading", { name: "Game setup" })).toBeInTheDocument();
       expect(screen.getByText("4 players")).toBeInTheDocument();
 
@@ -79,6 +86,7 @@ describe("Frontend - Shared", () => {
     it("supports every player count from two through eight", async () => {
       const user = userEvent.setup();
       render(<PlayerLifeTrackerApp />);
+      await openGameSetup(user);
 
       await user.click(screen.getByRole("button", { name: "Remove last player" }));
       await user.click(screen.getByRole("button", { name: "Remove last player" }));
@@ -119,6 +127,7 @@ describe("Frontend - Shared", () => {
       expect(within(screen.getByTestId("life-card-Player 1")).getByText("40")).toBeInTheDocument();
       expect(within(screen.getByTestId("life-card-Player 2")).getByText("41")).toBeInTheDocument();
 
+      await openGameSetup(user);
       await user.click(screen.getByRole("button", { name: "Set starting life to 20" }));
       for (const card of trackerCards()) {
         expect(within(card).getByText("20")).toBeInTheDocument();
@@ -151,6 +160,7 @@ describe("Frontend - Shared", () => {
     it("wires Reset and New Game through the tracker's cleanup behavior", async () => {
       const user = userEvent.setup();
       render(<PlayerLifeTrackerApp />);
+      await openGameSetup(user);
 
       await user.click(screen.getByRole("button", { name: "Decrease life for Player 1" }));
       expect(localStorage.length).toBe(1);
@@ -197,6 +207,7 @@ describe("Frontend - Shared", () => {
       await user.click(screen.getByRole("button", { name: "Close counters" }));
       expect(within(screen.getByTestId("life-card-Player 1")).getByText("40")).toBeInTheDocument();
 
+      await openGameSetup(user);
       await user.click(screen.getByRole("checkbox", { name: "Commander damage also reduces life" }));
       await user.click(screen.getByRole("button", { name: "Open counters for Player 1" }));
       await user.click(screen.getByRole("button", { name: "Increment Commander damage from Player 2" }));
@@ -211,6 +222,7 @@ describe("Frontend - Shared", () => {
     it("persists commander, named, custom, and setting values across reopen and remount", async () => {
       const user = userEvent.setup();
       const firstMount = render(<PlayerLifeTrackerApp />);
+      await openGameSetup(user);
 
       await user.click(screen.getByRole("checkbox", { name: "Commander damage also reduces life" }));
       await user.click(screen.getByRole("button", { name: "Open counters for Player 1" }));
@@ -231,6 +243,7 @@ describe("Frontend - Shared", () => {
 
       firstMount.unmount();
       render(<PlayerLifeTrackerApp />);
+      await openGameSetup(user);
       expect(screen.getByRole("checkbox", { name: "Commander damage also reduces life" })).toBeChecked();
       await user.click(screen.getByRole("button", { name: "Open counters for Player 1" }));
       expect(screen.getByRole("button", { name: "Increment Commander damage from Player 2" })).toHaveTextContent("1");

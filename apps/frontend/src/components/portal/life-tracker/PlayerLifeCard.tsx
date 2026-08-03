@@ -17,9 +17,9 @@ function lifeState(life: number): "dead" | "critical" | "healthy" {
 }
 
 const LIFE_TINTS = {
-  dead: "border-rose-400/70 bg-rose-950/65",
-  critical: "border-amber-400/60 bg-amber-950/55",
-  healthy: "border-accent/45 bg-accent/10"
+  dead: "border-rose-400/70 bg-gradient-to-br from-rose-200/95 via-rose-50 to-rose-300/40 text-rose-950",
+  critical: "border-amber-400/60 bg-gradient-to-br from-amber-200/95 via-amber-50 to-amber-300/40 text-amber-950",
+  healthy: "border-accent/40 bg-gradient-to-br from-accent-soft/75 via-zinc-50 to-accent/35 text-zinc-900"
 } as const;
 
 export function PlayerLifeCard({
@@ -43,13 +43,13 @@ export function PlayerLifeCard({
         gridRow: placement.gridRow,
         gridColumn: placement.gridColumn
       }}
-      className={`relative isolate min-h-48 overflow-hidden rounded-3xl border shadow-lg shadow-black/25 ${LIFE_TINTS[status]}`}
+      className={`relative isolate min-h-60 overflow-hidden rounded-3xl border shadow-lg shadow-black/20 ${LIFE_TINTS[status]}`}
     >
       <button
         type="button"
         aria-label={`Decrease life for ${displayLabel}`}
         onClick={() => onAdjustLife(player.label, -1)}
-        className="motion-focus absolute inset-y-0 left-0 z-20 flex min-w-14 w-[30%] items-center justify-start px-4 text-4xl font-light text-zinc-100/80 hover:bg-black/10 active:bg-black/20"
+        className="motion-focus absolute inset-x-0 top-0 z-20 flex h-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10"
       >
         <span aria-hidden="true" style={{ transform: rotation }}>
           −
@@ -59,39 +59,38 @@ export function PlayerLifeCard({
       <div
         data-testid={`life-card-content-${player.label}`}
         style={{ transform: rotation }}
-        className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 p-12 text-center"
+        className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 p-6 text-center"
       >
-        <span className="rounded-full border border-white/15 bg-zinc-950/45 px-3 py-1 text-sm font-semibold text-zinc-100">
+        <span className="rounded-full border border-black/10 bg-white/50 px-3 py-1 text-sm font-semibold shadow-sm">
           {displayLabel}
         </span>
-        <span className="text-7xl font-black tabular-nums tracking-tight text-zinc-50 sm:text-8xl">
+        <span className="relative text-6xl font-black tabular-nums tracking-tight sm:text-7xl">
           {player.life}
+          {player.life <= 0 && (
+            <span
+              role="img"
+              aria-label={`${displayLabel} is at zero or less life`}
+              className="absolute inset-0 flex items-center justify-center text-7xl opacity-70 drop-shadow-lg"
+            >
+              ☠
+            </span>
+          )}
         </span>
-        {player.life <= 0 && (
-          <span
-            role="img"
-            aria-label={`${displayLabel} is at zero or less life`}
-            className="absolute text-8xl text-rose-100/80 drop-shadow-lg"
-          >
-            ☠
-          </span>
-        )}
+        <button
+          type="button"
+          aria-label={`Open counters for ${displayLabel}`}
+          onClick={() => onOpenCounters(player.label)}
+          className="motion-focus min-h-11 rounded-full border border-black/10 bg-white/40 px-4 text-xs font-bold uppercase tracking-[0.12em] shadow-sm hover:bg-white/65"
+        >
+          Counters
+        </button>
       </div>
-
-      <button
-        type="button"
-        aria-label={`Open counters for ${displayLabel}`}
-        onClick={() => onOpenCounters(player.label)}
-        className="motion-focus absolute bottom-3 left-1/2 z-30 min-h-11 -translate-x-1/2 rounded-full border border-white/20 bg-zinc-950/55 px-4 text-xs font-bold uppercase tracking-[0.12em] text-zinc-100 hover:bg-zinc-900/80"
-      >
-        Counters
-      </button>
 
       <button
         type="button"
         aria-label={`Increase life for ${displayLabel}`}
         onClick={() => onAdjustLife(player.label, 1)}
-        className="motion-focus absolute inset-y-0 right-0 z-20 flex min-w-14 w-[30%] items-center justify-end px-4 text-4xl font-light text-zinc-100/80 hover:bg-white/5 active:bg-white/10"
+        className="motion-focus absolute inset-x-0 bottom-0 z-20 flex h-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10"
       >
         <span aria-hidden="true" style={{ transform: rotation }}>
           +

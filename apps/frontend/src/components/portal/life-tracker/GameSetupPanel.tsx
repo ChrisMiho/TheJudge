@@ -48,9 +48,9 @@ export function GameSetupPanel({
   return (
     <section
       aria-labelledby="life-tracker-game-setup-title"
-      className="rounded-2xl border border-zinc-700/80 bg-zinc-950/55 p-4 shadow-lg shadow-black/15"
+      className="rounded-2xl border border-zinc-800 bg-black/40 p-4"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 pb-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-soft">Table settings</p>
           <h2 id="life-tracker-game-setup-title" className="text-lg font-black text-zinc-100">
@@ -62,7 +62,7 @@ export function GameSetupPanel({
             type="button"
             aria-label="Reset current game"
             onClick={onReset}
-            className="motion-focus min-h-11 rounded-xl border border-zinc-600 bg-zinc-800/80 px-3 text-sm font-bold text-zinc-100 hover:bg-zinc-700"
+            className="motion-focus min-h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-bold text-zinc-100 hover:bg-zinc-800"
           >
             Reset
           </button>
@@ -77,8 +77,13 @@ export function GameSetupPanel({
         </div>
       </div>
 
-      <div className="mt-4">
-        <p className="mb-2 text-sm font-semibold text-zinc-300">Starting life</p>
+      <div className="border-b border-zinc-800 py-3">
+        <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-zinc-300">
+          <span aria-hidden="true" className="text-base leading-none">
+            ♥
+          </span>
+          Starting life
+        </p>
         <div className="grid grid-cols-5 gap-2" aria-label="Starting life presets">
           {STARTING_LIFE_PRESETS.map((preset) => {
             const isSelected = startingLife === preset;
@@ -95,7 +100,7 @@ export function GameSetupPanel({
                 className={`motion-focus min-h-11 rounded-full border px-2 text-sm font-black tabular-nums transition ${
                   isSelected
                     ? "border-accent bg-accent/20 text-accent-soft ring-2 ring-accent/25"
-                    : "border-zinc-600 bg-zinc-800/80 text-zinc-100 hover:bg-zinc-700"
+                    : "border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
                 }`}
               >
                 {preset}
@@ -105,18 +110,33 @@ export function GameSetupPanel({
         </div>
       </div>
 
-      <label className="mt-4 flex min-h-11 cursor-pointer items-center justify-between gap-4 rounded-xl border border-zinc-700 bg-zinc-900/70 px-3 py-2">
-        <span>
-          <span className="block text-sm font-bold text-zinc-100">Commander damage also reduces life</span>
-          <span className="block text-xs text-zinc-400">Only positive opponent damage is linked.</span>
+      <label className="flex min-h-11 cursor-pointer items-center justify-between gap-4 border-b border-zinc-800 py-3">
+        <span className="flex items-start gap-2">
+          <span aria-hidden="true" className="mt-0.5 text-base leading-none">
+            🛡
+          </span>
+          <span>
+            <span className="block text-sm font-bold text-zinc-100">Commander damage also reduces life</span>
+            <span className="block text-xs text-zinc-400">Only positive opponent damage is linked.</span>
+          </span>
         </span>
-        <input
-          type="checkbox"
-          aria-label="Commander damage also reduces life"
-          checked={commanderDamageToLife}
-          onChange={(event) => onCommanderDamageToLifeChange(event.target.checked)}
-          className="motion-focus h-6 w-6 shrink-0 accent-[rgb(var(--accent-strong))]"
-        />
+        <span className="relative inline-flex h-7 w-12 shrink-0 items-center">
+          <input
+            type="checkbox"
+            aria-label="Commander damage also reduces life"
+            checked={commanderDamageToLife}
+            onChange={(event) => onCommanderDamageToLifeChange(event.target.checked)}
+            className="peer absolute inset-0 z-10 h-full w-full cursor-pointer appearance-none bg-transparent"
+          />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 rounded-full bg-zinc-700 transition-colors peer-checked:bg-accent-strong peer-focus-visible:ring-2 peer-focus-visible:ring-accent-soft peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-zinc-950"
+          />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute left-1 h-5 w-5 rounded-full bg-white transition-transform peer-checked:translate-x-5"
+          />
+        </span>
       </label>
 
       <form onSubmit={applyCustomLife} className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
@@ -132,14 +152,14 @@ export function GameSetupPanel({
               setCustomError(null);
             }}
             inputMode="numeric"
-            className="motion-focus min-h-11 rounded-xl border border-zinc-600 bg-zinc-900 px-3 text-zinc-100"
+            className="motion-focus min-h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-zinc-100"
             placeholder={`${MIN_CUSTOM_STARTING_LIFE}–${MAX_CUSTOM_STARTING_LIFE}`}
           />
         </label>
         <button
           type="submit"
           aria-label="Apply custom starting life"
-          className="motion-focus mt-auto min-h-11 rounded-xl border border-zinc-600 bg-zinc-800 px-4 text-sm font-bold text-zinc-100 hover:bg-zinc-700"
+          className="motion-focus mt-auto min-h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-4 text-sm font-bold text-zinc-100 hover:bg-zinc-800"
         >
           Apply
         </button>
