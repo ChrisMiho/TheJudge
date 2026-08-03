@@ -445,6 +445,12 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: (planned) new `scripts/build-card-printing-prices.mjs` (or equivalent) → `apps/frontend/public/data/cardPrintingPrices.json`
 - Backed by: DEC-088, REQ-066, NFR-013
 
+### Commander Spellbook combo artifact build
+
+- Status: planned
+- Summary: Human-approved offline refresh of public reviewed Commander Spellbook variants/templates plus deterministic build of compact combo detail and oracle/template indexes. Query-backed templates expand through their authoritative Scryfall API URL; templates without an authoritative expansion remain unresolved. Raw responses stay gitignored, failed refreshes preserve valid committed artifacts, and runtime performs no external combo fetch.
+- Lives in: (planned) `scripts/refresh-commander-spellbook-data.mjs`, `scripts/build-commander-spellbook-combos.mjs`, gitignored `apps/backend/data/commander-spellbook/`, committed `apps/backend/data/commanderSpellbookCombos.json` and `apps/backend/data/commanderSpellbookComboIndex.json`
+- Backed by: DEC-116, REQ-093
 
 ### Prompt preview
 
@@ -522,6 +528,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Summary: A feature-portal destination providing a live full-table life/counter tracker for 2–8 players: rotated per-seat life cards with default seat arrangements, edge `+`/`−` life zones, a per-opponent commander-damage matrix plus the full named-counter palette and custom counters, an optional commander-damage→life setting, a life ≤ 0 skull death cue (visual only, no elimination), basic game setup (count + starting-life preset, reset), and browser-local persistence across reload/phone-lock (cleared on New Game/reset). Reuses the extracted shared player-roster editor. Switching directly from the tracker into In-Depth Question one-way seeds the current roster (count, names, life, counters) into `GameContext` via additive optional per-player fields; edits in Assistant never write back to tracker state, and unrelated transitions do not seed. UI direction was driven by the committed reference screenshots under the now-superseded `PRD/work/player-life-tracker/references/`; the shipped implementation is an accepted functional match but a visual deviation from those references — a follow-up visual-refinement pass is tracked under `PRD/work/player-life-tracker-refinement/`.
 - Lives in: `apps/frontend/src/components/portal/life-tracker/` (`PlayerLifeTrackerApp`, `PlayerLifeCard`, `GameSetupPanel`, `CounterPanel`), `apps/frontend/src/lib/lifeTracker/` (state, persistence, counters, seat arrangement, seed adapter), `apps/frontend/src/components/PlayerRosterEditor.tsx`, `apps/frontend/src/lib/portal/seedContext.tsx`, `apps/frontend/src/components/portal/destinationRegistry.tsx`, `apps/frontend/src/App.tsx` (seed-provider handoff wiring), `apps/frontend/src/types.ts` + `apps/backend/src/{validation/askAiRequest.ts,prompt/context.ts,prompt/promptFormatting.ts}` (additive counter contract)
 - Backed by: DEC-101, DEC-102, DEC-103, REQ-081, REQ-082, REQ-083, REQ-084, REQ-085, FLOW-013
+
+## Commander Spellbook combo retrieval
+
+- Status: planned
+- Summary: Backend-only, static Commander Spellbook prompt enrichment shared by In-Depth Question and Quick Question. Game mode automatically supplies only complete quantity-aware identity + compatible-zone matches unless narrow combo language explicitly permits labeled partial candidates; lookup mode requires both combo intent and an attached card. Selection is deterministic, capped at five, labels missing/wrong-zone/unresolved ingredients, and preserves WotC sources as authority. No Known Combos UI, browser, contract change, new endpoint, or runtime upstream call.
+- Lives in: (planned) `apps/backend/src/commanderSpellbook/` (artifact loader, intent detector, matcher/ranker, formatter), `apps/backend/src/prompt/` integration, `apps/backend/src/eval/fixtures/commander-spellbook-*`, `apps/backend/data/commanderSpellbookCombos.json`, and `apps/backend/data/commanderSpellbookComboIndex.json`
+- Backed by: DEC-116, REQ-093, REQ-094, REQ-095, FLOW-015
 
 ## Trade balancer
 

@@ -114,6 +114,43 @@ export function formatTargets(
     .join(" | ");
 }
 
+/**
+ * Builds one deterministic counter line for a populated player, or undefined when the
+ * player has no populated poison/experience/energy/commanderDamage/counters (DEC-102).
+ * Order: poison, experience, energy; commander-damage entries by PlayerLabel; then
+ * generic counters in input order.
+ */
+function formatPlayerCounterLine(player: PromptContext["gameContext"]["players"][number]): string | undefined {
+  const parts: string[] = [];
+
+  if (typeof player.poison === "number" && player.poison > 0) {
+    parts.push(`poison=${player.poison}`);
+  }
+  if (typeof player.experience === "number" && player.experience > 0) {
+    parts.push(`experience=${player.experience}`);
+  }
+  if (typeof player.energy === "number" && player.energy > 0) {
+    parts.push(`energy=${player.energy}`);
+  }
+
+  const commanderDamage = [...(player.commanderDamage ?? [])].sort(
+    (left, right) => toPlayerLabelIndex(left.from) - toPlayerLabelIndex(right.from)
+  );
+  for (const entry of commanderDamage) {
+    parts.push(`commanderDamage[${entry.from}]=${entry.amount}`);
+  }
+
+  for (const entry of player.counters ?? []) {
+    parts.push(`${entry.name}=${entry.amount}`);
+  }
+
+  if (parts.length === 0) {
+    return undefined;
+  }
+
+  return `${player.label} counters: ${parts.join(", ")}`;
+}
+
 export function formatGameContext(context: PromptContext): string {
   const players = [...context.gameContext.players].sort(
     (left, right) => toPlayerLabelIndex(left.label) - toPlayerLabelIndex(right.label)
@@ -123,12 +160,14 @@ export function formatGameContext(context: PromptContext): string {
   return [
     `turnPhase: ${context.gameContext.turnPhase}`,
     `playerCount: ${context.gameContext.playerCount}`,
-    ...players.map((player) => {
+    ...players.flatMap((player) => {
       const display =
         player.displayName && player.displayName !== player.label
           ? ` displayName=${player.displayName}`
           : "";
-      return `${player.label}: lifeTotal=${player.lifeTotal}${display}`;
+      const lifeLine = `${player.label}: lifeTotal=${player.lifeTotal}${display}`;
+      const counterLine = formatPlayerCounterLine(player);
+      return counterLine ? [lifeLine, counterLine] : [lifeLine];
     }),
     ...(context.gameContext.activePlayer
       ? [`activePlayer: ${formatPlayerRef(context.gameContext.activePlayer, displayNamesByPlayer)}`]

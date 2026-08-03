@@ -183,6 +183,41 @@ describe("Backend - Ask AI", () => {
       expect(prompt).not.toContain("cardId:");
     });
 
+    it("adds a populated player's counter line without changing other general-context or stack text", () => {
+      const contextWithCounters: PromptContext = {
+        ...baseContext,
+        gameContext: {
+          ...baseContext.gameContext,
+          players: [
+            {
+              label: "Player 1",
+              lifeTotal: 20,
+              poison: 3,
+              commanderDamage: [{ from: "Player 2", amount: 5 }],
+              counters: [{ name: "Monarch", amount: 1 }]
+            },
+            { label: "Player 2", lifeTotal: 17 }
+          ]
+        }
+      };
+
+      const basePrompt = buildPromptText(baseContext);
+      const counterPrompt = buildPromptText(contextWithCounters);
+
+      expect(counterPrompt).toContain("Player 1: lifeTotal=20");
+      expect(counterPrompt).toContain("Player 1 counters: poison=3, commanderDamage[Player 2]=5, Monarch=1");
+      expect(counterPrompt.indexOf("Player 1: lifeTotal=20") + "Player 1: lifeTotal=20".length + 1).toBe(
+        counterPrompt.indexOf("Player 1 counters:")
+      );
+
+      const stripCounterLine = (prompt: string) =>
+        prompt
+          .split("\n")
+          .filter((line) => !line.startsWith("Player 1 counters:"))
+          .join("\n");
+      expect(stripCounterLine(counterPrompt)).toBe(basePrompt);
+    });
+
     it("resolves player display names for active player, caster, owner, and player targets", () => {
       const prompt = buildPromptText({
         finalQuestion: "How does this resolve?",

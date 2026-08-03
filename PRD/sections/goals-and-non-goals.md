@@ -54,6 +54,7 @@
 - optional on-device camera card scanning as an alternate input path into existing zone fields (DEC-050..DEC-053); see `system-map.md` "Card scanning" (status: planned)
 - automatic fluid responsive presentation replacing the shipped user-selected density workaround, plus one shared chat-first conversation workspace with adaptive context, reader-safe auto-scroll, and focused motion (DEC-117, DEC-118, REQ-096..REQ-098)
 - standalone **Card Trade Balancer**: a two-sided, frontend-only, ephemeral card-value comparison (per-entry printing + foil toggle + quantity, scan or manual-search input, static-snapshot USD prices) reached via a top-level navigation menu (DEC-087, DEC-088, DEC-089; REQ-064..REQ-067); see `system-map.md` "Trade balancer" and "App navigation" (status: planned)
+- backend-only **Commander Spellbook combo enrichment**: a human-approved static community combo corpus used only for complete contextual matches or narrow explicit combo questions, with deterministic identity/quantity/zone matching and labeled missing pieces (DEC-116, REQ-093..REQ-095); see `system-map.md` "Commander Spellbook combo retrieval" (status: planned)
 
 ## Product risks
 - **Prompt size vs AI latency:** Game-rules prompt enrichment (DEC-030, REQ-022) materially increases prompt size (~25–32k chars typical/worst case when all 23 curated topics ship). This is an active risk to the 3-second latency success metric, not a temporary scope tradeoff. Monitor after ship.
@@ -77,6 +78,7 @@
 - live/real-time card price sync, price history, marketplace/transaction handling, and automated "suggest cards to balance" logic in the Trade Balancer (DEC-087)
 - arbitrary theme color input, per-component theme overrides, server-synced theme preferences, account-based theme settings, and dark/light mode redesign for theme customization (DEC-066)
 - user-visible layout/profile overrides, saved layout preferences, UA-sniffed or JavaScript-selected device modes, separate mobile/desktop component trees, viewport locking, fixed-to-viewport chat composers, and sticky-footer redesign outside the shared conversation workspace (DEC-117, DEC-118)
+- visible Known Combos panels, a combo browser/portal destination, find-my-combos deck analysis, bracket estimation, runtime Commander Spellbook calls, a public combo mirror, and deterministic combo legality/executability validation (DEC-116)
 
 ## Scope Notes
 TheJudge is an **MTG assistant with a suite of features** that help players — not an official judge or a deterministic/gameplay-accurate rules engine. **In-Depth Question** (the staged game-context + Ask AI feature, internally `mtg-assistant`) is the primary feature; Quick Question and other tools sit alongside it (`DEC-094`).

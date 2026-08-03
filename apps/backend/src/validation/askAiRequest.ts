@@ -125,10 +125,27 @@ const zonesSchema = z
   })
   .strict();
 
+const nonNegativeIntCount = () => z.number().int().min(0);
+
+export const commanderDamageEntrySchema = z.object({
+  from: playerLabelSchema,
+  amount: nonNegativeIntCount()
+}).strict();
+
+export const namedCounterSchema = z.object({
+  name: boundedText(40),
+  amount: nonNegativeIntCount()
+}).strict();
+
 export const gamePlayerSchema = z.object({
   label: playerLabelSchema,
   lifeTotal: z.number().int().min(-99).max(999),
-  displayName: optionalBoundedText(40)
+  displayName: optionalBoundedText(40),
+  poison: nonNegativeIntCount().optional(),
+  experience: nonNegativeIntCount().optional(),
+  energy: nonNegativeIntCount().optional(),
+  commanderDamage: z.array(commanderDamageEntrySchema).max(7).optional(),
+  counters: z.array(namedCounterSchema).max(20).optional()
 }).strict();
 
 export const gameContextSchema = z

@@ -265,6 +265,22 @@ Purpose:
 - the backend loads both committed artifacts at startup and omits game-rules enrichment if the artifacts are missing or empty
 - runtime CR fetches are out of scope for the core product
 
+## Commander Spellbook Combo Data Strategy
+
+Commander Spellbook combo enrichment (DEC-116) is a planned backend-only prompt source layered onto the existing game and lookup modes; it does not add a product-facing endpoint or change `AskAiRequest`.
+
+- source reads use Commander Spellbook's public REST API; only public reviewed variants (`OK` / `EXAMPLE`) enter the corpus
+- cards join on Commander Spellbook `oracleId` → TheJudge `cardId` (Scryfall `oracle_id`); printing identity is excluded
+- network refresh is a dedicated, explicit human-approved operation; raw paginated variant, template, and template-expansion responses stay gitignored under `apps/backend/data/commander-spellbook/`
+- the planned committed backend artifacts are `apps/backend/data/commanderSpellbookCombos.json` (trimmed variant detail + source manifest) and `apps/backend/data/commanderSpellbookComboIndex.json` (inverse oracle membership, template expansions, and unresolved-template metadata)
+- retained variant detail includes exact/template ingredients, quantities, starting zones, produced effects, description/steps, mana needed, prerequisites, notes, popularity, and stable Commander Spellbook reference; price, image, and unrelated site payload fields are omitted
+- query-backed templates are expanded during refresh through the authoritative Scryfall API URL supplied by Commander Spellbook; authoritative explicit replacements are used when exposed; templates with neither remain unresolved
+- TheJudge does not parse Scryfall query syntax and does not maintain a manual template-replacement fork
+- the build is deterministic and fail-safe: failed/partial refreshes do not replace a valid committed snapshot, and a build without fresh raw inputs preserves a valid prior artifact
+- runtime matching is local, quantity-aware, instance-aware, and zone-aware; runtime never calls Commander Spellbook or Scryfall
+- missing/invalid artifacts disable only combo enrichment and emit one diagnostic warning; the normal Ask AI path continues
+- Commander Spellbook content is labeled community-sourced in the prompt and never overrides official card text, WotC rulings, or Comprehensive Rules
+
 ## Card Scanning Data Strategy
 
 Card scanning (DEC-050) is an optional, frontend-only, on-device input path; it does not
@@ -331,6 +347,7 @@ The backend should include:
 - published WotC Oracle rulings for submitted cards when available from the static backend artifact
 - verbatim WotC Comprehensive Rules excerpts for curated general game-rules topics selected per DEC-045 (always-on core plus game-state-gated expansion) from the static backend artifact
 - up to 5 supplemental WotC CR rule excerpts dynamically retrieved from the committed rule index artifact, scored per DEC-046 against the request context and deduplicated against selected System 2 baseline rule numbers
+- up to 5 eligible community-sourced Commander Spellbook variants: complete identity, quantity, and compatible-zone matches in game context, or labeled partial candidates for explicit combo questions; omit combo context otherwise and keep official Wizards card, rules, and rulings sources authoritative (DEC-116, REQ-094, REQ-095)
 - static MTG reference block
 - merged scope sentence for unselected zones and selected-but-empty zones
 - instructions to explain reasoning

@@ -366,6 +366,59 @@ describe("Backend - Ask AI", () => {
       const item = context.populatedZones[0]?.items[0];
       expect(item?.contextNotes).toBe("flashback target");
     });
+
+    it("normalizes populated player counters, strips zero/empty entries, and preserves request immutability", () => {
+      const request: GameAskAiRequest = {
+        question: "Status check",
+        gameContext: {
+          ...defaultGameContext,
+          players: [
+            {
+              label: "Player 1",
+              lifeTotal: 30,
+              poison: 3,
+              experience: 0,
+              energy: 4,
+              commanderDamage: [
+                { from: "Player 2", amount: 5 },
+                { from: "Player 2", amount: 0 }
+              ],
+              counters: [
+                { name: "Monarch", amount: 1 },
+                { name: "Ignored", amount: 0 }
+              ]
+            },
+            { label: "Player 2", lifeTotal: 20 }
+          ]
+        }
+      };
+      const requestSnapshot = JSON.parse(JSON.stringify(request));
+
+      const context = buildPromptContext(request);
+
+      expect(context.gameContext.players[0]).toEqual({
+        label: "Player 1",
+        lifeTotal: 30,
+        poison: 3,
+        energy: 4,
+        commanderDamage: [{ from: "Player 2", amount: 5 }],
+        counters: [{ name: "Monarch", amount: 1 }]
+      });
+      expect(context.gameContext.players[1]).toEqual({ label: "Player 2", lifeTotal: 20 });
+      expect(request).toEqual(requestSnapshot);
+    });
+
+    it("omits counter fields entirely for players with no populated counters", () => {
+      const context = buildPromptContext({
+        question: "Status",
+        gameContext: defaultGameContext
+      });
+
+      expect(context.gameContext.players).toEqual([
+        { label: "Player 1", lifeTotal: 20 },
+        { label: "Player 2", lifeTotal: 20 }
+      ]);
+    });
   });
 
   describe("buildLookupPromptContext", () => {
