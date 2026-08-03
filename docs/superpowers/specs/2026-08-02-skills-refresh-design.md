@@ -172,7 +172,7 @@ This is the **only** file in `PRD/` that gets edited. Receipts under `PRD/instru
 
 The one sub-file in the skill tree. Survives, rewritten. It holds genuine content the skill body should not carry: source-of-truth precedence, the task → read-order table, and out-of-scope paths.
 
-Two fixes required: its "Workflow skills (manual attach)" table lists only 6 skills and must cover all 8, and its sync note points at `AGENT-SKILLS.md` for a contract that is itself being rewritten.
+Three fixes required: its skill table lists only 6 skills and must cover all 8, that table is headed "Workflow skills (manual attach)" which the model-invocable decision contradicts, and its sync note points at `AGENT-SKILLS.md` for a contract that is itself being rewritten.
 
 ## `scripts/sync-agent-skills.sh`
 
