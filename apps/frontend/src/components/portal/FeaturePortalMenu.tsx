@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { createPortal } from "react-dom";
 import { PortalSlotContext } from "../../lib/portal/slotContext";
 import type { DestinationId, PortalDestination } from "../../lib/portal/types";
-import type { LayoutDensity } from "../../lib/theme/layoutDensity";
 import { ThemeSection } from "./ThemeSection";
 
 export interface FeaturePortalMenuProps {
@@ -11,8 +10,6 @@ export interface FeaturePortalMenuProps {
   onSelect: (id: DestinationId) => void;
   paletteId: string;
   onPaletteSelect: (id: string) => void;
-  density: LayoutDensity;
-  onDensityChange: (density: LayoutDensity) => void;
   /**
    * Rendered as this component's own children. When the active destination renders a
    * <PortalSlot />, the button portals into it (inline with that destination's own header,
@@ -29,8 +26,6 @@ export function FeaturePortalMenu({
   onSelect,
   paletteId,
   onPaletteSelect,
-  density,
-  onDensityChange,
   children
 }: FeaturePortalMenuProps): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
@@ -93,11 +88,6 @@ export function FeaturePortalMenu({
     setIsOpen(false);
   }
 
-  function handleDensityChange(nextDensity: LayoutDensity): void {
-    onDensityChange(nextDensity);
-    setIsOpen(false);
-  }
-
   const trigger = (
     <div
       ref={containerRef}
@@ -149,8 +139,6 @@ export function FeaturePortalMenu({
               <ThemeSection
                 paletteId={paletteId}
                 onSelect={handlePaletteSelect}
-                density={density}
-                onDensityChange={handleDensityChange}
               />
             </div>
           </div>

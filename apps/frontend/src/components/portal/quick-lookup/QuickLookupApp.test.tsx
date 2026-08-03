@@ -436,8 +436,10 @@ describe("QuickLookupApp", () => {
     await user.click(screen.getByRole("button", { name: "Ask TheJudge" }));
 
     expect(await screen.findByText("First lookup answer")).toBeInTheDocument();
+    expect(screen.getAllByTestId("conversation-workspace")).toHaveLength(1);
+    expect(screen.getByRole("log")).toHaveAttribute("aria-relevant", "additions text");
     expect(screen.queryByText("How does priority work?")).not.toBeInTheDocument();
-    expect(screen.queryByText("Lookup card")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /View context:/ })).not.toBeInTheDocument();
     const initialAskRequest = fetchMock.mock.calls.find(([input]) =>
       String(input).endsWith("/api/ask-ai")
     );
@@ -486,8 +488,18 @@ describe("QuickLookupApp", () => {
     await user.click(screen.getByRole("button", { name: "Ask TheJudge" }));
 
     expect(await screen.findByText("Card lookup answer")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
+    expect(screen.getAllByTestId("conversation-workspace")).toHaveLength(1);
+    expect(screen.queryByRole("heading", { name: "Lightning Bolt" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Remove Lightning Bolt" })).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", { name: "View context: Lightning Bolt" })
+    );
+    const contextDialog = screen.getByRole("dialog", { name: "Card context" });
+    expect(contextDialog).toContainElement(
+      screen.getByRole("heading", { name: "Lightning Bolt" })
+    );
+    expect(screen.queryByRole("button", { name: "Remove Lightning Bolt" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Close card context" }));
     const initialAskRequest = fetchMock.mock.calls.find(([input]) =>
       String(input).endsWith("/api/ask-ai")
     );

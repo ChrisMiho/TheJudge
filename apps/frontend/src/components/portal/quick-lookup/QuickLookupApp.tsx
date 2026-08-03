@@ -5,12 +5,12 @@ import { useAskAiSubmitOrchestration } from "../../../hooks/useAskAiSubmitOrches
 import { useScanCapture } from "../../../hooks/useScanCapture";
 import { buildLookupAskAiRequest } from "../../../lib/contextFlow";
 import { apiBaseUrl } from "../../../lib/env";
+import { prefersReducedMotion } from "../../../lib/motionPreference";
 import { NO_MATCH_COPY } from "../../../lib/search";
 import type { CardMetadataItem } from "../../../types";
 import { AskAiWaitingPanel } from "../../AskAiWaitingPanel";
 import { CardSelectionPreview } from "../../CardSelectionPreview";
-import { ConversationThread } from "../../ConversationThread";
-import { FollowUpComposer } from "../../FollowUpComposer";
+import { ConversationWorkspace } from "../../ConversationWorkspace";
 import { PageShell } from "../../PageShell";
 import { ScanCameraSurface } from "../../ScanCameraSurface";
 import { StagedStepHeader } from "../../StagedStepHeader";
@@ -146,10 +146,8 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
 
   function handleTopicSelection(topic: CoreTopic): void {
     setLockedTopic({ id: topic.id, title: topic.title });
-    const prefersReducedMotion =
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     questionContainerRef.current?.scrollIntoView({
-      behavior: prefersReducedMotion ? "auto" : "smooth",
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
       block: "center"
     });
     questionInputRef.current?.focus();
@@ -195,42 +193,33 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
       <PageShell>
         <StagedStepHeader stepName="Quick Question" />
 
-        {frozenLookupCard && (
-          <CardSelectionPreview
-            card={frozenLookupCard}
-            contextTitle="Lookup card"
-            contextContent={null}
-            showContextSection={false}
-          />
-        )}
-
-        <ConversationThread messages={visibleMessages} />
-
-        {error && (
-          <div className="motion-error space-y-2 rounded-2xl border border-rose-500/40 bg-rose-950/30 p-4">
-            <p className="text-sm text-rose-300">{error}</p>
-            <button
-              type="button"
-              disabled={!canRetry}
-              onClick={() => void submitLookup("retry")}
-              className="rounded-xl border border-rose-500/50 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {retryLabel}
-            </button>
-          </div>
-        )}
-
-        <FollowUpComposer isSubmitting={isFollowUpSubmitting} onSubmit={submitFollowUp} />
-
-        {!isSubmitting && !isFollowUpSubmitting && (
-          <button
-            type="button"
-            onClick={handleStartOver}
-            className="rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
-          >
-            Start Over
-          </button>
-        )}
+        <ConversationWorkspace
+          messages={visibleMessages}
+          context={
+            frozenLookupCard
+              ? {
+                  triggerLabel: frozenLookupCard.name,
+                  dialogLabel: "Card context",
+                  content: (
+                    <CardSelectionPreview
+                      card={frozenLookupCard}
+                      contextTitle="Lookup card"
+                      contextContent={null}
+                      showContextSection={false}
+                    />
+                  )
+                }
+              : undefined
+          }
+          error={error}
+          canRetry={canRetry}
+          retryLabel={retryLabel}
+          onRetry={() => submitLookup("retry")}
+          isFollowUpSubmitting={isFollowUpSubmitting}
+          onFollowUp={submitFollowUp}
+          onStartOver={handleStartOver}
+          showStartOver={!isSubmitting && !isFollowUpSubmitting}
+        />
       </PageShell>
     );
   }

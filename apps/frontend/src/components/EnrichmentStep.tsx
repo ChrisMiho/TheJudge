@@ -12,9 +12,11 @@ import { useEnrichmentTargets } from "../hooks/useEnrichmentTargets";
 import type { ConversationMessage, ContextTarget, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { AskAiWaitingPanel } from "./AskAiWaitingPanel";
 import { CardPresentation } from "./CardPresentation";
-import { ConversationThread } from "./ConversationThread";
-import { FollowUpComposer } from "./FollowUpComposer";
-import { FrozenContextSummary } from "./FrozenContextSummary";
+import { ConversationWorkspace } from "./ConversationWorkspace";
+import {
+  FrozenGameContextDetails,
+  getFrozenGameContextTriggerLabel
+} from "./FrozenGameContextDetails";
 import { PageShell } from "./PageShell";
 import { PortalSlot } from "./portal/PortalSlot";
 import { StagedStepHeader } from "./StagedStepHeader";
@@ -383,43 +385,32 @@ export function EnrichmentStep({
             <div />
           </header>
 
-          {frozenGameContext && <FrozenContextSummary frozenGameContext={frozenGameContext} />}
-
-          {isSubmitting && <AskAiWaitingPanel isSubmitting={isSubmitting} />}
-
-          <ConversationThread messages={visibleMessages} />
-
-          {error && (
-            <div className="motion-error space-y-2 rounded-2xl border border-rose-500/40 bg-rose-950/30 p-4">
-              <p className="text-sm text-rose-300">{error}</p>
-              <button
-                type="button"
-                disabled={!canRetry}
-                onClick={() => void onRetry()}
-                className="rounded-xl border border-rose-500/50 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {retryLabel}
-              </button>
-            </div>
-          )}
-
-          <FollowUpComposer isSubmitting={isFollowUpSubmitting} onSubmit={onFollowUp} />
-
-          {!isSubmitting && !isFollowUpSubmitting && (
-            <button
-              type="button"
-              onClick={onStartOver}
-              className="rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
-            >
-              Start Over
-            </button>
-          )}
-
-          {statusMessage && (
-            <p className="motion-success rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
-              {statusMessage}
-            </p>
-          )}
+          <ConversationWorkspace
+            messages={visibleMessages}
+            context={
+              frozenGameContext
+                ? {
+                    triggerLabel: getFrozenGameContextTriggerLabel(frozenGameContext),
+                    dialogLabel: "Frozen game context",
+                    content: (
+                      <FrozenGameContextDetails frozenGameContext={frozenGameContext} />
+                    )
+                  }
+                : undefined
+            }
+            pendingFeedback={
+              isSubmitting ? <AskAiWaitingPanel isSubmitting={isSubmitting} /> : undefined
+            }
+            error={error}
+            canRetry={canRetry}
+            retryLabel={retryLabel}
+            onRetry={onRetry}
+            isFollowUpSubmitting={isFollowUpSubmitting}
+            onFollowUp={onFollowUp}
+            onStartOver={onStartOver}
+            showStartOver={!isSubmitting && !isFollowUpSubmitting}
+            statusMessage={statusMessage}
+          />
       </PageShell>
     );
   }

@@ -1,6 +1,6 @@
 import { cleanup, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { renderEnrichment } from "../test/enrichmentStep";
+import { renderEnrichment, singlePlayerGameContext } from "../test/enrichmentStep";
 
 afterEach(cleanup);
 
@@ -48,17 +48,33 @@ describe("Ambient accent surfaces", () => {
     expect(questionSurface()).toHaveAttribute("data-accent-current", "true");
   });
 
-  it("opts only the complete follow-up composer into a resting interactive surface", () => {
-    renderEnrichment({
+  it("applies the answered-view inventory to context and the docked composer", async () => {
+    const user = renderEnrichment({
       isConversationActive: true,
       answer: "Initial answer",
-      visibleMessages: [{ role: "assistant", content: "Initial answer" }]
+      visibleMessages: [{ role: "assistant", content: "Initial answer" }],
+      frozenGameContext: singlePlayerGameContext
     });
+
+    const workspace = screen.getByTestId("conversation-workspace");
+    expect(workspace).toHaveClass("conversation-workspace");
+    const contextTrigger = screen.getByRole("button", { name: /View context:/ });
+    expect(contextTrigger).toHaveClass("ambient-accent-surface", "ambient-accent-interactive");
+    await user.click(contextTrigger);
+    expect(screen.getByRole("dialog", { name: "Frozen game context" })).toHaveClass(
+      "ambient-accent-surface"
+    );
+    expect(screen.getByRole("dialog", { name: "Frozen game context" })).toHaveAttribute(
+      "data-accent-current",
+      "true"
+    );
 
     const composer = screen.getByPlaceholderText("Ask a follow-up…").closest("form");
     expect(composer).toHaveClass("ambient-accent-surface", "ambient-accent-interactive");
     expect(composer).toHaveAttribute("data-accent-current", "false");
-    expect(screen.getByText("Initial answer").closest(".ambient-accent-surface")).toBeNull();
+    expect(screen.getByText("Initial answer").closest(".conversation-thread")).not.toHaveClass(
+      "ambient-accent-surface"
+    );
     expect(screen.getByRole("button", { name: "Start Over" })).not.toHaveClass(
       "ambient-accent-surface"
     );

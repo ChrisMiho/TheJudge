@@ -13,7 +13,7 @@
   4. Enrichment: default card-by-card wizard (OK advances); optional **View all cards** for full-list edit with per-zone internal scrolling; user may add caster, targets, notes, and mana spent where relevant. In both modes, the same responsive image/metadata presentation appears above full-width enrichment fields. The complete image-bearing or fallback card row uses the same identity-ring treatment as zone collection.
   5. Submit: user enters an optional question, clicks **Decrypt Stack**, and the frontend sends `question` plus `gameContext` to the backend.
   6. Backend builds the prompt and returns a plain-text answer.
-  7. Frontend displays the answer.
+  7. Frontend displays the answer in the shared chat-first conversation workspace; frozen game context is available through the adaptive read-only context trigger/sheet/drawer and follow-ups continue through FLOW-005.
 - Edge Cases:
   - if game-context values are missing/invalid, continue action is blocked
   - if zone confirmation has zero zones selected, continue action is blocked
@@ -29,8 +29,8 @@
   - if the user changes phase after selecting zones, newly assumed zones are added and existing cards/enrichment are preserved
 - Notes:
   - this is the primary core product flow with staged context capture
-  - each staged step's header presents the active step name inline to the right of the `TheJudge` / `MTG Assistant` brand block in a single row (DEC-067, REQ-045); the answered-state conversation header stays a slim brand-only header with no step name, and now also carries an inline feature-portal Menu slot (DEC-109, REQ-089) so Menu docks and scrolls with this header exactly as on the staged steps rather than floating fixed
-  - staged-flow screen compaction (DEC-076, REQ-056) and optional layout density (DEC-075, REQ-055, FLOW-008) are presentation-only and do not change this flow's logic or payloads
+  - each staged step's header presents the active step name inline to the right of the `TheJudge` / `MTG Assistant` brand block in a single row (DEC-067, REQ-045); the answered-state conversation header stays a slim brand-only header with no step name and carries an inline feature-portal Menu slot (DEC-109, REQ-089)
+  - staged-flow compaction (DEC-076, REQ-056) and automatic fluid responsive presentation (DEC-117, REQ-096) are presentation-only and do not change this flow's logic or payloads; users select no layout profile
 
 ### FLOW-002
 - Name: Inspect and remove cards from selected zones
@@ -90,14 +90,14 @@
 - Preconditions:
   - first decrypt has succeeded and the conversation thread is showing
 - Main Flow:
-  1. User sees a compact frozen context summary above the conversation thread.
-  2. User may expand the frozen context summary to inspect the full read-only game context.
-  3. User reads the assistant's answer in the conversation thread.
+  1. User enters the shared chat-first workspace with the assistant's first answer visible in the message log.
+  2. User may open the compact Game context trigger to inspect the full frozen read-only context in a bottom sheet below `768px` or right-side drawer at `768px+`, then close it and return focus to the trigger.
+  3. User reads the assistant's answer in the accessible conversation log.
   4. User types a follow-up in the chat composer (up to 300 characters) and clicks Send.
   5. Send button shows an inline processing animation; button is disabled.
   6. Frontend sends `{ question: followUpText, gameContext: frozen, conversationHistory: fullPriorExchange }` to `POST /api/ask-ai`.
   7. Backend inserts `CONVERSATION HISTORY` before `QUESTION` in the prompt and returns a plain-text answer.
-  8. User bubble and then assistant bubble are appended to the thread.
+  8. User bubble and then assistant bubble are appended to the log. If the reader was near the bottom, the newest message is followed; if the reader had scrolled up, their position is preserved and a New response control appears.
   9. Send button is restored; user can send another follow-up.
 - Edge Cases:
   - if the follow-up request fails, the error is shown and a retry button is presented; retry resubmits the failed follow-up with the same frozen context and history
@@ -105,10 +105,11 @@
   - start over is not available while a request is in flight
   - if history chars exceed `MAX_CONVERSATION_HISTORY_CHARS` (6000), oldest turns are truncated before the prompt is assembled
   - when the backend is running in mock mode, the assistant bubble still appends in the same chat thread and its answer contains the exact assembled LLM-facing prompt for that submitted user message
+  - while the reader is farther than 64px from the bottom, incoming messages never force-scroll; activating New response scrolls to and places keyboard focus on the newest assistant message without clearing any composer draft
 - Notes:
   - game context, zones, cards, and enrichment are frozen for the duration of the conversation; follow-ups are text-only in v1
   - the initial user question (including fallback) is included in `conversationHistory` sent to the API but is not shown as a visible bubble in the thread
-  - the answered-state screen keeps the top header slim and uses the frozen context summary as the setup for the conversation
+  - the answered-state screen keeps the top header slim and uses the compact context trigger plus adaptive overlay so the message log remains primary (DEC-118, REQ-097, REQ-098)
 
 ### FLOW-006
 - Name: Scan cards into a zone (optional batch input)
@@ -153,7 +154,7 @@
 - Preconditions:
   - app is loaded
 - Main Flow:
-  1. User opens the global theme/settings affordance from the app chrome.
+  1. User opens the feature-portal Menu and finds its palette-only **Theme** section.
   2. App shows the predefined palette choices as named swatches, with the current palette indicated.
   3. User selects a palette.
   4. App immediately applies the selected palette to primary accents and the restrained resting/hover/focus/current treatments on REQ-060's closed minimum surface inventory without leaving the current workflow step.
@@ -168,24 +169,8 @@
   - only REQ-060's closed minimum surface inventory uses the restrained ambient hierarchy from DEC-081; static chrome and the dominant page background remain neutral
 
 ### FLOW-008
-- Name: Choose and persist layout density
-- Trigger: User wants a tighter or roomier layout spacing
-- Preconditions:
-  - app is loaded
-- Main Flow:
-  1. User opens the global theme/settings affordance from the app chrome.
-  2. App shows the Chunky / Slim density choices below the palette swatches, with the current density indicated.
-  3. User selects a density.
-  4. App immediately applies the selected density via `data-layout-density` on `document.documentElement` without leaving the current workflow step.
-  5. App stores the selected density for the browser.
-  6. On later reloads, app restores the stored density before or during initial render without resetting user workflow state.
-- Edge Cases:
-  - if the stored density value is missing, corrupt, or unsupported, app falls back to chunky
-  - if browser storage is unavailable or write fails, the selected density may apply for the current session but app continues normally
-  - selecting the current density is a no-op and does not close or reset the main gameplay workflow unless the implemented control naturally closes after selection
-- Notes:
-  - density selection is frontend-only personalization and never changes submitted game context, prompt text, backend API behavior, or AI responses
-  - chunky is the default and must match pre-change spacing on reference screens (DEC-075, REQ-055)
+- Name: Retired — choose and persist layout density
+- Retired by DEC-117 / REQ-096. Responsive presentation is automatic and requires no replacement user flow.
 
 ### FLOW-009
 - Name: Build a two-sided trade and read the balance
@@ -216,35 +201,35 @@
 
 ### FLOW-010
 - Name: Switch destinations via the feature portal
-- Trigger: User wants to move between suite destinations (v1: the MTG Assistant flow and the Trade Balancer)
+- Trigger: User wants to move between the registered suite destinations or change the app palette
 - Preconditions:
   - app is loaded
 - Main Flow:
-  1. User taps the portal menu button in the **top-middle** of the header (distinct from the left brand block and the top-right palette/`ThemeControl` affordance).
-  2. The menu opens and lists the registered destinations — v1 **MTG Assistant** and **Trade Balancer** — with the current mode indicated.
+  1. User taps the icon-only portal Menu button in the **top-middle** of the current screen's header; it is the suite's only floating/attached app-chrome affordance.
+  2. The Menu opens and lists the registered destinations — **In-Depth Question** and **Quick Question** — with the current destination indicated. It also shows the palette-only **Theme** section and any registered action entries. Trade Balancer remains unregistered until its real feature ships.
   3. User selects another destination.
   4. App switches the active view to the selected destination without leaving the app or reloading.
-  5. To return, the user opens the same menu and selects the other destination.
+  5. To return, the user opens the same Menu and selects the other destination. Palette selection may also be changed in place without switching destinations.
 - Edge Cases:
   - selecting the current mode is a no-op and does not reset in-progress state
-  - switching destinations preserves each mode's in-session state while the app stays loaded (an in-progress MTG Assistant flow survives a trip to the Trade Balancer and back)
+  - switching destinations preserves each mode's in-session state while the app stays loaded (an in-progress In-Depth Question flow survives a trip to Quick Question and back)
   - refreshing the page restores whichever destination was last active in that browser tab (DEC-111, REQ-090); each destination's in-session state (staged flow, conversation, follow-ups) still resets fresh on refresh — only the choice of which destination screen mounts is persisted
   - a brand-new tab/window with no prior activity opens on the first registered destination, unchanged
-  - the portal button and its menu must not overlap or intercept taps meant for the brand block or `ThemeControl` (DEC-095, DEC-065)
+  - the portal button and Menu must not overlap or intercept taps meant for the brand or step-name columns (DEC-095, DEC-109)
 - Notes:
   - navigation is frontend-only chrome and never changes submitted game context, prompt text, backend API behavior, or AI responses (DEC-095, DEC-089)
-  - the MTG Assistant start screen and staged flow are unchanged; the portal is additive
-  - `ThemeControl` (FLOW-007 / FLOW-008) placement and behavior are unchanged; it keeps the top-right corner
+  - In-Depth Question's staged flow and Quick Question's lookup behavior are unchanged by navigation
+  - palette selection follows FLOW-007; layout density FLOW-008 is retired and responsive presentation is automatic (DEC-117 / REQ-096)
 
 ### FLOW-011
-- Name: Look up a card or ask a rules question in Quick Lookup
-- Trigger: User opens **Quick Lookup** from the feature portal (FLOW-010) to ask about a single card, or ask a freeform Magic rules question, without staging any game state
+- Name: Ask a Quick Question with optional card context
+- Trigger: User opens **Quick Question** from the feature portal (FLOW-010) to ask about a single card, or ask a freeform Magic rules question, without staging any game state
 - Preconditions:
   - app is loaded
   - local card metadata and the committed core-topics browse data are available
   - for scan input: the device has a usable camera with permission and the fingerprint library loads on first scan (FLOW-006)
 - Main Flow:
-  1. User selects Quick Lookup from the feature portal; the app switches to the lookup view (frontend-only, no reload).
+  1. User selects Quick Question from the feature portal; the app switches to the lookup view (frontend-only, no reload).
   2. The pre-submit view shows, top to bottom: an optional card-attach control (its "OPTIONAL CARD" label followed inline by the guidance copy "Add a card for context or ask any Magic related question.", dash-separated, DEC-113), the Question field, then a collapsed-by-default "General rules topics" outer disclosure. Its summary remains visible regardless of whether a card is attached or the Question field already has text; expanding it reveals a short list of core rules topics (the stack & priority, targeting, combat, layers) the user can read locally with no AI call.
   3. User optionally resolves one card either by typed autocomplete search (reusing REQ-001/REQ-002 behavior) or by scanning it with the existing camera scanner (FLOW-006 engine); the result is a single oracle-level card, shown with name, image when available, oracle text, and full metadata. The user may instead skip card input.
   4. After expanding the outer "General rules topics" disclosure, each topic row shows its title, a "Use this topic" button, and an expand/collapse toggle without needing to expand the row; expanding a row reveals that topic's rule numbers and excerpt and auto-collapses any other open topic (accordion). Tapping "Use this topic" locks that topic's phrase (`Tell me about {Topic}.`) into a non-editable pill next to the Question field's label (with its own remove control), smooth-scrolls the view to the Question field, and focuses the textarea; any text the user already typed in the textarea is preserved as optional supplementary context (REQ-091).
@@ -252,7 +237,7 @@
   6. Frontend sends `{ mode: "lookup", question, card? }` to `POST /api/ask-ai`; `question` is the client-composed string (the locked pill phrase plus any supplementary textarea text, the textarea alone when no pill is locked and it has text, or — when no pill is locked and the textarea is empty but a card is attached — a silent `Tell me about {Card Name}.` fallback, per REQ-091); `card` is present only if one was attached; no `gameContext` is sent.
   7. Backend assembles one lookup-mode prompt: question-driven rules retrieval (MTG reference block, always-on core game-rules topics, System 3 supplemental) always runs; when a card is attached, per-card enrichment (WotC rulings, full metadata incl. oracle text, card-scored System 3) layers in; game-state-only sections are always omitted. Off-domain questions get the "confused rules lookup" persona response rather than a direct answer. Backend returns a plain-text answer.
   7a. While the request is in flight and no answer has arrived yet, the Question form is hidden and replaced in place by the waiting panel (live elapsed timer, escalating messages); the Optional card section and the General rules topics disclosure stay visible and interactive throughout (DEC-114).
-  8. Frontend shows the answer in the reused conversation thread (first visible bubble is the assistant answer; the initial question is not shown as a bubble); the waiting panel and pre-submit view are replaced by this conversation view.
+  8. Frontend replaces the waiting/pre-submit view with the shared chat-first workspace (first visible bubble is the assistant answer; the initial question is not shown). When a card was attached, a compact card-context trigger opens its read-only presentation in a mobile bottom sheet or desktop right drawer; without a card, no context trigger renders.
   9. User may send text follow-ups from the reused composer; each follow-up sends `{ mode: "lookup", question, card: frozen (if one was attached), conversationHistory }` under the same conversation limits as the main flow.
   10. User may start over, which clears the thread, any locked topic pill, and returns to the pre-ask state — with the looked-up card preserved if one was attached; the collapsed outer "General rules topics" summary remains visible either way.
 - Edge Cases:
@@ -264,14 +249,16 @@
   - scan input inherits FLOW-006 behavior (permission fallback to manual search, scanned-printing art as presentation only); scan resolves to one card rather than adding into a zone
   - an off-domain question (with or without a card attached) gets the "confused rules lookup" persona response (DEC-108), not a direct answer
   - selecting a second topic before submitting swaps the locked pill without touching any text already typed in the textarea (REQ-091)
+  - if a later answer arrives while the reader is farther than 64px from the bottom, the log preserves reading position and shows New response; activating it scrolls to and places keyboard focus on the newest assistant message without clearing any composer draft (REQ-098)
 - Notes:
   - Quick Lookup carries no zones, stack, phase, or multi-card setup (DEC-107); it is not a full Comprehensive Rules browser and not official judge authority (DEC-002 / DEC-013)
-  - reuses existing search, scan, core-topics, and conversation components; when a card is attached the conversation is frozen on it, otherwise there is no frozen context object; follow-ups are text-only in v1
+  - reuses existing search, scan, core-topics, and the shared conversation workspace; when a card is attached the conversation is frozen on it, otherwise there is no frozen context object; follow-ups are text-only in v1
   - shares the main flow's conversation and text limits; Quick Lookup defines no separate limit policy
   - no answer-seeded second-pass retrieval in v1 (deferred, tracked as Q-004); the model still surfaces relevant verbatim rules from the first-pass provided set
   - a future option to attach optional lightweight game context to the card branch is tracked as Q-003 and is out of v1 scope
   - the "General rules topics" section's placement, always-rendered collapsed outer summary, nested row-level accordion disclosure, and the "Use this topic" locked-pill mechanism were confirmed during quick-question-ui-refinement (DEC-112 / REQ-091)
   - during quick-lookup refinement this flow was rewritten to merge the prior separate Card Lookup flow (this ID) and Rules Lookup flow (former FLOW-012) into one; see FLOW-012
+  - DEC-118 / REQ-097 / REQ-098 refine answered-state presentation and scrolling only; lookup request/prompt behavior is unchanged
 
 ### FLOW-012
 - Name: Look up a rules concept and ask a question
@@ -322,3 +309,29 @@
   - feedback is frontend-only chrome + delivery; it never changes submitted game context, prompt text, backend API behavior, or AI responses (DEC-105)
   - the snapshot is read-only and disclosed; screenshots/file uploads are out of v1 scope
   - the same expandable summary content is what is serialized and delivered (REQ-088)
+
+### FLOW-015
+- Name: Context-aware Commander Spellbook combo enrichment
+- Trigger: User submits an In-Depth Question or Quick Question through the existing `POST /api/ask-ai` flow
+- Preconditions:
+  - the existing game or lookup request passes normal Ask AI validation
+  - combo eligibility and artifact availability are evaluated by the backend and are not required for the base request to continue
+- Main Flow:
+  1. Backend normalizes the submitted question and deterministically checks for narrow explicit combo intent (REQ-094).
+  2. For game mode without combo intent, the matcher considers only variants whose complete exact/template ingredient multiset can be assigned to distinct submitted card instances in compatible zones.
+  3. For game mode with combo intent, the matcher keeps complete variants first and may add partial variants anchored to card names mentioned in the question; if no submitted card is named, submitted cards seed overlap matching.
+  4. For lookup mode, the matcher proceeds only when combo intent is explicit and a card is attached, and considers variants containing that card as an exact ingredient or authoritative template match.
+  5. The matcher annotates compatible present, wrong-zone, missing exact, matched-template, and unresolved-template ingredients; it ranks deterministically and selects at most five variants.
+  6. Prompt assembly inserts the labeled community-sourced combo section after rules/rulings enrichment and before conversation history plus the current question.
+  7. The configured provider answers through the unchanged endpoint/response contract, using official card/rules sources as authority and calling out missing pieces for partial candidates.
+- Edge Cases:
+  - lookup question has combo language but no attached card → no combo retrieval; normal lookup answering continues
+  - attached lookup card has no combo intent → no combo retrieval
+  - game context contains only part of a combo and the question has no combo intent → no partial variant is supplied
+  - contextual card matches a template but sits in an incompatible zone → marked wrong-zone, not satisfied for completeness
+  - template has no authoritative expansion → marked unresolved and cannot complete automatic matching
+  - fewer than the required quantity of a card/template match exists → remaining ingredient count is missing
+  - combo artifacts are missing, empty, or malformed → combo enrichment is omitted with one diagnostic warning; the question still reaches the provider
+- Notes:
+  - this flow is prompt enrichment inside the existing Ask AI flows, not a new user-visible screen or API
+  - "complete candidate" does not validate mana, commander designation, card state, legality, or prose prerequisites (DEC-116)

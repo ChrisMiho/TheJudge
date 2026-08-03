@@ -72,12 +72,36 @@ describe("Decorative motion foundation CSS", () => {
     );
   });
 
+  it("uses shared tokens for focused conversation and context motion", () => {
+    for (const selector of [
+      ".conversation-workspace-handoff",
+      ".conversation-message-enter",
+      ".conversation-new-response",
+      ".adaptive-context-overlay",
+      ".adaptive-context-surface"
+    ]) {
+      const rule = cssBlock(selector);
+      expect(rule).toMatch(/var\(--motion-(?:fast|base|slow)\)/);
+      expect(rule).toMatch(/var\(--motion-ease-(?:out|emphasized)\)/);
+    }
+  });
+
+  it("preserves existing functional and portal motion selectors", () => {
+    expect(cssBlock(".portal-menu-motion")).toContain("animation:");
+    expect(cssBlock(".wait-stage-calm")).toContain("animation:");
+    expect(cssBlock(".scan-confirm-popup")).toContain("animation:");
+    expect(cssBlock(".send-spinner")).toContain("animation:");
+  });
+
   it("reduces decorative motion without overriding functional animations", () => {
     const reducedMotion = cssBlock("@media (prefers-reduced-motion: reduce)");
 
     expect(reducedMotion).toContain(".motion-enter");
     expect(reducedMotion).toContain(".motion-error");
     expect(reducedMotion).toContain(".enrichment-card-enter");
+    expect(reducedMotion).toContain(".conversation-workspace-handoff");
+    expect(reducedMotion).toContain(".conversation-message-enter");
+    expect(reducedMotion).toContain(".conversation-new-response");
     expect(reducedMotion).toContain("animation-duration: 0.01ms");
     expect(reducedMotion).toContain("transition-duration: 0.01ms");
     expect(reducedMotion).not.toContain(".wait-stage");

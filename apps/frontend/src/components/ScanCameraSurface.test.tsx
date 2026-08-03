@@ -51,7 +51,7 @@ const locking: ScanConvergence = {
 
 describe("Frontend - Card Scan", () => {
   describe("Convergence indicator", () => {
-    it("exposes a slim density hook on the camera video", () => {
+    it("exposes the semantic responsive hook on the camera video", () => {
       render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
       expect(document.querySelector("video")).toHaveClass("scan-video");
     });
