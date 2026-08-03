@@ -41,6 +41,7 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={placement}
           layoutMode="grid"
+          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
@@ -71,6 +72,7 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={placement}
           layoutMode="grid"
+          isWideSeat={false}
           onAdjustLife={onAdjustLife}
           onOpenCounters={vi.fn()}
         />
@@ -93,6 +95,7 @@ describe("Frontend - Shared", () => {
           players={rosterWith(deadPlayer)}
           placement={placement}
           layoutMode="grid"
+          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
@@ -109,6 +112,7 @@ describe("Frontend - Shared", () => {
           players={rosterWith(revivedPlayer)}
           placement={placement}
           layoutMode="grid"
+          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
@@ -127,6 +131,7 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={placement}
           layoutMode="grid"
+          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onOpenCounters={onOpenCounters}
         />
@@ -151,6 +156,7 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={placement}
           layoutMode="grid"
+          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
@@ -164,7 +170,7 @@ describe("Frontend - Shared", () => {
       expect(screen.getByTestId("commander-preview-cell-Player 4")).toHaveTextContent("0");
     });
 
-    it("puts the life adjustment bands on top/bottom in grid mode and left/right in list mode", () => {
+    it("puts the life adjustment bands on top/bottom in grid mode and for list mode's narrow paired seats", () => {
       const player = playerAtLife(40);
       const { rerender } = render(
         <PlayerLifeCard
@@ -172,6 +178,7 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={placement}
           layoutMode="grid"
+          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
@@ -192,6 +199,31 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={placement}
           layoutMode="list"
+          isWideSeat={false}
+          onAdjustLife={vi.fn()}
+          onOpenCounters={vi.fn()}
+        />
+      );
+
+      expect(screen.getByRole("button", { name: "Decrease life for Player 1 (Alice)" })).toHaveClass(
+        "top-0",
+        "h-12"
+      );
+      expect(screen.getByRole("button", { name: "Increase life for Player 1 (Alice)" })).toHaveClass(
+        "bottom-0",
+        "h-12"
+      );
+    });
+
+    it("puts the life adjustment bands on left/right for list mode's full-width head/foot seats", () => {
+      const player = playerAtLife(40);
+      render(
+        <PlayerLifeCard
+          player={player}
+          players={rosterWith(player)}
+          placement={placement}
+          layoutMode="list"
+          isWideSeat={true}
           onAdjustLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
@@ -216,6 +248,7 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={placement}
           layoutMode="grid"
+          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
@@ -232,6 +265,7 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={sidewaysPlacement}
           layoutMode="grid"
+          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
@@ -249,6 +283,7 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={uprightPlacement}
           layoutMode="grid"
+          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />

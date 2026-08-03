@@ -146,7 +146,7 @@ describe("Frontend - Shared", () => {
       }
     });
 
-    it("switches the life table to an unrotated single-column list", async () => {
+    it("switches the life table to the head/pair/foot list layout", async () => {
       const user = userEvent.setup();
       render(<PlayerLifeTrackerApp />);
       await openGameSetup(user);
@@ -154,19 +154,29 @@ describe("Frontend - Shared", () => {
       await user.click(screen.getByRole("button", { name: "Use list layout" }));
 
       expect(screen.getByTestId("life-tracker-table")).toHaveStyle({
-        gridTemplateColumns: "repeat(1, minmax(0, 1fr))",
-        gridTemplateRows: "repeat(4, minmax(15rem, 1fr))"
+        gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+        gridTemplateRows: "repeat(3, minmax(15rem, 1fr))"
       });
-      for (const [index, card] of trackerCards().entries()) {
-        expect(card).toHaveAttribute("data-side", "bottom");
-        expect(card).toHaveStyle({
-          gridRow: `${index + 1} / ${index + 2}`,
-          gridColumn: "1 / 2"
-        });
-        expect(screen.getByTestId(`life-card-content-Player ${index + 1}`)).toHaveStyle({
-          transform: "translate(-50%, -50%) rotate(0deg)"
+
+      const expected = [
+        ["Player 1", "top", "1 / 2", "1 / 3", "rotate(180deg)"],
+        ["Player 2", "bottom", "2 / 3", "1 / 2", "rotate(0deg)"],
+        ["Player 3", "bottom", "2 / 3", "2 / 3", "rotate(0deg)"],
+        ["Player 4", "bottom", "3 / 4", "1 / 3", "rotate(0deg)"]
+      ] as const;
+
+      for (const [label, side, gridRow, gridColumn, rotate] of expected) {
+        const card = screen.getByTestId(`life-card-${label}`);
+        expect(card).toHaveAttribute("data-side", side);
+        expect(card).toHaveStyle({ gridRow, gridColumn });
+        expect(screen.getByTestId(`life-card-content-${label}`)).toHaveStyle({
+          transform: `translate(-50%, -50%) ${rotate}`
         });
       }
+
+      expect(screen.getByRole("button", { name: "Decrease life for Player 1" })).toHaveClass("left-0", "w-12");
+      expect(screen.getByRole("button", { name: "Decrease life for Player 2" })).toHaveClass("top-0", "h-12");
+      expect(screen.getByRole("button", { name: "Decrease life for Player 4" })).toHaveClass("left-0", "w-12");
     });
 
     it("changes only the selected player's life and applies starting life to the full table", async () => {

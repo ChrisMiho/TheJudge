@@ -9,6 +9,13 @@ export interface PlayerLifeCardProps {
   placement: SeatPlacement;
   /** List mode moves the life adjustment bands from top/bottom to the card's left/right edges. */
   layoutMode: LayoutMode;
+  /**
+   * True when this seat spans the full row width (list mode's single head/foot rows) rather than
+   * sharing a row with a paired seat. Only meaningful in list mode: wide, short rows want
+   * left/right bands (natural side-to-side tap zones on a wide card), while list mode's narrower
+   * paired rows - portrait-shaped like grid seats - keep the default top/bottom bands.
+   */
+  isWideSeat: boolean;
   onAdjustLife: (label: PlayerLabel, delta: number) => void;
   onOpenCounters: (label: PlayerLabel) => void;
 }
@@ -45,6 +52,7 @@ export function PlayerLifeCard({
   players,
   placement,
   layoutMode,
+  isWideSeat,
   onAdjustLife,
   onOpenCounters
 }: PlayerLifeCardProps): JSX.Element {
@@ -60,7 +68,7 @@ export function PlayerLifeCard({
   // content always ends up exactly card-sized regardless of aspect ratio or rotation.
   const isSideways = placement.rotation === 90 || placement.rotation === 270;
   const contentSize = isSideways ? { width: "100cqh", height: "100cqw" } : { width: "100cqw", height: "100cqh" };
-  const isListLayout = layoutMode === "list";
+  const isListLayout = layoutMode === "list" && isWideSeat;
   const decreaseBandClassName = isListLayout
     ? "absolute inset-y-0 left-0 z-20 flex w-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10"
     : "absolute inset-x-0 top-0 z-20 flex h-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10";

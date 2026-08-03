@@ -1,12 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PageShell } from "../../PageShell";
 import type { PlayerLabel } from "../../../types";
-import { listSeatArrangement, seatArrangement } from "../../../lib/lifeTracker/seatArrangement";
+import {
+  listSeatArrangement,
+  seatArrangement,
+  type SeatArrangementLayout,
+  type SeatPlacement
+} from "../../../lib/lifeTracker/seatArrangement";
 import { useLifeTracker, type UseLifeTrackerResult } from "../../../lib/lifeTracker/useLifeTracker";
 import { PortalSlot } from "../PortalSlot";
 import { CounterPanel } from "./CounterPanel";
 import { GameSetupPanel } from "./GameSetupPanel";
 import { PlayerLifeCard } from "./PlayerLifeCard";
+
+/** True when `placement` spans every column of `layout` - a list-mode head/foot row, not a paired seat. */
+function isWideSeat(placement: SeatPlacement, layout: SeatArrangementLayout): boolean {
+  const [start, end] = placement.gridColumn.split(" / ").map(Number);
+  return end - start >= layout.columns;
+}
 
 export interface PlayerLifeTrackerAppProps {
   /** Wave 3 composes the counter panel through this boundary. */
@@ -155,6 +166,7 @@ export function PlayerLifeTrackerApp({
                 players={tracker.state.players}
                 placement={placement}
                 layoutMode={tracker.state.layoutMode}
+                isWideSeat={tracker.state.layoutMode === "list" && isWideSeat(placement, layout)}
                 onAdjustLife={tracker.adjustPlayerLife}
                 onOpenCounters={openCounters}
               />

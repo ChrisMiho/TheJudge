@@ -182,7 +182,25 @@ export function seatArrangement(count: number): SeatArrangementLayout {
   return columnSplitLayout(leftCount, rightCount);
 }
 
-/** Returns an unrotated, top-to-bottom single-column layout for `count` players. */
+/**
+ * Row-based "symmetric rows, turned ends" layout (the alternative to `seatArrangement`'s
+ * column-based grid, matching the second Layout icon in `references/IMG_9509.PNG`): a single
+ * full-width "head" seat facing the top edge, side-by-side pairs facing the bottom edge in
+ * between, and - for even player counts, where the remaining players divide evenly - a single
+ * full-width "foot" seat facing the bottom edge. This is a direct generalization of the row
+ * layouts `seatArrangement` already uses for 2 and 3 players (top seat turned 180deg, remaining
+ * seats upright at 0deg) extended up through 8 players, rather than a new design: `count === 2`
+ * and `count === 3` here produce the exact same shape as `twoPlayerLayout`/`threePlayerLayout`.
+ *
+ * Unlike `seatArrangement`'s 4-8 player column split, no seat is ever rotated 90/270deg - every
+ * row reads either upright or upside-down, never sideways - which is what makes this the
+ * phone-portrait-friendly option: rows stack vertically instead of requiring wide rotated
+ * columns, and there are roughly half as many rows as the old one-player-per-row list.
+ *
+ * Seats fill in a fixed, deterministic scan order - the head seat, then each pair row
+ * left-to-right top-to-bottom, then the foot seat last - so `Player 1..N` always maps to the
+ * same seat for a given count.
+ */
 export function listSeatArrangement(count: number): SeatArrangementLayout {
   if (
     !Number.isInteger(count) ||
@@ -195,12 +213,35 @@ export function listSeatArrangement(count: number): SeatArrangementLayout {
     );
   }
 
+  const columns = count === 2 ? 1 : 2;
+  const seats: SeatPlacement[] = [];
+  let row = 1;
+  let nextIndex = 0;
+
+  seats.push(seat(playerLabelAt(nextIndex), "top", 180, row, row + 1, 1, columns + 1));
+  nextIndex += 1;
+  row += 1;
+
+  const remainingAfterHead = count - nextIndex;
+  const hasFootSeat = remainingAfterHead % 2 === 1;
+  const pairedCount = hasFootSeat ? remainingAfterHead - 1 : remainingAfterHead;
+
+  for (let pairRow = 0; pairRow < pairedCount / 2; pairRow += 1) {
+    seats.push(seat(playerLabelAt(nextIndex), "bottom", 0, row, row + 1, 1, 2));
+    seats.push(seat(playerLabelAt(nextIndex + 1), "bottom", 0, row, row + 1, 2, 3));
+    nextIndex += 2;
+    row += 1;
+  }
+
+  if (hasFootSeat) {
+    seats.push(seat(playerLabelAt(nextIndex), "bottom", 0, row, row + 1, 1, columns + 1));
+    row += 1;
+  }
+
   return {
     playerCount: count,
-    columns: 1,
-    rows: count,
-    seats: Array.from({ length: count }, (_, index) =>
-      seat(playerLabelAt(index), "bottom", 0, index + 1, index + 2, 1, 2)
-    )
+    columns,
+    rows: row - 1,
+    seats
   };
 }
