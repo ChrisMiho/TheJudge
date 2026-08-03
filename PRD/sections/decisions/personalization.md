@@ -19,7 +19,7 @@ Frontend-only user personalization behavior that changes app presentation withou
 - Notes:
   - approved approach: Option A, global theme control
   - placement superseded by DEC-110 (`decisions/navigation.md`): the picker no longer lives in its own corner control and is hosted inside the feature-portal Menu instead; the palette-token/persistence/fallback content on this page is otherwise unchanged
-  - non-goals: arbitrary RGB/hex picker, per-component overrides, server-synced preferences, account settings, dark/light mode redesign
+  - original non-goals: arbitrary RGB/hex picker, per-component overrides, server-synced preferences, account settings, dark/light mode redesign; DEC-119 supersedes the arbitrary-color exclusion for Colorless only, while every other boundary remains
 
 ### DEC-067
 - Decision: The staged data-collection screens present the active step name inline to the right of the `TheJudge` / `MTG Assistant` brand block in a single header row, rather than stacked below it as a standalone heading.
@@ -51,7 +51,7 @@ Frontend-only user personalization behavior that changes app presentation withou
   - scanner: `ScanCameraSurface` (capture pill, reticle, lock/progress, thumbs-up confirmation) and `ScanReviewBubble` migrate from hardcoded sky/emerald to palette tokens
   - the selection control, persistence, fallback, and FLOW-007 mechanism are unchanged — only which surfaces respond changes; neutral slate chrome (cards, panels, borders) stays neutral by design
   - frontend-only — no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan-matching engine, or data-pipeline behavior
-  - re-themed surfaces must preserve readable contrast and touch-friendly controls across every palette, including amber and rose
+  - re-themed surfaces must preserve readable contrast and touch-friendly controls across every curated profile; DEC-119 replaces the amber/rose examples with the six-profile WUBRGC catalog and exempts only user-supplied custom Colorless RGB
 - Related requirements:
   - DEC-066
   - REQ-044
@@ -59,7 +59,7 @@ Frontend-only user personalization behavior that changes app presentation withou
   - NFR-011
 - Notes:
   - approved scope calls: background stays neutral (blue bias removed), semantic green states re-themed, scanner UI included in theme reach, existing token set reused
-  - non-goals (unchanged from DEC-066): arbitrary RGB/hex picker, per-component overrides, server-synced preferences, account settings, dark/light mode redesign, palette-tinted backgrounds, new theming framework
+  - original non-goals (unchanged from DEC-066): arbitrary RGB/hex picker, per-component overrides, server-synced preferences, account settings, dark/light mode redesign, palette-tinted backgrounds, new theming framework; DEC-119 supersedes the arbitrary-color exclusion for Colorless only
   - placement superseded by DEC-110 (`decisions/navigation.md`): the picker's host moves from its own corner control into the feature-portal Menu; the broadened token-reach content on this page is otherwise unchanged
   - DEC-081 later narrows the "neutral slate chrome stays neutral" boundary: static chrome remains neutral, while only the closed surface inventory in REQ-060 may use restrained palette-derived borders, glows, and icon accents
 
@@ -161,7 +161,7 @@ Frontend-only user personalization behavior that changes app presentation withou
 - Notes:
   - approved visual direction: restrained ambient accents (Option B), with a baseline accent at rest and stronger hover/focus/current treatment
   - rejected alternatives: interaction-only accents were too subtle to make the selected palette feel cohesive; full themed chrome was too loud and conflicted with the neutral-background hierarchy
-  - non-goals: new palettes, picker changes, palette-tinted page backgrounds, theme-specific component overrides, changing card-identity colors, re-animating scanner internals, or introducing a theming/animation framework
+  - original non-goals: new palettes, picker changes, palette-tinted page backgrounds, theme-specific component overrides, changing card-identity colors, re-animating scanner internals, or introducing a theming/animation framework; DEC-119 supersedes only the new-palette/picker clauses and preserves every surface/framework boundary
   - DEC-118 changes the answered-view surface shape, not the palette model or intensity contract
 
 ### DEC-091
@@ -187,3 +187,41 @@ Frontend-only user personalization behavior that changes app presentation withou
 - Notes:
   - approved swap direction: minus-left / plus-right
   - non-goals: changing player min/max, life-total or display-name logic, redesigning the game-context screen beyond these three controls and the arrow, or any contract/prompt change
+
+### DEC-119
+- Decision: Replace the predefined Blue/Violet/Emerald/Amber/Rose theme catalog with six globally shared MTG-inspired profiles ordered **White, Blue, Black, Red, Green, Colorless**, with Blue remaining the default. The fixed profiles keep the existing four-token frontend contract and receive curated values; Colorless defaults to curated neutral gray and alone exposes an inline full-spectrum custom color plus `Reset to gray`. A custom Colorless RGB is remembered independently and applied without contrast validation or correction. Retired stored palette IDs are deleted rather than migrated and fall back to Blue. This refines DEC-066/DEC-068/DEC-081 and supersedes their arbitrary-RGB, new-palette, picker-change, and retired-catalog exclusions only; their global reach, neutral-background, closed ambient-inventory, frontend-only, and contract-frozen boundaries remain authoritative.
+- Status: confirmed
+- Context: The shipped global palette plumbing already reaches In-Depth Question, Quick Question, Player Life Tracker, portal chrome, scanner accents, and the restrained ambient inventory, but the generic five-palette catalog makes those destinations feel only loosely related and does not express the product's MTG identity consistently. Refinement selected a reuse-first catalog evolution instead of per-profile component styles or an automatic color engine. White needs warm ivory/gold to remain distinct from Colorless; Black needs a near-black base with a restrained plum identity so it stays visible against the slate shell without collapsing into neutral gray. The product owner explicitly accepts poor contrast for arbitrary Colorless customization, while requiring the five fixed Magic-color profiles to remain polished and readable.
+- Impact:
+  - the authoritative fixed catalog and order are:
+    - White: `accent #F3E6B3`, `accent-strong #C6A15B`, `accent-soft #FFF8DC`, `accent-contrast #09090B`
+    - Blue: `accent #0369A1`, `accent-strong #1D4ED8`, `accent-soft #7DD3FC`, `accent-contrast #FFFFFF`
+    - Black: `accent #6B4F70`, `accent-strong #241F29`, `accent-soft #D8B4E2`, `accent-contrast #FFFFFF`
+    - Red: `accent #B91C1C`, `accent-strong #7F1D1D`, `accent-soft #FCA5A5`, `accent-contrast #FFFFFF`
+    - Green: `accent #15803D`, `accent-strong #14532D`, `accent-soft #86EFAC`, `accent-contrast #FFFFFF`
+    - Colorless: `accent #52525B`, `accent-strong #27272A`, `accent-soft #D4D4D8`, `accent-contrast #FFFFFF`
+  - the curated foreground/background pairs clear a 4.5:1 contrast baseline at both primary gradient endpoints; the Black profile is validated on representative dark and light surfaces and remains visually distinct from Colorless
+  - all existing accent-token consumers continue to share one selected profile globally; acceptance coverage explicitly includes In-Depth Question, Quick Question, Player Life Tracker, feature-portal chrome, and scanner accents
+  - existing consumers may be normalized to the intended role contract where needed for fixed-profile legibility: `accent-soft` text on dark surfaces, `accent-strong` text on light surfaces, and `accent-contrast` text on filled accent controls; no token roles or profile-specific component overrides are added
+  - selecting Colorless with no saved custom value applies the curated gray tokens; its Theme-section row exposes an inline native full-spectrum color input and `Reset to gray`
+  - a chosen custom RGB is assigned unchanged to `accent`, `accent-strong`, and `accent-soft`; `accent-contrast` remains white; no validation, warning, rejection, lightening/darkening, or contrast repair applies
+  - the custom RGB persists separately, survives switching profiles, and is restored when returning to Colorless; Reset removes only the custom value and immediately restores the fixed gray tokens
+  - Violet, Emerald, Amber, and Rose definitions are removed; loading any retired or otherwise unsupported selected ID deletes that stored selection and falls back to Blue; malformed custom RGB is deleted and falls back to fixed Colorless gray
+  - unavailable browser storage or failed reads/writes never block render or reset workflow state; selection may remain session-only
+  - the neutral slate page background, REQ-060's closed ambient-surface inventory, independent card-identity rings, and scanner motion/behavior remain unchanged
+  - frontend presentation/persistence only — no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, stack ordering, or data pipeline
+- Related requirements:
+  - REQ-099
+  - REQ-044
+  - REQ-046
+  - REQ-060
+  - FLOW-007
+  - NFR-011
+  - DEC-066
+  - DEC-068
+  - DEC-081
+  - DEC-110
+- Notes:
+  - approved approach: evolve the existing authoritative four-token catalog; rejected per-profile component styles and an automatic color-generation/contrast engine
+  - approved Black visual direction: Plum Black — near-black dominant/strong treatment with restrained muted-purple identity, not a bright purple theme
+  - non-goals: per-player themes, per-flow palettes, Magic mana symbols/logos/card art, customization of the five fixed Magic profiles, custom-Colorless contrast guarantees, palette-tinted backgrounds, light mode, server synchronization/accounts, or a new theming framework

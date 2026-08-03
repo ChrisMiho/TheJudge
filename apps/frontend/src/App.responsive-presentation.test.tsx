@@ -49,11 +49,11 @@ describe("Frontend - Automatic responsive presentation", () => {
     expect(document.documentElement).not.toHaveAttribute("data-layout-density");
     expect(globalThis.localStorage.getItem(legacyDensityKey)).toBe("chunky");
 
-    await user.click(screen.getByRole("button", { name: "Theme: Emerald" }));
+    await user.click(screen.getByRole("button", { name: "Theme: Green" }));
 
-    await waitFor(() => expect(document.documentElement.dataset.theme).toBe("emerald"));
+    await waitFor(() => expect(document.documentElement.dataset.theme).toBe("green"));
     expect(globalThis.localStorage.getItem(legacyDensityKey)).toBe("chunky");
-    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    expect(screen.getByRole("menu")).toBeInTheDocument();
   });
 
   it("keeps staged state mounted when the viewport changes", async () => {

@@ -4,7 +4,7 @@ import { applyPalette } from "./applyPalette";
 import { getPaletteById } from "./palettes";
 
 const blue = getPaletteById("blue")!;
-const violet = getPaletteById("violet")!;
+const white = getPaletteById("white")!;
 
 describe("Frontend - Theme", () => {
 describe("applyPalette", () => {
@@ -17,14 +17,14 @@ describe("applyPalette", () => {
   });
 
   it("sets data-theme and accent CSS variables on the document root", () => {
-    applyPalette(violet);
+    applyPalette(white);
 
     const root = document.documentElement;
-    expect(root.dataset.theme).toBe("violet");
-    expect(root.style.getPropertyValue("--accent")).toBe(violet.accent);
-    expect(root.style.getPropertyValue("--accent-strong")).toBe(violet.accentStrong);
-    expect(root.style.getPropertyValue("--accent-soft")).toBe(violet.accentSoft);
-    expect(root.style.getPropertyValue("--accent-contrast")).toBe(violet.accentContrast);
+    expect(root.dataset.theme).toBe("white");
+    expect(root.style.getPropertyValue("--accent")).toBe(white.accent);
+    expect(root.style.getPropertyValue("--accent-strong")).toBe(white.accentStrong);
+    expect(root.style.getPropertyValue("--accent-soft")).toBe(white.accentSoft);
+    expect(root.style.getPropertyValue("--accent-contrast")).toBe(white.accentContrast);
   });
 
   it("is idempotent when applying the same palette twice", () => {
@@ -38,11 +38,11 @@ describe("applyPalette", () => {
 
   it("overwrites the previous palette's variables when switching", () => {
     applyPalette(blue);
-    applyPalette(violet);
+    applyPalette(white);
 
     const root = document.documentElement;
-    expect(root.dataset.theme).toBe("violet");
-    expect(root.style.getPropertyValue("--accent")).toBe(violet.accent);
+    expect(root.dataset.theme).toBe("white");
+    expect(root.style.getPropertyValue("--accent")).toBe(white.accent);
   });
 });
 });

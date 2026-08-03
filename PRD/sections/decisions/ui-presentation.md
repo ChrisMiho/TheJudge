@@ -103,3 +103,35 @@ Frontend-only responsive presentation, motion, transition, and visual-feedback b
 - Notes:
   - approved approach: fluid CSS + structural breakpoints, chosen over matchMedia-driven `data-layout-density` and separate platform component trees
   - non-goals: user layout/profile settings, persisted layout overrides, UA sniffing, JS-managed viewport modes, duplicate platform trees, viewport locking, or a fixed-to-viewport composer
+
+### DEC-120
+- Decision: In-Depth Question keeps the existing section-wide **Players in game** disclosure, but its open state no longer exposes every player field at once. Each active player card has a compact baseline that keeps the editable display name and life total visible, plus its own arrow for secondary details. Those repeated arrows control one synchronized disclosure state: activating any player's arrow expands Poison, Energy, Experience, Commander damage, and any named counters for **all** active players; activating any arrow while expanded collapses those fields for all players. Secondary details default collapsed and reset collapsed when the outer roster disclosure closes or when the user leaves and later returns to In-Depth Question. This is a narrow amendment to DEC-095's destination-state preservation guarantee, and therefore to DEC-104's statement that those semantics remain untouched: only this ephemeral presentation state resets during an In-Depth Question destination round trip. Player values, player count, the outer roster-disclosure state, the current staged-flow step, and all other in-session destination data remain preserved.
+- Status: confirmed
+- Context: The Player Life Tracker handoff added useful counter fields to In-Depth Question's shared roster, but rendering those fields for every player as soon as the existing roster disclosure opens made the game-context step substantially denser, especially at multiplayer counts. The product owner reviewed three visual approaches under `PRD/work/excess-ui/` and selected Mock A's nested player-card structure. Independent per-player expansion was rejected: the intended task is normally to enter comparable context for the whole table, so opening one player's arrow should make the same fields available for every player rather than creating a mixed open/closed roster.
+- Impact:
+  - the existing **Players in game** count row, outer expand/collapse control, add/remove controls, helper copy, player-count bounds, and default-life behavior remain unchanged
+  - opening the outer roster disclosure renders one compact card per active player with that player's display-name and life-total inputs visible
+  - each compact player card renders a clear secondary-details arrow with a touch target of at least 44×44px; every arrow reflects the same shared `aria-expanded` value and its accessible name communicates that it shows or hides secondary details for all players
+  - activating any player's arrow expands or collapses the secondary fields on every active player card in one operation; newly added active players follow the current shared disclosure state
+  - the shared secondary state starts collapsed; closing the outer roster disclosure resets it collapsed, and switching away from then back to In-Depth Question also resets it collapsed even though the destination remains mounted
+  - resetting or toggling presentation never clears or changes display names, life totals, scalar counters, Commander damage, named counters, player count, current staged-flow step, or any other in-progress In-Depth Question state
+  - the existing helper remains exactly `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.`; the generated mock is directional layout evidence, not a source of product copy
+  - frontend presentation/state only — no change to `AskAiRequest`, Zod schemas, `GameContext`, tracker persistence or seed semantics, prompt assembly, provider selection, backend routes, card metadata, scan behavior, or data-pipeline behavior
+- Related requirements:
+  - REQ-100
+  - REQ-015
+  - REQ-069
+  - REQ-070
+  - REQ-096
+  - FLOW-001
+  - FLOW-010
+  - NFR-001
+  - DEC-091
+  - DEC-092
+  - DEC-095
+  - DEC-117
+- Notes:
+  - approved approach: Mock A's nested per-player arrows with one synchronized all-player disclosure state
+  - narrowly amends DEC-095's blanket in-session destination-state preservation guarantee only for the secondary-details disclosure state; DEC-104's action-entry behavior and every other DEC-095 destination semantic remain unchanged
+  - rejected alternatives: one global secondary-details bar detached from the player cards; removing the outer roster disclosure and making compact cards permanently visible; independent per-player open states
+  - non-goals: changing player data or validation, changing Player Life Tracker UI, adding new counter types, adding new guidance copy, persisting disclosure state, or redesigning the rest of Game context

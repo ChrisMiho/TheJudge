@@ -96,7 +96,7 @@ portal owns app chrome and every feature reaches it as a registered destination.
 - Notes:
   - supersedes only the placement clause of DEC-066/068/095 ("stays top-right corner" / "`ThemeControl` unchanged"); their palette-token, persistence, and reach content carries forward unchanged and stays resolvable under this new hosting
   - DEC-117 supersedes this decision's former density-hosting and density-preservation clauses only
-  - non-goals: changing palette values/tokens, arbitrary color picker, per-component theme overrides, account-level/server-synced palette preferences
+  - original non-goals: changing palette values or token roles, arbitrary color picker, per-component theme overrides, account-level/server-synced palette preferences; DEC-119 supersedes the catalog/value restriction and permits arbitrary color input for Colorless only, while the existing four token roles and every other boundary remain
 
 ### DEC-111
 - Decision: DEC-095/REQ-067/FLOW-010's "nothing is persisted across a page reload" clause is narrowly amended: the feature-portal's **active destination selection** now persists across a page refresh within the same browser tab, using `sessionStorage`. A refresh restores whichever destination the user was last viewing instead of always resetting to the first registered destination (`mtg-assistant`). This is the only change — the frontend-only view switch, in-session state preservation while the app stays loaded, the no-op on reselecting the current mode, and the extensible registry model (DEC-095) are all unchanged. Because `sessionStorage` does not carry across tabs, windows, or browser restarts, a brand-new tab with no prior activity still opens on the first registered destination — the existing new-session default is unchanged.

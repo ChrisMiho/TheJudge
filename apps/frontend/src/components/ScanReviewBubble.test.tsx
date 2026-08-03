@@ -147,6 +147,15 @@ describe("Frontend - Card Scan", () => {
       expect(screen.getByRole("button", { name: /Remove Opt/i })).toBeEnabled();
     });
 
+    it("uses accent palette tokens for the count badge, not a fixed hue", () => {
+      const cards = [makeZoneCard()];
+      render(<ScanReviewBubble cards={cards} onRemove={vi.fn()} />);
+
+      const badge = screen.getByRole("button", { name: /Scanned this session/i });
+      expect(badge).toHaveClass("bg-accent/90", "text-accent-contrast");
+      expect(badge.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
+    });
+
     it("calls onRemove with the instanceId of the removed card", async () => {
       const user = userEvent.setup();
       const onRemove = vi.fn();

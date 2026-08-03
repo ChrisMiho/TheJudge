@@ -43,3 +43,5 @@ Work slug.
 ## Next step
 
 `/thejudge-implement PRD/work/<slug>/ slice <first letter>` (Cursor / Claude Code) or `$thejudge-implement PRD/work/<slug>/ slice <first letter>` (Codex) — substitute the first slice letter from the README slice table, not assumed `A`.
+
+For one unattended agent completing every slice, use `/thejudge-implement-all PRD/work/<slug>/` (`$thejudge-implement-all` in Codex).

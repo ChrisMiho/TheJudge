@@ -127,7 +127,7 @@ export function ConversationThread({ messages }: ConversationThreadProps): JSX.E
           const roleClassName =
             message.role === "assistant"
               ? "max-w-[85%] self-start rounded-2xl rounded-tl-sm bg-zinc-800/80 px-4 py-3 text-sm text-zinc-100"
-              : "max-w-[85%] self-end rounded-2xl rounded-tr-sm border border-accent-strong/30 bg-accent-strong/30 px-4 py-3 text-sm text-zinc-100";
+              : "max-w-[85%] self-end rounded-2xl rounded-tr-sm border border-accent-strong/30 bg-accent-strong/30 px-4 py-3 text-sm text-accent-contrast";
           const entranceClassName =
             index >= animatedFromIndex ? " conversation-message-enter" : "";
           const isNewestAssistant =

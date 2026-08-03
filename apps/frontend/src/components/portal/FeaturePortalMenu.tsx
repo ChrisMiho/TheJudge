@@ -10,6 +10,9 @@ export interface FeaturePortalMenuProps {
   onSelect: (id: DestinationId) => void;
   paletteId: string;
   onPaletteSelect: (id: string) => void;
+  colorlessCustomHex: string | undefined;
+  onColorlessCustomChange: (hex: string) => void;
+  onColorlessReset: () => void;
   /**
    * Rendered as this component's own children. When the active destination renders a
    * <PortalSlot />, the button portals into it (inline with that destination's own header,
@@ -26,6 +29,9 @@ export function FeaturePortalMenu({
   onSelect,
   paletteId,
   onPaletteSelect,
+  colorlessCustomHex,
+  onColorlessCustomChange,
+  onColorlessReset,
   children
 }: FeaturePortalMenuProps): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
@@ -85,7 +91,6 @@ export function FeaturePortalMenu({
 
   function handlePaletteSelect(id: string): void {
     onPaletteSelect(id);
-    setIsOpen(false);
   }
 
   const trigger = (
@@ -139,6 +144,9 @@ export function FeaturePortalMenu({
               <ThemeSection
                 paletteId={paletteId}
                 onSelect={handlePaletteSelect}
+                colorlessCustomHex={colorlessCustomHex}
+                onColorlessCustomChange={onColorlessCustomChange}
+                onColorlessReset={onColorlessReset}
               />
             </div>
           </div>

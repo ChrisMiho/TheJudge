@@ -1,9 +1,8 @@
 # Agent Workflow Skills
 
-TheJudge uses 8 `thejudge-*` skills to drive PRD-based feature work, including
-two pairs of sibling flavors for parallel execution
-(`thejudge-map-out`/`thejudge-map-out-parallel`,
-`thejudge-implement`/`thejudge-implement-parallel`). All 8 are
+TheJudge uses 9 `thejudge-*` skills to drive PRD-based feature work, including
+sequential single-slice, unattended all-slice, and dependency-wave
+implementation modes. All 9 are
 **model-invocable** — the agent may select the matching skill when context
 clearly indicates it — and every skill remains callable explicitly
 (`/thejudge-*` in Cursor and Claude Code, `$thejudge-*` in Codex).
@@ -43,8 +42,11 @@ flowchart LR
   qc --> mapout[thejudge-map-out]
   qc --> mapoutp[thejudge-map-out-parallel]
   mapout --> implement[thejudge-implement]
+  mapout --> implementall[thejudge-implement-all]
   mapoutp --> implementp[thejudge-implement-parallel]
+  mapoutp --> implementall
   implement --> cleanup[thejudge-cleanup]
+  implementall --> cleanup
   implementp --> cleanup
 ```
 
@@ -55,9 +57,10 @@ flowchart LR
 | `thejudge-kickoff` | New session or new feature idea | `IDEA.md`, `README.md` (`status: ideation`) if an idea is captured | `thejudge-refinement` |
 | `thejudge-refinement` | An idea needs product definition | `DESIGN-BRIEF.md`, section updates, `README.md` → `status: refined` | `thejudge-quality-check` |
 | `thejudge-quality-check` | After refinement, before slicing | PASS/FAIL report only | `thejudge-map-out` (PASS) or `thejudge-refinement` (FAIL) |
-| `thejudge-map-out` | Quality-check passed; slices are sequential | `GAMEPLAN.md`, `slice-*.md`, `README.md` → `status: active` | `thejudge-implement` |
-| `thejudge-map-out-parallel` | Quality-check passed; slices are independent enough to wave | `GAMEPLAN.md` with wave plan, `slice-*.md`, `README.md` slice table with wave/depends-on columns | `thejudge-implement-parallel` |
+| `thejudge-map-out` | Quality-check passed; slices are sequential | `GAMEPLAN.md`, `slice-*.md`, `README.md` → `status: active` | `thejudge-implement` or unattended `thejudge-implement-all` |
+| `thejudge-map-out-parallel` | Quality-check passed; slices are independent enough to wave | `GAMEPLAN.md` with wave plan, `slice-*.md`, `README.md` slice table with wave/depends-on columns | `thejudge-implement-parallel` or sequential unattended `thejudge-implement-all` |
 | `thejudge-implement` | Executing one planned slice | Product code and tests for that slice | `thejudge-implement` (next slice) or `thejudge-cleanup` |
+| `thejudge-implement-all` | Executing every remaining slice in one unattended single-agent run | Product code, tests, milestone commits, shared GitHub branch, and review PR | Manual review/merge, then `thejudge-cleanup` after shipping |
 | `thejudge-implement-parallel` | Executing a whole wave of planned slices | Product code and tests for every slice in the wave, orchestrator-verified | `thejudge-implement-parallel` (next wave) or `thejudge-cleanup` |
 | `thejudge-cleanup` | Feature shipped, or explicit corpus hygiene | Receipt under `PRD/instructions/receipts/`, section promotions | Optional `thejudge-kickoff` |
 
