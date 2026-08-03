@@ -73,6 +73,8 @@ describe("Frontend - Shared", () => {
       await openGameSetup(user);
       expect(screen.getByRole("heading", { name: "Game setup" })).toBeInTheDocument();
       expect(screen.getByText("4 players")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Remove last player" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Add player" })).not.toBeInTheDocument();
 
       await user.click(screen.getByRole("button", { name: "Show player details" }));
       const playerOneName = screen.getByLabelText("Player 1 display name");
@@ -88,16 +90,18 @@ describe("Frontend - Shared", () => {
       render(<PlayerLifeTrackerApp />);
       await openGameSetup(user);
 
-      await user.click(screen.getByRole("button", { name: "Remove last player" }));
-      await user.click(screen.getByRole("button", { name: "Remove last player" }));
+      await user.click(screen.getByRole("button", { name: "Set player count to 2" }));
       expect(trackerCards()).toHaveLength(2);
 
       for (let count = 3; count <= 8; count += 1) {
-        await user.click(screen.getByRole("button", { name: "Add player" }));
+        await user.click(screen.getByRole("button", { name: `Set player count to ${count}` }));
         expect(trackerCards()).toHaveLength(count);
       }
 
-      expect(screen.getByRole("button", { name: "Add player" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Set player count to 8" })).toHaveAttribute(
+        "aria-pressed",
+        "true"
+      );
     });
 
     it("applies the four-player seat contract literally to every fixed label", () => {
@@ -115,6 +119,29 @@ describe("Frontend - Shared", () => {
         expect(card).toHaveAttribute("data-side", side);
         expect(card).toHaveStyle({ gridArea, gridRow, gridColumn });
         expect(screen.getByTestId(`life-card-content-${label}`)).toHaveStyle({ transform });
+      }
+    });
+
+    it("switches the life table to an unrotated single-column list", async () => {
+      const user = userEvent.setup();
+      render(<PlayerLifeTrackerApp />);
+      await openGameSetup(user);
+
+      await user.click(screen.getByRole("button", { name: "Use list layout" }));
+
+      expect(screen.getByTestId("life-tracker-table")).toHaveStyle({
+        gridTemplateColumns: "repeat(1, minmax(0, 1fr))",
+        gridTemplateRows: "repeat(4, minmax(15rem, 1fr))"
+      });
+      for (const [index, card] of trackerCards().entries()) {
+        expect(card).toHaveAttribute("data-side", "bottom");
+        expect(card).toHaveStyle({
+          gridRow: `${index + 1} / ${index + 2}`,
+          gridColumn: "1 / 2"
+        });
+        expect(screen.getByTestId(`life-card-content-Player ${index + 1}`)).toHaveStyle({
+          transform: "rotate(0deg)"
+        });
       }
     });
 
@@ -168,7 +195,7 @@ describe("Frontend - Shared", () => {
       expect(within(screen.getByTestId("life-card-Player 1")).getByText("40")).toBeInTheDocument();
       expect(localStorage.length).toBe(0);
 
-      await user.click(screen.getByRole("button", { name: "Remove last player" }));
+      await user.click(screen.getByRole("button", { name: "Set player count to 3" }));
       await user.click(screen.getByRole("button", { name: "Start new game" }));
       expect(trackerCards()).toHaveLength(4);
       expect(localStorage.length).toBe(0);

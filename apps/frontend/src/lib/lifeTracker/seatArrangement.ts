@@ -181,3 +181,26 @@ export function seatArrangement(count: number): SeatArrangementLayout {
   const [leftCount, rightCount] = COLUMN_SPLIT_BY_PLAYER_COUNT[count];
   return columnSplitLayout(leftCount, rightCount);
 }
+
+/** Returns an unrotated, top-to-bottom single-column layout for `count` players. */
+export function listSeatArrangement(count: number): SeatArrangementLayout {
+  if (
+    !Number.isInteger(count) ||
+    count < MIN_SEAT_ARRANGEMENT_PLAYER_COUNT ||
+    count > MAX_SEAT_ARRANGEMENT_PLAYER_COUNT
+  ) {
+    throw new RangeError(
+      `listSeatArrangement: unsupported player count ${count}; expected an integer from ` +
+        `${MIN_SEAT_ARRANGEMENT_PLAYER_COUNT} to ${MAX_SEAT_ARRANGEMENT_PLAYER_COUNT}.`
+    );
+  }
+
+  return {
+    playerCount: count,
+    columns: 1,
+    rows: count,
+    seats: Array.from({ length: count }, (_, index) =>
+      seat(playerLabelAt(index), "bottom", 0, index + 1, index + 2, 1, 2)
+    )
+  };
+}

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { NAMED_COUNTER_PALETTE } from "./counters";
 import {
   ALL_PLAYER_LABELS,
+  DEFAULT_LAYOUT_MODE,
   addCustomCounter,
   adjustCommanderDamage,
   adjustCustomCounter,
@@ -15,6 +16,7 @@ import {
   setCommanderDamageToLife,
   setCustomCounter,
   setNamedCounter,
+  setLayoutMode,
   setPlayerCount,
   setPlayerDisplayName,
   setStartingLife,
@@ -75,6 +77,7 @@ describe("Frontend - Shared", () => {
       expect(state.playerCount).toBe(4);
       expect(state.startingLife).toBe(40);
       expect(state.commanderDamageToLife).toBe(false);
+      expect(state.layoutMode).toBe("grid");
       expect(state.players.map((player) => player.label)).toEqual(["Player 1", "Player 2", "Player 3", "Player 4"]);
 
       for (const player of state.players) {
@@ -91,6 +94,10 @@ describe("Frontend - Shared", () => {
       expect(createInitialState(1, 40).playerCount).toBe(2);
       expect(createInitialState(20, 40).playerCount).toBe(8);
     });
+
+    it("accepts an explicit layout mode", () => {
+      expect(createInitialState(4, 40, false, "list").layoutMode).toBe("list");
+    });
   });
 
   describe("lifeTracker createDefaultGame / startNewGame", () => {
@@ -99,6 +106,7 @@ describe("Frontend - Shared", () => {
       expect(state.playerCount).toBe(4);
       expect(state.startingLife).toBe(40);
       expect(state.commanderDamageToLife).toBe(false);
+      expect(state.layoutMode).toBe(DEFAULT_LAYOUT_MODE);
     });
 
     it("startNewGame restores the documented default game regardless of prior state", () => {
@@ -124,6 +132,7 @@ describe("Frontend - Shared", () => {
       ["setCommanderDamage", (state) => setCommanderDamage(state, "Player 1", "Player 2", 5)],
       ["adjustCommanderDamage", (state) => adjustCommanderDamage(state, "Player 1", "Player 2", 3)],
       ["setCommanderDamageToLife", (state) => setCommanderDamageToLife(state, true)],
+      ["setLayoutMode", (state) => setLayoutMode(state, "list")],
       ["resetGame", (state) => resetGame(state)]
     ];
 
@@ -151,6 +160,17 @@ describe("Frontend - Shared", () => {
       const removed = removeCustomCounter(set, "Player 1", counterId);
       expect(set.players[0].customCounters).toHaveLength(1);
       expect(removed.players[0].customCounters).toHaveLength(0);
+    });
+  });
+
+  describe("lifeTracker layout mode", () => {
+    it("updates the layout mode without changing the input state", () => {
+      const state = createInitialState(4, 40);
+
+      const next = setLayoutMode(state, "list");
+
+      expect(next.layoutMode).toBe("list");
+      expect(state.layoutMode).toBe("grid");
     });
   });
 

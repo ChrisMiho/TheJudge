@@ -2,7 +2,7 @@ import { useState } from "react";
 import { PlayerRosterEditor } from "../../PlayerRosterEditor";
 import { PageShell } from "../../PageShell";
 import type { PlayerLabel } from "../../../types";
-import { seatArrangement } from "../../../lib/lifeTracker/seatArrangement";
+import { listSeatArrangement, seatArrangement } from "../../../lib/lifeTracker/seatArrangement";
 import { useLifeTracker } from "../../../lib/lifeTracker/useLifeTracker";
 import { PortalSlot } from "../PortalSlot";
 import { CounterPanel } from "./CounterPanel";
@@ -21,7 +21,9 @@ export function PlayerLifeTrackerApp({
   const [isRosterExpanded, setIsRosterExpanded] = useState(false);
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
   const [selectedPlayerLabel, setSelectedPlayerLabel] = useState<PlayerLabel | null>(null);
-  const layout = seatArrangement(tracker.state.playerCount);
+  const layout = tracker.state.layoutMode === "list"
+    ? listSeatArrangement(tracker.state.playerCount)
+    : seatArrangement(tracker.state.playerCount);
   const selectedPlayer = tracker.state.players.find((player) => player.label === selectedPlayerLabel);
 
   function openCounters(label: PlayerLabel): void {
@@ -65,8 +67,12 @@ export function PlayerLifeTrackerApp({
         {isSettingsExpanded && (
           <div className="space-y-2">
             <GameSetupPanel
+              playerCount={tracker.state.playerCount}
+              layoutMode={tracker.state.layoutMode}
               startingLife={tracker.state.startingLife}
               commanderDamageToLife={tracker.state.commanderDamageToLife}
+              onPlayerCountChange={tracker.setPlayerCount}
+              onLayoutModeChange={tracker.setLayoutMode}
               onStartingLifeChange={tracker.setStartingLife}
               onCommanderDamageToLifeChange={tracker.setCommanderDamageToLife}
               onReset={tracker.reset}
@@ -85,6 +91,7 @@ export function PlayerLifeTrackerApp({
                 onAddPlayer={() => tracker.setPlayerCount(tracker.state.playerCount + 1)}
                 onRemovePlayer={() => tracker.setPlayerCount(tracker.state.playerCount - 1)}
                 onDisplayNameChange={tracker.setPlayerDisplayName}
+                showCountStepper={false}
                 showLifeTotals={false}
               />
             </section>

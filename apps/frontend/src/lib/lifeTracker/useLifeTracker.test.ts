@@ -66,6 +66,18 @@ describe("Frontend - Shared", () => {
       expect(result.current.state.players[0].life).toBe(37);
     });
 
+    it("updates and synchronously persists the layout mode", () => {
+      const { result } = renderHook(() => useLifeTracker());
+
+      act(() => {
+        result.current.setLayoutMode("list");
+      });
+
+      const saved = JSON.parse(localStorage.getItem(TRACKER_STORAGE_KEY) as string);
+      expect(result.current.state.layoutMode).toBe("list");
+      expect(saved.layoutMode).toBe("list");
+    });
+
     it("saves synchronously across a sequence of actions in the same tick", () => {
       const { result } = renderHook(() => useLifeTracker());
 

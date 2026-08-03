@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { type SeatArrangementLayout, type SeatPlacement, seatArrangement } from "./seatArrangement";
+import {
+  listSeatArrangement,
+  type SeatArrangementLayout,
+  type SeatPlacement,
+  seatArrangement
+} from "./seatArrangement";
 
 /** Parses a CSS grid-row/grid-column value (`"<start> / <end>"`) into numeric line numbers. */
 function parseGridLine(value: string): { start: number; end: number } {
@@ -406,6 +411,31 @@ describe("Frontend - Shared", () => {
       it.each([1, 9, 4.5, Number.NaN])("rejects %s rather than returning a partial layout", (count) => {
         expect(() => seatArrangement(count)).toThrow(RangeError);
       });
+    });
+  });
+
+  describe("listSeatArrangement", () => {
+    it.each([2, 8])("returns an unrotated single-column list for %i players", (count) => {
+      const layout = listSeatArrangement(count);
+
+      expect(layout.playerCount).toBe(count);
+      expect(layout.columns).toBe(1);
+      expect(layout.rows).toBe(count);
+      expect(layout.seats.map((placement) => placement.label)).toEqual(
+        Array.from({ length: count }, (_, index) => `Player ${index + 1}`)
+      );
+
+      for (const [index, placement] of layout.seats.entries()) {
+        expect(placement.side).toBe("bottom");
+        expect(placement.rotation).toBe(0);
+        expect(placement.gridArea).toBe(`seat-player-${index + 1}`);
+        expect(placement.gridRow).toBe(`${index + 1} / ${index + 2}`);
+        expect(placement.gridColumn).toBe("1 / 2");
+      }
+    });
+
+    it.each([1, 9, 2.5, Number.NaN])("rejects invalid player count %s", (count) => {
+      expect(() => listSeatArrangement(count)).toThrow(RangeError);
     });
   });
 });

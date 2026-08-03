@@ -15,12 +15,13 @@ import {
   setCommanderDamageToLife,
   setCustomCounter,
   setNamedCounter,
+  setLayoutMode,
   setPlayerCount,
   setPlayerDisplayName,
   setStartingLife,
   startNewGame
 } from "./state";
-import type { TrackerState } from "./types";
+import type { LayoutMode, TrackerState } from "./types";
 
 export type UseLifeTrackerResult = {
   state: TrackerState;
@@ -37,6 +38,7 @@ export type UseLifeTrackerResult = {
   adjustCommanderDamage: (targetLabel: PlayerLabel, sourceLabel: PlayerLabel, delta: number) => void;
   setCommanderDamage: (targetLabel: PlayerLabel, sourceLabel: PlayerLabel, value: number) => void;
   setCommanderDamageToLife: (enabled: boolean) => void;
+  setLayoutMode: (mode: LayoutMode) => void;
   reset: () => void;
   newGame: () => void;
 };
@@ -88,6 +90,7 @@ export function useLifeTracker(): UseLifeTrackerResult {
     setCommanderDamage: (targetLabel, sourceLabel, value) =>
       commit(setCommanderDamage(stateRef.current, targetLabel, sourceLabel, value)),
     setCommanderDamageToLife: (enabled) => commit(setCommanderDamageToLife(stateRef.current, enabled)),
+    setLayoutMode: (mode) => commit(setLayoutMode(stateRef.current, mode)),
     reset: () => {
       const nextState = resetGame(stateRef.current);
       clearTrackerState();

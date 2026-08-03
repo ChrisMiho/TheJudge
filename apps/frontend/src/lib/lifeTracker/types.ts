@@ -11,6 +11,8 @@ export type CustomCounter = {
 /** Commander damage taken by a player, keyed by the opponent source's fixed label. */
 export type CommanderDamageBySource = Partial<Record<PlayerLabel, number>>;
 
+export type LayoutMode = "grid" | "list";
+
 export type TrackerPlayer = {
   label: PlayerLabel;
   displayName: string;
@@ -26,5 +28,6 @@ export type TrackerState = {
   startingLife: number;
   /** When enabled, an applied positive increase in commander damage also reduces the target's life. */
   commanderDamageToLife: boolean;
+  layoutMode: LayoutMode;
   players: TrackerPlayer[];
 };

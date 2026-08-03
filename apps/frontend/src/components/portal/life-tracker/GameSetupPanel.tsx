@@ -1,8 +1,14 @@
 import { useState, type FormEvent } from "react";
+import { MAX_PLAYER_COUNT, MIN_PLAYER_COUNT } from "../../../lib/lifeTracker/state";
+import type { LayoutMode } from "../../../lib/lifeTracker/types";
 
 export interface GameSetupPanelProps {
+  playerCount: number;
+  layoutMode: LayoutMode;
   startingLife: number;
   commanderDamageToLife: boolean;
+  onPlayerCountChange: (count: number) => void;
+  onLayoutModeChange: (mode: LayoutMode) => void;
   onStartingLifeChange: (startingLife: number) => void;
   onCommanderDamageToLifeChange: (enabled: boolean) => void;
   onReset: () => void;
@@ -10,12 +16,20 @@ export interface GameSetupPanelProps {
 }
 
 const STARTING_LIFE_PRESETS = [20, 25, 30, 40, 60] as const;
+const PLAYER_COUNTS = Array.from(
+  { length: MAX_PLAYER_COUNT - MIN_PLAYER_COUNT + 1 },
+  (_, index) => MIN_PLAYER_COUNT + index
+);
 const MIN_CUSTOM_STARTING_LIFE = 1;
 const MAX_CUSTOM_STARTING_LIFE = 999;
 
 export function GameSetupPanel({
+  playerCount,
+  layoutMode,
   startingLife,
   commanderDamageToLife,
+  onPlayerCountChange,
+  onLayoutModeChange,
   onStartingLifeChange,
   onCommanderDamageToLifeChange,
   onReset,
@@ -74,6 +88,70 @@ export function GameSetupPanel({
           >
             New Game
           </button>
+        </div>
+      </div>
+
+      <div className="border-b border-zinc-800 py-3">
+        <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-zinc-300">
+          <span aria-hidden="true" className="text-base leading-none">
+            👥
+          </span>
+          Players
+        </p>
+        <div className="grid grid-cols-7 gap-2" aria-label="Player count">
+          {PLAYER_COUNTS.map((count) => {
+            const isSelected = playerCount === count;
+            return (
+              <button
+                key={count}
+                type="button"
+                aria-label={`Set player count to ${count}`}
+                aria-pressed={isSelected}
+                onClick={() => onPlayerCountChange(count)}
+                className={`motion-focus min-h-11 rounded-full border px-2 text-sm font-black tabular-nums transition ${
+                  isSelected
+                    ? "border-accent bg-accent/20 text-accent-soft ring-2 ring-accent/25"
+                    : "border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
+                }`}
+              >
+                {count}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="border-b border-zinc-800 py-3">
+        <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-zinc-300">
+          <span aria-hidden="true" className="text-base leading-none">
+            ▤
+          </span>
+          Layout
+        </p>
+        <div className="grid grid-cols-2 gap-2" aria-label="Layout mode">
+          {(["grid", "list"] as const).map((mode) => {
+            const isSelected = layoutMode === mode;
+            const label = mode === "grid" ? "Grid" : "List";
+            return (
+              <button
+                key={mode}
+                type="button"
+                aria-label={`Use ${mode} layout`}
+                aria-pressed={isSelected}
+                onClick={() => onLayoutModeChange(mode)}
+                className={`motion-focus inline-flex min-h-11 items-center justify-center gap-2 rounded-full border px-3 text-sm font-black transition ${
+                  isSelected
+                    ? "border-accent bg-accent/20 text-accent-soft ring-2 ring-accent/25"
+                    : "border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
+                }`}
+              >
+                <span aria-hidden="true" className="text-base leading-none">
+                  {mode === "grid" ? "▦" : "☷"}
+                </span>
+                {label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
