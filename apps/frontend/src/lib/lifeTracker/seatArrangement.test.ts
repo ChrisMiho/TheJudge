@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { type SeatArrangementLayout, type SeatPlacement, seatArrangement } from "./seatArrangement";
+import {
+  listSeatArrangement,
+  type SeatArrangementLayout,
+  type SeatPlacement,
+  seatArrangement
+} from "./seatArrangement";
 
 /** Parses a CSS grid-row/grid-column value (`"<start> / <end>"`) into numeric line numbers. */
 function parseGridLine(value: string): { start: number; end: number } {
@@ -406,6 +411,206 @@ describe("Frontend - Shared", () => {
       it.each([1, 9, 4.5, Number.NaN])("rejects %s rather than returning a partial layout", (count) => {
         expect(() => seatArrangement(count)).toThrow(RangeError);
       });
+    });
+  });
+
+  describe("listSeatArrangement", () => {
+    it("returns the exact 2-player top/bottom halves layout, identical to seatArrangement(2)", () => {
+      expect(listSeatArrangement(2)).toEqual<SeatArrangementLayout>(seatArrangement(2));
+    });
+
+    it("returns the exact 3-player one-top-two-bottom layout, identical to seatArrangement(3)", () => {
+      expect(listSeatArrangement(3)).toEqual<SeatArrangementLayout>(seatArrangement(3));
+    });
+
+    it("returns the exact 4-player head/pair/foot layout (matching the icon: wide, pair, wide)", () => {
+      expect(listSeatArrangement(4)).toEqual<SeatArrangementLayout>({
+        playerCount: 4,
+        columns: 2,
+        rows: 3,
+        seats: [
+          {
+            label: "Player 1",
+            side: "top",
+            rotation: 180,
+            gridArea: "seat-player-1",
+            gridRow: "1 / 2",
+            gridColumn: "1 / 3"
+          },
+          {
+            label: "Player 2",
+            side: "bottom",
+            rotation: 0,
+            gridArea: "seat-player-2",
+            gridRow: "2 / 3",
+            gridColumn: "1 / 2"
+          },
+          {
+            label: "Player 3",
+            side: "bottom",
+            rotation: 0,
+            gridArea: "seat-player-3",
+            gridRow: "2 / 3",
+            gridColumn: "2 / 3"
+          },
+          {
+            label: "Player 4",
+            side: "bottom",
+            rotation: 0,
+            gridArea: "seat-player-4",
+            gridRow: "3 / 4",
+            gridColumn: "1 / 3"
+          }
+        ]
+      });
+    });
+
+    it("returns the exact 5-player head-then-two-pair-rows layout (odd count, no foot seat)", () => {
+      expect(listSeatArrangement(5)).toEqual<SeatArrangementLayout>({
+        playerCount: 5,
+        columns: 2,
+        rows: 3,
+        seats: [
+          {
+            label: "Player 1",
+            side: "top",
+            rotation: 180,
+            gridArea: "seat-player-1",
+            gridRow: "1 / 2",
+            gridColumn: "1 / 3"
+          },
+          {
+            label: "Player 2",
+            side: "bottom",
+            rotation: 0,
+            gridArea: "seat-player-2",
+            gridRow: "2 / 3",
+            gridColumn: "1 / 2"
+          },
+          {
+            label: "Player 3",
+            side: "bottom",
+            rotation: 0,
+            gridArea: "seat-player-3",
+            gridRow: "2 / 3",
+            gridColumn: "2 / 3"
+          },
+          {
+            label: "Player 4",
+            side: "bottom",
+            rotation: 0,
+            gridArea: "seat-player-4",
+            gridRow: "3 / 4",
+            gridColumn: "1 / 2"
+          },
+          {
+            label: "Player 5",
+            side: "bottom",
+            rotation: 0,
+            gridArea: "seat-player-5",
+            gridRow: "3 / 4",
+            gridColumn: "2 / 3"
+          }
+        ]
+      });
+    });
+
+    it("returns the exact 8-player head/three-pairs/foot layout", () => {
+      expect(listSeatArrangement(8)).toEqual<SeatArrangementLayout>({
+        playerCount: 8,
+        columns: 2,
+        rows: 5,
+        seats: [
+          {
+            label: "Player 1",
+            side: "top",
+            rotation: 180,
+            gridArea: "seat-player-1",
+            gridRow: "1 / 2",
+            gridColumn: "1 / 3"
+          },
+          {
+            label: "Player 2",
+            side: "bottom",
+            rotation: 0,
+            gridArea: "seat-player-2",
+            gridRow: "2 / 3",
+            gridColumn: "1 / 2"
+          },
+          {
+            label: "Player 3",
+            side: "bottom",
+            rotation: 0,
+            gridArea: "seat-player-3",
+            gridRow: "2 / 3",
+            gridColumn: "2 / 3"
+          },
+          {
+            label: "Player 4",
+            side: "bottom",
+            rotation: 0,
+            gridArea: "seat-player-4",
+            gridRow: "3 / 4",
+            gridColumn: "1 / 2"
+          },
+          {
+            label: "Player 5",
+            side: "bottom",
+            rotation: 0,
+            gridArea: "seat-player-5",
+            gridRow: "3 / 4",
+            gridColumn: "2 / 3"
+          },
+          {
+            label: "Player 6",
+            side: "bottom",
+            rotation: 0,
+            gridArea: "seat-player-6",
+            gridRow: "4 / 5",
+            gridColumn: "1 / 2"
+          },
+          {
+            label: "Player 7",
+            side: "bottom",
+            rotation: 0,
+            gridArea: "seat-player-7",
+            gridRow: "4 / 5",
+            gridColumn: "2 / 3"
+          },
+          {
+            label: "Player 8",
+            side: "bottom",
+            rotation: 0,
+            gridArea: "seat-player-8",
+            gridRow: "5 / 6",
+            gridColumn: "1 / 3"
+          }
+        ]
+      });
+    });
+
+    describe.each([2, 3, 4, 5, 6, 7, 8])("layout invariants for %i players", (count) => {
+      const layout = listSeatArrangement(count);
+
+      it("has exactly one descriptor per active seat with unique fixed labels", () => {
+        expect(layout.seats).toHaveLength(count);
+        expect(new Set(layout.seats.map((placement) => placement.label)).size).toBe(count);
+      });
+
+      it("only uses top/bottom sides and 0/180deg rotations - never sideways", () => {
+        for (const placement of layout.seats) {
+          expect(["top", "bottom"]).toContain(placement.side);
+          expect([0, 180]).toContain(placement.rotation);
+        }
+      });
+
+      it("never places two seats on overlapping grid cells", () => {
+        expectNoOverlaps(layout);
+      });
+    });
+
+    it.each([1, 9, 2.5, Number.NaN])("rejects invalid player count %s", (count) => {
+      expect(() => listSeatArrangement(count)).toThrow(RangeError);
     });
   });
 });

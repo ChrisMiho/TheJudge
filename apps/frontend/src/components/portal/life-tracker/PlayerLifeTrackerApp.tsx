@@ -1,27 +1,120 @@
-import { useState } from "react";
-import { PlayerRosterEditor } from "../../PlayerRosterEditor";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { PageShell } from "../../PageShell";
 import type { PlayerLabel } from "../../../types";
-import { seatArrangement } from "../../../lib/lifeTracker/seatArrangement";
-import { useLifeTracker } from "../../../lib/lifeTracker/useLifeTracker";
+import {
+  listSeatArrangement,
+  seatArrangement,
+  type SeatArrangementLayout,
+  type SeatPlacement
+} from "../../../lib/lifeTracker/seatArrangement";
+import { useLifeTracker, type UseLifeTrackerResult } from "../../../lib/lifeTracker/useLifeTracker";
 import { PortalSlot } from "../PortalSlot";
 import { CounterPanel } from "./CounterPanel";
 import { GameSetupPanel } from "./GameSetupPanel";
 import { PlayerLifeCard } from "./PlayerLifeCard";
+
+/** True when `placement` spans every column of `layout` - a list-mode head/foot row, not a paired seat. */
+function isWideSeat(placement: SeatPlacement, layout: SeatArrangementLayout): boolean {
+  const [start, end] = placement.gridColumn.split(" / ").map(Number);
+  return end - start >= layout.columns;
+}
 
 export interface PlayerLifeTrackerAppProps {
   /** Wave 3 composes the counter panel through this boundary. */
   onOpenCounters?: (label: PlayerLabel) => void;
 }
 
+interface GameSetupModalProps {
+  tracker: UseLifeTrackerResult;
+  onClose: () => void;
+}
+
+function GameSetupModal({ tracker, onClose }: GameSetupModalProps): JSX.Element {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    dialogRef.current?.focus();
+
+    function handleKeyDown(event: KeyboardEvent): void {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      returnFocusRef.current?.focus();
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-2 sm:items-center sm:p-4"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="game-setup-modal-title"
+        tabIndex={-1}
+        className="max-h-[94dvh] w-full max-w-xl overflow-y-auto rounded-3xl border border-zinc-700 bg-zinc-950 p-4 text-zinc-100 shadow-2xl shadow-black/40"
+      >
+        <header className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-strong">Life Tracker</p>
+            <h2 id="game-setup-modal-title" className="text-xl font-black text-zinc-100">
+              Game Setup
+            </h2>
+          </div>
+          <button
+            type="button"
+            aria-label="Close game setup"
+            onClick={onClose}
+            className="motion-focus min-h-11 min-w-11 rounded-full border border-zinc-700 bg-zinc-800 text-2xl text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100"
+          >
+            ×
+          </button>
+        </header>
+
+        <div className="mt-4">
+          <GameSetupPanel
+            playerCount={tracker.state.playerCount}
+            layoutMode={tracker.state.layoutMode}
+            startingLife={tracker.state.startingLife}
+            players={tracker.state.players.map((player) => ({
+              label: player.label,
+              displayName: player.displayName
+            }))}
+            onPlayerCountChange={tracker.setPlayerCount}
+            onLayoutModeChange={tracker.setLayoutMode}
+            onStartingLifeChange={tracker.setStartingLife}
+            onDisplayNameChange={tracker.setPlayerDisplayName}
+            onReset={tracker.reset}
+            onNewGame={tracker.newGame}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function PlayerLifeTrackerApp({
   onOpenCounters
 }: PlayerLifeTrackerAppProps): JSX.Element {
   const tracker = useLifeTracker();
-  const [isRosterExpanded, setIsRosterExpanded] = useState(false);
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
   const [selectedPlayerLabel, setSelectedPlayerLabel] = useState<PlayerLabel | null>(null);
-  const layout = seatArrangement(tracker.state.playerCount);
+  const closeGameSetup = useCallback(() => setIsSettingsExpanded(false), []);
+  const layout = tracker.state.layoutMode === "list"
+    ? listSeatArrangement(tracker.state.playerCount)
+    : seatArrangement(tracker.state.playerCount);
   const selectedPlayer = tracker.state.players.find((player) => player.label === selectedPlayerLabel);
 
   function openCounters(label: PlayerLabel): void {
@@ -32,64 +125,24 @@ export function PlayerLifeTrackerApp({
   return (
     <PageShell variant="full-bleed">
       <div className="mx-auto flex min-h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col gap-2">
-        <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-1">
+        <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3">
           <div>
-            <p className="bg-gradient-to-r from-accent-soft to-accent-strong bg-clip-text text-lg font-black tracking-tight text-transparent">
+            <p className="bg-gradient-to-r from-accent-soft to-accent-strong bg-clip-text text-sm font-black tracking-tight text-transparent">
               TheJudge
             </p>
           </div>
           <PortalSlot />
-          <h1 className="min-w-0 justify-self-end text-right text-sm font-black uppercase tracking-[0.1em] text-accent-soft">
-            Player Life Tracker
-          </h1>
+          <button
+            type="button"
+            aria-label="Open game setup"
+            aria-haspopup="dialog"
+            aria-expanded={isSettingsExpanded}
+            onClick={() => setIsSettingsExpanded(true)}
+            className="motion-focus flex h-9 w-9 shrink-0 items-center justify-center justify-self-end rounded-full border border-zinc-600 bg-zinc-900/95 text-lg text-zinc-100 shadow-lg shadow-black/40 backdrop-blur hover:bg-zinc-800"
+          >
+            <span aria-hidden="true">⚙</span>
+          </button>
         </header>
-
-        <button
-          type="button"
-          aria-label={isSettingsExpanded ? "Hide game setup" : "Show game setup"}
-          aria-expanded={isSettingsExpanded}
-          onClick={() => setIsSettingsExpanded((current) => !current)}
-          className="motion-hover motion-press motion-focus flex min-h-11 items-center justify-between gap-3 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2 text-left"
-        >
-          <span className="flex items-center gap-2 text-sm font-semibold text-zinc-100">
-            <span aria-hidden="true" className="text-lg leading-none text-zinc-400">
-              ⚙
-            </span>
-            Game setup
-          </span>
-          <span aria-hidden="true" className="text-sm text-zinc-400">
-            {isSettingsExpanded ? "▾" : "▸"}
-          </span>
-        </button>
-
-        {isSettingsExpanded && (
-          <div className="space-y-2">
-            <GameSetupPanel
-              startingLife={tracker.state.startingLife}
-              commanderDamageToLife={tracker.state.commanderDamageToLife}
-              onStartingLifeChange={tracker.setStartingLife}
-              onCommanderDamageToLifeChange={tracker.setCommanderDamageToLife}
-              onReset={tracker.reset}
-              onNewGame={tracker.newGame}
-            />
-
-            <section aria-label="Player roster" className="space-y-2">
-              <PlayerRosterEditor
-                players={tracker.state.players.map((player) => ({
-                  label: player.label,
-                  displayName: player.displayName
-                }))}
-                playerCount={tracker.state.playerCount}
-                isExpanded={isRosterExpanded}
-                onToggleExpanded={() => setIsRosterExpanded((current) => !current)}
-                onAddPlayer={() => tracker.setPlayerCount(tracker.state.playerCount + 1)}
-                onRemovePlayer={() => tracker.setPlayerCount(tracker.state.playerCount - 1)}
-                onDisplayNameChange={tracker.setPlayerDisplayName}
-                showLifeTotals={false}
-              />
-            </section>
-          </div>
-        )}
 
         <section
           aria-label={`${tracker.state.playerCount}-player life table`}
@@ -110,7 +163,10 @@ export function PlayerLifeTrackerApp({
               <PlayerLifeCard
                 key={player.label}
                 player={player}
+                players={tracker.state.players}
                 placement={placement}
+                layoutMode={tracker.state.layoutMode}
+                isWideSeat={tracker.state.layoutMode === "list" && isWideSeat(placement, layout)}
                 onAdjustLife={tracker.adjustPlayerLife}
                 onOpenCounters={openCounters}
               />
@@ -118,6 +174,8 @@ export function PlayerLifeTrackerApp({
           })}
         </section>
       </div>
+
+      {isSettingsExpanded && <GameSetupModal tracker={tracker} onClose={closeGameSetup} />}
 
       {selectedPlayer && (
         <CounterPanel
@@ -131,7 +189,6 @@ export function PlayerLifeTrackerApp({
           onSetCustomCounter={tracker.setCustomCounter}
           onRemoveCustomCounter={tracker.removeCustomCounter}
           onAdjustCommanderDamage={tracker.adjustCommanderDamage}
-          onSetCommanderDamage={tracker.setCommanderDamage}
         />
       )}
     </PageShell>

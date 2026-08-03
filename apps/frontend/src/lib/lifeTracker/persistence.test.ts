@@ -6,7 +6,13 @@ import {
   loadTrackerState,
   saveTrackerState
 } from "./persistence";
-import { addCustomCounter, createInitialState, setCommanderDamage, setNamedCounter } from "./state";
+import {
+  addCustomCounter,
+  createInitialState,
+  setCommanderDamage,
+  setLayoutMode,
+  setNamedCounter
+} from "./state";
 import type { TrackerState } from "./types";
 
 function createMemoryStorage(): Storage {
@@ -64,6 +70,29 @@ describe("Frontend - Shared", () => {
       expect(loaded?.players[0].namedCounters.poison).toBe(4);
       expect(loaded?.players[0].commanderDamage["Player 2"]).toBe(7);
       expect(loaded?.players[0].customCounters[0].name).toBe("Doom Counters");
+    });
+
+    it("round-trips a valid list layout unchanged", () => {
+      const state = setLayoutMode(buildFullState(), "list");
+
+      saveTrackerState(state);
+
+      expect(loadTrackerState()).toEqual(state);
+    });
+
+    it("loads a valid pre-layoutMode snapshot with the grid default", () => {
+      const legacyState = JSON.parse(JSON.stringify(buildFullState())) as Partial<TrackerState>;
+      delete legacyState.layoutMode;
+      localStorage.setItem(TRACKER_STORAGE_KEY, JSON.stringify(legacyState));
+
+      expect(loadTrackerState()).toEqual({ ...legacyState, layoutMode: "grid" });
+    });
+
+    it("normalizes an invalid stored layoutMode to grid", () => {
+      const state = { ...buildFullState(), layoutMode: "nonsense" };
+      localStorage.setItem(TRACKER_STORAGE_KEY, JSON.stringify(state));
+
+      expect(loadTrackerState()).toEqual({ ...state, layoutMode: "grid" });
     });
 
     it("returns null for malformed JSON", () => {
@@ -126,10 +155,12 @@ describe("Frontend - Shared", () => {
       expect(loadTrackerState()).toBeNull();
     });
 
-    it("returns null when commanderDamageToLife is not a boolean", () => {
-      const tampered = { ...buildFullState(), commanderDamageToLife: "yes" };
-      localStorage.setItem(TRACKER_STORAGE_KEY, JSON.stringify(tampered));
-      expect(loadTrackerState()).toBeNull();
+    it("accepts a current snapshot without commanderDamageToLife", () => {
+      const currentState = JSON.parse(JSON.stringify(buildFullState())) as Record<string, unknown>;
+      delete currentState.commanderDamageToLife;
+      localStorage.setItem(TRACKER_STORAGE_KEY, JSON.stringify(currentState));
+
+      expect(loadTrackerState()).toEqual(currentState);
     });
 
     it("returns null when localStorage is unavailable", () => {

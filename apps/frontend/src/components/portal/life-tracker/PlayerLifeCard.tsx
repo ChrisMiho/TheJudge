@@ -1,11 +1,21 @@
 import type { PlayerLabel } from "../../../types";
 import type { SeatPlacement } from "../../../lib/lifeTracker/seatArrangement";
-import type { TrackerPlayer } from "../../../lib/lifeTracker/types";
+import type { LayoutMode, TrackerPlayer } from "../../../lib/lifeTracker/types";
 import { formatPlayerDisplayLabel } from "../../../lib/playerLabels";
 
 export interface PlayerLifeCardProps {
   player: TrackerPlayer;
+  players: TrackerPlayer[];
   placement: SeatPlacement;
+  /** List mode moves the life adjustment bands from top/bottom to the card's left/right edges. */
+  layoutMode: LayoutMode;
+  /**
+   * True when this seat spans the full row width (list mode's single head/foot rows) rather than
+   * sharing a row with a paired seat. Only meaningful in list mode: wide, short rows want
+   * left/right bands (natural side-to-side tap zones on a wide card), while list mode's narrower
+   * paired rows - portrait-shaped like grid seats - keep the default top/bottom bands.
+   */
+  isWideSeat: boolean;
   onAdjustLife: (label: PlayerLabel, delta: number) => void;
   onOpenCounters: (label: PlayerLabel) => void;
 }
@@ -22,15 +32,49 @@ const LIFE_TINTS = {
   healthy: "border-accent/40 bg-gradient-to-br from-accent-soft/75 via-zinc-50 to-accent/35 text-zinc-900"
 } as const;
 
+/** Near-square column count for `count` preview tiles (2x2 for 4, matching the reference). */
+function previewColumns(count: number): number {
+  return Math.max(1, Math.ceil(Math.sqrt(count)));
+}
+
+type PreviewCell = { key: PlayerLabel; isSelf: boolean; value: number };
+
+function commanderDamagePreviewCells(player: TrackerPlayer, players: TrackerPlayer[]): PreviewCell[] {
+  return players.map((seat) => ({
+    key: seat.label,
+    isSelf: seat.label === player.label,
+    value: player.commanderDamage[seat.label] ?? 0
+  }));
+}
+
 export function PlayerLifeCard({
   player,
+  players,
   placement,
+  layoutMode,
+  isWideSeat,
   onAdjustLife,
   onOpenCounters
 }: PlayerLifeCardProps): JSX.Element {
   const displayLabel = formatPlayerDisplayLabel(player.label, player.displayName);
   const status = lifeState(player.life);
   const rotation = `rotate(${placement.rotation}deg)`;
+  const previewCells = commanderDamagePreviewCells(player, players);
+  const previewCols = previewColumns(previewCells.length);
+  // A 90/270 rotation swaps the content's effective width and height. Cards are rarely square,
+  // so sizing the rotated box off the card's own (un-rotated) dimensions overflows the shorter
+  // axis and gets silently clipped by the card's `overflow-hidden`. Container query units size
+  // the box off the *card's* width/height directly (swapped for sideways seats), so the rotated
+  // content always ends up exactly card-sized regardless of aspect ratio or rotation.
+  const isSideways = placement.rotation === 90 || placement.rotation === 270;
+  const contentSize = isSideways ? { width: "100cqh", height: "100cqw" } : { width: "100cqw", height: "100cqh" };
+  const isListLayout = layoutMode === "list" && isWideSeat;
+  const decreaseBandClassName = isListLayout
+    ? "absolute inset-y-0 left-0 z-20 flex w-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10"
+    : "absolute inset-x-0 top-0 z-20 flex h-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10";
+  const increaseBandClassName = isListLayout
+    ? "absolute inset-y-0 right-0 z-20 flex w-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10"
+    : "absolute inset-x-0 bottom-0 z-20 flex h-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10";
 
   return (
     <article
@@ -41,7 +85,8 @@ export function PlayerLifeCard({
       style={{
         gridArea: placement.gridArea,
         gridRow: placement.gridRow,
-        gridColumn: placement.gridColumn
+        gridColumn: placement.gridColumn,
+        containerType: "size"
       }}
       className={`relative isolate min-h-60 overflow-hidden rounded-3xl border shadow-lg shadow-black/20 ${LIFE_TINTS[status]}`}
     >
@@ -49,7 +94,7 @@ export function PlayerLifeCard({
         type="button"
         aria-label={`Decrease life for ${displayLabel}`}
         onClick={() => onAdjustLife(player.label, -1)}
-        className="motion-focus absolute inset-x-0 top-0 z-20 flex h-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10"
+        className={`motion-focus ${decreaseBandClassName}`}
       >
         <span aria-hidden="true" style={{ transform: rotation }}>
           −
@@ -58,8 +103,8 @@ export function PlayerLifeCard({
 
       <div
         data-testid={`life-card-content-${player.label}`}
-        style={{ transform: rotation }}
-        className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 p-6 text-center"
+        style={{ transform: `translate(-50%, -50%) ${rotation}`, ...contentSize }}
+        className="absolute left-1/2 top-1/2 z-10 flex flex-col items-center justify-center gap-2 p-6 text-center"
       >
         <span className="rounded-full border border-black/10 bg-white/50 px-3 py-1 text-sm font-semibold shadow-sm">
           {displayLabel}
@@ -78,11 +123,24 @@ export function PlayerLifeCard({
         </span>
         <button
           type="button"
+          data-testid={`commander-preview-${player.label}`}
           aria-label={`Open counters for ${displayLabel}`}
           onClick={() => onOpenCounters(player.label)}
-          className="motion-focus min-h-11 rounded-full border border-black/10 bg-white/40 px-4 text-xs font-bold uppercase tracking-[0.12em] shadow-sm hover:bg-white/65"
+          className="motion-focus grid gap-1 rounded-xl border border-black/10 bg-white/40 p-1.5 shadow-sm hover:bg-white/65"
+          style={{ gridTemplateColumns: `repeat(${previewCols}, minmax(0, 1fr))` }}
         >
-          Counters
+          {previewCells.map((cell) => (
+            <span
+              key={cell.key}
+              aria-hidden="true"
+              data-testid={`commander-preview-cell-${cell.key}`}
+              className={`flex min-h-6 min-w-6 items-center justify-center rounded-md text-[0.65rem] font-black tabular-nums ${
+                cell.isSelf ? "bg-black/10 opacity-80" : "bg-white/50"
+              }`}
+            >
+              {cell.isSelf ? "me" : cell.value}
+            </span>
+          ))}
         </button>
       </div>
 
@@ -90,7 +148,7 @@ export function PlayerLifeCard({
         type="button"
         aria-label={`Increase life for ${displayLabel}`}
         onClick={() => onAdjustLife(player.label, 1)}
-        className="motion-focus absolute inset-x-0 bottom-0 z-20 flex h-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10"
+        className={`motion-focus ${increaseBandClassName}`}
       >
         <span aria-hidden="true" style={{ transform: rotation }}>
           +

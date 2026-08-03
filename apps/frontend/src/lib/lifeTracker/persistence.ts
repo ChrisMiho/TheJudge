@@ -1,6 +1,11 @@
 import type { PlayerLabel } from "../../types";
 import { NAMED_COUNTER_IDS } from "./counters";
-import { ALL_PLAYER_LABELS, MAX_PLAYER_COUNT, MIN_PLAYER_COUNT } from "./state";
+import {
+  ALL_PLAYER_LABELS,
+  DEFAULT_LAYOUT_MODE,
+  MAX_PLAYER_COUNT,
+  MIN_PLAYER_COUNT
+} from "./state";
 import type { CustomCounter, TrackerState } from "./types";
 
 /** DEC-103: browser-local, single-device, frontend-only persistence key for the live tracker game. */
@@ -71,7 +76,6 @@ export function isValidTrackerState(value: unknown): value is TrackerState {
   }
 
   if (!isFiniteNumber(state.startingLife)) return false;
-  if (typeof state.commanderDamageToLife !== "boolean") return false;
 
   const players: unknown[] = Array.isArray(state.players) ? state.players : [];
   if (players.length !== state.playerCount) return false;
@@ -98,7 +102,12 @@ export function loadTrackerState(): TrackerState | null {
     if (raw === null) return null;
 
     const parsed: unknown = JSON.parse(raw);
-    return isValidTrackerState(parsed) ? parsed : null;
+    if (!isValidTrackerState(parsed)) return null;
+
+    const layoutMode = parsed.layoutMode === "grid" || parsed.layoutMode === "list"
+      ? parsed.layoutMode
+      : DEFAULT_LAYOUT_MODE;
+    return { ...parsed, layoutMode };
   } catch {
     return null;
   }

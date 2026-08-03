@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { NAMED_COUNTER_PALETTE } from "./counters";
 import {
   ALL_PLAYER_LABELS,
+  DEFAULT_LAYOUT_MODE,
   addCustomCounter,
   adjustCommanderDamage,
   adjustCustomCounter,
@@ -12,9 +13,9 @@ import {
   removeCustomCounter,
   resetGame,
   setCommanderDamage,
-  setCommanderDamageToLife,
   setCustomCounter,
   setNamedCounter,
+  setLayoutMode,
   setPlayerCount,
   setPlayerDisplayName,
   setStartingLife,
@@ -74,7 +75,8 @@ describe("Frontend - Shared", () => {
 
       expect(state.playerCount).toBe(4);
       expect(state.startingLife).toBe(40);
-      expect(state.commanderDamageToLife).toBe(false);
+      expect(state).not.toHaveProperty("commanderDamageToLife");
+      expect(state.layoutMode).toBe("grid");
       expect(state.players.map((player) => player.label)).toEqual(["Player 1", "Player 2", "Player 3", "Player 4"]);
 
       for (const player of state.players) {
@@ -91,6 +93,10 @@ describe("Frontend - Shared", () => {
       expect(createInitialState(1, 40).playerCount).toBe(2);
       expect(createInitialState(20, 40).playerCount).toBe(8);
     });
+
+    it("accepts an explicit layout mode", () => {
+      expect(createInitialState(4, 40, "list").layoutMode).toBe("list");
+    });
   });
 
   describe("lifeTracker createDefaultGame / startNewGame", () => {
@@ -98,7 +104,8 @@ describe("Frontend - Shared", () => {
       const state = createDefaultGame();
       expect(state.playerCount).toBe(4);
       expect(state.startingLife).toBe(40);
-      expect(state.commanderDamageToLife).toBe(false);
+      expect(state).not.toHaveProperty("commanderDamageToLife");
+      expect(state.layoutMode).toBe(DEFAULT_LAYOUT_MODE);
     });
 
     it("startNewGame restores the documented default game regardless of prior state", () => {
@@ -123,7 +130,7 @@ describe("Frontend - Shared", () => {
       ["addCustomCounter", (state) => addCustomCounter(state, "Player 1", "Storm")],
       ["setCommanderDamage", (state) => setCommanderDamage(state, "Player 1", "Player 2", 5)],
       ["adjustCommanderDamage", (state) => adjustCommanderDamage(state, "Player 1", "Player 2", 3)],
-      ["setCommanderDamageToLife", (state) => setCommanderDamageToLife(state, true)],
+      ["setLayoutMode", (state) => setLayoutMode(state, "list")],
       ["resetGame", (state) => resetGame(state)]
     ];
 
@@ -151,6 +158,17 @@ describe("Frontend - Shared", () => {
       const removed = removeCustomCounter(set, "Player 1", counterId);
       expect(set.players[0].customCounters).toHaveLength(1);
       expect(removed.players[0].customCounters).toHaveLength(0);
+    });
+  });
+
+  describe("lifeTracker layout mode", () => {
+    it("updates the layout mode without changing the input state", () => {
+      const state = createInitialState(4, 40);
+
+      const next = setLayoutMode(state, "list");
+
+      expect(next.layoutMode).toBe("list");
+      expect(state.layoutMode).toBe("grid");
     });
   });
 
@@ -192,24 +210,16 @@ describe("Frontend - Shared", () => {
   });
 
   describe("lifeTracker commander damage automation", () => {
-    it("lowers target life by the applied positive increase only when automation is enabled", () => {
-      const state = setCommanderDamageToLife(createInitialState(2, 40), true);
+    it("always lowers target life by the applied positive increase", () => {
+      const state = createInitialState(2, 40);
       const next = adjustCommanderDamage(state, "Player 1", "Player 2", 2);
 
       expect(next.players[0].commanderDamage["Player 2"]).toBe(2);
       expect(next.players[0].life).toBe(38);
     });
 
-    it("does not reduce life when automation is disabled", () => {
-      const state = createInitialState(2, 40);
-      const next = adjustCommanderDamage(state, "Player 1", "Player 2", 2);
-
-      expect(next.players[0].commanderDamage["Player 2"]).toBe(2);
-      expect(next.players[0].life).toBe(40);
-    });
-
     it("never stores or applies life loss for the own-seat me cell", () => {
-      const state = setCommanderDamageToLife(createInitialState(2, 40), true);
+      const state = createInitialState(2, 40);
       const next = adjustCommanderDamage(state, "Player 1", "Player 1", 5);
 
       expect(next).toEqual(state);
@@ -217,12 +227,7 @@ describe("Frontend - Shared", () => {
     });
 
     it("does not restore life when a commander-damage value is decreased", () => {
-      const withDamage = setCommanderDamage(
-        setCommanderDamageToLife(createInitialState(2, 40), true),
-        "Player 1",
-        "Player 2",
-        6
-      );
+      const withDamage = setCommanderDamage(createInitialState(2, 40), "Player 1", "Player 2", 6);
       expect(withDamage.players[0].life).toBe(34);
 
       const decreased = setCommanderDamage(withDamage, "Player 1", "Player 2", 2);
@@ -231,7 +236,7 @@ describe("Frontend - Shared", () => {
     });
 
     it("only applies the positive portion when a decrease and increase cross the previous value", () => {
-      const state = setCommanderDamageToLife(createInitialState(2, 40), true);
+      const state = createInitialState(2, 40);
       const raised = setCommanderDamage(state, "Player 1", "Player 2", 5);
       expect(raised.players[0].life).toBe(35);
 
@@ -288,7 +293,6 @@ describe("Frontend - Shared", () => {
     it("reset preserves count, names, and settings while zeroing counters and restoring life", () => {
       let state = createInitialState(3, 40);
       state = setPlayerDisplayName(state, "Player 1", "Alice");
-      state = setCommanderDamageToLife(state, true);
       state = adjustPlayerLife(state, "Player 1", -15);
       state = adjustNamedCounter(state, "Player 1", "monarch", 1);
       state = addCustomCounter(state, "Player 1", "Storm");
@@ -299,7 +303,7 @@ describe("Frontend - Shared", () => {
       const reset = resetGame(state);
 
       expect(reset.playerCount).toBe(3);
-      expect(reset.commanderDamageToLife).toBe(true);
+      expect(reset).not.toHaveProperty("commanderDamageToLife");
       expect(reset.players[0].displayName).toBe("Alice");
       expect(reset.players[0].life).toBe(40);
       expect(reset.players[0].namedCounters.monarch).toBe(0);

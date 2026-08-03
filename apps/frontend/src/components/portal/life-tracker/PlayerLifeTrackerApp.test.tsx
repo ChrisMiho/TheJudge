@@ -29,7 +29,8 @@ function trackerCards(): HTMLElement[] {
 }
 
 async function openGameSetup(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-  await user.click(screen.getByRole("button", { name: "Show game setup" }));
+  await user.click(screen.getByRole("button", { name: "Open game setup" }));
+  expect(screen.getByRole("dialog", { name: "Game Setup" })).toBeInTheDocument();
 }
 
 function DestinationHarness(): JSX.Element {
@@ -62,25 +63,50 @@ describe("Frontend - Shared", () => {
   });
 
   describe("PlayerLifeTrackerApp", () => {
-    it("renders portal chrome, setup, and the shared roster editor without life inputs", async () => {
+    it("renders portal chrome and lets names be edited from the Players section of Game Setup", async () => {
       const user = userEvent.setup();
       render(<PlayerLifeTrackerApp />);
 
       expect(screen.getByRole("main")).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: "Player Life Tracker" })).toBeInTheDocument();
-      expect(screen.queryByRole("heading", { name: "Game setup" })).not.toBeInTheDocument();
+      expect(screen.getByText("TheJudge")).toBeInTheDocument();
 
       await openGameSetup(user);
-      expect(screen.getByRole("heading", { name: "Game setup" })).toBeInTheDocument();
-      expect(screen.getByText("4 players")).toBeInTheDocument();
+      expect(screen.getByLabelText("Player count")).toBeInTheDocument();
+      expect(screen.queryByLabelText("Player 1 display name")).not.toBeInTheDocument();
 
-      await user.click(screen.getByRole("button", { name: "Show player details" }));
+      await user.click(screen.getByRole("button", { name: "Edit player names" }));
       const playerOneName = screen.getByLabelText("Player 1 display name");
-      expect(screen.queryByLabelText("Player 1 life total")).not.toBeInTheDocument();
 
       await user.clear(playerOneName);
       await user.type(playerOneName, "Alice");
       expect(screen.getByText("Player 1 (Alice)")).toBeInTheDocument();
+    });
+
+    it("opens and closes Game Setup from the header button", async () => {
+      const user = userEvent.setup();
+      render(<PlayerLifeTrackerApp />);
+
+      const openButton = screen.getByRole("button", { name: "Open game setup" });
+      expect(openButton).toHaveAttribute("aria-haspopup", "dialog");
+      expect(openButton).toHaveAttribute("aria-expanded", "false");
+
+      await user.click(openButton);
+      expect(openButton).toHaveAttribute("aria-expanded", "true");
+      expect(screen.getByRole("dialog", { name: "Game Setup" })).toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Close game setup" }));
+      expect(screen.queryByRole("dialog", { name: "Game Setup" })).not.toBeInTheDocument();
+      expect(openButton).toHaveAttribute("aria-expanded", "false");
+    });
+
+    it("closes the Game Setup dialog on Escape", async () => {
+      const user = userEvent.setup();
+      render(<PlayerLifeTrackerApp />);
+      await openGameSetup(user);
+
+      await user.keyboard("{Escape}");
+
+      expect(screen.queryByRole("dialog", { name: "Game Setup" })).not.toBeInTheDocument();
     });
 
     it("supports every player count from two through eight", async () => {
@@ -88,26 +114,28 @@ describe("Frontend - Shared", () => {
       render(<PlayerLifeTrackerApp />);
       await openGameSetup(user);
 
-      await user.click(screen.getByRole("button", { name: "Remove last player" }));
-      await user.click(screen.getByRole("button", { name: "Remove last player" }));
+      await user.click(screen.getByRole("button", { name: "Set player count to 2" }));
       expect(trackerCards()).toHaveLength(2);
 
       for (let count = 3; count <= 8; count += 1) {
-        await user.click(screen.getByRole("button", { name: "Add player" }));
+        await user.click(screen.getByRole("button", { name: `Set player count to ${count}` }));
         expect(trackerCards()).toHaveLength(count);
       }
 
-      expect(screen.getByRole("button", { name: "Add player" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Set player count to 8" })).toHaveAttribute(
+        "aria-pressed",
+        "true"
+      );
     });
 
     it("applies the four-player seat contract literally to every fixed label", () => {
       render(<PlayerLifeTrackerApp />);
 
       const expected = [
-        ["Player 1", "left", "seat-player-1", "1 / 2", "1 / 2", "rotate(90deg)"],
-        ["Player 2", "left", "seat-player-2", "2 / 3", "1 / 2", "rotate(90deg)"],
-        ["Player 3", "right", "seat-player-3", "1 / 2", "2 / 3", "rotate(270deg)"],
-        ["Player 4", "right", "seat-player-4", "2 / 3", "2 / 3", "rotate(270deg)"]
+        ["Player 1", "left", "seat-player-1", "1 / 2", "1 / 2", "translate(-50%, -50%) rotate(90deg)"],
+        ["Player 2", "left", "seat-player-2", "2 / 3", "1 / 2", "translate(-50%, -50%) rotate(90deg)"],
+        ["Player 3", "right", "seat-player-3", "1 / 2", "2 / 3", "translate(-50%, -50%) rotate(270deg)"],
+        ["Player 4", "right", "seat-player-4", "2 / 3", "2 / 3", "translate(-50%, -50%) rotate(270deg)"]
       ] as const;
 
       for (const [label, side, gridArea, gridRow, gridColumn, transform] of expected) {
@@ -116,6 +144,39 @@ describe("Frontend - Shared", () => {
         expect(card).toHaveStyle({ gridArea, gridRow, gridColumn });
         expect(screen.getByTestId(`life-card-content-${label}`)).toHaveStyle({ transform });
       }
+    });
+
+    it("switches the life table to the head/pair/foot list layout", async () => {
+      const user = userEvent.setup();
+      render(<PlayerLifeTrackerApp />);
+      await openGameSetup(user);
+
+      await user.click(screen.getByRole("button", { name: "Use list layout" }));
+
+      expect(screen.getByTestId("life-tracker-table")).toHaveStyle({
+        gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+        gridTemplateRows: "repeat(3, minmax(15rem, 1fr))"
+      });
+
+      const expected = [
+        ["Player 1", "top", "1 / 2", "1 / 3", "rotate(180deg)"],
+        ["Player 2", "bottom", "2 / 3", "1 / 2", "rotate(0deg)"],
+        ["Player 3", "bottom", "2 / 3", "2 / 3", "rotate(0deg)"],
+        ["Player 4", "bottom", "3 / 4", "1 / 3", "rotate(0deg)"]
+      ] as const;
+
+      for (const [label, side, gridRow, gridColumn, rotate] of expected) {
+        const card = screen.getByTestId(`life-card-${label}`);
+        expect(card).toHaveAttribute("data-side", side);
+        expect(card).toHaveStyle({ gridRow, gridColumn });
+        expect(screen.getByTestId(`life-card-content-${label}`)).toHaveStyle({
+          transform: `translate(-50%, -50%) ${rotate}`
+        });
+      }
+
+      expect(screen.getByRole("button", { name: "Decrease life for Player 1" })).toHaveClass("left-0", "w-12");
+      expect(screen.getByRole("button", { name: "Decrease life for Player 2" })).toHaveClass("top-0", "h-12");
+      expect(screen.getByRole("button", { name: "Decrease life for Player 4" })).toHaveClass("left-0", "w-12");
     });
 
     it("changes only the selected player's life and applies starting life to the full table", async () => {
@@ -168,7 +229,7 @@ describe("Frontend - Shared", () => {
       expect(within(screen.getByTestId("life-card-Player 1")).getByText("40")).toBeInTheDocument();
       expect(localStorage.length).toBe(0);
 
-      await user.click(screen.getByRole("button", { name: "Remove last player" }));
+      await user.click(screen.getByRole("button", { name: "Set player count to 3" }));
       await user.click(screen.getByRole("button", { name: "Start new game" }));
       expect(trackerCards()).toHaveLength(4);
       expect(localStorage.length).toBe(0);
@@ -198,35 +259,31 @@ describe("Frontend - Shared", () => {
       expect(screen.getByRole("button", { name: "Increment Poison" })).toHaveTextContent("0");
     });
 
-    it("links only positive commander damage to life when the game setting is enabled", async () => {
+    it("always links positive commander damage to life", async () => {
       const user = userEvent.setup();
       render(<PlayerLifeTrackerApp />);
 
       await user.click(screen.getByRole("button", { name: "Open counters for Player 1" }));
-      await user.click(screen.getByRole("button", { name: "Increment Commander damage from Player 2" }));
+      await user.click(screen.getByRole("button", { name: "Increase commander damage from Player 2" }));
       await user.click(screen.getByRole("button", { name: "Close counters" }));
-      expect(within(screen.getByTestId("life-card-Player 1")).getByText("40")).toBeInTheDocument();
+      expect(within(screen.getByTestId("life-card-Player 1")).getByText("39")).toBeInTheDocument();
 
-      await openGameSetup(user);
-      await user.click(screen.getByRole("checkbox", { name: "Commander damage also reduces life" }));
       await user.click(screen.getByRole("button", { name: "Open counters for Player 1" }));
-      await user.click(screen.getByRole("button", { name: "Increment Commander damage from Player 2" }));
-      await user.click(screen.getByRole("button", { name: "Increment Commander damage from Player 2" }));
+      await user.click(screen.getByRole("button", { name: "Increase commander damage from Player 2" }));
+      await user.click(screen.getByRole("button", { name: "Increase commander damage from Player 2" }));
       await user.click(screen.getByRole("tab", { name: "Counters" }));
       await user.click(screen.getByRole("button", { name: "Increment Poison" }));
       await user.click(screen.getByRole("button", { name: "Close counters" }));
 
-      expect(within(screen.getByTestId("life-card-Player 1")).getByText("38")).toBeInTheDocument();
+      expect(within(screen.getByTestId("life-card-Player 1")).getByText("37")).toBeInTheDocument();
     });
 
-    it("persists commander, named, custom, and setting values across reopen and remount", async () => {
+    it("persists commander, named, and custom values across reopen and remount", async () => {
       const user = userEvent.setup();
       const firstMount = render(<PlayerLifeTrackerApp />);
-      await openGameSetup(user);
 
-      await user.click(screen.getByRole("checkbox", { name: "Commander damage also reduces life" }));
       await user.click(screen.getByRole("button", { name: "Open counters for Player 1" }));
-      await user.click(screen.getByRole("button", { name: "Increment Commander damage from Player 2" }));
+      await user.click(screen.getByRole("button", { name: "Increase commander damage from Player 2" }));
       await user.click(screen.getByRole("tab", { name: "Counters" }));
       await user.click(screen.getByRole("button", { name: "Increment Poison" }));
       await user.type(screen.getByRole("textbox", { name: "Custom counter name" }), "Storm");
@@ -235,7 +292,7 @@ describe("Frontend - Shared", () => {
       await user.click(screen.getByRole("button", { name: "Close counters" }));
 
       await user.click(screen.getByRole("button", { name: "Open counters for Player 1" }));
-      expect(screen.getByRole("button", { name: "Increment Commander damage from Player 2" })).toHaveTextContent("1");
+      expect(screen.getByTestId("commander-value-Player 2")).toHaveTextContent("1");
       await user.click(screen.getByRole("tab", { name: "Counters" }));
       expect(screen.getByRole("button", { name: "Increment Poison" })).toHaveTextContent("1");
       expect(screen.getByRole("button", { name: "Increment Storm" })).toHaveTextContent("1");
@@ -243,10 +300,8 @@ describe("Frontend - Shared", () => {
 
       firstMount.unmount();
       render(<PlayerLifeTrackerApp />);
-      await openGameSetup(user);
-      expect(screen.getByRole("checkbox", { name: "Commander damage also reduces life" })).toBeChecked();
       await user.click(screen.getByRole("button", { name: "Open counters for Player 1" }));
-      expect(screen.getByRole("button", { name: "Increment Commander damage from Player 2" })).toHaveTextContent("1");
+      expect(screen.getByTestId("commander-value-Player 2")).toHaveTextContent("1");
       await user.click(screen.getByRole("tab", { name: "Counters" }));
       expect(screen.getByRole("button", { name: "Increment Poison" })).toHaveTextContent("1");
       expect(screen.getByRole("button", { name: "Increment Storm" })).toHaveTextContent("1");

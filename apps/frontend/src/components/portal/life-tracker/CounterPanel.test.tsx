@@ -32,7 +32,6 @@ function panelProps(
     onSetCustomCounter: vi.fn(),
     onRemoveCustomCounter: vi.fn(),
     onAdjustCommanderDamage: vi.fn(),
-    onSetCommanderDamage: vi.fn(),
     ...overrides
   };
 }
@@ -81,7 +80,7 @@ describe("Frontend - Shared", () => {
       expect(trigger).toHaveFocus();
     });
 
-    it("shows one me cell and one independently adjustable cell per opponent", async () => {
+    it("shows one me cell and one independently adjustable cell per opponent, labeled by name only", async () => {
       const user = userEvent.setup();
       const props = panelProps();
       render(<CounterPanel {...props} />);
@@ -89,12 +88,15 @@ describe("Frontend - Shared", () => {
       const matrix = screen.getByRole("group", { name: "Commander damage by source" });
       expect(within(matrix).getAllByTestId(/^commander-cell-/)).toHaveLength(4);
       expect(within(matrix).getByText("me")).toBeInTheDocument();
+      expect(within(matrix).getByText("Player 2")).toBeInTheDocument();
       expect(within(matrix).queryByRole("button", { name: /Player 1/ })).not.toBeInTheDocument();
+      expect(within(matrix).queryByRole("button", { name: /Options for/ })).not.toBeInTheDocument();
 
-      await user.click(
-        within(matrix).getByRole("button", { name: "Increment Commander damage from Player 2" })
-      );
+      await user.click(within(matrix).getByRole("button", { name: "Increase commander damage from Player 2" }));
       expect(props.onAdjustCommanderDamage).toHaveBeenCalledWith("Player 1", "Player 2", 1);
+
+      await user.click(within(matrix).getByRole("button", { name: "Decrease commander damage from Player 2" }));
+      expect(props.onAdjustCommanderDamage).toHaveBeenCalledWith("Player 1", "Player 2", -1);
     });
 
     it("renders the shared palette exactly once and increments each value independently", async () => {

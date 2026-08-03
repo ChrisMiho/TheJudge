@@ -75,7 +75,7 @@ describe("Frontend - Portal", () => {
     await selectDestination(user, "In-Depth Question");
 
     expect(await screen.findByLabelText("Player 1 display name")).toHaveValue("Alice");
-    expect(screen.getByLabelText("Player 1 life total")).toHaveValue("40");
+    expect(screen.getByLabelText("Player 1 life total")).toHaveValue("35");
     expect(screen.getByLabelText("Player 1 poison")).toHaveValue("3");
     expect(screen.getByLabelText("Player 1 commander damage from Player 2")).toHaveValue("5");
     expect(screen.getByLabelText("Player 4 display name")).toHaveValue("Player 4");
