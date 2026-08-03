@@ -10,6 +10,7 @@ import {
   setCommanderDamage
 } from "./lib/lifeTracker/state";
 import { saveTrackerState, TRACKER_STORAGE_KEY } from "./lib/lifeTracker/persistence";
+import { expandSecondaryPlayerDetails } from "./test/appTestHelpers";
 
 function createMemoryStorage(): Storage {
   const entries = new Map<string, string>();
@@ -76,9 +77,12 @@ describe("Frontend - Portal", () => {
 
     expect(await screen.findByLabelText("Player 1 display name")).toHaveValue("Alice");
     expect(screen.getByLabelText("Player 1 life total")).toHaveValue("35");
+    expect(screen.queryByLabelText("Player 1 poison")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Player 4 display name")).toHaveValue("Player 4");
+
+    await expandSecondaryPlayerDetails(user);
     expect(screen.getByLabelText("Player 1 poison")).toHaveValue("3");
     expect(screen.getByLabelText("Player 1 commander damage from Player 2")).toHaveValue("5");
-    expect(screen.getByLabelText("Player 4 display name")).toHaveValue("Player 4");
   });
 
   it("does not seed after tracker-to-Quick-to-Assistant routing", async () => {
@@ -93,8 +97,10 @@ describe("Frontend - Portal", () => {
 
     expect(screen.getByLabelText("Player 1 display name")).toHaveValue("Player 1");
     expect(screen.getByLabelText("Player 1 life total")).toHaveValue("20");
-    expect(screen.queryByLabelText("Player 1 poison")).toHaveValue("");
     expect(screen.getByText("2 players")).toBeInTheDocument();
+
+    await expandSecondaryPlayerDetails(user);
+    expect(screen.getByLabelText("Player 1 poison")).toHaveValue("");
   });
 
   it("consumes the seed once so later unrelated re-entry does not clobber Assistant edits", async () => {
@@ -124,6 +130,7 @@ describe("Frontend - Portal", () => {
     const lifeInput = await screen.findByLabelText("Player 1 life total");
     await user.clear(lifeInput);
     await user.type(lifeInput, "12");
+    await expandSecondaryPlayerDetails(user);
     const poisonInput = screen.getByLabelText("Player 1 poison");
     await user.clear(poisonInput);
     await user.type(poisonInput, "8");

@@ -159,6 +159,11 @@ export async function expandPlayerDetails(user: ReturnType<typeof userEvent.setu
   await user.click(screen.getByRole("button", { name: "Show player details" }));
 }
 
+export async function expandSecondaryPlayerDetails(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  const [arrow] = await screen.findAllByRole("button", { name: "Show secondary details for all players" });
+  await user.click(arrow);
+}
+
 export async function selectTurnPhase(user: ReturnType<typeof userEvent.setup>, phaseValue: string): Promise<void> {
   await user.selectOptions(screen.getByLabelText("Turn phase"), phaseValue);
 }

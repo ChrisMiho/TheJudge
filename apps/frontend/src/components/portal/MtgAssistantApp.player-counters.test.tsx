@@ -10,6 +10,7 @@ import {
   advanceToZoneCollectionWithZones,
   baseCardMetadataFixture,
   clickDecryptStack,
+  expandSecondaryPlayerDetails,
   getUrlFromRequest,
   jsonResponse,
   selectZoneTab
@@ -82,24 +83,71 @@ describe("Frontend - MTG Assistant", () => {
     vi.unstubAllGlobals();
   });
 
-  it("consumes a roster seed into editable names, life totals, and counter fields", async () => {
+  it("consumes a roster seed with counter inputs hidden until the shared arrow is activated", async () => {
+    const user = userEvent.setup();
     renderWithSeed(fourPlayerSeed);
 
     expect(await screen.findByLabelText("Player 1 display name")).toHaveValue("Alice");
     expect(screen.getByLabelText("Player 1 life total")).toHaveValue("27");
+    expect(screen.getByText("4 players")).toBeInTheDocument();
+    expect(
+      screen.getByText("Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.")
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText("Player 1 poison")).not.toBeInTheDocument();
+
+    await expandSecondaryPlayerDetails(user);
+
     expect(screen.getByLabelText("Player 1 poison")).toHaveValue("3");
     expect(screen.getByLabelText("Player 1 energy")).toHaveValue("2");
     expect(screen.getByLabelText("Player 1 experience")).toHaveValue("4");
     expect(screen.getByLabelText("Player 1 commander damage from Player 2")).toHaveValue("5");
     expect(screen.getByLabelText("Player 1 counter Monarch amount")).toHaveValue("1");
+    expect(screen.getByLabelText("Player 4 poison")).toBeInTheDocument();
+  });
+
+  it("keeps the shared expanded state and existing values across add and remove", async () => {
+    const user = userEvent.setup();
+    renderWithSeed(fourPlayerSeed);
+
+    await expandSecondaryPlayerDetails(user);
+    expect(screen.getByLabelText("Player 1 poison")).toHaveValue("3");
+
+    await user.click(screen.getByRole("button", { name: "Add player" }));
+    expect(screen.getByText("5 players")).toBeInTheDocument();
+    expect(screen.getByLabelText("Player 5 poison")).toBeInTheDocument();
+    expect(screen.getByLabelText("Player 1 poison")).toHaveValue("3");
+
+    await user.click(screen.getByRole("button", { name: "Remove last player" }));
     expect(screen.getByText("4 players")).toBeInTheDocument();
+    expect(screen.getByLabelText("Player 1 poison")).toHaveValue("3");
+    expect(screen.getByLabelText("Player 4 poison")).toBeInTheDocument();
+  });
+
+  it("collapses secondary details on outer roster close and preserves values through reopen and re-expand", async () => {
+    const user = userEvent.setup();
+    renderWithSeed(fourPlayerSeed);
+
+    await expandSecondaryPlayerDetails(user);
+    expect(screen.getByLabelText("Player 1 poison")).toHaveValue("3");
+
+    await user.click(screen.getByRole("button", { name: "Hide player details" }));
+    expect(screen.queryByLabelText("Player 1 display name")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Show player details" }));
+    expect(screen.getByLabelText("Player 1 display name")).toHaveValue("Alice");
+    expect(screen.queryByLabelText("Player 1 poison")).not.toBeInTheDocument();
+
+    await expandSecondaryPlayerDetails(user);
+    expect(screen.getByLabelText("Player 1 poison")).toHaveValue("3");
+    expect(screen.getByLabelText("Player 1 counter Monarch amount")).toHaveValue("1");
   });
 
   it("submits edited populated counters while omitting zero and empty values", async () => {
     const user = userEvent.setup();
     renderWithSeed(fourPlayerSeed);
 
-    const poison = await screen.findByLabelText("Player 1 poison");
+    await expandSecondaryPlayerDetails(user);
+    const poison = screen.getByLabelText("Player 1 poison");
     await user.clear(poison);
     await user.type(poison, "8");
     await user.clear(screen.getByLabelText("Player 1 energy"));
@@ -109,6 +157,12 @@ describe("Frontend - MTG Assistant", () => {
     await user.clear(screen.getByLabelText("Player 1 counter Shield name"));
     await user.clear(screen.getByLabelText("Player 1 counter Charge amount"));
     await user.type(screen.getByLabelText("Player 1 counter Charge amount"), "7");
+
+    // Collapse and re-expand secondary details before submitting to prove disclosure
+    // toggles never alter the underlying counter values.
+    const [hideArrow] = screen.getAllByRole("button", { name: "Hide secondary details for all players" });
+    await user.click(hideArrow);
+    await expandSecondaryPlayerDetails(user);
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
     await advanceToZoneCollectionWithZones(user, ["Stack"]);

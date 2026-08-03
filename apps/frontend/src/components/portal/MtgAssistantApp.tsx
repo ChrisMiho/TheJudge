@@ -139,6 +139,7 @@ export function MtgAssistantApp(): JSX.Element {
   const [brandClickCount, setBrandClickCount] = useState(0);
   const showCatEasterEgg = brandClickCount >= 10;
   const [playersDetailsExpanded, setPlayersDetailsExpanded] = useState(false);
+  const [secondaryDetailsExpanded, setSecondaryDetailsExpanded] = useState(false);
   const [displayNamesByPlayer, setDisplayNamesByPlayer] = useState<Record<PlayerLabel, string>>(createDefaultDisplayNames);
   const [countersByPlayer, setCountersByPlayer] = useState<AssistantCountersByPlayer>(createEmptyCountersByPlayer);
 
@@ -238,6 +239,20 @@ export function MtgAssistantApp(): JSX.Element {
     window.setTimeout(() => {
       setStatusMessage((current) => (current === message ? null : current));
     }, 1400);
+  }
+
+  function toggleOuterRosterDetails(): void {
+    setPlayersDetailsExpanded((current) => {
+      const next = !current;
+      if (!next) {
+        setSecondaryDetailsExpanded(false);
+      }
+      return next;
+    });
+  }
+
+  function toggleSecondaryDetails(): void {
+    setSecondaryDetailsExpanded((current) => !current);
   }
 
   function updateLifeTotal(player: PlayerLabel, value: string): void {
@@ -516,12 +531,14 @@ export function MtgAssistantApp(): JSX.Element {
               players={rosterPlayers}
               playerCount={activePlayerCount}
               isExpanded={playersDetailsExpanded}
-              onToggleExpanded={() => setPlayersDetailsExpanded((current) => !current)}
+              onToggleExpanded={toggleOuterRosterDetails}
               onAddPlayer={addPlayer}
               onRemovePlayer={removePlayer}
               onDisplayNameChange={updateDisplayName}
               onLifeTotalChange={updateLifeTotal}
               showLifeTotals
+              secondaryDetailsExpanded={secondaryDetailsExpanded}
+              onToggleSecondaryDetails={toggleSecondaryDetails}
               renderPlayerExtras={(player) => {
                 const playerCounters = countersByPlayer[player.label];
                 return (
