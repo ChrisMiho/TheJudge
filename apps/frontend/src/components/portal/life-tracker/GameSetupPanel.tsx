@@ -1,14 +1,22 @@
 import { useState, type FormEvent } from "react";
 import { MAX_PLAYER_COUNT, MIN_PLAYER_COUNT } from "../../../lib/lifeTracker/state";
+import type { PlayerLabel } from "../../../types";
 import type { LayoutMode } from "../../../lib/lifeTracker/types";
+
+export interface GameSetupPanelPlayer {
+  label: PlayerLabel;
+  displayName: string;
+}
 
 export interface GameSetupPanelProps {
   playerCount: number;
   layoutMode: LayoutMode;
   startingLife: number;
+  players: GameSetupPanelPlayer[];
   onPlayerCountChange: (count: number) => void;
   onLayoutModeChange: (mode: LayoutMode) => void;
   onStartingLifeChange: (startingLife: number) => void;
+  onDisplayNameChange: (label: PlayerLabel, value: string) => void;
   onReset: () => void;
   onNewGame: () => void;
 }
@@ -21,19 +29,31 @@ const PLAYER_COUNTS = Array.from(
 const MIN_CUSTOM_STARTING_LIFE = 1;
 const MAX_CUSTOM_STARTING_LIFE = 999;
 
+const PILL_BASE =
+  "motion-focus min-h-11 rounded-full border px-3 text-sm font-black tabular-nums transition";
+const PILL_SELECTED = "border-accent-strong bg-accent-strong text-accent-contrast shadow-sm";
+const PILL_UNSELECTED = "border-zinc-300 bg-zinc-50 text-zinc-700 hover:bg-zinc-100";
+
+function pillClassName(isSelected: boolean): string {
+  return `${PILL_BASE} ${isSelected ? PILL_SELECTED : PILL_UNSELECTED}`;
+}
+
 export function GameSetupPanel({
   playerCount,
   layoutMode,
   startingLife,
+  players,
   onPlayerCountChange,
   onLayoutModeChange,
   onStartingLifeChange,
+  onDisplayNameChange,
   onReset,
   onNewGame
 }: GameSetupPanelProps): JSX.Element {
   const [isEditingStartingLifeCustom, setIsEditingStartingLifeCustom] = useState(false);
   const [startingLifeDraft, setStartingLifeDraft] = useState("");
   const [customError, setCustomError] = useState<string | null>(null);
+  const [isEditingNames, setIsEditingNames] = useState(false);
   const isCustomStartingLife = !(STARTING_LIFE_PRESETS as readonly number[]).includes(startingLife);
 
   function applyCustomLife(event: FormEvent<HTMLFormElement>): void {
@@ -70,45 +90,34 @@ export function GameSetupPanel({
   }
 
   return (
-    <section
-      aria-labelledby="life-tracker-game-setup-title"
-      className="rounded-2xl border border-zinc-800 bg-black/40 p-4"
-    >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 pb-3">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-soft">Table settings</p>
-          <h2 id="life-tracker-game-setup-title" className="text-lg font-black text-zinc-100">
-            Game setup
-          </h2>
-        </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            aria-label="Reset current game"
-            onClick={onReset}
-            className="motion-focus min-h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-bold text-zinc-100 hover:bg-zinc-800"
-          >
-            Reset
-          </button>
-          <button
-            type="button"
-            aria-label="Start new game"
-            onClick={onNewGame}
-            className="motion-focus min-h-11 rounded-xl border border-accent/50 bg-accent/15 px-3 text-sm font-bold text-accent-soft hover:bg-accent/25"
-          >
-            New Game
-          </button>
-        </div>
+    <section aria-label="Game setup controls" className="divide-y divide-zinc-200">
+      <div className="flex gap-2 pb-4">
+        <button
+          type="button"
+          aria-label="Reset current game"
+          onClick={onReset}
+          className="motion-focus min-h-11 flex-1 rounded-xl border border-zinc-300 bg-zinc-50 px-3 text-sm font-bold text-zinc-700 hover:bg-zinc-100"
+        >
+          Reset
+        </button>
+        <button
+          type="button"
+          aria-label="Start new game"
+          onClick={onNewGame}
+          className="motion-focus min-h-11 flex-1 rounded-xl border border-accent-strong bg-accent-strong px-3 text-sm font-bold text-accent-contrast hover:bg-accent"
+        >
+          New Game
+        </button>
       </div>
 
-      <div className="border-b border-zinc-800 py-3">
-        <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-zinc-300">
+      <div className="py-4">
+        <p className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-500">
           <span aria-hidden="true" className="text-base leading-none">
             👥
           </span>
           Players
         </p>
-        <div className="grid grid-cols-7 gap-2" aria-label="Player count">
+        <div className="flex flex-wrap gap-2" aria-label="Player count">
           {PLAYER_COUNTS.map((count) => {
             const isSelected = playerCount === count;
             return (
@@ -118,21 +127,49 @@ export function GameSetupPanel({
                 aria-label={`Set player count to ${count}`}
                 aria-pressed={isSelected}
                 onClick={() => onPlayerCountChange(count)}
-                className={`motion-focus min-h-11 rounded-full border px-2 text-sm font-black tabular-nums transition ${
-                  isSelected
-                    ? "border-accent bg-accent/20 text-accent-soft ring-2 ring-accent/25"
-                    : "border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
-                }`}
+                className={`${pillClassName(isSelected)} min-w-11`}
               >
                 {count}
               </button>
             );
           })}
         </div>
+
+        <button
+          type="button"
+          aria-label={isEditingNames ? "Hide player names" : "Edit player names"}
+          aria-expanded={isEditingNames}
+          onClick={() => setIsEditingNames((current) => !current)}
+          className="motion-focus mt-3 inline-flex items-center gap-1 rounded-md text-xs font-bold text-accent-strong hover:underline"
+        >
+          <span aria-hidden="true">{isEditingNames ? "▾" : "▸"}</span>
+          Edit names
+        </button>
+
+        {isEditingNames && (
+          <div className="mt-2 space-y-2">
+            {players.map((player) => (
+              <label
+                key={player.label}
+                className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2"
+              >
+                <span className="w-24 shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-zinc-500">
+                  {player.label}
+                </span>
+                <input
+                  aria-label={`${player.label} display name`}
+                  value={player.displayName}
+                  onChange={(event) => onDisplayNameChange(player.label, event.target.value)}
+                  className="motion-focus min-h-9 w-full min-w-0 rounded-md border border-zinc-300 bg-white px-2 text-sm text-zinc-900"
+                />
+              </label>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="border-b border-zinc-800 py-3">
-        <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-zinc-300">
+      <div className="py-4">
+        <p className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-500">
           <span aria-hidden="true" className="text-base leading-none">
             ▤
           </span>
@@ -149,11 +186,7 @@ export function GameSetupPanel({
                 aria-label={`Use ${mode} layout`}
                 aria-pressed={isSelected}
                 onClick={() => onLayoutModeChange(mode)}
-                className={`motion-focus inline-flex min-h-11 items-center justify-center gap-2 rounded-full border px-3 text-sm font-black transition ${
-                  isSelected
-                    ? "border-accent bg-accent/20 text-accent-soft ring-2 ring-accent/25"
-                    : "border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
-                }`}
+                className={`${pillClassName(isSelected)} inline-flex items-center justify-center gap-2`}
               >
                 <span aria-hidden="true" className="text-base leading-none">
                   {mode === "grid" ? "▦" : "☷"}
@@ -165,14 +198,14 @@ export function GameSetupPanel({
         </div>
       </div>
 
-      <div className="border-b border-zinc-800 py-3">
-        <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-zinc-300">
+      <div className="pt-4">
+        <p className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-500">
           <span aria-hidden="true" className="text-base leading-none">
             ♥
           </span>
           Starting life
         </p>
-        <div className="grid grid-cols-5 gap-2" aria-label="Starting life presets">
+        <div className="flex flex-wrap gap-2" aria-label="Starting life presets">
           {STARTING_LIFE_PRESETS.map((preset) => {
             const isSelected = startingLife === preset;
             return (
@@ -186,22 +219,14 @@ export function GameSetupPanel({
                   setIsEditingStartingLifeCustom(false);
                   onStartingLifeChange(preset);
                 }}
-                className={`motion-focus min-h-11 rounded-full border px-2 text-sm font-black tabular-nums transition ${
-                  isSelected
-                    ? "border-accent bg-accent/20 text-accent-soft ring-2 ring-accent/25"
-                    : "border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
-                }`}
+                className={`${pillClassName(isSelected)} min-w-11`}
               >
                 {preset}
               </button>
             );
           })}
           {isEditingStartingLifeCustom ? (
-            <form
-              noValidate
-              onSubmit={applyCustomLife}
-              className="relative min-h-11 min-w-0"
-            >
+            <form noValidate onSubmit={applyCustomLife} className="relative min-h-11 min-w-20">
               <input
                 autoFocus
                 type="number"
@@ -225,13 +250,13 @@ export function GameSetupPanel({
                 }}
                 onBlur={cancelCustomLifeEdit}
                 inputMode="numeric"
-                className="motion-focus min-h-11 w-full min-w-0 rounded-full border border-accent bg-zinc-900 px-2 pr-8 text-center text-sm font-black tabular-nums text-zinc-100 ring-2 ring-accent/25"
+                className="motion-focus min-h-11 w-full min-w-0 rounded-full border border-accent-strong bg-white px-2 pr-8 text-center text-sm font-black tabular-nums text-zinc-900 ring-2 ring-accent/25"
               />
               <button
                 type="submit"
                 aria-label="Apply custom starting life"
                 onPointerDown={(event) => event.preventDefault()}
-                className="motion-focus absolute right-1 top-1/2 flex min-h-8 min-w-8 -translate-y-1/2 items-center justify-center rounded-full text-sm font-black text-accent-soft hover:bg-zinc-800"
+                className="motion-focus absolute right-1 top-1/2 flex min-h-8 min-w-8 -translate-y-1/2 items-center justify-center rounded-full text-sm font-black text-accent-strong hover:bg-zinc-100"
               >
                 <span aria-hidden="true">✓</span>
               </button>
@@ -242,18 +267,14 @@ export function GameSetupPanel({
               aria-label="Set custom starting life"
               aria-pressed={isCustomStartingLife}
               onClick={beginCustomLifeEdit}
-              className={`motion-focus min-h-11 rounded-full border px-2 text-sm font-black tabular-nums transition ${
-                isCustomStartingLife
-                  ? "border-accent bg-accent/20 text-accent-soft ring-2 ring-accent/25"
-                  : "border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
-              }`}
+              className={`${pillClassName(isCustomStartingLife)} min-w-11`}
             >
               {isCustomStartingLife ? startingLife : "Custom"}
             </button>
           )}
         </div>
         {customError && (
-          <p id="custom-starting-life-error" role="alert" className="mt-2 text-sm text-rose-300">
+          <p id="custom-starting-life-error" role="alert" className="mt-2 text-sm text-rose-600">
             {customError}
           </p>
         )}

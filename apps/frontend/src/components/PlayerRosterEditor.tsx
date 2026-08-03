@@ -19,7 +19,6 @@ export type PlayerRosterEditorProps = {
   onRemovePlayer: () => void;
   onDisplayNameChange: (player: PlayerLabel, value: string) => void;
   onLifeTotalChange?: (player: PlayerLabel, value: string) => void;
-  showCountStepper?: boolean;
   showLifeTotals?: boolean;
   renderPlayerExtras?: (player: RosterPlayer) => ReactNode;
 };
@@ -38,7 +37,6 @@ export function PlayerRosterEditor({
   onRemovePlayer,
   onDisplayNameChange,
   onLifeTotalChange,
-  showCountStepper = true,
   showLifeTotals = true,
   renderPlayerExtras
 }: PlayerRosterEditorProps): JSX.Element {
@@ -59,28 +57,26 @@ export function PlayerRosterEditor({
             {playerCount} {playerCount === 1 ? "player" : "players"}
           </span>
         </div>
-        {showCountStepper && (
-          <div className="flex gap-2">
-            <button
-              type="button"
-              aria-label="Remove last player"
-              onClick={onRemovePlayer}
-              disabled={playerCount <= MIN_PLAYER_ROSTER_SIZE}
-              className="motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] min-w-[3.5rem] items-center justify-center rounded-lg border border-zinc-500 bg-zinc-800/70 px-4 py-1.5 text-xs font-semibold text-zinc-100 transition hover:bg-zinc-700/80 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              −
-            </button>
-            <button
-              type="button"
-              aria-label="Add player"
-              onClick={onAddPlayer}
-              disabled={playerCount >= MAX_PLAYER_ROSTER_SIZE}
-              className="motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] min-w-[3.5rem] items-center justify-center rounded-lg border border-accent/50 bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent-soft transition hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              +
-            </button>
-          </div>
-        )}
+        <div className="flex gap-2">
+          <button
+            type="button"
+            aria-label="Remove last player"
+            onClick={onRemovePlayer}
+            disabled={playerCount <= MIN_PLAYER_ROSTER_SIZE}
+            className="motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] min-w-[3.5rem] items-center justify-center rounded-lg border border-zinc-500 bg-zinc-800/70 px-4 py-1.5 text-xs font-semibold text-zinc-100 transition hover:bg-zinc-700/80 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            −
+          </button>
+          <button
+            type="button"
+            aria-label="Add player"
+            onClick={onAddPlayer}
+            disabled={playerCount >= MAX_PLAYER_ROSTER_SIZE}
+            className="motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] min-w-[3.5rem] items-center justify-center rounded-lg border border-accent/50 bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent-soft transition hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            +
+          </button>
+        </div>
       </div>
 
       {isExpanded && (

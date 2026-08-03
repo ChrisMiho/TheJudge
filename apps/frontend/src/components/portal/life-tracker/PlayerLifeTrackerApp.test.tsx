@@ -63,23 +63,19 @@ describe("Frontend - Shared", () => {
   });
 
   describe("PlayerLifeTrackerApp", () => {
-    it("renders portal chrome, setup, and the shared roster editor without life inputs", async () => {
+    it("renders portal chrome and lets names be edited from the Players section of Game Setup", async () => {
       const user = userEvent.setup();
       render(<PlayerLifeTrackerApp />);
 
       expect(screen.getByRole("main")).toBeInTheDocument();
       expect(screen.getByRole("heading", { name: "Player Life Tracker" })).toBeInTheDocument();
-      expect(screen.queryByRole("heading", { name: "Game setup" })).not.toBeInTheDocument();
 
       await openGameSetup(user);
-      expect(screen.getByRole("heading", { name: "Game setup" })).toBeInTheDocument();
-      expect(screen.getByText("4 players")).toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: "Remove last player" })).not.toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: "Add player" })).not.toBeInTheDocument();
+      expect(screen.getByLabelText("Player count")).toBeInTheDocument();
+      expect(screen.queryByLabelText("Player 1 display name")).not.toBeInTheDocument();
 
-      await user.click(screen.getByRole("button", { name: "Show player details" }));
+      await user.click(screen.getByRole("button", { name: "Edit player names" }));
       const playerOneName = screen.getByLabelText("Player 1 display name");
-      expect(screen.queryByLabelText("Player 1 life total")).not.toBeInTheDocument();
 
       await user.clear(playerOneName);
       await user.type(playerOneName, "Alice");

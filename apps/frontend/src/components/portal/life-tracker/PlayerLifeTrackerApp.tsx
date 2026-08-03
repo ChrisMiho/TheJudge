@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { PlayerRosterEditor } from "../../PlayerRosterEditor";
 import { PageShell } from "../../PageShell";
 import type { PlayerLabel } from "../../../types";
 import { listSeatArrangement, seatArrangement } from "../../../lib/lifeTracker/seatArrangement";
@@ -16,17 +15,10 @@ export interface PlayerLifeTrackerAppProps {
 
 interface GameSetupModalProps {
   tracker: UseLifeTrackerResult;
-  isRosterExpanded: boolean;
-  onToggleRoster: () => void;
   onClose: () => void;
 }
 
-function GameSetupModal({
-  tracker,
-  isRosterExpanded,
-  onToggleRoster,
-  onClose
-}: GameSetupModalProps): JSX.Element {
+function GameSetupModal({ tracker, onClose }: GameSetupModalProps): JSX.Element {
   const dialogRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
 
@@ -80,34 +72,22 @@ function GameSetupModal({
           </button>
         </header>
 
-        <div className="mt-4 space-y-2">
+        <div className="mt-4">
           <GameSetupPanel
             playerCount={tracker.state.playerCount}
             layoutMode={tracker.state.layoutMode}
             startingLife={tracker.state.startingLife}
+            players={tracker.state.players.map((player) => ({
+              label: player.label,
+              displayName: player.displayName
+            }))}
             onPlayerCountChange={tracker.setPlayerCount}
             onLayoutModeChange={tracker.setLayoutMode}
             onStartingLifeChange={tracker.setStartingLife}
+            onDisplayNameChange={tracker.setPlayerDisplayName}
             onReset={tracker.reset}
             onNewGame={tracker.newGame}
           />
-
-          <section aria-label="Player roster" className="space-y-2">
-            <PlayerRosterEditor
-              players={tracker.state.players.map((player) => ({
-                label: player.label,
-                displayName: player.displayName
-              }))}
-              playerCount={tracker.state.playerCount}
-              isExpanded={isRosterExpanded}
-              onToggleExpanded={onToggleRoster}
-              onAddPlayer={() => tracker.setPlayerCount(tracker.state.playerCount + 1)}
-              onRemovePlayer={() => tracker.setPlayerCount(tracker.state.playerCount - 1)}
-              onDisplayNameChange={tracker.setPlayerDisplayName}
-              showCountStepper={false}
-              showLifeTotals={false}
-            />
-          </section>
         </div>
       </div>
     </div>
@@ -118,7 +98,6 @@ export function PlayerLifeTrackerApp({
   onOpenCounters
 }: PlayerLifeTrackerAppProps): JSX.Element {
   const tracker = useLifeTracker();
-  const [isRosterExpanded, setIsRosterExpanded] = useState(false);
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
   const [selectedPlayerLabel, setSelectedPlayerLabel] = useState<PlayerLabel | null>(null);
   const closeGameSetup = useCallback(() => setIsSettingsExpanded(false), []);
@@ -186,14 +165,7 @@ export function PlayerLifeTrackerApp({
         </section>
       </div>
 
-      {isSettingsExpanded && (
-        <GameSetupModal
-          tracker={tracker}
-          isRosterExpanded={isRosterExpanded}
-          onToggleRoster={() => setIsRosterExpanded((current) => !current)}
-          onClose={closeGameSetup}
-        />
-      )}
+      {isSettingsExpanded && <GameSetupModal tracker={tracker} onClose={closeGameSetup} />}
 
       {selectedPlayer && (
         <CounterPanel

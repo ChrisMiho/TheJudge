@@ -4,14 +4,23 @@ import type { ComponentProps } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { GameSetupPanel } from "./GameSetupPanel";
 
+const FOUR_PLAYERS = [
+  { label: "Player 1" as const, displayName: "Player 1" },
+  { label: "Player 2" as const, displayName: "Player 2" },
+  { label: "Player 3" as const, displayName: "Player 3" },
+  { label: "Player 4" as const, displayName: "Player 4" }
+];
+
 function renderPanel(overrides: Partial<ComponentProps<typeof GameSetupPanel>> = {}) {
   const props: ComponentProps<typeof GameSetupPanel> = {
     playerCount: 4,
     layoutMode: "grid",
     startingLife: 40,
+    players: FOUR_PLAYERS,
     onPlayerCountChange: vi.fn(),
     onLayoutModeChange: vi.fn(),
     onStartingLifeChange: vi.fn(),
+    onDisplayNameChange: vi.fn(),
     onReset: vi.fn(),
     onNewGame: vi.fn(),
     ...overrides
@@ -160,6 +169,30 @@ describe("Frontend - Shared", () => {
 
       expect(props.onReset).toHaveBeenCalledOnce();
       expect(props.onNewGame).toHaveBeenCalledOnce();
+    });
+
+    it("reveals per-player name inputs for exactly the current player count from the Players section", async () => {
+      const user = userEvent.setup();
+      renderPanel({ playerCount: 2, players: FOUR_PLAYERS.slice(0, 2) });
+
+      expect(screen.queryByLabelText("Player 1 display name")).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Edit player names" }));
+
+      expect(screen.getByLabelText("Player 1 display name")).toBeInTheDocument();
+      expect(screen.getByLabelText("Player 2 display name")).toBeInTheDocument();
+      expect(screen.queryByLabelText("Player 3 display name")).not.toBeInTheDocument();
+    });
+
+    it("invokes onDisplayNameChange when a name is edited", async () => {
+      const user = userEvent.setup();
+      const props = renderPanel({ playerCount: 2, players: FOUR_PLAYERS.slice(0, 2) });
+
+      await user.click(screen.getByRole("button", { name: "Edit player names" }));
+      const nameInput = screen.getByLabelText("Player 1 display name");
+      await user.type(nameInput, "!");
+
+      expect(props.onDisplayNameChange).toHaveBeenCalledWith("Player 1", "Player 1!");
     });
 
   });

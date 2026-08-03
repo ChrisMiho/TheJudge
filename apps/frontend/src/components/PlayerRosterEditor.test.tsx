@@ -16,7 +16,6 @@ function EditorHarness({
   initialPlayers = TWO_PLAYERS,
   initialExpanded = false,
   initialCount = 2,
-  showCountStepper,
   showLifeTotals,
   onLifeTotalChange,
   renderPlayerExtras
@@ -24,7 +23,6 @@ function EditorHarness({
   initialPlayers?: RosterPlayer[];
   initialExpanded?: boolean;
   initialCount?: number;
-  showCountStepper?: boolean;
   showLifeTotals?: boolean;
   onLifeTotalChange?: (player: PlayerLabel, value: string) => void;
   renderPlayerExtras?: (player: RosterPlayer) => JSX.Element;
@@ -55,7 +53,6 @@ function EditorHarness({
       onRemovePlayer={removePlayer}
       onDisplayNameChange={updateDisplayName}
       onLifeTotalChange={onLifeTotalChange}
-      showCountStepper={showCountStepper}
       showLifeTotals={showLifeTotals}
       renderPlayerExtras={renderPlayerExtras}
     />
@@ -113,15 +110,6 @@ describe("PlayerRosterEditor", () => {
       expect(button.className).toContain("min-h-[2.75rem]");
       expect(button.className).toContain("min-w-[3.5rem]");
     }
-  });
-
-  it("keeps the count label and details toggle while hiding the count stepper", () => {
-    render(<EditorHarness showCountStepper={false} />);
-
-    expect(screen.getByText("2 players")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Show player details" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Remove last player" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Add player" })).not.toBeInTheDocument();
   });
 
   it("invokes the display-name callback when a player's name is edited", async () => {
