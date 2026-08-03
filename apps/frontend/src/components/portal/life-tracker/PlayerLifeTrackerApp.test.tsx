@@ -254,13 +254,13 @@ describe("Frontend - Shared", () => {
       render(<PlayerLifeTrackerApp />);
 
       await user.click(screen.getByRole("button", { name: "Open counters for Player 1" }));
-      await user.click(screen.getByRole("button", { name: "Increment Commander damage from Player 2" }));
+      await user.click(screen.getByRole("button", { name: "Increase commander damage from Player 2" }));
       await user.click(screen.getByRole("button", { name: "Close counters" }));
       expect(within(screen.getByTestId("life-card-Player 1")).getByText("39")).toBeInTheDocument();
 
       await user.click(screen.getByRole("button", { name: "Open counters for Player 1" }));
-      await user.click(screen.getByRole("button", { name: "Increment Commander damage from Player 2" }));
-      await user.click(screen.getByRole("button", { name: "Increment Commander damage from Player 2" }));
+      await user.click(screen.getByRole("button", { name: "Increase commander damage from Player 2" }));
+      await user.click(screen.getByRole("button", { name: "Increase commander damage from Player 2" }));
       await user.click(screen.getByRole("tab", { name: "Counters" }));
       await user.click(screen.getByRole("button", { name: "Increment Poison" }));
       await user.click(screen.getByRole("button", { name: "Close counters" }));
@@ -273,7 +273,7 @@ describe("Frontend - Shared", () => {
       const firstMount = render(<PlayerLifeTrackerApp />);
 
       await user.click(screen.getByRole("button", { name: "Open counters for Player 1" }));
-      await user.click(screen.getByRole("button", { name: "Increment Commander damage from Player 2" }));
+      await user.click(screen.getByRole("button", { name: "Increase commander damage from Player 2" }));
       await user.click(screen.getByRole("tab", { name: "Counters" }));
       await user.click(screen.getByRole("button", { name: "Increment Poison" }));
       await user.type(screen.getByRole("textbox", { name: "Custom counter name" }), "Storm");
@@ -282,7 +282,7 @@ describe("Frontend - Shared", () => {
       await user.click(screen.getByRole("button", { name: "Close counters" }));
 
       await user.click(screen.getByRole("button", { name: "Open counters for Player 1" }));
-      expect(screen.getByRole("button", { name: "Increment Commander damage from Player 2" })).toHaveTextContent("1");
+      expect(screen.getByTestId("commander-value-Player 2")).toHaveTextContent("1");
       await user.click(screen.getByRole("tab", { name: "Counters" }));
       expect(screen.getByRole("button", { name: "Increment Poison" })).toHaveTextContent("1");
       expect(screen.getByRole("button", { name: "Increment Storm" })).toHaveTextContent("1");
@@ -291,7 +291,7 @@ describe("Frontend - Shared", () => {
       firstMount.unmount();
       render(<PlayerLifeTrackerApp />);
       await user.click(screen.getByRole("button", { name: "Open counters for Player 1" }));
-      expect(screen.getByRole("button", { name: "Increment Commander damage from Player 2" })).toHaveTextContent("1");
+      expect(screen.getByTestId("commander-value-Player 2")).toHaveTextContent("1");
       await user.click(screen.getByRole("tab", { name: "Counters" }));
       expect(screen.getByRole("button", { name: "Increment Poison" })).toHaveTextContent("1");
       expect(screen.getByRole("button", { name: "Increment Storm" })).toHaveTextContent("1");

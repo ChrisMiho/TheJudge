@@ -32,7 +32,7 @@ const MAX_CUSTOM_STARTING_LIFE = 999;
 const PILL_BASE =
   "motion-focus min-h-11 rounded-full border px-3 text-sm font-black tabular-nums transition";
 const PILL_SELECTED = "border-accent-strong bg-accent-strong text-accent-contrast shadow-sm";
-const PILL_UNSELECTED = "border-zinc-300 bg-zinc-50 text-zinc-700 hover:bg-zinc-100";
+const PILL_UNSELECTED = "border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800";
 
 function pillClassName(isSelected: boolean): string {
   return `${PILL_BASE} ${isSelected ? PILL_SELECTED : PILL_UNSELECTED}`;
@@ -90,13 +90,13 @@ export function GameSetupPanel({
   }
 
   return (
-    <section aria-label="Game setup controls" className="divide-y divide-zinc-200">
+    <section aria-label="Game setup controls" className="divide-y divide-zinc-700/70">
       <div className="flex gap-2 pb-4">
         <button
           type="button"
           aria-label="Reset current game"
           onClick={onReset}
-          className="motion-focus min-h-11 flex-1 rounded-xl border border-zinc-300 bg-zinc-50 px-3 text-sm font-bold text-zinc-700 hover:bg-zinc-100"
+          className="motion-focus min-h-11 flex-1 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-bold text-zinc-100 hover:bg-zinc-800"
         >
           Reset
         </button>
@@ -111,7 +111,7 @@ export function GameSetupPanel({
       </div>
 
       <div className="py-4">
-        <p className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-500">
+        <p className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-400">
           <span aria-hidden="true" className="text-base leading-none">
             👥
           </span>
@@ -151,16 +151,16 @@ export function GameSetupPanel({
             {players.map((player) => (
               <label
                 key={player.label}
-                className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2"
+                className="flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2"
               >
-                <span className="w-24 shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-zinc-500">
+                <span className="w-24 shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
                   {player.label}
                 </span>
                 <input
                   aria-label={`${player.label} display name`}
                   value={player.displayName}
                   onChange={(event) => onDisplayNameChange(player.label, event.target.value)}
-                  className="motion-focus min-h-9 w-full min-w-0 rounded-md border border-zinc-300 bg-white px-2 text-sm text-zinc-900"
+                  className="motion-focus min-h-9 w-full min-w-0 rounded-md border border-zinc-700 bg-zinc-950 px-2 text-sm text-zinc-100"
                 />
               </label>
             ))}
@@ -169,7 +169,7 @@ export function GameSetupPanel({
       </div>
 
       <div className="py-4">
-        <p className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-500">
+        <p className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-400">
           <span aria-hidden="true" className="text-base leading-none">
             ▤
           </span>
@@ -199,7 +199,7 @@ export function GameSetupPanel({
       </div>
 
       <div className="pt-4">
-        <p className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-500">
+        <p className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-400">
           <span aria-hidden="true" className="text-base leading-none">
             ♥
           </span>
@@ -250,13 +250,13 @@ export function GameSetupPanel({
                 }}
                 onBlur={cancelCustomLifeEdit}
                 inputMode="numeric"
-                className="motion-focus min-h-11 w-full min-w-0 rounded-full border border-accent-strong bg-white px-2 pr-8 text-center text-sm font-black tabular-nums text-zinc-900 ring-2 ring-accent/25"
+                className="motion-focus min-h-11 w-full min-w-0 rounded-full border border-accent-strong bg-zinc-950 px-2 pr-8 text-center text-sm font-black tabular-nums text-zinc-100 ring-2 ring-accent/25"
               />
               <button
                 type="submit"
                 aria-label="Apply custom starting life"
                 onPointerDown={(event) => event.preventDefault()}
-                className="motion-focus absolute right-1 top-1/2 flex min-h-8 min-w-8 -translate-y-1/2 items-center justify-center rounded-full text-sm font-black text-accent-strong hover:bg-zinc-100"
+                className="motion-focus absolute right-1 top-1/2 flex min-h-8 min-w-8 -translate-y-1/2 items-center justify-center rounded-full text-sm font-black text-accent-strong hover:bg-zinc-800"
               >
                 <span aria-hidden="true">✓</span>
               </button>
@@ -274,7 +274,7 @@ export function GameSetupPanel({
           )}
         </div>
         {customError && (
-          <p id="custom-starting-life-error" role="alert" className="mt-2 text-sm text-rose-600">
+          <p id="custom-starting-life-error" role="alert" className="mt-2 text-sm text-rose-400">
             {customError}
           </p>
         )}

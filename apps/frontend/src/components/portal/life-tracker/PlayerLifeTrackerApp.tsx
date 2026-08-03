@@ -53,12 +53,12 @@ function GameSetupModal({ tracker, onClose }: GameSetupModalProps): JSX.Element 
         aria-modal="true"
         aria-labelledby="game-setup-modal-title"
         tabIndex={-1}
-        className="max-h-[94dvh] w-full max-w-xl overflow-y-auto rounded-3xl border border-zinc-200 bg-white p-4 text-zinc-900 shadow-2xl shadow-black/40"
+        className="max-h-[94dvh] w-full max-w-xl overflow-y-auto rounded-3xl border border-zinc-700 bg-zinc-950 p-4 text-zinc-100 shadow-2xl shadow-black/40"
       >
         <header className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-strong">Life Tracker</p>
-            <h2 id="game-setup-modal-title" className="text-xl font-black text-zinc-900">
+            <h2 id="game-setup-modal-title" className="text-xl font-black text-zinc-100">
               Game Setup
             </h2>
           </div>
@@ -66,7 +66,7 @@ function GameSetupModal({ tracker, onClose }: GameSetupModalProps): JSX.Element 
             type="button"
             aria-label="Close game setup"
             onClick={onClose}
-            className="motion-focus min-h-11 min-w-11 rounded-full border border-zinc-200 bg-zinc-100 text-2xl text-zinc-600 hover:bg-zinc-200"
+            className="motion-focus min-h-11 min-w-11 rounded-full border border-zinc-700 bg-zinc-800 text-2xl text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100"
           >
             ×
           </button>
@@ -179,7 +179,6 @@ export function PlayerLifeTrackerApp({
           onSetCustomCounter={tracker.setCustomCounter}
           onRemoveCustomCounter={tracker.removeCustomCounter}
           onAdjustCommanderDamage={tracker.adjustCommanderDamage}
-          onSetCommanderDamage={tracker.setCommanderDamage}
         />
       )}
     </PageShell>

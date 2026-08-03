@@ -110,7 +110,9 @@ describe("Frontend - Portal", () => {
     expect(within(lifeCard("Player 2")).getByText("40")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Open counters for Player 1 (Alice)" }));
-    await setCounterValue(user, "Commander damage from Player 2", "5");
+    for (let amount = 0; amount < 5; amount += 1) {
+      await user.click(screen.getByRole("button", { name: "Increase commander damage from Player 2" }));
+    }
     await user.click(screen.getByRole("tab", { name: "Counters" }));
     await setCounterValue(user, "Poison", "3");
     await user.click(screen.getByRole("button", { name: "Increment Monarch" }));
@@ -125,7 +127,7 @@ describe("Frontend - Portal", () => {
     expect(lifeCard("Player 1")).toHaveAttribute("aria-label", "Player 1 (Alice), 34 life");
     expect(lifeCard("Player 2")).toHaveAttribute("aria-label", "Player 2, 40 life");
     await user.click(screen.getByRole("button", { name: "Open counters for Player 1 (Alice)" }));
-    expect(screen.getByRole("button", { name: "Increment Commander damage from Player 2" })).toHaveTextContent("5");
+    expect(screen.getByTestId("commander-value-Player 2")).toHaveTextContent("5");
     await user.click(screen.getByRole("tab", { name: "Counters" }));
     expect(screen.getByRole("button", { name: "Increment Poison" })).toHaveTextContent("3");
     expect(screen.getByRole("button", { name: "Increment Monarch" })).toHaveTextContent("1");
@@ -182,7 +184,7 @@ describe("Frontend - Portal", () => {
     expect(lifeCard("Player 1")).toHaveAttribute("aria-label", "Player 1 (Alice), 34 life");
     expect(lifeCard("Player 2")).toHaveAttribute("aria-label", "Player 2, 40 life");
     await user.click(screen.getByRole("button", { name: "Open counters for Player 1 (Alice)" }));
-    expect(screen.getByRole("button", { name: "Increment Commander damage from Player 2" })).toHaveTextContent("5");
+    expect(screen.getByTestId("commander-value-Player 2")).toHaveTextContent("5");
     await user.click(screen.getByRole("tab", { name: "Counters" }));
     expect(screen.getByRole("button", { name: "Increment Poison" })).toHaveTextContent("3");
     expect(screen.getByRole("button", { name: "Increment Monarch" })).toHaveTextContent("1");

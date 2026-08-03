@@ -6,21 +6,22 @@ Written 2026-08-03 at the end of a session, for whoever picks this up next.
 
 Branch: `feature/life-tracker-more`. PR: [#59](https://github.com/ChrisMiho/TheJudge/pull/59) (**open, not merged** — leave it that way unless the user explicitly says to merge). Working tree is clean; everything described below is pushed.
 
-Three rounds landed in this session, on top of the commander-damage-grid/counter-tile and Game Setup work PR #59 already had:
+This session's follow-up (sixth session) landed on top of PR #59's prior work (commander-damage-grid/counter-tile, Game Setup revamp, and the fifth session's Game-Setup-cohesion/contrast pass):
 
-1. **Restyled `GameSetupPanel`** to the light-modal palette already established by `CounterPanel.tsx` (zinc-50/100/200/300 chips, `accent-strong` fill + `accent-contrast` text for selected/primary states) — replacing dark-mode-leftover classes (`bg-zinc-900`/`text-accent-soft`) that were illegible once the panel moved into a white modal dialog.
-2. **Removed the duplicate header** ("Table settings / Game setup") that repeated the modal's own "Life Tracker / Game Setup" title directly below it.
-3. **Reunified player-count and name-editing**: dropped the tracker's reuse of the shared `PlayerRosterEditor` (reverted the `showCountStepper` prop added last session, now unused) in favor of a small "Edit names" disclosure built directly into `GameSetupPanel`'s own Players section, right under the count pill row — instead of a separately-styled, dark-themed roster editor appearing after Layout/Starting-life with its own redundant "N players" label.
+1. **Dark-palette realignment**: `GameSetupModal` (`PlayerLifeTrackerApp.tsx`), `GameSetupPanel`, and `CounterPanel` were restyled from the white-surface palette (introduced in sessions four/five) to the dark surface already established elsewhere in the app (`AdaptiveContextDialog`'s `border-zinc-700 bg-zinc-950 text-zinc-100`, the page-shell's dark gradient). The user's complaint: with the rest of the app committed to a dark-gray look, a white modal now read as visually out of place rather than cohesive.
+2. **Commander-damage entry redesigned to mirror life adjustment**: each opponent tile in the counter panel's Player-tab matrix dropped the shared `CounterControl` (tap-to-increment, hold-for-`⋯`-menu with Decrease/Set) for a new `CommanderDamageCell` — an always-visible top `−` band and bottom `+` band (real ≥44px tap targets, matching the life card's own bands), no hold gesture, no menu, and no Set-value input (dropped outright per user request once decrease became one tap away).
+3. **Tile labels shortened + guidance copy relocated**: each commander-damage tile's visible label shrank from "Commander damage from {name}" to just the player's name (the long string was making the two-column grid look cramped). The "commander damage" context this removed is recovered as a small "Commander damage" section heading above the matrix; full context stays available to assistive tech via each band's `aria-label`. The stale "Tap to increment. Hold for additional options." line was removed from the Player tab (no longer true there) and — tightened to "Hold for **more** options" — added instead to the Counters tab, where tap/hold genuinely still applies and previously had no instructional copy.
+4. **`CounterControl` simplified**: its now-dead `variant`/`testId` props and the light-styled "commander" branch were removed since named/custom counters (Counters tab) are its only remaining caller.
 
-Full reasoning is in `DESIGN-BRIEF.md`'s newest addendum ("Game Setup cohesion + contrast pass") — read it before changing anything in this area, it records *why* each call was made, not just what.
+Full reasoning is in `DESIGN-BRIEF.md`'s newest addendum ("dark-palette realignment + commander-damage entry redesign") — read it before changing anything in this area, it records *why* each call was made, not just what.
 
 ## Verified before pushing
 
 - `npm --workspace apps/frontend run typecheck` — clean
 - `npm --workspace apps/frontend run test` — 833/833 passing
 - Scoped `eslint` on every touched file — clean
-- Live click-through in Chrome against the running dev build: Players pill row + "Edit names" disclosure (edits a name, confirms it reflects on the life card), custom starting-life inline editor, Grid/List layout toggle, Reset/New Game — all functioning, all legible against the white modal
-- Confirmed `MtgAssistantApp` (the only remaining `PlayerRosterEditor` caller) is unaffected — it never set `showCountStepper`, so reverting that prop is a no-op for it
+- Live click-through in Chrome against the running dev build: Game Setup modal (Players pill row + Edit names, Layout, Starting life — all legible on the dark surface), Counter panel's Player tab (increment/decrement the new commander-damage cell directly, no submenu, life total updates correctly), Counter panel's Counters tab (long-press still opens the Decrease/Set menu for named counters, unchanged), and the commander-damage grid at 2 and 5 players (scales cleanly, no layout collisions)
+- Confirmed `onSetCommanderDamage` removal is scoped to the `CounterPanel` prop chain only — `setCommanderDamage` (state layer) and `useLifeTracker().setCommanderDamage` stay, since `adjustCommanderDamage` is implemented in terms of `setCommanderDamage` internally and both have independent test coverage
 
 Implementation this session was done directly (not delegated to `codex exec`), then verified via the full suite + live Chrome click-through as above.
 
@@ -32,6 +33,7 @@ Not bugs — documented non-goals or explicitly parked follow-ups, carried forwa
 - **Gameplay-section toggles** from `IMG_9509.PNG` (Planechase, Archenemy, Bounty, Auto-KO, Turn timer, Game history) are still explicitly out of scope — those map to features that don't exist in this app.
 - **No dedicated full-screen Settings route** — Game Setup is a modal now (not inline), but still not real navigation. Revisit only if the user asks for it explicitly.
 - Per-player custom theming/pastel colors, saved profiles, game history, mana counter, dice & misc, full auto-KO — all still deferred per the original brief's non-goals, untouched this session.
+- The life card's own on-card commander-damage preview grid (`PlayerLifeCard.tsx`) is unchanged — this session's redesign was scoped to the counter-panel entry grid only.
 
 ## Possible next steps (not started, no decision made either way)
 
