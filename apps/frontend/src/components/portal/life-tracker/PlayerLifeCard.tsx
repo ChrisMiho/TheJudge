@@ -5,6 +5,7 @@ import { formatPlayerDisplayLabel } from "../../../lib/playerLabels";
 
 export interface PlayerLifeCardProps {
   player: TrackerPlayer;
+  players: TrackerPlayer[];
   placement: SeatPlacement;
   onAdjustLife: (label: PlayerLabel, delta: number) => void;
   onOpenCounters: (label: PlayerLabel) => void;
@@ -22,8 +23,24 @@ const LIFE_TINTS = {
   healthy: "border-accent/40 bg-gradient-to-br from-accent-soft/75 via-zinc-50 to-accent/35 text-zinc-900"
 } as const;
 
+/** Near-square column count for `count` preview tiles (2x2 for 4, matching the reference). */
+function previewColumns(count: number): number {
+  return Math.max(1, Math.ceil(Math.sqrt(count)));
+}
+
+type PreviewCell = { key: PlayerLabel; isSelf: boolean; value: number };
+
+function commanderDamagePreviewCells(player: TrackerPlayer, players: TrackerPlayer[]): PreviewCell[] {
+  return players.map((seat) => ({
+    key: seat.label,
+    isSelf: seat.label === player.label,
+    value: player.commanderDamage[seat.label] ?? 0
+  }));
+}
+
 export function PlayerLifeCard({
   player,
+  players,
   placement,
   onAdjustLife,
   onOpenCounters
@@ -31,6 +48,8 @@ export function PlayerLifeCard({
   const displayLabel = formatPlayerDisplayLabel(player.label, player.displayName);
   const status = lifeState(player.life);
   const rotation = `rotate(${placement.rotation}deg)`;
+  const previewCells = commanderDamagePreviewCells(player, players);
+  const previewCols = previewColumns(previewCells.length);
 
   return (
     <article
@@ -78,11 +97,24 @@ export function PlayerLifeCard({
         </span>
         <button
           type="button"
+          data-testid={`commander-preview-${player.label}`}
           aria-label={`Open counters for ${displayLabel}`}
           onClick={() => onOpenCounters(player.label)}
-          className="motion-focus min-h-11 rounded-full border border-black/10 bg-white/40 px-4 text-xs font-bold uppercase tracking-[0.12em] shadow-sm hover:bg-white/65"
+          className="motion-focus grid gap-1 rounded-xl border border-black/10 bg-white/40 p-1.5 shadow-sm hover:bg-white/65"
+          style={{ gridTemplateColumns: `repeat(${previewCols}, minmax(0, 1fr))` }}
         >
-          Counters
+          {previewCells.map((cell) => (
+            <span
+              key={cell.key}
+              aria-hidden="true"
+              data-testid={`commander-preview-cell-${cell.key}`}
+              className={`flex min-h-6 min-w-6 items-center justify-center rounded-md text-[0.65rem] font-black tabular-nums ${
+                cell.isSelf ? "bg-black/10 opacity-80" : "bg-white/50"
+              }`}
+            >
+              {cell.isSelf ? "me" : cell.value}
+            </span>
+          ))}
         </button>
       </div>
 

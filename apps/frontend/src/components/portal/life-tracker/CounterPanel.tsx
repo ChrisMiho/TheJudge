@@ -33,6 +33,8 @@ interface CounterControlProps {
   value: number;
   testId?: string;
   labelTestId?: string;
+  /** "commander" keeps the value-forward tile used by the damage matrix; "named" is the icon-forward, ghosted-until-active tile matching the counters reference. */
+  variant?: "commander" | "named";
   onIncrement: () => void;
   onDecrement: () => void;
   onSet: (value: number) => void;
@@ -44,6 +46,7 @@ function CounterControl({
   value,
   testId,
   labelTestId,
+  variant = "commander",
   onIncrement,
   onDecrement,
   onSet
@@ -106,9 +109,21 @@ function CounterControl({
     setShowOptions(false);
   }
 
+  const isNamed = variant === "named";
+  const isActive = value > 0;
+
   return (
-    <div data-testid={testId} className="rounded-xl border border-zinc-200 bg-zinc-100/80 p-2">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1">
+    <div
+      data-testid={testId}
+      className={
+        isNamed
+          ? `rounded-xl border p-2 transition-colors ${
+              isActive ? "border-accent/40 bg-accent/10" : "border-zinc-200 bg-zinc-50"
+            }`
+          : "rounded-xl border border-accent/25 bg-accent/10 p-2"
+      }
+    >
+      <div className={isNamed ? "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1" : "grid grid-cols-[minmax(0,1fr)_auto] gap-1"}>
         <button
           type="button"
           aria-label={`Increment ${label}`}
@@ -129,17 +144,49 @@ function CounterControl({
           onPointerUp={cancelLongPress}
           onPointerCancel={cancelLongPress}
           onPointerLeave={cancelLongPress}
-          className="motion-focus flex min-h-16 min-w-0 flex-col items-start justify-center rounded-lg px-2 text-left hover:bg-accent/10 active:bg-accent/15"
+          className={
+            isNamed
+              ? "motion-focus flex min-h-20 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1 text-center hover:bg-accent/10 active:bg-accent/15"
+              : "motion-focus flex min-h-16 min-w-0 flex-col items-start justify-center rounded-lg px-2 text-left hover:bg-white/40 active:bg-white/60"
+          }
         >
-          <span data-testid={labelTestId} className="flex items-center gap-1 truncate text-xs font-bold text-zinc-500">
-            {icon && (
-              <span aria-hidden="true" className="text-sm leading-none">
-                {icon}
+          {isNamed ? (
+            <>
+              {icon && (
+                <span
+                  aria-hidden="true"
+                  className={`text-2xl leading-none transition-opacity ${isActive ? "opacity-100" : "opacity-35 grayscale"}`}
+                >
+                  {icon}
+                </span>
+              )}
+              <span
+                data-testid={labelTestId}
+                className={`truncate text-[0.65rem] font-bold uppercase tracking-wide ${
+                  isActive ? "text-accent-strong" : "text-zinc-400"
+                }`}
+              >
+                {label}
               </span>
-            )}
-            {label}
-          </span>
-          <span className="text-2xl font-black tabular-nums text-zinc-900">{value}</span>
+              <span
+                className={`text-sm font-black tabular-nums ${isActive ? "text-zinc-900" : "text-zinc-300"}`}
+              >
+                {value}
+              </span>
+            </>
+          ) : (
+            <>
+              <span data-testid={labelTestId} className="flex items-center gap-1 truncate text-xs font-bold text-zinc-600">
+                {icon && (
+                  <span aria-hidden="true" className="text-sm leading-none">
+                    {icon}
+                  </span>
+                )}
+                {label}
+              </span>
+              <span className="text-2xl font-black tabular-nums text-zinc-900">{value}</span>
+            </>
+          )}
         </button>
         <button
           type="button"
@@ -306,8 +353,8 @@ export function CounterPanel({
 
         {activeTab === "player" ? (
           <div role="tabpanel" aria-label="Player counters" className="mt-4">
-            <p className="mb-3 text-sm text-zinc-500">Commander damage received from each seat.</p>
-            <div role="group" aria-label="Commander damage by source" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <p className="mb-3 text-sm text-zinc-500">Tap to increment. Hold for additional options.</p>
+            <div role="group" aria-label="Commander damage by source" className="grid grid-cols-2 gap-2">
               {players.map((source) => {
                 const sourceName = formatPlayerDisplayLabel(source.label, source.displayName);
                 if (source.label === player.label) {
@@ -315,7 +362,7 @@ export function CounterPanel({
                     <div
                       key={source.label}
                       data-testid={`commander-cell-${source.label}`}
-                      className="flex min-h-20 flex-col items-center justify-center rounded-xl border border-zinc-200 bg-zinc-100/80 p-2"
+                      className="flex min-h-20 flex-col items-center justify-center rounded-xl border border-accent/25 bg-accent/10 p-2"
                     >
                       <span className="text-xs font-bold text-zinc-500">{sourceName}</span>
                       <span className="text-2xl font-black text-zinc-900">me</span>
@@ -344,6 +391,7 @@ export function CounterPanel({
               {NAMED_COUNTER_PALETTE.map((definition) => (
                 <CounterControl
                   key={definition.id}
+                  variant="named"
                   label={definition.label}
                   icon={definition.icon}
                   labelTestId={`counter-label-${definition.id}`}
@@ -362,6 +410,7 @@ export function CounterPanel({
                   {player.customCounters.map((counter) => (
                     <div key={counter.id} className="space-y-1">
                       <CounterControl
+                        variant="named"
                         label={counter.name}
                         value={counter.amount}
                         onIncrement={() => onAdjustCustomCounter(player.label, counter.id, 1)}

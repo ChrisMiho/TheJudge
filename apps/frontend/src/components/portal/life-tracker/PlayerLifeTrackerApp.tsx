@@ -110,6 +110,7 @@ export function PlayerLifeTrackerApp({
               <PlayerLifeCard
                 key={player.label}
                 player={player}
+                players={tracker.state.players}
                 placement={placement}
                 onAdjustLife={tracker.adjustPlayerLife}
                 onOpenCounters={openCounters}
