@@ -412,6 +412,8 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
             </div>
           </form>
 
+          {isSubmitting && <AskAiWaitingPanel isSubmitting={isSubmitting} />}
+
           <details className="rounded-2xl border border-zinc-700/70 bg-zinc-900/55">
             <summary className="cursor-pointer px-4 py-3 text-zinc-100 marker:text-zinc-400">
               <h3 className="ml-2 inline text-base font-semibold">General rules topics</h3>
@@ -465,8 +467,6 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
               )}
             </div>
           </details>
-
-          {isSubmitting && <AskAiWaitingPanel isSubmitting={isSubmitting} />}
 
           {error && (
             <div className="motion-error space-y-2 rounded-2xl border border-rose-500/40 bg-rose-950/30 p-4">
