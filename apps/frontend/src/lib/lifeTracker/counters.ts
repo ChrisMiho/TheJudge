@@ -22,6 +22,8 @@ export type NamedCounterId =
 export type NamedCounterDefinition = {
   id: NamedCounterId;
   label: string;
+  /** Decorative-only glyph for the counter panel tile; not part of any data contract. */
+  icon: string;
   /** Present only when this counter also feeds an additive GameContext field. */
   gameContextTarget?: GameContextCounterTarget;
 };
@@ -32,17 +34,17 @@ export type NamedCounterDefinition = {
  * mapping elsewhere — import it.
  */
 export const NAMED_COUNTER_PALETTE: readonly NamedCounterDefinition[] = [
-  { id: "monarch", label: "Monarch" },
-  { id: "treasure", label: "Treasure" },
-  { id: "initiative", label: "Initiative" },
-  { id: "poison", label: "Poison", gameContextTarget: "poison" },
-  { id: "ascend", label: "Ascend" },
-  { id: "rad", label: "Rad" },
-  { id: "dayNight", label: "Day/night" },
-  { id: "cTax", label: "C.Tax" },
-  { id: "ko", label: "K.O." },
-  { id: "energy", label: "Energy", gameContextTarget: "energy" },
-  { id: "exp", label: "Exp", gameContextTarget: "experience" }
+  { id: "monarch", label: "Monarch", icon: "\u{1F451}" },
+  { id: "treasure", label: "Treasure", icon: "\u{1F4B0}" },
+  { id: "initiative", label: "Initiative", icon: "\u{1F6E1}\u{FE0F}" },
+  { id: "poison", label: "Poison", icon: "\u{2623}\u{FE0F}", gameContextTarget: "poison" },
+  { id: "ascend", label: "Ascend", icon: "\u{2B06}\u{FE0F}" },
+  { id: "rad", label: "Rad", icon: "\u{2622}\u{FE0F}" },
+  { id: "dayNight", label: "Day/night", icon: "\u{1F317}" },
+  { id: "cTax", label: "C.Tax", icon: "\u{1F3F0}" },
+  { id: "ko", label: "K.O.", icon: "\u{1F480}" },
+  { id: "energy", label: "Energy", icon: "\u{26A1}", gameContextTarget: "energy" },
+  { id: "exp", label: "Exp", icon: "\u{2B50}", gameContextTarget: "experience" }
 ];
 
 export const NAMED_COUNTER_IDS: readonly NamedCounterId[] = NAMED_COUNTER_PALETTE.map(
