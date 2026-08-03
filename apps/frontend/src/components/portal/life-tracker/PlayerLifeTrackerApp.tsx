@@ -121,9 +121,21 @@ export function PlayerLifeTrackerApp({
             </p>
           </div>
           <PortalSlot />
-          <h1 className="min-w-0 justify-self-end text-right text-sm font-black uppercase tracking-[0.1em] text-accent-soft">
-            Player Life Tracker
-          </h1>
+          <div className="flex min-w-0 items-center justify-self-end gap-2">
+            <h1 className="min-w-0 text-right text-sm font-black uppercase tracking-[0.1em] text-accent-soft">
+              Player Life Tracker
+            </h1>
+            <button
+              type="button"
+              aria-label="Open game setup"
+              aria-haspopup="dialog"
+              aria-expanded={isSettingsExpanded}
+              onClick={() => setIsSettingsExpanded(true)}
+              className="motion-focus flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-600 bg-zinc-900/95 text-lg text-zinc-100 shadow-lg shadow-black/40 backdrop-blur hover:bg-zinc-800"
+            >
+              <span aria-hidden="true">⚙</span>
+            </button>
+          </div>
         </header>
 
         <section
@@ -135,7 +147,7 @@ export function PlayerLifeTrackerApp({
             gridTemplateRows: `repeat(${layout.rows}, minmax(15rem, 1fr))`,
             minHeight: `${layout.rows * 16}rem`
           }}
-          className="relative flex-1 gap-2 pb-1"
+          className="flex-1 gap-2 pb-1"
         >
           {layout.seats.map((placement) => {
             const player = tracker.state.players.find((candidate) => candidate.label === placement.label);
@@ -147,21 +159,12 @@ export function PlayerLifeTrackerApp({
                 player={player}
                 players={tracker.state.players}
                 placement={placement}
+                layoutMode={tracker.state.layoutMode}
                 onAdjustLife={tracker.adjustPlayerLife}
                 onOpenCounters={openCounters}
               />
             );
           })}
-          <button
-            type="button"
-            aria-label="Open game setup"
-            aria-haspopup="dialog"
-            aria-expanded={isSettingsExpanded}
-            onClick={() => setIsSettingsExpanded(true)}
-            className="motion-focus absolute left-1/2 top-1/2 z-30 flex min-h-14 min-w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-600 bg-zinc-900/95 text-xl text-zinc-100 shadow-lg shadow-black/40 backdrop-blur"
-          >
-            <span aria-hidden="true">⚙</span>
-          </button>
         </section>
       </div>
 

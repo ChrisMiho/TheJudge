@@ -1,12 +1,14 @@
 import type { PlayerLabel } from "../../../types";
 import type { SeatPlacement } from "../../../lib/lifeTracker/seatArrangement";
-import type { TrackerPlayer } from "../../../lib/lifeTracker/types";
+import type { LayoutMode, TrackerPlayer } from "../../../lib/lifeTracker/types";
 import { formatPlayerDisplayLabel } from "../../../lib/playerLabels";
 
 export interface PlayerLifeCardProps {
   player: TrackerPlayer;
   players: TrackerPlayer[];
   placement: SeatPlacement;
+  /** List mode moves the life adjustment bands from top/bottom to the card's left/right edges. */
+  layoutMode: LayoutMode;
   onAdjustLife: (label: PlayerLabel, delta: number) => void;
   onOpenCounters: (label: PlayerLabel) => void;
 }
@@ -42,6 +44,7 @@ export function PlayerLifeCard({
   player,
   players,
   placement,
+  layoutMode,
   onAdjustLife,
   onOpenCounters
 }: PlayerLifeCardProps): JSX.Element {
@@ -50,6 +53,20 @@ export function PlayerLifeCard({
   const rotation = `rotate(${placement.rotation}deg)`;
   const previewCells = commanderDamagePreviewCells(player, players);
   const previewCols = previewColumns(previewCells.length);
+  // A 90/270 rotation swaps the content's effective width and height. Cards are rarely square,
+  // so sizing the rotated box off the card's own (un-rotated) dimensions overflows the shorter
+  // axis and gets silently clipped by the card's `overflow-hidden`. Container query units size
+  // the box off the *card's* width/height directly (swapped for sideways seats), so the rotated
+  // content always ends up exactly card-sized regardless of aspect ratio or rotation.
+  const isSideways = placement.rotation === 90 || placement.rotation === 270;
+  const contentSize = isSideways ? { width: "100cqh", height: "100cqw" } : { width: "100cqw", height: "100cqh" };
+  const isListLayout = layoutMode === "list";
+  const decreaseBandClassName = isListLayout
+    ? "absolute inset-y-0 left-0 z-20 flex w-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10"
+    : "absolute inset-x-0 top-0 z-20 flex h-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10";
+  const increaseBandClassName = isListLayout
+    ? "absolute inset-y-0 right-0 z-20 flex w-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10"
+    : "absolute inset-x-0 bottom-0 z-20 flex h-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10";
 
   return (
     <article
@@ -60,7 +77,8 @@ export function PlayerLifeCard({
       style={{
         gridArea: placement.gridArea,
         gridRow: placement.gridRow,
-        gridColumn: placement.gridColumn
+        gridColumn: placement.gridColumn,
+        containerType: "size"
       }}
       className={`relative isolate min-h-60 overflow-hidden rounded-3xl border shadow-lg shadow-black/20 ${LIFE_TINTS[status]}`}
     >
@@ -68,7 +86,7 @@ export function PlayerLifeCard({
         type="button"
         aria-label={`Decrease life for ${displayLabel}`}
         onClick={() => onAdjustLife(player.label, -1)}
-        className="motion-focus absolute inset-x-0 top-0 z-20 flex h-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10"
+        className={`motion-focus ${decreaseBandClassName}`}
       >
         <span aria-hidden="true" style={{ transform: rotation }}>
           −
@@ -77,8 +95,8 @@ export function PlayerLifeCard({
 
       <div
         data-testid={`life-card-content-${player.label}`}
-        style={{ transform: rotation }}
-        className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 p-6 text-center"
+        style={{ transform: `translate(-50%, -50%) ${rotation}`, ...contentSize }}
+        className="absolute left-1/2 top-1/2 z-10 flex flex-col items-center justify-center gap-2 p-6 text-center"
       >
         <span className="rounded-full border border-black/10 bg-white/50 px-3 py-1 text-sm font-semibold shadow-sm">
           {displayLabel}
@@ -122,7 +140,7 @@ export function PlayerLifeCard({
         type="button"
         aria-label={`Increase life for ${displayLabel}`}
         onClick={() => onAdjustLife(player.label, 1)}
-        className="motion-focus absolute inset-x-0 bottom-0 z-20 flex h-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10"
+        className={`motion-focus ${increaseBandClassName}`}
       >
         <span aria-hidden="true" style={{ transform: rotation }}>
           +

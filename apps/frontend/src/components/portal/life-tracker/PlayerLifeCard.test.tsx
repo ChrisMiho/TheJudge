@@ -40,6 +40,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
+          layoutMode="grid"
           onAdjustLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
@@ -55,7 +56,9 @@ describe("Frontend - Shared", () => {
         gridRow: "1 / 2",
         gridColumn: "1 / 2"
       });
-      expect(screen.getByTestId("life-card-content-Player 1")).toHaveStyle({ transform: "rotate(90deg)" });
+      expect(screen.getByTestId("life-card-content-Player 1")).toHaveStyle({
+        transform: "translate(-50%, -50%) rotate(90deg)"
+      });
     });
 
     it("targets only the card's fixed player from the edge zones", async () => {
@@ -67,6 +70,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
+          layoutMode="grid"
           onAdjustLife={onAdjustLife}
           onOpenCounters={vi.fn()}
         />
@@ -88,6 +92,7 @@ describe("Frontend - Shared", () => {
           player={deadPlayer}
           players={rosterWith(deadPlayer)}
           placement={placement}
+          layoutMode="grid"
           onAdjustLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
@@ -103,6 +108,7 @@ describe("Frontend - Shared", () => {
           player={revivedPlayer}
           players={rosterWith(revivedPlayer)}
           placement={placement}
+          layoutMode="grid"
           onAdjustLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
@@ -120,6 +126,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
+          layoutMode="grid"
           onAdjustLife={vi.fn()}
           onOpenCounters={onOpenCounters}
         />
@@ -143,6 +150,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
+          layoutMode="grid"
           onAdjustLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
@@ -154,6 +162,102 @@ describe("Frontend - Shared", () => {
       expect(screen.getByTestId("commander-preview-cell-Player 2")).toHaveTextContent("3");
       expect(screen.getByTestId("commander-preview-cell-Player 3")).toHaveTextContent("0");
       expect(screen.getByTestId("commander-preview-cell-Player 4")).toHaveTextContent("0");
+    });
+
+    it("puts the life adjustment bands on top/bottom in grid mode and left/right in list mode", () => {
+      const player = playerAtLife(40);
+      const { rerender } = render(
+        <PlayerLifeCard
+          player={player}
+          players={rosterWith(player)}
+          placement={placement}
+          layoutMode="grid"
+          onAdjustLife={vi.fn()}
+          onOpenCounters={vi.fn()}
+        />
+      );
+
+      expect(screen.getByRole("button", { name: "Decrease life for Player 1 (Alice)" })).toHaveClass(
+        "top-0",
+        "h-12"
+      );
+      expect(screen.getByRole("button", { name: "Increase life for Player 1 (Alice)" })).toHaveClass(
+        "bottom-0",
+        "h-12"
+      );
+
+      rerender(
+        <PlayerLifeCard
+          player={player}
+          players={rosterWith(player)}
+          placement={placement}
+          layoutMode="list"
+          onAdjustLife={vi.fn()}
+          onOpenCounters={vi.fn()}
+        />
+      );
+
+      expect(screen.getByRole("button", { name: "Decrease life for Player 1 (Alice)" })).toHaveClass(
+        "left-0",
+        "w-12"
+      );
+      expect(screen.getByRole("button", { name: "Increase life for Player 1 (Alice)" })).toHaveClass(
+        "right-0",
+        "w-12"
+      );
+    });
+
+    it("swaps the rotated content box's width/height source so a 90/270 rotation can't overflow a non-square card", () => {
+      const player = playerAtLife(40);
+      const sidewaysPlacement: SeatPlacement = { ...placement, rotation: 270 };
+      const { rerender } = render(
+        <PlayerLifeCard
+          player={player}
+          players={rosterWith(player)}
+          placement={placement}
+          layoutMode="grid"
+          onAdjustLife={vi.fn()}
+          onOpenCounters={vi.fn()}
+        />
+      );
+
+      expect(screen.getByTestId("life-card-content-Player 1")).toHaveStyle({
+        width: "100cqh",
+        height: "100cqw"
+      });
+
+      rerender(
+        <PlayerLifeCard
+          player={player}
+          players={rosterWith(player)}
+          placement={sidewaysPlacement}
+          layoutMode="grid"
+          onAdjustLife={vi.fn()}
+          onOpenCounters={vi.fn()}
+        />
+      );
+
+      expect(screen.getByTestId("life-card-content-Player 1")).toHaveStyle({
+        width: "100cqh",
+        height: "100cqw"
+      });
+
+      const uprightPlacement: SeatPlacement = { ...placement, rotation: 0 };
+      rerender(
+        <PlayerLifeCard
+          player={player}
+          players={rosterWith(player)}
+          placement={uprightPlacement}
+          layoutMode="grid"
+          onAdjustLife={vi.fn()}
+          onOpenCounters={vi.fn()}
+        />
+      );
+
+      expect(screen.getByTestId("life-card-content-Player 1")).toHaveStyle({
+        width: "100cqw",
+        height: "100cqh"
+      });
     });
   });
 });

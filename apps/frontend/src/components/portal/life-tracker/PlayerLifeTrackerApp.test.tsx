@@ -82,7 +82,7 @@ describe("Frontend - Shared", () => {
       expect(screen.getByText("Player 1 (Alice)")).toBeInTheDocument();
     });
 
-    it("opens and closes Game Setup from the centered floating button", async () => {
+    it("opens and closes Game Setup from the header button", async () => {
       const user = userEvent.setup();
       render(<PlayerLifeTrackerApp />);
 
@@ -132,10 +132,10 @@ describe("Frontend - Shared", () => {
       render(<PlayerLifeTrackerApp />);
 
       const expected = [
-        ["Player 1", "left", "seat-player-1", "1 / 2", "1 / 2", "rotate(90deg)"],
-        ["Player 2", "left", "seat-player-2", "2 / 3", "1 / 2", "rotate(90deg)"],
-        ["Player 3", "right", "seat-player-3", "1 / 2", "2 / 3", "rotate(270deg)"],
-        ["Player 4", "right", "seat-player-4", "2 / 3", "2 / 3", "rotate(270deg)"]
+        ["Player 1", "left", "seat-player-1", "1 / 2", "1 / 2", "translate(-50%, -50%) rotate(90deg)"],
+        ["Player 2", "left", "seat-player-2", "2 / 3", "1 / 2", "translate(-50%, -50%) rotate(90deg)"],
+        ["Player 3", "right", "seat-player-3", "1 / 2", "2 / 3", "translate(-50%, -50%) rotate(270deg)"],
+        ["Player 4", "right", "seat-player-4", "2 / 3", "2 / 3", "translate(-50%, -50%) rotate(270deg)"]
       ] as const;
 
       for (const [label, side, gridArea, gridRow, gridColumn, transform] of expected) {
@@ -164,7 +164,7 @@ describe("Frontend - Shared", () => {
           gridColumn: "1 / 2"
         });
         expect(screen.getByTestId(`life-card-content-Player ${index + 1}`)).toHaveStyle({
-          transform: "rotate(0deg)"
+          transform: "translate(-50%, -50%) rotate(0deg)"
         });
       }
     });
