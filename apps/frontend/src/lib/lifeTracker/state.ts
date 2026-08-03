@@ -7,7 +7,6 @@ export const MAX_PLAYER_COUNT = 8;
 
 export const DEFAULT_PLAYER_COUNT = 4;
 export const DEFAULT_STARTING_LIFE = 40;
-export const DEFAULT_COMMANDER_DAMAGE_TO_LIFE = false;
 export const DEFAULT_LAYOUT_MODE: LayoutMode = "grid";
 
 /** Every fixed player label, in seat order. The tracker roster is always a contiguous prefix of this list. */
@@ -62,14 +61,12 @@ function updatePlayer(
 export function createInitialState(
   playerCount: number,
   startingLife: number,
-  commanderDamageToLife: boolean = DEFAULT_COMMANDER_DAMAGE_TO_LIFE,
   layoutMode: LayoutMode = DEFAULT_LAYOUT_MODE
 ): TrackerState {
   const clampedCount = clampPlayerCount(playerCount);
   return {
     playerCount: clampedCount,
     startingLife,
-    commanderDamageToLife,
     layoutMode,
     players: ALL_PLAYER_LABELS.slice(0, clampedCount).map((label) => createPlayer(label, startingLife))
   };
@@ -77,12 +74,7 @@ export function createInitialState(
 
 /** The documented default game used for initial hydration and New Game. */
 export function createDefaultGame(layoutMode: LayoutMode = DEFAULT_LAYOUT_MODE): TrackerState {
-  return createInitialState(
-    DEFAULT_PLAYER_COUNT,
-    DEFAULT_STARTING_LIFE,
-    DEFAULT_COMMANDER_DAMAGE_TO_LIFE,
-    layoutMode
-  );
+  return createInitialState(DEFAULT_PLAYER_COUNT, DEFAULT_STARTING_LIFE, layoutMode);
 }
 
 /** Preserves retained players by fixed label; new players are initialized at the current starting life. */
@@ -193,8 +185,8 @@ export function removeCustomCounter(state: TrackerState, label: PlayerLabel, cou
 /**
  * Sets the commander-damage value received by `targetLabel` from `sourceLabel`. The own-seat "me"
  * cell (source === target) is never a stored entry and is a no-op. When the applied change is a
- * positive increase and `commanderDamageToLife` is enabled, the target's life drops by that same
- * amount; decreases and non-positive changes never affect life.
+ * positive increase, the target's life drops by that same amount; decreases and non-positive
+ * changes never affect life.
  */
 export function setCommanderDamage(
   state: TrackerState,
@@ -214,7 +206,7 @@ export function setCommanderDamage(
   const previousValue = targetPlayer.commanderDamage[sourceLabel] ?? 0;
   const nextValue = clampCounterValue(value);
   const appliedIncrease = Math.max(0, nextValue - previousValue);
-  const shouldReduceLife = state.commanderDamageToLife && appliedIncrease > 0;
+  const shouldReduceLife = appliedIncrease > 0;
 
   return updatePlayer(state, targetLabel, (player) => ({
     ...player,
@@ -235,10 +227,6 @@ export function adjustCommanderDamage(
   const targetPlayer = state.players.find((player) => player.label === targetLabel);
   const currentValue = targetPlayer?.commanderDamage[sourceLabel] ?? 0;
   return setCommanderDamage(state, targetLabel, sourceLabel, currentValue + delta);
-}
-
-export function setCommanderDamageToLife(state: TrackerState, enabled: boolean): TrackerState {
-  return { ...state, commanderDamageToLife: enabled };
 }
 
 export function setLayoutMode(state: TrackerState, mode: LayoutMode): TrackerState {

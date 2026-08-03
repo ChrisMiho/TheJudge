@@ -82,11 +82,13 @@ describe("Frontend - Portal", () => {
     expect(within(lifeCard("Player 1")).getByText("40")).toBeInTheDocument();
     expect(within(lifeCard("Player 2")).getByText("40")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Show game setup" }));
+    await user.click(screen.getByRole("button", { name: "Open game setup" }));
+    expect(screen.getByRole("dialog", { name: "Game Setup" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Show player details" }));
     const playerOneName = screen.getByLabelText("Player 1 display name");
     await user.clear(playerOneName);
     await user.type(playerOneName, "Alice");
+    await user.click(screen.getByRole("button", { name: "Close game setup" }));
 
     const decreaseAlice = () => screen.getByRole("button", { name: /Decrease life for Player 1/ });
     await user.click(decreaseAlice());
@@ -100,7 +102,9 @@ describe("Frontend - Portal", () => {
     await user.click(screen.getByRole("button", { name: /Increase life for Player 1/ }));
     expect(screen.queryByRole("img", { name: /Player 1 \(Alice\) is at zero or less life/ })).not.toBeInTheDocument();
 
+    await user.click(screen.getByRole("button", { name: "Open game setup" }));
     await user.click(screen.getByRole("button", { name: "Set starting life to 40" }));
+    await user.click(screen.getByRole("button", { name: "Close game setup" }));
     await user.click(decreaseAlice());
     expect(within(lifeCard("Player 1")).getByText("39")).toBeInTheDocument();
     expect(within(lifeCard("Player 2")).getByText("40")).toBeInTheDocument();
@@ -118,7 +122,7 @@ describe("Frontend - Portal", () => {
     firstMount.unmount();
     render(<App />);
 
-    expect(lifeCard("Player 1")).toHaveAttribute("aria-label", "Player 1 (Alice), 39 life");
+    expect(lifeCard("Player 1")).toHaveAttribute("aria-label", "Player 1 (Alice), 34 life");
     expect(lifeCard("Player 2")).toHaveAttribute("aria-label", "Player 2, 40 life");
     await user.click(screen.getByRole("button", { name: "Open counters for Player 1 (Alice)" }));
     expect(screen.getByRole("button", { name: "Increment Commander damage from Player 2" })).toHaveTextContent("5");
@@ -133,7 +137,7 @@ describe("Frontend - Portal", () => {
 
     const assistantLife = await screen.findByLabelText("Player 1 life total");
     expect(screen.getByLabelText("Player 1 display name")).toHaveValue("Alice");
-    expect(assistantLife).toHaveValue("39");
+    expect(assistantLife).toHaveValue("34");
     expect(screen.getByLabelText("Player 1 poison")).toHaveValue("3");
     expect(screen.getByLabelText("Player 1 commander damage from Player 2")).toHaveValue("5");
     expect(screen.getByLabelText("Player 1 counter Monarch amount")).toHaveValue("1");
@@ -175,7 +179,7 @@ describe("Frontend - Portal", () => {
 
     await selectDestination(user, "Life Tracker");
     expect(localStorage.getItem(TRACKER_STORAGE_KEY)).toBe(trackerSnapshot);
-    expect(lifeCard("Player 1")).toHaveAttribute("aria-label", "Player 1 (Alice), 39 life");
+    expect(lifeCard("Player 1")).toHaveAttribute("aria-label", "Player 1 (Alice), 34 life");
     expect(lifeCard("Player 2")).toHaveAttribute("aria-label", "Player 2, 40 life");
     await user.click(screen.getByRole("button", { name: "Open counters for Player 1 (Alice)" }));
     expect(screen.getByRole("button", { name: "Increment Commander damage from Player 2" })).toHaveTextContent("5");

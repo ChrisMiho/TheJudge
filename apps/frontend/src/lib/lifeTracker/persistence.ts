@@ -76,7 +76,6 @@ export function isValidTrackerState(value: unknown): value is TrackerState {
   }
 
   if (!isFiniteNumber(state.startingLife)) return false;
-  if (typeof state.commanderDamageToLife !== "boolean") return false;
 
   const players: unknown[] = Array.isArray(state.players) ? state.players : [];
   if (players.length !== state.playerCount) return false;

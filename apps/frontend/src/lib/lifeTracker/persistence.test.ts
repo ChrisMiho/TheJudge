@@ -155,10 +155,12 @@ describe("Frontend - Shared", () => {
       expect(loadTrackerState()).toBeNull();
     });
 
-    it("returns null when commanderDamageToLife is not a boolean", () => {
-      const tampered = { ...buildFullState(), commanderDamageToLife: "yes" };
-      localStorage.setItem(TRACKER_STORAGE_KEY, JSON.stringify(tampered));
-      expect(loadTrackerState()).toBeNull();
+    it("accepts a current snapshot without commanderDamageToLife", () => {
+      const currentState = JSON.parse(JSON.stringify(buildFullState())) as Record<string, unknown>;
+      delete currentState.commanderDamageToLife;
+      localStorage.setItem(TRACKER_STORAGE_KEY, JSON.stringify(currentState));
+
+      expect(loadTrackerState()).toEqual(currentState);
     });
 
     it("returns null when localStorage is unavailable", () => {

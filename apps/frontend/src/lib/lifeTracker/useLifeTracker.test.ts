@@ -135,14 +135,14 @@ describe("Frontend - Shared", () => {
       expect(saved.players[0].life).toBe(39);
     });
 
-    it("applies commander-damage-to-life automation through the hook", () => {
+    it("always applies commander damage to life through the hook", () => {
       const { result } = renderHook(() => useLifeTracker());
 
       act(() => {
-        result.current.setCommanderDamageToLife(true);
         result.current.adjustCommanderDamage("Player 1", "Player 2", 4);
       });
 
+      expect(result.current).not.toHaveProperty("setCommanderDamageToLife");
       expect(result.current.state.players[0].commanderDamage["Player 2"]).toBe(4);
       expect(result.current.state.players[0].life).toBe(36);
     });

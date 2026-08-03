@@ -6,16 +6,14 @@ export interface GameSetupPanelProps {
   playerCount: number;
   layoutMode: LayoutMode;
   startingLife: number;
-  commanderDamageToLife: boolean;
   onPlayerCountChange: (count: number) => void;
   onLayoutModeChange: (mode: LayoutMode) => void;
   onStartingLifeChange: (startingLife: number) => void;
-  onCommanderDamageToLifeChange: (enabled: boolean) => void;
   onReset: () => void;
   onNewGame: () => void;
 }
 
-const STARTING_LIFE_PRESETS = [20, 25, 30, 40, 60] as const;
+const STARTING_LIFE_PRESETS = [20, 25, 30, 40] as const;
 const PLAYER_COUNTS = Array.from(
   { length: MAX_PLAYER_COUNT - MIN_PLAYER_COUNT + 1 },
   (_, index) => MIN_PLAYER_COUNT + index
@@ -27,21 +25,21 @@ export function GameSetupPanel({
   playerCount,
   layoutMode,
   startingLife,
-  commanderDamageToLife,
   onPlayerCountChange,
   onLayoutModeChange,
   onStartingLifeChange,
-  onCommanderDamageToLifeChange,
   onReset,
   onNewGame
 }: GameSetupPanelProps): JSX.Element {
-  const [customLife, setCustomLife] = useState("");
+  const [isEditingStartingLifeCustom, setIsEditingStartingLifeCustom] = useState(false);
+  const [startingLifeDraft, setStartingLifeDraft] = useState("");
   const [customError, setCustomError] = useState<string | null>(null);
+  const isCustomStartingLife = !(STARTING_LIFE_PRESETS as readonly number[]).includes(startingLife);
 
   function applyCustomLife(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
-    const isIntegerText = /^\d+$/.test(customLife);
-    const parsed = Number(customLife);
+    const isIntegerText = /^\d+$/.test(startingLifeDraft);
+    const parsed = Number(startingLifeDraft);
 
     if (
       !isIntegerText ||
@@ -57,6 +55,18 @@ export function GameSetupPanel({
 
     setCustomError(null);
     onStartingLifeChange(parsed);
+    setIsEditingStartingLifeCustom(false);
+  }
+
+  function beginCustomLifeEdit(): void {
+    setStartingLifeDraft(isCustomStartingLife ? String(startingLife) : "");
+    setCustomError(null);
+    setIsEditingStartingLifeCustom(true);
+  }
+
+  function cancelCustomLifeEdit(): void {
+    setCustomError(null);
+    setIsEditingStartingLifeCustom(false);
   }
 
   return (
@@ -173,6 +183,7 @@ export function GameSetupPanel({
                 aria-pressed={isSelected}
                 onClick={() => {
                   setCustomError(null);
+                  setIsEditingStartingLifeCustom(false);
                   onStartingLifeChange(preset);
                 }}
                 className={`motion-focus min-h-11 rounded-full border px-2 text-sm font-black tabular-nums transition ${
@@ -185,68 +196,68 @@ export function GameSetupPanel({
               </button>
             );
           })}
+          {isEditingStartingLifeCustom ? (
+            <form
+              noValidate
+              onSubmit={applyCustomLife}
+              className="relative min-h-11 min-w-0"
+            >
+              <input
+                autoFocus
+                type="number"
+                min={MIN_CUSTOM_STARTING_LIFE}
+                max={MAX_CUSTOM_STARTING_LIFE}
+                step="1"
+                aria-label="Custom starting life"
+                aria-invalid={customError !== null}
+                aria-describedby={customError ? "custom-starting-life-error" : undefined}
+                value={startingLifeDraft}
+                onChange={(event) => {
+                  setStartingLifeDraft(event.target.value);
+                  setCustomError(null);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    cancelCustomLifeEdit();
+                  }
+                }}
+                onBlur={cancelCustomLifeEdit}
+                inputMode="numeric"
+                className="motion-focus min-h-11 w-full min-w-0 rounded-full border border-accent bg-zinc-900 px-2 pr-8 text-center text-sm font-black tabular-nums text-zinc-100 ring-2 ring-accent/25"
+              />
+              <button
+                type="submit"
+                aria-label="Apply custom starting life"
+                onPointerDown={(event) => event.preventDefault()}
+                className="motion-focus absolute right-1 top-1/2 flex min-h-8 min-w-8 -translate-y-1/2 items-center justify-center rounded-full text-sm font-black text-accent-soft hover:bg-zinc-800"
+              >
+                <span aria-hidden="true">✓</span>
+              </button>
+            </form>
+          ) : (
+            <button
+              type="button"
+              aria-label="Set custom starting life"
+              aria-pressed={isCustomStartingLife}
+              onClick={beginCustomLifeEdit}
+              className={`motion-focus min-h-11 rounded-full border px-2 text-sm font-black tabular-nums transition ${
+                isCustomStartingLife
+                  ? "border-accent bg-accent/20 text-accent-soft ring-2 ring-accent/25"
+                  : "border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
+              }`}
+            >
+              {isCustomStartingLife ? startingLife : "Custom"}
+            </button>
+          )}
         </div>
-      </div>
-
-      <label className="flex min-h-11 cursor-pointer items-center justify-between gap-4 border-b border-zinc-800 py-3">
-        <span className="flex items-start gap-2">
-          <span aria-hidden="true" className="mt-0.5 text-base leading-none">
-            🛡
-          </span>
-          <span>
-            <span className="block text-sm font-bold text-zinc-100">Commander damage also reduces life</span>
-            <span className="block text-xs text-zinc-400">Only positive opponent damage is linked.</span>
-          </span>
-        </span>
-        <span className="relative inline-flex h-7 w-12 shrink-0 items-center">
-          <input
-            type="checkbox"
-            aria-label="Commander damage also reduces life"
-            checked={commanderDamageToLife}
-            onChange={(event) => onCommanderDamageToLifeChange(event.target.checked)}
-            className="peer absolute inset-0 z-10 h-full w-full cursor-pointer appearance-none bg-transparent"
-          />
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 rounded-full bg-zinc-700 transition-colors peer-checked:bg-accent-strong peer-focus-visible:ring-2 peer-focus-visible:ring-accent-soft peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-zinc-950"
-          />
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute left-1 h-5 w-5 rounded-full bg-white transition-transform peer-checked:translate-x-5"
-          />
-        </span>
-      </label>
-
-      <form onSubmit={applyCustomLife} className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
-        <label className="flex flex-col gap-1">
-          <span className="text-xs font-semibold text-zinc-400">Custom starting life</span>
-          <input
-            aria-label="Custom starting life"
-            aria-invalid={customError !== null}
-            aria-describedby={customError ? "custom-starting-life-error" : undefined}
-            value={customLife}
-            onChange={(event) => {
-              setCustomLife(event.target.value);
-              setCustomError(null);
-            }}
-            inputMode="numeric"
-            className="motion-focus min-h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-zinc-100"
-            placeholder={`${MIN_CUSTOM_STARTING_LIFE}–${MAX_CUSTOM_STARTING_LIFE}`}
-          />
-        </label>
-        <button
-          type="submit"
-          aria-label="Apply custom starting life"
-          className="motion-focus mt-auto min-h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-4 text-sm font-bold text-zinc-100 hover:bg-zinc-800"
-        >
-          Apply
-        </button>
         {customError && (
-          <p id="custom-starting-life-error" role="alert" className="col-span-2 text-sm text-rose-300">
+          <p id="custom-starting-life-error" role="alert" className="mt-2 text-sm text-rose-300">
             {customError}
           </p>
         )}
-      </form>
+      </div>
     </section>
   );
 }

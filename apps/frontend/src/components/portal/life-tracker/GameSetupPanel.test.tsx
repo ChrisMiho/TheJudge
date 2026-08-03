@@ -9,11 +9,9 @@ function renderPanel(overrides: Partial<ComponentProps<typeof GameSetupPanel>> =
     playerCount: 4,
     layoutMode: "grid",
     startingLife: 40,
-    commanderDamageToLife: false,
     onPlayerCountChange: vi.fn(),
     onLayoutModeChange: vi.fn(),
     onStartingLifeChange: vi.fn(),
-    onCommanderDamageToLifeChange: vi.fn(),
     onReset: vi.fn(),
     onNewGame: vi.fn(),
     ...overrides
@@ -61,7 +59,7 @@ describe("Frontend - Shared", () => {
       expect(screen.getByRole("button", { name: "Use list layout" })).toHaveAttribute("aria-pressed", "true");
     });
 
-    it.each([20, 25, 30, 40, 60])("applies the %i-life preset", async (preset) => {
+    it.each([20, 25, 30, 40])("applies the %i-life preset", async (preset) => {
       const user = userEvent.setup();
       const props = renderPanel();
 
@@ -84,14 +82,33 @@ describe("Frontend - Shared", () => {
       );
     });
 
-    it("applies a valid custom integer", async () => {
+    it("shows an unselected Custom pill for a preset starting life", () => {
+      renderPanel({ startingLife: 40 });
+
+      const customPill = screen.getByRole("button", { name: "Set custom starting life" });
+      expect(customPill).toHaveTextContent("Custom");
+      expect(customPill).toHaveAttribute("aria-pressed", "false");
+    });
+
+    it("opens the inline custom-life input from the Custom pill", async () => {
+      const user = userEvent.setup();
+      renderPanel();
+
+      await user.click(screen.getByRole("button", { name: "Set custom starting life" }));
+
+      expect(screen.getByRole("spinbutton", { name: "Custom starting life" })).toBeInTheDocument();
+    });
+
+    it("applies a valid custom integer and collapses back to a pill", async () => {
       const user = userEvent.setup();
       const props = renderPanel();
 
-      await user.type(screen.getByRole("textbox", { name: "Custom starting life" }), "17");
+      await user.click(screen.getByRole("button", { name: "Set custom starting life" }));
+      await user.type(screen.getByRole("spinbutton", { name: "Custom starting life" }), "55");
       await user.click(screen.getByRole("button", { name: "Apply custom starting life" }));
 
-      expect(props.onStartingLifeChange).toHaveBeenCalledWith(17);
+      expect(props.onStartingLifeChange).toHaveBeenCalledWith(55);
+      expect(screen.getByRole("button", { name: "Set custom starting life" })).toBeInTheDocument();
       expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
@@ -99,11 +116,39 @@ describe("Frontend - Shared", () => {
       const user = userEvent.setup();
       const props = renderPanel();
 
-      await user.type(screen.getByRole("textbox", { name: "Custom starting life" }), value);
+      await user.click(screen.getByRole("button", { name: "Set custom starting life" }));
+      await user.type(screen.getByRole("spinbutton", { name: "Custom starting life" }), value);
       await user.click(screen.getByRole("button", { name: "Apply custom starting life" }));
 
       expect(props.onStartingLifeChange).not.toHaveBeenCalled();
       expect(screen.getByRole("alert")).toHaveTextContent("Enter a whole number from 1 to 999");
+      expect(screen.getByRole("spinbutton", { name: "Custom starting life" })).toBeInTheDocument();
+    });
+
+    it("shows and selects the active custom value", () => {
+      renderPanel({ startingLife: 55 });
+
+      const customPill = screen.getByRole("button", { name: "Set custom starting life" });
+      expect(customPill).toHaveTextContent("55");
+      expect(customPill).toHaveAttribute("aria-pressed", "true");
+    });
+
+    it("cancels inline custom-life editing on Escape or blur", async () => {
+      const user = userEvent.setup();
+      const props = renderPanel();
+
+      await user.click(screen.getByRole("button", { name: "Set custom starting life" }));
+      const input = screen.getByRole("spinbutton", { name: "Custom starting life" });
+      await user.type(input, "55");
+      await user.keyboard("{Escape}");
+      expect(screen.getByRole("button", { name: "Set custom starting life" })).toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Set custom starting life" }));
+      await user.type(screen.getByRole("spinbutton", { name: "Custom starting life" }), "55");
+      await user.tab();
+
+      expect(screen.getByRole("button", { name: "Set custom starting life" })).toBeInTheDocument();
+      expect(props.onStartingLifeChange).not.toHaveBeenCalled();
     });
 
     it("keeps Reset and New Game as explicit actions", async () => {
@@ -117,14 +162,5 @@ describe("Frontend - Shared", () => {
       expect(props.onNewGame).toHaveBeenCalledOnce();
     });
 
-    it("changes the commander-damage-to-life game setting", async () => {
-      const user = userEvent.setup();
-      const props = renderPanel();
-
-      await user.click(screen.getByRole("checkbox", { name: "Commander damage also reduces life" }));
-
-      expect(props.onCommanderDamageToLifeChange).toHaveBeenCalledOnce();
-      expect(props.onCommanderDamageToLifeChange).toHaveBeenCalledWith(true);
-    });
   });
 });

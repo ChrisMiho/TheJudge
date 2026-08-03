@@ -26,8 +26,6 @@ export type TrackerState = {
   /** 2-8, always equal to `players.length`. */
   playerCount: number;
   startingLife: number;
-  /** When enabled, an applied positive increase in commander damage also reduces the target's life. */
-  commanderDamageToLife: boolean;
   layoutMode: LayoutMode;
   players: TrackerPlayer[];
 };
