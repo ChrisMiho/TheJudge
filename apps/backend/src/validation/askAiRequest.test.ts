@@ -190,6 +190,116 @@ describe("Backend - Ask AI", () => {
     });
   });
 
+  describe("gamePlayerSchema — counter fields", () => {
+    function requestWithFirstPlayerOverrides(overrides: Record<string, unknown>) {
+      const base = validRequest();
+      return {
+        ...base,
+        gameContext: {
+          ...base.gameContext,
+          players: [
+            { ...base.gameContext.players[0], ...overrides },
+            base.gameContext.players[1]
+          ]
+        }
+      };
+    }
+
+    it("accepts a legacy player payload with only label, lifeTotal, and displayName", () => {
+      expect(askAiRequestSchema.safeParse(validRequest()).success).toBe(true);
+    });
+
+    it("accepts populated poison, experience, energy, commanderDamage, and counters", () => {
+      const parsed = askAiRequestSchema.safeParse(
+        requestWithFirstPlayerOverrides({
+          poison: 3,
+          experience: 2,
+          energy: 4,
+          commanderDamage: [{ from: "Player 2", amount: 5 }],
+          counters: [{ name: "Monarch", amount: 1 }]
+        })
+      );
+      expect(parsed.success).toBe(true);
+    });
+
+    it.each(["poison", "experience", "energy"])("rejects a negative %s amount", (field) => {
+      expect(askAiRequestSchema.safeParse(requestWithFirstPlayerOverrides({ [field]: -1 })).success).toBe(false);
+    });
+
+    it("rejects a negative commanderDamage amount", () => {
+      expect(
+        askAiRequestSchema.safeParse(
+          requestWithFirstPlayerOverrides({ commanderDamage: [{ from: "Player 2", amount: -1 }] })
+        ).success
+      ).toBe(false);
+    });
+
+    it("rejects a negative named counter amount", () => {
+      expect(
+        askAiRequestSchema.safeParse(
+          requestWithFirstPlayerOverrides({ counters: [{ name: "Monarch", amount: -1 }] })
+        ).success
+      ).toBe(false);
+    });
+
+    it("rejects an invalid commanderDamage source label", () => {
+      expect(
+        askAiRequestSchema.safeParse(
+          requestWithFirstPlayerOverrides({ commanderDamage: [{ from: "Player 99", amount: 5 }] })
+        ).success
+      ).toBe(false);
+    });
+
+    it("rejects control characters in a counter name", () => {
+      const controlChar = String.fromCharCode(7);
+      expect(
+        askAiRequestSchema.safeParse(
+          requestWithFirstPlayerOverrides({ counters: [{ name: `bad${controlChar}name`, amount: 1 }] })
+        ).success
+      ).toBe(false);
+    });
+
+    it("rejects a counter name over 40 characters", () => {
+      expect(
+        askAiRequestSchema.safeParse(
+          requestWithFirstPlayerOverrides({ counters: [{ name: "x".repeat(41), amount: 1 }] })
+        ).success
+      ).toBe(false);
+    });
+
+    it("rejects more than 7 commanderDamage entries", () => {
+      const commanderDamage = Array.from({ length: 8 }, (_, index) => ({
+        from: "Player 2" as const,
+        amount: index + 1
+      }));
+      expect(
+        askAiRequestSchema.safeParse(requestWithFirstPlayerOverrides({ commanderDamage })).success
+      ).toBe(false);
+    });
+
+    it("rejects more than 20 named counters", () => {
+      const counters = Array.from({ length: 21 }, (_, index) => ({
+        name: `Counter ${index}`,
+        amount: 1
+      }));
+      expect(askAiRequestSchema.safeParse(requestWithFirstPlayerOverrides({ counters })).success).toBe(false);
+    });
+
+    it("accepts exactly 7 commanderDamage entries and 20 named counters", () => {
+      const commanderDamage = Array.from({ length: 7 }, (_, index) => ({
+        from: "Player 2" as const,
+        amount: index + 1
+      }));
+      const counters = Array.from({ length: 20 }, (_, index) => ({
+        name: `Counter ${index}`,
+        amount: 1
+      }));
+      expect(
+        askAiRequestSchema.safeParse(requestWithFirstPlayerOverrides({ commanderDamage, counters })).success
+      ).toBe(true);
+    });
+  });
+
   describe("askAiRequestSchema — conversationHistory", () => {
     it("accepts a request with conversationHistory omitted", () => {
       expect(askAiRequestSchema.safeParse(validRequest()).success).toBe(true);

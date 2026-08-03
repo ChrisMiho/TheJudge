@@ -173,7 +173,7 @@ describe("ZoneCardPicker card grid", () => {
     expect(grid).toHaveClass("grid", "grid-cols-2", "overflow-y-auto");
   });
 
-  it("exposes slim density hooks on zone card tiles", () => {
+  it("exposes the semantic responsive hook on zone card tiles", () => {
     renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt")] });
     const tile = screen.getByRole("button", { name: "Remove Opt from Stack" }).closest(".zone-card-tile");
     expect(tile).toHaveClass("zone-card-tile");

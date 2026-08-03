@@ -1,0 +1,34 @@
+{
+  "id": "player-counters",
+  "description": "Two-player game where Player 1 has populated poison, experience, energy, commander damage received from Player 2, and a generic Monarch counter, while Player 2 has none. Proves the additive counter contract (DEC-102) adds a single deterministic counter line only for the populated player without changing existing prompt behavior.",
+  "request": {
+    "question": "What is the current poison and commander damage state in this game?",
+    "gameContext": {
+      "playerCount": 2,
+      "players": [
+        {
+          "label": "Player 1",
+          "lifeTotal": 32,
+          "poison": 3,
+          "experience": 2,
+          "energy": 4,
+          "commanderDamage": [{ "from": "Player 2", "amount": 5 }],
+          "counters": [{ "name": "Monarch", "amount": 1 }]
+        },
+        { "label": "Player 2", "lifeTotal": 20 }
+      ],
+      "turnPhase": "main_1",
+      "selectedZones": ["battlefield"],
+      "zones": {
+        "battlefield": [
+          {
+            "cardId": "blood-artist",
+            "name": "Blood Artist",
+            "oracleText": "Whenever Blood Artist or another creature dies, target player loses 1 life and you gain 1 life.",
+            "targets": [{ "kind": "none" }]
+          }
+        ]
+      }
+    }
+  }
+}

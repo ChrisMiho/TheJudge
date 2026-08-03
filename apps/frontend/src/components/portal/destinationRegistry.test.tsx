@@ -7,11 +7,13 @@ describe("PORTAL_DESTINATIONS", () => {
   it("registers the portal destinations in order", () => {
     expect(PORTAL_DESTINATIONS.map((destination) => destination.id)).toEqual([
       "mtg-assistant",
-      "quick-lookup"
+      "quick-lookup",
+      "player-life-tracker"
     ]);
     expect(PORTAL_DESTINATIONS.map((destination) => destination.label)).toEqual([
       "In-Depth Question",
-      "Quick Question"
+      "Quick Question",
+      "Life Tracker"
     ]);
   });
 

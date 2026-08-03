@@ -76,3 +76,32 @@ Decrypt wait UX and follow-up conversation history behavior.
   - REQ-028
 - Notes:
 
+### DEC-118
+- Decision: In-Depth Question and Quick Question share one chat-first conversation workspace after the first answer. The scrollable message log is the dominant surface; follow-up composer, retry/error feedback, and Start Over occupy stable workspace rows; and the composer is docked within the workspace rather than fixed to the viewport. Frozen flow-specific context moves behind a compact trigger: an accessible bottom sheet below `768px` and an accessible right-side drawer at `768px+`. In-Depth Question always exposes frozen game context; Quick Question exposes an attached frozen card and omits the trigger when no card was submitted. Appended messages auto-scroll only when the reader is within 64px of the bottom; otherwise reading position is preserved and a New response control scrolls to and places keyboard focus on the newest assistant message. Focused first-answer/message/drawer/control transitions reuse existing CSS motion tokens and honor reduced motion.
+- Status: confirmed
+- Context: The two shipped answer flows already reuse `ConversationThread` and `FollowUpComposer`, but each assembles its own surrounding answered-state layout. The result is a narrow bubble list with duplicated chrome, inline context consuming the top of the chat, no reader-safe auto-scroll policy, and desktop space used little differently from mobile. The product owner chose a chat-first context-drawer direction over a permanent desktop context rail and over keeping one stacked column at every width. Conversation semantics and contracts are already sound and are intentionally frozen; this decision changes presentation and interaction only.
+- Impact:
+  - one shared workspace owns thread, composer, error/retry placement, Start Over placement, context trigger, adaptive context container, and new-response affordance; both flows consume it rather than maintaining separate answered-state assemblies
+  - preserves existing destination/header chrome, hidden initial user question, first visible assistant answer, frozen-context rules, follow-up text limits, retry cooldown, Start Over data preservation, and request/history contracts
+  - context remains read-only; the bottom sheet/right drawer closes by explicit control and Escape, contains keyboard focus while open, and returns focus to its trigger
+  - the In-Depth trigger provides a terse cue (phase and populated-zone count); its drawer reuses the existing full frozen-context formatting; Quick Question uses the attached card name and existing card presentation, and renders no empty context trigger without a card
+  - the thread is an accessible polite live log that announces additions without re-announcing the full history
+  - remaining scroll distance `<= 64px` counts as near-bottom; appended messages then move to the latest message (immediate under reduced motion); farther-up readers keep their position and receive a New response control until they activate it or otherwise return to the bottom; activation scrolls to and places keyboard focus on the newest assistant message, dismisses the control, and preserves any composer draft
+  - first-answer handoff, newly appended messages, drawer/sheet open-close, and New response appearance use existing transform/opacity CSS motion tokens; existing bubbles do not replay entrance motion on unrelated renders
+  - DEC-031 waiting-panel behavior and DEC-041 inline Send spinner are preserved; no new palette/Menu signature animation or broad app-wide motion audit is introduced
+  - presentation only — no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, response shapes, conversation-history assembly/limits, retry timing, backend routes, or scanning behavior
+- Related requirements:
+  - REQ-025
+  - REQ-026
+  - REQ-028
+  - REQ-075
+  - REQ-097
+  - REQ-098
+  - DEC-040
+  - DEC-041
+  - DEC-079
+  - DEC-117
+  - NFR-006
+- Notes:
+  - approved layout: chat-first with adaptive overlay context, chosen over a permanent desktop context rail and a centered stacked column
+  - non-goals: visible initial-question bubble, context mutation, viewport-fixed composer, new conversation limits, persistence, backend changes, animation library, palette pulse, or scanner re-animation

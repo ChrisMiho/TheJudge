@@ -14,10 +14,9 @@ const DESTINATIONS: PortalDestination[] = [
 interface HarnessProps {
   initialId?: DestinationId;
   onPaletteSelect?: (id: string) => void;
-  onDensityChange?: (density: "chunky" | "slim") => void;
 }
 
-function Harness({ initialId = "mtg-assistant", onPaletteSelect = vi.fn(), onDensityChange = vi.fn() }: HarnessProps): JSX.Element {
+function Harness({ initialId = "mtg-assistant", onPaletteSelect = vi.fn() }: HarnessProps): JSX.Element {
   const [activeDestinationId, setActiveDestinationId] = useState<DestinationId>(initialId);
   return (
     <FeaturePortalMenu
@@ -26,8 +25,6 @@ function Harness({ initialId = "mtg-assistant", onPaletteSelect = vi.fn(), onDen
       onSelect={setActiveDestinationId}
       paletteId="blue"
       onPaletteSelect={onPaletteSelect}
-      density="chunky"
-      onDensityChange={onDensityChange}
     >
       <div>content</div>
     </FeaturePortalMenu>
@@ -72,16 +69,14 @@ describe("FeaturePortalMenu", () => {
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
 
-  it("selects a density and closes the menu", async () => {
+  it("keeps the menu Theme section palette-only", async () => {
     const user = userEvent.setup();
-    const onDensityChange = vi.fn();
-    render(<Harness onDensityChange={onDensityChange} />);
+    render(<Harness />);
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    await user.click(screen.getByRole("button", { name: "Layout: Mobile" }));
 
-    expect(onDensityChange).toHaveBeenCalledWith("slim");
-    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    expect(screen.queryByText("Layout")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Layout:/ })).not.toBeInTheDocument();
   });
 
   it("switches the active destination and closes the menu when a non-active item is selected", async () => {

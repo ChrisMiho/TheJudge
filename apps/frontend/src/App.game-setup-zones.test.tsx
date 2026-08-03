@@ -342,7 +342,8 @@ describe("Zone collection UI", () => {
 
     resolveAskAi(jsonResponse({ answer: "Mock answer" }));
     await screen.findByText("Mock answer");
-    expect(document.querySelector("[aria-live='polite']")).not.toBeInTheDocument();
+    expect(screen.queryByText("Consulting the stack…")).not.toBeInTheDocument();
+    expect(screen.getByRole("log")).toHaveAttribute("aria-live", "polite");
   });
 });
 });

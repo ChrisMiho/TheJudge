@@ -7,6 +7,8 @@
   - touch-friendly controls
   - simple layout
   - minimal navigation depth
+  - responsive presentation adapts automatically through mobile-first CSS, fluid values, and structural media queries; users do not choose a layout profile
+  - one semantic component tree serves mobile and desktop; no UA sniffing, JavaScript device-mode selection, or duplicate platform trees
 
 ### NFR-002
 - Title: Fast interaction loop
@@ -51,12 +53,15 @@
   - motion must be mobile-performance-safe (prefer transform/opacity, avoid layout thrash and main-thread jank) and must not regress NFR-001 (mobile-first) or NFR-002 (fast interaction loop)
   - scan camera surface convergence/lock/thumbs-up motion is excluded and stays as tuned (DEC-057, DEC-062, DEC-072, DEC-073)
   - existing functional wait-state motion (DEC-031, DEC-041) is unchanged
+  - focused conversation motion (DEC-118 / REQ-098) reuses the shared CSS vocabulary, animates only newly entering content, preserves a scrolled-up reader's position, and becomes effectively immediate under reduced motion
 - Dependencies:
   - DEC-079
   - DEC-031
   - DEC-041
   - NFR-001
   - NFR-002
+  - DEC-118
+  - REQ-098
 
 ### NFR-007
 - Title: Failure resilience
@@ -115,32 +120,37 @@
   - relates to NFR-001 (mobile-first) and NFR-002 (fast interaction loop); scanning is an optional input and does not change core-loop latency metrics
 
 ### NFR-011
-- Title: Lightweight theme personalization
-- Description: Theme and layout-density customization must preserve mobile usability, readable contrast, and the lightweight frontend architecture while adding browser-local personalization.
+- Title: Lightweight theme personalization and automatic responsive presentation
+- Description: Palette personalization and automatic responsive presentation must preserve mobile usability, readable contrast, and the lightweight frontend architecture without asking users to configure device spacing.
 - Constraints:
-  - theme and density selection must not add backend services, product-facing endpoints, account systems, or server-side storage
-  - palette and density application should use lightweight CSS/token plumbing and basic React state only; no animation-heavy theme or density transitions or theming framework migration
-  - themed and density-adjusted controls must remain readable and touch-friendly on mobile viewports
-  - palette and density persistence must degrade gracefully when browser storage is unavailable
+  - palette selection must not add backend services, product-facing endpoints, account systems, or server-side storage
+  - palette application uses lightweight CSS/token plumbing and basic React state; responsive presentation uses CSS rather than a stored React/JavaScript viewport mode
+  - no layout/profile control, layout persistence, UA sniffing, or separate mobile/desktop component trees
+  - themed and automatically responsive controls must remain readable and touch-friendly across supported viewports
+  - palette persistence must degrade gracefully when browser storage is unavailable; the retired density key is ignored and never required for app load
   - re-themed surfaces and semantic states (DEC-068 / REQ-046) must keep readable contrast across every palette, explicitly including amber and rose, and must reuse the existing accent tokens rather than adding token roles or duplicated color constants
-  - restrained ambient accents (DEC-081 / REQ-060) apply only to REQ-060's closed minimum surface inventory and must define resting, enhanced hover/focus, and selected/current intensity once through shared semantic styling; hover must not be the sole carrier of state or meaning
+  - restrained ambient accents (DEC-081 / REQ-060) apply only to REQ-060's closed minimum surface inventory, including DEC-118's context trigger/sheet/drawer and shared composer/workspace replacement surfaces, and must define resting, enhanced hover/focus, and selected/current intensity once through shared semantic styling
   - card-identity rings remain independent from the selected palette, and scanner convergence/lock/confirmation motion remains unchanged
-  - slim density must not shrink body text below existing `text-sm` / `text-xs` or primary control touch targets below `min-h-[2.75rem]` (DEC-075)
+  - fluid responsive rules must not shrink body/supporting text below existing `text-sm` / `text-xs` or applicable primary controls below 44px touch targets
+  - the adaptive context surface is a bottom sheet below `768px` and right-side drawer at `768px+`; both preserve keyboard/focus accessibility and do not require a different component tree
 - Dependencies:
   - DEC-066
   - DEC-068
-  - DEC-075
   - DEC-081
+  - DEC-117
+  - DEC-118
   - REQ-044
   - REQ-046
-  - REQ-055
   - REQ-060
+  - REQ-096
+  - REQ-097
+  - REQ-098
   - NFR-001
   - NFR-004
   - NFR-006
   - NFR-005
 - Notes:
-  - personalization should add delight without slowing the live-table interaction loop
+  - palette personalization should add delight without slowing the live-table interaction loop; viewport-appropriate spacing is automatic product behavior, not personalization
 
 ### NFR-012
 - Title: Test-suite hygiene and CI efficiency

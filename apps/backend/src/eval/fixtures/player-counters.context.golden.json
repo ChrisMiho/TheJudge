@@ -1,0 +1,60 @@
+{
+  "finalQuestion": "What is the current poison and commander damage state in this game?",
+  "gameContext": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 32,
+        "poison": 3,
+        "experience": 2,
+        "energy": 4,
+        "commanderDamage": [
+          {
+            "from": "Player 2",
+            "amount": 5
+          }
+        ],
+        "counters": [
+          {
+            "name": "Monarch",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "main_1",
+    "selectedZones": [
+      "battlefield"
+    ]
+  },
+  "populatedZones": [
+    {
+      "zoneId": "battlefield",
+      "items": [
+        {
+          "cardId": "blood-artist",
+          "name": "Blood Artist",
+          "oracleText": "Whenever Blood Artist or another creature dies, target player loses 1 life and you gain 1 life.",
+          "imageUrl": "",
+          "manaCost": "",
+          "manaValue": 0,
+          "typeLine": "",
+          "colors": [],
+          "supertypes": [],
+          "subtypes": [],
+          "targets": [
+            {
+              "kind": "none"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "orderedStack": []
+}

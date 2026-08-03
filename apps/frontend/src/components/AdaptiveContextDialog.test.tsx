@@ -1,0 +1,71 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, describe, expect, it } from "vitest";
+import { AdaptiveContextDialog } from "./AdaptiveContextDialog";
+
+afterEach(cleanup);
+
+const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
+
+describe("Frontend - Adaptive context dialog", () => {
+  it("opens an accessible portal dialog, traps focus, and restores the exact trigger on close", async () => {
+    const user = userEvent.setup();
+    render(
+      <AdaptiveContextDialog
+        triggerLabel="Combat · 2 populated zones"
+        dialogLabel="Frozen game context"
+      >
+        <a href="#context-detail">First detail</a>
+        <button type="button">Last action</button>
+      </AdaptiveContextDialog>
+    );
+
+    const trigger = screen.getByRole("button", {
+      name: "View context: Combat · 2 populated zones"
+    });
+    expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(trigger);
+
+    const dialog = screen.getByRole("dialog", { name: "Frozen game context" });
+    const close = within(dialog).getByRole("button", { name: "Close frozen game context" });
+    const lastAction = within(dialog).getByRole("button", { name: "Last action" });
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(dialog).toHaveClass("adaptive-context-surface", "ambient-accent-surface");
+    expect(dialog).toHaveAttribute("data-accent-current", "true");
+    expect(dialog.closest(".page-card")).toBeNull();
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(close).toHaveFocus();
+
+    lastAction.focus();
+    await user.tab();
+    expect(close).toHaveFocus();
+
+    await user.tab({ shift: true });
+    expect(lastAction).toHaveFocus();
+
+    await user.click(close);
+    expect(screen.queryByRole("dialog", { name: "Frozen game context" })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+
+    await user.click(trigger);
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog", { name: "Frozen game context" })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+
+  it("uses one CSS-driven surface for the mobile sheet and desktop drawer", () => {
+    expect(appCss).toMatch(
+      /\.adaptive-context-overlay \{[^}]*align-items: flex-end;[^}]*\}/
+    );
+    expect(appCss).toMatch(
+      /@media \(min-width: 768px\) \{[\s\S]*\.adaptive-context-overlay \{[^}]*align-items: stretch;[^}]*justify-content: flex-end;[^}]*\}[\s\S]*\.adaptive-context-surface \{[^}]*width: min\(/
+    );
+    expect(appCss).toMatch(
+      /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*\.adaptive-context-surface/
+    );
+  });
+});

@@ -1,6 +1,6 @@
 # UI presentation decisions
 
-Frontend-only motion, transition, and visual-feedback polish that changes how the app *feels* without changing game context, API contracts, prompt assembly, stack-ordering semantics, scan-engine behavior, or any backend behavior. Distinct from `personalization.md` (user-selectable palette/density): these decisions set a global baseline motion vocabulary, not a user preference.
+Frontend-only responsive presentation, motion, transition, and visual-feedback behavior that changes how the app *feels* without changing game context, API contracts, prompt assembly, stack-ordering semantics, scan-engine behavior, or any backend behavior. Distinct from `personalization.md` (user-selectable palette): these decisions define automatic presentation behavior, not a user preference.
 
 ### DEC-079
 - Decision: The app adopts a broadened, app-wide decorative-motion and visual-feedback baseline across the full staged flow (game context, zone confirmation, zone collection, enrichment) and the answered/conversation view. Motion is no longer limited to "basic show/hide or simple transitions"; rich micro-transitions, easing on state changes, entrance/exit transitions, and add/remove/success/error state-change cues are in scope. This intentionally broadens NFR-006 and the prior "animation-heavy UI" non-goal, bounded by the guardrails below. Scan camera surface internals are excluded.
@@ -80,3 +80,26 @@ Frontend-only motion, transition, and visual-feedback polish that changes how th
   - approved approach: enhance existing copy only (chosen over adding per-screen intro lines / per-control micro-copy, and over an onboarding overlay)
   - guardrails: no net-new guidance text, themed labels preserved, tuned scan cause-hints untouched, single concise line per enhanced helper
   - non-goals: new intro/orientation lines on screens that lack them today, tooltips/popovers/coachmarks/onboarding chrome, renaming themed labels or steps, rewording the tuned scan convergence feedback, and any behavior/contract/flow change
+
+### DEC-117
+- Decision: The app replaces DEC-075's user-selected Desktop/Mobile layout-density preference with automatic fluid responsive presentation. One semantic component tree uses mobile-first CSS, shared fluid spacing/sizing tokens, and structural media queries only where layout cannot interpolate. The feature-portal Theme section retains palette selection but exposes no layout/profile control; layout-density storage, React state/application plumbing, and `data-layout-density` are retired. Previously stored density values are ignored in place, not actively deleted. No UA sniffing, JavaScript device detection, pointer heuristics, or separate mobile/desktop component trees select presentation.
+- Status: confirmed
+- Context: The shipped Desktop/Mobile control is a persisted spacing switch mapped to internal `chunky`/`slim` values. It asks users to diagnose spacing and manually choose a workaround even though layout should adapt to their viewport. Relabeling the original density modes as devices did not make them true device profiles and can leave users in the wrong layout for the screen they are using. Product direction is now automatic: responsive behavior belongs to the presentation system, not personalization.
+- Impact:
+  - fully supersedes DEC-075 and retires REQ-055/FLOW-008; no replacement preference or migration UI is introduced
+  - `ThemeSection` retains palette swatches and palette persistence but removes the Layout section; DEC-110 is amended only for its former density-hosting/preservation clauses
+  - the app stops reading/writing the existing density local-storage key and stops setting `document.documentElement.dataset.layoutDensity`; an old stored value is harmless and ignored
+  - existing density-controlled surfaces migrate to mobile-first automatic rules: page shell/card, inner panels, staged header, zone grid/tiles, enrichment lists/rows, scan video/card preview, conversation workspace/thread, and frozen-context replacement surfaces
+  - fluid CSS values (for example `clamp()`-driven padding/gaps) handle continuous viewport variation; the `768px` boundary is reserved for structural changes such as DEC-118's bottom-sheet versus right-drawer context presentation
+  - Zone Confirmation inherits the automatic responsive shell but keeps its existing control behavior and flow semantics; its prior blanket exclusion from slim-density plumbing becomes irrelevant
+  - controls remain touch-friendly and readable; automatic presentation must not shrink primary targets below 44px or body/supporting text below the established `text-sm`/`text-xs` floor
+  - frontend presentation only — no change to workflow state, destination state, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer behavior, conversation history, or data-pipeline behavior
+- Related requirements:
+  - REQ-096
+  - NFR-001
+  - NFR-011
+  - DEC-110
+  - DEC-118
+- Notes:
+  - approved approach: fluid CSS + structural breakpoints, chosen over matchMedia-driven `data-layout-density` and separate platform component trees
+  - non-goals: user layout/profile settings, persisted layout overrides, UA sniffing, JS-managed viewport modes, duplicate platform trees, viewport locking, or a fixed-to-viewport composer

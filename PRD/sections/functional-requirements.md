@@ -419,16 +419,16 @@
 ### REQ-025
 - Title: Post-decrypt conversation thread
 - Priority: high
-- Description: After a successful Decrypt Stack, the enrichment step must replace the submit form with a compact answered-state layout, a read-only frozen context summary, and a conversation thread whose first visible message is the assistant's initial answer.
+- Description: After a successful Decrypt Stack, the enrichment step must replace the submit form with the shared chat-first conversation workspace, whose first visible message is the assistant's initial answer and whose frozen game context is available through an adaptive read-only context trigger/sheet/drawer.
 - Acceptance Criteria:
   - on first decrypt success, the submit form and Decrypt Stack button are hidden
   - answered-state header shows only **TheJudge** and omits redundant subtitle or conversation-heading copy
-  - compact read-only frozen context summary appears above the conversation thread
-  - compact summary highlights turn phase, active player when known, and populated zones with card names
-  - summary includes a disclosure arrow/control that expands to show the full frozen game context, including setup, zones, cards, and enrichment details
-  - expanded frozen context remains read-only and does not allow zone, card, or enrichment edits
-  - a scrollable conversation thread is shown; first visible bubble is the assistant's answer
+  - the shared workspace shows a compact game-context trigger before the message log, summarizing at least turn phase and populated-zone count
+  - activating the trigger opens the full frozen setup, zones, cards, and enrichment detail in an accessible bottom sheet below `768px` or right-side drawer at `768px+`
+  - open frozen context remains read-only and does not allow zone, card, or enrichment edits; close/Escape restores focus to the trigger
+  - a scrollable accessible conversation log is the workspace's dominant surface; its first visible bubble is the assistant's answer
   - the initial user question is not shown in the thread
+  - error/retry, composer, and Start Over occupy stable shared-workspace rows; the composer is docked within the workspace and is not fixed to the viewport
   - start over button is visible and enabled while no request is in flight
 - Constraints:
   - thread opens with the assistant answer only; do not show the initial user question as a visible bubble
@@ -436,14 +436,18 @@
 - Dependencies:
   - REQ-012
   - DEC-040
+  - DEC-118
+  - REQ-097
+  - REQ-098
 - Notes:
 
 ### REQ-026
 - Title: Follow-up chat composer
 - Priority: high
-- Description: While a conversation is active, users must be able to submit text follow-ups from a chat composer; each follow-up uses the frozen game context from the initial decrypt.
+- Description: While a conversation is active, users must be able to submit text follow-ups from the shared workspace's docked chat composer; each follow-up uses the frozen game context from the initial decrypt.
 - Acceptance Criteria:
   - chat composer shows a textarea and a Send button
+  - composer is a stable bottom row inside the shared conversation workspace and never a fixed viewport overlay
   - textarea accepts up to 300 characters
   - on follow-up success, a user bubble and then an assistant bubble are appended to the thread
   - mock-provider responses append to the same thread; the chat remains visible after mock responses exactly as it does for live responses
@@ -454,6 +458,8 @@
 - Dependencies:
   - REQ-025
   - DEC-040
+  - DEC-118
+  - REQ-097
 - Notes:
 
 ### REQ-027
@@ -488,12 +494,14 @@
   - Send button is disabled during the animation
   - animation is removed and button is restored when the response is received or an error occurs
   - `AskAiWaitingPanel` is not rendered for follow-up submits
+  - the existing spinner remains inline in the shared workspace's docked composer and is not replaced by a new animation system
 - Constraints:
   - CSS-only motion consistent with NFR-006; no animation libraries
 - Dependencies:
   - DEC-041
   - REQ-023
   - REQ-026
+  - DEC-118
 - Notes:
 
 ### REQ-029
@@ -1120,31 +1128,14 @@
 
 ### REQ-055
 - Title: Layout density preference
-- Priority: medium
-- Description: The frontend must let users choose a global **Desktop / Mobile** layout density (labels; stored internally as `"chunky"` / `"slim"`) through the existing theme panel, with the selection applied immediately and persisted for that browser. Mobile (`"slim"`) is the default as of 2026-08-02 (previously Desktop/`"chunky"`; see DEC-075) and must match pre-change slim spacing on reference screens.
+- Priority: —
+- Description: Superseded by REQ-096. The user-selected Desktop/Mobile density preference, its persisted `chunky`/`slim` values, and `data-layout-density` are retired in favor of automatic fluid responsive presentation (DEC-117).
 - Acceptance Criteria:
-  - the theme panel exposes a Desktop / Mobile segmented control below the palette swatches
-  - selecting a density immediately applies spacing via `data-layout-density` on `document.documentElement` and shared semantic CSS classes (`page-shell`, `page-card`, `panel-inner`, etc.)
-  - default density is Mobile (`"slim"`); missing, unset, corrupt, or unsupported stored values fall back to Mobile (`"slim"`) without throwing or blocking app load
-  - Desktop (`"chunky"`) mode on reference staged screens matches pre-change spacing (regression guard)
-  - Mobile (`"slim"`) mode visibly tightens shell padding, card gaps, and panel inner spacing without breaking touch targets or readability
-  - Mobile density applies only to participating density surfaces; `ZoneConfirmStep` is excluded from slim visual changes, and any shared shell extraction there must render visually unchanged
-  - selected density persists across page reloads for the same browser
-  - density changes do not reset game setup, selected zones, cards, enrichment, question text, answers, conversation state, scanner state, or retry cooldowns
-  - tests cover density selection, persistence, fallback, Desktop regression on at least one reference screen, and state safety
+  - superseded — see REQ-096
 - Constraints:
-  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, or data-pipeline behavior
-  - no server-synced preferences, account settings, viewport locking, sticky footers, or animation-heavy density transitions
-  - primary controls keep touch-friendly minimum heights (`min-h-[2.75rem]` on primary actions); body text is not shrunk below existing `text-sm` / `text-xs`
-  - density definitions must have one authoritative frontend source (`layoutDensityPrefs.ts`, `applyLayoutDensity.ts`, `index.css`) rather than duplicated spacing constants
 - Dependencies:
-  - DEC-075
-  - FLOW-008
-  - NFR-011
-  - DEC-066
+  - REQ-096
 - Notes:
-  - distinct from DEC-066's per-component theme-override non-goal — this is a global density token system
-  - REQ-056 screen compaction scroll caps apply in both densities; slim further tightens component-level spacing in a follow-on surface pass
 
 ### REQ-056
 - Title: Staged-flow screen compaction
@@ -1155,11 +1146,11 @@
   - **zone collection:** cards render in a 2-column tile grid with at most 4 tiles (2 rows) visible before the grid scrolls, for every zone including stack; remove buttons, thumbnails, truncated names, and stack-position labels are preserved; with 5+ cards the 5th is reachable via scroll; the empty-state `Select a suggestion to preview and add a card to …` placeholder is removed
   - **scan focus:** while scan is open, search input, scan entry button, zone card list, owner select, card preview, and outer staged-flow navigation/action buttons outside the camera surface are not in the document; the `Scan card` heading is removed; **Exit scan** is reachable on the camera surface top-right; the scan-local **Capture** button remains available; the low-confidence manual-search escalation prompt does not render; manual tap-to-capture remains available
   - **enrichment:** in **View all cards** mode, each zone's card list shows at most 4 full-width edit rows before internal scroll; card-by-card wizard mode is unchanged; all enrichment fields remain reachable by scrolling within the zone list
-  - **zone confirmation:** no layout, spacing, or slim-density visual changes; shared shell plumbing is permitted only if it is a rendered visual no-op for this step
+  - **zone confirmation:** no screen-specific control compaction; it may inherit the automatic responsive shell/spacing from REQ-096 while its existing control layout and behavior remain unchanged
   - tests cover representative cases for game-context Easter egg, zone grid scroll, scan chrome hide/show, and enrichment list scroll cap
 - Constraints:
   - presentation only; no change to step names, step ordering, flow logic, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, or data-pipeline behavior
-  - scroll caps (4 zone tiles, 4 enrichment rows per zone) apply in both chunky and slim density
+  - scroll caps (4 zone tiles, 4 enrichment rows per zone) apply across automatic responsive widths
   - no viewport locking, sticky footers, or `dvh` page-shell redesign
 - Dependencies:
   - DEC-076
@@ -1171,7 +1162,7 @@
   - DEC-052
 - Notes:
   - incremental improvement — pages with many zones or the decrypt form below enrichment may still scroll; this requirement targets the worst vertical offenders
-  - slim density (REQ-055 / DEC-075) tightens spacing further without changing these functional caps
+  - automatic responsive presentation (REQ-096 / DEC-117) adjusts surrounding spacing without changing these functional caps
 
 ### REQ-057
 - Title: Scanner acquisition diagnostics and validation matrix
@@ -1259,6 +1250,7 @@
   - motion uses transform/opacity-driven techniques where practical and does not introduce visible jank or regress the card-add (<5s) or Decrypt Stack (<20s) interaction targets (NFR-001, NFR-002)
   - the existing functional wait-state motion (`AskAiWaitingPanel`, inline follow-up Send spinner) continues to render unchanged (DEC-031, DEC-041)
   - the scan camera surface convergence/lock/thumbs-up motion is left unchanged (no re-animation of `ScanCameraSurface` internals)
+  - DEC-118/REQ-098's focused conversation additions reuse this same motion vocabulary for first-answer handoff, appended messages, adaptive context, and the New response affordance; they do not reopen a broad app-wide audit
   - no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, stack-ordering semantics, or data-pipeline behavior
   - a `prefers-reduced-motion` verification is recorded (automated test and/or explicit manual check) demonstrating decorative motion is suppressed and flows still complete
 - Constraints:
@@ -1276,8 +1268,11 @@
   - FLOW-001
   - FLOW-002
   - FLOW-006
+  - DEC-118
+  - REQ-098
 - Notes:
   - "broad motion freedom" was the approved direction; guardrails (CSS-only, reduced-motion-aware, performance-safe) keep the pass lightweight
+  - the original broad baseline is shipped; ui-flare-chat-motion adds only the focused conversation transitions in REQ-098
   - the proximity-driven scan-outline idea is deferred to its own refinement (Q-002), not part of this requirement
 
 ### REQ-060
@@ -1290,7 +1285,7 @@
   - zone collection applies the resting treatment to every zone tab and the active zone card-picker container; hover/focus strengthens interactive tabs, and the active tab and card-picker container retain the stronger current treatment
   - enrichment applies the resting treatment to the view-mode control and each rendered card-enrichment/question-submission working container; hover/focus strengthens interactive controls
   - enrichment current-state treatment follows the rendered mode: during wizard card editing only the card-enrichment container retains the stronger treatment; in list mode both the card-enrichment and question-submission containers retain it simultaneously; after wizard completion only the question-submission container retains it
-  - the answered/conversation view applies the resting treatment to the frozen-context disclosure and follow-up composer; hover/focus strengthens their interactive controls, and the open frozen-context disclosure retains the stronger current treatment
+  - the answered/conversation view applies the resting treatment to the context trigger, open adaptive context sheet/drawer, and follow-up composer/workspace; hover/focus strengthens their interactive controls, and the open context surface retains the stronger current treatment
   - this inventory is exhaustive for REQ-060; surfaces outside it remain neutral unless another existing requirement, especially REQ-046, already themes them
   - hovering an inventoried interactive item strengthens its palette-derived border/glow/icon treatment without obscuring text, controls, or content
   - keyboard `focus-visible`, touch active state where applicable, and selected/current state provide equivalent enhanced feedback; no state or meaning is communicated by hover alone
@@ -1320,6 +1315,8 @@
   - NFR-011
   - FLOW-001
   - FLOW-007
+  - DEC-118
+  - REQ-097
 - Notes:
   - this expands palette expression, not the palette model or selection mechanism
 
@@ -1494,29 +1491,34 @@
 ### REQ-067
 - Title: Feature portal — top-level app navigation
 - Priority: high
-- Description: The app must provide a first-class **feature portal** that owns top-level navigation chrome — a menu button in the **top-middle** of the header, distinct from and non-overlapping with both the left brand block and the top-right `ThemeControl`/palette affordance — that opens a dropdown to switch between destinations, with the same menu as the path back. Destinations are supplied by an **extensible registry** so features register as destinations rather than shipping their own entry chrome; v1 registers MTG Assistant (the existing flow / start screen) and Trade Balancer. Switching is a frontend-only view switch that preserves each mode's in-session state (DEC-095, refines DEC-089).
+- Description: The app must provide a first-class **feature portal** that owns top-level navigation chrome — one icon-only Menu button docked in the **top-middle** of every destination header — opening the registered destinations, action entries, and palette-only Theme section. Destinations come from an extensible registry rather than shipping their own entry chrome; the currently registered destinations are **In-Depth Question** and **Quick Question**. Switching is a frontend-only view switch that preserves each destination's in-session state, while only the active destination id persists across reload in the same tab (DEC-095 as amended by DEC-104/DEC-107/DEC-109/DEC-110/DEC-111/DEC-117).
 - Acceptance Criteria:
-  - a navigation menu button sits in the **top-middle** of the header on every screen and is visually distinct from both the brand block and `ThemeControl`, which stays at the top-right corner
-  - the portal button, the brand block, and `ThemeControl` (with its opened menu) have **non-overlapping** visual bounds and pointer hit areas at mobile and desktop sizes (DEC-065 precedent)
+  - an icon-only navigation Menu button sits in the **top-middle** of every destination header, docks through the destination's inline `PortalSlot`, and scrolls with that header; the viewport-fixed path remains only a defensive fallback for a future headerless destination
+  - the portal button, brand block, step-name column where present, and opened Menu have non-overlapping visual bounds and pointer hit areas across automatic responsive widths
   - destinations come from an **extensible registry** (a feature registers a destination entry rather than adding its own nav chrome); adding a destination requires no portal redesign
-  - opening the menu lists the registered destinations — v1 **MTG Assistant** and **Trade Balancer** — with the current mode indicated
+  - opening the Menu lists **In-Depth Question** (`mtg-assistant`) and **Quick Question** (`quick-lookup`) with the current destination indicated; Trade Balancer is not registered until its real feature ships
+  - the Menu may include action entries that invoke handlers without switching destination (DEC-104), plus a Theme section containing palette swatches only; no layout/profile control is shown (DEC-110/DEC-117)
   - selecting a destination switches the active view; selecting the current mode is a no-op that does not reset in-progress state
-  - switching between destinations **preserves each mode's in-session state** while the app stays loaded; nothing is persisted across a page reload
-  - the MTG Assistant start screen, staged flow, and answered/conversation view are unchanged by adding the portal
+  - switching between destinations preserves each destination's in-session state while the app stays loaded; refreshing restores only the active destination id in the same tab while each destination's internal state resets (DEC-111/REQ-090)
+  - In-Depth Question's staged flow and both destinations' request/prompt behavior are unchanged by the portal
   - any open/close motion is CSS-only and reduced-motion-aware (NFR-006)
 - Constraints:
   - chrome only; no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, `POST /api/ask-ai`, or any product-facing endpoint; no backend route and no server-side navigation state
   - mobile-first: the button and its menu must stay touch-friendly and not crowd the header (NFR-001)
 - Dependencies:
   - DEC-095
-  - DEC-089
-  - DEC-066
+  - DEC-104
+  - DEC-107
+  - DEC-109
+  - DEC-110
+  - DEC-111
+  - DEC-117
   - NFR-001
   - NFR-006
   - FLOW-010
 - Notes:
-  - owned by the `feature-portal` work package (elevated out of `card-trade-balancer`); the Trade Balancer registers as a destination and depends on the portal
-  - registry is extensible to future destinations (e.g. `card-lookup-qa`, `rules-lookup`); v1 lists only MTG Assistant and Trade Balancer
+  - owned by the `feature-portal` package; hidden placeholders do not count as registered destinations
+  - DEC-117/REQ-096 remove only the former density control; palette hosting, destination registry, action entries, and Menu docking remain unchanged
 
 ### REQ-068
 - Title: Responsive scan-view layout
@@ -1554,7 +1556,7 @@
 - Priority: low
 - Description: The game-context "Players in game" disclosure row's three controls — the expand/collapse toggle, the add-player button, and the remove-last-player button — must be enlarged for reliable tapping, the expand/collapse arrow must be more visually prominent as an expander affordance, and the add/remove buttons must be reordered to `−` (remove) on the left and `+` (add) on the right to match stepper intuition. Presentation/ergonomics only.
 - Acceptance Criteria:
-  - each of the three disclosure-row controls presents a touch target of at least 44×44px, in both chunky and slim density (DEC-075)
+  - each of the three disclosure-row controls presents a touch target of at least 44×44px across all supported responsive widths (DEC-117/REQ-096)
   - the expand/collapse arrow renders at a visibly larger, more prominent size than before so it clearly reads as an expander; `aria-label` and `aria-expanded` semantics are unchanged and still reflect the collapsed/expanded state
   - the add/remove pair is ordered `−` (remove last player) on the left and `+` (add player) on the right
   - each button keeps its existing label, `aria-label`, click handler, disabled behavior at `MIN_PLAYERS`/`MAX_PLAYERS`, and accent/zinc styling role
@@ -1562,14 +1564,15 @@
   - tests cover that the remove-player control precedes the add-player control in the players disclosure row and that all three controls render with the enlarged sizing
 - Constraints:
   - presentation only; no change to game-context logic, life totals, display names, player-count bounds, step names, step ordering, flow logic, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, or data-pipeline behavior
-  - preserve readable contrast and touch-friendly controls (NFR-001) across all palettes and densities
+  - preserve readable contrast and touch-friendly controls (NFR-001) across all palettes and supported responsive widths
   - CSS/Tailwind within the existing React/Vite stack; no new component library or framework
 - Dependencies:
   - DEC-091
   - DEC-076
-  - DEC-075
+  - DEC-117
   - REQ-056
   - REQ-060
+  - REQ-096
   - NFR-001
   - FLOW-001
 - Notes:
@@ -1590,10 +1593,12 @@
   - text/presentation only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, stack-ordering semantics, step names, step ordering, flow logic, or data-pipeline behavior
   - preserve the themed labels/buttons (`Decrypt Stack`, `Begin stackening!`, `Context enrichment`, `Consulting the stack…`) unchanged
   - do not reword the tuned scan condition-aware feedback (DEC-062/DEC-072 cause-hints)
-  - keep each enhanced helper to a single concise line, readable in both chunky and slim density and across all palettes (NFR-001)
+  - keep each enhanced helper to a single concise line, readable across all supported responsive widths and palettes (DEC-117/REQ-096/NFR-001)
 - Dependencies:
   - DEC-092
+  - DEC-117
   - REQ-069
+  - REQ-096
   - FLOW-001
   - FLOW-002
   - NFR-001
@@ -1713,18 +1718,19 @@
   - during quick-lookup refinement this requirement was rewritten to merge the prior card-mode assembly (this ID) and rules-mode assembly (former REQ-077) into one branching prompt-assembly path, and to add the off-domain guardrail; see REQ-077
 
 ### REQ-075
-- Title: Quick Lookup conversation thread
+- Title: Quick Question shared conversation workspace
 - Priority: high
-- Description: After the first answer, Quick Lookup must reuse the shipped conversation chrome for text follow-ups under the same conversation limits as the main flow, with the attached card (if any) frozen as context.
+- Description: After the first answer, Quick Question must use the same shared chat-first conversation workspace as In-Depth Question for text follow-ups under the same conversation limits, with the attached card (if any) frozen behind the adaptive read-only context trigger/sheet/drawer.
 - Acceptance Criteria:
-  - on first successful answer, the surface reuses the conversation thread, follow-up composer, inline processing animation, and start-over controls (REQ-025 / REQ-026 / REQ-027 / REQ-028 / REQ-029)
+  - on first successful answer, the surface renders the same shared workspace, conversation log, docked follow-up composer, inline processing animation, retry/error placement, New response affordance, and Start Over control as In-Depth Question (REQ-025 / REQ-026 / REQ-027 / REQ-028 / REQ-029 / REQ-097 / REQ-098)
   - the frozen "context" is the attached card if the user resolved one before asking; otherwise there is no frozen context object (no `GameContext` either way); a card, once submitted, is frozen for the duration of the conversation and follow-ups are text-only
+  - when a card is frozen, a compact trigger naming the card opens its existing read-only card presentation in a bottom sheet below `768px` or right-side drawer at `768px+`; without a card, no empty context trigger or container is rendered
   - the first visible thread bubble is the assistant's answer; the initial user question is included in `conversationHistory` sent to the API but is not shown as a visible bubble
   - follow-up requests send `{ mode: "lookup", question, card: frozen (when one was attached), conversationHistory }` and reuse the same message-count and per-message/character limits as the main flow (REQ-027); Quick Lookup defines no separate limit policy
   - start over clears the thread and returns to the pre-ask state — with the looked-up card preserved if one was attached, or the core-topics fallback (REQ-079) visible if not
   - mock-provider follow-ups append to the same thread exactly as live responses do
 - Constraints:
-  - reuse existing conversation components; no new conversation-limit constants or divergent chrome
+  - reuse the shared workspace and existing conversation/card components; no new conversation-limit constants, duplicated context formatting, or divergent chrome
   - no zone/card-context editing mid-conversation (v1)
 - Dependencies:
   - DEC-107
@@ -1732,6 +1738,9 @@
   - REQ-026
   - REQ-027
   - REQ-072
+  - DEC-118
+  - REQ-097
+  - REQ-098
 - Notes:
   - during quick-lookup refinement this requirement was rewritten to merge the prior Card Lookup thread (this ID) and Rules Lookup thread (former REQ-080) into one; see REQ-080
 
@@ -1976,42 +1985,44 @@
 ### REQ-089
 - Title: Mobile header consolidation — retire floating theme control, attach Menu everywhere
 - Priority: medium
-- Description: Fix the mobile header collision between the floating theme/palette control and staged-step text, and the disconnected floating Menu tab on the answered/conversation screen, by consolidating the header's two independent floating controls into one: theme/density selection folds into the feature-portal Menu (DEC-110), and every destination screen — including the answered/conversation view — renders its own inline header slot so Menu always docks flush to its content card rather than floating fixed (DEC-109). The Menu trigger becomes icon-only.
+- Description: Fix the mobile header collision between the former floating theme/palette control and staged-step text, and the disconnected floating Menu tab on the answered/conversation screen, by consolidating the header's two independent floating controls into one: palette selection lives in the feature-portal Menu (DEC-110), automatic responsive presentation replaces the former density control (DEC-117), and every destination screen — including the answered/conversation view — renders its own inline header slot so Menu always docks flush to its content card rather than floating fixed (DEC-109). The Menu trigger is icon-only.
 - Acceptance Criteria:
   - at mobile widths, no staged-step name (game context, zone confirmation, zone collection, enrichment) ever renders under or behind another control, because the standalone top-right theme control no longer exists
   - the answered/conversation screen's Menu tab docks flush to its content card's top border (matching the 4 staged screens' `.portal-slot-tab` treatment) and scrolls away with the page instead of remaining fixed at the viewport top while the user scrolls the conversation
-  - opening the feature-portal Menu shows the existing destination list plus a **Theme** section with the same palette swatches and Chunky/Slim density control `ThemeControl` previously exposed, with identical selection/persistence/fallback behavior
+  - opening the feature-portal Menu shows the existing destination list plus a **Theme** section with the same palette swatches and palette selection/persistence/fallback behavior previously exposed; no Layout, Desktop/Mobile, Chunky/Slim, or other profile control is rendered
   - no standalone floating theme control remains anywhere in the app
   - the Menu trigger renders icon-only (no visible "Menu" text); `aria-label="Switch feature"` continues to name it for assistive tech
   - the 4 staged screens' existing inline Menu docking, top-middle placement, and step-name presentation (DEC-067/DEC-076) are visually unchanged aside from the trigger losing its text label
 - Constraints:
   - presentation only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan logic, conversation/message logic, or data-pipeline behavior
-  - reuse `ThemeControl`'s existing palette/density logic and tokens as-is; do not introduce a second palette or density implementation
+  - reuse the existing palette logic and tokens as-is; responsive spacing follows REQ-096 and is not user personalization
   - mobile-first: verify at common narrow mobile widths (e.g. ~360–414px) in addition to desktop (NFR-001)
 - Dependencies:
   - DEC-109
   - DEC-110
+  - DEC-117
   - DEC-095
   - DEC-066
   - DEC-067
   - NFR-001
   - NFR-006
+  - REQ-096
   - FLOW-001
 - Notes:
-  - this is a bug-fix/consolidation pass over existing chrome (feature-portal Menu, `ThemeControl`, `StagedStepHeader`), not a new feature; no new screens or destinations are added
+  - DEC-117/REQ-096 supersede only the density-control clauses; Menu docking and palette hosting remain unchanged
 
 ### REQ-090
 - Title: Persist active feature-portal destination across a page refresh
 - Priority: medium
 - Description: On a page refresh, the app must restore whichever feature-portal destination (REQ-067) the user last had active, instead of always resetting to the first registered destination. This narrowly amends DEC-095/REQ-067/FLOW-010's "nothing is persisted across a page reload" clause (DEC-111): only the choice of which destination screen mounts is restored — each destination's in-session state (staged flow, conversation, follow-ups) still resets fresh on refresh, unchanged.
 - Acceptance Criteria:
-  - refreshing the page while a non-default destination (e.g. Quick Lookup) is active restores that same destination on reload, instead of resetting to the first registered destination (`mtg-assistant`)
+  - refreshing the page while a non-default destination (for example **Quick Question**, internally `quick-lookup`) is active restores that same destination on reload, instead of resetting to the first registered destination (`mtg-assistant`)
   - a brand-new browser tab/window with no prior activity in that tab still opens on the first registered destination — session-scoped persistence, not a durable cross-session preference
   - the persisted value is stored under a dedicated `sessionStorage` key, validated against the currently registered destination ids on load; a missing, corrupted, or unregistered value falls back to the first registered destination, mirroring the existing theme-palette fallback pattern (`themePrefs.ts`)
   - no other state persists across a refresh: each destination's staged/conversation/follow-up state resets to its normal fresh-start behavior on reload, unchanged
   - switching destinations within a live session (no refresh) keeps all existing DEC-095/REQ-067 behavior unchanged — in-session state preservation, no-op on reselecting the current mode, etc.
 - Constraints:
-  - frontend-only; `sessionStorage`, not `localStorage` — must not survive closing the tab/browser (distinguishes this from the theme-palette/density preference)
+  - frontend-only; `sessionStorage`, not `localStorage` — must not survive closing the tab/browser (distinguishes this from the durable theme-palette preference)
   - no URL-based routing / react-router
   - no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint/backend route
   - no change to which destination is the default for a brand-new session
@@ -2021,7 +2032,7 @@
   - REQ-067
   - FLOW-010
 - Notes:
-  - reuse the established preference pattern already used for theme palette / layout density (try/catch-guarded load/save, validated against known ids, graceful fallback to default) — `sessionStorage` instead of `localStorage` is the only mechanism difference
+  - reuse the established theme-palette preference pattern (try/catch-guarded load/save, validated against known ids, graceful fallback to default) — `sessionStorage` instead of `localStorage` is the only mechanism difference
 
 ### REQ-091
 - Title: Locked topic-phrase pill in Quick Lookup's general rules topics
@@ -2070,3 +2081,179 @@
   - REQ-075
 - Notes:
   - added during ui-refinement to close a gap: REQ-023 specifies this pattern for the in-depth flow's `EnrichmentStep`, and REQ-075 covers Quick Lookup's conversation once an answer exists, but the pre-first-answer wait state on Quick Lookup's own submit form was previously unspecified and had drifted from the REQ-023 pattern
+
+### REQ-093
+- Title: Committed Commander Spellbook combo corpus
+- Priority: high
+- Description: TheJudge must build a deterministic, compact, backend-only snapshot of Commander Spellbook's public reviewed combo variants, keyed and indexed by the Scryfall `oracle_id` already used as TheJudge `cardId`, so combo retrieval has no runtime dependency on Commander Spellbook or Scryfall.
+- Acceptance Criteria:
+  - a dedicated human-approved refresh retrieves the paginated public Commander Spellbook variants and templates into gitignored raw inputs; an agent never runs that network refresh without explicit approval
+  - the build accepts public reviewed variants only (`OK` / `EXAMPLE`) and records the source snapshot timestamp, upstream variant id/reference, Commander Spellbook attribution, and any source/license notices published by upstream
+  - committed backend artifacts separate compact variant detail from lookup indexes and retain, per variant: exact-card ingredients, quantities, permitted starting zones, template ingredients, produced effects, step description, mana needed, easy/notable prerequisites, notes, popularity, and stable source URL
+  - exact cards join on `oracleId` → TheJudge `cardId`; no printing-level identity enters combo retrieval or prompt context
+  - query-backed templates are expanded during the approved refresh by following their authoritative Commander Spellbook-provided Scryfall query/API URL and collecting deduplicated oracle ids across all result pages; authoritative explicit replacement mappings are used when the upstream source exposes them
+  - templates with neither an authoritative query nor an authoritative replacement mapping are retained and marked unresolved; TheJudge does not hand-author a replacement map or implement its own Scryfall-query parser
+  - the oracle index covers both exact-card membership and authoritative template membership; template expansion data remains available to the matcher so it can assign contextual card instances to template slots
+  - output ordering and serialization are deterministic for identical raw inputs, including stable variant-id and oracle-id tie-breaks
+  - a failed refresh or build never overwrites a valid committed artifact with empty/partial output; a local build with no fresh raw input validates and preserves the prior committed snapshot
+  - runtime performs no Commander Spellbook or Scryfall request
+- Constraints:
+  - static committed backend artifacts only; raw upstream responses stay gitignored
+  - do not expose a public mirror endpoint or add a product-facing route
+  - do not fold combo data into `cardMetadata.json`, `cardRulingsByOracleId.json`, or the WotC rules artifacts; each corpus keeps one authoritative shape
+- Dependencies:
+  - DEC-116
+  - DEC-012
+  - Commander Spellbook public REST API
+  - Scryfall `oracle_id` and card-search API used only during approved refresh
+- Notes:
+  - planned paths are `apps/backend/data/commanderSpellbookCombos.json` and `apps/backend/data/commanderSpellbookComboIndex.json`, built from gitignored raw inputs under `apps/backend/data/commander-spellbook/`
+
+### REQ-094
+- Title: Context-aware Commander Spellbook combo retrieval
+- Priority: high
+- Description: The backend must retrieve Commander Spellbook variants only through deterministic combo-intent and submitted-context gates, distinguishing complete contextual candidates from question-triggered partial candidates without claiming that any candidate is executable.
+- Acceptance Criteria:
+  - one shared deterministic detector uses case-insensitive word/phrase-boundary patterns for narrow combo intent such as `combo`, `combos`, `infinite`, `go infinite`, `goes infinite`, `loop`, and `win condition`; broad terms such as `synergy`, `interaction`, and `works with` do not activate partial retrieval by themselves
+  - for `mode: "game"` without explicit combo intent, retrieval returns only complete candidates: every exact/template ingredient and required quantity is assigned to a distinct submitted card instance in a Commander Spellbook-compatible starting zone
+  - one contextual card instance cannot satisfy more than one ingredient slot; duplicate quantities are multiset-aware and zone mapping is centralized and deterministic
+  - an unresolved template can never count as satisfied for a complete candidate
+  - for `mode: "game"` with explicit combo intent, complete candidates rank first and partial candidates may also be returned so the answer can identify missing or incorrectly zoned pieces
+  - submitted cards whose names are explicitly mentioned in a game-mode question become required anchors for partial candidates; when no submitted card is named, submitted cards seed overlap matching and ranking
+  - for `mode: "lookup"`, combo retrieval runs only when combo intent is explicit and one card is attached; every candidate must contain the attached card as an exact ingredient or authoritative template match
+  - lookup mode with no attached card and lookup questions without combo intent retrieve no combo catalog data
+  - every match result distinguishes compatible present ingredients, present-but-incompatible-zone ingredients, missing exact ingredients, matched template ingredients, and unresolved template ingredients
+  - mana availability, `mustBeCommander`, battlefield/card state, legality, and prose prerequisites are passed through as context but are not deterministically validated or represented as satisfied
+  - at most five variants are selected, ordered by: complete contextual match; required-anchor coverage; compatible-zone coverage; fewer missing ingredients; Commander Spellbook popularity descending; stable variant id ascending
+  - identical request context and artifact data produce the same selected variants and match annotations
+- Constraints:
+  - retrieval is local and backend-only; no model call is used to decide intent, eligibility, template satisfaction, or ranking
+  - do not introduce legality validation, rules simulation, hidden-state assumptions, or a second product-facing endpoint
+- Dependencies:
+  - DEC-116
+  - REQ-093
+  - DEC-021
+  - DEC-106
+  - DEC-013
+- Notes:
+  - "complete" means catalog ingredients and compatible submitted zones are present, not that mana/state/prerequisites have been proven or the combo is legally executable
+
+### REQ-095
+- Title: Commander Spellbook combo prompt enrichment
+- Priority: high
+- Description: Eligible combo matches must enter Ask AI prompts as a bounded, explicitly community-sourced section that describes present and missing ingredients while preserving WotC rules/card text as higher authority and keeping the HTTP contract unchanged.
+- Acceptance Criteria:
+  - when REQ-094 selects at least one variant, prompt assembly adds `COMMANDER SPELLBOOK COMBO CONTEXT — COMMUNITY-SOURCED` after card/rules/rulings enrichment and before conversation history plus the current question
+  - each entry includes its complete/partial classification, stable Commander Spellbook variant reference, compatible present ingredients, present-but-incompatible-zone ingredients, missing exact ingredients, matched/unresolved template ingredients, produced effects, steps, mana needed, prerequisites, and notes when available
+  - partial candidates explicitly label every missing or incorrectly zoned ingredient so the model can address the user's question without presenting the combo as currently assembled
+  - prompt instructions state that Commander Spellbook is community catalog data, not WotC rules, legality validation, or proof of executability; official card text, WotC rulings, and Comprehensive Rules remain authoritative
+  - without explicit combo intent, the model is told to use an automatically matched complete combo only when relevant to the user's actual question; it must not expand into unrelated staples or other variants
+  - no selected variants produces no combo section and no empty heading
+  - a missing, empty, or malformed combo artifact disables combo enrichment, emits one diagnostic warning per process/path, and still answers through the existing provider flow
+  - mock provider responses expose the exact assembled combo section under existing mock behavior; live responses keep the plain-text `{ answer }` contract
+  - combo selection adds no field to `AskAiRequest`, `AskAiResponse`, or error shapes and adds no endpoint
+  - eval fixtures cover game complete/non-intent, game partial/explicit, lookup attached-card/explicit, lookup unrelated-card question, unresolved templates, incompatible zones, and no-artifact degradation; goldens change only for intentional combo-section additions
+- Constraints:
+  - backend prompt enrichment only; no visible Known Combos panel, browser, or portal destination
+  - preserve existing stack order, prompt sections, provider boundary, and response formatting
+- Dependencies:
+  - DEC-116
+  - REQ-093
+  - REQ-094
+  - REQ-074
+  - DEC-029
+  - DEC-030
+  - DEC-046
+- Notes:
+  - the five-variant retrieval cap is a relevance/noise boundary independent of DEC-042's effectively unlimited global prompt-character budget
+
+### REQ-096
+- Title: Automatic fluid responsive presentation
+- Priority: high
+- Description: The frontend must adapt presentation automatically across viewport sizes using one mobile-first component tree, fluid CSS spacing/sizing, and structural media queries, replacing the retired user-selected Desktop/Mobile density preference.
+- Acceptance Criteria:
+  - the feature-portal Theme section exposes palette swatches only; no Layout, Desktop/Mobile, Chunky/Slim, profile, or equivalent spacing control is rendered
+  - app startup and theme changes do not read, write, migrate, or delete the former layout-density local-storage value; any old value is ignored without throwing or blocking render
+  - `data-layout-density` is not set on `document.documentElement` or consumed by application CSS
+  - page shell/card, inner panels, staged header, zone grid/tiles, enrichment lists/rows, scan video/card preview, conversation workspace/thread, and adaptive context surfaces use mobile-first automatic rules and shared fluid spacing/sizing tokens rather than duplicated viewport constants
+  - one semantic component tree renders at every viewport; no user-agent, platform, pointer, or viewport check in JavaScript selects a mobile/desktop layout
+  - structural media queries are used only where layout cannot fluidly interpolate; the context sheet/drawer changes at `768px` per REQ-097
+  - Zone Confirmation inherits automatic shell spacing while its control layout, selection behavior, and flow semantics remain unchanged
+  - primary interactive targets remain at least 44px in each dimension where applicable; established body/supporting text does not shrink below `text-sm`/`text-xs`
+  - changing viewport size does not reset game setup, selected zones, cards, enrichment, question text, answers, conversation state, scanner state, destination state, or retry cooldowns
+  - automated coverage verifies density UI/attribute/preference removal and representative responsive class/structure behavior
+  - visual evidence records `320x568`, `390x844`, `768x1024`, `1024x768`, and `1440x900` across representative staged screens and both conversation flows with no overlap, clipping, hidden primary controls, or unintended horizontal document scroll
+- Constraints:
+  - frontend presentation only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, backend routes, card metadata, scanner matching/stabilizer logic, or data-pipeline behavior
+  - no user-visible layout/profile setting, persisted layout override, UA sniffing, JS-managed viewport mode, duplicate platform component tree, viewport locking, or fixed-to-viewport composer
+  - responsive tokens and structural breakpoints have one authoritative CSS definition
+- Dependencies:
+  - DEC-117
+  - DEC-110
+  - REQ-056
+  - REQ-089
+  - NFR-001
+  - NFR-011
+- Notes:
+  - supersedes REQ-055; FLOW-008 is retired rather than replaced by a user flow because automatic presentation requires no user action
+
+### REQ-097
+- Title: Shared chat-first conversation workspace and adaptive context
+- Priority: high
+- Description: In-Depth Question and Quick Question must render one shared answered-state workspace in which the message log is primary, the composer is docked inside the workspace, and flow-specific frozen context is available through an adaptive read-only bottom sheet or right-side drawer.
+- Acceptance Criteria:
+  - both answered flows render the same shared workspace component for context trigger, message log, inline error/retry placement, follow-up composer, Start Over, and New response placement
+  - the composer occupies a stable bottom workspace row and never uses fixed viewport positioning; short viewports may fall back to normal document scrolling without hiding the composer or primary controls
+  - In-Depth Question always renders a compact context trigger summarizing at least phase and populated-zone count; opening it shows the existing full frozen setup, zones, cards, and enrichment details read-only
+  - Quick Question with an attached frozen card renders a compact trigger naming that card and opens the existing read-only card presentation; a no-card conversation renders no empty context trigger or container
+  - below `768px`, context opens as a bottom sheet; at `768px+`, it opens as a right-side drawer; both overlay rather than permanently consume message-log width
+  - both context variants provide an explicit close control, close on Escape, contain keyboard focus while open, restore focus to the trigger on close, and expose an accessible dialog name
+  - context formatting and card presentation are reused/refactored from existing authoritative components; no duplicate game-context label maps or card-metadata rendering logic is introduced
+  - the first visible message remains the assistant's answer; the initial user question remains hidden; frozen-context, follow-up limits, retry/cooldown, and Start Over data-preservation semantics remain unchanged
+  - existing destination/header chrome and feature-portal Menu docking remain unchanged
+  - REQ-060's ambient accent treatment applies to the context trigger, open sheet/drawer, and docked composer/workspace without broadening its closed surface inventory elsewhere
+- Constraints:
+  - presentation and component ownership only; no request, validation, prompt, provider, response, history, retry-timing, persistence, or backend change
+  - no context mutation during conversation, permanent desktop context rail, separate flow-specific chat chrome, or viewport-fixed composer
+- Dependencies:
+  - DEC-118
+  - DEC-117
+  - REQ-025
+  - REQ-026
+  - REQ-029
+  - REQ-060
+  - REQ-075
+  - REQ-096
+- Notes:
+  - selected approach: mobile bottom sheet + desktop right drawer over a chat-first workspace
+
+### REQ-098
+- Title: Reader-safe conversation scrolling and focused motion
+- Priority: high
+- Description: The shared conversation log must follow new messages without disrupting a reader who has scrolled upward, expose accessible live updates, and add only focused CSS/reduced-motion-aware transitions for the conversation experience.
+- Acceptance Criteria:
+  - remaining scroll distance is computed as `scrollHeight - scrollTop - clientHeight`; a value `<= 64px` is near-bottom
+  - on first-answer handoff, the workspace opens at the latest message
+  - when a message is appended while near-bottom, the log moves to the latest message; scrolling is immediate when `prefers-reduced-motion: reduce` applies and may be smooth otherwise
+  - when a message is appended while farther than 64px from the bottom, the reader's exact scroll position is preserved and a visible `New response` control appears
+  - activating `New response` scrolls to and places keyboard focus on the newest assistant message, dismisses the control, and preserves any composer text; that message is programmatically focusable without adding every message to the normal sequential tab order
+  - multiple additions while scrolled up do not force movement or render duplicate controls; the affordance may communicate the accumulated count
+  - manually returning to the near-bottom region dismisses the New response control
+  - the message container uses polite accessible live-log semantics (`role="log"` plus additions/text relevance) and does not re-announce the complete history on every append
+  - first-answer handoff, newly appended bubbles, adaptive context open/close, and New response appearance reuse shared transform/opacity motion tokens
+  - existing messages do not replay entrance motion on unrelated renders; only newly appended content receives the message entrance
+  - `prefers-reduced-motion` reduces these new transitions to effectively immediate behavior while all controls and flows remain fully usable
+  - `AskAiWaitingPanel`, the inline Send spinner, existing Menu/palette motion, and tuned scanner motion remain unchanged
+  - automated tests control scroll metrics and reduced-motion preference to cover near-bottom, scrolled-up, multiple-message, manual-return, activation focus on the newest assistant message with composer-text preservation, and no-reanimation cases
+- Constraints:
+  - CSS-based motion only; no animation library, scroll dependency, layout-thrashing animation, or broad app-wide motion audit
+  - no change to when user/assistant messages enter application state, conversation-history assembly, message limits, request timing, or provider behavior
+- Dependencies:
+  - DEC-118
+  - DEC-079
+  - REQ-028
+  - REQ-059
+  - REQ-097
+  - NFR-006
+- Notes:
+  - focused scope excludes new palette-switch/Menu signature animation and all scan-camera internals

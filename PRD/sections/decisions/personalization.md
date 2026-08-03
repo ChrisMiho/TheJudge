@@ -64,29 +64,10 @@ Frontend-only user personalization behavior that changes app presentation withou
   - DEC-081 later narrows the "neutral slate chrome stays neutral" boundary: static chrome remains neutral, while only the closed surface inventory in REQ-060 may use restrained palette-derived borders, glows, and icon accents
 
 ### DEC-075
-- Decision: Layout density customization uses a global frontend-only **Desktop / Mobile** control in the theme panel (labels; stored internally as `"chunky"` / `"slim"`), with browser-local persistence and `data-layout-density` on `document.documentElement`. **Mobile** (`"slim"`) is the default, adjusted 2026-08-02 from the original `"chunky"` default (see `receipts/adhoc-2026-08-02.md`); **Mobile** must remain a visual no-op versus pre-change slim spacing.
-- Status: confirmed
-- Context: DEC-066 ships palette personalization but not spacing density. Staged-flow screens remain vertically tall even after screen-specific compaction; users need a global compact layout preference without a settings system or account layer. The palette infrastructure (`ThemeControl`, localStorage prefs, immediate apply) is the pattern to mirror.
-- Impact:
-  - `layoutDensityPrefs.ts` stores `thejudge.theme.layoutDensity` (`"chunky"` | `"slim"`) — internal values unchanged by the 2026-08-02 label rename
-  - `applyLayoutDensity.ts` sets `document.documentElement.dataset.layoutDensity` only
-  - the theme panel (`ThemeSection`, folded into the feature-portal Menu per DEC-110) exposes a Desktop / Mobile segmented control below palette swatches, mapped to `"chunky"` / `"slim"` respectively
-  - shared `PageShell` and semantic CSS classes in `index.css` define chunky defaults plus `[data-layout-density="slim"]` overrides for shell padding, card gaps, and panel inner spacing on participating density surfaces
-  - `ZoneConfirmStep` is not a participating slim-density surface; it may share shell plumbing only when the rendered layout, spacing, and density behavior remain visually unchanged, otherwise its existing shell markup stays in place
-  - slim mode additionally tightens high-scroll surfaces (header scale, scan video aspect, conversation thread cap, etc.) via attribute selectors; chunky regression is guarded on reference screens
-  - missing, corrupt, or unsupported stored values fall back to slim (Mobile)
-  - primary controls keep touch-friendly minimum heights; body text is not shrunk below existing `text-sm` / `text-xs`
-  - no `AskAiRequest`, Zod schema, backend route, prompt assembly, provider, card metadata, or data-pipeline behavior changes
-- Related requirements:
-  - REQ-055
-  - FLOW-008
-  - NFR-011
-- Notes:
-  - distinct from DEC-066's "per-component theme overrides" non-goal — this is a global density token system, not arbitrary per-widget theming
-  - non-goals: server-synced preferences, account settings, viewport locking / sticky footers, animation-heavy density transitions
+- Superseded by DEC-117.
 
 ### DEC-076
-- Decision: The staged data-collection flow receives a presentation-only compaction pass across game context, zone collection, enrichment list mode, and scan-focused zone-collection chrome. Zone confirmation is excluded.
+- Decision: The staged data-collection flow receives a presentation-only compaction pass across game context, zone collection, enrichment list mode, and scan-focused zone-collection chrome. Zone confirmation is excluded from screen-specific control compaction; DEC-117 may still apply the automatic responsive shell around it.
 - Status: confirmed
 - Context: Routine setup work forces document scroll on desktop and mobile because screens stack generous padding, unbounded lists, and redundant chrome — especially enrichment list mode, zone collection with scan open, and game context (hero image, duplicate panels). This pass reduces vertical space without changing flow logic or payloads.
 - Impact:
@@ -95,7 +76,7 @@ Frontend-only user personalization behavior that changes app presentation withou
   - **zone collection chrome:** remove the empty-state `Select a suggestion to preview and add a card to …` placeholder; search and suggestions are sufficient affordance
   - **scan focus:** while scan is open, hide search input, scan entry button, zone card list, owner select, card preview, and outer staged-flow navigation/action buttons outside the camera surface; remove the `Scan card` heading; place **Exit scan** at the camera top-right; keep the scan-local **Capture** button and other scan-local controls available; offset the scan review bubble so controls do not overlap; remove the low-confidence "Use manual search" escalation prompt — manual search is reached via **Exit scan** while the camera is open (DEC-050); manual tap-to-capture on the scan screen is unchanged (DEC-052)
   - **enrichment:** in **View all cards** mode only, each zone's card list caps at 4 visible full-width edit rows with internal scroll; card-by-card wizard mode unchanged
-  - **zone confirmation:** no layout, spacing, or slim-density visual changes; shared shell plumbing is allowed only as a rendered visual no-op
+  - **zone confirmation:** no screen-specific control compaction; DEC-117/REQ-096 may apply automatic shell spacing while its control layout and flow behavior remain unchanged
   - presentation only — no change to step names, step ordering, flow logic, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, or data-pipeline behavior
 - Related requirements:
   - REQ-056
@@ -105,9 +86,11 @@ Frontend-only user personalization behavior that changes app presentation withou
   - DEC-067
   - DEC-050
   - DEC-052
+  - DEC-117
+  - REQ-096
 - Notes:
-  - scroll caps (4 zone tiles, 4 enrichment rows per zone) apply in both chunky and slim density; slim tightens spacing further (DEC-075)
-  - non-goals: viewport locking, sticky footers, `dvh` page-shell redesign, changing zone confirmation visuals or density behavior, scan-engine changes
+  - scroll caps (4 zone tiles, 4 enrichment rows per zone) apply across automatic responsive widths
+  - non-goals: viewport locking, sticky footers, `dvh` page-shell redesign, changing zone-confirmation control structure, or scan-engine changes
 
 ### DEC-078
 - Decision: Card presentation in zone collection, expanded scan review, and enrichment is image-first and responsive. An available card image is centered at **80% of its card container width**, preserves the source card's intrinsic aspect ratio, and shows the complete image without cropping. Image mode hides duplicated card identity labels; an accessible three-dot control swaps the image for every available locally carried metadata field and back again. When an image URL is absent or the image fails to load, including offline, the same readable metadata panel appears directly and expands to the available card container width. Remove and workflow-specific controls remain visible. Every image-bearing or metadata card container also uses a restrained thin ring derived from the existing card `colors`: one identity color, a stable WUBRG-ordered multicolor gradient, or cool light silver-gray when colors are empty, missing, or unrecognized.
@@ -149,12 +132,12 @@ Frontend-only user personalization behavior that changes app presentation withou
   - card colors use stable semantic presentation constants rather than the user-selectable palette tokens
 
 ### DEC-081
-- Decision: The selected theme palette extends into a restrained ambient accent layer across the four staged screens and the answered/conversation view. Only the closed minimum surface inventory in REQ-060 shows a low-intensity palette accent at rest, strengthens that accent on hover/focus where interactive, and retains a stronger restrained treatment while selected or current. Static chrome stays neutral. This extends DEC-066/DEC-068 and uses DEC-079's existing motion baseline; it supersedes only DEC-068's blanket exclusion of neutral borders for the listed surfaces.
+- Decision: The selected theme palette extends into a restrained ambient accent layer across the four staged screens and the answered/conversation view. Only the closed minimum surface inventory in REQ-060 shows a low-intensity palette accent at rest, strengthens that accent on hover/focus where interactive, and retains a stronger restrained treatment while selected or current. Static chrome stays neutral. In the answered view, DEC-118 replaces the former inline frozen-context disclosure surface with the context trigger plus its adaptive sheet/drawer while retaining the follow-up composer/workspace treatment. This extends DEC-066/DEC-068 and uses DEC-079's existing motion baseline; it supersedes only DEC-068's blanket exclusion of neutral borders for the listed surfaces.
 - Status: confirmed
 - Context: The shipped theme palette reaches primary actions, status states, and scanner chrome, but much of the surrounding experience remains visually disconnected from the selected palette. The approved direction is restrained ambient theming: enough persistent accent to make the palette feel coherent, with enhanced feedback during interaction, without tinting the page background or turning every neutral surface into saturated theme chrome.
 - Impact:
   - applies across game context, zone confirmation, zone collection, enrichment, and the answered/conversation view
-  - the exhaustive REQ-060 inventory is: game context's player-count disclosure row and phase/active-player control group (including conditional combat step); every zone-confirmation option row; every zone-collection tab and the active zone card-picker container; enrichment's view-mode control and rendered card-enrichment/question-submission working containers; and the answered/conversation view's frozen-context disclosure and follow-up composer
+  - the exhaustive REQ-060 inventory is: game context's player-count disclosure row and phase/active-player control group (including conditional combat step); every zone-confirmation option row; every zone-collection tab and the active zone card-picker container; enrichment's view-mode control and rendered card-enrichment/question-submission working containers; and the answered/conversation view's context trigger, open context sheet/drawer, and follow-up composer/workspace
   - enrichment current-state treatment follows the rendered mode: wizard card editing makes only the card-enrichment container current, list mode makes both the card-enrichment and question-submission containers current simultaneously, and completed wizard work makes only the question-submission container current
   - agents must not infer additional ambient-accent surfaces from broad categories; surfaces outside that inventory remain neutral unless another existing requirement already themes them
   - hover and `focus-visible` strengthen the same palette treatment; selected/current states may sustain the stronger restrained treatment so interaction hierarchy remains legible
@@ -170,6 +153,7 @@ Frontend-only user personalization behavior that changes app presentation withou
   - REQ-044
   - REQ-046
   - REQ-059
+  - REQ-097
   - NFR-006
   - NFR-011
   - FLOW-001
@@ -178,13 +162,14 @@ Frontend-only user personalization behavior that changes app presentation withou
   - approved visual direction: restrained ambient accents (Option B), with a baseline accent at rest and stronger hover/focus/current treatment
   - rejected alternatives: interaction-only accents were too subtle to make the selected palette feel cohesive; full themed chrome was too loud and conflicted with the neutral-background hierarchy
   - non-goals: new palettes, picker changes, palette-tinted page backgrounds, theme-specific component overrides, changing card-identity colors, re-animating scanner internals, or introducing a theming/animation framework
+  - DEC-118 changes the answered-view surface shape, not the palette model or intensity contract
 
 ### DEC-091
 - Decision: The game-context "Players in game" disclosure row's three controls (expand/collapse toggle, add-player, remove-player) are enlarged to reliably-tappable targets, the expand/collapse arrow is made visibly larger and more prominent as an expander affordance, and the add/remove pair is reordered to `−` (remove) on the left and `+` (add) on the right to match stepper intuition. Presentation/ergonomics only. Refines DEC-076; supersedes none of it.
 - Status: confirmed
 - Context: DEC-076 tightened game-context chrome and called for "wider expand/collapse and add/remove player buttons," but in practice the three controls remain small and hard to tap accurately, the expander glyph (`▸`/`▾`) is too small to notice as an affordance, and the current add-then-remove (`+` left, `−` right) order reads as backwards versus the conventional minus-left/plus-right stepper. This is a focused ergonomics pass on those three controls and the arrow only; it changes no game-context logic, values, player min/max, or data model.
 - Impact:
-  - the three controls in the "Players in game" disclosure row (`App.tsx`) — the expand/collapse toggle, the add-player button, and the remove-last-player button — are enlarged so each presents a comfortable touch target of at least 44×44px, in both chunky and slim density (DEC-075)
+  - the three controls in the "Players in game" disclosure row (`App.tsx`) — the expand/collapse toggle, the add-player button, and the remove-last-player button — are enlarged so each presents a comfortable touch target of at least 44×44px across all supported responsive widths (DEC-117/REQ-096)
   - the expand/collapse arrow is rendered at a visibly larger, more prominent size so it reads clearly as an expander; its `aria-label`/`aria-expanded` semantics are unchanged
   - the add/remove pair is reordered so `−` (remove last player) is on the left and `+` (add player) is on the right, matching the conventional stepper layout; button labels, `aria-label`s, handlers (`addPlayer`/`removePlayer`), disabled logic (`MIN_PLAYERS`/`MAX_PLAYERS`), and accent/zinc styling roles are otherwise unchanged
   - existing ambient-accent treatment on the player-count disclosure row (DEC-081/REQ-060) and its motion classes (DEC-079/NFR-006) are preserved
@@ -194,8 +179,9 @@ Frontend-only user personalization behavior that changes app presentation withou
   - REQ-056
   - REQ-060
   - DEC-076
-  - DEC-075
+  - DEC-117
   - DEC-081
+  - REQ-096
   - NFR-001
   - FLOW-001
 - Notes:

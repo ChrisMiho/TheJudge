@@ -86,6 +86,38 @@ function normalizeLifeTotal(value: number): number {
   return Number.isFinite(value) ? Math.trunc(value) : 20;
 }
 
+type PlayerCounterFields = GameAskAiRequest["gameContext"]["players"][number];
+type CommanderDamageEntry = NonNullable<PlayerCounterFields["commanderDamage"]>[number];
+type NamedCounterEntry = NonNullable<PlayerCounterFields["counters"]>[number];
+
+/** Normalizes a counter amount to a positive integer, or undefined if zero/unset (DEC-102). */
+function normalizeCounterAmount(value: number | undefined): number | undefined {
+  if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
+  const truncated = Math.trunc(value);
+  return truncated > 0 ? truncated : undefined;
+}
+
+function normalizeCommanderDamage(entries: CommanderDamageEntry[] | undefined): CommanderDamageEntry[] {
+  return (entries ?? []).reduce<CommanderDamageEntry[]>((normalized, entry) => {
+    const amount = normalizeCounterAmount(entry.amount);
+    if (amount !== undefined) {
+      normalized.push({ from: entry.from, amount });
+    }
+    return normalized;
+  }, []);
+}
+
+function normalizeNamedCounters(entries: NamedCounterEntry[] | undefined): NamedCounterEntry[] {
+  return (entries ?? []).reduce<NamedCounterEntry[]>((normalized, entry) => {
+    const amount = normalizeCounterAmount(entry.amount);
+    const name = normalizeWhitespace(entry.name);
+    if (amount !== undefined && name.length > 0) {
+      normalized.push({ name, amount });
+    }
+    return normalized;
+  }, []);
+}
+
 function normalizeZoneItem(card: import("../types/index.js").ZoneCardItem): PromptContextZoneItem | null {
   const name = normalizeWhitespace(card.name);
   if (name.length === 0) return null;
@@ -135,11 +167,24 @@ export function buildPromptContext(payload: GameAskAiRequest): PromptContext {
 
   const normalizedGameContext = {
     playerCount: gameCtx.playerCount,
-    players: gameCtx.players.map((player) => ({
-      label: player.label,
-      lifeTotal: normalizeLifeTotal(player.lifeTotal),
-      displayName: normalizeOptionalText(player.displayName) || undefined
-    })),
+    players: gameCtx.players.map((player) => {
+      const poison = normalizeCounterAmount(player.poison);
+      const experience = normalizeCounterAmount(player.experience);
+      const energy = normalizeCounterAmount(player.energy);
+      const commanderDamage = normalizeCommanderDamage(player.commanderDamage);
+      const counters = normalizeNamedCounters(player.counters);
+
+      return {
+        label: player.label,
+        lifeTotal: normalizeLifeTotal(player.lifeTotal),
+        displayName: normalizeOptionalText(player.displayName) || undefined,
+        ...(poison !== undefined ? { poison } : {}),
+        ...(experience !== undefined ? { experience } : {}),
+        ...(energy !== undefined ? { energy } : {}),
+        ...(commanderDamage.length > 0 ? { commanderDamage } : {}),
+        ...(counters.length > 0 ? { counters } : {})
+      };
+    }),
     turnPhase: gameCtx.turnPhase,
     ...(gameCtx.combatStep !== undefined ? { combatStep: gameCtx.combatStep } : {}),
     activePlayer: gameCtx.activePlayer,

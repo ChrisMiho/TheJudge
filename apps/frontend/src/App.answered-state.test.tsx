@@ -38,7 +38,7 @@ function queueAskAiResponses(...responses: Array<{ status: number; body: unknown
 }
 
 describe("Frontend - MTG Assistant", () => {
-describe("Frozen context summary in answered state", () => {
+describe("Adaptive frozen context in answered state", () => {
   beforeEach(() => {
     metadataFixture = [...baseCardMetadataFixture];
     askAiResponseQueue = [{ status: 200, body: { answer: "Mock answer" } }];
@@ -92,60 +92,57 @@ describe("Frozen context summary in answered state", () => {
     expect(await screen.findByText("Initial answer")).toBeInTheDocument();
   }
 
-  it("renders a compact frozen context with phase, active player, and zone card names", async () => {
+  it("renders the shared workspace with a phase and populated-zone context trigger", async () => {
     const user = userEvent.setup();
     await reachAnsweredStateWithEnrichedStack(user);
 
-    const summary = screen.getByRole("region", { name: "Frozen game context" });
-    expect(within(summary).getByText("Game context (frozen)")).toBeInTheDocument();
-    expect(within(summary).getByText("Pre Combat Main Phase")).toBeInTheDocument();
-    expect(within(summary).getByText("Player 1")).toBeInTheDocument();
-    expect(within(summary).getByText("Stack:")).toBeInTheDocument();
-    expect(within(summary).getByText("Opt")).toBeInTheDocument();
-
-    const toggle = within(summary).getByRole("button", { name: "Show full game context" });
-    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getAllByTestId("conversation-workspace")).toHaveLength(1);
+    const trigger = screen.getByRole("button", {
+      name: "View context: Pre Combat Main Phase · 1 populated zone"
+    });
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("dialog", { name: "Frozen game context" })).not.toBeInTheDocument();
   });
 
-  it("expands and collapses full frozen context with correct aria-expanded state", async () => {
+  it("opens the complete frozen context in the adaptive dialog and closes explicitly", async () => {
     const user = userEvent.setup();
     await reachAnsweredStateWithEnrichedStack(user);
 
-    const summary = screen.getByRole("region", { name: "Frozen game context" });
-    expect(within(summary).queryByText("Caster: Player 4")).not.toBeInTheDocument();
+    const trigger = screen.getByRole("button", {
+      name: "View context: Pre Combat Main Phase · 1 populated zone"
+    });
+    await user.click(trigger);
 
-    await user.click(within(summary).getByRole("button", { name: "Show full game context" }));
+    const dialog = screen.getByRole("dialog", { name: "Frozen game context" });
+    expect(within(dialog).getByText("Setup")).toBeInTheDocument();
+    expect(within(dialog).getByText("Pre Combat Main Phase")).toBeInTheDocument();
+    expect(within(dialog).getByText("Caster: Player 4")).toBeInTheDocument();
+    expect(within(dialog).getByText("Mana spent: 4")).toBeInTheDocument();
+    expect(within(dialog).getByText("Notes: Cast for alternate cost")).toBeInTheDocument();
 
-    const expandedToggle = within(summary).getByRole("button", { name: "Hide full game context" });
-    expect(expandedToggle).toHaveAttribute("aria-expanded", "true");
-    expect(within(summary).getByText("Caster: Player 4")).toBeInTheDocument();
-    expect(within(summary).getByText("Mana spent: 4")).toBeInTheDocument();
-    expect(within(summary).getByText("Notes: Cast for alternate cost")).toBeInTheDocument();
-
-    await user.click(expandedToggle);
-    expect(
-      within(summary).getByRole("button", { name: "Show full game context" })
-    ).toHaveAttribute("aria-expanded", "false");
-    expect(within(summary).queryByText("Caster: Player 4")).not.toBeInTheDocument();
+    await user.click(within(dialog).getByRole("button", { name: "Close frozen game context" }));
+    expect(screen.queryByRole("dialog", { name: "Frozen game context" })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
   });
 
-  it("renders no edit controls in the frozen context summary", async () => {
+  it("renders no edit controls in the frozen context dialog", async () => {
     const user = userEvent.setup();
     await reachAnsweredStateWithEnrichedStack(user);
 
-    const summary = screen.getByRole("region", { name: "Frozen game context" });
-    await user.click(within(summary).getByRole("button", { name: "Show full game context" }));
+    await user.click(
+      screen.getByRole("button", {
+        name: "View context: Pre Combat Main Phase · 1 populated zone"
+      })
+    );
+    const dialog = screen.getByRole("dialog", { name: "Frozen game context" });
 
-    expect(within(summary).queryAllByRole("combobox")).toHaveLength(0);
-    expect(within(summary).queryAllByRole("textbox")).toHaveLength(0);
+    expect(within(dialog).queryAllByRole("combobox")).toHaveLength(0);
+    expect(within(dialog).queryAllByRole("textbox")).toHaveLength(0);
     expect(screen.queryByLabelText("Caster for Opt")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Mana spent for Opt")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Remove Opt" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Add target for Opt" })).not.toBeInTheDocument();
-
-    const buttons = within(summary).getAllByRole("button");
-    expect(buttons).toHaveLength(1);
-    expect(buttons[0]).toHaveAttribute("aria-expanded");
+    expect(within(dialog).getAllByRole("button")).toHaveLength(1);
   });
 
   it("does not crash when optional frozen fields are absent", async () => {
@@ -157,12 +154,13 @@ describe("Frozen context summary in answered state", () => {
     await clickDecryptStack(user);
     expect(await screen.findByText("Initial answer")).toBeInTheDocument();
 
-    const summary = screen.getByRole("region", { name: "Frozen game context" });
-    await user.click(within(summary).getByRole("button", { name: "Show full game context" }));
-    expect(within(summary).getAllByText("Opt").length).toBeGreaterThan(0);
-    expect(
-      within(summary).getByRole("button", { name: "Hide full game context" })
-    ).toHaveAttribute("aria-expanded", "true");
+    await user.click(
+      screen.getByRole("button", {
+        name: "View context: Pre Combat Main Phase · 1 populated zone"
+      })
+    );
+    const dialog = screen.getByRole("dialog", { name: "Frozen game context" });
+    expect(within(dialog).getByText("Opt")).toBeInTheDocument();
   });
 });
 describe("Answered-state layout integration", () => {
@@ -217,19 +215,21 @@ describe("Answered-state layout integration", () => {
     expect(screen.queryByRole("heading", { name: "Conversation" })).not.toBeInTheDocument();
   });
 
-  it("renders the frozen context summary before the conversation thread in DOM order", async () => {
+  it("renders the context trigger before the conversation thread in one shared workspace", async () => {
     const user = userEvent.setup();
     await reachAnsweredState(user);
 
-    const summary = screen.getByRole("region", { name: "Frozen game context" });
+    const workspace = screen.getByTestId("conversation-workspace");
+    const trigger = within(workspace).getByRole("button", { name: /View context:/ });
     const firstAnswer = screen.getByText("Initial answer");
-    expect(summary.compareDocumentPosition(firstAnswer) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+    expect(trigger.compareDocumentPosition(firstAnswer) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
     );
-    expect(within(summary).queryByText("Initial answer")).not.toBeInTheDocument();
+    expect(within(workspace).getAllByRole("textbox", { name: "Follow-up question" })).toHaveLength(1);
+    expect(within(workspace).getAllByRole("button", { name: "Start Over" })).toHaveLength(1);
   });
 
-  it("appends follow-up bubbles below the frozen summary without a waiting panel", async () => {
+  it("appends follow-up bubbles below the context trigger without a waiting panel", async () => {
     const user = userEvent.setup();
     await reachAnsweredState(user);
     queueAskAiResponses({ status: 200, body: { answer: "Follow-up answer" } });
@@ -239,11 +239,14 @@ describe("Answered-state layout integration", () => {
 
     expect(await screen.findByText("Follow-up answer")).toBeInTheDocument();
     expect(screen.getByText("What about haste?")).toBeInTheDocument();
-    expect(document.querySelector("[aria-live='polite']")).not.toBeInTheDocument();
+    const log = screen.getByRole("log");
+    expect(log).toHaveAttribute("aria-live", "polite");
+    expect(log).toHaveAttribute("aria-relevant", "additions text");
+    expect(log).toHaveAttribute("aria-atomic", "false");
 
-    const summary = screen.getByRole("region", { name: "Frozen game context" });
+    const trigger = screen.getByRole("button", { name: /View context:/ });
     const followUpAnswer = screen.getByText("Follow-up answer");
-    expect(summary.compareDocumentPosition(followUpAnswer) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+    expect(trigger.compareDocumentPosition(followUpAnswer) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
     );
   });

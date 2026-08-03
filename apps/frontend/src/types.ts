@@ -25,6 +25,11 @@ export type GamePlayerContext = {
   label: PlayerLabel;
   lifeTotal: number;
   displayName?: string;
+  poison?: number;
+  experience?: number;
+  energy?: number;
+  commanderDamage?: { from: PlayerLabel; amount: number }[];
+  counters?: { name: string; amount: number }[];
 };
 
 export type TurnPhase =

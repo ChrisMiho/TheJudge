@@ -2,10 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   buildZoneScopeSentence,
   formatConversationHistorySection,
+  formatGameContext,
   formatSupplementalRulesSection
 } from "./promptFormatting.js";
 import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
-import type { ConversationTurn } from "../types/index.js";
+import type { ConversationTurn, PromptContext } from "../types/index.js";
 
 describe("Backend - Ask AI", () => {
   describe("buildZoneScopeSentence", () => {
@@ -51,6 +52,92 @@ describe("Backend - Ask AI", () => {
       expect(section).toContain("They do not override the user's submitted game state");
       expect(section).toContain("116.1. Unless a spell or ability has a timing restriction.");
       expect(section).toContain("116.2a. A player may cast an instant spell any time.");
+    });
+  });
+
+  describe("formatGameContext — player counter lines", () => {
+    const baseGameContext: PromptContext["gameContext"] = {
+      playerCount: 2,
+      players: [
+        { label: "Player 1", lifeTotal: 20 },
+        { label: "Player 2", lifeTotal: 20 }
+      ],
+      turnPhase: "main_1",
+      selectedZones: ["stack"]
+    };
+
+    function contextWithPlayers(players: PromptContext["gameContext"]["players"]): PromptContext {
+      return {
+        finalQuestion: "Test",
+        gameContext: { ...baseGameContext, players },
+        populatedZones: [],
+        orderedStack: []
+      };
+    }
+
+    it("appends one ordered counter line immediately after a populated player's life line", () => {
+      const context = contextWithPlayers([
+        {
+          label: "Player 1",
+          lifeTotal: 40,
+          poison: 3,
+          commanderDamage: [{ from: "Player 2", amount: 5 }],
+          counters: [{ name: "Monarch", amount: 1 }]
+        },
+        { label: "Player 2", lifeTotal: 20 }
+      ]);
+
+      const lines = formatGameContext(context).split("\n");
+      const lifeLineIndex = lines.indexOf("Player 1: lifeTotal=40");
+
+      expect(lifeLineIndex).toBeGreaterThan(-1);
+      expect(lines[lifeLineIndex + 1]).toBe("Player 1 counters: poison=3, commanderDamage[Player 2]=5, Monarch=1");
+    });
+
+    it("orders scalar fields poison, experience, energy before commander damage and generic counters", () => {
+      const context = contextWithPlayers([
+        {
+          label: "Player 1",
+          lifeTotal: 40,
+          energy: 2,
+          experience: 1,
+          poison: 3,
+          counters: [{ name: "Monarch", amount: 1 }],
+          commanderDamage: [{ from: "Player 2", amount: 5 }]
+        },
+        { label: "Player 2", lifeTotal: 20 }
+      ]);
+
+      const formatted = formatGameContext(context);
+      expect(formatted).toContain("Player 1 counters: poison=3, experience=1, energy=2, commanderDamage[Player 2]=5, Monarch=1");
+    });
+
+    it("orders commander-damage entries by PlayerLabel regardless of input order", () => {
+      const context = contextWithPlayers([
+        {
+          label: "Player 1",
+          lifeTotal: 40,
+          commanderDamage: [
+            { from: "Player 3", amount: 2 },
+            { from: "Player 2", amount: 5 }
+          ]
+        },
+        { label: "Player 2", lifeTotal: 20 },
+        { label: "Player 3", lifeTotal: 20 }
+      ]);
+
+      const formatted = formatGameContext(context);
+      expect(formatted).toContain("Player 1 counters: commanderDamage[Player 2]=5, commanderDamage[Player 3]=2");
+    });
+
+    it("adds no counter line for a player with no populated values", () => {
+      const context = contextWithPlayers([
+        { label: "Player 1", lifeTotal: 20 },
+        { label: "Player 2", lifeTotal: 20 }
+      ]);
+
+      const formatted = formatGameContext(context);
+      expect(formatted).not.toContain("counters:");
     });
   });
 

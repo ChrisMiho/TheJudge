@@ -39,8 +39,11 @@ describe("Reduced-motion CSS contract", () => {
       ".motion-success",
       ".motion-error",
       ".ambient-accent-surface",
-      ".frozen-context-summary",
-      ".frozen-context-disclosure",
+      ".conversation-workspace-handoff",
+      ".conversation-message-enter",
+      ".conversation-new-response",
+      ".adaptive-context-overlay",
+      ".adaptive-context-surface",
       ".enrichment-card-enter",
       ".card-state-remove"
     ]) {

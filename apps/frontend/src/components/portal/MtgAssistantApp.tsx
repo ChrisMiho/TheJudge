@@ -15,8 +15,15 @@ import {
   type FlowStepId
 } from "../../lib/contextFlow";
 import { formatPlayerDisplayLabel } from "../../lib/playerLabels";
+import { useAssistantSeed } from "../../lib/portal/seedContext";
 import { useAskAiSubmitOrchestration } from "../../hooks/useAskAiSubmitOrchestration";
 import { PageShell } from "../PageShell";
+import {
+  MAX_PLAYER_ROSTER_SIZE,
+  MIN_PLAYER_ROSTER_SIZE,
+  PlayerRosterEditor,
+  type RosterPlayer
+} from "../PlayerRosterEditor";
 import type {
   CardMetadataItem,
   CombatStep,
@@ -31,11 +38,67 @@ import type {
 const RETRY_COOLDOWN_SECONDS = 13;
 const METADATA_URL = "/data/cardMetadata.json";
 const EMPTY_STATE_IMAGE_URL = "/assets/cats-homescreen.png";
-const MIN_PLAYERS = 2;
-const MAX_PLAYERS = 8;
+const MIN_PLAYERS = MIN_PLAYER_ROSTER_SIZE;
+const MAX_PLAYERS = MAX_PLAYER_ROSTER_SIZE;
 const DUEL_STARTING_LIFE_TOTAL = "20";
 const MULTIPLAYER_STARTING_LIFE_TOTAL = "40";
 const PLAYER_OPTIONS: PlayerLabel[] = Array.from({ length: MAX_PLAYERS }, (_, index) => `Player ${index + 1}` as PlayerLabel);
+
+type ScalarCounterField = "poison" | "energy" | "experience";
+
+type AssistantNamedCounter = {
+  id: string;
+  name: string;
+  amount: string;
+};
+
+type AssistantPlayerCounters = Record<ScalarCounterField, string> & {
+  commanderDamage: Partial<Record<PlayerLabel, string>>;
+  counters: AssistantNamedCounter[];
+};
+
+type AssistantCountersByPlayer = Record<PlayerLabel, AssistantPlayerCounters>;
+
+function createDefaultLifeTotals(): Record<PlayerLabel, string> {
+  return PLAYER_OPTIONS.reduce<Record<PlayerLabel, string>>(
+    (accumulator, player, index) => ({
+      ...accumulator,
+      [player]: index < MIN_PLAYERS ? DUEL_STARTING_LIFE_TOTAL : MULTIPLAYER_STARTING_LIFE_TOTAL
+    }),
+    {} as Record<PlayerLabel, string>
+  );
+}
+
+function createDefaultDisplayNames(): Record<PlayerLabel, string> {
+  return PLAYER_OPTIONS.reduce<Record<PlayerLabel, string>>(
+    (accumulator, player) => ({ ...accumulator, [player]: player }),
+    {} as Record<PlayerLabel, string>
+  );
+}
+
+function createEmptyCountersByPlayer(): AssistantCountersByPlayer {
+  return PLAYER_OPTIONS.reduce<AssistantCountersByPlayer>(
+    (accumulator, player) => ({
+      ...accumulator,
+      [player]: {
+        poison: "",
+        energy: "",
+        experience: "",
+        commanderDamage: {},
+        counters: []
+      }
+    }),
+    {} as AssistantCountersByPlayer
+  );
+}
+
+function parsePositiveInteger(value: string): number | undefined {
+  const trimmed = value.trim();
+  if (!/^\d+$/.test(trimmed)) return undefined;
+
+  const parsed = Number(trimmed);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : undefined;
+}
 
 const TURN_PHASE_OPTIONS: Array<{ value: TurnPhase; label: string }> = [
   { value: "untap", label: "Untap" },
@@ -57,19 +120,12 @@ const COMBAT_STEP_OPTIONS: Array<{ value: CombatStep; label: string }> = [
 ];
 
 export function MtgAssistantApp(): JSX.Element {
+  const { consumeSeed } = useAssistantSeed();
   const [cardMetadata, setCardMetadata] = useState<CardMetadataItem[]>([]);
   const [isMetadataLoading, setIsMetadataLoading] = useState(true);
   const [flowStep, setFlowStep] = useState<FlowStepId>("game-context");
   const [activePlayerCount, setActivePlayerCount] = useState(MIN_PLAYERS);
-  const [lifeTotalsByPlayer, setLifeTotalsByPlayer] = useState<Record<PlayerLabel, string>>(() =>
-    PLAYER_OPTIONS.reduce<Record<PlayerLabel, string>>(
-      (accumulator, player, index) => ({
-        ...accumulator,
-        [player]: index < MIN_PLAYERS ? DUEL_STARTING_LIFE_TOTAL : MULTIPLAYER_STARTING_LIFE_TOTAL
-      }),
-      {} as Record<PlayerLabel, string>
-    )
-  );
+  const [lifeTotalsByPlayer, setLifeTotalsByPlayer] = useState<Record<PlayerLabel, string>>(createDefaultLifeTotals);
   const [gameContext, setGameContext] = useState<GameContext | null>(null);
   const [turnPhase, setTurnPhase] = useState<TurnPhase>(DEFAULT_TURN_PHASE);
   const [combatStep, setCombatStep] = useState<CombatStep>("declare_blockers");
@@ -83,12 +139,45 @@ export function MtgAssistantApp(): JSX.Element {
   const [brandClickCount, setBrandClickCount] = useState(0);
   const showCatEasterEgg = brandClickCount >= 10;
   const [playersDetailsExpanded, setPlayersDetailsExpanded] = useState(false);
-  const [displayNamesByPlayer, setDisplayNamesByPlayer] = useState<Record<PlayerLabel, string>>(() =>
-    PLAYER_OPTIONS.reduce<Record<PlayerLabel, string>>(
-      (accumulator, player) => ({ ...accumulator, [player]: player }),
-      {} as Record<PlayerLabel, string>
-    )
-  );
+  const [displayNamesByPlayer, setDisplayNamesByPlayer] = useState<Record<PlayerLabel, string>>(createDefaultDisplayNames);
+  const [countersByPlayer, setCountersByPlayer] = useState<AssistantCountersByPlayer>(createEmptyCountersByPlayer);
+
+  // DestinationOutlet keeps previously visited destinations mounted. Running after
+  // every render lets an already-mounted Assistant atomically take the one-shot seed
+  // queued immediately before the portal switches back to it.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- consumeSeed clears synchronously, so state updates cannot loop; checking every render is required for a hidden mounted destination.
+  useEffect(() => {
+    const seed = consumeSeed();
+    if (!seed) return;
+
+    const nextDisplayNames = createDefaultDisplayNames();
+    const nextLifeTotals = createDefaultLifeTotals();
+    const nextCounters = createEmptyCountersByPlayer();
+
+    for (const player of seed.players) {
+      nextDisplayNames[player.label] = player.displayName ?? player.label;
+      nextLifeTotals[player.label] = String(player.lifeTotal);
+      nextCounters[player.label] = {
+        poison: player.poison === undefined ? "" : String(player.poison),
+        energy: player.energy === undefined ? "" : String(player.energy),
+        experience: player.experience === undefined ? "" : String(player.experience),
+        commanderDamage: Object.fromEntries(
+          (player.commanderDamage ?? []).map(({ from, amount }) => [from, String(amount)])
+        ) as Partial<Record<PlayerLabel, string>>,
+        counters: (player.counters ?? []).map((counter, index) => ({
+          id: `${player.label.toLowerCase().replace(/ /g, "-")}-seed-counter-${index + 1}`,
+          name: counter.name,
+          amount: String(counter.amount)
+        }))
+      };
+    }
+
+    setActivePlayerCount(Math.min(MAX_PLAYERS, Math.max(MIN_PLAYERS, seed.playerCount)));
+    setDisplayNamesByPlayer(nextDisplayNames);
+    setLifeTotalsByPlayer(nextLifeTotals);
+    setCountersByPlayer(nextCounters);
+    setPlayersDetailsExpanded(true);
+  });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -121,6 +210,11 @@ export function MtgAssistantApp(): JSX.Element {
   }, []);
 
   const activePlayers = PLAYER_OPTIONS.slice(0, activePlayerCount);
+  const rosterPlayers: RosterPlayer[] = activePlayers.map((player) => ({
+    label: player,
+    displayName: displayNamesByPlayer[player],
+    lifeTotal: lifeTotalsByPlayer[player]
+  }));
   const {
     answer,
     error,
@@ -198,16 +292,84 @@ export function MtgAssistantApp(): JSX.Element {
     }));
   }
 
+  function updateScalarCounter(player: PlayerLabel, field: ScalarCounterField, value: string): void {
+    setCountersByPlayer((current) => ({
+      ...current,
+      [player]: {
+        ...current[player],
+        [field]: value
+      }
+    }));
+  }
+
+  function updateCommanderDamage(player: PlayerLabel, source: PlayerLabel, value: string): void {
+    setCountersByPlayer((current) => ({
+      ...current,
+      [player]: {
+        ...current[player],
+        commanderDamage: {
+          ...current[player].commanderDamage,
+          [source]: value
+        }
+      }
+    }));
+  }
+
+  function updateNamedCounter(
+    player: PlayerLabel,
+    counterId: string,
+    field: "name" | "amount",
+    value: string
+  ): void {
+    setCountersByPlayer((current) => ({
+      ...current,
+      [player]: {
+        ...current[player],
+        counters: current[player].counters.map((counter) =>
+          counter.id === counterId ? { ...counter, [field]: value } : counter
+        )
+      }
+    }));
+  }
+
   function buildPlayers(): GamePlayerContext[] {
     return activePlayers.map((player) => {
       const parsed = Number(lifeTotalsByPlayer[player]);
       const trimmedName = displayNamesByPlayer[player]?.trim() ?? "";
       const displayName = trimmedName.length > 0 && trimmedName !== player ? trimmedName : undefined;
-      return {
+      const builtPlayer: GamePlayerContext = {
         label: player,
         lifeTotal: Number.isFinite(parsed) ? parsed : NaN,
         displayName
       };
+
+      const playerCounters = countersByPlayer[player];
+      for (const field of ["poison", "energy", "experience"] as const) {
+        const amount = parsePositiveInteger(playerCounters[field]);
+        if (amount !== undefined) {
+          builtPlayer[field] = amount;
+        }
+      }
+
+      const commanderDamage = activePlayers.flatMap((source) => {
+        if (source === player) return [];
+        const amount = parsePositiveInteger(playerCounters.commanderDamage[source] ?? "");
+        return amount === undefined ? [] : [{ from: source, amount }];
+      });
+      if (commanderDamage.length > 0) {
+        builtPlayer.commanderDamage = commanderDamage;
+      }
+
+      const counters = playerCounters.counters.flatMap((counter) => {
+        const name = counter.name.trim();
+        const amount = parsePositiveInteger(counter.amount);
+        return name.length === 0 || amount === undefined ? [] : [{ name, amount }];
+      });
+      if (counters.length > 0) {
+        builtPlayer.counters = counters;
+      }
+
+      return builtPlayer;
     });
   }
 
@@ -350,75 +512,92 @@ export function MtgAssistantApp(): JSX.Element {
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Players in game</p>
             <p className="text-xs text-zinc-400">Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.</p>
 
-            <div className="ambient-accent-surface ambient-accent-interactive flex items-center justify-between gap-3 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  aria-label={playersDetailsExpanded ? "Hide player details" : "Show player details"}
-                  aria-expanded={playersDetailsExpanded}
-                  onClick={() => setPlayersDetailsExpanded((current) => !current)}
-                  className="motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] min-w-[3.5rem] items-center justify-center rounded-lg border border-zinc-600 bg-zinc-800/70 px-3 py-1.5 text-xl leading-none text-zinc-200 transition hover:bg-zinc-700/80"
-                >
-                  {playersDetailsExpanded ? "▾" : "▸"}
-                </button>
-                <span className="text-sm font-semibold text-zinc-100">
-                  {activePlayerCount} {activePlayerCount === 1 ? "player" : "players"}
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  aria-label="Remove last player"
-                  onClick={removePlayer}
-                  disabled={activePlayerCount <= MIN_PLAYERS}
-                  className="motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] min-w-[3.5rem] items-center justify-center rounded-lg border border-zinc-500 bg-zinc-800/70 px-4 py-1.5 text-xs font-semibold text-zinc-100 transition hover:bg-zinc-700/80 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  −
-                </button>
-                <button
-                  type="button"
-                  aria-label="Add player"
-                  onClick={addPlayer}
-                  disabled={activePlayerCount >= MAX_PLAYERS}
-                  className="motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] min-w-[3.5rem] items-center justify-center rounded-lg border border-accent/50 bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent-soft transition hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  +
-                </button>
-              </div>
-            </div>
+            <PlayerRosterEditor
+              players={rosterPlayers}
+              playerCount={activePlayerCount}
+              isExpanded={playersDetailsExpanded}
+              onToggleExpanded={() => setPlayersDetailsExpanded((current) => !current)}
+              onAddPlayer={addPlayer}
+              onRemovePlayer={removePlayer}
+              onDisplayNameChange={updateDisplayName}
+              onLifeTotalChange={updateLifeTotal}
+              showLifeTotals
+              renderPlayerExtras={(player) => {
+                const playerCounters = countersByPlayer[player.label];
+                return (
+                  <div className="space-y-3 border-t border-zinc-700/70 pt-3">
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                      {(["poison", "energy", "experience"] as const).map((field) => (
+                        <label key={field} className="flex flex-col gap-1">
+                          <span className="text-xs font-semibold capitalize text-zinc-300">{field}</span>
+                          <input
+                            aria-label={`${player.label} ${field}`}
+                            value={playerCounters[field]}
+                            onChange={(event) => updateScalarCounter(player.label, field, event.target.value)}
+                            inputMode="numeric"
+                            className="motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-right font-semibold text-zinc-100"
+                          />
+                        </label>
+                      ))}
+                    </div>
 
-            {playersDetailsExpanded && (
-              <div className="space-y-2">
-                {activePlayers.map((player) => (
-                  <div
-                    key={player}
-                    className="space-y-2 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2 text-sm"
-                  >
-                    <label className="flex flex-col gap-1">
-                      <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
-                        {player} name
-                      </span>
-                      <input
-                        aria-label={`${player} display name`}
-                        value={displayNamesByPlayer[player]}
-                        onChange={(event) => updateDisplayName(player, event.target.value)}
-                        className="motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-zinc-100"
-                      />
-                    </label>
-                    <label className="grid grid-cols-[1fr_auto] items-center gap-3">
-                      <span className="font-medium text-zinc-100">Life total</span>
-                      <input
-                        aria-label={`${player} life total`}
-                        value={lifeTotalsByPlayer[player]}
-                        onChange={(event) => updateLifeTotal(player, event.target.value)}
-                        inputMode="numeric"
-                        className="motion-focus w-28 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-right font-semibold text-zinc-100"
-                      />
-                    </label>
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
+                        Commander damage
+                      </p>
+                      {activePlayers
+                        .filter((source) => source !== player.label)
+                        .map((source) => (
+                          <label key={source} className="grid grid-cols-[1fr_auto] items-center gap-3">
+                            <span className="text-zinc-300">From {source}</span>
+                            <input
+                              aria-label={`${player.label} commander damage from ${source}`}
+                              value={playerCounters.commanderDamage[source] ?? ""}
+                              onChange={(event) =>
+                                updateCommanderDamage(player.label, source, event.target.value)
+                              }
+                              inputMode="numeric"
+                              className="motion-focus w-28 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-right font-semibold text-zinc-100"
+                            />
+                          </label>
+                        ))}
+                    </div>
+
+                    {playerCounters.counters.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
+                          Named counters
+                        </p>
+                        {playerCounters.counters.map((counter) => {
+                          const accessibleName = counter.name.trim() || counter.id;
+                          return (
+                            <div key={counter.id} className="grid grid-cols-[1fr_auto] gap-2">
+                              <input
+                                aria-label={`${player.label} counter ${accessibleName} name`}
+                                value={counter.name}
+                                onChange={(event) =>
+                                  updateNamedCounter(player.label, counter.id, "name", event.target.value)
+                                }
+                                className="motion-focus min-w-0 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-zinc-100"
+                              />
+                              <input
+                                aria-label={`${player.label} counter ${accessibleName} amount`}
+                                value={counter.amount}
+                                onChange={(event) =>
+                                  updateNamedCounter(player.label, counter.id, "amount", event.target.value)
+                                }
+                                inputMode="numeric"
+                                className="motion-focus w-28 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-right font-semibold text-zinc-100"
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
-            )}
+                );
+              }}
+            />
           </div>
           <div className="panel-inner ambient-accent-surface ambient-accent-interactive">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

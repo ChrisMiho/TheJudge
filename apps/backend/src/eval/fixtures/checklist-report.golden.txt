@@ -11,6 +11,7 @@ mana-spent-explicit-fallback | 16/16 | PASS
 multi-step-stack | 16/16 | PASS
 multi-zone | 16/16 | PASS
 near-cap-stack | 16/16 | PASS
+player-counters | 16/16 | PASS
 quick-lookup-card | 16/16 | PASS
 quick-lookup-no-card | 16/16 | PASS
 quick-lookup-off-domain | 15/15 | PASS
