@@ -12,6 +12,7 @@ import {
   baseCardMetadataFixture,
   clickDecryptStack,
   createMemoryStorage,
+  expandSecondaryPlayerDetails,
   getUrlFromRequest,
   jsonResponse,
   selectZoneTab
@@ -139,6 +140,8 @@ describe("Frontend - Portal", () => {
     const assistantLife = await screen.findByLabelText("Player 1 life total");
     expect(screen.getByLabelText("Player 1 display name")).toHaveValue("Alice");
     expect(assistantLife).toHaveValue("34");
+    expect(screen.queryByLabelText("Player 1 poison")).not.toBeInTheDocument();
+    await expandSecondaryPlayerDetails(user);
     expect(screen.getByLabelText("Player 1 poison")).toHaveValue("3");
     expect(screen.getByLabelText("Player 1 commander damage from Player 2")).toHaveValue("5");
     expect(screen.getByLabelText("Player 1 counter Monarch amount")).toHaveValue("1");
@@ -153,6 +156,9 @@ describe("Frontend - Portal", () => {
     await selectDestination(user, "Quick Question");
     await selectDestination(user, "In-Depth Question");
     expect(screen.getByLabelText("Player 1 life total")).toHaveValue("12");
+    expect(screen.queryByLabelText("Player 1 poison")).not.toBeInTheDocument();
+
+    await expandSecondaryPlayerDetails(user);
     expect(screen.getByLabelText("Player 1 poison")).toHaveValue("8");
     expect(screen.getByLabelText("Player 1 counter Monarch amount")).toHaveValue("0");
 

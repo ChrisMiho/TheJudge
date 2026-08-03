@@ -1,6 +1,6 @@
 # Slice A — Synchronized player-card disclosure contract
 
-## Status: planned
+## Status: done
 
 ## Goal
 

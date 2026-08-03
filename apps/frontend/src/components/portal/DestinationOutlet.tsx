@@ -21,7 +21,7 @@ export function DestinationOutlet({ destinations, activeDestinationId }: Destina
         .filter((destination) => mountedDestinationIds.includes(destination.id))
         .map((destination) => (
           <div key={destination.id} hidden={destination.id !== activeDestinationId}>
-            {destination.render()}
+            {destination.render(destination.id === activeDestinationId)}
           </div>
         ))}
     </>

@@ -21,6 +21,10 @@ export type PlayerRosterEditorProps = {
   onLifeTotalChange?: (player: PlayerLabel, value: string) => void;
   showLifeTotals?: boolean;
   renderPlayerExtras?: (player: RosterPlayer) => ReactNode;
+  /** Shared, controlled all-player secondary-details disclosure state. */
+  secondaryDetailsExpanded?: boolean;
+  /** Toggles the shared secondary-details state for every player card. */
+  onToggleSecondaryDetails?: () => void;
 };
 
 /**
@@ -38,8 +42,14 @@ export function PlayerRosterEditor({
   onDisplayNameChange,
   onLifeTotalChange,
   showLifeTotals = true,
-  renderPlayerExtras
+  renderPlayerExtras,
+  secondaryDetailsExpanded = false,
+  onToggleSecondaryDetails
 }: PlayerRosterEditorProps): JSX.Element {
+  // Callers that have not migrated to the controlled secondary-details contract keep
+  // their prior behavior: extras render inline with no nested arrow.
+  const secondaryDisclosureControlled = onToggleSecondaryDetails !== undefined;
+  const extrasVisible = secondaryDisclosureControlled ? secondaryDetailsExpanded : true;
   return (
     <>
       <div className="ambient-accent-surface ambient-accent-interactive flex items-center justify-between gap-3 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2">
@@ -81,37 +91,64 @@ export function PlayerRosterEditor({
 
       {isExpanded && (
         <div className="space-y-2">
-          {players.map((player) => (
-            <div
-              key={player.label}
-              className="space-y-2 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2 text-sm"
-            >
-              <label className="flex flex-col gap-1">
-                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
-                  {player.label} name
-                </span>
-                <input
-                  aria-label={`${player.label} display name`}
-                  value={player.displayName}
-                  onChange={(event) => onDisplayNameChange(player.label, event.target.value)}
-                  className="motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-zinc-100"
-                />
-              </label>
-              {showLifeTotals && (
-                <label className="grid grid-cols-[1fr_auto] items-center gap-3">
-                  <span className="font-medium text-zinc-100">Life total</span>
-                  <input
-                    aria-label={`${player.label} life total`}
-                    value={player.lifeTotal ?? ""}
-                    onChange={(event) => onLifeTotalChange?.(player.label, event.target.value)}
-                    inputMode="numeric"
-                    className="motion-focus w-28 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-right font-semibold text-zinc-100"
-                  />
-                </label>
-              )}
-              {renderPlayerExtras?.(player)}
-            </div>
-          ))}
+          {players.map((player) => {
+            const secondaryRegionId = `player-secondary-details-${player.label.replace(/\s+/g, "-").toLowerCase()}`;
+            return (
+              <div
+                key={player.label}
+                className="space-y-2 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2 text-sm"
+              >
+                <div className="flex items-center gap-2">
+                  <label className="flex flex-1 flex-col gap-1">
+                    <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
+                      {player.label} name
+                    </span>
+                    <input
+                      aria-label={`${player.label} display name`}
+                      value={player.displayName}
+                      onChange={(event) => onDisplayNameChange(player.label, event.target.value)}
+                      className="motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-zinc-100"
+                    />
+                  </label>
+                  {showLifeTotals && (
+                    <label className="flex flex-col items-end gap-1">
+                      <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
+                        Life total
+                      </span>
+                      <input
+                        aria-label={`${player.label} life total`}
+                        value={player.lifeTotal ?? ""}
+                        onChange={(event) => onLifeTotalChange?.(player.label, event.target.value)}
+                        inputMode="numeric"
+                        className="motion-focus w-20 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-right font-semibold text-zinc-100"
+                      />
+                    </label>
+                  )}
+                  {renderPlayerExtras && secondaryDisclosureControlled && (
+                    <button
+                      type="button"
+                      aria-expanded={secondaryDetailsExpanded}
+                      aria-controls={secondaryRegionId}
+                      aria-label={
+                        secondaryDetailsExpanded
+                          ? "Hide secondary details for all players"
+                          : "Show secondary details for all players"
+                      }
+                      onClick={onToggleSecondaryDetails}
+                      className="motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] min-w-[2.75rem] shrink-0 items-center justify-center rounded-lg border border-zinc-600 bg-zinc-800/70 text-lg leading-none text-zinc-200 transition hover:bg-zinc-700/80"
+                    >
+                      {secondaryDetailsExpanded ? "▾" : "▸"}
+                    </button>
+                  )}
+                </div>
+                {renderPlayerExtras && extrasVisible && (
+                  <div id={secondaryRegionId} role="group" className="space-y-2">
+                    {renderPlayerExtras(player)}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </>

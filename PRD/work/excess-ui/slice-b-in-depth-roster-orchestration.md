@@ -1,6 +1,6 @@
 # Slice B — In-Depth roster orchestration and preservation
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -72,4 +72,15 @@ git diff --check
 - `apps/frontend/src/components/portal/MtgAssistantApp.tsx`
 - `apps/frontend/src/components/portal/MtgAssistantApp.player-counters.test.tsx`
 - `apps/frontend/src/App.responsive-presentation.test.tsx`
+
+### Discovered scope
+
+Wiring the shared secondary-details boolean into `MtgAssistantApp` also collapses seeded
+counter inputs by default in the two Life Tracker handoff integration suites, which were not
+listed above because they exercise `MtgAssistantApp` only through the real portal without
+otherwise touching this slice's contract. Updated `apps/frontend/src/App.player-life-tracker-flow.test.tsx`
+and `apps/frontend/src/App.player-life-tracker-seed.test.tsx` to expand the shared arrow before
+reading/editing counter fields, keeping `npm run quality:check` green. Slice C still owns
+updating `App.player-life-tracker-flow.test.tsx` further for the destination-round-trip reset
+behavior it introduces.
 - `apps/frontend/src/test/appTestHelpers.tsx`

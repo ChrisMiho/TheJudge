@@ -17,9 +17,10 @@ describe("PORTAL_DESTINATIONS", () => {
     ]);
   });
 
-  it("each destination's render() returns a node", () => {
+  it("each destination's render(isActive) returns a node for both activity values", () => {
     for (const destination of PORTAL_DESTINATIONS) {
-      expect(isValidElement(destination.render())).toBe(true);
+      expect(isValidElement(destination.render(true))).toBe(true);
+      expect(isValidElement(destination.render(false))).toBe(true);
     }
   });
 });

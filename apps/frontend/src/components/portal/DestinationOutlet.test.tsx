@@ -5,16 +5,38 @@ import { describe, expect, it } from "vitest";
 import { DestinationOutlet } from "./DestinationOutlet";
 import type { DestinationId, PortalDestination } from "../../lib/portal/types";
 
-function StatefulField({ label, testId }: { label: string; testId: string }): JSX.Element {
+function StatefulField({
+  label,
+  testId,
+  isActive
+}: {
+  label: string;
+  testId: string;
+  isActive: boolean;
+}): JSX.Element {
   const [value, setValue] = useState("");
   return (
-    <input aria-label={label} data-testid={testId} value={value} onChange={(event) => setValue(event.target.value)} />
+    <input
+      aria-label={label}
+      data-testid={testId}
+      data-active={isActive}
+      value={value}
+      onChange={(event) => setValue(event.target.value)}
+    />
   );
 }
 
 const DESTINATIONS: PortalDestination[] = [
-  { id: "alpha", label: "Alpha", render: () => <StatefulField label="Alpha input" testId="alpha-input" /> },
-  { id: "beta", label: "Beta", render: () => <StatefulField label="Beta input" testId="beta-input" /> }
+  {
+    id: "alpha",
+    label: "Alpha",
+    render: (isActive) => <StatefulField label="Alpha input" testId="alpha-input" isActive={isActive} />
+  },
+  {
+    id: "beta",
+    label: "Beta",
+    render: (isActive) => <StatefulField label="Beta input" testId="beta-input" isActive={isActive} />
+  }
 ];
 
 function Harness(): JSX.Element {
@@ -77,6 +99,23 @@ describe("DestinationOutlet", () => {
 
     expect(screen.getByTestId("alpha-input")).toHaveValue("keep-me");
     expect(screen.queryByTestId("beta-input")).not.toBeInTheDocument();
+  });
+
+  it("passes each retained destination's current active/inactive value on every render", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    expect(screen.getByTestId("alpha-input")).toHaveAttribute("data-active", "true");
+
+    await user.click(screen.getByRole("button", { name: "Go beta" }));
+
+    expect(screen.getByTestId("alpha-input")).toHaveAttribute("data-active", "false");
+    expect(screen.getByTestId("beta-input")).toHaveAttribute("data-active", "true");
+
+    await user.click(screen.getByRole("button", { name: "Go alpha" }));
+
+    expect(screen.getByTestId("alpha-input")).toHaveAttribute("data-active", "true");
+    expect(screen.getByTestId("beta-input")).toHaveAttribute("data-active", "false");
   });
 });
 });
