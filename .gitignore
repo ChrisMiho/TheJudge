@@ -4,6 +4,9 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Superpowers skill runtime state (brainstorm preview server pid/log files)
+.superpowers/
+
 # Logs
 *.log
 npm-debug.log*
