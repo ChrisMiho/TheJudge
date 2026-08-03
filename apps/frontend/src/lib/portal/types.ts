@@ -5,5 +5,5 @@ export type DestinationId = string;
 export interface PortalDestination {
   id: DestinationId;
   label: string;
-  render: () => ReactNode;
+  render: (isActive: boolean) => ReactNode;
 }

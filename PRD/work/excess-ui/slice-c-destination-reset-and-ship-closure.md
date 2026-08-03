@@ -1,6 +1,6 @@
 # Slice C — Destination reset, integration proof, and ship closure
 
-## Status: planned
+## Status: done
 
 ## Goal
 

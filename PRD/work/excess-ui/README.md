@@ -27,7 +27,7 @@ rejected alternatives. See `GAMEPLAN.md` for the implementation architecture and
 | --- | --- | --- | --- |
 | A | Synchronized player-card disclosure contract | — | done |
 | B | In-Depth roster orchestration and preservation | A | done |
-| C | Destination reset, integration proof, and ship closure | A, B | planned |
+| C | Destination reset, integration proof, and ship closure | A, B | done |
 
 The package is sequential: B consumes A's controlled shared-editor contract, and C can verify the
 narrow destination-state reset only after the integrated In-Depth state exists.
@@ -44,22 +44,9 @@ All implementation paths are relative to `apps/frontend/src/`.
 
 ## Next step
 
-Implement Slice C next.
-
-**Cursor**
-
-```text
-/thejudge-implement PRD/work/excess-ui/ slice C
-```
-
-**Codex**
+All slices are done. Run cleanup to promote durable PRD truth, write the receipt, and delete this
+work folder.
 
 ```text
-$thejudge-implement PRD/work/excess-ui/ slice C
-```
-
-**Claude Code**
-
-```text
-/thejudge-implement PRD/work/excess-ui/ slice C
+/thejudge-cleanup PRD/work/excess-ui/
 ```

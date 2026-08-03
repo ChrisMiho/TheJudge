@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { EnrichmentStep } from "../EnrichmentStep";
 import { StagedStepHeader } from "../StagedStepHeader";
 import { ZoneCollectionStep } from "../ZoneCollectionStep";
@@ -119,7 +119,11 @@ const COMBAT_STEP_OPTIONS: Array<{ value: CombatStep; label: string }> = [
   { value: "end_of_combat", label: "End of Combat" }
 ];
 
-export function MtgAssistantApp(): JSX.Element {
+export interface MtgAssistantAppProps {
+  isActive?: boolean;
+}
+
+export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.Element {
   const { consumeSeed } = useAssistantSeed();
   const [cardMetadata, setCardMetadata] = useState<CardMetadataItem[]>([]);
   const [isMetadataLoading, setIsMetadataLoading] = useState(true);
@@ -179,6 +183,14 @@ export function MtgAssistantApp(): JSX.Element {
     setCountersByPlayer(nextCounters);
     setPlayersDetailsExpanded(true);
   });
+
+  const wasActiveRef = useRef(isActive);
+  useEffect(() => {
+    if (wasActiveRef.current && !isActive) {
+      setSecondaryDetailsExpanded(false);
+    }
+    wasActiveRef.current = isActive;
+  }, [isActive]);
 
   useEffect(() => {
     const controller = new AbortController();

@@ -156,6 +156,9 @@ describe("Frontend - Portal", () => {
     await selectDestination(user, "Quick Question");
     await selectDestination(user, "In-Depth Question");
     expect(screen.getByLabelText("Player 1 life total")).toHaveValue("12");
+    expect(screen.queryByLabelText("Player 1 poison")).not.toBeInTheDocument();
+
+    await expandSecondaryPlayerDetails(user);
     expect(screen.getByLabelText("Player 1 poison")).toHaveValue("8");
     expect(screen.getByLabelText("Player 1 counter Monarch amount")).toHaveValue("0");
 
