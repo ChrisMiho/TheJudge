@@ -1,10 +1,11 @@
 ---
 name: thejudge-implement
 description: >-
-  Implements an existing TheJudge work-package slice from PRD/work/<slug>/ using
-  GAMEPLAN.md and lettered slice docs. Use after map-out, or when the work folder
-  already has a GAMEPLAN and slices and the user wants to kick off work without
-  regenerating planning docs.
+  Implements one lettered slice from an existing PRD/work/<slug>/ GAMEPLAN end
+  to end — code, tests, verification, status update. Use after map-out, or
+  whenever a single slice needs to be executed in this session. For
+  dispatching an entire wave of slices across multiple agents, use
+  thejudge-implement-parallel instead.
 ---
 
 # TheJudge Implement
@@ -13,80 +14,39 @@ description: >-
 
 Execute one existing implementation slice from `PRD/work/<slug>/` end to end.
 
-## Shared output guidance
-
-Read the shared response guidance at `../thejudge-output-guidance.md` (canonical path: `.cursor/skills/thejudge-output-guidance.md`) and apply it to this workflow's user-facing output. This affects response length only; preserve all reads, writes, gates, verification, and handoff requirements below.
-
 ## Inputs
 
-User provides a work slug or `PRD/work/<slug>/`.
+Work slug or `PRD/work/<slug>/` path. Optional slice letter or slice doc path — if omitted, choose the first slice whose status is not `done`, ordered alphabetically.
 
-Optional: user provides a specific slice letter or slice doc path. If omitted, choose the first slice whose status is not `done`, ordered alphabetically by slice letter.
-
-## Required reads
+## Reads
 
 1. `PRD/work/<slug>/README.md`
 2. `PRD/work/<slug>/GAMEPLAN.md`
-3. Selected `PRD/work/<slug>/slice-*.md`
-4. Files listed in the selected slice's `Files touched` / implementation map
+3. The selected `PRD/work/<slug>/slice-*.md`
+4. Files listed in the selected slice's `Files touched`
 5. Relevant existing tests and local code patterns
+6. This skill's `reference.md` for the binding implementation constraints
 
-Read other PRD files only when the selected slice references them or the code change needs a decision check.
+Read other PRD files only when the selected slice references them or the change needs a decision check.
 
-## Process
+## Writes
 
-1. Identify the selected slice and confirm its dependencies are done or satisfied.
-2. Summarize the slice objective and verification commands in a short update.
-3. Mark the selected slice `Status: in-progress` before code edits.
-4. Implement only the selected slice's scope.
-5. Add or update focused tests for the slice.
-6. Run the slice verification commands.
-7. If verification passes, mark the slice `Status: done`.
-8. Update `PRD/work/<slug>/README.md` slice table/status notes when present.
-9. Report changed files, verification results, and the next slice.
+- Product code and tests within the selected slice's `Files touched`
+- Slice doc status line (see `reference.md`)
+- `PRD/work/<slug>/README.md` slice table/status notes, when present
 
-If verification fails, keep the slice `Status: in-progress` or mark `Status: blocked` only when the blocker cannot be resolved in-session. Report the failing command and concrete blocker.
-
-## Implementation rules
+## Gates
 
 - Follow `GAMEPLAN.md` and the selected slice doc; do not regenerate them.
+- Confirm the selected slice's dependencies are done before starting.
+- Mark the slice `in-progress` before code edits; `done` only after its verification command passes in this session; `blocked` only when the blocker cannot be resolved in-session — report the failing command and the blocker.
 - Keep edits limited to the selected slice unless a dependency forces a small supporting change.
-- Preserve active product decisions and `PRD/instructions/technical-design-rules.md`.
-- Preserve stack ordering semantics across UI, API, prompt, and tests.
-- Do not change API request/response shapes unless the slice cites a confirmed decision requiring it.
-- Do not add product-facing endpoints unless the slice cites a confirmed decision requiring it.
-- Do not implement deterministic rules-engine, legality validation, or board-state simulation behavior.
-- Any Scryfall download or network refresh requires explicit human approval before running.
-- Do not commit changes unless the user explicitly asks for a commit.
+- Never run `thejudge-map-out`, rewrite `GAMEPLAN.md`/slice docs (beyond status), start multiple slices in one session unless asked, run cleanup, or promote durable PRD truth.
+- Every implementation constraint in `reference.md` is binding.
 
-## Status conventions
+## Next step
 
-Slice docs should use one of:
+More slices remain → `/thejudge-implement PRD/work/<slug>/ slice <next letter>` (or `next slice` for Claude Code).
+All slices done → `/thejudge-cleanup PRD/work/<slug>/`.
 
-- `planned`
-- `in-progress`
-- `done`
-- `blocked`
-
-Prefer a single status line near the top of each slice:
-
-```markdown
-## Status: in-progress
-```
-
-If a slice uses another existing status format, preserve the local format and update only the status value.
-
-## Do not
-
-- Run `thejudge-map-out`
-- Rewrite `GAMEPLAN.md` or slice docs except for status/progress notes
-- Start multiple slices in one session unless the user explicitly asks
-- Run cleanup or delete `PRD/work/<slug>/`
-- Promote durable PRD truth; leave that for `thejudge-cleanup`
-
-## Handoff
-
-When the selected slice is done, end with **Next step** — all three platforms, in order: Cursor, Codex, Claude Code. Substitute `<slug>` and slice letters from this session. Templates: `PRD/instructions/workflow-reference.md` (Handoff blocks).
-
-- More slices remain → next skill: `thejudge-implement` with next slice letter (or `next slice` for Claude)
-- All slices done → next skill: `thejudge-cleanup`
+(`$thejudge-*` in Codex.)

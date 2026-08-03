@@ -1,57 +1,47 @@
 ---
 name: thejudge-quality-check
 description: >-
-  Validates PRD alignment and agent-readiness before slicing work. Use after
-  refinement, before map-out.
+  Validates a DESIGN-BRIEF.md against PRD alignment and agent-readiness,
+  producing a PASS/FAIL report — never a GAMEPLAN or slice docs. Use after
+  refinement, before map-out, to gate whether a work package is ready to
+  slice.
 ---
 
 # TheJudge Quality Check
 
 ## Goal
 
-Gate before `thejudge-map-out`. Report pass/fail; fix only trivial issues with user approval.
-
-## Shared output guidance
-
-Read the shared response guidance at `../thejudge-output-guidance.md` (canonical path: `.cursor/skills/thejudge-output-guidance.md`) and apply it to this workflow's user-facing output. This affects response length only; preserve all reads, writes, gates, verification, and handoff requirements below.
+Gate before map-out: report PASS or FAIL against PRD alignment and agent-readiness; fix only trivial issues with in-session user approval.
 
 ## Inputs
 
-User provides work slug.
+Work slug.
 
 ## Reads
 
 1. `PRD/work/<slug>/DESIGN-BRIEF.md`
 2. Affected `PRD/sections/*.md`
 3. `PRD/sections/decisions.md` router, then relevant `PRD/sections/decisions/<domain>.md` files
-4. `PRD/instructions/workflow-reference.md` (checklist section)
+4. `PRD/instructions/technical-design-rules.md`
 
 ## Checklist
 
 - [ ] No contradictions with active `DEC-###` entries in the relevant `decisions/<domain>.md` files
 - [ ] Current vocabulary is used in new/edited content
-- [ ] Stack ordering consistent if feature touches stack/API/prompt
-- [ ] `technical-design-rules.md` constraints respected (one endpoint, no rules engine, etc.)
+- [ ] Stack ordering is preserved if the feature touches stack/API/prompt
+- [ ] `technical-design-rules.md` constraints are respected (one endpoint, no rules engine, etc.)
 - [ ] Scope is implementable without hidden assumptions
-- [ ] Open questions only for real ambiguity
+- [ ] Open questions are reserved for genuine ambiguity only
 
-## Output
+## Gates
 
-Short report:
+- Emit **PASS** or **FAIL** — never leave the call implicit.
+- Trivial fixes only with in-session user approval; never write `GAMEPLAN.md` or slice docs; never write product code.
+- Never guess an answer into committed scope.
 
-- **PASS** or **FAIL**
-- Issues list (file + line or section reference)
-- Optional: trivial fixes applied (only if user approved in session)
+## Next step
 
-## Do not
+**PASS** → `/thejudge-map-out PRD/work/<slug>/` (or `/thejudge-map-out-parallel PRD/work/<slug>/` if slices look independent).
+**FAIL** → `/thejudge-refinement PRD/work/<slug>/`, with the issue list included above the handoff.
 
-- Write GAMEPLAN or slice docs
-- Write code
-- Guess answers into committed scope
-
-## Handoff
-
-End with **Next step** — all three platforms, in order: Cursor, Codex, Claude Code. Substitute `<slug>` from this session. Templates: `PRD/instructions/workflow-reference.md` (Handoff blocks).
-
-- **PASS** → next skill: `thejudge-map-out`
-- **FAIL** → next skill: `thejudge-refinement` (include issue list above the handoff blocks)
+(`$thejudge-*` in Codex.)

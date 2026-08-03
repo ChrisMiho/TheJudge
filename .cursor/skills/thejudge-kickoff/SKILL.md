@@ -1,59 +1,44 @@
 ---
 name: thejudge-kickoff
 description: >-
-  Loads minimal onboarding context for TheJudge (README + PRD control plane).
-  Optionally captures a new idea in PRD/work/<slug>/IDEA.md. Use when starting
-  a new session or beginning work on a new feature.
+  Loads minimal onboarding context for TheJudge (root README.md + PRD/README.md)
+  and optionally captures a new idea in PRD/work/<slug>/IDEA.md. Use when
+  starting a new session or beginning work on a new feature idea.
 ---
 
 # TheJudge Kickoff
 
 ## Goal
 
-Orient the agent without pre-loading the full PRD. Optionally seed a new work package when the user describes an idea.
+Orient in this repo without pre-loading the full PRD, and optionally seed a new work package when the user describes an idea.
 
-## Shared output guidance
+## Inputs
 
-Read the shared response guidance at `../thejudge-output-guidance.md` (canonical path: `.cursor/skills/thejudge-output-guidance.md`) and apply it to this workflow's user-facing output. This affects response length only; preserve all reads, writes, gates, verification, and handoff requirements below.
+Optional: a feature idea description in the same message.
 
-## Required reads
+## Reads
 
 1. `README.md` — stack, layout, quality gates, current product status
-2. `PRD/README.md` — control plane, precedence, navigation
+2. `PRD/README.md` — control plane, source-of-truth precedence, navigation
 
-Do not read other PRD files unless the user provides paths in the same message.
+Nothing else. Do not pre-load `PRD/sections/` or `PRD/instructions/` — see `reference.md` for the full precedence model and task → read-order table used by later skills.
 
-## New idea capture (when user describes one)
+## Writes
 
-1. Propose a kebab-case slug (e.g. `card-wotc-rule-enrichment`).
-2. Create `PRD/work/<slug>/IDEA.md` — 3–5 sentences: problem, outcome, non-goals.
-3. Create `PRD/work/<slug>/README.md` with `status: ideation` at top.
-4. Confirm slug and paths in your response.
+Only when the user describes a new idea:
 
-If the user only wants orientation, skip writes.
+- `PRD/work/<slug>/IDEA.md` — 3–5 sentences: problem, outcome, non-goals
+- `PRD/work/<slug>/README.md` — `status: ideation` at top
 
-## Response format
+`<slug>` is a new kebab-case name proposed from the idea (e.g. `card-wotc-rule-enrichment`). If the user only wants orientation, write nothing.
 
-Short paragraph (2–3 sentences):
+## Gates
 
-1. Product in one phrase (MTG assistant with a suite of player-help features)
-2. Current baseline from README + PRD/README (suite framing, not flow-validation or MVP)
-3. Ready for next task — or confirm idea captured at `PRD/work/<slug>/`
+- Never read PRD content beyond the two required files without the user naming paths in the same message.
+- Never write product code from this skill.
 
-## Do not
+## Next step
 
-- Pre-load `sections/` or instructions
-- Summarize full PRD during kickoff
-- Write code
+Orient-only: none — point the user at `AGENT-SKILLS.md` and this skill's `reference.md`.
 
-## Handoff
-
-If orient-only (no `IDEA.md` created), skip **Next step** blocks. Point the user to `AGENT-SKILLS.md` and [reference.md](reference.md) for the workflow.
-
-If `IDEA.md` was created, end with **Next step** — all three platforms, in order: Cursor, Codex, Claude Code. Substitute `<slug>` from this session. Templates: `PRD/instructions/workflow-reference.md` (Handoff blocks).
-
-Next skill: `thejudge-refinement`.
-
-## Reference
-
-PRD quick map: [reference.md](reference.md)
+Idea captured: `/thejudge-refinement PRD/work/<slug>/` (Cursor / Claude Code) or `$thejudge-refinement PRD/work/<slug>/` (Codex).

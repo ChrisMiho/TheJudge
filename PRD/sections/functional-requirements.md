@@ -1663,7 +1663,7 @@
   - when a card is resolved, its name, image when available, and oracle text (including full metadata) are shown before the user submits a question, and the user can remove or replace it before submitting
   - only one card is active at a time; there are no zones, stack, phase, multi-card setup, or per-card enrichment-editing controls
   - a freeform question field accepts up to the same character cap as the main flow question (REQ-011)
-  - the pre-submit view's guidance copy, directly under the header, reads exactly **"Add a card for context or ask any Magic related question."**
+  - the pre-submit view's guidance copy reads exactly **"Add a card for context or ask any Magic related question."**, shown inline as a suffix on the "Optional card" label after an em dash (e.g. "OPTIONAL CARD — Add a card for context or ask any Magic related question."), not as a standalone line under the header (DEC-113)
   - the pre-submit view is laid out top to bottom as: optional card-attach control, then the Question field, then the "General rules topics" outer disclosure (REQ-079), whose collapsed summary remains visible regardless of whether a card is attached or the question field already has text
 - Constraints:
   - reuse existing search, scan, card-presentation, and core-topics components; do not fork new identity or metadata models
@@ -1671,6 +1671,7 @@
 - Dependencies:
   - DEC-107
   - DEC-112
+  - DEC-113
   - DEC-095
   - REQ-001
   - REQ-002
@@ -1679,6 +1680,7 @@
 - Notes:
   - during quick-lookup refinement this requirement was rewritten to merge the prior separate Card Lookup entry (this ID) and Rules Lookup entry (former REQ-076) into one destination; see REQ-076
   - during quick-question-ui-refinement, the guidance-copy wording and the card/question/topics section order were confirmed (DEC-112); the prior "empty state shows the fallback" framing is superseded by REQ-079's always-rendered collapsed outer disclosure
+  - during ui-refinement, the guidance copy's placement moved from a standalone line under the header to inline with the "Optional card" label (DEC-113); the wording itself and the section order are unchanged
 
 ### REQ-074
 - Title: Quick Lookup prompt assembly and domain guardrail
@@ -2046,3 +2048,25 @@
   - DEC-112
 - Notes:
   - supersedes REQ-079's prior "ask about this pre-fills an editable textarea" acceptance criterion for the topic-row action button; REQ-079 was amended alongside this requirement
+
+### REQ-092
+- Title: Quick Lookup submit wait feedback
+- Priority: medium
+- Description: While Quick Lookup's initial submit is in flight (before the first answer arrives), the app must hide the Question form and show the existing decrypt wait feedback panel in its place, matching the in-depth flow's own submit-wait pattern.
+- Acceptance Criteria:
+  - while a Quick Lookup submit is in flight and no answer has yet arrived, the Question form (label, locked-topic pill if present, textarea, character counter, submit button) is not rendered
+  - `AskAiWaitingPanel` (REQ-023: live elapsed timer, `aria-live` threshold-based messages) renders in the Question form's place during the wait
+  - the Optional card section (search/attach control, selected-card preview) remains visible and interactive during the wait
+  - the "General rules topics" outer disclosure remains visible and interactive during the wait; expanding/collapsing a topic or locking/swapping/removing a topic pill during the wait does not affect the in-flight request
+  - the Question form reappears in place of the waiting panel as soon as the request resolves with an error, alongside the existing error/retry affordance
+  - on success, the pre-submit view is replaced by the existing post-answer conversation view (REQ-025-style swap), unchanged by this requirement
+- Constraints:
+  - reuse `AskAiWaitingPanel` as-is; no new waiting-panel variant, no animation library
+  - no change to request payloads, prompt assembly, `useAskAiSubmitOrchestration`, or the `isConversationActive` swap
+  - scoped to the initial submit only; follow-up turns keep their existing inline composer-button animation (DEC-041)
+- Dependencies:
+  - DEC-114
+  - REQ-023
+  - REQ-075
+- Notes:
+  - added during ui-refinement to close a gap: REQ-023 specifies this pattern for the in-depth flow's `EnrichmentStep`, and REQ-075 covers Quick Lookup's conversation once an answer exists, but the pre-first-answer wait state on Quick Lookup's own submit form was previously unspecified and had drifted from the REQ-023 pattern

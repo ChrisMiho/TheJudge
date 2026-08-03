@@ -1,86 +1,47 @@
 ---
 name: thejudge-map-out-parallel
 description: >-
-  Creates GAMEPLAN and lettered slice docs in PRD/work/<slug>/ with slices
-  grouped into dependency waves for concurrent implementation. Use after
-  quality-check passes when the work has independent slices worth running in
-  parallel.
+  Creates GAMEPLAN.md and lettered slice docs in PRD/work/<slug>/, grouped
+  into dependency waves of slices with disjoint files that can be implemented
+  concurrently. Use after quality-check passes when the work has independent
+  slices worth running in parallel — otherwise use thejudge-map-out, which
+  sequences slices without wave grouping.
 ---
 
 # TheJudge Map Out (Parallel)
 
 ## Goal
 
-Produce an implementation-ready work package whose slices are grouped into
-dependency **waves**, so independent slices can be implemented concurrently.
-
-This is the parallel-oriented flavor of `thejudge-map-out`. Use the plain
-`thejudge-map-out` when the work is inherently sequential or too small to wave.
-
-## Shared output guidance
-
-Read the shared response guidance at `../thejudge-output-guidance.md` (canonical path: `.cursor/skills/thejudge-output-guidance.md`) and apply it to this workflow's user-facing output. This affects response length only; preserve all reads, writes, gates, verification, and handoff requirements below.
+Produce an implementation-ready work package whose slices are grouped into dependency **waves**, so independent slices can be implemented concurrently.
 
 ## Inputs
 
-User provides work slug.
+Work slug.
 
 ## Reads
 
 1. `PRD/work/<slug>/DESIGN-BRIEF.md`
-2. Refined `PRD/sections/` referenced in brief
-3. `PRD/instructions/workflow-reference.md` (slice template)
-4. `PRD/instructions/doc-lifecycle.md`
+2. Refined `PRD/sections/` referenced in the brief
+3. `PRD/instructions/doc-lifecycle.md`
+4. This skill's `reference.md` for the slice template, Ship gates block, and wave table format
 
 ## Writes
 
 - `PRD/work/<slug>/GAMEPLAN.md` — architecture, data flow, **wave plan**, verification checklist
 - `PRD/work/<slug>/slice-a-*.md` … `slice-n-*.md`
-- Update `PRD/work/<slug>/README.md` — slice table (with wave + depends-on columns), implementation map, `status: active`
+- Update `PRD/work/<slug>/README.md` — slice table with wave + depends-on columns, implementation map, `status: active`
 
-## Slice rules
+## Gates
 
-- One primary objective per slice
-- Explicit dependencies in README table
-- Each slice: Status, Goal, Requirements, Files touched, Tests, Acceptance criteria
-- Each acceptance criterion must be verifiable (test command or explicit manual check)
-- Include file paths and verification commands
-- Final slice includes PRD promotion checklist (execution in cleanup skill) and Ship gates from `workflow-reference.md`
+- One primary objective per slice; each slice: Status, Goal, Requirements, Files touched, Tests, Acceptance criteria; each acceptance criterion verifiable.
+- Build a dependency graph from each slice's stated dependencies. Wave N holds every slice whose dependencies all live in waves `< N`. Wave 1 has no dependencies.
+- Same-wave slices must have **disjoint `Files touched`** — overlap means merge the slices or push one to a later wave.
+- A single-slice wave is fine; not everything parallelizes.
+- Any slice that cannot be parallelized states why (shared file, shared migration, ordering constraint).
+- Never split a cohesive change across same-wave slices just to manufacture parallelism.
+- Final slice carries the PRD promotion checklist (execution happens in cleanup) and the Ship gates block from `reference.md`.
+- Never write product code from this skill; never persist plans to tool-specific plan folders.
 
-## Wave rules
+## Next step
 
-- Build a dependency graph from each slice's stated dependencies.
-- Group slices into numbered waves. **Wave N** holds every slice whose
-  dependencies all live in waves `< N`. Wave 1 has no dependencies.
-- Slices in the same wave MUST be safe to run concurrently:
-  - No ordering dependency between them.
-  - **Disjoint `Files touched` sets.** If two same-wave slices edit the same
-    file, either merge them or push one to a later wave.
-- A wave may contain a single slice — that is fine; not everything parallelizes.
-- Record the plan in GAMEPLAN as a wave table and mirror it in the README slice table:
-
-  ```markdown
-  | Wave | Slices | Depends on |
-  | ---- | ------ | ---------- |
-  | 1    | A, B   | —          |
-  | 2    | C      | A          |
-  ```
-
-- State any slice that cannot be parallelized and why (shared file, shared
-  migration, ordering constraint).
-
-## Do not
-
-- Write product code
-- Persist to tool-specific plan folders
-- Force parallelism by splitting a cohesive change across slices that touch the same files
-
-## Handoff
-
-After GAMEPLAN, slices, and the wave table are written, end with **Next step** —
-all three platforms, in order: Cursor, Codex, Claude Code. Substitute `<slug>`
-and the first wave's slice letters from the README slice table. Templates:
-`PRD/instructions/workflow-reference.md` (Handoff blocks).
-
-- Cursor / Claude Code → next skill: `thejudge-implement-codex` (dispatches a whole wave concurrently)
-- Codex → next skill: `thejudge-implement` (one slice at a time; the codex-delegation flavor is orchestrator-only)
+`/thejudge-implement-parallel PRD/work/<slug>/ wave 1` (Cursor / Claude Code) or `$thejudge-implement-parallel PRD/work/<slug>/ wave 1` (Codex, sequential — no in-session subagent primitive).
