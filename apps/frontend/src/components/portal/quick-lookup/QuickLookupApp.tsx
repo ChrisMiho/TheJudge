@@ -237,14 +237,7 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
 
   return (
     <PageShell>
-      {!scanCapture.isOpen && (
-        <>
-          <StagedStepHeader stepName="Quick Question" />
-          <p className="text-sm text-zinc-400">
-            Add a card for context or ask any Magic related question.
-          </p>
-        </>
-      )}
+      {!scanCapture.isOpen && <StagedStepHeader stepName="Quick Question" />}
 
       {scanCapture.isOpen ? (
         <section className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-3">
@@ -285,7 +278,10 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
         <>
           <section className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
             <label className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
-              Optional card
+              <span>Optional card</span>{" — "}
+              <span className="text-sm font-normal normal-case tracking-normal text-zinc-400">
+                Add a card for context or ask any Magic related question.
+              </span>
               <span className="mt-2 grid gap-2 normal-case tracking-normal sm:grid-cols-[1fr_auto] sm:items-center">
                 <input
                   aria-label="Card search"
@@ -360,59 +356,61 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
             )}
           </section>
 
-          <form
-            ref={questionContainerRef}
-            onSubmit={handleSubmit}
-            className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
-          >
-            <div className="flex flex-wrap items-center gap-2">
-              <label
-                htmlFor="quick-lookup-question"
-                className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300"
-              >
-                Question
-              </label>
-              {lockedTopic && (
-                <span className="inline-flex items-center gap-2 rounded-full border border-accent/70 bg-accent/15 px-3 py-1 text-xs font-semibold text-accent-soft">
-                  <span>{`Tell me about ${lockedTopic.title}.`}</span>
-                  <button
-                    type="button"
-                    aria-label={`Remove ${lockedTopic.title} topic`}
-                    onClick={() => setLockedTopic(null)}
-                    className="rounded-full px-1 text-sm leading-none text-accent-soft transition hover:bg-accent/25"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-            </div>
-            <textarea
-              ref={questionInputRef}
-              id="quick-lookup-question"
-              aria-label="Magic question"
-              value={question}
-              maxLength={MAX_QUESTION_LENGTH}
-              onChange={(event) => setQuestion(event.target.value)}
-              className="min-h-28 w-full resize-y rounded-xl border border-zinc-600 bg-zinc-800/80 px-3 py-2 text-sm normal-case tracking-normal text-zinc-100"
-              placeholder={
-                lockedTopic
-                  ? "Add anything specific — or leave this blank and just ask."
-                  : "What would you like to know?"
-              }
-            />
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs text-zinc-400">{composedQuestion.length}/{MAX_QUESTION_LENGTH}</p>
-              <button
-                type="submit"
-                disabled={!canSubmit || isSubmitting}
-                className="rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isSubmitting ? "Asking…" : "Ask TheJudge"}
-              </button>
-            </div>
-          </form>
-
-          {isSubmitting && <AskAiWaitingPanel isSubmitting={isSubmitting} />}
+          {isSubmitting ? (
+            <AskAiWaitingPanel isSubmitting={isSubmitting} />
+          ) : (
+            <form
+              ref={questionContainerRef}
+              onSubmit={handleSubmit}
+              className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <label
+                  htmlFor="quick-lookup-question"
+                  className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300"
+                >
+                  Question
+                </label>
+                {lockedTopic && (
+                  <span className="inline-flex items-center gap-2 rounded-full border border-accent/70 bg-accent/15 px-3 py-1 text-xs font-semibold text-accent-soft">
+                    <span>{`Tell me about ${lockedTopic.title}.`}</span>
+                    <button
+                      type="button"
+                      aria-label={`Remove ${lockedTopic.title} topic`}
+                      onClick={() => setLockedTopic(null)}
+                      className="rounded-full px-1 text-sm leading-none text-accent-soft transition hover:bg-accent/25"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+              </div>
+              <textarea
+                ref={questionInputRef}
+                id="quick-lookup-question"
+                aria-label="Magic question"
+                value={question}
+                maxLength={MAX_QUESTION_LENGTH}
+                onChange={(event) => setQuestion(event.target.value)}
+                className="min-h-28 w-full resize-y rounded-xl border border-zinc-600 bg-zinc-800/80 px-3 py-2 text-sm normal-case tracking-normal text-zinc-100"
+                placeholder={
+                  lockedTopic
+                    ? "Add anything specific — or leave this blank and just ask."
+                    : "What would you like to know?"
+                }
+              />
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs text-zinc-400">{composedQuestion.length}/{MAX_QUESTION_LENGTH}</p>
+                <button
+                  type="submit"
+                  disabled={!canSubmit || isSubmitting}
+                  className="rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isSubmitting ? "Asking…" : "Ask TheJudge"}
+                </button>
+              </div>
+            </form>
+          )}
 
           <details className="rounded-2xl border border-zinc-700/70 bg-zinc-900/55">
             <summary className="cursor-pointer px-4 py-3 text-zinc-100 marker:text-zinc-400">

@@ -108,3 +108,36 @@ Lightweight Ask AI lookup entries that reuse existing search, scan, and conversa
 - Notes:
   - refines DEC-107 and REQ-079; does not change DEC-106's `AskAiRequest` shape, `POST /api/ask-ai`, or any backend prompt-assembly contract
   - supersedes REQ-079's prior "ask about this pre-fills a freely editable textarea" acceptance criterion; REQ-079 is amended alongside this decision and a new REQ-091 captures the locked-pill mechanism in full
+
+### DEC-113
+- Decision: Quick Lookup's pre-submit guidance copy ("Add a card for context or ask any Magic related question.") moves from its own line between the header and the "Optional card" section into an inline suffix on the "Optional card" label, separated by an em dash, reading "OPTIONAL CARD — Add a card for context or ask any Magic related question."; the standalone paragraph is removed. The card-attach control's position in the pre-submit layout (top of the stack, per REQ-073) is unchanged.
+- Status: confirmed
+- Context: The guidance line sat as an orphaned paragraph between the header and the "Optional card" section it was actually describing, reading as disconnected from the field it explains. Folding it inline with the label it precedes ties the copy directly to the control it describes, in the same spirit as DEC-092's helper-copy tightening elsewhere in the app, without adding any new guidance text.
+- Impact:
+  - the standalone guidance paragraph directly under the `StagedStepHeader` is removed
+  - the "Optional card" label renders as "OPTIONAL CARD — Add a card for context or ask any Magic related question." with the label portion keeping its existing uppercase/tracked styling and the guidance sentence in normal case/weight, matching its prior paragraph styling
+  - copy text itself is unchanged verbatim; only its placement moves
+  - no change to the card-attach control, search behavior, or scan entry point
+- Related requirements:
+  - REQ-073
+- Notes:
+  - amends REQ-073's guidance-copy-placement acceptance criterion only; REQ-073's layout order (card-attach control, then Question field, then General rules topics) is unchanged
+  - narrow, presentation-only precedent alongside DEC-092; does not expand DEC-092's own scope (game-context players / zone-confirmation helpers)
+
+### DEC-114
+- Decision: Quick Lookup's initial submit (pre-first-answer) hides the Question form while a request is in flight, replacing it in place with the existing `AskAiWaitingPanel`, instead of leaving the form visible with the panel appended beneath it. The Optional card section and the "General rules topics" disclosure remain visible and interactive throughout the wait, unchanged.
+- Status: confirmed
+- Context: The in-depth flow's decrypt wait already replaces its submit form with `AskAiWaitingPanel` while keeping context above the form visible (DEC-031/REQ-023). Quick Lookup's initial submit had drifted from that pattern — the Question form stayed on screen with the waiting panel added underneath, reading as cluttered and inconsistent with the flow it's meant to mirror. This decision brings the same "form replaced by the waiting panel, context above stays visible" pattern to Quick Lookup's own submit form (the Question field/composer), scoped only to the pre-first-answer wait; the post-first-answer conversation experience (REQ-075) is unaffected.
+- Impact:
+  - while `isSubmitting` is true and no answer has yet arrived, the Question form (label, pill, textarea, character counter, submit button) is not rendered; `AskAiWaitingPanel` renders in its place
+  - the Optional card section (search/attach control and any selected-card preview) stays visible and interactive during the wait, matching REQ-023's "context above the form remains visible" pattern
+  - the "General rules topics" disclosure stays visible and interactive during the wait; expanding/collapsing topics or locking a topic pill mid-wait has no effect on the in-flight request
+  - the Question form reappears (waiting panel removed) as soon as the request resolves, whether that resolution is an error (form and retry affordance return, matching REQ-023's "restored ... when a response is received or an error occurs") or a success (the component instead swaps into the existing post-answer conversation view, unchanged)
+  - no change to `useAskAiSubmitOrchestration`, request payloads, prompt assembly, or the `isConversationActive` swap that already replaces the full pre-submit view once the first answer lands
+- Related requirements:
+  - REQ-092
+  - REQ-023
+  - REQ-075
+- Notes:
+  - purely a pre-submit-view rendering change in `QuickLookupApp.tsx`; reuses the existing `AskAiWaitingPanel` component and its timer/threshold behavior verbatim (REQ-023), no new waiting-panel variant
+  - scoped to the initial submit only; follow-up turns already use the inline composer-button animation per DEC-041/REQ-028 and are unaffected

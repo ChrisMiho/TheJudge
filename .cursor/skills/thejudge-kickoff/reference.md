@@ -1,6 +1,6 @@
 # TheJudge PRD quick map
 
-Use **after** kickoff when the user names a task or work slug.
+Use after kickoff, once the user names a task or work slug.
 
 ## Source-of-truth precedence
 
@@ -9,20 +9,22 @@ Use **after** kickoff when the user names a task or work slug.
 3. `PRD/instructions/*.md` — agent process
 4. `PRD/README.md` — navigation only
 
-## Workflow skills (manual attach)
+## Workflow skills
+
+All 8 are model-invocable and may also be called explicitly (`/thejudge-*` in Cursor/Claude Code, `$thejudge-*` in Codex).
 
 | Skill | Use when |
 | ----- | -------- |
 | `thejudge-kickoff` | New session / new idea |
 | `thejudge-refinement` | Shape idea + write PRD sections |
 | `thejudge-quality-check` | Before slicing |
-| `thejudge-map-out` | Create GAMEPLAN + slices |
-| `thejudge-implement` | Execute a lettered slice |
+| `thejudge-map-out` | Create GAMEPLAN + slices, sequential |
+| `thejudge-map-out-parallel` | Create GAMEPLAN + slices, grouped into dependency waves |
+| `thejudge-implement` | Execute one lettered slice |
+| `thejudge-implement-parallel` | Dispatch a whole wave across agents |
 | `thejudge-cleanup` | Ship feature / corpus hygiene |
 
 **Canonical skills:** edit `.cursor/skills/` only, then run `npm run skills:ai-sync` to copy into `.agents/skills/` (Codex) and `.claude/skills/` (Claude Code). See `AGENT-SKILLS.md`.
-
-Copy-paste handoffs: `PRD/instructions/workflow-reference.md` (Handoff blocks).
 
 ## Task → files
 

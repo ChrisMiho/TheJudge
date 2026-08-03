@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CardMetadataItem } from "../../../types";
@@ -151,12 +151,15 @@ describe("QuickLookupApp", () => {
     const user = userEvent.setup();
     render(<QuickLookupApp />);
 
-    expect(
-      screen.getByText("Add a card for context or ask any Magic related question.")
-    ).toBeInTheDocument();
     expect(screen.queryByText("Browse core rules topics")).not.toBeInTheDocument();
 
-    const cardSection = screen.getByText("Optional card").closest("section");
+    const cardLabel = screen.getByText("Optional card").closest("label");
+    expect(cardLabel).not.toBeNull();
+    expect(cardLabel).toHaveTextContent(
+      "Optional card — Add a card for context or ask any Magic related question."
+    );
+
+    const cardSection = cardLabel!.closest("section");
     const questionForm = screen.getByRole("textbox", { name: "Magic question" }).closest("form");
     const topicsHeading = await screen.findByRole("heading", {
       name: "General rules topics"
@@ -360,6 +363,67 @@ describe("QuickLookupApp", () => {
     await user.click(submitButton);
 
     expect(onSubmit).toHaveBeenCalledWith("Tell me about Lightning Bolt.", lightningBolt);
+  });
+
+  it("replaces the question form during the initial wait and restores it on error", async () => {
+    const user = userEvent.setup();
+    let resolveAskAi: ((response: Response) => void) | undefined;
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/data/cardMetadata.json") {
+        return Promise.resolve(jsonResponse([lightningBolt, counterspell]));
+      }
+      if (url === "/data/gameRulesCoreTopics.json") {
+        return Promise.resolve(jsonResponse(coreTopics));
+      }
+      if (url === "http://localhost:3000/api/ask-ai") {
+        return new Promise<Response>((resolve) => {
+          resolveAskAi = resolve;
+        });
+      }
+      throw new Error(`Unexpected fetch: ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<QuickLookupApp />);
+
+    await user.type(
+      screen.getByRole("textbox", { name: "Magic question" }),
+      "How does priority work?"
+    );
+    await user.click(screen.getByRole("button", { name: "Ask TheJudge" }));
+
+    expect(await screen.findByText("Consulting the stack…")).toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "Magic question" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Ask TheJudge" })).not.toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Card search" })).toBeEnabled();
+    const topicsHeading = screen.getByRole("heading", { name: "General rules topics" });
+    expect(topicsHeading).toBeVisible();
+
+    await user.click(topicsHeading);
+    expect(screen.getByRole("heading", { name: "Stack and Priority" })).toBeVisible();
+
+    await act(async () => {
+      resolveAskAi?.(
+        new Response(
+          JSON.stringify({
+            code: "PROVIDER_UNAVAILABLE",
+            message: "Miho is working on it",
+            retryAfterSeconds: 13
+          }),
+          {
+            status: 502,
+            headers: { "Content-Type": "application/json" }
+          }
+        )
+      );
+    });
+
+    expect(await screen.findByText("Miho is working on it")).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Magic question" })).toHaveValue(
+      "How does priority work?"
+    );
+    expect(screen.getByRole("button", { name: "Ask TheJudge" })).toBeInTheDocument();
+    expect(screen.queryByText("Consulting the stack…")).not.toBeInTheDocument();
   });
 
   it("runs a cardless assistant-first conversation and restores core topics on start over", async () => {

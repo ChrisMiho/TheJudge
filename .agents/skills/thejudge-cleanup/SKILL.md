@@ -1,23 +1,22 @@
 ---
 name: thejudge-cleanup
 description: >-
-  Post-ship evaluation — promote PRD truth, write durable receipt, delete
-  ephemeral PRD/work/ folder. Use when a feature is done or for corpus hygiene.
+  Closes out a shipped work package: verifies slice completion, promotes
+  durable PRD truth, writes a receipt, and deletes PRD/work/<slug>/. Also
+  handles explicit corpus-hygiene sweeps. Use when a feature has shipped or
+  when the user explicitly asks for PRD corpus hygiene — not for general code
+  tidying requests.
 ---
 
 # TheJudge Cleanup
 
 ## Goal
 
-Close out a work package: verify what's done, promote durable docs, receipt, delete `PRD/work/<slug>/`.
-
-## Shared output guidance
-
-Read the shared response guidance at `../thejudge-output-guidance.md` (canonical path: `.cursor/skills/thejudge-output-guidance.md`) and apply it to this workflow's user-facing output. This affects response length only; preserve all reads, writes, gates, verification, and handoff requirements below.
+Close out a work package: verify what's done, promote durable docs, write the receipt, delete `PRD/work/<slug>/`.
 
 ## Inputs
 
-User provides work slug (or `prd-workflow-skills` for this rollout's self-closeout).
+Work slug.
 
 ## Reads
 
@@ -25,53 +24,39 @@ User provides work slug (or `prd-workflow-skills` for this rollout's self-closeo
 2. `PRD/instructions/doc-lifecycle.md`
 3. Relevant codebase paths from slice implementation maps
 
-## Ship checklist
+## Writes
 
-Apply during process step 1:
+- Promoted durable outcomes in the affected `PRD/sections/*.md`; new decisions go into the relevant `PRD/sections/decisions/<domain>.md` file plus the router index line in `PRD/sections/decisions.md`
+- Receipt at `PRD/instructions/receipts/<slug>-<YYYY-MM-DD>.md` — **written before delete** — containing date, slug, status (shipped | partial | corpus-only), actions taken, every file created/updated/deleted, verification results
+- `PRD/sections/system-map.md` entry flipped `planned`/`partial` → `shipped`, only once both code and the receipt exist
+- `PRD/README.md`, only if navigation changed
+
+## Ship checklist
 
 - Slice acceptance criteria satisfied and verified
 - Tests updated; `npm run quality:check` green for touched areas
 - Public contract unchanged unless a slice scoped a change
 - No secrets committed
 - Durable outcomes promoted; `PRD/work/<slug>/` ready to delete
-- System-map promotion gate applied — shipped subsystem's `sections/system-map.md` entry flipped to `shipped` (code + receipt exist)
 
-## Process
+## Gates
 
-1. Compare each slice acceptance criteria vs codebase — mark done/pending; run ship checklist.
-2. Promote durable outcomes to affected sections; for decisions, promote into the relevant `PRD/sections/decisions/<domain>.md` and add the router index line in `PRD/sections/decisions.md`.
-3. **Write receipt first** (see below).
-4. Apply the system-map promotion gate (`PRD/instructions/doc-lifecycle.md`): now that code exists and the receipt is written, flip the shipped subsystem's `PRD/sections/system-map.md` entry/entries from `planned`/`partial` to `shipped`. The shipped-vs-planned signal lives in the catalog only — never edit a `DEC`/`REQ` `Status:` field.
-5. Delete `PRD/work/<slug>/` entirely if fully shipped.
-6. Update `PRD/README.md` only if navigation changed.
-
-## Receipt (required before delete)
-
-Path: `PRD/instructions/receipts/<slug>-<YYYY-MM-DD>.md`
-
-Include:
-
-- Date, slug, status (shipped | partial | corpus-only)
-- Actions taken checklist
-- Files created / updated / deleted (every path)
-- Verification results
-
-Receipts are **durable** — never delete with work folder.
+- Receipt is written **before** `PRD/work/<slug>/` is deleted. Receipts are durable — never deleted with the work folder.
+- The shipped-vs-planned signal lives only in `sections/system-map.md` — never edit a `DEC`/`REQ` `Status:` field to convey it.
+- `npm run quality:check` green for touched areas, and no secrets committed, before delete.
+- Never start new features or slices from this skill; never delete `PRD/instructions/receipts/`.
 
 ## Corpus hygiene mode
 
-When user requests terminology/sections sweep (no feature slug):
+When the user explicitly requests a terminology/sections sweep (no feature slug): apply the terminology table below, and record every edit in a receipt named `skill-migration-<date>.md` or `<slug>-<date>.md`.
 
-- Apply checklist from `workflow-reference.md` terminology table
-- Record all edits in receipt named `skill-migration-<date>.md` or `<slug>-<date>.md`
+| Retire | Replace with |
+| --- | --- |
+| old milestone labels | core product |
+| old provider-stage labels | provider modes (`mock` / `openai`) |
+| retired provider names | current provider boundary language |
+| simplification language | intentional constraints |
 
-## Do not
+## Next step
 
-- Start new features or slices
-- Delete `PRD/instructions/receipts/`
-
-## Handoff
-
-Terminal skill — no **Next step** required after closeout.
-
-Optional: if the user wants to start new work, offer **Next step** with all three platforms pointing to `thejudge-kickoff`. Templates: `PRD/instructions/workflow-reference.md` (Handoff blocks).
+Terminal — no required handoff. If the user wants to start new work, offer `/thejudge-kickoff` (`$thejudge-kickoff` in Codex).

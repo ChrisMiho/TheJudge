@@ -67,24 +67,7 @@ PRD documentation tooling: system-map catalog, detail files, the decisions.md ro
   - this decision does not change the "assistant, not judge" framing or any prompt behavior
 
 ### DEC-064
-- Decision: TheJudge workflow skills use shared, user-tunable output-verbosity guidance so session responses can be lean, standard, or detailed without changing the work each skill performs.
-- Status: confirmed
-- Context: The `thejudge-*` agent workflow skills can generate expensive user-facing output across a long PRD workflow: long summaries, full document dumps, repeated context restatement, and verbose closeouts. Output tokens cost materially more than input tokens, so response verbosity has a disproportionate cost while providing little value when the user only needs status, blockers, verification, and the next command. The skills need a consistent output contract that users can tune per session without changing the underlying PRD reads, writes, approval gates, verification, or handoff sequence.
-- Impact:
-  - documentation/process only: no `apps/` code, product UI, backend API, prompt assembly, provider behavior, or PRD content model change
-  - add one shared canonical output-guidance artifact under `.cursor/skills/`, then sync it to `.agents/skills/` and `.claude/skills/` through the existing `npm run skills:ai-sync` workflow; individual skills reference that shared guidance instead of duplicating verbosity rules
-  - output profiles are `lean`, `standard`, and `detailed`; `standard` is the default and should be shorter than the pre-decision baseline
-  - a user may override the profile per session with plain-language instructions such as "use lean output" or "detailed output is OK"; no persistent settings store, config file, CLI flag, or workflow router is introduced
-  - profile choice changes only response shape and amount of explanation; it never changes required reads, writes, approval gates, PASS/FAIL calls, blocker reporting, verification commands, status updates, or required `Next step` handoff blocks
-  - skills avoid full document dumps, restated background, long command output, and broad summaries unless the user explicitly asks or the material is needed to explain a blocker or approval decision
-  - mandatory output remains mandatory in every profile: approval requests, selected options/tradeoffs when required, PASS/FAIL outcomes, blocker details, verification results, files changed, and the required platform handoff blocks
-  - canonical editing remains `.cursor/skills/thejudge-*`; synced copies remain implementation artifacts per `AGENT-SKILLS.md` and `PRD/instructions/workflow-reference.md`
-- Related requirements:
-  - (none — documentation and process decision; no functional requirement is added or changed)
-- Notes:
-  - this extends the same token-discipline theme as DEC-063, but targets response output rather than input retrieval structure
-  - no `system-map.md` entry is added: the catalog tracks product/code subsystems, not the PRD's own agent workflow tooling
-  - final implementation should update skill-maintenance docs only if needed to make the shared guidance artifact discoverable
+- Superseded by DEC-115.
 
 ### DEC-086
 - Decision: `npm run quality:check` runs the Vitest suite exactly once — coverage-mode execution is the single canonical regression + coverage gate and the redundant standalone `test` step is removed from the aggregate; alongside this, test files are reorganized for clarity (split the oversized `App.test.tsx`, extract shared EnrichmentStep fixtures/setup, group scan suites) as an assertion-preserving test refactor. Coverage thresholds, the eval golden gate, and product behavior are unchanged, and cross-workspace parallelism/sharding is explicitly deferred.
@@ -103,3 +86,21 @@ PRD documentation tooling: system-map catalog, detail files, the decisions.md ro
   - continues the token/tooling-discipline lineage of DEC-063 (input structure) and DEC-064 (output verbosity); this decision targets test-execution and test-file structure
   - no `system-map.md` entry is added: the catalog tracks product/code subsystems, not the repo's own test/CI tooling (consistent with DEC-044 / DEC-063 / DEC-064)
   - this decision does not change the "assistant, not judge" framing or any prompt behavior
+
+### DEC-115
+- Decision: TheJudge workflow skill responses stay terse and high-signal by construction — status, decisions, files/IDs touched, verification, and the required handoff — with no document dumps, no restated background, and no long command output. Supersedes DEC-064.
+- Status: confirmed
+- Context: The 2026-08-02 skills refresh (`docs/superpowers/specs/2026-08-02-skills-refresh-design.md`) rewrites every `thejudge-*` skill from a blank page, calibrated for models that no longer need a shared verbosity-profile artifact to stay terse. DEC-064's mechanism — one shared `.cursor/skills/thejudge-output-guidance.md` file referenced by every skill, with `lean`/`standard`/`detailed` profiles — is the exact artifact the refresh deletes. Leaving DEC-064 `confirmed` while removing the file it mandates would put the corpus in self-contradiction and cause a later `thejudge-quality-check` to correctly FAIL against it.
+- Impact:
+  - documentation/process only: no `apps/` code, product UI, backend API, prompt assembly, provider behavior, or PRD content model change
+  - the DEC-064 mechanism is retired and deleted: `.cursor/skills/thejudge-output-guidance.md` and its synced copies, plus the per-skill "Shared output guidance" boilerplate paragraph in every `thejudge-*` skill, are removed
+  - the `lean` / `standard` / `detailed` output-profile vocabulary and its per-session override are dropped; a plain-language request to be more or less verbose needs no named profile system
+  - response discipline becomes inherent to how each skill is written, not delegated to a referenced file — every rewritten `thejudge-*` skill is terse and high-signal by construction
+  - unchanged from DEC-064 and still binding: profile or phrasing never alters required reads, writes, approval gates, PASS/FAIL calls, blocker reporting, verification, status updates, or the required `Next step` handoff; mandatory output stays mandatory
+  - canonical editing remains `.cursor/skills/thejudge-*`; synced copies in `.agents/skills/` and `.claude/skills/` remain implementation artifacts, not edit targets
+- Related requirements:
+  - (none — documentation and process decision; no functional requirement is added or changed)
+- Notes:
+  - DEC-064's body is trimmed to a one-line tombstone in this file; the ID stays resolvable
+  - DEC-063 and DEC-086 reference DEC-064 in their own Notes as lineage — those are historical mentions of a still-resolvable ID and are left alone
+  - no `system-map.md` entry is added: the catalog tracks product/code subsystems, not the PRD's own agent workflow tooling (consistent with DEC-044 / DEC-063 / DEC-064)
