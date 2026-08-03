@@ -17,7 +17,7 @@ This is a recalibration, not a redesign. The pipeline, the skill names, the thre
 | Decision | Choice |
 |---|---|
 | Approach | Contract-first rewrite, blank-page per skill |
-| Invocation | Manual attach only — no model self-selection |
+| Invocation | Model-invocable — no `disable-model-invocation` flag |
 | Runtimes | All three: Cursor, Codex, Claude Code |
 | Skill count | 8 |
 | `thejudge-implement-codex` | Deleted, replaced by platform-neutral `thejudge-implement-parallel` |
@@ -49,8 +49,7 @@ Every skill follows the same shape. Sections are omitted when empty rather than 
 ```markdown
 ---
 name: thejudge-<stage>
-description: <one sentence: what it does + when to attach it>
-disable-model-invocation: true
+description: <what it does + when to use it + what distinguishes it from siblings>
 ---
 
 # <Title>
@@ -91,11 +90,27 @@ What is deliberately **denser**:
 
 ## Invocation model
 
-All 8 skills carry `disable-model-invocation: true`. The agent never self-selects a workflow skill; the operator attaches one per session.
+No skill carries `disable-model-invocation`. All 8 are model-invocable, and all 8 remain explicitly callable (`/thejudge-map-out`, `$thejudge-map-out`). The agent may select a workflow skill when context clearly matches.
 
-This resolves a standing contradiction: `AGENT-SKILLS.md` has always said "attach the matching skill manually," while the flag was stripped from the skills three separate times in git history (`a957abd`, `36a24e1`, `bc5b77b`). The docs were right; the frontmatter was wrong.
+This resolves a standing contradiction in the opposite direction from the docs: `AGENT-SKILLS.md` says "attach the matching skill manually at the start of each agent session," and `workflow-reference.md` says "no router or orchestrator is part of the workflow" — while the flag was stripped from the skills three separate times in git history (`a957abd`, `36a24e1`, `bc5b77b`). The frontmatter was right; the docs were stale. Both files get corrected to describe model-invocable skills that can also be attached explicitly.
 
-**Open item for implementation:** confirm the exact opt-out mechanism for Cursor and Codex. `disable-model-invocation` is the Claude Code frontmatter key. If the other runtimes use a different key or none, document the actual behavior per runtime in `AGENT-SKILLS.md` rather than assuming parity.
+### Descriptions are load-bearing
+
+With model invocation enabled, `description` is the only thing standing between the right skill firing and the wrong one. It carries more weight than any body text.
+
+Every description must answer three things: what the skill does, when to use it, and **what distinguishes it from its nearest sibling**.
+
+Two pairs compete directly and must be written against each other:
+
+| Pair | Distinguishing trigger |
+|---|---|
+| `map-out` vs `map-out-parallel` | Whether slices are being grouped into dependency waves for concurrent work, or sequenced |
+| `implement` vs `implement-parallel` | Whether a single slice is being executed here, or a whole wave dispatched across agents |
+
+Two more risks specific to this skill set:
+
+- **Stage-adjacent misfire.** `refinement`, `quality-check`, and `map-out` all take a work slug and all read the design brief. Each description must name the artifact it *produces* (`DESIGN-BRIEF.md`, a PASS/FAIL report, `GAMEPLAN.md` + slices), since that is what actually separates them.
+- **Destructive misfire.** `cleanup` deletes `PRD/work/<slug>/`. Its description must not fire on general tidying language. It triggers on shipping a completed work package or an explicit corpus-hygiene request — never on "clean this up." The receipt-before-delete gate in the body is the second line of defense, but the description is the first.
 
 ## The two parallel skills
 
@@ -134,7 +149,7 @@ Currently 366 lines. 259 of them are duplication or mechanical expansion.
 
 | Section | Lines | Disposition |
 |---|---|---|
-| Purpose | 4 | Keep |
+| Purpose | 4 | Keep, corrected — currently asserts "humans manually attach… no router," which the model-invocable decision contradicts |
 | Skill Sequence mermaid | 10 | Delete — duplicate of `AGENT-SKILLS.md` |
 | Platform paths + sync | 11 | Delete — duplicate of `AGENT-SKILLS.md` |
 | Session Openers ×3 | 41 | Collapse to the prefix rule |
@@ -170,6 +185,8 @@ The script becomes a plain three-way mirror: `.cursor/skills/` → `.agents/skil
 Rewritten to match. Removes the orchestrator-only section, the exclude-list explanation, and the asymmetric `diff -rq` verification note. Verification simplifies to: both synced trees are byte-identical to canonical.
 
 Keeps the sync contract (edit `.cursor/skills/` only, run `npm run skills:ai-sync`, commit all three trees), the flow diagram, and the per-skill catalog.
+
+Corrects the opening claim that skills are manually attached each session — they are model-invocable and may also be called explicitly.
 
 ## Global config cleanup
 
@@ -234,6 +251,9 @@ These are load-bearing details earned through use. The rewrite must carry every 
 - `grep -rn "implement-codex\|output-guidance" --include="*.md" --include="*.sh" .` returns hits only under `PRD/instructions/receipts/`.
 - Every skill's Next step names a command that resolves to an existing skill.
 - Each of the 23 preserved specifics is locatable in the new skill set.
+- No skill carries `disable-model-invocation`; all 8 appear in the runtime's available-skills listing.
+- Each description names the artifact its skill produces, and each `-parallel` description states what separates it from its base sibling.
+- `cleanup`'s description does not fire on generic tidying language.
 - `~/.cursor/skills/kickoff`, `~/.codex/skills/kickoff`, `~/.agents/skills` no longer exist.
 
 ## Non-goals
