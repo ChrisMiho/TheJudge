@@ -4,7 +4,8 @@ description: >-
   Dispatches every slice in a wave from PRD/work/<slug>/ across concurrent
   agents using the host runtime's parallel-agent mechanism (or sequentially if
   the runtime has none), then independently re-verifies each result before
-  marking it done. Use after map-out-parallel, when a whole wave — not a
+  marking it done. When the last wave finishes every slice, sets
+  STATUS.ship-ready. Use after map-out-parallel, when a whole wave — not a
   single slice — is ready to implement. For one slice, use thejudge-implement;
   for one agent completing all remaining slices unattended, use
   thejudge-implement-all.
@@ -31,12 +32,21 @@ The orchestrator reads these itself, before dispatching anything — orientation
 3. Every selected wave's `PRD/work/<slug>/slice-*.md`
 4. `Files touched` for each selected slice
 5. This skill's `reference.md` for the binding implementation constraints
+6. `PRD/instructions/workflow-reference.md` — package status / STATUS.* duties
 
 ## Writes
 
 - Product code and tests within each dispatched slice's `Files touched`
 - Slice doc status lines (see `reference.md`)
 - `PRD/work/<slug>/README.md` slice table / wave status
+- Package status when every registered slice is `done` (see Status transitions)
+
+## Status transitions
+
+- While any slice in any wave remains not `done`: keep package `active` / `STATUS.active`.
+- When the orchestrator has marked the **last** remaining slice `done`: set
+  `status: ship-ready`, replace marker with `STATUS.ship-ready`, move board
+  row under `## ship-ready` in `PRD/work/STATUS.md`.
 
 ## Gates
 
@@ -52,6 +62,6 @@ The orchestrator reads these itself, before dispatching anything — orientation
 ## Next step
 
 More waves remain → `/thejudge-implement-parallel PRD/work/<slug>/ wave <next>`.
-All slices done → `/thejudge-cleanup PRD/work/<slug>/`.
+All slices done (`ship-ready`) → `/thejudge-cleanup PRD/work/<slug>/`.
 
 (`$thejudge-*` in Codex — sequential mode, per the runtime-without-a-parallel-mechanism gate above.)

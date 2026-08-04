@@ -54,18 +54,26 @@ flowchart LR
 
 ## Skill catalog
 
-| Skill | When | Writes | Next |
-| --- | --- | --- | --- |
-| `thejudge-prepare` | One arbitrary request needs autonomous preparation before an unattended implementation loop | One reviewed `PRD/work/<slug>/` package plus a docs-only preparation branch/PR, or `NO ACTIONABLE PACKAGE` | After human merge, `thejudge-implement-all` |
-| `thejudge-kickoff` | New session or new feature idea | `IDEA.md`, `README.md` (`status: ideation`) if an idea is captured | `thejudge-refinement` |
-| `thejudge-refinement` | An idea needs product definition | `DESIGN-BRIEF.md`, section updates, `README.md` → `status: refined` | `thejudge-quality-check` |
-| `thejudge-quality-check` | After refinement, before slicing | PASS/FAIL report only | `thejudge-map-out` (PASS) or `thejudge-refinement` (FAIL) |
-| `thejudge-map-out` | Quality-check passed; slices are sequential | `GAMEPLAN.md`, `slice-*.md`, `README.md` → `status: active` | `thejudge-implement` or unattended `thejudge-implement-all` |
-| `thejudge-map-out-parallel` | Quality-check passed; slices are independent enough to wave | `GAMEPLAN.md` with wave plan, `slice-*.md`, `README.md` slice table with wave/depends-on columns | `thejudge-implement-parallel` or sequential unattended `thejudge-implement-all` |
-| `thejudge-implement` | Executing one planned slice | Product code and tests for that slice | `thejudge-implement` (next slice) or `thejudge-cleanup` |
-| `thejudge-implement-all` | Executing every remaining slice in one unattended single-agent run | Product code, tests, milestone commits, shared GitHub branch, and review PR | Manual review/merge, then `thejudge-cleanup` after shipping |
-| `thejudge-implement-parallel` | Executing a whole wave of planned slices | Product code and tests for every slice in the wave, orchestrator-verified | `thejudge-implement-parallel` (next wave) or `thejudge-cleanup` |
-| `thejudge-cleanup` | Feature shipped, or explicit corpus hygiene | Receipt under `PRD/instructions/receipts/`, section promotions | Optional `thejudge-kickoff` |
+| Skill | When | Writes | Status | Next |
+| --- | --- | --- | --- | --- |
+| `thejudge-prepare` | One arbitrary request needs autonomous preparation before an unattended implementation loop | One reviewed `PRD/work/<slug>/` package plus a docs-only preparation branch/PR, or `NO ACTIONABLE PACKAGE` | READY → `active`; BLOCKED preserves the furthest valid status | After human merge, `thejudge-implement-all` |
+| `thejudge-kickoff` | New session or new feature idea | `IDEA.md`, `README.md`, `STATUS.ideation`, board row | → `ideation` | `thejudge-refinement` |
+| `thejudge-refinement` | An idea needs product definition | `DESIGN-BRIEF.md`, section updates | `refining` → (on approval) `refined` | `thejudge-quality-check` |
+| `thejudge-quality-check` | After refinement, before slicing | PASS/FAIL report only | PASS keeps `refined`; FAIL → `refining` | `thejudge-map-out` (PASS) or `thejudge-refinement` (FAIL) |
+| `thejudge-map-out` | Quality-check passed; slices are sequential | `GAMEPLAN.md`, `slice-*.md`, README | → `active` | `thejudge-implement` or unattended `thejudge-implement-all` |
+| `thejudge-map-out-parallel` | Quality-check passed; slices are independent enough to wave | `GAMEPLAN.md` with wave plan, `slice-*.md`, README | → `active` | `thejudge-implement-parallel` or sequential unattended `thejudge-implement-all` |
+| `thejudge-implement` | Executing one planned slice | Product code and tests for that slice | Last slice done → `ship-ready` | `thejudge-implement` (next slice) or `thejudge-cleanup` |
+| `thejudge-implement-all` | Executing every remaining slice in one unattended single-agent run | Product code, tests, milestone commits, shared GitHub branch, and review PR | All slices done → `ship-ready` | Manual review/merge, then `thejudge-cleanup` after shipping |
+| `thejudge-implement-parallel` | Executing a whole wave of planned slices | Product code and tests for every slice in the wave, orchestrator-verified | Last slice done → `ship-ready` | `thejudge-implement-parallel` (next wave) or `thejudge-cleanup` |
+| `thejudge-cleanup` | Package is `ship-ready` (or force override), or explicit corpus hygiene | Receipt under `PRD/instructions/receipts/`, section promotions, board strip | Delete folder + remove board row | Optional `thejudge-kickoff` |
+
+Package status signals (skill-maintained on every transition):
+
+- `PRD/work/<slug>/README.md` — `status: <value>`
+- Exactly one empty `PRD/work/<slug>/STATUS.<value>` marker
+- Board: `PRD/work/STATUS.md` (canonical list; `PRD/README.md` has a single-line pointer only)
+
+Full vocabulary and rules: `PRD/instructions/workflow-reference.md`.
 
 ## Session handoffs
 
@@ -82,7 +90,8 @@ literal command, prefixed `/thejudge-*` (Cursor, Claude Code) or `$thejudge-*`
 
 ## Related docs
 
-- `PRD/instructions/workflow-reference.md` — handoff prefix rule, work-folder lifecycle, status vocabulary
+- `PRD/instructions/workflow-reference.md` — handoff prefix rule, work-folder lifecycle, package status vocabulary + STATUS.* markers
+- `PRD/work/STATUS.md` — skill-maintained work-package board
 - `PRD/instructions/preparation-contract.md` — autonomous one-package preparation, assumptions, blockers, and publication
 - `PRD/README.md` — product control plane
 - `.cursor/skills/thejudge-kickoff/reference.md` — PRD quick map

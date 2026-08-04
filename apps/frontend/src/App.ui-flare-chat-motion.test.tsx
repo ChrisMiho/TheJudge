@@ -169,14 +169,13 @@ describe("Frontend - UI flare chat motion integration", () => {
     expect(screen.getByText(inDepthAnswer)).toBeVisible();
     expect(screen.getByRole("button", { name: /View context: Pre Combat Main Phase/ })).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Start Over" }));
-    expect(screen.getByRole("heading", { name: "Context enrichment" })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "View all cards" }));
-    expect(screen.getByRole("button", { name: "Remove Opt" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
 
     await selectDestination(user, "Quick Question");
     expect(screen.getByText(quickFollowUpAnswer)).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Start Over" }));
-    expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Lightning Bolt" })).not.toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "General rules topics" })).toBeInTheDocument();
 
     expect(localStorage.getItem(legacyDensityKey)).toBe("slim");
     expect(document.documentElement).not.toHaveAttribute("data-layout-density");

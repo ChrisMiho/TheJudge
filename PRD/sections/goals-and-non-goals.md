@@ -53,7 +53,6 @@
 ## Planned capabilities (optional, outside the core loop)
 - optional on-device camera card scanning as an alternate input path into existing zone fields (DEC-050..DEC-053); see `system-map.md` "Card scanning" (status: planned)
 - automatic fluid responsive presentation replacing the shipped user-selected density workaround, plus one shared chat-first conversation workspace with adaptive context, reader-safe auto-scroll, and focused motion (DEC-117, DEC-118, REQ-096..REQ-098)
-- standalone **Card Trade Balancer**: a two-sided, frontend-only, ephemeral card-value comparison (per-entry printing + foil toggle + quantity, scan or manual-search input, static-snapshot USD prices) reached via a top-level navigation menu (DEC-087, DEC-088, DEC-089; REQ-064..REQ-067); see `system-map.md` "Trade balancer" and "App navigation" (status: planned)
 - backend-only **Commander Spellbook combo enrichment**: a human-approved static community combo corpus used only for complete contextual matches or narrow explicit combo questions, with deterministic identity/quantity/zone matching and labeled missing pieces (DEC-116, REQ-093..REQ-095); see `system-map.md` "Commander Spellbook combo retrieval" (status: planned)
 
 ## Product risks

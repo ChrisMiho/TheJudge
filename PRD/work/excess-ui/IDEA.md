@@ -1,3 +1,0 @@
-# Excess Player UI
-
-The life-tracker work unintentionally made each player area in the in-depth flow much denser by showing all available fields at once. The player area should default to a compact presentation that keeps only the player name and life total visible, with an explicit way to expand the player’s poison, commander-damage, and other secondary details. Returning to the in-depth flow after navigating elsewhere should restore the compact default instead of reopening the expanded presentation. This work does not change life-tracker calculations, player data, or the meaning of any existing secondary field.

@@ -10,7 +10,7 @@ Its primary feature, **MTG Assistant**, helps users:
 - ask a contextual question about the game state or stack
 - receive a plain-text AI explanation of the likely interaction
 
-Other features (optional or planned) sit alongside MTG Assistant — for example card scanning as an alternate input path, browser-local personalization, and a Card Trade Balancer.
+Other features sit alongside MTG Assistant — for example card scanning as an alternate input path, browser-local personalization, the Card Trade Balancer, Life Tracker, and Send feedback.
 
 ## Product Positioning
 This product is:
@@ -38,7 +38,7 @@ MTG Assistant intentionally keeps context structured but lightweight:
 - optional user question
 - no full legality validation
 
-Beyond MTG Assistant, a standalone **Card Trade Balancer** is a planned optional feature: a frontend-only, ephemeral two-sided card-value comparison (static-snapshot USD prices, per-entry printing + foil + quantity), reached via a top-level navigation menu that switches between it and the MTG Assistant flow (DEC-087, DEC-089). It adds no backend endpoint or prompt/contract change.
+Beyond MTG Assistant, the suite includes a shipped standalone **Card Trade Balancer**: a frontend-only, ephemeral two-sided card-value comparison (static-snapshot USD prices, per-entry printing + foil + quantity), reached via the feature-portal Menu (DEC-087, DEC-088, DEC-095). It adds no backend endpoint or prompt/contract change.
 
 A planned backend-only Commander Spellbook integration adds tightly gated community combo context to existing In-Depth and Quick Question prompts: complete submitted identity/zone matches may enrich automatically, while partial combos appear only for explicit combo questions and must call out missing pieces (DEC-116). It adds no visible combo surface, endpoint, or runtime upstream dependency.
 

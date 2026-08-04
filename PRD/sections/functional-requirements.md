@@ -507,19 +507,20 @@
 ### REQ-029
 - Title: Start over from conversation
 - Priority: medium
-- Description: Users must be able to start over from an active conversation, clearing the thread and unfreezing enrichment editing while preserving all previously entered context.
+- Description: Users must be able to start over from an active In-Depth Question conversation, clearing the conversation and returning to the beginning of the flow so they can stage a new question from scratch, without losing their player roster.
 - Acceptance Criteria:
   - start over button is visible whenever the first decrypt has succeeded and no request is in flight
-  - clicking start over clears the conversation thread
-  - enrichment editing is unfrozen; all previously entered game context, zones, cards, enrichment, and question are preserved
-  - the user is returned to the pre-decrypt enrichment state (submit form and Decrypt Stack button restored)
+  - clicking start over clears the conversation thread and returns the user to the game context step (first step of the flow)
+  - staged game context, selected zones, zone cards, question text, and turn-phase/combat-step staging are cleared
+  - player roster is preserved: player count, display names, life totals, poison/energy/experience, commander damage, and custom counters are unchanged (so a game seeded from or shared with Player Life Tracker is not wiped)
   - no conversation history is persisted after start over
 - Constraints:
-  - do not clear or reset game context, zones, cards, or enrichment on start over
+  - do not clear or reset player roster fields (count, display names, life totals, counters) on start over
 - Dependencies:
   - DEC-040
   - REQ-025
 - Notes:
+  - superseded prior behavior of returning to the enrichment step with staged zones/cards preserved; this requirement now defines a full flow reset instead
 
 ### REQ-030
 - Title: Prompt assembly includes full card metadata in every populated zone
@@ -1498,16 +1499,16 @@
 ### REQ-067
 - Title: Feature portal — top-level app navigation
 - Priority: high
-- Description: The app must provide a first-class **feature portal** that owns top-level navigation chrome — one icon-only Menu button docked in the **top-middle** of every destination header — opening the registered destinations, action entries, and palette-only Theme section. Destinations come from an extensible registry rather than shipping their own entry chrome; the currently registered destinations are **In-Depth Question** and **Quick Question**. Switching is a frontend-only view switch that preserves each destination's in-session state, while only the active destination id persists across reload in the same tab (DEC-095 as amended by DEC-104/DEC-107/DEC-109/DEC-110/DEC-111/DEC-117).
+- Description: The app must provide a first-class **feature portal** that owns top-level navigation chrome — one icon-only Menu button docked in the **top-middle** of every destination header — opening the registered destinations, action entries, and palette-only Theme section. Destinations come from an extensible registry rather than shipping their own entry chrome; registered destinations include **In-Depth Question**, **Quick Question**, **Trade Balancer**, and **Life Tracker**. Switching is a frontend-only view switch that preserves each destination's in-session data (with DEC-120's presentation-only exception for In-Depth secondary-player-details), while only the active destination id persists across reload in the same tab (DEC-095 as amended by DEC-104/DEC-107/DEC-109/DEC-110/DEC-111/DEC-117/DEC-120).
 - Acceptance Criteria:
   - an icon-only navigation Menu button sits in the **top-middle** of every destination header, docks through the destination's inline `PortalSlot`, and scrolls with that header; the viewport-fixed path remains only a defensive fallback for a future headerless destination
   - the portal button, brand block, step-name column where present, and opened Menu have non-overlapping visual bounds and pointer hit areas across automatic responsive widths
   - destinations come from an **extensible registry** (a feature registers a destination entry rather than adding its own nav chrome); adding a destination requires no portal redesign
-  - opening the Menu lists **In-Depth Question** (`mtg-assistant`) and **Quick Question** (`quick-lookup`) with the current destination indicated; Trade Balancer is not registered until its real feature ships
-  - the Menu may include action entries that invoke handlers without switching destination (DEC-104), plus a Theme section containing palette swatches only; no layout/profile control is shown (DEC-110/DEC-117)
-  - selecting a destination switches the active view; selecting the current mode is a no-op that does not reset in-progress state
-  - switching between destinations preserves each destination's in-session state while the app stays loaded; refreshing restores only the active destination id in the same tab while each destination's internal state resets (DEC-111/REQ-090)
-  - In-Depth Question's staged flow and both destinations' request/prompt behavior are unchanged by the portal
+  - opening the Menu lists **In-Depth Question** (`mtg-assistant`), **Quick Question** (`quick-lookup`), **Trade Balancer** (`trade-balancer`), and **Life Tracker** (`player-life-tracker`) with the current destination indicated
+  - the Menu may include action entries that invoke handlers without switching destination (DEC-104; v1: **Send feedback**), plus a Theme section containing palette swatches only; no layout/profile control is shown (DEC-110/DEC-117)
+  - selecting a destination switches the active view; selecting the current mode is a no-op that does not reset in-progress destination data
+  - switching between destinations preserves each destination's in-session data while the app stays loaded, except In-Depth secondary-player-details disclosure resets collapsed per DEC-120/REQ-100; refreshing restores only the active destination id in the same tab while each destination's internal state resets (DEC-111/REQ-090)
+  - In-Depth Question's staged flow and both destinations' request/prompt behavior are unchanged by the portal (presentation-only exceptions called out in DEC-120)
   - any open/close motion is CSS-only and reduced-motion-aware (NFR-006)
 - Constraints:
   - chrome only; no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, `POST /api/ask-ai`, or any product-facing endpoint; no backend route and no server-side navigation state
@@ -1734,7 +1735,7 @@
   - when a card is frozen, a compact trigger naming the card opens its existing read-only card presentation in a bottom sheet below `768px` or right-side drawer at `768px+`; without a card, no empty context trigger or container is rendered
   - the first visible thread bubble is the assistant's answer; the initial user question is included in `conversationHistory` sent to the API but is not shown as a visible bubble
   - follow-up requests send `{ mode: "lookup", question, card: frozen (when one was attached), conversationHistory }` and reuse the same message-count and per-message/character limits as the main flow (REQ-027); Quick Lookup defines no separate limit policy
-  - start over clears the thread and returns to the pre-ask state — with the looked-up card preserved if one was attached, or the core-topics fallback (REQ-079) visible if not
+  - start over clears the thread and returns to the empty pre-ask state — the looked-up card, its search input, and any locked topic are cleared, and the core-topics fallback (REQ-079) is visible
   - mock-provider follow-ups append to the same thread exactly as live responses do
 - Constraints:
   - reuse the shared workspace and existing conversation/card components; no new conversation-limit constants, duplicated context formatting, or divergent chrome
@@ -2271,13 +2272,14 @@
 - Description: The frontend must replace the retired generic preset catalog with one globally shared White/Blue/Black/Red/Green/Colorless profile catalog, preserve the existing four-token theme architecture and global reach, and let Colorless alone carry a remembered, resettable, deliberately uncorrected custom RGB.
 - Acceptance Criteria:
   - the Theme section renders exactly six profiles in this order: White, Blue, Black, Red, Green, Colorless; Blue is the default
-  - the authoritative fixed token matrix is:
-    - White: `accent #F3E6B3`, `accent-strong #C6A15B`, `accent-soft #FFF8DC`, `accent-contrast #09090B`
-    - Blue: `accent #0369A1`, `accent-strong #1D4ED8`, `accent-soft #7DD3FC`, `accent-contrast #FFFFFF`
-    - Black: `accent #6B4F70`, `accent-strong #241F29`, `accent-soft #D8B4E2`, `accent-contrast #FFFFFF`
-    - Red: `accent #B91C1C`, `accent-strong #7F1D1D`, `accent-soft #FCA5A5`, `accent-contrast #FFFFFF`
-    - Green: `accent #15803D`, `accent-strong #14532D`, `accent-soft #86EFAC`, `accent-contrast #FFFFFF`
-    - Colorless: `accent #52525B`, `accent-strong #27272A`, `accent-soft #D4D4D8`, `accent-contrast #FFFFFF`
+  - the authoritative fixed swatch/token matrix is:
+    - White: `swatch #FAF8F2`, `accent #EDE7D6`, `accent-strong #B0A382`, `accent-soft #FAF8F2`, `accent-contrast #09090B`
+    - Blue: `swatch #38E1FF`, `accent #0050D8`, `accent-strong #1E3A9C`, `accent-soft #38E1FF`, `accent-contrast #FFFFFF`
+    - Black: `swatch #C77DFF`, `accent #7C3AED`, `accent-strong #2E1A47`, `accent-soft #C77DFF`, `accent-contrast #FFFFFF`
+    - Red: `swatch #FF4D6D`, `accent #C10230`, `accent-strong #7A0424`, `accent-soft #FF4D6D`, `accent-contrast #FFFFFF`
+    - Green: `swatch #4AFFA0`, `accent #0A7A42`, `accent-strong #0A5C33`, `accent-soft #4AFFA0`, `accent-contrast #FFFFFF`
+    - Colorless: `swatch #71717A`, `accent #52525B`, `accent-strong #27272A`, `accent-soft #E4E4E7`, `accent-contrast #FFFFFF`
+  - each refreshed WUBRG Theme-menu swatch equals that profile's `accent-soft` value; the fixed Colorless swatch remains unchanged
   - each curated profile's `accent-contrast` pairing clears a 4.5:1 contrast ratio at both primary gradient endpoints; Black is manually reviewed on representative dark and light surfaces and remains visibly distinct from Colorless and the slate shell
   - selecting any fixed profile immediately retints every existing accent-token consumer without resetting destination or workflow state; automated representative coverage includes In-Depth Question, Quick Question, Player Life Tracker, feature-portal chrome, and scanner accents
   - fixed-profile token use follows the existing semantic roles: accent text on dark surfaces uses `accent-soft`, accent text on light surfaces uses `accent-strong`, and text on filled accent controls uses `accent-contrast`
@@ -2287,7 +2289,7 @@
   - `Reset to gray` removes only the saved custom RGB and immediately reapplies the fixed Colorless values
   - Violet, Emerald, Amber, and Rose are absent from the catalog; loading one of those or any unsupported selected ID deletes the stored selection and falls back to Blue
   - malformed saved custom RGB is deleted and Colorless uses its fixed gray values; unavailable storage or failed reads/writes do not block render or reset app state
-  - tests cover exact catalog/order/values, Blue default, fixed-profile contrast, Black-versus-Colorless distinction, global representative reach, custom apply/persist/restore/reset, legacy/unknown deletion, malformed custom deletion, and unavailable storage
+  - tests cover exact catalog/order/swatches/token values, refreshed WUBRG swatch-to-`accent-soft` alignment, Blue default, fixed-profile contrast, Black-versus-Colorless distinction, global representative reach, custom apply/persist/restore/reset, legacy/unknown deletion, malformed custom deletion, and unavailable storage
 - Constraints:
   - reuse the single authoritative four-token frontend theme system; do not add token roles, per-flow palettes, per-profile component overrides, or a generated theming/contrast engine
   - do not broaden REQ-060's closed ambient-surface inventory, tint the neutral slate page background, recolor card-identity rings, or change scanner behavior/motion
@@ -2305,7 +2307,8 @@
   - FLOW-007
   - NFR-011
 - Notes:
-  - approved Black direction: near-black strong token with muted plum/mauve identity, not a bright purple theme
+  - approved Black direction: vivid, playful purple with saturated violet primary/highlight tokens and a purple-tinted near-black strong token; this intentionally supersedes the earlier muted plum/mauve, not-bright-purple direction
+  - the neon direction is values-only; it adds no CSS shadow, bloom, halo, animation, profile-specific component rule, or new token role
   - the refinement comparison image is preview-only and is not a shipped product asset
 
 ### REQ-100
@@ -2342,3 +2345,32 @@
   - NFR-001
 - Notes:
   - approved visual direction: `PRD/work/excess-ui/mock-a-nested-player-accordion.png`; the mock's generated text is non-normative
+
+### REQ-101
+- Title: Feature-portal Menu tab prominence (responsive width, thicker border, medium glow)
+- Priority: medium
+- Description: The feature-portal Menu trigger must be easier to notice: widen it with automatic CSS responsive sizing (modest on small viewports, ~25% on desktop breakpoints), thicken its accent border, and add a medium accent glow on every viewport, without changing docking, icon-only labeling, dropdown behavior, or introducing any user layout preference (DEC-121).
+- Acceptance Criteria:
+  - below the `768px` breakpoint, the Menu trigger's horizontal padding (or equivalent width treatment) is approximately 10–15% larger than the pre-change `1rem` (`px-4`) baseline
+  - at and above `768px`, that horizontal padding (or equivalent) is approximately 25% larger than the same pre-change baseline
+  - the trigger's accent border is visually thicker than the pre-change single `border` / `border-accent/55` treatment on every viewport
+  - a medium accent ring and/or box-shadow glow is present on every viewport so the tab reads as primary chrome at a glance (not subtle-only; not strong bloom)
+  - under `prefers-reduced-motion: reduce`, no new decorative motion is required; static border/glow emphasis remains acceptable
+  - the trigger remains icon-only with `aria-label="Switch feature"`; docking via `.portal-slot-tab` / `PortalSlot` stays flush to `.page-card`; dropdown open/select/close behavior is unchanged
+  - primary touch target remains at least 44×44px; no Theme Layout / Desktop/Mobile / density control is introduced
+  - automated or stylesheet assertions cover the responsive width rules, thicker border, and medium glow treatment on the Menu trigger (and existing portal docking tests continue to pass)
+- Constraints:
+  - frontend presentation only; one mobile-first component tree; CSS media queries / fluid values only — no UA sniffing, JS device detection, or persisted layout preference (DEC-117 / REQ-096)
+  - no change to destination registry, action entries, Theme palette section, active-destination persistence, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, backend routes, card metadata, scan behavior, or data pipeline
+  - do not relocate Menu, restore a visible "Menu" text label, redesign the dropdown, or add an animation library
+- Dependencies:
+  - DEC-121
+  - DEC-109
+  - DEC-117
+  - REQ-067
+  - REQ-089
+  - REQ-096
+  - NFR-001
+  - NFR-006
+- Notes:
+  - user-confirmed: automatic CSS breakpoints (not a user setting); medium glow intensity

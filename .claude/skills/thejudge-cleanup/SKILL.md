@@ -1,11 +1,12 @@
 ---
 name: thejudge-cleanup
 description: >-
-  Closes out a shipped work package: verifies slice completion, promotes
-  durable PRD truth, writes a receipt, and deletes PRD/work/<slug>/. Also
-  handles explicit corpus-hygiene sweeps. Use when a feature has shipped or
-  when the user explicitly asks for PRD corpus hygiene — not for general code
-  tidying requests.
+  Closes out a ship-ready work package: verifies slice completion, promotes
+  durable PRD truth, writes a receipt, updates PRD/work/STATUS.md, and deletes
+  PRD/work/<slug>/. Also handles explicit corpus-hygiene sweeps. Use when a
+  feature has shipped (STATUS.ship-ready), when the user force-overrides for
+  cleanup, or when the user explicitly asks for PRD corpus hygiene — not for
+  general code tidying requests.
 ---
 
 # TheJudge Cleanup
@@ -16,23 +17,27 @@ Close out a work package: verify what's done, promote durable docs, write the re
 
 ## Inputs
 
-Work slug.
+Work slug. Optional force override when the user explicitly requests cleanup of a non-`ship-ready` package.
 
 ## Reads
 
 1. `PRD/work/<slug>/README.md` + `GAMEPLAN.md` + slice docs
-2. `PRD/instructions/doc-lifecycle.md`
-3. Relevant codebase paths from slice implementation maps
+2. `PRD/work/<slug>/STATUS.*` marker and `PRD/work/STATUS.md`
+3. `PRD/instructions/doc-lifecycle.md`
+4. `PRD/instructions/workflow-reference.md` — package status / STATUS.* duties
+5. Relevant codebase paths from slice implementation maps
 
 ## Writes
 
 - Promoted durable outcomes in the affected `PRD/sections/*.md`; new decisions go into the relevant `PRD/sections/decisions/<domain>.md` file plus the router index line in `PRD/sections/decisions.md`
 - Receipt at `PRD/instructions/receipts/<slug>-<YYYY-MM-DD>.md` — **written before delete** — containing date, slug, status (shipped | partial | corpus-only), actions taken, every file created/updated/deleted, verification results
 - `PRD/sections/system-map.md` entry flipped `planned`/`partial` → `shipped`, only once both code and the receipt exist
-- `PRD/README.md`, only if navigation changed
+- `PRD/work/STATUS.md` — remove the slug from every section
+- `PRD/README.md`, only if navigation changed (never re-introduce a multi-row work-package table)
 
 ## Ship checklist
 
+- Package is `ship-ready` (`status: ship-ready` + `STATUS.ship-ready`) **or** user explicitly forced cleanup
 - Slice acceptance criteria satisfied and verified
 - Tests updated; `npm run quality:check` green for touched areas
 - Public contract unchanged unless a slice scoped a change
@@ -41,6 +46,7 @@ Work slug.
 
 ## Gates
 
+- **Status gate:** refuse cleanup unless the package is `ship-ready`, or the user explicitly ordered a force override. If refusing, report the current status and next skill.
 - Receipt is written **before** `PRD/work/<slug>/` is deleted. Receipts are durable — never deleted with the work folder.
 - The shipped-vs-planned signal lives only in `sections/system-map.md` — never edit a `DEC`/`REQ` `Status:` field to convey it.
 - `npm run quality:check` green for touched areas, and no secrets committed, before delete.

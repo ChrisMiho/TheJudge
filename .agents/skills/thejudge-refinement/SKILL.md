@@ -3,8 +3,9 @@ name: thejudge-refinement
 description: >-
   Shapes a feature idea into a DESIGN-BRIEF.md plus aligned PRD/sections/
   updates, after up to 3 rounds of clarifying questions and explicit user
-  approval. Use after kickoff, when an idea needs product definition before
-  it can be quality-checked.
+  approval. Sets STATUS.refining while in flux and STATUS.refined on approval.
+  Use after kickoff, when an idea needs product definition before it can be
+  quality-checked.
 ---
 
 # TheJudge Refinement
@@ -36,13 +37,20 @@ guessing.
 3. Relevant `PRD/sections/*.md` for the feature
 4. `PRD/instructions/requirement-format.md`
 5. `PRD/instructions/technical-design-rules.md`
+6. `PRD/instructions/workflow-reference.md` — package status / STATUS.* duties
 
 ## Writes
 
 - `PRD/work/<slug>/DESIGN-BRIEF.md` — scope, decisions, non-goals, REQ/FLOW references
 - Updates to `PRD/sections/` (new `REQ-###`, `FLOW-###`; promote new `DEC-###` bodies into the relevant `PRD/sections/decisions/<domain>.md` file and add the router index line in `PRD/sections/decisions.md`)
 - `PRD/sections/open-questions.md` only for genuine ambiguity (`Q-###`)
-- `PRD/work/<slug>/README.md` → `status: refined`
+- Package status signals (see Status transitions)
+
+## Status transitions
+
+- On start/resume while questions or the brief are in flux: `status: refining`, replace marker with `STATUS.refining`, move board row under `## refining`
+- On **explicit user approval** of the design brief / PRD updates: `status: refined`, replace marker with `STATUS.refined`, move board row under `## refined`
+- Never leave two `STATUS.*` markers in the package folder
 
 ## Gates
 
