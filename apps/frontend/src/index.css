@@ -258,7 +258,7 @@
 }
 
 .conversation-thread {
-  max-height: clamp(18rem, 45dvh, 24rem);
+  max-height: clamp(28rem, 70dvh, 44rem);
   gap: var(--layout-compact-gap);
   padding: var(--layout-content-padding);
 }

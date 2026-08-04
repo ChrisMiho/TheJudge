@@ -136,13 +136,13 @@ export function ConversationThread({ messages }: ConversationThreadProps): JSX.E
         aria-relevant="additions text"
         aria-atomic="false"
         onScroll={handleScroll}
-        className="conversation-thread flex max-h-96 flex-col gap-3 overflow-y-auto rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+        className="conversation-thread flex flex-col gap-3 overflow-y-auto p-4"
       >
         {messages.map((message, index) => {
           const roleClassName =
             message.role === "assistant"
-              ? "max-w-[85%] self-start rounded-2xl rounded-tl-sm bg-zinc-800/80 px-4 py-3 text-sm text-zinc-100"
-              : "max-w-[85%] self-end rounded-2xl rounded-tr-sm border border-accent-strong/30 bg-accent-strong/30 px-4 py-3 text-sm text-accent-contrast";
+              ? "max-w-[85%] self-start text-sm text-zinc-100"
+              : "max-w-[85%] self-end rounded-2xl rounded-tr-sm bg-accent-strong px-4 py-3 text-sm text-accent-contrast";
           const entranceClassName =
             index >= animatedFromIndex ? " conversation-message-enter" : "";
           const isNewestAssistant =

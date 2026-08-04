@@ -1,6 +1,6 @@
 # Slice E — Full-bleed conversation thread
 
-## Status: planned
+## Status: done
 
 ## Goal
 

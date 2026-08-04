@@ -203,7 +203,7 @@ describe("Frontend - MTG Assistant", () => {
       expect(scrollToMock).toHaveBeenLastCalledWith({ top: 640, behavior: "auto" });
     });
 
-    it("uses accent-contrast text on the filled user bubble and a neutral assistant bubble", () => {
+    it("renders a solid, high-contrast user bubble and plain flowing assistant text with no bubble background", () => {
       render(
         <ConversationThread
           messages={[
@@ -217,8 +217,10 @@ describe("Frontend - MTG Assistant", () => {
         .getByText("The stack resolves.")
         .closest("[data-conversation-message-index]");
       const userBubble = screen.getByText("What about hexproof?").parentElement;
-      expect(userBubble).toHaveClass("bg-accent-strong/30", "text-accent-contrast");
-      expect(assistantBubble).toHaveClass("bg-zinc-800/80");
+      expect(userBubble).toHaveClass("bg-accent-strong", "text-accent-contrast");
+      expect(userBubble?.className).not.toContain("bg-accent-strong/30");
+      expect(userBubble?.className).not.toContain("border");
+      expect(assistantBubble?.className).not.toMatch(/\bbg-/);
       expect(assistantBubble).not.toHaveClass("text-accent-contrast");
     });
 
