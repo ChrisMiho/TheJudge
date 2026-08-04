@@ -242,6 +242,63 @@ describe("FeaturePortalMenu reduced motion", () => {
   });
 });
 
+describe("FeaturePortalMenu prominence styles (REQ-101 / DEC-121)", () => {
+  it("wires the trigger button onto the prominence class and drops the old quiet treatment", () => {
+    render(<Harness />);
+
+    const className = screen.getByRole("button", { name: "Switch feature" }).className;
+    expect(className).toContain("portal-menu-trigger");
+    expect(className).not.toContain("border-accent/55");
+    expect(className).not.toContain("px-4");
+  });
+
+  it("defines mobile-first padding within the ~10-15% band above the 1rem baseline", () => {
+    const baseBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-trigger {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-trigger {"))
+    );
+
+    expect(baseBlock).toMatch(/padding-inline:\s*1\.1\d{1,2}rem;/);
+  });
+
+  it("defines a min-width: 768px rule with padding in the ~25% band above the 1rem baseline", () => {
+    const mediaStart = appCss.indexOf("@media (min-width: 768px)");
+    const mediaBlock = appCss.slice(mediaStart, appCss.indexOf("}", appCss.indexOf("}", mediaStart)) + 1);
+
+    expect(mediaBlock).toContain(".portal-menu-trigger");
+    expect(mediaBlock).toMatch(/padding-inline:\s*1\.25rem;/);
+  });
+
+  it("thickens the accent border beyond the pre-change 1px treatment while keeping the flush top edge", () => {
+    const baseBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-trigger {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-trigger {"))
+    );
+
+    expect(baseBlock).toMatch(/border-width:\s*2px;/);
+    expect(baseBlock).toMatch(/border-top-width:\s*0;/);
+    expect(baseBlock).toMatch(/border-color:\s*rgb\(var\(--accent\)[^)]*\);/);
+  });
+
+  it("adds a medium CSS-only accent glow without an animation library", () => {
+    const baseBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-trigger {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-trigger {"))
+    );
+
+    expect(baseBlock).toMatch(/box-shadow:/);
+    expect(baseBlock).toContain("--accent-soft");
+    expect(baseBlock).toContain("--accent-strong");
+    expect(baseBlock).not.toMatch(/animation:/);
+    expect(baseBlock).not.toMatch(/transition:/);
+  });
+
+  it("does not add the trigger to the reduced-motion block since it carries no new decorative motion", () => {
+    const reducedMotionBlock = appCss.slice(appCss.indexOf("@media (prefers-reduced-motion: reduce)"));
+    expect(reducedMotionBlock).not.toContain(".portal-menu-trigger");
+  });
+});
+
 describe("Chrome integration", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
 

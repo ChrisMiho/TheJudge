@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 # center-menu-tab-prominence
@@ -26,7 +26,7 @@ See `DESIGN-BRIEF.md` for approved scope and `GAMEPLAN.md` for architecture, dep
 | Slice | Objective | Depends on | Requirements | Status |
 | --- | --- | --- | --- | --- |
 | [A](slice-a-menu-trigger-prominence.md) | Responsive width + thicker border + medium glow on Menu trigger | — | REQ-101, DEC-121 | done |
-| [B](slice-b-assertions-and-ship.md) | Stylesheet/component assertions, regression, cleanup handoff | A | REQ-101 verification | planned |
+| [B](slice-b-assertions-and-ship.md) | Stylesheet/component assertions, regression, cleanup handoff | A | REQ-101 verification | done |
 
 Sequential: B asserts the selectors and values A introduces on the shared trigger/CSS.
 

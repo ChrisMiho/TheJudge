@@ -1,6 +1,6 @@
 # Slice B — Assertions, regression, and ship closure
 
-## Status: planned
+## Status: done
 
 ## Dependencies
 
