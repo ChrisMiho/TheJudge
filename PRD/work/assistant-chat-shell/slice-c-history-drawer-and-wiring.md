@@ -1,6 +1,6 @@
 # Slice C — History drawer UI, resume flow, and Menu mutual exclusivity
 
-## Status: planned
+## Status: done
 
 ## Goal
 

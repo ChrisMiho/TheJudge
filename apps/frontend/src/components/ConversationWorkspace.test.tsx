@@ -59,7 +59,7 @@ describe("Frontend - Conversation workspace", () => {
     expect(onStartOver).toHaveBeenCalledOnce();
   });
 
-  it("omits optional context, feedback, and Start Over rows without empty containers", () => {
+  it("omits optional context, feedback, history trigger, and Start Over rows without empty containers", () => {
     render(
       <ConversationWorkspace
         messages={[{ role: "assistant", content: "Cardless answer" }]}
@@ -76,9 +76,47 @@ describe("Frontend - Conversation workspace", () => {
 
     const workspace = screen.getByTestId("conversation-workspace");
     expect(within(workspace).queryByText("View context")).not.toBeInTheDocument();
+    expect(within(workspace).queryByText("Conversation history")).not.toBeInTheDocument();
     expect(within(workspace).queryByRole("dialog")).not.toBeInTheDocument();
     expect(within(workspace).queryByRole("button", { name: "Start Over" })).not.toBeInTheDocument();
     expect(within(workspace).getByText("Cardless answer")).toBeInTheDocument();
+  });
+
+  it("renders a full-width history trigger above the context trigger when provided", async () => {
+    const user = userEvent.setup();
+    const onOpen = vi.fn();
+
+    render(
+      <ConversationWorkspace
+        messages={[{ role: "assistant", content: "Cardless answer" }]}
+        historyTrigger={{ label: "In-Depth Question", onOpen }}
+        context={{
+          triggerLabel: "Combat · 1 populated zone",
+          dialogLabel: "Frozen game context",
+          content: <p>Read-only context</p>
+        }}
+        error={null}
+        canRetry={false}
+        retryLabel="Retry"
+        onRetry={vi.fn(async () => undefined)}
+        isFollowUpSubmitting={false}
+        onFollowUp={vi.fn(async () => undefined)}
+        onStartOver={vi.fn()}
+        showStartOver={false}
+      />
+    );
+
+    const workspace = screen.getByTestId("conversation-workspace");
+    const buttons = within(workspace).getAllByRole("button");
+    const historyTriggerButton = within(workspace).getByRole("button", { name: /Conversation history/ });
+    const contextTriggerButton = within(workspace).getByRole("button", {
+      name: "View context: Combat · 1 populated zone"
+    });
+
+    expect(buttons.indexOf(historyTriggerButton)).toBeLessThan(buttons.indexOf(contextTriggerButton));
+
+    await user.click(historyTriggerButton);
+    expect(onOpen).toHaveBeenCalledOnce();
   });
 
   it("preserves a typed composer draft when New response focuses the latest assistant message", async () => {

@@ -4,16 +4,21 @@ import { useAutocompleteSuggestions } from "../../../hooks/useAutocompleteSugges
 import { useAskAiSubmitOrchestration } from "../../../hooks/useAskAiSubmitOrchestration";
 import { useScanCapture } from "../../../hooks/useScanCapture";
 import { buildLookupAskAiRequest } from "../../../lib/contextFlow";
+import type { ConversationHistoryEntry } from "../../../lib/conversationHistory/persistence";
+import { loadHistoryEntries, saveHistoryEntry } from "../../../lib/conversationHistory/persistence";
 import { apiBaseUrl } from "../../../lib/env";
 import { prefersReducedMotion } from "../../../lib/motionPreference";
 import { NO_MATCH_COPY } from "../../../lib/search";
 import type { CardMetadataItem } from "../../../types";
 import { AskAiWaitingPanel } from "../../AskAiWaitingPanel";
 import { CardSelectionPreview } from "../../CardSelectionPreview";
+import { ConversationHistoryDrawer } from "../../ConversationHistoryDrawer";
 import { ConversationWorkspace } from "../../ConversationWorkspace";
 import { PageShell } from "../../PageShell";
 import { ScanCameraSurface } from "../../ScanCameraSurface";
 import { StagedStepHeader } from "../../StagedStepHeader";
+
+const FLOW_LABEL = "Quick Question";
 
 const CARD_METADATA_URL = "/data/cardMetadata.json";
 const CORE_TOPICS_URL = "/data/gameRulesCoreTopics.json";
@@ -46,6 +51,9 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
   const closeScanRef = useRef<() => void>(() => undefined);
   const questionContainerRef = useRef<HTMLFormElement>(null);
   const questionInputRef = useRef<HTMLTextAreaElement>(null);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [historyEntries, setHistoryEntries] = useState<ConversationHistoryEntry[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const {
     error,
     isSubmitting,
@@ -57,10 +65,26 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
     isConversationActive,
     submitAttempt,
     submitFollowUp,
-    startOver
+    startOver,
+    restoreConversation
   } = useAskAiSubmitOrchestration({
     apiBaseUrl,
-    retryCooldownSeconds: RETRY_COOLDOWN_SECONDS
+    retryCooldownSeconds: RETRY_COOLDOWN_SECONDS,
+    onConversationUpdated: (snapshot) => {
+      const existing = loadHistoryEntries().find((entry) => entry.id === snapshot.conversationId);
+      const now = new Date().toISOString();
+      saveHistoryEntry({
+        id: snapshot.conversationId,
+        mode: "lookup",
+        flowLabel: FLOW_LABEL,
+        frozenContext: snapshot.frozenContext,
+        hiddenInitialQuestion: snapshot.hiddenInitialQuestion,
+        visibleMessages: snapshot.visibleMessages,
+        createdAt: existing?.createdAt ?? now,
+        updatedAt: now
+      });
+      setActiveConversationId(snapshot.conversationId);
+    }
   });
 
   useEffect(() => {
@@ -185,7 +209,19 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
     setSelectedCard(null);
     setSearchInput("");
     setOpenTopicId(null);
+    setActiveConversationId(null);
     closeScanRef.current();
+  }
+
+  function openHistory(): void {
+    setHistoryEntries(loadHistoryEntries("lookup"));
+    setIsHistoryOpen(true);
+  }
+
+  function handleSelectHistoryEntry(entry: ConversationHistoryEntry): void {
+    restoreConversation(entry);
+    setActiveConversationId(entry.id);
+    setIsHistoryOpen(false);
   }
 
   const retryLabel = retryCountdown > 0 ? `Retry in ${retryCountdown}s` : "Retry";
@@ -197,8 +233,17 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
       <PageShell>
         <StagedStepHeader stepName="Quick Question" />
 
+        <ConversationHistoryDrawer
+          isOpen={isHistoryOpen}
+          onClose={() => setIsHistoryOpen(false)}
+          entries={historyEntries}
+          activeConversationId={activeConversationId}
+          onSelectEntry={handleSelectHistoryEntry}
+        />
+
         <ConversationWorkspace
           messages={visibleMessages}
+          historyTrigger={{ label: FLOW_LABEL, onOpen: openHistory }}
           context={
             frozenLookupCard
               ? {

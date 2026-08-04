@@ -265,6 +265,29 @@
   min-height: 44px;
 }
 
+.conversation-history-trigger {
+  min-height: 44px;
+}
+
+.conversation-history-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  background: rgb(9 9 11 / 0.72);
+  animation: adaptive-context-overlay-enter var(--motion-fast) var(--motion-ease-out) both;
+}
+
+.conversation-history-surface {
+  width: 100%;
+  max-height: min(85dvh, 48rem);
+  overflow-y: auto;
+  border-radius: 1rem 1rem 0 0;
+  padding: var(--layout-panel-padding);
+  animation: adaptive-context-enter var(--motion-base) var(--motion-ease-emphasized) both;
+}
+
 .adaptive-context-overlay {
   position: fixed;
   inset: 0;
@@ -311,6 +334,17 @@
     width: min(30rem, 90vw);
     max-height: none;
     border-radius: 1rem 0 0 1rem;
+  }
+
+  .conversation-history-overlay {
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+
+  .conversation-history-surface {
+    width: min(30rem, 90vw);
+    max-height: none;
+    border-radius: 0 1rem 1rem 0;
   }
 }
 
@@ -639,6 +673,8 @@ body {
   .conversation-new-response,
   .adaptive-context-overlay,
   .adaptive-context-surface,
+  .conversation-history-overlay,
+  .conversation-history-surface,
   .enrichment-card-enter,
   .card-state-remove {
     animation-delay: 0ms !important;

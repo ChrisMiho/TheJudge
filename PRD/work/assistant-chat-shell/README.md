@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 # assistant-chat-shell
@@ -19,8 +19,8 @@ implementation decisions made during mapping.
 | --- | --- | --- | --- |
 | [A](./slice-a-markdown-answer-rendering.md) | Structured markdown rendering of assistant messages | none | done |
 | [B](./slice-b-history-persistence-layer.md) | Browser-local conversation history storage + hook save/restore API | none | done |
-| [C](./slice-c-history-drawer-and-wiring.md) | History drawer UI, resume flow, Menu mutual exclusivity, dual-consumer wiring | B | planned |
+| [C](./slice-c-history-drawer-and-wiring.md) | History drawer UI, resume flow, Menu mutual exclusivity, dual-consumer wiring | B | done |
 
 ## Next step
 
-`/thejudge-implement PRD/work/assistant-chat-shell/ slice C`
+All slices done. `/thejudge-cleanup PRD/work/assistant-chat-shell/`

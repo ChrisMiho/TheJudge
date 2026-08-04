@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useLeftEdgeDrawer } from "../../lib/portal/leftEdgeDrawerContext";
 import { PortalSlotContext } from "../../lib/portal/slotContext";
 import { isPortalActionEntry, type DestinationId, type PortalEntry } from "../../lib/portal/types";
 import { ThemeSection } from "./ThemeSection";
@@ -39,6 +40,24 @@ export function FeaturePortalMenu({
   const [slotNodes, setSlotNodes] = useState<HTMLDivElement[]>([]);
   const [visibleSlotNode, setVisibleSlotNode] = useState<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { activeDrawer, openDrawer, closeDrawer } = useLeftEdgeDrawer();
+
+  useEffect(() => {
+    if (isOpen) {
+      openDrawer("menu");
+    } else {
+      closeDrawer("menu");
+    }
+  }, [isOpen, openDrawer, closeDrawer]);
+
+  useEffect(() => {
+    // null means "nothing has claimed the shared slot yet" (e.g. this menu's own
+    // openDrawer("menu") call hasn't round-tripped through the provider yet) — only
+    // a different drawer actually claiming the slot should force this one closed.
+    if (activeDrawer !== null && activeDrawer !== "menu") {
+      setIsOpen(false);
+    }
+  }, [activeDrawer]);
 
   const registerSlot = useCallback((node: HTMLDivElement) => {
     setSlotNodes((current) => (current.includes(node) ? current : [...current, node]));

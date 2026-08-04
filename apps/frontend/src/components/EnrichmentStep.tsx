@@ -12,6 +12,7 @@ import { useEnrichmentTargets } from "../hooks/useEnrichmentTargets";
 import type { ConversationMessage, ContextTarget, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { AskAiWaitingPanel } from "./AskAiWaitingPanel";
 import { CardPresentation } from "./CardPresentation";
+import type { ConversationHistoryTriggerDescriptor } from "./ConversationWorkspace";
 import { ConversationWorkspace } from "./ConversationWorkspace";
 import {
   FrozenGameContextDetails,
@@ -52,6 +53,7 @@ type EnrichmentStepProps = {
   frozenGameContext: GameContext | null;
   onFollowUp: (text: string) => Promise<void>;
   onStartOver: () => void;
+  historyTrigger?: ConversationHistoryTriggerDescriptor;
 };
 
 export function EnrichmentStep({
@@ -76,7 +78,8 @@ export function EnrichmentStep({
   visibleMessages,
   frozenGameContext,
   onFollowUp,
-  onStartOver
+  onStartOver,
+  historyTrigger
 }: EnrichmentStepProps): JSX.Element {
   const [viewMode, setViewMode] = useState<EnrichmentViewMode>("wizard");
   const [wizardIndex, setWizardIndex] = useState(0);
@@ -387,6 +390,7 @@ export function EnrichmentStep({
 
           <ConversationWorkspace
             messages={visibleMessages}
+            historyTrigger={historyTrigger}
             context={
               frozenGameContext
                 ? {

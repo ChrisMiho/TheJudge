@@ -3,6 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FeaturePortalMenu } from "./FeaturePortalMenu";
+import { ConversationHistoryDrawer } from "../ConversationHistoryDrawer";
+import { LeftEdgeDrawerProvider } from "../../lib/portal/leftEdgeDrawerContext";
 import type { DestinationId, PortalEntry } from "../../lib/portal/types";
 import { appCss, jsonResponse, getUrlFromRequest } from "../../test/appTestHelpers";
 
@@ -321,6 +323,41 @@ describe("Chrome integration", () => {
     const portalContainerClassName = portalButton.closest("div")?.className ?? "";
     expect(portalContainerClassName).toContain("portal-slot-tab");
     expect(portalContainerClassName).not.toContain("fixed");
+  });
+
+  it("closes an open history drawer when the Menu opens, and vice versa, via the shared left-edge signal", async () => {
+    const user = userEvent.setup();
+
+    function TwoDrawerHarness(): JSX.Element {
+      const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+      return (
+        <LeftEdgeDrawerProvider>
+          <Harness />
+          <button type="button" onClick={() => setIsHistoryOpen(true)}>
+            Open history
+          </button>
+          <ConversationHistoryDrawer
+            isOpen={isHistoryOpen}
+            onClose={() => setIsHistoryOpen(false)}
+            entries={[]}
+            onSelectEntry={vi.fn()}
+          />
+        </LeftEdgeDrawerProvider>
+      );
+    }
+
+    render(<TwoDrawerHarness />);
+
+    await user.click(screen.getByRole("button", { name: "Open history" }));
+    expect(screen.getByRole("dialog", { name: "Conversation history" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Conversation history" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Open history" }));
+    expect(screen.getByRole("dialog", { name: "Conversation history" })).toBeInTheDocument();
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
 });
 });
