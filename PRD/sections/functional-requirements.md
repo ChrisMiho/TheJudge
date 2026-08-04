@@ -897,6 +897,7 @@
   - FLOW-001
 - Notes:
   - refines header chrome only; the cat-wizard image is hidden by default on the game-context screen and revealed session-only after 10 brand clicks (DEC-076, REQ-056)
+  - amended by DEC-122: the step name moves out of the header row entirely into an eyebrow label above each step's own content heading; this requirement's step-name values, ordering, and per-step coverage stay valid, only the position clause is superseded
 
 ### REQ-046
 - Title: Expanded theme palette reach
@@ -1527,6 +1528,7 @@
 - Notes:
   - owned by the `feature-portal` package; hidden placeholders do not count as registered destinations
   - DEC-117/REQ-096 remove only the former density control; palette hosting, destination registry, action entries, and Menu docking remain unchanged
+  - amended by DEC-122: the Menu trigger moves from a top-middle tab to a top-left corner rail, and its dropdown becomes a left-edge sliding drawer; destination registry, action entries, Theme section, in-session state preservation, and reload persistence are all unchanged, only the trigger's position and opened-panel shape are superseded
 
 ### REQ-068
 - Title: Responsive scan-view layout
@@ -2018,6 +2020,7 @@
   - FLOW-001
 - Notes:
   - DEC-117/REQ-096 supersede only the density-control clauses; Menu docking and palette hosting remain unchanged
+  - amended by DEC-122: "docks flush" now describes the top-left corner rail rather than the top-middle tab, and the step-name presentation referenced here moves out of the header into an eyebrow label (REQ-045); the underlying consolidation this requirement establishes (no standalone floating theme control, no fixed-viewport Menu) is otherwise unchanged
 
 ### REQ-090
 - Title: Persist active feature-portal destination across a page refresh
@@ -2349,6 +2352,7 @@
 ### REQ-101
 - Title: Feature-portal Menu tab prominence (responsive width, thicker border, medium glow)
 - Priority: medium
+- Status: superseded outright by DEC-122 — never implemented, and does not apply to the rebuilt top-left corner rail trigger, which uses a different visual language (radial fade vs. border + glow ring). Kept below only for historical/disposition reference.
 - Description: The feature-portal Menu trigger must be easier to notice: widen it with automatic CSS responsive sizing (modest on small viewports, ~25% on desktop breakpoints), thicken its accent border, and add a medium accent glow on every viewport, without changing docking, icon-only labeling, dropdown behavior, or introducing any user layout preference (DEC-121).
 - Acceptance Criteria:
   - below the `768px` breakpoint, the Menu trigger's horizontal padding (or equivalent width treatment) is approximately 10–15% larger than the pre-change `1rem` (`px-4`) baseline
@@ -2374,3 +2378,71 @@
   - NFR-006
 - Notes:
   - user-confirmed: automatic CSS breakpoints (not a user setting); medium glow intensity
+
+### REQ-102
+- Title: Structured markdown answer rendering
+- Priority: high
+- Description: The shared conversation thread must render assistant answers (initial answer and follow-up messages) as structured markdown — headings, lists, emphasis, inline code, tables, code blocks, and links — instead of unformatted plain text, using client-side rendering only.
+- Acceptance Criteria:
+  - assistant messages in `ConversationThread` render markdown headings, ordered/unordered lists, bold/italic emphasis, inline code, fenced code blocks, tables, and links with legible default styling in both light and dark theme profiles
+  - user messages continue to render as plain text (no markdown parsing of user input)
+  - plain-text answers containing no markdown syntax render unchanged from today
+  - rendered output is sanitized: no raw HTML execution, no script/style injection from model output
+  - rendering applies identically wherever `ConversationThread`/`ConversationWorkspace` is used — In-Depth Question, Quick Question, and any future consumer — with no per-flow duplication of rendering logic
+  - long unbroken code blocks or tables scroll horizontally within their own container rather than overflowing or breaking the page layout
+- Constraints:
+  - client-side rendering only; no schema-enforced answer shape; no prompt-assembly changes to request markdown from the model
+  - no change to `AskAiRequest`/`AskAiResponse` shapes, Zod schemas, or provider behavior — `answer` remains a plain string on the wire
+  - reuse one rendering implementation; do not duplicate markdown-parsing logic across flows
+- Dependencies:
+  - DEC-123
+  - DEC-118
+- Notes:
+  - narrows `technical-design-rules.md`'s "preserve plain-text core product response output" constraint to the API/contract layer only
+
+### REQ-103
+- Title: Persistent conversation history list and drawer
+- Priority: high
+- Description: The shared conversation workspace must offer a left history drawer listing auto-saved past conversations, persisted browser-locally on the current device, so a user can browse conversations from earlier in the session or a previous visit.
+- Acceptance Criteria:
+  - any conversation that reaches at least one successful answer auto-saves to a browser-local history list; saving happens on first answer and updates on each subsequent follow-up in that conversation
+  - a history drawer, opened from the shared conversation workspace, lists saved conversations most-recent-first, each showing originating flow, timestamp, and the first question as a preview snippet
+  - the list is capped at the 20 most recent conversations; saving a 21st entry prunes the oldest
+  - leaving an active conversation with at least one successful answer (via Start Over / New conversation) auto-saves it to history before clearing the workspace
+  - storage reads are guarded; a missing, corrupted, or invalid stored value is dropped without breaking the app, mirroring the existing theme-preference fallback pattern
+  - the drawer opens/closes with an explicit control and Escape, contains keyboard focus while open, and returns focus to its trigger on close
+  - no server-side store, account system, or cross-device sync is introduced; history is scoped to one browser on one device
+  - the drawer's trigger is a full-width button in the conversation workspace body, stacked above the context trigger, distinct from the feature-portal Menu's corner-rail trigger (DEC-125)
+  - below `768px` the drawer presents as a bottom sheet; at `768px`+ it presents as a left-side drawer, mirroring DEC-118's context sheet/drawer breakpoint and affordance types (DEC-125)
+  - opening the history drawer while the feature-portal Menu drawer is open closes the Menu drawer first, and vice versa, so the left edge never shows two overlapping panels (DEC-125)
+- Constraints:
+  - frontend-only, browser-local persistence; no backend endpoint or contract change
+  - reuse the DEC-103 (Player Life Tracker) persistence pattern rather than introducing new storage infrastructure
+- Dependencies:
+  - DEC-124
+  - DEC-125
+  - DEC-118
+  - DEC-122
+  - DEC-103
+- Notes:
+
+### REQ-104
+- Title: Resume a saved conversation
+- Priority: high
+- Description: Selecting a saved conversation from the history drawer must restore its frozen context, mode, and full message thread into the active workspace, and re-enable follow-up asking against that restored state exactly as if the conversation were still in progress.
+- Acceptance Criteria:
+  - selecting a history entry loads its stored frozen context (game context or attached card), mode (`game` / `lookup`), and full message thread into the shared conversation workspace
+  - after resuming, the follow-up composer is enabled and behaves identically to a freshly-decrypted conversation: same message-count and per-message/character limits (REQ-027), same frozen-context rules (DEC-040), same retry/error handling
+  - resuming a conversation replaces whatever conversation was previously active in the workspace; if that prior conversation had at least one successful answer, it is auto-saved to history first (REQ-103) before being replaced
+  - resumed frozen context remains read-only; no zone, card, or enrichment editing is introduced by resuming
+  - resuming updates the entry's position to most-recent in the history list on its next successful follow-up
+- Constraints:
+  - no change to `AskAiRequest`/`AskAiResponse` shapes, Zod schemas, prompt assembly, providers, or backend routes
+  - no re-derivation or re-validation of frozen context beyond what was stored at save time
+- Dependencies:
+  - DEC-124
+  - REQ-103
+  - REQ-025
+  - REQ-075
+  - DEC-040
+- Notes:

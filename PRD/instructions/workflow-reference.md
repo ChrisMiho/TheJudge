@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This file is the lean operator reference for TheJudge PRD-driven work. All 10
+This file is the lean operator reference for TheJudge PRD-driven work. All 11
 `thejudge-*` skills are model-invocable and may also be called explicitly —
 see `AGENT-SKILLS.md` for the full catalog, platform paths, and sync
 instructions.
@@ -67,6 +67,7 @@ deleted (cleanup writes the durable receipt, then removes the work folder).
 | `thejudge-quality-check` | PASS: leave `refined`. FAIL: → `STATUS.refining` |
 | `thejudge-map-out` / `map-out-parallel` | → `STATUS.active` |
 | `thejudge-implement` / `implement-all` / `implement-parallel` | Stay `active` until the last remaining slice is `done`, then → `STATUS.ship-ready` |
+| `thejudge-implement-fanout` | Owns no transitions itself — dispatches per-package to `implement-all`/`implement-parallel`, which apply the row above |
 | `thejudge-cleanup` | Gate: refuse unless `ship-ready` (or user force-override). On success: receipt, remove package, strip board row |
 
 ## Work Folder Lifecycle

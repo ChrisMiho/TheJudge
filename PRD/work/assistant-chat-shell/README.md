@@ -1,9 +1,9 @@
 ---
-status: ideation
+status: refined
 ---
 
 # assistant-chat-shell
 
-Modern assistant-style chat shell for In-Depth and Quick Question: left history drawer, centered active thread, context badges, edit/new.
+Structured markdown answer rendering plus persistent, resumable conversation history (left history drawer) on top of the already-shipped chat-first workspace (DEC-118). Absorbed `in-depth-question-ux` (answer formatting) during refinement.
 
-See `IDEA.md` for the original idea.
+See `IDEA.md` for the original idea and `DESIGN-BRIEF.md` for the approved scope.

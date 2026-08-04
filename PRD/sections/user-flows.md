@@ -343,3 +343,26 @@
 - Notes:
   - this flow is prompt enrichment inside the existing Ask AI flows, not a new user-visible screen or API
   - "complete candidate" does not validate mana, commander designation, card state, legality, or prose prerequisites (DEC-116)
+
+### FLOW-016
+- Name: Resume a saved conversation from history
+- Trigger: User opens the shared conversation workspace's history drawer and selects a saved conversation
+- Preconditions:
+  - at least one conversation has previously reached a successful answer and was auto-saved (REQ-103)
+- Main Flow:
+  1. User opens the history drawer from the shared conversation workspace.
+  2. Drawer lists saved conversations most-recent-first, each showing flow, timestamp, and a preview of the first question.
+  3. User selects an entry.
+  4. If the currently active conversation has at least one successful answer, it is auto-saved to history first.
+  5. The selected entry's frozen context (game context or attached card), mode, and full message thread load into the workspace, replacing the previously active conversation.
+  6. The follow-up composer enables; the user can continue asking follow-ups under the same limits and frozen-context rules as a freshly-decrypted conversation.
+  7. On the next successful follow-up in the resumed conversation, its history entry moves to most-recent in the list.
+- Edge Cases:
+  - selected entry's stored data is corrupted or fails validation → entry is dropped from the list without crashing the app
+  - history list exceeds 20 entries → oldest entry is pruned automatically on the next save
+  - user selects the same conversation that is already active → no-op, workspace state unchanged
+  - user starts a brand-new conversation instead of resuming → existing Start Over / New conversation flow applies unchanged (DEC-040/REQ-029), with auto-save of the outgoing conversation per REQ-103
+  - the feature-portal Menu drawer is already open when the user opens the history drawer (or vice versa) → the previously open drawer closes first, so only one left-edge drawer is ever open at a time (DEC-125)
+- Notes:
+  - resumed frozen context stays read-only; no zone/card/enrichment editing is introduced (DEC-040 unchanged)
+  - no backend, contract, or provider behavior changes; this is a frontend state-restoration flow only

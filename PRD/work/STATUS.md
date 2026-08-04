@@ -10,8 +10,8 @@ _(none)_
 
 ## active
 
-- [center-menu-tab-prominence](./center-menu-tab-prominence/)
 - [commander-spellbook-combos](./commander-spellbook-combos/)
+- [center-menu-tab-prominence](./center-menu-tab-prominence/)
 
 ## refining
 
@@ -20,13 +20,11 @@ _(none)_
 
 ## refined
 
-_(none)_
+- [assistant-chat-shell](./assistant-chat-shell/)
 
 ## ideation
 
-- [assistant-chat-shell](./assistant-chat-shell/)
 - [card-collection-manager](./card-collection-manager/)
-- [in-depth-question-ux](./in-depth-question-ux/)
 - [scan-non-english-special-treatments](./scan-non-english-special-treatments/)
 
 ## owner-action
