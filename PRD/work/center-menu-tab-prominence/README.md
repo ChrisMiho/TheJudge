@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 # center-menu-tab-prominence
@@ -24,8 +24,8 @@ See `GAMEPLAN.md` for architecture and data flow.
 | Slice | Objective | Depends on | Status |
 | --- | --- | --- | --- |
 | [A](./slice-a-header-recenter-and-eyebrow.md) | Recenter brand block; relocate step-name into an in-flow `StepEyebrow` above each step's own content | none | done |
-| [B](./slice-b-corner-rail-drawer.md) | Rebuild Menu trigger as a top-left corner rail opening a sliding drawer | A | planned |
+| [B](./slice-b-corner-rail-drawer.md) | Rebuild Menu trigger as a top-left corner rail opening a sliding drawer | A | done |
 
 ## Next step
 
-`/thejudge-implement PRD/work/center-menu-tab-prominence/ slice B`
+`/thejudge-cleanup PRD/work/center-menu-tab-prominence/`

@@ -1,6 +1,6 @@
 # Slice B — Corner-rail trigger and sliding drawer
 
-## Status: planned
+## Status: done
 
 ## Goal
 

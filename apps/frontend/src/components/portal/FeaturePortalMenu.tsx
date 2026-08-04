@@ -102,7 +102,7 @@ export function FeaturePortalMenu({
   const trigger = (
     <div
       ref={containerRef}
-      className={effectiveSlotNode ? "portal-slot-tab relative" : "fixed left-1/2 top-0 z-30 -translate-x-1/2"}
+      className={effectiveSlotNode ? "portal-slot-tab relative" : "fixed left-0 top-0 z-30"}
     >
       <button
         type="button"
@@ -110,20 +110,18 @@ export function FeaturePortalMenu({
         aria-haspopup="true"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((current) => !current)}
-        className="motion-hover motion-press motion-focus flex h-11 items-center gap-2 rounded-b-2xl border border-t-0 border-accent/55 bg-zinc-900/95 px-4 text-sm font-medium text-zinc-100 transition hover:bg-zinc-800/90"
+        className="portal-menu-rail motion-focus border-none font-medium"
       >
-        <span aria-hidden="true">☰</span>
+        <span aria-hidden="true" className="portal-menu-rail-icon">☰</span>
       </button>
 
       {isOpen && (
-        <div className="absolute left-1/2 top-full z-20 w-56 -translate-x-1/2 pt-2">
-          {/* Animation lives on this inner box, not the positioned wrapper above — motion-enter's
-              keyframe sets `transform` directly, which would otherwise clobber -translate-x-1/2. */}
-          <div
-            role="menu"
-            aria-label="Feature destinations"
-            className="portal-menu-motion flex flex-col gap-1 rounded-2xl border border-zinc-700/80 bg-zinc-900/95 p-2 shadow-xl"
-          >
+        <div
+          role="menu"
+          aria-label="Feature destinations"
+          className="portal-menu-drawer portal-menu-drawer-motion bg-zinc-900/95"
+        >
+          <div className="portal-menu-drawer-inner flex flex-col gap-1">
             {entries.map((entry) => {
               const isActive = !isPortalActionEntry(entry) && entry.id === activeDestinationId;
               return (
@@ -164,7 +162,7 @@ export function FeaturePortalMenu({
   return (
     <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot }}>
       {effectiveSlotNode ? createPortal(trigger, effectiveSlotNode) : trigger}
-      <div className={effectiveSlotNode ? undefined : "pt-14"}>{children}</div>
+      <div className={effectiveSlotNode ? undefined : "pt-44"}>{children}</div>
     </PortalSlotContext.Provider>
   );
 }
