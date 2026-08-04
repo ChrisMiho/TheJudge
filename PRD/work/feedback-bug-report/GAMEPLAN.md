@@ -84,7 +84,14 @@ Payload shape (integrations-and-data.md, Feedback Delivery Strategy):
 
 A, B, C are parallel-ready. D starts once B + C land. E is the integration + PRD-promotion slice.
 
-## Owner action required — runs in parallel with implementation, not before it
+## Owner action required — split out to `PRD/work/feedback-delivery-onboarding/`
+
+> The human-interaction steps below now live in their own work package,
+> [`feedback-delivery-onboarding`](../feedback-delivery-onboarding/), so Slices A–E can close out
+> on the engineering track alone. The summary is kept here for context; the actionable checklist is
+> in that folder's `CHECKLIST.md`.
+
+
 
 None of Slices A–E need a real Formspree id to be built, tested, or merged. Delivery (Slice C) is written and verified against an unset/mocked id from the start — the no-op path and the POST path are both exercised with mocked `fetch`, never a live network call — so **UI implementation can kick off immediately** while the owner does Formspree onboarding on their own timeline:
 

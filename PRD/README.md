@@ -110,7 +110,8 @@ Read in this order:
 
 | Slug | Status | Summary |
 |------|--------|---------|
-| [feedback-bug-report](./work/feedback-bug-report/) | ideation | Frontend-only user feedback + bug report: feature-portal action opens a modal, delivered to owner inbox via Formspree with an app-state snapshot |
+| [feedback-bug-report](./work/feedback-bug-report/) | active | Frontend-only user feedback + bug report: feature-portal action opens a modal, delivered to owner inbox via Formspree with an app-state snapshot |
+| [feedback-delivery-onboarding](./work/feedback-delivery-onboarding/) | owner-action | Human-only tail split out of `feedback-bug-report`: create the Formspree form, supply the public form id, run the live-send smoke check |
 | [card-trade-balancer](./work/card-trade-balancer/) | active | Build a frontend-only two-sided card-value comparison with printing-aware prices, scan/manual input, and top-level navigation |
 | [prompt-game-state-enrichment](./work/prompt-game-state-enrichment/) | deferred | Add `gameStateNotes` freeform game-state field and `ADDITIONAL GAME STATE` prompt section (revisit after retrieval + consolidation work) |
 
