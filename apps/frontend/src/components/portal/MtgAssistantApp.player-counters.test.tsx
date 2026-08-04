@@ -186,4 +186,39 @@ describe("Frontend - MTG Assistant", () => {
       lifeTotal: 31
     });
   });
+
+  it("returns to game context on start over while preserving roster/life/counter fields", async () => {
+    const user = userEvent.setup();
+    renderWithSeed(fourPlayerSeed);
+
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advanceToZoneCollectionWithZones(user, ["Stack"]);
+    await selectZoneTab(user, "Stack");
+    await addCardToActiveZone(user, "opt", "Opt");
+    await advanceToContextEnrichmentFromZones(user);
+    await user.type(
+      screen.getByPlaceholderText("How does this resolve?"),
+      "What happens if this resolves?"
+    );
+    await clickDecryptStack(user);
+
+    expect(await screen.findByText("ok")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Start Over" }));
+
+    expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
+    expect(await screen.findByLabelText("Player 1 display name")).toHaveValue("Alice");
+    expect(screen.getByLabelText("Player 1 life total")).toHaveValue("27");
+
+    await expandSecondaryPlayerDetails(user);
+    expect(screen.getByLabelText("Player 1 poison")).toHaveValue("3");
+    expect(screen.getByLabelText("Player 1 counter Monarch amount")).toHaveValue("1");
+
+    await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+    await advanceToZoneCollectionWithZones(user, ["Stack"]);
+    await selectZoneTab(user, "Stack");
+    expect(screen.queryByText("Opt")).not.toBeInTheDocument();
+    await addCardToActiveZone(user, "opt", "Opt");
+    await advanceToContextEnrichmentFromZones(user);
+    expect(screen.getByPlaceholderText("How does this resolve?")).toHaveValue("");
+  });
 });

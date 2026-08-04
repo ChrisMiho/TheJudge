@@ -69,6 +69,7 @@ portal owns app chrome and every feature reaches it as a registered destination.
 - Notes:
   - refines DEC-095; DEC-095's placement, registry, and semantics stay fully resolvable and unchanged
   - non-goals: relocating Menu off top-middle on the 4 staged screens, removing the code-level fixed fallback, redesigning the dropdown contents or destination list, adding scroll-direction-aware show/hide behavior
+  - visual size/border/glow prominence of the Menu trigger is refined by DEC-121 / REQ-101 without changing this decision's docking, icon-only, or placement clauses
 
 ### DEC-110
 - Decision: `ThemeControl`'s palette-swatch picker retires as an independent fixed top-right corner control and folds into the feature-portal Menu dropdown as a **Theme** section, rendered below the destination list. This removes the top-right floating orb entirely, leaving the feature-portal Menu as the suite's one floating/attached chrome affordance (DEC-109). Palette values, persistence, fallback behavior, and every surface that already consumes palette tokens (DEC-066/068/078/081) are unchanged — only where the palette picker lives moves. DEC-117 later removes the former density picker from this hosted Theme section and replaces density with automatic responsive presentation. This decision supersedes DEC-066/068/095's "`ThemeControl` stays at `fixed right-3 top-3`, top-right corner" placement clause; their palette-token/persistence/reach content stays valid and unchanged.
@@ -115,3 +116,26 @@ portal owns app chrome and every feature reaches it as a registered destination.
 - Notes:
   - supersedes only the "nothing is persisted across a page reload" clause of DEC-095/REQ-067/FLOW-010, scoped strictly to the active-destination choice; their registry, placement, and in-session state-preservation content is otherwise unchanged and stays resolvable
   - non-goals: persisting in-progress conversation/staged-context content across a refresh (stays ephemeral, `decisions/conversation-ux.md`), `localStorage`/cross-session durability, URL-based routing, changing the new-session default destination
+
+### DEC-121
+- Decision: The feature-portal Menu trigger (DEC-109) gains a **discoverability presentation pass**: thicker accent border and a **medium** accent glow on every viewport, plus **automatic responsive width** — modest (~10–15%) widen below the `768px` structural breakpoint and ~25% wider at/above it — implemented with mobile-first CSS on the existing single trigger (no Theme/layout preference, no UA sniffing, no separate mobile/desktop trees). This amends only DEC-109's visual quietness; docking, top-middle placement, icon-only label, registry/dropdown behavior, and DEC-117's automatic responsive rules remain in force.
+- Status: confirmed
+- Context: Users reported missing the center Menu tab entirely. The original IDEA asked for ~25% width and a stronger edge; refinement confirmed desktop can take the full ~25% widen while mobile stays milder so the header is not overwhelmed, with the thicker border and medium glow shared across viewports. A user Desktop/Mobile "setting" was explicitly rejected in favor of CSS breakpoints to stay aligned with DEC-117.
+- Impact:
+  - Menu trigger horizontal padding (or equivalent width treatment) increases ~10–15% vs the pre-change `px-4` / `1rem` baseline below `768px`, and ~25% at/above `768px`
+  - border weight increases beyond the pre-change `border` / `border-accent/55` treatment so the tab edge reads clearly on light and dark accent palettes
+  - a medium accent ring and/or box-shadow glow is applied on every viewport so the control reads as primary chrome at a glance; glow is CSS-only and must respect `prefers-reduced-motion` (no new animation library; static emphasis may remain when motion is reduced)
+  - `.portal-slot-tab` flush docking to `.page-card` remains correct; touch target stays ≥44px (NFR-001)
+  - presentation only — no change to destination switching, action entries, Theme section, persistence, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, backend routes, card metadata, scan behavior, or data pipeline
+- Related requirements:
+  - REQ-101
+  - REQ-067
+  - REQ-089
+  - DEC-109
+  - DEC-117
+  - REQ-096
+  - NFR-001
+  - NFR-006
+- Notes:
+  - amends DEC-109 visual treatment only; does not relocate Menu, restore a density/layout preference, or redesign the dropdown
+  - approved glow intensity: medium (clearly glowing accent edge, not subtle-only and not strong bloom)

@@ -10,10 +10,12 @@ _(none)_
 
 ## active
 
+- [center-menu-tab-prominence](./center-menu-tab-prominence/)
 - [commander-spellbook-combos](./commander-spellbook-combos/)
 
 ## refining
 
+- [context-ai-photo-card-id](./context-ai-photo-card-id/)
 - [player-life-tracker-refinement](./player-life-tracker-refinement/)
 
 ## refined
@@ -22,7 +24,10 @@ _(none)_
 
 ## ideation
 
+- [assistant-chat-shell](./assistant-chat-shell/)
 - [card-collection-manager](./card-collection-manager/)
+- [in-depth-question-ux](./in-depth-question-ux/)
+- [scan-non-english-special-treatments](./scan-non-english-special-treatments/)
 
 ## owner-action
 

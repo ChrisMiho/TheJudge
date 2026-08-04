@@ -182,6 +182,10 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
     startOver();
     setQuestion("");
     setLockedTopic(null);
+    setSelectedCard(null);
+    setSearchInput("");
+    setOpenTopicId(null);
+    closeScanRef.current();
   }
 
   const retryLabel = retryCountdown > 0 ? `Retry in ${retryCountdown}s` : "Retry";

@@ -17,6 +17,17 @@ Gate before map-out: report PASS or FAIL against PRD alignment and agent-readine
 
 Work slug.
 
+## Mode
+
+Direct invocation keeps approval-gated trivial fixes below.
+
+When the controlling agent explicitly states `thejudge-prepare is controlling`,
+read `PRD/instructions/preparation-contract.md`, emit the same explicit PASS or
+FAIL verdict, and return every FAIL issue to refinement through
+`thejudge-prepare`, which records the latest result in the package README's
+`Preparation gate` section. Do not self-certify a failed brief or create
+map-out artifacts.
+
 ## Reads
 
 1. `PRD/work/<slug>/DESIGN-BRIEF.md`
@@ -42,12 +53,19 @@ Work slug.
 ## Gates
 
 - Emit **PASS** or **FAIL** — never leave the call implicit.
-- Trivial fixes only with in-session user approval; never write `GAMEPLAN.md` or slice docs; never write product code.
+- In direct mode, trivial fixes require in-session user approval. In
+  orchestrated mode, return every issue to refinement for correction. Never
+  write `GAMEPLAN.md`, slice docs, or product code.
 - Never guess an answer into committed scope.
 
 ## Next step
 
-**PASS** → `/thejudge-map-out PRD/work/<slug>/` (or `/thejudge-map-out-parallel PRD/work/<slug>/` if slices look independent).
-**FAIL** → `/thejudge-refinement PRD/work/<slug>/`, with the issue list included above the handoff.
+Orchestrated mode: return PASS or the complete FAIL issue list to
+`thejudge-prepare` for recording in the package README.
+
+Direct **PASS** → `/thejudge-map-out PRD/work/<slug>/` (or
+`/thejudge-map-out-parallel PRD/work/<slug>/` if slices look independent).
+Direct **FAIL** → `/thejudge-refinement PRD/work/<slug>/`, with the issue list
+included above the handoff.
 
 (`$thejudge-*` in Codex.)
