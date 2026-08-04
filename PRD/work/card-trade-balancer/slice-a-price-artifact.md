@@ -1,6 +1,6 @@
 # Slice A — Printing-level price artifact + lazy loader
 
-## Status: planned
+## Status: done
 
 ## Dependencies
 
