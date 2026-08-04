@@ -150,7 +150,11 @@ describe("Frontend - Conversation workspace", () => {
       await user.click(within(workspace).getByRole("button", { name: "New response" }));
 
       expect(composer).toHaveValue("Keep this draft byte-for-byte.");
-      expect(within(workspace).getByText("Newest answer").parentElement).toHaveFocus();
+      expect(
+        within(workspace)
+          .getByText("Newest answer")
+          .closest("[data-conversation-message-index]")
+      ).toHaveFocus();
     } finally {
       if (originalScrollHeight) {
         Object.defineProperty(HTMLElement.prototype, "scrollHeight", originalScrollHeight);

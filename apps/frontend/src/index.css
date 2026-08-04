@@ -152,6 +152,115 @@
   animation: conversation-new-response var(--motion-fast) var(--motion-ease-emphasized) both;
 }
 
+.conversation-markdown > * + * {
+  margin-top: 0.5em;
+}
+
+.conversation-markdown h1,
+.conversation-markdown h2,
+.conversation-markdown h3,
+.conversation-markdown h4,
+.conversation-markdown h5,
+.conversation-markdown h6 {
+  font-weight: 600;
+  line-height: 1.3;
+  color: #f4f4f5;
+}
+
+.conversation-markdown h1 {
+  font-size: 1.25em;
+}
+
+.conversation-markdown h2 {
+  font-size: 1.15em;
+}
+
+.conversation-markdown h3,
+.conversation-markdown h4,
+.conversation-markdown h5,
+.conversation-markdown h6 {
+  font-size: 1.05em;
+}
+
+.conversation-markdown ul,
+.conversation-markdown ol {
+  padding-left: 1.25em;
+}
+
+.conversation-markdown ul {
+  list-style: disc;
+}
+
+.conversation-markdown ol {
+  list-style: decimal;
+}
+
+.conversation-markdown li + li {
+  margin-top: 0.25em;
+}
+
+.conversation-markdown strong {
+  font-weight: 600;
+}
+
+.conversation-markdown em {
+  font-style: italic;
+}
+
+.conversation-markdown code {
+  border-radius: 0.25rem;
+  background-color: rgb(63 63 70 / 0.6);
+  padding: 0.125em 0.35em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.875em;
+}
+
+.conversation-markdown pre {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  background-color: rgb(24 24 27 / 0.85);
+  padding: 0.75em 1em;
+}
+
+.conversation-markdown pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+.conversation-markdown a {
+  color: rgb(var(--accent-soft));
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.conversation-markdown blockquote {
+  border-left: 2px solid rgb(var(--accent) / 0.4);
+  padding-left: 0.75em;
+  color: #d4d4d8;
+}
+
+.conversation-markdown-table-scroll {
+  overflow-x: auto;
+}
+
+.conversation-markdown table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9em;
+}
+
+.conversation-markdown th,
+.conversation-markdown td {
+  border: 1px solid rgb(63 63 70 / 0.7);
+  padding: 0.35em 0.6em;
+  text-align: left;
+}
+
+.conversation-markdown th {
+  font-weight: 600;
+  background-color: rgb(63 63 70 / 0.35);
+}
+
 .adaptive-context-trigger {
   min-height: 44px;
 }

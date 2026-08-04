@@ -1,6 +1,21 @@
 import { useLayoutEffect, useMemo, useRef, useState, type UIEvent } from "react";
+import ReactMarkdown, { type Components } from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { prefersReducedMotion } from "../lib/motionPreference";
 import type { ConversationMessage } from "../types";
+
+const markdownComponents: Components = {
+  a: ({ children, ...props }) => (
+    <a {...props} target="_blank" rel="noopener noreferrer">
+      {children}
+    </a>
+  ),
+  table: ({ children, ...props }) => (
+    <div className="conversation-markdown-table-scroll">
+      <table {...props}>{children}</table>
+    </div>
+  )
+};
 
 type ConversationThreadProps = {
   messages: ConversationMessage[];
@@ -140,7 +155,15 @@ export function ConversationThread({ messages }: ConversationThreadProps): JSX.E
               tabIndex={isNewestAssistant ? -1 : undefined}
               className={`conversation-message ${roleClassName}${entranceClassName}`}
             >
-              <p className="whitespace-pre-wrap">{message.content}</p>
+              {message.role === "assistant" ? (
+                <div className="conversation-markdown">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <p className="whitespace-pre-wrap">{message.content}</p>
+              )}
             </div>
           );
         })}

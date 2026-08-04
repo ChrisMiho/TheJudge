@@ -1,6 +1,6 @@
 # Slice A — Structured markdown answer rendering
 
-## Status: planned
+## Status: done
 
 ## Goal
 

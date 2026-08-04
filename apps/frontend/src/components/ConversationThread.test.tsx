@@ -160,8 +160,12 @@ describe("Frontend - MTG Assistant", () => {
 
       fireEvent.click(screen.getByRole("button", { name: "New response" }));
 
-      const firstAssistant = screen.getByText("The stack resolves.").parentElement;
-      const newestAssistant = screen.getByText("Hexproof restricts opposing targets.").parentElement;
+      const firstAssistant = screen
+        .getByText("The stack resolves.")
+        .closest("[data-conversation-message-index]");
+      const newestAssistant = screen
+        .getByText("Hexproof restricts opposing targets.")
+        .closest("[data-conversation-message-index]");
       expect(firstAssistant).not.toHaveAttribute("tabindex");
       expect(newestAssistant).toHaveAttribute("tabindex", "-1");
       expect(newestAssistant).toHaveFocus();
@@ -171,7 +175,9 @@ describe("Frontend - MTG Assistant", () => {
 
     it("marks only appended messages for entrance motion across unrelated rerenders", () => {
       const { rerender } = render(<ConversationThread messages={initialMessages} />);
-      const firstAssistant = screen.getByText("The stack resolves.").parentElement;
+      const firstAssistant = screen
+        .getByText("The stack resolves.")
+        .closest("[data-conversation-message-index]");
       expect(firstAssistant).toHaveClass("conversation-message-enter");
 
       const appendedMessages: ConversationMessage[] = [
@@ -207,11 +213,75 @@ describe("Frontend - MTG Assistant", () => {
         />
       );
 
-      const assistantBubble = screen.getByText("The stack resolves.").parentElement;
+      const assistantBubble = screen
+        .getByText("The stack resolves.")
+        .closest("[data-conversation-message-index]");
       const userBubble = screen.getByText("What about hexproof?").parentElement;
       expect(userBubble).toHaveClass("bg-accent-strong/30", "text-accent-contrast");
       expect(assistantBubble).toHaveClass("bg-zinc-800/80");
       expect(assistantBubble).not.toHaveClass("text-accent-contrast");
+    });
+
+    it("renders assistant markdown syntax as structured elements", () => {
+      const markdownMessages: ConversationMessage[] = [
+        {
+          role: "assistant",
+          content:
+            "# Heading\n\n- one\n- two\n\n**bold** and `code`\n\n[link](https://example.com)"
+        }
+      ];
+      render(<ConversationThread messages={markdownMessages} />);
+
+      expect(screen.getByRole("heading", { level: 1, name: "Heading" })).toBeInTheDocument();
+      expect(screen.getAllByRole("listitem")).toHaveLength(2);
+      expect(screen.getByText("bold").tagName).toBe("STRONG");
+      expect(screen.getByText("code").tagName).toBe("CODE");
+      const link = screen.getByRole("link", { name: "link" });
+      expect(link).toHaveAttribute("href", "https://example.com");
+      expect(link).toHaveAttribute("target", "_blank");
+      expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    });
+
+    it("never parses markdown syntax in a user message", () => {
+      const userMarkdownMessages: ConversationMessage[] = [
+        { role: "user", content: "**not bold**" }
+      ];
+      render(<ConversationThread messages={userMarkdownMessages} />);
+
+      expect(screen.getByText("**not bold**")).toBeInTheDocument();
+      expect(document.querySelector("strong")).toBeNull();
+    });
+
+    it("renders a plain-text assistant answer unchanged", () => {
+      const plainMessages: ConversationMessage[] = [
+        { role: "assistant", content: "Hexproof restricts opposing targets." }
+      ];
+      render(<ConversationThread messages={plainMessages} />);
+
+      expect(screen.getByText("Hexproof restricts opposing targets.")).toBeInTheDocument();
+    });
+
+    it("renders raw HTML in an assistant message as literal text, not a live DOM node", () => {
+      const scriptMessages: ConversationMessage[] = [
+        { role: "assistant", content: "before <script>window.pwned = true;</script> after" }
+      ];
+      render(<ConversationThread messages={scriptMessages} />);
+
+      expect(document.querySelector("script[data-testid], .conversation-thread script")).toBeNull();
+      expect(screen.getByText(/window\.pwned = true/)).toBeInTheDocument();
+    });
+
+    it("wraps markdown tables in a horizontally scrollable container", () => {
+      const tableMessages: ConversationMessage[] = [
+        {
+          role: "assistant",
+          content: "| A | B |\n| --- | --- |\n| 1 | 2 |"
+        }
+      ];
+      render(<ConversationThread messages={tableMessages} />);
+
+      const table = screen.getByRole("table");
+      expect(table.parentElement).toHaveClass("conversation-markdown-table-scroll");
     });
   });
 });

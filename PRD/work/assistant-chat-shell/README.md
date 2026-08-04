@@ -15,12 +15,12 @@ implementation decisions made during mapping.
 
 ## Implementation map
 
-| Slice | Objective | Depends on |
-| --- | --- | --- |
-| [A](./slice-a-markdown-answer-rendering.md) | Structured markdown rendering of assistant messages | none |
-| [B](./slice-b-history-persistence-layer.md) | Browser-local conversation history storage + hook save/restore API | none |
-| [C](./slice-c-history-drawer-and-wiring.md) | History drawer UI, resume flow, Menu mutual exclusivity, dual-consumer wiring | B |
+| Slice | Objective | Depends on | Status |
+| --- | --- | --- | --- |
+| [A](./slice-a-markdown-answer-rendering.md) | Structured markdown rendering of assistant messages | none | done |
+| [B](./slice-b-history-persistence-layer.md) | Browser-local conversation history storage + hook save/restore API | none | planned |
+| [C](./slice-c-history-drawer-and-wiring.md) | History drawer UI, resume flow, Menu mutual exclusivity, dual-consumer wiring | B | planned |
 
 ## Next step
 
-`/thejudge-implement PRD/work/assistant-chat-shell/ slice A`
+`/thejudge-implement PRD/work/assistant-chat-shell/ slice B`
