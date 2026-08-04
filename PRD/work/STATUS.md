@@ -14,6 +14,7 @@ _(none)_
 
 ## refining
 
+- [center-menu-tab-prominence](./center-menu-tab-prominence/)
 - [context-ai-photo-card-id](./context-ai-photo-card-id/)
 - [player-life-tracker-refinement](./player-life-tracker-refinement/)
 
@@ -25,7 +26,6 @@ _(none)_
 
 - [assistant-chat-shell](./assistant-chat-shell/)
 - [card-collection-manager](./card-collection-manager/)
-- [center-menu-tab-prominence](./center-menu-tab-prominence/)
 - [in-depth-question-ux](./in-depth-question-ux/)
 - [scan-non-english-special-treatments](./scan-non-english-special-treatments/)
 
