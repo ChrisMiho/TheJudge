@@ -1,6 +1,6 @@
 # Slice B — Conversation history persistence layer
 
-## Status: planned
+## Status: done
 
 ## Goal
 

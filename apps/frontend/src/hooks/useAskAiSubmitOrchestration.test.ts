@@ -682,5 +682,209 @@ describe("useAskAiSubmitOrchestration", () => {
       expect(submittingDuringFollowUp.every((v) => v === false)).toBe(true);
     });
   });
+
+  describe("conversation history persistence hooks", () => {
+    it("returns hiddenInitialQuestion after a successful decrypt", async () => {
+      createCorrelationIdMock.mockReturnValue("corr-1");
+      vi.stubGlobal("fetch", vi.fn(async () => jsonResponse({ answer: "First answer" }, 200)));
+
+      const { result } = renderHook(() =>
+        useAskAiSubmitOrchestration({ apiBaseUrl: "https://api.test", retryCooldownSeconds: 13 })
+      );
+
+      expect(result.current.hiddenInitialQuestion).toBeNull();
+
+      await act(async () => {
+        await result.current.submitAttempt({
+          source: "decrypt",
+          payload: payloadFixture,
+          stackSize: 1,
+          finalQuestion: payloadFixture.question,
+          usedFallbackQuestion: false
+        });
+      });
+
+      expect(result.current.hiddenInitialQuestion).toBe(payloadFixture.question);
+    });
+
+    it("fires onConversationUpdated once with a stable conversationId per successful decrypt and follow-up", async () => {
+      createCorrelationIdMock.mockReturnValue("corr-1");
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () => jsonResponse({ answer: "First answer" }, 200))
+      );
+
+      const onConversationUpdated = vi.fn();
+      const { result } = renderHook(() =>
+        useAskAiSubmitOrchestration({
+          apiBaseUrl: "https://api.test",
+          retryCooldownSeconds: 13,
+          onConversationUpdated
+        })
+      );
+
+      await act(async () => {
+        await result.current.submitAttempt({
+          source: "decrypt",
+          payload: payloadFixture,
+          stackSize: 1,
+          finalQuestion: payloadFixture.question,
+          usedFallbackQuestion: false
+        });
+      });
+
+      expect(onConversationUpdated).toHaveBeenCalledTimes(1);
+      const firstSnapshot = onConversationUpdated.mock.calls[0]?.[0];
+      expect(firstSnapshot.conversationId).toEqual(expect.any(String));
+      expect(firstSnapshot.conversationId.length).toBeGreaterThan(0);
+      expect(firstSnapshot.hiddenInitialQuestion).toBe(payloadFixture.question);
+      expect(firstSnapshot.visibleMessages).toEqual([{ role: "assistant", content: "First answer" }]);
+
+      vi.stubGlobal("fetch", vi.fn(async () => jsonResponse({ answer: "Follow-up answer" }, 200)));
+
+      await act(async () => {
+        await result.current.submitFollowUp("Follow up?");
+      });
+
+      expect(onConversationUpdated).toHaveBeenCalledTimes(2);
+      const secondSnapshot = onConversationUpdated.mock.calls[1]?.[0];
+      expect(secondSnapshot.conversationId).toBe(firstSnapshot.conversationId);
+      expect(secondSnapshot.visibleMessages).toEqual([
+        { role: "assistant", content: "First answer" },
+        { role: "user", content: "Follow up?" },
+        { role: "assistant", content: "Follow-up answer" }
+      ]);
+    });
+
+    it("generates a fresh conversationId for the next decrypt after startOver", async () => {
+      createCorrelationIdMock.mockReturnValue("corr-1");
+      vi.stubGlobal("fetch", vi.fn(async () => jsonResponse({ answer: "First answer" }, 200)));
+
+      const onConversationUpdated = vi.fn();
+      const { result } = renderHook(() =>
+        useAskAiSubmitOrchestration({
+          apiBaseUrl: "https://api.test",
+          retryCooldownSeconds: 13,
+          onConversationUpdated
+        })
+      );
+
+      await act(async () => {
+        await result.current.submitAttempt({
+          source: "decrypt",
+          payload: payloadFixture,
+          stackSize: 1,
+          finalQuestion: payloadFixture.question,
+          usedFallbackQuestion: false
+        });
+      });
+
+      const firstConversationId = onConversationUpdated.mock.calls[0]?.[0].conversationId;
+
+      act(() => {
+        result.current.startOver();
+      });
+
+      await act(async () => {
+        await result.current.submitAttempt({
+          source: "decrypt",
+          payload: payloadFixture,
+          stackSize: 1,
+          finalQuestion: payloadFixture.question,
+          usedFallbackQuestion: false
+        });
+      });
+
+      const secondConversationId = onConversationUpdated.mock.calls[1]?.[0].conversationId;
+      expect(secondConversationId).not.toBe(firstConversationId);
+    });
+
+    it("restoreConversation replaces frozenContext, hiddenInitialQuestion, and visibleMessages, and clears retry/error state", async () => {
+      vi.useFakeTimers();
+      createCorrelationIdMock.mockReturnValue("corr-1");
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () =>
+          jsonResponse({ code: "PROVIDER_UNAVAILABLE", message: "Miho is working on it", retryAfterSeconds: 5 }, 502)
+        )
+      );
+
+      const { result } = renderHook(() =>
+        useAskAiSubmitOrchestration({ apiBaseUrl: "https://api.test", retryCooldownSeconds: 13 })
+      );
+
+      await act(async () => {
+        await result.current.submitAttempt({
+          source: "decrypt",
+          payload: payloadFixture,
+          stackSize: 1,
+          finalQuestion: payloadFixture.question,
+          usedFallbackQuestion: false
+        });
+      });
+
+      expect(result.current.error).toBe("Miho is working on it");
+      expect(result.current.retryCountdown).toBeGreaterThan(0);
+
+      const restoredMessages = [
+        { role: "assistant" as const, content: "Resumed answer" },
+        { role: "user" as const, content: "A follow-up" },
+        { role: "assistant" as const, content: "Resumed follow-up answer" }
+      ];
+
+      act(() => {
+        result.current.restoreConversation({
+          id: "resumed-entry",
+          frozenContext: { kind: "lookup", card: null },
+          hiddenInitialQuestion: "Resumed question",
+          visibleMessages: restoredMessages
+        });
+      });
+
+      expect(result.current.frozenContext).toEqual({ kind: "lookup", card: null });
+      expect(result.current.hiddenInitialQuestion).toBe("Resumed question");
+      expect(result.current.visibleMessages).toEqual(restoredMessages);
+      expect(result.current.error).toBeNull();
+      expect(result.current.retryCountdown).toBe(0);
+      expect(result.current.canRetry).toBe(true);
+    });
+
+    it("submitFollowUp after restoreConversation behaves like a freshly-decrypted conversation", async () => {
+      createCorrelationIdMock.mockReturnValue("corr-resume-followup");
+      const fetchMock = vi.fn(async () => jsonResponse({ answer: "Resumed follow-up answer" }, 200));
+      vi.stubGlobal("fetch", fetchMock);
+
+      const onConversationUpdated = vi.fn();
+      const { result } = renderHook(() =>
+        useAskAiSubmitOrchestration({
+          apiBaseUrl: "https://api.test",
+          retryCooldownSeconds: 13,
+          onConversationUpdated
+        })
+      );
+
+      act(() => {
+        result.current.restoreConversation({
+          id: "resumed-entry",
+          frozenContext: { kind: "lookup", card: null },
+          hiddenInitialQuestion: "Resumed question",
+          visibleMessages: [{ role: "assistant", content: "Resumed answer" }]
+        });
+      });
+
+      await act(async () => {
+        await result.current.submitFollowUp("What about ward?");
+      });
+
+      expect(result.current.visibleMessages).toEqual([
+        { role: "assistant", content: "Resumed answer" },
+        { role: "user", content: "What about ward?" },
+        { role: "assistant", content: "Resumed follow-up answer" }
+      ]);
+      expect(onConversationUpdated).toHaveBeenCalledWith(
+        expect.objectContaining({ conversationId: "resumed-entry" })
+      );
+    });
+  });
 });
 });
