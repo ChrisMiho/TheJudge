@@ -88,7 +88,7 @@ describe("Theme palette changes preserve workflow state", () => {
     await user.click(screen.getByRole("button", { name: "Theme: White" }));
 
     expect(document.documentElement.dataset.theme).toBe("white");
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("243 230 179");
+    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("237 231 214");
     expect(screen.getByRole("button", { name: "Confirm game context" }).className).toContain("from-accent");
   });
 
@@ -210,7 +210,7 @@ describe("Theme palette changes preserve workflow state", () => {
     expect(screen.getByText("Mock answer")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Theme: Green" }));
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("21 128 61");
+    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("10 122 66");
 
     await user.click(screen.getByRole("button", { name: "Theme: Colorless" }));
     expect(document.documentElement.style.getPropertyValue("--accent")).toBe("18 52 86");

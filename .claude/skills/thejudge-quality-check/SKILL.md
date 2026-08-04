@@ -2,9 +2,9 @@
 name: thejudge-quality-check
 description: >-
   Validates a DESIGN-BRIEF.md against PRD alignment and agent-readiness,
-  producing a PASS/FAIL report — never a GAMEPLAN or slice docs. Use after
-  refinement, before map-out, to gate whether a work package is ready to
-  slice.
+  producing a PASS/FAIL report — never a GAMEPLAN or slice docs. On FAIL
+  sets STATUS.refining. Use after refinement, before map-out, to gate whether
+  a work package is ready to slice.
 ---
 
 # TheJudge Quality Check
@@ -23,6 +23,7 @@ Work slug.
 2. Affected `PRD/sections/*.md`
 3. `PRD/sections/decisions.md` router, then relevant `PRD/sections/decisions/<domain>.md` files
 4. `PRD/instructions/technical-design-rules.md`
+5. `PRD/instructions/workflow-reference.md` — package status / STATUS.* duties
 
 ## Checklist
 
@@ -32,6 +33,11 @@ Work slug.
 - [ ] `technical-design-rules.md` constraints are respected (one endpoint, no rules engine, etc.)
 - [ ] Scope is implementable without hidden assumptions
 - [ ] Open questions are reserved for genuine ambiguity only
+
+## Status transitions
+
+- **PASS**: leave package at `refined` (`STATUS.refined` + board under `## refined`). Do not advance to `active` — map-out owns that.
+- **FAIL**: set `status: refining`, replace marker with `STATUS.refining`, move board row under `## refining`.
 
 ## Gates
 

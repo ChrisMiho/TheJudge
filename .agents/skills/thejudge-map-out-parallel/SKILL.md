@@ -3,9 +3,9 @@ name: thejudge-map-out-parallel
 description: >-
   Creates GAMEPLAN.md and lettered slice docs in PRD/work/<slug>/, grouped
   into dependency waves of slices with disjoint files that can be implemented
-  concurrently. Use after quality-check passes when the work has independent
-  slices worth running in parallel — otherwise use thejudge-map-out, which
-  sequences slices without wave grouping.
+  concurrently, and sets STATUS.active. Use after quality-check passes when
+  the work has independent slices worth running in parallel — otherwise use
+  thejudge-map-out, which sequences slices without wave grouping.
 ---
 
 # TheJudge Map Out (Parallel)
@@ -23,13 +23,15 @@ Work slug.
 1. `PRD/work/<slug>/DESIGN-BRIEF.md`
 2. Refined `PRD/sections/` referenced in the brief
 3. `PRD/instructions/doc-lifecycle.md`
-4. This skill's `reference.md` for the slice template, Ship gates block, and wave table format
+4. `PRD/instructions/workflow-reference.md` — package status / STATUS.* duties
+5. This skill's `reference.md` for the slice template, Ship gates block, and wave table format
 
 ## Writes
 
 - `PRD/work/<slug>/GAMEPLAN.md` — architecture, data flow, **wave plan**, verification checklist
 - `PRD/work/<slug>/slice-a-*.md` … `slice-n-*.md`
 - Update `PRD/work/<slug>/README.md` — slice table with wave + depends-on columns, implementation map, `status: active`
+- Empty marker `STATUS.active` (replace any prior STATUS.*); board row under `## active` in `PRD/work/STATUS.md`
 
 ## Gates
 

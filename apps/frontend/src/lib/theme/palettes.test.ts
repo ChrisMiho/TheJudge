@@ -86,41 +86,54 @@ describe("palettes", () => {
 
   it("asserts the approved fixed token values for every profile", () => {
     expect(getPaletteById("white")).toMatchObject({
-      accent: "243 230 179",
-      accentStrong: "198 161 91",
-      accentSoft: "255 224 102",
+      swatch: "#FAF8F2",
+      accent: "237 231 214",
+      accentStrong: "176 163 130",
+      accentSoft: "250 248 242",
       accentContrast: "9 9 11"
     });
     expect(getPaletteById("blue")).toMatchObject({
-      accent: "3 105 161",
-      accentStrong: "29 78 216",
-      accentSoft: "56 189 248",
+      swatch: "#38E1FF",
+      accent: "0 80 216",
+      accentStrong: "30 58 156",
+      accentSoft: "56 225 255",
       accentContrast: "255 255 255"
     });
     expect(getPaletteById("black")).toMatchObject({
-      accent: "107 79 112",
-      accentStrong: "36 31 41",
-      accentSoft: "216 180 254",
+      swatch: "#C77DFF",
+      accent: "124 58 237",
+      accentStrong: "46 26 71",
+      accentSoft: "199 125 255",
       accentContrast: "255 255 255"
     });
     expect(getPaletteById("red")).toMatchObject({
-      accent: "185 28 28",
-      accentStrong: "127 29 29",
-      accentSoft: "255 107 107",
+      swatch: "#FF4D6D",
+      accent: "193 2 48",
+      accentStrong: "122 4 36",
+      accentSoft: "255 77 109",
       accentContrast: "255 255 255"
     });
     expect(getPaletteById("green")).toMatchObject({
-      accent: "21 128 61",
-      accentStrong: "20 83 45",
-      accentSoft: "74 222 128",
+      swatch: "#4AFFA0",
+      accent: "10 122 66",
+      accentStrong: "10 92 51",
+      accentSoft: "74 255 160",
       accentContrast: "255 255 255"
     });
     expect(getPaletteById("colorless")).toMatchObject({
+      swatch: "#71717A",
       accent: "82 82 91",
       accentStrong: "39 39 42",
       accentSoft: "228 228 231",
       accentContrast: "255 255 255"
     });
+  });
+
+  it("aligns each refreshed WUBRG swatch with its accentSoft channel triple", () => {
+    for (const id of ["white", "blue", "black", "red", "green"]) {
+      const palette = getPaletteById(id)!;
+      expect(hexToChannelTriple(palette.swatch)).toBe(palette.accentSoft);
+    }
   });
 
   it("clears 4.5:1 contrast for accentContrast against both accent and accentStrong", () => {

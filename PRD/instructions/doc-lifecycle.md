@@ -10,23 +10,37 @@ These rules govern ephemeral planning markdown under `PRD/` so feature work does
 - `sections/` — product truth
 - `instructions/` — agent process and formatting rules
 - `PRD/README.md` — navigation only
+- `PRD/instructions/receipts/` — ship receipts (never deleted with work folders)
 - Code-adjacent READMEs (for example `apps/backend/src/providers/README.md`, eval fixture READMEs)
 
-**Ephemeral (delete when the slice ships):**
-- `PRD/work/<kebab-slug>/` — scratch notes, spike conclusions, temporary checklists for one slice
+**Ephemeral (delete when the package ships via cleanup):**
+- `PRD/work/<kebab-slug>/` — scratch notes, spike conclusions, temporary checklists for one work package
+- Per-package `STATUS.<status>` markers and package-local README status lines (deleted with the folder)
+- Package rows in `PRD/work/STATUS.md` (board is durable as a file; individual slug rows are removed on cleanup)
 
-## During active work
+## During work
 
-- Create at most one folder per slice: `PRD/work/<kebab-slug>/`
-- Include `PRD/work/<kebab-slug>/README.md` with `status: active` at the top
-- Do not link scratch folders from root `README.md` or `PRD/README.md` until content is promoted
+- Create at most one folder per package: `PRD/work/<kebab-slug>/` (stable slug — never rename the folder to encode status)
+- Include `PRD/work/<kebab-slug>/README.md` with `status: <value>` matching the package status vocabulary
+- Keep exactly one empty marker: `PRD/work/<kebab-slug>/STATUS.<value>`
+- Keep the slug listed under the matching heading in `PRD/work/STATUS.md`
+- Full vocabulary and transition rules: `instructions/workflow-reference.md`
+- Do not maintain a multi-row work-package table in `PRD/README.md` — one pointer to `work/STATUS.md` only
 - Do not recreate removed patterns: `PRD/analysis/`, `PRD/gameplan/`, `PRD/stories/`, feature queues, or story checklists in `PRD/README.md`
 
-## On slice completion
+## Status before delete
+
+A package reaches `ship-ready` when every implementation slice is `done`. Cleanup
+promotes durable truth and deletes only (or primarily) packages in `ship-ready`.
+User may explicitly force cleanup of a non-`ship-ready` package.
+
+## On package completion (cleanup)
 
 1. Promote durable outcomes into the relevant `sections/decisions/<domain>.md` file, the router index line in `sections/decisions.md`, and affected `sections/*.md`
-2. Delete `PRD/work/<kebab-slug>/` entirely
-3. Update `PRD/README.md` only if navigation or read-order guidance changed
+2. Write the receipt under `PRD/instructions/receipts/` **before** deleting the work folder
+3. Delete `PRD/work/<kebab-slug>/` entirely
+4. Remove the slug from `PRD/work/STATUS.md`
+5. Update `PRD/README.md` only if navigation or read-order guidance changed (not to re-list packages)
 
 ## Decision lifecycle
 
@@ -48,11 +62,13 @@ The shipped-vs-planned signal lives in the catalog only. Never edit a `DEC`/`REQ
 ## On abandoned work
 
 - Delete the `PRD/work/<kebab-slug>/` folder without promoting
+- Remove the slug from `PRD/work/STATUS.md`
 - Add a `Q-###` entry in `sections/open-questions.md` only if ambiguity remains for humans
 
 ## Prohibited patterns
 
 - Duplicate execution roadmaps outside `sections/`
-- Backlog or story checklists in `PRD/README.md`
+- Backlog or story checklists in `PRD/README.md` (use `PRD/work/STATUS.md`)
+- Renaming `PRD/work/<slug>/` to encode status
 - `PRD/stories/` or other permanent story backlogs under `PRD/`
 - References to out-of-repo Cursor skills as if they were repo source of truth
