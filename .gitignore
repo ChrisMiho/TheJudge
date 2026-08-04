@@ -4,6 +4,9 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Local git worktrees
+.worktrees/
+
 # Superpowers skill runtime state (brainstorm preview server pid/log files)
 .superpowers/
 
