@@ -43,3 +43,82 @@ Two additive capabilities on top of the already-shipped shared conversation work
 ## Open questions
 
 None outstanding — scope, retention cap (20), resume semantics (fully resumable), and persistence model (browser-local, single-device) were confirmed with the user during refinement. A quality-check pass flagged that the history drawer's narrow-viewport presentation and its collision with DEC-122's in-flight Menu corner rail were undecided; both are now resolved by `DEC-125` (own workspace-body trigger, bottom sheet `<768px` / left drawer `768px`+, mutually exclusive with the Menu drawer).
+
+## Addendum — post-ship visual refinement (2026-08-04)
+
+All three slices shipped and the package reached `ship-ready`. Live review of
+the running dev server against the product owner's original goal — mirroring
+Claude/ChatGPT/Cursor's chat UI — surfaced two gaps not caught by the earlier
+brief or quality-check pass:
+
+1. `DEC-125`'s history trigger shipped exactly as specified (full-width
+   button inside the workspace body) but read as a disconnected, boxy element
+   competing with the thread for space, not an integrated part of the app's
+   navigation chrome.
+2. The conversation thread's boxed/capped-height framing (nested bordered
+   panel, fixed `max-h-96` internal scroll, low-contrast bubbles) read as a
+   form field, not a chat surface.
+
+Direction was worked out interactively via a static HTML mock
+([`mockups/history-icon-and-full-bleed-chat.html`](./mockups/history-icon-and-full-bleed-chat.html))
+iterated through several rounds against the product owner's live feedback,
+including a reference screenshot of Claude's actual desktop UI
+([`example/`](./example/)).
+
+### Outcome
+
+1. **History trigger relocates into the Menu corner rail** (`DEC-126`) —
+   supersedes `DEC-125`'s trigger-placement clause only. The rail's single
+   ambient glow hit-area (`DEC-122`) grows taller and splits into two
+   equal-weight zones divided by a subtle line: Menu on top, History below,
+   same icon style/weight on both so they read as sibling controls. Height is
+   fluid (`clamp()`) rather than a fixed value or a discrete breakpoint —
+   confirmed by inspection that no existing decision governs responsive
+   sizing for the rail at all (today's single-icon rail is a fixed size at
+   every viewport). History's zone renders only on the two conversation-
+   bearing destinations.
+2. **Saved-entry row styling simplified** (`DEC-126`) — plain, unboxed
+   grouped rows with a quiet active/hover highlight, replacing a bordered
+   card per entry. The drawer's open/close mechanic, breakpoint presentation
+   (bottom sheet `<768px` / left drawer `768px`+), and mutual exclusivity
+   with the Menu drawer are explicitly **unchanged** from `DEC-125` — it is
+   still a left-docked sidebar that opens on demand, not a permanently
+   visible panel like Claude's.
+3. **Full-bleed conversation thread** (`DEC-127`) — within the conversation
+   workspace only, the thread fills available height instead of being capped
+   inside a secondary bordered box; the composer becomes a docked rounded
+   pill; assistant/user turns get stronger contrast against the surface and
+   each other. Scoped strictly to the workspace — the outer app shell,
+   header, MOCK-mode banner, and every other destination are unaffected.
+
+### Non-goals (addendum)
+
+- A persistent, always-open desktop sidebar (Claude's actual default) —
+  explicitly declined in favor of keeping `DEC-125`'s on-demand
+  overlay/drawer mechanic, matching the original idea doc's "collapsible
+  drawer" framing.
+- Any change to `DEC-122`'s corner-rail visual language (radial glow, no
+  border) beyond growing its hit-area height to host two zones.
+- Any redesign of the outer app shell, header chrome, MOCK-mode banner, or
+  non-conversation destinations (Life Tracker, Trade Balancer).
+- A shared icon-button or drawer-primitive component extraction (left as a
+  future code-health item).
+
+### Product truth added
+
+- `DEC-126` (`sections/decisions/conversation-ux.md`) — history trigger
+  integrated into the Menu corner rail; supersedes `DEC-125`'s trigger-
+  placement clause only.
+- `DEC-127` (`sections/decisions/conversation-ux.md`) — full-bleed
+  conversation thread presentation, scoped to the workspace.
+- `REQ-103` amended — trigger-placement and entry-row-styling acceptance
+  criteria updated to cite `DEC-126`; retention/resume/persistence semantics
+  unchanged.
+- `REQ-105` (new) — full-bleed conversation thread presentation.
+
+### Open questions
+
+None outstanding. This addendum needs a remap pass (new slice(s) layered on
+the existing shipped `GAMEPLAN.md`) before implementation —
+`/thejudge-quality-check` first, per the standard refined → QC → map-out
+path.

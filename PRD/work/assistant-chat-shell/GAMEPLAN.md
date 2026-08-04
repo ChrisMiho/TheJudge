@@ -171,3 +171,177 @@ save prunes the oldest entry.
 
 A has no dependency on B/C and can be implemented in any order relative to
 them.
+
+## Addendum — post-ship visual refinement (DEC-126 / DEC-127)
+
+A/B/C above shipped. This addendum adds two more slices on top of that
+already-shipped surface, driven by the live product-owner review captured in
+`DESIGN-BRIEF.md`'s addendum and the mock at
+`mockups/history-icon-and-full-bleed-chat.html`.
+
+### Slice D architecture — history trigger relocates into the corner rail (DEC-126)
+
+**The problem this solves.** The history trigger's *button* needs to render
+inside the same DOM subtree `FeaturePortalMenu` already portals into the
+active destination's header (`.portal-menu-rail`, positioned via the existing
+`<PortalSlot />` mechanism), but the trigger's *behavior* (whether it exists
+at all, and what `onOpen` does) is owned by each destination
+(`EnrichmentStep.tsx` / `QuickLookupApp.tsx` via `StagedStepHeader.tsx`), far
+down the tree from where `FeaturePortalMenu` is mounted (`App.tsx`'s
+`PortalShell`). `LeftEdgeDrawerContext` already solved the analogous "far
+apart in the tree" problem for open/close mutual exclusivity; this needs the
+same kind of small context, but for descriptor data instead of open state.
+
+**Mechanism.** Extend the existing `PortalSlotContext`
+(`lib/portal/slotContext.tsx`) rather than inventing a parallel registration
+path: `registerSlot` gains a second argument, a stable
+`getHistoryTrigger: () => ConversationHistoryTriggerDescriptor | undefined`
+getter. `PortalSlot.tsx` gains an optional `historyTrigger` prop; internally
+it stores the latest descriptor in a ref (updated on every render body, no
+effect — the "latest ref" pattern, not new to this codebase's problem shape)
+and passes a `useCallback(() => ref.current, [])`-stable getter into
+`registerSlot` so the registration effect still only runs on mount/unmount,
+exactly like today. `FeaturePortalMenu.tsx` changes `slotNodes` from
+`HTMLDivElement[]` to `{ node: HTMLDivElement; getHistoryTrigger: () => ... }[]`,
+keeps the existing "closest `[hidden]` is null" visibility check unchanged,
+and calls `.getHistoryTrigger()` on the visible entry at render time to
+decide whether to render one rail zone (Menu only, today's shape) or two
+(Menu + History).
+
+Both destination call sites (`EnrichmentStep.tsx:385`,
+`StagedStepHeader.tsx:11`, the latter threaded through a new
+`historyTrigger` prop on `StagedStepHeaderProps` from
+`QuickLookupApp.tsx:235`) pass `historyTrigger={historyTrigger}` next to the
+existing `<PortalSlot />`, reusing the exact same `historyTrigger` prop
+value each already receives today (no new prop plumbing into the
+destinations themselves — only downstream of where they already have it).
+This preserves today's shipped gating for free: the trigger is only ever
+supplied inside the `isConversationActive` branch in both destinations, so
+the rail's History zone still only appears once a conversation is active,
+exactly as it does today with the body button.
+
+`ConversationWorkspace.tsx` drops its `historyTrigger &&` button block
+entirely (`ConversationWorkspace.tsx:58-69`) — the workspace no longer
+renders anything for history; `ConversationHistoryTriggerDescriptor`'s
+`label` field is dropped (it was only ever used for the removed button's
+visible text; `FLOW_LABEL`/`entry.flowLabel` in the drawer's own list
+rendering is unrelated and unaffected) — the two call sites become
+`historyTrigger={{ onOpen: openHistory }}`.
+
+**Rail visuals.** `.portal-menu-rail` (`index.css:71`) currently renders a
+single hit-zone with a text glyph (`☰`, `.portal-menu-rail-icon`,
+`scaleX(1.6)` hack). Per DEC-126's confirmed direction (mock's `.rail.split`
+/ `.rail-zone` rules), add a `.portal-menu-rail-split` variant applied only
+when a History zone is present: height becomes
+`clamp(4.75rem, 4.1rem + 2.5vw, 6.25rem)` (mock's exact values, satisfying
+NFR-001's 44px-per-zone floor at every viewport per DEC-126), split into two
+`flex: 1; min-height: 2.75rem` zones with a `1px` top border on the second
+as the divider. Both icons switch from the current mixed
+text-glyph/none-yet approach to matching inline stroke-SVG icons
+(`viewBox="0 0 24 24"`, `stroke="currentColor"`, `stroke-width="2"`) — three
+horizontal lines for Menu (replacing `☰` + its `scaleX` hack), a
+clock-in-circle for History — this is the first inline-SVG icon in the
+codebase (grep confirms no existing convention to match instead), so follow
+the mock's exact glyphs. `aria-label="Switch feature"` stays on Menu;
+History's button gets `aria-label="Conversation history"`. Destinations
+without a history trigger (Life Tracker, Trade Balancer) keep rendering
+today's unmodified single-zone `.portal-menu-rail`.
+
+**Entry-row styling (same DEC-126, same slice — small, no file overlap with
+the rail work).** `ConversationHistoryDrawer.tsx`'s entry `<button>`
+(`ConversationHistoryDrawer.tsx:156-170`) drops its bordered-card classes
+(`rounded-xl border ... bg-zinc-900/55` / active `bg-zinc-800`) for plain
+unboxed rows with a quiet hover/active background highlight only — scope
+this to exactly REQ-103's acceptance line ("plain, unboxed grouped rows with
+a quiet active/hover highlight"), not the mock's illustrative group-label
+header (the drawer already lists only one mode's entries per the original
+GAMEPLAN's cross-cutting decision #1, so a group label would be redundant).
+
+### Slice E architecture — full-bleed conversation thread (DEC-127)
+
+**Scope constraint that shapes the whole approach.** `.page-shell`
+(`index.css:7`) is `min-height: 100vh` with the *document* scrolling — there
+is no bounded-height ancestor for `.conversation-thread` to flex-grow into.
+Building a true "fills the viewport, internal scroll only" layout (like
+Claude's actual app) would mean restructuring `.page-shell`/`.page-card`
+into a fixed-height flex shell — explicitly out of scope
+(non-goals: "no redesign of the outer app shell", "a persistent, always-open
+desktop sidebar... explicitly declined"). "Full-bleed... within the
+workspace" is therefore scoped to: the thread stops being a small
+fixed-cap box nested in its own bordered sub-panel, and grows substantially
+taller within the existing document-flow/page-scroll model, keeping
+`ConversationThread.tsx`'s own internal `overflow-y: auto` +
+DEC-118 near-bottom/auto-scroll/New-response logic (`ConversationThread.tsx`
+lines 31-128) completely untouched — only the container's height budget and
+bubble/composer presentation change.
+
+- `.conversation-thread` (`index.css:225`): raise the height clamp from
+  `clamp(18rem, 45dvh, 24rem)` to a substantially taller budget (e.g.
+  `clamp(28rem, 70dvh, 44rem)` — tune during implementation against real
+  viewports, the point is "reads as the dominant surface" not an exact
+  number) and drop the nested `rounded-2xl border ... bg-zinc-900/55`
+  panel treatment (`ConversationThread.tsx:139`) so the thread stops
+  reading as a second boxed card inside `.page-card` — it should blend with
+  the workspace surface, not sit inside its own visually near-identical
+  bordered box.
+- Bubbles (`ConversationThread.tsx:143-145`): assistant messages drop their
+  `bg-zinc-800/80` container/padding entirely — plain flowing text,
+  `max-w-[85%] self-start text-sm text-zinc-100`, no background — per
+  DEC-127's "no bubble container" for assistant turns. User messages go from
+  the current translucent `border border-accent-strong/30 bg-accent-strong/30`
+  to a solid, opaque accent bubble (drop the border, raise the fill from
+  `/30` to fully opaque or near it) so user turns read as clearly higher
+  contrast against both the surface and the assistant turns next to them.
+- `FollowUpComposer.tsx`: restructure from the current stacked
+  label/textarea/full-width-button form (`FollowUpComposer.tsx:21-53`) into
+  a single-row rounded-pill control (`border-radius: 999px` equivalent,
+  e.g. Tailwind `rounded-full`) — textarea/input inline with a circular
+  send-icon button (an SVG arrow, consistent with Slice D's new inline-SVG
+  icon convention, replacing the text "Send" label). Keep the "Follow-up
+  question" accessible name as a visually-hidden (`sr-only`) label rather
+  than dropping it, and keep the existing `MAX_QUESTION_CHARS` enforcement
+  and disabled/submitting states — only the visual structure and the
+  character counter's placement change (it doesn't need to be dropped, just
+  fit unobtrusively into the tighter pill layout).
+
+Both slices are additive presentation work with no shared files that would
+force ordering — D touches `FeaturePortalMenu.tsx`, `PortalSlot.tsx`,
+`slotContext.tsx`, `StagedStepHeader.tsx`, `EnrichmentStep.tsx`,
+`QuickLookupApp.tsx`, `ConversationHistoryDrawer.tsx`, `ConversationWorkspace.tsx`
+(trigger removal only), and rail/entry-row CSS; E touches
+`ConversationThread.tsx`, `FollowUpComposer.tsx`, and thread/bubble/composer
+CSS. `ConversationWorkspace.tsx` is the one file both slices touch (D removes
+the old trigger button block; E does not need to touch that file at all,
+since the thread/composer changes are self-contained to their own
+components) — no real overlap risk.
+
+## Verification checklist (addendum)
+
+```bash
+cd apps/frontend && npx vitest run \
+  src/components/portal/FeaturePortalMenu.test.tsx \
+  src/components/portal/PortalSlot.test.tsx \
+  src/components/ConversationWorkspace.test.tsx \
+  src/components/ConversationHistoryDrawer.test.tsx \
+  src/components/EnrichmentStep.test.tsx \
+  src/components/StagedStepHeader.test.tsx \
+  src/components/portal/quick-lookup/QuickLookupApp.test.tsx \
+  src/components/ConversationThread.test.tsx \
+  src/components/FollowUpComposer.test.tsx
+cd apps/frontend && npm run quality:check
+```
+
+Manual (dev server, `npm run dev`, both In-Depth Question and Quick
+Question): confirm the corner rail shows one zone (Menu only) before a
+conversation starts and splits into two zones (Menu + History, divider
+visible) once a conversation is active; confirm both icons render as
+matching stroke-SVGs, not a mixed text-glyph/SVG pair; confirm History still
+opens the same bottom-sheet/left-drawer, still closes an open Menu drawer
+and vice versa; confirm the rail stays usable (no icon overlap/clipping) at
+a narrow (~360px) viewport width; confirm drawer entries render as unboxed
+rows with only the active/hovered one highlighted; confirm the thread now
+fills substantially more vertical space with no inner bordered box, assistant
+text has no bubble background, user turns are solid/high-contrast bubbles,
+and the composer renders as a rounded pill; confirm DEC-118's near-bottom
+auto-scroll and "New response" control still behave identically to before
+this addendum.

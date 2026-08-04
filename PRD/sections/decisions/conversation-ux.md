@@ -165,3 +165,42 @@ Decrypt wait UX and follow-up conversation history behavior.
 - Notes:
   - refines DEC-124's presentation only; retention cap, resume semantics, persistence model, and auto-save behavior are unchanged
   - non-goals: merging history into the Menu drawer, a shared drawer primitive/component extraction (left as a future code-health item), any change to DEC-122's corner rail
+  - trigger placement is superseded by DEC-126; drawer open/close mechanics, breakpoint presentation, and mutual exclusivity with the Menu drawer are unchanged and stay resolvable here
+
+### DEC-126
+- Decision: DEC-125's history-drawer trigger placement is superseded: instead of a full-width button inside the conversation workspace body, the trigger becomes a small icon-only control integrated into the same top-left corner rail as the feature-portal Menu trigger (DEC-109/DEC-122). The rail's single ambient radial-glow hit-area grows taller and splits into two equal-weight hit-zones separated by a subtle divider — Menu on top, History below — both icons rendered at the same neutral color/weight and the same icon style (matching stroke-based glyphs) so they read as sibling controls in one integrated rail, not a primary control with something appended. The rail's height is fluid (CSS `clamp()`, scaling between a minimum that satisfies NFR-001's 44px-per-zone touch-target floor and a modest maximum) rather than a fixed rem value or a discrete mobile/desktop breakpoint switch, consistent with DEC-117's "fluid CSS, structural breakpoints only where layout cannot interpolate" precedent — today's rail has no responsive sizing rule at all (identical fixed size at every viewport), so a two-icon rail needs one and this decision supplies it. The History zone renders only on the two destinations that have history to show (In-Depth Question, Quick Question); Life Tracker and Trade Balancer keep the single-zone Menu-only rail.
+- Status: confirmed
+- Context: Live review of the shipped `DEC-125` trigger against the product owner's stated goal (mirroring Claude/ChatGPT/Cursor's chat UI) found it read as a disconnected, boxy element competing with the thread for vertical space, not an integrated part of the app's navigation chrome. A static HTML mock (`PRD/work/assistant-chat-shell/mockups/history-icon-and-full-bleed-chat.html`) iterated through three integration options — shared glow with split hit-zones, two independent compact icon buttons, and History docked outside the glow entirely — before the product owner confirmed the shared-glow/split-zone direction, then flagged two follow-on issues live against the mock: mismatched icon rendering (a stretched text glyph next to a thin-stroke SVG) reading as visually inconsistent, and no existing decision governing how a taller two-icon rail behaves at narrow viewports (confirmed by inspection: the shipped single-icon rail has zero responsive sizing rules today).
+- Impact:
+  - `ConversationWorkspace.tsx`'s full-width `.conversation-history-trigger` button is removed; a new icon-only history trigger renders in the same header area as the Menu's `PortalSlot` (moving ownership from the workspace body up to each conversation-bearing destination's own header row), present only when a `historyTrigger` is supplied
+  - the rail's ambient glow region (DEC-122) grows from housing one hit-zone to two, divided by a subtle 1px separator; each zone is independently clickable/tappable and meets NFR-001's 44×44px minimum at every viewport via the `clamp()` floor
+  - both icons render as the same stroke-weight glyph style (no mixing a text character with an SVG); Menu keeps its existing accessible name ("Switch feature") and History gets its own ("Conversation history")
+  - opening either control's drawer still closes the other via the existing `LeftEdgeDrawerContext` (DEC-125, unchanged)
+  - no change to DEC-122's corner rail on destinations without history (Life Tracker, Trade Balancer render the original single-zone rail)
+- Related requirements:
+  - REQ-103
+  - DEC-125
+  - DEC-122
+  - DEC-109
+  - DEC-117
+  - NFR-001
+- Notes:
+  - supersedes only DEC-125's trigger-placement clause; DEC-125's drawer open/close mechanics, breakpoint presentation (bottom sheet/left drawer), and mutual exclusivity remain unchanged and authoritative
+  - non-goals: any change to DEC-122's corner-rail visual language (radial glow, no border) beyond growing its hit-area height; a shared icon-button component extraction (left as a future code-health item)
+
+### DEC-127
+- Decision: Within the conversation workspace only (not the outer app shell, header chrome, MOCK-mode banner, or any other destination), the message thread stops being a secondary bordered panel capped at a small fixed height (`max-h-96`) with internal scrolling nested inside the workspace's own bordered card. It instead fills the available vertical space, with the follow-up composer docked at the bottom of that space as a rounded pill control. Assistant and user turns get stronger visual contrast against the surrounding surface and against each other (assistant messages as plain flowing text with no bubble container; user messages as a solid accent-colored right-aligned bubble) so each turn reads as clearly distinct at a glance, closer to the Claude/ChatGPT/Cursor reference the original idea named.
+- Status: confirmed
+- Context: Live review of the shipped conversation workspace against the product owner's "mirror Claude's chat UI" goal found the thread read as a form field, not a chat surface — a small internally-scrolling box nested inside a visually near-identical outer card, with assistant/user bubble backgrounds too close in tone to the surrounding panel to read as separate turns.
+- Impact:
+  - `ConversationThread.tsx`'s fixed `max-h-96` container is replaced with a layout that fills the workspace's available height; the follow-up composer moves from a bordered rectangular field to a docked rounded-pill control at the bottom of that space
+  - assistant message bubbles (`bg-zinc-800/80`) and user message bubbles (currently `bg-accent-strong/30`) get revisited for stronger contrast against both the surface behind them and each other
+  - none of DEC-118's scroll/auto-scroll near-bottom threshold, New response control, reader-safe scroll preservation, or composer-docked-not-viewport-fixed rules change — this decision layers presentation/framing only on top of DEC-118's existing behavior
+  - scoped strictly to the shared conversation workspace (`ConversationWorkspace.tsx`/`ConversationThread.tsx`); the outer app shell (`.page-card`), header, MOCK-mode banner, and every other destination (Life Tracker, Trade Balancer) are unaffected, consistent with this package's non-goal against redesigning unrelated suite chrome
+- Related requirements:
+  - REQ-105
+  - DEC-118
+  - REQ-097
+  - REQ-098
+- Notes:
+  - non-goals: any change to the outer app-shell card/header treatment, MOCK-mode banner, or non-conversation destinations; markdown rendering (DEC-123) and adaptive context trigger (DEC-118) behavior are unchanged, not reopened by this decision

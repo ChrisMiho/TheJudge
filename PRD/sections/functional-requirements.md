@@ -2412,19 +2412,22 @@
   - storage reads are guarded; a missing, corrupted, or invalid stored value is dropped without breaking the app, mirroring the existing theme-preference fallback pattern
   - the drawer opens/closes with an explicit control and Escape, contains keyboard focus while open, and returns focus to its trigger on close
   - no server-side store, account system, or cross-device sync is introduced; history is scoped to one browser on one device
-  - the drawer's trigger is a full-width button in the conversation workspace body, stacked above the context trigger, distinct from the feature-portal Menu's corner-rail trigger (DEC-125)
+  - the drawer's trigger is a small icon integrated into the feature-portal Menu's corner rail (DEC-122), stacked below the Menu icon within the same fluid-height ambient glow hit-area, rendered only on destinations that have history to show (DEC-126)
   - below `768px` the drawer presents as a bottom sheet; at `768px`+ it presents as a left-side drawer, mirroring DEC-118's context sheet/drawer breakpoint and affordance types (DEC-125)
   - opening the history drawer while the feature-portal Menu drawer is open closes the Menu drawer first, and vice versa, so the left edge never shows two overlapping panels (DEC-125)
+  - saved-conversation entries render as plain, unboxed grouped rows with a quiet active/hover highlight rather than a bordered card per entry (DEC-126)
 - Constraints:
   - frontend-only, browser-local persistence; no backend endpoint or contract change
   - reuse the DEC-103 (Player Life Tracker) persistence pattern rather than introducing new storage infrastructure
 - Dependencies:
   - DEC-124
   - DEC-125
+  - DEC-126
   - DEC-118
   - DEC-122
   - DEC-103
 - Notes:
+  - trigger placement and entry row styling refined by DEC-126 during post-ship visual refinement; retention/resume/persistence semantics unchanged
 
 ### REQ-104
 - Title: Resume a saved conversation
@@ -2446,3 +2449,23 @@
   - REQ-075
   - DEC-040
 - Notes:
+
+### REQ-105
+- Title: Full-bleed conversation thread presentation
+- Priority: medium
+- Description: The shared conversation thread must fill the workspace's available vertical space instead of being nested inside a secondary bordered panel capped at a small fixed height, and assistant/user turns must read as clearly visually distinct, so the conversation surface reads as a chat interface rather than a boxed form field.
+- Acceptance Criteria:
+  - the message thread expands to use the conversation workspace's available height instead of a fixed `max-h-96`-equivalent capped scroll box nested inside a second bordered panel
+  - the follow-up composer renders as a docked rounded-pill control at the bottom of that space rather than a bordered rectangular field
+  - assistant messages render as plain flowing text with no bubble container; user messages render as a solid, higher-contrast right-aligned bubble; both are visually distinguishable from the surrounding surface and from each other at a glance
+  - this presentation applies only within the conversation workspace (`ConversationWorkspace.tsx`/`ConversationThread.tsx`); the outer app shell/card, header, MOCK-mode banner, and every other destination (Life Tracker, Trade Balancer) are unaffected
+- Constraints:
+  - presentation only; no change to when messages enter application state, message limits, request timing, or provider behavior
+  - does not alter DEC-118's near-bottom auto-scroll threshold, New response control, or reader-safe scroll-position preservation
+- Dependencies:
+  - DEC-127
+  - DEC-118
+  - REQ-097
+  - REQ-098
+- Notes:
+  - added during post-ship visual refinement against the product owner's goal of mirroring Claude/ChatGPT/Cursor's chat UI
