@@ -226,14 +226,68 @@ describe("FeaturePortalMenu", () => {
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
 
-  it("is positioned top-middle, distinct from right-corner chrome", () => {
+  it("is positioned top-left, distinct from right-corner chrome", () => {
     render(<Harness />);
 
     const container = screen.getByRole("button", { name: "Switch feature" }).closest("div");
-    expect(container?.className).toContain("left-1/2");
-    expect(container?.className).toContain("-translate-x-1/2");
+    expect(container?.className).toContain("fixed");
+    expect(container?.className).toContain("left-0");
     expect(container?.className).toContain("top-0");
+    expect(container?.className).not.toContain("left-1/2");
+    expect(container?.className).not.toContain("-translate-x-1/2");
     expect(container?.className).not.toContain("right-3");
+  });
+
+  it("renders the trigger as a borderless radial-gradient rail with no separate button chrome layered on top", () => {
+    render(<Harness />);
+
+    const button = screen.getByRole("button", { name: "Switch feature" });
+    expect(button.className).toContain("portal-menu-rail");
+    expect(button.className).toContain("border-none");
+    expect(button.className).not.toContain("border-accent");
+    expect(button.className).not.toContain("bg-zinc-900");
+  });
+
+  it("darkens the same rail gradient on hover/expanded instead of adding a border or separate chrome layer", () => {
+    const baseBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-rail {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail {"))
+    );
+    const hoverBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-rail:hover"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail:hover"))
+    );
+
+    expect(baseBlock).toMatch(/radial-gradient\(/);
+    expect(hoverBlock).toContain('[aria-expanded="true"]');
+    expect(hoverBlock).toMatch(/radial-gradient\(/);
+    expect(hoverBlock).not.toContain("border");
+  });
+
+  it("opens a partial-height drawer positioned under the corner rail, not a centered dropdown box", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+
+    const menu = screen.getByRole("menu");
+    expect(menu.className).toContain("portal-menu-drawer");
+    expect(menu.className).not.toContain("left-1/2");
+    expect(menu.className).not.toContain("-translate-x-1/2");
+
+    const drawerBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-drawer {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-drawer {"))
+    );
+    expect(drawerBlock).toContain("left: 0");
+    expect(drawerBlock).toMatch(/max-height:/);
+
+    const enterKeyframe = appCss.slice(
+      appCss.indexOf("@keyframes portal-menu-drawer-enter"),
+      appCss.indexOf("}", appCss.indexOf("@keyframes portal-menu-drawer-enter") + 200) + 1
+    );
+    expect(enterKeyframe).toContain("translateX(-100%)");
+    expect(enterKeyframe).toContain("translateX(0)");
   });
 });
 
@@ -241,6 +295,11 @@ describe("FeaturePortalMenu reduced motion", () => {
   it("covers the portal menu open animation in the prefers-reduced-motion block", () => {
     const reducedMotionBlock = appCss.slice(appCss.indexOf("@media (prefers-reduced-motion: reduce)"));
     expect(reducedMotionBlock).toContain(".portal-menu-motion");
+  });
+
+  it("covers the drawer's slide transition in the prefers-reduced-motion block", () => {
+    const reducedMotionBlock = appCss.slice(appCss.indexOf("@media (prefers-reduced-motion: reduce)"));
+    expect(reducedMotionBlock).toContain(".portal-menu-drawer-motion");
   });
 });
 
@@ -262,7 +321,7 @@ describe("Chrome integration", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders the portal button inline in the staged step header, between the brand and the step name", async () => {
+  it("renders the portal button inline in the staged step header, ahead of the centered brand and the step eyebrow", async () => {
     const { default: App } = await import("../../App");
     render(<App />);
 
@@ -278,8 +337,10 @@ describe("Chrome integration", () => {
     const portalContainerClassName = portalButton.closest("div")?.className ?? "";
     expect(portalContainerClassName).toContain("portal-slot-tab");
     expect(portalContainerClassName).not.toContain("fixed");
-    expect(brand.compareDocumentPosition(portalButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(portalButton.compareDocumentPosition(stepHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // Header grid: PortalSlot (left column) precedes the centered brand block; the
+    // step-name eyebrow now renders outside the header, above the step's own content.
+    expect(portalButton.compareDocumentPosition(brand) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(brand.compareDocumentPosition(stepHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
     const user = userEvent.setup();
     await user.click(portalButton);

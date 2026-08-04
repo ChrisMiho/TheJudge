@@ -21,6 +21,7 @@ import {
 import { PageShell } from "./PageShell";
 import { PortalSlot } from "./portal/PortalSlot";
 import { StagedStepHeader } from "./StagedStepHeader";
+import { StepEyebrow } from "./StepEyebrow";
 
 const MAX_QUESTION_CHARS = 300;
 
@@ -381,11 +382,11 @@ export function EnrichmentStep({
     return (
       <PageShell>
           <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-1">
+            <PortalSlot />
             <h1 className="bg-gradient-to-r from-accent-soft to-accent-strong bg-clip-text text-3xl font-bold tracking-tight text-transparent">
               TheJudge
             </h1>
-            <PortalSlot />
-            <div />
+            <div aria-hidden="true" />
           </header>
 
           <ConversationWorkspace
@@ -421,7 +422,8 @@ export function EnrichmentStep({
 
   return (
     <PageShell>
-        <StagedStepHeader stepName="Context enrichment" />
+        <StagedStepHeader />
+        <StepEyebrow stepName="Context enrichment" />
 
         <div className="flex items-center justify-between gap-3">
           {totalCards > 0 && !hasAnswer && (

@@ -50,12 +50,108 @@
   padding: var(--layout-panel-padding);
 }
 
-/* Lifts the inline feature-portal tab (rendered in normal flow inside the header's
-   grid, see FeaturePortalMenu/PortalSlot) up so its top edge meets .page-card's
-   border — the negated mirror of .page-card's fluid padding-top, so the tab
-   stays flush with the border at every viewport width. */
+/* Lifts and shifts the inline feature-portal corner rail (rendered in normal flow
+   inside the header's left grid column, see FeaturePortalMenu/PortalSlot) so it
+   sits flush with .page-card's own top-left border — the negated mirror of
+   .page-card's fluid padding on both sides, so the rail (and the drawer, itself
+   anchored to this same container) meet the card's edges with no gap at any
+   viewport width. The previous top-middle tab only needed the vertical half of
+   this (nothing to its left to be flush with); the corner rail needs both. */
 .portal-slot-tab {
   margin-top: calc(var(--layout-panel-padding) * -1);
+  margin-left: calc(var(--layout-panel-padding) * -1);
+}
+
+/* Feature-portal corner rail (DEC-122): the trigger *is* the radial-gradient glow
+   area — an edge-strip hit area, not a small icon-sized button. No border, no
+   separate button/pill layered on top. Anchored at the rail's own top-left
+   corner, fading to fully transparent well inside its own bounding box so it
+   never reads as a clipped, pasted-on box (the earlier hard-edged-rectangle
+   attempt this replaced). */
+.portal-menu-rail {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 3;
+  width: 5.5rem;
+  height: 10.5rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 1rem;
+  font-size: 1.05rem;
+  color: rgb(212 212 216);
+  /* Matches .page-card's own border-radius so the rail's square corner never
+     pokes past the card's rounded edge into the page background behind it. */
+  border-top-left-radius: 1.5rem;
+  background-image: radial-gradient(
+    120% 120% at 0% 0%,
+    rgb(var(--accent-strong) / 0.22) 0%,
+    rgb(var(--accent-strong) / 0.11) 30%,
+    rgb(var(--accent-strong) / 0.03) 55%,
+    rgb(var(--accent-strong) / 0) 78%
+  );
+  transition:
+    background-image var(--motion-fast) var(--motion-ease-out),
+    color var(--motion-fast) var(--motion-ease-out);
+}
+
+/* Stretches the ☰ glyph horizontally in place (transform doesn't affect layout,
+   so this never disturbs the rail's own box or the header grid around it) —
+   the bars read as noticeably wider on every viewport without a media query. */
+.portal-menu-rail-icon {
+  display: inline-block;
+  transform: scaleX(1.6);
+}
+
+.portal-menu-rail:hover,
+.portal-menu-rail[aria-expanded="true"] {
+  background-image: radial-gradient(
+    120% 120% at 0% 0%,
+    rgb(var(--accent-strong) / 0.32) 0%,
+    rgb(var(--accent-strong) / 0.16) 30%,
+    rgb(var(--accent-strong) / 0.05) 55%,
+    rgb(var(--accent-strong) / 0) 78%
+  );
+  color: rgb(244 244 245);
+}
+
+/* Partial-height drawer sliding in from the left edge (DEC-122): overlays from
+   the same top-left corner as the rail (so it reads as originating from the
+   rail, not dropping from a header seam), transform-only motion (see
+   .portal-menu-drawer-motion). Its own left column of content clears the
+   rail's icon zone via .portal-menu-drawer-inner's left padding. */
+.portal-menu-drawer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  width: 16rem;
+  /* Sized to the viewport, not a fixed rem guess: on any reasonably tall
+     viewport this fits the full entries + Theme section with no internal
+     scroll; overflow-y only kicks in once the viewport itself is too short. */
+  max-height: 90dvh;
+  overflow-y: auto;
+  border-top-left-radius: 1.5rem;
+  border-right: 1px solid rgb(var(--accent-soft) / 0.35);
+  box-shadow: 0.5rem 0 1.5rem rgb(0 0 0 / 0.25);
+}
+
+.portal-menu-drawer-inner {
+  padding: 0.75rem 0.75rem 0.75rem 3.5rem;
+}
+
+@keyframes portal-menu-drawer-enter {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.portal-menu-drawer-motion {
+  animation: portal-menu-drawer-enter var(--motion-fast) var(--motion-ease-out) both;
 }
 
 /* Inner panel — standard bordered content block; absorbs space-y */
@@ -75,7 +171,7 @@
   line-height: 1.2;
 }
 
-.staged-step-name {
+.step-eyebrow {
   font-size: clamp(1rem, 1.5vw + 0.7rem, 1.25rem);
   line-height: 1.5rem;
 }
@@ -667,6 +763,7 @@ body {
   .motion-success,
   .motion-error,
   .portal-menu-motion,
+  .portal-menu-drawer-motion,
   .ambient-accent-surface,
   .conversation-workspace-handoff,
   .conversation-message-enter,

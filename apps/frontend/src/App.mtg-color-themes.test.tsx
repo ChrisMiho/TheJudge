@@ -107,7 +107,10 @@ describe("Global theme reach across destinations", () => {
 
     await selectDestination(user, "Quick Question");
     expectRootTokens(paletteFor("red"));
-    expect(screen.getByRole("button", { name: "Switch feature" }).className).toContain("border-accent/55");
+    // The rail's radial gradient reads --accent/--accent-strong directly (see .portal-menu-rail
+    // in index.css), so the accent-root-token assertion above already covers palette reach; this
+    // just confirms the trigger is still wired onto that accent-driven class after the switch.
+    expect(screen.getByRole("button", { name: "Switch feature" }).className).toContain("portal-menu-rail");
 
     await openPortalMenu(user);
     expect(screen.getByRole("menuitem", { name: "Quick Question" })).toHaveAttribute("aria-current", "true");

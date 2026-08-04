@@ -17,6 +17,7 @@ import { ConversationWorkspace } from "../../ConversationWorkspace";
 import { PageShell } from "../../PageShell";
 import { ScanCameraSurface } from "../../ScanCameraSurface";
 import { StagedStepHeader } from "../../StagedStepHeader";
+import { StepEyebrow } from "../../StepEyebrow";
 
 const FLOW_LABEL = "Quick Question";
 
@@ -231,7 +232,8 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
   if (isConversationActive) {
     return (
       <PageShell>
-        <StagedStepHeader stepName="Quick Question" />
+        <StagedStepHeader />
+        <StepEyebrow stepName="Quick Question" />
 
         <ConversationHistoryDrawer
           isOpen={isHistoryOpen}
@@ -275,7 +277,12 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
 
   return (
     <PageShell>
-      {!scanCapture.isOpen && <StagedStepHeader stepName="Quick Question" />}
+      {!scanCapture.isOpen && (
+        <>
+          <StagedStepHeader />
+          <StepEyebrow stepName="Quick Question" />
+        </>
+      )}
 
       {scanCapture.isOpen ? (
         <section className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-3">

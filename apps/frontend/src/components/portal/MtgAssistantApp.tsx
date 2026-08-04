@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { ConversationHistoryDrawer } from "../ConversationHistoryDrawer";
 import { EnrichmentStep } from "../EnrichmentStep";
 import { StagedStepHeader } from "../StagedStepHeader";
+import { StepEyebrow } from "../StepEyebrow";
 import { ZoneCollectionStep } from "../ZoneCollectionStep";
 import { ZoneConfirmStep } from "../ZoneConfirmStep";
 import { logFrontendDebug } from "../../lib/debugLogger";
@@ -587,7 +588,8 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   if (flowStep === "game-context") {
     content = (
       <PageShell>
-          <StagedStepHeader stepName="Game context" onBrandClick={() => setBrandClickCount((c) => c + 1)} />
+          <StagedStepHeader onBrandClick={() => setBrandClickCount((c) => c + 1)} />
+          <StepEyebrow stepName="Game context" />
           {showCatEasterEgg && (
             <div className="p-2 text-center">
               {emptyStateImageFailed ? (

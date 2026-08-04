@@ -1,6 +1,6 @@
 # Slice A — Header recenter and step-name eyebrow relocation
 
-## Status: planned
+## Status: done
 
 ## Goal
 

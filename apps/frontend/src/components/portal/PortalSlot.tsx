@@ -13,9 +13,10 @@ import { usePortalSlot } from "../../lib/portal/slotContext";
  *
  * `self-start`: the host header grid uses `items-center` so its row is
  * vertically centered against the tallest column (the brand block) — without
- * this override, the tab's `-mt` lift (see `.portal-slot-tab`) would be
- * measured from that centered position instead of the row's true top, and
- * would land short of the card's border.
+ * this override, the corner rail's `-mt` lift (see `.portal-slot-tab`) would
+ * be measured from that centered position instead of the row's true top, and
+ * would land short of the card's border. This slot sits in the header's
+ * left column (DEC-122) — previously the top-middle placement of DEC-095.
  */
 export function PortalSlot(): JSX.Element {
   const ref = useRef<HTMLDivElement>(null);

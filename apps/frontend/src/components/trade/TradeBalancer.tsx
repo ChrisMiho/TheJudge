@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { PageShell } from "../PageShell";
 import { StagedStepHeader } from "../StagedStepHeader";
+import { StepEyebrow } from "../StepEyebrow";
 import {
   loadCardPrices,
   type CardPrices,
@@ -143,7 +144,8 @@ export function TradeBalancer(): JSX.Element {
 
   return (
     <PageShell>
-      <StagedStepHeader stepName="Trade Balancer" />
+      <StagedStepHeader />
+      <StepEyebrow stepName="Trade Balancer" />
 
       <section className="space-y-2 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
