@@ -11,10 +11,11 @@ Use after kickoff, once the user names a task or work slug.
 
 ## Workflow skills
 
-All 9 are model-invocable and may also be called explicitly (`/thejudge-*` in Cursor/Claude Code, `$thejudge-*` in Codex).
+All 10 are model-invocable and may also be called explicitly (`/thejudge-*` in Cursor/Claude Code, `$thejudge-*` in Codex).
 
 | Skill | Use when |
 | ----- | -------- |
+| `thejudge-prepare` | Autonomously turn one request into one reviewed, implementation-ready package and docs-only preparation PR |
 | `thejudge-kickoff` | New session / new idea |
 | `thejudge-refinement` | Shape idea + write PRD sections |
 | `thejudge-quality-check` | Before slicing |
@@ -24,6 +25,11 @@ All 9 are model-invocable and may also be called explicitly (`/thejudge-*` in Cu
 | `thejudge-implement-all` | Execute every remaining slice unattended with one agent |
 | `thejudge-implement-parallel` | Dispatch a whole wave across agents |
 | `thejudge-cleanup` | Ship feature / corpus hygiene |
+
+Use `thejudge-prepare` when one agent should control kickoff through map-out,
+independent review, verification, and preparation publication without approval
+pauses. Use the direct phase sequence when the user wants interactive questions
+and explicit approvals between phases.
 
 **Canonical skills:** edit `.cursor/skills/` only, then run `npm run skills:ai-sync` to copy into `.agents/skills/` (Codex) and `.claude/skills/` (Claude Code). See `AGENT-SKILLS.md`.
 
