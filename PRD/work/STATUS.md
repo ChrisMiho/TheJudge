@@ -23,6 +23,7 @@ _(none)_
 
 ## ideation
 
+- [assistant-chat-shell](./assistant-chat-shell/)
 - [card-collection-manager](./card-collection-manager/)
 - [center-menu-tab-prominence](./center-menu-tab-prominence/)
 - [in-depth-question-ux](./in-depth-question-ux/)
