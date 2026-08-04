@@ -37,7 +37,7 @@ addendum for architecture) implement it.
 | [A](./slice-a-markdown-answer-rendering.md) | Structured markdown rendering of assistant messages | none | done |
 | [B](./slice-b-history-persistence-layer.md) | Browser-local conversation history storage + hook save/restore API | none | done |
 | [C](./slice-c-history-drawer-and-wiring.md) | History drawer UI, resume flow, Menu mutual exclusivity, dual-consumer wiring | B | done |
-| [D](./slice-d-history-trigger-corner-rail.md) | History trigger relocates into the Menu corner rail; saved-entry rows simplified (DEC-126) | none | planned |
+| [D](./slice-d-history-trigger-corner-rail.md) | History trigger relocates into the Menu corner rail; saved-entry rows simplified (DEC-126) | none | done |
 | [E](./slice-e-full-bleed-conversation-thread.md) | Full-bleed conversation thread, contrasted turns, pill composer (DEC-127) | none | planned |
 
 D and E have no dependency on each other or on A/B/C and can be implemented

@@ -382,7 +382,7 @@ export function EnrichmentStep({
     return (
       <PageShell>
           <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-1">
-            <PortalSlot />
+            <PortalSlot historyTrigger={historyTrigger} />
             <h1 className="bg-gradient-to-r from-accent-soft to-accent-strong bg-clip-text text-3xl font-bold tracking-tight text-transparent">
               TheJudge
             </h1>
@@ -391,7 +391,6 @@ export function EnrichmentStep({
 
           <ConversationWorkspace
             messages={visibleMessages}
-            historyTrigger={historyTrigger}
             context={
               frozenGameContext
                 ? {

@@ -60,7 +60,10 @@ describe("Frontend - Conversation header docking", () => {
     expect(await screen.findByText("Conversation answer")).toBeInTheDocument();
 
     const menuTrigger = screen.getByRole("button", { name: "Switch feature" });
-    const menuContainerClassName = menuTrigger.closest("div")?.className ?? "";
+    // A history trigger is active here (answered state), so the rail splits into two zones
+    // (DEC-126) — the button's immediate ancestor is the split-rail wrapper, not the portaled
+    // container itself, so find the container by its own class instead of assuming adjacency.
+    const menuContainerClassName = menuTrigger.closest(".portal-slot-tab")?.className ?? "";
 
     expect(menuContainerClassName).toContain("portal-slot-tab");
     expect(menuContainerClassName).not.toContain("fixed");

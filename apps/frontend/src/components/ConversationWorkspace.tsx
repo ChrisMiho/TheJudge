@@ -11,13 +11,11 @@ export type ConversationContextDescriptor = {
 };
 
 export type ConversationHistoryTriggerDescriptor = {
-  label: string;
   onOpen: () => void;
 };
 
 type ConversationWorkspaceProps = {
   messages: ConversationMessage[];
-  historyTrigger?: ConversationHistoryTriggerDescriptor;
   context?: ConversationContextDescriptor;
   pendingFeedback?: ReactNode;
   error: string | null;
@@ -34,7 +32,6 @@ type ConversationWorkspaceProps = {
 
 export function ConversationWorkspace({
   messages,
-  historyTrigger,
   context,
   pendingFeedback,
   error,
@@ -55,19 +52,6 @@ export function ConversationWorkspace({
       data-testid="conversation-workspace"
       className="conversation-workspace conversation-workspace-handoff"
     >
-      {historyTrigger && (
-        <button
-          type="button"
-          onClick={historyTrigger.onOpen}
-          className="conversation-history-trigger ambient-accent-surface ambient-accent-interactive w-full rounded-xl border border-zinc-700/70 bg-zinc-900/55 px-4 py-3 text-left text-sm font-semibold text-zinc-100"
-        >
-          <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
-            Conversation history
-          </span>
-          <span className="mt-1 block">{historyTrigger.label}</span>
-        </button>
-      )}
-
       {context && (
         <AdaptiveContextDialog
           triggerLabel={context.triggerLabel}

@@ -82,43 +82,6 @@ describe("Frontend - Conversation workspace", () => {
     expect(within(workspace).getByText("Cardless answer")).toBeInTheDocument();
   });
 
-  it("renders a full-width history trigger above the context trigger when provided", async () => {
-    const user = userEvent.setup();
-    const onOpen = vi.fn();
-
-    render(
-      <ConversationWorkspace
-        messages={[{ role: "assistant", content: "Cardless answer" }]}
-        historyTrigger={{ label: "In-Depth Question", onOpen }}
-        context={{
-          triggerLabel: "Combat · 1 populated zone",
-          dialogLabel: "Frozen game context",
-          content: <p>Read-only context</p>
-        }}
-        error={null}
-        canRetry={false}
-        retryLabel="Retry"
-        onRetry={vi.fn(async () => undefined)}
-        isFollowUpSubmitting={false}
-        onFollowUp={vi.fn(async () => undefined)}
-        onStartOver={vi.fn()}
-        showStartOver={false}
-      />
-    );
-
-    const workspace = screen.getByTestId("conversation-workspace");
-    const buttons = within(workspace).getAllByRole("button");
-    const historyTriggerButton = within(workspace).getByRole("button", { name: /Conversation history/ });
-    const contextTriggerButton = within(workspace).getByRole("button", {
-      name: "View context: Combat · 1 populated zone"
-    });
-
-    expect(buttons.indexOf(historyTriggerButton)).toBeLessThan(buttons.indexOf(contextTriggerButton));
-
-    await user.click(historyTriggerButton);
-    expect(onOpen).toHaveBeenCalledOnce();
-  });
-
   it("preserves a typed composer draft when New response focuses the latest assistant message", async () => {
     const user = userEvent.setup();
     const scrollMetrics = { scrollHeight: 640, clientHeight: 160 };

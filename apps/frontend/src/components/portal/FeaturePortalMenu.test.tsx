@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FeaturePortalMenu } from "./FeaturePortalMenu";
+import { PortalSlot } from "./PortalSlot";
 import { ConversationHistoryDrawer } from "../ConversationHistoryDrawer";
 import { LeftEdgeDrawerProvider } from "../../lib/portal/leftEdgeDrawerContext";
 import type { DestinationId, PortalEntry } from "../../lib/portal/types";
@@ -61,7 +62,7 @@ describe("FeaturePortalMenu", () => {
     const button = screen.getByRole("button", { name: "Switch feature" });
     expect(button).toHaveAttribute("aria-haspopup", "true");
     expect(button).toHaveAttribute("aria-expanded", "false");
-    expect(button).toHaveTextContent("☰");
+    expect(button.querySelector("svg")).toBeInTheDocument();
     expect(button).not.toHaveTextContent("Menu");
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
@@ -288,6 +289,59 @@ describe("FeaturePortalMenu", () => {
     );
     expect(enterKeyframe).toContain("translateX(-100%)");
     expect(enterKeyframe).toContain("translateX(0)");
+  });
+});
+
+describe("FeaturePortalMenu split rail (DEC-126)", () => {
+  function SlotHarness({ historyOnOpen }: { historyOnOpen?: () => void }): JSX.Element {
+    const [activeDestinationId, setActiveDestinationId] = useState<DestinationId>("mtg-assistant");
+    return (
+      <FeaturePortalMenu
+        entries={DESTINATIONS}
+        activeDestinationId={activeDestinationId}
+        onSelect={setActiveDestinationId}
+        paletteId="blue"
+        onPaletteSelect={vi.fn()}
+        colorlessCustomHex={undefined}
+        onColorlessCustomChange={vi.fn()}
+        onColorlessReset={vi.fn()}
+      >
+        <PortalSlot historyTrigger={historyOnOpen ? { onOpen: historyOnOpen } : undefined} />
+        <div>content</div>
+      </FeaturePortalMenu>
+    );
+  }
+
+  it("renders a single Menu-only zone when the visible slot has no history trigger", () => {
+    render(<SlotHarness />);
+
+    expect(screen.getByRole("button", { name: "Switch feature" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Conversation history" })).not.toBeInTheDocument();
+  });
+
+  it("splits the rail into two sibling zones with matching stroke-SVG icons when the visible slot has a history trigger", () => {
+    render(<SlotHarness historyOnOpen={vi.fn()} />);
+
+    const menuButton = screen.getByRole("button", { name: "Switch feature" });
+    const historyButton = screen.getByRole("button", { name: "Conversation history" });
+
+    expect(menuButton.closest("div")?.className).toContain("portal-menu-rail-split");
+    expect(menuButton.className).toContain("portal-menu-rail-zone");
+    expect(historyButton.className).toContain("portal-menu-rail-zone");
+    expect(menuButton.querySelector("svg")).toBeInTheDocument();
+    expect(historyButton.querySelector("svg")).toBeInTheDocument();
+  });
+
+  it("opens the history drawer via its own zone without toggling the Menu drawer", async () => {
+    const user = userEvent.setup();
+    const historyOnOpen = vi.fn();
+    render(<SlotHarness historyOnOpen={historyOnOpen} />);
+
+    await user.click(screen.getByRole("button", { name: "Conversation history" }));
+
+    expect(historyOnOpen).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Switch feature" })).toHaveAttribute("aria-expanded", "false");
   });
 });
 

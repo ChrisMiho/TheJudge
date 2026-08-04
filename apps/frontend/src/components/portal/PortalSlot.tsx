@@ -1,5 +1,14 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import type { ConversationHistoryTriggerDescriptor } from "../ConversationWorkspace";
 import { usePortalSlot } from "../../lib/portal/slotContext";
+
+type PortalSlotProps = {
+  /** Descriptor for the destination's history control, if it has one — read via a
+      "latest ref" getter so FeaturePortalMenu can ask "does the currently visible
+      slot have a history trigger, and what does it do" without new prop plumbing
+      between App.tsx and each destination (DEC-126). */
+  historyTrigger?: ConversationHistoryTriggerDescriptor;
+};
 
 /**
  * Marks where FeaturePortalMenu's button should render inline instead of its
@@ -18,18 +27,21 @@ import { usePortalSlot } from "../../lib/portal/slotContext";
  * would land short of the card's border. This slot sits in the header's
  * left column (DEC-122) — previously the top-middle placement of DEC-095.
  */
-export function PortalSlot(): JSX.Element {
+export function PortalSlot({ historyTrigger }: PortalSlotProps): JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
+  const historyTriggerRef = useRef(historyTrigger);
+  historyTriggerRef.current = historyTrigger;
   const { registerSlot, unregisterSlot } = usePortalSlot();
+  const getHistoryTrigger = useCallback(() => historyTriggerRef.current, []);
 
   useEffect(() => {
     const node = ref.current;
     if (!node) {
       return;
     }
-    registerSlot(node);
+    registerSlot(node, getHistoryTrigger);
     return () => unregisterSlot(node);
-  }, [registerSlot, unregisterSlot]);
+  }, [registerSlot, unregisterSlot, getHistoryTrigger]);
 
   return <div ref={ref} className="self-start" />;
 }

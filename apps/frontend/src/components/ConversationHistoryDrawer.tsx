@@ -157,10 +157,10 @@ export function ConversationHistoryDrawer({
                       type="button"
                       onClick={() => handleSelectEntry(entry)}
                       aria-current={isActive ? "true" : undefined}
-                      className={`w-full rounded-xl border px-3 py-2.5 text-left text-sm transition ${
+                      className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition ${
                         isActive
-                          ? "border-accent-soft/70 bg-zinc-800 text-zinc-100"
-                          : "border-zinc-700/70 bg-zinc-900/55 text-zinc-200 hover:bg-zinc-800/70"
+                          ? "bg-zinc-800 text-zinc-100"
+                          : "text-zinc-200 hover:bg-zinc-800/70"
                       }`}
                     >
                       <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">

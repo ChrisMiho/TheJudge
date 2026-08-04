@@ -232,7 +232,7 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
   if (isConversationActive) {
     return (
       <PageShell>
-        <StagedStepHeader />
+        <StagedStepHeader historyTrigger={{ onOpen: openHistory }} />
         <StepEyebrow stepName="Quick Question" />
 
         <ConversationHistoryDrawer
@@ -245,7 +245,6 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
 
         <ConversationWorkspace
           messages={visibleMessages}
-          historyTrigger={{ label: FLOW_LABEL, onOpen: openHistory }}
           context={
             frozenLookupCard
               ? {

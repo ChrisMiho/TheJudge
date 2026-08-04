@@ -96,15 +96,17 @@
     color var(--motion-fast) var(--motion-ease-out);
 }
 
-/* Stretches the ☰ glyph horizontally in place (transform doesn't affect layout,
-   so this never disturbs the rail's own box or the header grid around it) —
-   the bars read as noticeably wider on every viewport without a media query. */
+/* Shared sizing for both rail icons (DEC-126) — matching inline stroke-SVGs
+   (Menu's three-line hamburger, History's clock-in-circle) instead of the
+   previous mixed text-glyph/scaleX-stretch approach. */
 .portal-menu-rail-icon {
-  display: inline-block;
-  transform: scaleX(1.6);
+  display: block;
+  width: 1.35rem;
+  height: 1.35rem;
 }
 
 .portal-menu-rail:hover,
+.portal-menu-rail:has([aria-expanded="true"]),
 .portal-menu-rail[aria-expanded="true"] {
   background-image: radial-gradient(
     120% 120% at 0% 0%,
@@ -114,6 +116,39 @@
     rgb(var(--accent-strong) / 0) 78%
   );
   color: rgb(244 244 245);
+}
+
+/* Two-zone variant (DEC-126): once a destination has a history trigger, the
+   rail's single ambient-glow hit-area (unchanged visual language, see
+   .portal-menu-rail above) grows taller and splits into two equal-weight
+   sibling zones — Menu on top, History below — instead of hosting Menu alone.
+   Fluid clamp() height (not a fixed value or a discrete breakpoint switch)
+   satisfies NFR-001's 44px-per-zone touch-target floor at every viewport,
+   mirroring DEC-117's "fluid CSS, structural breakpoints only where layout
+   can't interpolate" precedent — today's single-zone rail has no responsive
+   sizing rule at all. */
+.portal-menu-rail-split {
+  height: clamp(4.75rem, 4.1rem + 2.5vw, 6.25rem);
+  padding: 0;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.portal-menu-rail-zone {
+  flex: 1;
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.portal-menu-rail-zone + .portal-menu-rail-zone {
+  border-top: 1px solid rgb(var(--accent-soft) / 0.35);
 }
 
 /* Partial-height drawer sliding in from the left edge (DEC-122): overlays from
@@ -358,10 +393,6 @@
 }
 
 .adaptive-context-trigger {
-  min-height: 44px;
-}
-
-.conversation-history-trigger {
   min-height: 44px;
 }
 

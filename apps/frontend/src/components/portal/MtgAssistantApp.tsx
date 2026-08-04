@@ -846,7 +846,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         frozenGameContext={frozenGameContext}
         onFollowUp={handleFollowUp}
         onStartOver={handleStartOver}
-        historyTrigger={{ label: FLOW_LABEL, onOpen: openHistory }}
+        historyTrigger={{ onOpen: openHistory }}
       />
     );
   }

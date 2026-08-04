@@ -1,6 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { StagedStepHeader } from "./StagedStepHeader";
+import { PortalSlotContext } from "../lib/portal/slotContext";
 
 afterEach(cleanup);
 
@@ -28,6 +29,22 @@ describe("StagedStepHeader", () => {
       "motion-press",
       "motion-focus"
     );
+  });
+
+  it("threads an optional historyTrigger into its PortalSlot registration", () => {
+    const registerSlot = vi.fn();
+    const unregisterSlot = vi.fn();
+    const onOpen = vi.fn();
+
+    render(
+      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot }}>
+        <StagedStepHeader historyTrigger={{ onOpen }} />
+      </PortalSlotContext.Provider>
+    );
+
+    expect(registerSlot).toHaveBeenCalledTimes(1);
+    const getHistoryTrigger = registerSlot.mock.calls[0][1] as () => { onOpen: () => void } | undefined;
+    expect(getHistoryTrigger()).toEqual({ onOpen });
   });
 });
 });

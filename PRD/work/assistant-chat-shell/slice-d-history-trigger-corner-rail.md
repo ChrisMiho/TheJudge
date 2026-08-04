@@ -1,6 +1,6 @@
 # Slice D — History trigger relocates into the Menu corner rail
 
-## Status: planned
+## Status: done
 
 ## Goal
 
