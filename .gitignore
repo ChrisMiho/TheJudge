@@ -52,3 +52,11 @@ output/retrieval-relevance-report.txt
 
 # Card-scan fingerprint build logs / pid (transient; the bin ships under public/data/)
 output/cardhash-build/
+
+# Playwright MCP output (console logs, page snapshots, screenshots)
+.playwright-mcp/
+
+# Ad-hoc debugging screenshots dropped in repo root (should live under .tmp/ instead)
+/*.png
+/*.jpg
+/*.jpeg

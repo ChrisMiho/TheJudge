@@ -12,6 +12,7 @@ _(none)_
 
 - [commander-spellbook-combos](./commander-spellbook-combos/)
 - [center-menu-tab-prominence](./center-menu-tab-prominence/)
+- [assistant-chat-shell](./assistant-chat-shell/)
 
 ## refining
 
@@ -20,7 +21,7 @@ _(none)_
 
 ## refined
 
-- [assistant-chat-shell](./assistant-chat-shell/)
+_(none)_
 
 ## ideation
 
