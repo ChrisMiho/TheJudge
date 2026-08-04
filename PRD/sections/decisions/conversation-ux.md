@@ -56,7 +56,7 @@ Decrypt wait UX and follow-up conversation history behavior.
   - `frozenGameContext` snapshot is taken on first decrypt success and used unchanged for all follow-up requests
   - enrichment zone/card editing is disabled while a conversation is active
   - `hiddenInitialQuestion` (including zone-aware fallback) is captured at first decrypt and included in `conversationHistory` on follow-up turns but not shown in the UI thread
-  - start over clears the thread and unfreezes editing; all previously entered context, zones, cards, and enrichment are preserved for re-use
+  - In-Depth Question start over clears the thread and returns the user to the beginning of the flow (game context step): staged game context, selected zones, zone cards, question text, and turn-phase/combat-step staging are all cleared; player roster (player count, display names, life totals, poison/energy/experience, commander damage, custom counters) is preserved so a game staged in or seeded from Player Life Tracker is not wiped
   - start over button is visible whenever the first decrypt has succeeded and no request is in flight
 - Related requirements:
   - REQ-025

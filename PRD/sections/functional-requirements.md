@@ -507,19 +507,20 @@
 ### REQ-029
 - Title: Start over from conversation
 - Priority: medium
-- Description: Users must be able to start over from an active conversation, clearing the thread and unfreezing enrichment editing while preserving all previously entered context.
+- Description: Users must be able to start over from an active In-Depth Question conversation, clearing the conversation and returning to the beginning of the flow so they can stage a new question from scratch, without losing their player roster.
 - Acceptance Criteria:
   - start over button is visible whenever the first decrypt has succeeded and no request is in flight
-  - clicking start over clears the conversation thread
-  - enrichment editing is unfrozen; all previously entered game context, zones, cards, enrichment, and question are preserved
-  - the user is returned to the pre-decrypt enrichment state (submit form and Decrypt Stack button restored)
+  - clicking start over clears the conversation thread and returns the user to the game context step (first step of the flow)
+  - staged game context, selected zones, zone cards, question text, and turn-phase/combat-step staging are cleared
+  - player roster is preserved: player count, display names, life totals, poison/energy/experience, commander damage, and custom counters are unchanged (so a game seeded from or shared with Player Life Tracker is not wiped)
   - no conversation history is persisted after start over
 - Constraints:
-  - do not clear or reset game context, zones, cards, or enrichment on start over
+  - do not clear or reset player roster fields (count, display names, life totals, counters) on start over
 - Dependencies:
   - DEC-040
   - REQ-025
 - Notes:
+  - superseded prior behavior of returning to the enrichment step with staged zones/cards preserved; this requirement now defines a full flow reset instead
 
 ### REQ-030
 - Title: Prompt assembly includes full card metadata in every populated zone
@@ -1734,7 +1735,7 @@
   - when a card is frozen, a compact trigger naming the card opens its existing read-only card presentation in a bottom sheet below `768px` or right-side drawer at `768px+`; without a card, no empty context trigger or container is rendered
   - the first visible thread bubble is the assistant's answer; the initial user question is included in `conversationHistory` sent to the API but is not shown as a visible bubble
   - follow-up requests send `{ mode: "lookup", question, card: frozen (when one was attached), conversationHistory }` and reuse the same message-count and per-message/character limits as the main flow (REQ-027); Quick Lookup defines no separate limit policy
-  - start over clears the thread and returns to the pre-ask state — with the looked-up card preserved if one was attached, or the core-topics fallback (REQ-079) visible if not
+  - start over clears the thread and returns to the empty pre-ask state — the looked-up card, its search input, and any locked topic are cleared, and the core-topics fallback (REQ-079) is visible
   - mock-provider follow-ups append to the same thread exactly as live responses do
 - Constraints:
   - reuse the shared workspace and existing conversation/card components; no new conversation-limit constants, duplicated context formatting, or divergent chrome
@@ -2344,3 +2345,32 @@
   - NFR-001
 - Notes:
   - approved visual direction: `PRD/work/excess-ui/mock-a-nested-player-accordion.png`; the mock's generated text is non-normative
+
+### REQ-101
+- Title: Feature-portal Menu tab prominence (responsive width, thicker border, medium glow)
+- Priority: medium
+- Description: The feature-portal Menu trigger must be easier to notice: widen it with automatic CSS responsive sizing (modest on small viewports, ~25% on desktop breakpoints), thicken its accent border, and add a medium accent glow on every viewport, without changing docking, icon-only labeling, dropdown behavior, or introducing any user layout preference (DEC-121).
+- Acceptance Criteria:
+  - below the `768px` breakpoint, the Menu trigger's horizontal padding (or equivalent width treatment) is approximately 10–15% larger than the pre-change `1rem` (`px-4`) baseline
+  - at and above `768px`, that horizontal padding (or equivalent) is approximately 25% larger than the same pre-change baseline
+  - the trigger's accent border is visually thicker than the pre-change single `border` / `border-accent/55` treatment on every viewport
+  - a medium accent ring and/or box-shadow glow is present on every viewport so the tab reads as primary chrome at a glance (not subtle-only; not strong bloom)
+  - under `prefers-reduced-motion: reduce`, no new decorative motion is required; static border/glow emphasis remains acceptable
+  - the trigger remains icon-only with `aria-label="Switch feature"`; docking via `.portal-slot-tab` / `PortalSlot` stays flush to `.page-card`; dropdown open/select/close behavior is unchanged
+  - primary touch target remains at least 44×44px; no Theme Layout / Desktop/Mobile / density control is introduced
+  - automated or stylesheet assertions cover the responsive width rules, thicker border, and medium glow treatment on the Menu trigger (and existing portal docking tests continue to pass)
+- Constraints:
+  - frontend presentation only; one mobile-first component tree; CSS media queries / fluid values only — no UA sniffing, JS device detection, or persisted layout preference (DEC-117 / REQ-096)
+  - no change to destination registry, action entries, Theme palette section, active-destination persistence, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, backend routes, card metadata, scan behavior, or data pipeline
+  - do not relocate Menu, restore a visible "Menu" text label, redesign the dropdown, or add an animation library
+- Dependencies:
+  - DEC-121
+  - DEC-109
+  - DEC-117
+  - REQ-067
+  - REQ-089
+  - REQ-096
+  - NFR-001
+  - NFR-006
+- Notes:
+  - user-confirmed: automatic CSS breakpoints (not a user setting); medium glow intensity

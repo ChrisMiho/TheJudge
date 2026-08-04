@@ -533,6 +533,20 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     await submitFollowUp(text);
   }
 
+  function handleStartOver(): void {
+    startOver();
+    setFlowStep("game-context");
+    setGameContext(null);
+    setSelectedZones([]);
+    setZoneCardsByZone({});
+    setQuestion("");
+    setConfirmedPhase(undefined);
+    setTurnPhase(DEFAULT_TURN_PHASE);
+    setCombatStep("declare_blockers");
+    setActivePlayer("Player 1");
+    setStatusMessage(null);
+  }
+
   let content: JSX.Element;
 
   if (flowStep === "game-context") {
@@ -794,7 +808,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         visibleMessages={visibleMessages}
         frozenGameContext={frozenGameContext}
         onFollowUp={handleFollowUp}
-        onStartOver={startOver}
+        onStartOver={handleStartOver}
       />
     );
   }

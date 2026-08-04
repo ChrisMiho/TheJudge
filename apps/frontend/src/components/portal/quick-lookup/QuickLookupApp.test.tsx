@@ -483,7 +483,7 @@ describe("QuickLookupApp", () => {
     expect(screen.getByRole("heading", { name: "Stack and Priority" })).not.toBeVisible();
   });
 
-  it("freezes an attached card for the thread and follow-ups, then preserves it on start over", async () => {
+  it("freezes an attached card for the thread and follow-ups, then clears it on start over", async () => {
     const user = userEvent.setup();
     const fetchMock = appFetchMock(["Card lookup answer", "Card follow-up answer"]);
     vi.stubGlobal("fetch", fetchMock);
@@ -536,10 +536,12 @@ describe("QuickLookupApp", () => {
     await user.click(screen.getByRole("button", { name: "Start Over" }));
 
     expect(screen.queryByText("Card lookup answer")).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Remove Lightning Bolt" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Lightning Bolt" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Remove Lightning Bolt" })).not.toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Card search" })).toHaveValue("");
     expect(screen.getByRole("textbox", { name: "Magic question" })).toHaveValue("");
     expect(screen.queryByText("Tell me about Stack and Priority.")).not.toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "General rules topics" })).toBeVisible();
   });
 });
 });
