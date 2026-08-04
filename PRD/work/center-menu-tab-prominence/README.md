@@ -1,44 +1,30 @@
 ---
-status: ship-ready
+status: active
 ---
 
 # center-menu-tab-prominence
 
-Widen and emphasize the center menu tab so users notice and can use it more easily.
-
-## Refined outcome
-
-- Menu trigger widens automatically via CSS (~10–15% below `768px`, ~25% at/above).
-- Thicker accent border and medium accent glow on every viewport.
-- Docking, icon-only label, dropdown behavior, and DEC-117 automatic responsive rules stay intact — no user Desktop/Mobile setting.
+Started as a narrow "widen and emphasize the center menu tab" pass (approved but never
+implemented). Pivoted into a bigger corner-rail + sliding-drawer restructure of the app-chrome
+header: Menu trigger relocates to a top-left corner rail, brand block centers, step-name text
+moves out of the header into an in-flow eyebrow label. See `DESIGN-BRIEF.md` for the approved
+scope and `PRD/sections/decisions/navigation.md` (DEC-122) for the full decision body.
 
 ## Product truth
 
-- DEC-121
-- REQ-101
-- DEC-109 / REQ-067 / REQ-089 (placement, docking, registry — unchanged)
-- DEC-117 / REQ-096 (automatic responsive presentation — must stay intact)
-
-See `DESIGN-BRIEF.md` for approved scope and `GAMEPLAN.md` for architecture, dependency order, and verification.
-
-## Slices
-
-| Slice | Objective | Depends on | Requirements | Status |
-| --- | --- | --- | --- | --- |
-| [A](slice-a-menu-trigger-prominence.md) | Responsive width + thicker border + medium glow on Menu trigger | — | REQ-101, DEC-121 | done |
-| [B](slice-b-assertions-and-ship.md) | Stylesheet/component assertions, regression, cleanup handoff | A | REQ-101 verification | done |
-
-Sequential: B asserts the selectors and values A introduces on the shared trigger/CSS.
+- DEC-122 (new) — supersedes DEC-095's top-middle placement and DEC-121 outright; preserves
+  DEC-109's never-fixed guarantee and DEC-110's Theme hosting.
+- REQ-045, REQ-067, REQ-089 — amended with notes pointing to DEC-122.
+- REQ-101 — superseded outright alongside DEC-121 (never implemented).
 
 ## Implementation map
 
-| Concern | Location |
-| --- | --- |
-| Menu trigger button | `apps/frontend/src/components/portal/FeaturePortalMenu.tsx` |
-| Prominence CSS (width / border / glow) | `apps/frontend/src/index.css` (dedicated class, e.g. `.portal-menu-trigger`) |
-| Flush docking (unchanged behavior) | `.portal-slot-tab` in `apps/frontend/src/index.css` + `PortalSlot` |
-| Assertions | `apps/frontend/src/components/portal/FeaturePortalMenu.test.tsx` (+ optional CSS contract test) |
-| Frozen contracts | No Ask AI / Zod / backend / registry / Theme density changes |
+See `GAMEPLAN.md` for architecture and data flow.
+
+| Slice | Objective | Depends on |
+| --- | --- | --- |
+| [A](./slice-a-header-recenter-and-eyebrow.md) | Recenter brand block; relocate step-name into an in-flow `StepEyebrow` above each step's own content | none |
+| [B](./slice-b-corner-rail-drawer.md) | Rebuild Menu trigger as a top-left corner rail opening a sliding drawer | A |
 
 ## Next step
 

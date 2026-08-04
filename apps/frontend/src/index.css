@@ -58,26 +58,6 @@
   margin-top: calc(var(--layout-panel-padding) * -1);
 }
 
-/* Menu trigger prominence (REQ-101 / DEC-121): mobile-first widen, thicker accent
-   border, and medium glow keep the trigger legible as clearly primary chrome —
-   one shared trigger, CSS-only, DEC-117's automatic responsive rules stay intact. */
-.portal-menu-trigger {
-  padding-inline: 1.125rem;
-  border-style: solid;
-  border-width: 2px;
-  border-top-width: 0;
-  border-color: rgb(var(--accent) / 0.7);
-  box-shadow:
-    0 0 0 1px rgb(var(--accent-soft) / 0.2),
-    0 0 1.25rem rgb(var(--accent-strong) / 0.35);
-}
-
-@media (min-width: 768px) {
-  .portal-menu-trigger {
-    padding-inline: 1.25rem;
-  }
-}
-
 /* Inner panel — standard bordered content block; absorbs space-y */
 .panel-inner {
   border-radius: 1rem;

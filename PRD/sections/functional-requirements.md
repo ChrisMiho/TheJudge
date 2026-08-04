@@ -897,6 +897,7 @@
   - FLOW-001
 - Notes:
   - refines header chrome only; the cat-wizard image is hidden by default on the game-context screen and revealed session-only after 10 brand clicks (DEC-076, REQ-056)
+  - amended by DEC-122: the step name moves out of the header row entirely into an eyebrow label above each step's own content heading; this requirement's step-name values, ordering, and per-step coverage stay valid, only the position clause is superseded
 
 ### REQ-046
 - Title: Expanded theme palette reach
@@ -1527,6 +1528,7 @@
 - Notes:
   - owned by the `feature-portal` package; hidden placeholders do not count as registered destinations
   - DEC-117/REQ-096 remove only the former density control; palette hosting, destination registry, action entries, and Menu docking remain unchanged
+  - amended by DEC-122: the Menu trigger moves from a top-middle tab to a top-left corner rail, and its dropdown becomes a left-edge sliding drawer; destination registry, action entries, Theme section, in-session state preservation, and reload persistence are all unchanged, only the trigger's position and opened-panel shape are superseded
 
 ### REQ-068
 - Title: Responsive scan-view layout
@@ -2018,6 +2020,7 @@
   - FLOW-001
 - Notes:
   - DEC-117/REQ-096 supersede only the density-control clauses; Menu docking and palette hosting remain unchanged
+  - amended by DEC-122: "docks flush" now describes the top-left corner rail rather than the top-middle tab, and the step-name presentation referenced here moves out of the header into an eyebrow label (REQ-045); the underlying consolidation this requirement establishes (no standalone floating theme control, no fixed-viewport Menu) is otherwise unchanged
 
 ### REQ-090
 - Title: Persist active feature-portal destination across a page refresh
@@ -2349,6 +2352,7 @@
 ### REQ-101
 - Title: Feature-portal Menu tab prominence (responsive width, thicker border, medium glow)
 - Priority: medium
+- Status: superseded outright by DEC-122 — never implemented, and does not apply to the rebuilt top-left corner rail trigger, which uses a different visual language (radial fade vs. border + glow ring). Kept below only for historical/disposition reference.
 - Description: The feature-portal Menu trigger must be easier to notice: widen it with automatic CSS responsive sizing (modest on small viewports, ~25% on desktop breakpoints), thicken its accent border, and add a medium accent glow on every viewport, without changing docking, icon-only labeling, dropdown behavior, or introducing any user layout preference (DEC-121).
 - Acceptance Criteria:
   - below the `768px` breakpoint, the Menu trigger's horizontal padding (or equivalent width treatment) is approximately 10–15% larger than the pre-change `1rem` (`px-4`) baseline

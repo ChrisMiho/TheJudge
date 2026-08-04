@@ -107,7 +107,7 @@ describe("Global theme reach across destinations", () => {
 
     await selectDestination(user, "Quick Question");
     expectRootTokens(paletteFor("red"));
-    expect(screen.getByRole("button", { name: "Switch feature" }).className).toContain("portal-menu-trigger");
+    expect(screen.getByRole("button", { name: "Switch feature" }).className).toContain("border-accent/55");
 
     await openPortalMenu(user);
     expect(screen.getByRole("menuitem", { name: "Quick Question" })).toHaveAttribute("aria-current", "true");

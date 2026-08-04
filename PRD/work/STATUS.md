@@ -6,11 +6,12 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-- [center-menu-tab-prominence](./center-menu-tab-prominence/)
+_(none)_
 
 ## active
 
 - [commander-spellbook-combos](./commander-spellbook-combos/)
+- [center-menu-tab-prominence](./center-menu-tab-prominence/)
 
 ## refining
 
