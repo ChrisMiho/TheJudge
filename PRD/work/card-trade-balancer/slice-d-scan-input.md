@@ -1,6 +1,6 @@
 # Slice D — Scan input for trade entries + ship
 
-## Status: planned
+## Status: done
 
 ## Dependencies
 
@@ -20,11 +20,11 @@ Add scan input to the Trade Balancer so the scanned printing becomes an entry's 
 
 ## Acceptance criteria
 
-- [ ] Opening Scan on a side and locking a card adds an entry whose default printing is the scanned printing, priced from the artifact (component test with a mocked scan resolve).
-- [ ] The scanned entry's printing can be changed via the shared picker, re-pricing it (component test).
-- [ ] A scanned printing id missing from the artifact falls back (other printing or $0 + caution) without breaking the add (component test).
-- [ ] Scan-unavailable path leaves manual search fully functional and surfaces the reason (component test).
-- [ ] No diff to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider boundary, or any endpoint (grep/manual check; backend tests unchanged and green).
+- [x] Opening Scan on a side and locking a card adds an entry whose default printing is the scanned printing, priced from the artifact (component test with a mocked scan resolve).
+- [x] The scanned entry's printing can be changed via the shared picker, re-pricing it (component test).
+- [x] A scanned printing id missing from the artifact falls back (other printing or $0 + caution) without breaking the add (component test).
+- [x] Scan-unavailable path leaves manual search fully functional and surfaces the reason (component test).
+- [x] No diff to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider boundary, or any endpoint (grep/manual check; backend tests unchanged and green).
 
 ## Verification
 
@@ -42,16 +42,18 @@ npm run quality:check
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria (A–D) satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged (no `AskAiRequest` / schema / prompt / endpoint diff)
-- [ ] No secrets committed; raw Scryfall bulk stays gitignored, only the trimmed artifact committed
-- [ ] Durable outcomes promoted; `PRD/work/card-trade-balancer/` ready to delete
+- [x] Slice acceptance criteria (A–D) satisfied and verified
+- [x] Tests updated; typecheck + frontend/backend tests + scoped eslint green for touched areas
+- [x] Public contract unchanged (no `AskAiRequest` / schema / prompt / endpoint diff)
+- [x] No secrets committed; raw Scryfall bulk stays gitignored, only the trimmed artifact committed
+- [ ] Durable outcomes promoted; `PRD/work/card-trade-balancer/` ready to delete (deferred to `thejudge-cleanup`)
 
 ## Files touched
 
 - `apps/frontend/src/components/trade/TradeSide.tsx` (add Scan entry point)
 - `apps/frontend/src/components/trade/TradeBalancer.tsx` (scan-add wiring)
+- `apps/frontend/src/components/trade/useTradeScan.ts` (new — scan wiring: oracle metadata synthesized from the price artifact, scanned-printing resolution, camera-unavailable fallback)
 - `apps/frontend/src/components/trade/TradeBalancer.scan.test.tsx` (new)
-- (reuse, no change) `apps/frontend/src/components/ScanCameraSurface.tsx`, `apps/frontend/src/lib/scan/resolveScanCandidates.ts`
+- `apps/frontend/src/components/portal/TradeBalancerPlaceholder.tsx` (deleted — unreferenced once the registry pointed at the real view)
+- (reuse, no change) `apps/frontend/src/components/ScanCameraSurface.tsx`, `apps/frontend/src/hooks/useScanCapture.ts`, `apps/frontend/src/lib/scan/loadScanMap.ts`, `apps/frontend/src/lib/scan/resolveScanCandidates.ts`
 </content>

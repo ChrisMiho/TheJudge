@@ -1,6 +1,6 @@
 # Slice C — Trade balancer core: state, pricing engine, manual entry
 
-## Status: planned
+## Status: done
 
 ## Dependencies
 
@@ -26,13 +26,13 @@ Build the two-sided Trade Balancer view with a pure pricing engine, manual-searc
 
 ## Acceptance criteria
 
-- [ ] `sideTotal` computes `Σ qty × (foil ? usdFoil : usd)`; a foil entry with `usdFoil: null` contributes $0 and is `entryHasMissingPrice === true` (unit tests in `pricing.test.ts`).
-- [ ] `difference` returns the absolute amount and the higher side, and `'equal'` on a tie (unit test).
-- [ ] Manual search → choose a printing → add appends an entry to the chosen side; adding the same card twice yields two entries (or an incremented quantity) and both count toward the total (component test).
-- [ ] Toggling foil, changing quantity, and removing an entry each update that side's total and the difference live (component test).
-- [ ] An entry whose selected-mode price is null renders the distinct color + caution triangle and contributes $0 (component test).
-- [ ] Changing an entry's printing re-prices it and updates the total (component test).
-- [ ] A simulated price-artifact load failure surfaces the reason and does not crash the view (component test with rejected `loadCardPrices`).
+- [x] `sideTotal` computes `Σ qty × (foil ? usdFoil : usd)`; a foil entry with `usdFoil: null` contributes $0 and is `entryHasMissingPrice === true` (unit tests in `pricing.test.ts`).
+- [x] `difference` returns the absolute amount and the higher side, and `'equal'` on a tie (unit test).
+- [x] Manual search → choose a printing → add appends an entry to the chosen side; adding the same card twice yields two entries (or an incremented quantity) and both count toward the total (component test).
+- [x] Toggling foil, changing quantity, and removing an entry each update that side's total and the difference live (component test).
+- [x] An entry whose selected-mode price is null renders the distinct color + caution triangle and contributes $0 (component test).
+- [x] Changing an entry's printing re-prices it and updates the total (component test).
+- [x] A simulated price-artifact load failure surfaces the reason and does not crash the view (component test with rejected `loadCardPrices`).
 
 ## Verification
 

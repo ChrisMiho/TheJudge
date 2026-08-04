@@ -8,12 +8,14 @@ describe("PORTAL_DESTINATIONS", () => {
     expect(PORTAL_DESTINATIONS.map((destination) => destination.id)).toEqual([
       "mtg-assistant",
       "quick-lookup",
-      "player-life-tracker"
+      "player-life-tracker",
+      "trade-balancer"
     ]);
     expect(PORTAL_DESTINATIONS.map((destination) => destination.label)).toEqual([
       "In-Depth Question",
       "Quick Question",
-      "Life Tracker"
+      "Life Tracker",
+      "Trade Balancer"
     ]);
   });
 

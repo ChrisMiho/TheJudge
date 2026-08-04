@@ -21,6 +21,8 @@ See `IDEA.md` for the original idea, `DESIGN-BRIEF.md` for the refined scope, an
 | [C](slice-c-balancer-core.md) | Balancer core: pricing engine + manual entry | A, `feature-portal` | 2 | REQ-064, REQ-065 (manual), FLOW-009 |
 | [D](slice-d-scan-input.md) | Scan input for entries + ship | C | 3 | REQ-065 (scan), FLOW-009, DEC-070 |
 
+**Status: A, C, D are `done`.** All implementation slices are complete; the package is ready for `thejudge-cleanup` (PRD promotion + receipt + delete `PRD/work/card-trade-balancer/`).
+
 Slice A is parallel-ready. C needs A's price loader and the `feature-portal` Trade Balancer mount slot (nav chrome is built by `feature-portal`, not here). D extends C and carries PRD promotion + ship gates. (The former Slice B — nav menu + mode switch — was retired; that chrome now lives in `feature-portal`.)
 
 ## Implementation map
