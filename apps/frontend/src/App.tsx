@@ -29,7 +29,7 @@ function PortalShell(): JSX.Element {
 
   return (
     <FeaturePortalMenu
-      destinations={PORTAL_DESTINATIONS}
+      entries={PORTAL_DESTINATIONS}
       activeDestinationId={activeDestinationId}
       onSelect={handleDestinationSelect}
       paletteId={paletteId}

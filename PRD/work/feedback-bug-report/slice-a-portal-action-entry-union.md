@@ -1,6 +1,6 @@
 # Slice A — Portal action-entry union
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -27,15 +27,16 @@ destinations, per DEC-104/REQ-086 — with zero behavior change to existing dest
 
 ## Acceptance criteria
 
-- [ ] `types.ts` exports `PortalDestination` (`kind: "destination"`), `PortalActionEntry`
-      (`kind: "action"`), and the `PortalEntry` union
-- [ ] `FeaturePortalMenu` renders a mix of destination and action entries in one dropdown
-- [ ] Selecting an action entry invokes its own `onSelect` handler, closes the menu, and leaves
+- [x] `types.ts` exports `PortalDestination` (`kind?: "destination"`, optional so existing
+      destination literals in tests outside this slice keep compiling), `PortalActionEntry`
+      (`kind: "action"`), the `PortalEntry` union, and the `isPortalActionEntry` guard
+- [x] `FeaturePortalMenu` renders a mix of destination and action entries in one dropdown
+- [x] Selecting an action entry invokes its own `onSelect` handler, closes the menu, and leaves
       `activeDestinationId` unchanged (verified with a mock action entry in the test harness)
-- [ ] Selecting a destination entry is unchanged: switches active destination, closes menu
-- [ ] Existing `destinationRegistry.test.tsx`, `DestinationOutlet.test.tsx`, and `App.*.test.tsx`
+- [x] Selecting a destination entry is unchanged: switches active destination, closes menu
+- [x] Existing `destinationRegistry.test.tsx`, `DestinationOutlet.test.tsx`, and `App.*.test.tsx`
       files stay green with no assertion changes required
-- [ ] `npm --workspace apps/frontend run typecheck` passes with the new union threaded through
+- [x] `npm --workspace apps/frontend run typecheck` passes with the new union threaded through
 
 ## Verification
 

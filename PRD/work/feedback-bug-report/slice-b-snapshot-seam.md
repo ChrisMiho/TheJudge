@@ -1,6 +1,6 @@
 # Slice B — Snapshot builder + seam contract
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -36,18 +36,18 @@ state without the modal ever reaching into flow internals (DEC-105, REQ-088).
 
 ## Acceptance criteria
 
-- [ ] `buildFeedbackContext()` is pure: same input object (deep-equal, not same reference) produces a
+- [x] `buildFeedbackContext()` is pure: same input object (deep-equal, not same reference) produces a
       deep-equal output across repeated calls
-- [ ] With `flowSnapshot: null`, `buildFeedbackContext()` still returns a valid `FeedbackContext`
+- [x] With `flowSnapshot: null`, `buildFeedbackContext()` still returns a valid `FeedbackContext`
       containing only shell + environment fields, never throws
-- [ ] With a populated `flowSnapshot`, the returned `FeedbackContext` carries screen/step, game
+- [x] With a populated `flowSnapshot`, the returned `FeedbackContext` carries screen/step, game
       context + typed question, zones/cards/enrichment, and conversation history through unchanged
-- [ ] `FeedbackContextProvider`'s `getFeedbackContext()` never mutates app state — a test asserts the
+- [x] `FeedbackContextProvider`'s `getFeedbackContext()` never mutates app state — a test asserts the
       flow snapshot fixture object passed in is unchanged after the call, and each call returns a
       fresh object (not a cached reference)
-- [ ] Registering a contributor then unmounting clears it: a subsequent `getFeedbackContext()` call
+- [x] Registering a contributor then unmounting clears it: a subsequent `getFeedbackContext()` call
       falls back to the `flowSnapshot: null` path
-- [ ] `npm --workspace apps/frontend run typecheck` passes
+- [x] `npm --workspace apps/frontend run typecheck` passes
 
 ## Verification
 

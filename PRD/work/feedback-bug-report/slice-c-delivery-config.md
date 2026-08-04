@@ -1,6 +1,6 @@
 # Slice C — Delivery + config
 
-## Status: planned
+## Status: done
 
 ## Goal
 

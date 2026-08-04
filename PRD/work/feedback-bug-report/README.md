@@ -14,9 +14,9 @@ data flow, and the full verification checklist.
 
 | Slice | Name | Depends on | Status |
 | --- | --- | --- | --- |
-| A | Portal action-entry union | — | planned |
-| B | Snapshot builder + seam contract | — | planned |
-| C | Delivery + config | — | planned |
+| A | Portal action-entry union | — | done |
+| B | Snapshot builder + seam contract | — | done |
+| C | Delivery + config | — | done |
 | D | FeedbackModal + form | B, C | planned |
 | E | Portal wiring + integration | A, B, C, D | planned |
 

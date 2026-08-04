@@ -52,6 +52,13 @@ export function resolveIsMockProvider(rawValue: string | undefined): boolean {
   return rawValue?.trim().toLowerCase() === "mock";
 }
 
+export function resolveFeedbackFormspreeId(rawValue: string | undefined): string | null {
+  // Public, non-secret config. Unset/empty/whitespace-only means feedback delivery is
+  // unconfigured and submission degrades to a graceful no-op — never a thrown error.
+  const trimmed = rawValue?.trim();
+  return trimmed ? trimmed : null;
+}
+
 export const apiBaseUrl = resolveApiBaseUrl(import.meta.env.VITE_API_URL);
 export const debugLoggingEnabled = resolveDebugLoggingEnabled(
   import.meta.env.VITE_DEBUG_LOGGING,
@@ -59,3 +66,6 @@ export const debugLoggingEnabled = resolveDebugLoggingEnabled(
   import.meta.env.MODE
 );
 export const isMockProvider = resolveIsMockProvider(import.meta.env.VITE_ASK_AI_PROVIDER);
+export const feedbackFormspreeId = resolveFeedbackFormspreeId(
+  import.meta.env.VITE_FEEDBACK_FORMSPREE_ID
+);

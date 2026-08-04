@@ -3,33 +3,40 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FeaturePortalMenu } from "./FeaturePortalMenu";
-import type { DestinationId, PortalDestination } from "../../lib/portal/types";
+import type { DestinationId, PortalEntry } from "../../lib/portal/types";
 import { appCss, jsonResponse, getUrlFromRequest } from "../../test/appTestHelpers";
 
-const DESTINATIONS: PortalDestination[] = [
-  { id: "mtg-assistant", label: "MTG Assistant", render: () => <div /> },
-  { id: "trade-balancer", label: "Trade", render: () => <div /> }
+const DESTINATIONS: PortalEntry[] = [
+  { kind: "destination", id: "mtg-assistant", label: "MTG Assistant", render: () => <div /> },
+  { kind: "destination", id: "trade-balancer", label: "Trade", render: () => <div /> }
 ];
 
 interface HarnessProps {
   initialId?: DestinationId;
   initialPaletteId?: string;
   onPaletteSelect?: (id: string) => void;
+  entries?: PortalEntry[];
+  onSelect?: (id: DestinationId) => void;
 }
 
 function Harness({
   initialId = "mtg-assistant",
   initialPaletteId = "blue",
-  onPaletteSelect = vi.fn()
+  onPaletteSelect = vi.fn(),
+  entries = DESTINATIONS,
+  onSelect
 }: HarnessProps): JSX.Element {
   const [activeDestinationId, setActiveDestinationId] = useState<DestinationId>(initialId);
   const [paletteId, setPaletteId] = useState(initialPaletteId);
   const [colorlessCustomHex, setColorlessCustomHex] = useState<string | undefined>(undefined);
   return (
     <FeaturePortalMenu
-      destinations={DESTINATIONS}
+      entries={entries}
       activeDestinationId={activeDestinationId}
-      onSelect={setActiveDestinationId}
+      onSelect={(id) => {
+        onSelect?.(id);
+        setActiveDestinationId(id);
+      }}
       paletteId={paletteId}
       onPaletteSelect={(id) => {
         setPaletteId(id);
@@ -100,7 +107,7 @@ describe("FeaturePortalMenu", () => {
     const onColorlessReset = vi.fn();
     render(
       <FeaturePortalMenu
-        destinations={DESTINATIONS}
+        entries={DESTINATIONS}
         activeDestinationId="mtg-assistant"
         onSelect={vi.fn()}
         paletteId="colorless"
@@ -154,6 +161,36 @@ describe("FeaturePortalMenu", () => {
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
     await user.click(screen.getByRole("menuitem", { name: "MTG Assistant" }));
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    expect(screen.getByRole("menuitem", { name: "MTG Assistant" })).toHaveAttribute("aria-current", "true");
+  });
+
+  it("renders action entries alongside destinations in array order", async () => {
+    const user = userEvent.setup();
+    const entries: PortalEntry[] = [...DESTINATIONS, { kind: "action", id: "demo-action", label: "Demo action", onSelect: vi.fn() }];
+    render(<Harness entries={entries} />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+
+    const items = screen.getAllByRole("menuitem").map((item) => item.textContent);
+    expect(items).toEqual(["MTG Assistant✓", "Trade", "Demo action"]);
+    expect(screen.getByRole("menuitem", { name: "Demo action" })).not.toHaveAttribute("aria-current");
+  });
+
+  it("runs an action entry's own handler, closes the menu, and leaves the active destination unchanged", async () => {
+    const user = userEvent.setup();
+    const actionSelect = vi.fn();
+    const onSelect = vi.fn();
+    const entries: PortalEntry[] = [...DESTINATIONS, { kind: "action", id: "demo-action", label: "Demo action", onSelect: actionSelect }];
+    render(<Harness entries={entries} onSelect={onSelect} />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    await user.click(screen.getByRole("menuitem", { name: "Demo action" }));
+
+    expect(actionSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect).not.toHaveBeenCalled();
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
