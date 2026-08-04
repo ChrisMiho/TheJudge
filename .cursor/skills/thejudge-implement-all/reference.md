@@ -17,6 +17,8 @@ Use `planned` / `in-progress` / `done` / `blocked` as a single status line near 
 
 Do not commit a `blocked` slice. Keep its local status/evidence in the worktree, add a blocker comment when the PR exists, and stop.
 
+Stopping before a slice reaches `done` for any reason (session end, usage limit, blocker): append the `### Handoff` block defined in `PRD/instructions/workflow-reference.md` under the status line, in the worktree, before stopping.
+
 ## Git and worktree contract
 
 ### Preflight

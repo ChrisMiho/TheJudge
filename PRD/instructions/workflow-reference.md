@@ -96,6 +96,29 @@ PR hands off to `$thejudge-implement-all PRD/work/<slug>/`. See
 the top of the slice doc. If a slice already uses another format, preserve it
 and change only the value.
 
+### Handoff note on incomplete stop
+
+When an agent stops a slice before it reaches `done` — session end, usage
+limit, or an unresolved blocker — append a `### Handoff` block directly under
+that slice's status line before stopping, replacing any prior `### Handoff`
+block for that slice:
+
+```markdown
+## Status: in-progress
+
+### Handoff
+- Done: <what is verified so far, or "nothing verified yet">
+- Next: <the concrete next action, specific enough to start cold>
+- Stopped because: <usage limit / blocker / session end>
+```
+
+A slice moving to `done` removes its `### Handoff` block — the slice doc's
+other sections are the durable record once complete. This is the same
+resumability contract for every implement skill (`thejudge-implement`,
+`-all`, `-parallel`, and anything `thejudge-implement-fanout` dispatches): a
+fresh agent reads the slice doc's status line and, if present, its
+`### Handoff` block, and needs nothing else to resume.
+
 ## Related material
 
 - Slice doc template and Ship gates block: `thejudge-map-out/reference.md` and
