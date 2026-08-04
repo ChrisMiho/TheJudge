@@ -2,11 +2,14 @@ import type { PlayerLabel } from "../../types";
 import { NAMED_COUNTER_IDS } from "./counters";
 import {
   ALL_PLAYER_LABELS,
+  DEFAULT_CARD_STYLE,
+  DEFAULT_DAY_NIGHT_ENABLED,
+  DEFAULT_DAY_NIGHT_PHASE,
   DEFAULT_LAYOUT_MODE,
   MAX_PLAYER_COUNT,
   MIN_PLAYER_COUNT
 } from "./state";
-import type { CustomCounter, TrackerState } from "./types";
+import type { CardStyle, CustomCounter, DayNightPhase, TrackerState } from "./types";
 
 /** DEC-103: browser-local, single-device, frontend-only persistence key for the live tracker game. */
 export const TRACKER_STORAGE_KEY = "thejudge.lifeTracker.state";
@@ -84,6 +87,20 @@ export function isValidTrackerState(value: unknown): value is TrackerState {
   return expectedLabels.every((label, index) => isValidTrackerPlayer(players[index], label));
 }
 
+/**
+ * The presentation settings below were added after the tracker shipped, so any snapshot written by
+ * an earlier build simply lacks them. They are deliberately *not* part of `isValidTrackerState`:
+ * an old-shape snapshot must still load and keep its game, falling back to the documented defaults
+ * (which reproduce the pre-existing behavior exactly) rather than being discarded as malformed.
+ */
+function normalizeCardStyle(value: unknown): CardStyle {
+  return value === "gradient" || value === "flat" ? value : DEFAULT_CARD_STYLE;
+}
+
+function normalizeDayNightPhase(value: unknown): DayNightPhase {
+  return value === "day" || value === "night" ? value : DEFAULT_DAY_NIGHT_PHASE;
+}
+
 function getStorage(): Storage | null {
   try {
     return globalThis.localStorage ?? null;
@@ -104,10 +121,18 @@ export function loadTrackerState(): TrackerState | null {
     const parsed: unknown = JSON.parse(raw);
     if (!isValidTrackerState(parsed)) return null;
 
-    const layoutMode = parsed.layoutMode === "grid" || parsed.layoutMode === "list"
-      ? parsed.layoutMode
+    const stored = parsed as Record<string, unknown>;
+    const layoutMode = stored.layoutMode === "grid" || stored.layoutMode === "list"
+      ? stored.layoutMode
       : DEFAULT_LAYOUT_MODE;
-    return { ...parsed, layoutMode };
+    return {
+      ...parsed,
+      layoutMode,
+      cardStyle: normalizeCardStyle(stored.cardStyle),
+      dayNightEnabled:
+        typeof stored.dayNightEnabled === "boolean" ? stored.dayNightEnabled : DEFAULT_DAY_NIGHT_ENABLED,
+      dayNightPhase: normalizeDayNightPhase(stored.dayNightPhase)
+    };
   } catch {
     return null;
   }

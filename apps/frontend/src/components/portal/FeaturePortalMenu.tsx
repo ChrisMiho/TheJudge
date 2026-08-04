@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { PortalSlotContext } from "../../lib/portal/slotContext";
-import type { DestinationId, PortalDestination } from "../../lib/portal/types";
+import { isPortalActionEntry, type DestinationId, type PortalEntry } from "../../lib/portal/types";
 import { ThemeSection } from "./ThemeSection";
 
 export interface FeaturePortalMenuProps {
-  destinations: PortalDestination[];
+  /** Destination and action entries, rendered identically in array order (DEC-104). */
+  entries: PortalEntry[];
   activeDestinationId: DestinationId;
   onSelect: (id: DestinationId) => void;
   paletteId: string;
@@ -24,7 +25,7 @@ export interface FeaturePortalMenuProps {
 }
 
 export function FeaturePortalMenu({
-  destinations,
+  entries,
   activeDestinationId,
   onSelect,
   paletteId,
@@ -84,8 +85,13 @@ export function FeaturePortalMenu({
     };
   }, [isOpen]);
 
-  function handleSelect(id: DestinationId): void {
-    onSelect(id);
+  function handleSelect(entry: PortalEntry): void {
+    // Action entries run their own handler and never switch the active destination.
+    if (isPortalActionEntry(entry)) {
+      entry.onSelect();
+    } else {
+      onSelect(entry.id);
+    }
     setIsOpen(false);
   }
 
@@ -118,23 +124,23 @@ export function FeaturePortalMenu({
             aria-label="Feature destinations"
             className="portal-menu-motion flex flex-col gap-1 rounded-2xl border border-zinc-700/80 bg-zinc-900/95 p-2 shadow-xl"
           >
-            {destinations.map((destination) => {
-              const isActive = destination.id === activeDestinationId;
+            {entries.map((entry) => {
+              const isActive = !isPortalActionEntry(entry) && entry.id === activeDestinationId;
               return (
                 <button
-                  key={destination.id}
+                  key={entry.id}
                   type="button"
                   role="menuitem"
-                  aria-label={destination.label}
+                  aria-label={entry.label}
                   aria-current={isActive ? "true" : undefined}
-                  onClick={() => handleSelect(destination.id)}
+                  onClick={() => handleSelect(entry)}
                   className={`flex min-h-[2.75rem] items-center gap-3 rounded-xl border px-3 py-2 text-left text-sm font-medium transition ${
                     isActive
                       ? "border-accent-soft/70 bg-zinc-800 text-zinc-100"
                       : "border-zinc-700/80 bg-zinc-900/60 text-zinc-200 hover:bg-zinc-800/70"
                   }`}
                 >
-                  <span>{destination.label}</span>
+                  <span>{entry.label}</span>
                   {isActive && <span aria-hidden="true" className="ml-auto text-accent-soft">✓</span>}
                 </button>
               );

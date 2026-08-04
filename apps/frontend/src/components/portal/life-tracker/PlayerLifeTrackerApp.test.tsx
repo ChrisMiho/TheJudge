@@ -226,11 +226,13 @@ describe("Frontend - Shared", () => {
       await user.click(screen.getByRole("button", { name: "Decrease life for Player 1" }));
       expect(localStorage.length).toBe(1);
       await user.click(screen.getByRole("button", { name: "Reset current game" }));
+      await user.click(screen.getByRole("button", { name: "Confirm reset current game" }));
       expect(within(screen.getByTestId("life-card-Player 1")).getByText("40")).toBeInTheDocument();
       expect(localStorage.length).toBe(0);
 
       await user.click(screen.getByRole("button", { name: "Set player count to 3" }));
       await user.click(screen.getByRole("button", { name: "Start new game" }));
+      await user.click(screen.getByRole("button", { name: "Confirm start new game" }));
       expect(trackerCards()).toHaveLength(4);
       expect(localStorage.length).toBe(0);
     });
@@ -305,6 +307,73 @@ describe("Frontend - Shared", () => {
       await user.click(screen.getByRole("tab", { name: "Counters" }));
       expect(screen.getByRole("button", { name: "Increment Poison" })).toHaveTextContent("1");
       expect(screen.getByRole("button", { name: "Increment Storm" })).toHaveTextContent("1");
+    });
+
+    it("drops a pending Reset confirm when Game Setup is closed and reopened", async () => {
+      const user = userEvent.setup();
+      render(<PlayerLifeTrackerApp />);
+      await openGameSetup(user);
+
+      await user.click(screen.getByRole("button", { name: "Reset current game" }));
+      expect(screen.getByRole("button", { name: "Confirm reset current game" })).toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Close game setup" }));
+      await openGameSetup(user);
+
+      expect(screen.queryByRole("button", { name: "Confirm reset current game" })).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Reset current game" })).toBeInTheDocument();
+    });
+
+    it("applies the chosen card style to every seat and keeps it across a remount", async () => {
+      const user = userEvent.setup();
+      const firstMount = render(<PlayerLifeTrackerApp />);
+      await openGameSetup(user);
+
+      expect(trackerCards().every((card) => card.dataset.cardStyle === "gradient")).toBe(true);
+
+      await user.click(screen.getByRole("button", { name: "Use flat card style" }));
+      expect(trackerCards().every((card) => card.dataset.cardStyle === "flat")).toBe(true);
+
+      firstMount.unmount();
+      render(<PlayerLifeTrackerApp />);
+      expect(trackerCards().every((card) => card.dataset.cardStyle === "flat")).toBe(true);
+    });
+
+    it("commits a typed life total from a life card", async () => {
+      const user = userEvent.setup();
+      render(<PlayerLifeTrackerApp />);
+
+      await user.click(screen.getByRole("button", { name: "Set life for Player 1" }));
+      const input = screen.getByRole("textbox", { name: "Set life for Player 1" });
+      await user.clear(input);
+      await user.type(input, "100000{Enter}");
+
+      expect(within(screen.getByTestId("life-card-Player 1")).getByText("100000")).toBeInTheDocument();
+      expect(JSON.parse(localStorage.getItem("thejudge.lifeTracker.state") as string).players[0].life).toBe(100000);
+    });
+
+    it("shows the day/night header control only when tracking is enabled, and flips it on tap", async () => {
+      const user = userEvent.setup();
+      render(<PlayerLifeTrackerApp />);
+
+      expect(screen.queryByTestId("day-night-toggle")).not.toBeInTheDocument();
+
+      await openGameSetup(user);
+      await user.click(screen.getByRole("switch", { name: "Track day and night" }));
+      await user.click(screen.getByRole("button", { name: "Close game setup" }));
+
+      const dayControl = screen.getByRole("button", {
+        name: "Day and night: currently day. Flip designation."
+      });
+      expect(dayControl).toHaveTextContent("Day");
+
+      await user.click(dayControl);
+
+      const nightControl = screen.getByRole("button", {
+        name: "Day and night: currently night. Flip designation."
+      });
+      expect(nightControl).toHaveTextContent("Night");
+      expect(nightControl).toHaveAttribute("data-day-night-phase", "night");
     });
 
     it("uses accent-soft for the dark Game Setup modal's accent heading", async () => {

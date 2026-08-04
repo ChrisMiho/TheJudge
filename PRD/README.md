@@ -106,15 +106,9 @@ Read in this order:
 - Preserve stable IDs once assigned.
 - Agent workflow skills: edit `.cursor/skills/thejudge-*` (canonical), run `npm run skills:ai-sync` to copy to `.agents/skills/` and `.claude/skills/`; see `AGENT-SKILLS.md`.
 
-## Active work packages (`PRD/work/`)
+## Work packages
 
-| Slug | Status | Summary |
-|------|--------|---------|
-| [feedback-bug-report](./work/feedback-bug-report/) | ideation | Frontend-only user feedback + bug report: feature-portal action opens a modal, delivered to owner inbox via Formspree with an app-state snapshot |
-| [card-trade-balancer](./work/card-trade-balancer/) | active | Build a frontend-only two-sided card-value comparison with printing-aware prices, scan/manual input, and top-level navigation |
-| [prompt-game-state-enrichment](./work/prompt-game-state-enrichment/) | deferred | Add `gameStateNotes` freeform game-state field and `ADDITIONAL GAME STATE` prompt section (revisit after retrieval + consolidation work) |
-
-Completed work is promoted into `sections/` and temporary work folders are removed per `instructions/doc-lifecycle.md`.
+Work packages: see [work/STATUS.md](./work/STATUS.md) (skill-maintained board + per-package `STATUS.*` markers).
 
 ## Current Editorial Notes
 - Current product status: TheJudge is an MTG assistant suite (`DEC-094`); the primary MTG Assistant loop is validated (past MVP) and deployed on AWS with the live OpenAI provider; local development remains mock-default (`DEC-020`, `DEC-084`).

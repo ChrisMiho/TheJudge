@@ -3,7 +3,8 @@ name: thejudge-implement-all
 description: >-
   Use when every remaining slice in an existing TheJudge GAMEPLAN should be
   completed during one unattended, single-agent session, especially for
-  long-running work that must remain reviewable on GitHub.
+  long-running work that must remain reviewable on GitHub. When all slices
+  finish, sets STATUS.ship-ready before handoff to cleanup.
 ---
 
 # TheJudge Implement All
@@ -18,7 +19,7 @@ Work slug or `PRD/work/<slug>/` path. Optional shared remote branch or PR number
 
 ## Reads
 
-Read the work-package `README.md`, `GAMEPLAN.md`, every remaining `slice-*.md`, each slice's files/tests, and this skill's `reference.md`.
+Read the work-package `README.md`, `GAMEPLAN.md`, every remaining `slice-*.md`, each slice's files/tests, this skill's `reference.md`, and `PRD/instructions/workflow-reference.md` (package status / STATUS.*).
 
 ## Workflow contract
 
@@ -39,6 +40,13 @@ Read the work-package `README.md`, `GAMEPLAN.md`, every remaining `slice-*.md`, 
 7. Inspect the staged diff and commit `feat(<slug>): complete slice <letter>`.
 8. Fetch/rebase again using `origin/main` until the shared ref exists, then the shared ref. After upstream changes, rerun both gates.
 9. Push `HEAD` to the shared remote branch without force. On a race, repeat fetch, rebase, full quality check, and push.
+
+## Status transitions
+
+- Keep package `active` / `STATUS.active` while any slice remains not `done`.
+- When every registered slice is `done`: set `status: ship-ready`, replace
+  marker with `STATUS.ship-ready`, move board row under `## ship-ready` in
+  `PRD/work/STATUS.md` (before the completion-gate READY loop finishes).
 
 ## Completion gate
 
@@ -63,4 +71,4 @@ Use the race-safe READY loop in `reference.md`; never infer readiness from this 
 
 ## Next step
 
-PR ready → review and merge manually. After the feature ships → `/thejudge-cleanup PRD/work/<slug>/` (`$thejudge-cleanup` in Codex).
+PR ready → review and merge manually. After the feature ships → `/thejudge-cleanup PRD/work/<slug>/` (`$thejudge-cleanup` in Codex) — package should already be `ship-ready`.

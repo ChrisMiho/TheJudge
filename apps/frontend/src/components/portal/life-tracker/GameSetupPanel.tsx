@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { MAX_PLAYER_COUNT, MIN_PLAYER_COUNT } from "../../../lib/lifeTracker/state";
 import type { PlayerLabel } from "../../../types";
-import type { LayoutMode } from "../../../lib/lifeTracker/types";
+import type { CardStyle, LayoutMode } from "../../../lib/lifeTracker/types";
 
 export interface GameSetupPanelPlayer {
   label: PlayerLabel;
@@ -11,15 +11,33 @@ export interface GameSetupPanelPlayer {
 export interface GameSetupPanelProps {
   playerCount: number;
   layoutMode: LayoutMode;
+  cardStyle: CardStyle;
+  dayNightEnabled: boolean;
   startingLife: number;
   players: GameSetupPanelPlayer[];
   onPlayerCountChange: (count: number) => void;
   onLayoutModeChange: (mode: LayoutMode) => void;
+  onCardStyleChange: (cardStyle: CardStyle) => void;
+  onDayNightEnabledChange: (enabled: boolean) => void;
   onStartingLifeChange: (startingLife: number) => void;
   onDisplayNameChange: (label: PlayerLabel, value: string) => void;
   onReset: () => void;
   onNewGame: () => void;
 }
+
+/**
+ * Reset and New Game both destroy work with no undo, so each is a two-step in-place confirm rather
+ * than an immediate action: the first press swaps that button for a confirm/cancel pair and names
+ * exactly what is about to be lost, the second press commits. Only one can be pending at a time -
+ * starting the other confirm cancels the first - and closing Game Setup unmounts this panel, which
+ * drops any pending confirm with it.
+ */
+type PendingAction = "reset" | "new-game";
+
+const PENDING_MESSAGES: Record<PendingAction, string> = {
+  reset: "Reset this game? Every life total goes back to the starting life and all counters clear. Players, names, and settings stay.",
+  "new-game": "Start a new game? This game is discarded: back to 4 players at 40 life, with names and counters cleared. Layout, card style, and day/night tracking stay."
+};
 
 const STARTING_LIFE_PRESETS = [20, 25, 30, 40] as const;
 const PLAYER_COUNTS = Array.from(
@@ -41,15 +59,20 @@ function pillClassName(isSelected: boolean): string {
 export function GameSetupPanel({
   playerCount,
   layoutMode,
+  cardStyle,
+  dayNightEnabled,
   startingLife,
   players,
   onPlayerCountChange,
   onLayoutModeChange,
+  onCardStyleChange,
+  onDayNightEnabledChange,
   onStartingLifeChange,
   onDisplayNameChange,
   onReset,
   onNewGame
 }: GameSetupPanelProps): JSX.Element {
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [isEditingStartingLifeCustom, setIsEditingStartingLifeCustom] = useState(false);
   const [startingLifeDraft, setStartingLifeDraft] = useState("");
   const [customError, setCustomError] = useState<string | null>(null);
@@ -91,23 +114,77 @@ export function GameSetupPanel({
 
   return (
     <section aria-label="Game setup controls" className="divide-y divide-zinc-700/70">
-      <div className="flex gap-2 pb-4">
-        <button
-          type="button"
-          aria-label="Reset current game"
-          onClick={onReset}
-          className="motion-focus min-h-11 flex-1 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-bold text-zinc-100 hover:bg-zinc-800"
-        >
-          Reset
-        </button>
-        <button
-          type="button"
-          aria-label="Start new game"
-          onClick={onNewGame}
-          className="motion-focus min-h-11 flex-1 rounded-xl border border-accent-strong bg-accent-strong px-3 text-sm font-bold text-accent-contrast hover:bg-accent"
-        >
-          New Game
-        </button>
+      <div className="pb-4">
+        <div className="flex gap-2">
+          {pendingAction === "reset" ? (
+            <div className="flex flex-1 gap-2">
+              <button
+                type="button"
+                aria-label="Confirm reset current game"
+                onClick={() => {
+                  setPendingAction(null);
+                  onReset();
+                }}
+                className="motion-focus min-h-11 flex-1 rounded-xl border border-rose-400 bg-rose-500 px-3 text-sm font-bold text-white hover:bg-rose-400"
+              >
+                Confirm
+              </button>
+              <button
+                type="button"
+                aria-label="Cancel reset current game"
+                onClick={() => setPendingAction(null)}
+                className="motion-focus min-h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-bold text-zinc-300 hover:bg-zinc-800"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              aria-label="Reset current game"
+              onClick={() => setPendingAction("reset")}
+              className="motion-focus min-h-11 flex-1 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-bold text-zinc-100 hover:bg-zinc-800"
+            >
+              Reset
+            </button>
+          )}
+
+          {pendingAction === "new-game" ? (
+            <div className="flex flex-1 gap-2">
+              <button
+                type="button"
+                aria-label="Confirm start new game"
+                onClick={() => {
+                  setPendingAction(null);
+                  onNewGame();
+                }}
+                className="motion-focus min-h-11 flex-1 rounded-xl border border-accent-strong bg-accent-strong px-3 text-sm font-bold text-accent-contrast hover:bg-accent"
+              >
+                Confirm
+              </button>
+              <button
+                type="button"
+                aria-label="Cancel start new game"
+                onClick={() => setPendingAction(null)}
+                className="motion-focus min-h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-bold text-zinc-300 hover:bg-zinc-800"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              aria-label="Start new game"
+              onClick={() => setPendingAction("new-game")}
+              className="motion-focus min-h-11 flex-1 rounded-xl border border-accent-strong bg-accent-strong px-3 text-sm font-bold text-accent-contrast hover:bg-accent"
+            >
+              New Game
+            </button>
+          )}
+        </div>
+        <p role="status" className={`text-xs font-semibold text-zinc-400 ${pendingAction ? "mt-2" : "sr-only"}`}>
+          {pendingAction ? PENDING_MESSAGES[pendingAction] : ""}
+        </p>
       </div>
 
       <div className="py-4">
@@ -196,9 +273,31 @@ export function GameSetupPanel({
             );
           })}
         </div>
+
+        <p className="mb-2 mt-3 text-xs font-bold uppercase tracking-[0.08em] text-zinc-500">Card style</p>
+        <div className="grid grid-cols-2 gap-2" aria-label="Card style">
+          {(["gradient", "flat"] as const).map((style) => {
+            const isSelected = cardStyle === style;
+            return (
+              <button
+                key={style}
+                type="button"
+                aria-label={`Use ${style} card style`}
+                aria-pressed={isSelected}
+                onClick={() => onCardStyleChange(style)}
+                className={`${pillClassName(isSelected)} inline-flex items-center justify-center gap-2`}
+              >
+                <span aria-hidden="true" className="text-base leading-none">
+                  {style === "gradient" ? "◐" : "●"}
+                </span>
+                {style === "gradient" ? "Ombre" : "Flat"}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="pt-4">
+      <div className="py-4">
         <p className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-400">
           <span aria-hidden="true" className="text-base leading-none">
             ♥
@@ -278,6 +377,30 @@ export function GameSetupPanel({
             {customError}
           </p>
         )}
+      </div>
+
+      <div className="pt-4">
+        <p className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-400">
+          <span aria-hidden="true" className="text-base leading-none">
+            ☾
+          </span>
+          Day / Night
+        </p>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={dayNightEnabled}
+          aria-label="Track day and night"
+          onClick={() => onDayNightEnabledChange(!dayNightEnabled)}
+          className={`${pillClassName(dayNightEnabled)} inline-flex w-full items-center justify-between gap-2`}
+        >
+          <span>Track day and night</span>
+          <span aria-hidden="true">{dayNightEnabled ? "On" : "Off"}</span>
+        </button>
+        <p className="mt-2 text-xs text-zinc-500">
+          Adds a day/night control to the tracker header. The designation is game-wide and only ever
+          changes when you flip it - nothing here watches the game to flip it for you.
+        </p>
       </div>
     </section>
   );

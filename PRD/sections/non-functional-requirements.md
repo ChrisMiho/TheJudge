@@ -128,7 +128,7 @@
   - no layout-density/device-profile control, layout persistence, UA sniffing, or separate mobile/desktop component trees
   - themed and automatically responsive controls must remain readable and touch-friendly across supported viewports
   - palette persistence must degrade gracefully when browser storage is unavailable; the retired density key is ignored and never required for app load
-  - re-themed surfaces and semantic states (DEC-068 / REQ-046) must keep readable contrast across all six curated DEC-119/REQ-099 profiles and must reuse the existing accent tokens rather than adding token roles or duplicated color constants
+  - re-themed surfaces and semantic states (DEC-068 / REQ-046) must keep readable contrast across all six curated DEC-119/REQ-099 profiles; each fixed profile's `accent-contrast` must clear at least 4.5:1 against both `accent` and `accent-strong`, and consumers must reuse the existing accent tokens rather than adding token roles or duplicated color constants
   - arbitrary custom Colorless RGB is deliberately exempt from the curated-profile contrast guarantee: it is applied unchanged with no warning, validation, rejection, or correction; the fixed Colorless gray profile remains inside the quality gate
   - restrained ambient accents (DEC-081 / REQ-060) apply only to REQ-060's closed minimum surface inventory, including DEC-118's context trigger/sheet/drawer and shared composer/workspace replacement surfaces, and must define resting, enhanced hover/focus, and selected/current intensity once through shared semantic styling
   - card-identity rings remain independent from the selected palette, and scanner convergence/lock/confirmation motion remains unchanged

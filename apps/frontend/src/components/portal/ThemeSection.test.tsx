@@ -103,6 +103,16 @@ describe("Frontend - Theme", () => {
       expect(whiteCheck).toHaveClass("text-accent-contrast");
     });
 
+    it("lays the Colorless row out on the same 5-column grid so its swatch aligns under White", () => {
+      renderThemeSection({ paletteId: "colorless" });
+
+      const paletteGroup = screen.getByRole("group", { name: "Theme palettes" });
+      const colorlessRow = screen.getByRole("button", { name: "Theme: Colorless" }).parentElement;
+
+      expect(paletteGroup).toHaveClass("grid", "grid-cols-5", "gap-0.5");
+      expect(colorlessRow).toHaveClass("grid", "grid-cols-5", "gap-0.5");
+    });
+
     it("renders the native color input and Reset to gray only when Colorless is active", () => {
       renderThemeSection({ paletteId: "colorless" });
 

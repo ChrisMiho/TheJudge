@@ -2,8 +2,9 @@
 name: thejudge-kickoff
 description: >-
   Loads minimal onboarding context for TheJudge (root README.md + PRD/README.md)
-  and optionally captures a new idea in PRD/work/<slug>/IDEA.md. Use when
-  starting a new session or beginning work on a new feature idea.
+  and optionally captures a new idea in PRD/work/<slug>/IDEA.md with
+  STATUS.ideation. Use when starting a new session or beginning work on a new
+  feature idea.
 ---
 
 # TheJudge Kickoff
@@ -29,6 +30,8 @@ Only when the user describes a new idea:
 
 - `PRD/work/<slug>/IDEA.md` — 3–5 sentences: problem, outcome, non-goals
 - `PRD/work/<slug>/README.md` — `status: ideation` at top
+- Empty marker `PRD/work/<slug>/STATUS.ideation` (exactly one STATUS.* per package)
+- Row under `## ideation` in `PRD/work/STATUS.md` (create the board if missing)
 
 `<slug>` is a new kebab-case name proposed from the idea (e.g. `card-wotc-rule-enrichment`). If the user only wants orientation, write nothing.
 
@@ -36,6 +39,7 @@ Only when the user describes a new idea:
 
 - Never read PRD content beyond the two required files without the user naming paths in the same message.
 - Never write product code from this skill.
+- Never rename `PRD/work/<slug>/` to encode status — use `STATUS.*` + README + board only (see `PRD/instructions/workflow-reference.md`).
 
 ## Next step
 

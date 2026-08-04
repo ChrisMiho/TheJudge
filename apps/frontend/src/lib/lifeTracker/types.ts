@@ -13,6 +13,23 @@ export type CommanderDamageBySource = Partial<Record<PlayerLabel, number>>;
 
 export type LayoutMode = "grid" | "list";
 
+/**
+ * Life-card surface treatment. `"gradient"` is the original three-stop ombre (its bright `via-*-50`
+ * mid stop is a lot of near-white on screen); `"flat"` is a single solid, lower-luminance tint.
+ */
+export type CardStyle = "gradient" | "flat";
+
+/** MTG's day/night is one game-wide designation that flips, never a per-player value. */
+export type DayNightPhase = "day" | "night";
+
+/** Settings that describe how the table is presented/played rather than the live game itself. */
+export type TrackerPreferences = {
+  layoutMode: LayoutMode;
+  cardStyle: CardStyle;
+  /** Opt-in: when false the day/night control is not rendered at all. */
+  dayNightEnabled: boolean;
+};
+
 export type TrackerPlayer = {
   label: PlayerLabel;
   displayName: string;
@@ -27,5 +44,9 @@ export type TrackerState = {
   playerCount: number;
   startingLife: number;
   layoutMode: LayoutMode;
+  cardStyle: CardStyle;
+  dayNightEnabled: boolean;
+  /** Only meaningful while `dayNightEnabled`; always persisted so a re-enable restores it. */
+  dayNightPhase: DayNightPhase;
   players: TrackerPlayer[];
 };

@@ -14,6 +14,7 @@ import {
   mergeSelectedZonesOnPhaseChange,
   type FlowStepId
 } from "../../lib/contextFlow";
+import { useRegisterFeedbackContributor } from "../../lib/feedback/FeedbackContextProvider";
 import { formatPlayerDisplayLabel } from "../../lib/playerLabels";
 import { useAssistantSeed } from "../../lib/portal/seedContext";
 import { useAskAiSubmitOrchestration } from "../../hooks/useAskAiSubmitOrchestration";
@@ -245,6 +246,23 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     apiBaseUrl,
     retryCooldownSeconds: RETRY_COOLDOWN_SECONDS
   });
+
+  // DEC-105/REQ-088: contribute this flow's live slice to a feedback snapshot,
+  // lazily — the closure is re-read on every render, so a snapshot taken at any
+  // step (game context → zone confirm → collection → enrichment → conversation)
+  // reflects that step. Read-only: nothing here mutates flow state. Once the
+  // question is submitted the orchestration freezes the context it actually sent,
+  // which is the more useful thing to disclose.
+  useRegisterFeedbackContributor(() => ({
+    screen: "MTG Assistant",
+    flowStep,
+    gameContext: frozenGameContext ?? gameContext,
+    question,
+    selectedZones,
+    zoneCards: zoneCardsByZone,
+    isConversationActive,
+    conversation: visibleMessages
+  }));
 
   function flashStatus(message: string): void {
     setStatusMessage(message);

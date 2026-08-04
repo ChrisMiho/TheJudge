@@ -1,5 +1,5 @@
 ---
-status: refined
+status: refining
 ---
 
 # player-life-tracker-refinement

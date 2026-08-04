@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { resolveApiBaseUrl, resolveDebugLoggingEnabled, resolveIsMockProvider } from "./env";
+import {
+  resolveApiBaseUrl,
+  resolveDebugLoggingEnabled,
+  resolveFeedbackFormspreeId,
+  resolveIsMockProvider,
+} from "./env";
 
 describe("Frontend - Shared", () => {
 describe("frontend env config", () => {
@@ -51,6 +56,23 @@ describe("frontend env config", () => {
 
   it("never throws on unrecognized provider values", () => {
     expect(() => resolveIsMockProvider("something-weird")).not.toThrow();
+  });
+
+  it("resolves feedback formspree id as null when unset, empty, or whitespace-only", () => {
+    expect(resolveFeedbackFormspreeId(undefined)).toBeNull();
+    expect(resolveFeedbackFormspreeId("")).toBeNull();
+    expect(resolveFeedbackFormspreeId("   ")).toBeNull();
+    expect(resolveFeedbackFormspreeId("\t\n")).toBeNull();
+  });
+
+  it("trims the configured feedback formspree id", () => {
+    expect(resolveFeedbackFormspreeId("abcd1234")).toBe("abcd1234");
+    expect(resolveFeedbackFormspreeId("  abcd1234  ")).toBe("abcd1234");
+  });
+
+  it("never throws for any feedback formspree id string input", () => {
+    expect(() => resolveFeedbackFormspreeId("!!not-an-id!!")).not.toThrow();
+    expect(() => resolveFeedbackFormspreeId(undefined)).not.toThrow();
   });
 });
 });

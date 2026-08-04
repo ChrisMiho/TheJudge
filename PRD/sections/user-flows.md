@@ -214,7 +214,7 @@
   - app is loaded
 - Main Flow:
   1. User taps the icon-only portal Menu button in the **top-middle** of the current screen's header; it is the suite's only floating/attached app-chrome affordance.
-  2. The Menu opens and lists the registered destinations — **In-Depth Question** and **Quick Question** — with the current destination indicated. It also shows the palette-only **Theme** section and any registered action entries. Trade Balancer remains unregistered until its real feature ships.
+  2. The Menu opens and lists the registered destinations — **In-Depth Question**, **Quick Question**, **Trade Balancer**, and **Life Tracker** — with the current destination indicated. It also shows the palette-only **Theme** section and any registered action entries (v1: **Send feedback**).
   3. User selects another destination.
   4. App switches the active view to the selected destination without leaving the app or reloading.
   5. To return, the user opens the same Menu and selects the other destination. Palette selection may also be changed in place without switching destinations.
