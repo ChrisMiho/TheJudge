@@ -1,8 +1,8 @@
 # Agent Workflow Skills
 
-TheJudge uses 9 `thejudge-*` skills to drive PRD-based feature work, including
-sequential single-slice, unattended all-slice, and dependency-wave
-implementation modes. All 9 are
+TheJudge uses 10 `thejudge-*` skills to drive PRD-based feature work, including
+autonomous preparation, sequential single-slice, unattended all-slice, and
+dependency-wave implementation modes. All 10 are
 **model-invocable** — the agent may select the matching skill when context
 clearly indicates it — and every skill remains callable explicitly
 (`/thejudge-*` in Cursor and Claude Code, `$thejudge-*` in Codex).
@@ -37,6 +37,8 @@ primitive, such as Codex — see its own `SKILL.md`).
 
 ```mermaid
 flowchart LR
+  prepare[thejudge-prepare] -. controls .-> kickoff
+  prepare -. READY after human merge .-> implementall
   kickoff[thejudge-kickoff] --> refinement[thejudge-refinement]
   refinement --> qc[thejudge-quality-check]
   qc --> mapout[thejudge-map-out]
@@ -54,6 +56,7 @@ flowchart LR
 
 | Skill | When | Writes | Next |
 | --- | --- | --- | --- |
+| `thejudge-prepare` | One arbitrary request needs autonomous preparation before an unattended implementation loop | One reviewed `PRD/work/<slug>/` package plus a docs-only preparation branch/PR, or `NO ACTIONABLE PACKAGE` | After human merge, `thejudge-implement-all` |
 | `thejudge-kickoff` | New session or new feature idea | `IDEA.md`, `README.md` (`status: ideation`) if an idea is captured | `thejudge-refinement` |
 | `thejudge-refinement` | An idea needs product definition | `DESIGN-BRIEF.md`, section updates, `README.md` → `status: refined` | `thejudge-quality-check` |
 | `thejudge-quality-check` | After refinement, before slicing | PASS/FAIL report only | `thejudge-map-out` (PASS) or `thejudge-refinement` (FAIL) |
@@ -80,5 +83,6 @@ literal command, prefixed `/thejudge-*` (Cursor, Claude Code) or `$thejudge-*`
 ## Related docs
 
 - `PRD/instructions/workflow-reference.md` — handoff prefix rule, work-folder lifecycle, status vocabulary
+- `PRD/instructions/preparation-contract.md` — autonomous one-package preparation, assumptions, blockers, and publication
 - `PRD/README.md` — product control plane
 - `.cursor/skills/thejudge-kickoff/reference.md` — PRD quick map

@@ -16,12 +16,25 @@ Orient in this repo without pre-loading the full PRD, and optionally seed a new 
 
 Optional: a feature idea description in the same message.
 
+## Mode
+
+Direct invocation keeps the minimal reads and user handoff below.
+
+When the controlling agent explicitly states `thejudge-prepare is controlling`,
+read `PRD/instructions/preparation-contract.md`, investigate only
+request-relevant PRD and code, select exactly one evidence-backed candidate (or
+return `NO ACTIONABLE PACKAGE`), and create the normal `IDEA.md`/README outputs.
+Return the selected evidence and artifacts to `thejudge-prepare` without pausing
+for user approval.
+
 ## Reads
 
 1. `README.md` — stack, layout, quality gates, current product status
 2. `PRD/README.md` — control plane, source-of-truth precedence, navigation
 
-Nothing else. Do not pre-load `PRD/sections/` or `PRD/instructions/` — see `reference.md` for the full precedence model and task → read-order table used by later skills.
+In direct mode, nothing else. Do not pre-load `PRD/sections/` or
+`PRD/instructions/` — see `reference.md` for the full precedence model and task
+→ read-order table used by later skills.
 
 ## Writes
 
@@ -34,11 +47,17 @@ Only when the user describes a new idea:
 
 ## Gates
 
-- Never read PRD content beyond the two required files without the user naming paths in the same message.
+- In direct mode, never read PRD content beyond the two required files without
+  the user naming paths in the same message.
 - Never write product code from this skill.
 
 ## Next step
 
-Orient-only: none — point the user at `AGENT-SKILLS.md` and this skill's `reference.md`.
+Orchestrated mode: return `NO ACTIONABLE PACKAGE` or the selected evidence and
+created artifacts to `thejudge-prepare`.
 
-Idea captured: `/thejudge-refinement PRD/work/<slug>/` (Cursor / Claude Code) or `$thejudge-refinement PRD/work/<slug>/` (Codex).
+Direct orient-only: none — point the user at `AGENT-SKILLS.md` and this skill's
+`reference.md`.
+
+Direct idea captured: `/thejudge-refinement PRD/work/<slug>/` (Cursor / Claude
+Code) or `$thejudge-refinement PRD/work/<slug>/` (Codex).

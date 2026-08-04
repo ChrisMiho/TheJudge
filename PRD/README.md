@@ -53,7 +53,8 @@ For implementation work, read in this order:
 | `instructions/technical-design-rules.md` | complete | Constraints for architecture and implementation proposals |
 | `instructions/secrets-handling.md` | active | Guardrails for storing secrets in `.secrets/`, never committing them, and validating secret decisions with the user |
 | `instructions/test-naming.md` | active | Hierarchical Vitest title convention (`Layer - Feature` outer describe, nested area + behavior) |
-| `instructions/workflow-reference.md` | active | Lean nine-skill PRD workflow reference: handoff prefix rule, work-folder lifecycle, status vocabulary |
+| `instructions/workflow-reference.md` | active | Lean ten-skill PRD workflow reference: interactive and autonomous paths, handoff prefix rule, work-folder lifecycle, status vocabulary |
+| `instructions/preparation-contract.md` | active | Autonomous one-package preparation, assumption, blocker, and PR-publication contract |
 
 ## Which Files to Read for Which Task
 

@@ -17,6 +17,18 @@ Turn an idea into approved product truth in `PRD/sections/` and a work-package d
 
 Work slug (e.g. `card-wotc-rule-enrichment`).
 
+## Mode
+
+Direct invocation keeps batched questions and explicit approval below.
+
+When the controlling agent explicitly states `thejudge-prepare is controlling`,
+read `PRD/instructions/preparation-contract.md`. Replace the approval pause with
+its conservative assumption ladder, record every material assumption and its
+evidence in `DESIGN-BRIEF.md`, and continue autonomously. If uncertainty meets
+the contract's genuine decision blocker test, preserve the furthest valid
+artifacts and return the unresolved decision to `thejudge-prepare` instead of
+guessing.
+
 ## Reads
 
 1. `PRD/work/<slug>/IDEA.md` (or the user's description)
@@ -34,8 +46,10 @@ Work slug (e.g. `card-wotc-rule-enrichment`).
 
 ## Gates
 
-- Batch clarifying questions, up to 3 per round — never one at a time.
-- Present a design summary and **wait for user approval** before writing any PRD artifact.
+- In direct mode, batch clarifying questions, up to 3 per round — never one at a
+  time.
+- In direct mode, present a design summary and **wait for user approval** before
+  writing any PRD artifact.
 - No scope enters from an open question without explicit user confirmation.
 - No code, no slice docs.
 - Preserve stable IDs — add new `REQ-###` / `FLOW-###` / `DEC-###` / `Q-###`; never renumber.
@@ -43,4 +57,8 @@ Work slug (e.g. `card-wotc-rule-enrichment`).
 
 ## Next step
 
-`/thejudge-quality-check PRD/work/<slug>/` (Cursor / Claude Code) or `$thejudge-quality-check PRD/work/<slug>/` (Codex).
+Orchestrated mode: return the refined artifacts or genuine decision blocker to
+`thejudge-prepare`.
+
+Direct mode: `/thejudge-quality-check PRD/work/<slug>/` (Cursor / Claude Code)
+or `$thejudge-quality-check PRD/work/<slug>/` (Codex).
