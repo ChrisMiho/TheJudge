@@ -18,7 +18,7 @@ _(none)_
 
 ## refined
 
-- [mtg-color-profile-refresh](./mtg-color-profile-refresh/)
+_(none)_
 
 ## ideation
 
