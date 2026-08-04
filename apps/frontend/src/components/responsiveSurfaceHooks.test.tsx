@@ -65,7 +65,7 @@ describe("Frontend - Responsive surface hooks", () => {
     expect(appCss).toMatch(/\.page-shell\[data-mock-banner="true"\] \{[^}]*var\(--layout-page-padding-block\)/s);
     expect(appCss).toMatch(/\.portal-slot-tab \{[^}]*var\(--layout-panel-padding\)/s);
     expect(appCss).toMatch(/\.staged-step-brand \{[^}]*clamp\(/s);
-    expect(appCss).toMatch(/\.staged-step-name \{[^}]*clamp\(/s);
+    expect(appCss).toMatch(/\.step-eyebrow \{[^}]*clamp\(/s);
   });
 
   it("covers staged, card, scan, conversation, and adaptive-context surfaces", () => {

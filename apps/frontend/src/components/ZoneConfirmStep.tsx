@@ -3,6 +3,7 @@ import { ZONE_LABELS } from "../lib/zoneLabels";
 import type { ZoneId } from "../types";
 import { PageShell } from "./PageShell";
 import { StagedStepHeader } from "./StagedStepHeader";
+import { StepEyebrow } from "./StepEyebrow";
 
 type ZoneConfirmStepProps = {
   selectedZones: ZoneId[];
@@ -23,7 +24,8 @@ export function ZoneConfirmStep({
 }: ZoneConfirmStepProps): JSX.Element {
   return (
     <PageShell>
-        <StagedStepHeader stepName="Zone confirmation" />
+        <StagedStepHeader />
+        <StepEyebrow stepName="Zone confirmation" />
         <p className="text-sm text-zinc-400">Select all zones that apply to your question.</p>
 
         <div className="grid grid-cols-1 gap-2 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4 sm:grid-cols-2">

@@ -139,3 +139,33 @@ portal owns app chrome and every feature reaches it as a registered destination.
 - Notes:
   - amends DEC-109 visual treatment only; does not relocate Menu, restore a density/layout preference, or redesign the dropdown
   - approved glow intensity: medium (clearly glowing accent edge, not subtle-only and not strong bloom)
+  - superseded outright by DEC-122: the Menu trigger is rebuilt as a corner rail with a different visual language (radial fade vs. border + glow ring), so none of this decision's width/border/glow treatment carries forward
+
+### DEC-122
+- Decision: The feature-portal Menu trigger relocates from the top-middle header tab (DEC-095/DEC-109) to a **top-left corner rail** — a radial-gradient glow anchored at the header's top-left corner that fades to fully transparent well inside its own bounding box, with no border and no separate button/pill rendered on top of the glow; the glow area itself is the trigger, at the same click target and role as today's Menu button. Selecting it opens a **partial-height drawer that slides in horizontally from the left edge** (`transform: translateX`), replacing the dropdown box, while staying docked inline per-screen and never fixed to the viewport (DEC-109's guarantee carries forward unchanged, just applied to the rail/drawer instead of the top-middle tab). The **brand block moves to true center** of the header row. The **step-name text drops the top-right header slot** and becomes an in-flow **eyebrow label** — small, uppercase, same accent-gradient family as the brand block — sitting directly above each step's own content heading instead of in header chrome, carrying the same step-name values as before (REQ-045's content is unchanged, only its position moves); it stays empty on Life Tracker and the conversation view, unchanged from today. This is a **placement/interaction pivot**, not a tweak: it supersedes DEC-095's top-middle tab placement and DEC-121's width/border/glow prominence pass (never implemented, does not carry forward — the rail uses a different visual language), while preserving DEC-095's extensible destination registry, DEC-109's "never floats fixed" guarantee, and DEC-110's Theme-section-inside-the-Menu hosting.
+- Status: confirmed
+- Context: DEC-121's approved widen-and-glow prominence pass for the top-middle tab was never implemented in code. Before it landed, the user pivoted to a bigger direction: move Menu off the header row into a corner-anchored trigger with a sliding drawer, closer to how corner navigation affordances read across other apps. Once the trigger moved to a corner, two more header problems surfaced: the header's `1fr auto 1fr` grid is mathematically centered, but the brand block read as visually off-center once one corner carried a solid glowing rail and the opposite corner carried only bare step-name text of varying width per screen — a visual-weight mismatch, not a math bug. Separately, that top-right step-name text read as a disconnected floating label rather than integrated chrome. Both were resolved together: relocating the step-name out of the header into an eyebrow label above each step's own content removes the weight mismatch (fixing the centering complaint) and gives the text a more natural, content-anchored home (fixing the disconnected-label complaint). Earlier live mockup iteration (radial-gradient corner fade, no border) fixed a first attempt that read as a "pasted-on box" — a clipped rectangle with a hard `border-right`, however subtly tinted, always reads as pasted-on regardless of color; the fix was geometry (fade to transparent inside its own bounds), not color.
+- Impact:
+  - Menu trigger renders as a top-left edge-strip rail: radial-gradient anchored at the corner, decreasing alpha stops, fully transparent well inside its own bounding box, `border: none`; hover/expanded states darken the same gradient rather than adding a border or a separate button chrome
+  - selecting the trigger opens a partial-height drawer via `transform: translateX(-100%)` (closed) → `translateX(0)` (open), transitioning on `transform` only, so it visibly originates from the left edge rather than dropping from a seam under the header
+  - drawer and rail stay docked inline per-screen exactly as DEC-109 established for the top-middle tab; the `fixed`-position fallback remains only as the same defensive safety net DEC-109 already carved out for a hypothetical headerless destination
+  - brand block (`TheJudge` / `MTG Assistant`) renders centered in the header row on every destination screen
+  - step-name text (game context, zone confirmation, zone collection, enrichment, trade balancer) renders as a small uppercase eyebrow label in the accent-gradient family, positioned directly above that step's own content heading; content/values are unchanged from REQ-045/DEC-067, only the position moves out of the header grid
+  - Life Tracker and the conversation view keep no step-name slot, unchanged from today
+  - reduced-motion: the drawer's slide transform respects `prefers-reduced-motion` (snaps instead of animating), per NFR-006, no new carve-out needed
+  - rail/drawer pixel dimensions are an implementation detail against the real header, constrained only by NFR-001's 44px touch-target minimum — not fixed by this decision
+  - presentation only — no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan behavior, the destination registry, action entries, or the Theme section's contents (DEC-095/DEC-104/DEC-110 unchanged)
+- Related requirements:
+  - REQ-045
+  - REQ-067
+  - REQ-089
+  - DEC-095
+  - DEC-109
+  - DEC-110
+  - DEC-121
+  - NFR-001
+  - NFR-006
+- Notes:
+  - supersedes DEC-095's top-middle tab placement clause and DEC-121's width/border/glow treatment outright (neither carries forward); DEC-095's registry, DEC-109's "never floats fixed" guarantee, and DEC-110's Theme-section hosting all remain in force, just applied to the rail/drawer
+  - REQ-101 (DEC-121's acceptance criteria) is superseded outright alongside DEC-121
+  - non-goals: redesigning the dropdown/drawer's contents or destination registry; consolidating `EnrichmentStep.tsx`'s pre-existing duplicated brand-block JSX (unrelated code-health item, left for a future pass); a step-progress indicator replacing the step-name text; any backend/contract change

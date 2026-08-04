@@ -69,6 +69,9 @@ describe("Frontend - Automatic responsive presentation", () => {
 
     expect(screen.getByLabelText("Player 1 life total")).toBe(lifeInput);
     expect(lifeInput).toHaveValue("33");
-    expect(screen.getByRole("button", { name: "Switch feature" })).toHaveClass("h-11");
+    // .portal-menu-rail's 10.5rem edge-strip height (index.css) clears NFR-001's 44px
+    // touch-target minimum many times over; this just confirms the trigger survives
+    // the resize still wired onto that class, not a specific pixel height.
+    expect(screen.getByRole("button", { name: "Switch feature" })).toHaveClass("portal-menu-rail");
   });
 });

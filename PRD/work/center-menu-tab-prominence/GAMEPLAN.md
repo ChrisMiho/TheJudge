@@ -1,70 +1,68 @@
 # GAMEPLAN — center-menu-tab-prominence
 
-Presentation-only discoverability pass for the feature-portal Menu trigger: modest automatic CSS widen on small viewports, ~25% widen from `768px` up, thicker accent border, and medium accent glow — without changing docking, icon-only labeling, dropdown behavior, or DEC-117's automatic responsive rules.
-
-Source of truth: `DESIGN-BRIEF.md`, DEC-121, REQ-101, plus DEC-109 / REQ-067 / REQ-089 (placement/docking/registry unchanged) and DEC-117 / REQ-096 (no user layout preference).
+Source: `DESIGN-BRIEF.md`, DEC-122 (`PRD/sections/decisions/navigation.md`).
 
 ## Architecture
 
-One shared trigger; styles only:
+Two independent concerns inside the same header, split into two sequential slices:
 
-1. **Prominence presentation (Slice A)** — Keep the existing single Menu `<button>` in `FeaturePortalMenu.tsx`. Replace the quiet `border border-t-0 border-accent/55 … px-4` treatment with a dedicated CSS class (preferred: `.portal-menu-trigger` or equivalent in `index.css`) that owns:
-   - mobile-first horizontal padding ≈ `1.1–1.15rem` (~10–15% over pre-change `1rem` / `px-4`)
-   - `@media (min-width: 768px)` horizontal padding ≈ `1.25rem` (~25% over baseline)
-   - thicker accent border than the pre-change `1px` / `border-accent/55` edge (still `border-t-0` so flush docking reads correctly)
-   - medium CSS-only accent ring and/or `box-shadow` glow on every viewport (clearly primary chrome; not subtle-only; not strong bloom)
-   - `prefers-reduced-motion`: no new decorative motion required; static border/glow may remain. If the glow uses a transition/animation, include it in the existing reduced-motion block the same way `.portal-menu-motion` / ambient accents do.
-2. **Assertions and ship closure (Slice B)** — Stylesheet and/or component assertions lock width rules, thicker border, and medium glow; existing docking / open-select / reduced-motion portal tests stay green; carry cleanup handoff.
+1. **Content/DOM structure** — where the brand block and the step-name text sit.
+   Touches `StagedStepHeader.tsx`, `BrandMark.tsx`, a new shared `StepEyebrow.tsx`,
+   and every step screen that currently passes `stepName` into `StagedStepHeader`.
+2. **Trigger visual + interaction** — how the Menu trigger looks and opens.
+   Touches only `FeaturePortalMenu.tsx`, `PortalSlot.tsx` (doc comment only), and
+   the rail/drawer CSS. Does not depend on where the brand or step-name render,
+   only on which grid column the slot lands in from slice A.
 
-`.portal-slot-tab` flush lift against `.page-card` stays untouched in behavior. Prefer tokens (`rgb(var(--accent) / …)`, `--accent-soft`, `--accent-strong`) over hard-coded palette RGB. No second component tree, UA sniffing, JS breakpoints, Theme Layout control, or animation library.
+Sequential order: A before B, because B's rail sits in the same header grid
+column slice A repositions (`PortalSlot` moves from the middle column to the
+left column). Implementing B first would mean rebuilding the rail's position
+twice.
 
 ## Data flow
 
-Unchanged. Destination switching, action entries, Theme palette section, and `sessionStorage` active-destination persistence keep their existing paths. This package only changes how the trigger looks.
+- `stepName` currently flows: destination screen → `StagedStepHeader` prop →
+  rendered as `<h2 class="staged-step-name">` in the header's right column.
+- After slice A: destination screen renders `<StepEyebrow>{stepName}</StepEyebrow>`
+  itself, positioned above its own first content line. `StagedStepHeader` no
+  longer accepts or renders `stepName` at all — it only renders the brand block
+  (now centered) and the `<PortalSlot />` (now left-anchored).
+- `FeaturePortalMenu`'s slot-registration mechanism (`registerSlot` /
+  `unregisterSlot` / `visibleSlotNode`) is unchanged by slice B — only the
+  trigger's own markup (radial-gradient rail instead of pill button) and the
+  open-state markup (sliding drawer instead of dropdown box) change. The fixed
+  fallback (destinations with no header) keeps the same defensive role DEC-109
+  already established, repositioned to the top-left corner to match the rail.
 
-## Interfaces / contracts
+## Non-goals (carried from DESIGN-BRIEF.md, do not implement)
 
-No public contract change. No new props on `FeaturePortalMenu`. No backend, Zod, prompt, scan, or destination-registry edits.
+- Drawer/dropdown *contents*, the destination registry, or the Theme section.
+- Consolidating `EnrichmentStep.tsx`'s pre-existing duplicated brand-block JSX.
+- Any part of DEC-121's border/glow-ring visual treatment.
+- A step-progress indicator (dots/breadcrumb).
+- Backend, contract, prompt, scan, or destination-behavior changes.
 
-Suggested CSS surface (normative intent; exact class name chosen in Slice A):
+## Verification checklist (full package)
 
-```css
-.portal-menu-trigger {
-  /* thicker accent border; medium glow; padding ≈ 1.1–1.15rem */
-}
-@media (min-width: 768px) {
-  .portal-menu-trigger {
-    /* padding ≈ 1.25rem */
-  }
-}
+```bash
+cd apps/frontend && npm run quality:check
 ```
 
-Touch target stays ≥44px (`h-11` / NFR-001). Accessible name stays `aria-label="Switch feature"`; trigger remains icon-only (☰).
+- `StagedStepHeader.test.tsx`, `FeaturePortalMenu.test.tsx`, and each touched
+  step's own test file pass.
+- Manual check (dev server): every destination header reads as centered on the
+  brand block; the rail is discoverable at the top-left corner with no border;
+  the drawer visibly slides in from the left edge; each step's eyebrow label
+  sits above that step's own first content line; Life Tracker and the
+  conversation view show no eyebrow and are otherwise unaffected.
+- `prefers-reduced-motion` still covered for the drawer's open transition
+  (mirrors the existing `.portal-menu-motion` reduced-motion coverage test).
 
-## Dependency order
+## Slices
 
-| Slice | Depends on | Why sequential |
-| --- | --- | --- |
-| A | — | Owns the class/token choices on the shared trigger + CSS |
-| B | A | Assertions must target the selectors/values Slice A ships |
+| Slice | Objective | Depends on | Files |
+| --- | --- | --- | --- |
+| A | Recenter brand block; relocate step-name into an in-flow `StepEyebrow` above each step's own content | none | `StagedStepHeader.tsx`, `BrandMark.tsx`, `StepEyebrow.tsx` (new), `StepEyebrow.test.tsx` (new), `StagedStepHeader.test.tsx`, `ZoneConfirmStep.tsx`, `ZoneCollectionStep.tsx`, `EnrichmentStep.tsx`, `trade/TradeBalancer.tsx`, `portal/MtgAssistantApp.tsx`, `index.css` |
+| B | Rebuild Menu trigger as a top-left corner rail opening a sliding drawer | A (shares the header's left grid column) | `portal/FeaturePortalMenu.tsx`, `portal/PortalSlot.tsx` (doc comment), `portal/FeaturePortalMenu.test.tsx`, `index.css` |
 
-Not parallel-ready: both slices would edit the same trigger class and test expectations.
-
-## Verification checklist
-
-- [ ] Below `768px`, trigger horizontal padding ≈ 10–15% above `1rem`
-- [ ] At/above `768px`, trigger horizontal padding ≈ 25% above `1rem`
-- [ ] Accent border thicker than pre-change single `border` / `border-accent/55` on every viewport
-- [ ] Medium accent glow present on every viewport (CSS-only)
-- [ ] Under `prefers-reduced-motion: reduce`, no new decorative motion; static emphasis OK
-- [ ] Icon-only + `aria-label="Switch feature"`; `.portal-slot-tab` docking still flush; dropdown open/select/close unchanged
-- [ ] No Desktop/Mobile / density / layout preference control
-- [ ] Automated/stylesheet assertions cover width, border, glow; existing portal tests pass
-- [ ] `npm --workspace apps/frontend run test` and `npm run quality:check` green for touched areas
-
-## Non-goals (do not implement)
-
-- Relocating Menu; restoring a visible "Menu" label; redesigning dropdown/registry
-- User-facing Desktop/Mobile or density control; separate mobile/desktop component trees
-- Backend, contract, prompt, scan, or destination-behavior changes
-- Strong bloom / animation library
+Final slice: B. Carries the Ship gates block and PRD promotion checklist.

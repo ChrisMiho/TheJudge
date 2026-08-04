@@ -131,10 +131,10 @@ export function PlayerLifeTrackerApp({
     <PageShell variant="full-bleed">
       <div className="mx-auto flex min-h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col gap-2">
         <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3">
-          <div>
+          <PortalSlot />
+          <div className="text-center">
             <BrandMark />
           </div>
-          <PortalSlot />
           <div className="flex items-center gap-2 justify-self-end">
             {tracker.state.dayNightEnabled && (
               <button
