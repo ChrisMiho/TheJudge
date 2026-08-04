@@ -41,8 +41,10 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={placement}
           layoutMode="grid"
+          cardStyle="gradient"
           isWideSeat={false}
           onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
       );
@@ -72,8 +74,10 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={placement}
           layoutMode="grid"
+          cardStyle="gradient"
           isWideSeat={false}
           onAdjustLife={onAdjustLife}
+          onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
       );
@@ -95,8 +99,10 @@ describe("Frontend - Shared", () => {
           players={rosterWith(deadPlayer)}
           placement={placement}
           layoutMode="grid"
+          cardStyle="gradient"
           isWideSeat={false}
           onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
       );
@@ -112,8 +118,10 @@ describe("Frontend - Shared", () => {
           players={rosterWith(revivedPlayer)}
           placement={placement}
           layoutMode="grid"
+          cardStyle="gradient"
           isWideSeat={false}
           onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
       );
@@ -131,8 +139,10 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={placement}
           layoutMode="grid"
+          cardStyle="gradient"
           isWideSeat={false}
           onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
           onOpenCounters={onOpenCounters}
         />
       );
@@ -156,8 +166,10 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={placement}
           layoutMode="grid"
+          cardStyle="gradient"
           isWideSeat={false}
           onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
       );
@@ -178,8 +190,10 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={placement}
           layoutMode="grid"
+          cardStyle="gradient"
           isWideSeat={false}
           onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
       );
@@ -199,8 +213,10 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={placement}
           layoutMode="list"
+          cardStyle="gradient"
           isWideSeat={false}
           onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
       );
@@ -223,8 +239,10 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={placement}
           layoutMode="list"
+          cardStyle="gradient"
           isWideSeat={true}
           onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
       );
@@ -248,8 +266,10 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={placement}
           layoutMode="grid"
+          cardStyle="gradient"
           isWideSeat={false}
           onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
       );
@@ -265,8 +285,10 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={sidewaysPlacement}
           layoutMode="grid"
+          cardStyle="gradient"
           isWideSeat={false}
           onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
       );
@@ -283,8 +305,10 @@ describe("Frontend - Shared", () => {
           players={rosterWith(player)}
           placement={uprightPlacement}
           layoutMode="grid"
+          cardStyle="gradient"
           isWideSeat={false}
           onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
       );
@@ -292,6 +316,163 @@ describe("Frontend - Shared", () => {
       expect(screen.getByTestId("life-card-content-Player 1")).toHaveStyle({
         width: "100cqw",
         height: "100cqh"
+      });
+    });
+
+    describe("Card style", () => {
+      function renderWithStyle(cardStyle: "gradient" | "flat", life = 40) {
+        const player = playerAtLife(life);
+        return render(
+          <PlayerLifeCard
+            player={player}
+            players={rosterWith(player)}
+            placement={placement}
+            layoutMode="grid"
+            cardStyle={cardStyle}
+            isWideSeat={false}
+            onAdjustLife={vi.fn()}
+            onSetLife={vi.fn()}
+            onOpenCounters={vi.fn()}
+          />
+        );
+      }
+
+      it("keeps the gradient ombre fill for the default card style", () => {
+        renderWithStyle("gradient");
+        const card = screen.getByTestId("life-card-Player 1");
+
+        expect(card).toHaveAttribute("data-card-style", "gradient");
+        expect(card.className).toContain("bg-gradient-to-br");
+        expect(card.className).toContain("via-zinc-50");
+      });
+
+      it("drops the bright mid stop for a single solid tint in the flat card style", () => {
+        renderWithStyle("flat");
+        const card = screen.getByTestId("life-card-Player 1");
+
+        expect(card).toHaveAttribute("data-card-style", "flat");
+        expect(card.className).not.toContain("bg-gradient-to-br");
+        expect(card.className).not.toContain("via-");
+        expect(card.className).toContain("bg-accent-soft");
+      });
+
+      it("keeps the same three life states and their border/text colors in the flat card style", () => {
+        const { unmount } = renderWithStyle("flat", 5);
+        let card = screen.getByTestId("life-card-Player 1");
+        expect(card).toHaveAttribute("data-life-state", "critical");
+        expect(card.className).toContain("border-amber-400/60");
+        expect(card.className).toContain("text-amber-950");
+        unmount();
+
+        renderWithStyle("flat", 0);
+        card = screen.getByTestId("life-card-Player 1");
+        expect(card).toHaveAttribute("data-life-state", "dead");
+        expect(card.className).toContain("border-rose-400/70");
+        expect(card.className).toContain("text-rose-950");
+      });
+    });
+
+    describe("Typed life entry", () => {
+      function renderEditable(life = 40) {
+        const player = playerAtLife(life);
+        const onSetLife = vi.fn();
+        const onAdjustLife = vi.fn();
+        render(
+          <PlayerLifeCard
+            player={player}
+            players={rosterWith(player)}
+            placement={placement}
+            layoutMode="grid"
+            cardStyle="gradient"
+            isWideSeat={false}
+            onAdjustLife={onAdjustLife}
+            onSetLife={onSetLife}
+            onOpenCounters={vi.fn()}
+          />
+        );
+        return { onSetLife, onAdjustLife };
+      }
+
+      it("commits a typed total on Enter", async () => {
+        const user = userEvent.setup();
+        const { onSetLife } = renderEditable(40);
+
+        await user.click(screen.getByRole("button", { name: "Set life for Player 1 (Alice)" }));
+        const input = screen.getByRole("textbox", { name: "Set life for Player 1 (Alice)" });
+        await user.clear(input);
+        await user.type(input, "100000{Enter}");
+
+        expect(onSetLife).toHaveBeenCalledWith("Player 1", 100000);
+        expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+      });
+
+      it("commits a negative total on blur", async () => {
+        const user = userEvent.setup();
+        const { onSetLife } = renderEditable(3);
+
+        await user.click(screen.getByRole("button", { name: "Set life for Player 1 (Alice)" }));
+        const input = screen.getByRole("textbox", { name: "Set life for Player 1 (Alice)" });
+        await user.clear(input);
+        await user.type(input, "-12");
+        await user.tab();
+
+        expect(onSetLife).toHaveBeenCalledWith("Player 1", -12);
+      });
+
+      it("cancels on Escape without writing the draft", async () => {
+        const user = userEvent.setup();
+        const { onSetLife } = renderEditable(40);
+
+        await user.click(screen.getByRole("button", { name: "Set life for Player 1 (Alice)" }));
+        const input = screen.getByRole("textbox", { name: "Set life for Player 1 (Alice)" });
+        await user.clear(input);
+        await user.type(input, "7{Escape}");
+
+        expect(onSetLife).not.toHaveBeenCalled();
+        expect(screen.getByRole("button", { name: "Set life for Player 1 (Alice)" })).toBeInTheDocument();
+      });
+
+      it("cancels rather than writing garbage for empty or non-numeric entry", async () => {
+        const user = userEvent.setup();
+        const { onSetLife } = renderEditable(40);
+
+        await user.click(screen.getByRole("button", { name: "Set life for Player 1 (Alice)" }));
+        await user.clear(screen.getByRole("textbox", { name: "Set life for Player 1 (Alice)" }));
+        await user.keyboard("{Enter}");
+        expect(onSetLife).not.toHaveBeenCalled();
+
+        await user.click(screen.getByRole("button", { name: "Set life for Player 1 (Alice)" }));
+        const input = screen.getByRole("textbox", { name: "Set life for Player 1 (Alice)" });
+        await user.clear(input);
+        await user.type(input, "lots{Enter}");
+
+        expect(onSetLife).not.toHaveBeenCalled();
+      });
+
+      it("opens from keyboard focus with Enter and rotates with the rest of the card content", async () => {
+        const user = userEvent.setup();
+        renderEditable(40);
+
+        screen.getByRole("button", { name: "Set life for Player 1 (Alice)" }).focus();
+        await user.keyboard("{Enter}");
+
+        const input = screen.getByRole("textbox", { name: "Set life for Player 1 (Alice)" });
+        expect(input).toHaveFocus();
+        // The entry lives inside the single rotated content box, so it inherits the seat's rotation.
+        expect(screen.getByTestId("life-card-content-Player 1")).toContainElement(input);
+      });
+
+      it("leaves the +/- adjustment bands above the card content so they still take their own taps", async () => {
+        const user = userEvent.setup();
+        const { onAdjustLife, onSetLife } = renderEditable(40);
+
+        expect(screen.getByTestId("life-card-content-Player 1").className).toContain("z-10");
+        expect(screen.getByRole("button", { name: "Increase life for Player 1 (Alice)" }).className).toContain("z-20");
+
+        await user.click(screen.getByRole("button", { name: "Increase life for Player 1 (Alice)" }));
+
+        expect(onAdjustLife).toHaveBeenCalledWith("Player 1", 1);
+        expect(onSetLife).not.toHaveBeenCalled();
       });
     });
   });

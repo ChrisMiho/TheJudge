@@ -147,6 +147,63 @@ describe("Frontend - Shared", () => {
       expect(result.current.state.players[0].life).toBe(36);
     });
 
+    it("commits an exact typed life total through setPlayerLife", () => {
+      const { result } = renderHook(() => useLifeTracker());
+
+      act(() => {
+        result.current.setPlayerLife("Player 1", 100000);
+      });
+      expect(result.current.state.players[0].life).toBe(100000);
+      expect(JSON.parse(localStorage.getItem(TRACKER_STORAGE_KEY) as string).players[0].life).toBe(100000);
+
+      act(() => {
+        result.current.setPlayerLife("Player 1", -7);
+      });
+      expect(result.current.state.players[0].life).toBe(-7);
+    });
+
+    it("persists the card style and day/night settings as they change", () => {
+      const { result } = renderHook(() => useLifeTracker());
+
+      act(() => {
+        result.current.setCardStyle("flat");
+        result.current.setDayNightEnabled(true);
+        result.current.toggleDayNightPhase();
+      });
+
+      expect(result.current.state.cardStyle).toBe("flat");
+      expect(result.current.state.dayNightEnabled).toBe(true);
+      expect(result.current.state.dayNightPhase).toBe("night");
+
+      const stored = JSON.parse(localStorage.getItem(TRACKER_STORAGE_KEY) as string);
+      expect(stored.cardStyle).toBe("flat");
+      expect(stored.dayNightEnabled).toBe(true);
+      expect(stored.dayNightPhase).toBe("night");
+    });
+
+    it("keeps presentation preferences across New Game while discarding the game", () => {
+      const { result } = renderHook(() => useLifeTracker());
+
+      act(() => {
+        result.current.setLayoutMode("list");
+        result.current.setCardStyle("flat");
+        result.current.setDayNightEnabled(true);
+        result.current.setPlayerCount(6);
+        result.current.toggleDayNightPhase();
+      });
+
+      act(() => {
+        result.current.newGame();
+      });
+
+      expect(result.current.state.layoutMode).toBe("list");
+      expect(result.current.state.cardStyle).toBe("flat");
+      expect(result.current.state.dayNightEnabled).toBe(true);
+      expect(result.current.state.dayNightPhase).toBe("day");
+      expect(result.current.state.playerCount).toBe(4);
+      expect(localStorage.getItem(TRACKER_STORAGE_KEY)).toBeNull();
+    });
+
     it("exposes named and custom counter actions that update the returned state", () => {
       const { result } = renderHook(() => useLifeTracker());
 

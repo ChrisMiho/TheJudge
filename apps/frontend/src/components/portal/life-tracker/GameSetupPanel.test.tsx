@@ -15,10 +15,14 @@ function renderPanel(overrides: Partial<ComponentProps<typeof GameSetupPanel>> =
   const props: ComponentProps<typeof GameSetupPanel> = {
     playerCount: 4,
     layoutMode: "grid",
+    cardStyle: "gradient",
+    dayNightEnabled: false,
     startingLife: 40,
     players: FOUR_PLAYERS,
     onPlayerCountChange: vi.fn(),
     onLayoutModeChange: vi.fn(),
+    onCardStyleChange: vi.fn(),
+    onDayNightEnabledChange: vi.fn(),
     onStartingLifeChange: vi.fn(),
     onDisplayNameChange: vi.fn(),
     onReset: vi.fn(),
@@ -160,15 +164,85 @@ describe("Frontend - Shared", () => {
       expect(props.onStartingLifeChange).not.toHaveBeenCalled();
     });
 
-    it("keeps Reset and New Game as explicit actions", async () => {
+    it("keeps Reset and New Game as explicit actions behind a confirming second press", async () => {
       const user = userEvent.setup();
       const props = renderPanel();
 
       await user.click(screen.getByRole("button", { name: "Reset current game" }));
+      expect(props.onReset).not.toHaveBeenCalled();
+      await user.click(screen.getByRole("button", { name: "Confirm reset current game" }));
+
       await user.click(screen.getByRole("button", { name: "Start new game" }));
+      expect(props.onNewGame).not.toHaveBeenCalled();
+      await user.click(screen.getByRole("button", { name: "Confirm start new game" }));
 
       expect(props.onReset).toHaveBeenCalledOnce();
       expect(props.onNewGame).toHaveBeenCalledOnce();
+    });
+
+    it("announces what each pending confirm will destroy and clears the message after confirming", async () => {
+      const user = userEvent.setup();
+      renderPanel();
+
+      await user.click(screen.getByRole("button", { name: "Reset current game" }));
+      expect(screen.getByRole("status")).toHaveTextContent(/every life total goes back/i);
+      expect(screen.getByRole("status")).toHaveTextContent(/players, names, and settings stay/i);
+
+      await user.click(screen.getByRole("button", { name: "Start new game" }));
+      expect(screen.getByRole("status")).toHaveTextContent(/this game is discarded/i);
+
+      await user.click(screen.getByRole("button", { name: "Confirm start new game" }));
+      expect(screen.getByRole("status")).toBeEmptyDOMElement();
+    });
+
+    it("cancels a pending Reset without firing it, and drops it when New Game is confirmed instead", async () => {
+      const user = userEvent.setup();
+      const props = renderPanel();
+
+      await user.click(screen.getByRole("button", { name: "Reset current game" }));
+      await user.click(screen.getByRole("button", { name: "Cancel reset current game" }));
+
+      expect(props.onReset).not.toHaveBeenCalled();
+      expect(screen.getByRole("button", { name: "Reset current game" })).toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Reset current game" }));
+      await user.click(screen.getByRole("button", { name: "Start new game" }));
+      await user.click(screen.getByRole("button", { name: "Confirm start new game" }));
+
+      expect(screen.queryByRole("button", { name: "Confirm reset current game" })).not.toBeInTheDocument();
+      expect(props.onReset).not.toHaveBeenCalled();
+      expect(props.onNewGame).toHaveBeenCalledOnce();
+    });
+
+    it("changes card style and reflects a controlled cardStyle prop update", async () => {
+      const user = userEvent.setup();
+      const props = renderPanel({ cardStyle: "gradient" });
+
+      expect(screen.getByRole("button", { name: "Use gradient card style" })).toHaveAttribute(
+        "aria-pressed",
+        "true"
+      );
+      expect(screen.getByRole("button", { name: "Use flat card style" })).toHaveAttribute("aria-pressed", "false");
+
+      await user.click(screen.getByRole("button", { name: "Use flat card style" }));
+      expect(props.onCardStyleChange).toHaveBeenCalledWith("flat");
+
+      props.rerenderPanel({ cardStyle: "flat" });
+      expect(screen.getByRole("button", { name: "Use flat card style" })).toHaveAttribute("aria-pressed", "true");
+    });
+
+    it("toggles day/night tracking from its off default", async () => {
+      const user = userEvent.setup();
+      const props = renderPanel({ dayNightEnabled: false });
+      const toggle = screen.getByRole("switch", { name: "Track day and night" });
+
+      expect(toggle).toHaveAttribute("aria-checked", "false");
+
+      await user.click(toggle);
+      expect(props.onDayNightEnabledChange).toHaveBeenCalledWith(true);
+
+      props.rerenderPanel({ dayNightEnabled: true });
+      expect(screen.getByRole("switch", { name: "Track day and night" })).toHaveAttribute("aria-checked", "true");
     });
 
     it("reveals per-player name inputs for exactly the current player count from the Players section", async () => {

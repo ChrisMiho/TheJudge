@@ -1,6 +1,13 @@
 import type { PlayerLabel } from "../../types";
 import { clampCounterValue, createEmptyNamedCounters, type NamedCounterId } from "./counters";
-import type { LayoutMode, TrackerPlayer, TrackerState } from "./types";
+import type {
+  CardStyle,
+  DayNightPhase,
+  LayoutMode,
+  TrackerPlayer,
+  TrackerPreferences,
+  TrackerState
+} from "./types";
 
 export const MIN_PLAYER_COUNT = 2;
 export const MAX_PLAYER_COUNT = 8;
@@ -8,6 +15,18 @@ export const MAX_PLAYER_COUNT = 8;
 export const DEFAULT_PLAYER_COUNT = 4;
 export const DEFAULT_STARTING_LIFE = 40;
 export const DEFAULT_LAYOUT_MODE: LayoutMode = "grid";
+/** Unchanged from the original shipped look, so existing games keep the ombre they already had. */
+export const DEFAULT_CARD_STYLE: CardStyle = "gradient";
+/** Day/night is opt-in: off costs nothing for the many games that never use the mechanic. */
+export const DEFAULT_DAY_NIGHT_ENABLED = false;
+export const DEFAULT_DAY_NIGHT_PHASE: DayNightPhase = "day";
+
+/** The presentation/format settings that survive a New Game, unlike the game's own live values. */
+export const DEFAULT_PREFERENCES: TrackerPreferences = {
+  layoutMode: DEFAULT_LAYOUT_MODE,
+  cardStyle: DEFAULT_CARD_STYLE,
+  dayNightEnabled: DEFAULT_DAY_NIGHT_ENABLED
+};
 
 /** Every fixed player label, in seat order. The tracker roster is always a contiguous prefix of this list. */
 export const ALL_PLAYER_LABELS: readonly PlayerLabel[] = [
@@ -61,20 +80,27 @@ function updatePlayer(
 export function createInitialState(
   playerCount: number,
   startingLife: number,
-  layoutMode: LayoutMode = DEFAULT_LAYOUT_MODE
+  layoutMode: LayoutMode = DEFAULT_LAYOUT_MODE,
+  preferences: Partial<Omit<TrackerPreferences, "layoutMode">> = {}
 ): TrackerState {
   const clampedCount = clampPlayerCount(playerCount);
   return {
     playerCount: clampedCount,
     startingLife,
     layoutMode,
+    cardStyle: preferences.cardStyle ?? DEFAULT_CARD_STYLE,
+    dayNightEnabled: preferences.dayNightEnabled ?? DEFAULT_DAY_NIGHT_ENABLED,
+    dayNightPhase: DEFAULT_DAY_NIGHT_PHASE,
     players: ALL_PLAYER_LABELS.slice(0, clampedCount).map((label) => createPlayer(label, startingLife))
   };
 }
 
 /** The documented default game used for initial hydration and New Game. */
-export function createDefaultGame(layoutMode: LayoutMode = DEFAULT_LAYOUT_MODE): TrackerState {
-  return createInitialState(DEFAULT_PLAYER_COUNT, DEFAULT_STARTING_LIFE, layoutMode);
+export function createDefaultGame(
+  layoutMode: LayoutMode = DEFAULT_LAYOUT_MODE,
+  preferences: Partial<Omit<TrackerPreferences, "layoutMode">> = {}
+): TrackerState {
+  return createInitialState(DEFAULT_PLAYER_COUNT, DEFAULT_STARTING_LIFE, layoutMode, preferences);
 }
 
 /** Preserves retained players by fixed label; new players are initialized at the current starting life. */
@@ -108,6 +134,19 @@ export function setStartingLife(state: TrackerState, startingLife: number): Trac
 /** Life is not clamped: it can fall to or below zero so the (visual-only) skull cue can trigger. */
 export function adjustPlayerLife(state: TrackerState, label: PlayerLabel, delta: number): TrackerState {
   return updatePlayer(state, label, (player) => ({ ...player, life: player.life + delta }));
+}
+
+/**
+ * Sets an exact life total (the typed-entry path). Like `adjustPlayerLife` the value is not
+ * clamped - arbitrarily large and negative totals are both legal - but a non-finite value is
+ * refused outright rather than written, so a NaN can never poison persisted state.
+ */
+export function setPlayerLife(state: TrackerState, label: PlayerLabel, life: number): TrackerState {
+  if (!Number.isFinite(life)) {
+    return state;
+  }
+
+  return updatePlayer(state, label, (player) => ({ ...player, life }));
 }
 
 export function adjustNamedCounter(
@@ -233,10 +272,33 @@ export function setLayoutMode(state: TrackerState, mode: LayoutMode): TrackerSta
   return { ...state, layoutMode: mode };
 }
 
+export function setCardStyle(state: TrackerState, cardStyle: CardStyle): TrackerState {
+  return { ...state, cardStyle };
+}
+
+/** Turning tracking on always starts the game at day; turning it off leaves the phase untouched. */
+export function setDayNightEnabled(state: TrackerState, dayNightEnabled: boolean): TrackerState {
+  return {
+    ...state,
+    dayNightEnabled,
+    dayNightPhase: dayNightEnabled ? DEFAULT_DAY_NIGHT_PHASE : state.dayNightPhase
+  };
+}
+
+export function setDayNightPhase(state: TrackerState, dayNightPhase: DayNightPhase): TrackerState {
+  return { ...state, dayNightPhase };
+}
+
+/** The only transition MTG's day/night has: it flips. There is no third designation to cycle to. */
+export function toggleDayNightPhase(state: TrackerState): TrackerState {
+  return setDayNightPhase(state, state.dayNightPhase === "day" ? "night" : "day");
+}
+
 /** Preserves player count, names, and settings; zeroes every counter and restores life to the starting value. */
 export function resetGame(state: TrackerState): TrackerState {
   return {
     ...state,
+    dayNightPhase: DEFAULT_DAY_NIGHT_PHASE,
     players: state.players.map((player) => ({
       ...player,
       life: state.startingLife,
@@ -247,7 +309,12 @@ export function resetGame(state: TrackerState): TrackerState {
   };
 }
 
-/** Discards the current game entirely and restores the documented default game. */
-export function startNewGame(): TrackerState {
-  return createDefaultGame();
+/**
+ * Discards the current game entirely and restores the documented default game. Presentation
+ * preferences (layout, card style, day/night tracking) are carried over when supplied: they
+ * describe how the user wants the tracker to look/behave, not the game being discarded, so
+ * silently reverting them on New Game would keep undoing the user's explicit choices.
+ */
+export function startNewGame(preferences: Partial<TrackerPreferences> = {}): TrackerState {
+  return createDefaultGame(preferences.layoutMode ?? DEFAULT_LAYOUT_MODE, preferences);
 }

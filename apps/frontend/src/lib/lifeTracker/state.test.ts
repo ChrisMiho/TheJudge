@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { NAMED_COUNTER_PALETTE } from "./counters";
 import {
   ALL_PLAYER_LABELS,
+  DEFAULT_CARD_STYLE,
   DEFAULT_LAYOUT_MODE,
   addCustomCounter,
   adjustCommanderDamage,
@@ -12,14 +13,19 @@ import {
   createInitialState,
   removeCustomCounter,
   resetGame,
+  setCardStyle,
   setCommanderDamage,
   setCustomCounter,
+  setDayNightEnabled,
+  setDayNightPhase,
   setNamedCounter,
   setLayoutMode,
   setPlayerCount,
   setPlayerDisplayName,
+  setPlayerLife,
   setStartingLife,
-  startNewGame
+  startNewGame,
+  toggleDayNightPhase
 } from "./state";
 import type { TrackerState } from "./types";
 
@@ -309,6 +315,90 @@ describe("Frontend - Shared", () => {
       expect(reset.players[0].namedCounters.monarch).toBe(0);
       expect(reset.players[0].customCounters).toEqual([{ id: counterId, name: "Storm", amount: 0 }]);
       expect(reset.players[1].commanderDamage).toEqual({});
+    });
+  });
+
+  describe("lifeTracker exact life entry", () => {
+    it("sets an exact total, including very large and negative values", () => {
+      let state = createInitialState(2, 40);
+
+      state = setPlayerLife(state, "Player 1", 100000);
+      expect(state.players[0].life).toBe(100000);
+
+      state = setPlayerLife(state, "Player 1", -12);
+      expect(state.players[0].life).toBe(-12);
+      expect(state.players[1].life).toBe(40);
+    });
+
+    it("refuses a non-finite total instead of writing it", () => {
+      const state = createInitialState(2, 40);
+
+      expect(setPlayerLife(state, "Player 1", Number.NaN)).toBe(state);
+      expect(setPlayerLife(state, "Player 1", Number.POSITIVE_INFINITY)).toBe(state);
+    });
+  });
+
+  describe("lifeTracker presentation preferences", () => {
+    it("defaults to the shipped ombre card style and day/night tracking off", () => {
+      const state = createDefaultGame();
+
+      expect(state.cardStyle).toBe(DEFAULT_CARD_STYLE);
+      expect(state.cardStyle).toBe("gradient");
+      expect(state.dayNightEnabled).toBe(false);
+      expect(state.dayNightPhase).toBe("day");
+    });
+
+    it("sets the card style without touching the game", () => {
+      const state = setCardStyle(createInitialState(2, 40), "flat");
+
+      expect(state.cardStyle).toBe("flat");
+      expect(state.players[0].life).toBe(40);
+    });
+
+    it("starts day/night tracking at day whenever it is enabled", () => {
+      let state = setDayNightEnabled(createInitialState(2, 40), true);
+      state = toggleDayNightPhase(state);
+      expect(state.dayNightPhase).toBe("night");
+
+      state = setDayNightEnabled(state, false);
+      expect(state.dayNightEnabled).toBe(false);
+      expect(state.dayNightPhase).toBe("night");
+
+      state = setDayNightEnabled(state, true);
+      expect(state.dayNightPhase).toBe("day");
+    });
+
+    it("flips the one game-wide designation back and forth", () => {
+      let state = setDayNightPhase(createInitialState(2, 40), "day");
+
+      state = toggleDayNightPhase(state);
+      expect(state.dayNightPhase).toBe("night");
+
+      state = toggleDayNightPhase(state);
+      expect(state.dayNightPhase).toBe("day");
+    });
+
+    it("returns the day designation to day on reset", () => {
+      let state = setDayNightEnabled(createInitialState(2, 40), true);
+      state = toggleDayNightPhase(state);
+
+      expect(resetGame(state).dayNightPhase).toBe("day");
+      expect(resetGame(state).dayNightEnabled).toBe(true);
+    });
+
+    it("carries presentation preferences over a New Game while discarding the game itself", () => {
+      const next = startNewGame({ layoutMode: "list", cardStyle: "flat", dayNightEnabled: true });
+
+      expect(next.layoutMode).toBe("list");
+      expect(next.cardStyle).toBe("flat");
+      expect(next.dayNightEnabled).toBe(true);
+      expect(next.dayNightPhase).toBe("day");
+      expect(next.playerCount).toBe(4);
+      expect(next.startingLife).toBe(40);
+    });
+
+    it("falls back to the documented defaults when New Game is given no preferences", () => {
+      expect(startNewGame()).toEqual(createDefaultGame());
     });
   });
 
