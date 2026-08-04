@@ -63,7 +63,13 @@ export function ThemeSection({
         ))}
       </div>
 
-      <div className="flex items-center gap-2 px-1">
+      {/*
+        Same 5-column grid as the row above so the Colorless swatch lands in column 1, exactly
+        under the White swatch. A flex row here put the swatch a few pixels right of the column-1
+        centre (grid centres each 40px button in its wider track; flex pins it to the left edge),
+        which read as a visibly misaligned second row.
+      */}
+      <div className="grid grid-cols-5 items-center gap-0.5">
         <PaletteSwatchButton
           palette={COLORLESS_PALETTE}
           isActive={isColorlessActive}
@@ -71,7 +77,7 @@ export function ThemeSection({
         />
 
         {isColorlessActive && (
-          <>
+          <div className="col-span-4 flex items-center gap-2">
             <input
               type="color"
               aria-label="Customize Colorless color"
@@ -87,7 +93,7 @@ export function ThemeSection({
             >
               Reset to gray
             </button>
-          </>
+          </div>
         )}
       </div>
     </div>
