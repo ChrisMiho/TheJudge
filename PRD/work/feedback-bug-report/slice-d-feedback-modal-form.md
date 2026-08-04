@@ -1,6 +1,6 @@
 # Slice D — FeedbackModal + form
 
-## Status: planned
+## Status: done
 
 ## Goal
 

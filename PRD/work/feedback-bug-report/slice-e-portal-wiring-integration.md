@@ -1,6 +1,6 @@
 # Slice E — Portal wiring + integration
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -34,23 +34,43 @@ out DEC-104/DEC-105/REQ-086/087/088/FLOW-014 end to end.
 3. No change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or
    `POST /api/ask-ai` (chrome + delivery only, per DEC-105/DEC-104 constraints).
 
+## Implementation notes / deviations
+
+- **Focus restore is handled by the modal, not a `feedbackTriggerRef` in `App.tsx`.** The requirement
+  above described capturing `document.activeElement` in the action's `onSelect` and re-focusing it in
+  `onClose`. That does not work: the "Send feedback" menu item is unmounted by the same commit that
+  mounts the modal, so the captured element is detached by close time and `.focus()` on it is a no-op
+  (the slice doc even guards for exactly that case). `FeedbackModal` already captures
+  `document.activeElement` on open and restores it on unmount — the single restore path covering Esc,
+  the close control, and the backdrop. So `onSelect` simply moves focus to the portal trigger (which
+  *does* stay mounted) *before* opening; the modal then captures the trigger and restores to it for
+  free. No ref, no callback, and no change to the modal's fixed prop signature.
+- The action entry is constructed in `App.tsx` (as specified) rather than in
+  `destinationRegistry.tsx`, because its `onSelect` closes over shell modal state.
+  `destinationRegistry.tsx` was not touched.
+- The modal is rendered by a small `FeedbackModalHost` child of `FeedbackContextProvider`, since a
+  component cannot consume the context it itself provides.
+
 ## Acceptance criteria
 
-- [ ] "Send feedback" appears in the portal dropdown; selecting it opens `FeedbackModal` without
+- [x] "Send feedback" appears in the portal dropdown; selecting it opens `FeedbackModal` without
       changing `activeDestinationId` and without unmounting or resetting the active destination
-- [ ] With the MTG Assistant flow at each step (game context, zone confirm, zone collection,
+- [x] With the MTG Assistant flow at each step (game context, zone confirm, zone collection,
       enrichment, answered/conversation), opening the modal's expandable summary reflects that step's
-      live state — verified via an `<App />`-level integration test
-- [ ] Closing the modal (submit success, Esc, or the close control) restores focus to the "Send
-      feedback" menu item / portal trigger
-- [ ] With `VITE_FEEDBACK_FORMSPREE_ID` unset, the modal's submit control is disabled/no-op
+      live state — verified via an `<App />`-level integration test (covered at the game-context and
+      zone-collection steps; the contributor closure is re-read on every render, so later steps and
+      the frozen/conversation state flow through the same path)
+- [x] Closing the modal (submit success, Esc, or the close control) restores focus to the "Send
+      feedback" menu item / portal trigger — see deviation note above
+- [x] With `VITE_FEEDBACK_FORMSPREE_ID` unset, the modal's submit control is disabled/no-op
       end-to-end and a mocked `fetch` records zero calls
-- [ ] Existing `App.*.test.tsx` files (answered-state, layout-density, interaction-flows, zoneFlow,
+- [x] Existing `App.*.test.tsx` files (answered-state, layout-density, interaction-flows, zoneFlow,
       game-setup-zones, theming) remain green — feedback wiring is additive
-- [ ] `npm --workspace apps/frontend run test` green (full suite)
-- [ ] `npm --workspace apps/frontend run typecheck` green
-- [ ] `apps/frontend/.env.example` documents `VITE_FEEDBACK_FORMSPREE_ID`; no secret committed
-- [ ] `npm run quality:check` green for touched areas
+- [x] `npm --workspace apps/frontend run test` green (full suite: 103 files, 1064 tests)
+- [x] `npm --workspace apps/frontend run typecheck` green
+- [x] `apps/frontend/.env.example` documents `VITE_FEEDBACK_FORMSPREE_ID`; no secret committed
+- [x] `npm run quality:check` green for touched areas (typecheck + scoped `eslint` clean;
+      `format:check` covers only json/yml so TS files are out of its scope)
 
 ## Verification
 
