@@ -6,11 +6,11 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
+- [assistant-chat-shell](./assistant-chat-shell/)
 - [center-menu-tab-prominence](./center-menu-tab-prominence/)
 
 ## active
 
-- [assistant-chat-shell](./assistant-chat-shell/)
 - [commander-spellbook-combos](./commander-spellbook-combos/)
 
 ## refining

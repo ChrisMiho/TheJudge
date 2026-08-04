@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 # assistant-chat-shell
@@ -45,7 +45,5 @@ in any order.
 
 ## Next step
 
-`/thejudge-implement PRD/work/assistant-chat-shell/ slice D` (or slice E —
-either first) for one slice at a time, or
-`/thejudge-implement-all PRD/work/assistant-chat-shell/` to complete both
-unattended.
+All slices (A–E) are done. `/thejudge-cleanup PRD/work/assistant-chat-shell/`
+after this PR merges.
