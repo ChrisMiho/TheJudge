@@ -12,6 +12,7 @@ export default tseslint.config(
       "**/dist/**",
       "**/build/**",
       "**/coverage/**",
+      ".worktrees/**",
       "apps/frontend/data/scryfall/default-cards.json"
     ]
   },
