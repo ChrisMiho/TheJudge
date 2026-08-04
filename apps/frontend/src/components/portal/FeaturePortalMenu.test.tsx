@@ -260,7 +260,7 @@ describe("Chrome integration", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders the portal button inline in the staged step header, between the brand and the step name", async () => {
+  it("renders the portal button inline in the staged step header, ahead of the centered brand and the step eyebrow", async () => {
     const { default: App } = await import("../../App");
     render(<App />);
 
@@ -276,8 +276,10 @@ describe("Chrome integration", () => {
     const portalContainerClassName = portalButton.closest("div")?.className ?? "";
     expect(portalContainerClassName).toContain("portal-slot-tab");
     expect(portalContainerClassName).not.toContain("fixed");
-    expect(brand.compareDocumentPosition(portalButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(portalButton.compareDocumentPosition(stepHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // Header grid: PortalSlot (left column) precedes the centered brand block; the
+    // step-name eyebrow now renders outside the header, above the step's own content.
+    expect(portalButton.compareDocumentPosition(brand) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(brand.compareDocumentPosition(stepHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
     const user = userEvent.setup();
     await user.click(portalButton);

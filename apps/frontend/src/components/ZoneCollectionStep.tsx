@@ -14,6 +14,7 @@ import { useScanCapture, type ScanAddOutcome } from "../hooks/useScanCapture";
 import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { PageShell } from "./PageShell";
 import { StagedStepHeader } from "./StagedStepHeader";
+import { StepEyebrow } from "./StepEyebrow";
 import { ZoneCardPicker } from "./ZoneCardPicker";
 
 type ZoneCollectionStepProps = {
@@ -175,7 +176,8 @@ export function ZoneCollectionStep({
     <PageShell>
       {!isScanOpen && (
         <>
-          <StagedStepHeader stepName="Add cards to zones" />
+          <StagedStepHeader />
+          <StepEyebrow stepName="Add cards to zones" />
           <p className="text-sm text-zinc-400">
             Select a zone, then add cards by searching or scanning.
           </p>

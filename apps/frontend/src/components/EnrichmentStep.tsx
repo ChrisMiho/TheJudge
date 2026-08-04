@@ -20,6 +20,7 @@ import {
 import { PageShell } from "./PageShell";
 import { PortalSlot } from "./portal/PortalSlot";
 import { StagedStepHeader } from "./StagedStepHeader";
+import { StepEyebrow } from "./StepEyebrow";
 
 const MAX_QUESTION_CHARS = 300;
 
@@ -417,7 +418,8 @@ export function EnrichmentStep({
 
   return (
     <PageShell>
-        <StagedStepHeader stepName="Context enrichment" />
+        <StagedStepHeader />
+        <StepEyebrow stepName="Context enrichment" />
 
         <div className="flex items-center justify-between gap-3">
           {totalCards > 0 && !hasAnswer && (

@@ -75,7 +75,7 @@
   line-height: 1.2;
 }
 
-.staged-step-name {
+.step-eyebrow {
   font-size: clamp(1rem, 1.5vw + 0.7rem, 1.25rem);
   line-height: 1.5rem;
 }
