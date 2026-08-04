@@ -110,7 +110,7 @@ export function FeaturePortalMenu({
         aria-haspopup="true"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((current) => !current)}
-        className="motion-hover motion-press motion-focus flex h-11 items-center gap-2 rounded-b-2xl border border-t-0 border-accent/55 bg-zinc-900/95 px-4 text-sm font-medium text-zinc-100 transition hover:bg-zinc-800/90"
+        className="portal-menu-trigger motion-hover motion-press motion-focus flex h-11 items-center gap-2 rounded-b-2xl bg-zinc-900/95 text-sm font-medium text-zinc-100 transition hover:bg-zinc-800/90"
       >
         <span aria-hidden="true">☰</span>
       </button>

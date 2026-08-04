@@ -23,10 +23,10 @@ See `DESIGN-BRIEF.md` for approved scope and `GAMEPLAN.md` for architecture, dep
 
 ## Slices
 
-| Slice | Objective | Depends on | Requirements |
-| --- | --- | --- | --- |
-| [A](slice-a-menu-trigger-prominence.md) | Responsive width + thicker border + medium glow on Menu trigger | — | REQ-101, DEC-121 |
-| [B](slice-b-assertions-and-ship.md) | Stylesheet/component assertions, regression, cleanup handoff | A | REQ-101 verification |
+| Slice | Objective | Depends on | Requirements | Status |
+| --- | --- | --- | --- | --- |
+| [A](slice-a-menu-trigger-prominence.md) | Responsive width + thicker border + medium glow on Menu trigger | — | REQ-101, DEC-121 | done |
+| [B](slice-b-assertions-and-ship.md) | Stylesheet/component assertions, regression, cleanup handoff | A | REQ-101 verification | planned |
 
 Sequential: B asserts the selectors and values A introduces on the shared trigger/CSS.
 

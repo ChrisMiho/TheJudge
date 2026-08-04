@@ -1,6 +1,6 @@
 # Slice A — Menu trigger prominence presentation
 
-## Status: planned
+## Status: done
 
 ## Goal
 
