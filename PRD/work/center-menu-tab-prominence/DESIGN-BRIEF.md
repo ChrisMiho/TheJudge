@@ -1,6 +1,6 @@
 # DESIGN-BRIEF: center-menu-tab-prominence
 
-Status: awaiting explicit user approval of this brief and the linked PRD updates before `STATUS.refined`.
+Status: approved (user explicit approval 2026-08-03).
 
 ## Problem
 

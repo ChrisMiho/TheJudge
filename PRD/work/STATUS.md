@@ -10,11 +10,11 @@ _(none)_
 
 ## active
 
+- [center-menu-tab-prominence](./center-menu-tab-prominence/)
 - [commander-spellbook-combos](./commander-spellbook-combos/)
 
 ## refining
 
-- [center-menu-tab-prominence](./center-menu-tab-prominence/)
 - [context-ai-photo-card-id](./context-ai-photo-card-id/)
 - [player-life-tracker-refinement](./player-life-tracker-refinement/)
 
