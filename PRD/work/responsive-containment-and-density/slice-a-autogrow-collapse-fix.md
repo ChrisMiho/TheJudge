@@ -1,6 +1,6 @@
 # Slice A — Auto-grow hook never pins a collapsed height
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -46,3 +46,27 @@ Playwright MCP, both viewports: navigate → switch to Life Tracker → `browser
 
 - `apps/frontend/src/hooks/useAutoGrowTextarea.ts`
 - `apps/frontend/src/hooks/useAutoGrowTextarea.test.tsx`
+
+## Verified (2026-08-05)
+
+- `npm --workspace apps/frontend run test -- useAutoGrowTextarea` — 8/8 pass; the 3 new
+  regression tests were confirmed failing against the pre-fix implementation.
+- `npm run typecheck` — clean.
+- Playwright MCP, 1440×900 then 1366×860, original repro (load → Life Tracker → resize →
+  Quick Question): `style.height` 32px, `clientHeight` 32, `scrollHeight` 32,
+  **content clipped 0px** (was `0px` / 12 / 32 / 20px clipped), `clientHeight >= lineHeight` true.
+
+### Known-red gate (pre-existing, not caused by this package)
+
+`npm run quality:check` was already red before the first commit on this branch, verified
+by stashing all changes and re-running:
+
+- `lint` — 902 errors: `.claude/worktrees/agent-a4c9b03d9142f4cff` and
+  `agent-ae4a622c95c07ac17` present multiple candidate `tsconfigRootDir`s.
+- `format:check` — 42 files, **all** inside those two worktrees; no real formatting issues.
+- `test` — `App.feedback.test.tsx` "keeps submit a no-op with a hint when no form id is
+  configured" fails because `apps/frontend/.env:7` sets `VITE_FEEDBACK_FORMSPREE_ID`
+  and Vite loads `.env` during tests, so the test's unconfigured-state assumption is false.
+
+Slices in this package verify with `typecheck` + targeted workspace tests + Playwright MCP
+measurement until those are resolved.
