@@ -1,6 +1,6 @@
 # Slice E — Starting-life Custom default + count-driven defaults
 
-## Status: planned
+## Status: done
 
 ## Goal
 

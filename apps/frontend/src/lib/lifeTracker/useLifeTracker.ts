@@ -14,7 +14,6 @@ import {
   setCardStyle,
   setCommanderDamage,
   setCustomCounter,
-  setDayNightEnabled,
   setNamedCounter,
   setLayoutMode,
   setPlayerCount,
@@ -43,7 +42,6 @@ export type UseLifeTrackerResult = {
   setCommanderDamage: (targetLabel: PlayerLabel, sourceLabel: PlayerLabel, value: number) => void;
   setLayoutMode: (mode: LayoutMode) => void;
   setCardStyle: (cardStyle: CardStyle) => void;
-  setDayNightEnabled: (enabled: boolean) => void;
   toggleDayNightPhase: () => void;
   reset: () => void;
   newGame: () => void;
@@ -98,7 +96,6 @@ export function useLifeTracker(): UseLifeTrackerResult {
       commit(setCommanderDamage(stateRef.current, targetLabel, sourceLabel, value)),
     setLayoutMode: (mode) => commit(setLayoutMode(stateRef.current, mode)),
     setCardStyle: (cardStyle) => commit(setCardStyle(stateRef.current, cardStyle)),
-    setDayNightEnabled: (enabled) => commit(setDayNightEnabled(stateRef.current, enabled)),
     toggleDayNightPhase: () => commit(toggleDayNightPhase(stateRef.current)),
     reset: () => {
       const nextState = resetGame(stateRef.current);
@@ -107,8 +104,8 @@ export function useLifeTracker(): UseLifeTrackerResult {
     },
     newGame: () => {
       // New Game discards the game, not the user's presentation preferences - see `startNewGame`.
-      const { layoutMode, cardStyle, dayNightEnabled } = stateRef.current;
-      const nextState = startNewGame({ layoutMode, cardStyle, dayNightEnabled });
+      const { layoutMode, cardStyle } = stateRef.current;
+      const nextState = startNewGame({ layoutMode, cardStyle });
       clearTrackerState();
       commitWithoutPersisting(nextState);
     }

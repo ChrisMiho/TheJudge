@@ -99,6 +99,19 @@ describe("Frontend - Shared", () => {
       expect(props.onAdjustCommanderDamage).toHaveBeenCalledWith("Player 1", "Player 2", -1);
     });
 
+    it("renders commander damage decrease/increase bands at the widened tap-target height", () => {
+      const props = panelProps();
+      render(<CounterPanel {...props} />);
+
+      const matrix = screen.getByRole("group", { name: "Commander damage by source" });
+      expect(
+        within(matrix).getByRole("button", { name: "Decrease commander damage from Player 2" })
+      ).toHaveClass("min-h-[53px]");
+      expect(
+        within(matrix).getByRole("button", { name: "Increase commander damage from Player 2" })
+      ).toHaveClass("min-h-[53px]");
+    });
+
     it("renders the shared palette exactly once and increments each value independently", async () => {
       const user = userEvent.setup();
       const props = panelProps();

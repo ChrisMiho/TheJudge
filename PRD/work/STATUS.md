@@ -6,13 +6,12 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-_(none)_
+- [player-life-tracker-refinement](./player-life-tracker-refinement/)
 
 ## active
 
 - [center-menu-tab-prominence-followup](./center-menu-tab-prominence-followup/)
 - [assistant-chat-shell-followup](./assistant-chat-shell-followup/)
-- [player-life-tracker-refinement](./player-life-tracker-refinement/)
 
 ## refining
 

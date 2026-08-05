@@ -1,6 +1,6 @@
 # Slice C — Commander-damage band width +20%
 
-## Status: planned
+## Status: done
 
 ## Goal
 

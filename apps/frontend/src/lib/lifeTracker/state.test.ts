@@ -16,7 +16,6 @@ import {
   setCardStyle,
   setCommanderDamage,
   setCustomCounter,
-  setDayNightEnabled,
   setDayNightPhase,
   setNamedCounter,
   setLayoutMode,
@@ -81,6 +80,7 @@ describe("Frontend - Shared", () => {
 
       expect(state.playerCount).toBe(4);
       expect(state.startingLife).toBe(40);
+      expect(state.hasManualStartingLife).toBe(false);
       expect(state).not.toHaveProperty("commanderDamageToLife");
       expect(state.layoutMode).toBe("grid");
       expect(state.players.map((player) => player.label)).toEqual(["Player 1", "Player 2", "Player 3", "Player 4"]);
@@ -110,6 +110,7 @@ describe("Frontend - Shared", () => {
       const state = createDefaultGame();
       expect(state.playerCount).toBe(4);
       expect(state.startingLife).toBe(40);
+      expect(state.hasManualStartingLife).toBe(false);
       expect(state).not.toHaveProperty("commanderDamageToLife");
       expect(state.layoutMode).toBe(DEFAULT_LAYOUT_MODE);
     });
@@ -252,20 +253,22 @@ describe("Frontend - Shared", () => {
   });
 
   describe("lifeTracker player count changes", () => {
-    it("preserves retained players by fixed label and their current life/counters when growing", () => {
-      const state = adjustPlayerLife(createInitialState(2, 40), "Player 1", -10);
-      const grown = setPlayerCount(state, 4);
+    it("preserves retained players by fixed label and their current life/counters when growing within the same tier", () => {
+      const state = adjustPlayerLife(createInitialState(4, 40), "Player 1", -10);
+      const grown = setPlayerCount(state, 6);
 
-      expect(grown.playerCount).toBe(4);
+      expect(grown.playerCount).toBe(6);
       expect(grown.players.map((player) => player.label)).toEqual([
         "Player 1",
         "Player 2",
         "Player 3",
-        "Player 4"
+        "Player 4",
+        "Player 5",
+        "Player 6"
       ]);
       expect(grown.players[0].life).toBe(30);
-      expect(grown.players[2].life).toBe(40);
-      expect(grown.players[3].life).toBe(40);
+      expect(grown.players[4].life).toBe(40);
+      expect(grown.players[5].life).toBe(40);
     });
 
     it("initializes new players at the current starting life, not the original", () => {
@@ -275,22 +278,28 @@ describe("Frontend - Shared", () => {
       expect(grown.players[2].life).toBe(20);
     });
 
-    it("drops trailing players and keeps the retained ones untouched when shrinking", () => {
-      const state = adjustPlayerLife(createInitialState(4, 40), "Player 2", -3);
-      const shrunk = setPlayerCount(state, 2);
+    it("drops trailing players and keeps the retained ones untouched when shrinking within the same tier", () => {
+      const state = adjustPlayerLife(createInitialState(6, 40), "Player 2", -3);
+      const shrunk = setPlayerCount(state, 4);
 
-      expect(shrunk.playerCount).toBe(2);
-      expect(shrunk.players.map((player) => player.label)).toEqual(["Player 1", "Player 2"]);
+      expect(shrunk.playerCount).toBe(4);
+      expect(shrunk.players.map((player) => player.label)).toEqual([
+        "Player 1",
+        "Player 2",
+        "Player 3",
+        "Player 4"
+      ]);
       expect(shrunk.players[1].life).toBe(37);
     });
   });
 
   describe("lifeTracker starting life and reset", () => {
-    it("setStartingLife seeds all active players' current life", () => {
+    it("setStartingLife seeds all active players' current life and marks the choice manual", () => {
       const state = adjustPlayerLife(createInitialState(3, 40), "Player 1", -30);
       const reseeded = setStartingLife(state, 25);
 
       expect(reseeded.startingLife).toBe(25);
+      expect(reseeded.hasManualStartingLife).toBe(true);
       for (const player of reseeded.players) {
         expect(player.life).toBe(25);
       }
@@ -318,6 +327,70 @@ describe("Frontend - Shared", () => {
     });
   });
 
+  describe("lifeTracker starting-life manual flag and count-driven defaults", () => {
+    it("createInitialState and createDefaultGame both seed hasManualStartingLife false", () => {
+      expect(createInitialState(4, 40).hasManualStartingLife).toBe(false);
+      expect(createDefaultGame().hasManualStartingLife).toBe(false);
+    });
+
+    it("crossing 4-players down to 2 without a manual choice applies the duel default and reseeds every player's life", () => {
+      const state = adjustPlayerLife(createDefaultGame(), "Player 1", -15);
+      const reduced = setPlayerCount(state, 2);
+
+      expect(reduced.startingLife).toBe(20);
+      expect(reduced.hasManualStartingLife).toBe(false);
+      for (const player of reduced.players) {
+        expect(player.life).toBe(20);
+      }
+    });
+
+    it("crossing back up from 2 to 3+ without a manual choice applies the multi default and reseeds every player's life", () => {
+      const duel = setPlayerCount(createInitialState(4, 40), 2);
+      const grownBack = setPlayerCount(duel, 3);
+
+      expect(grownBack.startingLife).toBe(40);
+      expect(grownBack.hasManualStartingLife).toBe(false);
+      for (const player of grownBack.players) {
+        expect(player.life).toBe(40);
+      }
+    });
+
+    it("a same-tier count change never touches startingLife or any player's life, even when hasManualStartingLife is false", () => {
+      const state = adjustPlayerLife(createDefaultGame(), "Player 2", -7);
+      const grown = setPlayerCount(state, 5);
+
+      expect(grown.startingLife).toBe(40);
+      expect(grown.hasManualStartingLife).toBe(false);
+      expect(grown.players[1].life).toBe(33);
+      expect(grown.players[4].life).toBe(40);
+    });
+
+    it("after a manual starting-life choice, a boundary-crossing count change never overrides startingLife or reseeds life", () => {
+      const manual = setStartingLife(createDefaultGame(), 30);
+      const reduced = setPlayerCount(manual, 2);
+
+      expect(reduced.startingLife).toBe(30);
+      expect(reduced.hasManualStartingLife).toBe(true);
+      for (const player of reduced.players) {
+        expect(player.life).toBe(30);
+      }
+    });
+
+    it("startNewGame resets hasManualStartingLife to false", () => {
+      const manual = setStartingLife(createDefaultGame(), 30);
+      expect(manual.hasManualStartingLife).toBe(true);
+      expect(startNewGame().hasManualStartingLife).toBe(false);
+    });
+
+    it("resetGame leaves hasManualStartingLife unchanged in either direction", () => {
+      const manual = setStartingLife(createDefaultGame(), 30);
+      expect(resetGame(manual).hasManualStartingLife).toBe(true);
+
+      const automatic = createDefaultGame();
+      expect(resetGame(automatic).hasManualStartingLife).toBe(false);
+    });
+  });
+
   describe("lifeTracker exact life entry", () => {
     it("sets an exact total, including very large and negative values", () => {
       let state = createInitialState(2, 40);
@@ -339,12 +412,11 @@ describe("Frontend - Shared", () => {
   });
 
   describe("lifeTracker presentation preferences", () => {
-    it("defaults to the shipped ombre card style and day/night tracking off", () => {
+    it("defaults to the shipped ombre card style and day at the day/night designation", () => {
       const state = createDefaultGame();
 
       expect(state.cardStyle).toBe(DEFAULT_CARD_STYLE);
       expect(state.cardStyle).toBe("gradient");
-      expect(state.dayNightEnabled).toBe(false);
       expect(state.dayNightPhase).toBe("day");
     });
 
@@ -353,19 +425,6 @@ describe("Frontend - Shared", () => {
 
       expect(state.cardStyle).toBe("flat");
       expect(state.players[0].life).toBe(40);
-    });
-
-    it("starts day/night tracking at day whenever it is enabled", () => {
-      let state = setDayNightEnabled(createInitialState(2, 40), true);
-      state = toggleDayNightPhase(state);
-      expect(state.dayNightPhase).toBe("night");
-
-      state = setDayNightEnabled(state, false);
-      expect(state.dayNightEnabled).toBe(false);
-      expect(state.dayNightPhase).toBe("night");
-
-      state = setDayNightEnabled(state, true);
-      expect(state.dayNightPhase).toBe("day");
     });
 
     it("flips the one game-wide designation back and forth", () => {
@@ -379,19 +438,17 @@ describe("Frontend - Shared", () => {
     });
 
     it("returns the day designation to day on reset", () => {
-      let state = setDayNightEnabled(createInitialState(2, 40), true);
-      state = toggleDayNightPhase(state);
+      const state = toggleDayNightPhase(createInitialState(2, 40));
+      expect(state.dayNightPhase).toBe("night");
 
       expect(resetGame(state).dayNightPhase).toBe("day");
-      expect(resetGame(state).dayNightEnabled).toBe(true);
     });
 
     it("carries presentation preferences over a New Game while discarding the game itself", () => {
-      const next = startNewGame({ layoutMode: "list", cardStyle: "flat", dayNightEnabled: true });
+      const next = startNewGame({ layoutMode: "list", cardStyle: "flat" });
 
       expect(next.layoutMode).toBe("list");
       expect(next.cardStyle).toBe("flat");
-      expect(next.dayNightEnabled).toBe(true);
       expect(next.dayNightPhase).toBe("day");
       expect(next.playerCount).toBe(4);
       expect(next.startingLife).toBe(40);

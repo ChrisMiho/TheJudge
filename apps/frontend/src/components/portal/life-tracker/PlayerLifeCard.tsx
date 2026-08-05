@@ -107,11 +107,11 @@ export function PlayerLifeCard({
   const contentSize = isSideways ? { width: "100cqh", height: "100cqw" } : { width: "100cqw", height: "100cqh" };
   const isListLayout = layoutMode === "list" && isWideSeat;
   const decreaseBandClassName = isListLayout
-    ? "absolute inset-y-0 left-0 z-20 flex w-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10"
-    : "absolute inset-x-0 top-0 z-20 flex h-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10";
+    ? "absolute inset-y-0 left-0 z-20 flex w-[67px] items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10"
+    : "absolute inset-x-0 top-0 z-20 flex h-[67px] items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10";
   const increaseBandClassName = isListLayout
-    ? "absolute inset-y-0 right-0 z-20 flex w-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10"
-    : "absolute inset-x-0 bottom-0 z-20 flex h-12 items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10";
+    ? "absolute inset-y-0 right-0 z-20 flex w-[67px] items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10"
+    : "absolute inset-x-0 bottom-0 z-20 flex h-[67px] items-center justify-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10";
   const isEditingLife = lifeDraft !== null;
 
   function commitLifeDraft(): void {

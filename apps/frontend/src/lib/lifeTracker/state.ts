@@ -17,15 +17,12 @@ export const DEFAULT_STARTING_LIFE = 40;
 export const DEFAULT_LAYOUT_MODE: LayoutMode = "grid";
 /** Unchanged from the original shipped look, so existing games keep the ombre they already had. */
 export const DEFAULT_CARD_STYLE: CardStyle = "gradient";
-/** Day/night is opt-in: off costs nothing for the many games that never use the mechanic. */
-export const DEFAULT_DAY_NIGHT_ENABLED = false;
 export const DEFAULT_DAY_NIGHT_PHASE: DayNightPhase = "day";
 
 /** The presentation/format settings that survive a New Game, unlike the game's own live values. */
 export const DEFAULT_PREFERENCES: TrackerPreferences = {
   layoutMode: DEFAULT_LAYOUT_MODE,
-  cardStyle: DEFAULT_CARD_STYLE,
-  dayNightEnabled: DEFAULT_DAY_NIGHT_ENABLED
+  cardStyle: DEFAULT_CARD_STYLE
 };
 
 /** Every fixed player label, in seat order. The tracker roster is always a contiguous prefix of this list. */
@@ -44,6 +41,19 @@ function clampPlayerCount(count: number): number {
   const rounded = Math.round(count);
   return Math.min(MAX_PLAYER_COUNT, Math.max(MIN_PLAYER_COUNT, rounded));
 }
+
+/** DEC-101 (amended): the only two starting-life tiers, keyed off whether the table is a duel (exactly 2 players). */
+type StartingLifeTier = "duel" | "multi";
+
+function startingLifeTier(count: number): StartingLifeTier {
+  return count === MIN_PLAYER_COUNT ? "duel" : "multi";
+}
+
+/** REQ-081 (amended): count-driven starting-life defaults, matching In-Depth (2 players → 20, 3+ → 40). */
+const TIER_DEFAULT_STARTING_LIFE: Record<StartingLifeTier, number> = {
+  duel: 20,
+  multi: 40
+};
 
 function createCustomCounterId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -87,9 +97,9 @@ export function createInitialState(
   return {
     playerCount: clampedCount,
     startingLife,
+    hasManualStartingLife: false,
     layoutMode,
     cardStyle: preferences.cardStyle ?? DEFAULT_CARD_STYLE,
-    dayNightEnabled: preferences.dayNightEnabled ?? DEFAULT_DAY_NIGHT_ENABLED,
     dayNightPhase: DEFAULT_DAY_NIGHT_PHASE,
     players: ALL_PLAYER_LABELS.slice(0, clampedCount).map((label) => createPlayer(label, startingLife))
   };
@@ -103,18 +113,38 @@ export function createDefaultGame(
   return createInitialState(DEFAULT_PLAYER_COUNT, DEFAULT_STARTING_LIFE, layoutMode, preferences);
 }
 
-/** Preserves retained players by fixed label; new players are initialized at the current starting life. */
+/**
+ * Preserves retained players by fixed label; new players are initialized at the current starting
+ * life. When the count crosses the 2 ↔ 3+ tier boundary and the user hasn't manually chosen a
+ * starting life for this game (`hasManualStartingLife` is `false`), also applies that tier's
+ * count-driven starting-life default and reseeds every player's life to it - retained and
+ * newly-created players alike, the same way `setStartingLife` does. A same-tier count change (e.g.
+ * 4→5) never touches `startingLife` or any player's life, even when `hasManualStartingLife` is
+ * `false` - this avoids silently clobbering live life totals on an in-tier bump the user didn't ask
+ * to reseed.
+ */
 export function setPlayerCount(state: TrackerState, count: number): TrackerState {
   const nextCount = clampPlayerCount(count);
   const nextLabels = ALL_PLAYER_LABELS.slice(0, nextCount);
   const retainedByLabel = new Map(state.players.map((player) => [player.label, player]));
 
+  const shouldApplyTierDefault =
+    !state.hasManualStartingLife && startingLifeTier(nextCount) !== startingLifeTier(state.playerCount);
+  const nextStartingLife = shouldApplyTierDefault
+    ? TIER_DEFAULT_STARTING_LIFE[startingLifeTier(nextCount)]
+    : state.startingLife;
+
   return {
     ...state,
     playerCount: nextCount,
-    players: nextLabels.map(
-      (label) => retainedByLabel.get(label) ?? createPlayer(label, state.startingLife)
-    )
+    startingLife: nextStartingLife,
+    players: nextLabels.map((label) => {
+      const retained = retainedByLabel.get(label);
+      if (shouldApplyTierDefault) {
+        return retained ? { ...retained, life: nextStartingLife } : createPlayer(label, nextStartingLife);
+      }
+      return retained ?? createPlayer(label, state.startingLife);
+    })
   };
 }
 
@@ -122,11 +152,17 @@ export function setPlayerDisplayName(state: TrackerState, label: PlayerLabel, di
   return updatePlayer(state, label, (player) => ({ ...player, displayName }));
 }
 
-/** Sets the starting-life setting and seeds every active player's current life to it. */
+/**
+ * Sets the starting-life setting and seeds every active player's current life to it. Any call -
+ * preset click or Custom apply - is an explicit user choice, so this also marks
+ * `hasManualStartingLife` `true`, guarding future `setPlayerCount` calls from overriding it with a
+ * count-driven default.
+ */
 export function setStartingLife(state: TrackerState, startingLife: number): TrackerState {
   return {
     ...state,
     startingLife,
+    hasManualStartingLife: true,
     players: state.players.map((player) => ({ ...player, life: startingLife }))
   };
 }
@@ -276,15 +312,6 @@ export function setCardStyle(state: TrackerState, cardStyle: CardStyle): Tracker
   return { ...state, cardStyle };
 }
 
-/** Turning tracking on always starts the game at day; turning it off leaves the phase untouched. */
-export function setDayNightEnabled(state: TrackerState, dayNightEnabled: boolean): TrackerState {
-  return {
-    ...state,
-    dayNightEnabled,
-    dayNightPhase: dayNightEnabled ? DEFAULT_DAY_NIGHT_PHASE : state.dayNightPhase
-  };
-}
-
 export function setDayNightPhase(state: TrackerState, dayNightPhase: DayNightPhase): TrackerState {
   return { ...state, dayNightPhase };
 }
@@ -311,9 +338,10 @@ export function resetGame(state: TrackerState): TrackerState {
 
 /**
  * Discards the current game entirely and restores the documented default game. Presentation
- * preferences (layout, card style, day/night tracking) are carried over when supplied: they
- * describe how the user wants the tracker to look/behave, not the game being discarded, so
- * silently reverting them on New Game would keep undoing the user's explicit choices.
+ * preferences (layout, card style) are carried over when supplied: they describe how the user
+ * wants the tracker to look/behave, not the game being discarded, so silently reverting them on
+ * New Game would keep undoing the user's explicit choices. Day/night always resets to Day, same
+ * as any other fresh game.
  */
 export function startNewGame(preferences: Partial<TrackerPreferences> = {}): TrackerState {
   return createDefaultGame(preferences.layoutMode ?? DEFAULT_LAYOUT_MODE, preferences);
