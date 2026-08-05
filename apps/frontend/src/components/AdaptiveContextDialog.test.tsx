@@ -68,4 +68,14 @@ describe("Frontend - Adaptive context dialog", () => {
       /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*\.adaptive-context-surface/
     );
   });
+
+  it("sizes the answered-workspace top clearance to the side-by-side rail's 2.75rem band, not the retired stacked-rail clamp (DEC-141)", () => {
+    const triggerBlock = appCss.slice(
+      appCss.indexOf(".adaptive-context-trigger {"),
+      appCss.indexOf("}", appCss.indexOf(".adaptive-context-trigger {"))
+    );
+
+    expect(triggerBlock).toContain("margin-top: calc(2.75rem - var(--layout-panel-padding))");
+    expect(triggerBlock).not.toContain("clamp(4.75rem, 4.1rem + 2.5vw, 6.25rem)");
+  });
 });

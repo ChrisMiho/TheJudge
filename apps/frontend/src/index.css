@@ -553,17 +553,20 @@
   background-color: rgb(63 63 70 / 0.35);
 }
 
-/* Reserves clearance below the feature-portal corner rail (DEC-126's two-zone
+/* Reserves clearance below the feature-portal corner rail (DEC-137's side-by-side
    split form, see .portal-menu-rail-split above) so "View context" — the first
    element inside the answered .conversation-workspace, sitting directly under
    the header — never sits under the rail's absolutely-positioned hit area.
    The rail has no in-flow footprint (position: absolute, see .portal-slot-tab),
-   so nothing else pushes this trigger down automatically. Mirrors the rail's
-   own fluid height math (its clamp() minus the corner lift it's pulled up by)
-   rather than a fixed guess, so clearance holds at any viewport width. */
+   so nothing else pushes this trigger down automatically. DEC-141 retargets
+   this from DEC-126's old stacked-rail clamp (~4.75rem-6.25rem, sized for two
+   44px zones stacked) to DEC-137's side-by-side rail's actual 2.75rem
+   interactive band, the same way the old rule did — minus the corner lift
+   .portal-slot-tab pulls the rail up by, so clearance holds at any viewport
+   width without leaving a large empty band above View Context. */
 .adaptive-context-trigger {
   min-height: 44px;
-  margin-top: calc(clamp(4.75rem, 4.1rem + 2.5vw, 6.25rem) - var(--layout-panel-padding));
+  margin-top: calc(2.75rem - var(--layout-panel-padding));
 }
 
 /* History drawer (DEC-125, amended by DEC-134): a left-edge, full-height drawer at every

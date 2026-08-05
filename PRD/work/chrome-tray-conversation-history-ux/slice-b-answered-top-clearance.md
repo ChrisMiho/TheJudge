@@ -1,6 +1,6 @@
 # Slice B — Compact answered-workspace top clearance
 
-## Status: planned
+## Status: done
 
 ## Goal
 
