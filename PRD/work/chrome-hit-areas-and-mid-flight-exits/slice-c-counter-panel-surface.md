@@ -1,6 +1,6 @@
 # Slice C — Counter panel joins the full-height overlay family
 
-## Status: planned
+## Status: done
 
 ## Goal
 
