@@ -1,6 +1,6 @@
 # Slice C — Resilient resumed card context preview
 
-## Status: planned
+## Status: done
 
 ## Goal
 
