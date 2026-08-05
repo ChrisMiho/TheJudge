@@ -1,6 +1,6 @@
 # Slice A — Always-visible History rail, no View Context overlap
 
-## Status: planned
+## Status: done
 
 ## Goal
 

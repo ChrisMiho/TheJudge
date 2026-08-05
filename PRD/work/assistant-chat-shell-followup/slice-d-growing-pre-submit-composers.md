@@ -1,6 +1,6 @@
 # Slice D — Growing pre-submit question composers
 
-## Status: planned
+## Status: done
 
 ## Goal
 

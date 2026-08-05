@@ -1,4 +1,14 @@
-import type { ConversationMessage } from "../../types";
+import type { FlowStepId } from "../contextFlow";
+import type {
+  CardMetadataItem,
+  CombatStep,
+  ConversationMessage,
+  GameContext,
+  PlayerLabel,
+  TurnPhase,
+  ZoneCardItem,
+  ZoneId
+} from "../../types";
 import type { FrozenAskAiContext } from "../../hooks/useAskAiSubmitOrchestration";
 
 export type ConversationHistoryMode = "game" | "lookup";
@@ -105,5 +115,124 @@ export function saveHistoryEntry(entry: ConversationHistoryEntry): void {
     storage.setItem(CONVERSATION_HISTORY_STORAGE_KEY, JSON.stringify(merged));
   } catch {
     // Conversation history persistence must never interfere with the app's core flow.
+  }
+}
+
+// --- Mid-flight Draft (REQ-108 / FLOW-017) ---
+//
+// A single, per-mode, browser-local snapshot of staging that happens *before* the
+// first successful Ask AI submit (flowStep/gameContext/zones/question for In-Depth,
+// selected card/question/locked topic for Quick Question). Mirrors the guarded-read
+// pattern above but stays in its own per-mode storage key and never touches the
+// completed-entries array or its 20-entry cap.
+
+export type GameDraftState = {
+  mode: "game";
+  flowStep: FlowStepId;
+  gameContext: GameContext | null;
+  selectedZones: ZoneId[];
+  zoneCardsByZone: Partial<Record<ZoneId, ZoneCardItem[]>>;
+  question: string;
+  turnPhase: TurnPhase;
+  combatStep: CombatStep;
+  confirmedPhase: TurnPhase | undefined;
+  activePlayer: PlayerLabel;
+  updatedAt: string;
+};
+
+export type LookupDraftState = {
+  mode: "lookup";
+  selectedCard: CardMetadataItem | null;
+  question: string;
+  lockedTopic: { id: string; title: string } | null;
+  updatedAt: string;
+};
+
+export type ConversationDraft = GameDraftState | LookupDraftState;
+
+const DRAFT_STORAGE_KEY_PREFIX = "thejudge.conversationDraft.";
+
+function draftStorageKey(mode: ConversationHistoryMode): string {
+  return `${DRAFT_STORAGE_KEY_PREFIX}${mode}`;
+}
+
+function isValidGameDraftState(value: unknown): value is GameDraftState {
+  if (typeof value !== "object" || value === null) return false;
+  const draft = value as Record<string, unknown>;
+
+  return (
+    draft.mode === "game" &&
+    typeof draft.flowStep === "string" &&
+    (draft.gameContext === null || (typeof draft.gameContext === "object" && draft.gameContext !== null)) &&
+    Array.isArray(draft.selectedZones) &&
+    typeof draft.zoneCardsByZone === "object" &&
+    draft.zoneCardsByZone !== null &&
+    typeof draft.question === "string" &&
+    typeof draft.turnPhase === "string" &&
+    typeof draft.combatStep === "string" &&
+    (draft.confirmedPhase === undefined || typeof draft.confirmedPhase === "string") &&
+    typeof draft.activePlayer === "string" &&
+    typeof draft.updatedAt === "string"
+  );
+}
+
+function isValidLookupDraftState(value: unknown): value is LookupDraftState {
+  if (typeof value !== "object" || value === null) return false;
+  const draft = value as Record<string, unknown>;
+
+  return (
+    draft.mode === "lookup" &&
+    (draft.selectedCard === null || (typeof draft.selectedCard === "object" && draft.selectedCard !== null)) &&
+    typeof draft.question === "string" &&
+    (draft.lockedTopic === null || (typeof draft.lockedTopic === "object" && draft.lockedTopic !== null)) &&
+    typeof draft.updatedAt === "string"
+  );
+}
+
+/** Reads the stored Draft for a mode, dropping it silently if corrupt/invalid. Never throws. */
+export function loadDraft(mode: "game"): GameDraftState | null;
+export function loadDraft(mode: "lookup"): LookupDraftState | null;
+export function loadDraft(mode: ConversationHistoryMode): ConversationDraft | null {
+  try {
+    const storage = getStorage();
+    if (!storage) return null;
+
+    const raw = storage.getItem(draftStorageKey(mode));
+    if (raw === null) return null;
+
+    const parsed: unknown = JSON.parse(raw);
+    if (mode === "game") {
+      return isValidGameDraftState(parsed) ? parsed : null;
+    }
+    return isValidLookupDraftState(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Overwrites the single Draft slot for this draft's mode. Never throws. */
+export function saveDraft(draft: Omit<GameDraftState, "updatedAt">): void;
+export function saveDraft(draft: Omit<LookupDraftState, "updatedAt">): void;
+export function saveDraft(draft: Omit<GameDraftState, "updatedAt"> | Omit<LookupDraftState, "updatedAt">): void {
+  try {
+    const storage = getStorage();
+    if (!storage) return;
+
+    const full: ConversationDraft = { ...draft, updatedAt: new Date().toISOString() };
+    storage.setItem(draftStorageKey(draft.mode), JSON.stringify(full));
+  } catch {
+    // Draft persistence must never interfere with the app's core flow.
+  }
+}
+
+/** Clears the single Draft slot for a mode. Never throws. */
+export function clearDraft(mode: ConversationHistoryMode): void {
+  try {
+    const storage = getStorage();
+    if (!storage) return;
+
+    storage.removeItem(draftStorageKey(mode));
+  } catch {
+    // Draft persistence must never interfere with the app's core flow.
   }
 }

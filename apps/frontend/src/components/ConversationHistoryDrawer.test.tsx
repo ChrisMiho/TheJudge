@@ -129,6 +129,61 @@ describe("Frontend - Conversation history drawer", () => {
     expect(trigger).toHaveFocus();
   });
 
+  it("shows a distinct Draft row above completed entries when a Draft exists", () => {
+    const onSelect = vi.fn();
+    render(
+      <ConversationHistoryDrawer
+        isOpen
+        onClose={vi.fn()}
+        entries={[buildEntry()]}
+        onSelectEntry={vi.fn()}
+        draft={{ updatedAt: "2026-01-03T00:00:00.000Z", onSelect }}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /Draft/ })).toBeInTheDocument();
+    expect(screen.queryByText("No saved conversations yet")).not.toBeInTheDocument();
+  });
+
+  it("calls the Draft's onSelect when the Draft row is clicked", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    render(
+      <ConversationHistoryDrawer
+        isOpen
+        onClose={vi.fn()}
+        entries={[]}
+        onSelectEntry={vi.fn()}
+        draft={{ updatedAt: "2026-01-03T00:00:00.000Z", onSelect }}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /Draft/ }));
+    expect(onSelect).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the Draft row instead of the empty state when there are no completed entries", () => {
+    render(
+      <ConversationHistoryDrawer
+        isOpen
+        onClose={vi.fn()}
+        entries={[]}
+        onSelectEntry={vi.fn()}
+        draft={{ updatedAt: "2026-01-03T00:00:00.000Z", onSelect: vi.fn() }}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /Draft/ })).toBeInTheDocument();
+    expect(screen.queryByText("No saved conversations yet")).not.toBeInTheDocument();
+  });
+
+  it("renders no Draft row and the ordinary empty state when no Draft is passed", () => {
+    render(<ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[]} onSelectEntry={vi.fn()} />);
+
+    expect(screen.queryByRole("button", { name: /Draft/ })).not.toBeInTheDocument();
+    expect(screen.getByText("No saved conversations yet")).toBeInTheDocument();
+  });
+
   it("mirrors the adaptive-context sheet/drawer CSS shape to the left edge", () => {
     expect(appCss).toMatch(
       /\.conversation-history-overlay \{[^}]*align-items: flex-end;[^}]*\}/

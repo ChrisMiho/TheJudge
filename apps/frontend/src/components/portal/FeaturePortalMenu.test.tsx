@@ -649,7 +649,12 @@ describe("Chrome integration", () => {
     // renders in normal flow inside the header grid, then lifts via `.portal-slot-tab`'s
     // negative margin to meet .page-card's own top border (see index.css) — rather than
     // falling back to the viewport-fixed floating tab.
-    const portalContainerClassName = portalButton.closest("div")?.className ?? "";
+    // Game context now always supplies a historyTrigger (REQ-107), so the rail renders
+    // in its two-zone split form (see .portal-menu-rail-split) — the button's immediate
+    // parent is that split-zone wrapper, not `.portal-slot-tab` itself. Climb to the
+    // nearest `.portal-slot-tab` ancestor (present in both single- and two-zone forms)
+    // rather than the immediate parent div.
+    const portalContainerClassName = portalButton.closest(".portal-slot-tab")?.className ?? "";
     expect(portalContainerClassName).toContain("portal-slot-tab");
     expect(portalContainerClassName).not.toContain("fixed");
     // Header grid: PortalSlot (left column) precedes the centered brand block; the
@@ -696,7 +701,9 @@ describe("Chrome integration", () => {
     await user.click(screen.getByRole("menuitem", { name: "In-Depth Question" }));
 
     const portalButton = screen.getByRole("button", { name: "Switch feature" });
-    const portalContainerClassName = portalButton.closest("div")?.className ?? "";
+    // Same two-zone-wrapper caveat as above: climb to the nearest `.portal-slot-tab`
+    // ancestor rather than the immediate parent div.
+    const portalContainerClassName = portalButton.closest(".portal-slot-tab")?.className ?? "";
     expect(portalContainerClassName).toContain("portal-slot-tab");
     expect(portalContainerClassName).not.toContain("fixed");
   });

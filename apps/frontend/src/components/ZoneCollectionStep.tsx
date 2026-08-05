@@ -12,6 +12,7 @@ import { useAutocompleteKeyboard } from "../hooks/useAutocompleteKeyboard";
 import { useAutocompleteSuggestions } from "../hooks/useAutocompleteSuggestions";
 import { useScanCapture, type ScanAddOutcome } from "../hooks/useScanCapture";
 import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
+import type { ConversationHistoryTriggerDescriptor } from "./ConversationWorkspace";
 import { PageShell } from "./PageShell";
 import { StagedStepHeader } from "./StagedStepHeader";
 import { StepEyebrow } from "./StepEyebrow";
@@ -31,6 +32,7 @@ type ZoneCollectionStepProps = {
   canContinue: boolean;
   onFlashStatus: (message: string) => void;
   statusMessage: string | null;
+  historyTrigger?: ConversationHistoryTriggerDescriptor;
 };
 
 export function ZoneCollectionStep({
@@ -46,7 +48,8 @@ export function ZoneCollectionStep({
   onContinue,
   canContinue,
   onFlashStatus,
-  statusMessage
+  statusMessage,
+  historyTrigger
 }: ZoneCollectionStepProps): JSX.Element {
   const orderedSelectedZones = useMemo(
     () => CANONICAL_ZONE_ORDER.filter((zone) => selectedZones.includes(zone)),
@@ -176,7 +179,7 @@ export function ZoneCollectionStep({
     <PageShell>
       {!isScanOpen && (
         <>
-          <StagedStepHeader />
+          <StagedStepHeader historyTrigger={historyTrigger} />
           <StepEyebrow stepName="Add cards to zones" />
           <p className="text-sm text-zinc-400">
             Select a zone, then add cards by searching or scanning.
