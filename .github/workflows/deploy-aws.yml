@@ -18,6 +18,7 @@ jobs:
       AWS_S3_BUCKET: thejudge-web-${{ vars.AWS_ACCOUNT_ID }}
       AWS_LAMBDA_FUNCTION_NAME: thejudge-api
       AWS_CLOUDFRONT_COMMENT: thejudge-web
+      VITE_FEEDBACK_FORMSPREE_ID: ${{ vars.VITE_FEEDBACK_FORMSPREE_ID }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

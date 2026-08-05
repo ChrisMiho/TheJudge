@@ -28,4 +28,5 @@ the feature portal as an action entry (DEC-104).
   - depends on DEC-104 for the portal action-entry kind and on `feature-portal` (DEC-095) for entry chrome
   - Formspree public form id is configuration, not a secret; it may be committed to `.env.example` and shipped in the client bundle
   - the owner completes Formspree account/form creation directly on formspree.io (out-of-band; the recipient email is registered there, never in the codebase or a secret store) and supplies the resulting form id via `VITE_FEEDBACK_FORMSPREE_ID`; the feature ships complete in the graceful-no-op state without this, and the owner's id handoff — not further engineering — is what enables delivery
+  - live delivery confirmed 2026-08-05: form id `xdenozlb`, local + production build env configured, live-send smoke (modal submit through inbox delivery) verified end to end
   - screenshots/file uploads are a deferred extension, not an open question

@@ -24,8 +24,6 @@ Do not rename package folders to encode status.
 
 ## owner-action
 
-- [feedback-delivery-onboarding](./feedback-delivery-onboarding/)
-
 ## deferred
 
 - [commander-spellbook-combos](./commander-spellbook-combos/)
