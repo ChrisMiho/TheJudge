@@ -77,9 +77,18 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | | |
 |---|---|
 | Purpose | Suite navigation + Theme |
-| Phone / Desktop | Rail: corner band (hit box capped per DEC-137). Open tray: full-height of **visible shell side**, width per navigation DECs (not a free full-viewport panel past shell) |
-| Fit | Overlay; no page scroll. Occludes under-tray chrome when open (DEC-140/147) |
-| Notes | DEC-122, DEC-133, DEC-137, DEC-147 |
+| Phone / Desktop | Rail: corner band (hit box capped per DEC-137) when tray closed. Open tray: full-height of **visible shell side**, width per navigation DECs (not a free full-viewport panel past shell). Theme orbs on one row (DEC-152). |
+| Fit | Overlay; no page scroll. Opaque over destination content; rail Menu/History icons hidden/unclickable while open; close via outside click / Escape (DEC-140/147/150) |
+| Notes | DEC-122, DEC-133, DEC-137, DEC-147, DEC-150, DEC-152, REQ-127, REQ-131 |
+
+#### Card detail popup (suite-wide)
+
+| | |
+|---|---|
+| Purpose | Read oracle/local card detail without stacking it under the image |
+| Phone / Desktop | Compact popup over the card image; opened from a top-right corner control on the image; closed via X (Escape/outside optional) |
+| Fit | Overlay; popup body may region-scroll if detail is long; must not invent a second page-length scroll for the hosting step |
+| Notes | DEC-151, REQ-128 — applies whenever a card image is shown |
 
 #### Conversation history drawer
 
@@ -108,10 +117,10 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | | |
 |---|---|
 | Purpose | Optional card + question → Ask AI |
-| Phone | Shell 100% width band; content-sized vertically (DEC-145); primary fields and submit in first viewport when practical; topics/lists may region-scroll |
-| Desktop/tablet | Shell 92%/48rem cap; content-sized vertically; composer/field growth must not force page scroll (REQ-110 / DEC-146) |
+| Phone | Shell 100% width band; content-sized vertically (DEC-145); compact card image + corner detail popup when a card is attached (DEC-151); primary fields and **Send Request** submit in first viewport when practical; topics/lists may region-scroll |
+| Desktop/tablet | Shell 92%/48rem cap; content-sized vertically; composer/field growth must not force page scroll or clip chrome below the field (REQ-110 / DEC-146 / DEC-153) |
 | Fit | No page scroll for primary submit path |
-| Notes | DEC-107, DEC-145, DEC-146 |
+| Notes | DEC-107, DEC-145, DEC-146, DEC-151, DEC-153, REQ-132 |
 
 #### Quick Question — answered workspace
 
@@ -127,10 +136,10 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | | |
 |---|---|
 | Purpose | Players, phase, notes before zones |
-| Phone | Shell width band; roster/controls in first viewport when practical; expanded secondary details stay within width (DEC-128) |
-| Desktop/tablet | Shell 92%/48rem cap; **content-sized vertically** — do not stretch the step card to fill empty lower viewport (DEC-145) |
+| Phone | Shell width band; roster/controls in first viewport when practical; expanded secondary details stay within width and align to their player row (DEC-128) |
+| Desktop/tablet | Shell 92%/48rem cap; **content-sized vertically** — do not stretch the step card to fill empty lower viewport (DEC-145); expanded secondary details contained and aligned (DEC-128) |
 | Fit | Prefer no page scroll for primary confirm path; dense multiplayer may region-scroll inside roster panel if needed |
-| Notes | DEC-120, DEC-128, DEC-145 |
+| Notes | DEC-120, DEC-128, REQ-106, DEC-145 |
 
 #### In-Depth — Zone confirmation
 
@@ -146,19 +155,19 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | | |
 |---|---|
 | Purpose | Add cards to selected zones (search/scan) |
-| Phone | Shell width band; card-detail add action near first viewport (REQ-125); grid may region-scroll |
-| Desktop/tablet | Shell 92%/48rem; content-sized vertically (DEC-145); keep primary add reachable without inventing empty-band fill |
-| Fit | No page scroll past a stranded add CTA; lists/grids region-scroll |
-| Notes | DEC-148, REQ-125, DEC-145 |
+| Phone | Shell width band; compact card images; add action in first viewport (REQ-125/129); added cards horizontal L→R strip with region scroll (REQ-130); detail via corner popup (REQ-128) |
+| Desktop/tablet | Shell 92%/48rem; content-sized vertically (DEC-145); same density rules; keep primary add reachable without inventing empty-band fill |
+| Fit | No page scroll past a stranded add CTA; card strip region-scrolls horizontally |
+| Notes | DEC-151, REQ-125, REQ-128–130, DEC-145 |
 
 #### In-Depth — Enrichment
 
 | | |
 |---|---|
 | Purpose | Optional per-card notes + question before decrypt |
-| Phone / Desktop | Shell width bands; content-sized vertically (DEC-145); question composer matches FollowUp composition (DEC-146); lists region-scroll |
-| Fit | Composer growth must not force page scroll |
-| Notes | DEC-146, REQ-110, DEC-145 |
+| Phone / Desktop | Shell width bands; content-sized vertically (DEC-145); compact card images + corner detail popup (DEC-151); question composer matches FollowUp composition with initial **Send Request** label (DEC-146/153); lists region-scroll |
+| Fit | Composer growth must not force page scroll or clip chrome below the field (REQ-110) |
+| Notes | DEC-146, DEC-153, REQ-110, REQ-132, DEC-145, DEC-151 |
 
 #### In-Depth — Answered workspace
 

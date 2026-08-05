@@ -197,9 +197,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Shared card presentation
 
 - Status: shipped
-- Summary: Zone collection, expanded scan review, and both enrichment modes share a responsive image-first card presentation. Available images are centered at 80% of the container width, retain their intrinsic aspect ratio, and toggle to complete locally carried metadata; missing or failed images enter metadata mode directly. Complete card containers use stable WUBRG-ordered identity rings with a silver-gray fallback, while existing Remove, ordering, enrichment, scan, and submission behavior remains unchanged.
-- Lives in: `apps/frontend/src/components/CardPresentation.tsx`, `apps/frontend/src/lib/cardIdentityRing.ts`, consumers in `apps/frontend/src/components/{ZoneCardPicker,ScanReviewBubble,EnrichmentStep}.tsx`, ring and responsive scroll styling in `apps/frontend/src/index.css`
-- Backed by: DEC-078, REQ-058, FLOW-001, FLOW-002, FLOW-006
+- Summary: Zone collection, expanded scan review, enrichment, and other suite card-image surfaces share a responsive image-first card presentation (DEC-078 as amended by DEC-151). Available images stay uncropped and aspect-preserving, sized for first-viewport density; a corner control opens a dismissible popup with locally carried descriptive fields (including oracle text); missing or failed images enter metadata mode directly. In-Depth zone added cards use a horizontal left-to-right strip with region scroll. Complete card containers use stable WUBRG-ordered identity rings with a silver-gray fallback; Remove, ordering, enrichment, scan, and submission behavior remain unchanged.
+- Lives in: `apps/frontend/src/components/CardPresentation.tsx`, `apps/frontend/src/lib/cardIdentityRing.ts`, consumers in `apps/frontend/src/components/{ZoneCardPicker,ScanReviewBubble,EnrichmentStep,CardSelectionPreview}.tsx`, ring and responsive scroll styling in `apps/frontend/src/index.css`
+- Backed by: DEC-078, DEC-151, REQ-058, REQ-128, REQ-130, FLOW-001, FLOW-002, FLOW-006
 
 ### Per-instance zone-card identity
 

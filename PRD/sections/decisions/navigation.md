@@ -257,16 +257,17 @@ portal owns app chrome and every feature reaches it as a registered destination.
   - non-goals: redesigning the rail's visual language, the drawer's contents, the destination registry, or any destination's own layout
 
 ### DEC-140
-- Decision: When the feature-portal Menu tray is open, the tray surface must paint **above** and **fully occlude** non-Menu corner-rail chrome — especially the History zone on In-Depth Question and Quick Question. Icons under the open tray must not show through the tray and must not receive pointer events. The Menu trigger itself remains interactive so the user can close the tray. Menu↔History mutual exclusivity (DEC-125) still applies when History is opened by other means.
+- Decision: When the feature-portal Menu tray is open, the tray surface must paint **above** and **fully occlude** non-Menu corner-rail chrome — especially the History zone on In-Depth Question and Quick Question. Icons under the open tray must not show through the tray and must not receive pointer events. Menu↔History mutual exclusivity (DEC-125) still applies when History is opened by other means. **Close affordance while open is amended by DEC-150:** outside click and Escape close the tray; the Menu and History rail icons are hidden/unclickable while the tray is open (they are not the open-state close control).
 - Status: confirmed
-- Context: Live review after the full-height tray (DEC-133) and side-by-side History rail (DEC-137) found History still painting through the open tray and remaining clickable. Playwright verification confirmed `.portal-menu-rail` stacks at `z-index: 3` above `.portal-menu-drawer` at `z-index: 2`, so `elementFromPoint` over the History icon while Menu is open still hits History and can open the history drawer through the tray.
+- Context: Live review after the full-height tray (DEC-133) and side-by-side History rail (DEC-137) found History still painting through the open tray and remaining clickable. Playwright verification confirmed `.portal-menu-rail` stacks at `z-index: 3` above `.portal-menu-drawer` at `z-index: 2`, so `elementFromPoint` over the History icon while Menu is open still hits History and can open the history drawer through the tray. Product-owner review of PR #75 further rejected rail icons remaining visible/clickable through the open tray, including the Menu trigger.
 - Impact:
   - open Menu tray stacking/occlusion covers the History rail zone (and any other non-Menu rail chrome under the tray's painted bounds)
-  - while Menu is open, History is not visible through the tray and is not clickable; Menu remains the close control
+  - while Menu is open, History is not visible through the tray and is not clickable
   - Life Tracker / Trade Balancer (Menu-only rail) must not regress: open tray still reads as an opaque left shell panel over destination content
   - presentation/interaction only — no change to destination registry, Theme, History persistence, `AskAiRequest`, Zod schemas, prompt assembly, providers, or backend routes
 - Related requirements:
   - REQ-115
+  - REQ-127
   - REQ-113
   - REQ-114
   - DEC-122
@@ -274,33 +275,60 @@ portal owns app chrome and every feature reaches it as a registered destination.
   - DEC-133
   - DEC-137
   - DEC-125
+  - DEC-150
   - NFR-001
 - Notes:
   - amends open-state stacking/occlusion for DEC-122/DEC-133 relative to DEC-126's History zone; does not redesign tray contents or the rail's rest-state visual language
-  - non-goals: merging History into the Menu tray, changing Menu outside-click-to-close, or altering History drawer geometry
+  - the prior "Menu trigger remains interactive to close" clause is superseded by DEC-150
+  - non-goals: merging History into the Menu tray, or altering History drawer geometry
 
 ### DEC-147
-- Decision: Three corrections to the open Menu tray's presentation. (1) **Opacity extends to all destination content, not only rail chrome.** DEC-140 required the open tray to fully occlude non-Menu corner-rail chrome and to read as an opaque left shell panel; that opacity obligation now explicitly covers every destination element under the tray's painted bounds, so no page text, control, or artwork remains legible through the tray surface. (2) **The tray box is bounded by the visible shell.** The tray's own height is the shell area it occupies, not a full viewport height applied from an offset origin, so the tray element never extends past the viewport's bottom edge. (3) **The first destination row's hit area clears the rail band.** DEC-135 already gives each menu row a left inset that clears the corner rail's icon zone; that inset now governs the row's **interactive** bounds as well as its visual ones, so the Menu trigger's hit band (DEC-137's `5.5rem x 3.5rem` cap) and the first destination row no longer claim the same pixels. DEC-135's full-bleed row presentation and edge-to-edge separator rules are unchanged — no row moves down — and the Menu trigger stays interactive so the user can close the tray (DEC-140). Menu↔History mutual exclusivity, outside-click-to-close, focus trap/restore, Escape-to-close, reduced-motion behavior, and tray contents are unchanged.
+- Decision: Corrections to the open Menu tray's presentation. (1) **Opacity extends to all destination content, not only rail chrome.** The open tray must fully occlude every destination element under its painted bounds, so no page text, control, or artwork remains legible through the tray surface. (2) **Painted bounds stay inside the visible shell.** The tray must not visually extend past the shell/viewport bottom; an unclipped layout-box measurement that exceeds the viewport while `overflow: hidden` already clips paint is not itself a defect. (3) **Open-state rail interaction is owned by DEC-150.** First-row label inset that clears the rail band remains good practice, but requiring a zero intersection between the Menu trigger box and row one while the trigger stays above the drawer is retired — DEC-150 hides the rail icons while open instead. DEC-135's full-bleed row presentation and edge-to-edge separator rules are unchanged. Outside-click-to-close, Escape-to-close, focus trap/restore, reduced-motion behavior, and tray contents (aside from Theme layout in DEC-152) remain.
 - Status: confirmed
-- Context: The 2026-08-05 Playwright MCP sweep found the tray at `background-color: rgba(24, 24, 27, 0.95)` with `backdrop-filter: none` and no scrim element (`scrimPresent: false`); ten destination-content elements measured inside the tray footprint and stayed legible through it, with the tray's "Send feedback" row visually colliding with Trade Balancer's "Side A $0.00 · Side B $0.00 · USD only" price line. The same sweep measured the tray element at 256x844 from y=45 (bottom 889 against an 844px viewport) on mobile and 256x900 from y=57 (bottom 957 against 900) on desktop, and measured the Menu trigger overlapping the first destination row by 88px horizontally at desktop and 32px vertically at mobile. The `ConversationHistoryDrawer` at the same viewports renders opaque over a dimming scrim and is the in-app reference for correct behavior.
+- Context: The 2026-08-05 Playwright MCP sweep found translucent tray paint and destination content ghosting through. Implementation made the surface opaque and cleared first-row labels from the rail band, but two original acceptance proxies conflicted with confirmed stacking (DEC-140) and sticky `100dvh` tray sizing inside an overflow-clipped shell. Product-owner review redirected open-state rail behavior to DEC-150.
 - Impact:
   - the open tray surface is opaque (or backed by a scrim sufficient to make it so) across its full painted bounds on every destination
-  - the tray element's measured bottom does not exceed the viewport bottom at any supported viewport
-  - the Menu trigger no longer overlaps the first destination row's interactive area; both keep their NFR-001 touch targets
-  - Life Tracker and Trade Balancer (Menu-only rail) and the DEC-140 History-occlusion behavior must not regress
-  - presentation/interaction only — no change to the destination registry, Theme controls, History persistence, `AskAiRequest`, Zod schemas, prompt assembly, providers, or backend routes
+  - painted tray content does not visually overflow the shell/viewport bottom
+  - Life Tracker and Trade Balancer (Menu-only rail) and History occlusion under the open tray must not regress
+  - presentation/interaction only — no change to the destination registry, Theme controls (layout: DEC-152), History persistence, `AskAiRequest`, Zod schemas, prompt assembly, providers, or backend routes
 - Related requirements:
   - REQ-122
+  - REQ-127
   - REQ-115
   - REQ-113
   - REQ-114
   - NFR-001
   - DEC-140
+  - DEC-150
   - DEC-133
   - DEC-135
   - DEC-137
   - DEC-134
 - Notes:
   - reference pattern is the existing history drawer's opaque-surface-plus-scrim treatment; this decision does not require adopting its width or animation
-  - clause (3) corrects interactive bounds only; it does not move rows, change DEC-135's full-bleed row geometry, or alter DEC-137's rail cap
-  - non-goals: redesigning tray contents, the Theme section, the rail's rest-state visual language, or History drawer geometry
+  - retired proxies: "tray element measured bottom ≤ viewport" as a hard box metric; "Menu trigger bounding box does not intersect first row" while DEC-140 kept the trigger above the drawer
+  - non-goals: redesigning tray destination rows, the rail's rest-state visual language, or History drawer geometry
+
+### DEC-150
+- Decision: While the feature-portal Menu tray is open, the corner-rail Menu and History icons are **not visible and not clickable**. The user closes the tray by clicking/tapping **outside** the tray (and by existing Escape-to-close). This amends DEC-140's prior "Menu trigger remains interactive so the user can close" clause and retires DEC-147's trigger∩row intersection criterion as the path to preventing accidental rail taps.
+- Status: confirmed
+- Context: Product-owner review of PR #75 found Menu and History remaining visible and clickable through/over the open tray, inviting accidental taps. Outside-click dismiss already exists for the Menu tray; making it the primary close path while hiding the rail icons matches the desired open-state UX.
+- Impact:
+  - with the tray open on any destination, `elementFromPoint` over the former Menu and History icon centers does not hit those controls
+  - Menu and History rail affordances do not paint through/over the open tray
+  - outside-click and Escape still close the tray; Menu↔History mutual exclusivity when History is opened by other means is unchanged
+  - rest-state rail (tray closed) keeps DEC-137 hit-area rules
+  - presentation/interaction only — no change to destination registry, Theme, History persistence, `AskAiRequest`, Zod schemas, prompt assembly, providers, or backend routes
+- Related requirements:
+  - REQ-127
+  - REQ-122
+  - REQ-115
+  - DEC-140
+  - DEC-147
+  - DEC-133
+  - DEC-137
+  - DEC-125
+  - NFR-001
+- Notes:
+  - does not require absorbing `chrome-tray-conversation-history-ux` implementation work into this package; product truth here is authoritative for the hide/outside-click amendment
+  - non-goals: merging History into the Menu tray, changing History drawer geometry, or redesigning rest-state rail visuals

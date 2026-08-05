@@ -9,9 +9,9 @@
 - Main Flow:
   1. Game setup: user sets player count, active player when known, and turn phase via dropdown; turn phase is required and defaults to **main_1**. The expandable **Players in game** panel renders each active player as a compact card with display name and life visible. A secondary-details arrow on every player card controls one synchronized state: activating any arrow expands or collapses Poison, Energy, Experience, Commander damage, and named counters for all active players. Active player and downstream player selects show display names as `Player N (Name)` when set. Turn phase and active player appear in one merged panel; the cat-wizard hero image is hidden until the user clicks the brand title 10 times on this step (session-only reveal).
   2. Zone confirmation: app preselects likely zones from the turn phase; user adjusts the checklist; at least one zone is required to continue.
-  3. Per-zone collection: for each selected zone, user may add card identities from local search; non-stack cards capture owner; stack cards are ordered bottom-to-top. Added cards appear in a compact 2-column tile grid with internal scrolling. An available uncropped card image is centered at 80% of its tile width; a three-dot control swaps it for locally carried metadata. If the image is unavailable, the readable full-tile-width metadata panel appears directly. Remove and stack position remain available. Each complete tile has a restrained ring derived from the card's existing colors, with a light silver-gray treatment for colorless/missing colors. While scan is open, search and the card list are hidden; user exits scan to return to manual search.
-  4. Enrichment: default card-by-card wizard (OK advances); optional **View all cards** for full-list edit with per-zone internal scrolling; user may add caster, targets, notes, and mana spent where relevant. In both modes, the same responsive image/metadata presentation appears above full-width enrichment fields. The complete image-bearing or fallback card row uses the same identity-ring treatment as zone collection.
-  5. Submit: user enters an optional question, clicks **Decrypt Stack**, and the frontend sends `question` plus `gameContext` to the backend.
+  3. Per-zone collection: for each selected zone, user may add card identities from local search; non-stack cards capture owner; stack cards are ordered bottom-to-top. Added cards appear in a horizontal left-to-right strip in add order with horizontal region scroll. An available uncropped card image is compact (DEC-151); a corner detail control opens a dismissible popup with locally carried oracle/metadata. If the image is unavailable, the readable metadata panel appears directly. Remove and stack position remain available. Each complete tile has a restrained ring derived from the card's existing colors, with a light silver-gray treatment for colorless/missing colors. While scan is open, search and the card list are hidden; user exits scan to return to manual search.
+  4. Enrichment: default card-by-card wizard (OK advances); optional **View all cards** for full-list edit with per-zone internal scrolling; user may add caster, targets, notes, and mana spent where relevant. In both modes, the same compact image + corner detail popup presentation appears above full-width enrichment fields. The complete image-bearing or fallback card row uses the same identity-ring treatment as zone collection.
+  5. Submit: user enters an optional question, clicks **Send Request** on the initial decrypt control, and the frontend sends `question` plus `gameContext` to the backend.
   6. Backend builds the prompt and returns a plain-text answer.
   7. Frontend displays the answer in the shared chat-first conversation workspace; frozen game context is available through the adaptive read-only context trigger/sheet/drawer and follow-ups continue through FLOW-005.
 - Edge Cases:
@@ -29,16 +29,17 @@
   - if the user changes phase after selecting zones, newly assumed zones are added and existing cards/enrichment are preserved
   - player secondary details default collapsed; every per-player arrow reflects and toggles the same all-player expanded state, so mixed open/closed player cards cannot occur
   - closing the outer player panel or leaving and returning to In-Depth Question resets secondary details collapsed without clearing player values or other in-progress flow state
-  - on narrow/mobile viewports, expanding secondary player details must not push cards or controls horizontally off-page or introduce document-level horizontal scroll (DEC-128, REQ-106)
+  - on phone and desktop viewports, expanding secondary player details must not push cards or controls horizontally off-page, misalign the expand panel, or introduce document-level horizontal scroll (DEC-128, REQ-106)
   - returning to a staged step after leaving the destination and resizing the viewport must not leave the optional-question composer collapsed below one line or clipping typed content (DEC-131, REQ-110, REQ-120)
-  - on narrow/mobile viewports, the card-detail view reached from zone search must keep its add action near the first viewport rather than behind a full-height preview and duplicated oracle text (DEC-148, REQ-125)
+  - composer growth must not clip UI below the field or force page scroll from growth alone (REQ-110)
+  - on narrow/mobile viewports, the card-detail view reached from zone search must keep its add action in the first viewport via compact image + detail popup (DEC-151, REQ-125, REQ-128, REQ-129)
 - Notes:
   - this is the primary core product flow with staged context capture
   - each staged step's header presents the active step name inline to the right of the `TheJudge` / `MTG Assistant` brand block in a single row (DEC-067, REQ-045); the answered-state conversation header stays a slim brand-only header with no step name and carries an inline feature-portal Menu slot (DEC-109, REQ-089)
   - staged-flow compaction (DEC-076, REQ-056) and automatic fluid responsive presentation (DEC-117, REQ-096) are presentation-only and do not change this flow's logic or payloads; users select no layout profile
   - compact synchronized player-secondary disclosure (DEC-120, REQ-100) changes only the visibility of existing player inputs; submitted game context is unchanged for unchanged values
-  - mobile containment for expanded secondary details (DEC-128, REQ-106) is presentation-only and does not change disclosure semantics or payloads
-  - viewport fill on both axes (DEC-145, REQ-124), the pre-submit composer composition (DEC-146, REQ-121), and card-detail height reduction (DEC-148, REQ-125) are presentation-only and change no step logic, control set, or payload
+  - player-details containment/alignment (DEC-128, REQ-106) is presentation-only and does not change disclosure semantics or payloads
+  - desktop shell width (DEC-145, REQ-124), pre-submit composer composition (DEC-146 / DEC-153, REQ-121 / REQ-132), and card density (DEC-151, REQ-125 / REQ-128–130) are presentation-only and change no step logic or payload
 
 ### FLOW-002
 - Name: Inspect and remove cards from selected zones
@@ -47,9 +48,9 @@
   - at least one selected zone has a card
 - Main Flow:
   1. User opens or views a selected zone's card list.
-  2. App lists cards for that zone in a compact 2-column tile grid (max 4 visible, scroll the rest).
-  3. Stack-zone cards are shown from bottom to top.
-  4. Each tile centers an available uncropped card image at 80% of the tile width. Image mode keeps Remove and stack position where applicable while hiding duplicated identity labels; a three-dot control swaps the image for every present locally carried metadata field. If the image is unavailable, the same metadata presentation appears directly. The full tile has a thin ring derived from existing card colors: one semantic color, a stable multicolor gradient, or light silver-gray for colorless/missing colors.
+  2. App lists cards for that zone in a horizontal left-to-right strip in add order; overflow scrolls horizontally inside the strip region.
+  3. Stack-zone cards keep bottom-to-top ordering semantics.
+  4. Each tile shows a compact uncropped card image (DEC-151). Image mode keeps Remove and stack position where applicable while hiding duplicated identity labels stacked under the art; a corner detail control opens a dismissible popup with locally carried descriptive fields (including oracle text when present). If the image is unavailable, the same metadata presentation appears directly. The full tile has a thin ring derived from existing card colors: one semantic color, a stable multicolor gradient, or light silver-gray for colorless/missing colors.
   5. User removes one or more cards.
   6. Zone card count updates.
 - Edge Cases:
@@ -57,7 +58,7 @@
   - if the last card is removed from a zone, that zone remains selected but is omitted from the request payload
 - Notes:
   - manual reorder is out of scope for the core product
-  - tile grid layout, image presentation, and scroll cap are presentation only (DEC-076, DEC-078, REQ-056, REQ-058)
+  - horizontal strip layout, compact image presentation, and detail popup are presentation only (DEC-076, DEC-078, DEC-151, REQ-056, REQ-058, REQ-128, REQ-130)
   - each card is an independent instance keyed on its `instanceId`: when the same card appears more than once in a non-stack zone, removing or editing one copy targets only that copy and leaves its siblings intact (DEC-082, REQ-061)
 
 ### FLOW-003
@@ -131,7 +132,7 @@
   2. The scanner auto-scans continuously; a manual capture button is always available. A live convergence indicator shows `searching`, then `locking` on a named card with a progress/confidence cue as evidence accumulates (DEC-057). While searching under poor conditions, the indicator surfaces a cause-aware hint derived from per-frame quality signals — e.g. "too much glare — tilt the card", "hold steady", "move closer" — to guide the user toward a lockable frame (DEC-062). Behind the scenes the query frame is conditioned (glare suppression, auto-contrast, white-balance) and the best frame in the window is preferred for hashing so a card locks without needing a perfect angle.
   3. As the scanner enters the `locking` state (a confident leader accumulating votes), an affirmative outline is drawn on the detected card in the viewfinder as a positive "you're close — hold this angle" alignment cue; it clears if the scanner drops back to `searching` (DEC-083). Once one card is consistently the best over a short window with high confidence, it **locks in** and is **auto-added** to the current zone via the existing add path (owner via the sticky owner selector, duplicate-stack block, stack-size limit, `ZoneCardItem` output) — no Accept tap and no selecting from a list (DEC-056).
   4. A thumbs-up confirmation popup fades in and out and a short "ding" plays (on by default; a top-left mute toggle silences the sound only, not the popup); auto-scan immediately resumes for the next card and the scan review bubble shows the running count of cards added this session (DEC-058, DEC-057, DEC-061).
-  5. To remove a wrong auto-add, the user taps the scanned-cards bubble in the top-right. Its viewport-capped 320px panel lists each card with the shared responsive image/metadata presentation and a persistent Remove control. An available uncropped image is centered at 80% of the entry width and can be swapped for local metadata; if the image is unavailable, the metadata appears directly. Each complete entry has the same restrained identity ring used by zone collection and enrichment. Long sessions scroll inside the panel. The user removes the card in one tap (no confirmation) without leaving the camera (DEC-058, DEC-078).
+  5. To remove a wrong auto-add, the user taps the scanned-cards bubble in the top-right. Its viewport-capped 320px panel lists each card with the shared compact image + corner detail popup presentation and a persistent Remove control. An available uncropped image is sized for DEC-151 density; the corner control opens locally carried descriptive fields (including oracle text when present); if the image is unavailable, the metadata appears directly. Each complete entry has the same restrained identity ring used by zone collection and enrichment. Long sessions scroll inside the panel. The user removes the card in one tap (no confirmation) without leaving the camera (DEC-058, DEC-078, DEC-151).
   6. User repeats as needed, then taps **Exit scan** (top-right on the camera surface) to return to zone collection and pick another zone or move forward in the flow; normal staged-flow navigation/actions return only after scan closes.
 - Edge Cases:
   - lock/convergence thresholds are tuned to lock readily on a clearly-leading card while retaining the runner-up margin guard; rare wrong auto-adds are acceptable because they are removable in one tap, and an ambiguous frame keeps searching rather than committing (DEC-059, DEC-058)

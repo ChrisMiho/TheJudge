@@ -13,7 +13,7 @@ detail.
 | --- | --- |
 | Branch | `feature/responsive-containment-and-density` @ `d4ef683` |
 | PR | [#75](https://github.com/ChrisMiho/TheJudge/pull/75) → `feature/automated-refinement` (**not** `main`) |
-| Package status | `active` (`STATUS.active`) — **not** ship-ready, two slices blocked |
+| Package status | `refined` (`STATUS.refined`) after 2026-08-05 re-refinement of `issues.md` — QC → map-out before more implement |
 | Working tree | clean at time of writing |
 | Dev server | started for review: frontend `:5173`, backend `:3000`, `ASK_AI_PROVIDER=mock` |
 

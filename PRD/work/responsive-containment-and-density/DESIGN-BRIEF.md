@@ -1,109 +1,95 @@
 # DESIGN-BRIEF: responsive-containment-and-density
 
-Status: approved (explicit user approval of the design summary, 2026-08-05).
+Status: approved (re-refinement after PR #75 review, explicit user approval 2026-08-05).
 
 ## Problem
 
-A Playwright MCP sweep of all four portal destinations at 390×844 and 1440×900
-(2026-08-05) found the shell leaking in three ways.
-
-**It clips its own content.** The shared pre-submit composer pins itself to
-`height: 0px` and hides 20px of the user's typed question, showing only a sliver of
-glyph tops. At phone widths the same composer's field is starved to 40% of its row by
-an inline labelled button. In-Depth player rows overflow their panel by 34px.
-
-**Overlays blend with what they cover.** The Menu tray is translucent with no scrim,
-so ten destination-content elements stay legible through it and the tray's own trigger
-sits on top of the first destination row. The mock-mode banner covers header controls
-on the two full-bleed destinations.
-
-**It wastes the space it owns.** 53% of desktop width and 41–43% of both viewports'
-height sit empty, while the primary "Add card" action is stranded 244px below the
-mobile fold behind a full-size preview and oracle text duplicated from the card art.
+The first pass of this package closed most measured containment defects, but product-owner
+review of PR #75 found remaining tray, density, composer, roster, Theme, and submit-label
+issues. Two slices stayed blocked because their acceptance criteria fought confirmed
+decisions (C) or outran what DEC-148 authorized (F). `issues.md` is the authoritative
+post-review work list.
 
 ## Outcome
 
-Every destination renders its content fully inside its own box at phone and desktop
-widths; overlays occlude what they cover; and the shell uses the viewport it is given.
-Each fix is verified with Playwright MCP measurements at both viewports before and
-after — the same method that produced the evidence — with no new `@playwright/test`
-CI harness.
+Product truth and this brief authorize the adjustments needed so an agent can finish the
+package: tray rail icons hide while open (outside-click / Escape close), card surfaces get
+compact images plus a suite-wide detail popup and a horizontal In-Depth zone strip, composer
+growth respects chrome below the field, Theme orbs fit one row, initial submit reads
+**Send Request**, and Game Context expanded player details align on phone and desktop.
+Verification stays Playwright MCP measurement at 390×844 and 1440×900 plus targeted unit
+tests — no new `@playwright/test` CI harness.
 
-## Confirmed choices
+## Confirmed choices (re-refinement)
 
 | Question | Choice |
 | --- | --- |
-| Package scope | All six sweep findings plus the absorbed roster-containment defect |
-| Absorbed package | `mobile-player-details-overflow` folded in and deleted; its `DEC-128` / `REQ-106` already live in `PRD/sections/` and carry forward unchanged |
-| Dead space (F5) | Both axes, fluid — new `DEC-145` supersedes `DEC-131`'s deferral; shell cap `min(90rem, ~92vw)` (≥1200px measured at 1440×900) |
-| Composer composition (F2) | Match the shipped `FollowUpComposer`: full-width field, inline counter, compact circular submit |
-| Card detail (F6) | Shrink preview image and drop duplicated oracle text; no sticky CTA bar |
-| Verification | Playwright MCP at 390×844 and 1440×900; no `@playwright/test` harness |
+| Open Menu tray + rail | Hide Menu and History (not visible/clickable). Close via **outside click** and Escape. Amends DEC-140's "Menu trigger stays interactive." |
+| Card density | Shrink images so primary chrome + CTA fit the first viewport; oracle/detail behind a **corner icon → popup with X**; In-Depth zone cards **horizontal L→R scroller**. Info icon on **every card image in the suite**. |
+| Composer growth | Ceiling is chrome below the field staying on-screen / no page scroll from growth (REQ-110 intent). |
+| Desktop shell width | Keep DEC-145 `min(48rem, 92vw)`. |
+| Theme orbs | One row for all six; Colorless options centered under that row. |
+| Initial submit label | Visible **Send Request** on first Decrypt/Ask; follow-up stays arrow. Concise Enrichment ready-copy points at the button when the optional message is empty. |
+| Player details | Fix expanded secondary-details alignment on mobile **and** desktop (DEC-128 / REQ-106). |
+| Package ownership | This package owns the tray-rail amendment in product truth; do not implement `chrome-tray-conversation-history-ux` here. |
 
 ## Product truth
 
 | ID | Role |
 | --- | --- |
-| DEC-145 | New — shell fills the viewport on both axes; supersedes DEC-131's dead-space / shell-redesign non-goal |
-| DEC-146 | New — pre-submit composers adopt the `FollowUpComposer` composition; amends DEC-131's composer clause |
-| DEC-147 | New — open tray opaque against all destination content, bounded to the viewport, and first-row hit area clears the rail band; extends DEC-140 and DEC-135's inset, no row geometry change |
-| DEC-148 | New — narrow-viewport card detail caps preview height and drops duplicated oracle text |
-| REQ-120 | New — auto-grow composer survives destination switch + resize |
-| REQ-121 | New — composer row composition |
-| REQ-122 | New — opaque, bounded tray without trigger overlap |
-| REQ-123 | New — banner clears every destination header (enforces DEC-085) |
-| REQ-124 | New — viewport fill on both axes |
-| REQ-125 | New — reachable add action in card detail |
-| DEC-128 / REQ-106 | Inherited from the absorbed package — mobile roster containment, unchanged |
-| REQ-110 / DEC-131 | Unchanged growth behavior; REQ-120 adds the collapsed-height case |
-| DEC-085 | Unchanged banner decision; REQ-123 makes its offset guarantee measurable |
-| DEC-140 | Unchanged occlusion intent; DEC-147 extends it past rail chrome |
-| DEC-117 / NFR-001 | Unchanged mechanism — fluid CSS on one tree, no JS device modes |
-| FLOW-001 | Edge cases and notes amended for REQ-120 and REQ-125 |
+| DEC-150 | New — open tray hides rail icons; outside-click / Escape close; revises DEC-140 / DEC-147 proxy criteria |
+| DEC-151 | New — compact card images + suite-wide detail popup + horizontal zone strip; supersedes DEC-148; amends DEC-078 |
+| DEC-152 | New — Theme orb single-row layout + centered Colorless options |
+| DEC-153 | New — initial **Send Request** label + Enrichment ready-copy; amends DEC-146; carves out DEC-092 / REQ-070 preserve for that visible label |
+| REQ-127 | New — open-tray rail hide + outside dismiss |
+| REQ-128 | New — suite-wide card detail popup |
+| REQ-129 | New — compact card images / first-viewport fit |
+| REQ-130 | New — horizontal In-Depth zone-card strip |
+| REQ-131 | New — Theme orb row |
+| REQ-132 | New — Send Request label + ready copy |
+| REQ-110 / REQ-122 / REQ-125 / REQ-115 / REQ-058 / REQ-106 | Amended to match |
+| DEC-140 / DEC-147 / DEC-148 / DEC-078 / DEC-146 / DEC-128 / DEC-131 / DEC-092 | Amended or superseded as noted in bodies |
+| FLOW-001 / screen-layout.md | Amended for tray, cards, composer, Theme, submit |
+| DEC-145 / REQ-124 | Unchanged (48rem shell) |
+| DEC-128 / REQ-106 (roster containment) | Still in force; alignment fix is enforcement + desktop coverage |
 
-## Findings → requirements
+## Issues → requirements
 
-| Finding | Measured evidence | Lands on |
-| --- | --- | --- |
-| F1 composer pins `height:0px` | `clientHeight` 12 vs `scrollHeight` 32; 20px clipped | REQ-120 |
-| F2 field starved on mobile | 136px of a 340px row (40%); placeholder clipped 20px | REQ-121 / DEC-146 |
-| F3 tray translucent, overlapping, oversized | `scrimPresent:false`; 10 elements ghost through; 88px trigger overlap; bottom 889 vs 844 and 957 vs 900 | REQ-122 / DEC-147 |
-| F4 banner covers headers | 24px / 9px / 12px (Life Tracker), 11px (Trade Balancer); 3 banner nodes | REQ-123 |
-| F5 dead space | 770px (53%) horizontal, 366px (41%) vertical desktop; 359px (43%) mobile | REQ-124 / DEC-145 |
-| F6 CTA below fold | "Add card" at y=1088 on 844px viewport; page 1286px | REQ-125 / DEC-148 |
-| F7 roster overflow (absorbed) | row 322px in a 288px box; ▾ 8px past panel border | REQ-106 / DEC-128 |
+| issues.md # | Lands on |
+| --- | --- |
+| 1 tray icons clickable through tray | DEC-150, REQ-127 (amends DEC-140/147, REQ-115/122) |
+| 2 player details misaligned | DEC-128 / REQ-106 (amended) |
+| 3 oracle icon + popup | DEC-151, REQ-128 |
+| 4 shrink images / no stranded scroll | DEC-151, REQ-129 (unblocks F / REQ-125) |
+| 5 horizontal zone cards | DEC-151, REQ-130 |
+| 6 Theme orb row | DEC-152, REQ-131 |
+| 7 Send Request + ready copy | DEC-153, REQ-132 |
+| 8 composer growth ceiling | REQ-110 / DEC-131 notes |
 
-## Implementation pointers (non-normative)
+## Unblocks
 
-- **F1 root cause is known.** [`useAutoGrowTextarea.ts:41`](../../../apps/frontend/src/hooks/useAutoGrowTextarea.ts)
-  reads `textarea.scrollHeight` on window resize. For an inactive destination the
-  textarea is unrendered, so `scrollHeight` is `0` and the handler writes
-  `height: 0px`; the sizing effect depends only on `[value, textareaRef]`, so
-  re-activation never recomputes. Guard the unrendered case and re-measure on
-  activation — keep the fix in the shared hook (DEC-131 prefers one implementation).
-  Repro: load → switch destination → resize → switch back.
-- **Two correct in-app patterns already exist.** `ConversationHistoryDrawer` renders
-  opaque over a dimming scrim and blocks pointer events beneath (target for DEC-147);
-  `FollowUpComposer` gives its field 230px at a 390px viewport using a circular send
-  control (target for DEC-146). Prefer aligning to these over inventing new treatments.
-- Likely surfaces: `PageShell.tsx` and `index.css` (`.mock-mode-banner`,
-  `data-mock-banner` offset, `.portal-shell-bounds`), `FeaturePortalMenu.tsx` /
-  `.portal-menu-drawer` (tray), `CardPresentation.tsx` (card detail),
-  `MtgAssistantApp.tsx` `renderPlayerExtras` and `PlayerRosterEditor.tsx` (roster).
-- Prefer mobile-first fluid Tailwind (`min-w-0`, `min()` caps, flex/grid fill) over
-  clipping with `overflow-x-hidden` on the shell.
-- Existing Vitest suites (`PlayerRosterEditor.test.tsx`, `MockModeBanner.test.tsx`,
-  `FeaturePortalMenu.test.tsx`, `ConversationWorkspace.test.tsx`) can carry stable
-  assertions; Playwright MCP measurement remains the primary geometry evidence.
+- **Slice C:** opacity already met; retire box-bottom and trigger∩row proxy criteria; replace with rail-hide + outside-click close.
+- **Slice F:** DEC-148 levers alone cannot hit REQ-125; DEC-151 / REQ-128–130 provide the authorized density path.
 
 ## Non-goals
 
-- Theme, typography, or brand redesign.
+- Theme, typography, or brand redesign beyond Theme orb layout (DEC-152).
 - Any change to Ask AI behavior, prompt assembly, payload shape, stack ordering,
   `GameContext`, Zod schemas, providers, or backend routes.
 - A new `@playwright/test` CI harness.
-- Changes to secondary-details disclosure semantics, player-count rules, or the
-  character caps and blank-question fallback.
-- Changes to the conversation-history drawer or the answered-view follow-up composer —
-  both measured correct and serve as reference patterns.
-- Edge-to-edge desktop text with no maximum reading measure.
+- Implementing or absorbing `chrome-tray-conversation-history-ux` slices.
+- Merging this package or running cleanup (human-controlled).
+- Revisiting the DEC-145 48rem shell width.
+
+## Implementation pointers (non-normative)
+
+- Prefer shared `CardPresentation` (or equivalent) for the corner detail control so every
+  card image surface stays consistent.
+- Tray open-state: hide/disable rail controls rather than fighting z-index so History and
+  Menu cannot receive hits; keep Escape and outside-click paths that already exist.
+- Composer: growth ceiling must account for UI **below** the textarea (submit row /
+  destination chrome), not only the field's bottom vs viewport bottom.
+- Measure before/after at 390×844 and 1440×900 with Playwright MCP; call `browser_close`
+  when done.
+- `npm run quality:check` may be red for pre-existing worktree/env reasons — see
+  `HANDOFF.md`; do not treat those as this package's regressions.

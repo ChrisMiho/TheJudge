@@ -1,38 +1,54 @@
-# Slice G — In-Depth roster containment
+# Slice G — In-Depth player-details alignment
 
-## Status: done
+## Status: planned
 
 ## Goal
 
-Keep expanded player cards and their secondary controls inside the "Players in game"
-panel and the viewport at phone widths (REQ-106, DEC-128 — inherited from the
-absorbed `mobile-player-details-overflow` package).
+Fix the expanded secondary-player-details box's alignment relative to its owning
+player row/card, on both phone and desktop viewports (REQ-106, DEC-128 —
+containment itself already shipped and stays intact).
 
 ## Requirements
 
-1. Expanded secondary-detail regions (Poison, Energy, Experience, Commander damage,
-   named counters) and their player-card chrome stay within the panel's content width.
-2. No document-level horizontal scroll is introduced at phone widths.
-3. Preferred fix direction is fluid widths, wrapping, and `min-w-0` on flex/grid
-   children rather than hiding overflow on the page shell (DEC-128 Notes).
-4. `sm+` composition receives only incidental shared safety — no deliberate desktop
-   roster redesign.
+1. Reproduce and measure the alignment defect at 390×844 and 1440×900 before
+   changing code (per `HANDOFF.md`'s working rules) — the prior pass fixed
+   horizontal overflow (`min-w-0` shrink-safety) but product-owner review of PR
+   #75 found the expanded panel itself misaligned relative to its player row,
+   which is a distinct defect from overflow.
+2. The expanded secondary-detail region (`renderPlayerExtras` output, rendered in
+   `PlayerRosterEditor.tsx`'s `id={secondaryRegionId}` sibling div) must visually
+   align to its owning player card's chrome — not floating, offset, or reading as
+   detached from the row above it — at **both** viewports.
+3. Preferred fix direction stays fluid widths / wrapping / `min-w-0` on flex/grid
+   children (DEC-128 Notes), not shell-level `overflow-x-hidden`.
+4. Containment already shipped in the first pass must not regress: no descendant
+   of the roster panel gets `scrollWidth > clientWidth`, and no element extends
+   past the panel's right border.
 5. Disclosure semantics, player values, and submitted `gameContext` are unchanged
-   (DEC-120, REQ-100).
+   (DEC-120, REQ-100) — this slice is presentation-only.
+6. `sm+` composition may receive incidental shared alignment fixes but this is not
+   a deliberate desktop roster redesign.
 
 ## Acceptance criteria
 
-- [ ] At 390×844 with secondary details expanded, no descendant of the roster panel
-      has `scrollWidth > clientWidth` (baseline defect: row content 322px in a 288px
-      box, 34px over; four other nodes 9–22px over)
-- [ ] No element inside the panel extends past the panel's right border
-      (baseline defect: disclosure ▾ controls 8px past)
+- [ ] At 390×844 with secondary details expanded, no descendant of the roster
+      panel has `scrollWidth > clientWidth`, and no element extends past the
+      panel's right border (regression check on the shipped fix)
 - [ ] `documentElement.scrollWidth <= clientWidth` at 390×844 with details expanded
+      (regression check)
+- [ ] At 1440×900 with secondary details expanded, the expanded details region is
+      horizontally contained **and** visually aligned to its owning player
+      card/row — not offset or floating incorrectly (new: this is the defect this
+      slice closes)
+- [ ] At 390×844, the same alignment property holds — the expanded region reads as
+      belonging to its player row, not detached
 - [ ] Expanding and collapsing still toggles all players together; no mixed
       open/closed state (DEC-120)
-- [ ] Player values and submitted `gameContext` are unchanged for unchanged inputs —
-      existing `PlayerRosterEditor` and `MtgAssistantApp.player-counters` tests pass
-- [ ] `sm+` roster composition is visually equivalent apart from shared shrink/wrap safety
+- [ ] Player values and submitted `gameContext` are unchanged for unchanged inputs
+      — existing `PlayerRosterEditor` and `MtgAssistantApp.player-counters` tests
+      pass
+- [ ] `sm+` roster composition is visually equivalent apart from the alignment fix
+      and shared shrink/wrap safety
 
 ## Verification
 
@@ -41,9 +57,11 @@ npm --workspace apps/frontend run test -- PlayerRosterEditor MtgAssistantApp
 npm run quality:check
 ```
 
-Playwright MCP at 390×844: In-Depth → expand player details → expand secondary
-details → `browser_evaluate` for per-node `scrollWidth` vs `clientWidth`, panel-edge
-intersection, and document scroll width, plus a screenshot. Spot-check 1440×900.
+Playwright MCP at 390×844 and 1440×900: In-Depth → expand player details → expand
+secondary details → `browser_evaluate` for the secondary-details region's bounding
+box relative to its player card's bounding box (left/right edge alignment), plus
+`scrollWidth`/`clientWidth` regression checks, plus screenshots. Call
+`browser_close` when finished.
 
 ## Files touched
 
@@ -51,24 +69,11 @@ intersection, and document scroll width, plus a screenshot. Spot-check 1440×900
 - `apps/frontend/src/components/PlayerRosterEditor.tsx`
 - `apps/frontend/src/components/PlayerRosterEditor.test.tsx`
 
-## Verified (2026-08-05)
+## Prior pass (2026-08-05) — containment fixed, carried forward as regression bar
 
-Root cause was exactly the direction DEC-128's Notes predicted. The player row is a flex
-container whose name column used `flex-1` **without `min-w-0`**; a flex child defaults to
-`min-width: auto`, so the name input's intrinsic width acted as a floor and the row could
-not shrink to its panel. Adding `min-w-0` to the row and the name column, plus `w-full
-min-w-0` on the input, lets the row shrink as designed.
-
-At 390×844 with secondary details expanded:
-
-| Measure | Before | After |
-| --- | --- | --- |
-| Nodes with `scrollWidth > clientWidth` | 6 (row 322px in a 288px box, 34px over) | **0** |
-| Elements past the panel's right border | 2 (disclosure ▾, 8px over) | **0** |
-| `documentElement.scrollWidth > clientWidth` | false | false |
-
-- Expand/collapse still toggles all players together; no mixed open/closed state.
-- `PlayerRosterEditor` + `MtgAssistantApp` tests 20/20 pass — player values and submitted
-  `gameContext` unchanged.
-- Change is a shared shrink-safety rule, so `sm+` composition is visually equivalent
-  (DEC-128 permits incidental shared safety only).
+Root cause was the player row's `flex-1` name column lacking `min-w-0`, so the
+name input's intrinsic width floored the row wider than its panel (322px in a
+288px box). Adding `min-w-0` to the row, the name column, and the input resolved
+all six overflow nodes and the two out-of-bounds disclosure controls; 20/20
+roster tests passed. That fix must not regress while this slice adds the
+alignment fix on top of it.

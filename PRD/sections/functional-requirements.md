@@ -165,7 +165,7 @@
 - Priority: high
 - Description: The app must submit the final question and captured `gameContext` to the backend through the main action button.
 - Acceptance Criteria:
-  - action button label is **Decrypt Stack**
+  - the initial pre-submit action's **visible** label is **Send Request** (DEC-153 / REQ-132); the control's accessible name retains Decrypt Stack / Ask semantics
   - clicking the button sends `question` and `gameContext`
   - no top-level `stack` or `battlefieldContext` is sent
   - submit is allowed only when at least one selected zone has a card
@@ -174,7 +174,10 @@
   - one main product-facing endpoint in the core product
 - Dependencies:
   - backend API
+  - DEC-153
+  - REQ-132
 - Notes:
+  - visible label amended by DEC-153; answered follow-up send stays arrow/icon-only
 
 ### REQ-013
 - Title: Plain-text AI response
@@ -1155,17 +1158,19 @@
 - Description: The frontend must compact the staged data-collection screens to reduce vertical scroll through presentation-only layout changes on game context, zone collection, enrichment list mode, and scan-focused zone-collection chrome. Zone confirmation is excluded.
 - Acceptance Criteria:
   - **game context:** the cat-wizard hero image is not in the document on initial render; after 10 clicks on the `TheJudge` brand title on the game-context step it appears (`/assets/cats-homescreen.png`) and stays visible for the browser session only; turn phase and active player render in one merged panel side-by-side on `sm+` widths with combat sub-step full-width below when phase is `combat`; `(recommended)` does not appear in active-player labeling; player expand/collapse and add/remove controls use wider tap targets
-  - **zone collection:** cards render in a 2-column tile grid with at most 4 tiles (2 rows) visible before the grid scrolls, for every zone including stack; remove buttons, thumbnails, truncated names, and stack-position labels are preserved; with 5+ cards the 5th is reachable via scroll; the empty-state `Select a suggestion to preview and add a card to …` placeholder is removed
+  - **zone collection:** cards render in a horizontal left-to-right strip in add order with horizontal region scroll (DEC-151 / REQ-130), for every zone including stack; remove buttons, compact images, truncated names, and stack-position labels are preserved; overflow cards are reachable via horizontal scroll; the empty-state `Select a suggestion to preview and add a card to …` placeholder is removed
   - **scan focus:** while scan is open, search input, scan entry button, zone card list, owner select, card preview, and outer staged-flow navigation/action buttons outside the camera surface are not in the document; the `Scan card` heading is removed; **Exit scan** is reachable on the camera surface top-right; the scan-local **Capture** button remains available; the low-confidence manual-search escalation prompt does not render; manual tap-to-capture remains available
   - **enrichment:** in **View all cards** mode, each zone's card list shows at most 4 full-width edit rows before internal scroll; card-by-card wizard mode is unchanged; all enrichment fields remain reachable by scrolling within the zone list
   - **zone confirmation:** no screen-specific control compaction; it may inherit the automatic responsive shell/spacing from REQ-096 while its existing control layout and behavior remain unchanged
-  - tests cover representative cases for game-context Easter egg, zone grid scroll, scan chrome hide/show, and enrichment list scroll cap
+  - tests cover representative cases for game-context Easter egg, zone strip scroll, scan chrome hide/show, and enrichment list scroll cap
 - Constraints:
   - presentation only; no change to step names, step ordering, flow logic, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, or data-pipeline behavior
-  - scroll caps (4 zone tiles, 4 enrichment rows per zone) apply across automatic responsive widths
+  - enrichment scroll cap (4 rows per zone) applies across automatic responsive widths; zone-collection list geometry follows DEC-151
   - no viewport locking, sticky footers, or `dvh` page-shell redesign
 - Dependencies:
   - DEC-076
+  - DEC-151
+  - REQ-130
   - FLOW-001
   - FLOW-002
   - FLOW-006
@@ -1175,6 +1180,7 @@
 - Notes:
   - incremental improvement — pages with many zones or the decrypt form below enrichment may still scroll; this requirement targets the worst vertical offenders
   - automatic responsive presentation (REQ-096 / DEC-117) adjusts surrounding spacing without changing these functional caps
+  - prior 2-column / 4-visible-tile zone grid superseded by DEC-151 horizontal strip
 
 ### REQ-057
 - Title: Scanner acquisition diagnostics and validation matrix
@@ -1213,33 +1219,35 @@
 ### REQ-058
 - Title: Consistent legible card presentation and identity highlighting
 - Priority: medium
-- Description: Card containers in zone collection, expanded scan review, and enrichment must use one responsive image-first presentation, on-demand local metadata, and a restrained ring derived from the existing card colors (DEC-078).
+- Description: Card containers in zone collection, expanded scan review, enrichment, and other suite card-image surfaces must use one responsive image-first presentation, on-demand local detail (DEC-151 popup), and a restrained ring derived from the existing card colors (DEC-078 as amended).
 - Acceptance Criteria:
-  - `ZoneCardPicker`, expanded `ScanReviewBubble`, and `EnrichmentStep` use the same shared card-presentation boundary
-  - an available card image is centered at 80% of its card container width, preserves its intrinsic aspect ratio, and renders without cropping
-  - image mode hides duplicated name, owner/zone, and oracle labels while retaining Remove, stack position where applicable, enrichment inputs, and other workflow controls
-  - an accessible three-dot control replaces an available image with local metadata and toggles back to the image
-  - `ZoneCardPicker` preserves its two-column grid, bottom-to-top stack ordering, Remove behavior, and viewport-relative internal scroll cap
+  - `ZoneCardPicker`, expanded `ScanReviewBubble`, `EnrichmentStep`, and shared preview surfaces use the same shared card-presentation boundary for image sizing, identity ring, and detail affordance
+  - an available card image preserves its intrinsic aspect ratio and renders without cropping; size follows DEC-151 compact density rather than a fixed 80%-of-container target when that target prevents first-viewport fit
+  - image mode does not stack duplicated name, owner/zone, or oracle labels under the art while retaining Remove, stack position where applicable, enrichment inputs, and other workflow controls
+  - a corner detail control opens the dismissible detail popup (REQ-128) for locally carried descriptive fields
+  - `ZoneCardPicker` uses a horizontal left-to-right strip in add order with horizontal region scroll (REQ-130); stack bottom-to-top semantics and Remove behavior remain
   - expanded `ScanReviewBubble` uses a 320px width with a viewport-safe cap and retains its counter and one-tap Remove behavior
   - long scan-review sessions scroll inside the expanded panel before the panel would exceed the available camera viewport; the top-right counter and one-tap removal behavior remain unchanged
   - `EnrichmentStep` uses the shared presentation in both **View all cards** and **Card-by-card** modes; enrichment fields remain full-width below without changing either mode's behavior
   - when `imageUrl` is empty or the image emits a load error, no broken-image icon or empty image gap remains; the surface replaces the image with a text-first card panel
-  - the metadata panel expands to the available card-container width and renders every locally carried field that is present: name, mana cost, mana value, type line, oracle text, colors, supertypes, and subtypes
   - the fallback never invents values for absent optional fields and does not fetch additional metadata; Remove, stack position where applicable, enrichment fields, and other workflow controls remain rendered and usable
-  - mixed image/metadata content may produce different tile or row heights, but the zone, enrichment, and scan-review internal scroll boundaries remain effective
   - every complete card tile, scan-review entry, and enrichment row uses a thin, low-opacity identity ring around the container whether it contains an image or the text-first fallback
   - single-color cards map W/U/B/R/G to warm ivory, blue, muted violet-charcoal, red, and green; white remains visually distinguishable from the cool light silver-gray colorless treatment
   - multicolor cards use a stable WUBRG-ordered gradient containing every recognized color present in the existing `colors` array
   - cards with an empty, missing, or wholly unrecognized `colors` value use the cool light silver-gray ring without failing rendering
   - identity rings remain decorative: card text continues to identify the card, and the ring adds no glow, background tint, animation, or dependency on the selected app theme palette
-  - automated tests cover shared 80%-width responsive sizing, uncropped rendering, metadata toggle/reset behavior, empty-URL and image-error fallback paths, complete available-metadata rendering, absence of a broken image/empty gap, zone and enrichment viewport caps, scan-panel viewport containment/internal scrolling, both enrichment modes, all five single-color mappings, stable multicolor ordering, silver-gray empty/missing/unknown fallback, and ring application to image-bearing and text-fallback containers on all three surfaces
+  - automated tests cover compact uncropped rendering, detail-popup open/close, empty-URL and image-error fallback paths, zone horizontal strip, scan-panel viewport containment/internal scrolling, both enrichment modes, color mappings, and ring application on participating surfaces
 - Constraints:
-  - presentation only; use existing `colors` and do not add true `colorIdentity`, image caching, connectivity detection, explicit image retry, runtime metadata refresh, or any change to `CardSelectionPreview`, card identity, printing-image selection, `ZoneCardItem`, `CardMetadataItem`, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, scan matching/stabilizer logic, or data-pipeline behavior
-  - preserve internal scrolling in zone collection, enrichment, and scan review
-  - define shared image sizing, metadata-toggle/error handling, fallback rendering, semantic color mapping, and ring treatment once and reuse them across all three surfaces; do not duplicate sizing, image-fit, fallback-field, or card-color logic
+  - presentation only; use existing `colors` and do not add true `colorIdentity`, image caching, connectivity detection, explicit image retry, runtime metadata refresh, or any change to card identity, printing-image selection, `ZoneCardItem`, `CardMetadataItem`, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, scan matching/stabilizer logic, or data-pipeline behavior
+  - preserve region scrolling in zone collection, enrichment, and scan review
+  - define shared image sizing, detail-popup/error handling, fallback rendering, semantic color mapping, and ring treatment once and reuse them; do not duplicate sizing, image-fit, fallback-field, or card-color logic
   - card-color presentation constants stay separate from user-selectable theme palette tokens
 - Dependencies:
   - DEC-078
+  - DEC-151
+  - REQ-128
+  - REQ-129
+  - REQ-130
   - REQ-008
   - REQ-048
   - DEC-018
@@ -1249,7 +1257,7 @@
   - FLOW-002
   - FLOW-006
 - Notes:
-  - `CardSelectionPreview` remains the visual calibration reference, not an additional implementation target
+  - `CardSelectionPreview` participates in DEC-151 corner detail + compact image rules; identity-ring calibration remains shared
 
 ### REQ-059
 - Title: App-wide UI motion & visual-feedback polish pass
@@ -1601,25 +1609,28 @@
 - Acceptance Criteria:
   - the game-context "Players in game" helper text reads exactly `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.` (replacing `2 players start at 20 life. 3+ players default to 40 life.`), naming the `▾` expander control while preserving the 20/40 defaults behavior in a single line
   - the zone-confirmation helper text reads exactly `Select all zones that apply to your question.` (replacing `Select the zones relevant to your question. Defaults are pre-checked based on the turn phase.`); the prior turn-phase-defaults clause is intentionally dropped
-  - no other on-screen guidance/helper text is changed: the "Add cards to zones" helper, the context-enrichment screen, the answered/follow-up view, the scan on-open state, the stack-order note, the tuned scan cause-hints, and the fallback-question note are byte-for-byte unchanged
+  - no other on-screen guidance/helper text is changed: the "Add cards to zones" helper, the context-enrichment screen (other than its ready-state helper text, whose pointer to the send control is governed by DEC-153/REQ-132 rather than this preserve), the answered/follow-up view, the scan on-open state, the stack-order note, the tuned scan cause-hints, and the fallback-question note are byte-for-byte unchanged
   - no net-new guidance text is introduced anywhere — no new intro/orientation lines, tooltips, popovers, coachmarks, modals, or onboarding flow
   - the `▾`/`▸` expander control referenced by the enhanced game-context copy retains its existing `aria-label`/`aria-expanded` semantics and toggle behavior (REQ-069); the copy change is text-only
   - tests assert the two enhanced strings render on their respective screens and that the replaced strings no longer appear
 - Constraints:
   - text/presentation only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, stack-ordering semantics, step names, step ordering, flow logic, or data-pipeline behavior
-  - preserve the themed labels/buttons (`Decrypt Stack`, `Begin stackening!`, `Context enrichment`, `Consulting the stack…`) unchanged
+  - preserve the themed labels/buttons (`Begin stackening!`, `Context enrichment`, `Consulting the stack…`) unchanged; the initial pre-submit submit control's **visible** label and the Enrichment ready-state helper text's pointer to that control are governed by DEC-153 / REQ-132 (**Send Request**) rather than this constraint
   - do not reword the tuned scan condition-aware feedback (DEC-062/DEC-072 cause-hints)
   - keep each enhanced helper to a single concise line, readable across all supported responsive widths and palettes (DEC-117/REQ-096/NFR-001)
 - Dependencies:
   - DEC-092
   - DEC-117
+  - DEC-153
   - REQ-069
   - REQ-096
+  - REQ-132
   - FLOW-001
   - FLOW-002
   - NFR-001
 - Notes:
   - triggered by post-AWS-release feedback that the per-screen usage statements were not landing; scope was deliberately narrowed by the product owner from a broad per-screen rewrite to enhancing only the two helper lines that under-explain, leaving self-explanatory screens alone
+  - DEC-153 supersedes this requirement's prior blanket preserve of the visible **Decrypt Stack** submit label for the initial pre-submit control only, and additionally carves out the Enrichment ready-state helper text's pointer to that control from this requirement's byte-for-byte preserve of the context-enrichment screen
 
 ### REQ-071
 - Title: Remove redundant searching-state label to clear mute-toggle overlap
@@ -2499,6 +2510,29 @@
   - added during post-ship visual refinement against the product owner's goal of mirroring Claude/ChatGPT/Cursor's chat UI
   - short-content fill and Start Over chrome reachability/sizing refined by REQ-109 / DEC-131
 
+### REQ-106
+- Title: In-Depth expanded player-details containment and alignment
+- Priority: high
+- Description: When In-Depth Question's synchronized secondary player details are expanded, every expanded player card and its secondary controls must stay inside the roster panel/content width with no horizontal document overflow, and the expanded details box must align to its owning player row on phone and desktop viewports (DEC-128).
+- Acceptance Criteria:
+  - at 390×844 with secondary details expanded, no descendant of the roster panel has `scrollWidth > clientWidth`, and no element inside the panel extends past the panel's right border (baseline defect: row 322px in a 288px box; disclosure ▾ 8px past)
+  - `documentElement.scrollWidth <= clientWidth` at 390×844 with details expanded
+  - at 1440×900 with secondary details expanded, the expanded details region is horizontally contained and visually aligned to its player card/row (not offset or floating incorrectly)
+  - expanding and collapsing still toggles all players together; no mixed open/closed state (DEC-120 / REQ-100)
+  - player values and submitted `gameContext` are unchanged for unchanged inputs
+- Constraints:
+  - presentation only; preferred fluid widths / wrapping / `min-w-0` rather than shell `overflow-x-hidden`
+  - no Life Tracker changes; no disclosure-semantics or payload changes
+- Dependencies:
+  - DEC-128
+  - DEC-120
+  - REQ-100
+  - FLOW-001
+  - NFR-001
+  - DEC-117
+- Notes:
+  - restores the missing REQ-106 body referenced by DEC-128 / FLOW-001 / the absorbed roster package; desktop alignment coverage added in the 2026-08-05 re-refinement
+
 ### REQ-107
 - Title: Always-visible History rail without View Context overlap
 - Priority: high
@@ -2578,10 +2612,10 @@
 ### REQ-110
 - Title: Growing pre-submit question composers
 - Priority: high
-- Description: The Enrichment optional-question field and the Quick Question question field must grow with typed content so long messages remain readable and editable, up to the available space before bottom chrome, without causing the page/document to scroll from field growth.
+- Description: The Enrichment optional-question field and the Quick Question question field must grow with typed content so long messages remain readable and editable, up to the available space before chrome **below** the composer, without causing the page/document to scroll from field growth or clipping that lower UI.
 - Acceptance Criteria:
   - as the user types a long question on Enrichment (optional question) and on Quick Question, the field grows vertically with the content rather than staying a single-line-height box that clips text
-  - growth stops when further expansion would force document/page scroll; bottom chrome (submit row / equivalent) remains the growth ceiling against available viewport space
+  - growth stops when further expansion would push UI below the composer (submit row / equivalent destination chrome) off-screen or force document/page scroll — not when the field's bottom merely reaches the viewport bottom while lower chrome is lost
   - the same grow-without-page-scroll behavior holds on desktop (more available space) and mobile
   - character counter and submit control remain usable while the field is expanded
 - Constraints:
@@ -2592,6 +2626,7 @@
   - REQ-011
   - REQ-073
 - Notes:
+  - PR #75 review clarified the ceiling is the whole app composition under the field, not the field-vs-viewport-bottom alone
 
 ### REQ-111
 - Title: Always-on game-wide day/night designation
@@ -2700,17 +2735,18 @@
 ### REQ-115
 - Title: Menu tray occludes under-rail chrome when open
 - Priority: high
-- Description: When the feature-portal Menu tray is open, non-Menu corner-rail chrome under the tray (notably History on In-Depth Question and Quick Question) must be visually covered by the tray and must not receive clicks; the Menu trigger remains available to close the tray (DEC-140).
+- Description: When the feature-portal Menu tray is open, non-Menu corner-rail chrome under the tray (notably History on In-Depth Question and Quick Question) must be visually covered and must not receive clicks (DEC-140). Open-state rail hide and outside-click close are specified by REQ-127 / DEC-150.
 - Acceptance Criteria:
   - with Menu open on a History-bearing destination, History does not paint through the tray surface
   - with Menu open, `document.elementFromPoint` over the History icon's former center returns tray/menu UI (or non-History chrome), not the History control
   - clicking/tapping where History sits while Menu is open does not open History
-  - Menu trigger still toggles the tray closed
-  - Menu-only destinations (Life Tracker, Trade Balancer) keep an opaque open tray over destination content without regressing DEC-133/137 hit-area rules
+  - Menu-only destinations (Life Tracker, Trade Balancer) keep an opaque open tray over destination content without regressing DEC-133/137 rest-state hit-area rules
 - Constraints:
   - presentation/interaction only; no registry, Theme, persistence, or Ask AI contract changes
 - Dependencies:
   - DEC-140
+  - DEC-150
+  - REQ-127
   - DEC-122
   - DEC-133
   - DEC-126
@@ -2718,6 +2754,7 @@
   - REQ-114
   - NFR-001
 - Notes:
+  - prior "Menu trigger still toggles the tray closed" criterion is superseded by REQ-127
 
 ### REQ-116
 - Title: Compact answered-workspace top clearance
@@ -2824,44 +2861,48 @@
 ### REQ-121
 - Title: Pre-submit composer row composition
 - Priority: high
-- Description: The Enrichment optional-question and Quick Question composers present the field as the dominant element of their row, with an inline character counter and a compact submit control, matching the answered view's follow-up composer (DEC-146).
+- Description: The Enrichment optional-question and Quick Question composers present the field as the dominant element of their row, with an inline character counter and a compact submit control, matching the answered view's follow-up composer composition (DEC-146). Initial visible label is **Send Request** per DEC-153 / REQ-132.
 - Acceptance Criteria:
   - at a 390px-wide viewport the composer's text field measures at least 65% of its composer row's width (baseline defect: 136px of 340px = 40%; the answered-view follow-up composer measures 230px at the same viewport)
   - the placeholder and typed content are not clipped: the field's `scrollHeight` does not exceed its `clientHeight` at rest
-  - the submit control exposes its existing accessible name ("Ask TheJudge", "Decrypt Stack") even when rendered without a visible text label
-  - the submit control and any icon-only affordance meet the 44px touch-target floor (NFR-001)
+  - the submit control exposes its existing accessible name ("Ask TheJudge", "Decrypt Stack") even when the visible label is **Send Request**
+  - the submit control meets the 44px touch-target floor (NFR-001)
   - submit gating, character caps, and the zone-aware blank-question fallback are unchanged
 - Constraints:
   - frontend presentation only; no contract, prompt, or provider change
-  - does not modify the answered-view follow-up composer
+  - does not modify the answered-view follow-up composer's arrow treatment (DEC-153)
 - Dependencies:
   - DEC-146
+  - DEC-153
+  - REQ-132
   - REQ-110
   - REQ-120
   - NFR-001
 - Notes:
 
 ### REQ-122
-- Title: Opaque, bounded Menu tray without trigger overlap
+- Title: Opaque Menu tray with painted bounds inside the shell
 - Priority: high
-- Description: The open feature-portal Menu tray occludes destination content across its painted bounds, stays inside the viewport, and does not overlap its own trigger with the first destination row (DEC-147).
+- Description: The open feature-portal Menu tray occludes destination content across its painted bounds and does not visually overflow the visible shell (DEC-147). Open-state rail hide and outside-click close are owned by REQ-127 / DEC-150.
 - Acceptance Criteria:
   - with the tray open on any destination, the tray's painted bounds are fully opaque: the computed `background-color` alpha of the tray surface is `1`, or a scrim/backdrop element covers the same bounds such that no destination-content pixel contributes to the rendered result (baseline defect: `rgba(24, 24, 27, 0.95)`, `backdrop-filter: none`, `scrimPresent: false`)
-  - the tray element's measured bottom does not exceed the viewport's bottom at 390x844 or 1440x900 (measured defect: 889 against 844, and 957 against 900)
-  - the Menu trigger's bounding box does not intersect the first destination row's interactive bounds (measured defect: 88px horizontal overlap at desktop, 32px vertical at mobile)
-  - DEC-140's History occlusion and non-clickability under the open tray do not regress
+  - painted tray content does not visually extend past the shell/viewport bottom at 390x844 or 1440x900 (an unclipped layout-box measurement alone is not a failure when overflow clipping already hides the excess)
+  - DEC-140 / REQ-115 History occlusion under the open tray does not regress
   - Menu↔History mutual exclusivity, outside-click-to-close, Escape-to-close, and focus trap/restore do not regress
 - Constraints:
   - presentation/interaction only; destination registry, Theme controls, and History persistence unchanged
   - does not alter History drawer geometry
 - Dependencies:
   - DEC-147
+  - DEC-150
   - DEC-140
+  - REQ-127
   - DEC-133
   - DEC-135
   - DEC-137
   - NFR-001
 - Notes:
+  - retired proxies: hard tray-element `bottom ≤ viewport` box metric; Menu-trigger bounding-box ∩ first-row intersection while the trigger stayed above the drawer
 
 ### REQ-123
 - Title: Mock-mode banner clears every destination header
@@ -2908,22 +2949,24 @@
 ### REQ-125
 - Title: Reachable add action in card detail
 - Priority: medium
-- Description: The zone-collection card-detail view keeps its add action near the first viewport on narrow screens by capping preview-image height and removing oracle text duplicated from the card art (DEC-148).
+- Description: The zone-collection card-detail view keeps its add action in the first viewport on narrow screens via DEC-151 density (compact preview image + detail behind the corner popup rather than stacked under the art).
 - Acceptance Criteria:
-  - at 390x844 the add action's measured `top` is within the first viewport (at most 844px), and the detail view's document `scrollHeight` is at most 900px (baseline defect: add action at y=1088, 244px below fold, on a 1286px page)
-  - the oracle-text paragraph that repeats text already legible on the displayed card image is not rendered beneath it
-  - the metadata list (mana cost, mana value, type line, colors, supertypes, subtypes), owner selection, and add behavior are unchanged
-  - when the card image is unavailable, the existing readable metadata fallback path (FLOW-001) is unaffected and its descriptive text still renders
+  - at 390x844 the add action's measured `top` is within the first viewport (at most 844px) (baseline defect: add action at y=1088, 244px below fold, on a 1286px page; DEC-148-only pass left it at ~956px)
+  - oracle/detail text is not stacked under the card image by default; it is available via the corner detail popup (REQ-128)
+  - owner selection and add behavior remain available; when the card image is unavailable, the readable metadata fallback path (FLOW-001) still renders
   - wider viewports keep a legible preview presentation
 - Constraints:
   - presentation only; no card metadata content change, no Scryfall fetch change, no `gameContext.zones` payload change
   - no sticky or floating chrome added over the preview
 - Dependencies:
-  - DEC-148
+  - DEC-151
+  - REQ-128
+  - REQ-129
   - DEC-145
   - FLOW-001
   - NFR-001
 - Notes:
+  - DEC-148 levers alone are insufficient; meet this requirement through DEC-151
 
 ### REQ-126
 - Title: Screen-layout catalog for agent-directed UI
@@ -2947,3 +2990,119 @@
   - NFR-001
 - Notes:
   - per-screen % bands are starting intent and may be tuned by updating the catalog row when a screen does not fit
+
+### REQ-127
+- Title: Hide rail icons while Menu tray is open; outside-click close
+- Priority: high
+- Description: While the feature-portal Menu tray is open, Menu and History rail icons are not visible and not clickable; the user closes the tray by clicking/tapping outside it or pressing Escape (DEC-150).
+- Acceptance Criteria:
+  - with the tray open on History-bearing and Menu-only destinations at 390×844 and 1440×900, `document.elementFromPoint` over the former Menu and History icon centers does not hit those controls
+  - Menu and History rail affordances do not paint through/over the open tray
+  - outside-click (and existing Escape) closes the tray; opening History by other means still honors Menu↔History mutual exclusivity
+  - rest-state rail (tray closed) keeps DEC-137 hit-area rules and NFR-001 floors
+- Constraints:
+  - presentation/interaction only; no registry, Theme, History persistence, or Ask AI contract changes
+- Dependencies:
+  - DEC-150
+  - DEC-140
+  - DEC-147
+  - REQ-122
+  - REQ-115
+  - NFR-001
+- Notes:
+
+### REQ-128
+- Title: Suite-wide card-image detail popup
+- Priority: high
+- Description: Whenever a card image is displayed in the suite, a compact corner control on the image opens a dismissible popup with oracle text and other locally carried descriptive fields (DEC-151).
+- Acceptance Criteria:
+  - every suite card-image surface that shows an available image exposes the corner detail control (top-right of the image)
+  - activating the control opens a popup over the card containing locally carried descriptive fields including oracle text when present
+  - the popup has an X close control; Escape and/or outside dismiss may match other overlays
+  - stacked oracle/detail under the image is not the default path when the image is present
+  - missing/failed image keeps the existing text-first fallback (no broken-image icon)
+  - no new network fetch for popup contents
+- Constraints:
+  - presentation only; no `AskAiRequest`, Zod, `GameContext`, or metadata-pipeline change
+- Dependencies:
+  - DEC-151
+  - DEC-078
+  - REQ-058
+  - REQ-125
+  - NFR-001
+- Notes:
+
+### REQ-129
+- Title: Compact card images for first-viewport fit
+- Priority: high
+- Description: Card images are sized compactly enough that the hosting screen's primary chrome and CTA fit in the first viewport without page-scroll past a stranded action (DEC-151). Horizontal region-scroll of card strips is allowed.
+- Acceptance Criteria:
+  - at 390×844 on zone-collection card detail, the add action's `top` is ≤ 844px (REQ-125)
+  - In-Depth Enrichment and Quick Question pre-submit card surfaces do not force page scroll solely because card images are full intrinsic size
+  - images remain uncropped and aspect-ratio preserving; identity remains image-first
+- Constraints:
+  - presentation only; no sticky floating CTA bar over the preview
+- Dependencies:
+  - DEC-151
+  - REQ-125
+  - REQ-058
+  - DEC-149
+  - NFR-001
+- Notes:
+
+### REQ-130
+- Title: Horizontal In-Depth zone-card strip
+- Priority: medium
+- Description: Added cards in In-Depth zone collection present as a horizontal left-to-right strip in add order with horizontal region scroll, replacing the two-column grid as the primary list layout (DEC-151).
+- Acceptance Criteria:
+  - zone-collection added cards lay out in a single horizontal row/strip in the order added
+  - overflow scrolls horizontally inside the strip region (not as document horizontal scroll)
+  - stack zone bottom-to-top ordering semantics and Remove behavior remain
+  - strip participates in DEC-151 compact image + detail popup rules
+- Constraints:
+  - presentation only; no zone payload or stack-ordering rule change
+- Dependencies:
+  - DEC-151
+  - DEC-078
+  - REQ-058
+  - FLOW-001
+  - NFR-001
+- Notes:
+
+### REQ-131
+- Title: Theme orb single-row layout
+- Priority: medium
+- Description: The Menu Theme section keeps all six profile orbs on one row and centers Colorless options under that row when Colorless is selected (DEC-152).
+- Acceptance Criteria:
+  - at 390×844 and 1440×900 with the Menu tray open, the six Theme orbs share one row (the last orb is not alone on a second row)
+  - when Colorless is selected, custom color + Reset controls appear centered under the orb row
+  - selecting other profiles does not show Colorless-only controls; DEC-119 catalog/persistence unchanged
+- Constraints:
+  - Theme-section layout only; destination menu row geometry (DEC-135) unchanged
+- Dependencies:
+  - DEC-152
+  - DEC-119
+  - REQ-099
+  - NFR-001
+- Notes:
+
+### REQ-132
+- Title: Initial Send Request label and Enrichment ready copy
+- Priority: medium
+- Description: The initial pre-submit Ask/Decrypt control shows visible **Send Request** text; the answered follow-up send control stays arrow/icon-only; Enrichment ready-state copy briefly directs the user to that button when the optional message is empty (DEC-153).
+- Acceptance Criteria:
+  - Enrichment decrypt and Quick Question first-ask submit controls show the visible label **Send Request**
+  - after the first answer, the follow-up composer send control remains arrow/icon-only
+  - Enrichment ready-state helper text (when the optional question is blank) concisely tells the user to use the send button unless they add an optional message
+  - REQ-121 field-width floor (≥65% of composer row at 390px) still holds
+  - accessible names retain Ask/Decrypt semantics; character caps and blank-question fallback unchanged
+- Constraints:
+  - presentation/copy only; no Ask AI contract change
+- Dependencies:
+  - DEC-153
+  - DEC-146
+  - REQ-121
+  - REQ-011
+  - REQ-073
+  - NFR-001
+- Notes:

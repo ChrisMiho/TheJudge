@@ -1,17 +1,18 @@
 ---
-status: refining
+status: active
 ---
 
 # responsive-containment-and-density
 
-Fix clipped content, overlay collisions, and wasted viewport space across all four
-portal destinations at phone and desktop widths. Evidence gathered with Playwright
-MCP at 390×844 and 1440×900.
+Fix clipped content, overlay collisions, wasted viewport space, and PR #75's
+follow-up density/copy findings across all four portal destinations at phone and
+desktop widths. Evidence gathered with Playwright MCP at 390×844 and 1440×900.
 
 See `IDEA.md`, `DESIGN-BRIEF.md`, `GAMEPLAN.md`.
 
-**Resuming in a fresh session?** Read [`issues.md`](./issues.md) (the work list), then
-[`HANDOFF.md`](./HANDOFF.md) (the context needed to work it).
+**Resuming in a fresh session?** Read [`issues.md`](./issues.md) (the work list origin),
+then this table and `GAMEPLAN.md`. `HANDOFF.md` and `DESIGN-BRIEF.md` hold prior-session
+context; `issues.md` items are now fully absorbed into the slice table below.
 
 ## Slice table
 
@@ -19,68 +20,43 @@ See `IDEA.md`, `DESIGN-BRIEF.md`, `GAMEPLAN.md`.
 | --- | --- | --- | --- |
 | [A](./slice-a-autogrow-collapse-fix.md) | done | Auto-grow hook never pins a collapsed height (REQ-120) | — |
 | [B](./slice-b-composer-composition.md) | done | Pre-submit composer composition (REQ-121, DEC-146) | A |
-| [C](./slice-c-menu-tray-containment.md) | blocked | Menu tray opacity, bounds, hit area (REQ-122, DEC-147) | — |
+| [C](./slice-c-menu-tray-containment.md) | planned | Menu tray rail-hide while open (REQ-127, DEC-150) | — |
 | [D](./slice-d-banner-header-clearance.md) | done | Banner clears every destination header (REQ-123) | C |
 | [E](./slice-e-viewport-fill.md) | done | Desktop shell width cap (REQ-124, DEC-145) | D |
-| [F](./slice-f-card-detail-height.md) | blocked | Card detail height reduction (REQ-125, DEC-148) | E |
-| [G](./slice-g-roster-containment.md) | done | In-Depth roster containment (REQ-106, DEC-128) | — |
-| [H](./slice-h-full-flow-verification.md) | done | Full-flow re-verification and ship gates | A–G |
+| [F](./slice-f-card-detail-height.md) | planned | Compact card images + suite-wide detail popup (REQ-128/129, DEC-151) | — |
+| [I](./slice-i-horizontal-zone-strip.md) | planned | Horizontal In-Depth zone-card strip (REQ-130, DEC-151) | F |
+| [G](./slice-g-roster-containment.md) | planned | In-Depth player-details alignment (REQ-106, DEC-128) | — |
+| [J](./slice-j-theme-orb-row.md) | planned | Theme orb single row (REQ-131, DEC-152) | — |
+| [K](./slice-k-send-request-label.md) | planned | Send Request label + Enrichment ready copy (REQ-132, DEC-153) | — |
+| [L](./slice-l-composer-growth-ceiling.md) | planned | Composer growth ceiling accounts for chrome below the field (REQ-110) | — |
+| [H](./slice-h-full-flow-verification.md) | planned | Full-flow re-verification and ship gates | C, F, I, G, J, K, L |
 
 ## Implementation map
 
 | Area | Path |
 | --- | --- |
 | Auto-grow hook | `apps/frontend/src/hooks/useAutoGrowTextarea.ts` |
-| Pre-submit composers | `apps/frontend/src/components/EnrichmentStep.tsx`, `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx` |
+| Pre-submit composers | `apps/frontend/src/components/EnrichmentStep.tsx`, `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx`, `apps/frontend/src/components/ComposerSubmitButton.tsx` |
 | Reference composer (do not change) | `apps/frontend/src/components/FollowUpComposer.tsx` |
-| Menu tray | `apps/frontend/src/components/portal/FeaturePortalMenu.tsx`, `apps/frontend/src/index.css` |
+| Menu tray + Theme | `apps/frontend/src/components/portal/FeaturePortalMenu.tsx`, `apps/frontend/src/components/portal/ThemeSection.tsx`, `apps/frontend/src/index.css` |
 | Reference overlay (do not change) | `apps/frontend/src/components/ConversationHistoryDrawer.tsx` |
 | Shell + banner | `apps/frontend/src/components/PageShell.tsx`, `apps/frontend/src/index.css` |
-| Card detail | `apps/frontend/src/components/CardPresentation.tsx`, `apps/frontend/src/components/CardSelectionPreview.tsx` |
+| Card detail + zone strip | `apps/frontend/src/components/CardPresentation.tsx`, `apps/frontend/src/components/CardSelectionPreview.tsx`, `apps/frontend/src/components/ZoneCardPicker.tsx` |
 | Roster | `apps/frontend/src/components/portal/MtgAssistantApp.tsx`, `apps/frontend/src/components/PlayerRosterEditor.tsx` |
-
-## Next
-
-`/thejudge-implement-all PRD/work/responsive-containment-and-density/`
 
 ## Preparation gate
 
-- Quality-check: **FAIL** (2026-08-05) — DEC-147 clause 3 contradicted DEC-135's row-inset resolution; REQ-121/122/124/125 carried non-verifiable acceptance criteria; DEC-131 lacked a supersession note.
-- Quality-check: **PASS** (2026-08-05, after in-session fixes) — clause 3 reworded to extend DEC-135's inset to interactive bounds with no row movement; all four requirements given numeric thresholds; DEC-131 annotated. No contradictions with active DECs, no forbidden design drift, no open questions.
+- Quality-check: **FAIL** (2026-08-05 re-refinement) — DEC-078 Decision lead still mandates 80% + three-dot swap against DEC-151; FLOW-002/FLOW-006 still describe 2-column/80%/three-dot; REQ-012 visible label **Decrypt Stack** contradicts DEC-153/REQ-132 **Send Request**; REQ-070 preserve-Decrypt-Stack constraint conflicts for that control; `system-map.md` card-presentation summary still 80%/toggle.
+- QC FAIL consistency sync applied (same session): DEC-078 Decision lead, FLOW-002/006, REQ-012, REQ-070, `system-map.md`, DEC-078 router line, plus DEC-076/REQ-056 zone-collection grid → horizontal strip — re-run quality-check.
+- Quality-check: **FAIL** (2026-08-05, second pass) — prior sync items cleared; remaining: **DEC-092** Decision/Notes still preserve visible **Decrypt Stack** without a DEC-153 carve-out, so agents can refuse **Send Request**.
+- DEC-092 Decision/Impact/Notes + router index synced to DEC-153 / REQ-132 carve-out (explicit approval 2026-08-05); package returned to `refined`.
+- Quality-check: **FAIL** (2026-08-05, third pass) — prior Decrypt Stack carve-out cleared; remaining: **REQ-070** AC still requires the context-enrichment screen helper text stay byte-for-byte unchanged, which blocks **DEC-153 / REQ-132** Enrichment ready-copy. DEC-092 Notes carve out only the visible **Send Request** label, not that ready-copy change.
+- REQ-070 AC/Constraints/Notes + DEC-092 Impact/Notes synced (explicit approval 2026-08-05) to carve the Enrichment ready-state helper text's pointer to the send control out of the byte-for-byte context-enrichment preserve, same class as the Send Request label carve-out; package returned to `refined`.
+- Quality-check: **PASS** (2026-08-05, fourth pass) — cross-checked `decisions/navigation.md`, `decisions/conversation-ux.md`, `decisions/personalization.md`, `functional-requirements.md` (REQ-012, REQ-070, REQ-106, REQ-110, REQ-115, REQ-122, REQ-125–132), `screen-layout.md`, `system-map.md`, `user-flows.md` (FLOW-002, FLOW-006), and the `decisions.md` router against the re-refined brief. No residual old-behavior language (80% image, three-dot toggle, 2-column grid, Decrypt Stack visible label, box-bottom/trigger∩row proxies); no dangling DEC/REQ IDs; `screen-layout.md` carries rows for the tray, card popup, composer, and zone-collection changes per DEC-149's gate; stack ordering / API / prompt assembly untouched, matching the brief's non-goals; no open questions introduced.
 
-## Audit findings (Playwright MCP, 2026-08-05)
+## Next
 
-| ID | Finding | Measured evidence | Viewports |
-| --- | --- | --- | --- |
-| F1 | Shared question composer pins `height: 0px` and clips typed content | `style.height="0px"`, `clientHeight` 12 vs `scrollHeight` 32 → 20px hidden | both |
-| F2 | Composer textarea squeezed by inline CTA on phone widths | textarea 136px of a 340px row (40%); CTA 128px + counter 34px inline; question wraps to 5 lines with ~200px unused | mobile |
-| F3 | Feature tray has no scrim, is translucent, overlaps its own toggle, and overflows | `scrimPresent:false`, `bg rgba(24,24,27,0.95)`, `backdropFilter:none`; 10 page elements ghost through; toggle overlaps first menu item by 88px; tray bottom 889 vs vh 844 (mobile) and 957 vs 900 (desktop) | both |
-| F4 | Mock-mode banner covers Life Tracker / Trade Balancer headers | "Switch feature" 24px covered, `h1` 9px, ⚙ 12px (Life Tracker); "Switch feature" 11px (Trade Balancer) | both |
-| F5 | Shell leaves most of the viewport empty | Desktop 1440×900: shell 670px → 770px (53%) horizontal, 366px (41%) vertical dead. Mobile: 359px (43%) below content on zone collection | both |
-| F6 | Card detail strands the primary CTA below the fold | "Add card" at y=1088 on an 844px viewport → 244px below fold; page 1286px; oracle text duplicated on art and in panel | mobile |
-| F7 | In-Depth player rows break out of their panel (absorbed) | row content 322px in a 288px box (34px over); disclosure ▾ 8px past panel right border | mobile |
+`/thejudge-implement-all PRD/work/responsive-containment-and-density/` (or
+`/thejudge-implement PRD/work/responsive-containment-and-density/ slice C` for one
+slice at a time — C, F, G, J, K, and L are parallel-ready; I depends on F; H is last).
 
-### F1 root cause
-
-[`apps/frontend/src/hooks/useAutoGrowTextarea.ts:41`](../../../apps/frontend/src/hooks/useAutoGrowTextarea.ts)
-reads `textarea.scrollHeight` on window resize. For a destination that is not active the
-textarea is unrendered, so `scrollHeight` is `0` and the handler writes `height: 0px`.
-The sizing effect depends only on `[value, textareaRef]`, so re-activating the
-destination never recomputes and the field stays collapsed to padding-only.
-
-Deterministic repro: load app → switch destination → resize window → switch back.
-
-### Reference pattern already in the codebase
-
-- `ConversationHistoryDrawer` renders opaque with a dimming scrim and correctly blocks
-  pointer events on the page beneath — the target behavior for F3.
-- `FollowUpComposer` uses a full-width input with a compact circular send control
-  (230px textarea at a 390px viewport) — the target composition for F2.
-
-## Absorbed package
-
-`PRD/work/mobile-player-details-overflow/` is absorbed here (user decision,
-2026-08-05). Its `DEC-128` / `REQ-106` are already promoted into `PRD/sections/`
-(`decisions/ui-presentation.md`, `functional-requirements.md`, `user-flows.md`) and
-carry forward as inherited product truth; F7 above is its defect, re-confirmed
-unfixed during this sweep.

@@ -58,28 +58,31 @@ Frontend-only responsive presentation, motion, transition, and visual-feedback b
   - non-goals: backend health/status endpoint, dismissible banner, changes to mock-response content, changes to the ask-AI contract, and any banner in a production build unless mock mode is explicitly configured at build time
 
 ### DEC-092
-- Decision: Post-release first-time-user confusion about "how do I use this screen" is addressed by **enhancing existing on-screen guidance copy only** — sharpening the helper statements that are already rendered — **without introducing any net-new guidance text, intro lines, tooltips, popups, or onboarding chrome**, and without touching self-explanatory screens. Two existing helper lines are enhanced in this pass; every other screen (context enrichment, answered/follow-up view, scan on-open) is intentionally left with no added guidance text, and the playful themed labels/buttons (`Decrypt Stack`, `Begin stackening!`, `Context enrichment`, `Consulting the stack…`) are preserved unchanged.
+- Decision: Post-release first-time-user confusion about "how do I use this screen" is addressed by **enhancing existing on-screen guidance copy only** — sharpening the helper statements that are already rendered — **without introducing any net-new guidance text, intro lines, tooltips, popups, or onboarding chrome**, and without touching self-explanatory screens. Two existing helper lines are enhanced in this pass; every other screen (context enrichment, answered/follow-up view, scan on-open) is intentionally left with no added guidance text, and the playful themed labels/buttons (`Begin stackening!`, `Context enrichment`, `Consulting the stack…`) are preserved unchanged. The initial pre-submit submit control's **visible** label, and the Enrichment ready-state helper text's pointer to that control, are governed by DEC-153 / REQ-132 (**Send Request**) rather than this preserve; accessible Ask/Decrypt semantics may remain.
 - Status: confirmed
-- Context: After the AWS release to friends, early feedback surfaced that users struggle to figure out how to use each screen — the per-screen statements intended to explain usage were not landing. The product owner reviewed the full set of existing guidance statements and chose a deliberately surgical copy-only pass: enhance the statements that under-explain (notably a helper that described life-total defaults but never mentioned the `▾` expander control that opens the name/life editing panel), state control usage and behavior together in one concise single line, and leave genuinely self-explanatory screens alone rather than padding them with new text. New orientation lines, per-control micro-copy on screens that lack it today, and any onboarding overlay were explicitly rejected as out of scope: the goal is clearer existing words, not more words. Themed voice is kept because it is product character, not a comprehension blocker once the plain helper lines do the orienting.
+- Context: After the AWS release to friends, early feedback surfaced that users struggle to figure out how to use each screen — the per-screen statements intended to explain usage were not landing. The product owner reviewed the full set of existing guidance statements and chose a deliberately surgical copy-only pass: enhance the statements that under-explain (notably a helper that described life-total defaults but never mentioned the `▾` expander control that opens the name/life editing panel), state control usage and behavior together in one concise single line, and leave genuinely self-explanatory screens alone rather than padding them with new text. New orientation lines, per-control micro-copy on screens that lack it today, and any onboarding overlay were explicitly rejected as out of scope: the goal is clearer existing words, not more words. Themed voice is kept because it is product character, not a comprehension blocker once the plain helper lines do the orienting. DEC-153 later carves out only the initial pre-submit control's visible label so Enrichment/Quick Question keep a clear CTA after the compact composer landed.
 - Impact:
   - the game-context "Players in game" helper changes from `2 players start at 20 life. 3+ players default to 40 life.` to `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.` — naming the expander control's purpose and keeping the defaults behavior in one line
   - the zone-confirmation helper changes from `Select the zones relevant to your question. Defaults are pre-checked based on the turn phase.` to `Select all zones that apply to your question.` — a direct action-oriented line; the turn-phase-defaults clause is intentionally dropped
-  - the "Add cards to zones" helper, the context-enrichment screen, the answered/follow-up view, the scan on-open state, the stack-order note, the tuned scan cause-hints, and the fallback-question note are **not changed** by this pass
+  - the "Add cards to zones" helper, the context-enrichment screen (other than its ready-state helper text, whose pointer to the send control is carved out per DEC-153/REQ-132), the answered/follow-up view, the scan on-open state, the stack-order note, the tuned scan cause-hints, and the fallback-question note are **not changed** by this pass
   - **no net-new guidance text** is added anywhere — no new intro/orientation lines, tooltips, popovers, coachmarks, modals, or onboarding flow
-  - themed labels/buttons are unchanged; the tuned scan condition-aware feedback (DEC-062/DEC-072 cause-hints like "Too much glare — tilt", "Hold steady", "Good — hold steady") is out of scope and left as tuned
+  - themed labels/buttons other than the initial pre-submit visible label are unchanged; that visible label is **Send Request** (DEC-153 / REQ-132), and the Enrichment ready-state helper text's pointer to that control is likewise governed by DEC-153 / REQ-132 rather than this preserve; the tuned scan condition-aware feedback (DEC-062/DEC-072 cause-hints like "Too much glare — tilt", "Hold steady", "Good — hold steady") is out of scope and left as tuned
   - presentation/text only — no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, stack-ordering semantics, step names, step ordering, flow logic, or data-pipeline behavior
   - no new screens, no flow/step reordering, no renamed steps (FLOW-001, FLOW-002, FLOW-006 and the answered view are unchanged)
 - Related requirements:
   - REQ-070
+  - REQ-132
   - FLOW-001
   - FLOW-002
   - FLOW-006
   - NFR-001
   - DEC-079
+  - DEC-153
 - Notes:
   - approved approach: enhance existing copy only (chosen over adding per-screen intro lines / per-control micro-copy, and over an onboarding overlay)
-  - guardrails: no net-new guidance text, themed labels preserved, tuned scan cause-hints untouched, single concise line per enhanced helper
-  - non-goals: new intro/orientation lines on screens that lack them today, tooltips/popovers/coachmarks/onboarding chrome, renaming themed labels or steps, rewording the tuned scan convergence feedback, and any behavior/contract/flow change
+  - guardrails: no net-new guidance text, themed labels preserved except the DEC-153 carve-out for the initial pre-submit visible **Send Request** label and its Enrichment ready-state helper-text pointer, tuned scan cause-hints untouched, single concise line per enhanced helper
+  - DEC-153 supersedes this decision's prior blanket preserve of the visible **Decrypt Stack** submit label for the initial pre-submit control only, and additionally carves the Enrichment ready-state helper text's pointer to that control out of this decision's byte-for-byte preserve of the context-enrichment screen
+  - non-goals: new intro/orientation lines on screens that lack them today, tooltips/popovers/coachmarks/onboarding chrome, renaming other themed labels or steps, rewording the tuned scan convergence feedback, and any behavior/contract/flow change
 
 ### DEC-117
 - Decision: The app replaces DEC-075's user-selected Desktop/Mobile layout-density preference with automatic fluid responsive presentation. One semantic component tree uses mobile-first CSS, shared fluid spacing/sizing tokens, and structural media queries only where layout cannot interpolate. The feature-portal Theme section retains palette selection but exposes no layout/profile control; layout-density storage, React state/application plumbing, and `data-layout-density` are retired. Previously stored density values are ignored in place, not actively deleted. No UA sniffing, JavaScript device detection, pointer heuristics, or separate mobile/desktop component trees select presentation.
@@ -137,14 +140,14 @@ Frontend-only responsive presentation, motion, transition, and visual-feedback b
   - non-goals: changing player data or validation, changing Player Life Tracker UI, adding new counter types, adding new guidance copy, persisting disclosure state, or redesigning the rest of Game context
 
 ### DEC-128
-- Decision: When In-Depth Question's synchronized secondary player details are expanded on a narrow/mobile viewport, every expanded player card and its secondary controls must remain fully within the viewport width with no horizontal document overflow or sideways slide off-page. Layout uses the existing one-tree, mobile-first fluid CSS approach (DEC-117). Desktop/`sm+` composition may receive only incidental shared safety (e.g. `min-w-0`) and must not be deliberately redesigned. Disclosure semantics, player values, and submitted `gameContext` remain those of DEC-120 / REQ-100.
+- Decision: When In-Depth Question's synchronized secondary player details are expanded, every expanded player card and its secondary controls must remain fully within the content width with no horizontal document overflow, sideways slide off-page, or misaligned expand panel relative to its player row — on **both** narrow/mobile and desktop/`sm+` viewports. Layout uses the existing one-tree, mobile-first fluid CSS approach (DEC-117). Desktop composition is not a wholesale roster redesign, but shared containment/alignment defects that appear at desktop widths must be fixed. Disclosure semantics, player values, and submitted `gameContext` remain those of DEC-120 / REQ-100.
 - Status: confirmed
-- Context: After DEC-120 shipped compact synchronized secondary details, real-device and agent browser checks showed expanded player boxes sliding horizontally off the page on phone widths while remaining acceptable on wider viewports. This is a containment/ergonomics defect, not a change to disclosure behavior or data.
+- Context: After DEC-120 shipped compact synchronized secondary details, real-device and agent browser checks showed expanded player boxes sliding horizontally off the page on phone widths. Product-owner review of PR #75 also found the expanded details box misaligned on mobile and desktop after the containment pass.
 - Impact:
-  - expanded secondary-detail regions (Poison, Energy, Experience, Commander damage, named counters) and their player-card chrome stay within the visible content width on narrow viewports
-  - the document/root does not gain a horizontal scroll from this expansion on those viewports
-  - `sm+` three-column scalar-counter layout and other desktop composition stay visually equivalent unless a shared shrink/wrap rule is required for both breakpoints
-  - verification during implementation uses Cursor's Playwright MCP plugin at a phone-sized viewport (resize, expand, screenshot, measure `scrollWidth` vs `clientWidth`); no new `@playwright/test` CI harness is required by this decision
+  - expanded secondary-detail regions (Poison, Energy, Experience, Commander damage, named counters) and their player-card chrome stay within the visible content width at phone and desktop test viewports
+  - the document/root does not gain a horizontal scroll from this expansion
+  - the expanded panel aligns to its owning player row/card chrome rather than floating or offset incorrectly
+  - verification uses Playwright MCP at 390×844 and 1440×900; no new `@playwright/test` CI harness
   - frontend presentation only — no change to `AskAiRequest`, Zod schemas, `GameContext`, tracker persistence/seed, prompt assembly, providers, backend routes, card metadata, scan behavior, Life Tracker UI, or chat shell
 - Related requirements:
   - REQ-106
@@ -156,7 +159,7 @@ Frontend-only responsive presentation, motion, transition, and visual-feedback b
   - DEC-117
 - Notes:
   - preferred fix direction: fluid widths / wrapping / `min-w-0` on flex/grid children rather than hiding overflow on the page shell
-  - non-goals: independent per-player expansion, desktop roster redesign, Life Tracker changes, CI Playwright harness, data/API changes
+  - non-goals: independent per-player expansion, Life Tracker changes, CI Playwright harness, data/API changes
 
 ### DEC-145
 - Decision: The desktop shell's width cap becomes a modest fluid value — `min(48rem, 92vw)` — instead of the fixed `42rem` column, so paired controls (turn phase / active player, trade sides) have room to sit side by side without single full-width controls stretching into content-less bands. The mechanism stays DEC-117's automatic fluid CSS on one component tree, with no layout-density storage, UA sniffing, or JS device detection. **Vertical dead space below staged-step content is deliberately left as-is**: stretching the shell to absorb it was built, reviewed, and rejected because a taller card frames an empty region rather than removing it, and genuinely using that space requires step-level content that does not exist yet. This decision therefore supersedes only the *horizontal* half of DEC-131's non-goal ("outer app-shell redesign"); DEC-131's deferral of pre-submit lower-half dead space stands until content exists to fill it.
@@ -182,22 +185,15 @@ Frontend-only responsive presentation, motion, transition, and visual-feedback b
 
 ### DEC-148
 - Decision: On narrow/mobile viewports the zone-collection card-detail view keeps its primary add action reachable without a long scroll: the card preview image is height-capped rather than rendered at full intrinsic size, and the oracle-text paragraph that merely repeats text already legible on the card art is not duplicated below it. The metadata list (mana cost, mana value, type line, colors, supertypes, subtypes) and the add action are unchanged in content.
-- Status: confirmed
-- Context: The 2026-08-05 Playwright MCP sweep measured the "Add card" control at y=1088 on an 844px viewport — 244px below the fold, on a 1286px page — behind a 272x375 preview image and an oracle-text paragraph identical to the text printed on the card image directly above it. The user must scroll past a duplicate of what they just read to complete the step.
+- Status: superseded
+- Context: The 2026-08-05 Playwright MCP sweep measured the "Add card" control at y=1088 on an 844px viewport — 244px below the fold. DEC-148's two levers shipped but recovered only ~133px of the ~245px needed; remaining height lived in step chrome and the metadata list.
 - Impact:
-  - narrow-viewport card detail reduces content height so the add action sits at or near the first viewport
-  - the card image remains the primary identity cue and stays legible at its capped height; wider viewports keep today's presentation
-  - no new sticky or floating chrome is introduced over the preview
-  - presentation only — no change to card metadata content, owner selection, zone assignment, or `gameContext.zones` payloads
+  - historical: narrow-viewport image cap + drop duplicate oracle paragraph under the image
 - Related requirements:
   - REQ-125
-  - REQ-124
-  - NFR-001
-  - DEC-145
-  - FLOW-001
+  - DEC-151
 - Notes:
-  - rejected alternative: pinning the add action to a sticky bottom bar while keeping full-size preview — adds persistent chrome over the preview instead of removing duplicated content
-  - non-goals: redesigning the card identity ring treatment, the three-dot metadata swap, or the added-card tile grid
+  - **superseded by DEC-151**, which authorizes compact images suite-wide, a corner detail popup for oracle/metadata, and a horizontal zone-card strip — the density path that can actually keep primary CTAs in the first viewport
 
 ### DEC-149
 - Decision: Durable screen-layout product truth lives at `PRD/sections/screen-layout.md`. That catalog is authoritative for layout direction (screen purpose, hybrid %-of-viewport shell / %-of-shell inner regions, viewport bands, default no-page-scroll fit with allowed region scroll, and anti-overcalibration). Agents refining or adding UI must read and follow it; they must not invent sizes or full-bleed stretches when a surface is covered. New user-visible screens or major overlays must add a catalog row (using the file’s template) during refinement. Mechanism remains DEC-117 fluid CSS on one component tree — the catalog expresses product intent in % bands and caps, not a second density system, UA sniffing, or JS device detection. Feature-specific presentation DECs and REQs remain binding; the catalog aligns with them — including DEC-145 / REQ-124 **desktop shell width** (`min(48rem, 92vw)`) and in-shell prose measure, without reintroducing rejected staged-step vertical fill — and is updated when those change. Vertical fill applies only where other DECs require it (answered workspace DEC-127/131, Life Tracker DEC-136, scan chrome DEC-090).
@@ -222,3 +218,28 @@ Frontend-only responsive presentation, motion, transition, and visual-feedback b
   - hybrid % model: outer shell **width** % of viewport; inner panels % of shell; staged pre-submit height stays content-sized per DEC-145
   - default fit: no document/page scroll for primary UI; nested region scroll allowed
   - non-goals: full design system/token library/Figma parity; rewriting UI in the docs package; strict no-nested-scroll everywhere; reintroducing rejected staged-step vertical fill
+
+### DEC-151
+- Decision: Card surfaces adopt a denser presentation so primary step chrome and CTAs stay in the first viewport. (1) **Compact images** — card images shrink enough that the hosting screen's primary controls fit the viewshell without page-scroll past a stranded action; horizontal region-scroll of card strips is the allowed escape valve. (2) **Suite-wide detail popup** — whenever a card image is displayed anywhere in the suite, a compact corner control (top-right of the image) opens a dismissible popup over the card with oracle text and other locally carried descriptive fields; the popup has an X close control (Escape/outside dismiss may match other overlays). Stacked oracle/detail under the image is not the default density path. (3) **Horizontal In-Depth zone strip** — added cards in In-Depth zone collection stack left-to-right in add order with horizontal region scroll, replacing the two-column grid as the primary list layout. Supersedes DEC-148. Amends DEC-078's 80%-of-container image default, two-column zone grid, and three-dot-as-sole-detail path (the corner popup is the primary detail affordance; image↔metadata swap may remain only if it does not reintroduce stacked density).
+- Status: confirmed
+- Context: PR #75 review found full-size card images and stacked oracle text consuming the shell, zone cards in a space-heavy grid, and DEC-148 unable to bring "Add card" into the first viewport. The product owner chose smaller images, detail-on-demand via corner icon, and a horizontal zone strip that also shows add order.
+- Impact:
+  - card images across the suite expose the corner detail control when an image is present
+  - popup content uses locally carried fields only (no new fetch); missing image keeps the existing text-first fallback
+  - zone-collection added-card list is a horizontal scroller in add order; stack bottom-to-top semantics for the stack zone are unchanged
+  - primary add/confirm/submit actions for the hosting step stay in the first viewport at 390×844 when practical (REQ-125 / REQ-129)
+  - presentation only — no change to `AskAiRequest`, Zod schemas, `GameContext`, card identity, prompt assembly, providers, or backend routes
+- Related requirements:
+  - REQ-128
+  - REQ-129
+  - REQ-130
+  - REQ-125
+  - REQ-058
+  - DEC-078
+  - DEC-148
+  - DEC-149
+  - FLOW-001
+  - NFR-001
+- Notes:
+  - identity rings, Remove, owner select, and enrichment fields remain available
+  - non-goals: sticky floating CTA bars over the preview, redesigning scan-engine chrome, changing stack ordering rules, or theme/brand redesign
