@@ -129,6 +129,31 @@ describe("Frontend - Conversation history drawer", () => {
     expect(trigger).toHaveFocus();
   });
 
+  it("closes and restores focus when the dimmed scrim outside the panel is activated", async () => {
+    const user = userEvent.setup();
+    render(<Harness entries={[buildEntry()]} onSelectEntry={vi.fn()} />);
+
+    const trigger = screen.getByRole("button", { name: "Open history trigger" });
+    await user.click(trigger);
+
+    expect(screen.getByRole("dialog", { name: "Conversation history" })).toBeInTheDocument();
+    await user.click(screen.getByTestId("conversation-history-overlay"));
+
+    expect(screen.queryByRole("dialog", { name: "Conversation history" })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+
+  it("does not close when activating the panel surface itself", async () => {
+    const user = userEvent.setup();
+    render(<Harness entries={[buildEntry()]} onSelectEntry={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: "Open history trigger" }));
+    const dialog = screen.getByRole("dialog", { name: "Conversation history" });
+
+    await user.click(within(dialog).getByText("Conversation history"));
+    expect(screen.getByRole("dialog", { name: "Conversation history" })).toBeInTheDocument();
+  });
+
   it("shows a distinct Draft row above completed entries when a Draft exists", () => {
     const onSelect = vi.fn();
     render(

@@ -1,6 +1,6 @@
 # Slice D — Outside/scrim dismiss for View Context and History
 
-## Status: planned
+## Status: done
 
 ## Goal
 

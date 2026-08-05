@@ -126,7 +126,14 @@ export function ConversationHistoryDrawer({
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="conversation-history-overlay" data-testid="conversation-history-overlay">
+    // DEC-142/REQ-117: activating the dimmed scrim (this root, outside the panel surface)
+    // closes the drawer via the same onClose path as Close/Escape. The surface below stops
+    // propagation so clicks inside it never reach this handler.
+    <div
+      className="conversation-history-overlay"
+      data-testid="conversation-history-overlay"
+      onClick={onClose}
+    >
       <section
         ref={dialogRef}
         role="dialog"
@@ -134,6 +141,7 @@ export function ConversationHistoryDrawer({
         aria-labelledby={titleId}
         tabIndex={-1}
         onKeyDown={handleDialogKeyDown}
+        onClick={(event) => event.stopPropagation()}
         className="conversation-history-surface ambient-accent-surface border border-zinc-700 bg-zinc-950 text-zinc-100 shadow-2xl"
       >
         <div className="adaptive-context-header flex items-center justify-between gap-3 border-b border-zinc-700/70">
