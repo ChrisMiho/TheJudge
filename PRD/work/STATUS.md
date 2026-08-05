@@ -20,6 +20,8 @@ Do not rename package folders to encode status.
 
 - [card-collection-manager](./card-collection-manager/)
 - [scan-non-english-special-treatments](./scan-non-english-special-treatments/)
+- [life-tracker-me-map-and-tray](./life-tracker-me-map-and-tray/)
+- [chrome-hit-areas-and-mid-flight-exits](./chrome-hit-areas-and-mid-flight-exits/)
 
 ## owner-action
 
