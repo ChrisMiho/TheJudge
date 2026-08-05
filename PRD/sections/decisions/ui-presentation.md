@@ -159,26 +159,26 @@ Frontend-only responsive presentation, motion, transition, and visual-feedback b
   - non-goals: independent per-player expansion, desktop roster redesign, Life Tracker changes, CI Playwright harness, data/API changes
 
 ### DEC-145
-- Decision: The suite shell fills the viewport it is given, on both axes, at every destination and staged step. The desktop shell's width cap scales past today's fixed ~670px column instead of pinning a narrow band inside a wide screen, and pre-submit staged steps (Game context, Zone confirmation, Zone collection, Enrichment, Quick Question landing) absorb available vertical space rather than top-anchoring a content-sized card above an empty lower region. The mechanism stays DEC-117's automatic fluid CSS on one component tree — fluid caps, `min()` / viewport units, and flex/grid fill — with no layout-density storage, UA sniffing, or JS device detection. This decision **supersedes DEC-131's non-goal** that deferred "filling empty lower-half dead space on pre-submit Game Context / zone / Quick Question landing screens" and "outer app-shell redesign" to later UI-refinement work; DEC-131's answered-workspace clauses are otherwise unchanged.
+- Decision: The desktop shell's width cap becomes a modest fluid value — `min(48rem, 92vw)` — instead of the fixed `42rem` column, so paired controls (turn phase / active player, trade sides) have room to sit side by side without single full-width controls stretching into content-less bands. The mechanism stays DEC-117's automatic fluid CSS on one component tree, with no layout-density storage, UA sniffing, or JS device detection. **Vertical dead space below staged-step content is deliberately left as-is**: stretching the shell to absorb it was built, reviewed, and rejected because a taller card frames an empty region rather than removing it, and genuinely using that space requires step-level content that does not exist yet. This decision therefore supersedes only the *horizontal* half of DEC-131's non-goal ("outer app-shell redesign"); DEC-131's deferral of pre-submit lower-half dead space stands until content exists to fill it.
 - Status: confirmed
-- Context: A Playwright MCP sweep of all four destinations (2026-08-05) measured `.portal-shell-bounds` at 670px inside a 1440px viewport — 770px (53%) of width unused — with 366px (41%) of unused height below content on Trade Balancer and roughly 420px on Quick Question. At 390x844 the zone-collection step ended at y=485, leaving 359px (43%) of empty screen below the primary controls, with Game context and Quick Question showing ~320px each. DEC-131 recorded this as deliberate deferral rather than accepted composition, and the product owner has now reversed that deferral.
+- Context: A Playwright MCP sweep (2026-08-05) measured `.portal-shell-bounds` at 670px inside a 1440px viewport — 770px (53%) of width unused. Wider caps were then built and reviewed against to-scale mocks of all five candidate widths: at `90rem` (1325px) every control became a band, most visibly a 1277px "Confirm game context" button, and the product owner rejected it as "stretched without the ability to actually fill that content in a usable way". `64rem` showed the same effect at 976px. `48rem` keeps the paired-control gain while the primary CTA still reads as a button (718px measured).
 - Impact:
-  - desktop shell width becomes a fluid cap of `min(90rem, ~92vw)` that grows with the viewport rather than a fixed narrow column, still binding on ultra-wide screens; prose-dominant regions keep their own maximum reading measure inside the widened shell rather than stretching edge to edge
-  - pre-submit staged steps fill available height so the primary controls are not stranded above a large empty band
-  - Life Tracker's existing one-screen fit (DEC-136) and the answered conversation workspace's fill behavior (DEC-127, DEC-131) are the precedent, not exceptions
+  - desktop shell measures 768px at a 1440px viewport (was 670px), and the cap still binds on ultra-wide displays
+  - paired controls have room to sit side by side; single full-width primary controls do not become bands
+  - staged steps stay content-sized vertically; the empty region below them is accepted for now and revisited when there is content for it
+  - Life Tracker's one-screen fit (DEC-136) and the answered workspace's fill behavior (DEC-127, DEC-131) are unchanged
   - presentation only — no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, backend routes, card metadata, or scan behavior
 - Related requirements:
   - REQ-124
   - REQ-096
-  - REQ-109
   - NFR-001
   - DEC-117
   - DEC-131
-  - DEC-127
   - DEC-136
 - Notes:
-  - verification uses Playwright MCP viewport-fill measurement at 390x844 and 1440x900, not a new `@playwright/test` CI harness
-  - non-goals: theme, typography, or brand redesign; changing which controls each step presents; edge-to-edge text lines with no maximum measure
+  - candidate widths were compared as to-scale mocks before the value was fixed; "CTA rendered width" was the deciding measure, not percentage of viewport filled
+  - verification uses Playwright MCP measurement at 390x844 and 1440x900, not a new `@playwright/test` CI harness
+  - non-goals: theme, typography, or brand redesign; vertical fill of staged steps; changing which controls each step presents
 
 ### DEC-148
 - Decision: On narrow/mobile viewports the zone-collection card-detail view keeps its primary add action reachable without a long scroll: the card preview image is height-capped rather than rendered at full intrinsic size, and the oracle-text paragraph that merely repeats text already legible on the card art is not duplicated below it. The metadata list (mana cost, mana value, type line, colors, supertypes, subtypes) and the add action are unchanged in content.

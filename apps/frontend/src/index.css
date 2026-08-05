@@ -51,7 +51,12 @@
   margin-right: auto;
   display: flex;
   width: 100%;
-  max-width: 42rem;
+  /* Fluid cap rather than a fixed 42rem column: at 1440px the old cap left 770px (53%)
+     of the viewport unused. 48rem is a deliberate, restrained step up — wider settings
+     were built and reviewed, and past roughly this width the staged steps have no content
+     that grows to use it, so single full-width controls ("Confirm game context") stretch
+     into bands. `min()` keeps the cap binding on ultra-wide displays (DEC-145, REQ-124). */
+  max-width: min(48rem, 92vw);
   flex-direction: column;
   gap: var(--layout-surface-gap);
   border-radius: 1.5rem;

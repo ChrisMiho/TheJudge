@@ -2881,21 +2881,21 @@
 - Notes:
 
 ### REQ-124
-- Title: Viewport fill on both axes
+- Title: Desktop shell width cap
 - Priority: medium
-- Description: The suite shell scales its width cap with the viewport and lets pre-submit staged steps absorb available height, replacing the fixed narrow column and top-anchored composition (DEC-145).
+- Description: The desktop shell scales past the fixed `42rem` column to a modest fluid cap so paired controls have room, without single full-width controls stretching into content-less bands (DEC-145). Vertical space below staged-step content is deliberately retained.
 - Acceptance Criteria:
-  - the shell width is a fluid cap of `min(90rem, ~92vw)`; at 1440x900 the measured shell width is at least 1200px (baseline defect: 670px, leaving 770px / 53% unused)
-  - the cap still binds on ultra-wide viewports: at 2560px wide the shell does not exceed 90rem (1440px)
-  - prose-dominant regions (conversation thread, guidance copy) keep their own maximum reading measure inside the widened shell rather than running the full shell width
-  - at 390x844 no pre-submit staged step leaves more than 120px of unused vertical space below its content (baseline defect: 359px / 43% on zone collection; 320px on Game context and Quick Question)
-  - at 1440x900 no pre-submit staged step leaves more than 150px of unused vertical space below its content (baseline defect: 366px / 41%)
-  - the same behavior is produced by fluid CSS on one component tree — no layout-density storage, `data-layout-density`, UA sniffing, or JS device detection (NFR-001, DEC-117)
+  - the shell width is `min(48rem, 92vw)`; at 1440x900 the measured shell width is 768px (baseline: 670px)
+  - the cap still binds on ultra-wide viewports: at 2560px wide the shell does not exceed 48rem (768px)
+  - a full-width primary control inside the shell ("Confirm game context") measures no more than ~720px at 1440x900, so it still reads as a button rather than a band (rejected settings measured 976px at 64rem and 1277px at 90rem)
+  - mobile presentation at 390x844 is unchanged by this requirement
+  - the result is produced by fluid CSS on one component tree — no layout-density storage, `data-layout-density`, UA sniffing, or JS device detection (NFR-001, DEC-117)
   - Life Tracker's one-screen fit (DEC-136) and the answered workspace's fill behavior (DEC-127, DEC-131) do not regress
-  - no horizontal document overflow is introduced at either viewport
+  - no horizontal document overflow is introduced at any tested viewport
 - Constraints:
   - presentation only; step content, control sets, and payloads unchanged
   - no theme, typography, or brand redesign
+  - does **not** require filling the vertical space below staged-step content; DEC-145 accepts that space until step-level content exists for it
 - Dependencies:
   - DEC-145
   - DEC-117
@@ -2903,6 +2903,7 @@
   - REQ-096
   - NFR-001
 - Notes:
+  - width was chosen by comparing to-scale mocks of 42/48/64/90rem; rendered CTA width, not percentage of viewport filled, was the deciding measure
 
 ### REQ-125
 - Title: Reachable add action in card detail

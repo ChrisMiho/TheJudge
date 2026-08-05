@@ -1,6 +1,6 @@
 # Slice E — Viewport fill on both axes
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -57,3 +57,43 @@ screenshots of each step at each viewport.
 
 - Slice D — both slices edit shell rules in `apps/frontend/src/index.css`, and the
   banner offset participates in the same vertical budget this slice rebalances.
+
+## Scope change during implementation (2026-08-05)
+
+The slice was written as "viewport fill on both axes". Both halves were built and shown to
+the product owner, who rejected the wide setting on sight: at `90rem` (1325px) every
+control became a band, most visibly a 1277px "Confirm game context" button — *"stretched
+without the ability to actually fill that content in a usable way"*. Stretching the card
+vertically drew the same objection: it measures well (359px unused → 24px) but frames an
+empty region rather than removing it.
+
+To-scale mocks of all five candidate widths were built at
+[`mocks/width-options.html`](./mocks/width-options.html) and reviewed. The deciding
+measure was **rendered CTA width**, not percentage of viewport filled:
+
+| Setting | Shell | Unused | CTA width | Outcome |
+| --- | --- | --- | --- | --- |
+| 42rem (today) | 670px | 770px · 53% | 622px | baseline |
+| **48rem** | **768px** | **672px · 47%** | **718px** | **chosen** |
+| 64rem | 1024px | 416px · 29% | 976px | bands |
+| 90rem | 1325px | 115px · 8% | 1277px | rejected on sight |
+
+Outcome: **horizontal cap only, at `min(48rem, 92vw)`. Vertical fill dropped**, by explicit
+product-owner decision — the space stays until there is step-level content for it.
+`DEC-145` and `REQ-124` were rewritten to match; DEC-145 now supersedes only the
+horizontal half of DEC-131's non-goal.
+
+## Verified (2026-08-05)
+
+| Measure | Viewport | Before | After |
+| --- | --- | --- | --- |
+| Shell width | 1440×900 | 670px | **768px** |
+| Unused horizontal | 1440×900 | 770px (53%) | 672px (47%) |
+| CTA rendered width | 1440×900 | 622px | 718px (reads as a button) |
+| Shell width (cap binds) | 2560×1440 | — | **768px** |
+| Shell width (unchanged) | 390×844 | 359px | 359px |
+
+- No horizontal document overflow at 390×844, 1440×900, or 2560×1440.
+- Full frontend suite: 1187/1188 pass — the one failure is the pre-existing
+  `App.feedback` env-dependent test documented in slice A.
+- Vertical: 359px below content at 1440×900, unchanged and accepted (DEC-145).
