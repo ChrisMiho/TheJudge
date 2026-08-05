@@ -91,19 +91,34 @@
   margin-left: calc(var(--layout-panel-padding) * -1);
 }
 
-/* Feature-portal corner rail (DEC-122): the trigger *is* the radial-gradient glow
-   area — an edge-strip hit area, not a small icon-sized button. No border, no
-   separate button/pill layered on top. Anchored at the rail's own top-left
-   corner, fading to fully transparent well inside its own bounding box so it
-   never reads as a clipped, pasted-on box (the earlier hard-edged-rectangle
-   attempt this replaced). */
+/* Feature-portal corner rail (DEC-122, bounded by DEC-137): the trigger reads as
+   the radial-gradient glow area — no border, no separate button/pill layered on
+   top — anchored at the rail's own top-left corner and fading to fully
+   transparent well inside the painted extent so it never reads as a clipped,
+   pasted-on box (the earlier hard-edged-rectangle attempt this replaced).
+
+   DEC-137 splits *painted* extent from *interactive* extent. The gradient
+   reaches full transparency at 78% of its own box, so the element that paints it
+   was mostly invisible-but-tappable chrome sitting at z-index 3 above real
+   destination content: on Life Tracker it shadowed 75x111px (8,325px^2) of the
+   "Decrease life for Player 1" control, turning a life tap into a Menu open
+   mid-game. The gradient therefore moves to a `pointer-events: none`
+   ::before that keeps the exact painted extent it always had, while the button
+   itself shrinks to the icon band that actually accepts taps.
+
+   Height — not width — is the dimension that fixes this: destination content on
+   Life Tracker begins just below the icon band, so capping height drops the
+   overlap to zero while width is free. The 5.5rem width is deliberately KEPT:
+   the icon is centred in it, and narrowing the box to the icon's own width would
+   re-centre the icon 16px to the left, which DEC-137 explicitly does not accept.
+   See REQ-114 — compliance here is hit-tested, not eyeballed. */
 .portal-menu-rail {
   position: absolute;
   left: 0;
   top: 0;
   z-index: 3;
   width: 5.5rem;
-  height: 10.5rem;
+  height: 3.5rem;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -113,6 +128,25 @@
   /* Matches .page-card's own border-radius so the rail's square corner never
      pokes past the card's rounded edge into the page background behind it. */
   border-top-left-radius: 1.5rem;
+  transition: color var(--motion-fast) var(--motion-ease-out);
+}
+
+/* The rail's painted glow, decoupled from its hit area (DEC-137). Keeps the
+   single-zone rail's original 5.5rem x 10.5rem extent so the corner's appearance
+   is unchanged; `pointer-events: none` is the whole point of the element. The
+   negative z-index stays contained by .portal-menu-rail's own stacking context
+   (it sets z-index: 3), so the glow sits behind the icon without escaping behind
+   the shell. */
+.portal-menu-rail::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 5.5rem;
+  height: 10.5rem;
+  z-index: -1;
+  pointer-events: none;
+  border-top-left-radius: inherit;
   background-image: radial-gradient(
     120% 120% at 0% 0%,
     rgb(var(--accent-strong) / 0.22) 0%,
@@ -120,9 +154,7 @@
     rgb(var(--accent-strong) / 0.03) 55%,
     rgb(var(--accent-strong) / 0) 78%
   );
-  transition:
-    background-image var(--motion-fast) var(--motion-ease-out),
-    color var(--motion-fast) var(--motion-ease-out);
+  transition: background-image var(--motion-fast) var(--motion-ease-out);
 }
 
 /* Shared sizing for both rail icons (DEC-126) — matching inline stroke-SVGs
@@ -134,9 +166,11 @@
   height: 1.35rem;
 }
 
-.portal-menu-rail:hover,
-.portal-menu-rail:has([aria-expanded="true"]),
-.portal-menu-rail[aria-expanded="true"] {
+/* Hover/expanded darkens the same gradient, which now lives on ::before. The
+   colour half stays on the element itself so the icon still brightens. */
+.portal-menu-rail:hover::before,
+.portal-menu-rail:has([aria-expanded="true"])::before,
+.portal-menu-rail[aria-expanded="true"]::before {
   background-image: radial-gradient(
     120% 120% at 0% 0%,
     rgb(var(--accent-strong) / 0.32) 0%,
@@ -144,27 +178,45 @@
     rgb(var(--accent-strong) / 0.05) 55%,
     rgb(var(--accent-strong) / 0) 78%
   );
+}
+
+.portal-menu-rail:hover,
+.portal-menu-rail:has([aria-expanded="true"]),
+.portal-menu-rail[aria-expanded="true"] {
   color: rgb(244 244 245);
 }
 
-/* Two-zone variant (DEC-126): once a destination has a history trigger, the
-   rail's single ambient-glow hit-area (unchanged visual language, see
-   .portal-menu-rail above) grows taller and splits into two equal-weight
-   sibling zones — Menu on top, History below — instead of hosting Menu alone.
-   Fluid clamp() height (not a fixed value or a discrete breakpoint switch)
-   satisfies NFR-001's 44px-per-zone touch-target floor at every viewport,
-   mirroring DEC-117's "fluid CSS, structural breakpoints only where layout
-   can't interpolate" precedent — today's single-zone rail has no responsive
-   sizing rule at all. */
+/* Two-zone variant (DEC-126, rearranged by DEC-137): once a destination has a
+   history trigger, the rail's ambient-glow area hosts two equal-weight sibling
+   zones — Menu leading, History trailing — instead of Menu alone.
+
+   DEC-126 stacked these zones and used a fluid clamp() height to hold NFR-001's
+   44px-per-zone floor. That cannot work: only ~70px of vertical space exists
+   between the rail's top and the step-name eyebrow below it, while two stacked
+   44px zones need 88px. The clamp resolved to ~76px at 430px wide, so the zones
+   overflowed their own rail by 12px and that overflow landed on the eyebrow —
+   the floor was being met only by spilling onto destination content.
+
+   Side-by-side resolves both constraints at once: two 2.75rem zones fit the
+   rail's existing 5.5rem width exactly, the band is 2.75rem tall, and it clears
+   the eyebrow by ~26px. The clamp() is retired because the constraint that
+   motivated it is gone. */
 .portal-menu-rail-split {
-  height: clamp(4.75rem, 4.1rem + 2.5vw, 6.25rem);
+  height: 2.75rem;
   padding: 0;
-  flex-direction: column;
+  flex-direction: row;
   align-items: stretch;
+}
+
+/* The split rail keeps its own original painted extent, unchanged — only the
+   arrangement of the zones inside it moves. */
+.portal-menu-rail-split::before {
+  height: clamp(4.75rem, 4.1rem + 2.5vw, 6.25rem);
 }
 
 .portal-menu-rail-zone {
   flex: 1;
+  min-width: 2.75rem;
   min-height: 2.75rem;
   display: flex;
   align-items: center;
@@ -176,8 +228,10 @@
   cursor: pointer;
 }
 
+/* Separator follows the arrangement: a vertical rule between side-by-side zones
+   where DEC-126's stacked pair used a horizontal one. */
 .portal-menu-rail-zone + .portal-menu-rail-zone {
-  border-top: 1px solid rgb(var(--accent-soft) / 0.35);
+  border-left: 1px solid rgb(var(--accent-soft) / 0.35);
 }
 
 /* Full-height drawer sliding in from the left edge (DEC-122, amended by

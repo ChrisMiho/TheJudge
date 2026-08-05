@@ -1,6 +1,6 @@
 # Slice A — Corner rail hit area bounded to painted affordance
 
-## Status: planned
+## Status: done
 
 ## Goal
 
