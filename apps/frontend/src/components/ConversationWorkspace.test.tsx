@@ -59,7 +59,7 @@ describe("Frontend - Conversation workspace", () => {
     expect(onStartOver).toHaveBeenCalledOnce();
   });
 
-  it("omits optional context, feedback, and Start Over rows without empty containers", () => {
+  it("omits optional context, feedback, history trigger, and Start Over rows without empty containers", () => {
     render(
       <ConversationWorkspace
         messages={[{ role: "assistant", content: "Cardless answer" }]}
@@ -76,6 +76,7 @@ describe("Frontend - Conversation workspace", () => {
 
     const workspace = screen.getByTestId("conversation-workspace");
     expect(within(workspace).queryByText("View context")).not.toBeInTheDocument();
+    expect(within(workspace).queryByText("Conversation history")).not.toBeInTheDocument();
     expect(within(workspace).queryByRole("dialog")).not.toBeInTheDocument();
     expect(within(workspace).queryByRole("button", { name: "Start Over" })).not.toBeInTheDocument();
     expect(within(workspace).getByText("Cardless answer")).toBeInTheDocument();
@@ -150,7 +151,11 @@ describe("Frontend - Conversation workspace", () => {
       await user.click(within(workspace).getByRole("button", { name: "New response" }));
 
       expect(composer).toHaveValue("Keep this draft byte-for-byte.");
-      expect(within(workspace).getByText("Newest answer").parentElement).toHaveFocus();
+      expect(
+        within(workspace)
+          .getByText("Newest answer")
+          .closest("[data-conversation-message-index]")
+      ).toHaveFocus();
     } finally {
       if (originalScrollHeight) {
         Object.defineProperty(HTMLElement.prototype, "scrollHeight", originalScrollHeight);

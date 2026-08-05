@@ -34,9 +34,32 @@ type PendingRetry =
   | { kind: "decrypt"; payload: AskAiPayload; stackSize: number; finalQuestion: string; usedFallbackQuestion: boolean }
   | { kind: "followup"; payload: AskAiPayload; text: string };
 
+export type ConversationUpdateSnapshot = {
+  conversationId: string;
+  frozenContext: FrozenAskAiContext;
+  hiddenInitialQuestion: string;
+  visibleMessages: ConversationMessage[];
+};
+
+export type RestoredConversationEntry = {
+  id: string;
+  frozenContext: FrozenAskAiContext;
+  hiddenInitialQuestion: string;
+  visibleMessages: ConversationMessage[];
+};
+
+function generateConversationId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `conv-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+}
+
 type UseAskAiSubmitOrchestrationOptions = {
   apiBaseUrl: string;
   retryCooldownSeconds: number;
+  onConversationUpdated?: (snapshot: ConversationUpdateSnapshot) => void;
 };
 
 type UseAskAiSubmitOrchestrationResult = {
@@ -49,15 +72,18 @@ type UseAskAiSubmitOrchestrationResult = {
   visibleMessages: ConversationMessage[];
   frozenContext: FrozenAskAiContext | null;
   frozenGameContext: GameContext | null;
+  hiddenInitialQuestion: string | null;
   isConversationActive: boolean;
   submitAttempt: (options: SubmitAttemptOptions) => Promise<void>;
   submitFollowUp: (text: string) => Promise<void>;
   startOver: () => void;
+  restoreConversation: (entry: RestoredConversationEntry) => void;
 };
 
 export function useAskAiSubmitOrchestration({
   apiBaseUrl,
-  retryCooldownSeconds
+  retryCooldownSeconds,
+  onConversationUpdated
 }: UseAskAiSubmitOrchestrationOptions): UseAskAiSubmitOrchestrationResult {
   const [answer, setAnswer] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +93,7 @@ export function useAskAiSubmitOrchestration({
   const [visibleMessages, setVisibleMessages] = useState<ConversationMessage[]>([]);
   const [frozenContext, setFrozenContext] = useState<FrozenAskAiContext | null>(null);
   const [hiddenInitialQuestion, setHiddenInitialQuestion] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [pendingRetry, setPendingRetry] = useState<PendingRetry | null>(null);
 
   const canRetry = retryCountdown === 0 && !isSubmitting && !isFollowUpSubmitting;
@@ -133,13 +160,21 @@ export function useAskAiSubmitOrchestration({
       setAnswer(body.answer);
       setError(null);
       setPendingRetry(null);
-      setFrozenContext(
-        isLookupAskAiPayload(payload)
-          ? { kind: "lookup", card: payload.card ?? null }
-          : { kind: "game", gameContext: payload.gameContext }
-      );
+      const nextFrozenContext: FrozenAskAiContext = isLookupAskAiPayload(payload)
+        ? { kind: "lookup", card: payload.card ?? null }
+        : { kind: "game", gameContext: payload.gameContext };
+      const nextVisibleMessages: ConversationMessage[] = [{ role: "assistant", content: body.answer }];
+      const nextConversationId = generateConversationId();
+      setFrozenContext(nextFrozenContext);
       setHiddenInitialQuestion(payload.question);
-      setVisibleMessages([{ role: "assistant", content: body.answer }]);
+      setVisibleMessages(nextVisibleMessages);
+      setConversationId(nextConversationId);
+      onConversationUpdated?.({
+        conversationId: nextConversationId,
+        frozenContext: nextFrozenContext,
+        hiddenInitialQuestion: payload.question,
+        visibleMessages: nextVisibleMessages
+      });
     } catch (submitError) {
       logFrontendDebug("ask_ai.request_failed", {
         correlationId,
@@ -200,11 +235,20 @@ export function useAskAiSubmitOrchestration({
       });
       setError(null);
       setPendingRetry(null);
-      setVisibleMessages((current) => [
-        ...current,
+      const nextVisibleMessages: ConversationMessage[] = [
+        ...visibleMessages,
         { role: "user", content: text },
         { role: "assistant", content: body.answer }
-      ]);
+      ];
+      setVisibleMessages(nextVisibleMessages);
+      if (conversationId && frozenContext && hiddenInitialQuestion) {
+        onConversationUpdated?.({
+          conversationId,
+          frozenContext,
+          hiddenInitialQuestion,
+          visibleMessages: nextVisibleMessages
+        });
+      }
     } catch (submitError) {
       logFrontendDebug("ask_ai.request_failed", {
         correlationId,
@@ -305,9 +349,21 @@ export function useAskAiSubmitOrchestration({
     setVisibleMessages([]);
     setFrozenContext(null);
     setHiddenInitialQuestion(null);
+    setConversationId(null);
     setPendingRetry(null);
     setAnswer(null);
     setError(null);
+  }
+
+  function restoreConversation(entry: RestoredConversationEntry): void {
+    setFrozenContext(entry.frozenContext);
+    setHiddenInitialQuestion(entry.hiddenInitialQuestion);
+    setVisibleMessages(entry.visibleMessages);
+    setConversationId(entry.id);
+    setPendingRetry(null);
+    setError(null);
+    setRetryCountdown(0);
+    setAnswer(null);
   }
 
   return {
@@ -320,9 +376,11 @@ export function useAskAiSubmitOrchestration({
     visibleMessages,
     frozenContext,
     frozenGameContext,
+    hiddenInitialQuestion,
     isConversationActive,
     submitAttempt,
     submitFollowUp,
-    startOver
+    startOver,
+    restoreConversation
   };
 }

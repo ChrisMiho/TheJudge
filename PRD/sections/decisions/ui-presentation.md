@@ -135,3 +135,25 @@ Frontend-only responsive presentation, motion, transition, and visual-feedback b
   - narrowly amends DEC-095's blanket in-session destination-state preservation guarantee only for the secondary-details disclosure state; DEC-104's action-entry behavior and every other DEC-095 destination semantic remain unchanged
   - rejected alternatives: one global secondary-details bar detached from the player cards; removing the outer roster disclosure and making compact cards permanently visible; independent per-player open states
   - non-goals: changing player data or validation, changing Player Life Tracker UI, adding new counter types, adding new guidance copy, persisting disclosure state, or redesigning the rest of Game context
+
+### DEC-128
+- Decision: When In-Depth Question's synchronized secondary player details are expanded on a narrow/mobile viewport, every expanded player card and its secondary controls must remain fully within the viewport width with no horizontal document overflow or sideways slide off-page. Layout uses the existing one-tree, mobile-first fluid CSS approach (DEC-117). Desktop/`sm+` composition may receive only incidental shared safety (e.g. `min-w-0`) and must not be deliberately redesigned. Disclosure semantics, player values, and submitted `gameContext` remain those of DEC-120 / REQ-100.
+- Status: confirmed
+- Context: After DEC-120 shipped compact synchronized secondary details, real-device and agent browser checks showed expanded player boxes sliding horizontally off the page on phone widths while remaining acceptable on wider viewports. This is a containment/ergonomics defect, not a change to disclosure behavior or data.
+- Impact:
+  - expanded secondary-detail regions (Poison, Energy, Experience, Commander damage, named counters) and their player-card chrome stay within the visible content width on narrow viewports
+  - the document/root does not gain a horizontal scroll from this expansion on those viewports
+  - `sm+` three-column scalar-counter layout and other desktop composition stay visually equivalent unless a shared shrink/wrap rule is required for both breakpoints
+  - verification during implementation uses Cursor's Playwright MCP plugin at a phone-sized viewport (resize, expand, screenshot, measure `scrollWidth` vs `clientWidth`); no new `@playwright/test` CI harness is required by this decision
+  - frontend presentation only — no change to `AskAiRequest`, Zod schemas, `GameContext`, tracker persistence/seed, prompt assembly, providers, backend routes, card metadata, scan behavior, Life Tracker UI, or chat shell
+- Related requirements:
+  - REQ-106
+  - REQ-100
+  - REQ-096
+  - FLOW-001
+  - NFR-001
+  - DEC-120
+  - DEC-117
+- Notes:
+  - preferred fix direction: fluid widths / wrapping / `min-w-0` on flex/grid children rather than hiding overflow on the page shell
+  - non-goals: independent per-player expansion, desktop roster redesign, Life Tracker changes, CI Playwright harness, data/API changes

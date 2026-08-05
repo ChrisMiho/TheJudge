@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This file is the lean operator reference for TheJudge PRD-driven work. All 10
+This file is the lean operator reference for TheJudge PRD-driven work. All 11
 `thejudge-*` skills are model-invocable and may also be called explicitly —
 see `AGENT-SKILLS.md` for the full catalog, platform paths, and sync
 instructions.
@@ -67,6 +67,7 @@ deleted (cleanup writes the durable receipt, then removes the work folder).
 | `thejudge-quality-check` | PASS: leave `refined`. FAIL: → `STATUS.refining` |
 | `thejudge-map-out` / `map-out-parallel` | → `STATUS.active` |
 | `thejudge-implement` / `implement-all` / `implement-parallel` | Stay `active` until the last remaining slice is `done`, then → `STATUS.ship-ready` |
+| `thejudge-implement-fanout` | Owns no transitions itself — dispatches per-package to `implement-all`/`implement-parallel`, which apply the row above |
 | `thejudge-cleanup` | Gate: refuse unless `ship-ready` (or user force-override). On success: receipt, remove package, strip board row |
 
 ## Work Folder Lifecycle
@@ -94,6 +95,29 @@ PR hands off to `$thejudge-implement-all PRD/work/<slug>/`. See
 `planned` / `in-progress` / `done` / `blocked`, as a single status line near
 the top of the slice doc. If a slice already uses another format, preserve it
 and change only the value.
+
+### Handoff note on incomplete stop
+
+When an agent stops a slice before it reaches `done` — session end, usage
+limit, or an unresolved blocker — append a `### Handoff` block directly under
+that slice's status line before stopping, replacing any prior `### Handoff`
+block for that slice:
+
+```markdown
+## Status: in-progress
+
+### Handoff
+- Done: <what is verified so far, or "nothing verified yet">
+- Next: <the concrete next action, specific enough to start cold>
+- Stopped because: <usage limit / blocker / session end>
+```
+
+A slice moving to `done` removes its `### Handoff` block — the slice doc's
+other sections are the durable record once complete. This is the same
+resumability contract for every implement skill (`thejudge-implement`,
+`-all`, `-parallel`, and anything `thejudge-implement-fanout` dispatches): a
+fresh agent reads the slice doc's status line and, if present, its
+`### Handoff` block, and needs nothing else to resume.
 
 ## Related material
 

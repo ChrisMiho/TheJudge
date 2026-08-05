@@ -2378,3 +2378,94 @@
   - NFR-006
 - Notes:
   - user-confirmed: automatic CSS breakpoints (not a user setting); medium glow intensity
+
+### REQ-102
+- Title: Structured markdown answer rendering
+- Priority: high
+- Description: The shared conversation thread must render assistant answers (initial answer and follow-up messages) as structured markdown — headings, lists, emphasis, inline code, tables, code blocks, and links — instead of unformatted plain text, using client-side rendering only.
+- Acceptance Criteria:
+  - assistant messages in `ConversationThread` render markdown headings, ordered/unordered lists, bold/italic emphasis, inline code, fenced code blocks, tables, and links with legible default styling in both light and dark theme profiles
+  - user messages continue to render as plain text (no markdown parsing of user input)
+  - plain-text answers containing no markdown syntax render unchanged from today
+  - rendered output is sanitized: no raw HTML execution, no script/style injection from model output
+  - rendering applies identically wherever `ConversationThread`/`ConversationWorkspace` is used — In-Depth Question, Quick Question, and any future consumer — with no per-flow duplication of rendering logic
+  - long unbroken code blocks or tables scroll horizontally within their own container rather than overflowing or breaking the page layout
+- Constraints:
+  - client-side rendering only; no schema-enforced answer shape; no prompt-assembly changes to request markdown from the model
+  - no change to `AskAiRequest`/`AskAiResponse` shapes, Zod schemas, or provider behavior — `answer` remains a plain string on the wire
+  - reuse one rendering implementation; do not duplicate markdown-parsing logic across flows
+- Dependencies:
+  - DEC-123
+  - DEC-118
+- Notes:
+  - narrows `technical-design-rules.md`'s "preserve plain-text core product response output" constraint to the API/contract layer only
+
+### REQ-103
+- Title: Persistent conversation history list and drawer
+- Priority: high
+- Description: The shared conversation workspace must offer a left history drawer listing auto-saved past conversations, persisted browser-locally on the current device, so a user can browse conversations from earlier in the session or a previous visit.
+- Acceptance Criteria:
+  - any conversation that reaches at least one successful answer auto-saves to a browser-local history list; saving happens on first answer and updates on each subsequent follow-up in that conversation
+  - a history drawer, opened from the shared conversation workspace, lists saved conversations most-recent-first, each showing originating flow, timestamp, and the first question as a preview snippet
+  - the list is capped at the 20 most recent conversations; saving a 21st entry prunes the oldest
+  - leaving an active conversation with at least one successful answer (via Start Over / New conversation) auto-saves it to history before clearing the workspace
+  - storage reads are guarded; a missing, corrupted, or invalid stored value is dropped without breaking the app, mirroring the existing theme-preference fallback pattern
+  - the drawer opens/closes with an explicit control and Escape, contains keyboard focus while open, and returns focus to its trigger on close
+  - no server-side store, account system, or cross-device sync is introduced; history is scoped to one browser on one device
+  - the drawer's trigger is a small icon integrated into the feature-portal Menu's corner rail (DEC-122), stacked below the Menu icon within the same fluid-height ambient glow hit-area, rendered only on destinations that have history to show (DEC-126)
+  - below `768px` the drawer presents as a bottom sheet; at `768px`+ it presents as a left-side drawer, mirroring DEC-118's context sheet/drawer breakpoint and affordance types (DEC-125)
+  - opening the history drawer while the feature-portal Menu drawer is open closes the Menu drawer first, and vice versa, so the left edge never shows two overlapping panels (DEC-125)
+  - saved-conversation entries render as plain, unboxed grouped rows with a quiet active/hover highlight rather than a bordered card per entry (DEC-126)
+- Constraints:
+  - frontend-only, browser-local persistence; no backend endpoint or contract change
+  - reuse the DEC-103 (Player Life Tracker) persistence pattern rather than introducing new storage infrastructure
+- Dependencies:
+  - DEC-124
+  - DEC-125
+  - DEC-126
+  - DEC-118
+  - DEC-122
+  - DEC-103
+- Notes:
+  - trigger placement and entry row styling refined by DEC-126 during post-ship visual refinement; retention/resume/persistence semantics unchanged
+
+### REQ-104
+- Title: Resume a saved conversation
+- Priority: high
+- Description: Selecting a saved conversation from the history drawer must restore its frozen context, mode, and full message thread into the active workspace, and re-enable follow-up asking against that restored state exactly as if the conversation were still in progress.
+- Acceptance Criteria:
+  - selecting a history entry loads its stored frozen context (game context or attached card), mode (`game` / `lookup`), and full message thread into the shared conversation workspace
+  - after resuming, the follow-up composer is enabled and behaves identically to a freshly-decrypted conversation: same message-count and per-message/character limits (REQ-027), same frozen-context rules (DEC-040), same retry/error handling
+  - resuming a conversation replaces whatever conversation was previously active in the workspace; if that prior conversation had at least one successful answer, it is auto-saved to history first (REQ-103) before being replaced
+  - resumed frozen context remains read-only; no zone, card, or enrichment editing is introduced by resuming
+  - resuming updates the entry's position to most-recent in the history list on its next successful follow-up
+- Constraints:
+  - no change to `AskAiRequest`/`AskAiResponse` shapes, Zod schemas, prompt assembly, providers, or backend routes
+  - no re-derivation or re-validation of frozen context beyond what was stored at save time
+- Dependencies:
+  - DEC-124
+  - REQ-103
+  - REQ-025
+  - REQ-075
+  - DEC-040
+- Notes:
+
+### REQ-105
+- Title: Full-bleed conversation thread presentation
+- Priority: medium
+- Description: The shared conversation thread must fill the workspace's available vertical space instead of being nested inside a secondary bordered panel capped at a small fixed height, and assistant/user turns must read as clearly visually distinct, so the conversation surface reads as a chat interface rather than a boxed form field.
+- Acceptance Criteria:
+  - the message thread expands to use the conversation workspace's available height instead of a fixed `max-h-96`-equivalent capped scroll box nested inside a second bordered panel
+  - the follow-up composer renders as a docked rounded-pill control at the bottom of that space rather than a bordered rectangular field
+  - assistant messages render as plain flowing text with no bubble container; user messages render as a solid, higher-contrast right-aligned bubble; both are visually distinguishable from the surrounding surface and from each other at a glance
+  - this presentation applies only within the conversation workspace (`ConversationWorkspace.tsx`/`ConversationThread.tsx`); the outer app shell/card, header, MOCK-mode banner, and every other destination (Life Tracker, Trade Balancer) are unaffected
+- Constraints:
+  - presentation only; no change to when messages enter application state, message limits, request timing, or provider behavior
+  - does not alter DEC-118's near-bottom auto-scroll threshold, New response control, or reader-safe scroll-position preservation
+- Dependencies:
+  - DEC-127
+  - DEC-118
+  - REQ-097
+  - REQ-098
+- Notes:
+  - added during post-ship visual refinement against the product owner's goal of mirroring Claude/ChatGPT/Cursor's chat UI

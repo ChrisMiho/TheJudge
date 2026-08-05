@@ -1,10 +1,13 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { ConversationHistoryDrawer } from "../ConversationHistoryDrawer";
 import { EnrichmentStep } from "../EnrichmentStep";
 import { StagedStepHeader } from "../StagedStepHeader";
 import { StepEyebrow } from "../StepEyebrow";
 import { ZoneCollectionStep } from "../ZoneCollectionStep";
 import { ZoneConfirmStep } from "../ZoneConfirmStep";
 import { logFrontendDebug } from "../../lib/debugLogger";
+import type { ConversationHistoryEntry } from "../../lib/conversationHistory/persistence";
+import { loadHistoryEntries, saveHistoryEntry } from "../../lib/conversationHistory/persistence";
 import { apiBaseUrl } from "../../lib/env";
 import {
   buildAskAiRequest,
@@ -38,6 +41,7 @@ import type {
 } from "../../types";
 
 const RETRY_COOLDOWN_SECONDS = 13;
+const FLOW_LABEL = "In-Depth Question";
 const METADATA_URL = "/data/cardMetadata.json";
 const EMPTY_STATE_IMAGE_URL = "/assets/cats-homescreen.png";
 const MIN_PLAYERS = MIN_PLAYER_ROSTER_SIZE;
@@ -148,6 +152,9 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   const [secondaryDetailsExpanded, setSecondaryDetailsExpanded] = useState(false);
   const [displayNamesByPlayer, setDisplayNamesByPlayer] = useState<Record<PlayerLabel, string>>(createDefaultDisplayNames);
   const [countersByPlayer, setCountersByPlayer] = useState<AssistantCountersByPlayer>(createEmptyCountersByPlayer);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [historyEntries, setHistoryEntries] = useState<ConversationHistoryEntry[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
 
   // DestinationOutlet keeps previously visited destinations mounted. Running after
   // every render lets an already-mounted Assistant atomically take the one-shot seed
@@ -242,10 +249,26 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     isConversationActive,
     submitAttempt,
     submitFollowUp,
-    startOver
+    startOver,
+    restoreConversation
   } = useAskAiSubmitOrchestration({
     apiBaseUrl,
-    retryCooldownSeconds: RETRY_COOLDOWN_SECONDS
+    retryCooldownSeconds: RETRY_COOLDOWN_SECONDS,
+    onConversationUpdated: (snapshot) => {
+      const existing = loadHistoryEntries().find((entry) => entry.id === snapshot.conversationId);
+      const now = new Date().toISOString();
+      saveHistoryEntry({
+        id: snapshot.conversationId,
+        mode: "game",
+        flowLabel: FLOW_LABEL,
+        frozenContext: snapshot.frozenContext,
+        hiddenInitialQuestion: snapshot.hiddenInitialQuestion,
+        visibleMessages: snapshot.visibleMessages,
+        createdAt: existing?.createdAt ?? now,
+        updatedAt: now
+      });
+      setActiveConversationId(snapshot.conversationId);
+    }
   });
 
   // DEC-105/REQ-088: contribute this flow's live slice to a feedback snapshot,
@@ -546,6 +569,18 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     setCombatStep("declare_blockers");
     setActivePlayer("Player 1");
     setStatusMessage(null);
+    setActiveConversationId(null);
+  }
+
+  function openHistory(): void {
+    setHistoryEntries(loadHistoryEntries("game"));
+    setIsHistoryOpen(true);
+  }
+
+  function handleSelectHistoryEntry(entry: ConversationHistoryEntry): void {
+    restoreConversation(entry);
+    setActiveConversationId(entry.id);
+    setIsHistoryOpen(false);
   }
 
   let content: JSX.Element;
@@ -811,6 +846,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         frozenGameContext={frozenGameContext}
         onFollowUp={handleFollowUp}
         onStartOver={handleStartOver}
+        historyTrigger={{ onOpen: openHistory }}
       />
     );
   }
@@ -818,6 +854,13 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   return (
     <div key={flowStep} className="motion-enter">
       {content}
+      <ConversationHistoryDrawer
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        entries={historyEntries}
+        activeConversationId={activeConversationId}
+        onSelectEntry={handleSelectHistoryEntry}
+      />
     </div>
   );
 }

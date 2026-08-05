@@ -112,6 +112,8 @@ portal owns app chrome and every feature reaches it as a registered destination.
 - Related requirements:
   - REQ-090
   - REQ-067
+- Notes:
+  - "each destination's in-session state...resets fresh on every reload" is narrowly reopened for saved conversation history only by DEC-124; the active-destination restore behavior described above is otherwise unchanged
   - DEC-095
 - Notes:
   - supersedes only the "nothing is persisted across a page reload" clause of DEC-095/REQ-067/FLOW-010, scoped strictly to the active-destination choice; their registry, placement, and in-session state-preservation content is otherwise unchanged and stays resolvable

@@ -22,7 +22,7 @@ These rules govern how agents may propose architecture or implementation details
 - use backend-only model invocation
 - decorative UI motion is permitted app-wide but must stay CSS-based, `prefers-reduced-motion`-aware, and performance-safe (DEC-079, NFR-006); do not introduce an animation library/framework without a new confirmed decision
 - responsive presentation is automatic and CSS-driven (DEC-117, REQ-096): use one mobile-first component tree, fluid values, and structural media queries; do not expose a layout/profile preference or select presentation through UA/JS device detection
-- preserve plain-text core product response output
+- preserve plain-string wire/API response output (`{ answer }` stays a plain markdown string); client-side markdown rendering in the shared conversation thread is in scope (DEC-123, REQ-102)
 
 ## Forbidden Design Drift
 

@@ -47,6 +47,7 @@ Decrypt wait UX and follow-up conversation history behavior.
 - Related requirements:
   - REQ-027
 - Notes:
+  - narrowly reopened for saved conversation history only by DEC-124; all other conversation state remains ephemeral per this decision
 
 ### DEC-040
 - Decision: Game context is frozen after the first successful decrypt for the duration of the in-session conversation; follow-up turns are text-only in v1.
@@ -105,3 +106,102 @@ Decrypt wait UX and follow-up conversation history behavior.
 - Notes:
   - approved layout: chat-first with adaptive overlay context, chosen over a permanent desktop context rail and a centered stacked column
   - non-goals: visible initial-question bubble, context mutation, viewport-fixed composer, new conversation limits, persistence, backend changes, animation library, palette pulse, or scanner re-animation
+  - persistence is narrowly reopened, for conversation history only, by DEC-124
+
+### DEC-123
+- Decision: The shared conversation thread renders assistant answers as structured markdown — headings, lists, emphasis, inline code, tables, code blocks, and links — instead of plain text, using client-side rendering only. No schema-enforced answer shape is introduced. This applies generically to `ConversationThread`/`ConversationWorkspace`, so any current or future consumer of the shared workspace (In-Depth Question, Quick Question, and any later chat feature) inherits it without per-flow duplication.
+- Status: confirmed
+- Context: Assistant answers already come back containing markdown (headings, lists, emphasis) from the model, but the thread renders them as unformatted plain text, so structured explanations are harder to scan than intended. `technical-design-rules.md`'s "preserve plain-text core product response output" constraint predates this decision and is narrowed by it to mean the wire contract (`{ answer }` stays a plain string) rather than the rendered presentation.
+- Impact:
+  - a client-side markdown renderer (e.g. `react-markdown` + a GFM plugin for tables) parses and renders `answer` text and follow-up assistant messages inside `ConversationThread` bubbles; user messages remain plain text
+  - rendered output is sanitized against script/style injection; raw HTML in model output is not executed
+  - no change to `AskAiRequest`/`AskAiResponse` shapes, Zod schemas, prompt assembly, or provider behavior — the model still returns a plain markdown string; only the frontend's rendering of that string changes
+  - existing plain-text answers (no markdown syntax) render unchanged
+  - narrows `technical-design-rules.md`'s "preserve plain-text core product response output" constraint to the API/contract layer only
+- Related requirements:
+  - REQ-102
+  - DEC-118
+- Notes:
+  - non-goals: schema-enforced/structured answer shapes, prompt changes to request markdown, syntax highlighting themes beyond default code-block styling
+
+### DEC-124
+- Decision: Conversation history becomes persistent and resumable, browser-local and single-device only, following the `DEC-103` (Player Life Tracker) persistence precedent. Any conversation that reaches at least one successful answer auto-saves to a local history list; a left history drawer (part of the shared conversation workspace) lists saved conversations most-recent-first, each labeled by originating flow and timestamp with the first question as a preview snippet. Selecting a saved conversation restores its frozen context (game context or attached card), its mode, and its full message thread, and re-enables follow-up asking against that restored state. The list is capped at the 20 most recent conversations; saving a 21st prunes the oldest. This narrowly diverges from `DEC-039`'s ephemeral-only conversation history and `DEC-111`'s "each destination's in-session state...resets fresh on every reload" for saved conversation history only — no other suite state gains persistence by this decision.
+- Status: confirmed
+- Context: The shared conversation workspace (DEC-118) made every flow's chat presentation consistent, but conversations are still lost the moment the user starts a new one or reloads — there is no way to revisit or continue a past exchange. `DEC-103` already established a browser-local, single-device persistence pattern for exactly this kind of narrow, feature-scoped divergence from the suite's default ephemeral/no-persistence convention.
+- Impact:
+  - a history entry stores: flow/mode, frozen context snapshot (`GameContext` or attached card, matching DEC-040/REQ-075's existing frozen-context shapes), the full message thread, and a created/updated timestamp
+  - entries are written to a browser-local storage key on auto-save (first successful answer) and updated on each subsequent follow-up in that conversation; reads are guarded try/catch with corrupt/invalid entries dropped, mirroring the `DEC-111`/theme-preference fallback pattern
+  - the history drawer opens from the shared conversation workspace, lists entries most-recent-first, and supports selecting an entry to resume it
+  - resuming an entry loads its frozen context, mode, and thread into the active workspace exactly as if that conversation were still in progress; follow-up requests behave identically to a freshly-decrypted conversation (same limits, same frozen-context rules)
+  - starting a new conversation (existing Start Over control, DEC-040/REQ-029) is unaffected in its own behavior; if the conversation being left has at least one successful answer, it is auto-saved to history first
+  - list is capped at 20 entries; the oldest entry is pruned automatically when a 21st is saved
+  - no server-side store, no account system, no cross-device sync; storage is scoped to one browser on one device
+  - no change to `AskAiRequest`/`AskAiResponse` shapes, Zod schemas, prompt assembly, providers, or backend routes
+- Related requirements:
+  - REQ-103
+  - REQ-104
+  - DEC-118
+  - DEC-103
+  - DEC-040
+- Notes:
+  - diverges from DEC-039/DEC-111 for saved conversation history only; all other suite state remains in-session/ephemeral
+  - non-goals: cross-device sync, account/auth, server-side storage, editing restored frozen context, unbounded history retention
+  - narrow-viewport presentation, trigger placement, and the DEC-122 collision are resolved by DEC-125
+
+### DEC-125
+- Decision: DEC-124's left history drawer gets its own trigger — a full-width button inside the conversation workspace body (the same implementation pattern as `AdaptiveContextDialog`'s trigger, DEC-118), positioned above the context trigger — rather than sharing DEC-122's top-left corner-rail Menu trigger or its drawer. The history drawer presents as an accessible bottom sheet below `768px` and a left-side drawer at `768px`+, mirroring DEC-118's context sheet/drawer breakpoint and affordance types exactly, just mirrored to the left instead of the right. Because both the history drawer and DEC-122's Menu drawer slide in from the left edge at `768px`+, they are mutually exclusive: opening either one closes the other first, so the left edge never shows two overlapping slide-in panels.
+- Status: confirmed
+- Context: quality-check flagged that DEC-124 confirmed a "left history drawer" with no narrow-viewport presentation spec, unlike DEC-118 which resolved the identical question for the context drawer. Meanwhile DEC-122 (in-flight, `center-menu-tab-prominence`) independently claims the top-left corner rail and a left-edge sliding drawer for the suite's global Menu, on every destination screen including the conversation workspace. Left unresolved, implementers would have had to invent either the mobile presentation or the trigger/collision resolution mid-slice.
+- Impact:
+  - the history drawer trigger renders as a full-width button in the conversation workspace body (`ConversationWorkspace`), stacked above `AdaptiveContextDialog`'s trigger, not inside `EnrichmentStep`'s header row and not registered through the feature-portal `PortalSlot`/destination registry (DEC-095/DEC-109/DEC-122 unaffected)
+  - the history drawer overlay reuses the `AdaptiveContextDialog` bottom-sheet/drawer pattern: `align-items: flex-end` bottom sheet below `768px`, left-edge drawer (`justify-content: flex-start`) at `768px`+, same focus-trap/restore, Escape-to-close, and reduced-motion behavior as DEC-118 established
+  - opening the history drawer while DEC-122's Menu drawer is open closes the Menu drawer first, and opening the Menu drawer while the history drawer is open closes the history drawer first; each drawer's own open/close/focus-restore behavior is otherwise unchanged
+  - no change to DEC-122's corner rail, drawer transform, or destination registry; no change to DEC-118's context sheet/drawer
+- Related requirements:
+  - REQ-103
+  - DEC-124
+  - DEC-118
+  - DEC-122
+- Notes:
+  - refines DEC-124's presentation only; retention cap, resume semantics, persistence model, and auto-save behavior are unchanged
+  - non-goals: merging history into the Menu drawer, a shared drawer primitive/component extraction (left as a future code-health item), any change to DEC-122's corner rail
+  - trigger placement is superseded by DEC-126; drawer open/close mechanics, breakpoint presentation, and mutual exclusivity with the Menu drawer are unchanged and stay resolvable here
+
+### DEC-126
+- Decision: DEC-125's history-drawer trigger placement is superseded: instead of a full-width button inside the conversation workspace body, the trigger becomes a small icon-only control integrated into the same top-left corner rail as the feature-portal Menu trigger (DEC-109/DEC-122). The rail's single ambient radial-glow hit-area grows taller and splits into two equal-weight hit-zones separated by a subtle divider — Menu on top, History below — both icons rendered at the same neutral color/weight and the same icon style (matching stroke-based glyphs) so they read as sibling controls in one integrated rail, not a primary control with something appended. The rail's height is fluid (CSS `clamp()`, scaling between a minimum that satisfies NFR-001's 44px-per-zone touch-target floor and a modest maximum) rather than a fixed rem value or a discrete mobile/desktop breakpoint switch, consistent with DEC-117's "fluid CSS, structural breakpoints only where layout cannot interpolate" precedent — today's rail has no responsive sizing rule at all (identical fixed size at every viewport), so a two-icon rail needs one and this decision supplies it. The History zone renders only on the two destinations that have history to show (In-Depth Question, Quick Question); Life Tracker and Trade Balancer keep the single-zone Menu-only rail.
+- Status: confirmed
+- Context: Live review of the shipped `DEC-125` trigger against the product owner's stated goal (mirroring Claude/ChatGPT/Cursor's chat UI) found it read as a disconnected, boxy element competing with the thread for vertical space, not an integrated part of the app's navigation chrome. Iterative static HTML mockups during refinement walked three integration options — shared glow with split hit-zones, two independent compact icon buttons, and History docked outside the glow entirely — before the product owner confirmed the shared-glow/split-zone direction, then flagged two follow-on issues live against the mock: mismatched icon rendering (a stretched text glyph next to a thin-stroke SVG) reading as visually inconsistent, and no existing decision governing how a taller two-icon rail behaves at narrow viewports (confirmed by inspection: the shipped single-icon rail had zero responsive sizing rules).
+- Impact:
+  - `ConversationWorkspace.tsx`'s full-width `.conversation-history-trigger` button is removed; a new icon-only history trigger renders in the same header area as the Menu's `PortalSlot` (moving ownership from the workspace body up to each conversation-bearing destination's own header row), present only when a `historyTrigger` is supplied
+  - the rail's ambient glow region (DEC-122) grows from housing one hit-zone to two, divided by a subtle 1px separator; each zone is independently clickable/tappable and meets NFR-001's 44×44px minimum at every viewport via the `clamp()` floor
+  - both icons render as the same stroke-weight glyph style (no mixing a text character with an SVG); Menu keeps its existing accessible name ("Switch feature") and History gets its own ("Conversation history")
+  - saved-conversation entries in the history drawer render as plain, unboxed grouped rows with a quiet active/hover highlight rather than a bordered card per entry
+  - opening either control's drawer still closes the other via the existing `LeftEdgeDrawerContext` (DEC-125, unchanged)
+  - no change to DEC-122's corner rail on destinations without history (Life Tracker, Trade Balancer render the original single-zone rail)
+- Related requirements:
+  - REQ-103
+  - DEC-125
+  - DEC-122
+  - DEC-109
+  - DEC-117
+  - NFR-001
+- Notes:
+  - supersedes only DEC-125's trigger-placement clause; DEC-125's drawer open/close mechanics, breakpoint presentation (bottom sheet/left drawer), and mutual exclusivity remain unchanged and authoritative
+  - non-goals: any change to DEC-122's corner-rail visual language (radial glow, no border) beyond growing its hit-area height; a shared icon-button component extraction (left as a future code-health item)
+
+### DEC-127
+- Decision: Within the conversation workspace only (not the outer app shell, header chrome, MOCK-mode banner, or any other destination), the message thread stops being a secondary bordered panel capped at a small fixed height (`max-h-96`) with internal scrolling nested inside the workspace's own bordered card. It instead fills the available vertical space, with the follow-up composer docked at the bottom of that space as a rounded pill control. Assistant and user turns get stronger visual contrast against the surrounding surface and against each other (assistant messages as plain flowing text with no bubble container; user messages as a solid accent-colored right-aligned bubble) so each turn reads as clearly distinct at a glance, closer to the Claude/ChatGPT/Cursor reference the original idea named.
+- Status: confirmed
+- Context: Live review of the shipped conversation workspace against the product owner's "mirror Claude's chat UI" goal found the thread read as a form field, not a chat surface — a small internally-scrolling box nested inside a visually near-identical outer card, with assistant/user bubble backgrounds too close in tone to the surrounding panel to read as separate turns.
+- Impact:
+  - `ConversationThread.tsx`'s fixed `max-h-96` container is replaced with a layout that fills the workspace's available height; the follow-up composer moves from a bordered rectangular field to a docked rounded-pill control at the bottom of that space
+  - assistant message bubbles (`bg-zinc-800/80`) and user message bubbles (currently `bg-accent-strong/30`) get revisited for stronger contrast against both the surface behind them and each other
+  - none of DEC-118's scroll/auto-scroll near-bottom threshold, New response control, reader-safe scroll preservation, or composer-docked-not-viewport-fixed rules change — this decision layers presentation/framing only on top of DEC-118's existing behavior
+  - scoped strictly to the shared conversation workspace (`ConversationWorkspace.tsx`/`ConversationThread.tsx`); the outer app shell (`.page-card`), header, MOCK-mode banner, and every other destination (Life Tracker, Trade Balancer) are unaffected, consistent with this package's non-goal against redesigning unrelated suite chrome
+- Related requirements:
+  - REQ-105
+  - DEC-118
+  - REQ-097
+  - REQ-098
+- Notes:
+  - non-goals: any change to the outer app-shell card/header treatment, MOCK-mode banner, or non-conversation destinations; markdown rendering (DEC-123) and adaptive context trigger (DEC-118) behavior are unchanged, not reopened by this decision

@@ -12,6 +12,7 @@ import {
 } from "./lib/feedback/FeedbackContextProvider";
 import { loadTrackerState } from "./lib/lifeTracker/persistence";
 import { trackerStateToRosterSeed } from "./lib/lifeTracker/seed";
+import { LeftEdgeDrawerProvider } from "./lib/portal/leftEdgeDrawerContext";
 import { AssistantSeedProvider, useAssistantSeed } from "./lib/portal/seedContext";
 import type { DestinationId, PortalActionEntry } from "./lib/portal/types";
 
@@ -107,8 +108,10 @@ function FeedbackModalHost({
 
 export default function App(): JSX.Element {
   return (
-    <AssistantSeedProvider>
-      <PortalShell />
-    </AssistantSeedProvider>
+    <LeftEdgeDrawerProvider>
+      <AssistantSeedProvider>
+        <PortalShell />
+      </AssistantSeedProvider>
+    </LeftEdgeDrawerProvider>
   );
 }

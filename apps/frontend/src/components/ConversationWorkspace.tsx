@@ -10,6 +10,10 @@ export type ConversationContextDescriptor = {
   content: ReactNode;
 };
 
+export type ConversationHistoryTriggerDescriptor = {
+  onOpen: () => void;
+};
+
 type ConversationWorkspaceProps = {
   messages: ConversationMessage[];
   context?: ConversationContextDescriptor;

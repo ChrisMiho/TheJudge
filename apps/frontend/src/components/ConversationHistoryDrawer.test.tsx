@@ -1,0 +1,143 @@
+import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { useState } from "react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import type { ConversationHistoryEntry } from "../lib/conversationHistory/persistence";
+import { appCss } from "../test/appTestHelpers";
+import { ConversationHistoryDrawer } from "./ConversationHistoryDrawer";
+
+afterEach(cleanup);
+
+function buildEntry(overrides: Partial<ConversationHistoryEntry> = {}): ConversationHistoryEntry {
+  return {
+    id: "entry-1",
+    mode: "lookup",
+    flowLabel: "Quick Question",
+    frozenContext: { kind: "lookup", card: null },
+    hiddenInitialQuestion: "How does hexproof work exactly against opposing spells and abilities?",
+    visibleMessages: [{ role: "assistant", content: "Hexproof restricts opposing targets." }],
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-02T00:00:00.000Z",
+    ...overrides
+  };
+}
+
+function Harness({
+  entries,
+  activeConversationId,
+  onSelectEntry
+}: {
+  entries: ConversationHistoryEntry[];
+  activeConversationId?: string | null;
+  onSelectEntry: (entry: ConversationHistoryEntry) => void;
+}): JSX.Element {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <>
+      <button type="button" onClick={() => setIsOpen(true)}>
+        Open history trigger
+      </button>
+      <ConversationHistoryDrawer
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        entries={entries}
+        activeConversationId={activeConversationId}
+        onSelectEntry={onSelectEntry}
+      />
+    </>
+  );
+}
+
+describe("Frontend - Conversation history drawer", () => {
+  it("renders nothing when closed", () => {
+    render(
+      <ConversationHistoryDrawer isOpen={false} onClose={vi.fn()} entries={[]} onSelectEntry={vi.fn()} />
+    );
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("shows an empty state when there are no saved conversations", () => {
+    render(<ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[]} onSelectEntry={vi.fn()} />);
+
+    expect(screen.getByRole("dialog", { name: "Conversation history" })).toBeInTheDocument();
+    expect(screen.getByText("No saved conversations yet")).toBeInTheDocument();
+  });
+
+  it("lists entries with flow label, timestamp, and a truncated question preview", () => {
+    const longQuestion =
+      "How does hexproof interact with equipment auras and other opposing spells that try to target this creature across several turns?";
+    render(
+      <ConversationHistoryDrawer
+        isOpen
+        onClose={vi.fn()}
+        entries={[buildEntry({ hiddenInitialQuestion: longQuestion })]}
+        onSelectEntry={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText(/Quick Question/)).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(`^${longQuestion.slice(0, 80)}…$`))).toBeInTheDocument();
+  });
+
+  it("calls onSelectEntry for a non-active entry and no-ops for the active entry", async () => {
+    const user = userEvent.setup();
+    const onSelectEntry = vi.fn();
+    const activeEntry = buildEntry({ id: "active-entry", hiddenInitialQuestion: "Active question" });
+    const otherEntry = buildEntry({ id: "other-entry", hiddenInitialQuestion: "Other question" });
+
+    render(
+      <ConversationHistoryDrawer
+        isOpen
+        onClose={vi.fn()}
+        entries={[activeEntry, otherEntry]}
+        activeConversationId="active-entry"
+        onSelectEntry={onSelectEntry}
+      />
+    );
+
+    await user.click(screen.getByText("Active question"));
+    expect(onSelectEntry).not.toHaveBeenCalled();
+
+    await user.click(screen.getByText("Other question"));
+    expect(onSelectEntry).toHaveBeenCalledWith(otherEntry);
+  });
+
+  it("traps focus, closes on Escape, and restores focus to whatever triggered it", async () => {
+    const user = userEvent.setup();
+    const onSelectEntry = vi.fn();
+
+    render(<Harness entries={[buildEntry()]} onSelectEntry={onSelectEntry} />);
+
+    const trigger = screen.getByRole("button", { name: "Open history trigger" });
+    await user.click(trigger);
+
+    const dialog = screen.getByRole("dialog", { name: "Conversation history" });
+    const close = within(dialog).getByRole("button", { name: "Close conversation history" });
+    const entryButton = within(dialog).getByRole("button", { name: /Quick Question/ });
+    expect(close).toHaveFocus();
+
+    entryButton.focus();
+    await user.tab();
+    expect(close).toHaveFocus();
+
+    await user.tab({ shift: true });
+    expect(entryButton).toHaveFocus();
+
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog", { name: "Conversation history" })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+
+  it("mirrors the adaptive-context sheet/drawer CSS shape to the left edge", () => {
+    expect(appCss).toMatch(
+      /\.conversation-history-overlay \{[^}]*align-items: flex-end;[^}]*\}/
+    );
+    expect(appCss).toMatch(
+      /@media \(min-width: 768px\) \{[\s\S]*\.conversation-history-overlay \{[^}]*justify-content: flex-start;[^}]*\}[\s\S]*\.conversation-history-surface \{[^}]*border-radius: 0 1rem 1rem 0;[^}]*\}/
+    );
+    expect(appCss).toMatch(
+      /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*\.conversation-history-surface/
+    );
+  });
+});

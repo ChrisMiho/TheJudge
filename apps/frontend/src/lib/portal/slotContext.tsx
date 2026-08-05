@@ -1,7 +1,11 @@
 import { createContext, useContext } from "react";
+import type { ConversationHistoryTriggerDescriptor } from "../../components/ConversationWorkspace";
 
 export interface PortalSlotContextValue {
-  registerSlot: (node: HTMLDivElement) => void;
+  registerSlot: (
+    node: HTMLDivElement,
+    getHistoryTrigger: () => ConversationHistoryTriggerDescriptor | undefined
+  ) => void;
   unregisterSlot: (node: HTMLDivElement) => void;
 }
 

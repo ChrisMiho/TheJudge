@@ -34,25 +34,26 @@
 - per-card context enrichment (caster/targets/notes/mana spent fallback where relevant)
 - card-gated submit flow requiring at least one selected-zone card
 - Decrypt Stack submit flow
-- plain-text AI response
+- markdown-rendered AI answers in the shared conversation thread (wire contract remains a plain string; DEC-123, REQ-102)
 - mock-first integration path
 - one main backend endpoint
 - app-wide CSS decorative-motion and visual-feedback baseline with reduced-motion support (DEC-079, REQ-059, NFR-006)
 - predefined browser-local palette personalization hosted in the feature-portal Menu (DEC-066, DEC-110, REQ-044)
 - In-Depth Question and Quick Question destinations, both reusing the shipped conversation/thread behavior
+- shared chat-first conversation workspace with adaptive context, reader-safe auto-scroll, full-bleed thread presentation, docked pill composer, and browser-local resumable history (DEC-117, DEC-118, DEC-123..DEC-127, REQ-096..REQ-098, REQ-102..REQ-105)
+- feature-portal top-left corner-rail Menu with sliding drawer, centered brand block, and in-flow step-name eyebrow (DEC-122)
 - AWS production deployment with live OpenAI, automated quality-gated deploys, backend-only secret loading, and cost/scale guardrails (DEC-084)
 
 ## Intentional constraints
 - duplicate-card blocking is a temporary product constraint, not a gameplay rule
 - stack size is capped at 10 cards to reduce token use and abuse risk
 - the product does not implement a deterministic rules engine or full board-state simulator
-- plain-text answers are used before advanced formatting polish
+- answer wire format stays a plain markdown string; schema-enforced answer shapes are out of scope (DEC-123)
 - runtime metadata syncing is out of scope
 - camera scanning is out of the **core product loop**, but is a scoped, optional, frontend-only input feature (DEC-050)
 
 ## Planned capabilities (optional, outside the core loop)
 - optional on-device camera card scanning as an alternate input path into existing zone fields (DEC-050..DEC-053); see `system-map.md` "Card scanning" (status: planned)
-- automatic fluid responsive presentation replacing the shipped user-selected density workaround, plus one shared chat-first conversation workspace with adaptive context, reader-safe auto-scroll, and focused motion (DEC-117, DEC-118, REQ-096..REQ-098)
 - backend-only **Commander Spellbook combo enrichment**: a human-approved static community combo corpus used only for complete contextual matches or narrow explicit combo questions, with deterministic identity/quantity/zone matching and labeled missing pieces (DEC-116, REQ-093..REQ-095); see `system-map.md` "Commander Spellbook combo retrieval" (status: planned)
 
 ## Product risks
@@ -66,7 +67,7 @@
 - controller selection
 - mode selection
 - multiplayer sync
-- saved sessions
+- saved sessions outside the narrowly scoped browser-local conversation history (DEC-124; capped, single-device, no accounts)
 - account system
 - billing
 - runtime metadata syncing

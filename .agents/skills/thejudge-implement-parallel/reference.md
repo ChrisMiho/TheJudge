@@ -20,3 +20,5 @@ Also preserve active product decisions from `PRD/sections/decisions/` and `PRD/i
 ```
 
 If a slice already uses another status format, preserve the format and change only the value.
+
+Stopping before a slice reaches `done` (session end, usage limit, blocker): append the `### Handoff` block defined in `PRD/instructions/workflow-reference.md` under the status line before stopping.

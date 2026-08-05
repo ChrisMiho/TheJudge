@@ -295,7 +295,6 @@ describe("Accent token coverage for staged and answered semantic surfaces", () =
 
     const bubble = userMessage.closest("div");
     expect(bubble).not.toBeNull();
-    expect(bubble!.className).toContain("border-accent-strong");
     expect(bubble!.className).toContain("bg-accent-strong");
     expect(bubble!.className).toContain("text-accent-contrast");
     expect(bubble!.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
