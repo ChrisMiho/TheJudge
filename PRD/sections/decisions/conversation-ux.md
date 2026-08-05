@@ -277,6 +277,8 @@ Decrypt wait UX and follow-up conversation history behavior.
   - NFR-001
 - Notes:
   - non-goals: filling empty lower-half dead space on pre-submit Game Context / zone / Quick Question landing screens; outer app-shell redesign
+  - **both non-goals above are superseded by DEC-145**, which takes on viewport fill and the shell width cap; this decision's answered-workspace clauses and its pre-submit grow-with-content requirement (REQ-110) are unchanged and stay resolvable here
+  - the pre-submit composer's row composition is amended by DEC-146 (full-width field, inline counter, compact circular submit); vertical growth behavior is unchanged
 
 ### DEC-134
 - Decision: Two post-ship corrections to the saved-conversation history experience (DEC-124/DEC-125/DEC-126). (1) **Selecting a saved conversation always lands on that conversation.** Restoring an entry from any pre-submit staged step of In-Depth Question moves the flow to the answered conversation workspace in the same action, rather than restoring the conversation behind whatever step the user was on. (2) The history drawer presents as a **left-edge, full-height drawer at every viewport**, superseding DEC-125's below-`768px` bottom sheet. Its `768px`+ presentation is unchanged. Menu↔History mutual exclusivity, focus trap/restore, Escape-to-close, reduced-motion behavior, the 20-entry cap, Draft semantics (DEC-130), and all frozen-context/restore semantics are unchanged.
@@ -405,3 +407,25 @@ Decrypt wait UX and follow-up conversation history behavior.
 - Notes:
   - hardening + persistence completeness; not a redesign of card preview chrome
   - non-goals: editing frozen context; re-fetching Scryfall at resume time
+
+### DEC-146
+- Decision: The pre-submit question composers shared by Enrichment (optional question) and Quick Question adopt the composition already shipped by the answered view's `FollowUpComposer`: the text field spans the composer row's full width, the character counter sits inline, and submission uses a compact circular icon control rather than a wide labelled button occupying the same row as the field. This applies at narrow viewports where the labelled button starves the field; wider viewports may retain a labelled control so long as the field keeps the dominant share of the row. Amends DEC-131's pre-submit composer clause, whose grow-with-content requirement (REQ-110) is unchanged and still governs vertical behavior.
+- Status: confirmed
+- Context: The 2026-08-05 Playwright MCP sweep measured the Enrichment composer at 390px: the textarea occupied 136px of a 340px row (40%) while the "Decrypt Stack" button took 128px and the counter 34px. A typed question wrapped to five lines in a narrow ribbon with roughly 200px of the row unused above the button, and the placeholder itself clipped by 20px (`scrollHeight` 52 vs `clientHeight` 32). The answered view's follow-up composer, at the same viewport, gives its field 230px using a circular send control — the app already contains the correct pattern.
+- Impact:
+  - Enrichment optional-question and Quick Question composers present a full-width field with inline counter and compact submit affordance at narrow viewports
+  - the submit control keeps an accessible name ("Ask TheJudge" / "Decrypt Stack" semantics preserved for assistive technology) even when rendered icon-only
+  - the 44px touch-target floor (NFR-001) applies to the circular control
+  - character caps, fallback-question behavior, and submit gating are unchanged
+  - presentation only — no change to `AskAiRequest`, prompt assembly, providers, or backend routes
+- Related requirements:
+  - REQ-121
+  - REQ-110
+  - REQ-011
+  - REQ-073
+  - NFR-001
+  - DEC-131
+  - DEC-127
+- Notes:
+  - rejected alternatives: stacking a full-width labelled CTA below the field (adds a row of height on the most space-constrained screens); keeping the row and only dropping the label below `sm` (leaves the row composition that caused the starvation)
+  - non-goals: changing the answered-view follow-up composer, the character cap, or the zone-aware blank-question fallback

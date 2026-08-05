@@ -278,3 +278,29 @@ portal owns app chrome and every feature reaches it as a registered destination.
 - Notes:
   - amends open-state stacking/occlusion for DEC-122/DEC-133 relative to DEC-126's History zone; does not redesign tray contents or the rail's rest-state visual language
   - non-goals: merging History into the Menu tray, changing Menu outside-click-to-close, or altering History drawer geometry
+
+### DEC-147
+- Decision: Three corrections to the open Menu tray's presentation. (1) **Opacity extends to all destination content, not only rail chrome.** DEC-140 required the open tray to fully occlude non-Menu corner-rail chrome and to read as an opaque left shell panel; that opacity obligation now explicitly covers every destination element under the tray's painted bounds, so no page text, control, or artwork remains legible through the tray surface. (2) **The tray box is bounded by the visible shell.** The tray's own height is the shell area it occupies, not a full viewport height applied from an offset origin, so the tray element never extends past the viewport's bottom edge. (3) **The first destination row's hit area clears the rail band.** DEC-135 already gives each menu row a left inset that clears the corner rail's icon zone; that inset now governs the row's **interactive** bounds as well as its visual ones, so the Menu trigger's hit band (DEC-137's `5.5rem x 3.5rem` cap) and the first destination row no longer claim the same pixels. DEC-135's full-bleed row presentation and edge-to-edge separator rules are unchanged — no row moves down — and the Menu trigger stays interactive so the user can close the tray (DEC-140). Menu↔History mutual exclusivity, outside-click-to-close, focus trap/restore, Escape-to-close, reduced-motion behavior, and tray contents are unchanged.
+- Status: confirmed
+- Context: The 2026-08-05 Playwright MCP sweep found the tray at `background-color: rgba(24, 24, 27, 0.95)` with `backdrop-filter: none` and no scrim element (`scrimPresent: false`); ten destination-content elements measured inside the tray footprint and stayed legible through it, with the tray's "Send feedback" row visually colliding with Trade Balancer's "Side A $0.00 · Side B $0.00 · USD only" price line. The same sweep measured the tray element at 256x844 from y=45 (bottom 889 against an 844px viewport) on mobile and 256x900 from y=57 (bottom 957 against 900) on desktop, and measured the Menu trigger overlapping the first destination row by 88px horizontally at desktop and 32px vertically at mobile. The `ConversationHistoryDrawer` at the same viewports renders opaque over a dimming scrim and is the in-app reference for correct behavior.
+- Impact:
+  - the open tray surface is opaque (or backed by a scrim sufficient to make it so) across its full painted bounds on every destination
+  - the tray element's measured bottom does not exceed the viewport bottom at any supported viewport
+  - the Menu trigger no longer overlaps the first destination row's interactive area; both keep their NFR-001 touch targets
+  - Life Tracker and Trade Balancer (Menu-only rail) and the DEC-140 History-occlusion behavior must not regress
+  - presentation/interaction only — no change to the destination registry, Theme controls, History persistence, `AskAiRequest`, Zod schemas, prompt assembly, providers, or backend routes
+- Related requirements:
+  - REQ-122
+  - REQ-115
+  - REQ-113
+  - REQ-114
+  - NFR-001
+  - DEC-140
+  - DEC-133
+  - DEC-135
+  - DEC-137
+  - DEC-134
+- Notes:
+  - reference pattern is the existing history drawer's opaque-surface-plus-scrim treatment; this decision does not require adopting its width or animation
+  - clause (3) corrects interactive bounds only; it does not move rows, change DEC-135's full-bleed row geometry, or alter DEC-137's rail cap
+  - non-goals: redesigning tray contents, the Theme section, the rail's rest-state visual language, or History drawer geometry

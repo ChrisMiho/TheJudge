@@ -30,12 +30,15 @@
   - player secondary details default collapsed; every per-player arrow reflects and toggles the same all-player expanded state, so mixed open/closed player cards cannot occur
   - closing the outer player panel or leaving and returning to In-Depth Question resets secondary details collapsed without clearing player values or other in-progress flow state
   - on narrow/mobile viewports, expanding secondary player details must not push cards or controls horizontally off-page or introduce document-level horizontal scroll (DEC-128, REQ-106)
+  - returning to a staged step after leaving the destination and resizing the viewport must not leave the optional-question composer collapsed below one line or clipping typed content (DEC-131, REQ-110, REQ-120)
+  - on narrow/mobile viewports, the card-detail view reached from zone search must keep its add action near the first viewport rather than behind a full-height preview and duplicated oracle text (DEC-148, REQ-125)
 - Notes:
   - this is the primary core product flow with staged context capture
   - each staged step's header presents the active step name inline to the right of the `TheJudge` / `MTG Assistant` brand block in a single row (DEC-067, REQ-045); the answered-state conversation header stays a slim brand-only header with no step name and carries an inline feature-portal Menu slot (DEC-109, REQ-089)
   - staged-flow compaction (DEC-076, REQ-056) and automatic fluid responsive presentation (DEC-117, REQ-096) are presentation-only and do not change this flow's logic or payloads; users select no layout profile
   - compact synchronized player-secondary disclosure (DEC-120, REQ-100) changes only the visibility of existing player inputs; submitted game context is unchanged for unchanged values
   - mobile containment for expanded secondary details (DEC-128, REQ-106) is presentation-only and does not change disclosure semantics or payloads
+  - viewport fill on both axes (DEC-145, REQ-124), the pre-submit composer composition (DEC-146, REQ-121), and card-detail height reduction (DEC-148, REQ-125) are presentation-only and change no step logic, control set, or payload
 
 ### FLOW-002
 - Name: Inspect and remove cards from selected zones

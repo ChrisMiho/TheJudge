@@ -2800,3 +2800,126 @@
   - REQ-075
   - DEC-118
 - Notes:
+
+### REQ-120
+- Title: Auto-grow composer survives destination switching and viewport resize
+- Priority: high
+- Description: The shared pre-submit auto-grow behavior (REQ-110) must never leave a composer pinned to a collapsed height. Sizing derived from a measurement taken while the field's destination is inactive — and therefore unrendered — must not be applied, and the field must be re-measured when its destination becomes active again.
+- Acceptance Criteria:
+  - after the sequence load app -> switch to another destination -> resize the window -> switch back, the composer's `clientHeight` is at least one line of its computed `line-height` and its `scrollHeight` does not exceed its `clientHeight`
+  - no inline `height: 0px` (or any height below one line) is written to a composer whose measured `scrollHeight` is `0` because it is unrendered
+  - the field still grows with typed content and still stops before forcing document scroll, per REQ-110
+  - the behavior holds for both composers that share the hook (Quick Question question, Enrichment optional question) at 390x844 and 1440x900
+  - a regression test covers the collapsed-height case so the defect cannot silently return
+- Constraints:
+  - frontend-only; no Ask AI contract change; character caps unchanged
+  - fix stays in the shared hook rather than duplicating per-call-site sizing logic (DEC-131 prefers one implementation)
+- Dependencies:
+  - REQ-110
+  - DEC-131
+  - DEC-146
+- Notes:
+  - measured defect (2026-08-05): `style.height="0px"`, `clientHeight` 12 against `scrollHeight` 32, hiding 20px of the user's typed question
+
+### REQ-121
+- Title: Pre-submit composer row composition
+- Priority: high
+- Description: The Enrichment optional-question and Quick Question composers present the field as the dominant element of their row, with an inline character counter and a compact submit control, matching the answered view's follow-up composer (DEC-146).
+- Acceptance Criteria:
+  - at a 390px-wide viewport the composer's text field measures at least 65% of its composer row's width (baseline defect: 136px of 340px = 40%; the answered-view follow-up composer measures 230px at the same viewport)
+  - the placeholder and typed content are not clipped: the field's `scrollHeight` does not exceed its `clientHeight` at rest
+  - the submit control exposes its existing accessible name ("Ask TheJudge", "Decrypt Stack") even when rendered without a visible text label
+  - the submit control and any icon-only affordance meet the 44px touch-target floor (NFR-001)
+  - submit gating, character caps, and the zone-aware blank-question fallback are unchanged
+- Constraints:
+  - frontend presentation only; no contract, prompt, or provider change
+  - does not modify the answered-view follow-up composer
+- Dependencies:
+  - DEC-146
+  - REQ-110
+  - REQ-120
+  - NFR-001
+- Notes:
+
+### REQ-122
+- Title: Opaque, bounded Menu tray without trigger overlap
+- Priority: high
+- Description: The open feature-portal Menu tray occludes destination content across its painted bounds, stays inside the viewport, and does not overlap its own trigger with the first destination row (DEC-147).
+- Acceptance Criteria:
+  - with the tray open on any destination, the tray's painted bounds are fully opaque: the computed `background-color` alpha of the tray surface is `1`, or a scrim/backdrop element covers the same bounds such that no destination-content pixel contributes to the rendered result (baseline defect: `rgba(24, 24, 27, 0.95)`, `backdrop-filter: none`, `scrimPresent: false`)
+  - the tray element's measured bottom does not exceed the viewport's bottom at 390x844 or 1440x900 (measured defect: 889 against 844, and 957 against 900)
+  - the Menu trigger's bounding box does not intersect the first destination row's interactive bounds (measured defect: 88px horizontal overlap at desktop, 32px vertical at mobile)
+  - DEC-140's History occlusion and non-clickability under the open tray do not regress
+  - Menu↔History mutual exclusivity, outside-click-to-close, Escape-to-close, and focus trap/restore do not regress
+- Constraints:
+  - presentation/interaction only; destination registry, Theme controls, and History persistence unchanged
+  - does not alter History drawer geometry
+- Dependencies:
+  - DEC-147
+  - DEC-140
+  - DEC-133
+  - DEC-135
+  - DEC-137
+  - NFR-001
+- Notes:
+
+### REQ-123
+- Title: Mock-mode banner clears every destination header
+- Priority: high
+- Description: DEC-085's guarantee that page content is offset so the fixed mock-mode banner never obscures the header must hold on every destination, including full-bleed destinations that do not inherit `PageShell`'s standard offset.
+- Acceptance Criteria:
+  - in mock provider mode, no header control on any destination intersects the banner's painted bounds (measured defect: Life Tracker "Switch feature" covered by 24px, brand `h1` by 9px, "Open game setup" by 12px; Trade Balancer "Switch feature" by 11px)
+  - the guarantee holds at 390x844 and 1440x900 for Quick Question, In-Depth Question, Life Tracker, and Trade Balancer
+  - exactly one banner element is mounted at a time (measured defect: three `.mock-mode-banner` nodes present simultaneously)
+  - non-mock builds are unaffected and render no banner
+- Constraints:
+  - presentation only; banner copy, non-dismissibility, and the build-time `ASK_AI_PROVIDER` resolution path are unchanged
+- Dependencies:
+  - DEC-085
+  - DEC-133
+  - NFR-001
+- Notes:
+
+### REQ-124
+- Title: Viewport fill on both axes
+- Priority: medium
+- Description: The suite shell scales its width cap with the viewport and lets pre-submit staged steps absorb available height, replacing the fixed narrow column and top-anchored composition (DEC-145).
+- Acceptance Criteria:
+  - the shell width is a fluid cap of `min(90rem, ~92vw)`; at 1440x900 the measured shell width is at least 1200px (baseline defect: 670px, leaving 770px / 53% unused)
+  - the cap still binds on ultra-wide viewports: at 2560px wide the shell does not exceed 90rem (1440px)
+  - prose-dominant regions (conversation thread, guidance copy) keep their own maximum reading measure inside the widened shell rather than running the full shell width
+  - at 390x844 no pre-submit staged step leaves more than 120px of unused vertical space below its content (baseline defect: 359px / 43% on zone collection; 320px on Game context and Quick Question)
+  - at 1440x900 no pre-submit staged step leaves more than 150px of unused vertical space below its content (baseline defect: 366px / 41%)
+  - the same behavior is produced by fluid CSS on one component tree — no layout-density storage, `data-layout-density`, UA sniffing, or JS device detection (NFR-001, DEC-117)
+  - Life Tracker's one-screen fit (DEC-136) and the answered workspace's fill behavior (DEC-127, DEC-131) do not regress
+  - no horizontal document overflow is introduced at either viewport
+- Constraints:
+  - presentation only; step content, control sets, and payloads unchanged
+  - no theme, typography, or brand redesign
+- Dependencies:
+  - DEC-145
+  - DEC-117
+  - DEC-136
+  - REQ-096
+  - NFR-001
+- Notes:
+
+### REQ-125
+- Title: Reachable add action in card detail
+- Priority: medium
+- Description: The zone-collection card-detail view keeps its add action near the first viewport on narrow screens by capping preview-image height and removing oracle text duplicated from the card art (DEC-148).
+- Acceptance Criteria:
+  - at 390x844 the add action's measured `top` is within the first viewport (at most 844px), and the detail view's document `scrollHeight` is at most 900px (baseline defect: add action at y=1088, 244px below fold, on a 1286px page)
+  - the oracle-text paragraph that repeats text already legible on the displayed card image is not rendered beneath it
+  - the metadata list (mana cost, mana value, type line, colors, supertypes, subtypes), owner selection, and add behavior are unchanged
+  - when the card image is unavailable, the existing readable metadata fallback path (FLOW-001) is unaffected and its descriptive text still renders
+  - wider viewports keep a legible preview presentation
+- Constraints:
+  - presentation only; no card metadata content change, no Scryfall fetch change, no `gameContext.zones` payload change
+  - no sticky or floating chrome added over the preview
+- Dependencies:
+  - DEC-148
+  - DEC-145
+  - FLOW-001
+  - NFR-001
+- Notes:

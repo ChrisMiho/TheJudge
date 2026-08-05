@@ -157,3 +157,44 @@ Frontend-only responsive presentation, motion, transition, and visual-feedback b
 - Notes:
   - preferred fix direction: fluid widths / wrapping / `min-w-0` on flex/grid children rather than hiding overflow on the page shell
   - non-goals: independent per-player expansion, desktop roster redesign, Life Tracker changes, CI Playwright harness, data/API changes
+
+### DEC-145
+- Decision: The suite shell fills the viewport it is given, on both axes, at every destination and staged step. The desktop shell's width cap scales past today's fixed ~670px column instead of pinning a narrow band inside a wide screen, and pre-submit staged steps (Game context, Zone confirmation, Zone collection, Enrichment, Quick Question landing) absorb available vertical space rather than top-anchoring a content-sized card above an empty lower region. The mechanism stays DEC-117's automatic fluid CSS on one component tree — fluid caps, `min()` / viewport units, and flex/grid fill — with no layout-density storage, UA sniffing, or JS device detection. This decision **supersedes DEC-131's non-goal** that deferred "filling empty lower-half dead space on pre-submit Game Context / zone / Quick Question landing screens" and "outer app-shell redesign" to later UI-refinement work; DEC-131's answered-workspace clauses are otherwise unchanged.
+- Status: confirmed
+- Context: A Playwright MCP sweep of all four destinations (2026-08-05) measured `.portal-shell-bounds` at 670px inside a 1440px viewport — 770px (53%) of width unused — with 366px (41%) of unused height below content on Trade Balancer and roughly 420px on Quick Question. At 390x844 the zone-collection step ended at y=485, leaving 359px (43%) of empty screen below the primary controls, with Game context and Quick Question showing ~320px each. DEC-131 recorded this as deliberate deferral rather than accepted composition, and the product owner has now reversed that deferral.
+- Impact:
+  - desktop shell width becomes a fluid cap of `min(90rem, ~92vw)` that grows with the viewport rather than a fixed narrow column, still binding on ultra-wide screens; prose-dominant regions keep their own maximum reading measure inside the widened shell rather than stretching edge to edge
+  - pre-submit staged steps fill available height so the primary controls are not stranded above a large empty band
+  - Life Tracker's existing one-screen fit (DEC-136) and the answered conversation workspace's fill behavior (DEC-127, DEC-131) are the precedent, not exceptions
+  - presentation only — no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, backend routes, card metadata, or scan behavior
+- Related requirements:
+  - REQ-124
+  - REQ-096
+  - REQ-109
+  - NFR-001
+  - DEC-117
+  - DEC-131
+  - DEC-127
+  - DEC-136
+- Notes:
+  - verification uses Playwright MCP viewport-fill measurement at 390x844 and 1440x900, not a new `@playwright/test` CI harness
+  - non-goals: theme, typography, or brand redesign; changing which controls each step presents; edge-to-edge text lines with no maximum measure
+
+### DEC-148
+- Decision: On narrow/mobile viewports the zone-collection card-detail view keeps its primary add action reachable without a long scroll: the card preview image is height-capped rather than rendered at full intrinsic size, and the oracle-text paragraph that merely repeats text already legible on the card art is not duplicated below it. The metadata list (mana cost, mana value, type line, colors, supertypes, subtypes) and the add action are unchanged in content.
+- Status: confirmed
+- Context: The 2026-08-05 Playwright MCP sweep measured the "Add card" control at y=1088 on an 844px viewport — 244px below the fold, on a 1286px page — behind a 272x375 preview image and an oracle-text paragraph identical to the text printed on the card image directly above it. The user must scroll past a duplicate of what they just read to complete the step.
+- Impact:
+  - narrow-viewport card detail reduces content height so the add action sits at or near the first viewport
+  - the card image remains the primary identity cue and stays legible at its capped height; wider viewports keep today's presentation
+  - no new sticky or floating chrome is introduced over the preview
+  - presentation only — no change to card metadata content, owner selection, zone assignment, or `gameContext.zones` payloads
+- Related requirements:
+  - REQ-125
+  - REQ-124
+  - NFR-001
+  - DEC-145
+  - FLOW-001
+- Notes:
+  - rejected alternative: pinning the add action to a sticky bottom bar while keeping full-size preview — adds persistent chrome over the preview instead of removing duplicated content
+  - non-goals: redesigning the card identity ring treatment, the three-dot metadata swap, or the added-card tile grid

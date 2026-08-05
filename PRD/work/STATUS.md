@@ -8,6 +8,7 @@ Do not rename package folders to encode status.
 
 ## active
 
+- [responsive-containment-and-density](./responsive-containment-and-density/)
 - [chrome-tray-conversation-history-ux](./chrome-tray-conversation-history-ux/)
 
 ## refined
