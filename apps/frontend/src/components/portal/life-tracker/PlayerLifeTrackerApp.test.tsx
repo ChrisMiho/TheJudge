@@ -82,6 +82,18 @@ describe("Frontend - Shared", () => {
       expect(screen.getByText("Player 1 (Alice)")).toBeInTheDocument();
     });
 
+    it("wraps its full-bleed content in the shell-bounds pass-through wrapper (REQ-113)", () => {
+      const { container } = render(<PlayerLifeTrackerApp />);
+
+      const bleedWrapper = container.querySelector(".page-shell-bleed");
+      expect(bleedWrapper).toBeInTheDocument();
+      expect(bleedWrapper?.querySelector(".portal-shell-bounds")).toBeInTheDocument();
+      // The full-bleed wrapper is a bare pass-through box — Life Tracker's own layout
+      // (its inner flex column) is still the direct structural content, pixel-identical
+      // to before this wrapper existed.
+      expect(screen.getByTestId("life-tracker-table")).toBeInTheDocument();
+    });
+
     it("opens and closes Game Setup from the header button", async () => {
       const user = userEvent.setup();
       render(<PlayerLifeTrackerApp />);

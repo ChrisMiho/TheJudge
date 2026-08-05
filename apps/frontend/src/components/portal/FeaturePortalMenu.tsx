@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { BrandMark } from "../BrandMark";
 import type { ConversationHistoryTriggerDescriptor } from "../ConversationWorkspace";
 import { useLeftEdgeDrawer } from "../../lib/portal/leftEdgeDrawerContext";
 import { PortalSlotContext } from "../../lib/portal/slotContext";
@@ -84,7 +85,10 @@ export function FeaturePortalMenu({
   const [isOpen, setIsOpen] = useState(false);
   const [slotEntries, setSlotEntries] = useState<SlotEntry[]>([]);
   const [visibleSlotEntry, setVisibleSlotEntry] = useState<SlotEntry | null>(null);
+  const [shellBoundsEntries, setShellBoundsEntries] = useState<HTMLDivElement[]>([]);
+  const [visibleShellBoundsNode, setVisibleShellBoundsNode] = useState<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
   const { activeDrawer, openDrawer, closeDrawer } = useLeftEdgeDrawer();
 
   useEffect(() => {
@@ -117,6 +121,14 @@ export function FeaturePortalMenu({
     setSlotEntries((current) => current.filter((entry) => entry.node !== node));
   }, []);
 
+  const registerShellBounds = useCallback((node: HTMLDivElement) => {
+    setShellBoundsEntries((current) => (current.includes(node) ? current : [...current, node]));
+  }, []);
+
+  const unregisterShellBounds = useCallback((node: HTMLDivElement) => {
+    setShellBoundsEntries((current) => current.filter((entry) => entry !== node));
+  }, []);
+
   // DestinationOutlet keeps inactive destinations mounted and hides them via the `hidden`
   // attribute (for in-session state preservation) instead of unmounting — so a destination's
   // <PortalSlot /> registers once on mount and stays registered while hidden, and more than one
@@ -126,6 +138,13 @@ export function FeaturePortalMenu({
   useEffect(() => {
     setVisibleSlotEntry(slotEntries.find((entry) => entry.node.closest("[hidden]") === null) ?? null);
   }, [slotEntries, activeDestinationId]);
+
+  // Same visibility resolution as slots (each PageShell's ShellBounds node registers once
+  // and stays registered while its destination is hidden-but-mounted) — more than one can be
+  // registered once multiple destinations have been visited.
+  useEffect(() => {
+    setVisibleShellBoundsNode(shellBoundsEntries.find((node) => node.closest("[hidden]") === null) ?? null);
+  }, [shellBoundsEntries, activeDestinationId]);
 
   const effectiveSlotNode = visibleSlotEntry?.node ?? null;
   // Read at render time (not cached in state) — the visible slot's own render already
@@ -138,7 +157,12 @@ export function FeaturePortalMenu({
     }
 
     function handlePointerDown(event: MouseEvent): void {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      // The drawer may be portaled into a shell-bounds node elsewhere in the DOM (not a
+      // descendant of containerRef), so a click landing inside it must not read as "outside".
+      const insideContainer = containerRef.current?.contains(target) ?? false;
+      const insideDrawer = drawerRef.current?.contains(target) ?? false;
+      if (!insideContainer && !insideDrawer) {
         setIsOpen(false);
       }
     }
@@ -171,6 +195,69 @@ export function FeaturePortalMenu({
     onPaletteSelect(id);
   }
 
+  const drawer = isOpen ? (
+    <div
+      ref={drawerRef}
+      role="menu"
+      aria-label="Feature destinations"
+      className="portal-menu-drawer portal-menu-drawer-motion bg-zinc-900/95"
+    >
+      <div className="portal-menu-drawer-inner flex flex-col gap-1">
+        {entries.map((entry) => {
+          const isActive = !isPortalActionEntry(entry) && entry.id === activeDestinationId;
+          return (
+            <button
+              key={entry.id}
+              type="button"
+              role="menuitem"
+              aria-label={entry.label}
+              aria-current={isActive ? "true" : undefined}
+              onClick={() => handleSelect(entry)}
+              className={`flex min-h-[2.75rem] items-center gap-3 rounded-xl border px-3 py-2 text-left text-sm font-medium transition ${
+                isActive
+                  ? "border-accent-soft/70 bg-zinc-800 text-zinc-100"
+                  : "border-zinc-700/80 bg-zinc-900/60 text-zinc-200 hover:bg-zinc-800/70"
+              }`}
+            >
+              <span>{entry.label}</span>
+              {isActive && <span aria-hidden="true" className="ml-auto text-accent-soft">✓</span>}
+            </button>
+          );
+        })}
+        <div className="mt-1 flex flex-col gap-1 border-t border-zinc-700/60 pt-2">
+          <p className="px-1 pb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">Theme</p>
+          <ThemeSection
+            paletteId={paletteId}
+            onSelect={handlePaletteSelect}
+            colorlessCustomHex={colorlessCustomHex}
+            onColorlessCustomChange={onColorlessCustomChange}
+            onColorlessReset={onColorlessReset}
+          />
+        </div>
+        {/* Quiet decorative brand mark (REQ-113 item 4): pinned toward the bottom of any
+            leftover vertical space via `mt-auto` in this flex column (drawer-inner stretches
+            to the drawer's full height, see .portal-menu-drawer-inner's min-height: 100%) —
+            not immediately after the last entry. `aria-hidden` and no onClick (plain BrandMark,
+            not the header's button variant) keep it out of the drawer's own `role="menu"`
+            semantics entirely: it isn't a menuitem and doesn't affect menuitem queries.
+            `.portal-menu-drawer-brand`'s `pointer-events: none` (index.css) means it never
+            intercepts clicks meant for entries/Theme/scroll above it. No height-detection
+            logic decides whether this renders — a shell too short to host it cleanly is
+            handled by the same `.portal-shell-bounds` overflow: hidden clip that produces the
+            matching bottom-left radius (slice A), which simply clips this off along with the
+            rest of the drawer's excess height. */}
+        <div aria-hidden="true" className="portal-menu-drawer-brand mt-auto pt-3">
+          <BrandMark />
+        </div>
+      </div>
+    </div>
+  ) : null;
+
+  // The drawer portals into the resolved shell-bounds node (REQ-113's full-height/visible-bounds
+  // tray) when one is registered and visible. When none is registered — isolated component
+  // tests, a hypothetical headerless/shell-less destination — it falls back to rendering inline
+  // here, exactly as it always has, so every existing case without a PageShell/ShellBounds
+  // ancestor keeps passing unmodified.
   const trigger = (
     <div
       ref={containerRef}
@@ -210,53 +297,16 @@ export function FeaturePortalMenu({
         </button>
       )}
 
-      {isOpen && (
-        <div
-          role="menu"
-          aria-label="Feature destinations"
-          className="portal-menu-drawer portal-menu-drawer-motion bg-zinc-900/95"
-        >
-          <div className="portal-menu-drawer-inner flex flex-col gap-1">
-            {entries.map((entry) => {
-              const isActive = !isPortalActionEntry(entry) && entry.id === activeDestinationId;
-              return (
-                <button
-                  key={entry.id}
-                  type="button"
-                  role="menuitem"
-                  aria-label={entry.label}
-                  aria-current={isActive ? "true" : undefined}
-                  onClick={() => handleSelect(entry)}
-                  className={`flex min-h-[2.75rem] items-center gap-3 rounded-xl border px-3 py-2 text-left text-sm font-medium transition ${
-                    isActive
-                      ? "border-accent-soft/70 bg-zinc-800 text-zinc-100"
-                      : "border-zinc-700/80 bg-zinc-900/60 text-zinc-200 hover:bg-zinc-800/70"
-                  }`}
-                >
-                  <span>{entry.label}</span>
-                  {isActive && <span aria-hidden="true" className="ml-auto text-accent-soft">✓</span>}
-                </button>
-              );
-            })}
-            <div className="mt-1 flex flex-col gap-1 border-t border-zinc-700/60 pt-2">
-              <p className="px-1 pb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">Theme</p>
-              <ThemeSection
-                paletteId={paletteId}
-                onSelect={handlePaletteSelect}
-                colorlessCustomHex={colorlessCustomHex}
-                onColorlessCustomChange={onColorlessCustomChange}
-                onColorlessReset={onColorlessReset}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      {!visibleShellBoundsNode && drawer}
     </div>
   );
 
   return (
-    <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot }}>
+    <PortalSlotContext.Provider
+      value={{ registerSlot, unregisterSlot, registerShellBounds, unregisterShellBounds }}
+    >
       {effectiveSlotNode ? createPortal(trigger, effectiveSlotNode) : trigger}
+      {visibleShellBoundsNode && drawer ? createPortal(drawer, visibleShellBoundsNode) : null}
       <div className={effectiveSlotNode ? undefined : "pt-44"}>{children}</div>
     </PortalSlotContext.Provider>
   );
