@@ -1874,10 +1874,14 @@
   - each opponent commander-damage cell exposes always-visible `−`/`+` bands (no hold menu); band thickness follows REQ-112
   - incrementing an opponent's commander damage also decrements that player's life (always on; not a Game Setup toggle)
   - counter values persist with the game per DEC-103
+  - the panel's surface fills the available shell height rather than sizing to its content, joining the Menu tray and history drawer's overlay family, and scrolls internally when its content exceeds that height (DEC-139)
+  - no dead scrim band remains above the panel at any player count
 - Constraints:
   - counters are captured values only; no automatic rules resolution beyond the explicit commander-damage→life convenience (DEC-013)
+  - the surface-geometry clause is presentation only; it introduces no new counter types and no change to DEC-102's contract, DEC-103 persistence, or REQ-085's seed handoff
 - Dependencies:
   - DEC-101
+  - DEC-139
   - REQ-081
   - REQ-083
   - REQ-112
@@ -2518,10 +2522,13 @@
 ### REQ-108
 - Title: Mid-flight Draft slot in conversation history
 - Priority: high
-- Description: Each conversation-bearing destination must persist at most one mid-flight Draft snapshot (anything before the first successful submit) so Menu navigation away and page reload do not wipe staged work; listed in History as **Draft**, auto-hydrated on destination mount, and kept as a single updating slot (no unfinished backlog).
+- Description: Each conversation-bearing destination must persist at most one mid-flight Draft snapshot (anything before the first successful submit) so Menu navigation away, page reload, and opening a saved conversation do not wipe staged work; listed in History as **Draft**, auto-hydrated on destination mount, and kept as a single updating slot (no unfinished backlog).
 - Acceptance Criteria:
   - mid-flight is defined as any staged state before the first successful Ask AI answer for the current attempt (typed question, optional card, staged game/zones/enrichment, current step as applicable)
-  - Draft is written/updated as mid-flight staging changes enough to resume meaningfully after Menu leave or reload
+  - Draft is written/updated as mid-flight staging changes enough to resume meaningfully after Menu leave, reload, or opening a saved conversation
+  - selecting a completed conversation from any pre-submit staged step writes the destination's Draft **before** restoring that conversation, so the staged attempt is recoverable from the same drawer immediately afterward (DEC-138)
+  - this snapshot-on-history-select applies to **both** conversation-bearing destinations — In-Depth Question and Quick Question — and is silent (no confirmation dialog and no transient notice)
+  - when there is no meaningful staging to preserve, selecting a conversation writes no Draft, matching Menu-leave's existing empty-staging behavior
   - History drawer shows at most one **Draft** row per destination when mid-flight state exists, labeled **Draft** (not "In progress")
   - selecting Draft restores that destination's mid-flight staged state so the user can continue toward submit
   - mounting the destination with a stored Draft (page reload, or Menu return to that destination) auto-hydrates mid-flight UI from Draft without requiring History select first
@@ -2535,12 +2542,14 @@
   - no change to `AskAiRequest` / Zod / prompt assembly / providers
 - Dependencies:
   - DEC-130
+  - DEC-138
   - DEC-124
   - DEC-103
   - REQ-103
   - REQ-029
   - FLOW-017
 - Notes:
+  - DEC-138 extended this requirement's exit coverage from "Menu leave or reload" to include opening a saved conversation, in both destinations; the one-slot-per-destination rule is unchanged
 
 ### REQ-109
 - Title: Answered workspace fill and Start Over chrome
@@ -2651,3 +2660,36 @@
   - NFR-006
 - Notes:
   - follow-up to shipped `center-menu-tab-prominence` (DEC-122); EnrichmentStep brand-block consolidation remains parked
+
+### REQ-114
+- Title: Suite chrome hit areas bounded to the affordance they paint
+- Priority: high
+- Description: Suite chrome must not accept taps outside the affordance it visibly paints. The feature-portal corner rail's interactive box is capped to its icon band while its radial gradient continues to paint at its current `5.5rem × 10.5rem` extent as non-interactive decoration, and the two-zone split rail's zones sit side-by-side so they clear the step-name eyebrow while holding NFR-001's per-zone touch floor (DEC-137).
+- Acceptance Criteria:
+  - the single-zone rail's interactive element is `5.5rem` wide × `3.5rem` tall; the region between that box and the gradient's painted extent does not accept pointer events
+  - the single-zone rail's rendered appearance is unchanged at every viewport and in every state (rest, hover, `aria-expanded`), including the top-left radius treatment, both gradient stops, and the icon's rendered position — the icon must not shift as a result of the smaller interactive box
+  - on Life Tracker, `document.elementFromPoint` over the region previously shadowed by the rail returns the player card's life control, not the Menu trigger — asserted at multiple points across the former `75 × 111` overlap, not a single sample, and the measured remaining overlap between the rail's interactive box and the "Decrease life for Player 1" control is exactly zero
+  - the split rail renders its Menu and History zones side-by-side within the rail's `5.5rem` width, each at least `2.75rem × 2.75rem`, with Menu leading and History trailing
+  - on a destination carrying a History zone, `document.elementFromPoint` over the step-name eyebrow's leading characters returns the eyebrow's own content, not a rail zone, and the rail's interactive box ends above the eyebrow's top edge
+  - both split-rail zones meet NFR-001's 44px-per-zone floor without either zone overflowing the rail's stated box
+  - the single-zone rail retains a touch target meeting NFR-001 at every viewport
+  - no destination's content is inset, repositioned, or resized to accommodate the rail
+  - verification is by hit-testing the contested regions in tests; screenshot or visual inspection alone does not satisfy this requirement
+- Constraints:
+  - presentation only; the fix lives in the chrome, not in any destination's layout
+  - no change to the destination registry, drawer contents, Theme section, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, or backend routes
+  - do not redesign the rail's visual language or alter its gradient values
+- Dependencies:
+  - DEC-137
+  - DEC-122
+  - DEC-126
+  - DEC-133
+  - DEC-135
+  - DEC-136
+  - REQ-113
+  - NFR-001
+- Notes:
+  - enforces DEC-122's existing "the glow area itself is the trigger" clause rather than introducing a new direction
+  - `3.5rem` matches the menu-row inset already used in `index.css` to clear this same icon zone
+  - the single-zone rail keeps its painted `5.5rem` width because capping height alone reduces the Life Tracker overlap to zero; narrowing the width would re-center the icon 16px left, a visual change this requirement forbids
+  - the side-by-side split arrangement is forced, not stylistic: only 70px exists between the rail's top and the eyebrow, while two stacked 44px zones require 88px

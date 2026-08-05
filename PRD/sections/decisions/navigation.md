@@ -221,3 +221,37 @@ portal owns app chrome and every feature reaches it as a registered destination.
 - Notes:
   - App-level test suites that exercise the In-Depth flow now seed the active destination explicitly rather than depending on which destination leads the registry
   - non-goals: adding/removing destinations, per-user default preference UI, changing action-entry behavior
+
+### DEC-137
+- Decision: **Suite chrome's interactive box may not extend beyond the affordance it paints.** Applied to the feature-portal corner rail (DEC-122/DEC-126/DEC-133), in two parts.
+
+  (1) **Single-zone rail (destinations without a History zone).** The rail's *interactive* box is capped to **`3.5rem` tall** — the icon zone — while its radial gradient keeps painting at exactly today's `5.5rem × 10.5rem` extent as **non-interactive decoration** (`pointer-events: none`). The interactive box **keeps the painted `5.5rem` width**: on the destination where this defect bites (Life Tracker), content begins below the rail's icon zone, so capping height alone reduces the overlap to zero and width is not load-bearing. Preserving the width also keeps the icon centered exactly where it renders today (centered in `5.5rem`); narrowing the box to `3.5rem` wide would re-center the icon 16px to the left, which would be a visual change this decision does not accept. Resulting touch target is `5.5rem × 3.5rem`, comfortably above NFR-001's floor.
+
+  (2) **Two-zone split rail (destinations with a History zone).** The Menu and History zones move from **stacked to side-by-side** within the rail's existing `5.5rem` width — each zone `2.75rem` wide × `2.75rem` tall — so the rail occupies a single `2.75rem`-tall band instead of two stacked ones. This is required, not cosmetic: only **70px** of vertical space exists between the rail's top and the step-name eyebrow, while two stacked zones at NFR-001's 44px-per-zone floor need **88px**. Stacked geometry cannot satisfy both the touch-target floor and eyebrow clearance at the same time; side-by-side satisfies both with 26px to spare. This **amends DEC-126's stacked two-zone arrangement** and is a deliberate, visible change to the rail — the only one in this decision.
+
+  Compliance is verified by **hit-testing** the contested regions (`document.elementFromPoint` over the overlap), not by visual inspection.
+- Status: confirmed
+- Context: Post-ship audit at 430 × 900, after PR #71, found the rail's invisible remainder intercepting real destination content. `.portal-menu-rail` is an `88 × 168` box whose only paint is a radial gradient reaching full transparency at 78% of its own extent, at `z-index: 3` — so the majority of the box is an invisible interceptor sitting above destination content. On Life Tracker, where the rail takes its tall single-zone form and DEC-136 made each whole card half a life zone, it shadows `75 × 111` px (8,325px²) of the "Decrease life for Player 1" button; `elementFromPoint` returns `Switch feature` at every contested point, so a tap meant to adjust life opens the Menu *during a game*. On destinations carrying a History zone, the same gap covers the first 76px of the step-name eyebrow. This is not a new direction: DEC-122 already specified that "the glow area itself is the trigger". The implementation drifted from that clause, and this decision restores it rather than superseding anything. A first pass at this decision proposed narrowing the rail's *width* only; hit-testing the proposed geometry against the real card showed it would leave `43 × 111` px (4,773px²) still overlapping — a 43% reduction presented as a fix — which is why the decision now caps height and why compliance is defined by hit-testing rather than by inspection. The stacked-vs-side-by-side conflict surfaced the same way: the 70px-available / 88px-required arithmetic is not visible without measuring.
+- Impact:
+  - the single-zone rail's interactive box is `5.5rem × 3.5rem`; its gradient renders from a `pointer-events: none` decorative layer at the current `5.5rem × 10.5rem` extent, so that variant's appearance is byte-for-byte unchanged and the icon does not move
+  - the split rail's two zones sit side-by-side in a single `2.75rem`-tall band, each `2.75rem × 2.75rem`, clearing the step-name eyebrow while holding NFR-001's per-zone floor; this variant's arrangement visibly changes
+  - Menu remains the leading (left) zone and History the trailing (right) zone, preserving DEC-126's reading order
+  - the zone separator rule moves from a horizontal border between stacked zones to a vertical one between side-by-side zones
+  - no destination content is inset, repositioned, or resized to accommodate chrome — the fix lives entirely in the chrome
+  - hover / `aria-expanded` gradient states, the top-left radius treatment, slide-in motion, drawer mechanics, Menu↔History mutual exclusivity, registry, and Theme hosting are all unchanged (DEC-122/DEC-126/DEC-133/DEC-135)
+  - presentation only — no change to the destination registry, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, or backend routes
+- Related requirements:
+  - REQ-114
+  - REQ-113
+  - DEC-122
+  - DEC-126
+  - DEC-133
+  - DEC-135
+  - DEC-136
+  - NFR-001
+- Notes:
+  - enforces DEC-122's existing "the glow area itself is the trigger" clause for the single-zone rail; supersedes nothing there
+  - **amends DEC-126's stacked two-zone arrangement to side-by-side**; DEC-126's ambient-glow visual language, equal-weight zone treatment, Menu-then-History order, and NFR-001 floor all carry forward unchanged
+  - DEC-126's fluid `clamp()` zone height is superseded by the fixed `2.75rem` band, since the constraint that motivated the clamp (fitting two stacked zones at every viewport) no longer applies once the zones sit side-by-side
+  - the 3.5rem figure is not a new invention — `index.css` already uses it as the menu-row inset that clears this exact icon zone
+  - non-goals: redesigning the rail's visual language, the drawer's contents, the destination registry, or any destination's own layout

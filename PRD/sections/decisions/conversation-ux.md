@@ -298,3 +298,28 @@ Decrypt wait UX and follow-up conversation history behavior.
 - Notes:
   - supersedes DEC-125's "accessible bottom sheet below `768px`" clause for the history drawer only; DEC-118's context sheet/drawer breakpoint is untouched
   - non-goals: merging history into the Menu drawer, a shared drawer primitive extraction, changing what a restored conversation contains
+
+### DEC-138
+- Decision: **Opening a saved conversation while mid-flight staging is unsubmitted snapshots that staging to the Draft slot first**, then restores the conversation — in **both** conversation-bearing destinations (In-Depth Question and Quick Question). This makes history-select the third mid-flight exit covered by DEC-130's single Draft slot, alongside Menu-leave and reload, with identical semantics: same one-slot-per-destination rule, same **Draft** row in the same drawer, same auto-hydrate on return, same clear-on-first-successful-submit. The snapshot is **silent** — no confirmation dialog, no toast, no new interruption — because the staged work is not lost, it is recoverable from the drawer the user is already looking at. Draft-row selection and completed-entry selection behave consistently in this respect.
+- Status: confirmed
+- Context: Post-ship audit found the Draft snapshot is implemented as an effect keyed on the destination's `isActive` true→false edge. Menu-leave deactivates the destination and fires it; reload is covered by its own mount-time path. Selecting a history entry never changes `isActive` — the destination stays mounted and active — so the effect never runs and `restoreConversation` overwrites staging in place. Reproduced live on Quick Question: a typed question vanished from the DOM with `localStorage` holding only `thejudge.conversationHistory.entries` and no `thejudge.conversationDraft.lookup`; staging the same question and leaving via Menu instead **did** write the Draft, so the two exits provably disagree. The audit's original write-up recorded this against In-Depth Question only; re-verification found the identical defect in both destinations' history-select handlers, which is why this decision is explicit that it covers both. REQ-108's acceptance criteria named "Menu leave or reload", so this genuinely was uncovered rather than merely unimplemented.
+- Impact:
+  - selecting a completed conversation from any pre-submit staged step writes the destination's Draft before restoring
+  - the staged attempt is recoverable immediately afterward as the **Draft** row in the same history drawer
+  - when there is no meaningful staging to preserve, no Draft is written (matching Menu-leave's existing empty-staging behavior, which clears rather than writes)
+  - an already-answered active conversation still has no Draft to maintain and is unaffected
+  - DEC-134's "selecting a saved conversation always lands on that conversation" is unchanged — the snapshot happens before the restore, not instead of it
+  - browser-local and frontend-only — no change to `AskAiRequest`, Zod schemas, frozen-context shapes, history persistence or its 20-entry cap, prompt assembly, providers, or backend routes
+- Related requirements:
+  - REQ-108
+  - REQ-103
+  - FLOW-017
+  - FLOW-016
+  - DEC-130
+  - DEC-124
+  - DEC-134
+  - DEC-103
+- Notes:
+  - extends DEC-130's exit coverage; supersedes nothing, and the Draft slot's one-per-destination rule is unchanged
+  - the Draft still does not count toward the 20 completed-conversation retention cap
+  - non-goals: a multi-draft backlog, a confirm-before-discard prompt, a transient "saved as Draft" notice, or any change to what a restored conversation contains

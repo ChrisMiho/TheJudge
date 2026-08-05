@@ -385,12 +385,16 @@
   3. Returning to that destination via Menu, or reloading while that destination mounts, auto-hydrates mid-flight UI from Draft (DEC-103-style) so staged work is not lost.
   4. User may also open History from the corner rail (including from a pre-submit step) and select **Draft** or a completed conversation (FLOW-016).
   5. Selecting Draft restores that destination's mid-flight staged state so the user can continue toward submit.
+  5a. Selecting a *completed* conversation from a pre-submit step snapshots the current staging to the Draft slot first, then lands on that conversation (DEC-134). The staged attempt is immediately recoverable as the **Draft** row in the same drawer; no confirmation or notice interrupts the transition (DEC-138).
   6. After Start Over from an answered conversation (completed auto-save per REQ-103), new mid-flight staging becomes/overwrites that destination's Draft (still one row). Start Over itself remains answered-only (REQ-029).
 - Edge Cases:
   - empty completed history and no Draft → History still opens to an empty/zero-state list
   - Draft storage corrupt → Draft dropped; History still opens; destination mounts fresh
   - first successful submit while a Draft exists for the attempt → Draft cleared; conversation enters completed-history path
   - switching to Life Tracker / Trade Balancer → those destinations have no History zone; returning to In-Depth / Quick Question restores always-on History and auto-hydrates Draft if present
+  - selecting a completed conversation with no meaningful staging present → no Draft written, matching Menu-leave's empty-staging behavior
+  - selecting a completed conversation while an answered conversation is already active → no Draft to maintain; restore proceeds unchanged
 - Notes:
   - one Draft per conversation-bearing destination; no unfinished backlog; no mid-flight Start Over invent (DEC-130)
   - pre-submit empty lower-half screen fill is out of scope for this flow
+  - the three mid-flight exits — Menu leave, reload, and opening a saved conversation — are all Draft-covered and must behave identically in both conversation-bearing destinations (DEC-138)
