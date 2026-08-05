@@ -1,6 +1,6 @@
 # Slice B — Pre-submit composer composition
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -55,3 +55,23 @@ each.
 
 - Slice A — the "no clipping at rest" criterion cannot pass while the shared hook
   pins `height: 0px`.
+
+## Verified (2026-08-05)
+
+Playwright MCP measurements, field share of composer row:
+
+| Composer | Viewport | Before | After | Clipped |
+| --- | --- | --- | --- | --- |
+| Quick Question | 390×844 | 40% (136/340) | **66.3%** (226/340) | 0px |
+| Enrichment optional question | 390×844 | 40% (136/340) | **68.4%** (233/340) | 0px (was 20px) |
+| Enrichment optional question | 1440×900 | — | 67.2% | 0px |
+
+- Submit control at 390px: 44×44, icon-only, `aria-label` "Ask TheJudge" / "Decrypt Stack".
+- Submit control at 1440px: 128×44, visible label returns, same accessible name.
+- The Enrichment placeholder "How does this resolve?" now renders in full; it was
+  previously cut mid-glyph on its second line.
+- `npm --workspace apps/frontend run test -- EnrichmentStep QuickLookup FollowUpComposer ConversationWorkspace`
+  — 36/36 pass. `npm run typecheck` clean.
+- `SendIcon` was extracted to `ComposerSubmitButton.tsx` and imported by
+  `FollowUpComposer` rather than duplicated, per `technical-design-rules.md` reuse rule.
+  `FollowUpComposer`'s rendered output is unchanged.
