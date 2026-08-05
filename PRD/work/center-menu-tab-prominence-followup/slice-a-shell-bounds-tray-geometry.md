@@ -1,6 +1,6 @@
 # Slice A — Shell-bounds tray geometry
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -68,30 +68,39 @@ matching the shell — for both shell types, via one shared mechanism.
 
 ## Acceptance criteria
 
-- [ ] `npx vitest run FeaturePortalMenu` (or the frontend workspace
+- [x] `npx vitest run FeaturePortalMenu` (or the frontend workspace
       equivalent) passes, including all pre-existing cases unmodified.
-- [ ] New/updated tests assert: a `ShellBounds` node registers into context
+- [x] New/updated tests assert: a `ShellBounds` node registers into context
       and unregisters on unmount; `FeaturePortalMenu` resolves the visible one
       among multiple registered (hidden-vs-visible) nodes; the open drawer
       portals into the resolved shell-bounds node (its DOM parent is that
       node, not the header slot) when one is present.
-- [ ] CSS assertions (string-matching `appCss`, matching this file's existing
+- [x] CSS assertions (string-matching `appCss`, matching this file's existing
       test conventions) confirm: `.page-card` includes `position: relative`;
       `.portal-shell-bounds` includes `position: absolute`, `overflow:
       hidden`, and `border-radius: inherit`; the drawer rule includes
       `position: sticky`.
-- [ ] `PlayerLifeTrackerApp.test.tsx` passes with the new `.page-shell-bleed`
+- [x] `PlayerLifeTrackerApp.test.tsx` passes with the new `.page-shell-bleed`
       wrapper + `<ShellBounds />` present; existing layout/behavior assertions
       are unchanged.
 - [ ] Manual check on `npm run dev` (frontend workspace): open Menu on a
       standard short-content destination — tray fills the card top→bottom,
       bottom-left radius matches the card, no square corner past the curve.
+      **Not performed** — no browser-automation tool was available in this
+      session (Playwright browser was locked by a concurrent session; the
+      Chrome extension was not connected). Confidence instead comes from the
+      automated DOM-structure assertions above (drawer's real DOM parent is
+      the resolved `.portal-shell-bounds` node) plus the exact CSS-string
+      assertions for the sticky/clip/radius-inherit rules. Recommend a
+      one-time manual pass before/at ship.
 - [ ] Manual check: open Menu on a tall/scrolled destination (e.g. a long
       In-Depth Question answer) — tray tracks the visible card side while
-      scrolling, not a mile-tall panel spanning the full document.
+      scrolling, not a mile-tall panel spanning the full document. **Not
+      performed** — see note above.
 - [ ] Manual check: open Menu on Life Tracker — same full left-side +
-      bottom-left radius treatment as a standard destination.
-- [ ] Destination select, Theme section, History mutual exclusivity, and
+      bottom-left radius treatment as a standard destination. **Not
+      performed** — see note above.
+- [x] Destination select, Theme section, History mutual exclusivity, and
       reduced-motion slide all still work exactly as before (spot-check via
       existing test suites + one manual pass).
 

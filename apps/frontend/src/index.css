@@ -37,6 +37,7 @@
 }
 
 .page-card {
+  position: relative;
   margin-left: auto;
   margin-right: auto;
   display: flex;
@@ -48,6 +49,34 @@
   border: 1px solid rgb(63 63 70 / 0.7);
   background-color: rgb(24 24 27 / 0.7);
   padding: var(--layout-panel-padding);
+}
+
+/* Pass-through wrapper for `PageShell`'s full-bleed variant (Life Tracker):
+   no border, radius, or padding of its own, so full-bleed's existing
+   rendered layout stays pixel-identical to before this wrapper existed. It
+   exists purely so full-bleed destinations get the same `ShellBounds`
+   positioning/clipping anchor `.page-card` gets (REQ-113). */
+.page-shell-bleed {
+  display: block;
+  width: 100%;
+  position: relative;
+}
+
+/* Registered by `ShellBounds` (one per `PageShell`) as the Menu drawer's
+   portal target and clip box: sized to the shell's real content box via
+   `inset: 0` (out of flow, so it never inflates that box's height), clipped
+   at the shell's actual edges, and following whatever radius the shell
+   itself has (`.page-card`'s 1.5rem, or full-bleed's unset/0) with no
+   per-variant hardcoding — this is what produces the matching bottom-left
+   radius for free. `pointer-events: none` keeps the box itself from
+   intercepting clicks on real shell content around/behind it; the drawer
+   portaled inside re-enables `pointer-events: auto` for itself. */
+.portal-shell-bounds {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
 }
 
 /* Lifts and shifts the inline feature-portal corner rail (rendered in normal flow
@@ -151,22 +180,31 @@
   border-top: 1px solid rgb(var(--accent-soft) / 0.35);
 }
 
-/* Partial-height drawer sliding in from the left edge (DEC-122): overlays from
-   the same top-left corner as the rail (so it reads as originating from the
-   rail, not dropping from a header seam), transform-only motion (see
-   .portal-menu-drawer-motion). Its own left column of content clears the
-   rail's icon zone via .portal-menu-drawer-inner's left padding. */
+/* Full-height drawer sliding in from the left edge (DEC-122, amended by
+   DEC-133): overlays from the same top-left corner as the rail (so it reads
+   as originating from the rail, not dropping from a header seam),
+   transform-only motion (see .portal-menu-drawer-motion). Its own left
+   column of content clears the rail's icon zone via
+   .portal-menu-drawer-inner's left padding.
+   `position: sticky; top: 0` (not `absolute`) so that, when portaled into
+   the resolved `.portal-shell-bounds` node (REQ-113), the drawer tracks the
+   on-screen top of the outer shell while a tall/scrollable destination
+   scrolls, instead of a fixed point in the document. `height: 100dvh` is a
+   viewport-scale cap, not a fixed rem guess: on a shell taller than the
+   viewport the drawer fills the visible portion; on a shell shorter than
+   the viewport, `.portal-shell-bounds`'s `overflow: hidden` clips the excess
+   at the shell's real (shorter) bottom edge — the same clip that produces
+   the matching bottom-left radius there. `pointer-events: auto` re-enables
+   interaction, since the clip box itself is `pointer-events: none`. */
 .portal-menu-drawer {
-  position: absolute;
+  position: sticky;
   left: 0;
   top: 0;
   z-index: 2;
   width: 16rem;
-  /* Sized to the viewport, not a fixed rem guess: on any reasonably tall
-     viewport this fits the full entries + Theme section with no internal
-     scroll; overflow-y only kicks in once the viewport itself is too short. */
-  max-height: 90dvh;
+  height: 100dvh;
   overflow-y: auto;
+  pointer-events: auto;
   border-top-left-radius: 1.5rem;
   border-right: 1px solid rgb(var(--accent-soft) / 0.35);
   box-shadow: 0.5rem 0 1.5rem rgb(0 0 0 / 0.25);

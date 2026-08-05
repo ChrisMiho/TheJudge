@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { isMockProvider } from "../lib/env";
 import { MockModeBanner } from "./MockModeBanner";
+import { ShellBounds } from "./portal/ShellBounds";
 
 type PageShellProps = {
   children: ReactNode;
@@ -17,9 +18,15 @@ export function PageShell({ children, variant = "standard" }: PageShellProps): J
     <main className="page-shell" data-mock-banner={isMockProvider ? "true" : undefined}>
       <MockModeBanner />
       {variant === "full-bleed" ? (
-        children
+        <div className="page-shell-bleed">
+          {children}
+          <ShellBounds />
+        </div>
       ) : (
-        <section className="page-card">{children}</section>
+        <section className="page-card">
+          {children}
+          <ShellBounds />
+        </section>
       )}
     </main>
   );

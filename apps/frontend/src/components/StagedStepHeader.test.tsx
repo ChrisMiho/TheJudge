@@ -37,7 +37,7 @@ describe("StagedStepHeader", () => {
     const onOpen = vi.fn();
 
     render(
-      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot }}>
+      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot, registerShellBounds: vi.fn(), unregisterShellBounds: vi.fn() }}>
         <StagedStepHeader historyTrigger={{ onOpen }} />
       </PortalSlotContext.Provider>
     );

@@ -12,7 +12,7 @@ describe("PortalSlot", () => {
     const unregisterSlot = vi.fn();
 
     const { unmount } = render(
-      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot }}>
+      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot, registerShellBounds: vi.fn(), unregisterShellBounds: vi.fn() }}>
         <PortalSlot />
       </PortalSlotContext.Provider>
     );
@@ -32,7 +32,7 @@ describe("PortalSlot", () => {
     const onOpen = vi.fn();
 
     const { rerender } = render(
-      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot }}>
+      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot, registerShellBounds: vi.fn(), unregisterShellBounds: vi.fn() }}>
         <PortalSlot />
       </PortalSlotContext.Provider>
     );
@@ -41,7 +41,7 @@ describe("PortalSlot", () => {
     expect(getHistoryTrigger()).toBeUndefined();
 
     rerender(
-      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot }}>
+      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot, registerShellBounds: vi.fn(), unregisterShellBounds: vi.fn() }}>
         <PortalSlot historyTrigger={{ onOpen }} />
       </PortalSlotContext.Provider>
     );
@@ -56,7 +56,7 @@ describe("PortalSlot", () => {
     const unregisterSlot = vi.fn();
 
     const { container } = render(
-      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot }}>
+      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot, registerShellBounds: vi.fn(), unregisterShellBounds: vi.fn() }}>
         <PortalSlot />
       </PortalSlotContext.Provider>
     );
