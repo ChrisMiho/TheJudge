@@ -15,7 +15,7 @@ Architecture, data flow, and package-level verification: `GAMEPLAN.md`.
 | Slice | Goal | Status | Depends on |
 | --- | --- | --- | --- |
 | [A](./slice-a-always-visible-history-rail.md) | Always-visible History rail, no View Context overlap (REQ-107) | done | none |
-| [B](./slice-b-mid-flight-draft-slot.md) | Mid-flight Draft slot, auto-hydrate (REQ-108 / FLOW-017) | planned | A |
+| [B](./slice-b-mid-flight-draft-slot.md) | Mid-flight Draft slot, auto-hydrate (REQ-108 / FLOW-017) | done | A |
 | [C](./slice-c-answered-fill-start-over-chrome.md) | Answered workspace fill + Start Over chrome (REQ-109) | planned | none |
 | [D](./slice-d-growing-pre-submit-composers.md) | Growing pre-submit question composers (REQ-110) | planned | none |
 

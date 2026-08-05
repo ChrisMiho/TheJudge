@@ -3,12 +3,20 @@ import { createPortal } from "react-dom";
 import type { ConversationHistoryEntry } from "../lib/conversationHistory/persistence";
 import { useLeftEdgeDrawer } from "../lib/portal/leftEdgeDrawerContext";
 
+export type ConversationHistoryDraftDescriptor = {
+  updatedAt: string;
+  onSelect: () => void;
+};
+
 type ConversationHistoryDrawerProps = {
   isOpen: boolean;
   onClose: () => void;
   entries: ConversationHistoryEntry[];
   activeConversationId?: string | null;
   onSelectEntry: (entry: ConversationHistoryEntry) => void;
+  /** Mid-flight staging snapshot for the current destination, if one exists (REQ-108). Rendered
+      as a distinct "Draft" row above completed entries, separate from the 20-entry history list. */
+  draft?: ConversationHistoryDraftDescriptor | null;
 };
 
 const FOCUSABLE_SELECTOR = [
@@ -38,7 +46,8 @@ export function ConversationHistoryDrawer({
   onClose,
   entries,
   activeConversationId,
-  onSelectEntry
+  onSelectEntry,
+  draft
 }: ConversationHistoryDrawerProps): JSX.Element | null {
   const titleId = useId();
   const dialogRef = useRef<HTMLElement>(null);
@@ -143,11 +152,24 @@ export function ConversationHistoryDrawer({
         </div>
 
         <div className="adaptive-context-content">
-          {entries.length === 0 ? (
+          {draft && (
+            <button
+              type="button"
+              onClick={draft.onSelect}
+              className="mb-2 w-full rounded-lg border border-accent/50 bg-accent/10 px-3 py-2.5 text-left text-sm text-zinc-100 transition hover:bg-accent/20"
+            >
+              <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-accent-soft">
+                Draft · {formatUpdatedAt(draft.updatedAt)}
+              </span>
+              <span className="mt-1 block text-zinc-300">Resume where you left off</span>
+            </button>
+          )}
+
+          {entries.length === 0 && !draft ? (
             <p className="rounded-xl border border-zinc-700/70 bg-zinc-900/55 px-3 py-3 text-sm text-zinc-300">
               No saved conversations yet
             </p>
-          ) : (
+          ) : entries.length === 0 ? null : (
             <ul className="flex flex-col gap-2">
               {entries.map((entry) => {
                 const isActive = entry.id === activeConversationId;

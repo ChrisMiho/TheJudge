@@ -4,8 +4,14 @@ import { useAutocompleteSuggestions } from "../../../hooks/useAutocompleteSugges
 import { useAskAiSubmitOrchestration } from "../../../hooks/useAskAiSubmitOrchestration";
 import { useScanCapture } from "../../../hooks/useScanCapture";
 import { buildLookupAskAiRequest } from "../../../lib/contextFlow";
-import type { ConversationHistoryEntry } from "../../../lib/conversationHistory/persistence";
-import { loadHistoryEntries, saveHistoryEntry } from "../../../lib/conversationHistory/persistence";
+import type { ConversationHistoryEntry, LookupDraftState } from "../../../lib/conversationHistory/persistence";
+import {
+  clearDraft,
+  loadDraft,
+  loadHistoryEntries,
+  saveDraft,
+  saveHistoryEntry
+} from "../../../lib/conversationHistory/persistence";
 import { apiBaseUrl } from "../../../lib/env";
 import { prefersReducedMotion } from "../../../lib/motionPreference";
 import { NO_MATCH_COPY } from "../../../lib/search";
@@ -35,9 +41,10 @@ type CoreTopic = {
 
 export type QuickLookupAppProps = {
   onSubmit?: (question: string, card: CardMetadataItem | null) => void;
+  isActive?: boolean;
 };
 
-export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
+export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProps): JSX.Element {
   const [cardMetadata, setCardMetadata] = useState<CardMetadataItem[]>([]);
   const [isMetadataLoading, setIsMetadataLoading] = useState(true);
   const [metadataError, setMetadataError] = useState<string | null>(null);
@@ -55,6 +62,7 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [historyEntries, setHistoryEntries] = useState<ConversationHistoryEntry[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [lookupDraft, setLookupDraft] = useState<LookupDraftState | null>(null);
   const {
     error,
     isSubmitting,
@@ -85,8 +93,48 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
         updatedAt: now
       });
       setActiveConversationId(snapshot.conversationId);
+      // First successful Ask AI submit for the attempt: the mid-flight Draft is now a
+      // completed history entry (saved just above), so drop the Draft slot (REQ-108).
+      clearDraft("lookup");
     }
   });
+
+  function hydrateFromLookupDraft(draft: LookupDraftState): void {
+    setSelectedCard(draft.selectedCard);
+    setQuestion(draft.question);
+    setLockedTopic(draft.lockedTopic);
+  }
+
+  // Mid-flight Draft auto-hydrate (REQ-108 / FLOW-017): this destination mounts once per
+  // session (DestinationOutlet keeps it mounted-but-hidden afterward), so a mount-only
+  // effect covers exactly the "reload" case FLOW-017 calls out — Menu-leave-and-back within
+  // the same session already survives via this component staying mounted in memory.
+  useEffect(() => {
+    const draft = loadDraft("lookup");
+    if (draft) hydrateFromLookupDraft(draft);
+  }, []);
+
+  const wasActiveForDraftRef = useRef(isActive);
+
+  // Mid-flight Draft snapshot on Menu-leave (FLOW-017's "Menu-leave snapshot"): only while
+  // still pre-submit — an active answered conversation already has its own completed-history
+  // entry and no Draft to maintain. Reacts only to the isActive true→false edge; other staging
+  // fields are read via closure at the time of that transition, not listed as deps, so typing
+  // doesn't re-fire this on every keystroke.
+  useEffect(() => {
+    const wasActive = wasActiveForDraftRef.current;
+    wasActiveForDraftRef.current = isActive;
+    if (!wasActive || isActive || isConversationActive) return;
+
+    const hasStaging = selectedCard !== null || question.trim().length > 0 || lockedTopic !== null;
+
+    if (hasStaging) {
+      saveDraft({ mode: "lookup", selectedCard, question, lockedTopic });
+    } else {
+      clearDraft("lookup");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts only to the isActive edge; staging fields are read via closure at fire time, not listed, so typing doesn't re-fire this.
+  }, [isActive]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -216,12 +264,18 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
 
   function openHistory(): void {
     setHistoryEntries(loadHistoryEntries("lookup"));
+    setLookupDraft(loadDraft("lookup"));
     setIsHistoryOpen(true);
   }
 
   function handleSelectHistoryEntry(entry: ConversationHistoryEntry): void {
     restoreConversation(entry);
     setActiveConversationId(entry.id);
+    setIsHistoryOpen(false);
+  }
+
+  function handleSelectDraft(draft: LookupDraftState): void {
+    hydrateFromLookupDraft(draft);
     setIsHistoryOpen(false);
   }
 
@@ -241,6 +295,7 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
           entries={historyEntries}
           activeConversationId={activeConversationId}
           onSelectEntry={handleSelectHistoryEntry}
+          draft={lookupDraft ? { updatedAt: lookupDraft.updatedAt, onSelect: () => handleSelectDraft(lookupDraft) } : null}
         />
 
         <ConversationWorkspace
@@ -289,6 +344,7 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
         entries={historyEntries}
         activeConversationId={activeConversationId}
         onSelectEntry={handleSelectHistoryEntry}
+        draft={lookupDraft ? { updatedAt: lookupDraft.updatedAt, onSelect: () => handleSelectDraft(lookupDraft) } : null}
       />
 
       {scanCapture.isOpen ? (

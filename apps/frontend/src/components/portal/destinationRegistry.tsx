@@ -11,7 +11,12 @@ export const PORTAL_DESTINATIONS: PortalDestination[] = [
     label: "In-Depth Question",
     render: (isActive) => <MtgAssistantApp isActive={isActive} />
   },
-  { kind: "destination", id: "quick-lookup", label: "Quick Question", render: () => <QuickLookupApp /> },
+  {
+    kind: "destination",
+    id: "quick-lookup",
+    label: "Quick Question",
+    render: (isActive) => <QuickLookupApp isActive={isActive} />
+  },
   { kind: "destination", id: "player-life-tracker", label: "Life Tracker", render: () => <PlayerLifeTrackerApp /> },
   { kind: "destination", id: "trade-balancer", label: "Trade Balancer", render: () => <TradeBalancer /> }
 ];
