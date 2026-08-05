@@ -98,8 +98,13 @@ export function PlayerRosterEditor({
                 key={player.label}
                 className="space-y-2 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2 text-sm"
               >
-                <div className="flex items-center gap-2">
-                  <label className="flex flex-1 flex-col gap-1">
+                {/* `min-w-0` on the row and on the growing name column: a flex child defaults
+                    to `min-width: auto`, so the name input's intrinsic width acted as a floor
+                    and pushed the row wider than its panel at phone widths — the row measured
+                    322px inside a 288px box and the disclosure control rendered past the
+                    panel's right border (DEC-128, REQ-106). */}
+                <div className="flex min-w-0 items-center gap-2">
+                  <label className="flex min-w-0 flex-1 flex-col gap-1">
                     <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
                       {player.label} name
                     </span>
@@ -107,7 +112,7 @@ export function PlayerRosterEditor({
                       aria-label={`${player.label} display name`}
                       value={player.displayName}
                       onChange={(event) => onDisplayNameChange(player.label, event.target.value)}
-                      className="motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-zinc-100"
+                      className="motion-focus w-full min-w-0 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-zinc-100"
                     />
                   </label>
                   {showLifeTotals && (

@@ -1,6 +1,6 @@
 # Slice G — In-Depth roster containment
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -50,3 +50,25 @@ intersection, and document scroll width, plus a screenshot. Spot-check 1440×900
 - `apps/frontend/src/components/portal/MtgAssistantApp.tsx` (`renderPlayerExtras`)
 - `apps/frontend/src/components/PlayerRosterEditor.tsx`
 - `apps/frontend/src/components/PlayerRosterEditor.test.tsx`
+
+## Verified (2026-08-05)
+
+Root cause was exactly the direction DEC-128's Notes predicted. The player row is a flex
+container whose name column used `flex-1` **without `min-w-0`**; a flex child defaults to
+`min-width: auto`, so the name input's intrinsic width acted as a floor and the row could
+not shrink to its panel. Adding `min-w-0` to the row and the name column, plus `w-full
+min-w-0` on the input, lets the row shrink as designed.
+
+At 390×844 with secondary details expanded:
+
+| Measure | Before | After |
+| --- | --- | --- |
+| Nodes with `scrollWidth > clientWidth` | 6 (row 322px in a 288px box, 34px over) | **0** |
+| Elements past the panel's right border | 2 (disclosure ▾, 8px over) | **0** |
+| `documentElement.scrollWidth > clientWidth` | false | false |
+
+- Expand/collapse still toggles all players together; no mixed open/closed state.
+- `PlayerRosterEditor` + `MtgAssistantApp` tests 20/20 pass — player values and submitted
+  `gameContext` unchanged.
+- Change is a shared shrink-safety rule, so `sm+` composition is visually equivalent
+  (DEC-128 permits incidental shared safety only).

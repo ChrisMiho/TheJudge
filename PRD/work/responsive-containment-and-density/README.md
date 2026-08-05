@@ -20,7 +20,7 @@ See `IDEA.md`, `DESIGN-BRIEF.md`, `GAMEPLAN.md`.
 | [D](./slice-d-banner-header-clearance.md) | done | Banner clears every destination header (REQ-123) | C |
 | [E](./slice-e-viewport-fill.md) | planned | Viewport fill on both axes (REQ-124, DEC-145) | D |
 | [F](./slice-f-card-detail-height.md) | planned | Card detail height reduction (REQ-125, DEC-148) | E |
-| [G](./slice-g-roster-containment.md) | planned | In-Depth roster containment (REQ-106, DEC-128) | — |
+| [G](./slice-g-roster-containment.md) | done | In-Depth roster containment (REQ-106, DEC-128) | — |
 | [H](./slice-h-full-flow-verification.md) | planned | Full-flow re-verification and ship gates | A–G |
 
 ## Implementation map
