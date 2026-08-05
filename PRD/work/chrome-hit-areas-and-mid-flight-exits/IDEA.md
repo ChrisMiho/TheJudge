@@ -38,7 +38,7 @@ Found with Playwright MCP at 430 × 900 against the branch behind PR #71, after 
 | 1 | high | Menu rail overlaps Life Tracker's Player 1 card; taps there open the Menu instead of adjusting life | rail `0,0 88×168`; card `12,56 199×406`; overlap ≈ 8,512px²; `document.elementFromPoint(22, 66)` → `Switch feature` |
 | 2 | medium | Rail overlaps the step-name eyebrow on every destination | rail `13,13 88×76`; `Quick Question` H2 at `25,83 380×24`; `elementFromPoint(30, 95)` → `portal-menu-rail-zone` (History) |
 | 3 | medium | Selecting a saved conversation from mid-flight staging discards the staged attempt with no Draft | staged In-Depth at zone-collection with Battlefield card → select history entry → `localStorage` holds only `thejudge.conversationHistory.entries`; no `thejudge.conversationDraft.game` |
-| 4 | low | Counter panel is a content-sized bottom sheet, unlike the history drawer (DEC-134) and Menu tray (DEC-133) | `PlayerLifeTrackerApp` `GameSetupModal` / `CounterPanel` overlays |
+| 4 | low | Counter panel is a content-sized bottom sheet, unlike the history drawer (DEC-134) and Menu tray (DEC-133) | already owned by [`life-tracker-me-map-and-tray`](../life-tracker-me-map-and-tray/), which covers the same tray from the "cuts off the matrix" angle — fold this consistency note into that package rather than duplicating it |
 | 5 | low | Pre-submit staged screens leave the lower half of the shell empty | Quick Question landing, zone confirm, zone collection at 430 × 900 — already an explicit DEC-131 non-goal; confirm whether it stays deferred |
 
 ## Related product truth
