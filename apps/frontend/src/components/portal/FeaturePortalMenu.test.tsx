@@ -556,6 +556,68 @@ describe("FeaturePortalMenu shell-bounds tray geometry (REQ-113)", () => {
   });
 });
 
+describe("FeaturePortalMenu decorative brand mark (REQ-113 item 4)", () => {
+  it("renders a quiet, non-interactive brand mark inside the open drawer, after the entries and Theme section", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+
+    const menu = screen.getByRole("menu");
+    const marks = screen.getAllByText("TheJudge");
+    expect(marks.length).toBeGreaterThan(0);
+    const brandMark = marks[marks.length - 1];
+    expect(menu.contains(brandMark)).toBe(true);
+
+    const hiddenAncestor = brandMark.closest('[aria-hidden="true"]');
+    expect(hiddenAncestor).not.toBeNull();
+    expect(hiddenAncestor?.className).toContain("portal-menu-drawer-brand");
+
+    // Not a button, not an actionable element.
+    expect(brandMark.tagName).not.toBe("BUTTON");
+    expect(brandMark.closest("button")).toBeNull();
+  });
+
+  it("does not affect menuitem queries — the brand mark is not part of the drawer's role=menu semantics", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+
+    const items = screen.getAllByRole("menuitem");
+    expect(items.map((item) => item.textContent)).toEqual(["MTG Assistant✓", "Trade"]);
+    expect(items.some((item) => item.textContent?.includes("TheJudge"))).toBe(false);
+  });
+
+  it("never triggers a selection when its area is clicked", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    render(<Harness onSelect={onSelect} />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    const marks = screen.getAllByText("TheJudge");
+    await user.click(marks[marks.length - 1]);
+
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+  });
+
+  it("styles the brand mark as quiet/non-interactive and stretches the drawer's flex column so it can pin to the bottom", () => {
+    const brandBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-drawer-brand {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-drawer-brand {"))
+    );
+    expect(brandBlock).toContain("pointer-events: none");
+    expect(brandBlock).toContain("opacity:");
+
+    const innerBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-drawer-inner {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-drawer-inner {"))
+    );
+    expect(innerBlock).toContain("min-height: 100%");
+  });
+});
+
 describe("Chrome integration", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
 

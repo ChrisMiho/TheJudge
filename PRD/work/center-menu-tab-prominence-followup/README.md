@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 # center-menu-tab-prominence-followup
@@ -19,7 +19,7 @@ implementation architecture.
 | Slice | Goal | Depends on | Status |
 | --- | --- | --- | --- |
 | [A](./slice-a-shell-bounds-tray-geometry.md) | Shell-bounds architecture: full-height + visible-bounds sizing + matching corner radius, for both `.page-card` and Life Tracker full-bleed | — | done |
-| [B](./slice-b-tray-brand-mark-and-shipgate.md) | Quiet decorative brand mark in unused lower tray space; final verification, PRD promotion, ship gates | A | planned |
+| [B](./slice-b-tray-brand-mark-and-shipgate.md) | Quiet decorative brand mark in unused lower tray space; final verification, PRD promotion, ship gates | A | done |
 
 ## Implementation map
 

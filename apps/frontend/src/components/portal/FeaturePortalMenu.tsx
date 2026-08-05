@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { BrandMark } from "../BrandMark";
 import type { ConversationHistoryTriggerDescriptor } from "../ConversationWorkspace";
 import { useLeftEdgeDrawer } from "../../lib/portal/leftEdgeDrawerContext";
 import { PortalSlotContext } from "../../lib/portal/slotContext";
@@ -232,6 +233,21 @@ export function FeaturePortalMenu({
             onColorlessCustomChange={onColorlessCustomChange}
             onColorlessReset={onColorlessReset}
           />
+        </div>
+        {/* Quiet decorative brand mark (REQ-113 item 4): pinned toward the bottom of any
+            leftover vertical space via `mt-auto` in this flex column (drawer-inner stretches
+            to the drawer's full height, see .portal-menu-drawer-inner's min-height: 100%) —
+            not immediately after the last entry. `aria-hidden` and no onClick (plain BrandMark,
+            not the header's button variant) keep it out of the drawer's own `role="menu"`
+            semantics entirely: it isn't a menuitem and doesn't affect menuitem queries.
+            `.portal-menu-drawer-brand`'s `pointer-events: none` (index.css) means it never
+            intercepts clicks meant for entries/Theme/scroll above it. No height-detection
+            logic decides whether this renders — a shell too short to host it cleanly is
+            handled by the same `.portal-shell-bounds` overflow: hidden clip that produces the
+            matching bottom-left radius (slice A), which simply clips this off along with the
+            rest of the drawer's excess height. */}
+        <div aria-hidden="true" className="portal-menu-drawer-brand mt-auto pt-3">
+          <BrandMark />
         </div>
       </div>
     </div>

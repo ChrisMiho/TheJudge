@@ -210,8 +210,27 @@
   box-shadow: 0.5rem 0 1.5rem rgb(0 0 0 / 0.25);
 }
 
+/* `min-height: 100%` (not a fixed height) stretches this flex column to the
+   drawer's full 100dvh on short content — giving the brand mark's `mt-auto`
+   (below) leftover space to pin against — while still letting it grow past
+   100% when entries + Theme content is taller, so the drawer's own
+   `overflow-y: auto` scrolls that excess exactly as before. */
 .portal-menu-drawer-inner {
+  min-height: 100%;
   padding: 0.75rem 0.75rem 0.75rem 3.5rem;
+}
+
+/* Quiet decorative brand mark (REQ-113 item 4, DEC-133): non-interactive
+   (`pointer-events: none` — belt-and-suspenders alongside the `aria-hidden`
+   marker element and BrandMark's no-onClick plain-text rendering) and
+   visually muted so it reads as ambient chrome, not another action. No
+   height-detection logic decides whether this renders — a short shell
+   clips it via `.portal-shell-bounds`'s `overflow: hidden` (slice A), the
+   same mechanism that clips the rest of the drawer's excess height. */
+.portal-menu-drawer-brand {
+  pointer-events: none;
+  opacity: 0.35;
+  text-align: center;
 }
 
 @keyframes portal-menu-drawer-enter {
