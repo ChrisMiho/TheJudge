@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { appCss } from "../test/appTestHelpers";
 import { ConversationWorkspace } from "./ConversationWorkspace";
 
 afterEach(cleanup);
@@ -80,6 +81,30 @@ describe("Frontend - Conversation workspace", () => {
     expect(within(workspace).queryByRole("dialog")).not.toBeInTheDocument();
     expect(within(workspace).queryByRole("button", { name: "Start Over" })).not.toBeInTheDocument();
     expect(within(workspace).getByText("Cardless answer")).toBeInTheDocument();
+  });
+
+  it("renders Start Over shrink-to-content on mobile, reverting to full width at the sm breakpoint (REQ-109)", () => {
+    render(
+      <ConversationWorkspace
+        messages={[{ role: "assistant", content: "Answer" }]}
+        error={null}
+        canRetry={false}
+        retryLabel="Retry"
+        onRetry={vi.fn(async () => undefined)}
+        isFollowUpSubmitting={false}
+        onFollowUp={vi.fn(async () => undefined)}
+        onStartOver={vi.fn()}
+        showStartOver
+      />
+    );
+
+    const startOver = screen.getByRole("button", { name: "Start Over" });
+    // Mobile-default shrink-to-content (less-dominant, reduces accidental taps) via Tailwind's
+    // self-start, reverting to the original full-width stretch at sm: — the .conversation-
+    // start-over class carries the shared 44px NFR-001 touch-target floor at both sizes.
+    expect(startOver).toHaveClass("conversation-start-over");
+    expect(startOver).toHaveClass("self-start");
+    expect(startOver).toHaveClass("sm:self-stretch");
   });
 
   it("preserves a typed composer draft when New response focuses the latest assistant message", async () => {
@@ -170,5 +195,16 @@ describe("Frontend - Conversation workspace", () => {
       }
       vi.unstubAllGlobals();
     }
+  });
+
+  it("gives the answered thread a viewport-relative min-height floor so short threads still fill (REQ-109)", () => {
+    expect(appCss).toMatch(/\.conversation-thread \{[^}]*min-height: clamp\([^)]*dvh[^)]*\);[^}]*\}/);
+    // The floor stays below the existing max-height figure so a short thread still leaves
+    // room below it (composer, Start Over) within a standard desktop viewport.
+    expect(appCss).toMatch(/\.conversation-thread \{[^}]*max-height: clamp\(28rem, 70dvh, 44rem\);[^}]*\}/);
+  });
+
+  it("guarantees the 44px NFR-001 touch-target floor on Start Over at both breakpoints", () => {
+    expect(appCss).toMatch(/\.conversation-start-over \{[^}]*min-height: 44px;[^}]*\}/);
   });
 });

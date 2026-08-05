@@ -1,6 +1,6 @@
 # Slice C — Answered workspace fill + Start Over chrome
 
-## Status: planned
+## Status: done
 
 ## Goal
 
