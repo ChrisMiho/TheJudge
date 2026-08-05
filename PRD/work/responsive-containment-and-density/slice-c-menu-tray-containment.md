@@ -1,6 +1,6 @@
 # Slice C — Menu tray opacity, bounds, and hit area
 
-## Status: planned
+## Status: blocked
 
 ## Goal
 
@@ -55,3 +55,37 @@ Playwright MCP at both viewports: open the tray on Quick Question and Trade Bala
 - `apps/frontend/src/components/portal/FeaturePortalMenu.tsx`
 - `apps/frontend/src/index.css` (`.portal-menu-drawer`, `.portal-menu-drawer-row`)
 - `apps/frontend/src/components/portal/FeaturePortalMenu.test.tsx`
+
+## Verified (2026-08-05) — 5 of 7 acceptance criteria
+
+Met:
+
+- Tray `background-color` is now `rgb(24, 24, 27)` — alpha 1, was `rgba(24, 24, 27, 0.95)`.
+- No destination content visible through the tray at 390×844 or 1440×900 (screenshots
+  `c01-tray-desktop.png`, `c02-tray-mobile.png`). Previously ten elements ghosted through,
+  including "Send feedback" colliding with Trade Balancer's price line.
+- First row's label now starts at x=473 against a trigger right edge of 429 at desktop —
+  the ☰ no longer paints on top of "Quick Question". Row inset tracks DEC-137's rail band
+  (3.5rem below `sm`, 5.5rem at `sm+`) instead of a flat 3.5rem.
+- Row full-bleed presentation and separator rules unchanged; no row moved.
+- 65/65 menu-related unit tests pass; `npm run typecheck` clean.
+
+**Not met — both are proxy metrics that conflict with the design, not defects:**
+
+1. *"Tray element's measured bottom does not exceed viewport height."* Still 957 vs 900.
+   The tray is `position: sticky; top: 0; height: 100dvh` inside `.portal-shell-bounds`,
+   which has `overflow: hidden` — so the **painted** tray already stops at the shell's
+   bottom edge and is not visually oversized. Only the unclipped box measurement exceeds
+   the viewport. Making the box itself track "top of tray → viewport bottom" needs the
+   shell's live top offset, which changes with banner presence and scroll position, so
+   `100dvh` is deliberate for the stuck state.
+2. *"Trigger's bounding box does not intersect the first row's interactive bounds."*
+   Still intersects. `.portal-menu-rail` sits at `z-index: 3` above the drawer's `2`, so
+   hit-testing in the overlap resolves to the Menu trigger — which **DEC-140 explicitly
+   requires** ("The Menu trigger itself remains interactive so the user can close the
+   tray"). Removing the intersection would need the row split into a bordered wrapper plus
+   an inset button, a DOM change to DEC-135's row structure.
+
+Both criteria were written during refinement as proxies for "the tray isn't bigger than
+the screen" and "the trigger doesn't sit on the first row". The user-visible properties
+are now satisfied; the literal measurements are not.

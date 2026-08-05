@@ -276,11 +276,20 @@
   padding: 0.75rem 0 0.75rem 0;
 }
 
-/* One menu entry: the 3.5rem left inset that clears the corner rail's icon zone lives
-   on the row itself rather than on the drawer's padding box, so the row's bottom border
-   spans the drawer edge to edge. */
+/* One menu entry: the left inset that clears the corner rail's icon zone lives on the
+   row itself rather than on the drawer's padding box, so the row's bottom border spans
+   the drawer edge to edge. The inset tracks the rail's own painted width at each
+   breakpoint (DEC-137 caps the split rail at 5.5rem x 3.5rem): a flat 3.5rem cleared the
+   narrow rail but left the first row's label starting underneath the wider desktop band,
+   which read as the Menu trigger sitting on top of the first destination (DEC-147). */
 .portal-menu-drawer-row {
   padding: 0.5rem 0.75rem 0.5rem 3.5rem;
+}
+
+@media (min-width: 640px) {
+  .portal-menu-drawer-row {
+    padding-left: 5.5rem;
+  }
 }
 
 /* Theme block: sits well below the rail's icon zone, so it takes a normal inset (a

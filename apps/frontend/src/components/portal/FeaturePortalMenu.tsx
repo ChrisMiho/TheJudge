@@ -200,7 +200,7 @@ export function FeaturePortalMenu({
       ref={drawerRef}
       role="menu"
       aria-label="Feature destinations"
-      className="portal-menu-drawer portal-menu-drawer-motion bg-zinc-900/95"
+      className="portal-menu-drawer portal-menu-drawer-motion bg-zinc-900"
     >
       <div className="portal-menu-drawer-inner flex flex-col">
         {entries.map((entry) => {
