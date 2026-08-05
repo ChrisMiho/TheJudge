@@ -228,7 +228,7 @@ function CommanderDamageCell({
         type="button"
         aria-label={`Decrease commander damage from ${name}`}
         onClick={onDecrement}
-        className="motion-focus flex min-h-11 items-center justify-center text-xl font-light text-zinc-400 hover:bg-black/10 hover:text-zinc-100 active:bg-black/15"
+        className="motion-focus flex min-h-[53px] items-center justify-center text-xl font-light text-zinc-400 hover:bg-black/10 hover:text-zinc-100 active:bg-black/15"
       >
         <span aria-hidden="true">−</span>
       </button>
@@ -242,7 +242,7 @@ function CommanderDamageCell({
         type="button"
         aria-label={`Increase commander damage from ${name}`}
         onClick={onIncrement}
-        className="motion-focus flex min-h-11 items-center justify-center text-xl font-light text-zinc-400 hover:bg-black/10 hover:text-zinc-100 active:bg-black/15"
+        className="motion-focus flex min-h-[53px] items-center justify-center text-xl font-light text-zinc-400 hover:bg-black/10 hover:text-zinc-100 active:bg-black/15"
       >
         <span aria-hidden="true">+</span>
       </button>

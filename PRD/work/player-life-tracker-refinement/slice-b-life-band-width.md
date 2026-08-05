@@ -1,6 +1,6 @@
 # Slice B — Life adjustment band width +40%
 
-## Status: planned
+## Status: done
 
 ## Goal
 

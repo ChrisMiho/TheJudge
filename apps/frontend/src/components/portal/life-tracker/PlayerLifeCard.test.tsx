@@ -200,11 +200,11 @@ describe("Frontend - Shared", () => {
 
       expect(screen.getByRole("button", { name: "Decrease life for Player 1 (Alice)" })).toHaveClass(
         "top-0",
-        "h-12"
+        "h-[67px]"
       );
       expect(screen.getByRole("button", { name: "Increase life for Player 1 (Alice)" })).toHaveClass(
         "bottom-0",
-        "h-12"
+        "h-[67px]"
       );
 
       rerender(
@@ -223,11 +223,11 @@ describe("Frontend - Shared", () => {
 
       expect(screen.getByRole("button", { name: "Decrease life for Player 1 (Alice)" })).toHaveClass(
         "top-0",
-        "h-12"
+        "h-[67px]"
       );
       expect(screen.getByRole("button", { name: "Increase life for Player 1 (Alice)" })).toHaveClass(
         "bottom-0",
-        "h-12"
+        "h-[67px]"
       );
     });
 
@@ -249,11 +249,11 @@ describe("Frontend - Shared", () => {
 
       expect(screen.getByRole("button", { name: "Decrease life for Player 1 (Alice)" })).toHaveClass(
         "left-0",
-        "w-12"
+        "w-[67px]"
       );
       expect(screen.getByRole("button", { name: "Increase life for Player 1 (Alice)" })).toHaveClass(
         "right-0",
-        "w-12"
+        "w-[67px]"
       );
     });
 

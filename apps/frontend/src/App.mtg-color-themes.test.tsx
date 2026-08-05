@@ -141,7 +141,7 @@ describe("Global theme reach across destinations", () => {
 
     await user.click(screen.getByRole("button", { name: "Increase life for Player 2" }));
     await user.click(screen.getByRole("button", { name: "Open game setup" }));
-    await user.click(screen.getByRole("button", { name: "Set player count to 3" }));
+    await user.click(screen.getByRole("button", { name: "Decrease player count" }));
     await user.click(screen.getByRole("button", { name: "Close game setup" }));
 
     await selectPalette(user, "Black");
