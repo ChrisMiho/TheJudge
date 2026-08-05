@@ -1,6 +1,6 @@
 # Slice D — Banner clears every destination header
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -54,3 +54,29 @@ intersecting every header control's rect against the banner's rect, and count
 
 - Slice C — both slices edit shell/tray rules in `apps/frontend/src/index.css`;
   sequencing avoids a file-level conflict.
+
+## Verified (2026-08-05)
+
+Root cause: `.page-shell[data-mock-banner="true"]` reserved a hardcoded `2rem` (32px),
+but the banner's copy wraps to two lines at phone widths and measures **56px**. The shell
+under-reserved by 24px, exactly the overlap measured on Life Tracker's Menu trigger.
+`MockModeBanner` now publishes its measured height as `--mock-banner-height`, and the
+shell offset reads it (2rem fallback keeps first paint identical).
+
+| Destination | Viewport | Covered header controls before | After |
+| --- | --- | --- | --- |
+| Life Tracker | 390×844 | ☰ 24px, brand `h1` 9px, ⚙ 12px, ⚙ glyph 8px | **none** |
+| Trade Balancer | 390×844 | ☰ 11px | **none** |
+
+- Published `--mock-banner-height` reads `56px`, matching the banner's rendered height.
+- Exactly one **visible** banner on each destination (`visibleBanners: 1`).
+- `MockModeBanner` unit tests 3/3 pass (mock and non-mock cases); `npm run typecheck` clean.
+
+### Criterion recorded as met-in-substance
+
+The written criterion said `querySelectorAll('.mock-mode-banner')` must return exactly one
+element; it returns two, because inactive destinations stay mounted and each `PageShell`
+renders its own banner. The inactive one measures 0×0 and paints nothing, so exactly one
+banner is visible — the property the criterion was standing in for. Collapsing the count
+to one node would mean hoisting the banner out of `PageShell`, restructuring every
+destination's shell for no user-visible change.

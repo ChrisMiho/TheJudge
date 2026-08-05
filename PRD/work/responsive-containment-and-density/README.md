@@ -17,7 +17,7 @@ See `IDEA.md`, `DESIGN-BRIEF.md`, `GAMEPLAN.md`.
 | [A](./slice-a-autogrow-collapse-fix.md) | done | Auto-grow hook never pins a collapsed height (REQ-120) | — |
 | [B](./slice-b-composer-composition.md) | done | Pre-submit composer composition (REQ-121, DEC-146) | A |
 | [C](./slice-c-menu-tray-containment.md) | blocked | Menu tray opacity, bounds, hit area (REQ-122, DEC-147) | — |
-| [D](./slice-d-banner-header-clearance.md) | planned | Banner clears every destination header (REQ-123) | C |
+| [D](./slice-d-banner-header-clearance.md) | done | Banner clears every destination header (REQ-123) | C |
 | [E](./slice-e-viewport-fill.md) | planned | Viewport fill on both axes (REQ-124, DEC-145) | D |
 | [F](./slice-f-card-detail-height.md) | planned | Card detail height reduction (REQ-125, DEC-148) | E |
 | [G](./slice-g-roster-containment.md) | planned | In-Depth roster containment (REQ-106, DEC-128) | — |

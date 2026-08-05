@@ -31,9 +31,18 @@
 }
 
 /* Offset shell content so the fixed banner never covers the header. Applied
-   only in mock builds; live builds render no banner and no offset. */
+   only in mock builds; live builds render no banner and no offset.
+
+   The offset tracks the banner's measured height (published as
+   `--mock-banner-height` by `MockModeBanner`) rather than assuming one. A
+   hardcoded 2rem cleared the banner only while its copy fit on one line; at
+   phone widths the copy wraps and the banner measures ~3.5rem, so the shell
+   under-reserved and the fixed banner covered header controls on destinations
+   whose header sits at the top of their content — Life Tracker's Menu trigger
+   lost 24px, Trade Balancer's 11px (REQ-123). The 2rem fallback keeps the
+   pre-measurement first paint identical to before. */
 .page-shell[data-mock-banner="true"] {
-  padding-top: calc(var(--layout-page-padding-block) + 2rem);
+  padding-top: calc(var(--layout-page-padding-block) + var(--mock-banner-height, 2rem));
 }
 
 .page-card {
