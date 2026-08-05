@@ -10,22 +10,17 @@ _(none)_
 
 ## active
 
-- [commander-spellbook-combos](./commander-spellbook-combos/)
 - [center-menu-tab-prominence-followup](./center-menu-tab-prominence-followup/)
+- [assistant-chat-shell-followup](./assistant-chat-shell-followup/)
+- [player-life-tracker-refinement](./player-life-tracker-refinement/)
 
 ## refining
 
 - [context-ai-photo-card-id](./context-ai-photo-card-id/)
 
-## refined
-
-- [assistant-chat-shell-followup](./assistant-chat-shell-followup/)
-- [player-life-tracker-refinement](./player-life-tracker-refinement/)
-
 ## ideation
 
 - [card-collection-manager](./card-collection-manager/)
-- [player-life-tracker-refinement-followup](./player-life-tracker-refinement-followup/)
 - [scan-non-english-special-treatments](./scan-non-english-special-treatments/)
 
 ## owner-action
@@ -34,4 +29,4 @@ _(none)_
 
 ## deferred
 
-_(none)_
+- [commander-spellbook-combos](./commander-spellbook-combos/)
