@@ -118,6 +118,19 @@ export function saveHistoryEntry(entry: ConversationHistoryEntry): void {
   }
 }
 
+/** Removes one entry by id. A no-op if the id is not present. Never throws (DEC-143 / REQ-118). */
+export function deleteHistoryEntry(id: string): void {
+  try {
+    const storage = getStorage();
+    if (!storage) return;
+
+    const remaining = readAllEntries().filter((candidate) => candidate.id !== id);
+    storage.setItem(CONVERSATION_HISTORY_STORAGE_KEY, JSON.stringify(remaining));
+  } catch {
+    // Conversation history persistence must never interfere with the app's core flow.
+  }
+}
+
 // --- Mid-flight Draft (REQ-108 / FLOW-017) ---
 //
 // A single, per-mode, browser-local snapshot of staging that happens *before* the

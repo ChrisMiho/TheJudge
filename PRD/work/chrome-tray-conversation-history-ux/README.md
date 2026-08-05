@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 # Chrome tray and conversation history UX
@@ -24,7 +24,7 @@ Plan: [`GAMEPLAN.md`](./GAMEPLAN.md).
 | [B](./slice-b-answered-top-clearance.md) | Compact answered top clearance | A (`index.css`) | done |
 | [C](./slice-c-resilient-card-preview.md) | Resilient resumed card context preview | — | done |
 | [D](./slice-d-overlay-scrim-dismiss.md) | Outside/scrim dismiss for View Context + History | — | done |
-| [E](./slice-e-delete-history-entries.md) | Delete completed history entries | D (drawer) | planned |
+| [E](./slice-e-delete-history-entries.md) | Delete completed history entries | D (drawer) | done |
 
 Default sequence A → B → C → D → E. C is parallel-ready with A/B/D; E follows D; B follows A
 because both edit `index.css`. Slice E carries the ship gates and PRD promotion checklist.
@@ -41,7 +41,5 @@ because both edit `index.css`. Slice E carries the ship gates and PRD promotion 
 
 ## Next step
 
-`/thejudge-implement PRD/work/chrome-tray-conversation-history-ux/ slice A`
-
-For one unattended agent completing every slice:
-`/thejudge-implement-all PRD/work/chrome-tray-conversation-history-ux/`
+All slices done. PR ready → review and merge manually. After the feature ships:
+`/thejudge-cleanup PRD/work/chrome-tray-conversation-history-ux/`

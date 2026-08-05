@@ -209,6 +209,94 @@ describe("Frontend - Conversation history drawer", () => {
     expect(screen.getByText("No saved conversations yet")).toBeInTheDocument();
   });
 
+  it("renders no delete control when onDeleteEntry is not passed", () => {
+    render(<ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[buildEntry()]} onSelectEntry={vi.fn()} />);
+
+    expect(screen.queryByRole("button", { name: /^Delete:/ })).not.toBeInTheDocument();
+  });
+
+  it("gives the Draft row no delete control even when onDeleteEntry is passed", () => {
+    render(
+      <ConversationHistoryDrawer
+        isOpen
+        onClose={vi.fn()}
+        entries={[]}
+        onSelectEntry={vi.fn()}
+        onDeleteEntry={vi.fn()}
+        draft={{ updatedAt: "2026-01-03T00:00:00.000Z", onSelect: vi.fn() }}
+      />
+    );
+
+    expect(screen.queryByRole("button", { name: /^Delete:/ })).not.toBeInTheDocument();
+  });
+
+  it("requires confirmation before deleting, leaving storage and the list unchanged on cancel", async () => {
+    const user = userEvent.setup();
+    const onDeleteEntry = vi.fn();
+    const entry = buildEntry();
+    render(
+      <ConversationHistoryDrawer
+        isOpen
+        onClose={vi.fn()}
+        entries={[entry]}
+        onSelectEntry={vi.fn()}
+        onDeleteEntry={onDeleteEntry}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Delete: Quick Question/ }));
+    expect(screen.getByRole("button", { name: /^Confirm delete: Quick Question/ })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /^Cancel delete: Quick Question/ }));
+    expect(onDeleteEntry).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: /^Delete: Quick Question/ })).toBeInTheDocument();
+    expect(screen.getByText(/Quick Question/)).toBeInTheDocument();
+  });
+
+  it("deletes the entry on confirm and it disappears from the list immediately", async () => {
+    const user = userEvent.setup();
+    const onDeleteEntry = vi.fn();
+    const entry = buildEntry();
+    render(
+      <ConversationHistoryDrawer
+        isOpen
+        onClose={vi.fn()}
+        entries={[entry]}
+        onSelectEntry={vi.fn()}
+        onDeleteEntry={onDeleteEntry}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Delete: Quick Question/ }));
+    await user.click(screen.getByRole("button", { name: /^Confirm delete: Quick Question/ }));
+
+    expect(onDeleteEntry).toHaveBeenCalledWith(entry);
+  });
+
+  it("leaves a non-active entry's row deletable without touching the active row", async () => {
+    const user = userEvent.setup();
+    const onDeleteEntry = vi.fn();
+    const activeEntry = buildEntry({ id: "active-entry", hiddenInitialQuestion: "Active question" });
+    const otherEntry = buildEntry({ id: "other-entry", hiddenInitialQuestion: "Other question" });
+    render(
+      <ConversationHistoryDrawer
+        isOpen
+        onClose={vi.fn()}
+        entries={[activeEntry, otherEntry]}
+        activeConversationId="active-entry"
+        onSelectEntry={vi.fn()}
+        onDeleteEntry={onDeleteEntry}
+      />
+    );
+
+    const deleteButtons = screen.getAllByRole("button", { name: /^Delete: Quick Question/ });
+    await user.click(deleteButtons[1]);
+    await user.click(screen.getByRole("button", { name: /^Confirm delete: Quick Question/ }));
+
+    expect(onDeleteEntry).toHaveBeenCalledWith(otherEntry);
+    expect(onDeleteEntry).not.toHaveBeenCalledWith(activeEntry);
+  });
+
   // DEC-134: a left-edge, full-height drawer at every viewport, not a bottom sheet below
   // 768px. Content-sized bottom sheets left a screen of empty scrim above a one-entry list.
   it("presents as a left-edge full-height drawer at every viewport", () => {

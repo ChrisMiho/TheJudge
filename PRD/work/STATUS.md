@@ -6,9 +6,9 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-## active
-
 - [chrome-tray-conversation-history-ux](./chrome-tray-conversation-history-ux/)
+
+## active
 
 ## refined
 

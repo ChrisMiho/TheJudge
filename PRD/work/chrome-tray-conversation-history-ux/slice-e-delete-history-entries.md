@@ -1,6 +1,6 @@
 # Slice E — Delete completed history entries
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -79,10 +79,10 @@ npm run quality:check
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change
+- [x] No secrets committed
 - [ ] Durable outcomes promoted; `PRD/work/chrome-tray-conversation-history-ux/` ready to delete
 
 ## PRD promotion checklist (executed in cleanup, not here)
