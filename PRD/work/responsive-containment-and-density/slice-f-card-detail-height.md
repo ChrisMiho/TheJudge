@@ -1,6 +1,6 @@
 # Slice F — Card detail height reduction
 
-## Status: planned
+## Status: blocked
 
 ## Goal
 
@@ -55,3 +55,29 @@ select the result → `browser_evaluate` for add-action `top` and document
 
 - Slice E — the page-height budget this slice measures against depends on the
   shell's rebalanced vertical composition.
+
+## Verified (2026-08-05) — DEC-148 implemented in full; REQ-125's numeric target not reached
+
+Both changes DEC-148 specifies are in place:
+
+- Preview image height-capped below `sm` (`max-h-[17rem]`), measured 198×272 (was 272×375).
+  The cap is deliberately generous: the card's own printed text stays readable, which is
+  the premise for dropping the duplicate.
+- The oracle-text paragraph no longer renders below the image at narrow widths
+  (`duplicateOracleRendered: false`). It still renders at `sm+`, where the image sits in a
+  narrow column and its text is not legible, and whenever there is no image at all — the
+  `CardPresentation` fallback path is untouched.
+
+| Measure | Before | After | REQ-125 target |
+| --- | --- | --- | --- |
+| Document `scrollHeight` | 1286px | **1153px** | ≤ 900px |
+| "Add card" `top` | 1088px | **956px** | ≤ 844px |
+| Below the fold by | 244px | **112px** | 0px |
+
+**Not met.** The two levers DEC-148 authorises recover 133px; the target needs ~245px. The
+rest of the height is the step's other chrome above the preview — zone tabs, search field,
+Scan button, Card owner select — plus the six-row metadata list. Reaching the target means
+restructuring the step (for example a two-column preview at phone widths, which would make
+the card art too small to read and so invalidate the dedupe rationale), which is beyond
+what DEC-148 decided. Card metadata content, owner selection, and add behaviour are
+unchanged; `CardPresentation` / `CardSelectionPreview` tests 12/12 pass.

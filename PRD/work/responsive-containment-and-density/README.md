@@ -19,7 +19,7 @@ See `IDEA.md`, `DESIGN-BRIEF.md`, `GAMEPLAN.md`.
 | [C](./slice-c-menu-tray-containment.md) | blocked | Menu tray opacity, bounds, hit area (REQ-122, DEC-147) | — |
 | [D](./slice-d-banner-header-clearance.md) | done | Banner clears every destination header (REQ-123) | C |
 | [E](./slice-e-viewport-fill.md) | done | Desktop shell width cap (REQ-124, DEC-145) | D |
-| [F](./slice-f-card-detail-height.md) | planned | Card detail height reduction (REQ-125, DEC-148) | E |
+| [F](./slice-f-card-detail-height.md) | blocked | Card detail height reduction (REQ-125, DEC-148) | E |
 | [G](./slice-g-roster-containment.md) | done | In-Depth roster containment (REQ-106, DEC-128) | — |
 | [H](./slice-h-full-flow-verification.md) | planned | Full-flow re-verification and ship gates | A–G |
 
