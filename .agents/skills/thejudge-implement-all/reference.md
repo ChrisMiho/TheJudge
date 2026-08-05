@@ -27,7 +27,15 @@ Stopping before a slice reaches `done` for any reason (session end, usage limit,
 2. Require a clean launch checkout and a remote `origin/<feature-base>` at the same commit as local `HEAD`. If it is dirty, ahead, behind, detached, or has no remote tracking branch, block and report it. Never copy, stash, or commit its files implicitly.
 3. Fetch `origin/<feature-base>`. Derive the package branch as `thejudge-auto/<slug>`; it is unique to this work package and never shared with another package.
 4. Resolve any supplied PR before branch setup. It must be open, in `origin`, have head `thejudge-auto/<slug>`, and base `<feature-base>`. Block on a closed PR, fork, base mismatch, or head mismatch; never repoint, join, or reuse it.
-5. Create the package branch from `origin/<feature-base>` in one isolated worktree. If the exact package branch already exists, create the worktree from it only after the matching-PR check succeeds. Multiple worktrees cannot check out the same local branch.
+5. Read the package README's `### Implementation handoff` before creating a
+   worktree. If its `Worktree` path exists and `git worktree list --porcelain`
+   confirms that it checks out `thejudge-auto/<slug>`, reopen that retained
+   worktree and preserve its local handoff/uncommitted state. Otherwise create
+   the package branch from `origin/<feature-base>` in one isolated worktree.
+   If the exact package branch already exists, create the worktree from it only
+   after the matching-PR check succeeds. Multiple worktrees cannot check out
+   the same local branch; if an existing package worktree is not usable, block
+   and report it rather than creating a second one.
 6. Confirm the selected GAMEPLAN, slice docs, and relevant baseline exist unchanged at that remote start point. Record the launch checkout's status and do not alter, stage, stash, or commit its files.
 
 Keep the worktree after completion and report its path. Do not delete worktrees or local branches automatically.

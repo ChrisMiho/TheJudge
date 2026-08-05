@@ -26,9 +26,26 @@ Optional include-list or ignore-list of slugs (e.g. "ignore commander-spellbook-
 The orchestrator reads these itself, before dispatching anything — orientation is not delegable:
 
 1. `PRD/work/STATUS.md` — resolve the active list against any include/ignore argument
-2. Each selected package's `PRD/work/<slug>/GAMEPLAN.md` and `README.md`
+2. Each selected package's `PRD/work/<slug>/GAMEPLAN.md`, `README.md`, and
+   every unfinished slice's status / `### Handoff` block
 3. Every selected package's `Files touched` across its slice docs
 4. `PRD/instructions/workflow-reference.md` — package status / STATUS.* duties
+
+## Durable handoff
+
+Fanout has no shared orchestration handoff file: writing one in the clean
+launch checkout would race with package status updates and would block the
+next package executor's preflight. Its durable handoff is instead the
+per-package `### Implementation handoff` in `README.md`, plus any unfinished
+slice's `### Handoff` block, owned by `thejudge-implement-all`.
+
+Before dispatching or re-dispatching a package, read those records and pass
+their existence to the cold-start executor. The dispatch prompt must state
+that it is a resume when a handoff exists, and that the executor must refresh
+both applicable records before it returns or runs out of usage. A restarted
+fanout run always recomputes the overlap components from the current files and
+uses package status plus these handoffs as the source of truth; it never relies
+on the prior parent agent's chat, task IDs, or memory.
 
 ## Per-package executor
 
@@ -36,6 +53,12 @@ Every selected package dispatches `thejudge-implement-all`, including a
 GAMEPLAN that is grouped into dependency waves. The dispatched agent executes
 all remaining slices sequentially in its own worktree; it never delegates
 slice implementation or invokes `thejudge-implement-parallel`.
+
+Each executor owns its package's durable handoff updates. A package that is
+still `active` after an interrupted executor is eligible for a fresh
+`thejudge-implement-all` dispatch only after its README and unfinished-slice
+handoff are read; the new executor resumes that package in its retained
+worktree/branch rather than reconstructing progress from the parent session.
 
 Read the slice table only to confirm the package has work left and to identify
 files for the cross-package overlap gate. Do not select an executor from the
@@ -66,7 +89,7 @@ blocked.
   `main`, select another branch, or continue if the launch checkout is dirty,
   behind its remote, or lacks `origin/<feature-base>`.
 - **Full tool access required per dispatched agent.** Each dispatched agent must be able to invoke skills and read/write/run commands (Bash, Edit, Write, Skill). An agent type restricted to read-only or planning-only tools cannot run `thejudge-implement-all` and is not a valid dispatch target for this skill.
-- **Self-contained dispatch prompt.** Each dispatched agent starts cold — it does not inherit this session's context. Its prompt must name `thejudge-implement-all`, the exact `PRD/work/<slug>/` path, and `feature base: <feature-base>`; the dispatched agent then does its own reads under that skill's contract.
+- **Self-contained dispatch prompt.** Each dispatched agent starts cold — it does not inherit this session's context. Its prompt must name `thejudge-implement-all`, the exact `PRD/work/<slug>/` path, and `feature base: <feature-base>`; state whether `README.md` or an unfinished slice contains a handoff and require the agent to read it before acting. The dispatched agent then does its own reads and refreshes the handoff under that skill's contract.
 - Only dispatch packages currently `STATUS.active` with an existing `GAMEPLAN.md`. A package still `refined` or earlier is not this skill's job — it needs map-out first.
 - Never run `thejudge-map-out*`, `thejudge-quality-check`, or `thejudge-cleanup` from this skill.
 - Never commit, push, merge, or open a PR from the orchestrator itself — only dispatched agents do, under their own skill's contract.
@@ -77,6 +100,7 @@ blocked.
 | Selected package | Dispatch |
 |---|---|
 | Any GAMEPLAN shape | `thejudge-implement-all PRD/work/<slug>/ --base <feature-base>` |
+| Package has a README or unfinished-slice handoff | Read it, then dispatch `thejudge-implement-all` as a resume |
 | File overlap with another selected package | Run that pair sequentially, not concurrently |
 | Not yet `active` (no GAMEPLAN) | Drop from this run |
 
