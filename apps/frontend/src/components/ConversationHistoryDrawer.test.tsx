@@ -129,6 +129,31 @@ describe("Frontend - Conversation history drawer", () => {
     expect(trigger).toHaveFocus();
   });
 
+  it("closes and restores focus when the dimmed scrim outside the panel is activated", async () => {
+    const user = userEvent.setup();
+    render(<Harness entries={[buildEntry()]} onSelectEntry={vi.fn()} />);
+
+    const trigger = screen.getByRole("button", { name: "Open history trigger" });
+    await user.click(trigger);
+
+    expect(screen.getByRole("dialog", { name: "Conversation history" })).toBeInTheDocument();
+    await user.click(screen.getByTestId("conversation-history-overlay"));
+
+    expect(screen.queryByRole("dialog", { name: "Conversation history" })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+
+  it("does not close when activating the panel surface itself", async () => {
+    const user = userEvent.setup();
+    render(<Harness entries={[buildEntry()]} onSelectEntry={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: "Open history trigger" }));
+    const dialog = screen.getByRole("dialog", { name: "Conversation history" });
+
+    await user.click(within(dialog).getByText("Conversation history"));
+    expect(screen.getByRole("dialog", { name: "Conversation history" })).toBeInTheDocument();
+  });
+
   it("shows a distinct Draft row above completed entries when a Draft exists", () => {
     const onSelect = vi.fn();
     render(
@@ -182,6 +207,94 @@ describe("Frontend - Conversation history drawer", () => {
 
     expect(screen.queryByRole("button", { name: /Draft/ })).not.toBeInTheDocument();
     expect(screen.getByText("No saved conversations yet")).toBeInTheDocument();
+  });
+
+  it("renders no delete control when onDeleteEntry is not passed", () => {
+    render(<ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[buildEntry()]} onSelectEntry={vi.fn()} />);
+
+    expect(screen.queryByRole("button", { name: /^Delete:/ })).not.toBeInTheDocument();
+  });
+
+  it("gives the Draft row no delete control even when onDeleteEntry is passed", () => {
+    render(
+      <ConversationHistoryDrawer
+        isOpen
+        onClose={vi.fn()}
+        entries={[]}
+        onSelectEntry={vi.fn()}
+        onDeleteEntry={vi.fn()}
+        draft={{ updatedAt: "2026-01-03T00:00:00.000Z", onSelect: vi.fn() }}
+      />
+    );
+
+    expect(screen.queryByRole("button", { name: /^Delete:/ })).not.toBeInTheDocument();
+  });
+
+  it("requires confirmation before deleting, leaving storage and the list unchanged on cancel", async () => {
+    const user = userEvent.setup();
+    const onDeleteEntry = vi.fn();
+    const entry = buildEntry();
+    render(
+      <ConversationHistoryDrawer
+        isOpen
+        onClose={vi.fn()}
+        entries={[entry]}
+        onSelectEntry={vi.fn()}
+        onDeleteEntry={onDeleteEntry}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Delete: Quick Question/ }));
+    expect(screen.getByRole("button", { name: /^Confirm delete: Quick Question/ })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /^Cancel delete: Quick Question/ }));
+    expect(onDeleteEntry).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: /^Delete: Quick Question/ })).toBeInTheDocument();
+    expect(screen.getByText(/Quick Question/)).toBeInTheDocument();
+  });
+
+  it("deletes the entry on confirm and it disappears from the list immediately", async () => {
+    const user = userEvent.setup();
+    const onDeleteEntry = vi.fn();
+    const entry = buildEntry();
+    render(
+      <ConversationHistoryDrawer
+        isOpen
+        onClose={vi.fn()}
+        entries={[entry]}
+        onSelectEntry={vi.fn()}
+        onDeleteEntry={onDeleteEntry}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Delete: Quick Question/ }));
+    await user.click(screen.getByRole("button", { name: /^Confirm delete: Quick Question/ }));
+
+    expect(onDeleteEntry).toHaveBeenCalledWith(entry);
+  });
+
+  it("leaves a non-active entry's row deletable without touching the active row", async () => {
+    const user = userEvent.setup();
+    const onDeleteEntry = vi.fn();
+    const activeEntry = buildEntry({ id: "active-entry", hiddenInitialQuestion: "Active question" });
+    const otherEntry = buildEntry({ id: "other-entry", hiddenInitialQuestion: "Other question" });
+    render(
+      <ConversationHistoryDrawer
+        isOpen
+        onClose={vi.fn()}
+        entries={[activeEntry, otherEntry]}
+        activeConversationId="active-entry"
+        onSelectEntry={vi.fn()}
+        onDeleteEntry={onDeleteEntry}
+      />
+    );
+
+    const deleteButtons = screen.getAllByRole("button", { name: /^Delete: Quick Question/ });
+    await user.click(deleteButtons[1]);
+    await user.click(screen.getByRole("button", { name: /^Confirm delete: Quick Question/ }));
+
+    expect(onDeleteEntry).toHaveBeenCalledWith(otherEntry);
+    expect(onDeleteEntry).not.toHaveBeenCalledWith(activeEntry);
   });
 
   // DEC-134: a left-edge, full-height drawer at every viewport, not a bottom sheet below

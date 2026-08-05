@@ -6,10 +6,7 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-- [chrome-hit-areas-and-mid-flight-exits](./chrome-hit-areas-and-mid-flight-exits/)
-- [assistant-chat-shell-followup](./assistant-chat-shell-followup/)
-- [player-life-tracker-refinement](./player-life-tracker-refinement/)
-- [center-menu-tab-prominence-followup](./center-menu-tab-prominence-followup/)
+- [chrome-tray-conversation-history-ux](./chrome-tray-conversation-history-ux/)
 
 ## active
 

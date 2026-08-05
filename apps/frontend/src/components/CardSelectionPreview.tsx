@@ -9,8 +9,12 @@ type CardSelectionPreviewProps = {
   action?: ReactNode;
 };
 
-function formatMetaList(values: string[]): string {
-  return values.length > 0 ? values.join(", ") : "N/A";
+// DEC-144/REQ-119: incomplete frozen/resumed cards (e.g. saved before a metadata field
+// existed, or edited storage) can reach this component with colors/supertypes/subtypes
+// missing at runtime despite CardMetadataItem declaring them required — Array.isArray
+// guards against calling .length on undefined and white-screening View Context.
+function formatMetaList(values: string[] | undefined): string {
+  return Array.isArray(values) && values.length > 0 ? values.join(", ") : "N/A";
 }
 
 export function CardSelectionPreview({

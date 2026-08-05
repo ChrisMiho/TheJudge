@@ -87,7 +87,7 @@ Decrypt wait UX and follow-up conversation history behavior.
 - Impact:
   - one shared workspace owns thread, composer, error/retry placement, Start Over placement, context trigger, adaptive context container, and new-response affordance; both flows consume it rather than maintaining separate answered-state assemblies
   - preserves existing destination/header chrome, hidden initial user question, first visible assistant answer, frozen-context rules, follow-up text limits, retry cooldown, Start Over data preservation, and request/history contracts
-  - context remains read-only; the bottom sheet/right drawer closes by explicit control and Escape, contains keyboard focus while open, and returns focus to its trigger
+  - context remains read-only; the bottom sheet/right drawer closes by explicit control and Escape, contains keyboard focus while open, and returns focus to its trigger (outside/scrim click dismiss added by DEC-142)
   - the In-Depth trigger provides a terse cue (phase and populated-zone count); its drawer reuses the existing full frozen-context formatting; Quick Question uses the attached card name and existing card presentation, and renders no empty context trigger without a card
   - the thread is an accessible polite live log that announces additions without re-announcing the full history
   - remaining scroll distance `<= 64px` counts as near-bottom; appended messages then move to the latest message (immediate under reduced motion); farther-up readers keep their position and receive a New response control until they activate it or otherwise return to the bottom; activation scrolls to and places keyboard focus on the newest assistant message, dismisses the control, and preserves any composer draft
@@ -151,6 +151,7 @@ Decrypt wait UX and follow-up conversation history behavior.
   - non-goals: cross-device sync, account/auth, server-side storage, editing restored frozen context, unbounded history retention
   - narrow-viewport presentation, trigger placement, and the DEC-122 collision are resolved by DEC-125
   - mid-flight **Draft** slot (before first successful submit) is added by DEC-130; completed-history cap of 20 is unchanged and does not include Draft
+  - user-initiated delete of completed entries is added by DEC-143 / REQ-118 (planning miss relative to this decision's original non-goals silence on delete)
 
 ### DEC-125
 - Decision: DEC-124's left history drawer gets its own trigger — a full-width button inside the conversation workspace body (the same implementation pattern as `AdaptiveContextDialog`'s trigger, DEC-118), positioned above the context trigger — rather than sharing DEC-122's top-left corner-rail Menu trigger or its drawer. The history drawer presents as an accessible bottom sheet below `768px` and a left-side drawer at `768px`+, mirroring DEC-118's context sheet/drawer breakpoint and affordance types exactly, just mirrored to the left instead of the right. Because both the history drawer and DEC-122's Menu drawer slide in from the left edge at `768px`+, they are mutually exclusive: opening either one closes the other first, so the left edge never shows two overlapping slide-in panels.
@@ -190,8 +191,9 @@ Decrypt wait UX and follow-up conversation history behavior.
   - DEC-117
   - NFR-001
 - Notes:
-  - supersedes only DEC-125's trigger-placement clause; DEC-125's drawer open/close mechanics, breakpoint presentation (bottom sheet/left drawer), and mutual exclusivity remain unchanged and authoritative
+  - supersedes only DEC-125's trigger-placement clause; DEC-125's drawer open/close mechanics and mutual exclusivity remain authoritative here; breakpoint presentation for the history drawer is superseded by DEC-134 (left-edge full-height at every viewport)
   - History visibility on In-Depth/Quick Question (always-on, including empty/after Start Over) and non-overlap with View Context are refined by DEC-129; this decision's rail integration otherwise stands
+  - stacked Menu-over-History zones and fluid `clamp()` rail height are superseded by DEC-137's side-by-side `2.75rem` band (Menu leading / History trailing)
   - non-goals: any change to DEC-122's corner-rail visual language (radial glow, no border) beyond growing its hit-area height; a shared icon-button component extraction (left as a future code-health item)
 
 ### DEC-127
@@ -323,3 +325,83 @@ Decrypt wait UX and follow-up conversation history behavior.
   - extends DEC-130's exit coverage; supersedes nothing, and the Draft slot's one-per-destination rule is unchanged
   - the Draft still does not count toward the 20 completed-conversation retention cap
   - non-goals: a multi-draft backlog, a confirm-before-discard prompt, a transient "saved as Draft" notice, or any change to what a restored conversation contains
+
+### DEC-141
+- Decision: The answered conversation workspace's top clearance for **View Context** must match the **post–DEC-137 side-by-side corner-rail footprint**, not the taller pre–DEC-137 stacked-rail clearance. There must be no large empty band between the step eyebrow / header chrome and View Context (or the thread when View Context is absent), while History↔View Context non-overlap (DEC-129 / REQ-107) remains true at every supported viewport.
+- Status: confirmed
+- Context: DEC-129 required non-overlap with History; the shipped clearance used `margin-top: calc(clamp(4.75rem, …) - panel-padding)` sized for the older taller stacked rail. After DEC-137 shortened the split rail to a single `2.75rem` band, that margin left ~64px+ of dead space at the top of resumed Quick and In-Depth answered workspaces. Playwright measured the computed margin at 64px and an eyebrow→View Context gap of ~87px.
+- Impact:
+  - retarget answered-workspace top spacing to the actual open/rest rail geometry after DEC-137
+  - short and resumed threads no longer waste a large empty top band before View Context / thread content
+  - DEC-129's "History must not overlap View Context" acceptance remains mandatory; clearance may shrink but must not reintroduce overlap/clipping
+  - presentation only — no change to history persistence, frozen context, Ask AI contracts, or providers
+- Related requirements:
+  - REQ-116
+  - REQ-107
+  - REQ-109
+  - DEC-129
+  - DEC-137
+  - DEC-131
+  - DEC-118
+- Notes:
+  - amends the clearance *magnitude* used to satisfy DEC-129; does not reopen History placement or always-on visibility
+  - non-goals: pre-submit empty lower-half fill; hiding View Context; moving context into a permanent rail
+
+### DEC-142
+- Decision: The shared **View Context** overlay (`AdaptiveContextDialog`) and the **History** drawer overlay both dismiss when the user activates the dimmed outside/scrim region, in addition to their existing Close control and Escape. Focus restore to the trigger (or prior focus) on close is unchanged. Menu tray outside-click-to-close is unchanged (already shipped).
+- Status: confirmed
+- Context: DEC-118 specified Close + Escape only for the context sheet/drawer. Live use after chat-shell / history shipping found users expect scrim click to dismiss these modal overlays; Playwright confirmed neither overlay wires backdrop dismiss today.
+- Impact:
+  - clicking/tapping the overlay scrim (outside the panel surface) closes View Context and closes History
+  - Close and Escape remain; focus trap/restore and reduced-motion behavior stay
+  - does not change Menu↔History mutual exclusivity or Menu's own outside-click handler
+  - presentation/interaction only — no persistence or contract changes
+- Related requirements:
+  - REQ-117
+  - REQ-103
+  - DEC-118
+  - DEC-125
+  - DEC-134
+- Notes:
+  - amends DEC-118's "closes by explicit control and Escape" clause for View Context; extends the same dismiss model to History for overlay-family consistency
+  - non-goals: click-outside dismiss for non-overlay panels (e.g. Life Tracker counter panel already has its own chrome), or removing Escape/Close
+
+### DEC-143
+- Decision: Completed browser-local conversation history entries are **user-deletable** from the History drawer. Each completed row exposes a delete affordance; confirming delete removes that entry from local storage immediately. Deleting the **active** completed conversation also clears the workspace (same destination return as Start Over) **without** re-saving the deleted thread. The 20-entry auto-prune cap remains. Draft rows are not covered by this delete control (Draft keeps DEC-130/138 overwrite/clear rules).
+- Status: confirmed
+- Context: DEC-124 introduced auto-save + resume but omitted user-initiated delete — a planning miss confirmed in live use. Users can only wait for prune-at-20 or clear site data.
+- Impact:
+  - History drawer offers per completed-entry delete with an explicit confirmation step before removal
+  - delete is frontend-only against the existing local history key; no server, account, or sync
+  - deleting a non-active entry removes it from the list only
+  - deleting the active entry removes it and returns the destination to a clean pre-answer state without writing that thread back to history
+  - corrupt/missing storage handling stays the existing guarded pattern
+- Related requirements:
+  - REQ-118
+  - FLOW-018
+  - REQ-103
+  - REQ-104
+  - DEC-124
+  - DEC-130
+- Notes:
+  - extends DEC-124; does not reopen cross-device sync or unbounded retention
+  - non-goals: bulk multi-select delete, swipe-only delete without a confirm path, exporting history, or Draft-as-completed-entry delete (Draft remains the mid-flight slot)
+
+### DEC-144
+- Decision: Opening **View Context** for a frozen/resumed lookup card must never crash the app when card metadata arrays or optional fields are missing or partial. The preview defensively renders available fields and safe fallbacks; persistence/restore paths should prefer storing the full `CardMetadataItem` shape used at submit time when available.
+- Status: confirmed
+- Context: Playwright verification of resumed Quick Question history found opening View Context for a card-bearing entry can throw in `CardSelectionPreview` (`formatMetaList` reading `.length` of undefined `colors` / `supertypes` / `subtypes`) and white-screen the tree. That breaks the exact "inspect past conversation context" path this chrome work is meant to support.
+- Impact:
+  - `CardSelectionPreview` (and any resumed-context path into it) treats missing array/optional fields as empty/N/A rather than throwing
+  - saving/restoring lookup frozen cards should retain the fields the preview needs when they were present at submit
+  - In-Depth game-context View Context path must not regress
+  - frontend-only — no Ask AI contract change
+- Related requirements:
+  - REQ-119
+  - REQ-104
+  - REQ-075
+  - DEC-118
+  - DEC-124
+- Notes:
+  - hardening + persistence completeness; not a redesign of card preview chrome
+  - non-goals: editing frozen context; re-fetching Scryfall at resume time

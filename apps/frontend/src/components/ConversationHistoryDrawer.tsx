@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type KeyboardEvent } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import type { ConversationHistoryEntry } from "../lib/conversationHistory/persistence";
 import { useLeftEdgeDrawer } from "../lib/portal/leftEdgeDrawerContext";
@@ -17,6 +17,9 @@ type ConversationHistoryDrawerProps = {
   /** Mid-flight staging snapshot for the current destination, if one exists (REQ-108). Rendered
       as a distinct "Draft" row above completed entries, separate from the 20-entry history list. */
   draft?: ConversationHistoryDraftDescriptor | null;
+  /** Deletes one completed entry (DEC-143 / REQ-118). Omitted entirely, the Draft row never
+      gets a delete control (DEC-130/138) since it isn't part of the completed-entries map below. */
+  onDeleteEntry?: (entry: ConversationHistoryEntry) => void;
 };
 
 const FOCUSABLE_SELECTOR = [
@@ -47,13 +50,15 @@ export function ConversationHistoryDrawer({
   entries,
   activeConversationId,
   onSelectEntry,
-  draft
+  draft,
+  onDeleteEntry
 }: ConversationHistoryDrawerProps): JSX.Element | null {
   const titleId = useId();
   const dialogRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const { activeDrawer, openDrawer, closeDrawer } = useLeftEdgeDrawer();
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -82,11 +87,18 @@ export function ConversationHistoryDrawer({
 
     restoreFocusRef.current?.focus();
     restoreFocusRef.current = null;
+    // A stale "confirm delete?" row must not reappear pre-armed the next time this drawer opens.
+    setPendingDeleteId(null);
   }, [isOpen]);
 
   function handleSelectEntry(entry: ConversationHistoryEntry): void {
     if (entry.id === activeConversationId) return;
     onSelectEntry(entry);
+  }
+
+  function handleConfirmDelete(entry: ConversationHistoryEntry): void {
+    onDeleteEntry?.(entry);
+    setPendingDeleteId(null);
   }
 
   function handleDialogKeyDown(event: KeyboardEvent<HTMLElement>): void {
@@ -126,7 +138,14 @@ export function ConversationHistoryDrawer({
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="conversation-history-overlay" data-testid="conversation-history-overlay">
+    // DEC-142/REQ-117: activating the dimmed scrim (this root, outside the panel surface)
+    // closes the drawer via the same onClose path as Close/Escape. The surface below stops
+    // propagation so clicks inside it never reach this handler.
+    <div
+      className="conversation-history-overlay"
+      data-testid="conversation-history-overlay"
+      onClick={onClose}
+    >
       <section
         ref={dialogRef}
         role="dialog"
@@ -134,6 +153,7 @@ export function ConversationHistoryDrawer({
         aria-labelledby={titleId}
         tabIndex={-1}
         onKeyDown={handleDialogKeyDown}
+        onClick={(event) => event.stopPropagation()}
         className="conversation-history-surface ambient-accent-surface border border-zinc-700 bg-zinc-950 text-zinc-100 shadow-2xl"
       >
         <div className="adaptive-context-header flex items-center justify-between gap-3 border-b border-zinc-700/70">
@@ -173,23 +193,59 @@ export function ConversationHistoryDrawer({
             <ul className="flex flex-col gap-2">
               {entries.map((entry) => {
                 const isActive = entry.id === activeConversationId;
+                const entryLabel = `${entry.flowLabel} · ${formatUpdatedAt(entry.updatedAt)}`;
+                // Distinct from entryLabel: two entries can share a flowLabel and even an
+                // updatedAt, so the delete/confirm/cancel controls identify the row by its
+                // question content instead, the same way a sighted user reads the list.
+                const deleteEntryLabel = `${entry.flowLabel}: ${previewSnippet(entry.hiddenInitialQuestion)}`;
+                const isPendingDelete = pendingDeleteId === entry.id;
                 return (
-                  <li key={entry.id}>
+                  <li key={entry.id} className="flex items-stretch gap-2">
                     <button
                       type="button"
                       onClick={() => handleSelectEntry(entry)}
                       aria-current={isActive ? "true" : undefined}
-                      className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                      className={`flex-1 rounded-lg px-3 py-2.5 text-left text-sm transition ${
                         isActive
                           ? "bg-zinc-800 text-zinc-100"
                           : "text-zinc-200 hover:bg-zinc-800/70"
                       }`}
                     >
                       <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
-                        {entry.flowLabel} · {formatUpdatedAt(entry.updatedAt)}
+                        {entryLabel}
                       </span>
                       <span className="mt-1 block truncate">{previewSnippet(entry.hiddenInitialQuestion)}</span>
                     </button>
+                    {onDeleteEntry &&
+                      (isPendingDelete ? (
+                        <div className="flex flex-col gap-1">
+                          <button
+                            type="button"
+                            aria-label={`Confirm delete: ${deleteEntryLabel}`}
+                            onClick={() => handleConfirmDelete(entry)}
+                            className="rounded-lg border border-red-800 bg-red-900/60 px-2 py-1 text-xs font-semibold text-red-100 transition hover:bg-red-900"
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={`Cancel delete: ${deleteEntryLabel}`}
+                            onClick={() => setPendingDeleteId(null)}
+                            className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-700"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          aria-label={`Delete: ${deleteEntryLabel}`}
+                          onClick={() => setPendingDeleteId(entry.id)}
+                          className="self-center rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-700"
+                        >
+                          Delete
+                        </button>
+                      ))}
                   </li>
                 );
               })}

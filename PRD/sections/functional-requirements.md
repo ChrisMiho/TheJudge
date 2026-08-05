@@ -2433,7 +2433,7 @@
   - the list is capped at the 20 most recent conversations; saving a 21st entry prunes the oldest
   - leaving an active conversation with at least one successful answer (via Start Over / New conversation) auto-saves it to history before clearing the workspace
   - storage reads are guarded; a missing, corrupted, or invalid stored value is dropped without breaking the app, mirroring the existing theme-preference fallback pattern
-  - the drawer opens/closes with an explicit control and Escape, contains keyboard focus while open, and returns focus to its trigger on close
+  - the drawer opens/closes with an explicit control and Escape, contains keyboard focus while open, and returns focus to its trigger on close (outside/scrim dismiss added by REQ-117 / DEC-142; user delete by REQ-118 / DEC-143)
   - no server-side store, account system, or cross-device sync is introduced; history is scoped to one browser on one device
   - the drawer's trigger is a small icon integrated into the feature-portal Menu's corner rail (DEC-122), stacked below the Menu icon within the same fluid-height ambient glow hit-area, and is always rendered on In-Depth Question and Quick Question (DEC-129), including when the list is empty and after Start Over
   - below `768px` the drawer presents as a bottom sheet; at `768px`+ it presents as a left-side drawer, mirroring DEC-118's context sheet/drawer breakpoint and affordance types (DEC-125)
@@ -2508,6 +2508,7 @@
   - immediately after Start Over, History remains visible and openable without requiring a new successful submit
   - opening History with an empty list shows an empty/zero-state drawer rather than hiding or disabling the control
   - at desktop widths and at ~390×844 mobile widths, the History icon/hit-target does not overlap, clip into, or sit on the border of the View Context trigger
+  - answered-workspace top clearance used to satisfy the prior criterion must not leave a large empty band after DEC-137's shorter side-by-side rail (REQ-116 / DEC-141)
   - Life Tracker and Trade Balancer continue to show Menu-only rails (no History zone)
 - Constraints:
   - presentation and availability only; drawer open/close, breakpoint sheet/drawer, and Menu mutual exclusivity remain DEC-125
@@ -2516,7 +2517,9 @@
   - DEC-129
   - DEC-126
   - DEC-122
+  - DEC-141
   - REQ-103
+  - REQ-116
 - Notes:
 
 ### REQ-108
@@ -2693,3 +2696,107 @@
   - `3.5rem` matches the menu-row inset already used in `index.css` to clear this same icon zone
   - the single-zone rail keeps its painted `5.5rem` width because capping height alone reduces the Life Tracker overlap to zero; narrowing the width would re-center the icon 16px left, a visual change this requirement forbids
   - the side-by-side split arrangement is forced, not stylistic: only 70px exists between the rail's top and the eyebrow, while two stacked 44px zones require 88px
+
+### REQ-115
+- Title: Menu tray occludes under-rail chrome when open
+- Priority: high
+- Description: When the feature-portal Menu tray is open, non-Menu corner-rail chrome under the tray (notably History on In-Depth Question and Quick Question) must be visually covered by the tray and must not receive clicks; the Menu trigger remains available to close the tray (DEC-140).
+- Acceptance Criteria:
+  - with Menu open on a History-bearing destination, History does not paint through the tray surface
+  - with Menu open, `document.elementFromPoint` over the History icon's former center returns tray/menu UI (or non-History chrome), not the History control
+  - clicking/tapping where History sits while Menu is open does not open History
+  - Menu trigger still toggles the tray closed
+  - Menu-only destinations (Life Tracker, Trade Balancer) keep an opaque open tray over destination content without regressing DEC-133/137 hit-area rules
+- Constraints:
+  - presentation/interaction only; no registry, Theme, persistence, or Ask AI contract changes
+- Dependencies:
+  - DEC-140
+  - DEC-122
+  - DEC-133
+  - DEC-126
+  - DEC-137
+  - REQ-114
+  - NFR-001
+- Notes:
+
+### REQ-116
+- Title: Compact answered-workspace top clearance
+- Priority: high
+- Description: Answered Quick Question and In-Depth Question workspaces must not show a large empty band above View Context (or above the thread when View Context is absent); top clearance must match the post–DEC-137 side-by-side rail footprint while preserving History↔View Context non-overlap (DEC-141, DEC-129).
+- Acceptance Criteria:
+  - on resumed and freshly answered conversations at desktop and ~390×844, there is no large unused empty band between the step eyebrow/header region and View Context / first thread content attributable to oversized rail clearance
+  - computed top clearance for `.adaptive-context-trigger` (or equivalent) is sized to the current side-by-side rail height, not the pre–DEC-137 stacked-rail clamp
+  - History icon/hit-target still does not overlap, clip into, or sit on the border of View Context (REQ-107)
+  - short-thread fill / Start Over reachability from REQ-109 remain satisfied
+- Constraints:
+  - presentation only; no history semantics or Ask AI contract changes
+- Dependencies:
+  - DEC-141
+  - DEC-129
+  - DEC-137
+  - REQ-107
+  - REQ-109
+- Notes:
+
+### REQ-117
+- Title: Outside-click dismiss for View Context and History overlays
+- Priority: high
+- Description: View Context and History overlays must close when the user activates the dimmed outside/scrim region, in addition to Close and Escape (DEC-142).
+- Acceptance Criteria:
+  - with View Context open, activating the scrim outside the panel closes it and restores focus to the View Context trigger
+  - with History open, activating the scrim outside the panel closes it and restores focus appropriately
+  - Close and Escape continue to work on both overlays
+  - focus trap while open is unchanged; reduced-motion behavior is unchanged
+  - Menu tray outside-click-to-close remains as already shipped
+- Constraints:
+  - interaction only on existing overlays; no new overlay system; no persistence/contract changes
+- Dependencies:
+  - DEC-142
+  - DEC-118
+  - DEC-125
+  - DEC-134
+  - REQ-103
+- Notes:
+
+### REQ-118
+- Title: Delete completed conversations from history
+- Priority: high
+- Description: Users must be able to delete individual completed browser-local history entries from the History drawer after confirmation (DEC-143).
+- Acceptance Criteria:
+  - each completed history row exposes a delete affordance distinct from select-to-resume
+  - delete requires an explicit confirmation step before the entry is removed
+  - on confirm, the entry is removed from local storage and disappears from the list immediately
+  - deleting a non-active entry does not change the active workspace
+  - deleting the active completed conversation removes it and clears the workspace to the destination's clean pre-answer state without re-saving that thread
+  - Draft rows are not deleted by this control; Draft rules remain REQ-108 / DEC-130 / DEC-138
+  - the 20-entry auto-prune cap still applies to remaining completed entries
+  - no server-side store, account, or cross-device sync is introduced
+- Constraints:
+  - frontend-only local persistence; reuse the existing history storage key/pattern
+  - no Ask AI contract or backend change
+- Dependencies:
+  - DEC-143
+  - FLOW-018
+  - DEC-124
+  - REQ-103
+  - REQ-104
+- Notes:
+
+### REQ-119
+- Title: Resilient resumed card context preview
+- Priority: high
+- Description: Opening View Context for a frozen/resumed lookup card must never crash the app when card metadata is partial; the preview must render safe fallbacks (DEC-144).
+- Acceptance Criteria:
+  - View Context for a lookup card with missing `colors` / `supertypes` / `subtypes` (or other optional preview fields) renders without throwing and without white-screening the app
+  - available fields still display; missing lists show an N/A-style fallback consistent with existing preview empty handling
+  - freshly submitted card-bearing Quick Question conversations that reach history still restore a previewable card when full metadata was available at submit
+  - In-Depth game-context View Context path does not regress
+- Constraints:
+  - frontend-only; no Scryfall re-fetch at resume; no Ask AI contract change
+- Dependencies:
+  - DEC-144
+  - DEC-124
+  - REQ-104
+  - REQ-075
+  - DEC-118
+- Notes:

@@ -415,6 +415,57 @@ describe("FeaturePortalMenu split rail (DEC-126)", () => {
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Switch feature" })).toHaveAttribute("aria-expanded", "false");
   });
+
+  it("makes the History zone inert — hidden, non-hit-testable, out of tab order — while Menu is open", async () => {
+    const user = userEvent.setup();
+    const historyOnOpen = vi.fn();
+    render(<SlotHarness historyOnOpen={historyOnOpen} />);
+
+    const historyButton = screen.getByRole("button", { name: "Conversation history" });
+    expect(historyButton).not.toHaveAttribute("aria-hidden");
+    expect(historyButton).not.toHaveAttribute("tabindex");
+    expect(historyButton.className).not.toContain("portal-menu-rail-zone-inert");
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+
+    // Removed from the accessibility tree (and so from role-based queries) — the same
+    // proxy used elsewhere in this suite for "not hit-testable" in a jsdom environment
+    // that does not compute real paint/hit-test order.
+    expect(screen.queryByRole("button", { name: "Conversation history" })).not.toBeInTheDocument();
+    expect(historyButton).toHaveAttribute("aria-hidden", "true");
+    expect(historyButton).toHaveAttribute("tabindex", "-1");
+    expect(historyButton.className).toContain("portal-menu-rail-zone-inert");
+
+    // Belt-and-suspenders: even a direct click while inert must not open History.
+    fireEvent.click(historyButton);
+    expect(historyOnOpen).not.toHaveBeenCalled();
+
+    // The Menu trigger remains the close control and restores History once closed.
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    expect(historyButton).not.toHaveAttribute("aria-hidden");
+    expect(historyButton.className).not.toContain("portal-menu-rail-zone-inert");
+  });
+
+  it("leaves the single-zone rail (Life Tracker / Trade Balancer, no history trigger) unaffected by the inert rule", async () => {
+    const user = userEvent.setup();
+    render(<SlotHarness />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+
+    expect(screen.getByRole("button", { name: "Switch feature" })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.queryByRole("button", { name: "Conversation history" })).not.toBeInTheDocument();
+  });
+
+  it("keeps the History-zone inert rule both paint- and hit-test-inert, not merely non-interactive", () => {
+    const inertBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-rail-zone-inert {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-zone-inert {"))
+    );
+
+    expect(inertBlock).toContain("visibility: hidden");
+    expect(inertBlock).toContain("pointer-events: none");
+  });
 });
 
 describe("FeaturePortalMenu reduced motion", () => {

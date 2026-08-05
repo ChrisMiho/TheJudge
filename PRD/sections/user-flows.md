@@ -398,3 +398,25 @@
   - one Draft per conversation-bearing destination; no unfinished backlog; no mid-flight Start Over invent (DEC-130)
   - pre-submit empty lower-half screen fill is out of scope for this flow
   - the three mid-flight exits — Menu leave, reload, and opening a saved conversation — are all Draft-covered and must behave identically in both conversation-bearing destinations (DEC-138)
+
+### FLOW-018
+- Name: Delete a saved conversation from history
+- Trigger: User opens the History drawer and chooses to delete a completed conversation entry
+- Preconditions:
+  - at least one completed conversation exists in browser-local history (REQ-103)
+  - user is on In-Depth Question or Quick Question (History rail available)
+- Main Flow:
+  1. User opens Conversation history from the corner rail.
+  2. User activates delete on a completed entry (not Draft).
+  3. App presents an explicit confirmation step naming that the entry will be removed.
+  4. User confirms; app removes the entry from local storage and from the list.
+  5. If the deleted entry was the active conversation, the workspace clears to the destination's clean pre-answer state without re-saving that thread; otherwise the active workspace is unchanged.
+  6. User may close History via Close, Escape, or outside/scrim click (REQ-117).
+- Edge Cases:
+  - user cancels confirmation → entry remains; drawer stays open
+  - last completed entry deleted → drawer shows empty/zero-state (and Draft row if present)
+  - storage write fails → app does not crash; user can retry; existing guarded persistence pattern applies
+  - Draft row → no delete-via-this-flow; Draft remains overwrite/clear per FLOW-017
+- Notes:
+  - frontend-only; no backend, accounts, or sync (DEC-143)
+  - auto-prune at 20 completed entries remains for entries the user does not delete
