@@ -416,7 +416,7 @@ describe("FeaturePortalMenu split rail (DEC-126)", () => {
     expect(screen.getByRole("button", { name: "Switch feature" })).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("makes the History zone inert — hidden, non-hit-testable, out of tab order — while Menu is open (DEC-140)", async () => {
+  it("makes the History zone inert — hidden, non-hit-testable, out of tab order — while Menu is open", async () => {
     const user = userEvent.setup();
     const historyOnOpen = vi.fn();
     render(<SlotHarness historyOnOpen={historyOnOpen} />);
@@ -457,7 +457,7 @@ describe("FeaturePortalMenu split rail (DEC-126)", () => {
     expect(screen.queryByRole("button", { name: "Conversation history" })).not.toBeInTheDocument();
   });
 
-  it("keeps the History-zone inert rule both paint- and hit-test-inert, not merely non-interactive (DEC-140)", () => {
+  it("keeps the History-zone inert rule both paint- and hit-test-inert, not merely non-interactive", () => {
     const inertBlock = appCss.slice(
       appCss.indexOf(".portal-menu-rail-zone-inert {"),
       appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-zone-inert {"))

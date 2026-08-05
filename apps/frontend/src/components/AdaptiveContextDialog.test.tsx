@@ -69,7 +69,7 @@ describe("Frontend - Adaptive context dialog", () => {
     );
   });
 
-  it("sizes the answered-workspace top clearance to the side-by-side rail's 2.75rem band, not the retired stacked-rail clamp (DEC-141)", () => {
+  it("sizes the answered-workspace top clearance to the side-by-side rail's 2.75rem band, not the retired stacked-rail clamp", () => {
     const triggerBlock = appCss.slice(
       appCss.indexOf(".adaptive-context-trigger {"),
       appCss.indexOf("}", appCss.indexOf(".adaptive-context-trigger {"))
