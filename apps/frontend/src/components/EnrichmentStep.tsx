@@ -421,7 +421,7 @@ export function EnrichmentStep({
 
   return (
     <PageShell>
-        <StagedStepHeader />
+        <StagedStepHeader historyTrigger={historyTrigger} />
         <StepEyebrow stepName="Context enrichment" />
 
         <div className="flex items-center justify-between gap-3">

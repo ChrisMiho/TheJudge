@@ -588,7 +588,10 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   if (flowStep === "game-context") {
     content = (
       <PageShell>
-          <StagedStepHeader onBrandClick={() => setBrandClickCount((c) => c + 1)} />
+          <StagedStepHeader
+            onBrandClick={() => setBrandClickCount((c) => c + 1)}
+            historyTrigger={{ onOpen: openHistory }}
+          />
           <StepEyebrow stepName="Game context" />
           {showCatEasterEgg && (
             <div className="p-2 text-center">
@@ -785,6 +788,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         }}
         onContinue={confirmZoneSelection}
         statusMessage={statusMessage}
+        historyTrigger={{ onOpen: openHistory }}
       />
     );
   } else if (flowStep === "zone-collection") {
@@ -812,6 +816,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         canContinue={canContinueCollection}
         onFlashStatus={flashStatus}
         statusMessage={statusMessage}
+        historyTrigger={{ onOpen: openHistory }}
       />
     );
   } else {

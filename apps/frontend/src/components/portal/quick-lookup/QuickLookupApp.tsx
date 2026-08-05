@@ -278,10 +278,18 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
     <PageShell>
       {!scanCapture.isOpen && (
         <>
-          <StagedStepHeader />
+          <StagedStepHeader historyTrigger={{ onOpen: openHistory }} />
           <StepEyebrow stepName="Quick Question" />
         </>
       )}
+
+      <ConversationHistoryDrawer
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        entries={historyEntries}
+        activeConversationId={activeConversationId}
+        onSelectEntry={handleSelectHistoryEntry}
+      />
 
       {scanCapture.isOpen ? (
         <section className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-3">

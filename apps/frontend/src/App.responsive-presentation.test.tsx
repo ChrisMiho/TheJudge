@@ -69,9 +69,11 @@ describe("Frontend - Automatic responsive presentation", () => {
 
     expect(screen.getByLabelText("Player 1 life total")).toBe(lifeInput);
     expect(lifeInput).toHaveValue("33");
-    // .portal-menu-rail's 10.5rem edge-strip height (index.css) clears NFR-001's 44px
-    // touch-target minimum many times over; this just confirms the trigger survives
-    // the resize still wired onto that class, not a specific pixel height.
-    expect(screen.getByRole("button", { name: "Switch feature" })).toHaveClass("portal-menu-rail");
+    // Game context now always supplies a historyTrigger (REQ-107), so the rail renders
+    // in its two-zone split form and this button carries `.portal-menu-rail-zone`
+    // (index.css: `min-height: 2.75rem`, exactly NFR-001's 44px touch-target floor)
+    // rather than the single-zone `.portal-menu-rail`. This just confirms the trigger
+    // survives the resize still wired onto that class, not a specific pixel height.
+    expect(screen.getByRole("button", { name: "Switch feature" })).toHaveClass("portal-menu-rail-zone");
   });
 });
