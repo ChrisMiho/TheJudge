@@ -14,6 +14,8 @@ _(none)_
 
 ## refining
 
+- [assistant-chat-shell-followup](./assistant-chat-shell-followup/)
+- [center-menu-tab-prominence-followup](./center-menu-tab-prominence-followup/)
 - [context-ai-photo-card-id](./context-ai-photo-card-id/)
 - [player-life-tracker-refinement](./player-life-tracker-refinement/)
 
@@ -23,9 +25,7 @@ _(none)_
 
 ## ideation
 
-- [assistant-chat-shell-followup](./assistant-chat-shell-followup/)
 - [card-collection-manager](./card-collection-manager/)
-- [center-menu-tab-prominence-followup](./center-menu-tab-prominence-followup/)
 - [player-life-tracker-refinement-followup](./player-life-tracker-refinement-followup/)
 - [scan-non-english-special-treatments](./scan-non-english-special-treatments/)
 

@@ -1,5 +1,5 @@
 ---
-status: ideation
+status: refining
 ---
 
 # assistant-chat-shell-followup
