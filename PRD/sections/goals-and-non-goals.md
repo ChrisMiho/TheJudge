@@ -41,7 +41,7 @@
 - predefined browser-local palette personalization hosted in the feature-portal Menu (DEC-066, DEC-110, REQ-044)
 - In-Depth Question and Quick Question destinations, both reusing the shipped conversation/thread behavior
 - shared chat-first conversation workspace with adaptive context, reader-safe auto-scroll, full-bleed thread presentation, docked pill composer, and browser-local resumable history (DEC-117, DEC-118, DEC-123..DEC-127, REQ-096..REQ-098, REQ-102..REQ-105)
-- feature-portal top-left corner-rail Menu with sliding drawer, centered brand block, and in-flow step-name eyebrow (DEC-122)
+- feature-portal top-left corner-rail Menu with full-height shell-docked sliding tray (visible-bounds on tall shells, matching bottom-left radius), centered brand block, and in-flow step-name eyebrow (DEC-122, DEC-133)
 - AWS production deployment with live OpenAI, automated quality-gated deploys, backend-only secret loading, and cost/scale guardrails (DEC-084)
 
 ## Intentional constraints

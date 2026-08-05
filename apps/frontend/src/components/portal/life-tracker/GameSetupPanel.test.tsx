@@ -16,13 +16,11 @@ function renderPanel(overrides: Partial<ComponentProps<typeof GameSetupPanel>> =
     playerCount: 4,
     layoutMode: "grid",
     cardStyle: "gradient",
-    dayNightEnabled: false,
     startingLife: 40,
     players: FOUR_PLAYERS,
     onPlayerCountChange: vi.fn(),
     onLayoutModeChange: vi.fn(),
     onCardStyleChange: vi.fn(),
-    onDayNightEnabledChange: vi.fn(),
     onStartingLifeChange: vi.fn(),
     onDisplayNameChange: vi.fn(),
     onReset: vi.fn(),
@@ -41,20 +39,34 @@ function renderPanel(overrides: Partial<ComponentProps<typeof GameSetupPanel>> =
 
 describe("Frontend - Shared", () => {
   describe("GameSetupPanel", () => {
-    it("changes player count through the 2-8 pill row and marks the active count", async () => {
+    it("changes player count via the −/+ stepper", async () => {
       const user = userEvent.setup();
       const props = renderPanel({ playerCount: 4 });
       const controls = screen.getByLabelText("Player count");
 
-      expect(within(controls).getAllByRole("button")).toHaveLength(7);
-      expect(within(controls).getByRole("button", { name: "Set player count to 4" })).toHaveAttribute(
-        "aria-pressed",
-        "true"
-      );
+      expect(within(controls).getByText("4")).toBeInTheDocument();
 
-      await user.click(within(controls).getByRole("button", { name: "Set player count to 7" }));
+      await user.click(within(controls).getByRole("button", { name: "Increase player count" }));
+      expect(props.onPlayerCountChange).toHaveBeenCalledWith(5);
 
-      expect(props.onPlayerCountChange).toHaveBeenCalledWith(7);
+      await user.click(within(controls).getByRole("button", { name: "Decrease player count" }));
+      expect(props.onPlayerCountChange).toHaveBeenCalledWith(3);
+    });
+
+    it("disables the decrease button at the minimum player count", () => {
+      renderPanel({ playerCount: 2 });
+      const controls = within(screen.getByLabelText("Player count"));
+
+      expect(controls.getByRole("button", { name: "Decrease player count" })).toBeDisabled();
+      expect(controls.getByRole("button", { name: "Increase player count" })).not.toBeDisabled();
+    });
+
+    it("disables the increase button at the maximum player count", () => {
+      renderPanel({ playerCount: 8 });
+      const controls = within(screen.getByLabelText("Player count"));
+
+      expect(controls.getByRole("button", { name: "Increase player count" })).toBeDisabled();
+      expect(controls.getByRole("button", { name: "Decrease player count" })).not.toBeDisabled();
     });
 
     it("changes layout mode and reflects a controlled layoutMode prop update", async () => {
@@ -112,12 +124,33 @@ describe("Frontend - Shared", () => {
       expect(screen.getByRole("spinbutton", { name: "Custom starting life" })).toBeInTheDocument();
     });
 
+    it("prefills the inline custom-life input with 60 when starting life is currently a fixed preset", async () => {
+      const user = userEvent.setup();
+      renderPanel({ startingLife: 40 });
+
+      await user.click(screen.getByRole("button", { name: "Set custom starting life" }));
+
+      expect(screen.getByRole("spinbutton", { name: "Custom starting life" })).toHaveValue(60);
+    });
+
+    it("submitting the 60 prefill unedited applies starting life 60", async () => {
+      const user = userEvent.setup();
+      const props = renderPanel({ startingLife: 40 });
+
+      await user.click(screen.getByRole("button", { name: "Set custom starting life" }));
+      await user.click(screen.getByRole("button", { name: "Apply custom starting life" }));
+
+      expect(props.onStartingLifeChange).toHaveBeenCalledWith(60);
+    });
+
     it("applies a valid custom integer and collapses back to a pill", async () => {
       const user = userEvent.setup();
       const props = renderPanel();
 
       await user.click(screen.getByRole("button", { name: "Set custom starting life" }));
-      await user.type(screen.getByRole("spinbutton", { name: "Custom starting life" }), "55");
+      const input = screen.getByRole("spinbutton", { name: "Custom starting life" });
+      await user.clear(input);
+      await user.type(input, "55");
       await user.click(screen.getByRole("button", { name: "Apply custom starting life" }));
 
       expect(props.onStartingLifeChange).toHaveBeenCalledWith(55);
@@ -130,7 +163,9 @@ describe("Frontend - Shared", () => {
       const props = renderPanel();
 
       await user.click(screen.getByRole("button", { name: "Set custom starting life" }));
-      await user.type(screen.getByRole("spinbutton", { name: "Custom starting life" }), value);
+      const input = screen.getByRole("spinbutton", { name: "Custom starting life" });
+      await user.clear(input);
+      await user.type(input, value);
       await user.click(screen.getByRole("button", { name: "Apply custom starting life" }));
 
       expect(props.onStartingLifeChange).not.toHaveBeenCalled();
@@ -152,12 +187,15 @@ describe("Frontend - Shared", () => {
 
       await user.click(screen.getByRole("button", { name: "Set custom starting life" }));
       const input = screen.getByRole("spinbutton", { name: "Custom starting life" });
+      await user.clear(input);
       await user.type(input, "55");
       await user.keyboard("{Escape}");
       expect(screen.getByRole("button", { name: "Set custom starting life" })).toBeInTheDocument();
 
       await user.click(screen.getByRole("button", { name: "Set custom starting life" }));
-      await user.type(screen.getByRole("spinbutton", { name: "Custom starting life" }), "55");
+      const reopenedInput = screen.getByRole("spinbutton", { name: "Custom starting life" });
+      await user.clear(reopenedInput);
+      await user.type(reopenedInput, "55");
       await user.tab();
 
       expect(screen.getByRole("button", { name: "Set custom starting life" })).toBeInTheDocument();
@@ -231,18 +269,11 @@ describe("Frontend - Shared", () => {
       expect(screen.getByRole("button", { name: "Use flat card style" })).toHaveAttribute("aria-pressed", "true");
     });
 
-    it("toggles day/night tracking from its off default", async () => {
-      const user = userEvent.setup();
-      const props = renderPanel({ dayNightEnabled: false });
-      const toggle = screen.getByRole("switch", { name: "Track day and night" });
+    it("renders with no Day/Night toggle - the control is always visible in the header instead", () => {
+      renderPanel();
 
-      expect(toggle).toHaveAttribute("aria-checked", "false");
-
-      await user.click(toggle);
-      expect(props.onDayNightEnabledChange).toHaveBeenCalledWith(true);
-
-      props.rerenderPanel({ dayNightEnabled: true });
-      expect(screen.getByRole("switch", { name: "Track day and night" })).toHaveAttribute("aria-checked", "true");
+      expect(screen.queryByRole("switch", { name: "Track day and night" })).not.toBeInTheDocument();
+      expect(screen.queryByText("Day / Night")).not.toBeInTheDocument();
     });
 
     it("reveals per-player name inputs for exactly the current player count from the Players section", async () => {

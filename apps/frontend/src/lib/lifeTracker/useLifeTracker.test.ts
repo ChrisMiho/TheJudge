@@ -162,22 +162,19 @@ describe("Frontend - Shared", () => {
       expect(result.current.state.players[0].life).toBe(-7);
     });
 
-    it("persists the card style and day/night settings as they change", () => {
+    it("persists the card style and day/night phase as they change", () => {
       const { result } = renderHook(() => useLifeTracker());
 
       act(() => {
         result.current.setCardStyle("flat");
-        result.current.setDayNightEnabled(true);
         result.current.toggleDayNightPhase();
       });
 
       expect(result.current.state.cardStyle).toBe("flat");
-      expect(result.current.state.dayNightEnabled).toBe(true);
       expect(result.current.state.dayNightPhase).toBe("night");
 
       const stored = JSON.parse(localStorage.getItem(TRACKER_STORAGE_KEY) as string);
       expect(stored.cardStyle).toBe("flat");
-      expect(stored.dayNightEnabled).toBe(true);
       expect(stored.dayNightPhase).toBe("night");
     });
 
@@ -187,7 +184,6 @@ describe("Frontend - Shared", () => {
       act(() => {
         result.current.setLayoutMode("list");
         result.current.setCardStyle("flat");
-        result.current.setDayNightEnabled(true);
         result.current.setPlayerCount(6);
         result.current.toggleDayNightPhase();
       });
@@ -198,10 +194,56 @@ describe("Frontend - Shared", () => {
 
       expect(result.current.state.layoutMode).toBe("list");
       expect(result.current.state.cardStyle).toBe("flat");
-      expect(result.current.state.dayNightEnabled).toBe(true);
       expect(result.current.state.dayNightPhase).toBe("day");
       expect(result.current.state.playerCount).toBe(4);
       expect(localStorage.getItem(TRACKER_STORAGE_KEY)).toBeNull();
+    });
+
+    it("applies the count-driven starting-life default when crossing tiers without a manual choice", () => {
+      const { result } = renderHook(() => useLifeTracker());
+
+      act(() => {
+        result.current.setPlayerCount(2);
+      });
+
+      expect(result.current.state.startingLife).toBe(20);
+      expect(result.current.state.hasManualStartingLife).toBe(false);
+      expect(result.current.state.players.every((player) => player.life === 20)).toBe(true);
+
+      act(() => {
+        result.current.setPlayerCount(3);
+      });
+
+      expect(result.current.state.startingLife).toBe(40);
+      expect(result.current.state.players.every((player) => player.life === 40)).toBe(true);
+    });
+
+    it("does not apply the count-driven default after a manual starting-life choice", () => {
+      const { result } = renderHook(() => useLifeTracker());
+
+      act(() => {
+        result.current.setStartingLife(30);
+        result.current.setPlayerCount(2);
+      });
+
+      expect(result.current.state.hasManualStartingLife).toBe(true);
+      expect(result.current.state.startingLife).toBe(30);
+      expect(result.current.state.players.every((player) => player.life === 30)).toBe(true);
+    });
+
+    it("newGame resets hasManualStartingLife to false", () => {
+      const { result } = renderHook(() => useLifeTracker());
+
+      act(() => {
+        result.current.setStartingLife(30);
+      });
+      expect(result.current.state.hasManualStartingLife).toBe(true);
+
+      act(() => {
+        result.current.newGame();
+      });
+
+      expect(result.current.state.hasManualStartingLife).toBe(false);
     });
 
     it("exposes named and custom counter actions that update the returned state", () => {

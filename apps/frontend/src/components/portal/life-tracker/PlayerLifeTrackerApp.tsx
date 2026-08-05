@@ -2,23 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { BrandMark } from "../../BrandMark";
 import { PageShell } from "../../PageShell";
 import type { PlayerLabel } from "../../../types";
-import {
-  listSeatArrangement,
-  seatArrangement,
-  type SeatArrangementLayout,
-  type SeatPlacement
-} from "../../../lib/lifeTracker/seatArrangement";
+import { listSeatArrangement, seatArrangement } from "../../../lib/lifeTracker/seatArrangement";
 import { useLifeTracker, type UseLifeTrackerResult } from "../../../lib/lifeTracker/useLifeTracker";
 import { PortalSlot } from "../PortalSlot";
 import { CounterPanel } from "./CounterPanel";
 import { GameSetupPanel } from "./GameSetupPanel";
 import { PlayerLifeCard } from "./PlayerLifeCard";
-
-/** True when `placement` spans every column of `layout` - a list-mode head/foot row, not a paired seat. */
-function isWideSeat(placement: SeatPlacement, layout: SeatArrangementLayout): boolean {
-  const [start, end] = placement.gridColumn.split(" / ").map(Number);
-  return end - start >= layout.columns;
-}
 
 export interface PlayerLifeTrackerAppProps {
   /** Wave 3 composes the counter panel through this boundary. */
@@ -89,7 +78,6 @@ function GameSetupModal({ tracker, onClose }: GameSetupModalProps): JSX.Element 
             playerCount={tracker.state.playerCount}
             layoutMode={tracker.state.layoutMode}
             cardStyle={tracker.state.cardStyle}
-            dayNightEnabled={tracker.state.dayNightEnabled}
             startingLife={tracker.state.startingLife}
             players={tracker.state.players.map((player) => ({
               label: player.label,
@@ -98,7 +86,6 @@ function GameSetupModal({ tracker, onClose }: GameSetupModalProps): JSX.Element 
             onPlayerCountChange={tracker.setPlayerCount}
             onLayoutModeChange={tracker.setLayoutMode}
             onCardStyleChange={tracker.setCardStyle}
-            onDayNightEnabledChange={tracker.setDayNightEnabled}
             onStartingLifeChange={tracker.setStartingLife}
             onDisplayNameChange={tracker.setPlayerDisplayName}
             onReset={tracker.reset}
@@ -129,31 +116,34 @@ export function PlayerLifeTrackerApp({
 
   return (
     <PageShell variant="full-bleed">
-      <div className="mx-auto flex min-h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col gap-2">
+      {/* `height`, not `min-height`: the table is a single screen of seats, so it has to be
+          capped by the viewport rather than merely floored by it. At 5-8 players the old
+          `min-h` + per-row `minmax(15rem, …)` + per-card `min-h-60` floors summed past the
+          screen and pushed the bottom seats below the fold; rows now share whatever height
+          the screen actually has. */}
+      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col gap-2">
         <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3">
           <PortalSlot />
           <div className="text-center">
             <BrandMark />
           </div>
           <div className="flex items-center gap-2 justify-self-end">
-            {tracker.state.dayNightEnabled && (
-              <button
-                type="button"
-                data-testid="day-night-toggle"
-                data-day-night-phase={tracker.state.dayNightPhase}
-                // The button both reports the current designation and flips it, so the label states
-                // what it is now and the visible text repeats it - MTG day/night is one game-wide
-                // value with exactly two states, so "flip" needs no further disambiguation.
-                aria-label={`Day and night: currently ${tracker.state.dayNightPhase}. Flip designation.`}
-                onClick={tracker.toggleDayNightPhase}
-                className="motion-focus flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-zinc-600 bg-zinc-900/95 px-3 text-xs font-bold text-zinc-100 shadow-lg shadow-black/40 backdrop-blur hover:bg-zinc-800"
-              >
-                <span aria-hidden="true" className="text-sm leading-none">
-                  {tracker.state.dayNightPhase === "day" ? "☀" : "☾"}
-                </span>
-                <span aria-hidden="true">{tracker.state.dayNightPhase === "day" ? "Day" : "Night"}</span>
-              </button>
-            )}
+            <button
+              type="button"
+              data-testid="day-night-toggle"
+              data-day-night-phase={tracker.state.dayNightPhase}
+              // The button both reports the current designation and flips it, so the label states
+              // what it is now and the visible text repeats it - MTG day/night is one game-wide
+              // value with exactly two states, so "flip" needs no further disambiguation.
+              aria-label={`Day and night: currently ${tracker.state.dayNightPhase}. Flip designation.`}
+              onClick={tracker.toggleDayNightPhase}
+              className="motion-focus flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-zinc-600 bg-zinc-900/95 px-3 text-xs font-bold text-zinc-100 shadow-lg shadow-black/40 backdrop-blur hover:bg-zinc-800"
+            >
+              <span aria-hidden="true" className="text-sm leading-none">
+                {tracker.state.dayNightPhase === "day" ? "☀" : "☾"}
+              </span>
+              <span aria-hidden="true">{tracker.state.dayNightPhase === "day" ? "Day" : "Night"}</span>
+            </button>
             <button
               type="button"
               aria-label="Open game setup"
@@ -173,10 +163,9 @@ export function PlayerLifeTrackerApp({
           style={{
             display: "grid",
             gridTemplateColumns: `repeat(${layout.columns}, minmax(0, 1fr))`,
-            gridTemplateRows: `repeat(${layout.rows}, minmax(15rem, 1fr))`,
-            minHeight: `${layout.rows * 16}rem`
+            gridTemplateRows: `repeat(${layout.rows}, minmax(0, 1fr))`
           }}
-          className="flex-1 gap-2 pb-1"
+          className="min-h-0 flex-1 gap-2 pb-1"
         >
           {layout.seats.map((placement) => {
             const player = tracker.state.players.find((candidate) => candidate.label === placement.label);
@@ -188,9 +177,7 @@ export function PlayerLifeTrackerApp({
                 player={player}
                 players={tracker.state.players}
                 placement={placement}
-                layoutMode={tracker.state.layoutMode}
                 cardStyle={tracker.state.cardStyle}
-                isWideSeat={tracker.state.layoutMode === "list" && isWideSeat(placement, layout)}
                 onAdjustLife={tracker.adjustPlayerLife}
                 onSetLife={tracker.setPlayerLife}
                 onOpenCounters={openCounters}

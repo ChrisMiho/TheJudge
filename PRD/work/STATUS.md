@@ -6,28 +6,22 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-_(none)_
+- [assistant-chat-shell-followup](./assistant-chat-shell-followup/)
+- [player-life-tracker-refinement](./player-life-tracker-refinement/)
+- [center-menu-tab-prominence-followup](./center-menu-tab-prominence-followup/)
 
 ## active
-
-- [commander-spellbook-combos](./commander-spellbook-combos/)
 
 ## refining
 
 - [context-ai-photo-card-id](./context-ai-photo-card-id/)
-- [player-life-tracker-refinement](./player-life-tracker-refinement/)
-
-## refined
-
-_(none)_
 
 ## ideation
 
-- [assistant-chat-shell-followup](./assistant-chat-shell-followup/)
 - [card-collection-manager](./card-collection-manager/)
-- [center-menu-tab-prominence-followup](./center-menu-tab-prominence-followup/)
-- [player-life-tracker-refinement-followup](./player-life-tracker-refinement-followup/)
 - [scan-non-english-special-treatments](./scan-non-english-special-treatments/)
+- [life-tracker-me-map-and-tray](./life-tracker-me-map-and-tray/)
+- [chrome-hit-areas-and-mid-flight-exits](./chrome-hit-areas-and-mid-flight-exits/)
 
 ## owner-action
 
@@ -35,4 +29,4 @@ _(none)_
 
 ## deferred
 
-_(none)_
+- [commander-spellbook-combos](./commander-spellbook-combos/)

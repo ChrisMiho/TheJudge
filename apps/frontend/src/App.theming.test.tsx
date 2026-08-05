@@ -31,7 +31,8 @@ import {
   openStackBuilder,
   addCardToStack,
   clickDecryptStack,
-  appCss
+  appCss,
+  startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
 let fetchMock: ReturnType<typeof vi.fn>;
@@ -47,6 +48,7 @@ function queueAskAiResponses(...responses: Array<{ status: number; body: unknown
 describe("Frontend - Theme", () => {
 describe("Theme palette changes preserve workflow state", () => {
   beforeEach(() => {
+    startOnInDepthQuestion();
     metadataFixture = [...baseCardMetadataFixture];
     askAiResponseQueue = [{ status: 200, body: { answer: "Mock answer" } }];
     submittedAskAiRequests.length = 0;

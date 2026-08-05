@@ -47,7 +47,7 @@ Decrypt wait UX and follow-up conversation history behavior.
 - Related requirements:
   - REQ-027
 - Notes:
-  - narrowly reopened for saved conversation history only by DEC-124; all other conversation state remains ephemeral per this decision
+  - narrowly reopened for saved conversation history by DEC-124 and for mid-flight Draft by DEC-130; all other conversation state remains ephemeral per this decision
 
 ### DEC-040
 - Decision: Game context is frozen after the first successful decrypt for the duration of the in-session conversation; follow-up turns are text-only in v1.
@@ -59,9 +59,12 @@ Decrypt wait UX and follow-up conversation history behavior.
   - `hiddenInitialQuestion` (including zone-aware fallback) is captured at first decrypt and included in `conversationHistory` on follow-up turns but not shown in the UI thread
   - In-Depth Question start over clears the thread and returns the user to the beginning of the flow (game context step): staged game context, selected zones, zone cards, question text, and turn-phase/combat-step staging are all cleared; player roster (player count, display names, life totals, poison/energy/experience, commander damage, custom counters) is preserved so a game staged in or seeded from Player Life Tracker is not wiped
   - start over button is visible whenever the first decrypt has succeeded and no request is in flight
+  - completed-conversation auto-save on Start Over and mid-flight Draft persistence are owned by DEC-124 / DEC-130 (not restated here)
 - Related requirements:
   - REQ-025
   - REQ-029
+  - REQ-103
+  - REQ-108
 - Notes:
 
 ### DEC-041
@@ -147,6 +150,7 @@ Decrypt wait UX and follow-up conversation history behavior.
   - diverges from DEC-039/DEC-111 for saved conversation history only; all other suite state remains in-session/ephemeral
   - non-goals: cross-device sync, account/auth, server-side storage, editing restored frozen context, unbounded history retention
   - narrow-viewport presentation, trigger placement, and the DEC-122 collision are resolved by DEC-125
+  - mid-flight **Draft** slot (before first successful submit) is added by DEC-130; completed-history cap of 20 is unchanged and does not include Draft
 
 ### DEC-125
 - Decision: DEC-124's left history drawer gets its own trigger — a full-width button inside the conversation workspace body (the same implementation pattern as `AdaptiveContextDialog`'s trigger, DEC-118), positioned above the context trigger — rather than sharing DEC-122's top-left corner-rail Menu trigger or its drawer. The history drawer presents as an accessible bottom sheet below `768px` and a left-side drawer at `768px`+, mirroring DEC-118's context sheet/drawer breakpoint and affordance types exactly, just mirrored to the left instead of the right. Because both the history drawer and DEC-122's Menu drawer slide in from the left edge at `768px`+, they are mutually exclusive: opening either one closes the other first, so the left edge never shows two overlapping slide-in panels.
@@ -187,6 +191,7 @@ Decrypt wait UX and follow-up conversation history behavior.
   - NFR-001
 - Notes:
   - supersedes only DEC-125's trigger-placement clause; DEC-125's drawer open/close mechanics, breakpoint presentation (bottom sheet/left drawer), and mutual exclusivity remain unchanged and authoritative
+  - History visibility on In-Depth/Quick Question (always-on, including empty/after Start Over) and non-overlap with View Context are refined by DEC-129; this decision's rail integration otherwise stands
   - non-goals: any change to DEC-122's corner-rail visual language (radial glow, no border) beyond growing its hit-area height; a shared icon-button component extraction (left as a future code-health item)
 
 ### DEC-127
@@ -205,3 +210,91 @@ Decrypt wait UX and follow-up conversation history behavior.
   - REQ-098
 - Notes:
   - non-goals: any change to the outer app-shell card/header treatment, MOCK-mode banner, or non-conversation destinations; markdown rendering (DEC-123) and adaptive context trigger (DEC-118) behavior are unchanged, not reopened by this decision
+  - short-thread fill and Start Over chrome reachability/sizing are refined by DEC-131
+
+### DEC-129
+- Decision: On In-Depth Question and Quick Question, the History zone of the Menu corner rail (DEC-126) is always present — including when the history list is empty, when the user is on any pre-submit step, and immediately after Start Over — matching Menu's always-on pattern. The History control and the answered-state View Context trigger must not overlap or collide at any supported viewport (desktop and mobile). Life Tracker and Trade Balancer remain Menu-only (no History zone).
+- Status: confirmed
+- Context: Live review showed the History icon overlapping View Context on desktop (`issues/1.png`) and disappearing after Start Over until a new request was submitted (`issues/2.png`), so prior conversations were unreachable while re-walking the flow.
+- Impact:
+  - supersedes DEC-126's and REQ-103's "History only when there is history to show / only when `historyTrigger` is supplied for an active answered workspace" visibility clauses for these two destinations
+  - the History rail zone renders on every In-Depth Question and Quick Question screen state (pre-submit steps and answered workspace)
+  - layout/spacing of the corner rail vs View Context (and any adjacent header chrome) is adjusted so the History hit-target never overlaps the context trigger or its border
+  - empty history opens the same drawer with an empty/zero-state list rather than hiding the control
+  - no change to DEC-125 drawer open/close, breakpoint sheet/drawer presentation, or mutual exclusivity with the Menu drawer
+- Related requirements:
+  - REQ-107
+  - REQ-103
+  - DEC-126
+  - DEC-122
+  - FLOW-017
+- Notes:
+  - non-goals: History on Life Tracker / Trade Balancer; merging History into the Menu drawer contents
+
+### DEC-130
+- Decision: Each conversation-bearing destination (In-Depth Question, Quick Question) gains exactly one browser-local **Draft** slot that snapshots mid-flight staging so Menu navigation away (and page reload) do not wipe work before the first successful Ask AI submit. Mid-flight means any staged state for the current attempt before that first successful submit (typed question, optional card, staged game/zones/enrichment, current step — whatever that flow has staged). The History drawer lists that slot as **Draft** (not "In progress"), separately from completed conversations. Selecting Draft restores mid-flight staged state. A page reload on that destination, and returning to that destination via Menu while a Draft exists, **auto-hydrate** the mid-flight UI from Draft (DEC-103-style restore — not list-until-selected like completed history). The single slot updates as staging changes (no unfinished backlog). Start Over remains answered-only per DEC-040/REQ-029; after Start Over from an answered conversation, new mid-flight staging becomes/overwrites that destination's Draft. First successful submit clears Draft and the conversation follows DEC-124 completed-history. Draft does not count toward the 20-entry completed-history cap.
+- Status: confirmed
+- Context: Users can open Menu throughout In-Depth/Quick Question staging (card scan, zones, enrichment, typed question). Leaving before submit was wiping that progress. Owner wants one replaceable Draft snapshot labeled "Draft", with reload/return auto-hydrate like Life Tracker persistence — not a new pre-submit Start Over control.
+- Impact:
+  - extends DEC-124's persistence model with a distinct Draft record per destination (`game` / `lookup`), stored browser-locally with the same guarded-read pattern
+  - Draft is written/updated as the user stages mid-flight state (enough to resume meaningfully after Menu leave or reload)
+  - Start Over stays visible only after first successful decrypt with no request in flight (DEC-040/REQ-029 unchanged); there is no mid-flight Start Over / New conversation invent
+  - after Start Over from an answered conversation (completed auto-save per DEC-124), subsequent mid-flight staging becomes/overwrites that destination's Draft
+  - once the attempt reaches a successful first answer, Draft for that attempt is cleared and the conversation enters the normal DEC-124 completed-history path
+  - History drawer shows Draft (when present) above or distinctly from completed entries; selecting Draft restores staged pre-submit state rather than an answered thread
+  - mounting the destination with a stored Draft auto-hydrates mid-flight UI (reload and Menu return); History still lists Draft for explicit re-select
+  - no server-side store, no multi-draft backlog, no change to `AskAiRequest` / providers / prompt assembly
+- Related requirements:
+  - REQ-108
+  - REQ-103
+  - REQ-029
+  - DEC-124
+  - DEC-103
+  - FLOW-017
+- Notes:
+  - narrowly extends DEC-039/DEC-111 divergence already opened by DEC-124; Draft is still single-device browser-local only
+  - non-goals: multiple unfinished drafts per destination, cross-destination single global draft, editing frozen answered context via Draft, pre-submit Start Over control
+
+### DEC-131
+- Decision: Within the shared answered conversation workspace (In-Depth Question and Quick Question), short threads must still fill the available vertical chat surface (no large empty dead band below a short card), Start Over must remain reachable in the first desktop viewport without being clipped by excess chrome height, and on narrow/mobile viewports Start Over is visually smaller than the prior full-width large control to reduce accidental taps while remaining an adequate touch target (NFR-001). Separately, the pre-submit question composers shared by Enrichment (optional question) and Quick Question must grow with typed content up to the available space before bottom chrome, without growing so far that the document/page scrolls.
+- Status: confirmed
+- Context: Live review found desktop answered chrome too tall (Start Over hidden), short answered threads leaving empty black below the workspace (`issues/4.png`), oversized mobile Start Over, and pre-submit question fields that stay single-line until chat initiates (`issues/3.png`, `issues/5.png`). Pre-submit staged-screen "fill the empty lower half" is explicitly out of scope for this decision (owned by other UI-refinement work).
+- Impact:
+  - answered `ConversationWorkspace` layout rebalances so the thread region absorbs available height when content is short (extends DEC-127's fill intent to the short-content case)
+  - desktop answered layout keeps Start Over (and composer) within the reachable workspace without requiring the user to discover a clipped control
+  - mobile Start Over uses a compact control treatment (smaller visual weight than today's large full-width button) while meeting the 44px touch-target floor
+  - Enrichment optional-question field and Quick Question question field share a grow-with-content behavior capped so the page itself does not scroll from field growth; growth stops when bottom chrome (submit / Start Over-equivalent row) meets the available bottom
+  - presentation/layout only — no contract, provider, or prompt changes
+- Related requirements:
+  - REQ-109
+  - REQ-110
+  - REQ-105
+  - REQ-097
+  - DEC-127
+  - DEC-118
+  - NFR-001
+- Notes:
+  - non-goals: filling empty lower-half dead space on pre-submit Game Context / zone / Quick Question landing screens; outer app-shell redesign
+
+### DEC-134
+- Decision: Two post-ship corrections to the saved-conversation history experience (DEC-124/DEC-125/DEC-126). (1) **Selecting a saved conversation always lands on that conversation.** Restoring an entry from any pre-submit staged step of In-Depth Question moves the flow to the answered conversation workspace in the same action, rather than restoring the conversation behind whatever step the user was on. (2) The history drawer presents as a **left-edge, full-height drawer at every viewport**, superseding DEC-125's below-`768px` bottom sheet. Its `768px`+ presentation is unchanged. Menu↔History mutual exclusivity, focus trap/restore, Escape-to-close, reduced-motion behavior, the 20-entry cap, Draft semantics (DEC-130), and all frozen-context/restore semantics are unchanged.
+- Status: confirmed
+- Context: Live use after the chat-shell package shipped found both defects. In-Depth Question renders a restored conversation only inside its enrichment step, so selecting an entry from Game context closed the drawer onto the unchanged staged screen — the conversation appeared not to open at all — and then surfaced that other thread later, in place of enrichment, once the user walked the flow forward on their own. Quick Question was unaffected because its whole screen is gated on an active conversation. Separately, the bottom sheet sized itself to its content, so a short list (one saved conversation, or an empty one) rendered a small strip pinned to the screen bottom under a screen's worth of scrim, read by the product owner as dead space; the Menu drawer opened from the same corner rail is a left-edge full-height tray (DEC-133) at every width.
+- Impact:
+  - selecting a history entry on In-Depth Question restores the conversation *and* moves the flow to the answered workspace, from any staged step
+  - Start Over from that restored conversation returns to a clean Game context step exactly as before
+  - the history overlay uses `align-items: stretch; justify-content: flex-start` with no `max-height` cap at every viewport; the surface keeps its right-side rounding and slides in from the left edge it is anchored to
+  - narrow-viewport width is a fluid cap (`min(22rem, 88vw)`); `768px`+ keeps `min(30rem, 90vw)`
+  - presentation and in-app navigation only — no change to `AskAiRequest`, Zod schemas, `GameContext`, frozen-context shapes, history persistence/limits, prompt assembly, providers, or backend routes
+- Related requirements:
+  - REQ-103
+  - REQ-107
+  - DEC-124
+  - DEC-125
+  - DEC-126
+  - DEC-130
+  - DEC-133
+  - NFR-001
+- Notes:
+  - supersedes DEC-125's "accessible bottom sheet below `768px`" clause for the history drawer only; DEC-118's context sheet/drawer breakpoint is untouched
+  - non-goals: merging history into the Menu drawer, a shared drawer primitive extraction, changing what a restored conversation contains

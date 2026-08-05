@@ -26,8 +26,6 @@ export type DayNightPhase = "day" | "night";
 export type TrackerPreferences = {
   layoutMode: LayoutMode;
   cardStyle: CardStyle;
-  /** Opt-in: when false the day/night control is not rendered at all. */
-  dayNightEnabled: boolean;
 };
 
 export type TrackerPlayer = {
@@ -43,10 +41,10 @@ export type TrackerState = {
   /** 2-8, always equal to `players.length`. */
   playerCount: number;
   startingLife: number;
+  /** Whether the current game's starting life was set explicitly (preset or Custom) rather than by a count-driven default. */
+  hasManualStartingLife: boolean;
   layoutMode: LayoutMode;
   cardStyle: CardStyle;
-  dayNightEnabled: boolean;
-  /** Only meaningful while `dayNightEnabled`; always persisted so a re-enable restores it. */
   dayNightPhase: DayNightPhase;
   players: TrackerPlayer[];
 };

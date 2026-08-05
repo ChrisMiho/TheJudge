@@ -11,7 +11,8 @@ import {
   jsonResponse,
   setSelectedZones,
   uninstallMemoryLocalStorage,
-  uninstallMemorySessionStorage
+  uninstallMemorySessionStorage,
+  startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
 let fetchMock: ReturnType<typeof vi.fn>;
@@ -54,6 +55,7 @@ describe("Frontend - Feedback", () => {
     beforeEach(() => {
       installMemoryLocalStorage();
       installMemorySessionStorage();
+      startOnInDepthQuestion();
       fetchMock = vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
         if (getUrlFromRequest(input) === "/data/cardMetadata.json") {
           return jsonResponse([]);
@@ -81,8 +83,8 @@ describe("Frontend - Feedback", () => {
         .map((item) => item.getAttribute("aria-label"));
 
       expect(entryLabels).toEqual([
-        "In-Depth Question",
         "Quick Question",
+        "In-Depth Question",
         "Life Tracker",
         "Trade Balancer",
         "Send feedback"

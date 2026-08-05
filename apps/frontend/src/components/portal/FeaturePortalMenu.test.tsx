@@ -4,9 +4,11 @@ import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FeaturePortalMenu } from "./FeaturePortalMenu";
 import { PortalSlot } from "./PortalSlot";
+import { ShellBounds } from "./ShellBounds";
 import { ConversationHistoryDrawer } from "../ConversationHistoryDrawer";
 import { LeftEdgeDrawerProvider } from "../../lib/portal/leftEdgeDrawerContext";
 import type { DestinationId, PortalEntry } from "../../lib/portal/types";
+import { startOnInDepthQuestion } from "../../test/appTestHelpers";
 import { appCss, jsonResponse, getUrlFromRequest } from "../../test/appTestHelpers";
 
 const DESTINATIONS: PortalEntry[] = [
@@ -265,7 +267,7 @@ describe("FeaturePortalMenu", () => {
     expect(hoverBlock).not.toContain("border");
   });
 
-  it("opens a partial-height drawer positioned under the corner rail, not a centered dropdown box", async () => {
+  it("opens a full-height, shell-bounds-clipped drawer positioned under the corner rail, not a centered dropdown box", async () => {
     const user = userEvent.setup();
     render(<Harness />);
 
@@ -281,7 +283,8 @@ describe("FeaturePortalMenu", () => {
       appCss.indexOf("}", appCss.indexOf(".portal-menu-drawer {"))
     );
     expect(drawerBlock).toContain("left: 0");
-    expect(drawerBlock).toMatch(/max-height:/);
+    expect(drawerBlock).toContain("position: sticky");
+    expect(drawerBlock).toMatch(/height: 100dvh/);
 
     const enterKeyframe = appCss.slice(
       appCss.indexOf("@keyframes portal-menu-drawer-enter"),
@@ -357,6 +360,265 @@ describe("FeaturePortalMenu reduced motion", () => {
   });
 });
 
+describe("FeaturePortalMenu shell-bounds tray geometry (REQ-113)", () => {
+  it("falls back to rendering the drawer in place when no shell-bounds node is registered", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+
+    const menu = screen.getByRole("menu");
+    expect(menu.closest(".portal-shell-bounds")).toBeNull();
+  });
+
+  it("portals the open drawer into the resolved shell-bounds node when one is registered", async () => {
+    const user = userEvent.setup();
+    render(
+      <FeaturePortalMenu
+        entries={DESTINATIONS}
+        activeDestinationId="mtg-assistant"
+        onSelect={vi.fn()}
+        paletteId="blue"
+        onPaletteSelect={vi.fn()}
+        colorlessCustomHex={undefined}
+        onColorlessCustomChange={vi.fn()}
+        onColorlessReset={vi.fn()}
+      >
+        <PortalSlot />
+        <section className="page-card">
+          <ShellBounds />
+          <div>page content</div>
+        </section>
+      </FeaturePortalMenu>
+    );
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+
+    const menu = screen.getByRole("menu");
+    expect(menu.parentElement).toHaveClass("portal-shell-bounds");
+  });
+
+  it("resolves the visible shell-bounds node among multiple registered (hidden vs visible)", async () => {
+    const user = userEvent.setup();
+    render(
+      <FeaturePortalMenu
+        entries={DESTINATIONS}
+        activeDestinationId="mtg-assistant"
+        onSelect={vi.fn()}
+        paletteId="blue"
+        onPaletteSelect={vi.fn()}
+        colorlessCustomHex={undefined}
+        onColorlessCustomChange={vi.fn()}
+        onColorlessReset={vi.fn()}
+      >
+        <PortalSlot />
+        <div hidden data-testid="hidden-shell">
+          <section className="page-card">
+            <ShellBounds />
+          </section>
+        </div>
+        <div data-testid="visible-shell">
+          <section className="page-card">
+            <ShellBounds />
+          </section>
+        </div>
+      </FeaturePortalMenu>
+    );
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+
+    const menu = screen.getByRole("menu");
+    const visibleHost = screen.getByTestId("visible-shell");
+    const hiddenHost = screen.getByTestId("hidden-shell");
+    expect(visibleHost.contains(menu)).toBe(true);
+    expect(hiddenHost.contains(menu)).toBe(false);
+  });
+
+  it("keeps the rail portaling into the header slot unchanged while the drawer portals into shell-bounds", async () => {
+    const user = userEvent.setup();
+    render(
+      <FeaturePortalMenu
+        entries={DESTINATIONS}
+        activeDestinationId="mtg-assistant"
+        onSelect={vi.fn()}
+        paletteId="blue"
+        onPaletteSelect={vi.fn()}
+        colorlessCustomHex={undefined}
+        onColorlessCustomChange={vi.fn()}
+        onColorlessReset={vi.fn()}
+      >
+        <PortalSlot />
+        <section className="page-card">
+          <ShellBounds />
+        </section>
+      </FeaturePortalMenu>
+    );
+
+    const button = screen.getByRole("button", { name: "Switch feature" });
+    expect(button.closest("div")?.className).toContain("portal-slot-tab");
+
+    await user.click(button);
+    const menu = screen.getByRole("menu");
+    expect(menu.closest(".portal-slot-tab")).toBeNull();
+    expect(menu.parentElement).toHaveClass("portal-shell-bounds");
+  });
+
+  it("still closes on outside click and Escape when the drawer is portaled into shell-bounds", async () => {
+    const user = userEvent.setup();
+    render(
+      <div>
+        <FeaturePortalMenu
+          entries={DESTINATIONS}
+          activeDestinationId="mtg-assistant"
+          onSelect={vi.fn()}
+          paletteId="blue"
+          onPaletteSelect={vi.fn()}
+          colorlessCustomHex={undefined}
+          onColorlessCustomChange={vi.fn()}
+          onColorlessReset={vi.fn()}
+        >
+          <PortalSlot />
+          <section className="page-card">
+            <ShellBounds />
+          </section>
+        </FeaturePortalMenu>
+        <button type="button">Outside</button>
+      </div>
+    );
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Outside" }));
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+  });
+
+  it("does not close when clicking inside the portaled drawer itself", async () => {
+    const user = userEvent.setup();
+    render(
+      <FeaturePortalMenu
+        entries={DESTINATIONS}
+        activeDestinationId="mtg-assistant"
+        onSelect={vi.fn()}
+        paletteId="blue"
+        onPaletteSelect={vi.fn()}
+        colorlessCustomHex={undefined}
+        onColorlessCustomChange={vi.fn()}
+        onColorlessReset={vi.fn()}
+      >
+        <PortalSlot />
+        <section className="page-card">
+          <ShellBounds />
+        </section>
+      </FeaturePortalMenu>
+    );
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+
+    // Clicking the Theme heading text inside the portaled drawer is not an actionable
+    // control, but it is a click landing inside the drawer's own (portaled) DOM subtree —
+    // this must not be treated as an "outside" click that closes the menu.
+    await user.click(screen.getByText("Theme"));
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+  });
+
+  it("gives .page-card a positioning context and .portal-shell-bounds a full-inset clip box matching the shell's radius", () => {
+    const pageCardBlock = appCss.slice(
+      appCss.indexOf(".page-card {"),
+      appCss.indexOf("}", appCss.indexOf(".page-card {"))
+    );
+    expect(pageCardBlock).toContain("position: relative");
+
+    const shellBoundsBlock = appCss.slice(
+      appCss.indexOf(".portal-shell-bounds {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-shell-bounds {"))
+    );
+    expect(shellBoundsBlock).toContain("position: absolute");
+    expect(shellBoundsBlock).toContain("inset: 0");
+    expect(shellBoundsBlock).toContain("overflow: hidden");
+    expect(shellBoundsBlock).toContain("border-radius: inherit");
+    expect(shellBoundsBlock).toContain("pointer-events: none");
+  });
+
+  it("gives .page-shell-bleed a bare pass-through box with no visual chrome of its own", () => {
+    const bleedBlock = appCss.slice(
+      appCss.indexOf(".page-shell-bleed {"),
+      appCss.indexOf("}", appCss.indexOf(".page-shell-bleed {"))
+    );
+    expect(bleedBlock).toContain("position: relative");
+    expect(bleedBlock).not.toContain("border");
+    expect(bleedBlock).not.toContain("border-radius");
+    expect(bleedBlock).not.toContain("padding");
+  });
+});
+
+describe("FeaturePortalMenu decorative brand mark (REQ-113 item 4)", () => {
+  it("renders a quiet, non-interactive brand mark inside the open drawer, after the entries and Theme section", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+
+    const menu = screen.getByRole("menu");
+    const marks = screen.getAllByText("TheJudge");
+    expect(marks.length).toBeGreaterThan(0);
+    const brandMark = marks[marks.length - 1];
+    expect(menu.contains(brandMark)).toBe(true);
+
+    const hiddenAncestor = brandMark.closest('[aria-hidden="true"]');
+    expect(hiddenAncestor).not.toBeNull();
+    expect(hiddenAncestor?.className).toContain("portal-menu-drawer-brand");
+
+    // Not a button, not an actionable element.
+    expect(brandMark.tagName).not.toBe("BUTTON");
+    expect(brandMark.closest("button")).toBeNull();
+  });
+
+  it("does not affect menuitem queries — the brand mark is not part of the drawer's role=menu semantics", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+
+    const items = screen.getAllByRole("menuitem");
+    expect(items.map((item) => item.textContent)).toEqual(["MTG Assistant✓", "Trade"]);
+    expect(items.some((item) => item.textContent?.includes("TheJudge"))).toBe(false);
+  });
+
+  it("never triggers a selection when its area is clicked", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    render(<Harness onSelect={onSelect} />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    const marks = screen.getAllByText("TheJudge");
+    await user.click(marks[marks.length - 1]);
+
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+  });
+
+  it("styles the brand mark as quiet/non-interactive and stretches the drawer's flex column so it can pin to the bottom", () => {
+    const brandBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-drawer-brand {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-drawer-brand {"))
+    );
+    expect(brandBlock).toContain("pointer-events: none");
+    expect(brandBlock).toContain("opacity:");
+
+    const innerBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-drawer-inner {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-drawer-inner {"))
+    );
+    expect(innerBlock).toContain("min-height: 100%");
+  });
+});
+
 describe("Chrome integration", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
 
@@ -376,6 +638,9 @@ describe("Chrome integration", () => {
   });
 
   it("renders the portal button inline in the staged step header, ahead of the centered brand and the step eyebrow", async () => {
+    // This case is about In-Depth Question's staged header specifically; Quick Question is
+    // the portal's default destination, so say which screen is under test.
+    startOnInDepthQuestion();
     const { default: App } = await import("../../App");
     render(<App />);
 
@@ -388,7 +653,12 @@ describe("Chrome integration", () => {
     // renders in normal flow inside the header grid, then lifts via `.portal-slot-tab`'s
     // negative margin to meet .page-card's own top border (see index.css) — rather than
     // falling back to the viewport-fixed floating tab.
-    const portalContainerClassName = portalButton.closest("div")?.className ?? "";
+    // Game context now always supplies a historyTrigger (REQ-107), so the rail renders
+    // in its two-zone split form (see .portal-menu-rail-split) — the button's immediate
+    // parent is that split-zone wrapper, not `.portal-slot-tab` itself. Climb to the
+    // nearest `.portal-slot-tab` ancestor (present in both single- and two-zone forms)
+    // rather than the immediate parent div.
+    const portalContainerClassName = portalButton.closest(".portal-slot-tab")?.className ?? "";
     expect(portalContainerClassName).toContain("portal-slot-tab");
     expect(portalContainerClassName).not.toContain("fixed");
     // Header grid: PortalSlot (left column) precedes the centered brand block; the
@@ -435,7 +705,9 @@ describe("Chrome integration", () => {
     await user.click(screen.getByRole("menuitem", { name: "In-Depth Question" }));
 
     const portalButton = screen.getByRole("button", { name: "Switch feature" });
-    const portalContainerClassName = portalButton.closest("div")?.className ?? "";
+    // Same two-zone-wrapper caveat as above: climb to the nearest `.portal-slot-tab`
+    // ancestor rather than the immediate parent div.
+    const portalContainerClassName = portalButton.closest(".portal-slot-tab")?.className ?? "";
     expect(portalContainerClassName).toContain("portal-slot-tab");
     expect(portalContainerClassName).not.toContain("fixed");
   });

@@ -12,7 +12,8 @@ import {
   expandSecondaryPlayerDetails,
   getUrlFromRequest,
   jsonResponse,
-  selectZoneTab
+  selectZoneTab,
+  startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
 async function selectDestination(user: ReturnType<typeof userEvent.setup>, name: string): Promise<void> {
@@ -31,6 +32,8 @@ describe("Frontend - Portal", () => {
   const submittedRequests: ZoneAskAiPayload[] = [];
 
   beforeEach(() => {
+
+    startOnInDepthQuestion();
     submittedRequests.length = 0;
     vi.stubGlobal(
       "fetch",

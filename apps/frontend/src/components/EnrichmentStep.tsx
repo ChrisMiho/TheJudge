@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   buildEnrichmentQueue,
   CANONICAL_ZONE_ORDER,
@@ -8,6 +8,7 @@ import { getCardIdentityRingStyle } from "../lib/cardIdentityRing";
 import { formatContextTarget, hasOwnerControl, parseManaSpent } from "../lib/enrichmentFormat";
 import { buildPlayerDisplayNameMap, formatPlayerDisplayLabel } from "../lib/playerLabels";
 import { ZONE_LABELS } from "../lib/zoneLabels";
+import { useAutoGrowTextarea } from "../hooks/useAutoGrowTextarea";
 import { useEnrichmentTargets } from "../hooks/useEnrichmentTargets";
 import type { ConversationMessage, ContextTarget, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { AskAiWaitingPanel } from "./AskAiWaitingPanel";
@@ -377,6 +378,8 @@ export function EnrichmentStep({
   const stackSelectedButEmpty =
     gameContext?.selectedZones?.includes("stack") === true && (zones.stack?.length ?? 0) === 0;
   const fallbackQuestion = resolveFallbackQuestion(zones);
+  const questionTextareaRef = useRef<HTMLTextAreaElement>(null);
+  useAutoGrowTextarea(question, questionTextareaRef);
 
   if (isConversationActive) {
     return (
@@ -421,7 +424,7 @@ export function EnrichmentStep({
 
   return (
     <PageShell>
-        <StagedStepHeader />
+        <StagedStepHeader historyTrigger={historyTrigger} />
         <StepEyebrow stepName="Context enrichment" />
 
         <div className="flex items-center justify-between gap-3">
@@ -532,13 +535,14 @@ export function EnrichmentStep({
                 </span>
                 <div className="ambient-accent-surface ambient-accent-interactive flex items-end gap-2 rounded-3xl border border-zinc-700/70 bg-zinc-900/55 py-2 pl-4 pr-2">
                   <textarea
+                    ref={questionTextareaRef}
                     aria-label="Optional question"
                     placeholder="How does this resolve?"
                     value={question}
                     onChange={(e) => onQuestionChange(e.target.value.slice(0, MAX_QUESTION_CHARS))}
                     rows={1}
                     maxLength={MAX_QUESTION_CHARS}
-                    className="min-w-0 flex-1 resize-none bg-transparent py-1.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none"
+                    className="min-w-0 flex-1 resize-none overflow-y-auto bg-transparent py-1.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none"
                   />
                   <span className="shrink-0 pb-1.5 text-xs text-zinc-500">
                     {question.length}/{MAX_QUESTION_CHARS}

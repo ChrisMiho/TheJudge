@@ -281,21 +281,23 @@
   - app is loaded
 - Main Flow:
   1. User selects Player Life Tracker from the feature portal; the app switches to the tracker view (frontend-only, no reload).
-  2. User sets player count (2–8) and a starting-life preset in basic game setup; each player card seeds to the starting life, arranged in full table orientation facing each seat.
-  3. During play, users tap each card's `+`/`−` zones to adjust life; a card shows a skull when that player's life reaches ≤ 0 and clears it if life returns above 0.
-  4. Users open a player's counter panel to track the per-opponent commander-damage matrix and named counters (poison, energy, exp, and the rest of the palette) plus any generic custom counter; with the commander-damage→life option on, opponent commander damage also decrements that player's life.
-  5. Tracker state persists to browser-local storage, so a reload or phone-lock restores the in-progress game (DEC-103).
-  6. When the user switches to MTG Assistant, the game-setup roster is seeded one-way from current tracker state (count, names, life, counters); the user may edit before Decrypt.
-  7. Returning to the tracker preserves its live state; an explicit reset / New Game returns counters to starting values and clears persistence.
+  2. User opens Game Setup to set player count (2–8 via `−`/`+`) and a starting-life preset (20/25/30/40 or Custom defaulting to 60); changing count applies In-Depth defaults (2 → 20, 3+ → 40) unless starting life was already customized; each player card seeds to the starting life, arranged in full table orientation facing each seat. Names are edited via Game Setup’s Edit names disclosure.
+  3. During play, users tap each card's `+`/`−` zones to adjust life (REQ-112); a card shows a skull when that player's life reaches ≤ 0 and clears it if life returns above 0.
+  4. The tracker header always shows the game-wide day/night designation; tapping it flips day ↔ night (REQ-111 / DEC-132). The designation is manual only and is not seeded into In-Depth.
+  5. Users open a player's counter panel to track the per-opponent commander-damage matrix (always-visible `−`/`+` bands per REQ-112) and named counters (poison, energy, exp, and the rest of the palette) plus any generic custom counter; incrementing opponent commander damage also decrements that player's life.
+  6. Tracker state persists to browser-local storage, so a reload or phone-lock restores the in-progress game (DEC-103).
+  7. When the user switches to MTG Assistant / In-Depth Question, the game-setup roster is seeded one-way from current tracker state (count, names, life, counters); day/night designation is not included; the user may edit before Decrypt.
+  8. Returning to the tracker preserves its live state; an explicit reset / New Game returns counters to starting values (presentation preferences may survive New Game).
 - Edge Cases:
   - the tracker's player count is constrained to 2–8, so the seeded roster always conforms to the game-context contract
   - counters left at zero or unset are omitted from the seeded `gameContext` payload (REQ-083)
   - a page reload mid-game restores tracker state rather than losing it (DEC-103)
   - the skull at life ≤ 0 is a visual death cue only; the player card remains and life can still be adjusted back up
+  - old saves that still carry a removed `dayNightEnabled` flag load; the flag is ignored and the header control remains available
 - Notes:
   - the tracker is a life/counter tracker, not a rules engine or board/zone tracker (DEC-013); it does not replace the staged zone / Ask AI flow, only seeds player-facing context into it
-  - deferred surfaces: game history, mana counter, dice & misc, per-player theming, saved profiles, reset-with-winner, layout toggle; Planechase / Archenemy / Bounty are out of scope
-  - UI direction is driven by the reference photos under `PRD/work/player-life-tracker/references/`
+  - deferred surfaces: game history, mana counter, dice & misc, per-player theming, saved profiles, reset-with-winner; Planechase / Archenemy / Bounty are out of scope
+  - UI direction is driven by the reference photos under the refinement package's `references/`
 
 ### FLOW-014
 - Name: Send feedback / report a bug
@@ -363,8 +365,32 @@
   - selected entry's stored data is corrupted or fails validation → entry is dropped from the list without crashing the app
   - history list exceeds 20 entries → oldest entry is pruned automatically on the next save
   - user selects the same conversation that is already active → no-op, workspace state unchanged
-  - user starts a brand-new conversation instead of resuming → existing Start Over / New conversation flow applies unchanged (DEC-040/REQ-029), with auto-save of the outgoing conversation per REQ-103
+  - user starts a brand-new conversation instead of resuming → existing Start Over / New conversation flow applies unchanged (DEC-040/REQ-029), with auto-save of the outgoing conversation per REQ-103; subsequent mid-flight staging after Start Over becomes/overwrites the Draft slot (REQ-108 / FLOW-017)
   - the feature-portal Menu drawer is already open when the user opens the history drawer (or vice versa) → the previously open drawer closes first, so only one left-edge drawer is ever open at a time (DEC-125)
+  - History control is unavailable / missing after Start Over → defect; History must remain always visible on In-Depth Question and Quick Question (REQ-107 / DEC-129)
 - Notes:
   - resumed frozen context stays read-only; no zone/card/enrichment editing is introduced (DEC-040 unchanged)
   - no backend, contract, or provider behavior changes; this is a frontend state-restoration flow only
+  - Draft resume (pre-submit mid-flight) is FLOW-017, not this completed-conversation resume path
+
+### FLOW-017
+- Name: Preserve and resume mid-flight Draft across Menu leave and reload
+- Trigger: User stages mid-flight work on In-Depth Question or Quick Question before first successful submit, then leaves via Menu, reloads, or opens History
+- Preconditions:
+  - user is on (or returning to) In-Depth Question or Quick Question
+  - History rail is always visible on these destinations (REQ-107)
+- Main Flow:
+  1. User stages mid-flight state (typed question, optional card, zones/enrichment, current step — anything before first successful submit). The destination's single Draft slot is written/updated and appears in History as **Draft**.
+  2. User may open Menu and navigate to another destination (or reload the page) without submitting; Draft remains browser-local.
+  3. Returning to that destination via Menu, or reloading while that destination mounts, auto-hydrates mid-flight UI from Draft (DEC-103-style) so staged work is not lost.
+  4. User may also open History from the corner rail (including from a pre-submit step) and select **Draft** or a completed conversation (FLOW-016).
+  5. Selecting Draft restores that destination's mid-flight staged state so the user can continue toward submit.
+  6. After Start Over from an answered conversation (completed auto-save per REQ-103), new mid-flight staging becomes/overwrites that destination's Draft (still one row). Start Over itself remains answered-only (REQ-029).
+- Edge Cases:
+  - empty completed history and no Draft → History still opens to an empty/zero-state list
+  - Draft storage corrupt → Draft dropped; History still opens; destination mounts fresh
+  - first successful submit while a Draft exists for the attempt → Draft cleared; conversation enters completed-history path
+  - switching to Life Tracker / Trade Balancer → those destinations have no History zone; returning to In-Depth / Quick Question restores always-on History and auto-hydrates Draft if present
+- Notes:
+  - one Draft per conversation-bearing destination; no unfinished backlog; no mid-flight Start Over invent (DEC-130)
+  - pre-submit empty lower-half screen fill is out of scope for this flow

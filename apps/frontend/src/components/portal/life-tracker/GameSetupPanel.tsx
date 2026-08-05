@@ -12,13 +12,11 @@ export interface GameSetupPanelProps {
   playerCount: number;
   layoutMode: LayoutMode;
   cardStyle: CardStyle;
-  dayNightEnabled: boolean;
   startingLife: number;
   players: GameSetupPanelPlayer[];
   onPlayerCountChange: (count: number) => void;
   onLayoutModeChange: (mode: LayoutMode) => void;
   onCardStyleChange: (cardStyle: CardStyle) => void;
-  onDayNightEnabledChange: (enabled: boolean) => void;
   onStartingLifeChange: (startingLife: number) => void;
   onDisplayNameChange: (label: PlayerLabel, value: string) => void;
   onReset: () => void;
@@ -36,14 +34,10 @@ type PendingAction = "reset" | "new-game";
 
 const PENDING_MESSAGES: Record<PendingAction, string> = {
   reset: "Reset this game? Every life total goes back to the starting life and all counters clear. Players, names, and settings stay.",
-  "new-game": "Start a new game? This game is discarded: back to 4 players at 40 life, with names and counters cleared. Layout, card style, and day/night tracking stay."
+  "new-game": "Start a new game? This game is discarded: back to 4 players at 40 life, with names and counters cleared. Layout and card style stay."
 };
 
 const STARTING_LIFE_PRESETS = [20, 25, 30, 40] as const;
-const PLAYER_COUNTS = Array.from(
-  { length: MAX_PLAYER_COUNT - MIN_PLAYER_COUNT + 1 },
-  (_, index) => MIN_PLAYER_COUNT + index
-);
 const MIN_CUSTOM_STARTING_LIFE = 1;
 const MAX_CUSTOM_STARTING_LIFE = 999;
 
@@ -60,13 +54,11 @@ export function GameSetupPanel({
   playerCount,
   layoutMode,
   cardStyle,
-  dayNightEnabled,
   startingLife,
   players,
   onPlayerCountChange,
   onLayoutModeChange,
   onCardStyleChange,
-  onDayNightEnabledChange,
   onStartingLifeChange,
   onDisplayNameChange,
   onReset,
@@ -102,7 +94,7 @@ export function GameSetupPanel({
   }
 
   function beginCustomLifeEdit(): void {
-    setStartingLifeDraft(isCustomStartingLife ? String(startingLife) : "");
+    setStartingLifeDraft(isCustomStartingLife ? String(startingLife) : "60");
     setCustomError(null);
     setIsEditingStartingLifeCustom(true);
   }
@@ -194,22 +186,26 @@ export function GameSetupPanel({
           </span>
           Players
         </p>
-        <div className="flex flex-wrap gap-2" aria-label="Player count">
-          {PLAYER_COUNTS.map((count) => {
-            const isSelected = playerCount === count;
-            return (
-              <button
-                key={count}
-                type="button"
-                aria-label={`Set player count to ${count}`}
-                aria-pressed={isSelected}
-                onClick={() => onPlayerCountChange(count)}
-                className={`${pillClassName(isSelected)} min-w-11`}
-              >
-                {count}
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-3" aria-label="Player count">
+          <button
+            type="button"
+            aria-label="Decrease player count"
+            onClick={() => onPlayerCountChange(playerCount - 1)}
+            disabled={playerCount === MIN_PLAYER_COUNT}
+            className="motion-focus inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-lg font-black text-zinc-100 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span aria-hidden="true">−</span>
+          </button>
+          <span className="min-w-8 text-center text-lg font-black tabular-nums text-zinc-100">{playerCount}</span>
+          <button
+            type="button"
+            aria-label="Increase player count"
+            onClick={() => onPlayerCountChange(playerCount + 1)}
+            disabled={playerCount === MAX_PLAYER_COUNT}
+            className="motion-focus inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-accent-strong bg-accent-strong text-lg font-black text-accent-contrast transition hover:bg-accent disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-900 disabled:text-zinc-100 disabled:opacity-50"
+          >
+            <span aria-hidden="true">+</span>
+          </button>
         </div>
 
         <button
@@ -377,30 +373,6 @@ export function GameSetupPanel({
             {customError}
           </p>
         )}
-      </div>
-
-      <div className="pt-4">
-        <p className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-400">
-          <span aria-hidden="true" className="text-base leading-none">
-            ☾
-          </span>
-          Day / Night
-        </p>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={dayNightEnabled}
-          aria-label="Track day and night"
-          onClick={() => onDayNightEnabledChange(!dayNightEnabled)}
-          className={`${pillClassName(dayNightEnabled)} inline-flex w-full items-center justify-between gap-2`}
-        >
-          <span>Track day and night</span>
-          <span aria-hidden="true">{dayNightEnabled ? "On" : "Off"}</span>
-        </button>
-        <p className="mt-2 text-xs text-zinc-500">
-          Adds a day/night control to the tracker header. The designation is game-wide and only ever
-          changes when you flip it - nothing here watches the game to flip it for you.
-        </p>
       </div>
     </section>
   );

@@ -13,7 +13,8 @@ import {
   jsonResponse,
   openStackBuilder,
   uninstallMemoryLocalStorage,
-  uninstallMemorySessionStorage
+  uninstallMemorySessionStorage,
+  startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
 const legacyDensityKey = "thejudge.theme.layoutDensity";
@@ -49,6 +50,7 @@ describe("Frontend - UI flare chat motion integration", () => {
   beforeEach(() => {
     installMemoryLocalStorage();
     installMemorySessionStorage();
+    startOnInDepthQuestion();
     localStorage.setItem(legacyDensityKey, "slim");
     submittedRequests = [];
     resolveQuickFollowUp = undefined;

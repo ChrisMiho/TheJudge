@@ -513,14 +513,19 @@
   - clicking start over clears the conversation thread and returns the user to the game context step (first step of the flow)
   - staged game context, selected zones, zone cards, question text, and turn-phase/combat-step staging are cleared
   - player roster is preserved: player count, display names, life totals, poison/energy/experience, commander damage, and custom counters are unchanged (so a game seeded from or shared with Player Life Tracker is not wiped)
-  - no conversation history is persisted after start over
+  - if the conversation being left has at least one successful answer, it is auto-saved to completed history first (REQ-103 / DEC-124)
+  - History remains available after start over (REQ-107); subsequent mid-flight staging after start over becomes/overwrites the Draft slot (REQ-108 / DEC-130)
 - Constraints:
   - do not clear or reset player roster fields (count, display names, life totals, counters) on start over
 - Dependencies:
   - DEC-040
   - REQ-025
+  - REQ-103
+  - REQ-107
+  - REQ-108
 - Notes:
   - superseded prior behavior of returning to the enrichment step with staged zones/cards preserved; this requirement now defines a full flow reset instead
+  - the former "no conversation history is persisted after start over" clause is superseded by DEC-124/DEC-130 persistence rules
 
 ### REQ-030
 - Title: Prompt assembly includes full card metadata in every populated zone
@@ -1529,6 +1534,7 @@
   - owned by the `feature-portal` package; hidden placeholders do not count as registered destinations
   - DEC-117/REQ-096 remove only the former density control; palette hosting, destination registry, action entries, and Menu docking remain unchanged
   - amended by DEC-122: the Menu trigger moves from a top-middle tab to a top-left corner rail, and its dropdown becomes a left-edge sliding drawer; destination registry, action entries, Theme section, in-session state preservation, and reload persistence are all unchanged, only the trigger's position and opened-panel shape are superseded
+  - amended by DEC-133 / REQ-113: the open Menu panel is a full-height left tray of the outer shell (visible-bounds on tall shells, matching bottom-left radius); registry, Theme, and docking guarantees otherwise unchanged
 
 ### REQ-068
 - Title: Responsive scan-view layout
@@ -1832,21 +1838,28 @@
 - Acceptance Criteria:
   - Player Life Tracker appears as a destination in the feature-portal registry (DEC-095); selecting it switches to the tracker view frontend-only with no reload
   - the main screen renders one card per player (2–8) with a large life total rotated to face that player's seat, using a default seat arrangement per player count
-  - each card exposes `+`/`−` controls (edge tap zones) that adjust that player's life
+  - each card exposes `+`/`−` controls (edge tap zones) that adjust that player's life; zone thickness follows REQ-112
   - a player whose life is ≤ 0 shows a skull death indicator overlay on their card; the indicator clears when life returns above 0; no elimination or auto-KO occurs
-  - basic game setup lets the user choose player count (2–8) and a starting-life preset (20, 25, 30, 40, 60, or custom); starting life seeds every player
+  - basic game setup lets the user choose player count (2–8) via `−`/`+` controls (not a pill row) and a starting-life preset (20, 25, 30, 40, or Custom); starting life seeds every player
+  - the Custom starting-life slot defaults to 60 when opened/applied without a different typed value
+  - changing player count applies the In-Depth starting-life defaults (2 players → 20, 3+ → 40) unless the user has already chosen a different starting life for this game
   - a reset returns all players' life and counters to the current starting values with no winner-selection step
-  - the roster (player count and display names) is the shared roster component used by the MTG Assistant game-setup step (REQ-015)
+  - display names are editable from Game Setup via the tracker's Edit names disclosure; In-Depth continues to use the shared `PlayerRosterEditor` (REQ-015)
+  - game-wide day/night designation tracking is always available in the tracker header (REQ-111 / DEC-132)
 - Constraints:
   - presentation/tracking only; not a rules engine, no board/zone tracking, no elimination logic (DEC-013)
   - decorative motion stays CSS-only and reduced-motion-aware (DEC-079, NFR-006)
+  - tracker Game Setup does not reuse `PlayerRosterEditor`; shared seed/data contracts are unchanged
 - Dependencies:
   - DEC-101
   - DEC-095
+  - DEC-132
+  - REQ-111
+  - REQ-112
   - NFR-001
 - Notes:
-  - UI direction is driven by the reference photos under `PRD/work/player-life-tracker/references/`
-  - deferred surfaces (game history, mana counter, dice & misc, per-player theming, saved profiles, reset-with-winner, layout toggle) are out of v1
+  - UI direction is driven by the reference photos under `PRD/work/player-life-tracker/references/` (carried into `player-life-tracker-refinement`)
+  - deferred surfaces (game history, mana counter, dice & misc, per-player theming, saved profiles, reset-with-winner) remain out of scope unless separately approved
 
 ### REQ-082
 - Title: Player counter tracking and commander-damage matrix
@@ -1857,17 +1870,20 @@
   - the panel tracks a per-opponent commander-damage value for each other player in the game (a "me" cell marks the player's own seat)
   - the panel offers the reference counter palette — Monarch, Treasure, Initiative, Poison, Ascend, Rad, Day/night, C.Tax, K.O., Energy, Exp — each independently increment/decrementable
   - the user can add a generic named custom counter
-  - tap increments a counter; a hold/secondary action exposes decrement and set options
-  - an optional per-game setting makes incrementing an opponent's commander damage also decrement that player's life; when off, commander damage and life are independent; all other counters are always manual
+  - tap increments a named/custom counter; a hold/secondary action exposes decrement and set options
+  - each opponent commander-damage cell exposes always-visible `−`/`+` bands (no hold menu); band thickness follows REQ-112
+  - incrementing an opponent's commander damage also decrements that player's life (always on; not a Game Setup toggle)
   - counter values persist with the game per DEC-103
 - Constraints:
-  - counters are captured values only; no automatic rules resolution beyond the explicit commander-damage→life option (DEC-013)
+  - counters are captured values only; no automatic rules resolution beyond the explicit commander-damage→life convenience (DEC-013)
 - Dependencies:
   - DEC-101
   - REQ-081
   - REQ-083
+  - REQ-112
 - Notes:
   - "all trackable player counters" per product direction; commander damage is per-opponent
+  - the palette's per-player “Day/night” counter is distinct from the game-wide day/night designation (REQ-111)
 
 ### REQ-083
 - Title: GameContext per-player counter contract extension
@@ -1894,15 +1910,16 @@
 - Priority: medium
 - Description: Persist tracker game state to browser-local storage so a live game survives reload/phone-lock, with explicit cleanup boundaries.
 - Acceptance Criteria:
-  - tracker state (roster, each player's life and counters, commander-damage matrix, commander-damage→life option, starting-life setting) is saved to browser-local storage
-  - on load, the tracker restores the last saved game state
-  - an explicit New Game / reset clears persisted state and returns to starting values
+  - tracker state (roster, each player's life and counters, commander-damage matrix, starting-life setting, game-wide `dayNightPhase`, layout mode, card style) is saved to browser-local storage
+  - on load, the tracker restores the last saved game state; unknown/obsolete fields such as a former `dayNightEnabled` flag are ignored without discarding the save
+  - an explicit New Game / reset clears game values and returns to starting values; presentation preferences (layout mode, card style) may survive New Game
   - persistence is frontend-only and single-device; no server store and no cross-device sync
 - Constraints:
   - diverges from the in-session-only suite convention (DEC-089/DEC-095) for this feature only; other suite modes are unchanged
 - Dependencies:
   - DEC-103
   - DEC-101
+  - DEC-132
 - Notes:
   - reuses the browser-local persistence pattern established by ThemeControl (DEC-066)
 
@@ -1916,6 +1933,7 @@
   - the seed is one-way (tracker → Assistant); edits in Assistant do not write back to the tracker
   - returning to the tracker preserves its live state
   - the tracker's player count is constrained to 2–8 so seeded values never violate the game-context contract
+  - game-wide day/night designation is not part of the seed (no `GameContext` field / wiring; DEC-132)
 - Constraints:
   - handoff is frontend-only; no backend/contract change beyond the additive counter fields (DEC-102)
 - Dependencies:
@@ -2021,6 +2039,7 @@
 - Notes:
   - DEC-117/REQ-096 supersede only the density-control clauses; Menu docking and palette hosting remain unchanged
   - amended by DEC-122: "docks flush" now describes the top-left corner rail rather than the top-middle tab, and the step-name presentation referenced here moves out of the header into an eyebrow label (REQ-045); the underlying consolidation this requirement establishes (no standalone floating theme control, no fixed-viewport Menu) is otherwise unchanged
+  - amended by DEC-133 / REQ-113: open Menu is a full-height shell-docked left tray (visible shell bounds on tall pages); "scrolls away with the page" for the rail remains, while the open tray tracks the visible shell side rather than a partial-height cutoff
 
 ### REQ-090
 - Title: Persist active feature-portal destination across a page refresh
@@ -2403,7 +2422,7 @@
 ### REQ-103
 - Title: Persistent conversation history list and drawer
 - Priority: high
-- Description: The shared conversation workspace must offer a left history drawer listing auto-saved past conversations, persisted browser-locally on the current device, so a user can browse conversations from earlier in the session or a previous visit.
+- Description: In-Depth Question and Quick Question must offer a left history drawer (always-on History rail, including pre-submit steps) listing auto-saved past conversations and any mid-flight **Draft**, persisted browser-locally on the current device, so a user can browse conversations from earlier in the session or a previous visit.
 - Acceptance Criteria:
   - any conversation that reaches at least one successful answer auto-saves to a browser-local history list; saving happens on first answer and updates on each subsequent follow-up in that conversation
   - a history drawer, opened from the shared conversation workspace, lists saved conversations most-recent-first, each showing originating flow, timestamp, and the first question as a preview snippet
@@ -2412,10 +2431,11 @@
   - storage reads are guarded; a missing, corrupted, or invalid stored value is dropped without breaking the app, mirroring the existing theme-preference fallback pattern
   - the drawer opens/closes with an explicit control and Escape, contains keyboard focus while open, and returns focus to its trigger on close
   - no server-side store, account system, or cross-device sync is introduced; history is scoped to one browser on one device
-  - the drawer's trigger is a small icon integrated into the feature-portal Menu's corner rail (DEC-122), stacked below the Menu icon within the same fluid-height ambient glow hit-area, rendered only on destinations that have history to show (DEC-126)
+  - the drawer's trigger is a small icon integrated into the feature-portal Menu's corner rail (DEC-122), stacked below the Menu icon within the same fluid-height ambient glow hit-area, and is always rendered on In-Depth Question and Quick Question (DEC-129), including when the list is empty and after Start Over
   - below `768px` the drawer presents as a bottom sheet; at `768px`+ it presents as a left-side drawer, mirroring DEC-118's context sheet/drawer breakpoint and affordance types (DEC-125)
   - opening the history drawer while the feature-portal Menu drawer is open closes the Menu drawer first, and vice versa, so the left edge never shows two overlapping panels (DEC-125)
   - saved-conversation entries render as plain, unboxed grouped rows with a quiet active/hover highlight rather than a bordered card per entry (DEC-126)
+  - when a mid-flight Draft exists for the destination, the drawer shows a distinct **Draft** row (REQ-108 / DEC-130) in addition to completed conversations
 - Constraints:
   - frontend-only, browser-local persistence; no backend endpoint or contract change
   - reuse the DEC-103 (Player Life Tracker) persistence pattern rather than introducing new storage infrastructure
@@ -2423,11 +2443,15 @@
   - DEC-124
   - DEC-125
   - DEC-126
+  - DEC-129
+  - DEC-130
   - DEC-118
   - DEC-122
   - DEC-103
+  - REQ-107
+  - REQ-108
 - Notes:
-  - trigger placement and entry row styling refined by DEC-126 during post-ship visual refinement; retention/resume/persistence semantics unchanged
+  - trigger placement and entry row styling refined by DEC-126; always-on visibility and Draft slot added by DEC-129/DEC-130
 
 ### REQ-104
 - Title: Resume a saved conversation
@@ -2469,3 +2493,161 @@
   - REQ-098
 - Notes:
   - added during post-ship visual refinement against the product owner's goal of mirroring Claude/ChatGPT/Cursor's chat UI
+  - short-content fill and Start Over chrome reachability/sizing refined by REQ-109 / DEC-131
+
+### REQ-107
+- Title: Always-visible History rail without View Context overlap
+- Priority: high
+- Description: On In-Depth Question and Quick Question, the History corner-rail control must always be available (including empty history and after Start Over), and must not overlap the answered-state View Context trigger or its chrome at any supported viewport.
+- Acceptance Criteria:
+  - History rail zone is visible on every In-Depth Question and Quick Question screen state (all pre-submit steps and the answered workspace), including when no completed conversations or Draft exist
+  - immediately after Start Over, History remains visible and openable without requiring a new successful submit
+  - opening History with an empty list shows an empty/zero-state drawer rather than hiding or disabling the control
+  - at desktop widths and at ~390×844 mobile widths, the History icon/hit-target does not overlap, clip into, or sit on the border of the View Context trigger
+  - Life Tracker and Trade Balancer continue to show Menu-only rails (no History zone)
+- Constraints:
+  - presentation and availability only; drawer open/close, breakpoint sheet/drawer, and Menu mutual exclusivity remain DEC-125
+  - no Ask AI contract or backend change
+- Dependencies:
+  - DEC-129
+  - DEC-126
+  - DEC-122
+  - REQ-103
+- Notes:
+
+### REQ-108
+- Title: Mid-flight Draft slot in conversation history
+- Priority: high
+- Description: Each conversation-bearing destination must persist at most one mid-flight Draft snapshot (anything before the first successful submit) so Menu navigation away and page reload do not wipe staged work; listed in History as **Draft**, auto-hydrated on destination mount, and kept as a single updating slot (no unfinished backlog).
+- Acceptance Criteria:
+  - mid-flight is defined as any staged state before the first successful Ask AI answer for the current attempt (typed question, optional card, staged game/zones/enrichment, current step as applicable)
+  - Draft is written/updated as mid-flight staging changes enough to resume meaningfully after Menu leave or reload
+  - History drawer shows at most one **Draft** row per destination when mid-flight state exists, labeled **Draft** (not "In progress")
+  - selecting Draft restores that destination's mid-flight staged state so the user can continue toward submit
+  - mounting the destination with a stored Draft (page reload, or Menu return to that destination) auto-hydrates mid-flight UI from Draft without requiring History select first
+  - Start Over remains answered-only (REQ-029 / DEC-040); no pre-submit Start Over / New conversation control is required
+  - after Start Over from an answered conversation, new mid-flight staging becomes/overwrites that destination's Draft — no second unfinished entry accumulates
+  - on first successful answer for the attempt, Draft for that attempt is cleared and the conversation follows completed-history auto-save (REQ-103 / DEC-124)
+  - Draft does not count toward the 20 completed-conversation retention cap
+  - storage reads are guarded; corrupt Draft data is dropped without breaking the app
+- Constraints:
+  - browser-local, single-device only; no server store, no multi-draft backlog per destination
+  - no change to `AskAiRequest` / Zod / prompt assembly / providers
+- Dependencies:
+  - DEC-130
+  - DEC-124
+  - DEC-103
+  - REQ-103
+  - REQ-029
+  - FLOW-017
+- Notes:
+
+### REQ-109
+- Title: Answered workspace fill and Start Over chrome
+- Priority: high
+- Description: The shared answered conversation workspace must fill available height when the thread is short, keep Start Over reachable on desktop, and use a smaller Start Over control on mobile to reduce accidental taps.
+- Acceptance Criteria:
+  - when the answered thread content is short, the workspace/thread surface still fills the available vertical chat area (no large empty dead band below a short card) on both mobile and desktop
+  - on desktop answered view, Start Over remains reachable within the workspace without being clipped out of the first viewport by excess chrome height
+  - on narrow/mobile viewports, Start Over is visually smaller/less dominant than the prior large full-width control while remaining an adequate ≥44×44px touch target (NFR-001)
+  - both In-Depth Question and Quick Question inherit the same shared-workspace treatment
+- Constraints:
+  - answered workspace only; pre-submit staged-screen lower-half fill is out of scope
+  - presentation only; no contract/provider/prompt changes
+- Dependencies:
+  - DEC-131
+  - DEC-127
+  - REQ-105
+  - REQ-097
+  - REQ-029
+  - NFR-001
+- Notes:
+
+### REQ-110
+- Title: Growing pre-submit question composers
+- Priority: high
+- Description: The Enrichment optional-question field and the Quick Question question field must grow with typed content so long messages remain readable and editable, up to the available space before bottom chrome, without causing the page/document to scroll from field growth.
+- Acceptance Criteria:
+  - as the user types a long question on Enrichment (optional question) and on Quick Question, the field grows vertically with the content rather than staying a single-line-height box that clips text
+  - growth stops when further expansion would force document/page scroll; bottom chrome (submit row / equivalent) remains the growth ceiling against available viewport space
+  - the same grow-without-page-scroll behavior holds on desktop (more available space) and mobile
+  - character counter and submit control remain usable while the field is expanded
+- Constraints:
+  - does not require filling empty lower-half dead space on pre-submit screens beyond what field growth naturally occupies
+  - no Ask AI contract change; existing character caps unchanged
+- Dependencies:
+  - DEC-131
+  - REQ-011
+  - REQ-073
+- Notes:
+
+### REQ-111
+- Title: Always-on game-wide day/night designation
+- Priority: medium
+- Description: Player Life Tracker must always expose a game-wide day/night designation control in the tracker header — no Game Setup opt-in toggle and no persisted enable flag — so players can manually flip day ↔ night during any game (DEC-132).
+- Acceptance Criteria:
+  - the tracker header always shows the current game-wide designation (`day` / `night`) via a compact flip control; tapping flips the designation
+  - Game Setup does not offer a Day/night tracking On/Off row; there is no `dayNightEnabled` (or equivalent) setting in live state or New Game preference carry-over
+  - designation flips are manual only — never auto-derived from turns, spells, or other unavailable game events
+  - Reset returns the designation to day; New Game resets phase to day while layout/card-style preferences may survive
+  - old saves that still carry a removed `dayNightEnabled` flag load successfully; the flag is ignored and the header control remains available
+  - the game-wide designation is not seeded into In-Depth / `GameContext`
+  - the per-player named “Day/night” counter in the counter palette remains a separate per-player value (REQ-082)
+- Constraints:
+  - tracker presentation/state only; no `GameContext`, seed, Ask AI, or prompt-assembly change
+  - no turn tracker or auto-derivation of day/night
+- Dependencies:
+  - DEC-132
+  - DEC-101
+  - DEC-103
+  - REQ-081
+  - REQ-084
+  - FLOW-013
+- Notes:
+  - product-truth companion to DEC-132 from `player-life-tracker-refinement`
+
+### REQ-112
+- Title: Wider life and commander-damage tap bands
+- Priority: medium
+- Description: Player Life Tracker life-adjustment edge bands and commander-damage cell `−`/`+` bands must be thicker than the prior baseline so common phone taps are easier, without changing the interaction model (DEC-132 companion polish from `player-life-tracker-refinement`).
+- Acceptance Criteria:
+  - life-adjustment bands (top/bottom on grid and narrow list pair seats; left/right on list-mode wide head/foot seats) are ~40% thicker than the prior `h-12`/`w-12` (48px) baseline → ≈67px
+  - each opponent commander-damage cell's always-visible `−`/`+` bands are ~20% thicker than the prior `min-h-11` (44px) baseline → ≈53px
+  - tap/increment/decrement behavior, matrix layout, and always-visible band model are otherwise unchanged
+  - touch targets remain usable on common phone widths (NFR-001)
+- Constraints:
+  - presentation/sizing only; no counter-model, persistence-shape, or seed/contract change beyond the sizing
+- Dependencies:
+  - REQ-081
+  - REQ-082
+  - DEC-101
+  - NFR-001
+- Notes:
+  - sized from the approved `player-life-tracker-refinement` brief; interaction model unchanged
+
+### REQ-113
+- Title: Full-height feature-portal Menu tray
+- Priority: medium
+- Description: The open feature-portal Menu panel must read as the full left side of the outer app shell — stretching top→bottom of `.page-card` on standard destinations and the same full left-side treatment on Life Tracker's full-bleed shell — flush with the shell's bottom-left curved corner, without a partial-height cutoff and without squaring over the shell radius (DEC-133).
+- Acceptance Criteria:
+  - on a standard `.page-card` destination, the open Menu tray fills the card's left side from top to bottom even when destination/Theme content is shorter than that height
+  - the tray's bottom-left corner is flush with the shell's bottom-left and uses the same bottom-left border radius as the shell so the curved edge is preserved (no square overhang into the page background)
+  - when the shell is taller than the viewport, the tray sizes to the visible shell side (viewport ∩ shell) and stays flush with the on-screen top and bottom of the outer component rather than spanning the shell's full scrollable height
+  - Life Tracker (full-bleed shell) receives the same full left-side height and bottom-left radius treatment as standard destinations
+  - unused lower tray space may show a quiet, non-interactive decorative TheJudge brand mark; the mark must not be a second navigation control and may be omitted only when a short shell cannot host it cleanly
+  - left-edge slide open/close, corner-rail trigger, destination/action/Theme behavior, reduced-motion, and Menu↔History mutual exclusivity remain unchanged from DEC-122/DEC-125/DEC-126
+  - tests or stylesheet assertions cover full-shell height (or visible-bounds equivalent), matching bottom-left radius, and Life Tracker parity
+- Constraints:
+  - presentation only; shell-docked chrome (DEC-109) — tracking the shell's visible rectangle is allowed; a free-floating overlay disconnected from the shell is not
+  - no change to destination registry, action entries, Theme section contents, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, backend routes, card metadata, scan behavior, or data pipeline
+  - do not redesign tray contents, consolidate EnrichmentStep brand-block JSX, or add a step-progress indicator in this requirement
+- Dependencies:
+  - DEC-133
+  - DEC-122
+  - DEC-109
+  - REQ-067
+  - REQ-089
+  - NFR-001
+  - NFR-006
+- Notes:
+  - follow-up to shipped `center-menu-tab-prominence` (DEC-122); EnrichmentStep brand-block consolidation remains parked

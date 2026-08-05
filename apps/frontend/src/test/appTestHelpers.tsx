@@ -115,6 +115,21 @@ export function uninstallMemorySessionStorage(): void {
   Reflect.deleteProperty(window, "sessionStorage");
 }
 
+/**
+ * Seeds the tab's active-destination preference so an App-level suite renders straight into
+ * In-Depth Question. The portal's own default is the first registered destination, which is
+ * Quick Question (`destinationRegistry.tsx`); suites that exercise the In-Depth flow itself
+ * say so here rather than depending on which destination happens to lead the registry.
+ * Call after any `installMemorySessionStorage()`, so the seed lands in the storage under test.
+ */
+export function startOnInDepthQuestion(): void {
+  try {
+    globalThis.sessionStorage?.setItem("thejudge.portal.activeDestinationId", "mtg-assistant");
+  } catch {
+    // A suite without session storage simply gets the registry default.
+  }
+}
+
 export function createStackItem(name: string, index: number): CardMetadataItem {
   return {
     cardId: `card-${index}`,
