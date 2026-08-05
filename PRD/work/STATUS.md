@@ -24,6 +24,7 @@ _(none)_
 
 ## ideation
 
+- [assistant-chat-shell-followup](./assistant-chat-shell-followup/)
 - [card-collection-manager](./card-collection-manager/)
 - [scan-non-english-special-treatments](./scan-non-english-special-treatments/)
 

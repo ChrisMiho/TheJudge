@@ -47,3 +47,7 @@ in any order.
 
 All slices (A–E) are done. `/thejudge-cleanup PRD/work/assistant-chat-shell/`
 after this PR merges.
+
+Post-ship feedback and further chat-shell polish live in
+[`assistant-chat-shell-followup`](../assistant-chat-shell-followup/) (ideation;
+`issues/` screenshots migrated there) so cleanup of this package is not blocked.

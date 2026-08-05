@@ -403,11 +403,7 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
           {isSubmitting ? (
             <AskAiWaitingPanel isSubmitting={isSubmitting} />
           ) : (
-            <form
-              ref={questionContainerRef}
-              onSubmit={handleSubmit}
-              className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
-            >
+            <form ref={questionContainerRef} onSubmit={handleSubmit} className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <label
                   htmlFor="quick-lookup-question"
@@ -429,26 +425,29 @@ export function QuickLookupApp({ onSubmit }: QuickLookupAppProps): JSX.Element {
                   </span>
                 )}
               </div>
-              <textarea
-                ref={questionInputRef}
-                id="quick-lookup-question"
-                aria-label="Magic question"
-                value={question}
-                maxLength={MAX_QUESTION_LENGTH}
-                onChange={(event) => setQuestion(event.target.value)}
-                className="min-h-28 w-full resize-y rounded-xl border border-zinc-600 bg-zinc-800/80 px-3 py-2 text-sm normal-case tracking-normal text-zinc-100"
-                placeholder={
-                  lockedTopic
-                    ? "Add anything specific — or leave this blank and just ask."
-                    : "What would you like to know?"
-                }
-              />
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs text-zinc-400">{composedQuestion.length}/{MAX_QUESTION_LENGTH}</p>
+              <div className="ambient-accent-surface ambient-accent-interactive flex items-end gap-2 rounded-3xl border border-zinc-700/70 bg-zinc-900/55 py-2 pl-4 pr-2">
+                <textarea
+                  ref={questionInputRef}
+                  id="quick-lookup-question"
+                  aria-label="Magic question"
+                  value={question}
+                  maxLength={MAX_QUESTION_LENGTH}
+                  onChange={(event) => setQuestion(event.target.value)}
+                  rows={1}
+                  className="min-w-0 flex-1 resize-none bg-transparent py-1.5 text-sm normal-case tracking-normal text-zinc-100 placeholder:text-zinc-500 focus:outline-none"
+                  placeholder={
+                    lockedTopic
+                      ? "Add anything specific — or leave this blank and just ask."
+                      : "What would you like to know?"
+                  }
+                />
+                <span className="shrink-0 pb-1.5 text-xs text-zinc-400">
+                  {composedQuestion.length}/{MAX_QUESTION_LENGTH}
+                </span>
                 <button
                   type="submit"
                   disabled={!canSubmit || isSubmitting}
-                  className="rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="shrink-0 rounded-full bg-gradient-to-r from-accent to-accent-strong px-4 py-2 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isSubmitting ? "Asking…" : "Ask TheJudge"}
                 </button>

@@ -506,7 +506,7 @@ export function EnrichmentStep({
             <form
               onSubmit={(e) => void onDecryptStack(e)}
               data-accent-current="true"
-              className="enrichment-question-surface ambient-accent-surface ambient-accent-interactive space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+              className="enrichment-question-surface space-y-3"
             >
               <div className="space-y-2 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
                 <p className="text-sm font-semibold text-zinc-100">Sending to TheJudge</p>
@@ -526,29 +526,32 @@ export function EnrichmentStep({
                   </p>
                 )}
               </div>
-              <label className="flex flex-col gap-1">
+              <div className="space-y-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
                   Optional question
                 </span>
-                <textarea
-                  placeholder="How does this resolve?"
-                  value={question}
-                  onChange={(e) => onQuestionChange(e.target.value.slice(0, MAX_QUESTION_CHARS))}
-                  rows={2}
-                  maxLength={MAX_QUESTION_CHARS}
-                  className="resize-none rounded-xl border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
-                />
-                <span className="text-right text-xs text-zinc-500">
-                  {question.length}/{MAX_QUESTION_CHARS}
-                </span>
-              </label>
-              <button
-                type="submit"
-                disabled={isSubmitting || !canDecrypt}
-                className="w-full rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isSubmitting ? "Decrypting…" : "Decrypt Stack"}
-              </button>
+                <div className="ambient-accent-surface ambient-accent-interactive flex items-end gap-2 rounded-3xl border border-zinc-700/70 bg-zinc-900/55 py-2 pl-4 pr-2">
+                  <textarea
+                    aria-label="Optional question"
+                    placeholder="How does this resolve?"
+                    value={question}
+                    onChange={(e) => onQuestionChange(e.target.value.slice(0, MAX_QUESTION_CHARS))}
+                    rows={1}
+                    maxLength={MAX_QUESTION_CHARS}
+                    className="min-w-0 flex-1 resize-none bg-transparent py-1.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none"
+                  />
+                  <span className="shrink-0 pb-1.5 text-xs text-zinc-500">
+                    {question.length}/{MAX_QUESTION_CHARS}
+                  </span>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !canDecrypt}
+                    className="shrink-0 rounded-full bg-gradient-to-r from-accent to-accent-strong px-4 py-2 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isSubmitting ? "Decrypting…" : "Decrypt Stack"}
+                  </button>
+                </div>
+              </div>
             </form>
           )
         )}

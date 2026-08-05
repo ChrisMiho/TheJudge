@@ -29,11 +29,13 @@
   - if the user changes phase after selecting zones, newly assumed zones are added and existing cards/enrichment are preserved
   - player secondary details default collapsed; every per-player arrow reflects and toggles the same all-player expanded state, so mixed open/closed player cards cannot occur
   - closing the outer player panel or leaving and returning to In-Depth Question resets secondary details collapsed without clearing player values or other in-progress flow state
+  - on narrow/mobile viewports, expanding secondary player details must not push cards or controls horizontally off-page or introduce document-level horizontal scroll (DEC-128, REQ-106)
 - Notes:
   - this is the primary core product flow with staged context capture
   - each staged step's header presents the active step name inline to the right of the `TheJudge` / `MTG Assistant` brand block in a single row (DEC-067, REQ-045); the answered-state conversation header stays a slim brand-only header with no step name and carries an inline feature-portal Menu slot (DEC-109, REQ-089)
   - staged-flow compaction (DEC-076, REQ-056) and automatic fluid responsive presentation (DEC-117, REQ-096) are presentation-only and do not change this flow's logic or payloads; users select no layout profile
   - compact synchronized player-secondary disclosure (DEC-120, REQ-100) changes only the visibility of existing player inputs; submitted game context is unchanged for unchanged values
+  - mobile containment for expanded secondary details (DEC-128, REQ-106) is presentation-only and does not change disclosure semantics or payloads
 
 ### FLOW-002
 - Name: Inspect and remove cards from selected zones
