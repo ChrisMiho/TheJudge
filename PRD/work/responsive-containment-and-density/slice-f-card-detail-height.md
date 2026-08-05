@@ -2,6 +2,20 @@
 
 ## Status: blocked
 
+### Handoff
+- Done: DEC-148 implemented in full — preview image height-capped below `sm` (198×272, was
+  272×375) and the duplicate oracle paragraph no longer renders when an image is present.
+  Document height 1286px → 1153px; add action 244px → 112px below the fold. 12/12 card
+  preview tests pass.
+- Next: the remaining ~112px is not in the preview — it is the step's other chrome above it
+  (zone tabs, search field, Scan button, Card owner select) plus the six-row metadata list.
+  Either relax REQ-125's `top ≤ 844px` criterion to match what DEC-148 actually authorises,
+  or take a new decision on restructuring the step. Note a two-column phone preview would
+  shrink the card art below readability and so invalidate the dedupe rationale this slice
+  depends on.
+- Stopped because: DEC-148's two levers recover 133px of the ~245px the criterion needs;
+  closing the gap is outside what that decision scoped.
+
 ## Goal
 
 Bring the zone-collection card-detail add action back into the first viewport on

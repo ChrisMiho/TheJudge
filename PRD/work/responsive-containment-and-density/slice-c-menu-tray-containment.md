@@ -2,6 +2,22 @@
 
 ## Status: blocked
 
+### Handoff
+- Done: tray surface is opaque (alpha 1, was 0.95) and no destination content shows through
+  at either viewport; first row's label clears the rail band (inset now 3.5rem below `sm`,
+  5.5rem at `sm+`); 65/65 menu unit tests pass. 5 of 7 acceptance criteria met.
+- Next: decide the two open criteria rather than code around them. (1) Tray box measures
+  957 vs a 900 viewport — its *painting* is already clipped by `.portal-shell-bounds`
+  `overflow: hidden`, so this is a measurement artifact, not a visible defect; either
+  relax the criterion in REQ-122 or give `.portal-menu-drawer` a height that tracks its
+  live top offset instead of `100dvh`. (2) Menu trigger box still intersects row one;
+  `.portal-menu-rail` is `z-index: 3` above the drawer's `2` so the trigger wins the tap,
+  which DEC-140 explicitly requires. Removing the intersection means splitting the row
+  into a bordered wrapper plus an inset button — a DOM change to DEC-135's row structure
+  that needs a product call first.
+- Stopped because: both remaining criteria conflict with existing confirmed decisions, so
+  meeting them literally would require amending DEC-140 or DEC-135.
+
 ## Goal
 
 Make the open Menu tray opaque against all destination content, keep its box

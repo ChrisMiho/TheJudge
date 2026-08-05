@@ -10,6 +10,8 @@ MCP at 390×844 and 1440×900.
 
 See `IDEA.md`, `DESIGN-BRIEF.md`, `GAMEPLAN.md`.
 
+**Resuming in a fresh session? Start at [`HANDOFF.md`](./HANDOFF.md).**
+
 ## Slice table
 
 | Slice | Status | Objective | Depends on |
