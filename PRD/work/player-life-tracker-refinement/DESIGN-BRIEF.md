@@ -1,6 +1,6 @@
 # DESIGN-BRIEF: player-life-tracker-refinement
 
-Status: proceeding under explicit user authorization to implement without an interactive approval round (overnight, unattended session — see `README.md` status note). This brief still records the required screenshot-vs-shipped diff and the resulting scope so it can be reviewed after the fact.
+Status: **approved** (2026-08-04 interactive refinement after quality-check FAIL). Prior session addenda below are historical shipped work; remaining implementable scope is the final addendum.
 
 ## Diff: shipped implementation vs. in-scope reference screenshots
 
@@ -126,3 +126,29 @@ Four pieces of direct user feedback on the shipped tracker, implemented together
 - **Not touched**: `seatArrangement.ts` (both algorithms), `CounterPanel`, the counter/commander-damage model, the seed/`GameContext` contracts, and the storage key. No migration/version bump was needed — the new fields are additive and defaulted on read.
 
 Verified: `npm --workspace apps/frontend run typecheck` clean, full frontend suite 1057/1057 passing (38 new cases across `state`, `persistence` — including the explicit old-shape-without-the-new-fields load path — `useLifeTracker`, `PlayerLifeCard`, `GameSetupPanel`, and `PlayerLifeTrackerApp`), scoped `eslint` clean on all thirteen touched files.
+
+## Addendum: always-on day/night + wider tap zones + Game Setup count/life defaults (2026-08-04, approved)
+
+Direct user approval after interactive refinement (including post–quality-check FAIL cleanup). Frontend-only; no `GameContext` / seed / Ask-AI contract change.
+
+### Scope
+
+- **Day/night always on (DEC-132 / REQ-111)**: remove the Game Setup “Day/night tracking” On/Off row entirely. Drop `dayNightEnabled` from `TrackerState`, defaults, setters, New Game preference carry-over, and persistence normalization (same removal pattern as `commanderDamageToLife`). The header ☀/☾ flip control is always visible on every game. Keep `dayNightPhase` (`"day"` | `"night"`), tap-to-flip, Reset → day, and **no auto-derivation**. Old saves that still carry `dayNightEnabled` load successfully; the field is ignored. New Game confirm copy that mentioned “day/night tracking stay” as a preference is updated accordingly (phase still resets to day on New Game; layout/card style remain the surviving preferences).
+- **Life +/− bands +40% (REQ-112)**: current life-adjustment bands are `h-12` / `w-12` (48px). Widen both orientations by 40% → ≈67px thickness — top/bottom bands (grid + narrow list pair seats) and left/right bands (list-mode wide head/foot seats). Interaction model unchanged.
+- **Commander-damage +/− bands +20% (REQ-112)**: current `CommanderDamageCell` top/bottom bands are `min-h-11` (44px). Widen by 20% → ≈53px. Matrix layout and always-visible −/+ interaction unchanged.
+- **Player count control (DEC-101 / REQ-081)**: replace the Game Setup Players **pill row** with `−` / `+` controls (range 2–8). Keep the existing **Edit names** disclosure UI as-is — do **not** remount `PlayerRosterEditor` in the tracker (In-Depth keeps the shared roster).
+- **Starting life (DEC-101 / REQ-081)**: keep fixed presets **20 / 25 / 30 / 40** plus **Custom**. Custom’s default value is **60** (opening/applying Custom without a different typed value uses 60). There is no separate fixed-60 pill.
+- **Count-driven starting-life defaults (DEC-101 / REQ-081)**: match In-Depth — changing player count to **2** applies starting life **20**; changing to **3+** applies **40** — unless the user has already chosen a different starting life for this game (manual preset or Custom). Applying the default reseeds player life totals the same way an explicit starting-life change already does.
+- **Commander damage → life always on**: product truth (DEC-101) matches already-shipped behavior / REQ-082 — no Game Setup toggle; positive commander-damage increases always reduce life.
+
+### Explicitly out of scope
+
+- Seeding game-wide `dayNightPhase` into In-Depth / `GameContext` — wiring is not present today; user confirmed leave it out. The per-player named “Day/night” counter in the palette (unrelated to the game-wide designation) is untouched.
+- Auto-deriving day/night from turns or spells.
+- Bringing `PlayerRosterEditor` back into tracker Game Setup.
+- Restoring a fixed **60** starting-life pill (60 lives only as Custom’s default).
+- Counter-panel, layout-mode, or card-style redesign beyond the band-sizing and day/night items above.
+
+### Product-truth references
+
+- DEC-101 (amended), DEC-132, REQ-081 (amended), REQ-082, REQ-111, REQ-112; amends FLOW-013 and system-map Player Life Tracker summary; amends persistence notes on DEC-103 / REQ-084 for dropping `dayNightEnabled` while keeping `dayNightPhase`.

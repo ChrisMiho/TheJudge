@@ -113,11 +113,11 @@ portal owns app chrome and every feature reaches it as a registered destination.
   - REQ-090
   - REQ-067
 - Notes:
-  - "each destination's in-session state...resets fresh on every reload" is narrowly reopened for saved conversation history only by DEC-124; the active-destination restore behavior described above is otherwise unchanged
+  - "each destination's in-session state...resets fresh on every reload" is narrowly reopened for saved conversation history by DEC-124 and for mid-flight Draft auto-hydrate by DEC-130; the active-destination restore behavior described above is otherwise unchanged
   - DEC-095
 - Notes:
   - supersedes only the "nothing is persisted across a page reload" clause of DEC-095/REQ-067/FLOW-010, scoped strictly to the active-destination choice; their registry, placement, and in-session state-preservation content is otherwise unchanged and stays resolvable
-  - non-goals: persisting in-progress conversation/staged-context content across a refresh (stays ephemeral, `decisions/conversation-ux.md`), `localStorage`/cross-session durability, URL-based routing, changing the new-session default destination
+  - non-goals of this decision itself: URL-based routing, changing the new-session default destination; completed-history and mid-flight Draft persistence across refresh are owned by DEC-124 / DEC-130 (not restated here)
 
 ### DEC-121
 - Decision: The feature-portal Menu trigger (DEC-109) gains a **discoverability presentation pass**: thicker accent border and a **medium** accent glow on every viewport, plus **automatic responsive width** — modest (~10–15%) widen below the `768px` structural breakpoint and ~25% wider at/above it — implemented with mobile-first CSS on the existing single trigger (no Theme/layout preference, no UA sniffing, no separate mobile/desktop trees). This amends only DEC-109's visual quietness; docking, top-middle placement, icon-only label, registry/dropdown behavior, and DEC-117's automatic responsive rules remain in force.
@@ -171,3 +171,28 @@ portal owns app chrome and every feature reaches it as a registered destination.
   - supersedes DEC-095's top-middle tab placement clause and DEC-121's width/border/glow treatment outright (neither carries forward); DEC-095's registry, DEC-109's "never floats fixed" guarantee, and DEC-110's Theme-section hosting all remain in force, just applied to the rail/drawer
   - REQ-101 (DEC-121's acceptance criteria) is superseded outright alongside DEC-121
   - non-goals: redesigning the dropdown/drawer's contents or destination registry; consolidating `EnrichmentStep.tsx`'s pre-existing duplicated brand-block JSX (unrelated code-health item, left for a future pass); a step-progress indicator replacing the step-name text; any backend/contract change
+  - open-tray height and bottom-left corner flush are refined by DEC-133 / REQ-113 (partial-height cutoff and missing bottom radius no longer apply); corner rail, slide motion, brand centering, and eyebrow clauses remain
+
+### DEC-133
+- Decision: The feature-portal Menu's open panel (DEC-122) becomes a **full-height left tray of the outer app shell**, not a partial-height floating panel. On standard destinations the tray stretches top→bottom of `.page-card`; on Life Tracker (and any other full-bleed shell) it uses the same full left-side treatment against that outer shell. The tray always fills that height even when destination/Theme content does not — unused lower space is acceptable and may host a quiet, non-interactive decorative TheJudge brand mark. On tall/scrollable shells the tray sizes to the **visible** shell side (viewport ∩ shell), staying flush with the on-screen top and bottom of the outer component rather than spanning the shell's full scrollable document height. The tray's bottom-left corner is flush with the shell's bottom-left and uses the **same bottom-left border radius** as the shell so it does not square over the curved edge (mirroring DEC-122's existing top-left radius treatment). Slide-in motion, corner rail, Theme/registry/actions, reduced-motion, and Menu↔History mutual exclusivity remain as DEC-122/DEC-125/DEC-126 established. The tray stays shell-docked chrome (DEC-109): tracking the shell's visible rectangle is allowed; a free-floating overlay disconnected from the shell is not.
+- Status: confirmed
+- Context: Post-ship live use of DEC-122's partial-height drawer found the hard bottom cutoff inelegant — the open Menu should read as the entire left side of the app shell. Users clarified this means the outer component (`.page-card` / full-bleed shell), not the raw viewport bottom outside the shell, and that the tray must meet the shell's bottom-left curve cleanly rather than overwriting it. Tall destinations must not produce a mile-tall tray; visible-bounds sizing keeps the left side covered as the user scrolls. Life Tracker has no `.page-card` but should not keep the old partial-height exception.
+- Impact:
+  - open Menu tray height is the outer shell's left side (full shell height when the shell fits the viewport; visible shell intersection when the shell is taller than the viewport)
+  - empty vertical space below Theme is intentional; optional quiet decorative brand mark in that region is non-interactive and must not become a second nav control
+  - bottom-left corner radius matches the shell; top-left radius treatment from DEC-122 remains
+  - Life Tracker full-bleed shell gets the same full left-side + corner treatment as `.page-card` destinations
+  - presentation only — no change to destination registry, action entries, Theme contents, History zone semantics beyond shared taller-tray geometry, `AskAiRequest`, Zod schemas, prompt assembly, providers, or backend routes
+- Related requirements:
+  - REQ-113
+  - REQ-067
+  - REQ-089
+  - DEC-122
+  - DEC-109
+  - DEC-125
+  - DEC-126
+  - NFR-001
+  - NFR-006
+- Notes:
+  - amends DEC-122's partial-height drawer and bottom-corner silence only; corner rail, brand centering, eyebrow, and slide-from-left motion stay
+  - non-goals: redesigning tray contents/registry/Theme; EnrichmentStep brand-block consolidation; step-progress indicator; any backend/contract change

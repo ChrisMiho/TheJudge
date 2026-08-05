@@ -11,17 +11,16 @@ _(none)_
 ## active
 
 - [commander-spellbook-combos](./commander-spellbook-combos/)
+- [center-menu-tab-prominence-followup](./center-menu-tab-prominence-followup/)
 
 ## refining
 
-- [assistant-chat-shell-followup](./assistant-chat-shell-followup/)
-- [center-menu-tab-prominence-followup](./center-menu-tab-prominence-followup/)
 - [context-ai-photo-card-id](./context-ai-photo-card-id/)
-- [player-life-tracker-refinement](./player-life-tracker-refinement/)
 
 ## refined
 
-_(none)_
+- [assistant-chat-shell-followup](./assistant-chat-shell-followup/)
+- [player-life-tracker-refinement](./player-life-tracker-refinement/)
 
 ## ideation
 
