@@ -6,11 +6,14 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
+- [chrome-hit-areas-and-mid-flight-exits](./chrome-hit-areas-and-mid-flight-exits/)
 - [assistant-chat-shell-followup](./assistant-chat-shell-followup/)
 - [player-life-tracker-refinement](./player-life-tracker-refinement/)
 - [center-menu-tab-prominence-followup](./center-menu-tab-prominence-followup/)
 
 ## active
+
+## refined
 
 ## refining
 
@@ -21,7 +24,6 @@ Do not rename package folders to encode status.
 - [card-collection-manager](./card-collection-manager/)
 - [scan-non-english-special-treatments](./scan-non-english-special-treatments/)
 - [life-tracker-me-map-and-tray](./life-tracker-me-map-and-tray/)
-- [chrome-hit-areas-and-mid-flight-exits](./chrome-hit-areas-and-mid-flight-exits/)
 
 ## owner-action
 

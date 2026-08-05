@@ -92,3 +92,27 @@ under `PRD/work/player-life-tracker/references/`.
   - supersedes the edge-band tap-zone treatment in DEC-101 ("edge `+`/`−` tap zones") for player life cards only; commander-damage cells keep their own always-visible `−`/`+` bands
   - `PlayerLifeCard` no longer takes `layoutMode` / `isWideSeat`; rotation is the sole orientation input
   - non-goals: changing seat arrangements or rotations, hold-to-repeat life adjustment, per-card layout preferences
+
+### DEC-139
+- Decision: The per-player **counter panel joins the suite's full-height overlay family** established by DEC-133 (Menu tray) and DEC-134 (history drawer), instead of presenting as a content-sized bottom sheet anchored to the viewport bottom. Its surface fills the available shell height rather than sizing to its content, and scrolls internally when its content exceeds that height. Counter semantics — the commander-damage matrix, the named-counter palette, custom counters, tap/hold interactions, the commander-damage→life convenience, and DEC-103 persistence — are entirely unchanged; this is a surface-geometry decision only.
+- Status: confirmed
+- Context: Post-ship audit found the counter panel is the last remaining content-sized overlay in the suite. DEC-134 already retired exactly this shape for the history drawer, in the product owner's own words: a content-sized sheet "rendered a small strip pinned to the screen bottom under a screen's worth of scrim", read as dead space, while "the Menu drawer opened from the same corner rail is a left-edge full-height tray at every width". The same reasoning had not yet been applied here. Measured live at 430 × 900 with 4 players: the panel renders `414 × 534` at `y=358`, leaving **358px of dead scrim above it — 40% of the viewport**. Note that the panel already carries `overflow-y-auto` with a `max-h-[94dvh]` cap and, at 4 players, does not overflow at all (`scrollHeight === clientHeight`); the defect is dead space and family inconsistency, **not** clipped or unreachable content.
+- Impact:
+  - the counter panel's surface fills the available shell height instead of sizing to its content, with internal scrolling when content exceeds it
+  - the dead scrim band above the panel is eliminated at every player count
+  - the panel reads as one family with the Menu tray and history drawer rather than as a third, differently-shaped surface
+  - focus trap, Escape-to-close, reduced-motion behavior, and the panel's existing scroll affordance carry forward unchanged
+  - presentation only — no new counter types, no change to the additive `GameContext` counter contract (DEC-102), DEC-103 persistence, the Assistant seed handoff (REQ-085), or any backend/contract surface
+- Related requirements:
+  - REQ-082
+  - REQ-112
+  - DEC-133
+  - DEC-134
+  - DEC-101
+  - DEC-102
+  - DEC-103
+  - NFR-001
+- Notes:
+  - applies DEC-134's own dead-space reasoning to the counter panel; supersedes the content-sized bottom-sheet presentation only
+  - this decision takes ownership of the counter panel's surface geometry away from the `life-tracker-me-map-and-tray` work package, which retains only the `"me"`-map placement problem; that package's "height-locked and non-scrollable" framing was measured to be inaccurate
+  - non-goals: the `"me"`-cell seat-map placement problem, new counter types or mechanics, auto-KO, multi-device sync

@@ -236,5 +236,29 @@ describe("Frontend - Shared", () => {
       await user.type(screen.getByRole("textbox", { name: "Custom counter name" }), "Shield");
       expect(screen.getByRole("button", { name: "Add custom counter" })).toHaveClass("text-accent-soft");
     });
+
+    it("fills the available height instead of sizing to its content, like the suite's other overlays", () => {
+      // DEC-139: the panel joins the Menu tray (DEC-133) / history drawer (DEC-134) overlay
+      // family. As a content-sized bottom sheet it left a 358px dead scrim band above itself
+      // at 430x900 with 4 players — 40% of the viewport — which is the shape DEC-134 already
+      // retired for the history drawer.
+      render(<CounterPanel {...panelProps()} />);
+
+      const surface = screen.getByRole("dialog");
+      const overlay = surface.parentElement as HTMLElement;
+
+      // Stretches at every viewport rather than bottom-anchoring on narrow ones.
+      expect(overlay.className).toContain("items-stretch");
+      expect(overlay.className).not.toContain("items-end");
+      expect(overlay.className).not.toContain("sm:items-center");
+
+      // Height comes from the overlay, not from the content.
+      expect(surface.className).toContain("h-full");
+      expect(surface.className).not.toContain("max-h-[94dvh]");
+
+      // The pre-existing scroll affordance is retained, not dropped: taller content at higher
+      // player counts must still be reachable.
+      expect(surface.className).toContain("overflow-y-auto");
+    });
   });
 });

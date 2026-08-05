@@ -316,14 +316,21 @@ export function CounterPanel({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-2 sm:items-center sm:p-4">
+    // DEC-139: the panel belongs to the same overlay family as the Menu tray (DEC-133) and the
+    // history drawer (DEC-134), so its surface fills the available height instead of sizing to
+    // its content. `items-end` + a content height previously left a 358px dead scrim band above
+    // the panel at 430x900 with 4 players — 40% of the viewport — which is the exact shape
+    // DEC-134 retired for the history drawer, in the product owner's own words. `items-stretch`
+    // at every viewport mirrors that decision; unused lower space is acceptable per DEC-133.
+    // The existing overflow-y-auto is retained, not introduced: the panel already scrolled.
+    <div className="fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 p-2 sm:p-4">
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="counter-panel-title"
         tabIndex={-1}
-        className="max-h-[94dvh] w-full max-w-xl overflow-y-auto rounded-3xl border border-zinc-700 bg-zinc-950 p-4 text-zinc-100 shadow-2xl shadow-black/40"
+        className="h-full w-full max-w-xl overflow-y-auto rounded-3xl border border-zinc-700 bg-zinc-950 p-4 text-zinc-100 shadow-2xl shadow-black/40"
       >
         <header className="flex items-start justify-between gap-4">
           <div>

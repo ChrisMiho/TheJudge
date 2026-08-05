@@ -252,19 +252,88 @@ describe("FeaturePortalMenu", () => {
   });
 
   it("darkens the same rail gradient on hover/expanded instead of adding a border or separate chrome layer", () => {
+    // The gradient lives on the decorative ::before layer (DEC-137) rather than on the
+    // button itself, so both the base and hover assertions read that layer.
     const baseBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-rail {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail {"))
+      appCss.indexOf(".portal-menu-rail::before {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail::before {"))
     );
     const hoverBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-rail:hover"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail:hover"))
+      appCss.indexOf(".portal-menu-rail:hover::before"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail:hover::before"))
     );
 
     expect(baseBlock).toMatch(/radial-gradient\(/);
     expect(hoverBlock).toContain('[aria-expanded="true"]');
     expect(hoverBlock).toMatch(/radial-gradient\(/);
     expect(hoverBlock).not.toContain("border");
+  });
+
+  it("paints the rail gradient from a non-interactive layer so the glow cannot intercept taps", () => {
+    // DEC-137/REQ-114: the gradient keeps its original 5.5rem x 10.5rem painted extent, but
+    // that extent is decoration only — the button's own box is the icon band. Before this,
+    // the button *was* the 10.5rem box, and its invisible lower two-thirds sat at z-index 3
+    // over destination content.
+    const decorativeBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-rail::before {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail::before {"))
+    );
+    const railBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-rail {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail {"))
+    );
+
+    expect(decorativeBlock).toContain("pointer-events: none");
+    expect(decorativeBlock).toContain("height: 10.5rem");
+    expect(decorativeBlock).toContain("width: 5.5rem");
+
+    // The interactive box is the icon band, not the painted extent.
+    expect(railBlock).toContain("height: 3.5rem");
+    expect(railBlock).not.toContain("height: 10.5rem");
+    // Width is deliberately unchanged: the icon is centred in it, and narrowing would
+    // shift the icon left. Height is the dimension that clears destination content.
+    expect(railBlock).toContain("width: 5.5rem");
+    expect(railBlock).not.toMatch(/radial-gradient\(/);
+  });
+
+  it("lays the split rail's two zones side by side so they clear the step eyebrow at the touch-target floor", () => {
+    // DEC-137 amends DEC-126's stacked pair. Stacking cannot work: only ~70px exists between
+    // the rail's top and the eyebrow, while two stacked 44px zones need 88px — the old
+    // clamp() met the floor only by overflowing the rail onto the eyebrow.
+    const splitBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-rail-split {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-split {"))
+    );
+    const zoneBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-rail-zone {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-zone {"))
+    );
+    const separatorBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-rail-zone + .portal-menu-rail-zone {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-zone + .portal-menu-rail-zone {"))
+    );
+
+    expect(splitBlock).toContain("flex-direction: row");
+    expect(splitBlock).not.toContain("flex-direction: column");
+    expect(splitBlock).toContain("height: 2.75rem");
+    expect(splitBlock).not.toContain("clamp(");
+
+    // Both axes hold NFR-001's 44px floor now that the zones sit beside each other.
+    expect(zoneBlock).toContain("min-width: 2.75rem");
+    expect(zoneBlock).toContain("min-height: 2.75rem");
+
+    // Separator follows the arrangement.
+    expect(separatorBlock).toContain("border-left");
+    expect(separatorBlock).not.toContain("border-top");
+  });
+
+  it("keeps the split rail's painted extent unchanged while only its zones rearrange", () => {
+    const splitDecorative = appCss.slice(
+      appCss.indexOf(".portal-menu-rail-split::before {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-split::before {"))
+    );
+
+    expect(splitDecorative).toContain("clamp(4.75rem, 4.1rem + 2.5vw, 6.25rem)");
   });
 
   it("opens a full-height, shell-bounds-clipped drawer positioned under the corner rail, not a centered dropdown box", async () => {

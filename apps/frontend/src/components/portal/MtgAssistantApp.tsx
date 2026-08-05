@@ -304,16 +304,17 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     }
   });
 
-  // Mid-flight Draft snapshot on Menu-leave (FLOW-017's "Menu-leave snapshot"): only while
-  // still pre-submit — an active answered conversation already has its own completed-history
-  // entry and no Draft to maintain. Reacts only to the isActive true→false edge; other staging
-  // fields are read via closure at the time of that transition, not listed as deps, so typing
-  // doesn't re-fire this on every keystroke. Uses its own ref (not the shared wasActiveRef
-  // above) so effect declaration order can't accidentally consume the edge before this runs.
-  useEffect(() => {
-    const wasActive = wasActiveForDraftRef.current;
-    wasActiveForDraftRef.current = isActive;
-    if (!wasActive || isActive || isConversationActive) return;
+  // The single definition of "snapshot whatever mid-flight staging exists right now"
+  // (REQ-108). Every mid-flight exit calls this one function rather than restating the
+  // staging predicate and Draft payload at each call site — this flow stages ten fields, so
+  // two copies would drift the moment one is added, and a drifted copy is exactly how the
+  // history-select exit came to be uncovered in the first place.
+  //
+  // An active answered conversation has its own completed-history entry and no Draft to
+  // maintain, so it is a no-op. Empty staging clears rather than writes, so a stale Draft
+  // does not outlive the work it described.
+  function snapshotMidFlightDraft(): void {
+    if (isConversationActive) return;
 
     const hasStaging =
       flowStep !== "game-context" ||
@@ -338,6 +339,19 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     } else {
       clearDraft("game");
     }
+  }
+
+  // Mid-flight Draft snapshot on Menu-leave (FLOW-017's "Menu-leave snapshot"). Reacts only
+  // to the isActive true→false edge; other staging fields are read via closure at the time of
+  // that transition, not listed as deps, so typing doesn't re-fire this on every keystroke.
+  // Uses its own ref (not the shared wasActiveRef above) so effect declaration order can't
+  // accidentally consume the edge before this runs.
+  useEffect(() => {
+    const wasActive = wasActiveForDraftRef.current;
+    wasActiveForDraftRef.current = isActive;
+    if (!wasActive || isActive) return;
+
+    snapshotMidFlightDraft();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts only to the isActive edge; staging fields are read via closure at fire time, not listed, so typing doesn't re-fire this.
   }, [isActive]);
 
@@ -649,6 +663,13 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   }
 
   function handleSelectHistoryEntry(entry: ConversationHistoryEntry): void {
+    // Opening a saved conversation is the third mid-flight exit (DEC-138), alongside
+    // Menu-leave and reload. It never changes `isActive` — this destination stays mounted
+    // and active — so the edge effect above cannot see it, and without this call
+    // restoreConversation would overwrite staged work with nothing recoverable. Snapshot
+    // first, then restore, so the staged attempt reappears as the Draft row in the same
+    // drawer the user is already looking at. Silent by design: no dialog, no notice.
+    snapshotMidFlightDraft();
     restoreConversation(entry);
     setActiveConversationId(entry.id);
     setIsHistoryOpen(false);
