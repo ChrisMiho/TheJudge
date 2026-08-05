@@ -10,7 +10,8 @@ import {
   installMemorySessionStorage,
   jsonResponse,
   uninstallMemoryLocalStorage,
-  uninstallMemorySessionStorage
+  uninstallMemorySessionStorage,
+  startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
 async function switchToDestination(user: ReturnType<typeof userEvent.setup>, label: string): Promise<void> {
@@ -22,6 +23,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
   beforeEach(() => {
     installMemoryLocalStorage();
     installMemorySessionStorage();
+    startOnInDepthQuestion();
     vi.stubGlobal(
       "fetch",
       vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {

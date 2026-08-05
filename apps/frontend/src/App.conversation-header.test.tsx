@@ -21,11 +21,13 @@ import {
   installMemoryLocalStorage,
   jsonResponse,
   openStackBuilder,
-  uninstallMemoryLocalStorage
+  uninstallMemoryLocalStorage,
+  startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
 describe("Frontend - Conversation header docking", () => {
   beforeEach(() => {
+    startOnInDepthQuestion();
     installMemoryLocalStorage();
     vi.stubGlobal(
       "fetch",

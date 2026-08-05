@@ -70,3 +70,25 @@ under `PRD/work/player-life-tracker/references/`.
   - FLOW-013
 - Notes:
   - distinct from the per-player named “Day/night” counter in the palette (REQ-082), which remains a separate optional counter
+
+### DEC-136
+- Decision: Two post-ship corrections to the life table (DEC-101). (1) **Life adjustment splits the whole player card in half** rather than reserving edge bands: every part of a card that is not one of its three inner controls (the life total, the commander-damage preview, the inline life input) adjusts life. Which half is `−` and which is `+` derives from that seat's own **rotation**, so `−` is always on that player's left and `+` on their right — mirrored for seats facing the top edge, split along the other axis for sideways seats. Layout mode and seat width no longer participate in that choice. The `−` / `+` glyphs stay pinned to their half's outer edge, so the card reads as it did with edge bands. (2) The life table **always fits one screen at every supported player count**: rows share the shell's height with no per-row or per-card minimum, and card contents size in container-query units so a shorter card scales rather than clipping.
+- Status: confirmed
+- Context: Live use found list mode's `−` / `+` misplaced — paired rows kept top/bottom bands while head/foot rows used left/right, and the head seat's 180° rotation put `−` on the player's right — and the 67px bands too small to hit reliably mid-game. The product owner proposed halving the card instead. Separately, at 5+ players the old floors (`min-h-60` per card plus `minmax(15rem, 1fr)` rows plus a `rows × 16rem` table minimum) summed past the viewport and pushed the bottom seats below the fold, which a live tabletop tracker cannot afford.
+- Impact:
+  - each card renders exactly two half-sized life zones, orientated by `SeatPlacement.rotation` alone
+  - the rotated content box becomes non-interactive as a box (its three real controls stay interactive), so taps anywhere else on the card reach the half beneath — tapping the life total for a custom entry and tapping the commander-damage preview to open the counter panel both behave exactly as before
+  - the table is capped by the viewport rather than floored by it; rows are `minmax(0, 1fr)` and cards carry no height minimum
+  - life total, name pill, and inline life entry size in container-query units within clamped bounds, so 2-player and 8-player tables both compose without clipping
+  - grid and list seat arrangements, rotations, tints, skull indicator, counters, commander-damage semantics, persistence, Game Setup, and In-Depth seeding are all unchanged
+- Related requirements:
+  - REQ-081
+  - REQ-084
+  - DEC-101
+  - DEC-103
+  - DEC-117
+  - NFR-001
+- Notes:
+  - supersedes the edge-band tap-zone treatment in DEC-101 ("edge `+`/`−` tap zones") for player life cards only; commander-damage cells keep their own always-visible `−`/`+` bands
+  - `PlayerLifeCard` no longer takes `layoutMode` / `isWideSeat`; rotation is the sole orientation input
+  - non-goals: changing seat arrangements or rotations, hold-to-repeat life adjustment, per-card layout preferences

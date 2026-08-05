@@ -217,7 +217,23 @@
    `overflow-y: auto` scrolls that excess exactly as before. */
 .portal-menu-drawer-inner {
   min-height: 100%;
-  padding: 0.75rem 0.75rem 0.75rem 3.5rem;
+  /* No horizontal padding: entry rows and the Theme block carry their own insets so
+     their separator rules stay full-bleed and meet the drawer's left wall. */
+  padding: 0.75rem 0 0.75rem 0;
+}
+
+/* One menu entry: the 3.5rem left inset that clears the corner rail's icon zone lives
+   on the row itself rather than on the drawer's padding box, so the row's bottom border
+   spans the drawer edge to edge. */
+.portal-menu-drawer-row {
+  padding: 0.5rem 0.75rem 0.5rem 3.5rem;
+}
+
+/* Theme block: sits well below the rail's icon zone, so it takes a normal inset (a
+   3.5rem one would squeeze the 5-swatch grid). The last entry row's own bottom border
+   is the rule above it, so this block adds no second line of its own. */
+.portal-menu-drawer-section {
+  padding: 0.75rem 0.75rem 0 0.75rem;
 }
 
 /* Quiet decorative brand mark (REQ-113 item 4, DEC-133): non-interactive
@@ -486,23 +502,44 @@
   margin-top: calc(clamp(4.75rem, 4.1rem + 2.5vw, 6.25rem) - var(--layout-panel-padding));
 }
 
+/* History drawer (DEC-125, amended by DEC-134): a left-edge, full-height drawer at every
+   viewport rather than a bottom sheet below 768px. As a bottom sheet it sized itself to its
+   content, so a short list (one saved conversation, or an empty one) rendered a small strip
+   pinned to the bottom under a screen's worth of empty scrim — read as dead space, not as a
+   panel. It also sits behind the same corner-rail zone as the Menu drawer, which is a
+   left-edge full-height drawer at every width; matching that geometry makes the two rail
+   zones open the same shape of surface. The 768px+ presentation is unchanged. */
 .conversation-history-overlay {
   position: fixed;
   inset: 0;
   z-index: 60;
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
+  justify-content: flex-start;
   background: rgb(9 9 11 / 0.72);
   animation: adaptive-context-overlay-enter var(--motion-fast) var(--motion-ease-out) both;
 }
 
 .conversation-history-surface {
-  width: 100%;
-  max-height: min(85dvh, 48rem);
+  width: min(22rem, 88vw);
   overflow-y: auto;
-  border-radius: 1rem 1rem 0 0;
+  border-radius: 0 1rem 1rem 0;
   padding: var(--layout-panel-padding);
-  animation: adaptive-context-enter var(--motion-base) var(--motion-ease-emphasized) both;
+  /* Slides in from the left edge it is anchored to, like the Menu drawer — the shared
+     `adaptive-context-enter` rises from the bottom, which only read correctly while this
+     was a bottom sheet. */
+  animation: conversation-history-enter var(--motion-base) var(--motion-ease-emphasized) both;
+}
+
+@keyframes conversation-history-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-1.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .adaptive-context-overlay {
@@ -553,15 +590,8 @@
     border-radius: 1rem 0 0 1rem;
   }
 
-  .conversation-history-overlay {
-    align-items: stretch;
-    justify-content: flex-start;
-  }
-
   .conversation-history-surface {
     width: min(30rem, 90vw);
-    max-height: none;
-    border-radius: 0 1rem 1rem 0;
   }
 }
 

@@ -184,13 +184,17 @@ describe("Frontend - Conversation history drawer", () => {
     expect(screen.getByText("No saved conversations yet")).toBeInTheDocument();
   });
 
-  it("mirrors the adaptive-context sheet/drawer CSS shape to the left edge", () => {
+  // DEC-134: a left-edge, full-height drawer at every viewport, not a bottom sheet below
+  // 768px. Content-sized bottom sheets left a screen of empty scrim above a one-entry list.
+  it("presents as a left-edge full-height drawer at every viewport", () => {
     expect(appCss).toMatch(
-      /\.conversation-history-overlay \{[^}]*align-items: flex-end;[^}]*\}/
+      /\.conversation-history-overlay \{[^}]*align-items: stretch;[^}]*justify-content: flex-start;[^}]*\}/
     );
     expect(appCss).toMatch(
-      /@media \(min-width: 768px\) \{[\s\S]*\.conversation-history-overlay \{[^}]*justify-content: flex-start;[^}]*\}[\s\S]*\.conversation-history-surface \{[^}]*border-radius: 0 1rem 1rem 0;[^}]*\}/
+      /\.conversation-history-surface \{[^}]*border-radius: 0 1rem 1rem 0;[^}]*\}/
     );
+    // No max-height cap anywhere: `align-items: stretch` is what gives it full height.
+    expect(appCss).not.toMatch(/\.conversation-history-surface \{[^}]*max-height:/);
     expect(appCss).toMatch(
       /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*\.conversation-history-surface/
     );

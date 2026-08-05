@@ -652,6 +652,14 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     restoreConversation(entry);
     setActiveConversationId(entry.id);
     setIsHistoryOpen(false);
+    // The restored conversation only renders inside EnrichmentStep, so selecting an entry
+    // from any earlier staged step (game-context, zone-confirm, zone-collection) has to
+    // move the flow there as well. Without this the drawer closed onto the step the user
+    // was already on — the conversation looked like it never opened — and then ambushed
+    // them with someone else's thread the moment they walked the flow forward to
+    // enrichment on their own. Quick Question has no equivalent bug: its whole screen is
+    // gated on `isConversationActive`, so restoring is enough there. (DEC-124)
+    setFlowStep("enrichment");
   }
 
   function handleSelectDraft(draft: GameDraftState): void {

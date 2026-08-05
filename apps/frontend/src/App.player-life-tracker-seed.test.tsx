@@ -10,7 +10,9 @@ import {
   setCommanderDamage
 } from "./lib/lifeTracker/state";
 import { saveTrackerState, TRACKER_STORAGE_KEY } from "./lib/lifeTracker/persistence";
-import { expandSecondaryPlayerDetails } from "./test/appTestHelpers";
+import { expandSecondaryPlayerDetails,
+  startOnInDepthQuestion
+} from "./test/appTestHelpers";
 
 function createMemoryStorage(): Storage {
   const entries = new Map<string, string>();
@@ -47,6 +49,7 @@ describe("Frontend - Portal", () => {
   beforeEach(() => {
     vi.stubGlobal("localStorage", createMemoryStorage());
     vi.stubGlobal("sessionStorage", createMemoryStorage());
+    startOnInDepthQuestion();
     vi.stubGlobal(
       "fetch",
       vi.fn(async (input: RequestInfo | URL) => {

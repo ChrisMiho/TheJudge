@@ -40,9 +40,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
-          layoutMode="grid"
           cardStyle="gradient"
-          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
@@ -73,9 +71,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
-          layoutMode="grid"
           cardStyle="gradient"
-          isWideSeat={false}
           onAdjustLife={onAdjustLife}
           onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
@@ -98,9 +94,7 @@ describe("Frontend - Shared", () => {
           player={deadPlayer}
           players={rosterWith(deadPlayer)}
           placement={placement}
-          layoutMode="grid"
           cardStyle="gradient"
-          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
@@ -117,9 +111,7 @@ describe("Frontend - Shared", () => {
           player={revivedPlayer}
           players={rosterWith(revivedPlayer)}
           placement={placement}
-          layoutMode="grid"
           cardStyle="gradient"
-          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
@@ -138,9 +130,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
-          layoutMode="grid"
           cardStyle="gradient"
-          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
           onOpenCounters={onOpenCounters}
@@ -165,9 +155,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
-          layoutMode="grid"
           cardStyle="gradient"
-          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
@@ -182,79 +170,96 @@ describe("Frontend - Shared", () => {
       expect(screen.getByTestId("commander-preview-cell-Player 4")).toHaveTextContent("0");
     });
 
-    it("puts the life adjustment bands on top/bottom in grid mode and for list mode's narrow paired seats", () => {
+    it("splits the whole card into two half-sized life zones, orientated by the seat's rotation", () => {
       const player = playerAtLife(40);
+      const decreaseName = "Decrease life for Player 1 (Alice)";
+      const increaseName = "Increase life for Player 1 (Alice)";
+
+      // Upright seat (rotation 0): the player's left half decreases, right half increases.
       const { rerender } = render(
         <PlayerLifeCard
           player={player}
           players={rosterWith(player)}
-          placement={placement}
-          layoutMode="grid"
+          placement={{ ...placement, rotation: 0 }}
           cardStyle="gradient"
-          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
       );
 
-      expect(screen.getByRole("button", { name: "Decrease life for Player 1 (Alice)" })).toHaveClass(
-        "top-0",
-        "h-[67px]"
+      expect(screen.getByRole("button", { name: decreaseName })).toHaveClass("left-0", "w-1/2");
+      expect(screen.getByRole("button", { name: increaseName })).toHaveClass("right-0", "w-1/2");
+
+      // Facing the top edge (180): mirrored, so `−` is still on that player's own left.
+      rerender(
+        <PlayerLifeCard
+          player={player}
+          players={rosterWith(player)}
+          placement={{ ...placement, rotation: 180 }}
+          cardStyle="gradient"
+          onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
+          onOpenCounters={vi.fn()}
+        />
       );
-      expect(screen.getByRole("button", { name: "Increase life for Player 1 (Alice)" })).toHaveClass(
-        "bottom-0",
-        "h-[67px]"
+
+      expect(screen.getByRole("button", { name: decreaseName })).toHaveClass("right-0", "w-1/2");
+      expect(screen.getByRole("button", { name: increaseName })).toHaveClass("left-0", "w-1/2");
+
+      // Sideways seats split along the other axis, because the player's left-right axis
+      // maps to the card's top-bottom one.
+      rerender(
+        <PlayerLifeCard
+          player={player}
+          players={rosterWith(player)}
+          placement={{ ...placement, rotation: 90 }}
+          cardStyle="gradient"
+          onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
+          onOpenCounters={vi.fn()}
+        />
       );
+
+      expect(screen.getByRole("button", { name: decreaseName })).toHaveClass("top-0", "h-1/2");
+      expect(screen.getByRole("button", { name: increaseName })).toHaveClass("bottom-0", "h-1/2");
 
       rerender(
         <PlayerLifeCard
           player={player}
           players={rosterWith(player)}
-          placement={placement}
-          layoutMode="list"
+          placement={{ ...placement, rotation: 270 }}
           cardStyle="gradient"
-          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
       );
 
-      expect(screen.getByRole("button", { name: "Decrease life for Player 1 (Alice)" })).toHaveClass(
-        "top-0",
-        "h-[67px]"
-      );
-      expect(screen.getByRole("button", { name: "Increase life for Player 1 (Alice)" })).toHaveClass(
-        "bottom-0",
-        "h-[67px]"
-      );
+      expect(screen.getByRole("button", { name: decreaseName })).toHaveClass("bottom-0", "h-1/2");
+      expect(screen.getByRole("button", { name: increaseName })).toHaveClass("top-0", "h-1/2");
     });
 
-    it("puts the life adjustment bands on left/right for list mode's full-width head/foot seats", () => {
+    it("keeps the inner controls clickable above the two life halves", () => {
       const player = playerAtLife(40);
       render(
         <PlayerLifeCard
           player={player}
           players={rosterWith(player)}
           placement={placement}
-          layoutMode="list"
           cardStyle="gradient"
-          isWideSeat={true}
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
       );
 
-      expect(screen.getByRole("button", { name: "Decrease life for Player 1 (Alice)" })).toHaveClass(
-        "left-0",
-        "w-[67px]"
-      );
-      expect(screen.getByRole("button", { name: "Increase life for Player 1 (Alice)" })).toHaveClass(
-        "right-0",
-        "w-[67px]"
-      );
+      // The content box covers the whole card, so it must not take pointer events itself -
+      // only its three real controls may, or every tap meant for a half would be swallowed.
+      const content = screen.getByTestId("life-card-content-Player 1");
+      expect(content).toHaveClass("pointer-events-none");
+      expect(screen.getByTestId("life-value-Player 1")).toHaveClass("pointer-events-auto");
+      expect(screen.getByTestId("commander-preview-Player 1")).toHaveClass("pointer-events-auto");
     });
 
     it("swaps the rotated content box's width/height source so a 90/270 rotation can't overflow a non-square card", () => {
@@ -265,9 +270,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
-          layoutMode="grid"
           cardStyle="gradient"
-          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
@@ -284,9 +287,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={sidewaysPlacement}
-          layoutMode="grid"
           cardStyle="gradient"
-          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
@@ -304,9 +305,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={uprightPlacement}
-          layoutMode="grid"
           cardStyle="gradient"
-          isWideSeat={false}
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
@@ -327,9 +326,7 @@ describe("Frontend - Shared", () => {
             player={player}
             players={rosterWith(player)}
             placement={placement}
-            layoutMode="grid"
             cardStyle={cardStyle}
-            isWideSeat={false}
             onAdjustLife={vi.fn()}
             onSetLife={vi.fn()}
             onOpenCounters={vi.fn()}
@@ -382,9 +379,7 @@ describe("Frontend - Shared", () => {
             player={player}
             players={rosterWith(player)}
             placement={placement}
-            layoutMode="grid"
             cardStyle="gradient"
-            isWideSeat={false}
             onAdjustLife={onAdjustLife}
             onSetLife={onSetLife}
             onOpenCounters={vi.fn()}
@@ -462,12 +457,14 @@ describe("Frontend - Shared", () => {
         expect(screen.getByTestId("life-card-content-Player 1")).toContainElement(input);
       });
 
-      it("leaves the +/- adjustment bands above the card content so they still take their own taps", async () => {
+      it("keeps the +/- halves takeable under the card content, which no longer takes taps itself", async () => {
         const user = userEvent.setup();
         const { onAdjustLife, onSetLife } = renderEditable(40);
 
+        // Inverted from the old edge-strip bands: the halves now sit *under* the content box
+        // (z-0 vs z-10) and stay reachable because that box is pointer-events-none.
         expect(screen.getByTestId("life-card-content-Player 1").className).toContain("z-10");
-        expect(screen.getByRole("button", { name: "Increase life for Player 1 (Alice)" }).className).toContain("z-20");
+        expect(screen.getByRole("button", { name: "Increase life for Player 1 (Alice)" }).className).toContain("z-0");
 
         await user.click(screen.getByRole("button", { name: "Increase life for Player 1 (Alice)" }));
 

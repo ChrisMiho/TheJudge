@@ -8,6 +8,7 @@ import { ShellBounds } from "./ShellBounds";
 import { ConversationHistoryDrawer } from "../ConversationHistoryDrawer";
 import { LeftEdgeDrawerProvider } from "../../lib/portal/leftEdgeDrawerContext";
 import type { DestinationId, PortalEntry } from "../../lib/portal/types";
+import { startOnInDepthQuestion } from "../../test/appTestHelpers";
 import { appCss, jsonResponse, getUrlFromRequest } from "../../test/appTestHelpers";
 
 const DESTINATIONS: PortalEntry[] = [
@@ -637,6 +638,9 @@ describe("Chrome integration", () => {
   });
 
   it("renders the portal button inline in the staged step header, ahead of the centered brand and the step eyebrow", async () => {
+    // This case is about In-Depth Question's staged header specifically; Quick Question is
+    // the portal's default destination, so say which screen is under test.
+    startOnInDepthQuestion();
     const { default: App } = await import("../../App");
     render(<App />);
 

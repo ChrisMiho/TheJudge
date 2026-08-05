@@ -170,7 +170,9 @@ describe("Frontend - Shared", () => {
 
       expect(screen.getByTestId("life-tracker-table")).toHaveStyle({
         gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-        gridTemplateRows: "repeat(3, minmax(15rem, 1fr))"
+        // Rows share the screen's height with no rem floor, so 5-8 seats still fit on one
+        // screen instead of summing past the fold.
+        gridTemplateRows: "repeat(3, minmax(0, 1fr))"
       });
 
       const expected = [
@@ -189,9 +191,12 @@ describe("Frontend - Shared", () => {
         });
       }
 
-      expect(screen.getByRole("button", { name: "Decrease life for Player 1" })).toHaveClass("left-0", "w-[67px]");
-      expect(screen.getByRole("button", { name: "Decrease life for Player 2" })).toHaveClass("top-0", "h-[67px]");
-      expect(screen.getByRole("button", { name: "Decrease life for Player 4" })).toHaveClass("left-0", "w-[67px]");
+      // Half-card life zones orientated by the seat's own rotation, not by layout mode or
+      // seat width: the head seat faces the top edge (180) so its halves mirror, while the
+      // upright pair and foot seats keep `−` on the screen-left half.
+      expect(screen.getByRole("button", { name: "Decrease life for Player 1" })).toHaveClass("right-0", "w-1/2");
+      expect(screen.getByRole("button", { name: "Decrease life for Player 2" })).toHaveClass("left-0", "w-1/2");
+      expect(screen.getByRole("button", { name: "Decrease life for Player 4" })).toHaveClass("left-0", "w-1/2");
     });
 
     it("changes only the selected player's life and applies starting life to the full table", async () => {

@@ -202,7 +202,7 @@ export function FeaturePortalMenu({
       aria-label="Feature destinations"
       className="portal-menu-drawer portal-menu-drawer-motion bg-zinc-900/95"
     >
-      <div className="portal-menu-drawer-inner flex flex-col gap-1">
+      <div className="portal-menu-drawer-inner flex flex-col">
         {entries.map((entry) => {
           const isActive = !isPortalActionEntry(entry) && entry.id === activeDestinationId;
           return (
@@ -213,10 +213,12 @@ export function FeaturePortalMenu({
               aria-label={entry.label}
               aria-current={isActive ? "true" : undefined}
               onClick={() => handleSelect(entry)}
-              className={`flex min-h-[2.75rem] items-center gap-3 rounded-xl border px-3 py-2 text-left text-sm font-medium transition ${
-                isActive
-                  ? "border-accent-soft/70 bg-zinc-800 text-zinc-100"
-                  : "border-zinc-700/80 bg-zinc-900/60 text-zinc-200 hover:bg-zinc-800/70"
+              // Full-bleed row, not an inset pill: the separator rule under each entry runs
+              // edge to edge across the drawer (the row itself carries the drawer's left
+              // text inset via `.portal-menu-drawer-row`), so the horizontal lines meet the
+              // drawer's left wall instead of stopping short of it.
+              className={`portal-menu-drawer-row flex min-h-[2.75rem] items-center gap-3 border-b border-zinc-700/60 text-left text-sm font-medium transition ${
+                isActive ? "bg-zinc-800 text-zinc-100" : "text-zinc-200 hover:bg-zinc-800/70"
               }`}
             >
               <span>{entry.label}</span>
@@ -224,8 +226,8 @@ export function FeaturePortalMenu({
             </button>
           );
         })}
-        <div className="mt-1 flex flex-col gap-1 border-t border-zinc-700/60 pt-2">
-          <p className="px-1 pb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">Theme</p>
+        <div className="portal-menu-drawer-section flex flex-col gap-1">
+          <p className="pb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">Theme</p>
           <ThemeSection
             paletteId={paletteId}
             onSelect={handlePaletteSelect}

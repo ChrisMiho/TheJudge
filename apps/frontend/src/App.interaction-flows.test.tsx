@@ -39,7 +39,8 @@ import {
   addCardToStack,
   clickDecryptStack,
   advanceToContextEnrichment,
-  appCss
+  appCss,
+  startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
 let fetchMock: ReturnType<typeof vi.fn>;
@@ -55,6 +56,7 @@ function queueAskAiResponses(...responses: Array<{ status: number; body: unknown
 describe("Frontend - MTG Assistant", () => {
 describe("Interaction flows", () => {
   beforeEach(() => {
+    startOnInDepthQuestion();
     metadataFixture = [...baseCardMetadataFixture];
     askAiResponseQueue = [{ status: 200, body: { answer: "Mock answer" } }];
     submittedAskAiRequests.length = 0;

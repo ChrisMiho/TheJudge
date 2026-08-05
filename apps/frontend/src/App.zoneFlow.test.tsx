@@ -84,6 +84,7 @@ vi.mock("./components/ScanCameraSurface", () => ({
 
 import App from "./App";
 import { PHASE_ZONE_DEFAULTS } from "./lib/contextFlow/phaseZoneDefaults";
+import { startOnInDepthQuestion } from "./test/appTestHelpers";
 import type { CardMetadataItem } from "./types";
 
 const metadataFixture: CardMetadataItem[] = [
@@ -165,6 +166,7 @@ describe("Phase zone defaults", () => {
 
 describe("Target gating and pickers", () => {
   beforeEach(() => {
+    startOnInDepthQuestion();
     cardIdentifierConstructorMock.mockClear();
     identifierMock.identify.mockClear();
     vi.stubGlobal(

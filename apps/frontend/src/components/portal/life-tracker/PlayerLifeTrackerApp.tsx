@@ -2,23 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { BrandMark } from "../../BrandMark";
 import { PageShell } from "../../PageShell";
 import type { PlayerLabel } from "../../../types";
-import {
-  listSeatArrangement,
-  seatArrangement,
-  type SeatArrangementLayout,
-  type SeatPlacement
-} from "../../../lib/lifeTracker/seatArrangement";
+import { listSeatArrangement, seatArrangement } from "../../../lib/lifeTracker/seatArrangement";
 import { useLifeTracker, type UseLifeTrackerResult } from "../../../lib/lifeTracker/useLifeTracker";
 import { PortalSlot } from "../PortalSlot";
 import { CounterPanel } from "./CounterPanel";
 import { GameSetupPanel } from "./GameSetupPanel";
 import { PlayerLifeCard } from "./PlayerLifeCard";
-
-/** True when `placement` spans every column of `layout` - a list-mode head/foot row, not a paired seat. */
-function isWideSeat(placement: SeatPlacement, layout: SeatArrangementLayout): boolean {
-  const [start, end] = placement.gridColumn.split(" / ").map(Number);
-  return end - start >= layout.columns;
-}
 
 export interface PlayerLifeTrackerAppProps {
   /** Wave 3 composes the counter panel through this boundary. */
@@ -127,7 +116,12 @@ export function PlayerLifeTrackerApp({
 
   return (
     <PageShell variant="full-bleed">
-      <div className="mx-auto flex min-h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col gap-2">
+      {/* `height`, not `min-height`: the table is a single screen of seats, so it has to be
+          capped by the viewport rather than merely floored by it. At 5-8 players the old
+          `min-h` + per-row `minmax(15rem, …)` + per-card `min-h-60` floors summed past the
+          screen and pushed the bottom seats below the fold; rows now share whatever height
+          the screen actually has. */}
+      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col gap-2">
         <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3">
           <PortalSlot />
           <div className="text-center">
@@ -169,10 +163,9 @@ export function PlayerLifeTrackerApp({
           style={{
             display: "grid",
             gridTemplateColumns: `repeat(${layout.columns}, minmax(0, 1fr))`,
-            gridTemplateRows: `repeat(${layout.rows}, minmax(15rem, 1fr))`,
-            minHeight: `${layout.rows * 16}rem`
+            gridTemplateRows: `repeat(${layout.rows}, minmax(0, 1fr))`
           }}
-          className="flex-1 gap-2 pb-1"
+          className="min-h-0 flex-1 gap-2 pb-1"
         >
           {layout.seats.map((placement) => {
             const player = tracker.state.players.find((candidate) => candidate.label === placement.label);
@@ -184,9 +177,7 @@ export function PlayerLifeTrackerApp({
                 player={player}
                 players={tracker.state.players}
                 placement={placement}
-                layoutMode={tracker.state.layoutMode}
                 cardStyle={tracker.state.cardStyle}
-                isWideSeat={tracker.state.layoutMode === "list" && isWideSeat(placement, layout)}
                 onAdjustLife={tracker.adjustPlayerLife}
                 onSetLife={tracker.setPlayerLife}
                 onOpenCounters={openCounters}

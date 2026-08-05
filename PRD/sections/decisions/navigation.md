@@ -196,3 +196,28 @@ portal owns app chrome and every feature reaches it as a registered destination.
 - Notes:
   - amends DEC-122's partial-height drawer and bottom-corner silence only; corner rail, brand centering, eyebrow, and slide-from-left motion stay
   - non-goals: redesigning tray contents/registry/Theme; EnrichmentStep brand-block consolidation; step-progress indicator; any backend/contract change
+
+### DEC-135
+- Decision: Two post-ship corrections to the feature-portal Menu. (1) **Quick Question is the suite's default destination** and leads the registry order: Quick Question, In-Depth Question, Life Tracker, Trade Balancer, then action entries. Registry order remains both the menu's rendered order (DEC-104) and the source of the no-stored-preference default (DEC-111's session-scoped active-destination persistence is otherwise unchanged). (2) Menu entries render as **full-bleed rows separated by horizontal rules that meet the tray's left wall**, rather than inset bordered pills. Each row keeps the left inset that clears the corner rail's icon zone, but that inset lives on the row rather than on the tray's padding box, so the rules themselves run edge to edge.
+- Status: confirmed
+- Context: Quick Question is the fastest path to an answer and the common entry point; opening on In-Depth Question's multi-step game-context form made the heavier flow the default cost of launching the app. Separately, live review of DEC-133's full-height tray found the inset pill borders stopping short of the tray's left wall, which read as floating boxes rather than as one list occupying the shell's left side.
+- Impact:
+  - `loadActiveDestinationId`'s fallback resolves to Quick Question; an unregistered stored id also falls back there
+  - a stored destination still wins for the rest of the tab session, and Menu selection still persists as before
+  - Life Tracker → In-Depth roster seeding (DEC-110) is keyed on the destinations themselves, not on registry position, and is unaffected
+  - entry rows carry their own inset and a full-bleed bottom rule; the Theme block takes a normal inset (it sits well below the rail's icon zone and a 3.5rem inset would squeeze the 5-swatch grid) and adds no second rule of its own
+  - active-entry treatment keeps its check mark and quiet fill; DEC-133's tray height/corner treatment, the corner rail, brand mark, Theme contents, and action-entry semantics are unchanged
+  - presentation and default-selection only — no change to the destination set, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, or backend routes
+- Related requirements:
+  - REQ-113
+  - REQ-067
+  - DEC-095
+  - DEC-104
+  - DEC-110
+  - DEC-111
+  - DEC-122
+  - DEC-133
+  - NFR-001
+- Notes:
+  - App-level test suites that exercise the In-Depth flow now seed the active destination explicitly rather than depending on which destination leads the registry
+  - non-goals: adding/removing destinations, per-user default preference UI, changing action-entry behavior

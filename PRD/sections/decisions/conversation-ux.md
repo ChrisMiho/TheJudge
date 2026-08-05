@@ -275,3 +275,26 @@ Decrypt wait UX and follow-up conversation history behavior.
   - NFR-001
 - Notes:
   - non-goals: filling empty lower-half dead space on pre-submit Game Context / zone / Quick Question landing screens; outer app-shell redesign
+
+### DEC-134
+- Decision: Two post-ship corrections to the saved-conversation history experience (DEC-124/DEC-125/DEC-126). (1) **Selecting a saved conversation always lands on that conversation.** Restoring an entry from any pre-submit staged step of In-Depth Question moves the flow to the answered conversation workspace in the same action, rather than restoring the conversation behind whatever step the user was on. (2) The history drawer presents as a **left-edge, full-height drawer at every viewport**, superseding DEC-125's below-`768px` bottom sheet. Its `768px`+ presentation is unchanged. Menu↔History mutual exclusivity, focus trap/restore, Escape-to-close, reduced-motion behavior, the 20-entry cap, Draft semantics (DEC-130), and all frozen-context/restore semantics are unchanged.
+- Status: confirmed
+- Context: Live use after the chat-shell package shipped found both defects. In-Depth Question renders a restored conversation only inside its enrichment step, so selecting an entry from Game context closed the drawer onto the unchanged staged screen — the conversation appeared not to open at all — and then surfaced that other thread later, in place of enrichment, once the user walked the flow forward on their own. Quick Question was unaffected because its whole screen is gated on an active conversation. Separately, the bottom sheet sized itself to its content, so a short list (one saved conversation, or an empty one) rendered a small strip pinned to the screen bottom under a screen's worth of scrim, read by the product owner as dead space; the Menu drawer opened from the same corner rail is a left-edge full-height tray (DEC-133) at every width.
+- Impact:
+  - selecting a history entry on In-Depth Question restores the conversation *and* moves the flow to the answered workspace, from any staged step
+  - Start Over from that restored conversation returns to a clean Game context step exactly as before
+  - the history overlay uses `align-items: stretch; justify-content: flex-start` with no `max-height` cap at every viewport; the surface keeps its right-side rounding and slides in from the left edge it is anchored to
+  - narrow-viewport width is a fluid cap (`min(22rem, 88vw)`); `768px`+ keeps `min(30rem, 90vw)`
+  - presentation and in-app navigation only — no change to `AskAiRequest`, Zod schemas, `GameContext`, frozen-context shapes, history persistence/limits, prompt assembly, providers, or backend routes
+- Related requirements:
+  - REQ-103
+  - REQ-107
+  - DEC-124
+  - DEC-125
+  - DEC-126
+  - DEC-130
+  - DEC-133
+  - NFR-001
+- Notes:
+  - supersedes DEC-125's "accessible bottom sheet below `768px`" clause for the history drawer only; DEC-118's context sheet/drawer breakpoint is untouched
+  - non-goals: merging history into the Menu drawer, a shared drawer primitive extraction, changing what a restored conversation contains

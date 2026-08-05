@@ -34,7 +34,8 @@ import {
   openStackBuilder,
   selectCard,
   addCardToStack,
-  clickDecryptStack
+  clickDecryptStack,
+  startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
 let fetchMock: ReturnType<typeof vi.fn>;
@@ -46,6 +47,7 @@ const submittedAskAiRequests: ZoneAskAiPayload[] = [];
 describe("Frontend - MTG Assistant", () => {
 describe("Game setup and zone confirmation", () => {
   beforeEach(() => {
+    startOnInDepthQuestion();
     submittedAskAiRequests.length = 0;
     fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
       const url = getUrlFromRequest(input);

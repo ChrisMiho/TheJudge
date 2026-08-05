@@ -4,16 +4,18 @@ import { PORTAL_DESTINATIONS } from "./destinationRegistry";
 
 describe("Frontend - Portal", () => {
 describe("PORTAL_DESTINATIONS", () => {
-  it("registers the portal destinations in order", () => {
+  // Order is both the menu's rendered order and the default active destination, since
+  // `loadActiveDestinationId` falls back to the first id.
+  it("registers the portal destinations in order, led by Quick Question", () => {
     expect(PORTAL_DESTINATIONS.map((destination) => destination.id)).toEqual([
-      "mtg-assistant",
       "quick-lookup",
+      "mtg-assistant",
       "player-life-tracker",
       "trade-balancer"
     ]);
     expect(PORTAL_DESTINATIONS.map((destination) => destination.label)).toEqual([
-      "In-Depth Question",
       "Quick Question",
+      "In-Depth Question",
       "Life Tracker",
       "Trade Balancer"
     ]);

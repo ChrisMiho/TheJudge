@@ -21,7 +21,8 @@ import {
   createMemoryStorage,
   getUrlFromRequest,
   jsonResponse,
-  openStackBuilder
+  openStackBuilder,
+  startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
 function paletteFor(id: string): Palette {
@@ -61,6 +62,7 @@ describe("Global theme reach across destinations", () => {
   beforeEach(() => {
     vi.stubGlobal("localStorage", createMemoryStorage());
     vi.stubGlobal("sessionStorage", createMemoryStorage());
+    startOnInDepthQuestion();
     vi.stubGlobal(
       "fetch",
       vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {

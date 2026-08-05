@@ -7,13 +7,15 @@ import {
   getUrlFromRequest,
   installMemoryLocalStorage,
   jsonResponse,
-  uninstallMemoryLocalStorage
+  uninstallMemoryLocalStorage,
+  startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
 const legacyDensityKey = "thejudge.theme.layoutDensity";
 
 describe("Frontend - Automatic responsive presentation", () => {
   beforeEach(() => {
+    startOnInDepthQuestion();
     installMemoryLocalStorage();
     globalThis.localStorage.setItem(legacyDensityKey, "chunky");
     vi.stubGlobal(
