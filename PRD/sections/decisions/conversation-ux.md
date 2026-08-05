@@ -191,8 +191,9 @@ Decrypt wait UX and follow-up conversation history behavior.
   - DEC-117
   - NFR-001
 - Notes:
-  - supersedes only DEC-125's trigger-placement clause; DEC-125's drawer open/close mechanics, breakpoint presentation (bottom sheet/left drawer), and mutual exclusivity remain unchanged and authoritative
+  - supersedes only DEC-125's trigger-placement clause; DEC-125's drawer open/close mechanics and mutual exclusivity remain authoritative here; breakpoint presentation for the history drawer is superseded by DEC-134 (left-edge full-height at every viewport)
   - History visibility on In-Depth/Quick Question (always-on, including empty/after Start Over) and non-overlap with View Context are refined by DEC-129; this decision's rail integration otherwise stands
+  - stacked Menu-over-History zones and fluid `clamp()` rail height are superseded by DEC-137's side-by-side `2.75rem` band (Menu leading / History trailing)
   - non-goals: any change to DEC-122's corner-rail visual language (radial glow, no border) beyond growing its hit-area height; a shared icon-button component extraction (left as a future code-health item)
 
 ### DEC-127
