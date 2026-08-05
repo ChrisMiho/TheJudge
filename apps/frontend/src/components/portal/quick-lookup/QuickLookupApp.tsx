@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAutocompleteKeyboard } from "../../../hooks/useAutocompleteKeyboard";
 import { useAutocompleteSuggestions } from "../../../hooks/useAutocompleteSuggestions";
 import { useAskAiSubmitOrchestration } from "../../../hooks/useAskAiSubmitOrchestration";
+import { useAutoGrowTextarea } from "../../../hooks/useAutoGrowTextarea";
 import { useScanCapture } from "../../../hooks/useScanCapture";
 import { buildLookupAskAiRequest } from "../../../lib/contextFlow";
 import type { ConversationHistoryEntry, LookupDraftState } from "../../../lib/conversationHistory/persistence";
@@ -282,6 +283,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   const retryLabel = retryCountdown > 0 ? `Retry in ${retryCountdown}s` : "Retry";
   const frozenLookupCard =
     frozenContext?.kind === "lookup" ? frozenContext.card : null;
+  useAutoGrowTextarea(question, questionInputRef);
 
   if (isConversationActive) {
     return (
@@ -498,7 +500,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
                   maxLength={MAX_QUESTION_LENGTH}
                   onChange={(event) => setQuestion(event.target.value)}
                   rows={1}
-                  className="min-w-0 flex-1 resize-none bg-transparent py-1.5 text-sm normal-case tracking-normal text-zinc-100 placeholder:text-zinc-500 focus:outline-none"
+                  className="min-w-0 flex-1 resize-none overflow-y-auto bg-transparent py-1.5 text-sm normal-case tracking-normal text-zinc-100 placeholder:text-zinc-500 focus:outline-none"
                   placeholder={
                     lockedTopic
                       ? "Add anything specific — or leave this blank and just ask."
