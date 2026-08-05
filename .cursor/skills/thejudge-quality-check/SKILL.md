@@ -44,6 +44,7 @@ map-out artifacts.
 - [ ] `technical-design-rules.md` constraints are respected (one endpoint, no rules engine, etc.)
 - [ ] Scope is implementable without hidden assumptions
 - [ ] Open questions are reserved for genuine ambiguity only
+- [ ] If the brief introduces or redesigns user-visible screens/overlays: `PRD/sections/screen-layout.md` has a matching row (or an explicit update) consistent with DEC-149 / REQ-126 — FAIL if missing or contradicted without a catalog/DEC update
 
 ## Status transitions
 

@@ -198,3 +198,27 @@ Frontend-only responsive presentation, motion, transition, and visual-feedback b
 - Notes:
   - rejected alternative: pinning the add action to a sticky bottom bar while keeping full-size preview — adds persistent chrome over the preview instead of removing duplicated content
   - non-goals: redesigning the card identity ring treatment, the three-dot metadata swap, or the added-card tile grid
+
+### DEC-149
+- Decision: Durable screen-layout product truth lives at `PRD/sections/screen-layout.md`. That catalog is authoritative for layout direction (screen purpose, hybrid %-of-viewport shell / %-of-shell inner regions, viewport bands, default no-page-scroll fit with allowed region scroll, and anti-overcalibration). Agents refining or adding UI must read and follow it; they must not invent sizes or full-bleed stretches when a surface is covered. New user-visible screens or major overlays must add a catalog row (using the file’s template) during refinement. Mechanism remains DEC-117 fluid CSS on one component tree — the catalog expresses product intent in % bands and caps, not a second density system, UA sniffing, or JS device detection. Feature-specific presentation DECs and REQs remain binding; the catalog aligns with them — including DEC-145 / REQ-124 **desktop shell width** (`min(48rem, 92vw)`) and in-shell prose measure, without reintroducing rejected staged-step vertical fill — and is updated when those change. Vertical fill applies only where other DECs require it (answered workspace DEC-127/131, Life Tracker DEC-136, scan chrome DEC-090).
+- Status: confirmed
+- Context: Agents polishing UI from short feedback (“stretch to fill”) repeatedly overcalibrated — e.g. filling unused viewport edge-to-edge — because `system-map.md` answers shipped/where and `ui-presentation.md` holds chronological DECs, but neither is a scan-friendly per-screen size/containment inventory. Product owner approved a new section plus thin decision and agent wiring so future features and polish lean on shared direction, orthogonal to the active `responsive-containment-and-density` defect package.
+- Impact:
+  - `PRD/sections/screen-layout.md` holds shared layout language + per major screen rows + new-screen template
+  - UI layout / containment / “fill or stretch” work reads the catalog before inventing geometry
+  - refinement of packages that introduce UI must land a catalog row before quality-check PASS
+  - `PRD/README.md` and agent skills/instructions point at the catalog for UI layout tasks
+  - does not absorb or block `responsive-containment-and-density`; that package completes measured fixes on its own
+  - presentation/docs only in this decision — no API, prompt, scan-engine, or provider change
+- Related requirements:
+  - REQ-126
+  - REQ-124
+  - REQ-096
+  - NFR-001
+  - DEC-117
+  - DEC-145
+- Notes:
+  - approved home: new section + thin DEC + README/skill wiring (not stuffing size tables into system-map or only into DEC bodies)
+  - hybrid % model: outer shell **width** % of viewport; inner panels % of shell; staged pre-submit height stays content-sized per DEC-145
+  - default fit: no document/page scroll for primary UI; nested region scroll allowed
+  - non-goals: full design system/token library/Figma parity; rewriting UI in the docs package; strict no-nested-scroll everywhere; reintroducing rejected staged-step vertical fill

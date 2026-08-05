@@ -8,15 +8,16 @@ Do not rename package folders to encode status.
 
 ## active
 
-- [responsive-containment-and-density](./responsive-containment-and-density/)
 - [chrome-tray-conversation-history-ux](./chrome-tray-conversation-history-ux/)
 
 ## refined
 
+- [ui-screen-layout-truth](./ui-screen-layout-truth/)
+
 ## refining
 
+- [responsive-containment-and-density](./responsive-containment-and-density/)
 - [context-ai-photo-card-id](./context-ai-photo-card-id/)
-- [ui-screen-layout-truth](./ui-screen-layout-truth/)
 
 ## ideation
 
