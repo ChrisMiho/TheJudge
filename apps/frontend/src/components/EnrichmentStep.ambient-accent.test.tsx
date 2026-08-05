@@ -35,8 +35,9 @@ describe("Ambient accent surfaces", () => {
     await user.click(viewModeControl);
 
     expect(cardSurface()).toHaveAttribute("data-accent-current", "true");
-    expect(questionSurface()).toHaveClass("ambient-accent-surface", "ambient-accent-interactive");
     expect(questionSurface()).toHaveAttribute("data-accent-current", "true");
+    const questionComposer = questionSurface().querySelector(".ambient-accent-surface");
+    expect(questionComposer).toHaveClass("ambient-accent-surface", "ambient-accent-interactive");
   });
 
   it("leaves card enrichment resting and marks question submission current after wizard completion", async () => {

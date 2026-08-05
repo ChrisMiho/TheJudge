@@ -1,0 +1,7 @@
+# player-life-tracker-refinement-followup
+
+Handoff from `player-life-tracker-refinement` (still refining; see that package's `HANDOFF.md` and DESIGN-BRIEF addenda). The parent package has absorbed many live-feedback passes (layout, counters, Game Setup, confirm-before-destroy, flat card style, typed life, day/night). Remaining items are small, explicitly parked follow-ups — not bugs and not the large deferred feature set.
+
+Problem: a short list of minor tracker presentation details was intentionally left open so the parent package could finish its current scope cleanly. Seeded candidates from the handoff: (1) convert the Counter panel Player/Counters tab bar from horizontal top tabs to the reference's vertical right-edge layout (`IMG_9505`/`IMG_9506`); (2) revisit Grid/List toggle labels/icons in Game Setup now that "List" means the row-based turned-ends arrangement rather than a flat single-column stack. Outcome: a separate work package that owns those minor details (and any similarly small polish that surfaces) without reopening the parent's closed addenda or the big deferred features.
+
+Non-goals: automatic day/night derivation; Gameplay-section toggles (Planechase, Archenemy, Bounty, Auto-KO, Turn timer, Game history); dedicated full-screen Settings route; per-player theming/pastels, saved profiles, mana counter, dice & misc — all stay deferred per the original life-tracker non-goals. No DESIGN-BRIEF yet; refinement confirms which seeded items stay in scope.

@@ -6,8 +6,7 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-- [assistant-chat-shell](./assistant-chat-shell/)
-- [center-menu-tab-prominence](./center-menu-tab-prominence/)
+_(none)_
 
 ## active
 
@@ -26,6 +25,8 @@ _(none)_
 
 - [assistant-chat-shell-followup](./assistant-chat-shell-followup/)
 - [card-collection-manager](./card-collection-manager/)
+- [center-menu-tab-prominence-followup](./center-menu-tab-prominence-followup/)
+- [player-life-tracker-refinement-followup](./player-life-tracker-refinement-followup/)
 - [scan-non-english-special-treatments](./scan-non-english-special-treatments/)
 
 ## owner-action
