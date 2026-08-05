@@ -20,7 +20,7 @@ Plan: [`GAMEPLAN.md`](./GAMEPLAN.md).
 
 | Slice | Objective | Depends on | Status |
 | --- | --- | --- | --- |
-| [A](./slice-a-menu-tray-occlusion.md) | Menu tray occludes under-rail History | — | planned |
+| [A](./slice-a-menu-tray-occlusion.md) | Menu tray occludes under-rail History | — | done |
 | [B](./slice-b-answered-top-clearance.md) | Compact answered top clearance | A (`index.css`) | planned |
 | [C](./slice-c-resilient-card-preview.md) | Resilient resumed card context preview | — | planned |
 | [D](./slice-d-overlay-scrim-dismiss.md) | Outside/scrim dismiss for View Context + History | — | planned |

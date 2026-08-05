@@ -1,6 +1,6 @@
 # Slice A — Menu tray occludes under-rail History
 
-## Status: planned
+## Status: done
 
 ## Goal
 

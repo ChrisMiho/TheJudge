@@ -234,6 +234,16 @@
   border-left: 1px solid rgb(var(--accent-soft) / 0.35);
 }
 
+/* DEC-140/REQ-115: while Menu is open, the History zone (a sibling within the
+   always-rendered, z-index: 3 rail) must not paint through or remain hit-testable
+   above the open tray. visibility: hidden removes it from paint and hit-testing
+   (falling through to the rail/split container behind it, not History) while
+   pointer-events: none is belt-and-suspenders once un-hidden by other paths. */
+.portal-menu-rail-zone-inert {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 /* Full-height drawer sliding in from the left edge (DEC-122, amended by
    DEC-133): overlays from the same top-left corner as the rail (so it reads
    as originating from the rail, not dropping from a header seam),
