@@ -1,6 +1,6 @@
 # Slice B — Snapshot mid-flight Draft when opening a saved conversation
 
-## Status: planned
+## Status: done
 
 ## Goal
 

@@ -129,4 +129,100 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
 
     expect(screen.getByRole("heading", { name: "Game context" })).toBeVisible();
   });
+
+  // DEC-138: opening a saved conversation is the third mid-flight exit, alongside Menu-leave
+  // and reload. It never changes `isActive`, so the edge effect that covers the other two
+  // cannot see it — before this, restoreConversation silently discarded staged work.
+  describe("Opening a saved conversation from mid-flight staging", () => {
+    function seedCompletedConversation(mode: "game" | "lookup"): void {
+      localStorage.setItem(
+        "thejudge.conversationHistory.entries",
+        JSON.stringify([
+          {
+            id: `seeded-${mode}`,
+            mode,
+            flowLabel: mode === "game" ? "In-Depth Question" : "Quick Question",
+            frozenContext:
+              mode === "game" ? { kind: "game", gameContext: { players: [] } } : { kind: "lookup", card: null },
+            hiddenInitialQuestion: "Earlier question",
+            visibleMessages: [
+              { role: "user", content: "Earlier question" },
+              { role: "assistant", content: "Earlier answer" }
+            ],
+            createdAt: "2026-01-01T00:00:00.000Z",
+            updatedAt: "2026-01-01T00:00:00.000Z"
+          }
+        ])
+      );
+    }
+
+    it("snapshots Quick Question staging to Draft before restoring the conversation", async () => {
+      seedCompletedConversation("lookup");
+      const user = userEvent.setup();
+      render(<App />);
+
+      await switchToDestination(user, "Quick Question");
+      await user.type(screen.getByLabelText("Magic question"), "Does lifelink trigger on deathtouch damage?");
+      expect(localStorage.getItem("thejudge.conversationDraft.lookup")).toBeNull();
+
+      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await user.click(await screen.findByRole("button", { name: /Earlier question/ }));
+
+      const draft = localStorage.getItem("thejudge.conversationDraft.lookup");
+      expect(draft).not.toBeNull();
+      expect(JSON.parse(draft as string)).toMatchObject({
+        mode: "lookup",
+        question: "Does lifelink trigger on deathtouch damage?"
+      });
+
+      // The conversation still opened — the snapshot happens before the restore, not instead
+      // of it (DEC-134 unchanged).
+      expect(await screen.findByText("Earlier answer")).toBeInTheDocument();
+    });
+
+    it("snapshots In-Depth Question staging to Draft before restoring the conversation", async () => {
+      seedCompletedConversation("game");
+      const user = userEvent.setup();
+      render(<App />);
+
+      await advanceToBattlefieldZoneCollection(user);
+      expect(localStorage.getItem("thejudge.conversationDraft.game")).toBeNull();
+
+      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await user.click(await screen.findByRole("button", { name: /Earlier question/ }));
+
+      const draft = localStorage.getItem("thejudge.conversationDraft.game");
+      expect(draft).not.toBeNull();
+      expect(JSON.parse(draft as string)).toMatchObject({ mode: "game", flowStep: "zone-collection" });
+    });
+
+    it("makes the discarded attempt recoverable as the Draft row in the same drawer", async () => {
+      seedCompletedConversation("lookup");
+      const user = userEvent.setup();
+      render(<App />);
+
+      await switchToDestination(user, "Quick Question");
+      await user.type(screen.getByLabelText("Magic question"), "Does trample carry over lethal damage?");
+
+      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await user.click(await screen.findByRole("button", { name: /Earlier question/ }));
+      expect(await screen.findByText("Earlier answer")).toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      expect(await screen.findByRole("button", { name: /Draft/ })).toBeInTheDocument();
+    });
+
+    it("writes no Draft when there is no meaningful staging to preserve", async () => {
+      seedCompletedConversation("lookup");
+      const user = userEvent.setup();
+      render(<App />);
+
+      await switchToDestination(user, "Quick Question");
+
+      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await user.click(await screen.findByRole("button", { name: /Earlier question/ }));
+
+      expect(localStorage.getItem("thejudge.conversationDraft.lookup")).toBeNull();
+    });
+  });
 });

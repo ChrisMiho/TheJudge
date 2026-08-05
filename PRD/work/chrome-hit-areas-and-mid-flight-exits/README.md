@@ -45,7 +45,7 @@ Plan: [`GAMEPLAN.md`](./GAMEPLAN.md).
 | Slice | Objective | Depends on | Status |
 | --- | --- | --- | --- |
 | [A](./slice-a-rail-hit-area.md) | Bound the corner rail's hit area to what it paints; split rail goes side-by-side | — | **done** |
-| [B](./slice-b-draft-on-history-select.md) | Snapshot the mid-flight Draft when opening a saved conversation, both modes | — | planned |
+| [B](./slice-b-draft-on-history-select.md) | Snapshot the mid-flight Draft when opening a saved conversation, both modes | — | **done** |
 | [C](./slice-c-counter-panel-surface.md) | Counter panel joins the full-height overlay family | — | planned |
 
 All three touch disjoint files and are parallel-ready. Sequenced A → B → C by severity, not by
