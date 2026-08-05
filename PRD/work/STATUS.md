@@ -13,6 +13,8 @@ Do not rename package folders to encode status.
 
 ## active
 
+- [chrome-tray-conversation-history-ux](./chrome-tray-conversation-history-ux/)
+
 ## refined
 
 ## refining

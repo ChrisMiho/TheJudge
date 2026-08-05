@@ -255,3 +255,26 @@ portal owns app chrome and every feature reaches it as a registered destination.
   - DEC-126's fluid `clamp()` zone height is superseded by the fixed `2.75rem` band, since the constraint that motivated the clamp (fitting two stacked zones at every viewport) no longer applies once the zones sit side-by-side
   - the 3.5rem figure is not a new invention — `index.css` already uses it as the menu-row inset that clears this exact icon zone
   - non-goals: redesigning the rail's visual language, the drawer's contents, the destination registry, or any destination's own layout
+
+### DEC-140
+- Decision: When the feature-portal Menu tray is open, the tray surface must paint **above** and **fully occlude** non-Menu corner-rail chrome — especially the History zone on In-Depth Question and Quick Question. Icons under the open tray must not show through the tray and must not receive pointer events. The Menu trigger itself remains interactive so the user can close the tray. Menu↔History mutual exclusivity (DEC-125) still applies when History is opened by other means.
+- Status: confirmed
+- Context: Live review after the full-height tray (DEC-133) and side-by-side History rail (DEC-137) found History still painting through the open tray and remaining clickable. Playwright verification confirmed `.portal-menu-rail` stacks at `z-index: 3` above `.portal-menu-drawer` at `z-index: 2`, so `elementFromPoint` over the History icon while Menu is open still hits History and can open the history drawer through the tray.
+- Impact:
+  - open Menu tray stacking/occlusion covers the History rail zone (and any other non-Menu rail chrome under the tray's painted bounds)
+  - while Menu is open, History is not visible through the tray and is not clickable; Menu remains the close control
+  - Life Tracker / Trade Balancer (Menu-only rail) must not regress: open tray still reads as an opaque left shell panel over destination content
+  - presentation/interaction only — no change to destination registry, Theme, History persistence, `AskAiRequest`, Zod schemas, prompt assembly, providers, or backend routes
+- Related requirements:
+  - REQ-115
+  - REQ-113
+  - REQ-114
+  - DEC-122
+  - DEC-126
+  - DEC-133
+  - DEC-137
+  - DEC-125
+  - NFR-001
+- Notes:
+  - amends open-state stacking/occlusion for DEC-122/DEC-133 relative to DEC-126's History zone; does not redesign tray contents or the rail's rest-state visual language
+  - non-goals: merging History into the Menu tray, changing Menu outside-click-to-close, or altering History drawer geometry
