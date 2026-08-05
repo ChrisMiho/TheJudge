@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 # player-life-tracker-refinement
@@ -12,11 +12,11 @@ See `IDEA.md` for the original idea and `DESIGN-BRIEF.md` for the approved scope
 
 | Slice | Goal | Depends on | Status |
 | --- | --- | --- | --- |
-| [A](./slice-a-always-on-day-night.md) | Remove `dayNightEnabled` end-to-end; header ☀/☾ control always visible | — | planned |
-| [B](./slice-b-life-band-width.md) | Widen `PlayerLifeCard` life +/− bands by 40% (48px → 67px) | — | planned |
-| [C](./slice-c-commander-damage-band-width.md) | Widen `CommanderDamageCell` +/− bands by 20% (44px → 53px) | — | planned |
-| [D](./slice-d-player-count-stepper.md) | Replace Game Setup Players pill row with a −/+ stepper | — | planned |
-| [E](./slice-e-starting-life-defaults.md) | Custom starting-life default 60 + count-driven starting-life defaults; final ship gates and PRD promotion | — | planned |
+| [A](./slice-a-always-on-day-night.md) | Remove `dayNightEnabled` end-to-end; header ☀/☾ control always visible | — | done |
+| [B](./slice-b-life-band-width.md) | Widen `PlayerLifeCard` life +/− bands by 40% (48px → 67px) | — | done |
+| [C](./slice-c-commander-damage-band-width.md) | Widen `CommanderDamageCell` +/− bands by 20% (44px → 53px) | — | done |
+| [D](./slice-d-player-count-stepper.md) | Replace Game Setup Players pill row with a −/+ stepper | — | done |
+| [E](./slice-e-starting-life-defaults.md) | Custom starting-life default 60 + count-driven starting-life defaults; final ship gates and PRD promotion | — | done |
 
 All five slices are parallel-ready — see `GAMEPLAN.md` for the file/line
 overlap analysis (A and E share files with E at non-overlapping sections).

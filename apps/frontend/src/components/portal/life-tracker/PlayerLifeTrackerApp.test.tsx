@@ -114,18 +114,21 @@ describe("Frontend - Shared", () => {
       render(<PlayerLifeTrackerApp />);
       await openGameSetup(user);
 
-      await user.click(screen.getByRole("button", { name: "Set player count to 2" }));
+      const decreaseButton = screen.getByRole("button", { name: "Decrease player count" });
+      const increaseButton = screen.getByRole("button", { name: "Increase player count" });
+
+      // The default game starts at 4 players; step down to the minimum first.
+      await user.click(decreaseButton);
+      await user.click(decreaseButton);
       expect(trackerCards()).toHaveLength(2);
+      expect(decreaseButton).toBeDisabled();
 
       for (let count = 3; count <= 8; count += 1) {
-        await user.click(screen.getByRole("button", { name: `Set player count to ${count}` }));
+        await user.click(increaseButton);
         expect(trackerCards()).toHaveLength(count);
       }
 
-      expect(screen.getByRole("button", { name: "Set player count to 8" })).toHaveAttribute(
-        "aria-pressed",
-        "true"
-      );
+      expect(increaseButton).toBeDisabled();
     });
 
     it("applies the four-player seat contract literally to every fixed label", () => {
@@ -174,9 +177,9 @@ describe("Frontend - Shared", () => {
         });
       }
 
-      expect(screen.getByRole("button", { name: "Decrease life for Player 1" })).toHaveClass("left-0", "w-12");
-      expect(screen.getByRole("button", { name: "Decrease life for Player 2" })).toHaveClass("top-0", "h-12");
-      expect(screen.getByRole("button", { name: "Decrease life for Player 4" })).toHaveClass("left-0", "w-12");
+      expect(screen.getByRole("button", { name: "Decrease life for Player 1" })).toHaveClass("left-0", "w-[67px]");
+      expect(screen.getByRole("button", { name: "Decrease life for Player 2" })).toHaveClass("top-0", "h-[67px]");
+      expect(screen.getByRole("button", { name: "Decrease life for Player 4" })).toHaveClass("left-0", "w-[67px]");
     });
 
     it("changes only the selected player's life and applies starting life to the full table", async () => {
@@ -230,7 +233,7 @@ describe("Frontend - Shared", () => {
       expect(within(screen.getByTestId("life-card-Player 1")).getByText("40")).toBeInTheDocument();
       expect(localStorage.length).toBe(0);
 
-      await user.click(screen.getByRole("button", { name: "Set player count to 3" }));
+      await user.click(screen.getByRole("button", { name: "Decrease player count" }));
       await user.click(screen.getByRole("button", { name: "Start new game" }));
       await user.click(screen.getByRole("button", { name: "Confirm start new game" }));
       expect(trackerCards()).toHaveLength(4);
@@ -352,20 +355,19 @@ describe("Frontend - Shared", () => {
       expect(JSON.parse(localStorage.getItem("thejudge.lifeTracker.state") as string).players[0].life).toBe(100000);
     });
 
-    it("shows the day/night header control only when tracking is enabled, and flips it on tap", async () => {
+    it("always shows the day/night header control, with no Game Setup toggle to hide it, and flips it on tap", async () => {
       const user = userEvent.setup();
       render(<PlayerLifeTrackerApp />);
-
-      expect(screen.queryByTestId("day-night-toggle")).not.toBeInTheDocument();
-
-      await openGameSetup(user);
-      await user.click(screen.getByRole("switch", { name: "Track day and night" }));
-      await user.click(screen.getByRole("button", { name: "Close game setup" }));
 
       const dayControl = screen.getByRole("button", {
         name: "Day and night: currently day. Flip designation."
       });
+      expect(screen.getByTestId("day-night-toggle")).toBeInTheDocument();
       expect(dayControl).toHaveTextContent("Day");
+
+      await openGameSetup(user);
+      expect(screen.queryByRole("switch", { name: "Track day and night" })).not.toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: "Close game setup" }));
 
       await user.click(dayControl);
 
@@ -374,6 +376,26 @@ describe("Frontend - Shared", () => {
       });
       expect(nightControl).toHaveTextContent("Night");
       expect(nightControl).toHaveAttribute("data-day-night-phase", "night");
+    });
+
+    it("resets the day/night designation back to Day on Reset", async () => {
+      const user = userEvent.setup();
+      render(<PlayerLifeTrackerApp />);
+
+      await user.click(
+        screen.getByRole("button", { name: "Day and night: currently day. Flip designation." })
+      );
+      expect(
+        screen.getByRole("button", { name: "Day and night: currently night. Flip designation." })
+      ).toBeInTheDocument();
+
+      await openGameSetup(user);
+      await user.click(screen.getByRole("button", { name: "Reset current game" }));
+      await user.click(screen.getByRole("button", { name: "Confirm reset current game" }));
+
+      expect(
+        screen.getByRole("button", { name: "Day and night: currently day. Flip designation." })
+      ).toBeInTheDocument();
     });
 
     it("uses accent-soft for the dark Game Setup modal's accent heading", async () => {

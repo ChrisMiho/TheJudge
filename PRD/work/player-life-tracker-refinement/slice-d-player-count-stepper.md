@@ -1,6 +1,6 @@
 # Slice D — Player count stepper
 
-## Status: planned
+## Status: done
 
 ## Goal
 

@@ -3,7 +3,6 @@ import { NAMED_COUNTER_IDS } from "./counters";
 import {
   ALL_PLAYER_LABELS,
   DEFAULT_CARD_STYLE,
-  DEFAULT_DAY_NIGHT_ENABLED,
   DEFAULT_DAY_NIGHT_PHASE,
   DEFAULT_LAYOUT_MODE,
   MAX_PLAYER_COUNT,
@@ -101,6 +100,10 @@ function normalizeDayNightPhase(value: unknown): DayNightPhase {
   return value === "day" || value === "night" ? value : DEFAULT_DAY_NIGHT_PHASE;
 }
 
+function normalizeHasManualStartingLife(value: unknown): boolean {
+  return typeof value === "boolean" ? value : false;
+}
+
 function getStorage(): Storage | null {
   try {
     return globalThis.localStorage ?? null;
@@ -129,9 +132,8 @@ export function loadTrackerState(): TrackerState | null {
       ...parsed,
       layoutMode,
       cardStyle: normalizeCardStyle(stored.cardStyle),
-      dayNightEnabled:
-        typeof stored.dayNightEnabled === "boolean" ? stored.dayNightEnabled : DEFAULT_DAY_NIGHT_ENABLED,
-      dayNightPhase: normalizeDayNightPhase(stored.dayNightPhase)
+      dayNightPhase: normalizeDayNightPhase(stored.dayNightPhase),
+      hasManualStartingLife: normalizeHasManualStartingLife(stored.hasManualStartingLife)
     };
   } catch {
     return null;

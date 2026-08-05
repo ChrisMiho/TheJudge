@@ -1,6 +1,6 @@
 # Slice A — Always-on day/night
 
-## Status: planned
+## Status: done
 
 ## Goal
 

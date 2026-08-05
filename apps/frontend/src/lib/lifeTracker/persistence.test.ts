@@ -11,9 +11,9 @@ import {
   createInitialState,
   setCardStyle,
   setCommanderDamage,
-  setDayNightEnabled,
   setLayoutMode,
   setNamedCounter,
+  setStartingLife,
   toggleDayNightPhase
 } from "./state";
 import type { TrackerState } from "./types";
@@ -217,23 +217,20 @@ describe("Frontend - Shared", () => {
     });
 
     describe("Presentation settings added after launch", () => {
-      it("round-trips the card style and day/night settings", () => {
+      it("round-trips the card style and day/night phase", () => {
         let state = setCardStyle(buildFullState(), "flat");
-        state = setDayNightEnabled(state, true);
         state = toggleDayNightPhase(state);
         saveTrackerState(state);
 
         const loaded = loadTrackerState();
 
         expect(loaded?.cardStyle).toBe("flat");
-        expect(loaded?.dayNightEnabled).toBe(true);
         expect(loaded?.dayNightPhase).toBe("night");
       });
 
       it("loads a pre-existing snapshot that has none of the new fields, falling back to defaults", () => {
-        const { cardStyle, dayNightEnabled, dayNightPhase, ...oldShape } = buildFullState();
+        const { cardStyle, dayNightPhase, ...oldShape } = buildFullState();
         expect(cardStyle).toBeDefined();
-        expect(dayNightEnabled).toBeDefined();
         expect(dayNightPhase).toBeDefined();
         localStorage.setItem(TRACKER_STORAGE_KEY, JSON.stringify(oldShape));
 
@@ -243,7 +240,6 @@ describe("Frontend - Shared", () => {
         expect(loaded?.playerCount).toBe(3);
         expect(loaded?.players[0].namedCounters.poison).toBe(4);
         expect(loaded?.cardStyle).toBe("gradient");
-        expect(loaded?.dayNightEnabled).toBe(false);
         expect(loaded?.dayNightPhase).toBe("day");
       });
 
@@ -253,7 +249,6 @@ describe("Frontend - Shared", () => {
           JSON.stringify({
             ...buildFullState(),
             cardStyle: "neon",
-            dayNightEnabled: "yes",
             dayNightPhase: "dusk"
           })
         );
@@ -262,8 +257,51 @@ describe("Frontend - Shared", () => {
 
         expect(loaded).not.toBeNull();
         expect(loaded?.cardStyle).toBe("gradient");
-        expect(loaded?.dayNightEnabled).toBe(false);
         expect(loaded?.dayNightPhase).toBe("day");
+      });
+
+      it("still loads successfully when a stored snapshot carries a pre-slice dayNightEnabled key", () => {
+        localStorage.setItem(
+          TRACKER_STORAGE_KEY,
+          JSON.stringify({
+            ...buildFullState(),
+            dayNightEnabled: true
+          })
+        );
+
+        const loaded = loadTrackerState();
+
+        expect(loaded).not.toBeNull();
+        expect(loaded?.playerCount).toBe(3);
+        expect(loaded?.players[0].namedCounters.poison).toBe(4);
+        expect(loaded?.dayNightPhase).toBe("day");
+      });
+
+      it("round-trips the hasManualStartingLife flag", () => {
+        const state = setStartingLife(buildFullState(), 25);
+        saveTrackerState(state);
+
+        expect(loadTrackerState()?.hasManualStartingLife).toBe(true);
+      });
+
+      it("loads a pre-existing snapshot without hasManualStartingLife, defaulting to false", () => {
+        const { hasManualStartingLife, ...oldShape } = buildFullState();
+        expect(hasManualStartingLife).toBeDefined();
+        localStorage.setItem(TRACKER_STORAGE_KEY, JSON.stringify(oldShape));
+
+        const loaded = loadTrackerState();
+
+        expect(loaded).not.toBeNull();
+        expect(loaded?.hasManualStartingLife).toBe(false);
+      });
+
+      it("falls back to false for an invalid stored hasManualStartingLife value", () => {
+        localStorage.setItem(
+          TRACKER_STORAGE_KEY,
+          JSON.stringify({ ...buildFullState(), hasManualStartingLife: "yes" })
+        );
+
+        expect(loadTrackerState()?.hasManualStartingLife).toBe(false);
       });
     });
 

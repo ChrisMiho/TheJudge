@@ -89,7 +89,6 @@ function GameSetupModal({ tracker, onClose }: GameSetupModalProps): JSX.Element 
             playerCount={tracker.state.playerCount}
             layoutMode={tracker.state.layoutMode}
             cardStyle={tracker.state.cardStyle}
-            dayNightEnabled={tracker.state.dayNightEnabled}
             startingLife={tracker.state.startingLife}
             players={tracker.state.players.map((player) => ({
               label: player.label,
@@ -98,7 +97,6 @@ function GameSetupModal({ tracker, onClose }: GameSetupModalProps): JSX.Element 
             onPlayerCountChange={tracker.setPlayerCount}
             onLayoutModeChange={tracker.setLayoutMode}
             onCardStyleChange={tracker.setCardStyle}
-            onDayNightEnabledChange={tracker.setDayNightEnabled}
             onStartingLifeChange={tracker.setStartingLife}
             onDisplayNameChange={tracker.setPlayerDisplayName}
             onReset={tracker.reset}
@@ -136,24 +134,22 @@ export function PlayerLifeTrackerApp({
             <BrandMark />
           </div>
           <div className="flex items-center gap-2 justify-self-end">
-            {tracker.state.dayNightEnabled && (
-              <button
-                type="button"
-                data-testid="day-night-toggle"
-                data-day-night-phase={tracker.state.dayNightPhase}
-                // The button both reports the current designation and flips it, so the label states
-                // what it is now and the visible text repeats it - MTG day/night is one game-wide
-                // value with exactly two states, so "flip" needs no further disambiguation.
-                aria-label={`Day and night: currently ${tracker.state.dayNightPhase}. Flip designation.`}
-                onClick={tracker.toggleDayNightPhase}
-                className="motion-focus flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-zinc-600 bg-zinc-900/95 px-3 text-xs font-bold text-zinc-100 shadow-lg shadow-black/40 backdrop-blur hover:bg-zinc-800"
-              >
-                <span aria-hidden="true" className="text-sm leading-none">
-                  {tracker.state.dayNightPhase === "day" ? "☀" : "☾"}
-                </span>
-                <span aria-hidden="true">{tracker.state.dayNightPhase === "day" ? "Day" : "Night"}</span>
-              </button>
-            )}
+            <button
+              type="button"
+              data-testid="day-night-toggle"
+              data-day-night-phase={tracker.state.dayNightPhase}
+              // The button both reports the current designation and flips it, so the label states
+              // what it is now and the visible text repeats it - MTG day/night is one game-wide
+              // value with exactly two states, so "flip" needs no further disambiguation.
+              aria-label={`Day and night: currently ${tracker.state.dayNightPhase}. Flip designation.`}
+              onClick={tracker.toggleDayNightPhase}
+              className="motion-focus flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-zinc-600 bg-zinc-900/95 px-3 text-xs font-bold text-zinc-100 shadow-lg shadow-black/40 backdrop-blur hover:bg-zinc-800"
+            >
+              <span aria-hidden="true" className="text-sm leading-none">
+                {tracker.state.dayNightPhase === "day" ? "☀" : "☾"}
+              </span>
+              <span aria-hidden="true">{tracker.state.dayNightPhase === "day" ? "Day" : "Night"}</span>
+            </button>
             <button
               type="button"
               aria-label="Open game setup"
