@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ConversationHistoryEntry } from "./persistence";
-import { CONVERSATION_HISTORY_STORAGE_KEY, loadHistoryEntries, saveHistoryEntry } from "./persistence";
+import type { ConversationHistoryEntry, GameDraftState, LookupDraftState } from "./persistence";
+import {
+  CONVERSATION_HISTORY_STORAGE_KEY,
+  clearDraft,
+  loadDraft,
+  loadHistoryEntries,
+  saveDraft,
+  saveHistoryEntry
+} from "./persistence";
 
 function createMemoryStorage(): Storage {
   const map = new Map<string, string>();
@@ -30,6 +37,34 @@ function buildEntry(overrides: Partial<ConversationHistoryEntry> = {}): Conversa
     visibleMessages: [{ role: "assistant", content: "Hexproof restricts opposing targets." }],
     createdAt: "2026-01-01T00:00:00.000Z",
     updatedAt: "2026-01-01T00:00:00.000Z",
+    ...overrides
+  };
+}
+
+function buildGameDraft(overrides: Partial<Omit<GameDraftState, "mode">> = {}): Omit<GameDraftState, "updatedAt"> {
+  return {
+    mode: "game",
+    flowStep: "zone-confirm",
+    gameContext: null,
+    selectedZones: ["battlefield"],
+    zoneCardsByZone: {},
+    question: "",
+    turnPhase: "main_1",
+    combatStep: "declare_blockers",
+    confirmedPhase: "main_1",
+    activePlayer: "Player 1",
+    ...overrides
+  };
+}
+
+function buildLookupDraft(
+  overrides: Partial<Omit<LookupDraftState, "mode">> = {}
+): Omit<LookupDraftState, "updatedAt"> {
+  return {
+    mode: "lookup",
+    selectedCard: null,
+    question: "Does trample interact with deathtouch?",
+    lockedTopic: null,
     ...overrides
   };
 }
@@ -134,6 +169,100 @@ describe("Frontend - Shared", () => {
       vi.stubGlobal("localStorage", failingStorage);
 
       expect(() => saveHistoryEntry(buildEntry())).not.toThrow();
+    });
+  });
+
+  describe("conversationHistory Draft persistence", () => {
+    beforeEach(() => {
+      vi.stubGlobal("localStorage", createMemoryStorage());
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it("returns null when no Draft is stored for a mode", () => {
+      expect(loadDraft("game")).toBeNull();
+      expect(loadDraft("lookup")).toBeNull();
+    });
+
+    it("saves and reloads a game Draft, stamping updatedAt", () => {
+      saveDraft(buildGameDraft());
+      const loaded = loadDraft("game");
+
+      expect(loaded).not.toBeNull();
+      expect(loaded).toMatchObject(buildGameDraft());
+      expect(typeof loaded?.updatedAt).toBe("string");
+    });
+
+    it("saves and reloads a lookup Draft", () => {
+      saveDraft(buildLookupDraft());
+      const loaded = loadDraft("lookup");
+
+      expect(loaded).not.toBeNull();
+      expect(loaded).toMatchObject(buildLookupDraft());
+    });
+
+    it("keeps game and lookup Drafts in separate slots", () => {
+      saveDraft(buildGameDraft());
+      saveDraft(buildLookupDraft());
+
+      expect(loadDraft("game")?.mode).toBe("game");
+      expect(loadDraft("lookup")?.mode).toBe("lookup");
+    });
+
+    it("overwrites the single Draft slot for a mode rather than accumulating", () => {
+      saveDraft(buildGameDraft({ question: "first" }));
+      saveDraft(buildGameDraft({ question: "second" }));
+
+      expect(loadDraft("game")?.question).toBe("second");
+    });
+
+    it("clears the Draft slot for a mode without affecting the other mode", () => {
+      saveDraft(buildGameDraft());
+      saveDraft(buildLookupDraft());
+
+      clearDraft("game");
+
+      expect(loadDraft("game")).toBeNull();
+      expect(loadDraft("lookup")).not.toBeNull();
+    });
+
+    it("never throws on corrupt JSON in Draft storage and drops it", () => {
+      localStorage.setItem("thejudge.conversationDraft.game", "{not json");
+      expect(loadDraft("game")).toBeNull();
+    });
+
+    it("drops a Draft with the wrong shape rather than returning it", () => {
+      localStorage.setItem("thejudge.conversationDraft.game", JSON.stringify({ mode: "game" }));
+      expect(loadDraft("game")).toBeNull();
+    });
+
+    it("does not affect the completed-history entries or its 20-entry cap", () => {
+      for (let index = 0; index < 20; index += 1) {
+        saveHistoryEntry(
+          buildEntry({
+            id: `entry-${index}`,
+            updatedAt: `2026-01-${String(index + 1).padStart(2, "0")}T00:00:00.000Z`
+          })
+        );
+      }
+      saveDraft(buildGameDraft());
+
+      expect(loadHistoryEntries()).toHaveLength(20);
+      expect(loadDraft("game")).not.toBeNull();
+    });
+
+    it("swallows a Draft write failure without throwing", () => {
+      const failingStorage: Storage = {
+        ...createMemoryStorage(),
+        setItem: () => {
+          throw new Error("QuotaExceededError");
+        }
+      };
+      vi.stubGlobal("localStorage", failingStorage);
+
+      expect(() => saveDraft(buildGameDraft())).not.toThrow();
     });
   });
 });

@@ -258,6 +258,13 @@
 }
 
 .conversation-thread {
+  /* Floor (min-height) extends DEC-127's fill intent to short threads — without it a
+     one-message-pair answer sizes to content and leaves a large empty band below the
+     card (issues/4.png) because nothing in the .page-shell/.page-card chain otherwise
+     ties height to the viewport. Kept below the existing max-height's dvh figure so a
+     short thread still leaves room for the chrome below it (View context, follow-up
+     composer, Start Over) within a standard ~800px-tall desktop viewport (REQ-109). */
+  min-height: clamp(14rem, 38dvh, 22rem);
   max-height: clamp(28rem, 70dvh, 44rem);
   gap: var(--layout-compact-gap);
   padding: var(--layout-content-padding);
@@ -268,6 +275,23 @@
   min-height: 0;
   flex-direction: column;
   gap: var(--layout-surface-gap);
+}
+
+/* Mobile default: shrink-to-content width via .self-start (Tailwind, in the component)
+   instead of the flex column's stretch default, so Start Over reads as a smaller,
+   less-dominant control and accidental taps are less likely (REQ-109). Reverts to the
+   original full-width treatment at the sm breakpoint via Tailwind's sm:self-stretch —
+   desktop keeps its existing sizing. min-height guarantees the NFR-001 44px touch
+   target floor holds at the smaller mobile padding/font size too. */
+.conversation-start-over {
+  min-height: 44px;
+  padding-block: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .conversation-start-over {
+    padding-block: 0.625rem;
+  }
 }
 
 .conversation-workspace-handoff {
@@ -392,8 +416,17 @@
   background-color: rgb(63 63 70 / 0.35);
 }
 
+/* Reserves clearance below the feature-portal corner rail (DEC-126's two-zone
+   split form, see .portal-menu-rail-split above) so "View context" — the first
+   element inside the answered .conversation-workspace, sitting directly under
+   the header — never sits under the rail's absolutely-positioned hit area.
+   The rail has no in-flow footprint (position: absolute, see .portal-slot-tab),
+   so nothing else pushes this trigger down automatically. Mirrors the rail's
+   own fluid height math (its clamp() minus the corner lift it's pulled up by)
+   rather than a fixed guess, so clearance holds at any viewport width. */
 .adaptive-context-trigger {
   min-height: 44px;
+  margin-top: calc(clamp(4.75rem, 4.1rem + 2.5vw, 6.25rem) - var(--layout-panel-padding));
 }
 
 .conversation-history-overlay {

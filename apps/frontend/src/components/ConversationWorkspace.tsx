@@ -87,7 +87,7 @@ export function ConversationWorkspace({
         <button
           type="button"
           onClick={onStartOver}
-          className="rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
+          className="conversation-start-over self-start rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 text-xs font-semibold text-zinc-100 transition hover:bg-zinc-700/80 sm:self-stretch sm:text-sm"
         >
           Start Over
         </button>

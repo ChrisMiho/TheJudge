@@ -1,6 +1,6 @@
 # Slice B — Mid-flight Draft slot in conversation history
 
-## Status: planned
+## Status: done
 
 ## Goal
 

@@ -1,6 +1,7 @@
 import { CANONICAL_ZONE_ORDER } from "../lib/contextFlow";
 import { ZONE_LABELS } from "../lib/zoneLabels";
 import type { ZoneId } from "../types";
+import type { ConversationHistoryTriggerDescriptor } from "./ConversationWorkspace";
 import { PageShell } from "./PageShell";
 import { StagedStepHeader } from "./StagedStepHeader";
 import { StepEyebrow } from "./StepEyebrow";
@@ -12,6 +13,7 @@ type ZoneConfirmStepProps = {
   onBack: () => void;
   onContinue: () => void;
   statusMessage: string | null;
+  historyTrigger?: ConversationHistoryTriggerDescriptor;
 };
 
 export function ZoneConfirmStep({
@@ -20,11 +22,12 @@ export function ZoneConfirmStep({
   onZoneToggle,
   onBack,
   onContinue,
-  statusMessage
+  statusMessage,
+  historyTrigger
 }: ZoneConfirmStepProps): JSX.Element {
   return (
     <PageShell>
-        <StagedStepHeader />
+        <StagedStepHeader historyTrigger={historyTrigger} />
         <StepEyebrow stepName="Zone confirmation" />
         <p className="text-sm text-zinc-400">Select all zones that apply to your question.</p>
 

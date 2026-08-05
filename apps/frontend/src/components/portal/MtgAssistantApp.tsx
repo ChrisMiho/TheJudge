@@ -6,8 +6,14 @@ import { StepEyebrow } from "../StepEyebrow";
 import { ZoneCollectionStep } from "../ZoneCollectionStep";
 import { ZoneConfirmStep } from "../ZoneConfirmStep";
 import { logFrontendDebug } from "../../lib/debugLogger";
-import type { ConversationHistoryEntry } from "../../lib/conversationHistory/persistence";
-import { loadHistoryEntries, saveHistoryEntry } from "../../lib/conversationHistory/persistence";
+import type { ConversationHistoryEntry, GameDraftState } from "../../lib/conversationHistory/persistence";
+import {
+  clearDraft,
+  loadDraft,
+  loadHistoryEntries,
+  saveDraft,
+  saveHistoryEntry
+} from "../../lib/conversationHistory/persistence";
 import { apiBaseUrl } from "../../lib/env";
 import {
   buildAskAiRequest,
@@ -155,6 +161,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [historyEntries, setHistoryEntries] = useState<ConversationHistoryEntry[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [gameDraft, setGameDraft] = useState<GameDraftState | null>(null);
 
   // DestinationOutlet keeps previously visited destinations mounted. Running after
   // every render lets an already-mounted Assistant atomically take the one-shot seed
@@ -200,6 +207,29 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     }
     wasActiveRef.current = isActive;
   }, [isActive]);
+
+  const wasActiveForDraftRef = useRef(isActive);
+
+  function hydrateFromGameDraft(draft: GameDraftState): void {
+    setFlowStep(draft.flowStep);
+    setGameContext(draft.gameContext);
+    setSelectedZones(draft.selectedZones);
+    setZoneCardsByZone(draft.zoneCardsByZone);
+    setQuestion(draft.question);
+    setTurnPhase(draft.turnPhase);
+    setCombatStep(draft.combatStep);
+    setConfirmedPhase(draft.confirmedPhase);
+    setActivePlayer(draft.activePlayer);
+  }
+
+  // Mid-flight Draft auto-hydrate (REQ-108 / FLOW-017): this destination mounts once per
+  // session (DestinationOutlet keeps it mounted-but-hidden afterward), so a mount-only
+  // effect covers exactly the "reload" case FLOW-017 calls out — Menu-leave-and-back within
+  // the same session already survives via this component staying mounted in memory.
+  useEffect(() => {
+    const draft = loadDraft("game");
+    if (draft) hydrateFromGameDraft(draft);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -268,8 +298,48 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         updatedAt: now
       });
       setActiveConversationId(snapshot.conversationId);
+      // First successful Ask AI submit for the attempt: the mid-flight Draft is now a
+      // completed history entry (saved just above), so drop the Draft slot (REQ-108).
+      clearDraft("game");
     }
   });
+
+  // Mid-flight Draft snapshot on Menu-leave (FLOW-017's "Menu-leave snapshot"): only while
+  // still pre-submit — an active answered conversation already has its own completed-history
+  // entry and no Draft to maintain. Reacts only to the isActive true→false edge; other staging
+  // fields are read via closure at the time of that transition, not listed as deps, so typing
+  // doesn't re-fire this on every keystroke. Uses its own ref (not the shared wasActiveRef
+  // above) so effect declaration order can't accidentally consume the edge before this runs.
+  useEffect(() => {
+    const wasActive = wasActiveForDraftRef.current;
+    wasActiveForDraftRef.current = isActive;
+    if (!wasActive || isActive || isConversationActive) return;
+
+    const hasStaging =
+      flowStep !== "game-context" ||
+      gameContext !== null ||
+      selectedZones.length > 0 ||
+      question.trim().length > 0 ||
+      Object.values(zoneCardsByZone).some((cards) => (cards?.length ?? 0) > 0);
+
+    if (hasStaging) {
+      saveDraft({
+        mode: "game",
+        flowStep,
+        gameContext,
+        selectedZones,
+        zoneCardsByZone,
+        question,
+        turnPhase,
+        combatStep,
+        confirmedPhase,
+        activePlayer
+      });
+    } else {
+      clearDraft("game");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts only to the isActive edge; staging fields are read via closure at fire time, not listed, so typing doesn't re-fire this.
+  }, [isActive]);
 
   // DEC-105/REQ-088: contribute this flow's live slice to a feedback snapshot,
   // lazily — the closure is re-read on every render, so a snapshot taken at any
@@ -574,6 +644,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
 
   function openHistory(): void {
     setHistoryEntries(loadHistoryEntries("game"));
+    setGameDraft(loadDraft("game"));
     setIsHistoryOpen(true);
   }
 
@@ -583,12 +654,20 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     setIsHistoryOpen(false);
   }
 
+  function handleSelectDraft(draft: GameDraftState): void {
+    hydrateFromGameDraft(draft);
+    setIsHistoryOpen(false);
+  }
+
   let content: JSX.Element;
 
   if (flowStep === "game-context") {
     content = (
       <PageShell>
-          <StagedStepHeader onBrandClick={() => setBrandClickCount((c) => c + 1)} />
+          <StagedStepHeader
+            onBrandClick={() => setBrandClickCount((c) => c + 1)}
+            historyTrigger={{ onOpen: openHistory }}
+          />
           <StepEyebrow stepName="Game context" />
           {showCatEasterEgg && (
             <div className="p-2 text-center">
@@ -785,6 +864,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         }}
         onContinue={confirmZoneSelection}
         statusMessage={statusMessage}
+        historyTrigger={{ onOpen: openHistory }}
       />
     );
   } else if (flowStep === "zone-collection") {
@@ -812,6 +892,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         canContinue={canContinueCollection}
         onFlashStatus={flashStatus}
         statusMessage={statusMessage}
+        historyTrigger={{ onOpen: openHistory }}
       />
     );
   } else {
@@ -860,6 +941,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         entries={historyEntries}
         activeConversationId={activeConversationId}
         onSelectEntry={handleSelectHistoryEntry}
+        draft={gameDraft ? { updatedAt: gameDraft.updatedAt, onSelect: () => handleSelectDraft(gameDraft) } : null}
       />
     </div>
   );
