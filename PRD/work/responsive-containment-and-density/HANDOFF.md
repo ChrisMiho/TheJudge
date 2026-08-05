@@ -1,7 +1,11 @@
 # Session handoff — responsive-containment-and-density
 
-Written 2026-08-05 for a fresh session picking up minor tweaks after product-owner review
-of PR #75. Read this plus `README.md`; the slice docs hold per-slice detail.
+Written 2026-08-05 for a fresh session picking up tweaks after product-owner review of
+PR #75.
+
+**Read order: [`issues.md`](./issues.md) → this file → `README.md`.** `issues.md` is the
+work list; this file is the context needed to work it safely. Slice docs hold per-slice
+detail.
 
 ## Where things stand
 
@@ -113,14 +117,48 @@ to the shared module, rendered output unchanged).
 - `git status` may look clean while `PRD/work/STATUS.md` disagrees with `STATUS.*` markers
   on disk — the board drifted once already this session.
 
+## The work list lives in `issues.md`
+
+[`issues.md`](./issues.md) is the product owner's brain dump of everything found while
+reviewing this package — free-form, unordered, written as noticed. **It is the
+authoritative list of what to investigate and fix in the next session.** Read it before
+anything else in this folder.
+
+Rules for the agent working it:
+
+1. **Read the whole file first.** Entries are written as they came to mind, not grouped or
+   prioritized. Two entries may describe the same underlying cause, and one entry may
+   cover several surfaces.
+2. **Reproduce and measure before fixing.** Every fix in this package landed against a
+   measured before/after at 390×844 and 1440×900 using Playwright MCP; hold the same bar.
+   An entry that cannot be reproduced gets recorded as such, not quietly skipped.
+3. **Fix the cause, not the symptom.** The three most valuable fixes here came from finding
+   a mechanical cause (`scrollHeight` read from an unrendered element, a hardcoded `2rem`
+   against a 56px banner, `flex-1` without `min-w-0`) rather than nudging CSS until the
+   screenshot looked right.
+4. **Check the entry against existing decisions first.** Several findings in this package
+   turned out to be violations of confirmed truth (`DEC-085`, `DEC-131`, `DEC-140`) rather
+   than new scope — those need no new decision, just enforcement. Others conflicted with a
+   decision and needed a product call. Establish which before writing code.
+5. **Anything that changes an acceptance criterion or a decision routes through
+   refinement**, not a direct edit — see below.
+6. **Mark each entry resolved in `issues.md` as you go**, with the measurement or the
+   reason it was not actionable, so the file stays an accurate record rather than a stale
+   wish list.
+
+Entries that turn out to be substantial enough to need their own slices should be mapped
+into this package's existing GAMEPLAN rather than a new package — this one is still
+`active` with two blocked slices.
+
 ## Suggested first move
 
 ```
 /thejudge-kickoff
 ```
 
-then state the tweaks. For a tweak that changes an acceptance criterion or a decision,
-route through `/thejudge-refinement PRD/work/responsive-containment-and-density/` so
-`PRD/sections/` stays truthful — three criteria in this package turned out to be proxies
-that fought the design, and editing code without editing the criterion is how that drift
-started.
+then point it at `PRD/work/responsive-containment-and-density/issues.md`.
+
+For any tweak that changes an acceptance criterion or a decision, route through
+`/thejudge-refinement PRD/work/responsive-containment-and-density/` so `PRD/sections/`
+stays truthful — three criteria in this package turned out to be proxies that fought the
+design, and editing code without editing the criterion is how that drift started.

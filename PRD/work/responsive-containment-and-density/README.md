@@ -10,7 +10,8 @@ MCP at 390×844 and 1440×900.
 
 See `IDEA.md`, `DESIGN-BRIEF.md`, `GAMEPLAN.md`.
 
-**Resuming in a fresh session? Start at [`HANDOFF.md`](./HANDOFF.md).**
+**Resuming in a fresh session?** Read [`issues.md`](./issues.md) (the work list), then
+[`HANDOFF.md`](./HANDOFF.md) (the context needed to work it).
 
 ## Slice table
 
