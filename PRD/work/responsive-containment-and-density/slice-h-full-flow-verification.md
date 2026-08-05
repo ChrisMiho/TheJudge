@@ -1,6 +1,6 @@
 # Slice H — Full-flow re-verification and ship gates
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -69,3 +69,44 @@ Plus the full Playwright MCP sweep described above.
 - [ ] Public contract unchanged unless slice scoped a change
 - [ ] No secrets committed
 - [ ] Durable outcomes promoted; `PRD/work/<slug>/` ready to delete
+
+## Verified (2026-08-05)
+
+Full sweep re-run at 390×844 and 1440×900 across Quick Question, In-Depth Question
+(game context → zone confirmation → zone collection → card detail → enrichment → question
+→ answered workspace), Life Tracker, Trade Balancer, the Menu tray, and the history drawer.
+
+### Original findings, re-measured
+
+| # | Finding | Before | After | Status |
+| --- | --- | --- | --- | --- |
+| F1 | Composer pins `height: 0px` | 12px client vs 32px scroll, 20px clipped | 32/32, **0px clipped** | closed |
+| F2 | Composer field starved | 40% of row (136/340) | **65.6–68.4%** | closed |
+| F3 | Tray translucent, content ghosts through | `rgba(…,0.95)`, 10 elements visible through | **alpha 1**, none visible | closed |
+| F3 | Trigger paints on first row | ☰ over "Quick Question" | label clears the rail band | closed |
+| F3 | Tray box exceeds viewport | 889 vs 844 · 957 vs 900 | unchanged (painting already clipped) | **open** |
+| F4 | Banner covers headers | 24/9/12px Life Tracker, 11px Trade Balancer | **none** | closed |
+| F5 | Shell width | 670px (53% unused) | **768px** (47% unused) | closed |
+| F5 | Vertical dead space | 359px | 359px | **accepted** (DEC-145) |
+| F6 | Add action below fold | 244px below | **112px** below | **partial** |
+| F7 | Roster rows break panel | 6 nodes clipped, ▾ 8px past border | **0 / 0** | closed |
+
+### Whole-flow checks
+
+- No horizontal document overflow on any step at either viewport.
+- No element with clipped content (`scrollWidth > clientWidth`) on any step at either
+  viewport, excluding `sr-only` text.
+- History drawer still opens opaque over its scrim and still blocks interaction beneath.
+- `FollowUpComposer`'s send control unchanged at 36×36 — the reference component this
+  package deliberately did not modify.
+- Frontend suite 1187/1188; the single failure is the pre-existing `App.feedback`
+  env-dependent test recorded in slice A.
+- `browser_close` called at the end of the sweep (`CLAUDE.md`).
+
+### Ship-ready withheld
+
+Slices **C** and **F** are `blocked`, so the package stays `active`. Both hold their
+decision's substance but miss a numeric acceptance criterion written during refinement:
+C's two remaining criteria conflict with DEC-140's stacking requirement and with clipping
+that already works, and F's target needs step restructuring beyond DEC-148. Each is
+documented in its own slice doc with measurements.
