@@ -27,6 +27,8 @@ Delete all 33 untracked root-level `*.png` files confirmed unreferenced above. T
 
 Add a rule (root `CLAUDE.md`, mirrored into `.cursor/rules/playwright-mcp-cleanup.mdc` alongside the existing browser-cleanup guidance) stating: when a skill or session captures Playwright/browser screenshots while working inside an active `PRD/work/<slug>/` package, output them under `PRD/work/<slug>/.playwright-mcp/` (create the subfolder if absent) rather than the repo root or a bare top-level `.tmp/`.
 
+**Authority split.** The canonical contract for capture location lives in `PRD/instructions/runtime-process-hygiene.md`, created by the `agent-workflow-alignment` package (Slice F), which also covers what this package does not: worktree-relative resolution for autonomous runs, the recorded capture-path evidence field that gates a slice being `done`, and disposal semantics. This package writes only the always-applied host-config carriers — `CLAUDE.md` and `.cursor/rules/playwright-mcp-cleanup.mdc` — which is what makes the rule reach interactive sessions without their reading the authority doc. Those two files state the destination and fallback inline and link onward, so they stand alone regardless of which package lands first. `AGENTS.md` is deliberately out of scope here; Slice F rewrites it into the same shape.
+
 This path is already covered by the existing `.gitignore` entries `.playwright-mcp/` and `.tmp/` — both patterns are unanchored (no leading `/`) and therefore already match at any depth, including inside `PRD/work/<slug>/`. No `.gitignore` change is required.
 
 Because `thejudge-cleanup` deletes the entire `PRD/work/<slug>/` folder on package close, any screenshots captured under it are removed automatically with no separate retention or maintenance policy — satisfying the non-goal of not building a long-lived screenshot archive.
@@ -49,7 +51,7 @@ Not applicable — this is a static documentation/hygiene rule with no runtime b
 ## Scope
 
 - Delete the 33 confirmed-unreferenced root `*.png` files.
-- Add the per-package screenshot-location rule to `CLAUDE.md` and `.cursor/rules/playwright-mcp-cleanup.mdc`.
+- Add the concise per-package screenshot-location rule, plus a link to the authority doc, to `CLAUDE.md` and `.cursor/rules/playwright-mcp-cleanup.mdc`.
 
 ## Non-goals
 
@@ -58,6 +60,7 @@ Not applicable — this is a static documentation/hygiene rule with no runtime b
 - Adding CI/lint/pre-commit enforcement against stray root PNGs (the existing `.gitignore` `/*.png` rule plus this documented convention is sufficient; enforcement tooling was explicitly declined).
 - Changing `.gitignore` (existing `.playwright-mcp/` / `.tmp/` patterns already cover the new per-package path).
 - Any change to `thejudge-cleanup`'s deletion mechanics — it already deletes the whole package folder, which is what makes the per-package location self-cleaning.
+- Writing the canonical capture contract, editing `AGENTS.md`, or touching any `thejudge-*` skill — all owned by `agent-workflow-alignment` Slice F.
 
 ## PRD alignment
 

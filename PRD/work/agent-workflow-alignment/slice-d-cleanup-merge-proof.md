@@ -26,7 +26,12 @@ treating `ship-ready` alone as sufficient.
      than inferring from local branch state alone.
    - `.worktrees/implement-<slug>` (if it still exists) has a clean working
      tree and no local commits that are not already present on the recorded
-     base's tip — i.e. it is fully merged.
+     base's tip — i.e. it is fully merged. "Clean" means
+     `git status --porcelain` is empty; gitignored artifacts do not count as
+     dirty. State this explicitly, because the worktree legitimately contains
+     `PRD/work/<slug>/.playwright-mcp/` captures (Slice F) and `.gitignore`'s
+     unanchored `.playwright-mcp/` pattern keeps them out of `--porcelain` —
+     cleanup must not block on a slice's own screenshots.
    - Every runtime-cleanup acceptance criterion recorded in the package's
      slice verification evidence is passing (owner/session, worktree, ports,
      started-vs-attached, `browser_close`/process-stop/port-release results —
@@ -61,6 +66,9 @@ treating `ship-ready` alone as sufficient.
       never a remote branch
 - [ ] Collaborative packages without `## Autonomous metadata` are explicitly
       exempted from the new checks
+- [ ] The clean-worktree condition defines "clean" as empty
+      `git status --porcelain` and states that gitignored capture folders do
+      not make a worktree dirty
 - [ ] `npm run skills:ai-sync` run; all three skill trees byte-identical
 
 ## Verification

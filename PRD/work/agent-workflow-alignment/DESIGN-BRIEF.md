@@ -115,7 +115,7 @@ Map-out encodes exact browser scenarios, viewports, observations or measurements
 
 ### 7. Runtime ownership and cleanup contract
 
-Create `PRD/instructions/runtime-process-hygiene.md` as the focused authority. `AGENTS.md`, `workflow-reference.md`, and affected skills link to it and retain only concise local reminders.
+Create `PRD/instructions/runtime-process-hygiene.md` as the focused authority. `AGENTS.md`, `workflow-reference.md`, and affected skills link to it and retain only concise local reminders. The always-applied host-config files (`CLAUDE.md`, `.cursor/rules/playwright-mcp-cleanup.mdc`) carry the same concise reminder and link, so interactive sessions get the rule without reading the authority doc; the `root-playwright-screenshot-hygiene` package writes those two, and this package keeps `AGENTS.md` in the same shape.
 
 Every browser/dev-server session records in the agent's working state and verification evidence:
 
@@ -124,8 +124,11 @@ Every browser/dev-server session records in the agent's working state and verifi
 - frontend and backend ports
 - whether each server was started by the agent or attached to
 - browser-close, owned-process-stop, and port-release results
+- screenshot/capture output path, or `none` when the session captured nothing
 
 Autonomous agents always start isolated servers on their assigned ports. Collaborative agents may attach to a verified server for the current checkout, but must not stop an attached or otherwise user-owned process.
+
+Screenshots and other browser captures are written to `PRD/work/<slug>/.playwright-mcp/` resolved against the current checkout root — the worktree root for autonomous runs, the main checkout for collaborative and interactive ones — never the repo root. When no package folder is in scope, the fallback is the root-level `.tmp/` or `.playwright-mcp/` ignored folder. When several packages are active, captures go to the package the current task belongs to. Captures are disposable evidence: cleanup deletes the package folder, and for autonomous packages the worktree, removing them with no separate retention policy. Agents record the observation or measurement as text in slice verification evidence rather than copying captures elsewhere to preserve them. No `.gitignore` change is required — `.playwright-mcp/` and `.tmp/` are unanchored patterns that already match at any depth, including under `PRD/work/<slug>/` and `.worktrees/`.
 
 Before any owning invocation ends, including failure or blocker paths, it must:
 

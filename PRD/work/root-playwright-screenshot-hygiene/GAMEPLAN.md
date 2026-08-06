@@ -30,4 +30,5 @@ Both slices are independent (disjoint files) and parallel-ready.
 
 ## Notes
 
-- This package produces no `REQ`/`FLOW`/`DEC` — per the design brief's PRD alignment section, this is agent-process/tooling convention, not product truth, so cleanup's promotion step has nothing to move into `sections/`.
+- This package produces no `REQ`/`FLOW`/`DEC` — per the design brief's PRD alignment section, this is agent-process/tooling convention, not product truth, so cleanup's promotion step has nothing to move into `sections/`. The canonical capture contract is recorded by `agent-workflow-alignment` under `DEC-154` instead.
+- Cross-package: `agent-workflow-alignment` Slice F owns `PRD/instructions/runtime-process-hygiene.md` (the authority), `AGENTS.md`, and the `thejudge-*` skill wiring. This package owns only `CLAUDE.md` and `.cursor/rules/playwright-mcp-cleanup.mdc`. File sets are disjoint, so the two packages can land in either order; Slice B's rule text is self-sufficient and its forward link resolves once Slice F ships.
