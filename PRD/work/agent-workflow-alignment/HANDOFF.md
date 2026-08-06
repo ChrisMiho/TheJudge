@@ -2,139 +2,123 @@
 
 ## Resume prompt
 
-Use `$thejudge-refinement PRD/work/agent-workflow-alignment/` after the parallel responsive-containment task has stopped touching the launch checkout. Read this handoff and `DESIGN-BRIEF.md`, verify the live Git state, complete the approved refinement artifacts/status transition, self-review them, and hand off to `$thejudge-quality-check PRD/work/agent-workflow-alignment/`. Do not repeat design questions and do not edit skills or implementation files during refinement.
-
-## Current state
-
-- The complete design was explicitly approved by the user on 2026-08-05.
-- Playwright MCP is available in Codex.
-- `DESIGN-BRIEF.md` has been written with the approved design.
-- `DEC-154` has been added to `PRD/sections/decisions/doc-process.md` and indexed in `PRD/sections/decisions.md`.
-- The package deliberately remains `status: refining` / `STATUS.refining`; the final transition to `refined` was paused because another process kept advancing and modifying the launch checkout during this refinement session.
-- Responsive commit `ad3d1bb` accidentally committed and pushed the `agent-workflow-alignment` row under `## refining` in `PRD/work/STATUS.md`, but did not include the untracked package folder or the unstaged `DEC-154` edits. Nothing was lost, but the responsive branch therefore contains a dangling board link that must be reconciled deliberately rather than hidden.
-- No skill, instruction, product-code, test, or `scripts/dev.mjs` implementation changes have been made for this package.
-
-## Why the session paused
-
-A parallel responsive-containment task was expected to run in its own worktree, but Git evidence showed the launch checkout itself changing during this session:
-
-- the launch checkout moved between `feature/responsive-containment-and-density` and `feature/automated-refinement`
-- a pull of `origin/main` created merge commit `0a82914`, followed by resets that moved the local `feature/automated-refinement` pointer to `origin/main`
-- the checkout returned to `feature/responsive-containment-and-density`
-- that branch then received and pushed multiple implementation commits while this refinement session was writing PRD files
-- a responsive slice file was also observed changing in the launch checkout between audits
-
-Because concurrent writes can accidentally absorb unrelated PRD work into another commit, do not finish the status transition until the launch checkout is stable or the operator explicitly chooses another safe checkout.
-
-## Git integrity and recovery audit
-
-The audit found no object-database or worktree-metadata corruption:
-
-- `git fsck --full --no-dangling` exited successfully.
-- `git worktree prune --dry-run --verbose` found no prunable registered worktrees.
-- Registered secondary worktrees had clean tracked working trees at audit time. Some track remote refs that are now gone or have diverged; that is stale lifecycle state, not corruption, and must not be cleaned as part of this refinement.
-- The responsive work was captured in commits and synchronized with its remote during the audit.
-- The workflow package remained present throughout the branch/reset incident.
-
-The one confirmed cross-task contamination is commit `ad3d1bb`: it moved the responsive package to `ship-ready` and also swept the already-modified `PRD/work/STATUS.md` into that commit, including this package's `refining` board row. Do not rewrite or amend that pushed commit. When resuming, either land this package on the intended branch so the row resolves there, or make a deliberate follow-up correction on the responsive branch after confirming the operator's desired branch layout.
-
-### `feature/automated-refinement`
-
-At the last audit:
-
-- local `feature/automated-refinement`: `35d00f8980a386a54f19839a9fb81184f883f8c1` (`origin/main`)
-- remote `origin/feature/automated-refinement`: `f67c649a0168716ae1f67f7c67073a92c25799f6`
-- successful merge of that feature tip with main: `0a82914d4cadce52cfb65f6e455110f34d2b5115`
-
-The reset moved only the local branch pointer. The feature commits remain on the remote, and the merged result remains recoverable.
-
-The merge result is anchored at:
+Implement this package: seven sequential slices (A→G) aligning TheJudge's agent
+workflow tooling. Nothing has been implemented yet — all slices are `planned`.
 
 ```text
-rescue/automated-refinement-main-merge-20260805
+$thejudge-implement-all PRD/work/agent-workflow-alignment/
 ```
 
-Do not repoint `feature/automated-refinement` automatically. After concurrent work is idle, ask the user which state they want:
+Read `DESIGN-BRIEF.md`, `DEC-154`, and `GAMEPLAN.md` first. Do not re-litigate
+the design or re-ask design questions — it was approved by the user on
+2026-08-05. Verify the live Git state before the first edit.
 
-1. Recommended if the intent is “feature plus current main”: repoint the local branch to `rescue/automated-refinement-main-merge-20260805` (`0a82914`).
-2. If the main merge should be discarded: repoint it to `origin/feature/automated-refinement` (`f67c649`).
-3. Leaving it at `35d00f8` abandons the feature commits from the local branch view, although they remain safe remotely.
+## Phase status
 
-### Rescue snapshots
+Refinement, quality-check, and map-out are **complete**. The package is
+`status: active` with `STATUS.active`, a `GAMEPLAN.md`, and seven slice docs.
 
-Local rescue refs created without altering the working tree:
+| Phase | State |
+| --- | --- |
+| Refinement | complete — `DESIGN-BRIEF.md` written, `DEC-154` promoted |
+| Quality-check | complete — passed |
+| Map-out | complete — `GAMEPLAN.md` + slices A–G |
+| Implementation | **not started** — all seven slices `planned` |
 
-- `rescue/merge-abort-20260805-1905` — exact tracked responsive working state captured before the parallel task committed it
-- `rescue/automated-refinement-main-merge-20260805` — the successful feature/main merge commit
-- `rescue/agent-workflow-refinement-20260805` — tracked approved refinement edits captured before pausing
+## Authority
 
-Untracked package archive:
+- `DESIGN-BRIEF.md` and `DEC-154` (`PRD/sections/decisions/doc-process.md`) are
+  the approved design. Slices implement that decision's Impact list verbatim.
+- `GAMEPLAN.md` owns architecture, slice ordering, and the verification
+  checklist.
+- `README.md`'s slice table is the progress board; update slice status there.
+
+## Repository facts at handoff (re-confirm, do not assume)
+
+- Branch `feature/agent-flow`, clean working tree, in sync with
+  `origin/feature/agent-flow`.
+- `.cursor/skills`, `.agents/skills`, and `.claude/skills` are byte-identical.
+  Run `diff -rq` before the first skill edit so later drift is attributable.
+- Not yet done, confirming implementation has not started:
+  - `.cursor/skills/thejudge-map-out-parallel/` still exists (slice A deletes it)
+  - `.cursor/skills/thejudge-implement-parallel/` still exists (slice A)
+  - `.cursor/skills/thejudge-defer/` does not exist (slice E creates it)
+  - `PRD/instructions/runtime-process-hygiene.md` does not exist (slice F)
+  - `scripts/process-manager.mjs` does not exist (slice G)
+
+## Implementation constraints
+
+- Slices are strictly sequential — each depends on the previous slice's file
+  state. One agent, no wave grouping, no slice-level parallelism.
+- Edit canonical `.cursor/skills/thejudge-*/` only. Never edit the `.agents/` or
+  `.claude/` mirrors directly. Every canonical skill edit (slices A–F) ends with
+  `npm run skills:ai-sync` plus a byte-identical mirror check — a per-slice
+  acceptance criterion, not deferred to the end.
+- `DEC-154` requires failing-baseline-first contract scenarios before each
+  canonical skill edit: establish a scenario the current skill fails, edit, then
+  re-run it.
+- Slices A–F are docs/skills only. Only slice G touches executable code
+  (`scripts/dev.mjs`, new `scripts/process-manager.mjs` plus tests,
+  `apps/frontend/vite.config.ts`, `package.json`).
+- No product code: no `apps/frontend` or `apps/backend` behavior, API contract,
+  prompt assembly, or data handling changes.
+- `npm run quality:check` must be green at the end of slice G, with
+  `node --test scripts/*.test.mjs` wired into it.
+
+## Bootstrap note
+
+This package rewrites the skills that would otherwise run it. `DEC-154`
+specifies autonomous implementation in `.worktrees/implement-<slug>` against a
+recorded remote base — but that behavior is what slices B–D create, so it does
+not exist yet. Implement this package in the current checkout on the current
+branch, which is what `DEC-154` prescribes for collaborative work.
+
+## Git discipline
+
+- Commit per slice on `feature/agent-flow`. Do not merge to `main`, and do not
+  push without explicit authorization.
+- Do not remove, prune, or repoint any other worktree or branch.
+- Preserve the rescue refs below and the unrelated 2026-08-03 stash.
+
+### Rescue refs (verified present 2026-08-05, leave alone)
+
+- `rescue/merge-abort-20260805-1905` — `dbd8dd1`, tracked responsive state
+  captured before a parallel task committed it
+- `rescue/automated-refinement-main-merge-20260805` — `0a82914`, the feature/main
+  merge commit
+- `rescue/agent-workflow-refinement-20260805` — `6bf7e02`, tracked approved
+  refinement edits captured before the earlier pause
+
+Untracked package archive (ephemeral `/tmp`, may not survive reboot):
 
 ```text
 /private/tmp/thejudge-agent-workflow-refinement-20260805.tar.gz
 SHA-256 c68a4c6098c0820fec0aef4e1757a073a4ded4f699e072d83ce500bc354f970c
 ```
 
-The archive contains `IDEA.md`, `README.md`, `HANDOFF.md` as it existed before this update, `DESIGN-BRIEF.md`, and `STATUS.refining`. Refresh the archive after this handoff if external backup of the latest handoff is desired.
+`stash@{0}` (`wip: player-life-tracker + commander-spellbook-combos (do not
+lose)`, 2026-08-03) is unrelated to this package. Do not drop or apply it.
 
-There is also an older stash from 2026-08-03 named `wip: player-life-tracker + commander-spellbook-combos (do not lose)`. It is unrelated to the merge incident and must not be dropped or applied during this package.
+## Resolved — no longer action items
 
-## Approved design
+The earlier refinement-phase handoff paused on two concurrency issues. Both have
+since resolved; they are recorded here so a future session does not reopen them.
 
-`DESIGN-BRIEF.md` is authoritative. The approved outcome is:
+- **Board row from responsive commit `ad3d1bb`.** That commit swept this
+  package's board row into an unrelated commit while the row was still
+  `refining`. The row now sits correctly under `## active` in
+  `PRD/work/STATUS.md`. Nothing to reconcile. `ad3d1bb` remains pushed and must
+  not be amended or reset.
+- **`feature/automated-refinement` branch pointer.** The earlier handoff left an
+  open question about which of three states to restore. The branch is now at
+  `6f1ca0f` both locally and on `origin`, so the divergence is gone and no
+  operator decision is pending.
 
-- ten-skill catalog: retain the collaborative/autonomous core, add `thejudge-defer`, remove `thejudge-map-out-parallel` and `thejudge-implement-parallel`
-- collaborative work stays in the current checkout/current local branch without automatic worktrees, branches, commits, pushes, or PRs
-- autonomous preparation requires an explicit remote base recorded in package metadata
-- autonomous preparation and implementation use `.worktrees/prepare-<slug>` and `.worktrees/implement-<slug>` respectively, with one branch/PR per package targeting the recorded base
-- one agent implements sequential slices within each package; fanout concurrency exists only across packages and preserves file-overlap serialization
-- cleanup proves the implementation PR merged into the recorded base and removes only clean, fully merged local worktrees/branches; no automatic remote-branch deletion
-- deferral is reversible and preserves all artifacts/Git state; `ship-ready` and active packages with an `in-progress` slice cannot be deferred
-- Playwright MCP is required when the user asks for it or browser-observable risk cannot be established by component tests
-- create focused `PRD/instructions/runtime-process-hygiene.md`; record owner/session, worktree, ports, started-versus-attached state, and cleanup evidence
-- every owning invocation calls `browser_close`, stops exact owned process trees, waits for exit, and verifies ports released before completion
-- harden `scripts/dev.mjs` to use explicit ports, direct spawning, exact tree ownership, idempotent awaited shutdown, and bounded exact-tree escalation
-- prohibit `nohup`, untracked background `&`, broad `pkill` / `killall`, and stopping attached/user-owned servers
-- add focused process-manager tests and use failing-baseline-first skill contract scenarios before canonical skill edits
+## Next step after implementation
 
-## Remaining refinement work
-
-Once the launch checkout is stable:
-
-1. Re-read `DESIGN-BRIEF.md` and the `DEC-154` router/body edits.
-2. Confirm no concurrent commit absorbed or reverted the package/decision files.
-3. Reconcile the `agent-workflow-alignment` board row already pushed in responsive commit `ad3d1bb`; do not amend or reset the pushed responsive commit.
-4. Self-review for placeholders, contradictions, ambiguity, scope drift, and stable-ID correctness.
-5. Change the package README from `status: refining` to `status: refined`.
-6. Replace `STATUS.refining` with the empty `STATUS.refined` marker.
-7. Move the board row from `## refining` to `## refined` in `PRD/work/STATUS.md` without altering unrelated rows.
-8. Run fresh documentation/status checks and inspect the exact diff.
-9. Report the merge-audit state separately; do not silently repair `feature/automated-refinement`.
-
-Expected refinement artifacts:
-
-- `PRD/work/agent-workflow-alignment/DESIGN-BRIEF.md`
-- `PRD/work/agent-workflow-alignment/README.md`
-- exactly one package marker (`STATUS.refined` after completion)
-- `PRD/work/STATUS.md`
-- `PRD/sections/decisions.md` (`DEC-154` router row)
-- `PRD/sections/decisions/doc-process.md` (`DEC-154` body)
-- this `HANDOFF.md`
-
-No `REQ`, `FLOW`, `NFR`, open question, or screen-layout row is required because the package changes repository workflow/tooling rather than product behavior.
-
-## Required discipline
-
-- Preserve all unrelated responsive-containment changes and commits.
-- Do not reset, checkout, stash, clean, or rewrite branches while concurrent work is active.
-- Do not remove existing worktrees or local/remote branches during refinement.
-- Do not edit `.agents/` or `.claude/` skill mirrors directly during implementation; edit canonical `.cursor/skills/thejudge-*/`, run `npm run skills:ai-sync`, and verify byte identity.
-- Do not implement skills, instructions, process code, or tests until refinement passes quality-check and map-out.
-
-## Next step after refinement is complete
-
-Run:
+When all seven slices verify, set `STATUS.ship-ready` and stop. Do not run
+cleanup in the same session; hand off to:
 
 ```text
-$thejudge-quality-check PRD/work/agent-workflow-alignment/
+$thejudge-cleanup PRD/work/agent-workflow-alignment/
 ```
