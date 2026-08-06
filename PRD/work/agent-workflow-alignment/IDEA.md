@@ -1,3 +1,0 @@
-# Agent workflow alignment
-
-The TheJudge skill catalog has grown enough that its interactive and autonomous paths are difficult to predict and audit. Align the operator documentation and skill contracts so collaborative work remains on the current branch while explicitly invoked autonomous work uses traceable bases, worktrees, branches, and pull requests. Simplify autonomous execution to sequential work within one package and concurrency only across packages, while adding reversible deferral and browser/process cleanup guardrails. Non-goals are changing product behavior, automatically merging pull requests, or moving the collaborative workflow into worktrees.
