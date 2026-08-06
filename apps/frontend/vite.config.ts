@@ -13,7 +13,10 @@ export default defineConfig({
     )
   },
   server: {
-    port: 5173
+    port: Number(process.env.FRONTEND_PORT ?? 5173),
+    // Fail fast on a collision instead of silently migrating to another port,
+    // so thejudge-implement-fanout's preflighted port assignment is trustworthy.
+    strictPort: true
   },
   test: {
     environment: "jsdom",

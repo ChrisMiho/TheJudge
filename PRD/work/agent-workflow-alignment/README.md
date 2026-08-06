@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # agent-workflow-alignment
 
@@ -16,7 +16,7 @@ See [DESIGN-BRIEF.md](./DESIGN-BRIEF.md) for the approved design and [GAMEPLAN.m
 | [D — Cleanup and merge proof](./slice-d-cleanup-merge-proof.md) | Cleanup proves the implementation PR merged into the recorded base before deleting | C | done |
 | [E — Reversible deferral](./slice-e-reversible-deferral.md) | Add `thejudge-defer`; fix the status vocabulary table; publish the final ten-skill catalog | A | done |
 | [F — Playwright and runtime process hygiene](./slice-f-runtime-process-hygiene.md) | Create `runtime-process-hygiene.md`; wire it into `AGENTS.md` and affected skills | D | done |
-| [G — Root dev launcher hardening](./slice-g-dev-launcher-hardening.md) | Harden `scripts/dev.mjs`, add process-manager tests, wire the quality gate | F | planned |
+| [G — Root dev launcher hardening](./slice-g-dev-launcher-hardening.md) | Harden `scripts/dev.mjs`, add process-manager tests, wire the quality gate | F | done |
 
 Sequential, single-agent implementation — no wave grouping. Run with
 `/thejudge-implement PRD/work/agent-workflow-alignment/ slice A` one at a

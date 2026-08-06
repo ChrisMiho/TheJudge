@@ -1,6 +1,6 @@
 # Slice G — Root dev launcher hardening and process-manager tests
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -167,8 +167,18 @@ grep -n "strictPort" apps/frontend/vite.config.ts
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/agent-workflow-alignment/` ready to delete
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change
+- [x] No secrets committed
+- [x] Durable outcomes promoted; `PRD/work/agent-workflow-alignment/` ready to delete
+
+### PRD promotion checklist (executed by `thejudge-cleanup`, not this slice)
+
+- `DEC-154` in `PRD/sections/decisions/doc-process.md` already records the full
+  approved design and needs no edit at cleanup.
+- No `PRD/sections/system-map.md` entry is added, per `DEC-154`'s own Notes —
+  this is repository workflow tooling, not a product/code subsystem.
+- The receipt at
+  `PRD/instructions/receipts/agent-workflow-alignment-<date>.md` must list
+  every file this GAMEPLAN's slices created, edited, or deleted.

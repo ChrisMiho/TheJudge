@@ -1,59 +1,39 @@
-import { spawn } from "node:child_process";
+import { ProcessManager } from "./process-manager.mjs";
 
 const npmExecutable = process.platform === "win32" ? "npm.cmd" : "npm";
-const services = [
-  { name: "backend", args: ["run", "dev", "--workspace", "apps/backend"] },
-  { name: "frontend", args: ["run", "dev", "--workspace", "apps/frontend"] }
-];
 
-const children = [];
-let isShuttingDown = false;
+// Explicit ports, defaulting to the historical values. thejudge-implement-fanout
+// assigns unique pairs per dispatched package, so both must be overridable.
+const backendPort = process.env.PORT ?? "3000";
+const frontendPort = process.env.FRONTEND_PORT ?? "5173";
+const frontendOrigin = process.env.FRONTEND_ORIGIN ?? `http://localhost:${frontendPort}`;
+const apiUrl = process.env.VITE_API_URL ?? `http://localhost:${backendPort}`;
 
-function startService(service) {
-  const child = spawn(`${npmExecutable} ${service.args.join(" ")}`, {
-    shell: true,
-    stdio: "inherit",
-    env: process.env
-  });
+const manager = new ProcessManager();
 
-  children.push({ ...service, process: child });
+manager.start({
+  name: "backend",
+  command: npmExecutable,
+  args: ["run", "dev", "--workspace", "apps/backend"],
+  env: { ...process.env, PORT: backendPort, FRONTEND_ORIGIN: frontendOrigin }
+});
 
-  child.on("error", (error) => {
-    console.error(`[dev] Failed to start ${service.name}:`, error);
-    shutdown(1);
-  });
+manager.start({
+  name: "frontend",
+  command: npmExecutable,
+  args: ["run", "dev", "--workspace", "apps/frontend"],
+  env: { ...process.env, FRONTEND_PORT: frontendPort, VITE_API_URL: apiUrl }
+});
 
-  child.on("exit", (code, signal) => {
-    if (isShuttingDown) return;
+// Both handlers join the same in-flight shutdown, so a second Ctrl-C (or a
+// SIGTERM crossing a SIGINT) neither re-signals the trees nor throws.
+process.on("SIGINT", () => {
+  void manager.stop(0);
+});
+process.on("SIGTERM", () => {
+  void manager.stop(0);
+});
 
-    if (signal) {
-      console.log(`[dev] ${service.name} exited from signal ${signal}`);
-    } else {
-      console.log(`[dev] ${service.name} exited with code ${code ?? 0}`);
-    }
-
-    shutdown(code ?? 0);
-  });
-}
-
-function shutdown(exitCode = 0) {
-  if (isShuttingDown) return;
-  isShuttingDown = true;
-
-  for (const child of children) {
-    if (!child.process.killed) {
-      child.process.kill("SIGTERM");
-    }
-  }
-
-  setTimeout(() => {
-    process.exit(exitCode);
-  }, 150);
-}
-
-process.on("SIGINT", () => shutdown(0));
-process.on("SIGTERM", () => shutdown(0));
-
-for (const service of services) {
-  startService(service);
-}
+// Exit only once every owned tree has actually exited — no blind timeout.
+const exitCode = await manager.settled;
+process.exit(exitCode);
