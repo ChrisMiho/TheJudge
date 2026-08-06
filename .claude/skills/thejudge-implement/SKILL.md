@@ -5,9 +5,7 @@ description: >-
   to end — code, tests, verification, status update. When the last slice is
   done, sets STATUS.ship-ready. Use after map-out, or whenever a single slice
   needs to be executed in this session. For completing every remaining slice
-  in one unattended session, use thejudge-implement-all. For dispatching an
-  entire wave of slices across multiple agents, use
-  thejudge-implement-parallel instead.
+  in one unattended session, use thejudge-implement-all instead.
 ---
 
 # TheJudge Implement
@@ -52,6 +50,7 @@ Read other PRD files only when the selected slice references them or the change 
 - Confirm the selected slice's dependencies are done before starting.
 - Mark the slice `in-progress` before code edits; `done` only after its verification command passes in this session; `blocked` only when the blocker cannot be resolved in-session — report the failing command and the blocker.
 - Keep edits limited to the selected slice unless a dependency forces a small supporting change.
+- A slice with browser or dev-server acceptance criteria is not `done` until `PRD/instructions/runtime-process-hygiene.md`'s cleanup contract evidence (browser-close, process-stop, port-release, capture output path) is recorded, and the recorded capture path resolves under the active package folder — `PRD/work/<slug>/.playwright-mcp/` — or the documented fallback. An unresolved ownership/cleanup failure keeps the slice `blocked`, not `done`.
 - Never run `thejudge-map-out`, rewrite `GAMEPLAN.md`/slice docs (beyond status), start multiple slices in one session unless asked, run cleanup, or promote durable PRD truth.
 - Every implementation constraint in `reference.md` is binding.
 

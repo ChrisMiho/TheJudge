@@ -13,11 +13,21 @@ export default defineConfig({
     )
   },
   server: {
-    port: 5173
+    port: Number(process.env.FRONTEND_PORT ?? 5173),
+    // Fail fast on a collision instead of silently migrating to another port,
+    // so thejudge-implement-fanout's preflighted port assignment is trustworthy.
+    strictPort: true
   },
   test: {
     environment: "jsdom",
     setupFiles: "./src/test/setup.ts",
+    // Pinned so a developer's local .env cannot decide test outcomes. env.ts reads
+    // this at module scope, so a real value there makes the "feedback delivery is
+    // unconfigured" assertions fail locally while passing in CI. Tests that need a
+    // configured id should stub it explicitly rather than inherit one.
+    env: {
+      VITE_FEEDBACK_FORMSPREE_ID: ""
+    },
     coverage: {
       provider: "v8",
       reporter: ["text", "json-summary"],

@@ -2,16 +2,19 @@
 
 ## Isolated preflight
 
-1. Inspect the launch checkout with read-only Git commands and fetch the latest
-   `origin/main`. If request-relevant uncommitted inputs are not on that base,
+1. Inspect the launch checkout with read-only Git commands, then resolve the
+   required `--base` argument (or a compatible supplied branch/PR's base) and
+   fetch the latest `origin/<recorded base>`. If the base is unresolved, stop
+   with an external-blocker-shaped report naming the missing base — never fall
+   back to `main`. If request-relevant uncommitted inputs are not on that base,
    stop with an external-blocker report; never copy, stash, or commit them.
 2. If a PR or branch is supplied, inspect its repository, base, head, changed
    files, work-folder slug, and marker before adopting it. Adopt only when it
-   targets this repository's `main`, owns the same single work package, contains
-   no product-code/test changes, and has no incompatible commits.
-3. Otherwise create an isolated worktree at the fetched `origin/main` and use
-   shared branch `thejudge-prep/<slug>`. A supplied compatible branch keeps its
-   existing name.
+   targets the recorded autonomous base, owns the same single work package,
+   contains no product-code/test changes, and has no incompatible commits.
+3. Otherwise create an isolated worktree at `.worktrees/prepare-<slug>`, based
+   on the fetched recorded autonomous base, and use shared branch
+   `thejudge-prep/<slug>`. A supplied compatible branch keeps its existing name.
 
 ## Registration and race rules
 
@@ -63,6 +66,9 @@ Publish as non-draft with this body shape:
 ## Preparation checks
 <fresh verification evidence and independent-review disposition>
 
+## Recorded base
+origin/<branch>
+
 ## Post-merge command
 `$thejudge-implement-all PRD/work/<slug>/`
 ```
@@ -100,6 +106,9 @@ Publish as draft with this body shape:
 
 ## Preparation checks
 <fresh verification evidence and independent-review result if reached>
+
+## Recorded base
+origin/<branch>
 
 ## Blocker
 - Question: <unresolved question>

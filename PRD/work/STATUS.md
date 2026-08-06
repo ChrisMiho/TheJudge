@@ -10,9 +10,6 @@ Do not rename package folders to encode status.
 
 ## active
 
-- [agent-workflow-alignment](./agent-workflow-alignment/)
-- [root-playwright-screenshot-hygiene](./root-playwright-screenshot-hygiene/)
-
 ## refined
 
 - [ui-screen-layout-truth](./ui-screen-layout-truth/)

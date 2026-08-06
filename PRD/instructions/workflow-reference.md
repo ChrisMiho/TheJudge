@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This file is the lean operator reference for TheJudge PRD-driven work. All 11
+This file is the lean operator reference for TheJudge PRD-driven work. All 10
 `thejudge-*` skills are model-invocable and may also be called explicitly —
 see `AGENT-SKILLS.md` for the full catalog, platform paths, and sync
 instructions.
@@ -42,7 +42,7 @@ for skills, slices, links, and receipts. Glance with
 | `active` | GAMEPLAN + slices exist; implementing | `thejudge-implement*` |
 | `ship-ready` | All implementation slices done; promote + receipt + delete | `thejudge-cleanup` |
 | `owner-action` | Blocked on a human outside the agent loop | human checklist |
-| `deferred` | Parked; not next work | none |
+| `deferred` | Parked; not next work | `thejudge-defer` (to restore) |
 
 Happy path: `ideation` → `refining` → `refined` → `active` → `ship-ready` →
 deleted (cleanup writes the durable receipt, then removes the work folder).
@@ -65,9 +65,10 @@ deleted (cleanup writes the durable receipt, then removes the work folder).
 | `thejudge-kickoff` | Create package + `STATUS.ideation` + board row |
 | `thejudge-refinement` | Start/resume → `STATUS.refining`; on explicit user approval of brief → `STATUS.refined` |
 | `thejudge-quality-check` | PASS: leave `refined`. FAIL: → `STATUS.refining` |
-| `thejudge-map-out` / `map-out-parallel` | → `STATUS.active` |
-| `thejudge-implement` / `implement-all` / `implement-parallel` | Stay `active` until the last remaining slice is `done`, then → `STATUS.ship-ready` |
+| `thejudge-map-out` | → `STATUS.active` |
+| `thejudge-implement` / `implement-all` | Stay `active` until the last remaining slice is `done`, then → `STATUS.ship-ready` |
 | `thejudge-implement-fanout` | Owns no transitions itself — dispatches every selected package to `implement-all`, which applies the row above |
+| `thejudge-defer` | Toggle current status ⇄ `deferred`, recording/restoring prior status and reason |
 | `thejudge-cleanup` | Gate: refuse unless `ship-ready` (or user force-override). On success: receipt, remove package, strip board row |
 
 ## Work Folder Lifecycle
@@ -115,15 +116,16 @@ block for that slice:
 A slice moving to `done` removes its `### Handoff` block — the slice doc's
 other sections are the durable record once complete. This is the same
 resumability contract for every implement skill (`thejudge-implement`,
-`-all`, `-parallel`, and anything `thejudge-implement-fanout` dispatches): a
+`-all`, and anything `thejudge-implement-fanout` dispatches): a
 fresh agent reads the slice doc's status line and, if present, its
 `### Handoff` block, and needs nothing else to resume.
 
 ## Related material
 
-- Slice doc template and Ship gates block: `thejudge-map-out/reference.md` and
-  `thejudge-map-out-parallel/reference.md`
+- Slice doc template and Ship gates block: `thejudge-map-out/reference.md`
 - Quality-check checklist: `thejudge-quality-check/SKILL.md`
+- Playwright verification policy and the runtime ownership/cleanup contract:
+  `runtime-process-hygiene.md`
 - Autonomous one-package preparation: `preparation-contract.md`
 - Cleanup receipt convention and terminology table: `thejudge-cleanup/SKILL.md`
 - Platform paths, sync command, and the full skill catalog: `AGENT-SKILLS.md`

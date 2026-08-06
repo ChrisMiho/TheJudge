@@ -20,10 +20,9 @@ All 10 are model-invocable and may also be called explicitly (`/thejudge-*` in C
 | `thejudge-refinement` | Shape idea + write PRD sections |
 | `thejudge-quality-check` | Before slicing |
 | `thejudge-map-out` | Create GAMEPLAN + slices, sequential |
-| `thejudge-map-out-parallel` | Create GAMEPLAN + slices, grouped into dependency waves |
 | `thejudge-implement` | Execute one lettered slice |
 | `thejudge-implement-all` | Execute every remaining slice unattended with one agent |
-| `thejudge-implement-parallel` | Dispatch a whole wave across agents |
+| `thejudge-implement-fanout` | Run two or more active packages concurrently |
 | `thejudge-cleanup` | Ship feature / corpus hygiene |
 
 Use `thejudge-prepare` when one agent should control kickoff through map-out,

@@ -64,8 +64,7 @@ map-out artifacts.
 Orchestrated mode: return PASS or the complete FAIL issue list to
 `thejudge-prepare` for recording in the package README.
 
-Direct **PASS** → `/thejudge-map-out PRD/work/<slug>/` (or
-`/thejudge-map-out-parallel PRD/work/<slug>/` if slices look independent).
+Direct **PASS** → `/thejudge-map-out PRD/work/<slug>/`.
 Direct **FAIL** → `/thejudge-refinement PRD/work/<slug>/`, with the issue list
 included above the handoff.
 

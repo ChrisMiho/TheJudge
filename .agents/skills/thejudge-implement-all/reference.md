@@ -7,7 +7,7 @@
 3. No new product-facing endpoints without a cited confirmed decision.
 4. Preserve stack ordering semantics across UI, API, prompt, and tests.
 5. Any Scryfall download or network refresh requires explicit human approval.
-6. Invocation authorizes scoped milestone commits, shared-branch pushes, PR creation, title updates, exceptional-event comments, and deletion only of later duplicate comments with the same marker and authenticated author. It never authorizes force-push, PR merge/close, or a merge into `main`.
+6. Invocation authorizes scoped milestone commits, shared-branch pushes, PR creation, title updates, exceptional-event comments, and deletion only of later duplicate comments with the same marker and authenticated author. It never authorizes force-push, PR merge/close, or a merge into the recorded autonomous base.
 
 Also preserve active product decisions from `PRD/sections/decisions/` and `PRD/instructions/technical-design-rules.md`. For UI layout, containment, density, or “fill/stretch” slices, also read and follow `PRD/sections/screen-layout.md` (DEC-149 / REQ-126); do not invent sizes that contradict the catalog.
 
@@ -23,15 +23,16 @@ Stopping before a slice reaches `done` for any reason (session end, usage limit,
 
 ### Preflight
 
-1. Confirm `origin`, `main`, GitHub authentication, and push access.
-2. Fetch `origin/main` and the requested shared branch.
+1. Confirm `origin`, the recorded autonomous base ref, GitHub authentication, and push access.
+2. Fetch `origin/<recorded base>` and the requested shared branch.
 3. Derive the shared branch as `thejudge-auto/<slug>` unless the user supplied a branch or PR.
-4. Create a unique local contributor branch and isolated worktree. Multiple worktrees cannot check out the same local branch.
-5. Base the contributor branch on `origin/<shared-branch>` when it exists; otherwise use `origin/main`.
+4. Create a unique local contributor branch and an isolated worktree at `.worktrees/implement-<slug>`. Multiple worktrees cannot check out the same local branch. Refuse to create or adopt a worktree at any path outside the repo-local `.worktrees/` root — a sibling directory such as `../<repo>-worktrees/`, a temp/scratchpad path, or an absolute path elsewhere on disk are all blockers, not adoptable states. This mirrors the identical preflight refusal `thejudge-prepare` applies to preparation worktrees.
+5. Base the contributor branch on `origin/<shared-branch>` when it exists; otherwise use `origin/<recorded base>`.
 6. Confirm the selected GAMEPLAN, slice docs, and relevant baseline exist unchanged at that remote start point. If the launch checkout has relevant modified or untracked inputs, block and report them; never copy, stash, or commit them implicitly.
 7. Record the launch checkout's status and do not alter, stage, stash, or commit its files.
+8. If `.worktrees/prepare-<slug>` exists for this package, verify its preparation PR merged into the recorded autonomous base and that the worktree is clean, then remove that preparation worktree and its local branch (per `preparation-contract.md`'s "Worktree retention" section). This implementation's own worktree is separate and unaffected by that check.
 
-If a PR number is supplied, resolve it before branch setup. Require an open PR in the `origin` repository with base `main`; adopt its exact head branch. If both PR and branch are supplied, they must match. Block on closed PRs, forks, base mismatch, or head mismatch.
+If a PR number is supplied, resolve it before branch setup. Require an open PR in the `origin` repository whose base equals the recorded autonomous base; adopt its exact head branch. If both PR and branch are supplied, they must match. Block on closed PRs, forks, base mismatch, or head mismatch.
 
 Keep the worktree after completion and report its path. Do not delete worktrees or local branches automatically.
 
@@ -39,7 +40,7 @@ Keep the worktree after completion and report its path. Do not delete worktrees 
 
 - Stage every intended slice output, including required config/scripts and status files. Inspect `git diff --cached`; require no relevant unstaged or non-ignored untracked changes, so the worktree being tested matches the index.
 - Run the slice verification and `npm run quality:check` after staging. Commit only while both pass on that exact tree.
-- Before pushing, fetch and rebase onto `origin/<shared-branch>` when it exists. Until then, rebase onto `origin/main`; if the shared ref appears during the race, rebase onto it before retrying.
+- Before pushing, fetch and rebase onto `origin/<shared-branch>` when it exists. Until then, rebase onto `origin/<recorded base>`; if the shared ref appears during the race, rebase onto it before retrying.
 - Resolve rebase conflicts by preserving both flows' intended behavior. Abort and block when intent cannot be determined from confirmed decisions and tests.
 - Recheck that the non-ignored worktree matches the index after testing and immediately before commit.
 - A rebase or conflict resolution invalidates earlier verification. Rerun the slice verification and `npm run quality:check`; amend the unpushed milestone only after the corrected tree is green.
@@ -48,7 +49,7 @@ Keep the worktree after completion and report its path. Do not delete worktrees 
 
 ## PR discovery and lifecycle
 
-Find an open PR in the `origin` repository whose head is the shared branch and whose base is `main`. Scan both its body and comments for canonical `registered:<slug>` markers.
+Find an open PR in the `origin` repository whose head is the shared branch and whose base is the recorded autonomous base (for example `origin/feature/example`; `main` is only ever an example value here, never an assumed default). Scan both its body and comments for canonical `registered:<slug>` markers.
 
 - No PR: after the first green milestone reaches GitHub, create one with the title/body below.
 - Existing PR, work-package marker absent: before implementation, add one registration comment containing the work-package goal and GAMEPLAN summary. Re-query unresolved blockers; set `BLOCKED` if any exist, otherwise `IN PROGRESS`. Re-query once more and restore `BLOCKED` if a blocker crossed the update.
@@ -89,7 +90,8 @@ Title priority is always `BLOCKED` > `IN PROGRESS` > `READY`. Every registration
 - Work package: `<work-slug>`
 - GAMEPLAN: `PRD/work/<work-slug>/GAMEPLAN.md`
 - Shared branch: `<shared-branch>`
-- Base commit: `<origin/main-sha>`
+- Autonomous base: `<origin/branch>`
+- Base commit: `<origin/<recorded base>-sha>`
 
 <Concise feature goal>
 

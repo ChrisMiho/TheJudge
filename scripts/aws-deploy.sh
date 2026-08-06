@@ -10,6 +10,13 @@ bucket_name="${AWS_S3_BUCKET:-$app_name-web-$account_id}"
 lambda_name="${AWS_LAMBDA_FUNCTION_NAME:-$app_name-api}"
 distribution_comment="${AWS_CLOUDFRONT_COMMENT:-$app_name-web}"
 
+# Resolved here, before packaging or any AWS call, so a missing value fails the
+# deploy rather than silently shipping a frontend with feedback disabled. This
+# script runs its own frontend build below, so the value must reach *this*
+# process — scoping it to the workflow's earlier "Build project" step sends it
+# to an artifact that never reaches S3.
+feedback_formspree_id="${VITE_FEEDBACK_FORMSPREE_ID:?VITE_FEEDBACK_FORMSPREE_ID must be set (GitHub repository variable)}"
+
 # Non-secret Lambda config. Plain literals, no shell env indirection: to change
 # the model (or timeout/retries), edit these values and push — the change
 # ships with the deploy that touches them, and `git blame` shows who/why.
@@ -72,7 +79,10 @@ aws lambda wait function-updated \
 
 (
   cd "$repo_root"
-  VITE_API_URL="$api_url" VITE_DEBUG_LOGGING=false npm --workspace apps/frontend run build
+  VITE_API_URL="$api_url" \
+    VITE_DEBUG_LOGGING=false \
+    VITE_FEEDBACK_FORMSPREE_ID="$feedback_formspree_id" \
+    npm --workspace apps/frontend run build
   aws s3 sync apps/frontend/dist "s3://$bucket_name" --delete --region "$aws_region"
   aws cloudfront create-invalidation --distribution-id "$distribution_id" --paths "/*" >/dev/null
 )

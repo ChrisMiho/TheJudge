@@ -1,8 +1,8 @@
 # Agent Workflow Skills
 
-TheJudge uses 11 `thejudge-*` skills to drive PRD-based feature work, including
-autonomous preparation, sequential single-slice, unattended all-slice,
-dependency-wave implementation, and cross-package fanout modes. All 11 are
+TheJudge uses 10 `thejudge-*` skills to drive PRD-based feature work, including
+autonomous preparation, sequential single-slice, unattended all-slice, and
+cross-package fanout modes. All 10 are
 **model-invocable** — the agent may select the matching skill when context
 clearly indicates it — and every skill remains callable explicitly
 (`/thejudge-*` in Cursor and Claude Code, `$thejudge-*` in Codex).
@@ -29,9 +29,7 @@ npm run skills:ai-sync
 Run `npm run skills:ai-sync` after any skill change, then commit
 `.cursor/skills/`, `.agents/skills/`, and `.claude/skills/` together. All
 three trees are byte-identical after a sync — every skill runs in every
-runtime, including both parallel flavors (`thejudge-implement-parallel`
-degrades to sequential execution in runtimes with no parallel-agent
-primitive, such as Codex — see its own `SKILL.md`).
+runtime.
 
 ## Workflow sequence
 
@@ -42,23 +40,21 @@ flowchart LR
   kickoff[thejudge-kickoff] --> refinement[thejudge-refinement]
   refinement --> qc[thejudge-quality-check]
   qc --> mapout[thejudge-map-out]
-  qc --> mapoutp[thejudge-map-out-parallel]
   mapout --> implement[thejudge-implement]
   mapout --> implementall[thejudge-implement-all]
-  mapoutp --> implementp[thejudge-implement-parallel]
-  mapoutp --> implementall
   implement --> cleanup[thejudge-cleanup]
   implementall --> cleanup
-  implementp --> cleanup
   fanout[thejudge-implement-fanout] -. dispatches one package each .-> implementall
-  fanout -. dispatches one package each .-> implementp
 ```
 
 `thejudge-implement-fanout` is the cross-package entry point: given two or
 more simultaneously `active` packages, it dispatches one isolated worktree +
-agent per package, each running whichever single-package skill above matches
-that package's own GAMEPLAN shape. It does not replace `thejudge-implement` /
-`-all` / `-parallel` — it selects among them per package.
+agent per package, each running `thejudge-implement-all` against that
+package's own GAMEPLAN. It does not replace `thejudge-implement` or
+`thejudge-implement-all` — it drives one unattended run per package.
+
+`thejudge-defer` can move any non-`ship-ready` package to `deferred` and back,
+orthogonal to the pipeline shown above.
 
 ## Skill catalog
 
@@ -69,11 +65,10 @@ that package's own GAMEPLAN shape. It does not replace `thejudge-implement` /
 | `thejudge-refinement` | An idea needs product definition | `DESIGN-BRIEF.md`, section updates | `refining` → (on approval) `refined` | `thejudge-quality-check` |
 | `thejudge-quality-check` | After refinement, before slicing | PASS/FAIL report only | PASS keeps `refined`; FAIL → `refining` | `thejudge-map-out` (PASS) or `thejudge-refinement` (FAIL) |
 | `thejudge-map-out` | Quality-check passed; slices are sequential | `GAMEPLAN.md`, `slice-*.md`, README | → `active` | `thejudge-implement` or unattended `thejudge-implement-all` |
-| `thejudge-map-out-parallel` | Quality-check passed; slices are independent enough to wave | `GAMEPLAN.md` with wave plan, `slice-*.md`, README | → `active` | `thejudge-implement-parallel` or sequential unattended `thejudge-implement-all` |
 | `thejudge-implement` | Executing one planned slice | Product code and tests for that slice | Last slice done → `ship-ready` | `thejudge-implement` (next slice) or `thejudge-cleanup` |
 | `thejudge-implement-all` | Executing every remaining slice in one unattended single-agent run | Product code, tests, milestone commits, shared GitHub branch, and review PR | All slices done → `ship-ready` | Manual review/merge, then `thejudge-cleanup` after shipping |
-| `thejudge-implement-parallel` | Executing a whole wave of planned slices | Product code and tests for every slice in the wave, orchestrator-verified | Last slice done → `ship-ready` | `thejudge-implement-parallel` (next wave) or `thejudge-cleanup` |
-| `thejudge-implement-fanout` | Two or more packages are `active` and should implement concurrently | Nothing directly; dispatches one isolated worktree/agent per package into `thejudge-implement-all` or `-parallel` | Owned per-package by the dispatched skill | Manual review/merge each PR, then `thejudge-cleanup` per package |
+| `thejudge-implement-fanout` | Two or more packages are `active` and should implement concurrently | Nothing directly; dispatches one isolated worktree/agent per package into `thejudge-implement-all` | Owned per-package by the dispatched skill | Manual review/merge each PR, then `thejudge-cleanup` per package |
+| `thejudge-defer` | A package should be parked as not-next work, or a parked package restored | README deferral record, `STATUS.deferred` marker, board row | Toggles current ⇄ `deferred` | None when deferring; the typical next skill for the restored status when restoring |
 | `thejudge-cleanup` | Package is `ship-ready` (or force override), or explicit corpus hygiene | Receipt under `PRD/instructions/receipts/`, section promotions, board strip | Delete folder + remove board row | Optional `thejudge-kickoff` |
 
 Package status signals (skill-maintained on every transition):

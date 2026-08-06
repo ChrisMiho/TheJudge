@@ -18,6 +18,9 @@
 ## Acceptance criteria
 
 - [ ] <check>
+<!-- Browser-risk slices only (see PRD/instructions/runtime-process-hygiene.md), e.g.:
+- [ ] Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/<slug>/.playwright-mcp/`
+-->
 
 ## Verification
 
