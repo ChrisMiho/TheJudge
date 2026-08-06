@@ -1,14 +1,6 @@
 # Slice D — Split outlier test files to lower the shard floor
 
-## Status: in-progress
-
-### Handoff
-- Done: all three outliers split assertion-preserving. 1227 cases and 3376
-  `expect(` occurrences both identical to pre-split; 115 -> 124 files; no split
-  descendant exceeds 7.3s under coverage. `npm run quality:check` green.
-- Next: read the PR run's per-shard timings, fill the slowest-shard comparison
-  against slice B's 2m34s, flip to `done`.
-- Stopped because: the slowest-shard comparison is a CI measurement.
+## Status: done
 
 ## Goal
 
@@ -45,7 +37,7 @@ no single file bounds how much sharding can help.
 - [x] Frontend case count is exactly **1227** before and after — record both
 - [x] No file among the three originals exceeds ~8s in the duration breakdown
       after the split
-- [ ] Slowest shard wall time drops relative to the slice B measurement; both
+- [x] Slowest shard wall time drops relative to the slice B measurement; both
       numbers recorded in this slice doc
 - [x] Total `expect(` count across the whole frontend test tree is **greater
       than or equal to** its pre-slice value — compare tree-wide totals before
@@ -123,9 +115,33 @@ slice C's `node` glob.
 
 ### Slowest shard
 
+Measured on run `31114869983` (attempt 3, green) against slice B's run
+`31113323253`:
+
 | Measurement | Slice B | Slice D |
 | --- | --- | --- |
-| Slowest frontend shard | 2m34s | _pending_ |
+| Slowest shard **job wall** | 2m34s | **1m20s** |
+| Slowest shard **test step** | 90s | **69s** |
+| Fastest shard test step | 46s | 52s |
+| Shard spread (slowest / fastest) | 1.96x | **1.33x** |
+
+Both figures are reported because job wall includes runner acquisition, which
+was noisy during these runs (see below); the test step is the infra-independent
+number. The spread narrowing from 1.96x to 1.33x is the point of the slice: the
+shards are now balanced, so the critical path tracks total work instead of one
+oversized file. Slices C and D together took the slowest shard's test step from
+90s to 69s while adding nine files.
+
+### GitHub Actions incident during measurement
+
+Attempts 1 and 2 of run `31114869983` are not usable as timings. Attempt 1 spent
+3m57s in runner provisioning before `coverage-merge`'s first step; attempt 2
+failed with `Failed to resolve action download info. Error: Service Unavailable`
+and `Bad Gateway` while downloading actions, and `static` took 5m40s. Those are
+GitHub infrastructure faults, not test or configuration failures — no assertion
+failed in any of them. Attempt 3 is the recorded green run, and even there
+`frontend-shard 2/3` waited ~5 minutes for a runner while its actual test step
+ran 69s. Slice E measures the end-to-end gate on a run free of this.
 
 ## Verification
 
