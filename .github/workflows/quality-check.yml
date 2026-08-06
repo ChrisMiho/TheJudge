@@ -7,8 +7,18 @@ on:
       - master
   pull_request:
 
+# Supersede in-flight PR runs, but never cancel a push run: cancelling a `main`
+# run would abort the deploy job mid-flight.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
 jobs:
-  quality:
+  static:
+    name: static
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -23,5 +33,103 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run quality checks
-        run: npm run quality:check
+      - name: Record runner cores
+        run: nproc
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Script tests
+        run: npm run test:scripts
+
+  backend:
+    name: backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Backend tests with coverage
+        run: npm --workspace apps/backend run test:coverage
+
+  frontend:
+    name: frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Frontend tests with coverage
+        run: npm --workspace apps/frontend run test:coverage
+
+  deploy:
+    name: deploy
+    needs: [static, backend, frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    # Job-scoped so pull_request jobs running contributor-controlled refs never
+    # receive AWS-assumable credentials.
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+      AWS_REGION: us-east-1
+      AWS_S3_BUCKET: thejudge-web-${{ vars.AWS_ACCOUNT_ID }}
+      AWS_LAMBDA_FUNCTION_NAME: thejudge-api
+      AWS_CLOUDFRONT_COMMENT: thejudge-web
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install packaging tools
+        run: sudo apt-get update && sudo apt-get install -y zip
+
+      - name: Build project
+        run: npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/thejudge-github-deploy
+          aws-region: us-east-1
+
+      # aws-deploy.sh runs its own frontend build, so the value must reach that
+      # step (commit f7970bf scoped it here to keep it out of PR-run scope).
+      - name: Deploy
+        run: bash scripts/aws-deploy.sh
+        env:
+          VITE_FEEDBACK_FORMSPREE_ID: ${{ vars.VITE_FEEDBACK_FORMSPREE_ID }}

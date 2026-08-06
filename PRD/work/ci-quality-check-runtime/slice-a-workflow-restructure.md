@@ -1,6 +1,17 @@
 # Slice A — Workflow restructure: parallel jobs, cancellation, deploy dependency
 
-## Status: planned
+## Status: in-progress
+
+### Handoff
+- Done: implementation complete and locally verified — merged workflow with
+  parallel `static` / `backend` / `frontend` jobs, deploy moved in behind
+  `needs:`, `deploy-aws.yml` deleted, concurrency group added, drift guard
+  (`scripts/ci-workflow-parity.test.mjs`) written and proven to fail on an
+  uncovered sub-script. `npm run quality:check` green.
+- Next: read the PR run's `nproc` output and job timings, fill the
+  `## Measurements` section, tick the CI-observed criteria, flip to `done`.
+- Stopped because: the remaining criteria are CI observations that cannot exist
+  until this milestone is pushed.
 
 ## Goal
 
@@ -43,18 +54,18 @@ workflow of parallel jobs where deploy depends on the gate via `needs:`.
 
 ## Acceptance criteria
 
-- [ ] `.github/workflows/deploy-aws.yml` no longer exists; its deploy steps live
+- [x] `.github/workflows/deploy-aws.yml` no longer exists; its deploy steps live
       in the gate workflow
-- [ ] `grep -c "quality:check" .github/workflows/*.yml` returns **0** — CI runs
+- [x] `grep -c "quality:check" .github/workflows/*.yml` returns **0** — CI runs
       the sub-scripts as separate jobs, so the aggregate never runs (and so can
       never run twice)
-- [ ] Drift guard exists and passes: `npm run test:scripts` covers a test that
+- [x] Drift guard exists and passes: `npm run test:scripts` covers a test that
       fails when a `quality:check` sub-script is absent from the workflow —
       prove it by temporarily adding a dummy sub-script to the chain and
       confirming the test fails, then revert
-- [ ] `id-token: write` appears only under the deploy job, verified by reading
+- [x] `id-token: write` appears only under the deploy job, verified by reading
       the workflow file
-- [ ] `VITE_FEEDBACK_FORMSPREE_ID` appears only under the build step's `env:`
+- [x] `VITE_FEEDBACK_FORMSPREE_ID` appears only under the build step's `env:`
 - [ ] A PR run shows `static`, `backend`, and `frontend` starting concurrently
 - [ ] Deploy is skipped on `pull_request` runs and runs on `main` pushes
 - [ ] A deliberately failing check (e.g. a temporary lint error) blocks deploy —
@@ -64,7 +75,42 @@ workflow of parallel jobs where deploy depends on the gate via `needs:`.
 - [ ] Observed `nproc` value recorded in this slice doc under a `Runner cores:`
       line
 - [ ] Gate wall time recorded for comparison against the 3m57s baseline
-- [ ] `npm run quality:check` unchanged in `package.json` and green locally
+- [x] `npm run quality:check` unchanged in `package.json` and green locally
+
+## Measurements
+
+Runner cores: _pending first PR run_
+
+| Metric | Baseline | Measured |
+| --- | --- | --- |
+| PR gate wall | 3m57s | _pending_ |
+
+Local `npm run quality:check` (this worktree, 10-core M-series): **34.6s wall**,
+unchanged command, green.
+
+### Deferred to a human-controlled `main` push
+
+Two criteria require pushing to `main`, which this flow never does (it neither
+merges nor pushes outside the shared branch):
+
+- deploy runs on `main` pushes (the `pull_request` half — deploy `skipped` — is
+  observable here and is recorded above)
+- pushing twice to `main` does **not** cancel the first deploy
+
+Both are structurally guaranteed by
+`cancel-in-progress: ${{ github.event_name == 'pull_request' }}` and
+`if: github.event_name == 'push' && github.ref == 'refs/heads/main'`, and are
+asserted by `scripts/ci-workflow-parity.test.mjs`, but the live confirmation
+belongs to the first post-merge `main` push.
+
+### Formspree scoping note
+
+Requirement 5 says "build-step-only". The variable was already scoped to the
+**Deploy** step, not "Build project", because `scripts/aws-deploy.sh` runs its
+own frontend build (`f7970bf` moved it there deliberately; the value on "Build
+project" only reaches a discarded artifact). Preserved exactly, and
+`deploymentPipeline.test.ts` now additionally asserts it appears on exactly one
+line of the merged workflow, so it cannot widen to workflow or job scope.
 
 ## Verification
 
