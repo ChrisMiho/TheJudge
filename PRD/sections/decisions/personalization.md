@@ -72,7 +72,7 @@ Frontend-only user personalization behavior that changes app presentation withou
 - Context: Routine setup work forces document scroll on desktop and mobile because screens stack generous padding, unbounded lists, and redundant chrome — especially enrichment list mode, zone collection with scan open, and game context (hero image, duplicate panels). This pass reduces vertical space without changing flow logic or payloads.
 - Impact:
   - **game context:** cat-wizard hero hidden by default; revealed after 10 clicks on the `TheJudge` brand title during the game-context step only, session-only with no localStorage and no hint; turn phase and active player merged into one panel (`grid-cols-1 sm:grid-cols-2`); combat sub-step remains full-width below when phase is `combat`; `(recommended)` removed from active-player labeling; wider expand/collapse and add/remove player buttons
-  - **zone collection:** card list becomes a 2-column tile grid showing at most 4 cards (2×2) before internal scroll, including stack; remove buttons and stack-position labels preserved
+  - **zone collection:** card list compaction originally used a 2-column tile grid with at most 4 cards visible before internal scroll; **DEC-151 supersedes that list layout** with a horizontal left-to-right strip in add order and horizontal region scroll; remove buttons and stack-position labels remain preserved
   - **zone collection chrome:** remove the empty-state `Select a suggestion to preview and add a card to …` placeholder; search and suggestions are sufficient affordance
   - **scan focus:** while scan is open, hide search input, scan entry button, zone card list, owner select, card preview, and outer staged-flow navigation/action buttons outside the camera surface; remove the `Scan card` heading; place **Exit scan** at the camera top-right; keep the scan-local **Capture** button and other scan-local controls available; offset the scan review bubble so controls do not overlap; remove the low-confidence "Use manual search" escalation prompt — manual search is reached via **Exit scan** while the camera is open (DEC-050); manual tap-to-capture on the scan screen is unchanged (DEC-052)
   - **enrichment:** in **View all cards** mode only, each zone's card list caps at 4 visible full-width edit rows with internal scroll; card-by-card wizard mode unchanged
@@ -89,47 +89,49 @@ Frontend-only user personalization behavior that changes app presentation withou
   - DEC-117
   - REQ-096
 - Notes:
-  - scroll caps (4 zone tiles, 4 enrichment rows per zone) apply across automatic responsive widths
+  - enrichment list scroll cap (4 rows per zone) still applies across automatic responsive widths; zone-collection visible-tile count is superseded by DEC-151's horizontal strip
   - non-goals: viewport locking, sticky footers, `dvh` page-shell redesign, changing zone-confirmation control structure, or scan-engine changes
+  - zone-collection list geometry amended by DEC-151 / REQ-130
 
 ### DEC-078
-- Decision: Card presentation in zone collection, expanded scan review, and enrichment is image-first and responsive. An available card image is centered at **80% of its card container width**, preserves the source card's intrinsic aspect ratio, and shows the complete image without cropping. Image mode hides duplicated card identity labels; an accessible three-dot control swaps the image for every available locally carried metadata field and back again. When an image URL is absent or the image fails to load, including offline, the same readable metadata panel appears directly and expands to the available card container width. Remove and workflow-specific controls remain visible. Every image-bearing or metadata card container also uses a restrained thin ring derived from the existing card `colors`: one identity color, a stable WUBRG-ordered multicolor gradient, or cool light silver-gray when colors are empty, missing, or unrecognized.
+- Decision: Card presentation in zone collection, expanded scan review, enrichment, and other suite card-image surfaces is image-first and responsive. An available card image preserves the source card's intrinsic aspect ratio and shows the complete image without cropping; **size follows DEC-151 compact density** (first-viewport fit) rather than a fixed 80%-of-container target when that target prevents fit. Image mode does not stack duplicated identity/oracle labels under the art; **the primary detail affordance is DEC-151's corner icon → dismissible popup** with locally carried descriptive fields. When an image URL is absent or the image fails to load, including offline, the same readable metadata panel appears directly and expands to the available card container width. Remove and workflow-specific controls remain visible. Every image-bearing or metadata card container also uses a restrained thin ring derived from the existing card `colors`: one identity color, a stable WUBRG-ordered multicolor gradient, or cool light silver-gray when colors are empty, missing, or unrecognized. **Zone-collection added cards use a horizontal left-to-right strip** (DEC-151 / REQ-130), not a two-column grid.
 - Status: confirmed
-- Context: The existing 56px zone/scan thumbnails and 64px enrichment thumbnails were too small to make the specific printing art legible. Initial implementation at a fixed 96px still left printed cards unreadable and duplicated labels crowded the surfaces. Responsive manual review established an image-first layout at 80% of each container as the usable balance across narrow and desktop widths. Existing `colors` metadata adds a light identity cue without adding true color-identity data or changing any product contract.
+- Context: The existing 56px zone/scan thumbnails and 64px enrichment thumbnails were too small to make the specific printing art legible. An earlier 80%-of-container + three-dot image↔metadata-swap presentation improved legibility but later blocked first-viewport density; DEC-151 amends size, detail affordance, and zone list layout while keeping image-first identity and identity rings. Existing `colors` metadata adds a light identity cue without adding true color-identity data or changing any product contract.
 - Impact:
-  - applies to card images in `ZoneCardPicker` card tiles, expanded `ScanReviewBubble` entries, and `EnrichmentStep` card rows
-  - all three surfaces use the same centered 80%-of-container image width rather than fixed or surface-specific thumbnail sizes
-  - images preserve intrinsic card aspect ratio and use uncropped rendering so the complete printing remains visible
-  - image mode omits duplicated name, owner/zone, and oracle labels; the printed card remains the primary identity presentation
-  - an accessible three-dot metadata control replaces an available image with every locally carried field that is present—name, mana cost, mana value, type line, oracle text, colors, supertypes, and subtypes—and toggles back to the image
+  - applies to card images in `ZoneCardPicker` card tiles, expanded `ScanReviewBubble` entries, `EnrichmentStep` card rows, and other suite card-image surfaces that share the presentation boundary
+  - images preserve intrinsic card aspect ratio and use uncropped rendering so the complete printing remains visible; **image width/height are sized for DEC-151 density** (compact enough for first-viewport fit) rather than a fixed 80%-of-container target when that target prevents fit
+  - image mode omits duplicated name, owner/zone, and oracle labels stacked under the art; the printed card remains the primary identity presentation
+  - **primary detail affordance is DEC-151's corner icon → dismissible popup** with locally carried descriptive fields (including oracle text); an image↔metadata swap control may remain only if it does not reintroduce stacked density under the image
   - a missing or failed image never renders a broken-image icon or reserves an empty image gap; it enters the same metadata presentation directly
-  - metadata expands to the available width of its zone tile, scan-review entry, or enrichment header
   - Remove, stack position where applicable, enrichment fields, and other workflow controls remain rendered and usable
-  - **zone collection:** preserve the two-column grid and bottom-to-top stack ordering; center the responsive image; keep the grid as the internal scroll owner within a viewport-relative cap
+  - **zone collection:** added cards use a **horizontal left-to-right strip** in add order with horizontal region scroll (DEC-151 / REQ-130); bottom-to-top stack ordering semantics for the stack zone are unchanged
   - **scan review:** use a 320px panel with a viewport-safe width cap; each entry uses the shared responsive presentation and Remove control; long sessions scroll inside the panel before it exceeds the camera viewport
-  - **enrichment:** use the shared responsive presentation in both **View all cards** and **Card-by-card** modes; keep enrichment fields full-width below
+  - **enrichment:** use the shared presentation in both **View all cards** and **Card-by-card** modes; enrichment fields remain full-width below; card images stay compact per DEC-151
   - the complete card container—not only the image—uses a thin, low-opacity ring; the same boundary applies when the image is replaced by the text-first fallback
   - white, blue, black, red, and green map to warm ivory, blue, muted violet-charcoal, red, and green; multicolor cards use a stable WUBRG-ordered gradient containing their present colors
   - empty, missing, or unrecognized colors use a cool light silver-gray ring that remains visually distinct from the warm ivory used for white cards
   - identity rings are decorative and independent from the active app theme; they do not replace the card name/text, tint the container background, add a glow or animation, or become the sole card-identity cue
-  - responsive image sizing, metadata-toggle/error handling, color mapping, and ring treatment are defined once and reused by all three surfaces
-  - `CardSelectionPreview` is unchanged
+  - responsive image sizing, detail-popup/error handling, color mapping, and ring treatment are defined once and reused across participating surfaces (including `CardSelectionPreview` for the corner detail control)
   - presentation only — no image caching, connectivity detection, explicit image retry, runtime metadata refresh, or change to card identity, printing-image selection, `ZoneCardItem`, `CardMetadataItem`, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, scan matching/stabilizer logic, or data-pipeline behavior
 - Related requirements:
   - REQ-058
+  - REQ-128
+  - REQ-129
+  - REQ-130
   - REQ-008
   - REQ-048
   - DEC-018
   - DEC-070
   - DEC-076
+  - DEC-151
   - FLOW-001
   - FLOW-002
   - FLOW-006
 - Notes:
-  - responsive card heights use viewport-relative internal scroll caps in zone collection and enrichment
   - fallback content renders only fields already present on the card; absent optional metadata does not produce invented values or require a fetch
   - this uses the existing `colors` array, not true MTG color identity; adding a `colorIdentity` field is out of scope
   - card colors use stable semantic presentation constants rather than the user-selectable palette tokens
+  - amended by DEC-151 for density, popup detail, and horizontal zone strip
 
 ### DEC-081
 - Decision: The selected theme palette extends into a restrained ambient accent layer across the four staged screens and the answered/conversation view. Only the closed minimum surface inventory in REQ-060 shows a low-intensity palette accent at rest, strengthens that accent on hover/focus where interactive, and retains a stronger restrained treatment while selected or current. Static chrome stays neutral. In the answered view, DEC-118 replaces the former inline frozen-context disclosure surface with the context trigger plus its adaptive sheet/drawer while retaining the follow-up composer/workspace treatment. This extends DEC-066/DEC-068 and uses DEC-079's existing motion baseline; it supersedes only DEC-068's blanket exclusion of neutral borders for the listed surfaces.
@@ -226,3 +228,22 @@ Frontend-only user personalization behavior that changes app presentation withou
   - approved Black visual direction: vivid, playful purple — saturated violet primary/highlight treatment with a purple-tinted near-black strong endpoint; this intentionally supersedes the earlier restrained muted-plum, not-bright-purple direction
   - approved neon direction comes from fixed catalog saturation only; no CSS shadow, bloom, halo, animation, profile-specific component rule, or new token role is added
   - non-goals: per-player themes, per-flow palettes, Magic mana symbols/logos/card art, customization of the five fixed Magic profiles, custom-Colorless contrast guarantees, palette-tinted backgrounds, light mode, server synchronization/accounts, or a new theming framework
+
+### DEC-152
+- Decision: In the feature-portal Menu **Theme** section, the six profile orbs (White, Blue, Black, Red, Green, Colorless) render on a **single row**. The tray/Theme block extends as needed so the last orb is not forced onto a second row. When Colorless is selected, the additional Colorless options (custom color control and Reset) appear **centered underneath** that orb row.
+- Status: confirmed
+- Context: Product-owner review of PR #75 found the final Theme orb wrapping alone onto a new row, which looked unfinished; spawned Colorless controls should sit centered under the full orb row.
+- Impact:
+  - all six Theme orbs share one horizontal row inside the open Menu tray
+  - Colorless custom/reset controls are centered below the orb row when Colorless is selected; they do not appear for other profiles
+  - DEC-119 catalog, tokens, persistence, and custom-Colorless behavior are unchanged
+  - presentation/layout only inside the Theme section
+- Related requirements:
+  - REQ-131
+  - REQ-099
+  - DEC-119
+  - DEC-066
+  - NFR-001
+- Notes:
+  - may widen/extend the Theme block or tray content area as needed for one orb row; do not change destination row geometry (DEC-135)
+  - non-goals: new profiles, reordering the WUBRGC catalog, or redesigning orb visuals beyond row layout

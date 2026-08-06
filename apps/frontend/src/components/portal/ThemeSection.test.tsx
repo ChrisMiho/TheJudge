@@ -33,7 +33,7 @@ describe("Frontend - Theme", () => {
       renderThemeSection();
 
       const paletteGroup = screen.getByRole("group", { name: "Theme palettes" });
-      expect(paletteGroup).toHaveClass("grid-cols-5", "gap-0.5");
+      expect(paletteGroup).toHaveClass("grid-cols-6", "gap-0.5");
 
       for (const palette of PALETTES) {
         const paletteButton = screen.getByRole("button", { name: `Theme: ${palette.name}` });
@@ -103,14 +103,23 @@ describe("Frontend - Theme", () => {
       expect(whiteCheck).toHaveClass("text-accent-contrast");
     });
 
-    it("lays the Colorless row out on the same 5-column grid so its swatch aligns under White", () => {
+    it("renders all six orbs, including Colorless, in the same single-row grid", () => {
       renderThemeSection({ paletteId: "colorless" });
 
       const paletteGroup = screen.getByRole("group", { name: "Theme palettes" });
-      const colorlessRow = screen.getByRole("button", { name: "Theme: Colorless" }).parentElement;
+      const colorlessButton = screen.getByRole("button", { name: "Theme: Colorless" });
 
-      expect(paletteGroup).toHaveClass("grid", "grid-cols-5", "gap-0.5");
-      expect(colorlessRow).toHaveClass("grid", "grid-cols-5", "gap-0.5");
+      expect(paletteGroup).toHaveClass("grid", "grid-cols-6", "gap-0.5");
+      expect(colorlessButton.parentElement).toBe(paletteGroup);
+    });
+
+    it("centers the Colorless custom-color controls under the full orb row", () => {
+      renderThemeSection({ paletteId: "colorless" });
+
+      const input = screen.getByLabelText("Customize Colorless color");
+      const controlsRow = input.parentElement;
+
+      expect(controlsRow).toHaveClass("justify-center");
     });
 
     it("renders the native color input and Reset to gray only when Colorless is active", () => {

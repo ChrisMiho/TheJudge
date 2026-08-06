@@ -24,7 +24,7 @@ function makeCard(overrides: Partial<ZoneCardItem> = {}): ZoneCardItem {
 
 describe("Frontend - MTG Assistant", () => {
 describe("CardPresentation", () => {
-  it("renders an uncropped centered card image at 80% width with its source and meaningful alt", () => {
+  it("renders an uncropped compact card image with its source, meaningful alt, and a corner detail control", () => {
     render(
       <CardPresentation
         card={makeCard()}
@@ -34,14 +34,14 @@ describe("CardPresentation", () => {
 
     const image = screen.getByRole("img", { name: "Urza, Lord High Artificer" });
     expect(image).toHaveAttribute("src", "https://img.example/urza.jpg");
-    expect(image).toHaveClass("mx-auto", "w-4/5", "h-auto", "object-contain");
+    expect(image).toHaveClass("h-auto", "max-h-32", "w-auto", "object-contain");
     expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Show card metadata for Urza, Lord High Artificer" })
+      screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" })
     ).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("replaces the image with metadata and toggles back while keeping actions visible", async () => {
+  it("opens a detail popup over the image with oracle text and closes it via the X control, without unmounting the image", async () => {
     const user = userEvent.setup();
     render(
       <CardPresentation
@@ -51,21 +51,37 @@ describe("CardPresentation", () => {
     );
 
     await user.click(
-      screen.getByRole("button", { name: "Show card metadata for Urza, Lord High Artificer" })
+      screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" })
     );
 
-    expect(screen.queryByRole("img")).not.toBeInTheDocument();
-    expect(screen.getByTestId("card-presentation-fallback")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
+    // Image stays mounted underneath the popup (DEC-151: popup layers over, does not replace).
+    expect(screen.getByRole("img", { name: "Urza, Lord High Artificer" })).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Show card image for Urza, Lord High Artificer" })
+      screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" })
     ).toHaveAttribute("aria-expanded", "true");
 
-    await user.click(
-      screen.getByRole("button", { name: "Show card image for Urza, Lord High Artificer" })
-    );
+    const popup = screen.getByTestId("card-detail-popup");
+    expect(popup).toBeInTheDocument();
+    expect(screen.getByText("When Urza enters, create a Construct artifact creature token.")).toBeInTheDocument();
+    expect(screen.getByText("{2}{U}{U}")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
 
+    await user.click(screen.getByRole("button", { name: "Close details for Urza, Lord High Artificer" }));
+
+    expect(screen.queryByTestId("card-detail-popup")).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Urza, Lord High Artificer" })).toBeInTheDocument();
+  });
+
+  it("closes the detail popup on Escape", async () => {
+    const user = userEvent.setup();
+    render(<CardPresentation card={makeCard()} />);
+
+    await user.click(screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" }));
+    expect(screen.getByTestId("card-detail-popup")).toBeInTheDocument();
+
+    await user.keyboard("{Escape}");
+
+    expect(screen.queryByTestId("card-detail-popup")).not.toBeInTheDocument();
   });
 
   it("renders the full-width fallback without mounting an image for an empty URL", () => {
@@ -79,7 +95,7 @@ describe("CardPresentation", () => {
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
     expect(screen.getByTestId("card-presentation-fallback")).toHaveClass("w-full");
     expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /card (metadata|image)/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /show details for/i })).not.toBeInTheDocument();
   });
 
   it("replaces a failed image with the fallback", () => {
@@ -95,7 +111,7 @@ describe("CardPresentation", () => {
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
     expect(screen.getByTestId("card-presentation-fallback")).toHaveClass("motion-error");
     expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /card (metadata|image)/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /show details for/i })).not.toBeInTheDocument();
   });
 
   it("clears an image error when the source changes", () => {

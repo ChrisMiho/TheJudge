@@ -35,14 +35,16 @@ guessing.
 1. `PRD/work/<slug>/IDEA.md` (or the user's description)
 2. `PRD/sections/decisions.md` router, then relevant `PRD/sections/decisions/<domain>.md` files
 3. Relevant `PRD/sections/*.md` for the feature
-4. `PRD/instructions/requirement-format.md`
-5. `PRD/instructions/technical-design-rules.md`
-6. `PRD/instructions/workflow-reference.md` — package status / STATUS.* duties
+4. `PRD/sections/screen-layout.md` when the idea adds or changes user-visible screens, overlays, or layout/containment
+5. `PRD/instructions/requirement-format.md`
+6. `PRD/instructions/technical-design-rules.md`
+7. `PRD/instructions/workflow-reference.md` — package status / STATUS.* duties
 
 ## Writes
 
 - `PRD/work/<slug>/DESIGN-BRIEF.md` — scope, decisions, non-goals, REQ/FLOW references
 - Updates to `PRD/sections/` (new `REQ-###`, `FLOW-###`; promote new `DEC-###` bodies into the relevant `PRD/sections/decisions/<domain>.md` file and add the router index line in `PRD/sections/decisions.md`)
+- When the feature introduces a user-visible screen or major overlay: a new row in `PRD/sections/screen-layout.md` using that file’s new-screen template (DEC-149 / REQ-126)
 - `PRD/sections/open-questions.md` only for genuine ambiguity (`Q-###`)
 - Package status signals (see Status transitions)
 

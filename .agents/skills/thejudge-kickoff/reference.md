@@ -39,6 +39,7 @@ and explicit approvals between phases.
 | ---- | ---------- |
 | Product understanding | `overview.md` → `decisions.md` → `goals-and-non-goals.md` |
 | Feature implementation | `decisions.md` → `functional-requirements.md` → `user-flows.md` → `integrations-and-data.md` |
+| UI layout / screen polish | `decisions.md` → `screen-layout.md` → `decisions/ui-presentation.md` → layout REQs |
 | Active work package | `PRD/work/<slug>/README.md` → `GAMEPLAN.md` → slice doc |
 
 ## Out of scope for default reads

@@ -9,7 +9,7 @@
 5. Any Scryfall download or network refresh requires explicit human approval.
 6. Invocation authorizes scoped milestone commits, shared-branch pushes, PR creation, title updates, exceptional-event comments, and deletion only of later duplicate comments with the same marker and authenticated author. It never authorizes force-push, PR merge/close, or a merge into `main`.
 
-Also preserve active product decisions from `PRD/sections/decisions/` and `PRD/instructions/technical-design-rules.md`.
+Also preserve active product decisions from `PRD/sections/decisions/` and `PRD/instructions/technical-design-rules.md`. For UI layout, containment, density, or “fill/stretch” slices, also read and follow `PRD/sections/screen-layout.md` (DEC-149 / REQ-126); do not invent sizes that contradict the catalog.
 
 ## Slice status
 

@@ -75,7 +75,9 @@ describe("FeaturePortalMenu", () => {
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
 
-    expect(screen.getByRole("button", { name: "Switch feature" })).toHaveAttribute("aria-expanded", "true");
+    // DEC-150: once open, the trigger itself is gone from the DOM (not merely hidden) —
+    // see the dedicated "rail-hide while open" describe block below for full coverage.
+    expect(screen.queryByRole("button", { name: "Switch feature" })).not.toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: "MTG Assistant" })).toHaveAttribute("aria-current", "true");
     expect(screen.getByRole("menuitem", { name: "Trade" })).not.toHaveAttribute("aria-current");
     expect(screen.getByText("Theme")).toBeInTheDocument();
@@ -416,51 +418,120 @@ describe("FeaturePortalMenu split rail (DEC-126)", () => {
     expect(screen.getByRole("button", { name: "Switch feature" })).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("makes the History zone inert — hidden, non-hit-testable, out of tab order — while Menu is open", async () => {
+});
+
+describe("FeaturePortalMenu rail-hide while open (DEC-150)", () => {
+  // DEC-150 amends DEC-140's "trigger stays interactive so the user can close it" clause:
+  // while the tray is open, neither the Menu trigger nor (on History-bearing destinations)
+  // the History zone may be visible or hit-testable. The rail stays mounted (same DOM node
+  // identity — see the `.portal-menu-rail-inert` comment in FeaturePortalMenu.tsx for why:
+  // other chrome, e.g. the feedback modal opened via this same Menu, restores focus to "the
+  // portal trigger" by DOM reference across the open/close cycle) and is instead made
+  // paint- and hit-test-inert via `visibility: hidden` / `pointer-events: none` plus
+  // `aria-hidden`/`tabIndex={-1}`. Real hit-testing (`elementFromPoint`) is verified via
+  // Playwright at the browser level; these tests assert the DOM-level contract the component
+  // controls directly.
+  function SlotHarness({ historyOnOpen }: { historyOnOpen?: () => void }): JSX.Element {
+    const [activeDestinationId, setActiveDestinationId] = useState<DestinationId>("mtg-assistant");
+    return (
+      <FeaturePortalMenu
+        entries={DESTINATIONS}
+        activeDestinationId={activeDestinationId}
+        onSelect={setActiveDestinationId}
+        paletteId="blue"
+        onPaletteSelect={vi.fn()}
+        colorlessCustomHex={undefined}
+        onColorlessCustomChange={vi.fn()}
+        onColorlessReset={vi.fn()}
+      >
+        <PortalSlot historyTrigger={historyOnOpen ? { onOpen: historyOnOpen } : undefined} />
+        <div>content</div>
+      </FeaturePortalMenu>
+    );
+  }
+
+  it("makes the Menu-only trigger inert (hidden, non-hit-testable, out of tab order, no-op onClick) while the tray is open, and restores it on close", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    const trigger = screen.getByRole("button", { name: "Switch feature" });
+    expect(trigger).not.toHaveAttribute("aria-hidden");
+    expect(trigger).not.toHaveAttribute("tabindex");
+    expect(trigger.className).not.toContain("portal-menu-rail-inert");
+
+    await user.click(trigger);
+
+    // Same DOM node throughout — not unmounted/remounted. `document.body.contains` (rather
+    // than a fresh `getByRole` query, which excludes `aria-hidden` elements by default)
+    // confirms the reference captured before opening is still attached, which is what keeps
+    // unrelated chrome (e.g. the feedback modal's focus-restore) working across the
+    // open/close cycle.
+    expect(document.body.contains(trigger)).toBe(true);
+    expect(trigger).toHaveAttribute("aria-hidden", "true");
+    expect(trigger).toHaveAttribute("tabindex", "-1");
+    expect(trigger.className).toContain("portal-menu-rail-inert");
+
+    // Belt-and-suspenders: even a direct click while inert must not toggle the tray again.
+    fireEvent.click(trigger);
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+
+    await user.keyboard("{Escape}");
+
+    expect(trigger).not.toHaveAttribute("aria-hidden");
+    expect(trigger).not.toHaveAttribute("tabindex");
+    expect(trigger.className).not.toContain("portal-menu-rail-inert");
+  });
+
+  it("makes both the Menu and History zones inert while the tray is open, and restores both on close", async () => {
     const user = userEvent.setup();
     const historyOnOpen = vi.fn();
     render(<SlotHarness historyOnOpen={historyOnOpen} />);
 
+    const menuButton = screen.getByRole("button", { name: "Switch feature" });
     const historyButton = screen.getByRole("button", { name: "Conversation history" });
-    expect(historyButton).not.toHaveAttribute("aria-hidden");
-    expect(historyButton).not.toHaveAttribute("tabindex");
-    expect(historyButton.className).not.toContain("portal-menu-rail-zone-inert");
 
-    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    await user.click(menuButton);
 
-    // Removed from the accessibility tree (and so from role-based queries) — the same
-    // proxy used elsewhere in this suite for "not hit-testable" in a jsdom environment
-    // that does not compute real paint/hit-test order.
-    expect(screen.queryByRole("button", { name: "Conversation history" })).not.toBeInTheDocument();
+    expect(menuButton).toHaveAttribute("aria-hidden", "true");
+    expect(menuButton).toHaveAttribute("tabindex", "-1");
     expect(historyButton).toHaveAttribute("aria-hidden", "true");
     expect(historyButton).toHaveAttribute("tabindex", "-1");
-    expect(historyButton.className).toContain("portal-menu-rail-zone-inert");
+    expect(screen.getByRole("menu")).toBeInTheDocument();
 
     // Belt-and-suspenders: even a direct click while inert must not open History.
     fireEvent.click(historyButton);
     expect(historyOnOpen).not.toHaveBeenCalled();
 
-    // The Menu trigger remains the close control and restores History once closed.
-    await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    await user.keyboard("{Escape}");
+
+    expect(menuButton).not.toHaveAttribute("aria-hidden");
     expect(historyButton).not.toHaveAttribute("aria-hidden");
-    expect(historyButton.className).not.toContain("portal-menu-rail-zone-inert");
   });
 
-  it("leaves the single-zone rail (Life Tracker / Trade Balancer, no history trigger) unaffected by the inert rule", async () => {
+  it("restores the trigger (same node) after an outside click closes the tray (only outside-click/Escape close it now)", async () => {
     const user = userEvent.setup();
-    render(<SlotHarness />);
+    render(
+      <div>
+        <Harness />
+        <button type="button">Outside</button>
+      </div>
+    );
 
-    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    const trigger = screen.getByRole("button", { name: "Switch feature" });
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute("aria-hidden", "true");
 
-    expect(screen.getByRole("button", { name: "Switch feature" })).toHaveAttribute("aria-expanded", "true");
-    expect(screen.queryByRole("button", { name: "Conversation history" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Outside" }));
+
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    expect(trigger).not.toHaveAttribute("aria-hidden");
+    expect(screen.getByRole("button", { name: "Switch feature" })).toBe(trigger);
   });
 
-  it("keeps the History-zone inert rule both paint- and hit-test-inert, not merely non-interactive", () => {
+  it("keeps the rail-inert rule both paint- and hit-test-inert, not merely non-interactive", () => {
     const inertBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-rail-zone-inert {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-zone-inert {"))
+      appCss.indexOf(".portal-menu-rail-inert {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-inert {"))
     );
 
     expect(inertBlock).toContain("visibility: hidden");

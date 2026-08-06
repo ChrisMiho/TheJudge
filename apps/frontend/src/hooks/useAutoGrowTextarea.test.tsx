@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { useRef, useState } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { useAutoGrowTextarea } from "./useAutoGrowTextarea";
 
@@ -10,26 +10,74 @@ let boundingTop = 100;
 let originalScrollHeight: PropertyDescriptor | undefined;
 let originalGetBoundingClientRect: PropertyDescriptor | undefined;
 let originalInnerHeight: PropertyDescriptor | undefined;
+let originalResizeObserver: PropertyDescriptor | undefined;
 
 function setScrollHeight(value: string, height: number): void {
   scrollHeightByValue.set(value, height);
 }
 
-function Harness({ initialValue = "" }: { initialValue?: string }): JSX.Element {
+function Harness({
+  initialValue = "",
+  style
+}: {
+  initialValue?: string;
+  style?: CSSProperties;
+}): JSX.Element {
   const [value, setValue] = useState(initialValue);
   const ref = useRef<HTMLTextAreaElement>(null);
   useAutoGrowTextarea(value, ref);
 
   return (
-    <textarea aria-label="Grow test field" ref={ref} value={value} onChange={(e) => setValue(e.target.value)} />
+    <textarea
+      aria-label="Grow test field"
+      ref={ref}
+      style={style}
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+    />
   );
+}
+
+/**
+ * jsdom ships no `ResizeObserver`. This stand-in records live observers so a test can
+ * fire them explicitly, standing in for the browser notifying the hook that a
+ * previously unrendered field just regained a layout box.
+ */
+const liveResizeObserverCallbacks = new Set<() => void>();
+
+function triggerResizeObservers(): void {
+  liveResizeObserverCallbacks.forEach((callback) => callback());
+}
+
+class StubResizeObserver {
+  constructor(private readonly callback: () => void) {}
+
+  observe(): void {
+    liveResizeObserverCallbacks.add(this.callback);
+  }
+
+  unobserve(): void {
+    liveResizeObserverCallbacks.delete(this.callback);
+  }
+
+  disconnect(): void {
+    liveResizeObserverCallbacks.delete(this.callback);
+  }
 }
 
 describe("Frontend - Shared", () => {
   describe("useAutoGrowTextarea", () => {
     beforeEach(() => {
       scrollHeightByValue.clear();
+      liveResizeObserverCallbacks.clear();
       boundingTop = 100;
+
+      originalResizeObserver = Object.getOwnPropertyDescriptor(window, "ResizeObserver");
+      Object.defineProperty(window, "ResizeObserver", {
+        configurable: true,
+        writable: true,
+        value: StubResizeObserver
+      });
 
       originalScrollHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollHeight");
       originalGetBoundingClientRect = Object.getOwnPropertyDescriptor(
@@ -74,6 +122,12 @@ describe("Frontend - Shared", () => {
       if (originalInnerHeight) {
         Object.defineProperty(window, "innerHeight", originalInnerHeight);
       }
+      if (originalResizeObserver) {
+        Object.defineProperty(window, "ResizeObserver", originalResizeObserver);
+      } else {
+        Reflect.deleteProperty(window, "ResizeObserver");
+      }
+      liveResizeObserverCallbacks.clear();
     });
 
     it("sizes the field to its scrollHeight when well within the viewport ceiling", () => {
@@ -137,6 +191,56 @@ describe("Frontend - Shared", () => {
 
       // Ceiling = 800 - 750 - 24 = 26px, below the 300px scrollHeight.
       expect(field.style.height).toBe("26px");
+    });
+
+    it("keeps the last visible height when a resize fires while the field is unrendered", () => {
+      // A field whose destination is inactive has no layout box, so it reports
+      // scrollHeight 0. Sizing from that measurement pinned `height: 0px` and clipped
+      // the field's content once the destination was shown again (REQ-120).
+      setScrollHeight("some content", 300);
+      render(<Harness initialValue="some content" />);
+      const field = screen.getByLabelText("Grow test field") as HTMLTextAreaElement;
+      expect(field.style.height).toBe("300px");
+
+      setScrollHeight("some content", 0);
+      act(() => {
+        fireEvent(window, new Event("resize"));
+      });
+
+      expect(field.style.height).toBe("300px");
+    });
+
+    it("re-measures when the field regains a layout box after being unrendered", () => {
+      setScrollHeight("some content", 300);
+      render(<Harness initialValue="some content" />);
+      const field = screen.getByLabelText("Grow test field") as HTMLTextAreaElement;
+
+      setScrollHeight("some content", 0);
+      act(() => {
+        fireEvent(window, new Event("resize"));
+      });
+
+      // Destination becomes active again: the element regains a box, and the
+      // observer recomputes without waiting for a value change or another resize.
+      setScrollHeight("some content", 120);
+      act(() => {
+        triggerResizeObservers();
+      });
+
+      expect(field.style.height).toBe("120px");
+    });
+
+    it("never sizes the field below a single line of its own text", () => {
+      // Ceiling maths can bottom out at 0 when the field sits near the viewport
+      // bottom; a zero-height field is never a valid resting state (REQ-120).
+      boundingTop = 795;
+      setScrollHeight("some content", 300);
+      render(<Harness initialValue="some content" style={{ lineHeight: "20px", paddingTop: "6px", paddingBottom: "6px" }} />);
+
+      const field = screen.getByLabelText("Grow test field") as HTMLTextAreaElement;
+
+      // Ceiling = 800 - 795 - 24, clamped to 0; the single-line floor wins instead.
+      expect(Number.parseFloat(field.style.height)).toBeGreaterThanOrEqual(20);
     });
   });
 });

@@ -3,6 +3,7 @@ import { useAutocompleteKeyboard } from "../../../hooks/useAutocompleteKeyboard"
 import { useAutocompleteSuggestions } from "../../../hooks/useAutocompleteSuggestions";
 import { useAskAiSubmitOrchestration } from "../../../hooks/useAskAiSubmitOrchestration";
 import { useAutoGrowTextarea } from "../../../hooks/useAutoGrowTextarea";
+import { ComposerSubmitButton } from "../../ComposerSubmitButton";
 import { useScanCapture } from "../../../hooks/useScanCapture";
 import { buildLookupAskAiRequest } from "../../../lib/contextFlow";
 import type { ConversationHistoryEntry, LookupDraftState } from "../../../lib/conversationHistory/persistence";
@@ -526,7 +527,13 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
                   </span>
                 )}
               </div>
-              <div className="ambient-accent-surface ambient-accent-interactive flex items-end gap-2 rounded-3xl border border-zinc-700/70 bg-zinc-900/55 py-2 pl-4 pr-2">
+              {/* Tighter inset and gaps below `sm` keep the field the dominant element of
+                  the row at phone widths (DEC-146, REQ-121); `sm+` keeps today's spacing.
+                  The counter stacks above the submit control (rather than sitting beside it
+                  as a third flex sibling) so DEC-153's every-width visible "Send Request"
+                  label does not spend its own row-width budget starving the field back below
+                  REQ-121's 65% floor. */}
+              <div className="ambient-accent-surface ambient-accent-interactive flex items-end gap-1 rounded-3xl border border-zinc-700/70 bg-zinc-900/55 py-2 pl-2 pr-1 sm:gap-2 sm:pl-4 sm:pr-2">
                 <textarea
                   ref={questionInputRef}
                   id="quick-lookup-question"
@@ -542,16 +549,19 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
                       : "What would you like to know?"
                   }
                 />
-                <span className="shrink-0 pb-1.5 text-xs text-zinc-400">
-                  {composedQuestion.length}/{MAX_QUESTION_LENGTH}
-                </span>
-                <button
-                  type="submit"
-                  disabled={!canSubmit || isSubmitting}
-                  className="shrink-0 rounded-full bg-gradient-to-r from-accent to-accent-strong px-4 py-2 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {isSubmitting ? "Asking…" : "Ask TheJudge"}
-                </button>
+                <div className="flex shrink-0 flex-col items-end gap-0.5">
+                  <span className="pr-0.5 text-[10px] leading-none text-zinc-400 sm:text-xs">
+                    {composedQuestion.length}/{MAX_QUESTION_LENGTH}
+                  </span>
+                  <ComposerSubmitButton
+                    label="Ask TheJudge"
+                    visibleLabel="Send Request"
+                    pendingLabel="Asking…"
+                    isSubmitting={isSubmitting}
+                    disabled={!canSubmit || isSubmitting}
+                    showLabelBelowSm
+                  />
+                </div>
               </div>
             </form>
           )}

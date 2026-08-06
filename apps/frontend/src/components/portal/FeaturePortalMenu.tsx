@@ -200,7 +200,7 @@ export function FeaturePortalMenu({
       ref={drawerRef}
       role="menu"
       aria-label="Feature destinations"
-      className="portal-menu-drawer portal-menu-drawer-motion bg-zinc-900/95"
+      className="portal-menu-drawer portal-menu-drawer-motion bg-zinc-900"
     >
       <div className="portal-menu-drawer-inner flex flex-col">
         {entries.map((entry) => {
@@ -260,52 +260,70 @@ export function FeaturePortalMenu({
   // tests, a hypothetical headerless/shell-less destination — it falls back to rendering inline
   // here, exactly as it always has, so every existing case without a PageShell/ShellBounds
   // ancestor keeps passing unmodified.
+  // DEC-150: while the tray is open, the rail's Menu/History trigger(s) are not visible and
+  // not clickable. This amends DEC-140's "trigger stays interactive so the user can close it"
+  // clause: closing now goes exclusively through the outside-click/Escape handlers above.
+  // The rail stays mounted (same DOM node identity) rather than being conditionally
+  // unmounted: `visibility: hidden` on `.portal-menu-rail-inert` removes it from paint and
+  // from `elementFromPoint` hit-testing (browsers exclude invisible elements from hit-testing
+  // and the tab order automatically), `pointer-events: none` is belt-and-suspenders, and
+  // `aria-hidden`/`tabIndex={-1}` on each interactive button are a further explicit guard —
+  // the same proven pattern this package's own prior DEC-140 History-inert treatment used.
+  // Keeping the same node mounted (instead of `isOpen ? null : ...`) matters beyond DEC-150
+  // itself: other app chrome (e.g. the feedback modal opened via this same Menu) restores
+  // keyboard focus to "the portal trigger" by DOM reference after closing, which only works
+  // if that reference survives the open/close cycle.
+  const railInertAttrs = isOpen ? { "aria-hidden": "true" as const, tabIndex: -1 } : {};
+
+  const railTrigger = historyTrigger ? (
+    <div
+      className={`portal-menu-rail portal-menu-rail-split motion-focus font-medium${
+        isOpen ? " portal-menu-rail-inert" : ""
+      }`}
+    >
+      <button
+        type="button"
+        aria-label="Switch feature"
+        aria-haspopup="true"
+        aria-expanded={false}
+        onClick={isOpen ? undefined : () => setIsOpen(true)}
+        className="portal-menu-rail-zone motion-focus border-none font-medium"
+        {...railInertAttrs}
+      >
+        <MenuIcon />
+      </button>
+      <button
+        type="button"
+        aria-label="Conversation history"
+        onClick={isOpen ? undefined : historyTrigger.onOpen}
+        className="portal-menu-rail-zone motion-focus border-none font-medium"
+        {...railInertAttrs}
+      >
+        <HistoryIcon />
+      </button>
+    </div>
+  ) : (
+    <button
+      type="button"
+      aria-label="Switch feature"
+      aria-haspopup="true"
+      aria-expanded={false}
+      onClick={isOpen ? undefined : () => setIsOpen(true)}
+      className={`portal-menu-rail motion-focus border-none font-medium${
+        isOpen ? " portal-menu-rail-inert" : ""
+      }`}
+      {...railInertAttrs}
+    >
+      <MenuIcon />
+    </button>
+  );
+
   const trigger = (
     <div
       ref={containerRef}
       className={effectiveSlotNode ? "portal-slot-tab relative" : "fixed left-0 top-0 z-30"}
     >
-      {historyTrigger ? (
-        <div className="portal-menu-rail portal-menu-rail-split motion-focus font-medium">
-          <button
-            type="button"
-            aria-label="Switch feature"
-            aria-haspopup="true"
-            aria-expanded={isOpen}
-            onClick={() => setIsOpen((current) => !current)}
-            className="portal-menu-rail-zone motion-focus border-none font-medium"
-          >
-            <MenuIcon />
-          </button>
-          <button
-            type="button"
-            aria-label="Conversation history"
-            // While Menu is open, the tray must occlude History rather than leave it
-            // clickable above the (lower z-index) drawer (DEC-140): hidden from paint/hit
-            // testing via .portal-menu-rail-zone-inert, out of the focus order, and its
-            // click handler removed as a second line of defense.
-            aria-hidden={isOpen ? "true" : undefined}
-            tabIndex={isOpen ? -1 : undefined}
-            onClick={isOpen ? undefined : historyTrigger.onOpen}
-            className={`portal-menu-rail-zone motion-focus border-none font-medium${
-              isOpen ? " portal-menu-rail-zone-inert" : ""
-            }`}
-          >
-            <HistoryIcon />
-          </button>
-        </div>
-      ) : (
-        <button
-          type="button"
-          aria-label="Switch feature"
-          aria-haspopup="true"
-          aria-expanded={isOpen}
-          onClick={() => setIsOpen((current) => !current)}
-          className="portal-menu-rail motion-focus border-none font-medium"
-        >
-          <MenuIcon />
-        </button>
-      )}
+      {railTrigger}
 
       {!visibleShellBoundsNode && drawer}
     </div>

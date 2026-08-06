@@ -45,7 +45,7 @@ describe("Frontend - Card Scan", () => {
       expect(screen.getByText("Opt")).toBeDefined();
     });
 
-    it("renders a centered 80%-width scanned printing image without a duplicated name", async () => {
+    it("renders a compact scanned printing image with a corner detail popup, no duplicated name (DEC-151)", async () => {
       const user = userEvent.setup();
       const scannedUrl = "https://img/opt-print.jpg";
       const cards = [makeZoneCard({ name: "Opt", imageUrl: scannedUrl })];
@@ -55,20 +55,20 @@ describe("Frontend - Card Scan", () => {
 
       const img = screen.getByRole("img", { name: "Opt" });
       expect(img.getAttribute("src")).toBe(scannedUrl);
-      expect(img).toHaveClass("mx-auto", "w-4/5", "h-auto", "object-contain");
+      expect(img).toHaveClass("h-auto", "w-auto", "object-contain");
 
       const entry = screen.getByRole("button", { name: /Remove Opt/i }).closest("li");
       expect(entry).toHaveClass("card-identity-ring");
       expect(entry).toHaveStyle("--card-identity-ring: rgb(14 165 233 / 0.55)");
       expect(within(entry as HTMLElement).queryByText("Opt")).not.toBeInTheDocument();
       expect(
-        within(entry as HTMLElement).getByRole("button", { name: "Show card metadata for Opt" })
+        within(entry as HTMLElement).getByRole("button", { name: "Show details for Opt" })
       ).toBeInTheDocument();
 
       await user.click(
-        within(entry as HTMLElement).getByRole("button", { name: "Show card metadata for Opt" })
+        within(entry as HTMLElement).getByRole("button", { name: "Show details for Opt" })
       );
-      expect(within(entry as HTMLElement).getByTestId("card-presentation-fallback")).toBeInTheDocument();
+      expect(within(entry as HTMLElement).getByTestId("card-detail-popup")).toBeInTheDocument();
       expect(within(entry as HTMLElement).getByText("Opt")).toBeInTheDocument();
     });
 
