@@ -39,8 +39,6 @@ jobs:
 
       - name: Build project
         run: npm run build
-        env:
-          VITE_FEEDBACK_FORMSPREE_ID: ${{ vars.VITE_FEEDBACK_FORMSPREE_ID }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -50,3 +48,5 @@ jobs:
 
       - name: Deploy
         run: bash scripts/aws-deploy.sh
+        env:
+          VITE_FEEDBACK_FORMSPREE_ID: ${{ vars.VITE_FEEDBACK_FORMSPREE_ID }}
