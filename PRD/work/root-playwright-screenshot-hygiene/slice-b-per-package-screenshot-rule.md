@@ -1,6 +1,6 @@
 # Slice B — Add per-package screenshot-location rule
 
-## Status: planned
+## Status: done
 
 ## Goal
 
