@@ -40,4 +40,9 @@ When using Playwright MCP (`plugin-playwright-playwright` or `@playwright/mcp`):
 
 - After finishing browser verification or interaction, call `browser_close` before ending the task.
 - Do not leave browser sessions open across unrelated tasks.
+- Write screenshots and other captures to `PRD/work/<slug>/.playwright-mcp/` in the current checkout — never the repo root. With no package in scope, use the root-level `.tmp/` folder.
 - Hard process cleanup of orphaned `ms-playwright/mcp-chrome` trees is handled by user session-end hooks. Do not `pkill` mid-session unless the user asks.
+
+Full contract — when browser verification is required, runtime ownership and
+cleanup, capture locations, and worktree/tooling isolation:
+`PRD/instructions/runtime-process-hygiene.md`.

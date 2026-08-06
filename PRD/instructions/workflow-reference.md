@@ -124,6 +124,8 @@ fresh agent reads the slice doc's status line and, if present, its
 
 - Slice doc template and Ship gates block: `thejudge-map-out/reference.md`
 - Quality-check checklist: `thejudge-quality-check/SKILL.md`
+- Playwright verification policy and the runtime ownership/cleanup contract:
+  `runtime-process-hygiene.md`
 - Autonomous one-package preparation: `preparation-contract.md`
 - Cleanup receipt convention and terminology table: `thejudge-cleanup/SKILL.md`
 - Platform paths, sync command, and the full skill catalog: `AGENT-SKILLS.md`

@@ -35,7 +35,8 @@ post-merge handoff remains
 2. Refined `PRD/sections/` referenced in the brief
 3. `PRD/instructions/doc-lifecycle.md`
 4. `PRD/instructions/workflow-reference.md` — package status / STATUS.* duties
-5. This skill's `reference.md` for the slice template and Ship gates block
+5. `PRD/instructions/runtime-process-hygiene.md` — Playwright policy and the runtime ownership/cleanup contract
+6. This skill's `reference.md` for the slice template and Ship gates block
 
 ## Writes
 
@@ -49,6 +50,7 @@ post-merge handoff remains
 - One primary objective per slice; explicit dependencies stated in the README table.
 - Each slice: Status, Goal, Requirements, Files touched, Tests, Acceptance criteria.
 - Each acceptance criterion must be verifiable — a test command or an explicit manual check.
+- For any slice with browser-observable risk per `runtime-process-hygiene.md`, encode the exact scenarios, viewports, and observations/measurements to check as acceptance criteria, plus a cleanup-evidence acceptance criterion (browser closed, owned server(s) stopped, ports released, capture output path recorded).
 - Default parallel-ready; sequential only with a stated blocker.
 - Final slice carries the PRD promotion checklist (execution happens in cleanup) and the Ship gates block from `reference.md`.
 - Never write product code from this skill; never persist plans to tool-specific plan folders — `PRD/work/` is the only location.

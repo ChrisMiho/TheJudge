@@ -1,6 +1,6 @@
 # Slice F — Playwright verification and runtime process hygiene
 
-## Status: planned
+## Status: done
 
 ## Goal
 

@@ -34,7 +34,7 @@ Read the work-package `README.md` — including its `## Autonomous metadata` sec
 1. Fetch/rebase onto the shared branch when it exists, otherwise the recorded autonomous base; resolve conflicts before editing.
 2. Confirm dependencies are `done`, then mark the slice `in-progress`.
 3. Implement only the slice and its tests under `reference.md`.
-4. Run the slice verification while its status is `in-progress`; debug until green.
+4. Run the slice verification while its status is `in-progress`; debug until green. For a slice with browser or dev-server acceptance criteria, record `PRD/instructions/runtime-process-hygiene.md`'s cleanup evidence (browser-close, owned-process-stop, port-release, capture output path) before it can become `done`; an unresolved ownership/cleanup failure keeps it `blocked`. This skill's isolated worktree always starts its own dev server(s) on ports it owns — it never attaches to a pre-existing one, since worktrees are isolated checkouts — and writes captures under its own worktree's `PRD/work/<slug>/.playwright-mcp/`.
 5. Mark it `done`, update only the README slice table/notes, and stage every intended slice output. Require the non-ignored worktree to match the index before and after rerunning the slice verification and `npm run quality:check`.
 6. If either gate fails, restore `in-progress` while debugging or leave `blocked` if stopping. Do not commit, push, or start another slice.
 7. Inspect the staged diff and commit `feat(<slug>): complete slice <letter>`.
@@ -50,7 +50,7 @@ Read the work-package `README.md` — including its `## Autonomous metadata` sec
 
 ## Completion gate
 
-Use the race-safe READY loop in `reference.md`; never infer readiness from this work package alone. Retain and report the worktree path.
+Use the race-safe READY loop in `reference.md`; never infer readiness from this work package alone. Retain and report the worktree path, and name the capture output path while the worktree still exists — cleanup removes the worktree and its captures with it.
 
 ## Quick reference
 
