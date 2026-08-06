@@ -1,15 +1,6 @@
 # Slice B — Shard frontend coverage and merge with thresholds intact
 
-## Status: in-progress
-
-### Handoff
-- Done: blob sharding + merge proven locally on vitest **2.1.9** (no dependency
-  bump needed), workflow converted to a 3-shard matrix plus a `coverage-merge`
-  job, deploy repointed at `coverage-merge`, drift guard extended with a
-  shard/merge contract test. `npm run quality:check` green.
-- Next: read the PR run's per-shard timings, settle N against them, fill
-  `## Measurements`, flip to `done`.
-- Stopped because: per-shard CI wall time cannot exist until this is pushed.
+## Status: done
 
 ## Goal
 
@@ -46,9 +37,9 @@ reports so thresholds are evaluated once, on merged totals.
       coverage below 45% (e.g. by adding an uncovered source file) and confirm
       `coverage-merge` **fails**; revert afterwards and record both outcomes
 - [x] No shard job fails on coverage thresholds when run alone
-- [ ] Per-shard wall time recorded in this slice doc; N justified against the
+- [x] Per-shard wall time recorded in this slice doc; N justified against the
       runner-core value from slice A
-- [ ] Deploy depends on `coverage-merge` and is skipped when it fails
+- [x] Deploy depends on `coverage-merge` and is skipped when it fails
 - [x] Vitest config threshold values are byte-identical to their pre-slice state
       (`git diff apps/frontend/vite.config.ts apps/backend/vitest.config.ts`)
 - [x] `npm run quality:check` unchanged and green locally
@@ -97,14 +88,51 @@ Without it a shard is judged on partial data: the design brief's measured
 counter-example is a scan-only slice reporting 17.47% lines against the 45%
 global threshold.
 
-### Shard count
+### Shard count, settled against measurement
 
-Runner cores from slice A: **4**. N starts at **3** per the slice contract;
-per-shard CI wall time is recorded below and N is settled against it.
+Runner cores from slice A: **4**. N started at **3** per the slice contract.
+Measured on run `31113323253` (all green):
 
 | Job | Duration |
 | --- | --- |
-| _pending first sharded run_ | |
+| `frontend-shard 1/3` | **2m34s** |
+| `frontend-shard 2/3` | 1m54s |
+| `frontend-shard 3/3` | 1m09s |
+| `coverage-merge` | 24s |
+| `static` | 38s |
+| `backend` | 23s |
+
+| Metric | Baseline | Slice A | Slice B |
+| --- | --- | --- | --- |
+| PR gate wall | 3m57s | 3m41s | **3m10s** |
+
+CI confirms the merge: `Test Files 115 passed (115)`, `Tests 1227 passed
+(1227)`, `All files 96.35%` — the same totals as the unsharded run, evaluated
+once in `coverage-merge`.
+
+**N stays at 3.** Raising N is not the lever the numbers point at: the slowest
+shard is 2m34s against a fastest of 1m09s, a 2.2x spread on an even file split,
+so the critical path is set by *distribution*, not by shard count. Each extra
+shard also buys a fresh ~35s of checkout/setup/`npm ci`. Vitest already
+saturates all 4 observed cores inside a shard. Slice D attacks the actual cause
+by splitting the three outlier files, and holding N fixed at 3 is what makes its
+"slowest shard drops" comparison meaningful. Slice E revisits N once the shards
+are balanced.
+
+### Gate target not yet met — expected at this point
+
+3m10s is still above the < 2m00s target. The remaining cost is concentrated in
+`frontend-shard 1/3`; slices C (jsdom scoping) and D (outlier splits) are the
+two levers left, and both act on exactly that cost.
+
+### CI-only defect found and fixed
+
+The first sharded run (`31112998612`) failed all three shards on
+`if-no-files-found: error` even though each had written its blob.
+`upload-artifact@v4`'s glob skips dotted directories, and `.vitest-reports` is
+one. Fixed with `include-hidden-files: true`; run `31113323253` is the green
+result. Local verification could not have caught this — no local gate uploads
+artifacts.
 
 ## Verification
 
