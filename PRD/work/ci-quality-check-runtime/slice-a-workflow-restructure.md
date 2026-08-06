@@ -1,17 +1,6 @@
 # Slice A — Workflow restructure: parallel jobs, cancellation, deploy dependency
 
-## Status: in-progress
-
-### Handoff
-- Done: implementation complete and locally verified — merged workflow with
-  parallel `static` / `backend` / `frontend` jobs, deploy moved in behind
-  `needs:`, `deploy-aws.yml` deleted, concurrency group added, drift guard
-  (`scripts/ci-workflow-parity.test.mjs`) written and proven to fail on an
-  uncovered sub-script. `npm run quality:check` green.
-- Next: read the PR run's `nproc` output and job timings, fill the
-  `## Measurements` section, tick the CI-observed criteria, flip to `done`.
-- Stopped because: the remaining criteria are CI observations that cannot exist
-  until this milestone is pushed.
+## Status: done
 
 ## Goal
 
@@ -66,42 +55,67 @@ workflow of parallel jobs where deploy depends on the gate via `needs:`.
 - [x] `id-token: write` appears only under the deploy job, verified by reading
       the workflow file
 - [x] `VITE_FEEDBACK_FORMSPREE_ID` appears only under the build step's `env:`
-- [ ] A PR run shows `static`, `backend`, and `frontend` starting concurrently
+- [x] A PR run shows `static`, `backend`, and `frontend` starting concurrently
 - [ ] Deploy is skipped on `pull_request` runs and runs on `main` pushes
 - [ ] A deliberately failing check (e.g. a temporary lint error) blocks deploy —
       confirm deploy reports `skipped`, never `success`
 - [ ] Pushing twice in quick succession to a PR branch cancels the first run;
       pushing twice to `main` does **not** cancel the first deploy
-- [ ] Observed `nproc` value recorded in this slice doc under a `Runner cores:`
+- [x] Observed `nproc` value recorded in this slice doc under a `Runner cores:`
       line
-- [ ] Gate wall time recorded for comparison against the 3m57s baseline
+- [x] Gate wall time recorded for comparison against the 3m57s baseline
 - [x] `npm run quality:check` unchanged in `package.json` and green locally
 
 ## Measurements
 
-Runner cores: _pending first PR run_
+**Runner cores: 4** (`nproc` in the `static` job, run `31111931196`). Slice B
+tunes shard count against this, not against an assumption.
+
+Measured on PR run `31111931196` (`pull_request`, PR #82):
+
+| Job | Started | Completed | Duration |
+| --- | --- | --- | --- |
+| `static` | 14:39:41Z | 14:40:22Z | 41s |
+| `backend` | 14:39:41Z | 14:40:11Z | 30s |
+| `frontend` | 14:39:41Z | 14:43:18Z | **3m37s** |
+| `deploy` | — | — | `skipped` |
 
 | Metric | Baseline | Measured |
 | --- | --- | --- |
-| PR gate wall | 3m57s | _pending_ |
+| PR gate wall | 3m57s | **3m41s** |
+
+All three gate jobs report the identical `started_at` of `14:39:41Z`, which is
+the concurrency proof. The wall time barely moved because `frontend` alone is
+3m37s of the 3m41s — parallelism cannot help until that job is split. That is
+exactly what slices B, C, and D address; slice A's job is the structure they
+need. The duplicated `Deploy AWS` gate (3m22s of wasted CPU per `main` push) is
+gone outright.
 
 Local `npm run quality:check` (this worktree, 10-core M-series): **34.6s wall**,
 unchanged command, green.
 
 ### Deferred to a human-controlled `main` push
 
-Two criteria require pushing to `main`, which this flow never does (it neither
-merges nor pushes outside the shared branch):
+Three criteria require a `main` push or a live cancellation race, neither of
+which this flow performs (it never merges and never pushes outside the shared
+branch):
 
-- deploy runs on `main` pushes (the `pull_request` half — deploy `skipped` — is
-  observable here and is recorded above)
+- deploy runs on `main` pushes — the `pull_request` half (deploy `skipped`) is
+  observed above and recorded
+- a deliberately failing check leaves deploy `skipped`, never `success` — on a
+  `pull_request` run deploy is skipped by its `if:` regardless, so the run above
+  cannot distinguish the two causes
 - pushing twice to `main` does **not** cancel the first deploy
 
-Both are structurally guaranteed by
-`cancel-in-progress: ${{ github.event_name == 'pull_request' }}` and
-`if: github.event_name == 'push' && github.ref == 'refs/heads/main'`, and are
-asserted by `scripts/ci-workflow-parity.test.mjs`, but the live confirmation
-belongs to the first post-merge `main` push.
+All three are structurally guaranteed by
+`cancel-in-progress: ${{ github.event_name == 'pull_request' }}`,
+`if: github.event_name == 'push' && github.ref == 'refs/heads/main'`, and
+`needs: [static, backend, frontend]`, and each is now asserted by
+`scripts/ci-workflow-parity.test.mjs` so it cannot regress silently. The live
+confirmation belongs to the first post-merge `main` push.
+
+The PR-branch half of the cancellation criterion is observable on this shared
+branch and is captured during the slice C / D push sequence — see slice C.
 
 ### Formspree scoping note
 

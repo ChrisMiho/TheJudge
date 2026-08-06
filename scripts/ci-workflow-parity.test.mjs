@@ -143,3 +143,21 @@ test("deploy credentials stay scoped to the deploy job", () => {
     "deploy must depend on the gate jobs via needs:"
   );
 });
+
+test("superseded PR runs cancel, but push runs never do", () => {
+  const workflow = loadWorkflow(GATE_WORKFLOW);
+  const concurrency = workflow.concurrency ?? {};
+
+  assert.match(
+    String(concurrency.group ?? ""),
+    /github\.workflow.*github\.ref|github\.ref.*github\.workflow/,
+    "the concurrency group must be keyed on workflow and ref"
+  );
+  // A literal `true` here would let a second `main` push cancel an in-flight
+  // deploy partway through uploading.
+  assert.equal(
+    String(concurrency["cancel-in-progress"] ?? ""),
+    "${{ github.event_name == 'pull_request' }}",
+    "cancellation must be limited to pull_request runs"
+  );
+});
