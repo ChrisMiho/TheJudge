@@ -19,6 +19,28 @@ orchestrator must state that predicate when handing work to each phase.
 Without that observable predicate, every phase runs directly and preserves its
 normal user questions, approval pauses, reads, outputs, and handoff.
 
+## Autonomous base
+
+`thejudge-prepare` is an explicit opt-in that requires a remote base argument,
+such as `--base feature/example`. It never defaults to `main` and never infers
+the current branch as the base. A missing, unavailable, or contradicted base
+blocks before worktree creation — report the missing base rather than silently
+choosing one.
+
+The resolved base is recorded as durable package metadata in the package
+`README.md`:
+
+```markdown
+## Autonomous metadata
+
+- Autonomous base: origin/<branch>
+```
+
+Downstream autonomous skills — `thejudge-implement-all`,
+`thejudge-implement-fanout`, and `thejudge-cleanup` — read and inherit this
+value, and block if it is missing, unavailable, or contradicted by a supplied
+branch or PR.
+
 ## One-package candidate selection and `NO ACTIONABLE PACKAGE`
 
 Produce exactly one `PRD/work/<slug>/` package per invocation.
@@ -69,6 +91,10 @@ create or reuse a stable `Q-###` identifier, preserve every valid artifact, and
 omit downstream artifacts that would depend on the answer.
 
 ## Phase inputs, outputs, and valid status transitions
+
+The recorded autonomous base is a precondition for every phase below, not
+phase-specific state: it is resolved before the first phase runs and remains
+unchanged for the life of the package.
 
 | Phase | Required input | Required output | Status transition |
 | --- | --- | --- | --- |
@@ -123,15 +149,25 @@ exists when authentication, network, permission, or Git state prevented it.
 
 Explicit `thejudge-prepare` invocation on a supported surface
 (`/thejudge-prepare` or `$thejudge-prepare`) authorizes an isolated worktree from
-the latest `origin/main`, branch `thejudge-prep/<slug>` unless a compatible
-branch or PR is supplied, documentation commits, non-force pushes, and creation
-or update of one preparation PR.
+the latest fetched recorded autonomous base, documentation commits, non-force
+pushes, and creation or update of one preparation PR whose PR base is the
+recorded autonomous base. The worktree path is `.worktrees/prepare-<slug>` and
+the branch is `thejudge-prep/<slug>`, unless a compatible preparation branch or
+PR is supplied.
 
 The design stops before implementation, so this authorization does not include
 product-code or product-test edits. It also excludes merges, closes, force
 pushes, stashing, destructive cleanup, and changes to unrelated launch-checkout
 work. If relevant uncommitted launch-checkout inputs are absent from the
 selected remote base, stop and report them instead of copying or stashing them.
+
+## Worktree retention
+
+The preparation worktree and its local branch remain after `READY` or `BLOCKED`
+publication. They are removed only once implementation preflight has proven the
+preparation PR merged into the recorded autonomous base and that worktree is
+clean. `thejudge-implement-all`'s preflight owns that removal step; preparation
+must not violate this contract by self-deleting its worktree or branch early.
 
 ## Required PR body fields and exact restart-prompt shape
 

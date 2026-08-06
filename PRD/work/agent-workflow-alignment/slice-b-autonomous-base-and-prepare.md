@@ -1,6 +1,6 @@
 # Slice B — Autonomous base and preparation ownership
 
-## Status: planned
+## Status: done
 
 ## Goal
 
