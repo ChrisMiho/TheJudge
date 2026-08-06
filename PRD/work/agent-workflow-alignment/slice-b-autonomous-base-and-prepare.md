@@ -19,7 +19,15 @@ preparation worktree/branch/PR.
      missing base as a blocker (do not silently choose `main`).
    - "One-package loop" step 1 (Git/worktree preflight): note that the
      preflight resolves and validates the base argument before any worktree
-     creation.
+     creation. The preflight also refuses to create or adopt a worktree at
+     any path outside the repo-local `.worktrees/` root — including a sibling
+     directory such as `../<repo>-worktrees/`, a temp/scratchpad path, or an
+     absolute path elsewhere on disk. If a supplied or discovered worktree
+     sits outside `.worktrees/`, stop and report it as a blocker rather than
+     adopting it. Evidence this is a live drift, not a hypothetical: as of
+     2026-08-05 eight `thejudge-auto/*` worktrees existed under a sibling
+     `TheJudge-worktrees/` directory despite the contract naming
+     `.worktrees/`.
    - "Terminal states" table: extend the `READY` and `BLOCKED` rows'
      "Required result" to include "recorded autonomous base" alongside the
      existing fields, matching `preparation-contract.md`.

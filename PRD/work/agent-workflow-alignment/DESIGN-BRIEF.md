@@ -142,6 +142,8 @@ An ownership or cleanup failure prevents the slice from becoming `done` and prev
 
 Runtime cleanup happens at the end of every owning task rather than waiting for final package cleanup. Final cleanup additionally verifies the recorded evidence before removing Git worktrees.
 
+Agent-created worktrees live only under the repo-local `.worktrees/` root, and the preparation and implementation preflights refuse any other path — sibling `../<repo>-worktrees/` directories, temp/scratchpad paths, and absolute paths elsewhere. Enforcement is at creation time, not a gate over pre-existing worktrees, which would contradict the non-goal about policing unrelated stale worktrees. The Claude Code harness's `**/.claude/worktrees/agent-*` isolation root is the one tolerated exception, because no repo or `.claude/settings.json` option relocates it. Since both roots are full repo checkouts whose files sit under no workspace tsconfig, every ignore-consuming tool config must exclude both — currently `eslint.config.mjs` and `.prettierignore`; adding a new one without those entries is a regression. This became load-bearing once autonomous worktrees moved into the repo: the historical sibling location is the only reason eight prior worktrees never broke the gate.
+
 ### 8. Root dev launcher hardening
 
 Harden `scripts/dev.mjs` so its behavior satisfies the runtime contract:

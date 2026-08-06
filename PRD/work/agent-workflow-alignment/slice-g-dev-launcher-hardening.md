@@ -98,11 +98,33 @@ block.
    test:scripts` to both the `test` script and the `quality:check` script in
    `package.json`, after the existing chain.
 
+### Worktree ignore invariant
+
+7. Verify — and, for any config this slice adds or edits, preserve — the
+   invariant that **every ignore-consuming tool config excludes agent
+   worktree roots**: both the repo-local `.worktrees/` root that Slices B
+   and C mandate, and `**/.claude/worktrees/**`, which the Claude Code
+   harness creates for subagent isolation and which no repo setting can
+   relocate. Current carriers are `eslint.config.mjs` (`ignores`) and
+   `.prettierignore`; both were fixed in `336d1e8` after `npm run lint`
+   produced 905 `tsconfigRootDir` parsing errors and `format:check` flagged
+   42 files, all sourced from two `.claude/worktrees/agent-*` checkouts.
+   This invariant matters more once Slices B and C move autonomous worktrees
+   into the repo-local `.worktrees/` root: today most historical worktrees
+   sat in a sibling directory outside the repo, which is the only reason
+   they never polluted the gate. State the invariant in
+   `PRD/instructions/runtime-process-hygiene.md` (Slice F) so a future
+   config addition does not silently regress it. Do not add a quality-gate
+   check that fails on worktrees existing outside `.worktrees/` — that would
+   contradict this design's non-goal about not policing unrelated stale
+   worktrees; enforcement belongs at creation time in the Slice B/C
+   preflights.
+
 ### Final-slice duties
 
-7. Append the Ship gates block (from this skill's `reference.md`) to the
+8. Append the Ship gates block (from this skill's `reference.md`) to the
    bottom of this slice doc, below "Files touched".
-8. Confirm the PRD promotion checklist (executed by `thejudge-cleanup`, not
+9. Confirm the PRD promotion checklist (executed by `thejudge-cleanup`, not
    this slice): `DEC-154` in `PRD/sections/decisions/doc-process.md` already
    records the full approved design and needs no edit at cleanup; no
    `PRD/sections/system-map.md` entry is added, per `DEC-154`'s own Notes

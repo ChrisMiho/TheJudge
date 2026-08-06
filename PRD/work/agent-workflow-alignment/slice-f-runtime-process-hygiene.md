@@ -75,6 +75,21 @@ ownership-and-cleanup contract, then wire `AGENTS.md`,
    therefore never appear in `git status --porcelain` (see Slice D's
    clean-worktree proof).
 
+   **`## Worktree location and tooling isolation`** — agent-created worktrees
+   live only under the repo-local `.worktrees/` root (`prepare-<slug>`,
+   `implement-<slug>`); the Slice B and C preflights refuse any other path,
+   including sibling `../<repo>-worktrees/` directories and temp/scratchpad
+   paths. One exception is not repo-controllable: the Claude Code harness
+   creates `**/.claude/worktrees/agent-*` for subagent isolation and no repo
+   or `.claude/settings.json` option relocates it, so that path is tolerated
+   rather than refused. Because both roots are full repo checkouts whose
+   files sit under no workspace tsconfig, **every ignore-consuming tool
+   config must exclude both** — currently `eslint.config.mjs` `ignores` and
+   `.prettierignore` (fixed in `336d1e8`). State that adding a new
+   ignore-consuming config without these entries is a regression, and that
+   enforcement of worktree location happens at creation time in the Slice
+   B/C preflights, never as a quality-gate check over pre-existing worktrees.
+
 ### Wire existing docs to it
 
 2. `AGENTS.md`: replace the current "Playwright MCP Cleanup" section body
@@ -132,9 +147,14 @@ ownership-and-cleanup contract, then wire `AGENTS.md`,
 
 ## Acceptance criteria
 
-- [ ] `PRD/instructions/runtime-process-hygiene.md` exists with all three
-      sections — Playwright policy, runtime ownership/cleanup contract, and
-      capture output location — matching `DEC-154`'s Impact list
+- [ ] `PRD/instructions/runtime-process-hygiene.md` exists with all four
+      sections — Playwright policy, runtime ownership/cleanup contract,
+      capture output location, and worktree location/tooling isolation —
+      matching `DEC-154`'s Impact list
+- [ ] The worktree section names `.worktrees/` as the only agent-created
+      root, records the non-relocatable `.claude/worktrees/` harness
+      exception, and states the ignore invariant naming
+      `eslint.config.mjs` and `.prettierignore`
 - [ ] The capture-location section states the per-package destination, that
       it resolves against the current checkout root (worktree for autonomous
       runs), the root `.tmp/`/`.playwright-mcp/` fallback, and that captures

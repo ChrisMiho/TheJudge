@@ -31,6 +31,11 @@ pairs.
    - Step 2: replace "Fetch `origin/main` and the requested shared branch"
      with "Fetch `origin/<recorded base>` and the requested shared branch".
    - Step 4: state the worktree path explicitly: `.worktrees/implement-<slug>`.
+     Add that the preflight refuses to create or adopt a worktree at any path
+     outside the repo-local `.worktrees/` root — sibling directories such as
+     `../<repo>-worktrees/`, temp/scratchpad paths, and absolute paths
+     elsewhere on disk are all blockers, not adoptable states. Mirrors Slice
+     B's identical preflight refusal for preparation worktrees.
    - Step 5: replace "otherwise use `origin/main`" with "otherwise use
      `origin/<recorded base>`".
    - Add a new preflight step: if `.worktrees/prepare-<slug>` exists for this
