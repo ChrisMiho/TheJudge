@@ -32,7 +32,7 @@ the deploy job so PR jobs never receive AWS-assumable credentials.
 | --- | --- | --- | --- | --- |
 | [A](./slice-a-workflow-restructure.md) | done | Parallel gate jobs, cancellation, deploy `needs:` the gate instead of duplicating it | sequential | — |
 | [B](./slice-b-shard-frontend-coverage.md) | done | Shard frontend coverage; merge blobs; thresholds on merged totals | sequential | A — needs the job structure and A's observed runner-core value to pick shard count |
-| [C](./slice-c-scope-jsdom-per-file.md) | planned | `environmentMatchGlobs` so DOM-free suites skip jsdom | parallel-ready | NFR-012, DEC-155 (no slice prerequisite; touches only `vite.config.ts`) |
+| [C](./slice-c-scope-jsdom-per-file.md) | done | `environmentMatchGlobs` so DOM-free suites skip jsdom | parallel-ready | NFR-012, DEC-155 (no slice prerequisite; touches only `vite.config.ts`) |
 | [D](./slice-d-split-outlier-test-files.md) | planned | Assertion-preserving split of the 3 outlier files to lower the shard floor | sequential | B — "slowest shard drops" is only measurable once shards exist |
 | [E](./slice-e-verify-and-promote.md) | planned | Verify wall-time targets end to end; promote PRD truth | sequential | A, B, C, D |
 

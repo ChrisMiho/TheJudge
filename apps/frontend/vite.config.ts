@@ -19,7 +19,53 @@ export default defineConfig({
     strictPort: true
   },
   test: {
+    // jsdom stays the default, so an unlisted or newly added test file is never
+    // silently DOM-less. Files opt *out* below, and only where a full green run
+    // proved they need no DOM (DEC-155).
     environment: "jsdom",
+    // First match wins. Per DEC-155 these are proven globs, not a blanket
+    // directory or extension rule: the jsdom pins below are measured
+    // counter-examples that still need a DOM, and every `node` entry either
+    // names a file or names a directory whose every test file passed under
+    // `node`.
+    environmentMatchGlobs: [
+      ["src/lib/lifeTracker/useLifeTracker.test.ts", "jsdom"],
+      ["src/lib/feedback/FeedbackContextProvider.test.tsx", "jsdom"],
+      ["src/lib/portal/seedContext.test.tsx", "jsdom"],
+      // Applies a palette to `document`, so it is DOM-bound despite its siblings.
+      ["src/lib/theme/applyPalette.test.ts", "jsdom"],
+
+      // Wholly DOM-free directories.
+      ["src/lib/scan/**", "node"],
+      ["src/lib/contextFlow/**", "node"],
+      ["src/lib/conversationHistory/**", "node"],
+      ["src/lib/trade/**", "node"],
+
+      // Mixed directories: named files only.
+      ["src/lib/feedback/buildFeedbackContext.test.ts", "node"],
+      ["src/lib/feedback/submitFeedback.test.ts", "node"],
+      ["src/lib/feedback/summarizeFeedbackContext.test.ts", "node"],
+      ["src/lib/lifeTracker/persistence.test.ts", "node"],
+      ["src/lib/lifeTracker/seatArrangement.test.ts", "node"],
+      ["src/lib/lifeTracker/seed.test.ts", "node"],
+      ["src/lib/lifeTracker/state.test.ts", "node"],
+      ["src/lib/theme/palettes.test.ts", "node"],
+      ["src/lib/theme/themePrefs.test.ts", "node"],
+      ["src/lib/portal/activeDestinationPrefs.test.ts", "node"],
+      ["src/components/trade/oracleSearch.test.ts", "node"],
+      ["src/lib/askAiWaitStages.test.ts", "node"],
+      ["src/lib/cardIdentityRing.test.ts", "node"],
+      ["src/lib/cardRulingsTransformPolicy.test.ts", "node"],
+      ["src/lib/deploymentPipeline.test.ts", "node"],
+      ["src/lib/env.test.ts", "node"],
+      ["src/lib/gameRulesBuildPolicy.test.ts", "node"],
+      ["src/lib/metadataTransformPolicy.test.ts", "node"],
+      ["src/lib/playerLabels.test.ts", "node"],
+      ["src/lib/scryfallRefreshPolicy.test.ts", "node"],
+      ["src/lib/search.test.ts", "node"],
+      ["src/lib/zoneCards.test.ts", "node"],
+      ["src/lib/zoneLabels.test.ts", "node"]
+    ],
     setupFiles: "./src/test/setup.ts",
     // Pinned so a developer's local .env cannot decide test outcomes. env.ts reads
     // this at module scope, so a real value there makes the "feedback delivery is
