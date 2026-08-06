@@ -12,3 +12,7 @@ Decide whether root Playwright/debug PNGs should be kept or deleted; lean delete
 | [B](./slice-b-per-package-screenshot-rule.md) | Add per-package screenshot-location rule to `CLAUDE.md` / `.cursor/rules/` | none |
 
 Both slices are parallel-ready (disjoint files). See `GAMEPLAN.md` for architecture and the verification checklist.
+
+## Autonomous metadata
+
+- Autonomous base: origin/feature/agent-flow

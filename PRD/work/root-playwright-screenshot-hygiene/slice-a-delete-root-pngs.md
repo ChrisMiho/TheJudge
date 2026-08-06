@@ -1,6 +1,6 @@
 # Slice A — Delete unreferenced root PNGs
 
-## Status: planned
+## Status: done
 
 ## Goal
 
