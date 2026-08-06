@@ -1,6 +1,6 @@
 # Slice D — Cleanup and merge proof
 
-## Status: planned
+## Status: done
 
 ## Goal
 
