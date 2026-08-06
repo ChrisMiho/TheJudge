@@ -1,6 +1,6 @@
 # Slice G — In-Depth player-details alignment
 
-## Status: planned
+## Status: done
 
 ## Goal
 

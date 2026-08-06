@@ -1,6 +1,6 @@
 # Slice K — Send Request label + Enrichment ready copy
 
-## Status: planned
+## Status: done
 
 ## Goal
 

@@ -1,6 +1,6 @@
 # Slice C — Menu tray rail-hide while open
 
-## Status: planned
+## Status: done
 
 ## Goal
 

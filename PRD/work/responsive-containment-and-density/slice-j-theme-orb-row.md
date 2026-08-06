@@ -1,6 +1,6 @@
 # Slice J — Theme orb single row
 
-## Status: planned
+## Status: done
 
 ## Goal
 

@@ -1,6 +1,6 @@
 # Slice I — Horizontal In-Depth zone-card strip
 
-## Status: planned
+## Status: done
 
 ## Goal
 

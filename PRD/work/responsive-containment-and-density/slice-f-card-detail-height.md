@@ -1,6 +1,6 @@
 # Slice F — Compact card images + suite-wide detail popup
 
-## Status: planned
+## Status: done
 
 ## Goal
 

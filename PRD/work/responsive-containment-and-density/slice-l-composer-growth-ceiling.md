@@ -1,6 +1,6 @@
 # Slice L — Composer growth ceiling accounts for chrome below the field
 
-## Status: planned
+## Status: done
 
 ## Goal
 

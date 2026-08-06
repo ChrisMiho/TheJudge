@@ -20,15 +20,15 @@ context; `issues.md` items are now fully absorbed into the slice table below.
 | --- | --- | --- | --- |
 | [A](./slice-a-autogrow-collapse-fix.md) | done | Auto-grow hook never pins a collapsed height (REQ-120) | — |
 | [B](./slice-b-composer-composition.md) | done | Pre-submit composer composition (REQ-121, DEC-146) | A |
-| [C](./slice-c-menu-tray-containment.md) | planned | Menu tray rail-hide while open (REQ-127, DEC-150) | — |
+| [C](./slice-c-menu-tray-containment.md) | done | Menu tray rail-hide while open (REQ-127, DEC-150) | — |
 | [D](./slice-d-banner-header-clearance.md) | done | Banner clears every destination header (REQ-123) | C |
 | [E](./slice-e-viewport-fill.md) | done | Desktop shell width cap (REQ-124, DEC-145) | D |
-| [F](./slice-f-card-detail-height.md) | planned | Compact card images + suite-wide detail popup (REQ-128/129, DEC-151) | — |
-| [I](./slice-i-horizontal-zone-strip.md) | planned | Horizontal In-Depth zone-card strip (REQ-130, DEC-151) | F |
-| [G](./slice-g-roster-containment.md) | planned | In-Depth player-details alignment (REQ-106, DEC-128) | — |
-| [J](./slice-j-theme-orb-row.md) | planned | Theme orb single row (REQ-131, DEC-152) | — |
-| [K](./slice-k-send-request-label.md) | planned | Send Request label + Enrichment ready copy (REQ-132, DEC-153) | — |
-| [L](./slice-l-composer-growth-ceiling.md) | planned | Composer growth ceiling accounts for chrome below the field (REQ-110) | — |
+| [F](./slice-f-card-detail-height.md) | done | Compact card images + suite-wide detail popup (REQ-128/129, DEC-151) | — |
+| [I](./slice-i-horizontal-zone-strip.md) | done | Horizontal In-Depth zone-card strip (REQ-130, DEC-151) | F |
+| [G](./slice-g-roster-containment.md) | done | In-Depth player-details alignment (REQ-106, DEC-128) | — |
+| [J](./slice-j-theme-orb-row.md) | done | Theme orb single row (REQ-131, DEC-152) | — |
+| [K](./slice-k-send-request-label.md) | done | Send Request label + Enrichment ready copy (REQ-132, DEC-153) | — |
+| [L](./slice-l-composer-growth-ceiling.md) | done | Composer growth ceiling accounts for chrome below the field (REQ-110) | — |
 | [H](./slice-h-full-flow-verification.md) | planned | Full-flow re-verification and ship gates | C, F, I, G, J, K, L |
 
 ## Implementation map
