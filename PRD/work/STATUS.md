@@ -7,8 +7,6 @@ Do not rename package folders to encode status.
 ## ship-ready
 
 - [responsive-containment-and-density](./responsive-containment-and-density/)
-- [agent-workflow-alignment](./agent-workflow-alignment/)
-- [root-playwright-screenshot-hygiene](./root-playwright-screenshot-hygiene/)
 
 ## active
 

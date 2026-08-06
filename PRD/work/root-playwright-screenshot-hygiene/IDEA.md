@@ -1,3 +1,0 @@
-# Root Playwright screenshot hygiene
-
-Ad-hoc PNG screenshots have accumulated in the repository root (e.g. slice verification and UI check captures from Playwright MCP). They may be useful as visual evidence for later prompts, but they are untracked clutter (root `/*.png` is already gitignored) and would need an ongoing keep/maintain policy if retained. Preferred outcome: confirm they are safe to delete (not referenced by tests, docs, CI, or committed fixtures), delete them, and leave a clear rule so future agent captures land in a disposable location (e.g. `.tmp/` or `.playwright-mcp/`) rather than the repo root. Non-goals: changing product UI, altering committed scan/test fixtures under `apps/`, or building a long-lived screenshot archive.
