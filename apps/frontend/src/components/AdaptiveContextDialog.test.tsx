@@ -57,6 +57,39 @@ describe("Frontend - Adaptive context dialog", () => {
     expect(trigger).toHaveFocus();
   });
 
+  it("closes and restores focus when the dimmed scrim outside the panel is activated", async () => {
+    const user = userEvent.setup();
+    render(
+      <AdaptiveContextDialog triggerLabel="Combat · 2 populated zones" dialogLabel="Frozen game context">
+        <button type="button">Last action</button>
+      </AdaptiveContextDialog>
+    );
+
+    const trigger = screen.getByRole("button", { name: "View context: Combat · 2 populated zones" });
+    await user.click(trigger);
+
+    expect(screen.getByRole("dialog", { name: "Frozen game context" })).toBeInTheDocument();
+    await user.click(screen.getByTestId("adaptive-context-overlay"));
+
+    expect(screen.queryByRole("dialog", { name: "Frozen game context" })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+
+  it("does not close when activating the panel surface itself", async () => {
+    const user = userEvent.setup();
+    render(
+      <AdaptiveContextDialog triggerLabel="Combat · 2 populated zones" dialogLabel="Frozen game context">
+        <button type="button">Last action</button>
+      </AdaptiveContextDialog>
+    );
+
+    await user.click(screen.getByRole("button", { name: "View context: Combat · 2 populated zones" }));
+    const dialog = screen.getByRole("dialog", { name: "Frozen game context" });
+
+    await user.click(within(dialog).getByText("Frozen game context"));
+    expect(screen.getByRole("dialog", { name: "Frozen game context" })).toBeInTheDocument();
+  });
+
   it("uses one CSS-driven surface for the mobile sheet and desktop drawer", () => {
     expect(appCss).toMatch(
       /\.adaptive-context-overlay \{[^}]*align-items: flex-end;[^}]*\}/
@@ -67,5 +100,15 @@ describe("Frontend - Adaptive context dialog", () => {
     expect(appCss).toMatch(
       /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*\.adaptive-context-surface/
     );
+  });
+
+  it("sizes the answered-workspace top clearance to the side-by-side rail's 2.75rem band, not the retired stacked-rail clamp", () => {
+    const triggerBlock = appCss.slice(
+      appCss.indexOf(".adaptive-context-trigger {"),
+      appCss.indexOf("}", appCss.indexOf(".adaptive-context-trigger {"))
+    );
+
+    expect(triggerBlock).toContain("margin-top: calc(2.75rem - var(--layout-panel-padding))");
+    expect(triggerBlock).not.toContain("clamp(4.75rem, 4.1rem + 2.5vw, 6.25rem)");
   });
 });

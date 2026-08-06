@@ -19,6 +19,11 @@ async function switchToDestination(user: ReturnType<typeof userEvent.setup>, lab
   await user.click(screen.getByRole("menuitem", { name: label }));
 }
 
+// A history row's select button and its Delete control (DEC-143) both mention the question
+// preview in their accessible name, so selecting a row by preview text alone is ambiguous —
+// exclude the delete control's "Delete: ..." name to land on the select button.
+const SELECT_HISTORY_ENTRY_NAME = /^(?!Delete:).*Earlier question/;
+
 describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
   beforeEach(() => {
     installMemoryLocalStorage();
@@ -166,7 +171,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
       expect(localStorage.getItem("thejudge.conversationDraft.lookup")).toBeNull();
 
       await user.click(screen.getByRole("button", { name: "Conversation history" }));
-      await user.click(await screen.findByRole("button", { name: /Earlier question/ }));
+      await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
 
       const draft = localStorage.getItem("thejudge.conversationDraft.lookup");
       expect(draft).not.toBeNull();
@@ -189,7 +194,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
       expect(localStorage.getItem("thejudge.conversationDraft.game")).toBeNull();
 
       await user.click(screen.getByRole("button", { name: "Conversation history" }));
-      await user.click(await screen.findByRole("button", { name: /Earlier question/ }));
+      await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
 
       const draft = localStorage.getItem("thejudge.conversationDraft.game");
       expect(draft).not.toBeNull();
@@ -205,7 +210,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
       await user.type(screen.getByLabelText("Magic question"), "Does trample carry over lethal damage?");
 
       await user.click(screen.getByRole("button", { name: "Conversation history" }));
-      await user.click(await screen.findByRole("button", { name: /Earlier question/ }));
+      await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
       expect(await screen.findByText("Earlier answer")).toBeInTheDocument();
 
       await user.click(screen.getByRole("button", { name: "Conversation history" }));
@@ -220,7 +225,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
       await switchToDestination(user, "Quick Question");
 
       await user.click(screen.getByRole("button", { name: "Conversation history" }));
-      await user.click(await screen.findByRole("button", { name: /Earlier question/ }));
+      await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
 
       expect(localStorage.getItem("thejudge.conversationDraft.lookup")).toBeNull();
     });

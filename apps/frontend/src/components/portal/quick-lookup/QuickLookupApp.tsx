@@ -8,6 +8,7 @@ import { buildLookupAskAiRequest } from "../../../lib/contextFlow";
 import type { ConversationHistoryEntry, LookupDraftState } from "../../../lib/conversationHistory/persistence";
 import {
   clearDraft,
+  deleteHistoryEntry,
   loadDraft,
   loadHistoryEntries,
   saveDraft,
@@ -295,6 +296,18 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
     setIsHistoryOpen(false);
   }
 
+  // DEC-143/REQ-118/FLOW-018: deletes a completed entry from storage and refreshes the list
+  // first; only then, if it was the active conversation, clears the workspace by reusing the
+  // same handleStartOver path Start Over already uses. handleStartOver's own resets (not
+  // onConversationUpdated) are what run here, so the deleted thread is never re-saved.
+  function handleDeleteHistoryEntry(entry: ConversationHistoryEntry): void {
+    deleteHistoryEntry(entry.id);
+    setHistoryEntries(loadHistoryEntries("lookup"));
+    if (entry.id === activeConversationId) {
+      handleStartOver();
+    }
+  }
+
   function handleSelectDraft(draft: LookupDraftState): void {
     hydrateFromLookupDraft(draft);
     setIsHistoryOpen(false);
@@ -317,6 +330,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
           entries={historyEntries}
           activeConversationId={activeConversationId}
           onSelectEntry={handleSelectHistoryEntry}
+          onDeleteEntry={handleDeleteHistoryEntry}
           draft={lookupDraft ? { updatedAt: lookupDraft.updatedAt, onSelect: () => handleSelectDraft(lookupDraft) } : null}
         />
 
@@ -366,6 +380,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
         entries={historyEntries}
         activeConversationId={activeConversationId}
         onSelectEntry={handleSelectHistoryEntry}
+        onDeleteEntry={handleDeleteHistoryEntry}
         draft={lookupDraft ? { updatedAt: lookupDraft.updatedAt, onSelect: () => handleSelectDraft(lookupDraft) } : null}
       />
 

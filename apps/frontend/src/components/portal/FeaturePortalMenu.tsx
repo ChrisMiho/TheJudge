@@ -280,8 +280,16 @@ export function FeaturePortalMenu({
           <button
             type="button"
             aria-label="Conversation history"
-            onClick={historyTrigger.onOpen}
-            className="portal-menu-rail-zone motion-focus border-none font-medium"
+            // While Menu is open, the tray must occlude History rather than leave it
+            // clickable above the (lower z-index) drawer (DEC-140): hidden from paint/hit
+            // testing via .portal-menu-rail-zone-inert, out of the focus order, and its
+            // click handler removed as a second line of defense.
+            aria-hidden={isOpen ? "true" : undefined}
+            tabIndex={isOpen ? -1 : undefined}
+            onClick={isOpen ? undefined : historyTrigger.onOpen}
+            className={`portal-menu-rail-zone motion-focus border-none font-medium${
+              isOpen ? " portal-menu-rail-zone-inert" : ""
+            }`}
           >
             <HistoryIcon />
           </button>

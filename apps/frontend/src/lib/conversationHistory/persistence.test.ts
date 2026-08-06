@@ -3,6 +3,7 @@ import type { ConversationHistoryEntry, GameDraftState, LookupDraftState } from 
 import {
   CONVERSATION_HISTORY_STORAGE_KEY,
   clearDraft,
+  deleteHistoryEntry,
   loadDraft,
   loadHistoryEntries,
   saveDraft,
@@ -169,6 +170,38 @@ describe("Frontend - Shared", () => {
       vi.stubGlobal("localStorage", failingStorage);
 
       expect(() => saveHistoryEntry(buildEntry())).not.toThrow();
+    });
+
+    it("removes an entry by id, leaving the rest of the list intact", () => {
+      const keep = buildEntry({ id: "keep" });
+      const remove = buildEntry({ id: "remove" });
+      saveHistoryEntry(keep);
+      saveHistoryEntry(remove);
+
+      deleteHistoryEntry("remove");
+
+      expect(loadHistoryEntries().map((entry) => entry.id)).toEqual(["keep"]);
+    });
+
+    it("is a no-op when the id is not present", () => {
+      const entry = buildEntry();
+      saveHistoryEntry(entry);
+
+      expect(() => deleteHistoryEntry("does-not-exist")).not.toThrow();
+      expect(loadHistoryEntries()).toEqual([entry]);
+    });
+
+    it("swallows a delete write failure without throwing", () => {
+      saveHistoryEntry(buildEntry());
+      const failingStorage: Storage = {
+        ...createMemoryStorage(),
+        setItem: () => {
+          throw new Error("QuotaExceededError");
+        }
+      };
+      vi.stubGlobal("localStorage", failingStorage);
+
+      expect(() => deleteHistoryEntry("entry-1")).not.toThrow();
     });
   });
 
