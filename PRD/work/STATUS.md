@@ -10,13 +10,15 @@ Do not rename package folders to encode status.
 
 ## active
 
+- [agent-workflow-alignment](./agent-workflow-alignment/)
+- [root-playwright-screenshot-hygiene](./root-playwright-screenshot-hygiene/)
+
 ## refined
 
 - [ui-screen-layout-truth](./ui-screen-layout-truth/)
 
 ## refining
 
-- [agent-workflow-alignment](./agent-workflow-alignment/)
 - [context-ai-photo-card-id](./context-ai-photo-card-id/)
 
 ## ideation
@@ -24,7 +26,6 @@ Do not rename package folders to encode status.
 - [card-collection-manager](./card-collection-manager/)
 - [scan-non-english-special-treatments](./scan-non-english-special-treatments/)
 - [life-tracker-me-map-and-tray](./life-tracker-me-map-and-tray/)
-- [root-playwright-screenshot-hygiene](./root-playwright-screenshot-hygiene/)
 
 ## owner-action
 
