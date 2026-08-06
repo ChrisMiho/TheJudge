@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # root-playwright-screenshot-hygiene
 
