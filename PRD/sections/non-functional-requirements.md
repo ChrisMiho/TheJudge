@@ -158,9 +158,15 @@
 
 ### NFR-012
 - Title: Test-suite hygiene and CI efficiency
-- Description: The Vitest test suite (~800 cases across ~82 source test files) and its CI gate should stay fast to run and easy to navigate as they grow, without weakening any coverage or regression protection.
+- Description: The Vitest test suite (~1500 cases across ~161 source test files, of which ~1227 cases / 115 files are frontend) and its CI gate should stay fast to run and easy to navigate as they grow, without weakening any coverage or regression protection.
 - Constraints:
-  - `npm run quality:check` executes the full test suite exactly once per CI job: coverage-mode execution is the single canonical regression + coverage gate, and the redundant standalone `test` step is removed from the aggregate (DEC-086)
+  - every test executes exactly once per CI run across all jobs: coverage-mode execution is the single canonical regression + coverage gate, and the redundant standalone `test` step stays out of the aggregate (DEC-086, wording generalized by DEC-155 so sharding — where a job runs one shard rather than the whole suite — satisfies rather than violates the no-duplicate-execution rule)
+  - `npm run quality:check` remains the single canonical local pre-PR command and gains no CI-only fast mode; CI may decompose its sub-checks into concurrent jobs, but the developer-facing command is unchanged (DEC-155)
+  - CI parallelism is the sanctioned lever for wall time: static checks, backend coverage, and sharded frontend coverage run as concurrent jobs, and sharded coverage is merged before thresholds are evaluated so thresholds apply once to merged totals (DEC-155)
+  - coverage runs on every CI run, not only on `main`; wall time is reduced by parallelism and by removing fixed overhead, never by narrowing when the coverage gate applies (DEC-155)
+  - the jsdom test environment is scoped per-file to the tests that need a DOM; blanket directory- or file-extension rules are prohibited because DOM-dependent tests exist under otherwise DOM-free paths (DEC-155)
+  - the CI gate is not duplicated: `Deploy AWS` depends on the gate jobs rather than re-running `quality:check`, and PR runs cancel superseded in-progress runs while the `main` deploy path is never cancelled mid-flight (DEC-155)
+  - when CI runs `quality:check`'s sub-scripts individually, an automated guard must assert the CI job set covers every sub-script in the aggregate, so the canonical local command and the CI decomposition cannot drift apart (DEC-155)
   - `npm test` and `npm run test:coverage` remain available for fast local iteration; workspace- and file-level targeting during development is preserved
   - no coverage threshold is lowered — frontend `lines: 45`; backend `lines: 45` plus `src/prompt/** lines: 60` and `src/validation/** lines: 60` stay at or above current values
   - the eval golden regression gate (`test:eval`, NFR-009) is unchanged; no prompt/eval golden update is bypassed to hit a timing target
@@ -170,8 +176,11 @@
   - NFR-005
   - NFR-009
   - DEC-086
+  - DEC-155
 - Notes:
-  - workspace-level (frontend + backend) parallelism and vitest sharding are an explicit deferral, not part of this requirement; a later package may revisit them with CI-runner-core data (DEC-086)
+  - DEC-086's deferral of workspace parallelism and vitest sharding is discharged by DEC-155, which supplies the CI-runner-core data it waited on (the public-repo `ubuntu-latest` runner is 4-vCPU)
+  - measured cost drivers are fixed overhead rather than case count: v8 coverage instrumentation adds ~86% test CPU (4.6x on tight numeric loops such as `src/lib/scan/**`), and a global jsdom environment charges every frontend test file ~0.47s CPU
+  - splitting an oversized test file remains an assertion- and case-count-preserving refactor; under DEC-155 it also lowers the slowest-shard floor, since a single long file bounds how much sharding can help
 
 ### NFR-013
 - Title: Trade-price data footprint and freshness
