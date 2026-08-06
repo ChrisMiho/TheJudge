@@ -6,10 +6,11 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
+- [responsive-containment-and-density](./responsive-containment-and-density/)
+
 ## active
 
 - [chrome-tray-conversation-history-ux](./chrome-tray-conversation-history-ux/)
-- [responsive-containment-and-density](./responsive-containment-and-density/)
 
 ## refined
 
@@ -17,6 +18,7 @@ Do not rename package folders to encode status.
 
 ## refining
 
+- [agent-workflow-alignment](./agent-workflow-alignment/)
 - [context-ai-photo-card-id](./context-ai-photo-card-id/)
 
 ## ideation

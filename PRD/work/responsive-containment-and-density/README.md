@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 # responsive-containment-and-density
@@ -29,7 +29,7 @@ context; `issues.md` items are now fully absorbed into the slice table below.
 | [J](./slice-j-theme-orb-row.md) | done | Theme orb single row (REQ-131, DEC-152) | — |
 | [K](./slice-k-send-request-label.md) | done | Send Request label + Enrichment ready copy (REQ-132, DEC-153) | — |
 | [L](./slice-l-composer-growth-ceiling.md) | done | Composer growth ceiling accounts for chrome below the field (REQ-110) | — |
-| [H](./slice-h-full-flow-verification.md) | planned | Full-flow re-verification and ship gates | C, F, I, G, J, K, L |
+| [H](./slice-h-full-flow-verification.md) | done | Full-flow re-verification and ship gates | C, F, I, G, J, K, L |
 
 ## Implementation map
 
@@ -56,7 +56,6 @@ context; `issues.md` items are now fully absorbed into the slice table below.
 
 ## Next
 
-`/thejudge-implement-all PRD/work/responsive-containment-and-density/` (or
-`/thejudge-implement PRD/work/responsive-containment-and-density/ slice C` for one
-slice at a time — C, F, G, J, K, and L are parallel-ready; I depends on F; H is last).
+All slices (A–L, including H) are `done`. Package is `ship-ready`.
+`/thejudge-cleanup PRD/work/responsive-containment-and-density/`
 
