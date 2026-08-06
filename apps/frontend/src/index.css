@@ -248,6 +248,18 @@
   border-left: 1px solid rgb(var(--accent-soft) / 0.35);
 }
 
+/* DEC-150/REQ-127: while the Menu tray is open, the corner-rail Menu trigger (and, on
+   History-bearing destinations, the History zone) must not paint through or remain
+   hit-testable above the open tray, and must not be reachable by keyboard. The rail stays
+   mounted (same DOM node) rather than being removed, so other chrome that restores focus to
+   it by reference across the open/close cycle keeps working; visibility: hidden removes it
+   from paint and from elementFromPoint hit-testing while pointer-events: none is
+   belt-and-suspenders. */
+.portal-menu-rail-inert {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 /* Full-height drawer sliding in from the left edge (DEC-122, amended by
    DEC-133): overlays from the same top-left corner as the rail (so it reads
    as originating from the rail, not dropping from a header seam),
@@ -361,12 +373,11 @@
   line-height: 1.5rem;
 }
 
-/* Full-width card images vary with the responsive tile width, so the grid uses
-   a viewport cap instead of a fixed row-height estimate. */
+/* Horizontal left-to-right strip in add order, region-scrolling on its own x-axis rather
+   than the page (DEC-151 part 3, REQ-130) — supersedes the prior 2-column vertical grid. */
 .zone-card-grid {
   --zone-card-grid-gap: var(--layout-compact-gap);
   gap: var(--zone-card-grid-gap);
-  max-height: 70dvh;
 }
 
 .zone-card-tile {
@@ -401,10 +412,6 @@
 .scan-video {
   aspect-ratio: 4 / 5;
   max-height: 50dvh;
-}
-
-.card-preview-placeholder {
-  min-height: clamp(10rem, 30dvh, 14rem);
 }
 
 .conversation-thread {

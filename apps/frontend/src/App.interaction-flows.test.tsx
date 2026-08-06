@@ -752,7 +752,7 @@ describe("Interaction flows", () => {
     await advancePastZoneCollection(user);
 
     const image = screen.getByRole("img", { name: "Lightning Bolt" });
-    expect(image).toHaveClass("mx-auto", "w-4/5", "h-auto", "object-contain");
+    expect(image).toHaveClass("h-auto", "w-auto", "object-contain");
 
     const row = screen.getByLabelText("Caster for Lightning Bolt").closest("li");
     expect(row).toHaveClass("enrichment-card-row", "card-identity-ring");
@@ -766,9 +766,10 @@ describe("Interaction flows", () => {
 
     await user.click(
       within(header as HTMLElement).getByRole("button", {
-        name: "Show card metadata for Lightning Bolt"
+        name: "Show details for Lightning Bolt"
       })
     );
+    expect(within(header as HTMLElement).getByTestId("card-detail-popup")).toBeInTheDocument();
     expect(within(header as HTMLElement).getByText("Lightning Bolt")).toBeInTheDocument();
     expect(within(header as HTMLElement).getByText("Lightning Bolt deals 3 damage to any target.")).toBeInTheDocument();
 
@@ -787,7 +788,7 @@ describe("Interaction flows", () => {
     await advanceToContextEnrichmentFromZones(user);
 
     const image = screen.getByRole("img", { name: "Lightning Bolt" });
-    expect(image).toHaveClass("mx-auto", "w-4/5", "h-auto", "object-contain");
+    expect(image).toHaveClass("h-auto", "w-auto", "object-contain");
 
     const row = screen.getByLabelText("Caster for Lightning Bolt").closest("li");
     const header = image.closest(".enrichment-card-header");

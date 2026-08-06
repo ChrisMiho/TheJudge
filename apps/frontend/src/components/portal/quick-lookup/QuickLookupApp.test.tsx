@@ -285,7 +285,12 @@ describe("QuickLookupApp", () => {
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 
     expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
+    // Oracle text is not stacked under the image by default (DEC-151) — it is reached via
+    // the suite-wide corner detail popup.
+    expect(screen.queryByText(lightningBolt.oracleText)).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Show details for Lightning Bolt" }));
     expect(screen.getByText(lightningBolt.oracleText)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Close details for Lightning Bolt" }));
     expect(screen.getByRole("heading", { name: "General rules topics" })).toBeVisible();
     await openGeneralRulesTopics(user);
     expect(screen.getByRole("heading", { name: "Stack and Priority" })).toBeInTheDocument();
@@ -324,6 +329,7 @@ describe("QuickLookupApp", () => {
     await user.click(screen.getByRole("button", { name: "Scan a card" }));
 
     expect(await screen.findByRole("heading", { name: "Counterspell" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Show details for Counterspell" }));
     expect(screen.getByText(counterspell.oracleText)).toBeInTheDocument();
   });
 

@@ -1,9 +1,9 @@
 import { useLayoutEffect, useRef, type RefObject } from "react";
 
 /**
- * Breathing room (px) kept between the growing field's bottom edge and the viewport's own
- * bottom edge, so growth never quite touches it — a small cushion rather than an exact
- * zero-margin ceiling (REQ-110).
+ * Breathing room (px) kept between the growing field's bottom edge and the boundary it's
+ * measured against, so growth never quite touches it — a small cushion on top of the
+ * below-field-chrome reserve computed below, rather than the sole ceiling factor (REQ-110).
  */
 const VIEWPORT_BOTTOM_MARGIN_PX = 24;
 

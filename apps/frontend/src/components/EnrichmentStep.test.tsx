@@ -1,11 +1,47 @@
 import { cleanup, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ZoneCardItem } from "../types";
-import { card1, card2, renderEnrichmentWithDuplicates } from "../test/enrichmentStep";
+import { card1, card2, renderEnrichment, renderEnrichmentWithDuplicates } from "../test/enrichmentStep";
 
 afterEach(cleanup);
 
 describe("Frontend - MTG Assistant", () => {
+describe("EnrichmentStep Send Request label + ready copy (DEC-153)", () => {
+  it("shows a visible 'Send Request' label on the initial decrypt submit control", async () => {
+    const user = renderEnrichment();
+    await user.click(screen.getByRole("button", { name: "OK — finish enrichment" }));
+
+    const button = screen.getByRole("button", { name: "Decrypt Stack" });
+    expect(button).toHaveTextContent("Send Request");
+  });
+
+  it("keeps the Decrypt Stack accessible name distinct from the visible label", async () => {
+    const user = renderEnrichment();
+    await user.click(screen.getByRole("button", { name: "OK — finish enrichment" }));
+
+    const button = screen.getByRole("button", { name: "Decrypt Stack" });
+    expect(button).not.toHaveTextContent("Decrypt Stack");
+  });
+
+  it("adds a concise send-button pointer to the ready-state copy when the question is blank", async () => {
+    const user = renderEnrichment({ question: "" });
+
+    await user.click(screen.getByRole("button", { name: "OK — finish enrichment" }));
+
+    expect(screen.getByText("Ready to decrypt.")).toBeInTheDocument();
+    expect(screen.getByText(/tap Send Request/i)).toBeInTheDocument();
+  });
+
+  it("omits the send-button pointer from the ready-state copy when the question is non-blank", async () => {
+    const user = renderEnrichment({ question: "Does this resolve?" });
+
+    await user.click(screen.getByRole("button", { name: "OK — finish enrichment" }));
+
+    expect(screen.getByText("Ready to decrypt.")).toBeInTheDocument();
+    expect(screen.queryByText(/tap Send Request/i)).not.toBeInTheDocument();
+  });
+});
+
 describe("EnrichmentStep per-instance identity", () => {
   it("removing one duplicate card calls onZonesChange with only the other remaining", async () => {
     const onZonesChange = vi.fn();

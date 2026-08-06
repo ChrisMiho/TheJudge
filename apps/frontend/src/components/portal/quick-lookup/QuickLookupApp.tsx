@@ -513,8 +513,12 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
                 )}
               </div>
               {/* Tighter inset and gaps below `sm` keep the field the dominant element of
-                  the row at phone widths (DEC-146, REQ-121); `sm+` keeps today's spacing. */}
-              <div className="ambient-accent-surface ambient-accent-interactive flex items-end gap-1.5 rounded-3xl border border-zinc-700/70 bg-zinc-900/55 py-2 pl-3 pr-1.5 sm:gap-2 sm:pl-4 sm:pr-2">
+                  the row at phone widths (DEC-146, REQ-121); `sm+` keeps today's spacing.
+                  The counter stacks above the submit control (rather than sitting beside it
+                  as a third flex sibling) so DEC-153's every-width visible "Send Request"
+                  label does not spend its own row-width budget starving the field back below
+                  REQ-121's 65% floor. */}
+              <div className="ambient-accent-surface ambient-accent-interactive flex items-end gap-1 rounded-3xl border border-zinc-700/70 bg-zinc-900/55 py-2 pl-2 pr-1 sm:gap-2 sm:pl-4 sm:pr-2">
                 <textarea
                   ref={questionInputRef}
                   id="quick-lookup-question"
@@ -530,15 +534,19 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
                       : "What would you like to know?"
                   }
                 />
-                <span className="shrink-0 pb-1.5 text-[11px] text-zinc-400 sm:text-xs">
-                  {composedQuestion.length}/{MAX_QUESTION_LENGTH}
-                </span>
-                <ComposerSubmitButton
-                  label="Ask TheJudge"
-                  pendingLabel="Asking…"
-                  isSubmitting={isSubmitting}
-                  disabled={!canSubmit || isSubmitting}
-                />
+                <div className="flex shrink-0 flex-col items-end gap-0.5">
+                  <span className="pr-0.5 text-[10px] leading-none text-zinc-400 sm:text-xs">
+                    {composedQuestion.length}/{MAX_QUESTION_LENGTH}
+                  </span>
+                  <ComposerSubmitButton
+                    label="Ask TheJudge"
+                    visibleLabel="Send Request"
+                    pendingLabel="Asking…"
+                    isSubmitting={isSubmitting}
+                    disabled={!canSubmit || isSubmitting}
+                    showLabelBelowSm
+                  />
+                </div>
               </div>
             </form>
           )}

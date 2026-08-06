@@ -163,14 +163,21 @@ describe("ZoneCardPicker card grid", () => {
     );
   });
 
-  it("renders zone cards in a 2-column grid with overflow-y-auto and zone-card-grid class", () => {
+  it("renders zone cards in a horizontal left-to-right strip with region scroll and zone-card-grid class (DEC-151 part 3, REQ-130)", () => {
     renderPicker(
       { isOpen: false },
       { cards: [makeZoneCard("opt", "Opt"), makeZoneCard("bolt", "Lightning Bolt")] }
     );
     const grid = document.querySelector(".zone-card-grid");
     expect(grid).not.toBeNull();
-    expect(grid).toHaveClass("grid", "grid-cols-2", "overflow-y-auto");
+    expect(grid).toHaveClass("flex", "overflow-x-auto");
+    expect(grid).not.toHaveClass("grid", "grid-cols-2");
+
+    // Tiles lay out left-to-right in add order.
+    const tiles = grid?.querySelectorAll(".zone-card-tile") ?? [];
+    expect(tiles).toHaveLength(2);
+    expect(within(tiles[0] as HTMLElement).getByText("bottom")).toBeInTheDocument();
+    expect(within(tiles[1] as HTMLElement).getByText("top")).toBeInTheDocument();
   });
 
   it("exposes the semantic responsive hook on zone card tiles", () => {
@@ -190,7 +197,7 @@ describe("ZoneCardPicker card grid", () => {
     expect(removeButton).toHaveClass("card-state-remove-trigger");
   });
 
-  it("uses a centered 80%-width image with no duplicated card name and keeps controls below it", async () => {
+  it("uses a compact image with a corner detail popup, no duplicated card name, and keeps controls below it (DEC-151)", async () => {
     const user = userEvent.setup();
     renderPicker(
       { isOpen: false },
@@ -199,23 +206,19 @@ describe("ZoneCardPicker card grid", () => {
 
     const image = screen.getByRole("img", { name: "Opt" });
     const tile = image.closest(".zone-card-tile") as HTMLElement;
-    expect(image).toHaveClass(
-      "zone-card-tile-image",
-      "mx-auto",
-      "w-4/5",
-      "h-auto",
-      "object-contain"
-    );
+    expect(image).toHaveClass("zone-card-tile-image", "h-auto", "w-auto", "object-contain");
     expect(within(tile).queryByText("Opt")).not.toBeInTheDocument();
     expect(screen.getByText("bottom & top")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove Opt from Stack" })).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Show card metadata for Opt" })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Show details for Opt" })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Show card metadata for Opt" }));
-    expect(within(tile).getByTestId("card-presentation-fallback")).toBeInTheDocument();
-    expect(within(tile).getByText("Opt")).toBeInTheDocument();
+    // Oracle/detail text is not stacked under the image by default — only the popup shows it.
+    expect(within(tile).queryByTestId("card-detail-popup")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Show details for Opt" }));
+    expect(within(tile).getByTestId("card-detail-popup")).toBeInTheDocument();
+    // The image stays mounted underneath the popup rather than being replaced by it.
+    expect(screen.getByRole("img", { name: "Opt" })).toBeInTheDocument();
   });
 
   it("does not duplicate the owner label on an image-bearing non-stack card", () => {

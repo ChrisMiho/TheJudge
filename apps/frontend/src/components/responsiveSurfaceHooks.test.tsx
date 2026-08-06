@@ -75,7 +75,6 @@ describe("Frontend - Responsive surface hooks", () => {
       ".scroll-cap-4-enrichment",
       ".enrichment-card-row",
       ".scan-video",
-      ".card-preview-placeholder",
       ".conversation-thread",
       ".conversation-workspace",
       ".adaptive-context-surface"
@@ -83,7 +82,12 @@ describe("Frontend - Responsive surface hooks", () => {
       expect(appCss).toContain(`${selector} {`);
     }
 
-    expect(appCss).toMatch(/\.zone-card-grid \{[^}]*max-height:\s*70dvh/s);
+    // Horizontal left-to-right strip with its own region scroll (DEC-151 part 3, REQ-130):
+    // `overflow-x-auto`/`flex` are applied via Tailwind classes in ZoneCardPicker's JSX, so
+    // the shared `.zone-card-grid` CSS block now only carries the gap token — the prior
+    // vertical-scroll `max-height: 70dvh` cap is gone.
+    expect(appCss).toMatch(/\.zone-card-grid \{[^}]*--zone-card-grid-gap/s);
+    expect(appCss).not.toMatch(/\.zone-card-grid \{[^}]*max-height:\s*70dvh/s);
     expect(appCss).not.toContain("--zone-card-tile-height");
     expect(appCss).not.toContain("--enrichment-card-row-height");
   });
@@ -93,7 +97,10 @@ describe("Frontend - Responsive surface hooks", () => {
     const { rerender } = render(
       <CardSelectionPreview card={cardWithoutImage} contextTitle="Stack card" contextContent={null} />
     );
-    expect(screen.getByText("No image")).toHaveClass("card-preview-placeholder");
+    // No image available: CardPresentation's shared text-first fallback renders directly
+    // (DEC-78/DEC-151) rather than a dedicated empty "No image" placeholder box.
+    expect(screen.getByTestId("card-presentation-fallback")).toBeInTheDocument();
+    expect(screen.getAllByText("Opt").length).toBeGreaterThan(0);
 
     rerender(<ConversationThread messages={messages} />);
     expect(screen.getByText("The stack resolves.").closest(".conversation-thread")).not.toBeNull();
