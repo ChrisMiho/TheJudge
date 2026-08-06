@@ -104,6 +104,9 @@ jobs:
           path: apps/frontend/.vitest-reports/
           retention-days: 1
           if-no-files-found: error
+          # `.vitest-reports` is a dotted directory, which the action's glob
+          # skips by default — without this the upload silently finds nothing.
+          include-hidden-files: true
 
   coverage-merge:
     name: coverage-merge
