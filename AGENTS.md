@@ -19,6 +19,21 @@ Superpowers' non-overlapping skills still apply: `systematic-debugging`,
 `test-driven-development`, `verification-before-completion`,
 `using-git-worktrees`, `requesting-code-review`, `receiving-code-review`.
 
+## Codex Git and GitHub CLI
+
+Codex runs agent commands inside a sandbox that can protect `.git`, network
+access, and macOS keychain credentials even when the repository is trusted.
+
+- If a Git command that mutates `.git`, or a `gh` command, fails with a
+  sandbox, permission, DNS, network, or credential-access error, retry the
+  exact command with scoped escalation and a concise justification.
+- Prefer narrow reusable command-prefix approvals when the same operation will
+  recur. Do not request blanket shell or unrestricted command approval.
+- Do not treat `gh auth status` inside the sandbox as proof that the stored
+  token is invalid. Verify with the same read-only command under scoped
+  escalation before suggesting reauthentication or changing credentials.
+- Never print, copy, or expose GitHub tokens while diagnosing authentication.
+
 ## Playwright MCP Cleanup
 
 When using Playwright MCP (`plugin-playwright-playwright` or `@playwright/mcp`):
