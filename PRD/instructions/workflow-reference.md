@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This file is the lean operator reference for TheJudge PRD-driven work. All 9
+This file is the lean operator reference for TheJudge PRD-driven work. All 10
 `thejudge-*` skills are model-invocable and may also be called explicitly —
 see `AGENT-SKILLS.md` for the full catalog, platform paths, and sync
 instructions.
@@ -42,7 +42,7 @@ for skills, slices, links, and receipts. Glance with
 | `active` | GAMEPLAN + slices exist; implementing | `thejudge-implement*` |
 | `ship-ready` | All implementation slices done; promote + receipt + delete | `thejudge-cleanup` |
 | `owner-action` | Blocked on a human outside the agent loop | human checklist |
-| `deferred` | Parked; not next work | none |
+| `deferred` | Parked; not next work | `thejudge-defer` (to restore) |
 
 Happy path: `ideation` → `refining` → `refined` → `active` → `ship-ready` →
 deleted (cleanup writes the durable receipt, then removes the work folder).
@@ -68,6 +68,7 @@ deleted (cleanup writes the durable receipt, then removes the work folder).
 | `thejudge-map-out` | → `STATUS.active` |
 | `thejudge-implement` / `implement-all` | Stay `active` until the last remaining slice is `done`, then → `STATUS.ship-ready` |
 | `thejudge-implement-fanout` | Owns no transitions itself — dispatches every selected package to `implement-all`, which applies the row above |
+| `thejudge-defer` | Toggle current status ⇄ `deferred`, recording/restoring prior status and reason |
 | `thejudge-cleanup` | Gate: refuse unless `ship-ready` (or user force-override). On success: receipt, remove package, strip board row |
 
 ## Work Folder Lifecycle

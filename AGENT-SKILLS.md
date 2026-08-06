@@ -1,8 +1,8 @@
 # Agent Workflow Skills
 
-TheJudge uses 9 `thejudge-*` skills to drive PRD-based feature work, including
+TheJudge uses 10 `thejudge-*` skills to drive PRD-based feature work, including
 autonomous preparation, sequential single-slice, unattended all-slice, and
-cross-package fanout modes. All 9 are
+cross-package fanout modes. All 10 are
 **model-invocable** — the agent may select the matching skill when context
 clearly indicates it — and every skill remains callable explicitly
 (`/thejudge-*` in Cursor and Claude Code, `$thejudge-*` in Codex).
@@ -53,6 +53,9 @@ agent per package, each running `thejudge-implement-all` against that
 package's own GAMEPLAN. It does not replace `thejudge-implement` or
 `thejudge-implement-all` — it drives one unattended run per package.
 
+`thejudge-defer` can move any non-`ship-ready` package to `deferred` and back,
+orthogonal to the pipeline shown above.
+
 ## Skill catalog
 
 | Skill | When | Writes | Status | Next |
@@ -65,6 +68,7 @@ package's own GAMEPLAN. It does not replace `thejudge-implement` or
 | `thejudge-implement` | Executing one planned slice | Product code and tests for that slice | Last slice done → `ship-ready` | `thejudge-implement` (next slice) or `thejudge-cleanup` |
 | `thejudge-implement-all` | Executing every remaining slice in one unattended single-agent run | Product code, tests, milestone commits, shared GitHub branch, and review PR | All slices done → `ship-ready` | Manual review/merge, then `thejudge-cleanup` after shipping |
 | `thejudge-implement-fanout` | Two or more packages are `active` and should implement concurrently | Nothing directly; dispatches one isolated worktree/agent per package into `thejudge-implement-all` | Owned per-package by the dispatched skill | Manual review/merge each PR, then `thejudge-cleanup` per package |
+| `thejudge-defer` | A package should be parked as not-next work, or a parked package restored | README deferral record, `STATUS.deferred` marker, board row | Toggles current ⇄ `deferred` | None when deferring; the typical next skill for the restored status when restoring |
 | `thejudge-cleanup` | Package is `ship-ready` (or force override), or explicit corpus hygiene | Receipt under `PRD/instructions/receipts/`, section promotions, board strip | Delete folder + remove board row | Optional `thejudge-kickoff` |
 
 Package status signals (skill-maintained on every transition):

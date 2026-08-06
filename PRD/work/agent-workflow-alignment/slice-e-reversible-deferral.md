@@ -1,6 +1,6 @@
 # Slice E — Reversible deferral
 
-## Status: planned
+## Status: done
 
 ## Goal
 

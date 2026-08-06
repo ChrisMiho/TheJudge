@@ -14,7 +14,7 @@ See [DESIGN-BRIEF.md](./DESIGN-BRIEF.md) for the approved design and [GAMEPLAN.m
 | [B — Autonomous base and prepare](./slice-b-autonomous-base-and-prepare.md) | `thejudge-prepare` requires an explicit remote base and records it durably | A | done |
 | [C — Autonomous implementation and fanout](./slice-c-autonomous-implementation-and-fanout.md) | `implement-all`/`fanout` inherit the recorded base; fanout assigns preflighted ports | B | done |
 | [D — Cleanup and merge proof](./slice-d-cleanup-merge-proof.md) | Cleanup proves the implementation PR merged into the recorded base before deleting | C | done |
-| [E — Reversible deferral](./slice-e-reversible-deferral.md) | Add `thejudge-defer`; fix the status vocabulary table; publish the final ten-skill catalog | A | planned |
+| [E — Reversible deferral](./slice-e-reversible-deferral.md) | Add `thejudge-defer`; fix the status vocabulary table; publish the final ten-skill catalog | A | done |
 | [F — Playwright and runtime process hygiene](./slice-f-runtime-process-hygiene.md) | Create `runtime-process-hygiene.md`; wire it into `AGENTS.md` and affected skills | D | planned |
 | [G — Root dev launcher hardening](./slice-g-dev-launcher-hardening.md) | Harden `scripts/dev.mjs`, add process-manager tests, wire the quality gate | F | planned |
 
