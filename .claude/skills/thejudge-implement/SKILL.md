@@ -5,9 +5,7 @@ description: >-
   to end — code, tests, verification, status update. When the last slice is
   done, sets STATUS.ship-ready. Use after map-out, or whenever a single slice
   needs to be executed in this session. For completing every remaining slice
-  in one unattended session, use thejudge-implement-all. For dispatching an
-  entire wave of slices across multiple agents, use
-  thejudge-implement-parallel instead.
+  in one unattended session, use thejudge-implement-all instead.
 ---
 
 # TheJudge Implement

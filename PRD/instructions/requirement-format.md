@@ -70,7 +70,7 @@ Decision bodies live in the relevant `sections/decisions/<domain>.md` file. Add 
 
 ## Slice Dependency Rules
 
-Slice dependency guidance lives in `thejudge-map-out/reference.md` and `thejudge-map-out-parallel/reference.md`.
+Slice dependency guidance lives in `thejudge-map-out/reference.md`.
 This document adds dependency-field rules for `PRD/work/<slug>/slice-*.md` entries:
 
 - `parallel-ready`: list only non-blocking references (REQ/DEC/NFR, etc.); no prerequisite slice IDs.

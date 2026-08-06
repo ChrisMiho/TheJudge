@@ -10,7 +10,7 @@ See [DESIGN-BRIEF.md](./DESIGN-BRIEF.md) for the approved design and [GAMEPLAN.m
 
 | Slice | Goal | Depends on | Status |
 | --- | --- | --- | --- |
-| [A — Skill catalog pruning](./slice-a-skill-catalog-pruning.md) | Delete the two parallel-flavor skills; republish the interim catalog map | — | planned |
+| [A — Skill catalog pruning](./slice-a-skill-catalog-pruning.md) | Delete the two parallel-flavor skills; republish the interim catalog map | — | done |
 | [B — Autonomous base and prepare](./slice-b-autonomous-base-and-prepare.md) | `thejudge-prepare` requires an explicit remote base and records it durably | A | planned |
 | [C — Autonomous implementation and fanout](./slice-c-autonomous-implementation-and-fanout.md) | `implement-all`/`fanout` inherit the recorded base; fanout assigns preflighted ports | B | planned |
 | [D — Cleanup and merge proof](./slice-d-cleanup-merge-proof.md) | Cleanup proves the implementation PR merged into the recorded base before deleting | C | planned |

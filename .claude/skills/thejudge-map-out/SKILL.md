@@ -3,9 +3,8 @@ name: thejudge-map-out
 description: >-
   Creates GAMEPLAN.md and lettered slice docs in PRD/work/<slug>/ for
   sequential agent implementation, and sets STATUS.active. Use after
-  quality-check passes, when the work's slices should be implemented one at a
-  time. For work with independent slices worth running concurrently, use
-  thejudge-map-out-parallel instead, which adds dependency-wave grouping.
+  quality-check passes, once the work is ready to be sliced for
+  implementation.
 ---
 
 # TheJudge Map Out

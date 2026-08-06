@@ -1,6 +1,6 @@
 # Slice A — Skill catalog pruning
 
-## Status: planned
+## Status: done
 
 ## Goal
 
