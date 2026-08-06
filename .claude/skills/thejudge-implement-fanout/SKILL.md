@@ -21,7 +21,7 @@ Optional include-list or ignore-list of slugs (e.g. "ignore commander-spellbook-
 The orchestrator reads these itself, before dispatching anything — orientation is not delegable:
 
 1. `PRD/work/STATUS.md` — resolve the active list against any include/ignore argument
-2. Each selected package's `PRD/work/<slug>/GAMEPLAN.md` and `README.md`
+2. Each selected package's `PRD/work/<slug>/GAMEPLAN.md` and `README.md`, including that README's `## Autonomous metadata` section (`Autonomous base: origin/<branch>`)
 3. Every selected package's `Files touched` across its slice docs
 4. `PRD/instructions/workflow-reference.md` — package status / STATUS.* duties
 
@@ -44,6 +44,8 @@ None owned by this skill. Each package's status moves `active` → `ship-ready` 
 
 - **Cross-package file-overlap check is mandatory before dispatch.** Diff the `Files touched` lists of every pair of selected packages. Any overlap: drop that pair from concurrent dispatch and run them sequentially instead — never dispatch two packages concurrently that can write the same file.
 - **One isolated worktree and branch per package.** Never share a worktree, local branch, or launch checkout across packages, even when running sequentially per the overlap gate above.
+- **All selected packages must record the same autonomous base.** If selected packages record different bases, drop the mismatched package(s) from this dispatch run and report them; never dispatch packages with different recorded bases in the same run.
+- **Explicit, unique, preflighted port pair per dispatched package.** The orchestrator assigns each dispatched package a frontend/backend port pair before dispatch. Preflight means confirming both ports are free on the host before assignment (for example via a bind-and-release check); do not assign a port already claimed by another dispatched package in this run or already bound by an unrelated process. Pass the assigned pair to the dispatched agent's prompt as explicit `PORT` (backend) and frontend dev port values; the dispatched agent's own `thejudge-implement-all` run starts its isolated dev server(s) on exactly those ports, never the shared defaults (backend `3000`, frontend `5173`).
 - **Full tool access required per dispatched agent.** Each dispatched agent must be able to invoke skills and read/write/run commands (Bash, Edit, Write, Skill). An agent type restricted to read-only or planning-only tools cannot run `thejudge-implement-all` and is not a valid dispatch target for this skill.
 - **Self-contained dispatch prompt.** Each dispatched agent starts cold — it does not inherit this session's context. Its prompt must name the exact skill to invoke (`thejudge-implement-all`) and the exact package path; the dispatched agent then does its own reads under that skill's contract.
 - Only dispatch packages currently `STATUS.active` with an existing `GAMEPLAN.md`. A package still `refined` or earlier is not this skill's job — it needs map-out first.
