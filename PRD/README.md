@@ -41,6 +41,7 @@ For implementation work, read in this order:
 | `sections/decisions.md` | active | Read-first router for confirmed decisions that override older draft wording |
 | `sections/decisions/` | active | Domain decision files that hold confirmed DEC bodies |
 | `sections/system-map.md` | active | Feature/subsystem catalog: shipped-vs-planned status, behavior summary, and coarse location per subsystem |
+| `sections/screen-layout.md` | active | Screen layout catalog: purpose, hybrid % size bands, fit/containment per major screen for agent-directed UI (DEC-149) |
 
 ## Instruction Inventory
 
@@ -74,6 +75,14 @@ Read in this order:
 5. `sections/non-functional-requirements.md`
 6. `instructions/technical-design-rules.md` (if architecture or code structure is involved)
 7. `instructions/secrets-handling.md` (if credentials, env vars, or provider keys are involved)
+
+### If the task is UI layout, containment, density, or visual polish of screens
+Read in this order:
+1. `sections/decisions.md`
+2. `sections/screen-layout.md`
+3. `sections/decisions/ui-presentation.md` (and any other cited domain DECs)
+4. `sections/functional-requirements.md` (layout-related REQs)
+5. `instructions/technical-design-rules.md`
 
 ### If the task is slice planning or map-out
 Read in this order:

@@ -31,9 +31,18 @@
 }
 
 /* Offset shell content so the fixed banner never covers the header. Applied
-   only in mock builds; live builds render no banner and no offset. */
+   only in mock builds; live builds render no banner and no offset.
+
+   The offset tracks the banner's measured height (published as
+   `--mock-banner-height` by `MockModeBanner`) rather than assuming one. A
+   hardcoded 2rem cleared the banner only while its copy fit on one line; at
+   phone widths the copy wraps and the banner measures ~3.5rem, so the shell
+   under-reserved and the fixed banner covered header controls on destinations
+   whose header sits at the top of their content — Life Tracker's Menu trigger
+   lost 24px, Trade Balancer's 11px (REQ-123). The 2rem fallback keeps the
+   pre-measurement first paint identical to before. */
 .page-shell[data-mock-banner="true"] {
-  padding-top: calc(var(--layout-page-padding-block) + 2rem);
+  padding-top: calc(var(--layout-page-padding-block) + var(--mock-banner-height, 2rem));
 }
 
 .page-card {
@@ -42,7 +51,12 @@
   margin-right: auto;
   display: flex;
   width: 100%;
-  max-width: 42rem;
+  /* Fluid cap rather than a fixed 42rem column: at 1440px the old cap left 770px (53%)
+     of the viewport unused. 48rem is a deliberate, restrained step up — wider settings
+     were built and reviewed, and past roughly this width the staged steps have no content
+     that grows to use it, so single full-width controls ("Confirm game context") stretch
+     into bands. `min()` keeps the cap binding on ultra-wide displays (DEC-145, REQ-124). */
+  max-width: min(48rem, 92vw);
   flex-direction: column;
   gap: var(--layout-surface-gap);
   border-radius: 1.5rem;
@@ -234,12 +248,14 @@
   border-left: 1px solid rgb(var(--accent-soft) / 0.35);
 }
 
-/* DEC-140/REQ-115: while Menu is open, the History zone (a sibling within the
-   always-rendered, z-index: 3 rail) must not paint through or remain hit-testable
-   above the open tray. visibility: hidden removes it from paint and hit-testing
-   (falling through to the rail/split container behind it, not History) while
-   pointer-events: none is belt-and-suspenders once un-hidden by other paths. */
-.portal-menu-rail-zone-inert {
+/* DEC-150/REQ-127: while the Menu tray is open, the corner-rail Menu trigger (and, on
+   History-bearing destinations, the History zone) must not paint through or remain
+   hit-testable above the open tray, and must not be reachable by keyboard. The rail stays
+   mounted (same DOM node) rather than being removed, so other chrome that restores focus to
+   it by reference across the open/close cycle keeps working; visibility: hidden removes it
+   from paint and from elementFromPoint hit-testing while pointer-events: none is
+   belt-and-suspenders. */
+.portal-menu-rail-inert {
   visibility: hidden;
   pointer-events: none;
 }
@@ -286,11 +302,20 @@
   padding: 0.75rem 0 0.75rem 0;
 }
 
-/* One menu entry: the 3.5rem left inset that clears the corner rail's icon zone lives
-   on the row itself rather than on the drawer's padding box, so the row's bottom border
-   spans the drawer edge to edge. */
+/* One menu entry: the left inset that clears the corner rail's icon zone lives on the
+   row itself rather than on the drawer's padding box, so the row's bottom border spans
+   the drawer edge to edge. The inset tracks the rail's own painted width at each
+   breakpoint (DEC-137 caps the split rail at 5.5rem x 3.5rem): a flat 3.5rem cleared the
+   narrow rail but left the first row's label starting underneath the wider desktop band,
+   which read as the Menu trigger sitting on top of the first destination (DEC-147). */
 .portal-menu-drawer-row {
   padding: 0.5rem 0.75rem 0.5rem 3.5rem;
+}
+
+@media (min-width: 640px) {
+  .portal-menu-drawer-row {
+    padding-left: 5.5rem;
+  }
 }
 
 /* Theme block: sits well below the rail's icon zone, so it takes a normal inset (a
@@ -348,12 +373,11 @@
   line-height: 1.5rem;
 }
 
-/* Full-width card images vary with the responsive tile width, so the grid uses
-   a viewport cap instead of a fixed row-height estimate. */
+/* Horizontal left-to-right strip in add order, region-scrolling on its own x-axis rather
+   than the page (DEC-151 part 3, REQ-130) — supersedes the prior 2-column vertical grid. */
 .zone-card-grid {
   --zone-card-grid-gap: var(--layout-compact-gap);
   gap: var(--zone-card-grid-gap);
-  max-height: 70dvh;
 }
 
 .zone-card-tile {
@@ -388,10 +412,6 @@
 .scan-video {
   aspect-ratio: 4 / 5;
   max-height: 50dvh;
-}
-
-.card-preview-placeholder {
-  min-height: clamp(10rem, 30dvh, 14rem);
 }
 
 .conversation-thread {

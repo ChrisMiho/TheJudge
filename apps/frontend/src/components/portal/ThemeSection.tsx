@@ -47,13 +47,16 @@ export function ThemeSection({
   onColorlessCustomChange,
   onColorlessReset
 }: ThemeSectionProps): JSX.Element {
-  const fixedPalettes = PALETTES.filter((palette) => palette.id !== "colorless");
   const isColorlessActive = paletteId === "colorless";
 
   return (
     <div className="flex flex-col gap-2">
-      <div role="group" aria-label="Theme palettes" className="grid grid-cols-5 gap-0.5">
-        {fixedPalettes.map((palette) => (
+      {/*
+        All six WUBRGC profiles (DEC-119 order) share a single grid-cols-6 row (DEC-152) so the
+        last orb — Colorless — never spills onto a second row.
+      */}
+      <div role="group" aria-label="Theme palettes" className="grid grid-cols-6 gap-0.5">
+        {PALETTES.map((palette) => (
           <PaletteSwatchButton
             key={palette.id}
             palette={palette}
@@ -63,39 +66,25 @@ export function ThemeSection({
         ))}
       </div>
 
-      {/*
-        Same 5-column grid as the row above so the Colorless swatch lands in column 1, exactly
-        under the White swatch. A flex row here put the swatch a few pixels right of the column-1
-        centre (grid centres each 40px button in its wider track; flex pins it to the left edge),
-        which read as a visibly misaligned second row.
-      */}
-      <div className="grid grid-cols-5 items-center gap-0.5">
-        <PaletteSwatchButton
-          palette={COLORLESS_PALETTE}
-          isActive={isColorlessActive}
-          onSelect={onSelect}
-        />
-
-        {isColorlessActive && (
-          <div className="col-span-4 flex items-center gap-2">
-            <input
-              type="color"
-              aria-label="Customize Colorless color"
-              value={colorlessCustomHex ?? COLORLESS_PALETTE.swatch}
-              onChange={(event) => onColorlessCustomChange(event.target.value)}
-              className="motion-focus h-9 w-9 shrink-0 cursor-pointer rounded border border-zinc-700/80 bg-transparent p-0"
-            />
-            <button
-              type="button"
-              aria-label="Reset to gray"
-              onClick={onColorlessReset}
-              className="motion-hover motion-press motion-focus min-h-[2.75rem] flex-1 rounded-lg border border-zinc-700/80 px-3 text-xs font-medium text-zinc-200 transition hover:bg-zinc-800/70"
-            >
-              Reset to gray
-            </button>
-          </div>
-        )}
-      </div>
+      {isColorlessActive && (
+        <div className="flex items-center justify-center gap-2">
+          <input
+            type="color"
+            aria-label="Customize Colorless color"
+            value={colorlessCustomHex ?? COLORLESS_PALETTE.swatch}
+            onChange={(event) => onColorlessCustomChange(event.target.value)}
+            className="motion-focus h-9 w-9 shrink-0 cursor-pointer rounded border border-zinc-700/80 bg-transparent p-0"
+          />
+          <button
+            type="button"
+            aria-label="Reset to gray"
+            onClick={onColorlessReset}
+            className="motion-hover motion-press motion-focus min-h-[2.75rem] rounded-lg border border-zinc-700/80 px-3 text-xs font-medium text-zinc-200 transition hover:bg-zinc-800/70"
+          >
+            Reset to gray
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { formatContextTarget, hasOwnerControl, parseManaSpent } from "../lib/enr
 import { buildPlayerDisplayNameMap, formatPlayerDisplayLabel } from "../lib/playerLabels";
 import { ZONE_LABELS } from "../lib/zoneLabels";
 import { useAutoGrowTextarea } from "../hooks/useAutoGrowTextarea";
+import { ComposerSubmitButton } from "./ComposerSubmitButton";
 import { useEnrichmentTargets } from "../hooks/useEnrichmentTargets";
 import type { ConversationMessage, ContextTarget, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { AskAiWaitingPanel } from "./AskAiWaitingPanel";
@@ -478,6 +479,11 @@ export function EnrichmentStep({
             <p className="mt-1 text-sm text-zinc-300">
               Card context reviewed. Use View all cards to make more edits.
             </p>
+            {!question.trim() && (
+              <p className="mt-1 text-sm text-zinc-300">
+                No message needed — tap Send Request below when you&rsquo;re ready.
+              </p>
+            )}
           </div>
         ) : (
           <div
@@ -533,7 +539,13 @@ export function EnrichmentStep({
                 <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
                   Optional question
                 </span>
-                <div className="ambient-accent-surface ambient-accent-interactive flex items-end gap-2 rounded-3xl border border-zinc-700/70 bg-zinc-900/55 py-2 pl-4 pr-2">
+                {/* Tighter inset and gaps below `sm` keep the field the dominant element of
+                    the row at phone widths (DEC-146, REQ-121); `sm+` keeps today's spacing.
+                    The counter stacks above the submit control (rather than sitting beside it
+                    as a third flex sibling) so DEC-153's every-width visible "Send Request"
+                    label does not spend its own row-width budget starving the field back below
+                    REQ-121's 65% floor. */}
+                <div className="ambient-accent-surface ambient-accent-interactive flex items-end gap-1 rounded-3xl border border-zinc-700/70 bg-zinc-900/55 py-2 pl-2 pr-1 sm:gap-2 sm:pl-4 sm:pr-2">
                   <textarea
                     ref={questionTextareaRef}
                     aria-label="Optional question"
@@ -544,16 +556,19 @@ export function EnrichmentStep({
                     maxLength={MAX_QUESTION_CHARS}
                     className="min-w-0 flex-1 resize-none overflow-y-auto bg-transparent py-1.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none"
                   />
-                  <span className="shrink-0 pb-1.5 text-xs text-zinc-500">
-                    {question.length}/{MAX_QUESTION_CHARS}
-                  </span>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting || !canDecrypt}
-                    className="shrink-0 rounded-full bg-gradient-to-r from-accent to-accent-strong px-4 py-2 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {isSubmitting ? "Decrypting…" : "Decrypt Stack"}
-                  </button>
+                  <div className="flex shrink-0 flex-col items-end gap-0.5">
+                    <span className="pr-0.5 text-[10px] leading-none text-zinc-500 sm:text-xs">
+                      {question.length}/{MAX_QUESTION_CHARS}
+                    </span>
+                    <ComposerSubmitButton
+                      label="Decrypt Stack"
+                      visibleLabel="Send Request"
+                      pendingLabel="Decrypting…"
+                      isSubmitting={isSubmitting}
+                      disabled={isSubmitting || !canDecrypt}
+                      showLabelBelowSm
+                    />
+                  </div>
                 </div>
               </div>
             </form>

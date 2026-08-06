@@ -196,6 +196,28 @@ describe("PlayerRosterEditor", () => {
     expect(within(player2Row?.parentElement as HTMLElement).getByTestId("extra-Player 2")).toBeInTheDocument();
   });
 
+  it("keeps the expanded secondary-details region a direct sibling of its player row inside the same card, so it shares the row's alignment (DEC-128/REQ-106)", () => {
+    render(
+      <EditorHarness
+        initialExpanded
+        initialSecondaryExpanded
+        renderPlayerExtras={(player) => <span data-testid={`extra-${player.label}`}>Extra for {player.label}</span>}
+      />
+    );
+
+    const player1Row = screen.getByLabelText("Player 1 display name").closest("div");
+    const player1Card = player1Row?.parentElement;
+    expect(player1Card).not.toBeNull();
+
+    // Both the name/life/arrow row and the expanded secondary-details region are direct
+    // children of the same bordered card wrapper — neither has independent margin/offset,
+    // which is what keeps the expanded panel visually aligned to its player row rather than
+    // floating or reading as detached, at every viewport.
+    const secondaryGroup = within(player1Card as HTMLElement).getByRole("group");
+    expect(secondaryGroup.parentElement).toBe(player1Card);
+    expect(player1Row?.parentElement).toBe(player1Card);
+  });
+
   it("renders no extras when renderPlayerExtras is not provided", () => {
     render(<EditorHarness initialExpanded />);
 

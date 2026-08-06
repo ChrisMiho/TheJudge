@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { SendIcon } from "./ComposerSubmitButton";
 
 const MAX_QUESTION_CHARS = 300;
 
@@ -6,25 +7,6 @@ type FollowUpComposerProps = {
   isSubmitting: boolean;
   onSubmit: (text: string) => Promise<void>;
 };
-
-/** Consistent with the corner rail's inline stroke-SVG icon convention (DEC-126). */
-function SendIcon(): JSX.Element {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className="h-4 w-4"
-    >
-      <line x1="12" y1="19" x2="12" y2="5" />
-      <polyline points="5 12 12 5 19 12" />
-    </svg>
-  );
-}
 
 export function FollowUpComposer({ isSubmitting, onSubmit }: FollowUpComposerProps): JSX.Element {
   const [text, setText] = useState("");

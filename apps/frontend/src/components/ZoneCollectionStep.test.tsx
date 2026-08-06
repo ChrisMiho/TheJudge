@@ -147,7 +147,7 @@ describe("ZoneCollectionStep scan focus", () => {
     );
   });
 
-  it("renders the zone card list as a capped 2-column scroll grid before scan opens", () => {
+  it("renders the zone card list as a horizontal left-to-right strip with region scroll before scan opens (DEC-151 part 3)", () => {
     mockScanCapture(false);
     renderStep([
       makeZoneCard("opt", "Opt"),
@@ -158,7 +158,7 @@ describe("ZoneCollectionStep scan focus", () => {
     ]);
 
     const cardGrid = screen.getByText("Stack cards (5)").nextElementSibling;
-    expect(cardGrid).toHaveClass("zone-card-grid", "grid", "grid-cols-2", "overflow-y-auto");
+    expect(cardGrid).toHaveClass("zone-card-grid", "flex", "overflow-x-auto");
     expect(screen.getByText("Doom Blade")).toBeInTheDocument();
   });
 

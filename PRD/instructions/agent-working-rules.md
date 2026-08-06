@@ -31,6 +31,7 @@ When creating or closing non-section markdown under `PRD/`, also read `instructi
 - If something is unclear, add it to `sections/open-questions.md`.
 - Do not silently guess.
 - Do not upgrade optional ideas into committed scope.
+- For UI layout, containment, density, or “fill/stretch” feedback: read `sections/screen-layout.md` (DEC-149) before proposing sizes; do not invent full-bleed or edge-to-edge layouts that contradict the catalog.
 
 ## Scope Discipline
 

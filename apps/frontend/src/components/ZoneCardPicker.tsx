@@ -243,11 +243,11 @@ export function ZoneCardPicker({
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
             {`${ZONE_LABELS[zoneId]} cards (${cards.length})`}
           </p>
-          <div className="zone-card-grid grid grid-cols-2 gap-2 overflow-y-auto">
+          <div className="zone-card-grid flex gap-2 overflow-x-auto pb-1">
             {cards.map((card, index) => (
               <div
                 key={card.instanceId ?? `${zoneId}-${card.cardId}-${index}`}
-                className="card-identity-ring zone-card-tile enrichment-card-enter card-state-remove flex flex-col gap-1 rounded-xl border border-zinc-700/80 bg-zinc-950/40 p-2"
+                className="card-identity-ring zone-card-tile enrichment-card-enter card-state-remove flex w-40 shrink-0 flex-col gap-1 rounded-xl border border-zinc-700/80 bg-zinc-950/40 p-2"
                 style={getCardIdentityRingStyle(card.colors)}
               >
                 <CardPresentation

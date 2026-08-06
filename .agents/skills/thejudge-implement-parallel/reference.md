@@ -9,7 +9,7 @@
 5. Any Scryfall download or network refresh requires explicit human approval, and that approval is never delegated to a subagent.
 6. Never commit unless the user explicitly asks.
 
-Also preserve active product decisions from `PRD/sections/decisions/` and `PRD/instructions/technical-design-rules.md`. Every dispatched agent must receive the relevant ones verbatim — a dispatched agent does not load TheJudge skills on its own.
+Also preserve active product decisions from `PRD/sections/decisions/` and `PRD/instructions/technical-design-rules.md`. For UI layout, containment, density, or “fill/stretch” slices, also read and follow `PRD/sections/screen-layout.md` (DEC-149 / REQ-126); do not invent sizes that contradict the catalog. Every dispatched agent must receive the relevant ones verbatim — a dispatched agent does not load TheJudge skills on its own.
 
 ## Slice status vocabulary
 

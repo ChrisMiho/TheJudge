@@ -11,11 +11,7 @@ description: >-
 
 ## Goal
 
-Run every selected `active` package to completion concurrently. Each package is
-owned by one cold-start agent invoking `thejudge-implement-all`, which creates
-that package's one isolated worktree, branch, and PR. This skill never touches
-slice contracts itself — it only selects packages, applies the overlap gate,
-and passes the checked-out feature base to each executor.
+Run every selected `active` package to completion concurrently, one isolated worktree and agent per package, each delegating to the single-package implement skill that matches its own GAMEPLAN shape. This skill never touches slice contracts itself — it only decides *which* packages run and *which existing skill* each one gets.
 
 ## Inputs
 
@@ -30,16 +26,14 @@ The orchestrator reads these itself, before dispatching anything — orientation
 3. Every selected package's `Files touched` across its slice docs
 4. `PRD/instructions/workflow-reference.md` — package status / STATUS.* duties
 
-## Per-package executor
+## Per-package skill selection
 
-Every selected package dispatches `thejudge-implement-all`, including a
-GAMEPLAN that is grouped into dependency waves. The dispatched agent executes
-all remaining slices sequentially in its own worktree; it never delegates
-slice implementation or invokes `thejudge-implement-parallel`.
+For each selected package, read its GAMEPLAN's slice table:
 
-Read the slice table only to confirm the package has work left and to identify
-files for the cross-package overlap gate. Do not select an executor from the
-table shape or create a third execution mode.
+- Slices are strictly sequential (each depends on its immediate predecessor, no wave grouping) → dispatch `thejudge-implement-all` for that package.
+- Slices are grouped into dependency waves with disjoint files → dispatch `thejudge-implement-parallel` for that package (its own internal fanout runs inside that one dispatched agent's session, wave by wave).
+
+Do not re-derive slice dependencies or invent a third mode — the chosen skill owns its own slice-level contract and status transitions.
 
 ## Writes
 
@@ -47,26 +41,14 @@ Nothing directly. All product code, tests, commits, and STATUS transitions happe
 
 ## Status transitions
 
-None owned by this skill. Each package's status moves `active` → `ship-ready`
-exactly as its dispatched `thejudge-implement-all` run defines. This skill
-only reports which packages finished, which are still running, and which are
-blocked.
+None owned by this skill. Each package's status moves `active` → `ship-ready` exactly as its dispatched skill (`thejudge-implement-all` or `thejudge-implement-parallel`) already defines. This skill only reports which packages finished, which are still running, and which are blocked.
 
 ## Gates
 
-- **Cross-package file-overlap check is mandatory before dispatch.** Diff the `Files touched` lists of every pair of selected packages. Form overlap components from those pairs. Dispatch independent components concurrently; within each component, run packages in slug order, starting the next only after the prior package reports `ship-ready`. If one blocks, report it and leave the later packages in that component undispatched. Never dispatch two packages concurrently that can write the same file.
-- **One isolated worktree and branch per package.** `thejudge-implement-all`
-  creates and retains exactly one worktree and package branch. Do not create a
-  second staging worktree, and never share a worktree, local branch, or launch
-  checkout across packages, even when running sequentially per the overlap
-  gate above.
-- **Checked-out feature base is mandatory.** Before dispatch, record the
-  current non-detached branch as `<feature-base>`. It is the PR base for every
-  selected package; pass its exact name to every executor. Do not infer
-  `main`, select another branch, or continue if the launch checkout is dirty,
-  behind its remote, or lacks `origin/<feature-base>`.
-- **Full tool access required per dispatched agent.** Each dispatched agent must be able to invoke skills and read/write/run commands (Bash, Edit, Write, Skill). An agent type restricted to read-only or planning-only tools cannot run `thejudge-implement-all` and is not a valid dispatch target for this skill.
-- **Self-contained dispatch prompt.** Each dispatched agent starts cold — it does not inherit this session's context. Its prompt must name `thejudge-implement-all`, the exact `PRD/work/<slug>/` path, and `feature base: <feature-base>`; the dispatched agent then does its own reads under that skill's contract.
+- **Cross-package file-overlap check is mandatory before dispatch.** Diff the `Files touched` lists of every pair of selected packages. Any overlap: drop that pair from concurrent dispatch and run them sequentially instead — never dispatch two packages concurrently that can write the same file.
+- **One isolated worktree and branch per package.** Never share a worktree, local branch, or launch checkout across packages, even when running sequentially per the overlap gate above.
+- **Full tool access required per dispatched agent.** Each dispatched agent must be able to invoke skills and read/write/run commands (Bash, Edit, Write, Skill). An agent type restricted to read-only or planning-only tools cannot run `thejudge-implement-all`/`thejudge-implement-parallel` and is not a valid dispatch target for this skill.
+- **Self-contained dispatch prompt.** Each dispatched agent starts cold — it does not inherit this session's context. Its prompt must name the exact skill to invoke (`thejudge-implement-all` or `thejudge-implement-parallel`) and the exact package path; the dispatched agent then does its own reads under that skill's contract.
 - Only dispatch packages currently `STATUS.active` with an existing `GAMEPLAN.md`. A package still `refined` or earlier is not this skill's job — it needs map-out first.
 - Never run `thejudge-map-out*`, `thejudge-quality-check`, or `thejudge-cleanup` from this skill.
 - Never commit, push, merge, or open a PR from the orchestrator itself — only dispatched agents do, under their own skill's contract.
@@ -74,9 +56,10 @@ blocked.
 
 ## Quick reference
 
-| Selected package | Dispatch |
+| Selected package's GAMEPLAN | Dispatch |
 |---|---|
-| Any GAMEPLAN shape | `thejudge-implement-all PRD/work/<slug>/ --base <feature-base>` |
+| Sequential slice table, no waves | `thejudge-implement-all PRD/work/<slug>/` |
+| Wave-grouped slice table | `thejudge-implement-parallel PRD/work/<slug>/` |
 | File overlap with another selected package | Run that pair sequentially, not concurrently |
 | Not yet `active` (no GAMEPLAN) | Drop from this run |
 

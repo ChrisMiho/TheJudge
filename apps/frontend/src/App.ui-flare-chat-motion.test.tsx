@@ -130,9 +130,12 @@ describe("Frontend - UI flare chat motion integration", () => {
       name: "View context: Lightning Bolt"
     });
     await user.click(quickTrigger);
-    expect(screen.getByRole("dialog", { name: "Card context" })).toHaveTextContent(
-      "Lightning Bolt deals 3 damage to any target."
-    );
+    const cardContextDialog = screen.getByRole("dialog", { name: "Card context" });
+    expect(cardContextDialog).toBeInTheDocument();
+    // Oracle text is not stacked under the image by default (DEC-151) — it is reached via
+    // the suite-wide corner detail popup, including inside this read-only context dialog.
+    await user.click(within(cardContextDialog).getByRole("button", { name: "Show details for Lightning Bolt" }));
+    expect(cardContextDialog).toHaveTextContent("Lightning Bolt deals 3 damage to any target.");
     await user.click(screen.getByRole("button", { name: "Close card context" }));
     expect(quickTrigger).toHaveFocus();
 
