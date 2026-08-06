@@ -21,7 +21,15 @@ const scripts = packageJson.scripts ?? {};
 // A CI job may satisfy a sub-script through a decomposed form that cannot be
 // derived from package.json (sharding, for example). Each entry is a deliberate
 // declaration: adding one is a reviewable act, not an accident.
-const CI_DECOMPOSITIONS = [];
+const CI_DECOMPOSITIONS = [
+  {
+    subScript: "npm --workspace apps/frontend run test:coverage",
+    satisfiedBy: /^npx vitest run --coverage .*--reporter=blob --shard=/,
+    why:
+      "CI runs the frontend suite as coverage shards and merges the blobs; the " +
+      "shard/merge contract is asserted separately below."
+  }
+];
 
 const normalize = (command) => command.trim().replace(/\s+/g, " ");
 
@@ -141,6 +149,51 @@ test("deploy credentials stay scoped to the deploy job", () => {
   assert.ok(
     (deploy.needs ?? []).length > 0,
     "deploy must depend on the gate jobs via needs:"
+  );
+});
+
+test("coverage thresholds are applied once, to merged shard data", () => {
+  const workflow = loadWorkflow(GATE_WORKFLOW);
+  const shardRuns = [];
+  for (const [, job] of gateJobs(workflow)) {
+    for (const step of job.steps ?? []) {
+      if (typeof step.run === "string" && /--shard=/.test(step.run)) {
+        shardRuns.push(normalize(step.run));
+      }
+    }
+  }
+
+  assert.ok(shardRuns.length > 0, "expected at least one sharded frontend run");
+  for (const run of shardRuns) {
+    // A shard sees a fraction of the suite. Judging that fraction against the
+    // whole-suite threshold fails on partial data, not on a real regression.
+    assert.match(
+      run,
+      /--coverage\.thresholds\.lines=0/,
+      `shard runs must not apply coverage thresholds: ${run}`
+    );
+  }
+
+  const mergeJob = workflow.jobs["coverage-merge"];
+  assert.ok(mergeJob, "a coverage-merge job must exist to apply the thresholds");
+  const mergeRuns = (mergeJob.steps ?? [])
+    .map((step) => step.run)
+    .filter((run) => typeof run === "string")
+    .map(normalize);
+  assert.ok(
+    mergeRuns.some(
+      (run) => run.includes("--merge-reports") && /(?<!thresholds\.lines=0.*)--coverage/.test(run)
+    ),
+    "coverage-merge must merge the shard blobs with coverage enabled"
+  );
+  assert.ok(
+    !mergeRuns.some((run) => run.includes("--coverage.thresholds")),
+    "coverage-merge must use the configured thresholds, not a CLI override"
+  );
+
+  assert.ok(
+    (workflow.jobs.deploy.needs ?? []).includes("coverage-merge"),
+    "deploy must depend on coverage-merge, not on the unmerged shard jobs"
   );
 });
 

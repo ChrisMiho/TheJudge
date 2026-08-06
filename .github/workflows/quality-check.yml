@@ -68,7 +68,46 @@ jobs:
         run: npm --workspace apps/backend run test:coverage
 
   frontend:
-    name: frontend
+    name: frontend-shard ${{ matrix.shard }}/3
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Thresholds are deliberately disabled here and applied only in
+      # coverage-merge: a shard sees a fraction of the suite, so judging it
+      # against the whole-suite threshold fails on partial data, not on a real
+      # coverage regression. The config values themselves are untouched.
+      - name: Frontend tests with coverage (shard ${{ matrix.shard }}/3)
+        working-directory: apps/frontend
+        run: >-
+          npx vitest run --coverage --coverage.thresholds.lines=0
+          --reporter=blob --shard=${{ matrix.shard }}/3
+
+      - name: Upload shard blob report
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-blob-${{ matrix.shard }}
+          path: apps/frontend/.vitest-reports/
+          retention-days: 1
+          if-no-files-found: error
+
+  coverage-merge:
+    name: coverage-merge
+    needs: [frontend]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -83,12 +122,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Frontend tests with coverage
-        run: npm --workspace apps/frontend run test:coverage
+      - name: Download shard blob reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: frontend-blob-*
+          path: apps/frontend/.vitest-reports/
+          merge-multiple: true
+
+      # The only job that can fail on coverage: thresholds come from
+      # vite.config.ts and are evaluated once, against merged totals.
+      - name: Merge shard reports and apply thresholds
+        working-directory: apps/frontend
+        run: npx vitest run --merge-reports --coverage
 
   deploy:
     name: deploy
-    needs: [static, backend, frontend]
+    needs: [static, backend, coverage-merge]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     # Job-scoped so pull_request jobs running contributor-controlled refs never
