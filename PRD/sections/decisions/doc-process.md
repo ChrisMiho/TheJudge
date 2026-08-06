@@ -1,6 +1,6 @@
 # Doc process decisions
 
-PRD documentation tooling: system-map catalog, detail files, the decisions.md router split, and agent workflow output guidance.
+PRD documentation tooling: system-map catalog, detail files, the decisions.md router split, and agent workflow contracts.
 
 ### DEC-044
 - Decision: Adopt a durable feature/subsystem catalog at `sections/system-map.md` so the truth layer states what is built, how it behaves at a glance, and where it lives — without re-deriving behavior from code.
@@ -104,3 +104,28 @@ PRD documentation tooling: system-map catalog, detail files, the decisions.md ro
   - DEC-064's body is trimmed to a one-line tombstone in this file; the ID stays resolvable
   - DEC-063 and DEC-086 reference DEC-064 in their own Notes as lineage — those are historical mentions of a still-resolvable ID and are left alone
   - no `system-map.md` entry is added: the catalog tracks product/code subsystems, not the PRD's own agent workflow tooling (consistent with DEC-044 / DEC-063 / DEC-064)
+
+### DEC-154
+- Decision: TheJudge agent workflows use a contract-centered lifecycle: collaborative skills stay in the current checkout and branch with no automatic Git publication; explicitly invoked autonomous preparation requires an operator-named remote base and records it for one-package worktree/branch/PR ownership; implementation is sequential within a package and concurrent only across packages; deferral is reversible; and user-requested or browser-risk-triggered Playwright verification plus exact owned-process cleanup are completion gates.
+- Status: confirmed
+- Context: The skill catalog and shared workflow documents have drifted as autonomous preparation, all-slice implementation, dependency-wave implementation, and fanout were added. Existing autonomous contracts silently target `origin/main`, cleanup equates `ship-ready` with merge, and parallel skills allow nested slice-agent fleets despite the desired one-agent-per-package model. Browser verification is available but inconsistently required, while `scripts/dev.mjs` launches shell wrappers and exits after a fixed delay without proving descendant shutdown. A merge/reset incident during refinement also demonstrated the cost of ambiguous checkout ownership. The workflow needs one predictable operator map and auditable ownership without changing product behavior.
+- Impact:
+  - documentation, agent workflow, and developer tooling only; no product UI, API, prompt, provider, or data behavior changes
+  - `AGENT-SKILLS.md` is the operator map; `workflow-reference.md` centralizes lifecycle rules; a focused `runtime-process-hygiene.md` owns browser/dev-server requirements; individual skills retain only phase-specific contracts and references
+  - the catalog becomes ten skills: keep kickoff, refinement, quality-check, map-out, implement, implement-all, implement-fanout, cleanup, and prepare; add reversible `thejudge-defer`; delete `thejudge-map-out-parallel` and `thejudge-implement-parallel` from canonical and synchronized trees
+  - ordinary collaborative work remains in the current checkout/current branch and does not automatically create worktrees, branches, commits, pushes, or PRs
+  - explicit autonomous preparation requires a named remote base, records `origin/<base>` in package metadata, uses `.worktrees/prepare-<slug>`, and opens a preparation PR against that base; a human merge is required before implementation
+  - autonomous implementation uses one agent and sequential slices in `.worktrees/implement-<slug>`, with one implementation branch/PR per package targeting the recorded base; fanout dispatches across packages only, requires a common recorded base, preserves cross-package file-overlap serialization, and assigns isolated port pairs
+  - `ship-ready` means slice verification passed, not that a PR merged; autonomous cleanup runs locally on the recorded base, proves the implementation PR merged and the worktree is clean/fully merged, then removes the clean local implementation worktree/branch; it never deletes remote branches or automatically commits, pushes, merges, or closes PRs
+  - `thejudge-defer` records the previous status and reason, moves the package to `deferred`, and restores it on the next invocation; artifacts and Git state are preserved; `ship-ready` and active packages with an `in-progress` slice cannot be deferred
+  - Playwright MCP is required when the user asks for it or when browser-observable risk cannot be established by component tests (responsive geometry/containment, overlays/stacking, hit areas, focus/keyboard, scrolling, navigation/persistence, browser APIs, or integrated multi-screen behavior); no new Playwright CI harness is added
+  - every browser/dev-server use records owner/session, worktree, ports, started-versus-attached state, and cleanup evidence; owners call `browser_close`, stop exact owned process trees, wait for exit, and verify owned ports released before a slice/task completes; attached or user-owned servers are never stopped
+  - `scripts/dev.mjs` is hardened to accept explicit isolated ports, spawn without shell wrappers, own exact service trees, shut down idempotently, await graceful exit, and escalate after a bounded window only against the same owned trees; broad `pkill`/`killall`, `nohup`, and untracked background processes are prohibited
+  - canonical skill edits follow failing-baseline-first contract scenarios, then `npm run skills:ai-sync` and byte-identical mirror verification; focused process-manager tests join the quality gate without duplicating the Vitest suite
+- Related requirements:
+  - (none — repository workflow and developer tooling only; no functional requirement is added or changed)
+- Notes:
+  - extends DEC-115's agent-workflow lineage without changing its terse-output rule
+  - `.worktrees/` is the only repo-local autonomous worktree root; existing unrelated worktrees are not silently removed
+  - runtime cleanup occurs at the end of every owning invocation, including failure paths; final package cleanup verifies the recorded evidence and owns post-merge Git worktree cleanup
+  - no `system-map.md` entry is added because the catalog tracks product/code subsystems rather than repository agent workflow tooling
