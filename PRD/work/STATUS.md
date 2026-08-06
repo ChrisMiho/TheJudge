@@ -12,14 +12,13 @@ Do not rename package folders to encode status.
 
 ## refined
 
-- [ui-screen-layout-truth](./ui-screen-layout-truth/)
-
 ## refining
 
 - [context-ai-photo-card-id](./context-ai-photo-card-id/)
 
 ## ideation
 
+- [ui-review](./ui-review/)
 - [card-collection-manager](./card-collection-manager/)
 - [scan-non-english-special-treatments](./scan-non-english-special-treatments/)
 - [life-tracker-me-map-and-tray](./life-tracker-me-map-and-tray/)
