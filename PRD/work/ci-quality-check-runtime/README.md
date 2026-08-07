@@ -28,13 +28,22 @@ the deploy job so PR jobs never receive AWS-assumable credentials.
 
 ## Slices
 
-| Slice | Objective | Type | Depends on |
-| --- | --- | --- | --- |
-| [A](./slice-a-workflow-restructure.md) | Parallel gate jobs, cancellation, deploy `needs:` the gate instead of duplicating it | sequential | — |
-| [B](./slice-b-shard-frontend-coverage.md) | Shard frontend coverage; merge blobs; thresholds on merged totals | sequential | A — needs the job structure and A's observed runner-core value to pick shard count |
-| [C](./slice-c-scope-jsdom-per-file.md) | `environmentMatchGlobs` so DOM-free suites skip jsdom | parallel-ready | NFR-012, DEC-155 (no slice prerequisite; touches only `vite.config.ts`) |
-| [D](./slice-d-split-outlier-test-files.md) | Assertion-preserving split of the 3 outlier files to lower the shard floor | sequential | B — "slowest shard drops" is only measurable once shards exist |
-| [E](./slice-e-verify-and-promote.md) | Verify wall-time targets end to end; promote PRD truth | sequential | A, B, C, D |
+| Slice | Status | Objective | Type | Depends on |
+| --- | --- | --- | --- | --- |
+| [A](./slice-a-workflow-restructure.md) | done | Parallel gate jobs, cancellation, deploy `needs:` the gate instead of duplicating it | sequential | — |
+| [B](./slice-b-shard-frontend-coverage.md) | done | Shard frontend coverage; merge blobs; thresholds on merged totals | sequential | A — needs the job structure and A's observed runner-core value to pick shard count |
+| [C](./slice-c-scope-jsdom-per-file.md) | done | `environmentMatchGlobs` so DOM-free suites skip jsdom | parallel-ready | NFR-012, DEC-155 (no slice prerequisite; touches only `vite.config.ts`) |
+| [D](./slice-d-split-outlier-test-files.md) | done | Assertion-preserving split of the 3 outlier files to lower the shard floor | sequential | B — "slowest shard drops" is only measurable once shards exist |
+| [E](./slice-e-verify-and-promote.md) | blocked | Verify wall-time targets end to end; promote PRD truth | sequential | A, B, C, D |
+
+Observed runner cores: **4** (slice A, run `31111931196`).
+
+Slice E is blocked on measurement, not on implementation. Every gate-integrity
+criterion and the PR-gate target are verified (**1m58s** vs 3m57s baseline, run
+`31134177316`). The deploy-job and time-to-deployed targets cannot be observed
+from any PR run — `deploy` is gated on `push` to `main` — so they must be read
+off the first `main` run after `feature/ui-review` merges. The package cannot
+reach `ship-ready`, and `thejudge-cleanup` must not run, until then.
 
 ## Implementation map
 

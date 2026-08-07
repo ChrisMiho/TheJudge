@@ -14,7 +14,9 @@ import { afterEach, describe, expect, it } from "vitest";
 
 const repoRoot = resolve(process.cwd(), "../..");
 const deployScript = resolve(repoRoot, "scripts/aws-deploy.sh");
-const workflowPath = resolve(repoRoot, ".github/workflows/deploy-aws.yml");
+// The deploy job now lives in the gate workflow so it can `needs:` the gate
+// instead of duplicating it.
+const workflowPath = resolve(repoRoot, ".github/workflows/quality-check.yml");
 const tempDirs: string[] = [];
 
 function writeExecutable(path: string, body: string): void {
@@ -99,6 +101,11 @@ describe("Frontend - Shared", () => {
       expect(deployStep).toContain(
         "VITE_FEEDBACK_FORMSPREE_ID: ${{ vars.VITE_FEEDBACK_FORMSPREE_ID }}"
       );
+      // Now that pull-request jobs share this workflow, a single occurrence is
+      // what proves the value never widens to workflow or job scope.
+      expect(
+        workflow.split("\n").filter((line) => line.includes("VITE_FEEDBACK_FORMSPREE_ID"))
+      ).toHaveLength(1);
     });
 
     it("stops before AWS mutations when the Formspree ID is missing", () => {
