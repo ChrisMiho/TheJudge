@@ -2078,6 +2078,8 @@
   - FLOW-010
 - Notes:
   - reuse the established theme-palette preference pattern (try/catch-guarded load/save, validated against known ids, graceful fallback to default) — `sessionStorage` instead of `localStorage` is the only mechanism difference
+  - amended by DEC-157 / REQ-140: URL-based routing is introduced, so the "no URL-based routing / react-router" constraint above no longer applies and `sessionStorage` is no longer the source of truth for the active destination. This requirement's guarded load/validate/fallback behavior survives as the **bare-`/` fallback**, and the brand-new-tab default now holds only when the URL carries no destination — a deep link intentionally overrides it.
+  - the first acceptance criterion's parenthetical "(`mtg-assistant`)" is stale: DEC-135 made **Quick Question** (`quick-lookup`) the first registered destination and the no-stored-preference default. Read "the first registered destination" as authoritative and the parenthetical as historical.
 
 ### REQ-091
 - Title: Locked topic-phrase pill in Quick Lookup's general rules topics
@@ -3219,3 +3221,36 @@
   - DEC-128
   - DEC-156
 - Notes:
+
+### REQ-140
+- Title: Addressable destination routes with deep links and browser history
+- Priority: high
+- Description: Each registered feature-portal destination (REQ-067) must be addressable at its own top-level URL, so a URL identifies a feature, a deep link lands the user directly on it, and browser back/forward moves between destinations. The URL is the source of truth for the active destination; the `sessionStorage` value established by REQ-090/DEC-111 is retained only as the fallback for a bare `/` (DEC-157).
+- Acceptance Criteria:
+  - the four registered destinations resolve at flat top-level paths — `/quick-lookup` (Quick Question), `/in-depth` (In-Depth Question), `/life-tracker` (Life Tracker), `/trade-balancer` (Trade Balancer) — with the id↔path mapping declared once as a `path` field on the destination registry
+  - opening a destination path directly in a brand-new tab mounts that destination, regardless of any stored `sessionStorage` value or the registry default
+  - selecting a destination from the feature-portal Menu updates the URL and pushes a history entry; browser Back returns to the previously active destination and Forward returns to it again
+  - a bare `/` resolves to the `sessionStorage`-stored destination when it is present and valid, and otherwise to the first registered destination — the existing guarded load/validate/fallback behavior of REQ-090 is reused, not reimplemented
+  - an unknown or unregistered path redirects to `/` and resolves from there rather than rendering an error or a blank shell
+  - switching destinations still preserves each destination's in-session data exactly as REQ-067/DEC-095 require: a destination visited, navigated away from, and returned to retains its in-session state and is not remounted
+  - **Send feedback** remains an action entry with no URL of its own: opening the feedback modal does not change the URL, the active destination, or history (DEC-104)
+  - the Life Tracker → In-Depth Question roster-seed handoff continues to run on menu selection only; arriving at `/in-depth` by deep link or Back navigation does not seed
+  - no in-flow state appears in the URL: staged game context, conversation, and follow-up state are not serialized into the path or search params, and each destination's staged/conversation/follow-up state resets on reload as REQ-090 already requires
+- Constraints:
+  - `react-router` is the routing mechanism; flat top-level routes only — no nested routes, no route params, no search-param state (DEC-157)
+  - the router supplies location and history only; it must not own mounting policy — `DestinationOutlet`'s keep-alive mounting is preserved, because `<Routes>`-style unmounting would break DEC-095/REQ-067 state preservation
+  - no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any backend route
+  - no change to the feature-portal's visual chrome — corner rail, tray, Theme section, and action entries are untouched (DEC-122 / DEC-133 / DEC-150)
+  - no change to which destination is the default for a bare `/` in a brand-new session (DEC-135 registry order)
+- Dependencies:
+  - DEC-157
+  - NFR-014
+  - REQ-067
+  - REQ-090
+  - DEC-095
+  - DEC-104
+  - DEC-111
+  - DEC-135
+- Notes:
+  - REQ-090's "a brand-new browser tab/window with no prior activity in that tab still opens on the first registered destination" is narrowed by DEC-157 to the bare-`/` case; a deep link intentionally overrides it
+  - production deep links need no infrastructure change: CloudFront already maps 403/404 to `/index.html` with a `200` response code (DEC-084 bootstrap)

@@ -63,6 +63,15 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Fit | No page scroll from shell chrome alone |
 | Notes | DEC-145, REQ-124, DEC-117. Do not invent vertical fill for empty lower bands. Life Tracker / answered workspace / scan use their own height rows |
 
+#### Destination load fallback (route `Suspense` boundary)
+
+| | |
+|---|---|
+| Purpose | Transient placeholder shown while a lazily-loaded destination's code chunk arrives (DEC-157 / NFR-014) |
+| Phone / Desktop | Occupies the destination content region **inside** the existing shell — the suite shell, corner rail, and brand block stay mounted and visible; it never replaces or resizes the shell, and never renders as a full-viewport takeover |
+| Fit | Reserves the region rather than collapsing it, so the shell does not jump height when the chunk resolves; no page scroll, no layout shift of surrounding chrome |
+| Notes | DEC-157, NFR-014, DEC-095. Appears at most **once per destination per session** — keep-alive mounting means a revisited destination is already loaded and shows no fallback. Keep it quiet and minimal; this is a sub-second chunk fetch, not a data-loading state, so it must not introduce a branded splash, progress bar, or motion beyond the existing CSS-motion rules (NFR-006). Do not invent vertical fill for the empty region |
+
 #### Mock-mode banner
 
 | | |
