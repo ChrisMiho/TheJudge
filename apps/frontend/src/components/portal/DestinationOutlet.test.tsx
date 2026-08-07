@@ -29,11 +29,13 @@ function StatefulField({
 const DESTINATIONS: PortalDestination[] = [
   {
     id: "alpha",
+    path: "/alpha",
     label: "Alpha",
     render: (isActive) => <StatefulField label="Alpha input" testId="alpha-input" isActive={isActive} />
   },
   {
     id: "beta",
+    path: "/beta",
     label: "Beta",
     render: (isActive) => <StatefulField label="Beta input" testId="beta-input" isActive={isActive} />
   }

@@ -12,15 +12,29 @@ export const PORTAL_DESTINATIONS: PortalDestination[] = [
   {
     kind: "destination",
     id: "quick-lookup",
+    path: "/quick-lookup",
     label: "Quick Question",
     render: (isActive) => <QuickLookupApp isActive={isActive} />
   },
   {
     kind: "destination",
     id: "mtg-assistant",
+    path: "/in-depth",
     label: "In-Depth Question",
     render: (isActive) => <MtgAssistantApp isActive={isActive} />
   },
-  { kind: "destination", id: "player-life-tracker", label: "Life Tracker", render: () => <PlayerLifeTrackerApp /> },
-  { kind: "destination", id: "trade-balancer", label: "Trade Balancer", render: () => <TradeBalancer /> }
+  {
+    kind: "destination",
+    id: "player-life-tracker",
+    path: "/life-tracker",
+    label: "Life Tracker",
+    render: () => <PlayerLifeTrackerApp />
+  },
+  {
+    kind: "destination",
+    id: "trade-balancer",
+    path: "/trade-balancer",
+    label: "Trade Balancer",
+    render: () => <TradeBalancer />
+  }
 ];

@@ -1,6 +1,6 @@
 # Slice A — Router foundation and URL as source of truth
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -68,3 +68,11 @@ npm run quality:check
 - `apps/frontend/src/lib/portal/types.ts`
 - `apps/frontend/src/components/portal/destinationRegistry.tsx`
 - `apps/frontend/src/hooks/useActiveDestination.test.ts` (new or extended)
+
+## Verification evidence — 2026-08-07
+
+- Automated: `npm --workspace apps/frontend run test` passed 124 files / 1,235 tests after the router and global history reset were integrated.
+- Browser: Playwright MCP on the worktree-owned Vite server at `127.0.0.1:4177` verified all four direct paths, stored and registry-order `/` fallback, unknown-path fallback, Menu URL updates, Back/Forward, keep-alive field state, and feedback-modal routelessness at `390x844` and `1280x900`.
+- Runtime ownership: server sessions `43127` and `95086` were started by this worktree and stopped through their exact handles; `browser_close` completed after each browser run; `lsof -nP -iTCP:4177 -sTCP:LISTEN` returned no listener after cleanup.
+- Captures: `PRD/work/frontend-routing-and-code-splitting/.playwright-mcp/slice-a-phone-trade-deep-link.png`, `slice-a-desktop-back-navigation.png`, and automatic session artifacts under `slice-a-auto/`.
+- Console: no application console errors; the only observed resource error was the existing missing `/favicon.ico` response.

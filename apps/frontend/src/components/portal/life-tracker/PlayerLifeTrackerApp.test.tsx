@@ -36,8 +36,8 @@ async function openGameSetup(user: ReturnType<typeof userEvent.setup>): Promise<
 function DestinationHarness(): JSX.Element {
   const [activeDestinationId, setActiveDestinationId] = useState<DestinationId>("player-life-tracker");
   const destinations: PortalDestination[] = [
-    { id: "player-life-tracker", label: "Life Tracker", render: () => <PlayerLifeTrackerApp /> },
-    { id: "other", label: "Other", render: () => <div>Other destination</div> }
+    { id: "player-life-tracker", path: "/life-tracker", label: "Life Tracker", render: () => <PlayerLifeTrackerApp /> },
+    { id: "other", path: "/other", label: "Other", render: () => <div>Other destination</div> }
   ];
 
   return (

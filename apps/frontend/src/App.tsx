@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BrowserRouter } from "react-router";
 import { FeedbackModal } from "./components/feedback/FeedbackModal";
 import { DestinationOutlet } from "./components/portal/DestinationOutlet";
 import { FeaturePortalMenu } from "./components/portal/FeaturePortalMenu";
@@ -108,10 +109,12 @@ function FeedbackModalHost({
 
 export default function App(): JSX.Element {
   return (
-    <LeftEdgeDrawerProvider>
-      <AssistantSeedProvider>
-        <PortalShell />
-      </AssistantSeedProvider>
-    </LeftEdgeDrawerProvider>
+    <BrowserRouter>
+      <LeftEdgeDrawerProvider>
+        <AssistantSeedProvider>
+          <PortalShell />
+        </AssistantSeedProvider>
+      </LeftEdgeDrawerProvider>
+    </BrowserRouter>
   );
 }

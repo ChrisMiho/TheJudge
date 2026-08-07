@@ -23,12 +23,12 @@ Captured by `thejudge-kickoff` from the SPA scaling analysis done during
 
 ## Slices
 
-| Slice | Objective | Depends on |
-| --- | --- | --- |
-| [A](slice-a-router-foundation.md) | Router foundation; URL as source of truth for the active destination | — |
-| [B](slice-b-lazy-boundaries.md) | Per-destination `React.lazy` boundaries and the load-fallback surface | A |
-| [C](slice-c-chunking.md) | Explicit `manualChunks` and measured payload verification | B |
-| [D](slice-d-test-alignment.md) | Test alignment, CI shard headroom, PRD promotion, ship gates | C |
+| Slice | Status | Objective | Depends on |
+| --- | --- | --- | --- |
+| [A](slice-a-router-foundation.md) | done | Router foundation; URL as source of truth for the active destination | — |
+| [B](slice-b-lazy-boundaries.md) | planned | Per-destination `React.lazy` boundaries and the load-fallback surface | A |
+| [C](slice-c-chunking.md) | planned | Explicit `manualChunks` and measured payload verification | B |
+| [D](slice-d-test-alignment.md) | planned | Test alignment, CI shard headroom, PRD promotion, ship gates | C |
 
 Sequential, not parallel. Each slice operates on structure the previous one
 creates: B's lazy boundaries live in the registry A restructures, C's chunking

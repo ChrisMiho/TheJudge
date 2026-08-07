@@ -12,8 +12,20 @@ import { startOnInDepthQuestion } from "../../test/appTestHelpers";
 import { appCss, jsonResponse, getUrlFromRequest } from "../../test/appTestHelpers";
 
 const DESTINATIONS: PortalEntry[] = [
-  { kind: "destination", id: "mtg-assistant", label: "MTG Assistant", render: () => <div /> },
-  { kind: "destination", id: "trade-balancer", label: "Trade", render: () => <div /> }
+  {
+    kind: "destination",
+    id: "mtg-assistant",
+    label: "MTG Assistant",
+    path: "/in-depth",
+    render: () => <div />
+  },
+  {
+    kind: "destination",
+    id: "trade-balancer",
+    label: "Trade",
+    path: "/trade-balancer",
+    render: () => <div />
+  }
 ];
 
 interface HarnessProps {

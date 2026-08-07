@@ -39,6 +39,16 @@ describe("Frontend - Portal", () => {
       expect(screen.queryByRole("heading", { name: "Game context" })).not.toBeInTheDocument();
     });
 
+    it("lets a deep link override the stored destination", () => {
+      sessionStorage.setItem(storageKey, "quick-lookup");
+      window.history.replaceState(null, "", "/in-depth");
+
+      render(<App />);
+
+      expect(screen.getByRole("heading", { name: "Game context" })).toBeVisible();
+      expect(screen.queryByLabelText("Card search")).not.toBeInTheDocument();
+    });
+
     it("restores In-Depth Question after the app remounts in the same tab", async () => {
       const user = userEvent.setup();
       const firstRender = render(<App />);
