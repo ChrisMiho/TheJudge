@@ -343,12 +343,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
                   triggerLabel: frozenLookupCard.name,
                   dialogLabel: "Card context",
                   content: (
-                    <CardSelectionPreview
-                      card={frozenLookupCard}
-                      contextTitle="Lookup card"
-                      contextContent={null}
-                      showContextSection={false}
-                    />
+                    <CardSelectionPreview card={frozenLookupCard} />
                   )
                 }
               : undefined
@@ -485,15 +480,14 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
             {selectedCard && (
               <CardSelectionPreview
                 card={selectedCard}
-                contextTitle="Lookup card"
-                contextContent={null}
-                showContextSection={false}
                 action={
+                  // REQ-133: the smaller Remove action is all that stays beside/below the
+                  // image now that the duplicated metadata panel is gone.
                   <button
                     type="button"
                     aria-label={`Remove ${selectedCard.name}`}
                     onClick={() => setSelectedCard(null)}
-                    className="rounded-xl border border-zinc-600 px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:bg-zinc-700"
+                    className="min-h-11 rounded-xl border border-zinc-600 px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-700"
                   >
                     Remove card
                   </button>

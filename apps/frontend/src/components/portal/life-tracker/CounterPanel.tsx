@@ -6,9 +6,11 @@ import {
   type PointerEvent as ReactPointerEvent
 } from "react";
 import type { PlayerLabel } from "../../../types";
+import { useOutsideDismiss } from "../../../hooks/useOutsideDismiss";
 import { NAMED_COUNTER_PALETTE, type NamedCounterId } from "../../../lib/lifeTracker/counters";
 import type { TrackerPlayer } from "../../../lib/lifeTracker/types";
 import { formatPlayerDisplayLabel } from "../../../lib/playerLabels";
+import { OverlayCloseButton } from "../../OverlayCloseButton";
 
 export interface CounterPanelProps {
   player: TrackerPlayer;
@@ -269,6 +271,8 @@ export function CounterPanel({
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const displayLabel = formatPlayerDisplayLabel(player.label, player.displayName);
 
+  useOutsideDismiss([dialogRef], onClose, true);
+
   useEffect(() => {
     returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     dialogRef.current?.focus();
@@ -339,14 +343,7 @@ export function CounterPanel({
               Counters for {displayLabel}
             </h2>
           </div>
-          <button
-            type="button"
-            aria-label="Close counters"
-            onClick={onClose}
-            className="motion-focus min-h-11 min-w-11 rounded-full border border-zinc-700 bg-zinc-800 text-2xl text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100"
-          >
-            ×
-          </button>
+          <OverlayCloseButton label="Close counters" onClick={onClose} />
         </header>
 
         <div role="tablist" aria-label="Counter panel sections" className="mt-4 grid grid-cols-2 rounded-xl bg-zinc-900 p-1">

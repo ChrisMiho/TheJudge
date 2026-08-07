@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
@@ -95,14 +95,19 @@ describe("Frontend - Feedback", () => {
       );
     });
 
-    it("opens the modal without changing the active destination", async () => {
+    it("opens the modal without changing the destination URL or history", async () => {
       const user = userEvent.setup();
       render(<App />);
+      await waitFor(() => expect(window.location.pathname).toBe("/in-depth"));
+      const initialPath = window.location.pathname;
+      const initialHistoryLength = window.history.length;
 
       const dialog = await openFeedbackModal(user);
 
       expect(dialog).toBeInTheDocument();
       expect(within(dialog).getByRole("heading", { name: "Send feedback" })).toBeVisible();
+      expect(window.location.pathname).toBe(initialPath);
+      expect(window.history.length).toBe(initialHistoryLength);
       // The MTG Assistant is still mounted and visible behind the modal.
       expect(screen.getByRole("heading", { name: "Game context" })).toBeVisible();
       expect(screen.queryByLabelText("Card search")).not.toBeInTheDocument();

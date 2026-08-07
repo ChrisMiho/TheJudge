@@ -171,11 +171,15 @@ export function EnrichmentStep({
         className="card-identity-ring enrichment-card-row enrichment-card-enter card-state-remove space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
         style={getCardIdentityRingStyle(card.colors)}
       >
-        <div className="enrichment-card-header">
+        {/* DEC-160: Enrichment is one of the four shell-column surfaces, so its image shares
+            the same content column as the staged Quick Question / zone preview cards rather
+            than the prior `.enrichment-card-presentation img { width: 51.2% }` call-site
+            scale-down. */}
+        <div className="enrichment-card-header card-shell-column mx-auto w-full">
           <CardPresentation
             card={card}
-            className="enrichment-card-presentation w-full min-w-0"
-            imageClassName="shrink-0 rounded"
+            className="w-full min-w-0"
+            imageClassName="rounded"
             actions={
               showRemove ? (
                 <button

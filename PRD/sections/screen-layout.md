@@ -63,6 +63,15 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Fit | No page scroll from shell chrome alone |
 | Notes | DEC-145, REQ-124, DEC-117. Do not invent vertical fill for empty lower bands. Life Tracker / answered workspace / scan use their own height rows |
 
+#### Destination load fallback (route `Suspense` boundary)
+
+| | |
+|---|---|
+| Purpose | Transient placeholder shown while a lazily-loaded destination's code chunk arrives (DEC-157 / NFR-014) |
+| Phone / Desktop | Occupies the destination content region **inside** the existing shell — the suite shell, corner rail, and brand block stay mounted and visible; it never replaces or resizes the shell, and never renders as a full-viewport takeover |
+| Fit | Reserves the region rather than collapsing it, so the shell does not jump height when the chunk resolves; no page scroll, no layout shift of surrounding chrome |
+| Notes | DEC-157, NFR-014, DEC-095. Appears at most **once per destination per session** — keep-alive mounting means a revisited destination is already loaded and shows no fallback. Keep it quiet and minimal; this is a sub-second chunk fetch, not a data-loading state, so it must not introduce a branded splash, progress bar, or motion beyond the existing CSS-motion rules (NFR-006). Do not invent vertical fill for the empty region |
+
 #### Mock-mode banner
 
 | | |
@@ -86,9 +95,10 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | | |
 |---|---|
 | Purpose | Read oracle/local card detail without stacking it under the image |
-| Phone / Desktop | Compact popup over the card image; opened from a top-right corner control on the image; closed via X (Escape/outside optional) |
-| Fit | Overlay; popup body may region-scroll if detail is long; must not invent a second page-length scroll for the hosting step |
-| Notes | DEC-151, REQ-128 — applies whenever a card image is shown |
+| Phone | Bottom sheet in the overlay family (DEC-158), **sized to its own content — not to the card image's bounding box**; opened from the top-right corner control on the image |
+| Desktop/tablet | Side panel at `768px`+ matching `AdaptiveContextDialog`'s composition; width tracks the View Context row, not a free full-viewport panel |
+| Fit | Overlay; popup body may region-scroll if detail is long; the close control lays out **inside** the overlay's own bounds at every width; must not invent a second page-length scroll for the hosting step |
+| Notes | DEC-151, DEC-158, DEC-159, REQ-128, REQ-142 — applies whenever a card image is shown across all six surfaces: Quick Question card search, In-Depth Enrichment, View Context, In-Depth zone selected-card/add preview, In-Depth zone strip, and Scan review. Superseded geometry: `absolute inset-0` over the image, measured at 92×128px holding 356px of content with its close X overflowing by 37px (DEC-158) |
 
 #### Conversation history drawer
 
@@ -105,10 +115,10 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | | |
 |---|---|
 | Purpose | Read-only frozen context for answered workspace |
-| Phone | Bottom sheet / overlay within workspace rules (DEC-118) |
+| Phone | Bottom sheet / overlay within workspace rules (DEC-118); surface height caps so a dismissible scrim of **≥25% of viewport height** remains at 390×844 — i.e. ≤`75dvh`, tightening the shipped `min(85dvh, 48rem)` (REQ-135) |
 | Desktop/tablet | Right drawer within workspace; not a second app shell |
-| Fit | Overlay; body may region-scroll |
-| Notes | DEC-118, DEC-142 |
+| Fit | Overlay; body may region-scroll. The scrim outside the surface is a dismiss region (DEC-142) and must stay reachable clear of the app header rather than reading as page content showing through. The frozen card rendered inside this sheet sizes to the sheet's own content column under DEC-160 — its growth consumes body scroll, never the ≥25% scrim floor |
+| Notes | DEC-118, DEC-142, DEC-159, DEC-160, REQ-135, REQ-141, REQ-142. The card here is the same shared `CardPresentation` as the staged surfaces; do not shrink it to buy room elsewhere (REQ-141) |
 
 ### Destinations
 
@@ -117,10 +127,10 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | | |
 |---|---|
 | Purpose | Optional card + question → Ask AI |
-| Phone | Shell 100% width band; content-sized vertically (DEC-145); compact card image + corner detail popup when a card is attached (DEC-151); primary fields and **Send Request** submit in first viewport when practical; topics/lists may region-scroll |
-| Desktop/tablet | Shell 92%/48rem cap; content-sized vertically; composer/field growth must not force page scroll or clip chrome below the field (REQ-110 / DEC-146 / DEC-153) |
-| Fit | No page scroll for primary submit path |
-| Notes | DEC-107, DEC-145, DEC-146, DEC-151, DEC-153, REQ-132 |
+| Phone | Shell 100% width band; content-sized vertically (DEC-145); attached card image sizes to the content column (DEC-160) — a clear majority of column width, replacing the 92×128px `max-h-32` render — with the corner detail popup for metadata (DEC-151/DEC-158); only **Remove card** beside/below the image (REQ-133); primary fields and **Send Request** submit in first viewport when practical; topics/lists may region-scroll |
+| Desktop/tablet | Shell 92%/48rem cap; content-sized vertically; card image grows with the wider column rather than holding the phone size (DEC-160); composer/field growth must not force page scroll or clip chrome below the field (REQ-110 / DEC-146 / DEC-153) |
+| Fit | No page scroll for primary submit path — this bounds card image growth (REQ-129); if the two conflict, the Fit rule wins and a bounded cap is recorded on this row. **Measured bound (ui-review, 2026-08-07):** the two did conflict. An unbounded content-column image rendered 265x369 at 390x844 and pushed **Send Request** to `top` 868px with 1004px of document scroll. The shared shell column (`.card-shell-column img`) is therefore capped at `max-height: 25dvh` below 768px and `42dvh` at 768px+ — a host-row height bound, never a reinstated component `max-h-32` or a per-surface variant. Result: 151x211 at 390x844 with Send Request fully inside the first viewport (`bottom` 754px) and document scroll back to 846px vs the 844px baseline; 271x378 at 1440x900 with Send Request `bottom` 892px. Consequence to accept: at 390x844 the image is 45.5% of content width, so REQ-141's "clear majority" is **not** met on this surface — REQ-129 binds first, exactly as DEC-160 anticipates. It remains 1.65x the superseded 92x128 render and grows with the viewport. |
+| Notes | DEC-107, DEC-145, DEC-146, DEC-151, DEC-153, DEC-158, DEC-160, REQ-132, REQ-133, REQ-141 |
 
 #### Quick Question — answered workspace
 
@@ -155,19 +165,19 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | | |
 |---|---|
 | Purpose | Add cards to selected zones (search/scan) |
-| Phone | Shell width band; compact card images; add action in first viewport (REQ-125/129); added cards horizontal L→R strip with region scroll (REQ-130); detail via corner popup (REQ-128) |
-| Desktop/tablet | Shell 92%/48rem; content-sized vertically (DEC-145); same density rules; keep primary add reachable without inventing empty-band fill |
-| Fit | No page scroll past a stranded add CTA; card strip region-scrolls horizontally |
-| Notes | DEC-151, REQ-125, REQ-128–130, DEC-145 |
+| Phone | Shell width band. **Search / scan:** the flexible search input and labeled Scan button share one non-wrapping row; Scan keeps the 44px touch floor while search takes remaining width (DEC-050/REQ-125). **Selected-card/add preview:** image uses the legibility-first shell-column treatment (clear majority of content width); the search field shows the exact selected name; no duplicate name/title renders below the art; Add action sits directly below and remains in the first viewport (REQ-125/129/141). The row height reclaimed from Scan may support the larger image but does not relax that Add bound. **Added cards:** horizontal L→R strip with region scroll (REQ-130), fixed `w-40` / 160px tiles, and images filling tile interiors under DEC-160 (≈92px → ≈144px). Detail uses the corner popup everywhere (REQ-128/DEC-158) |
+| Desktop/tablet | Shell 92%/48rem; content-sized vertically (DEC-145). Search and Scan keep the same single-row composition as phone. The selected-card/add preview grows with the shell column rather than retaining phone pixels; the added-card strip keeps the same fixed tile width and sizing rule. Keep primary add reachable without inventing empty-band fill |
+| Fit | No page scroll past a stranded add CTA — the selected-card preview's Add action `top` stays ≤ 844px at 390×844 (REQ-125/129). The card strip region-scrolls horizontally and must not become document horizontal scroll |
+| Notes | DEC-050, DEC-151, DEC-160, REQ-125, REQ-128–130, REQ-141, DEC-145. The selected-card/add preview is a card-reading surface and intentionally uses the large image. Added strip tiles are scannable add-order items — do not widen them to chase legibility; the corner popup is their read path. Search/Scan placement changes no scan, selection, owner, or add behavior. If either card form violates the Fit row, record a container bound here rather than forking `CardPresentation` or adding a size prop |
 
 #### In-Depth — Enrichment
 
 | | |
 |---|---|
 | Purpose | Optional per-card notes + question before decrypt |
-| Phone / Desktop | Shell width bands; content-sized vertically (DEC-145); compact card images + corner detail popup (DEC-151); question composer matches FollowUp composition with initial **Send Request** label (DEC-146/153); lists region-scroll |
-| Fit | Composer growth must not force page scroll or clip chrome below the field (REQ-110) |
-| Notes | DEC-146, DEC-153, REQ-110, REQ-132, DEC-145, DEC-151 |
+| Phone / Desktop | Shell width bands; content-sized vertically (DEC-145); card images size to the content column (DEC-160) — a clear majority of column width at 390×844, growing further at desktop — with the corner detail popup for metadata (DEC-151/DEC-158) and only **Remove card** beside/below the image (REQ-133); question composer matches FollowUp composition with initial **Send Request** label (DEC-146/153); lists region-scroll |
+| Fit | Composer growth must not force page scroll or clip chrome below the field (REQ-110); card image growth is bounded by the same no-page-scroll rule (REQ-129), with any needed cap recorded on this row |
+| Notes | DEC-146, DEC-153, REQ-110, REQ-132, DEC-145, DEC-151, DEC-158, DEC-160, REQ-133, REQ-141 |
 
 #### In-Depth — Answered workspace
 
@@ -183,10 +193,10 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | | |
 |---|---|
 | Purpose | On-device card capture into a zone |
-| Phone | Camera frame grows to fill **available viewport height** in the scan chrome (DEC-090); overlays stay non-overlapping |
-| Desktop/tablet | Same fill intent inside scan chrome; not a reason to widen unrelated suite shell |
-| Fit | Scan UI is its own full-bleed workspace; region overlays only |
-| Notes | DEC-090, DEC-052 family — do not re-layout scanner internals from generic “stretch” feedback |
+| Phone | Camera frame grows to fill **available viewport height** in the scan chrome (DEC-090); overlays stay non-overlapping. Scan review bubble: card images size to their list-row width under DEC-160 (they are no longer pixel-capped at 92×128px); the review list keeps its own vertical region scroll |
+| Desktop/tablet | Same fill intent inside scan chrome; not a reason to widen unrelated suite shell; same review-list sizing rule |
+| Fit | Scan UI is its own full-bleed workspace; region overlays only. The review list region-scrolls — larger images mean more scrolling, which is accepted (DEC-160) — but the review bubble must not displace or overlap the camera frame (DEC-090/REQ-129) |
+| Notes | DEC-090, DEC-160, REQ-129, DEC-052 family — do not re-layout scanner internals from generic “stretch” feedback. Scan review was outside `ui-review`'s original scope and is affected only because `ScanReviewBubble` consumes the shared `CardPresentation`; the density trade is documented in DEC-160. **Verify live at 390×844**: if the enlarged review bubble starves the camera frame, record a bounded image cap on this row — never fork the shared component |
 
 #### Player Life Tracker
 

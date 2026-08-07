@@ -12,11 +12,7 @@ describe("Frontend - MTG Assistant", () => {
 describe("Card state motion cues", () => {
   it("animates a newly selected card preview", () => {
     render(
-      <CardSelectionPreview
-        card={card as Required<ZoneCardItem>}
-        contextTitle="Stack card"
-        contextContent={null}
-      />
+      <CardSelectionPreview card={card as Required<ZoneCardItem>} />
     );
 
     expect(screen.getByRole("article")).toHaveClass("motion-enter");

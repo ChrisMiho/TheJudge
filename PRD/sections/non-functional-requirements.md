@@ -203,3 +203,25 @@
   - NFR-010
 - Notes:
   - the trade balancer is an optional top-level feature; like scanning, its data budget is scoped to users who actually use it
+
+### NFR-014
+- Title: Route-level code splitting and initial-payload posture
+- Description: With destinations addressable as routes (DEC-157 / REQ-140), the frontend's initial payload must scale with what a user actually opens rather than with the size of the whole suite, and must keep doing so as destinations are added.
+- Constraints:
+  - each registered destination is behind a `React.lazy` boundary, so a visitor who opens one destination does not download the code of destinations they never open
+  - code shared by more than one destination is grouped into an explicit `manualChunks` chunk rather than duplicated per destination chunk or hoisted into the common entry chunk
+  - `manualChunks` uses the **function form** (`(id) => ...`). The object form maps a chunk name to explicit module ids and does not accept path patterns, so a directory glob written there fails the build
+  - the scan surface is the known shared case, and it is **larger than `src/lib/scan/**`**: `src/hooks/useScanCapture.ts` is imported by Quick Question, In-Depth, and the trade destination, and `src/components/ScanCameraSurface.tsx` by Quick Question and trade. Chunk membership is determined by measured import-graph reachability from more than one destination, not by directory name — a group scoped to `src/lib/scan/**` alone leaves the heavier shared scan UI and capture-hook layer duplicated or hoisted
+  - `react`, `react-dom`, `react/jsx-runtime` (a distinct module id emitted by the automatic JSX transform), and `react-router` are grouped into a `vendor` chunk so framework code caches independently of feature code
+  - adding a destination must not require touching the chunking configuration for the common case — route-level splitting follows from the registry entry, not from per-feature build config
+  - this is a **code**-splitting posture only; it neither replaces nor weakens the existing data-artifact lazy loads (`cardhashes.bin` on first scan, NFR-010; `cardPrintingPrices.json` on first Trade Balancer open, NFR-013)
+  - the `Suspense` fallback must not flash on every destination switch: keep-alive mounting (DEC-095, preserved by DEC-157) means a destination suspends only on first visit
+  - route/lazy work must not lower any coverage threshold or delete a test to hit a timing target (NFR-012)
+- Dependencies:
+  - DEC-157
+  - REQ-140
+  - NFR-010
+  - NFR-012
+  - NFR-013
+- Notes:
+  - route boundaries additionally give the test suite natural split lines, which matters against NFR-012's measured headroom: at 1227 frontend cases the 3-shard gate runs 1m58s against a 2m00s target, and roughly 100 additional cases exhaust 3 shards. Net-new route tests that cross that line are handled by the sanctioned one-line shard-matrix bump, not by trimming tests.

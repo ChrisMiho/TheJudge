@@ -238,10 +238,13 @@ Frontend-only responsive presentation, motion, transition, and visual-feedback b
   - DEC-078
   - DEC-148
   - DEC-149
+  - DEC-158
   - FLOW-001
   - NFR-001
 - Notes:
   - identity rings, Remove, owner select, and enrichment fields remain available
+  - **popup geometry amended by DEC-158**: clause (2) said "a dismissible popup over the card" without constraining its box, and the shipped implementation read that as `absolute inset-0` on the image. DEC-158 frees the popup into the `AdaptiveContextDialog` overlay family; the corner-trigger affordance, local-fields-only content rule, and compact-image density intent of this decision are unchanged. The catalog row is `screen-layout.md` → *Card detail popup (suite-wide)*.
+  - **image sizing amended by DEC-160**: clause (1)'s "compact images" was implemented as a single fixed `max-h-32` on the shared component, producing an identical 92×128px render on every surface and at every viewport width. DEC-160 replaces the pixel cap with container-relative sizing, so all six card surfaces grow to what their own containers afford. This decision's first-viewport-fit *intent* is retained and REQ-129's criteria remain the ceiling; only the mechanism changes.
   - non-goals: sticky floating CTA bars over the preview, redesigning scan-engine chrome, changing stack ordering rules, or theme/brand redesign
 
 ### DEC-156
@@ -261,5 +264,78 @@ Frontend-only responsive presentation, motion, transition, and visual-feedback b
   - DEC-142
   - DEC-102
 - Notes:
-  - does not touch DEC-151's popup content/behavior, DEC-142's dismiss-trigger set, or DEC-102's `GamePlayerContext` field shapes — those stay as confirmed
-  - non-goal: redesigning Life Tracker's `CounterPanel`/`CounterControl`, or a broader icon/theme system pass beyond this close-control convention
+  - does not touch DEC-142's dismiss-trigger set or DEC-102's `GamePlayerContext` field shapes — those stay as confirmed
+  - **amended by DEC-158**: clause (1)'s "popup content/behavior unchanged" assumption was falsified by live measurement — the popup is bound to the card image's box and cannot host the consolidated content. DEC-158 frees it; the consolidation intent of clause (1) stands.
+  - **amended by DEC-159**: clause (2)'s "starting with `AdaptiveContextDialog`" scope is widened to every overlay close control via one shared component.
+  - **clarified by the `ui-review` live sweep (recorded in REQ-139)**: clause (3)'s "instead of a wide three-column grid" described only the desktop half of the defect — the fields already stack below `sm`, and the measured waste is control width at both bands (281px phone / 214px desktop for a two-digit value). The decision itself is unchanged: bounded stacked selects at both bands. Stacking the desktop row costs section height, which is an accepted trade (REQ-139).
+  - non-goal: redesigning Life Tracker's `CounterPanel`/`CounterControl` stepper, or a broader icon/theme system pass beyond this close-control convention
+
+### DEC-158
+- Decision: The card detail popup is **no longer bound to the card image's bounding box**. It renders as an overlay sized to its own content — matching the existing `AdaptiveContextDialog` overlay family (bottom sheet below 768px, side panel at 768px+) — rather than `position: absolute; inset: 0` over the image. This amends DEC-151, which specified a "corner detail popup" without constraining its geometry, and unblocks DEC-156/REQ-133's consolidation of card fields into that popup.
+- Status: confirmed
+- Context: Live Playwright measurement at 390×844 during `ui-review` refinement found the shipped popup is **92×128 px** (the image's own box) while its content measures **356 px tall** — a 2.8× overflow into a 128px scroll container with a 66px-wide text column — and its 44px close control lays out at x=234–278 while the dialog ends at x=241, so the X **overflows its own container by 37 px** and is effectively unusable. DEC-156 and REQ-133 assumed the popup could absorb the sidebar's fields with "popup content, X close control, and dismiss behavior unchanged"; that assumption is false at mobile width, and moving more content in would worsen it. The product owner's original report already anticipated this ("it's okay if a new popup appears… the card doesn't need to be restricted by the size of the image").
+- Impact:
+  - `CardDetailPopup` renders through a portal into the overlay family instead of `absolute inset-0` on the image container
+  - the popup's own close control is the shared themed control from DEC-159, laid out inside its own bounds at every width
+  - because `CardPresentation`/`CardSelectionPreview` are shared, this applies identically to **all six** card surfaces: Quick Question card search, In-Depth Enrichment, the card shown inside the View Context sheet, the In-Depth zone-collection selected-card/add preview, the In-Depth zone strip (`ZoneCardPicker`), and Scan review (`ScanReviewBubble`)
+  - DEC-151's compact-image / first-viewport-fit intent is retained — this changes only where the popup renders, not the density model
+  - `screen-layout.md`'s *Card detail popup (suite-wide)* row is updated to this geometry (phone bottom sheet / desktop side panel, content-sized, close control inside its own bounds) per DEC-149's catalog-update duty; the superseded `absolute inset-0` geometry is recorded there
+  - presentation only — no change to card identity, selection state, `AskAiRequest`, Zod schemas, or backend routes
+- Related requirements:
+  - REQ-128
+  - REQ-133
+  - REQ-141
+  - REQ-142
+  - DEC-151
+  - DEC-156
+- Notes:
+  - amends DEC-151's popup geometry; supersedes DEC-156 clause (1)'s "popup unchanged" qualifier while keeping its consolidation intent
+  - a popup rendered inside a 92×128 box is the root cause of the "text box that opens over the photo is too small" report — treat the geometry as the defect, not the content
+
+### DEC-159
+- Decision: Every overlay close control in the app renders through **one shared component** whose color derives from the active theme palette, replacing today's copy-pasted zinc chrome and the two remaining text **Close** buttons. Adopters: `AdaptiveContextDialog` (View Context), `ConversationHistoryDrawer`, `CardDetailPopup`, `FeedbackModal`, Life Tracker's `CounterPanel`, and Life Tracker's `GameSetupModal`.
+- Status: confirmed
+- Context: The `ui-review` sweep found three inconsistent close treatments across six overlays: `AdaptiveContextDialog` and `ConversationHistoryDrawer` render a text `Close` button (identical `adaptive-context-close` class strings), while `CardDetailPopup`, `FeedbackModal`, `CounterPanel` and `GameSetupModal` render a circular `×` whose Tailwind class string is duplicated verbatim in each file and hardcodes `zinc` rather than deriving from the theme. The product owner asked for "a more elegant x in the corner… that's color derives from the theme of choice". Duplicated chrome across files is a defect under `technical-design-rules.md`'s reuse-before-creating rule, not a style preference.
+- Impact:
+  - one shared close-control component is the single authoritative definition; the duplicated class strings are removed from all six call sites
+  - the control's color derives from the active theme palette (the existing `useThemePalette`/accent token path), not hardcoded `zinc`
+  - the control stays at or above the 44px touch-target floor (NFR-001) and keeps each overlay's existing accessible name
+  - supersedes DEC-156 clause (2)'s narrower "starting with `AdaptiveContextDialog`" scope
+  - presentation only — no dismiss-trigger, focus-trap, or persistence change
+- Related requirements:
+  - REQ-135
+  - REQ-142
+  - DEC-156
+  - DEC-142
+  - NFR-001
+- Notes:
+  - does not change DEC-142's dismiss-trigger set, focus restore, or reduced-motion behavior
+  - non-goal: a broader icon system or theme redesign beyond close controls; Life Tracker's `CounterControl` stepper geometry (DEC-136/DEC-139) is untouched
+
+### DEC-160
+- Decision: Card images size **relative to their container**, not to a fixed pixel cap. `CardPresentation`'s single `max-h-32` (128px) height cap is replaced by a rule that lets the image fill the width its host container affords, preserving aspect ratio. Because one shared component serves all six card surfaces, every surface's image grows to what its own layout already allows — no per-surface variant, no forked component, no per-screen size prop. This amends DEC-151 clause (1)'s "compact images" default: compactness stops being an absolute pixel ceiling and becomes a property of the container each surface provides.
+- Status: confirmed
+- Context: `ui-review`'s primary product-owner concern was that a selected card is unreadable ("the card image is so small you cannot read it"). Live measurement found `CardPresentation.tsx` caps every card image at `max-h-32`, yielding an identical 92×128px render at both 390×844 and 1440×900 — ~31% of the phone content column, and no response to desktop width at all. The first refinement pass scoped the fix to three surfaces (Quick Question card search, In-Depth Enrichment, the View Context sheet); quality-check then found the In-Depth zone strip and Scan review, and a later gate found `ZoneCardPicker` also renders a distinct selected-card/add preview before the strip. That makes **six user-visible surfaces**. Raising a single pixel cap uniformly would break the 160px strip; adding a size variant would split the shared component. Container-relative sizing resolves both: the strip tile keeps its 160px width and its image grows to ~144px inside it, while the four shell-column surfaces grow to ~300px. Product-owner decision (2026-08-06): all six surfaces grow; the zone selected-card/add preview uses the legibility-first shell-column treatment while REQ-125 keeps its Add action in the first viewport.
+- Impact:
+  - `CardPresentation`'s fixed `max-h-32` is removed; the image sizes to its container with aspect ratio preserved and no cropping (REQ-058 identity rules unchanged)
+  - Quick Question card search, In-Depth Enrichment, and the View Context sheet gain a materially larger image (shell-column width, ~300px at 390×844) — this is REQ-141's legibility floor
+  - the In-Depth zone-collection selected-card/add preview uses the same large shell-column treatment; its exact selected name lives in the search field, the duplicate standalone name below the art is removed, and the Add action remains directly below the image (REQ-125)
+  - the In-Depth zone strip's images grow inside the existing `w-40` tile; the tile does **not** widen and the horizontal strip layout of REQ-130 is unchanged
+  - Scan review's images grow to their list-row width inside the existing scrolling review list
+  - REQ-129's two behavioral criteria are the binding ceiling on all of this: the zone-collection add action's `top` stays ≤ 844px at 390×844, and no card surface may force page scroll. Where container-relative sizing would violate either, the hosting screen's `screen-layout.md` row records a bounded cap — a row-level constraint, never a component fork
+  - `screen-layout.md` rows for Quick Question pre-submit, In-Depth Enrichment, View Context, In-Depth zone collection, and Scan camera surface are updated to record the new sizing intent (DEC-149 catalog-update duty)
+  - presentation only — no change to card identity, selection state, image source/quality tier, `AskAiRequest`, Zod schemas, or backend routes
+- Related requirements:
+  - REQ-141
+  - REQ-133
+  - REQ-129
+  - REQ-130
+  - REQ-125
+  - REQ-058
+  - DEC-151
+  - DEC-149
+  - DEC-090
+- Notes:
+  - amends DEC-151 clause (1); the corner detail trigger, the local-fields-only popup content rule, and DEC-151's first-viewport-fit *intent* are all unchanged — only the mechanism by which "compact" is expressed changes
+  - the accepted trade is on **Scan review**: full-width images in a scrolling review list mean more scrolling to check a multi-card scan, on a surface the product owner did not report. It degrades gracefully (the list already scrolls) and was accepted rather than carved out, to keep one sizing rule across the shared component. If live verification at 390×844 shows the review bubble starving DEC-090's camera frame, record a bounded cap on the *Scan camera surface* catalog row
+  - do not "fix" the resulting larger images by reintroducing a pixel cap in the shared component, by forking per screen, or by adding a size prop — the whole point is one rule whose result differs because the containers differ

@@ -95,7 +95,7 @@ describe("Frontend - Responsive surface hooks", () => {
   it("keeps semantic hooks on responsive card and conversation content", async () => {
     const user = userEvent.setup();
     const { rerender } = render(
-      <CardSelectionPreview card={cardWithoutImage} contextTitle="Stack card" contextContent={null} />
+      <CardSelectionPreview card={cardWithoutImage} />
     );
     // No image available: CardPresentation's shared text-first fallback renders directly
     // (DEC-78/DEC-151) rather than a dedicated empty "No image" placeholder box.

@@ -7,9 +7,11 @@ import {
   type KeyboardEvent as ReactKeyboardEvent
 } from "react";
 import { useFeedbackForm, UNCONFIGURED_HINT } from "../../hooks/useFeedbackForm";
+import { useOutsideDismiss } from "../../hooks/useOutsideDismiss";
 import { summarizeFeedbackContext } from "../../lib/feedback/summarizeFeedbackContext";
 import type { FeedbackCategory } from "../../lib/feedback/submitFeedback";
 import type { FeedbackContext } from "../../lib/feedback/types";
+import { OverlayCloseButton } from "../OverlayCloseButton";
 
 const CATEGORY_OPTIONS: ReadonlyArray<{ value: FeedbackCategory; label: string }> = [
   { value: "bug", label: "Bug" },
@@ -112,6 +114,8 @@ function FeedbackDialog({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
+  useOutsideDismiss([dialogRef], onClose, true);
+
   /**
    * Focus trap: Tab off the last focusable element wraps to the first and
    * Shift+Tab off the first wraps to the last, so focus can never escape the
@@ -160,9 +164,6 @@ function FeedbackDialog({
     <div
       data-testid="feedback-modal-backdrop"
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-2 sm:items-center sm:p-4"
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
     >
       <div
         ref={dialogRef}
@@ -180,14 +181,7 @@ function FeedbackDialog({
               Send feedback
             </h2>
           </div>
-          <button
-            type="button"
-            aria-label="Close feedback"
-            onClick={onClose}
-            className="motion-focus min-h-11 min-w-11 rounded-full border border-zinc-700 bg-zinc-800 text-2xl text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100"
-          >
-            ×
-          </button>
+          <OverlayCloseButton label="Close feedback" onClick={onClose} />
         </header>
 
         <form

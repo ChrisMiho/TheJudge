@@ -366,7 +366,8 @@ Decrypt wait UX and follow-up conversation history behavior.
   - DEC-134
 - Notes:
   - amends DEC-118's "closes by explicit control and Escape" clause for View Context; extends the same dismiss model to History for overlay-family consistency
-  - non-goals: click-outside dismiss for non-overlay panels (e.g. Life Tracker counter panel already has its own chrome), or removing Escape/Close
+  - **amended during the `ui-review` pass**: this decision's original non-goal excluded Life Tracker's counter panel as a "non-overlay panel that already has its own chrome". DEC-139 subsequently moved `CounterPanel` into the full-height overlay family, so that premise no longer holds; REQ-143 extends scrim dismissal to it and makes one shared outside-click implementation authoritative across the overlay family. The dismiss-trigger set is widened, never narrowed.
+  - non-goals: click-outside dismiss for genuinely non-overlay panels, or removing Escape/Close
 
 ### DEC-143
 - Decision: Completed browser-local conversation history entries are **user-deletable** from the History drawer. Each completed row exposes a delete affordance; confirming delete removes that entry from local storage immediately. Deleting the **active** completed conversation also clears the workspace (same destination return as Start Over) **without** re-saving the deleted thread. The 20-entry auto-prune cap remains. Draft rows are not covered by this delete control (Draft keeps DEC-130/138 overwrite/clear rules).

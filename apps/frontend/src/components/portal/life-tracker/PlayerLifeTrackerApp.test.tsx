@@ -36,8 +36,8 @@ async function openGameSetup(user: ReturnType<typeof userEvent.setup>): Promise<
 function DestinationHarness(): JSX.Element {
   const [activeDestinationId, setActiveDestinationId] = useState<DestinationId>("player-life-tracker");
   const destinations: PortalDestination[] = [
-    { id: "player-life-tracker", label: "Life Tracker", render: () => <PlayerLifeTrackerApp /> },
-    { id: "other", label: "Other", render: () => <div>Other destination</div> }
+    { id: "player-life-tracker", path: "/life-tracker", label: "Life Tracker", render: () => <PlayerLifeTrackerApp /> },
+    { id: "other", path: "/other", label: "Other", render: () => <div>Other destination</div> }
   ];
 
   return (
@@ -241,10 +241,14 @@ describe("Frontend - Shared", () => {
     it("wires Reset and New Game through the tracker's cleanup behavior", async () => {
       const user = userEvent.setup();
       render(<PlayerLifeTrackerApp />);
-      await openGameSetup(user);
 
+      // Game Setup is a full-screen overlay (outside-dismiss now covers it), so the
+      // decrement that Reset must undo happens before it opens, not on background
+      // content behind it.
       await user.click(screen.getByRole("button", { name: "Decrease life for Player 1" }));
       expect(localStorage.length).toBe(1);
+
+      await openGameSetup(user);
       await user.click(screen.getByRole("button", { name: "Reset current game" }));
       await user.click(screen.getByRole("button", { name: "Confirm reset current game" }));
       expect(within(screen.getByTestId("life-card-Player 1")).getByText("40")).toBeInTheDocument();

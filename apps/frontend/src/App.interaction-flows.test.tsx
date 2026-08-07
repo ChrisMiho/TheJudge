@@ -42,7 +42,11 @@ describe("Interaction flows - search and game context", () => {
     await user.type(searchInput, "t");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
 
-    expect(screen.getByRole("heading", { name: "Opt" })).toBeInTheDocument();
+    // REQ-133/DEC-160: the staged preview is the shared CardPresentation only — no
+    // duplicated name heading beside it. This fixture carries no image, so the text-first
+    // fallback is what renders and it still carries the card's name.
+    expect(screen.queryByRole("heading", { name: "Opt" })).not.toBeInTheDocument();
+    expect(screen.getByTestId("card-presentation-fallback")).toHaveTextContent("Opt");
     expect(screen.getByText("Scry 1, then draw a card.")).toBeInTheDocument();
   });
 
@@ -158,7 +162,8 @@ describe("Interaction flows - search and game context", () => {
     fireEvent.keyDown(searchInput, { key: "ArrowDown" });
     fireEvent.keyDown(searchInput, { key: "Enter" });
 
-    expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Lightning Bolt" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Stack search input")).toHaveValue("Lightning Bolt");
     expect(screen.queryByRole("button", { name: "Lightning Bolt" })).not.toBeInTheDocument();
   });
 
@@ -181,7 +186,8 @@ describe("Interaction flows - search and game context", () => {
     fireEvent.keyDown(battlefieldSearchInput, { key: "ArrowDown" });
     fireEvent.keyDown(battlefieldSearchInput, { key: "Enter" });
 
-    expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Lightning Bolt" })).toBeInTheDocument();
+    expect(battlefieldSearchInput).toHaveValue("Lightning Bolt");
     expect(screen.queryByLabelText("Battlefield item details")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Lightning Bolt" })).not.toBeInTheDocument();
   });
