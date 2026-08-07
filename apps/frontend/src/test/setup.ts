@@ -1,6 +1,9 @@
-import { afterEach } from "vitest";
+import { afterEach, beforeAll } from "vitest";
 import { cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
+import { preloadPortalDestinations } from "../components/portal/destinationRegistry";
+
+beforeAll(preloadPortalDestinations);
 
 afterEach(() => {
   cleanup();
