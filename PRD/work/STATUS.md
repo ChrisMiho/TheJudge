@@ -25,6 +25,7 @@ Do not rename package folders to encode status.
 - [card-collection-manager](./card-collection-manager/)
 - [scan-non-english-special-treatments](./scan-non-english-special-treatments/)
 - [life-tracker-me-map-and-tray](./life-tracker-me-map-and-tray/)
+- [frontend-routing-and-code-splitting](./frontend-routing-and-code-splitting/)
 
 ## owner-action
 
