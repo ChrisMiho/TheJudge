@@ -2,6 +2,8 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import type { ConversationHistoryEntry } from "../lib/conversationHistory/persistence";
 import { useLeftEdgeDrawer } from "../lib/portal/leftEdgeDrawerContext";
+import { OverlayCloseButton } from "./OverlayCloseButton";
+import { useOutsideDismiss } from "../hooks/useOutsideDismiss";
 
 export type ConversationHistoryDraftDescriptor = {
   updatedAt: string;
@@ -59,6 +61,8 @@ export function ConversationHistoryDrawer({
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const { activeDrawer, openDrawer, closeDrawer } = useLeftEdgeDrawer();
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+  useOutsideDismiss([dialogRef], onClose, isOpen);
 
   useEffect(() => {
     if (isOpen) {
@@ -138,14 +142,10 @@ export function ConversationHistoryDrawer({
   if (!isOpen) return null;
 
   return createPortal(
-    // DEC-142/REQ-117: activating the dimmed scrim (this root, outside the panel surface)
-    // closes the drawer via the same onClose path as Close/Escape. The surface below stops
-    // propagation so clicks inside it never reach this handler.
-    <div
-      className="conversation-history-overlay"
-      data-testid="conversation-history-overlay"
-      onClick={onClose}
-    >
+    // DEC-142/REQ-117: the dimmed scrim (this root, outside the panel surface) closes the
+    // drawer via the shared useOutsideDismiss hook above, the same onClose path as
+    // Close/Escape.
+    <div className="conversation-history-overlay" data-testid="conversation-history-overlay">
       <section
         ref={dialogRef}
         role="dialog"
@@ -153,22 +153,13 @@ export function ConversationHistoryDrawer({
         aria-labelledby={titleId}
         tabIndex={-1}
         onKeyDown={handleDialogKeyDown}
-        onClick={(event) => event.stopPropagation()}
         className="conversation-history-surface ambient-accent-surface border border-zinc-700 bg-zinc-950 text-zinc-100 shadow-2xl"
       >
         <div className="adaptive-context-header flex items-center justify-between gap-3 border-b border-zinc-700/70">
           <h2 id={titleId} className="text-base font-semibold text-zinc-100">
             Conversation history
           </h2>
-          <button
-            ref={closeRef}
-            type="button"
-            aria-label="Close conversation history"
-            onClick={onClose}
-            className="adaptive-context-close rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700"
-          >
-            Close
-          </button>
+          <OverlayCloseButton ref={closeRef} label="Close conversation history" onClick={onClose} />
         </div>
 
         <div className="adaptive-context-content">

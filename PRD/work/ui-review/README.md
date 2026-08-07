@@ -2,22 +2,38 @@ status: active
 
 # ui-review
 
+## Autonomous metadata
+
+- Autonomous base: origin/main
+
+Slices A-C used `origin/feature/routing` as the base; that branch was merged to
+`main` on 2026-08-07 once A-C shipped, so the remaining slices branch from
+`origin/main`.
+
 Concrete UI polish/bug-fix pass over the card-context flow and player/game panels (see `braindump.md`, `IDEA.md`).
 
 Absorbs `ui-screen-layout-truth`'s problem framing — that package's durable deliverable (`PRD/sections/screen-layout.md`, DEC-149, REQ-126) already shipped outside `PRD/work/`, so its work-package folder was retired rather than merged file-for-file. Refinement here should use that catalog as the layout guardrail, not re-derive it.
 
 ## Slices
 
-| Slice | Objective | Depends on |
-| --- | --- | --- |
-| [A](slice-a-overlay-foundation.md) | Shared themed close control and one outside-dismiss contract across the overlay family | — |
-| [B](slice-b-card-detail-overlay.md) | Portal-hosted card detail bottom sheet / side panel on all six card surfaces | A — consumes the shared close and dismiss primitives |
-| [C](slice-c-card-composition.md) | Container-relative card sizing, staged-card consolidation, and zone selected-card composition | B — consolidation cannot target the image-bound popup |
-| [D](slice-d-question-counter.md) | Raw-editable-text counter and submit-gate integrity in Quick Question | — |
-| [E](slice-e-player-details.md) | In-Depth player disclosure, grouped counter rows, and bounded scalar selects | — |
-| [F](slice-f-rail-footprint.md) | Real in-flow corner-rail footprint and answered-workspace gap removal | — |
-| [G](slice-g-price-freshness.md) | Human-readable Trade Balancer price freshness | — |
-| [H](slice-h-integration-and-ship-gates.md) | Integrated browser regression, full quality gate, and cleanup handoff | A–G |
+| Slice | Status | Objective | Depends on |
+| --- | --- | --- | --- |
+| [A](slice-a-overlay-foundation.md) | done | Shared themed close control and one outside-dismiss contract across the overlay family | — |
+| [B](slice-b-card-detail-overlay.md) | done | Portal-hosted card detail bottom sheet / side panel on all six card surfaces | A — consumes the shared close and dismiss primitives |
+| [C](slice-c-card-composition.md) | done | Container-relative card sizing, staged-card consolidation, and zone selected-card composition | B — consolidation cannot target the image-bound popup |
+| [D](slice-d-question-counter.md) | planned | Raw-editable-text counter and submit-gate integrity in Quick Question | — |
+| [E](slice-e-player-details.md) | planned | In-Depth player disclosure, grouped counter rows, and bounded scalar selects | — |
+| [F](slice-f-rail-footprint.md) | planned | Real in-flow corner-rail footprint and answered-workspace gap removal | — |
+| [G](slice-g-price-freshness.md) | planned | Human-readable Trade Balancer price freshness | — |
+| [H](slice-h-integration-and-ship-gates.md) | planned | Integrated browser regression, full quality gate, and cleanup handoff | A–G |
+
+Known live-verification limit carried forward from slice B: the Scan review card
+surface cannot be reached in Playwright because the client-side perceptual-hash
+identifier never converges on Chrome's synthetic fake-camera pattern, and this MCP
+server exposes no `--use-file-for-fake-video-capture` control. That surface is
+covered by `ScanReviewBubble.test.tsx` plus the shared component/CSS rule measured
+live on the other five surfaces. Slices C and H should re-attempt it live only if a
+real-camera path becomes available, and otherwise record the same limit.
 
 Slices A, D, E, F, and G are parallel-ready from a product/dependency standpoint.
 B is sequential on A, C is sequential on B, and H is sequential on every product
@@ -51,8 +67,33 @@ and the affected `screen-layout.md` rows are the implementation authority. The
 final slice checks those records and corrects stale flow wording before cleanup;
 it does not invent a second roadmap or promote work-package prose as durable truth.
 
+## Resume point (2026-08-07)
+
+Slices **A, B, C are done** and shipped: PR #86 merged into `feature/routing`,
+which then went to `main`. Slices **D-H remain planned** and the package stays
+`active` — do not run `thejudge-cleanup` yet.
+
+Pick up with `$thejudge-implement PRD/work/ui-review/ slice D`, or
+`$thejudge-implement-all PRD/work/ui-review/` to take D through H in one run.
+D, E, F, and G have no dependencies on each other; H depends on all of them.
+Slice D's `### Handoff` block carries the cold-start detail.
+
+Two things the next agent inherits rather than rediscovers:
+
+1. **A shipped shortfall, not a passed criterion.** Slice C capped the shared
+   shell column at `25dvh` / `42dvh` because an unbounded image pushed Quick
+   Question's Send Request past the 844px fold — REQ-129's Fit rule binding
+   ahead of DEC-160's growth, which the catalog says wins. The consequence is
+   that REQ-141's "clear majority of content width at phone" is **not met** on
+   Quick Question (45.5%). Measurements are on that `screen-layout.md` row and
+   in `slice-c-card-composition.md`. Slice H should either accept and record
+   this or revisit the surrounding layout — it should not be quietly ticked off.
+2. **Scan review has never been verified live** (see the limit note above).
+
+The cross-package coordination note below is satisfied:
+`frontend-routing-and-code-splitting` merged before slices A-C were implemented,
+so slices F and H already resolve against the routed/lazy shell.
+
 ## Next step
 
-Start with `$thejudge-implement PRD/work/ui-review/ slice A`, or complete the
-package unattended with `$thejudge-implement-all PRD/work/ui-review/` after the
-cross-package coordination note above is satisfied.
+`$thejudge-implement PRD/work/ui-review/ slice D` (see Resume point above).

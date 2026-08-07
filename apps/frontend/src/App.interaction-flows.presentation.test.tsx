@@ -110,7 +110,7 @@ describe("Interaction flows - zone card presentation", () => {
     await advancePastZoneCollection(user);
 
     const image = screen.getByRole("img", { name: "Lightning Bolt" });
-    expect(image).toHaveClass("h-auto", "w-auto", "object-contain");
+    expect(image).toHaveClass("h-auto", "w-full", "object-contain");
 
     const row = screen.getByLabelText("Caster for Lightning Bolt").closest("li");
     expect(row).toHaveClass("enrichment-card-row", "card-identity-ring");
@@ -127,9 +127,17 @@ describe("Interaction flows - zone card presentation", () => {
         name: "Show details for Lightning Bolt"
       })
     );
-    expect(within(header as HTMLElement).getByTestId("card-detail-popup")).toBeInTheDocument();
-    expect(within(header as HTMLElement).getByText("Lightning Bolt")).toBeInTheDocument();
-    expect(within(header as HTMLElement).getByText("Lightning Bolt deals 3 damage to any target.")).toBeInTheDocument();
+    // DEC-158: the popup is portaled to <body>, so it is never bound by the enrichment card
+    // header it was opened from — the header itself still shows no duplicated detail.
+    expect(within(header as HTMLElement).queryByTestId("card-detail-popup")).not.toBeInTheDocument();
+    expect(within(header as HTMLElement).queryByText("Lightning Bolt")).not.toBeInTheDocument();
+    const detailPopup = screen.getByTestId("card-detail-popup");
+    expect(within(detailPopup).getByText("Lightning Bolt")).toBeInTheDocument();
+    expect(within(detailPopup).getByText("Lightning Bolt deals 3 damage to any target.")).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", { name: "Close details for Lightning Bolt" })
+    );
 
     expect(within(row as HTMLElement).getByLabelText("Caster for Lightning Bolt")).toBeInTheDocument();
     expect(within(row as HTMLElement).getByLabelText("Mana spent for Lightning Bolt")).toBeInTheDocument();
@@ -146,7 +154,7 @@ describe("Interaction flows - zone card presentation", () => {
     await advanceToContextEnrichmentFromZones(user);
 
     const image = screen.getByRole("img", { name: "Lightning Bolt" });
-    expect(image).toHaveClass("h-auto", "w-auto", "object-contain");
+    expect(image).toHaveClass("h-auto", "w-full", "object-contain");
 
     const row = screen.getByLabelText("Caster for Lightning Bolt").closest("li");
     const header = image.closest(".enrichment-card-header");

@@ -110,13 +110,18 @@ export function ZoneCardPicker({
       {!isScanOpen && (
         <label className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
           {`${ZONE_LABELS[zoneId]} search`}
-          <span className="mt-2 grid gap-2 normal-case tracking-normal sm:grid-cols-[1fr_auto] sm:items-center">
+          {/* REQ-125/DEC-160: search and the labeled Scan share one non-wrapping row at every
+              width — search flexes, Scan keeps its label and a 44px touch floor. The prior
+              `sm:grid-cols-[1fr_auto]` collapsed to a single column below 640px, stacking
+              Scan under search and pushing the selected-card preview and its Add action a row
+              further down the phone viewport. */}
+          <span className="mt-2 grid grid-cols-[1fr_auto] items-center gap-2 normal-case tracking-normal">
             <input
               aria-label={`${ZONE_LABELS[zoneId]} search input`}
               value={searchInput}
               onChange={(event) => onSearchInputChange(event.target.value)}
               onKeyDown={onSearchKeyDown}
-              className="w-full rounded-xl border border-zinc-600 bg-zinc-800/80 px-3 py-2 text-sm"
+              className="min-h-11 w-full min-w-0 rounded-xl border border-zinc-600 bg-zinc-800/80 px-3 py-2 text-sm"
               placeholder="Type to begin"
             />
             {scan && (
@@ -126,7 +131,7 @@ export function ZoneCardPicker({
                   event.preventDefault();
                   void scan.onOpen();
                 }}
-                className="rounded-xl border border-accent/70 bg-accent/15 px-4 py-2 text-sm font-semibold text-accent-soft transition hover:bg-accent/25"
+                className="min-h-11 whitespace-nowrap rounded-xl border border-accent/70 bg-accent/15 px-4 py-2 text-sm font-semibold text-accent-soft transition hover:bg-accent/25"
               >
                 Scan
               </button>
@@ -223,14 +228,11 @@ export function ZoneCardPicker({
       {!isScanOpen && selectedCard && (
         <CardSelectionPreview
           card={selectedCard}
-          contextTitle={`${ZONE_LABELS[zoneId]} card`}
-          showContextSection={false}
-          contextContent={null}
           action={
             <button
               type="button"
               onClick={onAddSelectedCard}
-              className="rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2 text-sm font-semibold text-accent-contrast shadow-md transition hover:opacity-90"
+              className="min-h-11 rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2 text-sm font-semibold text-accent-contrast shadow-md transition hover:opacity-90"
             >
               {addButtonLabel}
             </button>
@@ -250,10 +252,13 @@ export function ZoneCardPicker({
                 className="card-identity-ring zone-card-tile enrichment-card-enter card-state-remove flex w-40 shrink-0 flex-col gap-1 rounded-xl border border-zinc-700/80 bg-zinc-950/40 p-2"
                 style={getCardIdentityRingStyle(card.colors)}
               >
+                {/* DEC-160/REQ-130: the tile keeps its fixed w-40 footprint and its place in
+                    the horizontal strip; only the image inside it grows, from the shared
+                    92px render to roughly the tile's interior width. */}
                 <CardPresentation
                   card={card}
                   className="w-full"
-                  imageClassName="zone-card-tile-image shrink-0 rounded"
+                  imageClassName="zone-card-tile-image rounded"
                   actions={
                     <div className="space-y-1">
                       {zoneId === "stack" ? (

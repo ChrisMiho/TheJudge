@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { createPortal } from "react-dom";
 import { BrandMark } from "../BrandMark";
 import type { ConversationHistoryTriggerDescriptor } from "../ConversationWorkspace";
+import { useOutsideDismiss } from "../../hooks/useOutsideDismiss";
 import { useLeftEdgeDrawer } from "../../lib/portal/leftEdgeDrawerContext";
 import { PortalSlotContext } from "../../lib/portal/slotContext";
 import { isPortalActionEntry, type DestinationId, type PortalEntry } from "../../lib/portal/types";
@@ -151,20 +152,13 @@ export function FeaturePortalMenu({
   // committed its latest historyTrigger into the ref this getter reads.
   const historyTrigger = visibleSlotEntry?.getHistoryTrigger();
 
+  // The drawer may be portaled into a shell-bounds node elsewhere in the DOM (not a
+  // descendant of containerRef), so a click landing inside it must not read as "outside".
+  useOutsideDismiss([containerRef, drawerRef], () => setIsOpen(false), isOpen);
+
   useEffect(() => {
     if (!isOpen) {
       return;
-    }
-
-    function handlePointerDown(event: MouseEvent): void {
-      const target = event.target as Node;
-      // The drawer may be portaled into a shell-bounds node elsewhere in the DOM (not a
-      // descendant of containerRef), so a click landing inside it must not read as "outside".
-      const insideContainer = containerRef.current?.contains(target) ?? false;
-      const insideDrawer = drawerRef.current?.contains(target) ?? false;
-      if (!insideContainer && !insideDrawer) {
-        setIsOpen(false);
-      }
     }
 
     function handleKeyDown(event: KeyboardEvent): void {
@@ -173,10 +167,8 @@ export function FeaturePortalMenu({
       }
     }
 
-    document.addEventListener("mousedown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen]);

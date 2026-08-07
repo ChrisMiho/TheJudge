@@ -409,9 +409,41 @@
   margin-top: var(--enrichment-card-row-gap);
 }
 
-/* Scale the enrichment card image down (80% -> 51.2% of the row width). */
-.enrichment-card-presentation img {
-  width: 51.2%;
+/* DEC-160: the shell-column card surfaces (Quick Question pre-submit, the frozen View
+   Context card, and the In-Depth zone selected-card/add preview) share one content column
+   for the image. The image itself is container-relative (`w-full` on CardPresentation), so
+   this column — not a component prop or a height cap — is what decides the rendered size.
+   The bound is a *width* on the host container, growing with the viewport so desktop
+   renders larger than phone, and exists to satisfy REQ-129's Fit ceiling: an unbounded
+   full-column image forces page scroll on the hosting step, which REQ-129 makes the
+   binding constraint on all of DEC-160's growth. Recorded on the Quick Question pre-submit,
+   View Context, and In-Depth zone collection rows of screen-layout.md. */
+.card-shell-column {
+  max-width: min(100%, 20rem);
+}
+
+/* The bounded cap REQ-129 requires. Measured at 390x844: an unbounded column rendered the
+   card at 265x369 and pushed Quick Question's Send Request to top 868px with 1004px of
+   document scroll — DEC-160's growth losing to REQ-129's Fit rule, which the catalog says
+   wins. Bounding the column's *height* against the viewport keeps the aspect ratio intact
+   (width follows), keeps desktop larger than phone, and is a host-row constraint rather
+   than a component fork or a reinstated shared `max-h-32`. Recorded on the Quick Question
+   pre-submit, In-Depth Enrichment, View Context, and In-Depth zone collection rows of
+   screen-layout.md. */
+.card-shell-column img {
+  width: auto;
+  max-height: 25dvh;
+  margin-inline: auto;
+}
+
+@media (min-width: 768px) {
+  .card-shell-column {
+    max-width: 24rem;
+  }
+
+  .card-shell-column img {
+    max-height: 42dvh;
+  }
 }
 
 .enrichment-card-row {
@@ -652,9 +684,13 @@
   animation: adaptive-context-overlay-enter var(--motion-fast) var(--motion-ease-out) both;
 }
 
+/* REQ-135/screen-layout.md "View Context": capped at 75dvh (not the prior
+   min(85dvh, 48rem)) so a dismissible scrim of >=25% viewport height stays
+   reachable above the sheet at 390x844, rather than reading as page content
+   showing through. */
 .adaptive-context-surface {
   width: 100%;
-  max-height: min(85dvh, 48rem);
+  max-height: 75dvh;
   overflow-y: auto;
   border-radius: 1rem 1rem 0 0;
   padding: var(--layout-panel-padding);
@@ -666,6 +702,40 @@
 }
 
 .adaptive-context-content {
+  padding-top: var(--layout-content-padding);
+}
+
+/* Card detail popup (DEC-158, screen-layout.md "Card detail popup"): the same overlay-family
+   composition as View Context above, so the popup is sized by its own content instead of the
+   card image's bounding box. It sits one layer above .adaptive-context-overlay because it is
+   routinely opened from the frozen card *inside* View Context; DOM order alone would carry it
+   there today, but the explicit z-index keeps that true regardless of portal mount order. */
+.card-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: flex-end;
+  background: rgb(9 9 11 / 0.72);
+  animation: adaptive-context-overlay-enter var(--motion-fast) var(--motion-ease-out) both;
+}
+
+.card-detail-surface {
+  width: 100%;
+  /* Height is content-driven; the cap only bounds a long oracle text into a region scroll,
+     leaving a dismissible scrim above the sheet the way View Context does. */
+  max-height: 75dvh;
+  overflow-y: auto;
+  border-radius: 1rem 1rem 0 0;
+  padding: var(--layout-panel-padding);
+  animation: adaptive-context-enter var(--motion-base) var(--motion-ease-emphasized) both;
+}
+
+.card-detail-header {
+  padding-bottom: var(--layout-compact-gap);
+}
+
+.card-detail-content {
   padding-top: var(--layout-content-padding);
 }
 
@@ -685,6 +755,19 @@
   }
 
   .adaptive-context-surface {
+    width: min(30rem, 90vw);
+    max-height: none;
+    border-radius: 1rem 0 0 1rem;
+  }
+
+  /* Side panel at 768px+, tracking the View Context row's width rather than a free
+     full-viewport panel (screen-layout.md "Card detail popup"). */
+  .card-detail-overlay {
+    align-items: stretch;
+    justify-content: flex-end;
+  }
+
+  .card-detail-surface {
     width: min(30rem, 90vw);
     max-height: none;
     border-radius: 1rem 0 0 1rem;
@@ -1021,6 +1104,8 @@ body {
   .conversation-new-response,
   .adaptive-context-overlay,
   .adaptive-context-surface,
+  .card-detail-overlay,
+  .card-detail-surface,
   .conversation-history-overlay,
   .conversation-history-surface,
   .enrichment-card-enter,

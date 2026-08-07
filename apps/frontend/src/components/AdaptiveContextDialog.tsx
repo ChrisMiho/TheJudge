@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { OverlayCloseButton } from "./OverlayCloseButton";
+import { useOutsideDismiss } from "../hooks/useOutsideDismiss";
 
 type AdaptiveContextDialogProps = {
   triggerLabel: string;
@@ -27,6 +29,8 @@ export function AdaptiveContextDialog({
   const dialogRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+
+  useOutsideDismiss([dialogRef], closeDialog, isOpen);
 
   useEffect(() => {
     if (isOpen) {
@@ -100,14 +104,10 @@ export function AdaptiveContextDialog({
 
       {isOpen &&
         createPortal(
-          // DEC-142/REQ-117: activating the dimmed scrim (this root, outside the panel
-          // surface) closes the dialog via the same closeDialog path as Close/Escape.
-          // The surface below stops propagation so clicks inside it never reach this handler.
-          <div
-            className="adaptive-context-overlay"
-            data-testid="adaptive-context-overlay"
-            onClick={closeDialog}
-          >
+          // DEC-142/REQ-117: the dimmed scrim (this root, outside the panel surface) closes
+          // the dialog via the shared useOutsideDismiss hook above, the same closeDialog path
+          // as Close/Escape.
+          <div className="adaptive-context-overlay" data-testid="adaptive-context-overlay">
             <section
               ref={dialogRef}
               role="dialog"
@@ -116,22 +116,17 @@ export function AdaptiveContextDialog({
               tabIndex={-1}
               data-accent-current="true"
               onKeyDown={handleDialogKeyDown}
-              onClick={(event) => event.stopPropagation()}
               className="adaptive-context-surface ambient-accent-surface border border-zinc-700 bg-zinc-950 text-zinc-100 shadow-2xl"
             >
               <div className="adaptive-context-header flex items-center justify-between gap-3 border-b border-zinc-700/70">
                 <h2 id={titleId} className="text-base font-semibold text-zinc-100">
                   {dialogLabel}
                 </h2>
-                <button
+                <OverlayCloseButton
                   ref={closeRef}
-                  type="button"
-                  aria-label={`Close ${dialogLabel.toLocaleLowerCase()}`}
+                  label={`Close ${dialogLabel.toLocaleLowerCase()}`}
                   onClick={closeDialog}
-                  className="adaptive-context-close rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700"
-                >
-                  Close
-                </button>
+                />
               </div>
               <div className="adaptive-context-content">{children}</div>
             </section>

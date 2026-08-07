@@ -1,6 +1,6 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ZoneCardItem } from "../types";
 import { CardPresentation } from "./CardPresentation";
 
@@ -24,7 +24,7 @@ function makeCard(overrides: Partial<ZoneCardItem> = {}): ZoneCardItem {
 
 describe("Frontend - MTG Assistant", () => {
 describe("CardPresentation", () => {
-  it("renders an uncropped compact card image with its source, meaningful alt, and a corner detail control", () => {
+  it("renders an uncropped container-relative card image with its source, meaningful alt, and a corner detail control", () => {
     render(
       <CardPresentation
         card={makeCard()}
@@ -34,14 +34,48 @@ describe("CardPresentation", () => {
 
     const image = screen.getByRole("img", { name: "Urza, Lord High Artificer" });
     expect(image).toHaveAttribute("src", "https://img.example/urza.jpg");
-    expect(image).toHaveClass("h-auto", "max-h-32", "w-auto", "object-contain");
+    // DEC-160: one shared width/container-relative rule. `w-full` makes the host container
+    // decide the size, `h-auto` + `object-contain` keep it uncropped and aspect-preserving.
+    expect(image).toHaveClass("h-auto", "w-full", "object-contain");
     expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" })
     ).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("opens a detail popup over the image with oracle text and closes it via the X control, without unmounting the image", async () => {
+  it("carries no fixed pixel height cap and no per-surface size variant", () => {
+    const { container } = render(<CardPresentation card={makeCard()} />);
+
+    const image = screen.getByRole("img", { name: "Urza, Lord High Artificer" });
+    // The superseded rule rendered an identical 92x128px image on every surface and at every
+    // viewport width (DEC-160). Nothing may reintroduce that ceiling here or at a call site.
+    expect(image.className).not.toMatch(/max-h-/);
+    expect(image.className).not.toMatch(/\bw-auto\b/);
+    // The image's own box must not shrink-wrap; its container is what sizes it.
+    expect(image.parentElement?.className).not.toMatch(/\bw-fit\b/);
+    expect(image.parentElement).toHaveClass("w-full");
+    expect(container.querySelector("[data-card-size-variant]")).toBeNull();
+  });
+
+  it("lets a host container's width decide the rendered size without a component prop", () => {
+    const { rerender } = render(
+      <div style={{ width: "160px" }}>
+        <CardPresentation card={makeCard()} />
+      </div>
+    );
+    const narrowClasses = screen.getByRole("img").className;
+
+    rerender(
+      <div style={{ width: "640px" }}>
+        <CardPresentation card={makeCard()} />
+      </div>
+    );
+
+    // Identical classes in both hosts: the difference is the container, never a variant.
+    expect(screen.getByRole("img").className).toBe(narrowClasses);
+  });
+
+  it("opens a detail popup with oracle text and closes it via the X control, without unmounting the image", async () => {
     const user = userEvent.setup();
     render(
       <CardPresentation
@@ -54,7 +88,8 @@ describe("CardPresentation", () => {
       screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" })
     );
 
-    // Image stays mounted underneath the popup (DEC-151: popup layers over, does not replace).
+    // Image stays mounted while the popup is open (DEC-151: the popup adds detail, it never
+    // replaces the card image).
     expect(screen.getByRole("img", { name: "Urza, Lord High Artificer" })).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" })
@@ -72,16 +107,104 @@ describe("CardPresentation", () => {
     expect(screen.getByRole("img", { name: "Urza, Lord High Artificer" })).toBeInTheDocument();
   });
 
-  it("closes the detail popup on Escape", async () => {
+  it("hosts the detail popup in a body portal outside the card image container", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<CardPresentation card={makeCard()} />);
+
+    await user.click(screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" }));
+
+    const overlay = screen.getByTestId("card-detail-overlay");
+    const popup = screen.getByTestId("card-detail-popup");
+    const image = screen.getByRole("img", { name: "Urza, Lord High Artificer" });
+
+    // DEC-158/screen-layout.md "Card detail popup": the dialog is no longer `absolute inset-0`
+    // inside the 92x128px image box — it is a portal child of <body>, so its geometry is its
+    // own rather than the image's.
+    expect(overlay.parentElement).toBe(document.body);
+    expect(container.contains(popup)).toBe(false);
+    expect(image.closest("[data-testid='card-detail-popup']")).toBeNull();
+    expect(popup.parentElement).toBe(overlay);
+  });
+
+  it("renders the popup as the overlay-family bottom sheet / side panel surface rather than an image-bound box", async () => {
     const user = userEvent.setup();
     render(<CardPresentation card={makeCard()} />);
 
     await user.click(screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" }));
+
+    const overlay = screen.getByTestId("card-detail-overlay");
+    const popup = screen.getByTestId("card-detail-popup");
+
+    // The responsive bottom-sheet / side-panel geometry lives in index.css on these classes,
+    // matching the AdaptiveContextDialog composition the catalog points at.
+    expect(overlay).toHaveClass("card-detail-overlay");
+    expect(popup).toHaveClass("card-detail-surface");
+    expect(popup).not.toHaveClass("absolute", "inset-0");
+    expect(popup).toHaveAttribute("role", "dialog");
+    expect(popup).toHaveAttribute("aria-modal", "true");
+  });
+
+  it("closes the detail popup on Escape and restores focus to the trigger", async () => {
+    const user = userEvent.setup();
+    render(<CardPresentation card={makeCard()} />);
+
+    const trigger = screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" });
+    await user.click(trigger);
     expect(screen.getByTestId("card-detail-popup")).toBeInTheDocument();
 
     await user.keyboard("{Escape}");
 
     expect(screen.queryByTestId("card-detail-popup")).not.toBeInTheDocument();
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveFocus();
+  });
+
+  it("closes the detail popup on an outside interaction but not on an inside one", async () => {
+    const user = userEvent.setup();
+    render(<CardPresentation card={makeCard()} />);
+
+    const trigger = screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" });
+    await user.click(trigger);
+
+    fireEvent.mouseDown(screen.getByText("Urza, Lord High Artificer", { selector: "p" }));
+    expect(screen.getByTestId("card-detail-popup")).toBeInTheDocument();
+
+    fireEvent.mouseDown(screen.getByTestId("card-detail-overlay"));
+
+    expect(screen.queryByTestId("card-detail-popup")).not.toBeInTheDocument();
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("removes the portal host from the document when the card presentation unmounts while open", async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<CardPresentation card={makeCard()} />);
+
+    await user.click(screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" }));
+    expect(document.body.querySelector("[data-testid='card-detail-overlay']")).not.toBeNull();
+
+    unmount();
+
+    expect(document.body.querySelector("[data-testid='card-detail-overlay']")).toBeNull();
+    expect(document.body.querySelector("[data-testid='card-detail-popup']")).toBeNull();
+  });
+
+  it("populates the popup only from the passed card, issuing no network request", async () => {
+    const user = userEvent.setup();
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    render(<CardPresentation card={makeCard()} />);
+
+    await user.click(screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" }));
+
+    const popup = screen.getByTestId("card-detail-popup");
+    expect(within(popup).getByText("{2}{U}{U}")).toBeInTheDocument();
+    expect(within(popup).getByText("Legendary Creature — Human Artificer")).toBeInTheDocument();
+    expect(
+      within(popup).getByText("When Urza enters, create a Construct artifact creature token.")
+    ).toBeInTheDocument();
+    expect(within(popup).getByText("U, W")).toBeInTheDocument();
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    fetchSpy.mockRestore();
   });
 
   it("renders the full-width fallback without mounting an image for an empty URL", () => {

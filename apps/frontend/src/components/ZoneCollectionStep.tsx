@@ -83,10 +83,18 @@ export function ZoneCollectionStep({
     query: searchInput
   });
 
+  // DEC-160: selecting a card — by pointer or by keyboard — puts its exact canonical name in
+  // the search field. That field is now the only place the selected name is written, which is
+  // what let the duplicate standalone title below the art go.
+  function selectCard(card: CardMetadataItem): void {
+    setSelectedCard(card);
+    setSearchInput(card.name);
+  }
+
   const keyboard = useAutocompleteKeyboard({
     query: searchInput,
     suggestions,
-    onSelect: (card) => setSelectedCard(card)
+    onSelect: selectCard
   });
 
   const scanCapture = useScanCapture({
@@ -228,14 +236,21 @@ export function ZoneCollectionStep({
               searchInput={searchInput}
               onSearchInputChange={setSearchInput}
               onSearchKeyDown={keyboard.handleKeyDown}
-              showSuggestions={searchInput.trim().length >= 3 && keyboard.isOpen}
+              // Once the field holds the selected card's exact canonical name (DEC-160), that
+              // name is not a query — reopening the list over the staged preview would cover
+              // the very card it describes. Typing anything else brings suggestions back.
+              showSuggestions={
+                searchInput.trim().length >= 3 &&
+                keyboard.isOpen &&
+                searchInput !== selectedCard?.name
+              }
               isMetadataLoading={isMetadataLoading}
               suggestions={suggestions}
               noMatchCopy={NO_MATCH_COPY}
               activeSuggestionIndex={keyboard.activeIndex}
               onSuggestionHover={keyboard.setActiveIndex}
               onSuggestionSelect={(card) => {
-                setSelectedCard(card);
+                selectCard(card);
                 keyboard.closeSuggestions();
               }}
               selectedCard={selectedCard}

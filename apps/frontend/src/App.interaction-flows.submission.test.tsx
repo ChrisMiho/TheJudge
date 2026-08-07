@@ -375,7 +375,7 @@ describe("Interaction flows - submission and retry", () => {
 
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
     expect(screen.queryByLabelText("Battlefield item name")).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Lightning Bolt" })).toBeInTheDocument();
     expect(screen.queryByLabelText("Battlefield item details")).not.toBeInTheDocument();
   });
 

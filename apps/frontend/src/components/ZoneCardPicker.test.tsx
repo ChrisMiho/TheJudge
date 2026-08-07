@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ZoneCardPicker } from "./ZoneCardPicker";
 import type { ScanConvergence } from "../hooks/useScanCapture";
-import type { ZoneCardItem, ZoneId } from "../types";
+import type { CardMetadataItem, ZoneCardItem, ZoneId } from "../types";
 
 // The camera surface is exercised in ScanCameraSurface.test.tsx; here we only
 // care about the picker chrome around it (no selectable list, no Accept gate).
@@ -36,6 +36,21 @@ function makeZoneCard(cardId: string, name: string, overrides: Partial<ZoneCardI
     supertypes: [],
     subtypes: [],
     ...overrides
+  };
+}
+
+function makeMetadataCard(name: string, imageUrl: string): CardMetadataItem {
+  return {
+    cardId: name.toLowerCase(),
+    name,
+    oracleText: "",
+    imageUrl,
+    manaCost: "",
+    manaValue: 0,
+    typeLine: "",
+    colors: [],
+    supertypes: [],
+    subtypes: []
   };
 }
 
@@ -206,7 +221,7 @@ describe("ZoneCardPicker card grid", () => {
 
     const image = screen.getByRole("img", { name: "Opt" });
     const tile = image.closest(".zone-card-tile") as HTMLElement;
-    expect(image).toHaveClass("zone-card-tile-image", "h-auto", "w-auto", "object-contain");
+    expect(image).toHaveClass("zone-card-tile-image", "h-auto", "w-full", "object-contain");
     expect(within(tile).queryByText("Opt")).not.toBeInTheDocument();
     expect(screen.getByText("bottom & top")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove Opt from Stack" })).toBeInTheDocument();
@@ -216,9 +231,102 @@ describe("ZoneCardPicker card grid", () => {
     expect(within(tile).queryByTestId("card-detail-popup")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Show details for Opt" }));
-    expect(within(tile).getByTestId("card-detail-popup")).toBeInTheDocument();
-    // The image stays mounted underneath the popup rather than being replaced by it.
+    // DEC-158: the popup is portaled to <body>, so a w-40 strip tile never bounds the detail
+    // surface's geometry.
+    expect(within(tile).queryByTestId("card-detail-popup")).not.toBeInTheDocument();
+    expect(screen.getByTestId("card-detail-popup").closest(".zone-card-tile")).toBeNull();
+    expect(within(screen.getByTestId("card-detail-popup")).getByText("Opt")).toBeInTheDocument();
+    // The image stays mounted while the popup is open rather than being replaced by it.
     expect(screen.getByRole("img", { name: "Opt" })).toBeInTheDocument();
+  });
+
+  it("keeps strip tiles at their fixed w-40 footprint while the image inside grows", () => {
+    renderPicker(
+      { isOpen: false },
+      {
+        cards: [
+          makeZoneCard("opt", "Opt", { imageUrl: "https://img.example/opt.jpg" }),
+          makeZoneCard("bolt", "Lightning Bolt", { imageUrl: "https://img.example/bolt.jpg" })
+        ]
+      }
+    );
+
+    const tiles = document.querySelectorAll(".zone-card-tile");
+    expect(tiles).toHaveLength(2);
+    // REQ-130/DEC-160: only the image grows. The tile keeps its fixed width and the strip
+    // stays one horizontal region-scrolling row in add order.
+    tiles.forEach((tile) => {
+      expect(tile).toHaveClass("w-40", "shrink-0");
+      const image = within(tile as HTMLElement).getByRole("img");
+      expect(image).toHaveClass("w-full");
+      expect(image.className).not.toMatch(/max-h-|\bw-auto\b/);
+    });
+    const grid = document.querySelector(".zone-card-grid");
+    expect(grid).toHaveClass("flex", "overflow-x-auto");
+    expect(within(tiles[0] as HTMLElement).getByRole("img", { name: "Opt" })).toBeInTheDocument();
+    expect(
+      within(tiles[1] as HTMLElement).getByRole("img", { name: "Lightning Bolt" })
+    ).toBeInTheDocument();
+  });
+
+  it("puts search and the labeled Scan control on one non-wrapping row with a 44px touch floor", () => {
+    renderPicker({ isOpen: false });
+
+    const input = screen.getByLabelText("Stack search input");
+    const scanButton = screen.getByRole("button", { name: "Scan" });
+    const row = input.parentElement as HTMLElement;
+
+    // REQ-125: one row at every width — the prior `sm:grid-cols-[1fr_auto]` stacked them
+    // below 640px, pushing the selected-card preview and its Add action further down phone.
+    expect(row).toContainElement(scanButton);
+    expect(row).toHaveClass("grid", "grid-cols-[1fr_auto]", "items-center");
+    expect(row.className).not.toMatch(/sm:grid-cols/);
+    expect(scanButton).toHaveTextContent("Scan");
+    expect(scanButton).toHaveClass("min-h-11", "whitespace-nowrap");
+    expect(input).toHaveClass("min-h-11", "min-w-0");
+  });
+
+  it("renders the selected-card preview as a shell-column image with Add below and no duplicate title", () => {
+    render(
+      <ZoneCardPicker
+        zoneId="stack"
+        cards={[]}
+        activePlayers={["Player 1"]}
+        displayNamesByPlayer={{ "Player 1": undefined } as never}
+        pendingOwner="Player 1"
+        onPendingOwnerChange={() => undefined}
+        searchInput="Opt"
+        onSearchInputChange={() => undefined}
+        onSearchKeyDown={() => undefined}
+        showSuggestions={false}
+        isMetadataLoading={false}
+        suggestions={[]}
+        noMatchCopy="No match"
+        activeSuggestionIndex={-1}
+        onSuggestionHover={() => undefined}
+        onSuggestionSelect={() => undefined}
+        selectedCard={makeMetadataCard("Opt", "https://img.example/opt.jpg")}
+        addButtonLabel="Add card"
+        onAddSelectedCard={() => undefined}
+        onRemoveCard={() => undefined}
+      />
+    );
+
+    const preview = screen.getByRole("article");
+    const addButton = within(preview).getByRole("button", { name: "Add card" });
+    const image = within(preview).getByRole("img", { name: "Opt" });
+
+    // DEC-160: the exact canonical name lives in the search field, so the duplicate
+    // standalone title below the art is gone; Add stays directly below the image.
+    expect(screen.getByLabelText("Stack search input")).toHaveValue("Opt");
+    expect(within(preview).queryByRole("heading")).not.toBeInTheDocument();
+    expect(within(preview).queryByText("Opt")).not.toBeInTheDocument();
+    expect(preview.querySelector(".card-shell-column")).not.toBeNull();
+    expect(image.className).not.toMatch(/max-h-/);
+    expect(
+      image.compareDocumentPosition(addButton) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(addButton).toHaveClass("min-h-11");
   });
 
   it("does not duplicate the owner label on an image-bearing non-stack card", () => {

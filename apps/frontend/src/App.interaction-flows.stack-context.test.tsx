@@ -49,8 +49,8 @@ describe("Interaction flows - stack and target context", () => {
     expect(screen.queryByLabelText("Entry target kind")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Entry context notes")).not.toBeInTheDocument();
 
-    const firstView = screen.getByRole("heading", { name: "Opt" });
-    expect(firstView).toBeInTheDocument();
+    const firstView = screen.getByTestId("card-presentation-fallback");
+    expect(firstView).toHaveTextContent("Opt");
   });
 
   it("keeps battlefield preview free of context-edit controls", async () => {
