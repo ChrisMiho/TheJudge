@@ -9,10 +9,9 @@ Do not rename package folders to encode status.
 ## active
 
 - [frontend-routing-and-code-splitting](./frontend-routing-and-code-splitting/)
+- [ui-review](./ui-review/)
 
 ## refined
-
-- [ui-review](./ui-review/)
 
 ## refining
 

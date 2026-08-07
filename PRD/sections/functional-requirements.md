@@ -159,6 +159,7 @@
   - submit flow
 - Notes:
   - question is optional in the core product
+  - "up to 300 characters" means **what the user types**: REQ-091 as amended (`ui-review`, 2026-08-06) confirms the cap and the visible counter both measure raw editable text, not the client-composed submitted string
 
 ### REQ-012
 - Title: Decrypt Stack submit action
@@ -1158,7 +1159,7 @@
 - Description: The frontend must compact the staged data-collection screens to reduce vertical scroll through presentation-only layout changes on game context, zone collection, enrichment list mode, and scan-focused zone-collection chrome. Zone confirmation is excluded.
 - Acceptance Criteria:
   - **game context:** the cat-wizard hero image is not in the document on initial render; after 10 clicks on the `TheJudge` brand title on the game-context step it appears (`/assets/cats-homescreen.png`) and stays visible for the browser session only; turn phase and active player render in one merged panel side-by-side on `sm+` widths with combat sub-step full-width below when phase is `combat`; `(recommended)` does not appear in active-player labeling; player expand/collapse and add/remove controls use wider tap targets
-  - **zone collection:** cards render in a horizontal left-to-right strip in add order with horizontal region scroll (DEC-151 / REQ-130), for every zone including stack; remove buttons, compact images, truncated names, and stack-position labels are preserved; overflow cards are reachable via horizontal scroll; the empty-state `Select a suggestion to preview and add a card to …` placeholder is removed
+  - **zone collection:** cards render in a horizontal left-to-right strip in add order with horizontal region scroll (DEC-151 / REQ-130), for every zone including stack; remove buttons, images sized to the tile under DEC-160, truncated names, and stack-position labels are preserved; overflow cards are reachable via horizontal scroll; the empty-state `Select a suggestion to preview and add a card to …` placeholder is removed
   - **scan focus:** while scan is open, search input, scan entry button, zone card list, owner select, card preview, and outer staged-flow navigation/action buttons outside the camera surface are not in the document; the `Scan card` heading is removed; **Exit scan** is reachable on the camera surface top-right; the scan-local **Capture** button remains available; the low-confidence manual-search escalation prompt does not render; manual tap-to-capture remains available
   - **enrichment:** in **View all cards** mode, each zone's card list shows at most 4 full-width edit rows before internal scroll; card-by-card wizard mode is unchanged; all enrichment fields remain reachable by scrolling within the zone list
   - **zone confirmation:** no screen-specific control compaction; it may inherit the automatic responsive shell/spacing from REQ-096 while its existing control layout and behavior remain unchanged
@@ -2095,7 +2096,7 @@
   - submit is enabled whenever a pill is locked, a card is attached, or the textarea has non-empty trimmed text — not only on non-empty textarea content
   - tapping "Use this topic" smooth-scrolls the view so the Question field (with its new pill) is visible, and focuses the textarea
   - on submit, the request's `question` value is composed client-side with no `AskAiRequest` shape change: the pill phrase plus the trimmed textarea content (space-joined) when both are present; the pill phrase alone when the textarea is empty; the trimmed textarea content alone when no pill is locked and the textarea is non-empty; or, when no pill is locked, the textarea is empty, and a card is attached, the silent fallback phrase `Tell me about {Card Name}.` (not shown to the user; mirrors the locked-pill's phrasing convention and the game-context flow's existing silent-fallback-question precedent)
-  - the shared 300-character cap (REQ-011) applies to the composed question string, and the visible character counter reflects the composed length
+  - the shared 300-character cap (REQ-011) and the visible character counter both measure the **raw editable textarea content** — not the composed string; the locked pill phrase and the silent card fallback are composed at submit time and do not consume the user's budget (amended by REQ-134)
   - a locked topic pill and an attached card may both be present at submit time; the collapsed outer general-rules-topics summary remains rendered (REQ-079) whether or not a pill is locked
 - Constraints:
   - no `AskAiRequest` / Zod / backend prompt-assembly contract change; composition is frontend-only string concatenation
@@ -2106,6 +2107,7 @@
   - DEC-112
 - Notes:
   - supersedes REQ-079's prior "ask about this pre-fills an editable textarea" acceptance criterion for the topic-row action button; REQ-079 was amended alongside this requirement
+  - **amended during the `ui-review` pass (2026-08-06)**: the cap/counter criterion originally read "the shared 300-character cap (REQ-011) applies to the composed question string, and the visible character counter reflects the composed length". Live measurement showed that rule produces three user-visible defects — an empty field reporting the prefix length (`22/300` with a topic locked), a counter that rises when the user backspaces to empty (the silent card fallback replaces the empty string), and an unreachable submit state (`323/300` with **Send Request** disabled while `maxLength` caps raw input at 300). Product-owner decision: the counter and the submit gate both measure raw editable text. The composed string may therefore exceed 300 by the pill phrase — accepted, since `MAX_PROMPT_CHAR_BUDGET` is 1,000,000 (DEC-042). Composition itself (pill phrase + trimmed text, silent fallbacks, single-pill rule) is unchanged. See REQ-134.
 
 ### REQ-092
 - Title: Quick Lookup submit wait feedback
@@ -2951,9 +2953,13 @@
 ### REQ-125
 - Title: Reachable add action in card detail
 - Priority: medium
-- Description: The zone-collection card-detail view keeps its add action in the first viewport on narrow screens via DEC-151 density (compact preview image + detail behind the corner popup rather than stacked under the art).
+- Description: The zone-collection selected-card/add preview uses DEC-160's large, container-relative image treatment while keeping its add action in the first viewport on narrow screens. Manual search and its optional Scan launcher share one compact row at every viewport width so the launcher does not consume a separate phone row that could otherwise support the card preview. Detail stays behind the corner popup rather than stacking under the art, and the selected card's canonical name lives in the search field rather than in a duplicate title below the image.
 - Acceptance Criteria:
   - at 390x844 the add action's measured `top` is within the first viewport (at most 844px) (baseline defect: add action at y=1088, 244px below fold, on a 1286px page; DEC-148-only pass left it at ~956px)
+  - at 390×844 and 1440×900, the search input and labeled Scan button share one non-wrapping row; the input flexes into remaining width and the Scan control retains NFR-001's 44px minimum touch target
+  - the selected image occupies a clear majority of the content-column width, matching the approved legibility-first direction rather than the fixed 92×128px baseline
+  - while the selected-card preview is present, the search field displays that card's exact canonical name; a partial query must not remain as the only external identity label for a different selected card
+  - no standalone card-name/title row renders between the image and the add action; the search field, printed card name, and corner detail popup provide identity without duplicate vertical chrome
   - oracle/detail text is not stacked under the card image by default; it is available via the corner detail popup (REQ-128)
   - owner selection and add behavior remain available; when the card image is unavailable, the readable metadata fallback path (FLOW-001) still renders
   - wider viewports keep a legible preview presentation
@@ -2961,14 +2967,19 @@
   - presentation only; no card metadata content change, no Scryfall fetch change, no `gameContext.zones` payload change
   - no sticky or floating chrome added over the preview
 - Dependencies:
+  - DEC-050
   - DEC-151
+  - DEC-160
   - REQ-128
   - REQ-129
+  - REQ-141
   - DEC-145
   - FLOW-001
   - NFR-001
 - Notes:
   - DEC-148 levers alone are insufficient; meet this requirement through DEC-151
+  - `ui-review` product-owner choice (2026-08-06): approved mockup A, *Legibility first*, with the duplicate title removed and the exact selected name shown in search
+  - `ui-review` product-owner addition (2026-08-06): keep the Scan launcher beside search on phones as well as wider viewports; the reclaimed row height may support the larger DEC-160 preview but does not relax the first-viewport Add-action ceiling
 
 ### REQ-126
 - Title: Screen-layout catalog for agent-directed UI
@@ -3016,10 +3027,10 @@
 ### REQ-128
 - Title: Suite-wide card-image detail popup
 - Priority: high
-- Description: Whenever a card image is displayed in the suite, a compact corner control on the image opens a dismissible popup with oracle text and other locally carried descriptive fields (DEC-151).
+- Description: Whenever a card image is displayed in the suite, a compact corner control on the image opens a dismissible, portal-hosted overlay with oracle text and other locally carried descriptive fields. The overlay follows DEC-158 and the `AdaptiveContextDialog` family: it is sized to its own content outside the image bounds, presenting as a bottom sheet below `768px` and a side panel at `768px`+ (DEC-151, DEC-158).
 - Acceptance Criteria:
   - every suite card-image surface that shows an available image exposes the corner detail control (top-right of the image)
-  - activating the control opens a popup over the card containing locally carried descriptive fields including oracle text when present
+  - activating the control opens a portal-hosted, content-sized overlay outside the card image's bounding box: a bottom sheet below `768px` and a side panel at `768px`+, following `screen-layout.md` → *Card detail popup (suite-wide)*
   - the popup has an X close control; Escape and/or outside dismiss may match other overlays
   - stacked oracle/detail under the image is not the default path when the image is present
   - missing/failed image keeps the existing text-first fallback (no broken-image icon)
@@ -3028,29 +3039,37 @@
   - presentation only; no `AskAiRequest`, Zod, `GameContext`, or metadata-pipeline change
 - Dependencies:
   - DEC-151
+  - DEC-158
   - DEC-078
   - REQ-058
   - REQ-125
   - NFR-001
 - Notes:
+  - **amended during the `ui-review` pass (2026-08-06)**: DEC-158 supersedes the original "popup over the card" geometry. The top-right image trigger and local-fields-only content rule remain; the popup itself is portal-hosted and independent of the image bounds.
 
 ### REQ-129
-- Title: Compact card images for first-viewport fit
+- Title: Card image first-viewport fit ceiling
 - Priority: high
-- Description: Card images are sized compactly enough that the hosting screen's primary chrome and CTA fit in the first viewport without page-scroll past a stranded action (DEC-151). Horizontal region-scroll of card strips is allowed.
+- Description: However card images are sized, the hosting screen's primary chrome and CTA must still fit in the first viewport without page-scroll past a stranded action. Horizontal region-scroll of card strips is allowed. Under DEC-160 the sizing mechanism is container-relative rather than a fixed pixel cap, so this requirement is no longer a statement about *smallness* — it is the ceiling that container-relative growth must respect.
 - Acceptance Criteria:
   - at 390×844 on zone-collection card detail, the add action's `top` is ≤ 844px (REQ-125)
-  - In-Depth Enrichment and Quick Question pre-submit card surfaces do not force page scroll solely because card images are full intrinsic size
+  - In-Depth Enrichment and Quick Question pre-submit card surfaces do not force page scroll solely because of card image size
+  - Scan review's card list does not displace or overlap the scan camera chrome (DEC-090)
   - images remain uncropped and aspect-ratio preserving; identity remains image-first
+  - where container-relative sizing (DEC-160) would violate any criterion above on a given surface, that surface's `screen-layout.md` row records a bounded cap and the row is the authority — the shared component is not forked and gains no size variant
 - Constraints:
   - presentation only; no sticky floating CTA bar over the preview
 - Dependencies:
   - DEC-151
+  - DEC-160
   - REQ-125
   - REQ-058
+  - REQ-141
   - DEC-149
+  - DEC-090
   - NFR-001
 - Notes:
+  - **amended during the `ui-review` pass (2026-08-06)**: originally titled "Compact card images for first-viewport fit" and framed as a smallness mandate, which DEC-160 retires — a 92×128px image on every surface at every viewport width was the defect REQ-141 exists to fix. The behavioral criteria are unchanged and now serve as the ceiling on growth rather than as a floor on shrinking.
 
 ### REQ-130
 - Title: Horizontal In-Depth zone-card strip
@@ -3060,16 +3079,21 @@
   - zone-collection added cards lay out in a single horizontal row/strip in the order added
   - overflow scrolls horizontally inside the strip region (not as document horizontal scroll)
   - stack zone bottom-to-top ordering semantics and Remove behavior remain
-  - strip participates in DEC-151 compact image + detail popup rules
+  - strip participates in the DEC-151 detail-popup rules and in DEC-160's container-relative image sizing
+  - under DEC-160 the tile's image grows to fill the tile; the tile itself keeps its established fixed width (`w-40`, 160px) so the strip's horizontal rhythm and scroll behavior are preserved, and the taller tile stays within REQ-129's first-viewport ceiling
 - Constraints:
   - presentation only; no zone payload or stack-ordering rule change
+  - do not widen the tile to chase image legibility — the zone strip is a scannable add-order list, not a card-reading surface; the corner detail popup (REQ-128) remains the read path here
 - Dependencies:
   - DEC-151
+  - DEC-160
   - DEC-078
   - REQ-058
+  - REQ-129
   - FLOW-001
   - NFR-001
 - Notes:
+  - **amended during the `ui-review` pass (2026-08-06)**: DEC-160 replaces the shared `max-h-32` cap with container-relative sizing, which reaches this strip because `ZoneCardPicker` consumes the same `CardPresentation`. The image grows from 92px to roughly the tile's 160px interior; nothing else about the strip changes.
 
 ### REQ-131
 - Title: Theme orb single-row layout
@@ -3115,18 +3139,23 @@
 - Description: Wherever a searched/attached card is shown with `CardPresentation`/`CardSelectionPreview` (Quick Question card search, In-Depth Enrichment), the area beside the image drops to a single **Remove card** control placed below the image at a smaller size; every other field previously shown beside the image (name, oracle text, mana cost, type, colors) is available only through the existing DEC-151 corner detail popup. The image grows to use the freed width while staying within DEC-151's compact/first-viewport-fit intent.
 - Acceptance Criteria:
   - the region beside the card image no longer renders any control except (indirectly) the popup's own corner trigger; Remove card renders below the image, smaller than its current size
-  - name/oracle/mana-cost/type/colors are reachable only via the corner popup; no duplicate copy remains beside the image
-  - card image renders visibly larger than the current `max-h-32` cap while the hosting step's primary action (search/submit) still fits the first viewport per `screen-layout.md`'s Fit rule
+  - name/oracle/mana-cost/type/colors are reachable only via the detail popup; no duplicate copy remains beside the image
+  - card image renders visibly larger than the current `max-h-32` cap (measured baseline: 92×128px at both 390×844 and 1440×900) while the hosting step's primary action (search/submit) still fits the first viewport per `screen-layout.md`'s Fit rule — the concrete legibility floor is REQ-141 and the sizing mechanism is DEC-160
   - the change applies identically on Quick Question and In-Depth Enrichment since both consume the same shared component (no divergent one-off per screen)
-  - DEC-151's popup content, X close control, and dismiss behavior are unchanged
+  - this requirement's **control consolidation** covers only the two staged surfaces named above; it does not remove surface-specific controls from the other four surfaces (View Context sheet, In-Depth zone-collection selected-card/add preview, In-Depth zone strip, Scan review). REQ-125 separately removes the zone add preview's duplicate title while retaining its Add action. Only the *image sizing* half is suite-wide (REQ-141 / DEC-160)
+  - the popup's field content and dismiss behavior are unchanged; its **geometry** changes per DEC-158 (it is no longer `absolute inset-0` on the image) and its close control becomes the shared themed control per DEC-159
 - Constraints:
   - presentation only; no change to card identity, selection state, `AskAiRequest`, or Zod schemas
   - do not fork `CardPresentation`/`CardSelectionPreview` into per-screen copies; fix the shared component
+  - consolidation must not land before DEC-158's popup rehost — moving fields into a popup still bound to the image box would regress readability further, not improve it
 - Dependencies:
   - DEC-151
   - DEC-156
+  - DEC-158
   - REQ-128
+  - REQ-141
 - Notes:
+  - amended during the `ui-review` live sweep: the original "DEC-151's popup content, X close control, and dismiss behavior are unchanged" criterion was written before measurement showed the popup renders at 92×128px with 356px of content and a close control overflowing its own container by 37px. See DEC-158.
 
 ### REQ-134
 - Title: Question composer character counter integrity
@@ -3134,86 +3163,116 @@
 - Description: The Quick Question pre-submit composer's character counter must always match the actual editable text, including after backspace/delete edits and with a locked topic prefix present; the counter must never diverge from what the user can see and edit.
 - Acceptance Criteria:
   - typing then deleting characters (including full clearing) keeps the displayed counter equal to the current visible/editable length at every step — it does not stall, undercount, or overcount
+  - specifically, the two measured defects no longer reproduce: (a) with a card selected and no topic, backspacing the field from one character to empty must not raise the counter (baseline: jumps `1/300` → `29/300`); (b) with a topic locked, an empty field must not report a non-zero count (baseline: `22/300` for "Targets"; the original report's "sticks at 35" is the same defect with a longer topic title)
+  - the composer cannot reach a state where the field is at its own `maxLength` yet submission is blocked with no explanation — baseline defect: with a topic locked, typing the full 300 permitted characters yields `323/300` with **Send Request** disabled and no error, and the `maxLength` cap prevents typing less than the composed budget requires
   - locking/unlocking a topic recomputes the counter from the same source used to gate submission, with no stale reads
   - fix verified live via manual/Playwright interaction, not by static inspection alone (`systematic-debugging`)
-  - `EnrichmentStep.tsx`'s duplicate composer/counter (`MAX_QUESTION_CHARS`) is checked for the same defect during this slice and fixed if reproducible, even though it was not the screen originally reported
+  - `EnrichmentStep.tsx` and `FollowUpComposer.tsx` keep counters that track their own editable text; a regression test covers each so the `QuickLookupApp` pattern is not reintroduced
 - Constraints:
-  - presentation/state-bug fix only; `MAX_QUESTION_LENGTH`/`MAX_QUESTION_CHARS` caps and blank-question fallback behavior unchanged
+  - presentation/state-bug fix only; the 300-character limit itself and the blank-question fallback behavior are unchanged. **The single measurement is the raw editable textarea content** — the counter, the `maxLength` cap, and the submit gate all read it, per REQ-091 as amended; none of them read `composedQuestion`
+  - question *composition* is untouched: the locked pill phrase, the space-join rule, and the silent `Tell me about {Card Name}.` fallback still build the submitted string exactly as REQ-091 specifies — they simply stop contributing to the displayed count and the gate
+  - the composed string sent in `AskAiRequest.question` may exceed 300 characters by the length of the pill phrase. This is accepted, not a defect: `MAX_PROMPT_CHAR_BUDGET` is 1,000,000 (DEC-042), so no downstream limit is at risk. Do not reintroduce a composed-length cap to "fix" it
 - Dependencies:
   - DEC-146
   - REQ-121
+  - REQ-091
+  - REQ-011
 - Notes:
-  - known candidate cause: displayed counter reads `composedQuestion.length` (trimmed, topic-prefixed) while the bound textarea tracks raw `question` state — confirm root cause before fixing, per `systematic-debugging`
+  - root cause confirmed live during `ui-review` refinement, not merely suspected: `QuickLookupApp.tsx` displays `composedQuestion.length` (trimmed, topic-prefixed, with a `Tell me about <card>.` fallback when empty) while the bound textarea tracks raw `question` state and `maxLength` caps that raw value
+  - this requirement **amends REQ-091 in place** rather than working around it: REQ-091's original criterion explicitly mandated the composed-length counter that produces these defects, so the shipped behavior was correct against the old product truth. Read the amended REQ-091 criterion and its Notes as the authority; an agent that finds `composedQuestion.length` in the counter is looking at pre-amendment code, not at a requirement it should preserve
+  - `EnrichmentStep.tsx` and `FollowUpComposer.tsx` were checked during refinement and are **correct** — both read the raw bound value's length; the earlier "fix if reproducible" instruction is discharged, leaving only regression coverage
 
 ### REQ-135
 - Title: View Context close affordance and outside-click reliability
 - Priority: medium
-- Description: `AdaptiveContextDialog`'s close control becomes a themed circular X icon (matching the corner popup's existing X convention) instead of a text **Close** button; outside-click-to-close (DEC-142) is verified live and fixed if not actually dismissing the overlay.
+- Description: `AdaptiveContextDialog`'s close control becomes the shared themed X control (REQ-142/DEC-159) instead of a text **Close** button, and the overlay always presents a reachable scrim region to dismiss against. Scrim-click dismissal itself is already functional and must not regress.
 - Acceptance Criteria:
-  - the dialog's close control renders as a circular X icon whose color derives from the active theme, at or above the 44px touch-target floor (NFR-001)
-  - clicking outside the dialog body (on the scrim) closes it; Escape continues to close it; clicking inside the dialog body does not close it
-  - reproduced and fixed live (not assumed from code reading) if outside-click is currently non-functional
+  - the dialog's close control is the shared themed control from REQ-142 — a circular X whose color derives from the active theme, at or above the 44px touch-target floor (NFR-001) — and no text **Close** button remains
+  - clicking outside the dialog body (on the scrim) closes it; Escape continues to close it; clicking inside the dialog body does not close it — all three verified live, since scrim dismissal already works today and this requirement must not regress it
+  - at 390×844 with content long enough to hit the surface's height cap, the scrim region that dismisses the overlay is at least 25% of viewport height and is visually legible as dismissible chrome rather than as the page header showing through (measured baseline: a 127px band, ~15% of viewport, sitting directly behind the app header)
 - Constraints:
   - presentation/interaction fix only; DEC-142's dismiss-trigger set (Close, Escape, outside/scrim) is not narrowed
 - Dependencies:
   - DEC-142
   - DEC-151
   - DEC-156
+  - DEC-159
+  - REQ-142
+  - REQ-126
 - Notes:
+  - the ≥25% scrim floor is recorded on `screen-layout.md`'s *View Context / adaptive context overlay* row as a `≤75dvh` surface cap (tightening the shipped `min(85dvh, 48rem)`); take the geometry from that row rather than re-deriving it
+  - amended during the `ui-review` live sweep: outside-click was reported broken, but Playwright confirmed the scrim handler **works** at both viewport bands (`AdaptiveContextDialog` wires the overlay root's `onClick` with `stopPropagation` on the surface). The defect is reachability and affordance, not wiring — at the surface's `min(85dvh, 48rem)` cap the only dismissible region is a 127px strip behind the header, so users find the text **Close** button the only obvious exit.
 
 ### REQ-136
 - Title: Answered-workspace vertical density above the conversation
 - Priority: low
-- Description: Reduce the whitespace between the View Context trigger row and the first visible conversation content in the answered workspace (Quick Question and In-Depth), so more conversation content is visible without inventing a document-level scroll.
+- Description: Remove the reserved dead space above the View Context trigger in the answered workspace (Quick Question and In-Depth) by giving the feature-portal corner rail a real in-flow footprint, so surrounding spacing collapses to normal layout tokens instead of a hand-tuned clearance constant.
 - Acceptance Criteria:
-  - measured gap between the View Context trigger and the first message/thread content shrinks from its current value at 390×844 and 1440×900
-  - no new page/document scroll is introduced; `screen-layout.md`'s Fit rule and existing thread region-scroll are unchanged
-  - shared `--layout-surface-gap`/`.conversation-workspace` spacing tokens are tuned in place rather than a one-off inline override
+  - the feature-portal corner rail occupies in-flow layout space rather than reserving it through `.adaptive-context-trigger`'s `margin-top: calc(2.75rem - var(--layout-panel-padding))`; that compensating margin is deleted, not merely reduced
+  - the View Context trigger never overlaps or sits beneath the rail's interactive area at 390×844 or 1440×900, verified live with both a Menu and a History rail zone present
+  - measured vertical distance between the destination heading and the View Context trigger shrinks at both viewport bands (baseline: 32px of applied compensating margin, against a rail whose measured in-flow height is 0px)
+  - spacing comes from the shared `--layout-surface-gap`/`.conversation-workspace` tokens rather than a one-off inline override
+  - document-level scrolling in the answered workspace is no worse than the current baseline (the answered Quick Question workspace already document-scrolls at 390×844 — this requirement must not deepen it, and need not eliminate it)
 - Constraints:
   - do not change `ConversationWorkspace`'s message content, retry/error, or follow-up composer behavior
+  - the rail's own corner placement and DEC-137's side-by-side split form are unchanged — only its layout participation changes
 - Dependencies:
   - DEC-118
   - DEC-127
+  - DEC-137
+  - DEC-141
 - Notes:
+  - root cause identified live during `ui-review` refinement: the rail is `position: absolute` with a measured height of **0px**, so nothing pushes the trigger down automatically and `index.css` compensates with a magic margin. Tuning that constant treats the symptom; giving the rail a footprint removes the whole class of hand-tuned clearance values (product-owner decision, 2026-08-06).
 
 ### REQ-137
 - Title: In-Depth player-details expand affordance correctness
 - Priority: low
-- Description: The In-Depth Game Context per-player secondary-details toggle must visibly read as a right-pointing triangle when collapsed and a down-pointing triangle when expanded, matching DEC-120's intent; verify the live rendering since it was reported as reading square.
+- Description: The In-Depth Game Context expand toggles (the roster-level toggle and the per-player secondary-details toggle) must read as a triangle rather than as a rectangular button. The glyph is already a triangle; the defect is that it is the *small* Unicode variant sitting inside wide boxed button chrome, so the box reads as the control's shape.
 - Acceptance Criteria:
-  - collapsed state renders a clearly triangular ▸-style affordance; expanded state renders a clearly triangular ▾-style affordance, confirmed visually (not only via source inspection) across at least one phone and one desktop viewport
-  - if a visual/theming defect is found (e.g. font/glyph rendering, sizing, or contrast making the current `▸`/`▾` unreadable as a triangle), it is fixed; if the control is confirmed correct live, this is recorded as verified rather than re-implemented
+  - the toggle's visual mass is the triangle itself — the surrounding rectangular chrome (`rounded-lg` border plus fill) is removed or made non-rectangular, so what the eye reads as the control is a triangle, confirmed visually at 390×844 and 1440×900
+  - the triangle is rendered large enough to read as a triangle at a glance: either the full-size glyphs (U+25B6 / U+25BC) or an inline SVG replaces the current small variants (U+25B8 / U+25BE)
+  - the control's hit area stays at or above the 44px touch-target floor (NFR-001) even though its painted chrome shrinks, and it stops being disproportionately wide (baseline: 56×44px from `min-w-[3.5rem]` against a 44px height)
+  - the same treatment applies to both the roster-level toggle and the per-player secondary-details toggle, which today share the glyph pattern
+  - the "Tap ▾ to set names and life totals" hint paragraph either uses a glyph that is legible at body-text size or describes the control in words — baseline: U+25BE renders as a near-invisible dot at that size, so the hint points at something the user cannot identify
 - Constraints:
-  - presentation-only; DEC-120's collapsed-by-default synchronized-toggle behavior is unchanged
+  - presentation-only; DEC-120's collapsed-by-default synchronized-toggle behavior and both toggles' accessible names/`aria-expanded` wiring are unchanged
 - Dependencies:
   - DEC-120
   - DEC-128
+  - NFR-001
 - Notes:
+  - diagnosed live during `ui-review` refinement: the glyph is genuinely U+25B8 (BLACK RIGHT-POINTING **SMALL** TRIANGLE) inside a 56×44px `rounded-lg` bordered button. The report "change it to a triangle instead of a square" is about the box, not the glyph — so replacing the glyph alone would not resolve it.
 
 ### REQ-138
 - Title: Commander damage entry tighter layout
 - Priority: low
 - Description: In the In-Depth Game Context commander-damage section, tighten the arrangement of the **From \<source\>** label and its numeric entry box so the row does not read as two unrelated controls stranded at opposite edges. The control stays a plain numeric input — no dropdown, no value cap.
 - Acceptance Criteria:
-  - the "From" label and its numeric input render as one visually grouped control per opponent row, at both phone and desktop widths, with no unused mid-row gap
+  - the "From" label and its numeric input render as one visually grouped control per opponent row, at both phone and desktop widths, with no unused mid-row gap — measured baseline to eliminate: **457px** of empty space between the end of the "From Player 2" text and the left edge of its input at 1440×900
   - the field remains a free-typed numeric input (no dropdown, no min/max cap) since commander damage is not bounded like poison/energy/experience
+  - the grouping is implemented through the shared row pattern of REQ-144, not as a one-off local to commander damage
   - `GamePlayerContext.commanderDamage` data shape and prompt-assembly behavior are unchanged
 - Constraints:
   - presentation only; no `AskAiRequest`/Zod schema change
 - Dependencies:
   - DEC-102
   - DEC-128
+  - REQ-144
 - Notes:
+  - the stranded-edge appearance comes from `grid-cols-[1fr_auto]`, which stretches the label cell across all free width and pins the input right; the "Named counters" rows in the same panel use the identical pattern, which is why REQ-144 generalizes the fix rather than patching this section alone
 
 ### REQ-139
 - Title: Poison/energy/experience stacked bounded controls
 - Priority: low
-- Description: In the In-Depth Game Context per-player fields, poison, energy, and experience stack vertically instead of a wide three-column grid, and each becomes a bounded dropdown/select (poison 0–11, energy 0–100, experience 0–100) sized reasonably for phone and desktop — not a full-height overlay.
+- Description: In the In-Depth Game Context per-player fields, poison, energy, and experience each become a bounded dropdown/select (poison 0–11, energy 0–100, experience 0–100) sized to its content rather than stretched to the container width, stacked vertically at every viewport band. The dominant defect is control **width**, not the stacking.
 - Acceptance Criteria:
-  - poison, energy, and experience render as a vertical stack (not `grid-cols-3`) at phone width; desktop layout stays compact and does not consume disproportionate section height
   - each control is a bounded dropdown/select limited to its documented range (poison 0–11, energy 0–100, experience 0–100); values outside the range are not selectable
+  - each control sizes to its content instead of filling the row — measured baselines to beat: **281px wide at 390×844** and **214px wide at 1440×900**, both for a value of at most three characters
+  - the three fields render as a vertical stack at **both** phone and desktop widths, replacing today's `grid-cols-1 sm:grid-cols-3`
+  - the expanded-player region at 390×844 is shorter than its measured baseline of **1165px for three expanded players**
+  - at 1440×900 the desktop section grows by roughly two rows per player, because three stacked rows cannot be shorter than the one row they replace. **This height increase is an accepted trade, not a regression** — do not "fix" it by restoring a horizontal desktop row or by shrinking the controls below legibility
   - the control does not expand into a full-viewport or full-height overlay; it stays sized to its row
-  - `GamePlayerContext.poison`/`energy`/`experience` remain optional non-negative integers omitted when unset (DEC-102); wire format unchanged
+  - `GamePlayerContext.poison`/`energy`/`experience` remain optional non-negative integers omitted when unset (DEC-102); wire format unchanged, including the existing "unset" state — a select must offer an explicit empty/unset option rather than defaulting to `0`
 - Constraints:
   - presentation/input-widget only; no `AskAiRequest`/Zod schema change; does not reuse Life Tracker's tap/hold `CounterControl` interaction model (different control shape by design — dropdown, not stepper)
 - Dependencies:
@@ -3221,6 +3280,8 @@
   - DEC-128
   - DEC-156
 - Notes:
+  - amended during the `ui-review` live sweep: the fields **already stack** below `sm` (`grid-cols-1 sm:grid-cols-3`), so "stack instead of a three-column grid" described only the desktop half of the problem. Measurement showed the real waste is that each control stretches to its container at both bands — 281px (mobile) and 214px (desktop) for a two-digit value.
+  - the original "must not consume more section height than the current desktop three-column grid" criterion was unsatisfiable and has been replaced: stacking three fields that share one desktop row necessarily adds height. Product-owner decision (2026-08-06): stack at both bands and accept the desktop height, because consistent stacking plus content-sized controls is the point of DEC-156 clause (3). The height bound now applies where it can hold — the phone band's 1165px baseline.
 
 ### REQ-140
 - Title: Addressable destination routes with deep links and browser history
@@ -3254,3 +3315,117 @@
 - Notes:
   - REQ-090's "a brand-new browser tab/window with no prior activity in that tab still opens on the first registered destination" is narrowed by DEC-157 to the bare-`/` case; a deep link intentionally overrides it
   - production deep links need no infrastructure change: CloudFront already maps 403/404 to `/index.html` with a `200` response code (DEC-084 bootstrap)
+
+### REQ-141
+- Title: Selected-card image legibility floor
+- Priority: high
+- Description: Card images size relative to their container rather than to a fixed pixel cap (DEC-160), so a selected card is large enough to read its own printed text. `CardPresentation`'s single `max-h-32` is replaced by container-relative sizing, which lifts **all six** user-visible surfaces at once: Quick Question card search, In-Depth Enrichment, the card inside the View Context sheet, the In-Depth zone-collection selected-card/add preview, the In-Depth zone strip, and Scan review. This is the product owner's primary concern from the `ui-review` pass.
+- Acceptance Criteria:
+  - `CardPresentation` no longer applies a fixed pixel height cap to the card image; the image sizes to the width its container affords, preserving aspect ratio and remaining uncropped
+  - on the four shell-column surfaces — Quick Question card search, In-Depth Enrichment, the View Context sheet, and the In-Depth zone-collection selected-card/add preview — the image occupies a clear majority of the available content column width at 390×844, so the card's rules text is legible without opening the detail popup (baseline to beat: 92×128px, ~31% of the phone content column)
+  - at 1440×900 those same four surfaces render a larger image than at 390×844 — the sizing responds to available width, which the `max-h-32` baseline did not do at all
+  - the In-Depth zone strip's images grow **inside the existing `w-40` tile**: the tile does not widen, the strip stays a single horizontal region-scrolling row in add order (REQ-130), and horizontal document scroll is not introduced
+  - Scan review's images grow to their list-row width inside the existing scrolling review list, without overlapping or displacing the scan camera chrome (DEC-090)
+  - REQ-129's criteria still hold and are the binding ceiling: at 390×844 the zone-collection add action's `top` is ≤ 844px, and no card surface forces page scroll solely because images grew. Where the two conflict, REQ-129 wins and the hosting screen's `screen-layout.md` row records a bounded cap
+  - exactly one sizing rule lives in the shared component — no per-screen fork, no size variant prop, and no call-site `imageClassName` override that re-caps height
+  - verified visually at 390×844 and 1440×900 on **all six** surfaces (`prefers-reduced-motion` and theme selection are irrelevant here; this is a sizing check)
+- Constraints:
+  - presentation only; no change to card identity, selection state, image source/quality tier, `AskAiRequest`, or Zod schemas
+  - retains DEC-151's first-viewport-fit intent — this changes how "compact" is expressed, it does not license a full-bleed card hero on any surface
+  - do not compensate by shrinking the card image inside the View Context sheet to make room elsewhere; that surface is a consumer of the same component
+  - do not resolve a surface-specific overflow by forking the component or adding a size prop; bound it on that surface's catalog row instead (DEC-160)
+- Dependencies:
+  - DEC-160
+  - DEC-151
+  - DEC-156
+  - DEC-158
+  - REQ-133
+  - REQ-129
+  - REQ-130
+  - REQ-125
+  - REQ-126
+- Notes:
+  - measured live during `ui-review` refinement; `CardPresentation.tsx:158` caps the image with `max-h-32` and no responsive override, which is why phone and desktop render identically
+  - **corrected during quality-check (2026-08-06)**: this requirement originally named three consuming surfaces. The shared component has five — `ZoneCardPicker.tsx:253` and `ScanReviewBubble.tsx:49` were missed, and neither call site's `imageClassName` (`zone-card-tile-image shrink-0 rounded` / `shrink-0 rounded`) overrides the cap; `zone-card-tile-image` has no CSS rule backing it at all. Product-owner decision: all five grow, via container-relative sizing (DEC-160)
+  - **corrected during the next quality-check (2026-08-06)**: `ZoneCardPicker` has a second, distinct card surface at its selected-card/add preview (`CardSelectionPreview`, before the added-card strip). Product-owner decision: this sixth surface uses the large shell-column treatment; REQ-125 owns its exact-name-in-search, no-duplicate-title, and first-viewport Add-action rules
+  - REQ-133 frees the width beside the image on the two staged surfaces; this requirement is what that freed width must be spent on
+
+### REQ-142
+- Title: Shared theme-derived overlay close control
+- Priority: medium
+- Description: All overlay close controls render through one shared component whose color derives from the active theme palette, replacing today's two text **Close** buttons and four verbatim-duplicated hardcoded-`zinc` circular-`×` class strings (DEC-159).
+- Acceptance Criteria:
+  - a single shared close-control component exists and is the only definition of that chrome; the duplicated Tailwind class strings are removed from every call site
+  - all six overlays adopt it: `AdaptiveContextDialog` (View Context), `ConversationHistoryDrawer`, `CardDetailPopup`, `FeedbackModal`, Life Tracker's `CounterPanel`, and Life Tracker's `GameSetupModal`
+  - no text **Close** button remains in any overlay — today `AdaptiveContextDialog` and `ConversationHistoryDrawer` both render one via the shared `adaptive-context-close` class
+  - the control's color derives from the active theme palette through the existing theme-token path, and visibly changes when the user switches palette; it does not hardcode `zinc`
+  - the control is at or above the 44px touch-target floor (NFR-001) and each overlay keeps its existing distinct accessible name (e.g. "Close conversation history", "Close feedback")
+  - the control lays out **inside** its overlay's bounds at 390×844 — the `CardDetailPopup` baseline has its 44px close button laid out at x=234–278 while the dialog ends at x=241, overflowing by 37px
+  - contrast of the themed control against each overlay's surface meets the project's existing accessibility bar in all six palettes
+- Constraints:
+  - presentation only; no change to any overlay's dismiss triggers, focus trap, focus restore, or reduced-motion behavior
+  - Life Tracker's `CounterControl` stepper and the DEC-136/DEC-139 overlay geometry are untouched — this covers close controls only
+- Dependencies:
+  - DEC-159
+  - DEC-158
+  - DEC-142
+  - REQ-135
+  - NFR-001
+- Notes:
+  - the `CardDetailPopup` overflow is resolved by DEC-158's rehost; this requirement additionally guarantees the shared control never lays out outside its container
+
+### REQ-143
+- Title: Overlay dismiss-behavior parity
+- Priority: low
+- Description: The app's overlays share one authoritative outside-click/Escape dismissal implementation and one consistent dismiss contract, replacing the three divergent implementations found during the `ui-review` sweep.
+- Acceptance Criteria:
+  - outside-click dismissal has a single authoritative implementation (a shared hook or helper) imported by every overlay that dismisses on outside click, rather than the three current patterns: an overlay-root `onClick` plus surface `stopPropagation` (`AdaptiveContextDialog`, `ConversationHistoryDrawer`), an `event.target === event.currentTarget` check (`FeedbackModal`, Life Tracker's `GameSetupModal`), and a `document`-level `mousedown` listener (`FeaturePortalMenu`)
+  - Life Tracker's `CounterPanel` gains outside-click dismissal, which it lacks today despite having Escape — bringing it to parity with the rest of the overlay family
+  - every overlay continues to dismiss on Escape and on its close control, and clicking inside an overlay's surface never dismisses it — verified live per overlay, not by inspection
+  - existing behavior that is intentionally different is preserved: `FeaturePortalMenu`'s document-listener semantics and Menu↔History mutual exclusivity (DEC-150) still hold
+- Constraints:
+  - behavior-preserving refactor plus the one `CounterPanel` addition; no overlay loses a dismiss trigger
+  - DEC-142's dismiss-trigger set is extended to `CounterPanel`, not narrowed anywhere
+- Dependencies:
+  - DEC-142
+  - DEC-150
+  - REQ-135
+  - REQ-142
+- Notes:
+  - DEC-142 has been **amended in place** to retire its counter-panel exclusion: that note treated `CounterPanel` as a "non-overlay panel that already has its own chrome", a premise DEC-139 retired when it moved the panel into the full-height overlay family. Read the amended DEC-142 Notes as the authority, not the original exclusion.
+  - three implementations of one behavior is a reuse defect under `technical-design-rules.md`'s reuse-before-creating rule
+
+### REQ-144
+- Title: Grouped label-and-input row pattern for In-Depth counters
+- Priority: low
+- Description: In-Depth Game Context rows that pair a text label with a small numeric input use one shared grouping pattern that keeps the two visually associated, replacing the `grid-cols-[1fr_auto]` pattern that strands them at opposite edges of the row.
+- Acceptance Criteria:
+  - a single shared row pattern is defined once and applied to both the commander-damage rows and the "Named counters" rows, which use the identical stranded `grid-cols-[1fr_auto]` layout today
+  - in every adopting row, the label text and its input read as one grouped control at 390×844 and 1440×900, with no large unused gap between them (desktop baseline: 457px between label text end and input)
+  - the pattern holds as the label text length varies — player display names are user-editable and can be long, so grouping must not depend on a fixed label width
+  - each input keeps its current accessible name and `inputMode="numeric"`, and remains free-typed where it is free-typed today
+- Constraints:
+  - presentation only; no `AskAiRequest`/Zod schema change, and no change to `GamePlayerContext.commanderDamage` or named-counter data shapes
+  - does not change which rows exist or when they render — only how each row lays out
+- Dependencies:
+  - DEC-102
+  - DEC-128
+  - REQ-138
+- Notes:
+  - REQ-138 is the reported instance; this requirement is the shared pattern it uses, so the sibling "Named counters" rows are fixed in the same pass rather than left inconsistent
+
+### REQ-145
+- Title: Human-readable price freshness timestamp
+- Priority: low
+- Description: The Trade Balancer's price-freshness line presents its timestamp in a human-readable form instead of a raw machine ISO-8601 string.
+- Acceptance Criteria:
+  - the freshness line renders a human-readable date rather than the raw ISO string — measured baseline: `Prices as of 2026-06-05T22:21:13.248Z`, including the `T` separator, milliseconds, and `Z` suffix
+  - the rendered form does not imply more precision than the underlying data warrants (the price snapshot is a build-time artifact, not a live quote)
+  - the line stays on one line at 390×844
+- Constraints:
+  - presentation only; no change to the price data pipeline, `loadCardPrices`, the snapshot's stored format, or pricing math
+  - USD-only labelling and the existing "Even trade"/difference copy are unchanged
+- Dependencies:
+  - REQ-064
+- Notes:
+  - found during the `ui-review` light sweep across destinations rather than in the original braindump; included because it is the only user-facing defect the sweep surfaced outside the reported screens
