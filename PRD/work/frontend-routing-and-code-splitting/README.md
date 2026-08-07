@@ -27,7 +27,7 @@ Captured by `thejudge-kickoff` from the SPA scaling analysis done during
 | --- | --- | --- | --- |
 | [A](slice-a-router-foundation.md) | done | Router foundation; URL as source of truth for the active destination | — |
 | [B](slice-b-lazy-boundaries.md) | done | Per-destination `React.lazy` boundaries and the load-fallback surface | A |
-| [C](slice-c-chunking.md) | planned | Explicit `manualChunks` and measured payload verification | B |
+| [C](slice-c-chunking.md) | done | Explicit `manualChunks` and measured payload verification | B |
 | [D](slice-d-test-alignment.md) | planned | Test alignment, CI shard headroom, PRD promotion, ship gates | C |
 
 Sequential, not parallel. Each slice operates on structure the previous one

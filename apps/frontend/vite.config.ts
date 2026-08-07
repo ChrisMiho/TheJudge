@@ -12,6 +12,36 @@ export default defineConfig({
       process.env.VITE_ASK_AI_PROVIDER ?? process.env.ASK_AI_PROVIDER ?? ""
     )
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          const moduleId = id.split("\\").join("/");
+
+          if (
+            moduleId.endsWith("/node_modules/react/jsx-runtime.js") ||
+            moduleId.includes("/node_modules/react/") ||
+            moduleId.includes("/node_modules/react-dom/") ||
+            moduleId.includes("/node_modules/react-router/")
+          ) {
+            return "vendor";
+          }
+
+          if (
+            moduleId.includes("/src/lib/scan/") ||
+            moduleId.endsWith("/src/hooks/useScanCapture.ts") ||
+            moduleId.endsWith("/src/components/ScanCameraSurface.tsx") ||
+            moduleId.endsWith("/src/components/ScanCardOutline.tsx") ||
+            moduleId.endsWith("/src/components/ScanDebugOverlay.tsx")
+          ) {
+            return "scan";
+          }
+
+          return undefined;
+        }
+      }
+    }
+  },
   server: {
     port: Number(process.env.FRONTEND_PORT ?? 5173),
     // Fail fast on a collision instead of silently migrating to another port,

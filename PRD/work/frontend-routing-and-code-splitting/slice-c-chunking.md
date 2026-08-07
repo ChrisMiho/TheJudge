@@ -1,6 +1,6 @@
 # Slice C — Explicit chunking and measured payload verification
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -73,4 +73,33 @@ npm run quality:check
 ## Files touched
 
 - `apps/frontend/vite.config.ts`
+- `apps/frontend/src/lib/viteChunking.test.ts`
 - `PRD/work/frontend-routing-and-code-splitting/slice-c-chunking.md` (measured evidence)
+
+## Measured evidence — 2026-08-07
+
+All sizes below are Vite's minified raw / gzip output in kB.
+
+| Artifact | Pre-split eager build (after A) | Lazy build before `manualChunks` (after B) | Final explicit chunk build |
+| --- | ---: | ---: | ---: |
+| Entry | 548.71 / 167.22 | 212.94 / 69.74 | 35.86 / 12.27 |
+| Quick Question | folded into entry | 11.41 / 4.04 | 11.48 / 4.07 |
+| In-Depth Question | folded into entry | 49.69 / 13.36 | 49.76 / 13.38 |
+| Life Tracker | folded into entry | 30.33 / 8.07 | 30.36 / 8.08 |
+| Trade Balancer | folded into entry | 14.36 / 4.60 | 14.42 / 4.63 |
+| Shared scan surface | folded into entry | incidental shared placement | 42.90 / 15.51 |
+| Framework vendor | folded into entry | folded into entry | 177.16 / 58.07 |
+
+The end-to-end entry reduction is 512.85 kB raw (548.71 → 35.86), well beyond the 177.16 kB framework move alone. The final graph separately carries 106.02 kB of destination chunks and 42.90 kB of shared scan code; those 148.92 kB are destination/scan bytes that also left the eager entry. Shared conversation/header chunks account for the remaining extracted application code, with small minification differences between graph layouts.
+
+## Verification evidence — 2026-08-07
+
+- Contract: `src/lib/viteChunking.test.ts` passed 12 cases proving function-form ownership for explicit `react/jsx-runtime`, React/ReactDOM/router modules, all measured shared scan modules, and the intentional exclusion of destination-owned `ZoneCardPicker` and `useTradeScan`.
+- Emitted graph: the normal build produced `vendor-BVF4lV-E.js`, `scan-2BdhZY_b.js`, and distinct `QuickLookupApp`, `MtgAssistantApp`, `PlayerLifeTrackerApp`, and `TradeBalancer` files.
+- Entry isolation: unique strings for Quick (`Core topics are unavailable...`), In-Depth (`Enter numeric life totals...`), Life Tracker (`Day and night: currently`), and Trade (`No cards on this side yet.`) each appeared in exactly one destination chunk and were absent from `index-Crmthum1.js`.
+- Scan isolation: `Could not load scan resources` (`useScanCapture.ts`) and `Fill the guide on a flat contrasting surface...` (`ScanCameraSurface.tsx`) each appeared exactly once, in `scan-2BdhZY_b.js`, and were absent from the entry and destination chunks.
+- Preview network: a fresh `/trade-balancer` load requested `index`, `vendor`, `TradeBalancer`, `StepEyebrow`, and `scan`; it did not request the Quick, In-Depth, Life Tracker, or conversation-workspace chunks.
+- Preview paths: `/` resolved the stored destination, and `/quick-lookup`, `/in-depth`, `/life-tracker`, and `/trade-balancer` each served and mounted the expected production-built destination.
+- Define bridge: a separate `ASK_AI_PROVIDER=mock` build displayed `⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend`, proving the existing client define still works; the normal build was restored afterward.
+- Data artifacts: no data-artifact loader or generated data file changed; this package remains code-only.
+- Runtime ownership: preview sessions `31419` and `54723` were stopped through their exact handles; `browser_close` completed; port 4179 had no listener afterward. Automatic browser artifacts are under `.playwright-mcp/slice-c-auto/`; the only console error was the existing missing favicon.
