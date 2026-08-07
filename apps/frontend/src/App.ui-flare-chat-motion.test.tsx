@@ -133,9 +133,19 @@ describe("Frontend - UI flare chat motion integration", () => {
     const cardContextDialog = screen.getByRole("dialog", { name: "Card context" });
     expect(cardContextDialog).toBeInTheDocument();
     // Oracle text is not stacked under the image by default (DEC-151) — it is reached via
-    // the suite-wide corner detail popup, including inside this read-only context dialog.
+    // the suite-wide corner detail popup, including from inside this read-only context
+    // dialog. DEC-158 portals that popup out to <body>, so it layers over View Context
+    // instead of being squeezed into the frozen card's box, and each surface closes back
+    // in its own order.
     await user.click(within(cardContextDialog).getByRole("button", { name: "Show details for Lightning Bolt" }));
-    expect(cardContextDialog).toHaveTextContent("Lightning Bolt deals 3 damage to any target.");
+    const cardDetailPopup = screen.getByTestId("card-detail-popup");
+    expect(cardContextDialog).not.toContainElement(cardDetailPopup);
+    expect(cardDetailPopup).toHaveTextContent("Lightning Bolt deals 3 damage to any target.");
+
+    await user.click(screen.getByRole("button", { name: "Close details for Lightning Bolt" }));
+    expect(screen.queryByTestId("card-detail-popup")).not.toBeInTheDocument();
+    expect(cardContextDialog).toBeInTheDocument();
+
     await user.click(screen.getByRole("button", { name: "Close card context" }));
     expect(quickTrigger).toHaveFocus();
 

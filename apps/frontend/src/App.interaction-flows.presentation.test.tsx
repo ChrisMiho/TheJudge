@@ -127,9 +127,17 @@ describe("Interaction flows - zone card presentation", () => {
         name: "Show details for Lightning Bolt"
       })
     );
-    expect(within(header as HTMLElement).getByTestId("card-detail-popup")).toBeInTheDocument();
-    expect(within(header as HTMLElement).getByText("Lightning Bolt")).toBeInTheDocument();
-    expect(within(header as HTMLElement).getByText("Lightning Bolt deals 3 damage to any target.")).toBeInTheDocument();
+    // DEC-158: the popup is portaled to <body>, so it is never bound by the enrichment card
+    // header it was opened from — the header itself still shows no duplicated detail.
+    expect(within(header as HTMLElement).queryByTestId("card-detail-popup")).not.toBeInTheDocument();
+    expect(within(header as HTMLElement).queryByText("Lightning Bolt")).not.toBeInTheDocument();
+    const detailPopup = screen.getByTestId("card-detail-popup");
+    expect(within(detailPopup).getByText("Lightning Bolt")).toBeInTheDocument();
+    expect(within(detailPopup).getByText("Lightning Bolt deals 3 damage to any target.")).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", { name: "Close details for Lightning Bolt" })
+    );
 
     expect(within(row as HTMLElement).getByLabelText("Caster for Lightning Bolt")).toBeInTheDocument();
     expect(within(row as HTMLElement).getByLabelText("Mana spent for Lightning Bolt")).toBeInTheDocument();

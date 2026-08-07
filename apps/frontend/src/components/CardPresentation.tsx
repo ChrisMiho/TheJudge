@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useOutsideDismiss } from "../hooks/useOutsideDismiss";
 import type { ZoneCardItem } from "../types";
 import { OverlayCloseButton } from "./OverlayCloseButton";
@@ -82,11 +83,19 @@ type CardDetailPopupProps = {
 };
 
 /**
- * Suite-wide card detail popup (DEC-151 part 2). Layers over the card image — the image
- * stays mounted underneath — and shows oracle text plus the same locally-carried fields the
- * text-first fallback renders. No new network request: every field comes from the card
- * object already passed to `CardPresentation` / `CardSelectionPreview`. Escape closes it as
- * a convenience; the required dismissal path is the visible X control.
+ * Suite-wide card detail popup (DEC-151 part 2, rehosted by DEC-158). It shows oracle text
+ * plus the same locally-carried fields the text-first fallback renders. No new network
+ * request: every field comes from the card object already passed to `CardPresentation` /
+ * `CardSelectionPreview`. Escape closes it as a convenience; the required dismissal path is
+ * the visible X control, and the shared `useOutsideDismiss` hook covers the scrim.
+ *
+ * It is portaled to `document.body` rather than layered `absolute inset-0` over the image.
+ * As an image-bound box it inherited the image's 92x128px geometry, squeezing 356px of
+ * detail into a 66px text column and pushing its own close control 37px past the dialog's
+ * right edge (DEC-158). Portaled, it takes the overlay family's own geometry —
+ * content-sized bottom sheet below 768px, View Context-width side panel at 768px+, per
+ * `screen-layout.md`'s "Card detail popup" row — identically on all six card surfaces,
+ * with no per-surface variant, because every surface renders this one component.
  */
 export function CardDetailPopup({ card, onClose }: CardDetailPopupProps): JSX.Element {
   const titleId = useId();
@@ -106,25 +115,30 @@ export function CardDetailPopup({ card, onClose }: CardDetailPopupProps): JSX.El
     }
   }
 
-  return (
-    <div
-      ref={dialogRef}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={titleId}
-      tabIndex={-1}
-      onKeyDown={handleKeyDown}
-      data-testid="card-detail-popup"
-      className="absolute inset-0 z-10 flex flex-col overflow-y-auto rounded-lg border border-zinc-600 bg-zinc-950/95 p-3 text-left text-sm text-zinc-200"
-    >
-      <div className="mb-2 flex shrink-0 items-start justify-between gap-2">
-        <p id={titleId} className="font-semibold text-zinc-100">
-          {card.name}
-        </p>
-        <OverlayCloseButton ref={closeRef} label={`Close details for ${card.name}`} onClick={onClose} />
+  return createPortal(
+    <div className="card-detail-overlay" data-testid="card-detail-overlay">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onKeyDown={handleKeyDown}
+        data-testid="card-detail-popup"
+        className="card-detail-surface ambient-accent-surface border border-zinc-700 bg-zinc-950 text-left text-sm text-zinc-200 shadow-2xl"
+      >
+        <div className="card-detail-header flex shrink-0 items-start justify-between gap-3 border-b border-zinc-700/70">
+          <p id={titleId} className="font-semibold text-zinc-100">
+            {card.name}
+          </p>
+          <OverlayCloseButton ref={closeRef} label={`Close details for ${card.name}`} onClick={onClose} />
+        </div>
+        <div className="card-detail-content">
+          <CardDetailFieldsList card={card} />
+        </div>
       </div>
-      <CardDetailFieldsList card={card} />
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -138,11 +152,22 @@ export function CardPresentation({
   const imageUrl = card.imageUrl?.trim();
   const [imageFailed, setImageFailed] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
+  const detailTriggerRef = useRef<HTMLButtonElement>(null);
+  const wasDetailOpenRef = useRef(false);
 
   useEffect(() => {
     setImageFailed(false);
     setDetailOpen(false);
   }, [imageUrl]);
+
+  // The popup now lives in a body portal, so closing it no longer leaves focus inside a
+  // DOM ancestor of the trigger — restore it explicitly, as the other overlay adopters do.
+  useEffect(() => {
+    if (!detailOpen && wasDetailOpenRef.current) {
+      detailTriggerRef.current?.focus();
+    }
+    wasDetailOpenRef.current = detailOpen;
+  }, [detailOpen]);
 
   const imageAvailable = Boolean(imageUrl && !imageFailed);
 
@@ -157,6 +182,7 @@ export function CardPresentation({
             onError={() => setImageFailed(true)}
           />
           <button
+            ref={detailTriggerRef}
             type="button"
             aria-label={`Show details for ${card.name}`}
             aria-haspopup="dialog"

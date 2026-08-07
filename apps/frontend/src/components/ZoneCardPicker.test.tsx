@@ -216,8 +216,12 @@ describe("ZoneCardPicker card grid", () => {
     expect(within(tile).queryByTestId("card-detail-popup")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Show details for Opt" }));
-    expect(within(tile).getByTestId("card-detail-popup")).toBeInTheDocument();
-    // The image stays mounted underneath the popup rather than being replaced by it.
+    // DEC-158: the popup is portaled to <body>, so a w-40 strip tile never bounds the detail
+    // surface's geometry.
+    expect(within(tile).queryByTestId("card-detail-popup")).not.toBeInTheDocument();
+    expect(screen.getByTestId("card-detail-popup").closest(".zone-card-tile")).toBeNull();
+    expect(within(screen.getByTestId("card-detail-popup")).getByText("Opt")).toBeInTheDocument();
+    // The image stays mounted while the popup is open rather than being replaced by it.
     expect(screen.getByRole("img", { name: "Opt" })).toBeInTheDocument();
   });
 

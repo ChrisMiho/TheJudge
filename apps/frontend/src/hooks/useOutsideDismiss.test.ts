@@ -108,6 +108,61 @@ describe("Frontend - Shared", () => {
       expect(onDismiss).not.toHaveBeenCalled();
     });
 
+    it("dismisses only the most recently opened surface when overlays are nested", () => {
+      const outerSurface = document.createElement("div");
+      const innerSurface = document.createElement("div");
+      const outside = document.createElement("div");
+      document.body.append(outerSurface, innerSurface, outside);
+      const dismissOuter = vi.fn();
+      const dismissInner = vi.fn();
+
+      renderHook(() => {
+        const outerRef = useRef<HTMLElement>(outerSurface);
+        useOutsideDismiss([outerRef], dismissOuter, true);
+      });
+      const inner = renderHook(() => {
+        const innerRef = useRef<HTMLElement>(innerSurface);
+        useOutsideDismiss([innerRef], dismissInner, true);
+      });
+
+      // The inner surface's own scrim covers the outer one, so a single outside mousedown
+      // must not collapse both layers at once (card detail opened from inside View Context).
+      act(() => mousedownOn(outside));
+      expect(dismissInner).toHaveBeenCalledTimes(1);
+      expect(dismissOuter).not.toHaveBeenCalled();
+
+      inner.unmount();
+      act(() => mousedownOn(outside));
+      expect(dismissOuter).toHaveBeenCalledTimes(1);
+    });
+
+    it("hands dismissal back to the surface below when the top surface is disabled rather than unmounted", () => {
+      const outerSurface = document.createElement("div");
+      const innerSurface = document.createElement("div");
+      const outside = document.createElement("div");
+      document.body.append(outerSurface, innerSurface, outside);
+      const dismissOuter = vi.fn();
+      const dismissInner = vi.fn();
+
+      renderHook(() => {
+        const outerRef = useRef<HTMLElement>(outerSurface);
+        useOutsideDismiss([outerRef], dismissOuter, true);
+      });
+      const inner = renderHook(
+        ({ enabled }: { enabled: boolean }) => {
+          const innerRef = useRef<HTMLElement>(innerSurface);
+          useOutsideDismiss([innerRef], dismissInner, enabled);
+        },
+        { initialProps: { enabled: true } }
+      );
+
+      inner.rerender({ enabled: false });
+      act(() => mousedownOn(outside));
+
+      expect(dismissInner).not.toHaveBeenCalled();
+      expect(dismissOuter).toHaveBeenCalledTimes(1);
+    });
+
     it("always calls the latest onDismiss without re-attaching the listener", () => {
       const outside = document.createElement("div");
       document.body.append(outside);

@@ -68,8 +68,12 @@ describe("Frontend - Card Scan", () => {
       await user.click(
         within(entry as HTMLElement).getByRole("button", { name: "Show details for Opt" })
       );
-      expect(within(entry as HTMLElement).getByTestId("card-detail-popup")).toBeInTheDocument();
-      expect(within(entry as HTMLElement).getByText("Opt")).toBeInTheDocument();
+      // DEC-158: the popup is portaled out of the review row rather than layered inside it,
+      // so the row still shows no duplicated name and the detail surface is not bound by the
+      // row's geometry.
+      expect(within(entry as HTMLElement).queryByTestId("card-detail-popup")).not.toBeInTheDocument();
+      expect(within(entry as HTMLElement).queryByText("Opt")).not.toBeInTheDocument();
+      expect(within(screen.getByTestId("card-detail-popup")).getByText("Opt")).toBeInTheDocument();
     });
 
     it("uses a 320px viewport-capped panel with an internally scrolling list", async () => {

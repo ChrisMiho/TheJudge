@@ -673,6 +673,40 @@
   padding-top: var(--layout-content-padding);
 }
 
+/* Card detail popup (DEC-158, screen-layout.md "Card detail popup"): the same overlay-family
+   composition as View Context above, so the popup is sized by its own content instead of the
+   card image's bounding box. It sits one layer above .adaptive-context-overlay because it is
+   routinely opened from the frozen card *inside* View Context; DOM order alone would carry it
+   there today, but the explicit z-index keeps that true regardless of portal mount order. */
+.card-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: flex-end;
+  background: rgb(9 9 11 / 0.72);
+  animation: adaptive-context-overlay-enter var(--motion-fast) var(--motion-ease-out) both;
+}
+
+.card-detail-surface {
+  width: 100%;
+  /* Height is content-driven; the cap only bounds a long oracle text into a region scroll,
+     leaving a dismissible scrim above the sheet the way View Context does. */
+  max-height: 75dvh;
+  overflow-y: auto;
+  border-radius: 1rem 1rem 0 0;
+  padding: var(--layout-panel-padding);
+  animation: adaptive-context-enter var(--motion-base) var(--motion-ease-emphasized) both;
+}
+
+.card-detail-header {
+  padding-bottom: var(--layout-compact-gap);
+}
+
+.card-detail-content {
+  padding-top: var(--layout-content-padding);
+}
+
 .frozen-context-detail-row {
   padding: var(--layout-compact-gap);
 }
@@ -689,6 +723,19 @@
   }
 
   .adaptive-context-surface {
+    width: min(30rem, 90vw);
+    max-height: none;
+    border-radius: 1rem 0 0 1rem;
+  }
+
+  /* Side panel at 768px+, tracking the View Context row's width rather than a free
+     full-viewport panel (screen-layout.md "Card detail popup"). */
+  .card-detail-overlay {
+    align-items: stretch;
+    justify-content: flex-end;
+  }
+
+  .card-detail-surface {
     width: min(30rem, 90vw);
     max-height: none;
     border-radius: 1rem 0 0 1rem;
@@ -1025,6 +1072,8 @@ body {
   .conversation-new-response,
   .adaptive-context-overlay,
   .adaptive-context-surface,
+  .card-detail-overlay,
+  .card-detail-surface,
   .conversation-history-overlay,
   .conversation-history-surface,
   .enrichment-card-enter,

@@ -15,13 +15,21 @@ Absorbs `ui-screen-layout-truth`'s problem framing — that package's durable de
 | Slice | Status | Objective | Depends on |
 | --- | --- | --- | --- |
 | [A](slice-a-overlay-foundation.md) | done | Shared themed close control and one outside-dismiss contract across the overlay family | — |
-| [B](slice-b-card-detail-overlay.md) | planned | Portal-hosted card detail bottom sheet / side panel on all six card surfaces | A — consumes the shared close and dismiss primitives |
+| [B](slice-b-card-detail-overlay.md) | done | Portal-hosted card detail bottom sheet / side panel on all six card surfaces | A — consumes the shared close and dismiss primitives |
 | [C](slice-c-card-composition.md) | planned | Container-relative card sizing, staged-card consolidation, and zone selected-card composition | B — consolidation cannot target the image-bound popup |
 | [D](slice-d-question-counter.md) | planned | Raw-editable-text counter and submit-gate integrity in Quick Question | — |
 | [E](slice-e-player-details.md) | planned | In-Depth player disclosure, grouped counter rows, and bounded scalar selects | — |
 | [F](slice-f-rail-footprint.md) | planned | Real in-flow corner-rail footprint and answered-workspace gap removal | — |
 | [G](slice-g-price-freshness.md) | planned | Human-readable Trade Balancer price freshness | — |
 | [H](slice-h-integration-and-ship-gates.md) | planned | Integrated browser regression, full quality gate, and cleanup handoff | A–G |
+
+Known live-verification limit carried forward from slice B: the Scan review card
+surface cannot be reached in Playwright because the client-side perceptual-hash
+identifier never converges on Chrome's synthetic fake-camera pattern, and this MCP
+server exposes no `--use-file-for-fake-video-capture` control. That surface is
+covered by `ScanReviewBubble.test.tsx` plus the shared component/CSS rule measured
+live on the other five surfaces. Slices C and H should re-attempt it live only if a
+real-camera path becomes available, and otherwise record the same limit.
 
 Slices A, D, E, F, and G are parallel-ready from a product/dependency standpoint.
 B is sequential on A, C is sequential on B, and H is sequential on every product
