@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
@@ -86,6 +86,33 @@ describe("Frontend - Portal", () => {
     await expandSecondaryPlayerDetails(user);
     expect(screen.getByLabelText("Player 1 poison")).toHaveValue("3");
     expect(screen.getByLabelText("Player 1 commander damage from Player 2")).toHaveValue("5");
+  });
+
+  it("does not seed an Assistant reached by a direct deep link", async () => {
+    const user = userEvent.setup();
+    saveTrackerState(seededTrackerState());
+    window.history.replaceState(null, "", "/in-depth");
+
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: "Show player details" }));
+
+    expect(screen.getByLabelText("Player 1 display name")).toHaveValue("Player 1");
+    expect(screen.getByLabelText("Player 1 life total")).toHaveValue("20");
+  });
+
+  it("does not seed an Assistant reached from Life Tracker with browser Back", async () => {
+    const user = userEvent.setup();
+    saveTrackerState(seededTrackerState());
+    window.history.replaceState(null, "", "/in-depth");
+    render(<App />);
+
+    await selectDestination(user, "Life Tracker");
+    act(() => window.history.back());
+    await waitFor(() => expect(window.location.pathname).toBe("/in-depth"));
+    await user.click(screen.getByRole("button", { name: "Show player details" }));
+
+    expect(screen.getByLabelText("Player 1 display name")).toHaveValue("Player 1");
+    expect(screen.getByLabelText("Player 1 life total")).toHaveValue("20");
   });
 
   it("does not seed after tracker-to-Quick-to-Assistant routing", async () => {

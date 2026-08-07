@@ -1,6 +1,6 @@
 # Slice D — Test alignment, CI shard headroom, and promotion
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -107,3 +107,16 @@ npm --workspace apps/frontend run test:coverage
 - [ ] Public contract unchanged unless slice scoped a change
 - [ ] No secrets committed
 - [ ] Durable outcomes promoted; `PRD/work/frontend-routing-and-code-splitting/` ready to delete
+
+## Verification evidence — 2026-08-07
+
+- Targeted integration run: 4 files / 21 cases passed across destination resolution, keep-alive switching, feedback routing, seed handoff, and global URL cleanup.
+- The persistence suite now asserts DEC-157's complete resolution order: a registered path wins over storage; bare `/` consults a valid stored id; absent or unregistered storage falls back to registry order; an unknown path redirects through `/` to the guarded fallback.
+- The keep-alive regression retains the exact Quick Question search-input DOM node and its `lightning` value after switching to In-Depth Question and back. Moving destinations into `<Routes>` would replace that node and fail the test.
+- Feedback coverage records both pathname and `history.length` after root resolution and proves opening the routeless action modal changes neither.
+- Seed coverage proves the Life Tracker → In-Depth menu transition seeds, while a direct `/in-depth` load and browser Back from Life Tracker preserve the Assistant's unseeded defaults.
+- `src/test/setup.history-reset.test.ts` deliberately leaves `/in-depth` in one case and proves the following case starts at `/`, exercising the global `src/test/setup.ts` history reset added with the router foundation.
+- All new and edited titles use the `Frontend - Portal`, `Frontend - Feedback`, or `Frontend - Shared` naming vocabulary without planning identifiers. No App test adds a router wrapper.
+- Full frontend coverage passed 126 files / 1255 cases with 96.38% line coverage. NFR-012 requires `ceil(1255 / 440) = 3` shards; 1255 remains below the measured ~1330 ceiling, so `.github/workflows/quality-check.yml` remains at 3 shards. The `lines: 45` threshold is unchanged.
+- Durable promotion was confirmed in place: DEC-157 plus its decision index row, REQ-140, NFR-014, REQ-090/DEC-111 amendments, the **Destination load fallback** layout row, and the system-map Routing/Backed-by entries.
+- No browser or server session was started for this test-only slice. Integrated browser navigation, lazy-fallback, chunk-network, mock-define, cleanup, and capture evidence remains recorded in slices A–C.
