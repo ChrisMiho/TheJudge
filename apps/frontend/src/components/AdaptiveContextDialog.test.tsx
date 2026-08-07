@@ -102,6 +102,16 @@ describe("Frontend - Adaptive context dialog", () => {
     );
   });
 
+  it("caps the phone sheet at 75dvh so a >=25% dismissible scrim stays reachable above it (REQ-135)", () => {
+    const mobileSurfaceBlock = appCss.slice(
+      appCss.indexOf(".adaptive-context-surface {"),
+      appCss.indexOf("}", appCss.indexOf(".adaptive-context-surface {"))
+    );
+
+    expect(mobileSurfaceBlock).toContain("max-height: 75dvh");
+    expect(mobileSurfaceBlock).not.toContain("min(85dvh, 48rem)");
+  });
+
   it("sizes the answered-workspace top clearance to the side-by-side rail's 2.75rem band, not the retired stacked-rail clamp", () => {
     const triggerBlock = appCss.slice(
       appCss.indexOf(".adaptive-context-trigger {"),

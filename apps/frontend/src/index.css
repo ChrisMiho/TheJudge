@@ -652,9 +652,13 @@
   animation: adaptive-context-overlay-enter var(--motion-fast) var(--motion-ease-out) both;
 }
 
+/* REQ-135/screen-layout.md "View Context": capped at 75dvh (not the prior
+   min(85dvh, 48rem)) so a dismissible scrim of >=25% viewport height stays
+   reachable above the sheet at 390x844, rather than reading as page content
+   showing through. */
 .adaptive-context-surface {
   width: 100%;
-  max-height: min(85dvh, 48rem);
+  max-height: 75dvh;
   overflow-y: auto;
   border-radius: 1rem 1rem 0 0;
   padding: var(--layout-panel-padding);

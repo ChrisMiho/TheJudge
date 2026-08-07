@@ -12,16 +12,16 @@ Absorbs `ui-screen-layout-truth`'s problem framing — that package's durable de
 
 ## Slices
 
-| Slice | Objective | Depends on |
-| --- | --- | --- |
-| [A](slice-a-overlay-foundation.md) | Shared themed close control and one outside-dismiss contract across the overlay family | — |
-| [B](slice-b-card-detail-overlay.md) | Portal-hosted card detail bottom sheet / side panel on all six card surfaces | A — consumes the shared close and dismiss primitives |
-| [C](slice-c-card-composition.md) | Container-relative card sizing, staged-card consolidation, and zone selected-card composition | B — consolidation cannot target the image-bound popup |
-| [D](slice-d-question-counter.md) | Raw-editable-text counter and submit-gate integrity in Quick Question | — |
-| [E](slice-e-player-details.md) | In-Depth player disclosure, grouped counter rows, and bounded scalar selects | — |
-| [F](slice-f-rail-footprint.md) | Real in-flow corner-rail footprint and answered-workspace gap removal | — |
-| [G](slice-g-price-freshness.md) | Human-readable Trade Balancer price freshness | — |
-| [H](slice-h-integration-and-ship-gates.md) | Integrated browser regression, full quality gate, and cleanup handoff | A–G |
+| Slice | Status | Objective | Depends on |
+| --- | --- | --- | --- |
+| [A](slice-a-overlay-foundation.md) | done | Shared themed close control and one outside-dismiss contract across the overlay family | — |
+| [B](slice-b-card-detail-overlay.md) | planned | Portal-hosted card detail bottom sheet / side panel on all six card surfaces | A — consumes the shared close and dismiss primitives |
+| [C](slice-c-card-composition.md) | planned | Container-relative card sizing, staged-card consolidation, and zone selected-card composition | B — consolidation cannot target the image-bound popup |
+| [D](slice-d-question-counter.md) | planned | Raw-editable-text counter and submit-gate integrity in Quick Question | — |
+| [E](slice-e-player-details.md) | planned | In-Depth player disclosure, grouped counter rows, and bounded scalar selects | — |
+| [F](slice-f-rail-footprint.md) | planned | Real in-flow corner-rail footprint and answered-workspace gap removal | — |
+| [G](slice-g-price-freshness.md) | planned | Human-readable Trade Balancer price freshness | — |
+| [H](slice-h-integration-and-ship-gates.md) | planned | Integrated browser regression, full quality gate, and cleanup handoff | A–G |
 
 Slices A, D, E, F, and G are parallel-ready from a product/dependency standpoint.
 B is sequential on A, C is sequential on B, and H is sequential on every product

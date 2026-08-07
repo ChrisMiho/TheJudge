@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BrandMark } from "../../BrandMark";
+import { OverlayCloseButton } from "../../OverlayCloseButton";
 import { PageShell } from "../../PageShell";
 import type { PlayerLabel } from "../../../types";
+import { useOutsideDismiss } from "../../../hooks/useOutsideDismiss";
 import { listSeatArrangement, seatArrangement } from "../../../lib/lifeTracker/seatArrangement";
 import { useLifeTracker, type UseLifeTrackerResult } from "../../../lib/lifeTracker/useLifeTracker";
 import { PortalSlot } from "../PortalSlot";
@@ -23,6 +25,8 @@ function GameSetupModal({ tracker, onClose }: GameSetupModalProps): JSX.Element 
   const dialogRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
 
+  useOutsideDismiss([dialogRef], onClose, true);
+
   useEffect(() => {
     returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     dialogRef.current?.focus();
@@ -42,12 +46,7 @@ function GameSetupModal({ tracker, onClose }: GameSetupModalProps): JSX.Element 
   }, [onClose]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-2 sm:items-center sm:p-4"
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-2 sm:items-center sm:p-4">
       <div
         ref={dialogRef}
         role="dialog"
@@ -63,14 +62,7 @@ function GameSetupModal({ tracker, onClose }: GameSetupModalProps): JSX.Element 
               Game Setup
             </h2>
           </div>
-          <button
-            type="button"
-            aria-label="Close game setup"
-            onClick={onClose}
-            className="motion-focus min-h-11 min-w-11 rounded-full border border-zinc-700 bg-zinc-800 text-2xl text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100"
-          >
-            ×
-          </button>
+          <OverlayCloseButton label="Close game setup" onClick={onClose} />
         </header>
 
         <div className="mt-4">

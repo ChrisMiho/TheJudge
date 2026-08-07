@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useOutsideDismiss } from "../hooks/useOutsideDismiss";
 import type { ZoneCardItem } from "../types";
+import { OverlayCloseButton } from "./OverlayCloseButton";
 
 type CardPresentationProps = {
   card: ZoneCardItem;
@@ -88,7 +90,10 @@ type CardDetailPopupProps = {
  */
 export function CardDetailPopup({ card, onClose }: CardDetailPopupProps): JSX.Element {
   const titleId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+
+  useOutsideDismiss([dialogRef], onClose, true);
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -103,6 +108,7 @@ export function CardDetailPopup({ card, onClose }: CardDetailPopupProps): JSX.El
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
@@ -115,15 +121,7 @@ export function CardDetailPopup({ card, onClose }: CardDetailPopupProps): JSX.El
         <p id={titleId} className="font-semibold text-zinc-100">
           {card.name}
         </p>
-        <button
-          ref={closeRef}
-          type="button"
-          aria-label={`Close details for ${card.name}`}
-          onClick={onClose}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-zinc-600 text-lg leading-none text-zinc-200 transition hover:bg-zinc-800"
-        >
-          <span aria-hidden="true">×</span>
-        </button>
+        <OverlayCloseButton ref={closeRef} label={`Close details for ${card.name}`} onClick={onClose} />
       </div>
       <CardDetailFieldsList card={card} />
     </div>
