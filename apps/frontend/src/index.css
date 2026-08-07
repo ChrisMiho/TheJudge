@@ -409,9 +409,41 @@
   margin-top: var(--enrichment-card-row-gap);
 }
 
-/* Scale the enrichment card image down (80% -> 51.2% of the row width). */
-.enrichment-card-presentation img {
-  width: 51.2%;
+/* DEC-160: the shell-column card surfaces (Quick Question pre-submit, the frozen View
+   Context card, and the In-Depth zone selected-card/add preview) share one content column
+   for the image. The image itself is container-relative (`w-full` on CardPresentation), so
+   this column — not a component prop or a height cap — is what decides the rendered size.
+   The bound is a *width* on the host container, growing with the viewport so desktop
+   renders larger than phone, and exists to satisfy REQ-129's Fit ceiling: an unbounded
+   full-column image forces page scroll on the hosting step, which REQ-129 makes the
+   binding constraint on all of DEC-160's growth. Recorded on the Quick Question pre-submit,
+   View Context, and In-Depth zone collection rows of screen-layout.md. */
+.card-shell-column {
+  max-width: min(100%, 20rem);
+}
+
+/* The bounded cap REQ-129 requires. Measured at 390x844: an unbounded column rendered the
+   card at 265x369 and pushed Quick Question's Send Request to top 868px with 1004px of
+   document scroll — DEC-160's growth losing to REQ-129's Fit rule, which the catalog says
+   wins. Bounding the column's *height* against the viewport keeps the aspect ratio intact
+   (width follows), keeps desktop larger than phone, and is a host-row constraint rather
+   than a component fork or a reinstated shared `max-h-32`. Recorded on the Quick Question
+   pre-submit, In-Depth Enrichment, View Context, and In-Depth zone collection rows of
+   screen-layout.md. */
+.card-shell-column img {
+  width: auto;
+  max-height: 25dvh;
+  margin-inline: auto;
+}
+
+@media (min-width: 768px) {
+  .card-shell-column {
+    max-width: 24rem;
+  }
+
+  .card-shell-column img {
+    max-height: 42dvh;
+  }
 }
 
 .enrichment-card-row {

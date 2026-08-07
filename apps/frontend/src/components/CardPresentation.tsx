@@ -174,11 +174,17 @@ export function CardPresentation({
   return (
     <div className={joinClasses("space-y-2", className)}>
       {imageAvailable ? (
-        <div className="relative mx-auto w-fit max-w-full">
+        // DEC-160: one container-relative sizing rule for all six card surfaces. The image
+        // fills the width its host container affords and keeps its aspect ratio; the wrapper
+        // no longer shrink-wraps (`w-fit`) around a fixed `max-h-32` box, which rendered an
+        // identical 92x128px card on every surface and at every viewport. No size variant,
+        // per-screen prop, or call-site height cap replaces it — a surface that needs a
+        // different result changes its own container.
+        <div className="relative mx-auto w-full">
           <img
             src={imageUrl}
             alt={card.name}
-            className={joinClasses("h-auto max-h-32 w-auto object-contain", imageClassName)}
+            className={joinClasses("h-auto w-full object-contain", imageClassName)}
             onError={() => setImageFailed(true)}
           />
           <button

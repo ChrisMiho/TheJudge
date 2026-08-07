@@ -110,7 +110,7 @@ describe("Interaction flows - zone card presentation", () => {
     await advancePastZoneCollection(user);
 
     const image = screen.getByRole("img", { name: "Lightning Bolt" });
-    expect(image).toHaveClass("h-auto", "w-auto", "object-contain");
+    expect(image).toHaveClass("h-auto", "w-full", "object-contain");
 
     const row = screen.getByLabelText("Caster for Lightning Bolt").closest("li");
     expect(row).toHaveClass("enrichment-card-row", "card-identity-ring");
@@ -154,7 +154,7 @@ describe("Interaction flows - zone card presentation", () => {
     await advanceToContextEnrichmentFromZones(user);
 
     const image = screen.getByRole("img", { name: "Lightning Bolt" });
-    expect(image).toHaveClass("h-auto", "w-auto", "object-contain");
+    expect(image).toHaveClass("h-auto", "w-full", "object-contain");
 
     const row = screen.getByLabelText("Caster for Lightning Bolt").closest("li");
     const header = image.closest(".enrichment-card-header");

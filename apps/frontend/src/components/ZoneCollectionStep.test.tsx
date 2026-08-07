@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ZoneCollectionStep } from "./ZoneCollectionStep";
 import type { ScanConvergence } from "../hooks/useScanCapture";
 import { useScanCapture } from "../hooks/useScanCapture";
-import type { ZoneCardItem } from "../types";
+import type { CardMetadataItem, ZoneCardItem } from "../types";
 
 vi.mock("./ScanCameraSurface", () => ({
   ScanCameraSurface: ({ onCapture }: { onCapture: () => void }) => (
@@ -210,6 +210,52 @@ describe("ZoneCollectionStep scan focus", () => {
     await user.click(removals[0]!);
 
     expect(onZonesChange).toHaveBeenCalledWith({ battlefield: [card2] });
+  });
+
+  it("puts the selected card's exact canonical name into the search field", async () => {
+    const user = userEvent.setup();
+    mockScanCapture(false);
+    const opt: CardMetadataItem = {
+      cardId: "opt",
+      name: "Opt",
+      oracleText: "",
+      imageUrl: "https://img.example/opt.jpg",
+      manaCost: "",
+      manaValue: 0,
+      typeLine: "",
+      colors: [],
+      supertypes: [],
+      subtypes: []
+    };
+
+    render(
+      <ZoneCollectionStep
+        selectedZones={["stack"]}
+        zones={{ stack: [] }}
+        onZonesChange={() => undefined}
+        cardMetadata={[opt]}
+        isMetadataLoading={false}
+        activePlayer="Player 1"
+        activePlayers={["Player 1"]}
+        displayNamesByPlayer={{ "Player 1": undefined } as never}
+        onBack={() => undefined}
+        onContinue={() => undefined}
+        canContinue={true}
+        onFlashStatus={() => undefined}
+        statusMessage={null}
+      />
+    );
+
+    const search = screen.getByLabelText("Stack search input");
+    await user.type(search, "opt");
+    await user.click(await screen.findByRole("button", { name: "Opt" }));
+
+    // DEC-160: the canonical name in search is what lets the duplicate standalone title
+    // below the art go — the typed fragment is replaced by the exact selected name.
+    expect(search).toHaveValue("Opt");
+    const preview = screen.getByRole("article");
+    expect(within(preview).queryByText("Opt")).not.toBeInTheDocument();
+    expect(within(preview).getByRole("img", { name: "Opt" })).toBeInTheDocument();
   });
 });
 });

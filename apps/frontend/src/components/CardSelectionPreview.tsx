@@ -4,40 +4,27 @@ import { CardPresentation } from "./CardPresentation";
 
 type CardSelectionPreviewProps = {
   card: CardMetadataItem;
-  contextTitle: string;
-  contextContent: ReactNode;
-  showContextSection?: boolean;
   action?: ReactNode;
 };
 
-export function CardSelectionPreview({
-  card,
-  contextTitle,
-  contextContent,
-  showContextSection = true,
-  action
-}: CardSelectionPreviewProps): JSX.Element {
+/**
+ * The staged-card surface shared by Quick Question (pre-submit and the frozen View Context
+ * card) and the In-Depth zone-collection selected-card/add preview.
+ *
+ * REQ-133/DEC-160 consolidated it down to what it is now: one shell-column image plus the
+ * host's own action. It previously paired a `max-h-32` image with a metadata sidebar
+ * (`grid-cols-[minmax(160px,200px)_1fr]`) repeating the card's name and context — detail the
+ * corner popup already carries, beside an image too small to read. Dropping the sidebar frees
+ * the whole content column for the image, which is the point of DEC-160; the name stays
+ * reachable through the popup and still renders inside `CardPresentation`'s text-first
+ * fallback when no image exists.
+ */
+export function CardSelectionPreview({ card, action }: CardSelectionPreviewProps): JSX.Element {
   return (
     <article className="motion-enter rounded-2xl border border-zinc-600 bg-zinc-800/75 p-4 shadow-[0_14px_34px_-24px_rgba(0,0,0,0.5)]">
-      <div className="grid gap-3 sm:grid-cols-[minmax(160px,200px)_1fr]">
-        {/* Compact image + suite-wide corner detail popup (DEC-151 parts 1-2): the image no
-            longer renders at a fixed large size, and oracle text / metadata is reached via
-            the popup rather than stacked under the image or duplicated in the panel below.
-            When no image is available, CardPresentation's own text-first fallback renders
-            here directly and spans both columns so it is not squeezed into the narrow image
-            column (DEC-78's unchanged missing-image behavior); the heading below still
-            carries the card name as an accessible heading in that case. */}
-        <CardPresentation card={card} className="w-full" fallbackClassName="sm:col-span-2" />
-        <div className="flex flex-col justify-between gap-3 rounded-xl border border-zinc-600/80 bg-zinc-900/45 p-3">
-          <h2 className="text-base font-semibold text-zinc-100">{card.name}</h2>
-          {showContextSection && (
-            <div className="space-y-2 rounded-lg border border-zinc-600/70 bg-zinc-900/50 p-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">{contextTitle}</p>
-              {contextContent}
-            </div>
-          )}
-          {action}
-        </div>
+      <div className="card-shell-column mx-auto flex w-full flex-col gap-3">
+        <CardPresentation card={card} className="w-full" />
+        {action ? <div className="flex justify-center">{action}</div> : null}
       </div>
     </article>
   );

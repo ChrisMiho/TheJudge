@@ -55,7 +55,7 @@ describe("Frontend - Card Scan", () => {
 
       const img = screen.getByRole("img", { name: "Opt" });
       expect(img.getAttribute("src")).toBe(scannedUrl);
-      expect(img).toHaveClass("h-auto", "w-auto", "object-contain");
+      expect(img).toHaveClass("h-auto", "w-full", "object-contain");
 
       const entry = screen.getByRole("button", { name: /Remove Opt/i }).closest("li");
       expect(entry).toHaveClass("card-identity-ring");

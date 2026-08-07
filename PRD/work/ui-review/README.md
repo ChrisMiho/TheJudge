@@ -16,7 +16,7 @@ Absorbs `ui-screen-layout-truth`'s problem framing — that package's durable de
 | --- | --- | --- | --- |
 | [A](slice-a-overlay-foundation.md) | done | Shared themed close control and one outside-dismiss contract across the overlay family | — |
 | [B](slice-b-card-detail-overlay.md) | done | Portal-hosted card detail bottom sheet / side panel on all six card surfaces | A — consumes the shared close and dismiss primitives |
-| [C](slice-c-card-composition.md) | planned | Container-relative card sizing, staged-card consolidation, and zone selected-card composition | B — consolidation cannot target the image-bound popup |
+| [C](slice-c-card-composition.md) | done | Container-relative card sizing, staged-card consolidation, and zone selected-card composition | B — consolidation cannot target the image-bound popup |
 | [D](slice-d-question-counter.md) | planned | Raw-editable-text counter and submit-gate integrity in Quick Question | — |
 | [E](slice-e-player-details.md) | planned | In-Depth player disclosure, grouped counter rows, and bounded scalar selects | — |
 | [F](slice-f-rail-footprint.md) | planned | Real in-flow corner-rail footprint and answered-workspace gap removal | — |

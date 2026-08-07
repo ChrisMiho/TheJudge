@@ -284,7 +284,10 @@ describe("QuickLookupApp", () => {
     await user.type(searchInput, "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 
-    expect(screen.getByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
+    // REQ-133/DEC-160: the staged card is the image itself — the duplicated name heading and
+    // metadata panel beside it are gone, so nothing repeats what the popup already carries.
+    expect(screen.getByRole("img", { name: "Lightning Bolt" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Lightning Bolt" })).not.toBeInTheDocument();
     // Oracle text is not stacked under the image by default (DEC-151) — it is reached via
     // the suite-wide corner detail popup.
     expect(screen.queryByText(lightningBolt.oracleText)).not.toBeInTheDocument();
@@ -297,7 +300,7 @@ describe("QuickLookupApp", () => {
 
     await user.click(screen.getByRole("button", { name: "Remove Lightning Bolt" }));
 
-    expect(screen.queryByRole("heading", { name: "Lightning Bolt" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "Lightning Bolt" })).not.toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "Stack and Priority" })).toBeInTheDocument();
   });
 
@@ -328,7 +331,7 @@ describe("QuickLookupApp", () => {
     await waitFor(() => expect(fetch).toHaveBeenCalledWith("/data/cardMetadata.json", expect.anything()));
     await user.click(screen.getByRole("button", { name: "Scan a card" }));
 
-    expect(await screen.findByRole("heading", { name: "Counterspell" })).toBeInTheDocument();
+    expect(await screen.findByRole("img", { name: "Counterspell" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Show details for Counterspell" }));
     expect(screen.getByText(counterspell.oracleText)).toBeInTheDocument();
   });
@@ -506,15 +509,14 @@ describe("QuickLookupApp", () => {
 
     expect(await screen.findByText("Card lookup answer")).toBeInTheDocument();
     expect(screen.getAllByTestId("conversation-workspace")).toHaveLength(1);
-    expect(screen.queryByRole("heading", { name: "Lightning Bolt" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "Lightning Bolt" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Remove Lightning Bolt" })).not.toBeInTheDocument();
     await user.click(
       screen.getByRole("button", { name: "View context: Lightning Bolt" })
     );
     const contextDialog = screen.getByRole("dialog", { name: "Card context" });
-    expect(contextDialog).toContainElement(
-      screen.getByRole("heading", { name: "Lightning Bolt" })
-    );
+    // The frozen card inside View Context is the same consolidated shell-column image.
+    expect(contextDialog).toContainElement(screen.getByRole("img", { name: "Lightning Bolt" }));
     expect(screen.queryByRole("button", { name: "Remove Lightning Bolt" })).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Close card context" }));
     const initialAskRequest = fetchMock.mock.calls.find(([input]) =>
@@ -542,7 +544,7 @@ describe("QuickLookupApp", () => {
     await user.click(screen.getByRole("button", { name: "Start Over" }));
 
     expect(screen.queryByText("Card lookup answer")).not.toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Lightning Bolt" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "Lightning Bolt" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Remove Lightning Bolt" })).not.toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Card search" })).toHaveValue("");
     expect(screen.getByRole("textbox", { name: "Magic question" })).toHaveValue("");

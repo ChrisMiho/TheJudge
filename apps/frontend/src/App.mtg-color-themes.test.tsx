@@ -131,7 +131,7 @@ describe("Global theme reach across destinations", () => {
     await selectPalette(user, "Green");
 
     expectRootTokens(paletteFor("green"));
-    expect(screen.getByRole("heading", { name: "Opt" })).toBeInTheDocument();
+    expect(screen.getByTestId("card-presentation-fallback")).toHaveTextContent("Opt");
     expect(screen.getByRole("textbox", { name: "Magic question" })).toHaveValue("Does it draw a card?");
     expect(screen.getByRole("button", { name: "Scan a card" }).className).toContain("border-accent/70");
   });
@@ -219,7 +219,7 @@ describe("Global theme reach across destinations", () => {
     await openPortalMenu(user);
     await user.click(screen.getByRole("button", { name: "Reset to gray" }));
     expect(document.documentElement.style.getPropertyValue("--accent")).toBe("82 82 91");
-    expect(screen.getByRole("heading", { name: "Counterspell" })).toBeInTheDocument();
+    expect(screen.getByTestId("card-presentation-fallback")).toHaveTextContent("Counterspell");
 
     await selectDestination(user, "In-Depth Question");
     expect(screen.getByText("Mock answer")).toBeInTheDocument();

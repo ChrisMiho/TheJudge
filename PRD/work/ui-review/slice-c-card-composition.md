@@ -1,6 +1,6 @@
 # Slice C — Six-surface card sizing and composition
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -45,6 +45,22 @@ staged-card chrome and preserving each host's first-viewport/scroll contract.
 - [ ] Any necessary host-specific bound is written to the owning `screen-layout.md` row with measurement evidence, never to `CardPresentation` as a variant or fixed shared cap
 - [ ] `npm run quality:check` is green
 - [ ] Runtime evidence records browser/session handle, checkout, ports and ownership; `browser_close` called, owned servers stopped, owned ports released; captures written to `PRD/work/ui-review/.playwright-mcp/`
+
+## Verification evidence
+
+- Checkout `.worktrees/implement-ui-review`; servers **started by this agent** on `PORT=3901` / `FRONTEND_PORT=5901` via `npm run dev:mock`; browser: Playwright MCP.
+- One shared rule: `CardPresentation`'s image is now `h-auto w-full object-contain` inside a `w-full` (not `w-fit`) wrapper. `max-h-32` is gone from the component and no call site reintroduces a height cap; `.enrichment-card-presentation img { width: 51.2% }` was removed with it. Tests assert no `max-h-`, no `w-auto`, no size variant, and identical classes when the same component renders in a 160px and a 640px host.
+- Staged consolidation: `CardSelectionPreview` lost its `grid-cols-[minmax(160px,200px)_1fr]` metadata sidebar, its duplicate `<h2>` name, and its now-dead `contextTitle`/`contextContent`/`showContextSection` props. Only the shell-column image plus the host's smaller action remain; detail stays reachable through slice B's popup. Verified live and by focused tests on Quick Question, the frozen View Context card, and the zone selected-card/add preview.
+- Zone composition: selecting a card by pointer **or** keyboard now writes its exact canonical name into the search field (one `selectCard` helper feeds both paths), which is what let the duplicate title below the art go. Suggestions stay closed while the field holds exactly that name, so the list never covers the staged preview. Search and the labeled Scan share one `grid-cols-[1fr_auto]` row at every width (the prior `sm:` prefix stacked them below 640px); both carry `min-h-11`.
+- Strip and scan review: tiles keep `w-40 shrink-0` in the one horizontal region-scrolling row; only the image inside grows. Scan review takes its list-row width with no shell-column cap.
+- **Measured live at 390x844 (Quick Question):** the image grew from the 92x128 baseline to 151x211 — 1.65x — with aspect ratio preserved (rendered vs natural ratio equal to 4 decimal places) and `object-fit: contain`. Send Request sits fully in the first viewport (`bottom` 754px) and document scroll is 846px against the 844px baseline, i.e. no scroll gained from image growth. At 1440x900 the same image renders 271x378 — materially larger than phone, as DEC-160 requires — with Send Request `bottom` 892px inside the 900px viewport. No document horizontal scroll at either viewport (`scrollWidth === clientWidth`).
+- **REQ-129 vs REQ-141 conflict, resolved and recorded.** An unbounded content-column image measured 265x369 at 390x844 and pushed Send Request to `top` 868px with 1004px of document scroll — DEC-160's growth losing to REQ-129's Fit rule. Per the catalog, Fit wins and the bound is recorded on the hosting row: `.card-shell-column img` is capped at `max-height: 25dvh` / `42dvh`, a host-row **height** bound rather than a component fork or a reinstated shared `max-h-32`. Written to the Quick Question pre-submit row of `PRD/sections/screen-layout.md` with the measurements above. **Accepted consequence:** at 390x844 the image is 45.5% of content width, so REQ-141's "clear majority at phone" is **not** met on this surface. This is a real, deliberate shortfall against that criterion, not a passed one.
+- Runtime cleanup: `browser_close` called; the owned `node scripts/dev.mjs` tree stopped by `SIGTERM` to its own handle and exited (background task exit code 0); `lsof` confirms no listener on 3901/5901. The pre-existing user-owned dev server (PID 52408, main checkout) was identified and left running.
+- Captures: none needed beyond slice B's; all slice C criteria are numeric measurements recorded above.
+
+### Not verified live
+
+Scan review — same limitation recorded in slice B (the perceptual-hash identifier cannot converge on Chrome's synthetic fake camera), so requirement 7's live 390x844 check did not run. Covered by `ScanReviewBubble.test.tsx` and the shared sizing rule. No host-specific Scan bound was added, because none could be measured; slice H should re-check.
 
 ## Verification
 

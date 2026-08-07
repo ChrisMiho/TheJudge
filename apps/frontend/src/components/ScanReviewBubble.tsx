@@ -46,10 +46,13 @@ export function ScanReviewBubble({ cards, onRemove }: ScanReviewBubbleProps): JS
                 className="card-identity-ring rounded-lg border border-zinc-700/70 bg-zinc-900/60 px-2.5 py-1.5 text-sm text-zinc-100"
                 style={getCardIdentityRingStyle(card.colors)}
               >
+                {/* DEC-160: the review image grows to its own list-row width inside the
+                    existing scrolling list — no shell-column cap here, because the row is
+                    already the narrow container this surface affords. */}
                 <CardPresentation
                   card={card}
-                  className="scan-review-card-presentation w-full min-w-0"
-                  imageClassName="shrink-0 rounded"
+                  className="w-full min-w-0"
+                  imageClassName="rounded"
                   actions={
                     <button
                       type="button"
