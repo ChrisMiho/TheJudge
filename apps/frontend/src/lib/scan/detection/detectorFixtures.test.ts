@@ -1,12 +1,8 @@
 import { describe, expect, it } from "vitest"
 import baselineEval from "../__fixtures__/detector/baseline-eval.json"
-import { detectCard, detectCardCorners } from "../detector"
 import {
-  evaluateDetectorFixtures,
   generateDetectorFixtureImage,
-  loadDetectorFixtureManifest,
-  loadDetectorFixtures,
-  loadDetectorRealFrameFixture
+  loadDetectorFixtureManifest
 } from "../detectorFixtures"
 
 describe("Frontend - Card Scan", () => {
@@ -62,44 +58,6 @@ describe("detector fixture corpus", () => {
     expect(first.width).toBe(fixture.generation.frameWidth)
     expect(first.height).toBe(fixture.generation.frameHeight)
     expect(Array.from(first.data)).toEqual(Array.from(second.data))
-  })
-
-  it("loads committed real PNG frames into RGB images that run through detector entry points", () => {
-    const realEntries = loadDetectorFixtureManifest().fixtures.filter((entry) => entry.source === "real")
-    expect(realEntries).toHaveLength(4)
-
-    for (const entry of realEntries) {
-      const fixture = loadDetectorRealFrameFixture(entry)
-
-      expect(fixture.image.width, entry.id).toBeGreaterThan(0)
-      expect(fixture.image.height, entry.id).toBeGreaterThan(0)
-      expect(fixture.image.data, entry.id).toBeInstanceOf(Uint8Array)
-      expect(fixture.image.data, entry.id).toHaveLength(fixture.image.width * fixture.image.height * 3)
-      expect(() => detectCardCorners(fixture.image)).not.toThrow()
-      expect(() => detectCard(fixture.image)).not.toThrow()
-    }
-  })
-
-  it("reports per-fixture detector results and aggregate baseline detect rate", () => {
-    const report = evaluateDetectorFixtures(loadDetectorFixtures())
-
-    expect(report.total).toBe(9)
-    expect(report.results.map((result) => result.id)).toEqual(loadDetectorFixtureManifest().fixtures.map((f) => f.id))
-    expect(report.detected).toBeGreaterThan(0)
-    expect(report.detectRate).toBe(report.detected / report.total)
-    expect(report.results.find((result) => result.id === "synthetic-obvious-baseline")?.detected).toBe(true)
-  })
-
-  it("separates synthetic and real-frame evaluation groups in the report", () => {
-    const report = evaluateDetectorFixtures(loadDetectorFixtures())
-
-    expect(report.groups.synthetic.label).toBe("synthetic detector fixtures (necessary-but-not-sufficient)")
-    expect(report.groups.synthetic.total).toBe(5)
-    expect(report.groups.synthetic.detectRate).toBe(report.groups.synthetic.detected / report.groups.synthetic.total)
-    expect(report.groups.real.label).toBe("real owner-captured frames")
-    expect(report.groups.real.total).toBe(4)
-    expect(report.groups.real.detectRate).toBe(report.groups.real.detected / report.groups.real.total)
-    expect(report.results.filter((result) => result.source === "real")).toHaveLength(4)
   })
 
   it("records distinct pre-tuning baselines for synthetic and real-frame fixtures", () => {

@@ -3106,3 +3106,116 @@
   - REQ-073
   - NFR-001
 - Notes:
+
+### REQ-133
+- Title: Card area consolidation around the corner detail popup
+- Priority: medium
+- Description: Wherever a searched/attached card is shown with `CardPresentation`/`CardSelectionPreview` (Quick Question card search, In-Depth Enrichment), the area beside the image drops to a single **Remove card** control placed below the image at a smaller size; every other field previously shown beside the image (name, oracle text, mana cost, type, colors) is available only through the existing DEC-151 corner detail popup. The image grows to use the freed width while staying within DEC-151's compact/first-viewport-fit intent.
+- Acceptance Criteria:
+  - the region beside the card image no longer renders any control except (indirectly) the popup's own corner trigger; Remove card renders below the image, smaller than its current size
+  - name/oracle/mana-cost/type/colors are reachable only via the corner popup; no duplicate copy remains beside the image
+  - card image renders visibly larger than the current `max-h-32` cap while the hosting step's primary action (search/submit) still fits the first viewport per `screen-layout.md`'s Fit rule
+  - the change applies identically on Quick Question and In-Depth Enrichment since both consume the same shared component (no divergent one-off per screen)
+  - DEC-151's popup content, X close control, and dismiss behavior are unchanged
+- Constraints:
+  - presentation only; no change to card identity, selection state, `AskAiRequest`, or Zod schemas
+  - do not fork `CardPresentation`/`CardSelectionPreview` into per-screen copies; fix the shared component
+- Dependencies:
+  - DEC-151
+  - DEC-156
+  - REQ-128
+- Notes:
+
+### REQ-134
+- Title: Question composer character counter integrity
+- Priority: medium
+- Description: The Quick Question pre-submit composer's character counter must always match the actual editable text, including after backspace/delete edits and with a locked topic prefix present; the counter must never diverge from what the user can see and edit.
+- Acceptance Criteria:
+  - typing then deleting characters (including full clearing) keeps the displayed counter equal to the current visible/editable length at every step — it does not stall, undercount, or overcount
+  - locking/unlocking a topic recomputes the counter from the same source used to gate submission, with no stale reads
+  - fix verified live via manual/Playwright interaction, not by static inspection alone (`systematic-debugging`)
+  - `EnrichmentStep.tsx`'s duplicate composer/counter (`MAX_QUESTION_CHARS`) is checked for the same defect during this slice and fixed if reproducible, even though it was not the screen originally reported
+- Constraints:
+  - presentation/state-bug fix only; `MAX_QUESTION_LENGTH`/`MAX_QUESTION_CHARS` caps and blank-question fallback behavior unchanged
+- Dependencies:
+  - DEC-146
+  - REQ-121
+- Notes:
+  - known candidate cause: displayed counter reads `composedQuestion.length` (trimmed, topic-prefixed) while the bound textarea tracks raw `question` state — confirm root cause before fixing, per `systematic-debugging`
+
+### REQ-135
+- Title: View Context close affordance and outside-click reliability
+- Priority: medium
+- Description: `AdaptiveContextDialog`'s close control becomes a themed circular X icon (matching the corner popup's existing X convention) instead of a text **Close** button; outside-click-to-close (DEC-142) is verified live and fixed if not actually dismissing the overlay.
+- Acceptance Criteria:
+  - the dialog's close control renders as a circular X icon whose color derives from the active theme, at or above the 44px touch-target floor (NFR-001)
+  - clicking outside the dialog body (on the scrim) closes it; Escape continues to close it; clicking inside the dialog body does not close it
+  - reproduced and fixed live (not assumed from code reading) if outside-click is currently non-functional
+- Constraints:
+  - presentation/interaction fix only; DEC-142's dismiss-trigger set (Close, Escape, outside/scrim) is not narrowed
+- Dependencies:
+  - DEC-142
+  - DEC-151
+  - DEC-156
+- Notes:
+
+### REQ-136
+- Title: Answered-workspace vertical density above the conversation
+- Priority: low
+- Description: Reduce the whitespace between the View Context trigger row and the first visible conversation content in the answered workspace (Quick Question and In-Depth), so more conversation content is visible without inventing a document-level scroll.
+- Acceptance Criteria:
+  - measured gap between the View Context trigger and the first message/thread content shrinks from its current value at 390×844 and 1440×900
+  - no new page/document scroll is introduced; `screen-layout.md`'s Fit rule and existing thread region-scroll are unchanged
+  - shared `--layout-surface-gap`/`.conversation-workspace` spacing tokens are tuned in place rather than a one-off inline override
+- Constraints:
+  - do not change `ConversationWorkspace`'s message content, retry/error, or follow-up composer behavior
+- Dependencies:
+  - DEC-118
+  - DEC-127
+- Notes:
+
+### REQ-137
+- Title: In-Depth player-details expand affordance correctness
+- Priority: low
+- Description: The In-Depth Game Context per-player secondary-details toggle must visibly read as a right-pointing triangle when collapsed and a down-pointing triangle when expanded, matching DEC-120's intent; verify the live rendering since it was reported as reading square.
+- Acceptance Criteria:
+  - collapsed state renders a clearly triangular ▸-style affordance; expanded state renders a clearly triangular ▾-style affordance, confirmed visually (not only via source inspection) across at least one phone and one desktop viewport
+  - if a visual/theming defect is found (e.g. font/glyph rendering, sizing, or contrast making the current `▸`/`▾` unreadable as a triangle), it is fixed; if the control is confirmed correct live, this is recorded as verified rather than re-implemented
+- Constraints:
+  - presentation-only; DEC-120's collapsed-by-default synchronized-toggle behavior is unchanged
+- Dependencies:
+  - DEC-120
+  - DEC-128
+- Notes:
+
+### REQ-138
+- Title: Commander damage entry tighter layout
+- Priority: low
+- Description: In the In-Depth Game Context commander-damage section, tighten the arrangement of the **From \<source\>** label and its numeric entry box so the row does not read as two unrelated controls stranded at opposite edges. The control stays a plain numeric input — no dropdown, no value cap.
+- Acceptance Criteria:
+  - the "From" label and its numeric input render as one visually grouped control per opponent row, at both phone and desktop widths, with no unused mid-row gap
+  - the field remains a free-typed numeric input (no dropdown, no min/max cap) since commander damage is not bounded like poison/energy/experience
+  - `GamePlayerContext.commanderDamage` data shape and prompt-assembly behavior are unchanged
+- Constraints:
+  - presentation only; no `AskAiRequest`/Zod schema change
+- Dependencies:
+  - DEC-102
+  - DEC-128
+- Notes:
+
+### REQ-139
+- Title: Poison/energy/experience stacked bounded controls
+- Priority: low
+- Description: In the In-Depth Game Context per-player fields, poison, energy, and experience stack vertically instead of a wide three-column grid, and each becomes a bounded dropdown/select (poison 0–11, energy 0–100, experience 0–100) sized reasonably for phone and desktop — not a full-height overlay.
+- Acceptance Criteria:
+  - poison, energy, and experience render as a vertical stack (not `grid-cols-3`) at phone width; desktop layout stays compact and does not consume disproportionate section height
+  - each control is a bounded dropdown/select limited to its documented range (poison 0–11, energy 0–100, experience 0–100); values outside the range are not selectable
+  - the control does not expand into a full-viewport or full-height overlay; it stays sized to its row
+  - `GamePlayerContext.poison`/`energy`/`experience` remain optional non-negative integers omitted when unset (DEC-102); wire format unchanged
+- Constraints:
+  - presentation/input-widget only; no `AskAiRequest`/Zod schema change; does not reuse Life Tracker's tap/hold `CounterControl` interaction model (different control shape by design — dropdown, not stepper)
+- Dependencies:
+  - DEC-102
+  - DEC-128
+  - DEC-156
+- Notes:

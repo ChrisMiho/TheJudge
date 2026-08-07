@@ -158,9 +158,15 @@
 
 ### NFR-012
 - Title: Test-suite hygiene and CI efficiency
-- Description: The Vitest test suite (~800 cases across ~82 source test files) and its CI gate should stay fast to run and easy to navigate as they grow, without weakening any coverage or regression protection.
+- Description: The Vitest test suite (~1500 cases across ~170 source test files, of which ~1227 cases / 124 files are frontend) and its CI gate should stay fast to run and easy to navigate as they grow, without weakening any coverage or regression protection. The frontend file count rose 115 → 124 under DEC-155's assertion-preserving splits; the case count is unchanged.
 - Constraints:
-  - `npm run quality:check` executes the full test suite exactly once per CI job: coverage-mode execution is the single canonical regression + coverage gate, and the redundant standalone `test` step is removed from the aggregate (DEC-086)
+  - every test executes exactly once per CI run across all jobs: coverage-mode execution is the single canonical regression + coverage gate, and the redundant standalone `test` step stays out of the aggregate (DEC-086, wording generalized by DEC-155 so sharding — where a job runs one shard rather than the whole suite — satisfies rather than violates the no-duplicate-execution rule)
+  - `npm run quality:check` remains the single canonical local pre-PR command and gains no CI-only fast mode; CI may decompose its sub-checks into concurrent jobs, but the developer-facing command is unchanged (DEC-155)
+  - CI parallelism is the sanctioned lever for wall time: static checks, backend coverage, and sharded frontend coverage run as concurrent jobs, and sharded coverage is merged before thresholds are evaluated so thresholds apply once to merged totals (DEC-155)
+  - coverage runs on every CI run, not only on `main`; wall time is reduced by parallelism and by removing fixed overhead, never by narrowing when the coverage gate applies (DEC-155)
+  - the jsdom test environment is scoped per-file to the tests that need a DOM; blanket directory- or file-extension rules are prohibited because DOM-dependent tests exist under otherwise DOM-free paths (DEC-155)
+  - the CI gate is not duplicated: `Deploy AWS` depends on the gate jobs rather than re-running `quality:check`, and PR runs cancel superseded in-progress runs while the `main` deploy path is never cancelled mid-flight (DEC-155)
+  - when CI runs `quality:check`'s sub-scripts individually, an automated guard must assert the CI job set covers every sub-script in the aggregate, so the canonical local command and the CI decomposition cannot drift apart (DEC-155)
   - `npm test` and `npm run test:coverage` remain available for fast local iteration; workspace- and file-level targeting during development is preserved
   - no coverage threshold is lowered — frontend `lines: 45`; backend `lines: 45` plus `src/prompt/** lines: 60` and `src/validation/** lines: 60` stay at or above current values
   - the eval golden regression gate (`test:eval`, NFR-009) is unchanged; no prompt/eval golden update is bypassed to hit a timing target
@@ -170,8 +176,14 @@
   - NFR-005
   - NFR-009
   - DEC-086
+  - DEC-155
 - Notes:
-  - workspace-level (frontend + backend) parallelism and vitest sharding are an explicit deferral, not part of this requirement; a later package may revisit them with CI-runner-core data (DEC-086)
+  - DEC-086's deferral of workspace parallelism and vitest sharding is discharged by DEC-155, which supplies the CI-runner-core data it waited on (the public-repo `ubuntu-latest` runner is 4-vCPU)
+  - shard-count scaling rule, measured on run `31134177316`: gate wall ≈ `45s + (1.32 × T) / N`, where `T` is total frontend test seconds and `N` is the shard count. The 45s constant is fixed overhead sharding cannot cross (~17s shard setup + 23s `coverage-merge` + scheduling), of which ~34s is `checkout + setup-node + npm ci` paid twice. The practical trigger is `N ≥ frontend_cases / 440`: 3 shards hold to ~1330 cases, 4 to ~1770, 5 to ~2650. At the measured 1227 cases / 183s the gate is 1m58s against a 2m00s target — roughly 100 additional frontend cases exhaust 3 shards, so the next growth increment needs a 4th
+  - raising the shard count is a one-line matrix change and cannot affect correctness, because `coverage-merge` applies thresholds once to merged blobs regardless of `N`; sharding is the correct lever only while test execution dominates the 45s floor. Past roughly 6 shards the sanctioned next lever is running only affected tests (scales with change size, not suite size), not an unbounded shard count
+  - CI cost exposure: the repository is public, so standard-runner minutes are free and unlimited and shard count carries no minute cost; the binding limit is concurrent jobs (20 on the Free plan) against the 6 this workflow uses. Actions billing rounds each job up to the nearest minute, so if the repository is ever made private the current 1m58s run bills ~9 minutes rather than 2 — sharding trades billed minutes for wall time, making it free today and the largest cost multiplier if visibility changes
+  - measured cost drivers are fixed overhead rather than case count: v8 coverage instrumentation adds ~86% test CPU (4.6x on tight numeric loops such as `src/lib/scan/**`), and a global jsdom environment charges every frontend test file ~0.47s CPU
+  - splitting an oversized test file remains an assertion- and case-count-preserving refactor; under DEC-155 it also lowers the slowest-shard floor, since a single long file bounds how much sharding can help
 
 ### NFR-013
 - Title: Trade-price data footprint and freshness

@@ -1,0 +1,7 @@
+# IDEA: UI review
+
+**Problem:** The braindump (`braindump.md`) lists concrete UI polish issues across the card-context flow and player/game panels — undersized card image, misplaced "Remove card" control, cramped text overlay, a tap counter that won't decrement, an awkward context-panel close affordance, a layout gap above "Quick question," a details-expand control that should read as a triangle, and commander-damage/poison/energy/experience controls that waste space. Agents fixing short bug descriptions like these tend to overcalibrate layout (e.g. "stretch to fill" becomes full-bleed) absent a shared per-screen sizing reference — which is exactly the gap `ui-screen-layout-truth` (DEC-149, REQ-126) already closed.
+
+**Outcome:** Work through the bug list screen-by-screen using `PRD/sections/screen-layout.md` and DEC-149's hybrid-% containment model as the guardrail, so fixes converge on the catalog's intended sizing instead of one-off stretches. Any screen touched here that isn't yet in the catalog gets a new row per the DEC-149 template.
+
+**Non-goals:** Not a new design system pass or pixel-perfect fidelity; not revisiting `responsive-containment-and-density` (already ship-ready, separate scope); not re-deriving `sections/screen-layout.md` / DEC-149 / REQ-126 — that catalog and wiring already shipped as durable PRD truth from the now-retired `ui-screen-layout-truth` package and should be read, not rewritten.

@@ -7,8 +7,18 @@ on:
       - master
   pull_request:
 
+# Supersede in-flight PR runs, but never cancel a push run: cancelling a `main`
+# run would abort the deploy job mid-flight.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
 jobs:
-  quality:
+  static:
+    name: static
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -23,5 +33,155 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run quality checks
-        run: npm run quality:check
+      - name: Record runner cores
+        run: nproc
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Script tests
+        run: npm run test:scripts
+
+  backend:
+    name: backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Backend tests with coverage
+        run: npm --workspace apps/backend run test:coverage
+
+  frontend:
+    name: frontend-shard ${{ matrix.shard }}/3
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Thresholds are deliberately disabled here and applied only in
+      # coverage-merge: a shard sees a fraction of the suite, so judging it
+      # against the whole-suite threshold fails on partial data, not on a real
+      # coverage regression. The config values themselves are untouched.
+      - name: Frontend tests with coverage (shard ${{ matrix.shard }}/3)
+        working-directory: apps/frontend
+        run: >-
+          npx vitest run --coverage --coverage.thresholds.lines=0
+          --reporter=blob --shard=${{ matrix.shard }}/3
+
+      - name: Upload shard blob report
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-blob-${{ matrix.shard }}
+          path: apps/frontend/.vitest-reports/
+          retention-days: 1
+          if-no-files-found: error
+          # `.vitest-reports` is a dotted directory, which the action's glob
+          # skips by default — without this the upload silently finds nothing.
+          include-hidden-files: true
+
+  coverage-merge:
+    name: coverage-merge
+    needs: [frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download shard blob reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: frontend-blob-*
+          path: apps/frontend/.vitest-reports/
+          merge-multiple: true
+
+      # The only job that can fail on coverage: thresholds come from
+      # vite.config.ts and are evaluated once, against merged totals.
+      - name: Merge shard reports and apply thresholds
+        working-directory: apps/frontend
+        run: npx vitest run --merge-reports --coverage
+
+  deploy:
+    name: deploy
+    needs: [static, backend, coverage-merge]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    # Job-scoped so pull_request jobs running contributor-controlled refs never
+    # receive AWS-assumable credentials.
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+      AWS_REGION: us-east-1
+      AWS_S3_BUCKET: thejudge-web-${{ vars.AWS_ACCOUNT_ID }}
+      AWS_LAMBDA_FUNCTION_NAME: thejudge-api
+      AWS_CLOUDFRONT_COMMENT: thejudge-web
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install packaging tools
+        run: sudo apt-get update && sudo apt-get install -y zip
+
+      - name: Build project
+        run: npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/thejudge-github-deploy
+          aws-region: us-east-1
+
+      # aws-deploy.sh runs its own frontend build, so the value must reach that
+      # step (commit f7970bf scoped it here to keep it out of PR-run scope).
+      - name: Deploy
+        run: bash scripts/aws-deploy.sh
+        env:
+          VITE_FEEDBACK_FORMSPREE_ID: ${{ vars.VITE_FEEDBACK_FORMSPREE_ID }}

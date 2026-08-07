@@ -60,3 +60,4 @@ output/cardhash-build/
 /*.png
 /*.jpg
 /*.jpeg
+.vitest-reports/

@@ -243,3 +243,23 @@ Frontend-only responsive presentation, motion, transition, and visual-feedback b
 - Notes:
   - identity rings, Remove, owner select, and enrichment fields remain available
   - non-goals: sticky floating CTA bars over the preview, redesigning scan-engine chrome, changing stack ordering rules, or theme/brand redesign
+
+### DEC-156
+- Decision: Three DEC-151-adjacent presentation refinements from the `ui-review` bug-fix pass. (1) **Card area consolidation** — the region beside a card image (`CardPresentation`/`CardSelectionPreview`) drops to a single, smaller **Remove card** control placed below the image; every other field it used to show (name, oracle text, mana cost, type, colors) moves exclusively into DEC-151's corner detail popup, and the image grows into the freed width within DEC-151's compact/first-viewport-fit intent. (2) **Themed close icon** — overlay close controls that currently render as a text **Close** button (starting with `AdaptiveContextDialog`'s View Context) switch to a themed circular X icon matching the corner popup's existing X convention. (3) **Bounded dropdown counters** — In-Depth Game Context's poison/energy/experience fields stack vertically and become bounded dropdown/select controls (poison 0–11, energy 0–100, experience 0–100) instead of a wide three-column grid of free-typed numeric inputs; this is a distinct, simpler control shape than Life Tracker's tap/hold `CounterControl` stepper, not a reuse of it.
+- Status: confirmed
+- Context: Product-owner UI review (`PRD/work/ui-review/braindump.md`) found the DEC-151 popup already shipped but the sidebar beside card images still duplicates its content, View Context's close control reads as a generic button rather than matching the popup's icon convention, and the poison/energy/experience grid wastes horizontal space with unbounded free-typed inputs. This is a tuning/bugfix pass over already-decided direction (DEC-151, DEC-142, DEC-102), not a new design system.
+- Impact:
+  - `CardPresentation`/`CardSelectionPreview` (shared by Quick Question and In-Depth Enrichment) render only Remove card beside the image; all other detail lives in the existing popup
+  - `AdaptiveContextDialog` and any overlay following the same convention use a themed circular X instead of a text Close button
+  - In-Depth Game Context's poison/energy/experience become bounded stacked dropdowns; commander damage stays a free-typed numeric input, just tighter-laid-out (REQ-138, not part of this decision's dropdown scope)
+  - presentation only — no change to `AskAiRequest`, Zod schemas, `GameContext`, card identity, prompt assembly, providers, or backend routes
+- Related requirements:
+  - REQ-133
+  - REQ-135
+  - REQ-139
+  - DEC-151
+  - DEC-142
+  - DEC-102
+- Notes:
+  - does not touch DEC-151's popup content/behavior, DEC-142's dismiss-trigger set, or DEC-102's `GamePlayerContext` field shapes — those stay as confirmed
+  - non-goal: redesigning Life Tracker's `CounterPanel`/`CounterControl`, or a broader icon/theme system pass beyond this close-control convention
