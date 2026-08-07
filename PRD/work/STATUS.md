@@ -7,7 +7,6 @@ Do not rename package folders to encode status.
 ## ship-ready
 
 - [responsive-containment-and-density](./responsive-containment-and-density/)
-- [ci-quality-check-runtime](./ci-quality-check-runtime/)
 
 ## active
 
