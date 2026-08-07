@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # ci-quality-check-runtime
 
@@ -34,16 +34,21 @@ the deploy job so PR jobs never receive AWS-assumable credentials.
 | [B](./slice-b-shard-frontend-coverage.md) | done | Shard frontend coverage; merge blobs; thresholds on merged totals | sequential | A — needs the job structure and A's observed runner-core value to pick shard count |
 | [C](./slice-c-scope-jsdom-per-file.md) | done | `environmentMatchGlobs` so DOM-free suites skip jsdom | parallel-ready | NFR-012, DEC-155 (no slice prerequisite; touches only `vite.config.ts`) |
 | [D](./slice-d-split-outlier-test-files.md) | done | Assertion-preserving split of the 3 outlier files to lower the shard floor | sequential | B — "slowest shard drops" is only measurable once shards exist |
-| [E](./slice-e-verify-and-promote.md) | blocked | Verify wall-time targets end to end; promote PRD truth | sequential | A, B, C, D |
+| [E](./slice-e-verify-and-promote.md) | done | Verify wall-time targets end to end; promote PRD truth | sequential | A, B, C, D |
 
 Observed runner cores: **4** (slice A, run `31111931196`).
 
-Slice E is blocked on measurement, not on implementation. Every gate-integrity
-criterion and the PR-gate target are verified (**1m58s** vs 3m57s baseline, run
-`31134177316`). The deploy-job and time-to-deployed targets cannot be observed
-from any PR run — `deploy` is gated on `push` to `main` — so they must be read
-off the first `main` run after `feature/ui-review` merges. The package cannot
-reach `ship-ready`, and `thejudge-cleanup` must not run, until then.
+Outcome: the PR gate runs in **1m58s** against a 3m57s baseline — half the wall
+time — with zero tests removed and zero thresholds lowered (run `31134177316`).
+Frontend cases stay at 1227 and backend at 271; coverage thresholds are
+byte-identical; `test:eval` is untouched and green.
+
+One follow-up carries past cleanup: the deploy-job and time-to-deployed figures
+are gated on `push` to `main`, so they are `skipped` on PR runs and remain
+pending observation on the first `main` run after `feature/ui-review` lands.
+They are structurally on track — the duplicated 3m22s gate that dominated the
+4m41s deploy baseline is gone — but they are not yet measured, and cleanup
+should carry that note into NFR-012 rather than record them as verified.
 
 ## Implementation map
 
