@@ -2,6 +2,11 @@
 
 ## Status: planned
 
+### Handoff
+- Done: nothing started for this slice. Slices A, B, and C are `done`, verified, and merged into `feature/routing`; D is the next dependency-ready slice (it depends on nothing).
+- Next: run `$thejudge-implement PRD/work/ui-review/ slice D` — or `$thejudge-implement-all` to take D through H — from a fresh worktree off the then-current autonomous base. Note the base chain moved: A–C shipped to `main` via `feature/routing`, so re-read `## Autonomous metadata` below before branching.
+- Stopped because: usage limit. The session was asked to stop after slice C and ship A–C rather than continue.
+
 ## Goal
 
 Make Quick Question's counter and submit gate measure the raw editable textarea

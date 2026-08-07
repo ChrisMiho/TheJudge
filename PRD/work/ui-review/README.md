@@ -4,7 +4,11 @@ status: active
 
 ## Autonomous metadata
 
-- Autonomous base: origin/feature/routing
+- Autonomous base: origin/main
+
+Slices A-C used `origin/feature/routing` as the base; that branch was merged to
+`main` on 2026-08-07 once A-C shipped, so the remaining slices branch from
+`origin/main`.
 
 Concrete UI polish/bug-fix pass over the card-context flow and player/game panels (see `braindump.md`, `IDEA.md`).
 
@@ -63,8 +67,33 @@ and the affected `screen-layout.md` rows are the implementation authority. The
 final slice checks those records and corrects stale flow wording before cleanup;
 it does not invent a second roadmap or promote work-package prose as durable truth.
 
+## Resume point (2026-08-07)
+
+Slices **A, B, C are done** and shipped: PR #86 merged into `feature/routing`,
+which then went to `main`. Slices **D-H remain planned** and the package stays
+`active` — do not run `thejudge-cleanup` yet.
+
+Pick up with `$thejudge-implement PRD/work/ui-review/ slice D`, or
+`$thejudge-implement-all PRD/work/ui-review/` to take D through H in one run.
+D, E, F, and G have no dependencies on each other; H depends on all of them.
+Slice D's `### Handoff` block carries the cold-start detail.
+
+Two things the next agent inherits rather than rediscovers:
+
+1. **A shipped shortfall, not a passed criterion.** Slice C capped the shared
+   shell column at `25dvh` / `42dvh` because an unbounded image pushed Quick
+   Question's Send Request past the 844px fold — REQ-129's Fit rule binding
+   ahead of DEC-160's growth, which the catalog says wins. The consequence is
+   that REQ-141's "clear majority of content width at phone" is **not met** on
+   Quick Question (45.5%). Measurements are on that `screen-layout.md` row and
+   in `slice-c-card-composition.md`. Slice H should either accept and record
+   this or revisit the surrounding layout — it should not be quietly ticked off.
+2. **Scan review has never been verified live** (see the limit note above).
+
+The cross-package coordination note below is satisfied:
+`frontend-routing-and-code-splitting` merged before slices A-C were implemented,
+so slices F and H already resolve against the routed/lazy shell.
+
 ## Next step
 
-Start with `$thejudge-implement PRD/work/ui-review/ slice A`, or complete the
-package unattended with `$thejudge-implement-all PRD/work/ui-review/` after the
-cross-package coordination note above is satisfied.
+`$thejudge-implement PRD/work/ui-review/ slice D` (see Resume point above).
