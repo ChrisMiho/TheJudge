@@ -10,6 +10,7 @@ export type DestinationId = string;
 export interface PortalDestination {
   kind?: "destination";
   id: DestinationId;
+  path: string;
   label: string;
   render: (isActive: boolean) => ReactNode;
 }

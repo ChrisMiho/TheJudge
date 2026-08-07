@@ -65,6 +65,19 @@
   padding: var(--layout-panel-padding);
 }
 
+/* Quiet route-chunk placeholder (DEC-157 / NFR-014). The normal PageShell and
+   StagedStepHeader stay present while the destination module arrives; this
+   token-sized content region prevents the card from collapsing without
+   inventing viewport fill or motion for a sub-second code fetch. */
+.destination-load-fallback {
+  display: grid;
+  min-height: calc(
+    var(--layout-panel-padding) + var(--layout-panel-padding) + var(--layout-panel-padding) +
+      var(--layout-panel-padding)
+  );
+  place-items: center;
+}
+
 /* Pass-through wrapper for `PageShell`'s full-bleed variant (Life Tracker):
    no border, radius, or padding of its own, so full-bleed's existing
    rendered layout stays pixel-identical to before this wrapper existed. It
