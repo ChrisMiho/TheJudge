@@ -56,6 +56,8 @@ For implementation work, read in this order:
 | `instructions/test-naming.md` | active | Hierarchical Vitest title convention (`Layer - Feature` outer describe, nested area + behavior) |
 | `instructions/workflow-reference.md` | active | Lean ten-skill PRD workflow reference: interactive and autonomous paths, handoff prefix rule, work-folder lifecycle, status vocabulary |
 | `instructions/preparation-contract.md` | active | Autonomous one-package preparation, assumption, blocker, and PR-publication contract |
+| `instructions/skill-testing.md` | active | Skill-fixture format, storage, and re-run triggers for verifying `thejudge-*` skill edits |
+| `instructions/skill-fixtures/` | active | Per-skill regression scenarios: prompt, grading key, and measured runs |
 
 ## Which Files to Read for Which Task
 

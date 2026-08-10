@@ -99,9 +99,13 @@ literal command, prefixed `/thejudge-*` (Cursor, Claude Code) or `$thejudge-*`
 ## Adding or updating a skill
 
 1. Create or edit under `.cursor/skills/<skill-name>/`.
-2. Run `npm run skills:ai-sync`.
-3. Verify: `diff -rq .cursor/skills .claude/skills` and `diff -rq .cursor/skills .agents/skills` — both must produce no output (the trees are now a plain three-way mirror; no expected exclusions).
-4. Commit all three skill trees.
+2. If the edit changes behavior — gates, refusal conditions, outcome taxonomy,
+   rationalizations, or the `description` — run that skill's fixture under
+   `PRD/instructions/skill-fixtures/` before merging. Format and re-run triggers:
+   `PRD/instructions/skill-testing.md`. Method: `superpowers:writing-skills`.
+3. Run `npm run skills:ai-sync`.
+4. Verify: `diff -rq .cursor/skills .claude/skills` and `diff -rq .cursor/skills .agents/skills` — both must produce no output (the trees are now a plain three-way mirror; no expected exclusions).
+5. Commit all three skill trees.
 
 ## Related docs
 
