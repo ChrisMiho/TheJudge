@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createAskAiRequest } from "../test-utils/requestBuilders.js";
+import { createAskAiRequest, createZoneCardItem } from "../test-utils/requestBuilders.js";
 
 const accessedPaths = vi.hoisted(() => [] as string[]);
 
@@ -110,6 +110,47 @@ describe("Backend - Ask AI", () => {
       expect(enabledResponse.status).toBe(disabledResponse.status);
       expect(Object.keys(enabledResponse.body).sort()).toEqual(Object.keys(disabledResponse.body).sort());
       expect(JSON.stringify(enabledResponse.body)).toBe(JSON.stringify(disabledResponse.body));
+    });
+
+    it("gives the two answer-quality A/B legs prompts differing only by the combo section", async () => {
+      // The shape slice F's comparison depends on: both legs built in ONE process
+      // from the same repo root, differing only by COMBO_ENRICHMENT_ENABLED. The
+      // mock provider echoes the assembled prompt, so the section is observable
+      // without changing the response contract.
+      const enriched = createConfiguredApp(repoRoot, {});
+      const disabled = createConfiguredApp(repoRoot, { COMBO_ENRICHMENT_ENABLED: "false" });
+      const payload = createAskAiRequest({
+        question: "How does this resolve?",
+        gameContext: {
+          playerCount: 2,
+          players: [
+            { label: "Player 1", lifeTotal: 20 },
+            { label: "Player 2", lifeTotal: 20 }
+          ],
+          turnPhase: "main_1",
+          selectedZones: ["battlefield"],
+          zones: {
+            battlefield: [
+              createZoneCardItem({
+                cardId: "oracle-1",
+                name: "Thassa's Oracle",
+                oracleText: "When this enters, look at the top of your library.",
+                owner: "Player 1"
+              })
+            ]
+          }
+        }
+      });
+
+      const enrichedResponse = await request(enriched.app).post("/api/ask-ai").send(payload);
+      const disabledResponse = await request(disabled.app).post("/api/ask-ai").send(payload);
+
+      expect(enrichedResponse.body.answer).toContain("COMMANDER SPELLBOOK COMBO CONTEXT");
+      expect(disabledResponse.body.answer).not.toContain("COMMANDER SPELLBOOK COMBO CONTEXT");
+
+      // Nothing but the prompt text differs: same status, same response keys.
+      expect(enrichedResponse.status).toBe(disabledResponse.status);
+      expect(Object.keys(enrichedResponse.body).sort()).toEqual(Object.keys(disabledResponse.body).sort());
     });
 
     it("fails open and still answers when the artifacts are missing entirely", async () => {

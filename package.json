@@ -29,6 +29,7 @@
     "prompt:preview": "node scripts/prompt-preview.mjs",
     "prompt:preview:all": "node scripts/prompt-preview.mjs --all-fixtures",
     "retrieval:report": "tsx scripts/retrieval-relevance-report.mjs",
+    "combo:answer-quality": "tsx scripts/compare-combo-answer-quality.mjs",
     "data:scan-vectors": "tsx scripts/build-scan-vectors.mjs",
     "data:scan-fingerprints": "tsx scripts/build-card-hashes.mjs",
     "data:scan-fingerprints:fresh": "tsx scripts/build-card-hashes.mjs --fresh",

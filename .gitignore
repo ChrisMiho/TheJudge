@@ -54,6 +54,10 @@ output/prompt-preview/
 # Retrieval relevance report (developer-local; not committed)
 output/retrieval-relevance-report.txt
 
+# Combo answer-quality comparison output (developer-local; only the reviewed
+# conclusion becomes durable history)
+output/combo-answer-quality/
+
 # Card-scan fingerprint build logs / pid (transient; the bin ships under public/data/)
 output/cardhash-build/
 

@@ -1,0 +1,35 @@
+{
+  "comment": "Curated inputs for the combo answer-quality A/B. Scenarios reuse the slice E eval fixtures by id rather than duplicating request payloads. A scenario may instead carry an inline `request` — needed for a meaningful live comparison, because the eval fixtures use synthetic oracle ids that the production corpus does not contain.",
+  "scenarios": [
+    {
+      "id": "complete-no-intent",
+      "fixture": "commander-spellbook-complete-no-intent",
+      "rationale": "Automatic enrichment: every piece is present and the user did not ask about combos. Tests whether unrequested combo context helps or distracts."
+    },
+    {
+      "id": "partial-explicit-intent",
+      "fixture": "commander-spellbook-partial-explicit-intent",
+      "rationale": "The user explicitly asks about combos and is missing a piece. Tests whether naming the missing piece improves the answer."
+    },
+    {
+      "id": "wrong-zone",
+      "fixture": "commander-spellbook-wrong-zone",
+      "rationale": "A piece is present but in an incompatible zone. Tests whether the model correctly refuses to call the combo assembled."
+    },
+    {
+      "id": "unresolved-template",
+      "fixture": "commander-spellbook-unresolved-template",
+      "rationale": "The gap is a template with no authoritative card list. Tests whether the model over-claims that the combo is live."
+    },
+    {
+      "id": "lookup-attached-intent",
+      "fixture": "commander-spellbook-lookup-attached-intent",
+      "rationale": "Quick Question with an attached card and explicit combo intent."
+    },
+    {
+      "id": "lookup-unrelated",
+      "fixture": "commander-spellbook-lookup-unrelated",
+      "rationale": "Control: an ordinary rules question about a card that appears in the corpus. Both legs should answer identically; a difference here is a false positive."
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 # commander-spellbook-combos
@@ -44,7 +44,7 @@ Architecture, data flow, and the full verification checklist: `GAMEPLAN.md`.
 | [C](./slice-c-intent-and-matching.md) | Intent detector, zone map, matcher/ranker with card-state annotations | B | done |
 | [D](./slice-d-prompt-integration.md) | Prompt section rendering + both prompt paths | C | done |
 | [E](./slice-e-eval-fixtures-and-goldens.md) | Eval fixtures, goldens, branch coverage | D | done |
-| [F](./slice-f-answer-quality-comparison.md) | Answer-quality A/B script + reviewed conclusion | D | planned |
+| [F](./slice-f-answer-quality-comparison.md) | Answer-quality A/B script + reviewed conclusion | D | done |
 
 A→B→C→D are sequential by type dependency — each consumes the previous slice's
 contract. E and F depend only on D and are parallel-ready. F carries the PRD
@@ -87,6 +87,20 @@ the never-"complete" rendering; REQ-146 + `system-map.md` given the planned scri
 `COMBO_ENRICHMENT_ENABLED` flag, and gitignored output location; stale GAMEPLAN/slice
 docs removed.
 
+## Outstanding owner actions
+
+Implementation is complete; these two remain and neither is agent-authorizable.
+
+1. **Production corpus refresh** — the committed artifacts are an empty bootstrap
+   corpus (`variantCount: 0`). Run
+   `npm run data:refresh-combos -- --confirm-live-calls`, then
+   `node scripts/build-commander-spellbook-combos.mjs`, and commit the two real
+   artifacts. Until then the enrichment loads cleanly but never matches anything.
+2. **Answer-quality A/B** — run
+   `ASK_AI_PROVIDER=openai npm run combo:answer-quality -- --confirm-live-calls`
+   after the refresh, review both answer sets, and record the dated verdict in
+   slice F. Per DEC-161 this informs the ship decision without blocking it.
+
 ## Next step
 
-`/thejudge-implement-all PRD/work/commander-spellbook-combos/`
+`/thejudge-cleanup PRD/work/commander-spellbook-combos/`
