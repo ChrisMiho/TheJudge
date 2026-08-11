@@ -21,7 +21,7 @@ Absorbs `ui-screen-layout-truth`'s problem framing — that package's durable de
 | [A](slice-a-overlay-foundation.md) | done | Shared themed close control and one outside-dismiss contract across the overlay family | — |
 | [B](slice-b-card-detail-overlay.md) | done | Portal-hosted card detail bottom sheet / side panel on all six card surfaces | A — consumes the shared close and dismiss primitives |
 | [C](slice-c-card-composition.md) | done | Container-relative card sizing, staged-card consolidation, and zone selected-card composition | B — consolidation cannot target the image-bound popup |
-| [D](slice-d-question-counter.md) | planned | Raw-editable-text counter and submit-gate integrity in Quick Question | — |
+| [D](slice-d-question-counter.md) | done | Raw-editable-text counter and submit-gate integrity in Quick Question | — |
 | [E](slice-e-player-details.md) | planned | In-Depth player disclosure, grouped counter rows, and bounded scalar selects | — |
 | [F](slice-f-rail-footprint.md) | planned | Real in-flow corner-rail footprint and answered-workspace gap removal | — |
 | [G](slice-g-price-freshness.md) | planned | Human-readable Trade Balancer price freshness | — |
@@ -67,18 +67,19 @@ and the affected `screen-layout.md` rows are the implementation authority. The
 final slice checks those records and corrects stale flow wording before cleanup;
 it does not invent a second roadmap or promote work-package prose as durable truth.
 
-## Resume point (2026-08-07)
+## Resume point (2026-08-11)
 
-Slices **A, B, C are done** and shipped: PR #86 merged into `feature/routing`,
-which then went to `main`. Slices **D-H remain planned** and the package stays
-`active` — do not run `thejudge-cleanup` yet.
+Slices **A, B, C** shipped via PR #86 into `feature/routing` → `main`. Slice
+**D is done** on the current run (branch `thejudge-impl/ui-review-root-20260811-1`,
+base `origin/main` @ `467cd42`). Slices **E–H remain planned** and the package
+stays `active` — do not run `thejudge-cleanup` yet.
 
-Pick up with `$thejudge-implement PRD/work/ui-review/ slice D`, or
-`$thejudge-implement-all PRD/work/ui-review/` to take D through H in one run.
-D, E, F, and G have no dependencies on each other; H depends on all of them.
-Slice D's `### Handoff` block carries the cold-start detail.
+Slice D raised the backend `question` wire bound from 300 to 600 characters
+after a live 400 disproved REQ-134's "no downstream limit is at risk" premise;
+see that slice's evidence. Slice H must carry the correction into
+`PRD/sections/` alongside the rest of the promotion checklist.
 
-Two things the next agent inherits rather than rediscovers:
+Two things inherited from the A–C run rather than rediscovered:
 
 1. **A shipped shortfall, not a passed criterion.** Slice C capped the shared
    shell column at `25dvh` / `42dvh` because an unbounded image pushed Quick
@@ -96,4 +97,4 @@ so slices F and H already resolve against the routed/lazy shell.
 
 ## Next step
 
-`$thejudge-implement PRD/work/ui-review/ slice D` (see Resume point above).
+`$thejudge-implement PRD/work/ui-review/ slice E` (see Resume point above).

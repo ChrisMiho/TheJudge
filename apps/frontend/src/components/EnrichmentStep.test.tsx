@@ -40,6 +40,23 @@ describe("EnrichmentStep Send Request label + ready copy (DEC-153)", () => {
     expect(screen.getByText("Ready to decrypt.")).toBeInTheDocument();
     expect(screen.queryByText(/tap Send Request/i)).not.toBeInTheDocument();
   });
+
+  it("counts the raw bound question value rather than any composed string", async () => {
+    const user = renderEnrichment({ question: "Does this resolve?" });
+    await user.click(screen.getByRole("button", { name: "OK — finish enrichment" }));
+
+    expect(screen.getByRole("textbox", { name: "Optional question" })).toHaveValue(
+      "Does this resolve?"
+    );
+    expect(screen.getByText("18/300")).toBeInTheDocument();
+  });
+
+  it("shows an empty count when the bound question value is blank", async () => {
+    const user = renderEnrichment({ question: "" });
+    await user.click(screen.getByRole("button", { name: "OK — finish enrichment" }));
+
+    expect(screen.getByText("0/300")).toBeInTheDocument();
+  });
 });
 
 describe("EnrichmentStep per-instance identity", () => {

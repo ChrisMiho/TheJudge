@@ -336,7 +336,7 @@ describe("QuickLookupApp", () => {
     expect(screen.getByText(counterspell.oracleText)).toBeInTheDocument();
   });
 
-  it("caps questions at 300 characters and blocks blank submission", async () => {
+  it("caps the raw question at 300 characters and blocks blank submission", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<QuickLookupApp onSubmit={onSubmit} />);
@@ -351,23 +351,71 @@ describe("QuickLookupApp", () => {
     await user.clear(questionInput);
     await user.type(questionInput, "a".repeat(301));
     expect(questionInput).toHaveValue("a".repeat(300));
+    expect(screen.getByText("300/300")).toBeInTheDocument();
     expect(submitButton).toBeEnabled();
     await openGeneralRulesTopics(user);
 
+    // The counter and the gate measure the editable textarea, so a locked topic neither
+    // inflates the visible count nor blocks a full-length question. The submitted string
+    // is still the composed pill phrase plus the trimmed text, and may exceed 300.
     await user.click(
       await screen.findByRole("button", { name: "Add Stack and Priority to question" })
     );
-    expect(
-      screen.getByText(`${"Tell me about Stack and Priority.".length + 1 + 300}/300`)
-    ).toBeInTheDocument();
-    expect(submitButton).toBeDisabled();
+    expect(screen.getByText("300/300")).toBeInTheDocument();
+    expect(submitButton).toBeEnabled();
+
+    await user.click(submitButton);
+    expect(onSubmit).toHaveBeenLastCalledWith(
+      `Tell me about Stack and Priority. ${"a".repeat(300)}`,
+      null
+    );
 
     await user.click(screen.getByRole("button", { name: "Remove Stack and Priority topic" }));
     expect(screen.getByText("300/300")).toBeInTheDocument();
     expect(submitButton).toBeEnabled();
 
     await user.click(submitButton);
-    expect(onSubmit).toHaveBeenCalledWith("a".repeat(300), null);
+    expect(onSubmit).toHaveBeenLastCalledWith("a".repeat(300), null);
+  });
+
+  it("counts the editable text rather than the silent card fallback", async () => {
+    const user = userEvent.setup();
+    render(<QuickLookupApp />);
+
+    await user.type(screen.getByRole("textbox", { name: "Card search" }), "lig");
+    await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
+
+    const questionInput = screen.getByRole("textbox", { name: "Magic question" });
+    expect(screen.getByText("0/300")).toBeInTheDocument();
+
+    await user.type(questionInput, "x");
+    expect(screen.getByText("1/300")).toBeInTheDocument();
+
+    await user.clear(questionInput);
+    expect(screen.getByText("0/300")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ask TheJudge" })).toBeEnabled();
+  });
+
+  it("keeps the visible count on raw text while topics are locked, swapped, and removed", async () => {
+    const user = userEvent.setup();
+    render(<QuickLookupApp />);
+    await openGeneralRulesTopics(user);
+
+    const questionInput = screen.getByRole("textbox", { name: "Magic question" });
+    await user.click(
+      await screen.findByRole("button", { name: "Add Stack and Priority to question" })
+    );
+    expect(screen.getByText("0/300")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ask TheJudge" })).toBeEnabled();
+
+    await user.click(screen.getByRole("button", { name: "Add Combat to question" }));
+    expect(screen.getByText("0/300")).toBeInTheDocument();
+
+    await user.type(questionInput, "Keep this detail");
+    expect(screen.getByText("16/300")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Remove Combat topic" }));
+    expect(screen.getByText("16/300")).toBeInTheDocument();
   });
 
   it("submits a silent card-name fallback when only a card is attached", async () => {

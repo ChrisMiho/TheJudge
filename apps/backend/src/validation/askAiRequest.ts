@@ -229,7 +229,12 @@ const conversationHistorySchema = z
     }
   });
 
-const questionSchema = boundedText(300, 0);
+// The 300-character product cap (REQ-011/REQ-091 as amended) measures the raw editable
+// textarea, not this field. The client composes the submitted question from a locked topic
+// pill phrase or the silent `Tell me about {Card Name}.` fallback plus that text, so the
+// wire value can exceed 300 by the prefix; 600 covers the longest such prefix with room to
+// spare and stays far below DEC-042's 1,000,000-character prompt budget.
+const questionSchema = boundedText(600, 0);
 
 const gameAskAiRequestSchema = z.object({
   mode: z.literal("game").optional(),

@@ -231,7 +231,10 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
       .join(" ") || (selectedCard ? `Tell me about ${selectedCard.name}.` : "");
   const hasQuestionContent =
     lockedTopic !== null || selectedCard !== null || trimmedQuestion.length > 0;
-  const canSubmit = hasQuestionContent && composedQuestion.length <= MAX_QUESTION_LENGTH;
+  // The counter, the textarea cap, and this gate all measure the raw editable text.
+  // `composedQuestion` may legitimately exceed the cap once a topic pill or the silent
+  // card fallback is prepended, and that composed string is what gets submitted.
+  const canSubmit = hasQuestionContent && question.length <= MAX_QUESTION_LENGTH;
 
   function handleTopicSelection(topic: CoreTopic): void {
     setLockedTopic({ id: topic.id, title: topic.title });
@@ -545,7 +548,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
                 />
                 <div className="flex shrink-0 flex-col items-end gap-0.5">
                   <span className="pr-0.5 text-[10px] leading-none text-zinc-400 sm:text-xs">
-                    {composedQuestion.length}/{MAX_QUESTION_LENGTH}
+                    {question.length}/{MAX_QUESTION_LENGTH}
                   </span>
                   <ComposerSubmitButton
                     label="Ask TheJudge"
