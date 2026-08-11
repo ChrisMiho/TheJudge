@@ -22,6 +22,31 @@ import { useTradeScan } from "./useTradeScan";
 const PRICE_LOAD_ERROR_COPY =
   "Card prices are unavailable right now. Cards you add will show $0 until prices load.";
 
+const SNAPSHOT_DATE_FORMATTER = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC"
+});
+
+/**
+ * Human-facing copy for the build-time price snapshot. The artifact carries a full ISO
+ * timestamp (`2026-06-05T22:21:13.248Z`), which reads as a live quote and leaks raw
+ * time/millisecond/zone detail the user cannot act on — the snapshot is only ever
+ * accurate to the day it was built. Returns `null` for an unparseable value so the
+ * freshness line is simply omitted rather than showing raw artifact data or throwing;
+ * pricing itself never depends on this.
+ */
+function formatSnapshotDate(value: string): string | null {
+  const dateOnly = value.slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+    return null;
+  }
+
+  const parsed = new Date(`${dateOnly}T00:00:00Z`);
+  return Number.isNaN(parsed.getTime()) ? null : SNAPSHOT_DATE_FORMATTER.format(parsed);
+}
+
 function updateEntries(
   entries: TradeEntry[],
   instanceId: string,
@@ -72,6 +97,7 @@ export function TradeBalancer(): JSX.Element {
     () => (prices ? buildOracleSearchIndex(prices) : []),
     [prices]
   );
+  const snapshotCopy = prices?.snapshotDate ? formatSnapshotDate(prices.snapshotDate) : null;
 
   function setSideEntries(
     sideId: TradeSideId,
@@ -163,8 +189,8 @@ export function TradeBalancer(): JSX.Element {
             {priceLoadError}
           </p>
         )}
-        {prices && !isPricesLoading && prices.snapshotDate && (
-          <p className="text-xs text-zinc-500">{`Prices as of ${prices.snapshotDate}`}</p>
+        {prices && !isPricesLoading && snapshotCopy && (
+          <p className="text-xs text-zinc-500">{`Prices as of ${snapshotCopy}`}</p>
         )}
       </section>
 

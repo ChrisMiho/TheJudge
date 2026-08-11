@@ -104,7 +104,7 @@ describe("Frontend - Trade", () => {
       expect(screen.getByText("Loading card prices…")).toBeInTheDocument();
 
       await waitFor(() => {
-        expect(screen.getByText("Prices as of 2026-06-05")).toBeInTheDocument();
+        expect(screen.getByText("Prices as of 5 June 2026")).toBeInTheDocument();
       });
       expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Even trade");
     });
@@ -205,6 +205,37 @@ describe("Frontend - Trade", () => {
       await user.click(within(side("A")).getByRole("button", { name: /Magic 2010/ }));
 
       expect(sideTotalText("A")).toBe("$4.00");
+    });
+
+    it("renders an ISO snapshot timestamp as date-level copy with no raw time, milliseconds, or zone", async () => {
+      loadCardPricesMock.mockResolvedValue(
+        createCardPrices({ ...artifact, snapshotDate: "2026-06-05T22:21:13.248Z" })
+      );
+      render(<TradeBalancer />);
+
+      const freshness = await screen.findByText(/^Prices as of /);
+      expect(freshness).toHaveTextContent("Prices as of 5 June 2026");
+      expect(freshness.textContent).not.toMatch(/T22:21:13\.248Z|\d{2}:\d{2}|Z$/);
+    });
+
+    it("degrades safely when the snapshot value is unparseable, leaving pricing intact", async () => {
+      loadCardPricesMock.mockResolvedValue(
+        createCardPrices({ ...artifact, snapshotDate: "not-a-date" })
+      );
+      const user = userEvent.setup();
+      render(<TradeBalancer />);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText("Side A card search")).not.toBeDisabled();
+      });
+      expect(screen.queryByText(/^Prices as of /)).not.toBeInTheDocument();
+      expect(screen.queryByText(/not-a-date/)).not.toBeInTheDocument();
+
+      await addCard(user, "A", "Lightning Bolt", /Magic 2010/);
+      expect(sideTotalText("A")).toBe("$4.00");
+      expect(screen.getByLabelText("Trade difference")).toHaveTextContent(
+        "Side A is ahead by $4.00"
+      );
     });
 
     it("surfaces the reason when the price artifact fails to load", async () => {
