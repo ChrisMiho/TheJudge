@@ -2099,7 +2099,8 @@
   - the shared 300-character cap (REQ-011) and the visible character counter both measure the **raw editable textarea content** — not the composed string; the locked pill phrase and the silent card fallback are composed at submit time and do not consume the user's budget (amended by REQ-134)
   - a locked topic pill and an attached card may both be present at submit time; the collapsed outer general-rules-topics summary remains rendered (REQ-079) whether or not a pill is locked
 - Constraints:
-  - no `AskAiRequest` / Zod / backend prompt-assembly contract change; composition is frontend-only string concatenation
+  - no `AskAiRequest` shape or backend prompt-assembly contract change; composition is frontend-only string concatenation
+  - **amended on ship (2026-08-11)**: one Zod bound did have to move. `questionSchema` was `boundedText(300, 0)`, which rejected the composed string once the composed-length submit gate was removed; it is now `boundedText(600, 0)`. No field, request shape, route, or prompt-assembly behavior changed — see REQ-134's ship correction for the measurement
   - reuses the existing curated `gameRulesByTopic` / `gameRulesCoreTopics.json` source; no new topic data
 - Dependencies:
   - REQ-079
@@ -2107,7 +2108,7 @@
   - DEC-112
 - Notes:
   - supersedes REQ-079's prior "ask about this pre-fills an editable textarea" acceptance criterion for the topic-row action button; REQ-079 was amended alongside this requirement
-  - **amended during the `ui-review` pass (2026-08-06)**: the cap/counter criterion originally read "the shared 300-character cap (REQ-011) applies to the composed question string, and the visible character counter reflects the composed length". Live measurement showed that rule produces three user-visible defects — an empty field reporting the prefix length (`22/300` with a topic locked), a counter that rises when the user backspaces to empty (the silent card fallback replaces the empty string), and an unreachable submit state (`323/300` with **Send Request** disabled while `maxLength` caps raw input at 300). Product-owner decision: the counter and the submit gate both measure raw editable text. The composed string may therefore exceed 300 by the pill phrase — accepted, since `MAX_PROMPT_CHAR_BUDGET` is 1,000,000 (DEC-042). Composition itself (pill phrase + trimmed text, silent fallbacks, single-pill rule) is unchanged. See REQ-134.
+  - **amended during the `ui-review` pass (2026-08-06)**: the cap/counter criterion originally read "the shared 300-character cap (REQ-011) applies to the composed question string, and the visible character counter reflects the composed length". Live measurement showed that rule produces three user-visible defects — an empty field reporting the prefix length (`22/300` with a topic locked), a counter that rises when the user backspaces to empty (the silent card fallback replaces the empty string), and an unreachable submit state (`323/300` with **Send Request** disabled while `maxLength` caps raw input at 300). Product-owner decision: the counter and the submit gate both measure raw editable text. The composed string may therefore exceed 300 by the pill phrase — accepted. Composition itself (pill phrase + trimmed text, silent fallbacks, single-pill rule) is unchanged. See REQ-134, including its 2026-08-11 ship correction: the wire bound in `askAiRequest.ts` is 600 characters, because the original "no downstream limit is at risk" reasoning cited DEC-042's prompt budget and missed the request schema's own 300-character bound.
 
 ### REQ-092
 - Title: Quick Lookup submit wait feedback
@@ -3171,7 +3172,8 @@
 - Constraints:
   - presentation/state-bug fix only; the 300-character limit itself and the blank-question fallback behavior are unchanged. **The single measurement is the raw editable textarea content** — the counter, the `maxLength` cap, and the submit gate all read it, per REQ-091 as amended; none of them read `composedQuestion`
   - question *composition* is untouched: the locked pill phrase, the space-join rule, and the silent `Tell me about {Card Name}.` fallback still build the submitted string exactly as REQ-091 specifies — they simply stop contributing to the displayed count and the gate
-  - the composed string sent in `AskAiRequest.question` may exceed 300 characters by the length of the pill phrase. This is accepted, not a defect: `MAX_PROMPT_CHAR_BUDGET` is 1,000,000 (DEC-042), so no downstream limit is at risk. Do not reintroduce a composed-length cap to "fix" it
+  - the composed string sent in `AskAiRequest.question` may exceed 300 characters by the length of the pill phrase. This is accepted, not a defect. Do not reintroduce a composed-length cap to "fix" it
+  - **corrected on ship (2026-08-11)**: the reasoning above originally read "no downstream limit is at risk: `MAX_PROMPT_CHAR_BUDGET` is 1,000,000 (DEC-042)". That skipped the request schema's own bound. `questionSchema` in `apps/backend/src/validation/askAiRequest.ts` was `boundedText(300, 0)`, so the first composed submission after the client gate was removed returned `400 VALIDATION_ERROR: question String must contain at most 300 character(s)` — the removed gate had been masking it. Product-owner decision: the **wire bound is 600 characters**, sized for the longest composed prefix (the pill phrase, or `Tell me about {Card Name}.` at a maximum-length card name — ~216 characters) on top of the 300-character raw cap. The raw editable cap is unchanged at 300, and 600 remains far below DEC-042's prompt budget
 - Dependencies:
   - DEC-146
   - REQ-121
