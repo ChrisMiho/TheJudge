@@ -1,8 +1,15 @@
 ---
-status: active
+status: deferred
 ---
 
 # commander-spellbook-combos
+
+> **Deferred.** Prior status: `active` (map-out complete — `DESIGN-BRIEF.md`,
+> `GAMEPLAN.md`, and slices A–E all exist and are unstarted). The frontmatter
+> here read `active` while `STATUS.deferred` and the board row read `deferred`;
+> reconciled to `deferred` on 2026-08-10, since two of the three signals agreed
+> and no slice work had begun. Restore with `thejudge-defer` to return this to
+> `active`, then implement from slice A.
 
 Integrate Commander Spellbook as a static, backend-only community combo enrichment corpus keyed by Scryfall `oracle_id`, with deterministic intent/context gates and no runtime upstream dependency.
 
