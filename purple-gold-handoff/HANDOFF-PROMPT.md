@@ -103,6 +103,37 @@ worktree_name=$(echo "$input" | jq -r '.worktree.name // empty')
 pr_number=$(echo "$input" | jq -r '.pr.number // empty')
 pr_review_state=$(echo "$input" | jq -r '.pr.review_state // empty')
 
+# Detect the real terminal width so the status line can compact itself in
+# narrow panes (e.g. two terminals side by side) instead of letting Claude
+# Code truncate the output with a trailing "...". stty size queries the
+# controlling terminal directly via /dev/tty, which works even though this
+# script's own stdin/stdout are piped by Claude Code. tput cols is a
+# fallback for environments without /dev/tty; if both fail we assume a wide
+# terminal so behavior is unchanged.
+term_width=""
+if [ -r /dev/tty ]; then
+  term_width=$( { stty size < /dev/tty; } 2>/dev/null | awk '{print $2}')
+fi
+if [ -z "$term_width" ]; then
+  term_width=$(tput cols 2>/dev/null)
+fi
+case "$term_width" in
+  ''|*[!0-9]*) term_width=200 ;;
+esac
+
+# Degrade gracefully as the terminal narrows: first drop the "(resets in)"
+# countdowns, then the session-duration segment, then shorten the cwd to
+# just its basename, then finally move the 5h/Weekly usage off onto their
+# own third line so line 1/2 stay readable.
+show_eta=1
+show_session=1
+cwd_mode="full"
+rate_limits_own_line=0
+[ "$term_width" -lt 130 ] && show_eta=0
+[ "$term_width" -lt 110 ] && show_session=0
+[ "$term_width" -lt 95 ] && cwd_mode="short"
+[ "$term_width" -lt 80 ] && rate_limits_own_line=1
+
 # ANSI color codes — pulled directly from the miho-gold theme (~/.claude/themes/miho-gold.json)
 PURPLE='\033[38;2;185;95;255m'           # claude / brand (secondary accent)
 GOLD='\033[38;2;255;200;50m'             # primary accent (autoAccept / rate_limit_fill)
@@ -121,10 +152,14 @@ cwd=$(echo "$input" | jq -r '.cwd // empty')
 if [ -z "$cwd" ]; then
   cwd=$(pwd)
 fi
-home="$HOME"
-short_cwd="${cwd#$home}"
-if [ "$short_cwd" != "$cwd" ]; then
-  short_cwd="~${short_cwd}"
+if [ "$cwd_mode" = "short" ]; then
+  short_cwd=$(basename "$cwd")
+else
+  home="$HOME"
+  short_cwd="${cwd#$home}"
+  if [ "$short_cwd" != "$cwd" ]; then
+    short_cwd="~${short_cwd}"
+  fi
 fi
 
 # Git branch (skip optional locks to avoid contention)
@@ -173,26 +208,72 @@ usage_color() {
   fi
 }
 
-# Build 5-hour usage suffix
+# Build 5-hour usage segment. "core" has no leading separator (used when
+# promoted to its own line); "str" has the leading separator (used when
+# appended inline to line 1).
 if [ -n "$five_hour" ]; then
   five_hour_pct=$(printf "%.0f" "$five_hour")
   five_hour_color=$(usage_color "$five_hour_pct")
-  five_hour_eta=$(format_reset "$five_hour_reset")
-  if [ -n "$five_hour_eta" ]; then
-    five_hour_str="  ${DIM}|${RESET}  ${LABEL_PURPLE}5h%%${RESET} ${five_hour_color}${five_hour_pct}%%${RESET} ${PURPLE}(${five_hour_eta})${RESET}"
+  if [ "$show_eta" = "1" ]; then
+    five_hour_eta=$(format_reset "$five_hour_reset")
   else
-    five_hour_str="  ${DIM}|${RESET}  ${LABEL_PURPLE}5h%%${RESET} ${five_hour_color}${five_hour_pct}%%${RESET}"
+    five_hour_eta=""
+  fi
+  if [ -n "$five_hour_eta" ]; then
+    five_hour_core="${LABEL_PURPLE}5h%%${RESET} ${five_hour_color}${five_hour_pct}%%${RESET} ${PURPLE}(${five_hour_eta})${RESET}"
+  else
+    five_hour_core="${LABEL_PURPLE}5h%%${RESET} ${five_hour_color}${five_hour_pct}%%${RESET}"
   fi
 else
+  five_hour_core=""
+fi
+if [ "$rate_limits_own_line" = "1" ] || [ -z "$five_hour_core" ]; then
   five_hour_str=""
+else
+  five_hour_str="  ${DIM}|${RESET}  ${five_hour_core}"
 fi
 
 # Build weekly usage segment (appended at the end of line 2). A plain
 # (color-free) copy is kept only as a non-empty marker for add_segment below.
+#
+# "pace" compares weekly% spent against how much of the rolling 7-day window
+# has already elapsed (weekly_reset - 604800s), so 80% used reads very
+# differently on day 2 (burning hot) vs day 6 (on track). red ▲ = ahead of an
+# even burn, gold ▼ = headroom, orange ● = tracking the clock. Built as its own
+# segment so it can be placed independently: normally shown on line 1 next to
+# effort (swapped with model/context-bar, which now lives on line 2); on
+# narrow terminals it's promoted to line 3 alongside Weekly instead.
+pace_segment=""
+pace_segment_plain=""
+if [ -n "$weekly" ] && [ -n "$weekly_reset" ]; then
+  now_epoch=$(date +%s)
+  pace_remaining=$((weekly_reset - now_epoch))
+  if [ "$pace_remaining" -gt 0 ]; then
+    [ "$pace_remaining" -gt 604800 ] && pace_remaining=604800
+    pace_delta=$(awk -v u="$weekly" -v r="$pace_remaining" \
+      'BEGIN { elapsed=(604800-r)/604800*100; printf "%.0f", u-elapsed }')
+    pace_delta=$((pace_delta))
+    pace_abs=${pace_delta#-}
+    if [ "$pace_delta" -ge 3 ]; then
+      pace_color="$RED"; pace_arrow="▲${pace_abs}%%"; pace_arrow_plain="▲${pace_abs}%"
+    elif [ "$pace_delta" -le -3 ]; then
+      pace_color="$GOLD_BOLD"; pace_arrow="▼${pace_abs}%%"; pace_arrow_plain="▼${pace_abs}%"
+    else
+      pace_color="$ORANGE"; pace_arrow="●"; pace_arrow_plain="●"
+    fi
+    pace_segment="${LABEL_PURPLE}P:${RESET} ${pace_color}${pace_arrow}${RESET}"
+    pace_segment_plain="P: ${pace_arrow_plain}"
+  fi
+fi
+
 if [ -n "$weekly" ]; then
   weekly_pct=$(printf "%.0f" "$weekly")
   weekly_color=$(usage_color "$weekly_pct")
-  weekly_eta=$(format_reset "$weekly_reset")
+  if [ "$show_eta" = "1" ]; then
+    weekly_eta=$(format_reset "$weekly_reset")
+  else
+    weekly_eta=""
+  fi
   if [ -n "$weekly_eta" ]; then
     weekly_segment="${LABEL_PURPLE}Weekly%%${RESET} ${weekly_color}${weekly_pct}%%${RESET} ${PURPLE}(${weekly_eta})${RESET}"
     weekly_segment_plain="Weekly ${weekly_pct}% (${weekly_eta})"
@@ -232,15 +313,53 @@ else
   pct_text="--"
 fi
 
-# Plain-text render of line 1's main content (cwd/branch/model/context bar),
-# used only to measure its printed width for alignment below — never printed.
-if [ -n "$branch" ]; then
-  line1_plain="${badge_plain}${short_cwd} › ${branch}  |  ${model}  [${bar_filled}${bar_empty}] ${pct_text}%"
-else
-  line1_plain="${badge_plain}${short_cwd}  |  ${model}  [${bar_filled}${bar_empty}] ${pct_text}%"
+# Model + context-bar segment. Used to be inline on line 1; now lives on
+# line 2 (swapped with effort/pace below) as an ordinary segment fragment —
+# pre-rendered here since it's embedded directly into line2 further down,
+# not passed through printf's %s substitution.
+model_bar_segment="${GOLD}${model}${RESET}  ${PURPLE}[${RESET}${ctx_color}${bar_filled}${RESET}${DIM}${bar_empty}${RESET}${PURPLE}]${RESET} ${pct_color}${pct_text}%%${RESET}"
+model_bar_segment_plain="${model}  [${bar_filled}${bar_empty}] ${pct_text}%"
+
+# Line-1 "extra" segments: effort + pace, swapped up from line 2 (where
+# model/context-bar used to sit). Joined the same way as the line-2 segments
+# further down, just kept in separate globals since they land on line 1.
+line1_extra=""
+line1_extra_plain=""
+add_segment1() {
+  [ -z "$2" ] && return
+  if [ -z "$line1_extra_plain" ]; then
+    line1_extra="$1"
+    line1_extra_plain="$2"
+  else
+    line1_extra="${line1_extra}  ${DIM}|${RESET}  $1"
+    line1_extra_plain="${line1_extra_plain}  |  $2"
+  fi
+}
+
+if [ -n "$effort" ]; then
+  add_segment1 "${LABEL_PURPLE}effort${RESET} ${GOLD}${effort}${RESET}" "effort ${effort}"
 fi
 
-# Second line: cost/duration, repo/worktree, output style/effort, vim mode, PR badge.
+# On narrow terminals pace is promoted to line 3 alongside Weekly instead
+# (see the rate_limits_own_line block below); skip it here to avoid showing
+# it twice.
+[ "$rate_limits_own_line" != "1" ] && add_segment1 "$pace_segment" "$pace_segment_plain"
+
+if [ -n "$line1_extra" ]; then
+  line1_extra_str="  ${DIM}|${RESET}  ${line1_extra}"
+else
+  line1_extra_str=""
+fi
+
+# Plain-text render of line 1's main content (cwd/branch/effort/pace), used
+# only to measure its printed width for alignment below — never printed.
+if [ -n "$branch" ]; then
+  line1_plain="${badge_plain}${short_cwd} › ${branch}${line1_extra_plain:+  |  ${line1_extra_plain}}"
+else
+  line1_plain="${badge_plain}${short_cwd}${line1_extra_plain:+  |  ${line1_extra_plain}}"
+fi
+
+# Second line: cost/duration, repo/worktree, output style, model+context bar, vim mode, PR badge.
 # Each segment is tracked both in color (line2) and as plain text (line2_plain)
 # so its printed width can be measured for the 5h/Weekly alignment below.
 line2=""
@@ -262,7 +381,7 @@ if [ -n "$cost" ]; then
   add_segment "${LABEL_PURPLE}cost${RESET} ${GOLD_BOLD}${cost_fmt}${RESET}" "cost ${cost_fmt}"
 fi
 
-if [ -n "$duration_ms" ]; then
+if [ "$show_session" = "1" ] && [ -n "$duration_ms" ]; then
   duration_sec=$((duration_ms / 1000))
   d_h=$((duration_sec / 3600))
   d_m=$(((duration_sec % 3600) / 60))
@@ -288,9 +407,7 @@ if [ -n "$output_style" ] && [ "$output_style" != "default" ]; then
   add_segment "${LABEL_PURPLE}style${RESET} ${WHITE}${output_style}${RESET}" "style ${output_style}"
 fi
 
-if [ -n "$effort" ]; then
-  add_segment "${LABEL_PURPLE}effort${RESET} ${GOLD}${effort}${RESET}" "effort ${effort}"
-fi
+add_segment "$model_bar_segment" "$model_bar_segment_plain"
 
 if [ -n "$vim_mode" ]; then
   add_segment "${ORANGE}${vim_mode}${RESET}" "${vim_mode}"
@@ -307,40 +424,70 @@ fi
 # Align the 5h (line 1) and Weekly (line 2) segments: each is preceded by an
 # identical "  |  " separator, so equalizing the visible width of everything
 # that precedes them is enough to make the two segments start in the same
-# column. Pad whichever line's pre-rate-limit content is shorter.
+# column. Pad whichever line's pre-rate-limit content is shorter. Skipped
+# entirely once the rate limits are promoted to their own line 3 (narrow
+# terminals) since there's nothing left to align.
 line1_pad=""
-if [ -n "$five_hour_str" ] && [ -n "$weekly_segment" ]; then
-  len1=${#line1_plain}
-  len2=${#line2_plain}
-  if [ "$len1" -lt "$len2" ]; then
-    pad=$((len2 - len1))
-    i=0
-    while [ $i -lt $pad ]; do line1_pad="${line1_pad} "; i=$((i+1)); done
-  elif [ "$len2" -lt "$len1" ]; then
-    pad=$((len1 - len2))
-    spacer=""
-    i=0
-    while [ $i -lt $pad ]; do spacer="${spacer} "; i=$((i+1)); done
-    line2="${line2}${spacer}"
-    line2_plain="${line2_plain}${spacer}"
+if [ "$rate_limits_own_line" != "1" ]; then
+  if [ -n "$five_hour_str" ] && [ -n "$weekly_segment" ]; then
+    len1=${#line1_plain}
+    len2=${#line2_plain}
+    if [ "$len1" -lt "$len2" ]; then
+      pad=$((len2 - len1))
+      i=0
+      while [ $i -lt $pad ]; do line1_pad="${line1_pad} "; i=$((i+1)); done
+    elif [ "$len2" -lt "$len1" ]; then
+      pad=$((len1 - len2))
+      spacer=""
+      i=0
+      while [ $i -lt $pad ]; do spacer="${spacer} "; i=$((i+1)); done
+      line2="${line2}${spacer}"
+      line2_plain="${line2_plain}${spacer}"
+    fi
   fi
+  add_segment "$weekly_segment" "$weekly_segment_plain"
 fi
-
-add_segment "$weekly_segment" "$weekly_segment_plain"
 
 # Prepend the auto-mode badge (empty when not in auto mode)
 printf "$badge"
 
 if [ -n "$branch" ]; then
-  printf "${PURPLE}%s${RESET} ${WHITE}›${RESET} ${GOLD}%s${RESET}  ${DIM}|${RESET}  ${GOLD}%s${RESET}  ${PURPLE}[${RESET}${ctx_color}%s${RESET}${DIM}%s${RESET}${PURPLE}]${RESET} ${pct_color}%s%%${RESET}%s${five_hour_str}" \
-    "$short_cwd" "$branch" "$model" "$bar_filled" "$bar_empty" "$pct_text" "$line1_pad"
+  printf "${PURPLE}%s${RESET} ${WHITE}›${RESET} ${GOLD}%s${RESET}${line1_extra_str}%s${five_hour_str}" \
+    "$short_cwd" "$branch" "$line1_pad"
 else
-  printf "${PURPLE}%s${RESET}  ${DIM}|${RESET}  ${GOLD}%s${RESET}  ${PURPLE}[${RESET}${ctx_color}%s${RESET}${DIM}%s${RESET}${PURPLE}]${RESET} ${pct_color}%s%%${RESET}%s${five_hour_str}" \
-    "$short_cwd" "$model" "$bar_filled" "$bar_empty" "$pct_text" "$line1_pad"
+  printf "${PURPLE}%s${RESET}${line1_extra_str}%s${five_hour_str}" \
+    "$short_cwd" "$line1_pad"
 fi
 
 if [ -n "$line2" ]; then
   printf "\n${line2}"
+fi
+
+# On narrow terminals the 5h/Weekly usage segments are promoted off lines
+# 1/2 onto their own line 3, keeping the primary info (cwd/branch/model and
+# cost/repo) readable instead of being cut off with "...".
+if [ "$rate_limits_own_line" = "1" ]; then
+  line3=""
+  if [ -n "$five_hour_core" ]; then
+    line3="${five_hour_core}"
+  fi
+  if [ -n "$pace_segment" ]; then
+    if [ -n "$line3" ]; then
+      line3="${line3}  ${DIM}|${RESET}  ${pace_segment}"
+    else
+      line3="${pace_segment}"
+    fi
+  fi
+  if [ -n "$weekly_segment" ]; then
+    if [ -n "$line3" ]; then
+      line3="${line3}  ${DIM}|${RESET}  ${weekly_segment}"
+    else
+      line3="${weekly_segment}"
+    fi
+  fi
+  if [ -n "$line3" ]; then
+    printf "\n${line3}"
+  fi
 fi
 ```
 
@@ -366,6 +513,32 @@ Notes on the design so you understand the intent:
 - Orange `rgb(255,140,40)` is the mid-level usage warning; red `rgb(255,45,110)` is high usage / errors.
 - The statusline requires `jq` and `bc` to be installed (both are standard on macOS/Homebrew and most Linux).
 
+Layout, so you know what a correct render looks like:
+- **Line 1:** cwd › branch | effort | pace | 5h usage
+- **Line 2:** cost | session | repo | worktree | style | model + context bar | vim | PR | Weekly usage
+- The 5h (line 1) and Weekly (line 2) segments are deliberately padded to start in the
+  same column, so the two usage readouts line up vertically.
+- Model and the context bar live on line 2; effort and pace sit on line 1. (Earlier
+  versions had these swapped — model/context-bar on line 1, effort on line 2.)
+
+The `P:` pace segment is the newest addition. It compares weekly% already spent against
+how much of the rolling 7-day window has elapsed, since 80% used means something very
+different on day 2 than on day 6:
+- red `▲n%` — burning ahead of an even spend
+- gold `▼n%` — you have headroom
+- orange `●` — tracking the clock (within 3 points either way)
+
+The statusline is responsive: it reads the real terminal width from `/dev/tty` (falling
+back to `tput cols`, then to a wide-terminal assumption) and sheds detail as the pane
+narrows, rather than letting Claude Code truncate the line with a trailing "...":
+- **< 130 cols** — drop the "(resets in)" countdowns
+- **< 110 cols** — drop the session-duration segment
+- **< 95 cols** — shorten the cwd to just its basename
+- **< 80 cols** — move 5h / pace / Weekly onto their own line 3, so lines 1–2 stay readable
+
 After creating everything, test the statusline renders without error by piping a sample payload into it, e.g.:
-`echo '{"model":{"display_name":"Opus 4.8"},"context_window":{"used_percentage":42},"cwd":"'"$HOME"'"}' | sh ~/.claude/statusline-command.sh`
+`echo '{"model":{"display_name":"Opus 5"},"context_window":{"used_percentage":42},"cwd":"'"$HOME"'"}' | sh ~/.claude/statusline-command.sh`
 then restart Claude Code (or run /statusline and /config) to see the new theme and bar.
+
+To check the narrow-terminal behavior, resize the window to roughly half width and confirm
+the usage readouts drop to a third line instead of being cut off.
