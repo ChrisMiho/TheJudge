@@ -147,7 +147,7 @@ describe("Game setup and zone confirmation", () => {
     render(<App />);
 
     expect(
-      screen.getByText("Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.")
+      screen.getByText("Tap the arrow to set names and life totals — 2 players start at 20, 3+ at 40.")
     ).toBeInTheDocument();
     expect(
       screen.queryByText(["2 players start at 20", "life. 3+ players default to 40 life."].join(" "))

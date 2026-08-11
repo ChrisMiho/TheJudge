@@ -148,8 +148,7 @@ describe("Frontend - Portal", () => {
 
     await user.clear(assistantLife);
     await user.type(assistantLife, "12");
-    await user.clear(screen.getByLabelText("Player 1 poison"));
-    await user.type(screen.getByLabelText("Player 1 poison"), "8");
+    await user.selectOptions(screen.getByLabelText("Player 1 poison"), "8");
     await user.clear(screen.getByLabelText("Player 1 counter Monarch amount"));
     await user.type(screen.getByLabelText("Player 1 counter Monarch amount"), "0");
 

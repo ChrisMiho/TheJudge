@@ -162,8 +162,7 @@ describe("Frontend - Portal", () => {
     await user.type(lifeInput, "12");
     await expandSecondaryPlayerDetails(user);
     const poisonInput = screen.getByLabelText("Player 1 poison");
-    await user.clear(poisonInput);
-    await user.type(poisonInput, "8");
+    await user.selectOptions(poisonInput, "8");
     await selectDestination(user, "Life Tracker");
 
     await waitFor(() => expect(localStorage.getItem(TRACKER_STORAGE_KEY)).toBe(before));

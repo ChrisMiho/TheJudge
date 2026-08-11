@@ -110,8 +110,7 @@ describe("Frontend - Portal", () => {
     await expandSecondaryPlayerDetails(user);
 
     const poison = screen.getByLabelText("Player 1 poison");
-    await user.clear(poison);
-    await user.type(poison, "5");
+    await user.selectOptions(poison, "5");
 
     await user.click(screen.getByRole("button", { name: "Hide player details" }));
     expect(screen.queryByLabelText("Player 1 display name")).not.toBeInTheDocument();
@@ -138,8 +137,7 @@ describe("Frontend - Portal", () => {
     await user.clear(lifeInput);
     await user.type(lifeInput, "33");
     const poisonInput = screen.getByLabelText("Player 1 poison");
-    await user.clear(poisonInput);
-    await user.type(poisonInput, "5");
+    await user.selectOptions(poisonInput, "5");
 
     await selectDestination(user, "Quick Question");
     await selectDestination(user, "In-Depth Question");
@@ -184,8 +182,7 @@ describe("Frontend - Portal", () => {
     await user.click(screen.getByRole("button", { name: "Show player details" }));
     await expandSecondaryPlayerDetails(user);
     const poison = screen.getByLabelText("Player 1 poison");
-    await user.clear(poison);
-    await user.type(poison, "5");
+    await user.selectOptions(poison, "5");
 
     await selectDestination(user, "Quick Question");
     await selectDestination(user, "In-Depth Question");

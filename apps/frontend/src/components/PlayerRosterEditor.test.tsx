@@ -123,6 +123,50 @@ describe("PlayerRosterEditor", () => {
     expect(removeButton).not.toBeDisabled();
   });
 
+  it("paints both disclosure controls as the same full-size triangle without boxed chrome", async () => {
+    const user = userEvent.setup();
+    render(
+      <EditorHarness
+        initialExpanded
+        renderPlayerExtras={(player) => <p>{`${player.label} extras`}</p>}
+      />
+    );
+
+    const rosterToggle = screen.getByRole("button", { name: "Hide player details" });
+    const [secondaryToggle] = screen.getAllByRole("button", {
+      name: "Show secondary details for all players"
+    });
+
+    for (const control of [rosterToggle, secondaryToggle]) {
+      const triangle = control.querySelector("svg");
+      expect(triangle).not.toBeNull();
+      expect(triangle!.querySelector("polygon")).not.toBeNull();
+      expect(triangle!.getAttribute("aria-hidden")).toBe("true");
+      expect(control.textContent).toBe("");
+      expect(control.className).toContain("min-h-[2.75rem]");
+      // The triangle is the painted mass — no rectangular border/fill around it.
+      expect(control.className).not.toMatch(/\bborder-zinc|\bbg-zinc/);
+    }
+
+    // Both controls share one treatment, so the painted geometry is identical.
+    expect(rosterToggle.querySelector("svg")!.getAttribute("viewBox")).toBe(
+      secondaryToggle.querySelector("svg")!.getAttribute("viewBox")
+    );
+    expect(rosterToggle.querySelector("polygon")!.getAttribute("points")).toBe(
+      secondaryToggle.querySelector("polygon")!.getAttribute("points")
+    );
+
+    // Expanded and collapsed differ only by rotation, never by a different glyph.
+    expect(rosterToggle.querySelector("svg")!.getAttribute("class")).toContain("rotate-90");
+    expect(secondaryToggle.querySelector("svg")!.getAttribute("class")).not.toContain("rotate-90");
+
+    await user.click(secondaryToggle);
+    const expandedSecondary = screen.getAllByRole("button", {
+      name: "Hide secondary details for all players"
+    })[0];
+    expect(expandedSecondary.querySelector("svg")!.getAttribute("class")).toContain("rotate-90");
+  });
+
   it("meets the 44x44 minimum touch target on the count controls", () => {
     render(<EditorHarness />);
 

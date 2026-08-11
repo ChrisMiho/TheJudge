@@ -70,14 +70,16 @@ describe("Interaction flows - search and game context", () => {
     expect(remove.compareDocumentPosition(add) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
     );
-    expect(toggle).toHaveClass("text-xl", "leading-none");
-    expect(toggle).toHaveTextContent("▸");
+    // The disclosure paints a full-size triangle, rotated when expanded, rather than a
+    // small text glyph inside a boxed button.
+    expect(toggle.querySelector("polygon")).not.toBeNull();
+    expect(toggle.querySelector("svg")?.getAttribute("class")).not.toContain("rotate-90");
     expect(toggle).toHaveAttribute("aria-expanded", "false");
 
     await user.click(toggle);
 
     const expandedToggle = screen.getByRole("button", { name: "Hide player details" });
-    expect(expandedToggle).toHaveTextContent("▾");
+    expect(expandedToggle.querySelector("svg")?.getAttribute("class")).toContain("rotate-90");
     expect(expandedToggle).toHaveAttribute("aria-expanded", "true");
   });
 
