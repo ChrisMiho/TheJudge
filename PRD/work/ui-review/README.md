@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # ui-review
 
@@ -25,7 +25,7 @@ Absorbs `ui-screen-layout-truth`'s problem framing — that package's durable de
 | [E](slice-e-player-details.md) | done | In-Depth player disclosure, grouped counter rows, and bounded scalar selects | — |
 | [F](slice-f-rail-footprint.md) | done | Real in-flow corner-rail footprint and answered-workspace gap removal | — |
 | [G](slice-g-price-freshness.md) | done | Human-readable Trade Balancer price freshness | — |
-| [H](slice-h-integration-and-ship-gates.md) | planned | Integrated browser regression, full quality gate, and cleanup handoff | A–G |
+| [H](slice-h-integration-and-ship-gates.md) | done | Integrated browser regression, full quality gate, and cleanup handoff | A–G |
 
 Known live-verification limit carried forward from slice B: the Scan review card
 surface cannot be reached in Playwright because the client-side perceptual-hash
@@ -67,30 +67,30 @@ and the affected `screen-layout.md` rows are the implementation authority. The
 final slice checks those records and corrects stale flow wording before cleanup;
 it does not invent a second roadmap or promote work-package prose as durable truth.
 
-## Resume point (2026-08-11)
+## Ship-ready (2026-08-11)
 
-Slices **A, B, C** shipped via PR #86 into `feature/routing` → `main`. Slice
-**D, E, F, and G are done** on the current run (branch
-`thejudge-impl/ui-review-root-20260811-1`, base `origin/main` @ `467cd42`).
-Slice **H remains planned** and the package stays `active` — do not run
-`thejudge-cleanup` yet.
+Every slice is `done`. Slices **A, B, C** shipped via PR #86 into
+`feature/routing` → `main`; slices **D–H** shipped on branch
+`thejudge-auto/ui-review` (contributor `thejudge-impl/ui-review-root-20260811-1`,
+base `origin/main` @ `467cd42`) in PR #88, which is open for manual review.
 
 Slice D raised the backend `question` wire bound from 300 to 600 characters
-after a live 400 disproved REQ-134's "no downstream limit is at risk" premise;
-see that slice's evidence. Slice H must carry the correction into
-`PRD/sections/` alongside the rest of the promotion checklist.
+after a live 400 disproved REQ-134's "no downstream limit is at risk" premise.
+Slice H's **"Corrections `thejudge-cleanup` must apply"** section lists that and
+five other durable-truth corrections cleanup has to promote — read it before
+running cleanup.
 
-Two things inherited from the A–C run rather than rediscovered:
+Two things inherited from the A–C run, both re-measured in slice H:
 
 1. **A shipped shortfall, not a passed criterion.** Slice C capped the shared
    shell column at `25dvh` / `42dvh` because an unbounded image pushed Quick
-   Question's Send Request past the 844px fold — REQ-129's Fit rule binding
-   ahead of DEC-160's growth, which the catalog says wins. The consequence is
-   that REQ-141's "clear majority of content width at phone" is **not met** on
-   Quick Question (45.5%). Measurements are on that `screen-layout.md` row and
-   in `slice-c-card-composition.md`. Slice H should either accept and record
-   this or revisit the surrounding layout — it should not be quietly ticked off.
-2. **Scan review has never been verified live** (see the limit note above).
+   Question's Send Request past the 844px fold. REQ-141's "clear majority of
+   content width at phone" is therefore **not met** on Quick Question —
+   re-measured at 45.3% in slice H and explicitly accepted and recorded there,
+   not ticked off. Closing it needs a layout change to the surrounding Quick
+   Question column, which is outside this package's scope.
+2. **Scan review has never been verified live** (see the limit note above);
+   slice H re-confirmed no change in this package touches scan chrome.
 
 The cross-package coordination note below is satisfied:
 `frontend-routing-and-code-splitting` merged before slices A-C were implemented,
@@ -98,4 +98,5 @@ so slices F and H already resolve against the routed/lazy shell.
 
 ## Next step
 
-`$thejudge-implement PRD/work/ui-review/ slice H` (see Resume point above).
+Review and merge PR #88, then run
+`$thejudge-cleanup PRD/work/ui-review/` — the package is already `ship-ready`.
