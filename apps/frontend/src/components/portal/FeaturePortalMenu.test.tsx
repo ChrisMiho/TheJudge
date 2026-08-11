@@ -283,6 +283,51 @@ describe("FeaturePortalMenu", () => {
     expect(hoverBlock).not.toContain("border");
   });
 
+  it("gives the rail a real in-flow footprint while keeping its flush top-left placement", () => {
+    const railBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-rail {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail {"))
+    );
+    const slotBlock = appCss.slice(
+      appCss.indexOf(".portal-slot-tab {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-slot-tab {"))
+    );
+
+    // In flow, not absolutely positioned out of it — so the answered workspace no longer
+    // needs a compensating clearance above View Context.
+    expect(railBlock).toContain("position: relative");
+    expect(railBlock).not.toContain("position: absolute");
+    // The decorative glow still anchors to the rail, so it stays a positioning context.
+    expect(railBlock).toContain("z-index: 3");
+    // The corner lift that keeps the rail flush with .page-card's border is unchanged.
+    expect(slotBlock).toContain("margin-top: calc(var(--layout-panel-padding) * -1)");
+    expect(slotBlock).toContain("margin-left: calc(var(--layout-panel-padding) * -1)");
+  });
+
+  it("keeps the interactive band at the 44px floor in both rail forms", () => {
+    render(<Harness />);
+    const menuOnly = screen.getByRole("button", { name: "Switch feature" });
+    expect(menuOnly.className).toContain("portal-menu-rail");
+
+    const railBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-rail {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail {"))
+    );
+    const splitBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-rail-split {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-split {"))
+    );
+    const zoneBlock = appCss.slice(
+      appCss.indexOf(".portal-menu-rail-zone {"),
+      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-zone {"))
+    );
+
+    expect(railBlock).toContain("height: 3.5rem");
+    expect(splitBlock).toContain("height: 2.75rem");
+    expect(zoneBlock).toContain("min-height: 2.75rem");
+    expect(zoneBlock).toContain("min-width: 2.75rem");
+  });
+
   it("paints the rail gradient from a non-interactive layer so the glow cannot intercept taps", () => {
     // DEC-137/REQ-114: the gradient keeps its original 5.5rem x 10.5rem painted extent, but
     // that extent is decoration only — the button's own box is the icon band. Before this,

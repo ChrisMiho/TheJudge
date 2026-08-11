@@ -112,13 +112,17 @@ describe("Frontend - Adaptive context dialog", () => {
     expect(mobileSurfaceBlock).not.toContain("min(85dvh, 48rem)");
   });
 
-  it("sizes the answered-workspace top clearance to the side-by-side rail's 2.75rem band, not the retired stacked-rail clamp", () => {
+  it("carries no compensating top clearance now that the rail has a real in-flow footprint", () => {
     const triggerBlock = appCss.slice(
       appCss.indexOf(".adaptive-context-trigger {"),
       appCss.indexOf("}", appCss.indexOf(".adaptive-context-trigger {"))
     );
 
-    expect(triggerBlock).toContain("margin-top: calc(2.75rem - var(--layout-panel-padding))");
+    // The rail participates in layout, so shared layout tokens own the spacing above
+    // View Context — no one-off clearance constant sized to the rail's band.
+    expect(triggerBlock).not.toContain("margin-top");
+    expect(triggerBlock).not.toContain("2.75rem");
     expect(triggerBlock).not.toContain("clamp(4.75rem, 4.1rem + 2.5vw, 6.25rem)");
+    expect(triggerBlock).toContain("min-height: 44px");
   });
 });

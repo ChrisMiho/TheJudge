@@ -23,7 +23,7 @@ Absorbs `ui-screen-layout-truth`'s problem framing — that package's durable de
 | [C](slice-c-card-composition.md) | done | Container-relative card sizing, staged-card consolidation, and zone selected-card composition | B — consolidation cannot target the image-bound popup |
 | [D](slice-d-question-counter.md) | done | Raw-editable-text counter and submit-gate integrity in Quick Question | — |
 | [E](slice-e-player-details.md) | done | In-Depth player disclosure, grouped counter rows, and bounded scalar selects | — |
-| [F](slice-f-rail-footprint.md) | planned | Real in-flow corner-rail footprint and answered-workspace gap removal | — |
+| [F](slice-f-rail-footprint.md) | done | Real in-flow corner-rail footprint and answered-workspace gap removal | — |
 | [G](slice-g-price-freshness.md) | planned | Human-readable Trade Balancer price freshness | — |
 | [H](slice-h-integration-and-ship-gates.md) | planned | Integrated browser regression, full quality gate, and cleanup handoff | A–G |
 
@@ -70,9 +70,9 @@ it does not invent a second roadmap or promote work-package prose as durable tru
 ## Resume point (2026-08-11)
 
 Slices **A, B, C** shipped via PR #86 into `feature/routing` → `main`. Slice
-**D and E are done** on the current run (branch
+**D, E, and F are done** on the current run (branch
 `thejudge-impl/ui-review-root-20260811-1`, base `origin/main` @ `467cd42`).
-Slices **F–H remain planned** and the package stays `active` — do not run
+Slices **G and H remain planned** and the package stays `active` — do not run
 `thejudge-cleanup` yet.
 
 Slice D raised the backend `question` wire bound from 300 to 600 characters
@@ -98,4 +98,4 @@ so slices F and H already resolve against the routed/lazy shell.
 
 ## Next step
 
-`$thejudge-implement PRD/work/ui-review/ slice F` (see Resume point above).
+`$thejudge-implement PRD/work/ui-review/ slice G` (see Resume point above).
