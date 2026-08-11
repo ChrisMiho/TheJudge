@@ -68,6 +68,7 @@ deleted (cleanup writes the durable receipt, then removes the work folder).
 | `thejudge-map-out` | → `STATUS.active` |
 | `thejudge-implement` / `implement-all` | Stay `active` until the last remaining slice is `done`, then → `STATUS.ship-ready` |
 | `thejudge-implement-fanout` | Owns no transitions itself — dispatches every selected package to `implement-all`, which applies the row above |
+| `thejudge-amend` | Owns no transitions — a package being amended keeps its current status |
 | `thejudge-defer` | Toggle current status ⇄ `deferred`, recording/restoring prior status and reason |
 | `thejudge-cleanup` | Gate: refuse unless `ship-ready` (or user force-override). On success: receipt, remove package, strip board row |
 

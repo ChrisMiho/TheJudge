@@ -10,8 +10,6 @@ Do not rename package folders to encode status.
 
 ## active
 
-- [ui-review](./ui-review/)
-
 ## refined
 
 ## refining
@@ -20,6 +18,7 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+- [ai-answer-quality-baseline](./ai-answer-quality-baseline/)
 - [card-collection-manager](./card-collection-manager/)
 - [scan-non-english-special-treatments](./scan-non-english-special-treatments/)
 - [life-tracker-me-map-and-tray](./life-tracker-me-map-and-tray/)

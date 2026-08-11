@@ -129,7 +129,7 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Purpose | Optional card + question → Ask AI |
 | Phone | Shell 100% width band; content-sized vertically (DEC-145); attached card image sizes to the content column (DEC-160) — a clear majority of column width, replacing the 92×128px `max-h-32` render — with the corner detail popup for metadata (DEC-151/DEC-158); only **Remove card** beside/below the image (REQ-133); primary fields and **Send Request** submit in first viewport when practical; topics/lists may region-scroll |
 | Desktop/tablet | Shell 92%/48rem cap; content-sized vertically; card image grows with the wider column rather than holding the phone size (DEC-160); composer/field growth must not force page scroll or clip chrome below the field (REQ-110 / DEC-146 / DEC-153) |
-| Fit | No page scroll for primary submit path — this bounds card image growth (REQ-129); if the two conflict, the Fit rule wins and a bounded cap is recorded on this row. **Measured bound (ui-review, 2026-08-07):** the two did conflict. An unbounded content-column image rendered 265x369 at 390x844 and pushed **Send Request** to `top` 868px with 1004px of document scroll. The shared shell column (`.card-shell-column img`) is therefore capped at `max-height: 25dvh` below 768px and `42dvh` at 768px+ — a host-row height bound, never a reinstated component `max-h-32` or a per-surface variant. Result: 151x211 at 390x844 with Send Request fully inside the first viewport (`bottom` 754px) and document scroll back to 846px vs the 844px baseline; 271x378 at 1440x900 with Send Request `bottom` 892px. Consequence to accept: at 390x844 the image is 45.5% of content width, so REQ-141's "clear majority" is **not** met on this surface — REQ-129 binds first, exactly as DEC-160 anticipates. It remains 1.65x the superseded 92x128 render and grows with the viewport. |
+| Fit | No page scroll for primary submit path — this bounds card image growth (REQ-129); if the two conflict, the Fit rule wins and a bounded cap is recorded on this row. **Measured bound (ui-review, 2026-08-07):** the two did conflict. An unbounded content-column image rendered 265x369 at 390x844 and pushed **Send Request** to `top` 868px with 1004px of document scroll. The shared shell column (`.card-shell-column img`) is therefore capped at `max-height: 25dvh` below 768px and `42dvh` at 768px+ — a host-row height bound, never a reinstated component `max-h-32` or a per-surface variant. Result: 151x211 at 390x844 with Send Request fully inside the first viewport (`bottom` 754px) and document scroll back to 846px vs the 844px baseline; 271x378 at 1440x900 with Send Request `bottom` 892px. Consequence to accept: at 390x844 the image is 45.3% of content width (151px of a 333px column, re-measured on ship 2026-08-11), so REQ-141's "clear majority" is **not** met on this surface — REQ-129 binds first, exactly as DEC-160 anticipates. It remains 1.65x the superseded 92x128 render and grows with the viewport (271x378 at 1440x900). Closing the gap requires changing the surrounding Quick Question column, not this cap. |
 | Notes | DEC-107, DEC-145, DEC-146, DEC-151, DEC-153, DEC-158, DEC-160, REQ-132, REQ-133, REQ-141 |
 
 #### Quick Question — answered workspace
@@ -139,7 +139,8 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Purpose | Chat-first follow-up after first answer |
 | Phone / Desktop | Thread fills **available shell/workspace height**; composer docked in workspace; thread region-scrolls |
 | Fit | No page scroll; thread is the scroll region (DEC-127/131) |
-| Notes | DEC-118, DEC-127, DEC-131 |
+| Rail clearance | The corner rail participates in layout (`.portal-menu-rail` is `position: relative`, giving the header's left column a real 44px band), so the first element under the header needs **no compensating clearance**. `.adaptive-context-trigger`'s `margin-top: calc(2.75rem - var(--layout-panel-padding))` is retired; spacing is plain `--layout-surface-gap` — measured 8px at 390x844 and 16px at 1440x900, with the rail's bottom 12px / 32px above View Context and no overlap. Do not reintroduce a rail-sized clearance constant here (ui-review, 2026-08-11) |
+| Notes | DEC-118, DEC-127, DEC-131, REQ-139 |
 
 #### In-Depth — Game context
 
@@ -149,7 +150,8 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Phone | Shell width band; roster/controls in first viewport when practical; expanded secondary details stay within width and align to their player row (DEC-128) |
 | Desktop/tablet | Shell 92%/48rem cap; **content-sized vertically** — do not stretch the step card to fill empty lower viewport (DEC-145); expanded secondary details contained and aligned (DEC-128) |
 | Fit | Prefer no page scroll for primary confirm path; dense multiplayer may region-scroll inside roster panel if needed |
-| Notes | DEC-120, DEC-128, REQ-106, DEC-145 |
+| Player-detail controls | Shipped shapes (ui-review, 2026-08-11), measured identical at 390x844 and 1440x900: both disclosures paint **one shared 20x20 inline-SVG triangle** rotated 90 degrees when expanded, inside an unboxed hit area (56x44 outer roster, 44x44 per-player) — no text glyph, no border/fill box. Commander-damage, named-counter, and scalar rows share **one grouped row pattern**: content-sized leading element, one declared 8px gap, then the control (the retired `grid-cols-[1fr_auto]` stretched that gap to 457px on desktop). Poison / energy / experience are **stacked 78px content-sized selects** with an explicit `Unset` option and fixed ranges 0-11 / 0-100 / 0-100; a seeded out-of-range value stays selectable. Three expanded players occupy 720px of secondary-detail height. Commander damage stays a free-typed unbounded numeric input |
+| Notes | DEC-120, DEC-128, REQ-106, DEC-145, REQ-137, REQ-138, REQ-144 |
 
 #### In-Depth — Zone confirmation
 
@@ -215,7 +217,8 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Phone | Shell/full destination width; sides stack; lists region-scroll; primary totals visible without hunting |
 | Desktop/tablet | Shell 92%/48rem (or destination equivalent); paired sides use shell width, not unused ultra-wide bands; content-sized vertically (DEC-145) |
 | Fit | No page scroll for totals/primary actions; entry lists region-scroll |
-| Notes | DEC-087, DEC-145 |
+| Price freshness | Date-level copy only — `Prices as of 5 June 2026`, formatted from the artifact's ISO `snapshotDate` with no raw `T`, milliseconds, or zone suffix, so it never reads as a live quote. One line at 390x844 (`scrollWidth` 299 = `clientWidth`). An unparseable artifact value omits the line entirely rather than printing raw data (ui-review, 2026-08-11, REQ-145) |
+| Notes | DEC-087, DEC-145, REQ-145 |
 
 #### Feedback modal
 

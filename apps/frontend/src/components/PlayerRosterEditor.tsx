@@ -10,6 +10,32 @@ export type RosterPlayer = {
   lifeTotal?: string;
 };
 
+/**
+ * One disclosure treatment for every roster arrow: a full-size triangle whose painted
+ * mass is the control, rotated rather than swapped for a second glyph. The previous
+ * U+25B8/U+25BE text glyphs rendered as a few pixels of ink inside a wide boxed button,
+ * so the box read as the control and the arrow was barely legible (REQ-135).
+ */
+function DisclosureTriangle({ isExpanded }: { isExpanded: boolean }): JSX.Element {
+  return (
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      viewBox="0 0 16 16"
+      className={`h-5 w-5 fill-current transition-transform${isExpanded ? " rotate-90" : ""}`}
+    >
+      <polygon points="4,1 14,8 4,15" />
+    </svg>
+  );
+}
+
+/**
+ * Shared disclosure-button chrome: a 44px-minimum hit area with no border or fill, so the
+ * triangle above is the only painted mass.
+ */
+const DISCLOSURE_CONTROL_CLASS =
+  "motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] items-center justify-center rounded-lg text-zinc-300 transition hover:text-zinc-50";
+
 export type PlayerRosterEditorProps = {
   players: RosterPlayer[];
   playerCount: number;
@@ -59,9 +85,9 @@ export function PlayerRosterEditor({
             aria-label={isExpanded ? "Hide player details" : "Show player details"}
             aria-expanded={isExpanded}
             onClick={onToggleExpanded}
-            className="motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] min-w-[3.5rem] items-center justify-center rounded-lg border border-zinc-600 bg-zinc-800/70 px-3 py-1.5 text-xl leading-none text-zinc-200 transition hover:bg-zinc-700/80"
+            className={`${DISCLOSURE_CONTROL_CLASS} min-w-[3.5rem]`}
           >
-            {isExpanded ? "▾" : "▸"}
+            <DisclosureTriangle isExpanded={isExpanded} />
           </button>
           <span className="text-sm font-semibold text-zinc-100">
             {playerCount} {playerCount === 1 ? "player" : "players"}
@@ -140,9 +166,9 @@ export function PlayerRosterEditor({
                           : "Show secondary details for all players"
                       }
                       onClick={onToggleSecondaryDetails}
-                      className="motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] min-w-[2.75rem] shrink-0 items-center justify-center rounded-lg border border-zinc-600 bg-zinc-800/70 text-lg leading-none text-zinc-200 transition hover:bg-zinc-700/80"
+                      className={`${DISCLOSURE_CONTROL_CLASS} min-w-[2.75rem] shrink-0`}
                     >
-                      {secondaryDetailsExpanded ? "▾" : "▸"}
+                      <DisclosureTriangle isExpanded={secondaryDetailsExpanded} />
                     </button>
                   )}
                 </div>

@@ -176,10 +176,29 @@ describe("Backend - Ask AI", () => {
     );
 
     it.each([
-      ["game", () => ({ ...validRequest(), question: "x".repeat(301) })],
-      ["lookup", () => ({ ...validLookupRequest(), question: "x".repeat(301) })]
-    ])("rejects questions over 300 characters in %s mode", (_mode, createRequest) => {
+      ["game", () => ({ ...validRequest(), question: "x".repeat(601) })],
+      ["lookup", () => ({ ...validLookupRequest(), question: "x".repeat(601) })]
+    ])("rejects questions over 600 characters in %s mode", (_mode, createRequest) => {
       expect(askAiRequestSchema.safeParse(createRequest()).success).toBe(false);
+    });
+
+    // The client caps the editable textarea at 300 characters and then composes the
+    // submitted question from a locked topic pill or the silent card-name fallback
+    // plus that text, so a valid composed question legitimately runs past 300.
+    it.each([
+      [
+        "game",
+        () => ({ ...validRequest(), question: `Tell me about Stack and Priority. ${"x".repeat(300)}` })
+      ],
+      [
+        "lookup",
+        () => ({
+          ...validLookupRequest(),
+          question: `Tell me about Stack and Priority. ${"x".repeat(300)}`
+        })
+      ]
+    ])("accepts a composed question over 300 characters in %s mode", (_mode, createRequest) => {
+      expect(askAiRequestSchema.safeParse(createRequest()).success).toBe(true);
     });
 
     it.each([

@@ -105,6 +105,32 @@ function createEmptyCountersByPlayer(): AssistantCountersByPlayer {
   );
 }
 
+/**
+ * One grouped row for every player counter: a content-sized leading element, one declared
+ * gap, then the value control. The previous `grid-cols-[1fr_auto]` rows gave the label all
+ * leftover width, so the label text and its input sat up to 457px apart on desktop and read
+ * as two unrelated controls (REQ-137).
+ */
+const COUNTER_ROW_CLASS = "flex min-w-0 items-center gap-2";
+const COUNTER_AMOUNT_INPUT_CLASS =
+  "motion-focus w-20 shrink-0 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-right font-semibold text-zinc-100";
+
+/** Fixed ranges for the scalar counters; every value in range is offered explicitly. */
+const SCALAR_COUNTER_MAX: Record<ScalarCounterField, number> = {
+  poison: 11,
+  energy: 100,
+  experience: 100
+};
+
+/**
+ * In-range values plus, when a seeded context carries a value the range does not cover, that
+ * value — a select must never silently drop state the user already had.
+ */
+function scalarCounterOptions(field: ScalarCounterField, value: string): string[] {
+  const inRange = Array.from({ length: SCALAR_COUNTER_MAX[field] + 1 }, (_, index) => String(index));
+  return value !== "" && !inRange.includes(value) ? [...inRange, value] : inRange;
+}
+
 function parsePositiveInteger(value: string): number | undefined {
   const trimmed = value.trim();
   if (!/^\d+$/.test(trimmed)) return undefined;
@@ -727,7 +753,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
           )}
           <div className="panel-inner">
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Players in game</p>
-            <p className="text-xs text-zinc-400">Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.</p>
+            <p className="text-xs text-zinc-400">Tap the arrow to set names and life totals — 2 players start at 20, 3+ at 40.</p>
 
             <PlayerRosterEditor
               players={rosterPlayers}
@@ -745,17 +771,29 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
                 const playerCounters = countersByPlayer[player.label];
                 return (
                   <div className="space-y-3 border-t border-zinc-700/70 pt-3">
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                    {/* Stacked at every width: three bounded selects side by side squeezed
+                        each control below its own legible width (REQ-138). */}
+                    <div className="flex flex-col gap-2">
                       {(["poison", "energy", "experience"] as const).map((field) => (
-                        <label key={field} className="flex flex-col gap-1">
-                          <span className="text-xs font-semibold capitalize text-zinc-300">{field}</span>
-                          <input
+                        <label key={field} className={COUNTER_ROW_CLASS}>
+                          {/* One declared label width across the three stacked rows, so the
+                              selects line up instead of stepping with each label's length. */}
+                          <span className="w-20 shrink-0 truncate text-xs font-semibold capitalize text-zinc-300">
+                            {field}
+                          </span>
+                          <select
                             aria-label={`${player.label} ${field}`}
                             value={playerCounters[field]}
                             onChange={(event) => updateScalarCounter(player.label, field, event.target.value)}
-                            inputMode="numeric"
-                            className="motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-right font-semibold text-zinc-100"
-                          />
+                            className="motion-focus w-auto shrink-0 rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 font-semibold text-zinc-100"
+                          >
+                            <option value="">Unset</option>
+                            {scalarCounterOptions(field, playerCounters[field]).map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
                         </label>
                       ))}
                     </div>
@@ -767,8 +805,8 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
                       {activePlayers
                         .filter((source) => source !== player.label)
                         .map((source) => (
-                          <label key={source} className="grid grid-cols-[1fr_auto] items-center gap-3">
-                            <span className="text-zinc-300">From {source}</span>
+                          <label key={source} className={COUNTER_ROW_CLASS}>
+                            <span className="min-w-0 truncate text-zinc-300">From {source}</span>
                             <input
                               aria-label={`${player.label} commander damage from ${source}`}
                               value={playerCounters.commanderDamage[source] ?? ""}
@@ -776,7 +814,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
                                 updateCommanderDamage(player.label, source, event.target.value)
                               }
                               inputMode="numeric"
-                              className="motion-focus w-28 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-right font-semibold text-zinc-100"
+                              className={COUNTER_AMOUNT_INPUT_CLASS}
                             />
                           </label>
                         ))}
@@ -790,14 +828,14 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
                         {playerCounters.counters.map((counter) => {
                           const accessibleName = counter.name.trim() || counter.id;
                           return (
-                            <div key={counter.id} className="grid grid-cols-[1fr_auto] gap-2">
+                            <div key={counter.id} className={COUNTER_ROW_CLASS}>
                               <input
                                 aria-label={`${player.label} counter ${accessibleName} name`}
                                 value={counter.name}
                                 onChange={(event) =>
                                   updateNamedCounter(player.label, counter.id, "name", event.target.value)
                                 }
-                                className="motion-focus min-w-0 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-zinc-100"
+                                className="motion-focus min-w-0 flex-1 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-zinc-100"
                               />
                               <input
                                 aria-label={`${player.label} counter ${accessibleName} amount`}
@@ -806,7 +844,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
                                   updateNamedCounter(player.label, counter.id, "amount", event.target.value)
                                 }
                                 inputMode="numeric"
-                                className="motion-focus w-28 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-right font-semibold text-zinc-100"
+                                className={COUNTER_AMOUNT_INPUT_CLASS}
                               />
                             </div>
                           );

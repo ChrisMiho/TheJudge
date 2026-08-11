@@ -50,6 +50,12 @@ describe("Frontend - Conversation composer", () => {
 
       expect(composer).toHaveValue("a".repeat(300));
       expect(screen.getByText("300/300")).toBeInTheDocument();
+
+      // The count tracks the raw editable value, so clearing returns it to zero.
+      await user.clear(composer);
+      expect(screen.getByText("0/300")).toBeInTheDocument();
+      await user.type(composer, "abc");
+      expect(screen.getByText("3/300")).toBeInTheDocument();
     });
 
     it("shows a spinner and disables the control while submitting", () => {
