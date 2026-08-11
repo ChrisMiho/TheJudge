@@ -8,6 +8,8 @@ Do not rename package folders to encode status.
 
 ## active
 
+- [commander-spellbook-combos](./commander-spellbook-combos/)
+
 ## refined
 
 ## refining
@@ -24,5 +26,3 @@ Do not rename package folders to encode status.
 ## owner-action
 
 ## deferred
-
-- [commander-spellbook-combos](./commander-spellbook-combos/)

@@ -1,216 +1,157 @@
-# GAMEPLAN — commander-spellbook-combos
+# Commander Spellbook Combo Enrichment — Gameplan
 
-Backend-only Commander Spellbook prompt enrichment: build a reviewed static combo corpus, load it fail-open at backend startup, match at most five variants deterministically against game or lookup context, and render a clearly community-sourced prompt section without changing the Ask AI contract.
-
-Source of truth: `DESIGN-BRIEF.md`, DEC-116, REQ-093–REQ-095, FLOW-015, plus DEC-013/021/029/030/046/106 and `PRD/instructions/technical-design-rules.md`.
+Mapped 2026-08-11 from `DESIGN-BRIEF.md` (quality check PASS, same date).
+Supersedes the deleted 2026-08-03 A–E plan, which predated the card-state and
+answer-quality expansion.
 
 ## Architecture
 
-Five additive layers preserve the existing single endpoint and provider boundary:
+Six modules under `apps/backend/src/commanderSpellbook/`, two build scripts, one
+measurement script. Nothing in `apps/frontend/`. No route, schema, or contract
+change anywhere.
 
-1. **Offline source and artifact pipeline (Slice A)** — a dedicated, explicitly confirmed network refresh writes a complete raw snapshot under gitignored `apps/backend/data/commander-spellbook/`. A separate deterministic build validates that snapshot and atomically emits the two committed runtime artifacts.
-2. **Runtime catalog boundary (Slice B)** — one loader validates both artifacts as a matching pair and exposes normalized readonly maps. Missing, empty, corrupt, or mismatched artifacts return an empty catalog and warn once per failing path.
-3. **Eligibility and matching (Slice C)** — a narrow lexical intent detector and a pure matcher select complete or explicit partial candidates. Quantity slots use distinct submitted instances; compatible-zone assignment is maximized before wrong-zone annotation; ranking is deterministic and capped at five.
-4. **Prompt/runtime integration (Slice D)** — the startup-loaded catalog flows through the existing app/route dependency injection into `preparePromptInput`. Prompt assembly inserts the formatted community section after official card/rules/rulings enrichment and before `SCOPE`, conversation history, and `QUESTION` as applicable.
-5. **End-to-end evaluation and ship closure (Slice E)** — fixture-owned catalog data and seven intentional golden scenarios prove every required game/lookup/failure branch without coupling eval stability to future upstream refreshes.
-
-No layer changes `AskAiRequest`, Zod validation, success/error response shapes, provider selection, `POST /api/ask-ai`, stack ordering, or frontend behavior. Runtime code never calls Commander Spellbook or Scryfall.
-
-## Artifact contracts
-
-Both committed files carry `schemaVersion: 1` and the same deterministic `snapshotId`. The loader rejects the pair if versions or snapshot IDs differ.
-
-`apps/backend/data/commanderSpellbookCombos.json`:
-
-```text
-{
-  schemaVersion,
-  snapshotId,
-  source: {
-    name, fetchedAt, apiBaseUrl, docsUrl, repositoryUrl,
-    licenseName, licenseUrl, attribution
-  },
-  variants: [{
-    id, status, sourceUrl, popularity,
-    uses: [{ cardId, name, quantity, startingZones, mustBeCommander, zoneState }],
-    requires: [{ templateId, name, quantity, startingZones, mustBeCommander, zoneState }],
-    produces: [{ name, quantity }],
-    description, manaNeeded, easyPrerequisites, notablePrerequisites, notes
-  }]
-}
+```
+scripts/refresh-commander-spellbook-data.mjs   (network, human-approved)
+        │  writes gitignored raw pages
+        ▼
+apps/backend/data/commander-spellbook/*.json   (gitignored)
+        │
+scripts/build-commander-spellbook-combos.mjs   (deterministic, offline)
+        │  OK-only filter, template expansion, camelCase projection
+        ▼
+apps/backend/data/commanderSpellbookCombos.json      (committed, variant detail)
+apps/backend/data/commanderSpellbookComboIndex.json  (committed, oracle/template index)
+        │
+        │  loaded once at startup, fail-open
+        ▼
+runtime/createConfiguredApp.ts ──> app/createApp.ts ──> prompt/preparation.ts
+        │                                                      │
+        │  config/index.ts: COMBO_ENRICHMENT_ENABLED           │
+        │  (false ⇒ catalog never loaded ⇒ options omitted)    │
+        ▼                                                      ▼
+commanderSpellbook/{catalog,intent,zones,matcher,formatting}.ts
+                                                               │
+                                            prompt/promptAssembly.ts
+                                            (COMMANDER SPELLBOOK COMBO CONTEXT)
 ```
 
-`apps/backend/data/commanderSpellbookComboIndex.json`:
+### Module boundaries
 
-```text
-{
-  schemaVersion,
-  snapshotId,
-  variantIdsByOracleId: { oracleId: [variantId, ...] },
-  templateExpansions: {
-    templateId: {
-      name,
-      status: "resolved" | "unresolved",
-      source: "scryfall-query" | "explicit-replacements" | "unresolved",
-      oracleIds: [oracleId, ...]
-    }
-  },
-  unresolvedTemplateIds: [templateId, ...]
-}
+| Module | Owns | Must not |
+|---|---|---|
+| `catalog.ts` | artifact types, `loadComboCatalog()`, integrity validation, one-time warn | know about requests or prompts |
+| `zones.ts` | the single `ZoneId` ⇄ `H/B/C/E/G/L` map | be duplicated in matcher or formatter |
+| `intent.ts` | the one word/phrase-boundary combo-intent detector | call a model; be re-implemented per mode |
+| `matcher.ts` | assignment, quantities, annotations, ranking, five-cap | render strings |
+| `formatting.ts` | the prompt section text and instruction lines | decide eligibility |
+
+`intent.ts` and `zones.ts` are single authoritative definitions imported by both
+the game and lookup paths — `technical-design-rules.md`'s reuse-before-creating
+rule is the reason they are separate files rather than matcher internals.
+
+## Data flow through prompt assembly
+
+`preparePromptInput()` already receives artifacts through
+`PreparePromptInputOptions` (`cardRulingsIndex`, `gameRulesTopics`,
+`gameRulesRuleIndex`). Combo enrichment follows that exact shape: a new optional
+`comboCatalog` option, absent when the artifact is missing or the config flag is
+off. Absent option ⇒ no matcher run ⇒ no section. No branch anywhere else needs
+to know why it is absent.
+
+### Section placement
+
+`buildPromptText()` (game) currently ends:
+
+```
+zoneSections → GAME RULES → ADDITIONAL RELEVANT RULE EXCERPTS → RULINGS
+             → SCOPE → CONVERSATION HISTORY → QUESTION
 ```
 
-The build converts Commander Spellbook zone codes once into TheJudge's canonical starting zones: `H → hand`, `B → battlefield`, `C → command`, `E → exile`, `G → graveyard`, and `L → library`. `stack` has no compatible Commander Spellbook starting-zone code and therefore identity matches there are wrong-zone matches, never complete-zone matches.
+The combo section is inserted **immediately after the rulings section and before
+`SCOPE`**, keeping all enrichment contiguous. `buildLookupPromptText()` gets the
+same relative position — after `officialRulingsSection`, before
+`conversationHistorySection`.
 
-Every collection and object-key order is stable. `snapshotId` is derived from normalized raw inputs rather than wall-clock build time, while `source.fetchedAt` comes from the raw snapshot manifest. The output pair is staged and validated before replacement; rollback restores the previous valid pair if either replacement fails.
-
-## Runtime interfaces
-
-Slice B establishes these shared interfaces for later slices:
-
-```ts
-type CommanderSpellbookCatalog = {
-  variantsById: ReadonlyMap<string, CommanderSpellbookVariant>;
-  variantIdsByOracleId: ReadonlyMap<string, readonly string[]>;
-  templateExpansionsById: ReadonlyMap<string, CommanderSpellbookTemplateExpansion>;
-};
-
-function loadCommanderSpellbookCatalog(
-  combosPath: string,
-  indexPath: string
-): CommanderSpellbookCatalog;
-```
-
-Slice C produces:
-
-```ts
-function hasExplicitComboIntent(question: string): boolean;
-
-function selectCommanderSpellbookMatches(input: {
-  request: AskAiRequest;
-  context: PromptInputContext;
-  catalog: CommanderSpellbookCatalog;
-}): CommanderSpellbookMatch[];
-```
-
-`CommanderSpellbookMatch` contains the variant, `classification` (`complete` or `partial`), `trigger` (`automatic` or `explicit`), and non-overlapping annotation lists for compatible exact ingredients, compatible template matches, wrong-zone assignments, missing ingredients, and unresolved templates. It also carries the numeric values used by the ranking comparator so formatter code never re-derives eligibility.
-
-Slice D consumes those matches through:
-
-```ts
-function formatCommanderSpellbookSection(matches: readonly CommanderSpellbookMatch[]): string;
-```
-
-An empty match list formats to `""`; prompt assembly therefore omits both heading and blank section.
-
-## Matching and ranking data flow
-
-```text
-AskAiRequest ──existing validation──> PromptInputContext
-      │                                  │
-      │ question/mode                    │ normalized card instances + zones
-      └────────────────┬─────────────────┘
-                       ▼
-             hasExplicitComboIntent
-                       │
-committed artifacts ─loader──> CommanderSpellbookCatalog
-                       │
-submitted oracle ids ──inverse index──> candidate variant ids
-                       │
-                       ▼
-       flatten ingredient quantities into stable slots
-                       │
-          maximum compatible assignment first
-                       │ remaining slots/instances
-          identity-only wrong-zone assignment second
-                       │
-                       ▼
-       annotate complete/partial + anchors + gaps
-                       │
-                       ▼
- complete > anchor coverage > compatible coverage >
- fewer missing > popularity desc > variant id asc
-                       │
-                       ▼
-                  first five
-                       │
-                       ▼
- community-sourced prompt section after official enrichment
-```
-
-- Game mode without explicit intent filters to complete matches only.
-- Game mode with explicit intent keeps complete matches first and permits partial matches. Card names explicitly mentioned using case-insensitive literal boundaries are required on partial candidates; without a named submitted card, every partial candidate must overlap at least one submitted card.
-- Lookup mode requires explicit intent and an attached card. Every candidate contains that oracle identity exactly or through a resolved authoritative template expansion.
-- Compatible assignment uses maximum-cardinality bipartite matching over stable ingredient slots and submitted instances so a flexible template cannot consume the only card needed by an exact slot. Remaining instances may then annotate identity matches in incompatible zones. No instance is used twice.
-- Unresolved templates have no assignment edges and always prevent `complete` classification.
-- Mana, commander designation, zone-state prose, legality, and prerequisites are retained as prompt context only and never evaluated as satisfied.
-
-## Prompt contract
-
-`formatCommanderSpellbookSection` emits plain text headed exactly:
-
-`COMMANDER SPELLBOOK COMBO CONTEXT — COMMUNITY-SOURCED`
-
-The section states that Commander Spellbook is community catalog data, not WotC rules or proof of legality/executability, and that official card text, WotC rulings, and Comprehensive Rules remain authoritative. Each entry includes the stable source reference, complete/partial state, compatible exact cards, compatible template matches, wrong-zone pieces, missing pieces, unresolved templates, produced effects, steps, mana needed, prerequisites, and notes when present. Automatically supplied complete matches include the instruction to use them only when relevant to the actual question.
-
-Game prompt order remains:
-
-```text
-... zones → GAME RULES → supplemental rules → OFFICIAL RULINGS
-→ COMMANDER SPELLBOOK COMBO CONTEXT → SCOPE → CONVERSATION HISTORY → QUESTION
-```
-
-Lookup prompt order remains:
-
-```text
-... GAME RULES → supplemental rules → CARD → OFFICIAL RULINGS
-→ COMMANDER SPELLBOOK COMBO CONTEXT → CONVERSATION HISTORY → QUESTION
-```
-
-## Reuse before creating
-
-- `scripts/refresh-scryfall-data.mjs` — request identity, temp-download, and preserve-on-failure patterns.
-- `scripts/build-card-rulings.mjs` / `scripts/build-game-rules.mjs` — pure exported transforms, deterministic ordering, graceful prior-artifact preservation, and policy-test pattern.
-- `apps/frontend/src/lib/*BuildPolicy.test.ts` plus `src/types/build-card-metadata.d.ts` — existing Vitest seam for root `.mjs` build scripts.
-- `apps/backend/src/cardRulings.ts` and `gameRules.ts` — startup loader normalization and warn-once failure behavior.
-- `apps/backend/src/prompt/preparation.ts` — single game/lookup enrichment orchestration boundary.
-- `apps/backend/src/prompt/promptAssembly.ts` — deterministic section ordering.
-- `apps/backend/src/runtime/createConfiguredApp.ts` → `createApp.ts` → `routes/askAi.ts` — existing dependency-injection chain.
-- `apps/backend/src/eval/contextEvaluationHarness.ts` and fixture README — golden scenario conventions.
-- `scripts/package-lambda.sh` already copies all of `apps/backend/data`; no packaging change is needed.
-
-## Sequential dependency map
-
-| Slice | Objective | Depends on | Sequential blocker |
-| --- | --- | --- | --- |
-| A | Offline refresh/build + committed corpus | — | Establishes the artifact schema, snapshot pair, and approved source data used everywhere else |
-| B | Fail-open runtime catalog loader | A | Must validate and normalize Slice A's exact artifact contract |
-| C | Intent-aware matcher and ranker | B | Consumes the normalized catalog types/maps exported by B |
-| D | Prompt and runtime integration | C | Consumes C's final match/annotation contract; avoids formatter/preparation churn |
-| E | Eval goldens, full regression gate, and ship closure | D | Goldens must capture the final prompt/runtime behavior and intentional ordering |
-
-This package is sequential because every later slice consumes a concrete interface finalized by its predecessor. Splitting these slices into parallel branches would duplicate or speculate about artifact, catalog, match, and prompt contracts.
-
-## Human-approved network gate
-
-Slice A may implement and test all refresh behavior with injected/mock `fetch`, but no agent may run the live Commander Spellbook/Scryfall refresh until the user explicitly approves that network operation in the implementation session. The live command requires the script's confirmation flag:
-
-```bash
-npm run data:refresh:commander-spellbook -- --confirm-network
-```
-
-The command writes a complete temporary raw snapshot and promotes it only after every required page/expansion succeeds. A refusal, network failure, pagination loop, partial template expansion, or validation failure preserves the prior raw snapshot and both committed artifacts.
+REQ-095 requires only "after card/rules/rulings enrichment and before
+conversation history plus the current question", which a post-`SCOPE` placement
+would also satisfy. The pre-`SCOPE` choice is pinned here so goldens are stable;
+changing it later is a golden update, not a requirement change.
 
 ## Verification checklist
 
-- [ ] Refresh/build policy tests cover confirmation gating, pagination, reviewed-status filtering, source metadata, explicit/query template expansion, unresolved templates, deterministic serialization, pair validation, and rollback/preservation.
-- [ ] A user-approved live refresh produces gitignored raw inputs and non-empty committed detail/index artifacts with matching `schemaVersion` and `snapshotId`.
-- [ ] Runtime loader tests prove valid normalization plus warn-once fail-open behavior for missing, empty, malformed, and mismatched artifacts.
-- [ ] Matcher tests prove narrow intent positives, broad-language negatives, complete automatic game matches, explicit partials, question anchors, lookup gating, quantity/distinct-instance semantics, zone compatibility, template matches, unresolved templates, and stable top-five ranking.
-- [ ] Prompt tests prove exact heading/content, omission on no match, community/WotC authority language, automatic-relevance instruction, and placement after official enrichment but before history/question.
-- [ ] App/runtime tests prove the loaded catalog reaches both request modes while the endpoint, request schema, live `{ answer }`, mock sidecars, provider boundary, and stack order remain unchanged.
-- [ ] Eval fixtures cover the seven REQ-095 branches and only intentional Commander Spellbook prompt goldens change.
-- [ ] `npm --workspace apps/frontend run test -- src/lib/commanderSpellbookDataPolicy.test.ts` passes.
-- [ ] `npm --workspace apps/backend run test` passes.
-- [ ] `npm --workspace apps/backend run test:eval` passes.
-- [ ] `npm run quality:check` passes in the final slice.
-- [ ] Final slice carries PRD promotion and cleanup ship gates.
+Every item is covered by a slice acceptance criterion.
+
+- [ ] Build is deterministic for identical raw inputs; `OK`-only with `EXAMPLE` rejected
+- [ ] Zone-scoped card state survives the build uncollapsed for multi-zone ingredients
+- [ ] Template expansion (query-backed + explicit) and unresolved-template retention
+- [ ] Failed/partial refresh never overwrites a valid committed snapshot
+- [ ] Loader fails open on missing/empty/malformed artifacts, warning once per path
+- [ ] Null steps/prereqs/mana/card-state in a committed variant is an integrity failure
+- [ ] `COMBO_ENRICHMENT_ENABLED=false` suppresses enrichment with no contract change
+- [ ] Narrow intent positives (`combo`, `infinite`, `go infinite`, `loop`, `win condition`) and broad-language non-triggers (`synergy`, `interaction`, `works with`)
+- [ ] Quantity-aware distinct-instance assignment; one instance never fills two slots
+- [ ] Unresolved template can never complete a candidate
+- [ ] Game complete/non-intent, game partial/explicit, lookup attached/explicit, lookup no-card and no-intent branches
+- [ ] State annotation resolves to the matched instance's zone; expected zone for wrong-zone/missing
+- [ ] Stable top-five ranking across the full six-key order
+- [ ] Rendered classification never emits the bare word "complete"
+- [ ] State-verification instruction present in both prompt modes
+- [ ] Prompt ordering, community-source guardrails, mock exposure, eval goldens
+- [ ] `AskAiRequest`/response/Zod/route/provider selection byte-identical
+- [ ] Executed, human-reviewed answer-quality comparison with a recorded conclusion
+
+## Slices
+
+| Slice | Objective | Depends on | Parallel-ready |
+|---|---|---|---|
+| A | Refresh + build scripts → committed artifacts | — | yes |
+| B | Runtime catalog loader, integrity validation, config flag | A | no — consumes A's artifact schema |
+| C | Intent detector, zone map, matcher/ranker | B | no — consumes B's loaded types |
+| D | Prompt section rendering + both prompt paths | C | no — consumes C's annotations |
+| E | Eval fixtures, goldens, full-path coverage | D | yes — parallel with F |
+| F | Answer-quality A/B script + recorded conclusion | D | yes — parallel with E |
+
+A–D are sequential by data dependency, not by convention: each consumes the
+previous slice's type contract. E and F both depend only on D and may run
+concurrently.
+
+## Owner-action checkpoints
+
+Two steps an agent cannot self-authorize. Neither blocks the slices around it.
+
+1. **Production corpus refresh (slice A).** `refresh-commander-spellbook-data.mjs`
+   makes live network calls to Commander Spellbook and Scryfall, which REQ-093
+   gates on explicit human approval. Slice A is verified end to end against
+   committed sample raw inputs under `apps/backend/src/commanderSpellbook/__fixtures__/`;
+   the real committed artifacts land when the owner approves one refresh run.
+   B–E work against fixture artifacts and do not wait for it.
+2. **Live provider A/B (slice F).** Costs money and needs `ASK_AI_PROVIDER=openai`
+   plus a real key. The script ships complete and refuses to run without
+   `--confirm-live-calls`; the owner triggers the run and reviews the output.
+
+Slice F's *conclusion* is the only ship-gate dependency, and per DEC-161 it
+informs the decision without blocking the build.
+
+## Risks
+
+- **Upstream schema drift.** Every field name in the brief comes from
+  `spellbook/serializers/variant_serializer.py`. The build must fail loudly on an
+  unrecognized `status` value or a missing expected key rather than silently
+  emitting a thinner corpus.
+- **Corpus size.** Commander Spellbook publishes tens of thousands of variants.
+  If the trimmed artifact is large enough to hurt Lambda cold start, the index /
+  detail split is the lever — the index is what matching needs, and detail can be
+  narrowed to selected variants. Measure in slice B before optimizing.
+- **Golden churn.** Adding fixtures changes `checklist-report.golden.txt` as well
+  as the per-scenario goldens. Slice E updates goldens only for the intentional
+  combo-section addition.
+
+## Constraints carried into every slice
+
+- Vitest outermost `describe` is `Backend - Ask AI` (closed vocabulary in
+  `PRD/instructions/test-naming.md`). Do not invent `Backend - Commander Spellbook`
+  without updating that file first. No slice/REQ/DEC labels in titles.
+- No browser verification: backend-only, no user-visible surface, so
+  `runtime-process-hygiene.md`'s Playwright policy does not trigger for any slice.
+- `AskAiRequest`, Zod schemas, success/error shapes, provider selection, and
+  `POST /api/ask-ai` stay unchanged — the enrichment is invisible to the contract.

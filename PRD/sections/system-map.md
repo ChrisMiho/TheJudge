@@ -455,7 +455,7 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Commander Spellbook combo artifact build
 
 - Status: planned
-- Summary: Human-approved offline refresh of public reviewed Commander Spellbook variants/templates plus deterministic build of compact combo detail and oracle/template indexes. Query-backed templates expand through their authoritative Scryfall API URL; templates without an authoritative expansion remain unresolved. Raw responses stay gitignored, failed refreshes preserve valid committed artifacts, and runtime performs no external combo fetch.
+- Summary: Human-approved offline refresh of reviewed `OK` Commander Spellbook variants/templates plus deterministic build of compact combo detail and oracle/template indexes. `EXAMPLE` variants are rejected because upstream nulls their steps, prerequisites, mana, notes, and card state. Per-ingredient card state is retained zone-scoped, alongside `mustBeCommander`. Query-backed templates expand through their authoritative Scryfall API URL; templates without an authoritative expansion remain unresolved. Raw responses stay gitignored, failed refreshes preserve valid committed artifacts, and runtime performs no external combo fetch.
 - Lives in: (planned) `scripts/refresh-commander-spellbook-data.mjs`, `scripts/build-commander-spellbook-combos.mjs`, gitignored `apps/backend/data/commander-spellbook/`, committed `apps/backend/data/commanderSpellbookCombos.json` and `apps/backend/data/commanderSpellbookComboIndex.json`
 - Backed by: DEC-116, REQ-093
 
@@ -539,9 +539,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ## Commander Spellbook combo retrieval
 
 - Status: planned
-- Summary: Backend-only, static Commander Spellbook prompt enrichment shared by In-Depth Question and Quick Question. Game mode automatically supplies only complete quantity-aware identity + compatible-zone matches unless narrow combo language explicitly permits labeled partial candidates; lookup mode requires both combo intent and an attached card. Selection is deterministic, capped at five, labels missing/wrong-zone/unresolved ingredients, and preserves WotC sources as authority. No Known Combos UI, browser, contract change, new endpoint, or runtime upstream call.
-- Lives in: (planned) `apps/backend/src/commanderSpellbook/` (artifact loader, intent detector, matcher/ranker, formatter), `apps/backend/src/prompt/` integration, `apps/backend/src/eval/fixtures/commander-spellbook-*`, `apps/backend/data/commanderSpellbookCombos.json`, and `apps/backend/data/commanderSpellbookComboIndex.json`
-- Backed by: DEC-116, REQ-093, REQ-094, REQ-095, FLOW-015
+- Summary: Backend-only, static Commander Spellbook prompt enrichment shared by In-Depth Question and Quick Question. Game mode automatically supplies only complete quantity-aware identity + compatible-zone matches unless narrow combo language explicitly permits labeled partial candidates; lookup mode requires both combo intent and an attached card. Selection is deterministic, capped at five, labels missing/wrong-zone/unresolved ingredients, surfaces each ingredient's card state for the zone its matched instance occupies, and preserves WotC sources as authority. No candidate is ever rendered as "complete" — full assignment renders as all pieces present with card state unverified, and the model is instructed to check that state against the board. No Known Combos UI, browser, contract change, new endpoint, or runtime upstream call.
+- Lives in: (planned) `apps/backend/src/commanderSpellbook/` (artifact loader, intent detector, matcher/ranker, formatter), `apps/backend/src/prompt/` integration, `apps/backend/src/eval/fixtures/commander-spellbook-*`, `apps/backend/data/commanderSpellbookCombos.json`, and `apps/backend/data/commanderSpellbookComboIndex.json`; the opt-in answer-quality comparison lives in `scripts/compare-combo-answer-quality.mjs` (`--confirm-live-calls`, `COMBO_ENRICHMENT_ENABLED` backend config) writing to gitignored `output/combo-answer-quality/` (REQ-146)
+- Backed by: DEC-116, DEC-161, REQ-093, REQ-094, REQ-095, REQ-146, FLOW-015
 
 ## Trade balancer
 
