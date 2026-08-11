@@ -10,10 +10,15 @@ export type AppLogger = {
 const TRUE_VALUES = new Set(["1", "true", "yes", "on"]);
 const FALSE_VALUES = new Set(["0", "false", "no", "off"]);
 
-export function resolveDebugLoggingEnabled(rawValue: string | undefined, nodeEnv: string | undefined): boolean {
-  const normalizedEnv = nodeEnv?.trim().toLowerCase();
-  const defaultEnabled = normalizedEnv === "development";
-
+/**
+ * Shared true/false env parsing. Casing and surrounding whitespace are
+ * normalized; an empty or absent value falls back to `defaultEnabled`.
+ */
+export function resolveBooleanEnv(
+  rawValue: string | undefined,
+  envName: string,
+  defaultEnabled: boolean
+): boolean {
   if (!rawValue || rawValue.trim().length === 0) {
     return defaultEnabled;
   }
@@ -28,30 +33,16 @@ export function resolveDebugLoggingEnabled(rawValue: string | undefined, nodeEnv
   }
 
   throw new Error(
-    `Invalid DEBUG_LOGGING value "${rawValue}". Expected true/false style value (for example: "true" or "false").`
+    `Invalid ${envName} value "${rawValue}". Expected true/false style value (for example: "true" or "false").`
   );
 }
 
+export function resolveDebugLoggingEnabled(rawValue: string | undefined, nodeEnv: string | undefined): boolean {
+  return resolveBooleanEnv(rawValue, "DEBUG_LOGGING", nodeEnv?.trim().toLowerCase() === "development");
+}
+
 export function resolvePayloadLoggingEnabled(rawValue: string | undefined, nodeEnv: string | undefined): boolean {
-  const normalizedEnv = nodeEnv?.trim().toLowerCase();
-  const defaultEnabled = normalizedEnv === "development";
-
-  if (!rawValue || rawValue.trim().length === 0) {
-    return defaultEnabled;
-  }
-
-  const normalizedValue = rawValue.trim().toLowerCase();
-  if (TRUE_VALUES.has(normalizedValue)) {
-    return true;
-  }
-
-  if (FALSE_VALUES.has(normalizedValue)) {
-    return false;
-  }
-
-  throw new Error(
-    `Invalid LOG_PAYLOADS value "${rawValue}". Expected true/false style value (for example: "true" or "false").`
-  );
+  return resolveBooleanEnv(rawValue, "LOG_PAYLOADS", nodeEnv?.trim().toLowerCase() === "development");
 }
 
 export function createAppLogger(enabled: boolean): AppLogger {

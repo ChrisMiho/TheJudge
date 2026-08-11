@@ -15,6 +15,7 @@ import {
   type GameRulesRuleIndexEntry
 } from "../gameRulesRetrieval.js";
 import { buildLookupPromptContext, buildPromptContext } from "./context.js";
+import type { ComboCatalog } from "../commanderSpellbook/catalog.js";
 import type { EnrichmentDebug } from "./enrichmentDebug.js";
 import {
   MAX_CONVERSATION_HISTORY_CHARS,
@@ -40,6 +41,7 @@ export type PreparePromptInputOptions = {
   cardRulingsIndex?: Map<string, RulingEntry[]>;
   gameRulesTopics?: GameRulesTopic[];
   gameRulesRuleIndex?: GameRulesRuleIndexEntry[];
+  comboCatalog?: ComboCatalog;
   collectEnrichmentDebug?: boolean;
 };
 
