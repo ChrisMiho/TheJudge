@@ -42,7 +42,7 @@ Architecture, data flow, and the full verification checklist: `GAMEPLAN.md`.
 | [A](./slice-a-corpus-build-pipeline.md) | Refresh + build scripts → two committed artifacts | — | done |
 | [B](./slice-b-catalog-loader-and-config.md) | Runtime catalog loader, integrity validation, `COMBO_ENRICHMENT_ENABLED` | A | done |
 | [C](./slice-c-intent-and-matching.md) | Intent detector, zone map, matcher/ranker with card-state annotations | B | done |
-| [D](./slice-d-prompt-integration.md) | Prompt section rendering + both prompt paths | C | planned |
+| [D](./slice-d-prompt-integration.md) | Prompt section rendering + both prompt paths | C | done |
 | [E](./slice-e-eval-fixtures-and-goldens.md) | Eval fixtures, goldens, branch coverage | D | planned |
 | [F](./slice-f-answer-quality-comparison.md) | Answer-quality A/B script + reviewed conclusion | D | planned |
 

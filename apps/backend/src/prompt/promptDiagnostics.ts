@@ -22,6 +22,8 @@ export type PromptDiagnostics = {
   supplementalRuleCount?: number;
   supplementalRulesSectionChars?: number;
   supplementalRuleIds?: string[];
+  comboSectionChars?: number;
+  comboCandidateCount?: number;
 };
 
 export type GetPromptDiagnosticsOptions = {
@@ -30,6 +32,8 @@ export type GetPromptDiagnosticsOptions = {
   gameRulesSectionChars?: number;
   supplementalRules?: RetrievedGameRule[];
   supplementalRulesSectionChars?: number;
+  comboSectionChars?: number;
+  comboCandidateCount?: number;
   conversationHistoryChars?: number;
 };
 
@@ -44,6 +48,8 @@ export function getPromptDiagnostics(prompt: string, resolvedRulingsOrOptions?: 
   let gameRulesSectionChars: number | undefined;
   let supplementalRules: RetrievedGameRule[] | undefined;
   let supplementalRulesSectionChars: number | undefined;
+  let comboSectionChars: number | undefined;
+  let comboCandidateCount: number | undefined;
   let conversationHistoryChars = 0;
 
   if (resolvedRulingsOrOptions && "cards" in resolvedRulingsOrOptions) {
@@ -55,6 +61,8 @@ export function getPromptDiagnostics(prompt: string, resolvedRulingsOrOptions?: 
     gameRulesSectionChars = opts.gameRulesSectionChars;
     supplementalRules = opts.supplementalRules;
     supplementalRulesSectionChars = opts.supplementalRulesSectionChars;
+    comboSectionChars = opts.comboSectionChars;
+    comboCandidateCount = opts.comboCandidateCount;
     conversationHistoryChars = opts.conversationHistoryChars ?? 0;
   }
 
@@ -83,6 +91,12 @@ export function getPromptDiagnostics(prompt: string, resolvedRulingsOrOptions?: 
           supplementalRuleCount: supplementalRules.length,
           supplementalRulesSectionChars,
           supplementalRuleIds: supplementalRules.map((r) => r.ruleId)
+        }
+      : {}),
+    ...(comboCandidateCount && comboCandidateCount > 0
+      ? {
+          comboSectionChars,
+          comboCandidateCount
         }
       : {})
   };
