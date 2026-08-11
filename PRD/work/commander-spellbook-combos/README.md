@@ -39,7 +39,7 @@ Architecture, data flow, and the full verification checklist: `GAMEPLAN.md`.
 
 | Slice | Objective | Depends on | Status |
 |---|---|---|---|
-| [A](./slice-a-corpus-build-pipeline.md) | Refresh + build scripts → two committed artifacts | — | planned |
+| [A](./slice-a-corpus-build-pipeline.md) | Refresh + build scripts → two committed artifacts | — | done |
 | [B](./slice-b-catalog-loader-and-config.md) | Runtime catalog loader, integrity validation, `COMBO_ENRICHMENT_ENABLED` | A | planned |
 | [C](./slice-c-intent-and-matching.md) | Intent detector, zone map, matcher/ranker with card-state annotations | B | planned |
 | [D](./slice-d-prompt-integration.md) | Prompt section rendering + both prompt paths | C | planned |

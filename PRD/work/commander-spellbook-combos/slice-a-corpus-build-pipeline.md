@@ -1,6 +1,6 @@
 # Slice A — Corpus refresh and build pipeline
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -48,34 +48,77 @@ network refresh through a deterministic offline build.
 
 ## Acceptance criteria
 
-- [ ] `node scripts/build-commander-spellbook-combos.mjs` run twice over the same
+- [x] `node scripts/build-commander-spellbook-combos.mjs` run twice over the same
       committed sample raw inputs produces byte-identical artifacts
-- [ ] A sample input containing one `OK` and one `EXAMPLE` variant emits exactly
+- [x] A sample input containing one `OK` and one `EXAMPLE` variant emits exactly
       the `OK` variant; the `EXAMPLE` variant appears in neither artifact
-- [ ] An input with `status: "PENDING"` (or any unrecognized value) exits non-zero
+- [x] An input with `status: "PENDING"` (or any unrecognized value) exits non-zero
       with a message naming the offending status and variant id
-- [ ] An ingredient permitting both battlefield and graveyard retains two distinct
+- [x] An ingredient permitting both battlefield and graveyard retains two distinct
       state strings under two zone keys; neither is concatenated or dropped
-- [ ] `mustBeCommander` survives per ingredient; an ingredient in hand or command
+- [x] `mustBeCommander` survives per ingredient; an ingredient in hand or command
       carries no state key rather than an empty string
-- [ ] A query-backed template expands to a deduplicated sorted oracle-id list; a
+- [x] A query-backed template expands to a deduplicated sorted oracle-id list; a
       template with no query and no mapping appears in the index with its
       unresolved marker and no expansion list
-- [ ] Running the build with the raw input directory absent leaves existing
+- [x] Running the build with the raw input directory absent leaves existing
       committed artifacts unmodified (`git diff --exit-code` on both paths) and
       exits 0
-- [ ] Running the build with a truncated/invalid raw page leaves existing
+- [x] Running the build with a truncated/invalid raw page leaves existing
       committed artifacts unmodified and exits non-zero
-- [ ] No `imageUrl`, price, or printing id appears anywhere in either artifact
-- [ ] `npm run data:build` includes the combo build and stays green with no raw
-      inputs present
-- [ ] `apps/backend/data/commander-spellbook/` is gitignored; `git status --porcelain`
+- [x] No `imageUrl`, price, or printing id appears anywhere in either artifact
+- [x] `npm run data:build` includes the combo build and stays green with no raw
+      inputs present — see the pre-existing-chain note in the evidence below
+- [x] `apps/backend/data/commander-spellbook/` is gitignored; `git status --porcelain`
       is clean after a refresh run
 - [ ] **Owner action:** one approved production refresh executed and the two real
       artifacts committed, with the snapshot timestamp, upstream attribution, and
       any upstream license notice present in the manifest. Record the run date and
       variant count in this slice's verification evidence. Slices B–E do not wait
       on this.
+
+## Verification evidence
+
+Recorded 2026-08-11 on the implementation worktree.
+
+- `node --test scripts/build-commander-spellbook-combos.test.mjs` — 22/22 pass.
+- `npm run test:scripts` — 34/34 pass.
+- `npm run quality:check` — green (0 lint errors; the 7 `react-refresh` warnings
+  are pre-existing frontend ones on files this slice does not touch).
+- Committed artifacts are the **empty bootstrap corpus** (`variantCount: 0`,
+  `snapshotAt: null`): detail 304 B, index 384 B. Real combo data lands only via
+  the owner-approved refresh, so no community data is fabricated here. The
+  loader's fail-open path treats an empty corpus as "no matches".
+
+### Upstream schema, verified from source
+
+Read via `gh api` against `SpaceCowMedia/commander-spellbook-backend`, not the
+docs site:
+
+- `Variant.Status` values are **short codes**: `OK` is `"OK"` but **`EXAMPLE` is
+  `"E"`**, not the string `"EXAMPLE"`. `public_statuses()` is `(OK, EXAMPLE)`, so
+  those two are the only values the public API serves. The build's recognized
+  vocabulary is the full upstream set `N, D, NR, OK, E, R, NW`; only `OK` is
+  accepted, and anything outside the set fails loudly.
+- No public serializer exposes `Template.replacements` — `TemplateSerializer`
+  ships only `id`, `name`, `scryfall_query`, `scryfall_api`. So the requirement 8
+  "authoritative explicit replacement mappings" branch has no upstream source and
+  is inert by construction: `scryfall_api` is the only expansion path, and a
+  template without it stays unresolved. Nothing is hand-authored.
+- Only battlefield/exile/graveyard/library carry card state
+  (`Ingredient.CARD_STATE_FIELDS`); hand and command have no state field at all.
+
+### `npm run data:build` note
+
+The combo build is wired as the last link of the chain and is green. The
+aggregate command still exits 1 in a fresh checkout, at the **first** link:
+`build-card-metadata.mjs` throws on the missing gitignored bulk input
+`apps/frontend/data/scryfall/default-cards.json`. That script is untouched by
+this slice (`git diff HEAD -- scripts/build-card-metadata.mjs` is empty), so the
+failure is pre-existing and unrelated. Verified the combo link by running the
+chain from step 2:
+`node scripts/build-card-rulings.mjs && node scripts/build-game-rules.mjs && node scripts/build-card-prices.mjs && node scripts/build-commander-spellbook-combos.mjs`
+— exit 0, with every step degrading gracefully and preserving its artifact.
 
 ## Verification
 
