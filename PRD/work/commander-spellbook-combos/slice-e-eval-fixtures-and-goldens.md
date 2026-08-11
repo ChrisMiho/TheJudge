@@ -1,6 +1,6 @@
 # Slice E — Eval fixtures and goldens
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -31,23 +31,74 @@ and goldens.
 
 ## Acceptance criteria
 
-- [ ] Seven `commander-spellbook-*` fixture trios exist and the harness runs them
-- [ ] The complete/no-intent golden contains the combo section; the lookup
+- [x] Seven `commander-spellbook-*` fixture trios exist and the harness runs them
+- [x] The complete/no-intent golden contains the combo section; the lookup
       unrelated-card golden and the degraded golden do not
-- [ ] The partial/explicit golden names its missing ingredients
-- [ ] The wrong-zone golden shows the ingredient as present-but-incompatible and
+- [x] The partial/explicit golden names its missing ingredients
+- [x] The wrong-zone golden shows the ingredient as present-but-incompatible and
       the candidate as partial
-- [ ] The unresolved-template golden shows the template as unresolved and the
+- [x] The unresolved-template golden shows the template as unresolved and the
       candidate as never complete
-- [ ] No golden contains the standalone word "complete" in a rendered
+- [x] No golden contains the standalone word "complete" in a rendered
       classification
-- [ ] `checklist-report.golden.txt` regenerated; `git diff` on goldens shows only
+- [x] `checklist-report.golden.txt` regenerated; `git diff` on goldens shows only
       combo-attributable changes
-- [ ] Goldens are stable across two consecutive runs
-- [ ] Refreshing the production corpus does not alter any golden (eval catalog is
+- [x] Goldens are stable across two consecutive runs
+- [x] Refreshing the production corpus does not alter any golden (eval catalog is
       independent) — verified by pointing the harness at a modified copy of the
       production artifact and observing no golden diff
-- [ ] `npm run quality:check` green
+- [x] `npm run quality:check` green
+
+## Verification evidence
+
+Recorded 2026-08-11 on the implementation worktree.
+
+- `npm --workspace apps/backend run test -- eval` — 5/5 pass across
+  `contextEvaluationHarness.test.ts` and `relevanceReport.test.ts`.
+- `npm run quality:check` — green.
+- All seven new scenarios score full marks in `checklist-report.golden.txt`:
+  five game-mode scenarios at `16/16` and two lookup scenarios at `14/14`.
+
+### No unrelated golden drift
+
+`git diff origin/feature/enhancement-bangers...HEAD -- apps/backend/src/eval/fixtures/`
+touches only `commander-spellbook-*` files, `README.md`, and
+`checklist-report.golden.txt`. The checklist diff is purely **additive** — seven
+new rows, no existing row modified. No pre-existing `.prompt.golden.txt` or
+`.context.golden.json` changed.
+
+### Production-corpus independence, verified by experiment
+
+Not merely asserted by construction. A variant keyed on `eval-oracle-a` — a card
+the eval fixtures genuinely submit — was injected into the production artifact
+`apps/backend/data/commanderSpellbookCombos.json` with popularity 9999, which
+would have ranked first had the harness read it. The eval suite was re-run and
+`git diff` on the fixtures directory was empty; the production artifact was then
+restored. The harness reads only `commander-spellbook-eval-catalog.json`.
+
+### Two harness changes were required
+
+1. `EvaluationFixture` gains an optional `disableComboEnrichment` flag. The
+   degraded scenario has to be evaluated with **no** catalog, which no
+   fixture-level field could otherwise express, since the harness applies one
+   catalog to every fixture.
+2. `resolveGameComboCandidates` is now exported from `prompt/preparation.ts`. The
+   harness's game path calls `buildPromptText` directly rather than
+   `preparePromptInput` (switching it would have churned unrelated goldens by
+   adding rulings and history), so it needs the production instance-collection
+   logic rather than a reimplementation of it.
+
+`buildEvalComboCatalog` derives oracle membership from the fixture's `variants`
+array instead of storing a second hand-maintained index, so the eval catalog
+cannot drift out of sync with itself.
+
+### One fixture-data addition
+
+`fixtureRulings` in the harness test gained an entry for `eval-oracle-b`. The
+pre-existing `lookup-card-enrichment` check requires an `OFFICIAL RULINGS` section
+for any attached lookup card, so the two lookup combo fixtures failed that check
+until their attached card had a ruling. It is a new key, so no existing fixture's
+golden was affected.
 
 ## Verification
 

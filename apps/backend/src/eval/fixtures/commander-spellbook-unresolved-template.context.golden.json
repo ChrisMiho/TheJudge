@@ -1,0 +1,42 @@
+{
+  "finalQuestion": "Does this loop go infinite?",
+  "gameContext": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 20
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "main_1",
+    "selectedZones": [
+      "battlefield"
+    ]
+  },
+  "populatedZones": [
+    {
+      "zoneId": "battlefield",
+      "items": [
+        {
+          "cardId": "eval-oracle-d",
+          "name": "Swarming Scute",
+          "oracleText": "Landfall — Whenever a land enters under your control, create a token copy.",
+          "imageUrl": "",
+          "manaCost": "",
+          "manaValue": 2,
+          "typeLine": "",
+          "colors": [],
+          "supertypes": [],
+          "subtypes": [],
+          "owner": "Player 1",
+          "targets": []
+        }
+      ]
+    }
+  ],
+  "orderedStack": []
+}

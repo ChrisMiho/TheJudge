@@ -6,6 +6,7 @@ import type {
 } from "../types/index.js";
 import type { GameRulesTopic } from "../gameRules.js";
 import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
+import type { ComboCatalog, ComboVariant } from "../commanderSpellbook/catalog.js";
 import { MAX_PROMPT_CHAR_BUDGET, normalizeQuestion } from "../prompt/normalization.js";
 
 const FALLBACK_QUESTION = "Resolve the stack";
@@ -60,7 +61,53 @@ export type EvaluationFixture = {
   description: string;
   request: AskAiRequest;
   expected?: EvaluationFixtureExpected;
+  /**
+   * Set for the degraded scenario: the fixture is evaluated with no combo
+   * catalog at all, proving the request is still answered normally and no combo
+   * section appears.
+   */
+  disableComboEnrichment?: boolean;
 };
+
+/**
+ * Build a `ComboCatalog` from the committed eval catalog fixture.
+ *
+ * The eval corpus is deliberately independent of
+ * `apps/backend/data/commanderSpellbookCombos.json`, so refreshing the
+ * production corpus can never churn a prompt golden. Membership is derived from
+ * the variants rather than duplicated in the fixture, so the two cannot drift.
+ */
+export function buildEvalComboCatalog(variants: ComboVariant[]): ComboCatalog {
+  const byOracleId = new Map<string, string[]>();
+  const byTemplateOracleId = new Map<string, string[]>();
+
+  const append = (membership: Map<string, string[]>, key: string, variantId: string) => {
+    const existing = membership.get(key);
+    if (existing) {
+      if (!existing.includes(variantId)) existing.push(variantId);
+    } else {
+      membership.set(key, [variantId]);
+    }
+  };
+
+  for (const variant of variants) {
+    for (const ingredient of variant.cardIngredients) {
+      append(byOracleId, ingredient.cardId, variant.variantId);
+    }
+    for (const ingredient of variant.templateIngredients) {
+      for (const oracleId of ingredient.oracleIds) {
+        append(byTemplateOracleId, oracleId, variant.variantId);
+      }
+    }
+  }
+
+  return {
+    variants: new Map(variants.map((variant) => [variant.variantId, variant])),
+    byOracleId,
+    byTemplateOracleId,
+    variantCount: variants.length
+  };
+}
 
 /** Slice A/B outputs needed to evaluate the labeled relevance checks. */
 export type ScenarioRelevance = {

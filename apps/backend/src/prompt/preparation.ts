@@ -102,8 +102,11 @@ function collectComboInstances(context: PromptContext): ComboMatchInstance[] {
  * The matcher runs only when a catalog was supplied. An absent option — because
  * the artifact is missing or `COMBO_ENRICHMENT_ENABLED` is false — means no
  * matcher run and therefore no section; this branch never learns which.
+ *
+ * Exported so the eval harness exercises the production path rather than
+ * reimplementing instance collection against its own fixtures.
  */
-function resolveGameComboCandidates(
+export function resolveGameComboCandidates(
   request: GameAskAiRequest,
   context: PromptContext,
   options: PreparePromptInputOptions
