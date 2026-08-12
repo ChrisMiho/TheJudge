@@ -52,7 +52,8 @@ Static Commander Spellbook catalog ingestion and context-aware prompt enrichment
 - Impact:
   - the refresh downloads one bulk document instead of walking a cursor; the ~1,055 paginated requests, their pacing, and their resume/retry machinery are removed
   - the corpus covers all 105,448 reviewed `OK` variants the export publishes; the export contains no `EXAMPLE` variants, so DEC-116's `EXAMPLE` rejection is retained defensively but is not exercised by this source
-  - committed artifacts are gzipped, holding the full corpus in roughly 6.5 MB rather than the ~112 MB an uncompressed artifact would add to the repository; the loader decompresses on first read, keeping the existing lazy-load posture
+  - committed artifacts are gzipped, holding the full corpus in 11.3 MB (9.6 MB detail + 1.7 MB index) rather than the 164 MB an uncompressed artifact would add to the repository; measured over all 105,447 real variants
+  - decompression is not a meaningful cost: loading the full gzipped catalog measured 283 ms against 241 ms uncompressed. The binding constraint is resident memory — the full detail catalog retains 254 MB of heap (~868 MB RSS) against 18 MB (~95 MB RSS) for the index alone, while at most five variants ever enter a prompt, so whether detail is held resident or read lazily is a sizing decision to settle explicitly rather than an optimization to defer
   - no coverage is traded for size: the 61% of variants with no tracked deck popularity are exactly the obscure pairings an explicit combo question is most likely to name, so a popularity cap is rejected
   - fixtures are derived from a real upstream response, so a future upstream rename fails the suite instead of passing it
   - the bulk document's own `timestamp` and `version` satisfy REQ-093's snapshot-provenance requirement directly

@@ -49,19 +49,68 @@ discarded all 136 downloaded pages on failure.
 2. **Wired into `data:refresh`.** Invoking that command is REQ-093's explicit human approval,
    matching the standard already applied to the ungated Scryfall and Comprehensive Rules
    downloads in the same script. The standalone combo script keeps `--confirm-live-calls`.
-3. **Gzipped committed artifacts, full coverage.** Measured on a 6,000-variant sample: the
-   trimmed corpus is ~1,066 B/variant uncompressed (~112 MB) and ~62 B/variant gzipped
-   (~6.5 MB, 17.2x). No popularity cap — 61% of variants have zero tracked deck popularity,
-   and those are precisely the obscure pairings an explicit combo question tends to name.
+3. **Gzipped committed artifacts, full coverage.** Measured over the full real corpus:
+   11.3 MB gzipped (9.6 MB detail + 1.7 MB index) against 164 MB uncompressed. No popularity
+   cap — 61% of variants have zero tracked deck popularity, and those are precisely the obscure
+   pairings an explicit combo question tends to name.
 4. **Fixtures derived from real upstream responses**, never hand-authored, so a future rename
    fails the suite instead of passing it.
 
-**Blast radius for re-mapping.** Slice A is invalidated outright. Slice B is affected by
-gunzip-on-load and by 105,448 variants rather than the ~30,000 its cold-start measurement
-assumed. Slice C is affected by that same scale. Slice D is likely intact. Slice E is intact —
-its eval catalog is deliberately independent of the production artifact. Slice F needs curated
-scenarios pointing at real oracle ids; its current scenarios reuse the eval fixtures' synthetic
-ids, which appear in no corpus and would make both A/B legs produce identical prompts.
+**Blast radius for re-mapping.** Slice A is invalidated outright. Slice B's cold-start
+measurement is superseded — see the measured replacement below. Slice C is affected by the
+same scale. Slice D is likely intact. Slice E is intact and verified so (below). Slice F needs
+curated scenarios pointing at real oracle ids; its current scenarios reuse the eval fixtures'
+synthetic ids, which appear in no corpus and would make both A/B legs produce identical prompts.
+
+### Measured 2026-08-12 — real corpus, replacing slice B's estimate
+
+Slice B measured a **synthetic** corpus at 10,000–30,000 variants, uncompressed, and reported
+28–75 ms. That covered neither the real scale nor decompression. Replaced by a measurement over
+a real artifact built from all 105,447 variants of the actual bulk export, in the exact
+`ComboVariant` shape `catalog.ts` defines. Median of 5 runs, read → decompress → parse → build
+both `Map`s.
+
+| Artifact | Raw | Gzipped |
+|---|---|---|
+| `commanderSpellbookCombos.json` (detail) | 156.4 MB | **9.6 MB** |
+| `commanderSpellbookComboIndex.json` (index) | 7.8 MB | **1.7 MB** |
+
+| Load | Time | Retained heap | RSS |
+|---|---|---|---|
+| Full catalog, uncompressed | 241 ms | — | — |
+| Full catalog, gzipped | **283 ms** | **254 MB** | **868 MB** |
+| Index only, gzipped | **15 ms** | **18 MB** | **95 MB** |
+
+**Conclusion: gzip is free; memory is the real constraint.** Decompression costs only ~42 ms on
+top of parsing, so DEC-162's gzipped-artifact decision carries no meaningful startup penalty.
+What does cost is holding the detail catalog resident: **254 MB of retained heap and ~868 MB RSS,
+against 18 MB / 95 MB for the index alone.** At most five variants ever enter a prompt, so
+roughly 100% of that resident detail is never read on any given request.
+
+This is the lever slice B recorded but could not quantify — "keep loading the index eagerly and
+narrow the detail artifact" — now with a number attached: it saves ~236 MB retained heap and
+~770 MB RSS. Map-out should treat lazy or partial detail access as a sizing decision to settle
+explicitly, not an optimization to defer, and should confirm the deployment target's memory
+budget before choosing. Note also that 105,447 variants are built from only **7,371 distinct
+oracle ids**, which is why the index stays small and why matching never needs the detail artifact.
+
+Corrected figure: the 6.5 MB gzipped estimate quoted earlier in this amendment came from a
+6,000-variant sample. The measured value over the full corpus is **9.6 MB** detail + 1.7 MB index.
+
+### Verified 2026-08-12 — slice E needs no changes
+
+The eval catalog is read by `contextEvaluationHarness.test.ts` with plain `readFileSync` +
+`JSON.parse` and passed to `buildEvalComboCatalog`; it never goes through `loadComboCatalog`, so
+neither the wire-format fix nor gzip storage reaches it. Its variant and ingredient keys were
+diffed against the artifact built from real upstream data and match exactly, at both levels. The
+wire-casing defect lived entirely at the parse boundary and never reached TheJudge's internal
+`ComboVariant` contract.
+
+Two consequences for re-mapping: slice E's catalog is a valid **conformance reference** for what
+the corrected build must emit, and its independence from the production artifact must be
+preserved rather than "fixed" — it is what stops a corpus refresh from churning a prompt golden.
+Slice F must therefore get real oracle ids through inline `request` payloads rather than by
+pointing the eval fixtures at real cards.
 
 **Carried forward, uncommitted.** A retry/backoff fix for `refresh-commander-spellbook-data.mjs`
 (`Retry-After` support, exponential backoff with full jitter) plus 15 tests for a script that
