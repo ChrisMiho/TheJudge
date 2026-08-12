@@ -89,6 +89,8 @@ docs removed.
 
 ## Outstanding owner actions
 
+Full pickup instructions for a cold agent: [`HANDOFF.md`](./HANDOFF.md).
+
 Implementation is complete; these two remain and neither is agent-authorizable.
 
 1. **Production corpus refresh** — the committed artifacts are an empty bootstrap
