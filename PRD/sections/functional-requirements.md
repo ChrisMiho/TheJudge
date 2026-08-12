@@ -2137,8 +2137,12 @@
 - Priority: high
 - Description: TheJudge must build a deterministic, compact, backend-only snapshot of Commander Spellbook's public reviewed combo variants, keyed and indexed by the Scryfall `oracle_id` already used as TheJudge `cardId`, so combo retrieval has no runtime dependency on Commander Spellbook or Scryfall.
 - Acceptance Criteria:
-  - a dedicated human-approved refresh retrieves the paginated public Commander Spellbook variants and templates into gitignored raw inputs; an agent never runs that network refresh without explicit approval
-  - the build accepts reviewed `OK` variants only and rejects `EXAMPLE` variants, because upstream returns null `description`, `mana_needed`, easy/notable prerequisites, `notes`, and every per-zone card-state field for `EXAMPLE` status; it records the source snapshot timestamp, upstream variant id/reference, Commander Spellbook attribution, and any source/license notices published by upstream
+  - a human-approved refresh retrieves Commander Spellbook's public bulk export into gitignored raw inputs; invoking the repository's `data:refresh` command is that approval, so the combo download runs as part of that chain alongside the Scryfall and Comprehensive Rules refreshes, and the standalone combo script additionally refuses to make a request without `--confirm-live-calls` (DEC-162)
+  - the build accepts reviewed `OK` variants only and rejects `EXAMPLE` variants, because upstream returns null `description`, `manaNeeded`, easy/notable prerequisites, `notes`, and every per-zone card-state field for `EXAMPLE` status; it records the source snapshot timestamp, upstream variant id/reference, Commander Spellbook attribution, and any source/license notices published by upstream
+  - the bulk export publishes only `OK` variants, so the `EXAMPLE` rejection above is defensive against a source change rather than a path this source exercises; an unrecognized status value still fails the build loudly
+  - the build parses upstream's **camelCase** wire field names (`oracleId`, `zoneLocations`, `manaNeeded`, `mustBeCommander`, `easyPrerequisites`, `notablePrerequisites`, `scryfallApi`); a snake_case reader silently matches nothing and must never be reintroduced (DEC-162)
+  - build fixtures are derived from a real upstream response and retain its exact wire casing; hand-authored fixtures are not acceptable evidence that the parser matches upstream
+  - committed artifacts are gzipped, so the full reviewed corpus stays a few megabytes rather than the ~112 MB an uncompressed artifact would add; the loader decompresses on first read and retains its lazy-load behavior
   - because only `OK` variants are accepted, every committed variant carries non-null steps, prerequisites, mana needed, and card state; a null in any of those fields is an artifact-integrity failure rather than expected data
   - committed backend artifacts separate compact variant detail from lookup indexes and retain, per variant: exact-card ingredients, quantities, permitted starting zones, per-ingredient zone-scoped card state, per-ingredient `mustBeCommander`, template ingredients, produced effects, step description, mana needed, easy/notable prerequisites, notes, popularity, and stable source URL
   - per-ingredient card state is retained as a zone-scoped map and is never collapsed into a single string; upstream exposes distinct battlefield, exile, graveyard, and library state, an ingredient may permit several starting zones at once, and the hand and command zones carry no state
@@ -2155,13 +2159,15 @@
   - do not fold combo data into `cardMetadata.json`, `cardRulingsByOracleId.json`, or the WotC rules artifacts; each corpus keeps one authoritative shape
 - Dependencies:
   - DEC-116
+  - DEC-162
   - DEC-012
-  - Commander Spellbook public REST API
+  - Commander Spellbook public bulk export
   - Scryfall `oracle_id` and card-search API used only during approved refresh
 - Notes:
-  - planned paths are `apps/backend/data/commanderSpellbookCombos.json` and `apps/backend/data/commanderSpellbookComboIndex.json`, built from gitignored raw inputs under `apps/backend/data/commander-spellbook/`
-  - upstream serializes in snake_case (`oracle_id`, `zone_locations`, `must_be_commander`, `battlefield_card_state`, `exile_card_state`, `graveyard_card_state`, `library_card_state`); TheJudge's committed artifacts use its own camelCase naming
+  - planned paths are gzipped `apps/backend/data/commanderSpellbookCombos.json.gz` and `apps/backend/data/commanderSpellbookComboIndex.json.gz`, built from gitignored raw inputs under `apps/backend/data/commander-spellbook/`
+  - upstream renders **camelCase** on the wire (`oracleId`, `zoneLocations`, `mustBeCommander`, `battlefieldCardState`, `exileCardState`, `graveyardCardState`, `libraryCardState`) because Django REST Framework applies `CamelCaseJSONRenderer` above the serializer; the snake_case names visible in upstream's Python serializers never reach a client, and a previous version of this note asserted the opposite and caused the build to match nothing (DEC-162)
   - the upstream starting-zone vocabulary is exactly `H`, `B`, `C`, `E`, `G`, `L`
+  - the bulk export publishes 105,448 reviewed `OK` variants and carries its own `timestamp` and `version`, which satisfy the snapshot-provenance criterion directly
 
 ### REQ-094
 - Title: Context-aware Commander Spellbook combo retrieval
@@ -3464,3 +3470,4 @@
   - the comparison exists to answer whether combo enrichment earned its place, which is otherwise unfalsifiable
   - planned path is `scripts/compare-combo-answer-quality.mjs`, gated behind an explicit `--confirm-live-calls` flag, writing to gitignored `output/combo-answer-quality/` alongside the existing `output/prompt-preview/` and `output/retrieval-relevance-report.txt` convention
   - the runtime config flag is `COMBO_ENRICHMENT_ENABLED` (backend env, enabled by default), read where prompt assembly consults the catalog rather than latched at module load, so one script process can answer both legs without a second process or a contract change
+  - curated scenarios must reference oracle ids that exist in the built corpus; the eval fixtures' synthetic ids (`eval-oracle-a`, …) appear in no corpus, so scenarios reusing them produce byte-identical prompts on both legs and spend live provider calls proving nothing (DEC-162 makes real ids available)

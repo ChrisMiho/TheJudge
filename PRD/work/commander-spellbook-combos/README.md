@@ -1,5 +1,5 @@
 ---
-status: ship-ready
+status: refined
 ---
 
 # commander-spellbook-combos
@@ -25,6 +25,7 @@ Integrate Commander Spellbook as a static, backend-only community combo enrichme
 
 - DEC-116
 - DEC-161
+- DEC-162
 - REQ-093
 - REQ-094
 - REQ-095
@@ -35,7 +36,15 @@ See `DESIGN-BRIEF.md` for approved scope.
 
 ## Slices
 
-Architecture, data flow, and the full verification checklist: `GAMEPLAN.md`.
+> **Superseded 2026-08-12 — pending re-map.** The statuses below record what the
+> A–F implementation reported and are kept as evidence; they do not describe
+> shippable work. The corpus build could not parse real upstream data (DEC-162),
+> so slice A is invalidated outright, B and C are affected by gzip-on-load and a
+> 105,448-variant corpus, and F needs scenarios with real oracle ids. D and E are
+> expected to survive. `thejudge-map-out` re-slices this; do not resume A–F as-is.
+
+Architecture, data flow, and the full verification checklist: `GAMEPLAN.md`
+(also superseded on the corpus-source and wire-format points).
 
 | Slice | Objective | Depends on | Status |
 |---|---|---|---|
@@ -55,8 +64,8 @@ promotion checklist and ship gates.
 | Area | Paths |
 |---|---|
 | Build pipeline | `scripts/refresh-commander-spellbook-data.mjs`, `scripts/build-commander-spellbook-combos.mjs` |
-| Committed artifacts | `apps/backend/data/commanderSpellbookCombos.json`, `apps/backend/data/commanderSpellbookComboIndex.json` |
-| Raw inputs (gitignored) | `apps/backend/data/commander-spellbook/` |
+| Committed artifacts | `apps/backend/data/commanderSpellbookCombos.json.gz`, `apps/backend/data/commanderSpellbookComboIndex.json.gz` |
+| Raw inputs (gitignored) | `apps/backend/data/commander-spellbook/` (bulk export) |
 | Runtime modules | `apps/backend/src/commanderSpellbook/{catalog,zones,intent,matcher,formatting}.ts` |
 | Wiring | `apps/backend/src/config/index.ts`, `runtime/createConfiguredApp.ts`, `app/createApp.ts`, `prompt/{preparation,promptAssembly}.ts` |
 | Eval | `apps/backend/src/eval/fixtures/commander-spellbook-*` |
@@ -89,20 +98,23 @@ docs removed.
 
 ## Outstanding owner actions
 
-Full pickup instructions for a cold agent: [`HANDOFF.md`](./HANDOFF.md).
+Start at `DESIGN-BRIEF.md` `## Amendments`. (The former `HANDOFF.md` was deleted on
+2026-08-12: it predated DEC-162 and instructed a cold agent to run the refresh and
+merge, both of which are now wrong.)
 
-Implementation is complete; these two remain and neither is agent-authorizable.
+Implementation is **not** complete: the corpus build cannot parse real upstream data
+(DEC-162). The refresh cannot usefully run until that is fixed, because the build
+rejects the very first real variant.
 
-1. **Production corpus refresh** — the committed artifacts are an empty bootstrap
-   corpus (`variantCount: 0`). Run
-   `npm run data:refresh-combos -- --confirm-live-calls`, then
-   `node scripts/build-commander-spellbook-combos.mjs`, and commit the two real
-   artifacts. Until then the enrichment loads cleanly but never matches anything.
-2. **Answer-quality A/B** — run
-   `ASK_AI_PROVIDER=openai npm run combo:answer-quality -- --confirm-live-calls`
-   after the refresh, review both answer sets, and record the dated verdict in
-   slice F. Per DEC-161 this informs the ship decision without blocking it.
+1. **Production corpus refresh** — blocked on the re-mapped build work, then run
+   through the `data:refresh` chain per DEC-162. The 2026-08-12 refresh attempt is
+   already evidenced in the brief; the committed artifacts remain the empty bootstrap
+   corpus (`variantCount: 0`).
+2. **Answer-quality A/B** — unchanged in principle (`ASK_AI_PROVIDER=openai`,
+   `--confirm-live-calls`, DEC-161 informs without blocking), but its curated
+   scenarios must first point at real oracle ids; the current ones reuse synthetic
+   eval-fixture ids and would make both legs identical.
 
 ## Next step
 
-`/thejudge-cleanup PRD/work/commander-spellbook-combos/`
+`/thejudge-quality-check PRD/work/commander-spellbook-combos/`

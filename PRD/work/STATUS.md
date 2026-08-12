@@ -6,11 +6,11 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-- [commander-spellbook-combos](./commander-spellbook-combos/)
-
 ## active
 
 ## refined
+
+- [commander-spellbook-combos](./commander-spellbook-combos/)
 
 ## refining
 

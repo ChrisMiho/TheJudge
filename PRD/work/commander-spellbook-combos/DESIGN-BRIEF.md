@@ -4,9 +4,69 @@
 
 - Product design: approved 2026-08-02
 - Scope expansion approved 2026-08-11 (card state capture + answer-quality measurement)
+- Corpus source + wire-format correction approved 2026-08-12 (see `## Amendments`)
 - Work package: refined
-- Quality check: PASS 2026-08-11
-- Next gate: `$thejudge-map-out PRD/work/commander-spellbook-combos/`
+- Quality check: PASS 2026-08-11 — **superseded**; the 2026-08-12 amendment must be re-checked
+- Next gate: `$thejudge-quality-check PRD/work/commander-spellbook-combos/`
+
+## Amendments
+
+### 2026-08-12 — corpus source and wire format
+
+Slices A–F were implemented and marked `done`, and the package reached `ship-ready`, before
+this was found. **That status was false**: the corpus build could not parse a single real
+upstream variant. The package was reopened rather than shipped or cleaned up.
+
+**Finding.** The build read seven snake_case fields upstream never emits — `oracle_id`,
+`zone_locations`, `mana_needed`, `must_be_commander`, `easy_prerequisites`,
+`notable_prerequisites`, `scryfall_api`. Django REST Framework's `CamelCaseJSONRenderer`
+renames every serializer field at the render layer, below where fields are declared, so
+reading upstream's `VariantSerializer` did not reveal it. Verified by running the real
+`build-commander-spellbook-combos.mjs` against real bulk bytes: it fails on the first
+variant with `variant 215-3430--85--200 has status OK but mana_needed is not a string`.
+
+**Why it survived every gate.**
+
+- `PRD/sections/integrations-and-data.md` asserted the snake_case claim as product truth, so
+  the implementation followed the PRD faithfully into the defect. That line is now corrected.
+- The 22 build tests passed because the committed fixtures were hand-authored in the same
+  incorrect casing (`zone_locations` x10, `must_be_commander` x10, `oracle_id` x8) — they
+  validated against a schema that has never existed.
+- The committed corpus was an empty bootstrap artifact (`variantCount: 0`), so no code path
+  ever met real data.
+
+**Separately, the paginated source proved unusable.** Upstream's load balancer throttled a
+sustained cursor walk with a bodiless `429` carrying no `Retry-After` after 13,600 variants;
+the quota resets in roughly six minutes. The refresh script had no retry handling and
+discarded all 136 downloaded pages on failure.
+
+**Decisions taken (owner-approved 2026-08-12), recorded as DEC-162.**
+
+1. **Bulk export as sole source.** `https://json.commanderspellbook.com/variants.json.gz` —
+   105,448 reviewed `OK` variants, ~26 MB, downloads in under a second, unthrottled,
+   regenerated daily, and carries its own `timestamp`/`version` for provenance. The paginated
+   walk is removed rather than kept as a fallback.
+2. **Wired into `data:refresh`.** Invoking that command is REQ-093's explicit human approval,
+   matching the standard already applied to the ungated Scryfall and Comprehensive Rules
+   downloads in the same script. The standalone combo script keeps `--confirm-live-calls`.
+3. **Gzipped committed artifacts, full coverage.** Measured on a 6,000-variant sample: the
+   trimmed corpus is ~1,066 B/variant uncompressed (~112 MB) and ~62 B/variant gzipped
+   (~6.5 MB, 17.2x). No popularity cap — 61% of variants have zero tracked deck popularity,
+   and those are precisely the obscure pairings an explicit combo question tends to name.
+4. **Fixtures derived from real upstream responses**, never hand-authored, so a future rename
+   fails the suite instead of passing it.
+
+**Blast radius for re-mapping.** Slice A is invalidated outright. Slice B is affected by
+gunzip-on-load and by 105,448 variants rather than the ~30,000 its cold-start measurement
+assumed. Slice C is affected by that same scale. Slice D is likely intact. Slice E is intact —
+its eval catalog is deliberately independent of the production artifact. Slice F needs curated
+scenarios pointing at real oracle ids; its current scenarios reuse the eval fixtures' synthetic
+ids, which appear in no corpus and would make both A/B legs produce identical prompts.
+
+**Carried forward, uncommitted.** A retry/backoff fix for `refresh-commander-spellbook-data.mjs`
+(`Retry-After` support, exponential backoff with full jitter) plus 15 tests for a script that
+previously had none. The retry helper stays useful for Scryfall template expansion, which does
+paginate; the resume-from-staged-pages half is superseded by the bulk source.
 
 ## Outcome
 
@@ -28,8 +88,8 @@ Three changes, driven by the upstream schema in `spellbook/serializers/variant_s
 
 - `scripts/refresh-commander-spellbook-data.mjs` (planned) performs the human-approved retrieval of public Commander Spellbook variants/templates plus authoritative Scryfall template expansions into gitignored raw inputs.
 - `scripts/build-commander-spellbook-combos.mjs` (planned) emits:
-  - `apps/backend/data/commanderSpellbookCombos.json` — source manifest plus trimmed variant details
-  - `apps/backend/data/commanderSpellbookComboIndex.json` — inverse oracle membership, template expansion membership, unresolved-template metadata
+  - `apps/backend/data/commanderSpellbookCombos.json.gz` — source manifest plus trimmed variant details
+  - `apps/backend/data/commanderSpellbookComboIndex.json.gz` — inverse oracle membership, template expansion membership, unresolved-template metadata
 - Only reviewed `OK` variants enter the committed corpus; `EXAMPLE` is rejected.
 - Because the corpus is `OK`-only, every committed variant carries non-null steps, prerequisites, mana needed, and card state. A null in those fields is an artifact-integrity failure, not expected data — the runtime loader enforces this.
 - Cards join on Commander Spellbook `oracle_id` → TheJudge `cardId`; printing identity is excluded.
@@ -42,7 +102,7 @@ Three changes, driven by the upstream schema in `spellbook/serializers/variant_s
 - Card state is stored **zone-scoped**, never collapsed into one string. Upstream exposes `battlefield_card_state`, `exile_card_state`, `graveyard_card_state`, and `library_card_state` separately; an ingredient may permit several starting zones at once, so one field would be lossy.
 - The hand and command zones carry no state upstream.
 - `mustBeCommander` is retained per ingredient.
-- Upstream serializes snake_case; committed artifacts use TheJudge's camelCase naming.
+- Upstream renders **camelCase** on the wire (`oracleId`, `zoneLocations`, `mustBeCommander`, `*CardState`); DRF's `CamelCaseJSONRenderer` renames serializer fields above the model, so snake_case never reaches a client (DEC-162).
 - The upstream starting-zone vocabulary is exactly `H`, `B`, `C`, `E`, `G`, `L`.
 
 ### Intent gate
@@ -130,7 +190,8 @@ Instructions explicitly state:
 
 ## Verification focus
 
-- deterministic paginated build, `OK`-only status filtering with `EXAMPLE` rejection, source metadata, and stable serialization
+- deterministic build from the bulk export, `OK`-only status filtering with `EXAMPLE` rejection, source metadata, and stable serialization
+- the build parses real upstream bytes: at least one fixture is a verbatim excerpt of a real bulk response, so a wire-format rename fails the suite rather than passing it
 - zone-scoped card state retained per ingredient without collapsing multi-zone ingredients
 - query-backed/explicit template expansion and unresolved-template preservation
 - quantity-aware distinct-instance assignment and centralized zone mapping
@@ -173,8 +234,9 @@ Instructions explicitly state:
 
 ## External source references
 
-- Commander Spellbook API: `https://backend.commanderspellbook.com/`
+- **Bulk export (the corpus source): `https://json.commanderspellbook.com/variants.json.gz`** — also served from `https://spellbook-prod.s3.amazonaws.com/variants.json`; produced by `backend/spellbook/tasks/export_variants.py`
+- Commander Spellbook API (no longer a corpus source; rate-limited): `https://backend.commanderspellbook.com/`
 - Developer API documentation: `https://spacecowmedia.github.io/commander-spellbook-backend/api.html`
 - Domain model: `https://spacecowmedia.github.io/commander-spellbook-backend/domain-model.html`
 - Backend source/license: `https://github.com/SpaceCowMedia/commander-spellbook-backend`
-- Authoritative ingredient/variant schema: `backend/spellbook/serializers/variant_serializer.py`; zone vocabulary in `backend/spellbook/models/ingredient.py`
+- Authoritative ingredient/variant schema: `backend/spellbook/serializers/variant_serializer.py`; zone vocabulary in `backend/spellbook/models/ingredient.py`. **These give field names in snake_case; the wire renames them.** The renderer is `backend/backend/settings.py` `DEFAULT_RENDERER_CLASSES` → `CamelCaseJSONRenderer`. Confirm any field name against a real response before relying on it.
