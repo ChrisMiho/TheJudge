@@ -110,7 +110,7 @@ git stash list | grep graph-preflight/<run-id>
 git stash apply <ref>
 ```
 
-A graph run never drops, pops, or reorders a stash it did not create.
+A graph run never drops, pops, or reorders any stash. The preflight stash contains the user's uncommitted work and must be restored manually.
 
 ## Human gates
 
@@ -137,7 +137,7 @@ A graph run may not:
 - run `npm run data:refresh` or any Scryfall network refresh
 - read, write, or commit anything matching `.secrets/`
 - create or adopt a worktree outside the repo-local `.worktrees/` root
-- drop or pop a stash it did not create
+- drop, pop, or reorder any stash
 - use `nohup`, untracked background `&`, `pkill`, or `killall`
 
 The permission profile at `.claude/graph-profile.json` enforces these
