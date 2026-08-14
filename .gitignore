@@ -60,4 +60,7 @@ output/cardhash-build/
 /*.png
 /*.jpg
 /*.jpeg
+
+# Ad-hoc scratch captures kept beside work packages (not product truth)
+PRD/work/adhoc/
 .vitest-reports/
