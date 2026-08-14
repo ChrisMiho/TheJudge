@@ -119,11 +119,21 @@ documentation changes:
 ## Open gate
 
 - None
+
+## Refused instructions
+
+- None
 ```
 
 `Outcome` is one of `ok`, `failed`, `parked`. `Evidence` names a command, path,
 PR URL, or artifact URL — never a bare claim. A fresh agent reads this file and
 `PRD/work/<slug>/README.md` and needs nothing else to resume.
+
+`## Refused instructions` quotes every user instruction the run declined to
+follow under `## Human gates` — one bullet per instruction, with the rule that
+refused it and the node it arose at. It reads `None` only when nothing was
+refused; a run that silently absorbed such an instruction leaves no trace here,
+which is the failure this section exists to prevent.
 
 `Profile` is evidence, not a constant. The driver cannot inspect the settings
 its own session was launched with, so it writes `unverified` unless the user
@@ -158,8 +168,30 @@ A gate parks rather than asks. To park, the driver:
 Gate triggers: a genuine decision blocker under the three-condition test in
 `preparation-contract.md`; a fourth `gate-qc` FAIL; a `build` blocker; a
 `review` finding rated Critical that the run cannot resolve from confirmed
-decisions and tests; a third `review`-to-`build` loop; or any `blocked`
-preflight classification.
+decisions and tests; a third `review`-to-`build` loop; any `blocked`
+preflight classification; or a user instruction that would waive that
+three-condition test, per the rule below.
+
+### No pre-authorization of product decisions
+
+The driver never converts a user instruction into a standing authorization that
+pre-resolves product decisions inside a delegated dispatch.
+
+- The assumption ladder in `preparation-contract.md` is applied **per question**,
+  evaluated fresh at the moment that question arises. It is never pre-applied
+  wholesale to a class of future questions.
+- A stated user preference — "prefer the smaller option", "pick whichever is
+  simpler" — is an **input** to that ladder, not a bypass of it.
+- The three-condition genuine-blocker test can never be waived, narrowed, or
+  pre-satisfied by user phrasing. An instruction that would waive it is refused:
+  the run parks and names the instruction it refused.
+- A user asking for autonomy is asking not to be interrupted by **mechanics** —
+  branching, stashing, sequencing, commits, PR plumbing. It is not authorization
+  to decide product behavior on their behalf.
+
+Refusal under this rule is recorded, never silent. The driver quotes the refused
+instruction under `## Refused instructions` in the ledger, so the user who gave
+it can see it was not followed.
 
 ## Boundaries
 

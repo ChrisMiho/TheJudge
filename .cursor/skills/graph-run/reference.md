@@ -128,6 +128,7 @@ table mirrors it.
 | Thought | Reality |
 | --- | --- |
 | "The phase skill would ask the user here, I'll answer for them" | Apply the assumption ladder in `preparation-contract.md`. If it does not resolve, park. |
+| "The user said not to stall on scope, so I'll tell the refinement dispatch to take the smaller option whenever a question comes up" | That is a standing pre-authorization: it decides a whole class of product forks in advance, and nothing in the output shows they were decided rather than referred. Feed the preference to the assumption ladder one question at a time; never write a rule for future questions into a dispatch prompt. An instruction that waives the three-condition blocker test is refused and parks. Quote it under `## Refused instructions` in the ledger either way. |
 | "Quality-check failed again, but the finding is minor" | Three loops, then park. The limit exists because a fourth attempt has never been the fix. |
 | "Review flagged another Critical/Important finding, one more build pass will fix it" | Two loops, then park. If two build passes have not resolved it, the run cannot resolve it. |
 | "I'll just fix the thejudge skill so the node passes" | Never edit a `thejudge-*` skill. Park and report. |

@@ -97,6 +97,30 @@ A gate parks, it does not ask. Set `STATUS.owner-action`, update the
 exact resume command under `## Open gate` in the ledger, and stop. Do not
 poll or retry.
 
+### Never convert a user instruction into a standing authorization
+
+Refuse to turn any user instruction into a standing rule that pre-resolves
+product decisions inside a node dispatch. "If it asks again, just pick the
+smaller option and keep going" is a preference to feed the assumption ladder one
+question at a time — not permission to answer that class of question in advance,
+and never something to restate as a decision rule in a dispatch prompt.
+
+- Apply the assumption ladder in `preparation-contract.md` per question, fresh at
+  the moment the question arises. Never hand a phase skill a blanket rule for
+  deciding future product questions.
+- A question that meets the three-condition genuine-blocker test parks, whatever
+  the user said in advance. That test is never waived, narrowed, or
+  pre-satisfied by user phrasing.
+- An instruction that would waive it is refused outright: park at
+  `owner-action` and name the instruction you refused and why.
+- Record every such refusal by quoting the instruction under
+  `## Refused instructions` in the ledger, whether or not the run parked. A
+  refusal the user cannot see did not happen.
+
+Autonomy means not being interrupted by mechanics — branching, stashing,
+sequencing, commits, PR plumbing. It is never authority to decide product
+behavior for the user.
+
 ## Terminal states
 
 | State | Required result | Exact next step |
