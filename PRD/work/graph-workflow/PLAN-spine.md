@@ -630,6 +630,23 @@ definition and independent review — take the most capable one.
 `gate-qc` may loop to `define` at most **three** times in one run. A fourth
 FAIL parks the package at `owner-action` with the complete findings.
 
+After every `gate-qc` node, `graph-run` records the result in the package
+`README.md` using the exact section shape from `preparation-contract.md`:
+
+```markdown
+## Preparation gate
+
+- Quality-check: PASS | FAIL
+- Checked artifact: `PRD/work/<slug>/DESIGN-BRIEF.md`
+- Findings: none | <complete issue list>
+```
+
+Replace this section with the latest result on every re-check. The `plan` node
+verifies `Quality-check: PASS` here before writing any planning artifact and
+cannot self-certify one. `thejudge-prepare` writes this section during
+preparation runs; during graph runs `graph-run` owns it, because graph runs do
+not delegate to `thejudge-prepare`.
+
 ## Ledger
 
 Every run writes `PRD/work/<slug>/GRAPH-RUN.md`, committed with the run's
@@ -1044,6 +1061,10 @@ predicate `graph-run is controlling` must appear in the dispatch prompt — the
 
 `plan` requires a recorded quality-check PASS in the package README's
 `## Preparation gate` section. It cannot self-certify one.
+
+`graph-run` writes that section itself after every `gate-qc` node — graph runs
+do not delegate to `thejudge-prepare`, so nothing else produces it. Use the
+exact section shape given in `PRD/instructions/graph-workflow-contract.md`.
 
 ## Worktree and branch shape
 
