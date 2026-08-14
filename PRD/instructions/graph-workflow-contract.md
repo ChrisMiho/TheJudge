@@ -104,7 +104,7 @@ documentation changes:
 ```markdown
 # Graph run — <slug>
 
-- Run ID: `graph-<YYYYMMDD>-<n>`
+- Run ID: `graph-<YYYYMMDD>-<HHMMSS>`
 - Profile: `.claude/graph-profile.json`
 - Autonomous base: `origin/<branch>`
 - Current node: `<node>`
