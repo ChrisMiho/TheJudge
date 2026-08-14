@@ -30,8 +30,12 @@ boundaries are required.
    With no ledger but a supplied package path, this is a resume, not a fresh
    run: enter at the node matching the package's current `STATUS.*` marker
    using the entry-point table in reference.md, and create the ledger there.
-   Start at `preflight` only for a genuinely fresh run — no existing package,
-   and a required `--branch <name>`.
+   Start at `preflight` for a genuinely fresh run — no existing package, and a
+   required `--branch <name>` — and also for a resumed package whose README has
+   no `## Autonomous metadata`: run `preflight` first with a supplied
+   `--branch <name>` to record the base, then enter at the status-matched node.
+   Skipping it there leaves no autonomous base, and node 6 (`build`) blocks
+   before worktree creation without one.
 2. State `graph-run is controlling` before every node handoff. Without that
    predicate the delegated skill runs in its normal interactive mode and will
    stop to ask the user questions.
@@ -138,7 +142,12 @@ park.
 ## Next step
 
 Report the terminal state, the branch, the PR URL if one exists, and the
-ledger path, then:
+ledger path, then give the exact next step for that terminal state from the
+table above.
+
+On `COMPLETE` the run is finished: there is no next command, and issuing one
+invites a resume that would re-enter a closed run. On `PARKED` or `BLOCKED`,
+end with:
 
 `/graph-run PRD/work/<slug>/`
 

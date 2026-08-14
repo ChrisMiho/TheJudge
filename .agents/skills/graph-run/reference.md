@@ -2,9 +2,11 @@
 
 ## Node dispatch
 
-Each node runs as a subagent with an explicit model override. The controlling
-predicate `graph-run is controlling` must appear in the dispatch prompt — the
-`thejudge-*` phase skills check for it and otherwise run interactively.
+Every node except node 8 (`land`) runs as a subagent with an explicit model
+override; `land` is a human PR merge the driver parks for and never dispatches,
+described below. The controlling predicate `graph-run is controlling` must
+appear in the dispatch prompt — the `thejudge-*` phase skills check for it and
+otherwise run interactively.
 
 | # | Node | Delegate | Model | On success | On failure |
 | --- | --- | --- | --- | --- | --- |
@@ -34,9 +36,9 @@ merged; if so it records `land` as `ok` and continues to `close`, otherwise
 it reports the PR is still open and stops again.
 
 `review` may loop to `build` at most **two** times for a Critical or
-Important finding. A finding the run cannot resolve from confirmed decisions
-and tests — the contract's `## Human gates` bar — parks immediately without
-waiting for the loop cap. A third Critical/Important loop also parks, with
+Important finding. A **Critical** finding the run cannot resolve from confirmed
+decisions and tests — the contract's `## Human gates` bar, which names Critical
+only — parks immediately without waiting for the loop cap. A third Critical/Important loop also parks, with
 the open findings recorded as evidence.
 
 ## Entry point with no ledger

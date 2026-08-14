@@ -42,7 +42,7 @@ attests which orchestrator is running.
 | 1 | `preflight` | `graph-preflight` | haiku | `shape` |
 | 2 | `shape` | `thejudge-kickoff` | sonnet | `define` |
 | 3 | `define` | `thejudge-refinement` | opus | `gate-qc` |
-| 4 | `gate-qc` | `thejudge-quality-check` | sonnet | `plan` on PASS, `define` on FAIL |
+| 4 | `gate-qc` | `thejudge-quality-check` | sonnet | `plan` on PASS, `define` on FAIL — except a fourth FAIL, which parks at `owner-action` |
 | 5 | `plan` | `thejudge-map-out` | sonnet | `build` |
 | 6 | `build` | `thejudge-implement-all` | sonnet | `review` |
 | 7 | `review` | `superpowers:requesting-code-review` | opus | `land` on approval, `build` on Critical/Important |

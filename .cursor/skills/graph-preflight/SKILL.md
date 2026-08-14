@@ -25,6 +25,9 @@ Read `PRD/instructions/graph-workflow-contract.md` before acting.
   `base:` line the script prints, not the flag you passed.
 - `--run-id <id>` (optional; defaults to `graph-<YYYYMMDD>-<HHMMSS>` in UTC,
   which is unique per run so two same-day runs cannot share a stash message).
+  Choose one id and pass that same `--run-id` to both the dry run and the real
+  run — the default is timestamped to the second, so omitting it gives the two
+  invocations different ids.
 
 ## Procedure
 
@@ -33,7 +36,11 @@ Read `PRD/instructions/graph-workflow-contract.md` before acting.
    commands.
 2. If the action is `blocked`, stop. Report the offending paths. Never
    hand-resolve a secret-bearing path to get past this.
-3. Otherwise re-run without `--dry-run`.
+3. Otherwise re-run the identical command without `--dry-run`, passing the same
+   explicit `--run-id`. With `--run-id` omitted the two invocations generate
+   different timestamped ids, so the stash name previewed in step 1 is not the
+   one that lands — and the handoff record would name a stash that does not
+   exist.
 4. Confirm the end state with `git status --porcelain` (empty) and
    `git branch --show-current` (the requested branch).
 5. When the action was `stash`, record the stash reference and the exact

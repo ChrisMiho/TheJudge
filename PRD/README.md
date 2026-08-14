@@ -118,7 +118,7 @@ Read in this order:
 - Prefer narrow edits to one file at a time.
 - Preserve stable IDs once assigned.
 - Agent workflow skills: edit `.cursor/skills/thejudge-*` (canonical), run `npm run skills:ai-sync` to copy to `.agents/skills/` and `.claude/skills/`; see `AGENT-SKILLS.md`.
-- Autonomous graph runs: `/graph-preflight` then `/graph-run PRD/work/<slug>/`; contract in `instructions/graph-workflow-contract.md`, permission profile in `.claude/graph-profile.json`.
+- Autonomous graph runs: `/graph-preflight` then `/graph-run PRD/work/<slug>/`; contract in `instructions/graph-workflow-contract.md`, permission profile in `.claude/graph-profile.json` — which binds only in a session launched with `claude --settings .claude/graph-profile.json` and is inert without that flag.
 
 ## Work packages
 
