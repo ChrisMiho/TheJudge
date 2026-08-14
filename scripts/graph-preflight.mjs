@@ -11,7 +11,21 @@ export const DEFAULT_THRESHOLDS = { maxFiles: 10, maxLines: 200 }
 
 export const SECRET_PATTERNS = [/(^|\/)\.secrets\//, /(^|\/)\.env($|\.)/, /\.pem$/, /\.key$/, /(^|\/)id_rsa($|\.)/]
 
-export function classifyWorkingTree(entries, thresholds = DEFAULT_THRESHOLDS) {
+// An entry's rename sources are normalized to a list: one destination path can
+// collect more than one source when a staged and an unstaged rename collapse
+// onto it. A bare string is still accepted so hand-built entries keep working.
+function renameSources(entry) {
+  if (entry.renamedFrom === undefined || entry.renamedFrom === null) return []
+  return Array.isArray(entry.renamedFrom) ? entry.renamedFrom : [entry.renamedFrom]
+}
+
+export function classifyWorkingTree(entries, thresholds) {
+  // A default parameter only fires for `undefined`, so an explicit `null` used
+  // to reach the comparisons as a TypeError. Spreading also backfills a partial
+  // object: a missing bound would otherwise compare against `undefined`, which
+  // is false for every `>` — a threshold that silently fails open.
+  const limits = { ...DEFAULT_THRESHOLDS, ...(thresholds ?? {}) }
+
   const files = entries.map((entry) => entry.path)
   const fileCount = entries.length
   const changedLines = entries.reduce((total, entry) => total + entry.changedLines, 0)
@@ -22,11 +36,9 @@ export function classifyWorkingTree(entries, thresholds = DEFAULT_THRESHOLDS) {
     return { ...base, action: "clean", reason: "working tree is clean" }
   }
 
-  // A renamed entry's `path` is only the destination. Check the source too —
+  // A renamed entry's `path` is only the destination. Check every source too —
   // a file moving *out of* a secret-bearing location is equally sensitive.
-  const secretCandidates = entries.flatMap((entry) =>
-    entry.renamedFrom ? [entry.path, entry.renamedFrom] : [entry.path]
-  )
+  const secretCandidates = entries.flatMap((entry) => [entry.path, ...renameSources(entry)])
   const secret = secretCandidates.find((path) => SECRET_PATTERNS.some((pattern) => pattern.test(path)))
   if (secret) {
     return {
@@ -36,19 +48,19 @@ export function classifyWorkingTree(entries, thresholds = DEFAULT_THRESHOLDS) {
     }
   }
 
-  if (fileCount > thresholds.maxFiles) {
+  if (fileCount > limits.maxFiles) {
     return {
       ...base,
       action: "stash",
-      reason: `file count ${fileCount} exceeds ${thresholds.maxFiles}`
+      reason: `file count ${fileCount} exceeds ${limits.maxFiles}`
     }
   }
 
-  if (changedLines > thresholds.maxLines) {
+  if (changedLines > limits.maxLines) {
     return {
       ...base,
       action: "stash",
-      reason: `changed lines ${changedLines} exceeds ${thresholds.maxLines}`
+      reason: `changed lines ${changedLines} exceeds ${limits.maxLines}`
     }
   }
 
@@ -69,8 +81,14 @@ const AUTO_COMMIT_MESSAGE = "chore(graph): auto-commit working tree before graph
 //   old => new                 (no common prefix or suffix at all)
 // Expand any of these back into real paths so downstream consumers (the
 // secret check in particular) never see the compact/braced form.
+//
+// The two inner captures exclude braces so a *literal* `{` or `}` elsewhere in
+// the path cannot be swallowed. With greedy `(.*)` captures,
+// `{config => .secrets}/{legacy}/creds.env` parsed as new path
+// `.secrets}/{legacy/creds.env`, which the `.secrets/` secret pattern no longer
+// matches — a mis-parse that silently weakens the secret gate.
 function normalizeRenamePath(rawPath) {
-  const braceMatch = rawPath.match(/^(.*)\{(.*) => (.*)\}(.*)$/)
+  const braceMatch = rawPath.match(/^(.*)\{([^{}]*) => ([^{}]*)\}(.*)$/)
   if (braceMatch) {
     const [, prefix, oldPart, newPart, suffix] = braceMatch
     return {
@@ -89,20 +107,30 @@ function normalizeRenamePath(rawPath) {
 // A file with both staged and unstaged hunks appears once in each numstat
 // call. Merge those back into a single entry per physical path so fileCount
 // — which directly feeds the maxFiles threshold — isn't inflated.
+//
+// Two entries collapsing onto one destination can carry two *different* source
+// paths (a staged rename and an unstaged one). Keeping only the first would
+// hide the second from the secret check, so every source is preserved.
 function mergeByPath(entries) {
   const merged = new Map()
   for (const entry of entries) {
     const existing = merged.get(entry.path)
     if (existing) {
       existing.changedLines += entry.changedLines
-      if (existing.renamedFrom === undefined && entry.renamedFrom !== undefined) {
-        existing.renamedFrom = entry.renamedFrom
+      for (const source of renameSources(entry)) {
+        if (!existing.sources.includes(source)) existing.sources.push(source)
       }
     } else {
-      merged.set(entry.path, { ...entry })
+      merged.set(entry.path, {
+        path: entry.path,
+        changedLines: entry.changedLines,
+        sources: renameSources(entry)
+      })
     }
   }
-  return [...merged.values()]
+  return [...merged.values()].map(({ path, changedLines, sources }) =>
+    sources.length > 0 ? { path, changedLines, renamedFrom: sources } : { path, changedLines }
+  )
 }
 
 export function collectEntries(runGit) {
@@ -158,8 +186,14 @@ export function planActions(classification, { branch, runId, base }) {
   // belongs to the checkout the work was done in. An auto-commit must land
   // *after* the branch exists, or it lands on whatever branch HEAD was on —
   // which may be `main`, leaving a silent unpushed commit there.
-  // `git switch -c` carries uncommitted changes into the new branch, so
-  // committing after the switch commits the same tree.
+  // `git switch -c` keeps uncommitted changes in the working tree *when the
+  // switch succeeds*, so committing afterwards commits the same tree. That
+  // holds when the start point's tree matches HEAD for the dirty paths — the
+  // default, since the start point is usually the current branch. With an
+  // explicit `--base` that diverges on a dirty path, git refuses the switch
+  // rather than overwriting it; the command fails, `formatFailureReport` names
+  // it, and the auto-commit never runs. Refusal is the safe outcome, not a
+  // guarantee that the changes always travel.
   if (classification.action === "stash") {
     commands.push(`git stash push -u -m ${JSON.stringify(`graph-preflight/${runId}`)}`)
   }
@@ -194,6 +228,28 @@ export function parseThresholdValue(raw, flagName) {
     throw new Error(`graph-preflight: ${flagName} must be a positive integer, got ${JSON.stringify(raw)}`)
   }
   return value
+}
+
+// `branch`, `base`, and `runId` are interpolated into the command strings
+// `planActions` builds, and `parseCommandArgs` re-tokenizes those strings on
+// whitespace before they reach real, destructive git commands. A value carrying
+// whitespace, a quote, or a shell metacharacter mis-tokenizes into extra
+// arguments, so every one is validated here at parse time. The allowlist is
+// deliberately narrower than `git check-ref-format`: it accepts the branch
+// names, remote-qualified refs, run ids, and shas this script actually
+// produces, and nothing that could split a command. A leading `-` is rejected
+// too, so `--base --dry-run` is an error rather than a base named `--dry-run`.
+const REF_VALUE_PATTERN = /^[A-Za-z0-9_][A-Za-z0-9._/-]*$/
+
+export function parseRefValue(raw, flagName) {
+  if (raw === null || raw === undefined) return null
+  if (typeof raw !== "string" || !REF_VALUE_PATTERN.test(raw)) {
+    throw new Error(
+      `graph-preflight: ${flagName} must be a valid git ref name — letters, digits, and ._/- only, ` +
+        `no whitespace, quotes, or shell metacharacters; got ${JSON.stringify(raw)}`
+    )
+  }
+  return raw
 }
 
 // The created branch becomes the autonomous base every later PR targets, so
@@ -234,7 +290,7 @@ export function formatFailureReport({ failedCommand, executed, remaining, stashe
   return lines.join("\n")
 }
 
-function parseArgs(argv) {
+export function parseArgs(argv) {
   const get = (name) => {
     const index = argv.indexOf(name)
     if (index === -1) return null
@@ -242,11 +298,16 @@ function parseArgs(argv) {
     // rejects it rather than silently falling back to the default.
     return argv[index + 1] === undefined ? "" : argv[index + 1]
   }
-  const runIdArg = get("--run-id")
+  // Every ref-shaped flag is validated identically: absent means "use the
+  // caller's default", but present-and-malformed is always an error. `--base`
+  // in particular decides the autonomous base every later PR targets, so it
+  // must never fall back silently to the current branch while the run reports
+  // "(resolved from the current HEAD)".
+  const runIdArg = parseRefValue(get("--run-id"), "--run-id")
   return {
-    branch: get("--branch"),
-    base: get("--base"),
-    runId: runIdArg && runIdArg.trim() ? runIdArg : defaultRunId(),
+    branch: parseRefValue(get("--branch"), "--branch"),
+    base: parseRefValue(get("--base"), "--base"),
+    runId: runIdArg ?? defaultRunId(),
     dryRun: argv.includes("--dry-run"),
     thresholds: {
       maxFiles: parseThresholdValue(get("--max-files"), "--max-files") ?? DEFAULT_THRESHOLDS.maxFiles,

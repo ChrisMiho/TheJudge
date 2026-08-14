@@ -5,7 +5,9 @@ import {
   classifyWorkingTree,
   collectEntries,
   planActions,
+  parseArgs,
   parseCommandArgs,
+  parseRefValue,
   parseThresholdValue,
   resolveBase,
   findBranchCollision,
@@ -246,7 +248,7 @@ test("graph-preflight - collect - rename with common suffix normalizes to real s
   const entries = collectEntries(fakeGit)
   assert.equal(entries.length, 1)
   assert.equal(entries[0].path, ".secrets/creds.env")
-  assert.equal(entries[0].renamedFrom, "config/creds.env")
+  assert.deepEqual(entries[0].renamedFrom, ["config/creds.env"])
 })
 
 test("graph-preflight - collect - rename with common prefix only normalizes to real source and destination paths", () => {
@@ -259,7 +261,7 @@ test("graph-preflight - collect - rename with common prefix only normalizes to r
   const entries = collectEntries(fakeGit)
   assert.equal(entries.length, 1)
   assert.equal(entries[0].path, "config/creds.env.bak")
-  assert.equal(entries[0].renamedFrom, "config/creds.env")
+  assert.deepEqual(entries[0].renamedFrom, ["config/creds.env"])
 })
 
 test("graph-preflight - collect - rename with common prefix and suffix normalizes to real source and destination paths", () => {
@@ -272,7 +274,7 @@ test("graph-preflight - collect - rename with common prefix and suffix normalize
   const entries = collectEntries(fakeGit)
   assert.equal(entries.length, 1)
   assert.equal(entries[0].path, "config/.secrets/creds.env")
-  assert.equal(entries[0].renamedFrom, "config/old/creds.env")
+  assert.deepEqual(entries[0].renamedFrom, ["config/old/creds.env"])
 })
 
 test("graph-preflight - collect - bare rename with no common prefix or suffix normalizes to real source and destination paths", () => {
@@ -285,7 +287,7 @@ test("graph-preflight - collect - bare rename with no common prefix or suffix no
   const entries = collectEntries(fakeGit)
   assert.equal(entries.length, 1)
   assert.equal(entries[0].path, ".secrets")
-  assert.equal(entries[0].renamedFrom, "config.env")
+  assert.deepEqual(entries[0].renamedFrom, ["config.env"])
 })
 
 test("graph-preflight - collect+classify - a file renamed into .secrets is blocked, using the exact reproduced git output", () => {
@@ -489,4 +491,212 @@ test("graph-preflight - defaultRunId - includes a time component so same-day run
   assert.equal(evening, "graph-20260814-210517")
   assert.notEqual(morning, evening)
   assert.match(defaultRunId(), /^graph-\d{8}-\d{6}$/)
+})
+
+// --- Hardening #2 — `--base` must validate as strictly as the threshold flags.
+// It decides the autonomous base every later PR targets, so a missing value is
+// an error, never a silent fall back to whatever branch HEAD happened to be. ---
+
+test("graph-preflight - parseArgs - omitting --base entirely still resolves from HEAD later", () => {
+  const options = parseArgs(["--branch", "feature/x"])
+  assert.equal(options.base, null, "an absent --base must stay null so resolveBase falls back")
+  assert.equal(
+    resolveBase(() => "feature/current\n", options.base),
+    "feature/current"
+  )
+})
+
+test("graph-preflight - parseArgs - --base as the final token throws instead of silently falling back", () => {
+  assert.throws(() => parseArgs(["--branch", "feature/x", "--base"]), /--base must be a valid git ref name/)
+})
+
+test("graph-preflight - parseArgs - --base with an empty value throws", () => {
+  assert.throws(() => parseArgs(["--branch", "feature/x", "--base", ""]), /--base must be a valid git ref name/)
+  assert.throws(() => parseArgs(["--branch", "feature/x", "--base", "   "]), /--base must be a valid git ref name/)
+})
+
+test("graph-preflight - parseArgs - a valid --base is preserved verbatim", () => {
+  assert.equal(parseArgs(["--branch", "feature/x", "--base", "origin/feature/spine"]).base, "origin/feature/spine")
+})
+
+// --- Hardening #3 — branch and run id are interpolated into command strings
+// that `parseCommandArgs` re-tokenizes, and those commands are real destructive
+// git invocations. A value carrying whitespace, a quote, or a shell
+// metacharacter mis-tokenizes, so reject it at parse time. ---
+
+const HOSTILE_REF_VALUES = [
+  ["a space", "feature/my branch"],
+  ["a double quote", 'feature/x"y'],
+  ["a semicolon", "feature/x;whoami"]
+]
+
+for (const [label, value] of HOSTILE_REF_VALUES) {
+  test(`graph-preflight - parseArgs - --branch containing ${label} is rejected`, () => {
+    assert.throws(() => parseArgs(["--branch", value]), /--branch must be a valid git ref name/)
+  })
+
+  test(`graph-preflight - parseArgs - --run-id containing ${label} is rejected`, () => {
+    assert.throws(
+      () => parseArgs(["--branch", "feature/x", "--run-id", value]),
+      /--run-id must be a valid git ref name/
+    )
+  })
+}
+
+test("graph-preflight - parseRefValue - an absent flag returns null so the caller's default applies", () => {
+  assert.equal(parseRefValue(null, "--base"), null)
+  assert.equal(parseRefValue(undefined, "--base"), null)
+})
+
+test("graph-preflight - parseRefValue - ordinary branch names, run ids, and shas pass", () => {
+  for (const value of [
+    "main",
+    "feature/graph-workflow-spine",
+    "origin/feature/spine",
+    "thejudge-auto/commander-spellbook-combos",
+    "graph-20260814-093000",
+    "0123456789abcdef",
+    "r1"
+  ]) {
+    assert.equal(parseRefValue(value, "--branch"), value, `expected ${value} to be accepted`)
+  }
+})
+
+test("graph-preflight - parseRefValue - shell metacharacters, globs, and a leading dash are rejected", () => {
+  for (const value of [
+    "feature/x y",
+    'feature/x"y',
+    "feature/x'y",
+    "feature/x;rm -rf /",
+    "feature/x`whoami`",
+    "feature/x$(whoami)",
+    "feature/x|y",
+    "feature/x&y",
+    "feature/x>y",
+    "feature/*",
+    "feature/x\ty",
+    "feature/x\ny",
+    "--dry-run",
+    "-x"
+  ]) {
+    assert.throws(
+      () => parseRefValue(value, "--branch"),
+      /--branch must be a valid git ref name/,
+      `expected ${JSON.stringify(value)} to be rejected`
+    )
+  }
+})
+
+test("graph-preflight - parseArgs - a rejected branch never reaches planActions as a mis-tokenizing command", () => {
+  // The concrete harm: without validation this planned
+  // `git switch -c feature/x; rm -rf /` and `parseCommandArgs` split it into
+  // extra arguments that git would receive.
+  assert.throws(() => parseArgs(["--branch", "feature/x; rm -rf /"]), /--branch must be a valid git ref name/)
+})
+
+// --- Hardening #4 — a literal brace outside the rename marker must not
+// mis-parse. These paths feed the secret gate, so a mis-parse weakens it. ---
+
+test("graph-preflight - collect - a literal-brace path segment after the rename marker parses correctly", () => {
+  // `git mv "config/{legacy}/creds.env" ".secrets/{legacy}/creds.env"`.
+  // Greedy captures used to yield newPath `.secrets}/{legacy/creds.env`, which
+  // the `.secrets/` secret pattern no longer matches.
+  const fakeGit = (args) => {
+    if (args.join(" ") === "diff --numstat --cached") {
+      return "0\t0\t{config => .secrets}/{legacy}/creds.env\n"
+    }
+    return ""
+  }
+  const entries = collectEntries(fakeGit)
+  assert.equal(entries.length, 1)
+  assert.equal(entries[0].path, ".secrets/{legacy}/creds.env")
+  assert.deepEqual(entries[0].renamedFrom, ["config/{legacy}/creds.env"])
+})
+
+test("graph-preflight - collect+classify - a literal-brace rename into .secrets is still blocked", () => {
+  const fakeGit = (args) => {
+    if (args.join(" ") === "diff --numstat --cached") {
+      return "0\t0\t{config => .secrets}/{legacy}/creds.env\n"
+    }
+    return ""
+  }
+  const result = classifyWorkingTree(collectEntries(fakeGit))
+  assert.equal(result.action, "blocked")
+  assert.match(result.reason, /secret/i)
+})
+
+test("graph-preflight - collect - a literal brace before the rename marker parses correctly", () => {
+  const fakeGit = (args) => {
+    if (args.join(" ") === "diff --numstat") {
+      return "0\t0\tdocs/{legacy}/{old => new}/notes.md\n"
+    }
+    return ""
+  }
+  const entries = collectEntries(fakeGit)
+  assert.equal(entries[0].path, "docs/{legacy}/new/notes.md")
+  assert.deepEqual(entries[0].renamedFrom, ["docs/{legacy}/old/notes.md"])
+})
+
+// --- Hardening #5 — two entries collapsing onto one destination can carry two
+// different source paths. Both feed the secret gate, so keep every one. ---
+
+test("graph-preflight - collect - two renames onto one destination keep BOTH source paths", () => {
+  const fakeGit = (args) => {
+    if (args.join(" ") === "diff --numstat") {
+      return "1\t0\t{config => vendor}/creds.env\n"
+    }
+    if (args.join(" ") === "diff --numstat --cached") {
+      return "2\t0\t{.secrets => vendor}/creds.env\n"
+    }
+    return ""
+  }
+  const entries = collectEntries(fakeGit)
+  assert.equal(entries.length, 1, "one destination path must produce one entry")
+  assert.equal(entries[0].path, "vendor/creds.env")
+  assert.deepEqual(entries[0].renamedFrom, ["config/creds.env", ".secrets/creds.env"])
+})
+
+test("graph-preflight - classifier - a second source path is still checked for secrets", () => {
+  const result = classifyWorkingTree([
+    { path: "vendor/creds.env", changedLines: 3, renamedFrom: ["config/creds.env", ".secrets/creds.env"] }
+  ])
+  assert.equal(result.action, "blocked")
+  assert.match(result.reason, /\.secrets\/creds\.env/)
+})
+
+test("graph-preflight - classifier - a legacy single-string renamedFrom is still honoured", () => {
+  const result = classifyWorkingTree([{ path: "config/creds.env", changedLines: 0, renamedFrom: ".secrets/x.env" }])
+  assert.equal(result.action, "blocked")
+})
+
+test("graph-preflight - collect - merging never duplicates an identical source path", () => {
+  const fakeGit = (args) => {
+    if (args.join(" ") === "diff --numstat") {
+      return "1\t0\t{config => vendor}/creds.env\n"
+    }
+    if (args.join(" ") === "diff --numstat --cached") {
+      return "2\t0\t{config => vendor}/creds.env\n"
+    }
+    return ""
+  }
+  const entries = collectEntries(fakeGit)
+  assert.deepEqual(entries[0].renamedFrom, ["config/creds.env"])
+  assert.equal(entries[0].changedLines, 3)
+})
+
+// --- Hardening #6 — an explicit `null` thresholds argument skips the default
+// parameter and used to throw a TypeError. Treat it as "use the defaults". ---
+
+test("graph-preflight - classifier - an explicit null thresholds argument uses the defaults", () => {
+  const entries = [{ path: "a.md", changedLines: 201 }]
+  assert.equal(classifyWorkingTree(entries, null).action, "stash")
+  assert.equal(classifyWorkingTree([{ path: "a.md", changedLines: 4 }], null).action, "commit")
+})
+
+test("graph-preflight - classifier - a partial thresholds object fills the missing bound from the defaults", () => {
+  // `{ maxFiles: 50 }` used to leave `maxLines` undefined, and every `>`
+  // comparison against undefined is false — the line threshold failed open.
+  const result = classifyWorkingTree([{ path: "a.md", changedLines: 500 }], { maxFiles: 50 })
+  assert.equal(result.action, "stash")
+  assert.match(result.reason, /changed lines/)
 })
