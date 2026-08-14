@@ -822,6 +822,23 @@ Create `.claude/graph-profile.json`:
 }
 ```
 
+> **Amended 2026-08-14 after review.** The block above shipped with four live
+> bypasses and is preserved only to show what was originally specified. The
+> profile actually on disk differs — see `.claude/graph-profile.json`, which is
+> the authority. Fixed: `Bash(git push -u origin *)` matched a trailing
+> `--force` (denies were anchored immediately after `git push`);
+> `Bash(node scripts/*)` reached `refresh-scryfall-data.mjs`, bypassing the
+> npm-spelling-only Scryfall deny; the worktree-root boundary had no deny at
+> all; and only `.cursor/skills/thejudge-*` was protected, leaving the
+> `.agents/` and `.claude/` synced trees — the latter being the tree Claude Code
+> actually loads — open via the blanket `Edit(./**)` allow.
+>
+> Two boundaries are **not** mechanically enforceable by this engine and are
+> convention-only: a trailing `&` is consumed as a command separator before any
+> rule sees it, and `nohup` is stripped as a wrapper before rule matching, which
+> makes the `Bash(nohup*)` deny inert. Both verified against
+> `code.claude.com/docs/en/permissions.md`.
+
 - [ ] **Step 2: Verify it is valid JSON**
 
 Run: `node -e "JSON.parse(require('fs').readFileSync('.claude/graph-profile.json','utf8')); console.log('valid json')"`
