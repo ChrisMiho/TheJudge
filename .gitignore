@@ -25,6 +25,11 @@ pnpm-debug.log*
 
 # Dependencies/build
 node_modules/
+# The trailing-slash pattern above matches directories only. A `node_modules`
+# *symlink* is not a directory, so it stayed untracked and `git stash push -u`
+# swept it into a stash, breaking the toolchain. This bare pattern covers the
+# symlink/file case without narrowing the directory ignore.
+node_modules
 dist/
 build/
 .next/

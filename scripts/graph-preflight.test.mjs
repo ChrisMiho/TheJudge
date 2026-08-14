@@ -1,5 +1,10 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
+import { execFileSync } from "node:child_process"
+import fs from "node:fs"
+import os from "node:os"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
 
 import {
   classifyWorkingTree,
@@ -699,4 +704,33 @@ test("graph-preflight - classifier - a partial thresholds object fills the missi
   const result = classifyWorkingTree([{ path: "a.md", changedLines: 500 }], { maxFiles: 50 })
   assert.equal(result.action, "stash")
   assert.match(result.reason, /changed lines/)
+})
+
+// --- Hardening #8 — `git stash push -u` sweeps untracked paths. A
+// `node_modules` *symlink* is not a directory, so the `node_modules/` pattern
+// never matched it and a real run swept the toolchain into a stash. ---
+
+test("graph-preflight - gitignore - a node_modules symlink is ignored, not swept as untracked", () => {
+  const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
+  const gitignore = fs.readFileSync(path.join(repoRoot, ".gitignore"), "utf8")
+
+  const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "graph-preflight-gitignore-"))
+  try {
+    const git = (args) => execFileSync("git", args, { cwd: sandbox, encoding: "utf8" })
+    git(["init", "-q", "."])
+    fs.writeFileSync(path.join(sandbox, ".gitignore"), gitignore)
+    fs.mkdirSync(path.join(sandbox, "real_deps"))
+    fs.writeFileSync(path.join(sandbox, "real_deps", "pkg.txt"), "x\n")
+    fs.symlinkSync("real_deps", path.join(sandbox, "node_modules"))
+
+    const untracked = git(["status", "--porcelain"])
+    assert.ok(!untracked.includes("node_modules"), `a node_modules symlink must be ignored, got:\n${untracked}`)
+
+    // The existing directory ignore must keep working, nested included.
+    fs.mkdirSync(path.join(sandbox, "sub", "node_modules"), { recursive: true })
+    fs.writeFileSync(path.join(sandbox, "sub", "node_modules", "a.js"), "x\n")
+    assert.ok(!git(["status", "--porcelain"]).includes("node_modules"))
+  } finally {
+    fs.rmSync(sandbox, { recursive: true, force: true })
+  }
 })
