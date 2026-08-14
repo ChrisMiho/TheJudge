@@ -7,6 +7,7 @@ Do not rename package folders to encode status.
 ## ship-ready
 
 - [frontend-routing-and-code-splitting](./frontend-routing-and-code-splitting/)
+- [graph-workflow](./graph-workflow/)
 
 ## active
 
