@@ -159,7 +159,9 @@ preflight classification.
 A graph run may not:
 
 - merge or close a pull request, or force-push by any flag
-- modify any `thejudge-*` skill
+- delete a remote branch, by `--delete`, `-d`, or the `:branch` refspec form
+- modify any `thejudge-*` skill in any of the three synced trees
+- modify its own permission profile, `.claude/settings*.json`, or `CLAUDE.md`
 - run `npm run data:refresh` or any Scryfall network refresh
 - read, write, or commit anything matching `.secrets/`
 - create or adopt a worktree outside the repo-local `.worktrees/` root
