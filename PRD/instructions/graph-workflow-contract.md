@@ -110,7 +110,8 @@ git stash list | grep graph-preflight/<run-id>
 git stash apply <ref>
 ```
 
-A graph run never drops, pops, or reorders any stash. The preflight stash contains the user's uncommitted work and must be restored manually.
+A graph run never drops, pops, or reorders any stash. The preflight stash
+contains the user's uncommitted work and must be restored manually.
 
 ## Human gates
 
@@ -140,8 +141,12 @@ A graph run may not:
 - drop, pop, or reorder any stash
 - use `nohup`, untracked background `&`, `pkill`, or `killall`
 
-The permission profile at `.claude/graph-profile.json` enforces these
-mechanically. The list above is the reason each deny entry exists.
+The permission profile at `.claude/graph-profile.json` mechanically enforces
+most of these. Two are convention-only: `nohup` is stripped as a wrapper
+before Bash rules are matched, and a trailing `&` is consumed as a command
+separator before any rule sees the command text — so the profile's `nohup`
+and background-`&` denies can never fire. The list above is the reason each
+deny entry exists.
 
 ## Related material
 

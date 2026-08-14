@@ -1,6 +1,7 @@
 # Agent Workflow Skills
 
-TheJudge uses 11 `thejudge-*` skills to drive PRD-based feature work, including
+TheJudge uses 11 `thejudge-*` skills to drive PRD-based feature work, plus 2
+`graph-*` skills that chain them into autonomous runs, including
 autonomous preparation, sequential single-slice, unattended all-slice, and
 cross-package fanout modes. All 11 are
 **model-invocable** — the agent may select the matching skill when context
@@ -81,6 +82,26 @@ orthogonal to the pipeline shown above.
 | `thejudge-amend` | New issues/requests arrive for an `active` package that is already mapped out | Slice requirements for folded items; a dated `## Amendments` entry for held items; nothing else | None — never transitions status | `thejudge-implement` for folded work; `thejudge-refinement` for held items |
 | `thejudge-defer` | A package should be parked as not-next work, or a parked package restored | README deferral record, `STATUS.deferred` marker, board row | Toggles current ⇄ `deferred` | None when deferring; the typical next skill for the restored status when restoring |
 | `thejudge-cleanup` | Package is `ship-ready` (or force override), or explicit corpus hygiene | Receipt under `PRD/instructions/receipts/`, section promotions, board strip | Delete folder + remove board row | Optional `thejudge-kickoff` |
+
+## Graph workflow skills
+
+Two `graph-*` skills chain the lifecycle above into one autonomous run. They
+**delegate** to the `thejudge-*` skills rather than reimplementing them — the
+eleven skills above stay unchanged.
+
+| Skill | When | Writes | Delegates to |
+| --- | --- | --- | --- |
+| `graph-preflight` | Before an autonomous run, to guarantee a clean freshly branched checkout | Auto-commit or stash, new pushed branch, handoff record | `scripts/graph-preflight.mjs` |
+| `graph-run` | Advancing one package through the full lifecycle without per-step input | `PRD/work/<slug>/GRAPH-RUN.md` ledger, status transitions, gate parks | Every `thejudge-*` phase skill |
+
+Graph runs load `.claude/graph-profile.json` as their permission profile:
+
+```bash
+claude --settings .claude/graph-profile.json
+```
+
+Full contract, node table, model map, and boundaries:
+`PRD/instructions/graph-workflow-contract.md`.
 
 Package status signals (skill-maintained on every transition):
 
