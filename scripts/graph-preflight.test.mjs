@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 
 import {
   classifyWorkingTree,
+  collectEntries,
+  planActions,
   DEFAULT_THRESHOLDS,
   SECRET_PATTERNS,
 } from "./graph-preflight.mjs";
@@ -90,4 +92,86 @@ test("graph-preflight - classifier - thresholds are overridable", () => {
 test("graph-preflight - defaults - documented thresholds are stable", () => {
   assert.deepEqual(DEFAULT_THRESHOLDS, { maxFiles: 10, maxLines: 200 });
   assert.ok(SECRET_PATTERNS.length > 0);
+});
+
+test("graph-preflight - collect - merges tracked numstat and untracked files", () => {
+  const fakeGit = (args) => {
+    if (args.join(" ") === "diff --numstat") {
+      return "2\t1\tPRD/sections/overview.md\n5\t0\tPRD/sections/personas.md\n";
+    }
+    if (args.join(" ") === "diff --numstat --cached") {
+      return "";
+    }
+    if (args.join(" ") === "ls-files --others --exclude-standard") {
+      return "PRD/work/adhoc/notes.md\n";
+    }
+    throw new Error(`unexpected git call: ${args.join(" ")}`);
+  };
+
+  const entries = collectEntries(fakeGit);
+  assert.equal(entries.length, 3);
+  assert.equal(entries[0].changedLines, 3);
+  assert.equal(entries[1].changedLines, 5);
+  assert.equal(entries[2].path, "PRD/work/adhoc/notes.md");
+});
+
+test("graph-preflight - collect - binary numstat dashes count as zero lines", () => {
+  const fakeGit = (args) => {
+    if (args.join(" ") === "diff --numstat") {
+      return "-\t-\tapps/frontend/public/logo.png\n";
+    }
+    return "";
+  };
+  const entries = collectEntries(fakeGit);
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].changedLines, 0);
+});
+
+test("graph-preflight - plan - commit path stages and commits", () => {
+  const commands = planActions(
+    { action: "commit", files: ["a.md"], fileCount: 1, changedLines: 4, reason: "small" },
+    { branch: "feature/graph-demo", runId: "graph-20260814-1" },
+  );
+  assert.ok(commands.some((c) => c.startsWith("git add -A")));
+  assert.ok(commands.some((c) => c.includes("git commit")));
+  assert.ok(commands.some((c) => c.includes("git switch -c feature/graph-demo")));
+  assert.ok(commands.some((c) => c.includes("git push -u origin feature/graph-demo")));
+});
+
+test("graph-preflight - plan - stash happens before the branch is created", () => {
+  const commands = planActions(
+    { action: "stash", files: [], fileCount: 13, changedLines: 757, reason: "too big" },
+    { branch: "feature/graph-demo", runId: "graph-20260814-1" },
+  );
+  const stashIndex = commands.findIndex((c) => c.includes("git stash push"));
+  const branchIndex = commands.findIndex((c) => c.includes("git switch -c"));
+  assert.ok(stashIndex !== -1, "expected a stash command");
+  assert.ok(stashIndex < branchIndex, "stash must precede branch creation");
+  assert.ok(commands.some((c) => c.includes("graph-preflight/graph-20260814-1")));
+});
+
+test("graph-preflight - plan - stash uses -u so untracked work travels with it", () => {
+  const commands = planActions(
+    { action: "stash", files: [], fileCount: 13, changedLines: 757, reason: "too big" },
+    { branch: "feature/x", runId: "r1" },
+  );
+  assert.ok(commands.some((c) => c.includes("git stash push -u")));
+});
+
+test("graph-preflight - plan - blocked produces no git commands at all", () => {
+  const commands = planActions(
+    { action: "blocked", files: [".secrets/x.env"], fileCount: 1, changedLines: 1, reason: "secret" },
+    { branch: "feature/x", runId: "r1" },
+  );
+  assert.deepEqual(commands, []);
+});
+
+test("graph-preflight - plan - clean tree still creates and pushes the branch", () => {
+  const commands = planActions(
+    { action: "clean", files: [], fileCount: 0, changedLines: 0, reason: "clean" },
+    { branch: "feature/x", runId: "r1" },
+  );
+  assert.ok(commands.some((c) => c.includes("git switch -c feature/x")));
+  assert.ok(!commands.some((c) => c.includes("git stash")));
+  assert.ok(!commands.some((c) => c.includes("git commit")));
 });
