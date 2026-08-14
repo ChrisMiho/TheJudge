@@ -39,7 +39,7 @@ user questions, approval pauses, and handoffs — identical to the
 | 4 | `gate-qc` | `thejudge-quality-check` | sonnet | `plan` on PASS, `define` on FAIL |
 | 5 | `plan` | `thejudge-map-out` | sonnet | `build` |
 | 6 | `build` | `thejudge-implement-all` | sonnet | `review` |
-| 7 | `review` | `superpowers:requesting-code-review` | opus | `land` |
+| 7 | `review` | `superpowers:requesting-code-review` | opus | `land` on approval, `build` on Critical/Important |
 | 8 | `land` | human (PR merge) | — | `close` |
 | 9 | `close` | `thejudge-cleanup` | sonnet | run complete |
 
@@ -49,6 +49,10 @@ definition and independent review — take the most capable one.
 
 `gate-qc` may loop to `define` at most **three** times in one run. A fourth
 FAIL parks the package at `owner-action` with the complete findings.
+
+`review` may loop to `build` at most **two** times in one run for a Critical
+or Important finding. A third occurrence parks the package at `owner-action`
+with the open findings.
 
 After every `gate-qc` node, `graph-run` records the result in the package
 `README.md` using the exact section shape from `preparation-contract.md`:
@@ -121,7 +125,8 @@ A gate parks rather than asks. To park, the driver:
 Gate triggers: a genuine decision blocker under the three-condition test in
 `preparation-contract.md`; a fourth `gate-qc` FAIL; a `build` blocker; a
 `review` finding rated Critical that the run cannot resolve from confirmed
-decisions and tests; or any `blocked` preflight classification.
+decisions and tests; a third `review`-to-`build` loop; or any `blocked`
+preflight classification.
 
 ## Boundaries
 

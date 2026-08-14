@@ -32,7 +32,9 @@ boundaries are required.
    predicate the delegated skill runs in its normal interactive mode and will
    stop to ask the user questions.
 3. Dispatch the node's delegate as a subagent using the model from the node
-   table. Pass the package path, the run ID, and the controlling predicate.
+   table, except node 8 (`land`), which the driver never dispatches — see
+   reference.md. Pass the package path, the run ID, and the controlling
+   predicate.
 4. Record the outcome in the ledger before starting the next node — evidence
    is a command, path, PR URL, or artifact URL, never a bare claim.
 5. On `ok`, advance. On `failed`, apply the node's retry rule from the
@@ -51,19 +53,30 @@ sequencing, model selection, the ledger, and gates — nothing else.
 Never edit a `thejudge-*` skill. If a phase behaves wrongly, park at
 `owner-action` and report it; do not patch around it.
 
+The driver never runs `gh pr merge` or `gh pr close` itself. Node 8 (`land`)
+is a human action: the driver parks and waits for the merge, it does not
+perform it.
+
 ## Parking
 
 A gate parks, it does not ask. Set `STATUS.owner-action`, update the
-`PRD/work/STATUS.md` board row, write the question and evidence under
-`## Open gate` in the ledger, and stop. Do not poll or retry.
+`PRD/work/STATUS.md` board row, write the question, the evidence, and the
+exact resume command under `## Open gate` in the ledger, and stop. Do not
+poll or retry.
 
 ## Terminal states
 
 | State | Required result | Exact next step |
 | --- | --- | --- |
-| `COMPLETE` | Every node `ok`; package `ship-ready` or cleaned up; ledger closed | Review and merge the PR |
+| `COMPLETE` | Every node `ok` through `close`; package `ship-ready` or cleaned up; ledger closed | None — the run is finished |
 | `PARKED` | `STATUS.owner-action`, board row updated, `## Open gate` names the question, evidence, and resume command | Resolve the gate, then `/graph-run PRD/work/<slug>/` |
 | `BLOCKED` | Safe branch and commit preserved; exact failure, what exists, what does not, and recovery action | Fix the external condition, then retry |
+
+`BLOCKED` is for an external condition outside the repository that no product
+decision would resolve — authentication failure, network unavailability, a
+GitHub outage, missing push access. `PARKED` is for anything requiring a
+human decision, judgment, or review. When it is not clear which applies,
+park.
 
 ## Next step
 
