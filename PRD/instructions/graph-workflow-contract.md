@@ -105,7 +105,7 @@ documentation changes:
 # Graph run — <slug>
 
 - Run ID: `graph-<YYYYMMDD>-<HHMMSS>`
-- Profile: `.claude/graph-profile.json`
+- Profile: `unverified` | `<path> (stated by the user at launch)`
 - Autonomous base: `origin/<branch>`
 - Current node: `<node>`
 - Next action: `/graph-run PRD/work/<slug>/`
@@ -124,6 +124,13 @@ documentation changes:
 `Outcome` is one of `ok`, `failed`, `parked`. `Evidence` names a command, path,
 PR URL, or artifact URL — never a bare claim. A fresh agent reads this file and
 `PRD/work/<slug>/README.md` and needs nothing else to resume.
+
+`Profile` is evidence, not a constant. The driver cannot inspect the settings
+its own session was launched with, so it writes `unverified` unless the user
+stated the launch command in this session — in which case it records that exact
+path and attributes it to the user. Never write a profile path the run did not
+observe: a later run reads this field and would otherwise believe the deny list
+was active when it may never have been loaded.
 
 ## Stashed work handoff
 
@@ -168,12 +175,21 @@ A graph run may not:
 - drop, pop, or reorder any stash
 - use `nohup`, untracked background `&`, `pkill`, or `killall`
 
-The permission profile at `.claude/graph-profile.json` mechanically enforces
-most of these. Two are convention-only: `nohup` is stripped as a wrapper
-before Bash rules are matched, and a trailing `&` is consumed as a command
-separator before any rule sees the command text — so the profile's `nohup`
-and background-`&` denies can never fire. The list above is the reason each
-deny entry exists.
+The permission profile at `.claude/graph-profile.json` enforces most of these
+mechanically, but **only in a session launched with**
+`claude --settings .claude/graph-profile.json`. Nothing detects, enforces, or
+records that launch flag, and the driver cannot read its own settings: in a
+session started without it, every entry in the profile is inert and the list
+above is convention only — binding on the agent's compliance rather than on the
+engine. Treat an unverified profile as absent.
+
+Two boundaries stay convention-only even with the profile loaded. `nohup` is
+stripped as a wrapper before Bash rules are matched, so the `Bash(nohup*)` deny
+can never fire. A trailing `&` is consumed as a command separator before any
+rule sees the command text, so no `&` rule is expressible at all — the profile
+contains no background-`&` entry, and adding one would not help.
+
+The list above is the reason each deny entry exists.
 
 ## Related material
 

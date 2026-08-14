@@ -1,18 +1,18 @@
 # Agent Workflow Skills
 
-TheJudge uses 11 `thejudge-*` skills to drive PRD-based feature work, plus 2
-`graph-*` skills that chain them into autonomous runs, including
+TheJudge uses 11 `thejudge-*` skills to drive PRD-based feature work — including
 autonomous preparation, sequential single-slice, unattended all-slice, and
-cross-package fanout modes. All 11 are
-**model-invocable** — the agent may select the matching skill when context
-clearly indicates it — and every skill remains callable explicitly
-(`/thejudge-*` in Cursor and Claude Code, `$thejudge-*` in Codex).
+cross-package fanout modes — plus 2 `graph-*` skills that chain those 11 into
+autonomous runs. All 13 are **model-invocable** — the agent may select the
+matching skill when context clearly indicates it — and every skill remains
+callable explicitly (`/thejudge-*` and `/graph-*` in Cursor and Claude Code,
+`$thejudge-*` and `$graph-*` in Codex).
 
 ## Single source + sync
 
 Skills are **not** maintained in three separate copies. Edit only:
 
-`.cursor/skills/thejudge-*/`
+`.cursor/skills/<skill-name>/` — both `thejudge-*` and `graph-*`
 
 Codex and Claude Code load skills from their own conventional paths. This repo
 copies the canonical tree into those paths with:
@@ -87,18 +87,25 @@ orthogonal to the pipeline shown above.
 
 Two `graph-*` skills chain the lifecycle above into one autonomous run. They
 **delegate** to the `thejudge-*` skills rather than reimplementing them — the
-eleven skills above stay unchanged.
+graph adds sequencing, a ledger, and gates, not a second pipeline. The phase
+skills recognize `graph-run is controlling` alongside
+`thejudge-prepare is controlling`; that predicate is the only graph-specific
+behavior they carry.
 
 | Skill | When | Writes | Delegates to |
 | --- | --- | --- | --- |
 | `graph-preflight` | Before an autonomous run, to guarantee a clean freshly branched checkout | Auto-commit or stash, new pushed branch, handoff record | `scripts/graph-preflight.mjs` |
-| `graph-run` | Advancing one package through the full lifecycle without per-step input | `PRD/work/<slug>/GRAPH-RUN.md` ledger, status transitions, gate parks | Every `thejudge-*` phase skill |
+| `graph-run` | Advancing one package through the full lifecycle without per-step input | `PRD/work/<slug>/GRAPH-RUN.md` ledger, package README `## Autonomous metadata` and `## Preparation gate`, status transitions, gate parks | `graph-preflight`, then 6 of the 11 phase skills — `thejudge-kickoff`, `-refinement`, `-quality-check`, `-map-out`, `-implement-all`, `-cleanup` — plus `superpowers:requesting-code-review` |
 
 Graph runs load `.claude/graph-profile.json` as their permission profile:
 
 ```bash
 claude --settings .claude/graph-profile.json
 ```
+
+Without that flag the profile is inert: nothing loads it, nothing detects its
+absence, and every boundary it encodes falls back to convention. Launch graph
+runs with it.
 
 Full contract, node table, model map, and boundaries:
 `PRD/instructions/graph-workflow-contract.md`.

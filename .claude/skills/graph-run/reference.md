@@ -39,6 +39,52 @@ and tests — the contract's `## Human gates` bar — parks immediately without
 waiting for the loop cap. A third Critical/Important loop also parks, with
 the open findings recorded as evidence.
 
+## Entry point with no ledger
+
+A supplied package path with no `GRAPH-RUN.md` is a resume, not a fresh run.
+Enter at the node matching the package's existing `STATUS.*` marker: dispatching
+`shape` at an already-mapped package re-runs `thejudge-kickoff`, which rewrites
+`IDEA.md` and resets the package to `STATUS.ideation` — regressing finished
+work.
+
+| Existing marker | Enter at |
+| --- | --- |
+| no package folder at all | `preflight` (requires `--branch <name>`) |
+| `STATUS.ideation` | `define` |
+| `STATUS.refining` | `define` |
+| `STATUS.refined` | `gate-qc` |
+| `STATUS.active` | `build`, or `plan` when `GAMEPLAN.md` is absent |
+| `STATUS.ship-ready` | `close` |
+| `STATUS.owner-action` | park again unless the recorded `## Open gate` is resolved |
+| `STATUS.deferred` | refuse; `thejudge-defer` restores it first |
+
+A package entered mid-lifecycle still needs a recorded autonomous base. If
+`## Autonomous metadata` is missing from its README, run `preflight` first with
+a supplied `--branch <name>`, record the base, then enter at the status-matched
+node.
+
+## Publishing before `build`
+
+`thejudge-implement-all` blocks when the launch checkout has relevant modified
+or untracked inputs, and requires the GAMEPLAN, slice docs, and baseline to
+exist unchanged at the remote start point (`thejudge-implement-all/reference.md`
+preflight steps 6–7). The driver's own writes violate both conditions:
+`GRAPH-RUN.md` is rewritten before every node, and nodes 3–5 produce
+`DESIGN-BRIEF.md`, `GAMEPLAN.md`, and the slice docs.
+
+Before dispatching `build`, commit and push to `origin/<autonomous base>`:
+
+- `GRAPH-RUN.md`
+- the package `README.md`, including `## Autonomous metadata` and
+  `## Preparation gate`
+- `DESIGN-BRIEF.md`, `GAMEPLAN.md`, and every `slice-*.md`
+- the `STATUS.*` marker and the `PRD/work/STATUS.md` board row
+- any `PRD/sections/` edits refinement made
+
+Then confirm `git status --porcelain` is empty. A dirty launch checkout at this
+point is a driver bug, not a `build` blocker — fix the publish step rather than
+dispatching into a node that will correctly refuse.
+
 ## Worktree and branch shape
 
 - Autonomous base: the branch `graph-preflight` created and pushed. **The
@@ -85,5 +131,5 @@ table mirrors it.
 | "Quality-check failed again, but the finding is minor" | Three loops, then park. The limit exists because a fourth attempt has never been the fix. |
 | "Review flagged another Critical/Important finding, one more build pass will fix it" | Two loops, then park. If two build passes have not resolved it, the run cannot resolve it. |
 | "I'll just fix the thejudge skill so the node passes" | Never edit a `thejudge-*` skill. Park and report. |
-| "The stash is in the way, I'll pop it" | Never drop, pop, or clear a stash. The deny list enforces this. |
+| "The stash is in the way, I'll pop it" | Never drop, pop, or clear a stash. The deny list enforces this only in a session launched with the profile — assume it is not, and comply anyway. |
 | "No ledger row yet, I'll write them all at the end" | Write the row before the next node starts, or a crashed run resumes wrong. |

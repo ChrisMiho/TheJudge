@@ -27,7 +27,11 @@ boundaries are required.
 ## Loop
 
 1. Read `PRD/work/<slug>/GRAPH-RUN.md` if it exists. Resume at `Current node`.
-   With no ledger, start at `preflight` and create one.
+   With no ledger but a supplied package path, this is a resume, not a fresh
+   run: enter at the node matching the package's current `STATUS.*` marker
+   using the entry-point table in reference.md, and create the ledger there.
+   Start at `preflight` only for a genuinely fresh run — no existing package,
+   and a required `--branch <name>`.
 2. State `graph-run is controlling` before every node handoff. Without that
    predicate the delegated skill runs in its normal interactive mode and will
    stop to ask the user questions.
@@ -56,6 +60,21 @@ two package `README.md` sections that skill would otherwise produce:
   `gate-qc` node. The `plan` node reads it and cannot self-certify a PASS.
 
 Use the exact section shapes in `PRD/instructions/graph-workflow-contract.md`.
+
+Both live in the launch checkout, which node 6 refuses to start from when it is
+dirty. Publish before dispatching `build` — see reference.md's
+"Publishing before `build`".
+
+## Permission profile
+
+`.claude/graph-profile.json` protects a run only when the session was launched
+with `claude --settings .claude/graph-profile.json`. The driver cannot read the
+settings its own session was started with, so it can never confirm the profile
+is loaded. Record that honestly: write `Profile: unverified` in the ledger
+unless the user stated the launch command in this session, and then record the
+exact path they gave and attribute it to them. Never assume the deny list is
+active — behave as though every boundary in the contract is enforced by your
+own compliance, because in an unflagged session it is.
 
 ## Delegation boundary
 
