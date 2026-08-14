@@ -49,3 +49,5 @@ Report the branch, the classification, and the stash reference if one exists,
 then continue the run:
 
 `/graph-run PRD/work/<slug>/`
+
+(`$graph-*` in Codex.)
