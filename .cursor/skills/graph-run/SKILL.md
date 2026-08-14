@@ -43,6 +43,20 @@ boundaries are required.
    PR action, and terminal claim. Use `superpowers:systematic-debugging` for
    unexpected command failures.
 
+## Package sections the driver owns
+
+Graph runs never delegate to `thejudge-prepare`, so the driver itself writes the
+two package `README.md` sections that skill would otherwise produce:
+
+- `## Autonomous metadata` / `- Autonomous base: origin/<branch>` — the branch
+  node 1 created and pushed. Write it as soon as both that branch and the
+  package README exist, and always before dispatching `build`;
+  `thejudge-implement-all` blocks before worktree creation without it.
+- `## Preparation gate` — rewritten with the latest verdict after every
+  `gate-qc` node. The `plan` node reads it and cannot self-certify a PASS.
+
+Use the exact section shapes in `PRD/instructions/graph-workflow-contract.md`.
+
 ## Delegation boundary
 
 Never reimplement a phase. `thejudge-refinement`, `thejudge-quality-check`,

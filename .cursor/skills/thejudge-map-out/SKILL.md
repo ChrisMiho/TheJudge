@@ -21,10 +21,11 @@ Work slug.
 
 Direct invocation keeps the implementation handoffs below.
 
-When the controlling agent explicitly states `thejudge-prepare is controlling`,
+When the controlling agent explicitly states that an orchestrator is
+controlling — `thejudge-prepare is controlling` or `graph-run is controlling` —
 read `PRD/instructions/preparation-contract.md`, require `Quality-check: PASS`
 in the package README's `Preparation gate` section, create the same
-GAMEPLAN/slice contract, and return control to `thejudge-prepare` for
+GAMEPLAN/slice contract, and return control to the named orchestrator for
 independent review, fresh verification, and publication. The successful
 post-merge handoff remains
 `$thejudge-implement-all PRD/work/<slug>/`.

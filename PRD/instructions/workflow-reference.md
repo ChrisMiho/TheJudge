@@ -7,11 +7,13 @@ This file is the lean operator reference for TheJudge PRD-driven work. All 10
 see `AGENT-SKILLS.md` for the full catalog, platform paths, and sync
 instructions.
 
-`thejudge-prepare` is the autonomous alternate path across kickoff, refinement,
-quality-check, and map-out. Orchestrated mode applies only when the controlling
-agent explicitly states `thejudge-prepare is controlling`; without that
-predicate, those phase skills retain their direct interactive behavior. The
-full autonomous contract lives in `preparation-contract.md`.
+`thejudge-prepare` and `graph-run` are the autonomous alternate paths across
+kickoff, refinement, quality-check, and map-out. Orchestrated mode applies only
+when the controlling agent explicitly states that an orchestrator is
+controlling — `thejudge-prepare is controlling` or `graph-run is controlling`;
+without one of those predicates, those phase skills retain their direct
+interactive behavior. The full autonomous contracts live in
+`preparation-contract.md` and `graph-workflow-contract.md`.
 
 ## Handoff prefix rule
 

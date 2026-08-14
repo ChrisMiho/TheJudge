@@ -41,10 +41,14 @@ the open findings recorded as evidence.
 
 ## Worktree and branch shape
 
-- Autonomous base: the branch `graph-preflight` created and pushed. Recorded as
-  `## Autonomous metadata` / `- Autonomous base: origin/<branch>` in the package
-  README, exactly as `preparation-contract.md` specifies, so
-  `thejudge-implement-all` inherits it unchanged.
+- Autonomous base: the branch `graph-preflight` created and pushed. **The
+  driver writes it.** Add `## Autonomous metadata` /
+  `- Autonomous base: origin/<branch>` to the package `README.md`, in the exact
+  shape `preparation-contract.md` specifies, immediately after node 1 succeeds —
+  or, on a fresh run where node 2 creates that README, immediately after node 2 —
+  and always before dispatching `build`. Nothing else produces it: graph runs
+  never delegate to `thejudge-prepare`, and `thejudge-implement-all` blocks
+  before worktree creation when the section is missing.
 - Worktree path: `.worktrees/implement-<slug>`, owned by `thejudge-implement-all`.
 - Refuse any worktree outside the repo-local `.worktrees/` root.
 - One worktree per package, not per slice. Slices that build on each other

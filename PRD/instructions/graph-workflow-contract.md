@@ -26,8 +26,14 @@ nodes and are specified separately.
 Graph mode is active only when the driver explicitly states
 `graph-run is controlling` when handing work to each node. Without that
 observable predicate every phase skill runs directly and preserves its normal
-user questions, approval pauses, and handoffs — identical to the
+user questions, approval pauses, and handoffs — the same mechanism as the
 `thejudge-prepare is controlling` predicate in `preparation-contract.md`.
+
+The four phase skills that gate on the predicate — `thejudge-kickoff`,
+`thejudge-refinement`, `thejudge-quality-check`, and `thejudge-map-out` —
+accept either orchestrator name in their `## Mode` section. The driver states
+its own name and never claims `thejudge-prepare is controlling`: the predicate
+attests which orchestrator is running.
 
 ## Node table
 
@@ -70,6 +76,25 @@ verifies `Quality-check: PASS` here before writing any planning artifact and
 cannot self-certify one. `thejudge-prepare` writes this section during
 preparation runs; during graph runs `graph-run` owns it, because graph runs do
 not delegate to `thejudge-prepare`.
+
+## Autonomous metadata
+
+`graph-run` records the branch that node 1 (`preflight`) created and pushed in
+the package `README.md`, using the exact section shape from
+`preparation-contract.md`:
+
+```markdown
+## Autonomous metadata
+
+- Autonomous base: origin/<branch>
+```
+
+The driver writes it immediately after node 1 succeeds — or, on a fresh run
+where node 2 (`shape`) creates that README, immediately after node 2 — and
+always before dispatching `build`. `thejudge-implement-all` blocks before
+worktree creation when this section is missing, so node 6 cannot start without
+it. `thejudge-prepare` writes it during preparation runs; during graph runs
+`graph-run` owns it, because graph runs do not delegate to `thejudge-prepare`.
 
 ## Ledger
 
