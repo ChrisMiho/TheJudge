@@ -5,6 +5,7 @@ import {
   classifyWorkingTree,
   collectEntries,
   planActions,
+  parseCommandArgs,
   DEFAULT_THRESHOLDS,
   SECRET_PATTERNS,
 } from "./graph-preflight.mjs";
@@ -174,4 +175,136 @@ test("graph-preflight - plan - clean tree still creates and pushes the branch", 
   assert.ok(commands.some((c) => c.includes("git switch -c feature/x")));
   assert.ok(!commands.some((c) => c.includes("git stash")));
   assert.ok(!commands.some((c) => c.includes("git commit")));
+});
+
+// --- Fix: Important #1 — partially-staged files must not be double-counted ---
+
+test("graph-preflight - collect - a file staged and unstaged merges into one entry with combined lines", () => {
+  const fakeGit = (args) => {
+    if (args.join(" ") === "diff --numstat") {
+      return "3\t1\tPRD/sections/overview.md\n";
+    }
+    if (args.join(" ") === "diff --numstat --cached") {
+      return "2\t0\tPRD/sections/overview.md\n";
+    }
+    if (args.join(" ") === "ls-files --others --exclude-standard") {
+      return "";
+    }
+    throw new Error(`unexpected git call: ${args.join(" ")}`);
+  };
+
+  const entries = collectEntries(fakeGit);
+  assert.equal(entries.length, 1, "one physical file must produce one entry");
+  assert.equal(entries[0].path, "PRD/sections/overview.md");
+  assert.equal(entries[0].changedLines, 6);
+});
+
+test("graph-preflight - collect - deduping a partially-staged file keeps fileCount accurate for the threshold", () => {
+  const fakeGit = (args) => {
+    if (args.join(" ") === "diff --numstat") {
+      return "3\t1\tPRD/sections/overview.md\n1\t1\tPRD/sections/personas.md\n";
+    }
+    if (args.join(" ") === "diff --numstat --cached") {
+      return "2\t0\tPRD/sections/overview.md\n";
+    }
+    return "";
+  };
+
+  const entries = collectEntries(fakeGit);
+  const result = classifyWorkingTree(entries);
+  assert.equal(result.fileCount, 2, "the double-counted path must not inflate fileCount");
+});
+
+// --- Fix: Important #2 — the real-execution tokenizer had zero coverage ---
+
+test("graph-preflight - parseCommandArgs - a quoted commit message tokenizes as one argument", () => {
+  const args = parseCommandArgs('git commit -m "a b c"');
+  assert.deepEqual(args, ["commit", "-m", "a b c"]);
+});
+
+test("graph-preflight - parseCommandArgs - a stash command produced by planActions round-trips", () => {
+  const commands = planActions(
+    { action: "stash", files: [], fileCount: 1, changedLines: 1, reason: "x" },
+    { branch: "feature/x", runId: "r1" },
+  );
+  const stashCommand = commands.find((c) => c.includes("git stash push"));
+  const args = parseCommandArgs(stashCommand);
+  assert.deepEqual(args, ["stash", "push", "-u", "-m", "graph-preflight/r1"]);
+});
+
+// --- Fix: Important #3 — renamed paths must be normalized and checked on both ends ---
+
+test("graph-preflight - collect - rename with common suffix normalizes to real source and destination paths", () => {
+  // The exact string reproduced by review: `git mv config/creds.env .secrets/creds.env`.
+  const fakeGit = (args) => {
+    if (args.join(" ") === "diff --numstat --cached") {
+      return "0\t0\t{config => .secrets}/creds.env\n";
+    }
+    return "";
+  };
+  const entries = collectEntries(fakeGit);
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].path, ".secrets/creds.env");
+  assert.equal(entries[0].renamedFrom, "config/creds.env");
+});
+
+test("graph-preflight - collect - rename with common prefix only normalizes to real source and destination paths", () => {
+  const fakeGit = (args) => {
+    if (args.join(" ") === "diff --numstat") {
+      return "0\t0\tconfig/{creds.env => creds.env.bak}\n";
+    }
+    return "";
+  };
+  const entries = collectEntries(fakeGit);
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].path, "config/creds.env.bak");
+  assert.equal(entries[0].renamedFrom, "config/creds.env");
+});
+
+test("graph-preflight - collect - rename with common prefix and suffix normalizes to real source and destination paths", () => {
+  const fakeGit = (args) => {
+    if (args.join(" ") === "diff --numstat") {
+      return "0\t0\tconfig/{old => .secrets}/creds.env\n";
+    }
+    return "";
+  };
+  const entries = collectEntries(fakeGit);
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].path, "config/.secrets/creds.env");
+  assert.equal(entries[0].renamedFrom, "config/old/creds.env");
+});
+
+test("graph-preflight - collect - bare rename with no common prefix or suffix normalizes to real source and destination paths", () => {
+  const fakeGit = (args) => {
+    if (args.join(" ") === "diff --numstat") {
+      return "0\t0\tconfig.env => .secrets\n";
+    }
+    return "";
+  };
+  const entries = collectEntries(fakeGit);
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].path, ".secrets");
+  assert.equal(entries[0].renamedFrom, "config.env");
+});
+
+test("graph-preflight - collect+classify - a file renamed into .secrets is blocked, using the exact reproduced git output", () => {
+  const fakeGit = (args) => {
+    if (args.join(" ") === "diff --numstat --cached") {
+      return "0\t0\t{config => .secrets}/creds.env\n";
+    }
+    return "";
+  };
+  const entries = collectEntries(fakeGit);
+  const result = classifyWorkingTree(entries);
+  assert.equal(result.action, "blocked");
+  assert.match(result.reason, /secret/i);
+});
+
+test("graph-preflight - classifier - a file renamed OUT of .secrets is blocked too (source path is checked)", () => {
+  const entries = [
+    { path: "config/creds.env", changedLines: 0, renamedFrom: ".secrets/creds.env" },
+  ];
+  const result = classifyWorkingTree(entries);
+  assert.equal(result.action, "blocked");
+  assert.match(result.reason, /secret/i);
 });

@@ -31,7 +31,12 @@ export function classifyWorkingTree(entries, thresholds = DEFAULT_THRESHOLDS) {
     return { ...base, action: "clean", reason: "working tree is clean" };
   }
 
-  const secret = files.find((path) =>
+  // A renamed entry's `path` is only the destination. Check the source too —
+  // a file moving *out of* a secret-bearing location is equally sensitive.
+  const secretCandidates = entries.flatMap((entry) =>
+    entry.renamedFrom ? [entry.path, entry.renamedFrom] : [entry.path],
+  );
+  const secret = secretCandidates.find((path) =>
     SECRET_PATTERNS.some((pattern) => pattern.test(path)),
   );
   if (secret) {
@@ -68,6 +73,50 @@ export function classifyWorkingTree(entries, thresholds = DEFAULT_THRESHOLDS) {
 const AUTO_COMMIT_MESSAGE =
   "chore(graph): auto-commit working tree before graph run";
 
+// `git diff --numstat` compacts a rename into one line instead of reporting
+// the source and destination paths plainly. It can appear as:
+//   {old => new}/suffix        (empty common prefix)
+//   prefix/{old => new}        (empty common suffix)
+//   prefix/{old => new}/suffix (both a common prefix and suffix)
+//   old => new                 (no common prefix or suffix at all)
+// Expand any of these back into real paths so downstream consumers (the
+// secret check in particular) never see the compact/braced form.
+function normalizeRenamePath(rawPath) {
+  const braceMatch = rawPath.match(/^(.*)\{(.*) => (.*)\}(.*)$/);
+  if (braceMatch) {
+    const [, prefix, oldPart, newPart, suffix] = braceMatch;
+    return {
+      oldPath: `${prefix}${oldPart}${suffix}`,
+      newPath: `${prefix}${newPart}${suffix}`,
+    };
+  }
+  const bareMatch = rawPath.match(/^(.*) => (.*)$/);
+  if (bareMatch) {
+    const [, oldPath, newPath] = bareMatch;
+    return { oldPath, newPath };
+  }
+  return null;
+}
+
+// A file with both staged and unstaged hunks appears once in each numstat
+// call. Merge those back into a single entry per physical path so fileCount
+// — which directly feeds the maxFiles threshold — isn't inflated.
+function mergeByPath(entries) {
+  const merged = new Map();
+  for (const entry of entries) {
+    const existing = merged.get(entry.path);
+    if (existing) {
+      existing.changedLines += entry.changedLines;
+      if (existing.renamedFrom === undefined && entry.renamedFrom !== undefined) {
+        existing.renamedFrom = entry.renamedFrom;
+      }
+    } else {
+      merged.set(entry.path, { ...entry });
+    }
+  }
+  return [...merged.values()];
+}
+
 export function collectEntries(runGit) {
   const entries = [];
 
@@ -78,12 +127,22 @@ export function collectEntries(runGit) {
     const output = runGit(args);
     for (const line of output.split("\n")) {
       if (!line.trim()) continue;
-      const [insertions, deletions, path] = line.split("\t");
-      if (!path) continue;
+      const [insertions, deletions, rawPath] = line.split("\t");
+      if (!rawPath) continue;
       // Binary files report "-" for both counts.
       const added = insertions === "-" ? 0 : Number(insertions);
       const removed = deletions === "-" ? 0 : Number(deletions);
-      entries.push({ path, changedLines: added + removed });
+      const changedLines = added + removed;
+      const rename = normalizeRenamePath(rawPath);
+      if (rename) {
+        entries.push({
+          path: rename.newPath,
+          changedLines,
+          renamedFrom: rename.oldPath,
+        });
+      } else {
+        entries.push({ path: rawPath, changedLines });
+      }
     }
   }
 
@@ -93,7 +152,7 @@ export function collectEntries(runGit) {
     entries.push({ path: line.trim(), changedLines: 0 });
   }
 
-  return entries;
+  return mergeByPath(entries);
 }
 
 export function planActions(classification, { branch, runId }) {
@@ -174,7 +233,7 @@ function main(argv) {
   }
 }
 
-function parseCommandArgs(command) {
+export function parseCommandArgs(command) {
   // Splits `git a b "c d"` into ["a", "b", "c d"], dropping the leading `git`.
   const matches = command.match(/"(?:[^"\\]|\\.)*"|\S+/g) ?? [];
   return matches
