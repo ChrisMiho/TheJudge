@@ -18,6 +18,7 @@
       "Bash(git worktree add \".worktrees/*)",
       "Bash(git worktree list*)",
       "Bash(git push -u origin *)",
+      "Bash(git push origin HEAD:*)",
       "Bash(gh pr create *)",
       "Bash(gh pr view *)",
       "Bash(gh pr comment *)",
