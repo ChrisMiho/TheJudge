@@ -197,7 +197,9 @@ it can see it was not followed.
 
 A graph run may not:
 
-- merge or close a pull request, or force-push by any flag
+- merge or close a pull request, or force-push by any flag (`--force`, `-f`,
+  `--force-with-lease`) or by the leading-`+` refspec form
+  (`git push origin +main:main`), which forces without a flag
 - delete a remote branch, by `--delete`, `-d`, or the `:branch` refspec form
 - modify any `thejudge-*` skill in any of the three synced trees
 - modify its own permission profile, `.claude/settings*.json`, or `CLAUDE.md`
