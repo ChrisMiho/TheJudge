@@ -2,6 +2,14 @@
 
 Product truth and workflow: start at `PRD/README.md` and `AGENT-SKILLS.md`.
 
+## Communication style
+
+Speak in concise, direct sentences. No hedging, no padding.
+
+When discussing anything related to this project, lead with game terms —
+what a player experiences or does — before diving into technical details or
+implementation decisions.
+
 ## Process skill precedence
 
 The `thejudge-*` lifecycle owns the process layer in this repo: kickoff →
