@@ -424,3 +424,51 @@
 - Notes:
   - frontend-only; no backend, accounts, or sync (DEC-143)
   - auto-prune at 20 completed entries remains for entries the user does not delete
+
+### FLOW-019
+- Name: Scan a batch of cards into a collection list
+- Trigger: User opens the Card Collection destination and chooses **Scan cards**
+- Preconditions:
+  - app is loaded
+  - the printing-price artifact and scan artifacts load on first use (lazy-loaded, NFR-015)
+  - camera permission is available, or the user falls back per DEC-050
+- Main Flow:
+  1. The collection home offers two actions; the user chooses **Scan cards**.
+  2. The scanner opens and the user scans cards one after another; each confident lock adds the card to a **review batch** with the scanned printing as its default.
+  3. The user reviews the batch and corrects any wrong printing through the shared printing picker, and may remove a mis-scanned item.
+  4. The user chooses the destination list — an existing list, or a new list named and given a `folder` / `deck` / `box` label at this moment.
+  5. The user commits; the **whole batch** is written to that one list and the batch clears.
+  6. The app offers the master-file **export** with the beta warning (FLOW-020); the user exports or dismisses.
+  7. The overview's pie and centered total reflect the new cards immediately.
+- Edge Cases:
+  - a scanned card with no price in the snapshot is still added, at $0 with the caution-triangle indicator — it is never dropped
+  - camera unavailable or permission denied → the scan surface closes, the reason is surfaced, and the collection stays usable
+  - the user abandons the batch → nothing is written to any list
+  - the user commits to a brand-new list → the list is created at commit time with the chosen name and label
+  - a second batch targeted at an existing list adds to it rather than replacing it
+  - duplicates within a list are allowed; stack duplicate-blocking and the 10-card cap do not apply
+  - browser storage write fails → an explicit error surfaces directing the user to export; the in-memory batch result is not silently lost
+- Notes:
+  - frontend-only; no backend call, no `AskAiRequest`, no prompt or rulings involvement (DEC-161)
+  - printing choice is a pricing/display layer only and does not change scan oracle-level identity (DEC-053)
+
+### FLOW-020
+- Name: Back up and restore the collection master file
+- Trigger: User commits a batch (export prompt) or explicitly chooses export/import from the collection
+- Preconditions:
+  - a collection working copy exists in browser storage, or the user holds a previously exported master file
+- Main Flow:
+  1. After a batch commit — or on demand from the collection — the app offers **Export master file**, stating plainly that browser storage can be cleared and that this file is the user's durable copy (beta warning).
+  2. The user exports; the app writes a single JSON file carrying the schema version, list definitions with labels, entries as printing id + quantity + foil, and an export timestamp.
+  3. To restore, the user chooses **Import** and selects a previously exported file.
+  4. The app validates the file and shows an explicit confirmation naming what will be replaced — the current list and card counts.
+  5. The user confirms; the working copy is **replaced** by the file's contents, prices are re-read from the committed snapshot, and the overview re-renders.
+- Edge Cases:
+  - user dismisses the export prompt → nothing is exported; the working copy is unchanged and the user can export later
+  - unreadable, wrong-shaped, or wrong-version file → rejected with a plain error; the existing working copy is left untouched
+  - user cancels the replace confirmation → import aborts and the working copy is unchanged
+  - imported entry references a printing missing from the current snapshot → the entry is kept and priced at $0 with the caution indicator rather than discarded
+  - storage quota exceeded on write → explicit error directing the user to export
+- Notes:
+  - replace-not-merge is deliberate restore semantics; it is always behind explicit confirmation so it is never silent (DEC-162)
+  - no upload, no server, no account, no cross-device sync — the file is the user's own

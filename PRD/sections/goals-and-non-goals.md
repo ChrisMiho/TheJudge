@@ -55,6 +55,7 @@
 ## Planned capabilities (optional, outside the core loop)
 - optional on-device camera card scanning as an alternate input path into existing zone fields (DEC-050..DEC-053); see `system-map.md` "Card scanning" (status: planned)
 - backend-only **Commander Spellbook combo enrichment**: a human-approved static community combo corpus used only for complete contextual matches or narrow explicit combo questions, with deterministic identity/quantity/zone matching and labeled missing pieces (DEC-116, REQ-093..REQ-095); see `system-map.md` "Commander Spellbook combo retrieval" (status: planned)
+- frontend-only **Card Collection Manager**: batch-scanned cards commit to named folder/deck/box lists, with a per-list count pie plus centered total USD, printing/quantity/foil editing, a browser-local working copy, and a user-owned master backup file (DEC-161, DEC-162, REQ-146..REQ-151); see `system-map.md` "Card collection manager" (status: planned)
 
 ## Product risks
 - **Prompt size vs AI latency:** Game-rules prompt enrichment (DEC-030, REQ-022) materially increases prompt size (~25–32k chars typical/worst case when all 23 curated topics ship). This is an active risk to the 3-second latency success metric, not a temporary scope tradeoff. Monitor after ship.
@@ -67,7 +68,7 @@
 - controller selection
 - mode selection
 - multiplayer sync
-- saved sessions outside the narrowly scoped browser-local conversation history (DEC-124; capped, single-device, no accounts)
+- saved sessions outside the narrowly scoped browser-local conversation history (DEC-124; capped, single-device, no accounts) and the browser-local card collection with its user-owned master backup file (DEC-162; single-device, no accounts, no cloud sync); this narrows the prior blanket saved-state exclusion — accounts, billing, server-side sessions, and multi-device sync stay out of scope
 - account system
 - billing
 - runtime metadata syncing
