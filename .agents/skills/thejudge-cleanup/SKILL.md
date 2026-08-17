@@ -71,13 +71,39 @@ rule.
 A package whose `README.md` has an `## Autonomous metadata` section must
 additionally satisfy all four of the following, in order, before deletion:
 
-1. The current branch equals the recorded autonomous base exactly.
+1. The current branch equals the recorded autonomous base exactly — **or**, when
+   that base no longer exists on the remote, the current branch contains the
+   implementation merge. A base branch that was deleted after merging is a
+   normal end state, not a cleanup blocker: check 2 is what proves the work
+   shipped, and this check only establishes that the checkout you are cleaning
+   from actually has it.
+
+   To take the second path, all three must hold, and each must be reported:
+   - The base resolves nowhere — absent from `git branch -r` after a fetch, and
+     from `git ls-remote --heads origin <base>` when the remote is reachable.
+   - The implementation merge commit is an ancestor of `HEAD`
+     (`git merge-base --is-ancestor <merge-sha> HEAD`). Locate it locally —
+     `git log --oneline --all --grep "<slug>"` finds the
+     `Merge pull request #N` commit without needing the API.
+   - The recorded base is named in the receipt alongside the merge SHA, so the
+     deleted branch stays traceable.
+
+   A base that still exists but is not checked out remains a failure — switch to
+   it rather than taking the second path.
 2. The implementation pull request — located via its
    `thejudge-auto:v1:registered:<slug>` marker, per
    `thejudge-implement-all/reference.md` — is merged, and its merge target is
    the recorded base. Verify with the GitHub CLI (for example `gh pr view
    <number> --json state,baseRefName,mergedAt`) rather than inferring it from
    local branch state alone.
+
+   **When the GitHub API is unreachable** — `gh` returns HTTP 5xx, or there is
+   no network — cleanup is not automatically blocked, because an outage is not
+   evidence about the work. Fall back to local proof: that PR's merge commit is
+   present, is an ancestor of `HEAD`, and is an ancestor of `origin/main`.
+   Report that the API was unavailable, name the merge SHA used, and record
+   both in the receipt. Never treat a 5xx as a failed check. Never take this
+   fallback while the API *is* reachable — there, `gh` stays authoritative.
 3. `.worktrees/implement-<slug>`, if it still exists, has a clean working tree
    and no local commits absent from the recorded base's tip — that is, it is
    fully merged. "Clean" means `git status --porcelain` is empty; gitignored
