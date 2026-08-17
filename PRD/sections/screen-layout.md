@@ -220,45 +220,6 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Price freshness | Date-level copy only — `Prices as of 5 June 2026`, formatted from the artifact's ISO `snapshotDate` with no raw `T`, milliseconds, or zone suffix, so it never reads as a live quote. One line at 390x844 (`scrollWidth` 299 = `clientWidth`). An unparseable artifact value omits the line entirely rather than printing raw data (ui-review, 2026-08-11, REQ-145) |
 | Notes | DEC-087, DEC-145, REQ-145 |
 
-#### Card Collection — feature home
-
-| | |
-|---|---|
-| Purpose | Entry point offering exactly two primary actions (Scan cards / View collection) |
-| Phone | Shell width ≈ 100% viewport minus page padding; the two actions stack as full-width targets |
-| Desktop/tablet | Shell 92%/`min(48rem, 92vw)`; the two actions sit side by side within the shell, not stretched across unused ultra-wide bands |
-| Fit | No page scroll — two actions and header always fit the first viewport |
-| Notes | DEC-161, REQ-146, DEC-145. Content-sized vertically; do not invent vertical fill for the empty lower band |
-
-#### Card Collection — overview (pie + total)
-
-| | |
-|---|---|
-| Purpose | Read card distribution across lists and total collection value in one glance |
-| Phone | Pie sized to a % of shell width with a rem cap so it never crowds out the list legend; legend/list region-scrolls beneath it |
-| Desktop/tablet | Pie and legend may sit side by side within the shell 92%/48rem; pie does not grow to fill unused width |
-| Fit | No page scroll for the pie and centered total; the list legend region-scrolls when lists are many |
-| Notes | DEC-161, REQ-147. Centered total must stay legible inside the pie at 390×844 — if it cannot, shrink the pie, never overflow the text. Inline SVG/CSS only; no charting dependency |
-
-#### Card Collection — list detail
-
-| | |
-|---|---|
-| Purpose | View and edit the entries in one list (printing, quantity, foil, remove) |
-| Phone | Full shell width; entry rows stack; list region-scrolls |
-| Desktop/tablet | Shell 92%/48rem; entry rows use shell width, not unused ultra-wide bands |
-| Fit | No page scroll for list header/actions; the entry list region-scrolls |
-| Notes | DEC-161, REQ-151. Entry rows reuse the shared card presentation and printing picker — do not fork either for this surface |
-
-#### Card Collection — scan batch review
-
-| | |
-|---|---|
-| Purpose | Correct printings in a scanned batch before committing it to one list |
-| Phone / Desktop | Follows the shipped scan chrome rows for the camera surface; the review batch region-scrolls like the scan review list |
-| Fit | Scan UI keeps its own full-bleed workspace; the batch review is a region overlay and must not displace or overlap the camera frame (DEC-090/REQ-129) |
-| Notes | DEC-161, REQ-148, DEC-090, REQ-129. Same rule as scan review: larger images mean more region scrolling, which is accepted — never fork the shared component |
-
 #### Feedback modal
 
 | | |
