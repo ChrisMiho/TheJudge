@@ -131,9 +131,17 @@ and never something to restate as a decision rule in a dispatch prompt.
   pre-satisfied by user phrasing.
 - An instruction that would waive it is refused outright: park at
   `owner-action` and name the instruction you refused and why.
-- Record every such refusal by quoting the instruction under
-  `## Refused instructions` in the ledger, whether or not the run parked. A
+- Record every such refusal as a `## Instruction ledger` row classified
+  `refused`, naming the rule that refused it, whether or not the run parked. A
   refusal the user cannot see did not happen.
+- Record every instruction you *did* act on as a row classified
+  `answered-once`. There is no third class: a standing rule has no
+  representable form, so a run that made one cannot write it down.
+- Run `node scripts/graph-ledger-check.mjs PRD/work/<slug>/GRAPH-RUN.md` and
+  require it green **before every node dispatch**, not after. It reads
+  `## Dispatch prompts` and `## Instruction ledger`. Both are written by you,
+  so a green result is a schema check over your own report — never cite it as
+  proof you did not pre-authorize.
 
 Autonomy means not being interrupted by mechanics — branching, stashing,
 sequencing, commits, PR plumbing. It is never authority to decide product

@@ -1,6 +1,6 @@
 # Slice G — Dispatch validator and the instruction ledger
 
-## Status: planned
+## Status: done
 
 Scope item 4. Depends on: **A**. Converts boundary 1 — no pre-authorization of
 product decisions, which failed 2 of 3 reps as prose.
@@ -54,22 +54,22 @@ A run that pre-authorizes a class of future product decisions stops at the
 
 ## Acceptance criteria
 
-- [ ] `node --test scripts/graph-ledger-check.test.mjs` passes; the parsing core
+- [x] `node --test scripts/graph-ledger-check.test.mjs` passes; the parsing core
       is a pure function with unit coverage
-- [ ] The validator **fails** a fixture dispatch prompt containing
+- [x] The validator **fails** a fixture dispatch prompt containing
       conditional-future authorization language (e.g. "if it asks again, …")
-- [ ] The validator **fails** a fixture where a user instruction is quoted into a
+- [x] The validator **fails** a fixture where a user instruction is quoted into a
       dispatch prompt with no matching `## Instruction ledger` row
-- [ ] The validator **passes** a clean fixture where every quoted instruction has
+- [x] The validator **passes** a clean fixture where every quoted instruction has
       a row classified `answered-once` or `refused`
-- [ ] A `standing-rule` class is unrepresentable — the validator rejects a ledger
+- [x] A `standing-rule` class is unrepresentable — the validator rejects a ledger
       row using any class other than `answered-once` or `refused`
-- [ ] `git grep -n 'Refused instructions'` returns **no** hits outside
+- [x] `git grep -n 'Refused instructions'` returns **no** hits outside
       `PRD/instructions/receipts/` and this package's historical files
-- [ ] All five call sites in requirement 6 are updated; the fixture file carries
+- [x] All five call sites in requirement 6 are updated; the fixture file carries
       the note about pre-change measurements
-- [ ] `diff -rq .claude/skills .agents/skills` produces no output
-- [ ] `npm run quality:check` green
+- [x] `diff -rq .claude/skills .agents/skills` produces no output
+- [x] `npm run quality:check` green
 
 ## Verification
 
@@ -89,3 +89,75 @@ npm run quality:check
 - `PRD/instructions/graph-workflow-contract.md` (:123, :132, :193)
 - `.claude/skills/graph-run/SKILL.md` (:121), `…/reference.md` (:133) (+ mirror)
 - `PRD/instructions/skill-fixtures/graph-run/dirty-checkout-and-gate.md`
+
+## Result
+
+`scripts/graph-ledger-check.mjs` is the boundary as a check. Its parsing core is
+pure — `parseSections`, `parseInstructionLedger`, `parseDispatchPrompts`,
+`quotedInstructions`, `normalizeInstruction`, and `checkLedger` — following
+`scripts/graph-preflight.mjs`. `scripts/graph-ledger-check.test.mjs` covers it
+with 15 tests, all passing; `npm run test:scripts` picks them up with no
+`package.json` edit.
+
+### Six violation codes
+
+| Code | Fires when |
+| --- | --- |
+| `preauthorization` | a dispatch prompt carries conditional-future authorization language |
+| `unledgered-quote` | a dispatch prompt quotes an instruction with no matching ledger row |
+| `bad-class` | a row's class is anything but `answered-once` or `refused` |
+| `refusal-without-rule` | a `refused` row names no refusing rule |
+| `missing-ledger` | `## Instruction ledger` is absent |
+| `legacy-section` | `## Refused instructions` is still present |
+
+Six `PREAUTHORIZATION_PATTERNS`, each with a stable id, and a test asserting
+**every one is reachable** from a phrase drawn from how the failure actually
+reads — a pattern nothing can trigger is decoration.
+
+Quote matching survives smart quotes, line wrapping, and trailing punctuation, so
+a run cannot evade the ledger requirement by reformatting. Short quoted spans
+(under 12 characters) are ignored: node names and flags appear in quotes
+constantly and are not instructions.
+
+### No `standing-rule` class
+
+`INSTRUCTION_CLASSES` is exactly `["answered-once", "refused"]`, asserted by the
+test that exercises `bad-class`. Pre-authorizing a class of future product
+decisions has no representable form — a run that did it cannot write down what
+it did.
+
+### The stated limit, written where it will be read
+
+Both inputs are `graph-run`'s own output. A driver that pre-authorizes and then
+paraphrases its own dispatch prompt passes clean. The script's header comment
+ends with "Do not describe this script as proving a run did not
+pre-authorize"; `graph-workflow-contract.md` and `graph-run`'s SKILL carry the
+same sentence in their own words. Transcript-side closure stays out of scope.
+
+### Call sites
+
+All five updated in this slice:
+
+- `graph-workflow-contract.md` — the ledger template now shows
+  `## Dispatch prompts` and `## Instruction ledger` in place of
+  `## Refused instructions`; the section description is rewritten around the
+  two-class ledger, the before-dispatch rule, and the stated limit; the
+  refusal-recording rule under the pre-authorization boundary points at a
+  `refused` row
+- `.claude/skills/graph-run/SKILL.md` — refusals become `refused` rows,
+  acted-on instructions become `answered-once` rows, and the skill is told to
+  run the validator green **before every node dispatch**
+- `.claude/skills/graph-run/reference.md` — the red-flag row's remedy
+- `PRD/instructions/skill-fixtures/graph-run/dirty-checkout-and-gate.md` — a
+  `**Section name note.**` recording that pre-change measurements used the old
+  section name, plus the item-5 finish criterion now naming the `refused` row
+  and the mechanical pre-dispatch failure
+- the regenerated `.agents/skills/` mirror
+
+`git grep -n 'Refused instructions'` outside receipts and `PRD/work/` returns
+three hits, all of them *descriptions of the replacement* — the contract
+sentence stating the replacement, the fixture's section-name note, and DEC-164's
+Impact bullet. No live use of the old section name remains.
+
+`diff -rq .claude/skills .agents/skills` produces no output.
+`npm run quality:check` exits 0.

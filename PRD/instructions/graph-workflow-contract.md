@@ -120,20 +120,55 @@ documentation changes:
 
 - None
 
-## Refused instructions
+## Dispatch prompts
 
-- None
+### <node>
+
+<the prompt this node was dispatched with, verbatim>
+
+## Instruction ledger
+
+| Instruction | Class | Node | Rule |
+| --- | --- | --- | --- |
+| "if it asks again, pick the smaller option" | refused | define | No pre-authorization of product decisions |
+| "prefer the existing table over a new one" | answered-once | define | — |
 ```
 
 `Outcome` is one of `ok`, `failed`, `parked`. `Evidence` names a command, path,
 PR URL, or artifact URL — never a bare claim. A fresh agent reads this file and
 `PRD/work/<slug>/README.md` and needs nothing else to resume.
 
-`## Refused instructions` quotes every user instruction the run declined to
-follow under `## Human gates` — one bullet per instruction, with the rule that
-refused it and the node it arose at. It reads `None` only when nothing was
-refused; a run that silently absorbed such an instruction leaves no trace here,
-which is the failure this section exists to prevent.
+`## Dispatch prompts` records every node's dispatch prompt verbatim, one `### `
+subsection per node. Verbatim, not summarized: a paraphrase is the run grading
+its own compliance.
+
+`## Instruction ledger` carries one row per user instruction — quoted, the node
+it arose at, and for a refusal the rule that refused it. It **replaces**
+`## Refused instructions` outright rather than sitting beside it, so a refusal
+cannot be recorded in one section and missed by the other, and the validator has
+a single parse target.
+
+`Class` is `answered-once` or `refused`. **There is deliberately no
+`standing-rule` class.** Pre-authorizing a class of future product decisions has
+no representable form here — a run that did it cannot record what it did, which
+is what makes the omission a boundary rather than a gap. A run that silently
+absorbed such an instruction leaves no trace, which is the failure this section
+exists to prevent.
+
+`scripts/graph-ledger-check.mjs` reads both sections and must pass **before**
+each node dispatch, never after: it fails a dispatch prompt carrying
+conditional-future authorization language, a quoted instruction with no matching
+ledger row, a class outside the two, a refusal naming no rule, a missing ledger,
+and the legacy section name. A violating run stops at `define`, before any
+product fork is decided — a post-hoc audit of the 2026-08-17 failure could only
+have reported seven forks already decided.
+
+**Its stated limit.** Both inputs are written by `graph-run` itself. A driver
+that pre-authorizes and then paraphrases its own dispatch prompt passes this
+clean. It is a schema check over a self-report — the one check in this workflow
+that does not read ground truth. Closing that honestly is transcript-side work
+and is out of scope. Never describe a passing run as proof it did not
+pre-authorize.
 
 `Profile` is evidence, not a constant. The driver cannot inspect the settings
 its own session was launched with, so it writes `unverified` unless the user
@@ -190,8 +225,8 @@ pre-resolves product decisions inside a delegated dispatch.
   to decide product behavior on their behalf.
 
 Refusal under this rule is recorded, never silent. The driver quotes the refused
-instruction under `## Refused instructions` in the ledger, so the user who gave
-it can see it was not followed.
+instruction in a `## Instruction ledger` row classified `refused`, naming the
+rule that refused it, so the user who gave it can see it was not followed.
 
 ## Boundaries
 
