@@ -10,6 +10,10 @@ the eleven-skill `thejudge-*` lifecycle without per-step human input, plus
 `graph-preflight`, a durable contract, a resumable ledger, per-node model
 assignment, and a permission profile.
 
+## Autonomous metadata
+
+- Autonomous base: origin/feature/graph-workflow-hardening
+
 ## Package contents
 
 | File | What it is |
