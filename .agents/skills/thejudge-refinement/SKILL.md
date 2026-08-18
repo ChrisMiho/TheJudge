@@ -22,13 +22,14 @@ Work slug (e.g. `card-wotc-rule-enrichment`).
 
 Direct invocation keeps batched questions and explicit approval below.
 
-When the controlling agent explicitly states `thejudge-prepare is controlling`,
+When the controlling agent explicitly states that an orchestrator is
+controlling — `thejudge-prepare is controlling` or `graph-run is controlling` —
 read `PRD/instructions/preparation-contract.md`. Replace the approval pause with
 its conservative assumption ladder, record every material assumption and its
 evidence in `DESIGN-BRIEF.md`, and continue autonomously. If uncertainty meets
 the contract's genuine decision blocker test, preserve the furthest valid
-artifacts and return the unresolved decision to `thejudge-prepare` instead of
-guessing.
+artifacts and return the unresolved decision to the named orchestrator instead
+of guessing.
 
 ## Reads
 

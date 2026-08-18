@@ -21,12 +21,13 @@ Optional: a feature idea description in the same message.
 
 Direct invocation keeps the minimal reads and user handoff below.
 
-When the controlling agent explicitly states `thejudge-prepare is controlling`,
+When the controlling agent explicitly states that an orchestrator is
+controlling — `thejudge-prepare is controlling` or `graph-run is controlling` —
 read `PRD/instructions/preparation-contract.md`, investigate only
 request-relevant PRD and code, select exactly one evidence-backed candidate (or
 return `NO ACTIONABLE PACKAGE`), and create the normal `IDEA.md`/README outputs.
-Return the selected evidence and artifacts to `thejudge-prepare` without pausing
-for user approval.
+Return the selected evidence and artifacts to the named orchestrator without
+pausing for user approval.
 
 ## Reads
 

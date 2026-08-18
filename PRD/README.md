@@ -56,6 +56,7 @@ For implementation work, read in this order:
 | `instructions/test-naming.md` | active | Hierarchical Vitest title convention (`Layer - Feature` outer describe, nested area + behavior) |
 | `instructions/workflow-reference.md` | active | Lean ten-skill PRD workflow reference: interactive and autonomous paths, handoff prefix rule, work-folder lifecycle, status vocabulary |
 | `instructions/preparation-contract.md` | active | Autonomous one-package preparation, assumption, blocker, and PR-publication contract |
+| `instructions/graph-workflow-contract.md` | active | Autonomous graph-run contract: node table, per-node model map, run ledger schema, human-gate parking, and boundaries |
 | `instructions/skill-testing.md` | active | Skill-fixture format, storage, and re-run triggers for verifying `thejudge-*` skill edits |
 | `instructions/skill-fixtures/` | active | Per-skill regression scenarios: prompt, grading key, and measured runs |
 
@@ -117,6 +118,7 @@ Read in this order:
 - Prefer narrow edits to one file at a time.
 - Preserve stable IDs once assigned.
 - Agent workflow skills: edit `.cursor/skills/thejudge-*` (canonical), run `npm run skills:ai-sync` to copy to `.agents/skills/` and `.claude/skills/`; see `AGENT-SKILLS.md`.
+- Autonomous graph runs: `/graph-preflight` then `/graph-run PRD/work/<slug>/`; contract in `instructions/graph-workflow-contract.md`, permission profile in `.claude/graph-profile.json` — which binds only in a session launched with `claude --settings .claude/graph-profile.json` and is inert without that flag.
 
 ## Work packages
 

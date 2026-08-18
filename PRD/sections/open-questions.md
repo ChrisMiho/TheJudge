@@ -38,3 +38,13 @@
   - Open a dedicated refinement for answer-seeded second-pass retrieval when prioritized, scoped as its own feature (recommended)
   - Drop the idea permanently and rely on the first-pass question-driven retrieval only
 - Recommended next step: Do not add second-pass retrieval to Quick Lookup (DEC-107) without a new confirmed decision. Open a dedicated refinement if/when prioritized.
+
+### Q-005
+- Question: Is any of the leaked `card-collection-manager` refinement preserved on `rescue/fixture-leak-card-collection-20260817` worth keeping?
+- Context: On 2026-08-17 a `graph-run` fixture rep escaped its isolated clone and ran `thejudge-refinement` against the live checkout (DEC-164 context). Before the leak was reverted, it wrote a `DESIGN-BRIEF.md` and `GRAPH-RUN.md` into `PRD/work/card-collection-manager/`, flipped that package's marker to `owner-action`, and edited eight `PRD/sections` files — adding DEC-161, DEC-162, REQ-146..151, NFR-015, FLOW-019, and a new `decisions/card-collection.md`. `PRD/sections/` was restored byte-identical and the package returned to `ideation`; the leaked work is preserved unmodified on the rescue branch. It is coherent, substantial, and was never reviewed.
+- Why it matters: The content is product truth for a real backlog package, so discarding it may throw away usable refinement, while adopting it would promote work produced in a contaminated environment by a test run whose own isolation had already failed. Leaving it parked indefinitely keeps six PRD IDs occupied and the question open. Neither "it is garbage" nor "it is good" has been established.
+- Options under consideration:
+  - Review the branch as its own scoped pass, keeping only what survives, and re-refine `card-collection-manager` normally (recommended)
+  - Discard the branch and re-refine `card-collection-manager` from `ideation` under the DEC-164 rig
+  - Leave parked until `card-collection-manager` is prioritized
+- Recommended next step: Keep it out of the DEC-164 hardening scope — that work is about enforcement, not product content. Rule on it when `card-collection-manager` is next picked up. Regardless of outcome, new IDs resume at DEC-165 / REQ-152 / NFR-016 so the rescue branch's IDs never collide.
