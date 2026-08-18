@@ -43,7 +43,7 @@ Mapped 2026-08-18. One scope item per slice, in the brief's stated order.
 | [C](./slice-c-protected-write-guard.md) | 3 | Protected-write drift guard passes on the current tree | B | done |
 | [D](./slice-d-profile-node-surface.md) | 8 | Profile matches the node command surface; `PROMPTED` state | A | done |
 | [E](./slice-e-explicit-staging.md) | 11 | Explicit staging — `git add -A` denied | D | done |
-| [F](./slice-f-profile-sentinel.md) | 9 | `Profile: loaded` becomes observed evidence | E | planned |
+| [F](./slice-f-profile-sentinel.md) | 9 | `Profile: loaded` becomes observed evidence | E | done |
 | [G](./slice-g-dispatch-validator.md) | 4 | Dispatch validator and `## Instruction ledger` | A | planned |
 | [H](./slice-h-working-directory-pin.md) | 14 | Absolute working directory in every dispatch; node 6 write scope | G | planned |
 | [I](./slice-i-concurrency-lock.md) | 15 | One run at a time — the concurrency lock | D, F | planned |

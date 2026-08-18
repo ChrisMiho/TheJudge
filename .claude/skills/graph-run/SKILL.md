@@ -72,13 +72,27 @@ dirty. Publish before dispatching `build` — see reference.md's
 ## Permission profile
 
 `.claude/graph-profile.json` protects a run only when the session was launched
-with `claude --settings .claude/graph-profile.json`. The driver cannot read the
-settings its own session was started with, so it can never confirm the profile
-is loaded. Record that honestly: write `Profile: unverified` in the ledger
-unless the user stated the launch command in this session, and then record the
-exact path they gave and attribute it to them. Never assume the deny list is
-active — behave as though every boundary in the contract is enforced by your
-own compliance, because in an unflagged session it is.
+with `claude --settings .claude/graph-profile.json`.
+
+Record the ledger's `Profile:` field **from node 1's observation**, not from
+what the user said. `graph-preflight` prints the value of the profile's
+`THEJUDGE_GRAPH_PROFILE` env sentinel, which exists only in a session launched
+with that file:
+
+| Node 1 reports | Ledger line |
+| --- | --- |
+| sentinel present | `Profile: loaded (env sentinel)` |
+| sentinel absent | `Profile: unverified` |
+
+The user-stated launch command is the fallback, used only when the sentinel is
+absent *and* the user named the command in this session — record the exact path
+they gave and attribute it to them. It is testimony, and the sentinel is not.
+
+**What the sentinel does not prove.** It shows the file was loaded. It says
+nothing about whether any individual deny rule fired, and two boundaries can
+never fire at all — `nohup` is stripped as a wrapper before rules match, and a
+trailing `&` is consumed as a separator. So behave as though every boundary in
+the contract is enforced by your own compliance, whatever the sentinel says.
 
 ## Delegation boundary
 

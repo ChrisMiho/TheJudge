@@ -213,11 +213,23 @@ A graph run may not:
 
 The permission profile at `.claude/graph-profile.json` enforces most of these
 mechanically, but **only in a session launched with**
-`claude --settings .claude/graph-profile.json`. Nothing detects, enforces, or
-records that launch flag, and the driver cannot read its own settings: in a
-session started without it, every entry in the profile is inert and the list
-above is convention only — binding on the agent's compliance rather than on the
-engine. Treat an unverified profile as absent.
+`claude --settings .claude/graph-profile.json`. In a session started without it,
+every entry in the profile is inert and the list above is convention only —
+binding on the agent's compliance rather than on the engine.
+
+**Whether it loaded is now observed, not asserted.** The profile carries
+`"env": { "THEJUDGE_GRAPH_PROFILE": "1" }`, which exists only in a session
+launched with it. `graph-preflight` reads it at node 1 and prints
+`Profile: loaded (env sentinel)` or `Profile: unverified`, and that line is what
+the ledger records. Nothing forges it: the profile denies edits to itself, so a
+run cannot write its own sentinel. The user's account of the launch command is
+the fallback when the sentinel is absent, recorded as their statement.
+
+**The sentinel proves the file loaded — not that any rule fired.** That limit is
+stated rather than papered over. A loaded profile still says nothing about
+whether a given deny was reached, and two boundaries can never fire under any
+profile: `nohup` and the trailing `&` below. Treat an unverified profile as
+absent, and a verified one as loaded, never as enforced.
 
 **Staging is explicit because a wildcard is what committed the 2026-08-17
 leak.** A fixture rep's dispatched subagent wrote product truth into the live

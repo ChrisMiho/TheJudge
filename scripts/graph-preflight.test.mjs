@@ -18,6 +18,8 @@ import {
   findBranchCollision,
   formatFailureReport,
   defaultRunId,
+  readProfileSentinel,
+  PROFILE_SENTINEL_ENV,
   DEFAULT_THRESHOLDS,
   SECRET_PATTERNS
 } from "./graph-preflight.mjs"
@@ -733,4 +735,45 @@ test("graph-preflight - gitignore - a node_modules symlink is ignored, not swept
   } finally {
     fs.rmSync(sandbox, { recursive: true, force: true })
   }
+})
+
+test("graph-preflight - readProfileSentinel - a profiled session reports loaded", () => {
+  const result = readProfileSentinel({ [PROFILE_SENTINEL_ENV]: "1" })
+  assert.equal(result.present, true)
+  assert.equal(result.ledgerLine, "Profile: loaded (env sentinel)")
+})
+
+test("graph-preflight - readProfileSentinel - an unprofiled session reports unverified", () => {
+  const result = readProfileSentinel({})
+  assert.equal(result.present, false)
+  assert.equal(result.value, null)
+  assert.equal(result.ledgerLine, "Profile: unverified")
+})
+
+test("graph-preflight - readProfileSentinel - any value other than 1 is not evidence", () => {
+  // A stray export of the same name must not read as a loaded profile.
+  for (const value of ["0", "", "true", "yes"]) {
+    const result = readProfileSentinel({ [PROFILE_SENTINEL_ENV]: value })
+    assert.equal(result.present, false, `${JSON.stringify(value)} must not count as loaded`)
+    assert.equal(result.ledgerLine, "Profile: unverified")
+  }
+})
+
+test("graph-preflight - the sentinel name matches the profile's env block", () => {
+  // If these drift, the script reports "unverified" in a session that really
+  // was launched with the profile, and the ledger understates its own evidence.
+  const profile = JSON.parse(
+    fs.readFileSync(fileURLToPath(new URL("../.claude/graph-profile.json", import.meta.url)), "utf8")
+  )
+  assert.equal(profile.env?.[PROFILE_SENTINEL_ENV], "1")
+})
+
+test("graph-preflight - the profile denies edits to itself, so the sentinel cannot be forged", () => {
+  const profile = JSON.parse(
+    fs.readFileSync(fileURLToPath(new URL("../.claude/graph-profile.json", import.meta.url)), "utf8")
+  )
+  assert.ok(
+    profile.permissions.deny.includes("Edit(./.claude/graph-profile.json)"),
+    "a run that could edit the profile could write its own sentinel"
+  )
 })

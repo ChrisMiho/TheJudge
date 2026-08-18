@@ -9,6 +9,34 @@ import { pathToFileURL } from "node:url"
 
 export const DEFAULT_THRESHOLDS = { maxFiles: 10, maxLines: 200 }
 
+// `.claude/graph-profile.json` sets this in its `env` block, so it is present
+// only in a session actually launched with `--settings <that file>`. It is the
+// one observable difference between a profiled session and an unprofiled one,
+// which is what turns the ledger's `Profile:` field from the user's word into
+// evidence.
+//
+// Stated limit: the sentinel proves the *file was loaded*. It does not prove
+// any individual deny rule fired, and it never will. A run cannot forge it —
+// the profile denies edits to itself — but a run also cannot verify from it
+// that `nohup` or a trailing `&` was refused, because neither is expressible
+// as a rule at all.
+export const PROFILE_SENTINEL_ENV = "THEJUDGE_GRAPH_PROFILE"
+
+/**
+ * What the ledger's `Profile:` field should say, from observation alone.
+ *
+ * Pure, so the test suite covers both branches without launching a session.
+ */
+export function readProfileSentinel(env = process.env) {
+  const value = env[PROFILE_SENTINEL_ENV]
+  const present = value === "1"
+  return {
+    present,
+    value: value ?? null,
+    ledgerLine: present ? "Profile: loaded (env sentinel)" : "Profile: unverified"
+  }
+}
+
 export const SECRET_PATTERNS = [/(^|\/)\.secrets\//, /(^|\/)\.env($|\.)/, /\.pem$/, /\.key$/, /(^|\/)id_rsa($|\.)/]
 
 // An entry's rename sources are normalized to a list: one destination path can
@@ -337,6 +365,9 @@ function main(argv) {
   const classification = classifyWorkingTree(entries, options.thresholds)
   const commands = planActions(classification, { ...options, base })
 
+  const sentinel = readProfileSentinel()
+  console.log(`profile sentinel: ${sentinel.present ? "present" : "absent"}`)
+  console.log(sentinel.ledgerLine)
   console.log(`action: ${classification.action}`)
   console.log(`reason: ${classification.reason}`)
   console.log(`files: ${classification.fileCount}`)

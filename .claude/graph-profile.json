@@ -1,4 +1,7 @@
 {
+  "env": {
+    "THEJUDGE_GRAPH_PROFILE": "1"
+  },
   "permissions": {
     "allow": [
       "Bash(npm run *)",
