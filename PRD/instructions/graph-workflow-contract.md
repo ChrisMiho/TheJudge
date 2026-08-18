@@ -347,6 +347,18 @@ what the profile is for. `Bash(npm run *)` and `Bash(node scripts/*)` stay
 broadly allowed, and enforcement lives in `quality:check` — `test:scripts` runs
 `node --test scripts/*.test.mjs`, so a new guard joins the gate by existing.
 
+## The ledger outlives the run
+
+`thejudge-cleanup` deletes `PRD/work/<slug>/`, and `GRAPH-RUN.md` lives inside
+it. Before that delete, cleanup folds the run's `## Node ledger` and
+`## Instruction ledger` **verbatim** into a `## Graph run` section of the durable
+receipt, and refuses the delete when a ledger exists and that section does not.
+
+Verbatim rather than summarized: a summary of a refusal ledger is the driver
+grading its own compliance. Without this, the proof that a run refused a
+pre-authorization survives exactly until the run succeeds — cleanup deletes the
+folder the ledger lives in.
+
 ## One run at a time
 
 `graph-preflight` takes `.worktrees/.graph-run.lock` before any mutation — a
