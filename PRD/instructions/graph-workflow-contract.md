@@ -17,8 +17,10 @@ Graph skills never reimplement a `thejudge-*` phase. `graph-run` dispatches the
 existing skill and records its outcome. A change to lifecycle behavior belongs
 in the `thejudge-*` skill, not in a graph skill copy.
 
-Exactly two graph skills exist in the spine: `graph-preflight` and `graph-run`.
-Domain node packs (`graph-ui-shape`, `graph-enrich-define`) attach as extra
+Exactly three graph skills exist in the spine: `graph-preflight`, `graph-run`,
+and `graph-gate-review` — the owner-facing half of the `define` gate, which
+walks the recorded `PRD/sections/` diff one stable ID at a time and resumes the
+run. Domain node packs (`graph-ui-shape`, `graph-enrich-define`) attach as extra
 nodes and are specified separately.
 
 ## Run predicate

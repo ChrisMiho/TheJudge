@@ -2,8 +2,8 @@
 
 TheJudge uses 11 `thejudge-*` skills to drive PRD-based feature work — including
 autonomous preparation, sequential single-slice, unattended all-slice, and
-cross-package fanout modes — plus 2 `graph-*` skills that chain those 11 into
-autonomous runs. All 13 are **model-invocable** — the agent may select the
+cross-package fanout modes — plus 3 `graph-*` skills that chain those 11 into
+autonomous runs. All 14 are **model-invocable** — the agent may select the
 matching skill when context clearly indicates it — and every skill remains
 callable explicitly (`/thejudge-*` and `/graph-*` in Claude Code,
 `$thejudge-*` and `$graph-*` in Codex).
@@ -94,6 +94,7 @@ behavior they carry.
 | --- | --- | --- | --- |
 | `graph-preflight` | Before an autonomous run, to guarantee a clean freshly branched checkout | Auto-commit or stash, new pushed branch, handoff record | `scripts/graph-preflight.mjs` |
 | `graph-run` | Advancing one package through the full lifecycle without per-step input | `PRD/work/<slug>/GRAPH-RUN.md` ledger, package README `## Autonomous metadata` and `## Preparation gate`, status transitions, gate parks | `graph-preflight`, then 6 of the 11 phase skills — `thejudge-kickoff`, `-refinement`, `-quality-check`, `-map-out`, `-implement-all`, `-cleanup` — plus `superpowers:requesting-code-review` |
+| `graph-gate-review` | After a run parks at the `define` gate, to walk the recorded `PRD/sections/` diff one stable ID at a time | `GRAPH-RUN.md`'s `## Gate verdicts` and resolved `## Open gate`, the restored `STATUS.*` marker and board row, and `PRD/sections/` edits — only to apply an owner verdict | nothing; it never dispatches and never advances a node |
 
 Graph runs load `.claude/graph-profile.json` as their permission profile:
 

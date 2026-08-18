@@ -1,6 +1,6 @@
 # Slice L — `define` parks on any `PRD/sections/` diff; `graph-gate-review`
 
-## Status: planned
+## Status: done
 
 Scope items 12 **and** 13 — they ship together. A park with no way through it is
 worse than no park. Depends on: **B** (the sync mirrors a new skill), **I** (the
@@ -89,31 +89,31 @@ one command rather than hand-editing a marker and a board row.
 
 ## Acceptance criteria
 
-- [ ] A `define` node that writes nothing to `PRD/sections/` advances to
+- [x] A `define` node that writes nothing to `PRD/sections/` advances to
       `gate-qc` **without parking**
-- [ ] A `define` node that writes a single REQ row parks with that row's
+- [x] A `define` node that writes a single REQ row parks with that row's
       **complete diff** under `## Open gate`, plus the new stable IDs and the
       resume command
-- [ ] The park uses the existing mechanism: `STATUS.owner-action` marker, board
+- [x] The park uses the existing mechanism: `STATUS.owner-action` marker, board
       row moved in `PRD/work/STATUS.md`, README `status:` updated — no new
       machinery
-- [ ] `graph-gate-review` run against a parked package leaves `STATUS.refined`, a
+- [x] `graph-gate-review` run against a parked package leaves `STATUS.refined`, a
       resolved `## Open gate`, a `## Gate verdicts` section with **one row per
       stable ID**, and a `/graph-run` that resumes at `gate-qc` rather than
       parking again — the full loop observed end to end
-- [ ] A `reject` verdict removes the ID from `PRD/sections/` **and** the number is
+- [x] A `reject` verdict removes the ID from `PRD/sections/` **and** the number is
       not reused: confirm the next refinement allocates the following number
-- [ ] `graph-gate-review` **refuses** a package whose `## Open gate` is a
+- [x] `graph-gate-review` **refuses** a package whose `## Open gate` is a
       `gate-qc` FAIL or a Critical review finding, naming why
-- [ ] `graph-gate-review` writes none of `DESIGN-BRIEF.md`, `GAMEPLAN.md`, or
+- [x] `graph-gate-review` writes none of `DESIGN-BRIEF.md`, `GAMEPLAN.md`, or
       slice docs — verified by `git status` after a review run
-- [ ] All five count-bearing lines in requirement 8 are updated;
+- [x] All five count-bearing lines in requirement 8 are updated;
       `git grep -n 'thirteen\|13-skill\|Exactly two graph skills'` returns no
       stale hit outside receipts and `PRD/work/graph-workflow/`
-- [ ] `PRD/README.md:121` carries the three-command invocation line
-- [ ] `.claude/skills/graph-gate-review/` exists and is mirrored:
+- [x] `PRD/README.md:121` carries the three-command invocation line
+- [x] `.claude/skills/graph-gate-review/` exists and is mirrored:
       `diff -rq .claude/skills .agents/skills` produces no output
-- [ ] `npm run quality:check` green
+- [x] `npm run quality:check` green
 
 ## Verification
 
@@ -135,3 +135,105 @@ npm run quality:check
 - `AGENT-SKILLS.md` (:6, :97-98)
 - `PRD/instructions/workflow-reference.md` (:6-8)
 - `PRD/README.md` (:121)
+
+## Result
+
+### The gate (item 12)
+
+`graph-run`'s loop step 5 now diffs `PRD/sections/` after node 3 returns `ok`.
+Non-empty parks through the **existing** mechanism — `STATUS.owner-action`,
+board row moved, complete diff plus new stable IDs plus the resume command under
+`## Open gate` — and empty advances straight to `gate-qc`. No new machinery. The
+reference's node table row for `define` and its entry-point row for
+`STATUS.owner-action` both name the new behavior; the "Publishing before
+`build`" list now notes that a non-empty `PRD/sections/` diff means the gate
+already ran.
+
+### `graph-gate-review` (item 13)
+
+`.claude/skills/graph-gate-review/SKILL.md` and `reference.md`, mirrored. It
+walks one stable ID at a time, **restating in plain product terms before showing
+any diff**, takes `accept` / `edit` / `reject`, applies each verdict before
+showing the next, then writes `## Gate verdicts`, resolves the gate, restores
+the status in all three places, and hands back `/graph-run PRD/work/<slug>/`.
+
+Boundaries are explicit: never advance a node, never dispatch, never write
+`DESIGN-BRIEF.md` / `GAMEPLAN.md` / slice docs, never edit `PRD/sections/`
+outside the recorded diff, never decide a verdict for the owner, never resolve a
+gate with an ID unwalked. A `reject` burns the number.
+
+### Measured end to end, in an isolated scratch repository
+
+A `demo` package parked at the `define` gate with three pending IDs —
+`DEC-166`, `REQ-152`, `REQ-153`.
+
+**The walk.** Opened by confirming the gate, naming all three IDs, then
+presenting item 1 of 3 in product terms first ("the life tracker lives on screen
+as a persistent strip — always visible while a game is going, sitting alongside
+the game rather than covering it"), then its diff, then asking for the verdict.
+It modified nothing before a verdict was given.
+
+**The full loop**, owner answering accept / edit / reject in turn:
+
+| Stable ID | Verdict | Result on disk |
+| --- | --- | --- |
+| `DEC-166` | accept | text unchanged |
+| `REQ-152` | edit | now reads "current life total **and commander damage**" |
+| `REQ-153` | reject | removed from `PRD/sections/functional-requirements.md` entirely |
+
+`## Gate verdicts` carries one row per stable ID with the owner's reason quoted
+on the edit and the reject. `## Open gate` reads "Resolved 2026-08-18 by
+`graph-gate-review` — 3 stable IDs walked, 3 verdicts recorded (1 accept, 1
+edit, 1 reject)", with the recorded diff left in place as evidence. The marker
+is `STATUS.refined`, exactly one, README `status:` updated, board row moved.
+
+**The reject burned the number** without being told to: the ledger records
+"`REQ-153` is burned — removed from `PRD/sections/` and never reissued. The next
+refinement allocates `REQ-154`."
+
+**Nothing it should not write was written.** `git status` after the run shows
+`DESIGN-BRIEF.md` untouched, and no `GAMEPLAN.md` or slice doc created.
+
+**The resume.** `graph-run` against the resolved package read the gate as closed
+and named `gate-qc` as the status-matched entry node rather than parking again.
+It routed through `preflight` first because the scratch package has no
+`## Autonomous metadata` — a fixture artifact, correctly diagnosed, not a defect
+in the loop.
+
+**The refusal.** With `## Open gate` rewritten as a fourth `gate-qc` FAIL,
+`graph-gate-review` refused, named the gate, pointed at
+`/thejudge-refinement PRD/work/demo/` as its owner, gave no resume command, and
+modified nothing. It also flagged unprompted that the node-ledger row and the
+open gate disagreed — reconcile before resuming.
+
+**The gate's two branches**, measured against `graph-run`'s loop step 5:
+
+- empty `PRD/sections/` diff → "Advance — empty `PRD/sections/` diff does not
+  gate. Next node: 4 (`gate-qc`)."
+- one added `REQ-154` row → "**Park.** … one `REQ` is product behavior as surely
+  as a `DEC` is, so 'only a requirement, no decisions' is not an advance
+  condition." It named the complete diff, the stable ID, the resume command,
+  `STATUS.owner-action`, the board row, terminal state `PARKED`, and releasing
+  the lock.
+
+The scratch repository is removed.
+
+### The five stale count-bearing lines
+
+All updated, plus `PRD/README.md`:
+
+| File | Now reads |
+| --- | --- |
+| `graph-workflow-contract.md` | "Exactly three graph skills exist in the spine", naming `graph-gate-review` |
+| `AGENT-SKILLS.md` (intro) | "3 `graph-*` skills", "All 14 are model-invocable" |
+| `AGENT-SKILLS.md` (table) | a third row: when, what it writes, and "nothing; it never dispatches and never advances a node" |
+| `workflow-reference.md` | "all three `graph-*` skills", "the full 14-skill catalog" |
+| `PRD/README.md` | the three-command invocation line including `/graph-gate-review` |
+
+`git grep -n 'thirteen\|13-skill\|13 are model-invocable\|Exactly two graph skills'`
+over `*.md` outside receipts and `PRD/work/` returns nothing.
+`doc-process.md:167` already read "fourteen" and already named the skill, as the
+slice said it would.
+
+`diff -rq .claude/skills .agents/skills` produces no output.
+`npm run quality:check` exits 0.

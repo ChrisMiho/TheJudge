@@ -12,7 +12,7 @@ otherwise run interactively.
 | --- | --- | --- | --- | --- | --- |
 | 1 | `preflight` | `/graph-preflight --branch <name>` | haiku | `shape` | park |
 | 2 | `shape` | `/thejudge-kickoff` | sonnet | `define` | park |
-| 3 | `define` | `/thejudge-refinement` | opus | `gate-qc` | park |
+| 3 | `define` | `/thejudge-refinement` | opus | `gate-qc`, **or park on any `PRD/sections/` diff** | park |
 | 4 | `gate-qc` | `/thejudge-quality-check` | sonnet | `plan` | `define`, max 3 loops |
 | 5 | `plan` | `/thejudge-map-out` | sonnet | `build` | park |
 | 6 | `build` | `/thejudge-implement-all` | sonnet | `review` | park |
@@ -70,7 +70,7 @@ work.
 | `STATUS.refined` | `gate-qc` |
 | `STATUS.active` | `build`, or `plan` when `GAMEPLAN.md` is absent |
 | `STATUS.ship-ready` | `close` |
-| `STATUS.owner-action` | park again unless the recorded `## Open gate` is resolved |
+| `STATUS.owner-action` | park again unless the recorded `## Open gate` is resolved — `graph-gate-review` is what resolves a `define` gate |
 | `STATUS.deferred` | refuse; `thejudge-defer` restores it first |
 
 A package entered mid-lifecycle still needs a recorded autonomous base. If
@@ -94,7 +94,9 @@ Before dispatching `build`, commit and push to `origin/<autonomous base>`:
   `## Preparation gate`
 - `DESIGN-BRIEF.md`, `GAMEPLAN.md`, and every `slice-*.md`
 - the `STATUS.*` marker and the `PRD/work/STATUS.md` board row
-- any `PRD/sections/` edits refinement made
+- any `PRD/sections/` edits refinement made — which, being non-empty, means the
+  run already parked at the `define` gate and an owner already walked them
+  through `graph-gate-review`
 
 Then confirm `git status --porcelain` is empty. A dirty launch checkout at this
 point is a driver bug, not a `build` blocker — fix the publish step rather than

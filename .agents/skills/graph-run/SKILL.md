@@ -63,6 +63,23 @@ boundaries are required.
    is a command, path, PR URL, or artifact URL, never a bare claim.
 5. On `ok`, advance. On `failed`, apply the node's retry rule from the
    contract. On any gate trigger, park.
+
+   **After node 3 (`define`) returns `ok`, diff `PRD/sections/`.** A non-empty
+   diff parks — the existing park mechanism, no new machinery: set
+   `STATUS.owner-action`, move the board row, and write under `## Open gate` the
+   **complete diff** (never a summary), the list of new stable IDs, and
+   `/graph-gate-review PRD/work/<slug>/` as the resume command. An empty diff
+   advances straight to `gate-qc`; refinement that only writes
+   `DESIGN-BRIEF.md` never interrupts a run.
+
+   The **whole** diff gates, not new `DEC-###` alone. The 2026-08-17 leak wrote
+   DEC-161 and DEC-162 *and* REQ-146..151, NFR-015, and FLOW-019 — six
+   requirements and a flow are product behavior as surely as two decisions are.
+
+   This is the one place autonomy is deliberately traded for control. Node 8
+   (`land`) was otherwise the first human touch, by which point code exists
+   against product truth nobody has read. Everything below the product layer —
+   branching, stashing, slicing, commits, PR plumbing — stays unattended.
 6. Use `superpowers:verification-before-completion` before every commit, push,
    PR action, and terminal claim. Use `superpowers:systematic-debugging` for
    unexpected command failures.

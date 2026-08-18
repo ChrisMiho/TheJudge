@@ -49,7 +49,7 @@ Mapped 2026-08-18. One scope item per slice, in the brief's stated order.
 | [I](./slice-i-concurrency-lock.md) | 15 | One run at a time — the concurrency lock | D, F | done |
 | [J](./slice-j-predicate-nodes-6-9.md) | 16 | The predicate covers nodes 6 and 9 | D | done |
 | [K](./slice-k-ledger-survives-close.md) | 10 | The run ledger survives `close` | J | done |
-| [L](./slice-l-define-gate-and-review.md) | 12+13 | `define` parks on any `PRD/sections/` diff; `graph-gate-review` | B, I, K | planned |
+| [L](./slice-l-define-gate-and-review.md) | 12+13 | `define` parks on any `PRD/sections/` diff; `graph-gate-review` | B, I, K | done |
 | [M](./slice-m-fixture-rig.md) | 5 | Fixture rig owns rep setup | C — **parallel-ready** | planned |
 | [N](./slice-n-cleanup-fixture.md) | 6 | `thejudge-cleanup` fixture | J, K, M | planned |
 | [O](./slice-o-remeasure-item-5.md) | 7 | Re-measure item 5 against the validator; ship gates | G, L, M | planned |
