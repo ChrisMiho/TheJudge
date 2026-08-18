@@ -10,6 +10,23 @@ When discussing anything related to this project, lead with game terms —
 what a player experiences or does — before diving into technical details or
 implementation decisions.
 
+Write so the owner can repeat it out loud to someone else. An answer that has
+to be re-read to be parsed has failed, even if every sentence in it is short.
+
+- Lead with the answer or the decision. Detail comes after, and only when it
+  changes what happens next.
+- Evidence belongs in the artifact, not the reply. Write the full record to
+  `PRD/work/<slug>/`, the brief, or the receipt — then summarize it in a few
+  sentences and say where the rest lives.
+- One idea per paragraph. Plain words over precise-but-dense ones. Define a
+  term the first time it appears.
+- Default to short. A status update is a few sentences. Write at length only
+  when asked, or when the text itself is the deliverable.
+- Asking for a decision: name the choice in plain terms, give a
+  recommendation, stop. Do not hand over alternatives to weigh cold.
+- No emphasis pile-up. Nested bullets, bold on every other phrase, and
+  three-clause sentences cost more than they add.
+
 ## Process skill precedence
 
 The `thejudge-*` lifecycle owns the process layer in this repo: kickoff →
