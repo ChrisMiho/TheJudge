@@ -208,6 +208,8 @@ A graph run may not:
 - create or adopt a worktree outside the repo-local `.worktrees/` root
 - drop, pop, or reorder any stash
 - use `nohup`, untracked background `&`, `pkill`, or `killall`
+- stage with `git add -A`, `git add --all`, or `git add .` — a run stages
+  explicit paths and nothing else
 
 The permission profile at `.claude/graph-profile.json` enforces most of these
 mechanically, but **only in a session launched with**
@@ -216,6 +218,21 @@ records that launch flag, and the driver cannot read its own settings: in a
 session started without it, every entry in the profile is inert and the list
 above is convention only — binding on the agent's compliance rather than on the
 engine. Treat an unverified profile as absent.
+
+**Staging is explicit because a wildcard is what committed the 2026-08-17
+leak.** A fixture rep's dispatched subagent wrote product truth into the live
+checkout, and `git add -A PRD/` during an unrelated cleanup is what turned that
+contamination into a commit. Path-scoped `git add <path>` stays broadly
+allowed: this narrows the wildcard, not the operation.
+
+One `git add -A` survives, and it is stated rather than hidden. Node 1's
+auto-commit path in `scripts/graph-preflight.mjs` runs `git add -A` through
+`execFileSync`, so the Bash deny never sees it. That is deliberate — auto-commit
+exists to capture a whole dirty tree — and it is bounded by a tested
+classification (at or below 10 changed files and 200 changed lines), a
+`--dry-run` preview of every planned command, and a secret gate that blocks
+before any of it. It is not the ad-hoc cleanup that caused the leak. No other
+script may add one.
 
 Two boundaries stay convention-only even with the profile loaded. `nohup` is
 stripped as a wrapper before Bash rules are matched, so the `Bash(nohup*)` deny
