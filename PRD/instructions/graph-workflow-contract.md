@@ -225,6 +225,42 @@ contains no background-`&` entry, and adding one would not help.
 
 The list above is the reason each deny entry exists.
 
+### Protected paths — three layers, each with a stated reach
+
+Protected set: `.secrets/**`, `CLAUDE.md`, `.claude/graph-profile.json`,
+`.claude/settings*.json`, and `thejudge-*/**` in both skill trees
+(`.claude/skills/` and `.agents/skills/`).
+
+No single mechanism covers every way a path can be written, so each writing
+mechanism states its own reach. Nothing here claims more than it enforces.
+
+| Writing mechanism | Enforcement | Reach |
+| --- | --- | --- |
+| Agent `Edit` / `Write` | `.claude/graph-profile.json` deny rules | Only in a session launched with `--settings`. `graph-preflight`'s env sentinel reports whether the profile loaded; treat an unverified profile as absent |
+| `node scripts/*` | `scripts/lib/protected-paths.mjs`, guarded by `scripts/protected-write-guard.test.mjs` under `test:scripts` | Non-test `scripts/**/*.mjs`, protected-path writes only, with exactly one declared exemption — the helper itself |
+| Raw Bash (`cp`, `rsync`, redirection) | none | **Convention.** Detected after the fact by the fixture rig's before/after snapshot and the skills-sync drift check. Never claimed as enforced |
+
+The drift guard's subject is protected-path writes, not all writes. Eleven
+scripts write to `data/`, `.tmp/`, and temp directories today; none of them is
+refactored, and routing general writes through the helper is a non-goal. Two
+limits are stated rather than assumed: the scan matches path **literals**, so a
+path assembled at runtime evades it, and `*.test.mjs` is out of scan scope
+because a graph run does not execute test files.
+
+Writes into the mirror tree `.agents/skills/` belong to the sync path alone,
+through `mirrorSkillTrees()`. Hand-editing a mirror is the drift this guards.
+
+The `thejudge-*/**` deny is a **graph-run boundary, not an authoring
+restriction**. Skill authoring happens in ordinary sessions, which do not load
+the profile, and `graph-run` / `graph-preflight` skill files are not denied at
+all.
+
+The profile is deliberately **not** narrowed to an allowlist of script names:
+that would block a run every time a script is added, which is the opposite of
+what the profile is for. `Bash(npm run *)` and `Bash(node scripts/*)` stay
+broadly allowed, and enforcement lives in `quality:check` — `test:scripts` runs
+`node --test scripts/*.test.mjs`, so a new guard joins the gate by existing.
+
 ## Related material
 
 - `PRD/instructions/preparation-contract.md` — the assumption ladder and

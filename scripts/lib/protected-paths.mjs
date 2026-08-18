@@ -31,6 +31,22 @@ export const PROTECTED_PATH_PATTERNS = Object.freeze([
   ".agents/skills/thejudge-*/**"
 ])
 
+/**
+ * The source-text forms a script would use to name a protected path.
+ *
+ * `scripts/protected-write-guard.test.mjs` scans for these as literals. The
+ * skill-tree entry is the bare `thejudge-` skill-name prefix rather than a full
+ * tree path, because a script naming a `thejudge-*` skill by name is naming a
+ * protected path however it later joins it.
+ */
+export const PROTECTED_PATH_LITERALS = Object.freeze([
+  ".secrets/",
+  "CLAUDE.md",
+  ".claude/graph-profile.json",
+  ".claude/settings",
+  "thejudge-"
+])
+
 /** The canonical skill tree. Edit here; never hand-edit the mirror. */
 export const CANONICAL_SKILL_TREE = ".claude/skills"
 
