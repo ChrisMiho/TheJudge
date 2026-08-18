@@ -151,7 +151,32 @@ uncommitted deletions and restores every deleted file from HEAD, silently
 converting the control into a full-skill run. The 2026-08-14 control was
 invalidated this way and produced no usable evidence.
 
-**Rig artifact to avoid.** Do not symlink `node_modules` into the clone.
-`.gitignore`'s `node_modules/` (trailing slash) matches directories but not a
-symlink of that name, so `stash -u` sweeps it up and breaks the toolchain,
-blocking every run at the `build` node. Use a real directory or omit it.
+## Rep setup is the rig's, not this file's
+
+`scripts/fixture-rig.mjs` owns rep setup. Do not hand-build reps from the notes
+below — they are the reasoning behind the rig, kept so a later reader knows why
+each rule exists, not a checklist to follow by hand.
+
+| Rig function | What it guarantees |
+| --- | --- |
+| `repLayouts(root, n)` / `layoutsAreIsolated` | one clone **and** one bare `origin` per rep, distinct, asserted |
+| `createRep(layout, { seedRepo })` | the clone points at its **own** bare origin, never the real remote; `node_modules` is a real directory |
+| `dispatchPrompt(layout, body)` | the rep's **absolute** clone path baked into the prompt, with the propagate-it-verbatim instruction; a relative path throws |
+| `snapshotRepo` + `compareSnapshots` | the invoking repository's `HEAD` and `-uall` status before and after; **any** new path or moved `HEAD` fails the run and names what changed |
+
+The last row is the one that matters. Rep isolation used to be a bullet point
+telling each rep to work in its clone, and on 2026-08-17 a rep's dispatched
+subagent inherited the session's real working directory instead. Constraining a
+parent does not constrain its children, and prose cannot reach a child at all.
+The snapshot detects that mechanically rather than waiting for someone to
+notice.
+
+**Recording a result is a separate, deliberate act.** The clean-tree criterion
+applies to the run, not to writing it down: measured results go into
+`## Measured runs` only after the after-snapshot has passed.
+
+**Rig artifact to avoid — now enforced.** Do not symlink `node_modules` into the
+clone. `.gitignore`'s `node_modules/` (trailing slash) matches directories but
+not a symlink of that name, so `stash -u` sweeps it up and breaks the toolchain,
+blocking every run at the `build` node. `createRep` always makes a real
+directory, and `nodeModulesIsRealDirectory` asserts it.
