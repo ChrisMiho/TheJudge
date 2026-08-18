@@ -39,6 +39,19 @@ Work slug. Optional force override when the user explicitly requests cleanup of 
 - `PRD/work/STATUS.md` — remove the slug from every section
 - `PRD/README.md`, only if navigation changed (never re-introduce a multi-row work-package table)
 
+### Delete mechanism
+
+Delete the work folder with `git rm -r PRD/work/<slug>/` — the path-scoped form,
+named here rather than left to the implementer. It is the only delete a graph
+run is permitted: every recursive `rm` spelling is denied by
+`.claude/graph-profile.json`, and an unscoped `git rm -r` is not allowed either,
+because node 9's delete must not be able to become a general tracked-file
+delete. A run reaching for any other form terminates `PROMPTED`.
+
+Remove the worktree and its local branch with `git worktree remove <path>` and
+`git branch -d <name>` — never `git branch -D`, which is denied, and never a
+remote-branch delete.
+
 For an autonomous package that passes the merge-proof gate below, cleanup also
 removes the clean, fully-merged `.worktrees/implement-<slug>` and its local
 branch. Never delete the remote branch. If `.worktrees/prepare-<slug>` still

@@ -41,7 +41,7 @@ Mapped 2026-08-18. One scope item per slice, in the brief's stated order.
 | [A](./slice-a-drop-cursor.md) | 1 | Drop Cursor; `.claude/skills/` canonical; sync repointed | PR #90 merged | done |
 | [B](./slice-b-node-sync.md) | 2 | Sync ports to Node through the protected-write helper | A | done |
 | [C](./slice-c-protected-write-guard.md) | 3 | Protected-write drift guard passes on the current tree | B | done |
-| [D](./slice-d-profile-node-surface.md) | 8 | Profile matches the node command surface; `PROMPTED` state | A | planned |
+| [D](./slice-d-profile-node-surface.md) | 8 | Profile matches the node command surface; `PROMPTED` state | A | done |
 | [E](./slice-e-explicit-staging.md) | 11 | Explicit staging — `git add -A` denied | D | planned |
 | [F](./slice-f-profile-sentinel.md) | 9 | `Profile: loaded` becomes observed evidence | E | planned |
 | [G](./slice-g-dispatch-validator.md) | 4 | Dispatch validator and `## Instruction ledger` | A | planned |

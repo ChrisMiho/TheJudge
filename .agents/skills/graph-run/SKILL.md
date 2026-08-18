@@ -132,6 +132,14 @@ behavior for the user.
 | `COMPLETE` | Every node `ok` through `close`; package `ship-ready` or cleaned up; ledger closed | None — the run is finished |
 | `PARKED` | `STATUS.owner-action`, board row updated, `## Open gate` names the question, evidence, and resume command | Resolve the gate, then `/graph-run PRD/work/<slug>/` |
 | `BLOCKED` | Safe branch and commit preserved; exact failure, what exists, what does not, and recovery action | Fix the external condition, then retry |
+| `PROMPTED` | The denied or unlisted command written verbatim under `## Open gate`, with the node it arose at; `STATUS.owner-action`, board row updated | Run the command yourself, or add the rule to `.claude/graph-profile.json`, then `/graph-run PRD/work/<slug>/` |
+
+`PROMPTED` is what a permission prompt becomes. A prompt in an autonomous
+session is a hang, not a question — nobody is there to answer it, and the run
+waits forever leaving no evidence of why. So a run that hits a denied or
+unlisted command ends the same way a parked run does: it writes the exact
+command under `## Open gate`, sets `STATUS.owner-action`, and stops. Never
+rephrase the command to dodge the rule, and never retry it.
 
 `BLOCKED` is for an external condition outside the repository that no product
 decision would resolve — authentication failure, network unavailability, a

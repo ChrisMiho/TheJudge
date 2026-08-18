@@ -261,6 +261,14 @@ what the profile is for. `Bash(npm run *)` and `Bash(node scripts/*)` stay
 broadly allowed, and enforcement lives in `quality:check` — `test:scripts` runs
 `node --test scripts/*.test.mjs`, so a new guard joins the gate by existing.
 
+## Terminal states
+
+`.claude/skills/graph-run/SKILL.md`'s `## Terminal states` table is the single
+authority for the four run-ending states — `COMPLETE`, `PARKED`, `BLOCKED`, and
+`PROMPTED` — including each one's required result and exact next step. This
+contract deliberately keeps no second copy: two lists of terminal states drift,
+and a lock released on a state one list omits is a stranded lock.
+
 ## Related material
 
 - `PRD/instructions/preparation-contract.md` — the assumption ladder and
