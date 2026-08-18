@@ -71,5 +71,5 @@ of guessing.
 Orchestrated mode: return the refined artifacts or genuine decision blocker to
 `thejudge-prepare`.
 
-Direct mode: `/thejudge-quality-check PRD/work/<slug>/` (Cursor / Claude Code)
+Direct mode: `/thejudge-quality-check PRD/work/<slug>/` (Claude Code)
 or `$thejudge-quality-check PRD/work/<slug>/` (Codex).

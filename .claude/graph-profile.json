@@ -69,8 +69,6 @@
       "Read(./.secrets/**)",
       "Edit(./.secrets/**)",
       "Write(./.secrets/**)",
-      "Edit(./.cursor/skills/thejudge-*/**)",
-      "Write(./.cursor/skills/thejudge-*/**)",
       "Edit(./.agents/skills/thejudge-*/**)",
       "Write(./.agents/skills/thejudge-*/**)",
       "Edit(./.claude/skills/thejudge-*/**)",

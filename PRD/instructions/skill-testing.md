@@ -2,7 +2,7 @@
 
 ## Status
 - Status: active
-- Applies to: every `thejudge-*` skill in `.cursor/skills/`
+- Applies to: every `thejudge-*` skill in `.claude/skills/`
 
 ## Purpose
 

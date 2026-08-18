@@ -201,7 +201,7 @@ A graph run may not:
   `--force-with-lease`) or by the leading-`+` refspec form
   (`git push origin +main:main`), which forces without a flag
 - delete a remote branch, by `--delete`, `-d`, or the `:branch` refspec form
-- modify any `thejudge-*` skill in any of the three synced trees
+- modify any `thejudge-*` skill in either synced tree
 - modify its own permission profile, `.claude/settings*.json`, or `CLAUDE.md`
 - run `npm run data:refresh` or any Scryfall network refresh
 - read, write, or commit anything matching `.secrets/`
@@ -231,5 +231,5 @@ The list above is the reason each deny entry exists.
   genuine-blocker test this contract reuses verbatim
 - `PRD/instructions/workflow-reference.md` — status vocabulary and marker rules
 - `PRD/instructions/runtime-process-hygiene.md` — browser/server cleanup
-- `.cursor/skills/graph-run/reference.md` — operational node detail
+- `.claude/skills/graph-run/reference.md` — operational node detail
 - `AGENT-SKILLS.md` — skill catalog and sync workflow

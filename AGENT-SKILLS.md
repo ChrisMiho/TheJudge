@@ -5,17 +5,17 @@ autonomous preparation, sequential single-slice, unattended all-slice, and
 cross-package fanout modes — plus 2 `graph-*` skills that chain those 11 into
 autonomous runs. All 13 are **model-invocable** — the agent may select the
 matching skill when context clearly indicates it — and every skill remains
-callable explicitly (`/thejudge-*` and `/graph-*` in Cursor and Claude Code,
+callable explicitly (`/thejudge-*` and `/graph-*` in Claude Code,
 `$thejudge-*` and `$graph-*` in Codex).
 
 ## Single source + sync
 
-Skills are **not** maintained in three separate copies. Edit only:
+Skills are **not** maintained in two separate copies. Edit only:
 
-`.cursor/skills/<skill-name>/` — both `thejudge-*` and `graph-*`
+`.claude/skills/<skill-name>/` — both `thejudge-*` and `graph-*`
 
-Codex and Claude Code load skills from their own conventional paths. This repo
-copies the canonical tree into those paths with:
+Codex loads skills from its own conventional path. This repo copies the
+canonical tree into that path with:
 
 ```bash
 npm run skills:ai-sync
@@ -23,14 +23,12 @@ npm run skills:ai-sync
 
 | Platform | Discovery path | Role |
 | --- | --- | --- |
-| Cursor | `.cursor/skills/` | **Canonical** — edit here |
-| Codex | `.agents/skills/` | Synced copy |
-| Claude Code | `.claude/skills/` | Synced copy |
+| Claude Code | `.claude/skills/` | **Canonical** — edit here |
+| Codex | `.agents/skills/` | Synced mirror |
 
 Run `npm run skills:ai-sync` after any skill change, then commit
-`.cursor/skills/`, `.agents/skills/`, and `.claude/skills/` together. All
-three trees are byte-identical after a sync — every skill runs in every
-runtime.
+`.claude/skills/` and `.agents/skills/` together. Both trees are
+byte-identical after a sync — every skill runs in both runtimes.
 
 ## Workflow sequence
 
@@ -121,19 +119,19 @@ Full vocabulary and rules: `PRD/instructions/workflow-reference.md`.
 ## Session handoffs
 
 Every skill that hands off ends with a **Next step**: one sentence plus the
-literal command, prefixed `/thejudge-*` (Cursor, Claude Code) or `$thejudge-*`
+literal command, prefixed `/thejudge-*` (Claude Code) or `$thejudge-*`
 (Codex).
 
 ## Adding or updating a skill
 
-1. Create or edit under `.cursor/skills/<skill-name>/`.
+1. Create or edit under `.claude/skills/<skill-name>/`.
 2. If the edit changes behavior — gates, refusal conditions, outcome taxonomy,
    rationalizations, or the `description` — run that skill's fixture under
    `PRD/instructions/skill-fixtures/` before merging. Format and re-run triggers:
    `PRD/instructions/skill-testing.md`. Method: `superpowers:writing-skills`.
 3. Run `npm run skills:ai-sync`.
-4. Verify: `diff -rq .cursor/skills .claude/skills` and `diff -rq .cursor/skills .agents/skills` — both must produce no output (the trees are now a plain three-way mirror; no expected exclusions).
-5. Commit all three skill trees.
+4. Verify: `diff -rq .claude/skills .agents/skills` — must produce no output (the trees are a plain two-way mirror; no expected exclusions).
+5. Commit both skill trees.
 
 ## Related docs
 
@@ -141,4 +139,4 @@ literal command, prefixed `/thejudge-*` (Cursor, Claude Code) or `$thejudge-*`
 - `PRD/work/STATUS.md` — skill-maintained work-package board
 - `PRD/instructions/preparation-contract.md` — autonomous one-package preparation, assumptions, blockers, and publication
 - `PRD/README.md` — product control plane
-- `.cursor/skills/thejudge-kickoff/reference.md` — PRD quick map
+- `.claude/skills/thejudge-kickoff/reference.md` — PRD quick map

@@ -19,8 +19,8 @@ interactive behavior. The full autonomous contracts live in
 ## Handoff prefix rule
 
 Every skill that hands off ends with a **Next step**: one sentence plus the
-literal command to run next. The command prefix is `/thejudge-*` in Cursor and
-Claude Code, `$thejudge-*` in Codex. Substitute `<slug>`, slice letters, or
+literal command to run next. The command prefix is `/thejudge-*` in Claude
+Code, `$thejudge-*` in Codex. Substitute `<slug>`, slice letters, or
 wave numbers from the session.
 
 ## Work package status vocabulary

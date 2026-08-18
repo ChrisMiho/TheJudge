@@ -48,7 +48,7 @@ find-and-replacing twice.
 | 2 | What short lowercase prefix should the skills use? | `proj-` → e.g. `acme-` |
 | 3 | What single command runs lint, typecheck, and tests? | `<quality-command>` |
 | 4 | Which directories hold product code? | `<code-roots>` |
-| 5 | Which agent runtimes do you use — Cursor, Claude Code, Codex, other? | Whether the sync script is needed, and its destinations |
+| 5 | Which agent runtimes do you use — Claude Code, Codex, other? | Whether the sync script is needed, and its destinations |
 | 6 | Should `PRD/` live at the repo root, or inside a package? | Install location |
 | 7 | How much do you want now: core only, or core plus autonomy? | Whether to run Phase 4 |
 
@@ -167,7 +167,7 @@ success.
 Read `04-skills.md` before starting this phase.
 
 1. Copy the **core six** from `templates/skills/` into the canonical skill path
-   for the primary runtime from question 5 — usually `.cursor/skills/`:
+   for the primary runtime from question 5 — usually `.claude/skills/`:
 
    `proj-kickoff`, `proj-refinement`, `proj-quality-check`, `proj-map-out`,
    `proj-implement`, `proj-cleanup`

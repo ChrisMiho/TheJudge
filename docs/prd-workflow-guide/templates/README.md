@@ -11,7 +11,7 @@ into your repo, replace the placeholders, and delete what you don't want.
 | `AGENT-SKILLS.md` | your repo root |
 | `AGENTS.md` | your repo root (duplicate as `CLAUDE.md` if you use Claude Code) |
 | `scripts/sync-agent-skills.sh` | `scripts/` — only if you use more than one agent runtime |
-| `skills/proj-*/` | your runtime's canonical skill path, e.g. `.cursor/skills/` |
+| `skills/proj-*/` | your runtime's canonical skill path, e.g. `.claude/skills/` |
 
 ## Placeholders to replace
 
