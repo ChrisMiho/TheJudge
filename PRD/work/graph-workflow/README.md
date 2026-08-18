@@ -73,8 +73,16 @@ package — the profile, `graph-run`'s SKILL, `thejudge-cleanup`'s SKILL, and th
 contract — and several slices depend on the prior slice's artifact, not merely
 its file. M is the one genuinely parallel-ready slice.
 
-**Branch precondition:** slices land on a fresh branch off `main` **after PR #90
-merges**. Those 31 commits touch the skill trees slice A rewrites.
+**Branch precondition — satisfied 2026-08-18.** PR #90 merged as `db91850`;
+slices land on `feature/graph-workflow-hardening`, cut fresh from that merge.
+
+> **History note — `e206506`'s commit subject is wrong.** It reads *"implement
+> slices E to O"*, but the commit touches only Markdown: it adds this package's
+> `DESIGN-BRIEF.md`, `GAMEPLAN.md`, and all fifteen slice docs at
+> `Status: planned`, and flips `STATUS.ship-ready` to `STATUS.active`. It is the
+> **map-out of A–O, not an implementation of them.** No slice code existed at
+> merge time. The subject is permanent in `main`'s history and is not worth a
+> rewrite — read this note instead of the log line.
 
 **Not implementable under the graph profile:** the protected set denies
 `Edit`/`Write` on `thejudge-*/**`, and slices A, D, J, K, O edit those files.
