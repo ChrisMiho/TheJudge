@@ -2,7 +2,9 @@ import assert from "node:assert/strict"
 import test from "node:test"
 
 import {
+  buildWriteScope,
   checkLedger,
+  classifyBuildWrites,
   formatViolations,
   normalizeInstruction,
   parseDispatchPrompts,
@@ -10,6 +12,7 @@ import {
   parseSections,
   quotedInstructions,
   INSTRUCTION_CLASSES,
+  WORKING_DIRECTORY_LINE,
   PREAUTHORIZATION_PATTERNS
 } from "./graph-ledger-check.mjs"
 
@@ -27,7 +30,8 @@ const CLEAN = `# Graph run — demo
 
 ### define
 
-graph-run is controlling. Working directory: /repo
+graph-run is controlling.
+Working directory: /repo
 The user said "prefer the existing table over a new one" for this question.
 
 ## Instruction ledger
@@ -176,4 +180,73 @@ test("graph-ledger-check - formatViolations names the file and refuses the dispa
   assert.match(report, /^graph-ledger-check: x\.md — 1 violation\(s\)/)
   assert.match(report, /The run must not dispatch/)
   assert.equal(formatViolations([], "x.md"), "graph-ledger-check: x.md — ok")
+})
+
+test("graph-ledger-check - a dispatch prompt with no working directory fails", () => {
+  const dirty = CLEAN.replace("Working directory: /repo\n", "")
+  const violation = checkLedger(dirty).find((v) => v.code === "missing-working-directory")
+  assert.ok(violation, "an unpinned dispatch is exactly the 2026-08-17 inheritance")
+  assert.equal(violation.node, "define")
+})
+
+test("graph-ledger-check - a relative working directory fails", () => {
+  // A relative path resolves against whatever directory the child starts in,
+  // which is the inheritance rather than a fix for it.
+  for (const relative of ["./", "../repo", "PRD/work/demo", "."]) {
+    const dirty = CLEAN.replace("Working directory: /repo", `Working directory: ${relative}`)
+    const violation = checkLedger(dirty).find((v) => v.code === "relative-working-directory")
+    assert.ok(violation, `${relative} must be rejected`)
+    assert.equal(violation.path, relative)
+  }
+})
+
+test("graph-ledger-check - the working-directory line must start its own line", () => {
+  // Buried mid-sentence it is prose, not a pin a node can propagate verbatim.
+  const dirty = CLEAN.replace(
+    "graph-run is controlling.\nWorking directory: /repo",
+    "graph-run is controlling. Working directory: /repo"
+  )
+  assert.ok(checkLedger(dirty).some((v) => v.code === "missing-working-directory"))
+})
+
+test("graph-ledger-check - an absolute working directory passes", () => {
+  const match = WORKING_DIRECTORY_LINE.exec("\nWorking directory: /Users/x/repo\n")
+  assert.equal(match[1], "/Users/x/repo")
+})
+
+test("graph-ledger-check - a node-6 return wholly in scope advances", () => {
+  const result = classifyBuildWrites(
+    [
+      ".worktrees/implement-demo/scripts/thing.mjs",
+      ".worktrees/implement-demo/apps/frontend/src/App.tsx",
+      "PRD/work/demo/README.md",
+      "./PRD/work/demo/slice-a.md"
+    ],
+    "demo"
+  )
+  assert.equal(result.outcome, "ok")
+  assert.deepEqual(result.outside, [])
+  assert.deepEqual(buildWriteScope("demo"), [".worktrees/implement-demo/", "PRD/work/demo/"])
+})
+
+test("graph-ledger-check - a node-6 return with one out-of-scope path parks and names it", () => {
+  const result = classifyBuildWrites(
+    [
+      ".worktrees/implement-demo/scripts/thing.mjs",
+      "PRD/sections/decisions/card-collection.md",
+      "PRD/work/demo/README.md"
+    ],
+    "demo"
+  )
+  assert.equal(result.outcome, "park")
+  assert.deepEqual(result.outside, ["PRD/sections/decisions/card-collection.md"])
+  assert.match(result.evidence, /PRD\/sections\/decisions\/card-collection\.md/)
+})
+
+test("graph-ledger-check - another package's worktree is out of scope", () => {
+  // The allowed set is this slug's, not "any worktree" — two concurrent runs
+  // must not be able to write into each other.
+  const result = classifyBuildWrites([".worktrees/implement-other/x.mjs"], "demo")
+  assert.equal(result.outcome, "park")
+  assert.deepEqual(result.outside, [".worktrees/implement-other/x.mjs"])
 })

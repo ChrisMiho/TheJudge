@@ -41,8 +41,24 @@ boundaries are required.
    stop to ask the user questions.
 3. Dispatch the node's delegate as a subagent using the model from the node
    table, except node 8 (`land`), which the driver never dispatches — see
-   reference.md. Pass the package path, the run ID, and the controlling
-   predicate.
+   reference.md. Pass the package path, the run ID, the controlling predicate,
+   and an absolute `Working directory:` line on its own line. Require the node
+   to copy that same line, unchanged, into every prompt it writes.
+
+   Constraining a parent does not constrain its children. On 2026-08-17 a
+   dispatched subagent inherited the session's real working directory and wrote
+   product truth into the live checkout. A relative path is not a fix — it
+   resolves against whatever directory the child happens to start in, which is
+   the inheritance itself. `scripts/graph-ledger-check.mjs` fails a recorded
+   dispatch prompt that is missing the line or pins a relative path.
+
+   After node 6 (`build`) returns, assert every path it wrote lies inside
+   `.worktrees/implement-<slug>/` or `PRD/work/<slug>/`. Anything outside that
+   set **fails the node and parks**, with the offending paths as the evidence.
+   This is the production equivalent of the fixture rig's before/after snapshot,
+   not that check reused: a real run is supposed to change the repository, so
+   "byte-unchanged" is the wrong assertion here and the write-scope set is the
+   right one.
 4. Record the outcome in the ledger before starting the next node — evidence
    is a command, path, PR URL, or artifact URL, never a bare claim.
 5. On `ok`, advance. On `failed`, apply the node's retry rule from the

@@ -20,6 +20,19 @@ otherwise run interactively.
 | 8 | `land` | human PR merge | — | `close` | park |
 | 9 | `close` | `/thejudge-cleanup` | sonnet | complete | park |
 
+Every dispatch prompt in this table carries an absolute `Working directory:`
+line on its own line, and instructs the node to copy that line unchanged into
+every prompt it writes. A node fans out to its own subagents; without the
+propagation rule the pin stops at the first hop, which is where the 2026-08-17
+leak got through. Relative paths are rejected outright.
+
+Node 6 (`build`) has a return-side assertion to match: every path it wrote must
+lie inside `.worktrees/implement-<slug>/` or `PRD/work/<slug>/`. A write outside
+that set fails the node and parks, naming the offending paths. It is the
+production counterpart of the fixture rig's before/after snapshot — that check
+asserts the invoking checkout is byte-unchanged, which a real run is supposed to
+violate, so the scope set replaces it rather than being renamed.
+
 `plan` requires a recorded quality-check PASS in the package README's
 `## Preparation gate` section. It cannot self-certify one.
 

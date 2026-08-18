@@ -163,6 +163,21 @@ and the legacy section name. A violating run stops at `define`, before any
 product fork is decided — a post-hoc audit of the 2026-08-17 failure could only
 have reported seven forks already decided.
 
+It also requires an absolute `Working directory:` line, on its own line, in
+every recorded dispatch prompt, and rejects a relative path. `graph-run` pins
+that line at dispatch and requires each node to copy it unchanged into every
+prompt the node itself writes — constraining a parent does not constrain its
+children, and a node fanning out to its own subagents is where the 2026-08-17
+leak got through.
+
+Node 6 (`build`) carries the return-side half: every path it wrote must lie
+inside `.worktrees/implement-<slug>/` or `PRD/work/<slug>/`, and a write outside
+that set fails the node and parks with the offending paths as evidence. The
+fixture rig's before/after snapshot does not port to production — it asserts the
+invoking checkout is byte-unchanged, which a real run is supposed to violate —
+so the write-scope assertion is its production equivalent rather than the same
+check under a new name.
+
 **Its stated limit.** Both inputs are written by `graph-run` itself. A driver
 that pre-authorizes and then paraphrases its own dispatch prompt passes this
 clean. It is a schema check over a self-report — the one check in this workflow

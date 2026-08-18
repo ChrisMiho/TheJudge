@@ -45,7 +45,7 @@ Mapped 2026-08-18. One scope item per slice, in the brief's stated order.
 | [E](./slice-e-explicit-staging.md) | 11 | Explicit staging — `git add -A` denied | D | done |
 | [F](./slice-f-profile-sentinel.md) | 9 | `Profile: loaded` becomes observed evidence | E | done |
 | [G](./slice-g-dispatch-validator.md) | 4 | Dispatch validator and `## Instruction ledger` | A | done |
-| [H](./slice-h-working-directory-pin.md) | 14 | Absolute working directory in every dispatch; node 6 write scope | G | planned |
+| [H](./slice-h-working-directory-pin.md) | 14 | Absolute working directory in every dispatch; node 6 write scope | G | done |
 | [I](./slice-i-concurrency-lock.md) | 15 | One run at a time — the concurrency lock | D, F | planned |
 | [J](./slice-j-predicate-nodes-6-9.md) | 16 | The predicate covers nodes 6 and 9 | D | planned |
 | [K](./slice-k-ledger-survives-close.md) | 10 | The run ledger survives `close` | J | planned |

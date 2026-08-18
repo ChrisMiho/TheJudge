@@ -36,6 +36,19 @@ export const INSTRUCTION_CLASSES = Object.freeze(["answered-once", "refused"])
  * Matched against dispatch prompts only. A user may say any of this; the
  * failure is a run writing it into a prompt as a decision rule.
  */
+/**
+ * An absolute `Working directory:` line, required in every dispatch prompt.
+ *
+ * Constraining a parent does not constrain its children: on 2026-08-17 a
+ * dispatched subagent inherited the session's real working directory and wrote
+ * product truth into the live checkout. Pinning the path in the prompt — and
+ * requiring the node to carry the same line into every prompt it writes — is
+ * how the pin survives a fan-out.
+ *
+ * Absolute only. A relative path is exactly what the failure inherited.
+ */
+export const WORKING_DIRECTORY_LINE = /^\s*Working directory:\s*(\S.*?)\s*$/m
+
 export const PREAUTHORIZATION_PATTERNS = Object.freeze([
   { id: "if-it-asks-again", pattern: /\bif (?:it|they|the \w+) asks?\b[^.]*\b(?:again|next time|from now on)\b/i },
   { id: "whenever-a-question", pattern: /\b(?:whenever|any time|each time|every time)\b[^.]*\b(?:a |another )?question\b/i },
@@ -190,6 +203,28 @@ export function checkLedger(markdown) {
           "future questions into a dispatch prompt."
       })
     }
+    const workingDirectory = WORKING_DIRECTORY_LINE.exec(prompt.text)
+    if (!workingDirectory) {
+      violations.push({
+        code: "missing-working-directory",
+        node: prompt.node,
+        detail:
+          `Dispatch prompt for \`${prompt.node}\` has no \`Working directory:\` ` +
+          "line. A node that fans out inherits the session's directory instead."
+      })
+    } else if (!workingDirectory[1].startsWith("/")) {
+      violations.push({
+        code: "relative-working-directory",
+        node: prompt.node,
+        path: workingDirectory[1],
+        detail:
+          `Dispatch prompt for \`${prompt.node}\` pins a relative working ` +
+          `directory (\`${workingDirectory[1]}\`). It must be absolute — a ` +
+          "relative path resolves against whatever directory the child happens " +
+          "to start in, which is the inheritance that caused the 2026-08-17 leak."
+      })
+    }
+
     for (const quote of quotedInstructions(prompt.text)) {
       if (ledgered.has(normalizeInstruction(quote))) continue
       violations.push({
@@ -204,6 +239,37 @@ export function checkLedger(markdown) {
   }
 
   return violations
+}
+
+/**
+ * Node 6's return-side write scope.
+ *
+ * A `build` node may write inside its own worktree or its own work package,
+ * and nowhere else. This is the production counterpart of the fixture rig's
+ * before/after snapshot — that check asserts the invoking checkout is
+ * byte-unchanged, which a real run is supposed to violate, so the allowed set
+ * replaces it rather than being reused by name.
+ *
+ * Pure, so a simulated node-6 return is a fixture rather than a live run.
+ */
+export function buildWriteScope(slug) {
+  return [`.worktrees/implement-${slug}/`, `PRD/work/${slug}/`]
+}
+
+export function classifyBuildWrites(paths, slug) {
+  const allowed = buildWriteScope(slug)
+  const outside = paths
+    .map((candidate) => candidate.replace(/^\.\//, ""))
+    .filter((candidate) => !allowed.some((prefix) => candidate.startsWith(prefix)))
+  return {
+    allowed,
+    outside,
+    outcome: outside.length === 0 ? "ok" : "park",
+    evidence:
+      outside.length === 0
+        ? `all writes inside ${allowed.join(" or ")}`
+        : `node 6 wrote outside its scope: ${outside.join(", ")}`
+  }
 }
 
 export function formatViolations(violations, path) {
