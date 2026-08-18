@@ -29,9 +29,16 @@ observable predicate every phase skill runs directly and preserves its normal
 user questions, approval pauses, and handoffs — the same mechanism as the
 `thejudge-prepare is controlling` predicate in `preparation-contract.md`.
 
-The four phase skills that gate on the predicate — `thejudge-kickoff`,
-`thejudge-refinement`, `thejudge-quality-check`, and `thejudge-map-out` —
-accept either orchestrator name in their `## Mode` section. The driver states
+Six skills gate on the predicate — `thejudge-kickoff`, `thejudge-refinement`,
+`thejudge-quality-check`, `thejudge-map-out`, `thejudge-implement-all`, and
+`thejudge-cleanup` — and each accepts either orchestrator name in its `## Mode`
+section. Nodes 6 and 9 are on that list because a skill `graph-run` dispatches
+which checks nothing has undeclared autonomous behavior: whether it pauses for a
+human in a run with no human is not knowable from the skill file.
+
+Node 7's `superpowers:requesting-code-review` is deliberately **not** on it. It
+is not a `thejudge-*` skill and not this repository's to gate; its independence
+is nominal and recorded as a stated limit rather than papered over. The driver states
 its own name and never claims `thejudge-prepare is controlling`: the predicate
 attests which orchestrator is running.
 

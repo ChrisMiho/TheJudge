@@ -13,6 +13,24 @@ description: >-
 
 Execute every remaining slice with one agent, publishing each green milestone to a shared GitHub branch and open review PR.
 
+## Mode
+
+Direct invocation keeps the unattended single-agent behavior below, including
+its own preflight, worktree creation, and PR lifecycle.
+
+When the controlling agent explicitly states that an orchestrator is
+controlling — `thejudge-prepare is controlling` or `graph-run is controlling` —
+read `PRD/instructions/graph-workflow-contract.md`, take the recorded autonomous
+base from the package README's `## Autonomous metadata` section rather than
+asking for one, and treat every stop as a park reported to the named
+orchestrator instead of a question to a user: a blocked slice, an unresolvable
+gate failure, or a rebase conflict whose intent is not derivable ends the node
+`failed` with the evidence, and never waits for an answer nobody is there to
+give. Write only inside `.worktrees/implement-<slug>/` and `PRD/work/<slug>/` —
+node 6's write scope is asserted on return. Carry the dispatch prompt's absolute
+`Working directory:` line, unchanged, into every prompt this skill writes.
+Merging and closing the PR stay human in both modes.
+
 ## Inputs
 
 Work slug or `PRD/work/<slug>/` path. Optional shared remote branch or PR number; otherwise use `thejudge-auto/<slug>` targeting the package's recorded autonomous base (the `## Autonomous metadata` section in its `README.md`). Block before worktree creation if the package has no recorded base and no compatible supplied branch/PR resolves one.

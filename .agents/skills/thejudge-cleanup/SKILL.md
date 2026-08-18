@@ -15,6 +15,20 @@ description: >-
 
 Close out a work package: verify what's done, promote durable docs, write the receipt, delete `PRD/work/<slug>/`.
 
+## Mode
+
+Direct invocation keeps the gates, receipt, and delete behavior below, including
+the user force-override.
+
+When the controlling agent explicitly states that an orchestrator is
+controlling — `thejudge-prepare is controlling` or `graph-run is controlling` —
+read `PRD/instructions/graph-workflow-contract.md`, and apply every gate below
+as a **park rather than a question**: a package that is not `ship-ready`, a
+merge-proof check that cannot be satisfied, or a dirty worktree ends the node
+`failed` with the evidence and returns control to the named orchestrator. **The
+force override is unavailable under a predicate** — it exists for a human who
+has judged the exception, and an autonomous run has no human to judge it.
+
 ## Inputs
 
 Work slug. Optional force override when the user explicitly requests cleanup of a non-`ship-ready` package.
