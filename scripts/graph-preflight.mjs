@@ -22,6 +22,15 @@ export const DEFAULT_THRESHOLDS = { maxFiles: 10, maxLines: 200 }
 // as a rule at all.
 export const PROFILE_SENTINEL_ENV = "THEJUDGE_GRAPH_PROFILE"
 
+// Two graph runs launched against one checkout both commit to it, both rewrite
+// `GRAPH-RUN.md`, and both publish before `build`. That is the same
+// shared-working-directory hazard that produced the 2026-08-17 leak, except
+// with no isolation between them at all. One run at a time.
+//
+// The path sits under `.worktrees/`, which `.gitignore` already covers, so the
+// lock is never committed and never travels with a branch.
+export const LOCK_PATH = ".worktrees/.graph-run.lock"
+
 /**
  * What the ledger's `Profile:` field should say, from observation alone.
  *
@@ -342,6 +351,93 @@ export function parseArgs(argv) {
       maxLines: parseThresholdValue(get("--max-lines"), "--max-lines") ?? DEFAULT_THRESHOLDS.maxLines
     }
   }
+}
+
+/**
+ * Is the recorded holder still running?
+ *
+ * Signal 0 performs the permission and existence checks without delivering
+ * anything. `EPERM` means the process exists under another user — alive, and
+ * emphatically not ours to reclaim.
+ */
+export function isPidAlive(pid, kill = process.kill.bind(process)) {
+  if (!Number.isInteger(pid) || pid <= 0) return false
+  try {
+    kill(pid, 0)
+    return true
+  } catch (error) {
+    return error.code === "EPERM"
+  }
+}
+
+export function parseLockFile(contents) {
+  try {
+    const parsed = JSON.parse(contents)
+    if (!parsed || typeof parsed !== "object") return null
+    return {
+      slug: typeof parsed.slug === "string" ? parsed.slug : null,
+      runId: typeof parsed.runId === "string" ? parsed.runId : null,
+      pid: Number.isInteger(parsed.pid) ? parsed.pid : null,
+      startedAt: typeof parsed.startedAt === "string" ? parsed.startedAt : null
+    }
+  } catch {
+    return null
+  }
+}
+
+/**
+ * What a run should do about the lock it found — the whole decision, as a pure
+ * function over the file's contents.
+ *
+ * A stale lock is *reported*, never silently stolen: a run that reclaims
+ * without saying so is indistinguishable from one that never contended.
+ */
+export function classifyLock({ contents, isAlive = isPidAlive }) {
+  if (contents === null || contents === undefined) {
+    return { state: "free", holder: null, message: null }
+  }
+
+  const holder = parseLockFile(contents)
+  if (!holder || holder.pid === null) {
+    return {
+      state: "corrupt",
+      holder: null,
+      message:
+        `graph-run lock at ${LOCK_PATH} is unreadable. Inspect it, confirm no ` +
+        `run is active, then delete it before starting.`
+    }
+  }
+
+  const who =
+    `slug ${holder.slug ?? "<unknown>"}, run id ${holder.runId ?? "<unknown>"}, ` +
+    `pid ${holder.pid}`
+
+  if (isAlive(holder.pid)) {
+    return {
+      state: "held",
+      holder,
+      message:
+        `graph-run lock at ${LOCK_PATH} is held by ${who}` +
+        `${holder.startedAt ? `, started ${holder.startedAt}` : ""}. ` +
+        `Refusing: two runs cannot share one launch checkout. Wait for that run ` +
+        `to reach a terminal state, which releases the lock.`
+    }
+  }
+
+  return {
+    state: "stale",
+    holder,
+    message:
+      `graph-run lock at ${LOCK_PATH} names ${who}` +
+      `${holder.startedAt ? `, started ${holder.startedAt}` : ""}, but that ` +
+      `process is not running. The lock is stale. Confirm the run really ended, ` +
+      `then reclaim it with: rm ${LOCK_PATH}`
+  }
+}
+
+/** The record a run writes when it takes the lock. */
+export function lockRecord({ slug, runId, pid, now }) {
+  return JSON.stringify({ slug, runId, pid, startedAt: now }, null, 2) + "\n"
 }
 
 function main(argv) {

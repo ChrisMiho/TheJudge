@@ -172,6 +172,13 @@ behavior for the user.
 | `BLOCKED` | Safe branch and commit preserved; exact failure, what exists, what does not, and recovery action | Fix the external condition, then retry |
 | `PROMPTED` | The denied or unlisted command written verbatim under `## Open gate`, with the node it arose at; `STATUS.owner-action`, board row updated | Run the command yourself, or add the rule to `.claude/graph-profile.json`, then `/graph-run PRD/work/<slug>/` |
 
+**Release the concurrency lock on every state in this table.** Node 1 takes
+`.worktrees/.graph-run.lock`; the run deletes it as the last act before
+reporting any terminal state above. This table is the definitive list — do not
+enumerate the releasing states anywhere else. A second list drifts, and a lock
+released on a state one list omits is a stranded lock that blocks every later
+run.
+
 `PROMPTED` is what a permission prompt becomes. A prompt in an autonomous
 session is a hang, not a question — nobody is there to answer it, and the run
 waits forever leaving no evidence of why. So a run that hits a denied or

@@ -19,7 +19,12 @@ import {
   formatFailureReport,
   defaultRunId,
   readProfileSentinel,
+  classifyLock,
+  isPidAlive,
+  lockRecord,
+  parseLockFile,
   PROFILE_SENTINEL_ENV,
+  LOCK_PATH,
   DEFAULT_THRESHOLDS,
   SECRET_PATTERNS
 } from "./graph-preflight.mjs"
@@ -776,4 +781,160 @@ test("graph-preflight - the profile denies edits to itself, so the sentinel cann
     profile.permissions.deny.includes("Edit(./.claude/graph-profile.json)"),
     "a run that could edit the profile could write its own sentinel"
   )
+})
+
+const HELD_LOCK = JSON.stringify({
+  slug: "graph-workflow",
+  runId: "graph-20260818-120000",
+  pid: 4242,
+  startedAt: "2026-08-18T12:00:00.000Z"
+})
+
+test("graph-preflight - lock - no lock file means the run may start", () => {
+  const result = classifyLock({ contents: null })
+  assert.equal(result.state, "free")
+  assert.equal(result.message, null)
+})
+
+test("graph-preflight - lock - a live holder refuses and names slug, run id, and pid", () => {
+  const result = classifyLock({ contents: HELD_LOCK, isAlive: () => true })
+  assert.equal(result.state, "held")
+  // All three, because "another run is going" is not enough to find it.
+  assert.match(result.message, /slug graph-workflow/)
+  assert.match(result.message, /run id graph-20260818-120000/)
+  assert.match(result.message, /pid 4242/)
+  assert.match(result.message, /Refusing: two runs cannot share one launch checkout/)
+})
+
+test("graph-preflight - lock - a dead holder is reported stale, never silently stolen", () => {
+  const result = classifyLock({ contents: HELD_LOCK, isAlive: () => false })
+  assert.equal(result.state, "stale")
+  assert.match(result.message, /is stale/)
+  assert.match(result.message, new RegExp(`reclaim it with: rm ${LOCK_PATH.replace(".", "\\.")}`))
+  assert.match(result.message, /Confirm the run really ended/)
+})
+
+test("graph-preflight - lock - an unreadable lock is corrupt, not free", () => {
+  // Treating a garbled lock as absent is how two runs end up sharing a checkout.
+  for (const contents of ["not json", "[]", "null", '{"slug":"x"}']) {
+    const result = classifyLock({ contents })
+    assert.equal(result.state, "corrupt", `${contents} must not read as free`)
+    assert.match(result.message, /confirm no run is active/i)
+  }
+})
+
+test("graph-preflight - lock - parseLockFile keeps only well-typed fields", () => {
+  assert.deepEqual(parseLockFile(HELD_LOCK), {
+    slug: "graph-workflow",
+    runId: "graph-20260818-120000",
+    pid: 4242,
+    startedAt: "2026-08-18T12:00:00.000Z"
+  })
+  assert.deepEqual(parseLockFile('{"pid":"4242"}'), {
+    slug: null,
+    runId: null,
+    pid: null,
+    startedAt: null
+  })
+})
+
+test("graph-preflight - lock - isPidAlive treats EPERM as alive", () => {
+  // A process owned by another user exists. Reclaiming it would be theft.
+  const eperm = () => {
+    const error = new Error("operation not permitted")
+    error.code = "EPERM"
+    throw error
+  }
+  assert.equal(isPidAlive(4242, eperm), true)
+
+  const esrch = () => {
+    const error = new Error("no such process")
+    error.code = "ESRCH"
+    throw error
+  }
+  assert.equal(isPidAlive(4242, esrch), false)
+  assert.equal(isPidAlive(4242, () => undefined), true)
+  assert.equal(isPidAlive(0, () => undefined), false)
+  assert.equal(isPidAlive(-1, () => undefined), false)
+})
+
+test("graph-preflight - lock - the record round-trips through the classifier", () => {
+  const record = lockRecord({
+    slug: "demo",
+    runId: "graph-20260818-130000",
+    pid: 99,
+    now: "2026-08-18T13:00:00.000Z"
+  })
+  const result = classifyLock({ contents: record, isAlive: () => true })
+  assert.equal(result.state, "held")
+  assert.equal(result.holder.slug, "demo")
+  assert.equal(result.holder.pid, 99)
+})
+
+test("graph-preflight - lock - the path is under the ignored .worktrees root", () => {
+  assert.equal(LOCK_PATH, ".worktrees/.graph-run.lock")
+})
+
+function terminalStates() {
+  const skill = fs.readFileSync(
+    fileURLToPath(new URL("../.claude/skills/graph-run/SKILL.md", import.meta.url)),
+    "utf8"
+  )
+  const section = /## Terminal states\n([\s\S]*?)\n## /.exec(skill)
+  assert.ok(section, "graph-run must have a ## Terminal states section")
+  return [...section[1].matchAll(/^\|\s*`([A-Z]+)`\s*\|/gm)].map((match) => match[1])
+}
+
+test("graph-preflight - lock - the releasing states are exactly the four in graph-run's table", () => {
+  assert.deepEqual(terminalStates(), ["COMPLETE", "PARKED", "BLOCKED", "PROMPTED"])
+})
+
+test("graph-preflight - lock - release is stated by reference, not re-enumerated", () => {
+  // A second list of releasing states drifts, and a lock released on a state one
+  // list omits is a stranded lock that blocks every later run.
+  const skill = fs.readFileSync(
+    fileURLToPath(new URL("../.claude/skills/graph-run/SKILL.md", import.meta.url)),
+    "utf8"
+  )
+  assert.match(skill, /Release the concurrency lock on every state in this table/)
+
+  for (const file of [
+    "../.claude/skills/graph-preflight/SKILL.md",
+    "../PRD/instructions/graph-workflow-contract.md"
+  ]) {
+    const text = fs.readFileSync(fileURLToPath(new URL(file, import.meta.url)), "utf8")
+    const enumerated = text.match(/`PROMPTED`/g) ?? []
+    assert.ok(
+      enumerated.length <= 1,
+      `${file} enumerates terminal states instead of pointing at graph-run's table`
+    )
+  }
+})
+
+test("graph-preflight - lock - taking then releasing leaves no lock, for each terminal state", () => {
+  const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "graph-lock-"))
+  try {
+    const lockPath = path.join(sandbox, LOCK_PATH)
+    fs.mkdirSync(path.dirname(lockPath), { recursive: true })
+
+    for (const state of terminalStates()) {
+      fs.writeFileSync(
+        lockPath,
+        lockRecord({ slug: "demo", runId: `graph-${state}`, pid: process.pid, now: new Date().toISOString() })
+      )
+      assert.equal(
+        classifyLock({ contents: fs.readFileSync(lockPath, "utf8") }).state,
+        "held",
+        `a live run must hold the lock before terminating ${state}`
+      )
+
+      // The terminal state's last act.
+      fs.rmSync(lockPath)
+
+      assert.equal(fs.existsSync(lockPath), false, `${state} must release the lock`)
+      assert.equal(classifyLock({ contents: null }).state, "free")
+    }
+  } finally {
+    fs.rmSync(sandbox, { recursive: true, force: true })
+  }
 })

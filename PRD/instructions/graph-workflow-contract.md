@@ -340,6 +340,26 @@ what the profile is for. `Bash(npm run *)` and `Bash(node scripts/*)` stay
 broadly allowed, and enforcement lives in `quality:check` — `test:scripts` runs
 `node --test scripts/*.test.mjs`, so a new guard joins the gate by existing.
 
+## One run at a time
+
+`graph-preflight` takes `.worktrees/.graph-run.lock` before any mutation — a
+JSON record of the slug, run id, PID, and start time, under the already-ignored
+`.worktrees/` root so it never travels with a branch. A second run refuses while
+it is held and relays a message naming the holding slug, run id, and PID. A lock
+whose PID is not running is reported **stale** with the reclaim command stated,
+never silently stolen; an unparseable lock stops the run rather than reading as
+absent. The decision is `classifyLock()` in `scripts/graph-preflight.mjs`, a
+tested pure function.
+
+Two runs against one launch checkout both commit to it, both rewrite
+`GRAPH-RUN.md`, and both publish before `build` — the shared-working-directory
+hazard of 2026-08-17 with no isolation between them.
+
+The run releases the lock on every state in `graph-run`'s `## Terminal states`
+table. That table is the definitive list and this contract does not restate it:
+a release path enumerated in two places drifts, and a lock released on a state
+one list omits is a stranded lock.
+
 ## Terminal states
 
 `.claude/skills/graph-run/SKILL.md`'s `## Terminal states` table is the single

@@ -29,6 +29,35 @@ Read `PRD/instructions/graph-workflow-contract.md` before acting.
   run — the default is timestamped to the second, so omitting it gives the two
   invocations different ids.
 
+## Concurrency lock
+
+Take the lock **first**, before the dry run and before any mutation. Two
+`graph-run` invocations against one launch checkout both commit to it, both
+rewrite `GRAPH-RUN.md`, and both publish before `build` — the same
+shared-working-directory hazard that produced the 2026-08-17 leak, with no
+isolation between them at all.
+
+The lock is `.worktrees/.graph-run.lock`, a JSON record holding the slug, run
+id, PID, and start time. It lives under `.worktrees/`, which `.gitignore`
+already covers, so it never travels with a branch.
+
+`classifyLock()` in `scripts/graph-preflight.mjs` decides what to do, and it is
+a tested pure function — do not re-derive the decision by judgment:
+
+| State | Meaning | Action |
+| --- | --- | --- |
+| `free` | no lock file | take it and continue |
+| `held` | the recorded PID is alive | **refuse**, and relay the message — it names the holding slug, run id, and PID |
+| `stale` | the recorded PID is not running | report it stale and relay the stated `rm` reclaim command. Never reclaim silently |
+| `corrupt` | the lock exists but does not parse | stop. A garbled lock read as absent is how two runs end up sharing a checkout |
+
+A stale lock is reported, never silently stolen: a run that reclaims without
+saying so is indistinguishable from one that never contended.
+
+Release is `graph-run`'s, not this skill's — see `graph-run`'s
+`## Terminal states` table, which is the definitive list of the states that
+release it.
+
 ## Procedure
 
 1. Run `npm run graph:preflight -- --branch <name> --run-id <id> --dry-run`
