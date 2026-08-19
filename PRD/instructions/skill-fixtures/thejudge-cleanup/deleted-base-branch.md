@@ -64,4 +64,51 @@ not been tested.
 
 | Date | Skill version | Reps | Result | Variance |
 | --- | --- | --- | --- | --- |
-| — | — | — | not yet measured | — |
+| 2026-08-18 | `thejudge-cleanup` @ slice K (`9da77c6`) | 3 | **PASS — all ten items, 3 of 3** | Zero divergence on every graded item. Two shared observations, both correct, neither a failure |
+
+### 2026-08-18 — first measured run
+
+Reps built by `scripts/fixture-rig.mjs`: three clones, three bare origins, a
+seeded package, a real merge commit `Merge pull request #42 from
+ChrisMiho/thejudge-auto/collection-manager`, and `feature/collection-manager`
+absent from every origin.
+
+Item by item, 3 of 3:
+
+- **1, 2** — every rep found the skill from `AGENT-SKILLS.md` unprompted and
+  applied the status gate before the merge-proof gate.
+- **3, 4, 5** — every rep treated the deleted base as a normal end state and
+  took the second path, proving absence from `git branch -r` and presence of the
+  merge in `HEAD`. Rep 1: "it resolves nowhere in `git branch -r`, and merge
+  commit `751f0d7` … *is* `HEAD` and the tip of `origin/main`, so the work
+  demonstrably shipped."
+- **6** — every receipt names the recorded base and the merge SHA. Rep 1: "The
+  base is named in the receipt so it stays traceable."
+- **7, 8** — receipt written before the delete in all three; all three deleted
+  with the path-scoped `git rm -r PRD/work/collection-manager/`.
+- **9** — no rep touched a remote branch.
+- **10** — measured separately by restoring `feature/collection-manager` to the
+  remote while staying on `main`. Refused, exactly as required: "Check 1
+  **fails**. Path: neither — the recorded base … still exists on the remote …
+  so the deleted-base fallback path is unavailable … the fix is to switch to
+  `feature/collection-manager` and re-run, not to fall back to merge-ancestry
+  proof."
+
+**Variance — two shared observations, recorded because convergence on a caveat
+is itself signal:**
+
+1. All three flagged that PR #42's *base ref* could not be confirmed, since the
+   rig has no GitHub remote. Each proceeded on the substantive local proof and
+   recorded the gap in the receipt rather than claiming the check passed. Rep 2
+   stated the trade explicitly: "blocking a clean-out on an unverifiable branch
+   *name* would be the wrong trade." This is a **fixture limitation**, not a
+   skill finding — a rig-built rep cannot answer a GitHub API question.
+2. All three declined to mint a `DEC-###` for the brief's product truth, because
+   the seeded `PRD/sections/` carries no numbered entries and any ID would be
+   invented rather than allocated. Correct, and also a rig limitation.
+
+Neither observation is a defect in the skill. Both are recorded so a later
+re-run against a richer seed can tell a new finding from a known artifact.
+
+The rig's after-snapshot passed — `compareSnapshots` reported "invoking
+repository unchanged" — **before** these results were written.

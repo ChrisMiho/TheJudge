@@ -51,7 +51,7 @@ Mapped 2026-08-18. One scope item per slice, in the brief's stated order.
 | [K](./slice-k-ledger-survives-close.md) | 10 | The run ledger survives `close` | J | done |
 | [L](./slice-l-define-gate-and-review.md) | 12+13 | `define` parks on any `PRD/sections/` diff; `graph-gate-review` | B, I, K | done |
 | [M](./slice-m-fixture-rig.md) | 5 | Fixture rig owns rep setup | C — **parallel-ready** | done |
-| [N](./slice-n-cleanup-fixture.md) | 6 | `thejudge-cleanup` fixture | J, K, M | planned |
+| [N](./slice-n-cleanup-fixture.md) | 6 | `thejudge-cleanup` fixture | J, K, M | done |
 | [O](./slice-o-remeasure-item-5.md) | 7 | Re-measure item 5 against the validator; ship gates | G, L, M | planned |
 
 ### Implementation map
