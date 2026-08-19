@@ -269,6 +269,9 @@ A graph run may not:
 - use `nohup`, untracked background `&`, `pkill`, or `killall`
 - stage with `git add -A`, `git add --all`, or `git add .` — a run stages
   explicit paths and nothing else
+- push `main` or `master`, or merge anything into them
+- merge or pull with a strategy that discards one side — `-s ours`,
+  `-X ours`, `-X theirs`, `--allow-unrelated-histories`, `git pull --force`
 
 The permission profile at `.claude/graph-profile.json` enforces most of these
 mechanically, but **only in a session launched with**
@@ -304,6 +307,41 @@ classification (at or below 10 changed files and 200 changed lines), a
 `--dry-run` preview of every planned command, and a secret gate that blocks
 before any of it. It is not the ad-hoc cleanup that caused the leak. No other
 script may add one.
+
+**Merging and pulling are allowed; merging into the trunk is not.** A run may
+`git merge` and `git pull` — integrating an updated base is ordinary mechanics,
+not a product decision. What it may not do is discard one side of that
+integration, so the strategy overrides are denied: `-s ours` produces a merge
+commit keeping none of the incoming work, and `-X ours` / `-X theirs`
+auto-resolves conflicts by picking a side, which is this contract's
+"preserve both flows' intended behavior" inverted. There is no
+`git merge --force`; those flags are its equivalent.
+
+**Where "not into `main`" is actually enforced — and where it cannot be.** A
+permission rule reads command text, and `git merge <ref>` names the branch
+merged **from**, never the branch merged **into**. The target is the current
+checkout, which no rule can see. So this boundary is not, and cannot be, a rule
+about `git merge`.
+
+It is enforced at the push instead. Only `origin` pushes are permitted at all,
+and every `main` / `master` spelling reachable through those two allows is
+denied — `git push origin main`, `origin HEAD:main`, `-u origin main`, and the
+refspec forms, for both names. The denies deliberately carry no trailing `*`
+after the branch name, so a branch merely *starting* with `main` —
+`main-line-feature`, `maintenance` — stays pushable. A rule that blocked those
+would surface mid-run as a prompt, which is a hang.
+
+What remains reachable, stated plainly: a run can make a local merge into `main`
+in its own checkout. It cannot publish it — the push is denied and force-push
+has been denied all along, so nothing lands that is not fast-forward. It also
+cannot erase it: `git reset --hard` and `git clean` are denied, so the mistake
+stays visible for the owner to unwind. The guarantee is "cannot be published and
+cannot be hidden", not "cannot be made". `scripts/graph-preflight.test.mjs`
+asserts each of these rules, including the false-positive check.
+
+The one merge that matters is still human. Node 8 (`land`) is the owner merging
+the pull request; `gh pr merge` and `gh pr close` stay denied, and nothing here
+changes that.
 
 Two boundaries stay convention-only even with the profile loaded. `nohup` is
 stripped as a wrapper before Bash rules are matched, so the `Bash(nohup*)` deny

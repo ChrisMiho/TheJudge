@@ -938,3 +938,86 @@ test("graph-preflight - lock - taking then releasing leaves no lock, for each te
     fs.rmSync(sandbox, { recursive: true, force: true })
   }
 })
+
+function graphProfile() {
+  return JSON.parse(
+    fs.readFileSync(fileURLToPath(new URL("../.claude/graph-profile.json", import.meta.url)), "utf8")
+  )
+}
+
+test("graph-profile - merge and pull are allowed", () => {
+  const { allow } = graphProfile().permissions
+  assert.ok(allow.includes("Bash(git merge *)"))
+  assert.ok(allow.includes("Bash(git pull *)"))
+})
+
+test("graph-profile - the destructive merge and pull variants are denied", () => {
+  // `-s ours` produces a merge commit that keeps none of the incoming work, and
+  // `-X ours`/`-X theirs` auto-resolves conflicts by picking a side — the
+  // shared-branch contract's "preserve both flows' intent" inverted. These are
+  // the "forced" forms of a merge; there is no `git merge --force`.
+  const { deny } = graphProfile().permissions
+  for (const command of ["merge", "pull"]) {
+    for (const flag of [
+      "-s ours",
+      "--strategy=ours",
+      "-X ours",
+      "-X theirs",
+      "--strategy-option=ours",
+      "--strategy-option=theirs",
+      "--allow-unrelated-histories"
+    ]) {
+      // Denied both before and after the ref — flags are legal in either place.
+      assert.ok(deny.includes(`Bash(git ${command} ${flag}*)`), `git ${command} ${flag}`)
+      assert.ok(deny.includes(`Bash(git ${command} * ${flag}*)`), `git ${command} <ref> ${flag}`)
+    }
+  }
+  assert.ok(deny.includes("Bash(git pull --force*)"))
+  assert.ok(deny.includes("Bash(git pull * --force*)"))
+})
+
+test("graph-profile - pushing the trunk is denied in every allowed spelling", () => {
+  // This is where "never merge into main" is actually enforced. A permission
+  // rule reads command text, and `git merge <ref>` names the branch merged
+  // FROM, never the branch merged INTO — so the merge itself is unreachable by
+  // a rule and the push is the enforcement point.
+  const { allow, deny } = graphProfile().permissions
+
+  // The premise: only origin pushes are allowed at all, so only origin
+  // spellings need denying. If a broader push allow is ever added, this fails.
+  const pushAllows = allow.filter((rule) => rule.startsWith("Bash(git push"))
+  assert.deepEqual(pushAllows, ["Bash(git push -u origin *)", "Bash(git push origin HEAD:*)"])
+
+  for (const branch of ["main", "master"]) {
+    for (const rule of [
+      `Bash(git push origin ${branch})`,
+      `Bash(git push origin ${branch} *)`,
+      `Bash(git push origin ${branch}:*)`,
+      `Bash(git push origin HEAD:${branch})`,
+      `Bash(git push origin HEAD:${branch} *)`,
+      `Bash(git push -u origin ${branch})`,
+      `Bash(git push -u origin ${branch} *)`,
+      `Bash(git push -u origin ${branch}:*)`,
+      `Bash(git push -u origin HEAD:${branch})`
+    ]) {
+      assert.ok(deny.includes(rule), `missing deny: ${rule}`)
+    }
+  }
+})
+
+test("graph-profile - the trunk denies do not catch a branch merely starting with main", () => {
+  // No trailing `*` sits directly after the branch name, so `main-line-feature`
+  // and `maintenance` stay pushable. A rule that blocked them would be found at
+  // the worst possible moment — mid-run, as a prompt.
+  const { deny } = graphProfile().permissions
+  const offenders = deny.filter((rule) => /(?:main|master)\*/.test(rule))
+  assert.deepEqual(offenders, [], "a deny ending `main*` would also block `main-line-feature`")
+})
+
+test("graph-profile - the run cannot tidy up a local merge it should not have made", () => {
+  // The honest backstop: a local merge into main is reachable, publishing it is
+  // not, and the run cannot erase the evidence either.
+  const { deny } = graphProfile().permissions
+  assert.ok(deny.includes("Bash(git reset --hard*)"))
+  assert.ok(deny.some((rule) => rule.startsWith("Bash(git push --force")))
+})

@@ -139,6 +139,34 @@ brief abbreviates `ci-workflow-parity.test.mjs`'s anchor regex (actual:
 `thejudge-*` skills exist — pre-existing drift, unrelated to the third graph
 skill, on a line slice A already edits.
 
+### Added after ship-ready — merge and pull, 2026-08-18
+
+Owner decision after the fifteen slices landed, so it is recorded here rather
+than folded into a slice: a graph run may `git merge` and `git pull`, provided
+it is not into the trunk and not forced.
+
+Implemented in `.claude/graph-profile.json` as two allows and 48 denies —
+the strategy overrides that discard one side (`-s ours`, `-X ours`,
+`-X theirs`, `--allow-unrelated-histories`, `git pull --force`) and every
+`main` / `master` push spelling reachable through the two permitted push
+allows. Measured under `claude --settings`: `git merge topic` allowed,
+`git merge -X theirs topic` denied, `git pull --force origin main` denied, all
+three `main` push forms denied, and `git push -u origin main-line-feature`
+still allowed.
+
+**The stated limit.** A permission rule reads command text, and
+`git merge <ref>` names the branch merged *from*, never the branch merged
+*into* — the target is the current checkout, which no rule can see. So this is
+enforced at the push, not at the merge. A run can make a local merge into
+`main`; it cannot publish it (push denied, force-push denied) and cannot hide
+it (`git reset --hard` and `git clean` denied). "Cannot be published and cannot
+be hidden", not "cannot be made". Five tests in
+`scripts/graph-preflight.test.mjs` hold the rules, including a false-positive
+check that `main-line-feature` stays pushable.
+
+Node 8 (`land`) is unchanged: the pull-request merge is still the owner's, and
+`gh pr merge` / `gh pr close` stay denied.
+
 ### Added on reopen
 
 Mechanical gaps, found by reading `.claude/graph-profile.json` against the node
