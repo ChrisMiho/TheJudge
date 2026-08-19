@@ -1,6 +1,6 @@
 ---
 slug: graph-workflow
-status: active
+status: ship-ready
 ---
 
 # graph-workflow
@@ -52,7 +52,7 @@ Mapped 2026-08-18. One scope item per slice, in the brief's stated order.
 | [L](./slice-l-define-gate-and-review.md) | 12+13 | `define` parks on any `PRD/sections/` diff; `graph-gate-review` | B, I, K | done |
 | [M](./slice-m-fixture-rig.md) | 5 | Fixture rig owns rep setup | C — **parallel-ready** | done |
 | [N](./slice-n-cleanup-fixture.md) | 6 | `thejudge-cleanup` fixture | J, K, M | done |
-| [O](./slice-o-remeasure-item-5.md) | 7 | Re-measure item 5 against the validator; ship gates | G, L, M | planned |
+| [O](./slice-o-remeasure-item-5.md) | 7 | Re-measure item 5 against the validator; ship gates | G, L, M | done |
 
 ### Implementation map
 
@@ -98,7 +98,8 @@ browser-observable risk per `PRD/instructions/runtime-process-hygiene.md`.
 
 ## Status
 
-`active` — quality-check PASS and mapped 2026-08-18 into fifteen slices (A–O). Reopened 2026-08-17
+`ship-ready` — all fifteen slices (A–O) `done` as of 2026-08-18, implemented on
+`thejudge-auto/graph-workflow` (PR #91). Quality-check PASS and mapped 2026-08-18 into fifteen slices (A–O). Reopened 2026-08-17
 after a workflow review found nine boundaries outside the brief's three; scope
 grew from seven items to sixteen. The fifth
 quality-check pass returned FAIL on five enumeration errors, all now corrected
@@ -241,6 +242,10 @@ reference 133), the four protected-literal scripts perform no anchored write
 calls, the eleven writers are the right eleven, and the `sync-agent-skills.sh`
 diff matches the file byte for byte.
 
-Mapped 2026-08-18. Next: `/thejudge-implement PRD/work/graph-workflow/ slice A`
-for one slice, or `/thejudge-implement-all PRD/work/graph-workflow/` for an
-unattended pass — **after PR #90 merges and a fresh branch is cut from `main`**.
+Implemented 2026-08-18 in one unattended `thejudge-implement-all` pass, fifteen
+milestone commits on `thejudge-auto/graph-workflow` against the recorded
+autonomous base `origin/feature/graph-workflow-hardening`. Review PR #91.
+
+Next: merge PR #91, then `/thejudge-cleanup PRD/work/graph-workflow/`. The PRD
+promotion checklist cleanup must execute is in
+`slice-o-remeasure-item-5.md` under `## PRD promotion checklist`.
