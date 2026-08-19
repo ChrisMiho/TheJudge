@@ -1,6 +1,6 @@
 # Slice N — `thejudge-cleanup` fixture
 
-## Status: planned
+## Status: in-progress
 
 Scope item 6. Depends on: **J** (cleanup's `## Mode` section), **K** (the
 receipt's `## Graph run` section), and **M** (the rig runs it).
