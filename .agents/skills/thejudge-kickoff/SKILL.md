@@ -64,5 +64,5 @@ created artifacts to `thejudge-prepare`.
 Direct orient-only: none — point the user at `AGENT-SKILLS.md` and this skill's
 `reference.md`.
 
-Direct idea captured: `/thejudge-refinement PRD/work/<slug>/` (Cursor / Claude
-Code) or `$thejudge-refinement PRD/work/<slug>/` (Codex).
+Direct idea captured: `/thejudge-refinement PRD/work/<slug>/` (Claude Code)
+or `$thejudge-refinement PRD/work/<slug>/` (Codex).

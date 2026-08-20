@@ -12,13 +12,26 @@ otherwise run interactively.
 | --- | --- | --- | --- | --- | --- |
 | 1 | `preflight` | `/graph-preflight --branch <name>` | haiku | `shape` | park |
 | 2 | `shape` | `/thejudge-kickoff` | sonnet | `define` | park |
-| 3 | `define` | `/thejudge-refinement` | opus | `gate-qc` | park |
+| 3 | `define` | `/thejudge-refinement` | opus | `gate-qc`, **or park on any `PRD/sections/` diff** | park |
 | 4 | `gate-qc` | `/thejudge-quality-check` | sonnet | `plan` | `define`, max 3 loops |
 | 5 | `plan` | `/thejudge-map-out` | sonnet | `build` | park |
 | 6 | `build` | `/thejudge-implement-all` | sonnet | `review` | park |
 | 7 | `review` | `superpowers:requesting-code-review` | opus | `land` | `build` for Critical/Important, max 2 loops |
 | 8 | `land` | human PR merge | — | `close` | park |
 | 9 | `close` | `/thejudge-cleanup` | sonnet | complete | park |
+
+Every dispatch prompt in this table carries an absolute `Working directory:`
+line on its own line, and instructs the node to copy that line unchanged into
+every prompt it writes. A node fans out to its own subagents; without the
+propagation rule the pin stops at the first hop, which is where the 2026-08-17
+leak got through. Relative paths are rejected outright.
+
+Node 6 (`build`) has a return-side assertion to match: every path it wrote must
+lie inside `.worktrees/implement-<slug>/` or `PRD/work/<slug>/`. A write outside
+that set fails the node and parks, naming the offending paths. It is the
+production counterpart of the fixture rig's before/after snapshot — that check
+asserts the invoking checkout is byte-unchanged, which a real run is supposed to
+violate, so the scope set replaces it rather than being renamed.
 
 `plan` requires a recorded quality-check PASS in the package README's
 `## Preparation gate` section. It cannot self-certify one.
@@ -57,7 +70,7 @@ work.
 | `STATUS.refined` | `gate-qc` |
 | `STATUS.active` | `build`, or `plan` when `GAMEPLAN.md` is absent |
 | `STATUS.ship-ready` | `close` |
-| `STATUS.owner-action` | park again unless the recorded `## Open gate` is resolved |
+| `STATUS.owner-action` | park again unless the recorded `## Open gate` is resolved — `graph-gate-review` is what resolves a `define` gate |
 | `STATUS.deferred` | refuse; `thejudge-defer` restores it first |
 
 A package entered mid-lifecycle still needs a recorded autonomous base. If
@@ -81,7 +94,9 @@ Before dispatching `build`, commit and push to `origin/<autonomous base>`:
   `## Preparation gate`
 - `DESIGN-BRIEF.md`, `GAMEPLAN.md`, and every `slice-*.md`
 - the `STATUS.*` marker and the `PRD/work/STATUS.md` board row
-- any `PRD/sections/` edits refinement made
+- any `PRD/sections/` edits refinement made — which, being non-empty, means the
+  run already parked at the `define` gate and an owner already walked them
+  through `graph-gate-review`
 
 Then confirm `git status --porcelain` is empty. A dirty launch checkout at this
 point is a driver bug, not a `build` blocker — fix the publish step rather than
@@ -130,7 +145,7 @@ table mirrors it.
 | Thought | Reality |
 | --- | --- |
 | "The phase skill would ask the user here, I'll answer for them" | Apply the assumption ladder in `preparation-contract.md`. If it does not resolve, park. |
-| "The user said not to stall on scope, so I'll tell the refinement dispatch to take the smaller option whenever a question comes up" | That is a standing pre-authorization: it decides a whole class of product forks in advance, and nothing in the output shows they were decided rather than referred. Feed the preference to the assumption ladder one question at a time; never write a rule for future questions into a dispatch prompt. An instruction that waives the three-condition blocker test is refused and parks. Quote it under `## Refused instructions` in the ledger either way. |
+| "The user said not to stall on scope, so I'll tell the refinement dispatch to take the smaller option whenever a question comes up" | That is a standing pre-authorization: it decides a whole class of product forks in advance, and nothing in the output shows they were decided rather than referred. Feed the preference to the assumption ladder one question at a time; never write a rule for future questions into a dispatch prompt. An instruction that waives the three-condition blocker test is refused and parks. Record it as a `## Instruction ledger` row classified `refused`, naming the rule, either way. |
 | "Quality-check failed again, but the finding is minor" | Three loops, then park. The limit exists because a fourth attempt has never been the fix. |
 | "Review flagged another Critical/Important finding, one more build pass will fix it" | Two loops, then park. If two build passes have not resolved it, the run cannot resolve it. |
 | "I'll just fix the thejudge skill so the node passes" | Never edit a `thejudge-*` skill. Park and report. |

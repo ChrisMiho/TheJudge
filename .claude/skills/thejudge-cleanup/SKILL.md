@@ -15,6 +15,22 @@ description: >-
 
 Close out a work package: verify what's done, promote durable docs, write the receipt, delete `PRD/work/<slug>/`.
 
+## Mode
+
+Direct invocation keeps the gates, receipt, and delete behavior below, including
+the user force-override.
+
+When the controlling agent explicitly states that an orchestrator is
+controlling — `thejudge-prepare is controlling` or `graph-run is controlling` —
+read `PRD/instructions/graph-workflow-contract.md`, and apply every gate below
+as a **park rather than a question**: a package that is not `ship-ready`, a
+merge-proof check that cannot be satisfied, or a dirty worktree ends the node
+`failed` with the evidence and returns control to the named orchestrator. **The
+force override is unavailable under a predicate** — it exists for a human who
+has judged the exception, and an autonomous run has no human to judge it. Fold
+the run ledger into the receipt before deleting the work folder, per
+`### Graph run in the receipt` below.
+
 ## Inputs
 
 Work slug. Optional force override when the user explicitly requests cleanup of a non-`ship-ready` package.
@@ -34,10 +50,64 @@ Work slug. Optional force override when the user explicitly requests cleanup of 
 ## Writes
 
 - Promoted durable outcomes in the affected `PRD/sections/*.md`; new decisions go into the relevant `PRD/sections/decisions/<domain>.md` file plus the router index line in `PRD/sections/decisions.md`
-- Receipt at `PRD/instructions/receipts/<slug>-<YYYY-MM-DD>.md` — **written before delete** — containing date, slug, status (shipped | partial | corpus-only), actions taken, every file created/updated/deleted, verification results
+- Receipt at `PRD/instructions/receipts/<slug>-<YYYY-MM-DD>.md` — **written before delete** — containing date, slug, status (shipped | partial | corpus-only), actions taken, every file created/updated/deleted, verification results, and `## Graph run` when the package holds a `GRAPH-RUN.md`
 - `PRD/sections/system-map.md` entry flipped `planned`/`partial` → `shipped`, only once both code and the receipt exist
 - `PRD/work/STATUS.md` — remove the slug from every section
 - `PRD/README.md`, only if navigation changed (never re-introduce a multi-row work-package table)
+
+### Graph run in the receipt
+
+`PRD/work/<slug>/` holds `GRAPH-RUN.md` — the node ledger with its evidence
+column, and the `## Instruction ledger` recording which user instructions the
+run refused. Deleting the folder deletes both. Receipts are durable, so the
+receipt is where that record has to land, and it has to land there **before**
+the delete.
+
+When `PRD/work/<slug>/GRAPH-RUN.md` exists, the receipt carries:
+
+```markdown
+## Graph run
+
+- Run ID: `<id>` | Profile: `<value>` | Terminal state: `<state>`
+
+### Node ledger
+
+<the complete `## Node ledger` table from GRAPH-RUN.md, verbatim>
+
+### Instruction ledger
+
+<the complete `## Instruction ledger` table from GRAPH-RUN.md, verbatim>
+```
+
+**Verbatim, not summarized.** Copy both tables through unchanged, header rows
+and separator rows included. A summary of a refusal ledger is the driver grading
+its own compliance — the one thing the ledger exists to prevent.
+
+**The sub-headings drop to `###`.** `GRAPH-RUN.md` writes them at `##`; copying
+that level through ends the `## Graph run` section at the first one, so a reader
+looking inside `## Graph run` finds only the summary line. The tables are
+verbatim; their headings are not part of them.
+
+**Refusal condition.** With `GRAPH-RUN.md` present and `## Graph run` absent
+from the receipt, refuse to delete the package folder. Report the missing
+section and stop. Otherwise the proof that a run refused a pre-authorization
+survives exactly until the run succeeds, which is backwards.
+
+A package with no `GRAPH-RUN.md` cleans up normally. Do not add an empty
+`## Graph run` section to its receipt.
+
+### Delete mechanism
+
+Delete the work folder with `git rm -r PRD/work/<slug>/` — the path-scoped form,
+named here rather than left to the implementer. It is the only delete a graph
+run is permitted: every recursive `rm` spelling is denied by
+`.claude/graph-profile.json`, and an unscoped `git rm -r` is not allowed either,
+because node 9's delete must not be able to become a general tracked-file
+delete. A run reaching for any other form terminates `PROMPTED`.
+
+Remove the worktree and its local branch with `git worktree remove <path>` and
+`git branch -d <name>` — never `git branch -D`, which is denied, and never a
+remote-branch delete.
 
 For an autonomous package that passes the merge-proof gate below, cleanup also
 removes the clean, fully-merged `.worktrees/implement-<slug>` and its local
@@ -62,6 +132,7 @@ rule.
 - **Autonomous merge-proof gate:** for a package with `## Autonomous metadata`, apply the four checks in the subsection below immediately after the status gate.
 - **Never delete a remote branch**, for autonomous or collaborative packages.
 - Receipt is written **before** `PRD/work/<slug>/` is deleted. Receipts are durable — never deleted with the work folder.
+- **Graph-run gate:** when `PRD/work/<slug>/GRAPH-RUN.md` exists, refuse the delete until the receipt carries `## Graph run` with both ledger tables verbatim. See `### Graph run in the receipt`.
 - The shipped-vs-planned signal lives only in `sections/system-map.md` — never edit a `DEC`/`REQ` `Status:` field to convey it.
 - `npm run quality:check` green for touched areas, and no secrets committed, before delete.
 - Never start new features or slices from this skill; never delete `PRD/instructions/receipts/`.

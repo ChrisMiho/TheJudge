@@ -63,8 +63,8 @@ post-merge handoff remains
 Orchestrated mode: return the mapped package to `thejudge-prepare` for review,
 verification, and publication.
 
-Direct mode: `/thejudge-implement PRD/work/<slug>/ slice <first letter>` (Cursor
-/ Claude Code) or `$thejudge-implement PRD/work/<slug>/ slice <first letter>`
+Direct mode: `/thejudge-implement PRD/work/<slug>/ slice <first letter>`
+(Claude Code) or `$thejudge-implement PRD/work/<slug>/ slice <first letter>`
 (Codex) — substitute the first slice letter from the README slice table, not
 assumed `A`.
 

@@ -1,6 +1,6 @@
 # Slice C — Protected-write drift guard
 
-## Status: planned
+## Status: done
 
 Scope item 3. Depends on: **B** (the helper is the guard's one exemption).
 
@@ -68,15 +68,15 @@ entry.
 
 ## Acceptance criteria
 
-- [ ] `node --test scripts/protected-write-guard.test.mjs` passes on the current
+- [x] `node --test scripts/protected-write-guard.test.mjs` passes on the current
       tree with **zero refactors** to any existing script
-- [ ] It passes `scripts/dev.mjs` and `scripts/graph-preflight.mjs` specifically
+- [x] It passes `scripts/dev.mjs` and `scripts/graph-preflight.mjs` specifically
       — the two a substring matcher fails. Assert this as a named test case, not
       as a side effect of the suite being green
-- [ ] It **fails** a deliberately planted script that writes to a protected path;
+- [x] It **fails** a deliberately planted script that writes to a protected path;
       the planted file is removed before commit
-- [ ] The exemption list holds exactly **one** entry, asserted by the test itself
-- [ ] The four scripts naming a protected literal are confirmed write-free, and
+- [x] The exemption list holds exactly **one** entry, asserted by the test itself
+- [x] The four scripts naming a protected literal are confirmed write-free, and
       the count is the real one:
 
       | Script | Protected literal | Writes? |
@@ -85,8 +85,8 @@ entry.
       | `openai-verify-credentials.mjs` | `.secrets/openai-dev.env` (:37, :82, :90) | no |
       | `graph-preflight.mjs` | `.secrets/` (:88, in a comment) | no |
       | `dev.mjs` | `thejudge-implement-fanout` (:5, in a comment) | no |
-- [ ] `npm run test:scripts` picks the guard up with no `package.json` edit
-- [ ] `npm run quality:check` green
+- [x] `npm run test:scripts` picks the guard up with no `package.json` edit
+- [x] `npm run quality:check` green
 
 ## Verification
 
@@ -102,3 +102,49 @@ npm run quality:check
 - `scripts/lib/protected-paths.mjs` (protected-set export, if the guard needs it)
 - `PRD/instructions/graph-workflow-contract.md`
 - `PRD/sections/decisions/doc-process.md` — DEC-164 Impact
+
+## Result
+
+`scripts/protected-write-guard.test.mjs` scans every non-test
+`scripts/**/*.mjs` and fails a file that pairs an anchored `fs` write call with
+a protected-path literal, unless it is on `PROTECTED_WRITE_EXEMPTIONS` — one
+entry, `scripts/lib/protected-paths.mjs`, asserted by the test itself. The
+literals come from the helper's new `PROTECTED_PATH_LITERALS` export, so the
+protected set is declared once.
+
+Six tests, all passing with **zero refactors** to any existing script:
+
+1. no script writes to a protected path outside the helper
+2. the exemption list holds exactly one entry
+3. call-form matching passes `dev.mjs` and `graph-preflight.mjs` — named
+   explicitly, asserting each *does* carry a protected literal and performs *no*
+   write call
+4. a substring matcher would have failed those two, so the anchoring is proved
+   load-bearing rather than asserted
+5. a planted protected-path writer is caught
+6. reading a protected path, or writing a non-protected one, stays legal
+
+**Planted-file check, run for real.** `scripts/planted-offender.mjs`
+(`writeFile(".claude/graph-profile.json", …)`) was written into `scripts/`; the
+suite went to `pass 5 / fail 1`, naming
+`scripts/planted-offender.mjs (writeFile( + ".claude/graph-profile.json")`. The
+file was deleted and the suite returned to `pass 6 / fail 0`. The temp-fixture
+version of the same case is kept as permanent coverage.
+
+**The four scripts naming a protected literal are the real four.**
+`git grep` over non-test `scripts/*.mjs` for every protected literal returns
+exactly `graph-preflight.mjs:88`, `aws-verify.mjs:39,45,70,81`,
+`dev.mjs:5`, and `openai-verify-credentials.mjs:37,82,90` — plus the helper.
+None performs a write call.
+
+`npm run test:scripts` went from 79 tests to 85 with no `package.json` edit.
+
+**Docs.** `graph-workflow-contract.md` gains a
+`### Protected paths — three layers, each with a stated reach` subsection under
+`## Boundaries`: the three-layer table, the guard's stated reach and two limits,
+the mirror-writes rule, the graph-run-boundary-not-authoring-restriction note,
+and the deliberate non-narrowing of the profile. DEC-164's Impact gains the
+mirror-writes clause; its existing bullets already state reach per mechanism and
+already record raw Bash as convention never claimed as enforced.
+
+`npm run quality:check` exits 0.

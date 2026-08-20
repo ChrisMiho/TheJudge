@@ -1,6 +1,6 @@
 # Slice H — Absolute working directory in every dispatch; node 6 write scope
 
-## Status: planned
+## Status: done
 
 Scope item 14. Depends on: **G** (same `graph-run` SKILL/reference regions).
 Converts the production half of boundary 2.
@@ -34,19 +34,19 @@ writes are proved to land where they should.
 
 ## Acceptance criteria
 
-- [ ] `graph-run/SKILL.md` loop step 3 and `reference.md`'s dispatch table both
+- [x] `graph-run/SKILL.md` loop step 3 and `reference.md`'s dispatch table both
       require an absolute `Working directory:` line **and** its propagation into
       nested prompts
-- [ ] The ledger check fails a `GRAPH-RUN.md` whose dispatch prompt lacks the
+- [x] The ledger check fails a `GRAPH-RUN.md` whose dispatch prompt lacks the
       line, and fails one whose path is relative rather than absolute
-- [ ] The node-6 write-scope assertion is specified with its allowed set
+- [x] The node-6 write-scope assertion is specified with its allowed set
       (`.worktrees/implement-<slug>/`, `PRD/work/<slug>/`) and its failure
       behavior (fail the node, park, offending paths as evidence)
-- [ ] Fixture: a simulated node-6 return with one out-of-scope path parks and
+- [x] Fixture: a simulated node-6 return with one out-of-scope path parks and
       names that path; one wholly in scope advances
-- [ ] `npm run test:scripts` green
-- [ ] `diff -rq .claude/skills .agents/skills` produces no output
-- [ ] `npm run quality:check` green
+- [x] `npm run test:scripts` green
+- [x] `diff -rq .claude/skills .agents/skills` produces no output
+- [x] `npm run quality:check` green
 
 ## Verification
 
@@ -64,3 +64,57 @@ npm run quality:check
   (dispatch table) (+ mirror)
 - `scripts/graph-ledger-check.mjs`, `scripts/graph-ledger-check.test.mjs`
 - `PRD/instructions/graph-workflow-contract.md`
+
+## Result
+
+### The pin
+
+`graph-run/SKILL.md` loop step 3 now requires an absolute `Working directory:`
+line, **on its own line**, in every dispatch prompt, and requires the node to
+copy that same line unchanged into every prompt it writes.
+`reference.md`'s dispatch table carries the matching paragraph. Both state the
+reason rather than the rule alone: constraining a parent does not constrain its
+children, and a relative path is not a fix — it resolves against whatever
+directory the child happens to start in, which is the inheritance itself.
+
+`scripts/graph-ledger-check.mjs` gains `WORKING_DIRECTORY_LINE` and two
+violation codes:
+
+| Code | Fires when |
+| --- | --- |
+| `missing-working-directory` | a recorded dispatch prompt has no `Working directory:` line |
+| `relative-working-directory` | the pinned path does not start with `/` |
+
+The line must start its own line. Buried mid-sentence it is prose, not a pin a
+node can propagate verbatim — a test asserts that case fails.
+`./`, `../repo`, `PRD/work/demo`, and `.` are each rejected by name.
+
+### Node 6's write scope
+
+`classifyBuildWrites(paths, slug)` and `buildWriteScope(slug)` are pure, so a
+simulated node-6 return is a fixture rather than a live run. Allowed set:
+`.worktrees/implement-<slug>/` and `PRD/work/<slug>/`. Anything else returns
+`outcome: "park"` with the offending paths in `outside` and in the evidence
+string.
+
+Three fixtures:
+
+- a return wholly in scope (worktree source, worktree app code, package README,
+  a `./`-prefixed package path) → `ok`
+- a return with one out-of-scope path
+  (`PRD/sections/decisions/card-collection.md` — the actual leak path) → `park`,
+  naming exactly that path
+- another package's worktree (`.worktrees/implement-other/`) → `park`. The
+  allowed set is *this slug's*, not "any worktree", so two concurrent runs
+  cannot write into each other
+
+### The rig snapshot does not port, and is said not to
+
+Stated in all three places — SKILL, reference, and
+`graph-workflow-contract.md`: the rig asserts the invoking checkout is
+byte-unchanged, which a real run is supposed to violate, so the write-scope
+assertion is its production **equivalent**, not the same check under a new name.
+
+`scripts/graph-ledger-check.test.mjs` is 22 tests; `npm run test:scripts` is 112,
+all passing. `diff -rq .claude/skills .agents/skills` produces no output.
+`npm run quality:check` exits 0.

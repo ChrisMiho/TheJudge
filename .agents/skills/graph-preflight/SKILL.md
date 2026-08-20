@@ -29,11 +29,42 @@ Read `PRD/instructions/graph-workflow-contract.md` before acting.
   run — the default is timestamped to the second, so omitting it gives the two
   invocations different ids.
 
+## Concurrency lock
+
+Take the lock **first**, before the dry run and before any mutation. Two
+`graph-run` invocations against one launch checkout both commit to it, both
+rewrite `GRAPH-RUN.md`, and both publish before `build` — the same
+shared-working-directory hazard that produced the 2026-08-17 leak, with no
+isolation between them at all.
+
+The lock is `.worktrees/.graph-run.lock`, a JSON record holding the slug, run
+id, PID, and start time. It lives under `.worktrees/`, which `.gitignore`
+already covers, so it never travels with a branch.
+
+`classifyLock()` in `scripts/graph-preflight.mjs` decides what to do, and it is
+a tested pure function — do not re-derive the decision by judgment:
+
+| State | Meaning | Action |
+| --- | --- | --- |
+| `free` | no lock file | take it and continue |
+| `held` | the recorded PID is alive | **refuse**, and relay the message — it names the holding slug, run id, and PID |
+| `stale` | the recorded PID is not running | report it stale and relay the stated `rm` reclaim command. Never reclaim silently |
+| `corrupt` | the lock exists but does not parse | stop. A garbled lock read as absent is how two runs end up sharing a checkout |
+
+A stale lock is reported, never silently stolen: a run that reclaims without
+saying so is indistinguishable from one that never contended.
+
+Release is `graph-run`'s, not this skill's — see `graph-run`'s
+`## Terminal states` table, which is the definitive list of the states that
+release it.
+
 ## Procedure
 
 1. Run `npm run graph:preflight -- --branch <name> --run-id <id> --dry-run`
-   first. Report the classification, the resolved base, and the planned
-   commands.
+   first. Report the classification, the resolved base, the planned commands,
+   and the two `profile sentinel:` / `Profile:` lines the script prints first —
+   they are what `graph-run` records in the ledger, and they are an observation,
+   never a restatement of what the user said at launch.
 2. If the action is `blocked`, stop. Report the offending paths. Never
    hand-resolve a secret-bearing path to get past this.
 3. Otherwise re-run the identical command without `--dry-run`, passing the same
@@ -61,6 +92,20 @@ where it stopped. Do not retry it and do not improvise a repair.
 
 Never drop, pop, re-stash, `git reset`, or force-push to tidy a failed run. An
 interrupted resolution is a gate for the user, not a state to clean up.
+
+## Profile sentinel
+
+`.claude/graph-profile.json` carries `"env": { "THEJUDGE_GRAPH_PROFILE": "1" }`,
+so the variable exists only in a session actually launched with
+`claude --settings .claude/graph-profile.json`. The script reads it and prints
+either `Profile: loaded (env sentinel)` or `Profile: unverified`. Report that
+line verbatim.
+
+It proves the **file was loaded**. It does not prove any individual deny rule
+fired, and it cannot: `nohup` is stripped before rules match and a trailing `&`
+is consumed as a separator, so neither is expressible as a rule at all. A run
+cannot forge the sentinel — the profile denies edits to itself — but never
+report it as proof that a boundary was enforced.
 
 ## Boundaries
 

@@ -1,6 +1,6 @@
 ---
 slug: graph-workflow
-status: active
+status: ship-ready
 ---
 
 # graph-workflow
@@ -38,21 +38,21 @@ Mapped 2026-08-18. One scope item per slice, in the brief's stated order.
 
 | Slice | Item | Objective | Depends on | Status |
 | --- | --- | --- | --- | --- |
-| [A](./slice-a-drop-cursor.md) | 1 | Drop Cursor; `.claude/skills/` canonical; sync repointed | PR #90 merged | planned |
-| [B](./slice-b-node-sync.md) | 2 | Sync ports to Node through the protected-write helper | A | planned |
-| [C](./slice-c-protected-write-guard.md) | 3 | Protected-write drift guard passes on the current tree | B | planned |
-| [D](./slice-d-profile-node-surface.md) | 8 | Profile matches the node command surface; `PROMPTED` state | A | planned |
-| [E](./slice-e-explicit-staging.md) | 11 | Explicit staging — `git add -A` denied | D | planned |
-| [F](./slice-f-profile-sentinel.md) | 9 | `Profile: loaded` becomes observed evidence | E | planned |
-| [G](./slice-g-dispatch-validator.md) | 4 | Dispatch validator and `## Instruction ledger` | A | planned |
-| [H](./slice-h-working-directory-pin.md) | 14 | Absolute working directory in every dispatch; node 6 write scope | G | planned |
-| [I](./slice-i-concurrency-lock.md) | 15 | One run at a time — the concurrency lock | D, F | planned |
-| [J](./slice-j-predicate-nodes-6-9.md) | 16 | The predicate covers nodes 6 and 9 | D | planned |
-| [K](./slice-k-ledger-survives-close.md) | 10 | The run ledger survives `close` | J | planned |
-| [L](./slice-l-define-gate-and-review.md) | 12+13 | `define` parks on any `PRD/sections/` diff; `graph-gate-review` | B, I, K | planned |
-| [M](./slice-m-fixture-rig.md) | 5 | Fixture rig owns rep setup | C — **parallel-ready** | planned |
-| [N](./slice-n-cleanup-fixture.md) | 6 | `thejudge-cleanup` fixture | J, K, M | planned |
-| [O](./slice-o-remeasure-item-5.md) | 7 | Re-measure item 5 against the validator; ship gates | G, L, M | planned |
+| [A](./slice-a-drop-cursor.md) | 1 | Drop Cursor; `.claude/skills/` canonical; sync repointed | PR #90 merged | done |
+| [B](./slice-b-node-sync.md) | 2 | Sync ports to Node through the protected-write helper | A | done |
+| [C](./slice-c-protected-write-guard.md) | 3 | Protected-write drift guard passes on the current tree | B | done |
+| [D](./slice-d-profile-node-surface.md) | 8 | Profile matches the node command surface; `PROMPTED` state | A | done |
+| [E](./slice-e-explicit-staging.md) | 11 | Explicit staging — `git add -A` denied | D | done |
+| [F](./slice-f-profile-sentinel.md) | 9 | `Profile: loaded` becomes observed evidence | E | done |
+| [G](./slice-g-dispatch-validator.md) | 4 | Dispatch validator and `## Instruction ledger` | A | done |
+| [H](./slice-h-working-directory-pin.md) | 14 | Absolute working directory in every dispatch; node 6 write scope | G | done |
+| [I](./slice-i-concurrency-lock.md) | 15 | One run at a time — the concurrency lock | D, F | done |
+| [J](./slice-j-predicate-nodes-6-9.md) | 16 | The predicate covers nodes 6 and 9 | D | done |
+| [K](./slice-k-ledger-survives-close.md) | 10 | The run ledger survives `close` | J | done |
+| [L](./slice-l-define-gate-and-review.md) | 12+13 | `define` parks on any `PRD/sections/` diff; `graph-gate-review` | B, I, K | done |
+| [M](./slice-m-fixture-rig.md) | 5 | Fixture rig owns rep setup | C — **parallel-ready** | done |
+| [N](./slice-n-cleanup-fixture.md) | 6 | `thejudge-cleanup` fixture | J, K, M | done |
+| [O](./slice-o-remeasure-item-5.md) | 7 | Re-measure item 5 against the validator; ship gates | G, L, M | done |
 
 ### Implementation map
 
@@ -98,7 +98,8 @@ browser-observable risk per `PRD/instructions/runtime-process-hygiene.md`.
 
 ## Status
 
-`active` — quality-check PASS and mapped 2026-08-18 into fifteen slices (A–O). Reopened 2026-08-17
+`ship-ready` — all fifteen slices (A–O) `done` as of 2026-08-18, implemented on
+`thejudge-auto/graph-workflow` (PR #91). Quality-check PASS and mapped 2026-08-18 into fifteen slices (A–O). Reopened 2026-08-17
 after a workflow review found nine boundaries outside the brief's three; scope
 grew from seven items to sixteen. The fifth
 quality-check pass returned FAIL on five enumeration errors, all now corrected
@@ -137,6 +138,34 @@ brief abbreviates `ci-workflow-parity.test.mjs`'s anchor regex (actual:
 `thejudge-kickoff/reference.md:14` says "All 10 are model-invocable" when eleven
 `thejudge-*` skills exist — pre-existing drift, unrelated to the third graph
 skill, on a line slice A already edits.
+
+### Added after ship-ready — merge and pull, 2026-08-18
+
+Owner decision after the fifteen slices landed, so it is recorded here rather
+than folded into a slice: a graph run may `git merge` and `git pull`, provided
+it is not into the trunk and not forced.
+
+Implemented in `.claude/graph-profile.json` as two allows and 48 denies —
+the strategy overrides that discard one side (`-s ours`, `-X ours`,
+`-X theirs`, `--allow-unrelated-histories`, `git pull --force`) and every
+`main` / `master` push spelling reachable through the two permitted push
+allows. Measured under `claude --settings`: `git merge topic` allowed,
+`git merge -X theirs topic` denied, `git pull --force origin main` denied, all
+three `main` push forms denied, and `git push -u origin main-line-feature`
+still allowed.
+
+**The stated limit.** A permission rule reads command text, and
+`git merge <ref>` names the branch merged *from*, never the branch merged
+*into* — the target is the current checkout, which no rule can see. So this is
+enforced at the push, not at the merge. A run can make a local merge into
+`main`; it cannot publish it (push denied, force-push denied) and cannot hide
+it (`git reset --hard` and `git clean` denied). "Cannot be published and cannot
+be hidden", not "cannot be made". Five tests in
+`scripts/graph-preflight.test.mjs` hold the rules, including a false-positive
+check that `main-line-feature` stays pushable.
+
+Node 8 (`land`) is unchanged: the pull-request merge is still the owner's, and
+`gh pr merge` / `gh pr close` stay denied.
 
 ### Added on reopen
 
@@ -241,6 +270,10 @@ reference 133), the four protected-literal scripts perform no anchored write
 calls, the eleven writers are the right eleven, and the `sync-agent-skills.sh`
 diff matches the file byte for byte.
 
-Mapped 2026-08-18. Next: `/thejudge-implement PRD/work/graph-workflow/ slice A`
-for one slice, or `/thejudge-implement-all PRD/work/graph-workflow/` for an
-unattended pass — **after PR #90 merges and a fresh branch is cut from `main`**.
+Implemented 2026-08-18 in one unattended `thejudge-implement-all` pass, fifteen
+milestone commits on `thejudge-auto/graph-workflow` against the recorded
+autonomous base `origin/feature/graph-workflow-hardening`. Review PR #91.
+
+Next: merge PR #91, then `/thejudge-cleanup PRD/work/graph-workflow/`. The PRD
+promotion checklist cleanup must execute is in
+`slice-o-remeasure-item-5.md` under `## PRD promotion checklist`.

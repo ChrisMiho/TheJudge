@@ -74,26 +74,25 @@ maintaining parallel copies, pick one canonical tree and mirror it.
 
 | Runtime | Discovery path | Role |
 | --- | --- | --- |
-| Cursor | `.cursor/skills/` | canonical — edit here |
-| Claude Code | `.claude/skills/` | synced copy |
+| Claude Code | `.claude/skills/` | canonical — edit here |
 | Codex | `.agents/skills/` | synced copy |
 
 Verify the paths your runtimes actually use before committing to this table;
-they change. The mirror script is twelve lines:
+they change. The mirror script is ten lines:
 
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SRC="$ROOT/.cursor/skills"
+SRC="$ROOT/.claude/skills"
 
-for dest in "$ROOT/.agents/skills" "$ROOT/.claude/skills"; do
+for dest in "$ROOT/.agents/skills"; do
   mkdir -p "$dest"
   rsync -a --delete "$SRC/" "$dest/"
 done
 
-echo "Synced $SRC -> .agents/skills/ and .claude/skills/ (plain mirror)"
+echo "Synced $SRC -> .agents/skills/ (plain mirror)"
 ```
 
 Wire it as `"skills:ai-sync": "bash scripts/sync-agent-skills.sh"` and make the
@@ -101,7 +100,7 @@ workflow explicit in your repo root doc:
 
 1. Edit under the canonical path only.
 2. Run the sync.
-3. Verify with `diff -rq .cursor/skills .claude/skills` — no output expected.
+3. Verify with `diff -rq .claude/skills .agents/skills` — no output expected.
 4. Commit all trees together.
 
 `--delete` is what keeps the mirror honest: a skill removed from the canonical
@@ -124,7 +123,7 @@ All slices are done. Run `/proj-cleanup PRD/work/<slug>/` to promote durable
 truth, write the receipt, and delete the work folder.
 ```
 
-Command prefixes differ by runtime — `/skill-name` in Cursor and Claude Code,
+Command prefixes differ by runtime — `/skill-name` in Claude Code,
 `$skill-name` in Codex. State the rule once in your workflow reference and have
 skills substitute the real slug, slice letter, or path rather than leaving
 placeholders in the output.

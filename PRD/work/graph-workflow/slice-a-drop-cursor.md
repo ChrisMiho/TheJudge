@@ -1,6 +1,6 @@
 # Slice A — Drop Cursor: two runtimes, `.claude/skills/` canonical
 
-## Status: planned
+## Status: done
 
 Scope item 1. Depends on: **PR #90 merged**; branch cut fresh from `main`.
 
@@ -97,18 +97,18 @@ proved by two gate commands whose exit status is the criterion.
 
 ## Acceptance criteria
 
-- [ ] `.cursor/` is gone: `git ls-files | grep -i '\.cursor'` exits **1**
-- [ ] No stray runtime reference: gate command 2 (below) exits **1**
-- [ ] All five legitimate-keep categories still carry the word — verified by
+- [x] `.cursor/` is gone: `git ls-files | grep -i '\.cursor'` exits **1**
+- [x] No stray runtime reference: gate command 2 (below) exits **1**
+- [x] All five legitimate-keep categories still carry the word — verified by
       `git diff --stat` showing **no** change under `PRD/sections/`,
       `PRD/instructions/receipts/`, `PRD/work/graph-workflow/PLAN-spine.md`, or
       `apps/frontend/`
-- [ ] `npm run skills:ai-sync` exits 0 **with the bash script**, and
+- [x] `npm run skills:ai-sync` exits 0 **with the bash script**, and
       `diff -rq .claude/skills .agents/skills` produces no output
-- [ ] `npm run quality:check` green
-- [ ] The 24-file checklist in requirement 3 is walked item by item; every entry
+- [x] `npm run quality:check` green
+- [x] The 24-file checklist in requirement 3 is walked item by item; every entry
       is either edited or explicitly noted as already clean
-- [ ] `thejudge-kickoff/reference.md:14` reads "All 11", not "All 10"
+- [x] `thejudge-kickoff/reference.md:14` reads "All 11", not "All 10"
 
 ## Verification
 
@@ -129,6 +129,14 @@ git grep -lwiI cursor -- \
 npm run skills:ai-sync && diff -rq .claude/skills .agents/skills
 npm run quality:check
 ```
+
+**Measured on this branch: gate 1 already exited 1 and gate 2 printed exactly
+24 paths, not 29.** `.cursor/` was deleted ahead of this slice by `7ab7c08`
+("Remove deprecated TheJudge skills and references"), so the five tracked
+`.cursor/` paths were already gone and only the 24-file scrub checklist
+remained. The two populations were nameable separately, as the note below
+requires, and the 24 printed paths matched the checklist file for file. The
+paragraph below describes the pre-`7ab7c08` tree and is kept as written.
 
 **Pre-slice, gate 2 prints 29 paths. 29 = the 24 files in the checklist + 5
 tracked paths under `.cursor/` that this slice deletes rather than scrubs** —
@@ -160,3 +168,32 @@ Three properties this gate form has that a bare `grep -ri cursor` does not:
   `doc-lifecycle.md`, `workflow-reference.md`
 - `.claude/graph-profile.json`, `.prettierignore`, `scripts/sync-agent-skills.sh`
 - `docs/prd-workflow-guide/` — 6 files
+
+## Result
+
+Both gates exit 1 on the finished tree. Every checklist entry was walked:
+
+- **Skill trees** — four canonical files edited in `.claude/skills/`
+  (`thejudge-kickoff/SKILL.md:67`, `thejudge-kickoff/reference.md:14,33`,
+  `thejudge-map-out/SKILL.md:66`, `thejudge-refinement/SKILL.md:74`);
+  `npm run skills:ai-sync` regenerated the mirror's four copies. Line 14 now
+  reads "All 11".
+- **Root and `PRD/`** — `AGENT-SKILLS.md` (:8 prefix, :12-31 single-source and
+  platform table, :124 prefix, :129-135 authoring workflow, :144 path),
+  `README.md:17`, `PRD/README.md:120`, `PRD/instructions/skill-testing.md:5`,
+  `graph-workflow-contract.md:234` and its "three synced trees" boundary at
+  :204, `doc-lifecycle.md:74`, `workflow-reference.md:22`,
+  `.claude/graph-profile.json` (the two `.cursor/skills/thejudge-*` deny rules
+  removed), `.prettierignore:8`, and `scripts/sync-agent-skills.sh` repointed to
+  `.claude/skills/` with the self-copy leg dropped.
+- **Portable guide** — all six files now name only Claude Code and Codex.
+- **Requirement 1 was already satisfied** — `.cursor/` carried no tracked path
+  at the branch point.
+
+The five legitimate-keep categories are untouched: `git diff --stat` over
+`PRD/sections/`, `PRD/instructions/receipts/`, `PLAN-spine.md`, and
+`apps/frontend/` is empty.
+
+`npm run skills:ai-sync` exits 0 with the bash script and
+`diff -rq .claude/skills .agents/skills` produces no output.
+`npm run quality:check` exits 0.

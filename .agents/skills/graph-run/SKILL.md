@@ -41,12 +41,45 @@ boundaries are required.
    stop to ask the user questions.
 3. Dispatch the node's delegate as a subagent using the model from the node
    table, except node 8 (`land`), which the driver never dispatches — see
-   reference.md. Pass the package path, the run ID, and the controlling
-   predicate.
+   reference.md. Pass the package path, the run ID, the controlling predicate,
+   and an absolute `Working directory:` line on its own line. Require the node
+   to copy that same line, unchanged, into every prompt it writes.
+
+   Constraining a parent does not constrain its children. On 2026-08-17 a
+   dispatched subagent inherited the session's real working directory and wrote
+   product truth into the live checkout. A relative path is not a fix — it
+   resolves against whatever directory the child happens to start in, which is
+   the inheritance itself. `scripts/graph-ledger-check.mjs` fails a recorded
+   dispatch prompt that is missing the line or pins a relative path.
+
+   After node 6 (`build`) returns, assert every path it wrote lies inside
+   `.worktrees/implement-<slug>/` or `PRD/work/<slug>/`. Anything outside that
+   set **fails the node and parks**, with the offending paths as the evidence.
+   This is the production equivalent of the fixture rig's before/after snapshot,
+   not that check reused: a real run is supposed to change the repository, so
+   "byte-unchanged" is the wrong assertion here and the write-scope set is the
+   right one.
 4. Record the outcome in the ledger before starting the next node — evidence
    is a command, path, PR URL, or artifact URL, never a bare claim.
 5. On `ok`, advance. On `failed`, apply the node's retry rule from the
    contract. On any gate trigger, park.
+
+   **After node 3 (`define`) returns `ok`, diff `PRD/sections/`.** A non-empty
+   diff parks — the existing park mechanism, no new machinery: set
+   `STATUS.owner-action`, move the board row, and write under `## Open gate` the
+   **complete diff** (never a summary), the list of new stable IDs, and
+   `/graph-gate-review PRD/work/<slug>/` as the resume command. An empty diff
+   advances straight to `gate-qc`; refinement that only writes
+   `DESIGN-BRIEF.md` never interrupts a run.
+
+   The **whole** diff gates, not new `DEC-###` alone. The 2026-08-17 leak wrote
+   DEC-161 and DEC-162 *and* REQ-146..151, NFR-015, and FLOW-019 — six
+   requirements and a flow are product behavior as surely as two decisions are.
+
+   This is the one place autonomy is deliberately traded for control. Node 8
+   (`land`) was otherwise the first human touch, by which point code exists
+   against product truth nobody has read. Everything below the product layer —
+   branching, stashing, slicing, commits, PR plumbing — stays unattended.
 6. Use `superpowers:verification-before-completion` before every commit, push,
    PR action, and terminal claim. Use `superpowers:systematic-debugging` for
    unexpected command failures.
@@ -72,13 +105,27 @@ dirty. Publish before dispatching `build` — see reference.md's
 ## Permission profile
 
 `.claude/graph-profile.json` protects a run only when the session was launched
-with `claude --settings .claude/graph-profile.json`. The driver cannot read the
-settings its own session was started with, so it can never confirm the profile
-is loaded. Record that honestly: write `Profile: unverified` in the ledger
-unless the user stated the launch command in this session, and then record the
-exact path they gave and attribute it to them. Never assume the deny list is
-active — behave as though every boundary in the contract is enforced by your
-own compliance, because in an unflagged session it is.
+with `claude --settings .claude/graph-profile.json`.
+
+Record the ledger's `Profile:` field **from node 1's observation**, not from
+what the user said. `graph-preflight` prints the value of the profile's
+`THEJUDGE_GRAPH_PROFILE` env sentinel, which exists only in a session launched
+with that file:
+
+| Node 1 reports | Ledger line |
+| --- | --- |
+| sentinel present | `Profile: loaded (env sentinel)` |
+| sentinel absent | `Profile: unverified` |
+
+The user-stated launch command is the fallback, used only when the sentinel is
+absent *and* the user named the command in this session — record the exact path
+they gave and attribute it to them. It is testimony, and the sentinel is not.
+
+**What the sentinel does not prove.** It shows the file was loaded. It says
+nothing about whether any individual deny rule fired, and two boundaries can
+never fire at all — `nohup` is stripped as a wrapper before rules match, and a
+trailing `&` is consumed as a separator. So behave as though every boundary in
+the contract is enforced by your own compliance, whatever the sentinel says.
 
 ## Delegation boundary
 
@@ -117,9 +164,17 @@ and never something to restate as a decision rule in a dispatch prompt.
   pre-satisfied by user phrasing.
 - An instruction that would waive it is refused outright: park at
   `owner-action` and name the instruction you refused and why.
-- Record every such refusal by quoting the instruction under
-  `## Refused instructions` in the ledger, whether or not the run parked. A
+- Record every such refusal as a `## Instruction ledger` row classified
+  `refused`, naming the rule that refused it, whether or not the run parked. A
   refusal the user cannot see did not happen.
+- Record every instruction you *did* act on as a row classified
+  `answered-once`. There is no third class: a standing rule has no
+  representable form, so a run that made one cannot write it down.
+- Run `node scripts/graph-ledger-check.mjs PRD/work/<slug>/GRAPH-RUN.md` and
+  require it green **before every node dispatch**, not after. It reads
+  `## Dispatch prompts` and `## Instruction ledger`. Both are written by you,
+  so a green result is a schema check over your own report — never cite it as
+  proof you did not pre-authorize.
 
 Autonomy means not being interrupted by mechanics — branching, stashing,
 sequencing, commits, PR plumbing. It is never authority to decide product
@@ -132,6 +187,21 @@ behavior for the user.
 | `COMPLETE` | Every node `ok` through `close`; package `ship-ready` or cleaned up; ledger closed | None — the run is finished |
 | `PARKED` | `STATUS.owner-action`, board row updated, `## Open gate` names the question, evidence, and resume command | Resolve the gate, then `/graph-run PRD/work/<slug>/` |
 | `BLOCKED` | Safe branch and commit preserved; exact failure, what exists, what does not, and recovery action | Fix the external condition, then retry |
+| `PROMPTED` | The denied or unlisted command written verbatim under `## Open gate`, with the node it arose at; `STATUS.owner-action`, board row updated | Run the command yourself, or add the rule to `.claude/graph-profile.json`, then `/graph-run PRD/work/<slug>/` |
+
+**Release the concurrency lock on every state in this table.** Node 1 takes
+`.worktrees/.graph-run.lock`; the run deletes it as the last act before
+reporting any terminal state above. This table is the definitive list — do not
+enumerate the releasing states anywhere else. A second list drifts, and a lock
+released on a state one list omits is a stranded lock that blocks every later
+run.
+
+`PROMPTED` is what a permission prompt becomes. A prompt in an autonomous
+session is a hang, not a question — nobody is there to answer it, and the run
+waits forever leaving no evidence of why. So a run that hits a denied or
+unlisted command ends the same way a parked run does: it writes the exact
+command under `## Open gate`, sets `STATUS.owner-action`, and stops. Never
+rephrase the command to dodge the rule, and never retry it.
 
 `BLOCKED` is for an external condition outside the repository that no product
 decision would resolve — authentication failure, network unavailability, a

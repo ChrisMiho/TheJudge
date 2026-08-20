@@ -3,10 +3,10 @@
 ## Purpose
 
 This file is the lean operator reference for TheJudge PRD-driven work. All 11
-`thejudge-*` skills and both `graph-*` skills — `graph-preflight` and
-`graph-run` — are model-invocable and may also be called explicitly; see
-`AGENT-SKILLS.md` for the full 13-skill catalog, platform paths, and sync
-instructions.
+`thejudge-*` skills and all three `graph-*` skills — `graph-preflight`,
+`graph-run`, and `graph-gate-review` — are model-invocable and may also be
+called explicitly; see `AGENT-SKILLS.md` for the full 14-skill catalog, platform
+paths, and sync instructions.
 
 `thejudge-prepare` and `graph-run` are the autonomous alternate paths across
 kickoff, refinement, quality-check, and map-out. Orchestrated mode applies only
@@ -19,8 +19,8 @@ interactive behavior. The full autonomous contracts live in
 ## Handoff prefix rule
 
 Every skill that hands off ends with a **Next step**: one sentence plus the
-literal command to run next. The command prefix is `/thejudge-*` in Cursor and
-Claude Code, `$thejudge-*` in Codex. Substitute `<slug>`, slice letters, or
+literal command to run next. The command prefix is `/thejudge-*` in Claude
+Code, `$thejudge-*` in Codex. Substitute `<slug>`, slice letters, or
 wave numbers from the session.
 
 ## Work package status vocabulary
