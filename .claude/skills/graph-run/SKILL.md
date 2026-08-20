@@ -171,28 +171,9 @@ and never something to restate as a decision rule in a dispatch prompt.
 - Record every instruction you *did* act on as a row classified
   `answered-once`. There is no third class: a standing rule has no
   representable form, so a run that made one cannot write it down.
-- Write `.worktrees/.graph-run-state.json` **immediately before every node
-  dispatch**: `{ "runId": "<run id>", "node": "<node about to be dispatched>",
-  "attempt": <attempt number for that node> }`. You are that file's only writer.
-  The hook reads it to learn which node to count against; it never parses
-  `GRAPH-RUN.md` and never infers the node from the tool call. Without it the
-  cap cannot attribute the call, and the hook says so on every call rather than
-  enforcing a guess.
-
-  Keep it separate from the lock. `parseLockFile()` treats an unreadable lock as
-  a hard blocker for the next run, so rewriting the lock nine times a run would
-  put the concurrency guard at risk that many times.
-
-  A loop-back — `define` on a `gate-qc` FAIL, `build` on a `review` finding — is
-  a new attempt: increment `attempt`, and the node starts on a fresh budget.
-- Check for `.worktrees/.graph-stop` **before every node dispatch**, in this
-  same pre-dispatch block. It is the owner's kill switch, and finding it means
-  halt — see `## Halting on the owner's stop sentinel` below.
-- Run `node scripts/graph-ledger-check.mjs PRD/work/<slug>/GRAPH-RUN.md` and
-  require it green **before every node dispatch**, not after. It reads
-  `## Dispatch prompts` and `## Instruction ledger`. Both are written by you,
-  so a green result is a schema check over your own report — never cite it as
-  proof you did not pre-authorize.
+- Every dispatch runs the ordered `## Pre-dispatch sequence` below first. Step 2
+  of it re-reads this rule from the contract, because a rule held only in context
+  is a rule compaction can take away halfway through a long run.
 
 Autonomy means not being interrupted by mechanics — branching, stashing,
 sequencing, commits, PR plumbing. It is never authority to decide product
@@ -235,6 +216,52 @@ ignores its own check cannot dispatch another node anyway. It deliberately keeps
 the halt path open — the ledger write, the status marker, the board row, and the
 commit all still work — and it denies deleting the sentinel, so a run cannot
 clear the switch to keep going.
+
+## Pre-dispatch sequence
+
+One ordered block, run before **every** node dispatch — not once at run start.
+Three of these steps used to sit in three different places; scattered
+instructions are how a step gets skipped on the seventh node of a nine-node run.
+
+1. **Kill switch.** Check for `.worktrees/.graph-stop`. Present → halt at this
+   boundary; see `## Halting on the owner's stop sentinel`.
+2. **Re-read the no-pre-authorization rule.** Read
+   `### No pre-authorization of product decisions` from
+   `PRD/instructions/graph-workflow-contract.md`, by that exact heading, and hold
+   it while writing this dispatch prompt.
+
+   Read it **every time**, not once at run start. The failure this prevents is
+   specific: on a long run the rule falls out of context to compaction, and the
+   node where it matters most is the one furthest from where it was read.
+
+   The rule's text lives in the contract and nowhere else. This file points at
+   it; it does not restate it. A second copy drifts, and then two rules disagree
+   about what the driver may do. If that heading ever stops existing, this step
+   fails loudly rather than quietly reading nothing — which is why it names the
+   heading rather than a line number or a vague "the boundaries section".
+
+   It is deliberately **not** in `CLAUDE.md`. It governs autonomous runs, not
+   every ordinary session in this repository, and that file is diluted enough.
+3. **Ledger check.** Run
+   `node scripts/graph-ledger-check.mjs PRD/work/<slug>/GRAPH-RUN.md` and require
+   it green. It reads `## Dispatch prompts` and `## Instruction ledger`. Both are
+   written by you, so a green result is a schema check over your own report —
+   never cite it as proof you did not pre-authorize.
+4. **Run-state write.** Write `.worktrees/.graph-run-state.json`:
+   `{ "runId": "<run id>", "node": "<node about to be dispatched>", "attempt":
+   <attempt number for that node> }`. You are that file's only writer. The hook
+   reads it to learn which node to count against; it never parses `GRAPH-RUN.md`
+   and never infers the node from the tool call. Without it the cap cannot
+   attribute the call, and the hook says so on every call rather than enforcing a
+   guess.
+
+   Keep it separate from the lock. `parseLockFile()` treats an unreadable lock as
+   a hard blocker for the next run, so rewriting the lock nine times a run would
+   put the concurrency guard at risk that many times.
+
+   A loop-back — `define` on a `gate-qc` FAIL, `build` on a `review` finding — is
+   a new attempt: increment `attempt`, and the node starts on a fresh budget.
+5. **Dispatch.** Only now.
 
 ## Hook liveness
 

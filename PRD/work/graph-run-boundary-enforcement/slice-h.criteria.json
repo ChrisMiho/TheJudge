@@ -5,7 +5,7 @@
     {
       "id": "H1",
       "statement": "`graph-run/SKILL.md` carries one ordered pre-dispatch block naming, in order: kill-switch check, no-pre-authorization re-read, ledger check, run-state write, dispatch.",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -13,7 +13,7 @@
     {
       "id": "H2",
       "statement": "The re-read names the exact contract section heading it reads, so a renamed section is a visible break rather than a silent no-op.",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -21,7 +21,7 @@
     {
       "id": "H3",
       "statement": "`grep -n \"pre-authorization\" CLAUDE.md` returns nothing \u2014 the rule did not leak into the file every ordinary session reads.",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -29,7 +29,7 @@
     {
       "id": "H4",
       "statement": "The rule's text appears exactly once across `PRD/instructions/graph-workflow-contract.md`, `.claude/skills/graph-run/`, and `AGENT-SKILLS.md`: the contract's copy. Verified by grep for a distinctive p",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -37,7 +37,7 @@
     {
       "id": "H5",
       "statement": "Live check. Dispatch one node under a stub run and confirm the contract read appears before the dispatch prompt is written. Record the ordering evidence.",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -45,7 +45,7 @@
     {
       "id": "H6",
       "statement": "`npm run skills:ai-sync` run and the mirror clean in `git status --porcelain`.",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }

@@ -36,7 +36,7 @@ and `GAMEPLAN.md` for the architecture and verification checklist.
 | [E](./slice-e-hook-liveness.md) ✅ | Canary at run start, heartbeat between nodes | REQ-159, NFR-016 | A, B, D |
 | [F](./slice-f-default-fail-criteria.md) ✅ | Slice criteria start `false`, flip on observed evidence | REQ-157 | A, B |
 | [G](./slice-g-independent-reviewer.md) ✅ | Node 7 reviewer with no write tools | REQ-155 | — |
-| [H](./slice-h-no-preauth-reread.md) | No-pre-authorization rule re-read at every dispatch | REQ-158 | — |
+| [H](./slice-h-no-preauth-reread.md) ✅ | No-pre-authorization rule re-read at every dispatch | REQ-158 | — |
 | [I](./slice-i-contract-retirement.md) | Contract retirement, stated limits, promotion | all | A–H |
 
 G and H touch skill and contract text only and are parallel-ready with the hook

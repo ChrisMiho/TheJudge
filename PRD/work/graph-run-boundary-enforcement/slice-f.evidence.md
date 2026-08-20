@@ -15,3 +15,8 @@ with the slice's criteria as the rubric. It reported holding no Write/Edit/
 NotebookEdit, graded all seven criteria, and produced four findings. The
 repository was byte-unchanged before and after. Three of the four findings were
 confirmed as real defects and fixed.
+
+2026-08-20 H5 — drove one stub dispatch through the pre-dispatch sequence with
+the hook instrumented. The evidence log, which only the hook writes, recorded the
+contract read at 20:44:22.393Z and the dispatch-prompt write at 20:44:26.263Z.
+The read came first, measured rather than reported.

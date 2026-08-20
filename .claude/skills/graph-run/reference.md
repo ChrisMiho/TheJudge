@@ -20,6 +20,16 @@ otherwise run interactively.
 | 8 | `land` | human PR merge | — | — | `close` | park |
 | 9 | `close` | `/thejudge-cleanup` | sonnet | 120 | complete | park |
 
+## Where the no-pre-authorization rule lives
+
+One place: `### No pre-authorization of product decisions` in
+`PRD/instructions/graph-workflow-contract.md`. `graph-run/SKILL.md` re-reads it
+by that heading before every dispatch and points at it rather than restating it.
+
+Do not copy the rule's text here, into `SKILL.md`, or into `AGENT-SKILLS.md`. Two
+copies drift, and then two rules disagree about what the driver may do. The
+example row below is an illustration of the rule being applied, not the rule.
+
 ## Node 7 dispatch shape
 
 The reviewer is a subagent `graph-run` dispatches, not a skill. Its dispatch
