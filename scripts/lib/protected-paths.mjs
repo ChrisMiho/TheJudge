@@ -28,7 +28,8 @@ export const PROTECTED_PATH_PATTERNS = Object.freeze([
   ".claude/graph-profile.json",
   ".claude/settings*.json",
   ".claude/skills/thejudge-*/**",
-  ".agents/skills/thejudge-*/**"
+  ".agents/skills/thejudge-*/**",
+  "scripts/graph-boundary-hook.mjs"
 ])
 
 /**
@@ -44,7 +45,8 @@ export const PROTECTED_PATH_LITERALS = Object.freeze([
   "CLAUDE.md",
   ".claude/graph-profile.json",
   ".claude/settings",
-  "thejudge-"
+  "thejudge-",
+  "scripts/graph-boundary-hook.mjs"
 ])
 
 /** The canonical skill tree. Edit here; never hand-edit the mirror. */
