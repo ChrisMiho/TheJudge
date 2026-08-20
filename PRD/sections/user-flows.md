@@ -424,3 +424,25 @@
 - Notes:
   - frontend-only; no backend, accounts, or sync (DEC-143)
   - auto-prune at 20 completed entries remains for entries the user does not delete
+
+### FLOW-020
+- Name: Owner halts a graph run in flight
+- Trigger: Owner decides a running autonomous graph run should stop before it reaches a terminal state
+- Preconditions:
+  - a graph run is live and holds `.worktrees/.graph-run.lock`
+  - the run has written `PRD/work/<slug>/GRAPH-RUN.md` and is at or between nodes
+- Main Flow:
+  1. Owner creates `.worktrees/.graph-stop`.
+  2. The current node finishes its work and returns to the driver.
+  3. Before dispatching the next node, `graph-run` finds the sentinel and stops advancing.
+  4. The run writes its terminal state, records the halt and the node it halted at under `## Open gate` in `GRAPH-RUN.md`, sets the package `STATUS.*` marker, and updates the `PRD/work/STATUS.md` board row.
+  5. The run deletes the concurrency lock and reports the terminal state, the branch, the PR URL if one exists, and the ledger path.
+  6. Owner removes the sentinel and resumes later with `/graph-run PRD/work/<slug>/`, which re-enters at the node the ledger records.
+- Edge Cases:
+  - sentinel created while no run is live → nothing happens; the next run refuses to start until it is removed, naming the sentinel
+  - driver ignores its own check → the hook denies the next node dispatch, and the run cannot advance
+  - run is inside a node that will not return → the owner still has Ctrl-C, which strands the lock; the reclaim command for a stale lock is already stated by `classifyLock()`
+  - sentinel and a gate park coincide → the park wins, because it already carries the owner's question and resume command
+- Notes:
+  - the halt reuses `graph-run`'s existing `## Terminal states` table; no new state is added
+  - mid-run steering via a `STEER.md` channel is deliberately not part of this flow — an instruction arriving mid-run needs `## Instruction ledger` treatment and is scoped as separate work

@@ -8,6 +8,8 @@ Do not rename package folders to encode status.
 
 ## active
 
+- [graph-run-boundary-enforcement](./graph-run-boundary-enforcement/)
+
 ## refined
 
 ## refining

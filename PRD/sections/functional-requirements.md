@@ -3431,3 +3431,170 @@
   - REQ-064
 - Notes:
   - found during the `ui-review` light sweep across destinations rather than in the original braindump; included because it is the only user-facing defect the sweep surfaced outside the reported screens
+
+### REQ-152
+- Title: Graph boundaries enforced by a hook that needs no launch flag
+- Priority: high
+- Description: Every boundary in `PRD/instructions/graph-workflow-contract.md` is enforced by a `PreToolUse` hook configured in a committed `.claude/settings.json`, so enforcement does not depend on anyone remembering `claude --settings .claude/graph-profile.json`.
+- Acceptance Criteria:
+  - the hook denies a boundary-violating tool call in a session launched with no `--settings` flag at all
+  - the hook denies a boundary-violating tool call issued from inside a dispatched subagent, not only from the top-level session — hook input carries `agent_id` / `agent_type`, and every graph node is a subagent
+  - the hook reads `tool_input.command` text directly, so `cp`, `rsync`, and shell redirection into a protected path are denied — the cases the profile's rule matcher cannot see
+  - `nohup` is denied by the hook; the profile's `Bash(nohup*)` rule can never fire because `nohup` is stripped as a wrapper before rules match
+  - a trailing background `&` is denied by the hook; no permission rule for it is expressible, because `&` is consumed as a command separator before any rule sees the command text
+  - a denied call returns a reason the agent can read and act on, and the run treats it as the existing `PROMPTED` terminal state rather than retrying or rephrasing
+- Constraints:
+  - `.claude/graph-profile.json` is retained as a second, independent layer and is not deleted; the hook is authoritative and the profile is belt-and-braces
+  - the hook and `.claude/settings.json` join the protected path set — a run must not be able to edit its own enforcer
+  - denial is by exit code 2 with the reason on stderr, or exit 0 with `hookSpecificOutput.permissionDecision: "deny"`; the run never treats hook silence as approval
+  - no boundary is removed from the contract as part of moving it — this changes the mechanism, not the list
+- Dependencies:
+  - DEC-163
+  - DEC-164
+  - DEC-166
+- Notes:
+  - whether a hook deny survives `permission_mode: "bypassPermissions"` is not explicitly documented; a slice must verify it against the running binary and record the measurement, and the contract must not assert it until then
+
+### REQ-153
+- Title: Two boundary tiers, the strict tier gated by the run lock
+- Priority: high
+- Description: The hook enforces a universal tier in every session and a graph tier only while a run holds `.worktrees/.graph-run.lock`, so committed always-on enforcement does not block ordinary work in this repository.
+- Acceptance Criteria:
+  - the universal tier denies in any session with no lock present: `.secrets/**` reads and writes, force-push in every flag and leading-`+` refspec form, remote branch deletion, `main`/`master` pushes, `rm -rf`, `sudo`, `pkill`, `killall`
+  - the graph tier denies only while the lock file exists: writes to `thejudge-*/**` in both skill trees, `CLAUDE.md`, `.claude/settings*.json`, `.claude/graph-profile.json`, plus `nohup` and background `&`
+  - the graph tier also denies agent writes to the hook's own records — `.worktrees/.graph-node-calls.json` and the observed-evidence log — so a run can neither reset its own call count nor forge evidence for a criterion it never checked
+  - an ordinary session with no lock can edit a `thejudge-*` skill and `CLAUDE.md` without a denial — skill authoring is not a graph run and must stay unblocked
+  - the same session, with a lock present, is denied those same edits
+  - removing the lock is not an escape hatch: lock release goes through the run's own release path, and a Bash deletion of the lock file is denied while a run is live
+- Constraints:
+  - tier membership is data the hook reads, not logic duplicated between the hook and the profile
+  - a missing or unparseable lock is treated as "no run active" for the graph tier and never as a reason to skip the universal tier
+- Dependencies:
+  - REQ-152
+  - DEC-166
+- Notes:
+  - the lock already exists as `classifyLock()` in `scripts/graph-preflight.mjs`; this requirement reuses that record rather than introducing a second run-active signal
+
+### REQ-154
+- Title: Owner kill switch that halts a run without stranding the lock
+- Priority: high
+- Description: The owner can stop a graph run in flight by creating `.worktrees/.graph-stop`, and the run halts cleanly — terminal state written, lock released — rather than dying mid-node the way Ctrl-C does.
+- Acceptance Criteria:
+  - `graph-run` checks for the sentinel immediately before every node dispatch and halts if it exists
+  - on halt the run writes a terminal state, records the halt and its evidence under `## Open gate` in `GRAPH-RUN.md`, updates the package `STATUS.*` marker and the `PRD/work/STATUS.md` board row, and deletes the concurrency lock
+  - a sentinel created mid-node lets the current node finish; the halt happens at the node boundary, so no ledger is left half written
+  - the hook denies new node dispatches while the sentinel exists, as the backstop for a driver that ignores its own check
+  - the halted run resumes with `/graph-run PRD/work/<slug>/` once the sentinel is removed, from the node recorded in the ledger
+- Constraints:
+  - the sentinel lives under the already-ignored `.worktrees/` root, so it never travels with a branch
+  - a `STEER.md` mid-run instruction channel is explicitly out of scope: every line it carried would need an `## Instruction ledger` row classified `answered-once` or `refused`, and that is its own package
+- Dependencies:
+  - REQ-152
+  - DEC-166
+- Notes:
+  - the halt state is drawn from `graph-run`'s existing `## Terminal states` table, which stays the single authority; this requirement adds no fifth state
+
+### REQ-155
+- Title: Node 7 review by an independent reviewer with no write tools
+- Priority: high
+- Description: The `review` node dispatches a fresh-context subagent that holds no Write or Edit tools and grades the slice against its own stated acceptance criteria, replacing `superpowers:requesting-code-review` at that node.
+- Acceptance Criteria:
+  - the reviewer subagent is dispatched with no Write, Edit, or NotebookEdit tools, and cannot modify the work it is grading
+  - the reviewer's context never saw the build — it reads the diff, the slice doc, and the package artifacts, not the build node's transcript
+  - the dispatch brief names the slice's acceptance criteria as the grading rubric and instructs the reviewer to flag only gaps that affect correctness or those stated requirements
+  - a finding that is a preference, a style note, or an improvement outside the slice's stated requirements is not rated Critical or Important and does not trigger a loop back to `build`
+  - `superpowers:requesting-code-review` is removed from node 7 in the node table, the contract, and `AGENT-SKILLS.md`
+- Constraints:
+  - the existing loop cap is unchanged: `review` may return to `build` at most twice, and a third occurrence parks at `owner-action`
+  - the reviewer is dispatched by `graph-run` and is not a `thejudge-*` skill; the run predicate rules are unchanged
+- Dependencies:
+  - DEC-163
+  - DEC-166
+- Notes:
+  - the failure this addresses is self-preferential bias — a model grading work it helped produce. The counter-risk is a reviewer that manufactures findings to look useful, which matters here because the loop budget is only two
+
+### REQ-156
+- Title: Per-node tool-call cap enforced by the hook
+- Priority: medium
+- Description: Each node in the graph node table carries a maximum tool-call count for one dispatch of that node; the hook counts calls per node attempt and denies past the cap, and the run parks rather than overrunning silently.
+- Acceptance Criteria:
+  - the node table gains a cap column, and every node has a value. The value is a budget for one dispatch of that node, not a per-run total for it
+  - `graph-run` writes `.worktrees/.graph-run-state.json` immediately before every node dispatch, recording the run id, the node about to be dispatched, and the attempt number for that node
+  - the hook reads that file to learn the current node; it does not parse `GRAPH-RUN.md` and does not infer the node from the tool call itself
+  - the hook increments a counter keyed by run id, node, and attempt on each tool call, and denies once that attempt's cap is reached, naming the node, the attempt, and the count in the denial reason
+  - exceeding a cap parks the package at `owner-action` with the node, the cap, and the observed count as evidence in `GRAPH-RUN.md`
+  - the counter survives a park and resume — a resumed run does not restart the count from zero for an attempt it already partly spent, because the counter is keyed by run id, node, and attempt rather than by session
+  - a node re-entered by a loop-back — `define` on a `gate-qc` FAIL, `build` on a `review` finding — is a new attempt and starts a fresh budget; it never parks before doing any work on a budget an earlier attempt spent
+  - the cap adds no third loop limit: the contract's existing loop caps — at most three FAIL returns to `define`, at most two returns to `build` — remain the only bound on how many times a node is dispatched
+  - the cap is not a fifth terminal state; an overrun uses the existing `PARKED` state
+- Constraints:
+  - the cap is tool calls, not spend: the Agent SDK's `max_turns` and `max_budget_usd` are not available to a skill-driven session, and dollar cost is not observable to a hook
+  - counter state lives under `.worktrees/`, alongside the lock, and never travels with a branch. The hook is the only writer of `.worktrees/.graph-node-calls.json`; `graph-run` is the only writer of `.worktrees/.graph-run-state.json`; `graph-preflight` remains the only writer of `.worktrees/.graph-run.lock`
+  - the run-state file is deliberately not folded into the lock record: the lock is the concurrency guard, `parseLockFile()` treats an unreadable lock as a hard blocker for the next run, and a per-dispatch rewrite would put that guard at risk on every node boundary
+  - a missing or unparseable run-state file means the hook cannot attribute the call to a node, so the cap does not fire; this degrades the cap and never blocks a run, and the condition is reported rather than silent
+- Dependencies:
+  - REQ-152
+  - DEC-166
+- Notes:
+  - the runaway shape this catches is a node looping on itself, which is what actually burns a run's budget
+
+### REQ-157
+- Title: Slice criteria start false and need observed evidence to flip
+- Priority: medium
+- Description: Each slice emits a machine-readable criteria file in which every acceptance criterion starts `false`, and an agent cannot flip one to `true` unless the hook has observed a matching evidence read — so node 6's `ok` is ground truth rather than a self-report.
+- Acceptance Criteria:
+  - `thejudge-map-out` emits a criteria file per slice, one entry per acceptance criterion, each carrying a stable criterion id, a value initialised `false`, and an `evidence` block
+  - the `evidence` block is what maps a tool call to a criterion: it names a command pattern, one or more file paths that must be read, or both. `thejudge-map-out` authors it beside the criterion in the slice doc, so it is written once with the criterion rather than maintained as a second list
+  - the hook matches every observed tool call against every criterion's `evidence` block and appends the ids of matching criteria to an append-only observed-evidence log under `.worktrees/`, keyed by run id and slice
+  - a write flipping a criterion to `true` is denied unless that criterion's id appears in the observed-evidence log, and the denial names the criterion id and the evidence it is still missing
+  - a criterion with no machine-checkable evidence is marked `manual` in the file, and its evidence event is defined rather than left open: the agent writes a dated observation line naming the criterion id into the slice's evidence log, and the hook records the observed write as that criterion's evidence event
+  - node 6 (`build`) reports `ok` only when every criterion in every slice's file is `true`; any remaining `false` fails the node
+- Constraints:
+  - a `manual` criterion's evidence proves the check occurred, not that it passed — the content of the observation line is still the agent's own word. This is stated in the contract as a named limit rather than claimed as ground truth
+  - the observed-evidence log is append-only and hook-written; an agent write to it is denied by the graph tier, so a run cannot forge its own evidence
+  - this does not change the slice doc format that `PRD/instructions/requirement-format.md` defines — the criteria file is emitted from it
+- Dependencies:
+  - REQ-152
+  - DEC-166
+- Notes:
+  - the same self-report weakness applies to `graph-ledger-check.mjs`, whose inputs `graph-run` writes itself; that limit is stated in the contract and is not closed by this requirement
+
+### REQ-158
+- Title: The no-pre-authorization rule is re-read at every node dispatch
+- Priority: medium
+- Description: `graph-run` re-reads the no-pre-authorization rule from `PRD/instructions/graph-workflow-contract.md` immediately before writing each node's dispatch prompt, so the rule cannot be lost to compaction partway through a long run.
+- Acceptance Criteria:
+  - the rule is read from the contract before every dispatch prompt is written, not once at run start
+  - the re-read happens at the same point `scripts/graph-ledger-check.mjs` already runs, which is before dispatch rather than after
+  - the rule is not added to `CLAUDE.md`, so it does not apply to every ordinary session in the repository and does not add to that file's dilution
+- Constraints:
+  - the rule's text stays in one place — the contract — and is not duplicated into the skill file or a third location
+- Dependencies:
+  - DEC-163
+  - DEC-166
+- Notes:
+  - the rule this protects is the one written to prevent the 2026-08-17 pre-authorization failure, which makes it the worst one to lose to a compaction pass
+
+### REQ-159
+- Title: The run proves the hook is firing before it starts and while it runs
+- Priority: high
+- Description: A graph run never proceeds on an unproven enforcer. `graph-preflight` issues a canary call the universal tier must deny and refuses to start the run if the deny does not fire, and the driver confirms at every node boundary that the hook is still firing.
+- Acceptance Criteria:
+  - `graph-preflight` issues a canary tool call that the universal tier is defined to deny, and treats the observed deny — the reason text the hook returns — as the proof
+  - a canary that is not denied ends the run at `BLOCKED` before node 2 is dispatched, naming what was tried, what came back, and the recovery action; the run does not start
+  - the same `BLOCKED` path covers the named untrusted-workspace condition, because a project hook that was never trusted cannot deny the canary either
+  - the canary targets a path or command that is inert if it were ever to execute, so a hook that is absent causes no side effect beyond the failed proof
+  - between nodes, `graph-run` confirms that the hook's own counter file advanced during the node just finished; a node that made tool calls while the counter stood still means the hook stopped firing
+  - a failed heartbeat ends the run at `BLOCKED` with the node, the expected advance, and the observed counter as evidence; the run does not advance to the next node
+  - the ledger records the canary result at run start and the heartbeat result at each node boundary, so the proof is in the record rather than in the agent's word
+- Constraints:
+  - the heartbeat is read-only over `.worktrees/.graph-node-calls.json`, whose single writer is the hook, so the driver cannot manufacture its own proof
+  - the heartbeat is unavailable when the cap is degraded — a missing or unparseable `.worktrees/.graph-run-state.json` means the hook attributes no calls to a node, so the counter cannot advance. That condition is reported as a degraded heartbeat rather than as a hook failure, and the canary at run start remains the binding proof
+  - `.claude/graph-profile.json` is not a fallback for a hook that did not fire: the contract already directs treating an unverified profile as absent, so a failed proof is refused rather than downgraded
+- Dependencies:
+  - REQ-152
+  - REQ-153
+  - REQ-156
+  - DEC-166
+- Notes:
+  - the failure this closes is the quiet one — a hook that is present, committed, and trusted still reads exactly like a working hook when it is not firing, and nothing in the run's output distinguishes the two
