@@ -6,8 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-- [graph-workflow](./graph-workflow/)
-
 ## active
 
 ## refined
