@@ -2,18 +2,28 @@ import assert from "node:assert/strict"
 import { Readable } from "node:stream"
 import test from "node:test"
 
-import { decide, main } from "./graph-boundary-hook.mjs"
+import { decide, main, projectRoot, readRunLock } from "./graph-boundary-hook.mjs"
 
 // The universal tier's whole surface, exercised through real PreToolUse
 // payloads rather than through the pure rules module. A rule that is correct in
 // `boundary-rules.mjs` but unreachable through the payload shape is not enforced.
 
-function bash(command) {
-  return decide(JSON.stringify({ tool_name: "Bash", tool_input: { command } }))
+// A lock the hook will find, and one it will not. The hook reads the file; the
+// tests hand it a reader rather than writing to `.worktrees/` from a test run.
+const LIVE_LOCK = { read: () => '{"slug":"x","runId":"r","pid":1,"startedAt":"t"}' }
+const NO_LOCK = {
+  read: () => {
+    throw Object.assign(new Error("ENOENT"), { code: "ENOENT" })
+  }
+}
+const CORRUPT_LOCK = { read: () => "{ this is not json" }
+
+function bash(command, lock = NO_LOCK) {
+  return decide(JSON.stringify({ tool_name: "Bash", tool_input: { command } }), lock)
 }
 
-function tool(toolName, toolInput) {
-  return decide(JSON.stringify({ tool_name: toolName, tool_input: toolInput }))
+function tool(toolName, toolInput, lock = NO_LOCK) {
+  return decide(JSON.stringify({ tool_name: toolName, tool_input: toolInput }), lock)
 }
 
 function collectStderr() {
@@ -43,9 +53,9 @@ const DENIED_UNIVERSAL = [
   ["recursive force remove", "rm -rf build", "recursive-force-remove"],
   ["recursive force remove, split flags", "rm -r -f build", "recursive-force-remove"],
   ["recursive force remove, long flags", "rm --recursive --force build", "recursive-force-remove"],
-  ["sudo", "sudo npm install -g something", "sudo"],
-  ["pkill", "pkill -f node", "pkill"],
-  ["killall", "killall node", "killall"],
+  ["sudo", "sudo npm install -g something", "denied-command"],
+  ["pkill", "pkill -f node", "denied-command"],
+  ["killall", "killall node", "denied-command"],
   ["secrets read", "cat .secrets/openai-dev.env", "secrets-access"],
   ["secrets write by redirection", "echo x > .secrets/openai-dev.env", "secrets-access"],
   ["secrets write by cp", "cp local.env .secrets/openai-dev.env", "secrets-access"],
@@ -55,6 +65,7 @@ const DENIED_UNIVERSAL = [
 for (const [name, command, rule] of DENIED_UNIVERSAL) {
   test(`universal tier denies ${name}`, () => {
     const result = bash(command)
+    assert.match(result.reason, /\S/)
     assert.equal(result.decision, "deny", `expected a deny for: ${command}`)
     assert.equal(result.rule, rule)
     assert.equal(result.tier, "universal")
@@ -124,6 +135,114 @@ test("file-editing tools are denied on the secrets subtree", () => {
     "deny"
   )
   assert.equal(tool("Read", { file_path: "PRD/README.md" }).decision, "allow")
+})
+
+
+// ---------------------------------------------------------------------------
+// Slice B — the graph tier, which fires only while the run lock exists.
+// ---------------------------------------------------------------------------
+
+const GRAPH_TIER = [
+  ["a project instruction file", "echo x > CLAUDE.md", "protected-path-write"],
+  ["the hook's own settings", "echo x > .claude/settings.json", "protected-path-write"],
+  ["the permission profile", "echo x > .claude/graph-profile.json", "protected-path-write"],
+  ["the hook itself", "echo x > scripts/graph-boundary-hook.mjs", "protected-path-write"],
+  [
+    "a canonical lifecycle skill",
+    "echo x > .claude/skills/thejudge-implement-all/SKILL.md",
+    "protected-path-write"
+  ],
+  [
+    "the lifecycle skill mirror",
+    "echo x > .agents/skills/thejudge-implement-all/SKILL.md",
+    "protected-path-write"
+  ],
+  ["the call counter", "echo x >> .worktrees/.graph-node-calls.json", "run-record-write"],
+  ["the evidence log", "echo x >> .worktrees/.graph-evidence.jsonl", "run-record-write"],
+  ["the evidence log by cp", "cp forged.jsonl .worktrees/.graph-evidence.jsonl", "run-record-write"],
+  ["removing the run lock", "rm .worktrees/.graph-run.lock", "run-lock-removal"],
+  ["a nohup wrapper", "nohup npm run dev", "nohup-wrapper"],
+  ["a background launch", "npm run dev &", "background-launch"],
+  ["a background launch mid-chain", "npm run dev & npm run test", "background-launch"]
+]
+
+for (const [name, command, rule] of GRAPH_TIER) {
+  test(`graph tier denies ${name} with a lock present`, () => {
+    const denied = bash(command, LIVE_LOCK)
+    assert.equal(denied.decision, "deny", `expected a deny for: ${command}`)
+    assert.equal(denied.rule, rule)
+    assert.equal(denied.tier, "graph")
+    assert.equal(denied.runActive, true)
+  })
+
+  test(`graph tier allows ${name} with no lock`, () => {
+    const allowed = bash(command, NO_LOCK)
+    assert.equal(allowed.decision, "allow", `wrongly denied without a lock: ${command}`)
+    assert.equal(allowed.runActive, false)
+  })
+}
+
+test("the graph tier denies file-tool writes to the protected set", () => {
+  assert.equal(tool("Write", { file_path: "CLAUDE.md" }, LIVE_LOCK).tier, "graph")
+  assert.equal(
+    tool("Edit", { file_path: ".claude/skills/thejudge-map-out/SKILL.md" }, LIVE_LOCK).decision,
+    "deny"
+  )
+  assert.equal(tool("Write", { file_path: "CLAUDE.md" }, NO_LOCK).decision, "allow")
+  assert.equal(tool("Write", { file_path: "PRD/README.md" }, LIVE_LOCK).decision, "allow")
+})
+
+test("the universal tier fires in both lock states", () => {
+  for (const [name, command, rule] of DENIED_UNIVERSAL) {
+    for (const [state, lock] of [["no lock", NO_LOCK], ["lock present", LIVE_LOCK]]) {
+      const result = bash(command, lock)
+      assert.equal(result.decision, "deny", `${name} must deny with ${state}`)
+      assert.equal(result.rule, rule)
+      assert.equal(result.tier, "universal")
+    }
+  }
+})
+
+test("a corrupt lock means no run active, and never disarms the universal tier", () => {
+  // The permissive reading is the safe one here: a hook that hardened on
+  // garbage would brick ordinary work in this repository.
+  const graphRule = bash("echo x > CLAUDE.md", CORRUPT_LOCK)
+  assert.equal(graphRule.decision, "allow")
+  assert.equal(graphRule.runActive, false)
+
+  const universalRule = bash("git push --force origin topic", CORRUPT_LOCK)
+  assert.equal(universalRule.decision, "deny")
+  assert.equal(universalRule.tier, "universal")
+})
+
+test("a missing lock means no run active", () => {
+  assert.equal(bash("git status", NO_LOCK).runActive, false)
+  assert.equal(bash("git status", LIVE_LOCK).runActive, true)
+})
+
+test("readRunLock reports absence rather than throwing", () => {
+  assert.equal(readRunLock("/nonexistent-root-xyz"), null)
+  assert.equal(readRunLock("/any", NO_LOCK.read), null)
+  assert.equal(typeof readRunLock("/any", LIVE_LOCK.read), "string")
+})
+
+test("the project root comes from the harness, not the call's working directory", () => {
+  assert.equal(projectRoot({}, { CLAUDE_PROJECT_DIR: "/repo" }), "/repo")
+  assert.equal(projectRoot({ cwd: "/repo/sub" }, {}), "/repo/sub")
+})
+
+test("ordinary work is untouched while a run holds the lock", () => {
+  // NFR-016 in the direction that matters most: the strict tier must not make
+  // the repository unusable for the run that is holding the lock.
+  for (const command of [
+    "npm run test:scripts",
+    "git status --short",
+    "git commit -m 'feat: something'",
+    "node --test scripts/graph-boundary-hook.test.mjs",
+    "echo notes > PRD/work/example/notes.md"
+  ]) {
+    assert.equal(bash(command, LIVE_LOCK).decision, "allow", `wrongly denied: ${command}`)
+  }
 })
 
 test("a deny exits 2 with the reason on stderr", async () => {

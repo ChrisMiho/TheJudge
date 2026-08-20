@@ -53,8 +53,48 @@ export const WRAPPER_COMMANDS = Object.freeze([
 /** Commands whose very presence at a segment head is denied. */
 export const DENIED_COMMANDS = Object.freeze(["sudo", "pkill", "killall"])
 
-/** Commands that copy, whose final positional argument is a write target. */
-export const COPY_COMMANDS = Object.freeze(["cp", "rsync", "install", "mv"])
+/**
+ * Commands that copy, whose final positional argument is a write target.
+ *
+ * `mv` is deliberately not here. It belongs to `DESTRUCTIVE_COMMANDS`, which
+ * exposes every positional — a move writes its destination *and* removes its
+ * source, so destination-only would miss half of what it does.
+ */
+export const COPY_COMMANDS = Object.freeze(["cp", "rsync", "install"])
+
+/**
+ * Commands where every positional argument is a thing being written or removed.
+ *
+ * `rm` is the reason this list exists: deleting the run lock is a write to the
+ * run's own bookkeeping, and no destination-only rule would see it.
+ */
+export const DESTRUCTIVE_COMMANDS = Object.freeze([
+  "rm",
+  "mv",
+  "tee",
+  "truncate",
+  "shred",
+  "ln",
+  "chmod",
+  "chown"
+])
+
+/** The run lock. Its presence is what turns the graph tier on. */
+export const RUN_LOCK_PATH = ".worktrees/.graph-run.lock"
+
+/**
+ * The hook's own records, which no agent may write.
+ *
+ * A run that could reset its call count or append to its evidence file would be
+ * grading its own homework, so the graph tier denies agent writes to both. The
+ * hook itself writes them, which is why these literals live here and not in the
+ * hook: `protected-write-guard.test.mjs` scans scripts for protected-path
+ * literals paired with fs write calls, and the hook is a writer.
+ */
+export const RUN_RECORD_PATHS = Object.freeze([
+  ".worktrees/.graph-node-calls.json",
+  ".worktrees/.graph-evidence.jsonl"
+])
 
 const VARIABLE_ASSIGNMENT = /^[A-Za-z_][A-Za-z0-9_]*=/
 
@@ -300,127 +340,244 @@ export function normalizeCommand(commandText) {
     if (COPY_COMMANDS.includes(commandName) && positional.length >= 2) {
       writeTargets.push(positional[positional.length - 1])
     }
+    if (DESTRUCTIVE_COMMANDS.includes(commandName)) {
+      writeTargets.push(...positional)
+    }
+    if (commandName === "sed" && argv.some((token) => /^-[a-zA-Z]*i/.test(token))) {
+      writeTargets.push(...positional)
+    }
     return {
       text: segmentText,
       argv,
       command: commandName,
       wrappers: stripped,
       redirections: targets,
-      writeTargets
+      writeTargets: [...new Set(writeTargets)]
     }
   })
   return { segments: normalized, trailingAmpersand, backgrounded }
 }
 
 function normalizePathText(value) {
-  return String(value).replace(/^["']|["']$/g, "").replace(/^\.\//, "")
+  return String(value)
+    .replace(/^["']|["']$/g, "")
+    .replace(/^\.\//, "")
+    .replace(/\/+$/, "")
 }
 
 function touchesSecrets(value) {
   const normalized = normalizePathText(value)
-  return normalized === ".secrets" || normalized.includes(SECRETS_PATH_PREFIX)
+  return normalized === ".secrets" || `${normalized}/`.includes(SECRETS_PATH_PREFIX)
 }
 
-function deny(rule, reason) {
-  return { decision: "deny", tier: "universal", rule, reason }
-}
-
-const ALLOW = Object.freeze({ decision: "allow", tier: null, rule: null, reason: null })
-
-function classifyGitPush(segment) {
-  const args = segment.argv.slice(2)
-
-  for (const argument of args) {
-    if (FORCE_PUSH_FLAGS.test(argument)) {
-      return deny("force-push", `Force-push is denied in every session (saw \`${argument}\`).`)
-    }
-    if (DELETE_PUSH_FLAGS.test(argument)) {
-      return deny(
-        "remote-branch-delete",
-        `Deleting a remote branch is denied in every session (saw \`${argument}\`).`
-      )
-    }
+/**
+ * Whether the lock file's contents mean a run is active.
+ *
+ * Pure: the caller reads the file, this decides what it means. A missing or
+ * unparseable lock is "no run active" for the graph tier — and never a reason
+ * to skip the universal tier, which fires either way.
+ *
+ * This is deliberately not `classifyLock()` from `graph-preflight.mjs`. That
+ * one decides whether a *new* run may start, so it treats a corrupt lock as a
+ * hard blocker. This one decides whether stricter rules apply to a call in
+ * flight, where the safe reading of an unreadable lock is the permissive one:
+ * a hook that hardened on garbage would brick ordinary work in this repository.
+ */
+export function isRunActive(lockContents) {
+  if (lockContents === null || lockContents === undefined) return false
+  try {
+    const parsed = JSON.parse(lockContents)
+    return Boolean(parsed) && typeof parsed === "object" && !Array.isArray(parsed)
+  } catch {
+    return false
   }
-
-  const refspecs = args.filter((argument) => !argument.startsWith("-"))
-  for (const refspec of refspecs) {
-    if (refspec.startsWith("+")) {
-      return deny(
-        "force-push",
-        `A leading \`+\` refspec is a force-push and is denied in every session (saw \`${refspec}\`).`
-      )
-    }
-    if (refspec.startsWith(":")) {
-      return deny(
-        "remote-branch-delete",
-        `A \`:branch\` refspec deletes a remote branch and is denied in every session (saw \`${refspec}\`).`
-      )
-    }
-    // `HEAD:main`, `main`, `refs/heads/main` — the destination half decides.
-    const destination = refspec.includes(":") ? refspec.slice(refspec.indexOf(":") + 1) : refspec
-    const branch = destination.replace(/^refs\/heads\//, "")
-    if (PROTECTED_BRANCHES.includes(branch)) {
-      return deny(
-        "protected-branch-push",
-        `Pushing to \`${branch}\` is denied in every session. Open a pull request instead.`
-      )
-    }
-  }
-
-  return ALLOW
 }
 
-function classifyRemove(segment) {
-  const flags = segment.argv.slice(1).filter((argument) => argument.startsWith("-"))
+/** Every path a call would write, across Bash segments and file-tool inputs. */
+function writtenPaths(context) {
+  const paths = [...context.paths]
+  for (const segment of context.segments) paths.push(...segment.writeTargets)
+  return paths
+}
+
+/** Every path a call so much as names. Reads count for the secrets rule. */
+function namedPaths(context) {
+  const paths = [...context.paths]
+  for (const segment of context.segments) {
+    paths.push(...segment.argv)
+    paths.push(...segment.writeTargets)
+  }
+  return paths
+}
+
+function matchesPath(candidate, target) {
+  const normalized = normalizePathText(candidate)
+  return normalized === target || normalized.endsWith(`/${target}`)
+}
+
+/**
+ * The tiers, as one table.
+ *
+ * Tier membership is a field on the rule, not logic split between the hook and
+ * the permission profile. Universal rules fire in every session; graph rules
+ * fire only while the run lock exists. Each rule returns a reason, or null.
+ */
+export const RULES = Object.freeze([
+  {
+    id: "secrets-access",
+    tier: "universal",
+    evaluate: (context) =>
+      namedPaths(context).some(touchesSecrets)
+        ? "Reading or writing the secrets subtree is denied in every session."
+        : null
+  },
+  {
+    id: "denied-command",
+    tier: "universal",
+    evaluate: (context) => {
+      for (const segment of context.segments) {
+        if (DENIED_COMMANDS.includes(segment.command)) {
+          return `\`${segment.command}\` is denied in every session.`
+        }
+      }
+      return null
+    }
+  },
+  {
+    id: "recursive-force-remove",
+    tier: "universal",
+    evaluate: (context) => {
+      for (const segment of context.segments) {
+        if (segment.command === "rm" && isRecursiveForce(segment)) {
+          return "`rm -rf` is denied in every session."
+        }
+      }
+      return null
+    }
+  },
+  {
+    id: "force-push",
+    tier: "universal",
+    evaluate: (context) => firstPushReason(context, "force-push")
+  },
+  {
+    id: "remote-branch-delete",
+    tier: "universal",
+    evaluate: (context) => firstPushReason(context, "remote-branch-delete")
+  },
+  {
+    id: "protected-branch-push",
+    tier: "universal",
+    evaluate: (context) => firstPushReason(context, "protected-branch-push")
+  },
+  {
+    id: "protected-path-write",
+    tier: "graph",
+    evaluate: (context) => {
+      for (const candidate of writtenPaths(context)) {
+        const normalized = normalizePathText(candidate)
+        if (isProtectedPath(normalized)) {
+          return `Writing \`${normalized}\` is denied while a graph run holds the lock: a run may not edit its own enforcer or its own instructions.`
+        }
+      }
+      return null
+    }
+  },
+  {
+    id: "run-record-write",
+    tier: "graph",
+    evaluate: (context) => {
+      for (const candidate of writtenPaths(context)) {
+        for (const record of RUN_RECORD_PATHS) {
+          if (matchesPath(candidate, record)) {
+            return `Writing \`${record}\` is denied while a graph run holds the lock: the hook is its sole writer, so a run cannot reset its own counter or forge its own evidence.`
+          }
+        }
+      }
+      return null
+    }
+  },
+  {
+    id: "run-lock-removal",
+    tier: "graph",
+    evaluate: (context) => {
+      for (const candidate of writtenPaths(context)) {
+        if (matchesPath(candidate, RUN_LOCK_PATH)) {
+          return "Removing the run lock is denied while that lock is live. Release goes through the run's own terminal states, not through deleting the lock."
+        }
+      }
+      return null
+    }
+  },
+  {
+    id: "nohup-wrapper",
+    tier: "graph",
+    evaluate: (context) => {
+      for (const segment of context.segments) {
+        if (segment.wrappers.includes("nohup")) {
+          return "`nohup` is denied while a graph run holds the lock: a detached command outlives the run that started it."
+        }
+      }
+      return null
+    }
+  },
+  {
+    id: "background-launch",
+    tier: "graph",
+    evaluate: (context) =>
+      context.backgrounded
+        ? "Launching a command in the background with `&` is denied while a graph run holds the lock: the run cannot own a process it never waits for."
+        : null
+  }
+])
+
+function isRecursiveForce(segment) {
   let recursive = false
   let force = false
-  for (const flag of flags) {
+  for (const flag of segment.argv.slice(1).filter((argument) => argument.startsWith("-"))) {
     if (flag === "--recursive") recursive = true
     else if (flag === "--force") force = true
     else if (/^-[a-zA-Z]+$/.test(flag)) {
-      if (flag.includes("r") || flag.includes("R")) recursive = true
+      if (/[rR]/.test(flag)) recursive = true
       if (flag.includes("f")) force = true
     }
   }
-  if (recursive && force) {
-    return deny("recursive-force-remove", "`rm -rf` is denied in every session.")
-  }
-  return ALLOW
+  return recursive && force
 }
 
-/** Apply the universal tier to one normalized segment. */
-export function classifySegment(segment) {
-  if (segment.command === "") return ALLOW
+/** `git push` analysis, returning the reason for whichever rule is asking. */
+function firstPushReason(context, ruleId) {
+  for (const segment of context.segments) {
+    if (segment.command !== "git" || segment.argv[1] !== "push") continue
+    const args = segment.argv.slice(2)
 
-  if (DENIED_COMMANDS.includes(segment.command)) {
-    return deny(segment.command, `\`${segment.command}\` is denied in every session.`)
-  }
+    for (const argument of args) {
+      if (ruleId === "force-push" && FORCE_PUSH_FLAGS.test(argument)) {
+        return `Force-push is denied in every session (saw \`${argument}\`).`
+      }
+      if (ruleId === "remote-branch-delete" && DELETE_PUSH_FLAGS.test(argument)) {
+        return `Deleting a remote branch is denied in every session (saw \`${argument}\`).`
+      }
+    }
 
-  for (const token of segment.argv) {
-    if (touchesSecrets(token)) {
-      return deny(
-        "secrets-access",
-        "Reading or writing the secrets subtree is denied in every session."
-      )
+    for (const refspec of args.filter((argument) => !argument.startsWith("-"))) {
+      if (ruleId === "force-push" && refspec.startsWith("+")) {
+        return `A leading \`+\` refspec is a force-push and is denied in every session (saw \`${refspec}\`).`
+      }
+      if (ruleId === "remote-branch-delete" && refspec.startsWith(":")) {
+        return `A \`:branch\` refspec deletes a remote branch and is denied in every session (saw \`${refspec}\`).`
+      }
+      if (ruleId !== "protected-branch-push") continue
+      if (refspec.startsWith("+") || refspec.startsWith(":")) continue
+      // `HEAD:main`, `main`, `refs/heads/main` — the destination half decides.
+      const destination = refspec.includes(":") ? refspec.slice(refspec.indexOf(":") + 1) : refspec
+      const branch = destination.replace(/^refs\/heads\//, "")
+      if (PROTECTED_BRANCHES.includes(branch)) {
+        return `Pushing to \`${branch}\` is denied in every session. Open a pull request instead.`
+      }
     }
   }
-
-  for (const target of segment.writeTargets) {
-    if (touchesSecrets(target)) {
-      return deny(
-        "secrets-access",
-        "Reading or writing the secrets subtree is denied in every session."
-      )
-    }
-  }
-
-  if (segment.command === "rm") return classifyRemove(segment)
-
-  if (segment.command === "git" && segment.argv[1] === "push") {
-    return classifyGitPush(segment)
-  }
-
-  return ALLOW
+  return null
 }
 
 /** The tool-input fields that name a file path across the file-editing tools. */
@@ -438,35 +595,47 @@ export function toolInputPaths(toolInput) {
   return paths
 }
 
+/** Everything the rules need to see about one tool call, in one shape. */
+export function callContext({ toolName, toolInput, runActive = false } = {}) {
+  const isBash = toolName === "Bash"
+  const normalized = isBash
+    ? normalizeCommand(toolInput?.command)
+    : { segments: [], trailingAmpersand: false, backgrounded: false }
+  return {
+    toolName: toolName ?? null,
+    segments: normalized.segments,
+    trailingAmpersand: normalized.trailingAmpersand,
+    backgrounded: normalized.backgrounded,
+    paths: isBash ? [] : toolInputPaths(toolInput),
+    runActive: Boolean(runActive)
+  }
+}
+
 /**
  * The decision function.
  *
- * `{ decision: "allow" | "deny", tier, rule, reason }`. Slice B adds the graph
- * tier behind the caller-supplied run state; today every deny is universal and
- * fires with or without a run lock.
+ * `{ decision, tier, rule, reason, runActive, trailingAmpersand, backgrounded }`.
+ * Universal rules are evaluated in every session. Graph rules are evaluated only
+ * when the caller reports the run lock present, so always-on enforcement never
+ * blocks ordinary work in this repository.
  */
-export function classifyToolCall({ toolName, toolInput } = {}) {
-  if (toolName === "Bash") {
-    const { segments, trailingAmpersand, backgrounded } = normalizeCommand(toolInput?.command)
-    for (const segment of segments) {
-      const verdict = classifySegment(segment)
-      if (verdict.decision === "deny") {
-        return { ...verdict, trailingAmpersand, backgrounded }
-      }
-    }
-    return { ...ALLOW, trailingAmpersand, backgrounded }
+export function classifyToolCall(call = {}) {
+  const context = callContext(call)
+  const observations = {
+    runActive: context.runActive,
+    trailingAmpersand: context.trailingAmpersand,
+    backgrounded: context.backgrounded
   }
 
-  for (const candidate of toolInputPaths(toolInput)) {
-    if (touchesSecrets(candidate)) {
-      return deny(
-        "secrets-access",
-        "Reading or writing the secrets subtree is denied in every session."
-      )
+  for (const rule of RULES) {
+    if (rule.tier === "graph" && !context.runActive) continue
+    const reason = rule.evaluate(context)
+    if (reason) {
+      return { decision: "deny", tier: rule.tier, rule: rule.id, reason, ...observations }
     }
   }
 
-  return ALLOW
+  return { decision: "allow", tier: null, rule: null, reason: null, ...observations }
 }
 
 /** Re-exported so a caller needs one import for the whole boundary vocabulary. */

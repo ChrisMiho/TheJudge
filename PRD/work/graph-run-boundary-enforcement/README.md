@@ -30,7 +30,7 @@ and `GAMEPLAN.md` for the architecture and verification checklist.
 | Slice | Objective | Requirements | Depends on |
 | --- | --- | --- | --- |
 | [A](./slice-a-hook-and-universal-tier.md) ✅ | Hook exists, is always on, denies the universal tier | REQ-152, NFR-016 | — |
-| [B](./slice-b-graph-tier.md) | Graph tier gated by the run lock | REQ-153, REQ-152, NFR-016 | A |
+| [B](./slice-b-graph-tier.md) ✅ | Graph tier gated by the run lock | REQ-153, REQ-152, NFR-016 | A |
 | [C](./slice-c-kill-switch.md) | Owner kill switch with a clean halt | REQ-154, FLOW-020 | A |
 | [D](./slice-d-tool-call-cap.md) | Per-dispatch tool-call cap | REQ-156 | A |
 | [E](./slice-e-hook-liveness.md) | Canary at run start, heartbeat between nodes | REQ-159, NFR-016 | A, B, D |

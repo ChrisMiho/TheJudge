@@ -3,10 +3,14 @@ import test from "node:test"
 
 import {
   COPY_COMMANDS,
+  DESTRUCTIVE_COMMANDS,
   PROTECTED_BRANCHES,
+  RULES,
+  RUN_LOCK_PATH,
+  RUN_RECORD_PATHS,
   WRAPPER_COMMANDS,
-  classifySegment,
   classifyToolCall,
+  isRunActive,
   extractRedirections,
   normalizeCommand,
   splitSegments,
@@ -108,9 +112,52 @@ test("rsync flags do not confuse the destination", () => {
   assert.deepEqual(segments[0].writeTargets, ["destination/"])
 })
 
-test("classifySegment allows an ordinary command", () => {
-  const { segments } = normalizeCommand("npm run test:scripts")
-  assert.equal(classifySegment(segments[0]).decision, "allow")
+test("an ordinary command is allowed", () => {
+  assert.equal(verdict("npm run test:scripts").decision, "allow")
+})
+
+test("destructive commands expose every positional as a write target", () => {
+  for (const command of DESTRUCTIVE_COMMANDS) {
+    const { segments } = normalizeCommand(`${command} -v first.txt second.txt`)
+    assert.deepEqual(
+      segments[0].writeTargets,
+      ["first.txt", "second.txt"],
+      `${command} must expose what it touches`
+    )
+  }
+})
+
+test("sed exposes its targets only with an in-place flag", () => {
+  const inPlace = normalizeCommand("sed -i '' s/a/b/ notes.txt")
+  assert.ok(inPlace.segments[0].writeTargets.includes("notes.txt"))
+
+  const streaming = normalizeCommand("sed s/a/b/ notes.txt")
+  assert.deepEqual(streaming.segments[0].writeTargets, [])
+})
+
+test("every rule declares a tier the classifier knows", () => {
+  assert.ok(RULES.length > 0)
+  for (const rule of RULES) {
+    assert.ok(["universal", "graph"].includes(rule.tier), `${rule.id} has an unknown tier`)
+    assert.equal(typeof rule.evaluate, "function")
+  }
+  assert.ok(RULES.some((rule) => rule.tier === "graph"), "the graph tier must exist")
+})
+
+test("a lock is active only when it parses into an object", () => {
+  assert.equal(isRunActive(null), false)
+  assert.equal(isRunActive(undefined), false)
+  assert.equal(isRunActive(""), false)
+  assert.equal(isRunActive("{ not json"), false)
+  assert.equal(isRunActive("[]"), false)
+  assert.equal(isRunActive("null"), false)
+  assert.equal(isRunActive("42"), false)
+  assert.equal(isRunActive('{"slug":"x","runId":"r","pid":1}'), true)
+})
+
+test("the record paths and the lock path are distinct", () => {
+  assert.equal(RUN_RECORD_PATHS.includes(RUN_LOCK_PATH), false)
+  assert.equal(RUN_RECORD_PATHS.length, 2)
 })
 
 test("each protected branch is denied and each tier field is populated", () => {

@@ -17,7 +17,10 @@
  * the between-node heartbeat, not by blocking the user.
  */
 
-import { classifyToolCall } from "./lib/boundary-rules.mjs"
+import { readFileSync } from "node:fs"
+import path from "node:path"
+
+import { RUN_LOCK_PATH, classifyToolCall, isRunActive } from "./lib/boundary-rules.mjs"
 
 const DENY_EXIT_CODE = 2
 
@@ -33,12 +36,39 @@ export function readStdin(stream) {
   })
 }
 
+/**
+ * The repository root, as the harness reports it.
+ *
+ * The hook runs with the tool call's own working directory, which inside a
+ * worktree or a subdirectory is not the root. `$CLAUDE_PROJECT_DIR` is what the
+ * harness sets, and the payload carries a fallback.
+ */
+export function projectRoot(payload = {}, environment = process.env) {
+  return environment.CLAUDE_PROJECT_DIR ?? payload.cwd ?? process.cwd()
+}
+
+/**
+ * Read the run lock, or report its absence.
+ *
+ * Returns `null` when the file is missing or unreadable for any reason. The
+ * pure module decides what that means; this only reports what was on disk.
+ */
+export function readRunLock(root, read = readFileSync) {
+  try {
+    return read(path.join(root, RUN_LOCK_PATH), "utf8")
+  } catch {
+    return null
+  }
+}
+
 /** Turn the raw payload into a verdict. Exported so the test drives it directly. */
-export function decide(rawPayload) {
+export function decide(rawPayload, { environment, read } = {}) {
   const payload = JSON.parse(rawPayload === "" ? "{}" : rawPayload)
+  const lockContents = readRunLock(projectRoot(payload, environment ?? process.env), read)
   return classifyToolCall({
     toolName: payload.tool_name,
-    toolInput: payload.tool_input
+    toolInput: payload.tool_input,
+    runActive: isRunActive(lockContents)
   })
 }
 
