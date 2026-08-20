@@ -143,6 +143,36 @@ and so is deleting the sentinel. The halt path itself stays open, because a run
 that could not write its own terminal state would strand exactly the state the
 kill switch exists to avoid.
 
+## Acceptance criteria are earned, not written
+
+`thejudge-map-out` emits one `slice-<letter>.criteria.json` beside each slice
+doc, with every criterion initialised `false` and carrying an `evidence` block —
+a command pattern, one or more file paths, or `"manual": true`. The schema and a
+worked example live in `thejudge-map-out/reference.md`. The slice doc format in
+`PRD/instructions/requirement-format.md` is unchanged; the criteria file is
+emitted from it, not a replacement for it.
+
+The hook matches every observed tool call against every criterion's evidence
+block and appends matching ids to `.worktrees/.graph-evidence.jsonl`, keyed by run
+id and slice. The hook is that log's only writer and the graph tier denies every
+other write to it, so a run cannot pre-seed its own evidence. The log is
+append-only: an earned id is never re-logged, and a damaged line is skipped
+rather than repaired.
+
+A write setting a criterion to `true` is denied unless that id is already in the
+log for this run, and the denial names the criterion and the evidence still
+missing. Evidence from another run does not carry over.
+
+Node 6 (`build`) reports `ok` only when every criterion in every slice's file is
+`true`. Any remaining `false` fails the node, and the check reads the emitted
+files rather than a summary of them.
+
+**The `manual` limit.** A `manual` criterion is earned by a dated observation
+line naming its id. That proves the check *happened* — that someone looked on
+that day and wrote down what they saw. It does not prove the check passed. No
+mechanism here can close that gap, and calling a `manual` criterion "verified" is
+overclaiming what the evidence supports.
+
 ## Hook liveness
 
 A run never proceeds on an unproven enforcer.

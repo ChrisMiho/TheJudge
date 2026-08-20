@@ -1,0 +1,65 @@
+{
+  "slug": "graph-run-boundary-enforcement",
+  "slice": "E",
+  "criteria": [
+    {
+      "id": "E1",
+      "statement": "Unit tests in `scripts/graph-preflight.test.mjs`: a denied canary returns proof; an allowed canary returns the `BLOCKED` classification with the tried command, the response, and the recovery action in",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/graph-preflight\\.test\\.mjs"
+      }
+    },
+    {
+      "id": "E2",
+      "statement": "Unit test: the untrusted-workspace case produces the same `BLOCKED` classification with its own named reason, distinguishable from a plain canary failure.",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/graph-preflight\\.test\\.mjs"
+      }
+    },
+    {
+      "id": "E3",
+      "statement": "Unit tests for the heartbeat: counter advanced \u2192 pass; counter static with calls made \u2192 `BLOCKED`; run-state file missing \u2192 degraded, run continues, condition reported.",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/graph-preflight\\.test\\.mjs"
+      }
+    },
+    {
+      "id": "E4",
+      "statement": "The canary command is inert: the slice records what it targets and why executing it would change nothing.",
+      "value": true,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "E5",
+      "statement": "Live canary. Run `npm run graph:preflight -- --dry-run` in a session with the hook installed and record the printed canary line verbatim. Then rename `.claude/settings.json` aside, re-run, and record ",
+      "value": true,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "E6",
+      "statement": "The ledger template in the contract carries the canary line and the per-node heartbeat column or line, and `graph-run/SKILL.md` states both.",
+      "value": true,
+      "evidence": {
+        "paths": [
+          "PRD/instructions/graph-workflow-contract.md",
+          ".claude/skills/graph-run/SKILL.md"
+        ]
+      }
+    },
+    {
+      "id": "E7",
+      "statement": "`npm run test:scripts` green.",
+      "value": true,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
+    }
+  ]
+}

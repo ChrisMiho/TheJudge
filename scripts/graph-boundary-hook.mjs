@@ -17,17 +17,26 @@
  * the between-node heartbeat, not by blocking the user.
  */
 
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
+import { appendFileSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs"
 import path from "node:path"
 
 import {
+  CRITERIA_FILE_SUFFIX,
+  EVIDENCE_LOG_PATH,
   RUN_LOCK_PATH,
   RUN_STATE_PATH,
   RUN_STOP_PATH,
+  callContext,
   callCountKey,
   classifyToolCall,
+  criteriaFlippedTrue,
+  evidenceSubject,
   isRunActive,
-  parseRunState
+  manualObservationIds,
+  matchesEvidence,
+  parseCriteriaFile,
+  parseRunState,
+  writtenText
 } from "./lib/boundary-rules.mjs"
 
 /** The counter file. The hook is its sole writer; the graph tier denies the rest. */
@@ -124,6 +133,143 @@ export function recordCall(root, runState, io = {}) {
   return { key, count: next }
 }
 
+/** The work-package slug this run is advancing, from the lock it holds. */
+export function slugFromLock(lockContents) {
+  try {
+    const parsed = JSON.parse(lockContents)
+    return typeof parsed?.slug === "string" ? parsed.slug : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Every slice's criteria file for one work package.
+ *
+ * Read fresh on each call rather than cached: a run emits and edits these files
+ * as it goes, and a cached view would judge a flip against a stale criterion.
+ */
+export function loadCriteria(root, slug, io = {}) {
+  const list = io.list ?? readdirSync
+  const read = io.read ?? readFileSync
+  if (slug === null) return []
+
+  const directory = path.join(root, "PRD", "work", slug)
+  let names
+  try {
+    names = list(directory)
+  } catch {
+    return []
+  }
+
+  const files = []
+  for (const name of names) {
+    if (!String(name).endsWith(CRITERIA_FILE_SUFFIX)) continue
+    let contents
+    try {
+      contents = read(path.join(directory, name), "utf8")
+    } catch {
+      continue
+    }
+    const parsed = parseCriteriaFile(contents)
+    if (parsed === null) continue
+    files.push({ name: String(name), ...parsed })
+  }
+  return files
+}
+
+/**
+ * The evidence ids already observed for this run.
+ *
+ * The log is append-only and the hook is its sole writer, which is what makes a
+ * flip check meaningful: a run cannot pre-seed its own evidence.
+ */
+export function readObservedEvidence(root, runId, io = {}) {
+  const read = io.read ?? readFileSync
+  const observed = new Set()
+  const raw = readRecord(root, EVIDENCE_LOG_PATH, read)
+  if (raw === null) return observed
+  for (const line of raw.split("\n")) {
+    if (line.trim() === "") continue
+    try {
+      const entry = JSON.parse(line)
+      if (entry?.runId === runId && typeof entry?.criterionId === "string") {
+        observed.add(entry.criterionId)
+      }
+    } catch {
+      // A damaged line is skipped, never rewritten. Append-only means the hook
+      // does not get to tidy this file.
+    }
+  }
+  return observed
+}
+
+/** Append observed-evidence entries. Only ever appends. */
+export function appendEvidence(root, entries, io = {}) {
+  if (entries.length === 0) return
+  const append = io.append ?? appendFileSync
+  const ensure = io.ensure ?? mkdirSync
+  const target = path.join(root, EVIDENCE_LOG_PATH)
+  ensure(path.dirname(target), { recursive: true })
+  append(target, entries.map((entry) => JSON.stringify(entry)).join("\n") + "\n", "utf8")
+}
+
+/**
+ * The criteria this call proves, and the criteria it is trying to set `true`.
+ *
+ * Ordinary calls earn evidence. A write to a criteria file is judged against
+ * what has already been earned. A dated observation line is the evidence event
+ * for a `manual` criterion, whose check no command can stand in for.
+ */
+export function assessCriteria({ context, criteriaFiles, observed, runId, now }) {
+  const subject = evidenceSubject(context)
+  const text = writtenText(context.toolName, context.toolInput)
+  const manualIds = new Set(manualObservationIds(text))
+  const flippedIds = new Set(criteriaFlippedTrue(text))
+
+  const earned = []
+  const flipped = []
+
+  for (const file of criteriaFiles) {
+    for (const criterion of file.criteria) {
+      const isManual = criterion.evidence?.manual === true
+
+      if (isManual ? manualIds.has(criterion.id) : matchesEvidence(criterion.evidence, subject)) {
+        if (!observed.has(criterion.id)) {
+          earned.push({
+            runId,
+            slice: file.slice,
+            criterionId: criterion.id,
+            via: isManual ? "manual-observation" : "tool-call",
+            observedAt: now
+          })
+        }
+      }
+
+      if (flippedIds.has(criterion.id) && !criterion.value) {
+        flipped.push({
+          id: criterion.id,
+          missing: isManual
+            ? `a dated observation line naming \`${criterion.id}\``
+            : describeEvidence(criterion.evidence)
+        })
+      }
+    }
+  }
+
+  return { earned, flipped }
+}
+
+function describeEvidence(evidence) {
+  const parts = []
+  if (typeof evidence?.command === "string" && evidence.command !== "") {
+    parts.push(`a command matching \`${evidence.command}\``)
+  }
+  const paths = Array.isArray(evidence?.paths) ? evidence.paths : []
+  if (paths.length > 0) parts.push(`a call naming ${paths.map((p) => `\`${p}\``).join(" or ")}`)
+  return parts.length === 0 ? "an evidence block that names nothing" : parts.join(" or ")
+}
+
 /** Whether the owner's stop sentinel is on disk. Its contents do not matter. */
 export function readStopSentinel(root, read = readFileSync) {
   try {
@@ -159,13 +305,47 @@ export function decide(rawPayload, io = {}) {
     }
   }
 
+  // Criteria are a run-time concern too: outside a run there is no run id to
+  // key evidence against and no node to attribute it to.
+  let flippedCriteria = []
+  let observedEvidence = null
+  if (runActive && runState !== null) {
+    const context = callContext({
+      toolName: payload.tool_name,
+      toolInput: payload.tool_input,
+      runActive
+    })
+    context.toolInput = payload.tool_input
+    const slug = slugFromLock(readRunLock(root, read))
+    const criteriaFiles = loadCriteria(root, slug, io)
+    if (criteriaFiles.length > 0) {
+      observedEvidence = readObservedEvidence(root, runState.runId, io)
+      const assessment = assessCriteria({
+        context,
+        criteriaFiles,
+        observed: observedEvidence,
+        runId: runState.runId,
+        now: (io.now ?? (() => new Date().toISOString()))()
+      })
+      flippedCriteria = assessment.flipped
+      try {
+        appendEvidence(root, assessment.earned, io)
+        for (const entry of assessment.earned) observedEvidence.add(entry.criterionId)
+      } catch (error) {
+        degraded = `could not append observed evidence (${error?.message ?? error})`
+      }
+    }
+  }
+
   const verdict = classifyToolCall({
     toolName: payload.tool_name,
     toolInput: payload.tool_input,
     runActive,
     stopRequested: readStopSentinel(root, read),
     runState,
-    callCount
+    callCount,
+    flippedCriteria,
+    observedEvidence
   })
   return { ...verdict, degraded }
 }

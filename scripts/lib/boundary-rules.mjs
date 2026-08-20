@@ -457,6 +457,154 @@ export function parseRunState(contents) {
 }
 
 /**
+ * Where a slice's machine-readable acceptance criteria live.
+ *
+ * One file beside each slice doc, emitted by `thejudge-map-out` from the doc's
+ * `## Acceptance criteria` list. It is not a replacement for the slice doc —
+ * `PRD/instructions/requirement-format.md` still defines that.
+ */
+export const CRITERIA_FILE_SUFFIX = ".criteria.json"
+
+/** The append-only log of evidence the hook actually observed. */
+export const EVIDENCE_LOG_PATH = ".worktrees/.graph-evidence.jsonl"
+
+/**
+ * A dated observation line for a `manual` criterion.
+ *
+ * `2026-08-20 A6 — attempted the denied command in a bypassPermissions session`
+ *
+ * The date is required so the line is an observation someone made on a day, not
+ * a claim that could have been copied forward from an earlier run.
+ */
+export const MANUAL_OBSERVATION_PATTERN = /(\d{4}-\d{2}-\d{2})\s+([A-Za-z]+\d+)\s*[—\-:]/g
+
+/**
+ * Read a criteria file.
+ *
+ * Returns `null` rather than throwing on anything malformed: an unreadable
+ * criteria file must not brick the session, and node 6's gate catches a slice
+ * whose criteria could not be read.
+ */
+export function parseCriteriaFile(contents) {
+  if (contents === null || contents === undefined) return null
+  try {
+    const parsed = JSON.parse(contents)
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null
+    if (!Array.isArray(parsed.criteria)) return null
+    const criteria = parsed.criteria
+      .filter((entry) => entry && typeof entry.id === "string")
+      .map((entry) => ({
+        id: entry.id,
+        statement: typeof entry.statement === "string" ? entry.statement : "",
+        value: entry.value === true,
+        evidence: entry.evidence && typeof entry.evidence === "object" ? entry.evidence : {}
+      }))
+    return {
+      slug: typeof parsed.slug === "string" ? parsed.slug : null,
+      slice: typeof parsed.slice === "string" ? parsed.slice : null,
+      criteria
+    }
+  } catch {
+    return null
+  }
+}
+
+/** Everything a criterion's `evidence` block can be matched against. */
+export function evidenceSubject(context) {
+  const commands = context.segments.map((segment) => segment.text)
+  return {
+    toolName: context.toolName,
+    commands,
+    commandText: commands.join(" ; "),
+    paths: namedPaths(context).map(normalizePathText)
+  }
+}
+
+/**
+ * Whether one tool call satisfies one criterion's `evidence` block.
+ *
+ * A block names a command pattern, one or more paths, or both. Either kind
+ * matching is enough — a criterion proved by running a command and a criterion
+ * proved by reading a file are both legitimate, and requiring both would make
+ * most blocks unsatisfiable.
+ *
+ * A `manual` criterion never matches an ordinary call. Its evidence event is the
+ * dated observation line, handled separately.
+ */
+export function matchesEvidence(evidence, subject) {
+  if (!evidence || evidence.manual === true) return false
+
+  if (typeof evidence.command === "string" && evidence.command !== "") {
+    try {
+      if (new RegExp(evidence.command).test(subject.commandText)) return true
+    } catch {
+      // A criterion with an invalid pattern simply never matches. It cannot be
+      // allowed to throw: the hook runs on every tool call in the repository.
+    }
+  }
+
+  const paths = Array.isArray(evidence.paths) ? evidence.paths : []
+  for (const candidate of paths) {
+    const target = normalizePathText(candidate)
+    if (subject.paths.some((named) => named === target || named.endsWith(`/${target}`))) {
+      return true
+    }
+  }
+
+  return false
+}
+
+/**
+ * The criterion ids a piece of written text sets to `true`.
+ *
+ * Tries the whole payload as JSON first, which is what a `Write` of a criteria
+ * file looks like. Falls back to a scan, which is what an `Edit`'s `new_string`
+ * or a shell heredoc looks like — a fragment that never parses on its own.
+ */
+export function criteriaFlippedTrue(text) {
+  if (typeof text !== "string" || text === "") return []
+
+  const parsed = parseCriteriaFile(text)
+  if (parsed !== null) {
+    return parsed.criteria.filter((entry) => entry.value === true).map((entry) => entry.id)
+  }
+
+  const found = new Set()
+  const forward = /"id"\s*:\s*"([^"]+)"[^{}]*?"value"\s*:\s*true/g
+  const reverse = /"value"\s*:\s*true[^{}]*?"id"\s*:\s*"([^"]+)"/g
+  for (const pattern of [forward, reverse]) {
+    let match
+    while ((match = pattern.exec(text)) !== null) found.add(match[1])
+  }
+  return [...found]
+}
+
+/** The criterion ids named by dated observation lines in a piece of text. */
+export function manualObservationIds(text) {
+  if (typeof text !== "string" || text === "") return []
+  const found = new Set()
+  const pattern = new RegExp(MANUAL_OBSERVATION_PATTERN.source, "g")
+  let match
+  while ((match = pattern.exec(text)) !== null) found.add(match[2])
+  return [...found]
+}
+
+/** The text a tool call would write, across the tools that write text. */
+export function writtenText(toolName, toolInput) {
+  if (!toolInput || typeof toolInput !== "object") return ""
+  const parts = []
+  for (const key of ["content", "new_string", "new_source", "command"]) {
+    if (typeof toolInput[key] === "string") parts.push(toolInput[key])
+  }
+  if (Array.isArray(toolInput.edits)) {
+    for (const edit of toolInput.edits) {
+      if (edit && typeof edit.new_string === "string") parts.push(edit.new_string)
+    }
+  }
+  return parts.join("\n")
+}
+
+/**
  * The counter key: run id, node, and attempt.
  *
  * Attempt is in the key so a loop-back never parks on a budget an earlier
@@ -626,6 +774,26 @@ export const RULES = Object.freeze([
     }
   },
   {
+    id: "criterion-flip-without-evidence",
+    tier: "graph",
+    evaluate: (context) => {
+      const { flippedCriteria, observedEvidence } = context
+      if (!Array.isArray(flippedCriteria) || flippedCriteria.length === 0) return null
+      const observed = observedEvidence instanceof Set ? observedEvidence : new Set()
+      const unproven = flippedCriteria.filter((entry) => !observed.has(entry.id))
+      if (unproven.length === 0) return null
+      const detail = unproven
+        .map((entry) => `\`${entry.id}\` (still needs: ${entry.missing})`)
+        .join(", ")
+      return (
+        `Setting ${unproven.length === 1 ? "an acceptance criterion" : "acceptance criteria"} ` +
+        `to \`true\` is denied without observed evidence: ${detail}. A criterion ` +
+        `starts \`false\` and is earned by the hook seeing the evidence, not by ` +
+        `writing the value.`
+      )
+    }
+  },
+  {
     id: "tool-call-cap",
     tier: "graph",
     evaluate: (context) => {
@@ -743,7 +911,9 @@ export function callContext({
   runActive = false,
   stopRequested = false,
   runState = null,
-  callCount = null
+  callCount = null,
+  flippedCriteria = [],
+  observedEvidence = null
 } = {}) {
   const isBash = toolName === "Bash"
   const normalized = isBash
@@ -758,7 +928,9 @@ export function callContext({
     runActive: Boolean(runActive),
     stopRequested: Boolean(stopRequested),
     runState,
-    callCount
+    callCount,
+    flippedCriteria,
+    observedEvidence
   }
 }
 

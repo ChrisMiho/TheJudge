@@ -46,6 +46,9 @@ Read the work-package `README.md` — including its `## Autonomous metadata` sec
 3. Implement dependency-ready slices sequentially with no implementation subagents or pauses between green slices.
 4. Join an existing PR before implementation; otherwise create it after the first push. Publish one milestone commit per slice.
 5. Continue until all registered work is complete or blocked. Never merge or close the PR.
+6. Report `ok` only when every criterion in every slice's `.criteria.json` is
+   `true`. Any `false` fails the node — the check is over the emitted files, not
+   over a summary of them.
 
 ## Slice loop
 
@@ -53,7 +56,12 @@ Read the work-package `README.md` — including its `## Autonomous metadata` sec
 2. Confirm dependencies are `done`, then mark the slice `in-progress`.
 3. Implement only the slice and its tests under `reference.md`.
 4. Run the slice verification while its status is `in-progress`; debug until green. For a slice with browser or dev-server acceptance criteria, record `PRD/instructions/runtime-process-hygiene.md`'s cleanup evidence (browser-close, owned-process-stop, port-release, capture output path) before it can become `done`; an unresolved ownership/cleanup failure keeps it `blocked`. This skill's isolated worktree always starts its own dev server(s) on ports it owns — it never attaches to a pre-existing one, since worktrees are isolated checkouts — and writes captures under its own worktree's `PRD/work/<slug>/.playwright-mcp/`.
-5. Mark it `done`, update only the README slice table/notes, and stage every intended slice output. Require the non-ignored worktree to match the index before and after rerunning the slice verification and `npm run quality:check`.
+5. Mark it `done` — which requires every criterion in the slice's
+   `slice-<letter>.criteria.json` to be `true`. Read the emitted files; a summary
+   or a checked box in the doc is not the gate. A criterion is set `true` only
+   after the hook has observed its evidence, so a run cannot write its way past
+   one. Any remaining `false` fails the node.
+   Then update only the README slice table/notes, and stage every intended slice output. Require the non-ignored worktree to match the index before and after rerunning the slice verification and `npm run quality:check`.
 6. If either gate fails, restore `in-progress` while debugging or leave `blocked` if stopping. Do not commit, push, or start another slice.
 7. Inspect the staged diff and commit `feat(<slug>): complete slice <letter>`.
 8. Fetch/rebase again using the recorded autonomous base until the shared ref exists, then the shared ref. After upstream changes, rerun both gates.

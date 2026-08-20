@@ -1,0 +1,62 @@
+{
+  "slug": "graph-run-boundary-enforcement",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "Unit tests assert every graph-tier rule denies with a lock present and allows with no lock, and that every universal-tier rule denies in both states.",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/(lib/boundary-rules|graph-boundary-hook)\\.test\\.mjs"
+      }
+    },
+    {
+      "id": "B2",
+      "statement": "Unit tests assert a corrupt lock file and a missing lock both classify as \"no run active\" for the graph tier while the universal tier still denies.",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/graph-boundary-hook\\.test\\.mjs"
+      }
+    },
+    {
+      "id": "B3",
+      "statement": "`nohup <cmd>` and `<cmd> &` are denied with a lock present. These are the two boundaries no permission rule can express, so this is the criterion that closes REQ-152's last two lines.",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/graph-boundary-hook\\.test\\.mjs"
+      }
+    },
+    {
+      "id": "B4",
+      "statement": "`rm .worktrees/.graph-run.lock` is denied with a live lock present.",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/graph-boundary-hook\\.test\\.mjs"
+      }
+    },
+    {
+      "id": "B5",
+      "statement": "A write to `.worktrees/.graph-node-calls.json` and one to `.worktrees/.graph-evidence.jsonl` are denied with a lock present.",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/graph-boundary-hook\\.test\\.mjs"
+      }
+    },
+    {
+      "id": "B6",
+      "statement": "Live, both directions. With no lock, edit a `thejudge-*` skill file and `CLAUDE.md` in an ordinary session \u2014 both succeed. Create a lock, attempt the same two edits \u2014 both denied, with the reason reco",
+      "value": true,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "B7",
+      "statement": "`npm run test:scripts` green.",
+      "value": true,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
+    }
+  ]
+}

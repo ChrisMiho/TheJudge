@@ -1,0 +1,70 @@
+{
+  "slug": "graph-run-boundary-enforcement",
+  "slice": "I",
+  "criteria": [
+    {
+      "id": "I1",
+      "statement": "`grep -n \"graph-ui-shape\\|graph-enrich-define\" PRD/ .claude/ -r` returns nothing outside `PRD/work/`.",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "I2",
+      "statement": "`grep -n \"convention only\\|Convention\\.\" PRD/instructions/graph-workflow-contract.md` returns no hit describing `nohup`, the trailing `&`, or raw Bash writes.",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "I3",
+      "statement": "The reach table's raw-Bash row names the hook and its reach; no row in that table reads `none`.",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "I4",
+      "statement": "The contract states the `bypassPermissions` measurement as observed, with the command, the result, and the binary version from slice A \u2014 never as an assertion that a deny survives it.",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "I5",
+      "statement": "Each of the seven stated limits appears in the contract, each in one place.",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "I6",
+      "statement": "Every REQ-152..159 acceptance criterion is traceable to a shipped slice. This slice records the mapping \u2014 requirement id \u2192 slice letter \u2192 evidence.",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "I7",
+      "statement": "`npm run quality:check` green.",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "I8",
+      "statement": "`npm run skills:ai-sync` run and the mirror clean in `git status --porcelain`.",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    }
+  ]
+}

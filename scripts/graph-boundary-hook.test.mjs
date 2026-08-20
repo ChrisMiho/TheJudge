@@ -2,14 +2,21 @@ import assert from "node:assert/strict"
 import { Readable } from "node:stream"
 import test from "node:test"
 
-import { RUN_LOCK_PATH, RUN_STATE_PATH, RUN_STOP_PATH, capForNode } from "./lib/boundary-rules.mjs"
+import {
+  EVIDENCE_LOG_PATH,
+  RUN_LOCK_PATH,
+  RUN_STATE_PATH,
+  RUN_STOP_PATH,
+  capForNode
+} from "./lib/boundary-rules.mjs"
 import {
   decide,
   main,
   projectRoot,
   readRunLock,
   readStopSentinel,
-  recordCall
+  recordCall,
+  slugFromLock
 } from "./graph-boundary-hook.mjs"
 
 // The universal tier's whole surface, exercised through real PreToolUse
@@ -502,6 +509,230 @@ test("recordCall is the counter's only entry point and returns its key", () => {
   assert.equal(first.count, 1)
   const second = recordCall("/root", { runId: "graph-9", node: "close", attempt: 4 }, io)
   assert.equal(second.count, 2)
+})
+
+
+// ---------------------------------------------------------------------------
+// Slice F — criteria start false and are earned, not written.
+// ---------------------------------------------------------------------------
+
+const CRITERIA_FILE = "slice-z.criteria.json"
+const SLUG = "throwaway-slice"
+
+function criteriaFixture() {
+  return {
+    slug: SLUG,
+    slice: "Z",
+    criteria: [
+      {
+        id: "Z1",
+        statement: "The script test suite passes",
+        value: false,
+        evidence: { command: "npm run test:scripts" }
+      },
+      {
+        id: "Z2",
+        statement: "The hook file was read",
+        value: false,
+        evidence: { paths: ["scripts/graph-boundary-hook.mjs"] }
+      },
+      {
+        id: "Z3",
+        statement: "A human confirmed the deny text reads clearly",
+        value: false,
+        evidence: { manual: true }
+      }
+    ]
+  }
+}
+
+/** A fake filesystem carrying a lock, run state, criteria, and the evidence log. */
+function withCriteria({ evidence = "", criteria = criteriaFixture() } = {}) {
+  const io = records({
+    lock: JSON.stringify({ slug: SLUG, runId: "graph-1", pid: 1, startedAt: "t" }),
+    state: runStateOf({ node: "build" })
+  })
+  io.files.set(EVIDENCE_LOG_PATH, evidence)
+  io.files.set(CRITERIA_FILE, JSON.stringify(criteria))
+  io.list = () => [CRITERIA_FILE]
+  io.append = (target, contents) => {
+    const existing = io.files.get(EVIDENCE_LOG_PATH) ?? ""
+    io.files.set(EVIDENCE_LOG_PATH, existing + contents)
+    io.files.set(target, io.files.get(EVIDENCE_LOG_PATH))
+  }
+  io.now = () => "2026-08-20T00:00:00.000Z"
+  return io
+}
+
+function evidenceLines(io) {
+  // Skips unparseable lines exactly as the hook does, so a test that plants a
+  // damaged line reads the log the same way production does.
+  const entries = []
+  for (const line of (io.files.get(EVIDENCE_LOG_PATH) ?? "").split("\n")) {
+    if (line.trim() === "") continue
+    try {
+      entries.push(JSON.parse(line))
+    } catch {
+      continue
+    }
+  }
+  return entries
+}
+
+function write(io, filePath, content) {
+  return decide(
+    JSON.stringify({ tool_name: "Write", tool_input: { file_path: filePath, content } }),
+    io
+  )
+}
+
+function flipAll(io, criteria = criteriaFixture()) {
+  const flipped = { ...criteria, criteria: criteria.criteria.map((c) => ({ ...c, value: true })) }
+  return write(io, `PRD/work/${SLUG}/${CRITERIA_FILE}`, JSON.stringify(flipped))
+}
+
+test("the slug comes from the lock the run holds", () => {
+  assert.equal(slugFromLock('{"slug":"a-package","runId":"r","pid":1}'), "a-package")
+  assert.equal(slugFromLock("{ not json"), null)
+  assert.equal(slugFromLock('{"runId":"r"}'), null)
+})
+
+test("a call matching a criterion's command pattern logs that id", () => {
+  const io = withCriteria()
+  assert.equal(bash("npm run test:scripts", io).decision, "allow")
+  assert.deepEqual(
+    evidenceLines(io).map((entry) => entry.criterionId),
+    ["Z1"]
+  )
+  assert.equal(evidenceLines(io)[0].via, "tool-call")
+  assert.equal(evidenceLines(io)[0].runId, "graph-1")
+  assert.equal(evidenceLines(io)[0].slice, "Z")
+})
+
+test("a non-matching call logs nothing", () => {
+  const io = withCriteria()
+  bash("git status --short", io)
+  assert.deepEqual(evidenceLines(io), [])
+})
+
+test("a file-path evidence block matches a call naming that path", () => {
+  const io = withCriteria()
+  decide(
+    JSON.stringify({
+      tool_name: "Read",
+      tool_input: { file_path: "scripts/graph-boundary-hook.mjs" }
+    }),
+    io
+  )
+  assert.deepEqual(
+    evidenceLines(io).map((entry) => entry.criterionId),
+    ["Z2"]
+  )
+})
+
+test("a flip with no logged evidence is denied, naming the id and what is missing", () => {
+  const denied = flipAll(withCriteria())
+  assert.equal(denied.decision, "deny")
+  assert.equal(denied.rule, "criterion-flip-without-evidence")
+  assert.equal(denied.tier, "graph")
+  for (const id of ["Z1", "Z2", "Z3"]) assert.ok(denied.reason.includes(id), `must name ${id}`)
+  assert.match(denied.reason, /npm run test:scripts/, "must name the missing command evidence")
+  assert.match(denied.reason, /dated observation line/, "must name the manual evidence event")
+})
+
+test("the same flip is allowed once every id is in the log", () => {
+  const io = withCriteria()
+  bash("npm run test:scripts", io)
+  decide(
+    JSON.stringify({
+      tool_name: "Read",
+      tool_input: { file_path: "scripts/graph-boundary-hook.mjs" }
+    }),
+    io
+  )
+  write(io, `PRD/work/${SLUG}/slice-z.evidence.md`, "2026-08-20 Z3 — read the deny text aloud.")
+  assert.equal(flipAll(io).decision, "allow")
+})
+
+test("a manual criterion flips only after its dated observation line", () => {
+  const io = withCriteria()
+  bash("npm run test:scripts", io)
+
+  // An undated mention is not an observation.
+  write(io, `PRD/work/${SLUG}/slice-z.evidence.md`, "Z3 — looks fine to me")
+  assert.equal(
+    evidenceLines(io).some((entry) => entry.criterionId === "Z3"),
+    false,
+    "an undated line must not count as an observation"
+  )
+
+  write(io, `PRD/work/${SLUG}/slice-z.evidence.md`, "2026-08-20 Z3 — confirmed against the run.")
+  assert.ok(evidenceLines(io).some((entry) => entry.criterionId === "Z3"))
+})
+
+test("a manual criterion is never earned by an ordinary command", () => {
+  const io = withCriteria({
+    criteria: {
+      slug: SLUG,
+      slice: "Z",
+      criteria: [
+        { id: "Z9", statement: "manual", value: false, evidence: { manual: true, command: ".*" } }
+      ]
+    }
+  })
+  bash("npm run test:scripts", io)
+  assert.deepEqual(evidenceLines(io), [], "manual wins over any pattern beside it")
+})
+
+test("the log is append-only: an earned id is never re-logged or rewritten", () => {
+  const io = withCriteria()
+  bash("npm run test:scripts", io)
+  const first = io.files.get(EVIDENCE_LOG_PATH)
+  bash("npm run test:scripts", io)
+  bash("npm run test:scripts", io)
+  assert.equal(io.files.get(EVIDENCE_LOG_PATH), first, "no duplicate and no rewrite")
+  assert.equal(evidenceLines(io).length, 1)
+})
+
+test("a damaged log line is skipped, never repaired", () => {
+  const io = withCriteria({ evidence: "{ not json\n" })
+  bash("npm run test:scripts", io)
+  const lines = (io.files.get(EVIDENCE_LOG_PATH) ?? "").split("\n")
+  assert.equal(lines[0], "{ not json", "the damaged line stays exactly as it was")
+  assert.ok(evidenceLines(io).some((entry) => entry.criterionId === "Z1"))
+})
+
+test("evidence from another run does not count for this one", () => {
+  const foreign = JSON.stringify({
+    runId: "graph-other",
+    slice: "Z",
+    criterionId: "Z1",
+    via: "tool-call",
+    observedAt: "2026-08-19T00:00:00.000Z"
+  })
+  const io = withCriteria({ evidence: `${foreign}\n` })
+  const denied = flipAll(io)
+  assert.equal(denied.decision, "deny")
+  assert.ok(denied.reason.includes("Z1"), "another run's evidence must not carry over")
+})
+
+test("a criterion already true is not re-checked", () => {
+  const criteria = criteriaFixture()
+  criteria.criteria = criteria.criteria.map((c) => ({ ...c, value: true }))
+  const io = withCriteria({ criteria })
+  assert.equal(flipAll(io, criteria).decision, "allow", "no flip is happening")
+})
+
+test("criteria are not enforced outside a run", () => {
+  const io = withCriteria()
+  io.read = records().read
+  assert.equal(flipAll(io).decision, "allow")
+})
+
+test("a package with no criteria files enforces nothing", () => {
+  const io = withCriteria()
+  io.list = () => []
+  assert.equal(flipAll(io).decision, "allow")
 })
 
 test("a deny exits 2 with the reason on stderr", async () => {

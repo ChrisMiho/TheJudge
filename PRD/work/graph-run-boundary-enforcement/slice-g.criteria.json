@@ -1,0 +1,54 @@
+{
+  "slug": "graph-run-boundary-enforcement",
+  "slice": "G",
+  "criteria": [
+    {
+      "id": "G1",
+      "statement": "`grep -rn \"requesting-code-review\" PRD/instructions/graph-workflow-contract.md .claude/skills/graph-run/ AGENT-SKILLS.md` returns nothing. The unrelated mentions in `CLAUDE.md` and `preparation-contra",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "G2",
+      "statement": "The contract's node table and `graph-run/reference.md`'s table both name the no-write reviewer, and the two tables agree line for line.",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "G3",
+      "statement": "`graph-run/reference.md` records the exact dispatch shape: the tool exclusion, the fresh-context requirement, the rubric, and the not-Critical-for-preferences rule.",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "G4",
+      "statement": "The loop cap text is byte-identical to what it was before this slice \u2014 confirmed by a targeted `git diff` over those lines showing no change.",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "G5",
+      "statement": "Live dispatch rehearsal. Dispatch the reviewer against this package's own first completed slice and record: the tools it held, that it produced findings graded against the slice's criteria, and that i",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "G6",
+      "statement": "`npm run skills:ai-sync` run and the mirror clean in `git status --porcelain`.",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    }
+  ]
+}
