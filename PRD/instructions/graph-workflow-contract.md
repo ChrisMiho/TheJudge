@@ -38,11 +38,13 @@ section. Nodes 6 and 9 are on that list because a skill `graph-run` dispatches
 which checks nothing has undeclared autonomous behavior: whether it pauses for a
 human in a run with no human is not knowable from the skill file.
 
-Node 7's `superpowers:requesting-code-review` is deliberately **not** on it. It
-is not a `thejudge-*` skill and not this repository's to gate; its independence
-is nominal and recorded as a stated limit rather than papered over. The driver states
-its own name and never claims `thejudge-prepare is controlling`: the predicate
-attests which orchestrator is running.
+Node 7's reviewer is deliberately **not** on it, and does not need to be. It is
+not a `thejudge-*` skill and has no autonomous behavior to declare: it is a
+subagent `graph-run` dispatches with no write tools at all, so the question the
+predicate exists to answer — whether a skill pauses for a human who is not there
+— cannot arise. Its independence is structural rather than nominal. The driver
+states its own name and never claims `thejudge-prepare is controlling`: the
+predicate attests which orchestrator is running.
 
 ## Node table
 
@@ -54,7 +56,7 @@ attests which orchestrator is running.
 | 4 | `gate-qc` | `thejudge-quality-check` | sonnet | 60 | `plan` on PASS, `define` on FAIL — except a fourth FAIL, which parks at `owner-action` |
 | 5 | `plan` | `thejudge-map-out` | sonnet | 120 | `build` |
 | 6 | `build` | `thejudge-implement-all` | sonnet | 600 | `review` |
-| 7 | `review` | `superpowers:requesting-code-review` | opus | 120 | `land` on approval, `build` on Critical/Important |
+| 7 | `review` | no-write reviewer subagent | opus | 120 | `land` on approval, `build` on Critical/Important |
 | 8 | `land` | human (PR merge) | — | — | `close` |
 | 9 | `close` | `thejudge-cleanup` | sonnet | 120 | run complete |
 
@@ -142,6 +144,31 @@ the lock is held and the sentinel exists, `Task` and `Agent` calls are denied,
 and so is deleting the sentinel. The halt path itself stays open, because a run
 that could not write its own terminal state would strand exactly the state the
 kill switch exists to avoid.
+
+## Node 7 — the no-write reviewer
+
+`review` dispatches a fresh-context subagent that grades the slice against its
+own stated acceptance criteria. It replaces the borrowed review skill this node
+used to call.
+
+**No write tools.** The reviewer holds no `Write`, `Edit`, or `NotebookEdit`. A
+reviewer that can modify the work it is grading is not reviewing it.
+
+**Fresh context.** It reads the diff, the slice doc, and the package artifacts.
+It never sees the build node's transcript — a reviewer that watched the work
+being justified is grading the justification.
+
+**The rubric is the slice's own acceptance criteria**, not the reviewer's taste.
+Flag gaps affecting correctness or those stated requirements, and nothing else.
+
+**A preference is never Critical or Important.** A style note, or an improvement
+outside the slice's stated requirements, does not trigger a loop back to `build`.
+The risk being managed is specific: a reviewer with a two-loop budget and an
+incentive to look useful will manufacture findings, and each manufactured finding
+spends a loop the run cannot get back.
+
+The loop cap is unchanged. `review` returns to `build` at most twice; a third
+occurrence parks at `owner-action`.
 
 ## Acceptance criteria are earned, not written
 

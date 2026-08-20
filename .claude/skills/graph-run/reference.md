@@ -16,9 +16,31 @@ otherwise run interactively.
 | 4 | `gate-qc` | `/thejudge-quality-check` | sonnet | 60 | `plan` | `define`, max 3 loops |
 | 5 | `plan` | `/thejudge-map-out` | sonnet | 120 | `build` | park |
 | 6 | `build` | `/thejudge-implement-all` | sonnet | 600 | `review` | park |
-| 7 | `review` | `superpowers:requesting-code-review` | opus | 120 | `land` | `build` for Critical/Important, max 2 loops |
+| 7 | `review` | no-write reviewer subagent | opus | 120 | `land` | `build` for Critical/Important, max 2 loops |
 | 8 | `land` | human PR merge | — | — | `close` | park |
 | 9 | `close` | `/thejudge-cleanup` | sonnet | 120 | complete | park |
+
+## Node 7 dispatch shape
+
+The reviewer is a subagent `graph-run` dispatches, not a skill. Its dispatch
+carries exactly this shape:
+
+- **Tools:** read and search only. No `Write`, `Edit`, or `NotebookEdit`. A
+  reviewer that can change the work is not reviewing it.
+- **Context:** fresh. Give it the diff, the slice doc, and the package
+  artifacts. Never the build node's transcript — a reviewer that watched the
+  work being justified grades the justification.
+- **Rubric:** the slice's own `## Acceptance criteria`, quoted into the brief.
+  Grade against those, not against taste.
+- **Severity rule:** a preference, a style note, or an improvement outside the
+  slice's stated requirements is **never** Critical or Important and never loops
+  back to `build`. Say so in the brief. A reviewer with a two-loop budget and an
+  incentive to look useful will otherwise manufacture findings, and each one
+  spends a loop the run cannot get back.
+- **Working directory:** the same absolute line every other dispatch carries,
+  copied unchanged.
+
+Loop cap unchanged: at most two returns to `build`, then park.
 
 Before dispatching node 2, node 1 must have proven the hook is live with a
 denied canary. Between every node, confirm `.worktrees/.graph-node-calls.json`

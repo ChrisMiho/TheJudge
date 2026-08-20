@@ -12,6 +12,7 @@ import {
   WRAPPER_COMMANDS,
   callCountKey,
   capForNode,
+  gitSubcommand,
   classifyToolCall,
   isRunActive,
   parseRunState,
@@ -306,4 +307,85 @@ test("build carries the largest budget, land the smallest", () => {
   // reads a design brief.
   assert.ok(capForNode("build") > capForNode("plan"))
   assert.ok(capForNode("define") > capForNode("gate-qc"))
+})
+
+// ---------------------------------------------------------------------------
+// Regressions found by the node-7 reviewer against slices A and B.
+// ---------------------------------------------------------------------------
+
+test("`&` inside a redirection is not a background launch", () => {
+  // `2>&1` appears in almost every command. Splitting on its `&` corrupted the
+  // segment into `npm run build 2>` and `1`, and tripped the background rule
+  // on a form that has nothing to do with backgrounding.
+  for (const command of ["npm run build 2>&1", "node x.mjs >&2", "make &>build.log"]) {
+    const { segments, backgrounded, trailingAmpersand } = splitSegments(command)
+    assert.equal(segments.length, 1, `${command} is one segment`)
+    assert.equal(segments[0], command)
+    assert.equal(backgrounded, false, `${command} does not background`)
+    assert.equal(trailingAmpersand, false)
+  }
+})
+
+test("a real background launch is still seen", () => {
+  assert.equal(splitSegments("npm run dev &").backgrounded, true)
+  assert.equal(splitSegments("npm run dev & npm run test").backgrounded, true)
+  assert.equal(splitSegments("npm run build 2>&1 &").backgrounded, true)
+})
+
+test("git's global options do not hide the subcommand", () => {
+  // `git -C /elsewhere push --force` is a force-push. A rule keying on
+  // `argv[1] === "push"` never saw it.
+  assert.deepEqual(gitSubcommand(["git", "push", "origin", "x"]), {
+    subcommand: "push",
+    args: ["origin", "x"]
+  })
+  assert.equal(gitSubcommand(["git", "-C", "/elsewhere", "push", "origin"]).subcommand, "push")
+  assert.equal(gitSubcommand(["git", "-c", "a.b=c", "push"]).subcommand, "push")
+  assert.equal(gitSubcommand(["git", "--no-pager", "push"]).subcommand, "push")
+  assert.equal(gitSubcommand(["git"]).subcommand, null)
+})
+
+test("a force-push is denied through git's global options", () => {
+  for (const command of [
+    "git -C /elsewhere push --force origin topic",
+    "git -c pack.threads=1 push -f origin topic",
+    "git --no-pager push origin main",
+    "git -C /elsewhere push origin :topic"
+  ]) {
+    assert.equal(verdict(command).decision, "deny", `must still be seen: ${command}`)
+  }
+})
+
+test("the secrets rule denies access, not discussion", () => {
+  // A substring test denied `rg '\.secrets/'`, `git log -S`, and any doc edit
+  // quoting the path — none of which touch a secret.
+  for (const command of [
+    "grep -rn '\\.secrets/' scripts/",
+    "rg '\\.secrets/' --files-with-matches",
+    "grep -c '.secrets/' PRD/instructions/graph-workflow-contract.md",
+    "git log -S.secrets/ --oneline"
+  ]) {
+    assert.equal(verdict(command).decision, "allow", `discussion must be allowed: ${command}`)
+  }
+})
+
+test("actual secrets access is still denied in every form", () => {
+  for (const command of [
+    "cat .secrets/openai-dev.env",
+    "cat ./.secrets/openai-dev.env",
+    "cat apps/.secrets/local.env",
+    "cp local.env .secrets/openai-dev.env",
+    "echo x > .secrets/openai-dev.env",
+    "rsync -a local/ .secrets/",
+    "ls .secrets"
+  ]) {
+    const result = verdict(command)
+    assert.equal(result.decision, "deny", `must stay denied: ${command}`)
+    assert.equal(result.rule, "secrets-access")
+  }
+})
+
+test("a pattern command still cannot read a secret by path", () => {
+  // The first positional is the pattern; the operands after it are paths.
+  assert.equal(verdict("grep -rn TOKEN .secrets/openai-dev.env").rule, "secrets-access")
 })

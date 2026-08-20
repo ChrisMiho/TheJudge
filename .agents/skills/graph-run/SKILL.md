@@ -41,7 +41,8 @@ boundaries are required.
    stop to ask the user questions.
 3. Dispatch the node's delegate as a subagent using the model from the node
    table, except node 8 (`land`), which the driver never dispatches — see
-   reference.md. Pass the package path, the run ID, the controlling predicate,
+   reference.md. Node 7 is not a skill: it is a no-write reviewer subagent whose
+   exact dispatch shape is in reference.md under `## Node 7 dispatch shape`. Pass the package path, the run ID, the controlling predicate,
    and an absolute `Working directory:` line on its own line. Require the node
    to copy that same line, unchanged, into every prompt it writes.
 

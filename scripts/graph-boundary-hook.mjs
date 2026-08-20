@@ -19,6 +19,7 @@
 
 import { appendFileSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs"
 import path from "node:path"
+import { pathToFileURL } from "node:url"
 
 import {
   CRITERIA_FILE_SUFFIX,
@@ -375,7 +376,10 @@ export async function main({ stdin, stderr, argv } = {}) {
 }
 
 const invokedDirectly =
-  process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href
+  // `pathToFileURL` percent-encodes; a raw `file://` template does not. A repo
+  // path containing a space would otherwise never match, and the hook would
+  // load without running — failing open, silently.
+  process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href
 
 if (invokedDirectly) {
   process.exitCode = await main()

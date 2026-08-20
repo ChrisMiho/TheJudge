@@ -161,6 +161,32 @@ export const RUN_RECORD_PATHS = Object.freeze([
 
 const VARIABLE_ASSIGNMENT = /^[A-Za-z_][A-Za-z0-9_]*=/
 
+/**
+ * Git's global options, which sit between `git` and its subcommand.
+ *
+ * `git -C /elsewhere push --force` is a force-push, and a rule keying on
+ * `argv[1] === "push"` never sees it.
+ */
+const GIT_GLOBAL_FLAGS_WITH_VALUE = new Set(["-C", "-c", "--exec-path", "--git-dir", "--work-tree", "--namespace"])
+
+/** The subcommand and its arguments, with git's global options stripped. */
+export function gitSubcommand(argv) {
+  let index = 1
+  while (index < argv.length) {
+    const token = argv[index]
+    if (GIT_GLOBAL_FLAGS_WITH_VALUE.has(token)) {
+      index += 2
+      continue
+    }
+    if (token.startsWith("-")) {
+      index += 1
+      continue
+    }
+    break
+  }
+  return { subcommand: argv[index] ?? null, args: argv.slice(index + 1) }
+}
+
 const FORCE_PUSH_FLAGS = /^(?:-f|--force|--force-with-lease(?:=.*)?|--force-if-includes)$/
 
 const DELETE_PUSH_FLAGS = /^(?:-d|--delete)$/
@@ -224,6 +250,13 @@ export function splitSegments(commandText) {
     }
 
     if (character === "&") {
+      // `2>&1`, `>&2`, `&>log` — the shell reads these as redirections, not as
+      // a background launch. Splitting here corrupts the segment *and* trips the
+      // background rule on a form that appears in almost every command.
+      if (current.trimEnd().endsWith(">") || commandText[index + 1] === ">") {
+        current += character
+        continue
+      }
       flush()
       backgrounded = true
       if (commandText.slice(index + 1).trim() === "") trailingAmpersand = true
@@ -428,9 +461,41 @@ function normalizePathText(value) {
     .replace(/\/+$/, "")
 }
 
+/**
+ * Whether a token *is* a path into the secrets subtree, rather than merely
+ * mentioning one.
+ *
+ * Anchored on purpose. A substring test denies `rg '\.secrets/'`, `git log -S`,
+ * and any doc edit that quotes the path — none of which touch a secret. The rule
+ * exists to stop access, not discussion.
+ */
 function touchesSecrets(value) {
   const normalized = normalizePathText(value)
-  return normalized === ".secrets" || `${normalized}/`.includes(SECRETS_PATH_PREFIX)
+  return (
+    normalized === ".secrets" ||
+    normalized.startsWith(SECRETS_PATH_PREFIX) ||
+    normalized.includes(`/${SECRETS_PATH_PREFIX}`) ||
+    normalized.endsWith("/.secrets")
+  )
+}
+
+/**
+ * Commands whose first positional argument is a pattern, not a path.
+ *
+ * `grep ".secrets/" file` searches for the text; it does not read the directory.
+ */
+const PATTERN_COMMANDS = Object.freeze(["grep", "egrep", "fgrep", "rg", "ag", "ack", "sed", "awk"])
+
+/** The tokens of a call that could actually name a secret, pattern operands excluded. */
+function secretsCandidates(context) {
+  const candidates = [...context.paths]
+  for (const segment of context.segments) {
+    const positional = segment.argv.slice(1).filter((token) => !token.startsWith("-"))
+    const skipPattern = PATTERN_COMMANDS.includes(segment.command)
+    const operands = skipPattern ? positional.slice(1) : positional
+    candidates.push(...operands, ...segment.writeTargets)
+  }
+  return candidates
 }
 
 /**
@@ -679,7 +744,7 @@ export const RULES = Object.freeze([
     id: "secrets-access",
     tier: "universal",
     evaluate: (context) =>
-      namedPaths(context).some(touchesSecrets)
+      secretsCandidates(context).some(touchesSecrets)
         ? "Reading or writing the secrets subtree is denied in every session."
         : null
   },
@@ -857,8 +922,9 @@ function isRecursiveForce(segment) {
 /** `git push` analysis, returning the reason for whichever rule is asking. */
 function firstPushReason(context, ruleId) {
   for (const segment of context.segments) {
-    if (segment.command !== "git" || segment.argv[1] !== "push") continue
-    const args = segment.argv.slice(2)
+    if (segment.command !== "git") continue
+    const { subcommand, args } = gitSubcommand(segment.argv)
+    if (subcommand !== "push") continue
 
     for (const argument of args) {
       if (ruleId === "force-push" && FORCE_PUSH_FLAGS.test(argument)) {
