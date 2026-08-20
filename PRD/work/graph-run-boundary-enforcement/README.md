@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 # graph-run-boundary-enforcement
@@ -37,7 +37,7 @@ and `GAMEPLAN.md` for the architecture and verification checklist.
 | [F](./slice-f-default-fail-criteria.md) ✅ | Slice criteria start `false`, flip on observed evidence | REQ-157 | A, B |
 | [G](./slice-g-independent-reviewer.md) ✅ | Node 7 reviewer with no write tools | REQ-155 | — |
 | [H](./slice-h-no-preauth-reread.md) ✅ | No-pre-authorization rule re-read at every dispatch | REQ-158 | — |
-| [I](./slice-i-contract-retirement.md) | Contract retirement, stated limits, promotion | all | A–H |
+| [I](./slice-i-contract-retirement.md) ✅ | Contract retirement, stated limits, promotion | all | A–H |
 
 G and H touch skill and contract text only and are parallel-ready with the hook
 chain. E is the one genuinely sequential slice: it proves the hook A and B built
@@ -54,9 +54,12 @@ and reads the counter D writes.
 | Phase skills | `.claude/skills/thejudge-map-out/`, `.claude/skills/thejudge-implement-all/` |
 | Durable truth | `PRD/instructions/graph-workflow-contract.md`, `AGENT-SKILLS.md` |
 
-## Build it interactively
+## Built interactively — and the boundary held
 
-Slice A creates `.claude/settings.json` and slice F edits `thejudge-*` skills.
-Both are inside the protected set that the graph tier denies while a run holds
-the lock, so a graph run building this package would be denied by the boundary
-it is building. Implement in a session holding no lock. See `GAMEPLAN.md`.
+Slice A created `.claude/settings.json` and slice F edited `thejudge-*` skills.
+Both are inside the protected set the graph tier denies while a run holds the
+lock, so a graph run building this package would have been denied by the boundary
+it was building. It was implemented in a session holding no lock, as planned.
+
+That is now demonstrated rather than predicted: slice B's live proof shows both
+of those exact writes succeeding with no lock and denied with one.

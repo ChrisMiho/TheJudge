@@ -20,8 +20,7 @@ in the `thejudge-*` skill, not in a graph skill copy.
 Exactly three graph skills exist in the spine: `graph-preflight`, `graph-run`,
 and `graph-gate-review` — the owner-facing half of the `define` gate, which
 walks the recorded `PRD/sections/` diff one stable ID at a time and resumes the
-run. Domain node packs (`graph-ui-shape`, `graph-enrich-define`) attach as extra
-nodes and are specified separately.
+run.
 
 ## Run predicate
 
@@ -387,6 +386,70 @@ Refusal under this rule is recorded, never silent. The driver quotes the refused
 instruction in a `## Instruction ledger` row classified `refused`, naming the
 rule that refused it, so the user who gave it can see it was not followed.
 
+## The boundary hook, and what it does not reach
+
+`scripts/graph-boundary-hook.mjs` is registered as a `PreToolUse` hook in the
+committed `.claude/settings.json`. It fires in every session and every dispatched
+subagent, with no launch flag. Decision logic is pure and lives in
+`scripts/lib/boundary-rules.mjs`, which holds every protected-path and command
+literal in this system; the hook does the file I/O and holds none of them.
+
+**Two tiers.** The universal tier fires in every session, run or no run: secrets
+access, force-push in every flag and refspec form, remote branch deletion,
+`main` / `master` pushes, `rm -rf`, `sudo`, `pkill`, `killall`. The graph tier
+fires only while a run holds `.worktrees/.graph-run.lock`: protected-path writes,
+writes to the hook's own records, removal of the lock or the stop sentinel,
+`nohup`, a background `&`, the per-node tool-call cap, and a criterion flipped to
+`true` without observed evidence.
+
+**It never fails closed.** An internal error prints a diagnostic and exits 0. A
+hook that denied on its own bugs would brick every session in this repository. A
+hook that has stopped deciding is caught by the canary and the heartbeat, not by
+blocking the user.
+
+### Stated limits
+
+Each of these is a limit, recorded once, not a claim.
+
+1. **Literal matching.** The hook matches path literals and normalized argv. A
+   path or command assembled at runtime — through a variable, a heredoc, or an
+   interpreter the hook allowed — evades it. The normalizer models a shell; it is
+   not one.
+2. **`graph-ledger-check.mjs` is a self-report.** It reads `## Dispatch prompts`
+   and `## Instruction ledger`, both written by the driver. A driver that
+   pre-authorizes and then paraphrases its own prompt passes it clean. It is a
+   schema check over a self-report — never cite a passing run as proof it did not
+   pre-authorize.
+3. **A `manual` criterion proves the check happened, not that it passed.** Its
+   evidence is a dated observation line naming the criterion id. That records
+   that someone looked on that day and wrote down what they saw. No mechanism
+   here closes the gap between that and a passing check.
+4. **A missing run-state file degrades the cap.** With nothing to attribute a
+   call to, the tool-call cap does not fire. The hook reports the degraded
+   condition on every call rather than staying silent, and never blocks the run
+   for it.
+5. **The heartbeat degrades with it.** No counter key to advance means the
+   between-node heartbeat reports `degraded`, not a hook failure. The run
+   continues and the run-start canary remains the binding proof — which means a
+   run whose run-state file never appears has canary-only liveness evidence for
+   its whole length.
+6. **Project hooks require workspace trust.** An untrusted checkout never loads
+   `.claude/settings.json`, so the hook cannot deny anything. This is a named
+   `BLOCKED` condition at the run-start canary, never a silent no-op — and it is
+   reported separately from a broken hook, because the two have different fixes.
+7. **`bypassPermissions` — a measurement, not a guarantee.** On 2026-08-20, in a
+   session run with `--permission-mode bypassPermissions` on `claude` 2.1.234,
+   the command `pkill -f definitely-no-such-process-xyz` returned:
+
+   ```
+   PreToolUse:Bash hook error: [node "$CLAUDE_PROJECT_DIR/scripts/graph-boundary-hook.mjs"]: [graph-boundary] `pkill` is denied in every session.
+   ```
+
+   **Observed result: denied.** That is one command, at one moment, on one binary
+   version. It is recorded as the measurement it is. Do not restate it as
+   "hook denies survive `bypassPermissions`" — nothing here establishes that as a
+   property of the harness.
+
 ## Boundaries
 
 A graph run may not:
@@ -408,13 +471,21 @@ A graph run may not:
 - merge or pull with a strategy that discards one side — `-s ours`,
   `-X ours`, `-X theirs`, `--allow-unrelated-histories`, `git pull --force`
 
-The permission profile at `.claude/graph-profile.json` enforces most of these
-mechanically, but **only in a session launched with**
-`claude --settings .claude/graph-profile.json`. In a session started without it,
-every entry in the profile is inert and the list above is convention only —
-binding on the agent's compliance rather than on the engine.
+**The boundary hook enforces this list, in every session.**
+`scripts/graph-boundary-hook.mjs` is registered as a `PreToolUse` hook in the
+committed `.claude/settings.json`, so it fires with no launch flag, at top level
+and inside every dispatched subagent. It is the enforcer.
 
-**Whether it loaded is now observed, not asserted.** The profile carries
+The permission profile at `.claude/graph-profile.json` is a **second layer**, not
+the primary one. It enforces many of the same rules, but **only in a session
+launched with** `claude --settings .claude/graph-profile.json`. It is kept rather
+than deleted — belt and braces — but nothing depends on it being loaded.
+
+**Whether it loaded is observed, not asserted — and it is informational.** Since
+the hook is the enforcer, the sentinel and the ledger's `Profile:` field record
+which session configuration was in play, not whether the boundaries held. Hook
+liveness is what proves that, and it has its own canary and heartbeat above. The
+profile carries
 `"env": { "THEJUDGE_GRAPH_PROFILE": "1" }`, which exists only in a session
 launched with it. `graph-preflight` reads it at node 1 and prints
 `Profile: loaded (env sentinel)` or `Profile: unverified`, and that line is what
@@ -424,9 +495,9 @@ the fallback when the sentinel is absent, recorded as their statement.
 
 **The sentinel proves the file loaded — not that any rule fired.** That limit is
 stated rather than papered over. A loaded profile still says nothing about
-whether a given deny was reached, and two boundaries can never fire under any
-profile: `nohup` and the trailing `&` below. Treat an unverified profile as
-absent, and a verified one as loaded, never as enforced.
+whether a given deny was reached. Treat an unverified profile as absent, and a
+verified one as loaded, never as enforced. An unverified profile is no longer a
+gap in enforcement, because the hook does not depend on it.
 
 **Staging is explicit because a wildcard is what committed the 2026-08-17
 leak.** A fixture rep's dispatched subagent wrote product truth into the live
@@ -478,11 +549,19 @@ The one merge that matters is still human. Node 8 (`land`) is the owner merging
 the pull request; `gh pr merge` and `gh pr close` stay denied, and nothing here
 changes that.
 
-Two boundaries stay convention-only even with the profile loaded. `nohup` is
-stripped as a wrapper before Bash rules are matched, so the `Bash(nohup*)` deny
-can never fire. A trailing `&` is consumed as a command separator before any
-rule sees the command text, so no `&` rule is expressible at all — the profile
-contains no background-`&` entry, and adding one would not help.
+**Two boundaries no permission rule can express — and why the hook exists.**
+`nohup` is stripped as a wrapper before Bash rules are matched, so the
+`Bash(nohup*)` deny can never fire. A trailing `&` is consumed as a command
+separator before any rule sees the command text, so no `&` rule is expressible
+at all — the profile contains no background-`&` entry, and adding one would not
+help.
+
+That reasoning still holds, and it is exactly the gap the boundary hook was built
+to close. The hook normalizes the command before matching: it strips wrappers and
+sees what is behind them, and it splits on separators while *observing* a
+trailing `&` rather than losing it. Both are graph-tier denies (`nohup-wrapper`,
+`background-launch`), enforced whenever a run holds the lock, with or without the
+profile. Neither is convention any more.
 
 The list above is the reason each deny entry exists.
 
@@ -497,9 +576,9 @@ mechanism states its own reach. Nothing here claims more than it enforces.
 
 | Writing mechanism | Enforcement | Reach |
 | --- | --- | --- |
-| Agent `Edit` / `Write` | `.claude/graph-profile.json` deny rules | Only in a session launched with `--settings`. `graph-preflight`'s env sentinel reports whether the profile loaded; treat an unverified profile as absent |
+| Agent `Edit` / `Write` | `scripts/graph-boundary-hook.mjs`, with `.claude/graph-profile.json` as a second layer | The hook fires in every session and every subagent with no launch flag, and denies protected-path writes while a run holds the lock. The profile's deny rules add a second layer, but only in a session launched with `--settings` |
 | `node scripts/*` | `scripts/lib/protected-paths.mjs`, guarded by `scripts/protected-write-guard.test.mjs` under `test:scripts` | Non-test `scripts/**/*.mjs`, protected-path writes only, with exactly one declared exemption — the helper itself |
-| Raw Bash (`cp`, `rsync`, redirection) | none | **Convention.** Detected after the fact by the fixture rig's before/after snapshot and the skills-sync drift check. Never claimed as enforced |
+| Raw Bash (`cp`, `rsync`, redirection, `rm`, `mv`, `tee`, `sed -i`, `>` / `>>`) | `scripts/graph-boundary-hook.mjs`, registered as a committed `PreToolUse` hook in `.claude/settings.json` | Every session and every subagent, no launch flag. The hook resolves each command's write targets before matching, so a redirection or a copy into a protected path is visible as a write. Graph tier: fires while a run holds the lock. Matches literals and normalized argv — a path assembled at runtime still evades it |
 
 The drift guard's subject is protected-path writes, not all writes. Eleven
 scripts write to `data/`, `.tmp/`, and temp directories today; none of them is

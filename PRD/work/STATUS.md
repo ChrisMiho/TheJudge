@@ -6,9 +6,10 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
+- [graph-run-boundary-enforcement](./graph-run-boundary-enforcement/)
+
 ## active
 
-- [graph-run-boundary-enforcement](./graph-run-boundary-enforcement/)
 
 ## refined
 
