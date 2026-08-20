@@ -278,3 +278,34 @@ PRD documentation tooling: system-map catalog, detail files, the decisions.md ro
   - a `manual` criterion's evidence proves the check happened, not that it passed: the hook observes the write, and the content of the observation line is still the agent's word. Stated as a named limit rather than closed, in the same spirit as the raw-Bash row this decision retires
   - the new stable IDs skip the block DEC-164 and Q-005 reserve. REQ-146..151, NFR-015, and FLOW-019 remain occupied by the reverted 2026-08-17 leak preserved on `rescue/fixture-leak-card-collection-20260817`; this decision resumes at REQ-152, NFR-016, and FLOW-020 as DEC-164's note directs, running through REQ-159
   - no `system-map.md` entry is added, for the same reason given in DEC-163, DEC-164, and DEC-165
+  - **Shipped 2026-08-20** (PR #93, merge `b83a7f9`, nine slices A–I). The impact
+    list above held. Six deltas worth recording, none of which changed the
+    decision:
+    - `test:scripts` ran `node --test scripts/*.test.mjs`, which does not reach
+      `scripts/lib/`. The glob was widened so the new pure-module tests actually
+      run; without it they would have existed without ever executing
+    - the hook also denies removal of `.worktrees/.graph-stop` while the lock is
+      held. The kill switch is defeated without it, and it is lock-gated, so the
+      owner clearing the sentinel to resume is unaffected
+    - the per-node caps are estimates, not measurements. No completed
+      `GRAPH-RUN.md` ledger existed to size them against, so only `build` rests
+      on an observation — this package's own implementation session, ~15 tool
+      calls per slice. Recorded as estimates to re-tune once real ledgers exist
+    - node 7's reviewer found four defects on its first outing, three real and
+      fixed with regression tests: `&` inside a redirection read as a background
+      launch (so `2>&1` was denied under a live lock), the secrets rule denying
+      any *mention* of the path rather than access to it, and `git -C <path>
+      push --force` slipping past a rule keyed on `argv[1]`. The reviewer earned
+      its place immediately
+    - `mv` belongs to the destructive-command set, not the copy set: a move
+      writes its destination *and* removes its source
+    - slices A–E's criteria files carry `true` without evidence-log entries,
+      because they were verified before the mechanism existed. Stated in the
+      slice doc rather than hidden; the enforcement is proven by a live round
+      trip on a throwaway slice, and it binds from the next package mapped out
+  - **The `bypassPermissions` measurement resolved**, as this decision's note
+    above required. On 2026-08-20, `claude` 2.1.234, a session run with
+    `--permission-mode bypassPermissions` had `pkill -f
+    definitely-no-such-process-xyz` **denied** by the hook. Recorded in the
+    contract as that measurement — one command, one moment, one binary version —
+    and explicitly not as a property of the harness

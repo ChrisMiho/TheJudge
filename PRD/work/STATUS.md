@@ -6,7 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-- [graph-run-boundary-enforcement](./graph-run-boundary-enforcement/)
 
 ## active
 
@@ -19,6 +18,7 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+- [graph-single-door-workflow](./graph-single-door-workflow/)
 - [ai-answer-quality-baseline](./ai-answer-quality-baseline/)
 - [card-collection-manager](./card-collection-manager/)
 - [scan-non-english-special-treatments](./scan-non-english-special-treatments/)
