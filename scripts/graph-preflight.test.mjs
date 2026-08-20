@@ -20,11 +20,13 @@ import {
   defaultRunId,
   readProfileSentinel,
   classifyLock,
+  classifyStopSentinel,
   isPidAlive,
   lockRecord,
   parseLockFile,
   PROFILE_SENTINEL_ENV,
   LOCK_PATH,
+  STOP_PATH,
   DEFAULT_THRESHOLDS,
   SECRET_PATTERNS
 } from "./graph-preflight.mjs"
@@ -1020,4 +1022,25 @@ test("graph-profile - the run cannot tidy up a local merge it should not have ma
   const { deny } = graphProfile().permissions
   assert.ok(deny.includes("Bash(git reset --hard*)"))
   assert.ok(deny.some((rule) => rule.startsWith("Bash(git push --force")))
+})
+
+test("an absent stop sentinel does not block a run", () => {
+  const clear = classifyStopSentinel({ present: false })
+  assert.equal(clear.state, "clear")
+  assert.equal(clear.message, null)
+})
+
+test("a present stop sentinel refuses the run and names the file to remove", () => {
+  // The owner's kill switch has to survive the next invocation. Otherwise
+  // throwing it stops one run and the next `/graph-run` quietly starts another.
+  const refused = classifyStopSentinel({ present: true })
+  assert.equal(refused.state, "refused")
+  assert.match(refused.message, new RegExp(STOP_PATH.replace(/\./g, "\\.")))
+  assert.match(refused.message, /rm /, "a refusal the owner cannot act on is a dead end")
+  assert.match(refused.message, /refusing to start/)
+})
+
+test("the stop sentinel and the run lock are different files", () => {
+  assert.notEqual(STOP_PATH, LOCK_PATH)
+  assert.match(STOP_PATH, /^\.worktrees\//)
 })

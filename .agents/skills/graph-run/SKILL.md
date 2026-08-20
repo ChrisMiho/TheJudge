@@ -170,6 +170,9 @@ and never something to restate as a decision rule in a dispatch prompt.
 - Record every instruction you *did* act on as a row classified
   `answered-once`. There is no third class: a standing rule has no
   representable form, so a run that made one cannot write it down.
+- Check for `.worktrees/.graph-stop` **before every node dispatch**, in this
+  same pre-dispatch block. It is the owner's kill switch, and finding it means
+  halt — see `## Halting on the owner's stop sentinel` below.
 - Run `node scripts/graph-ledger-check.mjs PRD/work/<slug>/GRAPH-RUN.md` and
   require it green **before every node dispatch**, not after. It reads
   `## Dispatch prompts` and `## Instruction ledger`. Both are written by you,
@@ -179,6 +182,44 @@ and never something to restate as a decision rule in a dispatch prompt.
 Autonomy means not being interrupted by mechanics — branching, stashing,
 sequencing, commits, PR plumbing. It is never authority to decide product
 behavior for the user.
+
+## Halting on the owner's stop sentinel
+
+The owner stops a run in flight by creating `.worktrees/.graph-stop`. Ctrl-C
+strands the lock mid-node and leaves no record of why; this does not.
+
+Check for the sentinel immediately before every node dispatch. A sentinel that
+appears mid-node lets that node finish — the halt is at the node boundary, so
+no ledger is ever left half written.
+
+On finding it, halt in this order:
+
+1. Write the terminal state from the `## Terminal states` table below. Read the
+   state from that table; do not add a fifth one, and do not restate the table
+   here.
+2. Record the halt under `## Open gate` in `GRAPH-RUN.md`: that the owner
+   stopped the run, the node it halted at, and the evidence.
+3. Set the package `STATUS.*` marker to match.
+4. Update the package's row in `PRD/work/STATUS.md`.
+5. Delete `.worktrees/.graph-run.lock` — the release every terminal state
+   requires.
+6. Report the branch, the PR URL if one exists, and the ledger path.
+
+Resume with `/graph-run PRD/work/<slug>/` after removing the sentinel. The run
+re-enters at the node the ledger records. `graph-preflight` refuses to start
+while the sentinel exists, so a halted run is not silently restarted by the next
+invocation.
+
+If the sentinel and a gate park coincide, **the park wins**: it already carries
+the owner's question and the resume command, and a halt written over it would
+lose both.
+
+The boundary hook is the backstop, not the mechanism. While the lock is held and
+the sentinel exists it denies `Task` and `Agent` calls outright, so a driver that
+ignores its own check cannot dispatch another node anyway. It deliberately keeps
+the halt path open — the ledger write, the status marker, the board row, and the
+commit all still work — and it denies deleting the sentinel, so a run cannot
+clear the switch to keep going.
 
 ## Terminal states
 

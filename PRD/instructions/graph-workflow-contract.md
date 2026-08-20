@@ -105,6 +105,33 @@ worktree creation when this section is missing, so node 6 cannot start without
 it. `thejudge-prepare` writes it during preparation runs; during graph runs
 `graph-run` owns it, because graph runs do not delegate to `thejudge-prepare`.
 
+## The owner's stop sentinel
+
+A run is stopped in flight by creating `.worktrees/.graph-stop`. `graph-run`
+checks for it immediately before every node dispatch, in the same pre-dispatch
+block that runs `graph-ledger-check.mjs`.
+
+A sentinel that appears mid-node lets that node finish. The halt is at the node
+boundary, so no ledger is left half written. On halting, the run writes a
+terminal state from `graph-run`'s `## Terminal states` table, records the halt
+and the node it halted at under `## Open gate`, sets the package `STATUS.*`
+marker and the `PRD/work/STATUS.md` board row, deletes the lock, and reports the
+branch, the PR URL if one exists, and the ledger path. No fifth terminal state
+exists for this, and no separate steering channel does either.
+
+`graph-preflight` refuses to start while the sentinel exists, naming both it and
+the file to remove. Resume is `/graph-run PRD/work/<slug>/` once the owner has
+removed it, re-entering at the node the ledger records.
+
+The sentinel and a gate park coincide → **the park wins**. It already carries the
+owner's question and the resume command.
+
+The boundary hook is the backstop for a driver that ignores its own check: while
+the lock is held and the sentinel exists, `Task` and `Agent` calls are denied,
+and so is deleting the sentinel. The halt path itself stays open, because a run
+that could not write its own terminal state would strand exactly the state the
+kill switch exists to avoid.
+
 ## Ledger
 
 Every run writes `PRD/work/<slug>/GRAPH-RUN.md`, committed with the run's

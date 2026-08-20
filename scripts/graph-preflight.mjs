@@ -5,6 +5,7 @@
 // decision lives here as a pure, tested function rather than as agent prose.
 
 import { execFileSync } from "node:child_process"
+import { existsSync } from "node:fs"
 import { pathToFileURL } from "node:url"
 
 export const DEFAULT_THRESHOLDS = { maxFiles: 10, maxLines: 200 }
@@ -30,6 +31,14 @@ export const PROFILE_SENTINEL_ENV = "THEJUDGE_GRAPH_PROFILE"
 // The path sits under `.worktrees/`, which `.gitignore` already covers, so the
 // lock is never committed and never travels with a branch.
 export const LOCK_PATH = ".worktrees/.graph-run.lock"
+
+// The owner's kill switch. Its presence means a run was asked to halt, so a new
+// run must not start on top of it — otherwise throwing the switch stops one run
+// and the next invocation quietly starts another.
+//
+// It sits under `.worktrees/` alongside the lock, which `.gitignore` already
+// covers, so it never travels with a branch.
+export const STOP_PATH = ".worktrees/.graph-stop"
 
 /**
  * What the ledger's `Profile:` field should say, from observation alone.
@@ -435,6 +444,25 @@ export function classifyLock({ contents, isAlive = isPidAlive }) {
   }
 }
 
+/**
+ * Whether the owner's stop sentinel blocks a new run.
+ *
+ * Pure, so the refusal is tested without touching the filesystem. The message
+ * names both the sentinel and the file to remove: a refusal the owner cannot
+ * act on is a dead end, not a boundary.
+ */
+export function classifyStopSentinel({ present }) {
+  if (!present) return { state: "clear", message: null }
+  return {
+    state: "refused",
+    message:
+      `graph-preflight: refusing to start — the owner's stop sentinel exists at ` +
+      `${STOP_PATH}. A run was asked to halt, and starting another would undo ` +
+      `that. Confirm the halted run finished, then remove it to resume: ` +
+      `rm ${STOP_PATH}`
+  }
+}
+
 /** The record a run writes when it takes the lock. */
 export function lockRecord({ slug, runId, pid, now }) {
   return JSON.stringify({ slug, runId, pid, startedAt: now }, null, 2) + "\n"
@@ -451,6 +479,14 @@ function main(argv) {
 
   if (!options.branch) {
     console.error("graph-preflight: --branch <name> is required")
+    return process.exit(2)
+  }
+
+  // Before the dry run and before any mutation: a halted run must not be
+  // restarted by the next invocation.
+  const stop = classifyStopSentinel({ present: existsSync(STOP_PATH) })
+  if (stop.state === "refused") {
+    console.error(stop.message)
     return process.exit(2)
   }
 

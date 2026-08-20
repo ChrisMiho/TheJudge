@@ -29,6 +29,17 @@ Read `PRD/instructions/graph-workflow-contract.md` before acting.
   run — the default is timestamped to the second, so omitting it gives the two
   invocations different ids.
 
+## The owner's stop sentinel
+
+Before the lock, before the dry run, and before any mutation:
+`scripts/graph-preflight.mjs` refuses to start while `.worktrees/.graph-stop`
+exists, exiting 2 with a message naming both the sentinel and the `rm` command
+that clears it. Relay that message and stop.
+
+The refusal is the point. Without it, throwing the kill switch stops one run and
+the next invocation quietly starts another. Never remove the sentinel yourself
+to get past this — a halted run is the owner's to resume.
+
 ## Concurrency lock
 
 Take the lock **first**, before the dry run and before any mutation. Two

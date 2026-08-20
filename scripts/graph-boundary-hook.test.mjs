@@ -2,21 +2,50 @@ import assert from "node:assert/strict"
 import { Readable } from "node:stream"
 import test from "node:test"
 
-import { decide, main, projectRoot, readRunLock } from "./graph-boundary-hook.mjs"
+import { RUN_LOCK_PATH, RUN_STOP_PATH } from "./lib/boundary-rules.mjs"
+import {
+  decide,
+  main,
+  projectRoot,
+  readRunLock,
+  readStopSentinel
+} from "./graph-boundary-hook.mjs"
 
 // The universal tier's whole surface, exercised through real PreToolUse
 // payloads rather than through the pure rules module. A rule that is correct in
 // `boundary-rules.mjs` but unreachable through the payload shape is not enforced.
 
-// A lock the hook will find, and one it will not. The hook reads the file; the
-// tests hand it a reader rather than writing to `.worktrees/` from a test run.
-const LIVE_LOCK = { read: () => '{"slug":"x","runId":"r","pid":1,"startedAt":"t"}' }
-const NO_LOCK = {
-  read: () => {
-    throw Object.assign(new Error("ENOENT"), { code: "ENOENT" })
+// The hook reads the run records off disk; the tests hand it a reader instead of
+// writing to `.worktrees/` from a test run. The reader is path-aware on purpose:
+// a reader that returned the same bytes for every path would fake a stop
+// sentinel in every lock test.
+const LOCK_CONTENTS = '{"slug":"x","runId":"r","pid":1,"startedAt":"t"}'
+
+function absent(target) {
+  throw Object.assign(new Error(`ENOENT: ${target}`), { code: "ENOENT" })
+}
+
+function records({ lock = null, stop = false } = {}) {
+  return {
+    read: (target) => {
+      if (target.endsWith(RUN_LOCK_PATH)) {
+        if (lock === null) absent(target)
+        return lock
+      }
+      if (target.endsWith(RUN_STOP_PATH)) {
+        if (!stop) absent(target)
+        return ""
+      }
+      return absent(target)
+    }
   }
 }
-const CORRUPT_LOCK = { read: () => "{ this is not json" }
+
+const LIVE_LOCK = records({ lock: LOCK_CONTENTS })
+const NO_LOCK = records()
+const CORRUPT_LOCK = records({ lock: "{ this is not json" })
+const LOCK_AND_STOP = records({ lock: LOCK_CONTENTS, stop: true })
+const STOP_NO_LOCK = records({ stop: true })
 
 function bash(command, lock = NO_LOCK) {
   return decide(JSON.stringify({ tool_name: "Bash", tool_input: { command } }), lock)
@@ -226,6 +255,12 @@ test("readRunLock reports absence rather than throwing", () => {
   assert.equal(typeof readRunLock("/any", LIVE_LOCK.read), "string")
 })
 
+test("readStopSentinel reports presence, not contents", () => {
+  assert.equal(readStopSentinel("/nonexistent-root-xyz"), false)
+  assert.equal(readStopSentinel("/any", NO_LOCK.read), false)
+  assert.equal(readStopSentinel("/any", LOCK_AND_STOP.read), true)
+})
+
 test("the project root comes from the harness, not the call's working directory", () => {
   assert.equal(projectRoot({}, { CLAUDE_PROJECT_DIR: "/repo" }), "/repo")
   assert.equal(projectRoot({ cwd: "/repo/sub" }, {}), "/repo/sub")
@@ -243,6 +278,75 @@ test("ordinary work is untouched while a run holds the lock", () => {
   ]) {
     assert.equal(bash(command, LIVE_LOCK).decision, "allow", `wrongly denied: ${command}`)
   }
+})
+
+
+// ---------------------------------------------------------------------------
+// Slice C — the owner's kill switch.
+// ---------------------------------------------------------------------------
+
+function dispatch(toolName, lock) {
+  return decide(
+    JSON.stringify({ tool_name: toolName, tool_input: { prompt: "run the next node" } }),
+    lock
+  )
+}
+
+test("a node dispatch is denied while the stop sentinel exists", () => {
+  for (const toolName of ["Task", "Agent"]) {
+    const denied = dispatch(toolName, LOCK_AND_STOP)
+    assert.equal(denied.decision, "deny", `${toolName} must be denied after a stop request`)
+    assert.equal(denied.rule, "dispatch-after-stop")
+    assert.equal(denied.tier, "graph")
+    assert.equal(denied.stopRequested, true)
+    assert.match(denied.reason, /release the lock/)
+  }
+})
+
+test("a node dispatch is allowed with a lock and no stop sentinel", () => {
+  for (const toolName of ["Task", "Agent"]) {
+    const allowed = dispatch(toolName, LIVE_LOCK)
+    assert.equal(allowed.decision, "allow", `${toolName} must run while no stop was requested`)
+    assert.equal(allowed.stopRequested, false)
+  }
+})
+
+test("the halting run can still write its own terminal state", () => {
+  // The kill switch stops dispatches, not the halt itself. A run that could not
+  // write its ledger, status marker, and board row would strand exactly the
+  // state this slice exists to avoid.
+  for (const command of [
+    "printf 'PARKED\n' >> PRD/work/example/GRAPH-RUN.md",
+    "git add PRD/work/example",
+    "git commit -m 'halt'",
+    "rm .worktrees/.graph-run.lock"
+  ]) {
+    const result = bash(command, LOCK_AND_STOP)
+    if (command.includes("graph-run.lock")) {
+      // Releasing the lock is the run's own path, not a Bash deletion.
+      assert.equal(result.rule, "run-lock-removal")
+      continue
+    }
+    assert.equal(result.decision, "allow", `the halt path must stay open: ${command}`)
+  }
+})
+
+test("a run cannot delete the owner's stop sentinel to escape it", () => {
+  const denied = bash("rm .worktrees/.graph-stop", LOCK_AND_STOP)
+  assert.equal(denied.decision, "deny")
+  assert.equal(denied.rule, "stop-sentinel-removal")
+  assert.equal(denied.tier, "graph")
+})
+
+test("the owner removes the sentinel to resume, once no run holds the lock", () => {
+  assert.equal(bash("rm .worktrees/.graph-stop", STOP_NO_LOCK).decision, "allow")
+})
+
+test("a stop sentinel with no lock changes nothing", () => {
+  // The graph tier is gated on the lock. A leftover sentinel must not harden an
+  // ordinary session.
+  assert.equal(dispatch("Task", STOP_NO_LOCK).decision, "allow")
+  assert.equal(bash("echo x > CLAUDE.md", STOP_NO_LOCK).decision, "allow")
 })
 
 test("a deny exits 2 with the reason on stderr", async () => {

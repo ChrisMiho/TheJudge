@@ -83,6 +83,24 @@ export const DESTRUCTIVE_COMMANDS = Object.freeze([
 export const RUN_LOCK_PATH = ".worktrees/.graph-run.lock"
 
 /**
+ * The owner's kill switch.
+ *
+ * Creating this file stops a run at its next node boundary. `graph-run` checks
+ * for it before every dispatch; the rules below are the backstop for a driver
+ * that ignores its own check.
+ */
+export const RUN_STOP_PATH = ".worktrees/.graph-stop"
+
+/**
+ * The tools that dispatch a subagent — which is what a node dispatch *is*.
+ *
+ * Denying these is how the kill switch stops a run that is not reading its own
+ * sentinel. It deliberately does not deny every tool: the halting run still has
+ * to write its terminal state, its ledger, and its board row.
+ */
+export const DISPATCH_TOOLS = Object.freeze(["Task", "Agent"])
+
+/**
  * The hook's own records, which no agent may write.
  *
  * A run that could reset its call count or append to its evidence file would be
@@ -510,6 +528,26 @@ export const RULES = Object.freeze([
     }
   },
   {
+    id: "stop-sentinel-removal",
+    tier: "graph",
+    evaluate: (context) => {
+      for (const candidate of writtenPaths(context)) {
+        if (matchesPath(candidate, RUN_STOP_PATH)) {
+          return "Removing the owner's stop sentinel is denied while a run holds the lock. The run halts first and releases the lock; the owner removes the sentinel to resume."
+        }
+      }
+      return null
+    }
+  },
+  {
+    id: "dispatch-after-stop",
+    tier: "graph",
+    evaluate: (context) =>
+      context.stopRequested && DISPATCH_TOOLS.includes(context.toolName)
+        ? "The owner asked this run to stop. Dispatching another node is denied. Halt at this boundary: write the terminal state, record the halt under `## Open gate`, set the package status and board row, and release the lock."
+        : null
+  },
+  {
     id: "nohup-wrapper",
     tier: "graph",
     evaluate: (context) => {
@@ -596,7 +634,7 @@ export function toolInputPaths(toolInput) {
 }
 
 /** Everything the rules need to see about one tool call, in one shape. */
-export function callContext({ toolName, toolInput, runActive = false } = {}) {
+export function callContext({ toolName, toolInput, runActive = false, stopRequested = false } = {}) {
   const isBash = toolName === "Bash"
   const normalized = isBash
     ? normalizeCommand(toolInput?.command)
@@ -607,7 +645,8 @@ export function callContext({ toolName, toolInput, runActive = false } = {}) {
     trailingAmpersand: normalized.trailingAmpersand,
     backgrounded: normalized.backgrounded,
     paths: isBash ? [] : toolInputPaths(toolInput),
-    runActive: Boolean(runActive)
+    runActive: Boolean(runActive),
+    stopRequested: Boolean(stopRequested)
   }
 }
 
@@ -623,6 +662,7 @@ export function classifyToolCall(call = {}) {
   const context = callContext(call)
   const observations = {
     runActive: context.runActive,
+    stopRequested: context.stopRequested,
     trailingAmpersand: context.trailingAmpersand,
     backgrounded: context.backgrounded
   }

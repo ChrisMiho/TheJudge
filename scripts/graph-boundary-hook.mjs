@@ -20,7 +20,12 @@
 import { readFileSync } from "node:fs"
 import path from "node:path"
 
-import { RUN_LOCK_PATH, classifyToolCall, isRunActive } from "./lib/boundary-rules.mjs"
+import {
+  RUN_LOCK_PATH,
+  RUN_STOP_PATH,
+  classifyToolCall,
+  isRunActive
+} from "./lib/boundary-rules.mjs"
 
 const DENY_EXIT_CODE = 2
 
@@ -61,14 +66,25 @@ export function readRunLock(root, read = readFileSync) {
   }
 }
 
+/** Whether the owner's stop sentinel is on disk. Its contents do not matter. */
+export function readStopSentinel(root, read = readFileSync) {
+  try {
+    read(path.join(root, RUN_STOP_PATH), "utf8")
+    return true
+  } catch {
+    return false
+  }
+}
+
 /** Turn the raw payload into a verdict. Exported so the test drives it directly. */
 export function decide(rawPayload, { environment, read } = {}) {
   const payload = JSON.parse(rawPayload === "" ? "{}" : rawPayload)
-  const lockContents = readRunLock(projectRoot(payload, environment ?? process.env), read)
+  const root = projectRoot(payload, environment ?? process.env)
   return classifyToolCall({
     toolName: payload.tool_name,
     toolInput: payload.tool_input,
-    runActive: isRunActive(lockContents)
+    runActive: isRunActive(readRunLock(root, read)),
+    stopRequested: readStopSentinel(root, read)
   })
 }
 
