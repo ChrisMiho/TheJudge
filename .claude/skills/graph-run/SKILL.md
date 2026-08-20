@@ -170,6 +170,20 @@ and never something to restate as a decision rule in a dispatch prompt.
 - Record every instruction you *did* act on as a row classified
   `answered-once`. There is no third class: a standing rule has no
   representable form, so a run that made one cannot write it down.
+- Write `.worktrees/.graph-run-state.json` **immediately before every node
+  dispatch**: `{ "runId": "<run id>", "node": "<node about to be dispatched>",
+  "attempt": <attempt number for that node> }`. You are that file's only writer.
+  The hook reads it to learn which node to count against; it never parses
+  `GRAPH-RUN.md` and never infers the node from the tool call. Without it the
+  cap cannot attribute the call, and the hook says so on every call rather than
+  enforcing a guess.
+
+  Keep it separate from the lock. `parseLockFile()` treats an unreadable lock as
+  a hard blocker for the next run, so rewriting the lock nine times a run would
+  put the concurrency guard at risk that many times.
+
+  A loop-back — `define` on a `gate-qc` FAIL, `build` on a `review` finding — is
+  a new attempt: increment `attempt`, and the node starts on a fresh budget.
 - Check for `.worktrees/.graph-stop` **before every node dispatch**, in this
   same pre-dispatch block. It is the owner's kill switch, and finding it means
   halt — see `## Halting on the owner's stop sentinel` below.
@@ -220,6 +234,24 @@ ignores its own check cannot dispatch another node anyway. It deliberately keeps
 the halt path open — the ledger write, the status marker, the board row, and the
 commit all still work — and it denies deleting the sentinel, so a run cannot
 clear the switch to keep going.
+
+## Tool-call caps
+
+Every node carries a per-dispatch tool-call budget — the `Cap` column of the node
+table in `PRD/instructions/graph-workflow-contract.md`, which is the authority.
+The hook counts every tool call against `<run id>/<node>/<attempt>` in
+`.worktrees/.graph-node-calls.json` and denies once the cap is reached.
+
+An overrun **parks** at `owner-action` using the existing `PARKED` state, with
+the node, the cap, and the observed count as evidence in `GRAPH-RUN.md`. There is
+no fifth terminal state for it. Never raise a cap mid-run to get past a deny —
+the overrun is the signal that the node is doing something other than its job.
+
+The cap is not a third loop limit. Each dispatch gets its own budget, so the
+three-FAIL and two-return caps stay the only bound on how many dispatches happen.
+
+The hook is the counter file's only writer, and the graph tier denies every other
+write to it. That is what makes the count evidence rather than a self-report.
 
 ## Terminal states
 

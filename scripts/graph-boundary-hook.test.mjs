@@ -2,13 +2,14 @@ import assert from "node:assert/strict"
 import { Readable } from "node:stream"
 import test from "node:test"
 
-import { RUN_LOCK_PATH, RUN_STOP_PATH } from "./lib/boundary-rules.mjs"
+import { RUN_LOCK_PATH, RUN_STATE_PATH, RUN_STOP_PATH, capForNode } from "./lib/boundary-rules.mjs"
 import {
   decide,
   main,
   projectRoot,
   readRunLock,
-  readStopSentinel
+  readStopSentinel,
+  recordCall
 } from "./graph-boundary-hook.mjs"
 
 // The universal tier's whole surface, exercised through real PreToolUse
@@ -25,8 +26,19 @@ function absent(target) {
   throw Object.assign(new Error(`ENOENT: ${target}`), { code: "ENOENT" })
 }
 
-function records({ lock = null, stop = false } = {}) {
+/**
+ * An in-memory stand-in for `.worktrees/`.
+ *
+ * The counter file is read *and* written by the hook, so the fake has to behave
+ * like a filesystem for it: a test that only stubbed reads would never catch the
+ * count failing to persist.
+ */
+function records({ lock = null, stop = false, state = null, counts = null } = {}) {
+  const files = new Map()
+  if (counts !== null) files.set(CALL_COUNT_PATH, counts)
+
   return {
+    files,
     read: (target) => {
       if (target.endsWith(RUN_LOCK_PATH)) {
         if (lock === null) absent(target)
@@ -36,9 +48,36 @@ function records({ lock = null, stop = false } = {}) {
         if (!stop) absent(target)
         return ""
       }
+      if (target.endsWith(RUN_STATE_PATH)) {
+        if (state === null) absent(target)
+        return state
+      }
+      for (const [name, contents] of files) {
+        if (target.endsWith(name)) return contents
+      }
       return absent(target)
-    }
+    },
+    write: (target, contents) => files.set(target, contents),
+    move: (from, to) => {
+      const contents = files.get(from)
+      files.delete(from)
+      files.set(CALL_COUNT_PATH, contents)
+      files.set(to, contents)
+    },
+    ensure: () => undefined
   }
+}
+
+const CALL_COUNT_PATH = ".worktrees/.graph-node-calls.json"
+
+/** The counts the fake filesystem is currently holding. */
+function countsIn(io) {
+  const raw = io.files.get(CALL_COUNT_PATH)
+  return raw === undefined ? {} : JSON.parse(raw)
+}
+
+function runStateOf({ runId = "graph-1", node = "plan", attempt = 1 } = {}) {
+  return JSON.stringify({ runId, node, attempt })
 }
 
 const LIVE_LOCK = records({ lock: LOCK_CONTENTS })
@@ -347,6 +386,122 @@ test("a stop sentinel with no lock changes nothing", () => {
   // ordinary session.
   assert.equal(dispatch("Task", STOP_NO_LOCK).decision, "allow")
   assert.equal(bash("echo x > CLAUDE.md", STOP_NO_LOCK).decision, "allow")
+})
+
+
+// ---------------------------------------------------------------------------
+// Slice D — the per-dispatch tool-call cap.
+// ---------------------------------------------------------------------------
+
+test("the counter increments once per call", () => {
+  const io = records({ lock: LOCK_CONTENTS, state: runStateOf() })
+  for (let call = 1; call <= 3; call += 1) {
+    const result = bash("git status", io)
+    assert.equal(result.callCount, call, "each call must advance the count by one")
+    assert.equal(result.decision, "allow")
+  }
+  assert.deepEqual(countsIn(io), { "graph-1/plan/1": 3 })
+})
+
+test("the deny fires at the cap, having allowed everything before it", () => {
+  const cap = capForNode("preflight")
+  const io = records({ lock: LOCK_CONTENTS, state: runStateOf({ node: "preflight" }) })
+
+  for (let call = 1; call < cap; call += 1) {
+    assert.equal(bash("git status", io).decision, "allow", `call ${call} must be allowed`)
+  }
+
+  const denied = bash("git status", io)
+  assert.equal(denied.decision, "deny")
+  assert.equal(denied.rule, "tool-call-cap")
+  assert.equal(denied.callCount, cap)
+  assert.match(denied.reason, /preflight/)
+  assert.match(denied.reason, /attempt 1/)
+})
+
+test("two attempts at one node under one run id hold separate counts", () => {
+  const cap = capForNode("preflight")
+  const io = records({
+    lock: LOCK_CONTENTS,
+    state: runStateOf({ node: "preflight", attempt: 1 }),
+    counts: JSON.stringify({ "graph-1/preflight/1": cap })
+  })
+
+  // Attempt 1 is spent.
+  assert.equal(bash("git status", io).decision, "deny")
+
+  // A loop-back is a new attempt with a fresh budget.
+  const second = records({
+    lock: LOCK_CONTENTS,
+    state: runStateOf({ node: "preflight", attempt: 2 }),
+    counts: JSON.stringify({ "graph-1/preflight/1": cap })
+  })
+  const fresh = bash("git status", second)
+  assert.equal(fresh.decision, "allow")
+  assert.equal(fresh.callCount, 1, "attempt 2 starts at zero")
+  assert.equal(countsIn(second)["graph-1/preflight/1"], cap, "attempt 1's count is untouched")
+})
+
+test("the count survives a park and resume", () => {
+  // The key is run id / node / attempt, never a session, so a counter file
+  // carried across a resume continues the same attempt rather than restarting.
+  const carried = JSON.stringify({ "graph-1/plan/1": 12 })
+  const io = records({ lock: LOCK_CONTENTS, state: runStateOf(), counts: carried })
+  assert.equal(bash("git status", io).callCount, 13)
+})
+
+test("a corrupt counter file restarts the count rather than blocking the run", () => {
+  const io = records({ lock: LOCK_CONTENTS, state: runStateOf(), counts: "{ not json" })
+  const result = bash("git status", io)
+  assert.equal(result.decision, "allow")
+  assert.equal(result.callCount, 1)
+})
+
+test("a missing run-state file allows the call and reports the degraded cap", () => {
+  const io = records({ lock: LOCK_CONTENTS, state: null })
+  const result = bash("git status", io)
+  assert.equal(result.decision, "allow")
+  assert.equal(result.callCount, null)
+  assert.match(result.degraded, /cannot attribute/)
+  assert.match(result.degraded, new RegExp(RUN_STATE_PATH.replace(/\./g, "\\.")))
+})
+
+test("an unparseable run-state file allows the call and reports the degraded cap", () => {
+  const io = records({ lock: LOCK_CONTENTS, state: "{ not json" })
+  const result = bash("git status", io)
+  assert.equal(result.decision, "allow")
+  assert.match(result.degraded, /not enforced/)
+})
+
+test("the degraded report reaches stderr, and never denies", async () => {
+  // A cap that quietly stopped counting looks exactly like a run that stayed
+  // inside it, so the degraded condition is reported rather than swallowed.
+  const io = records({ lock: LOCK_CONTENTS, state: null })
+  const stderr = collectStderr()
+  const code = await main({
+    stdin: Readable.from([JSON.stringify({ tool_name: "Bash", tool_input: { command: "ls" } })]),
+    stderr,
+    argv: { read: io.read }
+  })
+  assert.equal(code, 0)
+  assert.match(stderr.text(), /degraded/)
+})
+
+test("no counting happens outside a run", () => {
+  const io = records({ state: runStateOf() })
+  const result = bash("git status", io)
+  assert.equal(result.callCount, null)
+  assert.equal(result.degraded, null)
+  assert.deepEqual(countsIn(io), {}, "no run, no counter file")
+})
+
+test("recordCall is the counter's only entry point and returns its key", () => {
+  const io = records({ lock: LOCK_CONTENTS, state: runStateOf() })
+  const first = recordCall("/root", { runId: "graph-9", node: "close", attempt: 4 }, io)
+  assert.equal(first.key, "graph-9/close/4")
+  assert.equal(first.count, 1)
+  const second = recordCall("/root", { runId: "graph-9", node: "close", attempt: 4 }, io)
+  assert.equal(second.count, 2)
 })
 
 test("a deny exits 2 with the reason on stderr", async () => {

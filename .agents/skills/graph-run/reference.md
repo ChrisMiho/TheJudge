@@ -8,17 +8,17 @@ described below. The controlling predicate `graph-run is controlling` must
 appear in the dispatch prompt — the `thejudge-*` phase skills check for it and
 otherwise run interactively.
 
-| # | Node | Delegate | Model | On success | On failure |
-| --- | --- | --- | --- | --- | --- |
-| 1 | `preflight` | `/graph-preflight --branch <name>` | haiku | `shape` | park |
-| 2 | `shape` | `/thejudge-kickoff` | sonnet | `define` | park |
-| 3 | `define` | `/thejudge-refinement` | opus | `gate-qc`, **or park on any `PRD/sections/` diff** | park |
-| 4 | `gate-qc` | `/thejudge-quality-check` | sonnet | `plan` | `define`, max 3 loops |
-| 5 | `plan` | `/thejudge-map-out` | sonnet | `build` | park |
-| 6 | `build` | `/thejudge-implement-all` | sonnet | `review` | park |
-| 7 | `review` | `superpowers:requesting-code-review` | opus | `land` | `build` for Critical/Important, max 2 loops |
-| 8 | `land` | human PR merge | — | `close` | park |
-| 9 | `close` | `/thejudge-cleanup` | sonnet | complete | park |
+| # | Node | Delegate | Model | Cap | On success | On failure |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | `preflight` | `/graph-preflight --branch <name>` | haiku | 40 | `shape` | park |
+| 2 | `shape` | `/thejudge-kickoff` | sonnet | 60 | `define` | park |
+| 3 | `define` | `/thejudge-refinement` | opus | 150 | `gate-qc`, **or park on any `PRD/sections/` diff** | park |
+| 4 | `gate-qc` | `/thejudge-quality-check` | sonnet | 60 | `plan` | `define`, max 3 loops |
+| 5 | `plan` | `/thejudge-map-out` | sonnet | 120 | `build` | park |
+| 6 | `build` | `/thejudge-implement-all` | sonnet | 600 | `review` | park |
+| 7 | `review` | `superpowers:requesting-code-review` | opus | 120 | `land` | `build` for Critical/Important, max 2 loops |
+| 8 | `land` | human PR merge | — | — | `close` | park |
+| 9 | `close` | `/thejudge-cleanup` | sonnet | 120 | complete | park |
 
 Every dispatch prompt in this table carries an absolute `Working directory:`
 line on its own line, and instructs the node to copy that line unchanged into

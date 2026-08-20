@@ -46,17 +46,28 @@ attests which orchestrator is running.
 
 ## Node table
 
-| # | Node | Delegates to | Model | Advances to |
-| --- | --- | --- | --- | --- |
-| 1 | `preflight` | `graph-preflight` | haiku | `shape` |
-| 2 | `shape` | `thejudge-kickoff` | sonnet | `define` |
-| 3 | `define` | `thejudge-refinement` | opus | `gate-qc` |
-| 4 | `gate-qc` | `thejudge-quality-check` | sonnet | `plan` on PASS, `define` on FAIL — except a fourth FAIL, which parks at `owner-action` |
-| 5 | `plan` | `thejudge-map-out` | sonnet | `build` |
-| 6 | `build` | `thejudge-implement-all` | sonnet | `review` |
-| 7 | `review` | `superpowers:requesting-code-review` | opus | `land` on approval, `build` on Critical/Important |
-| 8 | `land` | human (PR merge) | — | `close` |
-| 9 | `close` | `thejudge-cleanup` | sonnet | run complete |
+| # | Node | Delegates to | Model | Cap | Advances to |
+| --- | --- | --- | --- | --- | --- |
+| 1 | `preflight` | `graph-preflight` | haiku | 40 | `shape` |
+| 2 | `shape` | `thejudge-kickoff` | sonnet | 60 | `define` |
+| 3 | `define` | `thejudge-refinement` | opus | 150 | `gate-qc` |
+| 4 | `gate-qc` | `thejudge-quality-check` | sonnet | 60 | `plan` on PASS, `define` on FAIL — except a fourth FAIL, which parks at `owner-action` |
+| 5 | `plan` | `thejudge-map-out` | sonnet | 120 | `build` |
+| 6 | `build` | `thejudge-implement-all` | sonnet | 600 | `review` |
+| 7 | `review` | `superpowers:requesting-code-review` | opus | 120 | `land` on approval, `build` on Critical/Important |
+| 8 | `land` | human (PR merge) | — | — | `close` |
+| 9 | `close` | `thejudge-cleanup` | sonnet | 120 | run complete |
+
+`Cap` is the tool-call budget for **one dispatch** of that node. The hook counts
+every tool call against `<run id>/<node>/<attempt>` and denies once the cap is
+reached; the run parks at `owner-action` with the node, the cap, and the observed
+count as evidence. A loop-back is a new attempt with a fresh budget, so this is
+never a third loop limit — the three-FAIL and two-return caps below stay the only
+bound on how many dispatches happen. `land` has no cap because the driver never
+dispatches it.
+
+This table is the authority. `graph-run/reference.md` mirrors it; when they
+disagree, the contract wins.
 
 Model rationale: mechanical and deterministic nodes take the cheapest capable
 model; nodes whose output is judgment the run cannot recover from — product

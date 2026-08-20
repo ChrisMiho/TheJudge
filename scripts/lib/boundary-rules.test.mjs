@@ -4,13 +4,17 @@ import test from "node:test"
 import {
   COPY_COMMANDS,
   DESTRUCTIVE_COMMANDS,
+  NODE_CALL_CAPS,
   PROTECTED_BRANCHES,
   RULES,
   RUN_LOCK_PATH,
   RUN_RECORD_PATHS,
   WRAPPER_COMMANDS,
+  callCountKey,
+  capForNode,
   classifyToolCall,
   isRunActive,
+  parseRunState,
   extractRedirections,
   normalizeCommand,
   splitSegments,
@@ -182,4 +186,124 @@ test("a non-Bash tool with no path fields is allowed", () => {
 test("an absent tool input does not throw", () => {
   assert.equal(classifyToolCall({ toolName: "Bash" }).decision, "allow")
   assert.equal(classifyToolCall().decision, "allow")
+})
+
+// ---------------------------------------------------------------------------
+// Slice D — the per-dispatch tool-call cap.
+// ---------------------------------------------------------------------------
+
+const NODES = [
+  "preflight",
+  "shape",
+  "define",
+  "gate-qc",
+  "plan",
+  "build",
+  "review",
+  "land",
+  "close"
+]
+
+test("every node in the contract's table carries a cap value", () => {
+  assert.deepEqual(Object.keys(NODE_CALL_CAPS), NODES)
+  for (const node of NODES) {
+    const cap = capForNode(node)
+    if (node === "land") {
+      assert.equal(cap, null, "node 8 is a human PR merge and is never dispatched")
+      continue
+    }
+    assert.ok(Number.isInteger(cap) && cap > 0, `${node} needs a positive integer cap`)
+  }
+})
+
+test("an unknown node has no cap rather than a default one", () => {
+  assert.equal(capForNode("not-a-node"), null)
+  assert.equal(capForNode(undefined), null)
+})
+
+test("run state parses only when every attribution field is present", () => {
+  assert.deepEqual(parseRunState('{"runId":"r","node":"build","attempt":2}'), {
+    runId: "r",
+    node: "build",
+    attempt: 2
+  })
+  for (const bad of [
+    null,
+    undefined,
+    "",
+    "{ not json",
+    "[]",
+    "null",
+    '{"runId":"r","node":"build"}',
+    '{"runId":"r","attempt":1}',
+    '{"node":"build","attempt":1}',
+    '{"runId":"r","node":"build","attempt":"2"}'
+  ]) {
+    assert.equal(parseRunState(bad), null, `must not attribute: ${JSON.stringify(bad)}`)
+  }
+})
+
+test("the counter key carries run id, node, and attempt", () => {
+  assert.equal(callCountKey({ runId: "graph-1", node: "plan", attempt: 3 }), "graph-1/plan/3")
+})
+
+function capped({ node = "plan", attempt = 1, callCount, runActive = true }) {
+  return classifyToolCall({
+    toolName: "Bash",
+    toolInput: { command: "git status" },
+    runActive,
+    runState: { runId: "graph-1", node, attempt },
+    callCount
+  })
+}
+
+test("the deny fires exactly at the cap and not before", () => {
+  const cap = capForNode("plan")
+  assert.equal(capped({ callCount: cap - 1 }).decision, "allow")
+  const denied = capped({ callCount: cap })
+  assert.equal(denied.decision, "deny")
+  assert.equal(denied.rule, "tool-call-cap")
+  assert.equal(denied.tier, "graph")
+})
+
+test("the reason names the node, the attempt, and the count", () => {
+  const denied = capped({ node: "build", attempt: 2, callCount: capForNode("build") })
+  assert.match(denied.reason, /build/)
+  assert.match(denied.reason, /attempt 2/)
+  assert.match(denied.reason, new RegExp(String(capForNode("build"))))
+  assert.match(denied.reason, /owner-action/, "an overrun parks; it does not invent a state")
+})
+
+test("the verdict reports the node, attempt, and count it counted against", () => {
+  const observed = capped({ node: "define", attempt: 3, callCount: 7 })
+  assert.equal(observed.node, "define")
+  assert.equal(observed.attempt, 3)
+  assert.equal(observed.callCount, 7)
+})
+
+test("a node with no cap is never capped", () => {
+  assert.equal(capped({ node: "land", callCount: 100000 }).decision, "allow")
+})
+
+test("an unattributable call is never capped", () => {
+  const unattributed = classifyToolCall({
+    toolName: "Bash",
+    toolInput: { command: "git status" },
+    runActive: true,
+    runState: null,
+    callCount: null
+  })
+  assert.equal(unattributed.decision, "allow")
+})
+
+test("the cap does not fire outside a run", () => {
+  assert.equal(capped({ callCount: capForNode("plan") + 500, runActive: false }).decision, "allow")
+})
+
+test("build carries the largest budget, land the smallest", () => {
+  // Sanity on the ordering rather than the exact numbers: the node that
+  // implements every slice cannot have a smaller budget than the one that
+  // reads a design brief.
+  assert.ok(capForNode("build") > capForNode("plan"))
+  assert.ok(capForNode("define") > capForNode("gate-qc"))
 })

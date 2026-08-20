@@ -92,6 +92,39 @@ export const RUN_LOCK_PATH = ".worktrees/.graph-run.lock"
 export const RUN_STOP_PATH = ".worktrees/.graph-stop"
 
 /**
+ * The run-state file `graph-run` writes immediately before every node dispatch.
+ *
+ * Deliberately separate from the lock. `parseLockFile()` in
+ * `graph-preflight.mjs` treats an unreadable lock as a hard blocker for the next
+ * run, so rewriting the lock at every node boundary would put the concurrency
+ * guard at risk nine times a run.
+ */
+export const RUN_STATE_PATH = ".worktrees/.graph-run-state.json"
+
+/**
+ * Per-dispatch tool-call budget, by node.
+ *
+ * One dispatch of one node. A loop-back is a new attempt with a fresh budget,
+ * so this is never a third loop limit — the contract's three-FAIL and
+ * two-return caps stay the only bound on how many dispatches happen.
+ *
+ * `land` is `null`: node 8 is a human PR merge and the driver never dispatches
+ * it, so it has no budget to spend. The basis for every other number is recorded
+ * in the slice doc, not asserted here.
+ */
+export const NODE_CALL_CAPS = Object.freeze({
+  preflight: 40,
+  shape: 60,
+  define: 150,
+  "gate-qc": 60,
+  plan: 120,
+  build: 600,
+  review: 120,
+  land: null,
+  close: 120
+})
+
+/**
  * The tools that dispatch a subagent — which is what a node dispatch *is*.
  *
  * Denying these is how the kill switch stops a run that is not reading its own
@@ -389,6 +422,47 @@ function touchesSecrets(value) {
 }
 
 /**
+ * The current node, from the run-state file `graph-run` wrote.
+ *
+ * Pure: the caller reads the file, this decides what it means. Returns `null`
+ * when the file is missing, unparseable, or missing any field needed to
+ * attribute a call — the hook cannot attribute what it cannot read, and says so
+ * rather than guessing the node from the tool call.
+ */
+export function parseRunState(contents) {
+  if (contents === null || contents === undefined) return null
+  try {
+    const parsed = JSON.parse(contents)
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null
+    const runId = typeof parsed.runId === "string" ? parsed.runId : null
+    const node = typeof parsed.node === "string" ? parsed.node : null
+    const attempt = Number.isInteger(parsed.attempt) ? parsed.attempt : null
+    if (runId === null || node === null || attempt === null) return null
+    return { runId, node, attempt }
+  } catch {
+    return null
+  }
+}
+
+/**
+ * The counter key: run id, node, and attempt.
+ *
+ * Attempt is in the key so a loop-back never parks on a budget an earlier
+ * attempt spent, and run id is in it so the count survives park and resume —
+ * neither is keyed to a session.
+ */
+export function callCountKey({ runId, node, attempt }) {
+  return `${runId}/${node}/${attempt}`
+}
+
+/** The budget for a node, or `null` when it has none. */
+export function capForNode(node) {
+  return Object.prototype.hasOwnProperty.call(NODE_CALL_CAPS, node)
+    ? NODE_CALL_CAPS[node]
+    : null
+}
+
+/**
  * Whether the lock file's contents mean a run is active.
  *
  * Pure: the caller reads the file, this decides what it means. A missing or
@@ -540,6 +614,23 @@ export const RULES = Object.freeze([
     }
   },
   {
+    id: "tool-call-cap",
+    tier: "graph",
+    evaluate: (context) => {
+      const { runState, callCount } = context
+      if (runState === null || callCount === null) return null
+      const cap = capForNode(runState.node)
+      if (cap === null) return null
+      if (callCount < cap) return null
+      return (
+        `Node \`${runState.node}\` attempt ${runState.attempt} has reached its ` +
+        `tool-call cap of ${cap} (this call is number ${callCount}). Park at ` +
+        `\`owner-action\` with the node, the cap, and the observed count as ` +
+        `evidence. A loop-back to this node is a new attempt with a fresh budget.`
+      )
+    }
+  },
+  {
     id: "dispatch-after-stop",
     tier: "graph",
     evaluate: (context) =>
@@ -634,7 +725,14 @@ export function toolInputPaths(toolInput) {
 }
 
 /** Everything the rules need to see about one tool call, in one shape. */
-export function callContext({ toolName, toolInput, runActive = false, stopRequested = false } = {}) {
+export function callContext({
+  toolName,
+  toolInput,
+  runActive = false,
+  stopRequested = false,
+  runState = null,
+  callCount = null
+} = {}) {
   const isBash = toolName === "Bash"
   const normalized = isBash
     ? normalizeCommand(toolInput?.command)
@@ -646,7 +744,9 @@ export function callContext({ toolName, toolInput, runActive = false, stopReques
     backgrounded: normalized.backgrounded,
     paths: isBash ? [] : toolInputPaths(toolInput),
     runActive: Boolean(runActive),
-    stopRequested: Boolean(stopRequested)
+    stopRequested: Boolean(stopRequested),
+    runState,
+    callCount
   }
 }
 
@@ -663,6 +763,9 @@ export function classifyToolCall(call = {}) {
   const observations = {
     runActive: context.runActive,
     stopRequested: context.stopRequested,
+    node: context.runState?.node ?? null,
+    attempt: context.runState?.attempt ?? null,
+    callCount: context.callCount,
     trailingAmpersand: context.trailingAmpersand,
     backgrounded: context.backgrounded
   }

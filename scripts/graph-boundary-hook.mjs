@@ -17,15 +17,21 @@
  * the between-node heartbeat, not by blocking the user.
  */
 
-import { readFileSync } from "node:fs"
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import path from "node:path"
 
 import {
   RUN_LOCK_PATH,
+  RUN_STATE_PATH,
   RUN_STOP_PATH,
+  callCountKey,
   classifyToolCall,
-  isRunActive
+  isRunActive,
+  parseRunState
 } from "./lib/boundary-rules.mjs"
+
+/** The counter file. The hook is its sole writer; the graph tier denies the rest. */
+const CALL_COUNT_PATH = ".worktrees/.graph-node-calls.json"
 
 const DENY_EXIT_CODE = 2
 
@@ -66,6 +72,58 @@ export function readRunLock(root, read = readFileSync) {
   }
 }
 
+/** Read a run record, or report its absence. Never throws. */
+function readRecord(root, relative, read) {
+  try {
+    return read(path.join(root, relative), "utf8")
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Increment this attempt's tool-call count and return the new value.
+ *
+ * The hook is the counter file's only writer, which is what makes the count
+ * evidence rather than a self-report: the graph tier denies every other write
+ * to it, so a run can neither reset it nor inflate it.
+ *
+ * The write goes through a temporary file and a rename, so a hook interrupted
+ * mid-write leaves the previous count rather than a truncated file that the
+ * next call would read as "no counts at all".
+ */
+export function recordCall(root, runState, io = {}) {
+  const read = io.read ?? readFileSync
+  const write = io.write ?? writeFileSync
+  const move = io.move ?? renameSync
+  const ensure = io.ensure ?? mkdirSync
+
+  const key = callCountKey(runState)
+  const target = path.join(root, CALL_COUNT_PATH)
+
+  let counts = {}
+  const raw = readRecord(root, CALL_COUNT_PATH, read)
+  if (raw !== null) {
+    try {
+      const parsed = JSON.parse(raw)
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) counts = parsed
+    } catch {
+      // A corrupt counter file restarts the count rather than blocking the run.
+      counts = {}
+    }
+  }
+
+  const next = (Number.isInteger(counts[key]) ? counts[key] : 0) + 1
+  counts[key] = next
+
+  ensure(path.dirname(target), { recursive: true })
+  const temporary = `${target}.${process.pid}.tmp`
+  write(temporary, `${JSON.stringify(counts, null, 2)}\n`, "utf8")
+  move(temporary, target)
+
+  return { key, count: next }
+}
+
 /** Whether the owner's stop sentinel is on disk. Its contents do not matter. */
 export function readStopSentinel(root, read = readFileSync) {
   try {
@@ -77,15 +135,39 @@ export function readStopSentinel(root, read = readFileSync) {
 }
 
 /** Turn the raw payload into a verdict. Exported so the test drives it directly. */
-export function decide(rawPayload, { environment, read } = {}) {
+export function decide(rawPayload, io = {}) {
+  const { environment, read } = io
   const payload = JSON.parse(rawPayload === "" ? "{}" : rawPayload)
   const root = projectRoot(payload, environment ?? process.env)
-  return classifyToolCall({
+  const runActive = isRunActive(readRunLock(root, read))
+
+  // Counting is a run-time concern. With no run holding the lock there is
+  // nothing to attribute a call to, and no budget being spent.
+  let runState = null
+  let callCount = null
+  let degraded = null
+  if (runActive) {
+    runState = parseRunState(readRecord(root, RUN_STATE_PATH, read ?? readFileSync))
+    if (runState === null) {
+      degraded = `no usable run state at ${RUN_STATE_PATH}; the tool-call cap cannot attribute this call and is not enforced`
+    } else {
+      try {
+        callCount = recordCall(root, runState, io).count
+      } catch (error) {
+        degraded = `could not record the tool call (${error?.message ?? error}); the cap is not enforced for this call`
+      }
+    }
+  }
+
+  const verdict = classifyToolCall({
     toolName: payload.tool_name,
     toolInput: payload.tool_input,
-    runActive: isRunActive(readRunLock(root, read)),
-    stopRequested: readStopSentinel(root, read)
+    runActive,
+    stopRequested: readStopSentinel(root, read),
+    runState,
+    callCount
   })
+  return { ...verdict, degraded }
 }
 
 export async function main({ stdin, stderr, argv } = {}) {
@@ -93,7 +175,12 @@ export async function main({ stdin, stderr, argv } = {}) {
   const errorStream = stderr ?? process.stderr
   try {
     const raw = argv?.payload ?? (await readStdin(input))
-    const verdict = decide(raw)
+    const verdict = decide(raw, { environment: argv?.environment, read: argv?.read })
+    if (verdict.degraded) {
+      // Reported, never silent: a cap that quietly stopped counting looks
+      // exactly like a run that stayed inside it.
+      errorStream.write(`[graph-boundary] degraded: ${verdict.degraded}\n`)
+    }
     if (verdict.decision === "deny") {
       errorStream.write(`[graph-boundary] ${verdict.reason}\n`)
       return DENY_EXIT_CODE
