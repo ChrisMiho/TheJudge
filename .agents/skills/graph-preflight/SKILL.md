@@ -29,6 +29,28 @@ Read `PRD/instructions/graph-workflow-contract.md` before acting.
   run — the default is timestamped to the second, so omitting it gives the two
   invocations different ids.
 
+## The liveness canary
+
+The script prints the canary command and leaves it `pending`. It cannot issue it
+itself — a canary is a *tool call*, and only the agent running through the
+harness can make one.
+
+So: issue `CANARY_COMMAND` as a real `Bash` tool call and require the hook to
+**deny** it. The reason text the hook returns is the proof. Then classify the
+result with `classifyCanary()` and report its `ledgerLine`.
+
+The canary targets a non-existent path under `.worktrees/`. If it ever executes
+it removes nothing, prints nothing, and exits 0 — a failed proof costs nothing
+beyond the failed proof.
+
+An allowed canary is **not** a warning to note and continue past. Report the
+`BLOCKED` message verbatim and stop: the run has no enforcer and node 2 must not
+be dispatched. If the workspace was never trusted, pass
+`workspaceTrusted: false` so the message names that condition and its own fix.
+
+Never downgrade to `.claude/graph-profile.json` as a fallback. A failed proof is
+refused.
+
 ## The owner's stop sentinel
 
 Before the lock, before the dry run, and before any mutation:

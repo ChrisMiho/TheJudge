@@ -143,6 +143,41 @@ and so is deleting the sentinel. The halt path itself stays open, because a run
 that could not write its own terminal state would strand exactly the state the
 kill switch exists to avoid.
 
+## Hook liveness
+
+A run never proceeds on an unproven enforcer.
+
+**At run start.** `graph-preflight` issues a canary — a Bash tool call the
+universal tier is defined to deny — and treats the observed deny, the reason
+text the hook returns, as the proof. The canary targets a non-existent path
+under `.worktrees/`, so executing it removes nothing, prints nothing, and exits
+0: an absent hook costs a failed proof and no side effect.
+
+A canary that is **not** denied ends the run at `BLOCKED` before node 2 is
+dispatched, naming what was tried, what came back, and the recovery action. An
+untrusted workspace is a separately named `BLOCKED` condition, because a project
+hook that was never trusted cannot deny anything either — and "your hook is
+broken" and "you never trusted this checkout" have different fixes.
+
+`.claude/graph-profile.json` is **not a fallback**. A failed proof is refused,
+never downgraded to a weaker one.
+
+**Between nodes.** `graph-run` reads `.worktrees/.graph-node-calls.json` before
+and after each node and confirms it advanced. A node that made tool calls while
+the counter stood still means the hook stopped firing mid-run, which the
+run-start canary cannot catch. That ends the run at `BLOCKED` with the node, the
+expected advance, and the observed counter as evidence; the run does not advance.
+
+The heartbeat is read-only over the counter file, whose sole writer is the hook.
+That is what makes it evidence: the driver cannot manufacture its own proof.
+
+A missing or unparseable run-state file leaves no counter key to advance. That is
+a **degraded heartbeat**, not a hook failure — it is reported, the run continues,
+and the run-start canary remains the binding proof.
+
+The ledger records the canary result at run start and the heartbeat at every node
+boundary.
+
 ## Ledger
 
 Every run writes `PRD/work/<slug>/GRAPH-RUN.md`, committed with the run's
@@ -153,15 +188,16 @@ documentation changes:
 
 - Run ID: `graph-<YYYYMMDD>-<HHMMSS>`
 - Profile: `unverified` | `<path> (stated by the user at launch)`
+- Canary: `denied — hook live (<command>)` | `allowed — BLOCKED (<reason>)`
 - Autonomous base: `origin/<branch>`
 - Current node: `<node>`
 - Next action: `/graph-run PRD/work/<slug>/`
 
 ## Node ledger
 
-| # | Node | Model | Outcome | Evidence | Date |
-| --- | --- | --- | --- | --- | --- |
-| 1 | preflight | haiku | ok | branch `<branch>` pushed; stash `graph-preflight/<run-id>` | <date> |
+| # | Node | Model | Outcome | Heartbeat | Evidence | Date |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | preflight | haiku | ok | `0 → 14` | branch `<branch>` pushed; stash `graph-preflight/<run-id>` | <date> |
 
 ## Open gate
 
@@ -180,6 +216,10 @@ documentation changes:
 | "if it asks again, pick the smaller option" | refused | define | No pre-authorization of product decisions |
 | "prefer the existing table over a new one" | answered-once | define | — |
 ```
+
+`Heartbeat` is the counter reading before and after that node, or
+`degraded (no run state)`, or `static at <n> — BLOCKED`. See
+`## Hook liveness` below.
 
 `Outcome` is one of `ok`, `failed`, `parked`. `Evidence` names a command, path,
 PR URL, or artifact URL — never a bare claim. A fresh agent reads this file and

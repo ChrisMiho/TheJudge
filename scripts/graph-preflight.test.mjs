@@ -19,12 +19,15 @@ import {
   formatFailureReport,
   defaultRunId,
   readProfileSentinel,
+  classifyCanary,
+  classifyHeartbeat,
   classifyLock,
   classifyStopSentinel,
   isPidAlive,
   lockRecord,
   parseLockFile,
   PROFILE_SENTINEL_ENV,
+  CANARY_COMMAND,
   LOCK_PATH,
   STOP_PATH,
   DEFAULT_THRESHOLDS,
@@ -1043,4 +1046,103 @@ test("a present stop sentinel refuses the run and names the file to remove", () 
 test("the stop sentinel and the run lock are different files", () => {
   assert.notEqual(STOP_PATH, LOCK_PATH)
   assert.match(STOP_PATH, /^\.worktrees\//)
+})
+
+// ---------------------------------------------------------------------------
+// Slice E — hook liveness, proven at run start and between nodes.
+// ---------------------------------------------------------------------------
+
+test("a denied canary is the proof, and says so in the ledger line", () => {
+  const proven = classifyCanary({ denied: true, response: "rm -rf is denied in every session." })
+  assert.equal(proven.state, "proven")
+  assert.equal(proven.message, null)
+  assert.match(proven.ledgerLine, /denied/)
+  assert.match(proven.ledgerLine, /hook live/)
+})
+
+test("an allowed canary blocks, naming what was tried, what came back, and the fix", () => {
+  const blocked = classifyCanary({ denied: false, response: "(no output, exit 0)" })
+  assert.equal(blocked.state, "blocked")
+  assert.equal(blocked.reason, "canary-not-denied")
+  assert.match(blocked.message, /BLOCKED/)
+  assert.ok(blocked.message.includes(CANARY_COMMAND), "the message must name what was tried")
+  assert.match(blocked.message, /\(no output, exit 0\)/, "and what came back")
+  assert.match(blocked.message, /recovery:/, "and the recovery action")
+  assert.match(blocked.message, /not a fallback/, "the profile is never a downgrade path")
+})
+
+test("an untrusted workspace blocks for its own named reason", () => {
+  // "Your hook is broken" and "you never trusted this checkout" have completely
+  // different recovery actions, so they must not collapse into one message.
+  const untrusted = classifyCanary({ denied: false, workspaceTrusted: false })
+  assert.equal(untrusted.state, "blocked")
+  assert.equal(untrusted.reason, "untrusted-workspace")
+  assert.match(untrusted.message, /not trusted/)
+  assert.match(untrusted.message, /trust this checkout/)
+
+  const plain = classifyCanary({ denied: false })
+  assert.notEqual(untrusted.reason, plain.reason)
+  assert.notEqual(untrusted.message, plain.message)
+})
+
+test("a trusted workspace with a denied canary is still proven", () => {
+  assert.equal(classifyCanary({ denied: true, workspaceTrusted: false }).state, "proven")
+})
+
+test("the canary is denied by the universal tier and is inert if it runs", () => {
+  // Both halves matter. A canary the tier does not deny proves nothing, and a
+  // canary with a side effect is not a proof worth running.
+  assert.match(CANARY_COMMAND, /^rm -rf /, "must be a universal-tier deny")
+  assert.match(CANARY_COMMAND, /\.worktrees\//, "must target the ignored run-record directory")
+  assert.match(CANARY_COMMAND, /nonexistent/, "must target a path that does not exist")
+})
+
+test("a heartbeat that advanced passes and records the span", () => {
+  const ok = classifyHeartbeat({ node: "plan", before: 3, after: 21 })
+  assert.equal(ok.state, "ok")
+  assert.equal(ok.message, null)
+  assert.match(ok.ledgerLine, /3 → 21/)
+  assert.match(ok.ledgerLine, /plan/)
+})
+
+test("a static counter with calls made blocks, with the expected and observed values", () => {
+  const blocked = classifyHeartbeat({ node: "build", before: 40, after: 40 })
+  assert.equal(blocked.state, "blocked")
+  assert.match(blocked.message, /BLOCKED/)
+  assert.match(blocked.message, /build/)
+  assert.match(blocked.message, /advance past 40/, "the expected advance")
+  assert.match(blocked.message, /observed: 40/, "the observed counter")
+  assert.match(blocked.message, /does not advance/)
+})
+
+test("a node that made no tool calls has nothing to prove", () => {
+  const ok = classifyHeartbeat({ node: "land", before: 7, after: 7, toolCallsMade: false })
+  assert.equal(ok.state, "ok")
+  assert.match(ok.ledgerLine, /nothing to prove/)
+})
+
+test("a missing run-state file is a degraded heartbeat, not a hook failure", () => {
+  const degraded = classifyHeartbeat({
+    node: "plan",
+    before: 0,
+    after: 0,
+    runStatePresent: false
+  })
+  assert.equal(degraded.state, "degraded")
+  assert.match(degraded.message, /not a hook failure/)
+  assert.match(degraded.message, /canary remains the binding proof/)
+  assert.match(degraded.ledgerLine, /degraded/)
+})
+
+test("a degraded heartbeat never reports as blocked, so the run continues", () => {
+  for (const toolCallsMade of [true, false]) {
+    const degraded = classifyHeartbeat({
+      node: "define",
+      before: 5,
+      after: 5,
+      runStatePresent: false,
+      toolCallsMade
+    })
+    assert.equal(degraded.state, "degraded")
+  }
 })

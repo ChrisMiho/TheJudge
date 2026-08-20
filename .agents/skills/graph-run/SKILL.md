@@ -235,6 +235,27 @@ the halt path open — the ledger write, the status marker, the board row, and t
 commit all still work — and it denies deleting the sentinel, so a run cannot
 clear the switch to keep going.
 
+## Hook liveness
+
+Node 1 proves the hook is firing with a canary before node 2 is dispatched — see
+`graph-preflight`. Record its result on the ledger's `Canary:` line. A canary
+that was not denied ends the run at `BLOCKED`; the run does not start.
+
+**Between every node**, read `.worktrees/.graph-node-calls.json` before and after
+the node and confirm it advanced. Pass both readings to `classifyHeartbeat()` and
+record its `ledgerLine` in the node ledger's `Heartbeat` column.
+
+- Advanced → `ok`, continue.
+- Static while the node made tool calls → **`BLOCKED`**. The hook stopped firing
+  mid-run and the node ran unenforced for an unknown span. The run does not
+  advance.
+- No usable run state → **degraded**, not a hook failure. Report it, continue,
+  and treat the run-start canary as the binding proof.
+
+Read the counter; never write it. The hook is its sole writer, and that is the
+only reason the heartbeat counts as evidence rather than as the run vouching for
+itself.
+
 ## Tool-call caps
 
 Every node carries a per-dispatch tool-call budget — the `Cap` column of the node

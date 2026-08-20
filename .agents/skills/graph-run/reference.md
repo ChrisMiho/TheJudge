@@ -20,6 +20,11 @@ otherwise run interactively.
 | 8 | `land` | human PR merge | — | — | `close` | park |
 | 9 | `close` | `/thejudge-cleanup` | sonnet | 120 | complete | park |
 
+Before dispatching node 2, node 1 must have proven the hook is live with a
+denied canary. Between every node, confirm `.worktrees/.graph-node-calls.json`
+advanced. Both are specified in `PRD/instructions/graph-workflow-contract.md`
+under `## Hook liveness`, which is the authority.
+
 Every dispatch prompt in this table carries an absolute `Working directory:`
 line on its own line, and instructs the node to copy that line unchanged into
 every prompt it writes. A node fans out to its own subagents; without the

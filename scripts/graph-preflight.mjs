@@ -6,6 +6,8 @@
 
 import { execFileSync } from "node:child_process"
 import { existsSync } from "node:fs"
+
+import { CANARY_COMMAND } from "./lib/boundary-rules.mjs"
 import { pathToFileURL } from "node:url"
 
 export const DEFAULT_THRESHOLDS = { maxFiles: 10, maxLines: 200 }
@@ -463,6 +465,127 @@ export function classifyStopSentinel({ present }) {
   }
 }
 
+/**
+ * The canary the run issues to prove its own enforcer is firing.
+ *
+ * Re-exported rather than restated: the command literal lives in
+ * `boundary-rules.mjs` with every other one in this system, so the canary and
+ * the rule that denies it can never drift apart.
+ */
+export { CANARY_COMMAND }
+
+/**
+ * Whether the canary proved the hook is live.
+ *
+ * A canary that was *denied* is the proof — the hook returned a reason, which
+ * only a firing hook can do. A canary that was *allowed* is not a warning to
+ * note and continue past: the run has no working enforcer, so it ends at
+ * `BLOCKED` before node 2 is ever dispatched.
+ *
+ * `.claude/graph-profile.json` is deliberately not a fallback here. A failed
+ * proof is refused, never downgraded to a weaker one.
+ */
+export function classifyCanary({ denied, response, workspaceTrusted = true }) {
+  if (denied) {
+    return {
+      state: "proven",
+      message: null,
+      ledgerLine: `Canary: denied — hook live (\`${CANARY_COMMAND}\`)`
+    }
+  }
+
+  // An untrusted workspace cannot run project hooks at all, so it fails the
+  // canary the same way a missing hook does. Naming it separately is the point:
+  // "your hook is broken" and "you never trusted this checkout" have completely
+  // different recovery actions.
+  if (!workspaceTrusted) {
+    return {
+      state: "blocked",
+      reason: "untrusted-workspace",
+      message:
+        `graph-preflight: BLOCKED — the workspace is not trusted, so project ` +
+        `hooks never load and the boundary hook cannot deny anything.\n` +
+        `  tried:    ${CANARY_COMMAND}\n` +
+        `  response: ${response ?? "(allowed — no hook reason returned)"}\n` +
+        `  recovery: trust this checkout in Claude Code, then re-run preflight. ` +
+        `Do not start the run until the canary is denied.`,
+      ledgerLine: "Canary: allowed — BLOCKED (untrusted workspace)"
+    }
+  }
+
+  return {
+    state: "blocked",
+    reason: "canary-not-denied",
+    message:
+      `graph-preflight: BLOCKED — the liveness canary was not denied, so the ` +
+      `boundary hook is not firing. The run has no enforcer and must not start.\n` +
+      `  tried:    ${CANARY_COMMAND}\n` +
+      `  response: ${response ?? "(allowed — no hook reason returned)"}\n` +
+      `  recovery: confirm .claude/settings.json registers the PreToolUse hook ` +
+      `and that scripts/graph-boundary-hook.mjs runs, then re-run preflight. ` +
+      `The permission profile is not a fallback — a failed proof is refused, ` +
+      `never downgraded.`,
+    ledgerLine: "Canary: allowed — BLOCKED (hook not firing)"
+  }
+}
+
+/**
+ * Whether the hook was still firing during the node that just finished.
+ *
+ * Read-only over the counter file, whose sole writer is the hook. That is what
+ * makes the heartbeat evidence: the driver cannot manufacture its own proof.
+ *
+ * A node that made tool calls while the counter stood still means the hook
+ * stopped firing mid-run, which the canary at run start cannot catch.
+ */
+export function classifyHeartbeat({
+  node,
+  before,
+  after,
+  runStatePresent = true,
+  toolCallsMade = true
+}) {
+  if (!runStatePresent) {
+    return {
+      state: "degraded",
+      message:
+        `graph-run: degraded heartbeat at node \`${node}\` — no usable run ` +
+        `state, so there was no counter key to advance. This is not a hook ` +
+        `failure. The run-start canary remains the binding proof.`,
+      ledgerLine: `Heartbeat: degraded (no run state) at \`${node}\``
+    }
+  }
+
+  if (after > before) {
+    return {
+      state: "ok",
+      message: null,
+      ledgerLine: `Heartbeat: ${before} → ${after} at \`${node}\``
+    }
+  }
+
+  if (!toolCallsMade) {
+    return {
+      state: "ok",
+      message: null,
+      ledgerLine: `Heartbeat: no tool calls at \`${node}\` — nothing to prove`
+    }
+  }
+
+  return {
+    state: "blocked",
+    message:
+      `graph-run: BLOCKED — the boundary hook stopped firing during node ` +
+      `\`${node}\`.\n` +
+      `  expected: the counter to advance past ${before}\n` +
+      `  observed: ${after}\n` +
+      `  meaning:  the node made tool calls that no hook saw, so the run has ` +
+      `been unenforced for an unknown span. The run does not advance.\n` +
+      `  recovery: re-run the liveness canary, repair the hook, then resume.`,
+    ledgerLine: `Heartbeat: static at ${after} during \`${node}\` — BLOCKED`
+  }
+}
+
 /** The record a run writes when it takes the lock. */
 export function lockRecord({ slug, runId, pid, now }) {
   return JSON.stringify({ slug, runId, pid, startedAt: now }, null, 2) + "\n"
@@ -500,6 +623,11 @@ function main(argv) {
   const sentinel = readProfileSentinel()
   console.log(`profile sentinel: ${sentinel.present ? "present" : "absent"}`)
   console.log(sentinel.ledgerLine)
+  // The canary is a *tool call*, which a script cannot make — only the agent
+  // running through the harness can. So the script names it and the skill
+  // issues it, then classifies the result with `classifyCanary()`.
+  console.log(`canary command: ${CANARY_COMMAND}`)
+  console.log("canary: pending — issue it as a Bash tool call and require a deny")
   console.log(`action: ${classification.action}`)
   console.log(`reason: ${classification.reason}`)
   console.log(`files: ${classification.fileCount}`)

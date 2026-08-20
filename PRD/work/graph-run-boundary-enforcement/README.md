@@ -33,7 +33,7 @@ and `GAMEPLAN.md` for the architecture and verification checklist.
 | [B](./slice-b-graph-tier.md) ✅ | Graph tier gated by the run lock | REQ-153, REQ-152, NFR-016 | A |
 | [C](./slice-c-kill-switch.md) ✅ | Owner kill switch with a clean halt | REQ-154, FLOW-020 | A |
 | [D](./slice-d-tool-call-cap.md) ✅ | Per-dispatch tool-call cap | REQ-156 | A |
-| [E](./slice-e-hook-liveness.md) | Canary at run start, heartbeat between nodes | REQ-159, NFR-016 | A, B, D |
+| [E](./slice-e-hook-liveness.md) ✅ | Canary at run start, heartbeat between nodes | REQ-159, NFR-016 | A, B, D |
 | [F](./slice-f-default-fail-criteria.md) | Slice criteria start `false`, flip on observed evidence | REQ-157 | A, B |
 | [G](./slice-g-independent-reviewer.md) | Node 7 reviewer with no write tools | REQ-155 | — |
 | [H](./slice-h-no-preauth-reread.md) | No-pre-authorization rule re-read at every dispatch | REQ-158 | — |

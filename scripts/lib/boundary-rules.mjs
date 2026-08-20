@@ -50,6 +50,18 @@ export const WRAPPER_COMMANDS = Object.freeze([
   "env"
 ])
 
+/**
+ * The liveness canary: a command the universal tier denies, and which would do
+ * nothing at all if it ever executed.
+ *
+ * Inertness is the whole design constraint. The canary exists to prove the hook
+ * is wired, and a proof that has a side effect when it fails is not a proof
+ * worth running. `rm -rf` on a path that does not exist under `.worktrees/` —
+ * which `.gitignore` already covers — removes nothing, prints nothing, and
+ * exits 0. So an absent hook costs a failed proof and no more.
+ */
+export const CANARY_COMMAND = "rm -rf .worktrees/.graph-canary-nonexistent"
+
 /** Commands whose very presence at a segment head is denied. */
 export const DENIED_COMMANDS = Object.freeze(["sudo", "pkill", "killall"])
 
