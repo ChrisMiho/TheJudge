@@ -1,0 +1,65 @@
+{
+  "slug": "graph-run-boundary-enforcement",
+  "slice": "A",
+  "criteria": [
+    {
+      "id": "A1",
+      "statement": "`node --test scripts/graph-boundary-hook.test.mjs` passes, covering: each universal-tier rule denied; `cp`, `rsync`, and `>` redirection into a protected path denied; `nohup`-wrapped commands unwrappe",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/graph-boundary-hook\\.test\\.mjs"
+      }
+    },
+    {
+      "id": "A2",
+      "statement": "Live proof, not only unit proof: in a session launched with no `--settings` flag, a `Bash` call the universal tier denies returns the hook's reason. Record the exact command tried and the reason text ",
+      "value": true,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "A3",
+      "statement": "The same denial fires from inside a dispatched subagent, not only at top level. Record the subagent dispatch and the returned reason.",
+      "value": true,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "A4",
+      "statement": "`grep -n \"CLAUDE.md\\|\\.claude/settings\\|thejudge-\\|\\.secrets/\" scripts/graph-boundary-hook.mjs` returns nothing \u2014 the literals live in `boundary-rules.mjs`.",
+      "value": true,
+      "evidence": {
+        "command": "grep -n .*graph-boundary-hook\\.mjs",
+        "paths": [
+          "scripts/graph-boundary-hook.mjs"
+        ]
+      }
+    },
+    {
+      "id": "A5",
+      "statement": "`npm run test:scripts` green, including `scripts/protected-write-guard.test.mjs`.",
+      "value": true,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
+    },
+    {
+      "id": "A6",
+      "statement": "`bypassPermissions` measured, not assumed. Issue one universal-tier denial in a session running `permission_mode: \"bypassPermissions\"` and record the observed result verbatim \u2014 denied or allowed \u2014 wit",
+      "value": true,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "A7",
+      "statement": "An ordinary session performs a normal edit, a `git status`, and a `npm run test:scripts` with no denial and no perceptible delay (NFR-016).",
+      "value": true,
+      "evidence": {
+        "manual": true
+      }
+    }
+  ]
+}

@@ -43,6 +43,8 @@ post-merge handoff remains
 
 - `PRD/work/<slug>/GAMEPLAN.md` — architecture, data flow, verification checklist
 - `PRD/work/<slug>/slice-a-*.md` … `slice-n-*.md`
+- `PRD/work/<slug>/slice-<letter>.criteria.json` — one per slice, emitted from that
+  slice's `## Acceptance criteria` list. Schema and worked example in `reference.md`.
 - Update `PRD/work/<slug>/README.md` — slice table, implementation map, `status: active`
 - Empty marker `STATUS.active` (replace any prior STATUS.*); board row under `## active` in `PRD/work/STATUS.md`
 
@@ -51,6 +53,14 @@ post-merge handoff remains
 - One primary objective per slice; explicit dependencies stated in the README table.
 - Each slice: Status, Goal, Requirements, Files touched, Tests, Acceptance criteria.
 - Each acceptance criterion must be verifiable — a test command or an explicit manual check.
+- Every criterion also gets an entry in the slice's `.criteria.json`, with
+  `value` initialised `false` and an `evidence` block naming the command pattern
+  or the file paths that prove it. Author the block **beside the criterion**, in
+  the same pass — it is written once with the criterion, never maintained as a
+  second list that drifts.
+- A criterion no command can prove is marked `"manual": true`. Its evidence event
+  is a dated observation line naming the criterion id, written into the slice's
+  evidence log. That proves the check *happened*, not that it passed.
 - For any slice with browser-observable risk per `runtime-process-hygiene.md`, encode the exact scenarios, viewports, and observations/measurements to check as acceptance criteria, plus a cleanup-evidence acceptance criterion (browser closed, owned server(s) stopped, ports released, capture output path recorded).
 - Default parallel-ready; sequential only with a stated blocker.
 - Final slice carries the PRD promotion checklist (execution happens in cleanup) and the Ship gates block from `reference.md`.

@@ -93,7 +93,7 @@ behavior they carry.
 | Skill | When | Writes | Delegates to |
 | --- | --- | --- | --- |
 | `graph-preflight` | Before an autonomous run, to guarantee a clean freshly branched checkout | Auto-commit or stash, new pushed branch, handoff record | `scripts/graph-preflight.mjs` |
-| `graph-run` | Advancing one package through the full lifecycle without per-step input | `PRD/work/<slug>/GRAPH-RUN.md` ledger, package README `## Autonomous metadata` and `## Preparation gate`, status transitions, gate parks | `graph-preflight`, then 6 of the 11 phase skills — `thejudge-kickoff`, `-refinement`, `-quality-check`, `-map-out`, `-implement-all`, `-cleanup` — plus `superpowers:requesting-code-review` |
+| `graph-run` | Advancing one package through the full lifecycle without per-step input | `PRD/work/<slug>/GRAPH-RUN.md` ledger, package README `## Autonomous metadata` and `## Preparation gate`, status transitions, gate parks | `graph-preflight`, the boundary hook (`scripts/graph-boundary-hook.mjs`, always on), then 6 of the 11 phase skills — `thejudge-kickoff`, `-refinement`, `-quality-check`, `-map-out`, `-implement-all`, `-cleanup` — plus a no-write reviewer subagent at node 7 |
 | `graph-gate-review` | After a run parks at the `define` gate, to walk the recorded `PRD/sections/` diff one stable ID at a time | `GRAPH-RUN.md`'s `## Gate verdicts` and resolved `## Open gate`, the restored `STATUS.*` marker and board row, and `PRD/sections/` edits — only to apply an owner verdict | nothing; it never dispatches and never advances a node |
 
 Graph runs load `.claude/graph-profile.json` as their permission profile:

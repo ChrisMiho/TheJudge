@@ -41,7 +41,8 @@ boundaries are required.
    stop to ask the user questions.
 3. Dispatch the node's delegate as a subagent using the model from the node
    table, except node 8 (`land`), which the driver never dispatches — see
-   reference.md. Pass the package path, the run ID, the controlling predicate,
+   reference.md. Node 7 is not a skill: it is a no-write reviewer subagent whose
+   exact dispatch shape is in reference.md under `## Node 7 dispatch shape`. Pass the package path, the run ID, the controlling predicate,
    and an absolute `Working directory:` line on its own line. Require the node
    to copy that same line, unchanged, into every prompt it writes.
 
@@ -170,15 +171,136 @@ and never something to restate as a decision rule in a dispatch prompt.
 - Record every instruction you *did* act on as a row classified
   `answered-once`. There is no third class: a standing rule has no
   representable form, so a run that made one cannot write it down.
-- Run `node scripts/graph-ledger-check.mjs PRD/work/<slug>/GRAPH-RUN.md` and
-  require it green **before every node dispatch**, not after. It reads
-  `## Dispatch prompts` and `## Instruction ledger`. Both are written by you,
-  so a green result is a schema check over your own report — never cite it as
-  proof you did not pre-authorize.
+- Every dispatch runs the ordered `## Pre-dispatch sequence` below first. Step 2
+  of it re-reads this rule from the contract, because a rule held only in context
+  is a rule compaction can take away halfway through a long run.
 
 Autonomy means not being interrupted by mechanics — branching, stashing,
 sequencing, commits, PR plumbing. It is never authority to decide product
 behavior for the user.
+
+## Halting on the owner's stop sentinel
+
+The owner stops a run in flight by creating `.worktrees/.graph-stop`. Ctrl-C
+strands the lock mid-node and leaves no record of why; this does not.
+
+Check for the sentinel immediately before every node dispatch. A sentinel that
+appears mid-node lets that node finish — the halt is at the node boundary, so
+no ledger is ever left half written.
+
+On finding it, halt in this order:
+
+1. Write the terminal state from the `## Terminal states` table below. Read the
+   state from that table; do not add a fifth one, and do not restate the table
+   here.
+2. Record the halt under `## Open gate` in `GRAPH-RUN.md`: that the owner
+   stopped the run, the node it halted at, and the evidence.
+3. Set the package `STATUS.*` marker to match.
+4. Update the package's row in `PRD/work/STATUS.md`.
+5. Delete `.worktrees/.graph-run.lock` — the release every terminal state
+   requires.
+6. Report the branch, the PR URL if one exists, and the ledger path.
+
+Resume with `/graph-run PRD/work/<slug>/` after removing the sentinel. The run
+re-enters at the node the ledger records. `graph-preflight` refuses to start
+while the sentinel exists, so a halted run is not silently restarted by the next
+invocation.
+
+If the sentinel and a gate park coincide, **the park wins**: it already carries
+the owner's question and the resume command, and a halt written over it would
+lose both.
+
+The boundary hook is the backstop, not the mechanism. While the lock is held and
+the sentinel exists it denies `Task` and `Agent` calls outright, so a driver that
+ignores its own check cannot dispatch another node anyway. It deliberately keeps
+the halt path open — the ledger write, the status marker, the board row, and the
+commit all still work — and it denies deleting the sentinel, so a run cannot
+clear the switch to keep going.
+
+## Pre-dispatch sequence
+
+One ordered block, run before **every** node dispatch — not once at run start.
+Three of these steps used to sit in three different places; scattered
+instructions are how a step gets skipped on the seventh node of a nine-node run.
+
+1. **Kill switch.** Check for `.worktrees/.graph-stop`. Present → halt at this
+   boundary; see `## Halting on the owner's stop sentinel`.
+2. **Re-read the no-pre-authorization rule.** Read
+   `### No pre-authorization of product decisions` from
+   `PRD/instructions/graph-workflow-contract.md`, by that exact heading, and hold
+   it while writing this dispatch prompt.
+
+   Read it **every time**, not once at run start. The failure this prevents is
+   specific: on a long run the rule falls out of context to compaction, and the
+   node where it matters most is the one furthest from where it was read.
+
+   The rule's text lives in the contract and nowhere else. This file points at
+   it; it does not restate it. A second copy drifts, and then two rules disagree
+   about what the driver may do. If that heading ever stops existing, this step
+   fails loudly rather than quietly reading nothing — which is why it names the
+   heading rather than a line number or a vague "the boundaries section".
+
+   It is deliberately **not** in `CLAUDE.md`. It governs autonomous runs, not
+   every ordinary session in this repository, and that file is diluted enough.
+3. **Ledger check.** Run
+   `node scripts/graph-ledger-check.mjs PRD/work/<slug>/GRAPH-RUN.md` and require
+   it green. It reads `## Dispatch prompts` and `## Instruction ledger`. Both are
+   written by you, so a green result is a schema check over your own report —
+   never cite it as proof you did not pre-authorize.
+4. **Run-state write.** Write `.worktrees/.graph-run-state.json`:
+   `{ "runId": "<run id>", "node": "<node about to be dispatched>", "attempt":
+   <attempt number for that node> }`. You are that file's only writer. The hook
+   reads it to learn which node to count against; it never parses `GRAPH-RUN.md`
+   and never infers the node from the tool call. Without it the cap cannot
+   attribute the call, and the hook says so on every call rather than enforcing a
+   guess.
+
+   Keep it separate from the lock. `parseLockFile()` treats an unreadable lock as
+   a hard blocker for the next run, so rewriting the lock nine times a run would
+   put the concurrency guard at risk that many times.
+
+   A loop-back — `define` on a `gate-qc` FAIL, `build` on a `review` finding — is
+   a new attempt: increment `attempt`, and the node starts on a fresh budget.
+5. **Dispatch.** Only now.
+
+## Hook liveness
+
+Node 1 proves the hook is firing with a canary before node 2 is dispatched — see
+`graph-preflight`. Record its result on the ledger's `Canary:` line. A canary
+that was not denied ends the run at `BLOCKED`; the run does not start.
+
+**Between every node**, read `.worktrees/.graph-node-calls.json` before and after
+the node and confirm it advanced. Pass both readings to `classifyHeartbeat()` and
+record its `ledgerLine` in the node ledger's `Heartbeat` column.
+
+- Advanced → `ok`, continue.
+- Static while the node made tool calls → **`BLOCKED`**. The hook stopped firing
+  mid-run and the node ran unenforced for an unknown span. The run does not
+  advance.
+- No usable run state → **degraded**, not a hook failure. Report it, continue,
+  and treat the run-start canary as the binding proof.
+
+Read the counter; never write it. The hook is its sole writer, and that is the
+only reason the heartbeat counts as evidence rather than as the run vouching for
+itself.
+
+## Tool-call caps
+
+Every node carries a per-dispatch tool-call budget — the `Cap` column of the node
+table in `PRD/instructions/graph-workflow-contract.md`, which is the authority.
+The hook counts every tool call against `<run id>/<node>/<attempt>` in
+`.worktrees/.graph-node-calls.json` and denies once the cap is reached.
+
+An overrun **parks** at `owner-action` using the existing `PARKED` state, with
+the node, the cap, and the observed count as evidence in `GRAPH-RUN.md`. There is
+no fifth terminal state for it. Never raise a cap mid-run to get past a deny —
+the overrun is the signal that the node is doing something other than its job.
+
+The cap is not a third loop limit. Each dispatch gets its own budget, so the
+three-FAIL and two-return caps stay the only bound on how many dispatches happen.
+
+The hook is the counter file's only writer, and the graph tier denies every other
+write to it. That is what makes the count evidence rather than a self-report.
 
 ## Terminal states
 
