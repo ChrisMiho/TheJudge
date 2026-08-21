@@ -1,0 +1,65 @@
+{
+  "slug": "graph-single-door-workflow",
+  "slice": "D",
+  "criteria": [
+    {
+      "id": "D1",
+      "statement": "`thejudge-refinement/SKILL.md`'s `## Reads` names `PRD/work/<slug>/intake/` and says it is read when the folder exists.",
+      "value": false,
+      "evidence": {
+        "command": "grep .*intake.* \\.claude/skills/thejudge-refinement/SKILL\\.md",
+        "paths": [".claude/skills/thejudge-refinement/SKILL.md"]
+      }
+    },
+    {
+      "id": "D2",
+      "statement": "`thejudge-refinement/SKILL.md` states intake is evidence and never authority, listing what it may do and what it may not.",
+      "value": false,
+      "evidence": { "paths": [".claude/skills/thejudge-refinement/SKILL.md"] }
+    },
+    {
+      "id": "D3",
+      "statement": "`graph-workflow-contract.md` carries the same evidence-not-authority rule, once, as the authority the skill defers to.",
+      "value": false,
+      "evidence": {
+        "command": "grep .*authority.* PRD/instructions/graph-workflow-contract\\.md",
+        "paths": ["PRD/instructions/graph-workflow-contract.md"]
+      }
+    },
+    {
+      "id": "D4",
+      "statement": "Both files state that a document cited by intake is recorded as a citation and not fetched.",
+      "value": false,
+      "evidence": {
+        "paths": [
+          ".claude/skills/thejudge-refinement/SKILL.md",
+          "PRD/instructions/graph-workflow-contract.md"
+        ]
+      }
+    },
+    {
+      "id": "D5",
+      "statement": "The contract states the rule is unenforced and names the `define` gate as what catches an intake claim adopted wholesale.",
+      "value": false,
+      "evidence": { "paths": ["PRD/instructions/graph-workflow-contract.md"] }
+    },
+    {
+      "id": "D6",
+      "statement": "`graph-run/SKILL.md` is byte-unchanged by this slice: the define-gate trigger in loop step 5 is untouched.",
+      "value": false,
+      "evidence": { "command": "git diff" }
+    },
+    {
+      "id": "D7",
+      "statement": "`npm run skills:ai-sync` run and `diff -rq .claude/skills .agents/skills` prints nothing.",
+      "value": false,
+      "evidence": { "command": "npm run skills:ai-sync" }
+    },
+    {
+      "id": "D8",
+      "statement": "Read the rule as an implementer: intake proposing a slug is honored, intake declaring a requirement settled is not. Record the reading.",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

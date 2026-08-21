@@ -3598,3 +3598,130 @@
   - DEC-166
 - Notes:
   - the failure this closes is the quiet one — a hook that is present, committed, and trusted still reads exactly like a working hook when it is not firing, and nothing in the run's output distinguishes the two
+
+### REQ-160
+- Title: `graph-run` is the single intake door
+- Priority: high
+- Description: The owner starts any work — an idea, an observation, a bug, or a context document — by invoking `graph-run` with a description and nothing else. No branch name is required, no orchestrator is chosen, and nothing is classified before it is described.
+- Acceptance Criteria:
+  - `graph-run` accepts a bare request with no `--branch` argument and starts a fresh package from it
+  - `--branch <name>`, when supplied, is used verbatim and overrides derivation
+  - `AGENT-SKILLS.md`'s `## Workflow sequence` mermaid diagram names `graph-run` as the door: the two `prepare` edges — `prepare -. controls .-> kickoff` and `prepare -. READY after human merge .-> implementall` — are replaced by `graph-run` edges, so the diagram shows one entry point rather than two
+  - `AGENT-SKILLS.md`'s skill-catalog `When` cell for `thejudge-prepare` no longer reads as an intake route: it names the skill as callable but not an entry point
+  - `AGENT-SKILLS.md`'s `## Graph workflow skills` paragraph says three `graph-*` skills, matching its own three-row table
+  - `PRD/instructions/graph-workflow-contract.md` names `graph-run` as the entry point for new work. Its existing `thejudge-prepare` mentions are the `thejudge-prepare is controlling` predicate and README section ownership, not entry-point claims, and are left as they are
+  - `.claude/skills/thejudge-prepare/SKILL.md` is unchanged in behavior, remains callable, and remains listed in the skill catalog as a non-entry-point skill
+  - `PRD/instructions/preparation-contract.md` is unchanged, and the `thejudge-prepare is controlling` predicate still resolves in all six phase skills that read it
+  - a new issue arriving against an `active`, already-mapped-out package still routes to `thejudge-amend`, and the door does not claim that case
+- Constraints:
+  - no skill is deleted; all 14 remain callable
+  - the node table, models, per-node caps, loop limits, the `define` gate trigger, and every entry in the contract's `## Boundaries` are unchanged
+  - the door adds no depth grading: every entry takes the full path
+- Dependencies:
+  - DEC-163
+  - DEC-166
+  - DEC-167
+- Notes:
+  - the door is not new machinery — `graph-run` already accepted a request plus `--branch` and already delegated package creation to `thejudge-kickoff` at node 2. This requirement removes the remaining choices at intake rather than adding a pipeline
+  - uniform depth is affordable because the `define` gate parks only on a non-empty `PRD/sections/` diff, so a change touching no product truth never interrupts the owner
+  - this package is implemented in an ordinary session, not a graph run. REQ-161, REQ-162, and REQ-163 all edit `thejudge-*` skills, and `graph-workflow-contract.md`'s `## Boundaries` forbids a graph run from modifying any `thejudge-*` skill in either synced tree, with `.claude/graph-profile.json` denying `Edit(./.claude/skills/thejudge-*/**)` and its `.agents/` twin. A graph run would end `PROMPTED` on most slices. The boundary is deliberately left as written — it exists so an autonomous run cannot rewrite the skills that govern it
+
+### REQ-161
+- Title: The door names the work before node 1
+- Priority: high
+- Description: The door proposes one slug from the request and any intake material, derives the branch from it, and passes that slug to node 2, so the branch and the package share one name.
+- Acceptance Criteria:
+  - the door proposes a kebab-case slug before dispatching node 1
+  - the derived branch is `thejudge-auto/<slug>`, matching the convention already in the repository's merge history
+  - `graph-preflight` receives that branch as its required `--branch` argument, and its own contract is otherwise unchanged
+  - node 2 receives the proposed slug and uses it rather than proposing a second name
+  - a slug proposed by intake material is honored ahead of derivation from the request text
+  - an explicitly supplied `--branch` overrides the derived branch without changing the slug node 2 receives
+  - a branch-name collision surfaces as `graph-preflight`'s existing exit-code-2 condition, and the door reports it with the derived name rather than retrying silently
+- Constraints:
+  - the door never infers the branch from the current branch, preserving the existing rule
+  - node ordering is unchanged: `preflight` stays node 1 and `shape` stays node 2
+- Dependencies:
+  - REQ-160
+  - DEC-167
+- Notes:
+  - this exists to resolve an ordering problem rather than for tidiness: node 1 requires a branch and node 2 is where slugs are born, so without the door proposing first the two names are decided independently and can disagree
+  - slug derivation is a guess; the owner overrides it with `--branch`, and intake overrides it by proposing its own
+
+### REQ-162
+- Title: Intake material is copied, bounded, and non-authoritative
+- Priority: high
+- Description: The door accepts context documents — file paths or markdown pasted in the same message — copies them verbatim into the package, and treats them as evidence that refinement weighs rather than instruction refinement obeys.
+- Acceptance Criteria:
+  - `graph-run` accepts zero or more file paths alongside the request, and accepts markdown pasted in the same message
+  - the door mints the `--run-id` before node 1 and passes that same id to `graph-preflight`, which already accepts a caller-chosen `--run-id`; the staging path is derived from it
+  - the door writes each item verbatim into `.worktrees/.graph-intake/<run-id>/` before node 1 is dispatched
+  - the staging path is recorded in the ledger at node 2's first ledger write, never before node 1: the ledger is `PRD/work/<slug>/GRAPH-RUN.md`, which does not exist until node 2 has created the package folder
+  - node 2 reads the staged intake, and once `thejudge-kickoff` has created `PRD/work/<slug>/` it copies each item into `PRD/work/<slug>/intake/`, commits it on the branch, and deletes the staging copy
+  - the contract states that intake is evidence and never authority: it may state findings, mark matters settled, and propose a slug, and it may not decide product truth
+  - every product decision arising from intake is still made with the owner at the `define` gate
+  - a document cited by intake is recorded as a citation and is not fetched
+  - `thejudge-refinement` reads `PRD/work/<slug>/intake/` as an input when the folder exists
+  - `thejudge-cleanup` writes an `## Intake` section into the receipt naming each intake file and its stated origin, before deleting `PRD/work/<slug>/`
+- Constraints:
+  - intake is copied, never referenced in place: a pointer to untracked material outside the repository is the recorded failure this closes
+  - intake is never staged inside the git working tree before node 1. `scripts/graph-preflight.mjs` counts untracked files (`git ls-files --others --exclude-standard`) and resolves an oversized tree with `git stash push -u`, which would sweep the intake off before the branch exists. `.worktrees/` is gitignored, and `git stash push -u` does not touch ignored paths
+  - no size gate is placed on intake, because a gate would refuse exactly the thorough handoff document this accepts. Staging outside the working tree is what makes that hold: node 1's file-count and changed-line thresholds never see the intake
+  - intake citations are never followed transitively; transitive following is unbounded
+  - `docs/whatIsGraph/` is not committed by this work — sweeping untracked working material into the repository stays the owner's call
+- Dependencies:
+  - REQ-160
+  - REQ-161
+  - DEC-167
+- Notes:
+  - the recorded failure is specific: `receipts/graph-run-boundary-enforcement-2026-08-20.md` states that all six of that package's findings came from `docs/whatIsGraph/graph-hardening-handoff.md`, that the promotion checklist expected the file marked closed or retired, and that cleanup could do neither because the file is untracked and outside the repository
+  - that same document is the worked example of correct intake shape: it declares itself kickoff-and-refinement input, states that nothing in it is a decision, and proposes its own slug
+  - "evidence, not authority" is a contract rule and not an enforced one. Nothing prevents refinement adopting an intake claim wholesale; what catches it is the `define` gate parking on the resulting `PRD/sections/` diff
+  - node 1 sweeps the intake *source* as well, so the staged copy is the only one the run is guaranteed to read. A handed-in path that is itself untracked — `docs/whatIsGraph/graph-hardening-handoff.md` is one, at 276 lines — is stashed off the checkout when the tree exceeds the thresholds, and auto-committed as `chore(graph): auto-commit working tree before graph run` when it does not. The door takes its copy at launch, before either happens
+
+### REQ-163
+- Title: Prior shipped runs are linked from the receipts corpus
+- Priority: medium
+- Description: When an observation lands on already-shipped code, the door finds the receipt documenting that work and hands it to refinement, so a second run against the same feature does not start blind.
+- Acceptance Criteria:
+  - node 2 searches `PRD/instructions/receipts/`, whose files are already named `<slug>-<date>.md`, for slug and keyword matches against the request and any intake material
+  - each match is written as one `## Prior run` line in `PRD/work/<slug>/IDEA.md`, naming the receipt path
+  - `thejudge-refinement` reads those lines as input
+  - no match writes no section, and the run continues without interruption
+  - matches are recorded as a flat list, not walked as a chain
+- Constraints:
+  - the owner is never asked to recall or name a prior receipt
+  - a match is offered to refinement as input and never treated as scope
+- Dependencies:
+  - REQ-160
+  - DEC-167
+- Notes:
+  - a flat list rather than a chain because receipts carry no parent pointer, so there is nothing to walk when a third run follows a second
+  - this is keyword matching, and it will miss a receipt whose slug shares no words with the request and may offer an irrelevant one. A false match costs a read rather than a wrong decision
+  - verified by grep before writing: no skill under `.claude/skills/` reads `PRD/instructions/receipts/` today
+
+### REQ-164
+- Title: A request too thin to package ends the run at `BLOCKED`
+- Priority: medium
+- Description: When node 2 cannot turn the request into an actionable package, the run stops and tells the owner what it needs, rather than proceeding on a guess or leaving the driver with an unhandled outcome.
+- Acceptance Criteria:
+  - `graph-run` handles `NO ACTIONABLE PACKAGE` returned by node 2 as a named edge in the contract and in the skill
+  - the run terminates at `BLOCKED`, reporting what was tried, what exists, what does not, and the recovery action
+  - the recovery action names re-invoking the door with a fuller description or with intake material, **and** an explicit `--branch`, because a fuller description of the same thing derives the same slug and `graph-preflight` exits 2 on the collision with the branch node 1 already pushed
+  - the report names the `thejudge-auto/<slug>` branch node 1 created and pushed, whether node 1 auto-committed or stashed the working tree, and the staging path holding any intake, so a retry loses no work and re-pastes no material
+  - the concurrency lock is released, as every terminal state requires
+  - no fifth terminal state is added
+  - `.claude/skills/graph-run/SKILL.md`'s terminal-state paragraph is amended so `BLOCKED` also covers a request too thin to package, not only an external condition
+  - that amendment is required rather than cosmetic: as written, `BLOCKED` is "an external condition outside the repository", `PARKED` is "anything requiring a human decision, judgment, or review", and the tiebreak is "when it is not clear which applies, park". A thin request is neither external nor outside the repository, so without the amendment the tiebreak routes it to `PARKED`, which has nothing to park against
+  - the widened `BLOCKED` definition is the only terminal-state text this package changes
+- Constraints:
+  - the outcome is `BLOCKED` rather than `PARKED`: `PARKED` means the run resumes from a recorded gate, and a thin request produces no artifact to resume from — recovery is a new run, not a resumption
+  - the mechanical form of the same point: parking needs a package folder for `## Open gate`, a `STATUS.*` marker, and a board row, and none of the three exists on this path. `thejudge-kickoff` returns `NO ACTIONABLE PACKAGE` without creating them, and intake stays staged outside the working tree until node 2 has created the package folder, so the intake path does not create one either
+  - the run does not delete the branch it left behind. `graph-preflight`'s contract forbids tidying a failed run, and node 1 may have auto-committed real working-tree changes onto that branch
+  - the door never invents scope to make a thin request actionable
+- Dependencies:
+  - REQ-160
+  - DEC-167
+- Notes:
+  - verified by grep before writing: `NO ACTIONABLE PACKAGE` appears in `thejudge-kickoff` and `thejudge-prepare` and nowhere in `graph-run` or `graph-workflow-contract.md`, so the driver has no rule for an outcome its own node can return
+  - the orphan branch is unavoidable rather than a defect: node 1 must create a branch before node 2 can judge whether the request is packageable, so every `BLOCKED` of this kind leaves a pushed `thejudge-auto/<slug>` behind. The requirement is that the report says so

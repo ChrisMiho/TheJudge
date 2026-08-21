@@ -446,3 +446,58 @@
 - Notes:
   - the halt reuses `graph-run`'s existing `## Terminal states` table; no new state is added
   - mid-run steering via a `STEER.md` channel is deliberately not part of this flow — an instruction arriving mid-run needs `## Instruction ledger` treatment and is scoped as separate work
+
+### FLOW-021
+- Name: Owner reports a bug on shipped code
+- Trigger: Owner notices something wrong in a feature that has already shipped and been cleaned up
+- Preconditions:
+  - the feature shipped, so `PRD/work/<slug>/` was deleted and a receipt exists under `PRD/instructions/receipts/`
+  - no `active` package covers the same code, so `thejudge-amend` does not apply
+  - no graph run holds `.worktrees/.graph-run.lock`, and `.worktrees/.graph-stop` does not exist
+- Main Flow:
+  1. Owner invokes `graph-run` with a plain description of what is wrong. No branch name, no classification, no choice of orchestrator.
+  2. The door proposes a slug from the description and derives the branch `thejudge-auto/<slug>`.
+  3. Node 1 (`preflight`) takes the lock, resolves uncommitted work, and creates and pushes that branch.
+  4. Node 2 (`shape`) receives the proposed slug, searches `PRD/instructions/receipts/` for slug and keyword matches, and writes `IDEA.md` with one `## Prior run` line per match.
+  5. Node 3 (`define`) runs refinement, which reads those prior-run lines as input alongside `PRD/sections/`.
+  6. The driver diffs `PRD/sections/`. A non-empty diff parks at `owner-action` with the complete diff and the new stable IDs; an empty diff advances straight to `gate-qc`.
+  7. Owner resolves the gate with `/graph-gate-review PRD/work/<slug>/` and resumes with `/graph-run PRD/work/<slug>/`.
+  8. The run continues through `gate-qc`, `plan`, `build`, and `review` unattended, and stops at node 8 (`land`) for the owner to merge.
+- Edge Cases:
+  - description too thin to package → node 2 returns `NO ACTIONABLE PACKAGE`, the run ends at `BLOCKED` naming what it needs, and no package folder is created. The report names the `thejudge-auto/<slug>` branch node 1 already pushed, and the retry supplies an explicit `--branch` so it does not hit `graph-preflight`'s exit-code-2 collision with it
+  - no receipt matches → no `## Prior run` section is written and the run continues without interruption
+  - an irrelevant receipt matches → refinement reads it as input and discards it; the cost is a read, not a wrong decision
+  - an `active` package already covers the same code → the owner uses `thejudge-amend` instead, so one branch touches those files rather than two
+  - the derived branch name collides → `graph-preflight`'s existing exit-code-2 condition fires and the door reports it with the derived name
+  - refinement changes no product truth → the `define` gate never parks, and the owner's only touch is the merge at node 8
+- Notes:
+  - the owner never classifies the report as a bug. The same door and the same nodes handle an idea, an observation, and a defect
+  - prior-run matches are input to refinement, never scope; scope is still decided at the `define` gate
+
+### FLOW-022
+- Name: Owner hands the door a context document
+- Trigger: Owner has a generated or written markdown document — a handoff, an audit, a findings list — that should drive the next package
+- Preconditions:
+  - the document exists as a file, or the owner can paste its markdown in the same message
+  - no graph run holds `.worktrees/.graph-run.lock`, and `.worktrees/.graph-stop` does not exist
+- Main Flow:
+  1. Owner invokes `graph-run` with a short request and one or more file paths, or with markdown pasted in the same message.
+  2. The door reads the intake material and proposes a slug, honoring a slug the material proposes ahead of deriving one from the request text.
+  3. The door writes each intake item verbatim into `.worktrees/.graph-intake/<run-id>/` before dispatching node 1 — an ignored path node 1 cannot stash — and records any document the material cites as a citation without fetching it.
+  4. Node 1 (`preflight`) creates and pushes `thejudge-auto/<slug>`.
+  5. Node 2 (`shape`) reads the staged intake and writes `IDEA.md`, adding `## Prior run` lines for any receipt matches. Once `thejudge-kickoff` has created `PRD/work/<slug>/`, node 2 copies the staged intake into `intake/`, commits it on the branch, and deletes the staging copy.
+  6. Node 3 (`define`) runs refinement, which reads the full intake as evidence and decides nothing from it that the owner has not seen.
+  7. The `define` gate parks on any resulting `PRD/sections/` diff, and the owner walks it one stable ID at a time.
+  8. The run continues unattended to node 8, and `thejudge-cleanup` later folds an `## Intake` section into the receipt naming each intake file and its stated origin.
+- Edge Cases:
+  - intake states a conclusion as settled → it is still evidence, and any product truth it produces parks at the `define` gate for the owner
+  - intake cites a large source document → the citation is recorded and the source is not fetched
+  - a supplied path does not exist or cannot be read → the door reports it before node 1 and does not start the run on partial material
+  - intake is large → it is copied whole and read by node 2 within its existing tool-call cap; no size gate refuses it, and staging outside the working tree keeps it clear of node 1's file-count and changed-line thresholds
+  - the handed-in source file is itself untracked → node 1 stashes it off the checkout or auto-commits it, and the run reads the copy the door staged at launch instead
+  - intake proposes a slug the owner disagrees with → `--branch` overrides the branch, and the owner amends the slug before resuming from the `define` gate
+- Notes:
+  - the failure this closes is recorded: `receipts/graph-run-boundary-enforcement-2026-08-20.md` states that its six findings came from an untracked document outside the repository that cleanup could neither update nor retire
+  - copying rather than referencing is what makes the receipt's evidence chain resolvable after the working file is gone
+  - the copy is staged outside the working tree and committed by node 2 rather than written into the package up front, because node 1 resolves the working tree before the branch exists and would carry the intake away with it
+  - "evidence, not authority" is a contract rule, not an enforced one; the `define` gate is what catches an intake claim adopted wholesale

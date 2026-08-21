@@ -1,0 +1,50 @@
+{
+  "slug": "graph-single-door-workflow",
+  "slice": "I",
+  "criteria": [
+    {
+      "id": "I1",
+      "statement": "`npm run skills:ai-sync && diff -rq .claude/skills .agents/skills` prints nothing.",
+      "value": false,
+      "evidence": { "command": "diff -rq \\.claude/skills \\.agents/skills" }
+    },
+    {
+      "id": "I2",
+      "statement": "`npm run quality:check` exits 0.",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    },
+    {
+      "id": "I3",
+      "statement": "`git diff --name-only main...HEAD` lists only files named in the GAMEPLAN's `## Files touched across the package` table.",
+      "value": false,
+      "evidence": { "command": "git diff --name-only" }
+    },
+    {
+      "id": "I4",
+      "statement": "The whole-package diff contains none of the five out-of-scope paths, and the contract's `## Boundaries` list is unchanged.",
+      "value": false,
+      "evidence": { "command": "git diff" }
+    },
+    {
+      "id": "I5",
+      "statement": "Every slice A-H is `## Status: done` and every criteria file has all criteria true.",
+      "value": false,
+      "evidence": { "command": "grep .*value.* PRD/work/graph-single-door-workflow" }
+    },
+    {
+      "id": "I6",
+      "statement": "The PRD promotion checklist is present in this slice doc, unexecuted, with each box unticked.",
+      "value": false,
+      "evidence": {
+        "paths": ["PRD/work/graph-single-door-workflow/slice-i-sync-and-promotion.md"]
+      }
+    },
+    {
+      "id": "I7",
+      "statement": "Read the finished contract: still four terminal states and nine nodes, and the only terminal-state text moved is the BLOCKED paragraph.",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

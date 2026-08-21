@@ -9,6 +9,7 @@ Do not rename package folders to encode status.
 
 ## active
 
+- [graph-single-door-workflow](./graph-single-door-workflow/)
 
 ## refined
 
@@ -18,7 +19,6 @@ Do not rename package folders to encode status.
 
 ## ideation
 
-- [graph-single-door-workflow](./graph-single-door-workflow/)
 - [ai-answer-quality-baseline](./ai-answer-quality-baseline/)
 - [card-collection-manager](./card-collection-manager/)
 - [scan-non-english-special-treatments](./scan-non-english-special-treatments/)

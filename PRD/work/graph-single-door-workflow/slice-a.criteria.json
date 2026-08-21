@@ -1,0 +1,70 @@
+{
+  "slug": "graph-single-door-workflow",
+  "slice": "A",
+  "criteria": [
+    {
+      "id": "A1",
+      "statement": "`graph-workflow-contract.md` names `graph-run` as the entry point for new work, in prose a reader can find without knowing the history.",
+      "value": false,
+      "evidence": {
+        "command": "grep .*entry point.* PRD/instructions/graph-workflow-contract\\.md",
+        "paths": ["PRD/instructions/graph-workflow-contract.md"]
+      }
+    },
+    {
+      "id": "A2",
+      "statement": "`grep -n \"prepare -\\.\" AGENT-SKILLS.md` returns nothing; the two `prepare` edges are gone from the mermaid diagram.",
+      "value": false,
+      "evidence": {
+        "command": "grep .*prepare -.* AGENT-SKILLS\\.md"
+      }
+    },
+    {
+      "id": "A3",
+      "statement": "`graph-run` is present in the `## Workflow sequence` diagram, carrying both edges the two `prepare` edges used to carry.",
+      "value": false,
+      "evidence": {
+        "command": "grep .*graph-run.* AGENT-SKILLS\\.md",
+        "paths": ["AGENT-SKILLS.md"]
+      }
+    },
+    {
+      "id": "A4",
+      "statement": "The `thejudge-prepare` catalog `When` cell no longer describes an intake route, and the row is still present.",
+      "value": false,
+      "evidence": {
+        "paths": ["AGENT-SKILLS.md"]
+      }
+    },
+    {
+      "id": "A5",
+      "statement": "`Three `graph-*` skills` matches in AGENT-SKILLS.md and the count of `Two `graph-*` skills` is 0.",
+      "value": false,
+      "evidence": {
+        "command": "grep .*graph-\\\\\\*.* skills.* AGENT-SKILLS\\.md"
+      }
+    },
+    {
+      "id": "A6",
+      "statement": "This slice's `git diff --name-only` lists exactly AGENT-SKILLS.md and graph-workflow-contract.md; prepare's skill and contract are untouched.",
+      "value": false,
+      "evidence": {
+        "command": "git diff --name-only"
+      }
+    },
+    {
+      "id": "A7",
+      "statement": "`grep -rn \"thejudge-prepare is controlling\" .claude/skills/` still returns the same six phase skills as before the slice.",
+      "value": false,
+      "evidence": {
+        "command": "grep .*thejudge-prepare is controlling.* \\.claude/skills"
+      }
+    },
+    {
+      "id": "A8",
+      "statement": "Read the amended diagram and catalog cell aloud: a new reader can tell which skill starts new work and that thejudge-prepare is not it.",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}
