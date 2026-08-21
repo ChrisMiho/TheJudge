@@ -29,6 +29,32 @@ share one name instead of being named independently at two nodes. A branch
 collision surfaces as `graph-preflight`'s existing exit-code-2 condition;
 report it with the derived name — never retry silently or invent a variant.
 
+## Intake
+
+Accept zero or more file paths alongside the request, and markdown pasted in
+the same message: `/graph-run "<request>" [paths...]`. A supplied path that
+does not exist or cannot be read is reported **before node 1** — the run does
+not start on partial material.
+
+Write each accepted item **verbatim** into
+`.worktrees/.graph-intake/<run-id>/` before node 1 is dispatched, using the
+run id minted above. The staging path is derived from that id.
+
+**Why outside the working tree:** node 1 resolves the working tree before the
+branch exists. `classifyWorkingTree` in `scripts/graph-preflight.mjs:99-113`
+stashes a tree over 10 files or 200 changed lines, the untracked scan at line
+213 feeds it, and line 246 stashes with `git stash push -u`. Intake written
+into the package up front would be stashed off before the branch exists,
+leaving node 2 an empty folder; under the threshold it would land only as a
+side effect of `chore(graph): auto-commit working tree before graph run`. The
+same sweep takes the untracked **source** file too, so the copy staged at
+launch, outside the working tree, is the only one the run is guaranteed to
+read. `.worktrees/` is gitignored and `git stash push -u` spares ignored
+paths, which is why staging lives there.
+
+Intake is copied, never referenced in place, and carries no size gate: a gate
+would refuse exactly the thorough handoff this accepts.
+
 Read `PRD/instructions/graph-workflow-contract.md` and [reference.md](reference.md)
 in full before acting. Their node table, ledger schema, gate rules, and
 boundaries are required.

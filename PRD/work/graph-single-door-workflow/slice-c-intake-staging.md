@@ -1,6 +1,6 @@
 # Slice C — Intake is staged, copied, and committed
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -57,27 +57,27 @@ REQ-162 (the mechanics half), FLOW-022.
 
 ## Acceptance criteria
 
-- [ ] C1 — `graph-run/SKILL.md` documents `/graph-run "<request>" [paths...]`
+- [x] C1 — `graph-run/SKILL.md` documents `/graph-run "<request>" [paths...]`
       and markdown pasted in the same message as accepted intake.
-- [ ] C2 — `graph-run/SKILL.md` names `.worktrees/.graph-intake/<run-id>/` as
+- [x] C2 — `graph-run/SKILL.md` names `.worktrees/.graph-intake/<run-id>/` as
       the staging path, written before node 1.
-- [ ] C3 — `graph-run/SKILL.md` states why staging sits outside the working
+- [x] C3 — `graph-run/SKILL.md` states why staging sits outside the working
       tree, citing node 1's stash/auto-commit behavior, and states that the
       untracked source file is swept too.
-- [ ] C4 — `thejudge-kickoff/SKILL.md` states the copy into
+- [x] C4 — `thejudge-kickoff/SKILL.md` states the copy into
       `PRD/work/<slug>/intake/`, the commit on the branch, and the deletion of
       the staged copy, in that order and after the package folder exists.
-- [ ] C5 — `graph-workflow-contract.md`'s `## Ledger` section states the
+- [x] C5 — `graph-workflow-contract.md`'s `## Ledger` section states the
       staging path is recorded at node 2's first ledger write, with the reason.
-- [ ] C6 — `graph-run/SKILL.md` states that an unreadable or missing supplied
+- [x] C6 — `graph-run/SKILL.md` states that an unreadable or missing supplied
       path is reported before node 1 and the run does not start.
-- [ ] C7 — `graph-workflow-contract.md` states intake is copied and never
+- [x] C7 — `graph-workflow-contract.md` states intake is copied and never
       referenced in place, and that no size gate is applied.
-- [ ] C8 — `git status --porcelain docs/whatIsGraph/` still shows the folder
+- [x] C8 — `git status --porcelain docs/whatIsGraph/` still shows the folder
       untracked; nothing in it is staged or committed by this slice.
-- [ ] C9 — `npm run skills:ai-sync` run and
+- [x] C9 — `npm run skills:ai-sync` run and
       `diff -rq .claude/skills .agents/skills` prints nothing.
-- [ ] C10 — dry-run the staging path by hand: create
+- [x] C10 — dry-run the staging path by hand: create
       `.worktrees/.graph-intake/<a test run id>/`, drop a file in it, run
       `git status --porcelain` and confirm the path does not appear, then remove
       it. Record the observed output.
@@ -91,3 +91,31 @@ grep -n "graph-intake\|intake" PRD/instructions/graph-workflow-contract.md
 git status --porcelain docs/whatIsGraph/
 npm run skills:ai-sync && diff -rq .claude/skills .agents/skills
 ```
+
+## C8 note
+
+This slice's isolated worktree (`.worktrees/implement-graph-single-door-workflow/`)
+never had `docs/whatIsGraph/` — it was created fresh from
+`origin/feature/graph-workflow-hardening`, and that folder was never committed
+to that branch (it stays untracked in the separate launch checkout by owner
+choice). `git status --porcelain docs/whatIsGraph/` here reports "No such
+file or directory," which trivially satisfies the criterion: nothing in it is
+staged or committed by this slice, because this slice never touches it.
+
+## C10 dry-run
+
+```
+$ mkdir -p .worktrees/.graph-intake/graph-20260820-160000-test
+$ echo "test intake content" > .worktrees/.graph-intake/graph-20260820-160000-test/note.md
+$ git status --porcelain
+ M .agents/skills/graph-run/SKILL.md
+ M .agents/skills/thejudge-kickoff/SKILL.md
+ M .claude/skills/graph-run/SKILL.md
+ M .claude/skills/thejudge-kickoff/SKILL.md
+ M PRD/instructions/graph-workflow-contract.md
+$ rm -r .worktrees/.graph-intake
+```
+
+The staged test file never appears in `git status --porcelain` — `.worktrees/`
+is gitignored, confirming the staging path sits outside anything a working-tree
+sweep can see or stash.

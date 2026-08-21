@@ -34,6 +34,13 @@ return `NO ACTIONABLE PACKAGE`), and create the normal `IDEA.md`/README outputs.
 Return the selected evidence and artifacts to the named orchestrator without
 pausing for user approval.
 
+When `graph-run is controlling` and staged intake exists at
+`.worktrees/.graph-intake/<run-id>/`, handle it only after `PRD/work/<slug>/`
+exists: copy each staged item verbatim into `PRD/work/<slug>/intake/`, commit
+it on the branch, then delete the staged copy — in that order. Record the
+staging path in `GRAPH-RUN.md` at this ledger's first write; the package
+folder, and the ledger inside it, do not exist any earlier.
+
 ## Reads
 
 1. `README.md` — stack, layout, quality gates, current product status
@@ -51,6 +58,8 @@ Only when the user describes a new idea:
 - `PRD/work/<slug>/README.md` — `status: ideation` at top
 - Empty marker `PRD/work/<slug>/STATUS.ideation` (exactly one STATUS.* per package)
 - Row under `## ideation` in `PRD/work/STATUS.md` (create the board if missing)
+- `PRD/work/<slug>/intake/` — only under `graph-run is controlling` with staged
+  intake present; committed, and the staged copy deleted, once written
 
 `<slug>` is a new kebab-case name proposed from the idea (e.g. `card-wotc-rule-enrichment`), or the supplied slug when the caller provides one. If the user only wants orientation, write nothing.
 

@@ -258,6 +258,7 @@ documentation changes:
 - Profile: `unverified` | `<path> (stated by the user at launch)`
 - Canary: `denied — hook live (<command>)` | `allowed — BLOCKED (<reason>)`
 - Autonomous base: `origin/<branch>`
+- Staging: `.worktrees/.graph-intake/<run-id>/`
 - Current node: `<node>`
 - Next action: `/graph-run PRD/work/<slug>/`
 
@@ -292,6 +293,12 @@ documentation changes:
 `Outcome` is one of `ok`, `failed`, `parked`. `Evidence` names a command, path,
 PR URL, or artifact URL — never a bare claim. A fresh agent reads this file and
 `PRD/work/<slug>/README.md` and needs nothing else to resume.
+
+`Staging` is recorded at node 2's first ledger write, never before node 1: the
+ledger lives inside `PRD/work/<slug>/`, and that folder is born at node 2, so
+there is nothing to write it to earlier. Intake is copied into
+`PRD/work/<slug>/intake/` and committed, never referenced in place; no size
+gate is applied to it.
 
 `## Dispatch prompts` records every node's dispatch prompt verbatim, one `### `
 subsection per node. Verbatim, not summarized: a paraphrase is the run grading
