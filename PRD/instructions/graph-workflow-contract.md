@@ -92,6 +92,11 @@ unless one is supplied. Node 1 (`preflight`) receives the branch and run id;
 node 2 (`shape`) receives the same slug, so the branch and the package share
 one name instead of being named independently at two nodes.
 
+Node 2 (`shape`) can return `NO ACTIONABLE PACKAGE` — the same outcome
+`thejudge-kickoff` and `thejudge-prepare` already have — when the request
+cannot be turned into an actionable package. The run ends `BLOCKED`, not
+`PARKED`: no package folder exists yet for a gate to park against.
+
 This table is the authority. `graph-run/reference.md` mirrors it; when they
 disagree, the contract wins.
 

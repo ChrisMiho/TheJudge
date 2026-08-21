@@ -363,9 +363,28 @@ rephrase the command to dodge the rule, and never retry it.
 
 `BLOCKED` is for an external condition outside the repository that no product
 decision would resolve — authentication failure, network unavailability, a
-GitHub outage, missing push access. `PARKED` is for anything requiring a
-human decision, judgment, or review. When it is not clear which applies,
-park.
+GitHub outage, missing push access — and for a request node 2 cannot turn into
+an actionable package (`NO ACTIONABLE PACKAGE`, the same outcome
+`thejudge-kickoff` and `thejudge-prepare` already have). `PARKED` is for
+anything requiring a human decision, judgment, or review over an existing
+artifact. When it is not clear which applies, park.
+
+A thin request is `BLOCKED`, not `PARKED`. `PARKED` means the run resumes from
+a recorded gate, and a thin request leaves no artifact to resume from.
+Mechanically, parking needs a package folder for `## Open gate`, a `STATUS.*`
+marker, and a board row — none exists, because `thejudge-kickoff` returns
+`NO ACTIONABLE PACKAGE` without creating them, and intake stays staged outside
+the working tree until node 2 creates the package folder.
+
+Node 1 runs before node 2 can judge the request, so this `BLOCKED` always
+leaves a pushed `thejudge-auto/<slug>` behind. The report names that branch,
+states whether node 1 auto-committed or stashed the working tree, and names
+the staging path holding any intake. The run does not delete the branch —
+`graph-preflight`'s contract forbids tidying a failed run, and node 1 may have
+auto-committed real working-tree changes onto it. The recovery action is a
+fuller description or intake material **plus an explicit `--branch`**,
+because the same description derives the same slug and `graph-preflight`
+exits 2 on the collision (`.claude/skills/graph-preflight/SKILL.md:118`).
 
 ## Next step
 

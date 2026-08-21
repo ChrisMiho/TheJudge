@@ -1,6 +1,6 @@
 # Slice F — A request too thin to package ends `BLOCKED`
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -59,30 +59,30 @@ REQ-164.
 
 ## Acceptance criteria
 
-- [ ] F1 — `grep -n "NO ACTIONABLE PACKAGE" .claude/skills/graph-run/SKILL.md`
+- [x] F1 — `grep -n "NO ACTIONABLE PACKAGE" .claude/skills/graph-run/SKILL.md`
       and the same grep against `graph-workflow-contract.md` both match; before
       this slice neither did.
-- [ ] F2 — `graph-run/SKILL.md`'s `BLOCKED` paragraph covers both an external
+- [x] F2 — `graph-run/SKILL.md`'s `BLOCKED` paragraph covers both an external
       condition outside the repository **and** a request too thin to package.
-- [ ] F3 — `graph-run/SKILL.md`'s `## Terminal states` table still lists
+- [x] F3 — `graph-run/SKILL.md`'s `## Terminal states` table still lists
       exactly four states: `COMPLETE`, `PARKED`, `BLOCKED`, `PROMPTED`.
-- [ ] F4 — `graph-run/SKILL.md` states why this is `BLOCKED` rather than
+- [x] F4 — `graph-run/SKILL.md` states why this is `BLOCKED` rather than
       `PARKED`, giving both the no-artifact-to-resume-from reason and the
       mechanical one (no package folder, no marker, no board row).
-- [ ] F5 — `graph-run/SKILL.md` requires the report to name the
+- [x] F5 — `graph-run/SKILL.md` requires the report to name the
       `thejudge-auto/<slug>` branch, whether node 1 committed or stashed, and
       the intake staging path.
-- [ ] F6 — `graph-run/SKILL.md` states the branch is not deleted, with the
+- [x] F6 — `graph-run/SKILL.md` states the branch is not deleted, with the
       reason, and that the recovery action needs an explicit `--branch` because
       of the exit-code-2 collision.
-- [ ] F7 — `graph-run/SKILL.md` still requires the lock released on every state
+- [x] F7 — `graph-run/SKILL.md` still requires the lock released on every state
       in the table, and no second list of releasing states is introduced.
-- [ ] F8 — `git diff` for this slice shows no change to the contract's
+- [x] F8 — `git diff` for this slice shows no change to the contract's
       `## Boundaries` list, the node table rows, the model column, or the cap
       column.
-- [ ] F9 — `npm run skills:ai-sync` run and
+- [x] F9 — `npm run skills:ai-sync` run and
       `diff -rq .claude/skills .agents/skills` prints nothing.
-- [ ] F10 — read the widened `BLOCKED` paragraph against the tiebreak sentence:
+- [x] F10 — read the widened `BLOCKED` paragraph against the tiebreak sentence:
       confirm a thin request now resolves to `BLOCKED` and that no other case
       moved out of `PARKED`. Record the reading.
 
@@ -95,3 +95,15 @@ grep -n "COMPLETE\|PARKED\|BLOCKED\|PROMPTED" .claude/skills/graph-run/SKILL.md
 git diff -- PRD/instructions/graph-workflow-contract.md
 npm run skills:ai-sync && diff -rq .claude/skills .agents/skills
 ```
+
+## F10 reading
+
+The widened paragraph adds one clause to `BLOCKED` — "and for a request node 2
+cannot turn into an actionable package" — and adds one qualifier to `PARKED` —
+"over an existing artifact." Every other `PARKED` trigger already named in the
+contract (`gate-qc` fourth FAIL, a `build`/`review` blocker, a genuine decision
+blocker) operates on an artifact the package already has, so none of them move.
+Only the request-not-yet-a-package case, which previously fell to the tiebreak
+sentence ("when it is not clear which applies, park") for lack of a named
+bucket, now has one. The tiebreak sentence itself is unchanged and still
+applies to any case this paragraph does not name.
