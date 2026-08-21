@@ -39,7 +39,7 @@ stays as written; implement this package interactively.
 | [E](./slice-e-prior-run-linking.md) ✅ | Prior shipped runs are linked from receipts | REQ-163, FLOW-021 | B |
 | [F](./slice-f-thin-request-blocked.md) ✅ | A request too thin to package ends `BLOCKED` | REQ-164 | C |
 | [G](./slice-g-cleanup-receipt-intake.md) ✅ | Cleanup folds intake into the receipt | REQ-162 | — |
-| [H](./slice-h-skill-fixtures.md) | Skill fixtures for every changed skill | DEC-167 | A–G |
+| [H](./slice-h-skill-fixtures.md) ✅ | Skill fixtures for every changed skill | DEC-167 | A–G |
 | [I](./slice-i-sync-and-promotion.md) | Mirror sync, promotion checklist, ship gates | DEC-167 | H |
 
 A, B, C, D, and F are sequential: they share

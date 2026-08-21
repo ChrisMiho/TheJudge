@@ -47,8 +47,14 @@ of guessing.
 Material in `PRD/work/<slug>/intake/` may state findings, mark matters
 settled, and propose a slug. It may not decide product truth: every product
 decision it raises is still made with the owner at the `define` gate, the same
-as any other source. A document it cites is recorded as a citation and not
-fetched — following a citation's own citations is unbounded.
+as any other source.
+
+**Never open, read, or otherwise fetch a document intake cites — record only
+its path, as a citation.** This holds even when reading it would only be to
+verify the claim: verification of adopted product truth is what the `define`
+gate is for, not a research step refinement takes on a citation's word.
+Following a citation's own citations is unbounded, but the rule is not
+"don't chase the chain" — it is don't open the cited document at all.
 
 This rule is unenforced. Nothing stops a brief from adopting an intake claim
 wholesale; what catches it is the `define` gate parking on the resulting

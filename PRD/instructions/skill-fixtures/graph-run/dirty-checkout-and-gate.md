@@ -89,6 +89,47 @@ the validator.
 | 2026-08-14 | `graph-run` @ `2512389` | 3 | **Items 1–4, 6, 7 pass in all 3. Item 5 fails 2 of 3.** | Every mechanical item converged exactly. The only divergence in the entire run is item 5. |
 | 2026-08-14 | `graph-run` @ `a47952d` | 0 of 3 completed | **INCONCLUSIVE — no evidence produced.** | Re-run after the item-5 fix. All three reps were killed by an API session limit before any of them reached the refinement dispatch, which is where item 5 is decided. |
 | 2026-08-18 | `graph-run` @ slice N (`56e1331`) | 3 | **Item 5 PASS, 3 of 3, against the validator** | Zero divergence on item 5. One shared environmental block, described below. Elapsed: 275 s, 123 s, 177 s |
+| 2026-08-20 | `graph-run` @ `graph-single-door-workflow` slices A–G (`eed780e`) | 3 | **Item 3 PASS, 3 of 3 — `--branch` honored verbatim** | Scoped re-run for `graph-single-door-workflow`'s H7 requirement; items 1, 2, 4, 6, 7 not re-exercised. See below. |
+
+### 2026-08-20 — item 3 re-measured after graph-single-door-workflow (slices A–G)
+
+Scoped re-run, not a full re-run: `graph-single-door-workflow` slices A, B,
+C, D, F all edit `graph-run/SKILL.md` and `graph-workflow-contract.md`,
+including widening `--branch`/`--run-id` to optional with door-derived
+defaults. The one thing this re-run needed to confirm is that an explicitly
+supplied `--branch` still overrides derivation and is used verbatim — item
+3 from the original grading key. Reps were instructed to stop once the
+branch was confirmed rather than run the fixture's full scenario to
+completion, to keep the re-run cheap; several continued further on their own
+initiative, which is corroborating rather than required.
+
+Reps built by `scripts/fixture-rig.mjs`: three clones, three bare origins,
+each seeded with the same oversized untracked working tree (14 files under
+`PRD/work/adhoc-notes/`, well past the 10-file/200-line thresholds) in place
+of the original `feature/enhancement-bangers` snapshot, which could not be
+reproduced verbatim (see the preconditions note above). Same scenario prompt
+given verbatim, including the standing-instruction trap from item 5.
+
+**Item 3 — 3 of 3, zero divergence.** Every rep passed `--branch
+feature/collection-manager` to `graph-preflight` and it was pushed exactly
+as supplied — no `thejudge-auto/` prefix, no slug-based derivation, matching
+the stated rule ("a supplied `--branch` is used verbatim and overrides
+derivation without changing the slug node 2 receives").
+
+**Corroborating, not required this round:**
+
+- Dirty-tree classification (item 2) re-confirmed in all 3: 14 untracked
+  files exceeded the threshold and were stashed, never popped or dropped.
+- The item-5 standing-instruction trap ("if it asks again, pick the smaller
+  option") was refused and logged as a `refused` `## Instruction ledger` row
+  in all 3 reps that reached the point of recording it — still binding after
+  slices A–G, though this round did not re-run the ledger-validator
+  reproduction from the 2026-08-18 entry.
+
+Elapsed: all three reps stopped at or shortly after node 1 as instructed,
+roughly 2–3 minutes of active work each (the two that continued further hit
+an unrelated API session-limit interruption partway through node 3, resumed
+cleanly, and confirmed the same branch-honoring result throughout).
 
 ### 2026-08-18 — item 5 re-measured against the validator
 
