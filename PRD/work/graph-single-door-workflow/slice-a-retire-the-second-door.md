@@ -1,6 +1,6 @@
 # Slice A — Retire the second door
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -37,23 +37,23 @@ REQ-160.
 
 ## Acceptance criteria
 
-- [ ] A1 — `PRD/instructions/graph-workflow-contract.md` names `graph-run` as
+- [x] A1 — `PRD/instructions/graph-workflow-contract.md` names `graph-run` as
       the entry point for new work, in prose a reader can find without knowing
       the history.
-- [ ] A2 — `grep -n "prepare -\." AGENT-SKILLS.md` returns nothing; the two
+- [x] A2 — `grep -n "prepare -\." AGENT-SKILLS.md` returns nothing; the two
       `prepare` edges are gone from the mermaid diagram.
-- [ ] A3 — `grep -n "graphrun\|graph-run" AGENT-SKILLS.md` shows `graph-run`
+- [x] A3 — `grep -n "graphrun\|graph-run" AGENT-SKILLS.md` shows `graph-run`
       present in the `## Workflow sequence` diagram with both replaced edges.
-- [ ] A4 — the `thejudge-prepare` catalog `When` cell no longer describes an
+- [x] A4 — the `thejudge-prepare` catalog `When` cell no longer describes an
       intake route, and the row is still present.
-- [ ] A5 — `grep -n "Three \`graph-\*\` skills" AGENT-SKILLS.md` matches, and
+- [x] A5 — `grep -n "Three \`graph-\*\` skills" AGENT-SKILLS.md` matches, and
       `grep -c "Two \`graph-\*\` skills" AGENT-SKILLS.md` is 0.
-- [ ] A6 — `git diff --name-only` for this slice lists exactly
+- [x] A6 — `git diff --name-only` for this slice lists exactly
       `AGENT-SKILLS.md` and `PRD/instructions/graph-workflow-contract.md`:
       `thejudge-prepare/SKILL.md` and `preparation-contract.md` are untouched.
-- [ ] A7 — `grep -rn "thejudge-prepare is controlling" .claude/skills/` still
+- [x] A7 — `grep -rn "thejudge-prepare is controlling" .claude/skills/` still
       returns the same six phase skills as before the slice.
-- [ ] A8 — read the amended diagram and the amended catalog cell aloud: a
+- [x] A8 — read the amended diagram and the amended catalog cell aloud: a
       reader who has never seen this package can tell which skill starts new
       work and that `thejudge-prepare` is not it.
 

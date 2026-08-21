@@ -34,8 +34,8 @@ byte-identical after a sync — every skill runs in both runtimes.
 
 ```mermaid
 flowchart LR
-  prepare[thejudge-prepare] -. controls .-> kickoff
-  prepare -. READY after human merge .-> implementall
+  graphrun[graph-run] -. controls .-> kickoff
+  graphrun -. controls .-> implementall
   kickoff[thejudge-kickoff] --> refinement[thejudge-refinement]
   refinement --> qc[thejudge-quality-check]
   qc --> mapout[thejudge-map-out]
@@ -69,7 +69,7 @@ orthogonal to the pipeline shown above.
 
 | Skill | When | Writes | Status | Next |
 | --- | --- | --- | --- | --- |
-| `thejudge-prepare` | One arbitrary request needs autonomous preparation before an unattended implementation loop | One reviewed `PRD/work/<slug>/` package plus a docs-only preparation branch/PR, or `NO ACTIONABLE PACKAGE` | READY → `active`; BLOCKED preserves the furthest valid status | After human merge, `thejudge-implement-all` |
+| `thejudge-prepare` | Autonomous preparation of one arbitrary request is wanted directly, outside `graph-run`, before an unattended implementation loop | One reviewed `PRD/work/<slug>/` package plus a docs-only preparation branch/PR, or `NO ACTIONABLE PACKAGE` | READY → `active`; BLOCKED preserves the furthest valid status | After human merge, `thejudge-implement-all` |
 | `thejudge-kickoff` | New session or new feature idea | `IDEA.md`, `README.md`, `STATUS.ideation`, board row | → `ideation` | `thejudge-refinement` |
 | `thejudge-refinement` | An idea needs product definition | `DESIGN-BRIEF.md`, section updates | `refining` → (on approval) `refined` | `thejudge-quality-check` |
 | `thejudge-quality-check` | After refinement, before slicing | PASS/FAIL report only | PASS keeps `refined`; FAIL → `refining` | `thejudge-map-out` (PASS) or `thejudge-refinement` (FAIL) |
@@ -83,7 +83,7 @@ orthogonal to the pipeline shown above.
 
 ## Graph workflow skills
 
-Two `graph-*` skills chain the lifecycle above into one autonomous run. They
+Three `graph-*` skills chain the lifecycle above into one autonomous run. They
 **delegate** to the `thejudge-*` skills rather than reimplementing them — the
 graph adds sequencing, a ledger, and gates, not a second pipeline. The phase
 skills recognize `graph-run is controlling` alongside

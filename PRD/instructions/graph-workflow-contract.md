@@ -6,6 +6,11 @@ This contract governs one autonomous graph run: a single work package advanced
 through the existing TheJudge lifecycle with no per-step user input. It
 coordinates the existing `thejudge-*` contracts without replacing them.
 
+`graph-run` is the entry point for new work. The owner hands it a request —
+an idea, an observation, a bug, or a pasted or referenced document — and it
+drives that request through the full lifecycle unattended, stopping only at
+the `define` gate or a terminal state.
+
 Active decisions and requirements in `PRD/sections/` remain product truth. When
 a `thejudge-*` phase skill conflicts with this contract during a graph run,
 this contract governs continuation and approval behavior; the phase skill
