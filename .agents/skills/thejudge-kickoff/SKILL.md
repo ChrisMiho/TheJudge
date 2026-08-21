@@ -41,10 +41,26 @@ it on the branch, then delete the staged copy — in that order. Record the
 staging path in `GRAPH-RUN.md` at this ledger's first write; the package
 folder, and the ledger inside it, do not exist any earlier.
 
+When `graph-run is controlling`, before writing `IDEA.md`, search
+`PRD/instructions/receipts/` — already named `<slug>-<date>.md` — for slug
+and keyword matches against the request and any intake material. Write one
+`## Prior run` line per match into `IDEA.md`, naming the receipt path; no
+match writes no section, and the run continues uninterrupted. Matches are a
+flat list, not a chain walk — receipts carry no parent pointer, so there is
+nothing to walk when a third run follows a second. Offer a match to
+`thejudge-refinement` as input, never as scope; the owner is never asked to
+recall or name a prior receipt.
+
+This is keyword matching, not semantic search: it will miss a receipt sharing
+no words with the request, and may offer an irrelevant one. A miss costs a
+blind run; a false match costs a read.
+
 ## Reads
 
 1. `README.md` — stack, layout, quality gates, current product status
 2. `PRD/README.md` — control plane, source-of-truth precedence, navigation
+3. `PRD/instructions/receipts/`, under `graph-run is controlling` — searched
+   for prior-run matches, never pre-loaded otherwise
 
 In direct mode, nothing else. Do not pre-load `PRD/sections/` or
 `PRD/instructions/` — see `reference.md` for the full precedence model and task
@@ -54,7 +70,8 @@ In direct mode, nothing else. Do not pre-load `PRD/sections/` or
 
 Only when the user describes a new idea:
 
-- `PRD/work/<slug>/IDEA.md` — 3–5 sentences: problem, outcome, non-goals
+- `PRD/work/<slug>/IDEA.md` — 3–5 sentences: problem, outcome, non-goals; under
+  `graph-run is controlling`, one `## Prior run` line per receipts match
 - `PRD/work/<slug>/README.md` — `status: ideation` at top
 - Empty marker `PRD/work/<slug>/STATUS.ideation` (exactly one STATUS.* per package)
 - Row under `## ideation` in `PRD/work/STATUS.md` (create the board if missing)
