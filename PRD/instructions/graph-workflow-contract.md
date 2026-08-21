@@ -72,6 +72,13 @@ never a third loop limit — the three-FAIL and two-return caps below stay the o
 bound on how many dispatches happen. `land` has no cap because the driver never
 dispatches it.
 
+On a fresh run, the driver names the work before dispatching node 1: propose a
+kebab-case slug from the request and any intake material, derive the branch as
+`thejudge-auto/<slug>` unless `--branch` overrides it, and mint `--run-id`
+unless one is supplied. Node 1 (`preflight`) receives the branch and run id;
+node 2 (`shape`) receives the same slug, so the branch and the package share
+one name instead of being named independently at two nodes.
+
 This table is the authority. `graph-run/reference.md` mirrors it; when they
 disagree, the contract wins.
 

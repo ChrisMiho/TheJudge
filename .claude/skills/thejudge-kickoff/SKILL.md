@@ -17,6 +17,11 @@ Orient in this repo without pre-loading the full PRD, and optionally seed a new 
 
 Optional: a feature idea description in the same message.
 
+Optional: a supplied slug. `graph-run`'s door proposes a slug before
+dispatching node 1 and passes it here so the branch and the package share one
+name — use it verbatim instead of proposing one. With no supplied slug, every
+direct invocation, propose one as today.
+
 ## Mode
 
 Direct invocation keeps the minimal reads and user handoff below.
@@ -47,7 +52,7 @@ Only when the user describes a new idea:
 - Empty marker `PRD/work/<slug>/STATUS.ideation` (exactly one STATUS.* per package)
 - Row under `## ideation` in `PRD/work/STATUS.md` (create the board if missing)
 
-`<slug>` is a new kebab-case name proposed from the idea (e.g. `card-wotc-rule-enrichment`). If the user only wants orientation, write nothing.
+`<slug>` is a new kebab-case name proposed from the idea (e.g. `card-wotc-rule-enrichment`), or the supplied slug when the caller provides one. If the user only wants orientation, write nothing.
 
 ## Gates
 

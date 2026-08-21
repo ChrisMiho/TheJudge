@@ -16,9 +16,18 @@ human, then either complete the run or park it at a named gate. `graph-run` is
 the driver that `PRD/instructions/graph-workflow-contract.md` refers to
 throughout.
 
-Accept a work-package path, or a request plus `--branch <name>` to start a new
-package from scratch. A `--branch` argument is required on a fresh run and is
-never inferred from the current branch.
+Accept a work-package path, or a request plus optional `--branch <name>` and
+`--run-id <id>` to start a new package from scratch. On a fresh run, propose a
+kebab-case slug from the request and any intake material before dispatching
+node 1, and derive the branch as `thejudge-auto/<slug>` — the convention
+already in the repository's merge history. A supplied `--branch` is used
+verbatim and overrides derivation without changing the slug node 2 receives;
+it is never inferred from the current branch. Mint the `--run-id` before node
+1 when none is supplied, and pass that same id to `graph-preflight`. Pass the
+proposed (or supplied-override) slug to node 2, so the branch and the package
+share one name instead of being named independently at two nodes. A branch
+collision surfaces as `graph-preflight`'s existing exit-code-2 condition;
+report it with the derived name — never retry silently or invent a variant.
 
 Read `PRD/instructions/graph-workflow-contract.md` and [reference.md](reference.md)
 in full before acting. Their node table, ledger schema, gate rules, and
@@ -30,8 +39,9 @@ boundaries are required.
    With no ledger but a supplied package path, this is a resume, not a fresh
    run: enter at the node matching the package's current `STATUS.*` marker
    using the entry-point table in reference.md, and create the ledger there.
-   Start at `preflight` for a genuinely fresh run — no existing package, and a
-   required `--branch <name>` — and also for a resumed package whose README has
+   Start at `preflight` for a genuinely fresh run — no existing package, with
+   `--branch` and `--run-id` optional as described above — and also for a
+   resumed package whose README has
    no `## Autonomous metadata`: run `preflight` first with a supplied
    `--branch <name>` to record the base, then enter at the status-matched node.
    Skipping it there leaves no autonomous base, and node 6 (`build`) blocks
