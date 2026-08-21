@@ -50,7 +50,7 @@ Work slug. Optional force override when the user explicitly requests cleanup of 
 ## Writes
 
 - Promoted durable outcomes in the affected `PRD/sections/*.md`; new decisions go into the relevant `PRD/sections/decisions/<domain>.md` file plus the router index line in `PRD/sections/decisions.md`
-- Receipt at `PRD/instructions/receipts/<slug>-<YYYY-MM-DD>.md` — **written before delete** — containing date, slug, status (shipped | partial | corpus-only), actions taken, every file created/updated/deleted, verification results, and `## Graph run` when the package holds a `GRAPH-RUN.md`
+- Receipt at `PRD/instructions/receipts/<slug>-<YYYY-MM-DD>.md` — **written before delete** — containing date, slug, status (shipped | partial | corpus-only), actions taken, every file created/updated/deleted, verification results, `## Graph run` when the package holds a `GRAPH-RUN.md`, and `## Intake` when it holds `intake/`
 - `PRD/sections/system-map.md` entry flipped `planned`/`partial` → `shipped`, only once both code and the receipt exist
 - `PRD/work/STATUS.md` — remove the slug from every section
 - `PRD/README.md`, only if navigation changed (never re-introduce a multi-row work-package table)
@@ -95,6 +95,29 @@ survives exactly until the run succeeds, which is backwards.
 
 A package with no `GRAPH-RUN.md` cleans up normally. Do not add an empty
 `## Graph run` section to its receipt.
+
+### Intake in the receipt
+
+`PRD/work/<slug>/intake/` holds the context documents the owner handed over —
+a supplied file path, or markdown pasted in the launch request. Deleting the
+folder deletes that record. `## Intake` sits beside `## Graph run`, not inside
+it: a package built without a graph run — a direct `thejudge-kickoff` session
+— can hold `intake/` too.
+
+When `PRD/work/<slug>/intake/` exists, the receipt carries:
+
+```markdown
+## Intake
+
+- `intake/<file>` — <origin: the supplied path, or "pasted in the request">
+```
+
+One line per file, named for its stated origin. A package with no `intake/`
+folder cleans up normally. Do not add an empty `## Intake` section to its
+receipt.
+
+No new refusal condition. Missing intake is not a reason to refuse the
+delete — the refusal condition above governs `GRAPH-RUN.md` alone.
 
 ### Delete mechanism
 
