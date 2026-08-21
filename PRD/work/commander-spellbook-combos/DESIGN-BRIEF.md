@@ -6,8 +6,9 @@
 - Scope expansion approved 2026-08-11 (card state capture + answer-quality measurement)
 - Corpus source + wire-format correction approved 2026-08-12 (see `## Amendments`)
 - Work package: refined
-- Quality check: PASS 2026-08-11 — **superseded**; the 2026-08-12 amendment must be re-checked
-- Next gate: `$thejudge-quality-check PRD/work/commander-spellbook-combos/`
+- Quality check: PASS 2026-08-11 — superseded by the 2026-08-12 amendment
+- Quality check: PASS 2026-08-21 — re-checked against the DEC-162 amendment; no contradictions with `decisions/combo-retrieval.md`, REQ-093/REQ-146, `integrations-and-data.md`, or `system-map.md`
+- Next gate: `$thejudge-map-out PRD/work/commander-spellbook-combos/`
 
 ## Amendments
 
