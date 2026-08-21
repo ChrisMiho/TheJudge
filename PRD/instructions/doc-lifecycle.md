@@ -71,4 +71,4 @@ The shipped-vs-planned signal lives in the catalog only. Never edit a `DEC`/`REQ
 - Backlog or story checklists in `PRD/README.md` (use `PRD/work/STATUS.md`)
 - Renaming `PRD/work/<slug>/` to encode status
 - `PRD/stories/` or other permanent story backlogs under `PRD/`
-- References to out-of-repo Cursor skills as if they were repo source of truth
+- References to out-of-repo agent skills as if they were repo source of truth

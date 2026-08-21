@@ -225,3 +225,22 @@
   - NFR-013
 - Notes:
   - route boundaries additionally give the test suite natural split lines, which matters against NFR-012's measured headroom: at 1227 frontend cases the 3-shard gate runs 1m58s against a 2m00s target, and roughly 100 additional cases exhaust 3 shards. Net-new route tests that cross that line are handled by the sanctioned one-line shard-matrix bump, not by trimming tests.
+
+### NFR-016
+- Title: Always-on hook enforcement stays invisible to ordinary sessions
+- Description: The `PreToolUse` hook is committed to `.claude/settings.json` and therefore fires on every tool call in every session in this repository, not only during graph runs. It must cost ordinary work nothing measurable and must never deny a legitimate call.
+- Constraints:
+  - the hook adds no perceptible latency to a tool call — it is a local file-and-string check with no network, no repository scan, and no dependency install
+  - a false deny in an ordinary session is a defect, not a tuning issue: the graph tier is inert without `.worktrees/.graph-run.lock`, and skill authoring, `CLAUDE.md` edits, and settings edits must all succeed with no lock present
+  - a hook that cannot be proven to be firing is detected and refused, not worked around: a crashed, timed-out, or untrusted hook is caught by REQ-159's canary at run start and its per-node heartbeat, and the run ends at `BLOCKED` rather than advancing. `.claude/graph-profile.json` is not the fallback — the contract already directs treating an unverified profile as absent, and the profile binds only under the launch flag this decision removes reliance on
+  - outside a graph run the same failure is a plain loss of enforcement, and the ordinary session is told rather than left to assume: a hook that errors reports it, and silence is never read as approval
+  - the deny rules match path and command literals; a path assembled at runtime evades them, and that limit is stated in the contract rather than assumed away
+  - the hook's own file and `.claude/settings.json` are in the protected set, so no run can weaken its own enforcement
+  - project-level hooks require workspace trust; the first run in an untrusted checkout must surface that as a named condition rather than as a silent no-op
+- Dependencies:
+  - REQ-152
+  - REQ-153
+  - REQ-159
+  - DEC-166
+- Notes:
+  - the failure mode that matters most is the quiet one — a hook that is present, trusted, and not actually firing reads exactly like a hook that is working

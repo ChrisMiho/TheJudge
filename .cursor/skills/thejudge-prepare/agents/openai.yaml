@@ -1,4 +1,0 @@
-interface:
-  display_name: "TheJudge Prepare"
-  short_description: "Prepare one TheJudge work package autonomously"
-  default_prompt: "Use $thejudge-prepare to turn this request into one implementation-ready TheJudge work package and preparation PR."

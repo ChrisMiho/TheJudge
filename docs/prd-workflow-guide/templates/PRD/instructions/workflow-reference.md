@@ -8,7 +8,7 @@ platform paths, and sync instructions live in `AGENT-SKILLS.md` at the repo root
 ## Handoff prefix rule
 
 Every skill that hands off ends with a **Next step**: one sentence plus the
-literal command to run next. The prefix is `/proj-*` in Cursor and Claude Code,
+literal command to run next. The prefix is `/proj-*` in Claude Code,
 `$proj-*` in Codex. Substitute the real slug and slice letter — never leave a
 placeholder in the output.
 

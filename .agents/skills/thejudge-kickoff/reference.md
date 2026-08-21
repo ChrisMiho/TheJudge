@@ -11,7 +11,7 @@ Use after kickoff, once the user names a task or work slug.
 
 ## Workflow skills
 
-All 10 are model-invocable and may also be called explicitly (`/thejudge-*` in Cursor/Claude Code, `$thejudge-*` in Codex).
+All 11 are model-invocable and may also be called explicitly (`/thejudge-*` in Claude Code, `$thejudge-*` in Codex).
 
 | Skill | Use when |
 | ----- | -------- |
@@ -30,7 +30,7 @@ independent review, verification, and preparation publication without approval
 pauses. Use the direct phase sequence when the user wants interactive questions
 and explicit approvals between phases.
 
-**Canonical skills:** edit `.cursor/skills/` only, then run `npm run skills:ai-sync` to copy into `.agents/skills/` (Codex) and `.claude/skills/` (Claude Code). See `AGENT-SKILLS.md`.
+**Canonical skills:** edit `.claude/skills/` only (Claude Code reads it), then run `npm run skills:ai-sync` to mirror into `.agents/skills/` (Codex). See `AGENT-SKILLS.md`.
 
 ## Task → files
 

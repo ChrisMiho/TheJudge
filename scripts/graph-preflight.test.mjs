@@ -18,6 +18,18 @@ import {
   findBranchCollision,
   formatFailureReport,
   defaultRunId,
+  readProfileSentinel,
+  classifyCanary,
+  classifyHeartbeat,
+  classifyLock,
+  classifyStopSentinel,
+  isPidAlive,
+  lockRecord,
+  parseLockFile,
+  PROFILE_SENTINEL_ENV,
+  CANARY_COMMAND,
+  LOCK_PATH,
+  STOP_PATH,
   DEFAULT_THRESHOLDS,
   SECRET_PATTERNS
 } from "./graph-preflight.mjs"
@@ -732,5 +744,405 @@ test("graph-preflight - gitignore - a node_modules symlink is ignored, not swept
     assert.ok(!git(["status", "--porcelain"]).includes("node_modules"))
   } finally {
     fs.rmSync(sandbox, { recursive: true, force: true })
+  }
+})
+
+test("graph-preflight - readProfileSentinel - a profiled session reports loaded", () => {
+  const result = readProfileSentinel({ [PROFILE_SENTINEL_ENV]: "1" })
+  assert.equal(result.present, true)
+  assert.equal(result.ledgerLine, "Profile: loaded (env sentinel)")
+})
+
+test("graph-preflight - readProfileSentinel - an unprofiled session reports unverified", () => {
+  const result = readProfileSentinel({})
+  assert.equal(result.present, false)
+  assert.equal(result.value, null)
+  assert.equal(result.ledgerLine, "Profile: unverified")
+})
+
+test("graph-preflight - readProfileSentinel - any value other than 1 is not evidence", () => {
+  // A stray export of the same name must not read as a loaded profile.
+  for (const value of ["0", "", "true", "yes"]) {
+    const result = readProfileSentinel({ [PROFILE_SENTINEL_ENV]: value })
+    assert.equal(result.present, false, `${JSON.stringify(value)} must not count as loaded`)
+    assert.equal(result.ledgerLine, "Profile: unverified")
+  }
+})
+
+test("graph-preflight - the sentinel name matches the profile's env block", () => {
+  // If these drift, the script reports "unverified" in a session that really
+  // was launched with the profile, and the ledger understates its own evidence.
+  const profile = JSON.parse(
+    fs.readFileSync(fileURLToPath(new URL("../.claude/graph-profile.json", import.meta.url)), "utf8")
+  )
+  assert.equal(profile.env?.[PROFILE_SENTINEL_ENV], "1")
+})
+
+test("graph-preflight - the profile denies edits to itself, so the sentinel cannot be forged", () => {
+  const profile = JSON.parse(
+    fs.readFileSync(fileURLToPath(new URL("../.claude/graph-profile.json", import.meta.url)), "utf8")
+  )
+  assert.ok(
+    profile.permissions.deny.includes("Edit(./.claude/graph-profile.json)"),
+    "a run that could edit the profile could write its own sentinel"
+  )
+})
+
+const HELD_LOCK = JSON.stringify({
+  slug: "graph-workflow",
+  runId: "graph-20260818-120000",
+  pid: 4242,
+  startedAt: "2026-08-18T12:00:00.000Z"
+})
+
+test("graph-preflight - lock - no lock file means the run may start", () => {
+  const result = classifyLock({ contents: null })
+  assert.equal(result.state, "free")
+  assert.equal(result.message, null)
+})
+
+test("graph-preflight - lock - a live holder refuses and names slug, run id, and pid", () => {
+  const result = classifyLock({ contents: HELD_LOCK, isAlive: () => true })
+  assert.equal(result.state, "held")
+  // All three, because "another run is going" is not enough to find it.
+  assert.match(result.message, /slug graph-workflow/)
+  assert.match(result.message, /run id graph-20260818-120000/)
+  assert.match(result.message, /pid 4242/)
+  assert.match(result.message, /Refusing: two runs cannot share one launch checkout/)
+})
+
+test("graph-preflight - lock - a dead holder is reported stale, never silently stolen", () => {
+  const result = classifyLock({ contents: HELD_LOCK, isAlive: () => false })
+  assert.equal(result.state, "stale")
+  assert.match(result.message, /is stale/)
+  assert.match(result.message, new RegExp(`reclaim it with: rm ${LOCK_PATH.replace(".", "\\.")}`))
+  assert.match(result.message, /Confirm the run really ended/)
+})
+
+test("graph-preflight - lock - an unreadable lock is corrupt, not free", () => {
+  // Treating a garbled lock as absent is how two runs end up sharing a checkout.
+  for (const contents of ["not json", "[]", "null", '{"slug":"x"}']) {
+    const result = classifyLock({ contents })
+    assert.equal(result.state, "corrupt", `${contents} must not read as free`)
+    assert.match(result.message, /confirm no run is active/i)
+  }
+})
+
+test("graph-preflight - lock - parseLockFile keeps only well-typed fields", () => {
+  assert.deepEqual(parseLockFile(HELD_LOCK), {
+    slug: "graph-workflow",
+    runId: "graph-20260818-120000",
+    pid: 4242,
+    startedAt: "2026-08-18T12:00:00.000Z"
+  })
+  assert.deepEqual(parseLockFile('{"pid":"4242"}'), {
+    slug: null,
+    runId: null,
+    pid: null,
+    startedAt: null
+  })
+})
+
+test("graph-preflight - lock - isPidAlive treats EPERM as alive", () => {
+  // A process owned by another user exists. Reclaiming it would be theft.
+  const eperm = () => {
+    const error = new Error("operation not permitted")
+    error.code = "EPERM"
+    throw error
+  }
+  assert.equal(isPidAlive(4242, eperm), true)
+
+  const esrch = () => {
+    const error = new Error("no such process")
+    error.code = "ESRCH"
+    throw error
+  }
+  assert.equal(isPidAlive(4242, esrch), false)
+  assert.equal(isPidAlive(4242, () => undefined), true)
+  assert.equal(isPidAlive(0, () => undefined), false)
+  assert.equal(isPidAlive(-1, () => undefined), false)
+})
+
+test("graph-preflight - lock - the record round-trips through the classifier", () => {
+  const record = lockRecord({
+    slug: "demo",
+    runId: "graph-20260818-130000",
+    pid: 99,
+    now: "2026-08-18T13:00:00.000Z"
+  })
+  const result = classifyLock({ contents: record, isAlive: () => true })
+  assert.equal(result.state, "held")
+  assert.equal(result.holder.slug, "demo")
+  assert.equal(result.holder.pid, 99)
+})
+
+test("graph-preflight - lock - the path is under the ignored .worktrees root", () => {
+  assert.equal(LOCK_PATH, ".worktrees/.graph-run.lock")
+})
+
+function terminalStates() {
+  const skill = fs.readFileSync(
+    fileURLToPath(new URL("../.claude/skills/graph-run/SKILL.md", import.meta.url)),
+    "utf8"
+  )
+  const section = /## Terminal states\n([\s\S]*?)\n## /.exec(skill)
+  assert.ok(section, "graph-run must have a ## Terminal states section")
+  return [...section[1].matchAll(/^\|\s*`([A-Z]+)`\s*\|/gm)].map((match) => match[1])
+}
+
+test("graph-preflight - lock - the releasing states are exactly the four in graph-run's table", () => {
+  assert.deepEqual(terminalStates(), ["COMPLETE", "PARKED", "BLOCKED", "PROMPTED"])
+})
+
+test("graph-preflight - lock - release is stated by reference, not re-enumerated", () => {
+  // A second list of releasing states drifts, and a lock released on a state one
+  // list omits is a stranded lock that blocks every later run.
+  const skill = fs.readFileSync(
+    fileURLToPath(new URL("../.claude/skills/graph-run/SKILL.md", import.meta.url)),
+    "utf8"
+  )
+  assert.match(skill, /Release the concurrency lock on every state in this table/)
+
+  for (const file of [
+    "../.claude/skills/graph-preflight/SKILL.md",
+    "../PRD/instructions/graph-workflow-contract.md"
+  ]) {
+    const text = fs.readFileSync(fileURLToPath(new URL(file, import.meta.url)), "utf8")
+    const enumerated = text.match(/`PROMPTED`/g) ?? []
+    assert.ok(
+      enumerated.length <= 1,
+      `${file} enumerates terminal states instead of pointing at graph-run's table`
+    )
+  }
+})
+
+test("graph-preflight - lock - taking then releasing leaves no lock, for each terminal state", () => {
+  const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "graph-lock-"))
+  try {
+    const lockPath = path.join(sandbox, LOCK_PATH)
+    fs.mkdirSync(path.dirname(lockPath), { recursive: true })
+
+    for (const state of terminalStates()) {
+      fs.writeFileSync(
+        lockPath,
+        lockRecord({ slug: "demo", runId: `graph-${state}`, pid: process.pid, now: new Date().toISOString() })
+      )
+      assert.equal(
+        classifyLock({ contents: fs.readFileSync(lockPath, "utf8") }).state,
+        "held",
+        `a live run must hold the lock before terminating ${state}`
+      )
+
+      // The terminal state's last act.
+      fs.rmSync(lockPath)
+
+      assert.equal(fs.existsSync(lockPath), false, `${state} must release the lock`)
+      assert.equal(classifyLock({ contents: null }).state, "free")
+    }
+  } finally {
+    fs.rmSync(sandbox, { recursive: true, force: true })
+  }
+})
+
+function graphProfile() {
+  return JSON.parse(
+    fs.readFileSync(fileURLToPath(new URL("../.claude/graph-profile.json", import.meta.url)), "utf8")
+  )
+}
+
+test("graph-profile - merge and pull are allowed", () => {
+  const { allow } = graphProfile().permissions
+  assert.ok(allow.includes("Bash(git merge *)"))
+  assert.ok(allow.includes("Bash(git pull *)"))
+})
+
+test("graph-profile - the destructive merge and pull variants are denied", () => {
+  // `-s ours` produces a merge commit that keeps none of the incoming work, and
+  // `-X ours`/`-X theirs` auto-resolves conflicts by picking a side — the
+  // shared-branch contract's "preserve both flows' intent" inverted. These are
+  // the "forced" forms of a merge; there is no `git merge --force`.
+  const { deny } = graphProfile().permissions
+  for (const command of ["merge", "pull"]) {
+    for (const flag of [
+      "-s ours",
+      "--strategy=ours",
+      "-X ours",
+      "-X theirs",
+      "--strategy-option=ours",
+      "--strategy-option=theirs",
+      "--allow-unrelated-histories"
+    ]) {
+      // Denied both before and after the ref — flags are legal in either place.
+      assert.ok(deny.includes(`Bash(git ${command} ${flag}*)`), `git ${command} ${flag}`)
+      assert.ok(deny.includes(`Bash(git ${command} * ${flag}*)`), `git ${command} <ref> ${flag}`)
+    }
+  }
+  assert.ok(deny.includes("Bash(git pull --force*)"))
+  assert.ok(deny.includes("Bash(git pull * --force*)"))
+})
+
+test("graph-profile - pushing the trunk is denied in every allowed spelling", () => {
+  // This is where "never merge into main" is actually enforced. A permission
+  // rule reads command text, and `git merge <ref>` names the branch merged
+  // FROM, never the branch merged INTO — so the merge itself is unreachable by
+  // a rule and the push is the enforcement point.
+  const { allow, deny } = graphProfile().permissions
+
+  // The premise: only origin pushes are allowed at all, so only origin
+  // spellings need denying. If a broader push allow is ever added, this fails.
+  const pushAllows = allow.filter((rule) => rule.startsWith("Bash(git push"))
+  assert.deepEqual(pushAllows, ["Bash(git push -u origin *)", "Bash(git push origin HEAD:*)"])
+
+  for (const branch of ["main", "master"]) {
+    for (const rule of [
+      `Bash(git push origin ${branch})`,
+      `Bash(git push origin ${branch} *)`,
+      `Bash(git push origin ${branch}:*)`,
+      `Bash(git push origin HEAD:${branch})`,
+      `Bash(git push origin HEAD:${branch} *)`,
+      `Bash(git push -u origin ${branch})`,
+      `Bash(git push -u origin ${branch} *)`,
+      `Bash(git push -u origin ${branch}:*)`,
+      `Bash(git push -u origin HEAD:${branch})`
+    ]) {
+      assert.ok(deny.includes(rule), `missing deny: ${rule}`)
+    }
+  }
+})
+
+test("graph-profile - the trunk denies do not catch a branch merely starting with main", () => {
+  // No trailing `*` sits directly after the branch name, so `main-line-feature`
+  // and `maintenance` stay pushable. A rule that blocked them would be found at
+  // the worst possible moment — mid-run, as a prompt.
+  const { deny } = graphProfile().permissions
+  const offenders = deny.filter((rule) => /(?:main|master)\*/.test(rule))
+  assert.deepEqual(offenders, [], "a deny ending `main*` would also block `main-line-feature`")
+})
+
+test("graph-profile - the run cannot tidy up a local merge it should not have made", () => {
+  // The honest backstop: a local merge into main is reachable, publishing it is
+  // not, and the run cannot erase the evidence either.
+  const { deny } = graphProfile().permissions
+  assert.ok(deny.includes("Bash(git reset --hard*)"))
+  assert.ok(deny.some((rule) => rule.startsWith("Bash(git push --force")))
+})
+
+test("an absent stop sentinel does not block a run", () => {
+  const clear = classifyStopSentinel({ present: false })
+  assert.equal(clear.state, "clear")
+  assert.equal(clear.message, null)
+})
+
+test("a present stop sentinel refuses the run and names the file to remove", () => {
+  // The owner's kill switch has to survive the next invocation. Otherwise
+  // throwing it stops one run and the next `/graph-run` quietly starts another.
+  const refused = classifyStopSentinel({ present: true })
+  assert.equal(refused.state, "refused")
+  assert.match(refused.message, new RegExp(STOP_PATH.replace(/\./g, "\\.")))
+  assert.match(refused.message, /rm /, "a refusal the owner cannot act on is a dead end")
+  assert.match(refused.message, /refusing to start/)
+})
+
+test("the stop sentinel and the run lock are different files", () => {
+  assert.notEqual(STOP_PATH, LOCK_PATH)
+  assert.match(STOP_PATH, /^\.worktrees\//)
+})
+
+// ---------------------------------------------------------------------------
+// Slice E — hook liveness, proven at run start and between nodes.
+// ---------------------------------------------------------------------------
+
+test("a denied canary is the proof, and says so in the ledger line", () => {
+  const proven = classifyCanary({ denied: true, response: "rm -rf is denied in every session." })
+  assert.equal(proven.state, "proven")
+  assert.equal(proven.message, null)
+  assert.match(proven.ledgerLine, /denied/)
+  assert.match(proven.ledgerLine, /hook live/)
+})
+
+test("an allowed canary blocks, naming what was tried, what came back, and the fix", () => {
+  const blocked = classifyCanary({ denied: false, response: "(no output, exit 0)" })
+  assert.equal(blocked.state, "blocked")
+  assert.equal(blocked.reason, "canary-not-denied")
+  assert.match(blocked.message, /BLOCKED/)
+  assert.ok(blocked.message.includes(CANARY_COMMAND), "the message must name what was tried")
+  assert.match(blocked.message, /\(no output, exit 0\)/, "and what came back")
+  assert.match(blocked.message, /recovery:/, "and the recovery action")
+  assert.match(blocked.message, /not a fallback/, "the profile is never a downgrade path")
+})
+
+test("an untrusted workspace blocks for its own named reason", () => {
+  // "Your hook is broken" and "you never trusted this checkout" have completely
+  // different recovery actions, so they must not collapse into one message.
+  const untrusted = classifyCanary({ denied: false, workspaceTrusted: false })
+  assert.equal(untrusted.state, "blocked")
+  assert.equal(untrusted.reason, "untrusted-workspace")
+  assert.match(untrusted.message, /not trusted/)
+  assert.match(untrusted.message, /trust this checkout/)
+
+  const plain = classifyCanary({ denied: false })
+  assert.notEqual(untrusted.reason, plain.reason)
+  assert.notEqual(untrusted.message, plain.message)
+})
+
+test("a trusted workspace with a denied canary is still proven", () => {
+  assert.equal(classifyCanary({ denied: true, workspaceTrusted: false }).state, "proven")
+})
+
+test("the canary is denied by the universal tier and is inert if it runs", () => {
+  // Both halves matter. A canary the tier does not deny proves nothing, and a
+  // canary with a side effect is not a proof worth running.
+  assert.match(CANARY_COMMAND, /^rm -rf /, "must be a universal-tier deny")
+  assert.match(CANARY_COMMAND, /\.worktrees\//, "must target the ignored run-record directory")
+  assert.match(CANARY_COMMAND, /nonexistent/, "must target a path that does not exist")
+})
+
+test("a heartbeat that advanced passes and records the span", () => {
+  const ok = classifyHeartbeat({ node: "plan", before: 3, after: 21 })
+  assert.equal(ok.state, "ok")
+  assert.equal(ok.message, null)
+  assert.match(ok.ledgerLine, /3 → 21/)
+  assert.match(ok.ledgerLine, /plan/)
+})
+
+test("a static counter with calls made blocks, with the expected and observed values", () => {
+  const blocked = classifyHeartbeat({ node: "build", before: 40, after: 40 })
+  assert.equal(blocked.state, "blocked")
+  assert.match(blocked.message, /BLOCKED/)
+  assert.match(blocked.message, /build/)
+  assert.match(blocked.message, /advance past 40/, "the expected advance")
+  assert.match(blocked.message, /observed: 40/, "the observed counter")
+  assert.match(blocked.message, /does not advance/)
+})
+
+test("a node that made no tool calls has nothing to prove", () => {
+  const ok = classifyHeartbeat({ node: "land", before: 7, after: 7, toolCallsMade: false })
+  assert.equal(ok.state, "ok")
+  assert.match(ok.ledgerLine, /nothing to prove/)
+})
+
+test("a missing run-state file is a degraded heartbeat, not a hook failure", () => {
+  const degraded = classifyHeartbeat({
+    node: "plan",
+    before: 0,
+    after: 0,
+    runStatePresent: false
+  })
+  assert.equal(degraded.state, "degraded")
+  assert.match(degraded.message, /not a hook failure/)
+  assert.match(degraded.message, /canary remains the binding proof/)
+  assert.match(degraded.ledgerLine, /degraded/)
+})
+
+test("a degraded heartbeat never reports as blocked, so the run continues", () => {
+  for (const toolCallsMade of [true, false]) {
+    const degraded = classifyHeartbeat({
+      node: "define",
+      before: 5,
+      after: 5,
+      runStatePresent: false,
+      toolCallsMade
+    })
+    assert.equal(degraded.state, "degraded")
   }
 })

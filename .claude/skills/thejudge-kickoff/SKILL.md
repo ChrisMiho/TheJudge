@@ -17,6 +17,11 @@ Orient in this repo without pre-loading the full PRD, and optionally seed a new 
 
 Optional: a feature idea description in the same message.
 
+Optional: a supplied slug. `graph-run`'s door proposes a slug before
+dispatching node 1 and passes it here so the branch and the package share one
+name — use it verbatim instead of proposing one. With no supplied slug, every
+direct invocation, propose one as today.
+
 ## Mode
 
 Direct invocation keeps the minimal reads and user handoff below.
@@ -29,10 +34,33 @@ return `NO ACTIONABLE PACKAGE`), and create the normal `IDEA.md`/README outputs.
 Return the selected evidence and artifacts to the named orchestrator without
 pausing for user approval.
 
+When `graph-run is controlling` and staged intake exists at
+`.worktrees/.graph-intake/<run-id>/`, handle it only after `PRD/work/<slug>/`
+exists: copy each staged item verbatim into `PRD/work/<slug>/intake/`, commit
+it on the branch, then delete the staged copy — in that order. Record the
+staging path in `GRAPH-RUN.md` at this ledger's first write; the package
+folder, and the ledger inside it, do not exist any earlier.
+
+When `graph-run is controlling`, before writing `IDEA.md`, search
+`PRD/instructions/receipts/` — already named `<slug>-<date>.md` — for slug
+and keyword matches against the request and any intake material. Write one
+`## Prior run` line per match into `IDEA.md`, naming the receipt path; no
+match writes no section, and the run continues uninterrupted. Matches are a
+flat list, not a chain walk — receipts carry no parent pointer, so there is
+nothing to walk when a third run follows a second. Offer a match to
+`thejudge-refinement` as input, never as scope; the owner is never asked to
+recall or name a prior receipt.
+
+This is keyword matching, not semantic search: it will miss a receipt sharing
+no words with the request, and may offer an irrelevant one. A miss costs a
+blind run; a false match costs a read.
+
 ## Reads
 
 1. `README.md` — stack, layout, quality gates, current product status
 2. `PRD/README.md` — control plane, source-of-truth precedence, navigation
+3. `PRD/instructions/receipts/`, under `graph-run is controlling` — searched
+   for prior-run matches, never pre-loaded otherwise
 
 In direct mode, nothing else. Do not pre-load `PRD/sections/` or
 `PRD/instructions/` — see `reference.md` for the full precedence model and task
@@ -42,12 +70,15 @@ In direct mode, nothing else. Do not pre-load `PRD/sections/` or
 
 Only when the user describes a new idea:
 
-- `PRD/work/<slug>/IDEA.md` — 3–5 sentences: problem, outcome, non-goals
+- `PRD/work/<slug>/IDEA.md` — 3–5 sentences: problem, outcome, non-goals; under
+  `graph-run is controlling`, one `## Prior run` line per receipts match
 - `PRD/work/<slug>/README.md` — `status: ideation` at top
 - Empty marker `PRD/work/<slug>/STATUS.ideation` (exactly one STATUS.* per package)
 - Row under `## ideation` in `PRD/work/STATUS.md` (create the board if missing)
+- `PRD/work/<slug>/intake/` — only under `graph-run is controlling` with staged
+  intake present; committed, and the staged copy deleted, once written
 
-`<slug>` is a new kebab-case name proposed from the idea (e.g. `card-wotc-rule-enrichment`). If the user only wants orientation, write nothing.
+`<slug>` is a new kebab-case name proposed from the idea (e.g. `card-wotc-rule-enrichment`), or the supplied slug when the caller provides one. If the user only wants orientation, write nothing.
 
 ## Gates
 
@@ -64,5 +95,5 @@ created artifacts to `thejudge-prepare`.
 Direct orient-only: none — point the user at `AGENT-SKILLS.md` and this skill's
 `reference.md`.
 
-Direct idea captured: `/thejudge-refinement PRD/work/<slug>/` (Cursor / Claude
-Code) or `$thejudge-refinement PRD/work/<slug>/` (Codex).
+Direct idea captured: `/thejudge-refinement PRD/work/<slug>/` (Claude Code)
+or `$thejudge-refinement PRD/work/<slug>/` (Codex).

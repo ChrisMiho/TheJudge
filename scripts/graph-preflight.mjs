@@ -5,9 +5,57 @@
 // decision lives here as a pure, tested function rather than as agent prose.
 
 import { execFileSync } from "node:child_process"
+import { existsSync } from "node:fs"
+
+import { CANARY_COMMAND } from "./lib/boundary-rules.mjs"
 import { pathToFileURL } from "node:url"
 
 export const DEFAULT_THRESHOLDS = { maxFiles: 10, maxLines: 200 }
+
+// `.claude/graph-profile.json` sets this in its `env` block, so it is present
+// only in a session actually launched with `--settings <that file>`. It is the
+// one observable difference between a profiled session and an unprofiled one,
+// which is what turns the ledger's `Profile:` field from the user's word into
+// evidence.
+//
+// Stated limit: the sentinel proves the *file was loaded*. It does not prove
+// any individual deny rule fired, and it never will. A run cannot forge it —
+// the profile denies edits to itself — but a run also cannot verify from it
+// that `nohup` or a trailing `&` was refused, because neither is expressible
+// as a rule at all.
+export const PROFILE_SENTINEL_ENV = "THEJUDGE_GRAPH_PROFILE"
+
+// Two graph runs launched against one checkout both commit to it, both rewrite
+// `GRAPH-RUN.md`, and both publish before `build`. That is the same
+// shared-working-directory hazard that produced the 2026-08-17 leak, except
+// with no isolation between them at all. One run at a time.
+//
+// The path sits under `.worktrees/`, which `.gitignore` already covers, so the
+// lock is never committed and never travels with a branch.
+export const LOCK_PATH = ".worktrees/.graph-run.lock"
+
+// The owner's kill switch. Its presence means a run was asked to halt, so a new
+// run must not start on top of it — otherwise throwing the switch stops one run
+// and the next invocation quietly starts another.
+//
+// It sits under `.worktrees/` alongside the lock, which `.gitignore` already
+// covers, so it never travels with a branch.
+export const STOP_PATH = ".worktrees/.graph-stop"
+
+/**
+ * What the ledger's `Profile:` field should say, from observation alone.
+ *
+ * Pure, so the test suite covers both branches without launching a session.
+ */
+export function readProfileSentinel(env = process.env) {
+  const value = env[PROFILE_SENTINEL_ENV]
+  const present = value === "1"
+  return {
+    present,
+    value: value ?? null,
+    ledgerLine: present ? "Profile: loaded (env sentinel)" : "Profile: unverified"
+  }
+}
 
 export const SECRET_PATTERNS = [/(^|\/)\.secrets\//, /(^|\/)\.env($|\.)/, /\.pem$/, /\.key$/, /(^|\/)id_rsa($|\.)/]
 
@@ -316,6 +364,233 @@ export function parseArgs(argv) {
   }
 }
 
+/**
+ * Is the recorded holder still running?
+ *
+ * Signal 0 performs the permission and existence checks without delivering
+ * anything. `EPERM` means the process exists under another user — alive, and
+ * emphatically not ours to reclaim.
+ */
+export function isPidAlive(pid, kill = process.kill.bind(process)) {
+  if (!Number.isInteger(pid) || pid <= 0) return false
+  try {
+    kill(pid, 0)
+    return true
+  } catch (error) {
+    return error.code === "EPERM"
+  }
+}
+
+export function parseLockFile(contents) {
+  try {
+    const parsed = JSON.parse(contents)
+    if (!parsed || typeof parsed !== "object") return null
+    return {
+      slug: typeof parsed.slug === "string" ? parsed.slug : null,
+      runId: typeof parsed.runId === "string" ? parsed.runId : null,
+      pid: Number.isInteger(parsed.pid) ? parsed.pid : null,
+      startedAt: typeof parsed.startedAt === "string" ? parsed.startedAt : null
+    }
+  } catch {
+    return null
+  }
+}
+
+/**
+ * What a run should do about the lock it found — the whole decision, as a pure
+ * function over the file's contents.
+ *
+ * A stale lock is *reported*, never silently stolen: a run that reclaims
+ * without saying so is indistinguishable from one that never contended.
+ */
+export function classifyLock({ contents, isAlive = isPidAlive }) {
+  if (contents === null || contents === undefined) {
+    return { state: "free", holder: null, message: null }
+  }
+
+  const holder = parseLockFile(contents)
+  if (!holder || holder.pid === null) {
+    return {
+      state: "corrupt",
+      holder: null,
+      message:
+        `graph-run lock at ${LOCK_PATH} is unreadable. Inspect it, confirm no ` +
+        `run is active, then delete it before starting.`
+    }
+  }
+
+  const who =
+    `slug ${holder.slug ?? "<unknown>"}, run id ${holder.runId ?? "<unknown>"}, ` +
+    `pid ${holder.pid}`
+
+  if (isAlive(holder.pid)) {
+    return {
+      state: "held",
+      holder,
+      message:
+        `graph-run lock at ${LOCK_PATH} is held by ${who}` +
+        `${holder.startedAt ? `, started ${holder.startedAt}` : ""}. ` +
+        `Refusing: two runs cannot share one launch checkout. Wait for that run ` +
+        `to reach a terminal state, which releases the lock.`
+    }
+  }
+
+  return {
+    state: "stale",
+    holder,
+    message:
+      `graph-run lock at ${LOCK_PATH} names ${who}` +
+      `${holder.startedAt ? `, started ${holder.startedAt}` : ""}, but that ` +
+      `process is not running. The lock is stale. Confirm the run really ended, ` +
+      `then reclaim it with: rm ${LOCK_PATH}`
+  }
+}
+
+/**
+ * Whether the owner's stop sentinel blocks a new run.
+ *
+ * Pure, so the refusal is tested without touching the filesystem. The message
+ * names both the sentinel and the file to remove: a refusal the owner cannot
+ * act on is a dead end, not a boundary.
+ */
+export function classifyStopSentinel({ present }) {
+  if (!present) return { state: "clear", message: null }
+  return {
+    state: "refused",
+    message:
+      `graph-preflight: refusing to start — the owner's stop sentinel exists at ` +
+      `${STOP_PATH}. A run was asked to halt, and starting another would undo ` +
+      `that. Confirm the halted run finished, then remove it to resume: ` +
+      `rm ${STOP_PATH}`
+  }
+}
+
+/**
+ * The canary the run issues to prove its own enforcer is firing.
+ *
+ * Re-exported rather than restated: the command literal lives in
+ * `boundary-rules.mjs` with every other one in this system, so the canary and
+ * the rule that denies it can never drift apart.
+ */
+export { CANARY_COMMAND }
+
+/**
+ * Whether the canary proved the hook is live.
+ *
+ * A canary that was *denied* is the proof — the hook returned a reason, which
+ * only a firing hook can do. A canary that was *allowed* is not a warning to
+ * note and continue past: the run has no working enforcer, so it ends at
+ * `BLOCKED` before node 2 is ever dispatched.
+ *
+ * `.claude/graph-profile.json` is deliberately not a fallback here. A failed
+ * proof is refused, never downgraded to a weaker one.
+ */
+export function classifyCanary({ denied, response, workspaceTrusted = true }) {
+  if (denied) {
+    return {
+      state: "proven",
+      message: null,
+      ledgerLine: `Canary: denied — hook live (\`${CANARY_COMMAND}\`)`
+    }
+  }
+
+  // An untrusted workspace cannot run project hooks at all, so it fails the
+  // canary the same way a missing hook does. Naming it separately is the point:
+  // "your hook is broken" and "you never trusted this checkout" have completely
+  // different recovery actions.
+  if (!workspaceTrusted) {
+    return {
+      state: "blocked",
+      reason: "untrusted-workspace",
+      message:
+        `graph-preflight: BLOCKED — the workspace is not trusted, so project ` +
+        `hooks never load and the boundary hook cannot deny anything.\n` +
+        `  tried:    ${CANARY_COMMAND}\n` +
+        `  response: ${response ?? "(allowed — no hook reason returned)"}\n` +
+        `  recovery: trust this checkout in Claude Code, then re-run preflight. ` +
+        `Do not start the run until the canary is denied.`,
+      ledgerLine: "Canary: allowed — BLOCKED (untrusted workspace)"
+    }
+  }
+
+  return {
+    state: "blocked",
+    reason: "canary-not-denied",
+    message:
+      `graph-preflight: BLOCKED — the liveness canary was not denied, so the ` +
+      `boundary hook is not firing. The run has no enforcer and must not start.\n` +
+      `  tried:    ${CANARY_COMMAND}\n` +
+      `  response: ${response ?? "(allowed — no hook reason returned)"}\n` +
+      `  recovery: confirm .claude/settings.json registers the PreToolUse hook ` +
+      `and that scripts/graph-boundary-hook.mjs runs, then re-run preflight. ` +
+      `The permission profile is not a fallback — a failed proof is refused, ` +
+      `never downgraded.`,
+    ledgerLine: "Canary: allowed — BLOCKED (hook not firing)"
+  }
+}
+
+/**
+ * Whether the hook was still firing during the node that just finished.
+ *
+ * Read-only over the counter file, whose sole writer is the hook. That is what
+ * makes the heartbeat evidence: the driver cannot manufacture its own proof.
+ *
+ * A node that made tool calls while the counter stood still means the hook
+ * stopped firing mid-run, which the canary at run start cannot catch.
+ */
+export function classifyHeartbeat({
+  node,
+  before,
+  after,
+  runStatePresent = true,
+  toolCallsMade = true
+}) {
+  if (!runStatePresent) {
+    return {
+      state: "degraded",
+      message:
+        `graph-run: degraded heartbeat at node \`${node}\` — no usable run ` +
+        `state, so there was no counter key to advance. This is not a hook ` +
+        `failure. The run-start canary remains the binding proof.`,
+      ledgerLine: `Heartbeat: degraded (no run state) at \`${node}\``
+    }
+  }
+
+  if (after > before) {
+    return {
+      state: "ok",
+      message: null,
+      ledgerLine: `Heartbeat: ${before} → ${after} at \`${node}\``
+    }
+  }
+
+  if (!toolCallsMade) {
+    return {
+      state: "ok",
+      message: null,
+      ledgerLine: `Heartbeat: no tool calls at \`${node}\` — nothing to prove`
+    }
+  }
+
+  return {
+    state: "blocked",
+    message:
+      `graph-run: BLOCKED — the boundary hook stopped firing during node ` +
+      `\`${node}\`.\n` +
+      `  expected: the counter to advance past ${before}\n` +
+      `  observed: ${after}\n` +
+      `  meaning:  the node made tool calls that no hook saw, so the run has ` +
+      `been unenforced for an unknown span. The run does not advance.\n` +
+      `  recovery: re-run the liveness canary, repair the hook, then resume.`,
+    ledgerLine: `Heartbeat: static at ${after} during \`${node}\` — BLOCKED`
+  }
+}
+
+/** The record a run writes when it takes the lock. */
+export function lockRecord({ slug, runId, pid, now }) {
+  return JSON.stringify({ slug, runId, pid, startedAt: now }, null, 2) + "\n"
+}
+
 function main(argv) {
   let options
   try {
@@ -330,6 +605,14 @@ function main(argv) {
     return process.exit(2)
   }
 
+  // Before the dry run and before any mutation: a halted run must not be
+  // restarted by the next invocation.
+  const stop = classifyStopSentinel({ present: existsSync(STOP_PATH) })
+  if (stop.state === "refused") {
+    console.error(stop.message)
+    return process.exit(2)
+  }
+
   const runGit = (args) => execFileSync("git", args, { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 })
 
   const base = resolveBase(runGit, options.base)
@@ -337,6 +620,14 @@ function main(argv) {
   const classification = classifyWorkingTree(entries, options.thresholds)
   const commands = planActions(classification, { ...options, base })
 
+  const sentinel = readProfileSentinel()
+  console.log(`profile sentinel: ${sentinel.present ? "present" : "absent"}`)
+  console.log(sentinel.ledgerLine)
+  // The canary is a *tool call*, which a script cannot make — only the agent
+  // running through the harness can. So the script names it and the skill
+  // issues it, then classifies the result with `classifyCanary()`.
+  console.log(`canary command: ${CANARY_COMMAND}`)
+  console.log("canary: pending — issue it as a Bash tool call and require a deny")
   console.log(`action: ${classification.action}`)
   console.log(`reason: ${classification.reason}`)
   console.log(`files: ${classification.fileCount}`)

@@ -5,7 +5,6 @@ coverage
 .worktrees
 **/.claude/worktrees
 package-lock.json
-.cursor
 PRD
 apps/frontend/data/scryfall/default-cards.json
 apps/frontend/public/data/cardMetadata.json

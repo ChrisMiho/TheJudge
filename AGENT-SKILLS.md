@@ -2,20 +2,20 @@
 
 TheJudge uses 11 `thejudge-*` skills to drive PRD-based feature work — including
 autonomous preparation, sequential single-slice, unattended all-slice, and
-cross-package fanout modes — plus 2 `graph-*` skills that chain those 11 into
-autonomous runs. All 13 are **model-invocable** — the agent may select the
+cross-package fanout modes — plus 3 `graph-*` skills that chain those 11 into
+autonomous runs. All 14 are **model-invocable** — the agent may select the
 matching skill when context clearly indicates it — and every skill remains
-callable explicitly (`/thejudge-*` and `/graph-*` in Cursor and Claude Code,
+callable explicitly (`/thejudge-*` and `/graph-*` in Claude Code,
 `$thejudge-*` and `$graph-*` in Codex).
 
 ## Single source + sync
 
-Skills are **not** maintained in three separate copies. Edit only:
+Skills are **not** maintained in two separate copies. Edit only:
 
-`.cursor/skills/<skill-name>/` — both `thejudge-*` and `graph-*`
+`.claude/skills/<skill-name>/` — both `thejudge-*` and `graph-*`
 
-Codex and Claude Code load skills from their own conventional paths. This repo
-copies the canonical tree into those paths with:
+Codex loads skills from its own conventional path. This repo copies the
+canonical tree into that path with:
 
 ```bash
 npm run skills:ai-sync
@@ -23,21 +23,19 @@ npm run skills:ai-sync
 
 | Platform | Discovery path | Role |
 | --- | --- | --- |
-| Cursor | `.cursor/skills/` | **Canonical** — edit here |
-| Codex | `.agents/skills/` | Synced copy |
-| Claude Code | `.claude/skills/` | Synced copy |
+| Claude Code | `.claude/skills/` | **Canonical** — edit here |
+| Codex | `.agents/skills/` | Synced mirror |
 
 Run `npm run skills:ai-sync` after any skill change, then commit
-`.cursor/skills/`, `.agents/skills/`, and `.claude/skills/` together. All
-three trees are byte-identical after a sync — every skill runs in every
-runtime.
+`.claude/skills/` and `.agents/skills/` together. Both trees are
+byte-identical after a sync — every skill runs in both runtimes.
 
 ## Workflow sequence
 
 ```mermaid
 flowchart LR
-  prepare[thejudge-prepare] -. controls .-> kickoff
-  prepare -. READY after human merge .-> implementall
+  graphrun[graph-run] -. controls .-> kickoff
+  graphrun -. controls .-> implementall
   kickoff[thejudge-kickoff] --> refinement[thejudge-refinement]
   refinement --> qc[thejudge-quality-check]
   qc --> mapout[thejudge-map-out]
@@ -71,7 +69,7 @@ orthogonal to the pipeline shown above.
 
 | Skill | When | Writes | Status | Next |
 | --- | --- | --- | --- | --- |
-| `thejudge-prepare` | One arbitrary request needs autonomous preparation before an unattended implementation loop | One reviewed `PRD/work/<slug>/` package plus a docs-only preparation branch/PR, or `NO ACTIONABLE PACKAGE` | READY → `active`; BLOCKED preserves the furthest valid status | After human merge, `thejudge-implement-all` |
+| `thejudge-prepare` | Autonomous preparation of one arbitrary request is wanted directly, outside `graph-run`, before an unattended implementation loop | One reviewed `PRD/work/<slug>/` package plus a docs-only preparation branch/PR, or `NO ACTIONABLE PACKAGE` | READY → `active`; BLOCKED preserves the furthest valid status | After human merge, `thejudge-implement-all` |
 | `thejudge-kickoff` | New session or new feature idea | `IDEA.md`, `README.md`, `STATUS.ideation`, board row | → `ideation` | `thejudge-refinement` |
 | `thejudge-refinement` | An idea needs product definition | `DESIGN-BRIEF.md`, section updates | `refining` → (on approval) `refined` | `thejudge-quality-check` |
 | `thejudge-quality-check` | After refinement, before slicing | PASS/FAIL report only | PASS keeps `refined`; FAIL → `refining` | `thejudge-map-out` (PASS) or `thejudge-refinement` (FAIL) |
@@ -85,7 +83,7 @@ orthogonal to the pipeline shown above.
 
 ## Graph workflow skills
 
-Two `graph-*` skills chain the lifecycle above into one autonomous run. They
+Three `graph-*` skills chain the lifecycle above into one autonomous run. They
 **delegate** to the `thejudge-*` skills rather than reimplementing them — the
 graph adds sequencing, a ledger, and gates, not a second pipeline. The phase
 skills recognize `graph-run is controlling` alongside
@@ -95,7 +93,8 @@ behavior they carry.
 | Skill | When | Writes | Delegates to |
 | --- | --- | --- | --- |
 | `graph-preflight` | Before an autonomous run, to guarantee a clean freshly branched checkout | Auto-commit or stash, new pushed branch, handoff record | `scripts/graph-preflight.mjs` |
-| `graph-run` | Advancing one package through the full lifecycle without per-step input | `PRD/work/<slug>/GRAPH-RUN.md` ledger, package README `## Autonomous metadata` and `## Preparation gate`, status transitions, gate parks | `graph-preflight`, then 6 of the 11 phase skills — `thejudge-kickoff`, `-refinement`, `-quality-check`, `-map-out`, `-implement-all`, `-cleanup` — plus `superpowers:requesting-code-review` |
+| `graph-run` | Advancing one package through the full lifecycle without per-step input | `PRD/work/<slug>/GRAPH-RUN.md` ledger, package README `## Autonomous metadata` and `## Preparation gate`, status transitions, gate parks | `graph-preflight`, the boundary hook (`scripts/graph-boundary-hook.mjs`, always on), then 6 of the 11 phase skills — `thejudge-kickoff`, `-refinement`, `-quality-check`, `-map-out`, `-implement-all`, `-cleanup` — plus a no-write reviewer subagent at node 7 |
+| `graph-gate-review` | After a run parks at the `define` gate, to walk the recorded `PRD/sections/` diff one stable ID at a time | `GRAPH-RUN.md`'s `## Gate verdicts` and resolved `## Open gate`, the restored `STATUS.*` marker and board row, and `PRD/sections/` edits — only to apply an owner verdict | nothing; it never dispatches and never advances a node |
 
 Graph runs load `.claude/graph-profile.json` as their permission profile:
 
@@ -121,19 +120,19 @@ Full vocabulary and rules: `PRD/instructions/workflow-reference.md`.
 ## Session handoffs
 
 Every skill that hands off ends with a **Next step**: one sentence plus the
-literal command, prefixed `/thejudge-*` (Cursor, Claude Code) or `$thejudge-*`
+literal command, prefixed `/thejudge-*` (Claude Code) or `$thejudge-*`
 (Codex).
 
 ## Adding or updating a skill
 
-1. Create or edit under `.cursor/skills/<skill-name>/`.
+1. Create or edit under `.claude/skills/<skill-name>/`.
 2. If the edit changes behavior — gates, refusal conditions, outcome taxonomy,
    rationalizations, or the `description` — run that skill's fixture under
    `PRD/instructions/skill-fixtures/` before merging. Format and re-run triggers:
    `PRD/instructions/skill-testing.md`. Method: `superpowers:writing-skills`.
 3. Run `npm run skills:ai-sync`.
-4. Verify: `diff -rq .cursor/skills .claude/skills` and `diff -rq .cursor/skills .agents/skills` — both must produce no output (the trees are now a plain three-way mirror; no expected exclusions).
-5. Commit all three skill trees.
+4. Verify: `diff -rq .claude/skills .agents/skills` — must produce no output (the trees are a plain two-way mirror; no expected exclusions).
+5. Commit both skill trees.
 
 ## Related docs
 
@@ -141,4 +140,4 @@ literal command, prefixed `/thejudge-*` (Cursor, Claude Code) or `$thejudge-*`
 - `PRD/work/STATUS.md` — skill-maintained work-package board
 - `PRD/instructions/preparation-contract.md` — autonomous one-package preparation, assumptions, blockers, and publication
 - `PRD/README.md` — product control plane
-- `.cursor/skills/thejudge-kickoff/reference.md` — PRD quick map
+- `.claude/skills/thejudge-kickoff/reference.md` — PRD quick map

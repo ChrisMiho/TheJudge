@@ -1,0 +1,71 @@
+{
+  "slug": "graph-single-door-workflow",
+  "slice": "H",
+  "criteria": [
+    {
+      "id": "H1",
+      "statement": "All four new fixture files exist with the four required sections, and no scenario names its skill under test.",
+      "value": true,
+      "evidence": {
+        "command": "ls PRD/instructions/skill-fixtures",
+        "paths": [
+          "PRD/instructions/skill-fixtures/graph-run/single-door-and-thin-request.md",
+          "PRD/instructions/skill-fixtures/thejudge-kickoff/supplied-slug-and-prior-runs.md",
+          "PRD/instructions/skill-fixtures/thejudge-refinement/intake-is-not-authority.md",
+          "PRD/instructions/skill-fixtures/thejudge-cleanup/intake-in-the-receipt.md"
+        ]
+      }
+    },
+    {
+      "id": "H2",
+      "statement": "Each new fixture's `## Grading key` contains at least one item the skill must refuse and at least one trap item.",
+      "value": true,
+      "evidence": {
+        "paths": [
+          "PRD/instructions/skill-fixtures/graph-run/single-door-and-thin-request.md",
+          "PRD/instructions/skill-fixtures/thejudge-kickoff/supplied-slug-and-prior-runs.md",
+          "PRD/instructions/skill-fixtures/thejudge-refinement/intake-is-not-authority.md",
+          "PRD/instructions/skill-fixtures/thejudge-cleanup/intake-in-the-receipt.md"
+        ]
+      }
+    },
+    {
+      "id": "H3",
+      "statement": "The no-skill control was run for each new fixture and its result recorded, including any predicted guardrail cut on the control's evidence.",
+      "value": true,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "H4",
+      "statement": "Each new fixture's `## Measured runs` carries a dated entry with at least three reps, naming the skill version under test.",
+      "value": true,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "H5",
+      "statement": "Variance across reps is recorded per fixture, not collapsed to pass/fail.",
+      "value": true,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "H6",
+      "statement": "`dirty-checkout-and-gate.md` has a dated re-run entry, and the supplied `--branch` was honored verbatim in it.",
+      "value": true,
+      "evidence": {
+        "paths": ["PRD/instructions/skill-fixtures/graph-run/dirty-checkout-and-gate.md"]
+      }
+    },
+    {
+      "id": "H7",
+      "statement": "Any fixture failure produced a skill edit and a re-run, not a fixture edit to match observed behavior. Each such edit is named, or none is stated.",
+      "value": true,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "H8",
+      "statement": "`npm run skills:ai-sync` run and `diff -rq .claude/skills .agents/skills` prints nothing after any skill edit H7 produced.",
+      "value": true,
+      "evidence": { "command": "npm run skills:ai-sync" }
+    }
+  ]
+}

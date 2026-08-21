@@ -1,0 +1,71 @@
+{
+  "slug": "graph-single-door-workflow",
+  "slice": "F",
+  "criteria": [
+    {
+      "id": "F1",
+      "statement": "`NO ACTIONABLE PACKAGE` now appears in both `graph-run/SKILL.md` and `graph-workflow-contract.md` as a named edge from node 2.",
+      "value": true,
+      "evidence": {
+        "command": "grep .*NO ACTIONABLE PACKAGE.*",
+        "paths": [".claude/skills/graph-run/SKILL.md", "PRD/instructions/graph-workflow-contract.md"]
+      }
+    },
+    {
+      "id": "F2",
+      "statement": "`graph-run/SKILL.md`'s `BLOCKED` paragraph covers both an external condition outside the repository and a request too thin to package.",
+      "value": true,
+      "evidence": { "paths": [".claude/skills/graph-run/SKILL.md"] }
+    },
+    {
+      "id": "F3",
+      "statement": "The `## Terminal states` table still lists exactly four states: COMPLETE, PARKED, BLOCKED, PROMPTED.",
+      "value": true,
+      "evidence": {
+        "command": "grep .*PROMPTED.* \\.claude/skills/graph-run/SKILL\\.md"
+      }
+    },
+    {
+      "id": "F4",
+      "statement": "`graph-run/SKILL.md` states why this is BLOCKED not PARKED: no artifact to resume from, and no package folder, marker, or board row to park against.",
+      "value": true,
+      "evidence": { "paths": [".claude/skills/graph-run/SKILL.md"] }
+    },
+    {
+      "id": "F5",
+      "statement": "`graph-run/SKILL.md` requires the report to name the `thejudge-auto/<slug>` branch, whether node 1 committed or stashed, and the intake staging path.",
+      "value": true,
+      "evidence": { "paths": [".claude/skills/graph-run/SKILL.md"] }
+    },
+    {
+      "id": "F6",
+      "statement": "`graph-run/SKILL.md` states the branch is not deleted, with the reason, and that recovery needs an explicit `--branch` because of the exit-code-2 collision.",
+      "value": true,
+      "evidence": { "paths": [".claude/skills/graph-run/SKILL.md"] }
+    },
+    {
+      "id": "F7",
+      "statement": "The lock-release rule still points at the terminal-states table as the definitive list, and no second list of releasing states was introduced.",
+      "value": true,
+      "evidence": { "paths": [".claude/skills/graph-run/SKILL.md"] }
+    },
+    {
+      "id": "F8",
+      "statement": "This slice's diff shows no change to the contract's `## Boundaries` list, the node table rows, the model column, or the cap column.",
+      "value": true,
+      "evidence": { "command": "git diff" }
+    },
+    {
+      "id": "F9",
+      "statement": "`npm run skills:ai-sync` run and `diff -rq .claude/skills .agents/skills` prints nothing.",
+      "value": true,
+      "evidence": { "command": "npm run skills:ai-sync" }
+    },
+    {
+      "id": "F10",
+      "statement": "Read the widened BLOCKED paragraph against the tiebreak sentence: a thin request resolves to BLOCKED and no other case moved out of PARKED.",
+      "value": true,
+      "evidence": { "manual": true }
+    }
+  ]
+}

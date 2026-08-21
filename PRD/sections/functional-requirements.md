@@ -3431,3 +3431,297 @@
   - REQ-064
 - Notes:
   - found during the `ui-review` light sweep across destinations rather than in the original braindump; included because it is the only user-facing defect the sweep surfaced outside the reported screens
+
+### REQ-152
+- Title: Graph boundaries enforced by a hook that needs no launch flag
+- Priority: high
+- Description: Every boundary in `PRD/instructions/graph-workflow-contract.md` is enforced by a `PreToolUse` hook configured in a committed `.claude/settings.json`, so enforcement does not depend on anyone remembering `claude --settings .claude/graph-profile.json`.
+- Acceptance Criteria:
+  - the hook denies a boundary-violating tool call in a session launched with no `--settings` flag at all
+  - the hook denies a boundary-violating tool call issued from inside a dispatched subagent, not only from the top-level session — hook input carries `agent_id` / `agent_type`, and every graph node is a subagent
+  - the hook reads `tool_input.command` text directly, so `cp`, `rsync`, and shell redirection into a protected path are denied — the cases the profile's rule matcher cannot see
+  - `nohup` is denied by the hook; the profile's `Bash(nohup*)` rule can never fire because `nohup` is stripped as a wrapper before rules match
+  - a trailing background `&` is denied by the hook; no permission rule for it is expressible, because `&` is consumed as a command separator before any rule sees the command text
+  - a denied call returns a reason the agent can read and act on, and the run treats it as the existing `PROMPTED` terminal state rather than retrying or rephrasing
+- Constraints:
+  - `.claude/graph-profile.json` is retained as a second, independent layer and is not deleted; the hook is authoritative and the profile is belt-and-braces
+  - the hook and `.claude/settings.json` join the protected path set — a run must not be able to edit its own enforcer
+  - denial is by exit code 2 with the reason on stderr, or exit 0 with `hookSpecificOutput.permissionDecision: "deny"`; the run never treats hook silence as approval
+  - no boundary is removed from the contract as part of moving it — this changes the mechanism, not the list
+- Dependencies:
+  - DEC-163
+  - DEC-164
+  - DEC-166
+- Notes:
+  - whether a hook deny survives `permission_mode: "bypassPermissions"` is not explicitly documented; a slice must verify it against the running binary and record the measurement, and the contract must not assert it until then
+
+### REQ-153
+- Title: Two boundary tiers, the strict tier gated by the run lock
+- Priority: high
+- Description: The hook enforces a universal tier in every session and a graph tier only while a run holds `.worktrees/.graph-run.lock`, so committed always-on enforcement does not block ordinary work in this repository.
+- Acceptance Criteria:
+  - the universal tier denies in any session with no lock present: `.secrets/**` reads and writes, force-push in every flag and leading-`+` refspec form, remote branch deletion, `main`/`master` pushes, `rm -rf`, `sudo`, `pkill`, `killall`
+  - the graph tier denies only while the lock file exists: writes to `thejudge-*/**` in both skill trees, `CLAUDE.md`, `.claude/settings*.json`, `.claude/graph-profile.json`, plus `nohup` and background `&`
+  - the graph tier also denies agent writes to the hook's own records — `.worktrees/.graph-node-calls.json` and the observed-evidence log — so a run can neither reset its own call count nor forge evidence for a criterion it never checked
+  - an ordinary session with no lock can edit a `thejudge-*` skill and `CLAUDE.md` without a denial — skill authoring is not a graph run and must stay unblocked
+  - the same session, with a lock present, is denied those same edits
+  - removing the lock is not an escape hatch: lock release goes through the run's own release path, and a Bash deletion of the lock file is denied while a run is live
+- Constraints:
+  - tier membership is data the hook reads, not logic duplicated between the hook and the profile
+  - a missing or unparseable lock is treated as "no run active" for the graph tier and never as a reason to skip the universal tier
+- Dependencies:
+  - REQ-152
+  - DEC-166
+- Notes:
+  - the lock already exists as `classifyLock()` in `scripts/graph-preflight.mjs`; this requirement reuses that record rather than introducing a second run-active signal
+
+### REQ-154
+- Title: Owner kill switch that halts a run without stranding the lock
+- Priority: high
+- Description: The owner can stop a graph run in flight by creating `.worktrees/.graph-stop`, and the run halts cleanly — terminal state written, lock released — rather than dying mid-node the way Ctrl-C does.
+- Acceptance Criteria:
+  - `graph-run` checks for the sentinel immediately before every node dispatch and halts if it exists
+  - on halt the run writes a terminal state, records the halt and its evidence under `## Open gate` in `GRAPH-RUN.md`, updates the package `STATUS.*` marker and the `PRD/work/STATUS.md` board row, and deletes the concurrency lock
+  - a sentinel created mid-node lets the current node finish; the halt happens at the node boundary, so no ledger is left half written
+  - the hook denies new node dispatches while the sentinel exists, as the backstop for a driver that ignores its own check
+  - the halted run resumes with `/graph-run PRD/work/<slug>/` once the sentinel is removed, from the node recorded in the ledger
+- Constraints:
+  - the sentinel lives under the already-ignored `.worktrees/` root, so it never travels with a branch
+  - a `STEER.md` mid-run instruction channel is explicitly out of scope: every line it carried would need an `## Instruction ledger` row classified `answered-once` or `refused`, and that is its own package
+- Dependencies:
+  - REQ-152
+  - DEC-166
+- Notes:
+  - the halt state is drawn from `graph-run`'s existing `## Terminal states` table, which stays the single authority; this requirement adds no fifth state
+
+### REQ-155
+- Title: Node 7 review by an independent reviewer with no write tools
+- Priority: high
+- Description: The `review` node dispatches a fresh-context subagent that holds no Write or Edit tools and grades the slice against its own stated acceptance criteria, replacing `superpowers:requesting-code-review` at that node.
+- Acceptance Criteria:
+  - the reviewer subagent is dispatched with no Write, Edit, or NotebookEdit tools, and cannot modify the work it is grading
+  - the reviewer's context never saw the build — it reads the diff, the slice doc, and the package artifacts, not the build node's transcript
+  - the dispatch brief names the slice's acceptance criteria as the grading rubric and instructs the reviewer to flag only gaps that affect correctness or those stated requirements
+  - a finding that is a preference, a style note, or an improvement outside the slice's stated requirements is not rated Critical or Important and does not trigger a loop back to `build`
+  - `superpowers:requesting-code-review` is removed from node 7 in the node table, the contract, and `AGENT-SKILLS.md`
+- Constraints:
+  - the existing loop cap is unchanged: `review` may return to `build` at most twice, and a third occurrence parks at `owner-action`
+  - the reviewer is dispatched by `graph-run` and is not a `thejudge-*` skill; the run predicate rules are unchanged
+- Dependencies:
+  - DEC-163
+  - DEC-166
+- Notes:
+  - the failure this addresses is self-preferential bias — a model grading work it helped produce. The counter-risk is a reviewer that manufactures findings to look useful, which matters here because the loop budget is only two
+
+### REQ-156
+- Title: Per-node tool-call cap enforced by the hook
+- Priority: medium
+- Description: Each node in the graph node table carries a maximum tool-call count for one dispatch of that node; the hook counts calls per node attempt and denies past the cap, and the run parks rather than overrunning silently.
+- Acceptance Criteria:
+  - the node table gains a cap column, and every node has a value. The value is a budget for one dispatch of that node, not a per-run total for it
+  - `graph-run` writes `.worktrees/.graph-run-state.json` immediately before every node dispatch, recording the run id, the node about to be dispatched, and the attempt number for that node
+  - the hook reads that file to learn the current node; it does not parse `GRAPH-RUN.md` and does not infer the node from the tool call itself
+  - the hook increments a counter keyed by run id, node, and attempt on each tool call, and denies once that attempt's cap is reached, naming the node, the attempt, and the count in the denial reason
+  - exceeding a cap parks the package at `owner-action` with the node, the cap, and the observed count as evidence in `GRAPH-RUN.md`
+  - the counter survives a park and resume — a resumed run does not restart the count from zero for an attempt it already partly spent, because the counter is keyed by run id, node, and attempt rather than by session
+  - a node re-entered by a loop-back — `define` on a `gate-qc` FAIL, `build` on a `review` finding — is a new attempt and starts a fresh budget; it never parks before doing any work on a budget an earlier attempt spent
+  - the cap adds no third loop limit: the contract's existing loop caps — at most three FAIL returns to `define`, at most two returns to `build` — remain the only bound on how many times a node is dispatched
+  - the cap is not a fifth terminal state; an overrun uses the existing `PARKED` state
+- Constraints:
+  - the cap is tool calls, not spend: the Agent SDK's `max_turns` and `max_budget_usd` are not available to a skill-driven session, and dollar cost is not observable to a hook
+  - counter state lives under `.worktrees/`, alongside the lock, and never travels with a branch. The hook is the only writer of `.worktrees/.graph-node-calls.json`; `graph-run` is the only writer of `.worktrees/.graph-run-state.json`; `graph-preflight` remains the only writer of `.worktrees/.graph-run.lock`
+  - the run-state file is deliberately not folded into the lock record: the lock is the concurrency guard, `parseLockFile()` treats an unreadable lock as a hard blocker for the next run, and a per-dispatch rewrite would put that guard at risk on every node boundary
+  - a missing or unparseable run-state file means the hook cannot attribute the call to a node, so the cap does not fire; this degrades the cap and never blocks a run, and the condition is reported rather than silent
+- Dependencies:
+  - REQ-152
+  - DEC-166
+- Notes:
+  - the runaway shape this catches is a node looping on itself, which is what actually burns a run's budget
+
+### REQ-157
+- Title: Slice criteria start false and need observed evidence to flip
+- Priority: medium
+- Description: Each slice emits a machine-readable criteria file in which every acceptance criterion starts `false`, and an agent cannot flip one to `true` unless the hook has observed a matching evidence read — so node 6's `ok` is ground truth rather than a self-report.
+- Acceptance Criteria:
+  - `thejudge-map-out` emits a criteria file per slice, one entry per acceptance criterion, each carrying a stable criterion id, a value initialised `false`, and an `evidence` block
+  - the `evidence` block is what maps a tool call to a criterion: it names a command pattern, one or more file paths that must be read, or both. `thejudge-map-out` authors it beside the criterion in the slice doc, so it is written once with the criterion rather than maintained as a second list
+  - the hook matches every observed tool call against every criterion's `evidence` block and appends the ids of matching criteria to an append-only observed-evidence log under `.worktrees/`, keyed by run id and slice
+  - a write flipping a criterion to `true` is denied unless that criterion's id appears in the observed-evidence log, and the denial names the criterion id and the evidence it is still missing
+  - a criterion with no machine-checkable evidence is marked `manual` in the file, and its evidence event is defined rather than left open: the agent writes a dated observation line naming the criterion id into the slice's evidence log, and the hook records the observed write as that criterion's evidence event
+  - node 6 (`build`) reports `ok` only when every criterion in every slice's file is `true`; any remaining `false` fails the node
+- Constraints:
+  - a `manual` criterion's evidence proves the check occurred, not that it passed — the content of the observation line is still the agent's own word. This is stated in the contract as a named limit rather than claimed as ground truth
+  - the observed-evidence log is append-only and hook-written; an agent write to it is denied by the graph tier, so a run cannot forge its own evidence
+  - this does not change the slice doc format that `PRD/instructions/requirement-format.md` defines — the criteria file is emitted from it
+- Dependencies:
+  - REQ-152
+  - DEC-166
+- Notes:
+  - the same self-report weakness applies to `graph-ledger-check.mjs`, whose inputs `graph-run` writes itself; that limit is stated in the contract and is not closed by this requirement
+
+### REQ-158
+- Title: The no-pre-authorization rule is re-read at every node dispatch
+- Priority: medium
+- Description: `graph-run` re-reads the no-pre-authorization rule from `PRD/instructions/graph-workflow-contract.md` immediately before writing each node's dispatch prompt, so the rule cannot be lost to compaction partway through a long run.
+- Acceptance Criteria:
+  - the rule is read from the contract before every dispatch prompt is written, not once at run start
+  - the re-read happens at the same point `scripts/graph-ledger-check.mjs` already runs, which is before dispatch rather than after
+  - the rule is not added to `CLAUDE.md`, so it does not apply to every ordinary session in the repository and does not add to that file's dilution
+- Constraints:
+  - the rule's text stays in one place — the contract — and is not duplicated into the skill file or a third location
+- Dependencies:
+  - DEC-163
+  - DEC-166
+- Notes:
+  - the rule this protects is the one written to prevent the 2026-08-17 pre-authorization failure, which makes it the worst one to lose to a compaction pass
+
+### REQ-159
+- Title: The run proves the hook is firing before it starts and while it runs
+- Priority: high
+- Description: A graph run never proceeds on an unproven enforcer. `graph-preflight` issues a canary call the universal tier must deny and refuses to start the run if the deny does not fire, and the driver confirms at every node boundary that the hook is still firing.
+- Acceptance Criteria:
+  - `graph-preflight` issues a canary tool call that the universal tier is defined to deny, and treats the observed deny — the reason text the hook returns — as the proof
+  - a canary that is not denied ends the run at `BLOCKED` before node 2 is dispatched, naming what was tried, what came back, and the recovery action; the run does not start
+  - the same `BLOCKED` path covers the named untrusted-workspace condition, because a project hook that was never trusted cannot deny the canary either
+  - the canary targets a path or command that is inert if it were ever to execute, so a hook that is absent causes no side effect beyond the failed proof
+  - between nodes, `graph-run` confirms that the hook's own counter file advanced during the node just finished; a node that made tool calls while the counter stood still means the hook stopped firing
+  - a failed heartbeat ends the run at `BLOCKED` with the node, the expected advance, and the observed counter as evidence; the run does not advance to the next node
+  - the ledger records the canary result at run start and the heartbeat result at each node boundary, so the proof is in the record rather than in the agent's word
+- Constraints:
+  - the heartbeat is read-only over `.worktrees/.graph-node-calls.json`, whose single writer is the hook, so the driver cannot manufacture its own proof
+  - the heartbeat is unavailable when the cap is degraded — a missing or unparseable `.worktrees/.graph-run-state.json` means the hook attributes no calls to a node, so the counter cannot advance. That condition is reported as a degraded heartbeat rather than as a hook failure, and the canary at run start remains the binding proof
+  - `.claude/graph-profile.json` is not a fallback for a hook that did not fire: the contract already directs treating an unverified profile as absent, so a failed proof is refused rather than downgraded
+- Dependencies:
+  - REQ-152
+  - REQ-153
+  - REQ-156
+  - DEC-166
+- Notes:
+  - the failure this closes is the quiet one — a hook that is present, committed, and trusted still reads exactly like a working hook when it is not firing, and nothing in the run's output distinguishes the two
+
+### REQ-160
+- Title: `graph-run` is the single intake door
+- Priority: high
+- Description: The owner starts any work — an idea, an observation, a bug, or a context document — by invoking `graph-run` with a description and nothing else. No branch name is required, no orchestrator is chosen, and nothing is classified before it is described.
+- Acceptance Criteria:
+  - `graph-run` accepts a bare request with no `--branch` argument and starts a fresh package from it
+  - `--branch <name>`, when supplied, is used verbatim and overrides derivation
+  - `AGENT-SKILLS.md`'s `## Workflow sequence` mermaid diagram names `graph-run` as the door: the two `prepare` edges — `prepare -. controls .-> kickoff` and `prepare -. READY after human merge .-> implementall` — are replaced by `graph-run` edges, so the diagram shows one entry point rather than two
+  - `AGENT-SKILLS.md`'s skill-catalog `When` cell for `thejudge-prepare` no longer reads as an intake route: it names the skill as callable but not an entry point
+  - `AGENT-SKILLS.md`'s `## Graph workflow skills` paragraph says three `graph-*` skills, matching its own three-row table
+  - `PRD/instructions/graph-workflow-contract.md` names `graph-run` as the entry point for new work. Its existing `thejudge-prepare` mentions are the `thejudge-prepare is controlling` predicate and README section ownership, not entry-point claims, and are left as they are
+  - `.claude/skills/thejudge-prepare/SKILL.md` is unchanged in behavior, remains callable, and remains listed in the skill catalog as a non-entry-point skill
+  - `PRD/instructions/preparation-contract.md` is unchanged, and the `thejudge-prepare is controlling` predicate still resolves in all six phase skills that read it
+  - a new issue arriving against an `active`, already-mapped-out package still routes to `thejudge-amend`, and the door does not claim that case
+- Constraints:
+  - no skill is deleted; all 14 remain callable
+  - the node table, models, per-node caps, loop limits, the `define` gate trigger, and every entry in the contract's `## Boundaries` are unchanged
+  - the door adds no depth grading: every entry takes the full path
+- Dependencies:
+  - DEC-163
+  - DEC-166
+  - DEC-167
+- Notes:
+  - the door is not new machinery — `graph-run` already accepted a request plus `--branch` and already delegated package creation to `thejudge-kickoff` at node 2. This requirement removes the remaining choices at intake rather than adding a pipeline
+  - uniform depth is affordable because the `define` gate parks only on a non-empty `PRD/sections/` diff, so a change touching no product truth never interrupts the owner
+  - this package is implemented in an ordinary session, not a graph run. REQ-161, REQ-162, and REQ-163 all edit `thejudge-*` skills, and `graph-workflow-contract.md`'s `## Boundaries` forbids a graph run from modifying any `thejudge-*` skill in either synced tree, with `.claude/graph-profile.json` denying `Edit(./.claude/skills/thejudge-*/**)` and its `.agents/` twin. A graph run would end `PROMPTED` on most slices. The boundary is deliberately left as written — it exists so an autonomous run cannot rewrite the skills that govern it
+
+### REQ-161
+- Title: The door names the work before node 1
+- Priority: high
+- Description: The door proposes one slug from the request and any intake material, derives the branch from it, and passes that slug to node 2, so the branch and the package share one name.
+- Acceptance Criteria:
+  - the door proposes a kebab-case slug before dispatching node 1
+  - the derived branch is `thejudge-auto/<slug>`, matching the convention already in the repository's merge history
+  - `graph-preflight` receives that branch as its required `--branch` argument, and its own contract is otherwise unchanged
+  - node 2 receives the proposed slug and uses it rather than proposing a second name
+  - a slug proposed by intake material is honored ahead of derivation from the request text
+  - an explicitly supplied `--branch` overrides the derived branch without changing the slug node 2 receives
+  - a branch-name collision surfaces as `graph-preflight`'s existing exit-code-2 condition, and the door reports it with the derived name rather than retrying silently
+- Constraints:
+  - the door never infers the branch from the current branch, preserving the existing rule
+  - node ordering is unchanged: `preflight` stays node 1 and `shape` stays node 2
+- Dependencies:
+  - REQ-160
+  - DEC-167
+- Notes:
+  - this exists to resolve an ordering problem rather than for tidiness: node 1 requires a branch and node 2 is where slugs are born, so without the door proposing first the two names are decided independently and can disagree
+  - slug derivation is a guess; the owner overrides it with `--branch`, and intake overrides it by proposing its own
+
+### REQ-162
+- Title: Intake material is copied, bounded, and non-authoritative
+- Priority: high
+- Description: The door accepts context documents — file paths or markdown pasted in the same message — copies them verbatim into the package, and treats them as evidence that refinement weighs rather than instruction refinement obeys.
+- Acceptance Criteria:
+  - `graph-run` accepts zero or more file paths alongside the request, and accepts markdown pasted in the same message
+  - the door mints the `--run-id` before node 1 and passes that same id to `graph-preflight`, which already accepts a caller-chosen `--run-id`; the staging path is derived from it
+  - the door writes each item verbatim into `.worktrees/.graph-intake/<run-id>/` before node 1 is dispatched
+  - the staging path is recorded in the ledger at node 2's first ledger write, never before node 1: the ledger is `PRD/work/<slug>/GRAPH-RUN.md`, which does not exist until node 2 has created the package folder
+  - node 2 reads the staged intake, and once `thejudge-kickoff` has created `PRD/work/<slug>/` it copies each item into `PRD/work/<slug>/intake/`, commits it on the branch, and deletes the staging copy
+  - the contract states that intake is evidence and never authority: it may state findings, mark matters settled, and propose a slug, and it may not decide product truth
+  - every product decision arising from intake is still made with the owner at the `define` gate
+  - a document cited by intake is recorded as a citation and is not fetched
+  - `thejudge-refinement` reads `PRD/work/<slug>/intake/` as an input when the folder exists
+  - `thejudge-cleanup` writes an `## Intake` section into the receipt naming each intake file and its stated origin, before deleting `PRD/work/<slug>/`
+- Constraints:
+  - intake is copied, never referenced in place: a pointer to untracked material outside the repository is the recorded failure this closes
+  - intake is never staged inside the git working tree before node 1. `scripts/graph-preflight.mjs` counts untracked files (`git ls-files --others --exclude-standard`) and resolves an oversized tree with `git stash push -u`, which would sweep the intake off before the branch exists. `.worktrees/` is gitignored, and `git stash push -u` does not touch ignored paths
+  - no size gate is placed on intake, because a gate would refuse exactly the thorough handoff document this accepts. Staging outside the working tree is what makes that hold: node 1's file-count and changed-line thresholds never see the intake
+  - intake citations are never followed transitively; transitive following is unbounded
+  - `docs/whatIsGraph/` is not committed by this work — sweeping untracked working material into the repository stays the owner's call
+- Dependencies:
+  - REQ-160
+  - REQ-161
+  - DEC-167
+- Notes:
+  - the recorded failure is specific: `receipts/graph-run-boundary-enforcement-2026-08-20.md` states that all six of that package's findings came from `docs/whatIsGraph/graph-hardening-handoff.md`, that the promotion checklist expected the file marked closed or retired, and that cleanup could do neither because the file is untracked and outside the repository
+  - that same document is the worked example of correct intake shape: it declares itself kickoff-and-refinement input, states that nothing in it is a decision, and proposes its own slug
+  - "evidence, not authority" is a contract rule and not an enforced one. Nothing prevents refinement adopting an intake claim wholesale; what catches it is the `define` gate parking on the resulting `PRD/sections/` diff
+  - node 1 sweeps the intake *source* as well, so the staged copy is the only one the run is guaranteed to read. A handed-in path that is itself untracked — `docs/whatIsGraph/graph-hardening-handoff.md` is one, at 276 lines — is stashed off the checkout when the tree exceeds the thresholds, and auto-committed as `chore(graph): auto-commit working tree before graph run` when it does not. The door takes its copy at launch, before either happens
+
+### REQ-163
+- Title: Prior shipped runs are linked from the receipts corpus
+- Priority: medium
+- Description: When an observation lands on already-shipped code, the door finds the receipt documenting that work and hands it to refinement, so a second run against the same feature does not start blind.
+- Acceptance Criteria:
+  - node 2 searches `PRD/instructions/receipts/`, whose files are already named `<slug>-<date>.md`, for slug and keyword matches against the request and any intake material
+  - each match is written as one `## Prior run` line in `PRD/work/<slug>/IDEA.md`, naming the receipt path
+  - `thejudge-refinement` reads those lines as input
+  - no match writes no section, and the run continues without interruption
+  - matches are recorded as a flat list, not walked as a chain
+- Constraints:
+  - the owner is never asked to recall or name a prior receipt
+  - a match is offered to refinement as input and never treated as scope
+- Dependencies:
+  - REQ-160
+  - DEC-167
+- Notes:
+  - a flat list rather than a chain because receipts carry no parent pointer, so there is nothing to walk when a third run follows a second
+  - this is keyword matching, and it will miss a receipt whose slug shares no words with the request and may offer an irrelevant one. A false match costs a read rather than a wrong decision
+  - verified by grep before writing: no skill under `.claude/skills/` reads `PRD/instructions/receipts/` today
+
+### REQ-164
+- Title: A request too thin to package ends the run at `BLOCKED`
+- Priority: medium
+- Description: When node 2 cannot turn the request into an actionable package, the run stops and tells the owner what it needs, rather than proceeding on a guess or leaving the driver with an unhandled outcome.
+- Acceptance Criteria:
+  - `graph-run` handles `NO ACTIONABLE PACKAGE` returned by node 2 as a named edge in the contract and in the skill
+  - the run terminates at `BLOCKED`, reporting what was tried, what exists, what does not, and the recovery action
+  - the recovery action names re-invoking the door with a fuller description or with intake material, **and** an explicit `--branch`, because a fuller description of the same thing derives the same slug and `graph-preflight` exits 2 on the collision with the branch node 1 already pushed
+  - the report names the `thejudge-auto/<slug>` branch node 1 created and pushed, whether node 1 auto-committed or stashed the working tree, and the staging path holding any intake, so a retry loses no work and re-pastes no material
+  - the concurrency lock is released, as every terminal state requires
+  - no fifth terminal state is added
+  - `.claude/skills/graph-run/SKILL.md`'s terminal-state paragraph is amended so `BLOCKED` also covers a request too thin to package, not only an external condition
+  - that amendment is required rather than cosmetic: as written, `BLOCKED` is "an external condition outside the repository", `PARKED` is "anything requiring a human decision, judgment, or review", and the tiebreak is "when it is not clear which applies, park". A thin request is neither external nor outside the repository, so without the amendment the tiebreak routes it to `PARKED`, which has nothing to park against
+  - the widened `BLOCKED` definition is the only terminal-state text this package changes
+- Constraints:
+  - the outcome is `BLOCKED` rather than `PARKED`: `PARKED` means the run resumes from a recorded gate, and a thin request produces no artifact to resume from — recovery is a new run, not a resumption
+  - the mechanical form of the same point: parking needs a package folder for `## Open gate`, a `STATUS.*` marker, and a board row, and none of the three exists on this path. `thejudge-kickoff` returns `NO ACTIONABLE PACKAGE` without creating them, and intake stays staged outside the working tree until node 2 has created the package folder, so the intake path does not create one either
+  - the run does not delete the branch it left behind. `graph-preflight`'s contract forbids tidying a failed run, and node 1 may have auto-committed real working-tree changes onto that branch
+  - the door never invents scope to make a thin request actionable
+- Dependencies:
+  - REQ-160
+  - DEC-167
+- Notes:
+  - verified by grep before writing: `NO ACTIONABLE PACKAGE` appears in `thejudge-kickoff` and `thejudge-prepare` and nowhere in `graph-run` or `graph-workflow-contract.md`, so the driver has no rule for an outcome its own node can return
+  - the orphan branch is unavoidable rather than a defect: node 1 must create a branch before node 2 can judge whether the request is packageable, so every `BLOCKED` of this kind leaves a pushed `thejudge-auto/<slug>` behind. The requirement is that the report says so
