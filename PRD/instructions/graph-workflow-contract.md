@@ -27,6 +27,19 @@ and `graph-gate-review` — the owner-facing half of the `define` gate, which
 walks the recorded `PRD/sections/` diff one stable ID at a time and resumes the
 run.
 
+## Intake is evidence, never authority
+
+`PRD/work/<slug>/intake/` may state findings, mark matters settled, and
+propose a slug. It may not decide product truth: every product decision it
+raises is still made with the owner at the `define` gate, same as any other
+source. A document it cites is recorded as a citation and not fetched —
+following a citation's own citations is unbounded.
+
+This rule is unenforced. Nothing stops `thejudge-refinement` from adopting an
+intake claim wholesale; what catches it is the `define` gate parking on the
+resulting `PRD/sections/` diff, the same mechanism that catches any other
+unreviewed product truth.
+
 ## Run predicate
 
 Graph mode is active only when the driver explicitly states
