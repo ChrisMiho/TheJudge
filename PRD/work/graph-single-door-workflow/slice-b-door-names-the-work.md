@@ -1,6 +1,6 @@
 # Slice B — The door names the work before node 1
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -45,26 +45,26 @@ REQ-160 (the `--branch` half), REQ-161.
 
 ## Acceptance criteria
 
-- [ ] B1 — `graph-run/SKILL.md` states `--branch` is optional, that a supplied
+- [x] B1 — `graph-run/SKILL.md` states `--branch` is optional, that a supplied
       value is used verbatim, and that an omitted one is derived; the "never
       inferred from the current branch" rule is still present.
-- [ ] B2 — `graph-run/SKILL.md` states the derived branch is
+- [x] B2 — `graph-run/SKILL.md` states the derived branch is
       `thejudge-auto/<slug>` and that the slug is proposed before node 1 is
       dispatched.
-- [ ] B3 — `graph-run/SKILL.md` states the door mints the `--run-id` before
+- [x] B3 — `graph-run/SKILL.md` states the door mints the `--run-id` before
       node 1 and passes that same id to `graph-preflight`.
-- [ ] B4 — `thejudge-kickoff/SKILL.md` accepts a supplied slug and uses it, and
+- [x] B4 — `thejudge-kickoff/SKILL.md` accepts a supplied slug and uses it, and
       still proposes one when none is supplied.
-- [ ] B5 — `graph-run/SKILL.md` states that a supplied `--branch` overrides the
+- [x] B5 — `graph-run/SKILL.md` states that a supplied `--branch` overrides the
       branch without changing the slug node 2 receives.
-- [ ] B6 — `graph-run/SKILL.md` states that a collision is `graph-preflight`'s
+- [x] B6 — `graph-run/SKILL.md` states that a collision is `graph-preflight`'s
       exit-code-2 condition, reported with the derived name, never retried.
-- [ ] B7 — `.claude/skills/graph-preflight/SKILL.md` is unchanged by this
+- [x] B7 — `.claude/skills/graph-preflight/SKILL.md` is unchanged by this
       slice, and the node table in the contract still reads `1 preflight` /
       `2 shape`.
-- [ ] B8 — `npm run skills:ai-sync` run and
+- [x] B8 — `npm run skills:ai-sync` run and
       `diff -rq .claude/skills .agents/skills` prints nothing.
-- [ ] B9 — hand-trace one launch on paper: request text in, slug out, branch
+- [x] B9 — hand-trace one launch on paper: request text in, slug out, branch
       out, run id out, and the two node dispatches carrying them. Confirm one
       name reaches both nodes. Record the traced values.
 
@@ -78,3 +78,18 @@ grep -n "slug" .claude/skills/thejudge-kickoff/SKILL.md
 git diff --name-only -- .claude/skills/graph-preflight/
 npm run skills:ai-sync && diff -rq .claude/skills .agents/skills
 ```
+
+## B9 hand-trace
+
+Request in: `"Add a dark-mode toggle to settings"`, no `--branch`, no `--run-id`.
+
+- Door proposes slug: `dark-mode-settings-toggle`
+- Door derives branch: `thejudge-auto/dark-mode-settings-toggle`
+- Door mints run id: `graph-20260820-153000`
+- Node 1 (`preflight`) dispatched with `--branch thejudge-auto/dark-mode-settings-toggle --run-id graph-20260820-153000`
+- Node 2 (`shape`) dispatched with slug `dark-mode-settings-toggle`, used verbatim
+  for `PRD/work/dark-mode-settings-toggle/`
+
+One name — `dark-mode-settings-toggle` — reaches both nodes: embedded in the
+branch string node 1 receives, and passed directly as the slug node 2
+receives.

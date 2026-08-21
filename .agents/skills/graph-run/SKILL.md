@@ -16,9 +16,44 @@ human, then either complete the run or park it at a named gate. `graph-run` is
 the driver that `PRD/instructions/graph-workflow-contract.md` refers to
 throughout.
 
-Accept a work-package path, or a request plus `--branch <name>` to start a new
-package from scratch. A `--branch` argument is required on a fresh run and is
-never inferred from the current branch.
+Accept a work-package path, or a request plus optional `--branch <name>` and
+`--run-id <id>` to start a new package from scratch. On a fresh run, propose a
+kebab-case slug from the request and any intake material before dispatching
+node 1, and derive the branch as `thejudge-auto/<slug>` — the convention
+already in the repository's merge history. A supplied `--branch` is used
+verbatim and overrides derivation without changing the slug node 2 receives;
+it is never inferred from the current branch. Mint the `--run-id` before node
+1 when none is supplied, and pass that same id to `graph-preflight`. Pass the
+proposed (or supplied-override) slug to node 2, so the branch and the package
+share one name instead of being named independently at two nodes. A branch
+collision surfaces as `graph-preflight`'s existing exit-code-2 condition;
+report it with the derived name — never retry silently or invent a variant.
+
+## Intake
+
+Accept zero or more file paths alongside the request, and markdown pasted in
+the same message: `/graph-run "<request>" [paths...]`. A supplied path that
+does not exist or cannot be read is reported **before node 1** — the run does
+not start on partial material.
+
+Write each accepted item **verbatim** into
+`.worktrees/.graph-intake/<run-id>/` before node 1 is dispatched, using the
+run id minted above. The staging path is derived from that id.
+
+**Why outside the working tree:** node 1 resolves the working tree before the
+branch exists. `classifyWorkingTree` in `scripts/graph-preflight.mjs:99-113`
+stashes a tree over 10 files or 200 changed lines, the untracked scan at line
+213 feeds it, and line 246 stashes with `git stash push -u`. Intake written
+into the package up front would be stashed off before the branch exists,
+leaving node 2 an empty folder; under the threshold it would land only as a
+side effect of `chore(graph): auto-commit working tree before graph run`. The
+same sweep takes the untracked **source** file too, so the copy staged at
+launch, outside the working tree, is the only one the run is guaranteed to
+read. `.worktrees/` is gitignored and `git stash push -u` spares ignored
+paths, which is why staging lives there.
+
+Intake is copied, never referenced in place, and carries no size gate: a gate
+would refuse exactly the thorough handoff this accepts.
 
 Read `PRD/instructions/graph-workflow-contract.md` and [reference.md](reference.md)
 in full before acting. Their node table, ledger schema, gate rules, and
@@ -30,8 +65,9 @@ boundaries are required.
    With no ledger but a supplied package path, this is a resume, not a fresh
    run: enter at the node matching the package's current `STATUS.*` marker
    using the entry-point table in reference.md, and create the ledger there.
-   Start at `preflight` for a genuinely fresh run — no existing package, and a
-   required `--branch <name>` — and also for a resumed package whose README has
+   Start at `preflight` for a genuinely fresh run — no existing package, with
+   `--branch` and `--run-id` optional as described above — and also for a
+   resumed package whose README has
    no `## Autonomous metadata`: run `preflight` first with a supplied
    `--branch <name>` to record the base, then enter at the status-matched node.
    Skipping it there leaves no autonomous base, and node 6 (`build`) blocks
@@ -327,9 +363,28 @@ rephrase the command to dodge the rule, and never retry it.
 
 `BLOCKED` is for an external condition outside the repository that no product
 decision would resolve — authentication failure, network unavailability, a
-GitHub outage, missing push access. `PARKED` is for anything requiring a
-human decision, judgment, or review. When it is not clear which applies,
-park.
+GitHub outage, missing push access — and for a request node 2 cannot turn into
+an actionable package (`NO ACTIONABLE PACKAGE`, the same outcome
+`thejudge-kickoff` and `thejudge-prepare` already have). `PARKED` is for
+anything requiring a human decision, judgment, or review over an existing
+artifact. When it is not clear which applies, park.
+
+A thin request is `BLOCKED`, not `PARKED`. `PARKED` means the run resumes from
+a recorded gate, and a thin request leaves no artifact to resume from.
+Mechanically, parking needs a package folder for `## Open gate`, a `STATUS.*`
+marker, and a board row — none exists, because `thejudge-kickoff` returns
+`NO ACTIONABLE PACKAGE` without creating them, and intake stays staged outside
+the working tree until node 2 creates the package folder.
+
+Node 1 runs before node 2 can judge the request, so this `BLOCKED` always
+leaves a pushed `thejudge-auto/<slug>` behind. The report names that branch,
+states whether node 1 auto-committed or stashed the working tree, and names
+the staging path holding any intake. The run does not delete the branch —
+`graph-preflight`'s contract forbids tidying a failed run, and node 1 may have
+auto-committed real working-tree changes onto it. The recovery action is a
+fuller description or intake material **plus an explicit `--branch`**,
+because the same description derives the same slug and `graph-preflight`
+exits 2 on the collision (`.claude/skills/graph-preflight/SKILL.md:118`).
 
 ## Next step
 

@@ -6,6 +6,11 @@ This contract governs one autonomous graph run: a single work package advanced
 through the existing TheJudge lifecycle with no per-step user input. It
 coordinates the existing `thejudge-*` contracts without replacing them.
 
+`graph-run` is the entry point for new work. The owner hands it a request —
+an idea, an observation, a bug, or a pasted or referenced document — and it
+drives that request through the full lifecycle unattended, stopping only at
+the `define` gate or a terminal state.
+
 Active decisions and requirements in `PRD/sections/` remain product truth. When
 a `thejudge-*` phase skill conflicts with this contract during a graph run,
 this contract governs continuation and approval behavior; the phase skill
@@ -21,6 +26,25 @@ Exactly three graph skills exist in the spine: `graph-preflight`, `graph-run`,
 and `graph-gate-review` — the owner-facing half of the `define` gate, which
 walks the recorded `PRD/sections/` diff one stable ID at a time and resumes the
 run.
+
+## Intake is evidence, never authority
+
+`PRD/work/<slug>/intake/` may state findings, mark matters settled, and
+propose a slug. It may not decide product truth: every product decision it
+raises is still made with the owner at the `define` gate, same as any other
+source.
+
+**Never open, read, or otherwise fetch a document intake cites — record only
+its path, as a citation.** This holds even to verify the claim: verification
+of adopted product truth is the `define` gate's job, not a research step
+refinement takes on a citation's word. Following a citation's own citations
+is unbounded, but the rule is broader than that — the cited document itself
+is never opened.
+
+This rule is unenforced. Nothing stops `thejudge-refinement` from adopting an
+intake claim wholesale; what catches it is the `define` gate parking on the
+resulting `PRD/sections/` diff, the same mechanism that catches any other
+unreviewed product truth.
 
 ## Run predicate
 
@@ -66,6 +90,18 @@ count as evidence. A loop-back is a new attempt with a fresh budget, so this is
 never a third loop limit — the three-FAIL and two-return caps below stay the only
 bound on how many dispatches happen. `land` has no cap because the driver never
 dispatches it.
+
+On a fresh run, the driver names the work before dispatching node 1: propose a
+kebab-case slug from the request and any intake material, derive the branch as
+`thejudge-auto/<slug>` unless `--branch` overrides it, and mint `--run-id`
+unless one is supplied. Node 1 (`preflight`) receives the branch and run id;
+node 2 (`shape`) receives the same slug, so the branch and the package share
+one name instead of being named independently at two nodes.
+
+Node 2 (`shape`) can return `NO ACTIONABLE PACKAGE` — the same outcome
+`thejudge-kickoff` and `thejudge-prepare` already have — when the request
+cannot be turned into an actionable package. The run ends `BLOCKED`, not
+`PARKED`: no package folder exists yet for a gate to park against.
 
 This table is the authority. `graph-run/reference.md` mirrors it; when they
 disagree, the contract wins.
@@ -246,6 +282,7 @@ documentation changes:
 - Profile: `unverified` | `<path> (stated by the user at launch)`
 - Canary: `denied — hook live (<command>)` | `allowed — BLOCKED (<reason>)`
 - Autonomous base: `origin/<branch>`
+- Staging: `.worktrees/.graph-intake/<run-id>/`
 - Current node: `<node>`
 - Next action: `/graph-run PRD/work/<slug>/`
 
@@ -280,6 +317,12 @@ documentation changes:
 `Outcome` is one of `ok`, `failed`, `parked`. `Evidence` names a command, path,
 PR URL, or artifact URL — never a bare claim. A fresh agent reads this file and
 `PRD/work/<slug>/README.md` and needs nothing else to resume.
+
+`Staging` is recorded at node 2's first ledger write, never before node 1: the
+ledger lives inside `PRD/work/<slug>/`, and that folder is born at node 2, so
+there is nothing to write it to earlier. Intake is copied into
+`PRD/work/<slug>/intake/` and committed, never referenced in place; no size
+gate is applied to it.
 
 `## Dispatch prompts` records every node's dispatch prompt verbatim, one `### `
 subsection per node. Verbatim, not summarized: a paraphrase is the run grading

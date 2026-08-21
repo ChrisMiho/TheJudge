@@ -5,7 +5,7 @@
     {
       "id": "B1",
       "statement": "`graph-run/SKILL.md` states `--branch` is optional, a supplied value is used verbatim, an omitted one is derived, and it is never inferred from the current branch.",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep .*--branch.* \\.claude/skills/graph-run/SKILL\\.md",
         "paths": [".claude/skills/graph-run/SKILL.md"]
@@ -14,7 +14,7 @@
     {
       "id": "B2",
       "statement": "`graph-run/SKILL.md` states the derived branch is `thejudge-auto/<slug>` and the slug is proposed before node 1 is dispatched.",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep .*thejudge-auto.* \\.claude/skills/graph-run/SKILL\\.md",
         "paths": [".claude/skills/graph-run/SKILL.md"]
@@ -23,7 +23,7 @@
     {
       "id": "B3",
       "statement": "`graph-run/SKILL.md` states the door mints the `--run-id` before node 1 and passes that same id to `graph-preflight`.",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep .*--run-id.* \\.claude/skills/graph-run/SKILL\\.md",
         "paths": [".claude/skills/graph-run/SKILL.md"]
@@ -32,7 +32,7 @@
     {
       "id": "B4",
       "statement": "`thejudge-kickoff/SKILL.md` accepts a supplied slug and uses it, and still proposes one when none is supplied.",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep .*slug.* \\.claude/skills/thejudge-kickoff/SKILL\\.md",
         "paths": [".claude/skills/thejudge-kickoff/SKILL.md"]
@@ -41,7 +41,7 @@
     {
       "id": "B5",
       "statement": "`graph-run/SKILL.md` states a supplied `--branch` overrides the branch without changing the slug node 2 receives.",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [".claude/skills/graph-run/SKILL.md"]
       }
@@ -49,7 +49,7 @@
     {
       "id": "B6",
       "statement": "`graph-run/SKILL.md` states a collision is graph-preflight's exit-code-2 condition, reported with the derived name and never retried silently.",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [".claude/skills/graph-run/SKILL.md"]
       }
@@ -57,7 +57,7 @@
     {
       "id": "B7",
       "statement": "`graph-preflight/SKILL.md` is unchanged by this slice and the contract node table still reads 1 preflight / 2 shape.",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "git diff --name-only"
       }
@@ -65,7 +65,7 @@
     {
       "id": "B8",
       "statement": "`npm run skills:ai-sync` run and `diff -rq .claude/skills .agents/skills` prints nothing.",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run skills:ai-sync"
       }
@@ -73,7 +73,7 @@
     {
       "id": "B9",
       "statement": "Hand-trace one launch: request in, slug/branch/run-id out, both node dispatches carrying them; confirm one name reaches both nodes.",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     }
   ]

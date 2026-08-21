@@ -6,10 +6,9 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
+- [graph-single-door-workflow](./graph-single-door-workflow/)
 
 ## active
-
-- [graph-single-door-workflow](./graph-single-door-workflow/)
 
 ## refined
 

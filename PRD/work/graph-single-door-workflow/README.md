@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 ## Autonomous metadata
@@ -32,15 +32,15 @@ stays as written; implement this package interactively.
 
 | Slice | Objective | Requirement | Depends on |
 | --- | --- | --- | --- |
-| [A](./slice-a-retire-the-second-door.md) | `thejudge-prepare` retired as an entry point; `graph-run` named as the door | REQ-160 | — |
-| [B](./slice-b-door-names-the-work.md) | The door names the work before node 1 | REQ-161 | A |
-| [C](./slice-c-intake-staging.md) | Intake is staged, copied, and committed | REQ-162, FLOW-022 | B |
-| [D](./slice-d-intake-is-evidence.md) | Intake is evidence, never authority | REQ-162 | C |
-| [E](./slice-e-prior-run-linking.md) | Prior shipped runs are linked from receipts | REQ-163, FLOW-021 | B |
-| [F](./slice-f-thin-request-blocked.md) | A request too thin to package ends `BLOCKED` | REQ-164 | C |
-| [G](./slice-g-cleanup-receipt-intake.md) | Cleanup folds intake into the receipt | REQ-162 | — |
-| [H](./slice-h-skill-fixtures.md) | Skill fixtures for every changed skill | DEC-167 | A–G |
-| [I](./slice-i-sync-and-promotion.md) | Mirror sync, promotion checklist, ship gates | DEC-167 | H |
+| [A](./slice-a-retire-the-second-door.md) ✅ | `thejudge-prepare` retired as an entry point; `graph-run` named as the door | REQ-160 | — |
+| [B](./slice-b-door-names-the-work.md) ✅ | The door names the work before node 1 | REQ-161 | A |
+| [C](./slice-c-intake-staging.md) ✅ | Intake is staged, copied, and committed | REQ-162, FLOW-022 | B |
+| [D](./slice-d-intake-is-evidence.md) ✅ | Intake is evidence, never authority | REQ-162 | C |
+| [E](./slice-e-prior-run-linking.md) ✅ | Prior shipped runs are linked from receipts | REQ-163, FLOW-021 | B |
+| [F](./slice-f-thin-request-blocked.md) ✅ | A request too thin to package ends `BLOCKED` | REQ-164 | C |
+| [G](./slice-g-cleanup-receipt-intake.md) ✅ | Cleanup folds intake into the receipt | REQ-162 | — |
+| [H](./slice-h-skill-fixtures.md) ✅ | Skill fixtures for every changed skill | DEC-167 | A–G |
+| [I](./slice-i-sync-and-promotion.md) ✅ | Mirror sync, promotion checklist, ship gates | DEC-167 | H |
 
 A, B, C, D, and F are sequential: they share
 `.claude/skills/graph-run/SKILL.md` and

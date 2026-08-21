@@ -1,6 +1,6 @@
 # Slice I — Mirror sync, promotion checklist, ship gates
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -55,20 +55,20 @@ DEC-167.
 
 ## Acceptance criteria
 
-- [ ] I1 — `npm run skills:ai-sync && diff -rq .claude/skills .agents/skills`
+- [x] I1 — `npm run skills:ai-sync && diff -rq .claude/skills .agents/skills`
       prints nothing.
-- [ ] I2 — `npm run quality:check` exits 0.
-- [ ] I3 — `git diff --name-only main...HEAD` lists only files named in the
+- [x] I2 — `npm run quality:check` exits 0.
+- [x] I3 — `git diff --name-only main...HEAD` lists only files named in the
       GAMEPLAN's files table.
-- [ ] I4 — `git diff --name-only main...HEAD` contains none of the five
+- [x] I4 — `git diff --name-only main...HEAD` contains none of the five
       out-of-scope paths in requirement 4, and the contract's `## Boundaries`
       list is unchanged in `git diff main...HEAD --
       PRD/instructions/graph-workflow-contract.md`.
-- [ ] I5 — every slice A–H is `## Status: done` and every criteria file has all
+- [x] I5 — every slice A–H is `## Status: done` and every criteria file has all
       criteria `true`.
-- [ ] I6 — the promotion checklist above is present in this slice doc,
+- [x] I6 — the promotion checklist above is present in this slice doc,
       unexecuted, with each box unticked.
-- [ ] I7 — read the four terminal states and the node table in the finished
+- [x] I7 — read the four terminal states and the node table in the finished
       contract: confirm the count is still four states and nine nodes, and that
       the only terminal-state text this package moved is the `BLOCKED`
       paragraph. Record the reading.
@@ -96,3 +96,21 @@ grep -c '"value": false' PRD/work/graph-single-door-workflow/*.criteria.json
 
 - No product files. This slice verifies the finished state and records the
   promotion checklist; the only writes are to this package's own docs.
+
+## I7 reading
+
+`.claude/skills/graph-run/SKILL.md`'s `## Terminal states` table still lists
+exactly four rows — `COMPLETE`, `PARKED`, `BLOCKED`, `PROMPTED` — and the
+contract (`## Terminal states`, line 679) names that table as the single
+authority for all four, unchanged. The node table
+(`PRD/instructions/graph-workflow-contract.md` `## Node table`) still lists
+exactly nine rows, `1 preflight` through `9 close`, with the same delegates,
+models, caps, and `Advances to` values this package started with.
+
+Diffing `.claude/skills/graph-run/SKILL.md` against the recorded autonomous
+base confirms the only terminal-state text this package moved is the
+`BLOCKED` paragraph: the two other lines matching `PARKED` in the diff are
+both inside that same rewritten paragraph, contrasting `BLOCKED` against
+`PARKED` the same way the original text did. `COMPLETE` and `PROMPTED`'s
+defining paragraphs, and the four-row table itself, are byte-identical to
+before slice A.

@@ -1,6 +1,6 @@
 # Slice H — Skill fixtures for every changed skill
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -62,22 +62,22 @@ rule), and `thejudge-cleanup` (a new required receipt section).
 
 ## Acceptance criteria
 
-- [ ] H1 — all four new fixture files exist at the paths above, each with the
+- [x] H1 — all four new fixture files exist at the paths above, each with the
       four required sections and none naming its skill in `## Scenario`.
-- [ ] H2 — each new fixture's `## Grading key` contains at least one item the
+- [x] H2 — each new fixture's `## Grading key` contains at least one item the
       skill must **refuse**, and at least one trap item.
-- [ ] H3 — the no-skill control was run for each new fixture and its result is
+- [x] H3 — the no-skill control was run for each new fixture and its result is
       recorded, including any predicted guardrail cut on the control's evidence.
-- [ ] H4 — each new fixture's `## Measured runs` carries a dated entry with at
+- [x] H4 — each new fixture's `## Measured runs` carries a dated entry with at
       least three reps, naming the skill version under test.
-- [ ] H5 — variance across reps is recorded per fixture, not collapsed to
+- [x] H5 — variance across reps is recorded per fixture, not collapsed to
       pass/fail.
-- [ ] H6 — `dirty-checkout-and-gate.md` has a dated re-run entry, and the
+- [x] H6 — `dirty-checkout-and-gate.md` has a dated re-run entry, and the
       supplied `--branch` was honored verbatim in it.
-- [ ] H7 — any fixture failure produced a skill edit and a re-run, not a fixture
+- [x] H7 — any fixture failure produced a skill edit and a re-run, not a fixture
       edit to match observed behavior. Name each edit made this way, or state
       that none were.
-- [ ] H8 — `npm run skills:ai-sync` run and
+- [x] H8 — `npm run skills:ai-sync` run and
       `diff -rq .claude/skills .agents/skills` prints nothing after any skill
       edit H7 produced.
 
@@ -89,6 +89,23 @@ grep -L "## Measured runs" PRD/instructions/skill-fixtures/*/*.md
 grep -c "Grading key" PRD/instructions/skill-fixtures/*/*.md
 npm run skills:ai-sync && diff -rq .claude/skills .agents/skills
 ```
+
+## H7 edit made
+
+`thejudge-refinement/intake-is-not-authority.md`'s first measured run found
+item 4 ("recorded as a citation and not fetched") failed in 4 of 4 relevant
+runs, including one that ran full `graph-run` orchestration — the cleanest
+possible evidence the original wording didn't bind. Strengthened
+`.claude/skills/thejudge-refinement/SKILL.md` and
+`PRD/instructions/graph-workflow-contract.md`'s citation-handling text from
+"is recorded as a citation and not fetched" to an explicit bright-line
+refusal ("Never open, read, or otherwise fetch a document intake cites...
+This holds even when reading it would only be to verify the claim"), then
+re-ran 3 fresh reps. Item 4 held 3 of 3 for the skill actually under test
+(`thejudge-refinement`, dispatched as node 3) — see that fixture's
+`## Measured runs` for the full account, including one non-consequential,
+self-disclosed caveat at the driver-simulation level. No fixture was edited
+to match the original observed (failing) behavior.
 
 Fixture runs dispatch subagents and cost real tokens. They are a deliberate
 pre-merge check on skill edits, not a CI gate, and are not wired into

@@ -1,6 +1,6 @@
 # Slice D — Intake is evidence, never authority
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -40,21 +40,21 @@ REQ-162 (the authority half).
 
 ## Acceptance criteria
 
-- [ ] D1 — `thejudge-refinement/SKILL.md`'s `## Reads` names
+- [x] D1 — `thejudge-refinement/SKILL.md`'s `## Reads` names
       `PRD/work/<slug>/intake/` and says it is read when the folder exists.
-- [ ] D2 — `thejudge-refinement/SKILL.md` states intake is evidence and never
+- [x] D2 — `thejudge-refinement/SKILL.md` states intake is evidence and never
       authority, listing what it may do and what it may not.
-- [ ] D3 — `graph-workflow-contract.md` carries the same rule, once, as the
+- [x] D3 — `graph-workflow-contract.md` carries the same rule, once, as the
       authority the skill defers to.
-- [ ] D4 — both files state that a cited document is recorded as a citation and
+- [x] D4 — both files state that a cited document is recorded as a citation and
       not fetched.
-- [ ] D5 — the contract states the rule is unenforced and names the `define`
+- [x] D5 — the contract states the rule is unenforced and names the `define`
       gate as what catches an intake claim adopted wholesale.
-- [ ] D6 — `graph-run/SKILL.md`'s loop step 5 gate trigger is byte-unchanged by
+- [x] D6 — `graph-run/SKILL.md`'s loop step 5 gate trigger is byte-unchanged by
       this slice: `git diff -- .claude/skills/graph-run/SKILL.md` is empty.
-- [ ] D7 — `npm run skills:ai-sync` run and
+- [x] D7 — `npm run skills:ai-sync` run and
       `diff -rq .claude/skills .agents/skills` prints nothing.
-- [ ] D8 — read the rule as an implementer would: it is clear that intake
+- [x] D8 — read the rule as an implementer would: it is clear that intake
       proposing a slug is honored while intake declaring a requirement settled
       is not. Record the reading.
 
@@ -66,3 +66,14 @@ grep -n "evidence\|authority\|citation" PRD/instructions/graph-workflow-contract
 git diff -- .claude/skills/graph-run/SKILL.md
 npm run skills:ai-sync && diff -rq .claude/skills .agents/skills
 ```
+
+## D8 reading
+
+Read both amended texts as a fresh implementer: intake proposing a slug is
+explicitly listed among what it "may" do (`## Reads` item 8 and the
+`## Intake is evidence, never authority` sections in both files), so a slug
+proposal is honored without further review. Intake declaring "REQ-160 is
+settled" or similar is explicitly excluded — "it may not decide product
+truth" — and any such claim only reaches `PRD/sections/` through the normal
+`define` gate diff, which parks for the owner regardless of what intake
+asserted. The distinction reads clearly: propose is honored, decide is not.

@@ -1,6 +1,6 @@
 # Slice G — Cleanup folds intake into the receipt
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -37,22 +37,22 @@ REQ-162 (the durability half).
 
 ## Acceptance criteria
 
-- [ ] G1 — `thejudge-cleanup/SKILL.md` states that an `## Intake` section is
+- [x] G1 — `thejudge-cleanup/SKILL.md` states that an `## Intake` section is
       written into the receipt before the package folder is deleted, when
       `PRD/work/<slug>/intake/` exists.
-- [ ] G2 — the stated section shape names each intake file and its stated
+- [x] G2 — the stated section shape names each intake file and its stated
       origin, and appears in the skill as a copyable markdown block.
-- [ ] G3 — `thejudge-cleanup/SKILL.md` states that a package with no `intake/`
+- [x] G3 — `thejudge-cleanup/SKILL.md` states that a package with no `intake/`
       gets no `## Intake` section.
-- [ ] G4 — `## Intake` is documented as a sibling of `## Graph run`, not nested
+- [x] G4 — `## Intake` is documented as a sibling of `## Graph run`, not nested
       inside it.
-- [ ] G5 — the receipt line in `## Writes` lists `## Intake` among the receipt's
+- [x] G5 — the receipt line in `## Writes` lists `## Intake` among the receipt's
       contents.
-- [ ] G6 — the graph-run refusal condition in
+- [x] G6 — the graph-run refusal condition in
       `### Graph run in the receipt` is byte-unchanged: no new refusal is added.
-- [ ] G7 — `npm run skills:ai-sync` run and
+- [x] G7 — `npm run skills:ai-sync` run and
       `diff -rq .claude/skills .agents/skills` prints nothing.
-- [ ] G8 — draft the `## Intake` section for the already-shipped
+- [x] G8 — draft the `## Intake` section for the already-shipped
       `graph-run-boundary-enforcement` package as it would have been written,
       using `docs/whatIsGraph/graph-hardening-handoff.md` as the intake file.
       Confirm the follow-up it discharges would have been unnecessary. Record
@@ -65,3 +65,26 @@ grep -n "## Intake\|Intake" .claude/skills/thejudge-cleanup/SKILL.md
 git diff -- .claude/skills/thejudge-cleanup/SKILL.md
 npm run skills:ai-sync && diff -rq .claude/skills .agents/skills
 ```
+
+## G8 draft
+
+`PRD/instructions/receipts/graph-run-boundary-enforcement-2026-08-20.md`'s
+`## Follow-ups` names `docs/whatIsGraph/graph-hardening-handoff.md` as the
+source document, untracked, with nothing committed to retire. Had that
+package been built with this slice's mechanism in place — the document handed
+in as intake and committed to `PRD/work/graph-run-boundary-enforcement/intake/`
+by node 2 — the receipt would instead have carried:
+
+```markdown
+## Intake
+
+- `intake/graph-hardening-handoff.md` — supplied path
+  `docs/whatIsGraph/graph-hardening-handoff.md`
+```
+
+That section names the file and its origin durably, inside the receipt, after
+the package folder (and `intake/` with it) is gone. The follow-up exists only
+because the source document stayed untracked outside the package; with it
+committed into `intake/` and folded into the receipt, there would have been
+nothing left to retire or mark closed — the follow-up would not have been
+written.
