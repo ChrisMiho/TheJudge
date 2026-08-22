@@ -75,6 +75,53 @@ test("the curated scenarios carry inline requests with real oracle ids, not the 
   assert.ok(uuidPattern.test(serialized), "expected at least one real UUID-shaped oracle id across the scenarios")
 })
 
+/**
+ * Every card-shaped object a scenario submits, from either request shape:
+ * game requests nest them under gameContext.zones.<zone>[], lookup requests
+ * carry a single `card`.
+ */
+function collectFixtureCards(value, found = []) {
+  if (Array.isArray(value)) {
+    for (const item of value) collectFixtureCards(item, found)
+  } else if (value && typeof value === "object") {
+    if (typeof value.cardId === "string" && typeof value.name === "string") found.push(value)
+    for (const item of Object.values(value)) collectFixtureCards(item, found)
+  }
+  return found
+}
+
+test("every scenario card matches the committed card corpus field for field", async () => {
+  // A scenario carries its card data inline, and the backend trusts the
+  // submitted payload rather than re-resolving it, so a hand-authored oracle
+  // text reaches the provider unchallenged. The 2026-08-22 run spent twelve
+  // live calls on cards whose text described abilities they do not have —
+  // Avatar of Growth as a +1/+1 counter ETB, Springheart Nantuko without
+  // bestow — which made every answer's rules reasoning unusable. In the real
+  // app buildZoneCardFromMetadata() copies these fields straight out of
+  // cardMetadata.json, so the fixtures must do the same.
+  const corpus = new Map(
+    JSON.parse(fs.readFileSync(path.resolve("apps/frontend/public/data/cardMetadata.json"), "utf8")).map((card) => [
+      card.cardId,
+      card
+    ])
+  )
+  // imageUrl is deliberately blank in the fixtures; owner/targets are request
+  // state, not card identity. Everything else must be the corpus verbatim.
+  const exempt = new Set(["imageUrl", "owner", "targets"])
+
+  const cards = collectFixtureCards((await loadScenarios()).map((scenario) => scenario.request))
+  assert.ok(cards.length >= 7, `expected the curated scenarios to submit real cards, found ${cards.length}`)
+
+  for (const card of cards) {
+    const real = corpus.get(card.cardId)
+    assert.ok(real, `${card.name} (${card.cardId}) is not in the committed card corpus`)
+    for (const [field, value] of Object.entries(card)) {
+      if (exempt.has(field)) continue
+      assert.deepEqual(value, real[field], `${card.name}: fixture ${field} does not match the card corpus`)
+    }
+  }
+})
+
 test("a run without the confirmation flag makes zero provider calls and exits 0", async () => {
   const { legs, calls } = stubLegs()
   const lines = []

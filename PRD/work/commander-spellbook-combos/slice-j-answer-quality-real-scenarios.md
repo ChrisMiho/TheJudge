@@ -2,38 +2,65 @@
 
 ## Status: done
 
-J1–J5 (code and verification) are complete. J6 and J7 are owner-only manual
-criteria — per this package's own established precedent, an owner-action
-checkpoint does not block shipping the surrounding code; see
-`## Owner-action checkpoints` in the package README.
+J1–J7 are complete. J6 and J7 were owner-only manual criteria; both were run
+by the owner on 2026-08-22 and their conclusions are recorded below.
 
 ### Handoff
 
-- Done: Slices G, H, I, J are all `done`. `npm run quality:check` is green
-  on the shared branch. PR #89 (`thejudge-auto/commander-spellbook-combos` →
-  `feature/enhancement-bangers`) is titled `[READY]`, CI is green,
-  `mergeable: MERGEABLE` / `mergeStateStatus: CLEAN`. J6 (production corpus
+- Done: Slices G, H, I, J are all `done`, J7 included. `npm run
+  quality:check` is green on the shared branch. PR #89
+  (`thejudge-auto/commander-spellbook-combos` →
+  `feature/enhancement-bangers`) is titled `[READY]`. J6 (production corpus
   refresh) is done — 106,182 real variants committed 2026-08-22; see
   DESIGN-BRIEF's `### Measured 2026-08-22` note and this file's J6 line for
-  what that run found and fixed.
-- Next: **J7 only remains.** The owner is running the live provider A/B
-  themselves (`npm run combo:answer-quality -- --confirm-live-calls`, with
-  `ASK_AI_PROVIDER=openai`, `OPENAI_API_KEY`, `OPENAI_MODEL` in their own
-  shell — no agent session can do this: the key lives in the
-  protected/gitignored `.secrets/` subtree, which the repo's boundary rules
-  deny reading or writing from any session). When the owner reports back
-  with the report (path under gitignored `output/combo-answer-quality/`, or
-  pasted content): read it with them, help them reach a verdict, then record
-  a dated conclusion — a line here is enough, e.g. "2026-08-2X: reviewed,
-  enrichment [helps/is neutral/hurts] because ___." That closes J7.
-  **J7 does not block merging PR #89** — the owner can merge whenever, with
-  or without having run it, matching this package's own established
-  precedent (the original slice A/F owner-action checkpoints were designed
-  the same way). After merge (whenever it happens): `/thejudge-cleanup
+  what that run found and fixed. J7 (live provider A/B) is done — see
+  `### Measured 2026-08-22 — J7 verdict` below.
+- Next: merge PR #89, then `/thejudge-cleanup
   PRD/work/commander-spellbook-combos/` — it will fold this receipt-worthy
   history into the closeout receipt before deleting this package folder.
-- Stopped because: session end (context budget) — the owner asked for this
-  handoff before starting a fresh session.
+  Nothing in this package is now waiting on the owner.
+- Follow-up the owner has flagged for a later session: revisit combo
+  enrichment guidance through `thejudge-refinement` — the A/B surfaced
+  prompt-shaping questions worth sharpening, but none that this package
+  needs to answer before it ships.
+
+### Measured 2026-08-22 — J7 verdict
+
+Reviewed the live A/B (6 scenarios, 12 provider calls) on corrected
+fixtures. **Enrichment helps.**
+
+- Decisive wins on both combo-intent scenarios. `partial-explicit-intent`:
+  the enriched leg names the missing Springheart Nantuko; the disabled leg
+  concludes only that "Avatar of Growth acts alone."
+  `lookup-attached-intent`: the disabled leg refuses the question outright —
+  "the rules do not formally define 'combo'" — while the enriched leg
+  answers it.
+- The over-claiming check came out the opposite way from what the slice
+  anticipated. On `unresolved-template` the *enriched* leg held the line and
+  named the missing token-on-death creature, while the *disabled* leg built
+  a speculative "three-card infinite combo scenario" out of creatures absent
+  from the board. Enrichment made the model more conservative, not less.
+- DEC-116's automatic no-intent enrichment was specifically checked and did
+  not distract. On `complete-no-intent` the enriched leg answered the actual
+  question (empty stack, nothing resolving) and correctly observed that
+  Springheart Nantuko is attached to nothing, so its landfall condition is
+  unmet; it confined the combo to a labelled community note. The disabled
+  leg drifted into a hypothetical Avatar of Growth ETB that had already
+  happened and reported its outcome as board state.
+- Control scenario `lookup-unrelated` produced no combo section on either
+  leg and near-identical answers — no false positive.
+
+An earlier run the same day was discarded rather than reviewed. Its scenario
+fixtures carried hand-authored oracle text that misdescribed all five cards
+(Avatar of Growth as a +1/+1-counter ETB, Springheart Nantuko without
+bestow), so every answer's rules reasoning was unusable. Only card *ids*
+were real — J1 verified ids, not text. The backend trusts the submitted
+payload rather than re-resolving it, and in the real app
+`buildZoneCardFromMetadata()` copies these fields straight from
+`cardMetadata.json`, so production was never affected; the defect was
+confined to the comparison fixture. Fixtures now carry corpus values, and a
+test in `npm run test:scripts` fails if any fixture card field drifts from
+`cardMetadata.json` again.
 
 ## Goal
 
@@ -96,8 +123,11 @@ can actually differ, then close the package: this is the final slice.
       `### Measured 2026-08-22` note for the real committed size and two bugs
       the live run surfaced (a V8 string-length limit, and one Scryfall query
       404 that used to abort the whole refresh).
-- [ ] J7 (manual) — the live provider A/B has been run and its conclusion
-      recorded, per DEC-161.
+- [x] J7 (manual) — the live provider A/B has been run and its conclusion
+      recorded, per DEC-161. **Done 2026-08-22:** enrichment helps; see
+      `### Measured 2026-08-22 — J7 verdict` above for the per-scenario
+      reading, and for the fixture defect that forced the run to be repeated
+      before the verdict could be trusted.
 
 ## Verification
 
@@ -111,6 +141,8 @@ npm run quality:check
 ## Files touched
 
 - `scripts/compare-combo-answer-quality.mjs`
+- `scripts/fixtures/combo-answer-quality-scenarios.json` (J7: card fields rebuilt from the committed corpus — see the J7 verdict note)
+- `scripts/compare-combo-answer-quality.test.mjs` (J7: the guard test that keeps fixture cards matching `cardMetadata.json`)
 - `apps/backend/src/eval/fixtures/commander-spellbook-*` (verification only — no expected content change; slice E's independence from production data is preserved, not "fixed")
 
 ## PRD promotion checklist — for `thejudge-cleanup`

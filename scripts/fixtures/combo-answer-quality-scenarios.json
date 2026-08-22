@@ -9,8 +9,14 @@
         "gameContext": {
           "playerCount": 2,
           "players": [
-            { "label": "Player 1", "lifeTotal": 20 },
-            { "label": "Player 2", "lifeTotal": 20 }
+            {
+              "label": "Player 1",
+              "lifeTotal": 20
+            },
+            {
+              "label": "Player 2",
+              "lifeTotal": 20
+            }
           ],
           "turnPhase": "main_1",
           "selectedZones": ["battlefield"],
@@ -19,18 +25,18 @@
               {
                 "cardId": "07db0374-3297-49c3-886d-a6bb42f7bb18",
                 "name": "Avatar of Growth",
-                "oracleText": "When Avatar of Growth enters the battlefield, you may put a +1/+1 counter on another target creature you control.",
+                "oracleText": "This spell costs {1} less to cast for each opponent you have.\nTrample\nWhen this creature enters, each player searches their library for up to two basic land cards, puts them onto the battlefield, then shuffles.",
                 "imageUrl": "",
-                "manaValue": 5,
+                "manaValue": 6,
                 "owner": "Player 1",
                 "targets": []
               },
               {
                 "cardId": "8a3ad2ef-8bcb-40c0-85de-f03328c2b644",
                 "name": "Springheart Nantuko",
-                "oracleText": "Whenever you play a land, create a token that's a copy of another target creature you control, except it's not legendary. Exile the token at the beginning of the next end step.",
+                "oracleText": "Bestow {1}{G}\nEnchanted creature gets +1/+1.\nLandfall — Whenever a land you control enters, you may pay {1}{G} if this permanent is attached to a creature you control. If you do, create a token that's a copy of that creature. If you didn't create a token this way, create a 1/1 green Insect creature token.",
                 "imageUrl": "",
-                "manaValue": 4,
+                "manaValue": 2,
                 "owner": "Player 1",
                 "targets": []
               }
@@ -47,8 +53,14 @@
         "gameContext": {
           "playerCount": 2,
           "players": [
-            { "label": "Player 1", "lifeTotal": 20 },
-            { "label": "Player 2", "lifeTotal": 20 }
+            {
+              "label": "Player 1",
+              "lifeTotal": 20
+            },
+            {
+              "label": "Player 2",
+              "lifeTotal": 20
+            }
           ],
           "turnPhase": "main_1",
           "selectedZones": ["battlefield"],
@@ -57,9 +69,9 @@
               {
                 "cardId": "07db0374-3297-49c3-886d-a6bb42f7bb18",
                 "name": "Avatar of Growth",
-                "oracleText": "When Avatar of Growth enters the battlefield, you may put a +1/+1 counter on another target creature you control.",
+                "oracleText": "This spell costs {1} less to cast for each opponent you have.\nTrample\nWhen this creature enters, each player searches their library for up to two basic land cards, puts them onto the battlefield, then shuffles.",
                 "imageUrl": "",
-                "manaValue": 5,
+                "manaValue": 6,
                 "owner": "Player 1",
                 "targets": []
               }
@@ -76,8 +88,14 @@
         "gameContext": {
           "playerCount": 2,
           "players": [
-            { "label": "Player 1", "lifeTotal": 20 },
-            { "label": "Player 2", "lifeTotal": 20 }
+            {
+              "label": "Player 1",
+              "lifeTotal": 20
+            },
+            {
+              "label": "Player 2",
+              "lifeTotal": 20
+            }
           ],
           "turnPhase": "main_1",
           "selectedZones": ["battlefield", "hand"],
@@ -86,9 +104,9 @@
               {
                 "cardId": "07db0374-3297-49c3-886d-a6bb42f7bb18",
                 "name": "Avatar of Growth",
-                "oracleText": "When Avatar of Growth enters the battlefield, you may put a +1/+1 counter on another target creature you control.",
+                "oracleText": "This spell costs {1} less to cast for each opponent you have.\nTrample\nWhen this creature enters, each player searches their library for up to two basic land cards, puts them onto the battlefield, then shuffles.",
                 "imageUrl": "",
-                "manaValue": 5,
+                "manaValue": 6,
                 "owner": "Player 1",
                 "targets": []
               }
@@ -97,9 +115,9 @@
               {
                 "cardId": "8a3ad2ef-8bcb-40c0-85de-f03328c2b644",
                 "name": "Springheart Nantuko",
-                "oracleText": "Whenever you play a land, create a token that's a copy of another target creature you control, except it's not legendary. Exile the token at the beginning of the next end step.",
+                "oracleText": "Bestow {1}{G}\nEnchanted creature gets +1/+1.\nLandfall — Whenever a land you control enters, you may pay {1}{G} if this permanent is attached to a creature you control. If you do, create a token that's a copy of that creature. If you didn't create a token this way, create a 1/1 green Insect creature token.",
                 "imageUrl": "",
-                "manaValue": 4,
+                "manaValue": 2,
                 "owner": "Player 1",
                 "targets": []
               }
@@ -116,8 +134,14 @@
         "gameContext": {
           "playerCount": 2,
           "players": [
-            { "label": "Player 1", "lifeTotal": 20 },
-            { "label": "Player 2", "lifeTotal": 20 }
+            {
+              "label": "Player 1",
+              "lifeTotal": 20
+            },
+            {
+              "label": "Player 2",
+              "lifeTotal": 20
+            }
           ],
           "turnPhase": "main_1",
           "selectedZones": ["battlefield"],
@@ -126,27 +150,27 @@
               {
                 "cardId": "72074972-418d-4dce-83cf-ce8cf310fc42",
                 "name": "Sidisi, Regent of the Mire",
-                "oracleText": "Flying. Whenever Sidisi, Regent of the Mire attacks, each opponent mills a card. Each player who mills a creature this way returns it to the battlefield under your control at the beginning of the next end step.",
+                "oracleText": "{T}, Sacrifice a creature you control with mana value X other than Sidisi: Return target creature card with mana value X plus 1 from your graveyard to the battlefield. Activate only as a sorcery.",
                 "imageUrl": "",
-                "manaValue": 5,
+                "manaValue": 2,
                 "owner": "Player 1",
                 "targets": []
               },
               {
                 "cardId": "dae4815e-9025-4993-ab46-52a3f1a7219e",
                 "name": "Thornbite Staff",
-                "oracleText": "Equipped creature has \"Whenever this creature deals combat damage to a player, you may untap it.\" Whenever equipped creature deals combat damage to a player, if it has deathtouch, that player sacrifices a creature.",
+                "oracleText": "Equipped creature has \"{2}, {T}: This creature deals 1 damage to any target\" and \"Whenever a creature dies, untap this creature.\"\nWhenever a Shaman creature enters, you may attach this Equipment to it.\nEquip {4}",
                 "imageUrl": "",
-                "manaValue": 3,
+                "manaValue": 2,
                 "owner": "Player 1",
                 "targets": []
               },
               {
                 "cardId": "aa76cc50-5be0-4844-b3a4-fb33fca3cdd3",
                 "name": "Bloodthrone Vampire",
-                "oracleText": "Sacrifice a creature: Put two +1/+1 counters on Bloodthrone Vampire.",
+                "oracleText": "Sacrifice a creature: This creature gets +2/+2 until end of turn.",
                 "imageUrl": "",
-                "manaValue": 3,
+                "manaValue": 2,
                 "owner": "Player 1",
                 "targets": []
               }
@@ -164,10 +188,10 @@
         "card": {
           "cardId": "07db0374-3297-49c3-886d-a6bb42f7bb18",
           "name": "Avatar of Growth",
-          "oracleText": "When Avatar of Growth enters the battlefield, you may put a +1/+1 counter on another target creature you control.",
+          "oracleText": "This spell costs {1} less to cast for each opponent you have.\nTrample\nWhen this creature enters, each player searches their library for up to two basic land cards, puts them onto the battlefield, then shuffles.",
           "imageUrl": "",
-          "manaCost": "{4}{G}",
-          "manaValue": 5,
+          "manaCost": "{4}{G}{G}",
+          "manaValue": 6,
           "typeLine": "Creature — Elemental Avatar",
           "colors": ["G"],
           "supertypes": [],
@@ -184,10 +208,10 @@
         "card": {
           "cardId": "07db0374-3297-49c3-886d-a6bb42f7bb18",
           "name": "Avatar of Growth",
-          "oracleText": "When Avatar of Growth enters the battlefield, you may put a +1/+1 counter on another target creature you control.",
+          "oracleText": "This spell costs {1} less to cast for each opponent you have.\nTrample\nWhen this creature enters, each player searches their library for up to two basic land cards, puts them onto the battlefield, then shuffles.",
           "imageUrl": "",
-          "manaCost": "{4}{G}",
-          "manaValue": 5,
+          "manaCost": "{4}{G}{G}",
+          "manaValue": 6,
           "typeLine": "Creature — Elemental Avatar",
           "colors": ["G"],
           "supertypes": [],
