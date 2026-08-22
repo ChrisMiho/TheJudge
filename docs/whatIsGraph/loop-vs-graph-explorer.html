@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en" data-palette="#2a78d6,#eb6834">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loop vs Graph Engineering — a decision explorer</title>
+<style>
+:root{
+  color-scheme: light;
+  --plane:#f9f9f7; --surface:#fcfcfb;
+  --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --ring:rgba(11,11,11,0.10);
+  --loop:#2a78d6; --graph:#eb6834;
+  --good:#0ca30c; --warn:#fab219; --crit:#d03b3b;
+  --radius:12px;
+  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme: dark;
+    --plane:#0d0d0d; --surface:#1a1a19;
+    --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,0.10);
+    --loop:#3987e5; --graph:#d95926;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --plane:#0d0d0d; --surface:#1a1a19;
+  --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,0.10);
+  --loop:#3987e5; --graph:#d95926;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--plane); color:var(--ink);
+  font-family:var(--font); line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px 96px;position:relative}
+header.top{padding:56px 0 28px;border-bottom:1px solid var(--grid);margin-bottom:36px}
+h1{font-size:clamp(28px,4vw,42px);line-height:1.12;margin:0 0 12px;letter-spacing:-0.02em;font-weight:650}
+.sub{color:var(--ink2);font-size:17px;max-width:62ch;margin:0}
+.kicker{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 14px}
+h2{font-size:24px;letter-spacing:-0.01em;margin:0 0 6px;font-weight:640}
+h3{font-size:16px;margin:0 0 6px;font-weight:640}
+section{margin:52px 0 0}
+.lede{color:var(--ink2);margin:0 0 22px;max-width:68ch}
+.card{background:var(--surface);border:1px solid var(--ring);border-radius:var(--radius);padding:20px 22px}
+.thesis{background:var(--surface);border:1px solid var(--ring);border-left:3px solid var(--loop);
+  border-radius:var(--radius);padding:22px 24px;margin:26px 0 0}
+.thesis p{margin:0;font-size:18px;line-height:1.5}
+.thesis .small{font-size:14px;color:var(--ink2);margin-top:10px}
+mark{background:transparent;color:var(--loop);font-weight:600}
+mark.g{color:var(--graph)}
+
+/* theme toggle */
+.toggle{position:absolute;top:20px;right:24px;z-index:20;background:var(--surface);border:1px solid var(--ring);
+  color:var(--ink2);border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer}
+.toggle:hover{color:var(--ink)}
+
+/* decision tool */
+.tool{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
+@media(max-width:860px){.tool{grid-template-columns:1fr}}
+.q{background:var(--surface);border:1px solid var(--ring);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px;
+  transition:border-color .15s ease}
+.q.answered{border-color:var(--ring)}
+.q.decisive{border-left:3px solid var(--loop)}
+.q.decisive.g{border-left-color:var(--graph)}
+.q .qt{font-weight:600;font-size:15px;margin:0 0 4px}
+.q .qh{color:var(--ink2);font-size:13.5px;margin:0 0 12px}
+.opts{display:flex;gap:8px;flex-wrap:wrap}
+.opt{border:1px solid var(--axis);background:transparent;color:var(--ink2);border-radius:999px;
+  padding:6px 15px;font:inherit;font-size:13.5px;cursor:pointer;transition:all .12s ease}
+.opt:hover{border-color:var(--muted);color:var(--ink)}
+.opt[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.verdict{position:sticky;top:24px;background:var(--surface);border:1px solid var(--ring);border-radius:var(--radius);
+  padding:22px;overflow:hidden}
+.vbadge{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  font-weight:650;color:var(--muted);margin-bottom:10px}
+.vdot{width:10px;height:10px;border-radius:50%;background:var(--muted)}
+.vtitle{font-size:26px;font-weight:660;letter-spacing:-0.01em;margin:0 0 8px;line-height:1.2}
+.vbody{font-size:14.5px;color:var(--ink2);margin:0 0 14px}
+.vreason{border-top:1px solid var(--grid);padding-top:14px;margin-top:14px}
+.vreason li{font-size:13.5px;color:var(--ink2);margin-bottom:7px}
+.vreason ul{margin:0;padding-left:18px}
+.reset{margin-top:16px;background:transparent;border:1px solid var(--axis);color:var(--ink2);
+  border-radius:8px;padding:7px 13px;font:inherit;font-size:13px;cursor:pointer;width:100%}
+.reset:hover{color:var(--ink);border-color:var(--muted)}
+
+/* comparison */
+table{width:100%;border-collapse:collapse;font-size:14.5px;background:var(--surface);
+  border:1px solid var(--ring);border-radius:var(--radius);overflow:hidden}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--grid);vertical-align:top}
+thead th{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:650;
+  background:var(--plane)}
+tbody tr:last-child td{border-bottom:none}
+td.dim{color:var(--ink2);font-weight:600;width:22%}
+.swatch{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px;vertical-align:baseline}
+.sw-loop{background:var(--loop)} .sw-graph{background:var(--graph)}
+
+/* pattern cards */
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:14px}
+.pc{background:var(--surface);border:1px solid var(--ring);border-radius:var(--radius);padding:17px 18px}
+.pc .tag{display:inline-block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:650;
+  padding:3px 8px;border-radius:5px;margin-bottom:9px}
+.tag.l{background:color-mix(in srgb,var(--loop) 14%,transparent);color:var(--loop)}
+.tag.g{background:color-mix(in srgb,var(--graph) 16%,transparent);color:var(--graph)}
+.tag.h{background:color-mix(in srgb,var(--muted) 18%,transparent);color:var(--ink2)}
+.pc p{margin:0;font-size:13.5px;color:var(--ink2)}
+.pc .when{margin-top:9px;font-size:13px;color:var(--muted)}
+
+/* charts */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:800px){.charts{grid-template-columns:1fr}}
+.chart{background:var(--surface);border:1px solid var(--ring);border-radius:var(--radius);padding:20px 22px 16px}
+.chart h3{margin-bottom:2px}
+.chart .csub{font-size:13px;color:var(--ink2);margin:0 0 18px}
+.legend{display:flex;gap:16px;margin:0 0 14px;font-size:13px;color:var(--ink2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.bar-row{margin-bottom:16px}
+.bar-lab{display:flex;justify-content:space-between;font-size:13px;color:var(--ink2);margin-bottom:5px}
+.bar-lab b{color:var(--ink);font-weight:600}
+.track{position:relative;height:14px}
+.bar{position:absolute;top:0;height:14px;border-radius:0 4px 4px 0;transition:width .5s cubic-bezier(.2,.7,.3,1)}
+.bar.float{border-radius:4px}
+.bar2{margin-top:2px}
+.axis-line{border-top:1px solid var(--axis);margin-top:6px;display:flex;justify-content:space-between;
+  font-size:11.5px;color:var(--muted);padding-top:5px;font-variant-numeric:tabular-nums}
+.note{font-size:12.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--grid)}
+
+/* stat tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:20px}
+.tile{background:var(--surface);border:1px solid var(--ring);border-radius:var(--radius);padding:16px 18px}
+.tile .tl{font-size:12.5px;color:var(--ink2);margin:0 0 6px}
+.tile .tv{font-size:29px;font-weight:660;letter-spacing:-0.02em;line-height:1.05;margin:0}
+.tile .ts{font-size:12px;color:var(--muted);margin:6px 0 0}
+
+/* failure modes */
+.fm{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.fm{grid-template-columns:1fr}}
+.fm ul{margin:8px 0 0;padding-left:17px}
+.fm li{font-size:13.5px;color:var(--ink2);margin-bottom:8px}
+.fm li b{color:var(--ink);font-weight:600}
+
+blockquote{margin:18px 0;padding:14px 18px;border-left:2px solid var(--axis);background:var(--surface);
+  border-radius:0 8px 8px 0;color:var(--ink2);font-size:15px}
+blockquote cite{display:block;margin-top:8px;font-size:12.5px;color:var(--muted);font-style:normal}
+footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--grid);font-size:13px;color:var(--muted)}
+a{color:var(--loop)}
+</style>
+</head>
+<body>
+<button class="toggle" id="themeBtn" type="button">Dark</button>
+<div class="wrap">
+
+<header class="top">
+  <p class="kicker">Agent orchestration architecture · August 2026</p>
+  <h1>Loop engineering vs.<br>Graph engineering</h1>
+  <p class="sub">Who holds the plan — the model, turn by turn, or your code? That single question separates the two paradigms. This page helps you answer it for a specific project.</p>
+</header>
+
+<div class="thesis">
+  <p><mark>Start with a loop.</mark> Add <mark class="g">graph structure</mark> at the specific points where a wrong turn is expensive, irreversible, or has to be auditable.</p>
+  <p class="small">This isn't a compromise — it's what nearly every production system converged on in 2025–26. And it matters less than you think: measured harness-induced variance exceeds model-induced variance by ~7.8×, which means scaffolding <em>quality</em> dominates scaffolding <em>shape</em>.</p>
+</div>
+
+<section>
+  <h2>Decide</h2>
+  <p class="lede">Answer in order. The first decisive "yes" settles it — later questions refine rather than override.</p>
+  <div class="tool">
+    <div id="questions"></div>
+    <aside class="verdict" id="verdict">
+      <div class="vbadge"><span class="vdot" id="vdot"></span><span id="vbadgetext">No answers yet</span></div>
+      <p class="vtitle" id="vtitle">Start answering</p>
+      <p class="vbody" id="vbody">Work down the questions on the left. The recommendation updates as you go, and shows which answer drove it.</p>
+      <div class="vreason" id="vreason" hidden><ul id="vlist"></ul></div>
+      <button class="reset" id="resetBtn" type="button">Clear answers</button>
+    </aside>
+  </div>
+</section>
+
+<section>
+  <h2>Compare</h2>
+  <p class="lede">The same system property, viewed from both paradigms. Nothing here is a knockout — every row is a trade you're choosing to make.</p>
+  <table>
+    <thead><tr>
+      <th>Dimension</th>
+      <th><span class="swatch sw-loop"></span>Loop</th>
+      <th><span class="swatch sw-graph"></span>Graph</th>
+    </tr></thead>
+    <tbody id="cmp"></tbody>
+  </table>
+</section>
+
+<section>
+  <h2>The evidence that should change your mind</h2>
+  <p class="lede">Two numbers do most of the argumentative work in this field, and both cut against architecture-first thinking.</p>
+  <div class="charts">
+
+    <div class="chart">
+      <h3>Harness beats architecture</h3>
+      <p class="csub">Benchmark point spread caused by swapping one variable while holding the other fixed</p>
+      <div id="chart1"></div>
+      <p class="note">Ranges from Zhang et al., <em>Stop Comparing LLM Agents Without Disclosing the Harness</em> (arXiv:2605.23950, May 2026). Aggregate harness-to-model variance ratio: <b>7.80×</b>. The practical read: most published loop-vs-graph comparisons are confounded by harness differences.</p>
+    </div>
+
+    <div class="chart">
+      <h3>Shippable autonomy is ~10× shorter than headline autonomy</h3>
+      <p class="csub">Task length completable at a given success rate, in minutes</p>
+      <div class="legend">
+        <span><span class="swatch sw-loop"></span>50% success</span>
+        <span><span class="swatch sw-graph"></span>80% success</span>
+      </div>
+      <div id="chart2"></div>
+      <p class="note">METR time-horizon measurements. The 50% figure is what gets quoted; the 80% figure is what you can ship unattended. Opus 4.6 values are trade-press-reported and unverified. METR warns measurements above 16 hours are unreliable with their current task suite.</p>
+    </div>
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+</section>
+
+<section>
+  <h2>Patterns</h2>
+  <p class="lede">The named shapes, tagged by which paradigm they belong to. The hybrids in the third color are where most production systems actually land.</p>
+  <div class="grid3" id="patterns"></div>
+</section>
+
+<section>
+  <h2>How each one fails</h2>
+  <p class="lede">Most agent debugging is pattern-matching against this list. Knowing the failure's name is usually 80% of the fix.</p>
+  <div class="fm">
+    <div class="card">
+      <h3><span class="swatch sw-loop"></span>Loop failure modes</h3>
+      <ul id="fmLoop"></ul>
+    </div>
+    <div class="card">
+      <h3><span class="swatch sw-graph"></span>Graph failure modes</h3>
+      <ul id="fmGraph"></ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Two quotes worth keeping</h2>
+  <blockquote>
+    Claude stops when the work looks done. Without a check it can run, "looks done" is the only signal available, and you become the verification loop: every mistake waits for you to notice it. Give Claude something that produces a pass or fail, and the loop closes on its own.
+    <cite>Anthropic — Claude Code best practices</cite>
+  </blockquote>
+  <blockquote>
+    Loop engineering isn't an alternative to graphs, so much as a simple version of them.
+    <cite>Sydney Runkle &amp; Harrison Chase, LangChain — "3 Years of Graph Engineering with LangGraph," 22 July 2026</cite>
+  </blockquote>
+  <p class="lede" style="margin-top:18px">Both are true, and they point the same direction: the thing that makes agents good is the tools, the context, and the verification signal. Loop and graph are just two ways of arranging those three.</p>
+</section>
+
+<footer>
+  Compiled 17 August 2026 from primary sources — Anthropic engineering &amp; Agent SDK docs, LangChain/LangGraph docs, Temporal, and peer-reviewed work (MAST arXiv:2503.13657, arXiv:2509.09677, arXiv:2605.23950, METR). Companion to the full written report. Palette validated for colorblind separation in both light and dark modes.
+</footer>
+
+</div>
+<script>
+/* ---------- theme ---------- */
+const btn = document.getElementById('themeBtn');
+const setLabel = () => {
+  const dark = document.documentElement.dataset.theme === 'dark'
+    || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+  btn.textContent = dark ? 'Light' : 'Dark';
+};
+btn.addEventListener('click', () => {
+  const cur = document.documentElement.dataset.theme;
+  const dark = cur === 'dark' || (!cur && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+  setLabel();
+});
+setLabel();
+
+/* ---------- decision tool ---------- */
+const QUESTIONS = [
+  { id:'q1', t:'Is a wrong action irreversible, expensive, or regulated?',
+    h:'Money movement, production writes, customer communications, anything inside a compliance perimeter.',
+    yes:'graph', weight:100,
+    why:'Irreversible actions need a structural gate, not a prompt asking nicely. Meta’s "Agents Rule of Two" makes this explicit: an agent with private data access, untrusted content exposure, and external communication requires a human in the loop — which is a statement about which edges may exist.' },
+
+  { id:'q2', t:'Do you need to pause for a human and resume hours or days later, across a process restart?',
+    h:'Approval queues, overnight review, anything where the wait outlives the process.',
+    yes:'graph', weight:95,
+    why:'A loop’s permission callback lives in-process and does not survive a deploy. LangGraph’s interrupt() plus a Postgres checkpointer stores the pause; a durable engine’s step.waitForEvent holds a 3-day wait with no process open.' },
+
+  { id:'q3', t:'Can you predict the required steps in advance, and do they rarely change?',
+    h:'You can draw it on a whiteboard and it stays drawn for six months.',
+    yes:'graph', weight:75,
+    why:'If the path is stable, encoding it is cheaper and faster than paying a model to re-derive it every run. Google measured ~50% token reduction and ~20% latency improvement moving a refund flow’s routing out of the model and into a graph.' },
+
+  { id:'q4', t:'Is there a cheap, machine-readable verifier for "done"?',
+    h:'Tests, a compiler, a linter, a schema check, a diff that either applies or doesn’t.',
+    yes:'loop', weight:90,
+    why:'This is the single strongest predictor of loop success in Anthropic’s own guidance. Give the loop an oracle and it closes on its own. A loop without an oracle is an expensive random walk — and MAST found 23.5% of multi-agent failures are verification failures.' },
+
+  { id:'q5', t:'Is the step count unpredictable, or does the path depend on what you find along the way?',
+    h:'Debugging, research, exploration, migration across a heterogeneous codebase.',
+    yes:'loop', weight:85,
+    why:'Anthropic’s definitional case for agents over workflows: "open-ended problems where it’s difficult or impossible to predict the required number of steps, and where you can’t hardcode a fixed path."' },
+
+  { id:'q6', t:'Is the work read-heavy and genuinely parallelizable?',
+    h:'Gathering, retrieving, analyzing — many independent directions at once.',
+    yes:'loop', weight:60, note:'with read-only subagent fan-out',
+    why:'Read actions parallelize cleanly. Anthropic’s multi-agent research system beat single-agent Opus 4 by 90.2% on breadth-first research — though token usage alone explained 80% of the variance, so much of that gain was bought with tokens, not topology.' },
+
+  { id:'q7', t:'Is the work write-heavy with interdependencies between the pieces?',
+    h:'Most coding work. Several agents editing the same system.',
+    yes:'loop', weight:70, note:'one deep loop with verification — not multi-agent',
+    why:'Cognition’s Flappy Bird case: parallel writers make invisible, incompatible implicit decisions you can’t merge. Anthropic excludes coding from their own multi-agent recommendation for the same reason. Go deep and single-threaded, with a fresh-context evaluator.' },
+
+  { id:'q8', t:'Is your product’s shape still changing week to week?',
+    h:'You are still discovering what the thing is.',
+    yes:'loop', weight:80,
+    why:'Graph state-schema churn is proportional to feature churn, so you pay the topology tax at the worst possible moment. Buy flexibility now, pay the token premium, add structure once the shape stops moving.' },
+];
+
+const answers = {};
+
+function renderQuestions(){
+  const host = document.getElementById('questions');
+  host.innerHTML = '';
+  QUESTIONS.forEach(q => {
+    const el = document.createElement('div');
+    el.className = 'q';
+    el.id = 'card-' + q.id;
+    el.innerHTML =
+      '<p class="qt">' + q.t + '</p>' +
+      '<p class="qh">' + q.h + '</p>' +
+      '<div class="opts">' +
+        '<button class="opt" type="button" data-q="' + q.id + '" data-v="yes">Yes</button>' +
+        '<button class="opt" type="button" data-q="' + q.id + '" data-v="no">No</button>' +
+        '<button class="opt" type="button" data-q="' + q.id + '" data-v="unsure">Not sure</button>' +
+      '</div>';
+    host.appendChild(el);
+  });
+  host.addEventListener('click', e => {
+    const b = e.target.closest('.opt');
+    if(!b) return;
+    const q = b.dataset.q, v = b.dataset.v;
+    answers[q] = (answers[q] === v) ? undefined : v;
+    if(answers[q] === undefined) delete answers[q];
+    syncButtons(); evaluate();
+  });
+}
+
+function syncButtons(){
+  document.querySelectorAll('.opt').forEach(b => {
+    b.setAttribute('aria-pressed', String(answers[b.dataset.q] === b.dataset.v));
+  });
+  QUESTIONS.forEach(q => {
+    const c = document.getElementById('card-' + q.id);
+    c.classList.toggle('answered', !!answers[q.id]);
+    c.classList.remove('decisive','g');
+  });
+}
+
+function evaluate(){
+  const hits = QUESTIONS.filter(q => answers[q.id] === 'yes');
+  const vt = document.getElementById('vtitle'),
+        vb = document.getElementById('vbody'),
+        vr = document.getElementById('vreason'),
+        vl = document.getElementById('vlist'),
+        vd = document.getElementById('vdot'),
+        vbt= document.getElementById('vbadgetext');
+
+  if(!hits.length){
+    const answered = Object.keys(answers).length;
+    vd.style.background = 'var(--muted)';
+    vbt.textContent = answered ? 'No decisive signal yet' : 'No answers yet';
+    vt.textContent = answered ? 'Default: start with a loop' : 'Start answering';
+    vb.textContent = answered
+      ? 'Nothing you answered yes to forces structure. That is the common case, and the default holds: build a loop with a tight tool surface, set max_turns and max_budget_usd from day one, and add graph structure at whichever failure point shows up first.'
+      : 'Work down the questions on the left. The recommendation updates as you go, and shows which answer drove it.';
+    vr.hidden = true;
+    return;
+  }
+
+  hits.sort((a,b) => b.weight - a.weight);
+  const top = hits[0];
+  const graphHits = hits.filter(h => h.yes === 'graph');
+  const loopHits  = hits.filter(h => h.yes === 'loop');
+
+  let verdict, badge, body;
+  if(graphHits.length && loopHits.length){
+    verdict = 'Hybrid';
+    badge = 'Mixed signals — this is normal';
+    body = 'You have both constraints. The answer is a graph shell with loop-shaped nodes, or a loop with hard gates on the specific risky actions. Fix the topology only where "' + graphHits[0].t.replace(/\?$/,'').toLowerCase() + '" applies; leave the rest of the work open.';
+    vd.style.background = 'linear-gradient(90deg,var(--loop) 50%,var(--graph) 50%)';
+  } else if(graphHits.length){
+    verdict = 'Graph';
+    badge = 'Structure it';
+    body = 'Your constraints are structural, and prompts cannot enforce structural constraints. Encode the topology so the model chooses between branches you defined rather than inventing its own.';
+    vd.style.background = 'var(--graph)';
+  } else {
+    verdict = 'Loop';
+    badge = top.note ? top.note : 'Let the model drive';
+    body = 'Nothing here needs a fixed path, and the properties that make loops work are present. Build the loop, bound it with turn and budget caps, and invest your effort in tools and the verification signal instead of topology.';
+    vd.style.background = 'var(--loop)';
+  }
+
+  vbt.textContent = badge;
+  vt.textContent = verdict;
+  vb.textContent = body;
+  vl.innerHTML = hits.map(h =>
+    '<li><b style="color:var(--' + h.yes + ')">' + (h.yes === 'loop' ? 'Loop' : 'Graph') + '</b> — ' + h.why + '</li>'
+  ).join('');
+  vr.hidden = false;
+
+  const c = document.getElementById('card-' + top.id);
+  c.classList.add('decisive');
+  if(top.yes === 'graph') c.classList.add('g');
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  Object.keys(answers).forEach(k => delete answers[k]);
+  syncButtons(); evaluate();
+});
+renderQuestions(); evaluate();
+
+/* ---------- comparison table ---------- */
+const CMP = [
+  ['Control flow','Model decides at runtime','Author decides at design time'],
+  ['Adding a capability','Add a tool. Done.','Add a node, an edge, and probably a state field'],
+  ['An unanticipated case','Often just works','Falls off the graph; needs a code change'],
+  ['Termination','Manufactured: budget, goal, gate','Structural: reach END'],
+  ['Reproducibility','Low — same input, different valid paths','High — same input, same path'],
+  ['Observability','Flat, variable-length spans; shape known post-hoc','Every node is a span; shape known before runtime'],
+  ['Testability','End-state assertions only','Node unit tests + trajectory assertions'],
+  ['Auditability','Requires full tracing to reconstruct','The topology <em>is</em> the audit story'],
+  ['Crash recovery','Session resume (conversation), not execution state','Checkpointer resumes mid-execution'],
+  ['Human-in-the-loop','Permission callbacks, in-process','interrupt() survives process death'],
+  ['Cost profile','Higher variance; can overshoot estimates','Predictable; bounded by topology'],
+  ['Prompt cache','Excellent — stable prefix, append-only','Poor if nodes swap prompts or tool sets'],
+  ['Time to working v1','Hours','Days'],
+  ['Under changing requirements','Edit a prompt or a tool','Edit schema + nodes + edges + migrations'],
+  ['Failure signature','Drifts, loops, quits early, over-explores','Falls off the graph, reducer conflicts, resume mis-maps'],
+];
+document.getElementById('cmp').innerHTML = CMP.map(r =>
+  '<tr><td class="dim">' + r[0] + '</td><td>' + r[1] + '</td><td>' + r[2] + '</td></tr>'
+).join('');
+
+/* ---------- chart 1: floating range bars ---------- */
+(function(){
+  const data = [
+    { label:'Swap the harness, fix the model', min:8.5, max:13.0, color:'var(--graph)' },
+    { label:'Swap the model, fix the harness', min:2.5, max:5.0,  color:'var(--loop)' },
+  ];
+  const MAX = 14;
+  document.getElementById('chart1').innerHTML =
+    data.map(d =>
+      '<div class="bar-row">' +
+        '<div class="bar-lab"><span>' + d.label + '</span><b>' + d.min + '–' + d.max + ' pts</b></div>' +
+        '<div class="track">' +
+          '<div class="bar float" style="left:' + (d.min/MAX*100) + '%;width:' +
+            ((d.max-d.min)/MAX*100) + '%;background:' + d.color + '"></div>' +
+        '</div>' +
+      '</div>'
+    ).join('') +
+    '<div class="axis-line"><span>0</span><span>7</span><span>14 pts</span></div>';
+})();
+
+/* ---------- chart 2: grouped horizontal bars ---------- */
+(function(){
+  const data = [
+    { model:'Claude Opus 4.6*', a:720, b:70 },
+    { model:'Claude Opus 4.5',  a:289, b:27 },
+  ];
+  const MAX = 780;
+  const fmt = m => m >= 60 ? (m/60).toFixed(m % 60 ? 1 : 0) + ' h' : m + ' min';
+  document.getElementById('chart2').innerHTML =
+    data.map(d =>
+      '<div class="bar-row">' +
+        '<div class="bar-lab"><span>' + d.model + '</span>' +
+          '<b>' + fmt(d.a) + ' &nbsp;/&nbsp; ' + fmt(d.b) + '</b></div>' +
+        '<div class="track">' +
+          '<div class="bar" style="left:0;width:' + (d.a/MAX*100) + '%;background:var(--loop)"></div>' +
+        '</div>' +
+        '<div class="track bar2">' +
+          '<div class="bar" style="left:0;width:' + (d.b/MAX*100) + '%;background:var(--graph)"></div>' +
+        '</div>' +
+      '</div>'
+    ).join('') +
+    '<div class="axis-line"><span>0</span><span>6 h</span><span>13 h</span></div>';
+})();
+
+/* ---------- stat tiles ---------- */
+const TILES = [
+  ['Multi-agent token cost','~15×','vs. a chat interaction (Anthropic, Jun 2025)'],
+  ['BrowseComp variance explained by tokens alone','80%','Much of the multi-agent gain was bought with tokens, not topology'],
+  ['KV-cache hit vs. miss','10×','$0.30 vs $3.00 /MTok, on a ~100:1 input:output ratio (Manus)'],
+  ['Multi-agent failures that are <em>specification</em> failures','44.2%','MAST, 1,600+ annotated traces — the author’s bug, not the model’s'],
+  ['Tool count where selection accuracy degrades','30–50','Anthropic Agent SDK tool-search docs'],
+  ['Gain from adding one verification step','+15.6%','MAST intervention on ChatDev'],
+];
+document.getElementById('tiles').innerHTML = TILES.map(t =>
+  '<div class="tile"><p class="tl">' + t[0] + '</p><p class="tv">' + t[1] + '</p><p class="ts">' + t[2] + '</p></div>'
+).join('');
+
+/* ---------- patterns ---------- */
+const PATTERNS = [
+  ['l','Turn-based loop','Triggered by a prompt; stops when Claude judges completion.','Short tasks outside a regular process.'],
+  ['l','Goal-based loop','A separate small model evaluates a stated condition after every turn. Met / not yet met / impossible.','Tasks with verifiable exit criteria.'],
+  ['l','Time-based loop','Fires on an interval; runs until the work completes or you cancel.','Recurring work, external system polling.'],
+  ['l','Proactive loop','Event- or schedule-triggered with no human present.','Well-defined recurring work streams.'],
+  ['l','Subagent fan-out','Isolated context per worker; only the final summary returns to the parent.','Read-heavy parallel work. Never parallel writes.'],
+  ['l','Fresh-context evaluator','A no-write subagent grades work from a context that never saw it built.','Defeating self-preferential bias.'],
+  ['g','Prompt chaining','Sequential steps with programmatic gate checks between them.','Clean fixed decomposition; trades latency for accuracy.'],
+  ['g','Routing','Classify, then dispatch to a specialized handler with its own prompt and tools.','Distinct input categories. Highest ROI graph pattern.'],
+  ['g','Parallelization','Sectioning (independent subtasks) or voting (same task N times).','Genuine independence, or confidence over speed.'],
+  ['g','Orchestrator-workers','Central LLM decomposes dynamically and delegates; subtask count unknown until runtime.','LangGraph Send() is the mechanism.'],
+  ['g','Evaluator-optimizer','Generator → evaluator → loop back or exit, with a hard attempt cap.','There is a legible eval criterion.'],
+  ['g','Durable workflow','Journaled replay: completed steps return recorded results instead of re-running.','Exactly-once side effects, day-long waits, in-flight versioning.'],
+  ['h','Graph shell, loop nodes','Fixed auditable outer topology; each node is an unconstrained agent with a budget.','Stable business process, unstable work inside each step.'],
+  ['h','Loop shell, workflow tools','The agent runs free but risky operations are single calls into tested code.','Where most teams should start.'],
+  ['h','CodeAct','The model emits one program that calls tools, executed once in a sandbox.','−64% tokens, −52% latency measured. Determinism preserved; authorship moves to the model.'],
+  ['h','Logit masking','A state machine restricts the action space without editing tool definitions.','Keeps the prompt prefix — and the 10× cache discount — intact.'],
+];
+const TAGNAME = { l:'Loop', g:'Graph', h:'Hybrid' };
+document.getElementById('patterns').innerHTML = PATTERNS.map(p =>
+  '<div class="pc"><span class="tag ' + p[0] + '">' + TAGNAME[p[0]] + '</span>' +
+  '<h3>' + p[1] + '</h3><p>' + p[2] + '</p><p class="when">' + p[3] + '</p></div>'
+).join('');
+
+/* ---------- failure modes ---------- */
+const FM_LOOP = [
+  ['Context rot','recall degrades as the window fills — n² attention over a finite budget'],
+  ['Agentic laziness','stops early on a multi-part task and declares it done'],
+  ['Self-preferential bias','grades its own work favorably when asked to verify it'],
+  ['Goal drift','gradual loss of fidelity to the objective, especially after compaction'],
+  ['Compaction amnesia','early instructions vanish in the summary — put rules in CLAUDE.md'],
+  ['Self-conditioning','errors already in context make further errors likelier; scale does not fix it'],
+  ['Infinite exploration','an unscoped "investigate this" floods the context'],
+  ['Correction pollution','repeated corrections fill context with failed approaches'],
+  ['Tool-selection decay','above 30–50 loaded tools, the model picks worse'],
+];
+const FM_GRAPH = [
+  ['Specification failure','44.2% of multi-agent failures — disobeyed specs, unaware of termination conditions'],
+  ['State schema churn','every new tracked thing is a schema edit plus a persisted-state migration'],
+  ['Falling off the graph','an input you did not anticipate has no edge to take'],
+  ['Reducer conflicts','parallel branches writing one key without a reducer raise InvalidUpdateError'],
+  ['Replay re-runs side effects','LangGraph replay is not journaled — the credit card gets charged twice'],
+  ['Resume mis-mapping','on resume the node re-runs from the top; multiple interrupts match by index'],
+  ['Abstraction debugging','failures require navigating graphs, subgraphs, state objects, decorators'],
+  ['Documentation drift','a large majority of published LangGraph tutorials are subtly wrong right now'],
+  ['Over-constraint','forcing deterministic paths onto exploratory tasks — LangChain concedes this one'],
+];
+const li = a => a.map(x => '<li><b>' + x[0] + '</b> — ' + x[1] + '</li>').join('');
+document.getElementById('fmLoop').innerHTML  = li(FM_LOOP);
+document.getElementById('fmGraph').innerHTML = li(FM_GRAPH);
+</script>
+</body>
+</html>
