@@ -1,0 +1,66 @@
+{
+  "slug": "commander-spellbook-combos",
+  "slice": "G",
+  "criteria": [
+    {
+      "id": "G1",
+      "statement": "refresh-commander-spellbook-data.mjs's VARIANTS_ENDPOINT is the bulk export URL; the paginated cursor walk and its resume-from-staged-pages machinery for variants are removed",
+      "value": false,
+      "evidence": { "paths": ["scripts/refresh-commander-spellbook-data.mjs"] }
+    },
+    {
+      "id": "G2",
+      "statement": "the retry/backoff helpers are retained and still exercised by the Scryfall template-expansion calls",
+      "value": false,
+      "evidence": { "paths": ["scripts/refresh-commander-spellbook-data.mjs", "scripts/refresh-commander-spellbook-data.test.mjs"] }
+    },
+    {
+      "id": "G3",
+      "statement": "build-commander-spellbook-combos.mjs reads camelCase wire field names throughout, with no remaining snake_case reads",
+      "value": false,
+      "evidence": { "paths": ["scripts/build-commander-spellbook-combos.mjs"] }
+    },
+    {
+      "id": "G4",
+      "statement": "the build succeeds against a real-upstream-excerpt fixture and fails loudly against a snake_case fixture",
+      "value": false,
+      "evidence": { "command": "node scripts/build-commander-spellbook-combos\\.mjs|npm run test:scripts" }
+    },
+    {
+      "id": "G5",
+      "statement": "commanderSpellbook fixtures are regenerated from real upstream bytes, not hand-authored",
+      "value": false,
+      "evidence": { "paths": ["apps/backend/src/commanderSpellbook/__fixtures__"] }
+    },
+    {
+      "id": "G6",
+      "statement": "the detail artifact is concatenated, individually-gzip-compressed per-variant JSON records",
+      "value": false,
+      "evidence": { "paths": ["scripts/build-commander-spellbook-combos.mjs", "apps/backend/data/commanderSpellbookCombos.json.gz"] }
+    },
+    {
+      "id": "G7",
+      "statement": "the index artifact carries a variantId to offset/length byte-offset directory into the detail artifact",
+      "value": false,
+      "evidence": { "paths": ["scripts/build-commander-spellbook-combos.mjs", "apps/backend/data/commanderSpellbookComboIndex.json.gz"] }
+    },
+    {
+      "id": "G8",
+      "statement": "npm run data:refresh runs the combo download as one step of its existing chain; data:refresh-combos still refuses to run without --confirm-live-calls",
+      "value": false,
+      "evidence": { "paths": ["package.json", "scripts/refresh-scryfall-data.mjs"] }
+    },
+    {
+      "id": "G9",
+      "statement": "a build-side test asserts the eval catalog's key shape matches the real build's output key shape",
+      "value": false,
+      "evidence": { "command": "npm run test:scripts" }
+    },
+    {
+      "id": "G10",
+      "statement": "a failed or empty refresh/build never overwrites a valid committed snapshot",
+      "value": false,
+      "evidence": { "command": "npm run test:scripts" }
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "slug": "commander-spellbook-combos",
+  "slice": "J",
+  "criteria": [
+    {
+      "id": "J1",
+      "statement": "curated comparison scenarios reference real oracle ids present in the built corpus, via inline request payloads",
+      "value": false,
+      "evidence": { "paths": ["scripts/compare-combo-answer-quality.mjs"] }
+    },
+    {
+      "id": "J2",
+      "statement": "with a real corpus loaded, the enrichment-on and enrichment-off legs produce genuinely different assembled prompts for at least one scenario",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/backend run test -- commanderSpellbook" }
+    },
+    {
+      "id": "J3",
+      "statement": "the script still refuses to contact the provider without --confirm-live-calls and writes to gitignored output/combo-answer-quality/",
+      "value": false,
+      "evidence": { "paths": ["scripts/compare-combo-answer-quality.mjs"] }
+    },
+    {
+      "id": "J4",
+      "statement": "npm run quality:check is green",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    },
+    {
+      "id": "J5",
+      "statement": "git diff --name-only main...HEAD touches only files named across slices G-J and this package's own docs",
+      "value": false,
+      "evidence": { "command": "git diff --name-only main\\.\\.\\.HEAD" }
+    },
+    {
+      "id": "J6",
+      "statement": "the owner has explicitly approved running the real production corpus refresh, separately from the DEC-162 architecture decisions",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "J7",
+      "statement": "the live provider A/B has been run and its conclusion recorded",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

@@ -8,9 +8,9 @@ Do not rename package folders to encode status.
 
 ## active
 
-## refined
-
 - [commander-spellbook-combos](./commander-spellbook-combos/)
+
+## refined
 
 ## refining
 

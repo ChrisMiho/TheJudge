@@ -1,0 +1,48 @@
+{
+  "slug": "commander-spellbook-combos",
+  "slice": "H",
+  "criteria": [
+    {
+      "id": "H1",
+      "statement": "the index artifact is decompressed and parsed fully once, at first use, holding its byte-offset directory in memory",
+      "value": false,
+      "evidence": { "paths": ["apps/backend/src/commanderSpellbook/catalog.ts"] }
+    },
+    {
+      "id": "H2",
+      "statement": "a lookup for one variant's detail reads only that variant's byte range and gunzips only that slice",
+      "value": false,
+      "evidence": { "paths": ["apps/backend/src/commanderSpellbook/catalog.ts"] }
+    },
+    {
+      "id": "H3",
+      "statement": "a test proves exactly one gzip member is decompressed per single-variant lookup, via a spy/counter",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/backend run test -- commanderSpellbook" }
+    },
+    {
+      "id": "H4",
+      "statement": "a variant with a null steps/prerequisites/mana/card-state field fails integrity validation at lazy-decompression time",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/backend run test -- commanderSpellbook" }
+    },
+    {
+      "id": "H5",
+      "statement": "missing, empty, or malformed index or detail artifacts disable combo enrichment only, warning once per process/path",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/backend run test -- commanderSpellbook" }
+    },
+    {
+      "id": "H6",
+      "statement": "COMBO_ENRICHMENT_ENABLED=false suppresses the loader entirely; the index is never read",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/backend run test -- commanderSpellbook" }
+    },
+    {
+      "id": "H7",
+      "statement": "repeated lookups for the same variant do not unboundedly retain every seen variant's decompressed detail",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/backend run test -- commanderSpellbook" }
+    }
+  ]
+}
