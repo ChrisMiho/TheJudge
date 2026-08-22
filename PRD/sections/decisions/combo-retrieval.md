@@ -12,6 +12,8 @@ Static Commander Spellbook catalog ingestion and context-aware prompt enrichment
   - game-mode automatic matching is quantity-aware, does not reuse one submitted card instance for multiple ingredient slots, and requires compatible starting zones
   - explicit combo questions may retrieve partial candidates anchored to submitted cards and must identify missing or incorrectly zoned pieces
   - unresolved template ingredients, mana availability, commander status, card state, and prose prerequisites are never silently treated as satisfied
+  - per-ingredient card state is zone-scoped and is rendered for the zone a matched instance actually occupies, so the model can weigh state that TheJudge cannot deterministically verify
+  - the prompt never labels a candidate "complete"; a fully assigned candidate is labeled as all pieces present with card state explicitly unverified
   - prompt output labels the corpus as community-sourced and keeps WotC card text, rulings, and Comprehensive Rules authoritative
   - `AskAiRequest`, success/error response shapes, provider selection, and the single `POST /api/ask-ai` endpoint remain unchanged
 - Related requirements:

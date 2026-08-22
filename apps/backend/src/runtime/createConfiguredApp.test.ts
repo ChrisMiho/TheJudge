@@ -1,0 +1,179 @@
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { gzipSync } from "node:zlib";
+import request from "supertest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createAskAiRequest, createZoneCardItem } from "../test-utils/requestBuilders.js";
+
+const accessedPaths = vi.hoisted(() => [] as string[]);
+
+vi.mock("node:fs", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:fs")>();
+  return {
+    ...actual,
+    default: actual,
+    existsSync: (path: Parameters<typeof actual.existsSync>[0]) => {
+      accessedPaths.push(String(path));
+      return actual.existsSync(path);
+    },
+    readFileSync: ((path: string, ...rest: unknown[]) => {
+      accessedPaths.push(String(path));
+      return (actual.readFileSync as (...args: unknown[]) => unknown)(path, ...rest);
+    }) as unknown as typeof actual.readFileSync
+  };
+});
+
+const { createConfiguredApp } = await import("./createConfiguredApp.js");
+
+const sampleVariant = {
+  variantId: "1000-2000",
+  sourceUrl: "https://commanderspellbook.com/combo/1000-2000/",
+  popularity: 900,
+  steps: "Cast the spell, then win.",
+  manaNeeded: "{U}{B}",
+  easyPrerequisites: "",
+  notablePrerequisites: "",
+  notes: "",
+  producedEffects: ["Win the game"],
+  cardIngredients: [
+    { cardId: "oracle-1", cardName: "Thassa's Oracle", quantity: 1, zones: ["B"], cardState: {}, mustBeCommander: false }
+  ],
+  templateIngredients: []
+};
+
+let repoRoot: string;
+let warnSpy: ReturnType<typeof vi.spyOn>;
+
+function comboPaths(root: string) {
+  return {
+    detail: join(root, "apps/backend/data/commanderSpellbookCombos.json.gz"),
+    index: join(root, "apps/backend/data/commanderSpellbookComboIndex.json.gz")
+  };
+}
+
+beforeEach(() => {
+  warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+  repoRoot = mkdtempSync(join(tmpdir(), "combo-runtime-"));
+  mkdirSync(join(repoRoot, "apps/backend/data"), { recursive: true });
+  const paths = comboPaths(repoRoot);
+  // Mirrors the build script's lazy-access format: each variant gzip-compressed
+  // individually and concatenated, with the index carrying its byte offsets.
+  const compressed = gzipSync(Buffer.from(JSON.stringify(sampleVariant), "utf8"));
+  writeFileSync(paths.detail, compressed);
+  writeFileSync(
+    paths.index,
+    gzipSync(
+      Buffer.from(
+        JSON.stringify({
+          byOracleId: { "oracle-1": ["1000-2000"] },
+          byTemplateOracleId: {},
+          detailOffsets: { "1000-2000": [0, compressed.length] }
+        }),
+        "utf8"
+      )
+    )
+  );
+  accessedPaths.length = 0;
+});
+
+afterEach(() => {
+  warnSpy.mockRestore();
+});
+
+describe("Backend - Ask AI", () => {
+  describe("Combo catalog wiring", () => {
+    it("loads the catalog when the flag defaults to enabled", () => {
+      const runtime = createConfiguredApp(repoRoot, {});
+
+      expect(runtime.config.comboEnrichmentEnabled).toBe(true);
+      expect(runtime.comboVariantCount).toBe(1);
+    });
+
+    it("never touches either artifact when the flag is disabled", () => {
+      const runtime = createConfiguredApp(repoRoot, { COMBO_ENRICHMENT_ENABLED: "false" });
+      const paths = comboPaths(repoRoot);
+
+      expect(runtime.comboVariantCount).toBe(0);
+      expect(accessedPaths).not.toContain(paths.detail);
+      expect(accessedPaths).not.toContain(paths.index);
+    });
+
+    it("builds an enabled and a disabled app in one process with no module-load latch", () => {
+      const enabled = createConfiguredApp(repoRoot, {});
+      const disabled = createConfiguredApp(repoRoot, { COMBO_ENRICHMENT_ENABLED: "false" });
+      const enabledAgain = createConfiguredApp(repoRoot, {});
+
+      expect(enabled.comboVariantCount).toBe(1);
+      expect(disabled.comboVariantCount).toBe(0);
+      expect(enabledAgain.comboVariantCount).toBe(1);
+    });
+
+    it("keeps ask-ai request and response bodies byte-identical with the flag on and off", async () => {
+      const enabled = createConfiguredApp(repoRoot, {});
+      const disabled = createConfiguredApp(repoRoot, { COMBO_ENRICHMENT_ENABLED: "false" });
+      // No submitted card matches the catalog's ingredient, so neither leg gets a
+      // combo section and the payloads must be indistinguishable.
+      const payload = createAskAiRequest();
+
+      const enabledResponse = await request(enabled.app).post("/api/ask-ai").send(payload);
+      const disabledResponse = await request(disabled.app).post("/api/ask-ai").send(payload);
+
+      expect(enabledResponse.status).toBe(disabledResponse.status);
+      expect(Object.keys(enabledResponse.body).sort()).toEqual(Object.keys(disabledResponse.body).sort());
+      expect(JSON.stringify(enabledResponse.body)).toBe(JSON.stringify(disabledResponse.body));
+    });
+
+    it("gives the two answer-quality A/B legs prompts differing only by the combo section", async () => {
+      // The shape slice F's comparison depends on: both legs built in ONE process
+      // from the same repo root, differing only by COMBO_ENRICHMENT_ENABLED. The
+      // mock provider echoes the assembled prompt, so the section is observable
+      // without changing the response contract.
+      const enriched = createConfiguredApp(repoRoot, {});
+      const disabled = createConfiguredApp(repoRoot, { COMBO_ENRICHMENT_ENABLED: "false" });
+      const payload = createAskAiRequest({
+        question: "How does this resolve?",
+        gameContext: {
+          playerCount: 2,
+          players: [
+            { label: "Player 1", lifeTotal: 20 },
+            { label: "Player 2", lifeTotal: 20 }
+          ],
+          turnPhase: "main_1",
+          selectedZones: ["battlefield"],
+          zones: {
+            battlefield: [
+              createZoneCardItem({
+                cardId: "oracle-1",
+                name: "Thassa's Oracle",
+                oracleText: "When this enters, look at the top of your library.",
+                owner: "Player 1"
+              })
+            ]
+          }
+        }
+      });
+
+      const enrichedResponse = await request(enriched.app).post("/api/ask-ai").send(payload);
+      const disabledResponse = await request(disabled.app).post("/api/ask-ai").send(payload);
+
+      expect(enrichedResponse.body.answer).toContain("COMMANDER SPELLBOOK COMBO CONTEXT");
+      expect(disabledResponse.body.answer).not.toContain("COMMANDER SPELLBOOK COMBO CONTEXT");
+
+      // Nothing but the prompt text differs: same status, same response keys.
+      expect(enrichedResponse.status).toBe(disabledResponse.status);
+      expect(Object.keys(enrichedResponse.body).sort()).toEqual(Object.keys(disabledResponse.body).sort());
+    });
+
+    it("fails open and still answers when the artifacts are missing entirely", async () => {
+      const emptyRoot = mkdtempSync(join(tmpdir(), "combo-runtime-empty-"));
+      const runtime = createConfiguredApp(emptyRoot, {});
+
+      expect(runtime.comboVariantCount).toBe(0);
+
+      const response = await request(runtime.app).post("/api/ask-ai").send(createAskAiRequest());
+      expect(response.status).toBe(200);
+      expect(typeof response.body.answer).toBe("string");
+    });
+  });
+});

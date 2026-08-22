@@ -1,4 +1,4 @@
-import { resolveDebugLoggingEnabled, resolvePayloadLoggingEnabled } from "../logging.js";
+import { resolveBooleanEnv, resolveDebugLoggingEnabled, resolvePayloadLoggingEnabled } from "../logging.js";
 
 const DEFAULT_PORT = 3000;
 const DEFAULT_OPENAI_TIMEOUT_MS = 15000;
@@ -13,6 +13,7 @@ export type ServerConfig = {
   debugLoggingEnabled: boolean;
   payloadLoggingEnabled: boolean;
   askAiProvider: AskAiProviderMode;
+  comboEnrichmentEnabled: boolean;
   openAiApiKey?: string;
   openAiModel?: string;
   openAiTimeoutMs?: number;
@@ -97,6 +98,7 @@ export function readServerConfig(env: NodeJS.ProcessEnv): ServerConfig {
     debugLoggingEnabled: resolveDebugLoggingEnabled(env.DEBUG_LOGGING, env.NODE_ENV),
     payloadLoggingEnabled: resolvePayloadLoggingEnabled(env.LOG_PAYLOADS, env.NODE_ENV),
     askAiProvider: provider,
+    comboEnrichmentEnabled: resolveBooleanEnv(env.COMBO_ENRICHMENT_ENABLED, "COMBO_ENRICHMENT_ENABLED", true),
     openAiApiKey,
     openAiModel,
     openAiTimeoutMs: provider === "openai" ? (openAiTimeoutMs ?? DEFAULT_OPENAI_TIMEOUT_MS) : undefined,

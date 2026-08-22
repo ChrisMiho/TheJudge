@@ -2159,8 +2159,9 @@
   - do not fold combo data into `cardMetadata.json`, `cardRulingsByOracleId.json`, or the WotC rules artifacts; each corpus keeps one authoritative shape
 - Dependencies:
   - DEC-116
+  - DEC-162
   - DEC-012
-  - Commander Spellbook public REST API
+  - Commander Spellbook public bulk export
   - Scryfall `oracle_id` and card-search API used only during approved refresh
 - Notes:
   - planned paths are gzipped `apps/backend/data/commanderSpellbookCombos.json.gz` and `apps/backend/data/commanderSpellbookComboIndex.json.gz`, built from gitignored raw inputs under `apps/backend/data/commander-spellbook/`
@@ -2183,7 +2184,8 @@
   - for `mode: "lookup"`, combo retrieval runs only when combo intent is explicit and one card is attached; every candidate must contain the attached card as an exact ingredient or authoritative template match
   - lookup mode with no attached card and lookup questions without combo intent retrieve no combo catalog data
   - every match result distinguishes compatible present ingredients, present-but-incompatible-zone ingredients, missing exact ingredients, matched template ingredients, and unresolved template ingredients
-  - mana availability, `mustBeCommander`, battlefield/card state, legality, and prose prerequisites are passed through as context but are not deterministically validated or represented as satisfied
+  - mana availability, `mustBeCommander`, per-zone card state, legality, and prose prerequisites are passed through as context but are not deterministically validated or represented as satisfied; the submitted request carries no tapped, counter, control, or commander-designation data, so these can only ever be surfaced to the model and never checked
+  - each match annotation carries the card state applicable to the zone its assigned instance actually occupies; wrong-zone and missing annotations instead carry the state of the expected zone, so the model can see what the ingredient would require
   - at most five variants are selected, ordered by: complete contextual match; required-anchor coverage; compatible-zone coverage; fewer missing ingredients; Commander Spellbook popularity descending; stable variant id ascending
   - identical request context and artifact data produce the same selected variants and match annotations
 - Constraints:
@@ -2196,7 +2198,7 @@
   - DEC-106
   - DEC-013
 - Notes:
-  - "complete" means catalog ingredients and compatible submitted zones are present, not that mana/state/prerequisites have been proven or the combo is legally executable
+  - "complete" means catalog ingredients and compatible submitted zones are present, not that mana/state/prerequisites have been proven or the combo is legally executable; because that distinction is easy to lose, REQ-095 forbids rendering the bare word "complete" as the user-facing classification label
 
 ### REQ-095
 - Title: Commander Spellbook combo prompt enrichment
@@ -2204,7 +2206,9 @@
 - Description: Eligible combo matches must enter Ask AI prompts as a bounded, explicitly community-sourced section that describes present and missing ingredients while preserving WotC rules/card text as higher authority and keeping the HTTP contract unchanged.
 - Acceptance Criteria:
   - when REQ-094 selects at least one variant, prompt assembly adds `COMMANDER SPELLBOOK COMBO CONTEXT — COMMUNITY-SOURCED` after card/rules/rulings enrichment and before conversation history plus the current question
-  - each entry includes its complete/partial classification, stable Commander Spellbook variant reference, compatible present ingredients, present-but-incompatible-zone ingredients, missing exact ingredients, matched/unresolved template ingredients, produced effects, steps, mana needed, prerequisites, and notes when available
+  - each entry includes its classification, stable Commander Spellbook variant reference, compatible present ingredients, present-but-incompatible-zone ingredients, missing exact ingredients, matched/unresolved template ingredients, per-ingredient applicable card state, per-ingredient `mustBeCommander`, produced effects, steps, mana needed, prerequisites, and notes when available
+  - the rendered classification never uses the bare word "complete": a fully assigned candidate renders as all pieces present with card state explicitly unverified, and a candidate with gaps renders as partial with its missing pieces named
+  - prompt instructions direct the model to check each ingredient's applicable card state and `mustBeCommander` against the submitted board before asserting that a combo is live, assembled, or executable
   - partial candidates explicitly label every missing or incorrectly zoned ingredient so the model can address the user's question without presenting the combo as currently assembled
   - prompt instructions state that Commander Spellbook is community catalog data, not WotC rules, legality validation, or proof of executability; official card text, WotC rulings, and Comprehensive Rules remain authoritative
   - without explicit combo intent, the model is told to use an automatically matched complete combo only when relevant to the user's actual question; it must not expand into unrelated staples or other variants
@@ -3442,6 +3446,32 @@
 - Notes:
   - found during the `ui-review` light sweep across destinations rather than in the original braindump; included because it is the only user-facing defect the sweep surfaced outside the reported screens
 
+### REQ-146
+- Title: Commander Spellbook enrichment answer-quality comparison
+- Priority: medium
+- Description: TheJudge must provide an opt-in, human-reviewed way to compare real provider answers with and without Commander Spellbook enrichment across curated combo scenarios, so the enrichment's effect on answer quality is observed rather than assumed.
+- Acceptance Criteria:
+  - a dedicated script answers each curated combo scenario twice against the configured live provider — once with the committed combo catalog loaded and once with combo enrichment disabled — and writes both answers side by side for human review
+  - combo enrichment is disabled for the comparison through backend runtime configuration only; no request field, response field, Zod schema, route, provider selection, or public contract changes
+  - the script refuses to contact the provider unless an explicit confirmation flag is supplied, mirroring the human-approved network gate on the corpus refresh
+  - comparison output is gitignored; only the dated human-reviewed conclusion is recorded in durable project history
+  - the comparison is never added to `npm run quality:check`, never asserted against a golden, and never fails a build on non-deterministic model output
+  - the recorded conclusion is reviewed before the Commander Spellbook work package ships and is carried into its cleanup receipt
+- Constraints:
+  - never auto-score, auto-gate, or fail CI on model answer content
+  - do not add a product-facing endpoint, request field, or user-visible surface
+  - do not grow this into a general-purpose LLM evaluation framework; a broad answer-quality baseline across all fixtures remains separate scope
+- Dependencies:
+  - DEC-161
+  - REQ-093
+  - REQ-094
+  - REQ-095
+- Notes:
+  - the existing `prompt:preview` tooling extracts assembled prompt text from the mock provider and therefore cannot observe answer quality; this is the first path in TheJudge that inspects real provider answers
+  - the comparison exists to answer whether combo enrichment earned its place, which is otherwise unfalsifiable
+  - planned path is `scripts/compare-combo-answer-quality.mjs`, gated behind an explicit `--confirm-live-calls` flag, writing to gitignored `output/combo-answer-quality/` alongside the existing `output/prompt-preview/` and `output/retrieval-relevance-report.txt` convention
+  - the runtime config flag is `COMBO_ENRICHMENT_ENABLED` (backend env, enabled by default), read where prompt assembly consults the catalog rather than latched at module load, so one script process can answer both legs without a second process or a contract change
+  - curated scenarios must reference oracle ids that exist in the built corpus; the eval fixtures' synthetic ids (`eval-oracle-a`, …) appear in no corpus, so scenarios reusing them produce byte-identical prompts on both legs and spend live provider calls proving nothing (DEC-162 makes real ids available)
 ### REQ-152
 - Title: Graph boundaries enforced by a hook that needs no launch flag
 - Priority: high

@@ -48,12 +48,20 @@ apps/backend/data/cr/source.txt
 apps/backend/data/cr/source.txt.tmp
 apps/backend/data/scryfall/rulings.json
 apps/backend/data/scryfall/rulings.json.tmp
+# Commander Spellbook raw refresh pages (build inputs only; the trimmed corpus
+# ships as apps/backend/data/commanderSpellbookCombo*.json)
+apps/backend/data/commander-spellbook/
+apps/backend/data/commander-spellbook.tmp/
 
 # Prompt preview output (developer-local; not committed)
 output/prompt-preview/
 
 # Retrieval relevance report (developer-local; not committed)
 output/retrieval-relevance-report.txt
+
+# Combo answer-quality comparison output (developer-local; only the reviewed
+# conclusion becomes durable history)
+output/combo-answer-quality/
 
 # Card-scan fingerprint build logs / pid (transient; the bin ships under public/data/)
 output/cardhash-build/

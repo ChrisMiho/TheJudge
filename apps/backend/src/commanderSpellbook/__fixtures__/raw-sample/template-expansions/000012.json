@@ -1,0 +1,10 @@
+{
+  "templateId": 12,
+  "name": "An untapper with no mana cost",
+  "scryfallApi": "https://api.scryfall.com/cards/search?q=o%3A%22untap+target%22",
+  "oracleIds": [
+    "bbbbbbbb-0000-4000-8000-000000000002",
+    "bbbbbbbb-0000-4000-8000-000000000001",
+    "bbbbbbbb-0000-4000-8000-000000000001"
+  ]
+}

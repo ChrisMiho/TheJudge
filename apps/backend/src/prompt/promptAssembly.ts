@@ -19,12 +19,15 @@ import type { ResolvedRulings } from "../cardRulings.js";
 import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
 import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
 import type { ConversationTurn, LookupPromptContext, PlayerLabel, PromptContext, ZoneId } from "../types/index.js";
+import { formatComboSection } from "../commanderSpellbook/formatting.js";
+import type { ComboCandidate } from "../commanderSpellbook/matcher.js";
 
 export type BuildPromptTextOptions = {
   rulings?: ResolvedRulings;
   gameRulesTopics?: GameRulesTopic[];
   supplementalRules?: RetrievedGameRule[];
   conversationHistory?: ConversationTurn[];
+  comboCandidates?: ComboCandidate[];
 };
 
 export function buildPromptText(context: PromptContext, options: BuildPromptTextOptions = {}): string {
@@ -40,6 +43,7 @@ export function buildPromptText(context: PromptContext, options: BuildPromptText
   const gameRulesSection = formatGameRulesSection(options.gameRulesTopics ?? []);
   const supplementalRulesSection = formatSupplementalRulesSection(options.supplementalRules ?? []);
   const officialRulingsSection = formatOfficialRulingsSection(options.rulings);
+  const comboSection = formatComboSection(options.comboCandidates ?? []);
 
   const conversationHistory = options.conversationHistory ?? [];
   const truncatedHistory = truncateConversationHistory(conversationHistory, MAX_CONVERSATION_HISTORY_CHARS);
@@ -87,6 +91,11 @@ export function buildPromptText(context: PromptContext, options: BuildPromptText
     sections.push("", officialRulingsSection);
   }
 
+  // Immediately after rulings and before SCOPE, keeping all enrichment contiguous.
+  if (comboSection.length > 0) {
+    sections.push("", comboSection);
+  }
+
   sections.push("", "SCOPE", scopeSentence);
 
   if (conversationHistorySection.length > 0) {
@@ -115,6 +124,7 @@ export function buildLookupPromptText(
       ].join("\n")
     : "";
   const officialRulingsSection = context.card ? formatOfficialRulingsSection(options.rulings) : "";
+  const comboSection = formatComboSection(options.comboCandidates ?? []);
   const conversationHistory = context.conversationHistory ?? [];
   const conversationHistorySection = formatConversationHistorySection(
     truncateConversationHistory(conversationHistory, MAX_CONVERSATION_HISTORY_CHARS)
@@ -140,6 +150,7 @@ export function buildLookupPromptText(
     supplementalRulesSection,
     cardSection,
     officialRulingsSection,
+    comboSection,
     conversationHistorySection
   ]) {
     if (section.length > 0) sections.push("", section);

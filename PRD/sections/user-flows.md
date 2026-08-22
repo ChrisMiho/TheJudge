@@ -337,8 +337,8 @@
   2. For game mode without combo intent, the matcher considers only variants whose complete exact/template ingredient multiset can be assigned to distinct submitted card instances in compatible zones.
   3. For game mode with combo intent, the matcher keeps complete variants first and may add partial variants anchored to card names mentioned in the question; if no submitted card is named, submitted cards seed overlap matching.
   4. For lookup mode, the matcher proceeds only when combo intent is explicit and a card is attached, and considers variants containing that card as an exact ingredient or authoritative template match.
-  5. The matcher annotates compatible present, wrong-zone, missing exact, matched-template, and unresolved-template ingredients; it ranks deterministically and selects at most five variants.
-  6. Prompt assembly inserts the labeled community-sourced combo section after rules/rulings enrichment and before conversation history plus the current question.
+  5. The matcher annotates compatible present, wrong-zone, missing exact, matched-template, and unresolved-template ingredients, attaching to each the card state applicable to the zone its assigned instance actually occupies — the expected zone's state for wrong-zone and missing entries — plus `mustBeCommander`; it ranks deterministically and selects at most five variants (REQ-094).
+  6. Prompt assembly inserts the labeled community-sourced combo section after rules/rulings enrichment and before conversation history plus the current question; a fully assigned candidate renders as all pieces present with card state explicitly unverified, never as "complete", and the model is instructed to check that state against the submitted board (REQ-095).
   7. The configured provider answers through the unchanged endpoint/response contract, using official card/rules sources as authority and calling out missing pieces for partial candidates.
 - Edge Cases:
   - lookup question has combo language but no attached card → no combo retrieval; normal lookup answering continues

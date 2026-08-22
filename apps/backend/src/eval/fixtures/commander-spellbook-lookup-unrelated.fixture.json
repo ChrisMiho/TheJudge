@@ -1,0 +1,20 @@
+{
+  "id": "commander-spellbook-lookup-unrelated",
+  "description": "Lookup mode with an attached card but an ordinary rules question: no combo intent, so nothing is retrieved.",
+  "request": {
+    "mode": "lookup",
+    "question": "What does this ability do when it resolves?",
+    "card": {
+      "cardId": "eval-oracle-b",
+      "name": "Dark Consultation",
+      "oracleText": "Name a card. Exile the top four cards of your library.",
+      "imageUrl": "",
+      "manaCost": "{B}",
+      "manaValue": 1,
+      "typeLine": "Instant",
+      "colors": ["B"],
+      "supertypes": [],
+      "subtypes": []
+    }
+  }
+}
