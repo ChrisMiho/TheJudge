@@ -1,6 +1,7 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import { describe, expect, it, vi } from "vitest";
 import { loadComboCatalog, type ComboCardIngredient, type ComboCatalog, type ComboVariant } from "../commanderSpellbook/catalog.js";
@@ -336,6 +337,95 @@ describe("Backend - Ask AI", () => {
           expect(promptText).toContain("check each ingredient's applicable card state");
           expect(promptText.slice(promptText.indexOf(COMBO_SECTION_HEADING))).not.toMatch(/\bcomplete\b/i);
         }
+      });
+    });
+
+    describe("real answer-quality scenarios (slice J)", () => {
+      /**
+       * `scripts/compare-combo-answer-quality.mjs`'s curated scenarios used to
+       * reference the slice E eval fixtures' synthetic oracle ids
+       * (`eval-oracle-a`, ...), which exist in no real corpus — both A/B legs
+       * would produce byte-identical prompts and spend live provider calls
+       * proving nothing (DEC-162). They now carry inline requests with real
+       * oracle ids. This proves J2 directly: with a real variant containing
+       * those ids loaded, the enrichment-on and enrichment-off legs produce
+       * genuinely different prompts for the "complete-no-intent" scenario —
+       * checked against prompt text, never the live provider.
+       */
+      const scenariosPath = join(
+        dirname(fileURLToPath(import.meta.url)),
+        "../../../../scripts/fixtures/combo-answer-quality-scenarios.json"
+      );
+      const scenarios = JSON.parse(readFileSync(scenariosPath, "utf8")).scenarios as Array<{
+        id: string;
+        request: unknown;
+      }>;
+
+      function loadRealVariantCatalog(): ComboCatalog {
+        const avatarOfGrowthVariant: ComboVariant = {
+          variantId: "5702-8097",
+          sourceUrl: "https://commanderspellbook.com/combo/5702-8097/",
+          popularity: 500,
+          steps: "Play a land to trigger Springheart Nantuko, copying Avatar of Growth.",
+          manaNeeded: "{1}{G}",
+          easyPrerequisites: "",
+          notablePrerequisites: "",
+          notes: "",
+          producedEffects: ["Repeatable +1/+1 counters"],
+          cardIngredients: [
+            cardIngredient({
+              cardId: "07db0374-3297-49c3-886d-a6bb42f7bb18",
+              cardName: "Avatar of Growth"
+            }),
+            cardIngredient({
+              cardId: "8a3ad2ef-8bcb-40c0-85de-f03328c2b644",
+              cardName: "Springheart Nantuko"
+            })
+          ],
+          templateIngredients: []
+        };
+
+        const dir = mkdtempSync(join(tmpdir(), "combo-scenario-real-"));
+        const detailPath = join(dir, "commanderSpellbookCombos.json.gz");
+        const indexPath = join(dir, "commanderSpellbookComboIndex.json.gz");
+        const compressed = gzipSync(Buffer.from(JSON.stringify(avatarOfGrowthVariant), "utf8"));
+        writeFileSync(detailPath, compressed);
+        writeFileSync(
+          indexPath,
+          gzipSync(
+            Buffer.from(
+              JSON.stringify({
+                byOracleId: {
+                  "07db0374-3297-49c3-886d-a6bb42f7bb18": ["5702-8097"],
+                  "8a3ad2ef-8bcb-40c0-85de-f03328c2b644": ["5702-8097"]
+                },
+                byTemplateOracleId: {},
+                detailOffsets: { "5702-8097": [0, compressed.length] }
+              }),
+              "utf8"
+            )
+          )
+        );
+        return loadComboCatalog(detailPath, indexPath);
+      }
+
+      it("carries real oracle ids, not the eval fixtures' synthetic ones", () => {
+        expect(scenarios.length).toBeGreaterThanOrEqual(6);
+        const serialized = JSON.stringify(scenarios);
+        expect(serialized).not.toMatch(/eval-oracle-/);
+      });
+
+      it("produces genuinely different prompts on and off for the complete-no-intent scenario", () => {
+        const scenario = scenarios.find((entry) => entry.id === "complete-no-intent");
+        expect(scenario).toBeDefined();
+
+        const catalog = loadRealVariantCatalog();
+        const enriched = preparePromptInput(scenario!.request as GameAskAiRequest, { comboCatalog: catalog });
+        const disabled = preparePromptInput(scenario!.request as GameAskAiRequest, {});
+
+        expect(enriched.promptText).toContain(COMBO_SECTION_HEADING);
+        expect(disabled.promptText).not.toContain(COMBO_SECTION_HEADING);
+        expect(enriched.promptText).not.toBe(disabled.promptText);
       });
     });
   });

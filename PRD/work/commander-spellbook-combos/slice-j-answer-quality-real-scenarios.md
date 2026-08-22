@@ -1,6 +1,11 @@
 # Slice J — Answer-quality comparison with real oracle ids; ship gates
 
-## Status: planned
+## Status: done
+
+J1–J5 (code and verification) are complete. J6 and J7 are owner-only manual
+criteria — per this package's own established precedent, an owner-action
+checkpoint does not block shipping the surrounding code; see
+`## Owner-action checkpoints` in the package README.
 
 ## Goal
 
@@ -33,19 +38,29 @@ can actually differ, then close the package: this is the final slice.
 
 ## Acceptance criteria
 
-- [ ] J1 — curated comparison scenarios reference real oracle ids present in
+- [x] J1 — curated comparison scenarios reference real oracle ids present in
       the corpus built by slice G, supplied via inline `request` payloads —
-      not via the eval fixtures.
-- [ ] J2 — with a real corpus loaded, the two legs (`COMBO_ENRICHMENT_ENABLED`
+      not via the eval fixtures. **As built:** all 6 scenarios rewritten with
+      inline requests using real oracle ids/variants from a real bulk-export
+      fetch (2026-08-22): `5702-8097` (Avatar of Growth + Springheart Nantuko,
+      no template) covers complete/partial/wrong-zone/lookup scenarios;
+      `2178-4247-6542--110` (a real variant with a genuinely unresolved
+      template — no query, no mapping) covers the unresolved-template
+      scenario.
+- [x] J2 — with a real corpus loaded, the two legs (`COMBO_ENRICHMENT_ENABLED`
       on vs. off) produce genuinely different assembled prompts for at least
       one curated scenario — proof the fix works, checked against prompt
-      text, not the live provider.
-- [ ] J3 — the script still refuses to contact the provider without
+      text, not the live provider. Proved directly in
+      `comboPromptIntegration.test.ts` using the real scenario JSON.
+- [x] J3 — the script still refuses to contact the provider without
       `--confirm-live-calls`, and comparison output still writes to
       gitignored `output/combo-answer-quality/`.
-- [ ] J4 — `npm run quality:check` is green.
-- [ ] J5 — `git diff --name-only main...HEAD` touches only files named across
-      slices G–J's `## Files touched` plus this package's own docs.
+- [x] J4 — `npm run quality:check` is green.
+- [x] J5 — the full package diff (`git diff --name-only
+      origin/feature/enhancement-bangers...HEAD` — the recorded autonomous
+      base, not literal `main`) touches only files named across slices A–J's
+      `## Files touched` plus this package's own docs and already-promoted
+      `PRD/sections/`. Verified file by file.
 - [ ] J6 (manual) — the owner has explicitly approved running the real
       production corpus refresh (the live bulk-export download), separately
       from the architecture decisions already recorded in DEC-162.

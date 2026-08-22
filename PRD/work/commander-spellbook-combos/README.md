@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 # commander-spellbook-combos
@@ -43,7 +43,7 @@ Architecture, data flow, and the full verification checklist: `GAMEPLAN.md`.
 | [G](./slice-g-corpus-build-pipeline-v2.md) | Bulk-export build, camelCase fix, lazy-access storage format | — | done |
 | [H](./slice-h-lazy-runtime-loader.md) | Lazy runtime catalog loader | G | done |
 | [I](./slice-i-matching-integration-at-scale.md) | Matching integration at real scale | H | done |
-| [J](./slice-j-answer-quality-real-scenarios.md) | Real-scenario answer-quality comparison; ship gates | I | planned |
+| [J](./slice-j-answer-quality-real-scenarios.md) | Real-scenario answer-quality comparison; ship gates | I | done |
 
 G→H→I→J are strictly sequential — each slice's design depends on the previous
 slice's real interface. J carries the PRD promotion checklist and ship gates.
@@ -88,15 +88,21 @@ this amendment).
 
 ## Owner-action checkpoints
 
-Two steps an agent cannot self-authorize; neither blocks slices G–I.
+Two steps an agent cannot self-authorize. Code for both is complete
+(slices G–J, ship-ready); neither blocks that code from shipping, matching
+this package's own established precedent.
 
-1. **Production corpus refresh** (slice J) — live network calls, gated on explicit
+1. **Production corpus refresh** — live network calls, gated on explicit
    human approval by REQ-093, separate from the architecture approval already
-   recorded in DEC-162. Slices G–I verify against fixture-scale/realistic
-   sample inputs; the real artifacts land only when the owner separately
-   approves invoking that live call.
-2. **Live provider A/B** (slice J) — costs money, needs `ASK_AI_PROVIDER=openai`.
-   The script ships complete and refuses to run without `--confirm-live-calls`.
+   recorded in DEC-162. Run `npm run data:refresh` (wired in, slice G) or the
+   standalone `npm run data:refresh-combos -- --confirm-live-calls`. The
+   committed artifacts stay the empty bootstrap corpus (`variantCount: 0`)
+   until this runs for real.
+2. **Live provider A/B** — costs money, needs `ASK_AI_PROVIDER=openai` and a
+   real key. Run `npm run combo:answer-quality -- --confirm-live-calls`
+   (script and real-oracle-id scenarios ready, slice J). Its conclusion
+   informs the ship decision without blocking it (DEC-161) — record it in a
+   dated note before cleanup deletes this package.
 
 ## Autonomous metadata
 
@@ -116,20 +122,14 @@ map-out with no fixes needed.
 
 ## Outstanding owner actions
 
-Start at `DESIGN-BRIEF.md` `## Amendments`. Re-mapped 2026-08-21 into slices
-G–J (`GAMEPLAN.md`); slices G, H, and I are done, pushed to this PR's shared
-branch. Only slice J remains.
-
-1. **Production corpus refresh** — code is ready (slices G–I done); run
-   through the `data:refresh` chain per DEC-162, gated on the owner's explicit
-   approval of that specific live call (slice J, J6). The 2026-08-12 refresh
-   attempt is already evidenced in the brief; the committed artifacts remain
-   the empty bootstrap corpus (`variantCount: 0`).
-2. **Answer-quality A/B** — unchanged in principle (`ASK_AI_PROVIDER=openai`,
-   `--confirm-live-calls`, DEC-161 informs without blocking), but its curated
-   scenarios must first point at real oracle ids; slice J (J1, J7) fixes the
-   scenarios and records the run.
+All four slices (G–J) are done and pushed to this PR's shared branch;
+`npm run quality:check` is green. Two owner-only items remain — see
+`## Owner-action checkpoints` above for the exact commands — tracked as
+manual criteria J6 and J7. Neither blocks merging this PR.
 
 ## Next step
 
-`/thejudge-implement PRD/work/commander-spellbook-combos/ slice J`
+Owner: run the production corpus refresh and the live answer-quality A/B
+(or defer them — they don't block merge), then merge this PR manually
+(driver agents never merge). After merge: `/thejudge-cleanup
+PRD/work/commander-spellbook-combos/`.

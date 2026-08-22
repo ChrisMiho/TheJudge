@@ -1,35 +1,199 @@
 {
-  "comment": "Curated inputs for the combo answer-quality A/B. Scenarios reuse the slice E eval fixtures by id rather than duplicating request payloads. A scenario may instead carry an inline `request` — needed for a meaningful live comparison, because the eval fixtures use synthetic oracle ids that the production corpus does not contain.",
+  "comment": "Curated inputs for the combo answer-quality A/B (DEC-162). Every scenario carries an inline `request` referencing real Commander Spellbook oracle ids and variants (sourced from a real bulk-export fetch, 2026-08-22) rather than the slice E eval fixtures' synthetic oracle ids, which exist in no real corpus and would make both A/B legs produce byte-identical prompts. Card `oracleText` here is illustrative, not verified against Scryfall (no live Scryfall call was made to build this file) -- review it against the real card text before spending money on a live run.",
   "scenarios": [
     {
       "id": "complete-no-intent",
-      "fixture": "commander-spellbook-complete-no-intent",
-      "rationale": "Automatic enrichment: every piece is present and the user did not ask about combos. Tests whether unrequested combo context helps or distracts."
+      "rationale": "Automatic enrichment: every piece of a real two-card variant (5702-8097: Avatar of Growth + Springheart Nantuko) is present and the user did not ask about combos. Tests whether unrequested combo context helps or distracts.",
+      "request": {
+        "question": "How does this resolve?",
+        "gameContext": {
+          "playerCount": 2,
+          "players": [
+            { "label": "Player 1", "lifeTotal": 20 },
+            { "label": "Player 2", "lifeTotal": 20 }
+          ],
+          "turnPhase": "main_1",
+          "selectedZones": ["battlefield"],
+          "zones": {
+            "battlefield": [
+              {
+                "cardId": "07db0374-3297-49c3-886d-a6bb42f7bb18",
+                "name": "Avatar of Growth",
+                "oracleText": "When Avatar of Growth enters the battlefield, you may put a +1/+1 counter on another target creature you control.",
+                "imageUrl": "",
+                "manaValue": 5,
+                "owner": "Player 1",
+                "targets": []
+              },
+              {
+                "cardId": "8a3ad2ef-8bcb-40c0-85de-f03328c2b644",
+                "name": "Springheart Nantuko",
+                "oracleText": "Whenever you play a land, create a token that's a copy of another target creature you control, except it's not legendary. Exile the token at the beginning of the next end step.",
+                "imageUrl": "",
+                "manaValue": 4,
+                "owner": "Player 1",
+                "targets": []
+              }
+            ]
+          }
+        }
+      }
     },
     {
       "id": "partial-explicit-intent",
-      "fixture": "commander-spellbook-partial-explicit-intent",
-      "rationale": "The user explicitly asks about combos and is missing a piece. Tests whether naming the missing piece improves the answer."
+      "rationale": "The user explicitly asks about combos and is missing a piece of the same real variant (5702-8097): Springheart Nantuko is absent. Tests whether naming the missing piece improves the answer.",
+      "request": {
+        "question": "Does this combo with anything on the battlefield?",
+        "gameContext": {
+          "playerCount": 2,
+          "players": [
+            { "label": "Player 1", "lifeTotal": 20 },
+            { "label": "Player 2", "lifeTotal": 20 }
+          ],
+          "turnPhase": "main_1",
+          "selectedZones": ["battlefield"],
+          "zones": {
+            "battlefield": [
+              {
+                "cardId": "07db0374-3297-49c3-886d-a6bb42f7bb18",
+                "name": "Avatar of Growth",
+                "oracleText": "When Avatar of Growth enters the battlefield, you may put a +1/+1 counter on another target creature you control.",
+                "imageUrl": "",
+                "manaValue": 5,
+                "owner": "Player 1",
+                "targets": []
+              }
+            ]
+          }
+        }
+      }
     },
     {
       "id": "wrong-zone",
-      "fixture": "commander-spellbook-wrong-zone",
-      "rationale": "A piece is present but in an incompatible zone. Tests whether the model correctly refuses to call the combo assembled."
+      "rationale": "A piece of the real variant (5702-8097) is present but in an incompatible zone: Avatar of Growth in hand instead of the battlefield the variant requires. Tests whether the model correctly refuses to call the combo assembled.",
+      "request": {
+        "question": "Does this combo with anything?",
+        "gameContext": {
+          "playerCount": 2,
+          "players": [
+            { "label": "Player 1", "lifeTotal": 20 },
+            { "label": "Player 2", "lifeTotal": 20 }
+          ],
+          "turnPhase": "main_1",
+          "selectedZones": ["battlefield", "hand"],
+          "zones": {
+            "hand": [
+              {
+                "cardId": "07db0374-3297-49c3-886d-a6bb42f7bb18",
+                "name": "Avatar of Growth",
+                "oracleText": "When Avatar of Growth enters the battlefield, you may put a +1/+1 counter on another target creature you control.",
+                "imageUrl": "",
+                "manaValue": 5,
+                "owner": "Player 1",
+                "targets": []
+              }
+            ],
+            "battlefield": [
+              {
+                "cardId": "8a3ad2ef-8bcb-40c0-85de-f03328c2b644",
+                "name": "Springheart Nantuko",
+                "oracleText": "Whenever you play a land, create a token that's a copy of another target creature you control, except it's not legendary. Exile the token at the beginning of the next end step.",
+                "imageUrl": "",
+                "manaValue": 4,
+                "owner": "Player 1",
+                "targets": []
+              }
+            ]
+          }
+        }
+      }
     },
     {
       "id": "unresolved-template",
-      "fixture": "commander-spellbook-unresolved-template",
-      "rationale": "The gap is a template with no authoritative card list. Tests whether the model over-claims that the combo is live."
+      "rationale": "A real variant (2178-4247-6542--110) whose gap is a template ('Creature with MV=1 and Creates Creature Token(s) on Death') with no authoritative query or mapping upstream -- genuinely unresolved, not a fixture stand-in. Tests whether the model over-claims the combo is live even with every exact card present.",
+      "request": {
+        "question": "Does this combo with anything?",
+        "gameContext": {
+          "playerCount": 2,
+          "players": [
+            { "label": "Player 1", "lifeTotal": 20 },
+            { "label": "Player 2", "lifeTotal": 20 }
+          ],
+          "turnPhase": "main_1",
+          "selectedZones": ["battlefield"],
+          "zones": {
+            "battlefield": [
+              {
+                "cardId": "72074972-418d-4dce-83cf-ce8cf310fc42",
+                "name": "Sidisi, Regent of the Mire",
+                "oracleText": "Flying. Whenever Sidisi, Regent of the Mire attacks, each opponent mills a card. Each player who mills a creature this way returns it to the battlefield under your control at the beginning of the next end step.",
+                "imageUrl": "",
+                "manaValue": 5,
+                "owner": "Player 1",
+                "targets": []
+              },
+              {
+                "cardId": "dae4815e-9025-4993-ab46-52a3f1a7219e",
+                "name": "Thornbite Staff",
+                "oracleText": "Equipped creature has \"Whenever this creature deals combat damage to a player, you may untap it.\" Whenever equipped creature deals combat damage to a player, if it has deathtouch, that player sacrifices a creature.",
+                "imageUrl": "",
+                "manaValue": 3,
+                "owner": "Player 1",
+                "targets": []
+              },
+              {
+                "cardId": "aa76cc50-5be0-4844-b3a4-fb33fca3cdd3",
+                "name": "Bloodthrone Vampire",
+                "oracleText": "Sacrifice a creature: Put two +1/+1 counters on Bloodthrone Vampire.",
+                "imageUrl": "",
+                "manaValue": 3,
+                "owner": "Player 1",
+                "targets": []
+              }
+            ]
+          }
+        }
+      }
     },
     {
       "id": "lookup-attached-intent",
-      "fixture": "commander-spellbook-lookup-attached-intent",
-      "rationale": "Quick Question with an attached card and explicit combo intent."
+      "rationale": "Quick Question with an attached real card (Avatar of Growth, from variant 5702-8097) and explicit combo intent.",
+      "request": {
+        "mode": "lookup",
+        "question": "Does this card combo with anything?",
+        "card": {
+          "cardId": "07db0374-3297-49c3-886d-a6bb42f7bb18",
+          "name": "Avatar of Growth",
+          "oracleText": "When Avatar of Growth enters the battlefield, you may put a +1/+1 counter on another target creature you control.",
+          "imageUrl": "",
+          "manaCost": "{4}{G}",
+          "manaValue": 5,
+          "typeLine": "Creature — Elemental Avatar",
+          "colors": ["G"],
+          "supertypes": [],
+          "subtypes": ["Elemental", "Avatar"]
+        }
+      }
     },
     {
       "id": "lookup-unrelated",
-      "fixture": "commander-spellbook-lookup-unrelated",
-      "rationale": "Control: an ordinary rules question about a card that appears in the corpus. Both legs should answer identically; a difference here is a false positive."
+      "rationale": "Control: an ordinary rules question about the same real card, no combo wording. Both legs should answer identically; a difference here is a false positive.",
+      "request": {
+        "mode": "lookup",
+        "question": "What does this card do when it enters the battlefield?",
+        "card": {
+          "cardId": "07db0374-3297-49c3-886d-a6bb42f7bb18",
+          "name": "Avatar of Growth",
+          "oracleText": "When Avatar of Growth enters the battlefield, you may put a +1/+1 counter on another target creature you control.",
+          "imageUrl": "",
+          "manaCost": "{4}{G}",
+          "manaValue": 5,
+          "typeLine": "Creature — Elemental Avatar",
+          "colors": ["G"],
+          "supertypes": [],
+          "subtypes": ["Elemental", "Avatar"]
+        }
+      }
     }
   ]
 }

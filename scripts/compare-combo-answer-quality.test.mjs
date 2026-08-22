@@ -53,7 +53,11 @@ test("parseArgs requires the explicit confirmation flag", () => {
   assert.equal(parseArgs(["--scenario", "wrong-zone"]).scenarioFilter, "wrong-zone")
 })
 
-test("the curated scenarios resolve through the slice E eval fixtures", async () => {
+test("the curated scenarios carry inline requests with real oracle ids, not the slice E eval fixtures", async () => {
+  // DEC-162: the eval fixtures' synthetic oracle ids (eval-oracle-a, ...) exist
+  // in no real corpus, so scenarios that pointed at them would make both A/B
+  // legs answer from an identical (empty) enrichment and spend live provider
+  // calls proving nothing. Every scenario now carries its request inline.
   const scenarios = await loadScenarios()
 
   assert.ok(scenarios.length >= 6)
@@ -63,6 +67,12 @@ test("the curated scenarios resolve through the slice E eval fixtures", async ()
   }
   assert.ok(scenarios.some((scenario) => scenario.request.mode === "lookup"))
   assert.ok(scenarios.some((scenario) => scenario.request.gameContext))
+
+  const serialized = JSON.stringify(scenarios)
+  assert.ok(!serialized.includes("eval-oracle-"), "no scenario may reference the eval fixtures' synthetic oracle ids")
+  // Real Commander Spellbook oracle ids are UUIDs; the synthetic eval ids never were.
+  const uuidPattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
+  assert.ok(uuidPattern.test(serialized), "expected at least one real UUID-shaped oracle id across the scenarios")
 })
 
 test("a run without the confirmation flag makes zero provider calls and exits 0", async () => {
