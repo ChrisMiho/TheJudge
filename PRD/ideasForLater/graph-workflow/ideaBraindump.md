@@ -1,0 +1,26 @@
+Id like to explore graph engineering as the next iteration of the workflow within this project. 
+
+Now that the size of this project has grown from a simple web app to a growing suite of features, the manual process has become cumbersome. At times, it is difficult to work through the flow, I love how it functions and the checks and balances against the PRD folder for product alignment and clarification, but some of the questions are difficult to answer, either due to the shorthand being used to describe past DECs or myself being unfamiliar with the technology. I believe a graph is the natural evolution of this process, allowing me to take a step back and focus on bigger picture/ui shape and vision, while the nuance of syntax, code, and implementation is left to the agent, whos is more knowledgeable about software, implementation, best practices, and all other tasks associated with writing code. The chained together steps im also hoping would enable me to continue to leverage the workflow like it currently operates, just without my input. 
+
+The PRD folder of this project is a living document, that holds the essence of this project, from functional vision to visual design, i want to continue to harness and nurture this wonderful library. I wonder if it needs further clarification and organization as we move closer to a fully autonomous workflow. 
+
+The skills outline in AGENT-SKILLS.md should provide an incredible start for context on how the current flow operates, so that we can produce a new one that aligns with modern practices. The old skills should not be canabalized or changed in this process, entirely new skills/files should be created to support this new agentic workflow
+
+The idea for this new work flow has a few different shapes given the use case:
+1. A work flow for UI content, this workflow will leverage the super powers draw skill for mock ups and the playwright mcp to retrieve data on what the current state of the application is for mobile and desktop. The goal of this workflow is to both enhance and refine existing UI components, as well as build new ones, leveraging the content in the PRD folder for direction, along with the input from the user, updating or creating documents within the PRD folder to acurately capture the idea/work for future agents to leverage, so that they do not drift from the intended gameplan.
+
+2. The second workflow is identical to the first in terms of concept, but this time for the backend enrichment system. This wont need to leverage the mockup skill or mcp, but it should leverage necessary super power skills needed for analyzing and gathering context when coming up with a gameplan. Part of this workflow should include the agent and myself defining what the new data point is, or which one is being refined, how i want to leverage that within the prompt enrichment process, why its important for the prompt, and example prompt prior to the work, showing how the new data point will be leveraged, and then a final task of implementation would be providing evidence of the implementation working, through a CODE GENERATED PROMPT, that I will review and sign off on. 
+
+Both workflows should include testing and evidence capture steps to provide evidence that the goal defined has been achieved. 
+
+Implementation should cover both documentation and code changes, i believe this is already worked into the workflow, but i want to call it out, so that documentation and the health of the PRD folder are maintained. As automation continues to expand, i want to ensure that the product truth that lives in the PRD folder continues to stay accurate and timely with the changes being made
+
+Another thing this workflow needs to keep in mind is how to manage github, my goal will be to have a fresh branch checked out locally, but im forgetful, we should include a step to ensure a fresh branch is checked out locally before beginning implementation. Additionally, any uncomitted changes should be comitted to the branch unless they are major changes, which in that case, they should be stashed and a handoff to deal with them later can manage that.
+
+But for all changes being implemented by this new workflow, the goal would be for worktrees to be created from the fresh local branch. However, id like to avoid navigating merge conflicts if i can help it, so although i want every change in its own isolated work tree, it may make more sense to bundle changes together in the same work tree, especially if they build on eachother, once implementation is done, a PR to the fresh local branch should be created in order to enforce strict version control and review
+
+Id like assistance defining the appropriate model to drive the various stages of thi workflow, so that excess tokens arent being used
+
+id like to define a unique profile for the loop/graph to utilize, that way it has the elevated permissions it needs to run and execute the work it needs to complete, but a healthy deny list, so that no extreme actions can be taken by the agent that might result in harm to the project or the computer
+
+please let me know what gaps you see in this idea/implementation so that it can be further refined. I am exploring a new type of engineering, so im not sure what is the best approach to this.
