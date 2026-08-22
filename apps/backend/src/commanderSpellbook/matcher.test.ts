@@ -1,5 +1,9 @@
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { gzipSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
-import type { ComboCardIngredient, ComboCatalog, ComboTemplateIngredient, ComboVariant } from "./catalog.js";
+import { loadComboCatalog, type ComboCardIngredient, type ComboCatalog, type ComboTemplateIngredient, type ComboVariant } from "./catalog.js";
 import { selectComboCandidates, type ComboMatchInstance, type ComboMatchRequest } from "./matcher.js";
 
 function cardIngredient(overrides: Partial<ComboCardIngredient> & { cardId: string }): ComboCardIngredient {
@@ -511,6 +515,149 @@ describe("Backend - Ask AI", () => {
       };
 
       expect(selectComboCandidates(empty, gameRequest({ instances: [instance("a", "battlefield")] }))).toEqual([]);
+    });
+  });
+
+  describe("Matching at real scale", () => {
+    /**
+     * Slice I: the DEC-162 amendment flagged the matcher as "affected by the
+     * same scale" a real corpus introduces (105,447 variants / 7,371 distinct
+     * oracle ids) — a popular card can produce a candidate pool far larger
+     * than any hand-sized fixture exercises, before ranking narrows it to
+     * five. This builds a REAL lazy-format catalog (gzip-per-record detail +
+     * byte-offset index, loaded through the actual `loadComboCatalog`, not
+     * the in-memory `catalogOf()` test double used elsewhere in this file)
+     * with one oracle id shared by many variants, and proves candidate
+     * resolution, quantity-aware assignment, and stable top-five ranking all
+     * still hold when only a handful of that large pool are eligible.
+     */
+    const POPULAR_CARD_ID = "popular-oracle";
+    const VARIANT_COUNT = 2000;
+    // Exactly these are fully assignable from the submitted instances below;
+    // every other generated variant requires a companion card that is never
+    // submitted, so it can never be fully assigned. `hasExplicitIntent: false`
+    // means only fully-assigned candidates are eligible at all (REQ-094), so
+    // these eight are the entire eligible set the ranking must sort and trim.
+    const WINNING_VARIANTS = [
+      { variantId: "zzzz-win-1", companion: "win-companion-1", popularity: 100 },
+      { variantId: "zzzz-win-2", companion: "win-companion-2", popularity: 90 },
+      { variantId: "zzzz-win-3", companion: "win-companion-3", popularity: 80 },
+      { variantId: "zzzz-win-4", companion: "win-companion-4", popularity: 70 },
+      { variantId: "zzzz-win-5", companion: "win-companion-5", popularity: 60 },
+      { variantId: "zzzz-win-6", companion: "win-companion-6", popularity: 50 },
+      { variantId: "zzzz-win-7", companion: "win-companion-7", popularity: 40 },
+      { variantId: "zzzz-win-8", companion: "win-companion-8", popularity: 30 }
+    ];
+
+    function generateAtScaleVariants(): ComboVariant[] {
+      // Filler: every one of these needs a companion card unique to it, which
+      // the request below never submits — so none can ever be fully assigned,
+      // no matter how large the shared-oracle-id candidate pool gets. Ids sort
+      // as "filler-*", strictly before the winners' "zzzz-win-*" ids, so the
+      // winners are not coincidentally contiguous with each other by luck of
+      // insertion order — the sort itself has to do the work.
+      const filler = Array.from({ length: VARIANT_COUNT - WINNING_VARIANTS.length }, (_, index) =>
+        variant({
+          variantId: `filler-${String(index).padStart(5, "0")}`,
+          popularity: index,
+          cardIngredients: [
+            cardIngredient({ cardId: POPULAR_CARD_ID, cardName: "Popular Card" }),
+            cardIngredient({ cardId: `unsubmitted-companion-${index}`, cardName: `Companion ${index}` })
+          ]
+        })
+      );
+
+      const winners = WINNING_VARIANTS.map((entry) =>
+        variant({
+          variantId: entry.variantId,
+          popularity: entry.popularity,
+          cardIngredients: [
+            cardIngredient({ cardId: POPULAR_CARD_ID, cardName: "Popular Card" }),
+            cardIngredient({ cardId: entry.companion, cardName: "Winning companion" })
+          ]
+        })
+      );
+
+      return [...filler, ...winners];
+    }
+
+    function loadAtScaleCatalog(variants: ComboVariant[]): ComboCatalog {
+      const dir = mkdtempSync(join(tmpdir(), "combo-at-scale-"));
+      const detailPath = join(dir, "commanderSpellbookCombos.json.gz");
+      const indexPath = join(dir, "commanderSpellbookComboIndex.json.gz");
+
+      const chunks: Buffer[] = [];
+      const detailOffsets: Record<string, [number, number]> = {};
+      const byOracleId: Record<string, string[]> = {};
+      let cursor = 0;
+      for (const entry of variants) {
+        const compressed = gzipSync(Buffer.from(JSON.stringify(entry), "utf8"));
+        detailOffsets[entry.variantId] = [cursor, compressed.length];
+        chunks.push(compressed);
+        cursor += compressed.length;
+        for (const ingredient of entry.cardIngredients) {
+          byOracleId[ingredient.cardId] = [...(byOracleId[ingredient.cardId] ?? []), entry.variantId];
+        }
+      }
+      writeFileSync(detailPath, Buffer.concat(chunks));
+      writeFileSync(
+        indexPath,
+        gzipSync(Buffer.from(JSON.stringify({ byOracleId, byTemplateOracleId: {}, detailOffsets }), "utf8"))
+      );
+
+      return loadComboCatalog(detailPath, indexPath);
+    }
+
+    it("resolves candidates via index membership and lazy fetch, never an in-memory array of every variant", () => {
+      const catalog = loadAtScaleCatalog(generateAtScaleVariants());
+      expect(catalog.variantCount).toBe(VARIANT_COUNT);
+      // No `.variants` map exists on the real lazy catalog at all — the type
+      // itself no longer offers one; this is the compile-time half of I1.
+      expect((catalog as unknown as { variants?: unknown }).variants).toBeUndefined();
+    });
+
+    it("stable top-five ranking holds when the pre-ranking candidate pool is large", () => {
+      const catalog = loadAtScaleCatalog(generateAtScaleVariants());
+      const instances = [
+        instance(POPULAR_CARD_ID, "battlefield"),
+        ...WINNING_VARIANTS.map((entry, index) => instance(entry.companion, "battlefield", index))
+      ];
+
+      const results = selectComboCandidates(
+        catalog,
+        gameRequest({ instances, hasExplicitIntent: false })
+      );
+
+      expect(results).toHaveLength(5);
+      expect(results.every((candidate) => candidate.fullyAssigned)).toBe(true);
+      // Highest popularity first among the eligible set (compareCandidates'
+      // popularity-descending key), truncated to MAX_COMBO_CANDIDATES.
+      expect(results.map((candidate) => candidate.variant.variantId)).toEqual([
+        "zzzz-win-1",
+        "zzzz-win-2",
+        "zzzz-win-3",
+        "zzzz-win-4",
+        "zzzz-win-5"
+      ]);
+    });
+
+    it("quantity-aware assignment still holds per candidate when the shared oracle id's pool is large", () => {
+      const catalog = loadAtScaleCatalog(generateAtScaleVariants());
+      // Only one instance of the popular card is submitted; every one of the
+      // 2000 variants needs it, but none can borrow another candidate's
+      // instance — instance pools are per-candidate, not shared across the
+      // scan, so this must hold regardless of how many variants examine it.
+      const results = selectComboCandidates(
+        catalog,
+        gameRequest({
+          instances: [instance(POPULAR_CARD_ID, "battlefield"), instance(WINNING_VARIANTS[0]!.companion, "battlefield", 1)],
+          hasExplicitIntent: false
+        })
+      );
+
+      expect(results).toHaveLength(1);
+      expect(results[0]!.variant.variantId).toBe("zzzz-win-1");
+      expect(results[0]!.annotations[0]!.matchedInstanceIds).toHaveLength(1);
     });
   });
 });

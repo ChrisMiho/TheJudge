@@ -1,5 +1,9 @@
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { gzipSync } from "node:zlib";
 import { describe, expect, it, vi } from "vitest";
-import type { ComboCardIngredient, ComboCatalog, ComboVariant } from "../commanderSpellbook/catalog.js";
+import { loadComboCatalog, type ComboCardIngredient, type ComboCatalog, type ComboVariant } from "../commanderSpellbook/catalog.js";
 import { COMBO_SECTION_HEADING } from "../commanderSpellbook/formatting.js";
 import * as matcher from "../commanderSpellbook/matcher.js";
 import { buildMockAnswer } from "../mockAskAi.js";
@@ -263,6 +267,76 @@ describe("Backend - Ask AI", () => {
       const comboSectionOf = (promptText: string) => promptText.slice(promptText.indexOf(COMBO_SECTION_HEADING));
       expect(comboSectionOf(game.promptText)).not.toMatch(/\bcomplete\b/i);
       expect(comboSectionOf(lookup.promptText)).not.toMatch(/\bcomplete\b/i);
+    });
+
+    describe("at real scale (slice I)", () => {
+      /**
+       * Loads a real lazy-format catalog (gzip-per-record detail + byte-offset
+       * index, through the actual `loadComboCatalog`) with many more variants
+       * than any hand-sized fixture, and proves both prompt paths still render
+       * correctly end to end: section present, never "complete", and the
+       * state-verification instruction present in both modes — the "likely
+       * intact, confirm it" risk the DEC-162 amendment flagged for slice D.
+       */
+      function loadAtScaleCatalog(): ComboCatalog {
+        const filler: ComboVariant[] = Array.from({ length: 500 }, (_, index) => ({
+          variantId: `filler-${String(index).padStart(4, "0")}`,
+          sourceUrl: `https://commanderspellbook.com/combo/filler-${index}/`,
+          popularity: index,
+          steps: "Do the unrelated thing.",
+          manaNeeded: "{1}",
+          easyPrerequisites: "",
+          notablePrerequisites: "",
+          notes: "",
+          producedEffects: ["Draw a card"],
+          cardIngredients: [
+            cardIngredient({ cardId: `unsubmitted-${index}`, cardName: `Filler ${index}` })
+          ],
+          templateIngredients: []
+        }));
+        const variants = [...filler, twoPieceCombo];
+
+        const dir = mkdtempSync(join(tmpdir(), "combo-prompt-at-scale-"));
+        const detailPath = join(dir, "commanderSpellbookCombos.json.gz");
+        const indexPath = join(dir, "commanderSpellbookComboIndex.json.gz");
+        const chunks: Buffer[] = [];
+        const detailOffsets: Record<string, [number, number]> = {};
+        const byOracleId: Record<string, string[]> = {};
+        let cursor = 0;
+        for (const entry of variants) {
+          const compressed = gzipSync(Buffer.from(JSON.stringify(entry), "utf8"));
+          detailOffsets[entry.variantId] = [cursor, compressed.length];
+          chunks.push(compressed);
+          cursor += compressed.length;
+          for (const ingredient of entry.cardIngredients) {
+            byOracleId[ingredient.cardId] = [...(byOracleId[ingredient.cardId] ?? []), entry.variantId];
+          }
+        }
+        writeFileSync(detailPath, Buffer.concat(chunks));
+        writeFileSync(
+          indexPath,
+          gzipSync(Buffer.from(JSON.stringify({ byOracleId, byTemplateOracleId: {}, detailOffsets }), "utf8"))
+        );
+        return loadComboCatalog(detailPath, indexPath);
+      }
+
+      it("renders the combo section correctly in both prompt modes against a large real-format catalog", () => {
+        const atScaleCatalog = loadAtScaleCatalog();
+        expect(atScaleCatalog.variantCount).toBe(501);
+
+        const game = preparePromptInput(gameRequestWithBoard("Any combos?", ["oracle-a"], ["oracle-b"]), {
+          comboCatalog: atScaleCatalog
+        });
+        const lookup = preparePromptInput(lookupRequest("Does this combo with anything?", "oracle-a"), {
+          comboCatalog: atScaleCatalog
+        });
+
+        for (const promptText of [game.promptText, lookup.promptText]) {
+          expect(promptText).toContain(COMBO_SECTION_HEADING);
+          expect(promptText).toContain("check each ingredient's applicable card state");
+          expect(promptText.slice(promptText.indexOf(COMBO_SECTION_HEADING))).not.toMatch(/\bcomplete\b/i);
+        }
+      });
     });
   });
 });

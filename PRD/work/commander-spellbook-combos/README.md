@@ -42,7 +42,7 @@ Architecture, data flow, and the full verification checklist: `GAMEPLAN.md`.
 |---|---|---|---|
 | [G](./slice-g-corpus-build-pipeline-v2.md) | Bulk-export build, camelCase fix, lazy-access storage format | — | done |
 | [H](./slice-h-lazy-runtime-loader.md) | Lazy runtime catalog loader | G | done |
-| [I](./slice-i-matching-integration-at-scale.md) | Matching integration at real scale | H | planned |
+| [I](./slice-i-matching-integration-at-scale.md) | Matching integration at real scale | H | done |
 | [J](./slice-j-answer-quality-real-scenarios.md) | Real-scenario answer-quality comparison; ship gates | I | planned |
 
 G→H→I→J are strictly sequential — each slice's design depends on the previous
@@ -117,9 +117,10 @@ map-out with no fixes needed.
 ## Outstanding owner actions
 
 Start at `DESIGN-BRIEF.md` `## Amendments`. Re-mapped 2026-08-21 into slices
-G–J (`GAMEPLAN.md`); implementation has not started.
+G–J (`GAMEPLAN.md`); slices G, H, and I are done, pushed to this PR's shared
+branch. Only slice J remains.
 
-1. **Production corpus refresh** — blocked on slices G–I landing, then run
+1. **Production corpus refresh** — code is ready (slices G–I done); run
    through the `data:refresh` chain per DEC-162, gated on the owner's explicit
    approval of that specific live call (slice J, J6). The 2026-08-12 refresh
    attempt is already evidenced in the brief; the committed artifacts remain
@@ -131,4 +132,4 @@ G–J (`GAMEPLAN.md`); implementation has not started.
 
 ## Next step
 
-`/thejudge-implement PRD/work/commander-spellbook-combos/ slice I`
+`/thejudge-implement PRD/work/commander-spellbook-combos/ slice J`
