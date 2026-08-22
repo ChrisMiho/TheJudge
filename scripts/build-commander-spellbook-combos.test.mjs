@@ -413,9 +413,37 @@ test("a truncated raw input fails without touching existing artifacts", async ()
   assert.ok(fs.readFileSync(paths.indexPath).equals(indexBefore))
 })
 
-test("readRawInputs returns null when no refresh has run", () => {
+test("readRawInputs returns null when no refresh has run", async () => {
   const emptyDir = makeTempDir()
-  assert.equal(readRawInputs(emptyDir), null)
+  assert.equal(await readRawInputs(emptyDir), null)
+})
+
+test("readRawInputs streams an oversized variants.json without ever holding it as one JS string", async () => {
+  // Regression guard for the real bulk export's actual size (~634MB
+  // decompressed, measured 2026-08-22) exceeding V8's ~536MB max string
+  // length. This fixture is far smaller, but still proves the read path is
+  // the streaming one, not a `readFileSync(..., "utf8")` + `JSON.parse` that
+  // merely happens to work at small scale.
+  const dir = makeTempDir()
+  fs.writeFileSync(path.join(dir, "refresh-manifest.json"), JSON.stringify({ snapshotAt: null, license: null }))
+  const manyVariants = Array.from({ length: 500 }, (_, index) => ({
+    id: `stream-${index}`,
+    status: "OK",
+    description: "steps",
+    manaNeeded: "",
+    easyPrerequisites: "",
+    notablePrerequisites: "",
+    notes: "",
+    uses: [{ card: { name: "A", oracleId: `o${index}` }, zoneLocations: ["B"], quantity: 1 }],
+    requires: []
+  }))
+  fs.writeFileSync(
+    path.join(dir, "variants.json"),
+    JSON.stringify({ timestamp: "t", version: "v", variants: manyVariants })
+  )
+
+  const rawInputs = await readRawInputs(dir)
+  assert.equal(rawInputs.rawVariants.length, 500)
 })
 
 test("a duplicated variant id fails the build", () => {

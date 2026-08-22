@@ -4,6 +4,8 @@ import zlib from "node:zlib"
 import { pathToFileURL } from "node:url"
 import { format as prettierFormat } from "prettier"
 
+import { streamJsonArrayObjects } from "./lib/stream-json-array.mjs"
+
 const defaultRawInputDir = path.resolve("apps/backend/data/commander-spellbook")
 const defaultDetailPath = path.resolve("apps/backend/data/commanderSpellbookCombos.json.gz")
 const defaultIndexPath = path.resolve("apps/backend/data/commanderSpellbookComboIndex.json.gz")
@@ -88,6 +90,19 @@ function readJsonFile(filePath) {
     return JSON.parse(contents)
   } catch (error) {
     throw new Error(`Malformed Commander Spellbook raw input ${filePath}: ${error.message}`, { cause: error })
+  }
+}
+
+/** Read only the first `maxBytes` of a file — never the whole thing, which may be too large to hold as one JS string. */
+function readFilePrefix(filePath, maxBytes) {
+  const fd = fs.openSync(filePath, "r")
+  try {
+    const size = Math.min(maxBytes, fs.fstatSync(fd).size)
+    const buffer = Buffer.alloc(size)
+    fs.readSync(fd, buffer, 0, size, 0)
+    return buffer.toString("utf8")
+  } finally {
+    fs.closeSync(fd)
   }
 }
 
@@ -416,7 +431,7 @@ export function buildComboArtifacts({ rawVariants, templateExpansions, snapshot 
  * export is one file, not a paginated cursor walk (DEC-162): `variants.json`
  * carries the whole `{ timestamp, version, variants: [...] }` envelope.
  */
-export function readRawInputs(rawInputDir) {
+export async function readRawInputs(rawInputDir) {
   const manifestPath = path.join(rawInputDir, "refresh-manifest.json")
   const variantsPath = path.join(rawInputDir, "variants.json")
 
@@ -425,11 +440,29 @@ export function readRawInputs(rawInputDir) {
   }
 
   const snapshot = readJsonFile(manifestPath)
-  const envelope = readJsonFile(variantsPath)
-  if (!Array.isArray(envelope?.variants)) {
-    throw new Error(`Malformed Commander Spellbook raw input ${variantsPath}: expected a "variants" array.`)
+
+  // Streamed, never `readFileSync(..., "utf8")` + `JSON.parse`: the real bulk
+  // export measures ~634MB decompressed (2026-08-22), past V8's ~536MB max
+  // string length, so a full-file parse throws before it ever gets to the
+  // "variants" array. `streamJsonArrayObjects` yields one variant at a time
+  // regardless of file size.
+  const rawVariants = []
+  try {
+    const stream = fs.createReadStream(variantsPath, { encoding: "utf8", highWaterMark: 1024 * 1024 })
+    for await (const variant of streamJsonArrayObjects(stream)) rawVariants.push(variant)
+  } catch (error) {
+    throw new Error(`Malformed Commander Spellbook raw input ${variantsPath}: ${error.message}`, { cause: error })
   }
-  const rawVariants = envelope.variants
+  if (rawVariants.length === 0 && fs.statSync(variantsPath).size > 0) {
+    // An empty result from a non-empty file means no "variants" array was
+    // ever found — `streamJsonArrayObjects` only detects that by scanning for
+    // `[`, so a missing/renamed key looks identical to a genuinely empty one.
+    // Read only a small prefix, never the whole file — it may be far too
+    // large to hold as one JS string at all.
+    if (!/"variants"\s*:\s*\[/.test(readFilePrefix(variantsPath, 4096))) {
+      throw new Error(`Malformed Commander Spellbook raw input ${variantsPath}: expected a "variants" array.`)
+    }
+  }
 
   const templateExpansions = new Map()
   for (const expansionPath of listJsonFiles(path.join(rawInputDir, "template-expansions"))) {
@@ -499,7 +532,7 @@ export async function runBuild(options = {}) {
   const detailPath = options.detailPath ?? defaultDetailPath
   const indexPath = options.indexPath ?? defaultIndexPath
 
-  const rawInputs = readRawInputs(rawInputDir)
+  const rawInputs = await readRawInputs(rawInputDir)
 
   if (!rawInputs) {
     console.warn(`Commander Spellbook raw inputs not found: ${rawInputDir}`)

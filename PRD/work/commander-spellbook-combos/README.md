@@ -88,21 +88,25 @@ this amendment).
 
 ## Owner-action checkpoints
 
-Two steps an agent cannot self-authorize. Code for both is complete
-(slices G–J, ship-ready); neither blocks that code from shipping, matching
-this package's own established precedent.
+Two steps an agent cannot self-authorize. Neither blocks shipping the code,
+matching this package's own established precedent.
 
-1. **Production corpus refresh** — live network calls, gated on explicit
-   human approval by REQ-093, separate from the architecture approval already
-   recorded in DEC-162. Run `npm run data:refresh` (wired in, slice G) or the
-   standalone `npm run data:refresh-combos -- --confirm-live-calls`. The
-   committed artifacts stay the empty bootstrap corpus (`variantCount: 0`)
-   until this runs for real.
-2. **Live provider A/B** — costs money, needs `ASK_AI_PROVIDER=openai` and a
-   real key. Run `npm run combo:answer-quality -- --confirm-live-calls`
-   (script and real-oracle-id scenarios ready, slice J). Its conclusion
-   informs the ship decision without blocking it (DEC-161) — record it in a
-   dated note before cleanup deletes this package.
+1. **Production corpus refresh — done 2026-08-22.** 106,182 real reviewed
+   variants committed (76.9 MB detail + 4.8 MB index gzipped — see
+   DESIGN-BRIEF's `### Measured 2026-08-22` note for why that is well above
+   this amendment's original estimate, and the owner decision to accept it).
+   135 templates resolved, 32 genuinely unresolved. The live run also
+   surfaced and fixed two real bugs no smaller-scale test caught: the actual
+   bulk document exceeds V8's max JS string length (now streamed, never
+   parsed as one string), and a single Scryfall template query returning 404
+   used to abort the whole refresh (now left unresolved instead, like a
+   template with no query at all).
+2. **Live provider A/B** — still outstanding. Costs money, needs
+   `ASK_AI_PROVIDER=openai` and a real key. Run `npm run combo:answer-quality
+   -- --confirm-live-calls` (script and real-oracle-id scenarios ready, slice
+   J). Its conclusion informs the ship decision without blocking it
+   (DEC-161) — record it in a dated note before cleanup deletes this
+   package.
 
 ## Autonomous metadata
 

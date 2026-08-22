@@ -61,9 +61,13 @@ can actually differ, then close the package: this is the final slice.
       base, not literal `main`) touches only files named across slices A–J's
       `## Files touched` plus this package's own docs and already-promoted
       `PRD/sections/`. Verified file by file.
-- [ ] J6 (manual) — the owner has explicitly approved running the real
+- [x] J6 (manual) — the owner has explicitly approved running the real
       production corpus refresh (the live bulk-export download), separately
-      from the architecture decisions already recorded in DEC-162.
+      from the architecture decisions already recorded in DEC-162. **Done
+      2026-08-22:** 106,182 real variants committed; see DESIGN-BRIEF's
+      `### Measured 2026-08-22` note for the real committed size and two bugs
+      the live run surfaced (a V8 string-length limit, and one Scryfall query
+      404 that used to abort the whole refresh).
 - [ ] J7 (manual) — the live provider A/B has been run and its conclusion
       recorded, per DEC-161.
 

@@ -1,7 +1,8 @@
 import fs from "node:fs"
 import path from "node:path"
-import zlib from "node:zlib"
 import { pathToFileURL } from "node:url"
+
+import { streamJsonArrayObjects } from "./lib/stream-json-array.mjs"
 
 const rawInputDir = path.resolve("apps/backend/data/commander-spellbook")
 const stagingDir = `${rawInputDir}.tmp`
@@ -100,10 +101,9 @@ export async function fetchJsonWithRetry(url, options = {}) {
 }
 
 /**
- * Same retry/backoff behavior as `fetchJsonWithRetry`, but for a response body
- * that is bytes, not JSON — the bulk export is a `.gz` file, decompressed by
- * the caller, not a JSON HTTP response with transport-level gzip the `fetch`
- * implementation would already unwrap.
+ * Same retry/backoff behavior as `fetchJsonWithRetry`, but returns the raw
+ * response bytes rather than calling `response.json()` — `parseBulkExportBytes`
+ * decides how to interpret them.
  */
 export async function fetchBufferWithRetry(url, options = {}) {
   const {
@@ -138,13 +138,31 @@ function fetchJson(url) {
   })
 }
 
-/** Fetch and decompress the bulk export in one unthrottled request (DEC-162). */
-async function fetchBulkExport(url) {
-  const compressed = await fetchBufferWithRetry(url, {
-    onRetry: ({ status, attempt, waitMs }) =>
-      console.warn(`HTTP ${status}; retry ${attempt}/${MAX_FETCH_ATTEMPTS - 1} in ${waitMs} ms.`)
-  })
-  return JSON.parse(zlib.gunzipSync(compressed).toString("utf8"))
+/**
+ * The bulk export URL ends in `.gz`, but upstream serves it with
+ * `Content-Encoding: gzip` (confirmed against the real endpoint, 2026-08-22),
+ * which Node's `fetch` decodes transparently before `arrayBuffer()` ever sees
+ * compressed bytes — so the bytes `fetchBufferWithRetry` returns are already
+ * plain JSON in practice, despite the `.gz` filename.
+ *
+ * The real document is far too large to parse as one JS string: measured
+ * 2026-08-22 at ~634MB decompressed, past V8's ~536MB max string length, so
+ * `bytes.toString("utf8")` on the whole buffer throws before `JSON.parse`
+ * ever runs. Only a real live refresh exercises the actual size — the
+ * DEC-162 amendment's own measurements were against a smaller sample.
+ *
+ * `timestamp`/`version` sit in the first few hundred bytes of the document,
+ * well before the multi-hundred-MB `variants` array, so they are read from a
+ * small prefix rather than requiring a full parse.
+ */
+export function extractEnvelopeMetadata(bytes) {
+  const head = bytes.subarray(0, Math.min(bytes.length, 4096)).toString("utf8")
+  const timestampMatch = head.match(/"timestamp"\s*:\s*"([^"]*)"/)
+  const versionMatch = head.match(/"version"\s*:\s*"([^"]*)"/)
+  return {
+    timestamp: timestampMatch ? timestampMatch[1] : null,
+    version: versionMatch ? versionMatch[1] : null
+  }
 }
 
 /**
@@ -154,10 +172,14 @@ async function fetchBulkExport(url) {
  * is left unresolved rather than hand-mapped. Upstream renders this camelCase
  * on the wire (DEC-162); `scryfall_api` is the Python serializer's name, never
  * the client-visible one.
+ *
+ * Accepts a plain array or an async iterable — `for await` works over both —
+ * so the same function serves small hand-authored test fixtures and the real
+ * streamed-from-disk variant sequence identically.
  */
-export function collectTemplates(variants) {
+export async function collectTemplates(variants) {
   const templates = new Map()
-  for (const variant of variants ?? []) {
+  for await (const variant of variants ?? []) {
     for (const requirement of variant?.requires ?? []) {
       const template = requirement?.template
       if (!Number.isInteger(template?.id) || templates.has(template.id)) continue
@@ -172,12 +194,12 @@ export function collectTemplates(variants) {
 }
 
 /** Follow Scryfall's `next_page` links, deduplicating oracle ids across all pages. */
-async function expandTemplate(template) {
+export async function expandTemplate(template, fetchJsonImpl = fetchJson) {
   const oracleIds = new Set()
   let url = template.scryfallApi
 
   while (url) {
-    const page = await fetchJson(url)
+    const page = await fetchJsonImpl(url)
     for (const card of page?.data ?? []) {
       if (typeof card?.oracle_id === "string" && card.oracle_id.length > 0) {
         oracleIds.add(card.oracle_id)
@@ -190,7 +212,7 @@ async function expandTemplate(template) {
   return [...oracleIds].sort((a, b) => a.localeCompare(b))
 }
 
-async function downloadTemplateExpansions(templates, targetDir) {
+export async function downloadTemplateExpansions(templates, targetDir, { expandTemplateImpl = expandTemplate } = {}) {
   ensureDirectory(targetDir)
   let resolved = 0
   let unresolved = 0
@@ -202,7 +224,20 @@ async function downloadTemplateExpansions(templates, targetDir) {
       continue
     }
 
-    const oracleIds = await expandTemplate(template)
+    let oracleIds
+    try {
+      oracleIds = await expandTemplateImpl(template)
+    } catch (error) {
+      // A query Scryfall rejects outright (a 404, a syntax it no longer
+      // accepts) is exactly as unresolvable as a template with no query at
+      // all — REQ-093 already treats "no authoritative expansion" as a normal,
+      // expected outcome, not a failure. Aborting the whole refresh over one
+      // bad query would be worse than leaving that one template unresolved.
+      unresolved += 1
+      console.warn(`Template ${template.templateId} (${template.name}) failed to expand (${error.message}); left unresolved.`)
+      continue
+    }
+
     if (oracleIds.length === 0) {
       unresolved += 1
       console.warn(`Template ${template.templateId} (${template.name}) expanded to zero cards; left unresolved.`)
@@ -246,24 +281,43 @@ export async function performCommanderSpellbookRefresh() {
   fs.rmSync(stagingDir, { recursive: true, force: true })
   ensureDirectory(stagingDir)
 
-  const envelope = await fetchBulkExport(BULK_EXPORT_URL)
-  if (!Array.isArray(envelope?.variants)) {
-    throw new Error(`Unexpected Commander Spellbook bulk export response shape at ${BULK_EXPORT_URL}.`)
-  }
-  fs.writeFileSync(path.join(stagingDir, "variants.json"), `${JSON.stringify(envelope)}\n`)
+  const bytes = await fetchBufferWithRetry(BULK_EXPORT_URL, {
+    onRetry: ({ status, attempt, waitMs }) =>
+      console.warn(`HTTP ${status}; retry ${attempt}/${MAX_FETCH_ATTEMPTS - 1} in ${waitMs} ms.`)
+  })
 
-  const templates = collectTemplates(envelope.variants)
+  // Written as raw bytes — never converted to a JS string — because the real
+  // document (~634MB decompressed, measured 2026-08-22) exceeds V8's max
+  // string length. Everything downstream reads it back by streaming.
+  const variantsPath = path.join(stagingDir, "variants.json")
+  fs.writeFileSync(variantsPath, bytes)
+  const { timestamp, version } = extractEnvelopeMetadata(bytes)
+
+  let variantCount = 0
+  async function* countedVariants() {
+    const stream = fs.createReadStream(variantsPath, { encoding: "utf8", highWaterMark: 1024 * 1024 })
+    for await (const variant of streamJsonArrayObjects(stream)) {
+      variantCount += 1
+      yield variant
+    }
+  }
+  const templates = await collectTemplates(countedVariants())
+
+  if (variantCount === 0) {
+    throw new Error(`Unexpected Commander Spellbook bulk export response shape at ${BULK_EXPORT_URL}: no variants found.`)
+  }
+
   const { resolved, unresolved } = await downloadTemplateExpansions(templates, path.join(stagingDir, "template-expansions"))
 
   const manifest = {
     // The bulk document's own timestamp/version satisfy REQ-093's snapshot
     // provenance directly (DEC-162) — no synthetic "now" stands in for it.
-    snapshotAt: typeof envelope.timestamp === "string" ? envelope.timestamp : new Date().toISOString(),
+    snapshotAt: timestamp ?? new Date().toISOString(),
     source: "Commander Spellbook",
     sourceUrl: BULK_EXPORT_URL,
     license: "Commander Spellbook community data, retrieved from the public bulk export; see https://commanderspellbook.com/",
-    upstreamVersion: typeof envelope.version === "string" ? envelope.version : null,
-    rawVariantCount: envelope.variants.length,
+    upstreamVersion: version,
+    rawVariantCount: variantCount,
     templateCount: templates.length,
     resolvedTemplateCount: resolved,
     unresolvedTemplateCount: unresolved
@@ -273,11 +327,11 @@ export async function performCommanderSpellbookRefresh() {
   fs.rmSync(rawInputDir, { recursive: true, force: true })
   fs.renameSync(stagingDir, rawInputDir)
 
-  console.log(`Refresh complete: ${envelope.variants.length} raw variants from the bulk export into ${rawInputDir}.`)
+  console.log(`Refresh complete: ${variantCount} raw variants from the bulk export into ${rawInputDir}.`)
   console.log(`Templates: ${resolved} resolved, ${unresolved} unresolved.`)
   console.log("Next: node scripts/build-commander-spellbook-combos.mjs")
 
-  return { variantCount: envelope.variants.length, resolvedTemplateCount: resolved, unresolvedTemplateCount: unresolved }
+  return { variantCount, resolvedTemplateCount: resolved, unresolvedTemplateCount: unresolved }
 }
 
 async function main() {

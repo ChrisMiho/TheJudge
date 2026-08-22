@@ -1,4 +1,7 @@
 import assert from "node:assert/strict"
+import fs from "node:fs"
+import os from "node:os"
+import path from "node:path"
 import zlib from "node:zlib"
 import test from "node:test"
 
@@ -10,6 +13,8 @@ import {
   backoffDelayMs,
   collectTemplates,
   describePlan,
+  downloadTemplateExpansions,
+  extractEnvelopeMetadata,
   fetchBufferWithRetry,
   fetchJsonWithRetry,
   parseRefreshArgs,
@@ -171,7 +176,7 @@ test("a 429 is retried and the eventual gzip payload is returned as a buffer", a
   assert.equal(waits.length, 1)
 })
 
-test("collectTemplates reads a flat variant array, not a paginated results wrapper", () => {
+test("collectTemplates reads a flat variant array, not a paginated results wrapper", async () => {
   const variants = [
     { id: "1", requires: [{ template: { id: 5, name: "Persist Creature", scryfallApi: "https://api.scryfall.com/x" } }] },
     { id: "2", requires: [{ template: { id: 5, name: "Persist Creature", scryfallApi: "https://api.scryfall.com/x" } }] },
@@ -179,7 +184,7 @@ test("collectTemplates reads a flat variant array, not a paginated results wrapp
     { id: "4", requires: [] }
   ]
 
-  const templates = collectTemplates(variants)
+  const templates = await collectTemplates(variants)
 
   assert.deepEqual(
     templates.map((template) => template.templateId),
@@ -189,9 +194,57 @@ test("collectTemplates reads a flat variant array, not a paginated results wrapp
   assert.equal(templates[1].scryfallApi, null)
 })
 
-test("collectTemplates never reads the Python serializer's snake_case scryfall_api", () => {
-  const templates = collectTemplates([
+test("collectTemplates never reads the Python serializer's snake_case scryfall_api", async () => {
+  const templates = await collectTemplates([
     { id: "1", requires: [{ template: { id: 1, name: "X", scryfall_api: "https://api.scryfall.com/wrong-case" } }] }
   ])
   assert.equal(templates[0].scryfallApi, null)
+})
+
+test("collectTemplates consumes an async iterable identically to a plain array", async () => {
+  async function* stream() {
+    yield { id: "1", requires: [{ template: { id: 5, name: "T", scryfallApi: "https://api.scryfall.com/x" } }] }
+  }
+  const templates = await collectTemplates(stream())
+  assert.deepEqual(
+    templates.map((template) => template.templateId),
+    [5]
+  )
+})
+
+test("extractEnvelopeMetadata reads timestamp and version from the document's head, without a full parse", () => {
+  // A trailing "variants" array far too large to ever materialize as one JS
+  // string in a real run — this proves the function only looks at the head.
+  const hugeSuffix = `,"variants":[${'{"id":"x"},'.repeat(1000)}{"id":"y"}]}`
+  const head = '{"timestamp":"2026-08-22T19:12:35.233842+00:00","version":"6.2.5"'
+  const bytes = Buffer.from(head + hugeSuffix, "utf8")
+
+  assert.deepEqual(extractEnvelopeMetadata(bytes), {
+    timestamp: "2026-08-22T19:12:35.233842+00:00",
+    version: "6.2.5"
+  })
+})
+
+test("extractEnvelopeMetadata returns nulls when the fields are missing or malformed", () => {
+  assert.deepEqual(extractEnvelopeMetadata(Buffer.from("{}", "utf8")), { timestamp: null, version: null })
+})
+
+test("a template Scryfall rejects outright (a 404, a query it no longer accepts) is left unresolved, not fatal to the whole refresh", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "combo-refresh-"))
+  const templates = [
+    { templateId: 1, name: "Bad query", scryfallApi: "https://api.scryfall.com/bad" },
+    { templateId: 2, name: "Good query", scryfallApi: "https://api.scryfall.com/good" }
+  ]
+
+  const { resolved, unresolved } = await downloadTemplateExpansions(templates, dir, {
+    expandTemplateImpl: async (template) => {
+      if (template.templateId === 1) throw new Error("Request failed for https://api.scryfall.com/bad: 404 Not Found")
+      return ["oracle-1", "oracle-2"]
+    }
+  })
+
+  assert.equal(unresolved, 1)
+  assert.equal(resolved, 1)
+  assert.ok(fs.existsSync(path.join(dir, "000002.json")), "the good template's expansion is still written")
+  assert.ok(!fs.existsSync(path.join(dir, "000001.json")), "the bad template writes nothing")
 })

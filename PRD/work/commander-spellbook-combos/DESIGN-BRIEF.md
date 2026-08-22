@@ -98,6 +98,34 @@ oracle ids**, which is why the index stays small and why matching never needs th
 Corrected figure: the 6.5 MB gzipped estimate quoted earlier in this amendment came from a
 6,000-variant sample. The measured value over the full corpus is **9.6 MB** detail + 1.7 MB index.
 
+### Measured 2026-08-22 — real production refresh, real committed size
+
+The live production refresh (J6) ran for the first time: **106,182** real reviewed
+variants, 27MB gzipped raw input, ~634MB decompressed (see below), 135 templates
+resolved and 32 genuinely unresolved via Scryfall.
+
+The committed lazy-access artifacts measure **76.9 MB** detail + **4.8 MB** index —
+far above this amendment's 9.6 MB / 1.7 MB estimate. The cause is the storage format
+itself, not a bug: gzipping each variant **individually** (required so a lookup never
+decompresses more than the one requested record) loses the cross-record compression a
+single shared gzip stream over the whole array gets almost for free — repeated JSON
+keys and similar strings across ~106k records no longer share a dictionary. Owner
+decision 2026-08-22: commit as measured. The memory-safety goal (bounded per-request
+detail fetch instead of ~868MB resident) is what mattered; the larger repo footprint is
+an accepted cost, not deferred work. Revisit only if repository size becomes an actual
+problem — the lever, if so, is batching several variants per gzip member instead of one
+each, trading some of this compression back for a coarser lazy-fetch granularity.
+
+**Also discovered by the real refresh, not by any smaller-scale test:** the real bulk
+document decompresses to ~634MB — past V8's ~536MB max JS string length, so
+`JSON.parse` on the whole document throws outright. Fixed with a streaming
+JSON-array parser (`scripts/lib/stream-json-array.mjs`, adapted from the identical
+technique already used for Scryfall's bulk file in `build-card-metadata.mjs`) in both
+the refresh and build scripts. Separately, a single Scryfall template-expansion query
+that 404s no longer aborts the whole refresh — it is now treated exactly like a
+template with no query at all (left unresolved), matching REQ-093's existing
+"unresolved is a normal outcome" posture instead of being a new failure mode.
+
 ### Verified 2026-08-12 — slice E needs no changes
 
 The eval catalog is read by `contextEvaluationHarness.test.ts` with plain `readFileSync` +

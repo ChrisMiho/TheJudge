@@ -49,7 +49,7 @@
     {
       "id": "J6",
       "statement": "the owner has explicitly approved running the real production corpus refresh, separately from the DEC-162 architecture decisions",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
