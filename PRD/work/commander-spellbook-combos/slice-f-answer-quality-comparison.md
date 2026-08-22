@@ -1,6 +1,6 @@
 # Slice F — Answer-quality comparison
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -33,18 +33,18 @@ conclusion, so the enrichment's effect on answers is observed rather than assume
 
 ## Acceptance criteria
 
-- [ ] Run without `--confirm-live-calls` makes zero network calls (asserted with a
+- [x] Run without `--confirm-live-calls` makes zero network calls (asserted with a
       stubbed provider), prints the intended scenario list, and exits 0
-- [ ] Run with the flag but no live provider configured fails with a clear message
+- [x] Run with the flag but no live provider configured fails with a clear message
       naming `ASK_AI_PROVIDER` rather than a stack trace
-- [ ] Both legs execute in one process; the enriched leg's assembled prompt
+- [x] Both legs execute in one process; the enriched leg's assembled prompt
       contains `COMMANDER SPELLBOOK COMBO CONTEXT` and the disabled leg's does not
-- [ ] Disabling enrichment changes no request or response shape — the two legs'
+- [x] Disabling enrichment changes no request or response shape — the two legs'
       payloads differ only in prompt text
-- [ ] Output is written under `output/combo-answer-quality/` and
+- [x] Output is written under `output/combo-answer-quality/` and
       `git status --porcelain` is clean after a run
-- [ ] `npm run quality:check` does not invoke the script (grep the script chain)
-- [ ] `package.json` exposes the run as a named script consistent with
+- [x] `npm run quality:check` does not invoke the script (grep the script chain)
+- [x] `package.json` exposes the run as a named script consistent with
       `prompt:preview` / `retrieval:report` naming
 - [ ] **Owner action:** one approved live run executed, both answer sets reviewed
       by a human, and the dated conclusion recorded below
@@ -54,8 +54,66 @@ conclusion, so the enrichment's effect on answers is observed rather than assume
 
 ## Reviewed conclusion
 
-_Recorded after the owner-approved live run. Date, scenarios compared, and the
-human verdict. Carried verbatim into the cleanup receipt._
+_Not yet recorded — this is the outstanding owner action._
+
+Run it with:
+
+```bash
+ASK_AI_PROVIDER=openai npm run combo:answer-quality -- --confirm-live-calls
+```
+
+Then record the date, the scenarios compared, and a plain verdict on whether the
+enrichment improved the answers — including a negative or inconclusive result.
+Per DEC-161 this is informational and does not block shipping. Carried verbatim
+into the cleanup receipt.
+
+**Read this before running:** the committed corpus is currently the empty
+bootstrap artifact, and the curated scenarios reuse the slice E eval fixtures,
+whose oracle ids are synthetic. Until the owner-approved production refresh
+(slice A) lands, both legs will produce identical prompts and the comparison will
+be vacuous. Run the corpus refresh first, then either point the scenarios at real
+cards via an inline `request`, or confirm the refreshed corpus covers the fixture
+cards. The scenarios file supports both forms for exactly this reason.
+
+## Verification evidence
+
+Recorded 2026-08-11 on the implementation worktree.
+
+- `npm run test:scripts` — 48/48 pass, including the 14 new cases in
+  `scripts/compare-combo-answer-quality.test.mjs`.
+- `npm run quality:check` — green.
+- `node scripts/compare-combo-answer-quality.mjs` (no flag) — prints all six
+  scenarios and the intended 12 live calls, exits 0, creates no `output/`
+  directory, and leaves `git status --porcelain` free of run artifacts.
+
+### The no-network guarantee is enforced, not just intended
+
+`runComparison` takes an injectable `buildLegs`, and every test supplies a stub
+that records calls and never opens a socket. Two assertions make a regression
+visible rather than expensive: no leg is asked anything without the flag, and the
+`ASK_AI_PROVIDER` check runs *before* any leg is built. The script's backend
+imports are dynamic and confined to the live path, so `node --test` loads the
+module without a TypeScript loader and cannot reach a provider call at all.
+
+### One criterion is verified outside the script's own tests
+
+"Both legs execute in one process; the enriched leg's prompt contains the section
+and the disabled leg's does not" cannot be asserted from
+`scripts/*.test.mjs`, which runs under plain `node --test` and therefore cannot
+import the TypeScript runtime. It is verified in
+`apps/backend/src/runtime/createConfiguredApp.test.ts`, which builds both
+configured apps in one process from one repo root differing only by
+`COMBO_ENRICHMENT_ENABLED`, and asserts the mock provider's echoed prompt contains
+the section on the enriched leg and not on the disabled one — plus identical
+status and response keys across the two.
+
+### Prompt reconstruction in the live path
+
+A live provider returns only `{ answer }`; the prompt is never in the response,
+and putting it there would change the contract. So each leg reconstructs its
+prompt locally through `preparePromptInput` with the same catalog the app loaded,
+purely so the written report can tell the reviewer whether a combo section was
+actually supplied. This never affects what is sent to the provider.
 
 ## Verification
 

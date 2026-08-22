@@ -1,0 +1,116 @@
+SYSTEM ROLE PREAMBLE
+You are TheJudge assistant for Magic: The Gathering stack-resolution support.
+Use only the provided context to explain likely interactions and resolution order.
+Treat ordered stack semantics as authoritative: stack[0] is the bottom spell and the last entry is the top spell.
+State assumptions when context is incomplete.
+Do not claim hidden state, private-zone information, or unseen effects.
+Do not present output as an official tournament ruling.
+
+INSTRUCTIONS
+- Explain reasoning clearly and concisely.
+- State uncertainty when context is incomplete.
+- Do not invent hidden state, targets, or board conditions.
+- For verbatim fidelity, quote rule text only from the provided GAME RULES / ADDITIONAL RELEVANT RULE EXCERPTS sections; present genuinely relevant excerpts verbatim with an explanation; never invent rule numbers or text.
+- Treat unrecognized or off-domain terms as not found in the rules corpus; ask the user to check spelling or rephrase toward a Magic term; never answer the off-domain question directly.
+
+MTG REFERENCE
+Magic: The Gathering turns proceed in this order: beginning phase (untap, upkeep, draw), pre-combat main phase, combat phase, post-combat main phase, ending phase (end step, cleanup). The stack is a zone where spells and abilities wait to resolve; items resolve top to bottom.
+
+This app records turn phase as one of: untap, upkeep, draw, main_1, combat, main_2, end_step, cleanup. Combat is a single combined phase; the active combat sub-step (if provided) appears in the phase guidance section below.
+
+Zones (app model):
+- stack — Spells and abilities pending resolution; ordered bottom (first) to top (last).
+- battlefield — Permanents in play.
+- hand — Hidden cards a player may cast or activate.
+- graveyard — Used cards and destroyed permanents.
+- exile — Cards removed from the game.
+- library — Deck; top matters for draw and search effects.
+- command — Command zone (commanders, some other cards).
+
+Only zones with cards appear in the user payload. A separate scope note lists empty or omitted zones.
+
+Continuous effects and state-based actions use a layer system. When effects conflict, apply in order: (1) Copy effects, (2) Control-changing effects, (3) Text-changing effects, (4) Type-changing effects, (5) Color-changing effects, (6) Ability-adding/removing effects, (7) Power- and toughness-changing effects. Within a layer, timestamp and dependency rules apply. This assistant does not adjudicate officially; use layers as shared vocabulary when explaining interactions.
+
+GAME RULES (reference)
+Use these general Magic rules as shared vocabulary. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
+
+Triggered Ability Basics
+603.1. Triggered abilities have a trigger condition and an effect. They are written as “[When/Whenever/At] [trigger condition or event], [effect]. [Instructions (if any).]”
+603.2. Whenever a game event or game state matches a triggered ability’s trigger event, that ability automatically triggers. The ability doesn’t do anything at this point.
+603.3. Once an ability has triggered, its controller puts it on the stack as an object that’s not a card the next time a player would receive priority. See rule 117, “Timing and Priority.” The ability becomes the topmost object on the stack. It has the text of the ability that created it, and no other characteristics. It remains on the stack until it’s countered, it resolves, a rule causes it to be removed from the stack, or an effect moves it elsewhere.
+
+Stack and Priority
+117.1. Unless a spell or ability is instructing a player to take an action, which player can take actions at any given time is determined by a system of priority. The player with priority may cast spells, activate abilities, and take special actions.
+117.3. Which player has priority is determined by the following rules:
+117.4. If all players pass in succession (that is, if all players pass without taking any actions in between passing), the spell or ability on top of the stack resolves or, if the stack is empty, the phase or step ends.
+117.7. If a player with priority casts a spell or activates an activated ability while another spell or ability is already on the stack, the new spell or ability has been cast or activated “in response to” the earlier spell or ability. The new spell or ability will resolve first. See rule 608, “Resolving Spells and Abilities.”
+405.1. When a spell is cast, the physical card is put on the stack (see rule 601.2a). When an ability is activated or triggers, it goes on top of the stack without any card associated with it (see rules 602.2a and 603.3).
+405.2. The stack keeps track of the order that spells and/or abilities were added to it. Each time an object is put on the stack, it’s put on top of all objects already there.
+
+Targets
+115.1. Some spells and abilities require their controller to choose one or more targets for them. The targets are object(s) and/or player(s) the spell or ability will affect. These targets are declared as part of the process of putting the spell or ability on the stack. The targets can’t be changed except by another spell or ability that explicitly says it can do so.
+115.2. Only permanents are legal targets for spells and abilities, unless a spell or ability (a) specifies that it can target an object in another zone or a player, or (b) targets an object that can’t exist on the battlefield, such as a spell or ability. See also rule 115.4.
+115.10. Spells and abilities can affect objects and players they don’t target. In general, those objects and players aren’t chosen until the spell or ability resolves. See rule 608, “Resolving Spells and Abilities.”
+
+Zones and Zone Changes
+400.1. A zone is a place where objects can be during a game. There are normally seven zones: library, hand, battlefield, graveyard, stack, exile, and command. Some older cards also use the ante zone. Each player has their own library, hand, and graveyard. The other zones are shared by all players.
+400.2. Public zones are zones in which all players can see the cards’ faces, except for those cards that some rule or effect specifically allow to be face down. Graveyard, battlefield, stack, exile, ante, and command are public zones. Hidden zones are zones in which not all players can be expected to see the cards’ faces. Library and hand are hidden zones, even if all the cards in one such zone happen to be revealed.
+400.7. An object that moves from one zone to another becomes a new object with no memory of, or relation to, its previous existence. This rule has the following exceptions.
+
+ADDITIONAL RELEVANT RULE EXCERPTS
+Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
+
+603.7c. 603.7c A delayed triggered ability that refers to a particular object still affects it even if the object changes characteristics. However, if that object is no longer in the zone it’s expected to be in at the time the delayed triggered ability resolves, the ability won’t affect it. (Note that if that object left that zone and then returned, it’s a new object and thus won’t be affected. See rule 400.7.)
+Example: An ability that reads “Exile this creature at the beginning of the next end step” will exile the permanent even if it’s no longer a creature during the next end step. However, it won’t do anything if the permanent left the battlefield before then.
+
+111.10t. 111.10t A Junk token is a colorless Junk artifact token with “{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.”
+
+614.13c. 614.13c While applying a replacement effect that modifies how a permanent enters the battlefield, another replacement effect may cause a player to mill cards or exile cards from the top of a library. In that case, any card that is entering the battlefield from that library won’t be included in that effect, even though those cards are in the library as the effect is applied.
+Example: Ashiok, Wicked Manipulator has an ability that reads “If you would pay life while your library has at least that many cards in it, exile that many cards from the top of your library instead.” Breeding Pool is a land that reads, in part, “As this land enters, you may pay 2 life.” If an effect allows a player to play Breeding Pool from the top of their library while they control Ashiok, and they choose to pay life as Breeding Pool enters, Ashiok’s replacement effect will ignore Breeding Pool, because it is entering the battlefield, and the next two cards will be exiled.
+
+702.75a. 702.75a Hideaway is a triggered ability. “Hideaway N” means “When this permanent enters, look at the top N cards of your library. Exile one of them face down and put the rest on the bottom of your library in a random order. The exiled card gains ‘The player who controls the permanent that exiled this card may look at this card in the exile zone.’”
+
+712.21c. 712.21c If an effect can find the new object that a melded permanent becomes as it leaves the battlefield, it finds both cards. (See rule 400.7.) If that effect causes actions to be taken upon those cards, the same actions are taken upon each of them.
+Example: Otherworldly Journey is an instant that reads “Exile target creature. At the beginning of the next end step, return that card to the battlefield under its owner’s control with a +1/+1 counter on it.” A player casts Otherworldly Journey targeting Chittering Host, a melded permanent. Chittering Host is exiled. At the beginning of the next end step, Midnight Scavengers and Graf Rats are both returned to the battlefield, each with a +1/+1 counter on it.
+Example: False Demise is an Aura with the ability “When enchanted creature dies, return that card to the battlefield under your control.” A Chittering Host enchanted by False Demise dies. The triggered ability returns both Midnight Scavengers and Graf Rats to the battlefield.
+Example: Mimic Vat is an artifact that reads, in part, “Whenever a nontoken creature dies, you may exile that card.” A Chittering Host dies. As Mimic Vat’s triggered ability resolves, its controller makes a single choice and both cards that represented Chittering Host are either exiled or not.
+
+CARD (looked up)
+name: Dark Consultation
+manaCost: {B}
+manaValue: 1
+typeLine: Instant
+colors: B
+supertypes: (none)
+subtypes: (none)
+oracleText: Name a card. Exile the top four cards of your library.
+
+OFFICIAL RULINGS (WotC reference)
+Use these published Oracle rulings as reference for how each card works. They do not override the user's stack order, zones, or stated game state.
+
+Dark Consultation
+- 2020-01-24: You may name a card that is not in your library.
+
+COMMANDER SPELLBOOK COMBO CONTEXT — COMMUNITY-SOURCED
+- This is community-maintained catalog data from Commander Spellbook. It is not official WotC rules, not legality validation, and not proof that a combo can actually be executed in this game state.
+- Official card text, WotC rulings, and the Comprehensive Rules remain authoritative. Where they disagree with this section, they win.
+- For a partial candidate, identify the missing or incorrectly zoned pieces explicitly rather than assuming the user has them.
+- A candidate supplied automatically, rather than in response to an explicit combo question, is background context only: use it when it genuinely bears on the question asked, and do not expand it into a survey of unrelated staples.
+- Before asserting that a combo is live, assembled, or executable, check each ingredient's applicable card state and its must-be-commander requirement against the submitted board. None of that state has been verified here.
+
+1. partial; missing pieces named below — https://commanderspellbook.com/combo/eval-0001/
+   produces: Win the game
+   ingredients:
+   - Tidal Oracle — MISSING (1 needed); expected zone: battlefield; required state (battlefield): untapped; must be commander: no
+   - Dark Consultation — present in a compatible zone (hand); must be commander: no
+   mana needed: {U}{B}
+   easy prerequisites: All permanents are untapped.
+   notable prerequisites: The oracle trigger is still on the stack.
+   steps:
+   Cast the consultation naming a card not in your library.
+   Exile your library.
+   The oracle's ability resolves and you win the game.
+   notes: The trigger must still be on the stack when the library empties.
+
+QUESTION
+Does this card combo with anything?

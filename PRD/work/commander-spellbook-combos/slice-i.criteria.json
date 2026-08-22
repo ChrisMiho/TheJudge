@@ -1,0 +1,64 @@
+{
+  "slug": "commander-spellbook-combos",
+  "slice": "I",
+  "criteria": [
+    {
+      "id": "I1",
+      "statement": "the matcher resolves candidates from the index's oracle-membership and fetches detail via slice H's lazy loader; no path assumes an in-memory array of every variant",
+      "value": true,
+      "evidence": {
+        "paths": [
+          "apps/backend/src/commanderSpellbook/matcher.ts"
+        ]
+      }
+    },
+    {
+      "id": "I2",
+      "statement": "game complete/non-intent, game partial/explicit, lookup attached/explicit, and lookup no-card/no-intent branches all pass against a realistic-scale artifact",
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test -- commanderSpellbook"
+      }
+    },
+    {
+      "id": "I3",
+      "statement": "quantity-aware distinct-instance assignment holds at scale; one instance never fills two slots across a larger candidate pool",
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test -- commanderSpellbook"
+      }
+    },
+    {
+      "id": "I4",
+      "statement": "stable top-five ranking across the full six-key order holds when the pre-ranking candidate pool is large",
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test -- commanderSpellbook"
+      }
+    },
+    {
+      "id": "I5",
+      "statement": "state annotation resolves to the matched (or expected) zone correctly when detail is fetched lazily",
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test -- commanderSpellbook"
+      }
+    },
+    {
+      "id": "I6",
+      "statement": "both prompt paths render the combo section correctly end to end against the same realistic-scale artifact",
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test -- prompt"
+      }
+    },
+    {
+      "id": "I7",
+      "statement": "rendered classification never emits the bare word complete; the state-verification instruction is present in both prompt modes",
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test -- prompt"
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "snapshotAt": "2026-08-11T00:00:00.000Z",
+  "source": "Commander Spellbook",
+  "sourceUrl": "https://backend.commanderspellbook.com/variants/",
+  "license": "Commander Spellbook community data, retrieved from the public API; see https://commanderspellbook.com/",
+  "variantPageCount": 1,
+  "rawVariantCount": 0,
+  "templateCount": 0,
+  "resolvedTemplateCount": 0,
+  "unresolvedTemplateCount": 0
+}

@@ -4,9 +4,147 @@
 
 - Product design: approved 2026-08-02
 - Scope expansion approved 2026-08-11 (card state capture + answer-quality measurement)
+- Corpus source + wire-format correction approved 2026-08-12 (see `## Amendments`)
 - Work package: refined
-- Quality check: PASS 2026-08-11
+- Quality check: PASS 2026-08-11 — superseded by the 2026-08-12 amendment
+- Quality check: PASS 2026-08-21 — re-checked against the DEC-162 amendment; no contradictions with `decisions/combo-retrieval.md`, REQ-093/REQ-146, `integrations-and-data.md`, or `system-map.md`
 - Next gate: `$thejudge-map-out PRD/work/commander-spellbook-combos/`
+
+## Amendments
+
+### 2026-08-12 — corpus source and wire format
+
+Slices A–F were implemented and marked `done`, and the package reached `ship-ready`, before
+this was found. **That status was false**: the corpus build could not parse a single real
+upstream variant. The package was reopened rather than shipped or cleaned up.
+
+**Finding.** The build read seven snake_case fields upstream never emits — `oracle_id`,
+`zone_locations`, `mana_needed`, `must_be_commander`, `easy_prerequisites`,
+`notable_prerequisites`, `scryfall_api`. Django REST Framework's `CamelCaseJSONRenderer`
+renames every serializer field at the render layer, below where fields are declared, so
+reading upstream's `VariantSerializer` did not reveal it. Verified by running the real
+`build-commander-spellbook-combos.mjs` against real bulk bytes: it fails on the first
+variant with `variant 215-3430--85--200 has status OK but mana_needed is not a string`.
+
+**Why it survived every gate.**
+
+- `PRD/sections/integrations-and-data.md` asserted the snake_case claim as product truth, so
+  the implementation followed the PRD faithfully into the defect. That line is now corrected.
+- The 22 build tests passed because the committed fixtures were hand-authored in the same
+  incorrect casing (`zone_locations` x10, `must_be_commander` x10, `oracle_id` x8) — they
+  validated against a schema that has never existed.
+- The committed corpus was an empty bootstrap artifact (`variantCount: 0`), so no code path
+  ever met real data.
+
+**Separately, the paginated source proved unusable.** Upstream's load balancer throttled a
+sustained cursor walk with a bodiless `429` carrying no `Retry-After` after 13,600 variants;
+the quota resets in roughly six minutes. The refresh script had no retry handling and
+discarded all 136 downloaded pages on failure.
+
+**Decisions taken (owner-approved 2026-08-12), recorded as DEC-162.**
+
+1. **Bulk export as sole source.** `https://json.commanderspellbook.com/variants.json.gz` —
+   105,448 reviewed `OK` variants, ~26 MB, downloads in under a second, unthrottled,
+   regenerated daily, and carries its own `timestamp`/`version` for provenance. The paginated
+   walk is removed rather than kept as a fallback.
+2. **Wired into `data:refresh`.** Invoking that command is REQ-093's explicit human approval,
+   matching the standard already applied to the ungated Scryfall and Comprehensive Rules
+   downloads in the same script. The standalone combo script keeps `--confirm-live-calls`.
+3. **Gzipped committed artifacts, full coverage.** Measured over the full real corpus:
+   11.3 MB gzipped (9.6 MB detail + 1.7 MB index) against 164 MB uncompressed. No popularity
+   cap — 61% of variants have zero tracked deck popularity, and those are precisely the obscure
+   pairings an explicit combo question tends to name.
+4. **Fixtures derived from real upstream responses**, never hand-authored, so a future rename
+   fails the suite instead of passing it.
+
+**Blast radius for re-mapping.** Slice A is invalidated outright. Slice B's cold-start
+measurement is superseded — see the measured replacement below. Slice C is affected by the
+same scale. Slice D is likely intact. Slice E is intact and verified so (below). Slice F needs
+curated scenarios pointing at real oracle ids; its current scenarios reuse the eval fixtures'
+synthetic ids, which appear in no corpus and would make both A/B legs produce identical prompts.
+
+### Measured 2026-08-12 — real corpus, replacing slice B's estimate
+
+Slice B measured a **synthetic** corpus at 10,000–30,000 variants, uncompressed, and reported
+28–75 ms. That covered neither the real scale nor decompression. Replaced by a measurement over
+a real artifact built from all 105,447 variants of the actual bulk export, in the exact
+`ComboVariant` shape `catalog.ts` defines. Median of 5 runs, read → decompress → parse → build
+both `Map`s.
+
+| Artifact | Raw | Gzipped |
+|---|---|---|
+| `commanderSpellbookCombos.json` (detail) | 156.4 MB | **9.6 MB** |
+| `commanderSpellbookComboIndex.json` (index) | 7.8 MB | **1.7 MB** |
+
+| Load | Time | Retained heap | RSS |
+|---|---|---|---|
+| Full catalog, uncompressed | 241 ms | — | — |
+| Full catalog, gzipped | **283 ms** | **254 MB** | **868 MB** |
+| Index only, gzipped | **15 ms** | **18 MB** | **95 MB** |
+
+**Conclusion: gzip is free; memory is the real constraint.** Decompression costs only ~42 ms on
+top of parsing, so DEC-162's gzipped-artifact decision carries no meaningful startup penalty.
+What does cost is holding the detail catalog resident: **254 MB of retained heap and ~868 MB RSS,
+against 18 MB / 95 MB for the index alone.** At most five variants ever enter a prompt, so
+roughly 100% of that resident detail is never read on any given request.
+
+This is the lever slice B recorded but could not quantify — "keep loading the index eagerly and
+narrow the detail artifact" — now with a number attached: it saves ~236 MB retained heap and
+~770 MB RSS. Map-out should treat lazy or partial detail access as a sizing decision to settle
+explicitly, not an optimization to defer, and should confirm the deployment target's memory
+budget before choosing. Note also that 105,447 variants are built from only **7,371 distinct
+oracle ids**, which is why the index stays small and why matching never needs the detail artifact.
+
+Corrected figure: the 6.5 MB gzipped estimate quoted earlier in this amendment came from a
+6,000-variant sample. The measured value over the full corpus is **9.6 MB** detail + 1.7 MB index.
+
+### Measured 2026-08-22 — real production refresh, real committed size
+
+The live production refresh (J6) ran for the first time: **106,182** real reviewed
+variants, 27MB gzipped raw input, ~634MB decompressed (see below), 135 templates
+resolved and 32 genuinely unresolved via Scryfall.
+
+The committed lazy-access artifacts measure **76.9 MB** detail + **4.8 MB** index —
+far above this amendment's 9.6 MB / 1.7 MB estimate. The cause is the storage format
+itself, not a bug: gzipping each variant **individually** (required so a lookup never
+decompresses more than the one requested record) loses the cross-record compression a
+single shared gzip stream over the whole array gets almost for free — repeated JSON
+keys and similar strings across ~106k records no longer share a dictionary. Owner
+decision 2026-08-22: commit as measured. The memory-safety goal (bounded per-request
+detail fetch instead of ~868MB resident) is what mattered; the larger repo footprint is
+an accepted cost, not deferred work. Revisit only if repository size becomes an actual
+problem — the lever, if so, is batching several variants per gzip member instead of one
+each, trading some of this compression back for a coarser lazy-fetch granularity.
+
+**Also discovered by the real refresh, not by any smaller-scale test:** the real bulk
+document decompresses to ~634MB — past V8's ~536MB max JS string length, so
+`JSON.parse` on the whole document throws outright. Fixed with a streaming
+JSON-array parser (`scripts/lib/stream-json-array.mjs`, adapted from the identical
+technique already used for Scryfall's bulk file in `build-card-metadata.mjs`) in both
+the refresh and build scripts. Separately, a single Scryfall template-expansion query
+that 404s no longer aborts the whole refresh — it is now treated exactly like a
+template with no query at all (left unresolved), matching REQ-093's existing
+"unresolved is a normal outcome" posture instead of being a new failure mode.
+
+### Verified 2026-08-12 — slice E needs no changes
+
+The eval catalog is read by `contextEvaluationHarness.test.ts` with plain `readFileSync` +
+`JSON.parse` and passed to `buildEvalComboCatalog`; it never goes through `loadComboCatalog`, so
+neither the wire-format fix nor gzip storage reaches it. Its variant and ingredient keys were
+diffed against the artifact built from real upstream data and match exactly, at both levels. The
+wire-casing defect lived entirely at the parse boundary and never reached TheJudge's internal
+`ComboVariant` contract.
+
+Two consequences for re-mapping: slice E's catalog is a valid **conformance reference** for what
+the corrected build must emit, and its independence from the production artifact must be
+preserved rather than "fixed" — it is what stops a corpus refresh from churning a prompt golden.
+Slice F must therefore get real oracle ids through inline `request` payloads rather than by
+pointing the eval fixtures at real cards.
+
+**Carried forward, uncommitted.** A retry/backoff fix for `refresh-commander-spellbook-data.mjs`
+(`Retry-After` support, exponential backoff with full jitter) plus 15 tests for a script that
+previously had none. The retry helper stays useful for Scryfall template expansion, which does
+paginate; the resume-from-staged-pages half is superseded by the bulk source.
 
 ## Outcome
 
@@ -28,8 +166,8 @@ Three changes, driven by the upstream schema in `spellbook/serializers/variant_s
 
 - `scripts/refresh-commander-spellbook-data.mjs` (planned) performs the human-approved retrieval of public Commander Spellbook variants/templates plus authoritative Scryfall template expansions into gitignored raw inputs.
 - `scripts/build-commander-spellbook-combos.mjs` (planned) emits:
-  - `apps/backend/data/commanderSpellbookCombos.json` — source manifest plus trimmed variant details
-  - `apps/backend/data/commanderSpellbookComboIndex.json` — inverse oracle membership, template expansion membership, unresolved-template metadata
+  - `apps/backend/data/commanderSpellbookCombos.json.gz` — source manifest plus trimmed variant details
+  - `apps/backend/data/commanderSpellbookComboIndex.json.gz` — inverse oracle membership, template expansion membership, unresolved-template metadata
 - Only reviewed `OK` variants enter the committed corpus; `EXAMPLE` is rejected.
 - Because the corpus is `OK`-only, every committed variant carries non-null steps, prerequisites, mana needed, and card state. A null in those fields is an artifact-integrity failure, not expected data — the runtime loader enforces this.
 - Cards join on Commander Spellbook `oracle_id` → TheJudge `cardId`; printing identity is excluded.
@@ -42,7 +180,7 @@ Three changes, driven by the upstream schema in `spellbook/serializers/variant_s
 - Card state is stored **zone-scoped**, never collapsed into one string. Upstream exposes `battlefield_card_state`, `exile_card_state`, `graveyard_card_state`, and `library_card_state` separately; an ingredient may permit several starting zones at once, so one field would be lossy.
 - The hand and command zones carry no state upstream.
 - `mustBeCommander` is retained per ingredient.
-- Upstream serializes snake_case; committed artifacts use TheJudge's camelCase naming.
+- Upstream renders **camelCase** on the wire (`oracleId`, `zoneLocations`, `mustBeCommander`, `*CardState`); DRF's `CamelCaseJSONRenderer` renames serializer fields above the model, so snake_case never reaches a client (DEC-162).
 - The upstream starting-zone vocabulary is exactly `H`, `B`, `C`, `E`, `G`, `L`.
 
 ### Intent gate
@@ -130,7 +268,8 @@ Instructions explicitly state:
 
 ## Verification focus
 
-- deterministic paginated build, `OK`-only status filtering with `EXAMPLE` rejection, source metadata, and stable serialization
+- deterministic build from the bulk export, `OK`-only status filtering with `EXAMPLE` rejection, source metadata, and stable serialization
+- the build parses real upstream bytes: at least one fixture is a verbatim excerpt of a real bulk response, so a wire-format rename fails the suite rather than passing it
 - zone-scoped card state retained per ingredient without collapsing multi-zone ingredients
 - query-backed/explicit template expansion and unresolved-template preservation
 - quantity-aware distinct-instance assignment and centralized zone mapping
@@ -173,8 +312,9 @@ Instructions explicitly state:
 
 ## External source references
 
-- Commander Spellbook API: `https://backend.commanderspellbook.com/`
+- **Bulk export (the corpus source): `https://json.commanderspellbook.com/variants.json.gz`** — also served from `https://spellbook-prod.s3.amazonaws.com/variants.json`; produced by `backend/spellbook/tasks/export_variants.py`
+- Commander Spellbook API (no longer a corpus source; rate-limited): `https://backend.commanderspellbook.com/`
 - Developer API documentation: `https://spacecowmedia.github.io/commander-spellbook-backend/api.html`
 - Domain model: `https://spacecowmedia.github.io/commander-spellbook-backend/domain-model.html`
 - Backend source/license: `https://github.com/SpaceCowMedia/commander-spellbook-backend`
-- Authoritative ingredient/variant schema: `backend/spellbook/serializers/variant_serializer.py`; zone vocabulary in `backend/spellbook/models/ingredient.py`
+- Authoritative ingredient/variant schema: `backend/spellbook/serializers/variant_serializer.py`; zone vocabulary in `backend/spellbook/models/ingredient.py`. **These give field names in snake_case; the wire renames them.** The renderer is `backend/backend/settings.py` `DEFAULT_RENDERER_CLASSES` → `CamelCaseJSONRenderer`. Confirm any field name against a real response before relying on it.

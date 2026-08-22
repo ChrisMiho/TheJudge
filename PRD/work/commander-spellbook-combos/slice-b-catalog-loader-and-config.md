@@ -1,6 +1,6 @@
 # Slice B — Runtime catalog loader and config flag
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -35,24 +35,67 @@ failing open on every artifact problem.
 
 ## Acceptance criteria
 
-- [ ] Both artifact paths absent → `loadComboCatalog` returns the empty result,
+- [x] Both artifact paths absent → `loadComboCatalog` returns the empty result,
       warns exactly once per path, and the app starts and answers normally
-- [ ] Same paths absent across two `loadComboCatalog` calls in one process →
+- [x] Same paths absent across two `loadComboCatalog` calls in one process →
       still exactly one warning per path
-- [ ] Malformed JSON, an empty file, and a valid-JSON-wrong-shape artifact each
+- [x] Malformed JSON, an empty file, and a valid-JSON-wrong-shape artifact each
       produce the empty result plus one warning, never a thrown error
-- [ ] A fixture variant with `steps: null` (or null mana/prereqs/card state) is
+- [x] A fixture variant with `steps: null` (or null mana/prereqs/card state) is
       treated as an integrity failure: warn once, enrichment disabled
-- [ ] `readServerConfig({})` returns `comboEnrichmentEnabled: true`
-- [ ] `readServerConfig({ COMBO_ENRICHMENT_ENABLED: "false" })` returns `false`;
+- [x] `readServerConfig({})` returns `comboEnrichmentEnabled: true`
+- [x] `readServerConfig({ COMBO_ENRICHMENT_ENABLED: "false" })` returns `false`;
       casing and surrounding whitespace are normalized as with `ASK_AI_PROVIDER`
-- [ ] With the flag false, `createConfiguredApp` never reads either artifact file
+- [x] With the flag false, `createConfiguredApp` never reads either artifact file
       and `PreparePromptInputOptions.comboCatalog` is `undefined`
-- [ ] Two `createConfiguredApp` calls in one process with different env objects
+- [x] Two `createConfiguredApp` calls in one process with different env objects
       yield one app with the catalog and one without — no module-load latch
-- [ ] `POST /api/ask-ai` request/response bodies are byte-identical with the flag
+- [x] `POST /api/ask-ai` request/response bodies are byte-identical with the flag
       on and off when no variant matches
-- [ ] Artifact size and parse duration recorded in verification evidence
+- [x] Artifact size and parse duration recorded in verification evidence
+
+## Verification evidence
+
+Recorded 2026-08-11 on the implementation worktree.
+
+- `npm --workspace apps/backend run test -- commanderSpellbook config createConfiguredApp`
+  — 38/38 pass across `catalog.test.ts` (11), `config/index.test.ts` (22),
+  `runtime/createConfiguredApp.test.ts` (5).
+- `npm --workspace apps/backend run typecheck` — clean.
+- The "never reads either artifact" assertion is enforced by mocking `node:fs`
+  and recording every `existsSync` / `readFileSync` path, so a future refactor
+  that loads eagerly fails the test rather than passing silently.
+
+### Cold-start measurement (GAMEPLAN corpus-size risk)
+
+Measured with a synthetic corpus in the real artifact shape (3 ingredients per
+variant, one multi-zone with two card-state strings), loaded through the compiled
+`loadComboCatalog` with full integrity validation. Median of 5 runs:
+
+| Variants | Detail artifact | Index artifact | `loadComboCatalog` |
+|---|---|---|---|
+| 10,000 | 11.04 MB | 0.93 MB | 28 ms |
+| 30,000 | 33.13 MB | 1.84 MB | 75 ms |
+
+Startup cost is a one-time 28–75 ms, which does not by itself justify
+restructuring. The notable figure is the **detail artifact's size**: it grows
+roughly linearly at ~1.1 MB per 1,000 variants, while the index — the only part
+matching actually needs — stays under 2 MB even at 30,000.
+
+No optimization is applied here, per the GAMEPLAN's "measure in slice B before
+optimizing". If the owner-approved production refresh lands a corpus at the upper
+end of that range, the recorded lever is available: keep loading the index
+eagerly and narrow the detail artifact to selected variants. That would be a new
+decision, not a silent change.
+
+### Reuse note
+
+`COMBO_ENRICHMENT_ENABLED` parsing did not get a new ad-hoc parser. The
+`TRUE_VALUES` / `FALSE_VALUES` logic duplicated between
+`resolveDebugLoggingEnabled` and `resolvePayloadLoggingEnabled` was extracted
+into an exported `resolveBooleanEnv(rawValue, envName, defaultEnabled)` in
+`logging.ts`; both existing helpers now delegate to it with identical behavior
+and identical error-message shape, and the new flag is a third caller.
 
 ## Verification
 

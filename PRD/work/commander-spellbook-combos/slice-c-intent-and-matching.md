@@ -1,6 +1,6 @@
 # Slice C — Combo intent detection and deterministic matching
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -48,37 +48,73 @@ fully annotated candidates — with no model call anywhere in the path.
 
 ## Acceptance criteria
 
-- [ ] `"Does this combo go infinite?"`, `"is this a loop"`, `"win condition"`,
+- [x] `"Does this combo go infinite?"`, `"is this a loop"`, `"win condition"`,
       and `"COMBOS"` all detect intent; `"good synergy"`, `"how does this
       interaction work"`, and `"works with my commander"` do not
-- [ ] `"comboing"` and `"discombobulate"` do not match `combo` (boundary check)
-- [ ] Game mode, no intent, all three ingredients present in compatible zones →
+- [x] `"comboing"` and `"discombobulate"` do not match `combo` (boundary check)
+- [x] Game mode, no intent, all three ingredients present in compatible zones →
       one complete candidate returned
-- [ ] Game mode, no intent, two of three ingredients present → no candidate
-- [ ] Game mode, explicit intent, two of three present → partial candidate whose
+- [x] Game mode, no intent, two of three ingredients present → no candidate
+- [x] Game mode, explicit intent, two of three present → partial candidate whose
       missing ingredient is named
-- [ ] A variant needing 2× a card with only 1 instance submitted → remaining count
+- [x] A variant needing 2× a card with only 1 instance submitted → remaining count
       reported missing, not satisfied
-- [ ] Two distinct instances of the same `cardId` satisfy a 2× requirement; one
+- [x] Two distinct instances of the same `cardId` satisfy a 2× requirement; one
       instance never fills both slots
-- [ ] Ingredient permitted only on battlefield, instance in graveyard → wrong-zone,
+- [x] Ingredient permitted only on battlefield, instance in graveyard → wrong-zone,
       and the candidate is not complete
-- [ ] Instance on the stack → wrong-zone for every ingredient, never compatible
-- [ ] Unresolved template present in a variant → that variant is never returned as
+- [x] Instance on the stack → wrong-zone for every ingredient, never compatible
+- [x] Unresolved template present in a variant → that variant is never returned as
       complete, in any mode
-- [ ] Lookup mode with intent and an attached card returns only variants containing
+- [x] Lookup mode with intent and an attached card returns only variants containing
       that card; lookup with intent and no card returns nothing; lookup with a card
       and no intent returns nothing
-- [ ] A question naming a submitted card restricts partial candidates to variants
+- [x] A question naming a submitted card restricts partial candidates to variants
       containing it; with no card named, submitted cards seed overlap ranking
-- [ ] Matched instance on the battlefield carries the battlefield state string;
+- [x] Matched instance on the battlefield carries the battlefield state string;
       the same ingredient when wrong-zone or missing carries the expected zone's
       state instead
-- [ ] `mustBeCommander` present on every annotation kind, including missing
-- [ ] Six variants eligible → exactly five returned, in the documented key order;
+- [x] `mustBeCommander` present on every annotation kind, including missing
+- [x] Six variants eligible → exactly five returned, in the documented key order;
       two variants identical through popularity break by ascending variant id
-- [ ] Identical request context and catalog produce identical selections and
+- [x] Identical request context and catalog produce identical selections and
       annotations across repeated calls
+
+## Verification evidence
+
+Recorded 2026-08-11 on the implementation worktree.
+
+- `npm --workspace apps/backend run test -- commanderSpellbook` — 60/60 pass
+  across `intent.test.ts` (20), `zones.test.ts` (4), `catalog.test.ts` (11),
+  `matcher.test.ts` (25).
+- `npm --workspace apps/backend run typecheck` — clean.
+- `npm run lint` — 0 errors.
+
+### Design decisions inside the slice's latitude
+
+Three points the slice doc left to implementation, resolved and pinned by tests
+so slice D and E can depend on them:
+
+1. **Exact ingredients claim instances before templates.** When a submitted card
+   is both a named ingredient and a member of a template's authoritative oracle
+   list, it fills the named slot. Otherwise a single instance could appear to
+   satisfy two slots depending on iteration order.
+2. **`ComboMatchInstance.zone` is optional.** A lookup-mode attached card is a
+   card the user is *asking about*, not a card observed in a zone. Rather than
+   fabricating a zone, an instance with no zone matches on identity and reports
+   the ingredient's **expected** zone state. Game-mode instances always carry a
+   zone, so this path never affects game matching.
+3. **The anchor filter applies to partial candidates only.** The brief calls
+   question-named cards "required anchors" while the acceptance criterion scopes
+   the restriction to partials; a fully assigned candidate is self-evidently
+   relevant, so it is ranked by anchor coverage but never filtered out by it.
+
+### Wrong-zone vocabulary
+
+`ComboIngredientAnnotation.wrongZones` uses TheJudge's `ZoneId` values rather
+than Commander Spellbook's single-letter codes, because the stack has no upstream
+equivalent and a card on the stack must still be reportable as wrongly zoned.
+`permittedZones` and `occupiedZones` stay in the upstream vocabulary.
 
 ## Verification
 

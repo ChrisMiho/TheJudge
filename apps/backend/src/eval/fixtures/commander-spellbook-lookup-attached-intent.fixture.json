@@ -1,0 +1,20 @@
+{
+  "id": "commander-spellbook-lookup-attached-intent",
+  "description": "Lookup mode with an attached card and explicit combo intent: only variants containing that card are retrieved.",
+  "request": {
+    "mode": "lookup",
+    "question": "Does this card combo with anything?",
+    "card": {
+      "cardId": "eval-oracle-b",
+      "name": "Dark Consultation",
+      "oracleText": "Name a card. Exile the top four cards of your library.",
+      "imageUrl": "",
+      "manaCost": "{B}",
+      "manaValue": 1,
+      "typeLine": "Instant",
+      "colors": ["B"],
+      "supertypes": [],
+      "subtypes": []
+    }
+  }
+}

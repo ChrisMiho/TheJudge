@@ -1,0 +1,273 @@
+{
+  "timestamp": "2026-08-11T00:00:00.000Z",
+  "version": "6.2.5",
+  "variants": [
+    {
+      "id": "1000-2000",
+      "status": "OK",
+      "identity": "UB",
+      "popularity": 900,
+      "spoiler": false,
+      "variantCount": 3,
+      "manaNeeded": "{U}{B}",
+      "manaValueNeeded": 2,
+      "easyPrerequisites": "All permanents are untapped.",
+      "notablePrerequisites": "Your library has at most five cards.",
+      "description": "Cast Demonic Consultation naming a card not in your library.\nExile your library.\nThassa's Oracle's ability resolves and you win the game.",
+      "notes": "The Oracle trigger must still be on the stack when the library empties.",
+      "bracketTag": "P",
+      "legalities": { "commander": true, "modern": false },
+      "prices": { "tcgplayer": "12.34" },
+      "produces": [
+        { "feature": { "id": 1, "name": "Win the game", "uncountable": true, "status": "U" }, "quantity": 1 },
+        { "feature": { "id": 2, "name": "Draw your library", "uncountable": true, "status": "U" }, "quantity": 1 }
+      ],
+      "uses": [
+        {
+          "card": {
+            "id": 501,
+            "name": "Thassa's Oracle",
+            "oracleId": "aaaaaaaa-0000-4000-8000-000000000001",
+            "spoiler": false,
+            "faces": [],
+            "typeLine": "Creature — Merfolk Wizard",
+            "imageUriFrontPng": "https://cards.scryfall.io/png/front/example-front.png",
+            "imageUriFrontNormal": "https://cards.scryfall.io/normal/front/example-front.jpg",
+            "imageUriBackPng": null,
+            "layoutRotationFront": "none"
+          },
+          "zoneLocations": ["B"],
+          "battlefieldCardState": "",
+          "exileCardState": "",
+          "libraryCardState": "",
+          "graveyardCardState": "",
+          "mustBeCommander": false,
+          "quantity": 1,
+          "usedFace": "front"
+        },
+        {
+          "card": {
+            "id": 502,
+            "name": "Demonic Consultation",
+            "oracleId": "aaaaaaaa-0000-4000-8000-000000000002",
+            "spoiler": false,
+            "faces": [],
+            "typeLine": "Instant",
+            "imageUriFrontPng": "https://cards.scryfall.io/png/front/example-consult.png"
+          },
+          "zoneLocations": ["H"],
+          "battlefieldCardState": "",
+          "exileCardState": "",
+          "libraryCardState": "",
+          "graveyardCardState": "",
+          "mustBeCommander": false,
+          "quantity": 1,
+          "usedFace": "front"
+        },
+        {
+          "card": {
+            "id": 503,
+            "name": "Underworld Breach",
+            "oracleId": "aaaaaaaa-0000-4000-8000-000000000003",
+            "spoiler": false,
+            "faces": [],
+            "typeLine": "Enchantment"
+          },
+          "zoneLocations": ["B", "G"],
+          "battlefieldCardState": "untapped and with no counters on it",
+          "exileCardState": "",
+          "libraryCardState": "",
+          "graveyardCardState": "with at least three other cards in your graveyard",
+          "mustBeCommander": false,
+          "quantity": 1,
+          "usedFace": "front"
+        }
+      ],
+      "requires": [],
+      "of": [],
+      "includes": []
+    },
+    {
+      "id": "1000-3000",
+      "status": "E",
+      "identity": "R",
+      "popularity": null,
+      "spoiler": false,
+      "variantCount": 1,
+      "manaNeeded": null,
+      "manaValueNeeded": null,
+      "easyPrerequisites": null,
+      "notablePrerequisites": null,
+      "description": null,
+      "notes": null,
+      "bracketTag": "C",
+      "legalities": { "commander": true },
+      "prices": { "tcgplayer": "1.00" },
+      "produces": [
+        { "feature": { "id": 3, "name": "Infinite damage", "uncountable": true, "status": "U" }, "quantity": 1 }
+      ],
+      "uses": [
+        {
+          "card": {
+            "id": 504,
+            "name": "Example Rejected Card",
+            "oracleId": "aaaaaaaa-0000-4000-8000-000000000004",
+            "spoiler": false,
+            "faces": [],
+            "typeLine": "Creature"
+          },
+          "zoneLocations": ["B"],
+          "battlefieldCardState": null,
+          "exileCardState": null,
+          "libraryCardState": null,
+          "graveyardCardState": null,
+          "mustBeCommander": false,
+          "quantity": 1,
+          "usedFace": "front"
+        }
+      ],
+      "requires": [],
+      "of": [],
+      "includes": []
+    },
+    {
+      "id": "1000-4000",
+      "status": "OK",
+      "identity": "WU",
+      "popularity": 450,
+      "spoiler": false,
+      "variantCount": 2,
+      "manaNeeded": "{2}{W}",
+      "manaValueNeeded": 3,
+      "easyPrerequisites": "You control a creature.",
+      "notablePrerequisites": "The commander is on the battlefield.",
+      "description": "Tap the commander to trigger the payoff.\nRepeat the loop until you win.",
+      "notes": "Any untapper with the same text works in place of the template.",
+      "bracketTag": "C",
+      "legalities": { "commander": true },
+      "prices": { "tcgplayer": "3.21" },
+      "produces": [
+        { "feature": { "id": 4, "name": "Infinite untaps", "uncountable": true, "status": "U" }, "quantity": 1 }
+      ],
+      "uses": [
+        {
+          "card": {
+            "id": 505,
+            "name": "Kenrith, the Returned King",
+            "oracleId": "aaaaaaaa-0000-4000-8000-000000000005",
+            "spoiler": false,
+            "faces": [],
+            "typeLine": "Legendary Creature — Human Noble"
+          },
+          "zoneLocations": ["C"],
+          "battlefieldCardState": "",
+          "exileCardState": "",
+          "libraryCardState": "",
+          "graveyardCardState": "",
+          "mustBeCommander": true,
+          "quantity": 1,
+          "usedFace": "front"
+        },
+        {
+          "card": {
+            "id": 506,
+            "name": "Basalt Monolith",
+            "oracleId": "aaaaaaaa-0000-4000-8000-000000000006",
+            "spoiler": false,
+            "faces": [],
+            "typeLine": "Artifact"
+          },
+          "zoneLocations": ["B"],
+          "battlefieldCardState": "untapped",
+          "exileCardState": "",
+          "libraryCardState": "",
+          "graveyardCardState": "",
+          "mustBeCommander": false,
+          "quantity": 2,
+          "usedFace": "front"
+        }
+      ],
+      "requires": [
+        {
+          "template": {
+            "id": 12,
+            "name": "An untapper with no mana cost",
+            "scryfallQuery": "o:\"untap target\" -o:\"{T}\"",
+            "scryfallApi": "https://api.scryfall.com/cards/search?q=o%3A%22untap+target%22"
+          },
+          "zoneLocations": ["B"],
+          "battlefieldCardState": "untapped",
+          "exileCardState": "",
+          "libraryCardState": "",
+          "graveyardCardState": "",
+          "mustBeCommander": false,
+          "quantity": 1
+        }
+      ],
+      "of": [],
+      "includes": []
+    },
+    {
+      "id": "1000-5000",
+      "status": "OK",
+      "identity": "G",
+      "popularity": 120,
+      "spoiler": false,
+      "variantCount": 1,
+      "manaNeeded": "{G}",
+      "manaValueNeeded": 1,
+      "easyPrerequisites": "You control a land.",
+      "notablePrerequisites": "",
+      "description": "Sacrifice the creature to the outlet and repeat.",
+      "notes": "",
+      "bracketTag": "O",
+      "legalities": { "commander": true },
+      "prices": { "tcgplayer": "0.50" },
+      "produces": [
+        {
+          "feature": { "id": 5, "name": "Infinite sacrifice triggers", "uncountable": true, "status": "U" },
+          "quantity": 1
+        }
+      ],
+      "uses": [
+        {
+          "card": {
+            "id": 507,
+            "name": "Scute Swarm",
+            "oracleId": "aaaaaaaa-0000-4000-8000-000000000007",
+            "spoiler": false,
+            "faces": [],
+            "typeLine": "Creature — Insect"
+          },
+          "zoneLocations": ["B"],
+          "battlefieldCardState": "untapped",
+          "exileCardState": "",
+          "libraryCardState": "",
+          "graveyardCardState": "",
+          "mustBeCommander": false,
+          "quantity": 1,
+          "usedFace": "front"
+        }
+      ],
+      "requires": [
+        {
+          "template": {
+            "id": 99,
+            "name": "A free sacrifice outlet",
+            "scryfallQuery": null,
+            "scryfallApi": null
+          },
+          "zoneLocations": ["B"],
+          "battlefieldCardState": "",
+          "exileCardState": "",
+          "libraryCardState": "",
+          "graveyardCardState": "",
+          "mustBeCommander": false,
+          "quantity": 1
+        }
+      ],
+      "of": [],
+      "includes": []
+    }
+  ]
+}

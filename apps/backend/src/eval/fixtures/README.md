@@ -72,6 +72,33 @@ Label rule ids by **human judgment** of relevance, then confirm they are reachab
 rule ids are excluded from System 3). A fixture with all three fields adds 3 to its
 `maxScore`.
 
+## Commander Spellbook combo fixtures
+
+Scenarios named `commander-spellbook-*` cover the combo-enrichment branches. They
+read a **dedicated eval corpus**, `commander-spellbook-eval-catalog.json`, not the
+production artifact at `apps/backend/data/commanderSpellbookCombos.json`. That
+separation is the point: an owner-approved production corpus refresh must never
+churn a prompt golden. The harness derives oracle membership from the fixture's
+`variants` array, so the catalog cannot drift out of sync with itself.
+
+| Fixture | Branch covered |
+| --- | --- |
+| `commander-spellbook-complete-no-intent` | game mode, every ingredient present in a compatible zone, no combo intent — section supplied automatically |
+| `commander-spellbook-partial-explicit-intent` | game mode, missing ingredient, explicit intent — partial candidate names the gap |
+| `commander-spellbook-wrong-zone` | ingredient present but incompatibly zoned |
+| `commander-spellbook-unresolved-template` | template with no authoritative card list — never fully assigned |
+| `commander-spellbook-lookup-attached-intent` | lookup mode, attached card plus explicit intent |
+| `commander-spellbook-lookup-unrelated` | lookup mode, attached card but no combo intent — no retrieval |
+| `commander-spellbook-degraded` | no catalog loaded at all — no section, request still answered |
+
+The degraded scenario uses the optional top-level `disableComboEnrichment: true`
+field (sibling of `request`), which evaluates that fixture with no catalog — the
+same state the runtime reaches with a missing artifact or
+`COMBO_ENRICHMENT_ENABLED=false`.
+
+Card names in the eval corpus are invented and every `oracle_id` is synthetic;
+they correspond to no real Scryfall identity.
+
 ## Prompt preview
 
 Run `npm run prompt:preview` from the repo root to POST fixtures through the mock backend and write reviewable artifacts to `output/prompt-preview/`. See `scripts/prompt-preview.mjs` for details.

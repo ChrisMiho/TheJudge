@@ -1,6 +1,7 @@
 import { resolve } from "node:path";
 import { createApp } from "../app/createApp.js";
 import { loadCardRulingsIndex } from "../cardRulings.js";
+import { loadComboCatalog, type ComboCatalog } from "../commanderSpellbook/catalog.js";
 import { readServerConfig } from "../config/index.js";
 import { loadGameRulesTopics } from "../gameRules.js";
 import { loadGameRulesRuleIndex } from "../gameRulesRetrieval.js";
@@ -13,6 +14,7 @@ export type RuntimeApp = {
   cardRulingsCardCount: number;
   gameRulesTopicCount: number;
   gameRulesRuleCount: number;
+  comboVariantCount: number;
 };
 
 export function createConfiguredApp(repoRoot: string, env: NodeJS.ProcessEnv = process.env): RuntimeApp {
@@ -24,6 +26,16 @@ export function createConfiguredApp(repoRoot: string, env: NodeJS.ProcessEnv = p
   const gameRulesRuleIndexPath = resolve(repoRoot, "apps/backend/data/gameRulesRuleIndex.json");
   const gameRulesRuleIndex = loadGameRulesRuleIndex(gameRulesRuleIndexPath);
 
+  // A disabled flag means the artifacts are never read and the option is simply
+  // absent downstream; no branch below learns why it is absent.
+  let comboCatalog: ComboCatalog | undefined;
+  if (config.comboEnrichmentEnabled) {
+    comboCatalog = loadComboCatalog(
+      resolve(repoRoot, "apps/backend/data/commanderSpellbookCombos.json.gz"),
+      resolve(repoRoot, "apps/backend/data/commanderSpellbookComboIndex.json.gz")
+    );
+  }
+
   return {
     app: createApp({
       frontendOrigin: config.frontendOrigin,
@@ -34,12 +46,14 @@ export function createConfiguredApp(repoRoot: string, env: NodeJS.ProcessEnv = p
       cardRulingsIndex,
       gameRulesTopics,
       gameRulesRuleIndex,
+      comboCatalog,
       collectEnrichmentDebug: config.askAiProvider !== "openai",
       logger: createAppLogger(config.debugLoggingEnabled)
     }),
     config,
     cardRulingsCardCount: cardRulingsIndex.size,
     gameRulesTopicCount: gameRulesTopics.length,
-    gameRulesRuleCount: gameRulesRuleIndex.length
+    gameRulesRuleCount: gameRulesRuleIndex.length,
+    comboVariantCount: comboCatalog?.variantCount ?? 0
   };
 }

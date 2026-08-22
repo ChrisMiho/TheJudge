@@ -1,0 +1,343 @@
+{
+  "timestamp": "2026-08-22T19:12:35.233842+00:00",
+  "version": "6.2.5",
+  "variants": [
+    {
+      "id": "5702-8097",
+      "status": "OK",
+      "uses": [
+        {
+          "card": {
+            "id": 8097,
+            "name": "Avatar of Growth",
+            "oracleId": "07db0374-3297-49c3-886d-a6bb42f7bb18",
+            "spoiler": false,
+            "faces": 1,
+            "typeLine": "Creature — Elemental Avatar",
+            "imageUriFrontPng": "https://cards.scryfall.io/png/front/f/5/f524a232-7158-4f85-880e-fede2f9d35d1.png?1783933994",
+            "imageUriFrontLarge": "https://cards.scryfall.io/large/front/f/5/f524a232-7158-4f85-880e-fede2f9d35d1.jpg?1783933994",
+            "imageUriFrontNormal": "https://cards.scryfall.io/normal/front/f/5/f524a232-7158-4f85-880e-fede2f9d35d1.jpg?1783933994",
+            "imageUriFrontSmall": "https://cards.scryfall.io/small/front/f/5/f524a232-7158-4f85-880e-fede2f9d35d1.jpg?1783933994",
+            "imageUriFrontArtCrop": "https://cards.scryfall.io/art_crop/front/f/5/f524a232-7158-4f85-880e-fede2f9d35d1.jpg?1783933994",
+            "layoutRotationFront": null,
+            "imageUriBackPng": null,
+            "imageUriBackLarge": null,
+            "imageUriBackNormal": null,
+            "imageUriBackSmall": null,
+            "imageUriBackArtCrop": null
+          },
+          "zoneLocations": ["B"],
+          "battlefieldCardState": "",
+          "exileCardState": "",
+          "libraryCardState": "",
+          "graveyardCardState": "",
+          "mustBeCommander": false,
+          "quantity": 1,
+          "usedFace": null
+        },
+        {
+          "card": {
+            "id": 5702,
+            "name": "Springheart Nantuko",
+            "oracleId": "8a3ad2ef-8bcb-40c0-85de-f03328c2b644",
+            "spoiler": false,
+            "faces": 1,
+            "typeLine": "Enchantment Creature — Insect Monk",
+            "imageUriFrontPng": "https://cards.scryfall.io/png/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.png?1783911255",
+            "imageUriFrontLarge": "https://cards.scryfall.io/large/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.jpg?1783911255",
+            "imageUriFrontNormal": "https://cards.scryfall.io/normal/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.jpg?1783911255",
+            "imageUriFrontSmall": "https://cards.scryfall.io/small/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.jpg?1783911255",
+            "imageUriFrontArtCrop": "https://cards.scryfall.io/art_crop/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.jpg?1783911255",
+            "layoutRotationFront": null,
+            "imageUriBackPng": null,
+            "imageUriBackLarge": null,
+            "imageUriBackNormal": null,
+            "imageUriBackSmall": null,
+            "imageUriBackArtCrop": null
+          },
+          "zoneLocations": ["B"],
+          "battlefieldCardState": "attached to Avatar of Growth",
+          "exileCardState": "",
+          "libraryCardState": "",
+          "graveyardCardState": "",
+          "mustBeCommander": false,
+          "quantity": 1,
+          "usedFace": null
+        }
+      ],
+      "requires": [],
+      "produces": [
+        {
+          "feature": {
+            "id": 2826,
+            "name": "Each opponent puts all basic lands from their library onto the battlefield",
+            "uncountable": true,
+            "status": "H"
+          },
+          "quantity": 1
+        },
+        {
+          "feature": {
+            "id": 60,
+            "name": "Near-infinite creature ETB",
+            "uncountable": true,
+            "status": "H"
+          },
+          "quantity": 1
+        },
+        {
+          "feature": {
+            "id": 207,
+            "name": "Near-infinite creature tokens",
+            "uncountable": true,
+            "status": "S"
+          },
+          "quantity": 1
+        },
+        {
+          "feature": {
+            "id": 2825,
+            "name": "Near-infinite landfall triggers of all players",
+            "uncountable": false,
+            "status": "H"
+          },
+          "quantity": 1
+        },
+        {
+          "feature": {
+            "id": 903,
+            "name": "Put all basic lands from your library onto the battlefield tapped",
+            "uncountable": true,
+            "status": "H"
+          },
+          "quantity": 1
+        }
+      ],
+      "of": [
+        {
+          "id": 33802
+        }
+      ],
+      "includes": [
+        {
+          "id": 33802
+        }
+      ],
+      "identity": "G",
+      "manaNeeded": "{1}{G}",
+      "manaValueNeeded": 2,
+      "easyPrerequisites": "You have a land card in hand.",
+      "notablePrerequisites": "At least half of the basic land cards in your library are Forests.",
+      "description": "Play a land.\nWhen the land enters, Springheart Nantuko triggers, causing you to pay {1}{G} to create a token copy of Avatar of Growth.\nWhen the Avatar of Growth token enters, it triggers, causing each player to search their library for up to two basic land cards and put them onto the battefield. Search for a Forest and any other basic land.\nWhen the basic lands enter, Springheart Nantuko triggers twice.\nHolding priority, activate two lands by tapping them, adding {1}{G}.\nResolve the first Springheart Nantuko trigger, choosing not to pay and creating a 1/1 Insect creature token.\nResolve the second Springheart Nantuko trigger, causing you to pay {1}{G} to create a token copy of Avatar of Growth\nRepeat from step 3 until your library contains no basic lands.",
+      "notes": "You can perform this combo if fewer than half the basic lands in your library are Forests, but in that case you won't be able to find all your basic lands unless you pay an additional {G} per additional pair of non-Forest lands once you run out of Forests.",
+      "popularity": 395,
+      "spoiler": false,
+      "bracketTag": "S",
+      "legalities": {
+        "commander": true,
+        "pauperCommanderMain": false,
+        "pauperCommander": false,
+        "oathbreaker": true,
+        "predh": false,
+        "standardBrawl": false,
+        "brawl": false,
+        "competitiveBrawl": false,
+        "alchemy": false,
+        "vintage": true,
+        "legacy": true,
+        "premodern": false,
+        "modern": false,
+        "pioneer": false,
+        "standard": false,
+        "pauper": false
+      },
+      "prices": {
+        "tcgplayer": "30.63",
+        "cardkingdom": "45.98",
+        "cardmarket": "20.29"
+      },
+      "variantCount": 1
+    },
+    {
+      "id": "4050-6982--5",
+      "status": "OK",
+      "uses": [
+        {
+          "card": {
+            "id": 6982,
+            "name": "Stalwart Successor",
+            "oracleId": "45392882-e4b9-4c74-a10f-985c2b4e2be9",
+            "spoiler": false,
+            "faces": 1,
+            "typeLine": "Creature — Human Warrior",
+            "imageUriFrontPng": "https://cards.scryfall.io/png/front/4/a/4a7b206f-8190-46e6-bb9e-44763d3eb4ac.png?1783907296",
+            "imageUriFrontLarge": "https://cards.scryfall.io/large/front/4/a/4a7b206f-8190-46e6-bb9e-44763d3eb4ac.jpg?1783907296",
+            "imageUriFrontNormal": "https://cards.scryfall.io/normal/front/4/a/4a7b206f-8190-46e6-bb9e-44763d3eb4ac.jpg?1783907296",
+            "imageUriFrontSmall": "https://cards.scryfall.io/small/front/4/a/4a7b206f-8190-46e6-bb9e-44763d3eb4ac.jpg?1783907296",
+            "imageUriFrontArtCrop": "https://cards.scryfall.io/art_crop/front/4/a/4a7b206f-8190-46e6-bb9e-44763d3eb4ac.jpg?1783907296",
+            "layoutRotationFront": null,
+            "imageUriBackPng": null,
+            "imageUriBackLarge": null,
+            "imageUriBackNormal": null,
+            "imageUriBackSmall": null,
+            "imageUriBackArtCrop": null
+          },
+          "zoneLocations": ["B"],
+          "battlefieldCardState": "",
+          "exileCardState": "",
+          "libraryCardState": "",
+          "graveyardCardState": "",
+          "mustBeCommander": false,
+          "quantity": 1,
+          "usedFace": null
+        },
+        {
+          "card": {
+            "id": 4050,
+            "name": "Phyrexian Altar",
+            "oracleId": "8d02b297-97c4-4379-9862-0a462400f66f",
+            "spoiler": false,
+            "faces": 1,
+            "typeLine": "Artifact",
+            "imageUriFrontPng": "https://cards.scryfall.io/png/front/9/5/95d9f93c-50a8-41a9-be98-d1900bf1c12f.png?1783921789",
+            "imageUriFrontLarge": "https://cards.scryfall.io/large/front/9/5/95d9f93c-50a8-41a9-be98-d1900bf1c12f.jpg?1783921789",
+            "imageUriFrontNormal": "https://cards.scryfall.io/normal/front/9/5/95d9f93c-50a8-41a9-be98-d1900bf1c12f.jpg?1783921789",
+            "imageUriFrontSmall": "https://cards.scryfall.io/small/front/9/5/95d9f93c-50a8-41a9-be98-d1900bf1c12f.jpg?1783921789",
+            "imageUriFrontArtCrop": "https://cards.scryfall.io/art_crop/front/9/5/95d9f93c-50a8-41a9-be98-d1900bf1c12f.jpg?1783921789",
+            "layoutRotationFront": null,
+            "imageUriBackPng": null,
+            "imageUriBackLarge": null,
+            "imageUriBackNormal": null,
+            "imageUriBackSmall": null,
+            "imageUriBackArtCrop": null
+          },
+          "zoneLocations": ["B"],
+          "battlefieldCardState": "",
+          "exileCardState": "",
+          "libraryCardState": "",
+          "graveyardCardState": "",
+          "mustBeCommander": false,
+          "quantity": 1,
+          "usedFace": null
+        }
+      ],
+      "requires": [
+        {
+          "template": {
+            "id": 5,
+            "name": "Persist Creature",
+            "scryfallQuery": "keyword:persist t:creature",
+            "scryfallApi": "https://api.scryfall.com/cards/search?q=%28keyword%3Apersist+t%3Acreature%29+legal%3Acommander"
+          },
+          "zoneLocations": ["B"],
+          "battlefieldCardState": "",
+          "exileCardState": "",
+          "libraryCardState": "",
+          "graveyardCardState": "",
+          "mustBeCommander": false,
+          "quantity": 1
+        }
+      ],
+      "produces": [
+        {
+          "feature": {
+            "id": 5,
+            "name": "Infinite colored mana",
+            "uncountable": true,
+            "status": "S"
+          },
+          "quantity": 1
+        },
+        {
+          "feature": {
+            "id": 4,
+            "name": "Infinite creature ETB",
+            "uncountable": true,
+            "status": "H"
+          },
+          "quantity": 1
+        },
+        {
+          "feature": {
+            "id": 3,
+            "name": "Infinite creature LTB",
+            "uncountable": true,
+            "status": "H"
+          },
+          "quantity": 1
+        },
+        {
+          "feature": {
+            "id": 6,
+            "name": "Infinite creature sacrifice triggers",
+            "uncountable": true,
+            "status": "H"
+          },
+          "quantity": 1
+        },
+        {
+          "feature": {
+            "id": 7,
+            "name": "Infinite death triggers",
+            "uncountable": true,
+            "status": "H"
+          },
+          "quantity": 1
+        }
+      ],
+      "of": [
+        {
+          "id": 31428
+        }
+      ],
+      "includes": [
+        {
+          "id": 26311
+        },
+        {
+          "id": 26308
+        },
+        {
+          "id": 31074
+        },
+        {
+          "id": 31428
+        }
+      ],
+      "identity": "BG",
+      "manaNeeded": "",
+      "manaValueNeeded": 0,
+      "easyPrerequisites": "",
+      "notablePrerequisites": "",
+      "description": "Activate Phyrexian Altar by sacrificing the creature with persist.\nWhen that creature dies, its persist ability triggers, returning it from your graveyard to the battlefield with a -1/-1 counter on it.\nWhen that creature enters, Stalwart Successor triggers, putting a +1/+1 counter on it.\nRemove a +1/+1 and a -1/-1 counter from that creature as a state-based action.\nRepeat.",
+      "notes": "",
+      "popularity": 122,
+      "spoiler": false,
+      "bracketTag": "E",
+      "legalities": {
+        "commander": true,
+        "pauperCommanderMain": false,
+        "pauperCommander": false,
+        "oathbreaker": true,
+        "predh": false,
+        "standardBrawl": false,
+        "brawl": false,
+        "competitiveBrawl": false,
+        "alchemy": false,
+        "vintage": true,
+        "legacy": true,
+        "premodern": false,
+        "modern": false,
+        "pioneer": false,
+        "standard": false,
+        "pauper": false
+      },
+      "prices": {
+        "tcgplayer": "56.35",
+        "cardkingdom": "60.34",
+        "cardmarket": "34.19"
+      },
+      "variantCount": 20
+    }
+  ]
+}

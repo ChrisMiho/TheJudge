@@ -1,0 +1,29 @@
+{
+  "id": "commander-spellbook-unresolved-template",
+  "description": "Game mode where the only gap is a template with no authoritative card list: the candidate can never be fully assigned.",
+  "request": {
+    "question": "Does this loop go infinite?",
+    "gameContext": {
+      "playerCount": 2,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 20 },
+        { "label": "Player 2", "lifeTotal": 20 }
+      ],
+      "turnPhase": "main_1",
+      "selectedZones": ["battlefield"],
+      "zones": {
+        "battlefield": [
+          {
+            "cardId": "eval-oracle-d",
+            "name": "Swarming Scute",
+            "oracleText": "Landfall — Whenever a land enters under your control, create a token copy.",
+            "imageUrl": "",
+            "manaValue": 2,
+            "owner": "Player 1",
+            "targets": []
+          }
+        ]
+      }
+    }
+  }
+}

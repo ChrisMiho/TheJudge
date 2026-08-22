@@ -1,0 +1,29 @@
+{
+  "id": "commander-spellbook-partial-explicit-intent",
+  "description": "Game mode with one ingredient missing and explicit combo intent: a partial candidate names the missing piece.",
+  "request": {
+    "question": "Do I have a combo on board right now?",
+    "gameContext": {
+      "playerCount": 2,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 20 },
+        { "label": "Player 2", "lifeTotal": 20 }
+      ],
+      "turnPhase": "main_1",
+      "selectedZones": ["battlefield"],
+      "zones": {
+        "battlefield": [
+          {
+            "cardId": "eval-oracle-a",
+            "name": "Tidal Oracle",
+            "oracleText": "When this enters, look at the top of your library.",
+            "imageUrl": "",
+            "manaValue": 2,
+            "owner": "Player 1",
+            "targets": []
+          }
+        ]
+      }
+    }
+  }
+}

@@ -44,3 +44,27 @@ Static Commander Spellbook catalog ingestion and context-aware prompt enrichment
 - Notes:
   - a broad answer-quality baseline across the whole fixture corpus is deliberately out of scope here and remains its own work
   - automated answer-quality gating in `quality:check` is an explicit non-goal, not an unbuilt future step
+
+### DEC-162
+- Decision: The Commander Spellbook corpus is built from upstream's **public bulk export** as its sole source, committed as **gzipped** artifacts, and every claim about upstream's schema is verified against **real upstream bytes** rather than against hand-authored fixtures. Upstream renders **camelCase** on the wire; the snake_case names in its Python serializers never reach a client. Invoking the repository's `data:refresh` command constitutes the explicit human approval REQ-093 requires, so the combo download joins that chain alongside the existing Scryfall and Comprehensive Rules refreshes. The paginated REST walk is removed rather than retained as a fallback.
+- Status: confirmed
+- Context: The paginated implementation of REQ-093 could not process real upstream data at all: it read `oracle_id`, `zone_locations`, `mana_needed`, `must_be_commander`, `easy_prerequisites`, `notable_prerequisites`, and `scryfall_api`, none of which upstream emits — Django REST Framework's `CamelCaseJSONRenderer` renames every serializer field at the render layer, below where the fields are declared. Reading the upstream `VariantSerializer` was not sufficient to catch this, and `integrations-and-data.md` had recorded the incorrect snake_case claim as product truth, so the implementation followed the PRD faithfully into the defect. The error survived 22 passing build tests because the committed fixtures were hand-authored in the same incorrect casing, and survived the committed corpus because that corpus was an empty bootstrap artifact whose zero variants meant the parser never met real data on any path. Separately, the paginated walk proved unusable in practice: upstream's load balancer throttled a sustained cursor walk with a bodiless `429` carrying no `Retry-After` after 13,600 variants. The bulk export supplies the same reviewed data in one unthrottled request.
+- Impact:
+  - the refresh downloads one bulk document instead of walking a cursor; the ~1,055 paginated requests, their pacing, and their resume/retry machinery are removed
+  - the corpus covers all 105,448 reviewed `OK` variants the export publishes; the export contains no `EXAMPLE` variants, so DEC-116's `EXAMPLE` rejection is retained defensively but is not exercised by this source
+  - committed artifacts are gzipped, holding the full corpus in 11.3 MB (9.6 MB detail + 1.7 MB index) rather than the 164 MB an uncompressed artifact would add to the repository; measured over all 105,447 real variants
+  - decompression is not a meaningful cost: loading the full gzipped catalog measured 283 ms against 241 ms uncompressed. The binding constraint is resident memory — the full detail catalog retains 254 MB of heap (~868 MB RSS) against 18 MB (~95 MB RSS) for the index alone, while at most five variants ever enter a prompt, so whether detail is held resident or read lazily is a sizing decision to settle explicitly rather than an optimization to defer
+  - no coverage is traded for size: the 61% of variants with no tracked deck popularity are exactly the obscure pairings an explicit combo question is most likely to name, so a popularity cap is rejected
+  - fixtures are derived from a real upstream response, so a future upstream rename fails the suite instead of passing it
+  - the bulk document's own `timestamp` and `version` satisfy REQ-093's snapshot-provenance requirement directly
+  - running `data:refresh` refreshes combo data as a normal part of the chain; the standalone combo script keeps its `--confirm-live-calls` flag for direct invocation
+  - no request/response contract, Zod schema, route, provider selection, or prompt-section semantics change; DEC-116's gating, five-variant cap, and never-"complete" rendering are untouched
+- Related requirements:
+  - REQ-093
+  - REQ-094
+  - REQ-095
+  - REQ-146
+- Notes:
+  - corrects `integrations-and-data.md`'s previous statement that upstream serializes snake_case; that line was the proximate cause of the defect and is replaced, not merely supplemented
+  - the bulk export is regenerated daily and served outside the throttled API host, so refresh cost is a sub-second download rather than a multi-window retry exercise
+  - popularity is retained per variant as ranking input; it is not used to decide corpus membership
