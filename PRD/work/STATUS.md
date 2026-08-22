@@ -24,5 +24,3 @@ Do not rename package folders to encode status.
 ## owner-action
 
 ## deferred
-
-- [commander-spellbook-combos](./commander-spellbook-combos/)
