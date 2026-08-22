@@ -1,19 +1,19 @@
 import assert from "node:assert/strict"
+import zlib from "node:zlib"
 import test from "node:test"
 
 import {
+  BULK_EXPORT_URL,
   CONFIRM_FLAG,
   MAX_FETCH_ATTEMPTS,
-  RESUME_FLAG,
   RETRY_BASE_DELAY_MS,
-  VARIANTS_ENDPOINT,
-  VARIANTS_REQUEST_DELAY_MS,
   backoffDelayMs,
+  collectTemplates,
   describePlan,
+  fetchBufferWithRetry,
   fetchJsonWithRetry,
   parseRefreshArgs,
-  parseRetryAfterMs,
-  resumeStateFromStagedPages
+  parseRetryAfterMs
 } from "./refresh-commander-spellbook-data.mjs"
 
 /** Minimal stand-in for the parts of `Response` the retry loop touches. */
@@ -34,23 +34,15 @@ function recordingSleep() {
 }
 
 test("the refresh makes no request without the confirmation flag", () => {
-  assert.deepEqual(parseRefreshArgs([]), { confirmed: false, resume: false })
-  assert.deepEqual(parseRefreshArgs([CONFIRM_FLAG]), { confirmed: true, resume: false })
-  assert.deepEqual(parseRefreshArgs([CONFIRM_FLAG, RESUME_FLAG]), { confirmed: true, resume: true })
-  // Resume alone is still gated by REQ-093 approval.
-  assert.deepEqual(parseRefreshArgs([RESUME_FLAG]), { confirmed: false, resume: true })
+  assert.deepEqual(parseRefreshArgs([]), { confirmed: false })
+  assert.deepEqual(parseRefreshArgs([CONFIRM_FLAG]), { confirmed: true })
 })
 
-test("the dry-run plan documents both the confirmation and resume flags", () => {
+test("the dry-run plan documents the bulk export URL and the confirmation flag", () => {
   const plan = describePlan()
   assert.match(plan, /no request has been made/)
+  assert.ok(plan.includes(BULK_EXPORT_URL))
   assert.ok(plan.includes(CONFIRM_FLAG))
-  assert.ok(plan.includes(RESUME_FLAG))
-})
-
-test("the variants cursor is paced more slowly than Scryfall's allowance", () => {
-  // Regression guard: a 100 ms pace is what the upstream ELB throttled with a 429.
-  assert.ok(VARIANTS_REQUEST_DELAY_MS >= 250)
 })
 
 test("a 429 is retried and the eventual payload is returned", async () => {
@@ -158,70 +150,48 @@ test("backoff grows exponentially and stays within its jitter band", () => {
   assert.equal(backoffDelayMs(1, RETRY_BASE_DELAY_MS, () => 1), RETRY_BASE_DELAY_MS)
 })
 
-test("resume with no staged pages starts from the feed head", () => {
-  const state = resumeStateFromStagedPages([], () => {
-    throw new Error("should not read")
-  })
-  assert.deepEqual(state, { pageCount: 0, variantCount: 0, nextUrl: VARIANTS_ENDPOINT, complete: false })
-})
+test("a 429 is retried and the eventual gzip payload is returned as a buffer", async () => {
+  const { waits, sleep } = recordingSleep()
+  const original = Buffer.from(JSON.stringify({ timestamp: "t", version: "v", variants: [] }))
+  const gzipped = zlib.gzipSync(original)
+  const statuses = [429, 200]
+  let calls = 0
 
-test("resume continues from the last staged page's cursor", () => {
-  const pages = {
-    "page-0001.json": { results: [{ id: 1 }, { id: 2 }], next: "https://example.test/?offset=2" },
-    "page-0002.json": { results: [{ id: 3 }], next: "https://example.test/?offset=3" }
-  }
-
-  const state = resumeStateFromStagedPages(Object.keys(pages), (name) => pages[name])
-
-  assert.deepEqual(state, {
-    pageCount: 2,
-    variantCount: 3,
-    nextUrl: "https://example.test/?offset=3",
-    complete: false
-  })
-})
-
-test("a staged run whose last page has no cursor is already complete", () => {
-  const pages = {
-    "page-0001.json": { results: [{ id: 1 }], next: "https://example.test/?offset=1" },
-    "page-0002.json": { results: [{ id: 2 }], next: null }
-  }
-
-  const state = resumeStateFromStagedPages(Object.keys(pages), (name) => pages[name])
-
-  assert.equal(state.complete, true)
-  assert.equal(state.nextUrl, null)
-  assert.equal(state.variantCount, 2)
-})
-
-test("a torn final page is dropped and the run resumes from its predecessor", () => {
-  const pages = {
-    "page-0001.json": { results: [{ id: 1 }], next: "https://example.test/?offset=1" },
-    "page-0002.json": null // interrupted mid-write
-  }
-
-  const state = resumeStateFromStagedPages(Object.keys(pages), (name) => {
-    if (pages[name] === null) throw new SyntaxError("Unexpected end of JSON input")
-    return pages[name]
+  const buffer = await fetchBufferWithRetry(BULK_EXPORT_URL, {
+    fetchImpl: async () =>
+      statuses[calls++] === 429
+        ? response(429)
+        : { ok: true, status: 200, statusText: "200", headers: { get: () => null }, arrayBuffer: async () => gzipped },
+    sleepImpl: sleep,
+    random: () => 0.5
   })
 
-  assert.equal(state.pageCount, 1)
-  assert.equal(state.variantCount, 1)
-  assert.equal(state.nextUrl, "https://example.test/?offset=1")
+  assert.equal(calls, 2)
+  assert.ok(zlib.gunzipSync(buffer).equals(original))
+  assert.equal(waits.length, 1)
 })
 
-test("a corrupt page that is not the last one fails loudly instead of silently truncating", () => {
-  const pages = {
-    "page-0001.json": null,
-    "page-0002.json": { results: [{ id: 2 }], next: null }
-  }
+test("collectTemplates reads a flat variant array, not a paginated results wrapper", () => {
+  const variants = [
+    { id: "1", requires: [{ template: { id: 5, name: "Persist Creature", scryfallApi: "https://api.scryfall.com/x" } }] },
+    { id: "2", requires: [{ template: { id: 5, name: "Persist Creature", scryfallApi: "https://api.scryfall.com/x" } }] },
+    { id: "3", requires: [{ template: { id: 9, name: "No query", scryfallApi: null } }] },
+    { id: "4", requires: [] }
+  ]
 
-  assert.throws(
-    () =>
-      resumeStateFromStagedPages(Object.keys(pages), (name) => {
-        if (pages[name] === null) throw new SyntaxError("Unexpected end of JSON input")
-        return pages[name]
-      }),
-    /page-0001\.json is unreadable/
+  const templates = collectTemplates(variants)
+
+  assert.deepEqual(
+    templates.map((template) => template.templateId),
+    [5, 9]
   )
+  assert.equal(templates[0].scryfallApi, "https://api.scryfall.com/x")
+  assert.equal(templates[1].scryfallApi, null)
+})
+
+test("collectTemplates never reads the Python serializer's snake_case scryfall_api", () => {
+  const templates = collectTemplates([
+    { id: "1", requires: [{ template: { id: 1, name: "X", scryfall_api: "https://api.scryfall.com/wrong-case" } }] }
+  ])
+  assert.equal(templates[0].scryfallApi, null)
 })

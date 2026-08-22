@@ -101,11 +101,13 @@ export function buildEvalComboCatalog(variants: ComboVariant[]): ComboCatalog {
     }
   }
 
+  const byId = new Map(variants.map((variant) => [variant.variantId, variant]));
+
   return {
-    variants: new Map(variants.map((variant) => [variant.variantId, variant])),
     byOracleId,
     byTemplateOracleId,
-    variantCount: variants.length
+    variantCount: variants.length,
+    getVariant: (variantId) => byId.get(variantId)
   };
 }
 

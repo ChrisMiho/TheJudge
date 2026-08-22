@@ -41,11 +41,13 @@ function catalogOf(variants: ComboVariant[]): ComboCatalog {
       byOracleId.set(ingredient.cardId, [...(byOracleId.get(ingredient.cardId) ?? []), entry.variantId]);
     }
   }
+  const byId = new Map(variants.map((entry) => [entry.variantId, entry]));
+
   return {
-    variants: new Map(variants.map((entry) => [entry.variantId, entry])),
     byOracleId,
     byTemplateOracleId: new Map(),
-    variantCount: variants.length
+    variantCount: variants.length,
+    getVariant: (variantId) => byId.get(variantId)
   };
 }
 

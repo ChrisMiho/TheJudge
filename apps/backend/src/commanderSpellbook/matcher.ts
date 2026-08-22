@@ -329,7 +329,7 @@ export function selectComboCandidates(catalog: ComboCatalog, request: ComboMatch
   const anchorCardIds = resolveAnchorCardIds(request.instances, request.questionText);
 
   const candidates = collectCandidateVariantIds(catalog, searchCardIds)
-    .map((variantId) => catalog.variants.get(variantId))
+    .map((variantId) => catalog.getVariant(variantId))
     .filter((variant): variant is ComboVariant => variant !== undefined)
     .map((variant) => buildCandidate(variant, request, anchorCardIds));
 

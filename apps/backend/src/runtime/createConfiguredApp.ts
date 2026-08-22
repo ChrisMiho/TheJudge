@@ -31,8 +31,8 @@ export function createConfiguredApp(repoRoot: string, env: NodeJS.ProcessEnv = p
   let comboCatalog: ComboCatalog | undefined;
   if (config.comboEnrichmentEnabled) {
     comboCatalog = loadComboCatalog(
-      resolve(repoRoot, "apps/backend/data/commanderSpellbookCombos.json"),
-      resolve(repoRoot, "apps/backend/data/commanderSpellbookComboIndex.json")
+      resolve(repoRoot, "apps/backend/data/commanderSpellbookCombos.json.gz"),
+      resolve(repoRoot, "apps/backend/data/commanderSpellbookComboIndex.json.gz")
     );
   }
 

@@ -1,14 +1,15 @@
 import fs from "node:fs"
 import path from "node:path"
+import zlib from "node:zlib"
 import { pathToFileURL } from "node:url"
 import { format as prettierFormat } from "prettier"
 
 const defaultRawInputDir = path.resolve("apps/backend/data/commander-spellbook")
-const defaultDetailPath = path.resolve("apps/backend/data/commanderSpellbookCombos.json")
-const defaultIndexPath = path.resolve("apps/backend/data/commanderSpellbookComboIndex.json")
+const defaultDetailPath = path.resolve("apps/backend/data/commanderSpellbookCombos.json.gz")
+const defaultIndexPath = path.resolve("apps/backend/data/commanderSpellbookComboIndex.json.gz")
 
 export const SOURCE_NAME = "Commander Spellbook"
-export const SOURCE_URL = "https://backend.commanderspellbook.com/"
+export const SOURCE_URL = "https://json.commanderspellbook.com/variants.json.gz"
 export const COMBO_PERMALINK_PREFIX = "https://commanderspellbook.com/combo/"
 
 /**
@@ -38,12 +39,18 @@ export const KNOWN_VARIANT_STATUSES = Object.freeze(["N", "D", "NR", "OK", "E", 
 export const ACCEPTED_VARIANT_STATUS = "OK"
 export const EXAMPLE_VARIANT_STATUS = "E"
 
-/** Editorial fields upstream nulls for EXAMPLE variants; OK variants must carry strings. */
+/**
+ * Editorial fields upstream nulls for EXAMPLE variants; OK variants must carry
+ * strings. Upstream renders these **camelCase** on the wire — DRF's
+ * `CamelCaseJSONRenderer` renames every serializer field above the model — so
+ * the upstream key here must never regress to the snake_case name its Python
+ * serializer declares (DEC-162).
+ */
 const REQUIRED_TEXT_FIELDS = Object.freeze([
   ["description", "steps"],
-  ["mana_needed", "manaNeeded"],
-  ["easy_prerequisites", "easyPrerequisites"],
-  ["notable_prerequisites", "notablePrerequisites"],
+  ["manaNeeded", "manaNeeded"],
+  ["easyPrerequisites", "easyPrerequisites"],
+  ["notablePrerequisites", "notablePrerequisites"],
   ["notes", "notes"]
 ])
 
@@ -103,7 +110,7 @@ export function projectIngredientState(rawIngredient, zones) {
   for (const zone of zones) {
     const stateKey = CARD_STATE_ZONE_KEYS[zone]
     if (!stateKey) continue
-    const rawState = rawIngredient[`${stateKey}_card_state`]
+    const rawState = rawIngredient[`${stateKey}CardState`]
     if (typeof rawState === "string" && rawState.trim().length > 0) {
       cardState[stateKey] = rawState
     }
@@ -112,9 +119,9 @@ export function projectIngredientState(rawIngredient, zones) {
 }
 
 function readIngredientZones(rawIngredient, context) {
-  const rawZones = rawIngredient?.zone_locations
+  const rawZones = rawIngredient?.zoneLocations
   if (!Array.isArray(rawZones) || rawZones.length === 0) {
-    throw new Error(`${context}: zone_locations must be a non-empty array.`)
+    throw new Error(`${context}: zoneLocations must be a non-empty array.`)
   }
   for (const zone of rawZones) {
     if (!ZONE_IDS.includes(zone)) {
@@ -134,9 +141,9 @@ function readIngredientQuantity(rawIngredient, context) {
 
 function projectCardIngredient(rawIngredient, variantId) {
   const context = `Commander Spellbook variant ${variantId} card ingredient`
-  const cardId = rawIngredient?.card?.oracle_id
+  const cardId = rawIngredient?.card?.oracleId
   if (typeof cardId !== "string" || cardId.length === 0) {
-    throw new Error(`${context}: card.oracle_id is required.`)
+    throw new Error(`${context}: card.oracleId is required.`)
   }
   const cardName = rawIngredient?.card?.name
   if (typeof cardName !== "string" || cardName.length === 0) {
@@ -150,7 +157,7 @@ function projectCardIngredient(rawIngredient, variantId) {
     quantity: readIngredientQuantity(rawIngredient, `${context} ${cardId}`),
     zones,
     cardState: projectIngredientState(rawIngredient, zones),
-    mustBeCommander: rawIngredient?.must_be_commander === true
+    mustBeCommander: rawIngredient?.mustBeCommander === true
   }
 }
 
@@ -166,10 +173,10 @@ function projectTemplateIngredient(rawIngredient, variantId, templateExpansions)
   }
   const zones = readIngredientZones(rawIngredient, `${context} ${templateId}`)
 
-  // `scryfall_api` is the only authoritative expansion upstream exposes; no public
+  // `scryfallApi` is the only authoritative expansion upstream exposes; no public
   // serializer surfaces Template.replacements, so a template without it stays
   // unresolved rather than being hand-mapped.
-  const scryfallApi = typeof rawIngredient.template.scryfall_api === "string" ? rawIngredient.template.scryfall_api : null
+  const scryfallApi = typeof rawIngredient.template.scryfallApi === "string" ? rawIngredient.template.scryfallApi : null
   const expansion = templateExpansions.get(templateId)
   const oracleIds = expansion ? [...expansion].sort((a, b) => a.localeCompare(b)) : []
   const unresolved = oracleIds.length === 0
@@ -180,7 +187,7 @@ function projectTemplateIngredient(rawIngredient, variantId, templateExpansions)
     quantity: readIngredientQuantity(rawIngredient, `${context} ${templateId}`),
     zones,
     cardState: projectIngredientState(rawIngredient, zones),
-    mustBeCommander: rawIngredient?.must_be_commander === true,
+    mustBeCommander: rawIngredient?.mustBeCommander === true,
     scryfallApi,
     unresolved,
     oracleIds
@@ -270,6 +277,45 @@ export function partitionVariantsByStatus(rawVariants) {
   return { accepted, rejected }
 }
 
+/**
+ * Gzip-compress each variant's JSON **individually** and concatenate the
+ * compressed members into one buffer, rather than gzipping one JSON array as
+ * a single stream. Gzip members are self-contained: decompressing a byte
+ * slice that holds exactly one member never touches any other member's
+ * bytes. That is what lets the runtime loader (slice H) fetch one variant's
+ * detail via a positional file read plus a single `gunzipSync`, without ever
+ * holding the other ~105k variants' bytes resident — the full detail catalog
+ * measured ~868MB RSS in the DEC-162 amendment, against ~95MB RSS for the
+ * index alone, and at most five variants ever enter a prompt.
+ *
+ * The returned `detailOffsets` (`variantId -> [offset, length]`) is what the
+ * index artifact carries so the loader never has to scan the detail file to
+ * find a variant.
+ */
+export function serializeVariantDetail(variants) {
+  const chunks = []
+  const detailOffsets = {}
+  let cursor = 0
+  for (const variant of variants) {
+    const compressed = zlib.gzipSync(Buffer.from(JSON.stringify(variant), "utf8"))
+    detailOffsets[variant.variantId] = [cursor, compressed.length]
+    chunks.push(compressed)
+    cursor += compressed.length
+  }
+  return { detailBuffer: Buffer.concat(chunks), detailOffsets }
+}
+
+/**
+ * Decompress one variant's record from a detail buffer at its recorded
+ * offset/length. Test and tooling use only: the runtime loader does the
+ * equivalent read lazily from disk, one variant at a time, never from a
+ * buffer holding the whole corpus.
+ */
+export function readVariantDetail(detailBuffer, offset, length) {
+  const member = detailBuffer.subarray(offset, offset + length)
+  return JSON.parse(zlib.gunzipSync(member).toString("utf8"))
+}
+
 /** @param {{ rawVariants: unknown[], templateExpansions: Map<number, string[]>, snapshot: object }} options */
 export function buildComboArtifacts({ rawVariants, templateExpansions, snapshot }) {
   const { accepted, rejected } = partitionVariantsByStatus(rawVariants)
@@ -347,8 +393,10 @@ export function buildComboArtifacts({ rawVariants, templateExpansions, snapshot 
     }
   }
 
+  const { detailBuffer, detailOffsets } = serializeVariantDetail(variants)
+
   return {
-    detail: { manifest, variants },
+    detailBuffer,
     index: {
       manifest,
       byOracleId: toSortedMembership(byOracleId),
@@ -356,32 +404,32 @@ export function buildComboArtifacts({ rawVariants, templateExpansions, snapshot 
       templates: serializedTemplates,
       unresolvedTemplateIds: Object.values(serializedTemplates)
         .filter((template) => template.unresolved)
-        .map((template) => template.templateId)
+        .map((template) => template.templateId),
+      detailOffsets: sortedObject(detailOffsets)
     }
   }
 }
 
 /**
  * Read the gitignored raw refresh output. Returns `null` when no refresh has run,
- * which the caller treats as "preserve whatever is already committed".
+ * which the caller treats as "preserve whatever is already committed". The bulk
+ * export is one file, not a paginated cursor walk (DEC-162): `variants.json`
+ * carries the whole `{ timestamp, version, variants: [...] }` envelope.
  */
 export function readRawInputs(rawInputDir) {
   const manifestPath = path.join(rawInputDir, "refresh-manifest.json")
-  const variantPaths = listJsonFiles(path.join(rawInputDir, "variants"))
+  const variantsPath = path.join(rawInputDir, "variants.json")
 
-  if (!fs.existsSync(manifestPath) || variantPaths.length === 0) {
+  if (!fs.existsSync(manifestPath) || !fs.existsSync(variantsPath)) {
     return null
   }
 
   const snapshot = readJsonFile(manifestPath)
-  const rawVariants = []
-  for (const variantPath of variantPaths) {
-    const page = readJsonFile(variantPath)
-    if (!Array.isArray(page?.results)) {
-      throw new Error(`Malformed Commander Spellbook raw input ${variantPath}: expected a "results" array.`)
-    }
-    rawVariants.push(...page.results)
+  const envelope = readJsonFile(variantsPath)
+  if (!Array.isArray(envelope?.variants)) {
+    throw new Error(`Malformed Commander Spellbook raw input ${variantsPath}: expected a "variants" array.`)
   }
+  const rawVariants = envelope.variants
 
   const templateExpansions = new Map()
   for (const expansionPath of listJsonFiles(path.join(rawInputDir, "template-expansions"))) {
@@ -400,23 +448,48 @@ export function readRawInputs(rawInputDir) {
   return { snapshot, rawVariants, templateExpansions }
 }
 
-async function writeArtifact(filePath, value) {
+/** The index stays a single gzip-compressed JSON document — it is read whole, every time. */
+async function writeIndexArtifact(filePath, value) {
   ensureParentDirectory(filePath)
-  const output = await prettierFormat(JSON.stringify(value), { parser: "json", printWidth: 120 })
-  fs.writeFileSync(filePath, output)
-  return Buffer.byteLength(output)
+  const formatted = await prettierFormat(JSON.stringify(value), { parser: "json", printWidth: 120 })
+  const compressed = zlib.gzipSync(Buffer.from(formatted, "utf8"))
+  fs.writeFileSync(filePath, compressed)
+  return compressed.length
 }
 
-function validateExistingArtifact(filePath, label) {
+/** The detail artifact is already compressed bytes (concatenated gzip members); write it verbatim. */
+function writeDetailArtifact(filePath, detailBuffer) {
+  ensureParentDirectory(filePath)
+  fs.writeFileSync(filePath, detailBuffer)
+  return detailBuffer.length
+}
+
+function validateExistingIndexArtifact(filePath) {
   if (!fs.existsSync(filePath)) {
-    console.warn(`No existing ${label} artifact found to preserve: ${filePath}`)
+    console.warn(`No existing combo index artifact found to preserve: ${filePath}`)
     return false
   }
-  const artifact = JSON.parse(fs.readFileSync(filePath, "utf8"))
+  const artifact = JSON.parse(zlib.gunzipSync(fs.readFileSync(filePath)).toString("utf8"))
   if (typeof artifact !== "object" || artifact === null || Array.isArray(artifact)) {
-    throw new Error(`Unexpected ${label} artifact shape in ${filePath}; expected a JSON object.`)
+    throw new Error(`Unexpected combo index artifact shape in ${filePath}; expected a JSON object.`)
   }
-  console.log(`Preserved existing ${label} artifact: ${filePath} (${formatBytes(fs.statSync(filePath).size)}).`)
+  console.log(`Preserved existing combo index artifact: ${filePath} (${formatBytes(fs.statSync(filePath).size)}).`)
+  return true
+}
+
+function validateExistingDetailArtifact(filePath) {
+  if (!fs.existsSync(filePath)) {
+    console.warn(`No existing combo detail artifact found to preserve: ${filePath}`)
+    return false
+  }
+  const bytes = fs.readFileSync(filePath)
+  if (bytes.length > 0) {
+    // Decompresses every concatenated gzip member and throws on corruption.
+    // The decompressed bytes are not one JSON document — each member is its
+    // own record — so this validates well-formedness, not shape.
+    zlib.gunzipSync(bytes)
+  }
+  console.log(`Preserved existing combo detail artifact: ${filePath} (${formatBytes(bytes.length)}).`)
   return true
 }
 
@@ -430,8 +503,8 @@ export async function runBuild(options = {}) {
 
   if (!rawInputs) {
     console.warn(`Commander Spellbook raw inputs not found: ${rawInputDir}`)
-    const detailPresent = validateExistingArtifact(detailPath, "combo detail")
-    const indexPresent = validateExistingArtifact(indexPath, "combo index")
+    const detailPresent = validateExistingDetailArtifact(detailPath)
+    const indexPresent = validateExistingIndexArtifact(indexPath)
 
     if (detailPresent && indexPresent) {
       return { preserved: true, variantCount: null }
@@ -439,29 +512,29 @@ export async function runBuild(options = {}) {
 
     // Bootstrap: emit a valid empty corpus so the runtime loader and `data:build`
     // have a well-formed artifact before the owner-approved production refresh.
-    const { detail, index } = buildComboArtifacts({
+    const { detailBuffer, index } = buildComboArtifacts({
       rawVariants: [],
       templateExpansions: new Map(),
       snapshot: { snapshotAt: null, license: null }
     })
-    await writeArtifact(detailPath, detail)
-    await writeArtifact(indexPath, index)
+    writeDetailArtifact(detailPath, detailBuffer)
+    await writeIndexArtifact(indexPath, index)
     console.log(`Wrote empty Commander Spellbook corpus placeholder: ${detailPath}, ${indexPath}`)
     return { preserved: false, variantCount: 0 }
   }
 
-  const { detail, index } = buildComboArtifacts(rawInputs)
+  const { detailBuffer, index } = buildComboArtifacts(rawInputs)
 
-  const detailBytes = await writeArtifact(detailPath, detail)
-  const indexBytes = await writeArtifact(indexPath, index)
+  const detailBytes = writeDetailArtifact(detailPath, detailBuffer)
+  const indexBytes = await writeIndexArtifact(indexPath, index)
 
-  console.log(`Commander Spellbook variants: ${detail.variants.length}`)
-  console.log(`Rejected non-OK variants: ${detail.manifest.rejectedVariantCount}`)
+  console.log(`Commander Spellbook variants: ${index.manifest.variantCount}`)
+  console.log(`Rejected non-OK variants: ${index.manifest.rejectedVariantCount}`)
   console.log(`Unresolved templates: ${index.unresolvedTemplateIds.length}`)
   console.log(`Detail bytes: ${detailBytes} (${formatBytes(detailBytes)}); wrote ${detailPath}`)
   console.log(`Index bytes: ${indexBytes} (${formatBytes(indexBytes)}); wrote ${indexPath}`)
 
-  return { preserved: false, variantCount: detail.variants.length }
+  return { preserved: false, variantCount: index.manifest.variantCount }
 }
 
 const invokedPath = process.argv[1] ? pathToFileURL(process.argv[1]).href : ""

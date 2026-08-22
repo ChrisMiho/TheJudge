@@ -1,0 +1,40 @@
+{
+  "timestamp": "2026-08-11T00:00:00.000Z",
+  "version": "6.2.5",
+  "variants": [
+    {
+      "id": "9000-1000",
+      "status": "PENDING",
+      "identity": "R",
+      "popularity": 10,
+      "manaNeeded": "{R}",
+      "manaValueNeeded": 1,
+      "easyPrerequisites": "",
+      "notablePrerequisites": "",
+      "description": "Unrecognized upstream status must fail the build loudly.",
+      "notes": "",
+      "produces": [],
+      "uses": [
+        {
+          "card": {
+            "id": 601,
+            "name": "Unrecognized Status Card",
+            "oracleId": "cccccccc-0000-4000-8000-000000000001",
+            "typeLine": "Creature"
+          },
+          "zoneLocations": ["B"],
+          "battlefieldCardState": "",
+          "exileCardState": "",
+          "libraryCardState": "",
+          "graveyardCardState": "",
+          "mustBeCommander": false,
+          "quantity": 1,
+          "usedFace": "front"
+        }
+      ],
+      "requires": [],
+      "of": [],
+      "includes": []
+    }
+  ]
+}

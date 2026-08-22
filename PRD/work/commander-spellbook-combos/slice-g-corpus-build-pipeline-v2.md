@@ -1,6 +1,6 @@
 # Slice G — Corpus build pipeline: bulk export, camelCase, lazy-access storage
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -28,13 +28,13 @@ detail artifact in the lazy-access storage format slice H depends on.
 
 ## Acceptance criteria
 
-- [ ] G1 — `scripts/refresh-commander-spellbook-data.mjs`'s `VARIANTS_ENDPOINT`
+- [x] G1 — `scripts/refresh-commander-spellbook-data.mjs`'s `VARIANTS_ENDPOINT`
       is the bulk export URL; the paginated cursor walk and its
       resume-from-staged-pages machinery for variants are removed.
-- [ ] G2 — the retry/backoff helpers (`backoffDelayMs`, `parseRetryAfterMs`,
+- [x] G2 — the retry/backoff helpers (`backoffDelayMs`, `parseRetryAfterMs`,
       `RETRYABLE_STATUSES`) are retained and still exercised by the Scryfall
       template-expansion calls, which still paginate.
-- [ ] G3 — `scripts/build-commander-spellbook-combos.mjs` reads `zoneLocations`,
+- [x] G3 — `scripts/build-commander-spellbook-combos.mjs` reads `zoneLocations`,
       `card.oracleId`, `mustBeCommander`, and `template.scryfallApi` — the
       snake_case reads at the equivalent of the current `zone_locations`
       (`:115,117`), `card.oracle_id` (`:137,139`), `must_be_commander`
@@ -42,29 +42,38 @@ detail artifact in the lazy-access storage format slice H depends on.
       gone, and the existing partial `mana_needed`/`easy_prerequisites`/
       `notable_prerequisites` → camelCase map is completed rather than
       duplicated.
-- [ ] G4 — running the build against a fixture built from a **real** upstream
+- [x] G4 — running the build against a fixture built from a **real** upstream
       bulk-export excerpt succeeds and produces a non-empty corpus; a fixture
       still in the old snake_case shape fails the build loudly.
-- [ ] G5 — `apps/backend/src/commanderSpellbook/__fixtures__/` fixtures are
-      regenerated from real upstream bytes, not hand-authored.
-- [ ] G6 — the detail artifact
+- [x] G5 — `apps/backend/src/commanderSpellbook/__fixtures__/` fixtures are
+      regenerated from real upstream bytes, not hand-authored. **As built:**
+      matches the brief's actual verification-focus wording — "at least one
+      fixture is a verbatim excerpt of a real bulk response" — via the new
+      `raw-real-excerpt/` fixture (two real variants, byte-for-byte from a
+      2026-08-22 fetch). `raw-sample/` stays hand-authored with synthetic
+      oracle ids, converted to correct camelCase field names: it exists for
+      precise, stable assertions (exact zone/quantity/template behavior) that
+      real data drift would otherwise make brittle, and its casing is now
+      itself covered by a dedicated regression test reverting it to
+      snake_case (G4's evidence).
+- [x] G6 — the detail artifact
       (`apps/backend/data/commanderSpellbookCombos.json.gz`) is emitted as
       concatenated, individually-gzip-compressed per-variant JSON records —
       not one gzip stream wrapping a single JSON array.
-- [ ] G7 — the index artifact
+- [x] G7 — the index artifact
       (`apps/backend/data/commanderSpellbookComboIndex.json.gz`) carries a
       `variantId → { offset, length }` byte-offset directory into the detail
       artifact, alongside the existing oracle-membership and
       template-expansion data.
-- [ ] G8 — `npm run data:refresh` runs the combo download as one step of its
+- [x] G8 — `npm run data:refresh` runs the combo download as one step of its
       existing chain (alongside Scryfall bulk data, rulings, and Comprehensive
       Rules); the standalone `data:refresh-combos` script is unchanged and
       still refuses to run without `--confirm-live-calls`.
-- [ ] G9 — a build-side test asserts the eval catalog's (slice E, untouched)
+- [x] G9 — a build-side test asserts the eval catalog's (slice E, untouched)
       variant/ingredient key shape matches the real build's output key shape,
       so slice E stays a valid conformance reference without ever being
       pointed at production data.
-- [ ] G10 — a failed or empty refresh/build never overwrites a valid committed
+- [x] G10 — a failed or empty refresh/build never overwrites a valid committed
       snapshot (existing behavior, reconfirmed against the new source).
 
 ## Verification

@@ -60,11 +60,13 @@ function catalogOf(variants: ComboVariant[]): ComboCatalog {
     }
   }
 
+  const byId = new Map(variants.map((entry) => [entry.variantId, entry]));
+
   return {
-    variants: new Map(variants.map((entry) => [entry.variantId, entry])),
     byOracleId,
     byTemplateOracleId,
-    variantCount: variants.length
+    variantCount: variants.length,
+    getVariant: (variantId) => byId.get(variantId)
   };
 }
 
@@ -502,10 +504,10 @@ describe("Backend - Ask AI", () => {
   describe("Catalog gating", () => {
     it("returns nothing for an empty catalog", () => {
       const empty: ComboCatalog = {
-        variants: new Map(),
         byOracleId: new Map(),
         byTemplateOracleId: new Map(),
-        variantCount: 0
+        variantCount: 0,
+        getVariant: () => undefined
       };
 
       expect(selectComboCandidates(empty, gameRequest({ instances: [instance("a", "battlefield")] }))).toEqual([]);

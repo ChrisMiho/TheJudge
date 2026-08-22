@@ -1,6 +1,7 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { gzipSync } from "node:zlib";
 import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createAskAiRequest, createZoneCardItem } from "../test-utils/requestBuilders.js";
@@ -46,8 +47,8 @@ let warnSpy: ReturnType<typeof vi.spyOn>;
 
 function comboPaths(root: string) {
   return {
-    detail: join(root, "apps/backend/data/commanderSpellbookCombos.json"),
-    index: join(root, "apps/backend/data/commanderSpellbookComboIndex.json")
+    detail: join(root, "apps/backend/data/commanderSpellbookCombos.json.gz"),
+    index: join(root, "apps/backend/data/commanderSpellbookComboIndex.json.gz")
   };
 }
 
@@ -56,11 +57,22 @@ beforeEach(() => {
   repoRoot = mkdtempSync(join(tmpdir(), "combo-runtime-"));
   mkdirSync(join(repoRoot, "apps/backend/data"), { recursive: true });
   const paths = comboPaths(repoRoot);
-  writeFileSync(paths.detail, JSON.stringify({ variants: [sampleVariant] }), "utf8");
+  // Mirrors the build script's lazy-access format: each variant gzip-compressed
+  // individually and concatenated, with the index carrying its byte offsets.
+  const compressed = gzipSync(Buffer.from(JSON.stringify(sampleVariant), "utf8"));
+  writeFileSync(paths.detail, compressed);
   writeFileSync(
     paths.index,
-    JSON.stringify({ byOracleId: { "oracle-1": ["1000-2000"] }, byTemplateOracleId: {} }),
-    "utf8"
+    gzipSync(
+      Buffer.from(
+        JSON.stringify({
+          byOracleId: { "oracle-1": ["1000-2000"] },
+          byTemplateOracleId: {},
+          detailOffsets: { "1000-2000": [0, compressed.length] }
+        }),
+        "utf8"
+      )
+    )
   );
   accessedPaths.length = 0;
 });

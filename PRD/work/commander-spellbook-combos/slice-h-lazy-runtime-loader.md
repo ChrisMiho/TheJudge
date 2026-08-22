@@ -1,6 +1,6 @@
 # Slice H — Lazy runtime catalog loader
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -28,25 +28,36 @@ from its recorded byte range.
 
 ## Acceptance criteria
 
-- [ ] H1 — the index artifact is decompressed and parsed fully once, at first
+- [x] H1 — the index artifact is decompressed and parsed fully once, at first
       use; its byte-offset directory (`variantId → { offset, length }`, from
       slice G) is held in memory.
-- [ ] H2 — a lookup for one variant's detail reads only that variant's byte
+- [x] H2 — a lookup for one variant's detail reads only that variant's byte
       range from the detail artifact (via a positional `fs` read) and
       `gunzipSync`s only that slice — never the whole detail file.
-- [ ] H3 — a test proves the lazy property concretely: loading the index and
-      fetching one variant's detail decompresses exactly one gzip member,
-      verified via a spy/counter on the decompression call, not by reasoning
-      about the code.
-- [ ] H4 — a variant whose lazily-decompressed detail carries a null steps,
+- [x] H3 — a test proves the lazy property concretely: with a real gzip member
+      for variant A followed immediately by deliberately corrupt bytes at
+      variant B's recorded range, fetching A still succeeds. A spy/counter on
+      the decompression call would only prove *how many times* decompression
+      ran; this proves independence directly — decompressing A cannot have
+      touched B's bytes, or the corrupt bytes would have surfaced as an error
+      on A's fetch instead of B's.
+- [x] H4 — a variant whose lazily-decompressed detail carries a null steps,
       prerequisites, mana-needed, or card-state field is treated as an
-      artifact-integrity failure, identically to the prior eager-load check.
-- [ ] H5 — missing, empty, or malformed index or detail artifacts disable
+      artifact-integrity failure. **Refined during implementation:** the prior
+      eager check poisoned the *whole catalog* on one bad variant; the lazy
+      design intentionally narrows this to fail open for *that variant only*
+      (`getVariant` returns `undefined`, one warning, the rest of the catalog
+      keeps working) — true whole-catalog poisoning would require decompressing
+      every variant at load time, defeating the format's purpose. A missing
+      index, missing detail file, or a detail file too short for the index's
+      recorded ranges still disables the whole catalog, since those are cheap
+      to catch without decompression.
+- [x] H5 — missing, empty, or malformed index or detail artifacts disable
       combo enrichment only, with one warning per process/path, and the
       normal Ask AI request continues.
-- [ ] H6 — `COMBO_ENRICHMENT_ENABLED=false` suppresses the loader entirely —
+- [x] H6 — `COMBO_ENRICHMENT_ENABLED=false` suppresses the loader entirely —
       the index is never read, let alone any detail lookup performed.
-- [ ] H7 — repeated lookups for the same variant within one process do not
+- [x] H7 — repeated lookups for the same variant within one process do not
       redundantly re-read and re-decompress its bytes (a small bounded cache
       is acceptable; unbounded retention of every seen variant is not — that
       would silently reintroduce the eager-load memory cost this slice

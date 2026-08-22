@@ -40,8 +40,8 @@ Architecture, data flow, and the full verification checklist: `GAMEPLAN.md`.
 
 | Slice | Objective | Depends on | Status |
 |---|---|---|---|
-| [G](./slice-g-corpus-build-pipeline-v2.md) | Bulk-export build, camelCase fix, lazy-access storage format | — | planned |
-| [H](./slice-h-lazy-runtime-loader.md) | Lazy runtime catalog loader | G | planned |
+| [G](./slice-g-corpus-build-pipeline-v2.md) | Bulk-export build, camelCase fix, lazy-access storage format | — | done |
+| [H](./slice-h-lazy-runtime-loader.md) | Lazy runtime catalog loader | G | done |
 | [I](./slice-i-matching-integration-at-scale.md) | Matching integration at real scale | H | planned |
 | [J](./slice-j-answer-quality-real-scenarios.md) | Real-scenario answer-quality comparison; ship gates | I | planned |
 
@@ -131,4 +131,4 @@ G–J (`GAMEPLAN.md`); implementation has not started.
 
 ## Next step
 
-`/thejudge-implement PRD/work/commander-spellbook-combos/ slice G`
+`/thejudge-implement PRD/work/commander-spellbook-combos/ slice I`

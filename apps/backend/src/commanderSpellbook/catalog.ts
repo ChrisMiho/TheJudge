@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from "node:fs";
+import { closeSync, existsSync, openSync, readFileSync, readSync, statSync } from "node:fs";
+import { gunzipSync } from "node:zlib";
 
 /**
  * Upstream starting-zone vocabulary (`ZoneLocation` in
@@ -50,10 +51,19 @@ export type ComboVariant = {
 };
 
 export type ComboCatalog = {
-  variants: Map<string, ComboVariant>;
   byOracleId: Map<string, string[]>;
   byTemplateOracleId: Map<string, string[]>;
   variantCount: number;
+  /**
+   * Fetches one variant's detail lazily: a positional read of its recorded
+   * byte range in the detail artifact, plus a single `gunzipSync` on just
+   * that slice — never the whole ~105k-variant detail file. `undefined` for
+   * an unknown id, or one whose bytes fail integrity validation: a corrupt
+   * single record disables enrichment for that variant only, not the whole
+   * catalog, since the individually-gzipped storage format exists precisely
+   * so one variant's bytes never depend on any other's.
+   */
+  getVariant(variantId: string): ComboVariant | undefined;
 };
 
 const ZONE_IDS: readonly ComboZoneId[] = ["H", "B", "C", "E", "G", "L"];
@@ -84,13 +94,46 @@ function warnOnce(filePath: string, message: string, error?: unknown): void {
   }
 }
 
-export function createEmptyComboCatalog(): ComboCatalog {
+function createEmptyComboCatalog(): ComboCatalog {
   return {
-    variants: new Map(),
     byOracleId: new Map(),
     byTemplateOracleId: new Map(),
-    variantCount: 0
+    variantCount: 0,
+    getVariant: () => undefined
   };
+}
+
+/**
+ * At most this many decompressed variants are held per loaded catalog. At
+ * most five variants ever enter one prompt, so this generously covers a warm
+ * process answering many requests without approaching the eager-load memory
+ * cost (~868MB RSS, DEC-162) this format exists to avoid. Least-recently-used
+ * eviction: `Map` insertion order is reuse order here, so the oldest key is
+ * always `entries.keys().next().value`.
+ */
+const DETAIL_CACHE_CAPACITY = 64;
+
+class BoundedVariantCache {
+  private readonly entries = new Map<string, ComboVariant>();
+
+  constructor(private readonly capacity: number) {}
+
+  get(variantId: string): ComboVariant | undefined {
+    const value = this.entries.get(variantId);
+    if (value === undefined) return undefined;
+    this.entries.delete(variantId);
+    this.entries.set(variantId, value);
+    return value;
+  }
+
+  set(variantId: string, value: ComboVariant): void {
+    this.entries.delete(variantId);
+    this.entries.set(variantId, value);
+    if (this.entries.size > this.capacity) {
+      const oldestKey = this.entries.keys().next().value;
+      if (oldestKey !== undefined) this.entries.delete(oldestKey);
+    }
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -232,26 +275,43 @@ function assertMembership(value: unknown, label: string): Map<string, string[]> 
   return membership;
 }
 
-function readArtifact(filePath: string, label: string): Record<string, unknown> | null {
-  if (!existsSync(filePath)) {
-    warnOnce(filePath, `Commander Spellbook ${label} artifact missing; combo enrichment disabled: ${filePath}`);
+type DetailOffset = readonly [offset: number, length: number];
+
+function assertDetailOffsets(value: unknown): Map<string, DetailOffset> {
+  if (!isRecord(value)) {
+    throw new Error("Combo index detailOffsets must be an object.");
+  }
+  const offsets = new Map<string, DetailOffset>();
+  for (const [variantId, entry] of Object.entries(value)) {
+    const [offset, length] = Array.isArray(entry) ? entry : [undefined, undefined];
+    if (!Number.isInteger(offset) || !Number.isInteger(length) || (offset as number) < 0 || (length as number) <= 0) {
+      throw new Error(`Combo index detailOffsets entry ${variantId} must be a [offset, length] pair.`);
+    }
+    offsets.set(variantId, [offset as number, length as number]);
+  }
+  return offsets;
+}
+
+function readIndexArtifact(indexPath: string): Record<string, unknown> | null {
+  if (!existsSync(indexPath)) {
+    warnOnce(indexPath, `Commander Spellbook combo index artifact missing; combo enrichment disabled: ${indexPath}`);
     return null;
   }
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(readFileSync(filePath, "utf8"));
+    parsed = JSON.parse(gunzipSync(readFileSync(indexPath)).toString("utf8"));
   } catch (error) {
     warnOnce(
-      filePath,
-      `Commander Spellbook ${label} artifact could not be parsed; combo enrichment disabled: ${filePath}`,
+      indexPath,
+      `Commander Spellbook combo index artifact could not be read; combo enrichment disabled: ${indexPath}`,
       error
     );
     return null;
   }
 
   if (!isRecord(parsed)) {
-    warnOnce(filePath, `Commander Spellbook ${label} artifact has an unexpected shape; combo enrichment disabled: ${filePath}`);
+    warnOnce(indexPath, `Commander Spellbook combo index artifact has an unexpected shape; combo enrichment disabled: ${indexPath}`);
     return null;
   }
 
@@ -259,42 +319,95 @@ function readArtifact(filePath: string, label: string): Record<string, unknown> 
 }
 
 /**
- * Load the committed combo artifacts, failing open on every artifact problem:
- * a missing, empty, malformed, or integrity-violating artifact disables combo
- * enrichment only and warns once per process per path, leaving the normal Ask AI
- * path untouched. Nothing here is memoized, so one process can build both an
- * enrichment-enabled and an enrichment-disabled app.
+ * Read one variant's bytes from the detail artifact at its recorded byte
+ * range and decompress just that gzip member. Thrown errors are the caller's
+ * signal to fail open for this one variant — never propagated further.
+ */
+function readVariantDetail(detailPath: string, [offset, length]: DetailOffset): unknown {
+  const fd = openSync(detailPath, "r");
+  try {
+    const buffer = Buffer.alloc(length);
+    readSync(fd, buffer, 0, length, offset);
+    return JSON.parse(gunzipSync(buffer).toString("utf8"));
+  } finally {
+    closeSync(fd);
+  }
+}
+
+/**
+ * Load the committed combo artifacts, failing open on every artifact problem.
+ * The index (small — oracle/template membership plus the byte-offset
+ * directory) is fully validated at load time, since fully validating it costs
+ * nothing. The detail artifact (the ~105k-variant corpus) is validated only
+ * structurally at load time — its size must cover every offset the index
+ * records — and each variant's actual bytes are decompressed and validated
+ * lazily, on first fetch. A single corrupt variant record therefore disables
+ * enrichment for that variant only, with one warning per process per variant;
+ * a missing or structurally-broken index or detail file disables the whole
+ * catalog, with one warning per process per path. Nothing here is memoized
+ * across calls, so one process can build both an enrichment-enabled and an
+ * enrichment-disabled app; each loaded catalog keeps its own small bounded
+ * cache of recently-fetched variants (`DETAIL_CACHE_CAPACITY`).
  */
 export function loadComboCatalog(detailPath: string, indexPath: string): ComboCatalog {
-  const detail = readArtifact(detailPath, "combo detail");
-  if (!detail) return createEmptyComboCatalog();
+  if (!existsSync(detailPath)) {
+    warnOnce(detailPath, `Commander Spellbook combo detail artifact missing; combo enrichment disabled: ${detailPath}`);
+    return createEmptyComboCatalog();
+  }
 
-  const index = readArtifact(indexPath, "combo index");
+  const index = readIndexArtifact(indexPath);
   if (!index) return createEmptyComboCatalog();
 
+  let byOracleId: Map<string, string[]>;
+  let byTemplateOracleId: Map<string, string[]>;
+  let detailOffsets: Map<string, DetailOffset>;
   try {
-    if (!Array.isArray(detail.variants)) {
-      throw new Error("Combo detail artifact is missing its variants array.");
-    }
+    byOracleId = assertMembership(index.byOracleId, "byOracleId");
+    byTemplateOracleId = assertMembership(index.byTemplateOracleId, "byTemplateOracleId");
+    detailOffsets = assertDetailOffsets(index.detailOffsets);
 
-    const variants = new Map<string, ComboVariant>();
-    for (const rawVariant of detail.variants) {
-      const variant = assertVariant(rawVariant);
-      variants.set(variant.variantId, variant);
+    const detailSize = statSync(detailPath).size;
+    for (const [variantId, [offset, length]] of detailOffsets) {
+      if (offset + length > detailSize) {
+        throw new Error(`Combo detail artifact is shorter than variant ${variantId}'s recorded byte range.`);
+      }
     }
-
-    return {
-      variants,
-      byOracleId: assertMembership(index.byOracleId, "byOracleId"),
-      byTemplateOracleId: assertMembership(index.byTemplateOracleId, "byTemplateOracleId"),
-      variantCount: variants.size
-    };
   } catch (error) {
     warnOnce(
-      detailPath,
-      `Commander Spellbook artifact failed integrity validation; combo enrichment disabled: ${detailPath}`,
+      indexPath,
+      `Commander Spellbook combo index failed structural validation; combo enrichment disabled: ${indexPath}`,
       error
     );
     return createEmptyComboCatalog();
   }
+
+  const cache = new BoundedVariantCache(DETAIL_CACHE_CAPACITY);
+
+  function getVariant(variantId: string): ComboVariant | undefined {
+    const cached = cache.get(variantId);
+    if (cached) return cached;
+
+    const offset = detailOffsets.get(variantId);
+    if (!offset) return undefined;
+
+    try {
+      const variant = assertVariant(readVariantDetail(detailPath, offset));
+      cache.set(variantId, variant);
+      return variant;
+    } catch (error) {
+      warnOnce(
+        `${detailPath}#${variantId}`,
+        `Commander Spellbook combo variant ${variantId} failed integrity validation; that variant is skipped: ${detailPath}`,
+        error
+      );
+      return undefined;
+    }
+  }
+
+  return {
+    byOracleId,
+    byTemplateOracleId,
+    variantCount: detailOffsets.size,
+    getVariant
+  };
 }
