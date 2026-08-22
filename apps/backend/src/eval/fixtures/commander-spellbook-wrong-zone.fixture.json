@@ -1,0 +1,40 @@
+{
+  "id": "commander-spellbook-wrong-zone",
+  "description": "Game mode where a required battlefield ingredient is submitted in exile: present but incompatibly zoned, so the candidate stays partial.",
+  "request": {
+    "question": "Is this a combo if I get it back?",
+    "gameContext": {
+      "playerCount": 2,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 20 },
+        { "label": "Player 2", "lifeTotal": 20 }
+      ],
+      "turnPhase": "main_1",
+      "selectedZones": ["battlefield", "exile"],
+      "zones": {
+        "battlefield": [
+          {
+            "cardId": "eval-oracle-a",
+            "name": "Tidal Oracle",
+            "oracleText": "When this enters, look at the top of your library.",
+            "imageUrl": "",
+            "manaValue": 2,
+            "owner": "Player 1",
+            "targets": []
+          }
+        ],
+        "exile": [
+          {
+            "cardId": "eval-oracle-c",
+            "name": "Echoing Reclaimer",
+            "oracleText": "Return target artifact card from your graveyard to your hand.",
+            "imageUrl": "",
+            "manaValue": 3,
+            "owner": "Player 1",
+            "targets": []
+          }
+        ]
+      }
+    }
+  }
+}

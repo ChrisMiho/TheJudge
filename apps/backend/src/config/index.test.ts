@@ -11,6 +11,7 @@ describe("Backend - Shared", () => {
         debugLoggingEnabled: false,
         payloadLoggingEnabled: false,
         askAiProvider: "mock",
+        comboEnrichmentEnabled: true,
         openAiApiKey: undefined,
         openAiModel: undefined,
         openAiTimeoutMs: undefined,
@@ -31,6 +32,7 @@ describe("Backend - Shared", () => {
         debugLoggingEnabled: true,
         payloadLoggingEnabled: false,
         askAiProvider: "mock",
+        comboEnrichmentEnabled: true,
         openAiApiKey: undefined,
         openAiModel: undefined,
         openAiTimeoutMs: undefined,
@@ -152,6 +154,27 @@ describe("Backend - Shared", () => {
           OPENAI_MAX_RETRIES: "0"
         })
       ).toThrow(/Invalid OPENAI_MAX_RETRIES value/);
+    });
+
+    it("enables combo enrichment by default", () => {
+      expect(readServerConfig({}).comboEnrichmentEnabled).toBe(true);
+    });
+
+    it("disables combo enrichment when COMBO_ENRICHMENT_ENABLED is false", () => {
+      expect(readServerConfig({ COMBO_ENRICHMENT_ENABLED: "false" }).comboEnrichmentEnabled).toBe(false);
+    });
+
+    it("normalizes COMBO_ENRICHMENT_ENABLED casing and surrounding whitespace", () => {
+      expect(readServerConfig({ COMBO_ENRICHMENT_ENABLED: "  FALSE  " }).comboEnrichmentEnabled).toBe(false);
+      expect(readServerConfig({ COMBO_ENRICHMENT_ENABLED: " True " }).comboEnrichmentEnabled).toBe(true);
+      expect(readServerConfig({ COMBO_ENRICHMENT_ENABLED: "0" }).comboEnrichmentEnabled).toBe(false);
+      expect(readServerConfig({ COMBO_ENRICHMENT_ENABLED: "" }).comboEnrichmentEnabled).toBe(true);
+    });
+
+    it("throws on an invalid COMBO_ENRICHMENT_ENABLED value", () => {
+      expect(() => readServerConfig({ COMBO_ENRICHMENT_ENABLED: "maybe" })).toThrow(
+        /Invalid COMBO_ENRICHMENT_ENABLED value/
+      );
     });
   });
 });

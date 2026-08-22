@@ -454,10 +454,10 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 
 ### Commander Spellbook combo artifact build
 
-- Status: planned
-- Summary: Human-approved offline refresh of public reviewed Commander Spellbook variants/templates plus deterministic build of compact combo detail and oracle/template indexes. Query-backed templates expand through their authoritative Scryfall API URL; templates without an authoritative expansion remain unresolved. Raw responses stay gitignored, failed refreshes preserve valid committed artifacts, and runtime performs no external combo fetch.
-- Lives in: (planned) `scripts/refresh-commander-spellbook-data.mjs`, `scripts/build-commander-spellbook-combos.mjs`, gitignored `apps/backend/data/commander-spellbook/`, committed `apps/backend/data/commanderSpellbookCombos.json` and `apps/backend/data/commanderSpellbookComboIndex.json`
-- Backed by: DEC-116, REQ-093
+- Status: shipped
+- Summary: Human-approved offline refresh of reviewed `OK` Commander Spellbook variants/templates from upstream's public bulk export, plus deterministic build of compact combo detail and oracle/template indexes. Upstream renders camelCase on the wire, and fixtures are derived from real upstream responses so a rename fails the suite (DEC-162). `EXAMPLE` variants are rejected because upstream nulls their steps, prerequisites, mana, notes, and card state, though the bulk export publishes none. Per-ingredient card state is retained zone-scoped, alongside `mustBeCommander`. Query-backed templates expand through their authoritative Scryfall API URL; templates without an authoritative expansion remain unresolved. Each variant is gzipped as its own member and the index carries a byte-offset directory into the detail artifact, so a lookup decompresses one record rather than the corpus — 76.9 MB detail + 4.8 MB index committed over 106,182 real variants (DEC-162). Both scripts parse the ~634 MB decompressed export as a stream, since it exceeds V8's maximum string length. Raw responses stay gitignored, failed refreshes preserve valid committed artifacts, and runtime performs no external combo fetch.
+- Lives in: `scripts/refresh-commander-spellbook-data.mjs` (wired into the `data:refresh` chain), `scripts/build-commander-spellbook-combos.mjs`, `scripts/lib/stream-json-array.mjs`, gitignored `apps/backend/data/commander-spellbook/`, committed `apps/backend/data/commanderSpellbookCombos.json.gz` and `apps/backend/data/commanderSpellbookComboIndex.json.gz`
+- Backed by: DEC-116, DEC-162, REQ-093
 
 ### Prompt preview
 
@@ -538,10 +538,10 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 
 ## Commander Spellbook combo retrieval
 
-- Status: planned
-- Summary: Backend-only, static Commander Spellbook prompt enrichment shared by In-Depth Question and Quick Question. Game mode automatically supplies only complete quantity-aware identity + compatible-zone matches unless narrow combo language explicitly permits labeled partial candidates; lookup mode requires both combo intent and an attached card. Selection is deterministic, capped at five, labels missing/wrong-zone/unresolved ingredients, and preserves WotC sources as authority. No Known Combos UI, browser, contract change, new endpoint, or runtime upstream call.
-- Lives in: (planned) `apps/backend/src/commanderSpellbook/` (artifact loader, intent detector, matcher/ranker, formatter), `apps/backend/src/prompt/` integration, `apps/backend/src/eval/fixtures/commander-spellbook-*`, `apps/backend/data/commanderSpellbookCombos.json`, and `apps/backend/data/commanderSpellbookComboIndex.json`
-- Backed by: DEC-116, REQ-093, REQ-094, REQ-095, FLOW-015
+- Status: shipped
+- Summary: Backend-only, static Commander Spellbook prompt enrichment shared by In-Depth Question and Quick Question. Game mode automatically supplies only complete quantity-aware identity + compatible-zone matches unless narrow combo language explicitly permits labeled partial candidates; lookup mode requires both combo intent and an attached card. Selection is deterministic, capped at five, labels missing/wrong-zone/unresolved ingredients, surfaces each ingredient's card state for the zone its matched instance occupies, and preserves WotC sources as authority. No candidate is ever rendered as "complete" — full assignment renders as all pieces present with card state unverified, and the model is instructed to check that state against the board. No Known Combos UI, browser, contract change, new endpoint, or runtime upstream call.
+- Lives in: `apps/backend/src/commanderSpellbook/` (`catalog.ts` lazy byte-range loader, `intent.ts`, `matcher.ts`, `zones.ts`, `formatting.ts`), `apps/backend/src/prompt/` integration (`preparation.ts`, `promptAssembly.ts`, `promptDiagnostics.ts`), `apps/backend/src/runtime/createConfiguredApp.ts`, `apps/backend/src/eval/fixtures/commander-spellbook-*`, `apps/backend/data/commanderSpellbookCombos.json.gz`, and `apps/backend/data/commanderSpellbookComboIndex.json.gz`; the opt-in answer-quality comparison lives in `scripts/compare-combo-answer-quality.mjs` (`--confirm-live-calls`, `COMBO_ENRICHMENT_ENABLED` backend config, curated scenarios referencing oracle ids that exist in the built corpus) writing to gitignored `output/combo-answer-quality/` (REQ-146)
+- Backed by: DEC-116, DEC-161, DEC-162, REQ-093, REQ-094, REQ-095, REQ-146, FLOW-015
 
 ## Trade balancer
 

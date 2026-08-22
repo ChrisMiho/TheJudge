@@ -1,0 +1,41 @@
+{
+  "id": "commander-spellbook-degraded",
+  "description": "Degraded path: no combo catalog is loaded at all, so no section appears and the request is still answered normally.",
+  "disableComboEnrichment": true,
+  "request": {
+    "question": "Do I have a combo on board right now?",
+    "gameContext": {
+      "playerCount": 2,
+      "players": [
+        { "label": "Player 1", "lifeTotal": 20 },
+        { "label": "Player 2", "lifeTotal": 20 }
+      ],
+      "turnPhase": "main_1",
+      "selectedZones": ["battlefield", "hand"],
+      "zones": {
+        "battlefield": [
+          {
+            "cardId": "eval-oracle-a",
+            "name": "Tidal Oracle",
+            "oracleText": "When this enters, look at the top of your library.",
+            "imageUrl": "",
+            "manaValue": 2,
+            "owner": "Player 1",
+            "targets": []
+          }
+        ],
+        "hand": [
+          {
+            "cardId": "eval-oracle-b",
+            "name": "Dark Consultation",
+            "oracleText": "Name a card. Exile the top four cards of your library.",
+            "imageUrl": "",
+            "manaValue": 1,
+            "owner": "Player 1",
+            "targets": []
+          }
+        ]
+      }
+    }
+  }
+}

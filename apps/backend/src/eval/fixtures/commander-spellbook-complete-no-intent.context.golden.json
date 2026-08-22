@@ -1,0 +1,62 @@
+{
+  "finalQuestion": "How does this resolve?",
+  "gameContext": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 20
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "main_1",
+    "selectedZones": [
+      "battlefield",
+      "hand"
+    ]
+  },
+  "populatedZones": [
+    {
+      "zoneId": "battlefield",
+      "items": [
+        {
+          "cardId": "eval-oracle-a",
+          "name": "Tidal Oracle",
+          "oracleText": "When this enters, look at the top of your library.",
+          "imageUrl": "",
+          "manaCost": "",
+          "manaValue": 2,
+          "typeLine": "",
+          "colors": [],
+          "supertypes": [],
+          "subtypes": [],
+          "owner": "Player 1",
+          "targets": []
+        }
+      ]
+    },
+    {
+      "zoneId": "hand",
+      "items": [
+        {
+          "cardId": "eval-oracle-b",
+          "name": "Dark Consultation",
+          "oracleText": "Name a card. Exile the top four cards of your library.",
+          "imageUrl": "",
+          "manaCost": "",
+          "manaValue": 1,
+          "typeLine": "",
+          "colors": [],
+          "supertypes": [],
+          "subtypes": [],
+          "owner": "Player 1",
+          "targets": []
+        }
+      ]
+    }
+  ],
+  "orderedStack": []
+}

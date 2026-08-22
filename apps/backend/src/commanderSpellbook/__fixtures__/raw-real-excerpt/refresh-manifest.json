@@ -1,0 +1,7 @@
+{
+  "snapshotAt": "2026-08-22T19:12:35.233842+00:00",
+  "source": "Commander Spellbook",
+  "sourceUrl": "https://json.commanderspellbook.com/variants.json.gz",
+  "license": "Commander Spellbook community data, retrieved from the public bulk export; see https://commanderspellbook.com/",
+  "rawVariantCount": 2
+}

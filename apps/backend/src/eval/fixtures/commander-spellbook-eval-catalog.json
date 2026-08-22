@@ -1,0 +1,136 @@
+{
+  "comment": "Eval-only combo corpus. Deliberately independent of apps/backend/data/commanderSpellbookCombos.json so refreshing the production corpus never churns a prompt golden. Oracle ids are synthetic.",
+  "variants": [
+    {
+      "variantId": "eval-0001",
+      "sourceUrl": "https://commanderspellbook.com/combo/eval-0001/",
+      "popularity": 900,
+      "steps": "Cast the consultation naming a card not in your library.\nExile your library.\nThe oracle's ability resolves and you win the game.",
+      "manaNeeded": "{U}{B}",
+      "easyPrerequisites": "All permanents are untapped.",
+      "notablePrerequisites": "The oracle trigger is still on the stack.",
+      "notes": "The trigger must still be on the stack when the library empties.",
+      "producedEffects": ["Win the game"],
+      "cardIngredients": [
+        {
+          "cardId": "eval-oracle-a",
+          "cardName": "Tidal Oracle",
+          "quantity": 1,
+          "zones": ["B"],
+          "cardState": { "battlefield": "untapped" },
+          "mustBeCommander": false
+        },
+        {
+          "cardId": "eval-oracle-b",
+          "cardName": "Dark Consultation",
+          "quantity": 1,
+          "zones": ["H"],
+          "cardState": {},
+          "mustBeCommander": false
+        }
+      ],
+      "templateIngredients": []
+    },
+    {
+      "variantId": "eval-0002",
+      "sourceUrl": "https://commanderspellbook.com/combo/eval-0002/",
+      "popularity": 400,
+      "steps": "Return the artifact from the graveyard.\nRepeat the loop for infinite mana.",
+      "manaNeeded": "{2}{R}",
+      "easyPrerequisites": "You control a land.",
+      "notablePrerequisites": "",
+      "producedEffects": ["Infinite mana"],
+      "notes": "",
+      "cardIngredients": [
+        {
+          "cardId": "eval-oracle-a",
+          "cardName": "Tidal Oracle",
+          "quantity": 1,
+          "zones": ["B"],
+          "cardState": { "battlefield": "untapped" },
+          "mustBeCommander": false
+        },
+        {
+          "cardId": "eval-oracle-c",
+          "cardName": "Echoing Reclaimer",
+          "quantity": 1,
+          "zones": ["B", "G"],
+          "cardState": {
+            "battlefield": "untapped and with no counters on it",
+            "graveyard": "with at least three other cards in your graveyard"
+          },
+          "mustBeCommander": false
+        }
+      ],
+      "templateIngredients": []
+    },
+    {
+      "variantId": "eval-0003",
+      "sourceUrl": "https://commanderspellbook.com/combo/eval-0003/",
+      "popularity": 250,
+      "steps": "Sacrifice the creature to the outlet.\nRepeat for infinite triggers.",
+      "manaNeeded": "{G}",
+      "easyPrerequisites": "You control a land.",
+      "notablePrerequisites": "",
+      "notes": "",
+      "producedEffects": ["Infinite sacrifice triggers"],
+      "cardIngredients": [
+        {
+          "cardId": "eval-oracle-d",
+          "cardName": "Swarming Scute",
+          "quantity": 1,
+          "zones": ["B"],
+          "cardState": { "battlefield": "untapped" },
+          "mustBeCommander": false
+        }
+      ],
+      "templateIngredients": [
+        {
+          "templateId": 99,
+          "templateName": "A free sacrifice outlet",
+          "quantity": 1,
+          "zones": ["B"],
+          "cardState": { "battlefield": "untapped" },
+          "mustBeCommander": false,
+          "scryfallApi": null,
+          "unresolved": true,
+          "oracleIds": []
+        }
+      ]
+    },
+    {
+      "variantId": "eval-0004",
+      "sourceUrl": "https://commanderspellbook.com/combo/eval-0004/",
+      "popularity": 150,
+      "steps": "Tap the commander to trigger the payoff.\nUntap it with the template and repeat.",
+      "manaNeeded": "{2}{W}",
+      "easyPrerequisites": "You control a creature.",
+      "notablePrerequisites": "The commander is on the battlefield.",
+      "notes": "Any untapper with the same text works in place of the template.",
+      "producedEffects": ["Infinite untaps"],
+      "cardIngredients": [
+        {
+          "cardId": "eval-oracle-e",
+          "cardName": "Returned Sovereign",
+          "quantity": 1,
+          "zones": ["C"],
+          "cardState": {},
+          "mustBeCommander": true
+        }
+      ],
+      "templateIngredients": [
+        {
+          "templateId": 12,
+          "templateName": "An untapper with no mana cost",
+          "quantity": 1,
+          "zones": ["B"],
+          "cardState": { "battlefield": "untapped" },
+          "mustBeCommander": false,
+          "scryfallApi": "https://api.scryfall.com/cards/search?q=o%3A%22untap+target%22",
+          "unresolved": false,
+          "oracleIds": ["eval-template-x"]
+        }
+      ]
+    }
+  ]
+}

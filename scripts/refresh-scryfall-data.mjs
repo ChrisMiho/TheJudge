@@ -5,6 +5,8 @@ import { Readable } from "node:stream";
 import { spawn } from "node:child_process";
 import { pathToFileURL } from "node:url";
 
+import { performCommanderSpellbookRefresh } from "./refresh-commander-spellbook-data.mjs";
+
 const bulkDataEndpoint = "https://api.scryfall.com/bulk-data";
 const sourceOutputPath = path.resolve("apps/frontend/data/scryfall/default-cards.json");
 const rulingsOutputPath = path.resolve("apps/backend/data/scryfall/rulings.json");
@@ -202,6 +204,22 @@ async function main() {
     console.log(`Download complete for ${target.label}: ${formatBytes(downloadedBytes)} at ${target.outputPath}.`);
   } catch (error) {
     console.warn(`Warning: skipped WotC Comprehensive Rules download. ${error.message}`);
+  }
+
+  // DEC-162: invoking `npm run data:refresh` is itself REQ-093's explicit human
+  // approval for the Commander Spellbook combo download, exactly as it already is
+  // for the two downloads above — no second `--confirm-live-calls` gate here. The
+  // standalone `data:refresh-combos` script keeps that flag for direct invocation.
+  try {
+    console.log("Refreshing Commander Spellbook combo data...");
+    const { variantCount, resolvedTemplateCount, unresolvedTemplateCount } = await performCommanderSpellbookRefresh();
+    successfulDownloads += 1;
+    console.log(
+      `Commander Spellbook refresh complete: ${variantCount} variants, ` +
+        `${resolvedTemplateCount} templates resolved, ${unresolvedTemplateCount} unresolved.`
+    );
+  } catch (error) {
+    console.warn(`Warning: skipped Commander Spellbook combo download. ${error.message}`);
   }
 
   if (!shouldRunDataBuildAfterRefresh(successfulDownloads)) {

@@ -6,6 +6,7 @@ import { mockAskAiProvider } from "../providers/mockAskAiProvider.js";
 import type { RulingEntry } from "../cardRulings.js";
 import type { GameRulesTopic } from "../gameRules.js";
 import type { GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
+import type { ComboCatalog } from "../commanderSpellbook/catalog.js";
 import type { AskAiProvider } from "../providers/askAiProvider.js";
 import { registerAskAiRoute } from "../routes/askAi.js";
 import { registerHealthRoute } from "../routes/health.js";
@@ -20,6 +21,7 @@ export type AppOptions = {
   cardRulingsIndex?: Map<string, RulingEntry[]>;
   gameRulesTopics?: GameRulesTopic[];
   gameRulesRuleIndex?: GameRulesRuleIndexEntry[];
+  comboCatalog?: ComboCatalog;
   collectEnrichmentDebug?: boolean;
 };
 
@@ -42,6 +44,7 @@ export function createApp(options: AppOptions = {}) {
     cardRulingsIndex: options.cardRulingsIndex,
     gameRulesTopics: options.gameRulesTopics,
     gameRulesRuleIndex: options.gameRulesRuleIndex,
+    comboCatalog: options.comboCatalog,
     collectEnrichmentDebug: options.collectEnrichmentDebug
   });
 

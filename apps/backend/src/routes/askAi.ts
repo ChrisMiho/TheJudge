@@ -9,6 +9,7 @@ import { preparePromptInput } from "../prompt/preparation.js";
 import type { RulingEntry } from "../cardRulings.js";
 import type { GameRulesTopic } from "../gameRules.js";
 import type { GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
+import type { ComboCatalog } from "../commanderSpellbook/catalog.js";
 import type { AskAiProvider } from "../providers/askAiProvider.js";
 import type { AskAiRequest } from "../types/index.js";
 import { askAiRequestSchema } from "../validation/askAiRequest.js";
@@ -23,6 +24,7 @@ export type AskAiRouteDeps = {
   cardRulingsIndex?: Map<string, RulingEntry[]>;
   gameRulesTopics?: GameRulesTopic[];
   gameRulesRuleIndex?: GameRulesRuleIndexEntry[];
+  comboCatalog?: ComboCatalog;
   collectEnrichmentDebug?: boolean;
 };
 
@@ -35,6 +37,7 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
     cardRulingsIndex,
     gameRulesTopics,
     gameRulesRuleIndex,
+    comboCatalog,
     collectEnrichmentDebug
   } = deps;
 
@@ -75,7 +78,13 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
 
       logger.info("ask_ai.prompt_context_build_started", { correlationId });
       const promptBuildStartedAt = Date.now();
-      const preparedPrompt = preparePromptInput(askAiRequest, { cardRulingsIndex, gameRulesTopics, gameRulesRuleIndex, collectEnrichmentDebug });
+      const preparedPrompt = preparePromptInput(askAiRequest, {
+        cardRulingsIndex,
+        gameRulesTopics,
+        gameRulesRuleIndex,
+        comboCatalog,
+        collectEnrichmentDebug
+      });
       const diagnostics = preparedPrompt.diagnostics;
       logger.info("ask_ai.prompt_context_build_completed", {
         correlationId,
