@@ -7,6 +7,34 @@ criteria — per this package's own established precedent, an owner-action
 checkpoint does not block shipping the surrounding code; see
 `## Owner-action checkpoints` in the package README.
 
+### Handoff
+
+- Done: Slices G, H, I, J are all `done`. `npm run quality:check` is green
+  on the shared branch. PR #89 (`thejudge-auto/commander-spellbook-combos` →
+  `feature/enhancement-bangers`) is titled `[READY]`, CI is green,
+  `mergeable: MERGEABLE` / `mergeStateStatus: CLEAN`. J6 (production corpus
+  refresh) is done — 106,182 real variants committed 2026-08-22; see
+  DESIGN-BRIEF's `### Measured 2026-08-22` note and this file's J6 line for
+  what that run found and fixed.
+- Next: **J7 only remains.** The owner is running the live provider A/B
+  themselves (`npm run combo:answer-quality -- --confirm-live-calls`, with
+  `ASK_AI_PROVIDER=openai`, `OPENAI_API_KEY`, `OPENAI_MODEL` in their own
+  shell — no agent session can do this: the key lives in the
+  protected/gitignored `.secrets/` subtree, which the repo's boundary rules
+  deny reading or writing from any session). When the owner reports back
+  with the report (path under gitignored `output/combo-answer-quality/`, or
+  pasted content): read it with them, help them reach a verdict, then record
+  a dated conclusion — a line here is enough, e.g. "2026-08-2X: reviewed,
+  enrichment [helps/is neutral/hurts] because ___." That closes J7.
+  **J7 does not block merging PR #89** — the owner can merge whenever, with
+  or without having run it, matching this package's own established
+  precedent (the original slice A/F owner-action checkpoints were designed
+  the same way). After merge (whenever it happens): `/thejudge-cleanup
+  PRD/work/commander-spellbook-combos/` — it will fold this receipt-worthy
+  history into the closeout receipt before deleting this package folder.
+- Stopped because: session end (context budget) — the owner asked for this
+  handoff before starting a fresh session.
+
 ## Goal
 
 Replace slice F outright. Fix the answer-quality comparison so its two legs
