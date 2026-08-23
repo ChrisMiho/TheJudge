@@ -1,4 +1,4 @@
-status: ideation
+status: refined
 
 # codebase-duplication-audit
 
@@ -10,8 +10,9 @@ See `IDEA.md` for problem, outcome, non-goals, and open questions.
 ## Package contents
 
 - `IDEA.md` — captured idea, scope, and open questions for refinement
+- `DESIGN-BRIEF.md` — refined scope, deliverable shape, method, assumptions
 - `intake/intake-codebase-health.md` — owner-staged intake, copied verbatim
-- `STATUS.ideation` — current lifecycle marker
+- `STATUS.refined` — current lifecycle marker
 
 ## Autonomous metadata
 

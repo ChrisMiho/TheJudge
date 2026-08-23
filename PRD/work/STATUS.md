@@ -10,11 +10,11 @@ Do not rename package folders to encode status.
 
 ## refined
 
+- [codebase-duplication-audit](./codebase-duplication-audit/)
+
 ## refining
 
 ## ideation
-
-- [codebase-duplication-audit](./codebase-duplication-audit/)
 
 ## owner-action
 
