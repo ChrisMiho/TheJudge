@@ -14,6 +14,8 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+- [codebase-duplication-audit](./codebase-duplication-audit/)
+
 ## owner-action
 
 ## deferred
