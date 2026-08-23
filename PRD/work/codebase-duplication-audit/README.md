@@ -17,3 +17,9 @@ See `IDEA.md` for problem, outcome, non-goals, and open questions.
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/codebase-duplication-audit
+
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/codebase-duplication-audit/DESIGN-BRIEF.md`
+- Findings: none

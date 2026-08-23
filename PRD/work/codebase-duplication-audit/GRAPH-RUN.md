@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`
 - Autonomous base: `origin/thejudge-auto/codebase-duplication-audit`
 - Staging: `.worktrees/.graph-intake/graph-20260823-173948/`
-- Current node: `gate-qc`
+- Current node: `plan`
 - Next action: `/graph-run PRD/work/codebase-duplication-audit/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | 1 | preflight | haiku | ok | `0 → 9` | branch `thejudge-auto/codebase-duplication-audit` pushed to origin at `4e8314f`; base resolved `feature/doc-refactor`; lock `.worktrees/.graph-run.lock` written and `isRunActive` verified `true`; working tree `clean`, no stash taken | 2026-08-23 |
 | 2 | shape | sonnet | ok | `0 → 28` | commit `9df5d09`; created `PRD/work/codebase-duplication-audit/{IDEA.md,README.md,STATUS.ideation,intake/intake-codebase-health.md}` and a row in `PRD/work/STATUS.md`; `git diff feature/doc-refactor..HEAD -- PRD/sections/` empty | 2026-08-23 |
 | 3 | define | opus | ok | `0 → 37` | `DESIGN-BRIEF.md` created (259 lines); `STATUS.refined`; gate diff verified empty by the driver via `git diff 1acf2d6 -- PRD/sections/`, `git diff -- PRD/sections/`, and `git status --porcelain PRD/sections/`, all three empty; no `Q-###` blocker preserved | 2026-08-23 |
+| 4 | gate-qc | sonnet | ok | `0 → 23` | PASS, findings `none`; DEC citations and file counts re-verified against source by the checker; no paths written, `git status --porcelain` empty; `STATUS.refined` unchanged | 2026-08-23 |
 
 ### Node 1 notes — a prior attempt of this run
 
@@ -194,6 +195,43 @@ Return as your final text, which is the driver's return value and not a message 
 4. Any question you preserved as a blocker, with its `Q-###` id and which of the three conditions held.
 5. Whether you wrote anything under `PRD/sections/`, and if so every stable ID you added or changed.
 6. Any command that was denied or prompted, quoted verbatim.
+
+### gate-qc
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy the `Working directory:` line above, unchanged and on its own line, into every prompt you write for any subagent you dispatch.
+
+You are node 4 (`gate-qc`) of an autonomous graph run. Invoke the `thejudge-quality-check` skill and follow it exactly.
+
+Run id: `graph-20260823-173948`
+Package path: `PRD/work/codebase-duplication-audit/`
+Artifact to check: `PRD/work/codebase-duplication-audit/DESIGN-BRIEF.md`
+
+This package is a read-only audit. It reads `apps/frontend`, `apps/backend`, and `scripts`, and produces one document, `DUPLICATION-AUDIT.md`. It changes no product code. Judge the brief on whether it is PRD-aligned and agent-ready for that deliverable, which is what the skill checks — not on whether it proposes code changes, because by design it proposes none.
+
+Context you will need: refinement resolved three open questions from the conservative assumption ladder and preserved no `Q-###` blocker. It wrote nothing under `PRD/sections/`, on the reasoning that the audit adds no product behavior, changes no contract, and states no new requirement. Those resolutions and their evidence are recorded in the brief's `## Material assumptions` section. Assessing whether that evidence actually holds is part of your check.
+
+## Required of you
+
+- Produce the PASS/FAIL report the skill specifies, with the complete finding list on a FAIL. A FAIL sets `STATUS.refining` per the skill.
+- Do not write `GAMEPLAN.md`, any slice doc, or any `slice-*.criteria.json`. Node 5 owns those.
+- Do not edit `DESIGN-BRIEF.md` to make it pass. Your job is to grade it, not to repair it.
+- Do not edit anything under `PRD/sections/`.
+- Do not edit any `thejudge-*` or `graph-*` skill, `.claude/settings*.json`, or `CLAUDE.md`.
+- Write only inside `PRD/work/codebase-duplication-audit/` and `PRD/work/STATUS.md`.
+- Keep exactly one `STATUS.*` marker in the package, and keep the `PRD/work/STATUS.md` board row consistent with it.
+
+Your tool-call budget for this dispatch is 60; the boundary hook counts and enforces it.
+
+Return as your final text, which is the driver's return value and not a message to a human:
+1. The verdict, exactly `PASS` or `FAIL`.
+2. The complete findings list, or `none`.
+3. Every path you created or modified.
+4. The `STATUS.*` marker now set.
+5. Any command that was denied or prompted, quoted verbatim.
 
 ## Instruction ledger
 
