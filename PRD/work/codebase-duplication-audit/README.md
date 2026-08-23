@@ -12,3 +12,7 @@ See `IDEA.md` for problem, outcome, non-goals, and open questions.
 - `IDEA.md` — captured idea, scope, and open questions for refinement
 - `intake/intake-codebase-health.md` — owner-staged intake, copied verbatim
 - `STATUS.ideation` — current lifecycle marker
+
+## Autonomous metadata
+
+- Autonomous base: origin/thejudge-auto/codebase-duplication-audit
