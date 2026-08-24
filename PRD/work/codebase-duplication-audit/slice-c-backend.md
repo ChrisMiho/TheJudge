@@ -1,6 +1,6 @@
 # Slice C — Backend surface pass
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -33,12 +33,12 @@ brief's floor.
 
 ## Acceptance criteria
 
-- [ ] C1. This surface's file inventory is enumerated with `git ls-files
+- [x] C1. This surface's file inventory is enumerated with `git ls-files
       apps/backend/src` and the count is recorded in the notes file.
-- [ ] C2. `audit-notes/surface-c-backend.md` exists, recording every finding
+- [x] C2. `audit-notes/surface-c-backend.md` exists, recording every finding
       in the brief's per-finding field shape and a draft coverage-table row
       for this surface.
-- [ ] C3. At least one seeding search was run scoped to this surface, per the
+- [x] C3. At least one seeding search was run scoped to this surface, per the
       brief's Method.
 
 ## Verification
