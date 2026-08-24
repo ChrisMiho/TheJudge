@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`
 - Autonomous base: `origin/thejudge-auto/codebase-duplication-audit`
 - Staging: `.worktrees/.graph-intake/graph-20260823-173948/`
-- Current node: `review`
+- Current node: `build`
 - Next action: `/graph-run PRD/work/codebase-duplication-audit/`
 
 ## Node ledger
@@ -19,6 +19,8 @@
 | 5 | plan | sonnet | ok | `0 → 39` | `GAMEPLAN.md` + slices A–E; 21 criteria across five `slice-*.criteria.json`, all initialised `false`, zero `manual`; driver dry-ran all 21 through the hook's own `matchesEvidence()` against trivial calls — 20 unearnable without the work, E7 earned by `git status --porcelain` alone; `STATUS.active` | 2026-08-23 |
 | 6 | build | sonnet | failed | `0 → 197` | attempt 1: audit written and verified, but every criterion in all five `slice-*.criteria.json` still `false` and no criteria file in its diff — the contract fails the node on a remaining `false`, read from the files not the summary. Also pushed slice A onto the autonomous base and retried a classifier-denied push | 2026-08-23 |
 | 6 | build | sonnet | ok | `0 → 22` | attempt 2: commit `49f85f2` on `thejudge-auto/codebase-duplication-audit-work`; all 21 criteria verified `true` by the driver from the emitted files; write scope clean — `git diff --name-only 5bf657a origin/...-work` names nothing outside `PRD/work/codebase-duplication-audit/` and `PRD/work/STATUS.md`; `apps/` and `scripts/` untouched | 2026-08-23 |
+| 7 | review | opus | ok (RETURN) | `0 → 45` | reviewed full range `5bf657a..origin/...-work`, not the PR diff, so slice A was covered; 1 Important + 4 Minor; recomputed the 500-file reconciliation independently and opened every citation in all 8 findings; driver re-verified the Important against source before spending a loop | 2026-08-23 |
+| 6 | build | sonnet | ok | `0 → 73` | attempt 3, after review return: commit `2cd17c2` on `...-work`; promoted `TurnPhase`/`CombatStep` to findings and rewrote Healthy-reuse entry 18's rule; found a further already-diverged pair (`ZONE_LABELS` "Command Zone" vs `ZONE_ITEM_LABEL` "Command"), driver-verified; all four Minor items fixed; 8 findings → 11, renumbered by complexity; all 21 criteria still `true`; `apps/` and `scripts/` untouched | 2026-08-23 |
 
 ### Node 1 notes — a prior attempt of this run
 
@@ -118,6 +120,35 @@ under-represents the work as a review artifact. Node 7 was therefore given the f
 `5bf657a..origin/thejudge-auto/codebase-duplication-audit-work` rather than the PR diff, so
 slice A is reviewed rather than skipped. A graph run cannot repair the topology: undoing it
 would need a force-push or a remote branch deletion, both denied in every session.
+
+### Node 7 note — the Important finding, verified before the loop was spent
+
+The reviewer returned the work on one Important finding: `DUPLICATION-AUDIT.md`'s
+Healthy-reuse entry 18 marks `TurnPhase`, `CombatStep`, and `ZoneId` as deliberately
+not flagged, on the rationale that they are "compile-time types, not runtime value
+literals — a name or shape mismatch fails the typechecker."
+
+The driver checked this against source before looping back, because a review loop is
+one of only two and a manufactured finding spends one permanently:
+
+- `apps/backend/src/types/index.ts:21-23` — `export type TurnPhase = z.infer<typeof
+  turnPhaseSchema>`. The backend type is *inferred from* a runtime value, not declared.
+- `apps/backend/src/validation/askAiRequest.ts:41-50` — `turnPhaseSchema` is a runtime
+  `z.enum([...])` of eight literals, consumed by request validation.
+- `apps/frontend/src/types.ts:35-43` — the frontend independently re-enumerates the same
+  eight literals as a union.
+- `apps/frontend/src/components/portal/MtgAssistantApp.tsx:142-151` — `TURN_PHASE_OPTIONS`
+  is a third copy, a runtime literal array of the same values.
+
+The rationale is inverted, and it contradicts the flagging rule entry 18 itself states
+("F-02 and F-05 are flagged precisely because each pairs a runtime-checked array with a
+type"). `TurnPhase` pairs exactly that. The finding is real and Important: an audit that
+affirmatively marks real duplication as healthy is worse than one that omits it, because
+the dismissal is what a reader would rely on.
+
+Review loop 1 of 2. The four Minor findings were passed along with it — they do not
+compel a return on their own, and the contract is explicit that a preference or an
+out-of-scope improvement is never Critical or Important.
 
 ## Open gate
 
@@ -454,6 +485,119 @@ Return as your final text:
 2. The commit SHA and the branch you pushed to.
 3. Confirmation that `git status --porcelain` in the worktree is empty.
 4. Any command that was denied or prompted, quoted verbatim. If a command is denied, stop and report it — do not retry it.
+
+### review
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy the `Working directory:` line above, unchanged and on its own line, into every prompt you write for any subagent you dispatch.
+
+You are node 7 (`review`) of an autonomous graph run. You are a reviewer, not an implementer.
+
+**You hold no write tools and must not create, edit, or delete any file — including via `Bash` redirection, `sed -i`, `tee`, or any other indirect route.** A reviewer that can modify the work it is grading is not reviewing it. Read and search only.
+
+You have not seen how this work was produced, and that is deliberate. Grade the artifacts in front of you, not any justification for them.
+
+## What to review
+
+The complete range, not the pull request diff:
+
+    git diff 5bf657a origin/thejudge-auto/codebase-duplication-audit-work
+
+Use that range. PR #97 proposes `thejudge-auto/codebase-duplication-audit-work` onto base `thejudge-auto/codebase-duplication-audit`, but slice A's commit was pushed directly onto the base earlier, so the PR diff omits slice A. Reviewing the PR diff alone would skip a fifth of the work.
+
+Artifacts to read:
+
+- `PRD/work/codebase-duplication-audit/DUPLICATION-AUDIT.md` — the deliverable
+- `PRD/work/codebase-duplication-audit/DESIGN-BRIEF.md` — what it was supposed to be
+- `PRD/work/codebase-duplication-audit/GAMEPLAN.md` and `slice-{a,b,c,d,e}-*.md`
+- `PRD/work/codebase-duplication-audit/audit-notes/surface-{a,b,c,d}-*.md`
+
+## The package's own promise
+
+This is a read-only audit. It reads `apps/frontend`, `apps/backend`, and `scripts` and writes one document. It changes no product code. A finding that the audit should have *fixed* something is out of scope by design.
+
+## Rubric — grade against these, not against taste
+
+These are the slices' own acceptance criteria, all currently marked `true`. [The 21 criterion statements A1-A3, B1-B3, C1-C3, D1-D4, E1-E8 were quoted here verbatim from the five slice-*.criteria.json files; they are reproduced in those files and in this package unchanged.]
+
+Note that these criteria were flipped to `true` by the node that did the work. Treat the flag as a claim to test, not as evidence. The highest-value checks available to you:
+
+- Do the audit's `path:line` citations resolve to what the finding says is there? Open them and look.
+- Does the coverage table's arithmetic actually reconcile against `git ls-files apps scripts` minus the stated exclusions?
+- Does any finding claim duplication between things that are not in fact serving the same need?
+- Was any surface's pass real, or is a zero-finding surface just an empty one?
+
+## Severity rule — read before writing a finding
+
+**A preference, a style note, or an improvement outside this package's stated requirements is never Critical or Important, and never sends the work back.** Say so plainly rather than inflating it.
+
+Critical is reserved for something that makes the deliverable wrong or unusable — a citation that does not resolve, a finding that misidentifies what the code does, arithmetic that does not reconcile, a surface never actually examined. Important is a stated requirement genuinely unmet.
+
+You have a two-return budget for the whole run, and each manufactured finding spends one the run cannot get back. If the work meets its criteria, approve it and say what you verified.
+
+Your tool-call budget for this dispatch is 120.
+
+Return as your final text, which is the driver's return value and not a message to a human:
+1. Your verdict: `APPROVE` or `RETURN`.
+2. Each finding with a severity of Critical, Important, or Minor, naming the criterion or brief requirement it fails. `none` if there are none.
+3. What you verified first-hand — which citations you opened, which arithmetic you recomputed, and what you found.
+4. Any criterion marked `true` that you believe is not in fact satisfied, with your evidence.
+
+### build (attempt 3)
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy the `Working directory:` line above, unchanged and on its own line, into every prompt you write for any subagent you dispatch.
+
+This is node 6 (`build`), attempt 3. Node 7 reviewed the work with fresh context and no write tools, and returned it. This is review loop 1 of 2 — a second return after this one parks the run, so treat this as the pass that has to land.
+
+The reviewer confirmed a great deal: it recomputed the 500-file reconciliation independently and it holds, it opened every citation in all eight findings and they all resolve, both cross-boundary dismissals (perceptual-hash, `*Policy.test.ts`) are correct, and surface C is a real pass rather than an empty one. None of the 21 criteria is disputed. The audit is good work. What follows is what it got wrong.
+
+## Important — this is what compels the return
+
+`DUPLICATION-AUDIT.md`'s Healthy-reuse **entry 18** marks `TurnPhase`, `CombatStep`, `ZoneId`, `GameContext`, `ConversationTurn` "and others" as deliberately not flagged, on the rationale that they are "compile-time types, not runtime value literals — a name or shape mismatch fails the typechecker."
+
+For `TurnPhase` and `CombatStep` that rationale is inverted. I verified it against source myself before spending this loop:
+
+- `apps/backend/src/types/index.ts:21-23` — `export type TurnPhase = z.infer<typeof turnPhaseSchema>`. The backend type is *inferred from* a runtime value, not declared as a compile-time type.
+- `apps/backend/src/validation/askAiRequest.ts:41-50` — `turnPhaseSchema` is a runtime `z.enum([...])` of eight literals, consumed by request validation.
+- `apps/frontend/src/types.ts:35-43` — the frontend independently re-enumerates the same eight literals as a union.
+- `apps/frontend/src/components/portal/MtgAssistantApp.tsx:142-151` — `TURN_PHASE_OPTIONS` is a third copy: a runtime literal array of the same values, rendered into the selector.
+
+No typechecker crosses the workspace boundary, so a frontend-only addition produces a request the backend validator rejects at runtime — F-02's stated failure mode exactly. Entry 18 also states the rule it used: "F-02 and F-05 are flagged precisely because each pairs a runtime-checked array with a type." `TurnPhase` pairs precisely that, so the document contradicts itself. `ZoneId`'s runtime pair is already half-flagged as F-05, while `TurnPhase` and `CombatStep` are flagged nowhere and are affirmatively marked "do not re-flag."
+
+An audit that marks real duplication as healthy is worse than one that omits it, because the dismissal is the part a reader relies on.
+
+Resolve it on the code. Either promote these as F-02 siblings, or restate the dismissal on a basis that survives the evidence above — including reconsidering whether `GameContext` and `ConversationTurn` belong in the entry at all. Which of those is right is your call as the node that owns the deliverable; I am not choosing it for you. Whatever you choose, entry 18's stated rationale and the document's own flagging rule have to agree with each other and with the code.
+
+## Minor — fold these in while you are here
+
+None of these compels a return on its own.
+
+1. **F-01's divergence tally is wrong and its example is backwards.** It says "5 of 7 call `preventDefault()` ... and 2 (`FeaturePortalMenu`, and effectively the cancel-edit variants below) do not." Six of seven call it; only `FeaturePortalMenu.tsx:164-168` does not. The cancel-edit variants named as *not* calling it both do — `GameSetupPanel.tsx:341` and `PlayerLifeCard.tsx:215` each call `preventDefault()` and `stopPropagation()`. The load-bearing claim, that real divergence exists today in `FeaturePortalMenu`, is correct and should survive the correction.
+2. **Healthy-reuse entry 5 overstates adoption.** `OverlayCloseButton.tsx` is adopted by 6 of F-01's 7 files, not "the same 7" — `FeaturePortalMenu.tsx` contains no reference to it. Surface A's notes repeat the same claim.
+3. **F-04's parenthetical does not add up.** "(6 total guard sites, counting `themePrefs.ts`'s four)" — the cited sites are 2 + 2 + 4 = 8.
+4. **A same-need pair surface C never surfaced or dismissed.** Zone display-label maps: `apps/frontend/src/lib/zoneLabels.ts:3-11` (`ZONE_LABELS`) versus `apps/backend/src/prompt/promptFormatting.ts:30-37` (`ZONE_ITEM_LABEL`), plus a third same-keyset variant at `:21-28` (`ZONE_SECTION_LABEL`). Surface C's notes explain the miss — the zone grep was scoped to `zones.ts` and `constants.ts`, the exported-symbol grep cannot see a non-exported `const`, and `prompt/` was not in the read-in-full list. Fold it in or dismiss it explicitly.
+
+## Constraints, unchanged
+
+Still a read-only audit. Do not edit anything under `apps/` or `scripts/` — the fix is to the audit document and the surface notes, not to the code they describe. Write only inside `PRD/work/codebase-duplication-audit/`, plus `PRD/work/STATUS.md` for the board row.
+
+If your edits change any finding count or the Healthy-reuse set, re-check that the affected criteria statements still hold and that the coverage table still reconciles. Stage explicit paths, no `git add -A` / `--all` / `.`. Push to `thejudge-auto/codebase-duplication-audit-work` only — not the base branch, and no force-push in any form. Leave PR #97 open and targeting base `thejudge-auto/codebase-duplication-audit`.
+
+Your tool-call budget for this attempt is 600, fresh.
+
+Return as your final text:
+1. How you resolved the Important finding, and the code evidence behind the choice.
+2. Each Minor: fixed, or dismissed with a reason.
+3. The commit SHA and the branch you pushed to.
+4. Any criterion whose statement is affected by your edits, and its state now.
+5. Any command that was denied or prompted, quoted verbatim. If a command is denied, stop and report it — do not retry it.
 
 ## Instruction ledger
 
