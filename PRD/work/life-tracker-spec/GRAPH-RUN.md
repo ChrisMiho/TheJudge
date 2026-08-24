@@ -6,7 +6,7 @@
 - Resume 2026-08-24: lock re-taken (`npm run graph:preflight -- --take-lock --slug life-tracker-spec --run-id graph-20260824-082911`); graph canary `nohup true` **denied** by graph-tier rule `denied-command-retry` — `Graph canary: denied — graph tier armed (nohup true)`. Lock pid `24000` is the script's dead parent, not the session pid `12491`; the hook keys on the lock file's existence, so the tier is armed regardless, and the next run would read the lock `stale` rather than silently steal it.
 - Autonomous base: `origin/thejudge-auto/life-tracker-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260824-082911/` (copied into `PRD/work/life-tracker-spec/intake/`, staged copy deleted)
-- Current node: `build` — `plan` returned ok on 2026-08-24
+- Current node: `land` — `review` returned APPROVE on 2026-08-24; parked for the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/105
 - Next action: `/graph-run PRD/work/life-tracker-spec/`
 
 ## Node ledger
@@ -18,6 +18,8 @@
 | 3 | define | opus | ok — gate | `0 → 41` | commit `a6c4aec` on `thejudge-auto/life-tracker-spec`, pushed; `PRD/work/life-tracker-spec/DESIGN-BRIEF.md`; `PRD/sections/decisions/doc-process.md` + `PRD/sections/decisions.md` (DEC-168); `git diff main...HEAD -- PRD/sections/` non-empty -> parked at the `define` gate; `STATUS.refined` -> `STATUS.owner-action` | 2026-08-24 |
 | 4 | gate-qc | sonnet | ok | `0 → 22` | verdict `PASS` on `PRD/work/life-tracker-spec/DESIGN-BRIEF.md`, findings `none`; no `STATUS.*` transition (stays `STATUS.refined`); `## Preparation gate` written to `PRD/work/life-tracker-spec/README.md` by the driver | 2026-08-24 |
 | 5 | plan | sonnet | ok | `0 → 33` | `PRD/work/life-tracker-spec/GAMEPLAN.md`; slices `slice-a-write-spec.md` (write `PRD/sections/life-tracker/README.md`) and `slice-b-nav-row.md` (one `PRD/README.md` Section Inventory row + package-wide diff proof), B sequential on A; `slice-a.criteria.json` (A1–A9) and `slice-b.criteria.json` (B1–B5) — all 14 criteria `false`, each with an `evidence` block, verified by parsing both files; `STATUS.refined` -> `STATUS.active`; board row moved to `## active` in `PRD/work/STATUS.md`; every written path inside `PRD/work/life-tracker-spec/` plus the board file | 2026-08-24 |
+| 6 | build | sonnet | ok | `0 → 136` | worktree `.worktrees/implement-life-tracker-spec` on `implement-life-tracker-spec-1787586821`; slice A `376b2a0`, slice B `3d18edf`, both pushed to `origin/thejudge-auto/life-tracker-spec-work` (forked because the derived shared-branch name collided with the recorded base itself, matching this repo's PR #97 precedent); PR https://github.com/ChrisMiho/TheJudge/pull/105 base `thejudge-auto/life-tracker-spec`; **write scope verified** — `git worktree list` and `git status --porcelain` show the launch checkout clean at `8799b1e`, and every path in `git diff --stat 8799b1e..3d18edf` lies inside `.worktrees/implement-life-tracker-spec/` or `PRD/work/life-tracker-spec/`; deliverables `PRD/sections/life-tracker/README.md` (new, 167 lines) and one `PRD/README.md` row; all 14 criteria `value: true` with 14 matching lines in the hook-written `.worktrees/.graph-evidence.jsonl` for this run id (A7/A8/B3/B5 `via: manual-observation` — a dated check that happened, not a passing check); `STATUS.active` -> `STATUS.ship-ready` | 2026-08-24 |
+| 7 | review | opus | ok | `0 → 31` | no-write reviewer (`Plan` agent type — no `Write`/`Edit`/`NotebookEdit`), fresh context, graded against `slice-a.criteria.json` (A1–A9) and `slice-b.criteria.json` (B1–B5); verdict **APPROVE**, **0 Critical, 0 Important**, 3 Minor — no loop back to `build`; all 14 criteria satisfied as stated; supersession rule verified applied as a rule (four superseded shapes demoted to closed doors, `≈67px` band appears only under `## Rejected alternatives and deferred scope`); diff confined to `PRD/README.md`, `PRD/sections/life-tracker/README.md`, and `PRD/work/` bookkeeping; Minor 2 independently confirmed by the driver — `git ls-remote origin thejudge-auto/life-tracker-spec` = `376b2a0` and `gh pr view 105 --json files` lists 7 files without the spec | 2026-08-24 |
 
 ## Gate verdicts
 
@@ -303,6 +305,35 @@ Report back:
 - any genuine blocker, with the three conditions shown
 
 Boundaries: do not modify any `thejudge-*` skill, `CLAUDE.md`, `.claude/settings*.json`, or `.claude/graph-profile.json`. Do not merge or close a pull request. Do not stage with `git add -A`, `git add --all`, or `git add .` — stage explicit paths only. Do not push `main` or `master`, force-push by any flag or leading-`+` refspec, or delete a remote branch. Do not drop, pop, or reorder any stash. Do not use `nohup`, a background `&`, `pkill`, or `killall`. Do not run `npm run data:refresh`. Do not touch `.secrets/`. If a command is denied, stop and report it verbatim — never retry it and never rephrase it to get past the rule.
+
+### review
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run ID: graph-20260824-082911
+Slug: life-tracker-spec
+
+You are node 7 of an autonomous graph run: `review`. You are a no-write reviewer. You hold no `Write`, `Edit`, or `NotebookEdit` tool and you must not attempt to change anything — a reviewer that can modify the work it grades is not reviewing it. Read and search only. You did not see the build node's transcript and must not go looking for it; grade the artifact, not the justification.
+
+**What to review.** The implementation diff `git diff 8799b1e..3d18edf` in the worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-life-tracker-spec`, published as PR https://github.com/ChrisMiho/TheJudge/pull/105 (base `thejudge-auto/life-tracker-spec`, head `thejudge-auto/life-tracker-spec-work`). Its two deliverables are `PRD/sections/life-tracker/README.md` (new) and one `PRD/README.md` Section Inventory row.
+
+**Your rubric is the slices' own acceptance criteria and nothing else.** Read them in the worktree at `PRD/work/life-tracker-spec/slice-a-write-spec.md` and `slice-a.criteria.json` (A1–A9), and `slice-b-nav-row.md` and `slice-b.criteria.json` (B1–B5). All 14 are marked `value: true`; the run's evidence log records each id as earned. Grade whether the shipped artifact actually satisfies each criterion as that criterion is stated. Supporting context: `PRD/work/life-tracker-spec/DESIGN-BRIEF.md`, `GAMEPLAN.md`, and the confirmed `DEC-168` in `PRD/sections/decisions/doc-process.md`, which the owner walked and accepted unchanged on 2026-08-24.
+
+**Severity rule, and it binds you.** A preference, a style note, or an improvement outside the slices' stated requirements is **never** Critical or Important, and never loops back to `build`. Rate such a thing Minor or leave it out. A reviewer with a two-loop budget and an incentive to look useful manufactures findings, and each one spends a loop this run cannot get back. Only a gap that breaks correctness or a stated criterion earns Critical or Important.
+
+Two things worth checking closely, because they are where this artifact could be wrong on its own terms:
+- DEC-168 says a behavior enters the spec only in its current form, and that a measured bound travels with its behavior only if that surface still exists. The worked example: the ≈53px commander-damage band (REQ-112) survives, the ≈67px life-adjustment edge band does not, because DEC-136 replaced edge bands with half-card zones. Check the spec against that rule rather than against the example alone.
+- DEC-168 says the spec moves, deletes, retires, reorders, and renumbers nothing, and that precedence is unchanged — `decisions.md` stays #1 and a cited DEC/REQ/FLOW wins any conflict with the spec. Check the diff actually touches only what it is allowed to touch, and that the spec carries its own non-authoritative marker.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write, and require any subagent you dispatch to do the same.
+
+Report back:
+- an overall verdict: `APPROVE` or `CHANGES REQUESTED`
+- every finding, each rated `Critical`, `Important`, or `Minor`, naming the criterion id it fails and the file and line it lives at
+- for each of the 14 criteria, whether the shipped artifact satisfies it as stated
+- `none` explicitly if you found nothing — that is a valid and expected outcome
 
 ## Instruction ledger
 
