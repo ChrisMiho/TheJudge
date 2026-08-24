@@ -806,6 +806,26 @@ test("a malformed release record is treated as absent, not as a release", () => 
   assert.equal(bash("rm .worktrees/.graph-run.lock", broken).rule, "run-lock-removal")
 })
 
+test("a release record keyed `terminalState` is not a release, and the denial says so", () => {
+  // Observed 2026-08-24 on `life-tracker-spec`. The driver wrote a well-formed
+  // record naming the right run and the right terminal state under the key
+  // `terminalState`. It parses, so it is not the malformed case above; it is
+  // simply the wrong key, and the lock stayed held for the rest of the run.
+  //
+  // No prose in the repository stated the key names — `releasesOwnLock()` was
+  // the only place they existed. The denial message now carries them, so the
+  // next driver learns the shape from the refusal rather than from the source.
+  const misKeyed = records({
+    lock: LOCK_CONTENTS,
+    release: JSON.stringify({ runId: "r", terminalState: "PARKED" })
+  })
+  const result = bash("rm .worktrees/.graph-run.lock", misKeyed)
+  assert.equal(result.rule, "run-lock-removal")
+  assert.match(result.reason, /"state"/)
+  assert.match(result.reason, /"runId"/)
+  assert.match(result.reason, /not `terminalState`/)
+})
+
 test("declaring a terminal state does not unlock anything else", () => {
   // Release covers the lock alone. Everything the graph tier guards stays
   // guarded right up to the moment the lock goes.

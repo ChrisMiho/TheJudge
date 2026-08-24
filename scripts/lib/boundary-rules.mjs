@@ -1013,7 +1013,7 @@ export const RULES = Object.freeze([
       if (releasesOwnLock(context)) return null
       for (const candidate of writtenPaths(context)) {
         if (matchesPath(candidate, RUN_LOCK_PATH)) {
-          return `Removing the run lock is denied while that lock is live. Release goes through the run's own terminal states: write \`${RUN_RELEASE_PATH}\` naming this run id and its terminal state first.`
+          return `Removing the run lock is denied while that lock is live. Release goes through the run's own terminal states: write \`${RUN_RELEASE_PATH}\` first, as {"runId": "<this run's id>", "state": "<terminal state>"} — both keys required, non-empty, and \`runId\` must equal the lock's. The key is \`state\`, not \`terminalState\`. Write it in a separate tool call before the removal: a compound command is one call, so the record is not on disk yet when this rule runs.`
         }
       }
       return null

@@ -242,10 +242,10 @@ On finding it, halt in this order:
 4. Update the package's row in `PRD/work/STATUS.md`.
 5. Declare the terminal state, then delete `.worktrees/.graph-run.lock` — the
    release every terminal state requires. Write
-   `.worktrees/.graph-run-release.json` naming this run id and the terminal
-   state first; the hook denies removing a live lock without it. That record is
-   what makes the release *declared* rather than silent — it does not authorise
-   the release, and the rule says so.
+   `.worktrees/.graph-run-release.json` first, in its own tool call, in the
+   exact shape `## Terminal states` gives; the hook denies removing a live lock
+   without it. That record is what makes the release *declared* rather than
+   silent — it does not authorise the release, and the rule says so.
 6. Report the branch, the PR URL if one exists, and the ledger path.
 
 Resume with `/graph-run PRD/work/<slug>/` after removing the sentinel. The run
@@ -386,6 +386,29 @@ reporting any terminal state above. This table is the definitive list — do not
 enumerate the releasing states anywhere else. A second list drifts, and a lock
 released on a state one list omits is a stranded lock that blocks every later
 run.
+
+**The release record's exact shape**, because the hook matches keys, not
+intent:
+
+```json
+{ "runId": "<this run's id>", "state": "COMPLETE | PARKED | BLOCKED | PROMPTED" }
+```
+
+Both keys are required, both are non-empty strings, and `runId` must equal the
+`runId` in the live lock. `releasesOwnLock()` in
+`scripts/lib/boundary-rules.mjs` is the decision, and it reads `state` — not
+`terminalState`. Extra keys are ignored, so `slug`, `node`, or a reason line
+can ride along freely.
+
+Write that file in **its own tool call**, before the call that removes the
+lock. A single compound command is one tool call, so the hook evaluates the
+removal against the disk as it stood before any of it ran — and denies.
+
+A wrong key is not recoverable inside the run. The removal is denied, and the
+corrected second attempt is denied again by `denied-command-retry` below, which
+is that rule working rather than a bug. Observed 2026-08-24 on
+`life-tracker-spec`: a record written with `terminalState` stranded the lock,
+and the owner had to remove it by hand.
 
 **A denied call is never retried.** The hook records every denial it issues for
 the run and refuses an identical later call as `denied-command-retry`, naming the
