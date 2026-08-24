@@ -61,7 +61,8 @@ Escape half; each adopter re-derives the same `document.addEventListener
 `OverlayCloseButton.tsx` is shared by six of these seven files for the
 visible close button; `FeaturePortalMenu.tsx` does not reference it (it has
 no dedicated close control at all — the menu closes via outside-click, a
-destination selection, or the broken Escape path). This sharpens the gap:
+destination selection, or its own Escape handler, which works but omits
+`preventDefault()`). This sharpens the gap:
 the click path is centralized for 6 of 7, and the keyboard path is
 centralized for none.
 

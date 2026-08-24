@@ -164,9 +164,10 @@ name back can read as inconsistent with the UI the player is looking at.
 `apps/backend/src/prompt/promptFormatting.ts:21-28` also declares
 `ZONE_SECTION_LABEL` (`"ZONE: BATTLEFIELD"`, etc.), a third same-keyset map.
 This stays out of the finding: its need is an uppercase prompt-section
-heading, backend-only with no frontend equivalent, consistent with surface
-C's original ruling that `ZONE_SECTION_LABEL` and `ZONE_ITEM_LABEL` serve two
-different purposes within the backend.
+heading, backend-only with no frontend equivalent, so it does not answer the
+same need as the two player-facing maps above. `promptFormatting.ts` sat
+outside surface C's read-in-full list, so this exclusion rests on the code
+cited here, not on any prior surface ruling.
 
 ### F-04: Combat-step list defined independently three times across the FE↔BE boundary
 
@@ -444,8 +445,9 @@ would need both edits by hand.
 5. `apps/frontend/src/components/OverlayCloseButton.tsx` — single shared
    close-button component, adopted by 6 of the 7 files named in F-01 (all
    except `FeaturePortalMenu.tsx`, which has no dedicated close control at
-   all — the menu closes via outside-click, a destination selection, or the
-   broken Escape path).
+   all — the menu closes via outside-click, a destination selection, or its
+   own Escape handler, which works but omits the `preventDefault()` its six
+   peers call, as F-01 records).
 6. `apps/frontend/src/components/StepEyebrow.tsx` /
    `apps/frontend/src/components/StagedStepHeader.tsx` — shared step-header
    pair, adopted consistently by `EnrichmentStep.tsx`, `ZoneConfirmStep.tsx`,
@@ -525,7 +527,7 @@ would need both edits by hand.
 | --- | --- | --- |
 | `apps/frontend/src/components/**`, `apps/frontend/src/hooks/**` | 108 | 2 (F-01, F-10) |
 | `apps/frontend/src/lib/**`, `apps/frontend/src/types/**`, top-level `apps/frontend/src/*`, `apps/frontend/src/test/**`, CSS | 159 | 2 (F-08, F-09) |
-| `apps/backend/src/**` | 162 | 0 in this surface's own pass (surfaced the F-05, F-06 candidates that this pass later confirmed; F-02, F-03, F-04 were found later, during review response, by re-reading files already inside this surface's and surface B's inventory — see note below) |
+| `apps/backend/src/**` | 162 | 0 in this surface's own pass (surfaced the F-05, F-06 candidates that this pass later confirmed; F-02, F-03, F-04 were found later, during review response, by re-reading files already inside this surface's and surfaces A and B's inventories — see note below) |
 | `scripts/**` plus the three `package.json` script blocks | 42 | 1 (F-07) |
 | Cross-boundary (FE↔BE↔scripts) | reads surfaces above; workspace-root config/tooling files outside `src/` also examined here (11 files: `.env.example`, `index.html`, `package.json`, `postcss.config.js`, `tailwind.config.ts`, `tsconfig.json`, `vite.config.ts` per frontend; `.env.example`, `package.json`, `tsconfig.json`, `vitest.config.ts` per backend) | 5 (F-02, F-03, F-04, F-05, F-06) + 1 minor (F-11); 2 starting points dismissed (perceptual-hash recipe, `*Policy.test.ts`) |
 | **Total** | **471** (A-D) **+ 11** (unassigned-but-in-scope config, examined by this pass) **+ 18 excluded** (data/binary, listed above) **= 500**, reconciling against `git ls-files apps scripts` | **11** |
@@ -583,8 +585,10 @@ resolved here.
   starting point (F-08 below, dismissed)" cited the wrong item — the
   perceptual-hash dismissal is Healthy reuse entry 2, not any `F-##`.
   Corrected.
-- Every finding after F-01 was renumbered (old F-02 through F-08 are now
-  F-05 through F-11) to keep the document's stated ranking rule — by
+- Every finding after F-01 was renumbered. The seven old findings F-02
+  through F-08 now occupy F-05 through F-11, but not by a uniform +3 shift —
+  they were re-ranked, so old F-04 became F-08 and old F-06 became F-09. The
+  renumbering keeps the document's stated ranking rule — by
   complexity removed, not discovery order — honest once F-02, F-03, and
   F-04 were inserted at their actual rank. Every cross-reference between
   findings, and from Healthy reuse into findings, was updated to match.
@@ -593,3 +597,28 @@ None of these corrections changed the coverage-table file-count
 reconciliation (still 500) or any of the three previously-dismissed
 cross-boundary starting points; they added 3 findings (8 → 11) and fixed
 prose errors in 3 more.
+
+Corrections from the owner gate (2026-08-23): the review that approved this
+document left four Minor findings open. All four are prose or attribution
+slips; none changes a finding, a verdict, a citation, or the coverage
+arithmetic.
+
+- **Healthy reuse entry 5** and `audit-notes/surface-a-components-hooks.md`
+  called `FeaturePortalMenu.tsx`'s Escape path "broken". It is not:
+  `FeaturePortalMenu.tsx:159-174` registers a `keydown` listener and closes
+  the menu. Its only divergence from the other six is the missing
+  `preventDefault()`, which F-01 already states correctly. Both places now
+  say that instead.
+- **F-03** justified excluding `ZONE_SECTION_LABEL` as "consistent with
+  surface C's original ruling". No such ruling exists in
+  `audit-notes/surface-c-backend.md`, and F-03 itself notes two paragraphs
+  earlier that `promptFormatting.ts` sat outside surface C's read-in-full
+  list. The exclusion was already justified on the code in the same
+  sentence; the false appeal is removed.
+- **The coverage table's backend-row note** attributed F-02, F-03, and F-04
+  to surfaces C and B only. `MtgAssistantApp.tsx`, cited by F-02 and F-03,
+  is in surface A's inventory. The row now names surfaces A and B.
+- **The renumbering summary** read as a uniform +3 shift. The seven old
+  findings do occupy F-05 through F-11 as a set, but they were re-ranked,
+  not shifted: old F-04 became F-08 and old F-06 became F-09. Stated
+  accurately now.
