@@ -10,13 +10,13 @@ Do not rename package folders to encode status.
 
 ## refined
 
-## refining
-
-## ideation
-
 | Package | Notes |
 | --- | --- |
 | [life-tracker-spec](./life-tracker-spec/) | Phase A #1 of the docs-refactor gameplan (`PRD/work/adhoc/refactor-gameplan.md`) — current-state spec for the Player Life Tracker |
+
+## refining
+
+## ideation
 
 ## owner-action
 
