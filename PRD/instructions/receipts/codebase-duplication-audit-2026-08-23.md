@@ -52,7 +52,48 @@
 - [x] `PRD/work/codebase-duplication-audit/GRAPH-RUN.md`'s `## Node ledger`
       and `## Instruction ledger` folded verbatim into `## Graph run` below,
       before the package folder was deleted, per this run's node-9 requirement
-- [x] `intake/intake-codebase-health.md` recorded under `## Intake` below,
+- [x] `intake/intake-codebase-health.md` recorded under `
+### Tooling defects surfaced at close-out, 2026-08-24
+
+Two defects in the graph tooling that the shakedown report's original four do
+not cover. Both were observed during this run's own resume, not reasoned about.
+
+**A. The hook denies prose that merely names a denied command.** The command
+normalizer does not track heredoc bodies. It splits the whole Bash command text
+on separators — newline and `;` included — and matches each resulting segment
+head against the denied-command list. A commit message containing a semicolon
+followed by `nohup` is therefore read as a real `nohup` invocation and denied.
+
+Isolated by driving `classifyToolCall()` directly:
+
+    "cat > f.txt <<EOF\nclaims to prove; nohup discriminates\nEOF\ngit commit -F f.txt"
+        -> deny  [graph/nohup-wrapper]     <- false positive, inert prose
+    "cat > f.txt <<EOF\nclaims to prove nohup discriminates\nEOF\ngit commit -F f.txt"
+        -> allow                           <- identical text, no semicolon
+    "echo hi; nohup echo x"
+        -> deny  [graph/nohup-wrapper]     <- genuine, correctly denied
+
+This is the inverse of the limit `## Stated limits` already records. That limit
+says a command assembled at runtime *evades* the hook. This is inert prose
+*triggering* it. It bites this workflow specifically: recording a defect is the
+run's job, and a run cannot write a ledger entry, commit message, or receipt
+that discusses a denied command in that shape without rewording around the tool.
+The commit message for `b531449` was reworded for exactly this reason. The same
+shape presumably affects every entry in `DENIED_COMMANDS` and both wrapper
+rules, not only this one.
+
+**B. The resume path has no lock step at all.** Tooling defect 1 in the
+shakedown report is that `graph-preflight` never writes the lock. The resume
+half is worse and separate: a resume enters at the node matching the package's
+`STATUS.*` marker and never re-runs `preflight`, so there is no step that takes
+the lock even in principle. The entire graph tier — caps, protected-path
+blocking, evidence checks, stop-sentinel protection — would have been inert for
+the whole of node 9. The driver wrote the lock by hand with `lockRecord()`
+before dispatching. Nothing in the tooling does this.
+
+Both are hand-patched here and neither survives into the next run.
+
+## Intake` below,
       before the package folder was deleted
 - [x] Autonomous merge-proof gate satisfied: current branch is the recorded
       base and checked out; PR #97 merged into that base per the GitHub API;
@@ -752,6 +793,19 @@ arithmetic.
 | 6 | build | sonnet | ok | `0 → 73` | attempt 3, after review return: commit `2cd17c2` on `...-work`; promoted `TurnPhase`/`CombatStep` to findings and rewrote Healthy-reuse entry 18's rule; found a further already-diverged pair (`ZONE_LABELS` "Command Zone" vs `ZONE_ITEM_LABEL` "Command"), driver-verified; all four Minor items fixed; 8 findings → 11, renumbered by complexity; all 21 criteria still `true`; `apps/` and `scripts/` untouched | 2026-08-23 |
 | 7 | review | opus | ok (APPROVE) | `0 → 17` | pass 2 at `2cd17c2`: APPROVE, 4 Minor, no Critical or Important; walked all 11 findings and every internal `F-##` reference for stale numbers after the renumber (none); enumerated all six backend `z.enum`s to test the rewritten Healthy-reuse rule exhaustively; recomputed the 500-file reconciliation; confirmed the original Important finding resolved rather than relocated | 2026-08-23 |
 | 8 | land | — (human) | ok | n/a — human node, no dispatch | PR #97 merged (squash) 2026-08-24T02:49:04Z as `ae3ac11` on `thejudge-auto/codebase-duplication-audit`; verified `gh pr view 97 --json state,mergedAt` -> MERGED, and the merged tree carries `STATUS.ship-ready`, 11 findings, and the 767-line ledger | 2026-08-24 |
+| 9 | close | sonnet | ok | `0 → 54` (cap 120) | receipt `PRD/instructions/receipts/codebase-duplication-audit-2026-08-23.md` written; `PRD/work/codebase-duplication-audit/` deleted and board row removed, commit `9443962`; driver re-verified independently — all 11 node-ledger rows byte-identical between `git show b531449:.../GRAPH-RUN.md` and this receipt, both ledger sections present, all 11 findings carried over, `git diff --stat 2cd17c2 HEAD -- apps/ scripts/` empty | 2026-08-24 |
+
+**Node 9's row was written by the driver after the fact, not by the run.** The
+run cannot record its own final node: node 9 deletes `PRD/work/<slug>/`, and
+`GRAPH-RUN.md` lives inside it, so there is no ledger left to write the `close`
+row into. Every other row was written before its successor started, per the
+contract's ledger rule. This row is the one exception, and it is recorded as
+such rather than presented as if the run wrote it.
+
+This is a structural gap in the contract, not a mistake by node 9. The fix
+belongs with the other graph-tooling defects: either the `close` row is written
+before the delete, or the receipt becomes the ledger's home at re-entry rather
+than at close.
 
 ### Resume notes — 2026-08-24, re-entry at `close`
 
