@@ -66,6 +66,32 @@ node 7 grades the slice against its stated acceptance criteria with fresh contex
 which covers E5 and E8. The driver verifies those three claims directly rather
 than reading the criteria flags as proof.
 
+### Node 5 note — criteria earned by the node that wrote them
+
+Before node 6 was dispatched, `.worktrees/.graph-evidence.jsonl` already held seven
+earned ids for this run: A1, A3, D1, D3, D4, E6, E7, logged 2026-08-24T00:05:30Z
+to 00:08:31Z — during node 5 (`plan`), not node 6 (`build`).
+
+Node 5 earned them legitimately as tool calls while planning: it ran `git ls-files`
+over the surfaces to reconcile file counts, ran searches over `scripts/`, and named
+the three `package.json` files. Those calls match the evidence patterns it was
+writing at the same time.
+
+The log is keyed by `runId`, slice, and criterion id — not by node. The contract
+states that evidence from another *run* does not carry over; evidence from another
+*node in the same run* does. So a third of this package's acceptance criteria were
+satisfied by the planning node, and node 6 can flip them to `true` without having
+done that work itself.
+
+The practical exposure here is low: every pre-earned criterion is an enumeration or
+search node 6 performs anyway in the course of the audit. The mechanism is still
+weaker than "earned, not written" implies, and on a package where the planning node
+happened to run the build node's verification command, it would be materially weaker.
+
+Recorded, not worked around. The driver verifies node 6's actual output directly —
+coverage against `git ls-files`, resolvable path:line citations, and the deliverable's
+required sections — rather than reading criteria flags as proof of work.
+
 ## Open gate
 
 - None
