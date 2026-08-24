@@ -169,13 +169,23 @@ reports the PR still open and stops again.
 ### Read the PR alongside the base, not on its own
 
 Slice A's commit `9f617d8` was pushed directly onto the autonomous base during build
-attempt 1, so **PR #97 shows four of the five slices**. Slice A's diff is already an
-ancestor of the base. The merge result is still complete — base gains A first, then
-B–E — but the PR under-represents the work as a review artifact. The full range is:
+attempt 1, so **PR #97's diff view shows four of the five slices**. The work branch
+itself is complete: `9f617d8` is an ancestor of both branches, so GitHub omits it
+from the diff only because the merge base already contains it. Nothing is missing
+from the branch, and the merge result is complete — base gains A first, then B–E.
+
+    git merge-base --is-ancestor 9f617d8 origin/thejudge-auto/codebase-duplication-audit-work  # true
+
+To read all five slices as one range, diff from the gameplan commit instead:
 
     git diff 5bf657a origin/thejudge-auto/codebase-duplication-audit-work
 
 Node 7 reviewed that range rather than the PR diff, so slice A was not skipped.
+
+**Correction (owner gate, 2026-08-23):** an earlier wording of this section, and
+`PRD/work/adhoc/graph-run-shakedown-report.md` §4 "Node mistake 2", said the PR was
+"missing a fifth of the work". That overstates it. The defect is real but narrower:
+the stray push made the PR a poor *review artifact*, not an incomplete branch.
 
 ### Deliberate deviation from the park procedure — the marker was not moved
 
@@ -191,7 +201,7 @@ again on the base would give git a rename/rename conflict against the PR — bas
 The marker's correct destination is `ship-ready`, and it arrives by merging. This gate
 record is the park; the marker follows the merge. Recorded here rather than silently.
 
-### Four Minor findings, open and not blocking
+### Four Minor findings — RESOLVED at the owner gate, 2026-08-23
 
 Node 7 approved with four Minor findings. Minor findings never loop back to `build`
 under the contract, and the two-return review budget was spent on the Important
@@ -215,6 +225,12 @@ finding's verdict, a citation, or the coverage arithmetic.
 4. **The changelog's renumbering summary implies a uniform shift** — "old F-02 through
    F-08 are now F-05 through F-11" reads as +3 across the board, but the remapping
    reordered (old F-05 → F-06, old F-03 → F-07). Only the range statement is true.
+
+
+**Resolution.** All four were fixed on the work branch in `35ee93c`, and recorded
+in `DUPLICATION-AUDIT.md`'s own correction log under "Corrections from the owner
+gate (2026-08-23)". None changed a finding, a verdict, a citation, or the coverage
+arithmetic. The gate's remaining question is the merge itself.
 
 ### Lock release — the contract and the hook disagree
 
