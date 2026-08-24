@@ -155,8 +155,9 @@ remote feature branches with nothing unmerged; content fidelity was verified
 before the audit package was deleted.
 
 `PRD/work/adhoc/graph-run-shakedown-report.md` holds the original report with
-in-place corrections. That directory is gitignored (`.gitignore:78`), so it is
-scratch — this receipt is the durable record.
+in-place corrections. That directory used to be gitignored; the rule is removed
+in this change so the doc-refactor planning files are visible in the tree and in
+review. This receipt is still the durable record of the run.
 
 ---
 
