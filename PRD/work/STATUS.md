@@ -6,8 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-- [codebase-duplication-audit](./codebase-duplication-audit/)
-
 ## active
 
 ## refined
