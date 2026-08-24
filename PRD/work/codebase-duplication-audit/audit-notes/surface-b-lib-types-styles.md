@@ -111,10 +111,10 @@ on failure, so a shared implementation only needs to preserve that.
 **Size:** small.
 
 **Complexity removed:** 4 independent places currently reimplement the same
-try/catch shape (6 total guard sites, counting `themePrefs.ts`'s four). If
+try/catch shape (8 total guard sites: 1 + 1 + 2 + `themePrefs.ts`'s four). If
 storage access needs to change (e.g. adding a `console.warn` in dev, or
 handling `QuotaExceededError` distinctly from "storage unavailable"), that
-change has to be hand-applied 4-6 times; today it already hasn't been, so any
+change has to be hand-applied 4-8 times; today it already hasn't been, so any
 future policy change starts from a baseline that's already
 inconsistent between the two sub-patterns.
 

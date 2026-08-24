@@ -58,10 +58,12 @@ own Escape/close-button paths — this hook only covers the outside/scrim
 interaction" — so the split is a deliberate boundary, but nothing fills the
 Escape half; each adopter re-derives the same `document.addEventListener
 ("keydown", ...)` / `event.key === "Escape"` / cleanup shape independently.
-`OverlayCloseButton.tsx` is shared by these same seven files for the visible
-close button, which sharpens the gap: the click path is centralized twice
-(button + outside-dismiss hook) and the keyboard path is centralized zero
-times.
+`OverlayCloseButton.tsx` is shared by six of these seven files for the
+visible close button; `FeaturePortalMenu.tsx` does not reference it (it has
+no dedicated close control at all — the menu closes via outside-click, a
+destination selection, or the broken Escape path). This sharpens the gap:
+the click path is centralized for 6 of 7, and the keyboard path is
+centralized for none.
 
 **Consolidation:** a paired `useDismissOnEscape(onDismiss, enabled)` hook
 (same shape and file as `useOutsideDismiss.ts`) that each of the 7 files
@@ -75,9 +77,9 @@ for any Escape-handling change (e.g. adding `stopPropagation`, or excluding
 Escape while an inner text input is focused) — done for `FeaturePortalMenu`'s
 menu case already; the other 6 would need to be checked and edited by hand.
 If one copy is edited and the others are not, overlays silently diverge in
-whether Escape calls `preventDefault()` first (5 of 7 do; `FeaturePortalMenu`
-does not) — a real behavioral difference already present today, first
-evidence that hand-copying has already begun to drift.
+whether Escape calls `preventDefault()` first (6 of 7 do; only
+`FeaturePortalMenu` does not) — a real behavioral difference already
+present today, first evidence that hand-copying has already begun to drift.
 
 Excluded from this finding as a different need: `GameSetupPanel.tsx:340` and
 `PlayerLifeCard.tsx:214` also check `event.key === "Escape"`, but inside a
@@ -134,8 +136,9 @@ because it was pasted rather than imported.
   `dismissStack` correctly handles nested-overlay ordering; this is the
   positive control the Escape-side gap in F-01 is measured against.
 - `apps/frontend/src/components/OverlayCloseButton.tsx` — single shared
-  close-button component, adopted by the same 7 files as
-  `useOutsideDismiss.ts`.
+  close-button component, adopted by 6 of the 7 files that use
+  `useOutsideDismiss.ts` (all except `FeaturePortalMenu.tsx`, which has no
+  dedicated close control at all).
 - `apps/frontend/src/components/StepEyebrow.tsx` /
   `apps/frontend/src/components/StagedStepHeader.tsx` — shared step-header
   pair, adopted consistently by `EnrichmentStep.tsx`, `ZoneConfirmStep.tsx`,
