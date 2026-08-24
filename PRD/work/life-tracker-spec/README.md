@@ -10,3 +10,7 @@ documentation-refactor gameplan.
 
 See `IDEA.md` for the problem, outcome, and non-goals, and the matched prior
 receipts.
+
+## Autonomous metadata
+
+- Autonomous base: origin/thejudge-auto/life-tracker-spec
