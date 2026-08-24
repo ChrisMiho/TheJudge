@@ -389,3 +389,70 @@ test("a pattern command still cannot read a secret by path", () => {
   // The first positional is the pattern; the operands after it are paths.
   assert.equal(verdict("grep -rn TOKEN .secrets/openai-dev.env").rule, "secrets-access")
 })
+
+test("every removal mechanism reaches the run lock, not just `rm`", () => {
+  // `unlink` was absent from DESTRUCTIVE_COMMANDS, so `run-lock-removal`
+  // matched `rm .worktrees/.graph-run.lock` and allowed the identical
+  // `unlink .worktrees/.graph-run.lock`. A guardrail one synonym clears is
+  // not a guardrail.
+  for (const command of [
+    "rm .worktrees/.graph-run.lock",
+    "rm -f .worktrees/.graph-run.lock",
+    "unlink .worktrees/.graph-run.lock",
+    "mv .worktrees/.graph-run.lock /tmp/elsewhere"
+  ]) {
+    const result = classifyToolCall({
+      toolName: "Bash",
+      toolInput: { command },
+      runActive: true
+    })
+    assert.equal(result.decision, "deny", `must stay denied without a release record: ${command}`)
+    assert.equal(result.rule, "run-lock-removal")
+  }
+})
+
+test("a declared terminal state gives lock release a path the rule recognises", () => {
+  // The contract requires the run to delete its lock as the last act of every
+  // terminal state; the rule denied exactly that, and the two could not both
+  // hold. Release is permitted only when the driver has declared a terminal
+  // state naming this run.
+  const release = { runId: "graph-20260823-173948", state: "COMPLETE" }
+  for (const command of [
+    "rm .worktrees/.graph-run.lock",
+    "unlink .worktrees/.graph-run.lock"
+  ]) {
+    const result = classifyToolCall({
+      toolName: "Bash",
+      toolInput: { command },
+      runActive: true,
+      lockRunId: "graph-20260823-173948",
+      release
+    })
+    assert.equal(result.decision, "allow", `release must be permitted: ${command}`)
+  }
+})
+
+test("a release record for a different run does not release this lock", () => {
+  const result = classifyToolCall({
+    toolName: "Bash",
+    toolInput: { command: "rm .worktrees/.graph-run.lock" },
+    runActive: true,
+    lockRunId: "graph-20260823-173948",
+    release: { runId: "graph-19990101-000000", state: "COMPLETE" }
+  })
+  assert.equal(result.decision, "deny")
+  assert.equal(result.rule, "run-lock-removal")
+})
+
+test("the stop sentinel is still not removable at a terminal state", () => {
+  // Release covers the lock alone. The owner clears their own kill switch.
+  const result = classifyToolCall({
+    toolName: "Bash",
+    toolInput: { command: "rm .worktrees/.graph-stop" },
+    runActive: true,
+    lockRunId: "graph-20260823-173948",
+    release: { runId: "graph-20260823-173948", state: "COMPLETE" }
+  })
+  assert.equal(result.decision, "deny")
+  assert.equal(result.rule, "stop-sentinel-removal")
+})

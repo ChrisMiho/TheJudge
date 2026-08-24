@@ -5,6 +5,7 @@ import test from "node:test"
 import {
   EVIDENCE_LOG_PATH,
   RUN_LOCK_PATH,
+  RUN_RELEASE_PATH,
   RUN_STATE_PATH,
   RUN_STOP_PATH,
   capForNode
@@ -40,13 +41,17 @@ function absent(target) {
  * like a filesystem for it: a test that only stubbed reads would never catch the
  * count failing to persist.
  */
-function records({ lock = null, stop = false, state = null, counts = null } = {}) {
+function records({ lock = null, stop = false, state = null, counts = null, release = null } = {}) {
   const files = new Map()
   if (counts !== null) files.set(CALL_COUNT_PATH, counts)
 
   return {
     files,
     read: (target) => {
+      if (target.endsWith(RUN_RELEASE_PATH)) {
+        if (release === null) absent(target)
+        return release
+      }
       if (target.endsWith(RUN_LOCK_PATH)) {
         if (lock === null) absent(target)
         return lock
@@ -764,4 +769,44 @@ test("an internal error prints a diagnostic before allowing", async () => {
   const { code, stderr } = await runHook("not json")
   assert.equal(code, 0)
   assert.match(stderr, /hook error, allowing the call/)
+})
+
+test("a run releases its own lock by declaring a terminal state", () => {
+  // The contract requires the lock deleted as the last act of every terminal
+  // state; this rule denied exactly that. Before the release record there was
+  // no path through that was not a bypass.
+  const held = records({ lock: LOCK_CONTENTS })
+  assert.equal(bash("rm .worktrees/.graph-run.lock", held).rule, "run-lock-removal")
+
+  const releasing = records({
+    lock: LOCK_CONTENTS,
+    release: JSON.stringify({ runId: "r", state: "COMPLETE" })
+  })
+  assert.equal(bash("rm .worktrees/.graph-run.lock", releasing).decision, "allow")
+  assert.equal(bash("unlink .worktrees/.graph-run.lock", releasing).decision, "allow")
+})
+
+test("a release naming another run does not open this lock", () => {
+  const stale = records({
+    lock: LOCK_CONTENTS,
+    release: JSON.stringify({ runId: "some-earlier-run", state: "COMPLETE" })
+  })
+  assert.equal(bash("rm .worktrees/.graph-run.lock", stale).rule, "run-lock-removal")
+})
+
+test("a malformed release record is treated as absent, not as a release", () => {
+  const broken = records({ lock: LOCK_CONTENTS, release: "{not json" })
+  assert.equal(bash("rm .worktrees/.graph-run.lock", broken).rule, "run-lock-removal")
+})
+
+test("declaring a terminal state does not unlock anything else", () => {
+  // Release covers the lock alone. Everything the graph tier guards stays
+  // guarded right up to the moment the lock goes.
+  const releasing = records({
+    lock: LOCK_CONTENTS,
+    release: JSON.stringify({ runId: "r", state: "COMPLETE" })
+  })
+  assert.equal(bash("echo x > CLAUDE.md", releasing).rule, "protected-path-write")
+  assert.equal(bash("rm .worktrees/.graph-stop", releasing).rule, "stop-sentinel-removal")
+  assert.equal(bash("echo x >> .worktrees/.graph-evidence.jsonl", releasing).rule, "run-record-write")
 })
