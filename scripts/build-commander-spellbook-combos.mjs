@@ -10,6 +10,25 @@ const defaultRawInputDir = path.resolve("apps/backend/data/commander-spellbook")
 const defaultDetailPath = path.resolve("apps/backend/data/commanderSpellbookCombos.json.gz")
 const defaultIndexPath = path.resolve("apps/backend/data/commanderSpellbookComboIndex.json.gz")
 
+/**
+ * Variants below this deck count are left out of the committed artifacts.
+ *
+ * Upstream's `popularity` is the number of decks running the combo. At 0 it is
+ * a combo the corpus knows about and nobody plays: on the 2026-08-22 snapshot
+ * that was 44,810 of 106,182 variants — 42.2% of the corpus and 33.6MB of the
+ * 76.9MB detail artifact.
+ *
+ * The cut exists because the whole corpus no longer fits in a Lambda deployment
+ * package: `UpdateFunctionCode` caps a direct upload at 70,167,211 bytes and the
+ * detail artifact alone compresses to 73.1MB. A threshold of 1 is the smallest
+ * cut that clears it, and it drops only combos no deck runs.
+ *
+ * Raise it to shrink the artifact further; every step is priced in
+ * `PRD/instructions/receipts/`. Set it to 0 to keep everything, which currently
+ * does not deploy.
+ */
+export const MIN_VARIANT_POPULARITY = 1
+
 export const SOURCE_NAME = "Commander Spellbook"
 export const SOURCE_URL = "https://json.commanderspellbook.com/variants.json.gz"
 export const COMBO_PERMALINK_PREFIX = "https://commanderspellbook.com/combo/"
@@ -331,25 +350,65 @@ export function readVariantDetail(detailBuffer, offset, length) {
   return JSON.parse(zlib.gunzipSync(member).toString("utf8"))
 }
 
-/** @param {{ rawVariants: unknown[], templateExpansions: Map<number, string[]>, snapshot: object }} options */
-export function buildComboArtifacts({ rawVariants, templateExpansions, snapshot }) {
+/** @param {{ rawVariants: unknown[], templateExpansions: Map<number, string[]>, snapshot: object, minPopularity?: number }} options */
+export function buildComboArtifacts({ rawVariants, templateExpansions, snapshot, minPopularity = MIN_VARIANT_POPULARITY }) {
   const { accepted, rejected } = partitionVariantsByStatus(rawVariants)
 
-  const variants = accepted
+  const projected = accepted
     .map((rawVariant) => projectVariant(rawVariant, templateExpansions))
     .sort((a, b) => a.variantId.localeCompare(b.variantId))
 
   const seenVariantIds = new Set()
-  for (const variant of variants) {
+  for (const variant of projected) {
     if (seenVariantIds.has(variant.variantId)) {
       throw new Error(`Commander Spellbook variant ${variant.variantId} appears more than once in the raw input.`)
     }
     seenVariantIds.add(variant.variantId)
   }
 
+  // Duplicate detection runs over the whole accepted set, before the floor: a
+  // corpus that repeats a variant is malformed whether or not anyone plays it.
+  const variants = projected.filter((variant) => meetsPopularityFloor(variant, minPopularity))
+
+  return assembleComboArtifacts({
+    variants,
+    rejected,
+    snapshot,
+    minPopularity: Number.isInteger(minPopularity) && minPopularity > 0 ? minPopularity : 0,
+    belowPopularityFloor: projected.length - variants.length
+  })
+}
+
+/**
+ * Whether a projected variant is popular enough to commit.
+ *
+ * A missing or non-integer `popularity` reads as 0 — the same value
+ * `projectVariant` already substitutes — so an upstream field that goes absent
+ * drops the variant rather than silently keeping the whole corpus.
+ */
+export function meetsPopularityFloor(variant, minPopularity) {
+  if (!Number.isInteger(minPopularity) || minPopularity <= 0) return true
+  const popularity = Number.isInteger(variant?.popularity) ? variant.popularity : 0
+  return popularity >= minPopularity
+}
+
+/**
+ * Build the index and detail artifacts from variants that are already projected.
+ *
+ * Split out of `buildComboArtifacts` so the same assembly serves both a fresh
+ * refresh and a re-emit that trims already-committed artifacts. Every derived
+ * structure below — oracle and template membership, the template directory, and
+ * the byte-offset directory — is computed from `variants` alone, which is what
+ * makes filtering that one list a complete edit rather than a partial one.
+ *
+ * @param {{ variants: object[], rejected: number, snapshot: object }} options
+ */
+export function assembleComboArtifacts({ variants, rejected, snapshot, minPopularity = 0, belowPopularityFloor = 0 }) {
   const manifest = sortedObject({
+    belowPopularityFloorCount: belowPopularityFloor,
     generatedBy: "scripts/build-commander-spellbook-combos.mjs",
     license: typeof snapshot?.license === "string" ? snapshot.license : null,
+    minPopularity,
     rejectedVariantCount: rejected,
     snapshotAt: typeof snapshot?.snapshotAt === "string" ? snapshot.snapshotAt : null,
     source: SOURCE_NAME,
@@ -526,6 +585,55 @@ function validateExistingDetailArtifact(filePath) {
   return true
 }
 
+/**
+ * Re-emit already-committed artifacts at a popularity floor, without a refresh.
+ *
+ * A full rebuild needs the ~634MB raw bulk export, which is gitignored and only
+ * present just after `data:refresh-combos`. Applying a floor to what is already
+ * committed does not: every detail record is a projected variant, so reading
+ * them back and re-running the same assembly produces exactly what a refresh at
+ * that floor would have produced.
+ *
+ * @param {{ detailPath?: string, indexPath?: string, minPopularity?: number }} [options]
+ */
+export async function trimCommittedArtifacts(options = {}) {
+  const detailPath = options.detailPath ?? defaultDetailPath
+  const indexPath = options.indexPath ?? defaultIndexPath
+  const minPopularity = options.minPopularity ?? MIN_VARIANT_POPULARITY
+
+  const index = JSON.parse(zlib.gunzipSync(fs.readFileSync(indexPath)).toString("utf8"))
+  const detailBuffer = fs.readFileSync(detailPath)
+  const offsets = index?.detailOffsets ?? {}
+
+  const kept = []
+  let dropped = 0
+  for (const variantId of Object.keys(offsets)) {
+    const [offset, length] = offsets[variantId]
+    const variant = readVariantDetail(detailBuffer, offset, length)
+    if (meetsPopularityFloor(variant, minPopularity)) kept.push(variant)
+    else dropped += 1
+  }
+  kept.sort((a, b) => a.variantId.localeCompare(b.variantId))
+
+  const rebuilt = assembleComboArtifacts({
+    variants: kept,
+    rejected: Number.isInteger(index?.manifest?.rejectedVariantCount) ? index.manifest.rejectedVariantCount : 0,
+    snapshot: { snapshotAt: index?.manifest?.snapshotAt ?? null, license: index?.manifest?.license ?? null },
+    minPopularity: Number.isInteger(minPopularity) && minPopularity > 0 ? minPopularity : 0,
+    belowPopularityFloor: (Number.isInteger(index?.manifest?.belowPopularityFloorCount) ? index.manifest.belowPopularityFloorCount : 0) + dropped
+  })
+
+  const detailBytes = writeDetailArtifact(detailPath, rebuilt.detailBuffer)
+  const indexBytes = await writeIndexArtifact(indexPath, rebuilt.index)
+
+  console.log(`Popularity floor: ${minPopularity} deck(s)`)
+  console.log(`Kept ${kept.length} variants; left out ${dropped}`)
+  console.log(`Detail bytes: ${detailBytes} (${formatBytes(detailBytes)}); wrote ${detailPath}`)
+  console.log(`Index bytes: ${indexBytes} (${formatBytes(indexBytes)}); wrote ${indexPath}`)
+
+  return { kept: kept.length, dropped, detailBytes, indexBytes }
+}
+
 /** @param {{ rawInputDir?: string, detailPath?: string, indexPath?: string }} [options] */
 export async function runBuild(options = {}) {
   const rawInputDir = options.rawInputDir ?? defaultRawInputDir
@@ -563,6 +671,11 @@ export async function runBuild(options = {}) {
 
   console.log(`Commander Spellbook variants: ${index.manifest.variantCount}`)
   console.log(`Rejected non-OK variants: ${index.manifest.rejectedVariantCount}`)
+  if (index.manifest.minPopularity > 0) {
+    console.log(
+      `Below popularity floor (<${index.manifest.minPopularity} decks), left out: ${index.manifest.belowPopularityFloorCount}`
+    )
+  }
   console.log(`Unresolved templates: ${index.unresolvedTemplateIds.length}`)
   console.log(`Detail bytes: ${detailBytes} (${formatBytes(detailBytes)}); wrote ${detailPath}`)
   console.log(`Index bytes: ${indexBytes} (${formatBytes(indexBytes)}); wrote ${indexPath}`)
@@ -572,7 +685,8 @@ export async function runBuild(options = {}) {
 
 const invokedPath = process.argv[1] ? pathToFileURL(process.argv[1]).href : ""
 if (import.meta.url === invokedPath) {
-  runBuild().catch((error) => {
+  const entry = process.argv.includes("--trim-committed") ? trimCommittedArtifacts : runBuild
+  entry().catch((error) => {
     console.error(error.message)
     process.exitCode = 1
   })
