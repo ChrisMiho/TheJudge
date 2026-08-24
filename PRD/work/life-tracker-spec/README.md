@@ -30,7 +30,7 @@ Product truth landed by refinement: `DEC-168` in
 
 | Slice | Scope | Dependency | Status |
 | --- | --- | --- | --- |
-| [A](./slice-a-write-spec.md) | Write `PRD/sections/life-tracker/README.md` on the DEC-168 template, consolidating the full source inventory into current-state form across all seven surfaces. | none | planned |
+| [A](./slice-a-write-spec.md) | Write `PRD/sections/life-tracker/README.md` on the DEC-168 template, consolidating the full source inventory into current-state form across all seven surfaces. | none | done |
 | [B](./slice-b-nav-row.md) | Add the one `PRD/README.md` Section Inventory row; final package-diff scope proof; ship gates. | sequential on A | planned |
 
 GAMEPLAN: `PRD/work/life-tracker-spec/GAMEPLAN.md`.
