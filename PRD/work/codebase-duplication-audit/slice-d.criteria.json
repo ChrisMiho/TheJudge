@@ -1,0 +1,38 @@
+{
+  "slug": "codebase-duplication-audit",
+  "slice": "D",
+  "criteria": [
+    {
+      "id": "D1",
+      "statement": "This surface's file inventory is enumerated with git ls-files scripts and the count is recorded in the notes file.",
+      "value": false,
+      "evidence": {
+        "command": "(?=[\\s\\S]*git ls-files)(?=[\\s\\S]*scripts)"
+      }
+    },
+    {
+      "id": "D2",
+      "statement": "audit-notes/surface-d-scripts.md exists, recording every finding in the brief's per-finding field shape and a draft coverage-table row for this surface.",
+      "value": false,
+      "evidence": {
+        "paths": ["PRD/work/codebase-duplication-audit/audit-notes/surface-d-scripts.md"]
+      }
+    },
+    {
+      "id": "D3",
+      "statement": "At least one seeding search was run scoped to this surface, per the brief's Method.",
+      "value": false,
+      "evidence": {
+        "command": "(?=[\\s\\S]*(grep|rg))(?=[\\s\\S]*scripts)"
+      }
+    },
+    {
+      "id": "D4",
+      "statement": "The scripts block of the root, frontend, and backend package.json files was read as part of this pass.",
+      "value": false,
+      "evidence": {
+        "paths": ["package.json", "apps/frontend/package.json", "apps/backend/package.json"]
+      }
+    }
+  ]
+}

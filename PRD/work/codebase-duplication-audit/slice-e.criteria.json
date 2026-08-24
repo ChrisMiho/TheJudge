@@ -1,0 +1,86 @@
+{
+  "slug": "codebase-duplication-audit",
+  "slice": "E",
+  "criteria": [
+    {
+      "id": "E1",
+      "statement": "All four surface note files (A-D) were read before cross-boundary analysis began.",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "PRD/work/codebase-duplication-audit/audit-notes/surface-a-components-hooks.md",
+          "PRD/work/codebase-duplication-audit/audit-notes/surface-b-lib-types-styles.md",
+          "PRD/work/codebase-duplication-audit/audit-notes/surface-c-backend.md",
+          "PRD/work/codebase-duplication-audit/audit-notes/surface-d-scripts.md"
+        ]
+      }
+    },
+    {
+      "id": "E2",
+      "statement": "The perceptual-hash cross-boundary starting point was confirmed or dismissed by reading both apps/frontend/src/lib/scan/recipe.ts and scripts/build-scan-vectors.mjs.",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/lib/scan/recipe.ts",
+          "scripts/build-scan-vectors.mjs"
+        ]
+      }
+    },
+    {
+      "id": "E3",
+      "statement": "The player-label cross-boundary starting point was confirmed or dismissed by reading both apps/frontend/src/types.ts and apps/backend/src/constants.ts.",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/types.ts",
+          "apps/backend/src/constants.ts"
+        ]
+      }
+    },
+    {
+      "id": "E4",
+      "statement": "The *Policy.test.ts versus scripts/*.mjs cross-boundary starting point was confirmed or dismissed by reading at least one of the four *Policy.test.ts files.",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/lib/cardRulingsTransformPolicy.test.ts",
+          "apps/frontend/src/lib/gameRulesBuildPolicy.test.ts",
+          "apps/frontend/src/lib/metadataTransformPolicy.test.ts",
+          "apps/frontend/src/lib/scryfallRefreshPolicy.test.ts"
+        ]
+      }
+    },
+    {
+      "id": "E5",
+      "statement": "DUPLICATION-AUDIT.md exists with all four required sections (Header, Findings, Healthy reuse, Coverage table).",
+      "value": false,
+      "evidence": {
+        "paths": ["PRD/work/codebase-duplication-audit/DUPLICATION-AUDIT.md"]
+      }
+    },
+    {
+      "id": "E6",
+      "statement": "The coverage table's total reconciles against git ls-files apps scripts, minus the exclusion list.",
+      "value": false,
+      "evidence": {
+        "command": "(?=[\\s\\S]*git ls-files)(?=[\\s\\S]*apps)(?=[\\s\\S]*scripts)"
+      }
+    },
+    {
+      "id": "E7",
+      "statement": "git status --porcelain was run and shows changes only under PRD/work/codebase-duplication-audit/ and PRD/work/STATUS.md.",
+      "value": false,
+      "evidence": {
+        "command": "git status --porcelain"
+      }
+    },
+    {
+      "id": "E8",
+      "statement": "npm run quality:check was run and exits 0.",
+      "value": false,
+      "evidence": {
+        "command": "npm run quality:check"
+      }
+    }
+  ]
+}

@@ -8,9 +8,9 @@ Do not rename package folders to encode status.
 
 ## active
 
-## refined
-
 - [codebase-duplication-audit](./codebase-duplication-audit/)
+
+## refined
 
 ## refining
 

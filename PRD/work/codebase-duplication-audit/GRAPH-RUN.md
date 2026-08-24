@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`
 - Autonomous base: `origin/thejudge-auto/codebase-duplication-audit`
 - Staging: `.worktrees/.graph-intake/graph-20260823-173948/`
-- Current node: `plan`
+- Current node: `build`
 - Next action: `/graph-run PRD/work/codebase-duplication-audit/`
 
 ## Node ledger
@@ -16,6 +16,7 @@
 | 2 | shape | sonnet | ok | `0 → 28` | commit `9df5d09`; created `PRD/work/codebase-duplication-audit/{IDEA.md,README.md,STATUS.ideation,intake/intake-codebase-health.md}` and a row in `PRD/work/STATUS.md`; `git diff feature/doc-refactor..HEAD -- PRD/sections/` empty | 2026-08-23 |
 | 3 | define | opus | ok | `0 → 37` | `DESIGN-BRIEF.md` created (259 lines); `STATUS.refined`; gate diff verified empty by the driver via `git diff 1acf2d6 -- PRD/sections/`, `git diff -- PRD/sections/`, and `git status --porcelain PRD/sections/`, all three empty; no `Q-###` blocker preserved | 2026-08-23 |
 | 4 | gate-qc | sonnet | ok | `0 → 23` | PASS, findings `none`; DEC citations and file counts re-verified against source by the checker; no paths written, `git status --porcelain` empty; `STATUS.refined` unchanged | 2026-08-23 |
+| 5 | plan | sonnet | ok | `0 → 39` | `GAMEPLAN.md` + slices A–E; 21 criteria across five `slice-*.criteria.json`, all initialised `false`, zero `manual`; driver dry-ran all 21 through the hook's own `matchesEvidence()` against trivial calls — 20 unearnable without the work, E7 earned by `git status --porcelain` alone; `STATUS.active` | 2026-08-23 |
 
 ### Node 1 notes — a prior attempt of this run
 
@@ -39,6 +40,31 @@ because a graph run does not patch the phase it is running:
 A third, observed this run: the lock records the node subagent's shell PID, which dies
 with the node, so `classifyLock()` reports the live run as `stale`. Enforcement is
 unaffected — `isRunActive()` requires only parseable JSON — but concurrency detection is.
+
+### Node 5 note — what a `command` criterion actually proves
+
+The driver dry-ran all 21 criteria through `matchesEvidence()` in
+`scripts/lib/boundary-rules.mjs`. One is loose: E7's evidence is the bare pattern
+`git status --porcelain`, so any call to that command earns it.
+
+The general point is larger than E7 and is recorded here rather than treated as a
+node failure. Several criteria state an *outcome* while their evidence can only
+observe a *call*:
+
+- E7 — "was run and shows changes only under ..." — evidence proves it ran.
+- E8 — "was run and exits 0" — evidence proves it ran.
+- E5 — "exists with all four required sections" — evidence proves the path was named.
+
+`PRD/instructions/graph-workflow-contract.md` states this limit only for
+`manual` criteria ("proves the check happened, not that it passed"). It applies
+equally to `command` and `paths` evidence, because the hook observes tool calls
+and not their results.
+
+Two things backstop it in this run, so it is not a blocker. The driver runs its
+own return-side write-scope assertion after node 6, which is E7's real claim. And
+node 7 grades the slice against its stated acceptance criteria with fresh context,
+which covers E5 and E8. The driver verifies those three claims directly rather
+than reading the criteria flags as proof.
 
 ## Open gate
 
@@ -230,6 +256,56 @@ Return as your final text, which is the driver's return value and not a message 
 1. The verdict, exactly `PASS` or `FAIL`.
 2. The complete findings list, or `none`.
 3. Every path you created or modified.
+4. The `STATUS.*` marker now set.
+5. Any command that was denied or prompted, quoted verbatim.
+
+### plan
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy the `Working directory:` line above, unchanged and on its own line, into every prompt you write for any subagent you dispatch.
+
+You are node 5 (`plan`) of an autonomous graph run. Invoke the `thejudge-map-out` skill and follow it exactly.
+
+Run id: `graph-20260823-173948`
+Package path: `PRD/work/codebase-duplication-audit/`
+
+The package README records `## Preparation gate` with `Quality-check: PASS` and no findings. Verify that section is present before writing any planning artifact. You cannot self-certify a PASS.
+
+Read `DESIGN-BRIEF.md` — it is the authority for the deliverable, the scope surfaces, the exclusion boundary, the ordering rule, and verification.
+
+## What this package produces
+
+A read-only audit. It reads `apps/frontend`, `apps/backend`, and `scripts` and writes one document, `DUPLICATION-AUDIT.md`, inside the package. It changes no product code. Slices here produce document sections and analysis, not code changes — plan them accordingly.
+
+Refinement noted that the brief's five audit surfaces (frontend components/hooks; frontend lib/types/styles; backend; scripts plus the `package.json` script blocks; cross-boundary) each yield a coverage-table row, and observed that this is a natural slice shape. That is an observation passed along, not a decision — the slice boundaries are yours to set.
+
+## Acceptance criteria must be earned, not asserted
+
+Emit one `slice-<letter>.criteria.json` beside each slice doc, per the schema and worked example in `thejudge-map-out/reference.md`. Every criterion starts `false` and carries an `evidence` block: a command pattern, one or more file paths, or `"manual": true`.
+
+Take care with what you write into those evidence blocks. The boundary hook matches observed tool calls against them and appends earned ids to `.worktrees/.graph-evidence.jsonl`; it is that log's only writer. At node 6 a write flipping a criterion to `true` is denied unless the id is already in the log for this run, and node 6 reports `ok` only when every criterion in every slice file is `true`. So an evidence block naming something the hook cannot observe produces a criterion the build node cannot legitimately earn, and the node fails.
+
+Note also the stated limit on `manual: true`: it is earned by a dated observation line naming the criterion id, which proves the check happened, not that it passed. Weigh that when choosing between a manual criterion and an observable one.
+
+## Required of you
+
+- Write `GAMEPLAN.md` and the lettered slice docs in the package, in the format `PRD/instructions/requirement-format.md` specifies.
+- Emit the matching `slice-<letter>.criteria.json` files.
+- Set `STATUS.active`, keeping exactly one `STATUS.*` marker, and keep the `PRD/work/STATUS.md` board row consistent.
+- Do not edit `DESIGN-BRIEF.md`, and do not edit anything under `PRD/sections/`.
+- Do not edit any `thejudge-*` or `graph-*` skill, `.claude/settings*.json`, or `CLAUDE.md`.
+- Do not begin the audit itself or write any part of `DUPLICATION-AUDIT.md`. Node 6 executes the slices.
+- Write only inside `PRD/work/codebase-duplication-audit/` and `PRD/work/STATUS.md`.
+
+Your tool-call budget for this dispatch is 120; the boundary hook counts and enforces it.
+
+Return as your final text, which is the driver's return value and not a message to a human:
+1. Every path you created or modified, as a list.
+2. The slice letters and a one-line scope for each.
+3. For each slice, how many criteria it carries and the evidence kind behind each (command pattern, file paths, or manual).
 4. The `STATUS.*` marker now set.
 5. Any command that was denied or prompted, quoted verbatim.
 
