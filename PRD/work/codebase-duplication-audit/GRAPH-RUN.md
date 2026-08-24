@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`
 - Autonomous base: `origin/thejudge-auto/codebase-duplication-audit`
 - Staging: `.worktrees/.graph-intake/graph-20260823-173948/`
-- Current node: `land`
-- Next action: merge PR #97, then `/graph-run PRD/work/codebase-duplication-audit/`
+- Current node: `close`
+- Next action: `/graph-run PRD/work/codebase-duplication-audit/`
 
 ## Node ledger
 
@@ -22,6 +22,41 @@
 | 7 | review | opus | ok (RETURN) | `0 → 45` | reviewed full range `5bf657a..origin/...-work`, not the PR diff, so slice A was covered; 1 Important + 4 Minor; recomputed the 500-file reconciliation independently and opened every citation in all 8 findings; driver re-verified the Important against source before spending a loop | 2026-08-23 |
 | 6 | build | sonnet | ok | `0 → 73` | attempt 3, after review return: commit `2cd17c2` on `...-work`; promoted `TurnPhase`/`CombatStep` to findings and rewrote Healthy-reuse entry 18's rule; found a further already-diverged pair (`ZONE_LABELS` "Command Zone" vs `ZONE_ITEM_LABEL` "Command"), driver-verified; all four Minor items fixed; 8 findings → 11, renumbered by complexity; all 21 criteria still `true`; `apps/` and `scripts/` untouched | 2026-08-23 |
 | 7 | review | opus | ok (APPROVE) | `0 → 17` | pass 2 at `2cd17c2`: APPROVE, 4 Minor, no Critical or Important; walked all 11 findings and every internal `F-##` reference for stale numbers after the renumber (none); enumerated all six backend `z.enum`s to test the rewritten Healthy-reuse rule exhaustively; recomputed the 500-file reconciliation; confirmed the original Important finding resolved rather than relocated | 2026-08-23 |
+| 8 | land | — (human) | ok | n/a — human node, no dispatch | PR #97 merged (squash) 2026-08-24T02:49:04Z as `ae3ac11` on `thejudge-auto/codebase-duplication-audit`; verified `gh pr view 97 --json state,mergedAt` -> MERGED, and the merged tree carries `STATUS.ship-ready`, 11 findings, and the 767-line ledger | 2026-08-24 |
+
+### Resume notes — 2026-08-24, re-entry at `close`
+
+The run re-entered at node 9 after the owner merged PR #97. Three things the
+resume path does not do for itself, done by hand and recorded here.
+
+**The lock was re-taken.** Node 1 takes `.worktrees/.graph-run.lock`; the run
+released it when it parked at `land`. A resume enters at the status-matched node
+and never re-runs `preflight`, so nothing re-arms the graph tier. Written with
+`lockRecord()` from `scripts/graph-preflight.mjs`, PID 10806 (the live driver
+process), and confirmed `held` — not `stale` — by `classifyLock()`.
+
+**A real second-tier canary was issued**, which the run-start canary is not
+capable of being. Driving `classifyToolCall()` directly shows why:
+
+    runActive  command                                       result
+    false      rm -rf .worktrees/.graph-canary-nonexistent   deny  [universal/recursive-force-remove]
+    true       rm -rf .worktrees/.graph-canary-nonexistent   deny  [universal/recursive-force-remove]
+    false      nohup echo graph-tier-canary                  allow
+    true       nohup echo graph-tier-canary                  deny  [graph/nohup-wrapper]
+
+The run-start canary denies identically whether or not a run is active, so it
+proves the hook is loaded and says nothing about whether the graph tier is armed.
+`nohup` discriminates. Issued as a live `Bash` call, the hook returned:
+
+    [graph-boundary] `nohup` is denied while a graph run holds the lock:
+    a detached command outlives the run that started it.
+
+So for node 9 the graph tier is proven armed, not assumed. This is the probe the
+shakedown report records as tooling defect 2, and it is still absent from
+`graph-preflight` — done here by hand, so it does not survive into the next run.
+
+**Node 8 needed no dispatch.** `land` is a human node; the driver verified the
+merge rather than performing it.
 
 ### Node 1 notes — a prior attempt of this run
 
