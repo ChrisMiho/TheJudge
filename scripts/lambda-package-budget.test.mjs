@@ -29,13 +29,25 @@ import zlib from "node:zlib"
  * not set to the exact current size: an artifact that grows a little should be
  * allowed to, and only a change that genuinely threatens the deploy should fail.
  */
-/** AWS's observed limit for a direct `UpdateFunctionCode` upload. */
+/** AWS's limit on the `UpdateFunctionCode` **request**, not on the zip. */
 const LAMBDA_REQUEST_LIMIT = 70_167_211
 
-/** Reserved for node_modules, compiled code, and the package manifests. */
-const NON_DATA_RESERVE = 8 * 1024 * 1024
+/**
+ * `--zip-file fileb://…` base64-encodes the archive, so the request is ~4/3 the
+ * zip. Budgeting the zip against the request limit is the mistake this constant
+ * exists to prevent: on 2026-08-24 a 53.8MB zip passed a 66.9MB check and then
+ * failed the real upload at 71.7MB. The resulting ceiling — 50.2MB — is exactly
+ * AWS's documented 50MB direct-upload quota, which is the same limit seen from
+ * the other side.
+ */
+const BASE64_EXPANSION = 4 / 3
 
-const DATA_BUDGET = LAMBDA_REQUEST_LIMIT - NON_DATA_RESERVE
+const ZIP_CEILING = Math.floor(LAMBDA_REQUEST_LIMIT / BASE64_EXPANSION)
+
+/** Reserved for node_modules, compiled code, and the package manifests. */
+const NON_DATA_RESERVE = 6 * 1024 * 1024
+
+const DATA_BUDGET = ZIP_CEILING - NON_DATA_RESERVE
 
 /**
  * What a file contributes to the zip, not what it occupies on disk.
@@ -94,8 +106,36 @@ test("the committed data artifacts leave room for a deployable Lambda package", 
   assert.ok(
     total <= DATA_BUDGET,
     `apps/backend/data contributes ${(total / 1048576).toFixed(1)}MB to the package, over the ${(DATA_BUDGET / 1048576).toFixed(1)}MB budget ` +
-      `that keeps the Lambda package under AWS's ${(LAMBDA_REQUEST_LIMIT / 1048576).toFixed(1)}MB request limit. ` +
+      `that keeps the base64-encoded upload under AWS's ${(LAMBDA_REQUEST_LIMIT / 1048576).toFixed(1)}MB request limit ` +
+      `(a ${(ZIP_CEILING / 1048576).toFixed(1)}MB zip ceiling). ` +
       `Largest: ${largest}. Raise MIN_VARIANT_POPULARITY in ` +
       `scripts/build-commander-spellbook-combos.mjs and re-run with --trim-committed, or move the deploy to an S3 upload.`
   )
+})
+
+test("the ceiling accounts for base64, because the request is not the zip", () => {
+  // The mistake this pins: on 2026-08-24 a 53.8MB zip cleared a check written
+  // against the 66.9MB *request* limit, then failed the real upload at 71.7MB.
+  // `--zip-file fileb://…` base64-encodes the archive, so the request is ~4/3
+  // the zip and the usable zip ceiling is ~50.2MB — which is AWS's documented
+  // 50MB direct-upload quota seen from the other side.
+  assert.ok(
+    ZIP_CEILING < LAMBDA_REQUEST_LIMIT,
+    "the zip ceiling must be below the request limit, not equal to it"
+  )
+
+  const encoded = ZIP_CEILING * BASE64_EXPANSION
+  assert.ok(
+    encoded <= LAMBDA_REQUEST_LIMIT,
+    `a zip at the ceiling encodes to ${(encoded / 1048576).toFixed(1)}MB, over the request limit`
+  )
+
+  // A zip that only just clears the request limit must be rejected by the
+  // ceiling — the false-pass case, asserted directly.
+  const wouldHavePassedTheOldCheck = 53.8 * 1048576
+  assert.ok(
+    wouldHavePassedTheOldCheck > ZIP_CEILING,
+    "the 53.8MB package that failed the real upload must not clear this ceiling"
+  )
+  assert.ok(wouldHavePassedTheOldCheck * BASE64_EXPANSION > LAMBDA_REQUEST_LIMIT)
 })

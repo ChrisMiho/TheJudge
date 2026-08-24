@@ -27,7 +27,7 @@ const defaultIndexPath = path.resolve("apps/backend/data/commanderSpellbookCombo
  * `PRD/instructions/receipts/`. Set it to 0 to keep everything, which currently
  * does not deploy.
  */
-export const MIN_VARIANT_POPULARITY = 1
+export const MIN_VARIANT_POPULARITY = 2
 
 export const SOURCE_NAME = "Commander Spellbook"
 export const SOURCE_URL = "https://json.commanderspellbook.com/variants.json.gz"
