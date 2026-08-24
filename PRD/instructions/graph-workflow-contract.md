@@ -91,6 +91,14 @@ never a third loop limit — the three-FAIL and two-return caps below stay the o
 bound on how many dispatches happen. `land` has no cap because the driver never
 dispatches it.
 
+At the cap, dispatches (`Task`, `Agent`) are denied outright and a bounded
+`PARK_GRACE_CALLS` budget stays open so the park can be written; past cap +
+grace, nothing is permitted. Before 2026-08-24 the cap denied every tool at the
+boundary, which made the park the sentence above requires impossible to carry
+out — a run could not even read a file to record why it had stopped. The stop
+sentinel already kept its halt path open for the same reason; the cap now
+matches it.
+
 On a fresh run, the driver names the work before dispatching node 1: propose a
 kebab-case slug from the request and any intake material, derive the branch as
 `thejudge-auto/<slug>` unless `--branch` overrides it, and mint `--run-id`
@@ -471,6 +479,11 @@ Each of these is a limit, recorded once, not a claim.
    call to, the tool-call cap does not fire. The hook reports the degraded
    condition on every call rather than staying silent, and never blocks the run
    for it.
+
+   A **stale** run-state file is worse than a missing one. It parses, so the cap
+   fires and attributes every call to a node that finished long ago. Observed
+   2026-08-24: a leftover `close/1` entry plus a fresh lock denied an unrelated
+   session outright. Delete the run-state file at a terminal state, with the lock.
 5. **The heartbeat degrades with it.** No counter key to advance means the
    between-node heartbeat reports `degraded`, not a hook failure. The run
    continues and the run-start canary remains the binding proof — which means a

@@ -7,32 +7,35 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 
 import {
-  classifyWorkingTree,
-  collectEntries,
-  planActions,
-  parseArgs,
-  parseCommandArgs,
-  parseRefValue,
-  parseThresholdValue,
-  resolveBase,
-  findBranchCollision,
-  formatFailureReport,
-  defaultRunId,
-  readProfileSentinel,
+  CANARY_COMMAND,
+  DEFAULT_THRESHOLDS,
+  LOCK_PATH,
+  PROFILE_SENTINEL_ENV,
+  SECRET_PATTERNS,
+  STOP_PATH,
   classifyCanary,
+  classifyGraphCanary,
   classifyHeartbeat,
   classifyLock,
   classifyStopSentinel,
+  classifyWorkingTree,
+  collectEntries,
+  defaultRunId,
+  findBranchCollision,
+  formatFailureReport,
   isPidAlive,
   lockRecord,
+  parseArgs,
+  parseCommandArgs,
   parseLockFile,
-  PROFILE_SENTINEL_ENV,
-  CANARY_COMMAND,
-  LOCK_PATH,
-  STOP_PATH,
-  DEFAULT_THRESHOLDS,
-  SECRET_PATTERNS
+  parseRefValue,
+  parseThresholdValue,
+  planActions,
+  readProfileSentinel,
+  resolveBase,
+  takeLock
 } from "./graph-preflight.mjs"
+import { GRAPH_CANARY_COMMAND, classifyToolCall, isRunActive } from "./lib/boundary-rules.mjs"
 
 test("graph-preflight - classifier - clean tree needs no resolution", () => {
   const result = classifyWorkingTree([])
@@ -1145,4 +1148,91 @@ test("a degraded heartbeat never reports as blocked, so the run continues", () =
     })
     assert.equal(degraded.state, "degraded")
   }
+})
+
+test("takeLock writes the lock the run depends on", () => {
+  // Until 2026-08-24 nothing called this: the lock was written by the agent
+  // remembering to, and on one run it forgot and still reported success. The
+  // hook gates its whole graph tier on this file existing.
+  const written = new Map()
+  const result = takeLock({
+    slug: "example",
+    runId: "graph-20260824-000000",
+    pid: 4242,
+    now: "2026-08-24T00:00:00.000Z",
+    io: {
+      read: () => {
+        throw Object.assign(new Error("ENOENT"), { code: "ENOENT" })
+      },
+      write: (target, contents) => written.set(target, contents),
+      ensure: () => undefined
+    }
+  })
+
+  assert.equal(result.taken, true)
+  const record = JSON.parse(written.get(LOCK_PATH))
+  assert.equal(record.slug, "example")
+  assert.equal(record.runId, "graph-20260824-000000")
+  assert.equal(record.pid, 4242)
+  assert.equal(isRunActive(written.get(LOCK_PATH)), true, "the hook must read the written lock as an active run")
+})
+
+test("takeLock refuses rather than stealing a live lock", () => {
+  const held = JSON.stringify({ slug: "other", runId: "graph-19990101-000000", pid: 999, startedAt: "t" })
+  let wrote = false
+  const result = takeLock({
+    slug: "example",
+    runId: "graph-20260824-000000",
+    io: { read: () => held, write: () => (wrote = true), ensure: () => undefined, isAlive: () => true }
+  })
+
+  assert.equal(result.taken, false)
+  assert.equal(result.state, "held")
+  assert.equal(wrote, false, "a second run must not overwrite the first run's lock")
+  assert.match(result.message, /other/)
+})
+
+test("takeLock reports a stale lock instead of silently reclaiming it", () => {
+  const stale = JSON.stringify({ slug: "dead", runId: "graph-19990101-000000", pid: 1, startedAt: "t" })
+  let wrote = false
+  const result = takeLock({
+    slug: "example",
+    runId: "graph-20260824-000000",
+    io: { read: () => stale, write: () => (wrote = true), ensure: () => undefined, isAlive: () => false }
+  })
+
+  assert.equal(result.taken, false)
+  assert.equal(result.state, "stale")
+  assert.equal(wrote, false)
+})
+
+test("the graph canary proves the tier the universal canary cannot see", () => {
+  // The universal canary is denied whether or not a run holds the lock, so it
+  // returns the same answer for an armed tier and a disarmed one.
+  for (const runActive of [false, true]) {
+    assert.equal(
+      classifyToolCall({ toolName: "Bash", toolInput: { command: CANARY_COMMAND }, runActive }).decision,
+      "deny",
+      "the universal canary cannot discriminate"
+    )
+  }
+
+  assert.equal(
+    classifyToolCall({ toolName: "Bash", toolInput: { command: GRAPH_CANARY_COMMAND }, runActive: false }).decision,
+    "allow"
+  )
+  const armed = classifyToolCall({
+    toolName: "Bash",
+    toolInput: { command: GRAPH_CANARY_COMMAND },
+    runActive: true
+  })
+  assert.equal(armed.decision, "deny")
+  assert.equal(armed.tier, "graph")
+})
+
+test("an undenied graph canary blocks the run", () => {
+  assert.equal(classifyGraphCanary({ denied: true }).state, "ok")
+  const blocked = classifyGraphCanary({ denied: false, response: "(allowed)" })
+  assert.equal(blocked.state, "blocked")
+  assert.match(blocked.message, /graph tier is disarmed/)
 })

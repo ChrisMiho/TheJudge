@@ -39,6 +39,29 @@ So: issue `CANARY_COMMAND` as a real `Bash` tool call and require the hook to
 **deny** it. The reason text the hook returns is the proof. Then classify the
 result with `classifyCanary()` and report its `ledgerLine`.
 
+### Two canaries, because one of them cannot see the tier that matters
+
+`CANARY_COMMAND` lives in the **universal** tier, which fires in every session.
+It is denied whether or not a run holds the lock, so it proves the hook is
+loaded and proves nothing about whether the graph tier is armed. On the first
+attempt of run `graph-20260823-170119` that gap was live: the lock was never
+written, the whole graph tier was inert, and this canary still reported green.
+
+`GRAPH_CANARY_COMMAND` is denied **only** while the lock is held. Issue it after
+the lock is taken and classify with `classifyGraphCanary()`:
+
+| runActive | `CANARY_COMMAND` | `GRAPH_CANARY_COMMAND` |
+| --- | --- | --- |
+| `false` | deny (universal) | allow |
+| `true` | deny (universal) | deny (graph) |
+
+Only the second column discriminates. Both are inert — `nohup true` does
+nothing if it ever executes — so a failed proof costs nothing but the proof.
+
+An allowed graph canary is `BLOCKED`, exactly like an allowed universal one. It
+means the hook is live while the tier is disarmed, which is what a missing or
+unparseable lock looks like from the inside.
+
 The canary targets a non-existent path under `.worktrees/`. If it ever executes
 it removes nothing, prints nothing, and exits 0 — a failed proof costs nothing
 beyond the failed proof.
@@ -74,8 +97,14 @@ The lock is `.worktrees/.graph-run.lock`, a JSON record holding the slug, run
 id, PID, and start time. It lives under `.worktrees/`, which `.gitignore`
 already covers, so it never travels with a branch.
 
-`classifyLock()` in `scripts/graph-preflight.mjs` decides what to do, and it is
-a tested pure function — do not re-derive the decision by judgment:
+**The script takes the lock itself.** Until 2026-08-24 it did not: `takeLock()`
+and `classifyLock()` had no callers at all, and this section asked the agent to
+write the file by hand. On one run the agent forgot and still reported success,
+leaving the entire graph tier inert. Do not write the lock by hand — run the
+script and check what it reports.
+
+`takeLock()` calls `classifyLock()` in `scripts/graph-preflight.mjs`, which is a
+tested pure function — do not re-derive the decision by judgment:
 
 | State | Meaning | Action |
 | --- | --- | --- |
@@ -87,9 +116,22 @@ a tested pure function — do not re-derive the decision by judgment:
 A stale lock is reported, never silently stolen: a run that reclaims without
 saying so is indistinguishable from one that never contended.
 
+### Resuming a parked run
+
+A resume re-enters at the node its ledger records and never re-runs the branch
+and stash work, so nothing along that path takes the lock. Before 2026-08-24 no
+step existed for it even in principle, and a resumed run advanced with the graph
+tier switched off for its whole length.
+
+Run `graph-preflight --take-lock --slug <slug> --run-id <id>` at re-entry. It
+takes the lock, names the graph canary, and does nothing else — no fetch, no
+branch, no stash. `--branch` is not required there.
+
 Release is `graph-run`'s, not this skill's — see `graph-run`'s
 `## Terminal states` table, which is the definitive list of the states that
-release it.
+release it. Release goes through a declared terminal state: write
+`.worktrees/.graph-run-release.json` naming the run id and terminal state, then
+delete the lock. The hook denies the deletion without that record.
 
 ## Procedure
 

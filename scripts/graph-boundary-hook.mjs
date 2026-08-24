@@ -23,6 +23,7 @@ import { pathToFileURL } from "node:url"
 
 import {
   CRITERIA_FILE_SUFFIX,
+  DENIAL_LOG_PATH,
   EVIDENCE_LOG_PATH,
   RUN_LOCK_PATH,
   RUN_RELEASE_PATH,
@@ -32,6 +33,7 @@ import {
   callCountKey,
   classifyToolCall,
   criteriaFlippedTrue,
+  denialKey,
   evidenceSubject,
   isRunActive,
   manualObservationIds,
@@ -310,6 +312,40 @@ export function readStopSentinel(root, read = readFileSync) {
   }
 }
 
+/**
+ * The denial keys this run has already been given.
+ *
+ * Same append-only discipline as the evidence log, and for the same reason: a
+ * run that could rewrite this could clear its own denial and retry.
+ */
+export function readPriorDenials(root, runId, io = {}) {
+  const read = io.read ?? readFileSync
+  const keys = new Map()
+  const raw = readRecord(root, DENIAL_LOG_PATH, read)
+  if (raw === null) return keys
+  for (const line of raw.split("\n")) {
+    if (line.trim() === "") continue
+    try {
+      const entry = JSON.parse(line)
+      // Keyed to the rule that first refused it, so a retry's message can name
+      // the original reason instead of only saying "you already tried this".
+      if (entry?.runId === runId && typeof entry?.key === "string") keys.set(entry.key, entry.rule ?? null)
+    } catch {
+      // A damaged line is skipped, never rewritten.
+    }
+  }
+  return keys
+}
+
+/** Record one denial. Only ever appends. */
+export function appendDenial(root, entry, io = {}) {
+  const append = io.append ?? appendFileSync
+  const ensure = io.ensure ?? mkdirSync
+  const target = path.join(root, DENIAL_LOG_PATH)
+  ensure(path.dirname(target), { recursive: true })
+  append(target, JSON.stringify(entry) + "\n", "utf8")
+}
+
 /** Turn the raw payload into a verdict. Exported so the test drives it directly. */
 export function decide(rawPayload, io = {}) {
   const { environment, read } = io
@@ -377,8 +413,34 @@ export function decide(rawPayload, io = {}) {
     flippedCriteria,
     observedEvidence,
     lockRunId: runActive ? runIdFromLock(readRunLock(root, read)) : null,
-    release: runActive ? readRelease(root, read ?? readFileSync) : null
+    release: runActive ? readRelease(root, read ?? readFileSync) : null,
+    priorDenials: runActive && runState !== null ? readPriorDenials(root, runState.runId, io) : null
   })
+
+  // Record the denial so a second attempt at the same call is refused as a
+  // retry rather than re-evaluated from scratch. Only genuine denials are
+  // logged, and never the retry rule's own denial — that would be the log
+  // feeding itself.
+  if (verdict.decision === "deny" && runActive && runState !== null && verdict.rule !== "denied-command-retry") {
+    try {
+      appendDenial(
+        root,
+        {
+          runId: runState.runId,
+          node: runState.node ?? null,
+          rule: verdict.rule,
+          key: denialKey(callContext({ toolName: payload.tool_name, toolInput: payload.tool_input, runActive })),
+          deniedAt: (io.now ?? (() => new Date().toISOString()))()
+        },
+        io
+      )
+    } catch (error) {
+      // A denial that could not be recorded is still a denial. Report the
+      // degraded condition rather than allowing the call.
+      degraded = `could not record the denial (${error?.message ?? error}); a retry of this call would not be caught`
+    }
+  }
+
   return { ...verdict, degraded }
 }
 
