@@ -7,10 +7,11 @@
 - Top-level `apps/frontend/src/*` files in scope (App.tsx + its co-located
   `App.*.test.tsx` files, `main.tsx`, `types.ts`, `index.css`):
   `git ls-files 'apps/frontend/src/App*' apps/frontend/src/main.tsx
-  apps/frontend/src/types.ts apps/frontend/src/index.css | wc -l` → **22**
+  apps/frontend/src/types.ts apps/frontend/src/index.css | wc -l` → **23**
   (19 `App.*.test.tsx` files + `App.tsx` + `main.tsx` + `types.ts` +
-  `index.css`).
-- **Total for this surface: 158.**
+  `index.css`; corrected during slice E's coverage reconciliation — the
+  original slice B pass mis-added this line to 22).
+- **Total for this surface: 159.**
 
 ## Seeding searches run
 
@@ -132,4 +133,4 @@ inconsistent between the two sub-patterns.
 
 | Directory | Files examined | Findings |
 | --- | --- | --- |
-| `apps/frontend/src/lib/**`, `apps/frontend/src/types/**`, top-level `apps/frontend/src/*`, `apps/frontend/src/test/**`, CSS | 158 | 2 (F-01, F-02) |
+| `apps/frontend/src/lib/**`, `apps/frontend/src/types/**`, top-level `apps/frontend/src/*`, `apps/frontend/src/test/**`, CSS | 159 | 2 (F-01, F-02) |

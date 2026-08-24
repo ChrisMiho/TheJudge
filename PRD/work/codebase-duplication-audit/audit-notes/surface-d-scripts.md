@@ -57,7 +57,7 @@ binding constraint 5.
 
 **Locations:**
 - `scripts/refresh-commander-spellbook-data.mjs:22` — `export const
-  CONFIRM_FLAG = "--confirm-live-calls"`; `parseRefreshArgs` (line 26-28,
+  CONFIRM_FLAG = "--confirm-live-calls"`; `parseRefreshArgs` (line 29-31,
   `{ confirmed: argv.includes(CONFIRM_FLAG) }`); `describePlan` (line
   260-268, "Commander Spellbook refresh plan (no request has been made): ...
   Re-run with ${CONFIRM_FLAG} to ...")

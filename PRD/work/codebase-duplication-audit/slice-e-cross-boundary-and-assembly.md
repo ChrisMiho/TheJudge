@@ -1,6 +1,6 @@
 # Slice E — Cross-boundary surface pass and final assembly
 
-## Status: planned
+## Status: done
 
 ## Depends on
 
@@ -59,24 +59,24 @@ one deliverable: `PRD/work/codebase-duplication-audit/DUPLICATION-AUDIT.md`.
 
 ## Acceptance criteria
 
-- [ ] E1. All four surface note files (A–D) were read before cross-boundary
+- [x] E1. All four surface note files (A–D) were read before cross-boundary
       analysis began.
-- [ ] E2. The perceptual-hash cross-boundary starting point was confirmed or
+- [x] E2. The perceptual-hash cross-boundary starting point was confirmed or
       dismissed by reading both `apps/frontend/src/lib/scan/recipe.ts` and
       `scripts/build-scan-vectors.mjs`.
-- [ ] E3. The player-label cross-boundary starting point was confirmed or
+- [x] E3. The player-label cross-boundary starting point was confirmed or
       dismissed by reading both `apps/frontend/src/types.ts` and
       `apps/backend/src/constants.ts`.
-- [ ] E4. The `*Policy.test.ts` versus `scripts/*.mjs` cross-boundary starting
+- [x] E4. The `*Policy.test.ts` versus `scripts/*.mjs` cross-boundary starting
       point was confirmed or dismissed by reading at least one of the four
       `*Policy.test.ts` files.
-- [ ] E5. `DUPLICATION-AUDIT.md` exists with all four required sections
+- [x] E5. `DUPLICATION-AUDIT.md` exists with all four required sections
       (Header, Findings, Healthy reuse, Coverage table).
-- [ ] E6. The coverage table's total reconciles against `git ls-files apps
+- [x] E6. The coverage table's total reconciles against `git ls-files apps
       scripts`, minus the exclusion list.
-- [ ] E7. `git status --porcelain` was run and shows changes only under
+- [x] E7. `git status --porcelain` was run and shows changes only under
       `PRD/work/codebase-duplication-audit/` and `PRD/work/STATUS.md`.
-- [ ] E8. `npm run quality:check` was run and exits 0.
+- [x] E8. `npm run quality:check` was run and exits 0.
 
 ## Verification
 
@@ -93,11 +93,12 @@ npm run quality:check
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/<slug>/` ready to delete
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change
+- [x] No secrets committed
+- [ ] Durable outcomes promoted; `PRD/work/<slug>/` ready to delete (cleanup's
+      job, per the promotion note below — not done by this slice)
 
 Promotion note for cleanup: per `DESIGN-BRIEF.md`'s Material assumption 1,
 `DUPLICATION-AUDIT.md` is not promoted into `PRD/sections/`. Cleanup carries it
