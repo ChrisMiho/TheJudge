@@ -1,6 +1,6 @@
 # Slice D — Scripts surface pass
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -44,14 +44,14 @@ that clears the brief's floor.
 
 ## Acceptance criteria
 
-- [ ] D1. This surface's file inventory is enumerated with `git ls-files
+- [x] D1. This surface's file inventory is enumerated with `git ls-files
       scripts` and the count is recorded in the notes file.
-- [ ] D2. `audit-notes/surface-d-scripts.md` exists, recording every finding
+- [x] D2. `audit-notes/surface-d-scripts.md` exists, recording every finding
       in the brief's per-finding field shape and a draft coverage-table row
       for this surface.
-- [ ] D3. At least one seeding search was run scoped to this surface, per the
+- [x] D3. At least one seeding search was run scoped to this surface, per the
       brief's Method.
-- [ ] D4. The `scripts` block of the root, frontend, and backend
+- [x] D4. The `scripts` block of the root, frontend, and backend
       `package.json` files was read as part of this pass.
 
 ## Verification
