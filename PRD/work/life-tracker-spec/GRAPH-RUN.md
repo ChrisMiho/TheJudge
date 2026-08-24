@@ -7,7 +7,7 @@
 - Autonomous base: `origin/thejudge-auto/life-tracker-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260824-082911/` (copied into `PRD/work/life-tracker-spec/intake/`, staged copy deleted)
 - Current node: `land` — `review` returned APPROVE on 2026-08-24; parked for the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/105
-- Next action: `/graph-run PRD/work/life-tracker-spec/`
+- Next action: merge https://github.com/ChrisMiho/TheJudge/pull/105, then `/graph-run PRD/work/life-tracker-spec/`
 
 ## Node ledger
 
@@ -34,6 +34,84 @@ No `PRD/sections/` change was applied: an `accept` leaves the run's text
 standing.
 
 ## Open gate
+
+**PARKED 2026-08-24 at node 8 (`land`) — the owner's pull-request merge.**
+
+The `define` gate below this section is resolved; this is the run's second and
+final gate. Nodes 4 through 7 all returned `ok` and the reviewer returned
+`APPROVE` with 0 Critical and 0 Important findings.
+
+**What the owner is being asked to do:** merge
+https://github.com/ChrisMiho/TheJudge/pull/105. `land` is a human action — the
+driver never runs `gh pr merge` or `gh pr close`.
+
+**Read the spec here, not in the PR's Files tab.** Node 6 pushed slice A
+directly onto the recorded autonomous base before opening the PR, so
+`origin/thejudge-auto/life-tracker-spec` already carries the 167-line
+`PRD/sections/life-tracker/README.md` and PR #105 shows slice B alone — seven
+files, none of them the spec. Verified by the driver:
+
+```
+git ls-remote origin thejudge-auto/life-tracker-spec   -> 376b2a0 (slice A)
+gh pr view 105 --json files                            -> 7 files, spec absent
+git show 376b2a0:PRD/sections/life-tracker/README.md   -> the spec
+git diff 8799b1e..3d18edf                              -> both slices together
+```
+
+Merging #105 loses nothing. It is not repairable inside this run: rewinding a
+pushed base needs a force-push the graph tier denies. The contributing cause is
+outside this package — `thejudge-implement-all/SKILL.md:36` derives the shared
+remote branch as `thejudge-auto/<slug>`, the same name as the recorded
+autonomous base, so the branch collided with itself and node 6 forked
+`-work` after slice A had already landed. A graph run may not edit a
+`thejudge-*` skill, so that fix belongs to an ordinary session.
+
+**Deviation from the park procedure, stated rather than buried.** The contract's
+park sets `STATUS.owner-action`, rewrites the README frontmatter, and moves the
+`PRD/work/STATUS.md` board row. The driver did **not** do that here, because
+doing so breaks the merge this gate is waiting for. Measured on a scratch branch,
+not assumed:
+
+```
+git merge-tree --write-tree --name-only HEAD origin/thejudge-auto/life-tracker-spec-work
+  baseline (no park):  merges clean
+  with the park:       CONFLICT (content) in PRD/work/STATUS.md
+                       CONFLICT (content) in PRD/work/life-tracker-spec/README.md
+```
+
+PR #105 moves the same board row to `## ship-ready` and the same frontmatter
+line to `status: ship-ready`. Writing `owner-action` over them on the base is a
+same-line collision on both. So the package keeps `STATUS.active` on the base
+and `STATUS.ship-ready` on the PR branch, and the gate lives here in the ledger
+— which `graph-run/reference.md` already treats as sufficient to resume from.
+The merge itself resolves the state, and node 9 (`close`) deletes the package
+folder outright.
+
+**The reviewer's three Minor findings, none of which loops back to `build`:**
+
+1. `B5` reads "A human confirmed", and in an unattended run no human exists. The
+   build node recorded a dated agent observation and said so in
+   `slice-b.evidence.md:15-17` rather than fabricating a sign-off. The reviewer
+   re-verified the substance independently — exactly two files promotable,
+   exactly two written. It resolves when the owner reviews the PR.
+2. PR #105 does not display the spec — covered in full above.
+3. Two current-state details in the sources are absent from the spec: the
+   confirm-before-destroy step on Reset / New Game (`system-map.md:535`), and
+   `NFR-001` / `NFR-006`, which are named on `Backed by:` but carry no attached
+   behavior (DEC-101's CSS-only, reduced-motion-aware constraint). Neither
+   fails a stated criterion — A5 asks for the seven surfaces and gets them, A4
+   asks only that the IDs be named. Candidates for a later pass.
+
+**Resume command, once #105 is merged:**
+
+```
+/graph-run PRD/work/life-tracker-spec/
+```
+
+The run re-enters at `land`, confirms the PR is merged, records it `ok`, and
+continues to node 9 (`close`).
+
+## Open gate — define (resolved)
 
 **RESOLVED 2026-08-24 — 1 stable ID walked, 1 verdict recorded (1 accept,
 0 edit, 0 reject).** See `## Gate verdicts` above. The evidence below is kept
