@@ -2,7 +2,7 @@
 
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -53,31 +53,31 @@ one derived, non-authoritative view on the fixed template.
 
 ## Acceptance criteria
 
-- [ ] A1 — `PRD/sections/life-tracker/README.md` exists.
-- [ ] A2 — The file carries all seven DEC-168 template fields: `Status:`,
+- [x] A1 — `PRD/sections/life-tracker/README.md` exists.
+- [x] A2 — The file carries all seven DEC-168 template fields: `Status:`,
       `Backed by:`, **What it is**, **How it works**, **Measured bounds**,
       **Rejected alternatives and deferred scope**, **Where it lives**.
-- [ ] A3 — The `Status:` field states the file is a draft/derived,
+- [x] A3 — The `Status:` field states the file is a draft/derived,
       non-authoritative view and that a cited `DEC`/`REQ`/`FLOW` wins any
       conflict.
-- [ ] A4 — The `Backed by:` line names every consolidated ID: DEC-101,
+- [x] A4 — The `Backed by:` line names every consolidated ID: DEC-101,
       DEC-102, DEC-103, DEC-132, DEC-136, DEC-139, REQ-081, REQ-082, REQ-083,
       REQ-084, REQ-085, REQ-111, REQ-112, FLOW-013, NFR-001, NFR-006.
-- [ ] A5 — **How it works** covers all seven surfaces (life table; counter
+- [x] A5 — **How it works** covers all seven surfaces (life table; counter
       panel and commander-damage matrix; day/night header control; Game
       Setup; reset/New Game; persistence; one-way MTG Assistant seed), each
       with a `Built:` marker.
-- [ ] A6 — **Measured bounds** contains every surviving bound: commander-damage
+- [x] A6 — **Measured bounds** contains every surviving bound: commander-damage
       `−`/`+` bands ≈53px; one-screen fit at every player count with no
       per-row/per-card minimum; counter panel full-height with no dead scrim
       at any player count; player count 2–8, starting life 20/25/30/40 +
       Custom default 60, count defaults 2→20, 3+→40.
-- [ ] A7 — The ≈67px life-adjustment edge band appears only under **Rejected
+- [x] A7 — The ≈67px life-adjustment edge band appears only under **Rejected
       alternatives and deferred scope** as a closed door — not under
       **Measured bounds** and not narrated in **How it works**.
-- [ ] A8 — **Where it lives** names a coarse location and defers to
+- [x] A8 — **Where it lives** names a coarse location and defers to
       `system-map.md` rather than duplicating deep code detail.
-- [ ] A9 — The slice's diff touches only `PRD/sections/life-tracker/README.md`
+- [x] A9 — The slice's diff touches only `PRD/sections/life-tracker/README.md`
       (new file) — no `apps/` change, no edit to any existing `DEC`, `REQ`,
       `FLOW`, or `NFR` body.
 

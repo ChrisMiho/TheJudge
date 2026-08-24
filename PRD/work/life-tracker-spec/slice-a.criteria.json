@@ -5,7 +5,7 @@
     {
       "id": "A1",
       "statement": "PRD/sections/life-tracker/README.md exists",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "test -f PRD/sections/life-tracker/README\\.md|ls PRD/sections/life-tracker",
         "paths": ["PRD/sections/life-tracker/README.md"]
@@ -14,7 +14,7 @@
     {
       "id": "A2",
       "statement": "The file carries all seven DEC-168 template fields: Status:, Backed by:, What it is, How it works, Measured bounds, Rejected alternatives and deferred scope, Where it lives",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep -E \"(Status:|Backed by:|What it is|How it works|Measured bounds|Rejected alternatives|Where it lives)\" PRD/sections/life-tracker/README\\.md",
         "paths": ["PRD/sections/life-tracker/README.md"]
@@ -23,7 +23,7 @@
     {
       "id": "A3",
       "statement": "The Status: field states the file is a draft/derived, non-authoritative view and that a cited DEC/REQ/FLOW wins any conflict",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep -Ei \"(draft|derived|non-authoritative|wins any conflict|wins on conflict)\" PRD/sections/life-tracker/README\\.md",
         "paths": ["PRD/sections/life-tracker/README.md"]
@@ -32,7 +32,7 @@
     {
       "id": "A4",
       "statement": "The Backed by: line names every consolidated ID: DEC-101, DEC-102, DEC-103, DEC-132, DEC-136, DEC-139, REQ-081, REQ-082, REQ-083, REQ-084, REQ-085, REQ-111, REQ-112, FLOW-013, NFR-001, NFR-006",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep -E \"(DEC-101|DEC-102|DEC-103|DEC-132|DEC-136|DEC-139|REQ-081|REQ-082|REQ-083|REQ-084|REQ-085|REQ-111|REQ-112|FLOW-013|NFR-001|NFR-006)\" PRD/sections/life-tracker/README\\.md",
         "paths": ["PRD/sections/life-tracker/README.md"]
@@ -41,7 +41,7 @@
     {
       "id": "A5",
       "statement": "How it works covers all seven surfaces (life table; counter panel and commander-damage matrix; day/night header control; Game Setup; reset/New Game; persistence; one-way MTG Assistant seed), each with a Built: marker",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep -Ei \"(life table|counter panel|commander.damage|day.night|Game Setup|New Game|persistence|MTG Assistant)\" PRD/sections/life-tracker/README\\.md|grep -c \"Built:\" PRD/sections/life-tracker/README\\.md",
         "paths": ["PRD/sections/life-tracker/README.md"]
@@ -50,7 +50,7 @@
     {
       "id": "A6",
       "statement": "Measured bounds contains every surviving bound: commander-damage bands ~53px; one-screen fit at every player count with no per-row/per-card minimum; counter panel full-height with no dead scrim at any player count; player count 2-8, starting life 20/25/30/40 + Custom default 60, count defaults 2->20, 3+->40",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep -Ei \"(53px|one-screen|full-height|dead scrim|20/25/30/40|2.8|2.20|3.40)\" PRD/sections/life-tracker/README\\.md",
         "paths": ["PRD/sections/life-tracker/README.md"]
@@ -59,7 +59,7 @@
     {
       "id": "A7",
       "statement": "The ~67px life-adjustment edge band appears only under Rejected alternatives and deferred scope as a closed door, not under Measured bounds and not narrated in How it works",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -67,7 +67,7 @@
     {
       "id": "A8",
       "statement": "Where it lives names a coarse location and defers to system-map.md rather than duplicating deep code detail",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -75,7 +75,7 @@
     {
       "id": "A9",
       "statement": "The slice's diff touches only PRD/sections/life-tracker/README.md (new file) - no apps/ change, no edit to any existing DEC, REQ, FLOW, or NFR body",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "git status --porcelain PRD/sections/ apps/|git diff --stat -- apps/ PRD/sections/decisions PRD/sections/functional-requirements\\.md PRD/sections/user-flows\\.md PRD/sections/system-map\\.md PRD/sections/screen-layout\\.md PRD/sections/non-functional-requirements\\.md",
         "paths": ["PRD/sections/life-tracker/README.md"]
