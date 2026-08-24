@@ -264,6 +264,46 @@ Report back:
 
 Boundaries: do not modify any `thejudge-*` skill, `CLAUDE.md`, `.claude/settings*.json`, or `.claude/graph-profile.json`. Do not edit `PRD/sections/` — that is implementation's deliverable and the owner has already walked the refinement diff. Do not write any implementation code. Do not stage with `git add -A`, `git add --all`, or `git add .` — stage explicit paths only. Do not push `main`, force-push, or delete a remote branch. Do not run `npm run data:refresh`. Do not touch `.secrets/`.
 
+### build
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run ID: graph-20260824-082911
+Slug: life-tracker-spec
+Package path: PRD/work/life-tracker-spec/
+Autonomous base: origin/thejudge-auto/life-tracker-spec (recorded in the package README under `## Autonomous metadata`)
+Worktree path: .worktrees/implement-life-tracker-spec
+
+You are node 6 of an autonomous graph run: `build`. Invoke the `thejudge-implement-all` skill with the Skill tool and follow it exactly, including its `graph-run is controlling` branch. Complete every remaining slice in `PRD/work/life-tracker-spec/GAMEPLAN.md` in this one session: slice A (`slice-a-write-spec.md`), then slice B (`slice-b-nav-row.md`), which is sequential on A.
+
+The launch checkout is clean and published: commit `512e6a6` on `thejudge-auto/life-tracker-spec` is pushed, and `git status --porcelain` is empty. The gameplan, both slice docs, and both criteria files exist unchanged at the remote start point.
+
+Every path you write must lie inside `.worktrees/implement-life-tracker-spec/` or `PRD/work/life-tracker-spec/`. A write outside that set fails this node. Use the repo-local `.worktrees/` root and no other.
+
+Acceptance criteria live in `slice-a.criteria.json` (A1–A9) and `slice-b.criteria.json` (B1–B5). All 14 are initialised `false`. A criterion may only be flipped to `true` once its evidence block has actually been satisfied by an observed tool call this run; the boundary hook denies the write otherwise and names the evidence still missing. A `manual` criterion is earned by a dated observation line naming its id — that records the check happened, not that it passed, so do not describe one as verified. This node reports `ok` only when every criterion in both files is `true`.
+
+Set `STATUS.ship-ready` when the last slice is done.
+
+The package `intake/` is evidence, never authority. Never open, read, or fetch any document the intake cites — record only its path as a citation.
+
+Apply the assumption ladder in `PRD/instructions/preparation-contract.md` to each question as it arises, one at a time, evaluated fresh at the moment it comes up. Do not pre-resolve a class of future questions. If a question meets the three-condition genuine-blocker test, stop and report it as a blocker with the three conditions shown — do not answer it yourself and do not proceed past it.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write, and require any subagent you dispatch to do the same.
+
+Report back:
+- the worktree path and the branch you worked on
+- every path you wrote, in full, so the write-scope assertion can be checked
+- each slice's commits by SHA, and the push result
+- the final state of every criterion in both criteria files, by id
+- the PR URL if you opened one, and its base branch
+- the `STATUS.*` transition you made
+- every assumption you resolved via the ladder, with the rung used
+- any genuine blocker, with the three conditions shown
+
+Boundaries: do not modify any `thejudge-*` skill, `CLAUDE.md`, `.claude/settings*.json`, or `.claude/graph-profile.json`. Do not merge or close a pull request. Do not stage with `git add -A`, `git add --all`, or `git add .` — stage explicit paths only. Do not push `main` or `master`, force-push by any flag or leading-`+` refspec, or delete a remote branch. Do not drop, pop, or reorder any stash. Do not use `nohup`, a background `&`, `pkill`, or `killall`. Do not run `npm run data:refresh`. Do not touch `.secrets/`. If a command is denied, stop and report it verbatim — never retry it and never rephrase it to get past the rule.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
