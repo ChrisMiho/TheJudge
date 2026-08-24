@@ -8,7 +8,9 @@ import zlib from "node:zlib"
 import {
   ACCEPTED_VARIANT_STATUS,
   EXAMPLE_VARIANT_STATUS,
+  MIN_VARIANT_POPULARITY,
   buildComboArtifacts,
+  meetsPopularityFloor,
   partitionVariantsByStatus,
   projectIngredientState,
   readRawInputs,
@@ -487,4 +489,87 @@ test("an unrecognized zone location fails the build", () => {
       }),
     /unrecognized zone location "S"/
   )
+})
+
+
+function popularityVariant(id, popularity) {
+  return {
+    id,
+    status: "OK",
+    popularity,
+    description: "steps",
+    manaNeeded: "",
+    easyPrerequisites: "",
+    notablePrerequisites: "",
+    notes: "",
+    uses: [{ card: { name: `Card ${id}`, oracleId: `o-${id}` }, zoneLocations: ["B"], quantity: 1 }],
+    requires: []
+  }
+}
+
+test("a refresh applies the popularity floor without being asked", () => {
+  // The regression this guards: `data:build` runs `runBuild` with no options, so
+  // a floor that only applied when explicitly passed would quietly rebuild the
+  // full corpus and break the deploy again on the next refresh.
+  const { index } = buildComboArtifacts({
+    rawVariants: [popularityVariant("1", 0), popularityVariant("2", 5), popularityVariant("3", 0)],
+    templateExpansions: new Map(),
+    snapshot: {}
+  })
+
+  assert.equal(index.manifest.variantCount, 1)
+  assert.equal(index.manifest.minPopularity, MIN_VARIANT_POPULARITY)
+  assert.equal(index.manifest.belowPopularityFloorCount, 2)
+  assert.deepEqual(Object.keys(index.detailOffsets), ["2"])
+})
+
+test("a trimmed variant leaves no trace in any derived structure", () => {
+  // Membership, the template directory, and the offset directory are all built
+  // from the same variant list, so filtering it must be complete rather than
+  // leaving an oracle id pointing at a variant the detail artifact no longer has.
+  const { index } = buildComboArtifacts({
+    rawVariants: [popularityVariant("1", 0), popularityVariant("2", 5)],
+    templateExpansions: new Map(),
+    snapshot: {}
+  })
+
+  const referenced = new Set(Object.values(index.byOracleId).flat())
+  for (const variantId of referenced) {
+    assert.ok(index.detailOffsets[variantId], `${variantId} is referenced but has no detail record`)
+  }
+  assert.ok(!index.byOracleId["o-1"], "a dropped variant must not keep its oracle membership")
+})
+
+test("the floor can be switched off, and then nothing is dropped", () => {
+  const { index } = buildComboArtifacts({
+    rawVariants: [popularityVariant("1", 0), popularityVariant("2", 5)],
+    templateExpansions: new Map(),
+    snapshot: {},
+    minPopularity: 0
+  })
+
+  assert.equal(index.manifest.variantCount, 2)
+  assert.equal(index.manifest.minPopularity, 0)
+  assert.equal(index.manifest.belowPopularityFloorCount, 0)
+})
+
+test("a duplicate is still a build failure even below the floor", () => {
+  // Duplicate detection runs over the accepted set before the filter: a corpus
+  // that repeats a variant is malformed whether or not anyone plays it.
+  assert.throws(
+    () =>
+      buildComboArtifacts({
+        rawVariants: [popularityVariant("dup", 0), popularityVariant("dup", 0)],
+        templateExpansions: new Map(),
+        snapshot: {}
+      }),
+    /appears more than once/
+  )
+})
+
+test("a variant with no popularity field reads as unplayed, not as unknown", () => {
+  assert.equal(meetsPopularityFloor({}, 1), false)
+  assert.equal(meetsPopularityFloor({ popularity: "900" }, 1), false)
+  assert.equal(meetsPopularityFloor({ popularity: 1 }, 1), true)
+  assert.equal(meetsPopularityFloor({ popularity: 0 }, 0), true)
 })
