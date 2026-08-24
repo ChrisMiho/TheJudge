@@ -1,5 +1,5 @@
 ---
-status: refined
+status: owner-action
 ---
 
 # life-tracker-spec

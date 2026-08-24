@@ -10,15 +10,15 @@ Do not rename package folders to encode status.
 
 ## refined
 
-| Package | Notes |
-| --- | --- |
-| [life-tracker-spec](./life-tracker-spec/) | Phase A #1 of the docs-refactor gameplan (`PRD/work/adhoc/refactor-gameplan.md`) — current-state spec for the Player Life Tracker |
-
 ## refining
 
 ## ideation
 
 ## owner-action
+
+| Package | Notes |
+| --- | --- |
+| [life-tracker-spec](./life-tracker-spec/) | `define` gate — graph run `graph-20260824-082911` parked on a `PRD/sections/` diff (DEC-168). Resume: `/graph-gate-review PRD/work/life-tracker-spec/` |
 
 ## deferred
 
