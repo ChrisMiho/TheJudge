@@ -5,7 +5,7 @@
     {
       "id": "E1",
       "statement": "All four surface note files (A-D) were read before cross-boundary analysis began.",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/work/codebase-duplication-audit/audit-notes/surface-a-components-hooks.md",
@@ -18,7 +18,7 @@
     {
       "id": "E2",
       "statement": "The perceptual-hash cross-boundary starting point was confirmed or dismissed by reading both apps/frontend/src/lib/scan/recipe.ts and scripts/build-scan-vectors.mjs.",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/lib/scan/recipe.ts",
@@ -29,7 +29,7 @@
     {
       "id": "E3",
       "statement": "The player-label cross-boundary starting point was confirmed or dismissed by reading both apps/frontend/src/types.ts and apps/backend/src/constants.ts.",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/types.ts",
@@ -40,7 +40,7 @@
     {
       "id": "E4",
       "statement": "The *Policy.test.ts versus scripts/*.mjs cross-boundary starting point was confirmed or dismissed by reading at least one of the four *Policy.test.ts files.",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/lib/cardRulingsTransformPolicy.test.ts",
@@ -53,7 +53,7 @@
     {
       "id": "E5",
       "statement": "DUPLICATION-AUDIT.md exists with all four required sections (Header, Findings, Healthy reuse, Coverage table).",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": ["PRD/work/codebase-duplication-audit/DUPLICATION-AUDIT.md"]
       }
@@ -61,7 +61,7 @@
     {
       "id": "E6",
       "statement": "The coverage table's total reconciles against git ls-files apps scripts, minus the exclusion list.",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(?=[\\s\\S]*git ls-files)(?=[\\s\\S]*apps)(?=[\\s\\S]*scripts)"
       }
@@ -69,7 +69,7 @@
     {
       "id": "E7",
       "statement": "git status --porcelain was run and shows changes only under PRD/work/codebase-duplication-audit/ and PRD/work/STATUS.md.",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "git status --porcelain"
       }
@@ -77,7 +77,7 @@
     {
       "id": "E8",
       "statement": "npm run quality:check was run and exits 0.",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run quality:check"
       }
