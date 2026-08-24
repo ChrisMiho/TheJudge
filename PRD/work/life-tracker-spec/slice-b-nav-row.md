@@ -2,7 +2,7 @@
 
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -28,16 +28,16 @@ and prove the whole package's diff stayed inside DEC-168's authorized scope.
 
 ## Acceptance criteria
 
-- [ ] B1 — `PRD/README.md` has exactly one new Section Inventory row, for
+- [x] B1 — `PRD/README.md` has exactly one new Section Inventory row, for
       `sections/life-tracker/`.
-- [ ] B2 — The new row's description states the spec is a derived,
+- [x] B2 — The new row's description states the spec is a derived,
       non-authoritative current-state view.
-- [ ] B3 — No other Section Inventory or Instruction Inventory row is added,
+- [x] B3 — No other Section Inventory or Instruction Inventory row is added,
       removed, or reordered.
-- [ ] B4 — The full package diff (`git diff` against the autonomous base)
+- [x] B4 — The full package diff (`git diff` against the autonomous base)
       shows no change under `apps/`, and no change to any existing `DEC`,
       `REQ`, `FLOW`, or `NFR` body, or to `open-questions.md`.
-- [ ] B5 — A human confirmed the package needs no further durable-truth
+- [x] B5 — A human confirmed the package needs no further durable-truth
       promotion at cleanup beyond the two files this package wrote.
 
 ## Verification
@@ -54,8 +54,8 @@ git diff --stat origin/thejudge-auto/life-tracker-spec... -- apps/ PRD/sections/
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/life-tracker-spec/` ready to delete
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change
+- [x] No secrets committed
+- [x] Durable outcomes promoted; `PRD/work/life-tracker-spec/` ready to delete
