@@ -5,7 +5,7 @@
     {
       "id": "A1",
       "statement": "This surface's file inventory is enumerated with git ls-files apps/frontend/src/components apps/frontend/src/hooks and the count is recorded in the notes file.",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(?=[\\s\\S]*git ls-files)(?=[\\s\\S]*apps/frontend/src/components)(?=[\\s\\S]*apps/frontend/src/hooks)"
       }
@@ -13,7 +13,7 @@
     {
       "id": "A2",
       "statement": "audit-notes/surface-a-components-hooks.md exists, recording every finding in the brief's per-finding field shape and a draft coverage-table row for this surface.",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": ["PRD/work/codebase-duplication-audit/audit-notes/surface-a-components-hooks.md"]
       }
@@ -21,7 +21,7 @@
     {
       "id": "A3",
       "statement": "At least one seeding search (repeated literals/magic numbers, repeated exported symbol names, near-identical signatures, or parallel handler names) was run scoped to this surface, per the brief's Method.",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(?=[\\s\\S]*(grep|rg))(?=[\\s\\S]*apps/frontend/src/(components|hooks))"
       }

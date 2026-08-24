@@ -1,6 +1,6 @@
 # Slice B — Frontend lib, types, and styles surface pass
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -38,13 +38,13 @@ that clears the brief's floor.
 
 ## Acceptance criteria
 
-- [ ] B1. This surface's file inventory is enumerated with `git ls-files`
+- [x] B1. This surface's file inventory is enumerated with `git ls-files`
       covering `apps/frontend/src/lib` and `apps/frontend/src/types`, and the
       count is recorded in the notes file.
-- [ ] B2. `audit-notes/surface-b-lib-types-styles.md` exists, recording every
+- [x] B2. `audit-notes/surface-b-lib-types-styles.md` exists, recording every
       finding in the brief's per-finding field shape and a draft coverage-table
       row for this surface.
-- [ ] B3. At least one seeding search was run scoped to this surface, per the
+- [x] B3. At least one seeding search was run scoped to this surface, per the
       brief's Method.
 
 ## Verification

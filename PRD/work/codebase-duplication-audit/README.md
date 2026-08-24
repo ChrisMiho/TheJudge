@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # codebase-duplication-audit
 
@@ -27,10 +27,10 @@ See `IDEA.md` for problem, outcome, non-goals, and open questions.
 | Slice | Scope | Depends on | Status |
 | --- | --- | --- | --- |
 | A | Frontend components and hooks (`apps/frontend/src/components/**`, `apps/frontend/src/hooks/**`) | none | done |
-| B | Frontend lib, types, styles (`apps/frontend/src/lib/**`, `apps/frontend/src/types/**`, top-level `apps/frontend/src/*`, `apps/frontend/src/test/**`, CSS) | none | planned |
-| C | Backend (`apps/backend/src/**`) | none | planned |
-| D | Scripts (`scripts/**` plus the three `package.json` script blocks) | none | planned |
-| E | Cross-boundary pass, plus final assembly of `DUPLICATION-AUDIT.md` | A, B, C, D | planned |
+| B | Frontend lib, types, styles (`apps/frontend/src/lib/**`, `apps/frontend/src/types/**`, top-level `apps/frontend/src/*`, `apps/frontend/src/test/**`, CSS) | none | done |
+| C | Backend (`apps/backend/src/**`) | none | done |
+| D | Scripts (`scripts/**` plus the three `package.json` script blocks) | none | done |
+| E | Cross-boundary pass, plus final assembly of `DUPLICATION-AUDIT.md` | A, B, C, D | done |
 
 ## Implementation map
 
