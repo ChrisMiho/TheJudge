@@ -79,9 +79,17 @@ export const COPY_COMMANDS = Object.freeze(["cp", "rsync", "install"])
  *
  * `rm` is the reason this list exists: deleting the run lock is a write to the
  * run's own bookkeeping, and no destination-only rule would see it.
+ *
+ * `unlink` and `rmdir` are here because a list holding only `rm` was a guardrail
+ * one synonym cleared. On 2026-08-24 `unlink .worktrees/.graph-run.lock` was
+ * observed to pass while the identical `rm` form was denied — the run-lock and
+ * stop-sentinel rules resolve their targets through this list, so a removal verb
+ * missing from it is invisible to both.
  */
 export const DESTRUCTIVE_COMMANDS = Object.freeze([
   "rm",
+  "unlink",
+  "rmdir",
   "mv",
   "tee",
   "truncate",
@@ -93,6 +101,22 @@ export const DESTRUCTIVE_COMMANDS = Object.freeze([
 
 /** The run lock. Its presence is what turns the graph tier on. */
 export const RUN_LOCK_PATH = ".worktrees/.graph-run.lock"
+
+/**
+ * The release record: a run's declaration that it has reached a terminal state.
+ *
+ * `graph-run`'s `## Terminal states` table requires the run to delete its lock
+ * as the last act of every terminal state. `run-lock-removal` denied exactly
+ * that, so the contract and the hook could not both hold, and every way through
+ * was a bypass. This gives release one path the rule recognises.
+ *
+ * **Its stated limit.** The driver writes both this record and the lock, so
+ * this does not *authorise* release — it makes release **declared**. A silent
+ * `rm` becomes a terminal state named on disk, against a run id, which a later
+ * audit can read. That is the whole of what it buys; it is not a check the
+ * driver cannot satisfy at will.
+ */
+export const RUN_RELEASE_PATH = ".worktrees/.graph-run-release.json"
 
 /**
  * The owner's kill switch.
@@ -818,9 +842,12 @@ export const RULES = Object.freeze([
     id: "run-lock-removal",
     tier: "graph",
     evaluate: (context) => {
+      // A declared terminal state is the release path the contract always
+      // required and this rule previously had no way to recognise.
+      if (releasesOwnLock(context)) return null
       for (const candidate of writtenPaths(context)) {
         if (matchesPath(candidate, RUN_LOCK_PATH)) {
-          return "Removing the run lock is denied while that lock is live. Release goes through the run's own terminal states, not through deleting the lock."
+          return `Removing the run lock is denied while that lock is live. Release goes through the run's own terminal states: write \`${RUN_RELEASE_PATH}\` naming this run id and its terminal state first.`
         }
       }
       return null
@@ -979,7 +1006,9 @@ export function callContext({
   runState = null,
   callCount = null,
   flippedCriteria = [],
-  observedEvidence = null
+  observedEvidence = null,
+  lockRunId = null,
+  release = null
 } = {}) {
   const isBash = toolName === "Bash"
   const normalized = isBash
@@ -996,8 +1025,25 @@ export function callContext({
     runState,
     callCount,
     flippedCriteria,
-    observedEvidence
+    observedEvidence,
+    lockRunId,
+    release
   }
+}
+
+/**
+ * Whether this run has declared a terminal state that releases *its own* lock.
+ *
+ * The run ids must match. A record naming another run does not release this
+ * lock — otherwise a stale release file left by an earlier run would silently
+ * unlock every run after it.
+ */
+export function releasesOwnLock(context) {
+  const release = context.release
+  if (!release || typeof release !== "object") return false
+  if (typeof release.state !== "string" || release.state === "") return false
+  if (typeof release.runId !== "string" || release.runId === "") return false
+  return release.runId === context.lockRunId
 }
 
 /**

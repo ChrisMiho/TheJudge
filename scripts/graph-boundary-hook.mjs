@@ -25,6 +25,7 @@ import {
   CRITERIA_FILE_SUFFIX,
   EVIDENCE_LOG_PATH,
   RUN_LOCK_PATH,
+  RUN_RELEASE_PATH,
   RUN_STATE_PATH,
   RUN_STOP_PATH,
   callContext,
@@ -139,6 +140,34 @@ export function slugFromLock(lockContents) {
   try {
     const parsed = JSON.parse(lockContents)
     return typeof parsed?.slug === "string" ? parsed.slug : null
+  } catch {
+    return null
+  }
+}
+
+/** The run id in the lock, so a release record can be matched against it. */
+export function runIdFromLock(lockContents) {
+  try {
+    const parsed = JSON.parse(lockContents)
+    return typeof parsed?.runId === "string" ? parsed.runId : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * The run's declaration that it has reached a terminal state, or null.
+ *
+ * Malformed is treated as absent. A release record that does not parse is not a
+ * release, and the lock stays denied — the safe direction for a rule whose job
+ * is to keep a live run from deleting its own bookkeeping.
+ */
+export function readRelease(root, read = readFileSync) {
+  const raw = readRecord(root, RUN_RELEASE_PATH, read)
+  if (raw === null) return null
+  try {
+    const parsed = JSON.parse(raw)
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null
   } catch {
     return null
   }
@@ -346,7 +375,9 @@ export function decide(rawPayload, io = {}) {
     runState,
     callCount,
     flippedCriteria,
-    observedEvidence
+    observedEvidence,
+    lockRunId: runActive ? runIdFromLock(readRunLock(root, read)) : null,
+    release: runActive ? readRelease(root, read ?? readFileSync) : null
   })
   return { ...verdict, degraded }
 }
