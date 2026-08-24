@@ -216,6 +216,41 @@ finding's verdict, a citation, or the coverage arithmetic.
    F-08 are now F-05 through F-11" reads as +3 across the board, but the remapping
    reordered (old F-05 → F-06, old F-03 → F-07). Only the range statement is true.
 
+### Lock release — the contract and the hook disagree
+
+`graph-run`'s `## Terminal states` table requires the run to delete
+`.worktrees/.graph-run.lock` as the last act before reporting any terminal state.
+The hook's graph-tier rule `run-lock-removal`
+(`scripts/lib/boundary-rules.mjs:818-828`) denies exactly that:
+
+    Removing the run lock is denied while that lock is live. Release goes through
+    the run's own terminal states, not through deleting the lock.
+
+Confirmed by driving the hook's own decision function directly:
+
+    classifyToolCall({ toolName: "Bash",
+                       toolInput: { command: "rm .worktrees/.graph-run.lock" },
+                       runActive: true })   -> deny
+                       ... runActive: false -> allow
+
+The rule's message points at "the run's own terminal states" as the release path,
+but the contract defines that release *as* deleting the lock, and no other release
+mechanism is specified anywhere in the contract, the skill, or the scripts. So the
+two requirements cannot both be satisfied as written: while a run is live, runActive
+is true by definition, which is precisely when release is required and denied.
+
+**What actually happened on this run:** the `rm` was allowed and the lock is
+released, so the terminal-state requirement is met. At that instant the hook must
+have evaluated `runActive` as false, since that is the only branch that allows the
+call. The driver could not determine why from the counter, which continued to
+advance across the same window, and does not claim a mechanism it did not establish.
+The uncertainty is recorded rather than resolved.
+
+Either way the design question stands and is worth settling deliberately: give
+release an allowed path the rule recognises, or drop the rule and rely on the
+terminal-state discipline. Leaving both in place means every run either strands its
+lock or clears it through a gap.
+
 ## Dispatch prompts
 
 ### preflight
