@@ -5,9 +5,9 @@
 // decision lives here as a pure, tested function rather than as agent prose.
 
 import { execFileSync } from "node:child_process"
-import { existsSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 
-import { CANARY_COMMAND } from "./lib/boundary-rules.mjs"
+import { CANARY_COMMAND, GRAPH_CANARY_COMMAND } from "./lib/boundary-rules.mjs"
 import { pathToFileURL } from "node:url"
 
 export const DEFAULT_THRESHOLDS = { maxFiles: 10, maxLines: 200 }
@@ -289,6 +289,22 @@ export function parseThresholdValue(raw, flagName) {
 // too, so `--base --dry-run` is an error rather than a base named `--dry-run`.
 const REF_VALUE_PATTERN = /^[A-Za-z0-9_][A-Za-z0-9._/-]*$/
 
+/**
+ * `--pid`, or null when absent.
+ *
+ * A malformed value is an error rather than a silent default: a lock carrying a
+ * junk pid reads `stale` to the next run, which reports the previous run dead
+ * and offers to reclaim its lock. That is the wrong answer to give quietly.
+ */
+export function parsePidValue(raw) {
+  if (raw === null) return null
+  const value = Number(raw)
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(`graph-preflight: --pid must be a positive integer, got ${JSON.stringify(raw)}`)
+  }
+  return value
+}
+
 export function parseRefValue(raw, flagName) {
   if (raw === null || raw === undefined) return null
   if (typeof raw !== "string" || !REF_VALUE_PATTERN.test(raw)) {
@@ -357,6 +373,18 @@ export function parseArgs(argv) {
     base: parseRefValue(get("--base"), "--base"),
     runId: runIdArg ?? defaultRunId(),
     dryRun: argv.includes("--dry-run"),
+    // A resume re-enters at the node its ledger records and never re-runs the
+    // branch/stash work, so it needs a way to take the lock and nothing else.
+    // Without one, nothing arms the graph tier for the rest of a resumed run.
+    takeLockOnly: argv.includes("--take-lock"),
+    slug: parseRefValue(get("--slug"), "--slug"),
+    // The lock names a process a later run tests for liveness, and this script
+    // is not it: node exits the moment it returns, so a lock carrying
+    // `process.pid` reads `stale` to the very next run. The driver's session
+    // outlives the run, so the driver passes its own pid. `process.ppid` is the
+    // fallback and is barely better — the invoking shell is short-lived too —
+    // which is why this is a flag rather than a guess.
+    pid: parsePidValue(get("--pid")),
     thresholds: {
       maxFiles: parseThresholdValue(get("--max-files"), "--max-files") ?? DEFAULT_THRESHOLDS.maxFiles,
       maxLines: parseThresholdValue(get("--max-lines"), "--max-lines") ?? DEFAULT_THRESHOLDS.maxLines
@@ -538,6 +566,36 @@ export function classifyCanary({ denied, response, workspaceTrusted = true }) {
  * A node that made tool calls while the counter stood still means the hook
  * stopped firing mid-run, which the canary at run start cannot catch.
  */
+/**
+ * The graph-tier canary's verdict.
+ *
+ * Separate from `classifyCanary` because it answers a different question and is
+ * issued at a different moment. `classifyCanary` asks whether the hook is loaded
+ * at all, before the lock exists. This asks whether the graph tier is armed,
+ * after it does. A run that passes the first and fails the second has a live
+ * hook and no lock — the exact state that went unnoticed on 2026-08-23.
+ */
+export function classifyGraphCanary({ denied, response }) {
+  if (denied) {
+    return {
+      state: "ok",
+      ledgerLine: `Graph canary: denied — graph tier armed (\`${GRAPH_CANARY_COMMAND}\`)`
+    }
+  }
+  return {
+    state: "blocked",
+    ledgerLine: `Graph canary: allowed — BLOCKED (\`${GRAPH_CANARY_COMMAND}\`)`,
+    message:
+      "graph-preflight: the graph-tier canary was not denied.\n" +
+      `  tried:    ${GRAPH_CANARY_COMMAND}\n` +
+      `  response: ${response ?? "(allowed)"}\n` +
+      "The hook may be live while the graph tier is disarmed, which is what a\n" +
+      "missing or unreadable `.worktrees/.graph-run.lock` looks like. The universal\n" +
+      "canary cannot see this: it is denied either way. Confirm the lock exists and\n" +
+      "parses as a JSON object, then retry. Do not proceed on an unproven tier."
+  }
+}
+
 export function classifyHeartbeat({
   node,
   before,
@@ -591,6 +649,45 @@ export function lockRecord({ slug, runId, pid, now }) {
   return JSON.stringify({ slug, runId, pid, startedAt: now }, null, 2) + "\n"
 }
 
+/**
+ * Take the lock, or report why it cannot be taken.
+ *
+ * Until 2026-08-24 nothing called this or `classifyLock`: both were tested pure
+ * functions with no caller, and the skill asked the agent to write the file by
+ * hand. On the first attempt of run `graph-20260823-170119` the agent forgot and
+ * still reported success, so the hook's entire graph tier — tool-call caps,
+ * protected-path blocking, criteria evidence, stop-sentinel protection — stayed
+ * inert for the whole run while the canary still reported green.
+ *
+ * A guardrail that depends on an agent remembering is not a guardrail, so the
+ * script takes it.
+ */
+export function takeLock({ slug, runId, pid = process.pid, now = new Date().toISOString(), io = {} }) {
+  const read = io.read ?? readFileSync
+  const write = io.write ?? writeFileSync
+  const ensure = io.ensure ?? mkdirSync
+
+  let contents
+  try {
+    contents = read(LOCK_PATH, "utf8")
+  } catch {
+    // An absent lock is the normal case: there is no run to collide with.
+    contents = null
+  }
+
+  if (contents !== null) {
+    const decision = classifyLock({ contents, isAlive: io.isAlive ?? isPidAlive })
+    // `held`, `stale`, and `unreadable` all refuse. A stale lock is reported
+    // with its reclaim command, never silently stolen.
+    return { taken: false, state: decision.state, message: decision.message }
+  }
+
+  const record = lockRecord({ slug, runId, pid, now })
+  ensure(".worktrees", { recursive: true })
+  write(LOCK_PATH, record, "utf8")
+  return { taken: true, state: "taken", record }
+}
+
 function main(argv) {
   let options
   try {
@@ -600,8 +697,16 @@ function main(argv) {
     return process.exit(2)
   }
 
-  if (!options.branch) {
+  // `--take-lock` is the resume path: the branch already exists and is checked
+  // out, so requiring `--branch` there would only invite a caller to re-pass a
+  // name that `findBranchCollision` would then reject as already taken.
+  if (!options.branch && !options.takeLockOnly) {
     console.error("graph-preflight: --branch <name> is required")
+    return process.exit(2)
+  }
+
+  if (options.takeLockOnly && !options.slug) {
+    console.error("graph-preflight: --take-lock requires --slug <slug> so the lock names its package")
     return process.exit(2)
   }
 
@@ -611,6 +716,33 @@ function main(argv) {
   if (stop.state === "refused") {
     console.error(stop.message)
     return process.exit(2)
+  }
+
+  // The lock comes before any mutation, and before the branch work, so a second
+  // run refuses rather than sharing the launch checkout. `--take-lock` stops
+  // here: a resume needs the tier armed and nothing else done.
+  if (!options.dryRun) {
+    const lockPid = options.pid ?? process.ppid
+    const lock = takeLock({ slug: options.slug ?? options.branch, runId: options.runId, pid: lockPid })
+    if (!lock.taken) {
+      console.error(lock.message)
+      return process.exit(2)
+    }
+    console.log(`lock: taken at ${LOCK_PATH} (run ${options.runId}, pid ${lockPid})`)
+    if (options.pid === null) {
+      console.warn(
+        "lock warning: no --pid given, so the lock records this script's parent. " +
+          "Both exit immediately, which makes the lock read `stale` to the next run. " +
+          "Pass the driver's own long-lived session pid."
+      )
+    }
+    console.log(`graph canary command: ${GRAPH_CANARY_COMMAND}`)
+    console.log("graph canary: pending — issue it as a Bash tool call and require a deny")
+  }
+
+  if (options.takeLockOnly) {
+    console.log("graph-preflight: lock taken; --take-lock did nothing else")
+    return undefined
   }
 
   const runGit = (args) => execFileSync("git", args, { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 })

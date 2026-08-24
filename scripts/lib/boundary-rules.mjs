@@ -62,6 +62,32 @@ export const WRAPPER_COMMANDS = Object.freeze([
  */
 export const CANARY_COMMAND = "rm -rf .worktrees/.graph-canary-nonexistent"
 
+/**
+ * The graph-tier canary: a command denied only while a run holds the lock.
+ *
+ * `CANARY_COMMAND` cannot prove what it is used to prove. It lives in the
+ * universal tier, which fires in every session, so it is denied whether or not
+ * the graph tier is armed — the probe returns the same answer for a healthy run
+ * and for a run whose lock was never written. On run `graph-20260823-170119`
+ * that is exactly what happened: green canary, tier disarmed, and the whole run
+ * unguarded.
+ *
+ * Driving `classifyToolCall()` directly shows the difference:
+ *
+ *     runActive  command                                       result
+ *     false      rm -rf .worktrees/.graph-canary-nonexistent   deny   [universal]
+ *     true       rm -rf .worktrees/.graph-canary-nonexistent   deny   [universal]
+ *     false      nohup true                                    allow
+ *     true       nohup true                                    deny   [graph/nohup-wrapper]
+ *
+ * Only the second pair discriminates, so this canary is issued *after* the lock
+ * is taken and its deny is what proves the tier is live.
+ *
+ * Inert for the same reason the universal canary is: `true` does nothing, so a
+ * hook that fails to deny costs a failed proof and no side effect.
+ */
+export const GRAPH_CANARY_COMMAND = "nohup true"
+
 /** Commands whose very presence at a segment head is denied. */
 export const DENIED_COMMANDS = Object.freeze(["sudo", "pkill", "killall"])
 
@@ -148,6 +174,18 @@ export const RUN_STATE_PATH = ".worktrees/.graph-run-state.json"
  * it, so it has no budget to spend. The basis for every other number is recorded
  * in the slice doc, not asserted here.
  */
+/**
+ * Calls a node may still make after its cap, so it can park.
+ *
+ * Not generosity: the contract requires a cap overrun to park at
+ * `owner-action`, and parking is four writes and a commit. A cap that denied
+ * those made its own instruction unfollowable — and left no record of why the
+ * run stopped, which is the one thing an overrun most needs to leave behind.
+ *
+ * Dispatches stay denied throughout, so this can never buy another node.
+ */
+export const PARK_GRACE_CALLS = 30
+
 export const NODE_CALL_CAPS = Object.freeze({
   preflight: 40,
   shape: 60,
@@ -223,6 +261,69 @@ const DELETE_PUSH_FLAGS = /^(?:-d|--delete)$/
  * denied — the profile could not express it at all, because the shell consumes
  * a trailing `&` as a separator before any rule sees it.
  */
+/**
+ * A heredoc opening at `index`, and where its body ends.
+ *
+ * Handles `<<WORD`, `<<-WORD`, `<<'WORD'`, and `<<"WORD"`. Quoting the
+ * delimiter changes expansion inside the body, which does not matter here —
+ * either way the body is stdin, not command text.
+ *
+ * An unterminated heredoc consumes the remainder: an unclosed body is still
+ * body, and treating the tail as commands is the false-positive this prevents.
+ */
+function matchHeredocStart(text, index) {
+  if (text[index] !== "<" || text[index + 1] !== "<") return null
+  // `<<<` is a here-string: one word on stdin, no delimited body. It has to be
+  // rejected from both of its `<<` pairs — matching the trailing pair would
+  // read the word after it as a delimiter and swallow the rest of the command.
+  if (text[index - 1] === "<") return null
+  if (text[index + 2] === "<") return null
+
+  let cursor = index + 2
+  let dashed = false
+  if (text[cursor] === "-") {
+    dashed = true
+    cursor += 1
+  }
+
+  while (text[cursor] === " " || text[cursor] === "\t") cursor += 1
+
+  let delimiterQuote = null
+  if (text[cursor] === "'" || text[cursor] === '"') {
+    delimiterQuote = text[cursor]
+    cursor += 1
+  }
+
+  let delimiter = ""
+  while (cursor < text.length && /[A-Za-z0-9_]/.test(text[cursor])) {
+    delimiter += text[cursor]
+    cursor += 1
+  }
+  if (delimiter === "") return null
+  if (delimiterQuote) {
+    if (text[cursor] !== delimiterQuote) return null
+    cursor += 1
+  }
+
+  const newline = text.indexOf("\n", cursor)
+  if (newline === -1) {
+    return { consumedText: text.slice(index), endIndex: text.length }
+  }
+
+  const lines = text.slice(newline + 1).split("\n")
+  let offset = newline + 1
+  for (const line of lines) {
+    const candidate = dashed ? line.replace(/^\t+/, "") : line
+    if (candidate === delimiter) {
+      const end = offset + line.length
+      return { consumedText: text.slice(index, end), endIndex: end - 1 }
+    }
+    offset += line.length + 1
+  }
+
+  return { consumedText: text.slice(index), endIndex: text.length }
+}
+
 export function splitSegments(commandText) {
   const segments = []
   let current = ""
@@ -237,6 +338,23 @@ export function splitSegments(commandText) {
 
   for (let index = 0; index < commandText.length; index += 1) {
     const character = commandText[index]
+
+    // A heredoc body is data the shell hands to a command's stdin, never
+    // command text. Splitting it produced denials on prose: a commit message
+    // reading "...to prove; nohup discriminates" split at the `;` and matched
+    // `nohup` as a segment head, so a run could be denied for *describing* a
+    // rule. The contract's stated limit is that a runtime-assembled command
+    // evades the hook; this was the inverse, and it bites hardest when a run is
+    // trying to record what it found.
+    //
+    // Skip from the delimiter line to its terminator, keeping the redirection
+    // itself so a `cat > protected/path <<EOF` write target still resolves.
+    const heredoc = quote ? null : matchHeredocStart(commandText, index)
+    if (heredoc) {
+      current += heredoc.consumedText
+      index = heredoc.endIndex
+      continue
+    }
 
     if (quote) {
       current += character
@@ -554,6 +672,34 @@ export function parseRunState(contents) {
  */
 export const CRITERIA_FILE_SUFFIX = ".criteria.json"
 
+/**
+ * The log of denials the hook has issued for the current run.
+ *
+ * The contract says a blocked command stops the run and is recorded, never
+ * retried. On 2026-08-23 a push was refused, the build node ran the identical
+ * command again, and the second attempt went through. A guardrail that can be
+ * cleared by trying twice is not a guardrail.
+ *
+ * **Its stated limit.** This covers denials *the hook issued*. The 2026-08-23
+ * block came from the harness's own permission classifier, which the hook never
+ * sees — it is not consulted for a call another layer already refused. So this
+ * closes the retry path for every rule in this file and cannot close it for a
+ * refusal that happens above the hook. Recorded rather than papered over.
+ */
+export const DENIAL_LOG_PATH = ".worktrees/.graph-denials.jsonl"
+
+/**
+ * A denied call's identity, for matching a later retry against it.
+ *
+ * Keyed on the normalized segments rather than the raw text so that reordered
+ * whitespace or a different quoting of the same command still matches, while a
+ * genuinely different command does not.
+ */
+export function denialKey(context) {
+  const shape = context.segments.map((segment) => segment.argv.join(" ")).join(" ; ")
+  return `${context.toolName ?? "?"}::${shape}`
+}
+
 /** The append-only log of evidence the hook actually observed. */
 export const EVIDENCE_LOG_PATH = ".worktrees/.graph-evidence.jsonl"
 
@@ -765,6 +911,26 @@ function matchesPath(candidate, target) {
  */
 export const RULES = Object.freeze([
   {
+    // First in the table on purpose. A retry of a call the hook already refused
+    // is denied *as a retry*, so the run gets told to park rather than being
+    // handed the original reason again and looping on it.
+    id: "denied-command-retry",
+    tier: "graph",
+    evaluate: (context) => {
+      const prior = context.priorDenials
+      if (!prior || prior.size === 0) return null
+      const key = denialKey(context)
+      if (!prior.has(key)) return null
+      const original = typeof prior.get === "function" ? prior.get(key) : null
+      return (
+        `This exact call was already denied during this run${original ? ` (\`${original}\`)` : ""}. ` +
+        "A blocked command stops the run and is recorded, never retried — a " +
+        "guardrail cleared by a second attempt is not a guardrail. Park at " +
+        "`owner-action` with the command and the original denial as evidence."
+      )
+    }
+  },
+  {
     id: "secrets-access",
     tier: "universal",
     evaluate: (context) =>
@@ -894,12 +1060,39 @@ export const RULES = Object.freeze([
       const cap = capForNode(runState.node)
       if (cap === null) return null
       if (callCount < cap) return null
-      return (
-        `Node \`${runState.node}\` attempt ${runState.attempt} has reached its ` +
-        `tool-call cap of ${cap} (this call is number ${callCount}). Park at ` +
-        `\`owner-action\` with the node, the cap, and the observed count as ` +
-        `evidence. A loop-back to this node is a new attempt with a fresh budget.`
-      )
+
+      // Past the cap the run may no longer dispatch, but it must still be able
+      // to park. Denying every call at the cap made the contract's own
+      // instruction impossible to follow: parking means writing the ledger, the
+      // status marker, and the board row, then releasing the lock — all tool
+      // calls, all denied. Observed 2026-08-24, when a session hit the cap and
+      // could not read a file, let alone record why it stopped.
+      //
+      // The stop sentinel already solved this shape: `dispatch-after-stop`
+      // denies dispatches and deliberately leaves the halt path open, because a
+      // run that cannot write its own terminal state strands exactly the state
+      // the guard exists to surface. The cap gets the same carve-out, bounded so
+      // the budget still means something.
+      if (callCount >= cap + PARK_GRACE_CALLS) {
+        return (
+          `Node \`${runState.node}\` attempt ${runState.attempt} passed its tool-call ` +
+          `cap of ${cap} and then used its ${PARK_GRACE_CALLS}-call park budget as well ` +
+          `(this call is number ${callCount}). Nothing further is permitted. Release the ` +
+          `lock and stop; if the park is genuinely incomplete, the owner finishes it.`
+        )
+      }
+
+      if (DISPATCH_TOOLS.includes(context.toolName)) {
+        return (
+          `Node \`${runState.node}\` attempt ${runState.attempt} has reached its ` +
+          `tool-call cap of ${cap} (this call is number ${callCount}). Dispatching ` +
+          `another node is denied. Park at \`owner-action\` with the node, the cap, and ` +
+          `the observed count as evidence — you have ${cap + PARK_GRACE_CALLS - callCount} ` +
+          `calls left to write it. A loop-back to this node is a new attempt with a fresh budget.`
+        )
+      }
+
+      return null
     }
   },
   {
@@ -1008,7 +1201,8 @@ export function callContext({
   flippedCriteria = [],
   observedEvidence = null,
   lockRunId = null,
-  release = null
+  release = null,
+  priorDenials = null
 } = {}) {
   const isBash = toolName === "Bash"
   const normalized = isBash
@@ -1027,7 +1221,8 @@ export function callContext({
     flippedCriteria,
     observedEvidence,
     lockRunId,
-    release
+    release,
+    priorDenials
   }
 }
 

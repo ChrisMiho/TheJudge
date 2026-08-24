@@ -65,6 +65,13 @@ boundaries are required.
    With no ledger but a supplied package path, this is a resume, not a fresh
    run: enter at the node matching the package's current `STATUS.*` marker
    using the entry-point table in reference.md, and create the ledger there.
+
+   **A resume takes the lock before it does anything else.** It never re-runs
+   the branch and stash work, so nothing along that path arms the graph tier.
+   Run `graph-preflight --take-lock --slug <slug> --run-id <id>`, then issue
+   `GRAPH_CANARY_COMMAND` and require a deny. Before 2026-08-24 no step existed
+   for this at all, and a resumed run advanced with caps, protected-path
+   blocking, evidence checks, and stop-sentinel protection all switched off.
    Start at `preflight` for a genuinely fresh run — no existing package, with
    `--branch` and `--run-id` optional as described above — and also for a
    resumed package whose README has
@@ -233,8 +240,12 @@ On finding it, halt in this order:
    stopped the run, the node it halted at, and the evidence.
 3. Set the package `STATUS.*` marker to match.
 4. Update the package's row in `PRD/work/STATUS.md`.
-5. Delete `.worktrees/.graph-run.lock` — the release every terminal state
-   requires.
+5. Declare the terminal state, then delete `.worktrees/.graph-run.lock` — the
+   release every terminal state requires. Write
+   `.worktrees/.graph-run-release.json` naming this run id and the terminal
+   state first; the hook denies removing a live lock without it. That record is
+   what makes the release *declared* rather than silent — it does not authorise
+   the release, and the rule says so.
 6. Report the branch, the PR URL if one exists, and the ledger path.
 
 Resume with `/graph-run PRD/work/<slug>/` after removing the sentinel. The run
@@ -305,6 +316,14 @@ Node 1 proves the hook is firing with a canary before node 2 is dispatched — s
 `graph-preflight`. Record its result on the ledger's `Canary:` line. A canary
 that was not denied ends the run at `BLOCKED`; the run does not start.
 
+**Two canaries, and only one of them proves the tier.** `CANARY_COMMAND` is a
+universal-tier deny: it fires in every session, so it says the hook is loaded and
+says nothing about whether the graph tier is armed. `GRAPH_CANARY_COMMAND` is
+denied only while the lock is held. Issue it after the lock is taken and record
+its `classifyGraphCanary()` line beside the first. An allowed graph canary is
+`BLOCKED` on the same terms — a live hook over a disarmed tier is what a missing
+lock looks like from the inside, and it is what went unnoticed on 2026-08-23.
+
 **Between every node**, read `.worktrees/.graph-node-calls.json` before and after
 the node and confirm it advanced. Pass both readings to `classifyHeartbeat()` and
 record its `ledgerLine` in the node ledger's `Heartbeat` column.
@@ -332,6 +351,19 @@ the node, the cap, and the observed count as evidence in `GRAPH-RUN.md`. There i
 no fifth terminal state for it. Never raise a cap mid-run to get past a deny —
 the overrun is the signal that the node is doing something other than its job.
 
+**The park is writable, and bounded.** At the cap the hook denies `Task` and
+`Agent` outright — no further node, ever — and allows `PARK_GRACE_CALLS` (30)
+more calls so the park can actually be written. Past cap + grace every call is
+denied and the run stops where it stands.
+
+That carve-out exists because until 2026-08-24 there was none: at the cap every
+tool was denied, including `Read`, so the park this section demands could not be
+written at all. A session hit it and could not record why it had stopped — the
+one thing an overrun most needs to leave behind. The stop sentinel already had
+the right shape (`dispatch-after-stop` denies dispatches and deliberately leaves
+the halt path open); the cap now matches it. Spend the grace on the park and
+nothing else.
+
 The cap is not a third loop limit. Each dispatch gets its own budget, so the
 three-FAIL and two-return caps stay the only bound on how many dispatches happen.
 
@@ -348,11 +380,24 @@ write to it. That is what makes the count evidence rather than a self-report.
 | `PROMPTED` | The denied or unlisted command written verbatim under `## Open gate`, with the node it arose at; `STATUS.owner-action`, board row updated | Run the command yourself, or add the rule to `.claude/graph-profile.json`, then `/graph-run PRD/work/<slug>/` |
 
 **Release the concurrency lock on every state in this table.** Node 1 takes
-`.worktrees/.graph-run.lock`; the run deletes it as the last act before
+`.worktrees/.graph-run.lock`; the run declares its terminal state in
+`.worktrees/.graph-run-release.json` and then deletes the lock as the last act before
 reporting any terminal state above. This table is the definitive list — do not
 enumerate the releasing states anywhere else. A second list drifts, and a lock
 released on a state one list omits is a stranded lock that blocks every later
 run.
+
+**A denied call is never retried.** The hook records every denial it issues for
+the run and refuses an identical later call as `denied-command-retry`, naming the
+rule that first refused it. On 2026-08-23 a push was refused, the build node ran
+the same command again, and the second attempt went through — a guardrail cleared
+by a second attempt is not a guardrail. On that rule, park: the command and its
+original denial are the evidence.
+
+Its limit, stated rather than implied: this covers denials **the hook issued**.
+The 2026-08-23 block came from the harness's own permission classifier, which the
+hook never sees, so that exact path is closed by discipline and by `PROMPTED`,
+not by the rule.
 
 `PROMPTED` is what a permission prompt becomes. A prompt in an autonomous
 session is a hang, not a question — nobody is there to answer it, and the run

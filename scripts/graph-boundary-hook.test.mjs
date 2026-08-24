@@ -3,6 +3,7 @@ import { Readable } from "node:stream"
 import test from "node:test"
 
 import {
+  DENIAL_LOG_PATH,
   EVIDENCE_LOG_PATH,
   RUN_LOCK_PATH,
   RUN_RELEASE_PATH,
@@ -423,12 +424,16 @@ test("the deny fires at the cap, having allowed everything before it", () => {
     assert.equal(bash("git status", io).decision, "allow", `call ${call} must be allowed`)
   }
 
-  const denied = bash("git status", io)
+  // Changed 2026-08-24: the cap stops dispatches at this boundary and leaves a
+  // bounded budget for the park it demands. Denying every tool here made that
+  // park unwritable — the run could not even read a file to record why it
+  // stopped.
+  const denied = dispatch("Task", io)
   assert.equal(denied.decision, "deny")
   assert.equal(denied.rule, "tool-call-cap")
-  assert.equal(denied.callCount, cap)
   assert.match(denied.reason, /preflight/)
   assert.match(denied.reason, /attempt 1/)
+  assert.match(denied.reason, /Dispatching/)
 })
 
 test("two attempts at one node under one run id hold separate counts", () => {
@@ -439,8 +444,8 @@ test("two attempts at one node under one run id hold separate counts", () => {
     counts: JSON.stringify({ "graph-1/preflight/1": cap })
   })
 
-  // Attempt 1 is spent.
-  assert.equal(bash("git status", io).decision, "deny")
+  // Attempt 1 is spent: no further dispatch from it.
+  assert.equal(dispatch("Task", io).decision, "deny")
 
   // A loop-back is a new attempt with a fresh budget.
   const second = records({
@@ -560,10 +565,12 @@ function withCriteria({ evidence = "", criteria = criteriaFixture() } = {}) {
   io.files.set(EVIDENCE_LOG_PATH, evidence)
   io.files.set(CRITERIA_FILE, JSON.stringify(criteria))
   io.list = () => [CRITERIA_FILE]
+  // The hook appends to absolute paths; map each back to the relative key its
+  // reader uses. Routing every append into the evidence log regardless of
+  // target would let a denial record read as evidence.
   io.append = (target, contents) => {
-    const existing = io.files.get(EVIDENCE_LOG_PATH) ?? ""
-    io.files.set(EVIDENCE_LOG_PATH, existing + contents)
-    io.files.set(target, io.files.get(EVIDENCE_LOG_PATH))
+    const key = target.endsWith(DENIAL_LOG_PATH) ? DENIAL_LOG_PATH : EVIDENCE_LOG_PATH
+    io.files.set(key, (io.files.get(key) ?? "") + contents)
   }
   io.now = () => "2026-08-20T00:00:00.000Z"
   return io
@@ -809,4 +816,60 @@ test("declaring a terminal state does not unlock anything else", () => {
   assert.equal(bash("echo x > CLAUDE.md", releasing).rule, "protected-path-write")
   assert.equal(bash("rm .worktrees/.graph-stop", releasing).rule, "stop-sentinel-removal")
   assert.equal(bash("echo x >> .worktrees/.graph-evidence.jsonl", releasing).rule, "run-record-write")
+})
+
+test("a denied call cannot be cleared by trying it again", () => {
+  // On 2026-08-23 a push was refused, the build node ran the identical command
+  // again, and the second attempt went through. A guardrail cleared by a second
+  // attempt is not a guardrail.
+  const io = withCriteria()
+  const command = "echo x > CLAUDE.md"
+
+  const first = bash(command, io)
+  assert.equal(first.decision, "deny")
+  assert.equal(first.rule, "protected-path-write")
+
+  const second = bash(command, io)
+  assert.equal(second.decision, "deny")
+  assert.equal(second.rule, "denied-command-retry", "the retry must be refused as a retry, not re-evaluated")
+  assert.match(second.reason, /never retried/)
+})
+
+test("the retry guard does not deny an unrelated call", () => {
+  const io = withCriteria()
+  bash("echo x > CLAUDE.md", io)
+  assert.equal(bash("git status --short", io).decision, "allow")
+})
+
+test("the retry log does not feed itself", () => {
+  // Logging the retry rule's own denial would make the log grow on every
+  // repeat and blur which call was originally refused.
+  const io = withCriteria()
+  bash("echo x > CLAUDE.md", io)
+  bash("echo x > CLAUDE.md", io)
+  bash("echo x > CLAUDE.md", io)
+
+  const entries = (io.files.get(DENIAL_LOG_PATH) ?? "")
+    .split("\n")
+    .filter((line) => line.trim() !== "")
+    .map((line) => JSON.parse(line))
+
+  assert.equal(entries.length, 1, "only the original denial is recorded")
+  assert.equal(entries[0].rule, "protected-path-write")
+  assert.equal(entries[0].node, "build")
+})
+
+test("a denial from another run does not block this one", () => {
+  const io = withCriteria()
+  io.files.set(
+    DENIAL_LOG_PATH,
+    JSON.stringify({ runId: "some-earlier-run", key: "Bash::git status --short", rule: "x" }) + "\n"
+  )
+  assert.equal(bash("git status --short", io).decision, "allow")
+})
+
+test("denials are not tracked outside a run", () => {
+  // No lock means no run to attribute a denial to, and ordinary sessions must
+  // not accumulate one.
+  assert.equal(bash("echo x > CLAUDE.md", NO_LOCK).decision, "allow")
 })

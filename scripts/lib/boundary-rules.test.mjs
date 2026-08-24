@@ -5,6 +5,7 @@ import {
   COPY_COMMANDS,
   DESTRUCTIVE_COMMANDS,
   NODE_CALL_CAPS,
+  PARK_GRACE_CALLS,
   PROTECTED_BRANCHES,
   RULES,
   RUN_LOCK_PATH,
@@ -12,12 +13,12 @@ import {
   WRAPPER_COMMANDS,
   callCountKey,
   capForNode,
-  gitSubcommand,
   classifyToolCall,
-  isRunActive,
-  parseRunState,
   extractRedirections,
+  gitSubcommand,
+  isRunActive,
   normalizeCommand,
+  parseRunState,
   splitSegments,
   stripWrappers,
   tokenize
@@ -248,10 +249,10 @@ test("the counter key carries run id, node, and attempt", () => {
   assert.equal(callCountKey({ runId: "graph-1", node: "plan", attempt: 3 }), "graph-1/plan/3")
 })
 
-function capped({ node = "plan", attempt = 1, callCount, runActive = true }) {
+function capped({ node = "plan", attempt = 1, callCount, runActive = true, toolName = "Bash" }) {
   return classifyToolCall({
-    toolName: "Bash",
-    toolInput: { command: "git status" },
+    toolName,
+    toolInput: toolName === "Bash" ? { command: "git status" } : { prompt: "dispatch" },
     runActive,
     runState: { runId: "graph-1", node, attempt },
     callCount
@@ -259,16 +260,20 @@ function capped({ node = "plan", attempt = 1, callCount, runActive = true }) {
 }
 
 test("the deny fires exactly at the cap and not before", () => {
+  // Changed 2026-08-24: the cap used to deny *every* tool at this boundary,
+  // which made the park it demands impossible to write. It now stops dispatches
+  // at exactly the cap and gives the park a bounded budget — see the park-path
+  // tests below. The boundary itself is unchanged; what it denies is narrower.
   const cap = capForNode("plan")
-  assert.equal(capped({ callCount: cap - 1 }).decision, "allow")
-  const denied = capped({ callCount: cap })
+  assert.equal(capped({ callCount: cap - 1, toolName: "Task" }).decision, "allow")
+  const denied = capped({ callCount: cap, toolName: "Task" })
   assert.equal(denied.decision, "deny")
   assert.equal(denied.rule, "tool-call-cap")
   assert.equal(denied.tier, "graph")
 })
 
 test("the reason names the node, the attempt, and the count", () => {
-  const denied = capped({ node: "build", attempt: 2, callCount: capForNode("build") })
+  const denied = capped({ node: "build", attempt: 2, callCount: capForNode("build"), toolName: "Task" })
   assert.match(denied.reason, /build/)
   assert.match(denied.reason, /attempt 2/)
   assert.match(denied.reason, new RegExp(String(capForNode("build"))))
@@ -455,4 +460,122 @@ test("the stop sentinel is still not removable at a terminal state", () => {
   })
   assert.equal(result.decision, "deny")
   assert.equal(result.rule, "stop-sentinel-removal")
+})
+
+test("a heredoc body is data, not commands", () => {
+  // Observed 2026-08-24: a commit message describing this very hook was denied.
+  // The body line "...to prove; nohup discriminates" split at the `;` and
+  // `nohup` matched as a segment head, so a run could be denied for recording
+  // what it found. Recording findings is the run's job.
+  const cases = [
+    "cat > msg.txt <<EOF\nclaims to prove; nohup discriminates\nEOF\ngit commit -F msg.txt",
+    "cat > msg.txt <<'EOF'\nthe rule denies; pkill is one of them\nEOF\ngit add msg.txt",
+    "cat > msg.txt <<-EOF\n\tindented; sudo appears here\n\tEOF\ngit add msg.txt",
+    'cat > msg.txt <<"EOF"\nwe removed; rm -rf from the list\nEOF\ngit add msg.txt'
+  ]
+  for (const command of cases) {
+    const result = classifyToolCall({ toolName: "Bash", toolInput: { command }, runActive: true })
+    assert.equal(result.decision, "allow", `prose must not be read as a command: ${command}`)
+  }
+})
+
+test("skipping a heredoc body does not skip what follows it", () => {
+  // The failure mode of the fix: consume too much and a real command after the
+  // terminator stops being seen at all.
+  for (const [command, rule] of [
+    ["cat > f.txt <<EOF\nbody\nEOF\nnohup echo after", "nohup-wrapper"],
+    ["cat > f.txt <<EOF\nbody\nEOF\npkill -f something", "denied-command"],
+    ["cat > f.txt <<EOF\nbody\nEOF\ngit push --force origin main", "force-push"]
+  ]) {
+    const result = classifyToolCall({ toolName: "Bash", toolInput: { command }, runActive: true })
+    assert.equal(result.decision, "deny", `a command after the terminator must still be seen: ${command}`)
+    assert.equal(result.rule, rule)
+  }
+})
+
+test("a heredoc still resolves its own write target", () => {
+  // The redirection is kept even though the body is skipped, so writing a
+  // protected path through a heredoc is still a write.
+  const result = classifyToolCall({
+    toolName: "Bash",
+    toolInput: { command: "cat > CLAUDE.md <<EOF\nanything\nEOF" },
+    runActive: true
+  })
+  assert.equal(result.decision, "deny")
+  assert.equal(result.rule, "protected-path-write")
+})
+
+test("an unterminated heredoc is body all the way down", () => {
+  // Treating the tail as commands is exactly the false positive being fixed.
+  const result = classifyToolCall({
+    toolName: "Bash",
+    toolInput: { command: "cat > f.txt <<EOF\nmentions; nohup and never closes" },
+    runActive: true
+  })
+  assert.equal(result.decision, "allow")
+})
+
+test("a here-string is not a heredoc", () => {
+  // `<<<` puts one word on stdin; it has no delimited body to skip.
+  const { segments } = splitSegments("cat <<< hello ; nohup true")
+  assert.equal(segments.length, 2)
+  assert.match(segments[1], /nohup/)
+})
+
+test("a node at its cap can no longer dispatch", () => {
+  const atCap = classifyToolCall({
+    toolName: "Task",
+    toolInput: { prompt: "another node" },
+    runActive: true,
+    runState: { runId: "r", node: "close", attempt: 1 },
+    callCount: NODE_CALL_CAPS.close
+  })
+  assert.equal(atCap.decision, "deny")
+  assert.equal(atCap.rule, "tool-call-cap")
+  assert.match(atCap.reason, /Dispatching\s+another node is denied/)
+})
+
+test("a node at its cap can still write its own park", () => {
+  // Observed 2026-08-24: at the cap every tool was denied, including Read, so
+  // the contract's own instruction — park at `owner-action` with the node, the
+  // cap, and the count as evidence — could not be carried out. Parking is four
+  // writes and a commit, and all of them were refused.
+  for (const call of [
+    { toolName: "Bash", toolInput: { command: "git add PRD/work/example" } },
+    { toolName: "Bash", toolInput: { command: "git commit -m park" } },
+    { toolName: "Write", toolInput: { file_path: "PRD/work/example/GRAPH-RUN.md", content: "parked" } },
+    { toolName: "Read", toolInput: { file_path: "PRD/work/example/GRAPH-RUN.md" } }
+  ]) {
+    const result = classifyToolCall({
+      ...call,
+      runActive: true,
+      runState: { runId: "r", node: "close", attempt: 1 },
+      callCount: NODE_CALL_CAPS.close + 5
+    })
+    assert.equal(result.decision, "allow", `the park path must stay open: ${call.toolName}`)
+  }
+})
+
+test("the park budget is bounded, so the cap still means something", () => {
+  const spent = classifyToolCall({
+    toolName: "Bash",
+    toolInput: { command: "git status" },
+    runActive: true,
+    runState: { runId: "r", node: "close", attempt: 1 },
+    callCount: NODE_CALL_CAPS.close + PARK_GRACE_CALLS
+  })
+  assert.equal(spent.decision, "deny")
+  assert.equal(spent.rule, "tool-call-cap")
+  assert.match(spent.reason, /park budget/)
+})
+
+test("a loop-back gets a fresh budget, cap and grace alike", () => {
+  const result = classifyToolCall({
+    toolName: "Task",
+    toolInput: { prompt: "retry the node" },
+    runActive: true,
+    runState: { runId: "r", node: "build", attempt: 2 },
+    callCount: 1
+  })
+  assert.equal(result.decision, "allow")
 })
