@@ -10,15 +10,15 @@ Do not rename package folders to encode status.
 
 ## refined
 
+| Package | Notes |
+| --- | --- |
+| [life-tracker-spec](./life-tracker-spec/) | `define` gate resolved 2026-08-24 — DEC-168 accepted, 1 of 1 stable ID walked. Resume: `/graph-run PRD/work/life-tracker-spec/` (re-enters at `gate-qc`) |
+
 ## refining
 
 ## ideation
 
 ## owner-action
-
-| Package | Notes |
-| --- | --- |
-| [life-tracker-spec](./life-tracker-spec/) | `define` gate — graph run `graph-20260824-082911` parked on a `PRD/sections/` diff (DEC-168). Resume: `/graph-gate-review PRD/work/life-tracker-spec/` |
 
 ## deferred
 

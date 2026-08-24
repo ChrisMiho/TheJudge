@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/<nonexistent>)`; graph tier: `denied — tier armed (nohup, lock held)`
 - Autonomous base: `origin/thejudge-auto/life-tracker-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260824-082911/` (copied into `PRD/work/life-tracker-spec/intake/`, staged copy deleted)
-- Current node: `define` — parked at the gate
-- Next action: `/graph-gate-review PRD/work/life-tracker-spec/`
+- Current node: `define` — gate resolved 2026-08-24; next node is `gate-qc`
+- Next action: `/graph-run PRD/work/life-tracker-spec/`
 
 ## Node ledger
 
@@ -16,7 +16,23 @@
 | 2 | shape | sonnet | ok | `0 → 29` | commit `ec08424` on `thejudge-auto/life-tracker-spec`, pushed; `PRD/work/life-tracker-spec/IDEA.md`, `README.md`, `STATUS.ideation`, `intake/refactor-gameplan.md`; board row added under `## ideation` in `PRD/work/STATUS.md`; staged intake deleted (`.worktrees/.graph-intake/graph-20260824-082911/` absent); prior-run matches `PRD/instructions/receipts/player-life-tracker-2026-08-03.md`, `PRD/instructions/receipts/player-life-tracker-refinement-2026-08-05.md` | 2026-08-24 |
 | 3 | define | opus | ok — gate | `0 → 41` | commit `a6c4aec` on `thejudge-auto/life-tracker-spec`, pushed; `PRD/work/life-tracker-spec/DESIGN-BRIEF.md`; `PRD/sections/decisions/doc-process.md` + `PRD/sections/decisions.md` (DEC-168); `git diff main...HEAD -- PRD/sections/` non-empty -> parked at the `define` gate; `STATUS.refined` -> `STATUS.owner-action` | 2026-08-24 |
 
+## Gate verdicts
+
+Walked 2026-08-24 by `/graph-gate-review PRD/work/life-tracker-spec/`. One
+stable ID pending, one verdict taken.
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `DEC-168` | accept | — |
+
+No `PRD/sections/` change was applied: an `accept` leaves the run's text
+standing.
+
 ## Open gate
+
+**RESOLVED 2026-08-24 — 1 stable ID walked, 1 verdict recorded (1 accept,
+0 edit, 0 reject).** See `## Gate verdicts` above. The evidence below is kept
+verbatim as the record of what was walked.
 
 **Question for the owner:** node 3 (`define`) wrote to `PRD/sections/`. Every
 line of that diff is product truth nobody has read yet, so the run parks here
@@ -82,10 +98,10 @@ index f769cf6..140e20a 100644
 **Resume command:**
 
 ```
-/graph-gate-review PRD/work/life-tracker-spec/
+/graph-run PRD/work/life-tracker-spec/
 ```
 
-Once the gate is resolved, the run re-enters at `gate-qc`.
+The gate is resolved; the run re-enters at `gate-qc`.
 
 ## Dispatch prompts
 
@@ -185,7 +201,11 @@ Boundaries: do not modify any `thejudge-*` skill, `CLAUDE.md`, `.claude/settings
 | --- | --- | --- | --- |
 | "start with the life-tracker in @PRD/work/adhoc/refactor-gameplan.md" | answered-once | shape | — |
 
-## Lock release — not completed, owner action required
+## Lock release — cleared 2026-08-24
+
+**Resolved.** `.worktrees/.graph-run.lock` is absent as of the gate review on
+2026-08-24, and the release path itself was fixed in `a224d47`. The account
+below is kept as the record of the original failure.
 
 The run reached its terminal state (`PARKED`) but could **not** release
 `.worktrees/.graph-run.lock`, and the next run will refuse to start until it is
