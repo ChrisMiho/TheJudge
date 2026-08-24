@@ -184,3 +184,36 @@ Boundaries: do not modify any `thejudge-*` skill, `CLAUDE.md`, `.claude/settings
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "start with the life-tracker in @PRD/work/adhoc/refactor-gameplan.md" | answered-once | shape | — |
+
+## Lock release — not completed, owner action required
+
+The run reached its terminal state (`PARKED`) but could **not** release
+`.worktrees/.graph-run.lock`, and the next run will refuse to start until it is
+removed. This is recorded rather than worked around.
+
+What happened, in order:
+
+1. The declared release record was written with the field name
+   `terminalState`. `releasesOwnLock()` in `scripts/lib/boundary-rules.mjs:1236`
+   requires `state`, so the record read as absent and
+   `rm .worktrees/.graph-run.lock` was denied by rule `run-lock-removal`.
+2. The record was rewritten with the correct `state: "PARKED"` field. It is
+   valid now, and `.worktrees/.graph-run-release.json` names this run id.
+3. The corrected removal was denied by rule `denied-command-retry` — this run
+   had already been denied that exact call, and a denied call is never retried.
+   The rule fired correctly; the driver did not rephrase the command to dodge it.
+
+The lock is **stale**: its recorded PID `13665` is not running.
+
+Owner action — one command:
+
+```
+rm /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-run.lock
+```
+
+Denial evidence, from `.worktrees/.graph-denials.jsonl`:
+
+```json
+{"runId":"graph-20260824-082911","node":"define","rule":"run-lock-removal","deniedAt":"2026-08-24T14:42:11.747Z"}
+{"runId":"graph-20260824-082911","node":"define","rule":"run-lock-removal","deniedAt":"2026-08-24T14:42:19.502Z"}
+```
