@@ -7,6 +7,7 @@ import {
   NODE_CALL_CAPS,
   PARK_GRACE_CALLS,
   PROTECTED_BRANCHES,
+  REMEDIABLE_RULES,
   RULES,
   RUN_LOCK_PATH,
   RUN_RECORD_PATHS,
@@ -578,4 +579,18 @@ test("a loop-back gets a fresh budget, cap and grace alike", () => {
     callCount: 1
   })
   assert.equal(result.decision, "allow")
+})
+
+test("REMEDIABLE_RULES stays narrow, and every member is a real rule", () => {
+  // Widening this set weakens the retry guard, so it is pinned rather than
+  // described. A rule belongs here only when its denial names something the
+  // contract already requires the run to go and do — adding one is a decision,
+  // and this assertion is where that decision has to be made on purpose.
+  assert.deepEqual([...REMEDIABLE_RULES], ["run-lock-removal"])
+
+  const known = new Set(RULES.map((rule) => rule.id))
+  for (const id of REMEDIABLE_RULES) {
+    assert.ok(known.has(id), `REMEDIABLE_RULES names \`${id}\`, which is not a rule`)
+  }
+  assert.ok(!REMEDIABLE_RULES.has("denied-command-retry"), "the guard cannot exempt itself")
 })
