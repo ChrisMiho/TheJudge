@@ -130,8 +130,9 @@ branch, no stash. `--branch` is not required there.
 Release is `graph-run`'s, not this skill's — see `graph-run`'s
 `## Terminal states` table, which is the definitive list of the states that
 release it. Release goes through a declared terminal state: write
-`.worktrees/.graph-run-release.json` naming the run id and terminal state, then
-delete the lock. The hook denies the deletion without that record.
+`.worktrees/.graph-run-release.json` in the exact shape `graph-run`'s
+`## Terminal states` section gives — `runId` and `state`, in its own tool call —
+then delete the lock. The hook denies the deletion without that record.
 
 ## Procedure
 

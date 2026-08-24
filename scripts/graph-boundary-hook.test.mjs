@@ -45,13 +45,20 @@ function absent(target) {
 function records({ lock = null, stop = false, state = null, counts = null, release = null } = {}) {
   const files = new Map()
   if (counts !== null) files.set(CALL_COUNT_PATH, counts)
+  // Mutable, because the release record is the one file a run is expected to
+  // create *between* two otherwise identical calls. A fixture that froze it at
+  // construction could not express that sequence at all.
+  let currentRelease = release
 
   return {
     files,
+    setRelease: (contents) => {
+      currentRelease = contents
+    },
     read: (target) => {
       if (target.endsWith(RUN_RELEASE_PATH)) {
-        if (release === null) absent(target)
-        return release
+        if (currentRelease === null) absent(target)
+        return currentRelease
       }
       if (target.endsWith(RUN_LOCK_PATH)) {
         if (lock === null) absent(target)
@@ -98,6 +105,27 @@ const NO_LOCK = records()
 const CORRUPT_LOCK = records({ lock: "{ this is not json" })
 const LOCK_AND_STOP = records({ lock: LOCK_CONTENTS, stop: true })
 const STOP_NO_LOCK = records({ stop: true })
+
+/**
+ * A live run whose denial log persists across calls and whose release record can
+ * be written between them — the exact sequence `run-lock-removal` describes.
+ *
+ * The lock, the run state, and the release record all name one run id, because
+ * `releasesOwnLock` matches the release against the lock while the denial log is
+ * keyed by the run state.
+ */
+function releasable() {
+  const io = records({
+    lock: JSON.stringify({ slug: SLUG, runId: "graph-1", pid: 1, startedAt: "t" }),
+    state: runStateOf({ node: "close" })
+  })
+  io.append = (target, contents) => {
+    const key = target.endsWith(DENIAL_LOG_PATH) ? DENIAL_LOG_PATH : EVIDENCE_LOG_PATH
+    io.files.set(key, (io.files.get(key) ?? "") + contents)
+  }
+  io.now = () => "2026-08-24T00:00:00.000Z"
+  return io
+}
 
 function bash(command, lock = NO_LOCK) {
   return decide(JSON.stringify({ tool_name: "Bash", tool_input: { command } }), lock)
@@ -806,6 +834,26 @@ test("a malformed release record is treated as absent, not as a release", () => 
   assert.equal(bash("rm .worktrees/.graph-run.lock", broken).rule, "run-lock-removal")
 })
 
+test("a release record keyed `terminalState` is not a release, and the denial says so", () => {
+  // Observed 2026-08-24 on `life-tracker-spec`. The driver wrote a well-formed
+  // record naming the right run and the right terminal state under the key
+  // `terminalState`. It parses, so it is not the malformed case above; it is
+  // simply the wrong key, and the lock stayed held for the rest of the run.
+  //
+  // No prose in the repository stated the key names — `releasesOwnLock()` was
+  // the only place they existed. The denial message now carries them, so the
+  // next driver learns the shape from the refusal rather than from the source.
+  const misKeyed = records({
+    lock: LOCK_CONTENTS,
+    release: JSON.stringify({ runId: "r", terminalState: "PARKED" })
+  })
+  const result = bash("rm .worktrees/.graph-run.lock", misKeyed)
+  assert.equal(result.rule, "run-lock-removal")
+  assert.match(result.reason, /"state"/)
+  assert.match(result.reason, /"runId"/)
+  assert.match(result.reason, /not `terminalState`/)
+})
+
 test("declaring a terminal state does not unlock anything else", () => {
   // Release covers the lock alone. Everything the graph tier guards stays
   // guarded right up to the moment the lock goes.
@@ -833,6 +881,47 @@ test("a denied call cannot be cleared by trying it again", () => {
   assert.equal(second.decision, "deny")
   assert.equal(second.rule, "denied-command-retry", "the retry must be refused as a retry, not re-evaluated")
   assert.match(second.reason, /never retried/)
+})
+
+test("a remediable denial is re-decided once the remedy is in place", () => {
+  // `run-lock-removal` does not refuse outright — it says "write the release
+  // record first". A driver that gets the record wrong, corrects it, and tries
+  // again is doing exactly what the denial asked for, so the retry guard must
+  // not stand across the one path every terminal state has to walk.
+  //
+  // Observed 2026-08-24 on `life-tracker-spec`: it did, and the run finished
+  // holding its own lock for the owner to clear by hand.
+  const io = releasable()
+
+  const first = bash("rm .worktrees/.graph-run.lock", io)
+  assert.equal(first.decision, "deny")
+  assert.equal(first.rule, "run-lock-removal")
+
+  // The original mistake: the record parses, but under the wrong key.
+  io.setRelease(JSON.stringify({ runId: "graph-1", terminalState: "PARKED" }))
+  const second = bash("rm .worktrees/.graph-run.lock", io)
+  assert.equal(second.decision, "deny")
+  assert.equal(
+    second.rule,
+    "run-lock-removal",
+    "the original rule re-decides; the retry guard must not answer for it"
+  )
+  assert.match(second.reason, /"state"/, "and it names what is still missing")
+
+  io.setRelease(JSON.stringify({ runId: "graph-1", state: "PARKED" }))
+  assert.equal(bash("rm .worktrees/.graph-run.lock", io).decision, "allow")
+})
+
+test("standing aside is not the same as waving through", () => {
+  // The guard steps aside for a remediable rule, but the rule itself keeps
+  // deciding. A run that never writes the record is refused every time, so
+  // nothing here is cleared by attempting it twice.
+  const io = releasable()
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const result = bash("rm .worktrees/.graph-run.lock", io)
+    assert.equal(result.decision, "deny")
+    assert.equal(result.rule, "run-lock-removal")
+  }
 })
 
 test("the retry guard does not deny an unrelated call", () => {
