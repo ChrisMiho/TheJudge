@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`
 - Autonomous base: `origin/thejudge-auto/codebase-duplication-audit`
 - Staging: `.worktrees/.graph-intake/graph-20260823-173948/`
-- Current node: `build`
-- Next action: `/graph-run PRD/work/codebase-duplication-audit/`
+- Current node: `land`
+- Next action: merge PR #97, then `/graph-run PRD/work/codebase-duplication-audit/`
 
 ## Node ledger
 
@@ -21,6 +21,7 @@
 | 6 | build | sonnet | ok | `0 → 22` | attempt 2: commit `49f85f2` on `thejudge-auto/codebase-duplication-audit-work`; all 21 criteria verified `true` by the driver from the emitted files; write scope clean — `git diff --name-only 5bf657a origin/...-work` names nothing outside `PRD/work/codebase-duplication-audit/` and `PRD/work/STATUS.md`; `apps/` and `scripts/` untouched | 2026-08-23 |
 | 7 | review | opus | ok (RETURN) | `0 → 45` | reviewed full range `5bf657a..origin/...-work`, not the PR diff, so slice A was covered; 1 Important + 4 Minor; recomputed the 500-file reconciliation independently and opened every citation in all 8 findings; driver re-verified the Important against source before spending a loop | 2026-08-23 |
 | 6 | build | sonnet | ok | `0 → 73` | attempt 3, after review return: commit `2cd17c2` on `...-work`; promoted `TurnPhase`/`CombatStep` to findings and rewrote Healthy-reuse entry 18's rule; found a further already-diverged pair (`ZONE_LABELS` "Command Zone" vs `ZONE_ITEM_LABEL` "Command"), driver-verified; all four Minor items fixed; 8 findings → 11, renumbered by complexity; all 21 criteria still `true`; `apps/` and `scripts/` untouched | 2026-08-23 |
+| 7 | review | opus | ok (APPROVE) | `0 → 17` | pass 2 at `2cd17c2`: APPROVE, 4 Minor, no Critical or Important; walked all 11 findings and every internal `F-##` reference for stale numbers after the renumber (none); enumerated all six backend `z.enum`s to test the rewritten Healthy-reuse rule exhaustively; recomputed the 500-file reconciliation; confirmed the original Important finding resolved rather than relocated | 2026-08-23 |
 
 ### Node 1 notes — a prior attempt of this run
 
@@ -152,7 +153,68 @@ out-of-scope improvement is never Critical or Important.
 
 ## Open gate
 
-- None
+**Node 8 (`land`) is a human action.** The driver does not run `gh pr merge` or
+`gh pr close`. The run is parked here waiting for the owner to merge.
+
+- **Question:** merge PR #97, or return the package with changes?
+- **PR:** https://github.com/ChrisMiho/TheJudge/pull/97 — `[THEJUDGE-AUTO][READY]`,
+  OPEN, not a draft, head `thejudge-auto/codebase-duplication-audit-work` onto base
+  `thejudge-auto/codebase-duplication-audit`.
+- **Resume command:** `/graph-run PRD/work/codebase-duplication-audit/`
+
+A later `/graph-run` checks whether the PR is merged. If it is, `land` records `ok`
+and the run continues to `close` (node 9, `thejudge-cleanup`). If it is not, the run
+reports the PR still open and stops again.
+
+### Read the PR alongside the base, not on its own
+
+Slice A's commit `9f617d8` was pushed directly onto the autonomous base during build
+attempt 1, so **PR #97 shows four of the five slices**. Slice A's diff is already an
+ancestor of the base. The merge result is still complete — base gains A first, then
+B–E — but the PR under-represents the work as a review artifact. The full range is:
+
+    git diff 5bf657a origin/thejudge-auto/codebase-duplication-audit-work
+
+Node 7 reviewed that range rather than the PR diff, so slice A was not skipped.
+
+### Deliberate deviation from the park procedure — the marker was not moved
+
+The park procedure sets `STATUS.owner-action` and moves the `PRD/work/STATUS.md`
+board row. **Neither was done, on purpose.**
+
+The base branch carries `STATUS.active` with its board row under `## active`; the PR
+carries `STATUS.ship-ready` with its row under `## ship-ready`. Renaming the marker
+again on the base would give git a rename/rename conflict against the PR — base
+`STATUS.active → STATUS.owner-action` versus work `STATUS.active → STATUS.ship-ready`
+— and the same collision on the board row, making the owner's merge harder for no gain.
+
+The marker's correct destination is `ship-ready`, and it arrives by merging. This gate
+record is the park; the marker follows the merge. Recorded here rather than silently.
+
+### Four Minor findings, open and not blocking
+
+Node 7 approved with four Minor findings. Minor findings never loop back to `build`
+under the contract, and the two-return review budget was spent on the Important
+finding, so these are recorded for the owner rather than fixed. None affects a
+finding's verdict, a citation, or the coverage arithmetic.
+
+1. **"the broken Escape path"** — Healthy-reuse entry 5 and `audit-notes/surface-a-components-hooks.md`
+   describe `FeaturePortalMenu`'s Escape path as broken. It is not: `FeaturePortalMenu.tsx:159-174`
+   registers a `keydown` listener and closes the menu. The only divergence is the missing
+   `preventDefault()`, which F-01 states correctly. This adjective was introduced by the fix
+   to a pass-1 Minor.
+2. **F-03 cites a surface-C ruling that does not exist** — it justifies excluding
+   `ZONE_SECTION_LABEL` as "consistent with surface C's original ruling", but
+   `surface-c-backend.md` contains no such ruling, and F-03 itself says two paragraphs
+   earlier that `promptFormatting.ts` was outside the read-in-full list. The exclusion is
+   independently and correctly justified on the code in the same sentence, so the false
+   appeal is decorative.
+3. **Coverage-table note omits surface A** when attributing the new findings' files —
+   `MtgAssistantApp.tsx` is in surface A's inventory, not B's or C's. The underlying
+   no-new-file-count claim is correct; only the prose attribution is incomplete.
+4. **The changelog's renumbering summary implies a uniform shift** — "old F-02 through
+   F-08 are now F-05 through F-11" reads as +3 across the board, but the remapping
+   reordered (old F-05 → F-06, old F-03 → F-07). Only the range statement is true.
 
 ## Dispatch prompts
 
@@ -598,6 +660,51 @@ Return as your final text:
 3. The commit SHA and the branch you pushed to.
 4. Any criterion whose statement is affected by your edits, and its state now.
 5. Any command that was denied or prompted, quoted verbatim. If a command is denied, stop and report it — do not retry it.
+
+### review (pass 2)
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy the `Working directory:` line above, unchanged and on its own line, into every prompt you write for any subagent you dispatch.
+
+You are node 7 (`review`), pass 2. Your return was acted on. **You still hold no write tools — read and search only, including no `Bash` redirection, `sed -i`, or `tee`.**
+
+This is the final review pass available to this run. A second RETURN parks the package at `owner-action` rather than producing another build loop, so weigh findings accordingly: a genuine Critical or Important still parks it and should still be raised, but a Minor should be recorded as Minor and not escalated.
+
+The work is now at commit `2cd17c2` on `thejudge-auto/codebase-duplication-audit-work`. Review the same full range, not the PR diff:
+
+    git diff 5bf657a origin/thejudge-auto/codebase-duplication-audit-work
+
+## What changed in response to you
+
+Your Important finding was accepted rather than argued with. `TurnPhase` and `CombatStep` were promoted to findings (now F-02 and F-04), and Healthy-reuse entry 18 was rewritten to state a narrower rule: a compound object shape stays healthy because a mismatch fails the typechecker or a `.strict()` schema loudly, while a type paired with a many-member runtime `z.enum`/array does not get that exemption. `ZoneId` was not separately promoted, on the stated ground that F-06 already covers the same seven-zone set.
+
+All four of your Minor items were fixed, in both the deliverable and the surface notes where each error originated. Two further changes were made that you did not ask for: a new F-03 for the zone display-label pair you flagged (`ZONE_LABELS` "Command Zone" versus `ZONE_ITEM_LABEL` "Command" — I confirmed that divergence against source myself), and a corrected cross-reference in the old F-06, which had cited F-08 as the perceptual-hash dismissal when that is Healthy-reuse entry 2.
+
+Because three findings landed ahead of their old slots, every finding after F-01 was renumbered — old F-02 through F-08 became F-05 through F-11 — and the physical block order was changed to match the document's stated ranking by complexity removed.
+
+## What to check on this pass
+
+The renumbering and reordering are where a regression is most likely, so weight your effort there:
+
+- Does every internal cross-reference still point at the finding it means, after the renumber? A stale reference to an old number is the obvious failure mode, and one such bug was already found and fixed during the rework.
+- Does the physical order of the finding blocks actually match the ranking the Header claims?
+- Are the three new findings (F-02, F-03, F-04) correct on the code, and do their citations resolve?
+- Does rewritten Healthy-reuse entry 18 now state a rule that is consistent with the code and with which findings the document flags? That was the substance of your Important finding, and a rule that merely moves the inconsistency elsewhere has not fixed it.
+- Do the four Minor corrections match what the code actually says, rather than trading one wrong number for another?
+- Does the coverage table still reconcile to 500? The claim is that the new findings analyze files already inside surfaces A/B/C, adding no new file count.
+
+You do not need to re-verify what you already confirmed on pass 1 and which has not changed — the citations in the untouched findings, the cross-boundary dismissals, and surface C being a real pass. Spend the budget on what moved.
+
+Your tool-call budget for this dispatch is 120, fresh.
+
+Return as your final text, which is the driver's return value and not a message to a human:
+1. Your verdict: `APPROVE` or `RETURN`.
+2. Each finding with a severity of Critical, Important, or Minor, naming the criterion or brief requirement it fails. `none` if there are none.
+3. What you verified first-hand on this pass, and what you deliberately did not re-check because it was unchanged.
+4. Whether your original Important finding is genuinely resolved, or only relocated.
 
 ## Instruction ledger
 
