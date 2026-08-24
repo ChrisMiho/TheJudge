@@ -1,5 +1,5 @@
 ---
-status: refined
+status: active
 ---
 
 # life-tracker-spec
@@ -19,3 +19,23 @@ Product truth landed by refinement: `DEC-168` in
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/life-tracker-spec
+
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/life-tracker-spec/DESIGN-BRIEF.md`
+- Findings: none
+
+## Slices
+
+| Slice | Scope | Dependency | Status |
+| --- | --- | --- | --- |
+| [A](./slice-a-write-spec.md) | Write `PRD/sections/life-tracker/README.md` on the DEC-168 template, consolidating the full source inventory into current-state form across all seven surfaces. | none | planned |
+| [B](./slice-b-nav-row.md) | Add the one `PRD/README.md` Section Inventory row; final package-diff scope proof; ship gates. | sequential on A | planned |
+
+GAMEPLAN: `PRD/work/life-tracker-spec/GAMEPLAN.md`.
+
+## Implementation map
+
+- `PRD/sections/life-tracker/README.md` — new file, slice A.
+- `PRD/README.md` — one Section Inventory row, slice B.

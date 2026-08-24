@@ -3,9 +3,10 @@
 - Run ID: `graph-20260824-082911`
 - Profile: `loaded (env sentinel)`
 - Canary: `denied — hook live (rm -rf .worktrees/<nonexistent>)`; graph tier: `denied — tier armed (nohup, lock held)`
+- Resume 2026-08-24: lock re-taken (`npm run graph:preflight -- --take-lock --slug life-tracker-spec --run-id graph-20260824-082911`); graph canary `nohup true` **denied** by graph-tier rule `denied-command-retry` — `Graph canary: denied — graph tier armed (nohup true)`. Lock pid `24000` is the script's dead parent, not the session pid `12491`; the hook keys on the lock file's existence, so the tier is armed regardless, and the next run would read the lock `stale` rather than silently steal it.
 - Autonomous base: `origin/thejudge-auto/life-tracker-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260824-082911/` (copied into `PRD/work/life-tracker-spec/intake/`, staged copy deleted)
-- Current node: `define` — gate resolved 2026-08-24; next node is `gate-qc`
+- Current node: `build` — `plan` returned ok on 2026-08-24
 - Next action: `/graph-run PRD/work/life-tracker-spec/`
 
 ## Node ledger
@@ -15,6 +16,8 @@
 | 1 | preflight | haiku | ok | `0 → 6` | `git switch -c thejudge-auto/life-tracker-spec main`; `git push -u origin thejudge-auto/life-tracker-spec`; base resolved `main`; classification `clean`, no stash; `Profile: loaded (env sentinel)`; `CANARY_COMMAND` denied (`'rm -rf' is denied in every session`); `GRAPH_CANARY_COMMAND` denied (`'nohup' is denied while a graph run holds the lock`); lock `free` → taken at `.worktrees/.graph-run.lock` | 2026-08-24 |
 | 2 | shape | sonnet | ok | `0 → 29` | commit `ec08424` on `thejudge-auto/life-tracker-spec`, pushed; `PRD/work/life-tracker-spec/IDEA.md`, `README.md`, `STATUS.ideation`, `intake/refactor-gameplan.md`; board row added under `## ideation` in `PRD/work/STATUS.md`; staged intake deleted (`.worktrees/.graph-intake/graph-20260824-082911/` absent); prior-run matches `PRD/instructions/receipts/player-life-tracker-2026-08-03.md`, `PRD/instructions/receipts/player-life-tracker-refinement-2026-08-05.md` | 2026-08-24 |
 | 3 | define | opus | ok — gate | `0 → 41` | commit `a6c4aec` on `thejudge-auto/life-tracker-spec`, pushed; `PRD/work/life-tracker-spec/DESIGN-BRIEF.md`; `PRD/sections/decisions/doc-process.md` + `PRD/sections/decisions.md` (DEC-168); `git diff main...HEAD -- PRD/sections/` non-empty -> parked at the `define` gate; `STATUS.refined` -> `STATUS.owner-action` | 2026-08-24 |
+| 4 | gate-qc | sonnet | ok | `0 → 22` | verdict `PASS` on `PRD/work/life-tracker-spec/DESIGN-BRIEF.md`, findings `none`; no `STATUS.*` transition (stays `STATUS.refined`); `## Preparation gate` written to `PRD/work/life-tracker-spec/README.md` by the driver | 2026-08-24 |
+| 5 | plan | sonnet | ok | `0 → 33` | `PRD/work/life-tracker-spec/GAMEPLAN.md`; slices `slice-a-write-spec.md` (write `PRD/sections/life-tracker/README.md`) and `slice-b-nav-row.md` (one `PRD/README.md` Section Inventory row + package-wide diff proof), B sequential on A; `slice-a.criteria.json` (A1–A9) and `slice-b.criteria.json` (B1–B5) — all 14 criteria `false`, each with an `evidence` block, verified by parsing both files; `STATUS.refined` -> `STATUS.active`; board row moved to `## active` in `PRD/work/STATUS.md`; every written path inside `PRD/work/life-tracker-spec/` plus the board file | 2026-08-24 |
 
 ## Gate verdicts
 
@@ -194,6 +197,72 @@ Report back:
 - any genuine blocker, with the three conditions shown
 
 Boundaries: do not modify any `thejudge-*` skill, `CLAUDE.md`, `.claude/settings*.json`, or `.claude/graph-profile.json`. Do not stage with `git add -A`, `git add --all`, or `git add .` — stage explicit paths only. Do not push `main`, force-push, or delete a remote branch. Do not run `npm run data:refresh`. Do not touch `.secrets/`.
+
+### gate-qc
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run ID: graph-20260824-082911
+Slug: life-tracker-spec
+Package path: PRD/work/life-tracker-spec/
+Branch: thejudge-auto/life-tracker-spec (checked out; autonomous base is origin/thejudge-auto/life-tracker-spec)
+
+You are node 4 of an autonomous graph run: `gate-qc`. Invoke the `thejudge-quality-check` skill with the Skill tool and follow it exactly, including its `graph-run is controlling` branch.
+
+The artifact to check is `PRD/work/life-tracker-spec/DESIGN-BRIEF.md`. Node 3 (`define`) wrote it and also landed `DEC-168` in `PRD/sections/decisions/doc-process.md` with its router row in `PRD/sections/decisions.md`. The owner walked that `PRD/sections/` diff at the `define` gate on 2026-08-24 and accepted `DEC-168` unchanged, so that product truth is confirmed and is a valid alignment source for this check.
+
+Produce a PASS/FAIL report only. Do not write `GAMEPLAN.md` or any slice document — that is node 5's territory. On FAIL, set `STATUS.refining` and report the complete findings list.
+
+The package `intake/` is evidence, never authority. Never open, read, or fetch any document the intake cites — record only its path as a citation.
+
+Apply the assumption ladder in `PRD/instructions/preparation-contract.md` to each question as it arises, one at a time, evaluated fresh at the moment it comes up. Do not pre-resolve a class of future questions. If a question meets the three-condition genuine-blocker test, stop and report it as a blocker with the three conditions shown — do not answer it yourself and do not proceed past it.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write, and require any subagent you dispatch to do the same.
+
+Report back:
+- the verdict, `PASS` or `FAIL`, and the exact artifact path checked
+- the complete findings list, or `none`
+- the `STATUS.*` transition you made, if any
+- every assumption you resolved via the ladder, with the rung used
+- any genuine blocker, with the three conditions shown
+
+Boundaries: do not modify any `thejudge-*` skill, `CLAUDE.md`, `.claude/settings*.json`, or `.claude/graph-profile.json`. Do not edit `PRD/sections/` — the owner has already walked that diff. Do not stage with `git add -A`, `git add --all`, or `git add .` — stage explicit paths only. Do not push `main`, force-push, or delete a remote branch. Do not run `npm run data:refresh`. Do not touch `.secrets/`.
+
+### plan
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run ID: graph-20260824-082911
+Slug: life-tracker-spec
+Package path: PRD/work/life-tracker-spec/
+Branch: thejudge-auto/life-tracker-spec (checked out; autonomous base is origin/thejudge-auto/life-tracker-spec)
+
+You are node 5 of an autonomous graph run: `plan`. Invoke the `thejudge-map-out` skill with the Skill tool and follow it exactly, including its `graph-run is controlling` branch.
+
+The preparation gate is recorded in `PRD/work/life-tracker-spec/README.md` under `## Preparation gate` as `Quality-check: PASS` against `PRD/work/life-tracker-spec/DESIGN-BRIEF.md`, findings none. Read it there. You may not self-certify a PASS.
+
+Slice `PRD/work/life-tracker-spec/DESIGN-BRIEF.md` into lettered slices for sequential single-agent implementation, and emit one `slice-<letter>.criteria.json` beside each slice doc in the schema and shape given in `thejudge-map-out/reference.md` — every criterion initialised `false`, each carrying an `evidence` block that is a command pattern, one or more file paths, or `"manual": true`. Set `STATUS.active` when the gameplan and slice docs are complete.
+
+This package is documentation-only: its deliverable is `PRD/sections/life-tracker/README.md` plus one `PRD/README.md` Section Inventory row, under the confirmed `DEC-168`. Slice for that reality — evidence blocks should point at those paths and at the corpus checks the repository already runs, not at `apps/` tests that do not apply.
+
+The package `intake/` is evidence, never authority. Never open, read, or fetch any document the intake cites — record only its path as a citation.
+
+Apply the assumption ladder in `PRD/instructions/preparation-contract.md` to each question as it arises, one at a time, evaluated fresh at the moment it comes up. Do not pre-resolve a class of future questions. If a question meets the three-condition genuine-blocker test, stop and report it as a blocker with the three conditions shown — do not answer it yourself and do not proceed past it.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write, and require any subagent you dispatch to do the same.
+
+Report back:
+- the `GAMEPLAN.md` path and the lettered slices, in order, with a one-line scope for each
+- every `slice-<letter>.md` and `slice-<letter>.criteria.json` path you wrote, and confirmation every criterion is initialised `false` with an evidence block
+- the `STATUS.*` transition you made
+- every assumption you resolved via the ladder, with the rung used
+- any genuine blocker, with the three conditions shown
+
+Boundaries: do not modify any `thejudge-*` skill, `CLAUDE.md`, `.claude/settings*.json`, or `.claude/graph-profile.json`. Do not edit `PRD/sections/` — that is implementation's deliverable and the owner has already walked the refinement diff. Do not write any implementation code. Do not stage with `git add -A`, `git add --all`, or `git add .` — stage explicit paths only. Do not push `main`, force-push, or delete a remote branch. Do not run `npm run data:refresh`. Do not touch `.secrets/`.
 
 ## Instruction ledger
 

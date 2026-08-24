@@ -8,11 +8,11 @@ Do not rename package folders to encode status.
 
 ## active
 
-## refined
-
 | Package | Notes |
 | --- | --- |
-| [life-tracker-spec](./life-tracker-spec/) | `define` gate resolved 2026-08-24 — DEC-168 accepted, 1 of 1 stable ID walked. Resume: `/graph-run PRD/work/life-tracker-spec/` (re-enters at `gate-qc`) |
+| [life-tracker-spec](./life-tracker-spec/) | Mapped 2026-08-24 — GAMEPLAN + slices A, B. Resume: `/thejudge-implement PRD/work/life-tracker-spec/ slice A` |
+
+## refined
 
 ## refining
 
