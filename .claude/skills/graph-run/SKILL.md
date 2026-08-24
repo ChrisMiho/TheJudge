@@ -404,11 +404,15 @@ Write that file in **its own tool call**, before the call that removes the
 lock. A single compound command is one tool call, so the hook evaluates the
 removal against the disk as it stood before any of it ran — and denies.
 
-A wrong key is not recoverable inside the run. The removal is denied, and the
-corrected second attempt is denied again by `denied-command-retry` below, which
-is that rule working rather than a bug. Observed 2026-08-24 on
-`life-tracker-spec`: a record written with `terminalState` stranded the lock,
-and the owner had to remove it by hand.
+A wrong key is recoverable: correct the record and issue the removal again.
+`run-lock-removal` is a remediable rule, so the retry guard below steps aside
+and the rule itself re-decides against the disk as it now stands. It is the only
+place in this workflow where a second attempt at a denied call is the right
+move, and it is right only because the denial named the thing to go and do.
+
+Observed 2026-08-24 on `life-tracker-spec`, before that carve-out existed: a
+record written with `terminalState` stranded the lock, the corrected retry was
+refused, and the owner removed the lock by hand.
 
 **A denied call is never retried.** The hook records every denial it issues for
 the run and refuses an identical later call as `denied-command-retry`, naming the
@@ -416,6 +420,14 @@ rule that first refused it. On 2026-08-23 a push was refused, the build node ran
 the same command again, and the second attempt went through — a guardrail cleared
 by a second attempt is not a guardrail. On that rule, park: the command and its
 original denial are the evidence.
+
+**The one exception is a rule whose denial named a remedy** — today that is
+`run-lock-removal` alone, listed in `REMEDIABLE_RULES` in
+`scripts/lib/boundary-rules.mjs`. A rule shaped "do X first, then this is
+permitted" is not cleared by a second attempt; it is *satisfied* by doing X. So
+the guard stands aside and the original rule decides again. Do X, retry once,
+and read what comes back: still denied means the remedy is still missing, and
+the reason says which part. Never read this as licence to retry anything else.
 
 Its limit, stated rather than implied: this covers denials **the hook issued**.
 The 2026-08-23 block came from the harness's own permission classifier, which the

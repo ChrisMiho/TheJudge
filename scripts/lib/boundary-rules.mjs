@@ -145,6 +145,34 @@ export const RUN_LOCK_PATH = ".worktrees/.graph-run.lock"
 export const RUN_RELEASE_PATH = ".worktrees/.graph-run-release.json"
 
 /**
+ * Rules whose denial names a remedy the caller can actually carry out.
+ *
+ * `denied-command-retry` exists so a guardrail is not cleared by a second
+ * attempt, and that is right for a rule whose refusal *stands*: a force-push is
+ * refused, and it stays refused however many times it is tried. It is wrong for
+ * a rule shaped "do X first, then this is permitted". Once X is done the rule
+ * itself allows the call, so refusing the retry makes the documented path
+ * unreachable after a single mistake.
+ *
+ * Observed 2026-08-24 on `life-tracker-spec`: the run wrote its release record
+ * under the key `terminalState`, `run-lock-removal` denied the lock removal,
+ * the record was corrected to `state`, and `denied-command-retry` refused the
+ * corrected attempt. The run could not release its own lock and the owner
+ * removed it by hand.
+ *
+ * A retry of one of these is **not** waved through. The retry guard steps aside
+ * and the original rule re-evaluates against the disk as it now stands: remedy
+ * satisfied, it allows; remedy still missing, it denies again with its own
+ * reason, which names what is still missing rather than saying only "you
+ * already tried this". Nothing is cleared by attempting it twice — the rule
+ * that refused it is still the rule deciding.
+ *
+ * Membership is deliberately narrow. A rule belongs here only if satisfying the
+ * remedy is something the contract *requires* the run to do anyway.
+ */
+export const REMEDIABLE_RULES = Object.freeze(new Set(["run-lock-removal"]))
+
+/**
  * The owner's kill switch.
  *
  * Creating this file stops a run at its next node boundary. `graph-run` checks
@@ -914,6 +942,11 @@ export const RULES = Object.freeze([
     // First in the table on purpose. A retry of a call the hook already refused
     // is denied *as a retry*, so the run gets told to park rather than being
     // handed the original reason again and looping on it.
+    //
+    // The exception is a rule in REMEDIABLE_RULES, whose denial named something
+    // the caller was supposed to go and do. There this guard steps aside and
+    // lets the original rule decide against the disk as it now stands — see
+    // that constant for why, and for the run this cost a stranded lock.
     id: "denied-command-retry",
     tier: "graph",
     evaluate: (context) => {
@@ -922,6 +955,9 @@ export const RULES = Object.freeze([
       const key = denialKey(context)
       if (!prior.has(key)) return null
       const original = typeof prior.get === "function" ? prior.get(key) : null
+      // Unknown original: deny. A retry guard that cannot identify what first
+      // refused the call has no basis for standing aside.
+      if (original !== null && REMEDIABLE_RULES.has(original)) return null
       return (
         `This exact call was already denied during this run${original ? ` (\`${original}\`)` : ""}. ` +
         "A blocked command stops the run and is recorded, never retried — a " +
