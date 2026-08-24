@@ -1,6 +1,6 @@
 # Slice A — Frontend components and hooks surface pass
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -38,13 +38,13 @@ touch together.
 
 ## Acceptance criteria
 
-- [ ] A1. This surface's file inventory is enumerated with `git ls-files
+- [x] A1. This surface's file inventory is enumerated with `git ls-files
       apps/frontend/src/components apps/frontend/src/hooks` and the count is
       recorded in the notes file.
-- [ ] A2. `audit-notes/surface-a-components-hooks.md` exists, recording every
+- [x] A2. `audit-notes/surface-a-components-hooks.md` exists, recording every
       finding in the brief's per-finding field shape and a draft coverage-table
       row for this surface.
-- [ ] A3. At least one seeding search (repeated literals/magic numbers,
+- [x] A3. At least one seeding search (repeated literals/magic numbers,
       repeated exported symbol names, near-identical signatures, or parallel
       handler names) was run scoped to this surface, per the brief's Method.
 
