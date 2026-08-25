@@ -424,6 +424,34 @@ If you write any prompt yourself, copy the `Working directory:` line above uncha
 
 Report: an overall verdict (APPROVE or CHANGES-REQUESTED), the counts of Critical / Important / Minor findings, and for each finding its severity, the criterion id it maps to (or outside-criteria), and the evidence. Do not dispatch further nodes and do not modify any file.
 
+### close
+
+graph-run is controlling. You are node 9 (`close`) of an autonomous graph run. Invoke the `thejudge-cleanup` skill and follow it exactly in graph-controlled (non-interactive) mode — do not stop to ask the user questions; close out the ship-ready package and return.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Package: `PRD/work/user-feedback-spec/` (marker `STATUS.ship-ready`). PR #107 is MERGED (base `thejudge-auto/user-feedback-spec`, merge commit `c6e5cbc`, mergedAt 2026-08-25T23:19:42Z — verify with `gh pr view 107 --json state,mergedAt,mergeCommit`). The launch checkout is already reconciled onto the merged base (`origin/thejudge-auto/user-feedback-spec` is an ancestor of HEAD).
+
+Durable deliverables — already present on the merged base, so confirm rather than re-create:
+- `PRD/sections/user-feedback/README.md` (146 lines, DEC-168 draft spec, includes the slice-A `useFeedbackForm.ts` correction).
+- `PRD/README.md` — one Section Inventory row for `sections/user-feedback/`.
+No new stable IDs were minted and no existing DEC/REQ/FLOW/NFR body was changed, so no `decisions.md`/`system-map.md` promotion is required (this is a derived draft doc, not a shipped-behavior change). Confirm `system-map.md`'s Feedback entry already reads shipped — this package changed no product behavior.
+
+Do the cleanup:
+- Verify both slices complete (A1–A9, B1–B5) and the merge-proof (PR merged via gh; deliverables on base).
+- Fold `GRAPH-RUN.md`'s `## Node ledger` (rows 1–8) and `## Instruction ledger` VERBATIM into a `## Graph run` section of the receipt before deleting the package — the contract refuses the delete otherwise. Add node 9's own row yourself, since the run cannot record its final node (deleting the package removes the ledger it would write into).
+- Write the receipt at `PRD/instructions/receipts/user-feedback-spec-2026-08-25.md`.
+- Remove the autonomous worktree `.worktrees/implement-user-feedback-spec` and its local build branch `thejudge-auto/user-feedback-spec-build-20260825163534`, plus the local branch `thejudge-auto/user-feedback-spec-work` (used to fix the PR conflict; remote head is retained by GitHub post-merge).
+- Update `PRD/work/STATUS.md` (remove the `user-feedback-spec` row).
+- Delete `PRD/work/user-feedback-spec/`.
+- Run `npm run quality:check` and record the result — note `lambda-package-budget.test.mjs` has a pre-existing `ENOTDIR` worktree-mechanics failure unrelated to this docs-only package; record it as such, do not fix it here.
+
+Record in the receipt as contributing-cause notes (do not fix — a graph run may not edit `thejudge-*` skills): (1) `thejudge-implement-all` derives the shared branch name equal to the base name, forcing the `-work` fork (life-tracker PR #105 precedent); (2) the driver pushed a ledger commit (`a1f6a88`) to the base after the PR head forked, creating a `GRAPH-RUN.md` conflict on PR #107 that had to be resolved by merging base into `-work`.
+
+If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
+
+Report: the receipt path, confirmation the ledger was folded verbatim, the merge-proof result, the worktree/branch removals, the board update, the package deletion, and the `quality:check` result. This is the final node.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
