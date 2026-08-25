@@ -330,6 +330,22 @@ If you write any prompt yourself, copy the `Working directory:` line above uncha
 
 Report: the artifacts you wrote (paths), the slice letters and their one-line intents, the criteria files and criterion counts, the `STATUS.*` marker you set, and any genuine blocker. Do not dispatch further nodes.
 
+### build
+
+graph-run is controlling. You are node 6 (`build`) of an autonomous graph run. Invoke the `thejudge-implement-all` skill and follow it exactly in graph-controlled (non-interactive) mode — complete every remaining slice in one unattended session, then set `STATUS.ship-ready` and hand off. Do not stop to ask the user questions.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Package: `PRD/work/user-feedback-spec/`. Its `README.md` records `## Autonomous metadata` (Autonomous base: origin/thejudge-auto/user-feedback-spec) and `## Preparation gate` (Quality-check: PASS). Read `GAMEPLAN.md`, `slice-a-verify-spec.md`, `slice-b-diff-proof.md`, and both `slice-*.criteria.json`. Create the worktree under `.worktrees/implement-user-feedback-spec/` (repo-local `.worktrees/` root only), open/maintain the PR against the recorded autonomous base, and drive every criterion in both slice files to `true` with real evidence.
+
+Both slices are VERIFY-ONLY. The deliverable — `PRD/sections/user-feedback/README.md` (144 lines) and the `PRD/README.md` Section Inventory nav row — is already written and committed on the autonomous base (commit `562d1c6`), owner-accepted at the define gate. Do not re-author it. Slice A verifies the committed spec against its cited sources (DEC-104, DEC-105, REQ-086, REQ-087, REQ-088, FLOW-014, NFR-001, NFR-006) and the DEC-168 template; criterion A5 permits ONE bounded additive correction — appending the missing `useFeedbackForm.ts` file-path line to the spec's Where-it-lives paragraph — only if independently confirmed against `system-map.md` and the repo tree. No other spec edit. Slice B verifies the nav row and proves the package-wide diff since the fork point touched nothing outside `PRD/sections/user-feedback/README.md`, the one nav row, and package bookkeeping — no `apps/` code, no existing DEC/REQ/FLOW/NFR body.
+
+Boundaries: do NOT modify any existing DEC/REQ/FLOW/NFR body, do NOT change `apps/` code, do NOT merge or close the PR (that is the owner's land step), do NOT push to `main`. Every path you write must lie inside `.worktrees/implement-user-feedback-spec/` or `PRD/work/user-feedback-spec/`.
+
+If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
+
+Report: the worktree path and work branch, each slice's completion and its criteria status (all `true`?), any bounded correction you made and its evidence, the PR URL, the write-scope confirmation (every written path inside the two allowed roots), and the final `STATUS.*` marker. Do not dispatch further nodes.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
