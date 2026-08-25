@@ -41,6 +41,10 @@ works**, **Measured bounds**, **Rejected alternatives and deferred scope**,
 No product-behavior decisions here. No `apps/` code change. No edit to
 `PRD/sections/decisions/feedback.md` or any other existing DEC/REQ/FLOW body.
 
+## Autonomous metadata
+
+- Autonomous base: origin/thejudge-auto/user-feedback-spec
+
 ## Next step
 
 `/thejudge-refinement PRD/work/user-feedback-spec/`
