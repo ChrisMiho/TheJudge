@@ -2,7 +2,7 @@
 
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -44,17 +44,17 @@ change, no edit to any existing `DEC`/`REQ`/`FLOW`/`NFR` body.
 
 ## Acceptance criteria
 
-- [ ] B1 — `PRD/README.md` has exactly one Section Inventory row for
+- [x] B1 — `PRD/README.md` has exactly one Section Inventory row for
       `sections/user-feedback/`.
-- [ ] B2 — That row's description states the spec is a derived,
+- [x] B2 — That row's description states the spec is a derived,
       non-authoritative current-state view citing DEC-168.
-- [ ] B3 — No other Section Inventory or Instruction Inventory row was
+- [x] B3 — No other Section Inventory or Instruction Inventory row was
       added, removed, or reordered.
-- [ ] B4 — The full package diff (from `$(git merge-base HEAD origin/main)`)
+- [x] B4 — The full package diff (from `$(git merge-base HEAD origin/main)`)
       shows no change under `apps/`, and no change to any existing
       `DEC`/`REQ`/`FLOW`/`NFR` body, `system-map.md`,
       `integrations-and-data.md`, or `open-questions.md`.
-- [ ] B5 — A human confirmed the package needs no further durable-truth
+- [x] B5 — A human confirmed the package needs no further durable-truth
       promotion at cleanup beyond `PRD/sections/user-feedback/README.md` and
       the `PRD/README.md` row.
 
@@ -74,9 +74,9 @@ git diff $(git merge-base HEAD origin/main)..HEAD -- PRD/sections/decisions PRD/
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/user-feedback-spec/` ready to
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change
+- [x] No secrets committed
+- [x] Durable outcomes promoted; `PRD/work/user-feedback-spec/` ready to
       delete
