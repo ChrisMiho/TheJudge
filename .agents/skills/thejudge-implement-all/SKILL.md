@@ -33,7 +33,7 @@ Merging and closing the PR stay human in both modes.
 
 ## Inputs
 
-Work slug or `PRD/work/<slug>/` path. Optional shared remote branch or PR number; otherwise use `thejudge-auto/<slug>` targeting the package's recorded autonomous base (the `## Autonomous metadata` section in its `README.md`). Block before worktree creation if the package has no recorded base and no compatible supplied branch/PR resolves one.
+Work slug or `PRD/work/<slug>/` path. Optional shared remote branch or PR number; otherwise use `thejudge-auto/<slug>` targeting the package's recorded autonomous base (the `## Autonomous metadata` section in its `README.md`). Block before worktree creation if the package has no recorded base and no compatible supplied branch/PR resolves one, or if the resolved shared branch equals the recorded autonomous base — a PR cannot target its own head, so supply a distinct branch such as `<base>-work`.
 
 ## Reads
 
