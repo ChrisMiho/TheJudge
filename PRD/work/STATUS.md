@@ -6,11 +6,11 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-## active
-
 | Package | Notes |
 | --- | --- |
-| [user-feedback-spec](./user-feedback-spec/) | Spec + nav row already committed and owner-accepted at the define gate (9 units, 2026-08-25). Mapped 2026-08-25: slice A verifies the spec against sources/template, slice B verifies the nav row and proves diff scope — both verify-only, parallel-ready (Phase A #2, docs-refactor gameplan) |
+| [user-feedback-spec](./user-feedback-spec/) | Spec + nav row already committed and owner-accepted at the define gate (9 units, 2026-08-25). Both slices done 2026-08-25: slice A verified the spec against sources/template (one bounded additive correction — added the missing `useFeedbackForm.ts` file-path line); slice B verified the nav row and proved the diff stayed in scope (Phase A #2, docs-refactor gameplan) |
+
+## active
 
 ## refined
 

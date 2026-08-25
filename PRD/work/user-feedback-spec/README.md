@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # user-feedback-spec
 
@@ -56,20 +56,16 @@ No product-behavior decisions here. No `apps/` code change. No edit to
 | Slice | Scope | Dependency | Status |
 | --- | --- | --- | --- |
 | [A](./slice-a-verify-spec.md) | Verify `PRD/sections/user-feedback/README.md` (already committed) against its cited sources and the DEC-168 template; close any confirmed, sourced gap with a bounded additive correction only. | none | done |
-| [B](./slice-b-diff-proof.md) | Verify the `PRD/README.md` Section Inventory row (already committed); prove the package-wide diff since its fork point touched nothing outside the licensed set. | none | planned |
+| [B](./slice-b-diff-proof.md) | Verify the `PRD/README.md` Section Inventory row (already committed); prove the package-wide diff since its fork point touched nothing outside the licensed set. | none | done |
 
 GAMEPLAN: `PRD/work/user-feedback-spec/GAMEPLAN.md`.
 
 ## Implementation map
 
 - `PRD/sections/user-feedback/README.md` — already written and committed
-  (`562d1c6`); verified (and, if needed, bounded-corrected) by slice A.
+  (`562d1c6`); verified and bounded-corrected by slice A (added the missing
+  `apps/frontend/src/hooks/useFeedbackForm.ts` file-path line to **Where it
+  lives**, confirmed against `system-map.md` and the repo tree).
 - `PRD/README.md` — already carries one Section Inventory row for
   `sections/user-feedback/`; verified by slice B, alongside the
   package-wide diff-scope proof.
-
-## Next step
-
-`/thejudge-implement PRD/work/user-feedback-spec/ slice A` (Claude Code) or
-`$thejudge-implement PRD/work/user-feedback-spec/ slice A` (Codex). Slice B
-has no ordering dependency on A.
