@@ -14,6 +14,10 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+| Package | Notes |
+| --- | --- |
+| [user-feedback-spec](./user-feedback-spec/) | Phase A #2 of the docs-refactor gameplan (`PRD/work/adhoc/refactor-gameplan.md`) — current-state spec for the Feedback & Bug Report feature |
+
 ## owner-action
 
 ## deferred
