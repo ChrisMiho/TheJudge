@@ -1,4 +1,7 @@
 import assert from "node:assert/strict"
+import { mkdtempSync } from "node:fs"
+import { tmpdir } from "node:os"
+import path from "node:path"
 import { Readable } from "node:stream"
 import test from "node:test"
 
@@ -29,6 +32,34 @@ import {
 // writing to `.worktrees/` from a test run. The reader is path-aware on purpose:
 // a reader that returned the same bytes for every path would fake a stop
 // sentinel in every lock test.
+const REPO_ROOT = path.resolve(import.meta.dirname, "..")
+
+// Pin the project root away from the repository for every test in this file,
+// before any of them runs. `projectRoot()` prefers `CLAUDE_PROJECT_DIR`, then
+// `payload.cwd`, then `process.cwd()` — and the last two both land on the
+// repository when the suite runs from it. Fixtures that inject a reader but no
+// writer therefore wrote through to the live `.worktrees/`. They now write into
+// a throwaway directory instead, so an un-isolated fixture is inert rather than
+// silently destructive.
+process.env.CLAUDE_PROJECT_DIR = mkdtempSync(path.join(tmpdir(), "graph-boundary-test-"))
+
+test("a test run cannot resolve the repository as the project root", () => {
+  // Regression, 2026-08-25. The fixtures below inject readers but not writers,
+  // so `appendDenial` and `recordCall` fell through to the real `appendFileSync`
+  // at the real project root. A `quality:check` run wrote three synthetic
+  // denials into the live `.worktrees/.graph-denials.jsonl` — a force-push
+  // attributed to `close`, and two dispatch-cap denials attributed to
+  // `preflight`, which was not running at all. That file is a graph run's
+  // evidence about its own conduct, and a test run must not be able to forge an
+  // entry in it. Pinning the project root away from the repository isolates
+  // every fixture at once, including the ones that inject no writer.
+  assert.notEqual(
+    projectRoot({}, process.env),
+    REPO_ROOT,
+    "tests must not resolve the repository as the project root"
+  )
+})
+
 const LOCK_CONTENTS = '{"slug":"x","runId":"r","pid":1,"startedAt":"t"}'
 
 function absent(target) {
