@@ -55,7 +55,7 @@ No product-behavior decisions here. No `apps/` code change. No edit to
 
 | Slice | Scope | Dependency | Status |
 | --- | --- | --- | --- |
-| [A](./slice-a-verify-spec.md) | Verify `PRD/sections/user-feedback/README.md` (already committed) against its cited sources and the DEC-168 template; close any confirmed, sourced gap with a bounded additive correction only. | none | planned |
+| [A](./slice-a-verify-spec.md) | Verify `PRD/sections/user-feedback/README.md` (already committed) against its cited sources and the DEC-168 template; close any confirmed, sourced gap with a bounded additive correction only. | none | done |
 | [B](./slice-b-diff-proof.md) | Verify the `PRD/README.md` Section Inventory row (already committed); prove the package-wide diff since its fork point touched nothing outside the licensed set. | none | planned |
 
 GAMEPLAN: `PRD/work/user-feedback-spec/GAMEPLAN.md`.

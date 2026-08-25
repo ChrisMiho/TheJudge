@@ -129,7 +129,9 @@ capture set and the delivery shape.
 ## Where it lives
 
 Frontend components and feedback-local logic live under
-`apps/frontend/src/components/feedback/` (`FeedbackModal.tsx`) and
+`apps/frontend/src/components/feedback/` (`FeedbackModal.tsx`), the
+form-state/validation hook `apps/frontend/src/hooks/useFeedbackForm.ts`
+(consumed by `FeedbackModal.tsx`), and
 `apps/frontend/src/lib/feedback/` (`buildFeedbackContext.ts`,
 `FeedbackContextProvider.tsx`, `submitFeedback.ts`,
 `summarizeFeedbackContext.ts`, `environment.ts`, `types.ts`); the app shell

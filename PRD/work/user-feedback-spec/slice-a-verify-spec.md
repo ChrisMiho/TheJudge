@@ -2,7 +2,7 @@
 
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -64,29 +64,29 @@ additive correction only — this slice verifies; it does not author.
 
 ## Acceptance criteria
 
-- [ ] A1 — The header carries a `Status:` line naming the file draft,
+- [x] A1 — The header carries a `Status:` line naming the file draft,
       derived, non-authoritative, with the cited `DEC`/`REQ`/`FLOW` winning
       any conflict, and a `Backed by:` line citing exactly DEC-104, DEC-105,
       REQ-086, REQ-087, REQ-088, FLOW-014, NFR-001, NFR-006.
-- [ ] A2 — All five DEC-168 template sections are present, in order: What it
+- [x] A2 — All five DEC-168 template sections are present, in order: What it
       is, How it works, Measured bounds, Rejected alternatives and deferred
       scope, Where it lives.
-- [ ] A3 — Every cited ID (DEC-104, DEC-105, REQ-086, REQ-087, REQ-088,
+- [x] A3 — Every cited ID (DEC-104, DEC-105, REQ-086, REQ-087, REQ-088,
       FLOW-014, NFR-001, NFR-006) actually exists in its named home file.
-- [ ] A4 — Every **How it works** bullet's stated behavior is confirmed
+- [x] A4 — Every **How it works** bullet's stated behavior is confirmed
       traceable to its cited source's text — no invented capability.
-- [ ] A5 — **Where it lives** names every file `system-map.md` and the
+- [x] A5 — **Where it lives** names every file `system-map.md` and the
       repository tree confirm belongs to the feature; the known candidate
       gap (`apps/frontend/src/hooks/useFeedbackForm.ts`) is confirmed and, if
       real, closed by an additive correction.
-- [ ] A6 — **Rejected alternatives and deferred scope** matches DEC-104's and
+- [x] A6 — **Rejected alternatives and deferred scope** matches DEC-104's and
       DEC-105's Context and non-goals language, with nothing invented or
       omitted.
-- [ ] A7 — **Measured bounds** states plainly that no pixel bounds exist and
+- [x] A7 — **Measured bounds** states plainly that no pixel bounds exist and
       lists the capture-set/delivery-shape constraints and the 2026-08-05
       live-delivery confirmation.
-- [ ] A8 — No new stable ID token appears in the spec beyond the 8 cited IDs.
-- [ ] A9 — The slice's diff touches only
+- [x] A8 — No new stable ID token appears in the spec beyond the 8 cited IDs.
+- [x] A9 — The slice's diff touches only
       `PRD/sections/user-feedback/README.md`, and only for the bounded
       correction in A5 if genuinely needed — no `apps/` change, no edit to
       any existing `DEC`/`REQ`/`FLOW`/`NFR` body.

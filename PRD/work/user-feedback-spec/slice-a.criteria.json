@@ -5,25 +5,29 @@
     {
       "id": "A1",
       "statement": "The header carries a Status: line naming the file draft, derived, non-authoritative, with the cited DEC/REQ/FLOW winning any conflict, and a Backed by: line citing exactly DEC-104, DEC-105, REQ-086, REQ-087, REQ-088, FLOW-014, NFR-001, NFR-006",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep -E \"(Status:|Backed by:|draft|derived|non-authoritative)\" PRD/sections/user-feedback/README\\.md",
-        "paths": ["PRD/sections/user-feedback/README.md"]
+        "paths": [
+          "PRD/sections/user-feedback/README.md"
+        ]
       }
     },
     {
       "id": "A2",
       "statement": "All five DEC-168 template sections are present, in order: What it is, How it works, Measured bounds, Rejected alternatives and deferred scope, Where it lives",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep -nE \"^## (What it is|How it works|Measured bounds|Rejected alternatives|Where it lives)\" PRD/sections/user-feedback/README\\.md",
-        "paths": ["PRD/sections/user-feedback/README.md"]
+        "paths": [
+          "PRD/sections/user-feedback/README.md"
+        ]
       }
     },
     {
       "id": "A3",
       "statement": "Every cited ID (DEC-104, DEC-105, REQ-086, REQ-087, REQ-088, FLOW-014, NFR-001, NFR-006) actually exists in its named home file",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep -E \"(DEC-104|DEC-105)\" PRD/sections/decisions/feedback\\.md|grep -E \"(REQ-086|REQ-087|REQ-088)\" PRD/sections/functional-requirements\\.md|grep \"FLOW-014\" PRD/sections/user-flows\\.md|grep -E \"(NFR-001|NFR-006)\" PRD/sections/non-functional-requirements\\.md",
         "paths": [
@@ -37,7 +41,7 @@
     {
       "id": "A4",
       "statement": "Every How it works bullet's stated behavior is confirmed traceable to its cited source's text - no invented capability",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -45,16 +49,19 @@
     {
       "id": "A5",
       "statement": "Where it lives names every file system-map.md and the repository tree confirm belongs to the feature; the known candidate gap (apps/frontend/src/hooks/useFeedbackForm.ts) is confirmed and, if real, closed by an additive correction",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep -n \"useFeedbackForm\" PRD/sections/system-map\\.md PRD/sections/user-feedback/README\\.md|find apps/frontend/src -iname \"*Feedback*\"",
-        "paths": ["PRD/sections/user-feedback/README.md", "PRD/sections/system-map.md"]
+        "paths": [
+          "PRD/sections/user-feedback/README.md",
+          "PRD/sections/system-map.md"
+        ]
       }
     },
     {
       "id": "A6",
       "statement": "Rejected alternatives and deferred scope matches DEC-104's and DEC-105's Context and non-goals language, with nothing invented or omitted",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -62,28 +69,34 @@
     {
       "id": "A7",
       "statement": "Measured bounds states plainly that no pixel bounds exist and lists the capture-set/delivery-shape constraints and the 2026-08-05 live-delivery confirmation",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep -Ei \"(no pixel|xdenozlb|2026-08-05)\" PRD/sections/user-feedback/README\\.md",
-        "paths": ["PRD/sections/user-feedback/README.md"]
+        "paths": [
+          "PRD/sections/user-feedback/README.md"
+        ]
       }
     },
     {
       "id": "A8",
       "statement": "No new stable ID token appears in the spec beyond the 8 cited IDs",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep -oE \"(DEC|REQ|FLOW|NFR|Q)-[0-9]+\" PRD/sections/user-feedback/README\\.md",
-        "paths": ["PRD/sections/user-feedback/README.md"]
+        "paths": [
+          "PRD/sections/user-feedback/README.md"
+        ]
       }
     },
     {
       "id": "A9",
       "statement": "The slice's diff touches only PRD/sections/user-feedback/README.md, and only for the bounded correction in A5 if genuinely needed - no apps/ change, no edit to any existing DEC/REQ/FLOW/NFR body",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "git status --porcelain PRD/sections/ apps/|git diff --stat -- apps/ PRD/sections/decisions PRD/sections/functional-requirements\\.md PRD/sections/user-flows\\.md PRD/sections/non-functional-requirements\\.md",
-        "paths": ["PRD/sections/user-feedback/README.md"]
+        "paths": [
+          "PRD/sections/user-feedback/README.md"
+        ]
       }
     }
   ]
