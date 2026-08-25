@@ -7,8 +7,9 @@
 - Autonomous base: `origin/thejudge-auto/user-feedback-spec`
 - Parent branch (fork point): `thejudge-auto/life-tracker-spec` — its work is already in `origin/main` via PR #106 (DEC-168 + life-tracker spec); our branch is a clean ancestor of `origin/main` (0 ahead, 1 behind)
 - Staging: `.worktrees/.graph-intake/graph-20260825-150903/`
-- Current node: `build` — plan complete 2026-08-25 (2 verify-only slices, `STATUS.active`); publishing before build
+- Current node: `review` — build complete 2026-08-25 (both slices verified, PR #107 open); launch checkout fast-forwarded to shipped base `b60d11f`
 - Next action: `/graph-run PRD/work/user-feedback-spec/`
+- PR: https://github.com/ChrisMiho/TheJudge/pull/107 — base `thejudge-auto/user-feedback-spec`, head `thejudge-auto/user-feedback-spec-work`
 
 ## Node ledger
 
@@ -19,6 +20,7 @@
 | 3 | define | opus | ok — gate (parked) | `1 → 33` | `DESIGN-BRIEF.md` written; new `PRD/sections/user-feedback/README.md` (144 lines, DEC-168 template) + one `PRD/README.md` Section Inventory row; **no new stable IDs**, no existing DEC/REQ/FLOW/NFR body modified; `git diff -- PRD/sections/` non-empty → parked at the `define` gate; `STATUS.refined` → `STATUS.owner-action` | 2026-08-25 |
 | 4 | gate-qc | sonnet | ok — PASS | `0 → 25` | `thejudge-quality-check` PASS on `DESIGN-BRIEF.md`, findings: none; brief cross-checked against DEC-104/105, REQ-086/087/088, FLOW-014, NFR-001/006, DEC-168 template rules; no new IDs, no `PRD/sections/` edits; `STATUS.refined` unchanged (PASS does not advance status) | 2026-08-25 |
 | 5 | plan | sonnet | ok | `0 → 33` | `thejudge-map-out`: `GAMEPLAN.md`, `slice-a-verify-spec.md`+`slice-a.criteria.json` (A1–A9, all `false`), `slice-b-diff-proof.md`+`slice-b.criteria.json` (B1–B5, all `false`); both slices **verify-only** (deliverable already committed at `562d1c6`), parallel-ready; A5 embeds the sourced `useFeedbackForm.ts` gap as a bounded additive correction (not a blocker); `STATUS.refined` → `STATUS.active`; board row moved to `## active`; all writes inside `PRD/work/user-feedback-spec/` + board file | 2026-08-25 |
+| 6 | build | sonnet | ok | `0 → 144` | `thejudge-implement-all`; worktree `.worktrees/implement-user-feedback-spec` on `thejudge-auto/user-feedback-spec-build-20260825163534`; slice A `b60d11f` pushed directly onto base (one bounded A5 correction — added `apps/frontend/src/hooks/useFeedbackForm.ts` to the spec's Where-it-lives paragraph, confirmed vs `system-map.md` + repo tree), slice B + ledger pushed to `origin/thejudge-auto/user-feedback-spec-work`; PR [#107](https://github.com/ChrisMiho/TheJudge/pull/107) base `…-spec` head `…-spec-work` (base=head name collision → `-work` fork, life-tracker PR #105 pattern); **write-scope verified** — launch checkout `git status --porcelain` clean, every changed path in the worktree, content diff confined to the spec + `PRD/work/user-feedback-spec/` + board; **criteria verified in worktree** — A1–A9 and B1–B5 all `value:true`, 14 matching lines in `.worktrees/.graph-evidence.jsonl` for this run id; pre-existing `lambda-package-budget.test.mjs` `ENOTDIR` failure proved unrelated (fails on clean base too), left as PR comment; `STATUS.active` → `STATUS.ship-ready` (on PR head) | 2026-08-25 |
 
 ## Gate verdicts
 
@@ -345,6 +347,47 @@ Boundaries: do NOT modify any existing DEC/REQ/FLOW/NFR body, do NOT change `app
 If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
 
 Report: the worktree path and work branch, each slice's completion and its criteria status (all `true`?), any bounded correction you made and its evidence, the PR URL, the write-scope confirmation (every written path inside the two allowed roots), and the final `STATUS.*` marker. Do not dispatch further nodes.
+
+### review
+
+graph-run is controlling — the driver is graph-run. You are node 7 (`review`) of an autonomous graph run: a fresh-context, NO-WRITE reviewer with read and search tools only (no Write, Edit, or NotebookEdit). Grade the completed slices A and B against their own acceptance criteria and return a verdict. Do not modify anything.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+What was built: Phase A #2 of a docs-refactor — a current-state feature spec for the Feedback & Bug Report feature at `PRD/sections/user-feedback/README.md` (DEC-168 template, draft, non-authoritative). Two VERIFY-ONLY slices ran; the deliverable spec plus the `PRD/README.md` nav row were already written and owner-accepted at the define gate (commit `562d1c6`). Build verified them and made ONE bounded additive correction: it added `apps/frontend/src/hooks/useFeedbackForm.ts` to the spec's Where-it-lives paragraph.
+
+Read fresh — you did NOT watch the build, so grade the artifacts, never any justification:
+- Deliverable: `PRD/sections/user-feedback/README.md` (current) and `PRD/README.md` (its one Section Inventory row for `sections/user-feedback/`).
+- The A5 correction diff: `git diff 562d1c6 b60d11f -- PRD/sections/user-feedback/README.md`.
+- The PR #107 content (slice B + ledger): `git diff origin/thejudge-auto/user-feedback-spec..origin/thejudge-auto/user-feedback-spec-work`.
+- Slice + evidence docs in `PRD/work/user-feedback-spec/`: `slice-a-verify-spec.md`, `slice-a.evidence.md`, `slice-b-diff-proof.md`, `slice-b.evidence.md`, `GAMEPLAN.md`, `DESIGN-BRIEF.md`.
+- Cited sources to check the spec against: `PRD/sections/decisions/feedback.md` (DEC-104, DEC-105), `PRD/sections/functional-requirements.md` (REQ-086, REQ-087, REQ-088), `PRD/sections/user-flows.md` (FLOW-014), `PRD/sections/non-functional-requirements.md` (NFR-001, NFR-006), `PRD/sections/system-map.md` (Feedback & bug report entry).
+
+Rubric — grade ONLY against these stated acceptance criteria, not taste:
+
+Slice A —
+- A1: header carries a Status line naming the file draft/derived/non-authoritative with the cited DEC/REQ/FLOW winning any conflict, and a Backed by line citing exactly DEC-104, DEC-105, REQ-086, REQ-087, REQ-088, FLOW-014, NFR-001, NFR-006.
+- A2: all five DEC-168 template sections present in order — What it is, How it works, Measured bounds, Rejected alternatives and deferred scope, Where it lives.
+- A3: every cited ID exists in its named home file.
+- A4: every How-it-works bullet's behavior is traceable to its cited source's text — no invented capability.
+- A5: Where it lives names every file system-map.md and the repo tree confirm belong to the feature; the known candidate gap (useFeedbackForm.ts) is confirmed and, if real, closed by an additive correction.
+- A6: Rejected alternatives and deferred scope matches DEC-104's and DEC-105's Context and non-goals language — nothing invented or omitted.
+- A7: Measured bounds states plainly that no pixel bounds exist and lists the capture-set/delivery-shape constraints and the 2026-08-05 live-delivery confirmation.
+- A8: no new stable ID token appears in the spec beyond the 8 cited IDs.
+- A9: the slice's diff touches only `PRD/sections/user-feedback/README.md`, and only for the bounded A5 correction if needed — no apps/ change, no edit to any existing DEC/REQ/FLOW/NFR body.
+
+Slice B —
+- B1: `PRD/README.md` has exactly one Section Inventory row for sections/user-feedback/.
+- B2: that row states the spec is a derived, non-authoritative current-state view citing DEC-168.
+- B3: no other Section Inventory or Instruction Inventory row was added, removed, or reordered.
+- B4: the full package diff (from the merge-base with origin/main) shows no change under apps/, and no change to any existing DEC/REQ/FLOW/NFR body, system-map.md, integrations-and-data.md, or open-questions.md.
+- B5: a human confirmed the package needs no further durable-truth promotion at cleanup beyond the spec file and the nav row.
+
+Severity rule (binding): a preference, a style note, or any improvement OUTSIDE these stated criteria is NEVER Critical or Important and never loops back to build — record it as Minor at most. B5 is a human-confirmation criterion; this unattended run had no human, so a dated agent observation stands in for it — that is a known Minor pattern, not a Critical or Important finding. Only a genuine gap that violates a stated criterion or breaks correctness is Critical or Important.
+
+If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
+
+Report: an overall verdict (APPROVE or CHANGES-REQUESTED), the counts of Critical / Important / Minor findings, and for each finding its severity, the criterion id it maps to (or outside-criteria), and the evidence. Do not dispatch further nodes and do not modify any file.
 
 ## Instruction ledger
 
