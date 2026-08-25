@@ -8,6 +8,10 @@ Do not rename package folders to encode status.
 
 ## active
 
+| Package | Notes |
+| --- | --- |
+| [user-feedback-spec](./user-feedback-spec/) | Spec + nav row already committed and owner-accepted at the define gate (9 units, 2026-08-25). Mapped 2026-08-25: slice A verifies the spec against sources/template, slice B verifies the nav row and proves diff scope — both verify-only, parallel-ready (Phase A #2, docs-refactor gameplan) |
+
 ## refined
 
 ## refining
@@ -15,10 +19,6 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
-
-| Package | Notes |
-| --- | --- |
-| [user-feedback-spec](./user-feedback-spec/) | Parked at the `define` gate — draft Feedback & Bug Report spec awaits owner review via `/graph-gate-review PRD/work/user-feedback-spec/` (Phase A #2, docs-refactor gameplan) |
 
 ## deferred
 

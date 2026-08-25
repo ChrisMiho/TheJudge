@@ -7,8 +7,8 @@
 - Autonomous base: `origin/thejudge-auto/user-feedback-spec`
 - Parent branch (fork point): `thejudge-auto/life-tracker-spec` — its work is already in `origin/main` via PR #106 (DEC-168 + life-tracker spec); our branch is a clean ancestor of `origin/main` (0 ahead, 1 behind)
 - Staging: `.worktrees/.graph-intake/graph-20260825-150903/`
-- Current node: `define` — PARKED at the define gate (owner review)
-- Next action: `/graph-gate-review PRD/work/user-feedback-spec/`
+- Current node: `build` — plan complete 2026-08-25 (2 verify-only slices, `STATUS.active`); publishing before build
+- Next action: `/graph-run PRD/work/user-feedback-spec/`
 
 ## Node ledger
 
@@ -17,8 +17,34 @@
 | 1 | preflight | haiku | ok | `0 → 4` | branch `thejudge-auto/user-feedback-spec` created + pushed; forked from `thejudge-auto/life-tracker-spec`; clean tree, no stash; lock `graph-20260825-150903` held | 2026-08-25 |
 | 2 | shape | sonnet | ok | `1 → 40` | package `PRD/work/user-feedback-spec/` created (`IDEA.md`, `README.md`, `STATUS.ideation`, `intake/refactor-gameplan.md`); board row under `## ideation`; commit `2e1c452` pushed | 2026-08-25 |
 | 3 | define | opus | ok — gate (parked) | `1 → 33` | `DESIGN-BRIEF.md` written; new `PRD/sections/user-feedback/README.md` (144 lines, DEC-168 template) + one `PRD/README.md` Section Inventory row; **no new stable IDs**, no existing DEC/REQ/FLOW/NFR body modified; `git diff -- PRD/sections/` non-empty → parked at the `define` gate; `STATUS.refined` → `STATUS.owner-action` | 2026-08-25 |
+| 4 | gate-qc | sonnet | ok — PASS | `0 → 25` | `thejudge-quality-check` PASS on `DESIGN-BRIEF.md`, findings: none; brief cross-checked against DEC-104/105, REQ-086/087/088, FLOW-014, NFR-001/006, DEC-168 template rules; no new IDs, no `PRD/sections/` edits; `STATUS.refined` unchanged (PASS does not advance status) | 2026-08-25 |
+| 5 | plan | sonnet | ok | `0 → 33` | `thejudge-map-out`: `GAMEPLAN.md`, `slice-a-verify-spec.md`+`slice-a.criteria.json` (A1–A9, all `false`), `slice-b-diff-proof.md`+`slice-b.criteria.json` (B1–B5, all `false`); both slices **verify-only** (deliverable already committed at `562d1c6`), parallel-ready; A5 embeds the sourced `useFeedbackForm.ts` gap as a bounded additive correction (not a blocker); `STATUS.refined` → `STATUS.active`; board row moved to `## active`; all writes inside `PRD/work/user-feedback-spec/` + board file | 2026-08-25 |
+
+## Gate verdicts
+
+Walked at owner-chosen granularity: **per behavior surface** (9 units). Refinement
+minted no new stable IDs, so the reviewable units are the new file's sections
+rather than minted `DEC`/`REQ`/`FLOW`/`NFR` ids. All accepted — the run's text
+stands, no `PRD/sections/` change applied.
+
+| Reviewed unit (`PRD/sections/user-feedback/README.md`) | Verdict | Reason |
+| --- | --- | --- |
+| Header + `## What it is` | accept | — |
+| `## How it works › Entry point` | accept | — |
+| `## How it works › The feedback modal` | accept | — |
+| `## How it works › App-state snapshot and disclosure` | accept | — |
+| `## How it works › Delivery` | accept | — |
+| `## How it works › Graceful no-op when unconfigured` | accept | — |
+| `## Measured bounds` | accept | — |
+| `## Rejected alternatives and deferred scope` | accept | — |
+| `## Where it lives` | accept | — |
 
 ## Open gate
+
+**RESOLVED 2026-08-25** — 9 units walked, 9 accepted, 0 edited, 0 rejected. No
+stable ID burned. `PRD/sections/` unchanged. Status restored to `refined`; run
+resumes at `gate-qc`. The recorded diff below stays as the evidence of what was
+walked.
 
 **Gate:** `define` — non-empty `PRD/sections/` diff awaiting owner review.
 
@@ -267,6 +293,42 @@ Apply the assumption ladder in `preparation-contract.md` per product question, f
 If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
 
 Report: the artifacts you wrote (paths), whether you made any `PRD/sections/` edits (and exactly what), any new stable IDs, whether you set `STATUS.refined`, and any genuine blocker you could not resolve. Do not create a GAMEPLAN or slice docs (that is node 5). Do not dispatch further nodes.
+
+### gate-qc
+
+graph-run is controlling. You are node 4 (`gate-qc`) of an autonomous graph run. Invoke the `thejudge-quality-check` skill and follow it exactly in graph-controlled (non-interactive) mode — do not stop to ask the user questions; produce the PASS/FAIL report and return.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Package: `PRD/work/user-feedback-spec/`. Validate its `DESIGN-BRIEF.md` for PRD alignment and agent-readiness, producing a PASS/FAIL report only — never a GAMEPLAN or slice docs (that is node 5). This is Phase A #2 of the docs-refactor gameplan: a current-state feature spec for the Feedback & Bug Report feature that lands at `PRD/sections/user-feedback/README.md` on the DEC-168 template (the pattern `PRD/sections/life-tracker/README.md` established for Phase A #1).
+
+Context you must weigh so you do not misread the expected state as a gap: refinement (node 3) minted NO new stable IDs and modified no existing DEC/REQ/FLOW/NFR body. The deliverable is a derived, draft, non-authoritative consolidation view over existing product truth (DEC-104, DEC-105, REQ-086, REQ-087, REQ-088, FLOW-014, NFR-001, NFR-006), with `PRD/sections/decisions.md` staying precedence #1. The `PRD/sections/` diff (the new `PRD/sections/user-feedback/README.md`) was already walked and resolved at the define gate on 2026-08-25 — 9 behavior-surface units, all accepted. Having no new requirements or decisions to align against is therefore the correct, expected state for this package, not a deficiency.
+
+Do NOT modify `PRD/sections/` product truth. On FAIL the skill sets `STATUS.refining`; on PASS leave the package as-is, ready to plan.
+
+If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
+
+Report: the PASS/FAIL verdict, the checked artifact path, the complete findings list (or "none"), and the `STATUS.*` marker you left. Do not dispatch further nodes.
+
+### plan
+
+graph-run is controlling. You are node 5 (`plan`) of an autonomous graph run. Invoke the `thejudge-map-out` skill and follow it exactly in graph-controlled (non-interactive) mode — do not stop to ask the user questions; produce the GAMEPLAN and slice docs and return.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Package: `PRD/work/user-feedback-spec/`. Read `DESIGN-BRIEF.md`, `README.md` (its `## Preparation gate` records Quality-check: PASS — you may not self-certify it), and `GRAPH-RUN.md` for full context. Produce `GAMEPLAN.md` plus lettered slice docs and one `slice-<letter>.criteria.json` per slice (every criterion initialised `false`, each with an `evidence` block — a command pattern, file paths, or `manual: true`), and set `STATUS.active`. Write only inside `PRD/work/user-feedback-spec/` and the `PRD/work/STATUS.md` board row.
+
+Critical factual context — this is Phase A #2 of the docs-refactor gameplan and it diverges from Phase A #1 (life-tracker), so do NOT copy that plan blindly:
+
+- The deliverable is ALREADY WRITTEN AND COMMITTED on the autonomous base. Commit `562d1c6` (the define-gate park) contains the full 144-line spec `PRD/sections/user-feedback/README.md` (DEC-168 template, draft/non-authoritative) AND the one `PRD/README.md` Section Inventory nav row for `sections/user-feedback/`. The define gate already walked and owner-accepted this content on 2026-08-25 — 9 behavior-surface units, all accepted.
+- Refinement minted NO new stable IDs and touched no existing DEC/REQ/FLOW/NFR body. The spec is a derived, draft, non-authoritative view citing DEC-104, DEC-105, REQ-086, REQ-087, REQ-088, FLOW-014, NFR-001, NFR-006, with `PRD/sections/decisions.md` staying precedence #1.
+- Therefore the plan must NOT include a slice that authors the spec or the nav row — that work is done and committed. Plan only what genuinely remains: verifying the committed spec is complete and correct against its cited sources and the DEC-168 template, and the package-wide diff-scope proof that no `apps/` code and no existing DEC/REQ/FLOW/NFR body was touched. The life-tracker receipt's slice B (nav row + package-wide diff proof) is the closest precedent for the proof slice; here the nav row already exists, so treat it as verify-only rather than author.
+
+Do NOT modify `PRD/sections/` product truth. Do NOT write code. If a genuine product blocker arises under the three-condition test in `preparation-contract.md`, STOP and report it rather than deciding it.
+
+If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
+
+Report: the artifacts you wrote (paths), the slice letters and their one-line intents, the criteria files and criterion counts, the `STATUS.*` marker you set, and any genuine blocker. Do not dispatch further nodes.
 
 ## Instruction ledger
 

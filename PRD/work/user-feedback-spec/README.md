@@ -1,4 +1,4 @@
-status: owner-action
+status: active
 
 # user-feedback-spec
 
@@ -45,6 +45,31 @@ No product-behavior decisions here. No `apps/` code change. No edit to
 
 - Autonomous base: origin/thejudge-auto/user-feedback-spec
 
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/user-feedback-spec/DESIGN-BRIEF.md`
+- Findings: none
+
+## Slices
+
+| Slice | Scope | Dependency | Status |
+| --- | --- | --- | --- |
+| [A](./slice-a-verify-spec.md) | Verify `PRD/sections/user-feedback/README.md` (already committed) against its cited sources and the DEC-168 template; close any confirmed, sourced gap with a bounded additive correction only. | none | planned |
+| [B](./slice-b-diff-proof.md) | Verify the `PRD/README.md` Section Inventory row (already committed); prove the package-wide diff since its fork point touched nothing outside the licensed set. | none | planned |
+
+GAMEPLAN: `PRD/work/user-feedback-spec/GAMEPLAN.md`.
+
+## Implementation map
+
+- `PRD/sections/user-feedback/README.md` — already written and committed
+  (`562d1c6`); verified (and, if needed, bounded-corrected) by slice A.
+- `PRD/README.md` — already carries one Section Inventory row for
+  `sections/user-feedback/`; verified by slice B, alongside the
+  package-wide diff-scope proof.
+
 ## Next step
 
-`/thejudge-refinement PRD/work/user-feedback-spec/`
+`/thejudge-implement PRD/work/user-feedback-spec/ slice A` (Claude Code) or
+`$thejudge-implement PRD/work/user-feedback-spec/ slice A` (Codex). Slice B
+has no ordering dependency on A.
