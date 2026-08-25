@@ -139,6 +139,24 @@ Then confirm `git status --porcelain` is empty. A dirty launch checkout at this
 point is a driver bug, not a `build` blocker — fix the publish step rather than
 dispatching into a node that will correctly refuse.
 
+### The base is frozen once `build` opens the PR
+
+This publish is the **last** driver push to `origin/<autonomous base>`. From the
+moment `build` opens the `-work` → base PR, the driver commits its ledger and
+status updates — `GRAPH-RUN.md`, the `STATUS.*` marker, the `PRD/work/STATUS.md`
+board row — to the launch checkout **locally only**, and pushes nothing to the
+base until the PR has merged. `GRAPH-RUN.md` lives in `PRD/work/<slug>/`, which
+the PR head branch also carries; a driver push to the base after that head forked
+makes both branches edit the same file and the PR conflicts on it — exactly what
+stranded `user-feedback-spec` PR #107 and forced a manual fix on the head branch.
+
+Reconcile at `land`/`close` instead: after the owner merges, `git merge
+origin/<autonomous base>` into the launch checkout, resolving `GRAPH-RUN.md` to
+the driver's own fuller ledger and keeping a single `STATUS.*` marker. That merge
+is local and short-lived — `close` deletes `PRD/work/<slug>/` — so it never
+reaches the base or the owner. The one push after the PR opens is `close`'s, of
+the receipt and the package deletion, and only after the merge is confirmed.
+
 ## Worktree and branch shape
 
 - Autonomous base: the branch `graph-preflight` created and pushed. **The
@@ -156,6 +174,18 @@ dispatching into a node that will correctly refuse.
   prevent.
 - PR base is the recorded autonomous base. Never `main` unless the user named
   it explicitly.
+- **Build's PR head branch is distinct from the base.** Dispatch `build` with an
+  explicit shared branch `thejudge-auto/<slug>-work` — the optional shared-branch
+  input `thejudge-implement-all` accepts. Without it the skill derives the shared
+  branch as `thejudge-auto/<slug>`, the **same name as the autonomous base**, and
+  a PR cannot go from a branch into itself. Left to improvise, `build` splits the
+  work — some slices pushed straight onto the base, the rest onto an ad-hoc fork —
+  so the PR never shows the full deliverable (observed on `life-tracker-spec`
+  PR #105 and `user-feedback-spec` PR #107). A distinct `-work` head puts every
+  slice on one PR head, opens a clean `-work` → base PR that shows the whole
+  deliverable, and keeps the base untouched by `build` until the owner merges.
+  `thejudge-implement-all` now also blocks on this collision on its own side, but
+  the driver supplies the distinct name so the block never fires in a graph run.
 
 ## Ledger writes
 
