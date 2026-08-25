@@ -6,10 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-| Package | Notes |
-| --- | --- |
-| [life-tracker-spec](./life-tracker-spec/) | Implemented 2026-08-24 — slices A, B done. `PRD/sections/life-tracker/README.md` + one `PRD/README.md` Section Inventory row. Ready for `thejudge-cleanup`. |
-
 ## active
 
 ## refined
