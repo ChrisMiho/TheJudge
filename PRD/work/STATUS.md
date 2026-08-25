@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Notes |
 | --- | --- |
-| [user-feedback-spec](./user-feedback-spec/) | PR #107 merged 2026-08-25 (`c6e5cbc`). Spec + nav row on the base; both slices done (slice A added the missing `useFeedbackForm.ts` line; slice B proved diff scope). Ready for `close` (Phase A #2, docs-refactor gameplan) |
 
 ## active
 
