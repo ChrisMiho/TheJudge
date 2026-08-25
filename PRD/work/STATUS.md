@@ -6,6 +6,10 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
+| Package | Notes |
+| --- | --- |
+| [user-feedback-spec](./user-feedback-spec/) | PR #107 merged 2026-08-25 (`c6e5cbc`). Spec + nav row on the base; both slices done (slice A added the missing `useFeedbackForm.ts` line; slice B proved diff scope). Ready for `close` (Phase A #2, docs-refactor gameplan) |
+
 ## active
 
 ## refined
@@ -15,10 +19,6 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
-
-| Package | Notes |
-| --- | --- |
-| [user-feedback-spec](./user-feedback-spec/) | Parked at the `land` gate 2026-08-25: build complete, review APPROVED (0 Critical, 0 Important, 2 Minor). **Owner: merge PR #107**, then `/graph-run PRD/work/user-feedback-spec/` to finish at `close` (Phase A #2, docs-refactor gameplan) |
 
 ## deferred
 
