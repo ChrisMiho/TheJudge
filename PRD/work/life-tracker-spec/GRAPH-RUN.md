@@ -4,10 +4,11 @@
 - Profile: `loaded (env sentinel)`
 - Canary: `denied — hook live (rm -rf .worktrees/<nonexistent>)`; graph tier: `denied — tier armed (nohup, lock held)`
 - Resume 2026-08-24: lock re-taken (`npm run graph:preflight -- --take-lock --slug life-tracker-spec --run-id graph-20260824-082911`); graph canary `nohup true` **denied** by graph-tier rule `denied-command-retry` — `Graph canary: denied — graph tier armed (nohup true)`. Lock pid `24000` is the script's dead parent, not the session pid `12491`; the hook keys on the lock file's existence, so the tier is armed regardless, and the next run would read the lock `stale` rather than silently steal it.
+- Resume 2026-08-25: lock re-taken (`npm run graph:preflight -- --take-lock --slug life-tracker-spec --run-id graph-20260824-082911`), lock pid `48897`; graph canary `nohup true` **denied by the graph-tier rule itself** — `` `nohup` is denied while a graph run holds the lock: a detached command outlives the run that started it. `` This is a clean tier proof, unlike the 2026-08-24 resume where `denied-command-retry` fired first. Profile sentinel `THEJUDGE_GRAPH_PROFILE` present, so `Profile: loaded (env sentinel)` holds for this session too. Launch checkout fast-forwarded `763edf2 -> 4bb26c6`, `git status --porcelain` empty.
 - Autonomous base: `origin/thejudge-auto/life-tracker-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260824-082911/` (copied into `PRD/work/life-tracker-spec/intake/`, staged copy deleted)
-- Current node: `land` — `review` returned APPROVE on 2026-08-24; parked for the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/105
-- Next action: merge https://github.com/ChrisMiho/TheJudge/pull/105, then `/graph-run PRD/work/life-tracker-spec/`
+- Current node: `close` — `land` resolved 2026-08-25 when the owner merged https://github.com/ChrisMiho/TheJudge/pull/105 (merge commit `4bb26c6`)
+- Next action: node 9 (`close`) — `/thejudge-cleanup` on `PRD/work/life-tracker-spec/`
 
 ## Node ledger
 
@@ -20,6 +21,7 @@
 | 5 | plan | sonnet | ok | `0 → 33` | `PRD/work/life-tracker-spec/GAMEPLAN.md`; slices `slice-a-write-spec.md` (write `PRD/sections/life-tracker/README.md`) and `slice-b-nav-row.md` (one `PRD/README.md` Section Inventory row + package-wide diff proof), B sequential on A; `slice-a.criteria.json` (A1–A9) and `slice-b.criteria.json` (B1–B5) — all 14 criteria `false`, each with an `evidence` block, verified by parsing both files; `STATUS.refined` -> `STATUS.active`; board row moved to `## active` in `PRD/work/STATUS.md`; every written path inside `PRD/work/life-tracker-spec/` plus the board file | 2026-08-24 |
 | 6 | build | sonnet | ok | `0 → 136` | worktree `.worktrees/implement-life-tracker-spec` on `implement-life-tracker-spec-1787586821`; slice A `376b2a0`, slice B `3d18edf`, both pushed to `origin/thejudge-auto/life-tracker-spec-work` (forked because the derived shared-branch name collided with the recorded base itself, matching this repo's PR #97 precedent); PR https://github.com/ChrisMiho/TheJudge/pull/105 base `thejudge-auto/life-tracker-spec`; **write scope verified** — `git worktree list` and `git status --porcelain` show the launch checkout clean at `8799b1e`, and every path in `git diff --stat 8799b1e..3d18edf` lies inside `.worktrees/implement-life-tracker-spec/` or `PRD/work/life-tracker-spec/`; deliverables `PRD/sections/life-tracker/README.md` (new, 167 lines) and one `PRD/README.md` row; all 14 criteria `value: true` with 14 matching lines in the hook-written `.worktrees/.graph-evidence.jsonl` for this run id (A7/A8/B3/B5 `via: manual-observation` — a dated check that happened, not a passing check); `STATUS.active` -> `STATUS.ship-ready` | 2026-08-24 |
 | 7 | review | opus | ok | `0 → 31` | no-write reviewer (`Plan` agent type — no `Write`/`Edit`/`NotebookEdit`), fresh context, graded against `slice-a.criteria.json` (A1–A9) and `slice-b.criteria.json` (B1–B5); verdict **APPROVE**, **0 Critical, 0 Important**, 3 Minor — no loop back to `build`; all 14 criteria satisfied as stated; supersession rule verified applied as a rule (four superseded shapes demoted to closed doors, `≈67px` band appears only under `## Rejected alternatives and deferred scope`); diff confined to `PRD/README.md`, `PRD/sections/life-tracker/README.md`, and `PRD/work/` bookkeeping; Minor 2 independently confirmed by the driver — `git ls-remote origin thejudge-auto/life-tracker-spec` = `376b2a0` and `gh pr view 105 --json files` lists 7 files without the spec | 2026-08-24 |
+| 8 | land | — (human PR merge) | ok | — (not dispatched) | owner merged https://github.com/ChrisMiho/TheJudge/pull/105 on 2026-08-25T15:20:12Z, merge commit `4bb26c6`; `gh pr view 105 --json state,mergedAt,mergeCommit` -> `MERGED`; launch checkout fast-forwarded `763edf2 -> 4bb26c6` with `git merge --ff-only`, `git status --porcelain` empty; package now `STATUS.ship-ready` with both slices `done` in `PRD/work/life-tracker-spec/README.md` and the board row under `## ship-ready`; the driver ran no `gh pr merge` or `gh pr close` | 2026-08-25 |
 
 ## Gate verdicts
 
@@ -34,6 +36,18 @@ No `PRD/sections/` change was applied: an `accept` leaves the run's text
 standing.
 
 ## Open gate
+
+- None. The `land` gate resolved on 2026-08-25; the run is advancing to node 9
+  (`close`). The evidence below is kept verbatim as the record of what was
+  parked and what the owner was asked to do.
+
+## Open gate — land (resolved)
+
+**RESOLVED 2026-08-25 — the owner merged PR #105.** Merge commit `4bb26c6`,
+merged at `2026-08-25T15:20:12Z`, base `thejudge-auto/life-tracker-spec`, head
+`thejudge-auto/life-tracker-spec-work`. Verified by the driver with
+`gh pr view 105 --json state,mergedAt,mergeCommit` -> `MERGED`. The driver ran
+no `gh pr merge` and no `gh pr close`. The original park text follows verbatim.
 
 **PARKED 2026-08-24 at node 8 (`land`) — the owner's pull-request merge.**
 
