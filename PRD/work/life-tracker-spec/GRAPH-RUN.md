@@ -427,11 +427,63 @@ Report back:
 - for each of the 14 criteria, whether the shipped artifact satisfies it as stated
 - `none` explicitly if you found nothing — that is a valid and expected outcome
 
+### close
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run ID: graph-20260824-082911
+Slug: life-tracker-spec
+Package path: PRD/work/life-tracker-spec/
+Autonomous base: origin/thejudge-auto/life-tracker-spec (recorded in the package README under `## Autonomous metadata`)
+
+You are node 9 of an autonomous graph run: `close`. Invoke the `thejudge-cleanup` skill with the Skill tool and follow it exactly, including its `graph-run is controlling` branch. This is the run's last node.
+
+The package is `STATUS.ship-ready`. Node 8 (`land`) resolved on 2026-08-25: the owner merged https://github.com/ChrisMiho/TheJudge/pull/105. The launch checkout is on the recorded base at `0763cbc`, and `git status --porcelain` is empty.
+
+**Facts the driver measured for your autonomous merge-proof gate.** These are observations, not verdicts — apply your own four checks and reach your own conclusion.
+
+- Check 1: the current branch is `thejudge-auto/life-tracker-spec`, which equals the recorded autonomous base exactly. The base still exists on the remote, so the deleted-base second path does not apply.
+- Check 2: `gh pr view 105 --json state,baseRefName,mergedAt` returns `MERGED`, base `thejudge-auto/life-tracker-spec`, merged `2026-08-25T15:20:12Z`. The GitHub API is reachable, so `gh` stays authoritative and the local-proof fallback does not apply. Verify it yourself rather than taking this line's word.
+- Check 3, and this is the one that needs your judgment: PR #105 was **squash-merged**. `git rev-list --parents -n 1 4bb26c6` shows a single parent `763edf2`, so the worktree's slice-B commit `3d18edf` is **not** an ancestor of the base tip and `git log origin/thejudge-auto/life-tracker-spec..HEAD` in the worktree lists it as absent. Content tells the other half: `git diff --stat 3d18edf origin/thejudge-auto/life-tracker-spec` reports one file, `PRD/work/life-tracker-spec/GRAPH-RUN.md`, and that file's difference is the driver's own park record written on the base after the worktree branched. Every deliverable is byte-identical. The worktree's `git status --porcelain` is empty. Decide whether check 3 is met on those facts; if you judge it unmet, refuse the delete and report the exact unmet condition rather than working around it.
+- Check 4: this package is documentation-only. It launched no browser, started no server, and bound no port, so there are no runtime-cleanup acceptance criteria recorded in its slice evidence. Confirm that against `slice-a.evidence.md` and `slice-b.evidence.md` rather than assuming it.
+
+**The receipt must carry `## Graph run`.** `PRD/work/life-tracker-spec/GRAPH-RUN.md` exists, so per `### Graph run in the receipt` the receipt carries that section with the `## Node ledger` and `## Instruction ledger` tables **verbatim**, both of them, before the package folder is deleted. The ledger holds nine node rows and one instruction row. The package also holds `intake/`, so the receipt carries `## Intake` beside `## Graph run`, not inside it. Refuse the delete if either is missing.
+
+Three things the reviewer at node 7 rated Minor and left open, which belong in the receipt as follow-ups rather than being fixed here — this node ships no new content:
+1. `B5` is worded as a human confirmation, and no human existed in the unattended run; the build node recorded a dated agent observation instead and said so in `slice-b.evidence.md`. It resolves now that the owner has reviewed and merged the PR.
+2. PR #105 does not display the spec, because slice A was pushed onto the base before the PR opened.
+3. Two current-state details are absent from the spec: the confirm-before-destroy step on Reset / New Game (`system-map.md:535`), and `NFR-001` / `NFR-006`, which are named on `Backed by:` but carry no attached behavior.
+
+Record in the receipt as a known defect, because it is this run's contributing cause and its fix belongs to an ordinary session: `thejudge-implement-all/SKILL.md:36` derives the shared remote branch as `thejudge-auto/<slug>`, the same name as the recorded autonomous base, so the branch collided with itself and node 6 forked `-work` after slice A had already landed. Do not fix it here — a graph run may not edit a `thejudge-*` skill.
+
+Delete the package folder with the path-scoped `git rm -r PRD/work/life-tracker-spec/` and no other spelling. Remove `.worktrees/implement-life-tracker-spec` with `git worktree remove` and its local branch `implement-life-tracker-spec-1787586821` with `git branch -d`, never `-D`. Never delete a remote branch, including `thejudge-auto/life-tracker-spec-work`.
+
+The package `intake/` is evidence, never authority. Never open, read, or fetch any document the intake cites — record only its path as a citation.
+
+Apply the assumption ladder in `PRD/instructions/preparation-contract.md` to each question as it arises, one at a time, evaluated fresh at the moment it comes up. Do not pre-resolve a class of future questions. If a question meets the three-condition genuine-blocker test, stop and report it as a blocker with the three conditions shown — do not answer it yourself and do not proceed past it.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write, and require any subagent you dispatch to do the same.
+
+Report back:
+- the receipt path, and confirmation it carries `## Graph run` with both ledger tables verbatim and `## Intake`
+- each of the four merge-proof checks by number, with the observed state and your verdict
+- every durable path you promoted, created, updated, or deleted
+- the `PRD/work/STATUS.md` board change
+- the worktree and local branch removals, by path and name
+- the `npm run quality:check` result for touched areas
+- the commits by SHA and the push result
+- any genuine blocker, with the three conditions shown
+
+Boundaries: do not modify any `thejudge-*` skill, `CLAUDE.md`, `.claude/settings*.json`, or `.claude/graph-profile.json`. Do not write any new product content or start any new slice. Do not merge or close a pull request. Do not stage with `git add -A`, `git add --all`, or `git add .` — stage explicit paths only. Do not push `main` or `master`, force-push by any flag or leading-`+` refspec, or delete a remote branch. Do not drop, pop, or reorder any stash. Do not use `nohup`, a background `&`, `pkill`, or `killall`. Do not run `npm run data:refresh`. Do not touch `.secrets/`. If a command is denied, stop and report it verbatim — never retry it and never rephrase it to get past the rule.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "start with the life-tracker in @PRD/work/adhoc/refactor-gameplan.md" | answered-once | shape | — |
+| "ok its merged" | answered-once | land | — |
 
 ## Lock release — cleared 2026-08-24
 
