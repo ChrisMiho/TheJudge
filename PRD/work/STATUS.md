@@ -14,11 +14,11 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+## owner-action
+
 | Package | Notes |
 | --- | --- |
-| [user-feedback-spec](./user-feedback-spec/) | Phase A #2 of the docs-refactor gameplan (`PRD/work/adhoc/refactor-gameplan.md`) — current-state spec for the Feedback & Bug Report feature |
-
-## owner-action
+| [user-feedback-spec](./user-feedback-spec/) | Parked at the `define` gate — draft Feedback & Bug Report spec awaits owner review via `/graph-gate-review PRD/work/user-feedback-spec/` (Phase A #2, docs-refactor gameplan) |
 
 ## deferred
 

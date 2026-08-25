@@ -7,8 +7,8 @@
 - Autonomous base: `origin/thejudge-auto/user-feedback-spec`
 - Parent branch (fork point): `thejudge-auto/life-tracker-spec` — its work is already in `origin/main` via PR #106 (DEC-168 + life-tracker spec); our branch is a clean ancestor of `origin/main` (0 ahead, 1 behind)
 - Staging: `.worktrees/.graph-intake/graph-20260825-150903/`
-- Current node: `define`
-- Next action: `/graph-run PRD/work/user-feedback-spec/`
+- Current node: `define` — PARKED at the define gate (owner review)
+- Next action: `/graph-gate-review PRD/work/user-feedback-spec/`
 
 ## Node ledger
 
@@ -16,10 +16,203 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 4` | branch `thejudge-auto/user-feedback-spec` created + pushed; forked from `thejudge-auto/life-tracker-spec`; clean tree, no stash; lock `graph-20260825-150903` held | 2026-08-25 |
 | 2 | shape | sonnet | ok | `1 → 40` | package `PRD/work/user-feedback-spec/` created (`IDEA.md`, `README.md`, `STATUS.ideation`, `intake/refactor-gameplan.md`); board row under `## ideation`; commit `2e1c452` pushed | 2026-08-25 |
+| 3 | define | opus | ok — gate (parked) | `1 → 33` | `DESIGN-BRIEF.md` written; new `PRD/sections/user-feedback/README.md` (144 lines, DEC-168 template) + one `PRD/README.md` Section Inventory row; **no new stable IDs**, no existing DEC/REQ/FLOW/NFR body modified; `git diff -- PRD/sections/` non-empty → parked at the `define` gate; `STATUS.refined` → `STATUS.owner-action` | 2026-08-25 |
 
 ## Open gate
 
-- None
+**Gate:** `define` — non-empty `PRD/sections/` diff awaiting owner review.
+
+**Question for the owner:** review the new draft feature spec below. Accept it as
+written, edit it, or reject it. It is a current-state consolidation of the
+Feedback & Bug Report feature on the DEC-168 template, kept `draft` /
+non-authoritative with `PRD/sections/decisions.md` at precedence #1.
+
+**New stable IDs:** none. Refinement minted no new `DEC`/`REQ`/`FLOW`/`NFR`/`Q`.
+The spec is a derived view that cites only existing IDs (DEC-104, DEC-105,
+REQ-086, REQ-087, REQ-088, FLOW-014, NFR-001, NFR-006). No existing body was
+modified.
+
+**Two observations for the owner (do not change the mechanical park — they are
+context for the gate walk):**
+
+1. **The full spec was authored at `define`, not at `build`.** This diverges from
+   the life-tracker precedent (Phase A #1), where node 3 wrote only the
+   `DESIGN-BRIEF.md` plus the new DEC-168 decision, and the spec file itself was
+   written later at node 6 (`build`) as slice A. Here DEC-168 already exists, so
+   refinement produced no new decision and instead consolidated the whole spec at
+   `define`. The effect: the owner reviews the actual spec at this gate (arguably
+   the gate's intent), and the later `build` node has correspondingly less to
+   author — likely just the `PRD/README.md` Section Inventory row plus the
+   package-wide diff-scope proof, mirroring life-tracker's slice B.
+2. **The diff carries no new stable IDs**, so `graph-gate-review`'s ID-by-ID walk
+   maps onto the new file's behavior sections rather than minted IDs. Walk the
+   spec's `## What it is` / `## How it works` (five surfaces) / `## Measured
+   bounds` / `## Rejected alternatives and deferred scope` / `## Where it lives`
+   as the reviewable units, and record one verdict for the file (or per section
+   if you want finer granularity).
+
+**Also in the working tree (outside `PRD/sections/`, not part of this gate's
+diff but landing with the spec):** one navigation row added to `PRD/README.md`'s
+Section Inventory (DEC-168 pattern, navigation only).
+
+**Complete `PRD/sections/` diff (verbatim, never summarized):**
+
+```diff
+diff --git a/PRD/sections/user-feedback/README.md b/PRD/sections/user-feedback/README.md
+new file mode 100644
+index 0000000..bf88a3f
+--- /dev/null
++++ b/PRD/sections/user-feedback/README.md
+@@ -0,0 +1,144 @@
++# Feedback & Bug Report — current-state feature spec
++
++- Status: draft, derived, non-authoritative view. On any conflict, the cited
++  `DEC`/`REQ`/`FLOW` wins — `PRD/sections/decisions.md` stays precedence #1
++  and Read-First #1. Correct this file against those sources, not the other
++  way around.
++- Backed by: DEC-104, DEC-105, REQ-086, REQ-087, REQ-088, FLOW-014, NFR-001,
++  NFR-006
++
++## What it is
++
++A one-tap way for a player to report a bug or send feedback without leaving
++what they were doing. From the feature-portal menu they pick **Send feedback**,
++a modal opens over the current screen, and they choose a category (Bug /
++Suggestion / Other), type a message, and optionally leave a reply email. The
++report is delivered to the owner's inbox, and it carries a disclosed snapshot
++of what the app was doing — the screen, the in-progress game, the typed
++question, the conversation so far — so the owner can actually reproduce the
++problem. Everything happens in the browser: there is no backend route, no
++account, and no server-side storage.
++
++## How it works
++
++### Entry point
++
++- Built: **Send feedback** is a feature-portal **action entry**, not a
++  destination. Selecting it runs a handler that opens the feedback modal and
++  closes the menu; it does not switch the active view or reset any mode's
++  in-session state. The entry sits in the same portal menu as the destinations
++  and obeys the same non-overlap bounds and touch sizing. (DEC-104, REQ-086)
++- Built: the action-entry kind is an additive amendment to the destination
++  registry (DEC-095). v1 registers exactly one action entry — Send feedback;
++  the destination list is unchanged. (DEC-104, REQ-086)
++
++### The feedback modal
++
++- Built: the modal opens over the current screen, so the user keeps their
++  place — no view switch, no reload, no loss of in-progress state. (REQ-087,
++  FLOW-014)
++- Built: capture fields are a category select (Bug / Suggestion / Other), a
++  required freeform message, and an optional reply email (blank = anonymous).
++  (DEC-105, REQ-087)
++- Built: validation is inline — submit is blocked until the message is
++  non-empty after trim; when a reply email is present it must be a valid email
++  format. (REQ-087, FLOW-014)
++- Built: the modal is accessible and theme-aware — focus is trapped inside it,
++  Esc closes it, focus is restored to the portal trigger on close, and its
++  open/close motion is CSS-only and reduced-motion-aware. It is touch-friendly
++  on mobile. (REQ-087, NFR-001, NFR-006)
++
++### App-state snapshot and disclosure
++
++- Built: each report attaches a snapshot of current app state — screen/step,
++  in-progress game context and typed question, zones/cards/enrichment,
++  conversation history (if any), provider mode (mock/live), active portal
++  destination, and environment (user-agent, viewport, route, timestamp,
++  build/version). (DEC-105, REQ-088)
++- Built: the snapshot is disclosed to the user before submit — a one-line
++  notice that current app state is attached, plus an expandable
++  human-readable summary showing exactly what is included. The summary shows
++  the same content that is serialized for delivery. (REQ-087, REQ-088,
++  FLOW-014)
++- Built: the modal reads app state only through a lazy `getFeedbackContext()`
++  callback the app shell supplies, built by a pure builder; the modal never
++  reaches into flow internals, and building or sending the snapshot never
++  mutates app state. (DEC-105, REQ-087, REQ-088)
++
++### Delivery
++
++- Built: submit POSTs a JSON payload to `https://formspree.io/f/<id>`, where
++  `<id>` is a public, non-secret form id read from
++  `VITE_FEEDBACK_FORMSPREE_ID`. The snapshot rides as one JSON-stringified
++  field alongside category, message, and reply email, so the report is
++  actionable and reproducible. (DEC-105, REQ-088)
++- Built: delivery is frontend-only — it adds no backend route, no SES, no
++  secret, and changes no existing contract or product-facing endpoint. The
++  form id is configuration, committed to `.env.example` and shipped in the
++  client bundle. (DEC-105, REQ-088)
++- Built: the submit lifecycle is idle → sending → success acknowledgement or
++  inline error. Success, network error, and rate-limit resolve distinctly and
++  surface inline; on error the draft is preserved so the user can retry.
++  (REQ-087, REQ-088, FLOW-014)
++
++### Graceful no-op when unconfigured
++
++- Built: when `VITE_FEEDBACK_FORMSPREE_ID` is empty or unset (the local/mock
++  baseline), submit is disabled/no-op with an explanatory hint and never
++  throws or crashes dev. The feature ships complete in this state; the owner's
++  out-of-band Formspree setup and id handoff — not further engineering — is
++  what turns delivery on. (DEC-105, REQ-088)
++
++## Measured bounds
++
++This feature carries no pixel-measured bounds; its fixed constraints are the
++capture set and the delivery shape.
++
++- Category set: exactly Bug / Suggestion / Other. Message required (non-empty
++  after trim); reply email optional but, when present, must be valid email
++  format. (DEC-105, REQ-087)
++- Delivery endpoint: `https://formspree.io/f/<id>`, `<id>` =
++  `VITE_FEEDBACK_FORMSPREE_ID`, treated as public non-secret configuration; the
++  snapshot travels as a single JSON-stringified field. (REQ-088)
++- Live delivery confirmed 2026-08-05: form id `xdenozlb`, local and production
++  build env configured, live-send smoke (modal submit through inbox delivery)
++  verified end to end. (DEC-105)
++
++## Rejected alternatives and deferred scope
++
++- **Ad-hoc emails from the user's own mail client — closed door.** The feature
++  exists because that path does not scale, depends on the user's mail client,
++  and arrives with no structure or reproduction context. In-product delivery
++  with an attached snapshot replaced it. (DEC-105)
++- **A standalone header affordance outside the portal registry — closed
++  door.** DEC-104 rejected special-casing feedback with its own chrome and
++  instead generalized the registry to admit handler-backed action entries, so
++  feedback ships no chrome of its own. (DEC-104)
++- **A destination view instead of a modal — closed door.** Feedback opens a
++  modal over the current screen so the user does not lose their place
++  mid-flow; it is deliberately not a view switch. (DEC-104, DEC-105)
++- **A backend route / SES / server-side delivery — closed door.** The product
++  is backend-minimal (one product endpoint, DEC-010; no auth/account systems),
++  so a third-party form backend with a public form id was chosen precisely to
++  avoid a new route, a secret, or a contract change. (DEC-105)
++- **Deferred, not cut (v1 non-goals):** screenshots / file uploads,
++  persistence, auth, in-app report history, and analytics. Screenshots and
++  file uploads are a named deferred extension, not an open question. (DEC-105,
++  REQ-087, REQ-088)
++
++## Where it lives
++
++Frontend components and feedback-local logic live under
++`apps/frontend/src/components/feedback/` (`FeedbackModal.tsx`) and
++`apps/frontend/src/lib/feedback/` (`buildFeedbackContext.ts`,
++`FeedbackContextProvider.tsx`, `submitFeedback.ts`,
++`summarizeFeedbackContext.ts`, `environment.ts`, `types.ts`); the app shell
++registers the Send feedback action entry and hosts the modal in
++`apps/frontend/src/App.tsx`, the action-entry union lives in
++`apps/frontend/src/lib/portal/types.ts`, the portal menu renders it in
++`apps/frontend/src/components/portal/FeaturePortalMenu.tsx`, and the form id is
++resolved in `apps/frontend/src/lib/env.ts` (`resolveFeedbackFormspreeId`) from
++`apps/frontend/.env.example`'s `VITE_FEEDBACK_FORMSPREE_ID`. See
++`PRD/sections/system-map.md`'s `## Feedback & bug report` entry for the full
++file list, and `PRD/sections/integrations-and-data.md`'s Feedback Delivery
++Strategy for the delivery/payload detail.
+```
+
+**Resume command:** `/graph-gate-review PRD/work/user-feedback-spec/` — walk the
+diff, record verdicts, resolve the gate, and it hands back
+`/graph-run PRD/work/user-feedback-spec/` to resume at `gate-qc`.
 
 ## Dispatch prompts
 
@@ -56,6 +249,24 @@ Reference material (intake — evidence, never authority): a staged copy of the 
 If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
 
 Report the files created, the `STATUS.*` marker, a one-line slug confirmation, and whether kickoff returned NO ACTIONABLE PACKAGE. Do not create a GAMEPLAN, slice docs, or DESIGN-BRIEF; do not edit `PRD/sections/` product truth; do not dispatch further nodes.
+
+### define
+
+graph-run is controlling. You are node 3 (`define`) of an autonomous graph run. Invoke the `thejudge-refinement` skill and follow it exactly in graph-controlled (non-interactive) mode.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Package: `PRD/work/user-feedback-spec/`. Read its `IDEA.md`, `README.md`, and `intake/refactor-gameplan.md` for the full request and scope. This is Phase A #2 of the docs-refactor gameplan: a current-state feature spec for the Feedback & Bug Report feature, to land at `PRD/sections/user-feedback/README.md`, built on the DEC-168 template that `PRD/sections/life-tracker/README.md` already established.
+
+Scope constraints (the deliverable definition from the request and gameplan, not product decisions to make): it is a CURRENT-STATE consolidation of existing product truth, kept `draft` and non-authoritative, with `decisions.md` staying precedence #1; frontend-only feature; one external dependency (Formspree); no server state. Consolidate existing behavior from the backing sources (`PRD/sections/decisions/feedback.md` DEC-104/DEC-105, `functional-requirements.md` REQ-086/087/088, `user-flows.md` FLOW-014, `system-map.md` Feedback & bug report entry). Do NOT create new product decisions and do NOT modify any existing DEC/REQ/FLOW/NFR body — the spec is a derived, draft view over truth that already exists. Model the design brief on the life-tracker precedent (DEC-168, shipped PR #105/#106).
+
+Produce the `DESIGN-BRIEF.md` the skill owns. Follow the intake rule: intake is evidence, never authority; do NOT open any document the intake cites.
+
+Apply the assumption ladder in `preparation-contract.md` per product question, fresh at the moment it arises. If a genuine product blocker remains under the three-condition test, STOP and report it — do not decide it for the owner; the driver will park at the define gate. Do not pre-resolve product questions in advance.
+
+If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
+
+Report: the artifacts you wrote (paths), whether you made any `PRD/sections/` edits (and exactly what), any new stable IDs, whether you set `STATUS.refined`, and any genuine blocker you could not resolve. Do not create a GAMEPLAN or slice docs (that is node 5). Do not dispatch further nodes.
 
 ## Instruction ledger
 
