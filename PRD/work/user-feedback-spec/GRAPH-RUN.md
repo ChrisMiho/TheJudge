@@ -7,8 +7,8 @@
 - Autonomous base: `origin/thejudge-auto/user-feedback-spec`
 - Parent branch (fork point): `thejudge-auto/life-tracker-spec` — its work is already in `origin/main` via PR #106 (DEC-168 + life-tracker spec); our branch is a clean ancestor of `origin/main` (0 ahead, 1 behind)
 - Staging: `.worktrees/.graph-intake/graph-20260825-150903/`
-- Current node: `review` — build complete 2026-08-25 (both slices verified, PR #107 open); launch checkout fast-forwarded to shipped base `b60d11f`
-- Next action: `/graph-run PRD/work/user-feedback-spec/`
+- Current node: `land` — **PARKED for owner** 2026-08-25; review APPROVED (0 Critical, 0 Important, 2 Minor). Owner merges PR #107, then resume.
+- Next action: merge PR #107, then `/graph-run PRD/work/user-feedback-spec/`
 - PR: https://github.com/ChrisMiho/TheJudge/pull/107 — base `thejudge-auto/user-feedback-spec`, head `thejudge-auto/user-feedback-spec-work`
 
 ## Node ledger
@@ -21,6 +21,8 @@
 | 4 | gate-qc | sonnet | ok — PASS | `0 → 25` | `thejudge-quality-check` PASS on `DESIGN-BRIEF.md`, findings: none; brief cross-checked against DEC-104/105, REQ-086/087/088, FLOW-014, NFR-001/006, DEC-168 template rules; no new IDs, no `PRD/sections/` edits; `STATUS.refined` unchanged (PASS does not advance status) | 2026-08-25 |
 | 5 | plan | sonnet | ok | `0 → 33` | `thejudge-map-out`: `GAMEPLAN.md`, `slice-a-verify-spec.md`+`slice-a.criteria.json` (A1–A9, all `false`), `slice-b-diff-proof.md`+`slice-b.criteria.json` (B1–B5, all `false`); both slices **verify-only** (deliverable already committed at `562d1c6`), parallel-ready; A5 embeds the sourced `useFeedbackForm.ts` gap as a bounded additive correction (not a blocker); `STATUS.refined` → `STATUS.active`; board row moved to `## active`; all writes inside `PRD/work/user-feedback-spec/` + board file | 2026-08-25 |
 | 6 | build | sonnet | ok | `0 → 144` | `thejudge-implement-all`; worktree `.worktrees/implement-user-feedback-spec` on `thejudge-auto/user-feedback-spec-build-20260825163534`; slice A `b60d11f` pushed directly onto base (one bounded A5 correction — added `apps/frontend/src/hooks/useFeedbackForm.ts` to the spec's Where-it-lives paragraph, confirmed vs `system-map.md` + repo tree), slice B + ledger pushed to `origin/thejudge-auto/user-feedback-spec-work`; PR [#107](https://github.com/ChrisMiho/TheJudge/pull/107) base `…-spec` head `…-spec-work` (base=head name collision → `-work` fork, life-tracker PR #105 pattern); **write-scope verified** — launch checkout `git status --porcelain` clean, every changed path in the worktree, content diff confined to the spec + `PRD/work/user-feedback-spec/` + board; **criteria verified in worktree** — A1–A9 and B1–B5 all `value:true`, 14 matching lines in `.worktrees/.graph-evidence.jsonl` for this run id; pre-existing `lambda-package-budget.test.mjs` `ENOTDIR` failure proved unrelated (fails on clean base too), left as PR comment; `STATUS.active` → `STATUS.ship-ready` (on PR head) | 2026-08-25 |
+| 7 | review | opus | ok — APPROVE | `0 → 24` | no-write reviewer (`Plan` agent type — no Write/Edit/NotebookEdit), fresh context, graded against `slice-a.criteria.json` (A1–A9) and `slice-b.criteria.json` (B1–B5); verdict **APPROVE**, **0 Critical, 0 Important, 2 Minor** — no loop back to `build`; all 14 criteria PASS; Minor 1 = A8 (`DEC-010`/`DEC-095` appear in spec body, cited verbatim from source bodies, not minted; Backed-by still exactly the 8), Minor 2 = B5 (human-confirmation stand-in, known unattended-run pattern) | 2026-08-25 |
+| 8 | land | — (human PR merge) | **parked** | — (not dispatched) | reached `land` after review APPROVE; PR [#107](https://github.com/ChrisMiho/TheJudge/pull/107) OPEN (`gh pr view 107` → `state: OPEN`, `mergedAt: null`); driver runs no `gh pr merge`/`gh pr close` — parks for the owner | 2026-08-25 |
 
 ## Gate verdicts
 
@@ -43,10 +45,37 @@ stands, no `PRD/sections/` change applied.
 
 ## Open gate
 
-**RESOLVED 2026-08-25** — 9 units walked, 9 accepted, 0 edited, 0 rejected. No
-stable ID burned. `PRD/sections/` unchanged. Status restored to `refined`; run
-resumes at `gate-qc`. The recorded diff below stays as the evidence of what was
-walked.
+**ACTIVE — `land` gate (human PR merge). PARKED 2026-08-25.**
+
+**Question for the owner:** merge PR #107 to advance the run to `close`. The
+build is complete and node 7 review APPROVED it (0 Critical, 0 Important, 2
+Minor — neither blocks). The driver does not merge PRs; this is your action.
+
+**Evidence:**
+- PR: https://github.com/ChrisMiho/TheJudge/pull/107 — base
+  `thejudge-auto/user-feedback-spec`, head `thejudge-auto/user-feedback-spec-work`,
+  state OPEN (`gh pr view 107` → `mergedAt: null`).
+- Review verdict: APPROVE, 0 Critical / 0 Important / 2 Minor (A8 note: `DEC-010`
+  and `DEC-095` are cited verbatim from source bodies, not newly minted; B5:
+  human-confirmation stand-in, known unattended-run pattern).
+- Deliverable already on the base at `b60d11f` (define-park spec `562d1c6` + the
+  one bounded A5 `useFeedbackForm.ts` correction). PR #107's Files tab shows only
+  slice B + ledger, because slice A landed directly on the base — the life-tracker
+  PR #105 pattern; no content is lost.
+- Note before merging: `PRD/README.md`'s `## Section Inventory` row renders
+  `Feedback &amp; Bug Report` (HTML entity in the source); cosmetic, matches the
+  existing pattern, flagged only so it is not mistaken for a defect.
+
+**Resume command:** after merging PR #107, run
+`/graph-run PRD/work/user-feedback-spec/` — the resume checks `gh pr view 107`,
+records `land` as `ok` on MERGED, and continues to `close` (`thejudge-cleanup`).
+
+---
+
+**RESOLVED 2026-08-25** (define gate) — 9 units walked, 9 accepted, 0 edited, 0
+rejected. No stable ID burned. `PRD/sections/` unchanged at that gate. Status
+restored to `refined`; run resumed at `gate-qc`. The recorded diff below stays as
+the evidence of what was walked.
 
 **Gate:** `define` — non-empty `PRD/sections/` diff awaiting owner review.
 
