@@ -6,6 +6,10 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
+| Package | Notes |
+| --- | --- |
+| [trade-balancer-spec](./trade-balancer-spec/) | PR #110 merged 2026-08-26 (`bbf78b0`). Both slices verify-only and done; awaiting `close` (node 9 cleanup) via `/graph-run PRD/work/trade-balancer-spec/` (Phase A #3, docs-refactor gameplan) |
+
 ## active
 
 ## refined
@@ -15,10 +19,6 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
-
-| Package | Notes |
-| --- | --- |
-| [trade-balancer-spec](./trade-balancer-spec/) | `land` gate — reviewer APPROVED (16/16 criteria, 0 Critical/Important). Merge PR #110 (`thejudge-auto/trade-balancer-spec-work` → `thejudge-auto/trade-balancer-spec`), then `/graph-run PRD/work/trade-balancer-spec/` to continue at `close` (Phase A #3, docs-refactor gameplan) |
 
 ## deferred
 

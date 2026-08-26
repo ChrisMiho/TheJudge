@@ -7,8 +7,8 @@
 - Autonomous base: `origin/thejudge-auto/trade-balancer-spec`
 - Fork point: `main` (`f97881b`) — carries Phase A specs #1 (life-tracker) and #2 (user-feedback) and DEC-168; local `main` was fast-forwarded to `origin/main` before this run branched, closing the stale-base gap the docs-refactor PROGRESS.md warns about
 - Staging: `.worktrees/.graph-intake/graph-20260825-190858/`
-- Current node: `land` — PARKED for the owner to merge PR #110 (human gate)
-- Next action: merge PR #110, then `/graph-run PRD/work/trade-balancer-spec/`
+- Current node: `close` — PR #110 merged; running cleanup
+- Next action: `/graph-run PRD/work/trade-balancer-spec/`
 
 ## Node ledger
 
@@ -24,7 +24,7 @@
 | 5 | plan | sonnet | ok | `1 → 50` | `thejudge-map-out`: `GAMEPLAN.md`, `slice-a-verify-spec.md`+`slice-a.criteria.json` (A1–A11, all `false`), `slice-b-diff-proof.md`+`slice-b.criteria.json` (B1–B5, all `false`); both **verify-only** (deliverable already committed at `41118d5`), parallel-ready; slice A covers behavior spec + corpus doc incl. figures re-read from committed artifact (no rebuild); GAMEPLAN notes `integrations-and-data.md` `printingId`-vs-`id` staleness as out-of-scope (not fixed); `STATUS.refined` → `STATUS.active`; board moved to `## active`; all writes inside `PRD/work/trade-balancer-spec/` + board | 2026-08-25 |
 | 6 | build | sonnet | ok | `1 → 71` | `thejudge-implement-all`; worktree `.worktrees/implement-trade-balancer-spec`, shared head `thejudge-auto/trade-balancer-spec-work`; both slices verify-only, **no bounded correction needed** (spec + corpus already correct); all measured figures re-confirmed vs committed `cardPrintingPrices.json` (read directly, no rebuild); A1–A11 + B1–B5 all `true` with matching lines in `.worktrees/.graph-evidence.jsonl` for this run; PR [#110](https://github.com/ChrisMiho/TheJudge/pull/110) base `…-spec` head `…-spec-work`, MERGEABLE; **write-scope verified** — launch checkout clean + unchanged at `6142c04`, every write in the worktree; pre-existing `lambda-package-budget.test.mjs` ENOTDIR worktree defect (same as PR #107) confirmed unrelated, noted on PR; `STATUS.active` → `STATUS.ship-ready` (on PR head) | 2026-08-25 |
 | 7 | review | opus | ok — APPROVE | `1 → 15` | no-write reviewer (`Plan` agent type, no Write/Edit/NotebookEdit), fresh context, graded PR #110 against `slice-a.criteria.json` (A1–A11) + `slice-b.criteria.json` (B1–B5); verdict **APPROVE**, all 16 criteria PASS, **0 Critical, 0 Important, 0 Minor** — no loop back to `build`; `integrations-and-data.md` `printingId`-vs-`id` staleness confirmed out-of-scope, correctly not a finding | 2026-08-25 |
-| 8 | land | — (human PR merge) | parked | — | PR [#110](https://github.com/ChrisMiho/TheJudge/pull/110) OPEN + MERGEABLE, base `thejudge-auto/trade-balancer-spec` head `thejudge-auto/trade-balancer-spec-work`; driver runs no `gh pr merge` — parked at `owner-action` for the owner to merge; `STATUS.ship-ready` → `STATUS.owner-action` | 2026-08-25 |
+| 8 | land | — (human PR merge) | ok | — | owner merged PR [#110](https://github.com/ChrisMiho/TheJudge/pull/110) 2026-08-26T02:23:31Z, merge commit `bbf78b0` (`gh pr view 110` → `state: MERGED`, base `thejudge-auto/trade-balancer-spec`); driver ran no `gh pr merge`/`gh pr close`; launch checkout reconciled onto merged base via `git merge origin/thejudge-auto/trade-balancer-spec` (conflicts in `PRD/work/STATUS.md` + package `README.md` resolved to the driver's fuller `GRAPH-RUN.md` ledger and a single `STATUS.ship-ready` marker) | 2026-08-26 |
 
 ## Gate verdicts
 
@@ -41,6 +41,9 @@ confirmed as the precedent for specs #4 (`scan`), #5 (`quick-lookup`), and #7
 | `PRD/sections/trade-balancer/data/cardPrintingPrices.md` (corpus doc; nested split shape) | accept | — |
 
 ## Open gate
+
+**RESOLVED 2026-08-26 — owner merged PR #110 (merge commit `bbf78b0`).** Land is
+`ok`; the run reconciled onto the merged base and continues at `close`.
 
 **Gate:** `land` (node 8) — the human PR merge. A graph run never merges its own
 PR, so it parks here for the owner.
@@ -595,3 +598,4 @@ Report a verdict of APPROVE or REQUEST CHANGES, the per-criterion pass/fail for 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | Write the current-state feature spec for the trade-balancer feature — Phase A #3 of the docs-refactor gameplan. Land it at PRD/sections/trade-balancer/README.md on the DEC-168 template. Frontend-only but it carries a corpus: apply the gameplan's data/ bucket test and split the corpus from the behavior. Keep it draft and non-authoritative. | answered-once | shape | — |
+| its merged | answered-once | land | — |
