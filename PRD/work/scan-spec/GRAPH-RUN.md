@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (universal: rm -rf; graph: nohup while lock held)`
 - Autonomous base: `origin/thejudge-auto/scan-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260825-212621/`
-- Current node: `define` (parked — owner gate)
-- Next action: `/graph-gate-review PRD/work/scan-spec/`
+- Current node: `gate-qc` (define gate resolved 2026-08-25 — 16/16 accepted)
+- Next action: `/graph-run PRD/work/scan-spec/`
 
 ## Node ledger
 
@@ -16,9 +16,40 @@
 | 2 | shape | sonnet | ok | `0 → 35` | package `PRD/work/scan-spec/` created (IDEA.md, README.md, STATUS.ideation, intake/refactor-gameplan.md byte-identical); STATUS.md board row added; committed `91cd0ec`, pushed | 2026-08-25 |
 | 3 | define | opus | ok | `0 → 41` | spec authored `PRD/sections/scan/README.md` (337 lines) + `PRD/sections/scan/data/{cardhashes,cardScanMap}.md` + `PRD/README.md` nav row + `DESIGN-BRIEF.md`; zero new stable IDs (derived view over existing DEC/REQ/FLOW/NFR); STATUS.refined; non-empty `PRD/sections/` diff → parks at define gate | 2026-08-25 |
 
+## Gate verdicts
+
+Walked via `graph-gate-review` on 2026-08-25. The `define` diff minted **zero new
+stable IDs** (a derived view over existing DEC/REQ/FLOW/NFR), so the walk mapped
+onto the spec's behavior sections, the two corpus docs, and the nav row — 16
+items, in diff order. **16 accepted, 0 edited, 0 rejected.** No `PRD/sections/`
+change applied; the run's text stands.
+
+| Item | Verdict | Reason |
+| --- | --- | --- |
+| Spec framing (Status / Backed-by / Corpus header) | accept | — |
+| What it is | accept | — |
+| How it works — camera surface | accept | — |
+| How it works — identifying (engine) | accept | — |
+| How it works — locking & hands-free auto-add | accept | — |
+| How it works — confirmation, review, correction | accept | — |
+| How it works — real-world robustness | accept | — |
+| How it works — diagnostics & debug overlay | accept | — |
+| How it works — scan-screen layout & theming | accept | — |
+| How scan feeds each destination (cross-cutting) | accept | — |
+| Measured bounds | accept | — |
+| Rejected alternatives & deferred scope | accept | — |
+| Where it lives | accept | — |
+| Corpus doc `data/cardhashes.md` | accept | — |
+| Corpus doc `data/cardScanMap.md` | accept | — |
+| `PRD/README.md` nav row | accept | — |
+
 ## Open gate
 
-**Parked at the `define` gate — owner review of the `PRD/sections/` diff.**
+**RESOLVED 2026-08-25 via `graph-gate-review` — 16/16 items accepted, 0 edits, 0
+rejects.** The complete diff below is retained as the evidence of what was walked.
+Resume: `/graph-run PRD/work/scan-spec/` (re-enters at `gate-qc`).
+
+Originally parked at the `define` gate — owner review of the `PRD/sections/` diff.
 
 Node 3 (`define`) authored the Card Scanning current-state feature spec. This is
 a new `PRD/sections/scan/` directory plus one navigation row in `PRD/README.md`.

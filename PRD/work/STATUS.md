@@ -10,15 +10,15 @@ Do not rename package folders to encode status.
 
 ## refined
 
+| Package | Notes |
+| --- | --- |
+| [scan-spec](./scan-spec/) | Phase A #4 of the docs-refactor gameplan — current-state spec for Card Scanning, the first cross-cutting feature (shared by In-Depth, Quick Question, Trade Balancer). Define gate walked via `graph-gate-review` 2026-08-25: **16/16 items accepted, 0 edits, 0 rejects**. Resume: `/graph-run PRD/work/scan-spec/` (re-enters at `gate-qc`) |
+
 ## refining
 
 ## ideation
 
 ## owner-action
-
-| Package | Notes |
-| --- | --- |
-| [scan-spec](./scan-spec/) | Phase A #4 of the docs-refactor gameplan — current-state spec for Card Scanning, the first cross-cutting feature (shared by In-Depth, Quick Question, Trade Balancer). Graph run `graph-20260825-212621` **parked at the define gate**: spec + two corpus `data/` docs written with zero new stable IDs, awaiting owner review. Resume: `/graph-gate-review PRD/work/scan-spec/` |
 
 ## deferred
 
