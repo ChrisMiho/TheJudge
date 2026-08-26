@@ -2,7 +2,7 @@
 
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -113,36 +113,36 @@ verifies; it does not author.
 
 ## Acceptance criteria
 
-- [ ] A1 — The spec's header carries a `Status:` line naming the file draft,
+- [x] A1 — The spec's header carries a `Status:` line naming the file draft,
       derived, non-authoritative, with the cited `DEC`/`REQ`/`FLOW` winning
       any conflict, and a `Backed by:` line citing exactly DEC-087, DEC-088,
       REQ-064, REQ-065, REQ-066, REQ-145, FLOW-009, NFR-013, NFR-001.
-- [ ] A2 — The corpus doc's header carries the same `Status:` shape and a
+- [x] A2 — The corpus doc's header carries the same `Status:` shape and a
       `Backed by:` line citing exactly DEC-088, REQ-066, NFR-013 (and the
       `CardPrintingPrice` shape in `integrations-and-data.md`).
-- [ ] A3 — The spec's five DEC-168 template sections are present, in order:
+- [x] A3 — The spec's five DEC-168 template sections are present, in order:
       What it is, How it works, Measured bounds, Rejected alternatives and
       deferred scope, Where it lives.
-- [ ] A4 — Every cited ID in either file's `Backed by:` line actually exists
+- [x] A4 — Every cited ID in either file's `Backed by:` line actually exists
       in its named home file.
-- [ ] A5 — Every **How it works** bullet in the spec is confirmed traceable
+- [x] A5 — Every **How it works** bullet in the spec is confirmed traceable
       to its cited source's text — no invented capability.
-- [ ] A6 — Both files' **Where it lives** content names every file
+- [x] A6 — Both files' **Where it lives** content names every file
       `system-map.md` and the repository tree confirm belongs to the
       feature; independently re-verified, not assumed from map-out.
-- [ ] A7 — The corpus doc's artifact-shape field names match the actual
+- [x] A7 — The corpus doc's artifact-shape field names match the actual
       committed JSON and the TypeScript `CardPrintingPrice` interface; the
       `integrations-and-data.md` field-name discrepancy (`printingId` vs.
       `id`) is confirmed and recorded as an out-of-scope observation with
       no edit made to any file over it.
-- [ ] A8 — The corpus doc's measured-bounds figures are confirmed against
+- [x] A8 — The corpus doc's measured-bounds figures are confirmed against
       the committed `cardPrintingPrices.json`, read directly (no rebuild).
-- [ ] A9 — The spec's **Rejected alternatives and deferred scope** matches
+- [x] A9 — The spec's **Rejected alternatives and deferred scope** matches
       DEC-087's and DEC-088's Context/Notes language, with nothing invented
       or omitted.
-- [ ] A10 — No new (minted) stable ID token appears in either file — every
+- [x] A10 — No new (minted) stable ID token appears in either file — every
       ID token present resolves to a real, pre-existing ID in its home file.
-- [ ] A11 — The slice's diff touches only
+- [x] A11 — The slice's diff touches only
       `PRD/sections/trade-balancer/README.md` and
       `PRD/sections/trade-balancer/data/cardPrintingPrices.md`, and only for
       a bounded additive correction if genuinely needed — no `apps/` change,
