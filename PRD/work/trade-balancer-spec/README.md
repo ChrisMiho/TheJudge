@@ -103,6 +103,10 @@ No product-behavior decisions here. No `apps/` code change. No edit to
 `PRD/sections/decisions/trade-balancer.md` or any other existing DEC/REQ/FLOW
 body. No decision on the exact corpus/behavior split shape.
 
+## Autonomous metadata
+
+- Autonomous base: origin/thejudge-auto/trade-balancer-spec
+
 ## Next step
 
 `/thejudge-refinement PRD/work/trade-balancer-spec/`
