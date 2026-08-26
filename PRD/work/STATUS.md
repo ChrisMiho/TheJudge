@@ -8,11 +8,11 @@ Do not rename package folders to encode status.
 
 ## active
 
-## refined
-
 | Package | Notes |
 | --- | --- |
-| [scan-spec](./scan-spec/) | Phase A #4 of the docs-refactor gameplan — current-state spec for Card Scanning, the first cross-cutting feature (shared by In-Depth, Quick Question, Trade Balancer). Define gate walked via `graph-gate-review` 2026-08-25: **16/16 items accepted, 0 edits, 0 rejects**. Resume: `/graph-run PRD/work/scan-spec/` (re-enters at `gate-qc`) |
+| [scan-spec](./scan-spec/) | Phase A #4 of the docs-refactor gameplan — current-state spec for Card Scanning, the first cross-cutting feature (shared by In-Depth, Quick Question, Trade Balancer). Deliverable already committed and owner-accepted at the define gate (16/16, 0 edits, 0 rejects). Mapped into two verify-only slices (A: spec + two corpus docs vs. sources/artifacts; B: nav row + diff-scope proof), no build work. Next: `/thejudge-implement PRD/work/scan-spec/ slice A` |
+
+## refined
 
 ## refining
 

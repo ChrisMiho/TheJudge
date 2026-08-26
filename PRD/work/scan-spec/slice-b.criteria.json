@@ -1,0 +1,54 @@
+{
+  "slug": "scan-spec",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "PRD/README.md has exactly one Section Inventory row for sections/scan/",
+      "value": false,
+      "evidence": {
+        "command": "grep -c \"sections/scan\" PRD/README\\.md",
+        "paths": ["PRD/README.md"]
+      }
+    },
+    {
+      "id": "B2",
+      "statement": "That row's description states the spec is a derived, non-authoritative current-state view citing DEC-168, names scan as shared by In-Depth, Quick Question, and Trade Balancer, and notes its two corpora live in data/cardhashes.md and data/cardScanMap.md",
+      "value": false,
+      "evidence": {
+        "command": "grep -Ei \"(derived|non-authoritative|current-state|DEC-168|cardhashes\\.md|cardScanMap\\.md)\" PRD/README\\.md",
+        "paths": ["PRD/README.md"]
+      }
+    },
+    {
+      "id": "B3",
+      "statement": "No other Section Inventory or Instruction Inventory row was added, removed, or reordered",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "B4",
+      "statement": "The full package diff (from the merge-base with origin/main) shows no change under apps/, and no change to any existing DEC/REQ/FLOW/NFR body, system-map.md, screen-layout.md, goals-and-non-goals.md, or open-questions.md",
+      "value": false,
+      "evidence": {
+        "command": "git diff --stat .*(apps/|PRD/sections/decisions|PRD/sections/functional-requirements\\.md|PRD/sections/user-flows\\.md|PRD/sections/non-functional-requirements\\.md|PRD/sections/system-map\\.md|PRD/sections/screen-layout\\.md|PRD/sections/goals-and-non-goals\\.md|PRD/sections/open-questions\\.md)",
+        "paths": [
+          "PRD/sections/scan/README.md",
+          "PRD/sections/scan/data/cardhashes.md",
+          "PRD/sections/scan/data/cardScanMap.md",
+          "PRD/README.md"
+        ]
+      }
+    },
+    {
+      "id": "B5",
+      "statement": "A human confirmed the package needs no further durable-truth promotion at cleanup beyond PRD/sections/scan/README.md, PRD/sections/scan/data/cardhashes.md, PRD/sections/scan/data/cardScanMap.md, and the PRD/README.md row",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    }
+  ]
+}

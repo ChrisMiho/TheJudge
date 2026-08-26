@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (universal: rm -rf; graph: nohup while lock held)`
 - Autonomous base: `origin/thejudge-auto/scan-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260825-212621/`
-- Current node: `plan` (gate-qc PASS 2026-08-25)
+- Current node: `build` (plan done 2026-08-25 — 2 verify-only slices)
 - Next action: `/graph-run PRD/work/scan-spec/`
 
 ## Node ledger
@@ -17,6 +17,7 @@
 | 3 | define | opus | ok | `0 → 41` | spec authored `PRD/sections/scan/README.md` (337 lines) + `PRD/sections/scan/data/{cardhashes,cardScanMap}.md` + `PRD/README.md` nav row + `DESIGN-BRIEF.md`; zero new stable IDs (derived view over existing DEC/REQ/FLOW/NFR); STATUS.refined; non-empty `PRD/sections/` diff → parks at define gate | 2026-08-25 |
 | — | define-gate | (owner) | resolved | — | `graph-gate-review` walked the diff — 16/16 items accepted, 0 edits, 0 rejects; STATUS restored to refined; committed `5f3eeee` | 2026-08-25 |
 | 4 | gate-qc | sonnet | ok | `0 → 15` | quality-check **PASS**, findings none; `DESIGN-BRIEF.md` validated against the accepted spec, corpus docs, and nav row; STATUS.refined unchanged. Resume re-proof: lock re-taken (pid 32334), graph canary denied (`nohup`) | 2026-08-25 |
+| 5 | plan | sonnet | ok | `0 → 61` | GAMEPLAN + 2 verify-only slices — A (12 criteria): spec + 2 corpus docs vs. cited sources/DEC-168/committed artifacts; B (5 criteria): nav row + package diff-scope proof. Flagged bounded correction for slice A: `cardhashes.md` `~14 MB` → `~13 MB` (bin is 13,047,744 bytes). Runtime/browser risk none. STATUS.active; writes all inside `PRD/work/scan-spec/` + board | 2026-08-25 |
 
 ## Gate verdicts
 
@@ -803,6 +804,38 @@ Report back:
 
 Copy the `Working directory:` line above, unchanged, into every prompt you write to any subagent you dispatch.
 
+### plan
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 5 (`plan`) of an autonomous graph run. Invoke the `thejudge-map-out` skill and follow it exactly, in its graph-run (non-interactive) mode. graph-run is controlling — do not stop to ask questions.
+
+Package: `PRD/work/scan-spec/`
+Run ID: `graph-20260825-212621`
+
+Before writing any planning artifact, confirm the package README's `## Preparation gate` reads `Quality-check: PASS` (it does — node 4 recorded it). You cannot self-certify it.
+
+Produce `GAMEPLAN.md` and the lettered slice docs (with a `slice-<letter>.criteria.json` per slice), and set `STATUS.active`.
+
+CRITICAL CONTEXT — this is a docs-only spec run, and the deliverable is ALREADY WRITTEN:
+- This is Phase A #4 of the docs-refactor gameplan. Node 3 (`define`) authored the entire deliverable directly into product truth and it is already committed on the autonomous base `origin/thejudge-auto/scan-spec` (commit 7cd4f41): `PRD/sections/scan/README.md` (the spec), `PRD/sections/scan/data/cardhashes.md` and `PRD/sections/scan/data/cardScanMap.md` (two corpus docs), and one `PRD/README.md` Section Inventory nav row.
+- The owner already walked that `PRD/sections/` diff at the define gate via `graph-gate-review` and accepted all 16 items (0 edits, 0 rejects).
+- So there is NO "write the spec" work left. Slicing it as authoring work would duplicate what already shipped.
+
+The three prior Phase A specs (#1 life-tracker, #2 user-feedback, #3 trade-balancer) sliced this identical situation as VERIFY-ONLY slices. Mirror that shape unless you find a concrete reason not to:
+- Slice A (verify-only): verify the already-committed `PRD/sections/scan/README.md` and the two `data/` corpus docs against their cited sources (the DEC/REQ/FLOW/NFR they name) and the DEC-168 template; verify each corpus doc's measured figures against the committed artifacts under `apps/frontend/public/data/` read directly (NO rebuild — rebuild needs a human-approved Scryfall download). Bounded correction only if something is actually wrong.
+- Slice B (verify-only): verify the `PRD/README.md` nav row and prove the package-wide diff since the fork point touched nothing outside the licensed set (the scan spec + two corpus files, the one nav row, and `PRD/work/scan-spec/`).
+
+Each criterion in every `criteria.json` must carry a real `evidence` block (command pattern, file paths, or `"manual": true`) per the map-out contract — the build node earns them by observed tool calls.
+
+Runtime/browser risk: none — this package is documentation-only, no UI surface change, nothing browser-observable. State that in the GAMEPLAN's runtime section so no Playwright verification is required.
+
+Report back: the slice letters and titles, the criteria count per slice, the `## Runtime / browser risk` verdict, and the final `STATUS.*` marker.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write to any subagent you dispatch.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -810,3 +843,4 @@ Copy the `Working directory:` line above, unchanged, into every prompt you write
 | Write the current-state feature spec for the scan feature — Phase A #4 of the docs-refactor gameplan. Land it at PRD/sections/scan/README.md on the DEC-168 template. Scan is cross-cutting — referenced by multiple destinations — so capture how it feeds each one, not just its own screen. Keep it draft and non-authoritative. | answered-once | shape | — |
 | current-state feature spec | answered-once | shape | — |
 | Backing sources | answered-once | define | — |
+| write the spec | answered-once | plan | — |
