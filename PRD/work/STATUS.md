@@ -14,6 +14,10 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+| Package | Notes |
+| --- | --- |
+| [quick-lookup-spec](./quick-lookup-spec/) | Phase A #5 of the docs-refactor gameplan (`PRD/work/adhoc/refactor-gameplan.md`) — current-state spec for Quick Lookup, first spec to run the full backend path (prompt assembly, retrieval, provider boundary) |
+
 ## owner-action
 
 ## deferred
