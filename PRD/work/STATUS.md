@@ -10,11 +10,11 @@ Do not rename package folders to encode status.
 
 ## refined
 
-## refining
-
 | Package | Notes |
 | --- | --- |
-| [trade-balancer-spec](./trade-balancer-spec/) | `gate-qc` FAIL 2026-08-25 — DESIGN-BRIEF Scope claims "two navigation-only Section Inventory rows" but the accepted deliverable and PRD/README.md carry one. Return to `/thejudge-refinement PRD/work/trade-balancer-spec/`. |
+| [trade-balancer-spec](./trade-balancer-spec/) | `gate-qc` loop 1 fix applied 2026-08-25 — DESIGN-BRIEF Scope and assumption #5 corrected to one navigation-only `PRD/README.md` row. Ready for `/thejudge-quality-check PRD/work/trade-balancer-spec/`. |
+
+## refining
 
 ## ideation
 

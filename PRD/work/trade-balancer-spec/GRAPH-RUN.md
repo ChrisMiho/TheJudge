@@ -7,7 +7,7 @@
 - Autonomous base: `origin/thejudge-auto/trade-balancer-spec`
 - Fork point: `main` (`f97881b`) — carries Phase A specs #1 (life-tracker) and #2 (user-feedback) and DEC-168; local `main` was fast-forwarded to `origin/main` before this run branched, closing the stale-base gap the docs-refactor PROGRESS.md warns about
 - Staging: `.worktrees/.graph-intake/graph-20260825-190858/`
-- Current node: `define` (attempt 2) — `gate-qc` FAIL loop 1/3; fixing DESIGN-BRIEF scope-count
+- Current node: `gate-qc` (attempt 2) — re-checking DESIGN-BRIEF after the scope-count fix
 - Next action: `/graph-run PRD/work/trade-balancer-spec/`
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 3 | define | opus | ok — gate (parked) | `1 → 41` | `DESIGN-BRIEF.md` written; two new files `PRD/sections/trade-balancer/README.md` (162 lines, behavior) and `PRD/sections/trade-balancer/data/cardPrintingPrices.md` (119 lines, corpus) + one `PRD/README.md` nav row; **no new stable IDs**, no existing DEC/REQ/FLOW/NFR body modified; corpus artifact byte-unchanged (no rebuild — Scryfall boundary respected); `git diff -- PRD/sections/` non-empty → parked at the `define` gate; `STATUS.refined` → `STATUS.owner-action` | 2026-08-25 |
 | — | gate-review | opus | gate resolved | — | owner walked the `define` diff; 2/2 files accepted, 0 edited, 0 rejected; nested corpus/behavior split confirmed as precedent for #4/#5/#7; `STATUS.owner-action` → `STATUS.refined` | 2026-08-25 |
 | 4 | gate-qc | sonnet | failed | `3 → 38` | `thejudge-quality-check` FAIL on `DESIGN-BRIEF.md`: Scope claims "two navigation-only Section Inventory rows" in `PRD/README.md` but only one was accepted/written (assumption #5 body already resolves to one; grep confirms one row). All DEC/REQ/FLOW/NFR citations and corpus figures verified accurate against source. Loop 1/3 → back to `define`; `STATUS.refined` → `STATUS.refining` | 2026-08-25 |
+| 3 | define | opus | ok | `1 → 15` | attempt 2 (FAIL loop-back): `DESIGN-BRIEF.md` scope-count corrected two→one in Scope + assumption #5 title; `git diff -- PRD/sections/` **empty** (accepted spec/corpus untouched, no re-park); no new stable IDs; no data build/refresh; `STATUS.refining` → `STATUS.refined` | 2026-08-25 |
 
 ## Gate verdicts
 
@@ -474,6 +475,24 @@ When the fix is applied, set `STATUS.refined` per the skill and report.
 If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
 
 Report: the exact `DESIGN-BRIEF.md` edits you made, confirmation that no `PRD/sections/` file was touched, confirmation of the one-row count in `PRD/README.md`, whether you set `STATUS.refined`, and any blocker. Do not create a GAMEPLAN or slice docs; do not dispatch further nodes.
+
+### gate-qc (attempt 2 — re-check after scope-count fix)
+
+graph-run is controlling. You are node 4 (`gate-qc`, attempt 2) of an autonomous graph run. Invoke the `thejudge-quality-check` skill and follow it exactly in graph-controlled (non-interactive) mode — do not stop to ask the user questions; produce the PASS/FAIL report and return.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Package: `PRD/work/trade-balancer-spec/`. Re-validate its `DESIGN-BRIEF.md` for PRD alignment and agent-readiness, and produce a PASS/FAIL report exactly as the skill defines. This is Phase A #3 of the docs-refactor gameplan: a current-state feature spec for the Trade Balancer, whose `define` gate was owner-resolved (both new `PRD/sections/` files accepted; nested corpus/behavior split confirmed). No new stable IDs; the spec is a derived, draft, non-authoritative view over existing DEC/REQ/FLOW/NFR truth, with `decisions.md` staying precedence #1.
+
+The prior `gate-qc` FAIL (loop 1/3) found one blocking issue: the Scope section and material-assumption #5 title stated a count of two navigation-only `PRD/README.md` Section Inventory rows, while only one was accepted and written. That has been corrected in `DESIGN-BRIEF.md` (Scope and assumption #5 now say one row; `PRD/README.md` confirmed to carry exactly one Trade Balancer row). Verify that fix landed and re-run the full check.
+
+Judge the DESIGN-BRIEF against the accepted deliverable, not against a hypothetical new-feature build: the correct outcome for this consolidation spec is a brief whose scope matches the two accepted files and cites only existing IDs. Do NOT propose new product decisions and do NOT require edits to existing DEC/REQ/FLOW/NFR bodies.
+
+Do NOT write a GAMEPLAN or slice docs (that is node 5). Do NOT run `npm run data:build`, `npm run data:refresh`, or any Scryfall network refresh. On FAIL, set `STATUS.refining` per the skill and report the complete findings; on PASS, report it so the driver can record the preparation gate.
+
+If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
+
+Report: PASS or FAIL, the checked artifact path, the complete findings list (or none), and the `STATUS.*` marker you set. Do not dispatch further nodes.
 
 ## Instruction ledger
 

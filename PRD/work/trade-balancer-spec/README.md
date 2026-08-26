@@ -1,5 +1,5 @@
 ---
-status: refining
+status: refined
 ---
 
 # trade-balancer-spec

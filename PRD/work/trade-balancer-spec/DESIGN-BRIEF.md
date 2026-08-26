@@ -17,7 +17,7 @@ exercise the corpus/behavior split.
 
 - **In scope:** one derived, non-authoritative current-state spec consolidating
   existing product truth for the Trade Balancer; one companion corpus doc for
-  the price artifact; two navigation-only Section Inventory rows in
+  the price artifact; one navigation-only Section Inventory row in
   `PRD/README.md`.
 - **Consolidated sources:** DEC-087 (Card Trade Balancer feature), DEC-088
   (printing-level price artifact), REQ-064 / REQ-065 / REQ-066 / REQ-145,
@@ -96,7 +96,7 @@ three-condition genuine-decision-blocker test.
    constraints; the artifact's byte/entry counts live in the corpus doc, not
    here. Per DEC-168, a bound travels with the surface it constrains. (Ladder
    step 5.)
-5. **Two navigation-only `PRD/README.md` rows.** DEC-168 authorized one Section
+5. **One navigation-only `PRD/README.md` row.** DEC-168 authorized one Section
    Inventory row per new spec directory; the `trade-balancer/` row follows that
    pattern, and the nested `data/` subfile needs no row of its own. A second row
    is added only if the reviewer prefers the corpus doc surfaced separately —
