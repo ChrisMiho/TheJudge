@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (universal: rm -rf; graph: nohup while lock held)`
 - Autonomous base: `origin/thejudge-auto/scan-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260825-212621/`
-- Current node: `gate-qc` (define gate resolved 2026-08-25 — 16/16 accepted)
+- Current node: `plan` (gate-qc PASS 2026-08-25)
 - Next action: `/graph-run PRD/work/scan-spec/`
 
 ## Node ledger
@@ -15,6 +15,8 @@
 | 1 | preflight | haiku | ok | `0 → 5` | branch `thejudge-auto/scan-spec` pushed to origin (`git ls-remote` = 0d7b59d); lock taken (pid 27180); clean tree, no stash; universal canary denied (`rm -rf`), graph canary denied (`nohup` while lock held) | 2026-08-25 |
 | 2 | shape | sonnet | ok | `0 → 35` | package `PRD/work/scan-spec/` created (IDEA.md, README.md, STATUS.ideation, intake/refactor-gameplan.md byte-identical); STATUS.md board row added; committed `91cd0ec`, pushed | 2026-08-25 |
 | 3 | define | opus | ok | `0 → 41` | spec authored `PRD/sections/scan/README.md` (337 lines) + `PRD/sections/scan/data/{cardhashes,cardScanMap}.md` + `PRD/README.md` nav row + `DESIGN-BRIEF.md`; zero new stable IDs (derived view over existing DEC/REQ/FLOW/NFR); STATUS.refined; non-empty `PRD/sections/` diff → parks at define gate | 2026-08-25 |
+| — | define-gate | (owner) | resolved | — | `graph-gate-review` walked the diff — 16/16 items accepted, 0 edits, 0 rejects; STATUS restored to refined; committed `5f3eeee` | 2026-08-25 |
+| 4 | gate-qc | sonnet | ok | `0 → 15` | quality-check **PASS**, findings none; `DESIGN-BRIEF.md` validated against the accepted spec, corpus docs, and nav row; STATUS.refined unchanged. Resume re-proof: lock re-taken (pid 32334), graph canary denied (`nohup`) | 2026-08-25 |
 
 ## Gate verdicts
 
@@ -771,6 +773,33 @@ OUTPUT
 Any change under `PRD/sections/` will be reviewed by the owner at the define gate after you return — that is expected and is how this run parks. Do not try to self-approve it.
 
 Report back: the exact files you wrote, whether you minted any new stable IDs (expected: none), how you structured the cross-destination section, your corpus `data/`-split decision and its reasoning, and any point where you applied the assumption ladder or hit a genuine blocker.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write to any subagent you dispatch.
+
+### gate-qc
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 4 (`gate-qc`) of an autonomous graph run. Invoke the `thejudge-quality-check` skill and follow it exactly, in its graph-run (non-interactive) mode. graph-run is controlling — do not stop to ask questions; produce the PASS/FAIL report the skill defines.
+
+Package: `PRD/work/scan-spec/`
+Run ID: `graph-20260825-212621`
+
+Context:
+- This is Phase A #4 of the docs-refactor gameplan — a docs-only current-state feature spec for Card Scanning. There is no `apps/` code change in scope.
+- Node 3 (`define`) authored the deliverable directly into `PRD/sections/scan/README.md` plus two `data/` corpus docs and a `PRD/README.md` nav row, and wrote `PRD/work/scan-spec/DESIGN-BRIEF.md` as the refinement record.
+- The owner already walked the `PRD/sections/` diff at the define gate via `graph-gate-review` and accepted all 16 items (0 edits, 0 rejects); see `PRD/work/scan-spec/GRAPH-RUN.md` `## Gate verdicts`.
+
+Your job: validate `PRD/work/scan-spec/DESIGN-BRIEF.md` for PRD alignment and agent-readiness per the quality-check contract, and produce the PASS/FAIL report. Do NOT write a GAMEPLAN or slice docs — that is node 5's job. On FAIL the skill sets `STATUS.refining`; on PASS the package stays ready to slice.
+
+Judge readiness for what this package actually is — a documentation/spec deliverable that is already written and owner-approved — not for code that does not exist. If the brief is coherent, aligned with the accepted spec, and gives a map-out agent enough to slice the remaining work (e.g. the `PRD/README.md` nav row and any diff-scope/verification slice, mirroring how the prior Phase A specs were sliced), that is a PASS.
+
+Report back:
+- The PASS or FAIL verdict.
+- The exact findings list (none, or the complete issue list) in the shape the quality-check contract specifies for the `## Preparation gate` section.
+- The `STATUS.*` marker state after you run.
 
 Copy the `Working directory:` line above, unchanged, into every prompt you write to any subagent you dispatch.
 

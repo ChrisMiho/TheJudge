@@ -18,6 +18,12 @@ with `decisions.md` staying precedence #1.
 
 - Autonomous base: origin/thejudge-auto/scan-spec
 
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/scan-spec/DESIGN-BRIEF.md`
+- Findings: none
+
 ## Backing sources (evidence, not yet read into a spec)
 
 - `PRD/sections/decisions/scanning.md` — the domain file; DEC-050 through
