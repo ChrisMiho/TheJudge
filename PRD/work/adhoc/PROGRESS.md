@@ -31,9 +31,9 @@ at the **define gate** for you to review, then resumes to completion.
 | # | Feature spec | Status | Landed as |
 | --- | --- | --- | --- |
 | 1 | `life-tracker` | ✅ **done** | PR #105, DEC-168 |
-| 2 | `user-feedback` | ⬜ **next** | — |
-| 3 | `trade-balancer` | ⬜ not started | — |
-| 4 | `scan` | ⬜ not started | — |
+| 2 | `user-feedback` | ✅ **done** | PR #107 (work→base), #109 (base→main) |
+| 3 | `trade-balancer` | ✅ **done (base→main pending)** | PR #110 (work→base) merged 2026-08-26; open the base→main PR to reach `main` |
+| 4 | `scan` | ⬜ **next** | — |
 | 5 | `quick-lookup` | ⬜ not started | — |
 | 6 | shared chrome | ⬜ not started | — |
 | 7 | `in-depth` | ⬜ not started | — |
