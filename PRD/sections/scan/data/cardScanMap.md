@@ -35,7 +35,7 @@ kept in its own `data/` doc alongside `cardhashes.md` rather than folded in with
 it. They are genuinely separate corpora: different upstream shapes (card
 **images** hashed into a binary library vs. printing **identity/image
 metadata**), different build scripts (`build-card-hashes.mjs` vs.
-`build-card-scan-map.mjs`), different artifact formats (a ~14 MB `CARDHSH1`
+`build-card-scan-map.mjs`), different artifact formats (a ~13 MB `CARDHSH1`
 binary vs. a JSON map), and different measured bounds. Each passes the four-clause
 `data/` test independently, so each is documented independently — the same
 corpus/behavior split the Trade Balancer applied to its single price artifact,

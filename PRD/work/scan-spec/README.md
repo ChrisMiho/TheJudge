@@ -156,7 +156,7 @@ the exact structure of the cross-destination section.
 
 | Slice | Scope | Dependency | Status |
 | --- | --- | --- | --- |
-| [A](./slice-a-verify-spec.md) | Verify `PRD/sections/scan/README.md`, `PRD/sections/scan/data/cardhashes.md`, and `PRD/sections/scan/data/cardScanMap.md` (all already committed) against their cited sources, the DEC-168 template, and the two committed data artifacts; close any confirmed, sourced gap with a bounded additive correction only. | none | planned |
+| [A](./slice-a-verify-spec.md) | Verify `PRD/sections/scan/README.md`, `PRD/sections/scan/data/cardhashes.md`, and `PRD/sections/scan/data/cardScanMap.md` (all already committed) against their cited sources, the DEC-168 template, and the two committed data artifacts; close any confirmed, sourced gap with a bounded additive correction only. | none | done |
 | [B](./slice-b-diff-proof.md) | Verify the `PRD/README.md` Section Inventory row (already committed); prove the package-wide diff since its fork point touched nothing outside the licensed set. | none | planned |
 
 GAMEPLAN: `PRD/work/scan-spec/GAMEPLAN.md`.

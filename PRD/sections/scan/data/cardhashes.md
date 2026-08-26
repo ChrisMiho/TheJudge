@@ -81,7 +81,7 @@ passes each one:
 
 Read from the committed artifact; a future coverage-extending build moves these.
 
-- Format/size: `CARDHSH1` v1, ~14 MB on disk (loaded lazily; see runtime posture
+- Format/size: `CARDHSH1` v1, ~13 MB on disk (loaded lazily; see runtime posture
   below). The shipped artifact format/size is frozen — a recipe/geometry change
   would force a full re-download/re-hash (DEC-054, REQ-039).
 - Corpus status at closeout: `partial` under DEC-054 — 97311/97323 fingerprinted;
