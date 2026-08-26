@@ -2,7 +2,7 @@
 
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge
 
-## Status: planned
+## Status: done
 
 ## Goal
 
