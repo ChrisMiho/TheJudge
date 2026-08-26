@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (universal: rm -rf; graph: nohup while lock held)`
 - Autonomous base: `origin/thejudge-auto/scan-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260825-212621/`
-- Current node: `build` (plan done 2026-08-25 — 2 verify-only slices)
+- Current node: `close` (land done — PR #112 merged `f42662e` 2026-08-25)
 - Next action: `/graph-run PRD/work/scan-spec/`
 
 ## Node ledger
@@ -18,6 +18,9 @@
 | — | define-gate | (owner) | resolved | — | `graph-gate-review` walked the diff — 16/16 items accepted, 0 edits, 0 rejects; STATUS restored to refined; committed `5f3eeee` | 2026-08-25 |
 | 4 | gate-qc | sonnet | ok | `0 → 15` | quality-check **PASS**, findings none; `DESIGN-BRIEF.md` validated against the accepted spec, corpus docs, and nav row; STATUS.refined unchanged. Resume re-proof: lock re-taken (pid 32334), graph canary denied (`nohup`) | 2026-08-25 |
 | 5 | plan | sonnet | ok | `0 → 61` | GAMEPLAN + 2 verify-only slices — A (12 criteria): spec + 2 corpus docs vs. cited sources/DEC-168/committed artifacts; B (5 criteria): nav row + package diff-scope proof. Flagged bounded correction for slice A: `cardhashes.md` `~14 MB` → `~13 MB` (bin is 13,047,744 bytes). Runtime/browser risk none. STATUS.active; writes all inside `PRD/work/scan-spec/` + board | 2026-08-25 |
+| 6 | build | sonnet | ok | `0 → 146` | worktree `.worktrees/implement-scan-spec`, head `thejudge-auto/scan-spec-work`; slice A **12/12** + slice B **5/5** criteria true (verified in worktree criteria files); 2 bounded corrections (`~14 MB`→`~13 MB`; removed a stray `~67px` card-back figure that belongs to Life Tracker, not DEC-055); **PR #112** OPEN (base `thejudge-auto/scan-spec` ← head `thejudge-auto/scan-spec-work`); STATUS.ship-ready. Write-scope: launch checkout byte-unchanged (`git status --porcelain` empty), all writes in worktree | 2026-08-25 |
+| 7 | review | opus | ok | `0 → 10` | no-write reviewer (`Plan` agent, no Edit/Write): **APPROVE**, 0 Critical, 0 Important. A1–A12 + B1–B5 all independently confirmed against the artifacts; both bounded corrections verified correct and in-scope (bin = 13,047,744 bytes; `~67px` is a Life Tracker bound, REQ-112/DEC-136, not DEC-055). 1 Minor note (stale grep in `slice-a.criteria.json` A4 evidence — deliverable correct) — no loop | 2026-08-25 |
+| 8 | land | (owner) | ok | — | **PR #112 merged** by owner (merge commit `f42662e`, base `thejudge-auto/scan-spec`). Head `thejudge-auto/scan-spec-work` auto-deleted on merge. Driver's node-6/node-7 local ledger commits reconciled onto the merged base via follow-up branch `thejudge-auto/scan-spec-followup` (README/STATUS/board conflicts resolved to ship-ready) | 2026-08-25 |
 
 ## Gate verdicts
 
@@ -48,9 +51,24 @@ change applied; the run's text stands.
 
 ## Open gate
 
-**RESOLVED 2026-08-25 via `graph-gate-review` — 16/16 items accepted, 0 edits, 0
-rejects.** The complete diff below is retained as the evidence of what was walked.
-Resume: `/graph-run PRD/work/scan-spec/` (re-enters at `gate-qc`).
+**RESOLVED 2026-08-25 — the `land` gate is done.** Owner merged **PR #112**
+(`thejudge-auto/scan-spec-work` → `thejudge-auto/scan-spec`, merge commit
+`f42662e`). Node 7 review had APPROVED (0 Critical, 0 Important).
+
+- Merging left the base ahead of the driver's local node-6/node-7 ledger commits
+  (kept local while the base was frozen). Those were reconciled onto the merged
+  base via follow-up branch `thejudge-auto/scan-spec-followup` and **follow-up
+  PR** (README/STATUS/board resolved to `ship-ready`; the corrected deliverable
+  taken from the merged base).
+- **Resume once the follow-up PR is merged:** `/graph-run PRD/work/scan-spec/` —
+  re-enters at `close` (cleanup: promote durable truth, write the receipt,
+  delete the package).
+
+---
+
+**Previously — `define` gate (RESOLVED 2026-08-25 via `graph-gate-review` —
+16/16 items accepted, 0 edits, 0 rejects).** The complete diff below is retained
+as the evidence of what was walked. Re-entered at `gate-qc` after resolution.
 
 Originally parked at the `define` gate — owner review of the `PRD/sections/` diff.
 
@@ -835,6 +853,77 @@ Runtime/browser risk: none — this package is documentation-only, no UI surface
 Report back: the slice letters and titles, the criteria count per slice, the `## Runtime / browser risk` verdict, and the final `STATUS.*` marker.
 
 Copy the `Working directory:` line above, unchanged, into every prompt you write to any subagent you dispatch.
+
+### build
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 6 (`build`) of an autonomous graph run. Invoke the `thejudge-implement-all` skill and follow it exactly, in its graph-run (non-interactive) mode. graph-run is controlling — do not stop to ask questions; complete every remaining slice in one unattended session.
+
+Package: `PRD/work/scan-spec/`
+Run ID: `graph-20260825-212621`
+
+Branch inputs (both matter — do not derive your own):
+- Autonomous base (PR base, already recorded in the package README `## Autonomous metadata`): `origin/thejudge-auto/scan-spec`. It already carries the shipped deliverable and all planning artifacts (pushed at commit 28c4ae2).
+- Shared head branch for the PR (pass this as the skill's shared-branch input): `thejudge-auto/scan-spec-work`. This MUST be distinct from the base — the PR is `thejudge-auto/scan-spec-work` → `thejudge-auto/scan-spec`. Do not let the shared branch default to the base name.
+- Worktree: `.worktrees/implement-scan-spec` (repo-local; never create a worktree outside `.worktrees/`).
+
+Execute both slices to completion, earning every acceptance criterion in `slice-a.criteria.json` (A1–A12) and `slice-b.criteria.json` (B1–B5) by real observed tool calls — the boundary hook logs evidence from your actual commands, so run the verifications for real; do not hand-set any criterion to true.
+
+Scope reminders for this docs-only spec package:
+- Both slices are verify-only. The deliverable (`PRD/sections/scan/README.md` + the two `data/` corpus docs + the `PRD/README.md` nav row) is already committed on the base. Verify it against its cited DEC/REQ/FLOW/NFR sources, the DEC-168 template, and the committed data artifacts under `apps/frontend/public/data/` read directly. Do NOT rebuild any data artifact — a rebuild needs a human-approved Scryfall download.
+- Slice A carries one bounded correction the plan flagged (criterion A9): `PRD/sections/scan/data/cardhashes.md` states the fingerprint library is `~14 MB`, but the committed `cardhashes.bin` is 13,047,744 bytes (~13 MB). Apply that factual correction inside the worktree so it rides the PR for owner review; keep the change bounded to that figure.
+- No `apps/` code change. No runtime/browser verification — the GAMEPLAN records runtime/browser risk as none.
+- All your writes must stay inside the worktree `.worktrees/implement-scan-spec/` (which mirrors the repo, so editing product files there is correct) or `PRD/work/scan-spec/`. Do not write elsewhere in the launch checkout.
+
+When every criterion is true, open the pull request `thejudge-auto/scan-spec-work` → `thejudge-auto/scan-spec` showing the whole deliverable, and set `STATUS.ship-ready` per the skill.
+
+Report back:
+- The worktree path and the shared/head branch actually used.
+- Per-slice: criteria all true (with the evidence), and the bounded correction applied.
+- The PR number and URL, and its confirmed base and head branches.
+- The final `STATUS.*` marker.
+- Any path you wrote outside `.worktrees/implement-scan-spec/` or `PRD/work/scan-spec/` (expected: none).
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write to any subagent you dispatch.
+
+### review
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 7 of an autonomous graph run: the independent no-write reviewer. You hold no Write/Edit tools by design — a reviewer that can modify the work it grades is not reviewing it. Your job is to GRADE, not to change anything and not to design new work. This is a fresh-context review — you have not seen the build agent's work; judge only the artifacts.
+
+WHAT TO GRADE
+Pull request #112 (`thejudge-auto/scan-spec-work` → `thejudge-auto/scan-spec`) for the `scan-spec` package — Phase A #4 of the docs-refactor gameplan, a docs-only current-state feature spec for Card Scanning. Both slices are verify-only.
+
+THE RUBRIC — the slices' own acceptance criteria, and nothing else
+Grade strictly against these; do not substitute your taste.
+- Slice A criteria A1–A12 in `.worktrees/implement-scan-spec/PRD/work/scan-spec/slice-a.criteria.json`, with the slice spec `.worktrees/implement-scan-spec/PRD/work/scan-spec/slice-a-verify-spec.md`.
+- Slice B criteria B1–B5 in `.worktrees/implement-scan-spec/PRD/work/scan-spec/slice-b.criteria.json`, with `.worktrees/implement-scan-spec/PRD/work/scan-spec/slice-b-diff-proof.md`.
+
+WHAT TO READ (read the actual content, not excerpts)
+- The full deliverable on the PR head, in the worktree: `.worktrees/implement-scan-spec/PRD/sections/scan/README.md`, `.../data/cardhashes.md`, `.../data/cardScanMap.md`, and the `PRD/README.md` nav row.
+- The PR diff (what the head branch changed versus the base): run `gh pr diff 112`. Because the base already carries the spec, this diff shows mainly the two bounded corrections plus the planning/evidence artifacts — that is expected.
+- `.worktrees/implement-scan-spec/PRD/work/scan-spec/GAMEPLAN.md` and `DESIGN-BRIEF.md` for context.
+- Cross-check any cited DEC/REQ/FLOW/NFR against its home file under `PRD/sections/` if you doubt a claim.
+
+PAY PARTICULAR ATTENTION to the two bounded corrections the build made — confirm each is factually correct and in-scope:
+1. `cardhashes.md` fingerprint-library size changed from ~14 MB to ~13 MB (the committed `apps/frontend/public/data/cardhashes.bin` should be ~13,047,744 bytes — verify by reading the file size and/or its manifest `byteSize`).
+2. A `~67px` card-back figure removed from the spec's rejected-alternatives section on the grounds it belonged to the Player Life Tracker, not scan's DEC-055 — confirm that removal did not delete a real scan fact.
+
+SEVERITY RULE (binding)
+- Flag only gaps that affect correctness or a stated acceptance criterion. A preference, a style note, or an improvement outside the slices' stated requirements is NEVER Critical or Important and must NOT trigger a loop back to build. If you notice such things, list them as Minor/notes only.
+- Rate each finding Critical, Important, or Minor. Only Critical or Important cause a loop back to build. Do not manufacture findings — an incentive to look useful is exactly what corrupts a review.
+
+OUTPUT
+- A one-line verdict: APPROVE (no Critical or Important findings) or CHANGES-REQUESTED.
+- Per-criterion: whether A1–A12 and B1–B5 are genuinely satisfied by the artifacts (spot-check the evidence; do not trust the criteria file's own true/false).
+- Any findings, each with severity, file:line, and which criterion or correctness fact it violates.
+- Explicit confirmation on the two bounded corrections.
+
+Do not write or edit any file. If you need the Working directory line in any prompt you write, copy it unchanged from the top of this message.
 
 ## Instruction ledger
 
