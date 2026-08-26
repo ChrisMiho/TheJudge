@@ -6,10 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-| Package | Notes |
-| --- | --- |
-| [scan-spec](./scan-spec/) | Phase A #4 of the docs-refactor gameplan — current-state spec for Card Scanning, the first cross-cutting feature (shared by In-Depth, Quick Question, Trade Balancer). Both verify-only slices done (A 12/12, B 5/5), node 7 review APPROVED, **PR [#112](https://github.com/ChrisMiho/TheJudge/pull/112) merged** (`f42662e`). Follow-up PR reconciles the driver ledger. Next: resume `/graph-run PRD/work/scan-spec/` → `close` |
-
 ## active
 
 ## refined
