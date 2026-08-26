@@ -7,7 +7,7 @@
 - Autonomous base: `origin/thejudge-auto/trade-balancer-spec`
 - Fork point: `main` (`f97881b`) — carries Phase A specs #1 (life-tracker) and #2 (user-feedback) and DEC-168; local `main` was fast-forwarded to `origin/main` before this run branched, closing the stale-base gap the docs-refactor PROGRESS.md warns about
 - Staging: `.worktrees/.graph-intake/graph-20260825-190858/`
-- Current node: `build` — implementing two verify-only slices on the `-work` head branch
+- Current node: `review` — no-write reviewer grading PR #110 against slice criteria
 - Next action: `/graph-run PRD/work/trade-balancer-spec/`
 
 ## Node ledger
@@ -22,6 +22,7 @@
 | 3 | define | opus | ok | `1 → 15` | attempt 2 (FAIL loop-back): `DESIGN-BRIEF.md` scope-count corrected two→one in Scope + assumption #5 title; `git diff -- PRD/sections/` **empty** (accepted spec/corpus untouched, no re-park); no new stable IDs; no data build/refresh; `STATUS.refining` → `STATUS.refined` | 2026-08-25 |
 | 4 | gate-qc | sonnet | ok | `1 → 19` | attempt 2 PASS on `DESIGN-BRIEF.md`: scope-count fix verified (Scope + assumption #5 now one row; `PRD/README.md` confirmed one Trade Balancer row); all cited IDs resolve, no contradiction with source bodies, corpus figures re-verified against committed artifact (no rebuild), no new IDs; findings none; stays `STATUS.refined` | 2026-08-25 |
 | 5 | plan | sonnet | ok | `1 → 50` | `thejudge-map-out`: `GAMEPLAN.md`, `slice-a-verify-spec.md`+`slice-a.criteria.json` (A1–A11, all `false`), `slice-b-diff-proof.md`+`slice-b.criteria.json` (B1–B5, all `false`); both **verify-only** (deliverable already committed at `41118d5`), parallel-ready; slice A covers behavior spec + corpus doc incl. figures re-read from committed artifact (no rebuild); GAMEPLAN notes `integrations-and-data.md` `printingId`-vs-`id` staleness as out-of-scope (not fixed); `STATUS.refined` → `STATUS.active`; board moved to `## active`; all writes inside `PRD/work/trade-balancer-spec/` + board | 2026-08-25 |
+| 6 | build | sonnet | ok | `1 → 71` | `thejudge-implement-all`; worktree `.worktrees/implement-trade-balancer-spec`, shared head `thejudge-auto/trade-balancer-spec-work`; both slices verify-only, **no bounded correction needed** (spec + corpus already correct); all measured figures re-confirmed vs committed `cardPrintingPrices.json` (read directly, no rebuild); A1–A11 + B1–B5 all `true` with matching lines in `.worktrees/.graph-evidence.jsonl` for this run; PR [#110](https://github.com/ChrisMiho/TheJudge/pull/110) base `…-spec` head `…-spec-work`, MERGEABLE; **write-scope verified** — launch checkout clean + unchanged at `6142c04`, every write in the worktree; pre-existing `lambda-package-budget.test.mjs` ENOTDIR worktree defect (same as PR #107) confirmed unrelated, noted on PR; `STATUS.active` → `STATUS.ship-ready` (on PR head) | 2026-08-25 |
 
 ## Gate verdicts
 
@@ -542,6 +543,26 @@ Every criterion in both `slice-a.criteria.json` and `slice-b.criteria.json` must
 If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
 
 Report: the worktree path and shared head branch used, each slice's completion and any bounded correction made, the full criteria state (A1–A11, B1–B5 all true), the PR URL with its base and head branches, confirmation the launch checkout is clean and all writes stayed in-scope, and whether you set `STATUS.ship-ready`. Do not dispatch further nodes.
+
+### review
+
+graph-run is controlling. You are node 7 (`review`) of an autonomous graph run: a fresh-context, NO-WRITE reviewer. You hold no Write/Edit/NotebookEdit tools and must not modify anything — you read and grade only.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Grade PR #110 (`gh pr diff 110`; base `thejudge-auto/trade-balancer-spec`, head `thejudge-auto/trade-balancer-spec-work`) for `PRD/work/trade-balancer-spec/`, a documentation-only Phase A #3 spec package. Read the PR diff, the slice docs and criteria files (`slice-a-verify-spec.md` + `slice-a.criteria.json`, `slice-b-diff-proof.md` + `slice-b.criteria.json`), `GAMEPLAN.md`, `DESIGN-BRIEF.md`, and the two committed deliverable files (`PRD/sections/trade-balancer/README.md`, `PRD/sections/trade-balancer/data/cardPrintingPrices.md`) plus `PRD/README.md`. Do NOT read the build node's transcript.
+
+RUBRIC — grade strictly against each slice's own acceptance criteria, nothing else:
+
+Slice A (verify spec + corpus): A1 header Status + Backed-by cites exactly DEC-087/088, REQ-064/065/066/145, FLOW-009, NFR-013, NFR-001. A2 corpus header Status + Backed-by cites exactly DEC-088, REQ-066, NFR-013 and the CardPrintingPrice shape. A3 five DEC-168 sections present in order. A4 every cited ID exists in its home file. A5 every How-it-works bullet traces to its cited source. A6 Where-it-lives names the real feature files. A7 artifact-shape field names match the committed JSON and the TS interface, and the integrations-and-data.md field-name staleness is recorded as out-of-scope with no edit. A8 measured figures confirmed against the committed cardPrintingPrices.json read directly (no rebuild). A9 Rejected-alternatives matches DEC-087/088 language. A10 no newly minted stable ID in either file. A11 slice diff touches only the two trade-balancer files, additive-correction only if needed, no apps/ or existing-body edits.
+
+Slice B (nav row + diff proof): B1 exactly one PRD/README.md Section Inventory row for sections/trade-balancer/. B2 that row states derived/non-authoritative, cites DEC-168, notes the corpus at data/cardPrintingPrices.md. B3 no other inventory row added/removed/reordered. B4 full package diff shows no apps/ change and no edit to any existing DEC/REQ/FLOW/NFR body, system-map.md, screen-layout.md, integrations-and-data.md, or open-questions.md. B5 is a manual human-confirmation criterion; in this unattended run it is satisfied by a dated agent observation — treat that as a known unattended-run pattern, NOT a finding.
+
+SEVERITY RULE: grade only correctness against these criteria. A style note, a preference, or an improvement outside the slice's stated requirements is NEVER Critical or Important and must NOT trigger a loop back to build. The `integrations-and-data.md` printingId-vs-id staleness is explicitly out of this package's scope — noting it is fine, but it is not a finding against this PR. Manufacturing findings spends a build loop the run cannot recover.
+
+If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
+
+Report a verdict of APPROVE or REQUEST CHANGES, the per-criterion pass/fail for A1–A11 and B1–B5, and any findings each rated Critical / Important / Minor with the criterion it maps to. Do not dispatch further nodes and do not modify any file.
 
 ## Instruction ledger
 
