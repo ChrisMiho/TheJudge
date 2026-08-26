@@ -6,8 +6,8 @@
 - Graph canary: `denied — graph tier armed (nohup true)`
 - Autonomous base: `origin/thejudge-auto/quick-lookup-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260826-174916/`
-- Current node: `gate-qc` (resumed 2026-08-26; lock re-taken, graph canary re-denied — tier armed)
-- Next action: `/graph-run PRD/work/quick-lookup-spec/`
+- Current node: `land` — PARKED for owner PR merge (2026-08-26)
+- Next action: merge PR #116, then `/graph-run PRD/work/quick-lookup-spec/`
 
 ## Node ledger
 
@@ -20,8 +20,34 @@
 | 4 | gate-qc | sonnet | ok | `0 → 17` | `thejudge-quality-check`: **PASS**, no findings; all cited IDs resolve (23 DEC, 20 REQ, FLOW-006/011, NFR-001); zero new IDs; documentation-only scope confirmed; `STATUS.refined` kept | 2026-08-26 |
 | 5 | plan | sonnet | ok | `0 → 55` | `thejudge-map-out`: `GAMEPLAN.md` + 3 verify-only slices (A UI-content/8 criteria, B backend-path-vs-source/8, C nav+diff-scope/5); `STATUS.active`; no new IDs, no `PRD/sections/` edit. Slice B flags a grounded gap — accepted spec omits Commander Spellbook combo retrieval (DEC-116/REQ-094, `preparation.ts`); bounded additive correction to apply in build if it re-verifies | 2026-08-26 |
 | 6 | build | sonnet | ok | `0 → 171` | `thejudge-implement-all`: PR [#116](https://github.com/ChrisMiho/TheJudge/pull/116) (`-work`→base) opened, MERGEABLE; 21/21 criteria `true` (`.graph-evidence.jsonl`); combo-retrieval gap re-verified from source and applied additively (new `### Combo enrichment` subsection, DEC-116/REQ-094/REQ-095 cited, 2 fixtures, `commanderSpellbook/` in Where-it-lives — existing IDs only, no `apps/` edit); `STATUS.ship-ready`. Write-scope PASS: launch checkout untouched (`b730ba5`), all writes inside `.worktrees/implement-quick-lookup-spec/` | 2026-08-26 |
+| 7 | review | opus | ok | `0 → 9` | no-write reviewer (fresh context): **APPROVE**, 0 Critical / 0 Important / 0 Minor; all 21 criteria re-confirmed; combo-retrieval correction verified from source (DEC-116/REQ-094/REQ-095 pre-existing + confirmed, `preparation.ts` code + both fixtures real); documentation-only scope (no new IDs, no source-body edits, no `apps/`) | 2026-08-26 |
+| 8 | land | (human) | parked | — | reviewer APPROVE → `land`. Driver never merges: PR [#116](https://github.com/ChrisMiho/TheJudge/pull/116) open, MERGEABLE, awaiting owner merge. **PARKED** | 2026-08-26 |
 
 ## Open gate
+
+### Current gate — `land` (node 8): owner PR merge
+
+**Gate:** node 7 (`review`) returned APPROVE with zero findings, which advances
+the run to `land`. `land` is a human action — the driver never runs `gh pr merge`
+or `gh pr close`. The run is **PARKED** here.
+
+**What the owner does:**
+1. Review and merge PR #116 — `thejudge-auto/quick-lookup-spec-work` →
+   `thejudge-auto/quick-lookup-spec` (the work→base PR; OPEN, MERGEABLE).
+   URL: https://github.com/ChrisMiho/TheJudge/pull/116
+2. Resume: `/graph-run PRD/work/quick-lookup-spec/` — the driver checks the PR is
+   merged, records `land` as `ok`, reconciles the local ledger commits, and runs
+   `close` (cleanup: receipt, durable promotion, package delete).
+3. Separately, to reach `main`: open and merge the base→main PR
+   (`thejudge-auto/quick-lookup-spec` → `main`). The run does not do this; it is
+   the branch-loop step that keeps `main` current for Phase A #6.
+
+**Evidence:** PR #116 OPEN + MERGEABLE (`gh pr view 116`); reviewer APPROVE,
+0 Critical / 0 Important / 0 Minor; 21/21 criteria `true`.
+
+---
+
+### Resolved — `define` gate (node 3)
 
 **Resolved:** 2026-08-26 via `/graph-gate-review` — all six spec sections walked
 and accepted (6 accept, 0 edit, 0 reject; 0 new stable IDs). The recorded diff
@@ -565,6 +591,20 @@ Branch/worktree: autonomous base (PR target) `thejudge-auto/quick-lookup-spec` (
 This build: Phase A #5, a documentation/consolidation package — all three slices (A, B, C) are VERIFY-ONLY, no `apps/` code change. Verify the owner-accepted spec `PRD/sections/quick-lookup/README.md` against its cited sources, the DEC-168 template, and the backend/frontend files it names; apply only bounded, sourced corrections to the spec (not to code), citing existing IDs only, minting no new IDs, editing no existing DEC/REQ/FLOW body and no `thejudge-*` skill. Slice B independently re-verifies a grounded finding (accepted spec may omit Commander Spellbook combo retrieval in lookup mode — `preparation.ts` `resolveLookupComboCandidates`, DEC-116/REQ-094, `commander-spellbook-lookup-*` fixtures); apply the slice's bounded additive correction only if it re-verifies from source, else record why.
 
 Run all remaining slices end to end; earn every criterion in every `slice-*.criteria.json` with real observed evidence; report ok only when every criterion is `true`. Set `STATUS.ship-ready`, then open the `-work`→base PR. Work only inside the worktree and/or `PRD/work/quick-lookup-spec/`; do not push to the base, do not merge/close the PR, do not force-push, do not touch the ledger/lock/sentinel. Report the PR URL, per-slice outcomes, all-criteria-true confirmation, the file list, the combo-correction decision, and the marker.
+
+### review
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 7 (`review`) of an autonomous graph run — a fresh-context, NO-WRITE reviewer holding no Write/Edit tools by design. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+Reviewing PR #116 (`thejudge-auto/quick-lookup-spec-work` → base `thejudge-auto/quick-lookup-spec`), the build output of a documentation/consolidation package (Phase A #5, verify-only slices verifying the owner-accepted quick-lookup spec against source, with bounded sourced corrections applied to the spec).
+
+Read the PR diff (`gh pr diff 116`), the three slice docs and their `## Acceptance criteria` (mirrored in `slice-*.criteria.json`), and the cited sources as needed. Do NOT read the build agent's transcript — grade the artifact, not the justification.
+
+Grade strictly against the slices' acceptance criteria. Flag only a criterion not met by the diff, or a correctness gap (spec claim not matching its cited source, a new stable ID minted where there must be none, an edit to an existing DEC/REQ/FLOW body, an `apps/` change, or a citation that does not resolve). Binding severity rule: a preference/style note or any improvement outside the stated criteria is never Critical or Important and never loops back to build — list such things as Minor/non-blocking only. Independently confirm the Commander Spellbook combo-retrieval correction from source (that lookup mode runs combo retrieval, and DEC-116/REQ-094/REQ-095 and the fixtures are real and pre-existing). Report a verdict (APPROVE or CHANGES REQUESTED), Critical/Important/Minor counts, and grounded findings.
 
 ## Instruction ledger
 

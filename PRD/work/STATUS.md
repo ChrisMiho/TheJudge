@@ -8,10 +8,6 @@ Do not rename package folders to encode status.
 
 ## active
 
-| Package | Notes |
-| --- | --- |
-| [quick-lookup-spec](./quick-lookup-spec/) | Phase A #5 of the docs-refactor gameplan — current-state Quick Lookup spec (full backend path). Quality-check PASS; mapped out into 3 verify-only slices (A: UI-facing content, B: backend-path section against source, C: nav row + diff-scope proof). Resume with `/thejudge-implement PRD/work/quick-lookup-spec/ slice A`. |
-
 ## refined
 
 ## refining
@@ -19,6 +15,10 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
+
+| Package | Gate |
+| --- | --- |
+| [quick-lookup-spec](./quick-lookup-spec/) | Parked at **land** (Phase A #5). Reviewer APPROVED; work→base PR [#116](https://github.com/ChrisMiho/TheJudge/pull/116) open + MERGEABLE. Merge it, then `/graph-run PRD/work/quick-lookup-spec/` (→ close). Then open the base→main PR to reach `main`. |
 
 ## deferred
 
