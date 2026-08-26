@@ -7,7 +7,7 @@
 - Autonomous base: `origin/thejudge-auto/trade-balancer-spec`
 - Fork point: `main` (`f97881b`) — carries Phase A specs #1 (life-tracker) and #2 (user-feedback) and DEC-168; local `main` was fast-forwarded to `origin/main` before this run branched, closing the stale-base gap the docs-refactor PROGRESS.md warns about
 - Staging: `.worktrees/.graph-intake/graph-20260825-190858/`
-- Current node: `gate-qc` (attempt 2) — re-checking DESIGN-BRIEF after the scope-count fix
+- Current node: `plan` — quality-check PASS; mapping out slices
 - Next action: `/graph-run PRD/work/trade-balancer-spec/`
 
 ## Node ledger
@@ -20,6 +20,7 @@
 | — | gate-review | opus | gate resolved | — | owner walked the `define` diff; 2/2 files accepted, 0 edited, 0 rejected; nested corpus/behavior split confirmed as precedent for #4/#5/#7; `STATUS.owner-action` → `STATUS.refined` | 2026-08-25 |
 | 4 | gate-qc | sonnet | failed | `3 → 38` | `thejudge-quality-check` FAIL on `DESIGN-BRIEF.md`: Scope claims "two navigation-only Section Inventory rows" in `PRD/README.md` but only one was accepted/written (assumption #5 body already resolves to one; grep confirms one row). All DEC/REQ/FLOW/NFR citations and corpus figures verified accurate against source. Loop 1/3 → back to `define`; `STATUS.refined` → `STATUS.refining` | 2026-08-25 |
 | 3 | define | opus | ok | `1 → 15` | attempt 2 (FAIL loop-back): `DESIGN-BRIEF.md` scope-count corrected two→one in Scope + assumption #5 title; `git diff -- PRD/sections/` **empty** (accepted spec/corpus untouched, no re-park); no new stable IDs; no data build/refresh; `STATUS.refining` → `STATUS.refined` | 2026-08-25 |
+| 4 | gate-qc | sonnet | ok | `1 → 19` | attempt 2 PASS on `DESIGN-BRIEF.md`: scope-count fix verified (Scope + assumption #5 now one row; `PRD/README.md` confirmed one Trade Balancer row); all cited IDs resolve, no contradiction with source bodies, corpus figures re-verified against committed artifact (no rebuild), no new IDs; findings none; stays `STATUS.refined` | 2026-08-25 |
 
 ## Gate verdicts
 
@@ -493,6 +494,31 @@ Do NOT write a GAMEPLAN or slice docs (that is node 5). Do NOT run `npm run data
 If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
 
 Report: PASS or FAIL, the checked artifact path, the complete findings list (or none), and the `STATUS.*` marker you set. Do not dispatch further nodes.
+
+### plan
+
+graph-run is controlling. You are node 5 (`plan`) of an autonomous graph run. Invoke the `thejudge-map-out` skill and follow it exactly in graph-controlled (non-interactive) mode — do not stop to ask the user questions; produce the GAMEPLAN and slice docs and return.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Package: `PRD/work/trade-balancer-spec/`. Its `## Preparation gate` records Quality-check: PASS. This is Phase A #3 of the docs-refactor gameplan — a documentation-only current-state feature spec for the Trade Balancer, the third instance of the DEC-168 spec layer after Phase A #1 (life-tracker) and #2 (user-feedback).
+
+CRITICAL SHAPE — the deliverable is already committed on the base. At the `define` gate (commit `41118d5`, owner-accepted via graph-gate-review) all three deliverables were authored and committed directly onto the recorded autonomous base `origin/thejudge-auto/trade-balancer-spec`:
+- `PRD/sections/trade-balancer/README.md` — the behavior spec (162 lines, DEC-168 template).
+- `PRD/sections/trade-balancer/data/cardPrintingPrices.md` — the corpus doc (nested `data/` subfile; this package is the FIRST Phase A spec to carry a corpus).
+- One `PRD/README.md` Section Inventory row for `sections/trade-balancer/`.
+
+So this maps out exactly like #2 (user-feedback): produce **verify-only** slices, not authoring slices. Model the slices on that proven pattern:
+- A verify-only slice covering the already-committed behavior spec AND the corpus doc: verify each against its cited sources (DEC-087, DEC-088, REQ-064/065/066/145, FLOW-009, NFR-013, NFR-001; the `CardPrintingPrice` shape in `integrations-and-data.md`; the `system-map.md` and `screen-layout.md` entries) and against the DEC-168 template. Verify the corpus doc's measured figures against the committed artifact `apps/frontend/public/data/cardPrintingPrices.json` by reading it directly — NEVER by rebuilding. Permit ONLY bounded additive corrections to the two trade-balancer spec/corpus files themselves (for example a missing file-path line in Where-it-lives), never a change to product behavior, never a new decision.
+- A verify-only slice covering the `PRD/README.md` nav row and a diff-scope proof: exactly one `sections/trade-balancer/` row exists, and the package-wide diff since the fork point (`main`, `f97881b`) touches nothing outside the licensed set (the two spec/corpus files, the one nav row, and `PRD/work/trade-balancer-spec/`).
+
+Emit one `slice-<letter>.criteria.json` beside each slice doc with every criterion initialised `false` and an evidence block, per `thejudge-map-out/reference.md`. Set `STATUS.active` per the skill.
+
+BOUNDARIES: Do NOT mint new stable IDs. Do NOT edit any existing DEC/REQ/FLOW/NFR body, nor `system-map.md`, `screen-layout.md`, `integrations-and-data.md`. Do NOT author authoring/rewrite slices — the spec and corpus are accepted and stand. Do NOT run `npm run data:build`, `npm run data:refresh`, or any Scryfall network refresh. Do NOT change `apps/` code. All writes stay inside `PRD/work/trade-balancer-spec/` plus the `PRD/work/STATUS.md` board row.
+
+If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
+
+Report: the GAMEPLAN and slice/criteria files created (paths), the number and nature of slices (confirm verify-only), whether you set `STATUS.active`, and any blocker. Do not dispatch further nodes.
 
 ## Instruction ledger
 

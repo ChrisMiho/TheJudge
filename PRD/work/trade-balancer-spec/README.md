@@ -109,15 +109,14 @@ body. No decision on the exact corpus/behavior split shape.
 
 ## Preparation gate
 
-- Quality-check: FAIL
+- Quality-check: PASS
 - Checked artifact: `PRD/work/trade-balancer-spec/DESIGN-BRIEF.md`
-- Findings: DESIGN-BRIEF Scope claims "two navigation-only Section Inventory
-  rows in `PRD/README.md`" and assumption #5's title repeats "Two", but the
-  accepted deliverable and the actual `PRD/README.md` carry exactly **one**
-  Trade Balancer nav row (assumption #5's own body already resolves to one).
-  Fix: change "two" → "one" in the Scope section and retitle assumption #5 to
-  match its body. All DEC/REQ/FLOW/NFR citations and corpus figures otherwise
-  verified accurate. (`gate-qc` loop 1/3, 2026-08-25)
+- Findings: none. Attempt 1 FAIL (Scope claimed two `PRD/README.md` nav rows;
+  only one accepted/written) was fixed in `define` attempt 2 and re-verified
+  clean in `gate-qc` attempt 2: Scope + assumption #5 now say one row,
+  `PRD/README.md` confirmed to carry one Trade Balancer row, all cited IDs
+  resolve with no contradiction to source bodies, and the corpus figures were
+  re-verified against the committed artifact. (`gate-qc` PASS, 2026-08-25)
 
 ## Next step
 
