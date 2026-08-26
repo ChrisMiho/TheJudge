@@ -14,11 +14,11 @@ Do not rename package folders to encode status.
 
 ## ideation
 
-| Package | Notes |
-| --- | --- |
-| [quick-lookup-spec](./quick-lookup-spec/) | Phase A #5 of the docs-refactor gameplan (`PRD/work/adhoc/refactor-gameplan.md`) — current-state spec for Quick Lookup, first spec to run the full backend path (prompt assembly, retrieval, provider boundary) |
-
 ## owner-action
+
+| Package | Gate |
+| --- | --- |
+| [quick-lookup-spec](./quick-lookup-spec/) | Parked at the **define gate** (Phase A #5, docs-refactor gameplan). Node 3 authored `PRD/sections/quick-lookup/README.md` (derived, non-authoritative Quick Lookup spec, zero new IDs). Review with `/graph-gate-review PRD/work/quick-lookup-spec/`, then resume with `/graph-run PRD/work/quick-lookup-spec/`. |
 
 ## deferred
 
