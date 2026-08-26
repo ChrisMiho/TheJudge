@@ -19,6 +19,7 @@
 | — | gate-review | (owner) | resolved | — | `/graph-gate-review`: 6 sections walked, 6 accept / 0 edit / 0 reject; 0 new IDs; gate resolved, package restored to `refined` | 2026-08-26 |
 | 4 | gate-qc | sonnet | ok | `0 → 17` | `thejudge-quality-check`: **PASS**, no findings; all cited IDs resolve (23 DEC, 20 REQ, FLOW-006/011, NFR-001); zero new IDs; documentation-only scope confirmed; `STATUS.refined` kept | 2026-08-26 |
 | 5 | plan | sonnet | ok | `0 → 55` | `thejudge-map-out`: `GAMEPLAN.md` + 3 verify-only slices (A UI-content/8 criteria, B backend-path-vs-source/8, C nav+diff-scope/5); `STATUS.active`; no new IDs, no `PRD/sections/` edit. Slice B flags a grounded gap — accepted spec omits Commander Spellbook combo retrieval (DEC-116/REQ-094, `preparation.ts`); bounded additive correction to apply in build if it re-verifies | 2026-08-26 |
+| 6 | build | sonnet | ok | `0 → 171` | `thejudge-implement-all`: PR [#116](https://github.com/ChrisMiho/TheJudge/pull/116) (`-work`→base) opened, MERGEABLE; 21/21 criteria `true` (`.graph-evidence.jsonl`); combo-retrieval gap re-verified from source and applied additively (new `### Combo enrichment` subsection, DEC-116/REQ-094/REQ-095 cited, 2 fixtures, `commanderSpellbook/` in Where-it-lives — existing IDs only, no `apps/` edit); `STATUS.ship-ready`. Write-scope PASS: launch checkout untouched (`b730ba5`), all writes inside `.worktrees/implement-quick-lookup-spec/` | 2026-08-26 |
 
 ## Open gate
 
@@ -548,6 +549,22 @@ Package: `PRD/work/quick-lookup-spec/`  ·  Run ID: `graph-20260826-174916`
 Context: Phase A #5 of the docs-refactor gameplan. The deliverable already exists and is owner-accepted at the define gate: spec `PRD/sections/quick-lookup/README.md` (untracked; driver commits at publish-before-build), design record `DESIGN-BRIEF.md`, one `PRD/README.md` row. `## Preparation gate` records `Quality-check: PASS`. Documentation/consolidation package, so the slices are VERIFY-ONLY (the pattern the four prior Phase A specs used); a slice verifies the authored spec against its cited sources, the DEC-168 template, and the backend/frontend files it names, and drift is fixed in build as a bounded sourced correction. Do not plan slices that add new product behavior or edit existing DEC/REQ/FLOW bodies.
 
 Write `GAMEPLAN.md`, the lettered slice docs, and one `slice-<letter>.criteria.json` per slice (criteria `false`, real `evidence` block). Scope slices to verify the spec content vs cited sources and DEC-168 shape, the backend-path section vs the actual `apps/backend/src/` files, and the `PRD/README.md` row plus a package-wide diff-scope proof. Set `STATUS.active`. No `PRD/sections/` edit, no commit/push/worktree, no touch to the ledger/lock/sentinel. Report slices/criteria created, per-slice scope, the marker, and confirmation of no new IDs and no `PRD/sections/` edits.
+
+### build
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 6 (`build`) of an autonomous graph run. Invoke the `thejudge-implement-all` skill and follow it exactly in graph mode. Copy the `Working directory:` line above, unchanged, into every prompt you write to any sub-step.
+
+Package: `PRD/work/quick-lookup-spec/`  ·  Run ID: `graph-20260826-174916`
+
+Branch/worktree: autonomous base (PR target) `thejudge-auto/quick-lookup-spec` (already pushed with the accepted spec + planning artifacts); shared PR head branch `thejudge-auto/quick-lookup-spec-work` (distinct from base); worktree `.worktrees/implement-quick-lookup-spec`.
+
+This build: Phase A #5, a documentation/consolidation package — all three slices (A, B, C) are VERIFY-ONLY, no `apps/` code change. Verify the owner-accepted spec `PRD/sections/quick-lookup/README.md` against its cited sources, the DEC-168 template, and the backend/frontend files it names; apply only bounded, sourced corrections to the spec (not to code), citing existing IDs only, minting no new IDs, editing no existing DEC/REQ/FLOW body and no `thejudge-*` skill. Slice B independently re-verifies a grounded finding (accepted spec may omit Commander Spellbook combo retrieval in lookup mode — `preparation.ts` `resolveLookupComboCandidates`, DEC-116/REQ-094, `commander-spellbook-lookup-*` fixtures); apply the slice's bounded additive correction only if it re-verifies from source, else record why.
+
+Run all remaining slices end to end; earn every criterion in every `slice-*.criteria.json` with real observed evidence; report ok only when every criterion is `true`. Set `STATUS.ship-ready`, then open the `-work`→base PR. Work only inside the worktree and/or `PRD/work/quick-lookup-spec/`; do not push to the base, do not merge/close the PR, do not force-push, do not touch the ledger/lock/sentinel. Report the PR URL, per-slice outcomes, all-criteria-true confirmation, the file list, the combo-correction decision, and the marker.
 
 ## Instruction ledger
 
