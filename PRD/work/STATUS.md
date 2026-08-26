@@ -6,11 +6,11 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-## active
-
 | Package | Notes |
 | --- | --- |
-| [scan-spec](./scan-spec/) | Phase A #4 of the docs-refactor gameplan — current-state spec for Card Scanning, the first cross-cutting feature (shared by In-Depth, Quick Question, Trade Balancer). Deliverable already committed and owner-accepted at the define gate (16/16, 0 edits, 0 rejects). Mapped into two verify-only slices (A: spec + two corpus docs vs. sources/artifacts; B: nav row + diff-scope proof), no build work. Next: `/thejudge-implement PRD/work/scan-spec/ slice A` |
+| [scan-spec](./scan-spec/) | Phase A #4 of the docs-refactor gameplan — current-state spec for Card Scanning, the first cross-cutting feature (shared by In-Depth, Quick Question, Trade Balancer). Deliverable already committed and owner-accepted at the define gate (16/16, 0 edits, 0 rejects). Both verify-only slices done: A (spec + two corpus docs verified against sources/artifacts, two bounded corrections applied) and B (nav row + diff-scope proof). Next: `/thejudge-cleanup PRD/work/scan-spec/` |
+
+## active
 
 ## refined
 
