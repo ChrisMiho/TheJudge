@@ -2,7 +2,7 @@
 
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -47,18 +47,18 @@ change, no edit to any existing `DEC`/`REQ`/`FLOW`/`NFR` body, no edit to
 
 ## Acceptance criteria
 
-- [ ] B1 — `PRD/README.md` has exactly one Section Inventory row for
+- [x] B1 — `PRD/README.md` has exactly one Section Inventory row for
       `sections/trade-balancer/`.
-- [ ] B2 — That row's description states the spec is a derived,
+- [x] B2 — That row's description states the spec is a derived,
       non-authoritative current-state view citing DEC-168 and notes the
       price corpus lives in `data/cardPrintingPrices.md`.
-- [ ] B3 — No other Section Inventory or Instruction Inventory row was
+- [x] B3 — No other Section Inventory or Instruction Inventory row was
       added, removed, or reordered.
-- [ ] B4 — The full package diff (from `$(git merge-base HEAD origin/main)`)
+- [x] B4 — The full package diff (from `$(git merge-base HEAD origin/main)`)
       shows no change under `apps/`, and no change to any existing
       `DEC`/`REQ`/`FLOW`/`NFR` body, `system-map.md`, `screen-layout.md`,
       `integrations-and-data.md`, or `open-questions.md`.
-- [ ] B5 — A human confirmed the package needs no further durable-truth
+- [x] B5 — A human confirmed the package needs no further durable-truth
       promotion at cleanup beyond
       `PRD/sections/trade-balancer/README.md`,
       `PRD/sections/trade-balancer/data/cardPrintingPrices.md`, and the
@@ -80,9 +80,9 @@ git diff $(git merge-base HEAD origin/main)..HEAD -- PRD/sections/decisions PRD/
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/trade-balancer-spec/` ready to
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change
+- [x] No secrets committed
+- [x] Durable outcomes promoted; `PRD/work/trade-balancer-spec/` ready to
       delete

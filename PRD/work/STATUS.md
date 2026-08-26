@@ -6,11 +6,11 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-## active
-
 | Package | Notes |
 | --- | --- |
-| [trade-balancer-spec](./trade-balancer-spec/) | Spec + corpus doc + nav row already committed and owner-accepted at the define gate (2026-08-25). Mapped 2026-08-25: slice A verifies the spec and corpus doc against sources/template/artifact, slice B verifies the nav row and proves diff scope — both verify-only, parallel-ready (Phase A #3, docs-refactor gameplan) |
+| [trade-balancer-spec](./trade-balancer-spec/) | Spec + corpus doc + nav row already committed and owner-accepted at the define gate (2026-08-25). Both slices done 2026-08-25: slice A verified the spec and corpus doc against sources/template/artifact (no correction needed), slice B verified the nav row and diff scope — both verify-only (Phase A #3, docs-refactor gameplan) |
+
+## active
 
 ## refined
 
