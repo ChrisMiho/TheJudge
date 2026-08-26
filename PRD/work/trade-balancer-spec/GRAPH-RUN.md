@@ -593,6 +593,28 @@ If you write any prompt yourself, copy the `Working directory:` line above uncha
 
 Report a verdict of APPROVE or REQUEST CHANGES, the per-criterion pass/fail for A1–A11 and B1–B5, and any findings each rated Critical / Important / Minor with the criterion it maps to. Do not dispatch further nodes and do not modify any file.
 
+### close
+
+graph-run is controlling. You are node 9 (`close`) of an autonomous graph run. Invoke the `thejudge-cleanup` skill and follow it exactly in graph-controlled (non-interactive) mode — do not stop to ask the user questions.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Package: `PRD/work/trade-balancer-spec/`, `STATUS.ship-ready`. This is a documentation-only Phase A #3 spec package (the DEC-168 current-state feature-spec layer, third instance after life-tracker and user-feedback). Close it out.
+
+MERGE-PROOF — PR #110 (`thejudge-auto/trade-balancer-spec-work` → `thejudge-auto/trade-balancer-spec`) was merged by the owner 2026-08-26T02:23:31Z, merge commit `bbf78b0` (`gh pr view 110` → MERGED). The launch checkout has already been reconciled onto the merged base by the driver. Verify the merge-proof per the skill (PR MERGED into the recorded base via `gh`; current branch equals the recorded base `thejudge-auto/trade-balancer-spec`; the implementation worktree is fully merged and clean) before deleting anything.
+
+DURABLE TRUTH — the three deliverables (`PRD/sections/trade-balancer/README.md`, `PRD/sections/trade-balancer/data/cardPrintingPrices.md`, and the one `PRD/README.md` Section Inventory row) were authored and owner-accepted at the `define` gate (commit `41118d5`) and are already on the base — confirm they are present, but no new promotion is required. No new stable IDs were minted and no existing DEC/REQ/FLOW/NFR body was modified, so no `decisions.md` promotion applies. `system-map.md`'s Trade balancer entry already reads shipped from prior work; this package changed no product behavior, so no system-map flip is required — confirm, do not edit.
+
+GRAPH-LEDGER FOLD (required before the delete) — `PRD/work/trade-balancer-spec/GRAPH-RUN.md` carries a `## Node ledger` and a `## Instruction ledger`. Fold BOTH verbatim into a `## Graph run` section of the receipt before deleting the package folder; refuse the delete if the ledger exists and that section does not. The instruction ledger has two rows, both `answered-once` (the node-2 shape request, and `its merged` at land) — there are no refused instructions.
+
+RECEIPT + CLEANUP — write the receipt to `PRD/instructions/receipts/trade-balancer-spec-2026-08-26.md`, record the `intake/refactor-gameplan.md` citation under `## Intake`, update `PRD/work/STATUS.md` (remove the `## ship-ready` row), delete `PRD/work/trade-balancer-spec/`, and remove the implementation worktree `.worktrees/implement-trade-balancer-spec` and its local build branch plus the local `thejudge-auto/trade-balancer-spec-work` head if present (its remote counterpart may already be gone — GitHub auto-deletes merged PR heads). Run `npm run quality:check` and record the result; the pre-existing `lambda-package-budget.test.mjs` ENOTDIR worktree-mechanics failure is a known unrelated defect (same as PR #107/#110) — record it as observed, do not attempt a fix.
+
+BOUNDARIES: Do NOT merge or close any PR, do NOT force-push, do NOT delete a remote branch, do NOT run `npm run data:build`/`data:refresh` or any Scryfall refresh, do NOT edit any `thejudge-*` skill. This node's own commit (receipt + package deletion) may be pushed to the base `thejudge-auto/trade-balancer-spec` — the merge is confirmed, so the frozen-base rule is lifted for this final push.
+
+If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
+
+Report: the merge-proof verdict with evidence, the receipt path, confirmation the `## Graph run` fold happened, the worktree/branches removed, the `quality:check` result, and confirmation `PRD/work/trade-balancer-spec/` was deleted. Do not dispatch further nodes.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
