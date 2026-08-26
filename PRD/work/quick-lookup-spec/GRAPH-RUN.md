@@ -6,7 +6,7 @@
 - Graph canary: `denied — graph tier armed (nohup true)`
 - Autonomous base: `origin/thejudge-auto/quick-lookup-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260826-174916/`
-- Current node: `define` — gate resolved 2026-08-26; run resumes at `gate-qc`
+- Current node: `gate-qc` (resumed 2026-08-26; lock re-taken, graph canary re-denied — tier armed)
 - Next action: `/graph-run PRD/work/quick-lookup-spec/`
 
 ## Node ledger
@@ -16,6 +16,8 @@
 | 1 | preflight | haiku | ok | `0 → 5` | branch `thejudge-auto/quick-lookup-spec` created from `main` and pushed; classification `clean` (no stash); lock `held` pid 59134; both canaries denied | 2026-08-26 |
 | 2 | shape | sonnet | ok | `0 → 34` | package `PRD/work/quick-lookup-spec/` created (`IDEA.md`, `README.md` with backing sources, `STATUS.ideation`); board row added under `## ideation` | 2026-08-26 |
 | 3 | define | opus | parked | `0 → 48` | spec authored at `PRD/sections/quick-lookup/README.md` (321 lines, DEC-168 template); `DESIGN-BRIEF.md` + one `PRD/README.md` Section Inventory row; zero new IDs, zero source-body edits; non-empty `PRD/sections/` diff → **parks at define gate** | 2026-08-26 |
+| — | gate-review | (owner) | resolved | — | `/graph-gate-review`: 6 sections walked, 6 accept / 0 edit / 0 reject; 0 new IDs; gate resolved, package restored to `refined` | 2026-08-26 |
+| 4 | gate-qc | sonnet | ok | `0 → 17` | `thejudge-quality-check`: **PASS**, no findings; all cited IDs resolve (23 DEC, 20 REQ, FLOW-006/011, NFR-001); zero new IDs; documentation-only scope confirmed; `STATUS.refined` kept | 2026-08-26 |
 
 ## Open gate
 
