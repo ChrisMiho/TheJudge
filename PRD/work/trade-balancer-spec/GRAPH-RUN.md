@@ -7,7 +7,7 @@
 - Autonomous base: `origin/thejudge-auto/trade-balancer-spec`
 - Fork point: `main` (`f97881b`) — carries Phase A specs #1 (life-tracker) and #2 (user-feedback) and DEC-168; local `main` was fast-forwarded to `origin/main` before this run branched, closing the stale-base gap the docs-refactor PROGRESS.md warns about
 - Staging: `.worktrees/.graph-intake/graph-20260825-190858/`
-- Current node: `plan` — quality-check PASS; mapping out slices
+- Current node: `build` — implementing two verify-only slices on the `-work` head branch
 - Next action: `/graph-run PRD/work/trade-balancer-spec/`
 
 ## Node ledger
@@ -21,6 +21,7 @@
 | 4 | gate-qc | sonnet | failed | `3 → 38` | `thejudge-quality-check` FAIL on `DESIGN-BRIEF.md`: Scope claims "two navigation-only Section Inventory rows" in `PRD/README.md` but only one was accepted/written (assumption #5 body already resolves to one; grep confirms one row). All DEC/REQ/FLOW/NFR citations and corpus figures verified accurate against source. Loop 1/3 → back to `define`; `STATUS.refined` → `STATUS.refining` | 2026-08-25 |
 | 3 | define | opus | ok | `1 → 15` | attempt 2 (FAIL loop-back): `DESIGN-BRIEF.md` scope-count corrected two→one in Scope + assumption #5 title; `git diff -- PRD/sections/` **empty** (accepted spec/corpus untouched, no re-park); no new stable IDs; no data build/refresh; `STATUS.refining` → `STATUS.refined` | 2026-08-25 |
 | 4 | gate-qc | sonnet | ok | `1 → 19` | attempt 2 PASS on `DESIGN-BRIEF.md`: scope-count fix verified (Scope + assumption #5 now one row; `PRD/README.md` confirmed one Trade Balancer row); all cited IDs resolve, no contradiction with source bodies, corpus figures re-verified against committed artifact (no rebuild), no new IDs; findings none; stays `STATUS.refined` | 2026-08-25 |
+| 5 | plan | sonnet | ok | `1 → 50` | `thejudge-map-out`: `GAMEPLAN.md`, `slice-a-verify-spec.md`+`slice-a.criteria.json` (A1–A11, all `false`), `slice-b-diff-proof.md`+`slice-b.criteria.json` (B1–B5, all `false`); both **verify-only** (deliverable already committed at `41118d5`), parallel-ready; slice A covers behavior spec + corpus doc incl. figures re-read from committed artifact (no rebuild); GAMEPLAN notes `integrations-and-data.md` `printingId`-vs-`id` staleness as out-of-scope (not fixed); `STATUS.refined` → `STATUS.active`; board moved to `## active`; all writes inside `PRD/work/trade-balancer-spec/` + board | 2026-08-25 |
 
 ## Gate verdicts
 
@@ -519,6 +520,28 @@ BOUNDARIES: Do NOT mint new stable IDs. Do NOT edit any existing DEC/REQ/FLOW/NF
 If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
 
 Report: the GAMEPLAN and slice/criteria files created (paths), the number and nature of slices (confirm verify-only), whether you set `STATUS.active`, and any blocker. Do not dispatch further nodes.
+
+### build
+
+graph-run is controlling. You are node 6 (`build`) of an autonomous graph run. Invoke the `thejudge-implement-all` skill and follow it exactly in graph-controlled (non-interactive) mode — complete every remaining slice in one unattended session; do not stop to ask the user questions.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Package: `PRD/work/trade-balancer-spec/`. `STATUS.active`, `## Preparation gate` records Quality-check: PASS, `## Autonomous metadata` records base `origin/thejudge-auto/trade-balancer-spec`. Implement both slices from `GAMEPLAN.md`:
+- Slice A (`slice-a-verify-spec.md`, criteria A1–A11) — verify-only over the already-committed behavior spec and corpus doc.
+- Slice B (`slice-b-diff-proof.md`, criteria B1–B5) — verify-only over the `PRD/README.md` nav row and the package diff-scope.
+
+SHARED HEAD BRANCH — pass this explicitly: use `thejudge-auto/trade-balancer-spec-work` as the shared implementation branch (the PR head). Do NOT derive the shared branch from the slug: the default `thejudge-auto/trade-balancer-spec` is the SAME name as the recorded autonomous base, and a PR cannot go from a branch into itself. The PR is head `thejudge-auto/trade-balancer-spec-work` → base `thejudge-auto/trade-balancer-spec`. Use the repo-local worktree `.worktrees/implement-trade-balancer-spec`.
+
+SHAPE — the deliverable is already committed on the base (spec README, corpus doc, and the `PRD/README.md` nav row landed at commit `41118d5`, owner-accepted at the define gate). These are verify-only slices, exactly like Phase A #2 (user-feedback-spec). Nothing new is authored. Permit ONLY a bounded additive correction to the two trade-balancer spec/corpus files themselves if a slice-A check surfaces a confirmed, sourced gap (for example a missing file-path line). Verify the corpus figures by reading the committed artifact `apps/frontend/public/data/cardPrintingPrices.json` directly.
+
+BOUNDARIES: Do NOT mint new stable IDs. Do NOT edit any existing DEC/REQ/FLOW/NFR body, nor `system-map.md`, `screen-layout.md`, `integrations-and-data.md` (the `printingId`-vs-`id` staleness GAMEPLAN notes is out of scope — leave it). Do NOT change `apps/` code. Do NOT run `npm run data:build`, `npm run data:refresh`, or any Scryfall network refresh. Every path you write must lie inside `.worktrees/implement-trade-balancer-spec/` or `PRD/work/trade-balancer-spec/`. Do NOT push to `origin/thejudge-auto/trade-balancer-spec` (the base) after the PR is open — the base is frozen once the PR opens; push slice work to the `-work` head and open the PR against the base.
+
+Every criterion in both `slice-a.criteria.json` and `slice-b.criteria.json` must be earned to `true` through observed evidence before the node reports ok; set `STATUS.ship-ready` when both slices are complete.
+
+If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
+
+Report: the worktree path and shared head branch used, each slice's completion and any bounded correction made, the full criteria state (A1–A11, B1–B5 all true), the PR URL with its base and head branches, confirmation the launch checkout is clean and all writes stayed in-scope, and whether you set `STATUS.ship-ready`. Do not dispatch further nodes.
 
 ## Instruction ledger
 

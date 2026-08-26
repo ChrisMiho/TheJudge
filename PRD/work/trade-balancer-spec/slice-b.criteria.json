@@ -1,0 +1,53 @@
+{
+  "slug": "trade-balancer-spec",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "PRD/README.md has exactly one Section Inventory row for sections/trade-balancer/",
+      "value": false,
+      "evidence": {
+        "command": "grep -c \"sections/trade-balancer\" PRD/README\\.md",
+        "paths": ["PRD/README.md"]
+      }
+    },
+    {
+      "id": "B2",
+      "statement": "That row's description states the spec is a derived, non-authoritative current-state view citing DEC-168 and notes the price corpus lives in data/cardPrintingPrices.md",
+      "value": false,
+      "evidence": {
+        "command": "grep -Ei \"(derived|non-authoritative|current-state|DEC-168|cardPrintingPrices\\.md)\" PRD/README\\.md",
+        "paths": ["PRD/README.md"]
+      }
+    },
+    {
+      "id": "B3",
+      "statement": "No other Section Inventory or Instruction Inventory row was added, removed, or reordered",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "B4",
+      "statement": "The full package diff (from the merge-base with origin/main) shows no change under apps/, and no change to any existing DEC/REQ/FLOW/NFR body, system-map.md, screen-layout.md, integrations-and-data.md, or open-questions.md",
+      "value": false,
+      "evidence": {
+        "command": "git diff --stat .*(apps/|PRD/sections/decisions|PRD/sections/functional-requirements\\.md|PRD/sections/user-flows\\.md|PRD/sections/non-functional-requirements\\.md|PRD/sections/system-map\\.md|PRD/sections/screen-layout\\.md|PRD/sections/integrations-and-data\\.md|PRD/sections/open-questions\\.md)",
+        "paths": [
+          "PRD/sections/trade-balancer/README.md",
+          "PRD/sections/trade-balancer/data/cardPrintingPrices.md",
+          "PRD/README.md"
+        ]
+      }
+    },
+    {
+      "id": "B5",
+      "statement": "A human confirmed the package needs no further durable-truth promotion at cleanup beyond PRD/sections/trade-balancer/README.md, PRD/sections/trade-balancer/data/cardPrintingPrices.md, and the PRD/README.md row",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    }
+  ]
+}

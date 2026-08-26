@@ -8,11 +8,11 @@ Do not rename package folders to encode status.
 
 ## active
 
-## refined
-
 | Package | Notes |
 | --- | --- |
-| [trade-balancer-spec](./trade-balancer-spec/) | `gate-qc` loop 1 fix applied 2026-08-25 — DESIGN-BRIEF Scope and assumption #5 corrected to one navigation-only `PRD/README.md` row. Ready for `/thejudge-quality-check PRD/work/trade-balancer-spec/`. |
+| [trade-balancer-spec](./trade-balancer-spec/) | Spec + corpus doc + nav row already committed and owner-accepted at the define gate (2026-08-25). Mapped 2026-08-25: slice A verifies the spec and corpus doc against sources/template/artifact, slice B verifies the nav row and proves diff scope — both verify-only, parallel-ready (Phase A #3, docs-refactor gameplan) |
+
+## refined
 
 ## refining
 

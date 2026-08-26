@@ -1,5 +1,5 @@
 ---
-status: refined
+status: active
 ---
 
 # trade-balancer-spec
@@ -118,6 +118,28 @@ body. No decision on the exact corpus/behavior split shape.
   resolve with no contradiction to source bodies, and the corpus figures were
   re-verified against the committed artifact. (`gate-qc` PASS, 2026-08-25)
 
+## Slices
+
+| Slice | Scope | Dependency | Status |
+| --- | --- | --- | --- |
+| [A](./slice-a-verify-spec.md) | Verify `PRD/sections/trade-balancer/README.md` and `PRD/sections/trade-balancer/data/cardPrintingPrices.md` (both already committed) against their cited sources, the DEC-168 template, and the committed `cardPrintingPrices.json` artifact; close any confirmed, sourced gap with a bounded additive correction only. | none | planned |
+| [B](./slice-b-diff-proof.md) | Verify the `PRD/README.md` Section Inventory row (already committed); prove the package-wide diff since its fork point touched nothing outside the licensed set. | none | planned |
+
+GAMEPLAN: `PRD/work/trade-balancer-spec/GAMEPLAN.md`.
+
+## Implementation map
+
+- `PRD/sections/trade-balancer/README.md` — already written and committed
+  (`41118d5`); verified (and, if needed, bounded-corrected) by slice A.
+- `PRD/sections/trade-balancer/data/cardPrintingPrices.md` — already written
+  and committed (`41118d5`); verified (and, if needed, bounded-corrected) by
+  slice A.
+- `PRD/README.md` — already carries one Section Inventory row for
+  `sections/trade-balancer/`; verified by slice B, alongside the
+  package-wide diff-scope proof.
+
 ## Next step
 
-`/thejudge-refinement PRD/work/trade-balancer-spec/`
+`/thejudge-implement PRD/work/trade-balancer-spec/ slice A` (Claude Code) or
+`$thejudge-implement PRD/work/trade-balancer-spec/ slice A` (Codex). Slice B
+has no ordering dependency on A.
