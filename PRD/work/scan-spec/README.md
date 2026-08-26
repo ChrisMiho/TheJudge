@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 # scan-spec
