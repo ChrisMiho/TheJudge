@@ -1,5 +1,5 @@
 ---
-status: owner-action
+status: refined
 ---
 
 # trade-balancer-spec

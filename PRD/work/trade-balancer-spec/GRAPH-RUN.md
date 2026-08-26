@@ -7,8 +7,8 @@
 - Autonomous base: `origin/thejudge-auto/trade-balancer-spec`
 - Fork point: `main` (`f97881b`) — carries Phase A specs #1 (life-tracker) and #2 (user-feedback) and DEC-168; local `main` was fast-forwarded to `origin/main` before this run branched, closing the stale-base gap the docs-refactor PROGRESS.md warns about
 - Staging: `.worktrees/.graph-intake/graph-20260825-190858/`
-- Current node: `define` — PARKED at the define gate (owner review)
-- Next action: `/graph-gate-review PRD/work/trade-balancer-spec/`
+- Current node: `define` — gate resolved; resume at `gate-qc`
+- Next action: `/graph-run PRD/work/trade-balancer-spec/`
 
 ## Node ledger
 
@@ -18,7 +18,25 @@
 | 2 | shape | sonnet | ok | `1 → 33` | package `PRD/work/trade-balancer-spec/` created (`IDEA.md`, `README.md`, `STATUS.ideation`, `intake/refactor-gameplan.md`); board row under `## ideation`; commit `b265e29` pushed; corpus `cardPrintingPrices.json` identified as passing all four `data/`-bucket clauses | 2026-08-25 |
 | 3 | define | opus | ok — gate (parked) | `1 → 41` | `DESIGN-BRIEF.md` written; two new files `PRD/sections/trade-balancer/README.md` (162 lines, behavior) and `PRD/sections/trade-balancer/data/cardPrintingPrices.md` (119 lines, corpus) + one `PRD/README.md` nav row; **no new stable IDs**, no existing DEC/REQ/FLOW/NFR body modified; corpus artifact byte-unchanged (no rebuild — Scryfall boundary respected); `git diff -- PRD/sections/` non-empty → parked at the `define` gate; `STATUS.refined` → `STATUS.owner-action` | 2026-08-25 |
 
+## Gate verdicts
+
+Walked 2026-08-25 via `graph-gate-review`. No new stable IDs, so the walk mapped
+onto the two new files (per-file granularity). Both accepted; no `PRD/sections/`
+edit or revert applied. The nested corpus/behavior split shape
+(`trade-balancer/data/cardPrintingPrices.md` under the feature directory) is
+confirmed as the precedent for specs #4 (`scan`), #5 (`quick-lookup`), and #7
+(`in-depth`).
+
+| Stable ID / file | Verdict | Reason |
+| --- | --- | --- |
+| `PRD/sections/trade-balancer/README.md` (behavior spec) | accept | — |
+| `PRD/sections/trade-balancer/data/cardPrintingPrices.md` (corpus doc; nested split shape) | accept | — |
+
 ## Open gate
+
+**RESOLVED 2026-08-25 — 2/2 files accepted, 0 edited, 0 rejected.** The recorded
+diff below stays as the evidence of what was walked; nothing in `PRD/sections/`
+was changed. Resume at `gate-qc` via `/graph-run PRD/work/trade-balancer-spec/`.
 
 **Gate:** `define` — non-empty `PRD/sections/` diff awaiting owner review.
 
@@ -417,6 +435,22 @@ Apply the assumption ladder in `preparation-contract.md` per product question, f
 If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
 
 Report: the artifacts you wrote (paths), whether you made any `PRD/sections/` edits (and exactly what), any new stable IDs, how you handled the corpus/behavior split, whether you set `STATUS.refined`, and any genuine blocker you could not resolve. Do not create a GAMEPLAN or slice docs (that is node 5). Do not dispatch further nodes.
+
+### gate-qc
+
+graph-run is controlling. You are node 4 (`gate-qc`) of an autonomous graph run. Invoke the `thejudge-quality-check` skill and follow it exactly in graph-controlled (non-interactive) mode — do not stop to ask the user questions; produce the PASS/FAIL report and return.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Package: `PRD/work/trade-balancer-spec/`. Validate its `DESIGN-BRIEF.md` for PRD alignment and agent-readiness, and produce a PASS/FAIL report exactly as the skill defines. This is Phase A #3 of the docs-refactor gameplan: a current-state feature spec for the Trade Balancer, whose `define` gate was owner-reviewed and resolved — both new `PRD/sections/` files (`trade-balancer/README.md` behavior spec and `trade-balancer/data/cardPrintingPrices.md` corpus doc) were accepted, and the nested corpus/behavior split shape was confirmed. No new stable IDs were minted; the spec is a derived, draft, non-authoritative view over existing DEC/REQ/FLOW/NFR truth, with `decisions.md` staying precedence #1.
+
+Judge the DESIGN-BRIEF against the accepted deliverable, not against a hypothetical new-feature build: the correct outcome for this consolidation spec is a brief whose scope matches the two accepted files and cites only existing IDs. Do NOT propose new product decisions and do NOT require edits to existing DEC/REQ/FLOW/NFR bodies.
+
+Do NOT write a GAMEPLAN or slice docs (that is node 5). Do NOT run `npm run data:build`, `npm run data:refresh`, or any Scryfall network refresh. On FAIL, set `STATUS.refining` per the skill and report the complete findings; on PASS, report it so the driver can record the preparation gate.
+
+If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
+
+Report: PASS or FAIL, the checked artifact path, the complete findings list (or none), and the `STATUS.*` marker you set. Do not dispatch further nodes.
 
 ## Instruction ledger
 

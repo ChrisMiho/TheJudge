@@ -10,15 +10,15 @@ Do not rename package folders to encode status.
 
 ## refined
 
+| Package | Notes |
+| --- | --- |
+| [trade-balancer-spec](./trade-balancer-spec/) | `define` gate resolved 2026-08-25 — both files accepted, nested corpus/behavior split confirmed as the precedent for #4/#5/#7. Resume at `gate-qc` via `/graph-run PRD/work/trade-balancer-spec/` |
+
 ## refining
 
 ## ideation
 
 ## owner-action
-
-| Package | Notes |
-| --- | --- |
-| [trade-balancer-spec](./trade-balancer-spec/) | Parked at the `define` gate — draft Trade Balancer spec + corpus doc await owner review via `/graph-gate-review PRD/work/trade-balancer-spec/` (Phase A #3, docs-refactor gameplan; corpus/behavior split shape to confirm) |
 
 ## deferred
 
