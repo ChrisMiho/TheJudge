@@ -14,6 +14,10 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+| Package | Notes |
+| --- | --- |
+| [trade-balancer-spec](./trade-balancer-spec/) | Phase A #3 of the docs-refactor gameplan (`PRD/work/adhoc/refactor-gameplan.md`) — current-state spec for the Trade Balancer, first to carry a corpus |
+
 ## owner-action
 
 ## deferred
