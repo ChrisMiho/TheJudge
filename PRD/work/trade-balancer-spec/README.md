@@ -1,5 +1,5 @@
 ---
-status: ideation
+status: owner-action
 ---
 
 # trade-balancer-spec
