@@ -14,6 +14,10 @@ so the spec must capture how it feeds each one, not just its own camera
 screen. Consolidates current behavior only; kept draft and non-authoritative,
 with `decisions.md` staying precedence #1.
 
+## Autonomous metadata
+
+- Autonomous base: origin/thejudge-auto/scan-spec
+
 ## Backing sources (evidence, not yet read into a spec)
 
 - `PRD/sections/decisions/scanning.md` — the domain file; DEC-050 through
