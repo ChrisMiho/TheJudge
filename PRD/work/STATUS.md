@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Notes |
 | --- | --- |
-| [trade-balancer-spec](./trade-balancer-spec/) | PR #110 merged 2026-08-26 (`bbf78b0`). Both slices verify-only and done; awaiting `close` (node 9 cleanup) via `/graph-run PRD/work/trade-balancer-spec/` (Phase A #3, docs-refactor gameplan) |
 
 ## active
 
