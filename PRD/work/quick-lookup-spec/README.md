@@ -162,7 +162,7 @@ No decision on the exact structure of the full-backend-path section.
 | Slice | Scope | Dependency | Status |
 | --- | --- | --- | --- |
 | [A](./slice-a-verify-ui-content.md) | Verify the spec's UI-facing content (header, What it is, all five How it works subsections, Measured bounds, Rejected alternatives and deferred scope, frontend half of Where it lives) against its cited sources and the DEC-168 template. | none | done |
-| [B](./slice-b-verify-backend-path.md) | Verify The full backend path section against the actual `apps/backend/src/` files it names; independently re-verify and, if confirmed, bounded-correct the known combo-retrieval gap (DEC-116, REQ-094, REQ-095). | none | planned |
+| [B](./slice-b-verify-backend-path.md) | Verify The full backend path section against the actual `apps/backend/src/` files it names; independently re-verify and, if confirmed, bounded-correct the known combo-retrieval gap (DEC-116, REQ-094, REQ-095). | none | done |
 | [C](./slice-c-nav-and-diff-proof.md) | Verify the `PRD/README.md` Section Inventory row; prove the package-wide diff since its fork point touched nothing outside the licensed set. | none | planned |
 
 GAMEPLAN: `PRD/work/quick-lookup-spec/GAMEPLAN.md`.
