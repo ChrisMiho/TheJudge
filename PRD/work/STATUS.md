@@ -14,6 +14,10 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+| Package | Notes |
+| --- | --- |
+| [scan-spec](./scan-spec/) | Phase A #4 of the docs-refactor gameplan (`PRD/work/adhoc/refactor-gameplan.md`) — current-state spec for Card Scanning, first cross-cutting feature referenced by three destinations |
+
 ## owner-action
 
 ## deferred
