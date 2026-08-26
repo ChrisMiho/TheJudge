@@ -14,11 +14,11 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+## owner-action
+
 | Package | Notes |
 | --- | --- |
-| [scan-spec](./scan-spec/) | Phase A #4 of the docs-refactor gameplan (`PRD/work/adhoc/refactor-gameplan.md`) — current-state spec for Card Scanning, first cross-cutting feature referenced by three destinations |
-
-## owner-action
+| [scan-spec](./scan-spec/) | Phase A #4 of the docs-refactor gameplan — current-state spec for Card Scanning, the first cross-cutting feature (shared by In-Depth, Quick Question, Trade Balancer). Graph run `graph-20260825-212621` **parked at the define gate**: spec + two corpus `data/` docs written with zero new stable IDs, awaiting owner review. Resume: `/graph-gate-review PRD/work/scan-spec/` |
 
 ## deferred
 

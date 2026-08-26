@@ -1,5 +1,5 @@
 ---
-status: ideation
+status: owner-action
 ---
 
 # scan-spec
