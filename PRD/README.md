@@ -45,6 +45,7 @@ For implementation work, read in this order:
 | `sections/life-tracker/` | draft | Derived, non-authoritative current-state feature spec for the Player Life Tracker, consolidating its decision/requirement/flow sources into one view (DEC-168) |
 | `sections/user-feedback/` | draft | Derived, non-authoritative current-state feature spec for the Feedback & Bug Report feature, consolidating its decision/requirement/flow sources into one view (DEC-168) |
 | `sections/trade-balancer/` | draft | Derived, non-authoritative current-state feature spec for the Trade Balancer, consolidating its decision/requirement/flow sources into one view; its price corpus is documented in the directory's `data/cardPrintingPrices.md` (DEC-168) |
+| `sections/scan/` | draft | Derived, non-authoritative current-state feature spec for Card Scanning — the cross-cutting camera input path shared by In-Depth, Quick Question, and Trade Balancer — consolidating its decision/requirement/flow sources into one view; its two committed Magic-data corpora are documented in the directory's `data/cardhashes.md` and `data/cardScanMap.md` (DEC-168) |
 
 ## Instruction Inventory
 
