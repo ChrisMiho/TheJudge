@@ -270,7 +270,7 @@ product truth, and are recorded here as the current shipped configuration.
   qualitatively (owner acceptance / laptop-camera end-to-end), not recorded as a
   counted table — flagged as an ambiguous bound rather than dropped. (NFR-010,
   DEC-055)
-- Committed-artifact figures (fingerprint library `~14 MB`, `CARDHSH1` v1,
+- Committed-artifact figures (fingerprint library `~13 MB`, `CARDHSH1` v1,
   corpus `partial` at closeout) live with the corpus doc `data/cardhashes.md`,
   not here.
 
@@ -288,10 +288,10 @@ product truth, and are recorded here as the current shipped configuration.
 - **In-scan low-confidence manual-search escalation prompt — closed door.**
   DEC-076 removed the in-scan prompt; manual search is reached by **Exit scan**
   while the camera is open. Manual tap-capture is unchanged. (DEC-076, DEC-052)
-- **Card-back "Flip the card over" prompt and the ~67px/strict edge cues —
-  closed door.** Card-back detection is descoped for want of a canonical
-  reference asset; the engine method and build support remain dormant, re-enable
-  by supplying the asset. (DEC-055)
+- **Card-back "Flip the card over" prompt — closed door.** Card-back
+  detection is descoped for want of a canonical reference asset; the engine
+  method and build support remain dormant, re-enable by supplying the asset.
+  (DEC-055)
 - **Loosening the lock gate as the robustness lever — closed door.** Robustness
   is added query-side and detection-side (cleaner query, best-frame selection,
   higher detector recall, guide prior, higher capture resolution); the identity

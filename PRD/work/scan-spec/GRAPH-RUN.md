@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (universal: rm -rf; graph: nohup while lock held)`
 - Autonomous base: `origin/thejudge-auto/scan-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260825-212621/`
-- Current node: `land` (parked — owner PR merge; review APPROVED 2026-08-25)
+- Current node: `close` (land done — PR #112 merged `f42662e` 2026-08-25)
 - Next action: `/graph-run PRD/work/scan-spec/`
 
 ## Node ledger
@@ -20,6 +20,7 @@
 | 5 | plan | sonnet | ok | `0 → 61` | GAMEPLAN + 2 verify-only slices — A (12 criteria): spec + 2 corpus docs vs. cited sources/DEC-168/committed artifacts; B (5 criteria): nav row + package diff-scope proof. Flagged bounded correction for slice A: `cardhashes.md` `~14 MB` → `~13 MB` (bin is 13,047,744 bytes). Runtime/browser risk none. STATUS.active; writes all inside `PRD/work/scan-spec/` + board | 2026-08-25 |
 | 6 | build | sonnet | ok | `0 → 146` | worktree `.worktrees/implement-scan-spec`, head `thejudge-auto/scan-spec-work`; slice A **12/12** + slice B **5/5** criteria true (verified in worktree criteria files); 2 bounded corrections (`~14 MB`→`~13 MB`; removed a stray `~67px` card-back figure that belongs to Life Tracker, not DEC-055); **PR #112** OPEN (base `thejudge-auto/scan-spec` ← head `thejudge-auto/scan-spec-work`); STATUS.ship-ready. Write-scope: launch checkout byte-unchanged (`git status --porcelain` empty), all writes in worktree | 2026-08-25 |
 | 7 | review | opus | ok | `0 → 10` | no-write reviewer (`Plan` agent, no Edit/Write): **APPROVE**, 0 Critical, 0 Important. A1–A12 + B1–B5 all independently confirmed against the artifacts; both bounded corrections verified correct and in-scope (bin = 13,047,744 bytes; `~67px` is a Life Tracker bound, REQ-112/DEC-136, not DEC-055). 1 Minor note (stale grep in `slice-a.criteria.json` A4 evidence — deliverable correct) — no loop | 2026-08-25 |
+| 8 | land | (owner) | ok | — | **PR #112 merged** by owner (merge commit `f42662e`, base `thejudge-auto/scan-spec`). Head `thejudge-auto/scan-spec-work` auto-deleted on merge. Driver's node-6/node-7 local ledger commits reconciled onto the merged base via follow-up branch `thejudge-auto/scan-spec-followup` (README/STATUS/board conflicts resolved to ship-ready) | 2026-08-25 |
 
 ## Gate verdicts
 
@@ -50,21 +51,18 @@ change applied; the run's text stands.
 
 ## Open gate
 
-**ACTIVE — parked at the `land` gate (owner PR merge).** Node 7 review APPROVED
-(0 Critical, 0 Important). The whole deliverable is on the pull request and needs
-the owner to merge it; the driver never runs `gh pr merge`.
+**RESOLVED 2026-08-25 — the `land` gate is done.** Owner merged **PR #112**
+(`thejudge-auto/scan-spec-work` → `thejudge-auto/scan-spec`, merge commit
+`f42662e`). Node 7 review had APPROVED (0 Critical, 0 Important).
 
-- **PR:** https://github.com/ChrisMiho/TheJudge/pull/112 —
-  `thejudge-auto/scan-spec-work` → `thejudge-auto/scan-spec`, state OPEN.
-- **What it contains:** the two bounded corrections plus the planning/evidence
-  artifacts. The spec itself already landed on the base at the define gate, so
-  the PR diff is small by design.
-- **Owner action:** review PR #112 and **merge it** into
-  `thejudge-auto/scan-spec` when satisfied.
-- **Resume:** `/graph-run PRD/work/scan-spec/` — it checks whether PR #112 is
-  merged; if so it records `land` ok, reconciles the base into the launch
-  checkout, and continues to `close` (cleanup). If not yet merged it reports the
-  PR is still open and stops again.
+- Merging left the base ahead of the driver's local node-6/node-7 ledger commits
+  (kept local while the base was frozen). Those were reconciled onto the merged
+  base via follow-up branch `thejudge-auto/scan-spec-followup` and **follow-up
+  PR** (README/STATUS/board resolved to `ship-ready`; the corrected deliverable
+  taken from the merged base).
+- **Resume once the follow-up PR is merged:** `/graph-run PRD/work/scan-spec/` —
+  re-enters at `close` (cleanup: promote durable truth, write the receipt,
+  delete the package).
 
 ---
 
