@@ -1,0 +1,91 @@
+{
+  "slug": "quick-lookup-spec",
+  "slice": "A",
+  "criteria": [
+    {
+      "id": "A1",
+      "statement": "The header carries a Status: line naming the file draft, derived, non-authoritative, with the cited DEC/REQ/FLOW winning any conflict and PRD/sections/decisions.md as precedence #1, and a Backed by: line whose ID set matches what the file's header actually records at check time - every one of those IDs confirmed to exist in its named home file",
+      "value": false,
+      "evidence": {
+        "command": "grep -nE \"(Status:|Backed by:|draft|derived|non-authoritative)\" PRD/sections/quick-lookup/README\\.md",
+        "paths": ["PRD/sections/quick-lookup/README.md"]
+      }
+    },
+    {
+      "id": "A2",
+      "statement": "The six top-level sections are present in order: What it is, How it works, The full backend path (heading only), Measured bounds, Rejected alternatives and deferred scope, Where it lives",
+      "value": false,
+      "evidence": {
+        "command": "grep -nE \"^## (What it is|How it works|The full backend path|Measured bounds|Rejected alternatives|Where it lives)\" PRD/sections/quick-lookup/README\\.md",
+        "paths": ["PRD/sections/quick-lookup/README.md"]
+      }
+    },
+    {
+      "id": "A3",
+      "statement": "What it is is confirmed accurate against DEC-107, REQ-073, FLOW-011, and DEC-108 - no invented capability, no omitted scope line",
+      "value": false,
+      "evidence": {
+        "command": "grep -n \"^### DEC-107\\b\" PRD/sections/decisions/lookup-suite\\.md|grep -n \"^### DEC-108\\b\" PRD/sections/decisions/lookup-suite\\.md|grep -n \"^### REQ-073\\b\" PRD/sections/functional-requirements\\.md|grep -n \"^### FLOW-011\\b\" PRD/sections/user-flows\\.md",
+        "paths": [
+          "PRD/sections/quick-lookup/README.md",
+          "PRD/sections/decisions/lookup-suite.md",
+          "PRD/sections/functional-requirements.md",
+          "PRD/sections/user-flows.md"
+        ]
+      }
+    },
+    {
+      "id": "A4",
+      "statement": "Each of the five How it works subsections is confirmed traceable to its cited sources' actual text - no invented capability, no dropped behavior",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "A5",
+      "statement": "Measured bounds figures are confirmed against screen-layout.md, DEC-045, DEC-025, and NFR-001 - the pre-submit image-fit figures and the four-topic/2500-char figures match their sources exactly",
+      "value": false,
+      "evidence": {
+        "command": "grep -n \"Quick Question\" PRD/sections/screen-layout\\.md|grep -n \"^### DEC-045\\b\" -A 15 PRD/sections/decisions/rules-retrieval\\.md|grep -n \"^### DEC-025\\b\" -A 10 PRD/sections/decisions/prompt-assembly\\.md",
+        "paths": [
+          "PRD/sections/quick-lookup/README.md",
+          "PRD/sections/screen-layout.md",
+          "PRD/sections/decisions/rules-retrieval.md",
+          "PRD/sections/decisions/prompt-assembly.md"
+        ]
+      }
+    },
+    {
+      "id": "A6",
+      "statement": "Rejected alternatives and deferred scope matches its cited DECs' Context/Notes language, with nothing invented or omitted, including DEC-097/DEC-099 framed as a real measured rejection per DEC-107's Context (not a bare superseded footnote)",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "A7",
+      "statement": "The frontend-facing portion of Where it lives names every file system-map.md's Quick Lookup block and the actual repository tree confirm belongs to the feature; QuickLookupApp.tsx is confirmed registered in destinationRegistry.tsx",
+      "value": false,
+      "evidence": {
+        "command": "find apps/frontend/src/components/portal/quick-lookup -maxdepth 1 -type f|grep -n \"quick-lookup|QuickLookupApp\" apps/frontend/src/components/portal/destinationRegistry\\.tsx",
+        "paths": [
+          "PRD/sections/quick-lookup/README.md",
+          "PRD/sections/system-map.md",
+          "apps/frontend/src/components/portal/quick-lookup",
+          "apps/frontend/src/components/portal/destinationRegistry.tsx"
+        ]
+      }
+    },
+    {
+      "id": "A8",
+      "statement": "No new (minted) stable ID token appears in the file outside slice B's licensed combo-ID addition - every ID token present resolves to a real, pre-existing ID in its home file - and this slice's diff touches only PRD/sections/quick-lookup/README.md, confined to the sections this slice owns, and only for bounded additive correction where genuinely needed - no apps/ change, no edit to any existing DEC/REQ/FLOW/NFR body, no system-map.md/screen-layout.md/open-questions.md/goals-and-non-goals.md edit",
+      "value": false,
+      "evidence": {
+        "command": "grep -oE \"(DEC|REQ|FLOW|NFR|Q)-[0-9]+\" PRD/sections/quick-lookup/README\\.md|sort -u|git status --porcelain PRD/sections/ apps/",
+        "paths": ["PRD/sections/quick-lookup/README.md"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "slug": "quick-lookup-spec",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "Request-validation bullets (mode-discriminated union, default-to-game, .strict() lookup branch, oracle-level card shape, 600-char questionSchema, shared conversation-history validation) are confirmed against askAiRequest.ts, read directly",
+      "value": false,
+      "evidence": {
+        "command": "grep -n \"mode|strict|questionSchema|boundedText\" apps/backend/src/validation/askAiRequest\\.ts",
+        "paths": [
+          "apps/backend/src/validation/askAiRequest.ts",
+          "PRD/sections/quick-lookup/README.md"
+        ]
+      }
+    },
+    {
+      "id": "B2",
+      "statement": "Branching-prompt-assembly bullets (single path not forked by card, always-run vs card-conditional layers, structural absence of game-state-only sections) are confirmed against preparation.ts and promptAssembly.ts, read directly, including a direct check that the lookup assembler never calls the game-context/phase-guidance/zone-section builders",
+      "value": false,
+      "evidence": {
+        "command": "grep -n \"prepareLookupPromptInput|prepareGamePromptInput\" -A 20 apps/backend/src/prompt/preparation\\.ts|grep -n \"getPhaseGuidance|selectGameRulesTopics\" apps/backend/src/prompt/preparation\\.ts",
+        "paths": [
+          "apps/backend/src/prompt/preparation.ts",
+          "apps/backend/src/prompt/promptAssembly.ts",
+          "PRD/sections/quick-lookup/README.md"
+        ]
+      }
+    },
+    {
+      "id": "B3",
+      "statement": "The combo-retrieval finding is independently re-verified against DEC-116, REQ-094, REQ-095, the system-map Commander Spellbook combo retrieval block, preparation.ts's resolveLookupComboCandidates call sites, and the two commander-spellbook-lookup-* fixtures; the bounded additive correction is applied if the finding holds, and FLOW-011 is confirmed to need no change",
+      "value": false,
+      "evidence": {
+        "command": "grep -n \"^### DEC-116\\b\" -A 10 PRD/sections/decisions/combo-retrieval\\.md|grep -n \"^### REQ-094\\b|^### REQ-095\\b\" -A 10 PRD/sections/functional-requirements\\.md|grep -n \"resolveLookupComboCandidates\" -A 15 apps/backend/src/prompt/preparation\\.ts",
+        "paths": [
+          "PRD/sections/decisions/combo-retrieval.md",
+          "PRD/sections/functional-requirements.md",
+          "PRD/sections/system-map.md",
+          "apps/backend/src/prompt/preparation.ts",
+          "apps/backend/src/eval/fixtures/commander-spellbook-lookup-attached-intent.fixture.json",
+          "apps/backend/src/eval/fixtures/commander-spellbook-lookup-unrelated.fixture.json",
+          "PRD/sections/user-flows.md",
+          "PRD/sections/quick-lookup/README.md"
+        ]
+      }
+    },
+    {
+      "id": "B4",
+      "statement": "Off-domain-guardrail bullets are confirmed prompt-instruction-only via a direct grep of apps/backend/src/prompt/ for any classifier/validator/detection branch, and the pinned wording is confirmed against the actual quick-lookup-off-domain.prompt.golden.txt content",
+      "value": false,
+      "evidence": {
+        "command": "grep -rn \"off-domain|offDomain\" apps/backend/src/prompt/|cat apps/backend/src/eval/fixtures/quick-lookup-off-domain\\.prompt\\.golden\\.txt",
+        "paths": [
+          "apps/backend/src/prompt",
+          "apps/backend/src/eval/fixtures/quick-lookup-off-domain.prompt.golden.txt",
+          "PRD/sections/quick-lookup/README.md"
+        ]
+      }
+    },
+    {
+      "id": "B5",
+      "statement": "Retrieval bullets (IDF-scored System 3, capped result set, curated exclusion, question-always/card-conditional query tokens, fixed four-topic always-on core) are confirmed against gameRulesRetrieval.ts and gameRulesTopicSelection.ts's ALWAYS_ON_TOPIC_IDS, read directly",
+      "value": false,
+      "evidence": {
+        "command": "grep -n \"retrieveRulesForQuery\\b\" -A 15 apps/backend/src/gameRulesRetrieval\\.ts|grep -n \"ALWAYS_ON_TOPIC_IDS\" -A 6 apps/backend/src/gameRulesTopicSelection\\.ts",
+        "paths": [
+          "apps/backend/src/gameRulesRetrieval.ts",
+          "apps/backend/src/gameRulesTopicSelection.ts",
+          "PRD/sections/quick-lookup/README.md"
+        ]
+      }
+    },
+    {
+      "id": "B6",
+      "statement": "Provider-boundary bullets (mode-agnostic generateAnswer, ASK_AI_PROVIDER selection, mock-default exposing the assembled prompt, golden fixture set including the two combo fixtures added in B3) are confirmed against apps/backend/src/providers/* and its README, read directly",
+      "value": false,
+      "evidence": {
+        "command": "cat apps/backend/src/providers/README\\.md|find apps/backend/src/eval/fixtures -maxdepth 1 -iname \"quick-lookup-*\"",
+        "paths": [
+          "apps/backend/src/providers/askAiProvider.ts",
+          "apps/backend/src/providers/createAskAiProvider.ts",
+          "apps/backend/src/providers/mockAskAiProvider.ts",
+          "apps/backend/src/providers/openAiResponsesProvider.ts",
+          "apps/backend/src/providers/README.md",
+          "PRD/sections/quick-lookup/README.md"
+        ]
+      }
+    },
+    {
+      "id": "B7",
+      "statement": "The backend-facing portion of Where it lives names every backend file the spec's backend-path section actually depends on, confirmed present in the repository tree",
+      "value": false,
+      "evidence": {
+        "command": "ls apps/backend/src/validation/askAiRequest\\.ts apps/backend/src/prompt/preparation\\.ts apps/backend/src/prompt/promptAssembly\\.ts apps/backend/src/prompt/context\\.ts apps/backend/src/prompt/mtgReference\\.ts apps/backend/src/prompt/phaseGuidance\\.ts apps/backend/src/gameRulesRetrieval\\.ts",
+        "paths": [
+          "PRD/sections/quick-lookup/README.md",
+          "apps/backend/src"
+        ]
+      }
+    },
+    {
+      "id": "B8",
+      "statement": "No new (minted) stable ID token appears in the backend-path section beyond the licensed DEC-116/REQ-094/REQ-095 addition (if applied) - and this slice's diff touches only PRD/sections/quick-lookup/README.md, confined to the backend-path section and the backend half of Where it lives - no apps/ change, no edit to any existing DEC/REQ/FLOW/NFR body, no system-map.md/screen-layout.md edit",
+      "value": false,
+      "evidence": {
+        "command": "grep -oE \"(DEC|REQ|FLOW|NFR|Q)-[0-9]+\" PRD/sections/quick-lookup/README\\.md|sort -u|git status --porcelain PRD/sections/ apps/",
+        "paths": ["PRD/sections/quick-lookup/README.md"]
+      }
+    }
+  ]
+}

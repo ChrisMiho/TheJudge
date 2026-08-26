@@ -1,5 +1,5 @@
 ---
-status: refined
+status: active
 ---
 
 # quick-lookup-spec
@@ -157,6 +157,32 @@ No decision on the exact structure of the full-backend-path section.
 - Checked artifact: `PRD/work/quick-lookup-spec/DESIGN-BRIEF.md`
 - Findings: none
 
+## Slices
+
+| Slice | Scope | Dependency | Status |
+| --- | --- | --- | --- |
+| [A](./slice-a-verify-ui-content.md) | Verify the spec's UI-facing content (header, What it is, all five How it works subsections, Measured bounds, Rejected alternatives and deferred scope, frontend half of Where it lives) against its cited sources and the DEC-168 template. | none | planned |
+| [B](./slice-b-verify-backend-path.md) | Verify The full backend path section against the actual `apps/backend/src/` files it names; independently re-verify and, if confirmed, bounded-correct the known combo-retrieval gap (DEC-116, REQ-094, REQ-095). | none | planned |
+| [C](./slice-c-nav-and-diff-proof.md) | Verify the `PRD/README.md` Section Inventory row; prove the package-wide diff since its fork point touched nothing outside the licensed set. | none | planned |
+
+GAMEPLAN: `PRD/work/quick-lookup-spec/GAMEPLAN.md`.
+
+## Implementation map
+
+- `PRD/sections/quick-lookup/README.md` — already written (not yet
+  committed; the driver commits it at publish-before-build); verified (and,
+  if needed, bounded-corrected) by slices A and B, each owning a distinct
+  part of the file.
+- `PRD/README.md` — already carries one Section Inventory row for
+  `sections/quick-lookup/` (not yet committed); verified by slice C,
+  alongside the package-wide diff-scope proof.
+
 ## Next step
 
-`/thejudge-refinement PRD/work/quick-lookup-spec/`
+`/thejudge-implement PRD/work/quick-lookup-spec/ slice A` (Claude Code) or
+`$thejudge-implement PRD/work/quick-lookup-spec/ slice A` (Codex). Slices B
+and C have no ordering dependency on A or on each other.
+
+Orchestrated mode: this package returns to `graph-run` for independent
+review, fresh verification, and publication — not published directly by
+this skill.

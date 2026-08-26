@@ -1,0 +1,52 @@
+{
+  "slug": "quick-lookup-spec",
+  "slice": "C",
+  "criteria": [
+    {
+      "id": "C1",
+      "statement": "PRD/README.md has exactly one Section Inventory row for sections/quick-lookup/",
+      "value": false,
+      "evidence": {
+        "command": "grep -c \"sections/quick-lookup\" PRD/README\\.md",
+        "paths": ["PRD/README.md"]
+      }
+    },
+    {
+      "id": "C2",
+      "statement": "That row's description states the spec is a derived, non-authoritative current-state view citing DEC-168, names Quick Lookup as the short-ask Ask AI destination, and notes it covers the full backend path",
+      "value": false,
+      "evidence": {
+        "command": "grep -Ei \"(derived|non-authoritative|current-state|DEC-168|backend path)\" PRD/README\\.md",
+        "paths": ["PRD/README.md"]
+      }
+    },
+    {
+      "id": "C3",
+      "statement": "No other Section Inventory or Instruction Inventory row was added, removed, or reordered",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "C4",
+      "statement": "The full package diff (from the merge-base with origin/main, including uncommitted working-tree changes) shows no change under apps/, and no change to any existing DEC/REQ/FLOW/NFR body, system-map.md, screen-layout.md, open-questions.md, or goals-and-non-goals.md",
+      "value": false,
+      "evidence": {
+        "command": "git diff --stat \\$\\(git merge-base HEAD origin/main\\) -- (apps/|PRD/sections/decisions|PRD/sections/functional-requirements\\.md|PRD/sections/user-flows\\.md|PRD/sections/non-functional-requirements\\.md|PRD/sections/system-map\\.md|PRD/sections/screen-layout\\.md|PRD/sections/goals-and-non-goals\\.md|PRD/sections/open-questions\\.md)",
+        "paths": [
+          "PRD/sections/quick-lookup/README.md",
+          "PRD/README.md"
+        ]
+      }
+    },
+    {
+      "id": "C5",
+      "statement": "A human confirmed the package needs no further durable-truth promotion at cleanup beyond PRD/sections/quick-lookup/README.md and the PRD/README.md row",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    }
+  ]
+}

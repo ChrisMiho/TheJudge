@@ -18,6 +18,7 @@
 | 3 | define | opus | parked | `0 → 48` | spec authored at `PRD/sections/quick-lookup/README.md` (321 lines, DEC-168 template); `DESIGN-BRIEF.md` + one `PRD/README.md` Section Inventory row; zero new IDs, zero source-body edits; non-empty `PRD/sections/` diff → **parks at define gate** | 2026-08-26 |
 | — | gate-review | (owner) | resolved | — | `/graph-gate-review`: 6 sections walked, 6 accept / 0 edit / 0 reject; 0 new IDs; gate resolved, package restored to `refined` | 2026-08-26 |
 | 4 | gate-qc | sonnet | ok | `0 → 17` | `thejudge-quality-check`: **PASS**, no findings; all cited IDs resolve (23 DEC, 20 REQ, FLOW-006/011, NFR-001); zero new IDs; documentation-only scope confirmed; `STATUS.refined` kept | 2026-08-26 |
+| 5 | plan | sonnet | ok | `0 → 55` | `thejudge-map-out`: `GAMEPLAN.md` + 3 verify-only slices (A UI-content/8 criteria, B backend-path-vs-source/8, C nav+diff-scope/5); `STATUS.active`; no new IDs, no `PRD/sections/` edit. Slice B flags a grounded gap — accepted spec omits Commander Spellbook combo retrieval (DEC-116/REQ-094, `preparation.ts`); bounded additive correction to apply in build if it re-verifies | 2026-08-26 |
 
 ## Open gate
 
@@ -519,6 +520,34 @@ Report back:
 - Confirmation you minted zero new IDs and edited zero existing source bodies
 - Whether you hit any genuine decision blocker (and if so, what)
 - The `STATUS.*` marker you set
+
+### gate-qc
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 4 (`gate-qc`) of an autonomous graph run. Invoke the `thejudge-quality-check` skill and follow it exactly in graph mode. Copy the `Working directory:` line above, unchanged, into every prompt you write to any sub-step.
+
+Package: `PRD/work/quick-lookup-spec/`  ·  Run ID: `graph-20260826-174916`
+
+Context: Phase A #5 of the docs-refactor gameplan, a current-state feature spec for quick-lookup on the DEC-168 template. Design record `PRD/work/quick-lookup-spec/DESIGN-BRIEF.md`; spec `PRD/sections/quick-lookup/README.md` (owner-accepted at the define gate, 6/6 sections, zero new IDs). Documentation/consolidation package, so downstream implementation is verify-only; validate the brief on those terms — PRD alignment and agent-readiness for a verify-and-correct implementation.
+
+Validate `DESIGN-BRIEF.md` (PASS/FAIL + complete findings). Write no GAMEPLAN or slice docs, no `PRD/sections/` edit, no commit/push/worktree, no touch to the ledger/lock/sentinel. Set the `STATUS.*` marker per the skill (FAIL sets `STATUS.refining`). Report the verdict, findings, marker, and confirmation of scope.
+
+### plan
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 5 (`plan`) of an autonomous graph run. Invoke the `thejudge-map-out` skill and follow it exactly in graph mode. Copy the `Working directory:` line above, unchanged, into every prompt you write to any sub-step.
+
+Package: `PRD/work/quick-lookup-spec/`  ·  Run ID: `graph-20260826-174916`
+
+Context: Phase A #5 of the docs-refactor gameplan. The deliverable already exists and is owner-accepted at the define gate: spec `PRD/sections/quick-lookup/README.md` (untracked; driver commits at publish-before-build), design record `DESIGN-BRIEF.md`, one `PRD/README.md` row. `## Preparation gate` records `Quality-check: PASS`. Documentation/consolidation package, so the slices are VERIFY-ONLY (the pattern the four prior Phase A specs used); a slice verifies the authored spec against its cited sources, the DEC-168 template, and the backend/frontend files it names, and drift is fixed in build as a bounded sourced correction. Do not plan slices that add new product behavior or edit existing DEC/REQ/FLOW bodies.
+
+Write `GAMEPLAN.md`, the lettered slice docs, and one `slice-<letter>.criteria.json` per slice (criteria `false`, real `evidence` block). Scope slices to verify the spec content vs cited sources and DEC-168 shape, the backend-path section vs the actual `apps/backend/src/` files, and the `PRD/README.md` row plus a package-wide diff-scope proof. Set `STATUS.active`. No `PRD/sections/` edit, no commit/push/worktree, no touch to the ledger/lock/sentinel. Report slices/criteria created, per-slice scope, the marker, and confirmation of no new IDs and no `PRD/sections/` edits.
 
 ## Instruction ledger
 

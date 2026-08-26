@@ -8,11 +8,11 @@ Do not rename package folders to encode status.
 
 ## active
 
-## refined
-
 | Package | Notes |
 | --- | --- |
-| [quick-lookup-spec](./quick-lookup-spec/) | Phase A #5 of the docs-refactor gameplan — current-state Quick Lookup spec (full backend path). Define gate resolved 2026-08-26 (6 sections accepted, 0 new IDs). Resume with `/graph-run PRD/work/quick-lookup-spec/` → `gate-qc`. |
+| [quick-lookup-spec](./quick-lookup-spec/) | Phase A #5 of the docs-refactor gameplan — current-state Quick Lookup spec (full backend path). Quality-check PASS; mapped out into 3 verify-only slices (A: UI-facing content, B: backend-path section against source, C: nav row + diff-scope proof). Resume with `/thejudge-implement PRD/work/quick-lookup-spec/ slice A`. |
+
+## refined
 
 ## refining
 

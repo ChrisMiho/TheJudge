@@ -46,6 +46,7 @@ For implementation work, read in this order:
 | `sections/user-feedback/` | draft | Derived, non-authoritative current-state feature spec for the Feedback & Bug Report feature, consolidating its decision/requirement/flow sources into one view (DEC-168) |
 | `sections/trade-balancer/` | draft | Derived, non-authoritative current-state feature spec for the Trade Balancer, consolidating its decision/requirement/flow sources into one view; its price corpus is documented in the directory's `data/cardPrintingPrices.md` (DEC-168) |
 | `sections/scan/` | draft | Derived, non-authoritative current-state feature spec for Card Scanning — the cross-cutting camera input path shared by In-Depth, Quick Question, and Trade Balancer — consolidating its decision/requirement/flow sources into one view; its two committed Magic-data corpora are documented in the directory's `data/cardhashes.md` and `data/cardScanMap.md` (DEC-168) |
+| `sections/quick-lookup/` | draft | Derived, non-authoritative current-state feature spec for Quick Lookup — the short-ask Ask AI destination — consolidating its decision/requirement/flow sources into one view, including the full backend path (validation, branching prompt assembly, retrieval, provider boundary) (DEC-168) |
 
 ## Instruction Inventory
 
