@@ -1,5 +1,5 @@
 ---
-status: ship-ready
+status: owner-action
 ---
 
 # scan-spec
