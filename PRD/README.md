@@ -43,6 +43,7 @@ For implementation work, read in this order:
 | `sections/system-map.md` | active | Feature/subsystem catalog: shipped-vs-planned status, behavior summary, and coarse location per subsystem |
 | `sections/screen-layout.md` | active | Screen layout catalog: purpose, hybrid % size bands, fit/containment per major screen for agent-directed UI (DEC-149) |
 | `sections/life-tracker/` | draft | Derived, non-authoritative current-state feature spec for the Player Life Tracker, consolidating its decision/requirement/flow sources into one view (DEC-168) |
+| `sections/user-feedback/` | draft | Derived, non-authoritative current-state feature spec for the Feedback & Bug Report feature, consolidating its decision/requirement/flow sources into one view (DEC-168) |
 
 ## Instruction Inventory
 
