@@ -1,5 +1,5 @@
 ---
-status: active
+status: owner-action
 ---
 
 # trade-balancer-spec

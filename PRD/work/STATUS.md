@@ -8,10 +8,6 @@ Do not rename package folders to encode status.
 
 ## active
 
-| Package | Notes |
-| --- | --- |
-| [trade-balancer-spec](./trade-balancer-spec/) | Spec + corpus doc + nav row already committed and owner-accepted at the define gate (2026-08-25). Mapped 2026-08-25: slice A verifies the spec and corpus doc against sources/template/artifact, slice B verifies the nav row and proves diff scope — both verify-only, parallel-ready (Phase A #3, docs-refactor gameplan) |
-
 ## refined
 
 ## refining
@@ -19,6 +15,10 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
+
+| Package | Notes |
+| --- | --- |
+| [trade-balancer-spec](./trade-balancer-spec/) | `land` gate — reviewer APPROVED (16/16 criteria, 0 Critical/Important). Merge PR #110 (`thejudge-auto/trade-balancer-spec-work` → `thejudge-auto/trade-balancer-spec`), then `/graph-run PRD/work/trade-balancer-spec/` to continue at `close` (Phase A #3, docs-refactor gameplan) |
 
 ## deferred
 
