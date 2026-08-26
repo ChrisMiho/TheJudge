@@ -7,7 +7,7 @@
 - Autonomous base: `origin/thejudge-auto/trade-balancer-spec`
 - Fork point: `main` (`f97881b`) — carries Phase A specs #1 (life-tracker) and #2 (user-feedback) and DEC-168; local `main` was fast-forwarded to `origin/main` before this run branched, closing the stale-base gap the docs-refactor PROGRESS.md warns about
 - Staging: `.worktrees/.graph-intake/graph-20260825-190858/`
-- Current node: `define` — gate resolved; resume at `gate-qc`
+- Current node: `define` (attempt 2) — `gate-qc` FAIL loop 1/3; fixing DESIGN-BRIEF scope-count
 - Next action: `/graph-run PRD/work/trade-balancer-spec/`
 
 ## Node ledger
@@ -17,6 +17,8 @@
 | 1 | preflight | haiku | ok | `0 → 3` | branch `thejudge-auto/trade-balancer-spec` created + pushed; base resolved `main`; clean tree, no stash; lock `graph-20260825-190858` (PID 3534) held; `CANARY_COMMAND` denied (universal), `GRAPH_CANARY_COMMAND` denied (graph tier) | 2026-08-25 |
 | 2 | shape | sonnet | ok | `1 → 33` | package `PRD/work/trade-balancer-spec/` created (`IDEA.md`, `README.md`, `STATUS.ideation`, `intake/refactor-gameplan.md`); board row under `## ideation`; commit `b265e29` pushed; corpus `cardPrintingPrices.json` identified as passing all four `data/`-bucket clauses | 2026-08-25 |
 | 3 | define | opus | ok — gate (parked) | `1 → 41` | `DESIGN-BRIEF.md` written; two new files `PRD/sections/trade-balancer/README.md` (162 lines, behavior) and `PRD/sections/trade-balancer/data/cardPrintingPrices.md` (119 lines, corpus) + one `PRD/README.md` nav row; **no new stable IDs**, no existing DEC/REQ/FLOW/NFR body modified; corpus artifact byte-unchanged (no rebuild — Scryfall boundary respected); `git diff -- PRD/sections/` non-empty → parked at the `define` gate; `STATUS.refined` → `STATUS.owner-action` | 2026-08-25 |
+| — | gate-review | opus | gate resolved | — | owner walked the `define` diff; 2/2 files accepted, 0 edited, 0 rejected; nested corpus/behavior split confirmed as precedent for #4/#5/#7; `STATUS.owner-action` → `STATUS.refined` | 2026-08-25 |
+| 4 | gate-qc | sonnet | failed | `3 → 38` | `thejudge-quality-check` FAIL on `DESIGN-BRIEF.md`: Scope claims "two navigation-only Section Inventory rows" in `PRD/README.md` but only one was accepted/written (assumption #5 body already resolves to one; grep confirms one row). All DEC/REQ/FLOW/NFR citations and corpus figures verified accurate against source. Loop 1/3 → back to `define`; `STATUS.refined` → `STATUS.refining` | 2026-08-25 |
 
 ## Gate verdicts
 
@@ -451,6 +453,27 @@ Do NOT write a GAMEPLAN or slice docs (that is node 5). Do NOT run `npm run data
 If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
 
 Report: PASS or FAIL, the checked artifact path, the complete findings list (or none), and the `STATUS.*` marker you set. Do not dispatch further nodes.
+
+### define (attempt 2 — gate-qc FAIL loop 1/3)
+
+graph-run is controlling. You are node 3 (`define`, attempt 2) of an autonomous graph run, looping back from a `gate-qc` FAIL. Invoke the `thejudge-refinement` skill and follow it exactly in graph-controlled (non-interactive) mode — do not stop to ask the user questions.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Package: `PRD/work/trade-balancer-spec/`. The `define` gate was already owner-resolved: both `PRD/sections/` files (`trade-balancer/README.md` behavior spec, `trade-balancer/data/cardPrintingPrices.md` corpus doc) were accepted and the nested corpus/behavior split was confirmed. Those files are correct and must NOT be reopened or edited.
+
+This loop-back fixes ONE `gate-qc` finding in `DESIGN-BRIEF.md` only, recorded in the package README's `## Preparation gate`:
+
+- The Scope section claims "two navigation-only Section Inventory rows in `PRD/README.md`", and material-assumption #5's title repeats "Two", but the accepted deliverable and the actual `PRD/README.md` carry exactly **one** Trade Balancer nav row (assumption #5's own body already resolves to one).
+- Correct it: change "two" → "one" in the Scope section, and retitle assumption #5 to match its body ("One navigation-only PRD/README.md row" or equivalent). Confirm against the real `PRD/README.md` (grep the Section Inventory) that exactly one Trade Balancer row exists.
+
+BOUNDARIES: Do NOT edit any `PRD/sections/` file — the accepted spec and corpus stand unchanged. Do NOT mint new stable IDs or new product decisions. Do NOT add a second `PRD/README.md` row. Do NOT run `npm run data:build`, `npm run data:refresh`, or any Scryfall network refresh. This is a documentation-accuracy fix to `DESIGN-BRIEF.md`, nothing more. Follow the intake rule: intake is evidence, never authority; do NOT open any document intake cites.
+
+When the fix is applied, set `STATUS.refined` per the skill and report.
+
+If you write any prompt yourself, copy the `Working directory:` line above unchanged into it.
+
+Report: the exact `DESIGN-BRIEF.md` edits you made, confirmation that no `PRD/sections/` file was touched, confirmation of the one-row count in `PRD/README.md`, whether you set `STATUS.refined`, and any blocker. Do not create a GAMEPLAN or slice docs; do not dispatch further nodes.
 
 ## Instruction ledger
 

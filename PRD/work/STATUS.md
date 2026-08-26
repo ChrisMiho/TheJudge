@@ -10,11 +10,11 @@ Do not rename package folders to encode status.
 
 ## refined
 
+## refining
+
 | Package | Notes |
 | --- | --- |
-| [trade-balancer-spec](./trade-balancer-spec/) | `define` gate resolved 2026-08-25 — both files accepted, nested corpus/behavior split confirmed as the precedent for #4/#5/#7. Resume at `gate-qc` via `/graph-run PRD/work/trade-balancer-spec/` |
-
-## refining
+| [trade-balancer-spec](./trade-balancer-spec/) | `gate-qc` FAIL 2026-08-25 — DESIGN-BRIEF Scope claims "two navigation-only Section Inventory rows" but the accepted deliverable and PRD/README.md carry one. Return to `/thejudge-refinement PRD/work/trade-balancer-spec/`. |
 
 ## ideation
 

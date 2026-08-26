@@ -1,5 +1,5 @@
 ---
-status: refined
+status: refining
 ---
 
 # trade-balancer-spec
@@ -106,6 +106,18 @@ body. No decision on the exact corpus/behavior split shape.
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/trade-balancer-spec
+
+## Preparation gate
+
+- Quality-check: FAIL
+- Checked artifact: `PRD/work/trade-balancer-spec/DESIGN-BRIEF.md`
+- Findings: DESIGN-BRIEF Scope claims "two navigation-only Section Inventory
+  rows in `PRD/README.md`" and assumption #5's title repeats "Two", but the
+  accepted deliverable and the actual `PRD/README.md` carry exactly **one**
+  Trade Balancer nav row (assumption #5's own body already resolves to one).
+  Fix: change "two" → "one" in the Scope section and retitle assumption #5 to
+  match its body. All DEC/REQ/FLOW/NFR citations and corpus figures otherwise
+  verified accurate. (`gate-qc` loop 1/3, 2026-08-25)
 
 ## Next step
 
