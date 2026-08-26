@@ -6,8 +6,8 @@
 - Graph canary: `denied — graph tier armed (nohup true)`
 - Autonomous base: `origin/thejudge-auto/quick-lookup-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260826-174916/`
-- Current node: `define` (PARKED at define gate)
-- Next action: `/graph-gate-review PRD/work/quick-lookup-spec/`, then `/graph-run PRD/work/quick-lookup-spec/`
+- Current node: `define` — gate resolved 2026-08-26; run resumes at `gate-qc`
+- Next action: `/graph-run PRD/work/quick-lookup-spec/`
 
 ## Node ledger
 
@@ -18,6 +18,10 @@
 | 3 | define | opus | parked | `0 → 48` | spec authored at `PRD/sections/quick-lookup/README.md` (321 lines, DEC-168 template); `DESIGN-BRIEF.md` + one `PRD/README.md` Section Inventory row; zero new IDs, zero source-body edits; non-empty `PRD/sections/` diff → **parks at define gate** | 2026-08-26 |
 
 ## Open gate
+
+**Resolved:** 2026-08-26 via `/graph-gate-review` — all six spec sections walked
+and accepted (6 accept, 0 edit, 0 reject; 0 new stable IDs). The recorded diff
+below is retained as the evidence of what was walked.
 
 **Gate:** define gate. `thejudge-refinement` (node 3) authored a current-state
 feature spec that writes new player-facing product truth into `PRD/sections/`.
@@ -384,6 +388,22 @@ index 0000000..a4e9b35
 +`#### Quick Question — answered workspace` rows for the layout bands, and
 +`apps/backend/src/providers/README.md` for the provider-boundary config detail.
 ```
+
+## Gate verdicts
+
+The spec minted zero new stable IDs — a derived, non-authoritative view citing
+existing IDs — so the walk unit was the spec's six sections rather than new IDs.
+Every section was accepted, so no `PRD/sections/` edit or revert was applied; the
+run's authored text stands.
+
+| Section walked | Verdict | Reason |
+| --- | --- | --- |
+| header + What it is | accept | — |
+| How it works | accept | — |
+| The full backend path | accept | — |
+| Measured bounds | accept | — |
+| Rejected alternatives and deferred scope | accept | — |
+| Where it lives | accept | — |
 
 ## Dispatch prompts
 

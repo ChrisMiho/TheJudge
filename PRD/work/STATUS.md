@@ -10,15 +10,15 @@ Do not rename package folders to encode status.
 
 ## refined
 
+| Package | Notes |
+| --- | --- |
+| [quick-lookup-spec](./quick-lookup-spec/) | Phase A #5 of the docs-refactor gameplan — current-state Quick Lookup spec (full backend path). Define gate resolved 2026-08-26 (6 sections accepted, 0 new IDs). Resume with `/graph-run PRD/work/quick-lookup-spec/` → `gate-qc`. |
+
 ## refining
 
 ## ideation
 
 ## owner-action
-
-| Package | Gate |
-| --- | --- |
-| [quick-lookup-spec](./quick-lookup-spec/) | Parked at the **define gate** (Phase A #5, docs-refactor gameplan). Node 3 authored `PRD/sections/quick-lookup/README.md` (derived, non-authoritative Quick Lookup spec, zero new IDs). Review with `/graph-gate-review PRD/work/quick-lookup-spec/`, then resume with `/graph-run PRD/work/quick-lookup-spec/`. |
 
 ## deferred
 
