@@ -6,9 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-| Package | Notes |
-| --- | --- |
-
 ## active
 
 ## refined
