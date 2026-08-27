@@ -18,6 +18,12 @@
 
 ## Open gate
 
+**RESOLVED 2026-08-27 via `graph-gate-review` — 14 of 14 spec sections accepted
+(0 edits, 0 rejects). The spec stands as written; no `PRD/sections/` change was
+applied at the gate. See `## Gate verdicts`. The recorded diff below stays as the
+evidence of what was walked. Package restored to `refined`; run resumes at
+`gate-qc`.**
+
 **Gate — `define` produced a non-empty `PRD/sections/` diff.** The whole diff is
 one new file, `PRD/sections/shared-chrome/README.md` (442 lines, pure addition;
 no existing DEC/REQ/FLOW/NFR source body was changed). Per the graph-run
@@ -536,6 +542,30 @@ index 0000000..de2f4ff
 +blocks for the full file lists, and `PRD/sections/screen-layout.md`'s
 +`## Shared layout language` and `### Shared chrome` rows for the layout bands.
 ```
+
+## Gate verdicts
+
+Walked 2026-08-27 via `graph-gate-review`. This is a Phase A spec with **zero new
+stable IDs** (a derived view over existing DEC/REQ/FLOW/NFR), so the walk mapped
+onto the new spec file's 14 sections, in file order, one at a time. All accepted;
+the spec file `PRD/sections/shared-chrome/README.md` stands unchanged.
+
+| Walk unit (section) | Verdict | Reason |
+| --- | --- | --- |
+| Header — draft marker + Backed-by citation set | accept | — |
+| What it is — bucket scope, chrome-only, constraint-7 split | accept | — |
+| Suite shell + mock-mode banner | accept | — |
+| Destination routing + load fallback | accept | — |
+| Menu corner rail + tray | accept | — |
+| Theme section | accept | — |
+| Shared answered-conversation workspace | accept | — |
+| Conversation history drawer | accept | — |
+| View Context / adaptive-context overlay | accept | — |
+| Card detail popup (suite-wide) + shared close control | accept | — |
+| Shared layout language | accept | — |
+| Measured bounds | accept | — |
+| Rejected alternatives + deferred scope | accept | — |
+| Where it lives | accept | — |
 
 ## Dispatch prompts
 
