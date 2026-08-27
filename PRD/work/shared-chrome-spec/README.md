@@ -1,5 +1,5 @@
 ---
-status: refined
+status: active
 ---
 
 # shared-chrome-spec
@@ -88,6 +88,38 @@ proposed and confirmed or corrected at the define gate.
 
 - Autonomous base: origin/thejudge-auto/shared-chrome-spec
 
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/shared-chrome-spec/DESIGN-BRIEF.md`
+- Findings: none
+
+## Slices
+
+| Slice | Scope | Dependency | Status |
+| --- | --- | --- | --- |
+| [A](./slice-a-verify-structural-chrome.md) | Verify the spec's structural-chrome content (header/Backed-by structural half, What it is, first four How it works subsections — shell/mock-banner, routing/load fallback, Menu rail/tray, Theme; Shared layout language; structural portions of Measured bounds and Rejected alternatives; structural portion of Where it lives) against cited sources and the actual `apps/frontend/src/` tree. | none | planned |
+| [B](./slice-b-verify-conversation-chrome.md) | Verify the spec's conversation/overlay-chrome content (header/Backed-by conversation half, last four How it works subsections — answered workspace, history drawer, View Context overlay, card detail popup + close control; conversation-chrome portions of Measured bounds and Rejected alternatives; conversation-chrome portion of Where it lives) against cited sources and the actual `apps/frontend/src/` tree. | none | planned |
+| [C](./slice-c-nav-scope-and-diff-proof.md) | Verify the two scope-boundary bullets in Rejected alternatives (deferred/out-of-scope; per-feature surfaces); verify the `PRD/README.md` Section Inventory row; prove the package diff from the `ee6e33f` map-out baseline stayed in scope, correctly excluding the concurrent `lambda-s3-deploy` package's already-committed changes on this branch. | none | planned |
+
+GAMEPLAN: `PRD/work/shared-chrome-spec/GAMEPLAN.md`.
+
+## Implementation map
+
+- `PRD/sections/shared-chrome/README.md` — already written and committed
+  (`0445150`); verified (and, if needed, bounded-corrected) by slices A and
+  B, each owning a distinct half of the file, plus slice C's two
+  scope-boundary bullets.
+- `PRD/README.md` — needs one Section Inventory row for
+  `sections/shared-chrome/`; added and verified by slice C, alongside the
+  package-wide diff-scope proof.
+
 ## Next step
 
-`/thejudge-refinement PRD/work/shared-chrome-spec/`
+`/thejudge-implement PRD/work/shared-chrome-spec/ slice A` (Claude Code) or
+`$thejudge-implement PRD/work/shared-chrome-spec/ slice A` (Codex). Slices B
+and C have no ordering dependency on A or on each other.
+
+Orchestrated mode: this package returns to `graph-run` for independent
+review, fresh verification, and publication — not published directly by
+this skill.

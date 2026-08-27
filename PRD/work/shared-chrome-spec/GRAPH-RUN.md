@@ -3,10 +3,11 @@
 - Run ID: `graph-20260827-001521`
 - Profile: `unverified`
 - Canary: `denied — hook live (CANARY_COMMAND: rm -rf denied in every session); graph tier denied — GRAPH_CANARY_COMMAND: nohup denied while lock held`
+- Resume canary (2026-08-27, after gate-review): `denied — graph tier armed (nohup denied while lock held)`; lock re-taken via `graph-preflight --take-lock`
 - Autonomous base: `origin/thejudge-auto/shared-chrome-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260827-001521/`
-- Current node: `define` (parked at define gate)
-- Next action: `/graph-gate-review PRD/work/shared-chrome-spec/`
+- Current node: `build`
+- Next action: `/graph-run PRD/work/shared-chrome-spec/`
 
 ## Node ledger
 
@@ -15,6 +16,9 @@
 | 1 | preflight | haiku | ok | `0 → 4` | branch `thejudge-auto/shared-chrome-spec` created + pushed; clean checkout, no stash; both canaries denied (universal + graph tier) | 2026-08-27 |
 | 2 | shape | sonnet | ok | `0 → 52` | package `PRD/work/shared-chrome-spec/` created; `STATUS.ideation`; intake copied to `PRD/work/shared-chrome-spec/intake/refactor-gameplan.md` | 2026-08-27 |
 | 3 | define | opus | ok | `0 → 76` | spec `PRD/sections/shared-chrome/README.md` (442 lines, new file) written on DEC-168 template; zero new stable IDs; STATUS reached `refined`; run parks at define gate over the new-file diff | 2026-08-27 |
+| — | gate-review | — | resolved | — | owner walked 14/14 spec sections, all accepted (0 edits, 0 rejects); `## Gate verdicts` recorded; STATUS restored to `refined` | 2026-08-27 |
+| 4 | gate-qc | sonnet | ok (PASS) | `0 → 31` | `thejudge-quality-check` PASS on `DESIGN-BRIEF.md`; all 40 DEC / 22 REQ / 4 FLOW / 4 NFR citations verified against source; diff is one new file, zero source-body edits; no findings | 2026-08-27 |
+| 5 | plan | sonnet | ok | `0 → 37` | `thejudge-map-out`: 3 verify-only slices (A structural chrome, B conversation/overlay chrome, C scope bullets + `PRD/README.md` nav row + diff-scope proof) with criteria files; `STATUS.active`; slice C diff-scope baselined on `ee6e33f` to exclude lambda-s3-deploy's committed changes | 2026-08-27 |
 
 ## Open gate
 
