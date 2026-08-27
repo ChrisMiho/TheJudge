@@ -6,8 +6,8 @@
 - Resume canary (2026-08-27, after gate-review): `denied — graph tier armed (nohup denied while lock held)`; lock re-taken via `graph-preflight --take-lock`
 - Autonomous base: `origin/thejudge-auto/shared-chrome-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260827-001521/`
-- Current node: `review`
-- Next action: `/graph-run PRD/work/shared-chrome-spec/`
+- Current node: `land` (parked for human PR merge)
+- Next action: `/graph-run PRD/work/shared-chrome-spec/` (after merging PR #118)
 - PR: https://github.com/ChrisMiho/TheJudge/pull/118 (`thejudge-auto/shared-chrome-spec-work` → `thejudge-auto/shared-chrome-spec`)
 - Base frozen: PR open — driver commits ledger/status to launch checkout LOCALLY ONLY, no base push until PR merges
 
@@ -22,8 +22,29 @@
 | 4 | gate-qc | sonnet | ok (PASS) | `0 → 31` | `thejudge-quality-check` PASS on `DESIGN-BRIEF.md`; all 40 DEC / 22 REQ / 4 FLOW / 4 NFR citations verified against source; diff is one new file, zero source-body edits; no findings | 2026-08-27 |
 | 5 | plan | sonnet | ok | `0 → 37` | `thejudge-map-out`: 3 verify-only slices (A structural chrome, B conversation/overlay chrome, C scope bullets + `PRD/README.md` nav row + diff-scope proof) with criteria files; `STATUS.active`; slice C diff-scope baselined on `ee6e33f` to exclude lambda-s3-deploy's committed changes | 2026-08-27 |
 | 6 | build | sonnet | ok | `0 → 128` | `thejudge-implement-all`: PR #118 (`thejudge-auto/shared-chrome-spec-work` → base) opened; all 23 criteria `value:true` (A 9 / B 7 / C 7) verified from emitted files; write-scope clean (launch checkout untouched, writes in `.worktrees/implement-shared-chrome-spec/`); one bounded slice-B path correction; `STATUS.ship-ready`; pre-existing unrelated `lambda-package-budget.test.mjs` worktree failure documented on PR | 2026-08-27 |
+| 7 | review | opus | ok (APPROVE) | `0 → 13` | no-write reviewer (Explore, no write tools) APPROVE, 0 findings; graded A1–A9 / B1–B7 / C1–C7 against acceptance criteria; slice-B path correction verified accurate against the real tree; lambda changes and pre-existing test failure correctly not flagged | 2026-08-27 |
+| 8 | land | — | parked (human merge) | — | PR #118 OPEN + MERGEABLE; driver parks for owner PR merge — never runs `gh pr merge` | 2026-08-27 |
 
 ## Open gate
+
+**ACTIVE GATE — `land` (human PR merge).** Node 7 (`review`) APPROVED with zero
+findings; the deliverable is ship-ready. Node 8 (`land`) is a human action: the
+driver parks and waits for the owner to merge — it never runs `gh pr merge` or
+`gh pr close`.
+
+- **Question:** merge PR #118 into its base branch.
+- **PR:** https://github.com/ChrisMiho/TheJudge/pull/118 — `thejudge-auto/shared-chrome-spec-work`
+  → `thejudge-auto/shared-chrome-spec` — OPEN, MERGEABLE.
+- **Evidence:** all 23 slice criteria `value:true`; review APPROVE, 0 findings;
+  diff-scope proven from `ee6e33f`, touching only `PRD/`.
+- **Resume:** after merging PR #118, run `/graph-run PRD/work/shared-chrome-spec/`.
+  It confirms the PR is merged, records `land` ok, and runs `close` (promote
+  durable truth, write the receipt, delete the package).
+- **Note:** the base `thejudge-auto/shared-chrome-spec` also carries the owner's
+  intentional `lambda-s3-deploy` side work (see the resolved define-gate note
+  below). Merging PR #118 is `-work` → that base; it does not itself touch `main`.
+
+---
 
 **RESOLVED 2026-08-27 via `graph-gate-review` — 14 of 14 spec sections accepted
 (0 edits, 0 rejects). The spec stands as written; no `PRD/sections/` change was
