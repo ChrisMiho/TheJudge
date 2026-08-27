@@ -5,11 +5,11 @@
   and Read-First #1. Correct this file against those sources, not the other
   way around.
 - Backed by: DEC-020, DEC-025, DEC-029, DEC-042, DEC-045, DEC-046, DEC-095,
-  DEC-106, DEC-107, DEC-108, DEC-112, DEC-113, DEC-114, DEC-118, DEC-017,
-  DEC-033, DEC-053, DEC-160, DEC-096, DEC-097, DEC-098, DEC-099, DEC-100,
-  REQ-072, REQ-073, REQ-074, REQ-075, REQ-079, REQ-091, REQ-092, REQ-097,
-  REQ-098, REQ-011, REQ-022, REQ-024, REQ-030, REQ-129, REQ-134, REQ-141,
-  FLOW-006, FLOW-011, NFR-001
+  DEC-106, DEC-107, DEC-108, DEC-112, DEC-113, DEC-114, DEC-116, DEC-118,
+  DEC-017, DEC-033, DEC-053, DEC-160, DEC-096, DEC-097, DEC-098, DEC-099,
+  DEC-100, REQ-072, REQ-073, REQ-074, REQ-075, REQ-079, REQ-091, REQ-092,
+  REQ-094, REQ-095, REQ-097, REQ-098, REQ-011, REQ-022, REQ-024, REQ-030,
+  REQ-129, REQ-134, REQ-141, FLOW-006, FLOW-011, NFR-001
 
 ## What it is
 
@@ -173,6 +173,23 @@ both providers. (DEC-020, REQ-072)
   an explanation. The user `QUESTION` and, when present, the conversation history
   section are placed by the existing rules. (REQ-074)
 
+### Combo enrichment
+
+- Built: `prepareLookupPromptInput` also calls `resolveLookupComboCandidates`,
+  which — when a Commander Spellbook catalog is loaded — calls
+  `selectComboCandidates` in `mode: "lookup"` with the attached card (if any)
+  as the sole match instance and the explicit-intent detector run over the
+  question text. Retrieval requires **both** explicit combo intent and an
+  attached card; a lookup question with no card, or with a card but no combo
+  intent, retrieves no combo catalog data. Every candidate must contain the
+  attached card as an exact ingredient or an authoritative template match.
+  (DEC-116, REQ-094)
+- Built: when at least one variant is selected, prompt assembly adds a bounded
+  `COMMANDER SPELLBOOK COMBO CONTEXT — COMMUNITY-SOURCED` section (shared
+  format with game mode) after card/rules/rulings enrichment and before
+  conversation history and the question; no selected variants means no combo
+  section at all. (REQ-095)
+
 ### Off-domain guardrail
 
 - Built: the lookup-mode prompt instructs the model to treat unrecognized or
@@ -216,6 +233,11 @@ both providers. (DEC-020, REQ-072)
   scenarios, each with a request fixture plus a context golden and a prompt
   golden; the off-domain prompt golden pins the guardrail instruction wording
   verbatim. (DEC-108)
+- Built: combo enrichment on the lookup path is pinned by dedicated fixtures —
+  `commander-spellbook-lookup-attached-intent` (attached card, explicit combo
+  intent) and `commander-spellbook-lookup-unrelated` (attached card, ordinary
+  rules question, no combo intent) — under
+  `apps/backend/src/eval/fixtures/commander-spellbook-lookup-*`. (REQ-095)
 
 ## Measured bounds
 
@@ -310,10 +332,13 @@ and the committed core-topics browse artifact
 through `apps/backend/src/validation/askAiRequest.ts` (the `mode: "lookup"`
 branch), `apps/backend/src/prompt/` (`preparation.ts`, `promptAssembly.ts`,
 `context.ts`, `mtgReference.ts`, `phaseGuidance.ts`),
-`apps/backend/src/gameRulesRetrieval.ts` (System 3), and
+`apps/backend/src/gameRulesRetrieval.ts` (System 3),
+`apps/backend/src/commanderSpellbook/` (`catalog.ts`, `intent.ts`,
+`matcher.ts`, `zones.ts`, `formatting.ts` — combo enrichment, DEC-116), and
 `apps/backend/src/providers/` (`askAiProvider.ts`, `createAskAiProvider.ts`,
 `mockAskAiProvider.ts`, `openAiResponsesProvider.ts`); regression goldens live
-under `apps/backend/src/eval/fixtures/quick-lookup-*` and the core-topics
+under `apps/backend/src/eval/fixtures/quick-lookup-*` and
+`commander-spellbook-lookup-*`, and the core-topics
 artifact is emitted by `scripts/build-game-rules.mjs`. See
 `PRD/sections/system-map.md`'s `## Quick Lookup` block for the full file list,
 `PRD/sections/screen-layout.md`'s `#### Quick Question — pre-submit` and

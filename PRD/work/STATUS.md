@@ -6,11 +6,11 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-## active
-
 | Package | Notes |
 | --- | --- |
-| [quick-lookup-spec](./quick-lookup-spec/) | Phase A #5 of the docs-refactor gameplan — current-state Quick Lookup spec (full backend path). Quality-check PASS; mapped out into 3 verify-only slices (A: UI-facing content, B: backend-path section against source, C: nav row + diff-scope proof). Resume with `/thejudge-implement PRD/work/quick-lookup-spec/ slice A`. |
+| [quick-lookup-spec](./quick-lookup-spec/) | Phase A #5 of the docs-refactor gameplan — current-state Quick Lookup spec (full backend path). All 3 verify-only slices done (A: UI-facing content, B: backend-path section against source — bounded combo-retrieval correction applied, C: nav row + diff-scope proof). PR pending review. |
+
+## active
 
 ## refined
 
