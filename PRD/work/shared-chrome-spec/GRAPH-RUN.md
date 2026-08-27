@@ -6,10 +6,10 @@
 - Resume canary (2026-08-27, after gate-review): `denied — graph tier armed (nohup denied while lock held)`; lock re-taken via `graph-preflight --take-lock`
 - Autonomous base: `origin/thejudge-auto/shared-chrome-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260827-001521/`
-- Current node: `land` (parked for human PR merge)
-- Next action: `/graph-run PRD/work/shared-chrome-spec/` (after merging PR #118)
-- PR: https://github.com/ChrisMiho/TheJudge/pull/118 (`thejudge-auto/shared-chrome-spec-work` → `thejudge-auto/shared-chrome-spec`)
-- Base frozen: PR open — driver commits ledger/status to launch checkout LOCALLY ONLY, no base push until PR merges
+- Current node: `close`
+- Next action: `/graph-run PRD/work/shared-chrome-spec/`
+- PR: https://github.com/ChrisMiho/TheJudge/pull/118 (`thejudge-auto/shared-chrome-spec-work` → `thejudge-auto/shared-chrome-spec`) — MERGED 2026-08-27T17:21:58Z
+- Resume (2026-08-27, at `land`): lock reclaimed (stale, own run, short-lived pid) and re-taken via `graph-preflight --take-lock --pid 86003`; graph canary `nohup true` denied — graph tier armed; PR #118 confirmed MERGED; launch checkout reconciled by `git merge origin/thejudge-auto/shared-chrome-spec` (conflicts in `PRD/work/STATUS.md` + package `README.md` resolved to a single `ship-ready` marker; `GRAPH-RUN.md` kept the driver's fuller ledger)
 
 ## Node ledger
 
@@ -24,25 +24,22 @@
 | 6 | build | sonnet | ok | `0 → 128` | `thejudge-implement-all`: PR #118 (`thejudge-auto/shared-chrome-spec-work` → base) opened; all 23 criteria `value:true` (A 9 / B 7 / C 7) verified from emitted files; write-scope clean (launch checkout untouched, writes in `.worktrees/implement-shared-chrome-spec/`); one bounded slice-B path correction; `STATUS.ship-ready`; pre-existing unrelated `lambda-package-budget.test.mjs` worktree failure documented on PR | 2026-08-27 |
 | 7 | review | opus | ok (APPROVE) | `0 → 13` | no-write reviewer (Explore, no write tools) APPROVE, 0 findings; graded A1–A9 / B1–B7 / C1–C7 against acceptance criteria; slice-B path correction verified accurate against the real tree; lambda changes and pre-existing test failure correctly not flagged | 2026-08-27 |
 | 8 | land | — | parked (human merge) | — | PR #118 OPEN + MERGEABLE; driver parks for owner PR merge — never runs `gh pr merge` | 2026-08-27 |
+| 8 | land | — | ok | n/a (human merge) | PR #118 confirmed MERGED (`gh pr view 118` → `state: MERGED`, `mergedAt: 2026-08-27T17:21:58Z`); owner merged `-work` → base; launch checkout reconciled via `git merge origin/thejudge-auto/shared-chrome-spec` | 2026-08-27 |
 
 ## Open gate
 
-**ACTIVE GATE — `land` (human PR merge).** Node 7 (`review`) APPROVED with zero
-findings; the deliverable is ship-ready. Node 8 (`land`) is a human action: the
-driver parks and waits for the owner to merge — it never runs `gh pr merge` or
-`gh pr close`.
+**RESOLVED 2026-08-27 — `land` merged.** PR #118 was merged by the owner
+(`state: MERGED`, `mergedAt: 2026-08-27T17:21:58Z`). The driver confirmed the
+merge on resume, reconciled the launch checkout (`git merge origin/thejudge-auto/shared-chrome-spec`,
+conflicts resolved to a single `ship-ready` marker and the driver's fuller
+`GRAPH-RUN.md`), recorded `land` ok, and advanced to node 9 (`close`).
 
-- **Question:** merge PR #118 into its base branch.
-- **PR:** https://github.com/ChrisMiho/TheJudge/pull/118 — `thejudge-auto/shared-chrome-spec-work`
-  → `thejudge-auto/shared-chrome-spec` — OPEN, MERGEABLE.
-- **Evidence:** all 23 slice criteria `value:true`; review APPROVE, 0 findings;
-  diff-scope proven from `ee6e33f`, touching only `PRD/`.
-- **Resume:** after merging PR #118, run `/graph-run PRD/work/shared-chrome-spec/`.
-  It confirms the PR is merged, records `land` ok, and runs `close` (promote
-  durable truth, write the receipt, delete the package).
+No active gate. Next: node 9 (`close`) runs `thejudge-cleanup` — promote durable
+truth, write the receipt, delete the package.
+
 - **Note:** the base `thejudge-auto/shared-chrome-spec` also carries the owner's
   intentional `lambda-s3-deploy` side work (see the resolved define-gate note
-  below). Merging PR #118 is `-work` → that base; it does not itself touch `main`.
+  below). Merging PR #118 was `-work` → that base; it did not itself touch `main`.
 
 ---
 

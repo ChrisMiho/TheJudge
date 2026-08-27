@@ -2,7 +2,7 @@
 
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -159,27 +159,27 @@ sourced gap with a bounded additive correction only.
 
 ## Acceptance criteria
 
-- [ ] B1 — Every conversation-drawer-overlay and popup/close-control ID in
+- [x] B1 — Every conversation-drawer-overlay and popup/close-control ID in
       `Backed by:` (the 39-ID subset listed in requirement 3) resolves to a
       real, pre-existing ID in its home file.
-- [ ] B2 — The last four **How it works** subsection headings appear, in
+- [x] B2 — The last four **How it works** subsection headings appear, in
       order, following the first four.
-- [ ] B3 — Each of the last four **How it works** subsections is confirmed
+- [x] B3 — Each of the last four **How it works** subsections is confirmed
       traceable to its cited sources' actual text (requirement 5's
       per-subsection list) — no invented capability, no dropped behavior.
-- [ ] B4 — The conversation-chrome portion of **Measured bounds** (drawer
+- [x] B4 — The conversation-chrome portion of **Measured bounds** (drawer
       width/cap, View Context, workspace clearance, card popup, shared card
       image) is confirmed against its cited sources and does not contradict
       slice A's portion.
-- [ ] B5 — The conversation-chrome portion of **Rejected alternatives and
+- [x] B5 — The conversation-chrome portion of **Rejected alternatives and
       deferred scope** (the four closed-door bullets in requirement 7)
       matches its cited DECs' Context/Notes language, with nothing invented
       or omitted.
-- [ ] B6 — The conversation-chrome portion of **Where it lives** names
+- [x] B6 — The conversation-chrome portion of **Where it lives** names
       every file `system-map.md`'s `## Follow-up chat` block and the actual
       repository tree confirm belongs to shared chrome; each named file is
       confirmed to exist.
-- [ ] B7 — No new (minted) stable ID token appears in the file — every ID
+- [x] B7 — No new (minted) stable ID token appears in the file — every ID
       token present resolves to a real, pre-existing ID in its home file —
       and this slice's diff touches only
       `PRD/sections/shared-chrome/README.md`, confined to the sections this
