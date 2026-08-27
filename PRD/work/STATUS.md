@@ -6,10 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-| Package | Notes |
-| --- | --- |
-| [quick-lookup-spec](./quick-lookup-spec/) | Phase A #5 of the docs-refactor gameplan — current-state Quick Lookup spec (full backend path). Work→base PR [#116](https://github.com/ChrisMiho/TheJudge/pull/116) MERGED 2026-08-27. Run sits at `close`: resume `/graph-run PRD/work/quick-lookup-spec/` for cleanup (receipt + package delete). Then open the base→main PR to reach `main`. |
-
 ## active
 
 ## refined
