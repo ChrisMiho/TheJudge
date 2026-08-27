@@ -2,7 +2,7 @@
 
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -85,29 +85,29 @@ branch.
 
 ## Acceptance criteria
 
-- [ ] C1 — The "Deferred / out of scope for this view" bullet correctly
+- [x] C1 — The "Deferred / out of scope for this view" bullet correctly
       lists exactly its five deferred items (deep-linkable in-flow state,
       nested/parameterized routes, cross-device sync, multi-draft backlog,
       shared drawer-primitive extraction) with nothing invented or omitted.
-- [ ] C2 — The "Per-feature surfaces that stay with their own specs" bullet
+- [x] C2 — The "Per-feature surfaces that stay with their own specs" bullet
       correctly excludes DEC-120/DEC-128/REQ-100/REQ-106, REQ-045, REQ-125,
       DEC-156 clause 3, and DEC-104/DEC-105/FLOW-014, and none of those IDs
       appears in the file's `Backed by:` line.
-- [ ] C3 — `PRD/README.md` has exactly one Section Inventory row for
+- [x] C3 — `PRD/README.md` has exactly one Section Inventory row for
       `sections/shared-chrome/`, matching the five shipped Phase A specs'
       row pattern and citing DEC-168.
-- [ ] C4 — No other Section Inventory or Instruction Inventory row was
+- [x] C4 — No other Section Inventory or Instruction Inventory row was
       added, removed, or reordered.
-- [ ] C5 — From the `ee6e33f` baseline, `git diff` shows no change under
+- [x] C5 — From the `ee6e33f` baseline, `git diff` shows no change under
       `apps/`, and no change to any existing `DEC`/`REQ`/`FLOW`/`NFR` body,
       `system-map.md`, `screen-layout.md`, `open-questions.md`, or
       `goals-and-non-goals.md` — correctly scoped to exclude
       `lambda-s3-deploy`'s pre-baseline, owner-approved changes.
-- [ ] C6 — The full package diff from `ee6e33f` (including uncommitted
+- [x] C6 — The full package diff from `ee6e33f` (including uncommitted
       working-tree changes) touches only `PRD/sections/shared-chrome/
       README.md`, `PRD/README.md`, `PRD/work/shared-chrome-spec/`
       bookkeeping, and the `PRD/work/STATUS.md` board row.
-- [ ] C7 — A human confirmed the package needs no further durable-truth
+- [x] C7 — A human confirmed the package needs no further durable-truth
       promotion at cleanup beyond `PRD/sections/shared-chrome/README.md`
       and the `PRD/README.md` row.
 
@@ -133,9 +133,15 @@ git status --porcelain
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/shared-chrome-spec/` ready to
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas (one
+      pre-existing, package-independent `test:scripts` failure documented
+      on PR #118 — `scripts/lambda-package-budget.test.mjs` assumes `.git`
+      is a directory and fails in any git worktree; reproduced failing
+      identically on the unmodified base commit, passes clean from the
+      primary checkout)
+- [x] Public contract unchanged unless slice scoped a change (docs-only;
+      no `apps/` change)
+- [x] No secrets committed
+- [x] Durable outcomes promoted; `PRD/work/shared-chrome-spec/` ready to
       delete

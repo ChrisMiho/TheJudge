@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 # shared-chrome-spec
@@ -100,7 +100,7 @@ proposed and confirmed or corrected at the define gate.
 | --- | --- | --- | --- |
 | [A](./slice-a-verify-structural-chrome.md) | Verify the spec's structural-chrome content (header/Backed-by structural half, What it is, first four How it works subsections — shell/mock-banner, routing/load fallback, Menu rail/tray, Theme; Shared layout language; structural portions of Measured bounds and Rejected alternatives; structural portion of Where it lives) against cited sources and the actual `apps/frontend/src/` tree. | none | done |
 | [B](./slice-b-verify-conversation-chrome.md) | Verify the spec's conversation/overlay-chrome content (header/Backed-by conversation half, last four How it works subsections — answered workspace, history drawer, View Context overlay, card detail popup + close control; conversation-chrome portions of Measured bounds and Rejected alternatives; conversation-chrome portion of Where it lives) against cited sources and the actual `apps/frontend/src/` tree. | none | done |
-| [C](./slice-c-nav-scope-and-diff-proof.md) | Verify the two scope-boundary bullets in Rejected alternatives (deferred/out-of-scope; per-feature surfaces); verify the `PRD/README.md` Section Inventory row; prove the package diff from the `ee6e33f` map-out baseline stayed in scope, correctly excluding the concurrent `lambda-s3-deploy` package's already-committed changes on this branch. | none | planned |
+| [C](./slice-c-nav-scope-and-diff-proof.md) | Verify the two scope-boundary bullets in Rejected alternatives (deferred/out-of-scope; per-feature surfaces); verify the `PRD/README.md` Section Inventory row; prove the package diff from the `ee6e33f` map-out baseline stayed in scope, correctly excluding the concurrent `lambda-s3-deploy` package's already-committed changes on this branch. | none | done |
 
 GAMEPLAN: `PRD/work/shared-chrome-spec/GAMEPLAN.md`.
 
