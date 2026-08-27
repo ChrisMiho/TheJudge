@@ -10,7 +10,6 @@ Do not rename package folders to encode status.
 
 ## refined
 
-- [shared-chrome-spec](./shared-chrome-spec/)
 - [lambda-s3-deploy](./lambda-s3-deploy/)
 
 ## refining
@@ -18,6 +17,8 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
+
+- [shared-chrome-spec](./shared-chrome-spec/) — parked at `define` gate; walk the diff with `/graph-gate-review PRD/work/shared-chrome-spec/`
 
 ## deferred
 
