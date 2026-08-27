@@ -430,9 +430,14 @@ The shared conversation chrome lives in
 `apps/frontend/src/components/{ConversationWorkspace,ConversationThread,ConversationHistoryDrawer,AdaptiveContextDialog,FrozenGameContextDetails,FollowUpComposer,ComposerSubmitButton,CardSelectionPreview}.tsx`,
 `apps/frontend/src/hooks/{useAskAiSubmitOrchestration,useAutoGrowTextarea}.ts`, and
 `apps/frontend/src/lib/conversationHistory/persistence.ts`; the shared card presentation
-and detail popup in `apps/frontend/src/components/` (`CardPresentation`, `CardDetailPopup`),
-and the one shared overlay close control adopted across those overlays plus
-`FeedbackModal.tsx` and Life Tracker's `CounterPanel`/`GameSetupModal`. Routing is
+and detail popup in `apps/frontend/src/components/CardPresentation.tsx` (which exports
+both `CardPresentation` and the co-located `CardDetailPopup` component — not a separate
+file), and the one shared overlay close control
+(`apps/frontend/src/components/OverlayCloseButton.tsx`) adopted across those overlays
+plus `apps/frontend/src/components/feedback/FeedbackModal.tsx` and Life Tracker's
+`apps/frontend/src/components/portal/life-tracker/CounterPanel.tsx` and its
+co-located `GameSetupModal` component (defined within `PlayerLifeTrackerApp.tsx` in
+that same directory, not a separate file). Routing is
 `react-router` in `App.tsx` with `manualChunks` in `apps/frontend/vite.config.ts`; the
 shared CSS (`.portal-menu-rail`, drawer, `.page-shell-bleed`, `.portal-shell-bounds`,
 `.step-eyebrow`, `.mock-mode-banner`, `--layout-surface-gap`) is in
