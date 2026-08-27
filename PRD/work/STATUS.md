@@ -10,6 +10,8 @@ Do not rename package folders to encode status.
 
 ## refined
 
+- [lambda-s3-deploy](./lambda-s3-deploy/)
+
 ## refining
 
 ## ideation
