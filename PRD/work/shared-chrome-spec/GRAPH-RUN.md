@@ -71,7 +71,17 @@ into the shared-chrome deliverable. The owner should split `0445150` — land th
 `lambda-s3-deploy` half on its own branch/PR and keep only the shared-chrome half
 here — before resuming past the gate.
 
-**Resume command (after the gate is walked AND the branch is de-contaminated):**
+**Owner decision (2026-08-27):** the `lambda-s3-deploy` work in `0445150` is the
+owner's own intentional side work (a side question run with another agent), not
+contamination to untangle. The owner authorized pushing the branch as-is. Branch
+pushed to `origin/thejudge-auto/shared-chrome-spec` at the park. This second
+owner action is resolved; only the define-gate spec walk remains. Caveat on
+record: DEC-169/REQ-165/NFR-017 now live on this branch and will reach main when
+shared-chrome lands — if `lambda-s3-deploy` later runs its own `define` it would
+re-author those IDs and collide, so it should ride this branch rather than
+re-run its define.
+
+**Resume command (after the gate is walked):**
 `/graph-gate-review PRD/work/shared-chrome-spec/`
 
 **Complete recorded diff (the entire `PRD/sections/` change for this gate):**
