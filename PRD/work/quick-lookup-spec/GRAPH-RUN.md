@@ -6,8 +6,8 @@
 - Graph canary: `denied — graph tier armed (nohup true)`
 - Autonomous base: `origin/thejudge-auto/quick-lookup-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260826-174916/`
-- Current node: `land` — PARKED for owner PR merge (2026-08-26)
-- Next action: merge PR #116, then `/graph-run PRD/work/quick-lookup-spec/`
+- Current node: `close` — land done (PR #116 merged 2026-08-27, base reconciled); cleanup pending
+- Next action: `/graph-run PRD/work/quick-lookup-spec/` (runs `close`), then open the base→main PR
 
 ## Node ledger
 
@@ -21,15 +21,23 @@
 | 5 | plan | sonnet | ok | `0 → 55` | `thejudge-map-out`: `GAMEPLAN.md` + 3 verify-only slices (A UI-content/8 criteria, B backend-path-vs-source/8, C nav+diff-scope/5); `STATUS.active`; no new IDs, no `PRD/sections/` edit. Slice B flags a grounded gap — accepted spec omits Commander Spellbook combo retrieval (DEC-116/REQ-094, `preparation.ts`); bounded additive correction to apply in build if it re-verifies | 2026-08-26 |
 | 6 | build | sonnet | ok | `0 → 171` | `thejudge-implement-all`: PR [#116](https://github.com/ChrisMiho/TheJudge/pull/116) (`-work`→base) opened, MERGEABLE; 21/21 criteria `true` (`.graph-evidence.jsonl`); combo-retrieval gap re-verified from source and applied additively (new `### Combo enrichment` subsection, DEC-116/REQ-094/REQ-095 cited, 2 fixtures, `commanderSpellbook/` in Where-it-lives — existing IDs only, no `apps/` edit); `STATUS.ship-ready`. Write-scope PASS: launch checkout untouched (`b730ba5`), all writes inside `.worktrees/implement-quick-lookup-spec/` | 2026-08-26 |
 | 7 | review | opus | ok | `0 → 9` | no-write reviewer (fresh context): **APPROVE**, 0 Critical / 0 Important / 0 Minor; all 21 criteria re-confirmed; combo-retrieval correction verified from source (DEC-116/REQ-094/REQ-095 pre-existing + confirmed, `preparation.ts` code + both fixtures real); documentation-only scope (no new IDs, no source-body edits, no `apps/`) | 2026-08-26 |
-| 8 | land | (human) | parked | — | reviewer APPROVE → `land`. Driver never merges: PR [#116](https://github.com/ChrisMiho/TheJudge/pull/116) open, MERGEABLE, awaiting owner merge. **PARKED** | 2026-08-26 |
+| 8 | land | (human) | ok | — | owner merged PR [#116](https://github.com/ChrisMiho/TheJudge/pull/116) 2026-08-27 (merge `1bf216b`). Base reconciled into launch checkout via `git merge origin/thejudge-auto/quick-lookup-spec` — fuller `GRAPH-RUN.md` kept, single `STATUS.ship-ready`. Advances to `close` | 2026-08-27 |
 
 ## Open gate
 
-### Current gate — `land` (node 8): owner PR merge
+### Resolved — `land` gate (node 8): owner PR merge
 
-**Gate:** node 7 (`review`) returned APPROVE with zero findings, which advances
-the run to `land`. `land` is a human action — the driver never runs `gh pr merge`
-or `gh pr close`. The run is **PARKED** here.
+**Resolved:** owner merged PR #116 on 2026-08-27 (merge `1bf216b`). The driver
+reconciled the merged base into the launch checkout (`git merge
+origin/thejudge-auto/quick-lookup-spec`; fuller ledger kept, single
+`STATUS.ship-ready`). The run now sits at `close` — resume
+`/graph-run PRD/work/quick-lookup-spec/` for cleanup (receipt, durable
+promotion, package delete), then open the base→main PR
+(`thejudge-auto/quick-lookup-spec` → `main`) to reach `main`.
+
+Original gate (for the record): node 7 (`review`) returned APPROVE with zero
+findings, which advanced the run to `land` — a human action the driver never
+performs.
 
 **What the owner does:**
 1. Review and merge PR #116 — `thejudge-auto/quick-lookup-spec-work` →
