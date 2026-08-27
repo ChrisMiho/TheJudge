@@ -35,8 +35,8 @@ at the **define gate** for you to review, then resumes to completion.
 | 3 | `trade-balancer` | ✅ **done** | PR #110 (work→base), #111 (base→main) |
 | 4 | `scan` | ✅ **done** | PR #112 (work→base), #114 (base→main) |
 | 5 | `quick-lookup` | ✅ **done** | PR #116 (work→base), #117 (base→main) |
-| 6 | shared chrome | ⬜ **next** | — |
-| 7 | `in-depth` | ⬜ not started | — |
+| 6 | `shared-chrome` | ✅ **done** | PR #118 (work→base), #119 (base→main; also carries the concurrent lambda-s3-deploy package) |
+| 7 | `in-depth` | ⬜ **next** | — |
 
 **Phase B** (audit every decision against the specs) can't start until all seven exist.
 **Phase C** (retire the decision log) is a manual session — it edits `thejudge-*` skills,
