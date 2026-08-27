@@ -10,6 +10,9 @@ Do not rename package folders to encode status.
 
 ## refined
 
+- [shared-chrome-spec](./shared-chrome-spec/)
+- [lambda-s3-deploy](./lambda-s3-deploy/)
+
 ## refining
 
 ## ideation
