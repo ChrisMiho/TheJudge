@@ -6,8 +6,10 @@
 - Resume canary (2026-08-27, after gate-review): `denied — graph tier armed (nohup denied while lock held)`; lock re-taken via `graph-preflight --take-lock`
 - Autonomous base: `origin/thejudge-auto/shared-chrome-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260827-001521/`
-- Current node: `build`
+- Current node: `review`
 - Next action: `/graph-run PRD/work/shared-chrome-spec/`
+- PR: https://github.com/ChrisMiho/TheJudge/pull/118 (`thejudge-auto/shared-chrome-spec-work` → `thejudge-auto/shared-chrome-spec`)
+- Base frozen: PR open — driver commits ledger/status to launch checkout LOCALLY ONLY, no base push until PR merges
 
 ## Node ledger
 
@@ -19,6 +21,7 @@
 | — | gate-review | — | resolved | — | owner walked 14/14 spec sections, all accepted (0 edits, 0 rejects); `## Gate verdicts` recorded; STATUS restored to `refined` | 2026-08-27 |
 | 4 | gate-qc | sonnet | ok (PASS) | `0 → 31` | `thejudge-quality-check` PASS on `DESIGN-BRIEF.md`; all 40 DEC / 22 REQ / 4 FLOW / 4 NFR citations verified against source; diff is one new file, zero source-body edits; no findings | 2026-08-27 |
 | 5 | plan | sonnet | ok | `0 → 37` | `thejudge-map-out`: 3 verify-only slices (A structural chrome, B conversation/overlay chrome, C scope bullets + `PRD/README.md` nav row + diff-scope proof) with criteria files; `STATUS.active`; slice C diff-scope baselined on `ee6e33f` to exclude lambda-s3-deploy's committed changes | 2026-08-27 |
+| 6 | build | sonnet | ok | `0 → 128` | `thejudge-implement-all`: PR #118 (`thejudge-auto/shared-chrome-spec-work` → base) opened; all 23 criteria `value:true` (A 9 / B 7 / C 7) verified from emitted files; write-scope clean (launch checkout untouched, writes in `.worktrees/implement-shared-chrome-spec/`); one bounded slice-B path correction; `STATUS.ship-ready`; pre-existing unrelated `lambda-package-budget.test.mjs` worktree failure documented on PR | 2026-08-27 |
 
 ## Open gate
 
