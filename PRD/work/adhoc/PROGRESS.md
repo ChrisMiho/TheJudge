@@ -4,7 +4,7 @@ The plan is `refactor-gameplan.md`. This file tracks **how far through it you ar
 Update the status boxes as runs finish. Graph runs delete their own work folder on
 completion, so this file — not `PRD/work/STATUS.md` — is the durable progress board.
 
-_Last updated: 2026-08-26._
+_Last updated: 2026-08-27._
 
 ---
 
@@ -34,8 +34,8 @@ at the **define gate** for you to review, then resumes to completion.
 | 2 | `user-feedback` | ✅ **done** | PR #107 (work→base), #109 (base→main) |
 | 3 | `trade-balancer` | ✅ **done** | PR #110 (work→base), #111 (base→main) |
 | 4 | `scan` | ✅ **done** | PR #112 (work→base), #114 (base→main) |
-| 5 | `quick-lookup` | ⬜ **next** | — |
-| 6 | shared chrome | ⬜ not started | — |
+| 5 | `quick-lookup` | ✅ **done** | PR #116 (work→base), #117 (base→main) |
+| 6 | shared chrome | ⬜ **next** | — |
 | 7 | `in-depth` | ⬜ not started | — |
 
 **Phase B** (audit every decision against the specs) can't start until all seven exist.
