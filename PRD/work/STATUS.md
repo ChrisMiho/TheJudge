@@ -6,11 +6,11 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-## active
-
 | Package | Notes |
 | --- | --- |
-| [shared-chrome-spec](./shared-chrome-spec/) | Phase A #6 of the docs-refactor gameplan — current-state shared-chrome spec (suite shell, Menu rail/tray, mock banner, routing/load fallback, conversation workspace, history drawer, View Context overlay, card-detail popup, shared layout language). Quality-check PASS; mapped out into 3 verify-only slices (A: structural chrome, B: conversation/overlay chrome, C: scope-boundary bullets + nav row + diff-scope proof). Resume with `/thejudge-implement PRD/work/shared-chrome-spec/ slice A`. |
+| [shared-chrome-spec](./shared-chrome-spec/) | Phase A #6 of the docs-refactor gameplan — current-state shared-chrome spec verified against its cited sources and the `apps/frontend/src/` tree. All 3 slices done: A (structural chrome), B (conversation/overlay chrome, one bounded path correction), C (scope-boundary bullets, `PRD/README.md` Section Inventory row, diff-scope proof from `ee6e33f`). PR #118 (`thejudge-auto/shared-chrome-spec-work` → `thejudge-auto/shared-chrome-spec`). Ready for `/thejudge-cleanup`. |
+
+## active
 
 ## refined
 

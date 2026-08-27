@@ -2,7 +2,7 @@
 
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -168,37 +168,37 @@ bounded additive correction only.
 
 ## Acceptance criteria
 
-- [ ] A1 — The header's `Status:` line names the file draft, derived,
+- [x] A1 — The header's `Status:` line names the file draft, derived,
       non-authoritative, with the cited `DEC`/`REQ`/`FLOW`/`NFR` winning any
       conflict and `PRD/sections/decisions.md` as precedence #1, and every
       navigation-chrome and shell/banner/layout-direction ID in `Backed by:`
       (the 22-ID subset listed in requirement 3) resolves to a real,
       pre-existing ID in its home file.
-- [ ] A2 — The file's top-level sections are present in order: What it is,
+- [x] A2 — The file's top-level sections are present in order: What it is,
       How it works (all eight subsection headings present, in order),
       Shared layout language, Measured bounds, Rejected alternatives and
       deferred scope, Where it lives.
-- [ ] A3 — **What it is** is confirmed accurate: names all four registered
+- [x] A3 — **What it is** is confirmed accurate: names all four registered
       destinations, frames shared chrome as the mounting frame, and states
       the binding-constraint-7 split — no invented scope.
-- [ ] A4 — Each of the first four **How it works** subsections is confirmed
+- [x] A4 — Each of the first four **How it works** subsections is confirmed
       traceable to its cited sources' actual text (requirement 6's
       per-subsection list) — no invented capability, no dropped behavior.
-- [ ] A5 — The **Shared layout language** section is confirmed against
+- [x] A5 — The **Shared layout language** section is confirmed against
       DEC-149, DEC-145, DEC-117, REQ-124, and its "authoritative for
       direction, not a presentation-DEC override" framing.
-- [ ] A6 — The structural portion of **Measured bounds** (shell width, rail
+- [x] A6 — The structural portion of **Measured bounds** (shell width, rail
       geometries, tray, mock banner, routing, touch-target/text floor) is
       confirmed against its cited sources and does not contradict slice B's
       portion.
-- [ ] A7 — The structural portion of **Rejected alternatives and deferred
+- [x] A7 — The structural portion of **Rejected alternatives and deferred
       scope** (the eight closed-door bullets in requirement 9) matches its
       cited DECs' Context/Notes language, with nothing invented or omitted.
-- [ ] A8 — The structural portion of **Where it lives** names every file
+- [x] A8 — The structural portion of **Where it lives** names every file
       `system-map.md`'s `## Feature portal (app navigation)` and `## Mock-
       mode banner` blocks and the actual repository tree confirm belongs to
       shared chrome; each named file is confirmed to exist.
-- [ ] A9 — No new (minted) stable ID token appears in the file — every ID
+- [x] A9 — No new (minted) stable ID token appears in the file — every ID
       token present resolves to a real, pre-existing ID in its home file —
       and this slice's diff touches only
       `PRD/sections/shared-chrome/README.md`, confined to the sections this
