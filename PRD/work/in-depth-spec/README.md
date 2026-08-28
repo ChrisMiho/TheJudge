@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # in-depth-spec
 
@@ -20,10 +20,10 @@ non-goals.
 
 | Slice | Scope | Status | Dependency |
 | --- | --- | --- | --- |
-| [A](./slice-a-verify-staged-flow.md) | Verify What it is, the staged-flow bullet, and Steps 1–4 against cited sources; independently re-check the DEC-018/DEC-122 header-citation gap | planned | none |
-| [B](./slice-b-verify-submit-and-conversation.md) | Verify Submit, the wait/conversation subsection, Measured bounds, Rejected alternatives, and the frontend half of Where it lives | planned | none |
-| [C](./slice-c-verify-backend-path.md) | Verify The full backend path (`mode: "game"`) section against real `apps/backend/src/` source and the backend half of Where it lives; independently re-check the DEC-047/REQ-033 header-citation gap | planned | none |
-| [D](./slice-d-header-nav-and-diff-proof.md) | Reconcile the header `Backed by:`/cross-boundary lines against A and C's results; verify the `PRD/README.md` nav row; prove the package diff stayed in scope | planned | A, B, C |
+| [A](./slice-a-verify-staged-flow.md) | Verify What it is, the staged-flow bullet, and Steps 1–4 against cited sources; independently re-check the DEC-018/DEC-122 header-citation gap | done | none |
+| [B](./slice-b-verify-submit-and-conversation.md) | Verify Submit, the wait/conversation subsection, Measured bounds, Rejected alternatives, and the frontend half of Where it lives | done | none |
+| [C](./slice-c-verify-backend-path.md) | Verify The full backend path (`mode: "game"`) section against real `apps/backend/src/` source and the backend half of Where it lives; independently re-check the DEC-047/REQ-033 header-citation gap | done | none |
+| [D](./slice-d-header-nav-and-diff-proof.md) | Reconcile the header `Backed by:`/cross-boundary lines against A and C's results; verify the `PRD/README.md` nav row; prove the package diff stayed in scope | done | A, B, C |
 
 ## Implementation map
 

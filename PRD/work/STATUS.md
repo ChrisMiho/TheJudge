@@ -6,6 +6,8 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
+- [in-depth-spec](./in-depth-spec/)
+
 ## active
 
 ## refined
@@ -17,8 +19,6 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
-
-- [in-depth-spec](./in-depth-spec/) — land gate: merge PR #120
 
 ## deferred
 

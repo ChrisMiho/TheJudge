@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph tier `denied — nohup true` while lock held
 - Autonomous base: `origin/thejudge-auto/in-depth-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260827-213634/`
-- Current node: `land` (PARKED 2026-08-27 — owner merges PR #120, then resume)
-- Next action: merge PR #120, then `/graph-run PRD/work/in-depth-spec/`
+- Current node: `close` (resumed 2026-08-28 — PR #120 merged, land ok)
+- Next action: `/graph-run PRD/work/in-depth-spec/`
 
 ## Node ledger
 
@@ -19,14 +19,23 @@
 | 5 | plan | sonnet | ok | `0 → 46` | `GAMEPLAN.md` + 4 verify slices (A staged flow / B submit+conversation / C backend path / D header-nav+diff-proof), 29 criteria; STATUS.active; candidate finding: DEC-018/DEC-047/DEC-122/REQ-033 cited inline but absent from header Backed-by (additive fix in A/C/D) | 2026-08-27 |
 | 6 | build | sonnet | ok | `0 → 216` | all 4 slices done, **29/29 criteria `value:true`** (A8/B6/C9/D6); PR [#120](https://github.com/ChrisMiho/TheJudge/pull/120) `thejudge-auto/in-depth-spec-work` → base; write-scope clean (all writes under `.worktrees/implement-in-depth-spec/`, launch checkout untouched); STATUS.ship-ready. Header gaps DEC-018/047/122/REQ-033 confirmed + additively fixed. **3 spec-vs-code discrepancies surfaced, left uncorrected (out of slice license), posted as PR comment for owner:** `gameStateNotes`/ADDITIONAL GAME STATE absent in `apps/` (system-map marks "planned"); `conversationHistory` per-message cap 10000 in code vs 2000 in REQ-027/DEC-038/spec; CONVERSATION HISTORY/SCOPE section order inverted vs `buildPromptText` | 2026-08-27 |
 | 7 | review | opus | ok | `0 → 18` | **APPROVE.** No Critical/Important. Independently re-verified: diff purely additive (3164 insertions, 0 deletions, nothing under `apps/`, no DEC/REQ/FLOW/NFR body edit, one `PRD/README.md` nav row); the 4 additive header IDs resolve to real confirmed sources and stayed bounded (DEC-122 correctly header-excluded); slice-C backend labels/schema confirmed against `apps/backend/src/`. Confirmed all 3 deferred discrepancies real and the deferral correct. One non-looping Minor (harmonize the 2000-char cap hedge) | 2026-08-27 |
-| 8 | land | — | park | — | human PR merge — driver does not dispatch. PR [#120](https://github.com/ChrisMiho/TheJudge/pull/120) OPEN, MERGEABLE, CLEAN; parked at `owner-action` for the owner to review + merge | 2026-08-27 |
+| 8 | land | — | ok | — | owner merged PR [#120](https://github.com/ChrisMiho/TheJudge/pull/120) 2026-08-28 (merge commit `eb9d737`); base `thejudge-auto/in-depth-spec` reconciled into launch checkout, GRAPH-RUN.md kept as fuller ledger, single marker STATUS.ship-ready | 2026-08-28 |
 
 ## Open gate
 
-**PARKED at the `land` gate — the owner merges the PR.** Node 8 (`land`) is a
-human PR merge; the driver never runs `gh pr merge`. Every automated node is
-`ok`: gate-qc PASS, plan (4 verify slices), build (29/29 criteria), review
-**APPROVE** (no Critical/Important). The deliverable is ready for the owner.
+**Land gate resolved 2026-08-28.** The owner merged PR #120 (merge commit
+`eb9d737`) into `thejudge-auto/in-depth-spec`. The run resumed, recorded `land`
+ok, reconciled the merged base into the launch checkout, and proceeded to
+`close` (`thejudge-cleanup`). No open gate remains.
+
+The 3 spec-vs-code discrepancies below were merged as-is (draft, non-authoritative
+spec) and remain a separate owner follow-up — cleanup carries them into the
+receipt, it does not resolve them.
+
+<details><summary>Resolved land-gate record (was: PARKED for owner merge)</summary>
+
+Every automated node was `ok`: gate-qc PASS, plan (4 verify slices), build
+(29/29 criteria), review **APPROVE** (no Critical/Important).
 
 - **What to do:** review and merge **PR #120**
   (https://github.com/ChrisMiho/TheJudge/pull/120) —
@@ -51,6 +60,8 @@ human PR merge; the driver never runs `gh pr merge`. Every automated node is
   confirms PR #120 merged, records `land` ok, reconciles the ledger via a local
   merge of the base, and runs `close` (`thejudge-cleanup`) to promote durable
   truth, write the receipt, and delete the package folder.
+
+</details>
 
 ### Prior gate — `define` (resolved 2026-08-27)
 
