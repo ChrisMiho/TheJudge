@@ -52,12 +52,12 @@ Recommended split: **15 fix-spec · 16 out-of-scope · 3 mark-obsolete.**
 | DEC-048 | doc-process | not-absorbed | system-map/*.md | Per-subsystem detail-file template; PRD tooling. | |
 | DEC-063 | doc-process | not-absorbed | decisions/ | Decisions-corpus file structure; not product substance. | |
 | DEC-086 | doc-process | not-absorbed | CI / tests | quality:check coverage reorg; tooling. | |
-| DEC-115 | doc-process | not-absorbed | .claude/skills/ | Terse skill-response discipline; agent workflow. | |
+| DEC-115 | doc-process | not-absorbed | .claude/skills/ | Terse skill-response discipline; agent workflow. Old canonical clause pointed at .cursor/, superseded by DEC-165. | out-of-scope ✓ — Cursor retired per owner |
 | DEC-154 | doc-process | not-absorbed | .claude/skills/ | Contract-centered agent-workflow lifecycle. | |
 | DEC-155 | doc-process | not-absorbed | CI | GitHub Actions sharding; tooling. | |
 | DEC-163 | doc-process | not-absorbed | .claude/skills/ | graph-run/graph-preflight workflow; developer tooling. | |
 | DEC-164 | doc-process | not-absorbed | .claude/skills/ | Graph boundaries as scripts/hooks; tooling. | |
-| DEC-165 | doc-process | not-absorbed | repo | .cursor/ removal, .claude/skills/ canonical; runtime tooling. | |
+| DEC-165 | doc-process | not-absorbed | repo | .cursor/ removal, .claude/skills/ canonical; runtime tooling. | out-of-scope ✓ — Cursor retired per owner |
 | DEC-166 | doc-process | not-absorbed | repo | Graph safety boundaries in a PreToolUse hook; repo config. | |
 | DEC-167 | doc-process | not-absorbed | .claude/skills/ | graph-run single intake door; intake tooling. | |
 
