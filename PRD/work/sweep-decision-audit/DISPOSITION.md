@@ -18,6 +18,10 @@ disposition + any note. Reject a verdict by writing `reject: <why>`.
 
 Recommended split: **15 fix-spec · 16 out-of-scope · 3 mark-obsolete.**
 
+Owner calls so far: Cursor-runtime rows (DEC-115, DEC-165) locked out-of-scope;
+the 3 obsolete rows left as-is (no corpus edit this pass). Apply touches only the
+15 fix-spec rows.
+
 ---
 
 ## fix-spec — real spec gaps (15)
@@ -65,6 +69,6 @@ Recommended split: **15 fix-spec · 16 out-of-scope · 3 mark-obsolete.**
 
 | Item | Section | Verdict | Superseded by | Note | Your call |
 | --- | --- | --- | --- | --- | --- |
-| DEC-067 | personalization | obsolete | DEC-122 | Step-name header placement → eyebrow; original inline-right-of-brand no longer applies. | |
-| DEC-121 | navigation | obsolete | DEC-122 | Superseded outright per its own Notes; shared-chrome names it a closed door. | |
-| DEC-089 | trade-balancer | obsolete | DEC-122/110/095/157/111 | Superseded by shipped shared-chrome nav (corner rail, folded theme, four destinations, persisted active). | |
+| DEC-067 | personalization | obsolete | DEC-122 | Step-name header placement → eyebrow; original inline-right-of-brand no longer applies. | leave as-is — no action per owner |
+| DEC-121 | navigation | obsolete | DEC-122 | Superseded outright per its own Notes; shared-chrome names it a closed door. | leave as-is — no action per owner |
+| DEC-089 | trade-balancer | obsolete | DEC-122/110/095/157/111 | Superseded by shipped shared-chrome nav (corner rail, folded theme, four destinations, persisted active). | leave as-is — no action per owner |
