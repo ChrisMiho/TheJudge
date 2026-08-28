@@ -1,9 +1,11 @@
 # Trade Balancer — current-state feature spec
 
-- Status: draft, derived, non-authoritative view. On any conflict, the cited
-  `DEC`/`REQ`/`FLOW` wins — `PRD/sections/decisions.md` stays precedence #1
-  and Read-First #1. Correct this file against those sources, not the other
-  way around.
+- Status: current-state feature spec — precedence #1 and Read-First #1 for what
+  this feature does today. Decision bodies are retired: `PRD/sections/decisions.md`
+  is now precedence #2, a historical index that resolves a cited `DEC` ID to a
+  one-line summary, no longer an override. The cited `REQ`/`FLOW` remain the
+  granular backing; keep this file correct in step with them as behavior changes,
+  editing in place — never by recording a new decision.
 - Backed by: DEC-087, DEC-088, REQ-064, REQ-065, REQ-066, REQ-145, FLOW-009,
   NFR-013, NFR-001
 - Corpus: the printing price artifact this feature loads is documented

@@ -11,7 +11,7 @@ These rules govern how product documents should be written and updated.
 - Preserve product meaning from source documents.
 - Do not invent product scope unless it is clearly implied.
 - Move ambiguity to `sections/open-questions.md` instead of guessing.
-- Put confirmed decisions in the relevant `sections/decisions/<domain>.md` file and add or update the router index line in `sections/decisions.md`.
+- Record product truth by editing the current-state feature spec `sections/<feature>/README.md` and its cited `REQ`/`FLOW` entries in place; the decision log is retired, so do not author a new `DEC-###`.
 - Keep product truth in section files.
 - Keep workflow and generation guidance in instruction files.
 - Convert scattered notes into structured bullets when possible.
@@ -40,7 +40,7 @@ Do not renumber IDs unless there is a compelling editorial reason.
 ## Editing Rules
 - make the smallest change that preserves correctness
 - prefer updating one relevant file instead of duplicating content
-- if a decision changes product truth, update the relevant `sections/decisions/<domain>.md` body and the router index line in `sections/decisions.md` first
+- if a decision changes product truth, update the relevant feature spec `sections/<feature>/README.md` and its cited `REQ`/`FLOW` entries in place first
 - if the decision changes scope or behavior, then update affected section files to match
 - when splitting broad stories, separate guardrail/process work from remediation/refactor work when feasible
 - when backlog order matters, encode the order via explicit dependency lines in story docs

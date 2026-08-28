@@ -3002,7 +3002,7 @@
 - Description: The product maintains a durable screen-layout catalog at `PRD/sections/screen-layout.md` so agents applying UI layout changes use shared size/containment direction (hybrid %-of-viewport shell and %-of-shell inner regions, viewport bands, default no-page-scroll fit with region scroll, anti-overcalibration) instead of inventing geometry from short feedback (DEC-149).
 - Acceptance Criteria:
   - `PRD/sections/screen-layout.md` exists with shared layout language, rows for suite chrome, the four portal destinations (including In-Depth staged steps and shared conversation workspace), scan camera, and feedback modal, plus a copy-paste new-screen template
-  - DEC-149 is indexed from `sections/decisions.md` and body lives in `decisions/ui-presentation.md`
+  - DEC-149 resolves via the `sections/decisions.md` index; its current-state truth lives in this catalog (`sections/screen-layout.md`) and the feature specs
   - `PRD/README.md` inventories the section and lists a UI layout / polish read order that includes `screen-layout.md`
   - agent skills and instructions require reading the catalog for UI layout work and adding a catalog row when refinement introduces new UI surfaces (`thejudge-kickoff` reference task table, `thejudge-refinement`, `thejudge-implement` family references, `thejudge-quality-check` checklist, `instructions/technical-design-rules.md`, `instructions/agent-working-rules.md`), with `npm run skills:ai-sync` applied after canonical skill edits
   - catalog mechanism language preserves DEC-117 (no UA/JS device modes / no second density preference)

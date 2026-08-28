@@ -49,7 +49,7 @@ Work slug. Optional force override when the user explicitly requests cleanup of 
 
 ## Writes
 
-- Promoted durable outcomes in the affected `PRD/sections/*.md`; new decisions go into the relevant `PRD/sections/decisions/<domain>.md` file plus the router index line in `PRD/sections/decisions.md`
+- Promoted durable outcomes into the relevant feature spec `PRD/sections/<feature>/README.md` and its cited `REQ`/`FLOW` entries, plus any other affected `PRD/sections/*.md`; the decision log is retired, so no new `DEC-###`
 - Receipt at `PRD/instructions/receipts/<slug>-<YYYY-MM-DD>.md` — **written before delete** — containing date, slug, status (shipped | partial | corpus-only), actions taken, every file created/updated/deleted, verification results, `## Graph run` when the package holds a `GRAPH-RUN.md`, and `## Intake` when it holds `intake/`
 - `PRD/sections/system-map.md` entry flipped `planned`/`partial` → `shipped`, only once both code and the receipt exist
 - `PRD/work/STATUS.md` — remove the slug from every section

@@ -4,10 +4,11 @@ Use after kickoff, once the user names a task or work slug.
 
 ## Source-of-truth precedence
 
-1. `PRD/sections/decisions.md` is the read-first router; indexed `PRD/sections/decisions/<domain>.md` entries override conflicting older language
-2. `PRD/sections/*.md` — product scope
-3. `PRD/instructions/*.md` — agent process
-4. `PRD/README.md` — navigation only
+1. `PRD/sections/<feature>/README.md` — the current-state feature specs, read-first truth for what a feature does today
+2. `PRD/sections/*.md` — product scope (`REQ`/`FLOW`/`NFR`, screen layout, system map)
+3. `PRD/sections/decisions.md` — demoted historical index; resolves a cited `DEC-ID` only, never an override
+4. `PRD/instructions/*.md` — agent process
+5. `PRD/README.md` — navigation only
 
 ## Workflow skills
 
@@ -36,9 +37,9 @@ and explicit approvals between phases.
 
 | Task | Read order |
 | ---- | ---------- |
-| Product understanding | `overview.md` → `decisions.md` → `goals-and-non-goals.md` |
-| Feature implementation | `decisions.md` → `functional-requirements.md` → `user-flows.md` → `integrations-and-data.md` |
-| UI layout / screen polish | `decisions.md` → `screen-layout.md` → `decisions/ui-presentation.md` → layout REQs |
+| Product understanding | `overview.md` → `<feature>/README.md` → `goals-and-non-goals.md` |
+| Feature implementation | `<feature>/README.md` → `functional-requirements.md` → `user-flows.md` → `integrations-and-data.md` |
+| UI layout / screen polish | `<feature>/README.md` → `screen-layout.md` → layout REQs |
 | Active work package | `PRD/work/<slug>/README.md` → `GAMEPLAN.md` → slice doc |
 
 ## Out of scope for default reads

@@ -2,7 +2,7 @@
 
 Durable **screen layout catalog** for agents refining or adding UI. Answers “what is this screen for, and how big should it be?” so layout is not invented from short feedback.
 
-**Authoritative for layout direction** under DEC-149 / REQ-126. Mechanism stays DEC-117 (one mobile-first tree, fluid CSS, no UA/JS device modes). Feature existence and code location stay in `system-map.md`. Binding presentation DECs stay in `decisions/ui-presentation.md` and related domain files; this catalog does not override those DECs — it gives the shared size/containment language agents must apply.
+**Authoritative for layout direction** under DEC-149 / REQ-126. Mechanism stays DEC-117 (one mobile-first tree, fluid CSS, no UA/JS device modes). Feature existence and code location stay in `system-map.md`. Binding presentation truth lives in the feature specs under `sections/<feature>/README.md`; this catalog does not override them — it gives the shared size/containment language agents must apply. (The decision log is retired; a cited `DEC-ID` resolves via the `decisions.md` index.)
 
 ## How to read this
 
@@ -249,6 +249,6 @@ Refinement of any package that introduces UI must land this row before quality-c
 
 ## Agent read contract
 
-- UI layout, containment, density, or “make it fill / stretch / tighter” work: read this file + `decisions.md` → `decisions/ui-presentation.md` (and any cited domain DECs).
+- UI layout, containment, density, or “make it fill / stretch / tighter” work: read this file + the relevant feature spec `sections/<feature>/README.md` (resolve any cited `DEC-ID` via the `decisions.md` index).
 - Do not treat `system-map.md` summaries as size specs.
 - Do not treat short user/bug phrasing as license to exceed this catalog.

@@ -116,9 +116,11 @@ boundaries are required.
    advances straight to `gate-qc`; refinement that only writes
    `DESIGN-BRIEF.md` never interrupts a run.
 
-   The **whole** diff gates, not new `DEC-###` alone. The 2026-08-17 leak wrote
-   DEC-161 and DEC-162 *and* REQ-146..151, NFR-015, and FLOW-019 — six
-   requirements and a flow are product behavior as surely as two decisions are.
+   The **whole** diff gates — every new stable ID, not the headline ones alone.
+   The 2026-08-17 leak wrote two decisions *and* REQ-146..151, NFR-015, and
+   FLOW-019 — six requirements and a flow are product behavior as surely as the
+   decisions were. Decisions are retired now, so new truth is `REQ`/`FLOW`
+   written into the feature specs, and every one of those gates.
 
    This is the one place autonomy is deliberately traded for control. Node 8
    (`land`) was otherwise the first human touch, by which point code exists

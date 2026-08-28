@@ -1,9 +1,11 @@
 # Quick Lookup — current-state feature spec
 
-- Status: draft, derived, non-authoritative view. On any conflict, the cited
-  `DEC`/`REQ`/`FLOW` wins — `PRD/sections/decisions.md` stays precedence #1
-  and Read-First #1. Correct this file against those sources, not the other
-  way around.
+- Status: current-state feature spec — precedence #1 and Read-First #1 for what
+  this feature does today. Decision bodies are retired: `PRD/sections/decisions.md`
+  is now precedence #2, a historical index that resolves a cited `DEC` ID to a
+  one-line summary, no longer an override. The cited `REQ`/`FLOW` remain the
+  granular backing; keep this file correct in step with them as behavior changes,
+  editing in place — never by recording a new decision.
 - Backed by: DEC-020, DEC-025, DEC-029, DEC-042, DEC-045, DEC-046, DEC-095,
   DEC-106, DEC-107, DEC-108, DEC-112, DEC-113, DEC-114, DEC-116, DEC-118,
   DEC-017, DEC-033, DEC-053, DEC-160, DEC-096, DEC-097, DEC-098, DEC-099,

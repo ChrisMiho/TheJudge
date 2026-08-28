@@ -33,13 +33,13 @@ map-out artifacts.
 
 1. `PRD/work/<slug>/DESIGN-BRIEF.md`
 2. Affected `PRD/sections/*.md`
-3. `PRD/sections/decisions.md` router, then relevant `PRD/sections/decisions/<domain>.md` files
+3. Relevant feature specs `PRD/sections/<feature>/README.md`; `PRD/sections/decisions.md` only to resolve a cited `DEC-ID`
 4. `PRD/instructions/technical-design-rules.md`
 5. `PRD/instructions/workflow-reference.md` — package status / STATUS.* duties
 
 ## Checklist
 
-- [ ] No contradictions with active `DEC-###` entries in the relevant `decisions/<domain>.md` files
+- [ ] No contradictions with the relevant current-state feature spec `PRD/sections/<feature>/README.md` and its cited `REQ`/`FLOW` entries
 - [ ] Current vocabulary is used in new/edited content
 - [ ] Stack ordering is preserved if the feature touches stack/API/prompt
 - [ ] `technical-design-rules.md` constraints are respected (one endpoint, no rules engine, etc.)

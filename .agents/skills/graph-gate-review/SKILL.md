@@ -86,7 +86,7 @@ pointed at it, which is the reason stable IDs are stable.
 
   | Stable ID | Verdict | Reason |
   | --- | --- | --- |
-  | `DEC-166` | accept | — |
+  | `REQ-151` | accept | — |
   | `REQ-152` | edit | "the cap is per turn, not per game" |
   | `REQ-153` | reject | "this is the enrich pack's scope, not this package's" |
   ```
