@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph tier `denied — nohup true` while lock held
 - Autonomous base: `origin/thejudge-auto/in-depth-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260827-213634/`
-- Current node: `build` (resumed 2026-08-27; gate-qc PASS, mapped to 4 verify slices)
+- Current node: `review` (resumed 2026-08-27; build ok, PR #120 open, 29/29 criteria)
 - Next action: `/graph-run PRD/work/in-depth-spec/`
 
 ## Node ledger
@@ -17,6 +17,7 @@
 | 3 | define | opus | ok | `0 → 44` | spec `PRD/sections/in-depth/README.md` (514 lines, new file, 0 deletions); `DESIGN-BRIEF.md`; `PRD/README.md` nav row; **0 new stable IDs**; status → refined | 2026-08-27 |
 | 4 | gate-qc | sonnet | ok | `0 → 29` | PASS, 0 findings; all 69 DEC / 47 REQ / 5 FLOW / 3 NFR citations verified against index; entanglement ownership confirmed on owning specs; status stays refined | 2026-08-27 |
 | 5 | plan | sonnet | ok | `0 → 46` | `GAMEPLAN.md` + 4 verify slices (A staged flow / B submit+conversation / C backend path / D header-nav+diff-proof), 29 criteria; STATUS.active; candidate finding: DEC-018/DEC-047/DEC-122/REQ-033 cited inline but absent from header Backed-by (additive fix in A/C/D) | 2026-08-27 |
+| 6 | build | sonnet | ok | `0 → 216` | all 4 slices done, **29/29 criteria `value:true`** (A8/B6/C9/D6); PR [#120](https://github.com/ChrisMiho/TheJudge/pull/120) `thejudge-auto/in-depth-spec-work` → base; write-scope clean (all writes under `.worktrees/implement-in-depth-spec/`, launch checkout untouched); STATUS.ship-ready. Header gaps DEC-018/047/122/REQ-033 confirmed + additively fixed. **3 spec-vs-code discrepancies surfaced, left uncorrected (out of slice license), posted as PR comment for owner:** `gameStateNotes`/ADDITIONAL GAME STATE absent in `apps/` (system-map marks "planned"); `conversationHistory` per-message cap 10000 in code vs 2000 in REQ-027/DEC-038/spec; CONVERSATION HISTORY/SCOPE section order inverted vs `buildPromptText` | 2026-08-27 |
 
 ## Open gate
 
@@ -728,6 +729,31 @@ Requirements:
 Do not dispatch any further node — that is the driver's job. Stage explicit paths only — never `git add -A`, `git add .`, or `git add --all`. Never push `main`/`master`, never force-push, never merge/close the PR. If you write any prompt for a sub-subagent, copy the `Working directory:` line above into it unchanged.
 
 Report back: the worktree path, the PR URL, the head and base branches, each slice's completion + its criteria all-true confirmation, every path written (to prove write-scope), and the resulting STATUS marker.
+
+### review
+
+graph-run is controlling. You are node 7 (`review`) of an autonomous graph run — a fresh-context, NO-WRITE reviewer. You hold no Write/Edit/NotebookEdit; you read and search only. Do not modify any file. A reviewer that can change the work is not reviewing it.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run ID: graph-20260827-213634
+Package: PRD/work/in-depth-spec/
+PR: #120 — head `thejudge-auto/in-depth-spec-work` → base `thejudge-auto/in-depth-spec`
+
+What to review: the build node's work on this package. See the diff with `gh pr diff 120` (and/or `git -C .worktrees/implement-in-depth-spec diff 3045e60...HEAD`). The corrected deliverable is `.worktrees/implement-in-depth-spec/PRD/sections/in-depth/README.md`.
+
+The rubric is the slices' OWN acceptance criteria — nothing else. Read all four slice docs and their criteria files:
+- `PRD/work/in-depth-spec/slice-a-verify-staged-flow.md` + `slice-a.criteria.json` (8 criteria)
+- `PRD/work/in-depth-spec/slice-b-verify-submit-and-conversation.md` + `slice-b.criteria.json` (6)
+- `PRD/work/in-depth-spec/slice-c-verify-backend-path.md` + `slice-c.criteria.json` (9)
+- `PRD/work/in-depth-spec/slice-d-header-nav-and-diff-proof.md` + `slice-d.criteria.json` (6)
+(Read these from the worktree copies under `.worktrees/implement-in-depth-spec/` — they carry the final `value:true` states and evidence.)
+
+This is a derived, draft, non-authoritative current-state spec (Phase A #7). The slices are VERIFY-ONLY with a single licensed additive correction: adding inline-cited-but-unlisted IDs (DEC-018/DEC-047/DEC-122/REQ-033) to the header. Grade whether: (a) each criterion's claim is actually supported by the cited source it names; (b) the additive header corrections are correct and stayed additive/bounded; (c) the package diff introduced no new stable ID, no behavior change, and no edit to any DEC/REQ/FLOW/NFR body.
+
+Severity rule (binding): a preference, a style note, or any improvement OUTSIDE a slice's stated acceptance criteria is NEVER Critical or Important and never loops back to build — say so explicitly in your report. In particular, the build node surfaced three spec-vs-code discrepancies (`gameStateNotes`/ADDITIONAL GAME STATE not in `apps/`; `conversationHistory` cap 10000-in-code vs 2000-in-source; CONVERSATION HISTORY/SCOPE prompt-order) and deliberately LEFT them uncorrected because fixing them is outside these verify slices' license and would require changing authoritative REQ/DEC bodies or code. Those are correctly deferred owner-follow-up items, NOT defects in this deliverable — do not rate them Critical/Important and do not loop to build over them. You may note in your report whether that deferral was the right call.
+
+Return a clear verdict: APPROVE, or a findings list where each finding has a severity (Critical / Important / Minor) and cites the exact criterion or diff line it fails. Only Critical/Important tied to a slice's own acceptance criteria may loop back to build. If you write any prompt for a sub-subagent, copy the `Working directory:` line above into it unchanged.
 
 ## Instruction ledger
 
