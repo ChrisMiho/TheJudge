@@ -16,6 +16,8 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+- [in-depth-spec](./in-depth-spec/)
+
 ## owner-action
 
 ## deferred
