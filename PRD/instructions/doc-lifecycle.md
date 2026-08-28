@@ -45,8 +45,10 @@ User may explicitly force cleanup of a non-`ship-ready` package.
 ## Decision lifecycle
 
 - New decisions land in their relevant `sections/decisions/<domain>.md` file and get a router index line in `sections/decisions.md`.
+- `sections/decisions.md` is a thin router: the precedence/lifecycle preamble plus a `DEC-ID → domain file → one-line summary` table. Decision bodies live verbatim in nine topic files under `sections/decisions/`, organized by topic/subsystem rather than by flow stage: `framing`, `capture-and-stack`, `game-context-model`, `prompt-assembly`, `rules-retrieval`, `providers-and-contract`, `conversation-ux`, `scanning`, `doc-process`. DEC-IDs stay globally unique and resolvable across files regardless of which file holds the body.
 - A fully superseded decision body trims to a one-line tombstone with the original ID and `superseded by DEC-XXX`, kept in its domain file so the ID stays resolvable.
 - Deep "how the code behaves" detail belongs in `sections/system-map.md` or related system-map detail files (DEC-044 / DEC-048), not in decision `Impact:` blocks.
+- Backed by: DEC-063
 
 ## System-map promotion gate
 

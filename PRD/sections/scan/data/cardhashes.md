@@ -44,15 +44,23 @@ passes each one:
   the full corpus is fingerprinted across many short runs without ever retaining
   the ~100 GB image corpus (DEC-054, REQ-039).
 - **Bounded and crash-safe:** optional `--limit N` / `--max-minutes M` budgets
-  (independent or combined); every bin/manifest write is atomic (temp file then
-  rename) and checkpointed every K entries, so a killed run resumes losslessly;
-  downloads are paced with `429`/`5xx` backoff honoring `Retry-After`; permanent
-  failures park an id after N attempts in the skip-list, `--retry-parked`
-  re-includes them (DEC-054, REQ-039).
+  (independent or combined, a clean stop always checkpointing first); every
+  bin/manifest write is atomic (temp file then rename) and checkpointed every
+  K entries, so a killed run resumes losslessly; downloads are paced with
+  `429`/`5xx` backoff honoring `Retry-After`. Only permanent per-image
+  failures (`404`, decode/dimension errors) count toward parking — a printing
+  parks after N failed attempts in the skip-list; transient failures
+  (`429`/`5xx`/network with the retry budget exhausted) are left missing and
+  retried next run without incrementing the park counter. `--retry-parked`
+  re-includes parked ids, and parked counts are reported in the run summary
+  (DEC-054, REQ-039).
 - **Non-destructive fresh rebuild:** `--fresh` (`data:scan-fingerprints:fresh`)
   builds from scratch into a **new** file and never deletes or overwrites the
-  live bin; promotion to the live path is a deliberate manual step (DEC-054,
-  REQ-039).
+  live bin; it refuses to clobber an existing target file unless the operator
+  explicitly passes `--output <path>` and/or `--force`. Promotion to the live
+  path is a deliberate manual step (DEC-054, REQ-039). The prior
+  `data:scan-hashes` alias now forwards to `data:scan-fingerprints` so one
+  name does not mean two behaviors (DEC-054).
 - **Coverage is measurable (DEC-069/REQ-047):** the gameplay/corpus inclusion
   filter is a tested helper (`hashLibBuild.ts` `shouldIncludeScanPrinting`) so
   legitimate art — including non-English-only alt-art — is not silently dropped,
@@ -60,6 +68,9 @@ passes each one:
   `data:scan-fingerprints --coverage-summary` / `--diagnose-id <id>` /
   `--diagnose-illustration-id <id>`, plus manifest `targetCount` /
   `fingerprintedTargetCount` / `missingCount` / `parkedCount` / `corpusStatus`.
+- **Append-only merge:** no pruning of printings removed from a newer Scryfall
+  bulk (a `--prune` flag is a separate, later decision); unsupported
+  `cardhashes.bin` versions are rejected before any rewrite (DEC-054, REQ-039).
 - **Static, no runtime sync:** the on-device app only ever reads the committed
   bin; identification makes no runtime network call. **Do not rebuild to read
   this doc** — regenerating requires the human-approved Scryfall image download.

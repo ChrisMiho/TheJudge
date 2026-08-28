@@ -19,8 +19,8 @@
   REQ-028, REQ-029, REQ-030, REQ-031, REQ-032, REQ-033, REQ-045, REQ-056, REQ-058,
   REQ-061, REQ-069, REQ-070, REQ-093, REQ-094, REQ-095, REQ-100, REQ-106,
   REQ-110, REQ-121, REQ-130, REQ-132, REQ-136, REQ-137, REQ-138, REQ-139,
-  REQ-144, FLOW-001, FLOW-002, FLOW-003, FLOW-004, FLOW-005, NFR-001, NFR-002,
-  NFR-006
+  REQ-144, FLOW-001, FLOW-002, FLOW-003, FLOW-004, FLOW-005, FLOW-015, NFR-001,
+  NFR-002, NFR-006, NFR-009
 - Consumed but owned elsewhere (cited, not re-specified here): the shared
   answered-conversation workspace, View Context overlay, history drawer,
   suite-wide card-detail popup, Menu rail (DEC-122), suite shell, and shared
@@ -80,12 +80,21 @@ retrieval/combo machinery that other specs own.
   `main_1`. Selects show `Player N (Name)` when a display name is set, but the
   submitted API values stay fixed `PlayerLabel` strings. (REQ-015, DEC-023,
   DEC-027)
+- Built: prompt text resolves player references — `activePlayer`, caster,
+  owner, and player targets — using the same `Player N (Name)` format as the
+  UI selects; a display name that is empty, whitespace-only, or identical to
+  its `PlayerLabel` counts as unset and the reference renders as the bare
+  label. (DEC-027, REQ-015, REQ-017, REQ-019)
 - Built: turn phase is one of `untap`, `upkeep`, `draw`, `main_1`, `combat`,
   `main_2`, `end_step`, `cleanup`. When phase is `combat`, an inline sub-step
   selector offers `beginning_of_combat`, `declare_attackers`, `declare_blockers`,
   `combat_damage`, `end_of_combat`, defaulting to `declare_blockers`; the
   `combatStep` field is submitted only for `combat` and omitted otherwise.
   (REQ-015, DEC-022, DEC-034, DEC-037)
+- Built: turn phase and active player are merged into one compact panel
+  (`grid-cols-1 sm:grid-cols-2`); the `(recommended)` suffix on active-player
+  labeling is removed. The combat sub-step selector stays full-width below the
+  panel when phase is `combat`. (DEC-076, REQ-056)
 - Built: the **Players in game** disclosure is collapsed by default. Each open
   player card shows display name and life total as its compact baseline; Poison,
   Energy, Experience, Commander damage, and populated named counters are gated
@@ -135,6 +144,13 @@ retrieval/combo machinery that other specs own.
   bottom-to-top append order; a selected zone may hold zero cards individually,
   but collection cannot continue until at least one selected zone contains a card.
   (REQ-001, REQ-002, REQ-018, FLOW-001)
+- Built: zone collection shows a non-blocking nudge when the stack zone is
+  selected but still empty and another selected zone already has a card — the
+  player is not blocked from continuing, just prompted that the stack may be
+  incomplete. (DEC-028, REQ-018, REQ-019)
+- Built: the empty-state placeholder text (`Select a suggestion to preview and
+  add a card to …`) is removed from zone-collection chrome; the search box and
+  suggestion list are sufficient affordance on their own. (DEC-076, REQ-056)
 - Built: the stack has its own capture rules — append-only, newest card becomes
   the top (`stack[0]` is the bottom, last element is the top, consistent across
   UI, payload, and prompt builder), the add button reads **Begin stackening!**
@@ -172,6 +188,9 @@ retrieval/combo machinery that other specs own.
   freeform context note, and mana-spent context for stack entries; the note
   placeholder names transient annotations (kicker/buyback paid, X value, counters
   added this turn, tapped status, gained abilities). (REQ-017, DEC-028, FLOW-001)
+- Built: before submit, enrichment shows a pre-decrypt summary of which
+  selected zones are populated and the fallback question that will be sent if
+  the player leaves the question field blank. (DEC-028, REQ-011, REQ-017)
 - Built: targets use `ContextTarget` — player targets (`targetPlayer`), card
   targets (`zone` + `cardId` + `cardName`), `{ kind: "none" }`, and freeform
   (`targetDescription`); the public API never exposes the legacy `StackTarget`.
@@ -201,8 +220,8 @@ retrieval/combo machinery that other specs own.
   another selected zone has cards — which may be shown as a pre-submit hint. The
   pre-submit composer presents the field as the dominant row element with an
   inline counter and compact submit, and grows with typed content without forcing
-  page scroll or clipping chrome below it. (REQ-011, DEC-146, DEC-131, REQ-121,
-  REQ-110)
+  page scroll or clipping chrome below it. (REQ-011, DEC-028, DEC-146, DEC-131,
+  REQ-121, REQ-110)
 - Built: submit is allowed only when at least one selected zone holds a card. The
   frontend sends `AskAiRequest = { question, gameContext }` on `mode: "game"`
   (the default, back-compatible branch); no top-level `stack` or
@@ -326,6 +345,10 @@ the game-mode request drives them. (DEC-020, DEC-010)
   candidates may also return so the answer can name missing or wrongly-zoned
   pieces. At most 5 variants are selected, deterministically ordered. (DEC-116,
   DEC-162, REQ-093, REQ-094)
+- Built: template ingredients are resolved at build time from authoritative
+  upstream mappings or Scryfall queries; an ingredient that fails to resolve
+  stays usable when a player asks an explicit combo question but can never by
+  itself satisfy automatic completion matching. (DEC-116, FLOW-015)
 - Built: eligible matches enter the prompt as a bounded
   `COMMANDER SPELLBOOK COMBO CONTEXT — COMMUNITY-SOURCED` section after
   card/rules/rulings enrichment and before conversation history and the question.
@@ -349,6 +372,10 @@ the game-mode request drives them. (DEC-020, DEC-010)
   contracts stay frozen across the swap and upstream failures map to the
   normalized error shape ("Miho is working on it"). (DEC-020, DEC-011, DEC-017,
   DEC-033, REQ-027)
+- Built: `askAiResponseSchema` accepts optional `context`, `diagnostics`, and
+  `enrichmentDebug` sidecar fields on success responses; the mock provider
+  populates them for local prompt-preview tooling, while the live OpenAI
+  provider and the frontend contract stay `{ answer }` only. (DEC-033, NFR-009)
 - Built: successful live answers emit log-only size diagnostics (`correlationId`,
   `providerElapsedMs`, `answerChars`, `estimatedAnswerTokens`,
   `charsPerTokenEstimate`); live responses stay `{ answer }` only with no sidecar,

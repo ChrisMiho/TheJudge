@@ -7,9 +7,10 @@
 - Backed by: DEC-020, DEC-025, DEC-029, DEC-042, DEC-045, DEC-046, DEC-095,
   DEC-106, DEC-107, DEC-108, DEC-112, DEC-113, DEC-114, DEC-116, DEC-118,
   DEC-017, DEC-033, DEC-053, DEC-160, DEC-096, DEC-097, DEC-098, DEC-099,
-  DEC-100, REQ-072, REQ-073, REQ-074, REQ-075, REQ-079, REQ-091, REQ-092,
-  REQ-094, REQ-095, REQ-097, REQ-098, REQ-011, REQ-022, REQ-024, REQ-030,
-  REQ-129, REQ-134, REQ-141, FLOW-006, FLOW-011, NFR-001
+  DEC-100, DEC-131, DEC-146, DEC-153, REQ-072, REQ-073, REQ-074, REQ-075,
+  REQ-079, REQ-091, REQ-092, REQ-094, REQ-095, REQ-097, REQ-098, REQ-011,
+  REQ-022, REQ-024, REQ-030, REQ-105, REQ-109, REQ-110, REQ-121, REQ-129,
+  REQ-132, REQ-134, REQ-141, FLOW-006, FLOW-011, NFR-001
 
 ## What it is
 
@@ -90,6 +91,21 @@ setup, and it is not a full rules browser or a judge authority.
   empty field with a card or topic attached reads `0/300` and a full
   300-character question stays submittable. (REQ-091 as amended by REQ-134,
   REQ-011)
+- Built: the composer row gives the Question textarea the full row width with
+  an inline character counter, replacing a wide labelled submit button with a
+  compact circular submit control at narrow viewports where a labelled button
+  would starve the field; wider viewports may keep a labelled control so long
+  as the field keeps the dominant share of the row. (DEC-146, REQ-121)
+- Built: the Question textarea grows with typed content up to the space
+  available before bottom chrome, capped so the page itself never scrolls from
+  field growth — growth stops when further expansion would push chrome below
+  the composer (submit row or equivalent) off-screen, not merely when the
+  field's own bottom reaches the viewport bottom while lower chrome is lost.
+  (DEC-131, REQ-110)
+- Built: the initial submit control shows the visible label **Send Request**
+  (accessible name may keep Ask/Decrypt semantics); the answered-view
+  follow-up composer keeps its separate compact arrow/icon-only send control.
+  (DEC-153, REQ-132, DEC-146)
 
 ### Initial submit wait
 
