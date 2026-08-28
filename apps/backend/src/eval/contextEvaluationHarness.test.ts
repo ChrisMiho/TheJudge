@@ -160,7 +160,10 @@ describe("Backend - Eval", () => {
       const checklistReport = `${buildChecklistReport(results)}\n`;
       await assertGoldenFile("checklist-report.golden.txt", checklistReport);
       expect(results.every((result) => result.passed), `Evaluation report:\n${checklistReport}`).toBe(true);
-    });
+      // Heavy golden-eval loop: full evaluation + golden compares per fixture, so
+      // runtime scales with the fixture count and legitimately nears the 5s default.
+      // 30s keeps slow CI runners clear of the timeout without loosening it suite-wide.
+    }, 30000);
 
     it("detects ordering and guardrail regressions", () => {
       const fixture: EvaluationFixture = {
