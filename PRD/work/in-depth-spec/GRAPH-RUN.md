@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph tier `denied — nohup true` while lock held
 - Autonomous base: `origin/thejudge-auto/in-depth-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260827-213634/`
-- Current node: `define` (parked at gate — awaiting owner walk)
-- Next action: `/graph-gate-review PRD/work/in-depth-spec/`
+- Current node: `define` (gate resolved 2026-08-27 — ready to resume at `gate-qc`)
+- Next action: `/graph-run PRD/work/in-depth-spec/`
 
 ## Node ledger
 
@@ -17,6 +17,11 @@
 | 3 | define | opus | ok | `0 → 44` | spec `PRD/sections/in-depth/README.md` (514 lines, new file, 0 deletions); `DESIGN-BRIEF.md`; `PRD/README.md` nav row; **0 new stable IDs**; status → refined | 2026-08-27 |
 
 ## Open gate
+
+**Resolved 2026-08-27** via `/graph-gate-review` — all 11 behavior sections walked
+one at a time, every verdict `accept` (0 edits, 0 rejects, 0 new stable IDs). No
+change was applied to `PRD/sections/`. The recorded diff below stays as the
+evidence of what was walked. See `## Gate verdicts`.
 
 **Parked at the `define` gate.** Node 3 (`define` / `thejudge-refinement`) wrote a
 non-empty `PRD/sections/` diff — a new current-state feature spec at
@@ -569,6 +574,30 @@ index 0000000..45fedaa
 +for the layout bands, and `PRD/sections/shared-chrome/README.md` for the
 +conversation-frame and layout-language details In-Depth consumes.
 ```
+
+## Gate verdicts
+
+Zero new stable IDs were minted, so `graph-gate-review`'s ID-centric walk was taken
+over the spec's behavior sections, in diff order. One row per section.
+
+| Section (walk item) | Verdict | Reason |
+| --- | --- | --- |
+| Framing & scope boundary (status marker, backed-by IDs, ownership) | accept | — |
+| What it is | accept | — |
+| Staged flow + Step 1 Game context | accept | — |
+| Step 2 Zone confirmation + Step 3 Zone collection | accept | — |
+| Step 4 Enrichment | accept | — |
+| Submit — Send Request | accept | — |
+| The wait, the answer, and the conversation | accept | — |
+| Backend: request validation + prompt assembly | accept | — |
+| Backend: retrieval + combo + provider boundary | accept | — |
+| Measured bounds (incl. flagged `MAX_CONVERSATION_HISTORY_CHARS`) | accept | — |
+| Rejected alternatives & deferred scope + Where it lives | accept | — |
+
+The `MAX_CONVERSATION_HISTORY_CHARS` conflict (REQ-027 = 1,000,000 vs FLOW-005 = 6000)
+was accepted as-flagged: the owner kept the spec's "confirm against source" note rather
+than pick a number here. The underlying REQ-027/FLOW-005 disagreement is a separate fix,
+outside this draft spec's scope.
 
 ## Dispatch prompts
 

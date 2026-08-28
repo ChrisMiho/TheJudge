@@ -11,14 +11,13 @@ Do not rename package folders to encode status.
 ## refined
 
 - [lambda-s3-deploy](./lambda-s3-deploy/)
+- [in-depth-spec](./in-depth-spec/)
 
 ## refining
 
 ## ideation
 
 ## owner-action
-
-- [in-depth-spec](./in-depth-spec/) — parked at the `define` gate; walk with `/graph-gate-review PRD/work/in-depth-spec/`
 
 ## deferred
 
