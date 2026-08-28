@@ -1,20 +1,63 @@
 # Graph Workflow Contract
 
+- Backed by: DEC-154, DEC-163, DEC-164, DEC-166, DEC-167, REQ-152, REQ-153,
+  REQ-154, REQ-155, REQ-156, REQ-160
+
 ## Purpose and precedence
 
 This contract governs one autonomous graph run: a single work package advanced
 through the existing TheJudge lifecycle with no per-step user input. It
 coordinates the existing `thejudge-*` contracts without replacing them.
 
-`graph-run` is the entry point for new work. The owner hands it a request —
-an idea, an observation, a bug, or a pasted or referenced document — and it
-drives that request through the full lifecycle unattended, stopping only at
-the `define` gate or a terminal state.
+`graph-run` is the entry point for new work — the single intake door.
+`thejudge-prepare` no longer serves as an entry point, though it keeps its own
+skill, contract, and predicate (DEC-167). The owner hands `graph-run` a
+request — an idea, an observation, a bug, or a pasted or referenced document —
+and it drives that request through the full lifecycle unattended, stopping
+only at the `define` gate or a terminal state.
 
 Active decisions and requirements in `PRD/sections/` remain product truth. When
 a `thejudge-*` phase skill conflicts with this contract during a graph run,
 this contract governs continuation and approval behavior; the phase skill
 continues to govern its own artifacts.
+
+## Overall flow
+
+One graph run carries a single work package from a raw request to a merged
+pull request, unattended except at the gates below.
+
+1. **Kickoff.** The owner hands `graph-run` a request — an idea, a bug, or a
+   pasted or referenced document. `graph-run` is the single intake door: it
+   proposes a kebab-case slug, derives the branch as `thejudge-auto/<slug>`,
+   and stages any supplied documents as evidence. `thejudge-prepare` no
+   longer serves as an entry point for new work, though it keeps its own
+   skill, contract, and predicate (DEC-167).
+2. **Preflight.** `graph-preflight` (node 1) readies the checkout before any
+   other node runs: one branch, one concurrency lock, an auto-commit-or-stash
+   resolution of whatever was dirty. This automates, for autonomous runs, the
+   worktree and branch ownership DEC-154 established for the agent-workflow
+   lifecycle generally; DEC-163 is the layer that chains that lifecycle's
+   phases end to end with no human between steps.
+3. **Refine.** `thejudge-kickoff` (node 2) names the package and
+   `thejudge-refinement` (node 3) writes the design brief and any
+   `PRD/sections/` truth it proposes.
+4. **Gate.** A non-empty `PRD/sections/` diff parks the run at `define`. The
+   owner walks it one stable ID at a time with `graph-gate-review`, taking an
+   accept/edit/reject verdict per item, before the run resumes — the one
+   place this workflow trades autonomy for a human, because no script can
+   judge whether the product truth written there is the product the owner
+   wants (DEC-164).
+5. **Build.** Once quality-checked and sliced, `thejudge-implement-all`
+   (node 6) implements sequentially inside `.worktrees/implement-<slug>/`. A
+   committed `PreToolUse` hook — not the driver's own say-so — proves every
+   acceptance criterion before the node can report `ok` (DEC-166).
+6. **Review.** A fresh-context, no-write reviewer subagent (node 7) grades
+   the slice against its own stated acceptance criteria and can loop the run
+   back to `build` on a Critical or Important finding, up to twice (DEC-166).
+7. **Merge.** `land` (node 8) is the owner merging the pull request by
+   hand — the one merge in this workflow that stays human and is never
+   automated. `thejudge-cleanup` (node 9, `close`) then promotes durable
+   truth, folds the run's ledger into a receipt, and deletes the package.
 
 ## Delegation boundary
 
@@ -45,6 +88,11 @@ This rule is unenforced. Nothing stops `thejudge-refinement` from adopting an
 intake claim wholesale; what catches it is the `define` gate parking on the
 resulting `PRD/sections/` diff, the same mechanism that catches any other
 unreviewed product truth.
+
+Node 2 also greps `PRD/instructions/receipts/` — each already named
+`<slug>-<date>.md` — for prior runs against the same ground, and writes one
+`## Prior run` line per match into `IDEA.md`. This is a flat list of matches,
+not a chain walk: receipts carry no parent pointer (DEC-167).
 
 ## Run predicate
 
@@ -668,6 +716,10 @@ Verbatim rather than summarized: a summary of a refusal ledger is the driver
 grading its own compliance. Without this, the proof that a run refused a
 pre-authorization survives exactly until the run succeeds — cleanup deletes the
 folder the ledger lives in.
+
+Cleanup also writes an `## Intake` section naming each staged intake file and
+its stated origin, so anything `graph-run` copied into
+`PRD/work/<slug>/intake/` is not lost when the folder is deleted (DEC-167).
 
 ## One run at a time
 

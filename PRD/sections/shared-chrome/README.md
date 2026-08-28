@@ -4,15 +4,17 @@
   `DEC`/`REQ`/`FLOW`/`NFR` wins — `PRD/sections/decisions.md` stays precedence #1
   and Read-First #1. Correct this file against those sources, not the other
   way around.
-- Backed by: DEC-085, DEC-095, DEC-104, DEC-109, DEC-110, DEC-111, DEC-117,
-  DEC-118, DEC-121, DEC-122, DEC-123, DEC-124, DEC-125, DEC-126, DEC-127,
-  DEC-129, DEC-130, DEC-131, DEC-133, DEC-134, DEC-135, DEC-137, DEC-138,
-  DEC-140, DEC-141, DEC-142, DEC-143, DEC-144, DEC-145, DEC-146, DEC-147,
-  DEC-148, DEC-149, DEC-150, DEC-151, DEC-153, DEC-156, DEC-157, DEC-158,
-  DEC-159, DEC-160, REQ-067, REQ-089, REQ-090, REQ-096, REQ-113, REQ-114,
-  REQ-115, REQ-116, REQ-117, REQ-118, REQ-119, REQ-122, REQ-123, REQ-124,
-  REQ-126, REQ-127, REQ-128, REQ-131, REQ-135, REQ-140, REQ-141, REQ-142,
-  FLOW-010, FLOW-016, FLOW-017, FLOW-018, NFR-001, NFR-006, NFR-011, NFR-014
+- Backed by: DEC-078, DEC-079, DEC-081, DEC-085, DEC-095, DEC-104, DEC-109,
+  DEC-110, DEC-111, DEC-117, DEC-118, DEC-119, DEC-121, DEC-122, DEC-123,
+  DEC-124, DEC-125, DEC-126, DEC-127, DEC-129, DEC-130, DEC-131, DEC-133,
+  DEC-134, DEC-135, DEC-137, DEC-138, DEC-140, DEC-141, DEC-142, DEC-143,
+  DEC-144, DEC-145, DEC-146, DEC-147, DEC-148, DEC-149, DEC-150, DEC-151,
+  DEC-152, DEC-153, DEC-156, DEC-157, DEC-158, DEC-159, DEC-160, REQ-058,
+  REQ-059, REQ-060, REQ-067, REQ-089, REQ-090, REQ-096, REQ-099, REQ-113,
+  REQ-114, REQ-115, REQ-116, REQ-117, REQ-118, REQ-119, REQ-122, REQ-123,
+  REQ-124, REQ-126, REQ-127, REQ-128, REQ-131, REQ-135, REQ-140, REQ-141,
+  REQ-142, FLOW-010, FLOW-016, FLOW-017, FLOW-018, NFR-001, NFR-006, NFR-011,
+  NFR-014
 
 ## What it is
 
@@ -165,6 +167,21 @@ language live here.
 - Built: the Theme section's palette orbs sit on one row within the tray; the
   section takes a normal inset rather than the rail-clearing row inset (it sits well
   below the rail's icon zone). (REQ-131, DEC-135)
+- Built: the catalog is six globally shared MTG-color profiles, ordered **White,
+  Blue, Black, Red, Green, Colorless**, with Blue the default; each supplies curated
+  `accent` / `accent-strong` / `accent-soft` / `accent-contrast` values through the
+  existing four-token contract, and each orb swatch shows that profile's
+  `accent-soft` value. Colorless alone exposes an inline full-spectrum custom-color
+  input plus **Reset to gray**: a chosen custom RGB is applied to `accent` /
+  `accent-strong` / `accent-soft` unchanged, with no contrast validation or
+  correction, and it persists independently of the fixed catalog, surviving switches
+  to other profiles and back. Loading a retired or otherwise unsupported stored
+  palette ID (the former Violet/Emerald/Amber/Rose catalog) deletes that stored
+  value and falls back to Blue. (DEC-119, REQ-099)
+- Built: all six Theme orbs render on a single row, with the Theme block/tray
+  extending as needed so the last orb never wraps to a second row on its own; when
+  Colorless is selected, its custom-color input and Reset control render **centered
+  underneath** the orb row rather than beside it. (DEC-152, REQ-131)
 
 ### The shared answered-conversation workspace
 
@@ -186,6 +203,10 @@ language live here.
   below a short card); desktop Start Over stays reachable in the workspace chrome,
   and mobile Start Over is a compact control above the 44px touch floor. (DEC-131,
   DEC-127, NFR-001)
+- Built: the follow-up composer/workspace carries the same restrained
+  ambient-accent treatment as the context trigger — a low-intensity accent at rest,
+  strengthened on hover/`focus-visible`, sustained while current — reusing the
+  existing four palette tokens with no new token roles. (DEC-081, REQ-060)
 - Built: the answered-workspace top clearance for View Context matches the
   **post-DEC-137 side-by-side rail footprint**: the corner rail participates in
   layout (`position: relative`) so the header owns its 44px band, and the shared
@@ -245,6 +266,14 @@ language live here.
   `subtypes` and other optional fields, falling back to N/A-style empty handling instead
   of throwing; persistence prefers storing the full `CardMetadataItem` shape used at
   submit time. (DEC-144, REQ-119)
+- Built: the View Context trigger and the open context sheet/drawer carry the
+  restrained ambient-accent layer from the selected theme palette — a low-intensity
+  palette accent at rest, a strengthened accent on hover/`focus-visible`, and a
+  sustained-but-still-restrained treatment while open (current state). Touch and
+  keyboard users get the same active/focus/current feedback; hover is never the
+  sole carrier of state. Reuses the existing four palette tokens with no new token
+  roles and no palette-tinted page background; static surrounding chrome stays
+  neutral. (DEC-081, REQ-060)
 
 ### Card detail popup (suite-wide) and the shared close control
 
@@ -267,11 +296,33 @@ language live here.
   ceiling; where container sizing would violate them, the hosting screen's
   `screen-layout.md` row records a bounded cap — never a component fork or size prop.
   (DEC-156, DEC-160, DEC-151, REQ-141)
+- Built: every image-bearing or metadata card container on those six shared
+  surfaces also carries a restrained, thin identity ring derived from the card's
+  existing `colors`: one WUBRG hue for a monocolor card, a stable WUBRG-ordered
+  gradient for multicolor, and a cool light silver-gray ring when colors are empty,
+  missing, or unrecognized. The ring is decorative and independent of the active
+  theme palette — it does not tint the container background, add a glow or
+  animation, or stand in as the sole identity cue — and applies equally when the
+  text-first metadata fallback replaces a missing image. (DEC-078, REQ-058)
 - Built: every overlay close control — View Context, the history drawer, the card popup,
   the feedback modal, and Life Tracker's counter and game-setup panels — renders through
   **one shared component** whose color derives from the active theme palette, replacing the
   copy-pasted zinc chrome and the former text "Close" buttons, at or above the 44px touch
   floor. (DEC-159, DEC-156, REQ-142)
+
+### Decorative motion baseline
+
+- Built: shared chrome draws on the app-wide, CSS-only decorative-motion baseline —
+  hover/press/focus micro-interactions, eased entrance/exit transitions, and
+  add/remove/success/error state-change cues, rather than only basic show/hide. The
+  Menu tray's slide-in, the overlay family's open/dismiss transitions, and the
+  history-drawer and card-popup close controls all draw on this baseline. No
+  animation library or framework is introduced; motion stays
+  transform/opacity-driven for mobile performance and honors
+  `prefers-reduced-motion` — no decorative motion is required to complete any flow.
+  Functional wait-state motion (the ask-AI waiting panel, the inline follow-up
+  spinner) predates this baseline and is unchanged by it. (DEC-079, REQ-059,
+  NFR-006)
 
 ## Shared layout language
 

@@ -6,13 +6,13 @@
   way around.
 - Backed by: DEC-050, DEC-051, DEC-052, DEC-053, DEC-054, DEC-055, DEC-056,
   DEC-057, DEC-058, DEC-059, DEC-060, DEC-061, DEC-062, DEC-065, DEC-069,
-  DEC-070, DEC-072, DEC-073, DEC-074, DEC-077, DEC-083, DEC-090, DEC-093,
-  DEC-076, DEC-078, DEC-082, DEC-068, DEC-087, DEC-107, DEC-157, DEC-151,
-  DEC-158, DEC-160, REQ-034, REQ-035, REQ-036, REQ-037, REQ-038, REQ-039,
-  REQ-040, REQ-041, REQ-042, REQ-043, REQ-047, REQ-048, REQ-050, REQ-051,
-  REQ-052, REQ-053, REQ-054, REQ-056, REQ-057, REQ-062, REQ-068, REQ-071,
-  REQ-125, REQ-073, REQ-065, REQ-046, REQ-128, REQ-129, FLOW-006, FLOW-009,
-  FLOW-011, NFR-010, NFR-014, NFR-006, NFR-001
+  DEC-070, DEC-071, DEC-072, DEC-073, DEC-074, DEC-077, DEC-083, DEC-090,
+  DEC-093, DEC-076, DEC-078, DEC-082, DEC-068, DEC-087, DEC-107, DEC-157,
+  DEC-151, DEC-158, DEC-160, REQ-034, REQ-035, REQ-036, REQ-037, REQ-038,
+  REQ-039, REQ-040, REQ-041, REQ-042, REQ-043, REQ-047, REQ-048, REQ-049,
+  REQ-050, REQ-051, REQ-052, REQ-053, REQ-054, REQ-056, REQ-057, REQ-062,
+  REQ-068, REQ-071, REQ-125, REQ-073, REQ-065, REQ-046, REQ-128, REQ-129,
+  FLOW-006, FLOW-009, FLOW-011, NFR-010, NFR-014, NFR-006, NFR-001
 - Corpus: scanning loads two committed Magic-data artifacts, each documented
   separately as a `data/` concern and not inlined here — the fingerprint
   library in `data/cardhashes.md` and the scan-to-metadata bridge in
@@ -114,6 +114,15 @@ becomes the only way to add a card. It sits outside the core product loop
   art matches the physical card; a missing printing image falls back to the
   oracle-level image. This is presentation only: `cardId`, the duplicate-stack
   key, prompt context, and rulings stay oracle-level. (DEC-070, REQ-048)
+- Built: that oracle-level fallback image is itself the standard-print
+  representative chosen by the committed metadata build's
+  `choosePreferredCard` — biased toward a standard paper printing over
+  special treatments (Secret Lair, promo, showcase, etc.) before the
+  most-recent tiebreak, falling back to a special printing only when no
+  standard printing exists for that oracle id. This is a metadata-build-time
+  refinement of DEC-012 with no scan-engine or runtime impact; the scan path
+  is otherwise unaffected because the scanned printing's own art (above)
+  displays directly. (DEC-071, REQ-049)
 
 ### Real-world robustness
 
@@ -176,7 +185,11 @@ becomes the only way to add a card. It sits outside the core product loop
   confirmation popup, review bubble) restyle with the selected app palette
   rather than fixed sky/emerald — an approved presentation-only exception to
   DEC-050's separate scoping that changes no capture, matching, or lock
-  behavior. (DEC-068, REQ-046)
+  behavior. The lock indicator and the add-to-stack confirmation popup were
+  among the previously-fixed emerald "semantic-green" states DEC-068 moved
+  onto the palette app-wide; the dominant page background behind the staged
+  scan screens stays neutralized to slate rather than palette-tinted, same as
+  elsewhere in the app. (DEC-068, REQ-046)
 
 ## How scan feeds each destination
 
