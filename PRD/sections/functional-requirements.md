@@ -3765,3 +3765,25 @@
 - Notes:
   - verified by grep before writing: `NO ACTIONABLE PACKAGE` appears in `thejudge-kickoff` and `thejudge-prepare` and nowhere in `graph-run` or `graph-workflow-contract.md`, so the driver has no rule for an outcome its own node can return
   - the orphan branch is unavoidable rather than a defect: node 1 must create a branch before node 2 can judge whether the request is packageable, so every `BLOCKED` of this kind leaves a pushed `thejudge-auto/<slug>` behind. The requirement is that the report says so
+
+### REQ-165
+- Title: S3-staged Lambda deploy upload
+- Priority: high
+- Description: The backend deploy stages the Lambda code+data zip in S3 and points `update-function-code` at it, instead of uploading the zip directly, so the deploy is bounded by AWS's 250 MB unzipped package quota rather than the ~50 MB direct-upload zip limit that breaks when the committed combo artifacts grow.
+- Acceptance Criteria:
+  - `scripts/aws-deploy.sh` uploads `dist/lambda.zip` to the artifact bucket, then calls `aws lambda update-function-code --s3-bucket <bucket> --s3-key <key>`; the `--zip-file fileb://…` form is removed
+  - `scripts/aws-bootstrap.sh` creates the artifact bucket `<app>-lambda-artifacts-<account>` — private (public access blocked), no CloudFront origin, in the same region as the function — and is idempotent on re-run
+  - the S3 object uses a fixed key overwritten each deploy; no per-deploy history object is kept
+  - the deploy succeeds on a package that exceeds the old ~50 MB direct-upload ceiling but stays within the 250 MB unzipped quota
+  - `scripts/package-lambda.sh` is unchanged and still produces `dist/lambda.zip`
+- Constraints:
+  - the artifact bucket and the Lambda function are in the same AWS region; a cross-region `--s3-bucket` reference is not valid
+  - the deploy continues to run only after `npm run quality:check` passes and only under the scoped OIDC deploy role (DEC-084)
+  - no bucket policy or Lambda-side S3 grant is added: `update-function-code --s3-bucket` reads the object with the caller's credentials, so a scoped `s3:PutObject` on the deploy role is the only new permission
+  - the product API, prompt, and runtime behavior are unchanged; this touches deploy plumbing only
+- Dependencies:
+  - DEC-169
+  - DEC-084
+  - NFR-017
+- Notes:
+  - rollback is Lambda's own function-version history, not an S3 object history — the fixed overwritten key is deliberate

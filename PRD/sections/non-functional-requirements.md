@@ -244,3 +244,17 @@
   - DEC-166
 - Notes:
   - the failure mode that matters most is the quiet one — a hook that is present, trusted, and not actually firing reads exactly like a hook that is working
+
+### NFR-017
+- Title: Deploy artifact stays within the S3-path package quota
+- Description: With the deploy on the S3-staged path (DEC-169/REQ-165), the binding limit becomes AWS's 250 MB unzipped deployment-package quota. A committed data artifact that would push the package past a deployable size must be caught before merge, not after a failed deploy on `main`.
+- Constraints:
+  - `scripts/lambda-package-budget.test.mjs` measures the unzipped on-disk package footprint (code + production `node_modules` + committed `apps/backend/data`) against the 250 MB quota, with a reserve, and fails when the tracked data would exceed the budget
+  - the base64/request-limit basis (`LAMBDA_REQUEST_LIMIT`, `BASE64_EXPANSION`, `ZIP_CEILING`) is removed with the direct-upload path it described; the test no longer models the ~50 MB direct-upload ceiling
+  - the test runs in `test:scripts` / `quality:check` so an over-quota artifact fails on the pull request, not after the merge
+  - the failure message names the largest data contributors and points at the levers (raise `MIN_VARIANT_POPULARITY` and re-trim, or reduce committed data), consistent with the current test's guidance
+- Dependencies:
+  - DEC-169
+  - REQ-165
+- Notes:
+  - the guardrail is repointed, never removed — a disarmed budget check is how the 2026-08-22 two-day deploy outage went unseen; the new basis simply matches the new real limit
