@@ -705,6 +705,30 @@ Do not dispatch any further node — that is the driver's job. Stage explicit pa
 
 Report back: the GAMEPLAN path, every slice doc + criteria.json path created, the slice count and one-line summary each, and confirm STATUS.active is set.
 
+### build
+
+graph-run is controlling. You are node 6 (`build`) of an autonomous graph run. Run the `thejudge-implement-all` skill end to end: implement every remaining slice in the GAMEPLAN in one worktree, then open the pull request.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run ID: graph-20260827-213634
+Package: PRD/work/in-depth-spec/
+Slug: in-depth-spec
+Autonomous base: origin/thejudge-auto/in-depth-spec
+Shared PR head branch (use verbatim): thejudge-auto/in-depth-spec-work
+
+Invoke `thejudge-implement-all` (read its SKILL.md and reference.md; because `graph-run is controlling`, honor the run predicate — do NOT pause for user questions; apply the assumption ladder and, if a genuine three-condition blocker arises, report it back rather than asking). The package README carries `## Autonomous metadata` (base recorded) and `## Preparation gate: PASS`.
+
+Requirements:
+- Create the one package worktree at `.worktrees/implement-in-depth-spec` and do all work there. Every path you write must lie inside `.worktrees/implement-in-depth-spec/` or `PRD/work/in-depth-spec/`.
+- Use the shared PR head branch `thejudge-auto/in-depth-spec-work` (distinct from the base) so the PR is `-work` → `origin/thejudge-auto/in-depth-spec` and shows the whole deliverable. Do NOT derive the head as the same name as the base.
+- These are 4 verify-only slices (A staged flow, B submit+conversation, C `mode:"game"` backend path, D header-nav+diff-proof) over the already-authored, committed spec `PRD/sections/in-depth/README.md`. Each slice VERIFIES the spec section against its cited DEC/REQ/FLOW/NFR sources (and, for C, real `apps/backend/src/` code), and applies only bounded, additive corrections the slice doc and its `criteria.json` authorize — chiefly the header Backed-by citation gap (DEC-018/DEC-047/DEC-122/REQ-033). Do NOT re-author the spec, mint new stable IDs, change In-Depth product behavior, or edit any DEC/REQ/FLOW/NFR body.
+- Earn every criterion in every `slice-*.criteria.json` with real tool calls; the node is `ok` only when all 29 criteria across all four slices are `true`. When all slices complete, set STATUS.ship-ready.
+
+Do not dispatch any further node — that is the driver's job. Stage explicit paths only — never `git add -A`, `git add .`, or `git add --all`. Never push `main`/`master`, never force-push, never merge/close the PR. If you write any prompt for a sub-subagent, copy the `Working directory:` line above into it unchanged.
+
+Report back: the worktree path, the PR URL, the head and base branches, each slice's completion + its criteria all-true confirmation, every path written (to prove write-scope), and the resulting STATUS marker.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
