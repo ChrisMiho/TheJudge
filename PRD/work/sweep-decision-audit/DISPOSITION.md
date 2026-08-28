@@ -10,17 +10,22 @@ corpus, `out-of-scope` rows get a one-line "lives in <X>, not a feature spec"
 note (or nothing). Sweep itself never edits — this grid is the seam.
 
 **Dispositions:** `fix-spec` (real player-facing gap → add to a spec) ·
+`fix-doc` (real gap, but not product-facing → into an instructions doc) ·
 `out-of-scope` (correctly absent — tooling/hosting/non-scored doc) ·
 `mark-obsolete` (superseded → retire in corpus).
 
 **Your call:** leave blank to accept the recommendation, or write your own
 disposition + any note. Reject a verdict by writing `reject: <why>`.
 
-Recommended split: **15 fix-spec · 16 out-of-scope · 3 mark-obsolete.**
+Split: **15 fix-spec · 5 fix-doc · 11 out-of-scope · 3 mark-obsolete.**
 
-Owner calls so far: Cursor-runtime rows (DEC-115, DEC-165) locked out-of-scope;
-the 3 obsolete rows left as-is (no corpus edit this pass). Apply touches only the
-15 fix-spec rows.
+Owner calls so far:
+- Cursor-runtime rows (DEC-115, DEC-165) locked out-of-scope — runtime retired.
+- 3 obsolete rows left as-is — no corpus edit this pass.
+- 5 graph rows (DEC-154/163/164/166/167) moved to fix-doc → graph-workflow-contract.md.
+- Lambda rows (DEC-084, DEC-169) stay out-of-scope — fold into docs when implemented.
+
+Apply touches the **15 fix-spec + 5 fix-doc** rows.
 
 ---
 
@@ -44,26 +49,37 @@ the 3 obsolete rows left as-is (no corpus edit this pass). Apply touches only th
 | DEC-071 | providers-and-contract | not-absorbed | scan | Document choosePreferredCard standard-print tiebreak in the metadata build. | |
 | DEC-079 | ui-presentation | not-absorbed | shared-chrome | Document the app-wide decorative-motion baseline (hover/press/focus, entrance/exit, add/remove/success/error cues). | |
 
-## out-of-scope — correctly absent (16)
+## fix-doc — graph workflow, into an instructions doc (5)
+
+Not product-facing, so not a feature spec. Owner wants the graph workflow's
+intended operation and overall flow captured in a durable doc. Recommended home:
+extend `PRD/instructions/graph-workflow-contract.md` with an "Overall flow"
+section (kickoff → preflight → refine → gate → build → review → merge) and cite
+each DEC in the relevant section. (Alt: a new short `graph-workflow-overview.md`.)
+
+| Item | Section | Verdict | Target doc | Fix note | Your call |
+| --- | --- | --- | --- | --- | --- |
+| DEC-154 | doc-process | not-absorbed | graph-workflow-contract.md | Contract-centered agent-workflow lifecycle (worktrees, autonomous prep/implement/cleanup, verification gates) — the flow the graph automates. | fix-doc per owner |
+| DEC-163 | doc-process | not-absorbed | graph-workflow-contract.md | graph-run / graph-preflight workflow over the thejudge-* lifecycle. | fix-doc per owner |
+| DEC-164 | doc-process | not-absorbed | graph-workflow-contract.md | Graph-workflow boundaries moved from prose to enforced scripts/hooks. | fix-doc per owner |
+| DEC-166 | doc-process | not-absorbed | graph-workflow-contract.md | Graph safety boundaries in a committed PreToolUse hook. | fix-doc per owner |
+| DEC-167 | doc-process | not-absorbed | graph-workflow-contract.md | graph-run as single intake door; thejudge-prepare retired as entry point. | fix-doc per owner |
+
+## out-of-scope — correctly absent (11)
 
 | Item | Section | Verdict | Lives in | Note | Your call |
 | --- | --- | --- | --- | --- | --- |
 | DEC-162 | combo-retrieval | partial | system-map.md | Corpus-build/artifact-format substance; delegated outside the 7 feature specs. | |
 | DEC-054 | scanning | partial | data/cardhashes.md | Resumable/budget-bounded build mechanics; delegated outside the scored specs. | |
-| DEC-084 | deployment | not-absorbed | docs/aws/ | Serverless hosting architecture; decision's own notes say it belongs in docs/aws/. | |
-| DEC-169 | deployment | not-absorbed | docs/aws/ | S3-staged Lambda deploy-artifact mechanics; deploy pipeline, not product. | |
+| DEC-084 | deployment | not-absorbed | docs/aws/ | Serverless hosting architecture; decision's own notes say it belongs in docs/aws/. | out-of-scope — folds into docs when Lambda is implemented, per owner |
+| DEC-169 | deployment | not-absorbed | docs/aws/ | S3-staged Lambda deploy-artifact mechanics; deploy pipeline, not product. | out-of-scope — folds into docs when Lambda is implemented, per owner |
 | DEC-044 | doc-process | not-absorbed | system-map.md | PRD-tooling catalog; not player-facing. | |
 | DEC-048 | doc-process | not-absorbed | system-map/*.md | Per-subsystem detail-file template; PRD tooling. | |
 | DEC-063 | doc-process | not-absorbed | decisions/ | Decisions-corpus file structure; not product substance. | |
 | DEC-086 | doc-process | not-absorbed | CI / tests | quality:check coverage reorg; tooling. | |
 | DEC-115 | doc-process | not-absorbed | .claude/skills/ | Terse skill-response discipline; agent workflow. Old canonical clause pointed at .cursor/, superseded by DEC-165. | out-of-scope ✓ — Cursor retired per owner |
-| DEC-154 | doc-process | not-absorbed | .claude/skills/ | Contract-centered agent-workflow lifecycle. | |
 | DEC-155 | doc-process | not-absorbed | CI | GitHub Actions sharding; tooling. | |
-| DEC-163 | doc-process | not-absorbed | .claude/skills/ | graph-run/graph-preflight workflow; developer tooling. | |
-| DEC-164 | doc-process | not-absorbed | .claude/skills/ | Graph boundaries as scripts/hooks; tooling. | |
 | DEC-165 | doc-process | not-absorbed | repo | .cursor/ removal, .claude/skills/ canonical; runtime tooling. | out-of-scope ✓ — Cursor retired per owner |
-| DEC-166 | doc-process | not-absorbed | repo | Graph safety boundaries in a PreToolUse hook; repo config. | |
-| DEC-167 | doc-process | not-absorbed | .claude/skills/ | graph-run single intake door; intake tooling. | |
 
 ## mark-obsolete — superseded (3)
 
