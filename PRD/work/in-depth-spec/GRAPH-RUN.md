@@ -774,8 +774,31 @@ Severity rule (binding): a preference, a style note, or any improvement OUTSIDE 
 
 Return a clear verdict: APPROVE, or a findings list where each finding has a severity (Critical / Important / Minor) and cites the exact criterion or diff line it fails. Only Critical/Important tied to a slice's own acceptance criteria may loop back to build. If you write any prompt for a sub-subagent, copy the `Working directory:` line above into it unchanged.
 
+### close
+
+graph-run is controlling. You are node 9 (`close`) of an autonomous graph run. Run the `thejudge-cleanup` skill end to end to close out this ship-ready package.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run ID: graph-20260827-213634
+Package: PRD/work/in-depth-spec/ (STATUS.ship-ready)
+Base branch (already checked out): thejudge-auto/in-depth-spec — PR #120 is MERGED (commit `eb9d737`).
+
+Invoke `thejudge-cleanup` (read its SKILL.md; because `graph-run is controlling`, honor the run predicate — do NOT pause for user questions). Then:
+
+1. Verify slice completion (all 4 slices done, 29/29 criteria `value:true`) and that the deliverable `PRD/sections/in-depth/README.md` is in place with the merged additive header fixes.
+2. Promote any durable PRD truth this package produced. Note: this is a derived, draft, non-authoritative current-state spec; the spec file already lives at `PRD/sections/in-depth/README.md` and the `PRD/README.md` nav row already exists. No new stable IDs, no DEC/REQ/FLOW/NFR body changes.
+3. Write the durable receipt under `PRD/instructions/receipts/`. It MUST include a `## Graph run` section carrying this package's `GRAPH-RUN.md` `## Node ledger` and `## Instruction ledger` **verbatim** (the contract's ledger-outlives-the-run rule — the delete is refused if the ledger exists and that section does not). Also record, as an explicit **owner follow-up** item in the receipt, the 3 spec-vs-code discrepancies build surfaced and the owner merged as-is: (a) `gameStateNotes`/`ADDITIONAL GAME STATE` absent from `apps/backend/src/` (system-map marks "planned") though the spec calls it Built; (b) `conversationHistory` per-message cap `boundedText(10000)` in code vs ≤2000 in REQ-027/DEC-038/spec; (c) `CONVERSATION HISTORY`/`SCOPE` prompt-section order inverted vs real `buildPromptText`. These are follow-up, not resolved here.
+4. Update `PRD/work/STATUS.md` (remove the ship-ready row) and delete `PRD/work/in-depth-spec/`.
+5. Commit the receipt + STATUS.md update + package deletion on branch `thejudge-auto/in-depth-spec`. Do NOT push — the driver performs the final push. Do NOT touch `main`/`master`, do NOT force-push, do NOT merge/close anything.
+
+Stage explicit paths only — never `git add -A`, `git add .`, or `git add --all`. If you write any prompt for a sub-subagent, copy the `Working directory:` line above into it unchanged.
+
+Report back: the receipt path, confirmation the `## Graph run` section is present with both ledgers verbatim, the STATUS.md change, confirmation the package folder is deleted, and the commit hash. Do not dispatch any further node.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "Write the current-state feature spec for the in-depth feature — Phase A #7, the last of the docs-refactor gameplan. Land it at PRD/sections/in-depth/README.md on the DEC-168 template. It is the largest and most entangled feature, so lean on the patterns the earlier six specs established. Keep it draft and non-authoritative." | answered-once | shape | — |
+| "ok its merged" | answered-once | land | — |
