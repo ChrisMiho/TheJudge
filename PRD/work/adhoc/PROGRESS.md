@@ -13,7 +13,7 @@ _Last updated: 2026-08-28._
 | # | Package | Status | How it runs |
 | --- | --- | --- | --- |
 | 0 | Codebase health audit | ✅ **done** (PR #98) | graph run, read-only |
-| 1 | Feature spec layer (Phase A/B/C) | 🟡 **in progress** — Phase A ✅, Phase B ✅, **Phase C next** | graph runs + one manual session |
+| 1 | Feature spec layer (Phase A/B/C) | ✅ **done** — Phase A ✅, Phase B ✅, Phase C ✅ | graph runs + one manual session |
 | 2 | Overnight-run tuning | ⬜ not started | mixed |
 | 3 | Operator manual | ⬜ not started | manual |
 | 4 | Plain-language standard | ⬜ not started | manual |
@@ -52,21 +52,29 @@ the fixes. Deletes nothing — the verdicts are Phase C's deletion map.
 
 Verdict split: **122 absorbed · 13 partial · 18 not-absorbed · 3 obsolete**.
 Dispositions: 15 fix-spec + 12 fix-doc applied; 4 out-of-scope (Cursor retired, Lambda
-pending); 3 obsolete left as-is. Keep `PRD/work/sweep-decision-audit/` until Phase C
-consumes it — it is the deletion map.
+pending); 3 obsolete left as-is. `PRD/work/sweep-decision-audit/` was the deletion
+map; Phase C consumed and deleted it.
 
-## Package 1, Phase C — retire ⬜ next
+## Package 1, Phase C — retire ✅ complete
 
-A manual, interactive session — it edits `thejudge-*` skills, which a graph run may not
-touch, so it is **not** a graph run or a sweep. Flip precedence (specs become truth),
-delete the ~149 proven-absorbed decisions, retire the 3 obsolete, **keep the 2 Lambda
-decisions** (content not yet captured anywhere durable), rewrite the decision-writing
-step in 5 skills, replace the decision template, point the define gate at REQ IDs, and
-update the 21 remaining citations. Start gate (a verdict on every confirmed decision)
-is satisfied.
+A manual, plan-first interactive session (not a graph run or a sweep). Flipped
+precedence so the 7 specs are truth and `decisions.md` dropped to a demoted #2
+historical index; deleted every decision body (the 17 per-domain files) except
+the two Lambda survivors **DEC-084 / DEC-169** in `decisions/deployment.md`;
+kept all 169 router index rows so every `DEC-ID` still resolves (the ~1,522
+content citations were left untouched by design); rewrote the decision-writing
+step across the skills **and** the instruction files that carry it
+(`requirement-format.md` template, `doc-lifecycle.md`, `agent-working-rules.md`,
+`writing-rules.md`, `technical-design-rules.md`, `graph-workflow-contract.md`);
+reframed the define gate's example at REQ IDs; and repointed the handful of live
+citations that named a deleted file path.
 
-**Kickoff prompt:** `PRD/work/adhoc/phase-c-kickoff.md` — paste it into a fresh
-session on an up-to-date `main`. Plan-first; it is not a graph run or a sweep.
+| Piece | Status | Landed as |
+| --- | --- | --- |
+| Retire the decision log | ✅ **done** | PR (docs/phase-c-retire-decision-log) — receipt `docs-refactor-phase-c-2026-08-28.md` |
+
+`PRD/work/sweep-decision-audit/` was the deletion map; consumed and deleted as
+part of this phase. The plan is recorded at `PRD/work/adhoc/phase-c-plan.md`.
 
 ---
 
