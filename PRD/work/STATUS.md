@@ -16,9 +16,9 @@ Do not rename package folders to encode status.
 
 ## ideation
 
-- [in-depth-spec](./in-depth-spec/)
-
 ## owner-action
+
+- [in-depth-spec](./in-depth-spec/) — parked at the `define` gate; walk with `/graph-gate-review PRD/work/in-depth-spec/`
 
 ## deferred
 
