@@ -65,6 +65,9 @@ step in 5 skills, replace the decision template, point the define gate at REQ ID
 update the 21 remaining citations. Start gate (a verdict on every confirmed decision)
 is satisfied.
 
+**Kickoff prompt:** `PRD/work/adhoc/phase-c-kickoff.md` — paste it into a fresh
+session on an up-to-date `main`. Plan-first; it is not a graph run or a sweep.
+
 ---
 
 ## Kickoff prompts — the seven specs (approach A) ✅ all run
