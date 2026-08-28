@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph tier `denied — nohup true` while lock held
 - Autonomous base: `origin/thejudge-auto/in-depth-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260827-213634/`
-- Current node: `review` (resumed 2026-08-27; build ok, PR #120 open, 29/29 criteria)
-- Next action: `/graph-run PRD/work/in-depth-spec/`
+- Current node: `land` (PARKED 2026-08-27 — owner merges PR #120, then resume)
+- Next action: merge PR #120, then `/graph-run PRD/work/in-depth-spec/`
 
 ## Node ledger
 
@@ -18,40 +18,48 @@
 | 4 | gate-qc | sonnet | ok | `0 → 29` | PASS, 0 findings; all 69 DEC / 47 REQ / 5 FLOW / 3 NFR citations verified against index; entanglement ownership confirmed on owning specs; status stays refined | 2026-08-27 |
 | 5 | plan | sonnet | ok | `0 → 46` | `GAMEPLAN.md` + 4 verify slices (A staged flow / B submit+conversation / C backend path / D header-nav+diff-proof), 29 criteria; STATUS.active; candidate finding: DEC-018/DEC-047/DEC-122/REQ-033 cited inline but absent from header Backed-by (additive fix in A/C/D) | 2026-08-27 |
 | 6 | build | sonnet | ok | `0 → 216` | all 4 slices done, **29/29 criteria `value:true`** (A8/B6/C9/D6); PR [#120](https://github.com/ChrisMiho/TheJudge/pull/120) `thejudge-auto/in-depth-spec-work` → base; write-scope clean (all writes under `.worktrees/implement-in-depth-spec/`, launch checkout untouched); STATUS.ship-ready. Header gaps DEC-018/047/122/REQ-033 confirmed + additively fixed. **3 spec-vs-code discrepancies surfaced, left uncorrected (out of slice license), posted as PR comment for owner:** `gameStateNotes`/ADDITIONAL GAME STATE absent in `apps/` (system-map marks "planned"); `conversationHistory` per-message cap 10000 in code vs 2000 in REQ-027/DEC-038/spec; CONVERSATION HISTORY/SCOPE section order inverted vs `buildPromptText` | 2026-08-27 |
+| 7 | review | opus | ok | `0 → 18` | **APPROVE.** No Critical/Important. Independently re-verified: diff purely additive (3164 insertions, 0 deletions, nothing under `apps/`, no DEC/REQ/FLOW/NFR body edit, one `PRD/README.md` nav row); the 4 additive header IDs resolve to real confirmed sources and stayed bounded (DEC-122 correctly header-excluded); slice-C backend labels/schema confirmed against `apps/backend/src/`. Confirmed all 3 deferred discrepancies real and the deferral correct. One non-looping Minor (harmonize the 2000-char cap hedge) | 2026-08-27 |
+| 8 | land | — | park | — | human PR merge — driver does not dispatch. PR [#120](https://github.com/ChrisMiho/TheJudge/pull/120) OPEN, MERGEABLE, CLEAN; parked at `owner-action` for the owner to review + merge | 2026-08-27 |
 
 ## Open gate
 
-**Resolved 2026-08-27** via `/graph-gate-review` — all 11 behavior sections walked
-one at a time, every verdict `accept` (0 edits, 0 rejects, 0 new stable IDs). No
-change was applied to `PRD/sections/`. The recorded diff below stays as the
-evidence of what was walked. See `## Gate verdicts`.
+**PARKED at the `land` gate — the owner merges the PR.** Node 8 (`land`) is a
+human PR merge; the driver never runs `gh pr merge`. Every automated node is
+`ok`: gate-qc PASS, plan (4 verify slices), build (29/29 criteria), review
+**APPROVE** (no Critical/Important). The deliverable is ready for the owner.
 
-**Parked at the `define` gate.** Node 3 (`define` / `thejudge-refinement`) wrote a
-non-empty `PRD/sections/` diff — a new current-state feature spec at
-`PRD/sections/in-depth/README.md` (new directory; 514 lines, all insertions, 0
-deletions). Per the graph-run contract, any non-empty `PRD/sections/` diff parks
-the run for owner review before it advances.
+- **What to do:** review and merge **PR #120**
+  (https://github.com/ChrisMiho/TheJudge/pull/120) —
+  `thejudge-auto/in-depth-spec-work` → `thejudge-auto/in-depth-spec`. It is
+  OPEN, MERGEABLE, CLEAN. The diff is purely additive (3164 insertions, 0
+  deletions): the In-Depth spec plus the 4 bounded header-citation fixes
+  (DEC-018/DEC-047/DEC-122/REQ-033) and one `PRD/README.md` nav row. Nothing
+  under `apps/`, no DEC/REQ/FLOW/NFR body edited.
+- **Read before merging — 3 spec-vs-code discrepancies build surfaced and left
+  uncorrected** (posted as a PR comment; out of these verify slices' license
+  because fixing them needs an authoritative REQ/DEC-body or `apps/` change).
+  They are a separate follow-up decision, not blockers for this draft
+  non-authoritative spec:
+  1. `gameStateNotes` / the `ADDITIONAL GAME STATE` prompt section is absent
+     from `apps/backend/src/` (system-map already marks it "planned"), yet the
+     spec describes it as Built.
+  2. `conversationHistory` per-message cap is `boundedText(10000)` in code vs
+     the ≤2000 the spec reports from REQ-027/DEC-038.
+  3. The `CONVERSATION HISTORY` / `SCOPE` prompt-section order in the spec is
+     inverted relative to real `buildPromptText`.
+- **Resume command (after merge):** `/graph-run PRD/work/in-depth-spec/` — it
+  confirms PR #120 merged, records `land` ok, reconciles the ledger via a local
+  merge of the base, and runs `close` (`thejudge-cleanup`) to promote durable
+  truth, write the receipt, and delete the package folder.
 
-- **New stable IDs minted:** none. The spec is a derived current-state view over
-  existing DEC/REQ/FLOW/NFR truth; refinement minted zero new IDs (verified by the
-  node). It also cites — without re-specifying — IDs owned by other specs (scan,
-  shared-chrome, card metadata).
-- **Question for the owner:** walk the spec and accept / edit / reject its content.
-  Because there are no new stable IDs, the ID-centric `graph-gate-review` walk maps
-  onto the spec's behavior sections, in order: **What it is**; the **staged flow**
-  (Step 1 Game context, Step 2 Zone confirmation, Step 3 Zone collection, Step 4
-  Enrichment, Submit — Decrypt Stack, the wait/answer/conversation); the **full
-  backend path** (`mode: "game"` — request validation, prompt assembly, retrieval
-  enrichment, combo enrichment, provider boundary); **Measured bounds**; **Rejected
-  alternatives and deferred scope**; **Where it lives**.
-- **One flagged conflict needs an owner ruling:** `MAX_CONVERSATION_HISTORY_CHARS` —
-  REQ-027 / DEC-042 state 1,000,000 while FLOW-005 states 6000. The two cited sources
-  conflict, so the spec flags the bound and points to source rather than choosing a
-  number. Resolve it during the walk (an `edit` on the Measured bounds row).
-- **Resume command:** `/graph-gate-review PRD/work/in-depth-spec/`
+### Prior gate — `define` (resolved 2026-08-27)
 
-Once every section has a verdict, `graph-gate-review` restores `status: refined` and
-hands back `/graph-run PRD/work/in-depth-spec/`, which resumes the run at `gate-qc`.
+Resolved via `/graph-gate-review` — all 11 behavior sections walked one at a
+time, every verdict `accept` (0 edits, 0 rejects, 0 new stable IDs); no change
+applied to `PRD/sections/`. The recorded diff and per-section verdicts below
+stay as the evidence of what was walked. The flagged
+`MAX_CONVERSATION_HISTORY_CHARS` conflict (REQ-027 1,000,000 vs FLOW-005 6000)
+was accepted as-flagged. See `## Gate verdicts` and the recorded diff.
 
 ### Recorded `PRD/sections/` diff
 

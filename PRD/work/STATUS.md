@@ -8,8 +8,6 @@ Do not rename package folders to encode status.
 
 ## active
 
-- [in-depth-spec](./in-depth-spec/)
-
 ## refined
 
 - [lambda-s3-deploy](./lambda-s3-deploy/)
@@ -19,6 +17,8 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
+
+- [in-depth-spec](./in-depth-spec/) — land gate: merge PR #120
 
 ## deferred
 
