@@ -5,7 +5,7 @@
     {
       "id": "D1",
       "statement": "PRD/README.md has exactly one Section Inventory row for sections/in-depth/",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep -c \"sections/in-depth\" PRD/README\\.md",
         "paths": ["PRD/README.md"]
@@ -14,7 +14,7 @@
     {
       "id": "D2",
       "statement": "That row's description states the spec is a derived, non-authoritative current-state view citing DEC-168, names In-Depth as the primary MTG Assistant loop / mode: game destination, and notes it covers the full backend path",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep -Ei \"(derived|non-authoritative|current-state|DEC-168|backend path)\" PRD/README\\.md",
         "paths": ["PRD/README.md"]
@@ -23,7 +23,7 @@
     {
       "id": "D3",
       "statement": "No other Section Inventory or Instruction Inventory row was added, removed, or reordered",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -31,7 +31,7 @@
     {
       "id": "D4",
       "statement": "The header's Backed by: line and Consumed but owned elsewhere paragraph are confirmed internally consistent with whatever slices A and C actually did, and a fresh header-vs-body ID reconciliation shows zero non-cross-boundary IDs missing from Backed by:",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "python3 -c \"import re; t=open('PRD/sections/in-depth/README.md').read(); h=t[:t.index('## What it is')]; b=t[t.index('## What it is'):]; hi=set(re.findall(r'(?:DEC|REQ|FLOW|NFR)-\\\\d+', h)); bi=set(re.findall(r'(?:DEC|REQ|FLOW|NFR)-\\\\d+', b)); cb={'FLOW-006','FLOW-010','REQ-097','REQ-098','DEC-095','DEC-135','DEC-145','DEC-124','DEC-149','DEC-050','DEC-070','DEC-012'}; print(sorted((bi-hi)-cb))\"",
         "paths": ["PRD/sections/in-depth/README.md"]
@@ -40,7 +40,7 @@
     {
       "id": "D5",
       "statement": "The full package diff (from the merge-base with origin/main) shows no change under apps/, and no change to any existing DEC/REQ/FLOW/NFR body, system-map.md, screen-layout.md, open-questions.md, or goals-and-non-goals.md",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "git diff --stat \\$\\(git merge-base HEAD origin/main\\) -- (apps/|PRD/sections/decisions|PRD/sections/functional-requirements\\.md|PRD/sections/user-flows\\.md|PRD/sections/non-functional-requirements\\.md|PRD/sections/system-map\\.md|PRD/sections/screen-layout\\.md|PRD/sections/goals-and-non-goals\\.md|PRD/sections/open-questions\\.md)",
         "paths": [
@@ -52,7 +52,7 @@
     {
       "id": "D6",
       "statement": "A human confirmed the package needs no further durable-truth promotion at cleanup beyond PRD/sections/in-depth/README.md and the PRD/README.md row",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
