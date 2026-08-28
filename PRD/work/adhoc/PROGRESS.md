@@ -4,7 +4,7 @@ The plan is `refactor-gameplan.md`. This file tracks **how far through it you ar
 Update the status boxes as runs finish. Graph runs delete their own work folder on
 completion, so this file — not `PRD/work/STATUS.md` — is the durable progress board.
 
-_Last updated: 2026-08-27._
+_Last updated: 2026-08-28._
 
 ---
 
@@ -13,7 +13,7 @@ _Last updated: 2026-08-27._
 | # | Package | Status | How it runs |
 | --- | --- | --- | --- |
 | 0 | Codebase health audit | ✅ **done** (PR #98) | graph run, read-only |
-| 1 | Feature spec layer (Phase A/B/C) | 🟡 **in progress** — see below | graph runs + one manual session |
+| 1 | Feature spec layer (Phase A/B/C) | 🟡 **in progress** — Phase A ✅ done (all 7 specs on `main`); Phase B is next | graph runs + one manual session |
 | 2 | Overnight-run tuning | ⬜ not started | mixed |
 | 3 | Operator manual | ⬜ not started | manual |
 | 4 | Plain-language standard | ⬜ not started | manual |
@@ -36,11 +36,13 @@ at the **define gate** for you to review, then resumes to completion.
 | 4 | `scan` | ✅ **done** | PR #112 (work→base), #114 (base→main) |
 | 5 | `quick-lookup` | ✅ **done** | PR #116 (work→base), #117 (base→main) |
 | 6 | `shared-chrome` | ✅ **done** | PR #118 (work→base), #119 (base→main; also carries the concurrent lambda-s3-deploy package) |
-| 7 | `in-depth` | ⬜ **next** | — |
+| 7 | `in-depth` | ✅ **done** | PR #120 (work→base), #121 (base→main) |
 
-**Phase B** (audit every decision against the specs) can't start until all seven exist.
-**Phase C** (retire the decision log) is a manual session — it edits `thejudge-*` skills,
-which a graph run may not touch.
+**Phase A is complete** — all seven specs exist on `main` (2026-08-28). **Phase B**
+(audit every confirmed decision against the specs) is now unblocked and is the next
+step. **Phase C** (retire the decision log) is a manual session — it edits
+`thejudge-*` skills, which a graph run may not touch — and cannot start until Phase
+B has a verdict on all confirmed decisions.
 
 ---
 
