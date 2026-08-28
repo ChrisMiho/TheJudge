@@ -4,7 +4,7 @@ The plan is `refactor-gameplan.md`. This file tracks **how far through it you ar
 Update the status boxes as runs finish. Graph runs delete their own work folder on
 completion, so this file — not `PRD/work/STATUS.md` — is the durable progress board.
 
-_Last updated: 2026-08-25._
+_Last updated: 2026-08-28._
 
 ---
 
@@ -13,7 +13,7 @@ _Last updated: 2026-08-25._
 | # | Package | Status | How it runs |
 | --- | --- | --- | --- |
 | 0 | Codebase health audit | ✅ **done** (PR #98) | graph run, read-only |
-| 1 | Feature spec layer (Phase A/B/C) | 🟡 **in progress** — see below | graph runs + one manual session |
+| 1 | Feature spec layer (Phase A/B/C) | 🟡 **in progress** — Phase A ✅, Phase B ✅, **Phase C next** | graph runs + one manual session |
 | 2 | Overnight-run tuning | ⬜ not started | mixed |
 | 3 | Operator manual | ⬜ not started | manual |
 | 4 | Plain-language standard | ⬜ not started | manual |
@@ -23,28 +23,54 @@ started all this. Don't let it fall off the end.
 
 ---
 
-## Package 1, Phase A — the seven specs
+## Package 1, Phase A — the seven specs ✅ complete
 
-One current-state spec per feature, smallest first. Each is one graph run that parks
-at the **define gate** for you to review, then resumes to completion.
+One current-state spec per feature, smallest first. Each was one graph run that parked
+at the **define gate** for review, then resumed to completion. **All seven are on `main`.**
 
 | # | Feature spec | Status | Landed as |
 | --- | --- | --- | --- |
 | 1 | `life-tracker` | ✅ **done** | PR #105, DEC-168 |
 | 2 | `user-feedback` | ✅ **done** | PR #107 (work→base), #109 (base→main) |
-| 3 | `trade-balancer` | ✅ **done (base→main pending)** | PR #110 (work→base) merged 2026-08-26; open the base→main PR to reach `main` |
-| 4 | `scan` | ⬜ **next** | — |
-| 5 | `quick-lookup` | ⬜ not started | — |
-| 6 | shared chrome | ⬜ not started | — |
-| 7 | `in-depth` | ⬜ not started | — |
+| 3 | `trade-balancer` | ✅ **done** | PR #110 (work→base), reached `main` |
+| 4 | `scan` | ✅ **done** | PR #114 |
+| 5 | `quick-lookup` | ✅ **done** | PR #116 (work→base), #117 (base→main) |
+| 6 | shared chrome | ✅ **done** | PR #118 (work→base), #119 (base→main) |
+| 7 | `in-depth` | ✅ **done** | PR #120 (work→base), #121 (base→main) |
 
-**Phase B** (audit every decision against the specs) can't start until all seven exist.
-**Phase C** (retire the decision log) is a manual session — it edits `thejudge-*` skills,
-which a graph run may not touch.
+## Package 1, Phase B — audit + apply ✅ complete
+
+Audited all 156 `Status: confirmed` decisions across the 18 domain files against the
+seven specs, one verdict each (`absorbed` / `partial` / `not-absorbed` / `obsolete`),
+via the `thejudge-sweep` skill. Then dispositioned every non-clean verdict and applied
+the fixes. Deletes nothing — the verdicts are Phase C's deletion map.
+
+| Piece | Status | Landed as |
+| --- | --- | --- |
+| Audit + disposition grid | ✅ **done** | PR #124 — `PRD/work/sweep-decision-audit/` (verdicts + `DISPOSITION.md`) |
+| Applied fixes (27 decisions into specs/docs) | ✅ **done** | PR #125 — 15 fix-spec + 12 fix-doc |
+
+Verdict split: **122 absorbed · 13 partial · 18 not-absorbed · 3 obsolete**.
+Dispositions: 15 fix-spec + 12 fix-doc applied; 4 out-of-scope (Cursor retired, Lambda
+pending); 3 obsolete left as-is. Keep `PRD/work/sweep-decision-audit/` until Phase C
+consumes it — it is the deletion map.
+
+## Package 1, Phase C — retire ⬜ next
+
+A manual, interactive session — it edits `thejudge-*` skills, which a graph run may not
+touch, so it is **not** a graph run or a sweep. Flip precedence (specs become truth),
+delete the ~149 proven-absorbed decisions, retire the 3 obsolete, **keep the 2 Lambda
+decisions** (content not yet captured anywhere durable), rewrite the decision-writing
+step in 5 skills, replace the decision template, point the define gate at REQ IDs, and
+update the 21 remaining citations. Start gate (a verdict on every confirmed decision)
+is satisfied.
 
 ---
 
-## Kickoff prompts — the remaining six specs (approach A)
+## Kickoff prompts — the seven specs (approach A) ✅ all run
+
+_All seven specs have landed on `main`; this section is kept as a record of how they
+were run and is no longer pending work._
 
 One graph run per spec, each its own branch and PR. Run them **one at a time, in
 this order**, each **in a fresh session checked out on an up-to-date `main`**. Do
