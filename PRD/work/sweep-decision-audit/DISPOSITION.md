@@ -17,15 +17,21 @@ note (or nothing). Sweep itself never edits — this grid is the seam.
 **Your call:** leave blank to accept the recommendation, or write your own
 disposition + any note. Reject a verdict by writing `reject: <why>`.
 
-Split: **15 fix-spec · 5 fix-doc · 11 out-of-scope · 3 mark-obsolete.**
+Split: **15 fix-spec · 12 fix-doc · 4 out-of-scope · 3 mark-obsolete.** All 34 boxes answered.
 
-Owner calls so far:
-- Cursor-runtime rows (DEC-115, DEC-165) locked out-of-scope — runtime retired.
-- 3 obsolete rows left as-is — no corpus edit this pass.
-- 5 graph rows (DEC-154/163/164/166/167) moved to fix-doc → graph-workflow-contract.md.
-- Lambda rows (DEC-084, DEC-169) stay out-of-scope — fold into docs when implemented.
+Owner calls:
+- fix-spec (15): all get fixed into their feature spec (incl. borderline DEC-033).
+- fix-doc (12): graph → graph-workflow-contract.md; system-map → system-map.md;
+  CI → new ci.md; tooling → doc-lifecycle.md / cardhashes.md. No Cursor items.
+- out-of-scope (4): Cursor rows (DEC-115, DEC-165) retired; Lambda rows (DEC-084,
+  DEC-169) fold into docs when implemented.
+- mark-obsolete (3): left as-is — no corpus edit this pass.
 
-Apply touches the **15 fix-spec + 5 fix-doc** rows.
+Two homes still open for owner confirmation before apply:
+1. Graph flow inside graph-workflow-contract.md (recommended) vs a new overview doc.
+2. CI docs in a new PRD/instructions/ci.md (recommended) vs folded into skill-testing.md.
+
+Apply will touch the **15 fix-spec + 12 fix-doc** rows. NOT YET RUN.
 
 ---
 
@@ -49,13 +55,16 @@ Apply touches the **15 fix-spec + 5 fix-doc** rows.
 | DEC-071 | providers-and-contract | not-absorbed | scan | Document choosePreferredCard standard-print tiebreak in the metadata build. | |
 | DEC-079 | ui-presentation | not-absorbed | shared-chrome | Document the app-wide decorative-motion baseline (hover/press/focus, entrance/exit, add/remove/success/error cues). | |
 
-## fix-doc — graph workflow, into an instructions doc (5)
+## fix-doc — not product-facing, into a durable non-spec doc (12)
 
-Not product-facing, so not a feature spec. Owner wants the graph workflow's
-intended operation and overall flow captured in a durable doc. Recommended home:
-extend `PRD/instructions/graph-workflow-contract.md` with an "Overall flow"
-section (kickoff → preflight → refine → gate → build → review → merge) and cite
-each DEC in the relevant section. (Alt: a new short `graph-workflow-overview.md`.)
+Real substance, but it governs tooling/systems, not player behavior — so it lands
+in an instructions/system doc, never a feature spec. Where a target doc already
+covers the substance, the apply just cites the DEC; otherwise it adds the missing
+part in that doc's voice. No Cursor items here (retired).
+
+**Graph workflow (5)** — home: extend `PRD/instructions/graph-workflow-contract.md`
+with an "Overall flow" section (kickoff → preflight → refine → gate → build →
+review → merge) and cite each DEC in its relevant section.
 
 | Item | Section | Verdict | Target doc | Fix note | Your call |
 | --- | --- | --- | --- | --- | --- |
@@ -65,21 +74,37 @@ each DEC in the relevant section. (Alt: a new short `graph-workflow-overview.md`
 | DEC-166 | doc-process | not-absorbed | graph-workflow-contract.md | Graph safety boundaries in a committed PreToolUse hook. | fix-doc per owner |
 | DEC-167 | doc-process | not-absorbed | graph-workflow-contract.md | graph-run as single intake door; thejudge-prepare retired as entry point. | fix-doc per owner |
 
-## out-of-scope — correctly absent (11)
+**System map (3)** — home: `PRD/sections/system-map.md` (+ `system-map/*.md` details).
+
+| Item | Section | Verdict | Target doc | Fix note | Your call |
+| --- | --- | --- | --- | --- | --- |
+| DEC-044 | doc-process | not-absorbed | sections/system-map.md | The system-map catalog itself (shipped/planned subsystem index + status states). | fix-doc per owner |
+| DEC-048 | doc-process | not-absorbed | sections/system-map.md | Per-subsystem detail-file template under system-map/. | fix-doc per owner |
+| DEC-162 | combo-retrieval | partial | sections/system-map.md | Combo corpus-build/artifact-format substance (gzip sizing, data:refresh trigger, real-bytes fixture). | fix-doc per owner |
+
+**CI (2)** — home: recommend a new short `PRD/instructions/ci.md` (the quality-check
+pipeline), or fold into `skill-testing.md`. Owner to confirm home.
+
+| Item | Section | Verdict | Target doc | Fix note | Your call |
+| --- | --- | --- | --- | --- | --- |
+| DEC-086 | doc-process | not-absorbed | ci.md (new) | Single coverage pass for quality:check + test-file reorg. | fix-doc per owner |
+| DEC-155 | doc-process | not-absorbed | ci.md (new) | GitHub Actions restructured into parallel/sharded jobs. | fix-doc per owner |
+
+**Tooling (2)** — corpus/build structure docs.
+
+| Item | Section | Verdict | Target doc | Fix note | Your call |
+| --- | --- | --- | --- | --- | --- |
+| DEC-063 | doc-process | not-absorbed | instructions/doc-lifecycle.md | decisions.md split into router + topic files (doc-lifecycle already touches this — cite + fill any gap). | fix-doc per owner |
+| DEC-054 | scanning | partial | sections/scan/data/cardhashes.md | Resumable/budget-bounded build, --fresh, checkpointing, skip-list, npm aliases (cardhashes.md already exists — cite + fill any gap). | fix-doc per owner |
+
+## out-of-scope — no doc, correctly left absent (4)
 
 | Item | Section | Verdict | Lives in | Note | Your call |
 | --- | --- | --- | --- | --- | --- |
-| DEC-162 | combo-retrieval | partial | system-map.md | Corpus-build/artifact-format substance; delegated outside the 7 feature specs. | |
-| DEC-054 | scanning | partial | data/cardhashes.md | Resumable/budget-bounded build mechanics; delegated outside the scored specs. | |
-| DEC-084 | deployment | not-absorbed | docs/aws/ | Serverless hosting architecture; decision's own notes say it belongs in docs/aws/. | out-of-scope — folds into docs when Lambda is implemented, per owner |
-| DEC-169 | deployment | not-absorbed | docs/aws/ | S3-staged Lambda deploy-artifact mechanics; deploy pipeline, not product. | out-of-scope — folds into docs when Lambda is implemented, per owner |
-| DEC-044 | doc-process | not-absorbed | system-map.md | PRD-tooling catalog; not player-facing. | |
-| DEC-048 | doc-process | not-absorbed | system-map/*.md | Per-subsystem detail-file template; PRD tooling. | |
-| DEC-063 | doc-process | not-absorbed | decisions/ | Decisions-corpus file structure; not product substance. | |
-| DEC-086 | doc-process | not-absorbed | CI / tests | quality:check coverage reorg; tooling. | |
-| DEC-115 | doc-process | not-absorbed | .claude/skills/ | Terse skill-response discipline; agent workflow. Old canonical clause pointed at .cursor/, superseded by DEC-165. | out-of-scope ✓ — Cursor retired per owner |
-| DEC-155 | doc-process | not-absorbed | CI | GitHub Actions sharding; tooling. | |
-| DEC-165 | doc-process | not-absorbed | repo | .cursor/ removal, .claude/skills/ canonical; runtime tooling. | out-of-scope ✓ — Cursor retired per owner |
+| DEC-084 | deployment | not-absorbed | docs/aws/ | Serverless hosting architecture. | out-of-scope — folds into docs when Lambda is implemented, per owner |
+| DEC-169 | deployment | not-absorbed | docs/aws/ | S3-staged Lambda deploy-artifact mechanics. | out-of-scope — folds into docs when Lambda is implemented, per owner |
+| DEC-115 | doc-process | not-absorbed | .claude/skills/ | Terse skill-response discipline; old canonical clause pointed at .cursor/, superseded by DEC-165. | out-of-scope ✓ — Cursor stuff, per owner |
+| DEC-165 | doc-process | not-absorbed | repo | .cursor/ removal, .claude/skills/ canonical. | out-of-scope ✓ — Cursor stuff, per owner |
 
 ## mark-obsolete — superseded (3)
 
