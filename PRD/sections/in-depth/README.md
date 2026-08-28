@@ -6,7 +6,7 @@
   way around.
 - Backed by: DEC-002, DEC-003, DEC-004, DEC-005, DEC-006, DEC-007, DEC-008,
   DEC-009, DEC-010, DEC-011, DEC-013, DEC-014, DEC-015, DEC-016, DEC-017,
-  DEC-019, DEC-020, DEC-021, DEC-022, DEC-023, DEC-024, DEC-025, DEC-026,
+  DEC-018, DEC-019, DEC-020, DEC-021, DEC-022, DEC-023, DEC-024, DEC-025, DEC-026,
   DEC-027, DEC-028, DEC-029, DEC-030, DEC-031, DEC-032, DEC-033, DEC-034,
   DEC-035, DEC-036, DEC-037, DEC-038, DEC-039, DEC-040, DEC-041, DEC-042,
   DEC-043, DEC-045, DEC-046, DEC-049, DEC-067, DEC-076, DEC-078, DEC-082,
@@ -23,8 +23,8 @@
   NFR-006
 - Consumed but owned elsewhere (cited, not re-specified here): the shared
   answered-conversation workspace, View Context overlay, history drawer,
-  suite-wide card-detail popup, Menu rail, suite shell, and shared layout
-  language live in `PRD/sections/shared-chrome/`; the camera scan input path
+  suite-wide card-detail popup, Menu rail (DEC-122), suite shell, and shared
+  layout language live in `PRD/sections/shared-chrome/`; the camera scan input path
   (FLOW-006) lives in `PRD/sections/scan/`; the rules-retrieval and
   combo-corpus machinery live in `PRD/sections/system-map.md`. In-Depth is a
   consumer of each — this spec describes how In-Depth mounts and drives them,
