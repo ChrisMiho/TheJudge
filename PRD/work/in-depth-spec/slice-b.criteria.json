@@ -1,0 +1,71 @@
+{
+  "slug": "in-depth-spec",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "Submit - Decrypt Stack is confirmed traceable to DEC-153, REQ-132, REQ-012, REQ-011, DEC-146, DEC-131, REQ-121, REQ-110, REQ-019, DEC-096, DEC-106 - no invented capability, no dropped behavior",
+      "value": false,
+      "evidence": {
+        "command": "grep -n \"^### DEC-153\\b\" -A 15 PRD/sections/decisions/conversation-ux\\.md",
+        "paths": [
+          "PRD/sections/in-depth/README.md",
+          "PRD/sections/decisions/conversation-ux.md",
+          "PRD/sections/functional-requirements.md"
+        ]
+      }
+    },
+    {
+      "id": "B2",
+      "statement": "The wait, the answer, and the conversation is confirmed traceable to DEC-031, REQ-023, REQ-025, DEC-040, DEC-118, REQ-026, REQ-028, DEC-039, DEC-041, DEC-123, DEC-127, FLOW-005, REQ-027, DEC-038, REQ-029, DEC-014, REQ-014, FLOW-003 - no invented capability, no dropped behavior",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "B3",
+      "statement": "Measured bounds figures are confirmed against their cited sources, including the flagged, unresolved MAX_CONVERSATION_HISTORY_CHARS disagreement staying flagged rather than silently resolved",
+      "value": false,
+      "evidence": {
+        "command": "grep -n \"MAX_CONVERSATION_HISTORY_CHARS\" PRD/sections/in-depth/README\\.md",
+        "paths": [
+          "PRD/sections/in-depth/README.md",
+          "PRD/sections/functional-requirements.md",
+          "PRD/sections/user-flows.md"
+        ]
+      }
+    },
+    {
+      "id": "B4",
+      "statement": "Rejected alternatives and deferred scope matches its cited DECs' Context/Notes language, with nothing invented or omitted",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "B5",
+      "statement": "The frontend-facing portion of Where it lives names every file system-map.md and the actual repository tree confirm belongs to the feature; MtgAssistantApp is confirmed registered in destinationRegistry.tsx",
+      "value": false,
+      "evidence": {
+        "command": "grep -n \"MtgAssistantApp\" apps/frontend/src/components/portal/destinationRegistry\\.tsx",
+        "paths": [
+          "PRD/sections/in-depth/README.md",
+          "PRD/sections/system-map.md",
+          "apps/frontend/src/components/portal/MtgAssistantApp.tsx",
+          "apps/frontend/src/components/portal/destinationRegistry.tsx"
+        ]
+      }
+    },
+    {
+      "id": "B6",
+      "statement": "No new (minted) stable ID token appears in the sections this slice owns - and this slice's diff touches only PRD/sections/in-depth/README.md, confined to the sections this slice owns, and only for bounded additive correction where genuinely needed - no apps/ change, no edit to any existing DEC/REQ/FLOW/NFR body, no system-map.md/screen-layout.md/open-questions.md/goals-and-non-goals.md edit",
+      "value": false,
+      "evidence": {
+        "command": "grep -oE \"(DEC|REQ|FLOW|NFR|Q)-[0-9]+\" PRD/sections/in-depth/README\\.md | sort -u",
+        "paths": ["PRD/sections/in-depth/README.md"]
+      }
+    }
+  ]
+}

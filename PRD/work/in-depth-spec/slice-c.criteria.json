@@ -1,0 +1,122 @@
+{
+  "slug": "in-depth-spec",
+  "slice": "C",
+  "criteria": [
+    {
+      "id": "C1",
+      "statement": "Request-validation bullets (mode-discriminated union, default-to-game, no top-level stack/battlefieldContext/card, empty-zone omission, gameStateNotes bounds, shared conversationHistory validation) are confirmed against askAiRequest.ts, read directly",
+      "value": false,
+      "evidence": {
+        "command": "grep -n \"mode|strict|gameContext|gameStateNotes|conversationHistory\" apps/backend/src/validation/askAiRequest\\.ts",
+        "paths": [
+          "apps/backend/src/validation/askAiRequest.ts",
+          "PRD/sections/in-depth/README.md"
+        ]
+      }
+    },
+    {
+      "id": "C2",
+      "statement": "Prompt-assembly bullets (fixed section order, PHASE GUIDANCE combat-substep specificity, full per-card metadata, stack-vs-non-stack field differences) are confirmed against preparation.ts, context.ts, normalization.ts, mtgReference.ts, and phaseGuidance.ts, read directly",
+      "value": false,
+      "evidence": {
+        "command": "grep -n \"prepareGamePromptInput\" -A 30 apps/backend/src/prompt/preparation\\.ts",
+        "paths": [
+          "apps/backend/src/prompt/preparation.ts",
+          "apps/backend/src/prompt/context.ts",
+          "apps/backend/src/prompt/normalization.ts",
+          "apps/backend/src/prompt/mtgReference.ts",
+          "apps/backend/src/prompt/phaseGuidance.ts",
+          "PRD/sections/in-depth/README.md"
+        ]
+      }
+    },
+    {
+      "id": "C3",
+      "statement": "Retrieval bullets (always-on core plus game-state-gated System 2 expansion, IDF-weighted System 3 supplemental scoring with dedup, omission conditions) are confirmed against gameRules.ts and gameRulesRetrieval.ts, read directly",
+      "value": false,
+      "evidence": {
+        "command": "grep -n \"retrieveRulesForQuery|IDF|score\" apps/backend/src/gameRulesRetrieval\\.ts",
+        "paths": [
+          "apps/backend/src/gameRules.ts",
+          "apps/backend/src/gameRulesRetrieval.ts",
+          "PRD/sections/in-depth/README.md"
+        ]
+      }
+    },
+    {
+      "id": "C4",
+      "statement": "Combo-enrichment bullets (complete-vs-partial candidate gating on explicit intent, 5-variant cap, deterministic ordering, section position, forbidden complete wording, A/B-only measurement) are confirmed against apps/backend/src/commanderSpellbook/ and the game-mode combo call site in preparation.ts, read directly",
+      "value": false,
+      "evidence": {
+        "command": "grep -n \"resolveGameComboCandidates|selectComboCandidates|hasExplicitComboIntent\" -A 15 apps/backend/src/prompt/preparation\\.ts",
+        "paths": [
+          "apps/backend/src/commanderSpellbook",
+          "apps/backend/src/prompt/preparation.ts",
+          "PRD/sections/decisions/combo-retrieval.md",
+          "PRD/sections/in-depth/README.md"
+        ]
+      }
+    },
+    {
+      "id": "C5",
+      "statement": "Provider-boundary and diagnostics bullets (mode-agnostic generateAnswer, ASK_AI_PROVIDER selection, mock-default exposing the assembled prompt, live-path diagnostics fields, answer-only response shape) are confirmed against apps/backend/src/providers/* and its README, read directly",
+      "value": false,
+      "evidence": {
+        "command": "grep -n \"correlationId|providerElapsedMs|answerChars|estimatedAnswerTokens|charsPerTokenEstimate\" -r apps/backend/src",
+        "paths": [
+          "apps/backend/src/providers/askAiProvider.ts",
+          "apps/backend/src/providers/createAskAiProvider.ts",
+          "apps/backend/src/providers/mockAskAiProvider.ts",
+          "apps/backend/src/providers/openAiResponsesProvider.ts",
+          "apps/backend/src/providers/README.md",
+          "PRD/sections/in-depth/README.md"
+        ]
+      }
+    },
+    {
+      "id": "C6",
+      "statement": "The DEC-047 header-citation gap is independently re-verified; if confirmed, DEC-047 is added to the Backed by: line",
+      "value": false,
+      "evidence": {
+        "command": "grep -n \"^### DEC-047\\b\" -A 10 PRD/sections/decisions/rules-retrieval\\.md",
+        "paths": [
+          "PRD/sections/decisions/rules-retrieval.md",
+          "PRD/sections/in-depth/README.md"
+        ]
+      }
+    },
+    {
+      "id": "C7",
+      "statement": "The REQ-033 header-citation gap is independently re-verified; if confirmed, REQ-033 is added to the Backed by: line",
+      "value": false,
+      "evidence": {
+        "command": "grep -n \"^### REQ-033\\b\" -A 10 PRD/sections/functional-requirements\\.md",
+        "paths": [
+          "PRD/sections/functional-requirements.md",
+          "PRD/sections/in-depth/README.md"
+        ]
+      }
+    },
+    {
+      "id": "C8",
+      "statement": "The backend-facing portion of Where it lives names every backend file the spec's backend-path section actually depends on, confirmed present in the repository tree",
+      "value": false,
+      "evidence": {
+        "command": "ls apps/backend/src/routes/askAi\\.ts apps/backend/src/validation/askAiRequest\\.ts apps/backend/src/prompt/preparation\\.ts apps/backend/src/prompt/context\\.ts apps/backend/src/prompt/normalization\\.ts apps/backend/src/prompt/mtgReference\\.ts apps/backend/src/prompt/phaseGuidance\\.ts apps/backend/src/cardRulings\\.ts apps/backend/src/gameRules\\.ts apps/backend/src/gameRulesTopicSelection\\.ts apps/backend/src/gameRulesRetrieval\\.ts",
+        "paths": [
+          "PRD/sections/in-depth/README.md",
+          "apps/backend/src"
+        ]
+      }
+    },
+    {
+      "id": "C9",
+      "statement": "No new (minted) stable ID token appears in the backend-path section beyond the licensed DEC-047/REQ-033 additions (if applied) - and this slice's diff touches only PRD/sections/in-depth/README.md, confined to the backend-path section, the Backed by: line, and the backend half of Where it lives - no apps/ change, no edit to any existing DEC/REQ/FLOW/NFR body, no system-map.md/screen-layout.md edit",
+      "value": false,
+      "evidence": {
+        "command": "grep -oE \"(DEC|REQ|FLOW|NFR|Q)-[0-9]+\" PRD/sections/in-depth/README\\.md | sort -u",
+        "paths": ["PRD/sections/in-depth/README.md"]
+      }
+    }
+  ]
+}

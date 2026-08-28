@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph tier `denied — nohup true` while lock held
 - Autonomous base: `origin/thejudge-auto/in-depth-spec`
 - Staging: `.worktrees/.graph-intake/graph-20260827-213634/`
-- Current node: `define` (gate resolved 2026-08-27 — ready to resume at `gate-qc`)
+- Current node: `build` (resumed 2026-08-27; gate-qc PASS, mapped to 4 verify slices)
 - Next action: `/graph-run PRD/work/in-depth-spec/`
 
 ## Node ledger
@@ -15,6 +15,8 @@
 | 1 | preflight | haiku | ok | `0 → 5` | branch `thejudge-auto/in-depth-spec` created and pushed to origin; base `main`; tree clean; both canaries denied | 2026-08-27 |
 | 2 | shape | sonnet | ok | `0 → 22` | package `PRD/work/in-depth-spec/` created; intake folded to `intake/refactor-gameplan.md`; commit `bfe6774`; 6 prior-run receipt matches in `IDEA.md` | 2026-08-27 |
 | 3 | define | opus | ok | `0 → 44` | spec `PRD/sections/in-depth/README.md` (514 lines, new file, 0 deletions); `DESIGN-BRIEF.md`; `PRD/README.md` nav row; **0 new stable IDs**; status → refined | 2026-08-27 |
+| 4 | gate-qc | sonnet | ok | `0 → 29` | PASS, 0 findings; all 69 DEC / 47 REQ / 5 FLOW / 3 NFR citations verified against index; entanglement ownership confirmed on owning specs; status stays refined | 2026-08-27 |
+| 5 | plan | sonnet | ok | `0 → 46` | `GAMEPLAN.md` + 4 verify slices (A staged flow / B submit+conversation / C backend path / D header-nav+diff-proof), 29 criteria; STATUS.active; candidate finding: DEC-018/DEC-047/DEC-122/REQ-033 cited inline but absent from header Backed-by (additive fix in A/C/D) | 2026-08-27 |
 
 ## Open gate
 
@@ -659,6 +661,49 @@ This is a valid, actionable package (the request is a concrete, self-contained s
 Stage explicit paths only — never `git add -A`, `git add .`, or `git add --all`. Never push `main`/`master`. If you write any prompt for a sub-subagent, copy the `Working directory:` line above into it unchanged.
 
 Report back: the exact paths created, the intake path now inside the package, any `## Prior run` receipt matches found, and confirm the commit landed on the branch. Do not dispatch any further node — that is the driver's job.
+
+### gate-qc
+
+graph-run is controlling. You are node 4 (`gate-qc`) of an autonomous graph run. Run the `thejudge-quality-check` skill end to end against this package's DESIGN-BRIEF.md and return its PASS/FAIL report.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run ID: graph-20260827-213634
+Package: PRD/work/in-depth-spec/
+Slug: in-depth-spec
+
+Invoke `thejudge-quality-check` (read its SKILL.md; because `graph-run is controlling`, also read `PRD/instructions/preparation-contract.md` and honor the run predicate — do NOT pause for user questions; apply the assumption ladder and, if a genuine three-condition blocker arises, report it back rather than asking).
+
+Validate `PRD/work/in-depth-spec/DESIGN-BRIEF.md` for PRD alignment and agent-readiness. This is a derived, draft, non-authoritative current-state feature spec (Phase A #7); the deliverable already written is `PRD/sections/in-depth/README.md`, and the `define` gate has already been owner-reviewed (all 11 behavior sections accepted, zero new stable IDs). Judge the brief on its own contract: no new stable IDs, no behavior change, correct entanglement ownership, and a spec that matches the six prior Phase A specs' shape.
+
+Produce ONLY a PASS/FAIL quality-check report — never a GAMEPLAN or slice docs. On FAIL, set STATUS.refining and state every finding concretely. On PASS, leave the package at STATUS.refined.
+
+Do not dispatch any further node — that is the driver's job. Stage explicit paths only — never `git add -A`, `git add .`, or `git add --all`. Never push `main`/`master`. If you write any prompt for a sub-subagent, copy the `Working directory:` line above into it unchanged.
+
+Report back: PASS or FAIL, the exact findings (or "none"), the artifact checked, and the resulting STATUS marker.
+
+### plan
+
+graph-run is controlling. You are node 5 (`plan`) of an autonomous graph run. Run the `thejudge-map-out` skill end to end and return the GAMEPLAN and slice docs it creates.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run ID: graph-20260827-213634
+Package: PRD/work/in-depth-spec/
+Slug: in-depth-spec
+
+Invoke `thejudge-map-out` (read its SKILL.md and reference.md; because `graph-run is controlling`, honor the run predicate — do NOT pause for user questions; apply the assumption ladder and, if a genuine three-condition blocker arises, report it back rather than asking).
+
+First verify the package README's `## Preparation gate` records `Quality-check: PASS` (it does — you may not self-certify it). Then slice this package into GAMEPLAN.md + lettered slice docs + one `slice-<letter>.criteria.json` per slice, and set STATUS.active.
+
+Package context you must respect (do not re-decide it):
+- This is Phase A #7, a derived, draft, non-authoritative current-state feature spec. The deliverable `PRD/sections/in-depth/README.md` was already authored and committed at the `define` node (514 lines, 0 new stable IDs), and the `define` gate was owner-reviewed (all 11 behavior sections accepted). `DESIGN-BRIEF.md` and the `PRD/README.md` Section Inventory nav row also already exist.
+- Slice the remaining work to carry this package to ship-ready — verification and any not-yet-done PRD integration — not a re-authoring of the spec. Do not mint new stable IDs, change any In-Depth product behavior, or edit any DEC/REQ/FLOW/NFR body. Mirror the slice shape the earlier six Phase A spec packages used.
+- Every criterion's evidence block must be earnable by a real tool call (command pattern or file path), or `"manual": true` for a genuine human-eyes check.
+
+Do not dispatch any further node — that is the driver's job. Stage explicit paths only — never `git add -A`, `git add .`, or `git add --all`. Never push `main`/`master`. If you write any prompt for a sub-subagent, copy the `Working directory:` line above into it unchanged.
+
+Report back: the GAMEPLAN path, every slice doc + criteria.json path created, the slice count and one-line summary each, and confirm STATUS.active is set.
 
 ## Instruction ledger
 
