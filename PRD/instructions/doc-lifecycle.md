@@ -36,19 +36,19 @@ User may explicitly force cleanup of a non-`ship-ready` package.
 
 ## On package completion (cleanup)
 
-1. Promote durable outcomes into the relevant `sections/decisions/<domain>.md` file, the router index line in `sections/decisions.md`, and affected `sections/*.md`
+1. Promote durable outcomes into the relevant feature spec `sections/<feature>/README.md` and its cited `REQ`/`FLOW` entries, plus any other affected `sections/*.md`
 2. Write the receipt under `PRD/instructions/receipts/` **before** deleting the work folder
 3. Delete `PRD/work/<kebab-slug>/` entirely
 4. Remove the slug from `PRD/work/STATUS.md`
 5. Update `PRD/README.md` only if navigation or read-order guidance changed (not to re-list packages)
 
-## Decision lifecycle
+## Decision lifecycle (retired)
 
-- New decisions land in their relevant `sections/decisions/<domain>.md` file and get a router index line in `sections/decisions.md`.
-- `sections/decisions.md` is a thin router: the precedence/lifecycle preamble plus a `DEC-ID → domain file → one-line summary` table. Decision bodies live verbatim in nine topic files under `sections/decisions/`, organized by topic/subsystem rather than by flow stage: `framing`, `capture-and-stack`, `game-context-model`, `prompt-assembly`, `rules-retrieval`, `providers-and-contract`, `conversation-ux`, `scanning`, `doc-process`. DEC-IDs stay globally unique and resolvable across files regardless of which file holds the body.
-- A fully superseded decision body trims to a one-line tombstone with the original ID and `superseded by DEC-XXX`, kept in its domain file so the ID stays resolvable.
-- Deep "how the code behaves" detail belongs in `sections/system-map.md` or related system-map detail files (DEC-044 / DEC-048), not in decision `Impact:` blocks.
-- Backed by: DEC-063
+- The decision log is **retired**. No new `DEC-###` entry is written. When a decision changes what a feature does, edit the current-state feature spec `sections/<feature>/README.md` and its cited `REQ`/`FLOW` entries in place — an ID names a place in the product, not a moment in time.
+- `sections/decisions.md` is a demoted historical index (precedence #2, no longer read-first): a `DEC-ID → status → one-line summary` table that keeps every DEC-ID resolvable so cross-references never dangle. No ID is renumbered and nothing is appended.
+- Decision bodies are deleted. The only two that still carry a body are the deployment survivors DEC-084 / DEC-169 in `sections/decisions/deployment.md`, kept until their content lands in a durable deployment doc, after which they retire too.
+- Deep "how the code behaves" detail belongs in `sections/system-map.md` or related system-map detail files (DEC-044 / DEC-048), not in a feature spec.
+- Backed by: DEC-063, DEC-168
 
 ## System-map promotion gate
 

@@ -34,7 +34,7 @@ of guessing.
 ## Reads
 
 1. `PRD/work/<slug>/IDEA.md` (or the user's description)
-2. `PRD/sections/decisions.md` router, then relevant `PRD/sections/decisions/<domain>.md` files
+2. Relevant feature specs `PRD/sections/<feature>/README.md` (current-state truth); `PRD/sections/decisions.md` only to resolve a cited `DEC-ID`
 3. Relevant `PRD/sections/*.md` for the feature
 4. `PRD/sections/screen-layout.md` when the idea adds or changes user-visible screens, overlays, or layout/containment
 5. `PRD/instructions/requirement-format.md`
@@ -63,7 +63,7 @@ wholesale; what catches it is the `define` gate parking on the resulting
 ## Writes
 
 - `PRD/work/<slug>/DESIGN-BRIEF.md` — scope, decisions, non-goals, REQ/FLOW references
-- Updates to `PRD/sections/` (new `REQ-###`, `FLOW-###`; promote new `DEC-###` bodies into the relevant `PRD/sections/decisions/<domain>.md` file and add the router index line in `PRD/sections/decisions.md`)
+- Updates to `PRD/sections/` (new `REQ-###`, `FLOW-###`; edit the current-state feature spec `PRD/sections/<feature>/README.md` in place — the decision log is retired, so no new `DEC-###`)
 - When the feature introduces a user-visible screen or major overlay: a new row in `PRD/sections/screen-layout.md` using that file’s new-screen template (DEC-149 / REQ-126)
 - `PRD/sections/open-questions.md` only for genuine ambiguity (`Q-###`)
 - Package status signals (see Status transitions)
@@ -82,8 +82,8 @@ wholesale; what catches it is the `define` gate parking on the resulting
   writing any PRD artifact.
 - No scope enters from an open question without explicit user confirmation.
 - No code, no slice docs.
-- Preserve stable IDs — add new `REQ-###` / `FLOW-###` / `DEC-###` / `Q-###`; never renumber.
-- `PRD/sections/decisions.md` is the read-first override router; DEC bodies live in `decisions/<domain>.md`.
+- Preserve stable IDs — add new `REQ-###` / `FLOW-###` / `Q-###`; never renumber, never mint a new `DEC-###`.
+- Read-first truth is the feature specs `PRD/sections/<feature>/README.md`; `PRD/sections/decisions.md` is a demoted historical index that only resolves a cited `DEC-ID`.
 
 ## Next step
 

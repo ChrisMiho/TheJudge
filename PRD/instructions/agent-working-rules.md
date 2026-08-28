@@ -8,16 +8,18 @@ These rules define how an agent should behave when reading, editing, or extendin
 
 For most product tasks, read:
 
-1. `sections/decisions.md`
-2. the relevant target section file
-3. any related flow/requirement files
+1. the relevant feature spec `sections/<feature>/README.md` (current-state truth)
+2. the related requirement/flow files (`sections/functional-requirements.md`,
+   `sections/user-flows.md`, `sections/non-functional-requirements.md`)
+3. `sections/decisions.md` only to resolve a cited `DEC-ID` to its one-line
+   summary — the decision log is retired and is no longer read-first
 4. the relevant instruction file
 
 When creating or closing non-section markdown under `PRD/`, also read `instructions/doc-lifecycle.md`.
 
 ## General Rules
 
-- Treat `sections/decisions.md` as the read-first override layer and router to domain decision files.
+- Read-first truth is the feature specs under `sections/<feature>/README.md`; `sections/decisions.md` is a demoted historical index that only resolves a cited `DEC-ID`. Do not treat a decision as an override on a spec.
 - Do not assume older wording is correct if a decision conflicts with it.
 - Keep edits narrow and local.
 - Preserve stable IDs.
@@ -36,7 +38,7 @@ When creating or closing non-section markdown under `PRD/`, also read `instructi
 ## Scope Discipline
 
 - The product remains an MTG assistant suite (an assistant with player-help features, not an official judge or rules engine) unless decisions explicitly expand scope.
-- Do not pull historical or future roadmap ideas into current work unless promoted via the relevant `sections/decisions/<domain>.md` file and router index line in `sections/decisions.md`.
+- Do not pull historical or future roadmap ideas into current work unless promoted into the relevant feature spec and its cited `REQ`/`FLOW` entries.
 - Do not optimize for long-term architecture at the cost of shipping the current slice.
 - Preserve stack ordering, contract stability, and “assistant not judge” framing.
 - Active execution context: `PRD/README.md` plus the relevant `sections/` files for the task.
@@ -45,12 +47,12 @@ When creating or closing non-section markdown under `PRD/`, also read `instructi
 
 - Read only the files needed for the task.
 - Do not load the full PRD set when a smaller subset is enough.
-- Prefer the `decisions.md` router, the relevant `decisions/<domain>.md` file, and one or two section files for focused tasks.
+- Prefer the relevant feature spec and one or two requirement/flow section files for focused tasks; open the `decisions.md` index only to resolve a cited `DEC-ID`.
 
 ## Change Management Rules
 
-- If a confirmed decision changes behavior, update the relevant `sections/decisions/<domain>.md` body and router index line in `sections/decisions.md` first.
-- Then update any affected section files.
+- When behavior changes, update the relevant feature spec and its cited `REQ`/`FLOW` entries in place first — an ID names a place in the product, not a moment in time. No new decision is written.
+- Then update any other affected section files.
 - If a rule changes how agents should behave, update an instruction file, not a section file.
 - If new uncertainty is introduced, add a `Q-###` entry.
 

@@ -48,17 +48,18 @@
   - ...
 - Recommended next step:
 
-## Decision Template
+## Decisions (retired)
 
-Decision bodies live in the relevant `sections/decisions/<domain>.md` file. Add or update the matching router index line in `sections/decisions.md` whenever recording a decision.
+The decision log is retired. **Do not author a new `DEC-###` entry** — there is
+no decision template. When a decision changes what a feature does, edit the
+current-state feature spec at `sections/<feature>/README.md` and its cited
+`REQ`/`FLOW` entries in place. An ID names a place in the product, not a moment
+in time.
 
-### DEC-###
-- Decision:
-- Status: confirmed
-- Context:
-- Impact:
-- Related requirements:
-- Notes:
+Existing `DEC-###` IDs stay resolvable via the `sections/decisions.md` index
+(precedence #2, historical). The only two decisions that still carry a full body
+are the deployment survivors DEC-084 / DEC-169 in
+`sections/decisions/deployment.md`; do not add more.
 
 ## Formatting Rules
 - Keep entries self-contained.
@@ -79,7 +80,7 @@ This document adds dependency-field rules for `PRD/work/<slug>/slice-*.md` entri
 
 ## Slice Acceptance Criteria Rule
 
-For any slice in `PRD/work/<slug>/`, each acceptance criterion must be verifiable (test command or explicit manual check). The final slice must include ship gates from `workflow-reference.md` and an acceptance criterion that records completion in an auditable place: update the relevant `sections/decisions/<domain>.md` file, the router index line in `sections/decisions.md`, and affected `sections/*.md` when product truth changes; update `PRD/README.md` only when navigation guidance changes; and delete `PRD/work/<slug>/` when ephemeral planning was used. See `instructions/doc-lifecycle.md`.
+For any slice in `PRD/work/<slug>/`, each acceptance criterion must be verifiable (test command or explicit manual check). The final slice must include ship gates from `workflow-reference.md` and an acceptance criterion that records completion in an auditable place: update the relevant feature spec `sections/<feature>/README.md` and its cited `REQ`/`FLOW` entries, plus any other affected `sections/*.md`, when product truth changes; update `PRD/README.md` only when navigation guidance changes; and delete `PRD/work/<slug>/` when ephemeral planning was used. See `instructions/doc-lifecycle.md`.
 
 ## Slice Template (`PRD/work/<slug>/`)
 

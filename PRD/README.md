@@ -3,7 +3,7 @@
 ## Status
 - Project Status: active
 - Documentation baseline: product truth in `sections/`; agent process in `instructions/`
-- Next work: start from the `sections/decisions.md` router and promote new scope to the relevant `sections/decisions/<domain>.md` file plus the router index line before implementation
+- Next work: start from the relevant feature spec under `sections/<feature>/README.md` and edit it plus its cited `REQ`/`FLOW` in place; the decision log is retired
 
 ## Purpose
 This file is the control-plane document for the PRD set.
@@ -15,15 +15,17 @@ Use it to:
 
 ## Read First
 For implementation work, read in this order:
-1. `sections/decisions.md`
-2. the relevant target section file(s)
-3. the relevant instruction file(s)
+1. the relevant feature spec `sections/<feature>/README.md` (current-state truth)
+2. the related requirement/flow section file(s)
+3. `sections/decisions.md` — only to resolve a cited `DEC-ID`
+4. the relevant instruction file(s)
 
 ## Source-of-Truth Precedence
-1. `sections/decisions.md` overrides older conflicting draft language
-2. section files define current product scope
-3. instruction files define how the agent should process and generate content
-4. `README.md` is the navigation layer only (not a backlog or roadmap)
+1. the current-state feature specs `sections/<feature>/README.md` are read-first truth for what a feature does today
+2. section files (`REQ`/`FLOW`/`NFR`, screen layout, system map) define current product scope
+3. `sections/decisions.md` is a demoted historical index — resolves a cited `DEC-ID`, never an override
+4. instruction files define how the agent should process and generate content
+5. `README.md` is the navigation layer only (not a backlog or roadmap)
 
 ## Section Inventory
 
@@ -38,17 +40,17 @@ For implementation work, read in this order:
 | `sections/non-functional-requirements.md` | complete | Performance, security, maintainability, and system quality constraints |
 | `sections/integrations-and-data.md` | complete | API contracts, stack ordering, integrations, data notes, and dependencies |
 | `sections/open-questions.md` | needs review | Unresolved items that need human decisions |
-| `sections/decisions.md` | active | Read-first router for confirmed decisions that override older draft wording |
-| `sections/decisions/` | active | Domain decision files that hold confirmed DEC bodies |
+| `sections/decisions.md` | retired | Demoted historical index (precedence #2): resolves a cited `DEC-ID` to a one-line summary; the feature specs are the current truth |
+| `sections/decisions/deployment.md` | active | The only surviving decision bodies — the two deployment decisions DEC-084 / DEC-169 |
 | `sections/system-map.md` | active | Feature/subsystem catalog: shipped-vs-planned status, behavior summary, and coarse location per subsystem |
 | `sections/screen-layout.md` | active | Screen layout catalog: purpose, hybrid % size bands, fit/containment per major screen for agent-directed UI (DEC-149) |
-| `sections/life-tracker/` | draft | Derived, non-authoritative current-state feature spec for the Player Life Tracker, consolidating its decision/requirement/flow sources into one view (DEC-168) |
-| `sections/user-feedback/` | draft | Derived, non-authoritative current-state feature spec for the Feedback & Bug Report feature, consolidating its decision/requirement/flow sources into one view (DEC-168) |
-| `sections/trade-balancer/` | draft | Derived, non-authoritative current-state feature spec for the Trade Balancer, consolidating its decision/requirement/flow sources into one view; its price corpus is documented in the directory's `data/cardPrintingPrices.md` (DEC-168) |
-| `sections/scan/` | draft | Derived, non-authoritative current-state feature spec for Card Scanning — the cross-cutting camera input path shared by In-Depth, Quick Question, and Trade Balancer — consolidating its decision/requirement/flow sources into one view; its two committed Magic-data corpora are documented in the directory's `data/cardhashes.md` and `data/cardScanMap.md` (DEC-168) |
-| `sections/quick-lookup/` | draft | Derived, non-authoritative current-state feature spec for Quick Lookup — the short-ask Ask AI destination — consolidating its decision/requirement/flow sources into one view, including the full backend path (validation, branching prompt assembly, retrieval, provider boundary) (DEC-168) |
-| `sections/in-depth/` | draft | Derived, non-authoritative current-state feature spec for In-Depth Question — the primary MTG Assistant loop (staged game-context capture plus the `mode: "game"` Ask AI backend and post-decrypt conversation) — consolidating its decision/requirement/flow sources into one view, including the full backend path (validation, game-mode prompt assembly, rules and combo enrichment, provider boundary) (DEC-168) |
-| `sections/shared-chrome/` | draft | Derived, non-authoritative current-state feature spec for shared chrome — the frame every destination mounts into (suite shell, Menu rail/tray, mock-mode banner, routing/load fallback, the shared answered-conversation workspace, history drawer, View Context overlay, suite-wide card-detail popup) plus the shared layout language — consolidating its decision/requirement/flow sources into one view (DEC-168) |
+| `sections/life-tracker/` | active | Current-state feature spec for the Player Life Tracker, consolidating its decision/requirement/flow sources into one view (DEC-168) |
+| `sections/user-feedback/` | active | Current-state feature spec for the Feedback & Bug Report feature, consolidating its decision/requirement/flow sources into one view (DEC-168) |
+| `sections/trade-balancer/` | active | Current-state feature spec for the Trade Balancer, consolidating its decision/requirement/flow sources into one view; its price corpus is documented in the directory's `data/cardPrintingPrices.md` (DEC-168) |
+| `sections/scan/` | active | Current-state feature spec for Card Scanning — the cross-cutting camera input path shared by In-Depth, Quick Question, and Trade Balancer — consolidating its decision/requirement/flow sources into one view; its two committed Magic-data corpora are documented in the directory's `data/cardhashes.md` and `data/cardScanMap.md` (DEC-168) |
+| `sections/quick-lookup/` | active | Current-state feature spec for Quick Lookup — the short-ask Ask AI destination — consolidating its decision/requirement/flow sources into one view, including the full backend path (validation, branching prompt assembly, retrieval, provider boundary) (DEC-168) |
+| `sections/in-depth/` | active | Current-state feature spec for In-Depth Question — the primary MTG Assistant loop (staged game-context capture plus the `mode: "game"` Ask AI backend and post-decrypt conversation) — consolidating its decision/requirement/flow sources into one view, including the full backend path (validation, game-mode prompt assembly, rules and combo enrichment, provider boundary) (DEC-168) |
+| `sections/shared-chrome/` | active | Current-state feature spec for shared chrome — the frame every destination mounts into (suite shell, Menu rail/tray, mock-mode banner, routing/load fallback, the shared answered-conversation workspace, history drawer, View Context overlay, suite-wide card-detail popup) plus the shared layout language — consolidating its decision/requirement/flow sources into one view (DEC-168) |
 
 ## Instruction Inventory
 
@@ -57,7 +59,7 @@ For implementation work, read in this order:
 | `instructions/agent-working-rules.md` | active | Behavioral rules for any agent editing or generating content in this PRD set |
 | `instructions/doc-lifecycle.md` | active | When to create, promote, and delete ephemeral planning docs |
 | `instructions/writing-rules.md` | complete | Rules for writing and editing these documents |
-| `instructions/requirement-format.md` | complete | Required formatting templates for requirements, flows, decisions, questions, and slices |
+| `instructions/requirement-format.md` | complete | Required formatting templates for requirements, flows, questions, and slices (the decision log is retired — no DEC template) |
 | `instructions/technical-design-rules.md` | complete | Constraints for architecture and implementation proposals |
 | `instructions/secrets-handling.md` | active | Guardrails for storing secrets in `.secrets/`, never committing them, and validating secret decisions with the user |
 | `instructions/test-naming.md` | active | Hierarchical Vitest title convention (`Layer - Feature` outer describe, nested area + behavior) |
@@ -72,13 +74,13 @@ For implementation work, read in this order:
 ### If the task is product understanding
 Read in this order:
 1. `sections/overview.md`
-2. `sections/decisions.md`
+2. the relevant feature spec `sections/<feature>/README.md`
 3. `sections/goals-and-non-goals.md`
 4. `sections/problem-statement.md`
 
 ### If the task is feature implementation
 Read in this order:
-1. `sections/decisions.md`
+1. the relevant feature spec `sections/<feature>/README.md`
 2. `sections/functional-requirements.md`
 3. `sections/user-flows.md`
 4. `sections/integrations-and-data.md`
@@ -88,15 +90,15 @@ Read in this order:
 
 ### If the task is UI layout, containment, density, or visual polish of screens
 Read in this order:
-1. `sections/decisions.md`
-2. `sections/screen-layout.md`
-3. `sections/decisions/ui-presentation.md` (and any other cited domain DECs)
+1. `sections/screen-layout.md`
+2. the relevant feature spec `sections/<feature>/README.md`
+3. `sections/decisions.md` — only to resolve a cited `DEC-ID`
 4. `sections/functional-requirements.md` (layout-related REQs)
 5. `instructions/technical-design-rules.md`
 
 ### If the task is slice planning or map-out
 Read in this order:
-1. `sections/decisions.md`
+1. the relevant feature spec `sections/<feature>/README.md`
 2. `sections/functional-requirements.md`
 3. `sections/user-flows.md`
 4. `instructions/workflow-reference.md`
@@ -112,7 +114,7 @@ Read in this order:
 1. `instructions/agent-working-rules.md`
 2. `instructions/doc-lifecycle.md` (if creating or closing non-section PRD markdown)
 3. `instructions/writing-rules.md`
-4. `sections/decisions.md`
+4. the relevant feature spec `sections/<feature>/README.md` (open `sections/decisions.md` to resolve a cited `DEC-ID`)
 5. the relevant target section file
 
 ## Working Rules Summary
@@ -121,7 +123,7 @@ Read in this order:
 - Ephemeral slice plans live only in `PRD/work/<slug>/` and must be deleted when the slice ships (see `instructions/doc-lifecycle.md`).
 - Do not guess when the source is ambiguous.
 - Put unresolved ambiguity in `sections/open-questions.md`.
-- Record confirmed decision bodies in the relevant `sections/decisions/<domain>.md` file and keep the router index line in `sections/decisions.md` current.
+- Record product truth by editing the current-state feature spec `sections/<feature>/README.md` and its cited `REQ`/`FLOW` in place; the decision log is retired, so do not author a new `DEC-###`.
 - Prefer narrow edits to one file at a time.
 - Preserve stable IDs once assigned.
 - Agent workflow skills: edit `.claude/skills/thejudge-*` (canonical), run `npm run skills:ai-sync` to mirror into `.agents/skills/`; see `AGENT-SKILLS.md`.
@@ -142,7 +144,7 @@ Work packages: see [work/STATUS.md](./work/STATUS.md) (skill-maintained board + 
 ## Implementation Snapshot
 - Runtime code is split across `apps/frontend` and `apps/backend`, with a single product-facing backend route (`POST /api/ask-ai`) plus health endpoint.
 - Current frontend flow supports staged context + stack interaction patterns; canonical behavior is tracked in `sections/user-flows.md`.
-- Prompt/input contract includes structured context beyond stack/question (see `sections/integrations-and-data.md`, the `sections/decisions.md` router, and relevant `sections/decisions/<domain>.md` files).
+- Prompt/input contract includes structured context beyond stack/question (see `sections/integrations-and-data.md` and the `sections/in-depth/README.md` feature spec).
 - Metadata pipeline remains static-file based (`npm run data:build` / `npm run data:refresh`) with runtime loading from `/data/cardMetadata.json`.
 - Context/prompt regression coverage lives in tests and `apps/backend/src/eval/fixtures/README.md`.
 - Automated tests and type checks are part of the active workflow; root dev run remains `npm run dev`.

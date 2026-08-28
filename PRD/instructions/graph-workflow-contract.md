@@ -16,7 +16,9 @@ request â€” an idea, an observation, a bug, or a pasted or referenced document â
 and it drives that request through the full lifecycle unattended, stopping
 only at the `define` gate or a terminal state.
 
-Active decisions and requirements in `PRD/sections/` remain product truth. When
+The current-state feature specs and their `REQ`/`FLOW` entries in `PRD/sections/`
+are product truth; the decision log is retired to a demoted historical index.
+When
 a `thejudge-*` phase skill conflicts with this contract during a graph run,
 this contract governs continuation and approval behavior; the phase skill
 continues to govern its own artifacts.
