@@ -6,8 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-- [in-depth-spec](./in-depth-spec/)
-
 ## active
 
 ## refined
