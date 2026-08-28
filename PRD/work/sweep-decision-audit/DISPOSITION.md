@@ -27,11 +27,12 @@ Owner calls:
   DEC-169) fold into docs when implemented.
 - mark-obsolete (3): left as-is — no corpus edit this pass.
 
-Two homes still open for owner confirmation before apply:
-1. Graph flow inside graph-workflow-contract.md (recommended) vs a new overview doc.
-2. CI docs in a new PRD/instructions/ci.md (recommended) vs folded into skill-testing.md.
+Homes confirmed by owner:
+1. Graph flow → extend `PRD/instructions/graph-workflow-contract.md`.
+2. CI docs → new `PRD/instructions/ci.md`.
 
-Apply will touch the **15 fix-spec + 12 fix-doc** rows. NOT YET RUN.
+Apply touches the **15 fix-spec + 12 fix-doc** rows, grouped by target file
+(9 files, one agent each). Lands as its own PR off main.
 
 ---
 
