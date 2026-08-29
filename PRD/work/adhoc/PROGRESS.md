@@ -14,12 +14,18 @@ _Last updated: 2026-08-28._
 | --- | --- | --- | --- |
 | 0 | Codebase health audit | ✅ **done** (PR #98) | graph run, read-only |
 | 1 | Feature spec layer (Phase A/B/C) | ✅ **done** — Phase A ✅, Phase B ✅, Phase C ✅ | graph runs + one manual session |
-| 2 | Overnight-run tuning | ⬜ **next** — kickoff drafted (`adhoc/package-2-kickoff.md`) | mixed, interactive (not a graph run) |
+| 2 | Overnight-run tuning | ⬜ blocked on the graph tooling fixes (below); kickoff drafted (`adhoc/package-2-kickoff.md`) | interactive (not a graph run) |
 | 3 | Operator manual | ⬜ not started | manual |
 | 4 | Plain-language standard | ⬜ not started | manual |
 
 Package 4 is the only one that fixes the "I can't follow agent output" problem that
 started all this. Don't let it fall off the end.
+
+**Prerequisite before Package 2 — graph tooling fixes ⬜ next.** The first
+autonomous run surfaced five live defects in the graph enforcer/preflight (two
+can leave the safety tier silently off). They are fixed as their own code+tests
+package before any more overnight runs. Kickoff: `adhoc/graph-tooling-fixes-kickoff.md`.
+Evidence: `adhoc/graph-run-shakedown-report.md` §4.
 
 ---
 
