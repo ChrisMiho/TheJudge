@@ -14,7 +14,7 @@ _Last updated: 2026-08-28._
 | --- | --- | --- | --- |
 | 0 | Codebase health audit | ✅ **done** (PR #98) | graph run, read-only |
 | 1 | Feature spec layer (Phase A/B/C) | ✅ **done** — Phase A ✅, Phase B ✅, Phase C ✅ | graph runs + one manual session |
-| 2 | Overnight-run tuning | ⬜ not started | mixed |
+| 2 | Overnight-run tuning | ⬜ **next** — kickoff drafted (`adhoc/package-2-kickoff.md`) | mixed, interactive (not a graph run) |
 | 3 | Operator manual | ⬜ not started | manual |
 | 4 | Plain-language standard | ⬜ not started | manual |
 
