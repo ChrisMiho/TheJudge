@@ -10,22 +10,12 @@ plan-first: it changes how every future overnight run behaves and touches real
 code, so let it show you the plan — especially the scope split — before it edits
 anything.
 
-## Why plan-first, and the one scope call up front
+## Prerequisite: the tooling fixes ship first
 
-Two bodies of work overlap here, and the session must settle which is Package 2
-before touching anything:
-
-- **Run-tuning** (the gameplan's Package 2): two-run split, async markdown gate,
-  morning digest, merge-safe ordering / branch shape.
-- **Tooling defects** (the shakedown's §4/§5): five live defects in the graph
-  enforcer and preflight — the concurrency lock nothing writes, the liveness
-  probe blind to the tier that matters, per-run (not per-step) evidence, the
-  lock-release contradiction, and the heredoc false-positive. The report says
-  fix these "as its own package," and Q2 asks whether they come first.
-
-Every future run rides on those defects, so they are prerequisite-flavored. The
-plan should recommend one package or a split, and a sequence, and get your call
-before editing.
+The shakedown's five tooling defects (§4) are fixed in their own package before
+this one — `PRD/work/adhoc/graph-tooling-fixes-kickoff.md`. Package 2 is pure
+run-tuning and assumes it runs on the fixed enforcer. Do not re-open the defects
+here; if one is still live, stop and finish that package first.
 
 ## The prompt
 
@@ -43,21 +33,20 @@ Read first, in order:
 - PRD/work/adhoc/PROGRESS.md — current state (Package 1 A/B/C done) plus the
   "Open loose ends" list (the CODE-HEALTH.md decision, true overnight batching
   needing this package, and the base→main merge having no automation/reminder).
-- PRD/work/adhoc/graph-run-shakedown-report.md — the failure evidence this
-  package tunes against: the five tooling defects (§4), the two node mistakes,
-  the ordered next-steps (§5), and the open questions Q1–Q7 (§6).
+- PRD/work/adhoc/graph-run-shakedown-report.md — the run evidence this package
+  tunes against: the branch-shape question (Q7), node mistake 2 (the PR-diff
+  slip), and the ordered next-steps (§5). The five §4 tooling defects are
+  already fixed in the prior package; read them only as context.
 - PRD/instructions/graph-workflow-contract.md — the contract being tuned, and
   the graph-* skills + scripts/graph-*.mjs / scripts/lib/boundary-rules.mjs it
   governs.
 
-Then plan before touching anything. First settle scope with me: the gameplan's
-Package 2 is run-tuning (two-run split, async markdown gate, morning digest,
-merge-safe ordering / the Q7 branch-shape question), while the shakedown's five
-tooling defects are prerequisite-flavored (Q2 asks whether they come first).
-Recommend one package or a split, and a sequence, and wait for my approval
-before editing. Because this has real code and tests, prefer running it as a
-proper interactive PRD/work/<slug>/ package (kickoff → refinement →
-quality-check → map-out → implement), driven by hand rather than by graph-run.
+Then plan before touching anything and wait for my approval before editing. The
+five graph tooling defects are already fixed in a prior package — this is pure
+run-tuning; do not re-open them. Because this has real code and tests, prefer
+running it as a proper interactive PRD/work/<slug>/ package (kickoff →
+refinement → quality-check → map-out → implement), driven by hand rather than by
+graph-run.
 
 What Package 2 covers (gameplan scope):
 - The two-run split (constraint 11): run one stops at quality-check PASS with the
@@ -72,10 +61,6 @@ What Package 2 covers (gameplan scope):
   hop with no reminder, and the single-path run lock (sequential only).
 - The loose ends from PROGRESS: decide CODE-HEALTH.md (write it into the process
   or drop it) and make the base→main merge step impossible to skip.
-
-If the tooling defects fold into this package, each fix lands as real code with a
-test — the shakedown proved a prompt-only patch does not survive into the next
-run (defect 1).
 
 Hard guardrails (from the gameplan and the shakedown):
 - Do not relitigate constraints 11–14. The node table and every boundary are
