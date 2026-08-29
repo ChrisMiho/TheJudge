@@ -279,6 +279,14 @@ other write to it, so a run cannot pre-seed its own evidence. The log is
 append-only: an earned id is never re-logged, and a damaged line is skipped
 rather than repaired.
 
+**Evidence is earned per step, not per run.** Only the `build` node (node 6)
+earns criteria evidence. Criteria belong to slices and slices are implemented in
+`build`, so an earlier node's file listings and searches cannot pre-satisfy a
+check the builder was supposed to earn — the 2026-08-23 shakedown saw the `plan`
+node earn 7 of 21 criteria before `build` had started, because earning was keyed
+by run id alone. The gate is on *earning* only: the flip guard below still fires
+in every node, so nothing lets a non-build node forge a pass.
+
 A write setting a criterion to `true` is denied unless that id is already in the
 log for this run, and the denial names the criterion and the evidence still
 missing. Evidence from another run does not carry over.
@@ -287,11 +295,23 @@ Node 6 (`build`) reports `ok` only when every criterion in every slice's file is
 `true`. Any remaining `false` fails the node, and the check reads the emitted
 files rather than a summary of them.
 
+**Every check proves the command ran, not that it passed.** The hook is a
+`PreToolUse` hook: it fires *before* the tool call executes, so it never sees an
+exit code or any output. A criterion whose evidence is `"npm run test:scripts"`
+is earned the moment that command is *issued* — a failing run earns it exactly as
+a passing one does. This is not a limit of `manual` criteria alone; it is
+structural, and it holds for command and path criteria too. Closing it would take
+a `PostToolUse` hook that inspects the result — a different evidence model, out of
+scope here. Until then, "the criteria are earned" means every check *ran*, never
+that every check *passed*; do not describe a passing build node as proof the work
+is correct.
+
 **The `manual` limit.** A `manual` criterion is earned by a dated observation
 line naming its id. That proves the check *happened* — that someone looked on
-that day and wrote down what they saw. It does not prove the check passed. No
-mechanism here can close that gap, and calling a `manual` criterion "verified" is
-overclaiming what the evidence supports.
+that day and wrote down what they saw. It does not prove the check passed. It is
+the sharpest case of the structural limit above: no command stands in for the
+observation at all, so calling a `manual` criterion "verified" overclaims what
+the evidence supports.
 
 ## Hook liveness
 
@@ -521,10 +541,15 @@ Each of these is a limit, recorded once, not a claim.
    pre-authorizes and then paraphrases its own prompt passes it clean. It is a
    schema check over a self-report — never cite a passing run as proof it did not
    pre-authorize.
-3. **A `manual` criterion proves the check happened, not that it passed.** Its
-   evidence is a dated observation line naming the criterion id. That records
-   that someone looked on that day and wrote down what they saw. No mechanism
-   here closes the gap between that and a passing check.
+3. **A criterion proves the command ran, not that it passed.** The hook is
+   `PreToolUse`: it fires before the tool executes, so it never sees an exit code
+   or output. A command criterion is earned when the command is *issued* — a
+   failing run earns it exactly as a passing one does. This is structural and
+   applies to command and path criteria, not only to `manual` ones. A `manual`
+   criterion is the sharpest case: its only evidence is a dated observation line,
+   and no command stands in for it at all. Closing the gap would take a
+   `PostToolUse` hook that inspects the result — a different evidence model, not
+   built here.
 4. **A missing run-state file degrades the cap.** With nothing to attribute a
    call to, the tool-call cap does not fire. The hook reports the degraded
    condition on every call rather than staying silent, and never blocks the run

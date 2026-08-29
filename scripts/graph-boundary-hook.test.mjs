@@ -322,6 +322,27 @@ for (const [name, command, rule] of GRAPH_TIER) {
   })
 }
 
+// Defect 5 — the normalizer must not read a denied command's name out of a
+// heredoc body. 2026-08-24: writing a commit message that read
+// "...to prove; nohup discriminates" split at the `;`, matched `nohup` as a
+// segment head, and denied the run for merely *describing* a rule. The fix
+// (`matchHeredocStart`) skips the body; these guard it so it survives. The
+// reproduction is the shakedown report's own §4 defect 5.
+test("defect 5: a denied command named inside a heredoc body is not matched", () => {
+  const command =
+    "cat > note.txt <<EOF\nclaims to prove; nohup discriminates\nEOF\ngit commit -F note.txt"
+  const verdict = bash(command, LIVE_LOCK)
+  assert.equal(verdict.decision, "allow", "heredoc body prose must not be read as a command")
+})
+
+test("defect 5: a genuine nohup outside a heredoc is still denied", () => {
+  // The same shape without a heredoc is a real background wrapper and stays denied
+  // — the fix suppresses the false positive without opening a real hole.
+  const verdict = bash("echo hi; nohup echo x", LIVE_LOCK)
+  assert.equal(verdict.decision, "deny")
+  assert.equal(verdict.rule, "nohup-wrapper")
+})
+
 test("the graph tier denies file-tool writes to the protected set", () => {
   assert.equal(tool("Write", { file_path: "CLAUDE.md" }, LIVE_LOCK).tier, "graph")
   assert.equal(
@@ -616,10 +637,10 @@ function criteriaFixture() {
 }
 
 /** A fake filesystem carrying a lock, run state, criteria, and the evidence log. */
-function withCriteria({ evidence = "", criteria = criteriaFixture() } = {}) {
+function withCriteria({ evidence = "", criteria = criteriaFixture(), node = "build" } = {}) {
   const io = records({
     lock: JSON.stringify({ slug: SLUG, runId: "graph-1", pid: 1, startedAt: "t" }),
-    state: runStateOf({ node: "build" })
+    state: runStateOf({ node })
   })
   io.files.set(EVIDENCE_LOG_PATH, evidence)
   io.files.set(CRITERIA_FILE, JSON.stringify(criteria))
@@ -661,6 +682,35 @@ function flipAll(io, criteria = criteriaFixture()) {
   const flipped = { ...criteria, criteria: criteria.criteria.map((c) => ({ ...c, value: true })) }
   return write(io, `PRD/work/${SLUG}/${CRITERIA_FILE}`, JSON.stringify(flipped))
 }
+
+// Defect 3 (Q4) — evidence is earned per step, not per run.
+// The 2026-08-23 shakedown saw the `plan` node's file listings and searches
+// satisfy 7 of 21 criteria before `build` had started, because the evidence log
+// was keyed by run alone. Earning is now gated to the `build` node.
+test("defect 3 (Q4): a non-build node cannot earn a build criterion", () => {
+  const io = withCriteria({ node: "plan" })
+  assert.equal(bash("npm run test:scripts", io).decision, "allow")
+  assert.deepEqual(evidenceLines(io), [], "no criterion earned outside the build node")
+})
+
+test("defect 3 (Q4): the build node still earns evidence normally", () => {
+  const io = withCriteria({ node: "build" })
+  bash("npm run test:scripts", io)
+  assert.deepEqual(
+    evidenceLines(io).map((entry) => entry.criterionId),
+    ["Z1"]
+  )
+})
+
+test("defect 3 (Q4): gating earning to build does not disable the flip guard elsewhere", () => {
+  // Setting a criterion true without logged evidence stays denied in every node.
+  // Over-gating that also silenced this check would let a non-build node forge a
+  // pass, which is the opposite of what the filing fix is for.
+  const io = withCriteria({ node: "plan" })
+  const verdict = flipAll(io)
+  assert.equal(verdict.decision, "deny")
+  assert.equal(verdict.rule, "criterion-flip-without-evidence")
+})
 
 test("the slug comes from the lock the run holds", () => {
   assert.equal(slugFromLock('{"slug":"a-package","runId":"r","pid":1}'), "a-package")
