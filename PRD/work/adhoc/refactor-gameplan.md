@@ -62,8 +62,6 @@ Seven directories under `PRD/sections/`, plus `data/` per corpus and
 B.** Specs carry an explicit draft marker until Phase C flips precedence. A spec
 that comes out wrong is corrected against a source that still exists.
 
-Each run also emits a `CODE-HEALTH.md` — observation only, never acted on.
-
 ### Phase B — audit decisions against specs
 
 One verdict per confirmed decision: `absorbed`, `partial` (naming exactly what

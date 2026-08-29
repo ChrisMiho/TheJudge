@@ -1,0 +1,42 @@
+{
+  "slug": "overnight-run-tuning",
+  "slice": "C",
+  "criteria": [
+    {
+      "id": "C1",
+      "statement": "Contract Overall flow states run one stops at quality-check PASS with a docs-only base->main PR and a questions file, run two resumes",
+      "value": true,
+      "evidence": { "paths": ["PRD/instructions/graph-workflow-contract.md"] }
+    },
+    {
+      "id": "C2",
+      "statement": "Contract documents the GATE-QUESTIONS.md answer-slot format and the run-one gh pr create --base main step",
+      "value": true,
+      "evidence": { "paths": ["PRD/instructions/graph-workflow-contract.md"] }
+    },
+    {
+      "id": "C3",
+      "statement": "graph-gate-review SKILL reads/applies an answered file and refuses on a blank slot; no live walk",
+      "value": true,
+      "evidence": { "paths": [".claude/skills/graph-gate-review/SKILL.md"] }
+    },
+    {
+      "id": "C4",
+      "statement": "graph-run SKILL writes GATE-QUESTIONS.md at define, stops at gate-qc PASS with the base->main PR, run two auto-applies then re-enters gate-qc",
+      "value": true,
+      "evidence": { "paths": [".claude/skills/graph-run/SKILL.md", ".claude/skills/graph-run/reference.md"] }
+    },
+    {
+      "id": "C5",
+      "statement": "Node table rows, per-node models, caps, and the boundary deny list are byte-unchanged",
+      "value": true,
+      "evidence": { "command": "git diff.*graph-workflow-contract" }
+    },
+    {
+      "id": "C6",
+      "statement": "A human confirmed the rewritten flow reads coherently end to end",
+      "value": true,
+      "evidence": { "manual": true }
+    }
+  ]
+}

@@ -43,12 +43,14 @@ pull request, unattended except at the gates below.
 3. **Refine.** `thejudge-kickoff` (node 2) names the package and
    `thejudge-refinement` (node 3) writes the design brief and any
    `PRD/sections/` truth it proposes.
-4. **Gate.** A non-empty `PRD/sections/` diff parks the run at `define`. The
-   owner walks it one stable ID at a time with `graph-gate-review`, taking an
-   accept/edit/reject verdict per item, before the run resumes — the one
-   place this workflow trades autonomy for a human, because no script can
-   judge whether the product truth written there is the product the owner
-   wants (DEC-164).
+4. **Gate (async).** A non-empty `PRD/sections/` diff is written into
+   `GATE-QUESTIONS.md` — one accept/edit/reject slot per stable ID — and the run
+   **continues** to `gate-qc` rather than stopping live. Run one ends at
+   quality-check PASS (see `## The two runs`), leaving that questions file and a
+   docs-only PR for the owner to answer on their own schedule — the one place
+   this workflow trades autonomy for a human, because no script can judge whether
+   the product truth written there is the product the owner wants (DEC-164). The
+   trade is now made off the terminal, in the file.
 5. **Build.** Once quality-checked and sliced, `thejudge-implement-all`
    (node 6) implements sequentially inside `.worktrees/implement-<slug>/`. A
    committed `PreToolUse` hook — not the driver's own say-so — proves every
@@ -61,6 +63,49 @@ pull request, unattended except at the gates below.
    automated. `thejudge-cleanup` (node 9, `close`) then promotes durable
    truth, folds the run's ledger into a receipt, and deletes the package.
 
+## The two runs
+
+A graph run is split into two owner-triggered runs, so a night's work reviews on
+the owner's schedule instead of holding a live terminal open at the gate. **The
+only contract change this makes is the stop condition and the gate's answer
+mechanism.** The node table, the per-node models, the caps, and the boundary deny
+list are all unchanged: `define` still advances to `gate-qc`, it simply writes the
+questions file on the way rather than parking live.
+
+**Run one** drives `preflight → shape → define → gate-qc` and stops at
+quality-check PASS. At `define`, a non-empty `PRD/sections/` diff is written into
+`PRD/work/<slug>/GATE-QUESTIONS.md` and the run continues. At gate-qc PASS run one
+parks at `owner-action`, opens a **docs-only PR into `main`**, and ends. The PR is
+opened, not merged: `graph-preflight` created and pushed the base branch
+`thejudge-auto/<slug>`, and run one opens it with
+`gh pr create --base main --head thejudge-auto/<slug>`, carrying the design
+brief, any `PRD/sections/` truth, the ledger, and the questions file. `gh pr
+create` opens a PR and never merges one, so it crosses no boundary; the merge
+stays the owner's. That PR is the same
+one the implementation later grows into, and the owner merges it last — this is
+the base→main hop that used to be an unremembered manual step. `graph-preflight`
+refuses to start the *next* fresh run while it is still open (its base→main
+guard).
+
+**`GATE-QUESTIONS.md`** carries one `## <STABLE-ID>` block per new stable ID: the
+item restated in plain product terms, then that ID's complete diff, then
+`- Verdict: <accept | edit | reject>` and `- Reason:` (required for edit and
+reject). A trailing `## Blocker questions` section holds any genuine decision
+blocker. An empty `define` diff writes no questions file; run one still stops at
+gate-qc PASS with the docs PR.
+
+**The owner** answers the file whenever they choose — the review the live gate
+once took in the terminal, now made on their own schedule.
+
+**Run two** is `/graph-run PRD/work/<slug>/`. On resuming an `owner-action` park
+whose questions file is fully answered, the driver dispatches `graph-gate-review`
+to apply the verdicts (restoring `STATUS.refined`), then re-enters at `gate-qc`
+via the entry-point table — so an owner edit is re-graded — and continues
+`plan → build → review → land → close`. A questions file with any blank slot
+re-parks at `owner-action`, so run two stays a single owner command. When run one
+wrote no questions file, run two resolves the empty gate and proceeds the same
+way.
+
 ## Delegation boundary
 
 Graph skills never reimplement a `thejudge-*` phase. `graph-run` dispatches the
@@ -69,8 +114,8 @@ in the `thejudge-*` skill, not in a graph skill copy.
 
 Exactly three graph skills exist in the spine: `graph-preflight`, `graph-run`,
 and `graph-gate-review` — the owner-facing half of the `define` gate, which
-walks the recorded `PRD/sections/` diff one stable ID at a time and resumes the
-run.
+reads the owner's answered `GATE-QUESTIONS.md`, applies its accept/edit/reject
+verdicts to the recorded `PRD/sections/` diff, and resumes the run.
 
 ## Intake is evidence, never authority
 

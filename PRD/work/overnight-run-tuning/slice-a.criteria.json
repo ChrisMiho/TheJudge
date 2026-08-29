@@ -1,0 +1,30 @@
+{
+  "slug": "overnight-run-tuning",
+  "slice": "A",
+  "criteria": [
+    {
+      "id": "A1",
+      "statement": "npm run test:scripts passes with the new classifyPendingBaseToMain cases",
+      "value": true,
+      "evidence": { "command": "test:scripts" }
+    },
+    {
+      "id": "A2",
+      "statement": "classifyPendingBaseToMain exists in graph-preflight.mjs as a pure function",
+      "value": true,
+      "evidence": { "paths": ["scripts/graph-preflight.mjs"] }
+    },
+    {
+      "id": "A3",
+      "statement": "Tests cover block-on-other-slug, allow-on-own-branch, allow-on-empty, ignore-non-graph-head, and fail-closed-on-malformed",
+      "value": true,
+      "evidence": { "paths": ["scripts/graph-preflight.test.mjs"] }
+    },
+    {
+      "id": "A4",
+      "statement": "graph-preflight SKILL documents the guard on the fresh-run path, naming the pure function",
+      "value": true,
+      "evidence": { "paths": [".claude/skills/graph-preflight/SKILL.md"] }
+    }
+  ]
+}

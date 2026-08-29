@@ -134,6 +134,26 @@ release it. Release goes through a declared terminal state: write
 `## Terminal states` section gives — `runId` and `state`, in its own tool call —
 then delete the lock. The hook denies the deletion without that record.
 
+## base→main guard (fresh runs only)
+
+A fresh run refuses to start while a prior package's base→main PR is still open,
+so the overnight queue never branches off a `main` that a prior package has not
+reached — the failure that parked `user-feedback-spec` (PR #107) at the wrong
+base.
+
+The script runs the read-only query `gh pr list --base main --state open --json
+headRefName,url` and passes the parsed list to `classifyPendingBaseToMain()` in
+`scripts/graph-preflight.mjs` — the tested pure function is the authority; do not
+re-derive the decision in prose. It **blocks** when any open PR's head is a
+`thejudge-auto/*` branch other than the one this run is creating, and **fails
+closed** (blocks) when the list cannot be obtained or parsed. On a block, the
+script exits 2 naming the PR to merge first; relay that and stop.
+
+This runs on the fresh-run path only, in the dry run and the real run alike. The
+resume path (`--take-lock`, no `--branch`) skips it: run two's own base→main PR
+is legitimately open. It is the enforcement half of run one opening that PR — see
+`graph-run` and `graph-workflow-contract.md`.
+
 ## Procedure
 
 1. Run `npm run graph:preflight -- --branch <name> --run-id <id> --dry-run`
