@@ -6,8 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-- [overnight-run-tuning](./overnight-run-tuning/)
-
 ## active
 
 ## refined
