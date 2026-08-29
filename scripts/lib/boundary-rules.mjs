@@ -701,6 +701,23 @@ export function parseRunState(contents) {
 export const CRITERIA_FILE_SUFFIX = ".criteria.json"
 
 /**
+ * The one node that may earn acceptance-criteria evidence.
+ *
+ * Evidence is filed per **step**, not per run. On 2026-08-23 the `plan` node's
+ * file listings and searches satisfied 7 of 21 criteria before `build` had
+ * started, because the evidence log was keyed by run id alone — a check the
+ * builder was supposed to earn was pre-satisfied by an earlier node that happened
+ * to run the same command. Criteria belong to slices, and slices are implemented
+ * during `build` (node 6), so only `build` earns their evidence. An earlier
+ * node's identical call logs nothing.
+ *
+ * This gates *earning* only. The flip guard — a criterion set `true` without
+ * logged evidence — still fires in every node, so over-gating cannot let a
+ * non-build node forge a pass.
+ */
+export const EVIDENCE_EARNING_NODE = "build"
+
+/**
  * The log of denials the hook has issued for the current run.
  *
  * The contract says a blocked command stops the run and is recorded, never

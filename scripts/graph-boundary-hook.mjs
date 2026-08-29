@@ -24,6 +24,7 @@ import { pathToFileURL } from "node:url"
 import {
   CRITERIA_FILE_SUFFIX,
   DENIAL_LOG_PATH,
+  EVIDENCE_EARNING_NODE,
   EVIDENCE_LOG_PATH,
   RUN_LOCK_PATH,
   RUN_RELEASE_PATH,
@@ -394,11 +395,18 @@ export function decide(rawPayload, io = {}) {
         now: (io.now ?? (() => new Date().toISOString()))()
       })
       flippedCriteria = assessment.flipped
-      try {
-        appendEvidence(root, assessment.earned, io)
-        for (const entry of assessment.earned) observedEvidence.add(entry.criterionId)
-      } catch (error) {
-        degraded = `could not append observed evidence (${error?.message ?? error})`
+      // Defect 3 (Q4): earn evidence only during the build node. An earlier
+      // node's file listings and searches must not pre-satisfy build's criteria
+      // — the 2026-08-23 shakedown saw the planner earn 7 of 21 checks before
+      // build began. The flip guard above still fires in every node, so gating
+      // earning here cannot let a non-build node forge a pass.
+      if (runState.node === EVIDENCE_EARNING_NODE) {
+        try {
+          appendEvidence(root, assessment.earned, io)
+          for (const entry of assessment.earned) observedEvidence.add(entry.criterionId)
+        } catch (error) {
+          degraded = `could not append observed evidence (${error?.message ?? error})`
+        }
       }
     }
   }
