@@ -9,16 +9,26 @@ patch the machinery it runs on.
 The kickoff scoped "five live defects." On inspection, **four were already
 fixed, merged to `main`, and under test** before this session began:
 
-| Defect | State on entry | Landed by |
+| Defect | Code fix | Regression test |
 | --- | --- | --- |
-| 1 — nothing writes the lock | fixed (`takeLock()` called in preflight `main()`) | #101 |
-| 2 — liveness blind to tier 2 | fixed (`nohup true` graph canary + `classifyGraphCanary()`) | #101 |
-| 4 — lock can't be released | fixed (`.graph-run-release.json` path + `releasesOwnLock()`) | #99, #104 |
-| 5 — heredoc false-positive | fixed (`matchHeredocStart()` skips heredoc bodies) | #101 |
-| **3 — a step earns its own homework** | **live** | this package |
+| 1 — nothing writes the lock | `takeLock()` in preflight `main()` (#101) | ✅ `takeLock writes the lock the run depends on` |
+| 2 — liveness blind to tier 2 | `nohup true` graph canary + `classifyGraphCanary()` (#101) | ✅ `the graph canary proves the tier the universal canary cannot see` |
+| 4 — lock can't be released | `.graph-run-release.json` + `releasesOwnLock()` (#99, #104) | ✅ `run-lock-removal` release-sequence tests |
+| 5 — heredoc false-positive | `matchHeredocStart()` skips heredoc bodies (#101) | ✅ **added here** — code shipped without a test |
+| **3 — a step earns its own homework** | **added here** — `EVIDENCE_EARNING_NODE` gate | ✅ **added here** (3 tests) |
+
+The brief required "each defect backed by a test." Four fixes had already landed
+in prior PRs; on audit, **defect 5's fix had shipped in code with no test** — the
+exact gap the shakedown warned about, since an unguarded fix does not survive a
+reversion. This package closes defect 3 and backfills the missing defect-5 guard,
+so all five now have committed code **and** a regression test.
 
 The retry-after-block hardening the brief scoped *out* as a node mistake had also
 already landed as the `denied-command-retry` rule + denial log.
+
+**Defect 4 / Q5:** the shipped resolution landed on one design path — release gets
+a permitted, adjustable route (`.graph-run-release.json`) rather than the rule
+being dropped. Confirmed by the owner to stand; not reopened.
 
 ## The one live defect, and the decision
 

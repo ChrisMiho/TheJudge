@@ -322,6 +322,27 @@ for (const [name, command, rule] of GRAPH_TIER) {
   })
 }
 
+// Defect 5 — the normalizer must not read a denied command's name out of a
+// heredoc body. 2026-08-24: writing a commit message that read
+// "...to prove; nohup discriminates" split at the `;`, matched `nohup` as a
+// segment head, and denied the run for merely *describing* a rule. The fix
+// (`matchHeredocStart`) skips the body; these guard it so it survives. The
+// reproduction is the shakedown report's own §4 defect 5.
+test("defect 5: a denied command named inside a heredoc body is not matched", () => {
+  const command =
+    "cat > note.txt <<EOF\nclaims to prove; nohup discriminates\nEOF\ngit commit -F note.txt"
+  const verdict = bash(command, LIVE_LOCK)
+  assert.equal(verdict.decision, "allow", "heredoc body prose must not be read as a command")
+})
+
+test("defect 5: a genuine nohup outside a heredoc is still denied", () => {
+  // The same shape without a heredoc is a real background wrapper and stays denied
+  // — the fix suppresses the false positive without opening a real hole.
+  const verdict = bash("echo hi; nohup echo x", LIVE_LOCK)
+  assert.equal(verdict.decision, "deny")
+  assert.equal(verdict.rule, "nohup-wrapper")
+})
+
 test("the graph tier denies file-tool writes to the protected set", () => {
   assert.equal(tool("Write", { file_path: "CLAUDE.md" }, LIVE_LOCK).tier, "graph")
   assert.equal(
