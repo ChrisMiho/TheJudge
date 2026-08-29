@@ -6,8 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-- [graph-tooling-fixes](./graph-tooling-fixes/) — PR #131, awaiting merge
-
 ## active
 
 ## refined
