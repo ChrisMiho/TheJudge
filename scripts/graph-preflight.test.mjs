@@ -13,10 +13,12 @@ import {
   PROFILE_SENTINEL_ENV,
   SECRET_PATTERNS,
   STOP_PATH,
+  GRAPH_BRANCH_PREFIX,
   classifyCanary,
   classifyGraphCanary,
   classifyHeartbeat,
   classifyLock,
+  classifyPendingBaseToMain,
   classifyStopSentinel,
   classifyWorkingTree,
   collectEntries,
@@ -1235,4 +1237,62 @@ test("an undenied graph canary blocks the run", () => {
   const blocked = classifyGraphCanary({ denied: false, response: "(allowed)" })
   assert.equal(blocked.state, "blocked")
   assert.match(blocked.message, /graph tier is disarmed/)
+})
+
+// ---------------------------------------------------------------------------
+// base→main guard — a fresh run refuses to start while a prior package's
+// base→main PR is still open, so the queue never branches off a stale main.
+// ---------------------------------------------------------------------------
+
+const NEW_BRANCH = "thejudge-auto/overnight-run-tuning"
+
+test("graph-preflight - base-to-main guard - blocks on another slug's open PR", () => {
+  const guard = classifyPendingBaseToMain({
+    openPRs: [{ headRefName: "thejudge-auto/user-feedback-spec", url: "https://x/1" }],
+    newBranch: NEW_BRANCH
+  })
+  assert.equal(guard.block, true)
+  assert.match(guard.reason, /thejudge-auto\/user-feedback-spec/)
+  assert.match(guard.reason, /https:\/\/x\/1/, "the message must name the PR to merge")
+})
+
+test("graph-preflight - base-to-main guard - allows when only this branch's PR is open", () => {
+  // Run two's own base→main PR is legitimately open; it must not block itself.
+  const guard = classifyPendingBaseToMain({
+    openPRs: [{ headRefName: NEW_BRANCH, url: "https://x/own" }],
+    newBranch: NEW_BRANCH
+  })
+  assert.equal(guard.block, false)
+  assert.equal(guard.reason, null)
+})
+
+test("graph-preflight - base-to-main guard - allows on an empty PR list", () => {
+  const guard = classifyPendingBaseToMain({ openPRs: [], newBranch: NEW_BRANCH })
+  assert.equal(guard.block, false)
+})
+
+test("graph-preflight - base-to-main guard - ignores non-graph heads", () => {
+  // A human's feature PR into main is not the queue's concern.
+  const guard = classifyPendingBaseToMain({
+    openPRs: [
+      { headRefName: "feature/some-work", url: "https://x/2" },
+      { headRefName: "main-line-experiment", url: "https://x/3" }
+    ],
+    newBranch: NEW_BRANCH
+  })
+  assert.equal(guard.block, false)
+})
+
+test("graph-preflight - base-to-main guard - fails closed when the list is unavailable", () => {
+  // The guard's whole job is safety, so an unverifiable state refuses rather
+  // than assuming the queue is clear.
+  for (const bad of [null, undefined, "not-an-array", 42]) {
+    const guard = classifyPendingBaseToMain({ openPRs: bad, newBranch: NEW_BRANCH })
+    assert.equal(guard.block, true, `openPRs=${JSON.stringify(bad)} must fail closed`)
+    assert.match(guard.reason, /could not verify/)
+  }
+})
+
+test("graph-preflight - base-to-main guard - the branch prefix is the graph convention", () => {
+  assert.equal(GRAPH_BRANCH_PREFIX, "thejudge-auto/")
 })

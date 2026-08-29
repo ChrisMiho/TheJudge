@@ -12,7 +12,7 @@ otherwise run interactively.
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | `preflight` | `/graph-preflight --branch <name>` | haiku | 40 | `shape` | park |
 | 2 | `shape` | `/thejudge-kickoff` | sonnet | 60 | `define` | park |
-| 3 | `define` | `/thejudge-refinement` | opus | 150 | `gate-qc`, **or park on any `PRD/sections/` diff** | park |
+| 3 | `define` | `/thejudge-refinement` | opus | 150 | `gate-qc` (writes `GATE-QUESTIONS.md` on a non-empty diff; no live park) | park |
 | 4 | `gate-qc` | `/thejudge-quality-check` | sonnet | 60 | `plan` | `define`, max 3 loops |
 | 5 | `plan` | `/thejudge-map-out` | sonnet | 120 | `build` | park |
 | 6 | `build` | `/thejudge-implement-all` | sonnet | 600 | `review` | park |
@@ -107,7 +107,7 @@ work.
 | `STATUS.refined` | `gate-qc` |
 | `STATUS.active` | `build`, or `plan` when `GAMEPLAN.md` is absent |
 | `STATUS.ship-ready` | `close` |
-| `STATUS.owner-action` | park again unless the recorded `## Open gate` is resolved — `graph-gate-review` is what resolves a `define` gate |
+| `STATUS.owner-action` | run two: apply an answered `GATE-QUESTIONS.md` via `graph-gate-review`, then re-enter at `gate-qc`; a blank answer slot re-parks. Any non-`define` gate parks again unless its recorded `## Open gate` is resolved |
 | `STATUS.deferred` | refuse; `thejudge-defer` restores it first |
 
 A package entered mid-lifecycle still needs a recorded autonomous base. If
@@ -131,9 +131,9 @@ Before dispatching `build`, commit and push to `origin/<autonomous base>`:
   `## Preparation gate`
 - `DESIGN-BRIEF.md`, `GAMEPLAN.md`, and every `slice-*.md`
 - the `STATUS.*` marker and the `PRD/work/STATUS.md` board row
-- any `PRD/sections/` edits refinement made — which, being non-empty, means the
-  run already parked at the `define` gate and an owner already walked them
-  through `graph-gate-review`
+- any `PRD/sections/` edits refinement made — which, being non-empty, means run
+  one wrote `GATE-QUESTIONS.md`, the owner answered it, and run two applied the
+  verdicts through `graph-gate-review` before reaching `build`
 
 Then confirm `git status --porcelain` is empty. A dirty launch checkout at this
 point is a driver bug, not a `build` blocker — fix the publish step rather than

@@ -493,6 +493,77 @@ export function classifyStopSentinel({ present }) {
   }
 }
 
+// Every autonomous base branch is `thejudge-auto/<slug>`, so a PR from a head
+// under this prefix into `main` is a package's base→main hop — the merge nothing
+// in the run performs and nothing reminded the owner to open (until run one now
+// opens it). The guard below reasons about exactly those PRs.
+export const GRAPH_BRANCH_PREFIX = "thejudge-auto/"
+
+// The read-only query whose parsed output feeds the guard. Read-only: `gh pr
+// list` never mutates, so it is safe on the fresh-run path and in a dry run.
+export const OPEN_BASE_TO_MAIN_PRS_COMMAND = [
+  "pr",
+  "list",
+  "--base",
+  "main",
+  "--state",
+  "open",
+  "--json",
+  "headRefName,url"
+]
+
+/**
+ * Whether a *fresh* run must refuse to start because a prior package's base→main
+ * PR is still open.
+ *
+ * Pure over the parsed PR list, so the whole decision — including the
+ * fail-closed branch — is tested without a `gh` process. A run that branches off
+ * a `main` a prior package has not reached parks at the wrong base; that is what
+ * happened to `user-feedback-spec` (PR #107), which is the failure this prevents.
+ *
+ * Fail closed: if the list could not be obtained or parsed (`openPRs` is not an
+ * array), refuse rather than assume the queue is clear. The guard's entire job
+ * is safety, so an unverifiable state is a block, not a pass.
+ *
+ * The resume path (`--take-lock`) never calls this: run two's own base→main PR
+ * is legitimately open, and it shares this run's `newBranch`, so it is excluded
+ * here too.
+ */
+export function classifyPendingBaseToMain({ openPRs, newBranch }) {
+  if (!Array.isArray(openPRs)) {
+    return {
+      block: true,
+      reason:
+        `graph-preflight: could not verify open base→main PRs (gh unavailable or ` +
+        `returned unparseable output). Refusing the fresh run — restore gh access, ` +
+        `or merge any pending base→main PR, then retry.`
+    }
+  }
+
+  const pending = openPRs.filter(
+    (pr) =>
+      pr &&
+      typeof pr.headRefName === "string" &&
+      pr.headRefName.startsWith(GRAPH_BRANCH_PREFIX) &&
+      pr.headRefName !== newBranch
+  )
+
+  if (pending.length === 0) {
+    return { block: false, reason: null }
+  }
+
+  const list = pending.map((pr) => `  ${pr.headRefName} → main (${pr.url ?? "<no url>"})`).join("\n")
+  return {
+    block: true,
+    reason:
+      `graph-preflight: refusing to start a fresh run while a prior package's ` +
+      `base→main PR is still open:\n${list}\n` +
+      `Merge it into main first, then retry. A fresh run branched off a main that ` +
+      `lacks the prior package parks at the wrong base (this happened to ` +
+      `user-feedback-spec, PR #107).`
+  }
+}
+
 /**
  * The canary the run issues to prove its own enforcer is firing.
  *
@@ -716,6 +787,26 @@ function main(argv) {
   if (stop.state === "refused") {
     console.error(stop.message)
     return process.exit(2)
+  }
+
+  // base→main guard: a fresh run refuses to start while a prior package's
+  // base→main PR is still open, so the queue never branches off a stale `main`.
+  // Fresh runs only — a resume (`--take-lock`) has its own base→main PR open by
+  // design. The `gh pr list` query is read-only, so this runs in a dry run too:
+  // surfacing the block early is the point. A gh failure fails closed.
+  if (!options.takeLockOnly) {
+    const runGh = (args) => execFileSync("gh", args, { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 })
+    let openPRs
+    try {
+      openPRs = JSON.parse(runGh(OPEN_BASE_TO_MAIN_PRS_COMMAND))
+    } catch {
+      openPRs = null // unavailable or unparseable → classifyPendingBaseToMain blocks
+    }
+    const guard = classifyPendingBaseToMain({ openPRs, newBranch: options.branch })
+    if (guard.block) {
+      console.error(guard.reason)
+      return process.exit(2)
+    }
   }
 
   // The lock comes before any mutation, and before the branch work, so a second

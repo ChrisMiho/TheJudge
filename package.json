@@ -36,7 +36,8 @@
     "data:scan-hashes": "npm run data:scan-fingerprints",
     "data:scan-map": "tsx scripts/build-card-scan-map.mjs",
     "skills:ai-sync": "node scripts/sync-agent-skills.mjs",
-    "graph:preflight": "node scripts/graph-preflight.mjs"
+    "graph:preflight": "node scripts/graph-preflight.mjs",
+    "graph:digest": "node scripts/graph-digest.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

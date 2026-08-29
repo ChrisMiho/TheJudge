@@ -14,18 +14,18 @@ _Last updated: 2026-08-28._
 | --- | --- | --- | --- |
 | 0 | Codebase health audit | ✅ **done** (PR #98) | graph run, read-only |
 | 1 | Feature spec layer (Phase A/B/C) | ✅ **done** — Phase A ✅, Phase B ✅, Phase C ✅ | graph runs + one manual session |
-| 2 | Overnight-run tuning | ⬜ blocked on the graph tooling fixes (below); kickoff drafted (`adhoc/package-2-kickoff.md`) | interactive (not a graph run) |
+| 2 | Overnight-run tuning | 🔄 **in progress** — tooling-fixes blocker cleared (PR #131/#132 merged); implementing as `PRD/work/overnight-run-tuning/` | interactive (not a graph run) |
 | 3 | Operator manual | ⬜ not started | manual |
 | 4 | Plain-language standard | ⬜ not started | manual |
 
 Package 4 is the only one that fixes the "I can't follow agent output" problem that
 started all this. Don't let it fall off the end.
 
-**Prerequisite before Package 2 — graph tooling fixes ⬜ next.** The first
-autonomous run surfaced five live defects in the graph enforcer/preflight (two
-can leave the safety tier silently off). They are fixed as their own code+tests
-package before any more overnight runs. Kickoff: `adhoc/graph-tooling-fixes-kickoff.md`.
-Evidence: `adhoc/graph-run-shakedown-report.md` §4.
+**Prerequisite before Package 2 — graph tooling fixes ✅ done (PR #131 / #132).**
+The first autonomous run surfaced five live defects in the graph enforcer/preflight
+(two could leave the safety tier silently off). They were fixed as their own
+code+tests package and merged, so Package 2 is unblocked. Evidence:
+`adhoc/graph-run-shakedown-report.md` §4.
 
 ---
 
@@ -165,12 +165,13 @@ then `/graph-run PRD/work/<slug>/`.
 
 ## Open loose ends to settle (not blocking the next spec)
 
-- **CODE-HEALTH.md**: the gameplan says every Phase A run emits one; DEC-168 doesn't
-  require it and the life-tracker run didn't. Decide: write it into the process, or
-  drop it from the plan.
-- **True overnight batching** needs Package 2 (async markdown gate). Until then it's
-  one spec per cycle: run → park at define gate → you review → resume → complete.
-- **Base→main merge has no automation or reminder** (shakedown Q7, the branch-shape
-  question). A run marks COMPLETE at its base branch; reaching `main` is a manual
-  owner PR. Package 3 (operator manual) or Package 2 should make this step explicit
-  so it can't be skipped again.
+- **CODE-HEALTH.md** — ✅ resolved (Package 2): dropped from the plan. It was
+  never load-bearing — DEC-168 never required it and only the Package 0 audit
+  produced one — so the gameplan no longer asks each run to emit one.
+- **True overnight batching** — ✅ delivered by Package 2's async markdown gate:
+  run one stops at quality-check PASS with a questions file and a docs PR; you
+  answer on your own schedule; run two implements.
+- **Base→main merge** — ✅ resolved by Package 2: run one opens the
+  `thejudge-auto/<slug> → main` PR up front (so it always exists), and
+  `graph-preflight` refuses the next fresh run while a prior base→main PR is still
+  open. The morning digest (`npm run graph:digest`) also lists any pending one.
