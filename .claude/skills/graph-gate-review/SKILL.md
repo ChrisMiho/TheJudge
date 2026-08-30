@@ -34,7 +34,12 @@ review.
 
 ## Reads
 
-1. `PRD/work/<slug>/GATE-QUESTIONS.md` — the owner's answer slots
+1. `PRD/work/<slug>/GATE-QUESTIONS.md` — the owner's answer slots. Each
+   `## <STABLE-ID>` block opens with the gate-question plain-language block from
+   `PRD/instructions/plain-language-standard.md` (*What this decides · In plain
+   terms · What happens if you say no*); that block is what the owner answered
+   against, and your own reporting back to the owner follows the same standard —
+   lead with the ask, inline the substance of any ID you name
 2. `PRD/work/<slug>/GRAPH-RUN.md` — `## Open gate` and the recorded
    `PRD/sections/` diff
 3. `PRD/work/<slug>/README.md` and its `STATUS.*` marker

@@ -50,7 +50,7 @@ Work slug. Optional force override when the user explicitly requests cleanup of 
 ## Writes
 
 - Promoted durable outcomes into the relevant feature spec `PRD/sections/<feature>/README.md` and its cited `REQ`/`FLOW` entries, plus any other affected `PRD/sections/*.md`; the decision log is retired, so no new `DEC-###`
-- Receipt at `PRD/instructions/receipts/<slug>-<YYYY-MM-DD>.md` — **written before delete** — containing date, slug, status (shipped | partial | corpus-only), actions taken, every file created/updated/deleted, verification results, `## Graph run` when the package holds a `GRAPH-RUN.md`, and `## Intake` when it holds `intake/`
+- Receipt at `PRD/instructions/receipts/<slug>-<YYYY-MM-DD>.md` — **written before delete** — opening with the receipt plain-language block from `PRD/instructions/plain-language-standard.md` (a **What happened** line in product terms and a **What it means for you** line saying what the owner can now do or see), then containing date, slug, status (shipped | partial | corpus-only), actions taken, every file created/updated/deleted, verification results, `## Graph run` when the package holds a `GRAPH-RUN.md`, and `## Intake` when it holds `intake/`. The plain-language block leads; the ledgers and file lists follow it unchanged
 - `PRD/sections/system-map.md` entry flipped `planned`/`partial` → `shipped`, only once both code and the receipt exist
 - `PRD/work/STATUS.md` — remove the slug from every section
 - `PRD/README.md`, only if navigation changed (never re-introduce a multi-row work-package table)

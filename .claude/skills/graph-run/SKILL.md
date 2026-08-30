@@ -110,12 +110,16 @@ boundaries are required.
 
    **After node 3 (`define`) returns `ok`, diff `PRD/sections/`.** A non-empty
    diff no longer parks live. Write `PRD/work/<slug>/GATE-QUESTIONS.md` — one
-   `## <STABLE-ID>` block per new stable ID, each carrying the item restated in
-   plain product terms, that ID's **complete diff** (never a summary), and an
-   `accept/edit/reject` answer slot — then **continue** to `gate-qc`. An empty
-   diff writes no questions file; refinement that only writes `DESIGN-BRIEF.md`
-   produces no gate at all. The exact file format is in
-   `graph-workflow-contract.md` under `## The two runs`.
+   `## <STABLE-ID>` block per new stable ID, each opening with the gate-question
+   plain-language block from `PRD/instructions/plain-language-standard.md`
+   (*What this decides · In plain terms · What happens if you say no*, with every
+   cited `DEC`/`REQ` inlined and any technical term defined in the same breath),
+   then that ID's **complete diff** (never a summary), and an `accept/edit/reject`
+   answer slot — then **continue** to `gate-qc`. The owner must be able to answer
+   each block without opening a file to decode an ID: that is the founding pain
+   this gate exists to fix. An empty diff writes no questions file; refinement
+   that only writes `DESIGN-BRIEF.md` produces no gate at all. The exact file
+   format is in `graph-workflow-contract.md` under `## The two runs`.
 
    The **whole** diff gates — every new stable ID gets its own slot, not the
    headline ones alone. The 2026-08-17 leak wrote two decisions *and*
@@ -154,7 +158,12 @@ three) as normal; only PASS stops. To stop, run one:
    never merges one, so no boundary is crossed. Record its URL in the ledger. It
    is the PR the implementation grows into and the owner merges last — the
    base→main hop `graph-preflight`'s guard makes un-skippable for the next fresh
-   run.
+   run. The `--body` opens with the PR-body plain-language block from
+   `PRD/instructions/plain-language-standard.md` — *What this is · What you need
+   to do · What it changes* — so the owner sees, at the top of the PR, that this
+   is a docs-only design PR, that their action is to answer `GATE-QUESTIONS.md`
+   and hold the PR open (not merge yet), and what product truth it proposes;
+   the design brief, sections diff, and ledger stay in the body below it.
 3. Parks at `owner-action`: set the marker, update the board row, and write under
    `## Open gate` either "answer `GATE-QUESTIONS.md`, then resume" (with the file
    path) or, on an empty diff, "review the docs PR, then resume to implement" —
@@ -239,6 +248,11 @@ A gate parks, it does not ask. Set `STATUS.owner-action`, update the
 `PRD/work/STATUS.md` board row, write the question, the evidence, and the
 exact resume command under `## Open gate` in the ledger, and stop. Do not
 poll or retry.
+
+The `## Open gate` write and the board row are owner-facing, so both follow
+`PRD/instructions/plain-language-standard.md`: open with what the owner must do,
+say in plain product terms what stopped the run and what happens next, and inline
+the substance of any `DEC`/`REQ` you name rather than leaving a bare ID.
 
 ### Never convert a user instruction into a standing authorization
 

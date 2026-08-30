@@ -4,7 +4,7 @@ The plan is `refactor-gameplan.md`. This file tracks **how far through it you ar
 Update the status boxes as runs finish. Graph runs delete their own work folder on
 completion, so this file — not `PRD/work/STATUS.md` — is the durable progress board.
 
-_Last updated: 2026-08-28._
+_Last updated: 2026-08-29._
 
 ---
 
@@ -16,10 +16,12 @@ _Last updated: 2026-08-28._
 | 1 | Feature spec layer (Phase A/B/C) | ✅ **done** — Phase A ✅, Phase B ✅, Phase C ✅ | graph runs + one manual session |
 | 2 | Overnight-run tuning | ✅ **done** (PR #133; cleaned up in #134/#135) | interactive (not a graph run) |
 | 3 | Operator manual | ⬜ not started | manual |
-| 4 | Plain-language standard | ⬜ not started | manual |
+| 4 | Plain-language standard | ✅ **done** (PR to `main`) | manual (not a graph run) |
 
 Package 4 is the only one that fixes the "I can't follow agent output" problem that
-started all this. Don't let it fall off the end.
+started all this. It shipped — Package 3 (the operator manual) is now the last
+remaining work, and it comes last on purpose because it documents what Package 4
+just settled.
 
 **Prerequisite before Package 2 — graph tooling fixes ✅ done (PR #131 / #132).**
 The first autonomous run surfaced five live defects in the graph enforcer/preflight
@@ -81,6 +83,27 @@ citations that named a deleted file path.
 
 `PRD/work/sweep-decision-audit/` was the deletion map; consumed and deleted as
 part of this phase. The plan is recorded at `PRD/work/adhoc/phase-c-plan.md`.
+
+## Package 4 — the plain-language standard ✅ complete
+
+A manual, plan-first interactive session (not a graph run or a sweep). Fixed the
+founding pain: every owner-facing artifact an agent writes now opens with a
+plain-language block — lead with the ask, inline the substance of any `DEC`/`REQ`
+it cites, product terms before technical ones. New
+`PRD/instructions/plain-language-standard.md` holds the four rules, the
+per-artifact header table, and a worked before/after on a real gate question
+(`REQ-134`). Embedded across six fronts: gate questions
+(`graph-workflow-contract.md`, `graph-run`, `graph-gate-review`), PR bodies
+(`graph-run`, `thejudge-implement-all`), receipts and status boards
+(`thejudge-cleanup`, `graph-run`), and in-session/subagent output (`CLAUDE.md`,
+`agent-working-rules.md`, `writing-rules.md`). Forward-only. All four edited
+skills re-synced byte-identical to `.agents/skills/`.
+
+| Piece | Status | Landed as |
+| --- | --- | --- |
+| Plain-language standard + six embeds | ✅ **done** | PR (docs/package-4-plain-language-standard) — receipt `docs-refactor-package-4-2026-08-29.md` |
+
+The plan is recorded at `PRD/work/adhoc/package-4-plan.md`.
 
 ---
 

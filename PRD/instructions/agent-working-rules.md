@@ -27,6 +27,7 @@ When creating or closing non-section markdown under `PRD/`, also read `instructi
 - Keep product content in section files.
 - Keep process guidance in instruction files.
 - Follow `instructions/secrets-handling.md` for any work touching credentials, secret files, AWS auth, or secret-related env vars.
+- Anything you hand the owner — an in-session summary, a subagent's report back, a skill handoff, a generated gate question, PR body, or receipt — follows `instructions/plain-language-standard.md`: lead with the ask, inline the substance of any `DEC`/`REQ` you cite, and put product terms before technical ones. This binds subagent output, not just the main chat.
 
 ## Ambiguity Handling
 
