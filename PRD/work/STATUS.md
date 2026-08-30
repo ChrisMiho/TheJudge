@@ -6,11 +6,11 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
+- [lambda-s3-deploy](./lambda-s3-deploy/) — slices A/B/C done; PR #145 (thejudge-auto/lambda-s3-deploy-work -> thejudge-auto/lambda-s3-deploy) open for review/merge
+
 ## active
 
 ## refined
-
-- [lambda-s3-deploy](./lambda-s3-deploy/)
 
 ## refining
 

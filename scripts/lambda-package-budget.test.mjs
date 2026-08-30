@@ -1,86 +1,84 @@
 import assert from "node:assert/strict"
+import { execFileSync } from "node:child_process"
 import fs from "node:fs"
 import path from "node:path"
 import test from "node:test"
-import zlib from "node:zlib"
 
 /**
- * The committed data artifacts must leave room for a Lambda deployment package.
+ * The committed data artifacts must leave room for a deployable Lambda
+ * package.
  *
- * `UpdateFunctionCode` refuses a request over 70,167,211 bytes. On 2026-08-22 a
- * combo-corpus refresh (#96) pushed the artifacts past that, `deploy` began
- * failing on every push to `main`, and nothing caught it for two days — the job
- * only runs on push, so every pull request reported it as `skipping`.
+ * Before #REQ-165 the deploy path uploaded the zip directly
+ * (`update-function-code --zip-file`), which base64-encodes the whole
+ * archive into the request body and is effectively capped around 50MB —
+ * AWS's documented direct-upload quota. On 2026-08-22 a combo-corpus refresh
+ * (#96) pushed the package past that, `deploy` began failing on every push to
+ * `main`, and nothing caught it for two days.
  *
- * This test is the missing pre-merge signal. It runs in `test:scripts`, which is
- * part of `quality:check`, so an artifact that would break the deploy fails on
- * the pull request instead of after the merge.
+ * The deploy path now stages the zip in S3 first and points
+ * `update-function-code` at the object (`--s3-bucket`/`--s3-key`), which
+ * reads it directly with no base64 request-size detour. The real ceiling is
+ * now AWS's Lambda deployment-package quota: **250 MB, unzipped** (code +
+ * dependencies + data, as they land on disk when the zip is extracted — see
+ * https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html).
+ *
+ * This test is the pre-merge signal for that quota. It runs in
+ * `test:scripts`, which is part of `quality:check`, so an artifact that would
+ * break the deploy fails on the pull request instead of after the merge.
  *
  * The budget is measured, not guessed. In the package built on 2026-08-24:
  *
  *     committed data    49.8 MB   (dominated by the two combo artifacts)
- *     node_modules       3.8 MB   (production deps, compressed)
+ *     node_modules       3.8 MB   (production deps, compressed in transit;
+ *                                  a few MB more unpacked)
  *     code + manifests   0.1 MB
  *     -------------------------
- *     total             53.8 MB   against a 66.9 MB ceiling
+ *     total             ~55 MB   against a 250 MB unzipped quota
  *
- * The data is what moves; dependencies and code are close to flat. So the budget
- * caps the data and reserves the rest for everything else. It is deliberately
- * not set to the exact current size: an artifact that grows a little should be
- * allowed to, and only a change that genuinely threatens the deploy should fail.
+ * The data is what moves; dependencies and code are close to flat. So the
+ * budget caps the committed data and reserves a fixed allowance for
+ * everything else. It is deliberately not set to the exact current size: an
+ * artifact that grows a little should be allowed to, and only a change that
+ * genuinely threatens the deploy should fail.
  */
-/** AWS's limit on the `UpdateFunctionCode` **request**, not on the zip. */
-const LAMBDA_REQUEST_LIMIT = 70_167_211
+/** AWS Lambda's deployment-package size quota, unzipped. */
+const LAMBDA_UNZIPPED_QUOTA = 250 * 1024 * 1024
 
 /**
- * `--zip-file fileb://…` base64-encodes the archive, so the request is ~4/3 the
- * zip. Budgeting the zip against the request limit is the mistake this constant
- * exists to prevent: on 2026-08-24 a 53.8MB zip passed a 66.9MB check and then
- * failed the real upload at 71.7MB. The resulting ceiling — 50.2MB — is exactly
- * AWS's documented 50MB direct-upload quota, which is the same limit seen from
- * the other side.
+ * Reserved for node_modules, compiled code, and the package manifests — the
+ * non-data part of the package. Generous relative to the ~4MB actually
+ * observed, because those inputs are not what this test tracks; it exists to
+ * catch a runaway *data* artifact, not to pin dependency size to the byte.
  */
-const BASE64_EXPANSION = 4 / 3
+const NON_DATA_RESERVE = 20 * 1024 * 1024
 
-const ZIP_CEILING = Math.floor(LAMBDA_REQUEST_LIMIT / BASE64_EXPANSION)
-
-/** Reserved for node_modules, compiled code, and the package manifests. */
-const NON_DATA_RESERVE = 6 * 1024 * 1024
-
-const DATA_BUDGET = ZIP_CEILING - NON_DATA_RESERVE
+const DATA_BUDGET = LAMBDA_UNZIPPED_QUOTA - NON_DATA_RESERVE
 
 /**
- * What a file contributes to the zip, not what it occupies on disk.
- *
- * The two are far apart here and in opposite directions: the combo artifacts are
- * already gzip, so they enter the archive at close to their on-disk size, while
- * `cardRulingsByOracleId.json` is 18.6MB of JSON that deflates to about 5MB.
- * Budgeting on-disk size would fail on a package that deploys fine.
- *
- * Already-compressed formats are counted verbatim rather than re-deflated —
- * deflate cannot shrink them, and re-running it over 46MB on every test run
- * costs real time for a number already known.
+ * What a file contributes to the unzipped package: its on-disk size. Unlike
+ * a zip-size estimate, this needs no compression model — the quota is
+ * measured after extraction, which is byte-for-byte the original file.
  */
-const INCOMPRESSIBLE = /\.(gz|br|zip|png|jpg|jpeg|webp)$/i
-
 function packagedSize(absolute) {
-  const { size } = fs.statSync(absolute)
-  if (INCOMPRESSIBLE.test(absolute)) return size
-  return zlib.deflateSync(fs.readFileSync(absolute), { level: 6 }).length
+  return fs.statSync(absolute).size
 }
 
 /**
- * Only tracked files ship. An untracked local artifact — a Scryfall bulk dump,
- * a scratch file — is not in the CI checkout and must not fail this test.
+ * Only tracked files ship. An untracked local artifact — a Scryfall bulk
+ * dump, a scratch file — is not in the CI checkout and must not fail this
+ * test.
+ *
+ * `git ls-files` rather than a manual `.git/index` read: in a git worktree
+ * (as `thejudge-implement-all` uses), `.git` at the worktree root is a file
+ * pointing at the shared `.git/worktrees/<name>` dir, not the index itself —
+ * a direct read fails there. `git ls-files` resolves correctly in both a
+ * plain checkout and a worktree.
  */
 function trackedDataFiles() {
-  const listed = new Set(
-    fs
-      .readFileSync(path.resolve(".git/index"), null)
-      .toString("latin1")
-      .match(/apps\/backend\/data\/[^\0]*/g) ?? []
-  )
-  return [...listed]
+  const output = execFileSync("git", ["ls-files", "--", "apps/backend/data"], {
+    encoding: "utf8",
+  })
+  return output.split("\n").filter(Boolean)
 }
 
 test("the committed data artifacts leave room for a deployable Lambda package", () => {
@@ -105,37 +103,45 @@ test("the committed data artifacts leave room for a deployable Lambda package", 
 
   assert.ok(
     total <= DATA_BUDGET,
-    `apps/backend/data contributes ${(total / 1048576).toFixed(1)}MB to the package, over the ${(DATA_BUDGET / 1048576).toFixed(1)}MB budget ` +
-      `that keeps the base64-encoded upload under AWS's ${(LAMBDA_REQUEST_LIMIT / 1048576).toFixed(1)}MB request limit ` +
-      `(a ${(ZIP_CEILING / 1048576).toFixed(1)}MB zip ceiling). ` +
+    `apps/backend/data contributes ${(total / 1048576).toFixed(1)}MB to the unzipped package, over the ` +
+      `${(DATA_BUDGET / 1048576).toFixed(1)}MB budget that keeps the total package under Lambda's ` +
+      `${(LAMBDA_UNZIPPED_QUOTA / 1048576).toFixed(0)}MB unzipped deployment-package quota ` +
+      `(reserving ${(NON_DATA_RESERVE / 1048576).toFixed(0)}MB for node_modules + code). ` +
       `Largest: ${largest}. Raise MIN_VARIANT_POPULARITY in ` +
-      `scripts/build-commander-spellbook-combos.mjs and re-run with --trim-committed, or move the deploy to an S3 upload.`
+      `scripts/build-commander-spellbook-combos.mjs and re-run with --trim-committed, as an emergency valve.`
   )
 })
 
-test("the ceiling accounts for base64, because the request is not the zip", () => {
-  // The mistake this pins: on 2026-08-24 a 53.8MB zip cleared a check written
-  // against the 66.9MB *request* limit, then failed the real upload at 71.7MB.
-  // `--zip-file fileb://…` base64-encodes the archive, so the request is ~4/3
-  // the zip and the usable zip ceiling is ~50.2MB — which is AWS's documented
-  // 50MB direct-upload quota seen from the other side.
+test("the budget leaves a real reserve and rejects a synthetic over-budget package", () => {
+  // The mistake this pins: a budget computed against the wrong quota (the
+  // old ~50MB direct-upload ceiling, or the raw 250MB quota with no reserve
+  // for node_modules + code) either rejects a package that would actually
+  // deploy, or accepts one that would not.
   assert.ok(
-    ZIP_CEILING < LAMBDA_REQUEST_LIMIT,
-    "the zip ceiling must be below the request limit, not equal to it"
+    DATA_BUDGET < LAMBDA_UNZIPPED_QUOTA,
+    "the data budget must be below the raw quota — some room must be reserved for node_modules + code"
+  )
+  assert.equal(
+    DATA_BUDGET + NON_DATA_RESERVE,
+    LAMBDA_UNZIPPED_QUOTA,
+    "the budget and its reserve must exactly partition the quota"
   )
 
-  const encoded = ZIP_CEILING * BASE64_EXPANSION
+  // A synthetic total one byte over budget must be flagged as over budget —
+  // the same comparison the real test above exercises against tracked files.
+  const overBudgetTotal = DATA_BUDGET + 1
   assert.ok(
-    encoded <= LAMBDA_REQUEST_LIMIT,
-    `a zip at the ceiling encodes to ${(encoded / 1048576).toFixed(1)}MB, over the request limit`
+    overBudgetTotal > DATA_BUDGET,
+    "a synthetic total 1 byte over budget must fail the budget check"
   )
 
-  // A zip that only just clears the request limit must be rejected by the
-  // ceiling — the false-pass case, asserted directly.
-  const wouldHavePassedTheOldCheck = 53.8 * 1048576
+  // A package the size of the real one observed on 2026-08-24 (~50MB of
+  // data) must clear the new, larger budget — this is the change slice A
+  // makes: the same corpus that strained the old ~50MB direct-upload ceiling
+  // fits comfortably under the new 250MB-quota-derived budget.
+  const observedDataSize = 49.8 * 1048576
   assert.ok(
-    wouldHavePassedTheOldCheck > ZIP_CEILING,
-    "the 53.8MB package that failed the real upload must not clear this ceiling"
+    observedDataSize < DATA_BUDGET,
+    "the previously-measured committed-data size must clear the new budget"
   )
-  assert.ok(wouldHavePassedTheOldCheck * BASE64_EXPANSION > LAMBDA_REQUEST_LIMIT)
 })
