@@ -91,6 +91,27 @@ Report back: the slice letters and one-line title each, the GAMEPLAN path, confi
 
 Copy the `Working directory:` line above, unchanged, into every prompt you write.
 
+### build
+
+Invoke the `thejudge-implement-all` skill (via the Skill tool) and follow it exactly.
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Package: PRD/work/lambda-s3-deploy/
+Run ID: graph-20260829-213717
+Autonomous base: origin/thejudge-auto/lambda-s3-deploy
+Shared branch (PR head): thejudge-auto/lambda-s3-deploy-work
+
+Implement every remaining slice (A, B, C) sequentially in one shared worktree at `.worktrees/implement-lambda-s3-deploy/`, opening a `thejudge-auto/lambda-s3-deploy-work -> thejudge-auto/lambda-s3-deploy` PR that carries the whole deliverable. Earn each slice's acceptance criteria in `slice-<letter>.criteria.json` through real tool calls; a criterion flips to `true` only with observed evidence.
+
+Structural constraint: this is a graph run and the boundary list forbids `npm run data:refresh` or any live Scryfall / Commander Spellbook network fetch. Slice C therefore flips `MIN_VARIANT_POPULARITY` to 0 in code only; it must NOT attempt to regenerate the committed combo corpus artifacts. Its C4 criterion is `manual` and is the owner's follow-up — record it honestly, do not fake it.
+
+Report back: per-slice PASS/FAIL with each slice's criteria all `true` or the remaining `false` ones named, the worktree path, the `-work -> base` PR URL, every file path written, and the resulting STATUS.* marker.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
