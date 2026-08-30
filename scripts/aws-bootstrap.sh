@@ -9,6 +9,8 @@ github_repo="${GITHUB_REPOSITORY:-ChrisMiho/TheJudge}"
 app_name="${APP_NAME:-thejudge}"
 bucket_name="${AWS_S3_BUCKET:-$app_name-web-$account_id}"
 artifact_bucket_name="${AWS_LAMBDA_ARTIFACT_BUCKET:-$app_name-lambda-artifacts-$account_id}"
+# Fixed key, overwritten on every run — matches scripts/aws-deploy.sh. (DEC-169)
+artifact_s3_key="lambda/lambda.zip"
 lambda_name="${AWS_LAMBDA_FUNCTION_NAME:-$app_name-api}"
 lambda_role_name="${AWS_LAMBDA_ROLE_NAME:-$app_name-lambda-exec}"
 ssm_param_name="${OPENAI_API_KEY_SSM_PARAM:-/thejudge/openai-api-key}"
@@ -119,6 +121,17 @@ lambda_role_arn="arn:aws:iam::$account_id:role/$lambda_role_name"
 npm run build
 artifact_path="$(bash "$repo_root/scripts/package-lambda.sh")"
 
+# Stage the package in S3, then point Lambda at the object instead of uploading
+# the zip inline. `--zip-file` base64-encodes the whole archive into the request
+# body, which AWS caps around 50MB; the committed data corpus pushes the package
+# past that, so the direct upload fails with RequestEntityTooLargeException.
+# Reading the object from S3 (`--code S3Bucket=`/`--s3-bucket`) is bounded only by
+# Lambda's 250MB unzipped quota — the same path scripts/aws-deploy.sh uses.
+# (REQ-165) The artifact bucket is created above, so it exists by here.
+aws s3 cp "$artifact_path" "s3://$artifact_bucket_name/$artifact_s3_key" \
+  --region "$aws_region" \
+  >/dev/null
+
 if ! aws lambda get-function --function-name "$lambda_name" --region "$aws_region" >/dev/null 2>&1; then
   aws lambda create-function \
     --function-name "$lambda_name" \
@@ -126,7 +139,7 @@ if ! aws lambda get-function --function-name "$lambda_name" --region "$aws_regio
     --architectures arm64 \
     --role "$lambda_role_arn" \
     --handler apps/backend/dist/lambda.handler \
-    --zip-file "$(aws_fileb_uri "$artifact_path")" \
+    --code "S3Bucket=$artifact_bucket_name,S3Key=$artifact_s3_key" \
     --timeout 20 \
     --memory-size 512 \
     --environment "Variables={NODE_ENV=production,ASK_AI_PROVIDER=openai,DEBUG_LOGGING=false,LOG_PAYLOADS=false,OPENAI_MODEL=$openai_model,OPENAI_TIMEOUT_MS=$openai_timeout_ms,OPENAI_MAX_RETRIES=$openai_max_retries,OPENAI_API_KEY_SSM_PARAM=$ssm_param_name}" \
@@ -135,7 +148,8 @@ if ! aws lambda get-function --function-name "$lambda_name" --region "$aws_regio
 else
   aws lambda update-function-code \
     --function-name "$lambda_name" \
-    --zip-file "$(aws_fileb_uri "$artifact_path")" \
+    --s3-bucket "$artifact_bucket_name" \
+    --s3-key "$artifact_s3_key" \
     --region "$aws_region" \
     >/dev/null
 fi
@@ -436,6 +450,7 @@ cat > "$tmp_dir/github-deploy-policy.json" <<JSON
     {
       "Effect": "Allow",
       "Action": [
+        "s3:GetObject",
         "s3:PutObject"
       ],
       "Resource": "arn:aws:s3:::$artifact_bucket_name/*"
