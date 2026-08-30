@@ -14,6 +14,10 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+| Package | Notes |
+| --- | --- |
+| [prompt-context-refinement](./prompt-context-refinement/) | Fresh gameplan for rules-question prompt/context pipeline; five owner observations, RAG-flagged item to be split out at refinement |
+
 ## owner-action
 
 ## deferred
