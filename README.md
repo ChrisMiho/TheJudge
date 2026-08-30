@@ -8,6 +8,7 @@ Its primary feature, **MTG Assistant**, helps players build staged game context,
 - Product planning and story source of truth: `PRD/README.md`
 - This root README is for fast onboarding, setup, and implementation status.
 - If you are using coding agents, point them to `PRD/README.md` first.
+- Driving the system yourself (one command per task): `OPERATOR.md`
 
 ## Current Product Status
 
