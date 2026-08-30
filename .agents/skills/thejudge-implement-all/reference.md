@@ -81,8 +81,25 @@ Title priority is always `BLOCKED` > `IN PROGRESS` > `READY`. Every registration
 
 ## Initial PR body
 
+The body opens with the PR-body plain-language block from
+`PRD/instructions/plain-language-standard.md` — *What this is · What you need to
+do · What it changes* — written in product terms with any cited `REQ`/`DEC`
+substance inlined. The `## Automated implementation` machine detail below it is
+unchanged; the plain-language block sits above it so the owner reads the ask
+first, the record second.
+
 ```markdown
 <!-- thejudge-auto:v1:registered:<work-slug> -->
+
+## What this is
+<One or two plain sentences: what the feature does for a player or the owner.>
+
+## What you need to do
+<The owner's action — review the diff, then merge when green — or "Nothing yet"
+while work is in progress.>
+
+## What it changes
+<What a player or the owner will see or be able to do that they could not before.>
 
 ## Automated implementation
 

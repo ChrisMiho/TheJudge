@@ -14,6 +14,7 @@ These rules govern how product documents should be written and updated.
 - Record product truth by editing the current-state feature spec `sections/<feature>/README.md` and its cited `REQ`/`FLOW` entries in place; the decision log is retired, so do not author a new `DEC-###`.
 - Keep product truth in section files.
 - Keep workflow and generation guidance in instruction files.
+- Every owner-facing artifact an agent generates — gate question, PR body, receipt, status row, in-session summary — opens with the plain-language block defined in `plain-language-standard.md`: lead with the ask, inline the substance of any `DEC`/`REQ` it cites, and put product terms before technical ones.
 - Convert scattered notes into structured bullets when possible.
 - Preserve important constraints exactly.
 - Separate confirmed requirements from ideas, assumptions, and open questions.

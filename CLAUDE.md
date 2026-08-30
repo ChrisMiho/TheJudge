@@ -26,6 +26,10 @@ to be re-read to be parsed has failed, even if every sentence in it is short.
   recommendation, stop. Do not hand over alternatives to weigh cold.
 - No emphasis pile-up. Nested bullets, bold on every other phrase, and
   three-clause sentences cost more than they add.
+- These rules govern every owner-facing summary, not just the main chat: a
+  subagent reporting back, a skill's handoff line, and any in-session status
+  bind to `PRD/instructions/plain-language-standard.md` — open with the ask,
+  inline the substance of any `DEC`/`REQ` you cite, and put product terms first.
 
 ## Process skill precedence
 

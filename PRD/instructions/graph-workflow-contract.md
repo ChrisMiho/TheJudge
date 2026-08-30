@@ -87,12 +87,23 @@ the base→main hop that used to be an unremembered manual step. `graph-prefligh
 refuses to start the *next* fresh run while it is still open (its base→main
 guard).
 
-**`GATE-QUESTIONS.md`** carries one `## <STABLE-ID>` block per new stable ID: the
-item restated in plain product terms, then that ID's complete diff, then
+**`GATE-QUESTIONS.md`** carries one `## <STABLE-ID>` block per new stable ID. Each
+block opens with the plain-language block `PRD/instructions/plain-language-standard.md`
+requires for a gate question — three labelled lines, in this order:
+
+- **What this decides:** the one thing the owner is choosing, in product terms.
+- **In plain terms:** what a player or the owner experiences, with the substance
+  of every cited `DEC`/`REQ` inlined into the sentence and any technical term
+  defined in the same breath — never a bare ID the owner must go look up.
+- **What happens if you say no:** the state that stands if this ID is rejected.
+
+Then that ID's **complete diff** (never a summary), then
 `- Verdict: <accept | edit | reject>` and `- Reason:` (required for edit and
-reject). A trailing `## Blocker questions` section holds any genuine decision
-blocker. An empty `define` diff writes no questions file; run one still stops at
-gate-qc PASS with the docs PR.
+reject). The diff and IDs are the pointer for an implementer; the three lines
+above are what lets the owner answer without decoding anything. A trailing
+`## Blocker questions` section holds any genuine decision blocker, written to the
+same standard. An empty `define` diff writes no questions file; run one still
+stops at gate-qc PASS with the docs PR.
 
 **The owner** answers the file whenever they choose — the review the live gate
 once took in the terminal, now made on their own schedule.
@@ -823,6 +834,8 @@ and a lock released on a state one list omits is a stranded lock.
 
 ## Related material
 
+- `PRD/instructions/plain-language-standard.md` — the plain-language opening
+  block every gate question, PR body, and receipt this workflow generates carries
 - `PRD/instructions/preparation-contract.md` — the assumption ladder and
   genuine-blocker test this contract reuses verbatim
 - `PRD/instructions/workflow-reference.md` — status vocabulary and marker rules
