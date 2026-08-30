@@ -10,13 +10,13 @@ Do not rename package folders to encode status.
 
 ## refined
 
-- [lambda-s3-deploy](./lambda-s3-deploy/)
-
 ## refining
 
 ## ideation
 
 ## owner-action
+
+- [lambda-s3-deploy](./lambda-s3-deploy/) — run one parked at gate-qc PASS; review the docs PR, then `/graph-run PRD/work/lambda-s3-deploy/` to implement
 
 ## deferred
 
