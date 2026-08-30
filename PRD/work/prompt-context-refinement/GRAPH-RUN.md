@@ -42,7 +42,7 @@ remote-branch deletion); it carries no PR.
   prompt-layout spec), FLOW-023 (the multi-card Quick Question flow), NFR-018
   (validate prompt quality against real worked rules solutions). Observation #1's
   mechanic-definition enrichment is RAG-shaped and filed to `RAG-DEFERRED.md`.
-- **PR:** docs-only design PR into `main` — `<URL recorded below once opened>`.
+- **PR:** docs-only design PR into `main` — https://github.com/ChrisMiho/TheJudge/pull/151.
   It stays open; the owner does **not** merge it yet — implementation grows into
   it and it merges last.
 - **Resume command:** `/graph-run PRD/work/prompt-context-refinement/`
