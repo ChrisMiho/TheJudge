@@ -1,6 +1,6 @@
 # Slice B — Skip the production deploy on non-code merges
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -61,6 +61,37 @@ deploy, while quality-check jobs keep running on every merge.
       them, and no path in the code set was dropped from the denylist logic
       (this workflow change cannot be exercised by a real push from this
       sandbox).
+
+## Manual observation (B7)
+
+2026-08-29 B7 — line-by-line read of the final `deploy:` job block in
+`.github/workflows/quality-check.yml`, confirmed:
+
+- Code-set path list: `apps/`, `scripts/`, `.github/workflows/`,
+  `package.json`, `package-lock.json`, `tsconfig*.json` — matches REQ-166's
+  list exactly (`code_pattern` regex in the `changes` job's "Detect code
+  changes" step).
+- `deploy:`'s `if:` composes
+  `needs.changes.outputs.deploy == 'true' && ((github.event_name == 'push' &&
+  github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch')`
+  — the original `push`-to-`main` guard is still present unchanged (now one
+  branch of an `||` with `workflow_dispatch`), `needs:` still lists
+  `static`, `backend`, `coverage-merge` unchanged (plus the new `changes`
+  job), and nothing was loosened — the new clause only adds a further
+  requirement (the change-detection verdict) or an explicit manual-override
+  path, it never drops the branch/event guard.
+- No code-set path was dropped from the `changes` job's regex: `apps/**` and
+  `scripts/**` are directory prefixes so nested files match, `.github/workflows/**`
+  likewise, and the three literal filenames (`package.json`,
+  `package-lock.json`, `tsconfig*.json`) are anchored with `$`/`.*` so they
+  match at any depth git reports them (relative to repo root, which is where
+  `package.json` and `package-lock.json` live; `tsconfig*.json` matches both
+  the root config and any `apps/*/tsconfig.json`, the latter already covered
+  twice over by the `apps/` prefix).
+
+This workflow change cannot be exercised by a real push from this sandbox
+(no live GitHub Actions run available here). Real skip/deploy verdicts on a
+live push are proven when this branch reaches `main`.
 
 ## Verification
 
