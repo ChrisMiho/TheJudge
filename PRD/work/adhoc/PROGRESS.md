@@ -15,13 +15,13 @@ _Last updated: 2026-08-29._
 | 0 | Codebase health audit | ✅ **done** (PR #98) | graph run, read-only |
 | 1 | Feature spec layer (Phase A/B/C) | ✅ **done** — Phase A ✅, Phase B ✅, Phase C ✅ | graph runs + one manual session |
 | 2 | Overnight-run tuning | ✅ **done** (PR #133; cleaned up in #134/#135) | interactive (not a graph run) |
-| 3 | Operator manual | ⬜ not started | manual |
+| 3 | Operator manual | ✅ **done** (PR to `main`) | manual |
 | 4 | Plain-language standard | ✅ **done** (PR to `main`) | manual (not a graph run) |
 
-Package 4 is the only one that fixes the "I can't follow agent output" problem that
-started all this. It shipped — Package 3 (the operator manual) is now the last
-remaining work, and it comes last on purpose because it documents what Package 4
-just settled.
+All five packages are done — the whole docs-refactor arc from the brain dump is
+finished. Package 4 fixed the "I can't follow agent output" pain; Package 3 (the
+operator manual) came last on purpose, documenting what every other package
+settled.
 
 **Prerequisite before Package 2 — graph tooling fixes ✅ done (PR #131 / #132).**
 The first autonomous run surfaced five live defects in the graph enforcer/preflight
@@ -83,6 +83,28 @@ citations that named a deleted file path.
 
 `PRD/work/sweep-decision-audit/` was the deletion map; consumed and deleted as
 part of this phase. The plan is recorded at `PRD/work/adhoc/phase-c-plan.md`.
+
+## Package 3 — the operator manual ✅ complete
+
+A manual, plan-first interactive session (not a graph run or a sweep). Fixed the
+founding pain from the owner's side: there was no owner-facing "I want to do X →
+here is the one command and what I'll be asked" doc — only `AGENT-SKILLS.md`, which
+is written for agents. New top-level `OPERATOR.md` holds task-recipes in one fixed
+shape (You want to · Do · You'll be asked · Your touch points · Done when) for all
+eight tasks: start a feature, file a bug/add scope, run overnight, review a gate,
+the base→main merge, resume a park, run a sweep, run a manual package. Written to
+the plain-language standard Package 4 shipped — its first real consumer. Every
+command was verified against the skill it names before writing (document reality,
+not the ideal). Fixed the `PRD/README.md` graph-run line, which had presented the
+resume form (`/graph-preflight` then `/graph-run PRD/work/<slug>/`) as the general
+path — the fresh-run default is one command, `/graph-run "<request>"`. Added a
+one-line `OPERATOR.md` pointer from both `README.md` and `PRD/README.md`.
+
+| Piece | Status | Landed as |
+| --- | --- | --- |
+| Operator manual + doc-bug fix + pointers | ✅ **done** | PR (docs/package-3-operator-manual) — receipt `docs-refactor-package-3-2026-08-29.md` |
+
+The plan is recorded at `PRD/work/adhoc/package-3-plan.md`.
 
 ## Package 4 — the plain-language standard ✅ complete
 
