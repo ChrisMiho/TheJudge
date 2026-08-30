@@ -32,11 +32,15 @@ without touching the game-mode staging flow:
 
 1. **Quick Question, several cards (REQ-167, FLOW-023).** Today the player
    attaches at most one card and any second card is a guess. This lets the player
-   add every card they want to ask about (a bounded list, recommend ~6), each at
+   add every card they want to ask about (a bounded list, capped at 5), each at
    oracle identity, while Quick Question still carries no zones, phase, stack, or
    life. The backend enriches each card (metadata + WotC rulings) and scores rule
    retrieval over the question plus all cards. Biggest item; it changes the
    lookup request shape from a single optional `card` to a bounded card list.
+   When the attached cards form a combo, a lookup answer explains a fully-assembled
+   combo; when the match is only partial, it names the missing ingredient(s) and
+   describes the role a filling card would play (a description of the missing role
+   from the combo catalog, not a card recommendation) — see assumption 8.
 
 2. **Guardrail stops refusing real Magic phrases (REQ-168).** The off-domain
    guardrail is one instruction line in the prompt — no classifier. It over-fired
@@ -89,10 +93,10 @@ supported by repository evidence.
    line 249) and DEC-106 shaped the union to grow additively. Ladder rung 6 (no
    new endpoint/contract layer). Exact wire spelling (`cards` array vs. `card`
    as array) left to implementation as a code-shape choice.
-3. **Multi-card cap is bounded but the number is calibration, not product
-   truth.** Recommend ~6, tuned at implementation against the prompt budget —
-   consistent with how retrieval/topic caps are recorded as "measured bounds,"
-   not fixed decisions. Ladder rung 4 (smallest reversible scope).
+3. **Multi-card cap is a fixed 5.** The owner set the add cap at 5 cards in the
+   `define`-gate edit verdict on REQ-167; it is now product truth, stated to the
+   player and enforced so the prompt stays bounded — no longer a tune-at-
+   implementation number. Ladder rung 1 (owner decision at the gate).
 4. **The guardrail stays prompt-instruction-only.** Evidence: DEC-108 states it
    is prompt-instruction-only with no classifier; the fix is wording, not a new
    detection branch. Ladder rung 2 (tested/public contract preserved).
@@ -124,6 +128,30 @@ supported by repository evidence.
    attached-card-coverage term ahead of popularity, while single-card coverage
    is uniform so ordering collapses to today's popularity/variant-id.
 
+8. **Lookup complete/partial reuses REQ-094 classification and REQ-095
+   rendering — no new mechanism.** The owner's `edit` verdict asked that a lookup
+   combo answer explain a fully-assembled combo and, when partial, say what is
+   missing and what would fill it. Settled with existing machinery: "complete" =
+   every ingredient slot filled by an exact or authoritative-template match in the
+   attached set, with REQ-094's zone-compatibility and required-quantity/distinct-
+   instance checks dropped because lookup carries no zones or per-card quantities;
+   a candidate is admitted by the already-agreed qualify-on-any-one rule and is
+   "partial" when admitted but with at least one slot unmatched; the at-most-five
+   ranking uses REQ-094's general order with the two zone-based coverage terms
+   collapsed into attached-card coverage (complete → attached-card coverage →
+   fewer missing → popularity → variant id). "What would fill the missing role" is
+   a description of that ingredient's own identity/template/category from the combo
+   catalog — the same present/missing labeling REQ-095 already renders — **not** an
+   actual card recommendation; a card-suggestion engine is out of scope and would
+   be a new feature. REQ-095's existing rendering already covers the lookup answer
+   text (its zone-specific rows are simply empty for lookup), so no new REQ-095
+   criterion and no new stable ID were needed. Evidence: REQ-094's game-mode
+   complete/partial definition and selection order, and REQ-095's present/missing
+   ingredient enrichment (which already lists lookup fixtures). Ladder rung 1/3
+   (PRD truth in the same requirements + established local pattern). This
+   supersedes the earlier "not fully specified" gate-review flags on REQ-094 and
+   REQ-167, now removed.
+
 None of these met the three-condition genuine-blocker test: the PRD, tested
 behavior, and established patterns each gave an authoritative basis, and the
 smaller option did not silently decide a disputed product behavior. No blocker
@@ -133,12 +161,14 @@ is reported.
 
 New stable IDs (each an owner gate question):
 
-- **REQ-167** — Quick Question accepts several cards with no game state.
-  Supersedes DEC-107's single-card / DEC-106's single optional `card`, and
+- **REQ-167** — Quick Question accepts several cards (capped at 5) with no game
+  state. Supersedes DEC-107's single-card / DEC-106's single optional `card`, and
   amends REQ-094's `mode: "lookup"` combo criterion (single attached card →
   bounded attached-card set; qualify-on-any-one plus attached-card-coverage
-  ranking). REQ-094 carries the reciprocal "amended by REQ-167" note.
-  (`PRD/sections/functional-requirements.md`)
+  ranking; complete/partial classification for a board-less mode; lookup answer
+  explains a complete combo and, for a partial, names the missing role — rendered
+  by REQ-095's existing present/missing enrichment). REQ-094 carries the
+  reciprocal "amended by REQ-167" note. (`PRD/sections/functional-requirements.md`)
 - **REQ-168** — the rules guardrail stops refusing real Magic phrases like
   "combo." Amends DEC-108 / REQ-074 (wording, still prompt-only).
   (`PRD/sections/functional-requirements.md`)

@@ -5,8 +5,13 @@
 - Canary: `denied — hook live (universal: rm -rf; graph: nohup)`
 - Autonomous base: `origin/thejudge-auto/prompt-context-refinement-v2`
 - Staging: `.worktrees/.graph-intake/graph-20260830-154444/`
-- Current node: `owner-action` (run one parked; gate-qc PASS)
+- Current node: `plan` (run two — gate-qc PASS; slicing the gameplan)
 - Next action: `/graph-run PRD/work/prompt-context-refinement/`
+- Run two: resumed 2026-08-30 from `owner-action`. Lock re-taken (pid 17131);
+  graph canary re-proved (`nohup` denied). Gate fully answered: REQ-167 edit
+  (cap 5 + partial-combo explanation), REQ-168 edit (explain what each phrase
+  means), REQ-169 accept, FLOW-023 accept, NFR-018 accept (document source
+  provenance).
 
 Note: this is a relaunch. The first attempt (`graph-20260830-152808`,
 branch `thejudge-auto/prompt-context-refinement`) hit BLOCKED at node 2 on a
@@ -26,13 +31,19 @@ remote-branch deletion); it carries no PR.
 | 4 | gate-qc | sonnet | failed | `0 → 47` | FAIL: REQ-167 (multi-card combo matching) contradicts unamended REQ-094 (single-card combo matching); both current-state truth, no supersession note, multi-card match semantics unspecified. `STATUS.refining`. Loop 1 of 3 to define | 2026-08-30 |
 | 3 | define | opus | ok | `0 → 27` | Loop-1 fix: REQ-094 `mode: "lookup"` criterion amended (qualify-on-any-one + attached-card coverage ranking) with reciprocal REQ-167 amend note; REQ-167 combo criterion tightened; DESIGN-BRIEF assumption #7 recorded; no blocker; `STATUS.refined` | 2026-08-30 |
 | 4 | gate-qc | sonnet | ok | `0 → 20` | PASS (re-grade): REQ-094/REQ-167 mutually consistent, multi-card combo semantics fully specified, no regressions in REQ-168/169, FLOW-023, NFR-018, RAG split. `STATUS.refined`. Run one stops here | 2026-08-30 |
+| — | gate-review | sonnet | ok | `0 → 27` | Run two: applied owner verdicts (2 edit, 3 accept, 0 reject); REQ-167 cap→5 + partial-combo AC (flagged not-fully-specified), REQ-094 coupled note, REQ-168 phrase-explanations; gate resolved; `STATUS.refined`. See `## Gate verdicts` | 2026-08-30 |
+| 4 | gate-qc | sonnet | failed | `0 → 18` | FAIL (run two re-grade): REQ-167/REQ-094 partial-combo behavior self-flagged not-fully-specified (no complete/partial meaning in board-less lookup); 5 points to settle. DESIGN-BRIEF stale (still ~6 cap; partial-combo gap not surfaced). `STATUS.refining`. Loop 2 of 3 to define | 2026-08-30 |
+| 3 | define | opus | ok | `0 → 25` | Loop-2 fix: specified lookup complete/partial combo (complete = all slots matched in attached set, zone checks dropped; partial = admitted-but-missing; ranking = complete→coverage→fewer-missing→popularity→variant-id; missing named as role/template via REQ-095, not a card rec). No new stable ID (amended REQ-094/REQ-167, refs REQ-095). DESIGN-BRIEF fixed (cap 5, assumption #8). No blocker. `STATUS.refined` | 2026-08-30 |
+| 4 | gate-qc | sonnet | ok | `0 → 16` | PASS (run two re-grade): partial-combo fully specified & implementable, REQ-094/REQ-167/REQ-095 consistent, DESIGN-BRIEF matches (cap 5), no regressions, no live not-specified flags. `STATUS.refined`. Run two continues to plan | 2026-08-30 |
 
 ## Open gate
 
-- **What the owner does:** answer the five decisions in
-  `PRD/work/prompt-context-refinement/GATE-QUESTIONS.md` — write `accept`,
-  `edit`, or `reject` on each `Verdict:` line (add a `Reason:` for edit/reject),
-  then resume the run.
+- **Status: resolved** 2026-08-30 by `graph-gate-review` — all 5 stable IDs
+  answered (2 edit, 3 accept, 0 reject); verdicts applied, see
+  `## Gate verdicts` below.
+- **What the owner did:** answered the five decisions in
+  `PRD/work/prompt-context-refinement/GATE-QUESTIONS.md` — `accept`,
+  `edit`, or `reject` on each `Verdict:` line, with a `Reason:` for each edit.
 - **What stopped the run:** run one drove `preflight → shape → define →
   gate-qc` and stopped at the first quality-check PASS, by design — no script can
   decide whether the proposed product truth is the product the owner wants. The
@@ -46,8 +57,47 @@ remote-branch deletion); it carries no PR.
   It stays open; the owner does **not** merge it yet — implementation grows into
   it and it merges last.
 - **Resume command:** `/graph-run PRD/work/prompt-context-refinement/`
-  (run two applies the answered verdicts via `graph-gate-review`, re-grades at
-  `gate-qc`, then continues `plan → build → review → land → close`).
+  (run two continues at `gate-qc` to re-grade the two edits just applied, then
+  continues `plan → build → review → land → close`).
+
+## Gate verdicts
+
+Applied by `graph-gate-review`, 2026-08-30, from the owner's answered
+`GATE-QUESTIONS.md`.
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-167` | edit | "I wanna set a cap of 5 cards, and i was a little confused by what you mentioned about the combos... if it meets the criteria for an identified combo, then explain the combo. If it does not match the criteria for a combo, can we somehow callout what theyre missing or explain what parts do combo but what is possibly missing?... explain whats missing and how the combo could work and what would potentially fill that empty row, since we'd be able to tell which part is missing right?" |
+| `REQ-168` | edit | "This sounds great, i think this should be expanded on however to explain what these phrases represent." |
+| `REQ-169` | accept | "I may expand on explanations after the initial draft, but i like starting with concise explanations to start." |
+| `FLOW-023` | accept | "sounds great" |
+| `NFR-018` | accept | "Please make sure to document where these use cases are retrieved from so that they can be validated." |
+
+Applied, inside each ID's recorded diff only, in `PRD/sections/functional-requirements.md`:
+
+- **REQ-167** — AC bullet 2: cap changed from a suggested "~6, tuned at
+  implementation" to a fixed **5 cards**. New AC bullet + Notes entry: lookup
+  combo answers must explain a fully-assembled combo, and for a partial match
+  must name the missing ingredient(s) and what would fill them — flagged
+  **not fully specified**: "complete vs. partial" has no defined meaning yet
+  for a mode with no board state, so full/partial classification and
+  selection mechanics need a `define` loop (and re-grade at `gate-qc`) before
+  `map-out`.
+- **REQ-094** (coupled amendment, covered by the REQ-167 verdict) — added a
+  matching "not yet specified" note under the `mode: "lookup"` Notes bullet,
+  pointing at the same gap so implementation cannot silently read the
+  unamended "contains at least one" criterion as already answering the
+  owner's partial-combo ask.
+- **REQ-168** — AC bullet 2 (the maintained phrasing doc) reworded from
+  "categories (with examples)" to require each category carry its example
+  phrases **and a plain-language explanation of what the phrase means**, so
+  the doc reads as a glossary. This is a complete, text-level correction —
+  no further specification needed. Notes entry added recording the change.
+- **REQ-169, FLOW-023, NFR-018** — accept; no `PRD/sections/` changes. The
+  NFR-018 reason (document where worked-solution sources come from) is
+  recorded above for the next phase to see, but is not written into
+  `PRD/sections/` because the recorded verdict is `accept`, not `edit` — a
+  verdict is applied exactly as marked, never inferred from its reason text.
 
 ## Dispatch prompts
 
@@ -185,6 +235,47 @@ The prior FAIL: REQ-167 (multi-card lookup combo matching) contradicted unamende
 Re-validate `DESIGN-BRIEF.md` against `PRD/sections/`, with attention to: REQ-094 and REQ-167 now mutually consistent with fully specified multi-card combo-match semantics; the rest of the brief (REQ-168, REQ-169, FLOW-023, NFR-018, RAG-DEFERRED split) still coherent and agent-ready; nothing regressed from the fix. On PASS leave STATUS.refined; on FAIL set STATUS.refining and list every issue.
 
 Report back the verdict and, on FAIL, the complete issue list. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+### gate-review (run two)
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are the gate-review step of run two. Invoke the `graph-gate-review` skill and follow it exactly. Do NOT ask the user questions. Read every verdict FROM the answered `PRD/work/prompt-context-refinement/GATE-QUESTIONS.md` (never from this prompt). Apply each accept/edit/reject inside that ID's recorded diff only; write `## Gate verdicts`, resolve `## Open gate`, restore status to refined (marker, README, board row), hand back the resume command. Two verdicts are edit with substantive reasons — apply the owner's correction faithfully without watering down or expanding; where full specification needs reshaping beyond a text correction, apply what fits the diff and flag that it needs the gate-qc re-grade (and possibly a define loop). Do not write DESIGN-BRIEF.md, do not reshape beyond the diff, do not advance a node. Package `PRD/work/prompt-context-refinement/`, run id `graph-20260830-154444`. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+### gate-qc (run two)
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 4 (`gate-qc`) re-grading in run two after gate-review applied the owner verdicts. Invoke `thejudge-quality-check` in graph mode. Do NOT ask the user questions. PASS/FAIL only. Changes: REQ-167 cap fixed at 5 plus a new partial-combo criterion (explain a fully-assembled combo; for a partial match, name the missing ingredient(s) and what would fill them) that gate-review flagged as not fully specified — full/partial classification has no defined meaning in a board-less lookup; REQ-094 coupled note added; REQ-168 phrasing doc must explain what each phrase means; REQ-169/FLOW-023/NFR-018 accepted unchanged. Re-validate `DESIGN-BRIEF.md` against `PRD/sections/`, judging honestly whether the partial-combo behavior is now implementable-and-testable or still under-specified. On PASS leave STATUS.refined; on FAIL set STATUS.refining and list every issue precisely. Package `PRD/work/prompt-context-refinement/`, run id `graph-20260830-154444`. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+### define (run two, loop 2)
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 3 (`define`) re-entered after a quality-check FAIL (run two, gate-qc→define loop 2 of 3). Invoke `thejudge-refinement` in graph mode. Do NOT ask the user questions. Targeted specification of one finding; keep everything else intact; end at STATUS.refined. Package `PRD/work/prompt-context-refinement/` (STATUS.refining), run id `graph-20260830-154444`.
+
+The owner accepted REQ-167 and, in an edit verdict, asked that a combo lookup explain a fully-assembled combo and, when partial, name what is missing and what would fill it. gate-review applied the intent but flagged it not-fully-specified; gate-qc FAILed for that. Specify it precisely, grounded in existing REQ-094 (combo machinery) and REQ-095 (present/missing rendering), applying the assumption ladder per point and recording assumptions:
+1. Define complete for a board-less lookup candidate (all ingredient slots matched in the attached set; drop REQ-094 zone/quantity checks lookup has no data for).
+2. Define partial admission/selection (qualify-on-any-one admits; partial when a slot is unmatched).
+3. Fold attached-card coverage into REQ-094's at-most-five ranking for lookup; state precedence and tie-breaking.
+4. Define naming the missing role as the missing ingredient's identity/template/category (the REQ-095 present/missing labeling), NOT a card recommendation — a suggestion engine is out of scope.
+5. Decide whether REQ-095 already renders the lookup answer text or a new AC is needed.
+
+Also fix stale DESIGN-BRIEF.md (cap ~6 to fixed 5; surface the partial-combo behavior). Prefer amending REQ-167/REQ-094 and referencing REQ-095 over any new stable ID (a new ID makes a new owner gate question); do not touch REQ-168/REQ-169/FLOW-023/NFR-018; remove the not-fully-specified self-flags once specified. Park only on a genuine three-condition blocker. Report the IDs/lines changed, the mechanics settled with evidence, assumptions, whether a new ID was unavoidable, DESIGN-BRIEF fixes, and the final STATUS. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+### gate-qc (run two, loop 3)
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 4 (`gate-qc`) re-grading in run two after define loop 2 specified the lookup partial-combo behavior. Invoke `thejudge-quality-check` in graph mode. Do NOT ask the user questions. PASS/FAIL only. The prior FAIL was that the partial-combo answer for a board-less lookup was self-flagged not-fully-specified; the define loop settled it grounded in REQ-094 and REQ-095 with no new stable ID (complete = all slots matched in the attached set, zone/quantity checks dropped; partial = admitted-but-missing; ranking = complete then coverage then fewer-missing then popularity then variant-id; missing role named as ingredient identity/template via REQ-095, not a card recommendation; REQ-095 already renders the lookup text). DESIGN-BRIEF updated (cap fixed at 5, partial-combo surfaced, assumption 8). Re-validate DESIGN-BRIEF against PRD/sections: partial-combo implementable/testable with no remaining not-specified flags, REQ-094/REQ-167/REQ-095 consistent, DESIGN-BRIEF matches (cap 5), REQ-168/REQ-169/FLOW-023/NFR-018 unregressed. On PASS leave STATUS.refined; on FAIL set STATUS.refining and list every issue. Package `PRD/work/prompt-context-refinement/`, run id `graph-20260830-154444`. Copy the `Working directory:` line above, unchanged, into any prompt you write.
 
 ## Instruction ledger
 

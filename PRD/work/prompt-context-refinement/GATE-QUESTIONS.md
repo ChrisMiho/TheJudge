@@ -84,8 +84,8 @@ Coupled amendment — the existing single-card combo rule this decision changes 
 +  - the `mode: "lookup"` criterion is amended by REQ-167: the single attached card generalizes to a bounded multi-card set. The attached cards become the match instances; a candidate qualifies by containing at least one of them (exact ingredient or authoritative template match); and attached-card coverage orders results ahead of popularity. The zero-card and single-card lookup cases behave exactly as before. Game-mode retrieval (every other criterion above) is unchanged
 ```
 
-- Verdict: <accept | edit | reject>
-- Reason:
+- Verdict: edit
+- Reason: I wanna set a cap of 5 cards, and i was a little confused by what you mentioned about the combos, if a user asks how something combos, and it meets the criteria for an identified combo, then explain the combo. If it does not match the criteria for a combo, can we somehow callout what theyre missing or explain what parts do combo but what is possibly missing? Im not sure how complicated that would be, but if we check the boxes for a complete combo, then explain the combo, and if we only have part, explain whats missing and how the combo could work and what would potentially fill that empty row, since we'd be able to tell which part is missing right?
 
 ---
 
@@ -131,8 +131,8 @@ Complete diff (functional-requirements.md):
 +  - The same persona applies whether or not cards are attached (DEC-108); the reworded line lives on the shared lookup instruction, `apps/backend/src/prompt/promptAssembly.ts`.
 ```
 
-- Verdict: <accept | edit | reject>
-- Reason:
+- Verdict: edit
+- Reason: This sounds great, i think this should be expanded on however to explain what these phrases represent.
 
 ---
 
@@ -176,8 +176,8 @@ Complete diff (functional-requirements.md):
 +  - The owner's stated purpose is to drive future prompt-format optimization for better rules resolving; this spec is that reference surface.
 ```
 
-- Verdict: <accept | edit | reject>
-- Reason:
+- Verdict: accept
+- Reason: I may expand on explanations after the initial draft, but i like starting with concise explanations to start.
 
 ---
 
@@ -224,8 +224,8 @@ Complete diff (user-flows.md):
 +  - Carries no zones, phase, stack, or life — Quick Question explicitly drops game context, so this flow does **not** resolve Q-003 (lightweight game context on a card).
 ```
 
-- Verdict: <accept | edit | reject>
-- Reason:
+- Verdict: accept
+- Reason: sounds great
 
 ---
 
@@ -263,8 +263,8 @@ Complete diff (non-functional-requirements.md):
 +  - Distinct from RAG/corpus retrieval: this external data validates and tunes the prompt; it is not injected into prompts. The mechanic-definition enrichment idea, which would inject a corpus into the prompt, is RAG-deferred (`PRD/work/prompt-context-refinement/RAG-DEFERRED.md`).
 ```
 
-- Verdict: <accept | edit | reject>
-- Reason:
+- Verdict: accept
+- Reason: Please make sure to document where these use cases are retrieved from so that they can be validated.
 
 ---
 

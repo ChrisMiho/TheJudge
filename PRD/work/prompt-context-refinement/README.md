@@ -1,4 +1,4 @@
-status: owner-action
+status: refined
 
 # prompt-context-refinement
 
@@ -16,6 +16,9 @@ See `IDEA.md` for the problem, the five observations, and prior-run receipts.
 
 - Quality-check: PASS
 - Checked artifact: `PRD/work/prompt-context-refinement/DESIGN-BRIEF.md`
-- Findings: none. (Loop 1 FAIL — REQ-167/REQ-094 multi-card combo contradiction —
-  was fixed in define loop 2 and cleared on re-grade: REQ-094 amended with a
-  reciprocal REQ-167 note and fully specified multi-card combo-match semantics.)
+- Findings: none. Run-two history: the owner's gate edits (REQ-167 cap 5 +
+  partial-combo explanation; REQ-168 phrase glossary) were applied by
+  gate-review; the first re-grade FAILed because the lookup partial-combo
+  behavior was under-specified; define loop 2 specified it (grounded in
+  REQ-094's combo machinery and REQ-095's present/missing rendering, no new
+  stable ID); the second re-grade PASSed. Design is agent-ready for map-out.
