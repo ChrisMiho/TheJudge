@@ -2,10 +2,10 @@
 
 - Run ID: `graph-20260829-213717`
 - Profile: `loaded (env sentinel)`
-- Canary: `denied — hook live (universal: rm -rf; graph tier: nohup while lock held)`
+- Canary: `denied — hook live (run one: rm -rf + nohup; run two resume: nohup while lock held)`
 - Autonomous base: `origin/thejudge-auto/lambda-s3-deploy`
 - Staging: `n/a (resume — refinement done outside the graph run)`
-- Current node: `owner-action` (run one parked at gate-qc PASS)
+- Current node: `build` (run two)
 - Next action: `/graph-run PRD/work/lambda-s3-deploy/`
 
 Resume of a package already at `STATUS.refined` with no prior ledger and no
@@ -21,24 +21,15 @@ record the autonomous base.
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 4` (lock taken mid-node; canary is binding proof) | branch `thejudge-auto/lambda-s3-deploy` created off `main` and pushed; lock held (pid 32724); auto-committed `GRAPH-RUN.md`; canaries both denied | 2026-08-29 |
 | 4 | gate-qc | sonnet | ok | `0 → 33` | quality-check PASS, findings none; every code citation in `DESIGN-BRIEF.md` spot-verified against the repo | 2026-08-29 |
+| 4 | gate-qc (attempt 2, run two) | sonnet | ok | `0 → 35` | quality-check PASS, findings none; re-graded on resume, citations re-verified against live repo | 2026-08-29 |
+| 5 | plan | sonnet | ok | `0 → 53` | slices A/B/C mapped; `GAMEPLAN.md` + slice docs + `slice-{a,b,c}.criteria.json` (10/7/10 criteria, all `false`); `STATUS.active` set | 2026-08-29 |
 
-## Open gate
-
-- **What you need to do:** review the docs PR (link below), then run
-  `/graph-run PRD/work/lambda-s3-deploy/` to resume into implementation.
-- **What stopped the run:** run one reached quality-check PASS. Per the two-runs
-  model this is the one human checkpoint — the run pauses before writing any code
-  so you can confirm the design before implementation starts. The product truth
-  itself (REQ-165 S3-staged deploy, REQ-166 skip-deploy-on-docs-merges, the
-  REQ-093/NFR-017 full-corpus edits) was already reviewed and merged to `main`
-  via PR #143, so there are no gate questions to answer — just confirm the plan.
-- **What happens next:** resuming runs `plan → build → review`, which slices and
-  implements the three axes inside `.worktrees/implement-lambda-s3-deploy/`,
-  opens a `-work → base` PR you review, then hands back to you to merge and clean
-  up. The base→main docs PR stays open the whole time and is the one you merge
-  last.
-- **Docs PR:** https://github.com/ChrisMiho/TheJudge/pull/144 (base→main; hold open, merge last)
-- **Resume command:** `/graph-run PRD/work/lambda-s3-deploy/`
+- None — run one's `owner-action` gate was resolved on run two. Run one's
+  `define` diff was empty (refinement was authored outside the graph and merged
+  to `main` via PR #143), so there were no `GATE-QUESTIONS.md` verdicts to apply:
+  `STATUS.refined` was restored and the run re-entered at `gate-qc`.
+- Docs PR #144 (base→main) stays open across both runs — the owner's to merge
+  last: https://github.com/ChrisMiho/TheJudge/pull/144
 
 ## Dispatch prompts
 
@@ -80,6 +71,23 @@ Run ID: graph-20260829-213717
 Validate `PRD/work/lambda-s3-deploy/DESIGN-BRIEF.md` for PRD alignment and agent-readiness, and produce a PASS/FAIL report. This package was refined outside the graph run and merged to `main` via PR #143 (design brief, REQ-166, and the REQ-093/NFR-017 edits are already durable PRD truth on `main`); grade agent-readiness of the brief as written. Do not open documents that intake cites. Do not author a GAMEPLAN or slice docs — quality-check is PASS/FAIL only.
 
 Report back: the PASS/FAIL verdict and the complete findings list (or "none").
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write.
+
+### plan
+
+Invoke the `thejudge-map-out` skill (via the Skill tool) and follow it exactly.
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Package: PRD/work/lambda-s3-deploy/
+Run ID: graph-20260829-213717
+
+Quality-check is PASS (see the package README `## Preparation gate`) — do not self-certify it. Produce `GAMEPLAN.md` and lettered slice docs for sequential single-agent implementation of the three axes in `DESIGN-BRIEF.md`, emit one `slice-<letter>.criteria.json` beside each slice doc with every criterion initialised `false` and carrying an evidence block, and set `STATUS.active`. Slice so the axes build cleanly in one worktree; keep each slice's acceptance criteria grounded and verifiable.
+
+Report back: the slice letters and one-line title each, the GAMEPLAN path, confirmation each slice has a `.criteria.json`, and the resulting STATUS.* marker.
 
 Copy the `Working directory:` line above, unchanged, into every prompt you write.
 

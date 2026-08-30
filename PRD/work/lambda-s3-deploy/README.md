@@ -1,5 +1,7 @@
 # lambda-s3-deploy
 
+status: active
+
 Deploy-pipeline hardening on three fronts (see `DESIGN-BRIEF.md`):
 
 1. **Axis 1** — S3-staged Lambda deploy: stage `dist/lambda.zip` in a private
@@ -26,3 +28,22 @@ up by `graph-run` at `STATUS.refined`; see `GRAPH-RUN.md` for the run ledger.
 - Quality-check: PASS
 - Checked artifact: `PRD/work/lambda-s3-deploy/DESIGN-BRIEF.md`
 - Findings: none
+
+## Slice table
+
+| Slice | Title | Requirements | Dependencies | Status |
+| --- | --- | --- | --- | --- |
+| A | S3-staged Lambda deploy | REQ-165, DEC-169, NFR-017 | parallel-ready | planned |
+| B | Skip prod deploy on non-code merges | REQ-166 | parallel-ready | planned |
+| C | Remove combo size restriction + PRD backing | REQ-093, NFR-017 | parallel-ready | planned |
+
+See `GAMEPLAN.md` for the architecture/data-flow map and the structural
+constraint (no graph-run `data:refresh`) that scopes Slice C.
+
+## Implementation map
+
+- Slice A: `scripts/aws-deploy.sh`, `scripts/aws-bootstrap.sh`,
+  `scripts/lambda-package-budget.test.mjs`, `docs/aws/deployment.md`
+- Slice B: `.github/workflows/quality-check.yml`
+- Slice C: `scripts/build-commander-spellbook-combos.mjs`,
+  `PRD/sections/system-map.md`

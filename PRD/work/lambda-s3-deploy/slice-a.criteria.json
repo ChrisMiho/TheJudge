@@ -1,0 +1,66 @@
+{
+  "slug": "lambda-s3-deploy",
+  "slice": "A",
+  "criteria": [
+    {
+      "id": "A1",
+      "statement": "scripts/aws-deploy.sh stages the zip via `aws s3 cp` and updates the function via --s3-bucket/--s3-key; no --zip-file remains in that call",
+      "value": false,
+      "evidence": { "paths": ["scripts/aws-deploy.sh"] }
+    },
+    {
+      "id": "A2",
+      "statement": "scripts/aws-deploy.sh passes a bash -n syntax check",
+      "value": false,
+      "evidence": { "command": "bash -n scripts/aws-deploy\\.sh", "paths": ["scripts/aws-deploy.sh"] }
+    },
+    {
+      "id": "A3",
+      "statement": "scripts/aws-bootstrap.sh creates the private, no-CloudFront artifact bucket <app>-lambda-artifacts-<account> in the function's region, idempotently",
+      "value": false,
+      "evidence": { "paths": ["scripts/aws-bootstrap.sh"] }
+    },
+    {
+      "id": "A4",
+      "statement": "scripts/aws-bootstrap.sh passes a bash -n syntax check",
+      "value": false,
+      "evidence": { "command": "bash -n scripts/aws-bootstrap\\.sh", "paths": ["scripts/aws-bootstrap.sh"] }
+    },
+    {
+      "id": "A5",
+      "statement": "the GitHub deploy role policy in scripts/aws-bootstrap.sh grants s3:PutObject scoped to the new artifact bucket",
+      "value": false,
+      "evidence": { "paths": ["scripts/aws-bootstrap.sh"] }
+    },
+    {
+      "id": "A6",
+      "statement": "scripts/lambda-package-budget.test.mjs no longer references LAMBDA_REQUEST_LIMIT, BASE64_EXPANSION, or ZIP_CEILING; it measures the unzipped on-disk footprint against a 250 MB quota with a stated reserve",
+      "value": false,
+      "evidence": { "paths": ["scripts/lambda-package-budget.test.mjs"] }
+    },
+    {
+      "id": "A7",
+      "statement": "npm run test:scripts passes, including the rewritten guardrail test and its synthetic over-budget regression case",
+      "value": false,
+      "evidence": { "command": "npm run test:scripts" }
+    },
+    {
+      "id": "A8",
+      "statement": "scripts/package-lambda.sh is unchanged (no diff against the pre-slice version)",
+      "value": false,
+      "evidence": { "command": "git diff --stat scripts/package-lambda\\.sh", "paths": ["scripts/package-lambda.sh"] }
+    },
+    {
+      "id": "A9",
+      "statement": "docs/aws/deployment.md mentions the new artifact bucket and the S3-staged upload step",
+      "value": false,
+      "evidence": { "paths": ["docs/aws/deployment.md"] }
+    },
+    {
+      "id": "A10",
+      "statement": "A dated manual observation records that real S3-staged deploy behavior beyond the old ~50 MB ceiling cannot be executed in this sandbox (no AWS credentials), that the argument forms were verified by reading the AWS CLI reference, and that real deploy behavior is proven when this branch reaches main and CI's deploy job runs under the OIDC role",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

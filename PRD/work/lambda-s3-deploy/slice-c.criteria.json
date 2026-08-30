@@ -1,0 +1,70 @@
+{
+  "slug": "lambda-s3-deploy",
+  "slice": "C",
+  "criteria": [
+    {
+      "id": "C1",
+      "statement": "MIN_VARIANT_POPULARITY in scripts/build-commander-spellbook-combos.mjs equals 0",
+      "value": false,
+      "evidence": { "paths": ["scripts/build-commander-spellbook-combos.mjs"] }
+    },
+    {
+      "id": "C2",
+      "statement": "the comment above the constant is updated to describe it as an emergency valve tied to the axis-1 guardrail, not the standing trim, and no longer claims the full corpus does not deploy",
+      "value": false,
+      "evidence": { "paths": ["scripts/build-commander-spellbook-combos.mjs"] }
+    },
+    {
+      "id": "C3",
+      "statement": "npm run test:scripts passes, including build-commander-spellbook-combos.test.mjs's index.manifest.minPopularity assertion",
+      "value": false,
+      "evidence": { "command": "npm run test:scripts" }
+    },
+    {
+      "id": "C4",
+      "statement": "A dated manual observation records that the committed combo artifacts were not regenerated in this slice, why (graph-run boundary on data:refresh), and the exact owner follow-up command",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "C5",
+      "statement": "PRD/sections/system-map.md's AWS production deployment / Serverless hosting / Deploy and cost guardrails entries cite REQ-165, REQ-166, and NFR-017 in Backed by, and Serverless hosting's Lives in names scripts/lambda-package-budget.test.mjs",
+      "value": false,
+      "evidence": { "paths": ["PRD/sections/system-map.md"] }
+    },
+    {
+      "id": "C6",
+      "statement": "Slice acceptance criteria for A, B, and C are all satisfied and verified (own criteria files read true)",
+      "value": false,
+      "evidence": { "paths": [
+        "PRD/work/lambda-s3-deploy/slice-a.criteria.json",
+        "PRD/work/lambda-s3-deploy/slice-b.criteria.json",
+        "PRD/work/lambda-s3-deploy/slice-c.criteria.json"
+      ] }
+    },
+    {
+      "id": "C7",
+      "statement": "npm run quality:check is green for touched areas",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    },
+    {
+      "id": "C8",
+      "statement": "public contract unchanged: no AskAiRequest, Zod schema, response shape, route, endpoint, provider-selection, or frontend change in any slice's diff",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "C9",
+      "statement": "no secrets committed (reviewed diff for API_KEY/SECRET/TOKEN/PASSWORD-shaped literals)",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "C10",
+      "statement": "durable outcomes promoted; PRD/work/lambda-s3-deploy/ is ready to delete",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "slug": "lambda-s3-deploy",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": ".github/workflows/quality-check.yml has a workflow_dispatch trigger in addition to the existing push/pull_request triggers",
+      "value": false,
+      "evidence": { "paths": [".github/workflows/quality-check.yml"] }
+    },
+    {
+      "id": "B2",
+      "statement": "the deploy job's precondition additionally requires the change-detection step's code-set verdict (or workflow_dispatch); an all-non-code-set push does not run deploy",
+      "value": false,
+      "evidence": { "paths": [".github/workflows/quality-check.yml"] }
+    },
+    {
+      "id": "B3",
+      "statement": "static, backend, frontend, and coverage-merge keep their current trigger conditions; no paths/paths-ignore key is added at the workflow's top-level on: block",
+      "value": false,
+      "evidence": { "paths": [".github/workflows/quality-check.yml"] }
+    },
+    {
+      "id": "B4",
+      "statement": "the change-detection step's logic defaults to deploy when the changed-file set can't be determined (first push / all-zeros base SHA)",
+      "value": false,
+      "evidence": { "paths": [".github/workflows/quality-check.yml"] }
+    },
+    {
+      "id": "B5",
+      "statement": "the change-detection step writes the paths it evaluated and its deploy/skip decision to the job log, not just a silent job-level if:",
+      "value": false,
+      "evidence": { "paths": [".github/workflows/quality-check.yml"] }
+    },
+    {
+      "id": "B6",
+      "statement": "npm run format:check passes (the edited workflow YAML parses and is formatted)",
+      "value": false,
+      "evidence": { "command": "npm run format:check" }
+    },
+    {
+      "id": "B7",
+      "statement": "A dated manual observation records a line-by-line read of the final deploy: job block confirming the code-set path list, the composed if: condition, and that no code-set path was dropped",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

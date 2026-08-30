@@ -8,6 +8,8 @@ Do not rename package folders to encode status.
 
 ## active
 
+- [lambda-s3-deploy](./lambda-s3-deploy/) — mapped (slices A/B/C); run two driving plan → build → review
+
 ## refined
 
 ## refining
@@ -15,8 +17,6 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
-
-- [lambda-s3-deploy](./lambda-s3-deploy/) — run one parked at gate-qc PASS; review the docs PR, then `/graph-run PRD/work/lambda-s3-deploy/` to implement
 
 ## deferred
 
