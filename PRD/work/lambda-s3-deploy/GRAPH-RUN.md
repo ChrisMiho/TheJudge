@@ -37,7 +37,7 @@ record the autonomous base.
   opens a `-work → base` PR you review, then hands back to you to merge and clean
   up. The base→main docs PR stays open the whole time and is the one you merge
   last.
-- **Docs PR:** `<pending — recorded below on creation>`
+- **Docs PR:** https://github.com/ChrisMiho/TheJudge/pull/144 (base→main; hold open, merge last)
 - **Resume command:** `/graph-run PRD/work/lambda-s3-deploy/`
 
 ## Dispatch prompts
