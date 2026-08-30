@@ -14,11 +14,11 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+## owner-action
+
 | Package | Notes |
 | --- | --- |
-| [prompt-context-refinement](./prompt-context-refinement/) | Fresh gameplan for rules-question prompt/context pipeline; five owner observations, RAG-flagged item to be split out at refinement |
-
-## owner-action
+| [prompt-context-refinement](./prompt-context-refinement/) | Gameplan drafted, quality-check PASS. Docs-only PR open into `main`. Owner answers accept/edit/reject in `GATE-QUESTIONS.md` (5 decisions: REQ-167 multi-card Quick Question incl. the REQ-094 combo amendment, REQ-168 guardrail wording, REQ-169 prompt-layout spec, FLOW-023, NFR-018), then resume `/graph-run PRD/work/prompt-context-refinement/` to implement. RAG item filed to `RAG-DEFERRED.md`. |
 
 ## deferred
 

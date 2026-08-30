@@ -260,3 +260,16 @@
 - Notes:
   - the guardrail is repointed, never removed — a disarmed budget check is how the 2026-08-22 two-day deploy outage went unseen; the new basis simply matches the new real limit
   - the budget is measured against the full corpus (no popularity floor), so the headroom the test reports is the real headroom, not headroom over a trimmed baseline
+
+### NFR-018
+- Title: Prompt quality is validated against real worked rules solutions
+- Description: Today prompt and retrieval quality is regression-tested by golden fixtures and the eval harness against labeled expected outcomes (REQ-032 / DEC-047). This adds a validation track fed by real-world hard rules questions that carry published worked solutions — the kind found in public rules-Q&A and judge resources — so the prompt can be checked and tuned against how hard cases actually resolve, not only against hand-authored fixtures. The worked solutions are curated into a committed evaluation set and run through the existing eval harness; they are test data, never runtime retrieval.
+- Constraints:
+  - The worked-solutions set is committed evaluation data (fixtures) fed through the existing eval harness (REQ-032 / DEC-047); it never becomes runtime prompt context and adds no new runtime dependency or external call.
+  - Specific sources and their licensing/attribution are resolved at implementation before any data is committed; only data licensed for this use is committed.
+  - This is a quality/validation track that reports where the prompt fails hard cases and guides tuning; it is not a build-blocking gate unless the owner later promotes it (mirroring DEC-161's opt-in, non-gating stance on enrichment A/B).
+- Dependencies:
+  - REQ-032, DEC-047 (eval harness and labeled-outcome evaluation)
+  - REQ-022, DEC-046 (retrieval the validation set exercises)
+- Notes:
+  - Distinct from RAG/corpus retrieval: this external data validates and tunes the prompt; it is not injected into prompts. The mechanic-definition enrichment idea, which would inject a corpus into the prompt, is RAG-deferred (`PRD/work/prompt-context-refinement/RAG-DEFERRED.md`).
