@@ -252,9 +252,11 @@
   - `scripts/lambda-package-budget.test.mjs` measures the unzipped on-disk package footprint (code + production `node_modules` + committed `apps/backend/data`) against the 250 MB quota, with a reserve, and fails when the tracked data would exceed the budget
   - the base64/request-limit basis (`LAMBDA_REQUEST_LIMIT`, `BASE64_EXPANSION`, `ZIP_CEILING`) is removed with the direct-upload path it described; the test no longer models the ~50 MB direct-upload ceiling
   - the test runs in `test:scripts` / `quality:check` so an over-quota artifact fails on the pull request, not after the merge
-  - the failure message names the largest data contributors and points at the levers (raise `MIN_VARIANT_POPULARITY` and re-trim, or reduce committed data), consistent with the current test's guidance
+  - the full combo corpus is the standing state (`MIN_VARIANT_POPULARITY` = 0, REQ-093); the failure message names the largest data contributors and points at the levers (reduce committed data, or as an emergency size valve raise `MIN_VARIANT_POPULARITY` to re-trim), consistent with the current test's guidance
 - Dependencies:
   - DEC-169
   - REQ-165
+  - REQ-093
 - Notes:
   - the guardrail is repointed, never removed — a disarmed budget check is how the 2026-08-22 two-day deploy outage went unseen; the new basis simply matches the new real limit
+  - the budget is measured against the full corpus (no popularity floor), so the headroom the test reports is the real headroom, not headroom over a trimmed baseline

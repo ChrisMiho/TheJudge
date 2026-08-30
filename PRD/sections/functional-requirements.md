@@ -2143,6 +2143,7 @@
   - the build parses upstream's **camelCase** wire field names (`oracleId`, `zoneLocations`, `manaNeeded`, `mustBeCommander`, `easyPrerequisites`, `notablePrerequisites`, `scryfallApi`); a snake_case reader silently matches nothing and must never be reintroduced (DEC-162)
   - build fixtures are derived from a real upstream response and retain its exact wire casing; hand-authored fixtures are not acceptable evidence that the parser matches upstream
   - committed artifacts are gzipped per variant, measuring 76.9 MB detail + 4.8 MB index over the real corpus; the loader reads only the requested variant's byte range and gunzips only that slice, so resident memory stays bounded regardless of corpus size (DEC-162)
+  - the full reviewed `OK` corpus is committed with no popularity floor applied — the build's `MIN_VARIANT_POPULARITY` defaults to `0`; on the S3-staged deploy path (REQ-165) the full corpus fits the 250 MB unzipped quota, so raising the floor is an emergency size valve under NFR-017, not a routine trim
   - because only `OK` variants are accepted, every committed variant carries non-null steps, prerequisites, mana needed, and card state; a null in any of those fields is an artifact-integrity failure rather than expected data
   - committed backend artifacts separate compact variant detail from lookup indexes and retain, per variant: exact-card ingredients, quantities, permitted starting zones, per-ingredient zone-scoped card state, per-ingredient `mustBeCommander`, template ingredients, produced effects, step description, mana needed, easy/notable prerequisites, notes, popularity, and stable source URL
   - per-ingredient card state is retained as a zone-scoped map and is never collapsed into a single string; upstream exposes distinct battlefield, exile, graveyard, and library state, an ingredient may permit several starting zones at once, and the hand and command zones carry no state
@@ -3787,3 +3788,25 @@
   - NFR-017
 - Notes:
   - rollback is Lambda's own function-version history, not an S3 object history — the fixed overwritten key is deliberate
+
+### REQ-166
+- Title: Skip the production deploy on non-code merges
+- Priority: medium
+- Description: A merge to `main` that changes only non-code paths does not deploy to production. The `deploy` job runs only when a changed path matches the code set, so documentation and PRD merges stop triggering a full frontend + Lambda build-and-deploy for zero runtime change. Quality checks still run on every merge.
+- Acceptance Criteria:
+  - the `deploy` job in `.github/workflows/quality-check.yml` runs only when the push to `main` changed at least one path in the **code set**: `apps/**`, `scripts/**`, `.github/workflows/**`, `package.json`, `package-lock.json`, `tsconfig*.json`
+  - a merge whose changed paths are all outside the code set (for example `PRD/**`, `docs/**`, any `*.md`, `.claude/**`, `eslint.config.mjs`) skips the deploy job; no frontend and no Lambda deploy runs
+  - the quality-check jobs (`static`, `backend`, `frontend`, `coverage-merge`) still run on every push to `main`, so `main` keeps a green CI signal on a docs-only merge
+  - a `workflow_dispatch` trigger allows a manual full deploy from the Actions tab with no code change
+  - the change-detection step logs the changed paths it evaluated and its deploy/skip decision, so a skip is visible in the run log rather than silent
+  - when the changed-file set cannot be determined (for example a first push or an all-zeros base SHA), the job deploys rather than skips — the fail-safe favors deploying
+- Constraints:
+  - gate the `deploy` job only; do not add `paths`/`paths-ignore` at the workflow trigger, which would also drop the quality checks on that merge
+  - the code set is a denylist: a new build-affecting path — a new deployable directory or a new root build-config file — must be added to it, or its deploy is silently skipped; this maintenance cost is the accepted trade for the denylist form
+  - deploy remains push-to-`main` only plus the manual dispatch; pull-request events never deploy, so DEC-084's OIDC credential scoping is unchanged
+- Dependencies:
+  - DEC-084
+  - REQ-165
+- Notes:
+  - motivation: before this, every docs-only merge ran the full build-and-deploy — the batch of documentation PRs merged on 2026-08-29 each deployed pointlessly
+  - `eslint.config.mjs` is treated as non-code: it changes lint (the `static` job) but never the built artifact
