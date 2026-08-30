@@ -14,7 +14,7 @@ _Last updated: 2026-08-28._
 | --- | --- | --- | --- |
 | 0 | Codebase health audit | ✅ **done** (PR #98) | graph run, read-only |
 | 1 | Feature spec layer (Phase A/B/C) | ✅ **done** — Phase A ✅, Phase B ✅, Phase C ✅ | graph runs + one manual session |
-| 2 | Overnight-run tuning | 🔄 **in progress** — tooling-fixes blocker cleared (PR #131/#132 merged); implementing as `PRD/work/overnight-run-tuning/` | interactive (not a graph run) |
+| 2 | Overnight-run tuning | ✅ **done** (PR #133; cleaned up in #134/#135) | interactive (not a graph run) |
 | 3 | Operator manual | ⬜ not started | manual |
 | 4 | Plain-language standard | ⬜ not started | manual |
 
