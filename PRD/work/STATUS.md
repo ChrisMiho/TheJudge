@@ -8,11 +8,11 @@ Do not rename package folders to encode status.
 
 ## active
 
-## refined
-
 | Package | Notes |
 | --- | --- |
-| [prompt-context-refinement](./prompt-context-refinement/) | define loop 2 (2026-08-30, run two): specified the lookup-mode partial-combo mechanics the gate-qc FAIL flagged. REQ-094 (amended) now defines "complete" (every ingredient slot filled by an exact/template match in the attached set, zone/quantity checks dropped for a board-less mode) and "partial" (qualifies on any one attached card, at least one slot unmatched), with lookup selection order complete → attached-card coverage → fewer missing → popularity → variant id; REQ-167's answer AC settled (explain a complete combo; for a partial, describe the missing role from the combo catalog, not a card recommendation) and cap fixed at 5. REQ-095's existing present/missing rendering covers the answer text — no new stable ID. All "not fully specified" flags removed; DESIGN-BRIEF refreshed (cap 5, assumption 8). Resume `/graph-run PRD/work/prompt-context-refinement/` — re-grades at `gate-qc`. |
+| [prompt-context-refinement](./prompt-context-refinement/) | Mapped out 2026-08-30: `GAMEPLAN.md` + 5 lettered slices. A (multi-card lookup backend: contract, prompt, retrieval, combo matching), B (multi-card pre-submit UI + follow-up wiring + screen-layout re-measurement, depends on A), C (REQ-168 guardrail wording + phrasing glossary), D (REQ-169 prompt-layout spec, depends on A/C), E (NFR-018 worked-solutions eval set, final slice, carries Ship gates + PRD promotion checklist). Resume `/thejudge-implement PRD/work/prompt-context-refinement/ slice A`. |
+
+## refined
 
 ## refining
 

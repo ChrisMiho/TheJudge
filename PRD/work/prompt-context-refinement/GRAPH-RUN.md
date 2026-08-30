@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (universal: rm -rf; graph: nohup)`
 - Autonomous base: `origin/thejudge-auto/prompt-context-refinement-v2`
 - Staging: `.worktrees/.graph-intake/graph-20260830-154444/`
-- Current node: `plan` (run two — gate-qc PASS; slicing the gameplan)
+- Current node: `build` (run two — 5 slices A–E mapped)
 - Next action: `/graph-run PRD/work/prompt-context-refinement/`
 - Run two: resumed 2026-08-30 from `owner-action`. Lock re-taken (pid 17131);
   graph canary re-proved (`nohup` denied). Gate fully answered: REQ-167 edit
@@ -35,6 +35,7 @@ remote-branch deletion); it carries no PR.
 | 4 | gate-qc | sonnet | failed | `0 → 18` | FAIL (run two re-grade): REQ-167/REQ-094 partial-combo behavior self-flagged not-fully-specified (no complete/partial meaning in board-less lookup); 5 points to settle. DESIGN-BRIEF stale (still ~6 cap; partial-combo gap not surfaced). `STATUS.refining`. Loop 2 of 3 to define | 2026-08-30 |
 | 3 | define | opus | ok | `0 → 25` | Loop-2 fix: specified lookup complete/partial combo (complete = all slots matched in attached set, zone checks dropped; partial = admitted-but-missing; ranking = complete→coverage→fewer-missing→popularity→variant-id; missing named as role/template via REQ-095, not a card rec). No new stable ID (amended REQ-094/REQ-167, refs REQ-095). DESIGN-BRIEF fixed (cap 5, assumption #8). No blocker. `STATUS.refined` | 2026-08-30 |
 | 4 | gate-qc | sonnet | ok | `0 → 16` | PASS (run two re-grade): partial-combo fully specified & implementable, REQ-094/REQ-167/REQ-095 consistent, DESIGN-BRIEF matches (cap 5), no regressions, no live not-specified flags. `STATUS.refined`. Run two continues to plan | 2026-08-30 |
+| 5 | plan | sonnet | ok | `0 → 85` | `GAMEPLAN.md` + 5 slice docs (A multi-card backend, B multi-card UI+Playwright, C guardrail+glossary, D prompt-layout spec, E worked-solutions eval) + 5 `slice-*.criteria.json`; `STATUS.active`; order A→B→C→D→E | 2026-08-30 |
 
 ## Open gate
 
@@ -276,6 +277,14 @@ graph-run is controlling.
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge
 
 You are node 4 (`gate-qc`) re-grading in run two after define loop 2 specified the lookup partial-combo behavior. Invoke `thejudge-quality-check` in graph mode. Do NOT ask the user questions. PASS/FAIL only. The prior FAIL was that the partial-combo answer for a board-less lookup was self-flagged not-fully-specified; the define loop settled it grounded in REQ-094 and REQ-095 with no new stable ID (complete = all slots matched in the attached set, zone/quantity checks dropped; partial = admitted-but-missing; ranking = complete then coverage then fewer-missing then popularity then variant-id; missing role named as ingredient identity/template via REQ-095, not a card recommendation; REQ-095 already renders the lookup text). DESIGN-BRIEF updated (cap fixed at 5, partial-combo surfaced, assumption 8). Re-validate DESIGN-BRIEF against PRD/sections: partial-combo implementable/testable with no remaining not-specified flags, REQ-094/REQ-167/REQ-095 consistent, DESIGN-BRIEF matches (cap 5), REQ-168/REQ-169/FLOW-023/NFR-018 unregressed. On PASS leave STATUS.refined; on FAIL set STATUS.refining and list every issue. Package `PRD/work/prompt-context-refinement/`, run id `graph-20260830-154444`. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+### plan
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 5 (`plan`). Invoke `thejudge-map-out` in graph mode. Do NOT ask the user questions. Package `PRD/work/prompt-context-refinement/` (STATUS.refined), run id `graph-20260830-154444`. The README `## Preparation gate` records Quality-check: PASS — verify it before writing any planning artifact; you cannot self-certify it. Create GAMEPLAN.md, lettered slice docs, and each slice's criteria.json (criteria initialised false with evidence blocks), set STATUS.active. Slice these roughly-independent items sensibly for sequential single-agent implementation, foundational first: REQ-167 + FLOW-023 (bounded 5-card lookup, per-card enrichment + retrieval, combo qualify-on-any-one + coverage ranking + complete/partial answer naming the missing role via REQ-095, not a card recommendation; the pre-submit multi-card add strip, with the screen-layout pre-submit single-card image-cap row needing re-measurement); REQ-168 (guardrail wording + a glossary phrasing doc); REQ-169 (readable prompt-layout spec, docs only); NFR-018 (committed worked-solutions eval set with documented provenance, test data only). Keep REQ-169 and NFR-018 as their own slices; REQ-168 its own small slice; do not expand scope beyond the approved requirements. Report the GAMEPLAN summary, slice list with coverage, criteria.json confirmation, and the final STATUS. Copy the `Working directory:` line above, unchanged, into any prompt you write.
 
 ## Instruction ledger
 

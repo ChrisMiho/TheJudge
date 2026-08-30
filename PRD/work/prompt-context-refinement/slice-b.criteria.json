@@ -1,0 +1,60 @@
+{
+  "slug": "prompt-context-refinement",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "The pre-submit view supports adding, previewing, and removing more than one card; each add resolves to one oracle-level card via typed search or camera scan.",
+      "value": false,
+      "evidence": {
+        "command": "npm --workspace apps/frontend run test.*QuickLookupApp|vitest.*QuickLookupApp",
+        "paths": ["apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx"]
+      }
+    },
+    {
+      "id": "B2",
+      "statement": "An add attempted past the 5-card cap is blocked and a stated limit is shown to the player.",
+      "value": false,
+      "evidence": {
+        "command": "npm --workspace apps/frontend run test.*QuickLookupApp|vitest.*QuickLookupApp",
+        "paths": ["apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx", "apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.test.tsx"]
+      }
+    },
+    {
+      "id": "B3",
+      "statement": "On submit, the request carries the full attached card list and no game state; with zero or one card attached, behavior is unchanged from today.",
+      "value": false,
+      "evidence": {
+        "paths": ["apps/frontend/src/lib/contextFlow/flow.ts", "apps/frontend/src/lib/contextFlow/flow.test.ts"]
+      }
+    },
+    {
+      "id": "B4",
+      "statement": "The answered workspace's frozen-context view shows every attached card; a follow-up sends { mode: lookup, question, cards: frozen, conversationHistory } with the card set frozen (text-only follow-ups).",
+      "value": false,
+      "evidence": {
+        "paths": ["apps/frontend/src/hooks/useAskAiSubmitOrchestration.ts", "apps/frontend/src/hooks/useAskAiSubmitOrchestration.test.ts"]
+      }
+    },
+    {
+      "id": "B5",
+      "statement": "Component tests (QuickLookupApp.test.tsx and any touched flow/hook tests) cover add/remove/cap-blocked/frozen-context/follow-up for the multi-card case.",
+      "value": false,
+      "evidence": {
+        "command": "npm --workspace apps/frontend run test"
+      }
+    },
+    {
+      "id": "B6",
+      "statement": "Browser-risk manual check: at 390x844 and 1440x900, add cards up to the 5-card cap, confirm the blocked-add message on a 6th attempt, submit, and confirm the answered workspace shows all attached cards in the frozen context; record the re-measured image-cap bound in screen-layout.md.",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "B7",
+      "statement": "Browser closed, owned dev server(s) stopped, ports released; captures (if any) written to PRD/work/prompt-context-refinement/.playwright-mcp/.",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}
