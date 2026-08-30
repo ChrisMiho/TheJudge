@@ -6,6 +6,7 @@ on:
       - main
       - master
   pull_request:
+  workflow_dispatch:
 
 # Supersede in-flight PR runs, but never cancel a push run: cancelling a `main`
 # run would abort the deploy job mid-flight.
@@ -138,10 +139,73 @@ jobs:
         working-directory: apps/frontend
         run: npx vitest run --merge-reports --coverage
 
+  changes:
+    name: changes
+    # Only computed where it can matter: a push to main (the normal deploy
+    # trigger) or a manual workflow_dispatch (which always deploys, per
+    # requirement, so it does not need the path check). Never on pull_request
+    # — deploy never runs there regardless (DEC-084's OIDC credential scoping
+    # is unchanged), so there is nothing for this job to gate.
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      deploy: ${{ steps.detect.outputs.deploy }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Full history: the merge-base diff below needs to reach arbitrarily
+          # far back, not just the immediately preceding commit.
+          fetch-depth: 0
+
+      - name: Detect code changes
+        id: detect
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Manual workflow_dispatch trigger — deploying regardless of changed paths." | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          before="${{ github.event.before }}"
+
+          # Fail safe to deploy whenever the changed-file set cannot be
+          # determined: the workflow's first-ever run on this branch, an
+          # all-zeros before-SHA, or a before commit this checkout cannot see.
+          if [[ -z "$before" ]] || [[ "$before" =~ ^0+$ ]] || ! git cat-file -e "$before" 2>/dev/null; then
+            echo "Base commit for change detection is unavailable (before=\"$before\") — failing safe to deploy." | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          changed="$(git diff --name-only "$before" "${{ github.sha }}")"
+          echo "## Change-detection: paths in this push" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "$changed" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "Changed paths:"
+          echo "$changed"
+
+          # The code set: a change under any of these is what the deploy job
+          # exists to ship. Everything else (docs, PRD/**, .claude/**, ...)
+          # does not warrant a full frontend + Lambda deploy.
+          code_pattern='^(apps/|scripts/|\.github/workflows/|package\.json$|package-lock\.json$|tsconfig.*\.json$)'
+          if echo "$changed" | grep -Eq "$code_pattern"; then
+            echo "Code-set path changed — deploy verdict: deploy." | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No code-set path changed — deploy verdict: skip." | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          fi
+
   deploy:
     name: deploy
-    needs: [static, backend, coverage-merge]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [static, backend, coverage-merge, changes]
+    if: >-
+      needs.changes.outputs.deploy == 'true' &&
+      ((github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     # Job-scoped so pull_request jobs running contributor-controlled refs never
     # receive AWS-assumable credentials.

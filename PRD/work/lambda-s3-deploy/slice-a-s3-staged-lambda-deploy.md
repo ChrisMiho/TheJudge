@@ -1,6 +1,6 @@
 # Slice A — S3-staged Lambda deploy
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -77,6 +77,22 @@ the real limit.
       forms against the AWS CLI reference, and real deploy behavior is proven
       when this branch reaches `main` and CI's `deploy` job runs under the
       OIDC role.
+
+## Manual observation (A10)
+
+2026-08-29 A10 — no AWS credentials are available in this sandbox, so the real S3-
+staged deploy (an upload past the old ~50MB direct-upload ceiling, and the
+`update-function-code --s3-bucket`/`--s3-key` call actually succeeding
+against Lambda's 250MB unzipped quota) could not be executed here. Instead,
+the plumbing was verified by reading the argument forms
+(`aws s3 cp <path> s3://<bucket>/<key>` and
+`aws lambda update-function-code --function-name <fn> --s3-bucket <bucket>
+--s3-key <key>`) against the AWS CLI v2 reference for `s3 cp` and
+`lambda update-function-code`, and by `bash -n` syntax-checking both edited
+scripts. Real deploy behavior is proven when this branch reaches `main` and
+GitHub Actions' `deploy` job runs `scripts/aws-deploy.sh` under the
+`thejudge-github-deploy` OIDC role — that is the first point in this graph
+run's lifecycle where AWS credentials exist.
 
 ## Verification
 

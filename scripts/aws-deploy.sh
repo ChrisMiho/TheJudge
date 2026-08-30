@@ -7,8 +7,14 @@ aws_region="${AWS_REGION:-us-east-1}"
 account_id="${AWS_ACCOUNT_ID:?AWS_ACCOUNT_ID must be set (GitHub repo variable or shell export)}"
 app_name="${APP_NAME:-thejudge}"
 bucket_name="${AWS_S3_BUCKET:-$app_name-web-$account_id}"
+artifact_bucket_name="${AWS_LAMBDA_ARTIFACT_BUCKET:-$app_name-lambda-artifacts-$account_id}"
 lambda_name="${AWS_LAMBDA_FUNCTION_NAME:-$app_name-api}"
 distribution_comment="${AWS_CLOUDFRONT_COMMENT:-$app_name-web}"
+
+# Fixed key, overwritten on every deploy. No per-deploy history object,
+# versioning, or lifecycle rule — the artifact only needs to outlive the
+# single `update-function-code` call that reads it. (DEC-169)
+artifact_s3_key="lambda/lambda.zip"
 
 # Resolved here, before packaging or any AWS call, so a missing value fails the
 # deploy rather than silently shipping a frontend with feedback disabled. This
@@ -25,19 +31,21 @@ openai_timeout_ms="15000"
 openai_max_retries="2"
 openai_api_key_ssm_param="/thejudge/openai-api-key"
 
-aws_fileb_uri() {
-  local path="$1"
-  if command -v cygpath >/dev/null 2>&1; then
-    path="$(cygpath -w "$path")"
-  fi
-  printf 'fileb://%s' "$path"
-}
-
 artifact_path="$(bash "$repo_root/scripts/package-lambda.sh")"
+
+# Stage in S3 first, then point Lambda at the object instead of uploading the
+# zip inline. `update-function-code --zip-file` base64-encodes the whole
+# archive into the request body, which AWS's request-size limit effectively
+# caps at ~50MB; `--s3-bucket`/`--s3-key` reads the object directly and is
+# bounded only by Lambda's 250MB unzipped deployment-package quota. (REQ-165)
+aws s3 cp "$artifact_path" "s3://$artifact_bucket_name/$artifact_s3_key" \
+  --region "$aws_region" \
+  >/dev/null
 
 aws lambda update-function-code \
   --function-name "$lambda_name" \
-  --zip-file "$(aws_fileb_uri "$artifact_path")" \
+  --s3-bucket "$artifact_bucket_name" \
+  --s3-key "$artifact_s3_key" \
   --region "$aws_region" \
   >/dev/null
 

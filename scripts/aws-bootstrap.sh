@@ -8,6 +8,7 @@ account_id="${AWS_ACCOUNT_ID:?AWS_ACCOUNT_ID must be set (GitHub repo variable o
 github_repo="${GITHUB_REPOSITORY:-ChrisMiho/TheJudge}"
 app_name="${APP_NAME:-thejudge}"
 bucket_name="${AWS_S3_BUCKET:-$app_name-web-$account_id}"
+artifact_bucket_name="${AWS_LAMBDA_ARTIFACT_BUCKET:-$app_name-lambda-artifacts-$account_id}"
 lambda_name="${AWS_LAMBDA_FUNCTION_NAME:-$app_name-api}"
 lambda_role_name="${AWS_LAMBDA_ROLE_NAME:-$app_name-lambda-exec}"
 ssm_param_name="${OPENAI_API_KEY_SSM_PARAM:-/thejudge/openai-api-key}"
@@ -51,6 +52,18 @@ fi
 
 aws s3api put-public-access-block \
   --bucket "$bucket_name" \
+  --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+
+# Private staging bucket for the Lambda deploy artifact, in the same region as
+# the function. No CloudFront origin — this bucket is never served to
+# browsers, only read by `update-function-code --s3-bucket` with the deploy
+# role's own credentials. (REQ-165)
+if ! aws s3api head-bucket --bucket "$artifact_bucket_name" 2>/dev/null; then
+  aws s3api create-bucket --bucket "$artifact_bucket_name" --region "$aws_region"
+fi
+
+aws s3api put-public-access-block \
+  --bucket "$artifact_bucket_name" \
   --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
 
 cat > "$tmp_dir/lambda-trust.json" <<'JSON'
@@ -419,6 +432,13 @@ cat > "$tmp_dir/github-deploy-policy.json" <<JSON
         "s3:PutObject"
       ],
       "Resource": "arn:aws:s3:::$bucket_name/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject"
+      ],
+      "Resource": "arn:aws:s3:::$artifact_bucket_name/*"
     },
     {
       "Effect": "Allow",

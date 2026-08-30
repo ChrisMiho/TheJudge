@@ -1,6 +1,6 @@
 # Slice C — Remove the combo size restriction
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -76,6 +76,47 @@ the package: refresh PRD-backing cross-references and carry the ship gates.
       to delete (no further ephemeral planning content needed beyond this
       package's own artifacts).
 
+## Manual observations (C4, C8, C9, C10)
+
+2026-08-29 C4 — the committed
+`apps/backend/data/commanderSpellbookCombos.json.gz` and
+`...ComboIndex.json.gz` artifacts were **not** regenerated in this slice.
+`PRD/instructions/graph-workflow-contract.md`'s Boundaries list forbids a
+graph run from running `npm run data:refresh` or any live Scryfall/Commander
+Spellbook network fetch, so this graph run's `build` node cannot execute it —
+only the code-level floor (`MIN_VARIANT_POPULARITY = 0`) shipped here. Owner
+follow-up, post-merge: run `npm run data:refresh` locally (a live,
+human-approved Commander Spellbook bulk-export fetch per DEC-162), review the
+result, then commit the regenerated
+`apps/backend/data/commanderSpellbookCombos.json.gz` and
+`apps/backend/data/commanderSpellbookComboIndex.json.gz`.
+
+2026-08-29 C8 — reviewed this package's full diff (slices A, B, C) against
+the public contract: no changes touch `apps/backend/src` (no `AskAiRequest`,
+Zod schema, response shape, route, or provider-selection change) or
+`apps/frontend/src`. Every file touched is deploy tooling
+(`scripts/aws-{deploy,bootstrap}.sh`, `scripts/package-lambda.sh` unchanged),
+a workflow file (`.github/workflows/quality-check.yml`), a data-build script
+(`scripts/build-commander-spellbook-combos.mjs`) and its test, or docs/PRD.
+Public contract unchanged.
+
+2026-08-29 C9 — reviewed the package's full diff for
+`API_KEY`/`SECRET`/`TOKEN`/`PASSWORD`-shaped literals
+(`git diff HEAD~2 -- <touched files> | grep -iE "api_key|secret|token|password"`).
+The only matches are pre-existing, unchanged references to the SSM parameter
+*name* `/thejudge/openai-api-key` (not a secret value — the key itself is
+read from AWS SSM at Lambda cold start, never committed) and prose mentioning
+"non-secret env" / "secret loading". No secret value is committed.
+
+2026-08-29 C10 — durable outcomes promoted: `PRD/sections/system-map.md`'s
+AWS production deployment / Serverless hosting / Deploy and cost guardrails
+entries now cite REQ-165, REQ-166, NFR-017 and name the touched files.
+REQ-093, REQ-165, REQ-166, DEC-169, and NFR-017 were already landed on `main`
+via PR #143 (refinement, ahead of this build). `PRD/work/lambda-s3-deploy/`
+carries no further durable content beyond its own package artifacts (the
+GAMEPLAN, slice docs, criteria files, README, GRAPH-RUN ledger) — ready for
+`thejudge-cleanup` to delete once this PR merges.
+
 ## Verification
 
 ```bash
@@ -86,6 +127,9 @@ npm run quality:check
 ## Files touched
 
 - `scripts/build-commander-spellbook-combos.mjs`
+- `scripts/build-commander-spellbook-combos.test.mjs` (two fixture tests
+  updated for the new default floor; required for `npm run test:scripts` to
+  stay green — not in the original files-touched list)
 - `PRD/sections/system-map.md`
 
 ## Ship gates
