@@ -16,8 +16,6 @@ Do not rename package folders to encode status.
 
 ## ideation
 
-- [overnight-run-tuning](./overnight-run-tuning/)
-
 ## owner-action
 
 ## deferred
