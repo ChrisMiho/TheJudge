@@ -1043,3 +1043,55 @@ test("denials are not tracked outside a run", () => {
   // not accumulate one.
   assert.equal(bash("echo x > CLAUDE.md", NO_LOCK).decision, "allow")
 })
+
+test("a denied file-tool write does not poison writes to other paths", () => {
+  // Regression: on 2026-08-30 a graph run bricked because `denialKey` keyed only
+  // on shell segments — empty for every file tool — so every Write collapsed to
+  // one key `Write::`. One denied write refused every later write, on any path.
+  const io = withCriteria()
+
+  const first = tool("Write", { file_path: "CLAUDE.md", content: "x" }, io)
+  assert.equal(first.decision, "deny")
+  assert.equal(first.rule, "protected-path-write")
+
+  // A different path is a different call. The retry guard must not catch it.
+  const second = tool(
+    "Write",
+    { file_path: "PRD/work/prompt-context-refinement/IDEA.md", content: "x" },
+    io
+  )
+  assert.equal(second.decision, "allow", "a Write to an unrelated path is not the denied call")
+})
+
+test("a denied file-tool write to the same path is still refused as a retry", () => {
+  const io = withCriteria()
+  assert.equal(tool("Write", { file_path: "CLAUDE.md", content: "x" }, io).rule, "protected-path-write")
+  const again = tool("Write", { file_path: "CLAUDE.md", content: "x" }, io)
+  assert.equal(again.rule, "denied-command-retry", "the same call is still a retry")
+})
+
+test("reading the call counter is allowed — the heartbeat requires it", () => {
+  // The between-node heartbeat reads `.graph-node-calls.json` on every node. A
+  // read is not a write, so `run-record-write` must not fire on it. On
+  // 2026-08-30 it did, seeding the denialKey collision above.
+  const io = withCriteria()
+  const result = tool("Read", { file_path: ".worktrees/.graph-node-calls.json" }, io)
+  assert.equal(result.decision, "allow", "a Read of the counter is not a write to it")
+})
+
+test("reading a protected file is allowed while a run holds the lock", () => {
+  // Nodes read CLAUDE.md and the enforcer scripts constantly. Only writes are
+  // guarded; a read of a protected path is ordinary work.
+  const io = withCriteria()
+  assert.equal(tool("Read", { file_path: "CLAUDE.md" }, io).decision, "allow")
+})
+
+test("writing the call counter is still denied", () => {
+  // The read exemption must not loosen the write guard: the hook is the counter's
+  // sole writer.
+  const io = withCriteria()
+  assert.equal(
+    tool("Write", { file_path: ".worktrees/.graph-node-calls.json", content: "x" }, io).rule,
+    "run-record-write"
+  )
+})

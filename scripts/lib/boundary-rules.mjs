@@ -742,7 +742,12 @@ export const DENIAL_LOG_PATH = ".worktrees/.graph-denials.jsonl"
  */
 export function denialKey(context) {
   const shape = context.segments.map((segment) => segment.argv.join(" ")).join(" ; ")
-  return `${context.toolName ?? "?"}::${shape}`
+  // File tools carry no shell segments — their identity is the path they name.
+  // Without this a denied `Read`/`Write`/`Edit` produced the path-blind key
+  // `Read::`, and the retry guard then refused every later call of that tool on
+  // any path for the rest of the run (observed 2026-08-30).
+  const paths = (context.paths ?? []).map(normalizePathText).join(" , ")
+  return `${context.toolName ?? "?"}::${shape}::${paths}`
 }
 
 /** The append-only log of evidence the hook actually observed. */
@@ -925,9 +930,20 @@ export function isRunActive(lockContents) {
   }
 }
 
+/**
+ * Tools that only read. Their `file_path` / `path` names a file to read, never
+ * one to write, so they contribute nothing to `writtenPaths`. The heartbeat
+ * reads `.graph-node-calls.json` on every node through `Read`; treating that as
+ * a write is what denied it and bricked the 2026-08-30 run. The set is a
+ * denylist rather than a write-tool allowlist so that an unrecognised tool is
+ * treated as a potential writer — fail-safe for the write-protection rules.
+ */
+const READ_ONLY_TOOLS = new Set(["Read", "Grep", "Glob"])
+
 /** Every path a call would write, across Bash segments and file-tool inputs. */
 function writtenPaths(context) {
-  const paths = [...context.paths]
+  const paths = []
+  if (!READ_ONLY_TOOLS.has(context.toolName)) paths.push(...context.paths)
   for (const segment of context.segments) paths.push(...segment.writeTargets)
   return paths
 }
