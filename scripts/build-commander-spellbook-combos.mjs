@@ -18,16 +18,17 @@ const defaultIndexPath = path.resolve("apps/backend/data/commanderSpellbookCombo
  * that was 44,810 of 106,182 variants — 42.2% of the corpus and 33.6MB of the
  * 76.9MB detail artifact.
  *
- * The cut exists because the whole corpus no longer fits in a Lambda deployment
- * package: `UpdateFunctionCode` caps a direct upload at 70,167,211 bytes and the
- * detail artifact alone compresses to 73.1MB. A threshold of 1 is the smallest
- * cut that clears it, and it drops only combos no deck runs.
- *
- * Raise it to shrink the artifact further; every step is priced in
- * `PRD/instructions/receipts/`. Set it to 0 to keep everything, which currently
- * does not deploy.
+ * Set to 0: the full reviewed corpus is the standing state (REQ-093). This is
+ * no longer a standing trim — the S3-staged Lambda deploy (REQ-165) raised
+ * the real ceiling to Lambda's 250MB unzipped deployment-package quota, well
+ * past the whole corpus's size. The constant stays a functioning **emergency
+ * valve**: raise it only if `scripts/lambda-package-budget.test.mjs` — the
+ * pre-merge guardrail that measures the real quota — ever fires again, then
+ * re-run with `--trim-committed` (see `trimCommittedArtifacts` below) to
+ * re-emit the committed artifacts at the raised floor without a live refresh.
+ * Every step is priced in `PRD/instructions/receipts/`.
  */
-export const MIN_VARIANT_POPULARITY = 2
+export const MIN_VARIANT_POPULARITY = 0
 
 export const SOURCE_NAME = "Commander Spellbook"
 export const SOURCE_URL = "https://json.commanderspellbook.com/variants.json.gz"

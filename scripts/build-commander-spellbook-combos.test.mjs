@@ -507,30 +507,38 @@ function popularityVariant(id, popularity) {
   }
 }
 
-test("a refresh applies the popularity floor without being asked", () => {
-  // The regression this guards: `data:build` runs `runBuild` with no options, so
-  // a floor that only applied when explicitly passed would quietly rebuild the
-  // full corpus and break the deploy again on the next refresh.
+test("with no options, the default floor keeps the full corpus", () => {
+  // Slice C (REQ-093): MIN_VARIANT_POPULARITY defaults to 0, and
+  // meetsPopularityFloor treats a floor <= 0 as "keep everything" — so
+  // `data:build` running `runBuild` with no options now keeps the full
+  // corpus by default, which is the intended standing state. Before Slice C
+  // this same call (against a default of 2) dropped the popularity-0
+  // variants; this test pins the new default's actual behavior rather than
+  // the old one.
   const { index } = buildComboArtifacts({
     rawVariants: [popularityVariant("1", 0), popularityVariant("2", 5), popularityVariant("3", 0)],
     templateExpansions: new Map(),
     snapshot: {}
   })
 
-  assert.equal(index.manifest.variantCount, 1)
+  assert.equal(index.manifest.variantCount, 3)
   assert.equal(index.manifest.minPopularity, MIN_VARIANT_POPULARITY)
-  assert.equal(index.manifest.belowPopularityFloorCount, 2)
-  assert.deepEqual(Object.keys(index.detailOffsets), ["2"])
+  assert.equal(index.manifest.belowPopularityFloorCount, 0)
+  assert.deepEqual(Object.keys(index.detailOffsets).sort(), ["1", "2", "3"])
 })
 
 test("a trimmed variant leaves no trace in any derived structure", () => {
   // Membership, the template directory, and the offset directory are all built
   // from the same variant list, so filtering it must be complete rather than
-  // leaving an oracle id pointing at a variant the detail artifact no longer has.
+  // leaving an oracle id pointing at a variant the detail artifact no longer
+  // has. Exercises the emergency-valve path directly with an explicit floor:
+  // the default floor is 0 (Slice C), which filters nothing, so a real drop
+  // needs `minPopularity` passed the way `--trim-committed` would.
   const { index } = buildComboArtifacts({
     rawVariants: [popularityVariant("1", 0), popularityVariant("2", 5)],
     templateExpansions: new Map(),
-    snapshot: {}
+    snapshot: {},
+    minPopularity: 1
   })
 
   const referenced = new Set(Object.values(index.byOracleId).flat())

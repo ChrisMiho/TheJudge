@@ -1,6 +1,6 @@
 # lambda-s3-deploy
 
-status: active
+status: ship-ready
 
 Deploy-pipeline hardening on three fronts (see `DESIGN-BRIEF.md`):
 
@@ -35,7 +35,7 @@ up by `graph-run` at `STATUS.refined`; see `GRAPH-RUN.md` for the run ledger.
 | --- | --- | --- | --- | --- |
 | A | S3-staged Lambda deploy | REQ-165, DEC-169, NFR-017 | parallel-ready | done |
 | B | Skip prod deploy on non-code merges | REQ-166 | parallel-ready | done |
-| C | Remove combo size restriction + PRD backing | REQ-093, NFR-017 | parallel-ready | planned |
+| C | Remove combo size restriction + PRD backing | REQ-093, NFR-017 | parallel-ready | done |
 
 See `GAMEPLAN.md` for the architecture/data-flow map and the structural
 constraint (no graph-run `data:refresh`) that scopes Slice C.

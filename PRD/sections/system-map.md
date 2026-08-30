@@ -498,15 +498,15 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 
 - Status: shipped
 - Summary: Runs the live OpenAI-backed app on a low-cost AWS serverless stack using AWS-provided URLs, automated quality-gated deploys, backend-only secret loading, and explicit cost/scale guardrails.
-- Lives in: `.github/workflows/deploy-aws.yml`, `scripts/aws-{bootstrap,deploy}.sh`, `scripts/package-lambda.sh`, `apps/backend/src/lambda.ts`, `docs/aws/`
-- Backed by: DEC-084, GOAL-003, NFR-003, NFR-004
+- Lives in: `.github/workflows/quality-check.yml` (`deploy` job), `scripts/aws-{bootstrap,deploy}.sh`, `scripts/package-lambda.sh`, `apps/backend/src/lambda.ts`, `docs/aws/`
+- Backed by: DEC-084, GOAL-003, NFR-003, NFR-004, REQ-165, REQ-166, NFR-017
 
 ### Serverless hosting
 
 - Status: shipped
-- Summary: Serves the static frontend from a private S3 origin through CloudFront and the backend from Lambda through a public Function URL, without a custom domain.
-- Lives in: `scripts/aws-bootstrap.sh`, `scripts/aws-deploy.sh`, `apps/backend/src/lambda.ts`
-- Backed by: DEC-084, NFR-004
+- Summary: Serves the static frontend from a private S3 origin through CloudFront and the backend from Lambda through a public Function URL, without a custom domain. The Lambda deploy artifact is staged in a private S3 bucket rather than uploaded inline, raising the effective package ceiling to Lambda's 250MB unzipped quota.
+- Lives in: `scripts/aws-bootstrap.sh`, `scripts/aws-deploy.sh`, `apps/backend/src/lambda.ts`, `scripts/lambda-package-budget.test.mjs`
+- Backed by: DEC-084, NFR-004, REQ-165, REQ-166, NFR-017
 
 ### Production secrets and deployment identity
 
@@ -518,9 +518,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Deploy and cost guardrails
 
 - Status: shipped
-- Summary: Gates every main-branch deploy on `quality:check`, caps Lambda concurrency when the account quota permits, retains the account limit as the fallback cap, and configures a low monthly AWS Budget alert.
-- Lives in: `.github/workflows/deploy-aws.yml`, `scripts/aws-bootstrap.sh`
-- Backed by: DEC-084, NFR-004
+- Summary: Gates every main-branch deploy on `quality:check`, skips the deploy job on merges that touch no code-set path (with a `workflow_dispatch` manual override), caps Lambda concurrency when the account quota permits, retains the account limit as the fallback cap, and configures a low monthly AWS Budget alert.
+- Lives in: `.github/workflows/quality-check.yml` (`changes` and `deploy` jobs), `scripts/aws-bootstrap.sh`
+- Backed by: DEC-084, NFR-004, REQ-165, REQ-166, NFR-017
 
 ## Quick Lookup
 
