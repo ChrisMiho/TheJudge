@@ -32,15 +32,32 @@ Lambda  thejudge-api  (nodejs24.x, arm64, 512 MB, 20 s)
         -> createConfiguredApp() -> Express app (same routes as local dev)
         -> ASK_AI_PROVIDER=openai -> OpenAI Responses API
 
+Private S3 bucket  thejudge-lambda-artifacts-<account>   <-- public access
+                   blocked, no CloudFront origin, deploy staging only
+                   (dist/lambda.zip, fixed key, overwritten every deploy)
+
 Deploy path:
 GitHub push to main
-  -> .github/workflows/deploy-aws.yml
+  -> .github/workflows/quality-check.yml (deploy job)
      -> quality:check gate (typecheck + lint + format + test + coverage)
      -> OIDC AssumeRole (thejudge-github-deploy, no static keys)
      -> scripts/aws-deploy.sh
-        -> package + update Lambda code + non-secret env
+        -> package Lambda zip
+        -> aws s3 cp -> thejudge-lambda-artifacts-<account> (S3-staged upload)
+        -> update-function-code --s3-bucket/--s3-key + non-secret env
         -> build frontend + s3 sync + CloudFront invalidation
 ```
+
+### S3-staged Lambda deploy
+
+`update-function-code --s3-bucket`/`--s3-key` reads the package from S3
+instead of accepting it inline as a base64-encoded request body. That raises
+the effective package ceiling from the ~50MB a direct `--zip-file` upload
+tops out at to Lambda's real 250MB unzipped deployment-package quota. The
+artifact bucket is private, has no CloudFront origin (it is never served to
+browsers), and holds one fixed-key object overwritten on every deploy — no
+per-deploy history, versioning, or lifecycle rule.
+`scripts/lambda-package-budget.test.mjs` guards the real quota pre-merge.
 
 ## One-time bootstrap
 
@@ -101,13 +118,16 @@ The bootstrap is idempotent and run once, locally, with admin credentials.
 
 Deploys are **build-from-source**, triggered by a push to `main`:
 
-1. `.github/workflows/deploy-aws.yml` runs on push to `main`.
+1. The `deploy` job in `.github/workflows/quality-check.yml` runs on push to
+   `main` (code changes only — see the change-detection step below).
 2. The **quality gate** (`npm run quality:check`) runs first; a red build blocks
    the deploy.
 3. GitHub assumes the `thejudge-github-deploy` role via OIDC (no static keys).
-4. `scripts/aws-deploy.sh` packages the Lambda, updates the function code and the
-   **non-secret** env block, rebuilds the frontend (with `VITE_API_URL` pointed
-   at the Function URL), syncs it to S3, and invalidates CloudFront.
+4. `scripts/aws-deploy.sh` packages the Lambda, stages the zip in the
+   `thejudge-lambda-artifacts-<account>` S3 bucket, points
+   `update-function-code` at that object, updates the **non-secret** env block,
+   rebuilds the frontend (with `VITE_API_URL` pointed at the Function URL),
+   syncs it to S3, and invalidates CloudFront.
 
 The OpenAI key is never touched by a deploy — it is read from SSM at cold start,
 so redeploys never clobber it. Running `scripts/aws-deploy.sh` locally (with
