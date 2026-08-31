@@ -401,5 +401,8 @@ under `apps/backend/src/eval/fixtures/quick-lookup-*` and
 artifact is emitted by `scripts/build-game-rules.mjs`. See
 `PRD/sections/system-map.md`'s `## Quick Lookup` block for the full file list,
 `PRD/sections/screen-layout.md`'s `#### Quick Question — pre-submit` and
-`#### Quick Question — answered workspace` rows for the layout bands, and
-`apps/backend/src/providers/README.md` for the provider-boundary config detail.
+`#### Quick Question — answered workspace` rows for the layout bands,
+`PRD/sections/system-map/prompt-layout-spec.md` for every section the lookup
+prompt is built from, in assembly order, and which appear with/without a
+card attached (REQ-169), and `apps/backend/src/providers/README.md` for the
+provider-boundary config detail.

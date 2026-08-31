@@ -1,6 +1,12 @@
 # Prompt assembly
 Backed by: DEC-025, DEC-036, DEC-042, DEC-043, DEC-033, DEC-021
 
+For the full section-by-section list in exact assembly order, a plain
+one-line description of each, and a presence matrix across every path (game
+mode, lookup with/without cards, follow-up), see
+`system-map/prompt-layout-spec.md` (REQ-169). This doc stays the narrative
+walkthrough; that one is the readable reference table.
+
 ## How it works
 
 Prompt assembly turns the validated ask-AI request into one provider-facing text
