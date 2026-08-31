@@ -1,6 +1,6 @@
 # Slice E — Worked-solutions evaluation set
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -37,13 +37,13 @@ NFR-018.
 
 ## Acceptance criteria
 
-- [ ] E1 — A committed worked-solutions evaluation set exists, sourced from
+- [x] E1 — A committed worked-solutions evaluation set exists, sourced from
   real hard rules questions with published worked solutions.
-- [ ] E2 — Every case documents its source/provenance (where the question and
+- [x] E2 — Every case documents its source/provenance (where the question and
   its worked solution came from) and confirms licensing permits committing it.
-- [ ] E3 — The set runs through the existing eval harness infrastructure
+- [x] E3 — The set runs through the existing eval harness infrastructure
   without a new runtime dependency, external call, or live prompt wiring.
-- [ ] E4 — `npm run quality:check` is unaffected by the new set — it stays a
+- [x] E4 — `npm run quality:check` is unaffected by the new set — it stays a
   non-gating, opt-in validation track.
 
 ## Verification

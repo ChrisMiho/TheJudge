@@ -1,0 +1,18 @@
+{
+  "id": "illegal-target-partial-resolution",
+  "question": "A spell says: destroy target nonblack creature and target land, and they can't be regenerated. The same permanent gets chosen as both targets -- a creature that's also a land -- and its color is changed to black before the spell resolves. Does the whole spell fizzle because one target became illegal, or does part of it still work?",
+  "expectedSupplementalRuleIds": ["608.2b"],
+  "workedSolution": "Plague Spores reads, “Destroy target nonblack creature and target land. They can’t be regenerated.” Suppose the same creature land is chosen both as the nonblack creature and as the land, and the color of the creature land is changed to black before Plague Spores resolves. Plague Spores still resolves because the black creature land is still a legal target for the “target land” part of the spell. The “destroy target nonblack creature” part of the spell won’t affect that permanent, but the “destroy target land” part of the spell will still destroy it. It can’t be regenerated.",
+  "source": {
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "608.2b",
+    "sectionTitle": "Resolving Spells and Abilities",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-08-30",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "whyHard": "A spell only fully fizzles when EVERY target instance (every separate use of the word \"target\") is illegal at resolution; here only one of the two \"target\" instances became illegal, so the spell still resolves and does whatever it can for the still-legal target -- a case that's easy to get wrong by treating any illegal target as fizzling the whole spell."
+}
