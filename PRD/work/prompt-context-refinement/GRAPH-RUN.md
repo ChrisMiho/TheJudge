@@ -5,7 +5,9 @@
 - Canary: `denied — hook live (universal: rm -rf; graph: nohup)`
 - Autonomous base: `origin/thejudge-auto/prompt-context-refinement-v2`
 - Staging: `.worktrees/.graph-intake/graph-20260830-154444/`
-- Current node: `build` (run two — 5 slices A–E mapped)
+- Current node: `review` (run two — build done, PR #152; reviewing)
+- Base frozen: build opened PR #152; driver commits ledger/status to the launch
+  checkout LOCAL ONLY from here, pushing nothing to the base until the PR merges.
 - Next action: `/graph-run PRD/work/prompt-context-refinement/`
 - Run two: resumed 2026-08-30 from `owner-action`. Lock re-taken (pid 17131);
   graph canary re-proved (`nohup` denied). Gate fully answered: REQ-167 edit
@@ -36,6 +38,7 @@ remote-branch deletion); it carries no PR.
 | 3 | define | opus | ok | `0 → 25` | Loop-2 fix: specified lookup complete/partial combo (complete = all slots matched in attached set, zone checks dropped; partial = admitted-but-missing; ranking = complete→coverage→fewer-missing→popularity→variant-id; missing named as role/template via REQ-095, not a card rec). No new stable ID (amended REQ-094/REQ-167, refs REQ-095). DESIGN-BRIEF fixed (cap 5, assumption #8). No blocker. `STATUS.refined` | 2026-08-30 |
 | 4 | gate-qc | sonnet | ok | `0 → 16` | PASS (run two re-grade): partial-combo fully specified & implementable, REQ-094/REQ-167/REQ-095 consistent, DESIGN-BRIEF matches (cap 5), no regressions, no live not-specified flags. `STATUS.refined`. Run two continues to plan | 2026-08-30 |
 | 5 | plan | sonnet | ok | `0 → 85` | `GAMEPLAN.md` + 5 slice docs (A multi-card backend, B multi-card UI+Playwright, C guardrail+glossary, D prompt-layout spec, E worked-solutions eval) + 5 `slice-*.criteria.json`; `STATUS.active`; order A→B→C→D→E | 2026-08-30 |
+| 6 | build | sonnet | ok | `0 → 550` | All 5 slices; 28/28 criteria true; `npm run quality:check` green (432 script + 391 backend + 1302 frontend tests); PR #152 (`…-v2-work`→`…-v2`) opened; `STATUS.ship-ready` (worktree); write-scope OK (launch checkout clean, all writes in `.worktrees/implement-prompt-context-refinement/`) | 2026-08-30 |
 
 ## Open gate
 
@@ -285,6 +288,14 @@ graph-run is controlling.
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge
 
 You are node 5 (`plan`). Invoke `thejudge-map-out` in graph mode. Do NOT ask the user questions. Package `PRD/work/prompt-context-refinement/` (STATUS.refined), run id `graph-20260830-154444`. The README `## Preparation gate` records Quality-check: PASS — verify it before writing any planning artifact; you cannot self-certify it. Create GAMEPLAN.md, lettered slice docs, and each slice's criteria.json (criteria initialised false with evidence blocks), set STATUS.active. Slice these roughly-independent items sensibly for sequential single-agent implementation, foundational first: REQ-167 + FLOW-023 (bounded 5-card lookup, per-card enrichment + retrieval, combo qualify-on-any-one + coverage ranking + complete/partial answer naming the missing role via REQ-095, not a card recommendation; the pre-submit multi-card add strip, with the screen-layout pre-submit single-card image-cap row needing re-measurement); REQ-168 (guardrail wording + a glossary phrasing doc); REQ-169 (readable prompt-layout spec, docs only); NFR-018 (committed worked-solutions eval set with documented provenance, test data only). Keep REQ-169 and NFR-018 as their own slices; REQ-168 its own small slice; do not expand scope beyond the approved requirements. Report the GAMEPLAN summary, slice list with coverage, criteria.json confirmation, and the final STATUS. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+### build
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 6 (`build`). Invoke `thejudge-implement-all` in graph mode. Do NOT ask the user questions. Package `PRD/work/prompt-context-refinement/` (STATUS.active), run id `graph-20260830-154444`. Autonomous base `origin/thejudge-auto/prompt-context-refinement-v2`; use the explicit shared PR head branch `thejudge-auto/prompt-context-refinement-v2-work` (distinct from the base); worktree `.worktrees/implement-prompt-context-refinement/`. Implement every slice A to B to C to D to E sequentially in that one worktree: A multi-card lookup backend (REQ-167/094/095 — card to bounded cards max 5, per-card metadata+rulings, System 3 over question+all cards, combo qualify-on-any-one + coverage ranking, complete/partial answer naming the missing role via REQ-095 not a card recommendation); B multi-card UI + FLOW-023 (add strip capped at 5, follow-up wiring, screen re-measurement — browser-risk, use Playwright MCP, screenshots under the package `.playwright-mcp/`, browser_close when done); C guardrail wording + glossary (REQ-168); D prompt-layout spec doc (REQ-169); E worked-solutions eval set with documented provenance (NFR-018, final slice, ship gates). Earn each slice-<letter>.criteria.json as you go; report ok only when every criterion is true and the repo quality gate passes. Open the -work to base PR and set STATUS.ship-ready. Every path written must be inside `.worktrees/implement-prompt-context-refinement/` or `PRD/work/prompt-context-refinement/`. Park precisely on a genuine blocker rather than guessing or expanding scope. Copy the `Working directory:` line above, unchanged, into any prompt you write.
 
 ## Instruction ledger
 
