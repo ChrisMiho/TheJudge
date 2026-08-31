@@ -34,7 +34,7 @@ function seedCompletedConversation(
         id: overrides.id,
         mode,
         flowLabel: mode === "game" ? "In-Depth Question" : "Quick Question",
-        frozenContext: mode === "game" ? { kind: "game", gameContext: { players: [] } } : { kind: "lookup", card: null },
+        frozenContext: mode === "game" ? { kind: "game", gameContext: { players: [] } } : { kind: "lookup", cards: [] },
         hiddenInitialQuestion: overrides.hiddenInitialQuestion,
         visibleMessages: [
           { role: "user", content: overrides.hiddenInitialQuestion },

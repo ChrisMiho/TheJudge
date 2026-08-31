@@ -34,6 +34,27 @@ const CARD_METADATA_URL = "/data/cardMetadata.json";
 const CORE_TOPICS_URL = "/data/gameRulesCoreTopics.json";
 const MAX_QUESTION_LENGTH = 300;
 const RETRY_COOLDOWN_SECONDS = 13;
+// REQ-167: the single optional card generalizes to a bounded (max 5) list.
+const MAX_LOOKUP_CARDS = 5;
+
+/**
+ * The silent fallback question when only card(s) are attached and no locked
+ * topic or typed text exists. A single card renders exactly as before
+ * ("Tell me about X."); REQ-167 generalizes it to name every attached card.
+ */
+function composeCardsFallbackQuestion(cards: CardMetadataItem[]): string {
+  if (cards.length === 0) return "";
+  if (cards.length === 1) return `Tell me about ${cards[0]!.name}.`;
+  const names = cards.map((card) => card.name);
+  const last = names[names.length - 1];
+  const rest = names.slice(0, -1);
+  return `Tell me about ${rest.join(", ")} and ${last}.`;
+}
+
+function formatCardsTriggerLabel(cards: CardMetadataItem[]): string {
+  if (cards.length === 1) return cards[0]!.name;
+  return `${cards.length} cards`;
+}
 
 type CoreTopic = {
   id: string;
@@ -43,7 +64,7 @@ type CoreTopic = {
 };
 
 export type QuickLookupAppProps = {
-  onSubmit?: (question: string, card: CardMetadataItem | null) => void;
+  onSubmit?: (question: string, cards: CardMetadataItem[]) => void;
   isActive?: boolean;
 };
 
@@ -55,7 +76,8 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   const [isTopicsLoading, setIsTopicsLoading] = useState(true);
   const [topicsError, setTopicsError] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
-  const [selectedCard, setSelectedCard] = useState<CardMetadataItem | null>(null);
+  const [selectedCards, setSelectedCards] = useState<CardMetadataItem[]>([]);
+  const [cardLimitMessage, setCardLimitMessage] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
   const [lockedTopic, setLockedTopic] = useState<Pick<CoreTopic, "id" | "title"> | null>(null);
   const [openTopicId, setOpenTopicId] = useState<string | null>(null);
@@ -103,7 +125,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   });
 
   function hydrateFromLookupDraft(draft: LookupDraftState): void {
-    setSelectedCard(draft.selectedCard);
+    setSelectedCards(draft.selectedCards);
     setQuestion(draft.question);
     setLockedTopic(draft.lockedTopic);
   }
@@ -131,10 +153,10 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   function snapshotMidFlightDraft(): void {
     if (isConversationActive) return;
 
-    const hasStaging = selectedCard !== null || question.trim().length > 0 || lockedTopic !== null;
+    const hasStaging = selectedCards.length > 0 || question.trim().length > 0 || lockedTopic !== null;
 
     if (hasStaging) {
-      saveDraft({ mode: "lookup", selectedCard, question, lockedTopic });
+      saveDraft({ mode: "lookup", selectedCards, question, lockedTopic });
     } else {
       clearDraft("lookup");
     }
@@ -197,9 +219,33 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
     return () => controller.abort();
   }, []);
 
+  // REQ-167: an add beyond the 5-card cap is blocked with a stated limit
+  // message, mirroring the existing bounded-add UX pattern (`ScanAddOutcome`,
+  // the In-Depth zone-collection strip). A card already in the list is not
+  // added again.
+  function addLookupCard(card: CardMetadataItem): { added: true } | { added: false; message: string } {
+    if (selectedCards.some((existing) => existing.cardId === card.cardId)) {
+      return { added: false, message: `${card.name} is already attached to this question.` };
+    }
+    if (selectedCards.length >= MAX_LOOKUP_CARDS) {
+      return {
+        added: false,
+        message: `You've added ${MAX_LOOKUP_CARDS} cards, the most one Quick Question can use. Remove a card below to add another.`
+      };
+    }
+    setSelectedCards((current) => [...current, card]);
+    return { added: true };
+  }
+
   function selectCard(card: CardMetadataItem): void {
-    setSelectedCard(card);
     setSearchInput("");
+    const outcome = addLookupCard(card);
+    setCardLimitMessage(outcome.added ? null : outcome.message);
+  }
+
+  function removeCard(cardId: string): void {
+    setSelectedCards((current) => current.filter((card) => card.cardId !== cardId));
+    setCardLimitMessage(null);
   }
 
   const suggestions = useAutocompleteSuggestions({
@@ -214,9 +260,12 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   const scanCapture = useScanCapture({
     cardMetadata,
     onScanCandidateSelected: (card) => {
-      selectCard(card);
-      closeScanRef.current();
-      return { added: true };
+      const outcome = addLookupCard(card);
+      setCardLimitMessage(outcome.added ? null : outcome.message);
+      if (outcome.added) {
+        closeScanRef.current();
+      }
+      return outcome;
     }
   });
   closeScanRef.current = scanCapture.closeScan;
@@ -228,9 +277,9 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   const composedQuestion =
     [lockedTopic ? `Tell me about ${lockedTopic.title}.` : null, trimmedQuestion || null]
       .filter((part): part is string => part !== null)
-      .join(" ") || (selectedCard ? `Tell me about ${selectedCard.name}.` : "");
+      .join(" ") || composeCardsFallbackQuestion(selectedCards);
   const hasQuestionContent =
-    lockedTopic !== null || selectedCard !== null || trimmedQuestion.length > 0;
+    lockedTopic !== null || selectedCards.length > 0 || trimmedQuestion.length > 0;
   // The counter, the textarea cap, and this gate all measure the raw editable text.
   // `composedQuestion` may legitimately exceed the cap once a topic pill or the silent
   // card fallback is prepended, and that composed string is what gets submitted.
@@ -247,14 +296,14 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
 
   async function submitLookup(source: "decrypt" | "retry"): Promise<void> {
     if (!canSubmit) return;
-    const payload = buildLookupAskAiRequest(composedQuestion, selectedCard);
+    const payload = buildLookupAskAiRequest(composedQuestion, selectedCards);
     await submitAttempt({
       source,
       payload,
       stackSize: 0,
       finalQuestion: payload.question,
       usedFallbackQuestion:
-        lockedTopic === null && trimmedQuestion.length === 0 && selectedCard !== null
+        lockedTopic === null && trimmedQuestion.length === 0 && selectedCards.length > 0
     });
   }
 
@@ -264,7 +313,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
       return;
     }
     if (onSubmit) {
-      onSubmit(composedQuestion, selectedCard);
+      onSubmit(composedQuestion, selectedCards);
       return;
     }
     void submitLookup("decrypt");
@@ -274,7 +323,8 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
     startOver();
     setQuestion("");
     setLockedTopic(null);
-    setSelectedCard(null);
+    setSelectedCards([]);
+    setCardLimitMessage(null);
     setSearchInput("");
     setOpenTopicId(null);
     setActiveConversationId(null);
@@ -318,8 +368,8 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   }
 
   const retryLabel = retryCountdown > 0 ? `Retry in ${retryCountdown}s` : "Retry";
-  const frozenLookupCard =
-    frozenContext?.kind === "lookup" ? frozenContext.card : null;
+  const frozenLookupCards =
+    frozenContext?.kind === "lookup" ? frozenContext.cards : [];
   useAutoGrowTextarea(question, questionInputRef);
 
   if (isConversationActive) {
@@ -341,12 +391,16 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
         <ConversationWorkspace
           messages={visibleMessages}
           context={
-            frozenLookupCard
+            frozenLookupCards.length > 0
               ? {
-                  triggerLabel: frozenLookupCard.name,
+                  triggerLabel: formatCardsTriggerLabel(frozenLookupCards),
                   dialogLabel: "Card context",
                   content: (
-                    <CardSelectionPreview card={frozenLookupCard} />
+                    <div className="flex flex-col gap-3">
+                      {frozenLookupCards.map((card) => (
+                        <CardSelectionPreview key={card.cardId} card={card} />
+                      ))}
+                    </div>
                   )
                 }
               : undefined
@@ -422,9 +476,10 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
         <>
           <section className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
             <label className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
-              <span>Optional card</span>{" — "}
+              <span>Optional cards</span>{" — "}
               <span className="text-sm font-normal normal-case tracking-normal text-zinc-400">
-                Add a card for context or ask any Magic related question.
+                {/* REQ-167: up to 5 cards, added one at a time; ask with no card at all works too. */}
+                Add up to {MAX_LOOKUP_CARDS} cards for context, or ask any Magic related question.
               </span>
               <span className="mt-2 grid gap-2 normal-case tracking-normal sm:grid-cols-[1fr_auto] sm:items-center">
                 <input
@@ -433,7 +488,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
                   onChange={(event) => setSearchInput(event.target.value)}
                   onKeyDown={keyboard.handleKeyDown}
                   className="w-full rounded-xl border border-zinc-600 bg-zinc-800/80 px-3 py-2 text-sm"
-                  placeholder={selectedCard ? "Search to replace card" : "Type at least 3 characters"}
+                  placeholder={selectedCards.length > 0 ? "Search to add another card" : "Type at least 3 characters"}
                 />
                 <button
                   type="button"
@@ -479,23 +534,29 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
             )}
 
             {metadataError && <p className="text-sm text-amber-200">{metadataError}</p>}
+            {cardLimitMessage && <p className="text-sm text-amber-200">{cardLimitMessage}</p>}
 
-            {selectedCard && (
-              <CardSelectionPreview
-                card={selectedCard}
-                action={
-                  // REQ-133: the smaller Remove action is all that stays beside/below the
-                  // image now that the duplicated metadata panel is gone.
-                  <button
-                    type="button"
-                    aria-label={`Remove ${selectedCard.name}`}
-                    onClick={() => setSelectedCard(null)}
-                    className="min-h-11 rounded-xl border border-zinc-600 px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-700"
-                  >
-                    Remove card
-                  </button>
-                }
-              />
+            {selectedCards.length > 0 && (
+              <div className="flex flex-col gap-3">
+                {selectedCards.map((card) => (
+                  <CardSelectionPreview
+                    key={card.cardId}
+                    card={card}
+                    action={
+                      // REQ-133: the smaller Remove action is all that stays beside/below the
+                      // image now that the duplicated metadata panel is gone.
+                      <button
+                        type="button"
+                        aria-label={`Remove ${card.name}`}
+                        onClick={() => removeCard(card.cardId)}
+                        className="min-h-11 rounded-xl border border-zinc-600 px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-700"
+                      >
+                        Remove card
+                      </button>
+                    }
+                  />
+                ))}
+              </div>
             )}
           </section>
 

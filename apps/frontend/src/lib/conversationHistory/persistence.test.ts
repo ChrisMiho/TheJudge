@@ -33,7 +33,7 @@ function buildEntry(overrides: Partial<ConversationHistoryEntry> = {}): Conversa
     id: "entry-1",
     mode: "lookup",
     flowLabel: "Quick Question",
-    frozenContext: { kind: "lookup", card: null },
+    frozenContext: { kind: "lookup", cards: [] },
     hiddenInitialQuestion: "How does hexproof work?",
     visibleMessages: [{ role: "assistant", content: "Hexproof restricts opposing targets." }],
     createdAt: "2026-01-01T00:00:00.000Z",
@@ -63,7 +63,7 @@ function buildLookupDraft(
 ): Omit<LookupDraftState, "updatedAt"> {
   return {
     mode: "lookup",
-    selectedCard: null,
+    selectedCards: [],
     question: "Does trample interact with deathtouch?",
     lockedTopic: null,
     ...overrides

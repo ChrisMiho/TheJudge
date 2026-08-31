@@ -1,6 +1,6 @@
 # Slice B — Multi-card lookup: pre-submit UI, follow-up wiring, screen-layout
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -41,29 +41,30 @@ REQ-167 (pre-submit UI acceptance criteria), FLOW-023 (full flow).
 
 ## Acceptance criteria
 
-- [ ] B1 — The pre-submit view supports adding, previewing, and removing more
+- [x] B1 — The pre-submit view supports adding, previewing, and removing more
   than one card; each add resolves to one oracle-level card via typed search
   or camera scan.
-- [ ] B2 — An add attempted past the 5-card cap is blocked and a stated limit
+- [x] B2 — An add attempted past the 5-card cap is blocked and a stated limit
   is shown to the player.
-- [ ] B3 — On submit, the request carries the full attached card list and no
+- [x] B3 — On submit, the request carries the full attached card list and no
   game state; with zero or one card attached, behavior is unchanged from
   today.
-- [ ] B4 — The answered workspace's frozen-context view shows every attached
+- [x] B4 — The answered workspace's frozen-context view shows every attached
   card; a follow-up sends `{ mode: "lookup", question, cards: frozen,
   conversationHistory }` with the card set frozen (text-only follow-ups).
-- [ ] B5 — Component tests (`QuickLookupApp.test.tsx` and any touched flow/hook
+- [x] B5 — Component tests (`QuickLookupApp.test.tsx` and any touched flow/hook
   tests) cover add/remove/cap-blocked/frozen-context/follow-up for the
   multi-card case.
-- [ ] B6 — **Browser-risk (manual):** at 390×844 and at 1440×900, add cards up
+- [x] B6 — **Browser-risk (manual):** at 390×844 and at 1440×900, add cards up
   to the 5-card cap, confirm the blocked-add message on a 6th attempt, submit,
   and confirm the answered workspace shows all attached cards in the frozen
   context. Record the re-measured image-cap bound (or confirm the existing
   bound already holds for the multi-card strip) as the `screen-layout.md`
-  update.
-- [ ] B7 — Browser closed, owned dev server(s) stopped, ports released;
+  update. See `slice-b.evidence.md` (2026-08-30).
+- [x] B7 — Browser closed, owned dev server(s) stopped, ports released;
   captures (if any) written to
-  `PRD/work/prompt-context-refinement/.playwright-mcp/`.
+  `PRD/work/prompt-context-refinement/.playwright-mcp/`. See
+  `slice-b.evidence.md` (2026-08-30).
 
 ## Verification
 

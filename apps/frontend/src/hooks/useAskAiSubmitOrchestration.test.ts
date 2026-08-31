@@ -52,18 +52,20 @@ const lookupPayloadFixture: LookupAskAiPayload = {
 
 const lookupCardPayloadFixture: LookupAskAiPayload = {
   ...lookupPayloadFixture,
-  card: {
-    cardId: "oracle-lightning-bolt",
-    name: "Lightning Bolt",
-    oracleText: "Lightning Bolt deals 3 damage to any target.",
-    imageUrl: "https://cards.example/lightning-bolt.jpg",
-    manaCost: "{R}",
-    manaValue: 1,
-    typeLine: "Instant",
-    colors: ["R"],
-    supertypes: [],
-    subtypes: []
-  }
+  cards: [
+    {
+      cardId: "oracle-lightning-bolt",
+      name: "Lightning Bolt",
+      oracleText: "Lightning Bolt deals 3 damage to any target.",
+      imageUrl: "https://cards.example/lightning-bolt.jpg",
+      manaCost: "{R}",
+      manaValue: 1,
+      typeLine: "Instant",
+      colors: ["R"],
+      supertypes: [],
+      subtypes: []
+    }
+  ]
 };
 
 describe("Frontend - MTG Assistant", () => {
@@ -285,7 +287,7 @@ describe("useAskAiSubmitOrchestration", () => {
       });
 
       expect(result.current.isConversationActive).toBe(true);
-      expect(result.current.frozenContext).toEqual({ kind: "lookup", card: null });
+      expect(result.current.frozenContext).toEqual({ kind: "lookup", cards: [] });
       expect(result.current.frozenGameContext).toBeNull();
 
       await act(async () => {
@@ -328,7 +330,7 @@ describe("useAskAiSubmitOrchestration", () => {
 
       expect(result.current.frozenContext).toEqual({
         kind: "lookup",
-        card: lookupCardPayloadFixture.card
+        cards: lookupCardPayloadFixture.cards
       });
 
       await act(async () => {
@@ -338,7 +340,7 @@ describe("useAskAiSubmitOrchestration", () => {
       expect(JSON.parse(fetchMock.mock.calls[1]?.[1]?.body as string)).toMatchObject({
         mode: "lookup",
         question: "What if it is copied?",
-        card: lookupCardPayloadFixture.card
+        cards: lookupCardPayloadFixture.cards
       });
     });
 
@@ -835,13 +837,13 @@ describe("useAskAiSubmitOrchestration", () => {
       act(() => {
         result.current.restoreConversation({
           id: "resumed-entry",
-          frozenContext: { kind: "lookup", card: null },
+          frozenContext: { kind: "lookup", cards: [] },
           hiddenInitialQuestion: "Resumed question",
           visibleMessages: restoredMessages
         });
       });
 
-      expect(result.current.frozenContext).toEqual({ kind: "lookup", card: null });
+      expect(result.current.frozenContext).toEqual({ kind: "lookup", cards: [] });
       expect(result.current.hiddenInitialQuestion).toBe("Resumed question");
       expect(result.current.visibleMessages).toEqual(restoredMessages);
       expect(result.current.error).toBeNull();
@@ -866,7 +868,7 @@ describe("useAskAiSubmitOrchestration", () => {
       act(() => {
         result.current.restoreConversation({
           id: "resumed-entry",
-          frozenContext: { kind: "lookup", card: null },
+          frozenContext: { kind: "lookup", cards: [] },
           hiddenInitialQuestion: "Resumed question",
           visibleMessages: [{ role: "assistant", content: "Resumed answer" }]
         });

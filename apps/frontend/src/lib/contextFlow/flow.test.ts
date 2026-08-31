@@ -373,15 +373,38 @@ describe("buildLookupAskAiRequest", () => {
       { role: "assistant" as const, content: "First answer" }
     ];
 
-    const payload = buildLookupAskAiRequest("Follow up", cardWithFrontendField, conversationHistory);
+    const payload = buildLookupAskAiRequest("Follow up", [cardWithFrontendField], conversationHistory);
 
     expect(payload).toEqual({
       mode: "lookup",
       question: "Follow up",
-      card: lookupCard,
+      cards: [lookupCard],
       conversationHistory
     });
-    expect(payload.card).not.toHaveProperty("instanceId");
+    expect(payload.cards?.[0]).not.toHaveProperty("instanceId");
+  });
+
+  it("builds a bounded multi-card lookup payload, in submitted order (REQ-167)", () => {
+    const secondCard: CardMetadataItem = {
+      cardId: "oracle-counterspell",
+      name: "Counterspell",
+      oracleText: "Counter target spell.",
+      imageUrl: "https://cards.example/counterspell.jpg",
+      manaCost: "{U}{U}",
+      manaValue: 2,
+      typeLine: "Instant",
+      colors: ["U"],
+      supertypes: [],
+      subtypes: []
+    };
+
+    const payload = buildLookupAskAiRequest("How do these interact?", [lookupCard, secondCard]);
+
+    expect(payload).toEqual({
+      mode: "lookup",
+      question: "How do these interact?",
+      cards: [lookupCard, secondCard]
+    });
   });
 });
 });
