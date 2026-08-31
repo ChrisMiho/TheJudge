@@ -16,10 +16,6 @@ Do not rename package folders to encode status.
 
 ## owner-action
 
-| Package | Notes |
-| --- | --- |
-| [prompt-context-refinement](./prompt-context-refinement/) | Built, tested, reviewed (APPROVE). At `land` — owner merges two PRs in order: #152 (implementation `…-v2-work`→`…-v2`) first, then #151 (`…-v2`→`main`) last. Then resume `/graph-run PRD/work/prompt-context-refinement/` for `close` (promote truth, receipt, delete package). Built: multi-card Quick Question (≤5 cards) with complete/partial combo answers, guardrail phrasing fix + glossary, prompt-layout spec, worked-solutions eval; 28/28 criteria, suite green. |
-
 ## deferred
 
 ## parked in ideasForLater
