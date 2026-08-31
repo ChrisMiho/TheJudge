@@ -1,6 +1,6 @@
 # Slice A — Multi-card lookup: backend contract, prompt, retrieval, combo matching
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -57,29 +57,29 @@ classification — no new criterion expected).
 
 ## Acceptance criteria
 
-- [ ] A1 — The lookup request schema accepts an optional bounded list of at
+- [x] A1 — The lookup request schema accepts an optional bounded list of at
   most 5 oracle-level cards in place of the single optional `card`; a 6th card
   is rejected by validation.
-- [ ] A2 — Zero cards attached and exactly one card attached produce output
+- [x] A2 — Zero cards attached and exactly one card attached produce output
   identical to today's no-card and single-card lookup (metadata, rulings,
   System 3 query, combo retrieval).
-- [ ] A3 — With 2+ cards attached, per-card full metadata and per-card WotC
+- [x] A3 — With 2+ cards attached, per-card full metadata and per-card WotC
   rulings appear for every attached card, and the System 3 supplemental
   retrieval query is built from the question plus every attached card's
   oracle text and type line.
-- [ ] A4 — Combo retrieval for `mode: "lookup"` qualifies a candidate on
+- [x] A4 — Combo retrieval for `mode: "lookup"` qualifies a candidate on
   containing at least one attached card, ranks candidates covering more
   attached cards ahead of those covering fewer (before popularity), and
   classifies a candidate complete only when every ingredient slot is filled
   somewhere in the attached set.
-- [ ] A5 — A complete lookup combo candidate's rendered answer explains the
+- [x] A5 — A complete lookup combo candidate's rendered answer explains the
   assembled combo; a partial candidate names each missing ingredient and
   describes what would fill that role (its own identity/template/category
   from the combo catalog) — never a card recommendation.
-- [ ] A6 — Eval fixtures cover multi-card lookup (metadata/rulings/System 3
+- [x] A6 — Eval fixtures cover multi-card lookup (metadata/rulings/System 3
   query), multi-card combo-complete, and multi-card combo-partial; existing
   single-card and no-card lookup goldens are unchanged.
-- [ ] A7 — `npm --workspace apps/backend run test`, `npm --workspace
+- [x] A7 — `npm --workspace apps/backend run test`, `npm --workspace
   apps/backend run test:eval`, and `npm run quality:check` all pass.
 
 ## Verification

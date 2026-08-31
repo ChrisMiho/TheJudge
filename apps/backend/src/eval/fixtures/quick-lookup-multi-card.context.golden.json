@@ -1,0 +1,39 @@
+{
+  "finalQuestion": "Do these abilities interact during combat?",
+  "cards": [
+    {
+      "cardId": "fixture-questing-beast",
+      "name": "Questing Beast",
+      "oracleText": "Deathtouch",
+      "imageUrl": "",
+      "manaCost": "{2}{G}{G}",
+      "manaValue": 4,
+      "typeLine": "Legendary Creature — Beast",
+      "colors": [
+        "G"
+      ],
+      "supertypes": [
+        "Legendary"
+      ],
+      "subtypes": [
+        "Beast"
+      ],
+      "targets": []
+    },
+    {
+      "cardId": "eval-oracle-b",
+      "name": "Dark Consultation",
+      "oracleText": "Name a card. Exile the top four cards of your library.",
+      "imageUrl": "",
+      "manaCost": "{B}",
+      "manaValue": 1,
+      "typeLine": "Instant",
+      "colors": [
+        "B"
+      ],
+      "supertypes": [],
+      "subtypes": [],
+      "targets": []
+    }
+  ]
+}

@@ -102,31 +102,62 @@ describe("Backend - Ask AI", () => {
       expect(askAiRequestSchema.safeParse(validLookupRequest()).success).toBe(true);
     });
 
-    it("accepts and normalizes a lookup card reference", () => {
+    it("accepts and normalizes a single-entry lookup card list", () => {
       const parsed = askAiRequestSchema.safeParse({
         ...validLookupRequest(),
-        card: {
-          cardId: "opt",
-          name: "Opt",
-          oracleText: "Scry 1, then draw a card."
-        }
+        cards: [
+          {
+            cardId: "opt",
+            name: "Opt",
+            oracleText: "Scry 1, then draw a card."
+          }
+        ]
       });
 
       expect(parsed.success).toBe(true);
       if (parsed.success && parsed.data.mode === "lookup") {
-        expect(parsed.data.card).toEqual({
-          cardId: "opt",
-          name: "Opt",
-          oracleText: "Scry 1, then draw a card.",
-          imageUrl: "",
-          manaCost: "",
-          manaValue: 0,
-          typeLine: "",
-          colors: [],
-          supertypes: [],
-          subtypes: []
-        });
+        expect(parsed.data.cards).toEqual([
+          {
+            cardId: "opt",
+            name: "Opt",
+            oracleText: "Scry 1, then draw a card.",
+            imageUrl: "",
+            manaCost: "",
+            manaValue: 0,
+            typeLine: "",
+            colors: [],
+            supertypes: [],
+            subtypes: []
+          }
+        ]);
       }
+    });
+
+    function lookupCard(cardId: string) {
+      return { cardId, name: cardId, oracleText: `${cardId} text` };
+    }
+
+    it("accepts a bounded multi-card lookup list up to 5 cards (REQ-167)", () => {
+      const cards = ["a", "b", "c", "d", "e"].map(lookupCard);
+      const parsed = askAiRequestSchema.safeParse({ ...validLookupRequest(), cards });
+
+      expect(parsed.success).toBe(true);
+      if (parsed.success && parsed.data.mode === "lookup") {
+        expect(parsed.data.cards).toHaveLength(5);
+      }
+    });
+
+    it("rejects a 6th card in the lookup card list", () => {
+      const cards = ["a", "b", "c", "d", "e", "f"].map(lookupCard);
+      const parsed = askAiRequestSchema.safeParse({ ...validLookupRequest(), cards });
+
+      expect(parsed.success).toBe(false);
+    });
+
+    it("accepts lookup mode with zero cards, identical to today's no-card lookup", () => {
+      expect(
+        askAiRequestSchema.safeParse({ ...validLookupRequest(), cards: [] }).success
+      ).toBe(true);
     });
 
     it("rejects gameContext in lookup mode", () => {
@@ -138,16 +169,18 @@ describe("Backend - Ask AI", () => {
       ).toBe(false);
     });
 
-    it("rejects a card in game mode", () => {
+    it("rejects a cards list in game mode", () => {
       expect(
         askAiRequestSchema.safeParse({
           ...validRequest(),
           mode: "game",
-          card: {
-            cardId: "opt",
-            name: "Opt",
-            oracleText: "Scry 1, then draw a card."
-          }
+          cards: [
+            {
+              cardId: "opt",
+              name: "Opt",
+              oracleText: "Scry 1, then draw a card."
+            }
+          ]
         }).success
       ).toBe(false);
     });
@@ -159,17 +192,19 @@ describe("Backend - Ask AI", () => {
       ["contextNotes", "Cast during combat"],
       ["manaSpent", 1]
     ])(
-      "rejects the game-state card field %s in lookup mode",
+      "rejects the game-state card field %s in a lookup card entry",
       (field, value) => {
         expect(
           askAiRequestSchema.safeParse({
             ...validLookupRequest(),
-            card: {
-              cardId: "opt",
-              name: "Opt",
-              oracleText: "Scry 1, then draw a card.",
-              [field]: value
-            }
+            cards: [
+              {
+                cardId: "opt",
+                name: "Opt",
+                oracleText: "Scry 1, then draw a card.",
+                [field]: value
+              }
+            ]
           }).success
         ).toBe(false);
       }

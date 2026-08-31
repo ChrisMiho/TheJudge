@@ -1,0 +1,38 @@
+{
+  "finalQuestion": "How do these cards combo with each other?",
+  "cards": [
+    {
+      "cardId": "eval-oracle-a",
+      "name": "Tidal Oracle",
+      "oracleText": "When Tidal Oracle enters, look at the top card of your library.",
+      "imageUrl": "",
+      "manaCost": "{1}{U}",
+      "manaValue": 2,
+      "typeLine": "Creature — Merfolk Wizard",
+      "colors": [
+        "U"
+      ],
+      "supertypes": [],
+      "subtypes": [
+        "Merfolk",
+        "Wizard"
+      ],
+      "targets": []
+    },
+    {
+      "cardId": "eval-oracle-b",
+      "name": "Dark Consultation",
+      "oracleText": "Name a card. Exile the top four cards of your library.",
+      "imageUrl": "",
+      "manaCost": "{B}",
+      "manaValue": 1,
+      "typeLine": "Instant",
+      "colors": [
+        "B"
+      ],
+      "supertypes": [],
+      "subtypes": [],
+      "targets": []
+    }
+  ]
+}

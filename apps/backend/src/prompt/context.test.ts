@@ -422,22 +422,24 @@ describe("Backend - Ask AI", () => {
   });
 
   describe("buildLookupPromptContext", () => {
-    it("normalizes the question, conversation history, and complete card metadata", () => {
+    it("normalizes the question, conversation history, and complete card metadata for a single attached card", () => {
       const request: LookupAskAiRequest = {
         mode: "lookup",
         question: "  How   does this work? ",
-        card: {
-          cardId: "  questing-beast ",
-          name: "  Questing   Beast ",
-          oracleText: "  Vigilance,   deathtouch, haste  ",
-          imageUrl: " https://example.com/questing-beast.png ",
-          manaCost: " {2}{G}{G} ",
-          manaValue: 4,
-          typeLine: " Legendary   Creature — Beast ",
-          colors: ["G", "G", " "],
-          supertypes: ["Legendary", " "],
-          subtypes: ["Beast", "Beast"]
-        },
+        cards: [
+          {
+            cardId: "  questing-beast ",
+            name: "  Questing   Beast ",
+            oracleText: "  Vigilance,   deathtouch, haste  ",
+            imageUrl: " https://example.com/questing-beast.png ",
+            manaCost: " {2}{G}{G} ",
+            manaValue: 4,
+            typeLine: " Legendary   Creature — Beast ",
+            colors: ["G", "G", " "],
+            supertypes: ["Legendary", " "],
+            subtypes: ["Beast", "Beast"]
+          }
+        ],
         conversationHistory: [
           { role: "user", content: "Earlier question" },
           { role: "assistant", content: "Earlier answer" }
@@ -446,26 +448,72 @@ describe("Backend - Ask AI", () => {
 
       expect(buildLookupPromptContext(request)).toEqual({
         finalQuestion: "How does this work?",
-        card: {
-          cardId: "questing-beast",
-          name: "Questing Beast",
-          oracleText: "Vigilance, deathtouch, haste",
-          imageUrl: "https://example.com/questing-beast.png",
-          manaCost: "{2}{G}{G}",
-          manaValue: 4,
-          typeLine: "Legendary Creature — Beast",
-          colors: ["G"],
-          supertypes: ["Legendary"],
-          subtypes: ["Beast"],
-          targets: []
-        },
+        cards: [
+          {
+            cardId: "questing-beast",
+            name: "Questing Beast",
+            oracleText: "Vigilance, deathtouch, haste",
+            imageUrl: "https://example.com/questing-beast.png",
+            manaCost: "{2}{G}{G}",
+            manaValue: 4,
+            typeLine: "Legendary Creature — Beast",
+            colors: ["G"],
+            supertypes: ["Legendary"],
+            subtypes: ["Beast"],
+            targets: []
+          }
+        ],
         conversationHistory: request.conversationHistory
       });
+    });
+
+    it("normalizes every attached card, in order, for a multi-card lookup request (REQ-167)", () => {
+      const request: LookupAskAiRequest = {
+        mode: "lookup",
+        question: "How do these interact?",
+        cards: [
+          {
+            cardId: "card-one",
+            name: "Card One",
+            oracleText: "Card one text",
+            imageUrl: "",
+            manaCost: "{1}",
+            manaValue: 1,
+            typeLine: "Instant",
+            colors: [],
+            supertypes: [],
+            subtypes: []
+          },
+          {
+            cardId: "card-two",
+            name: "Card Two",
+            oracleText: "Card two text",
+            imageUrl: "",
+            manaCost: "{2}",
+            manaValue: 2,
+            typeLine: "Sorcery",
+            colors: [],
+            supertypes: [],
+            subtypes: []
+          }
+        ]
+      };
+
+      const context = buildLookupPromptContext(request);
+      expect(context.cards).toHaveLength(2);
+      expect(context.cards?.map((card) => card.cardId)).toEqual(["card-one", "card-two"]);
+      expect(context.cards?.map((card) => card.name)).toEqual(["Card One", "Card Two"]);
     });
 
     it("does not apply the game-mode fallback question when lookup text is blank", () => {
       expect(buildLookupPromptContext({ mode: "lookup", question: "   " })).toEqual({
         finalQuestion: ""
+      });
+    });
+
+    it("omits cards entirely when zero cards are attached", () => {
+      expect(buildLookupPromptContext({ mode: "lookup", question: "How does trample work?" })).toEqual({
+        finalQuestion: "How does trample work?"
       });
     });
   });

@@ -201,23 +201,26 @@ function checkLookupCardEnrichment(
   context: LookupPromptContext,
   promptText: string
 ): EvaluationCheckResult {
-  const expectsCard = fixture.request.mode === "lookup" && fixture.request.card !== undefined;
+  const expectsCards =
+    fixture.request.mode === "lookup" && (fixture.request.cards?.length ?? 0) > 0;
   const hasCardSection = promptText.includes("CARD (looked up)");
   const hasOfficialRulings = promptText.includes("OFFICIAL RULINGS");
-  const cardMetadataPresent = !expectsCard || (
-    context.card !== undefined &&
-    promptText.includes(`name: ${context.card.name}`) &&
-    promptText.includes(`oracleText: ${context.card.oracleText}`)
-  );
-  const passed = expectsCard
+  const cardMetadataPresent =
+    !expectsCards ||
+    (context.cards !== undefined &&
+      context.cards.length > 0 &&
+      context.cards.every(
+        (card) => promptText.includes(`name: ${card.name}`) && promptText.includes(`oracleText: ${card.oracleText}`)
+      ));
+  const passed = expectsCards
     ? hasCardSection && hasOfficialRulings && cardMetadataPresent
     : !hasCardSection && !hasOfficialRulings;
   return {
     id: "lookup-card-enrichment",
     passed,
     details: passed
-      ? expectsCard
-        ? "Attached lookup card metadata and official rulings are present."
+      ? expectsCards
+        ? "Attached lookup card metadata and official rulings are present for every attached card."
         : "Card-only sections are omitted when lookup has no card."
       : "Lookup card/rulings section presence does not match the fixture request."
   };

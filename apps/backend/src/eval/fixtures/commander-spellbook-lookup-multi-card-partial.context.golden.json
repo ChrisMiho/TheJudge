@@ -1,0 +1,40 @@
+{
+  "finalQuestion": "Does either of these cards combo with anything?",
+  "cards": [
+    {
+      "cardId": "eval-oracle-c",
+      "name": "Echoing Reclaimer",
+      "oracleText": "When Echoing Reclaimer enters, exile it unless you sacrifice another creature. When you do, return target artifact or creature card from your graveyard to your hand.",
+      "imageUrl": "",
+      "manaCost": "{2}{U}{B}",
+      "manaValue": 4,
+      "typeLine": "Creature — Zombie",
+      "colors": [
+        "U",
+        "B"
+      ],
+      "supertypes": [],
+      "subtypes": [
+        "Zombie"
+      ],
+      "targets": []
+    },
+    {
+      "cardId": "eval-oracle-d",
+      "name": "Swarming Scute",
+      "oracleText": "When Swarming Scute dies, create a 1/1 green Insect creature token.",
+      "imageUrl": "",
+      "manaCost": "{2}{G}",
+      "manaValue": 3,
+      "typeLine": "Creature — Insect",
+      "colors": [
+        "G"
+      ],
+      "supertypes": [],
+      "subtypes": [
+        "Insect"
+      ],
+      "targets": []
+    }
+  ]
+}

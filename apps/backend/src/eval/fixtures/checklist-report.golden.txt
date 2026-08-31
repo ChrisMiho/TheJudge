@@ -7,6 +7,8 @@ combat-deathtouch | 19/19 | PASS
 commander-spellbook-complete-no-intent | 16/16 | PASS
 commander-spellbook-degraded | 16/16 | PASS
 commander-spellbook-lookup-attached-intent | 14/14 | PASS
+commander-spellbook-lookup-multi-card-complete | 14/14 | PASS
+commander-spellbook-lookup-multi-card-partial | 14/14 | PASS
 commander-spellbook-lookup-unrelated | 14/14 | PASS
 commander-spellbook-partial-explicit-intent | 16/16 | PASS
 commander-spellbook-unresolved-template | 16/16 | PASS
@@ -20,6 +22,7 @@ multi-zone | 16/16 | PASS
 near-cap-stack | 16/16 | PASS
 player-counters | 16/16 | PASS
 quick-lookup-card | 16/16 | PASS
+quick-lookup-multi-card | 16/16 | PASS
 quick-lookup-no-card | 16/16 | PASS
 quick-lookup-off-domain | 15/15 | PASS
 simple-interaction | 16/16 | PASS

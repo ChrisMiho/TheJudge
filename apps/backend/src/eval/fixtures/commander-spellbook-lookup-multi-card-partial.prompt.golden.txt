@@ -1,0 +1,134 @@
+SYSTEM ROLE PREAMBLE
+You are TheJudge assistant for Magic: The Gathering stack-resolution support.
+Use only the provided context to explain likely interactions and resolution order.
+Treat ordered stack semantics as authoritative: stack[0] is the bottom spell and the last entry is the top spell.
+State assumptions when context is incomplete.
+Do not claim hidden state, private-zone information, or unseen effects.
+Do not present output as an official tournament ruling.
+
+INSTRUCTIONS
+- Explain reasoning clearly and concisely.
+- State uncertainty when context is incomplete.
+- Do not invent hidden state, targets, or board conditions.
+- For verbatim fidelity, quote rule text only from the provided GAME RULES / ADDITIONAL RELEVANT RULE EXCERPTS sections; present genuinely relevant excerpts verbatim with an explanation; never invent rule numbers or text.
+- Treat unrecognized or off-domain terms as not found in the rules corpus; ask the user to check spelling or rephrase toward a Magic term; never answer the off-domain question directly.
+
+MTG REFERENCE
+Magic: The Gathering turns proceed in this order: beginning phase (untap, upkeep, draw), pre-combat main phase, combat phase, post-combat main phase, ending phase (end step, cleanup). The stack is a zone where spells and abilities wait to resolve; items resolve top to bottom.
+
+This app records turn phase as one of: untap, upkeep, draw, main_1, combat, main_2, end_step, cleanup. Combat is a single combined phase; the active combat sub-step (if provided) appears in the phase guidance section below.
+
+Zones (app model):
+- stack — Spells and abilities pending resolution; ordered bottom (first) to top (last).
+- battlefield — Permanents in play.
+- hand — Hidden cards a player may cast or activate.
+- graveyard — Used cards and destroyed permanents.
+- exile — Cards removed from the game.
+- library — Deck; top matters for draw and search effects.
+- command — Command zone (commanders, some other cards).
+
+Only zones with cards appear in the user payload. A separate scope note lists empty or omitted zones.
+
+Continuous effects and state-based actions use a layer system. When effects conflict, apply in order: (1) Copy effects, (2) Control-changing effects, (3) Text-changing effects, (4) Type-changing effects, (5) Color-changing effects, (6) Ability-adding/removing effects, (7) Power- and toughness-changing effects. Within a layer, timestamp and dependency rules apply. This assistant does not adjudicate officially; use layers as shared vocabulary when explaining interactions.
+
+GAME RULES (reference)
+Use these general Magic rules as shared vocabulary. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
+
+Triggered Ability Basics
+603.1. Triggered abilities have a trigger condition and an effect. They are written as “[When/Whenever/At] [trigger condition or event], [effect]. [Instructions (if any).]”
+603.2. Whenever a game event or game state matches a triggered ability’s trigger event, that ability automatically triggers. The ability doesn’t do anything at this point.
+603.3. Once an ability has triggered, its controller puts it on the stack as an object that’s not a card the next time a player would receive priority. See rule 117, “Timing and Priority.” The ability becomes the topmost object on the stack. It has the text of the ability that created it, and no other characteristics. It remains on the stack until it’s countered, it resolves, a rule causes it to be removed from the stack, or an effect moves it elsewhere.
+
+Stack and Priority
+117.1. Unless a spell or ability is instructing a player to take an action, which player can take actions at any given time is determined by a system of priority. The player with priority may cast spells, activate abilities, and take special actions.
+117.3. Which player has priority is determined by the following rules:
+117.4. If all players pass in succession (that is, if all players pass without taking any actions in between passing), the spell or ability on top of the stack resolves or, if the stack is empty, the phase or step ends.
+117.7. If a player with priority casts a spell or activates an activated ability while another spell or ability is already on the stack, the new spell or ability has been cast or activated “in response to” the earlier spell or ability. The new spell or ability will resolve first. See rule 608, “Resolving Spells and Abilities.”
+405.1. When a spell is cast, the physical card is put on the stack (see rule 601.2a). When an ability is activated or triggers, it goes on top of the stack without any card associated with it (see rules 602.2a and 603.3).
+405.2. The stack keeps track of the order that spells and/or abilities were added to it. Each time an object is put on the stack, it’s put on top of all objects already there.
+
+Targets
+115.1. Some spells and abilities require their controller to choose one or more targets for them. The targets are object(s) and/or player(s) the spell or ability will affect. These targets are declared as part of the process of putting the spell or ability on the stack. The targets can’t be changed except by another spell or ability that explicitly says it can do so.
+115.2. Only permanents are legal targets for spells and abilities, unless a spell or ability (a) specifies that it can target an object in another zone or a player, or (b) targets an object that can’t exist on the battlefield, such as a spell or ability. See also rule 115.4.
+115.10. Spells and abilities can affect objects and players they don’t target. In general, those objects and players aren’t chosen until the spell or ability resolves. See rule 608, “Resolving Spells and Abilities.”
+
+Zones and Zone Changes
+400.1. A zone is a place where objects can be during a game. There are normally seven zones: library, hand, battlefield, graveyard, stack, exile, and command. Some older cards also use the ante zone. Each player has their own library, hand, and graveyard. The other zones are shared by all players.
+400.2. Public zones are zones in which all players can see the cards’ faces, except for those cards that some rule or effect specifically allow to be face down. Graveyard, battlefield, stack, exile, ante, and command are public zones. Hidden zones are zones in which not all players can be expected to see the cards’ faces. Library and hand are hidden zones, even if all the cards in one such zone happen to be revealed.
+400.7. An object that moves from one zone to another becomes a new object with no memory of, or relation to, its previous existence. This rule has the following exceptions.
+
+ADDITIONAL RELEVANT RULE EXCERPTS
+Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
+
+702.72a. 702.72a Champion represents two triggered abilities. “Champion an [object]” means “When this permanent enters, sacrifice it unless you exile another [object] you control” and “When this permanent leaves the battlefield, return the exiled card to the battlefield under its owner’s control.”
+
+712.21c. 712.21c If an effect can find the new object that a melded permanent becomes as it leaves the battlefield, it finds both cards. (See rule 400.7.) If that effect causes actions to be taken upon those cards, the same actions are taken upon each of them.
+Example: Otherworldly Journey is an instant that reads “Exile target creature. At the beginning of the next end step, return that card to the battlefield under its owner’s control with a +1/+1 counter on it.” A player casts Otherworldly Journey targeting Chittering Host, a melded permanent. Chittering Host is exiled. At the beginning of the next end step, Midnight Scavengers and Graf Rats are both returned to the battlefield, each with a +1/+1 counter on it.
+Example: False Demise is an Aura with the ability “When enchanted creature dies, return that card to the battlefield under your control.” A Chittering Host enchanted by False Demise dies. The triggered ability returns both Midnight Scavengers and Graf Rats to the battlefield.
+Example: Mimic Vat is an artifact that reads, in part, “Whenever a nontoken creature dies, you may exile that card.” A Chittering Host dies. As Mimic Vat’s triggered ability resolves, its controller makes a single choice and both cards that represented Chittering Host are either exiled or not.
+
+702.141a. 702.141a Encore is an activated ability that functions while the card with encore is in a graveyard. “Encore [cost]” means “[Cost], Exile this card from your graveyard: For each opponent, create a token that’s a copy of this card that attacks that opponent this turn if able. The tokens gain haste. Sacrifice them at the beginning of the next end step. Activate only as a sorcery.”
+
+111.10t. 111.10t A Junk token is a colorless Junk artifact token with “{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.”
+
+701.61a. 701.61a To forage means “Exile three cards from your graveyard or sacrifice a Food.”
+
+CARD (looked up)
+name: Echoing Reclaimer
+manaCost: {2}{U}{B}
+manaValue: 4
+typeLine: Creature — Zombie
+colors: U, B
+supertypes: (none)
+subtypes: Zombie
+oracleText: When Echoing Reclaimer enters, exile it unless you sacrifice another creature. When you do, return target artifact or creature card from your graveyard to your hand.
+
+name: Swarming Scute
+manaCost: {2}{G}
+manaValue: 3
+typeLine: Creature — Insect
+colors: G
+supertypes: (none)
+subtypes: Insect
+oracleText: When Swarming Scute dies, create a 1/1 green Insect creature token.
+
+OFFICIAL RULINGS (WotC reference)
+Use these published Oracle rulings as reference for how each card works. They do not override the user's stack order, zones, or stated game state.
+
+Echoing Reclaimer
+- 2020-02-05: It returns only creature cards.
+
+Swarming Scute
+- 2020-02-11: Its trigger uses the stack.
+
+COMMANDER SPELLBOOK COMBO CONTEXT — COMMUNITY-SOURCED
+- This is community-maintained catalog data from Commander Spellbook. It is not official WotC rules, not legality validation, and not proof that a combo can actually be executed in this game state.
+- Official card text, WotC rulings, and the Comprehensive Rules remain authoritative. Where they disagree with this section, they win.
+- For a partial candidate, identify the missing or incorrectly zoned pieces explicitly rather than assuming the user has them.
+- A candidate supplied automatically, rather than in response to an explicit combo question, is background context only: use it when it genuinely bears on the question asked, and do not expand it into a survey of unrelated staples.
+- Before asserting that a combo is live, assembled, or executable, check each ingredient's applicable card state and its must-be-commander requirement against the submitted board. None of that state has been verified here.
+
+1. partial; missing pieces named below — https://commanderspellbook.com/combo/eval-0002/
+   produces: Infinite mana
+   ingredients:
+   - Tidal Oracle — MISSING (1 needed); expected zone: battlefield; required state (battlefield): untapped; must be commander: no
+   - Echoing Reclaimer — present in a compatible zone (battlefield or graveyard); required state (battlefield): untapped and with no counters on it; must be commander: no
+   mana needed: {2}{R}
+   easy prerequisites: You control a land.
+   steps:
+   Return the artifact from the graveyard.
+   Repeat the loop for infinite mana.
+
+2. partial; missing pieces named below — https://commanderspellbook.com/combo/eval-0003/
+   produces: Infinite sacrifice triggers
+   ingredients:
+   - Swarming Scute — present in a compatible zone (battlefield); required state (battlefield): untapped; must be commander: no
+   - A free sacrifice outlet [template] — UNRESOLVED: the catalog has no authoritative card list for this requirement, so it cannot be matched automatically; expected zone: battlefield; required state (battlefield): untapped; must be commander: no
+   mana needed: {G}
+   easy prerequisites: You control a land.
+   steps:
+   Sacrifice the creature to the outlet.
+   Repeat for infinite triggers.
+
+QUESTION
+Does either of these cards combo with anything?

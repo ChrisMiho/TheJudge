@@ -47,18 +47,20 @@ describe("Backend - Ask AI", () => {
       const request: LookupAskAiRequest = {
         mode: "lookup",
         question: "What does this ability do?",
-        card: {
-          cardId: "questing-beast",
-          name: "Questing Beast",
-          oracleText: "Vigilance, deathtouch, haste",
-          imageUrl: "",
-          manaCost: "{2}{G}{G}",
-          manaValue: 4,
-          typeLine: "Legendary Creature — Beast",
-          colors: ["G"],
-          supertypes: ["Legendary"],
-          subtypes: ["Beast"]
-        }
+        cards: [
+          {
+            cardId: "questing-beast",
+            name: "Questing Beast",
+            oracleText: "Vigilance, deathtouch, haste",
+            imageUrl: "",
+            manaCost: "{2}{G}{G}",
+            manaValue: 4,
+            typeLine: "Legendary Creature — Beast",
+            colors: ["G"],
+            supertypes: ["Legendary"],
+            subtypes: ["Beast"]
+          }
+        ]
       };
       const prepared = preparePromptInput(request, {
         gameRulesTopics: topics,
@@ -75,6 +77,60 @@ describe("Backend - Ask AI", () => {
       ]);
       expect(prepared.promptText).toContain("CARD (looked up)");
       expect(prepared.promptText).toContain("OFFICIAL RULINGS (WotC reference)");
+    });
+
+    it("scores supplemental rules and rulings from every attached card, in order (REQ-167)", () => {
+      const request: LookupAskAiRequest = {
+        mode: "lookup",
+        question: "How do these two abilities interact?",
+        cards: [
+          {
+            cardId: "questing-beast",
+            name: "Questing Beast",
+            oracleText: "Vigilance, deathtouch, haste",
+            imageUrl: "",
+            manaCost: "{2}{G}{G}",
+            manaValue: 4,
+            typeLine: "Legendary Creature — Beast",
+            colors: ["G"],
+            supertypes: ["Legendary"],
+            subtypes: ["Beast"]
+          },
+          {
+            cardId: "snapcaster-mage",
+            name: "Snapcaster Mage",
+            oracleText: "Flash. When Snapcaster Mage enters, target instant or sorcery card in your graveyard gains flashback.",
+            imageUrl: "",
+            manaCost: "{1}{U}",
+            manaValue: 2,
+            typeLine: "Creature — Human Wizard",
+            colors: ["U"],
+            supertypes: [],
+            subtypes: ["Human", "Wizard"]
+          }
+        ]
+      };
+      const prepared = preparePromptInput(request, {
+        gameRulesTopics: topics,
+        gameRulesRuleIndex: ruleIndex,
+        cardRulingsIndex: new Map([
+          ["questing-beast", [{ publishedAt: "2019-10-04", comment: "Combat damage can't be prevented." }]],
+          ["snapcaster-mage", [{ publishedAt: "2011-06-01", comment: "Flashback is granted only for that turn." }]]
+        ]),
+        collectEnrichmentDebug: true
+      });
+
+      // Both attached cards feed rulings resolution, in the order submitted.
+      expect(prepared.enrichmentDebug?.rulings.cardsConsidered).toEqual([
+        { cardId: "questing-beast", name: "Questing Beast" },
+        { cardId: "snapcaster-mage", name: "Snapcaster Mage" }
+      ]);
+      // A rule id retrievable only through the second card's oracle text still
+      // shows the System 3 query was built from every attached card, not one.
+      expect(prepared.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId)).toContain("702.2");
+      expect(prepared.promptText).toContain("name: Questing Beast");
+      expect(prepared.promptText).toContain("name: Snapcaster Mage");
+      expect(prepared.promptText.match(/CARD \(looked up\)/g)).toHaveLength(1);
     });
   });
 });

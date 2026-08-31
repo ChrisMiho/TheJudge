@@ -663,19 +663,21 @@ describe("Backend - Ask AI", () => {
       const prompt = buildLookupPromptText(
         {
           ...lookupContext,
-          card: {
-            cardId: "questing-beast",
-            name: "Questing Beast",
-            oracleText: "Vigilance, deathtouch, haste",
-            imageUrl: "https://example.com/questing-beast.png",
-            manaCost: "{2}{G}{G}",
-            manaValue: 4,
-            typeLine: "Legendary Creature — Beast",
-            colors: ["G"],
-            supertypes: ["Legendary"],
-            subtypes: ["Beast"],
-            targets: []
-          }
+          cards: [
+            {
+              cardId: "questing-beast",
+              name: "Questing Beast",
+              oracleText: "Vigilance, deathtouch, haste",
+              imageUrl: "https://example.com/questing-beast.png",
+              manaCost: "{2}{G}{G}",
+              manaValue: 4,
+              typeLine: "Legendary Creature — Beast",
+              colors: ["G"],
+              supertypes: ["Legendary"],
+              subtypes: ["Beast"],
+              targets: []
+            }
+          ]
         },
         {
           rulings: {
@@ -699,6 +701,60 @@ describe("Backend - Ask AI", () => {
       expect(prompt).not.toContain("targets:");
       expect(prompt).not.toContain("contextNotes:");
       expect(prompt.indexOf("CARD (looked up)")).toBeLessThan(prompt.indexOf("OFFICIAL RULINGS"));
+    });
+
+    it("renders one CARD (looked up) heading with one block per attached card (REQ-167)", () => {
+      const prompt = buildLookupPromptText(
+        {
+          ...lookupContext,
+          cards: [
+            {
+              cardId: "card-one",
+              name: "Card One",
+              oracleText: "Card one text",
+              imageUrl: "",
+              manaCost: "{1}",
+              manaValue: 1,
+              typeLine: "Instant",
+              colors: [],
+              supertypes: [],
+              subtypes: [],
+              targets: []
+            },
+            {
+              cardId: "card-two",
+              name: "Card Two",
+              oracleText: "Card two text",
+              imageUrl: "",
+              manaCost: "{2}",
+              manaValue: 2,
+              typeLine: "Sorcery",
+              colors: [],
+              supertypes: [],
+              subtypes: [],
+              targets: []
+            }
+          ]
+        },
+        {
+          rulings: {
+            sectionChars: 0,
+            cards: [
+              { cardId: "card-one", name: "Card One", rulings: [{ publishedAt: "2020-01-01", comment: "Ruling one." }] },
+              { cardId: "card-two", name: "Card Two", rulings: [{ publishedAt: "2020-01-02", comment: "Ruling two." }] }
+            ]
+          }
+        }
+      );
+
+      // Exactly one heading; both card blocks render under it.
+      expect(prompt.match(/CARD \(looked up\)/g)).toHaveLength(1);
+      expect(prompt).toContain("CARD (looked up)\nname: Card One");
+      expect(prompt).toContain("name: Card Two");
+      expect(prompt).toContain("oracleText: Card one text");
+      expect(prompt).toContain("oracleText: Card two text");
+      expect(prompt).toContain("Card One\n- 2020-01-01: Ruling one.");
+      expect(prompt).toContain("Card Two\n- 2020-01-02: Ruling two.");
     });
 
     it("places conversation history immediately before the lookup question", () => {

@@ -1,0 +1,38 @@
+{
+  "id": "quick-lookup-multi-card",
+  "description": "Lookup mode with two attached cards and no combo intent: per-card metadata and rulings appear for both attached cards, and the System 3 supplemental retrieval query is built from the question plus both cards' oracle text and type line (REQ-167).",
+  "request": {
+    "mode": "lookup",
+    "question": "Do these abilities interact during combat?",
+    "cards": [
+      {
+        "cardId": "fixture-questing-beast",
+        "name": "Questing Beast",
+        "oracleText": "Deathtouch",
+        "imageUrl": "",
+        "manaCost": "{2}{G}{G}",
+        "manaValue": 4,
+        "typeLine": "Legendary Creature — Beast",
+        "colors": ["G"],
+        "supertypes": ["Legendary"],
+        "subtypes": ["Beast"]
+      },
+      {
+        "cardId": "eval-oracle-b",
+        "name": "Dark Consultation",
+        "oracleText": "Name a card. Exile the top four cards of your library.",
+        "imageUrl": "",
+        "manaCost": "{B}",
+        "manaValue": 1,
+        "typeLine": "Instant",
+        "colors": ["B"],
+        "supertypes": [],
+        "subtypes": []
+      }
+    ]
+  },
+  "expected": {
+    "expectedSystem2TopicIds": ["stack-and-priority", "targets-basics", "zones-basics", "abilities-trigger-basics"],
+    "expectedSupplementalRuleIds": ["702.2b"]
+  }
+}

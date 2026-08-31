@@ -105,9 +105,10 @@ export type PromptContext = {
 
 export type LookupPromptCard = Omit<PromptContextZoneItem, "owner" | "contextNotes">;
 
+/** REQ-167: the single optional card generalizes to a bounded (max 5) list. */
 export type LookupPromptContext = {
   finalQuestion: string;
-  card?: LookupPromptCard;
+  cards?: LookupPromptCard[];
   conversationHistory?: ConversationTurn[];
 };
 

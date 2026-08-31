@@ -113,17 +113,20 @@ export function buildLookupPromptText(
 ): string {
   const gameRulesSection = formatGameRulesSection(options.gameRulesTopics ?? []);
   const supplementalRulesSection = formatSupplementalRulesSection(options.supplementalRules ?? []);
-  const cardSection = context.card
-    ? [
-        "CARD (looked up)",
-        `name: ${context.card.name}`,
-        ...formatZoneCardMetadataLines(
-          { ...context.card, targets: [] },
-          {} as Record<PlayerLabel, string | undefined>
-        ).filter((line) => !line.startsWith("targets:") && !line.startsWith("contextNotes:"))
-      ].join("\n")
-    : "";
-  const officialRulingsSection = context.card ? formatOfficialRulingsSection(options.rulings) : "";
+  // REQ-167: one heading, one block per attached card (max 5) — matches
+  // OFFICIAL RULINGS's existing one-heading/many-blocks convention below, so
+  // exactly one card renders byte-identical to the prior single-card section.
+  const cardBlocks = (context.cards ?? []).map((card) =>
+    [
+      `name: ${card.name}`,
+      ...formatZoneCardMetadataLines(
+        { ...card, targets: [] },
+        {} as Record<PlayerLabel, string | undefined>
+      ).filter((line) => !line.startsWith("targets:") && !line.startsWith("contextNotes:"))
+    ].join("\n")
+  );
+  const cardSection = cardBlocks.length > 0 ? ["CARD (looked up)", cardBlocks.join("\n\n")].join("\n") : "";
+  const officialRulingsSection = (context.cards?.length ?? 0) > 0 ? formatOfficialRulingsSection(options.rulings) : "";
   const comboSection = formatComboSection(options.comboCandidates ?? []);
   const conversationHistory = context.conversationHistory ?? [];
   const conversationHistorySection = formatConversationHistorySection(
