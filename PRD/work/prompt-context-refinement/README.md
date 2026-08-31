@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # prompt-context-refinement
 
@@ -27,15 +27,18 @@ See `IDEA.md` for the problem, the five observations, and prior-run receipts.
 
 See `GAMEPLAN.md` for architecture and dependencies.
 
-| Slice | Scope | REQ/FLOW | Depends on |
-| --- | --- | --- | --- |
-| [A](./slice-a-multi-card-backend.md) | Multi-card lookup — backend contract, prompt assembly, retrieval, combo matching | REQ-167 (backend), REQ-094 (amended), REQ-095 (verified) | none |
-| [B](./slice-b-multi-card-frontend.md) | Multi-card lookup — pre-submit UI, follow-up wiring, screen-layout re-measurement | REQ-167 (UI), FLOW-023 | A |
-| [C](./slice-c-guardrail-phrasing.md) | Guardrail wording + phrasing glossary | REQ-168 | none (sequence after A to avoid a same-file merge) |
-| [D](./slice-d-prompt-layout-spec.md) | Readable prompt-layout spec doc | REQ-169 | A, C |
-| [E](./slice-e-worked-solutions-eval.md) | Worked-solutions evaluation set | NFR-018 | none |
+| Slice | Scope | REQ/FLOW | Depends on | Status |
+| --- | --- | --- | --- | --- |
+| [A](./slice-a-multi-card-backend.md) | Multi-card lookup — backend contract, prompt assembly, retrieval, combo matching | REQ-167 (backend), REQ-094 (amended), REQ-095 (verified) | none | done |
+| [B](./slice-b-multi-card-frontend.md) | Multi-card lookup — pre-submit UI, follow-up wiring, screen-layout re-measurement | REQ-167 (UI), FLOW-023 | A | done |
+| [C](./slice-c-guardrail-phrasing.md) | Guardrail wording + phrasing glossary | REQ-168 | none (sequence after A to avoid a same-file merge) | done |
+| [D](./slice-d-prompt-layout-spec.md) | Readable prompt-layout spec doc | REQ-169 | A, C | done |
+| [E](./slice-e-worked-solutions-eval.md) | Worked-solutions evaluation set | NFR-018 | none | done |
 
-Implementation order for a single sequential agent: A, B, C, D, E.
+Implementation order for a single sequential agent: A, B, C, D, E. All five
+slices are `done` (2026-08-30) on `thejudge-auto/prompt-context-refinement-v2-work`.
+`npm run quality:check` is green. Package is `ship-ready`, pending PR merge and
+`thejudge-cleanup`.
 
 ## Implementation map
 
