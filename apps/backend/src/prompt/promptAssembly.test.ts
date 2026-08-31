@@ -651,6 +651,10 @@ describe("Backend - Ask AI", () => {
       expect(prompt).toContain("quote rule text only from the provided GAME RULES");
       expect(prompt).toContain("not found in the rules corpus");
       expect(prompt).toContain("never answer the off-domain question directly");
+      // REQ-168: common Magic-adjacent phrasing is carved out as in-domain,
+      // ahead of the off-domain refusal persona.
+      expect(prompt).toContain("as in-domain and answer it normally");
+      expect(prompt).toContain("combo, infinite combo, aggro, control, ramp, tempo, stax, wheel, mill, blink, sacrifice outlet");
       expect(prompt).not.toContain("GENERAL GAME CONTEXT");
       expect(prompt).not.toContain("PHASE GUIDANCE");
       expect(prompt).not.toContain("ZONE:");

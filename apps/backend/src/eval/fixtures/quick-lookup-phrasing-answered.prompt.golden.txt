@@ -60,43 +60,15 @@ Zones and Zone Changes
 ADDITIONAL RELEVANT RULE EXCERPTS
 Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
 
-702.2c. 702.2c Any nonzero amount of combat damage assigned to a creature by a source with deathtouch is considered to be lethal damage for the purposes of determining if excess damage is being dealt.
+102.1. 102.1. A player is one of the people in the game. The active player is the player whose turn it is. The other players are nonactive players.
 
-702.170a. 702.170a Plot is a keyword ability that functions while the card with plot is in a player’s hand. “Plot [cost]” means “Any time you have priority during your main phase while the stack is empty, you may exile this card from your hand and pay [cost]. It becomes a plotted card.”
+602.5d. 602.5d Activated abilities that read “Activate only as a sorcery” mean the player must follow the timing rules for casting a sorcery spell, though the ability isn’t actually a sorcery. The player doesn’t actually need to have a sorcery card that they could cast.
 
-702.2b. 702.2b A creature with toughness greater than 0 that’s been dealt damage by a source with deathtouch since the last time state-based actions were checked is destroyed as a state-based action. See rule 704.
+602.5e. 602.5e Activated abilities that read “Activate only as an instant” mean the player must follow the timing rules for casting an instant spell, though the ability isn’t actually an instant. The player doesn’t actually need to have an instant card that they could cast.
 
-702.2. 702.2. Deathtouch
+112.2a. 112.2a Some effects instruct a player to create a copy of a card and say they may cast it. In that case, the owner of that copy is the player who is instructed to create it and given permission to cast it.
 
-702.2a. 702.2a Deathtouch is a static ability.
-
-CARD (looked up)
-name: Questing Beast
-manaCost: {2}{G}{G}
-manaValue: 4
-typeLine: Legendary Creature — Beast
-colors: G
-supertypes: Legendary
-subtypes: Beast
-oracleText: Deathtouch
-
-name: Dark Consultation
-manaCost: {B}
-manaValue: 1
-typeLine: Instant
-colors: B
-supertypes: (none)
-subtypes: (none)
-oracleText: Name a card. Exile the top four cards of your library.
-
-OFFICIAL RULINGS (WotC reference)
-Use these published Oracle rulings as reference for how each card works. They do not override the user's stack order, zones, or stated game state.
-
-Questing Beast
-- 2019-10-04: Combat damage can't be prevented.
-
-Dark Consultation
-- 2020-01-24: You may name a card that is not in your library.
+113.11. 113.11. Effects can stop an object from having a specified ability. These effects say that the object “can’t have” that ability. If the object has that ability, it loses it. It’s also impossible for an effect or keyword counter to add that ability to the object. If a resolving spell or ability creates a continuous effect that would add the specified ability to such an object, that part of that continuous effect does not apply; however, other parts of that continuous effect will still apply, and that resolving spell or ability can still create other continuous effects. Continuous effects created by static abilities that would add the specified ability won’t apply to that object.
 
 QUESTION
-Do these abilities interact during combat?
+What does it mean when people say a deck has a combo?

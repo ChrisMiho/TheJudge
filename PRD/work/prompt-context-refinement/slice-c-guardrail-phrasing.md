@@ -1,6 +1,6 @@
 # Slice C — Guardrail wording + phrasing glossary
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -32,22 +32,22 @@ REQ-168.
 
 ## Acceptance criteria
 
-- [ ] C1 — The lookup-mode guardrail instruction line answers questions using
+- [x] C1 — The lookup-mode guardrail instruction line answers questions using
   common non-official-but-valid Magic phrasing and reserves the "not found in
   the rules corpus" persona for input genuinely unrelated to Magic.
-- [ ] C2 — A new durable glossary doc exists with each phrasing category's
+- [x] C2 — A new durable glossary doc exists with each phrasing category's
   example phrases and a plain-language explanation of what the phrase means in
   Magic; it is discoverable from `promptAssembly.ts` or its adjacent
   documentation.
-- [ ] C3 — A question about "a combo," with or without cards attached, is
+- [x] C3 — A question about "a combo," with or without cards attached, is
   answered as a Magic question in the eval harness, not refused as "not a
   mechanic."
-- [ ] C4 — The off-domain golden fixture (`quick-lookup-off-domain`) still
+- [x] C4 — The off-domain golden fixture (`quick-lookup-off-domain`) still
   refuses a genuinely non-Magic input; a new fixture pins the reworded
   behavior for a common Magic-adjacent phrase.
-- [ ] C5 — No classifier, validator, detection branch, or off-domain log
+- [x] C5 — No classifier, validator, detection branch, or off-domain log
   signal is added; the guardrail stays one instruction line in the assembled
-  prompt.
+  prompt. See `slice-c.evidence.md` (2026-08-30).
 
 ## Verification
 

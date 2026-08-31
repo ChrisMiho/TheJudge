@@ -25,6 +25,7 @@ quick-lookup-card | 16/16 | PASS
 quick-lookup-multi-card | 16/16 | PASS
 quick-lookup-no-card | 16/16 | PASS
 quick-lookup-off-domain | 15/15 | PASS
+quick-lookup-phrasing-answered | 14/14 | PASS
 simple-interaction | 16/16 | PASS
 state-based-actions | 19/19 | PASS
 upkeep-trigger | 19/19 | PASS

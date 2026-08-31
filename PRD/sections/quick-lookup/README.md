@@ -237,6 +237,11 @@ both providers. (DEC-020, REQ-072)
 
 ### Off-domain guardrail
 
+- Built: common Magic-adjacent community phrasing (combo, infinite combo,
+  aggro, control, ramp, tempo, stax, wheel, mill, blink, sacrifice outlet, and
+  similar terms) is carved out as in-domain and answered, ahead of the
+  off-domain refusal — see `PRD/sections/system-map/lookup-phrasing-glossary.md`
+  for the maintained category list and what each phrase means. (REQ-168)
 - Built: the lookup-mode prompt instructs the model to treat unrecognized or
   off-domain terms as "not found in the rules corpus," ask the user to check
   spelling or rephrase toward a Magic term, and never answer the off-domain

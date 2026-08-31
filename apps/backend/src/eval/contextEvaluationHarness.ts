@@ -170,7 +170,11 @@ function checkLookupGuardrails(promptText: string): EvaluationCheckResult {
   const required = [
     "quote rule text only from the provided GAME RULES / ADDITIONAL RELEVANT RULE EXCERPTS sections",
     "not found in the rules corpus",
-    "never answer the off-domain question directly"
+    "never answer the off-domain question directly",
+    // REQ-168: common Magic-adjacent phrasing is carved out as in-domain,
+    // ahead of the off-domain refusal — present on every lookup path
+    // (DEC-108), so this check applies universally like the others above.
+    "as in-domain and answer it normally"
   ];
   const missing = required.filter((line) => !promptText.includes(line));
   return {

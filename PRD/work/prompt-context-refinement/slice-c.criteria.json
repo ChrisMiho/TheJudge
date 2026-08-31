@@ -5,24 +5,29 @@
     {
       "id": "C1",
       "statement": "The lookup-mode guardrail instruction line answers questions using common non-official-but-valid Magic phrasing and reserves the 'not found in the rules corpus' persona for input genuinely unrelated to Magic.",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/backend run test.*promptAssembly|vitest.*promptAssembly",
-        "paths": ["apps/backend/src/prompt/promptAssembly.ts", "apps/backend/src/prompt/promptAssembly.test.ts"]
+        "paths": [
+          "apps/backend/src/prompt/promptAssembly.ts",
+          "apps/backend/src/prompt/promptAssembly.test.ts"
+        ]
       }
     },
     {
       "id": "C2",
       "statement": "A new durable glossary doc exists with each phrasing category's example phrases and a plain-language explanation of what the phrase means in Magic; it is discoverable from promptAssembly.ts or its adjacent documentation.",
-      "value": false,
+      "value": true,
       "evidence": {
-        "paths": ["PRD/sections/system-map/lookup-phrasing-glossary.md"]
+        "paths": [
+          "PRD/sections/system-map/lookup-phrasing-glossary.md"
+        ]
       }
     },
     {
       "id": "C3",
       "statement": "A question about 'a combo', with or without cards attached, is answered as a Magic question in the eval harness, not refused as 'not a mechanic.'",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/backend run test:eval"
       }
@@ -30,16 +35,20 @@
     {
       "id": "C4",
       "statement": "The off-domain golden fixture (quick-lookup-off-domain) still refuses a genuinely non-Magic input; a new fixture pins the reworded behavior for a common Magic-adjacent phrase.",
-      "value": false,
+      "value": true,
       "evidence": {
-        "paths": ["apps/backend/src/eval/fixtures"]
+        "paths": [
+          "apps/backend/src/eval/fixtures"
+        ]
       }
     },
     {
       "id": "C5",
       "statement": "No classifier, validator, detection branch, or off-domain log signal is added; the guardrail stays one instruction line in the assembled prompt.",
-      "value": false,
-      "evidence": { "manual": true }
+      "value": true,
+      "evidence": {
+        "manual": true
+      }
     }
   ]
 }
