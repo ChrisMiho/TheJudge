@@ -121,6 +121,11 @@ export function resolveGameComboCandidates(
   });
 }
 
+/**
+ * REQ-167 / REQ-094 (amended): one match instance per attached card (zero,
+ * one, or up to five). Looked-up cards carry no zone — the user is asking
+ * about the cards, not reporting where they sit on a board.
+ */
 function resolveLookupComboCandidates(
   request: LookupAskAiRequest,
   context: LookupPromptContext,
@@ -128,18 +133,17 @@ function resolveLookupComboCandidates(
 ): ComboCandidate[] {
   if (!options.comboCatalog) return [];
 
-  // A looked-up card carries no zone: the user is asking about the card, not
-  // reporting where it sits on a board.
-  const instances: ComboMatchInstance[] = context.card
-    ? [{ instanceId: "attached", cardId: context.card.cardId, cardName: context.card.name }]
-    : [];
+  const instances: ComboMatchInstance[] = (context.cards ?? []).map((card, index) => ({
+    instanceId: `attached-${index}`,
+    cardId: card.cardId,
+    cardName: card.name
+  }));
 
   return selectComboCandidates(options.comboCatalog, {
     mode: "lookup",
     instances,
     questionText: request.question,
-    hasExplicitIntent: hasExplicitComboIntent(request.question),
-    attachedCardId: context.card?.cardId
+    hasExplicitIntent: hasExplicitComboIntent(request.question)
   });
 }
 
@@ -149,18 +153,20 @@ function prepareLookupPromptInput(
 ): PreparedPromptInput {
   const context = buildLookupPromptContext(request);
   const limits = getRulingLimits();
-  const cardsForRulings = context.card
-    ? [{ cardId: context.card.cardId, name: context.card.name }]
-    : [];
+  const cardsForRulings = (context.cards ?? []).map((card) => ({ cardId: card.cardId, name: card.name }));
   const allGameRulesTopics = options.gameRulesTopics ?? [];
   const gameRulesTopics = allGameRulesTopics.filter((topic) =>
     ALWAYS_ON_TOPIC_IDS.includes(topic.id as (typeof ALWAYS_ON_TOPIC_IDS)[number])
   );
   const gameRulesSection = formatGameRulesSection(gameRulesTopics);
   const curatedRuleIds = collectCuratedRuleIds(gameRulesTopics);
+  // REQ-167: System 3 scores the question plus every attached card's oracle
+  // text and type line, not just one.
   const query = buildQueryTokensFromParts({
     questionText: request.question,
-    oracleText: context.card ? `${context.card.oracleText} ${context.card.typeLine}` : ""
+    oracleText: (context.cards ?? [])
+      .map((card) => `${card.oracleText} ${card.typeLine}`)
+      .join(" ")
   });
   const conversationHistory = request.conversationHistory;
   const truncatedHistory = truncateConversationHistory(conversationHistory ?? [], MAX_CONVERSATION_HISTORY_CHARS);

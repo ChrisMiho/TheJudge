@@ -49,6 +49,7 @@ function candidate(overrides: Partial<ComboCandidate> = {}): ComboCandidate {
     missingCount: 0,
     compatibleZoneCount: 1,
     anchorCoverage: 0,
+    attachedCardCoverage: 1,
     ...overrides
   };
 }

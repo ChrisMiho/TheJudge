@@ -243,10 +243,15 @@ const gameAskAiRequestSchema = z.object({
   conversationHistory: conversationHistorySchema.optional()
 }).strict();
 
+// REQ-167: the single optional card generalizes to a bounded multi-card list.
+// A 6th card is rejected by `.max(5)`; zero cards and exactly one card behave
+// identically to the prior single-card shape (REQ-094 amended).
+export const MAX_LOOKUP_CARDS = 5;
+
 const lookupAskAiRequestSchema = z.object({
   mode: z.literal("lookup"),
   question: questionSchema,
-  card: lookupCardReferenceSchema.optional(),
+  cards: z.array(lookupCardReferenceSchema).max(MAX_LOOKUP_CARDS).optional(),
   conversationHistory: conversationHistorySchema.optional()
 }).strict();
 

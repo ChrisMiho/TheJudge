@@ -539,5 +539,8 @@ boundary in `apps/backend/src/providers/`. See `PRD/sections/system-map.md`'s
 `## Provider boundary`, `## Backend API & validation`, `## Follow-up chat`,
 `## Decrypt waiting panel`, and `## Commander Spellbook combo retrieval` blocks for
 the full file lists, `PRD/sections/screen-layout.md`'s five `#### In-Depth —` rows
-for the layout bands, and `PRD/sections/shared-chrome/README.md` for the
-conversation-frame and layout-language details In-Depth consumes.
+for the layout bands, `PRD/sections/system-map/prompt-layout-spec.md` for every
+section the game-mode prompt is built from, in assembly order, and which
+appear on an initial turn versus a follow-up (REQ-169), and
+`PRD/sections/shared-chrome/README.md` for the conversation-frame and
+layout-language details In-Depth consumes.

@@ -1,18 +1,20 @@
 {
   "finalQuestion": "Does this card combo with anything?",
-  "card": {
-    "cardId": "eval-oracle-b",
-    "name": "Dark Consultation",
-    "oracleText": "Name a card. Exile the top four cards of your library.",
-    "imageUrl": "",
-    "manaCost": "{B}",
-    "manaValue": 1,
-    "typeLine": "Instant",
-    "colors": [
-      "B"
-    ],
-    "supertypes": [],
-    "subtypes": [],
-    "targets": []
-  }
+  "cards": [
+    {
+      "cardId": "eval-oracle-b",
+      "name": "Dark Consultation",
+      "oracleText": "Name a card. Exile the top four cards of your library.",
+      "imageUrl": "",
+      "manaCost": "{B}",
+      "manaValue": 1,
+      "typeLine": "Instant",
+      "colors": [
+        "B"
+      ],
+      "supertypes": [],
+      "subtypes": [],
+      "targets": []
+    }
+  ]
 }

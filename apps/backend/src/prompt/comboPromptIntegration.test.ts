@@ -84,15 +84,15 @@ function gameRequestWithBoard(question: string, battlefield: string[], hand: str
   } as GameAskAiRequest;
 }
 
-function lookupRequest(question: string, cardId?: string): LookupAskAiRequest {
+function lookupRequest(question: string, ...cardIds: string[]): LookupAskAiRequest {
   return {
     mode: "lookup",
     question,
-    ...(cardId
+    ...(cardIds.length > 0
       ? {
-          card: {
+          cards: cardIds.map((cardId) => ({
             cardId,
-            name: "Thassa's Oracle",
+            name: cardId === "oracle-a" ? "Thassa's Oracle" : cardId,
             oracleText: "When this enters, look at the top of your library.",
             imageUrl: "",
             manaCost: "{U}{U}",
@@ -101,7 +101,7 @@ function lookupRequest(question: string, cardId?: string): LookupAskAiRequest {
             colors: ["U"],
             supertypes: [],
             subtypes: ["Merfolk", "Wizard"]
-          }
+          }))
         }
       : {})
   } as LookupAskAiRequest;
@@ -193,6 +193,27 @@ describe("Backend - Ask AI", () => {
 
       const noCard = preparePromptInput(lookupRequest("What combos exist?"), { comboCatalog: catalog });
       expect(noCard.promptText).not.toContain(COMBO_SECTION_HEADING);
+    });
+
+    it("explains a complete combo when the attached card set fills every ingredient slot (REQ-167/REQ-094 amended)", () => {
+      const prepared = preparePromptInput(
+        lookupRequest("How do these cards combo with each other?", "oracle-a", "oracle-b"),
+        { comboCatalog: catalog }
+      );
+
+      expect(prepared.promptText).toContain(COMBO_SECTION_HEADING);
+      expect(prepared.promptText).toContain("all pieces present; card state unverified");
+      expect(prepared.promptText).not.toContain("MISSING");
+    });
+
+    it("names the missing role, not a card recommendation, for a partial multi-card lookup candidate", () => {
+      const prepared = preparePromptInput(lookupRequest("Does this card combo with anything?", "oracle-a"), {
+        comboCatalog: catalog
+      });
+
+      expect(prepared.promptText).toContain(COMBO_SECTION_HEADING);
+      expect(prepared.promptText).toContain("partial; missing pieces named below");
+      expect(prepared.promptText).toContain("Demonic Consultation — MISSING");
     });
 
     it("includes the state-verification instruction in both prompt modes", () => {

@@ -1,22 +1,24 @@
 {
   "finalQuestion": "What does this ability do?",
-  "card": {
-    "cardId": "fixture-questing-beast",
-    "name": "Questing Beast",
-    "oracleText": "Deathtouch",
-    "imageUrl": "",
-    "manaCost": "{2}{G}{G}",
-    "manaValue": 4,
-    "typeLine": "Legendary Creature — Beast",
-    "colors": [
-      "G"
-    ],
-    "supertypes": [
-      "Legendary"
-    ],
-    "subtypes": [
-      "Beast"
-    ],
-    "targets": []
-  }
+  "cards": [
+    {
+      "cardId": "fixture-questing-beast",
+      "name": "Questing Beast",
+      "oracleText": "Deathtouch",
+      "imageUrl": "",
+      "manaCost": "{2}{G}{G}",
+      "manaValue": 4,
+      "typeLine": "Legendary Creature — Beast",
+      "colors": [
+        "G"
+      ],
+      "supertypes": [
+        "Legendary"
+      ],
+      "subtypes": [
+        "Beast"
+      ],
+      "targets": []
+    }
+  ]
 }

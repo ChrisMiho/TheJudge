@@ -113,17 +113,20 @@ export function buildLookupPromptText(
 ): string {
   const gameRulesSection = formatGameRulesSection(options.gameRulesTopics ?? []);
   const supplementalRulesSection = formatSupplementalRulesSection(options.supplementalRules ?? []);
-  const cardSection = context.card
-    ? [
-        "CARD (looked up)",
-        `name: ${context.card.name}`,
-        ...formatZoneCardMetadataLines(
-          { ...context.card, targets: [] },
-          {} as Record<PlayerLabel, string | undefined>
-        ).filter((line) => !line.startsWith("targets:") && !line.startsWith("contextNotes:"))
-      ].join("\n")
-    : "";
-  const officialRulingsSection = context.card ? formatOfficialRulingsSection(options.rulings) : "";
+  // REQ-167: one heading, one block per attached card (max 5) — matches
+  // OFFICIAL RULINGS's existing one-heading/many-blocks convention below, so
+  // exactly one card renders byte-identical to the prior single-card section.
+  const cardBlocks = (context.cards ?? []).map((card) =>
+    [
+      `name: ${card.name}`,
+      ...formatZoneCardMetadataLines(
+        { ...card, targets: [] },
+        {} as Record<PlayerLabel, string | undefined>
+      ).filter((line) => !line.startsWith("targets:") && !line.startsWith("contextNotes:"))
+    ].join("\n")
+  );
+  const cardSection = cardBlocks.length > 0 ? ["CARD (looked up)", cardBlocks.join("\n\n")].join("\n") : "";
+  const officialRulingsSection = (context.cards?.length ?? 0) > 0 ? formatOfficialRulingsSection(options.rulings) : "";
   const comboSection = formatComboSection(options.comboCandidates ?? []);
   const conversationHistory = context.conversationHistory ?? [];
   const conversationHistorySection = formatConversationHistorySection(
@@ -139,7 +142,11 @@ export function buildLookupPromptText(
     "- State uncertainty when context is incomplete.",
     "- Do not invent hidden state, targets, or board conditions.",
     "- For verbatim fidelity, quote rule text only from the provided GAME RULES / ADDITIONAL RELEVANT RULE EXCERPTS sections; present genuinely relevant excerpts verbatim with an explanation; never invent rule numbers or text.",
-    "- Treat unrecognized or off-domain terms as not found in the rules corpus; ask the user to check spelling or rephrase toward a Magic term; never answer the off-domain question directly.",
+    // REQ-168: common Magic-adjacent community phrasing (see the phrasing
+    // glossary) is in-domain and must be answered; the refusal persona is
+    // reserved for input genuinely unrelated to Magic. One instruction line —
+    // no classifier, validator, or detection branch.
+    "- Treat common Magic-adjacent phrasing (combo, infinite combo, aggro, control, ramp, tempo, stax, wheel, mill, blink, sacrifice outlet, and similar community terms — see the phrasing glossary) as in-domain and answer it normally; reserve not found in the rules corpus for input that is genuinely not about Magic — ask the user to check spelling or rephrase toward a Magic term; never answer the off-domain question directly.",
     "",
     "MTG REFERENCE",
     MTG_PROMPT_REFERENCE

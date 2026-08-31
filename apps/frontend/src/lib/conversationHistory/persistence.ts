@@ -55,7 +55,7 @@ function isFrozenAskAiContext(value: unknown): value is FrozenAskAiContext {
     return typeof context.gameContext === "object" && context.gameContext !== null;
   }
 
-  return context.kind === "lookup" && "card" in context;
+  return context.kind === "lookup" && "cards" in context && Array.isArray(context.cards);
 }
 
 function isValidConversationHistoryEntry(value: unknown): value is ConversationHistoryEntry {
@@ -155,7 +155,8 @@ export type GameDraftState = {
 
 export type LookupDraftState = {
   mode: "lookup";
-  selectedCard: CardMetadataItem | null;
+  /** REQ-167: the single optional card generalizes to a bounded (max 5) list. */
+  selectedCards: CardMetadataItem[];
   question: string;
   lockedTopic: { id: string; title: string } | null;
   updatedAt: string;
@@ -195,7 +196,7 @@ function isValidLookupDraftState(value: unknown): value is LookupDraftState {
 
   return (
     draft.mode === "lookup" &&
-    (draft.selectedCard === null || (typeof draft.selectedCard === "object" && draft.selectedCard !== null)) &&
+    Array.isArray(draft.selectedCards) &&
     typeof draft.question === "string" &&
     (draft.lockedTopic === null || (typeof draft.lockedTopic === "object" && draft.lockedTopic !== null)) &&
     typeof draft.updatedAt === "string"

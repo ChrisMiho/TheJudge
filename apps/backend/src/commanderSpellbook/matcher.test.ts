@@ -451,8 +451,7 @@ describe("Backend - Ask AI", () => {
         mode: "lookup",
         instances: [{ instanceId: "attached", cardId: "a", cardName: "Card a" }],
         questionText: "does this combo with anything",
-        hasExplicitIntent: true,
-        attachedCardId: "a"
+        hasExplicitIntent: true
       });
 
       expect(candidates.map((candidate) => candidate.variant.variantId)).toEqual(["has-card"]);
@@ -474,8 +473,7 @@ describe("Backend - Ask AI", () => {
         mode: "lookup",
         instances: [{ instanceId: "attached", cardId: "a", cardName: "Card a" }],
         questionText: "what does this do",
-        hasExplicitIntent: false,
-        attachedCardId: "a"
+        hasExplicitIntent: false
       });
 
       expect(candidates).toEqual([]);
@@ -493,8 +491,7 @@ describe("Backend - Ask AI", () => {
         mode: "lookup",
         instances: [{ instanceId: "attached", cardId: "a", cardName: "Card a" }],
         questionText: "does this combo",
-        hasExplicitIntent: true,
-        attachedCardId: "a"
+        hasExplicitIntent: true
       });
 
       const annotation = candidates[0]!.annotations[0]!;
@@ -502,6 +499,107 @@ describe("Backend - Ask AI", () => {
       expect(annotation.occupiedZones).toEqual([]);
       expect(annotation.stateZone).toBe("B");
       expect(annotation.cardState).toBe("untapped");
+    });
+
+    it("qualifies a candidate containing any one of several attached cards (REQ-167)", () => {
+      const multiCardCatalog = catalogOf([
+        variant({ variantId: "via-a", cardIngredients: [cardIngredient({ cardId: "a" }), cardIngredient({ cardId: "missing-1" })] }),
+        variant({ variantId: "via-b", cardIngredients: [cardIngredient({ cardId: "b" }), cardIngredient({ cardId: "missing-2" })] }),
+        variant({ variantId: "unrelated", cardIngredients: [cardIngredient({ cardId: "z" })] })
+      ]);
+
+      const candidates = selectComboCandidates(multiCardCatalog, {
+        mode: "lookup",
+        instances: [
+          { instanceId: "attached-0", cardId: "a", cardName: "Card a" },
+          { instanceId: "attached-1", cardId: "b", cardName: "Card b" }
+        ],
+        questionText: "how do these cards combo",
+        hasExplicitIntent: true
+      });
+
+      expect(candidates.map((candidate) => candidate.variant.variantId).sort()).toEqual(["via-a", "via-b"]);
+    });
+
+    it("ranks attached-card coverage ahead of popularity for partial lookup candidates (REQ-094 amended)", () => {
+      const coverageCatalog = catalogOf([
+        variant({
+          variantId: "high-popularity-low-coverage",
+          popularity: 900,
+          cardIngredients: [cardIngredient({ cardId: "a" }), cardIngredient({ cardId: "missing-y" }), cardIngredient({ cardId: "missing-z" })]
+        }),
+        variant({
+          variantId: "low-popularity-high-coverage",
+          popularity: 10,
+          cardIngredients: [cardIngredient({ cardId: "a" }), cardIngredient({ cardId: "b" }), cardIngredient({ cardId: "missing-x" })]
+        })
+      ]);
+
+      const candidates = selectComboCandidates(coverageCatalog, {
+        mode: "lookup",
+        instances: [
+          { instanceId: "attached-0", cardId: "a", cardName: "Card a" },
+          { instanceId: "attached-1", cardId: "b", cardName: "Card b" }
+        ],
+        questionText: "how do these cards combo",
+        hasExplicitIntent: true
+      });
+
+      expect(candidates.map((candidate) => candidate.variant.variantId)).toEqual([
+        "low-popularity-high-coverage",
+        "high-popularity-low-coverage"
+      ]);
+      expect(candidates[0]!.attachedCardCoverage).toBe(2);
+      expect(candidates[1]!.attachedCardCoverage).toBe(1);
+    });
+
+    it("classifies a lookup candidate complete when every slot is filled somewhere in the attached set, ignoring zones", () => {
+      const catalog = catalogOf([
+        variant({
+          variantId: "multi-complete",
+          cardIngredients: [
+            cardIngredient({ cardId: "a", zones: ["B"] }),
+            cardIngredient({ cardId: "b", zones: ["H"] })
+          ]
+        })
+      ]);
+
+      // Neither attached instance carries a zone (lookup has no board), so
+      // REQ-094's zone-compatibility check does not apply here.
+      const candidates = selectComboCandidates(catalog, {
+        mode: "lookup",
+        instances: [
+          { instanceId: "attached-0", cardId: "a", cardName: "Card a" },
+          { instanceId: "attached-1", cardId: "b", cardName: "Card b" }
+        ],
+        questionText: "how do these cards combo",
+        hasExplicitIntent: true
+      });
+
+      expect(candidates[0]!.fullyAssigned).toBe(true);
+      expect(candidates[0]!.missingCount).toBe(0);
+      expect(candidates[0]!.attachedCardCoverage).toBe(2);
+    });
+
+    it("classifies a lookup candidate partial and names the missing ingredient's own identity", () => {
+      const catalog = catalogOf([
+        variant({
+          variantId: "multi-partial",
+          cardIngredients: [cardIngredient({ cardId: "a", cardName: "Card a" }), cardIngredient({ cardId: "b", cardName: "Missing Card" })]
+        })
+      ]);
+
+      const candidates = selectComboCandidates(catalog, {
+        mode: "lookup",
+        instances: [{ instanceId: "attached-0", cardId: "a", cardName: "Card a" }],
+        questionText: "how does this card combo",
+        hasExplicitIntent: true
+      });
+
+      expect(candidates[0]!.fullyAssigned).toBe(false);
+      const missing = candidates[0]!.annotations.filter((annotation) => annotation.kind === "missing-exact");
+      expect(missing).toHaveLength(1);
+      expect(missing[0]!.label).toBe("Missing Card");
     });
   });
 

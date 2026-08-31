@@ -31,6 +31,28 @@ const counterspell: CardMetadataItem = {
   subtypes: []
 };
 
+function simpleCard(cardId: string, name: string): CardMetadataItem {
+  return {
+    cardId,
+    name,
+    oracleText: `${name} oracle text.`,
+    imageUrl: `https://cards.example/${cardId}.jpg`,
+    manaCost: "{1}",
+    manaValue: 1,
+    typeLine: "Instant",
+    colors: [],
+    supertypes: [],
+    subtypes: []
+  };
+}
+
+// REQ-167: enough distinct cards to exercise the 5-card cap and a 6th blocked add.
+const giantGrowth = simpleCard("oracle-giant-growth", "Giant Growth");
+const doomBlade = simpleCard("oracle-doom-blade", "Doom Blade");
+const brainstorm = simpleCard("oracle-brainstorm", "Brainstorm");
+const wrathOfGod = simpleCard("oracle-wrath-of-god", "Wrath of God");
+const allLookupCards = [lightningBolt, counterspell, giantGrowth, doomBlade, brainstorm, wrathOfGod];
+
 const coreTopics = [
   {
     id: "stack-and-priority",
@@ -91,12 +113,15 @@ function jsonResponse(payload: unknown): Response {
   } as Response;
 }
 
-function appFetchMock(answers: string[]): ReturnType<typeof vi.fn> {
+function appFetchMock(
+  answers: string[],
+  cardMetadata: CardMetadataItem[] = [lightningBolt, counterspell]
+): ReturnType<typeof vi.fn> {
   let answerIndex = 0;
   return vi.fn((input: RequestInfo | URL) => {
     const url = String(input);
     if (url === "/data/cardMetadata.json") {
-      return Promise.resolve(jsonResponse([lightningBolt, counterspell]));
+      return Promise.resolve(jsonResponse(cardMetadata));
     }
     if (url === "/data/gameRulesCoreTopics.json") {
       return Promise.resolve(jsonResponse(coreTopics));
@@ -153,10 +178,10 @@ describe("QuickLookupApp", () => {
 
     expect(screen.queryByText("Browse core rules topics")).not.toBeInTheDocument();
 
-    const cardLabel = screen.getByText("Optional card").closest("label");
+    const cardLabel = screen.getByText("Optional cards").closest("label");
     expect(cardLabel).not.toBeNull();
     expect(cardLabel).toHaveTextContent(
-      "Optional card — Add a card for context or ask any Magic related question."
+      "Optional cards — Add up to 5 cards for context, or ask any Magic related question."
     );
 
     const cardSection = cardLabel!.closest("section");
@@ -250,11 +275,11 @@ describe("QuickLookupApp", () => {
     expect(questionInput).toHaveValue("Keep this detail");
 
     await user.click(screen.getByRole("button", { name: "Ask TheJudge" }));
-    expect(onSubmit).toHaveBeenLastCalledWith("Tell me about Combat. Keep this detail", null);
+    expect(onSubmit).toHaveBeenLastCalledWith("Tell me about Combat. Keep this detail", []);
 
     await user.clear(questionInput);
     await user.click(screen.getByRole("button", { name: "Ask TheJudge" }));
-    expect(onSubmit).toHaveBeenLastCalledWith("Tell me about Combat.", null);
+    expect(onSubmit).toHaveBeenLastCalledWith("Tell me about Combat.", []);
 
     await user.click(screen.getByRole("button", { name: "Remove Combat topic" }));
 
@@ -367,7 +392,7 @@ describe("QuickLookupApp", () => {
     await user.click(submitButton);
     expect(onSubmit).toHaveBeenLastCalledWith(
       `Tell me about Stack and Priority. ${"a".repeat(300)}`,
-      null
+      []
     );
 
     await user.click(screen.getByRole("button", { name: "Remove Stack and Priority topic" }));
@@ -375,7 +400,7 @@ describe("QuickLookupApp", () => {
     expect(submitButton).toBeEnabled();
 
     await user.click(submitButton);
-    expect(onSubmit).toHaveBeenLastCalledWith("a".repeat(300), null);
+    expect(onSubmit).toHaveBeenLastCalledWith("a".repeat(300), []);
   });
 
   it("counts the editable text rather than the silent card fallback", async () => {
@@ -430,7 +455,7 @@ describe("QuickLookupApp", () => {
     expect(submitButton).toBeEnabled();
     await user.click(submitButton);
 
-    expect(onSubmit).toHaveBeenCalledWith("Tell me about Lightning Bolt.", lightningBolt);
+    expect(onSubmit).toHaveBeenCalledWith("Tell me about Lightning Bolt.", [lightningBolt]);
   });
 
   it("replaces the question form during the initial wait and restores it on error", async () => {
@@ -573,7 +598,7 @@ describe("QuickLookupApp", () => {
     expect(JSON.parse(initialAskRequest?.[1]?.body as string)).toEqual({
       mode: "lookup",
       question: "Tell me about Stack and Priority. What can this target?",
-      card: lightningBolt
+      cards: [lightningBolt]
     });
 
     await user.type(screen.getByRole("textbox", { name: "Follow-up question" }), "What if I copy it?");
@@ -586,7 +611,7 @@ describe("QuickLookupApp", () => {
     expect(JSON.parse(askRequests[1]?.[1]?.body as string)).toMatchObject({
       mode: "lookup",
       question: "What if I copy it?",
-      card: lightningBolt
+      cards: [lightningBolt]
     });
 
     await user.click(screen.getByRole("button", { name: "Start Over" }));
@@ -598,6 +623,97 @@ describe("QuickLookupApp", () => {
     expect(screen.getByRole("textbox", { name: "Magic question" })).toHaveValue("");
     expect(screen.queryByText("Tell me about Stack and Priority.")).not.toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "General rules topics" })).toBeVisible();
+  });
+
+  describe("multi-card lookup (REQ-167)", () => {
+    async function addCardByName(user: ReturnType<typeof userEvent.setup>, query: string, name: string): Promise<void> {
+      const searchInput = screen.getByRole("textbox", { name: "Card search" });
+      await user.clear(searchInput);
+      await user.type(searchInput, query);
+      await user.click(await screen.findByRole("button", { name }));
+    }
+
+    it("adds, previews, and removes more than one card via typed search", async () => {
+      const user = userEvent.setup();
+      vi.stubGlobal("fetch", appFetchMock([], allLookupCards));
+      render(<QuickLookupApp />);
+
+      await addCardByName(user, "lig", "Lightning Bolt");
+      await addCardByName(user, "cou", "Counterspell");
+
+      expect(screen.getByRole("img", { name: "Lightning Bolt" })).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Counterspell" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Remove Lightning Bolt" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Remove Counterspell" })).toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Remove Lightning Bolt" }));
+
+      expect(screen.queryByRole("img", { name: "Lightning Bolt" })).not.toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Counterspell" })).toBeInTheDocument();
+    });
+
+    it("blocks an add past the 5-card cap and states the limit to the player", async () => {
+      const user = userEvent.setup();
+      vi.stubGlobal("fetch", appFetchMock([], allLookupCards));
+      render(<QuickLookupApp />);
+
+      await addCardByName(user, "lig", "Lightning Bolt");
+      await addCardByName(user, "cou", "Counterspell");
+      await addCardByName(user, "gia", "Giant Growth");
+      await addCardByName(user, "doo", "Doom Blade");
+      await addCardByName(user, "bra", "Brainstorm");
+
+      expect(screen.queryByText(/You've added 5 cards/)).not.toBeInTheDocument();
+
+      const searchInput = screen.getByRole("textbox", { name: "Card search" });
+      await user.clear(searchInput);
+      await user.type(searchInput, "wra");
+      await user.click(await screen.findByRole("button", { name: "Wrath of God" }));
+
+      expect(
+        screen.getByText("You've added 5 cards, the most one Quick Question can use. Remove a card below to add another.")
+      ).toBeInTheDocument();
+      expect(screen.queryByRole("img", { name: "Wrath of God" })).not.toBeInTheDocument();
+      expect(screen.getAllByRole("button", { name: /^Remove / })).toHaveLength(5);
+    });
+
+    it("submits the full attached card list, freezes every card in context, and sends the frozen set on a follow-up", async () => {
+      const user = userEvent.setup();
+      const fetchMock = appFetchMock(["Multi-card answer", "Multi-card follow-up answer"], allLookupCards);
+      vi.stubGlobal("fetch", fetchMock);
+      render(<QuickLookupApp />);
+
+      await addCardByName(user, "lig", "Lightning Bolt");
+      await addCardByName(user, "cou", "Counterspell");
+      await user.type(screen.getByRole("textbox", { name: "Magic question" }), "How do these interact?");
+      await user.click(screen.getByRole("button", { name: "Ask TheJudge" }));
+
+      expect(await screen.findByText("Multi-card answer")).toBeInTheDocument();
+      const initialAskRequest = fetchMock.mock.calls.find(([input]) => String(input).endsWith("/api/ask-ai"));
+      expect(JSON.parse(initialAskRequest?.[1]?.body as string)).toEqual({
+        mode: "lookup",
+        question: "How do these interact?",
+        cards: [lightningBolt, counterspell]
+      });
+
+      const contextTrigger = screen.getByRole("button", { name: "View context: 2 cards" });
+      await user.click(contextTrigger);
+      const contextDialog = screen.getByRole("dialog", { name: "Card context" });
+      expect(contextDialog).toContainElement(screen.getByRole("img", { name: "Lightning Bolt" }));
+      expect(contextDialog).toContainElement(screen.getByRole("img", { name: "Counterspell" }));
+      await user.click(screen.getByRole("button", { name: "Close card context" }));
+
+      await user.type(screen.getByRole("textbox", { name: "Follow-up question" }), "What if both resolve?");
+      await user.click(screen.getByRole("button", { name: "Send" }));
+
+      expect(await screen.findByText("Multi-card follow-up answer")).toBeInTheDocument();
+      const askRequests = fetchMock.mock.calls.filter(([input]) => String(input).endsWith("/api/ask-ai"));
+      expect(JSON.parse(askRequests[1]?.[1]?.body as string)).toMatchObject({
+        mode: "lookup",
+        question: "What if both resolve?",
+        cards: [lightningBolt, counterspell]
+      });
+    });
   });
 });
 });

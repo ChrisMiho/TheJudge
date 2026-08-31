@@ -170,7 +170,11 @@ function checkLookupGuardrails(promptText: string): EvaluationCheckResult {
   const required = [
     "quote rule text only from the provided GAME RULES / ADDITIONAL RELEVANT RULE EXCERPTS sections",
     "not found in the rules corpus",
-    "never answer the off-domain question directly"
+    "never answer the off-domain question directly",
+    // REQ-168: common Magic-adjacent phrasing is carved out as in-domain,
+    // ahead of the off-domain refusal — present on every lookup path
+    // (DEC-108), so this check applies universally like the others above.
+    "as in-domain and answer it normally"
   ];
   const missing = required.filter((line) => !promptText.includes(line));
   return {
@@ -201,23 +205,26 @@ function checkLookupCardEnrichment(
   context: LookupPromptContext,
   promptText: string
 ): EvaluationCheckResult {
-  const expectsCard = fixture.request.mode === "lookup" && fixture.request.card !== undefined;
+  const expectsCards =
+    fixture.request.mode === "lookup" && (fixture.request.cards?.length ?? 0) > 0;
   const hasCardSection = promptText.includes("CARD (looked up)");
   const hasOfficialRulings = promptText.includes("OFFICIAL RULINGS");
-  const cardMetadataPresent = !expectsCard || (
-    context.card !== undefined &&
-    promptText.includes(`name: ${context.card.name}`) &&
-    promptText.includes(`oracleText: ${context.card.oracleText}`)
-  );
-  const passed = expectsCard
+  const cardMetadataPresent =
+    !expectsCards ||
+    (context.cards !== undefined &&
+      context.cards.length > 0 &&
+      context.cards.every(
+        (card) => promptText.includes(`name: ${card.name}`) && promptText.includes(`oracleText: ${card.oracleText}`)
+      ));
+  const passed = expectsCards
     ? hasCardSection && hasOfficialRulings && cardMetadataPresent
     : !hasCardSection && !hasOfficialRulings;
   return {
     id: "lookup-card-enrichment",
     passed,
     details: passed
-      ? expectsCard
-        ? "Attached lookup card metadata and official rulings are present."
+      ? expectsCards
+        ? "Attached lookup card metadata and official rulings are present for every attached card."
         : "Card-only sections are omitted when lookup has no card."
       : "Lookup card/rulings section presence does not match the fixture request."
   };

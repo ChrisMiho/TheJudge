@@ -148,7 +148,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
             mode,
             flowLabel: mode === "game" ? "In-Depth Question" : "Quick Question",
             frozenContext:
-              mode === "game" ? { kind: "game", gameContext: { players: [] } } : { kind: "lookup", card: null },
+              mode === "game" ? { kind: "game", gameContext: { players: [] } } : { kind: "lookup", cards: [] },
             hiddenInitialQuestion: "Earlier question",
             visibleMessages: [
               { role: "user", content: "Earlier question" },

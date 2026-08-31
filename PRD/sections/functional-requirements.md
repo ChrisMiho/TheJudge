@@ -2182,7 +2182,7 @@
   - an unresolved template can never count as satisfied for a complete candidate
   - for `mode: "game"` with explicit combo intent, complete candidates rank first and partial candidates may also be returned so the answer can identify missing or incorrectly zoned pieces
   - submitted cards whose names are explicitly mentioned in a game-mode question become required anchors for partial candidates; when no submitted card is named, submitted cards seed overlap matching and ranking
-  - for `mode: "lookup"`, combo retrieval runs only when combo intent is explicit and one card is attached; every candidate must contain the attached card as an exact ingredient or authoritative template match
+  - for `mode: "lookup"`, combo retrieval runs only when combo intent is explicit and at least one card is attached; the attached cards are the match instances (a bounded set of at most five, per REQ-167), and every candidate must contain at least one attached card as an exact ingredient or authoritative template match (qualify-on-any-one). Because lookup carries no zones and no per-card quantities, REQ-094's zone-compatibility and required-quantity/distinct-instance checks do not apply in lookup: a lookup candidate is **complete** when every ingredient slot in the combo definition is filled by an exact or authoritative-template match somewhere in the attached set, and **partial** when it qualifies (matches at least one attached card) but at least one ingredient slot has no match in the attached set. Lookup candidates use REQ-094's general selection order (below) with its two zone-based coverage terms collapsed into the single lookup analog — complete before partial; attached-card coverage descending (a candidate using more of the attached cards ranks ahead of one using fewer); fewer missing ingredients; Commander Spellbook popularity descending; stable variant id ascending. With exactly one attached card this is identical to the prior single-card rule (coverage is uniform, so ordering reduces to complete → fewer-missing → popularity/variant-id, exactly what the general order already produced for a single attached card); with no card attached, no combo data is retrieved (amended by REQ-167, which generalizes the single attached card to a bounded multi-card set)
   - lookup mode with no attached card and lookup questions without combo intent retrieve no combo catalog data
   - every match result distinguishes compatible present ingredients, present-but-incompatible-zone ingredients, missing exact ingredients, matched template ingredients, and unresolved template ingredients
   - mana availability, `mustBeCommander`, per-zone card state, legality, and prose prerequisites are passed through as context but are not deterministically validated or represented as satisfied; the submitted request carries no tapped, counter, control, or commander-designation data, so these can only ever be surfaced to the model and never checked
@@ -2198,8 +2198,11 @@
   - DEC-021
   - DEC-106
   - DEC-013
+  - REQ-167 (amends the `mode: "lookup"` combo criterion — see Notes)
 - Notes:
   - "complete" means catalog ingredients and compatible submitted zones are present, not that mana/state/prerequisites have been proven or the combo is legally executable; because that distinction is easy to lose, REQ-095 forbids rendering the bare word "complete" as the user-facing classification label
+  - the `mode: "lookup"` criterion is amended by REQ-167: the single attached card generalizes to a bounded multi-card set (at most five). The attached cards become the match instances; a candidate qualifies by containing at least one of them (exact ingredient or authoritative template match); complete vs. partial is then whether every ingredient slot is filled by a match in the attached set; and attached-card coverage orders results ahead of popularity. The zero-card and single-card lookup cases behave exactly as before. Game-mode retrieval (every other criterion above) is unchanged
+  - lookup complete/partial (specified in the `mode: "lookup"` criterion above; settled by the define loop of 2026-08-30): "complete" means every ingredient slot is filled by an exact or authoritative-template match in the attached set, with REQ-094's zone-compatibility and required-quantity/distinct-instance checks dropped because a lookup carries no zones and no per-card quantities; "partial" means the candidate qualifies on at least one attached card but leaves at least one slot unmatched. The user-facing answer text is rendered by REQ-095's existing present/missing ingredient enrichment, which is mode-agnostic — it names present ingredients, names each missing exact ingredient, and describes each missing template ingredient's role from the combo definition; the zone-specific rows REQ-095 can render are simply empty for lookup candidates. Naming "what would fill a missing role" means describing that ingredient's own identity/template/category from the combo catalog (a card name for a missing exact ingredient, a template/category description for a missing template ingredient) — it is not a card recommendation or search, and no card-suggestion engine is added
 
 ### REQ-095
 - Title: Commander Spellbook combo prompt enrichment
@@ -3810,3 +3813,73 @@
 - Notes:
   - motivation: before this, every docs-only merge ran the full build-and-deploy — the batch of documentation PRs merged on 2026-08-29 each deployed pointlessly
   - `eslint.config.mjs` is treated as non-code: it changes lint (the `static` job) but never the built artifact
+
+### REQ-167
+- Title: Quick Question accepts several cards with no game state
+- Priority: high
+- Description: In Quick Question today the player attaches at most one card, and pointing the question at any other card is a gamble — the model only reliably knows the single attached card. This lets the player add every card they want to ask about (a bounded list), each resolved to its oracle identity exactly the way the single card is today, while Quick Question still carries no zones, phase, stack, life totals, or other game state. The backend enriches each attached card — full metadata including oracle text, plus its WotC rulings — and scores supplemental rule retrieval over the question plus all attached cards, so every card the player named is fully in context. The fast, no-setup experience stays; the "did it actually see the other card" gamble goes away.
+- Acceptance Criteria:
+  - The lookup request carries an optional **bounded list** of oracle-level cards in place of the single optional card; each entry keeps the current oracle-level shape (`cardId`, `name`, `oracleText` required; `imageUrl`/`manaCost`/`manaValue`/`typeLine`/`colors`/`supertypes`/`subtypes` optional) and carries no zone, owner, caster, targets, or context-notes fields.
+  - The pre-submit view lets the player add, preview, and remove more than one card; an explicit cap of **5 cards** is enforced and stated to the player so the prompt stays bounded.
+  - Backend enrichment runs per attached card: each card's full metadata (same per-card formatting as populated-zone cards, DEC-042/REQ-030) and each card's WotC rulings (DEC-029) appear; System 3 supplemental retrieval (DEC-046/REQ-022) scores the question plus every attached card's oracle text and type line.
+  - Combo enrichment (Commander Spellbook) adapts to the card set: the attached cards become the match instances, amending REQ-094's single-card lookup rule. A candidate qualifies when it contains at least one attached card as an exact ingredient or authoritative template match, and candidates covering more of the attached cards rank ahead of those covering fewer (attached-card coverage), applied before popularity — so "how do these cards combo" surfaces the combos using the most of the attached cards first. With exactly one card attached this is identical to today's single-card lookup; with zero cards attached, behavior is unchanged (no combo data without explicit intent and at least one card). (DEC-116/REQ-094 [amended]/REQ-095)
+  - When an eligible candidate is **complete** — every ingredient slot filled by an exact or authoritative-template match across the attached cards — the answer explains that combo, with per-ingredient card state left explicitly unverified (a lookup carries no board). When a candidate is **partial** — it qualifies on at least one attached card but at least one ingredient slot is unmatched — the answer names each missing ingredient and describes what would fill that role: the missing ingredient's own card name (missing exact ingredient) or template/category description (missing template ingredient) drawn from the combo definition, so the player learns how the combo could be completed rather than getting nothing. This is a description of the missing role, **not** a card recommendation or search — no card-suggestion engine is added. Complete/partial classification for lookup and its at-most-five selection/ranking are defined in REQ-094 (amended); the answer text itself is rendered by REQ-095's existing present/missing ingredient enrichment, which already covers game and lookup candidates alike and needs no new criterion here.
+  - With no cards attached, behavior is identical to today's no-card lookup; with exactly one card attached, identical to today's single-card lookup.
+  - Golden fixtures cover multi-card, single-card, and no-card lookups; the multi-card fixtures pin per-card metadata + rulings and the multi-card System 3 query.
+- Constraints:
+  - No game state enters lookup mode — no `gameContext`, zones, phase, stack, life, or counters. This keeps the deliberate lookup non-goal, and is why this requirement does **not** resolve Q-003 (the separate question of lightweight game context on a card).
+  - One assembly path, not a fork: the card set is a bounded loop inside the single lookup assembly path, reusing the same per-card metadata/rulings/System-3 helpers, never a second implementation (preserves DEC-107's single-path shape).
+  - The frozen-context UI in the answered workspace shows all attached cards; follow-ups stay text-only with the card set frozen.
+- Dependencies:
+  - DEC-106 (the `mode`-discriminated union whose `card` field is the additive point)
+  - DEC-107 (single lookup assembly path — amended here from single-card to a bounded multi-card set)
+  - DEC-116, REQ-094 (amended here — the `mode: "lookup"` match instances generalize from the single attached card to the bounded card set; qualify-on-any-one plus attached-card-coverage ranking), REQ-095 (combo enrichment match instances)
+  - REQ-072, REQ-074 (lookup validation and assembly)
+  - FLOW-023
+- Notes:
+  - Supersedes the single-card constraint (DEC-107 "single card", DEC-106 optional single `card`). The `card` field becomes a bounded list; the exact wire spelling (`cards` array vs. keeping `card` as an array) is a code-shape choice made at implementation — both stay back-compatible through the `mode` union.
+  - Amends REQ-094's `mode: "lookup"` combo criterion: the required match instance was the single attached card; it becomes the bounded attached-card set — a candidate qualifies on containing any one attached card, and attached-card coverage ranks results ahead of popularity. REQ-094 carries the reciprocal "amended by REQ-167" note and lists REQ-167 as a dependency. The zero-card and single-card lookup cases, and all of game-mode retrieval, are unchanged.
+  - Screen-layout's "Quick Question — pre-submit" row records a **single-card** image cap (REQ-129/DEC-160/REQ-141). That row must be re-measured and updated for a multi-card add strip when this ships; it is deliberately not restamped as measured truth here.
+  - Does not resolve Q-003 (lightweight game context) or Q-004 (answer-seeded second-pass retrieval); both stay open.
+  - Gate review (2026-08-30) tightened the add cap from a suggested ~6 to a fixed 5, and directed that lookup-mode combo answers explain a completed combo when the attached cards fully assemble it, and otherwise name the missing piece(s) and describe what would fill them. The define loop (2026-08-30) settled those mechanics in REQ-094 (amended): "complete" = every ingredient slot filled by an exact/template match in the attached set, with REQ-094's zone/quantity checks dropped for a board-less mode; "partial" = qualifies on at least one attached card but leaves a slot unmatched; lookup selection order is complete-before-partial, then attached-card coverage, then fewer missing, then popularity, then variant id. The answer is REQ-095's existing present/missing rendering, and "what would fill the role" is the missing ingredient's own identity/template from the combo catalog, not a card recommendation. No new stable ID was needed.
+
+### REQ-168
+- Title: The rules guardrail stops refusing real Magic phrases like "combo"
+- Priority: high
+- Description: Quick Question tells the model to treat off-domain input as "not found in the rules corpus" and ask the player to rephrase — the "confused rules lookup" persona. That guardrail is a single instruction line in the assembled prompt; there is no separate classifier. It currently over-fires: asking about a "combo" came back as "combos isn't a mechanic," even though combo is everyday Magic language. This tunes the instruction so common Magic-adjacent phrasing — combo, infinite combo, aggro, control, ramp, tempo, stax, wheel, mill, blink, sacrifice outlet, and similar community terms — is treated as in-domain and answered, and the "not found in the rules" refusal is reserved for input that is genuinely not about Magic. The guardrail stays prompt-instruction-only.
+- Acceptance Criteria:
+  - The lookup-mode instruction line is reworded so the model answers questions that use common non-official-but-valid Magic phrasing, and returns the "not found in the rules corpus" persona only for input that is genuinely off-domain (not about Magic at all).
+  - A documented, maintained set of common valid-but-unofficial phrasing categories exists as durable truth so the owner can see and extend which phrases must not be refused; each category names its example phrases **and** a plain-language explanation of what the phrase means in Magic (not just the phrase listed bare), so the doc is a glossary the owner and future contributors can read on its own; the prompt instruction reflects that guidance.
+  - A question about "a combo" — with or without cards attached — is answered as a Magic question, not refused as "not a mechanic."
+  - The off-domain golden fixture keeps refusing a genuinely non-Magic input, and a new fixture pins that a common Magic-adjacent phrase is answered rather than refused.
+- Constraints:
+  - Prompt-instruction-only: no classifier, validator, detection branch, or off-domain log signal is added — the guardrail stays a line in the assembled prompt (DEC-108).
+  - This widens what counts as in-domain; it does not remove the guardrail. Genuinely non-Magic input is still refused with the persona.
+- Dependencies:
+  - DEC-108 (the prompt-only off-domain guardrail and its persona)
+  - REQ-074 (lookup prompt assembly and guardrail instruction)
+  - REQ-072
+- Notes:
+  - This also resolves the **symptom** half of the mechanic-keyword observation: a mechanic asked by name with no card must not be refused as "not an official mechanic." The separate idea of guaranteeing every relevant mechanic's **definition** is enriched into the prompt is RAG-shaped and filed to `PRD/work/prompt-context-refinement/RAG-DEFERRED.md`, not built here.
+  - The same persona applies whether or not cards are attached (DEC-108); the reworded line lives on the shared lookup instruction, `apps/backend/src/prompt/promptAssembly.ts`.
+  - Gate review (2026-08-30): the maintained phrasing doc must explain what each phrase represents, not just list it — a glossary, not a bare word list. Applied above.
+
+### REQ-169
+- Title: A readable prompt-layout spec with a per-path presence matrix
+- Priority: medium
+- Description: The owner wants to read, at a glance, exactly what the backend prompt is made of and which parts appear on which path — without wading through raw JSON. Past ad-hoc prompt output was "an overwhelming amount of json." This creates one maintained, human-readable prompt-layout spec: every named prompt section in its fixed assembly order, a one-line plain description of each, and a presence matrix showing whether each section is present, absent, or conditional on each path — In-Depth game mode, Quick Question with cards, Quick Question with no cards, and follow-up turns. It points at the existing `npm run prompt:preview` tool, which already writes a readable `production.prompt.txt` per fixture, as the way to see a real assembled prompt: the spec explains the shape and the tool shows a live example.
+- Acceptance Criteria:
+  - A durable doc (recommend `PRD/sections/system-map/prompt-layout-spec.md`) lists every prompt section in its actual assembly order with a plain one-line description each.
+  - The doc carries a presence matrix: rows are the sections, columns are the paths (game mode; lookup with card(s); lookup with no card; follow-up), each cell marked present / absent / conditional with the condition named.
+  - The matrix matches the assembled prompt for each path, verified against the assembly code and the `prompt:preview` output — not authored from memory.
+  - The doc names `npm run prompt:preview` as the tool to inspect a real prompt and states what it emits (readable prompt text plus context / diagnostics / enrichment sidecars).
+  - The doc is cross-linked from `system-map/prompt-assembly.md` and the Quick Lookup and In-Depth feature specs, and is kept in sync when section order or per-path presence changes.
+- Constraints:
+  - Documentation/spec only — no change to the assembled prompt, the request contract, or runtime behavior.
+  - One source of truth: the matrix is derived from the assembly code, not a hand-authored second description that can silently drift.
+- Dependencies:
+  - DEC-025, DEC-042 (prompt section order and budget)
+  - DEC-107, REQ-074 (lookup-path section presence)
+  - `system-map/prompt-assembly.md`; `scripts/prompt-preview.mjs`
+- Notes:
+  - The owner's stated purpose is to drive future prompt-format optimization for better rules resolving; this spec is that reference surface.

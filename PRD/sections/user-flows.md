@@ -501,3 +501,27 @@
   - copying rather than referencing is what makes the receipt's evidence chain resolvable after the working file is gone
   - the copy is staged outside the working tree and committed by node 2 rather than written into the package up front, because node 1 resolves the working tree before the branch exists and would carry the intake away with it
   - "evidence, not authority" is a contract rule, not an enforced one; the `define` gate is what catches an intake claim adopted wholesale
+
+### FLOW-023
+- Name: Ask a Quick Question about several cards with no game state
+- Trigger: In Quick Question the player wants to ask how two or more specific cards interact, without staging a game
+- Preconditions:
+  - app is loaded
+  - local card metadata and the committed core-topics browse data are available
+  - for scan input: the device has a usable camera with permission and the fingerprint library loads on first scan (FLOW-006)
+- Main Flow:
+  1. User opens Quick Question from the feature portal; the app switches to the lookup view (frontend-only, no reload).
+  2. The pre-submit view shows, top to bottom: the card-attach control — now able to hold more than one card — then the Question field, then the collapsed-by-default "General rules topics" disclosure.
+  3. User adds each card they want to discuss by typed autocomplete search (REQ-001/REQ-002) or by camera scan (FLOW-006); each resolves to one oracle-level card, previewed then added, and each can be removed. Adds are capped at the stated bound (REQ-167).
+  4. User types the question (or locks a topic pill, REQ-091) and submits; the request carries the list of attached cards and no game state.
+  5. Backend assembles one lookup-mode prompt: per-card full metadata and per-card WotC rulings for every attached card, System 3 supplemental retrieval scored over the question plus all attached cards, and combo enrichment over the card set when explicit combo intent is present; game-state-only sections stay omitted (REQ-167 / DEC-107).
+  6. The answer opens the shared chat-first workspace; the frozen context shows all attached cards; follow-ups are text-only with the card set frozen and send `{ mode: "lookup", question, cards: frozen, conversationHistory }`.
+- Edge Cases:
+  - no cards attached → identical to today's no-card lookup (FLOW-011)
+  - exactly one card attached → identical to today's single-card lookup (FLOW-011)
+  - user tries to add beyond the cap → the add is blocked with a stated limit, mirroring existing bounded-add patterns
+  - an off-domain question → the tuned "confused rules lookup" persona (REQ-168 / DEC-108) still applies whether or not cards are attached
+  - AI failure, follow-up failure, or history over the shared cap → same shared handling as FLOW-011 (FLOW-003 / FLOW-005 / REQ-027)
+- Notes:
+  - Supersedes FLOW-011's single-card constraint by allowing many cards; FLOW-011's no-card and single-card behaviors are unchanged special cases of this flow.
+  - Carries no zones, phase, stack, or life — Quick Question explicitly drops game context, so this flow does **not** resolve Q-003 (lightweight game context on a card).

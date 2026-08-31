@@ -1,0 +1,84 @@
+{
+  "slug": "prompt-context-refinement",
+  "slice": "A",
+  "criteria": [
+    {
+      "id": "A1",
+      "statement": "The lookup request schema accepts an optional bounded list of at most 5 oracle-level cards in place of the single optional card; a 6th card is rejected by validation.",
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test.*askAiRequest|vitest.*askAiRequest",
+        "paths": [
+          "apps/backend/src/validation/askAiRequest.ts",
+          "apps/backend/src/validation/askAiRequest.test.ts"
+        ]
+      }
+    },
+    {
+      "id": "A2",
+      "statement": "Zero cards attached and exactly one card attached produce output identical to today's no-card and single-card lookup (metadata, rulings, System 3 query, combo retrieval).",
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test.*preparation|vitest.*preparation",
+        "paths": [
+          "apps/backend/src/prompt/preparation.ts",
+          "apps/backend/src/prompt/preparation.test.ts"
+        ]
+      }
+    },
+    {
+      "id": "A3",
+      "statement": "With 2+ cards attached, per-card full metadata and per-card WotC rulings appear for every attached card, and the System 3 supplemental retrieval query is built from the question plus every attached card's oracle text and type line.",
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test.*preparation|vitest.*preparation",
+        "paths": [
+          "apps/backend/src/prompt/preparation.ts",
+          "apps/backend/src/prompt/context.ts"
+        ]
+      }
+    },
+    {
+      "id": "A4",
+      "statement": "Combo retrieval for mode: lookup qualifies a candidate on containing at least one attached card, ranks candidates covering more attached cards ahead of those covering fewer (before popularity), and classifies a candidate complete only when every ingredient slot is filled somewhere in the attached set.",
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test.*matcher|vitest.*matcher",
+        "paths": [
+          "apps/backend/src/commanderSpellbook/matcher.ts",
+          "apps/backend/src/commanderSpellbook/matcher.test.ts"
+        ]
+      }
+    },
+    {
+      "id": "A5",
+      "statement": "A complete lookup combo candidate's rendered answer explains the assembled combo; a partial candidate names each missing ingredient and describes what would fill that role (its own identity/template/category from the combo catalog) -- never a card recommendation.",
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test.*formatting|npm --workspace apps/backend run test.*comboPromptIntegration",
+        "paths": [
+          "apps/backend/src/commanderSpellbook/formatting.ts",
+          "apps/backend/src/prompt/comboPromptIntegration.test.ts"
+        ]
+      }
+    },
+    {
+      "id": "A6",
+      "statement": "Eval fixtures cover multi-card lookup (metadata/rulings/System 3 query), multi-card combo-complete, and multi-card combo-partial; existing single-card and no-card lookup goldens are unchanged.",
+      "value": true,
+      "evidence": {
+        "paths": [
+          "apps/backend/src/eval/fixtures"
+        ]
+      }
+    },
+    {
+      "id": "A7",
+      "statement": "npm --workspace apps/backend run test, npm --workspace apps/backend run test:eval, and npm run quality:check all pass.",
+      "value": true,
+      "evidence": {
+        "command": "npm (--workspace apps/backend)? run (test|test:eval)|npm run quality:check"
+      }
+    }
+  ]
+}

@@ -27,7 +27,7 @@ export type ZoneAskAiPayload = {
 export type LookupAskAiPayload = {
   mode: "lookup";
   question: string;
-  card?: CardMetadataItem;
+  cards?: CardMetadataItem[];
   conversationHistory?: ConversationMessage[];
 };
 
@@ -137,30 +137,29 @@ export function buildAskAiRequest(question: string, gameContext: GameContext): Z
   };
 }
 
+/** REQ-167: the single optional card generalizes to a bounded (max 5) list. */
 export function buildLookupAskAiRequest(
   question: string,
-  card?: CardMetadataItem | null,
+  cards?: CardMetadataItem[] | null,
   conversationHistory?: ConversationMessage[]
 ): LookupAskAiPayload {
-  const wireCard = card
-    ? {
-        cardId: card.cardId,
-        name: card.name,
-        oracleText: card.oracleText,
-        imageUrl: card.imageUrl,
-        manaCost: card.manaCost,
-        manaValue: card.manaValue,
-        typeLine: card.typeLine,
-        colors: card.colors,
-        supertypes: card.supertypes,
-        subtypes: card.subtypes
-      }
-    : undefined;
+  const wireCards = (cards ?? []).map((card) => ({
+    cardId: card.cardId,
+    name: card.name,
+    oracleText: card.oracleText,
+    imageUrl: card.imageUrl,
+    manaCost: card.manaCost,
+    manaValue: card.manaValue,
+    typeLine: card.typeLine,
+    colors: card.colors,
+    supertypes: card.supertypes,
+    subtypes: card.subtypes
+  }));
 
   return {
     mode: "lookup",
     question: question.trim(),
-    ...(wireCard ? { card: wireCard } : {}),
+    ...(wireCards.length > 0 ? { cards: wireCards } : {}),
     ...(conversationHistory ? { conversationHistory } : {})
   };
 }

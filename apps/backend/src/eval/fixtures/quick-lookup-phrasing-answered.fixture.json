@@ -1,0 +1,8 @@
+{
+  "id": "quick-lookup-phrasing-answered",
+  "description": "REQ-168: a question using common Magic-adjacent community phrasing ('combo') is answered as a Magic question -- the assembled prompt carves this phrasing out as in-domain, ahead of the off-domain refusal persona -- not refused as 'not a mechanic.'",
+  "request": {
+    "mode": "lookup",
+    "question": "What does it mean when people say a deck has a combo?"
+  }
+}

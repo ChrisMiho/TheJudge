@@ -1,0 +1,18 @@
+{
+  "id": "last-known-information-simultaneous-sba",
+  "question": "My 1/1 creature with undying has a +1/+1 counter on it. A spell puts three -1/-1 counters on it at once. The counters cancel down to two -1/-1 counters left over, so the creature dies from having 0 or less toughness. Does undying trigger, since the creature technically still had a +1/+1 counter on it before all this happened?",
+  "expectedSupplementalRuleIds": ["704.8"],
+  "workedSolution": "You control Young Wolf, a 1/1 creature with undying, and it has a +1/+1 counter on it. A spell puts three -1/-1 counters on Young Wolf. Before state-based actions are performed, Young Wolf has one +1/+1 counter and three -1/-1 counters on it. After state-based actions are performed, Young Wolf is in the graveyard. When it was last on the battlefield, it had a +1/+1 counter on it, so undying will not trigger.",
+  "source": {
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "704.8",
+    "sectionTitle": "State-Based Actions",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-08-30",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "whyHard": "The counter-cancellation state-based action (rule 704.5q) and the 0-toughness state-based action happen at the same time, so the creature's last known information is taken from before EITHER of them resolved -- meaning the +1/+1 counter still counts against undying's \"had no +1/+1 counters\" trigger condition, which is easy to miss if you assume the counters cancel first and the creature dies a step later."
+}

@@ -6,6 +6,10 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
+| Package | Notes |
+| --- | --- |
+| [prompt-context-refinement](./prompt-context-refinement/) | All 5 slices done 2026-08-30 on `thejudge-auto/prompt-context-refinement-v2-work`: A (multi-card lookup backend), B (multi-card pre-submit UI + follow-up wiring, Playwright-verified), C (REQ-168 guardrail wording + phrasing glossary), D (REQ-169 prompt-layout spec), E (NFR-018 worked-solutions eval set). Quality gate green. Ready for `thejudge-cleanup` after the PR merges. |
+
 ## active
 
 ## refined
