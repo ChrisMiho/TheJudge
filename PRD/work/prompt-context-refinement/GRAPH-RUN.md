@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (universal: rm -rf; graph: nohup)`
 - Autonomous base: `origin/thejudge-auto/prompt-context-refinement-v2`
 - Staging: `.worktrees/.graph-intake/graph-20260830-154444/`
-- Current node: `review` (run two — build done, PR #152; reviewing)
+- Current node: `owner-action` (run two — `land`: review APPROVED, awaiting owner merge)
 - Base frozen: build opened PR #152; driver commits ledger/status to the launch
   checkout LOCAL ONLY from here, pushing nothing to the base until the PR merges.
 - Next action: `/graph-run PRD/work/prompt-context-refinement/`
@@ -39,30 +39,29 @@ remote-branch deletion); it carries no PR.
 | 4 | gate-qc | sonnet | ok | `0 → 16` | PASS (run two re-grade): partial-combo fully specified & implementable, REQ-094/REQ-167/REQ-095 consistent, DESIGN-BRIEF matches (cap 5), no regressions, no live not-specified flags. `STATUS.refined`. Run two continues to plan | 2026-08-30 |
 | 5 | plan | sonnet | ok | `0 → 85` | `GAMEPLAN.md` + 5 slice docs (A multi-card backend, B multi-card UI+Playwright, C guardrail+glossary, D prompt-layout spec, E worked-solutions eval) + 5 `slice-*.criteria.json`; `STATUS.active`; order A→B→C→D→E | 2026-08-30 |
 | 6 | build | sonnet | ok | `0 → 550` | All 5 slices; 28/28 criteria true; `npm run quality:check` green (432 script + 391 backend + 1302 frontend tests); PR #152 (`…-v2-work`→`…-v2`) opened; `STATUS.ship-ready` (worktree); write-scope OK (launch checkout clean, all writes in `.worktrees/implement-prompt-context-refinement/`) | 2026-08-30 |
+| 7 | review | opus | ok | `0 → 42` | APPROVE (no-write reviewer): all 5 slices PASS against their acceptance criteria; no Critical/Important findings; 1 Minor (expected slice A/C interaction, no action). Cap enforced, oracle-only shape, qualify-on-any-one + coverage ranking, missing-role not a card rec, single/no-card paths unchanged. Advances to `land` | 2026-08-30 |
 
 ## Open gate
 
-- **Status: resolved** 2026-08-30 by `graph-gate-review` — all 5 stable IDs
-  answered (2 edit, 3 accept, 0 reject); verdicts applied, see
-  `## Gate verdicts` below.
-- **What the owner did:** answered the five decisions in
-  `PRD/work/prompt-context-refinement/GATE-QUESTIONS.md` — `accept`,
-  `edit`, or `reject` on each `Verdict:` line, with a `Reason:` for each edit.
-- **What stopped the run:** run one drove `preflight → shape → define →
-  gate-qc` and stopped at the first quality-check PASS, by design — no script can
-  decide whether the proposed product truth is the product the owner wants. The
-  five decisions: REQ-167 (Quick Question accepts several cards, no game state —
-  including the REQ-094 combo-matching amendment), REQ-168 (the rules guardrail
-  stops refusing valid Magic phrases like "combo"), REQ-169 (a readable
-  prompt-layout spec), FLOW-023 (the multi-card Quick Question flow), NFR-018
-  (validate prompt quality against real worked rules solutions). Observation #1's
-  mechanic-definition enrichment is RAG-shaped and filed to `RAG-DEFERRED.md`.
-- **PR:** docs-only design PR into `main` — https://github.com/ChrisMiho/TheJudge/pull/151.
-  It stays open; the owner does **not** merge it yet — implementation grows into
-  it and it merges last.
-- **Resume command:** `/graph-run PRD/work/prompt-context-refinement/`
-  (run two continues at `gate-qc` to re-grade the two edits just applied, then
-  continues `plan → build → review → land → close`).
+- **What the owner does — merge two PRs, in this order:** the run is built,
+  tested, and independently reviewed (APPROVE, no Critical/Important). It waits
+  at `land`, the one human step — the driver never merges. Merge:
+  1. **PR #152** — https://github.com/ChrisMiho/TheJudge/pull/152 — the
+     implementation (`…-v2-work` → `…-v2`). Merging it lands all five slices onto
+     the design branch.
+  2. **PR #151** — https://github.com/ChrisMiho/TheJudge/pull/151 — everything
+     into `main` (`…-v2` → `main`). After #152 merges, #151 carries the design +
+     implementation to `main`. Merge it **last**.
+- **What was built:** multi-card Quick Question (up to 5 cards, no game state)
+  with complete/partial combo answers; the guardrail stops refusing valid Magic
+  phrasing (e.g. "combo") with a maintained glossary; a readable prompt-layout
+  spec; and a worked-solutions eval set. 28/28 acceptance criteria exercised,
+  full test suite green.
+- **Resume command (after both merges):** `/graph-run PRD/work/prompt-context-refinement/`
+  — run two checks the PRs are merged, records `land` ok, then runs `close`
+  (promote durable truth, write the receipt, delete the package). If a PR is
+  still open it reports that and stops again.
+- **Do not merge before you're ready** — nothing else is waiting on the driver.
 
 ## Gate verdicts
 
@@ -296,6 +295,14 @@ graph-run is controlling.
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge
 
 You are node 6 (`build`). Invoke `thejudge-implement-all` in graph mode. Do NOT ask the user questions. Package `PRD/work/prompt-context-refinement/` (STATUS.active), run id `graph-20260830-154444`. Autonomous base `origin/thejudge-auto/prompt-context-refinement-v2`; use the explicit shared PR head branch `thejudge-auto/prompt-context-refinement-v2-work` (distinct from the base); worktree `.worktrees/implement-prompt-context-refinement/`. Implement every slice A to B to C to D to E sequentially in that one worktree: A multi-card lookup backend (REQ-167/094/095 — card to bounded cards max 5, per-card metadata+rulings, System 3 over question+all cards, combo qualify-on-any-one + coverage ranking, complete/partial answer naming the missing role via REQ-095 not a card recommendation); B multi-card UI + FLOW-023 (add strip capped at 5, follow-up wiring, screen re-measurement — browser-risk, use Playwright MCP, screenshots under the package `.playwright-mcp/`, browser_close when done); C guardrail wording + glossary (REQ-168); D prompt-layout spec doc (REQ-169); E worked-solutions eval set with documented provenance (NFR-018, final slice, ship gates). Earn each slice-<letter>.criteria.json as you go; report ok only when every criterion is true and the repo quality gate passes. Open the -work to base PR and set STATUS.ship-ready. Every path written must be inside `.worktrees/implement-prompt-context-refinement/` or `PRD/work/prompt-context-refinement/`. Park precisely on a genuine blocker rather than guessing or expanding scope. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+### review
+
+graph-run is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 7 (`review`) — a fresh-context, read-only reviewer with NO write tools; do not modify anything. Grade the implementation against the slices' own acceptance criteria and nothing else. The implementation is PR #152 (`thejudge-auto/prompt-context-refinement-v2-work` to `thejudge-auto/prompt-context-refinement-v2`); read the full diff with `gh pr diff 152`. Read the acceptance criteria from the slice docs in `PRD/work/prompt-context-refinement/` (slice-a..e and their criteria.json) and the design truth in `PRD/sections/` (REQ-167, REQ-094 amended, REQ-095, REQ-168, REQ-169, FLOW-023, NFR-018). For each slice A–E, judge whether the diff satisfies its criteria: the card to bounded-cards (max 5) contract and validation; per-card enrichment + System 3 over all cards; combo qualify-on-any-one + coverage ranking; complete/partial answer naming the missing role (template/category), never a card recommendation; the max-5 add-strip UI + frozen multi-card follow-up; the guardrail rewording + glossary; the prompt-layout spec matrix; and the worked-solutions eval set with documented provenance (test data only). Severity is strict: Critical/Important only for a gap breaking correctness or a stated criterion; a preference, style note, or out-of-scope improvement is never Critical/Important — do not manufacture findings. Check real gaps: max-5 cap and oracle-only shape enforced; any-one admission and coverage-before-popularity ranking; missing-role genuinely not a recommendation; goldens consistent; single/no-card paths unchanged. Report per-slice PASS or findings with severity + file:line + the criterion violated, then an overall APPROVE or CHANGES-REQUIRED. Copy the `Working directory:` line above, unchanged, into any prompt you write.
 
 ## Instruction ledger
 
