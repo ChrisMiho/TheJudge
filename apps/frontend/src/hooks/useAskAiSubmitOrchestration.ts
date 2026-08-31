@@ -16,7 +16,7 @@ type AskAiPayload = ZoneAskAiPayload | LookupAskAiPayload;
 
 export type FrozenAskAiContext =
   | { kind: "game"; gameContext: GameContext }
-  | { kind: "lookup"; card: CardMetadataItem | null };
+  | { kind: "lookup"; cards: CardMetadataItem[] };
 
 function isLookupAskAiPayload(payload: AskAiPayload): payload is LookupAskAiPayload {
   return "mode" in payload && payload.mode === "lookup";
@@ -161,7 +161,7 @@ export function useAskAiSubmitOrchestration({
       setError(null);
       setPendingRetry(null);
       const nextFrozenContext: FrozenAskAiContext = isLookupAskAiPayload(payload)
-        ? { kind: "lookup", card: payload.card ?? null }
+        ? { kind: "lookup", cards: payload.cards ?? [] }
         : { kind: "game", gameContext: payload.gameContext };
       const nextVisibleMessages: ConversationMessage[] = [{ role: "assistant", content: body.answer }];
       const nextConversationId = generateConversationId();
@@ -327,7 +327,7 @@ export function useAskAiSubmitOrchestration({
 
     const followUpPayload: AskAiPayload =
       frozenContext.kind === "lookup"
-        ? buildLookupAskAiRequest(text, frozenContext.card, conversationHistory)
+        ? buildLookupAskAiRequest(text, frozenContext.cards, conversationHistory)
         : {
             question: text,
             gameContext: frozenContext.gameContext,

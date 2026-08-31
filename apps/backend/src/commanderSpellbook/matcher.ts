@@ -69,15 +69,26 @@ export type ComboCandidate = {
   missingCount: number;
   compatibleZoneCount: number;
   anchorCoverage: number;
+  /**
+   * REQ-167 / REQ-094 (amended): count of distinct submitted card ids matched
+   * by this candidate's annotations. Used to rank `mode: "lookup"` candidates
+   * by how many of the attached cards a candidate actually uses, ahead of
+   * popularity. Computed for every mode; only lookup ranks on it.
+   */
+  attachedCardCoverage: number;
 };
 
 export type ComboMatchRequest = {
   mode: "game" | "lookup";
+  /**
+   * Every submitted card occurrence. For `mode: "lookup"` these are the
+   * attached cards (REQ-167) — a bounded set of at most five, each carrying no
+   * zone, since a looked-up card is a card the user is asking about, not a
+   * card observed somewhere on a board.
+   */
   instances: ComboMatchInstance[];
   questionText: string;
   hasExplicitIntent: boolean;
-  /** Lookup mode only: the attached card's oracle id. */
-  attachedCardId?: string;
 };
 
 type InstancePool = {
@@ -250,6 +261,7 @@ function annotateIngredient(spec: IngredientSpec, pool: InstancePool): ComboIngr
 
 function buildCandidate(variant: ComboVariant, request: ComboMatchRequest, anchorCardIds: Set<string>): ComboCandidate {
   const pool = createInstancePool(request.instances);
+  const instanceCardId = new Map(request.instances.map((instance) => [instance.instanceId, instance.cardId]));
 
   // Exact ingredients claim their instances before templates, so a card that is
   // both a named ingredient and a template member fills the named slot.
@@ -265,13 +277,22 @@ function buildCandidate(variant: ComboVariant, request: ComboMatchRequest, ancho
   const compatibleZoneCount = annotations.reduce((total, annotation) => total + annotation.quantitySatisfied, 0);
   const anchorCoverage = variant.cardIngredients.filter((ingredient) => anchorCardIds.has(ingredient.cardId)).length;
 
+  const matchedCardIds = new Set<string>();
+  for (const annotation of annotations) {
+    for (const instanceId of annotation.matchedInstanceIds) {
+      const cardId = instanceCardId.get(instanceId);
+      if (cardId) matchedCardIds.add(cardId);
+    }
+  }
+
   return {
     variant,
     fullyAssigned: missingCount === 0,
     annotations,
     missingCount,
     compatibleZoneCount,
-    anchorCoverage
+    anchorCoverage,
+    attachedCardCoverage: matchedCardIds.size
   };
 }
 
@@ -309,6 +330,23 @@ function compareCandidates(a: ComboCandidate, b: ComboCandidate): number {
 }
 
 /**
+ * REQ-094 (amended by REQ-167): lookup carries no zones, so the two zone-based
+ * coverage terms `compareCandidates` uses collapse into one lookup analog —
+ * attached-card coverage. Order: complete before partial; attached-card
+ * coverage descending; fewer missing ingredients; popularity descending;
+ * variant id ascending. With exactly one attached card, coverage is uniform
+ * across candidates, so ordering reduces to exactly what `compareCandidates`
+ * already produces for a single attached card.
+ */
+function compareLookupCandidates(a: ComboCandidate, b: ComboCandidate): number {
+  if (a.fullyAssigned !== b.fullyAssigned) return a.fullyAssigned ? -1 : 1;
+  if (a.attachedCardCoverage !== b.attachedCardCoverage) return b.attachedCardCoverage - a.attachedCardCoverage;
+  if (a.missingCount !== b.missingCount) return a.missingCount - b.missingCount;
+  if (a.variant.popularity !== b.variant.popularity) return b.variant.popularity - a.variant.popularity;
+  return a.variant.variantId.localeCompare(b.variant.variantId);
+}
+
+/**
  * Turn a submitted request plus the loaded catalog into at most five ranked,
  * fully annotated candidates. No model call decides intent, eligibility,
  * template satisfaction, or ranking, and nothing here validates legality, board
@@ -318,12 +356,16 @@ export function selectComboCandidates(catalog: ComboCatalog, request: ComboMatch
   if (catalog.variantCount === 0) return [];
 
   if (request.mode === "lookup") {
-    // Lookup retrieval requires both an attached card and explicit intent.
-    if (!request.hasExplicitIntent || !request.attachedCardId) return [];
+    // Lookup retrieval requires both explicit intent and at least one
+    // attached card (REQ-167: the bounded attached-card set replaces the
+    // single attached card as the match instances).
+    if (!request.hasExplicitIntent || request.instances.length === 0) return [];
   }
 
-  const submittedCardIds = [...new Set(request.instances.map((instance) => instance.cardId))];
-  const searchCardIds = request.mode === "lookup" ? [request.attachedCardId as string] : submittedCardIds;
+  // REQ-167: for lookup, every attached card is a search id — qualify-on-any-one
+  // is achieved structurally here, since a candidate only appears when the
+  // catalog membership scan below finds at least one attached card in it.
+  const searchCardIds = [...new Set(request.instances.map((instance) => instance.cardId))];
   if (searchCardIds.length === 0) return [];
 
   const anchorCardIds = resolveAnchorCardIds(request.instances, request.questionText);
@@ -337,10 +379,12 @@ export function selectComboCandidates(catalog: ComboCatalog, request: ComboMatch
     if (candidate.fullyAssigned) return true;
     // Partial candidates need explicit intent in every mode.
     if (!request.hasExplicitIntent) return false;
-    // With anchors named, partials must contain one of them.
+    // With anchors named, game-mode partials must contain one of them.
+    // Lookup partials already satisfy qualify-on-any-one via the catalog scan.
     if (request.mode === "game" && anchorCardIds.size > 0 && candidate.anchorCoverage === 0) return false;
     return true;
   });
 
-  return eligible.sort(compareCandidates).slice(0, MAX_COMBO_CANDIDATES);
+  const comparator = request.mode === "lookup" ? compareLookupCandidates : compareCandidates;
+  return eligible.sort(comparator).slice(0, MAX_COMBO_CANDIDATES);
 }

@@ -34,9 +34,12 @@ const ruleIndexPath = path.resolve(currentDir, "../../data/gameRulesRuleIndex.js
 const ruleIndex: GameRulesRuleIndexEntry[] = loadGameRulesRuleIndex(ruleIndexPath);
 const fixtureRulings = new Map([
   ["fixture-questing-beast", [{ publishedAt: "2019-10-04", comment: "Combat damage can't be prevented." }]],
-  // The lookup combo fixtures attach this card; `lookup-card-enrichment` requires
-  // an OFFICIAL RULINGS section for any attached card.
-  ["eval-oracle-b", [{ publishedAt: "2020-01-24", comment: "You may name a card that is not in your library." }]]
+  // The lookup combo fixtures attach these cards; `lookup-card-enrichment`
+  // requires an OFFICIAL RULINGS section for any attached card.
+  ["eval-oracle-a", [{ publishedAt: "2020-01-10", comment: "Its ability triggers once per turn." }]],
+  ["eval-oracle-b", [{ publishedAt: "2020-01-24", comment: "You may name a card that is not in your library." }]],
+  ["eval-oracle-c", [{ publishedAt: "2020-02-05", comment: "It returns only creature cards." }]],
+  ["eval-oracle-d", [{ publishedAt: "2020-02-11", comment: "Its trigger uses the stack." }]]
 ]);
 
 // Eval-only combo corpus: independent of the production artifact so an

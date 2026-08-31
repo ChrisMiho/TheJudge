@@ -139,14 +139,20 @@ function normalizeZoneItem(card: import("../types/index.js").ZoneCardItem): Prom
   };
 }
 
-function normalizeLookupCard(card: LookupAskAiRequest["card"]): LookupPromptCard | undefined {
-  if (!card) return undefined;
+function normalizeLookupCard(card: NonNullable<LookupAskAiRequest["cards"]>[number]): LookupPromptCard | undefined {
   const normalized = normalizeZoneItem({ ...card, targets: [] });
   if (!normalized) return undefined;
   const lookupCard = { ...normalized };
   delete lookupCard.owner;
   delete lookupCard.contextNotes;
   return lookupCard;
+}
+
+/** REQ-167: normalizes the bounded (max 5) attached-card list. */
+function normalizeLookupCards(cards: LookupAskAiRequest["cards"]): LookupPromptCard[] {
+  return (cards ?? [])
+    .map((card) => normalizeLookupCard(card))
+    .filter((card): card is LookupPromptCard => card !== undefined);
 }
 
 function resolveFallbackQuestion(zones: GameAskAiRequest["gameContext"]["zones"] | undefined): string {
@@ -236,10 +242,10 @@ export function buildPromptContext(payload: GameAskAiRequest): PromptContext {
 }
 
 export function buildLookupPromptContext(payload: LookupAskAiRequest): LookupPromptContext {
-  const card = normalizeLookupCard(payload.card);
+  const cards = normalizeLookupCards(payload.cards);
   return {
     finalQuestion: normalizeQuestion(payload.question),
-    ...(card ? { card } : {}),
+    ...(cards.length > 0 ? { cards } : {}),
     ...(payload.conversationHistory ? { conversationHistory: payload.conversationHistory } : {})
   };
 }

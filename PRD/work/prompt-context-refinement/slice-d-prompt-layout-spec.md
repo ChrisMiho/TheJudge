@@ -1,6 +1,6 @@
 # Slice D — Readable prompt-layout spec
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -34,18 +34,18 @@ REQ-169.
 
 ## Acceptance criteria
 
-- [ ] D1 — `PRD/sections/system-map/prompt-layout-spec.md` exists, lists every
+- [x] D1 — `PRD/sections/system-map/prompt-layout-spec.md` exists, lists every
   prompt section in actual assembly order, and gives each a plain one-line
   description.
-- [ ] D2 — The doc carries a presence matrix (sections × the four paths) with
+- [x] D2 — The doc carries a presence matrix (sections × the four paths) with
   each cell marked present/absent/conditional and the condition named.
-- [ ] D3 — **Manual:** the matrix was checked against `promptAssembly.ts` and
+- [x] D3 — **Manual:** the matrix was checked against `promptAssembly.ts` and
   against `npm run prompt:preview` output for at least one fixture per path
   (game, lookup-with-cards, lookup-no-card, follow-up) — not authored from
-  memory.
-- [ ] D4 — The doc names `npm run prompt:preview`, states what it emits, and
+  memory. See `slice-d.evidence.md` (2026-08-30).
+- [x] D4 — The doc names `npm run prompt:preview`, states what it emits, and
   points to it as the way to see a live example.
-- [ ] D5 — The doc is cross-linked from `system-map/prompt-assembly.md`,
+- [x] D5 — The doc is cross-linked from `system-map/prompt-assembly.md`,
   `quick-lookup/README.md`, and `in-depth/README.md`.
 
 ## Verification

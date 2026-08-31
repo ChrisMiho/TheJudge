@@ -9,26 +9,29 @@
 - Backed by: DEC-020, DEC-025, DEC-029, DEC-042, DEC-045, DEC-046, DEC-095,
   DEC-106, DEC-107, DEC-108, DEC-112, DEC-113, DEC-114, DEC-116, DEC-118,
   DEC-017, DEC-033, DEC-053, DEC-160, DEC-096, DEC-097, DEC-098, DEC-099,
-  DEC-100, DEC-131, DEC-146, DEC-153, REQ-072, REQ-073, REQ-074, REQ-075,
-  REQ-079, REQ-091, REQ-092, REQ-094, REQ-095, REQ-097, REQ-098, REQ-011,
-  REQ-022, REQ-024, REQ-030, REQ-105, REQ-109, REQ-110, REQ-121, REQ-129,
-  REQ-132, REQ-134, REQ-141, FLOW-006, FLOW-011, NFR-001
+  DEC-100, DEC-116, DEC-131, DEC-146, DEC-153, REQ-072, REQ-073, REQ-074,
+  REQ-075, REQ-079, REQ-091, REQ-092, REQ-094, REQ-095, REQ-097, REQ-098,
+  REQ-011, REQ-022, REQ-024, REQ-030, REQ-105, REQ-109, REQ-110, REQ-121,
+  REQ-129, REQ-132, REQ-134, REQ-141, REQ-167, FLOW-006, FLOW-011, FLOW-023,
+  NFR-001
 
 ## What it is
 
-A feature-portal destination for the short ask: the player either has one card
-in mind or doesn't, and wants a fast Magic rules answer without staging a whole
-game. They optionally attach a single card — by typed search or camera scan —
-then type a question (or pick a rules topic), and get a plain-text answer in the
-same conversation chrome the main MTG Assistant flow uses. Behind that one
-screen runs the entire Ask AI backend: the request rides the shared
-`POST /api/ask-ai` endpoint on a `mode: "lookup"` branch, the backend assembles
-one prompt that always retrieves rules from the question and layers in the
-card's rulings and metadata only when a card is attached, and the same provider
-boundary (mock by default, OpenAI live) generates the answer. Off-domain
-questions get an in-character "I couldn't find that in the rules" reply rather
-than a chatbot answer. It carries no zones, stack, phase, or multi-card
-setup, and it is not a full rules browser or a judge authority.
+A feature-portal destination for the short ask: the player either has one or
+more cards in mind or doesn't, and wants a fast Magic rules answer without
+staging a whole game. They optionally attach up to 5 cards — each by typed
+search or camera scan — then type a question (or pick a rules topic), and get
+a plain-text answer in the same conversation chrome the main MTG Assistant flow
+uses. Behind that one screen runs the entire Ask AI backend: the request rides
+the shared `POST /api/ask-ai` endpoint on a `mode: "lookup"` branch, the
+backend assembles one prompt that always retrieves rules from the question and
+layers in every attached card's rulings and metadata (REQ-167), and the same
+provider boundary (mock by default, OpenAI live) generates the answer.
+"How do these cards combo" explains a complete combo across the attached set
+or names the missing piece for a partial one. Off-domain questions get an
+in-character "I couldn't find that in the rules" reply rather than a chatbot
+answer. It carries no zones, stack, phase, or other game-state setup, and it is
+not a full rules browser or a judge authority.
 
 ## How it works
 
@@ -41,19 +44,24 @@ setup, and it is not a full rules browser or a judge authority.
   card-attach control, then the Question field, then the "General rules topics"
   outer disclosure. (REQ-073, DEC-112)
 - Built: the card-attach control's label carries the guidance copy inline after
-  an em dash — "OPTIONAL CARD — Add a card for context or ask any Magic related
-  question." — rather than as a standalone paragraph under the header. (DEC-113,
-  REQ-073)
-- Built: card input is optional and single. The player resolves one card by
-  typed autocomplete search (REQ-001/REQ-002 behavior) or by camera scan (the
-  shared FLOW-006 engine), each resolving to one oracle-level `CardMetadataItem`;
-  the resolved card shows its name, image when available, and oracle text with
-  full metadata before submit, and can be removed or replaced. Only one card is
-  active at a time; there are no zones, stack, phase, or per-card
-  enrichment-editing controls. (DEC-107, REQ-073, FLOW-006, FLOW-011)
-- Built: scan here resolves to exactly one card and is presentation-only at the
-  printing level — the scanned printing's art never reaches the request, prompt,
-  or rulings; identity stays oracle-level. (DEC-053, REQ-073)
+  an em dash — "OPTIONAL CARDS — Add up to 5 cards for context, or ask any
+  Magic related question." — rather than as a standalone paragraph under the
+  header. (DEC-113, REQ-073, REQ-167)
+- Built: card input is optional and bounded to at most 5 cards (REQ-167). The
+  player adds each card by typed autocomplete search (REQ-001/REQ-002 behavior)
+  or by camera scan (the shared FLOW-006 engine); each add resolves to one
+  oracle-level `CardMetadataItem`, previewed with its name, image when
+  available, and oracle text with full metadata before submit, and can be
+  removed individually. An add attempted past the cap is blocked and a stated
+  limit message is shown to the player, mirroring the existing bounded-add UX
+  pattern (`ScanAddOutcome`, the In-Depth zone-collection strip). With zero or
+  one card attached, behavior is unchanged from before REQ-167. There are no
+  zones, stack, phase, or per-card enrichment-editing controls. (DEC-107,
+  REQ-073, REQ-167, FLOW-006, FLOW-011)
+- Built: scan here resolves to exactly one card per scan and is
+  presentation-only at the printing level — the scanned printing's art never
+  reaches the request, prompt, or rulings; identity stays oracle-level.
+  (DEC-053, REQ-073)
 
 ### General rules topics browse
 
@@ -80,14 +88,15 @@ setup, and it is not a full rules browser or a judge authority.
 
 - Built: the freeform textarea stays independently editable at all times as
   optional supplementary context; locking, swapping, or removing a pill never
-  overwrites it. Submit is enabled whenever a pill is locked, a card is attached,
-  or the textarea has non-empty trimmed text. (REQ-091, DEC-112)
-- Built: on submit the wire `question` string is composed client-side with no
-  request-shape change — the pill phrase plus trimmed textarea text
-  (space-joined) when both are present; the pill phrase alone; the textarea
-  alone when no pill is locked; or, when no pill is locked and the textarea is
-  empty but a card is attached, the silent fallback `Tell me about {Card Name}.`
-  (never shown to the user). (REQ-091, FLOW-011)
+  overwrites it. Submit is enabled whenever a pill is locked, at least one card
+  is attached, or the textarea has non-empty trimmed text. (REQ-091, DEC-112)
+- Built: on submit the wire `question` string is composed client-side — the
+  pill phrase plus trimmed textarea text (space-joined) when both are present;
+  the pill phrase alone; the textarea alone when no pill is locked; or, when no
+  pill is locked and the textarea is empty but one or more cards are attached,
+  the silent fallback `Tell me about {Card Name}.` for a single card or
+  `Tell me about {Card A}, {Card B} and {Card C}.` for several (never shown to
+  the user). (REQ-091, REQ-167, FLOW-011)
 - Built: the visible counter, the textarea `maxLength`, and the submit gate all
   measure the raw editable textarea content, not the composed string, so an
   empty field with a card or topic attached reads `0/300` and a full
@@ -130,13 +139,16 @@ setup, and it is not a full rules browser or a judge authority.
   REQ-097, REQ-098)
 - Built: the first visible bubble is the assistant's answer; the initial user
   question rides in `conversationHistory` but is not shown as a visible bubble.
-  Follow-ups are text-only and send `{ mode: "lookup", question, card: frozen
-  (when one was attached), conversationHistory }`. (REQ-075, FLOW-011)
-- Built: when a card was attached it is frozen for the conversation and shown
-  behind a compact adaptive context trigger — a bottom sheet below 768px or a
-  right-side drawer at 768px+; without a card, no empty context trigger or
-  container renders. Start Over clears the thread and any locked pill and
-  returns to the pre-ask state. (REQ-075, DEC-118)
+  Follow-ups are text-only and send `{ mode: "lookup", question, cards: frozen
+  (the full attached set, when any were attached), conversationHistory }`.
+  (REQ-075, REQ-167, FLOW-011, FLOW-023)
+- Built: when one or more cards were attached, every one of them is frozen for
+  the conversation and shown behind a compact adaptive context trigger — a
+  bottom sheet below 768px or a right-side drawer at 768px+; the trigger label
+  names the single card or states the count (`"N cards"`) for several. Without
+  a card, no empty context trigger or container renders. Start Over clears the
+  thread and any locked pill and returns to the pre-ask state. (REQ-075,
+  REQ-167, DEC-118)
 
 ## The full backend path (request → assembly → retrieval → provider → response)
 
@@ -151,14 +163,18 @@ both providers. (DEC-020, REQ-072)
 - Built: `askAiRequestSchema` is a `mode`-discriminated union
   (`"game" | "lookup"`). A payload with no `mode` key defaults to `"game"` for
   back-compat; `mode: "lookup"` is a required literal. The lookup branch is
-  `{ mode: "lookup", question, card?, conversationHistory? }`, `.strict()`, so a
-  `gameContext` field is rejected as an unrecognized key — `card` and
-  `gameContext` are mutually exclusive across modes. (DEC-106, REQ-072)
-- Built: `card` is optional and its presence or absence is what the backend
-  branches on. The lookup card reference is oracle-level (`cardId`, `name`,
+  `{ mode: "lookup", question, cards?, conversationHistory? }`, `.strict()`, so
+  a `gameContext` field is rejected as an unrecognized key — `cards` and
+  `gameContext` are mutually exclusive across modes. (DEC-106, REQ-072,
+  REQ-167)
+- Built: `cards` is an optional bounded list of at most 5 entries (REQ-167,
+  amending DEC-106's single optional `card`); a 6th entry is rejected by
+  validation. Each entry keeps the prior oracle-level shape (`cardId`, `name`,
   `oracleText` required; `imageUrl`/`manaCost`/`manaValue`/`typeLine`/`colors`/
-  `supertypes`/`subtypes` optional) and carries no zone, caster, owner, targets,
-  or context-notes fields. (DEC-106, DEC-053, REQ-072)
+  `supertypes`/`subtypes` optional) and carries no zone, caster, owner,
+  targets, or context-notes fields. Zero cards and exactly one card behave
+  identically to the prior single-card shape. (DEC-106, DEC-053, REQ-072,
+  REQ-167)
 - Built: `conversationHistory` is optional and validated identically to the game
   mode (1–20 turns, first `user`, last `assistant`, strictly alternating,
   per-message cap). The `question` character bound and control-character
@@ -168,18 +184,21 @@ both providers. (DEC-020, REQ-072)
 
 - Built: `preparePromptInput` routes `mode: "lookup"` to a single lookup
   assembly path (`prepareLookupPromptInput` → `buildLookupPromptText`), never
-  forking by whether a card is attached — the card is a conditional layer inside
-  one path, not a second implementation. (DEC-107, REQ-074)
-- Built: three things always run regardless of a card. The static `MTG
-  REFERENCE` block (DEC-025), the always-on core game-rules topics (DEC-045 core
-  set), and question-scored System 3 supplemental rules (DEC-046 / REQ-022).
-  (DEC-107, REQ-074)
-- Built: when a card is attached, per-card enrichment layers in — the card's
-  full metadata including oracle text using the same per-card formatting as
-  populated-zone cards (DEC-042 / REQ-030), the card's WotC rulings (DEC-029),
-  and System 3 additionally scored against the card's oracle text and type line,
-  not only the question. With no card, the rulings section and card section are
-  empty and System 3 scores on the question alone. (DEC-107, REQ-074)
+  forking by how many cards are attached — the bounded card set (REQ-167) is a
+  loop inside one path, not a second implementation. (DEC-107, REQ-074,
+  REQ-167)
+- Built: three things always run regardless of the attached card set. The
+  static `MTG REFERENCE` block (DEC-025), the always-on core game-rules topics
+  (DEC-045 core set), and question-scored System 3 supplemental rules
+  (DEC-046 / REQ-022). (DEC-107, REQ-074)
+- Built: when one or more cards are attached, per-card enrichment layers in for
+  every attached card — each card's full metadata including oracle text using
+  the same per-card formatting as populated-zone cards (DEC-042 / REQ-030),
+  each card's WotC rulings under one `CARD (looked up)` / `OFFICIAL RULINGS`
+  heading per section, and System 3 additionally scored against every attached
+  card's oracle text and type line, not only the question. With no cards
+  attached, the rulings section and card section are empty and System 3 scores
+  on the question alone. (DEC-107, REQ-074, REQ-167)
 - Built: game-state-only sections are always omitted — zone sections, `PHASE
   GUIDANCE` (REQ-024), System 2 game-state topic gating (DEC-045), and the merged
   zone scope sentence (DEC-025) — because lookup mode never carries game state.
@@ -195,13 +214,21 @@ both providers. (DEC-020, REQ-072)
 
 - Built: `prepareLookupPromptInput` also calls `resolveLookupComboCandidates`,
   which — when a Commander Spellbook catalog is loaded — calls
-  `selectComboCandidates` in `mode: "lookup"` with the attached card (if any)
-  as the sole match instance and the explicit-intent detector run over the
-  question text. Retrieval requires **both** explicit combo intent and an
-  attached card; a lookup question with no card, or with a card but no combo
-  intent, retrieves no combo catalog data. Every candidate must contain the
-  attached card as an exact ingredient or an authoritative template match.
-  (DEC-116, REQ-094)
+  `selectComboCandidates` in `mode: "lookup"` with every attached card (REQ-167,
+  up to 5) as match instances and the explicit-intent detector run over the
+  question text. Retrieval requires **both** explicit combo intent and at
+  least one attached card; a lookup question with no card, or with cards but no
+  combo intent, retrieves no combo catalog data. A candidate qualifies by
+  containing at least one attached card as an exact ingredient or authoritative
+  template match (qualify-on-any-one), and candidates covering more of the
+  attached cards rank ahead of those covering fewer (attached-card coverage),
+  before popularity. A candidate is complete when every ingredient slot is
+  filled somewhere in the attached set and partial when it qualifies but a slot
+  is unmatched; the answer explains a complete combo or names each missing
+  ingredient's own identity/template from the catalog for a partial one — never
+  a card recommendation. With exactly one card attached this is identical to
+  the prior single-card rule. (DEC-116, REQ-094 amended by REQ-167, REQ-095,
+  REQ-167)
 - Built: when at least one variant is selected, prompt assembly adds a bounded
   `COMMANDER SPELLBOOK COMBO CONTEXT — COMMUNITY-SOURCED` section (shared
   format with game mode) after card/rules/rulings enrichment and before
@@ -210,11 +237,17 @@ both providers. (DEC-020, REQ-072)
 
 ### Off-domain guardrail
 
+- Built: common Magic-adjacent community phrasing (combo, infinite combo,
+  aggro, control, ramp, tempo, stax, wheel, mill, blink, sacrifice outlet, and
+  similar terms) is carved out as in-domain and answered, ahead of the
+  off-domain refusal — see `PRD/sections/system-map/lookup-phrasing-glossary.md`
+  for the maintained category list and what each phrase means. (REQ-168)
 - Built: the lookup-mode prompt instructs the model to treat unrecognized or
   off-domain terms as "not found in the rules corpus," ask the user to check
   spelling or rephrase toward a Magic term, and never answer the off-domain
   question directly — the "confused rules lookup" persona, applied identically
-  whether or not a card is attached. (DEC-108, REQ-074)
+  whether zero, one, or several cards (REQ-167) are attached. (DEC-108,
+  REQ-074, REQ-167)
 - Built: this is prompt-instruction-only. There is no separate classifier,
   validator, detection branch, or debug/log signal for off-domain input anywhere
   in the request path — the persona lives entirely as an instruction line in the
@@ -226,8 +259,8 @@ both providers. (DEC-020, REQ-072)
   retrieval over the loaded rule index, excluding the curated rule numbers the
   always-on core topics already carry, returning a small capped set of the
   best-scoring rules. For lookup the query is built from the question tokens
-  always, plus the attached card's oracle text and type line when one is
-  present. (DEC-046, REQ-022, DEC-107)
+  always, plus every attached card's oracle text and type line (REQ-167).
+  (DEC-046, REQ-022, DEC-107, REQ-167)
 - Built: the always-on core game-rules topics are a fixed curated set
   (stack-and-priority, targets, zones, triggered-ability basics), not the
   state-gated selector the game flow uses — lookup carries no game state to gate
@@ -247,15 +280,16 @@ both providers. (DEC-020, REQ-072)
   normalized error shape (the "Miho is working on it" copy). (DEC-020, DEC-017,
   DEC-033)
 - Built: regression is pinned by golden fixtures under
-  `apps/backend/src/eval/fixtures/quick-lookup-*` — card, no-card, and off-domain
-  scenarios, each with a request fixture plus a context golden and a prompt
-  golden; the off-domain prompt golden pins the guardrail instruction wording
-  verbatim. (DEC-108)
+  `apps/backend/src/eval/fixtures/quick-lookup-*` — single-card, no-card,
+  multi-card, and off-domain scenarios, each with a request fixture plus a
+  context golden and a prompt golden; the off-domain prompt golden pins the
+  guardrail instruction wording verbatim. (DEC-108, REQ-167)
 - Built: combo enrichment on the lookup path is pinned by dedicated fixtures —
-  `commander-spellbook-lookup-attached-intent` (attached card, explicit combo
-  intent) and `commander-spellbook-lookup-unrelated` (attached card, ordinary
-  rules question, no combo intent) — under
-  `apps/backend/src/eval/fixtures/commander-spellbook-lookup-*`. (REQ-095)
+  `commander-spellbook-lookup-attached-intent` and `-unrelated` (single
+  attached card) plus `-multi-card-complete` and `-multi-card-partial`
+  (bounded multi-card set) — under
+  `apps/backend/src/eval/fixtures/commander-spellbook-lookup-*`. (REQ-095,
+  REQ-167)
 
 ## Measured bounds
 
@@ -276,17 +310,24 @@ as the current shipped configuration, not product truth.
   ending with assistant, per-message cap — shared with the main flow, not a
   Quick-Lookup-specific policy. (REQ-072, REQ-075)
 - Retrieval: System 3 returns a small capped best-scoring set (top 5), curated
-  core-topic rule numbers excluded; question tokens always score, card
-  oracle/type tokens added only when a card is attached. (DEC-046, REQ-022)
+  core-topic rule numbers excluded; question tokens always score, plus every
+  attached card's oracle/type tokens (REQ-167). (DEC-046, REQ-022, REQ-167)
+- Card attach cap: the pre-submit card-attach strip accepts at most 5 cards
+  (REQ-167); an add attempted past the cap is blocked with a stated limit
+  message. (REQ-167, `QuickLookupApp.tsx`)
 - Always-on core topics: a fixed four-topic core set (stack-and-priority,
   targets, zones, triggered-ability basics); the static MTG reference block is a
   bounded ≤2500-char constant. (DEC-045, DEC-025)
 - Pre-submit card image fit: the shared card-shell image is capped at
-  `max-height: 25dvh` below 768px and `42dvh` at 768px+ so **Send Request** stays
-  in the first viewport with no page scroll — REQ-129's no-scroll fit binds
-  before REQ-141's "clear majority," so at 390×844 the image is ~45% of content
-  width, which REQ-141 is not met on and DEC-160 anticipates. (DEC-160, REQ-129,
-  REQ-141, `screen-layout.md`)
+  `max-height: 25dvh` below 768px and `42dvh` at 768px+, applied independently
+  per attached card — with one card, **Send Request** stays in the first
+  viewport with no page scroll; REQ-129's no-scroll fit binds before REQ-141's
+  "clear majority," so at 390×844 the image is ~45% of content width, which
+  REQ-141 is not met on and DEC-160 anticipates. With 2+ cards (REQ-167), each
+  stacked image still holds the same per-image cap — confirmed unchanged by
+  re-measurement (ui-review, 2026-08-30) — so the strip now scrolls the page
+  past the composer, an accepted consequence of the per-image bound, not a new
+  cap value. (DEC-160, REQ-129, REQ-141, REQ-167, `screen-layout.md`)
 - Layout/fit: mobile-first and touch-friendly; the pre-submit stack and the
   answered workspace follow the shared shell width and region-scroll rules of
   `screen-layout.md`'s "Quick Question — pre-submit" and "— answered workspace"
@@ -360,5 +401,8 @@ under `apps/backend/src/eval/fixtures/quick-lookup-*` and
 artifact is emitted by `scripts/build-game-rules.mjs`. See
 `PRD/sections/system-map.md`'s `## Quick Lookup` block for the full file list,
 `PRD/sections/screen-layout.md`'s `#### Quick Question — pre-submit` and
-`#### Quick Question — answered workspace` rows for the layout bands, and
-`apps/backend/src/providers/README.md` for the provider-boundary config detail.
+`#### Quick Question — answered workspace` rows for the layout bands,
+`PRD/sections/system-map/prompt-layout-spec.md` for every section the lookup
+prompt is built from, in assembly order, and which appear with/without a
+card attached (REQ-169), and `apps/backend/src/providers/README.md` for the
+provider-boundary config detail.
