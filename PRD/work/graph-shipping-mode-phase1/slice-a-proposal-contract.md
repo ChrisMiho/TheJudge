@@ -1,6 +1,6 @@
 # Slice A — Proposal contract + docs
 
-## Status: planned
+## Status: done
 
 ## Goal
 Encode the propose/apply/close division and the "GATE-QUESTIONS.md is the proposal"
