@@ -32,7 +32,7 @@
   post-deletion truth in 5 `PRD/sections/` files and gate-qc PASSed the brief.
 - **Evidence:** `PRD/sections/` diff (5 files) vs `origin/main`;
   `DESIGN-BRIEF.md`; prior receipt `card-scan-lockin-fix-2026-06-22.md`.
-- **Docs-only PR:** <filled at PR creation>
+- **Docs-only PR:** https://github.com/ChrisMiho/TheJudge/pull/157 (hold open, do not merge)
 - **Resume command:** `/graph-run PRD/work/remove-dead-card-back-detector/`
 
 ## Notes
