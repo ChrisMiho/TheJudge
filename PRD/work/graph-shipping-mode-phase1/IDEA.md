@@ -1,45 +1,49 @@
 # graph-shipping-mode-phase1
 
 ## Problem
-The graph-run backbone can't work through several ideas in one sitting. Two
-things block it: (1) `graph-preflight`'s base→main guard refuses **any** fresh
-run while **any** `thejudge-auto/*` → main PR is open, even when the new target
-shares no files with it — so the first parked package freezes the rest of a
-night (this is what stalled the overnight-codehealth loop after one target);
-and (2) run one **always** parks at `owner-action` even when the define gate is
-empty, forcing a second manual kickoff for ideas that have nothing for the
-owner to decide.
+The automated lifecycle carried forward a quirk of the old manual flow: refinement
+mutates durable product truth (`PRD/sections/`) up front, during spec-forming.
+That's the piece that fights everything else — it makes spec-forming touch shared
+files (so parallel formers collide), and it puts product truth into main before
+the code that backs it exists. Symptom seen 2026-09-01: the overnight loop parked
+after one target and every later fresh run hit the base→main guard; the deeper
+cause is *where the writing happens*, not the guard.
 
-## Outcome
-Two behaviour-preserving changes to the graph backbone:
-1. **Overlap-scoped base→main guard.** A fresh run is blocked only when the new
-   package's declared target files intersect an open `thejudge-auto/*` PR's
-   changed files (`gh pr list --json files`). Keep the fail-closed default when
-   overlap can't be determined; the resume path (`--take-lock`) stays exempt as
-   today.
-2. **Auto-bridge on an empty gate.** When `define` produces no `PRD/sections/`
-   diff (no `GATE-QUESTIONS.md`), run one continues into run two automatically
-   — spec → implementation in one kickoff. An idea WITH open questions still
-   parks at `owner-action` exactly as now. The final merge (`land`) is never
-   automated: it stays the owner's approval.
+## Outcome — move the writing: propose / apply / close
+Rework the shared lifecycle's division of labour so durable mutation happens once,
+in implementation, together with the code:
 
-Together these unblock the overnight-codehealth loop and deliver the
-single-idea auto-flow path (spec → implementation → owner merges).
+1. **Refinement = propose.** Writes only inside `PRD/work/<slug>/`: the design
+   brief, the *proposed* `PRD/sections/` changes captured as markdown/diff in the
+   work folder, and the gate questions. Never mutates durable `PRD/sections/` or
+   code. Its job becomes documenting the change, not making it.
+2. **Implement = apply.** Takes the approved proposal and writes the real updates
+   — the durable `PRD/sections/` edits **and** the code, together, in one PR.
+   Applies **by intent** against current truth (re-derives the edit from the
+   brief), not by replaying a possibly-stale frozen diff.
+3. **Cleanup = close.** Already promotes at close; reconcile so promotion happens
+   once (in apply/close), then delete the work folder.
+
+The `define` gate then reads the *proposal* (already the full diff embedded in
+`GATE-QUESTIONS.md`), not a live-applied diff. An empty proposal (no product
+truth) means no gate.
+
+## Why this is the foundation
+- Kills the spec-ahead-of-code window: durable truth and code land together.
+- Makes parallel spec-forming conflict-free: each former writes only its own work
+  folder. This is the prerequisite for [[graph-shipping-mode-phase2]].
+- Makes the base→main guard and auto-bridge mostly moot — retire/shrink rather
+  than engineer them.
 
 ## Non-goals
-- No concurrency yet: still one run at a time (one lock, shared checkout). True
-  parallel spec-forming via one base branch + a worktree per run, plus an
-  approval-watcher that fires part 2, is **Phase 2** ([[graph-shipping-mode-phase2]]).
-- No "ship multiple specs together" grouping — each idea stays its own package
-  and PR.
-- `land` stays a human merge; no auto-merge, ever.
-- Product/app truth (`PRD/sections/`) is untouched — this is an agent-workflow
-  change to `PRD/instructions/graph-workflow-contract.md`, the graph skills, and
-  `scripts/graph-preflight.mjs` (+ its tests).
+- No concurrency or background loop yet — that is Phase 2. This is correct even
+  single-threaded.
+- `land` (merge to main) stays a human merge.
+- No product/app (`PRD/sections/`) truth changes here: this is an agent-workflow
+  rework of the `thejudge-*` lifecycle skills, `graph-workflow-contract.md`, and
+  the graph scripts/tests.
 
-## Why now
-Surfaced live on 2026-09-01: the overnight-codehealth loop parked its first
-target (dormant `isCardBack()` removal, PR #157) and then every subsequent fresh
-run hit the unconditional base→main guard, ending the night after one package.
-The guard is armed and correct for dependent work; it just overcorrects for
-independent targets.
+## Scope note
+This changes the SHARED lifecycle skills (refinement, implement, cleanup), so it
+reworks both the manual thejudge flow and the automated graph flow — consistently.
+Divergent behaviour between the two modes would be worse than the larger change.

@@ -1,9 +1,10 @@
-status: ideation
+status: refining
 
 # graph-shipping-mode-phase1
 
-Unblock the graph-run backbone so it can work through several ideas: (1)
-overlap-scope the base→main guard so independent targets aren't blocked by an
-open loop PR, and (2) auto-bridge run one into run two when the define gate is
-empty. Merge stays the owner's. Agent-workflow change only — no `PRD/sections/`
-product truth. See `IDEA.md`.
+Foundation of the two-tool shipping model: move durable writing out of refinement.
+Refinement *proposes* (work-folder only); implement *applies* the durable
+`PRD/sections/` truth and the code together; cleanup promotes once at close. Makes
+spec-forming conflict-free and kills the spec-ahead-of-code window — the base→main
+guard and auto-bridge then retire. Agent-workflow change only — no `PRD/sections/`
+product truth. See `DESIGN-BRIEF.md`.

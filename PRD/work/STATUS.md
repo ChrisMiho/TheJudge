@@ -12,10 +12,11 @@ Do not rename package folders to encode status.
 
 ## refining
 
+| [graph-shipping-mode-phase1](graph-shipping-mode-phase1/) | propose/apply lifecycle rework: refinement documents proposal (work-folder only), implement applies durable truth + code together; conflict-free spec-forming; agent-workflow only, no `PRD/sections/` |
+
 ## ideation
 
-| [graph-shipping-mode-phase1](graph-shipping-mode-phase1/) | unblock graph-run for several ideas: overlap-scope the base→main guard + auto-bridge run one→two on an empty gate; agent-workflow only, no `PRD/sections/` |
-| [graph-shipping-mode-phase2](graph-shipping-mode-phase2/) | concurrent graph-run: one base branch + worktree per run + approval-watcher fires part 2; depends on phase1 |
+| [graph-shipping-mode-phase2](graph-shipping-mode-phase2/) | two decoupled tools joined by main: parallel spec-former (worktree per run) + single background implementation loop; subagents off by default; depends on phase1 |
 
 ## owner-action
 
