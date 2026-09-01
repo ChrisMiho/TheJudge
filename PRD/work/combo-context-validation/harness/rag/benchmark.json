@@ -1,0 +1,941 @@
+{
+  "generatedAt": "2026-08-31T23:05:50.868Z",
+  "items": [
+    {
+      "question": "A spell's effect creates a delayed trigger that says 'when this creature leaves the battlefield, do something.' But the creature leaves the battlefield before that spell actually finishes resolving and creates the delayed trigger. Does the delayed ability still trigger once the creature is gone?",
+      "expectedRuleId": "603.7a",
+      "sectionTitle": "gold",
+      "source": "gold"
+    },
+    {
+      "question": "A spell says: destroy target nonblack creature and target land, and they can't be regenerated. The same permanent gets chosen as both targets -- a creature that's also a land -- and its color is changed to black before the spell resolves. Does the whole spell fizzle because one target became illegal, or does part of it still work?",
+      "expectedRuleId": "608.2b",
+      "sectionTitle": "gold",
+      "source": "gold"
+    },
+    {
+      "question": "My 1/1 creature with undying has a +1/+1 counter on it. A spell puts three -1/-1 counters on it at once. The counters cancel down to two -1/-1 counters left over, so the creature dies from having 0 or less toughness. Does undying trigger, since the creature technically still had a +1/+1 counter on it before all this happened?",
+      "expectedRuleId": "704.8",
+      "sectionTitle": "gold",
+      "source": "gold"
+    },
+    {
+      "question": "My creature is enchanted by an Aura that says the creature is white. A separate effect on the battlefield says white creatures get +1/+1. Does my creature actually get the +1/+1, even though it wasn't white to begin with?",
+      "expectedRuleId": "613.9",
+      "sectionTitle": "gold",
+      "source": "gold"
+    },
+    {
+      "question": "I control two permanents that each say: if a creature you control would deal damage to a permanent or player, it deals double that damage instead. My creature deals 2 damage. Does having two of these doubling effects mean it deals 8 damage, or does it double forever since each doubling effect could apply to the other's result?",
+      "expectedRuleId": "614.5",
+      "sectionTitle": "gold",
+      "source": "gold"
+    },
+    {
+      "question": "I control a creature whose toughness equals my hand size. I cast a spell that reads: discard your hand, then draw seven cards. In the middle of that spell resolving, my hand is briefly empty, so the creature's toughness is 0. Does my creature die from a state-based action during that spell's resolution?",
+      "expectedRuleId": "704.4",
+      "sectionTitle": "gold",
+      "source": "gold"
+    },
+    {
+      "question": "If I have a rad counter on me, when exactly does the triggered ability that checks for rad counters go off during my turn?",
+      "expectedRuleId": "122.1i",
+      "sectionTitle": "Counters",
+      "source": "synthetic"
+    },
+    {
+      "question": "If my creature with a regeneration effect would be destroyed, do I still put it into the graveyard, or does something else happen instead?",
+      "expectedRuleId": "701.19b",
+      "sectionTitle": "Keyword Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have a permanent that's already untapped, can I choose to \"untap\" it again to trigger abilities that say \"whenever this permanent untaps\"?",
+      "expectedRuleId": "701.26b",
+      "sectionTitle": "Keyword Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "I just sacrificed two creatures at once—when they both go to my graveyard simultaneously, can I decide which one ends up on top?",
+      "expectedRuleId": "404.3",
+      "sectionTitle": "Graveyard",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I control a creature that explores, do I reveal the top card of my library when it explores, and what happens if it’s a land versus a nonland card?",
+      "expectedRuleId": "701.44a",
+      "sectionTitle": "Keyword Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If my companion card meets the deck-building requirements, can I put it directly into my hand at the start of the game instead of in the sideboard?",
+      "expectedRuleId": "702.139d",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I try to draw a card but my library is empty, do I immediately lose the game, or do I get a chance to do something first?",
+      "expectedRuleId": "704.5b",
+      "sectionTitle": "State-Based Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I don’t attack with any creatures this turn, do we skip the blocker declaration and damage steps entirely?",
+      "expectedRuleId": "506.1",
+      "sectionTitle": "Combat Phase",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I cast a sorcery and it gains an ability that triggers when the creature enters the battlefield, does that ability work while the sorcery is still on the stack?",
+      "expectedRuleId": "113.6",
+      "sectionTitle": "Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If one player on our Two-Headed Giant team concedes, does that mean both of us lose and are out of the game immediately?",
+      "expectedRuleId": "810.8b",
+      "sectionTitle": "Two-Headed Giant Variant",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have a creature with level counters and it reaches a new level range, do its stats and abilities from the previous level replace or add to the new ones?",
+      "expectedRuleId": "711.2",
+      "sectionTitle": "Leveler Cards",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I activate a planeswalker's ability with a \"+2\" loyalty cost, do I add two loyalty counters to it after resolving the ability?",
+      "expectedRuleId": "107.7",
+      "sectionTitle": "Numbers and Symbols",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I cast a prototype card for its alternative cost, does the creature’s power, toughness, and color come from the normal side or the prototype side once it’s on the battlefield?",
+      "expectedRuleId": "718.3b",
+      "sectionTitle": "Prototype Cards",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I put both +1/+1 and -1/-1 counters on the same creature, do any of those counters get removed automatically, or do they just stay on the creature?",
+      "expectedRuleId": "122.3",
+      "sectionTitle": "Counters",
+      "source": "synthetic"
+    },
+    {
+      "question": "Can my Phenomenon card be put into my deck for a regular Magic game, or are they only used in Planechase?",
+      "expectedRuleId": "312.1",
+      "sectionTitle": "Phenomena",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a permanent has multiple vanishing counters from different sources, do I remove one counter each turn for each instance, or just one counter total?",
+      "expectedRuleId": "702.63c",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I decide to change which planeswalker a creature is attacking during the declare attackers step, does that creature still need to follow restrictions like \"must attack if able\" or \"can't attack\"?",
+      "expectedRuleId": "508.7b",
+      "sectionTitle": "Declare Attackers Step",
+      "source": "synthetic"
+    },
+    {
+      "question": "When exactly do we declare how my creatures assign combat damage—do we do it before or right as combat damage starts?",
+      "expectedRuleId": "703.4k",
+      "sectionTitle": "Turn-Based Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a spell causes us to swap life totals, but one player can’t gain or lose life, what exactly happens to their life total during the exchange?",
+      "expectedRuleId": "701.12c",
+      "sectionTitle": "Keyword Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If we get stuck in a loop where players keep taking mandatory actions without end, but some players aren’t involved or affected by it, do all players lose, or just the ones caught in the loop and those nearby?",
+      "expectedRuleId": "104.4f",
+      "sectionTitle": "Ending the Game",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have multiple scheme cards in the command zone, when an ability says “this scheme,” does it refer to the specific scheme that ability came from, or could it mean any scheme in the command zone?",
+      "expectedRuleId": "314.7",
+      "sectionTitle": "Schemes",
+      "source": "synthetic"
+    },
+    {
+      "question": "If two permanents have the same name but one also has an additional name, do they count as having the same name for cards that affect all permanents with that name?",
+      "expectedRuleId": "201.2a",
+      "sectionTitle": "Name",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a spell says to set my life total to 10 but I’m currently at 3, do I gain 7 life or just go straight to 10 without gaining life?",
+      "expectedRuleId": "119.5",
+      "sectionTitle": "Life",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I splice one instant spell onto another with a different color, does the combined spell keep the color of the original spell or change to match the spliced spell?",
+      "expectedRuleId": "702.47c",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a card or ability is currently resolving and the turn ends, does that effect still finish, or is it removed from the stack and doesn’t happen?",
+      "expectedRuleId": "724.2b",
+      "sectionTitle": "Ending Turns and Phases",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a scheme card is face-up in the command zone, can I still use any of its activated abilities as if it were on the battlefield?",
+      "expectedRuleId": "904.8",
+      "sectionTitle": "Archenemy",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I gain control of my opponent’s turn, can I decide whether they want to concede or draw the game, or do they make those decisions themselves?",
+      "expectedRuleId": "723.5b",
+      "sectionTitle": "Controlling Another Player",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I pay the cost for aura swap while this Aura is attached to a creature, can I put a different Aura from my hand onto that same creature immediately?",
+      "expectedRuleId": "702.65a",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If we're drafting with Commander Legends boosters, can I add a copy of The Prismatic Piper to my deck even if I didn't draft it?",
+      "expectedRuleId": "903.13e",
+      "sectionTitle": "Commander",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I give a creature first strike after the first combat damage step has finished, can it still deal damage during the regular combat damage step?",
+      "expectedRuleId": "702.7c",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If my teammate loses the game due to decking, do we both lose immediately even if I have effects preventing me from losing?",
+      "expectedRuleId": "810.8a",
+      "sectionTitle": "Two-Headed Giant Variant",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I’m playing a deck with cards printed in a foreign language, do their names count as their English names for all game effects and interactions?",
+      "expectedRuleId": "201.2",
+      "sectionTitle": "Name",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have a card with that smaller inset text box inside the main text box, does that mean it’s an Omen card and has special rules during the game?",
+      "expectedRuleId": "720.1",
+      "sectionTitle": "Omen Cards",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I activate a land that adds mana, can I hold onto that mana to use it later in the turn, or do I have to spend it right away?",
+      "expectedRuleId": "106.4",
+      "sectionTitle": "Mana",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I draw a card with Miracle as my first draw this turn, can I reveal it immediately and choose to cast it for its Miracle cost instead of its regular mana cost?",
+      "expectedRuleId": "702.94a",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If my opponent’s damage would be dealt by an effect that says it can’t be prevented, but I have a creature with a damage prevention ability, does that ability still trigger or do nothing at all?",
+      "expectedRuleId": "615.12",
+      "sectionTitle": "Prevention Effects",
+      "source": "synthetic"
+    },
+    {
+      "question": "If my teammate controls a creature that’s being attacked, but I’m the one protecting it, who is actually considered the defending player for effects that care about that in this battle?",
+      "expectedRuleId": "310.8d",
+      "sectionTitle": "Battles",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I put a copy of an Aura on the battlefield by copying an existing one, does the new copy count as having just entered the battlefield for triggered abilities?",
+      "expectedRuleId": "730.2b",
+      "sectionTitle": "Merging with Permanents",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I tap my artifacts to reduce the cost of a spell with improvise, do I have to decide how many artifacts to tap before I know the spell’s full mana cost, or can I adjust that number after seeing the total cost?",
+      "expectedRuleId": "702.126b",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If we’re playing a multiplayer game, do all the standard rules for Magic still apply the same way as in a one-on-one match?",
+      "expectedRuleId": "100.1",
+      "sectionTitle": "General",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have a melded creature on the battlefield and it dies, does it count as one creature dying or two separate cards going to the graveyard for triggered abilities?",
+      "expectedRuleId": "712.21",
+      "sectionTitle": "Double-Faced Cards",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have a face-down conspiracy card in the command zone, can I reveal it and choose its name whenever I get priority?",
+      "expectedRuleId": "702.106c",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "Can I activate the loyalty ability on a creature card if it has a loyalty symbol in the cost, or do these abilities only work on planeswalkers?",
+      "expectedRuleId": "606.2",
+      "sectionTitle": "Loyalty Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I already have the initiative and an effect tells me to take the initiative again, does that create a new instance of the initiative or just trigger the related ability once?",
+      "expectedRuleId": "726.5",
+      "sectionTitle": "The Initiative",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have a card with mayhem in my graveyard, does its ability apply there or only when it’s on the battlefield?",
+      "expectedRuleId": "702.187a",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a card in exile is targeted by a spell or ability that causes it to become plotted, does that mean I can use its plotted effect even though it’s not in my deck?",
+      "expectedRuleId": "702.170c",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a card says to phase out a permanent until end of turn, does that cause the permanent to automatically phase back in when the turn ends?",
+      "expectedRuleId": "610.4",
+      "sectionTitle": "One-Shot Effects",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have a melded creature on the battlefield, how do I determine its mana value for things like targeting or paying costs?",
+      "expectedRuleId": "202.3c",
+      "sectionTitle": "Mana Cost and Color",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a creature has an ability granted by a spell and then a different effect removes that ability, which effect takes precedence and does the creature keep the ability or lose it?",
+      "expectedRuleId": "613.1f",
+      "sectionTitle": "Interaction of Continuous Effects",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have an effect that doubles the mana my land produces, do the restrictions or conditions on how that mana can be spent apply to all the mana I get, or just the original amount?",
+      "expectedRuleId": "106.6a",
+      "sectionTitle": "Mana",
+      "source": "synthetic"
+    },
+    {
+      "question": "If an effect lets me put a card onto the battlefield from the top of my library while another effect wants me to exile cards from the top of my library instead of paying life, does the card entering the battlefield count as being exiled by that effect?",
+      "expectedRuleId": "614.13c",
+      "sectionTitle": "Replacement Effects",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I cast a spell for its overload cost, does the spell’s text change completely, including replacing “target” with “each,” or do I just add the word “each” somewhere?",
+      "expectedRuleId": "702.96c",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I put an ability sticker on a card in my hand, does that card gain the ability printed on the sticker even before I cast it?",
+      "expectedRuleId": "123.7",
+      "sectionTitle": "Stickers",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a triggered ability says to exile a creature when it dies, but the creature’s already left the battlefield before that ability resolves, does the creature still get exiled?",
+      "expectedRuleId": "610.3b",
+      "sectionTitle": "One-Shot Effects",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a creature with an ability that triggers when it dies is put into my graveyard, can that ability still recognize the specific card that just died even though it's now in a different zone?",
+      "expectedRuleId": "400.7e",
+      "sectionTitle": "General",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have an older card with hideaway printed on it without a number, does it enter the battlefield tapped and let me look at exactly four cards for hideaway?",
+      "expectedRuleId": "702.75b",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If my teammate and I disagree about which creatures to attack with during our turn, who gets to decide?",
+      "expectedRuleId": "805.2",
+      "sectionTitle": "Shared Team Turns Option",
+      "source": "synthetic"
+    },
+    {
+      "question": "After we decide who goes first, can I shuffle or cut my opponent's deck before the game actually starts?",
+      "expectedRuleId": "103.3",
+      "sectionTitle": "Starting the Game",
+      "source": "synthetic"
+    },
+    {
+      "question": "Can I activate the ability on my artifact during my opponent’s turn, or do I have to wait until my main phase like I would when casting a sorcery?",
+      "expectedRuleId": "602.5d",
+      "sectionTitle": "Activating Activated Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I cast Benevolent Blessing on a creature while it already has an Aura with a quality it now has protection from, does that existing Aura stay attached or get put into the graveyard?",
+      "expectedRuleId": "702.16p",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I tap a land for mana during my opponent’s turn, does that count as casting a spell or using an activated ability that triggers responses?",
+      "expectedRuleId": "605.3",
+      "sectionTitle": "Mana Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I roll the planar die and it lands on the blank side, do I still get to take my turn normally without any extra effects?",
+      "expectedRuleId": "901.9a",
+      "sectionTitle": "Planechase",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I pay the overload cost on my spell that normally requires targets, do I still have to choose those targets when I cast it?",
+      "expectedRuleId": "702.96b",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If two players are being attacked simultaneously, can a creature controlled by one defending player block a creature that’s attacking the other defending player?",
+      "expectedRuleId": "802.4b",
+      "sectionTitle": "Attack Multiple Players Option",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have the venture marker on a specific room of a dungeon, can I move it to any room I want, or only to rooms connected by arrows from my current room?",
+      "expectedRuleId": "309.4",
+      "sectionTitle": "Dungeons",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I use some of the mana I generated but not all of it to pay for a spell, do I have to say out loud how much mana I still have left in my mana pool?",
+      "expectedRuleId": "106.4a",
+      "sectionTitle": "Mana",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a creature has level counters within a certain range, does it change its power, toughness, and abilities only while it stays within that range?",
+      "expectedRuleId": "107.8a",
+      "sectionTitle": "Numbers and Symbols",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I meld Fang, Fearless l’Cie and Vanille, Cheerful l’Cie, when exactly does Ragnarok, Divine Deliverance enter the battlefield?",
+      "expectedRuleId": "712.5g",
+      "sectionTitle": "Double-Faced Cards",
+      "source": "synthetic"
+    },
+    {
+      "question": "In our Commander Draft, can I include multiple copies of the same card in my deck, even if it usually goes against the singleton rule?",
+      "expectedRuleId": "903.13f",
+      "sectionTitle": "Commander",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I’m the emperor in this variant, can I cast spells or activate abilities that target players who are more than two seats away from me?",
+      "expectedRuleId": "809.3a",
+      "sectionTitle": "Emperor Variant",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I’m controlling my opponent’s turn, can I choose to make them concede the game on their behalf?",
+      "expectedRuleId": "723.6",
+      "sectionTitle": "Controlling Another Player",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I control a creature that normally gets +2/+2 from a static ability, but then the creature becomes a different creature with different characteristics, does the bonus change immediately to match the new characteristics?",
+      "expectedRuleId": "611.3a",
+      "sectionTitle": "Continuous Effects",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have no creature tokens on the battlefield and I use populate, do I still get to create a new token?",
+      "expectedRuleId": "701.36b",
+      "sectionTitle": "Keyword Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I attack with just one creature, does that count as attacking alone for cards that care about that condition even if I have other creatures on the battlefield?",
+      "expectedRuleId": "702.83b",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If an effect tells me to switch my life total with an opponent’s, but I can’t gain life, what happens—do our life totals still swap?",
+      "expectedRuleId": "701.12g",
+      "sectionTitle": "Keyword Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I remove banding from one of my attacking creatures after blockers are declared, does that creature still stay in the same attacking band for the rest of combat?",
+      "expectedRuleId": "702.22e",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have the two halves of a meld card on the battlefield, can I still transform or turn either half face down like a regular double-faced card?",
+      "expectedRuleId": "712.4c",
+      "sectionTitle": "Double-Faced Cards",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a card asks me to choose a color before the game starts and also has a printed ability that depends on that choice, does that chosen color stay linked to the card even if it leaves and returns to the battlefield?",
+      "expectedRuleId": "607.2p",
+      "sectionTitle": "Linked Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "In this multiplayer game using attack left, if I attack the player to my left, does that mean I can’t attack anyone else this turn?",
+      "expectedRuleId": "803.1",
+      "sectionTitle": "Attack Left and Attack Right Options",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a creature with renowned leaves the battlefield and then returns, does it remain renowned or does it lose that designation?",
+      "expectedRuleId": "702.112b",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I cast a spell with a ward cost that uses X, like \"ward X,\" and the value of X changes before that ward cost is paid, which value do I use to pay the ward?",
+      "expectedRuleId": "702.21b",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have a face-down creature on the battlefield, can I turn it face up during my opponent’s turn even when it’s not my main phase?",
+      "expectedRuleId": "116.2b",
+      "sectionTitle": "Special Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If my attacking creature has provoke, can I choose a blocking creature that’s already tapped and have it untap to block?",
+      "expectedRuleId": "702.39a",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If the starting player reveals a phenomenon card from their planar deck when setting up Planechase, do they have to put it on the bottom and reveal another card until a plane card shows up?",
+      "expectedRuleId": "901.5",
+      "sectionTitle": "Planechase",
+      "source": "synthetic"
+    },
+    {
+      "question": "Are players allowed to use cards as wagers or ante during official tournament matches?",
+      "expectedRuleId": "407.1",
+      "sectionTitle": "Ante",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have a card that’s a creature and an artifact, how do I know which card type it actually is?",
+      "expectedRuleId": "300.1",
+      "sectionTitle": "General",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I win the subgame created by my card, do any of the cards I played or effects that happened there carry over and affect the main game?",
+      "expectedRuleId": "729.1b",
+      "sectionTitle": "Subgames",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have multiple creatures with Bloodthirst and my opponents have taken damage this turn, do they each get the counters based on the total damage dealt that turn, or is it counted separately for each creature?",
+      "expectedRuleId": "702.54b",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If my teammate and I switch seats during the game, does that affect how we face the opponents or any game procedures in Two-Headed Giant?",
+      "expectedRuleId": "810.3",
+      "sectionTitle": "Two-Headed Giant Variant",
+      "source": "synthetic"
+    },
+    {
+      "question": "My card says to \"play\" a spell from my hand, but the current rules use \"cast\" instead—does that mean I have to follow the normal casting rules for that spell?",
+      "expectedRuleId": "701.18d",
+      "sectionTitle": "Keyword Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have an effect that says I can sacrifice a creature at any time to stop a delayed triggered ability, can I do that during my opponent’s turn when I have priority?",
+      "expectedRuleId": "116.2c",
+      "sectionTitle": "Special Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I control a melded creature and an opponent casts a spell that says \"turn target creature face down,\" can I turn my melded creature face down?",
+      "expectedRuleId": "712.16",
+      "sectionTitle": "Double-Faced Cards",
+      "source": "synthetic"
+    },
+    {
+      "question": "If my opponent casts a spell illegally and it gets reversed, do I still keep priority and get to decide what to do next?",
+      "expectedRuleId": "733.2",
+      "sectionTitle": "Handling Illegal Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I become the monarch on my turn while my opponent is currently the monarch, do they lose that status immediately, or can there be a moment when we’re both monarchs?",
+      "expectedRuleId": "725.3",
+      "sectionTitle": "The Monarch",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I turn a face-down creature face up, do any \"when this creature enters the battlefield\" abilities trigger again?",
+      "expectedRuleId": "708.8",
+      "sectionTitle": "Face-Down Spells and Permanents",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a card's ability instructs me to shuffle cards from my graveyard into my library but I choose zero cards, do I still have to shuffle my library?",
+      "expectedRuleId": "701.24d",
+      "sectionTitle": "Keyword Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I cast a creature card face down using morph, do I have to pay its mana cost or just pay 3 colorless mana instead?",
+      "expectedRuleId": "702.37c",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "In a multiplayer Planechase game that isn’t Grand Melee, does a plane’s static ability affect all players at the table, even those outside my limited range of influence?",
+      "expectedRuleId": "801.18",
+      "sectionTitle": "Limited Range of Influence Option",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a phenomenon card would be exiled or put into a graveyard, does it actually leave the command zone or stay there instead?",
+      "expectedRuleId": "312.2",
+      "sectionTitle": "Phenomena",
+      "source": "synthetic"
+    },
+    {
+      "question": "Can I cast a creature card with bestow as an enchantment if there’s an effect that says I can’t cast creature spells?",
+      "expectedRuleId": "702.103d",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a player leaves the game while they have a permanent phased out, when exactly does that permanent phase back in?",
+      "expectedRuleId": "702.26n",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I control two effects that give me protection from different colors, how do they apply together when determining what I can target or be targeted by?",
+      "expectedRuleId": "613.10",
+      "sectionTitle": "Interaction of Continuous Effects",
+      "source": "synthetic"
+    },
+    {
+      "question": "If an activated ability says \"target creature,\" do I have to choose that creature as I activate the ability, or can I wait and choose it later?",
+      "expectedRuleId": "115.1c",
+      "sectionTitle": "Targets",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I try to draw a card from my empty library, do I immediately lose the game, or does it happen at a specific time later?",
+      "expectedRuleId": "121.4",
+      "sectionTitle": "Drawing a Card",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have an effect that changes the characteristics of a token as it's being created, does that change happen before or after any replacement effect that might modify that token?",
+      "expectedRuleId": "701.7b",
+      "sectionTitle": "Keyword Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "Can I reveal my companion card before the game starts to prove my deck meets its restriction, and am I allowed to reveal more than one card this way?",
+      "expectedRuleId": "103.2b",
+      "sectionTitle": "Starting the Game",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a creature has banding from two different effects that say it “bands with other creatures,” do those abilities stack or are they treated as just one instance?",
+      "expectedRuleId": "702.22m",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If my teammate has an effect that prevents them from getting poison counters, does that mean I can’t get poison counters either?",
+      "expectedRuleId": "810.10c",
+      "sectionTitle": "Two-Headed Giant Variant",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I cast a spell that causes one of my double-faced cards to transform, does the trigger that happens “as it transforms” go on the stack before the card is fully face-up on the other side, or after?",
+      "expectedRuleId": "712.20",
+      "sectionTitle": "Double-Faced Cards",
+      "source": "synthetic"
+    },
+    {
+      "question": "If my melded creature is put into my graveyard, can I choose the order the two cards go into, and does that work the same way if they go back to my library?",
+      "expectedRuleId": "712.21a",
+      "sectionTitle": "Double-Faced Cards",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I discard a card with madness and then decide not to cast it, can effects that care about the discarded card still affect it after it’s returned from exile?",
+      "expectedRuleId": "400.7k",
+      "sectionTitle": "General",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have 5 life and an effect says I lose 3 life and gain 3 life simultaneously, do these changes cancel out or does my life total change?",
+      "expectedRuleId": "119.3",
+      "sectionTitle": "Life",
+      "source": "synthetic"
+    },
+    {
+      "question": "If my permanent has cumulative upkeep with multiple age counters, do I have to pay the full cost multiplied by the number of counters all at once, or can I pay only part of it to keep the permanent?",
+      "expectedRuleId": "702.24a",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If two cards have the same name because of an effect, do abilities that look for a specific card name treat them as the same card?",
+      "expectedRuleId": "201.3a",
+      "sectionTitle": "Name",
+      "source": "synthetic"
+    },
+    {
+      "question": "If both players lose the game at the same time, does the game continue or end immediately?",
+      "expectedRuleId": "104.1",
+      "sectionTitle": "Ending the Game",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a card has a mana cost with hybrid symbols, like {1}{W/U}{W/U}, how do I determine its total mana value for effects that care about that?",
+      "expectedRuleId": "202.3f",
+      "sectionTitle": "Mana Cost and Color",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I copy a permanent that had me choose a mode or type as it entered the battlefield, do I get to make those same choices again for the copy?",
+      "expectedRuleId": "707.6",
+      "sectionTitle": "Copying Objects",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a creature with toughness 1 gets blocked by a creature with 0 toughness, does the 0 toughness creature go to the graveyard immediately before any triggered abilities from the blocker can resolve?",
+      "expectedRuleId": "310.7",
+      "sectionTitle": "Battles",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I tap my creature to help pay the mana cost of a spell with convoke, is that creature considered tapped before the spell actually starts to resolve?",
+      "expectedRuleId": "702.51c",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If my melded permanent includes a flip card and I flip it, do I use the flip card’s alternate face for the entire melded permanent’s characteristics?",
+      "expectedRuleId": "730.2h",
+      "sectionTitle": "Merging with Permanents",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have a creature card face down on the battlefield and then it merges with another permanent on top of it, does the creature count as having been flipped face up for effects that care about turning face up?",
+      "expectedRuleId": "730.2e",
+      "sectionTitle": "Merging with Permanents",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I look at a permanent that says it \"connives,\" but I can't discard a card because my hand is empty, do I still get to draw a card afterward?",
+      "expectedRuleId": "701.50b",
+      "sectionTitle": "Keyword Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I cycle a card with a triggered ability that says “When you cycle this card,” does that ability trigger even though the card is now in my graveyard?",
+      "expectedRuleId": "702.29c",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If my opponent casts a spell that deals damage, can I activate an ability to prevent that damage after the spell has already resolved?",
+      "expectedRuleId": "615.4",
+      "sectionTitle": "Prevention Effects",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a creature has dealt damage during combat but the combat phase just ended, can it still be affected by spells or abilities that say “until end of combat”?",
+      "expectedRuleId": "511.3",
+      "sectionTitle": "End of Combat Step",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have a band of creatures attacking and only one of them is blocked by a wall, does that mean all the creatures in the band are considered blocked or just the one?",
+      "expectedRuleId": "702.22i",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "When a spell says to choose a mode or a target, can I pick something that isn’t a card or a permanent, like a player or a specific word on the card?",
+      "expectedRuleId": "701.38b",
+      "sectionTitle": "Keyword Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I detach an Equipment from one creature and then attach it to another, does it count as getting a new timestamp for that Equipment's continuous effects?",
+      "expectedRuleId": "613.7e",
+      "sectionTitle": "Interaction of Continuous Effects",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a creature’s toughness drops to zero during a spell’s resolution but then goes back up by the time the spell finishes, do we put it into the graveyard immediately or wait until everything finishes resolving?",
+      "expectedRuleId": "704.4",
+      "sectionTitle": "State-Based Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I get an effect that gives me extra votes on a planeswalker’s loyalty ability, do I get to cast all those votes at once or separately?",
+      "expectedRuleId": "701.38d",
+      "sectionTitle": "Keyword Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "We shuffled and cut the deck, but we never decided who sits where—do we have to pick seats in a specific way or can we just arrange ourselves however we want?",
+      "expectedRuleId": "800.5",
+      "sectionTitle": "General",
+      "source": "synthetic"
+    },
+    {
+      "question": "If the player who controls the plane card leaves the game, who becomes the new planar controller and when does the original controller actually leave?",
+      "expectedRuleId": "800.4p",
+      "sectionTitle": "General",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I have a creature with “Max speed — Flying” and its speed becomes 3, does it lose flying until its speed returns to 4?",
+      "expectedRuleId": "702.178a",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a card tells me to put tokens onto the battlefield, does that mean those tokens count as being created now, or is putting them different from creating them?",
+      "expectedRuleId": "701.7c",
+      "sectionTitle": "Keyword Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "When a card says to \"clash with an opponent,\" do both players reveal the top card of their library and compare them, or how exactly does that work?",
+      "expectedRuleId": "701.30b",
+      "sectionTitle": "Keyword Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "When I play a Saga, how do I know which Chapter happens first if there are multiple chapters listed?",
+      "expectedRuleId": "714.2a",
+      "sectionTitle": "Saga Cards",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a card says something happens at the beginning of day or night, what happens if the game is currently in the “neither” state—does that trigger count as day or night?",
+      "expectedRuleId": "731.2c",
+      "sectionTitle": "Day and Night",
+      "source": "synthetic"
+    },
+    {
+      "question": "Can I cast this spell using its Spectacle cost if an opponent lost life from damage earlier this turn, even though I haven't paid the mana cost listed on the card?",
+      "expectedRuleId": "702.137a",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I cast a spell that has a Phyrexian mana symbol in its cost, does that affect the card’s converted mana cost for things like counters or targeting restrictions?",
+      "expectedRuleId": "202.3g",
+      "sectionTitle": "Mana Cost and Color",
+      "source": "synthetic"
+    },
+    {
+      "question": "If my creature phases out during combat, does it still deal damage or become blocked this turn?",
+      "expectedRuleId": "702.26b",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I choose to pay the additional cost during a spell’s resolution, does the triggered ability that depends on that choice trigger immediately, or does it trigger later like normal triggered abilities?",
+      "expectedRuleId": "603.12",
+      "sectionTitle": "Handling Triggered Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a creature card with escape and “escapes with a +1/+1 counter” enters the battlefield after being cast from exile, does it still get those counters even if I returned it without ever having the card in my graveyard?",
+      "expectedRuleId": "702.138c",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I use an effect that puts a noncreature permanent directly onto the battlefield during combat and it says it’s attacking, does it actually count as attacking for that combat?",
+      "expectedRuleId": "506.3a",
+      "sectionTitle": "Combat Phase",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a card turns a creature into a battle as it enters the battlefield during combat, does that creature actually count as attacking even though it just came into play?",
+      "expectedRuleId": "506.3f",
+      "sectionTitle": "Combat Phase",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a card tells me to \"behold a creature,\" do I have to show one from my hand, or can I just point to a creature I already have on the battlefield?",
+      "expectedRuleId": "701.4a",
+      "sectionTitle": "Keyword Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I control an Aura enchanting my opponent’s creature, who gets to activate any abilities on the Aura or the creature granted by that Aura?",
+      "expectedRuleId": "303.4e",
+      "sectionTitle": "Enchantments",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I activate an ability that says to transform my permanent, but I've already transformed it earlier this turn, does it transform again or does nothing happen?",
+      "expectedRuleId": "701.27f",
+      "sectionTitle": "Keyword Actions",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a spell says “Kicker 2G and/or 3RR,” do I have to pay both kicker costs separately, or can I pay just one of them?",
+      "expectedRuleId": "702.33b",
+      "sectionTitle": "Keyword Abilities",
+      "source": "synthetic"
+    },
+    {
+      "question": "If I use a card effect that puts a land directly onto the battlefield, does that stop me from playing my normal land for the turn?",
+      "expectedRuleId": "305.4",
+      "sectionTitle": "Lands",
+      "source": "synthetic"
+    },
+    {
+      "question": "If a card creates a subgame, can I use cards that are in my actual deck or on the battlefield in that subgame, or do I only use what’s specifically brought into the subgame?",
+      "expectedRuleId": "729.4",
+      "sectionTitle": "Subgames",
+      "source": "synthetic"
+    }
+  ]
+}

@@ -1,0 +1,595 @@
+{
+  "generatedAt": "2026-08-31T05:19:45.407Z",
+  "seed": 42,
+  "n": 20,
+  "cases": [
+    {
+      "caseId": "combo-01",
+      "scenario": "complete",
+      "variantId": "1835-4222",
+      "popularity": 8048,
+      "ingredientCount": 2,
+      "cardNames": [
+        "Freed from the Real",
+        "Zaxara, the Exemplary"
+      ],
+      "cardIds": [
+        "03d32ace-dd99-48c6-bcae-9b915d041aef",
+        "a9946ea0-bf0e-4c9c-a3c6-21337a5029ab"
+      ],
+      "groundTruth": {
+        "steps": "Activate Zaxara by tapping it, adding {U}{U}.\nActivate Freed from the Real's second ability by paying {U}, untapping Zaxara.\nRepeat.",
+        "producedEffects": [
+          "Infinite colored mana"
+        ],
+        "notablePrerequisites": "Freed from the Real attached to Zaxara.\nZaxara does not have summoning sickness."
+      },
+      "band": "high"
+    },
+    {
+      "caseId": "combo-02",
+      "scenario": "complete",
+      "variantId": "1580-2292-4871-6663",
+      "popularity": 8083,
+      "ingredientCount": 4,
+      "cardNames": [
+        "The Masamune",
+        "Reassembling Skeleton",
+        "Pitiless Plunderer",
+        "Viscera Seer"
+      ],
+      "cardIds": [
+        "89eb4c39-35ae-405b-8af4-779880cb11c9",
+        "9dbc3530-b278-4c8d-b2cc-a09dfac9d5e5",
+        "a784481f-eccb-4112-bb38-04a659319660",
+        "f82a4e85-526d-4456-b700-7760043a31be"
+      ],
+      "groundTruth": {
+        "steps": "Activate Viscera Seer by sacrificing Reassembling Skeleton.\nWhen Reassembling Skeleton dies, Pitiless Plunderer triggers twice, creating two Treasure tokens.\nResolve the Viscera Seer ability.\nActivate the Treasure tokens by tapping and sacrificing them, adding {1}{B}.\nActivate Reassembling Skeleton by paying {1}{B}, returning it from your graveyard to the battlefield tapped.\nRepeat.",
+        "producedEffects": [
+          "Infinite creature ETB",
+          "Infinite creature LTB",
+          "Infinite creature sacrifice triggers",
+          "Infinite death triggers",
+          "Infinite scry 1"
+        ],
+        "notablePrerequisites": ""
+      },
+      "band": "high"
+    },
+    {
+      "caseId": "combo-03",
+      "scenario": "complete",
+      "variantId": "314-1612",
+      "popularity": 7978,
+      "ingredientCount": 2,
+      "cardNames": [
+        "Vito, Thorn of the Dusk Rose",
+        "Shard of the Nightbringer"
+      ],
+      "cardIds": [
+        "7336a541-3ae9-4ab2-acb8-f574c0a5b3a9",
+        "eedd5a17-d0fe-4a13-8f2c-f343bfa43f92"
+      ],
+      "groundTruth": {
+        "steps": "Cast Shard of the Nightbringer by paying {5}{B}{B}{B}.\nShard of the Nightbringer triggers, causing an opponent to lose half their life total, rounded up, and you to gain life equal to the life lost this way.\nVito triggers, causing the opponent to lose life equal to the amount of life gained this way.\nThe opponent loses the game due to having zero or less life.",
+        "producedEffects": [
+          "Infinite lifeloss for target opponent",
+          "Target opponent loses the game"
+        ],
+        "notablePrerequisites": ""
+      },
+      "band": "high"
+    },
+    {
+      "caseId": "combo-04",
+      "scenario": "complete",
+      "variantId": "2608-4499-5116",
+      "popularity": 326,
+      "ingredientCount": 3,
+      "cardNames": [
+        "Gilded Lotus",
+        "Derevi, Empyrial Tactician",
+        "Emiel the Blessed"
+      ],
+      "cardIds": [
+        "9a02a9a7-39d9-4763-85d3-747a0540b60b",
+        "afa49a09-146f-4439-850e-dd1938c93cef",
+        "b11c250c-f191-4c52-ba02-a9176f163447"
+      ],
+      "groundTruth": {
+        "steps": "Activate Gilded Lotus by tapping it, adding {3}.\nActivate Emiel by paying {3}, blinking Derevi.\nWhen Derevi enters the battlefield, it triggers, untapping Gilded Lotus.\nRepeat.",
+        "producedEffects": [
+          "Infinite creature ETB",
+          "Infinite creature LTB"
+        ],
+        "notablePrerequisites": ""
+      },
+      "band": "mid"
+    },
+    {
+      "caseId": "combo-05",
+      "scenario": "complete",
+      "variantId": "950-1846-3525",
+      "popularity": 1830,
+      "ingredientCount": 3,
+      "cardNames": [
+        "Fatestitcher",
+        "Pemmin's Aura",
+        "High Tide"
+      ],
+      "cardIds": [
+        "55765934-07be-4f03-a2e8-8292c0b601ae",
+        "ada2f380-bca7-4d64-9587-bab11c776ba8",
+        "dc671205-f2fa-454f-9957-921a6069ad53"
+      ],
+      "groundTruth": {
+        "steps": "Cast High Tide by paying {U}.\nActivate an Island by tapping it, adding {U}.\nHigh Tide triggers, adding {U}.\nActivate Fatestitcher by tapping it, untapping the Island.\nActivate Pemmin's Aura by paying {U}, untapping Fatestitcher.\nRepeat from step 2.",
+        "producedEffects": [
+          "Infinite blue mana",
+          "Infinite mana permanents you control can produce"
+        ],
+        "notablePrerequisites": "You control an Island.\nPemmin's Aura attached to Fatestitcher."
+      },
+      "band": "mid"
+    },
+    {
+      "caseId": "combo-06",
+      "scenario": "complete",
+      "variantId": "239-1700-4385-4893",
+      "popularity": 274,
+      "ingredientCount": 4,
+      "cardNames": [
+        "Reflex Sliver",
+        "Training Grounds",
+        "Sliver Queen",
+        "Manaweft Sliver"
+      ],
+      "cardIds": [
+        "80e4e857-3f7e-4344-bf41-64d3b32f328f",
+        "8de3eabe-9a8f-4865-beef-a4888c081d39",
+        "b8376cca-ea96-478a-8e98-c4482031300a",
+        "bd47398d-da35-4a09-8754-771af91b14f4"
+      ],
+      "groundTruth": {
+        "steps": "All slivers have haste.\nTap a Sliver to generate {1}.\nUse that mana to create a Sliver with Sliver Queen's ability.\nUse the newly created Sliver to repeat the cycle.",
+        "producedEffects": [
+          "Infinite creature ETB",
+          "Infinite creature tokens"
+        ],
+        "notablePrerequisites": ""
+      },
+      "band": "mid"
+    },
+    {
+      "caseId": "combo-07",
+      "scenario": "complete",
+      "variantId": "643-4302-5686",
+      "popularity": 243,
+      "ingredientCount": 3,
+      "cardNames": [
+        "Shilgengar, Sire of Famine",
+        "Maskwood Nexus",
+        "Bishop of Wings"
+      ],
+      "cardIds": [
+        "71ac4d8c-5b58-4ea8-996b-f0289717c4bb",
+        "9b2cdbed-c733-409b-b0e4-2c8960c25111",
+        "af4684cf-f109-44be-adfb-7c551a36635e"
+      ],
+      "groundTruth": {
+        "steps": "Activate Shilgengar by sacrificing another creature.\nWhen the creature dies, Bishop of Wings' second ability triggers, creating a 1/1 Spirit creature token.\nWhen the Spirit token enters the battlefield as an Angel due to Maskwood Nexus, Bishop of Wings' first ability triggers, causing you to gain 4 life.\nResolve the Shilgengar ability.\nRepeat.",
+        "producedEffects": [
+          "Infinite artifact tokens",
+          "Infinite Blood tokens",
+          "Infinite creature ETB",
+          "Infinite creature LTB",
+          "Infinite creature sacrifice triggers",
+          "Infinite death triggers",
+          "Infinite lifegain",
+          "Infinite lifegain triggers"
+        ],
+        "notablePrerequisites": "You control at least one additional creature."
+      },
+      "band": "mid"
+    },
+    {
+      "caseId": "combo-08",
+      "scenario": "complete",
+      "variantId": "1479-2638-2841-3897",
+      "popularity": 671,
+      "ingredientCount": 4,
+      "cardNames": [
+        "Terramorphic Expanse",
+        "Kodama of the East Tree",
+        "Tireless Tracker",
+        "Ghost Town"
+      ],
+      "cardIds": [
+        "1bd3e453-aa21-4ee6-95c2-d6d920ee8e7a",
+        "cb1afab6-b9c8-4b9c-840b-24106523a783",
+        "e6555cca-e608-4c87-b835-9cd47fd1f543",
+        "f2c861d3-b302-4e84-b647-099551007269"
+      ],
+      "groundTruth": {
+        "steps": "Fetch a land using Terramorphic Expanse.\nWhen the fetched land enters, Tireless Tracker and Kodama trigger.\nResolve the Kodama trigger, putting Ghost Town from your hand onto the battlefield.\nWhen Ghost Town enters, Kodama and Tireless Tracker trigger.\nHolding priority, activate Ghost Town's first abiltiy by tapping it, adding {C}.\nActivate Ghost Town's second ability by paying {0}, returning it from the battlefield to your hand.\nResolve the Tireless Tracker from step 4, creating a token.\nWhen the token enters, Kodama triggers, putting Ghost Town from your hand onto the battlefield.\nWhen Ghost Town enters, Tireless Tracker triggers.\nRepeat from step 5.",
+        "producedEffects": [
+          "Infinite artifact tokens",
+          "Infinite card draw",
+          "Infinite Clue tokens",
+          "Infinite colorless mana",
+          "Infinite draw triggers",
+          "Infinite landfall triggers"
+        ],
+        "notablePrerequisites": ""
+      },
+      "band": "mid"
+    },
+    {
+      "caseId": "combo-09",
+      "scenario": "complete",
+      "variantId": "573-1479-2374",
+      "popularity": 310,
+      "ingredientCount": 3,
+      "cardNames": [
+        "Maja, Bretagard Protector",
+        "Gruul Turf",
+        "Kodama of the East Tree"
+      ],
+      "cardIds": [
+        "0a2075b5-9609-433d-bcd2-e0a637456cf8",
+        "657243dd-e479-4f4b-99d2-09b55d833a35",
+        "cb1afab6-b9c8-4b9c-840b-24106523a783"
+      ],
+      "groundTruth": {
+        "steps": "Play Gruul Turf.\nWhen Gruul Turf enters the battlefield, it, Maja, and Kodama of the East Tree trigger.\nResolve the Kodama of the East Tree trigger, choosing not to put anything from your hand onto the battlefield.\nResolve the Gruul Turf trigger, returning it from the battlefield to your hand.\nResolve the Maja trigger, creating a token.\nWhen the token enters the battlefield, Kodama triggers, putting Gruul Turf from your hand onto the battlefield.\nWhen Gruul Turf enters the battlefield, it and Maja trigger.\nRepeat from step 4.",
+        "producedEffects": [
+          "Infinite creature ETB",
+          "Infinite creature tokens",
+          "Infinite landfall triggers"
+        ],
+        "notablePrerequisites": "You are able to play a land this turn."
+      },
+      "band": "mid"
+    },
+    {
+      "caseId": "combo-10",
+      "scenario": "complete",
+      "variantId": "1025-1948-4431",
+      "popularity": 558,
+      "ingredientCount": 3,
+      "cardNames": [
+        "Tel-Jilad Stylus",
+        "Stasis",
+        "Zur the Enchanter"
+      ],
+      "cardIds": [
+        "75a7fdd4-046a-433b-b16f-a0424a05c904",
+        "a8cf1379-0195-4e11-b994-481ef1284245",
+        "d7950018-d744-48a8-81aa-0d8384703f48"
+      ],
+      "groundTruth": {
+        "steps": "Declare Zur as an attacker.\nZur triggers, causing you to search your library for Stasis and put it onto the battlefield.\nDuring the end step prior to your turn, activate Tel-Jilad Stylus by tapping it, putting Stasis on the bottom of your library from the battlefield.\nRepeat.",
+        "producedEffects": [
+          "Lock",
+          "Opponents skip their untap steps"
+        ],
+        "notablePrerequisites": "Zur does not have summoning sickness and cannot be blocked and killed by an opponent."
+      },
+      "band": "mid"
+    },
+    {
+      "caseId": "combo-11",
+      "scenario": "complete",
+      "variantId": "5147-5170-6094-6132",
+      "popularity": 7,
+      "ingredientCount": 4,
+      "cardNames": [
+        "Metamorphosis Fanatic",
+        "Vengeful Bloodwitch",
+        "Junji, the Midnight Sky",
+        "Goblin Bombardment"
+      ],
+      "cardIds": [
+        "017aa9b3-a8ea-4588-9c50-e914a7d8e4ee",
+        "4cdbc466-42fc-471f-beab-397caec18101",
+        "78a48f4e-ba4c-4d8d-938a-9ddb342a885b",
+        "edad60c6-80de-4033-af1b-a703ac332983"
+      ],
+      "groundTruth": {
+        "steps": "Activate Goblin Bombardment by sacrificing Metamorphosis Fanatic.\nWhen Metamorphosis Fanatic dies, Vengeful Bloodwitch triggers, causing you to gain 1 life and target opponent to lose 1 life.\nResolve the Goblin Bombardment ability.\nActivate Goblin Bombardment by sacrificing Junji.\nWhen Junji dies, it and Vengeful Bloodwitch trigger.\nResolve the Vengeful Bloodwitch trigger, causing you to gain 1 life and target opponent to lose 1 life.\nResolve the Junji trigger, returning Metamorphosis Fanatic from your graveyard to the battlefield and causing you to lose 2 life.\nWhen Metamorphosis Fanatic enters, it triggers, returning Junji from your graveyard to the battlefield.\nResolve the Goblin Bombardment ability.\nRepeat.",
+        "producedEffects": [
+          "Infinite creature ETB",
+          "Infinite creature LTB",
+          "Infinite creature sacrifice triggers",
+          "Infinite damage",
+          "Infinite death triggers",
+          "Infinite lifegain triggers",
+          "Infinite lifeloss"
+        ],
+        "notablePrerequisites": ""
+      },
+      "band": "low"
+    },
+    {
+      "caseId": "combo-12",
+      "scenario": "complete",
+      "variantId": "1283-2232-2608",
+      "popularity": 15,
+      "ingredientCount": 3,
+      "cardNames": [
+        "Cloudstone Curio",
+        "Chromatic Orrery",
+        "Derevi, Empyrial Tactician"
+      ],
+      "cardIds": [
+        "5cd2fd32-4da2-40eb-b003-c0b9a9ec91c1",
+        "95c3976c-33f3-490b-bfd3-7f1af2fe0416",
+        "afa49a09-146f-4439-850e-dd1938c93cef"
+      ],
+      "groundTruth": {
+        "steps": "Activate Chromatic Orrery's first ability by tapping it, adding {5}.\nCast a nonartifact creature card from your hand by paying at most {2}.\nWhen the creature enters the battlefield, Cloudstone Curio triggers, returning Derevi from the battlefield to your hand.\nCast Derevi by paying {3}.\nWhen Derevi enters the battlefield, it and Cloudstone Curio trigger.\nResolve the Cloudstone Curio trigger, returning the creature cast in step 2 from the battlefield to your hand.\nResolve the Derevi trigger, untapping Cloudstone Curio.\nRepeat.",
+        "producedEffects": [
+          "Infinite card draw",
+          "Infinite colored mana",
+          "Infinite colorless mana",
+          "Infinite creature ETB",
+          "Infinite creature LTB",
+          "Infinite draw triggers",
+          "Infinite mana permanents you control can produce",
+          "Infinite storm count"
+        ],
+        "notablePrerequisites": "You have a nonartifact creature card in hand that can be cast using two mana or less."
+      },
+      "band": "low"
+    },
+    {
+      "caseId": "combo-13",
+      "scenario": "complete",
+      "variantId": "5256-6132-6981",
+      "popularity": 32,
+      "ingredientCount": 3,
+      "cardNames": [
+        "Metamorphosis Fanatic",
+        "Altar of Dementia",
+        "Perigee Beckoner"
+      ],
+      "cardIds": [
+        "017aa9b3-a8ea-4588-9c50-e914a7d8e4ee",
+        "d64e9152-ef24-4394-aeb0-9c3befc56549",
+        "e0a35a44-e56d-434e-8043-43d5031b2e84"
+      ],
+      "groundTruth": {
+        "steps": "Cast Perigee Beckoner for its warp cost by paying {1}{B}.\nWhen Perigee Beckoner enters, it triggers, targeting Metamorphosis Fanatic.\nActivate Altar of Dementia by sacrificing Perigee Beckoner.\nActivate Altar of Dementia by sacrificing Metamorphosis Fanatic.\nWhen Metamorphosis Fanatic dies, it triggers, returning itself from your graveyard to the battlefield tapped.\nWhen Metamorphosis Fanatic enters, it triggers, returning Perigee Beckoner from your graveyard to the battlefield.\nWhen Perigee Beckoner enters, it triggers, targeting Metamorphosis Fanatic.\nResolve the Altar of Dementia ability from step 4.\nRepeat from step 3.",
+        "producedEffects": [
+          "Infinite creature ETB",
+          "Infinite creature LTB",
+          "Infinite creature sacrifice triggers",
+          "Infinite death triggers",
+          "Infinite mill",
+          "Infinite self-mill"
+        ],
+        "notablePrerequisites": ""
+      },
+      "band": "low"
+    },
+    {
+      "caseId": "combo-14",
+      "scenario": "complete",
+      "variantId": "1537-3817-5231-6542",
+      "popularity": 1,
+      "ingredientCount": 4,
+      "cardNames": [
+        "Sister Hospitaller",
+        "Zealous Conscripts",
+        "Sidisi, Regent of the Mire",
+        "Thermopod"
+      ],
+      "cardIds": [
+        "06c39c1c-0e34-4ef0-bd06-23245cb9cc59",
+        "1dae6f39-2cbd-485c-b190-017a26401fd4",
+        "72074972-418d-4dce-83cf-ce8cf310fc42",
+        "c886fa01-bcee-4c73-9c46-2328711fc4f0"
+      ],
+      "groundTruth": {
+        "steps": "Activate Sidisi by tapping it and sacrificing Zealous Conscripts, returning Sister Hospitaller from your graveyard to the battlefield.\nWhen Sister Hospitaller enters the battlefield, it triggers, returning Zealous Conscripts from your graveyard to the battlefield and causing you to gain 5 life.\nWhen Zealous Conscripts enters the battlefield, it triggers, untapping Sidisi.\nActivate Thermopod by sacrificing Sister Hospitaller.\nRepeat.",
+        "producedEffects": [
+          "Infinite creature ETB",
+          "Infinite creature LTB",
+          "Infinite creature sacrifice triggers",
+          "Infinite death triggers",
+          "Infinite lifegain",
+          "Infinite lifegain triggers",
+          "Infinite red mana"
+        ],
+        "notablePrerequisites": ""
+      },
+      "band": "low"
+    },
+    {
+      "caseId": "combo-15",
+      "scenario": "complete",
+      "variantId": "592-2720-4691",
+      "popularity": 8,
+      "ingredientCount": 3,
+      "cardNames": [
+        "Vilis, Broker of Blood",
+        "Role Reversal",
+        "Underworld Dreams"
+      ],
+      "cardIds": [
+        "7c209753-121b-4859-944b-4e33f885e777",
+        "8be783b2-7394-411a-8ab5-a8fffe8d714c",
+        "967cf377-ae26-464d-85ac-8448b5a911f7"
+      ],
+      "groundTruth": {
+        "steps": "Cast Role Reversal targeting Vilis, Broker of Blood and a creature an opponent controls.\nOnce that opponent draws a card they draw their entire library and take damage equal to the amount of cards drawn.",
+        "producedEffects": [
+          "Infinite card draw for target opponent",
+          "Near-infinite damage to one opponent"
+        ],
+        "notablePrerequisites": "An opponent controls a creature."
+      },
+      "band": "low"
+    },
+    {
+      "caseId": "combo-16",
+      "scenario": "complete",
+      "variantId": "643-717-1742-4035",
+      "popularity": 2,
+      "ingredientCount": 4,
+      "cardNames": [
+        "Blood Speaker",
+        "Bone Miser",
+        "Maskwood Nexus",
+        "Skirge Familiar"
+      ],
+      "cardIds": [
+        "2659c0ea-9ae0-4be3-b9f7-5a38230815ad",
+        "3984e5f6-8643-4104-aa9c-18d474e07801",
+        "9b2cdbed-c733-409b-b0e4-2c8960c25111",
+        "ba95f24d-42da-48ce-bcf1-1b7c4b3c45b5"
+      ],
+      "groundTruth": {
+        "steps": "Activate Skirge Familiar by discarding Blood Speaker, adding {B}.\nBone Miser's first ability triggers, creating a 2/2 Zombie creature token that enters the battlefield as a Demon due to Maskwood Nexus.\nBlood Speaker's second ability triggers, returning itself to your hand from your graveyard.\nRepeat.",
+        "producedEffects": [
+          "Infinite black mana",
+          "Infinite creature ETB",
+          "Infinite creature tokens",
+          "Infinite self-discard triggers"
+        ],
+        "notablePrerequisites": ""
+      },
+      "band": "low"
+    },
+    {
+      "caseId": "combo-17",
+      "scenario": "complete",
+      "variantId": "883-2173-2438-5220",
+      "popularity": 0,
+      "ingredientCount": 4,
+      "cardNames": [
+        "Bolas's Citadel",
+        "Mortuary",
+        "Carrion Feeder",
+        "Ashes of the Abhorrent"
+      ],
+      "cardIds": [
+        "2bd111bb-ce02-414c-b5b7-e0e037d8d96b",
+        "8bd2af55-5a48-4300-a893-ae6cd548db24",
+        "a1cc5e37-b09a-4b7f-afd5-77c1c35aa425",
+        "a75d5b54-5cc9-49c4-8e8c-3bef22d4c01c"
+      ],
+      "groundTruth": {
+        "steps": "Activate Carrion Feeder by sacrificing it.\nWhen Carrion Feeder dies, Mortuary and Ashes of the Abhorrent trigger.\nResolve the Mortuary trigger, putting Carrion Feeder from your graveyard onto the top of your library.\nResolve the Ashes of the Abhorrent trigger, causing you to gain 1 life\nResolve the Carrion Feeder ability.\nCast Carrion Feeder from the top of your library by paying 1 life.\nRepeat.",
+        "producedEffects": [
+          "Infinite creature ETB",
+          "Infinite creature LTB",
+          "Infinite creature sacrifice triggers",
+          "Infinite death triggers",
+          "Infinite lifegain triggers",
+          "Infinite storm count"
+        ],
+        "notablePrerequisites": ""
+      },
+      "band": "zero"
+    },
+    {
+      "caseId": "combo-18",
+      "scenario": "complete",
+      "variantId": "719-3490-4050-7665",
+      "popularity": 0,
+      "ingredientCount": 4,
+      "cardNames": [
+        "Xenograft",
+        "Phyrexian Altar",
+        "Captain America, Team Leader",
+        "Animation Module"
+      ],
+      "cardIds": [
+        "76642e7a-3c8f-45b8-9cd7-dac8086bea87",
+        "8d02b297-97c4-4379-9862-0a462400f66f",
+        "916cf34a-fd2c-47fe-bebb-f7b52b3dabed",
+        "af42079b-a3c0-448c-9bb2-b915252e87a9"
+      ],
+      "groundTruth": {
+        "steps": "Put a +1/+1 counter on a creature you control.\nAnimation Module triggers, causing you to pay {1} to create a 1/1 Servo artifact creature token.\nWhen the Servo enters as a Hero due to Xenograft, Captain America triggers, putting a +1/+1 counter on it and the Servo.\nAnimation Module triggers twice.\nHolding priority, activate Phyrexian Altar by sacrificing the Servo, adding {1}.\nResolve the first Animation Module trigger, choosing not to pay.\nResolve the second Animation Module trigger, causing you to pay {1} to create a 1/1 Servo artifact creature token.\nRepeat from step 3.",
+        "producedEffects": [
+          "Infinite +1/+1 counters on a creature",
+          "Infinite artifact ETB",
+          "Infinite artifact LTB",
+          "Infinite artifact sacrifice triggers",
+          "Infinite creature ETB",
+          "Infinite creature LTB",
+          "Infinite creature sacrifice triggers",
+          "Infinite death triggers"
+        ],
+        "notablePrerequisites": ""
+      },
+      "band": "zero"
+    },
+    {
+      "caseId": "combo-19",
+      "scenario": "complete",
+      "variantId": "2034-4316-5043-5078",
+      "popularity": 0,
+      "ingredientCount": 4,
+      "cardNames": [
+        "Sensei's Divining Top",
+        "Experimental Frenzy",
+        "Ashnod's Altar",
+        "Alela, Artful Provocateur"
+      ],
+      "cardIds": [
+        "13575cf9-65c1-4861-b21e-eb2155e07766",
+        "3715e8b8-31df-499b-8a91-1bcd1199d6eb",
+        "4d18bcba-a346-445e-a182-6cc30b7e066d",
+        "936ae5dc-9838-47f3-ba1f-66523a7f5b76"
+      ],
+      "groundTruth": {
+        "steps": "Cast Sensei's Divining Top either from your hand or from the top of your library by paying {1}.\nAlela triggers, creating a 1/1 Faerie creature token.\nActivate Ashnod's Altar by sacrificing the Faerie, adding {C}{C}.\nActivate Sensei's Divining Top's second ability by tapping it, causing you to draw a card and put Sensei's Divining Top on top of your library.\nRepeat.",
+        "producedEffects": [
+          "Infinite card draw",
+          "Infinite draw triggers",
+          "Near-infinite colorless mana",
+          "Near-infinite creature ETB",
+          "Near-infinite creature LTB",
+          "Near-infinite creature sacrifice triggers",
+          "Near-infinite creature tokens",
+          "Near-infinite death triggers",
+          "Near-infinite storm count"
+        ],
+        "notablePrerequisites": ""
+      },
+      "band": "zero"
+    },
+    {
+      "caseId": "combo-20",
+      "scenario": "complete",
+      "variantId": "719-1606-3510",
+      "popularity": 0,
+      "ingredientCount": 3,
+      "cardNames": [
+        "Ley Weaver",
+        "Xenograft",
+        "Life and Limb"
+      ],
+      "cardIds": [
+        "24f1f0e9-8c9b-4f32-95ec-7af883bbeef4",
+        "76642e7a-3c8f-45b8-9cd7-dac8086bea87",
+        "d0d7250b-70d2-43f9-ae15-837227061ccb"
+      ],
+      "groundTruth": {
+        "steps": "Activate any land by tapping it, adding at least {1}.\nActivate Ley Weaver by tapping it, untapping it and the land.\nRepeat.",
+        "producedEffects": [
+          "Infinite mana creatures you control can produce",
+          "Infinite mana lands you control can produce",
+          "Infinite untap of creatures you control",
+          "Infinite untap of lands you control"
+        ],
+        "notablePrerequisites": "Ley Weaver does not have summoning sickness.\n\"Saproling\" chosen with Xenograft."
+      },
+      "band": "zero"
+    }
+  ]
+}

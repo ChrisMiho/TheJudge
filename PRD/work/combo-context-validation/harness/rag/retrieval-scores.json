@@ -1,0 +1,1583 @@
+{
+  "n": 156,
+  "summary": {
+    "lex_clean": {
+      "recall5": 0.577,
+      "mrr": 0.413
+    },
+    "sem_clean": {
+      "recall5": 0.885,
+      "mrr": 0.733
+    },
+    "lex_poll": {
+      "recall5": 0.026,
+      "mrr": 0.017
+    },
+    "sem_poll": {
+      "recall5": 0.603,
+      "mrr": 0.453
+    }
+  },
+  "rows": [
+    {
+      "expectedRuleId": "603.7a",
+      "source": "gold",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "608.2b",
+      "source": "gold",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 1,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "704.8",
+      "source": "gold",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 3,
+        "lex_poll": 0,
+        "sem_poll": 2
+      }
+    },
+    {
+      "expectedRuleId": "613.9",
+      "source": "gold",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 5,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "614.5",
+      "source": "gold",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 4
+      }
+    },
+    {
+      "expectedRuleId": "704.4",
+      "source": "gold",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 4,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "122.1i",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 2,
+        "lex_poll": 1,
+        "sem_poll": 2
+      }
+    },
+    {
+      "expectedRuleId": "701.19b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 5,
+        "lex_poll": 0,
+        "sem_poll": 4
+      }
+    },
+    {
+      "expectedRuleId": "701.26b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 3,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "404.3",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "701.44a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "702.139d",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 3,
+        "sem_clean": 3,
+        "lex_poll": 0,
+        "sem_poll": 4
+      }
+    },
+    {
+      "expectedRuleId": "704.5b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "506.1",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "113.6",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 4
+      }
+    },
+    {
+      "expectedRuleId": "810.8b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "711.2",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 5,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "107.7",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 2
+      }
+    },
+    {
+      "expectedRuleId": "718.3b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "122.3",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "312.1",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 3,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "702.63c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "508.7b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 5,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 4
+      }
+    },
+    {
+      "expectedRuleId": "703.4k",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "701.12c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "104.4f",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "314.7",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "201.2a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "119.5",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "702.47c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "724.2b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 4,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "904.8",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 3,
+        "lex_poll": 0,
+        "sem_poll": 3
+      }
+    },
+    {
+      "expectedRuleId": "723.5b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 5,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "702.65a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "903.13e",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "702.7c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 5,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "810.8a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "201.2",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "720.1",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 2
+      }
+    },
+    {
+      "expectedRuleId": "106.4",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "702.94a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "615.12",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "310.8d",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 5,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 5
+      }
+    },
+    {
+      "expectedRuleId": "730.2b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "702.126b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "100.1",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 3,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 2
+      }
+    },
+    {
+      "expectedRuleId": "712.21",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "702.106c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "606.2",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "726.5",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 2
+      }
+    },
+    {
+      "expectedRuleId": "702.187a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 2
+      }
+    },
+    {
+      "expectedRuleId": "702.170c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "610.4",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 4,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "202.3c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "613.1f",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "106.6a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 2
+      }
+    },
+    {
+      "expectedRuleId": "614.13c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 4
+      }
+    },
+    {
+      "expectedRuleId": "702.96c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 5
+      }
+    },
+    {
+      "expectedRuleId": "123.7",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 3,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 2
+      }
+    },
+    {
+      "expectedRuleId": "610.3b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "400.7e",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "702.75b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "805.2",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "103.3",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "602.5d",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "702.16p",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "605.3",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "901.9a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 4,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "702.96b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 3,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 2
+      }
+    },
+    {
+      "expectedRuleId": "802.4b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "309.4",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 3,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "106.4a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 5
+      }
+    },
+    {
+      "expectedRuleId": "107.8a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "712.5g",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 3,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "903.13f",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 5
+      }
+    },
+    {
+      "expectedRuleId": "809.3a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "723.6",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "611.3a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 2
+      }
+    },
+    {
+      "expectedRuleId": "701.36b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "702.83b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "701.12g",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 3,
+        "lex_poll": 0,
+        "sem_poll": 3
+      }
+    },
+    {
+      "expectedRuleId": "702.22e",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "712.4c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 5,
+        "sem_clean": 4,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "607.2p",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 4,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "803.1",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "702.112b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "702.21b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 3,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "116.2b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "702.39a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 2
+      }
+    },
+    {
+      "expectedRuleId": "901.5",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "407.1",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "300.1",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 4,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "729.1b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 3,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "702.54b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 3
+      }
+    },
+    {
+      "expectedRuleId": "810.3",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "701.18d",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 3,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "116.2c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "712.16",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "733.2",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "725.3",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "708.8",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 5,
+        "sem_clean": 3,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "701.24d",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "702.37c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 4,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "801.18",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "312.2",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "702.103d",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "702.26n",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "613.10",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "115.1c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "121.4",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "701.7b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "103.2b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "702.22m",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "810.10c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "712.20",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "712.21a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "400.7k",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "119.3",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 3,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "702.24a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "201.3a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "104.1",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 3,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "202.3f",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "707.6",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "310.7",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "702.51c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "730.2h",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "730.2e",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 3
+      }
+    },
+    {
+      "expectedRuleId": "701.50b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "702.29c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "615.4",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 3,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "511.3",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 4,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "702.22i",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 2,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "701.38b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "613.7e",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 4
+      }
+    },
+    {
+      "expectedRuleId": "704.4",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "701.38d",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "800.5",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "800.4p",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 4
+      }
+    },
+    {
+      "expectedRuleId": "702.178a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "701.7c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 2
+      }
+    },
+    {
+      "expectedRuleId": "701.30b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "714.2a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 5,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "731.2c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 3,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "702.137a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 2
+      }
+    },
+    {
+      "expectedRuleId": "202.3g",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 3,
+        "lex_poll": 0,
+        "sem_poll": 5
+      }
+    },
+    {
+      "expectedRuleId": "702.26b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 0,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "603.12",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 2
+      }
+    },
+    {
+      "expectedRuleId": "702.138c",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 5,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 5
+      }
+    },
+    {
+      "expectedRuleId": "506.3a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 2
+      }
+    },
+    {
+      "expectedRuleId": "506.3f",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 5,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 3
+      }
+    },
+    {
+      "expectedRuleId": "701.4a",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 4,
+        "sem_clean": 2,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "303.4e",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "701.27f",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 3
+      }
+    },
+    {
+      "expectedRuleId": "702.33b",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 1
+      }
+    },
+    {
+      "expectedRuleId": "305.4",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 0,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 0
+      }
+    },
+    {
+      "expectedRuleId": "729.4",
+      "source": "synthetic",
+      "ranks": {
+        "lex_clean": 1,
+        "sem_clean": 1,
+        "lex_poll": 0,
+        "sem_poll": 2
+      }
+    }
+  ]
+}

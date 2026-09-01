@@ -1,0 +1,7 @@
+# Large, regenerable investigation artifacts — keep out of git.
+# rule-embeddings.json (~96MB) rebuilds via harness/rag/embed-rules.mjs (~$0.004).
+# assembled*.json (~14MB) rebuilds free via harness/assemble.mjs from cases + indexes.
+harness/rag/rule-embeddings.json
+harness/assembled.json
+harness/assembled-suite.json
+harness/assembled-ablation.json

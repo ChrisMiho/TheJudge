@@ -1,0 +1,1942 @@
+{
+  "generatedAt": "2026-08-31T05:27:18.427Z",
+  "model": "gpt-4.1",
+  "judgeModel": "gpt-4.1-mini",
+  "estimatedSpendThisRun": 0.41505240000000004,
+  "cases": [
+    {
+      "caseId": "combo-01",
+      "variantId": "1835-4222",
+      "band": "high",
+      "popularity": 8048,
+      "cardNames": [
+        "Freed from the Real",
+        "Zaxara, the Exemplary"
+      ],
+      "groundTruth": {
+        "steps": "Activate Zaxara by tapping it, adding {U}{U}.\nActivate Freed from the Real's second ability by paying {U}, untapping Zaxara.\nRepeat.",
+        "producedEffects": [
+          "Infinite colored mana"
+        ],
+        "notablePrerequisites": "Freed from the Real attached to Zaxara.\nZaxara does not have summoning sickness."
+      },
+      "diagnosis": {
+        "comboSectionChars": 4586,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "701.8b",
+            "title": "Keyword Actions",
+            "score": 41.64780523117587
+          },
+          {
+            "ruleId": "122.1b",
+            "title": "Counters",
+            "score": 40.63129438259094
+          },
+          {
+            "ruleId": "702.2c",
+            "title": "Keyword Abilities",
+            "score": 39.41612620285534
+          },
+          {
+            "ruleId": "702.2b",
+            "title": "Keyword Abilities",
+            "score": 37.57049374368713
+          },
+          {
+            "ruleId": "704.5h",
+            "title": "State-Based Actions",
+            "score": 37.57049374368713
+          }
+        ],
+        "supplementalRunnerUp": [
+          "201.5a",
+          "702.103b",
+          "702.2",
+          "702.2a",
+          "702.2d",
+          "702.2f",
+          "111.10r",
+          "613.9",
+          "120.10",
+          "707.10e"
+        ],
+        "supplementalCandidatesScored": 2094,
+        "supplementalQueryText": "How do these cards combo together? Enchant creature {U}: Tap enchanted creature. {U}: Untap enchanted creature. Enchantment — Aura Deathtouch {T}: Add two mana of any one color. Whenever you cast a spell with {X} in its mana cost, create a 0/0 green Hydra creature token, then put X +1/+1 counters on it. Legendary Creature — Nightmare Hydra",
+        "rulingsIncluded": [
+          {
+            "name": "Freed from the Real",
+            "rulingCount": 1
+          },
+          {
+            "name": "Zaxara, the Exemplary",
+            "rulingCount": 5
+          }
+        ],
+        "rulingsSkippedNoMatch": [],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "Here’s how **Freed from the Real** and **Zaxara, the Exemplary** combo together, based only on the context and official materials provided:\n\n---\n\n### **Piece Recap**\n- **Zaxara, the Exemplary**:\n  - Legendary creature; deathtouch\n  - **{T}: Add two mana of any one color.**\n  - (Also has an ability that triggers on casting spells with {X} in their cost, but not directly relevant here)\n- **Freed from the Real**:\n  - Enchant creature (assume it is enchanting Zaxara as per combo prerequisites)\n  - **{U}: Tap enchanted creature.**\n  - **{U}: Untap enchanted creature.**\n\n---\n\n### **Combo Explanation**\n#### **Prerequisites**\n- **Freed from the Real** is enchanting **Zaxara, the Exemplary** on the battlefield.\n- Zaxara does **not** have summoning sickness (so it can tap for mana).\n- You can pay blue mana ({U}) at least once (you have at least {U} to start the sequence).\n\n---\n\n#### **Steps**\n1. **Tap Zaxara:** \n   - Activate Zaxara’s {T} ability: \"Add two mana of any one color.\"\n   - If you tap for let’s say {U}{U}, you get two blue mana.\n\n2. **Untap Zaxara with Freed from the Real:**\n   - Pay {U}: \"Untap enchanted creature.\"\n   - Use one of the blue mana you just made to untap Zaxara via Freed from the Real’s ability.\n\n3. **Repeat infinitely:**\n   - Zaxara is untapped again and can tap for {U}{U} again.\n   - Every time you repeat steps 1 and 2, you net {U} (since you spend {U} to untap, but make {U}{U} on each tap).\n   - Each iteration gives you one additional blue mana in your pool.\n   - Alternatively, you can choose another color with Zaxara to make any color of mana, as long as you can always pay {U} for the untap. E.g., tap for {U}{G}, untap with {U}, net {G}. Repeat for all combinations of colors you want Zaxara to provide.\n\n---\n\n### **Net Result**\n- **You can generate infinite mana of any color(s) that Zaxara can produce.**\n- For every iteration, you net one mana of your chosen color.\n- Infinite colored mana.\n\n---\n\n### **Rule Reference**\nFreed from the Real:  \n> “Only the player who controls Freed from the Real can activate its abilities. This might not be the controller of the enchanted creature.”\n\nZaxara:  \n> “{T}: Add two mana of any one color.”\n\n**No restriction prevents Zaxara from being tapped and untapped repeatedly, as long as you can always pay the untap cost.**\n\n---\n\n### **Summary Table**\n\n| Step                                      | Result      |\n|--------------------------------------------|-------------|\n| Tap Zaxara for {U}{U}                      | +2 blue     |\n| Pay {U} to Freed from the Real, untap Zaxara | -1 blue, Zaxara untapped |\n| Repeat                                     | Net +1 blue per cycle (or other color) |\n\n---\n\n### **In Short**\nAs long as Freed from the Real is enchanting Zaxara and you can start the loop (Zaxara is not summoning sick and you have {U}), you may repeat the tap/untap loop to generate infinite colored mana.",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant correctly identified the combo, explained the infinite mana payoff, and detailed the proper tap/untap loop steps using Freed from the Real and Zaxara."
+      }
+    },
+    {
+      "caseId": "combo-02",
+      "variantId": "1580-2292-4871-6663",
+      "band": "high",
+      "popularity": 8083,
+      "cardNames": [
+        "The Masamune",
+        "Reassembling Skeleton",
+        "Pitiless Plunderer",
+        "Viscera Seer"
+      ],
+      "groundTruth": {
+        "steps": "Activate Viscera Seer by sacrificing Reassembling Skeleton.\nWhen Reassembling Skeleton dies, Pitiless Plunderer triggers twice, creating two Treasure tokens.\nResolve the Viscera Seer ability.\nActivate the Treasure tokens by tapping and sacrificing them, adding {1}{B}.\nActivate Reassembling Skeleton by paying {1}{B}, returning it from your graveyard to the battlefield tapped.\nRepeat.",
+        "producedEffects": [
+          "Infinite creature ETB",
+          "Infinite creature LTB",
+          "Infinite creature sacrifice triggers",
+          "Infinite death triggers",
+          "Infinite scry 1"
+        ],
+        "notablePrerequisites": ""
+      },
+      "diagnosis": {
+        "comboSectionChars": 6686,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "603.12",
+            "title": "Handling Triggered Abilities",
+            "score": 76.85999532459775
+          },
+          {
+            "ruleId": "603.10a",
+            "title": "Handling Triggered Abilities",
+            "score": 74.67923476015892
+          },
+          {
+            "ruleId": "732.2a",
+            "title": "Taking Shortcuts",
+            "score": 56.68250174777933
+          },
+          {
+            "ruleId": "205.3m",
+            "title": "Type Line",
+            "score": 56.28799885875396
+          },
+          {
+            "ruleId": "111.10a",
+            "title": "Tokens",
+            "score": 54.930513869167655
+          }
+        ],
+        "supplementalRunnerUp": [
+          "113.6m",
+          "702.152a",
+          "603.6c",
+          "118.12",
+          "702.24a",
+          "707.5",
+          "111.10t",
+          "707.10",
+          "509.3d",
+          "702.141a"
+        ],
+        "supplementalCandidatesScored": 2218,
+        "supplementalQueryText": "How do these cards combo together? As long as equipped creature is attacking, it has first strike and must be blocked if able. Equipped creature has \"If a creature dying causes a triggered ability of this creature or an emblem you own to trigger, that ability triggers an additional time.\" Equip {2} Legendary Artifact — Equipment {1}{B}: Return this card from your graveyard to the battlefield tapped. Creature — Skeleton Warrior Whenever another creature you control dies, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\") Creature — Human Pirate Sacrifice a creature: Scry 1. (Look at the top card of your library. You may put that card on the bottom.) Creature — Vampire Wizard",
+        "rulingsIncluded": [
+          {
+            "name": "The Masamune",
+            "rulingCount": 8
+          },
+          {
+            "name": "Pitiless Plunderer",
+            "rulingCount": 1
+          },
+          {
+            "name": "Viscera Seer",
+            "rulingCount": 2
+          }
+        ],
+        "rulingsSkippedNoMatch": [
+          "Reassembling Skeleton"
+        ],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "Let’s explain how **The Masamune**, **Reassembling Skeleton**, **Pitiless Plunderer**, and **Viscera Seer*** can form a combo, focusing on the interaction and stack sequencing, with reference to the official texts and rules above.\n\n---\n\n## 1. Setup\nAssume the following board state:\n- You control **Pitiless Plunderer**, **Viscera Seer**, **Reassembling Skeleton** (on the battlefield), and **The Masamune** is equipped to **Pitiless Plunderer**.\n\nThere are currently no restrictions on using their abilities and no summoning sickness or mana constraints are noted. If the combo requires Treasure mana, you will gain it through the process itself.\n\n---\n\n## 2. How the Combo Proceeds\n\n### Step 1: Activate Viscera Seer\n- You **activate Viscera Seer**’s ability by sacrificing **Reassembling Skeleton** (\"Sacrifice a creature: Scry 1.\")\n- At this point, **Reassembling Skeleton** dies and goes to your graveyard. This death triggers **Pitiless Plunderer**.\n\n### Step 2: Pitiless Plunderer’s Trigger — Doubling via The Masamune\n- Normally, when **another creature you control dies**, **Pitiless Plunderer** triggers, making a Treasure token.\n- Here, because **The Masamune** is equipped to Pitiless Plunderer, it gives the equipped creature (Pitiless Plunderer itself) the ability:\n  > \"If a creature dying causes a triggered ability of this creature or an emblem you own to trigger, that ability triggers an additional time.\"\n- This applies, because Pitiless Plunderer’s own death trigger is being caused by Reassembling Skeleton's death; it’s a triggered ability **of Pitiless Plunderer**.\n\n**Result:**  \n**Pitiless Plunderer’s ability triggers twice**, creating **two Treasure tokens** when you sacrifice Reassembling Skeleton.\n\n### Step 3: Resolve Viscera Seer’s ability\n- Scry 1 from the original activation.\n\n### Step 4: Use Treasures to Return Skeleton\n- You now have two Treasure tokens. The Skeleton’s ability can be activated from the graveyard for {1}{B} (“{1}{B}: Return this card from your graveyard to the battlefield tapped.”)\n- **Sacrifice both Treasures:** Tap and sacrifice both, getting {B} and one other color (doesn’t matter for Reassembling Skeleton, but both can be {B} if needed).\n- **Activate Reassembling Skeleton’s ability:** Pay {1}{B} using the Treasures’ mana, returning Skeleton to the battlefield tapped.\n\n### Step 5: Repeat\n- Skeleton is back, repeat the process from Step 1.\n\n---\n\n## 3. Why this is a “Combo”\n- **Each time you repeat:**  \n  - **Sacrifice Reassembling Skeleton:** Scry 1 (Viscera Seer).\n  - **Pitiless Plunderer triggers twice:** Make two Treasure tokens.\n  - **Use two Treasures' mana:** Pay {1}{B} to return Skeleton.\n- **Result:** You can perform this loop as many times as desired while netting additional value from any \"when a creature dies\" or \"when a creature enters\" triggers, and Scry 1 for each cycle.\n- This produces:  \n  - Infinite triggers for \"creature dies\"/\"creature enters\"/\"creature sacrificed\"\n  - Infinite Scry 1 (choice to rearrange your library as you wish)\n  - Infinite ETB/LTB creature triggers if you have other cards that care.\n\n---\n\n## 4. Rules and Official Guidance\nHere are the supporting official statements that confirm this loop:\n- **The Masamune:**  \n  > \"If a creature dying causes a triggered ability of this creature...to trigger, that ability triggers an additional time.\"\n- **Pitiless Plunderer:**  \n  > \"Whenever another creature you control dies, create a Treasure token.\"\n- **Reassembling Skeleton:**  \n  > \"{1}{B}: Return this card from your graveyard to the battlefield tapped.\"\n- **Viscera Seer:**  \n  > \"Sacrifice a creature: Scry 1.\"\n- **Stack resolution order:** Abilities triggered by a single event are put on the stack in APNAP (Active Player, Nonactive Player) order, and each resolved top-to-bottom.\n\n---\n\n## 5. Limitations/Assumptions\n- **Mana for initial Skeleton return:** The loop is self-sustaining after the first execution because you will always create two Treasures for every one Reassembling Skeleton death.\n- **No other limiting factors mentioned:** If a stax card like Rest in Peace, Grafdigger’s Cage, or Blood Moon is present, or abilities that prohibit graveyard recursion, the loop may fail.\n\n---\n\n## 6. Combo Output\nWith these four cards configured as above, you have an **infinite, deterministic combo** producing:\n- Infinite creature sacrifices (to Viscera Seer)\n- Infinite Scry 1\n- Infinite death triggers (for Reassembling Skeleton)\n- Infinite ETB (Reassembling Skeleton) and LTB triggers (if other cards reference that)\n- Infinite Treasures (one per loop, but they're consumed to fuel the loop)\n\n---\n\n**Summary:**  \n**The Masamune** (on Pitiless Plunderer) causes Plunderer's death trigger to fire twice each time you sacrifice **Reassembling Skeleton** (via **Viscera Seer**), netting you two Treasure tokens. With those two Treasures, you pay {1}{B} to return Skeleton, and repeat. This is a classic infinite combo engine as described above.",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant correctly identified the combo, detailed the loop steps accurately matching the ground truth, and stated the correct end results including infinite triggers and scrying."
+      }
+    },
+    {
+      "caseId": "combo-03",
+      "variantId": "314-1612",
+      "band": "high",
+      "popularity": 7978,
+      "cardNames": [
+        "Vito, Thorn of the Dusk Rose",
+        "Shard of the Nightbringer"
+      ],
+      "groundTruth": {
+        "steps": "Cast Shard of the Nightbringer by paying {5}{B}{B}{B}.\nShard of the Nightbringer triggers, causing an opponent to lose half their life total, rounded up, and you to gain life equal to the life lost this way.\nVito triggers, causing the opponent to lose life equal to the amount of life gained this way.\nThe opponent loses the game due to having zero or less life.",
+        "producedEffects": [
+          "Infinite lifeloss for target opponent",
+          "Target opponent loses the game"
+        ],
+        "notablePrerequisites": ""
+      },
+      "diagnosis": {
+        "comboSectionChars": 4304,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "122.1b",
+            "title": "Counters",
+            "score": 73.41785007709588
+          },
+          {
+            "ruleId": "613.9",
+            "title": "Interaction of Continuous Effects",
+            "score": 60.79343868700039
+          },
+          {
+            "ruleId": "722.3c",
+            "title": "Preparation Cards",
+            "score": 58.37151159825477
+          },
+          {
+            "ruleId": "702.15e",
+            "title": "Keyword Abilities",
+            "score": 55.42338666339529
+          },
+          {
+            "ruleId": "702.1c",
+            "title": "Keyword Abilities",
+            "score": 54.44743894810884
+          }
+        ],
+        "supplementalRunnerUp": [
+          "120.3f",
+          "702.15b",
+          "732.3",
+          "509.1b",
+          "702.101a",
+          "203.1",
+          "205.3m",
+          "613.6",
+          "113.12",
+          "702.17b"
+        ],
+        "supplementalCandidatesScored": 1612,
+        "supplementalQueryText": "How do these cards combo together? Whenever you gain life, target opponent loses that much life. {3}{B}{B}: Creatures you control gain lifelink until end of turn. Legendary Creature — Vampire Cleric Flying Drain Life — When this creature enters, if you cast it, target opponent loses half their life, rounded up. You gain life equal to the life lost this way. Creature — C'tan",
+        "rulingsIncluded": [
+          {
+            "name": "Vito, Thorn of the Dusk Rose",
+            "rulingCount": 5
+          }
+        ],
+        "rulingsSkippedNoMatch": [
+          "Shard of the Nightbringer"
+        ],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "Let’s break down the combo interaction between **Vito, Thorn of the Dusk Rose** (on the battlefield) and **Shard of the Nightbringer** (cast from your hand):\n\n---\n\n### CARD EFFECTS\n\n**Vito, Thorn of the Dusk Rose:**  \n> Whenever you gain life, target opponent loses that much life.\n\n**Shard of the Nightbringer:**  \n> Flying  \n> **Drain Life** — When this creature enters, if you cast it, target opponent loses half their life, rounded up. You gain life equal to the life lost this way.\n\n---\n\n### HOW THE COMBO WORKS\n\n#### Step-by-step resolution and interaction:\n\n1. **You cast Shard of the Nightbringer** for {5}{B}{B}{B}.\n2. Shard of the Nightbringer enters the battlefield. Its triggered ability goes on the stack:\n   - \"**When this creature enters, if you cast it, target opponent loses half their life, rounded up. You gain life equal to the life lost this way.**\"\n3. That ability resolves:\n   - **Opponent loses half their life, rounded up.**\n   - **You gain life equal to the life lost this way.**\n4. **Vito, Thorn of the Dusk Rose** sees that you gained life from Shard's trigger:\n   - Its triggered ability goes on the stack: \"**Whenever you gain life, target opponent loses that much life.**\"\n   - You must choose a target opponent for Vito (it can be the same as the previous step or a different opponent if multiplayer).\n5. **Vito's triggered ability resolves:**\n   - That opponent loses life equal to the amount of life you just gained.\n\n#### Key interaction:\n\n- The life loss from **Shard of the Nightbringer's** ability is matched by an equal amount of life gained by you.\n- **Vito's** ability causes **that same opponent to lose as much life again**.\n\n---\n\n### RESULT\n\n- **The targeted opponent loses half their life (rounded up)** from Shard's trigger.\n- **You gain that much life** at the same time.\n- **Vito's triggered ability** then **makes the opponent lose that much life again**.\n\n#### Example (assume opponent is at 40 life):\n\n1. **Shard’s ETB**: Opponent loses 20 (half of 40, rounded up).\n2. **You gain 20 life**.\n3. **Vito's trigger**: Opponent loses another 20 life.\n4. **Opponent is at 0** (40 - 20 - 20 = 0).\n\n- The combo **can instantly defeat an opponent** if their life total is not odd and is at or below the threshold where losing half twice reduces them to 0 or less.\n- If starting life is odd, the rounding up can ensure one life is lost in the second halving (e.g., at 21 life: half is 11, then another 11 loss = -1).\n\n---\n\n### OFFICIAL SPELLBOOK COMBO REFERENCE\n\nAs per Commander Spellbook (context provided):\n> Cast Shard of the Nightbringer by paying {5}{B}{B}{B}. Shard of the Nightbringer triggers, causing an opponent to lose half their life total, rounded up, and you to gain life equal to the life lost this way. Vito triggers, causing the opponent to lose life equal to the amount of life gained. The opponent loses the game due to having zero or less life.\n\n---\n\n## SUMMARY\n\n**Vito, Thorn of the Dusk Rose** and **Shard of the Nightbringer** create a two-card combo that, upon Shard's entrance (and if cast), can reduce a single opponent's life total to zero in one sequence by causing them to lose half their life, then that much again.\n\n---\n\n### Likely Stack Order (all triggers put on stack in one go):\n\n- **Stack[0] (bottom):** Shard ETB drain trigger (opponent loses half life, you gain same).\n- **Stack[1] (top):** Vito trigger (same opponent loses amount you gained).\n\n**Vito’s ability only triggers because you gained life from Shard’s ability.**\n\n---\n\nIf you would like to see the stack step-by-step with specific life totals, let me know!",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant correctly identified the combo, explained the step-by-step interaction including the triggered abilities and their order, and stated the correct final outcome matching the ground truth."
+      }
+    },
+    {
+      "caseId": "combo-04",
+      "variantId": "2608-4499-5116",
+      "band": "mid",
+      "popularity": 326,
+      "cardNames": [
+        "Gilded Lotus",
+        "Derevi, Empyrial Tactician",
+        "Emiel the Blessed"
+      ],
+      "groundTruth": {
+        "steps": "Activate Gilded Lotus by tapping it, adding {3}.\nActivate Emiel by paying {3}, blinking Derevi.\nWhen Derevi enters the battlefield, it triggers, untapping Gilded Lotus.\nRepeat.",
+        "producedEffects": [
+          "Infinite creature ETB",
+          "Infinite creature LTB"
+        ],
+        "notablePrerequisites": ""
+      },
+      "diagnosis": {
+        "comboSectionChars": 4786,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "712.21c",
+            "title": "Double-Faced Cards",
+            "score": 98.73853286721221
+          },
+          {
+            "ruleId": "702.62a",
+            "title": "Keyword Abilities",
+            "score": 80.77604411925789
+          },
+          {
+            "ruleId": "722.3c",
+            "title": "Preparation Cards",
+            "score": 77.24994206089121
+          },
+          {
+            "ruleId": "607.5",
+            "title": "Linked Abilities",
+            "score": 66.82330459228456
+          },
+          {
+            "ruleId": "613.9",
+            "title": "Interaction of Continuous Effects",
+            "score": 66.68054551030505
+          }
+        ],
+        "supplementalRunnerUp": [
+          "702.24a",
+          "122.1b",
+          "800.4d",
+          "400.6",
+          "701.56a",
+          "701.66a",
+          "702.72a",
+          "310.11b",
+          "702.99a",
+          "613.5"
+        ],
+        "supplementalCandidatesScored": 2476,
+        "supplementalQueryText": "How do these cards combo together? {T}: Add three mana of any one color. Artifact Flying When Derevi enters and whenever a creature you control deals combat damage to a player, you may tap or untap target permanent. {1}{G}{W}{U}: Put Derevi onto the battlefield from the command zone. Legendary Creature — Bird Wizard {3}: Exile another target creature you control, then return it to the battlefield under its owner's control. Whenever another creature you control enters, you may pay {G/W}. If you do, put a +1/+1 counter on it. If it's a Unicorn, put two +1/+1 counters on it instead. ({G/W} can be paid with either {G} or {W}.) Legendary Creature — Unicorn",
+        "rulingsIncluded": [
+          {
+            "name": "Derevi, Empyrial Tactician",
+            "rulingCount": 2
+          },
+          {
+            "name": "Emiel the Blessed",
+            "rulingCount": 6
+          }
+        ],
+        "rulingsSkippedNoMatch": [
+          "Gilded Lotus"
+        ],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "**Summary:**  \nWith **Gilded Lotus**, **Derevi, Empyrial Tactician**, and **Emiel the Blessed** all on the battlefield under your control, you can loop Derevi repeatedly for infinite enter-the-battlefield (ETB) and leave-the-battlefield (LTB) triggers. Here’s how the combo functions step by step using only the logic in your references above:\n\n---\n\n**Step-by-step combo explanation:**  \n\n1. **Tap Gilded Lotus:**  \n   - Activate Gilded Lotus’s ability: “{T}: Add three mana of any one color.”\n   - You receive {3} mana of your chosen color.\n   \n2. **Activate Emiel the Blessed:**  \n   - Emiel’s ability: “{3}: Exile another target creature you control, then return it to the battlefield under its owner's control.”\n   - Use the {3} you created to activate Emiel’s ability, targeting Derevi, Empyrial Tactician.\n   - Derevi is exiled and immediately returned to the battlefield (“blinking” Derevi).\n\n3. **Derevi enters the battlefield, triggering its ability:**  \n   - Derevi’s ability: “When Derevi enters the battlefield... you may tap or untap target permanent.”\n   - When Derevi ETBs, its triggered ability triggers (see GAME RULES 603.2).\n   - Choose Gilded Lotus as the target for dereg’s triggered ability and untap it when the trigger resolves.\n\n4. **Repeat:**  \n   - At this point, you are back where you started:  \n     - Gilded Lotus is untapped.\n     - Derevi is on the battlefield (a new object, but functionally the same).\n     - Emiel is ready to use again.\n   - You can repeat steps 1–3 as many times as you wish, each cycle generating:\n     - Infinite Derevi ETB and LTB triggers (entering and leaving for each loop).\n     - Each loop can generate triggers for anything else that cares about creatures entering/leaving, or other ETB/LTB effects.\n     - (If you have sufficient payoffs for unlimited ETBs/LTBs, you can win the game or produce other infinite effects.)\n\n**Rule support:**  \n- “When Derevi enters the battlefield... you may tap or untap target permanent.”  \n- “{T}: Add three mana of any one color.” (Gilded Lotus)  \n- “{3}: Exile another target creature you control, then return it...” (Emiel)  \n- Zone change resets objects, but the combo does not depend on old/new identities for this loop, and triggers re-occurring are legal.\n\n---\n\n**Why this works:**  \n- The mana from Gilded Lotus always pays for Emiel’s blink.\n- Derevi’s ETB always untaps the Lotus, so you can do it again.\n- No hidden state or additional requirements are needed as long as you control all three permanents.\n\n---\n\n**Combo output:**  \n- **Infinite ETB/LTB triggers** (from Derevi blinking out and in)  \n- **Infinite uses of ETB/LTB payoffs** (like Soul Warden, Altar of the Brood, etc.—not provided here but often found in Commander decks)\n- **Infinite colored mana is NOT produced by this loop alone:**  \n  - Gilded Lotus gives you {3} and Emiel needs {3} to blink Derevi each time. If you have \"payoff\" triggers that generate more than {3} mana per loop or let you re-use the untap on other things, infinite mana becomes possible (not with only these three).\n\n---\n\n**Reference:**  \nThis exact recipe is reflected in Commander Spellbook Combo #2608-4499-5116:  \n> Activate Gilded Lotus by tapping it, adding {3}.  \n> Activate Emiel by paying {3}, blinking Derevi.  \n> When Derevi enters the battlefield, it triggers, untapping Gilded Lotus.  \n> Repeat.\n\n---\n\n**In summary:**  \n**Gilded Lotus + Emiel the Blessed + Derevi, Empyrial Tactician** = infinite Derevi blinks, with ETB/LTB triggers each time, so long as you can keep paying {3} for Emiel with the Lotus and untapping it every cycle. No additional pieces are required for this loop, but you do NOT generate excess mana—just the blink/trigger loop. With additional payoffs, infinite effects are possible.",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant correctly identified the combo, described the resulting infinite ETB/LTB triggers, and explained the loop steps precisely as in the ground truth example."
+      }
+    },
+    {
+      "caseId": "combo-05",
+      "variantId": "950-1846-3525",
+      "band": "mid",
+      "popularity": 1830,
+      "cardNames": [
+        "Fatestitcher",
+        "Pemmin's Aura",
+        "High Tide"
+      ],
+      "groundTruth": {
+        "steps": "Cast High Tide by paying {U}.\nActivate an Island by tapping it, adding {U}.\nHigh Tide triggers, adding {U}.\nActivate Fatestitcher by tapping it, untapping the Island.\nActivate Pemmin's Aura by paying {U}, untapping Fatestitcher.\nRepeat from step 2.",
+        "producedEffects": [
+          "Infinite blue mana",
+          "Infinite mana permanents you control can produce"
+        ],
+        "notablePrerequisites": "You control an Island.\nPemmin's Aura attached to Fatestitcher."
+      },
+      "diagnosis": {
+        "comboSectionChars": 5686,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "722.3c",
+            "title": "Preparation Cards",
+            "score": 91.22503884835739
+          },
+          {
+            "ruleId": "712.21c",
+            "title": "Double-Faced Cards",
+            "score": 82.18127974160899
+          },
+          {
+            "ruleId": "702.84a",
+            "title": "Keyword Abilities",
+            "score": 80.65023502200599
+          },
+          {
+            "ruleId": "613.9",
+            "title": "Interaction of Continuous Effects",
+            "score": 74.64725884602407
+          },
+          {
+            "ruleId": "800.4d",
+            "title": "General",
+            "score": 71.76113058655099
+          }
+        ],
+        "supplementalRunnerUp": [
+          "607.5",
+          "613.6",
+          "702.1c",
+          "702.141a",
+          "113.12",
+          "702.133a",
+          "702.34a",
+          "123.6c",
+          "616.1f",
+          "111.12"
+        ],
+        "supplementalCandidatesScored": 2328,
+        "supplementalQueryText": "How do these cards combo together? {T}: You may tap or untap another target permanent. Unearth {U} ({U}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.) Creature — Zombie Wizard Enchant creature {U}: Untap enchanted creature. {U}: Enchanted creature gains flying until end of turn. {U}: Enchanted creature gains shroud until end of turn. (It can't be the target of spells or abilities.) {1}: Enchanted creature gets +1/-1 or -1/+1 until end of turn. Enchantment — Aura Until end of turn, whenever a player taps an Island for mana, that player adds an additional {U}. Instant",
+        "rulingsIncluded": [
+          {
+            "name": "Fatestitcher",
+            "rulingCount": 5
+          },
+          {
+            "name": "High Tide",
+            "rulingCount": 2
+          }
+        ],
+        "rulingsSkippedNoMatch": [
+          "Pemmin's Aura"
+        ],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "**Combo Explanation: Fatestitcher + Pemmin's Aura + High Tide**\n\n**Relevant Setup**\n- You control **Fatestitcher** (on the battlefield), enchanted by **Pemmin's Aura**.\n- **High Tide** is in your hand and you control at least one **Island**.\n- You have at least {U} available to cast High Tide (and to start the combo).\n\n### Step-by-step Combo Walkthrough\n\n1. **Cast High Tide ({U}):**\n   - \"Until end of turn, whenever a player taps an Island for mana, that player adds an additional {U}.\"\n   - This makes each of your Islands tap for an extra {U} this turn.\n\n2. **Tap an Island for {U}{U}:**\n   - You tap an Island, using High Tide's effect; it produces {U}{U}.\n\n3. **Activate Fatestitcher ({T}):**\n   - Use Fatestitcher's ability: \"{T}: You may tap or untap another target permanent.\"\n   - Target your tapped Island and untap it. (Now, Fatestitcher is tapped; Island is untapped.)\n\n4. **Activate Pemmin's Aura ({U}):**\n   - Pemmin's Aura gives enchanted creature (Fatestitcher) the ability: \"{U}: Untap this creature.\"\n   - Pay {U} (from your Island) to untap Fatestitcher.\n\n**Now your board looks like:**\n- Fatestitcher: Untapped.\n- Island: Untapped.\n- You have at least {U} left, possibly {U}{U} if you started with any floating blue mana.\n\n**Repeat:**\n- Tap the Island again for another {U}{U} (production repeats thanks to High Tide).\n- Tap Fatestitcher to untap the Island.\n- Use {U} to untap Fatestitcher with Pemmin's Aura again.\n\n### **Result**\nEach full cycle costs {U} (to untap Fatestitcher) and produces {U}{U} (by tapping the Island). This gives you a net gain of {U} each time you loop:\n\n- **Infinite Blue Mana** (as long as you can continue the loop).\n\n---\n\n### **Why it works (Rules Reference)**\n\n- **Fatestitcher**’s ability untaps the Island you use for mana.\n- **Pemmin’s Aura**’s first activated ability gives you a way to untap Fatestitcher, which resets the tap/untap loop.\n- **High Tide** increases your Island’s output by one blue mana, enabling the net-positive loop.\n\n---\n\n### **Combo Ingredients Summary**\n\n- **Fatestitcher** (battlefield, untapped → you tap it each loop)\n- **Pemmin’s Aura** (battlefield, enchanting Fatestitcher)\n- **High Tide** (cast this turn, its effect ongoing)\n- **An Island** (any untapped Island you control)\n\n**As long as you can repeat these steps, you can generate unlimited blue mana during that turn.**\n\n---\n\n#### **Source for Combo**\n- This matches the entry in Commander Spellbook (Combo #950-1846-3525).\n\n---\n\n### **Recap:**\n- **Cast High Tide.**\n- **Tap Island for {U}{U}.**\n- **Tap Fatestitcher to untap Island.**\n- **Pay {U} to untap Fatestitcher.**\n- **Repeat for infinite blue mana.**",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant correctly identified the cards as a combo, explained the infinite blue mana payoff, and accurately described the loop steps in detail matching the ground truth."
+      }
+    },
+    {
+      "caseId": "combo-06",
+      "variantId": "239-1700-4385-4893",
+      "band": "mid",
+      "popularity": 274,
+      "cardNames": [
+        "Reflex Sliver",
+        "Training Grounds",
+        "Sliver Queen",
+        "Manaweft Sliver"
+      ],
+      "groundTruth": {
+        "steps": "All slivers have haste.\nTap a Sliver to generate {1}.\nUse that mana to create a Sliver with Sliver Queen's ability.\nUse the newly created Sliver to repeat the cycle.",
+        "producedEffects": [
+          "Infinite creature ETB",
+          "Infinite creature tokens"
+        ],
+        "notablePrerequisites": ""
+      },
+      "diagnosis": {
+        "comboSectionChars": 4568,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "106.7",
+            "title": "Mana",
+            "score": 31.94103119287744
+          },
+          {
+            "ruleId": "120.10",
+            "title": "Damage",
+            "score": 31.658234853412388
+          },
+          {
+            "ruleId": "700.5a",
+            "title": "General",
+            "score": 27.986288586711744
+          },
+          {
+            "ruleId": "205.1b",
+            "title": "Type Line",
+            "score": 27.078803646077652
+          },
+          {
+            "ruleId": "120.4d",
+            "title": "Damage",
+            "score": 26.794439127662713
+          }
+        ],
+        "supplementalRunnerUp": [
+          "702.51b",
+          "607.5a",
+          "700.8d",
+          "707.10e",
+          "205.3m",
+          "201.5a",
+          "111.4",
+          "107.4a",
+          "111.10",
+          "106.13"
+        ],
+        "supplementalCandidatesScored": 2349,
+        "supplementalQueryText": "How do these cards combo together? All Sliver creatures have haste. Creature — Sliver Activated abilities of creatures you control cost {2} less to activate. This effect can't reduce the mana in that cost to less than one mana. Enchantment {2}: Create a 1/1 colorless Sliver creature token. Legendary Creature — Sliver Sliver creatures you control have \"{T}: Add one mana of any color.\" Creature — Sliver",
+        "rulingsIncluded": [
+          {
+            "name": "Reflex Sliver",
+            "rulingCount": 2
+          },
+          {
+            "name": "Training Grounds",
+            "rulingCount": 8
+          },
+          {
+            "name": "Manaweft Sliver",
+            "rulingCount": 2
+          }
+        ],
+        "rulingsSkippedNoMatch": [
+          "Sliver Queen"
+        ],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "### Combo Explanation: Reflex Sliver + Training Grounds + Sliver Queen + Manaweft Sliver\n\nYou asked how these four cards interact to create a combo. Here’s how they work together, using only the provided context:\n\n**Summary of Relevant Card Abilities:**\n- **Sliver Queen:** `{2}: Create a 1/1 colorless Sliver creature token.`\n- **Manaweft Sliver:** All Slivers you control have \"`{T}: Add one mana of any color.`\"\n- **Reflex Sliver:** All Sliver creatures have haste.\n- **Training Grounds:** Activated abilities of creatures you control cost `{2}` less to activate, but not below one mana.\n\n---\n\n#### Step-by-Step Combo Breakdown:\n\n1. **Every Sliver you control, including tokens made by Sliver Queen, will have:**  \n   - Haste (from Reflex Sliver),  \n   - The ability \"`{T}: Add one mana of any color`\" (from Manaweft Sliver).\n\n2. **Sliver Queen's token-making ability costs `{2}`.**  \n   **Training Grounds** reduces this by `{2}`, but as per recent oracle and rules, you cannot reduce the cost below one mana; so the ability now costs `{1}`.\n\n   *Official ruling:*  \n   > \"Training Grounds can reduce the part of an activation cost represented by generic mana symbols down to nothing, as long as it still costs at least one mana. For example, if an activation cost is {2}, though, you'd still have to pay {1}.\"\n3. **You can tap any Sliver you control (including tokens produced) for `{1}` using the mana ability from Manaweft Sliver.**  \n\n4. **You can then use that `{1}` to activate Sliver Queen and make another 1/1 Sliver token.**\n\n   - All these tokens will have **haste**, meaning they can tap immediately to produce more mana.\n\n5. **Repeat:**  \n   - The new token taps for `{1}` to pay for another Sliver Queen activation, making another token, and so on.\n\n---\n\n#### **Combo Result**\n\n- **You can produce an arbitrarily large number of 1/1 colorless Sliver creature tokens.**\n- **Each \"cycle\" is:**\n  - Tap a Sliver (even newly created, thanks to haste) to generate `{1}` of any color,\n  - Pay that `{1}` to make a new Sliver token,\n  - Repeat with the new token.\n\n---\n\n**All requirements are satisfied as per official WotC published rulings:**\n- Training Grounds properly reduces the generic cost, but not below one mana.\n- Manaweft Sliver allows all your Slivers to tap for mana.\n- Reflex Sliver grants haste, so tokens can tap immediately.\n- Sliver Queen provides the repeatable token-creation.\n- You only need to maintain at least one untapped Sliver to start or continue the loop.\n\n---\n\n#### Combo Type (using MTG vocabulary):\n\n- **Infinite creature tokens**\n- **Infinite creature ETB triggers** (if you have any triggers that care about creatures entering the battlefield)\n\n---\n\n### **In Short**\n> **With all four cards on the battlefield under your control, you can make as many 1/1 Sliver tokens as you want, effectively giving you an infinite number of Slivers by repeating: tap a Sliver for {1}, use that {1} to activate Sliver Queen, make a new Sliver, and tap it immediately thanks to haste.**\n\n---\n\n**If you have follow-up questions about timing windows, stack interactions, or exploit routes (e.g., adding a win condition), just ask!**",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant correctly identified the combo, described the infinite Sliver token production with haste and mana generation, and accurately explained the cost reduction and looping steps matching the ground truth."
+      }
+    },
+    {
+      "caseId": "combo-07",
+      "variantId": "643-4302-5686",
+      "band": "mid",
+      "popularity": 243,
+      "cardNames": [
+        "Shilgengar, Sire of Famine",
+        "Maskwood Nexus",
+        "Bishop of Wings"
+      ],
+      "groundTruth": {
+        "steps": "Activate Shilgengar by sacrificing another creature.\nWhen the creature dies, Bishop of Wings' second ability triggers, creating a 1/1 Spirit creature token.\nWhen the Spirit token enters the battlefield as an Angel due to Maskwood Nexus, Bishop of Wings' first ability triggers, causing you to gain 4 life.\nResolve the Shilgengar ability.\nRepeat.",
+        "producedEffects": [
+          "Infinite artifact tokens",
+          "Infinite Blood tokens",
+          "Infinite creature ETB",
+          "Infinite creature LTB",
+          "Infinite creature sacrifice triggers",
+          "Infinite death triggers",
+          "Infinite lifegain",
+          "Infinite lifegain triggers"
+        ],
+        "notablePrerequisites": "You control at least one additional creature."
+      },
+      "diagnosis": {
+        "comboSectionChars": 6003,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "702.24a",
+            "title": "Keyword Abilities",
+            "score": 86.00669925629846
+          },
+          {
+            "ruleId": "201.5a",
+            "title": "Name",
+            "score": 83.59630645497958
+          },
+          {
+            "ruleId": "707.5",
+            "title": "Copying Objects",
+            "score": 75.5201254793963
+          },
+          {
+            "ruleId": "712.21c",
+            "title": "Double-Faced Cards",
+            "score": 70.71355679050342
+          },
+          {
+            "ruleId": "613.9",
+            "title": "Interaction of Continuous Effects",
+            "score": 70.34728564853032
+          }
+        ],
+        "supplementalRunnerUp": [
+          "205.3m",
+          "722.3c",
+          "122.1b",
+          "702.1c",
+          "118.12",
+          "111.10v",
+          "613.6",
+          "702.63a",
+          "702.63b",
+          "702.32a"
+        ],
+        "supplementalCandidatesScored": 2234,
+        "supplementalQueryText": "How do these cards combo together? Flying Sacrifice another creature: Create a Blood token. If you sacrificed an Angel this way, create a number of Blood tokens equal to its toughness instead. {W/B}{W/B}{W/B}, Sacrifice six Blood tokens: Return each creature card from your graveyard to the battlefield with a finality counter on it. Those creatures are Vampires in addition to their other types. Legendary Creature — Elder Demon Creatures you control are every creature type. The same is true for creature spells you control and creature cards you own that aren't on the battlefield. {3}, {T}: Create a 2/2 blue Shapeshifter creature token with changeling. (It is every creature type.) Artifact Whenever an Angel you control enters, you gain 4 life. Whenever an Angel you control dies, create a 1/1 white Spirit creature token with flying. Creature — Human Cleric",
+        "rulingsIncluded": [
+          {
+            "name": "Shilgengar, Sire of Famine",
+            "rulingCount": 8
+          },
+          {
+            "name": "Maskwood Nexus",
+            "rulingCount": 6
+          },
+          {
+            "name": "Bishop of Wings",
+            "rulingCount": 2
+          }
+        ],
+        "rulingsSkippedNoMatch": [],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "**Assumptions (as per your game state):**\n- You control **Shilgengar, Sire of Famine**, **Maskwood Nexus**, and **Bishop of Wings**, all on the battlefield.\n- You control at least one other creature (important for the combo to function, per combo prerequisites).\n- All relevant cards are untapped and able to use their effects. No other outside effects are assumed.\n\n---\n\n## How They Combo: Step-by-step\n\n1. **Maskwood Nexus** makes all creatures you control every creature type (including Angel, Spirit, etc.).\n   - Relevant Oracle text:  \n     > *Creatures you control are every creature type.*\n\n2. **Bishop of Wings** will \"see\" every creature you control as an Angel.\n   - Its triggers:  \n     > *Whenever an Angel you control enters the battlefield, you gain 4 life.*  \n     > *Whenever an Angel you control dies, create a 1/1 white Spirit creature token with flying.*\n\n   - **Due to Maskwood Nexus, its \"Angel\" triggers work on all creatures you control and all deaths/entries of those creatures.**\n\n3. **Activate Shilgengar's sacrifice ability:**\n   - **Cost**: Sacrifice another creature you control.\n   - **Effect**:  \n     > *Create a Blood token. If you sacrificed an Angel this way, create a number of Blood tokens equal to its toughness instead.*\n\n   - **All creatures you control are Angels (due to Maskwood Nexus), so you always get a number of Blood tokens equal to the sacrificed creature's toughness.**\n   - **\"Another creature\" requirement:** You can loop with any other creature (including tokens generated by Bishop of Wings, see below).\n\n4. **The creature dies:**\n   - **Bishop of Wings** \"Angel dies\" trigger:  \n     > *Whenever an Angel you control dies, create a 1/1 white Spirit creature token with flying.*\n\n   - **Due to Maskwood Nexus, every creature you control is an Angel**, so the creature you sacrificed triggers Bishop of Wings.  \n   - You create a 1/1 white Spirit creature token with flying.\n\n5. **Spirit token enters the battlefield:**\n   - **Due to Maskwood Nexus, this Spirit is also an Angel.**\n   - **Bishop of Wings** \"Angel enters\" trigger:\n     > *Whenever an Angel you control enters the battlefield, you gain 4 life.*\n\n   - You gain 4 life.\n\n6. **Repeatable loop:** Now, you have a new 1/1 Spirit token (which is every creature type). If you have not used the Spirit token yet, you can now activate Shilgengar again, sacrificing that Spirit to restart Steps 3–5.\n\n---\n\n## What the Combo Actually Produces\n\n**With only these three cards and at least one additional creature:**\n- **You can repeat:**\n  - Activate Shilgengar, sacrificing a creature (including tokens newly created by the combo).\n  - Generate Blood tokens equal to sacrificed creature's toughness.\n  - Each time you sacrifice a creature, Bishop of Wings generates a 1/1 Spirit (also an Angel) token.\n  - Each time the Spirit enters, you gain 4 life.\n\n**Result:**  \n- **Infinite Blood tokens** (as long as you can keep sacrificing the tokens to Shilgengar, since each new Spirit can be the sacrificial fodder).\n- **Infinite creature sacrifice triggers** (death triggers, LTB).\n- **Infinite creature ETB triggers** (from the Spirit tokens entering).\n- **Infinite lifegain (4 life per loop)**.\n- **Infinite Spirit tokens** (created and used as the loop pieces, so not accumulating unless you stop the loop before sacrificing the latest Spirit token).\n\n---\n\n## Rules and Rulings\n\n**Maskwood Nexus:**  \n> Creatures you control are every creature type. (Oracle)\n\n**Bishop of Wings:**  \n> If an effect (such as that of Arcane Adaptation) causes Bishop of Wings to be an Angel, its first ability triggers as it enters the battlefield and its last ability triggers as it dies.  \n> If Bishop of Wings dies at the same time as one or more Angels you control, its last ability triggers for each of those Angels. (WotC Rulings)\n\n**Shilgengar, Sire of Famine:**  \n> If you sacrificed an Angel to pay the cost of Shilgengar’s second ability, use the toughness of that Angel as it last existed on the battlefield to determine how many Blood tokens to create. (WotC Ruling)\n\nBecause *every creature is an Angel* with Maskwood Nexus, every sacrifice to Shilgengar's ability treats the sacrificed creature as an Angel for both Bishop of Wings and Shilgengar.\n\n---\n\n## Caveats\n\n- You **must control at least one \"other\" creature** to start the chain.\n- **You must be able to activate Shilgengar’s ability repeatedly** (i.e., the only limit is \"Do you have a creature to sacrifice?\").\n- If you *choose not to sacrifice the Spirit token next* (and instead use other creatures), you can accumulate Spirit tokens.\n\n---\n\n### Community Combo Reference\n\nThis matches Commander Spellbook combo #643-4302-5686:\n> Activate Shilgengar by sacrificing another creature.  \n> When the creature dies, Bishop of Wings' second ability triggers, creating a 1/1 Spirit creature token.  \n> When the Spirit token enters the battlefield as an Angel due to Maskwood Nexus, Bishop of Wings' first ability triggers, causing you to gain 4 life.  \n> Resolve the Shilgengar ability.  \n> Repeat.\n\n---\n\n### **Summary Table:**\n\n| Card                  | What it does in the combo                      |\n|-----------------------|------------------------------------------------|\n| Shilgengar, Sire of Famine | Sacrifice another creature to create Blood tokens (by toughness of that creature due to being an Angel) |\n| Maskwood Nexus            | Makes all your creatures every creature type (so all are Angels for both Shilgengar & Bishop of Wings) |\n| Bishop of Wings           | Triggers when an Angel dies (creates Spirit token), and when an Angel enters (gain 4 life). |\n\n---\n\n### **Outcome:**  \n**Infinite Blood tokens, infinite 1/1 Spirit tokens (created and immediately reused), infinite lifegain, infinite ETB/LTB/sacrifice/death triggers.**\n\n**No additional cards are required for this result, but outside payoffs could convert these infinites into a win condition.**",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant correctly identified the cards as a combo, accurately described the infinite effects produced, and explained the loop's steps in detail matching the ground truth."
+      }
+    },
+    {
+      "caseId": "combo-08",
+      "variantId": "1479-2638-2841-3897",
+      "band": "mid",
+      "popularity": 671,
+      "cardNames": [
+        "Terramorphic Expanse",
+        "Kodama of the East Tree",
+        "Tireless Tracker",
+        "Ghost Town"
+      ],
+      "groundTruth": {
+        "steps": "Fetch a land using Terramorphic Expanse.\nWhen the fetched land enters, Tireless Tracker and Kodama trigger.\nResolve the Kodama trigger, putting Ghost Town from your hand onto the battlefield.\nWhen Ghost Town enters, Kodama and Tireless Tracker trigger.\nHolding priority, activate Ghost Town's first abiltiy by tapping it, adding {C}.\nActivate Ghost Town's second ability by paying {0}, returning it from the battlefield to your hand.\nResolve the Tireless Tracker from step 4, creating a token.\nWhen the token enters, Kodama triggers, putting Ghost Town from your hand onto the battlefield.\nWhen Ghost Town enters, Tireless Tracker triggers.\nRepeat from step 5.",
+        "producedEffects": [
+          "Infinite artifact tokens",
+          "Infinite card draw",
+          "Infinite Clue tokens",
+          "Infinite colorless mana",
+          "Infinite draw triggers",
+          "Infinite landfall triggers"
+        ],
+        "notablePrerequisites": ""
+      },
+      "diagnosis": {
+        "comboSectionChars": 8267,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "707.5",
+            "title": "Copying Objects",
+            "score": 89.02596934276127
+          },
+          {
+            "ruleId": "201.5b",
+            "title": "Name",
+            "score": 81.96018994389584
+          },
+          {
+            "ruleId": "118.12",
+            "title": "Costs",
+            "score": 80.16411613183189
+          },
+          {
+            "ruleId": "702.24a",
+            "title": "Keyword Abilities",
+            "score": 78.4171841371248
+          },
+          {
+            "ruleId": "111.10u",
+            "title": "Tokens",
+            "score": 77.50992734187001
+          }
+        ],
+        "supplementalRunnerUp": [
+          "201.5a",
+          "712.21c",
+          "111.10v",
+          "702.71a",
+          "122.1b",
+          "603.12",
+          "702.32a",
+          "707.10",
+          "702.152a",
+          "702.63a"
+        ],
+        "supplementalCandidatesScored": 2405,
+        "supplementalQueryText": "How do these cards combo together? {T}, Sacrifice this land: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle. Land Reach Whenever another permanent you control enters, if it wasn't put onto the battlefield with this ability, you may put a permanent card with equal or lesser mana value from your hand onto the battlefield. Partner (You can have two commanders if both have partner.) Legendary Creature — Spirit Landfall — Whenever a land you control enters, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\") Whenever you sacrifice a Clue, put a +1/+1 counter on this creature. Creature — Human Scout {T}: Add {C}. {0}: Return this land to its owner's hand. Activate only if it's not your turn. Land",
+        "rulingsIncluded": [
+          {
+            "name": "Kodama of the East Tree",
+            "rulingCount": 8
+          },
+          {
+            "name": "Tireless Tracker",
+            "rulingCount": 11
+          }
+        ],
+        "rulingsSkippedNoMatch": [
+          "Terramorphic Expanse",
+          "Ghost Town"
+        ],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "**Summary:**  \nWith all four cards—**Terramorphic Expanse (battlefield), Kodama of the East Tree (battlefield), Tireless Tracker (battlefield), and Ghost Town (hand)**—plus the condition that it is not your turn, you can generate an *infinite loop* resulting in infinite Clue tokens (artifacts), infinite Tireless Tracker triggers (+1/+1 counters), potentially infinite card draw, and infinite landfall triggers.\n\n---\n\n### **How the Combo Works (Step by Step):**\n\n#### **Initial Setup**\n- Terramorphic Expanse is on the battlefield.\n- Kodama of the East Tree and Tireless Tracker are on the battlefield.\n- Ghost Town is in your hand.\n- It is not your turn (important for Ghost Town's ability).\n- You must have at least one basic land in your library to fetch.\n\n#### **Loop Begins**\n\n1. **Activate Terramorphic Expanse**  \n   - You activate and sacrifice it ({T}, sacrifice: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle).\n   - This triggers \"landfall\" (for Tireless Tracker) and \"whenever another permanent enters\" (for Kodama of the East Tree).\n\n2. **Land Enters → Triggers**  \n   - The basic land enters tapped.\n   - Two triggers now happen:\n     - Tireless Tracker's landfall: Investigate (make a Clue token).\n     - Kodama of the East Tree: \"Whenever another permanent you control enters, if it wasn't put onto the battlefield with this ability, you may put a permanent card with equal or lesser mana value from your hand onto the battlefield.\"\n   - You control the order you put these triggers on the stack; the relevant point is both will trigger.\n\n3. **Resolve Kodama's Trigger—Put Ghost Town Onto the Battlefield**  \n   - Kodama sees that a 0-mana permanent (land) entered, so you can put a permanent from hand with mana value 0 or less: Ghost Town.\n   - Put Ghost Town from hand onto the battlefield.\n\n4. **Ghost Town Enters → Triggers**  \n   - Ghost Town entering again triggers both Tireless Tracker (landfall: investigate) and Kodama (another permanent entered).\n   - Both triggers go on the stack (order is up to you).\n   - **Optionally, hold priority** and tap Ghost Town for {C} before it leaves.\n\n5. **Return Ghost Town to Your Hand**  \n   - Because it is not your turn, you may activate Ghost Town's second ability: {0}: Return Ghost Town to its owner's hand (this is only allowed if it is not your turn, a requirement met here).\n   - You can tap Ghost Town for {C} before bouncing it, generating infinite colorless mana in this loop.\n\n6. **Resolve Tireless Tracker's Investigate Trigger(s)**  \n   - Each land that entered (both the fetched basic land and Ghost Town) means Tireless Tracker's landfall ability triggers, so you create two Clue tokens per iteration.\n\n7. **Clue Token(s) Enter → Kodama Triggers**  \n   - For each Clue token, since it's a 0-mana permanent not put there by Kodama, Kodama will trigger again.\n   - Each time, you may put Ghost Town from your hand onto the battlefield—restarting steps 4–7.\n   - (Because Kodama cares about another permanent entering, and each new Clue or Ghost Town does this, you keep getting new triggers.)\n\n8. **Repeat**  \n   - Each time Ghost Town returns to hand, you can re-put it onto the battlefield with a Kodama trigger from a new Clue token entering under your control.\n   - This creates a loop: every Clue token entering lets you put Ghost Town in, which makes more Tireless Tracker triggers, which makes more Clues, etc.\n\n#### **What is produced?**\n- **Infinite Clue artifact tokens** (with \"{2}, Sacrifice: Draw a card\")\n- **Infinite landfall triggers** for Tireless Tracker\n- **Infinite +1/+1 counters** on Tireless Tracker (for every Clue you sacrifice during/after the loop)\n- **Infinite colorless mana** (as you can tap Ghost Town during each loop)\n- **Potential infinite card draw** (if you choose to spend the mana to crack Clues as the loop progresses, though this is limited by colored mana, if needed)\n\n---\n\n### **Relevant Rules/Oracle Excerpts**\n\n**Kodama of the East Tree:**\n> Whenever another permanent you control enters the battlefield, if it wasn't put onto the battlefield with this ability, you may put a permanent card with equal or lesser mana value from your hand onto the battlefield.\n\n**Tireless Tracker:**\n> Landfall — Whenever a land enters the battlefield under your control, investigate.  \n> Whenever you sacrifice a Clue, put a +1/+1 counter on Tireless Tracker.\n\n**Ghost Town:**\n> {0}: Return Ghost Town to its owner's hand. Activate only if it's not your turn.\n\n**Stack Resolution:**\n> \"Whenever a land you control enters, each landfall ability of the permanents you control will trigger. You can put them on the stack in any order.\"  \n> — Tireless Tracker official ruling, 2024-11-08\n\n---\n\n### **Why This is Infinite**\n- Each \"permanent entered, Kodama trigger\" allows Ghost Town to be put back onto the field.\n- Each \"land entered, Tireless Tracker trigger\" lets you investigate for a Clue, which re-triggers Kodama.\n- Returning Ghost Town to your hand (and optionally tapping it for {C}) \"resets\" the engine for another iteration.\n- There is no \"once per turn\" limitation on these triggers or abilities.\n\n---\n\n### **Known Combo (Community Reference)**\nFrom Commander Spellbook (Combo #1479-2638-2841-3897):  \n> \"Fetch a land using Terramorphic Expanse. When the fetched land enters, Tireless Tracker and Kodama trigger. Resolve the Kodama trigger, putting Ghost Town from your hand onto the battlefield. When Ghost Town enters, Kodama and Tireless Tracker trigger. Holding priority, activate Ghost Town's first abiltiy by tapping it, adding {C}. Activate Ghost Town's second ability by paying {0}, returning it from the battlefield to your hand. Resolve the Tireless Tracker from step 4, creating a token. When the token enters, Kodama triggers, putting Ghost Town from your hand onto the battlefield. When Ghost Town enters, Tireless Tracker triggers. Repeat from step 5.\"\n\n---\n\n## **Conclusion**\nWith these four cards in the described state, you can create **infinite Clues**, infinite colorless mana, infinite card draw (if you crack Clues), infinite Tireless Tracker triggers, and infinite permanent entries for any other triggers you may have.  \n**You must be able to repeatedly put Ghost Town onto the battlefield from your hand, bounce it, and have enough lands in your library for the initial fetch, but after that, the loop is limited only by your willingness to continue.**\n\nIf you want details on how the stack would look in a particular moment, please provide a stack snapshot. Otherwise, this is the overview per the provided context.",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant correctly identified the cards as a combo and accurately detailed the infinite loop steps and resulting effects that match the ground truth exactly."
+      }
+    },
+    {
+      "caseId": "combo-09",
+      "variantId": "573-1479-2374",
+      "band": "mid",
+      "popularity": 310,
+      "cardNames": [
+        "Maja, Bretagard Protector",
+        "Gruul Turf",
+        "Kodama of the East Tree"
+      ],
+      "groundTruth": {
+        "steps": "Play Gruul Turf.\nWhen Gruul Turf enters the battlefield, it, Maja, and Kodama of the East Tree trigger.\nResolve the Kodama of the East Tree trigger, choosing not to put anything from your hand onto the battlefield.\nResolve the Gruul Turf trigger, returning it from the battlefield to your hand.\nResolve the Maja trigger, creating a token.\nWhen the token enters the battlefield, Kodama triggers, putting Gruul Turf from your hand onto the battlefield.\nWhen Gruul Turf enters the battlefield, it and Maja trigger.\nRepeat from step 4.",
+        "producedEffects": [
+          "Infinite creature ETB",
+          "Infinite creature tokens",
+          "Infinite landfall triggers"
+        ],
+        "notablePrerequisites": "You are able to play a land this turn."
+      },
+      "diagnosis": {
+        "comboSectionChars": 6767,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "201.5b",
+            "title": "Name",
+            "score": 49.593744762327354
+          },
+          {
+            "ruleId": "702.47c",
+            "title": "Keyword Abilities",
+            "score": 49.50604920963237
+          },
+          {
+            "ruleId": "118.12",
+            "title": "Costs",
+            "score": 47.023108378217934
+          },
+          {
+            "ruleId": "122.1b",
+            "title": "Counters",
+            "score": 44.78853084023886
+          },
+          {
+            "ruleId": "201.5a",
+            "title": "Name",
+            "score": 41.441309937621554
+          }
+        ],
+        "supplementalRunnerUp": [
+          "702.17c",
+          "603.10a",
+          "616.1f",
+          "712.21c",
+          "702.49a",
+          "205.3m",
+          "702.17",
+          "702.17a",
+          "613.5",
+          "111.4"
+        ],
+        "supplementalCandidatesScored": 2293,
+        "supplementalQueryText": "How do these cards combo together? Other creatures you control get +1/+1. Landfall — Whenever a land you control enters, create a 1/1 white Human Warrior creature token. Legendary Creature — Human Warrior This land enters tapped. When this land enters, return a land you control to its owner's hand. {T}: Add {R}{G}. Land Reach Whenever another permanent you control enters, if it wasn't put onto the battlefield with this ability, you may put a permanent card with equal or lesser mana value from your hand onto the battlefield. Partner (You can have two commanders if both have partner.) Legendary Creature — Spirit",
+        "rulingsIncluded": [
+          {
+            "name": "Maja, Bretagard Protector",
+            "rulingCount": 4
+          },
+          {
+            "name": "Gruul Turf",
+            "rulingCount": 1
+          },
+          {
+            "name": "Kodama of the East Tree",
+            "rulingCount": 8
+          }
+        ],
+        "rulingsSkippedNoMatch": [],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "Let’s explain how the **Maja, Bretagard Protector + Gruul Turf + Kodama of the East Tree** combo works, using only the information specific to those cards and stack/trigger rules.\n\n## What you need\n- **Maja, Bretagard Protector** on the battlefield  \n- **Kodama of the East Tree** on the battlefield  \n- **Gruul Turf** in your hand\n- You are allowed to play a land this turn\n\n---\n\n## Step-by-Step Breakdown\n\n### 1. Play Gruul Turf from your hand\n\n- Gruul Turf enters the battlefield tapped.\n- Its own \"When this enters...\" ability triggers.\n- **Maja’s Landfall** ability triggers (\"Whenever a land you control enters...\").\n- **Kodama’s** ability triggers (\"Whenever another permanent you control enters...\").\n\n#### So, the stack gets (from bottom to top):\n1. Gruul Turf’s \"When this land enters, return a land you control to its owner's hand.\"\n2. Maja’s landfall (create a 1/1 white Human Warrior token)\n3. Kodama’s trigger (may put a permanent card of equal/lesser mana value from your hand onto the battlefield)\n\n### 2. Resolve triggers\n\n**Kodama’s trigger**  \n- You may put a permanent card from your hand onto the battlefield.  \n- If you choose \"no,\" nothing happens—standard play for this combo.\n\n**Gruul Turf’s trigger**  \n- You must return a land you control to your hand.  \n- You can choose Gruul Turf itself (since it’s legally on the battlefield).\n\nNow Gruul Turf goes back to your hand.\n\n**Maja’s Landfall**  \n- You create a 1/1 white Human Warrior token.\n- When this token enters, **Kodama’s** ability triggers again:  \n  - Because the token’s mana value (0) ≤ Gruul Turf’s (0), you may put Gruul Turf from your hand back onto the battlefield.\n\n### 3. Repeat\n\n- Whenever you put Gruul Turf back onto the battlefield this way, all the triggers happen again:  \n  - Maja’s landfall, Gruul Turf’s \"bounce a land,\" and Kodama’s trigger.\n- Each time through, you can always put Gruul Turf onto the field (via Kodama), then bounce it (via Gruul Turf), then create another 1/1 (via Maja).\n\n**You can continually loop these steps:**\n- Each loop, you get another 1/1 creature token (powered up by Maja’s +1/+1 to other creatures!)  \n- Technically, this gives you infinite landfall triggers, infinite 1/1 tokens, and infinite creature ETBs.\n\n---\n\n## Rules Support\n\n- **\"Landfall\":** *Whenever a land you control enters…*, triggers every time you put Gruul Turf into play.\n- **Kodama:** *Whenever another permanent you control enters, if it wasn't put on the battlefield with this ability, you may put a permanent card with equal or lesser mana value from your hand onto the battlefield.*\n  - Each 1/1 token allows you to re-play Gruul Turf from hand (because it's in your hand from the bounce, and mana value is valid).\n- **Gruul Turf:** *When this land enters, return a land you control to its owner’s hand.*  \n  - Lets you pick itself specifically, causing endless bounces as long as you have a legal land play.\n\n---\n\n## Summary\n\n**With these three cards and a land play for the turn, you can create infinite 1/1 white Human Warrior creature tokens (pumped to 2/2s by Maja), infinite landfall triggers, and infinite permanent ETBs.**  \nNo additional pieces are required for this result.\n\nLet me know if you want a step-by-step stack order for each loop, or clarification about a specific interaction!",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant correctly identified the combo, stated the infinite tokens and triggers as the payoff, and accurately explained the step-by-step loop including the proper order and interactions of triggers matching the labeled ground truth."
+      }
+    },
+    {
+      "caseId": "combo-10",
+      "variantId": "1025-1948-4431",
+      "band": "mid",
+      "popularity": 558,
+      "cardNames": [
+        "Tel-Jilad Stylus",
+        "Stasis",
+        "Zur the Enchanter"
+      ],
+      "groundTruth": {
+        "steps": "Declare Zur as an attacker.\nZur triggers, causing you to search your library for Stasis and put it onto the battlefield.\nDuring the end step prior to your turn, activate Tel-Jilad Stylus by tapping it, putting Stasis on the bottom of your library from the battlefield.\nRepeat.",
+        "producedEffects": [
+          "Lock",
+          "Opponents skip their untap steps"
+        ],
+        "notablePrerequisites": "Zur does not have summoning sickness and cannot be blocked and killed by an opponent."
+      },
+      "diagnosis": {
+        "comboSectionChars": 5522,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "702.71a",
+            "title": "Keyword Abilities",
+            "score": 61.47046598089543
+          },
+          {
+            "ruleId": "111.10u",
+            "title": "Tokens",
+            "score": 60.1083159243356
+          },
+          {
+            "ruleId": "702.24a",
+            "title": "Keyword Abilities",
+            "score": 57.267143582006604
+          },
+          {
+            "ruleId": "608.2d",
+            "title": "Resolving Spells and Abilities",
+            "score": 55.02525254029477
+          },
+          {
+            "ruleId": "722.3c",
+            "title": "Preparation Cards",
+            "score": 55.00627953594299
+          }
+        ],
+        "supplementalRunnerUp": [
+          "702.1c",
+          "118.12",
+          "707.10",
+          "702.30a",
+          "707.5",
+          "800.4a",
+          "613.9",
+          "601.2h",
+          "702.152a",
+          "903.4"
+        ],
+        "supplementalCandidatesScored": 2102,
+        "supplementalQueryText": "How do these cards combo together? {T}: Put target permanent you own on the bottom of your library. Artifact Players skip their untap steps. At the beginning of your upkeep, sacrifice this enchantment unless you pay {U}. Enchantment Flying Whenever Zur attacks, you may search your library for an enchantment card with mana value 3 or less, put it onto the battlefield, then shuffle. Legendary Creature — Human Wizard",
+        "rulingsIncluded": [
+          {
+            "name": "Tel-Jilad Stylus",
+            "rulingCount": 4
+          },
+          {
+            "name": "Stasis",
+            "rulingCount": 2
+          },
+          {
+            "name": "Zur the Enchanter",
+            "rulingCount": 1
+          }
+        ],
+        "rulingsSkippedNoMatch": [],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "### Combo Explanation: Zur the Enchanter + Stasis + Tel-Jilad Stylus\n\n**The core idea:**  \nUse Zur to repeatedly fetch Stasis, lock opponents out of untap steps, and use Tel-Jilad Stylus to recycle Stasis so Zur can fetch it again each turn.\n\nLet’s break down the steps, using only the context provided (and resolving everything by strict stack and state rules):\n\n---\n\n#### 1. Core Card Functionality\n\n- **Zur the Enchanter:**  \n  “Whenever Zur attacks, you may search your library for an enchantment card with mana value 3 or less, put it onto the battlefield, then shuffle.”\n- **Stasis:**  \n  “Players skip their untap steps. At the beginning of your upkeep, sacrifice this enchantment unless you pay {U}.”\n- **Tel-Jilad Stylus:**  \n  “{T}: Put target permanent you own on the bottom of your library.”\n\n---\n\n#### 2. How the Combo Functions (with Steps)\n\n**A. On your turn, in your combat phase:**\n\n- *Declare Zur as an attacker.*  \n  On attack, Zur’s triggered ability goes on the stack.\n\n- *Zur’s trigger resolves:*  \n  You search your library for Stasis (mana value 2), and put it directly onto the battlefield. You then shuffle your library.\n\n- *Stasis is now in play.*\n  - Stasis’ static ability means everyone will skip their untap steps—including you and your opponents.\n\n**B. Upkeep (on your next turn):**\n\n- *At beginning of your upkeep, Stasis triggers:*  \n  “At the beginning of your upkeep, sacrifice this enchantment unless you pay {U}.”  \n  - You can pay {U} to keep Stasis, or allow it to be sacrificed. (For the lock, you’d usually not pay and let it be sacrificed.)\n\n**C. The Recycling — Tel-Jilad Stylus Reset**\n\n- **Key trick:**  \n  Before your turn, *at the end step prior to your turn*, you activate Tel-Jilad Stylus ({T}: ability) targeting Stasis:\n  - Tap Tel-Jilad Stylus, put Stasis (which you own) on the bottom of your library.\n  - Official ruling: “Tel-Jilad Stylus’s ability can put tokens on the bottom of your library (where they then cease to exist).” For cards, the card itself goes to the bottom. (Relevant as Stasis is a card.)\n\n**D. Repeat:**\n\n- *On your next combat, declare Zur as an attacker again.*\n    - Zur finds Stasis (now on the bottom of your library) and puts it immediately onto the battlefield.\n    - Stasis starts locking down untap steps again.\n    - Repeat the Stylus step every cycle before your turn so you can always re-fetch Stasis with Zur every turn.\n\n---\n\n### Stack/Timing/Zone Considerations\n\n- **Why does this work?**\n    - *You always have a Stasis to fetch with Zur, because you keep returning it to your library with Tel-Jilad Stylus before you lose it to its cumulative upkeep.*\n    - *Stasis on the battlefield keeps everyone from ever untapping (unless they use effects outside the untap step).*\n- **What does it lock?**\n    - *Players—including you—skip their untap steps. Most decks are crippled by this, as they cannot untap crucial permanents like lands and creatures.*\n- **Risks and requirements:**\n    - *Zur must survive and be able to attack each turn (e.g., no summoning sickness and no way for opponents to kill him in combat).*\n    - *You must have Stasis in your library to fetch; hence, the Stylus loop.*\n    - *You need to be able to activate Tel-Jilad Stylus each turn (keep it untapped, have no Stasis-shutdown effects on it).*\n\n---\n\n### Summary Table\n\n| Phase                         | Action                                              | Zone / Stack                |\n|-------------------------------|----------------------------------------------------|-----------------------------|\n| Combat (each turn)            | Declare Zur as attacker: trigger on stack           | stack: Zur's ability        |\n| Combat -> resolves            | Put Stasis into play, shuffle                       | battlefield: Stasis         |\n| End Step before your turn     | Tap Stylus, put Stasis on bottom of library         | library: Stasis             |\n| Next upkeep                   | (If Stasis survived), its upkeep trigger resolves   | stack: Stasis trigger       |\n| Next combat                   | Zur gets Stasis again, lock resumes                 | repeat                      |\n\n---\n\n### Relevant Rule Texts\n\nFrom the **official rules** and card rulings above:\n\n- “When a spell is cast, the physical card is put on the stack (see rule 601.2a). When an ability is activated or triggers, it goes on top of the stack without any card associated with it (see rules 602.2a and 603.3).”\n- Tel-Jilad Stylus: \"Tel-Jilad Stylus’s ability can put tokens on the bottom of your library (where they then cease to exist).\"\n- Zur: \"Whenever Zur attacks, you may search your library for an enchantment card with mana value 3 or less, put it onto the battlefield, then shuffle.\"\n- Stasis: \"Players skip their untap steps.\"\n\n---\n\n## **Summary**\n\n**This combo uses Zur to repeatedly put Stasis onto the battlefield every turn (with his attack trigger), keeping everyone’s permanents tapped. Each turn, you return Stasis to your library with Tel-Jilad Stylus before you sacrifice it, so Zur can fetch it again and lock your opponents out of untapping forever.**\n\n**If you need step-by-step stack details for a particular turn sequence, ask with the stack/phase details.**",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant correctly identified the combo and payoff of locking opponents' untap steps, and detailed the correct loop steps involving Zur attacking to fetch Stasis, using Tel-Jilad Stylus to return Stasis to the library, and repeating the process each turn."
+      }
+    },
+    {
+      "caseId": "combo-11",
+      "variantId": "5147-5170-6094-6132",
+      "band": "low",
+      "popularity": 7,
+      "cardNames": [
+        "Metamorphosis Fanatic",
+        "Vengeful Bloodwitch",
+        "Junji, the Midnight Sky",
+        "Goblin Bombardment"
+      ],
+      "groundTruth": {
+        "steps": "Activate Goblin Bombardment by sacrificing Metamorphosis Fanatic.\nWhen Metamorphosis Fanatic dies, Vengeful Bloodwitch triggers, causing you to gain 1 life and target opponent to lose 1 life.\nResolve the Goblin Bombardment ability.\nActivate Goblin Bombardment by sacrificing Junji.\nWhen Junji dies, it and Vengeful Bloodwitch trigger.\nResolve the Vengeful Bloodwitch trigger, causing you to gain 1 life and target opponent to lose 1 life.\nResolve the Junji trigger, returning Metamorphosis Fanatic from your graveyard to the battlefield and causing you to lose 2 life.\nWhen Metamorphosis Fanatic enters, it triggers, returning Junji from your graveyard to the battlefield.\nResolve the Goblin Bombardment ability.\nRepeat.",
+        "producedEffects": [
+          "Infinite creature ETB",
+          "Infinite creature LTB",
+          "Infinite creature sacrifice triggers",
+          "Infinite damage",
+          "Infinite death triggers",
+          "Infinite lifegain triggers",
+          "Infinite lifeloss"
+        ],
+        "notablePrerequisites": ""
+      },
+      "diagnosis": {
+        "comboSectionChars": 7987,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "122.1b",
+            "title": "Counters",
+            "score": 141.60781861266753
+          },
+          {
+            "ruleId": "707.10",
+            "title": "Copying Objects",
+            "score": 84.53289113364062
+          },
+          {
+            "ruleId": "702.15e",
+            "title": "Keyword Abilities",
+            "score": 83.75278266102862
+          },
+          {
+            "ruleId": "118.12",
+            "title": "Costs",
+            "score": 83.60077776000047
+          },
+          {
+            "ruleId": "702.24a",
+            "title": "Keyword Abilities",
+            "score": 79.04224886118786
+          }
+        ],
+        "supplementalRunnerUp": [
+          "707.5",
+          "613.9",
+          "712.21c",
+          "201.5b",
+          "608.2d",
+          "120.4d",
+          "722.3c",
+          "603.12",
+          "201.5a",
+          "702.32a"
+        ],
+        "supplementalCandidatesScored": 2341,
+        "supplementalQueryText": "How do these cards combo together? Lifelink When this creature enters, return up to one target creature card from your graveyard to the battlefield with a lifelink counter on it. Miracle {1}{B} (You may cast this card for its miracle cost when you draw it if it's the first card you drew this turn.) Creature — Human Cleric Whenever this creature or another creature you control dies, target opponent loses 1 life and you gain 1 life. Creature — Vampire Warlock Flying, menace When Junji dies, choose one — • Each opponent discards two cards and loses 2 life. • Put target non-Dragon creature card from a graveyard onto the battlefield under your control. You lose 2 life. Legendary Creature — Dragon Spirit Sacrifice a creature: This enchantment deals 1 damage to any target. Enchantment",
+        "rulingsIncluded": [
+          {
+            "name": "Metamorphosis Fanatic",
+            "rulingCount": 11
+          },
+          {
+            "name": "Vengeful Bloodwitch",
+            "rulingCount": 1
+          }
+        ],
+        "rulingsSkippedNoMatch": [
+          "Junji, the Midnight Sky",
+          "Goblin Bombardment"
+        ],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "This grouping of cards enables an **infinite loop** when all are on the battlefield under your control, provided at least one opponent can legally be targeted by Vengeful Bloodwitch’s trigger.\n\n**Combo Pieces:**\n- **Metamorphosis Fanatic** (battlefield)\n- **Vengeful Bloodwitch** (battlefield)\n- **Junji, the Midnight Sky** (battlefield)\n- **Goblin Bombardment** (battlefield)\n\n### How the Combo Works\n\n#### The Loop\n\n1. **Sacrifice Metamorphosis Fanatic** to **Goblin Bombardment** (using its ability: “Sacrifice a creature: This enchantment deals 1 damage to any target.”).\n    - Metamorphosis Fanatic dies.\n    - Vengeful Bloodwitch triggers: “Whenever this creature or another creature you control dies, target opponent loses 1 life and you gain 1 life.”\n    - Stack: [Bombardment ability (“deal 1 to X”)] -> [Vengeful Bloodwitch trigger (“drain 1 opponent, gain 1”)]\n2. **Resolve triggers/effects as they come up (stack order).**\n    - Bombardment's damage can go to any target (possibly opponent, possibly a creature, etc.).\n    - Bloodwitch’s trigger drains and gains you 1 life each.\n3. **Sacrifice Junji, the Midnight Sky** to Goblin Bombardment.\n    - Junji dies.\n    - Vengeful Bloodwitch triggers (for Junji): drain/gain 1 more.\n    - Junji’s death trigger (“When Junji dies, choose one …”), choose: \"Put target non-Dragon creature card from a graveyard onto the battlefield under your control. You lose 2 life.\"\n        - Target your **Metamorphosis Fanatic** now in the graveyard. (Assuming no opposing graveyard has a better option.)\n        - You will lose 2 life when it resolves (but see below).\n4. **Return Metamorphosis Fanatic** from graveyard to battlefield (with Junji’s death trigger).\n    - Metamorphosis Fanatic enters.\n    - It **triggers**: “When this creature enters, return up to one target creature card from your graveyard to the battlefield with a lifelink counter on it.”\n        - Its own trigger targets Junji, returning Junji from your graveyard to the battlefield, now with a **lifelink counter**.\n5. **You have your original battlefield state restored** (all four combo pieces in play, but Junji now has a lifelink counter if it didn’t previously), and you’ve repeated: \n    - **Metamorphosis Fanatic has died**\n    - **Junji has died**\n    - **Junji's death trigger went off**\n    - **Vengeful Bloodwitch triggered twice (once for each death)**\n    - **Goblin Bombardment has triggered twice**\n\n#### **Repeat**\n\nYou can now perform these exact steps again and again as long as you're able to keep resolving Junji’s death trigger with the \"return non-Dragon creature\" mode. Each loop:\n\n- Drains target opponent for 2 life (from Bloodwitch triggers)\n- You gain 2 life (from Bloodwitch) but lose 2 life (from Junji’s mode), so your life total remains neutral per loop (unless Junji gets lifelink, see note).\n- Deals 2 additional damage via Goblin Bombardment to any targets (likely aiming at an opponent to win).\n- Both Metamorphosis Fanatic and Junji repeatedly enter and leave play, enabling additional enter/leave battlefield/dies triggers from any other cards you might control.\n\n#### **Lifelink Note**\nIf at any point you return Junji with **Metamorphosis Fanatic’s \"with a lifelink counter\"** trigger (which you will the first time), Junji will have **lifelink** the next loop. Any further sacrifices of Junji will cause Bombardment to deal 1 damage with lifelink, so you’ll start gaining life (and possibly snowball if other related triggers exist).\n\n**Key Loop Features:**\n- **Infinite damage**: Goblin Bombardment’s ability lets you direct any number of 1-damage pings to any legal targets for as long as you repeat the loop.\n- **Infinite life drain/gain**: Bloodwitch triggers for each death event (twice per loop), draining and gaining 1 each time.\n- **Infinite creature ETB/LTB/death triggers**: Each loop includes two creatures dying (either could trigger other cards that care about death or entering/leaving play).\n\n### RULE BASIS\n\n- This all functions due to **repeatedly bringing back each piece just after it dies**, using each card’s enter/dies triggers and the sacrifice outlet.\n\nFrom **GAME RULES 603.2, 603.3**: Triggered abilities such as Bloodwitch and Junji’s dies triggers get put on the stack automatically as soon as their event happens, and resolve in last-in, first-out order.\n\nFrom **400.2 and 400.7**: Zone changes mean that a returning card is a new object, so this process can repeat infinitely as long as you don’t get interrupted and the necessary cards are in the right zones.\n\n### SUMMARY\n\n**With Goblin Bombardment, Metamorphosis Fanatic, Vengeful Bloodwitch, and Junji, the Midnight Sky all on the battlefield under your control, you can:**\n- Repeatedly sacrifice Fanatic and Junji,\n- Reanimate each other with Junji/Fanatic’s triggers,\n- Drain opponents for as much life as you like or ping any target for infinite damage through Bombardment,\n- All while infinitely looping ETB/death triggers.\n\n**This is a full infinite combo.** If nothing interferes, you can win the game by dealing lethal damage or draining all opponents’ life.",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant accurately identified the combo, explained the infinite loop with correct card interactions and triggers, and matched the resulting effects and step-by-step mechanism as per the ground truth."
+      }
+    },
+    {
+      "caseId": "combo-12",
+      "variantId": "1283-2232-2608",
+      "band": "low",
+      "popularity": 15,
+      "cardNames": [
+        "Cloudstone Curio",
+        "Chromatic Orrery",
+        "Derevi, Empyrial Tactician"
+      ],
+      "groundTruth": {
+        "steps": "Activate Chromatic Orrery's first ability by tapping it, adding {5}.\nCast a nonartifact creature card from your hand by paying at most {2}.\nWhen the creature enters the battlefield, Cloudstone Curio triggers, returning Derevi from the battlefield to your hand.\nCast Derevi by paying {3}.\nWhen Derevi enters the battlefield, it and Cloudstone Curio trigger.\nResolve the Cloudstone Curio trigger, returning the creature cast in step 2 from the battlefield to your hand.\nResolve the Derevi trigger, untapping Cloudstone Curio.\nRepeat.",
+        "producedEffects": [
+          "Infinite card draw",
+          "Infinite colored mana",
+          "Infinite colorless mana",
+          "Infinite creature ETB",
+          "Infinite creature LTB",
+          "Infinite draw triggers",
+          "Infinite mana permanents you control can produce",
+          "Infinite storm count"
+        ],
+        "notablePrerequisites": "You have a nonartifact creature card in hand that can be cast using two mana or less."
+      },
+      "diagnosis": {
+        "comboSectionChars": 6186,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "613.9",
+            "title": "Interaction of Continuous Effects",
+            "score": 56.92044538125767
+          },
+          {
+            "ruleId": "722.3c",
+            "title": "Preparation Cards",
+            "score": 54.63940576171864
+          },
+          {
+            "ruleId": "702.1c",
+            "title": "Keyword Abilities",
+            "score": 53.09525889259696
+          },
+          {
+            "ruleId": "712.21c",
+            "title": "Double-Faced Cards",
+            "score": 46.16431302615063
+          },
+          {
+            "ruleId": "509.1b",
+            "title": "Declare Blockers Step",
+            "score": 44.35978223400608
+          }
+        ],
+        "supplementalRunnerUp": [
+          "106.7",
+          "732.3",
+          "206.3a",
+          "118.12",
+          "607.5",
+          "700.5a",
+          "120.10",
+          "113.12",
+          "613.6",
+          "702.44c"
+        ],
+        "supplementalCandidatesScored": 2540,
+        "supplementalQueryText": "How do these cards combo together? Whenever a nonartifact permanent you control enters, you may return another permanent you control that shares a permanent type with it to its owner's hand. Artifact You may spend mana as though it were mana of any color. {T}: Add {C}{C}{C}{C}{C}. {5}, {T}: Draw a card for each color among permanents you control. Legendary Artifact Flying When Derevi enters and whenever a creature you control deals combat damage to a player, you may tap or untap target permanent. {1}{G}{W}{U}: Put Derevi onto the battlefield from the command zone. Legendary Creature — Bird Wizard",
+        "rulingsIncluded": [
+          {
+            "name": "Chromatic Orrery",
+            "rulingCount": 1
+          },
+          {
+            "name": "Derevi, Empyrial Tactician",
+            "rulingCount": 2
+          }
+        ],
+        "rulingsSkippedNoMatch": [
+          "Cloudstone Curio"
+        ],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "Let’s analyze how **Cloudstone Curio**, **Chromatic Orrery**, and **Derevi, Empyrial Tactician** can be combined for a combo, using only the provided rules, card text, and Commander Spellbook context.\n\n## Key Abilities\n- **Cloudstone Curio:**  \n  Triggers when a nonartifact permanent enters under your control; you may return another permanent you control of the same type to its owner's hand.\n\n- **Chromatic Orrery:**  \n  Lets you use mana as if it were any color; {T}: Add {C}{C}{C}{C}{C}; {5}, {T}: Draw up to 5 cards.\n\n- **Derevi, Empyrial Tactician:**  \n  Flying.  \n  Whenever Derevi enters the battlefield or a creature you control deals combat damage to a player, you may tap or untap target permanent.  \n  {1}{G}{W}{U}: Put Derevi from the command zone onto the battlefield.\n\n### Relevant Combo Prerequisite (from Spellbook):  \nYou need a nonartifact creature in hand (\"Creature A\") you can cast for {2} or less.\n\n---\n\n## Combo Loop Explanation\n\n1. **Make sure you have:**\n   - Cloudstone Curio, Chromatic Orrery, and Derevi on the battlefield.\n   - A nonartifact creature in hand you can cast for {2} or less.\n\n2. **Loop Steps:**\n   1. **Tap Chromatic Orrery:**  \n      Add {C}{C}{C}{C}{C} to your mana pool.\n   2. **Cast Creature A from hand for {2}:**  \n      Use mana from Chromatic Orrery (thanks to its \"any color\" clause). Creature A enters the battlefield.\n   3. **Cloudstone Curio triggers:**  \n      You may return **another creature you control** (e.g., Derevi) to your hand.\n   4. **Return Derevi to your hand.**\n   5. **Cast Derevi ({G}{W}{U} = 3 mana, using Orrery's any-color ability):**  \n      Derevi enters the battlefield.\n   6. **Cloudstone Curio triggers:**  \n      You may return another creature (Creature A) to your hand.\n   7. **Return Creature A to your hand.**\n   8. **Derevi's trigger (from entering):**  \n      You may untap Chromatic Orrery.\n   9. You are back at start—with all three cards as at the beginning but have \"reset\" your mana and triggers.\n\n3. **Repeat the loop:**  \n   - Each time, you net 0 or positive mana (depending on the actual casting cost of Creature A).  \n   - If Creature A is {1} or less to cast, you generate infinite mana.\n   - Every loop gives you:\n     - Infinite untap triggers\n     - Infinite enters/leaves triggers for both creature and Derevi\n     - Infinite draw if other cards reward draws on ETB, or you can cash out Chromatic Orrery's draw ability.\n     - Infinite storm count.\n\n**Reference (Commander Spellbook Excerpt):**\n> Activate Chromatic Orrery's first ability by tapping it, adding {5}.\n> Cast a nonartifact creature card from your hand by paying at most {2}.\n> When the creature enters the battlefield, Cloudstone Curio triggers, returning Derevi from the battlefield to your hand.\n> Cast Derevi by paying {3}.\n> When Derevi enters the battlefield, it and Cloudstone Curio trigger.\n> Resolve the Cloudstone Curio trigger, returning the creature cast in step 2 from the battlefield to your hand.\n> Resolve the Derevi trigger, untapping Cloudstone Curio.\n> Repeat.\n\n---\n\n## Resolution Order\n\n- Cloudstone Curio's trigger lets you bounce one to hand immediately as each enters. \n- Derevi's enter-the-battlefield trigger (untap) can target Chromatic Orrery immediately.\n- Mana engine is maintained by Orrery's ability to convert all mana to colored and untap.\n- As long as you have enough mana left over after casting both, loop is unbounded (\"infinite\").\n\n---\n\n## Key Rules Supporting This\n- Cloudstone Curio triggers each time relevant permanents enter (see \"Triggered Ability Basics\").\n- The stack resolves these triggers as they enter (see \"Stack and Priority\").\n- Derevi's untap can be aimed at Chromatic Orrery each time (per targeting rules).\n\n---\n\n## What You Get\n\n**If Creature A costs exactly 2:**  \n- Neutral on mana every cycle; you can do it as many times as you want.\n\n**If Creature A costs less than 2:**  \n- You go *infinite* on colored mana, colorless mana, ETB/LTB effects, untaps, storm, etc.\n\n**If you have card draw on cast or ETB, or want to use Chromatic Orrery's draw ability:**  \n- Infinite draw is possible.\n\n---\n\n## Summary Table\n\n| Step                | Action                                | Result                        |\n|---------------------|---------------------------------------|-------------------------------|\n| 1                   | Tap Orrery for {C}{C}{C}{C}{C}        | 5 mana pool                   |\n| 2                   | Cast cheap creature (≤{2})            | Creature ETB, Curio trigger   |\n| 3                   | Bounce Derevi to hand (Curio)         | Derevi hand, creature in play |\n| 4                   | Cast Derevi (pay {3})                 | Derevi ETB                    |\n| 5                   | Bounce creature to hand (Curio)       | Creature hand                 |\n| 6                   | Untap Orrery (Derevi trigger)         | Orrery untapped, repeatable   |\n\n---\n\n**In summary:**  \n**Derevi, Cloudstone Curio, Chromatic Orrery, and a cheap nonartifact creature form a loop that generates infinite mana, infinite ETB/LTB triggers, infinite Derevi untaps, and if you have the right payoffs, infinite card draw, storm, or other on-ETB/untap effects.**",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant clearly identified the combo, correctly stated the infinite mana and triggers payoff, and accurately explained the looping steps matching the ground truth."
+      }
+    },
+    {
+      "caseId": "combo-13",
+      "variantId": "5256-6132-6981",
+      "band": "low",
+      "popularity": 32,
+      "cardNames": [
+        "Metamorphosis Fanatic",
+        "Altar of Dementia",
+        "Perigee Beckoner"
+      ],
+      "groundTruth": {
+        "steps": "Cast Perigee Beckoner for its warp cost by paying {1}{B}.\nWhen Perigee Beckoner enters, it triggers, targeting Metamorphosis Fanatic.\nActivate Altar of Dementia by sacrificing Perigee Beckoner.\nActivate Altar of Dementia by sacrificing Metamorphosis Fanatic.\nWhen Metamorphosis Fanatic dies, it triggers, returning itself from your graveyard to the battlefield tapped.\nWhen Metamorphosis Fanatic enters, it triggers, returning Perigee Beckoner from your graveyard to the battlefield.\nWhen Perigee Beckoner enters, it triggers, targeting Metamorphosis Fanatic.\nResolve the Altar of Dementia ability from step 4.\nRepeat from step 3.",
+        "producedEffects": [
+          "Infinite creature ETB",
+          "Infinite creature LTB",
+          "Infinite creature sacrifice triggers",
+          "Infinite death triggers",
+          "Infinite mill",
+          "Infinite self-mill"
+        ],
+        "notablePrerequisites": ""
+      },
+      "diagnosis": {
+        "comboSectionChars": 6981,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "712.21c",
+            "title": "Double-Faced Cards",
+            "score": 110.40892185070126
+          },
+          {
+            "ruleId": "702.62a",
+            "title": "Keyword Abilities",
+            "score": 87.11843540649426
+          },
+          {
+            "ruleId": "702.24a",
+            "title": "Keyword Abilities",
+            "score": 85.20104627010862
+          },
+          {
+            "ruleId": "707.5",
+            "title": "Copying Objects",
+            "score": 84.83152893198385
+          },
+          {
+            "ruleId": "118.12",
+            "title": "Costs",
+            "score": 81.72613441430532
+          }
+        ],
+        "supplementalRunnerUp": [
+          "702.72a",
+          "613.5",
+          "702.141a",
+          "607.5",
+          "800.4d",
+          "701.66a",
+          "122.1b",
+          "702.15e",
+          "707.10",
+          "702.63a"
+        ],
+        "supplementalCandidatesScored": 2372,
+        "supplementalQueryText": "How do these cards combo together? Lifelink When this creature enters, return up to one target creature card from your graveyard to the battlefield with a lifelink counter on it. Miracle {1}{B} (You may cast this card for its miracle cost when you draw it if it's the first card you drew this turn.) Creature — Human Cleric Sacrifice a creature: Target player mills cards equal to the sacrificed creature's power. Artifact When this creature enters, until end of turn, another target creature you control gets +2/+0 and gains \"When this creature dies, return it to the battlefield tapped under its owner's control.\" Warp {1}{B} (You may cast this card from your hand for its warp cost. Exile this creature at the beginning of the next end step, then you may cast it from exile on a later turn.) Creature — Horror",
+        "rulingsIncluded": [
+          {
+            "name": "Metamorphosis Fanatic",
+            "rulingCount": 11
+          },
+          {
+            "name": "Altar of Dementia",
+            "rulingCount": 2
+          }
+        ],
+        "rulingsSkippedNoMatch": [
+          "Perigee Beckoner"
+        ],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "Let's break down how **Metamorphosis Fanatic**, **Altar of Dementia**, and **Perigee Beckoner** can form a combo together, using only their oracle text, the provided rules, and Commander Spellbook context.\n\n---\n\n## CARD ABILITIES RECAP\n\n- **Metamorphosis Fanatic**  \n  - Lifelink.  \n  - ETB (enters-the-battlefield): Return up to one target creature card from your graveyard to the battlefield with a lifelink counter.\n\n- **Altar of Dementia**  \n  - {T}, **Sacrifice a creature**: Target player mills cards equal to the *sacrificed creature's power*.\n\n- **Perigee Beckoner**  \n  - ETB: Until end of turn, *another* target creature you control gets +2/+0 and gains \"When this creature dies, return it to the battlefield tapped under its owner's control.\"\n  - Warp {1}{B} (a type of alternative cost letting you cast it for less, with extra exile/casting behavior—only relevant for setup).\n\n---\n\n## COMBO FLOW\n\n**Assumption:** Metamorphosis Fanatic and Altar of Dementia are on the battlefield. Perigee Beckoner is in hand, and you have {1}{B} to pay its warp cost.\n\n### Step 1: Cast Perigee Beckoner for Warp Cost\n\n- You cast Perigee Beckoner using warp ({1}{B}). It enters the battlefield.\n\n### Step 2: Perigee Beckoner’s ETB Trigger\n\n- This triggers: \"When this creature enters, until end of turn, another target creature you control gets +2/+0 and gains 'When this creature dies, return it to the battlefield tapped under its owner's control.'\"\n- Choose **Metamorphosis Fanatic** as the 'another target creature.' For the rest of the turn, Fanatic gets:\n  - +2/+0,\n  - And: \"When this creature dies, return it to the battlefield tapped under its owner's control.\"\n\n### Step 3: Sacrifice Perigee Beckoner to Altar of Dementia\n\n- Activate Altar, sacrificing Beckoner. Target a player (commonly yourself for self-mill, or an opponent).\n- Beckoner dies, mills equal to its power (5).\n\n### Step 4: Sacrifice Metamorphosis Fanatic to Altar of Dementia\n\n- Activate Altar, sacrificing **Metamorphosis Fanatic**. The replacement effect from Beckoner's ETB still applies (**step 2**), so when Fanatic dies:\n  - Mills (now 4 power, from +2/+0 effect) from Altar’s ability.\n  - When Fanatic dies, **the delayed trigger from Beckoner's ETB returns it to the battlefield tapped**.\n\n### Step 5: Fanatic’s ETB Triggers\n\n- When Metamorphosis Fanatic re-enters, **its own ETB triggers**.\n- Use its ETB to return **Beckoner** from your graveyard to the battlefield (with a lifelink counter).\n- This starts the cycle anew: Beckoner ETBs and can target Fanatic again with its ETB, continuing the loop.\n\n---\n\n## LOOP & RESULTS\n\nYou continue these steps:\n1. Beckoner buffs Fanatic, giving it the “return” ability.\n2. Sacrifice Beckoner, then Fanatic (using Altar for both).\n3. Fanatic returns to battlefield from Beckoner's delayed trigger; its ETB returns Beckoner from your graveyard.\n4. Repeat.\n\n### What Do You Get?\n- **Infinite ETBs and LTBs:** Both creatures enter and leave the battlefield infinitely.\n- **Infinite 'Sacrifice' Triggers:** Both are repeatedly sacrificed.\n- **Infinite Mill:** Altar of Dementia mills a player equal to the creatures’ power *each time* you use it. You can target an opponent for each or yourself (self-mill).\n- **Infinite death triggers:** If you have anything else triggering on death or ETB, those also go infinite.\n\n---\n\n## RELEVANT RULE EXCERPTS AND NOTES\n\n- **Triggered abilities auto-trigger** and go on the stack whenever the conditions are met (603.2, 603.3).\n- Creatures are new objects after zone changes (400.7), but the continuous effect from Beckoner’s ETB applies as long as it’s “until end of turn” and after Metamorphosis Fanatic re-enters (as each is returned, its new instance is re-affected by new Beckoner triggers).\n- ETBs always retrigger on each re-entry (707.5, see Example: Wall of Omens).\n\n---\n\n### Summary (Combo Outcome)\n**With Metamorphosis Fanatic, Altar of Dementia, and Perigee Beckoner, you can:**\n\n- Mill any player an arbitrary number of cards,\n- Generate infinite creature entry/exit triggers,\n- Potentially take advantage of any ETB/LTB/death payoff.\n\nThe loop requires nothing additional once all three are set up and started as above — all triggers and abilities chain together automatically as described, within the rules and the card texts.",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant correctly identified the combo, accurately described its infinite mill and trigger loop payoff, and clearly laid out the step-by-step mechanism matching the ground truth."
+      }
+    },
+    {
+      "caseId": "combo-14",
+      "variantId": "1537-3817-5231-6542",
+      "band": "low",
+      "popularity": 1,
+      "cardNames": [
+        "Sister Hospitaller",
+        "Zealous Conscripts",
+        "Sidisi, Regent of the Mire",
+        "Thermopod"
+      ],
+      "groundTruth": {
+        "steps": "Activate Sidisi by tapping it and sacrificing Zealous Conscripts, returning Sister Hospitaller from your graveyard to the battlefield.\nWhen Sister Hospitaller enters the battlefield, it triggers, returning Zealous Conscripts from your graveyard to the battlefield and causing you to gain 5 life.\nWhen Zealous Conscripts enters the battlefield, it triggers, untapping Sidisi.\nActivate Thermopod by sacrificing Sister Hospitaller.\nRepeat.",
+        "producedEffects": [
+          "Infinite creature ETB",
+          "Infinite creature LTB",
+          "Infinite creature sacrifice triggers",
+          "Infinite death triggers",
+          "Infinite lifegain",
+          "Infinite lifegain triggers",
+          "Infinite red mana"
+        ],
+        "notablePrerequisites": ""
+      },
+      "diagnosis": {
+        "comboSectionChars": 6996,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "613.6",
+            "title": "Interaction of Continuous Effects",
+            "score": 97.57516988778333
+          },
+          {
+            "ruleId": "702.152a",
+            "title": "Keyword Abilities",
+            "score": 85.60494730910162
+          },
+          {
+            "ruleId": "205.3m",
+            "title": "Type Line",
+            "score": 63.47392773292254
+          },
+          {
+            "ruleId": "707.10",
+            "title": "Copying Objects",
+            "score": 59.775296007584714
+          },
+          {
+            "ruleId": "702.62a",
+            "title": "Keyword Abilities",
+            "score": 57.51932602010254
+          }
+        ],
+        "supplementalRunnerUp": [
+          "701.66a",
+          "118.12",
+          "702.71a",
+          "702.1b",
+          "702.141a",
+          "707.10e",
+          "603.12",
+          "702.154a",
+          "903.4",
+          "702.24a"
+        ],
+        "supplementalCandidatesScored": 2087,
+        "supplementalQueryText": "How do these cards combo together? Medicus Ministorum — When this creature enters, return target creature card from your graveyard to the battlefield. You gain life equal to its mana value. Creature — Human Cleric Haste When this creature enters, gain control of target permanent until end of turn. Untap that permanent. It gains haste until end of turn. Creature — Human Warrior {T}, Sacrifice a creature you control with mana value X other than Sidisi: Return target creature card with mana value X plus 1 from your graveyard to the battlefield. Activate only as a sorcery. Legendary Creature — Zombie Snake Warlock {S}: This creature gains haste until end of turn. ({S} can be paid with one mana from a snow source.) Sacrifice a creature: Add {R}. Snow Creature — Slug",
+        "rulingsIncluded": [
+          {
+            "name": "Sister Hospitaller",
+            "rulingCount": 1
+          },
+          {
+            "name": "Zealous Conscripts",
+            "rulingCount": 1
+          },
+          {
+            "name": "Sidisi, Regent of the Mire",
+            "rulingCount": 1
+          }
+        ],
+        "rulingsSkippedNoMatch": [
+          "Thermopod"
+        ],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "### Combo Explanation: Sister Hospitaller + Zealous Conscripts + Sidisi, Regent of the Mire + Thermopod\n\nWith all four cards, you have a chain that enables **infinite sacrifice loops**, **infinite enters/leaves-the-battlefield triggers**, **infinite red mana**, and **infinite lifegain**.\n\n#### How does the combo work?\n\n1. **Board state needed:**\n   - **Sidisi, Regent of the Mire** and **Thermopod** on the battlefield.  \n   - **Zealous Conscripts** on the battlefield.\n   - **Sister Hospitaller** in your graveyard.\n   - Sidisi **must not have summoning sickness** (you must have controlled it since the start of your turn).\n\n---\n\n2. **Start the loop:**\n   - **Activate Sidisi, Regent of the Mire:**  \n     Tap Sidisi and **sacrifice Zealous Conscripts** (to Sidisi's ability), naming X=5 (Zealous Conscripts' mana value is 5).  \n     - **Effect:** Return **Sister Hospitaller** (mana value 6) from your graveyard to the battlefield.\n\n---\n\n3. **Sister Hospitaller enters:**  \n   - Hospitaller's **ETB ability triggers**, returning target creature (choose Zealous Conscripts, now in the graveyard) to the battlefield **and** gain 5 life (equal to Conscripts' mana value).\n\n---\n\n4. **Zealous Conscripts enters:**  \n   - Its **ETB triggers**: You can target Sidisi (or anything else), but typically **target Sidisi** so that you \"gain control\" (which you already have) and **untap it**.\n   - **Sidisi is untapped** and ready to use again.\n\n---\n\n5. **Sacrifice Sister Hospitaller to Thermopod:**  \n   - Thermopod's sacrifice ability: **Sacrifice a creature:** Add {R}.\n     - Sacrifice **Sister Hospitaller**, generating **1 red mana**.\n     - Hospitaller is now in your graveyard again.\n\n---\n\n6. **Back to Step 2:**  \n   - **Sidisi's ability can be activated again** (you have an untapped Sidisi, a Thermopod, Zealous Conscripts on the battlefield, and Sister Hospitaller in your graveyard).\n\n---\n\n### What does this achieve?\n\nBy repeating the above steps:\n\n- Every loop:\n  - **Sacrifice Zealous Conscripts** to Sidisi: brings Sister Hospitaller back.\n  - **Sister Hospitaller ETB**: brings back Zealous Conscripts, **gain 5 life**.\n  - **Zealous Conscripts ETB**: untaps Sidisi.\n  - **Sacrifice Sister Hospitaller** to Thermopod: **get 1 red mana** and put Hospitaller back in the graveyard.\n\nSo you get, **per loop:**  \n- **5 life**\n- **1 red mana**\n- As many enters and leaves-the-battlefield triggers for two creatures as you want\n- As many death/sacrifice triggers as you want\n\n---\n\nYou can repeat this loop **any number of times** (as long as you can meet the \"activate only as a sorcery\" restriction on Sidisi, so only during your main phase and only when the stack is empty).\n\n---\n\n### In summary\n\nThis four-card combo allows you, on your main phase, to generate **infinite red mana**, **infinite life**, and **infinite ETB/LTB/sacrifice triggers**—for example, to feed effects like Blood Artist or Impact Tremors, if you have them, or simply to have much more mana and life than your opponents.\n\n**If any of the required cards are not present in the necessary zones (especially Sidisi needing to be ready to tap), the loop cannot function.**\n\n---\n\n**Stack Interaction**  \n- Each Sidisi activation is a sorcery-speed activated ability that returns Hospitaller.\n- Hospitaller and Conscripts have ETB triggered abilities that create triggers as spells/abilities on the stack and resolve in LIFO order (last-in, first-out).\n- Thermopod's ability is activated and resolves instantly (as a cost/ability), not using the stack for the sacrifice, but the action of sacrificing triggers other relevant abilities (like death triggers).\n\n---\n\n**If you have further questions about a specific interaction, board state, or potential interruption, feel free to clarify!**",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant accurately identified the combo, explained the infinite effects including triggers and mana, and correctly described the activation steps matching the ground truth."
+      }
+    },
+    {
+      "caseId": "combo-15",
+      "variantId": "592-2720-4691",
+      "band": "low",
+      "popularity": 8,
+      "cardNames": [
+        "Vilis, Broker of Blood",
+        "Role Reversal",
+        "Underworld Dreams"
+      ],
+      "groundTruth": {
+        "steps": "Cast Role Reversal targeting Vilis, Broker of Blood and a creature an opponent controls.\nOnce that opponent draws a card they draw their entire library and take damage equal to the amount of cards drawn.",
+        "producedEffects": [
+          "Infinite card draw for target opponent",
+          "Near-infinite damage to one opponent"
+        ],
+        "notablePrerequisites": "An opponent controls a creature."
+      },
+      "diagnosis": {
+        "comboSectionChars": 5584,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "613.9",
+            "title": "Interaction of Continuous Effects",
+            "score": 64.62874233382605
+          },
+          {
+            "ruleId": "722.3c",
+            "title": "Preparation Cards",
+            "score": 58.69659678402894
+          },
+          {
+            "ruleId": "702.1c",
+            "title": "Keyword Abilities",
+            "score": 51.254655424615905
+          },
+          {
+            "ruleId": "732.3",
+            "title": "Taking Shortcuts",
+            "score": 46.606005887276325
+          },
+          {
+            "ruleId": "704.7",
+            "title": "State-Based Actions",
+            "score": 38.55376710414907
+          }
+        ],
+        "supplementalRunnerUp": [
+          "122.1b",
+          "509.1b",
+          "701.54c",
+          "113.12",
+          "206.3a",
+          "702.1b",
+          "203.1",
+          "702.17b",
+          "702.22h",
+          "702.9b"
+        ],
+        "supplementalCandidatesScored": 1820,
+        "supplementalQueryText": "How do these cards combo together? Flying {B}, Pay 2 life: Target creature gets -1/-1 until end of turn. Whenever you lose life, draw that many cards. (Damage causes loss of life.) Legendary Creature — Demon Exchange control of two target permanents that share a permanent type. Sorcery Whenever an opponent draws a card, this enchantment deals 1 damage to that player. Enchantment",
+        "rulingsIncluded": [
+          {
+            "name": "Vilis, Broker of Blood",
+            "rulingCount": 2
+          },
+          {
+            "name": "Role Reversal",
+            "rulingCount": 6
+          },
+          {
+            "name": "Underworld Dreams",
+            "rulingCount": 3
+          }
+        ],
+        "rulingsSkippedNoMatch": [],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "Let’s break down **how Vilis, Broker of Blood, Role Reversal, and Underworld Dreams form a combo**, using only the context and official rules supplied above.\n\n---\n\n### Main Interactions\n\n#### 1. **Control Change**\n- **Role Reversal** allows you to exchange control of two permanents that share a permanent type—for example, you can swap your Vilis (a creature) with a creature an opponent controls.\n\n#### 2. **Vilis Ability**\n- **Vilis, Broker of Blood**:  \n  *\"Whenever you lose life, draw that many cards.\"*  \n  If you lose 1 life, you draw 1 card.  \n  If *an opponent* controls Vilis, **they** benefit from this.\n\n#### 3. **Underworld Dreams**\n- **Underworld Dreams**:  \n  *\"Whenever an opponent draws a card, this enchantment deals 1 damage to that player.\"*\n\n---\n\n### Sequence of Events (Combo Setup and Loop)\n\n#### **Step 1: Exchange Vilis**\n- With **Role Reversal**, you give control of Vilis, Broker of Blood to an opponent by swapping it for a creature they control.\n\n#### **Step 2: Trigger Chain During Opponent’s Draw**\n- On your opponent’s draw step, they will **draw a card** as normal.\n\n  - **Underworld Dreams** sees an opponent draw and triggers:  \n    - *\"deals 1 damage to that player.\"*\n\n  - That opponent **takes 1 damage** (loses 1 life).\n    - Now, **Vilis** (which they control) triggers:  \n      - *\"Whenever you lose life, draw that many cards.\"*\n      - They lost 1 life → **they draw 1 card**.\n\n#### **Step 3: Repeat (Trigger Loop)**\n- This draw is also seen by **Underworld Dreams**, which triggers again (deals 1 more damage), causing Vilis to trigger again, and so on.\n\n##### **This creates a loop:**\n- Draw a card → Take 1 damage → Draw a card → Take 1 damage → ...\n\n#### **Step 4: How Does the Loop End?**\n- The opponent will:\n  - Lose 1 life and draw 1 card repeatedly.\n  - This continues until:\n    - They have no more cards to draw (lose the game via decking), **or**\n    - Their life total drops to 0 or less (lose the game via life loss).\n\n---\n\n### Key Rule Quotes and Why This Works\n\n#### **Triggered Ability Basics**\n> 603.2. Whenever a game event or game state matches a triggered ability’s trigger event, that ability automatically triggers... [goes on stack]  \n> 603.3. Once an ability has triggered, its controller puts it on the stack...\n\nBoth Underworld Dreams and Vilis trigger in response to each draw event and life loss, respectively.\n\n#### **Loop Handling**\nIf players cannot make different choices, the process repeats until a state-based action (like game loss from life total or decking) ends it. See rule 732.3c (fragmented loops)—but here, the loop isn't optional, so it continues as described.\n\n#### **Underworld Dreams – Official Ruling**\n> 2004-10-04: If multiple cards are drawn at once, this card triggers once for each card drawn.\n\n#### **Vilis – Official Ruling**\n> If you pay life to cast a spell or activate an ability, you don't draw cards until after ...  \nBut in this case, triggers are sequential and chained directly.\n\n---\n\n### Important Caveats\n\n- You **must** be able to exchange Vilis for an opponent’s creature—if they don’t have a legal creature, you can’t initiate Role Reversal as described.\n- The loop is not optional—Underworld Dreams and Vilis will keep triggering as long as the opponent can draw cards and has life.\n\n---\n\n## **Summary Table**\n\n| Effect in Play             | Control      | What happens                   |\n|---------------------------|--------------|-------------------------------|\n| Vilis, Broker of Blood    | Opponent     | When they lose life, draw that many cards. |\n| Underworld Dreams         | You          | When opponent draws, they take 1 damage.   |\n| Role Reversal             | You (Cast)   | Swaps Vilis for opponent's creature.       |\n\n**Once Vilis is in their control, drawing a card will loop:**\n> They draw → Underworld Dreams triggers → 1 damage → Vilis draws → repeat\n\n### **Result**\n- Opponent draws their entire library and takes lethal damage (or decks, whichever comes first).\n\n---\n\n## **Summary Explanation:**\n> **Vilis, Broker of Blood + Underworld Dreams form a forced, self-repeating loop when an opponent controls Vilis. Role Reversal gives them Vilis: under Underworld Dreams, every time they draw a card, they lose 1 life, and every time they lose 1 life, Vilis makes them draw another card. The process repeats until the opponent loses the game due to running out of cards or having their life reduced to zero.**",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant fully explained the combo, correctly detailed the looping triggers and control exchange, and matched the final outcome of infinite card draw and damage to an opponent."
+      }
+    },
+    {
+      "caseId": "combo-16",
+      "variantId": "643-717-1742-4035",
+      "band": "low",
+      "popularity": 2,
+      "cardNames": [
+        "Blood Speaker",
+        "Bone Miser",
+        "Maskwood Nexus",
+        "Skirge Familiar"
+      ],
+      "groundTruth": {
+        "steps": "Activate Skirge Familiar by discarding Blood Speaker, adding {B}.\nBone Miser's first ability triggers, creating a 2/2 Zombie creature token that enters the battlefield as a Demon due to Maskwood Nexus.\nBlood Speaker's second ability triggers, returning itself to your hand from your graveyard.\nRepeat.",
+        "producedEffects": [
+          "Infinite black mana",
+          "Infinite creature ETB",
+          "Infinite creature tokens",
+          "Infinite self-discard triggers"
+        ],
+        "notablePrerequisites": ""
+      },
+      "diagnosis": {
+        "comboSectionChars": 5729,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "118.12",
+            "title": "Costs",
+            "score": 70.68728023358133
+          },
+          {
+            "ruleId": "205.3m",
+            "title": "Type Line",
+            "score": 66.47093054624752
+          },
+          {
+            "ruleId": "702.24a",
+            "title": "Keyword Abilities",
+            "score": 63.38289862111556
+          },
+          {
+            "ruleId": "613.6",
+            "title": "Interaction of Continuous Effects",
+            "score": 62.47361274389521
+          },
+          {
+            "ruleId": "111.10u",
+            "title": "Tokens",
+            "score": 62.05622208203763
+          }
+        ],
+        "supplementalRunnerUp": [
+          "702.1c",
+          "722.3c",
+          "707.5",
+          "702.152a",
+          "608.2d",
+          "603.12",
+          "702.71a",
+          "601.2h",
+          "613.9",
+          "603.8"
+        ],
+        "supplementalCandidatesScored": 1986,
+        "supplementalQueryText": "How do these cards combo together? At the beginning of your upkeep, you may sacrifice this creature. If you do, search your library for a Demon card, reveal that card, put it into your hand, then shuffle. Whenever a Demon you control enters, return this card from your graveyard to your hand. Creature — Ogre Shaman Whenever you discard a creature card, create a 2/2 black Zombie creature token. Whenever you discard a land card, add {B}{B}. Whenever you discard a noncreature, nonland card, draw a card. Creature — Zombie Wizard Creatures you control are every creature type. The same is true for creature spells you control and creature cards you own that aren't on the battlefield. {3}, {T}: Create a 2/2 blue Shapeshifter creature token with changeling. (It is every creature type.) Artifact Flying Discard a card: Add {B}. Creature — Phyrexian Imp",
+        "rulingsIncluded": [
+          {
+            "name": "Blood Speaker",
+            "rulingCount": 1
+          },
+          {
+            "name": "Bone Miser",
+            "rulingCount": 3
+          },
+          {
+            "name": "Maskwood Nexus",
+            "rulingCount": 6
+          },
+          {
+            "name": "Skirge Familiar",
+            "rulingCount": 1
+          }
+        ],
+        "rulingsSkippedNoMatch": [],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "Let’s walk through how these four cards—**Blood Speaker**, **Bone Miser**, **Maskwood Nexus**, and **Skirge Familiar**—combo together, given their oracle text and interactions, according to the provided references and rules.\n\n---\n\n## Stepwise Combo Explanation\n\n### 1. **Set up** \nYou control **Bone Miser**, **Maskwood Nexus**, and **Skirge Familiar** on the battlefield. You have **Blood Speaker** in your hand.\n\n### 2. **Activate Skirge Familiar**\n\n- **Skirge Familiar**'s ability:  \n  > \"Discard a card: Add {B}.\"\n\nYou activate Skirge Familiar’s ability by discarding **Blood Speaker** from your hand. This adds {B}.\n\n#### **Ruling Note**:  \nAccording to the official ruling:  \n> \"Skirge Familiar's activated ability is a mana ability. It doesn't use the stack and can't be responded to.\"\n\nSo, the discarding and the adding of mana happen instantly (without using the stack). However, discarding a creature card triggers **Bone Miser**'s ability, which does use the stack.\n\n### 3. **Bone Miser triggers** \n\n- **Bone Miser**:\n  > \"Whenever you discard a creature card, create a 2/2 black Zombie creature token.\"\n\nThis ability triggers because you discarded **Blood Speaker** (a creature card) to Skirge Familiar.\n\n#### **Ruling Note**:   \n> \"[Bone Miser's] triggered ability resolves before that spell or ability [the discard outlet] but after you’ve chosen targets for it.\"\n\nBut since Skirge Familiar’s ability doesn’t use the stack, Bone Miser's trigger simply goes on the stack at the next point a player would receive priority.\n\n#### **Maskwood Nexus interaction:**\n- **Maskwood Nexus**:\n  > \"Creatures you control are every creature type. The same is true for creature spells you control and creature cards you own that aren't on the battlefield.\"\n\nThe Zombie token created by Bone Miser is “every creature type,” including **Demon**.\n\n### 4. **Blood Speaker’s graveyard trigger**\n\n- **Blood Speaker**:\n  > \"Whenever a Demon you control enters the battlefield, return this card from your graveyard to your hand.\"\n\nThe token you just created is a Demon (due to Maskwood Nexus). When it enters, **Blood Speaker**'s graveyard trigger triggers, and you return it from your graveyard to your hand.\n\n### 5. **Repeat**\n\nNow **Blood Speaker** is back in your hand, you still control Skirge Familiar, and you can repeat the process.\n\n---\n\n## **What Does This Achieve?**\n\n- Each iteration produces:\n  - Add {B} (from Skirge Familiar)\n  - Create a 2/2 black Zombie (from Bone Miser)\n  - Return Blood Speaker to your hand (from Blood Speaker's graveyard trigger)\n\nBecause there’s no inherent restriction on how many times you do this, as long as you can keep discarding **Blood Speaker** to Skirge Familiar (which you can, because it pops back to hand each time), you can perform this cycle infinitely.\n\n**Result:**\n- **Infinite black mana** (via Skirge Familiar)\n- **Infinite 2/2 Zombie creature tokens** (via Bone Miser)\n- **Infinite Demon ETB triggers** (could be relevant if you control anything else that cares about Demons entering)\n- **Infinite self-discard triggers** (if anything further reacts to discards)\n\n---\n\n## **Key Rules/Oracle Facts Justifying This:**\n\n- **Bone Miser’s trigger happens when you discard a creature card**, regardless of how or why you discarded it.\n- **Skirge Familiar’s discard is a mana ability** (does not use the stack), but triggers like Bone Miser’s wait until the next opportunity to go on the stack.\n- **Maskwood Nexus makes all your creatures all creature types—including Demon**—so the Zombie token is a Demon.\n- **Blood Speaker’s graveyard trigger will always trigger when a Demon you control enters the battlefield**, no matter how Blood Speaker got to the graveyard or how the Demon entered.\n- **Nothing in this loop requires additional cards drawn or extra resources**—as long as you can repeat the discard, you can keep going.\n\n---\n\n**Summary:**  \nThis combo uses Skirge Familiar to discard Blood Speaker (making mana), Bone Miser to create a 2/2 token for each discard (which, thanks to Maskwood Nexus, is a Demon), and Blood Speaker’s ability to bring itself back each time a Demon ETBs. Because nothing exhausts or limits these cards’ abilities by themselves, you can repeat as many times as you want for infinite black mana and infinite Zombies.",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant correctly identified the combo, described the infinite mana and tokens payoff, and accurately explained the stepwise loop matching the ground truth steps."
+      }
+    },
+    {
+      "caseId": "combo-17",
+      "variantId": "883-2173-2438-5220",
+      "band": "zero",
+      "popularity": 0,
+      "cardNames": [
+        "Bolas's Citadel",
+        "Mortuary",
+        "Carrion Feeder",
+        "Ashes of the Abhorrent"
+      ],
+      "groundTruth": {
+        "steps": "Activate Carrion Feeder by sacrificing it.\nWhen Carrion Feeder dies, Mortuary and Ashes of the Abhorrent trigger.\nResolve the Mortuary trigger, putting Carrion Feeder from your graveyard onto the top of your library.\nResolve the Ashes of the Abhorrent trigger, causing you to gain 1 life\nResolve the Carrion Feeder ability.\nCast Carrion Feeder from the top of your library by paying 1 life.\nRepeat.",
+        "producedEffects": [
+          "Infinite creature ETB",
+          "Infinite creature LTB",
+          "Infinite creature sacrifice triggers",
+          "Infinite death triggers",
+          "Infinite lifegain triggers",
+          "Infinite storm count"
+        ],
+        "notablePrerequisites": ""
+      },
+      "diagnosis": {
+        "comboSectionChars": 7005,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "608.2d",
+            "title": "Resolving Spells and Abilities",
+            "score": 72.46856210559675
+          },
+          {
+            "ruleId": "702.24a",
+            "title": "Keyword Abilities",
+            "score": 71.8495282244553
+          },
+          {
+            "ruleId": "120.4d",
+            "title": "Damage",
+            "score": 70.7547046409339
+          },
+          {
+            "ruleId": "118.12",
+            "title": "Costs",
+            "score": 68.08270186346432
+          },
+          {
+            "ruleId": "603.10a",
+            "title": "Handling Triggered Abilities",
+            "score": 67.96115693388316
+          }
+        ],
+        "supplementalRunnerUp": [
+          "707.10",
+          "111.10v",
+          "707.5",
+          "608.2c",
+          "702.44c",
+          "702.152a",
+          "702.32a",
+          "712.21c",
+          "601.2h",
+          "702.63a"
+        ],
+        "supplementalCandidatesScored": 2775,
+        "supplementalQueryText": "How do these cards combo together? You may look at the top card of your library any time. You may play lands and cast spells from the top of your library. If you cast a spell this way, pay life equal to its mana value rather than pay its mana cost. {T}, Sacrifice ten nonland permanents: Each opponent loses 10 life. Legendary Artifact Whenever a creature is put into your graveyard from the battlefield, put that card on top of your library. Enchantment This creature can't block. Sacrifice a creature: Put a +1/+1 counter on this creature. Creature — Zombie Players can't cast spells from graveyards or activate abilities of cards in graveyards. Whenever a creature dies, you gain 1 life. Enchantment",
+        "rulingsIncluded": [
+          {
+            "name": "Bolas's Citadel",
+            "rulingCount": 8
+          },
+          {
+            "name": "Mortuary",
+            "rulingCount": 1
+          },
+          {
+            "name": "Ashes of the Abhorrent",
+            "rulingCount": 3
+          }
+        ],
+        "rulingsSkippedNoMatch": [
+          "Carrion Feeder"
+        ],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "Let’s break down **how Bolas's Citadel, Mortuary, Carrion Feeder, and Ashes of the Abhorrent** interact as a combo, using only the facts and rules from context.\n\n---\n\n## Steps of Interaction\n\n### 1. **Activate Carrion Feeder**\n- **Ability:** \"Sacrifice a creature: Put a +1/+1 counter on this creature.\"\n- Sacrifice **Carrion Feeder** itself (as it can target itself).\n\n### 2. **Carrion Feeder Dies: Two Triggers**\n- When Carrion Feeder dies:\n  - **Mortuary** (\"Whenever a creature is put into your graveyard from the battlefield, put that card on top of your library.\")\n  - **Ashes of the Abhorrent** (\"Whenever a creature dies, you gain 1 life.\")\n- Both triggers go on the stack. The order is chosen by the active player (assuming you control both).\n\n  - For the combo, **it does not matter which order**; you’ll get both effects as they’re separate triggers.\n\n### 3. **Resolve Triggers**\n- **Mortuary** triggers: Carrion Feeder is put from graveyard on top of library.\n- **Ashes** triggers: You gain 1 life.\n\n### 4. **Carrion Feeder’s Ability Resolves**\n- You put a +1/+1 counter on Carrion Feeder, but since Feeder is in your graveyard (temporarily, before Mortuary resolves), you only actually get the counter if Feeder is still on the battlefield.\n\n  - If you sacrifice another creature, Feeder gets bigger on the battlefield.\n  - If you sacrifice Feeder itself, the counter does nothing, but the combo continues.\n\n### 5. **Cast Carrion Feeder from Top of Library**\n- **Bolas's Citadel** allows: \"You may cast spells from the top of your library. If you cast a spell this way, pay life equal to its mana value rather than pay its mana cost.\"\n- Cast **Carrion Feeder** for 1 life (its mana value is 1).\n\n### 6. **Repeat**\n- **Loop:** Sacrifice Carrion Feeder → triggers Mortuary and Ashes → put Feeder on top, gain 1 life → cast Feeder from library for 1 life.\n- **Net Result Per Loop:** Lose 1 life to cast Feeder, gain 1 life from Ashes = life total stays constant.\n\n---\n\n## **What does this accomplish?**\n\n### Main effects:\n- **Infinite creature death triggers:** Carrion Feeder keeps dying.\n- **Infinite “creature ETB/LTB” triggers** (if you have other cards that care about these events, e.g., Blood Artist, Zulaport Cutthroat, etc.).\n- **Infinite Storm count:** Each loop casts Carrion Feeder, so storm count increases without end.\n- **Infinite lifegain triggers:** Ashes of the Abhorrent keeps triggering. (But net life gain is zero due to Feeder’s cost.)\n- **Infinite sacrifice triggers:** Any card that counts sacrifices will trigger infinitely.\n\n### **NOTES**\n- You do **not** gain or lose life overall per loop with just these four cards.\n- This combo doesn't directly win, but can generate infinite value from any \"Whenever a creature dies/enters the battlefield\" or \"Whenever you gain life\" effect, or with Bolas's Citadel's alternate win (sacrifice ten nonland permanents to make each opponent lose 10 life, using sacrificial tokens accumulated during the loop).\n- **No interaction is blocked by Ashes of the Abhorrent,** because all triggered abilities here (\"whenever\" worded) are **not** stopped by Ashes (per its official ruling).\n\n---\n\n## **Rule justifications**\n\n- **Triggered Abilities:** Rule 603—abilities like Mortuary and Ashes of the Abhorrent are triggered and go on the stack, then resolve.\n- **Stack Order:** The last trigger added resolves first, but all triggers will resolve in either order. The sacrifice (“cost”) is paid, then triggers are placed on the stack (rules 603.3, 405.1/405.2).\n- **Zone Changes:** When Carrion Feeder goes to the graveyard, it is a new object when it returns (rule 400.7).\n- **Ashes Ruling:** Ashes does not stop triggered abilities—only activated abilities of cards in graveyards are stopped.\n\n---\n\n## **Summary Table**\n\n| Step           | Card/Effect                | Results                         |\n|----------------|---------------------------|----------------------------------|\n| 1. Activate    | Carrion Feeder            | Sacrifice itself                 |\n| 2. Dies        | --                        | Mortuary and Ashes triggers      |\n| 3. Resolve     | Mortuary/Ashes            | Feeder atop library, gain 1 life |\n| 4. Cast again  | Bolas's Citadel           | Pay 1 life, recast Feeder        |\n| Repeat         | Loop                      | Net life: 0, infinite triggers   |\n\n---\n\n**Bottom line:**  \nWith all four cards, you can infinitely sacrifice and recast Carrion Feeder, generating infinite death/ETB/sacrifice triggers and infinite storm count. You break even on life with just these four cards, but can take advantage of the infinite triggers with other synergies.",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant clearly identified the loop, correctly described the infinite triggers and storm count payoff, and accurately explained the step-by-step mechanism matching the labeled ground truth."
+      }
+    },
+    {
+      "caseId": "combo-18",
+      "variantId": "719-3490-4050-7665",
+      "band": "zero",
+      "popularity": 0,
+      "cardNames": [
+        "Xenograft",
+        "Phyrexian Altar",
+        "Captain America, Team Leader",
+        "Animation Module"
+      ],
+      "groundTruth": {
+        "steps": "Put a +1/+1 counter on a creature you control.\nAnimation Module triggers, causing you to pay {1} to create a 1/1 Servo artifact creature token.\nWhen the Servo enters as a Hero due to Xenograft, Captain America triggers, putting a +1/+1 counter on it and the Servo.\nAnimation Module triggers twice.\nHolding priority, activate Phyrexian Altar by sacrificing the Servo, adding {1}.\nResolve the first Animation Module trigger, choosing not to pay.\nResolve the second Animation Module trigger, causing you to pay {1} to create a 1/1 Servo artifact creature token.\nRepeat from step 3.",
+        "producedEffects": [
+          "Infinite +1/+1 counters on a creature",
+          "Infinite artifact ETB",
+          "Infinite artifact LTB",
+          "Infinite artifact sacrifice triggers",
+          "Infinite creature ETB",
+          "Infinite creature LTB",
+          "Infinite creature sacrifice triggers",
+          "Infinite death triggers"
+        ],
+        "notablePrerequisites": ""
+      },
+      "diagnosis": {
+        "comboSectionChars": 8472,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "122.1b",
+            "title": "Counters",
+            "score": 104.93717947824173
+          },
+          {
+            "ruleId": "702.62a",
+            "title": "Keyword Abilities",
+            "score": 87.24908654868484
+          },
+          {
+            "ruleId": "702.152a",
+            "title": "Keyword Abilities",
+            "score": 79.85094506380554
+          },
+          {
+            "ruleId": "707.10e",
+            "title": "Copying Objects",
+            "score": 76.39996929798741
+          },
+          {
+            "ruleId": "702.24a",
+            "title": "Keyword Abilities",
+            "score": 73.57736520390962
+          }
+        ],
+        "supplementalRunnerUp": [
+          "613.6",
+          "707.5",
+          "111.10v",
+          "201.5a",
+          "701.66a",
+          "608.2d",
+          "702.32a",
+          "707.10",
+          "702.63a",
+          "603.12"
+        ],
+        "supplementalCandidatesScored": 2531,
+        "supplementalQueryText": "How do these cards combo together? As this enchantment enters, choose a creature type. Each creature you control is the chosen type in addition to its other types. Enchantment Sacrifice a creature: Add one mana of any color. Artifact Whenever another Hero you control enters, it gains vigilance and haste until end of turn. Put a +1/+1 counter on that Hero and a +1/+1 counter on Captain America. Legendary Creature — Human Soldier Hero Whenever one or more +1/+1 counters are put on a permanent you control, you may pay {1}. If you do, create a 1/1 colorless Servo artifact creature token. {3}, {T}: Choose a counter on target permanent or player. Give that permanent or player another counter of that kind. Artifact",
+        "rulingsIncluded": [
+          {
+            "name": "Xenograft",
+            "rulingCount": 3
+          },
+          {
+            "name": "Animation Module",
+            "rulingCount": 3
+          }
+        ],
+        "rulingsSkippedNoMatch": [
+          "Phyrexian Altar",
+          "Captain America, Team Leader"
+        ],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "## Combo Explanation: Xenograft + Phyrexian Altar + Captain America, Team Leader + Animation Module\n\n### What the Combo Does\n\nWith **all four cards on the battlefield** (with Xenograft having \"Hero\" as the chosen creature type), you can generate:\n\n- Infinite +1/+1 counters on a creature you control (and on Captain America, Team Leader)\n- Infinite enters-the-battlefield (ETB) and leaves-the-battlefield (LTB) triggers for artifacts and creatures\n- Infinite death/sacrifice triggers\n- Infinite Servo artifact creature tokens, generated and then immediately sacrificed\n\n### Step-by-step Interaction\n\n#### 1. Board Setup\n\n- **Xenograft**: Choose \"Hero\" when it enters. Now, **all creatures you control are Heroes in addition to their other types**.\n- **Phyrexian Altar**: Lets you **sacrifice a creature to add one mana of any color**.\n- **Captain America, Team Leader**: Whenever another Hero you control enters the battlefield, **it gains vigilance and haste until end of turn**. **Put a +1/+1 counter on that Hero and a +1/+1 counter on Captain America.**\n- **Animation Module**: Whenever one or more +1/+1 counters are put on a permanent you control, you may pay {1}. If you do, **create a 1/1 colorless Servo artifact creature token**.\n\n#### 2. Start the Loop\n\n- **Put a +1/+1 counter on any creature you control** (using a previous effect, or a spare Animation Module activation, as needed).\n- **Animation Module** triggers. If you pay {1}, **create a Servo token**.\n\n#### 3. The Servo Enters\n\n- The Servo **is a Hero** (thanks to Xenograft).\n- **Captain America** triggers: when another Hero enters, both that Hero (the Servo) and Captain America get a +1/+1 counter.\n- **This results in two triggers for Animation Module**, once for the Servo and once for Captain America (see Oracle ruling: \"If +1/+1 counters are put on more than one permanent you control at the same time, Animation Module's first ability triggers once for each of those permanents.\").\n\n#### 4. On the Stack\n\n- You now have **two Animation Module triggers** on the stack—but you want to \"hold priority\" (before they resolve), so:\n    - **Sacrifice the Servo to Phyrexian Altar**, adding {1} mana.\n    - The Servo dies, leaving the battlefield.\n    - **(This also enables various death/sacrifice/leave-the-battlefield triggers if you have them.)**\n\n#### 5. Resolve the Animation Module Triggers\n\n- **First Animation Module trigger**: you can choose **not** to pay {1}.\n- **Second Animation Module trigger**: pay {1} (using the mana you just got from Phyrexian Altar) to make **another Servo token**.\n\n#### 6. Repeat\n\n- You repeat steps 3–5:\n    - Each time, create a Servo, which triggers Captain America, which puts +1/+1 counters (triggering Animation Module twice). Sacrifice the Servo for {1} with Phyrexian Altar before resolving the triggers, use the mana to pay for the next Servo, and so on.\n    - **Captain America and one Servo get +1/+1 counters each time, ad infinitum**.\n\n### Key Rulings That Enable This Loop\n\n- **Xenograft**: \"Each creature you control is the chosen type in addition to its other types.\" This makes every Servo a Hero and thus eligible for Captain America's trigger.\n- **Animation Module**: \"If +1/+1 counters are put on more than one permanent you control at the same time, Animation Module's first ability triggers once for each of those permanents.\"\n- **Phyrexian Altar**: You can use the spawned Servo as the sacrifice to fuel the next Animation Module activation.\n\n---\n\n## **Summary Table**\n\n| Card Section        | Effect Relevant to the Combo                                       |\n|---------------------|--------------------------------------------------------------------|\n| Xenograft           | Makes all your creatures (including tokens) into Heroes            |\n| Captain America     | Puts a +1/+1 counter on each new Hero and on itself                |\n| Animation Module    | Lets you pay {1} to make a Servo each time you put a +1/+1 counter |\n| Phyrexian Altar     | Sacrifices the Servo for {1} mana to pay for the next Servo        |\n\n---\n\n## **End Result**\n\n**You can infinitely repeat the following:**\n- Generate {1} with Phyrexian Altar by sacrificing the newly-created Servo token.\n- Use that mana to pay for the next Animation Module trigger.\n- Make a new Servo token, which triggers Captain America and Animation Module.\n**Each repetition puts an additional +1/+1 counter on Captain America and (through the Hero trigger) the new Servo.**\n\n**This produces an infinite number of:**\n- Servo tokens created and sacrificed\n- Hero ETB/LTB and death/sacrifice triggers\n- +1/+1 counters on Captain America\n\n---\n\n### **If you have other triggers for 'creature/servo enters/leaves/dies', they will trigger infinitely as well.**\n\n**Assumption:** This explanation assumes you can always pay the {1} (via the Servo and Phyrexian Altar), and \"Hero\" was chosen as the creature type for Xenograft. If these pieces are not configured this way, the combo does not function as described.",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant clearly identified the combo, correctly explained the infinite triggers and counters produced, and accurately described the stepwise loop matching the provided ground truth."
+      }
+    },
+    {
+      "caseId": "combo-19",
+      "variantId": "2034-4316-5043-5078",
+      "band": "zero",
+      "popularity": 0,
+      "cardNames": [
+        "Sensei's Divining Top",
+        "Experimental Frenzy",
+        "Ashnod's Altar",
+        "Alela, Artful Provocateur"
+      ],
+      "groundTruth": {
+        "steps": "Cast Sensei's Divining Top either from your hand or from the top of your library by paying {1}.\nAlela triggers, creating a 1/1 Faerie creature token.\nActivate Ashnod's Altar by sacrificing the Faerie, adding {C}{C}.\nActivate Sensei's Divining Top's second ability by tapping it, causing you to draw a card and put Sensei's Divining Top on top of your library.\nRepeat.",
+        "producedEffects": [
+          "Infinite card draw",
+          "Infinite draw triggers",
+          "Near-infinite colorless mana",
+          "Near-infinite creature ETB",
+          "Near-infinite creature LTB",
+          "Near-infinite creature sacrifice triggers",
+          "Near-infinite creature tokens",
+          "Near-infinite death triggers",
+          "Near-infinite storm count"
+        ],
+        "notablePrerequisites": ""
+      },
+      "diagnosis": {
+        "comboSectionChars": 7202,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "122.1b",
+            "title": "Counters",
+            "score": 108.70360864596728
+          },
+          {
+            "ruleId": "118.12",
+            "title": "Costs",
+            "score": 80.04810456274157
+          },
+          {
+            "ruleId": "701.8b",
+            "title": "Keyword Actions",
+            "score": 78.04561554421564
+          },
+          {
+            "ruleId": "732.5",
+            "title": "Taking Shortcuts",
+            "score": 74.21870210182101
+          },
+          {
+            "ruleId": "613.9",
+            "title": "Interaction of Continuous Effects",
+            "score": 64.97433308365262
+          }
+        ],
+        "supplementalRunnerUp": [
+          "701.21a",
+          "722.3c",
+          "608.2c",
+          "400.6",
+          "608.2d",
+          "608.2b",
+          "601.2c",
+          "702.26b",
+          "702.1c",
+          "111.10t"
+        ],
+        "supplementalCandidatesScored": 2243,
+        "supplementalQueryText": "How do these cards combo together? {1}: Look at the top three cards of your library, then put them back in any order. {T}: Draw a card, then put this artifact on top of its owner's library. Artifact You may look at the top card of your library any time. You may play lands and cast spells from the top of your library. You can't play lands or cast spells from your hand. {3}{R}: Destroy this enchantment. Enchantment Sacrifice a creature: Add {C}{C}. Artifact Flying, deathtouch, lifelink Other creatures you control with flying get +1/+0. Whenever you cast an artifact or enchantment spell, create a 1/1 blue Faerie creature token with flying. Legendary Creature — Faerie Warlock",
+        "rulingsIncluded": [
+          {
+            "name": "Sensei's Divining Top",
+            "rulingCount": 2
+          },
+          {
+            "name": "Experimental Frenzy",
+            "rulingCount": 6
+          },
+          {
+            "name": "Alela, Artful Provocateur",
+            "rulingCount": 2
+          }
+        ],
+        "rulingsSkippedNoMatch": [
+          "Ashnod's Altar"
+        ],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "Let's break down **how the listed cards can combo** based on the information in the context:\n\n#### Pieces Involved\n- **Sensei's Divining Top** (artifact; can tap to draw a card, then put itself on top of your library)\n- **Experimental Frenzy** (enchantment; lets you play lands/cast spells from the top of your library, but _not_ from your hand)\n- **Ashnod's Altar** (artifact; sacrifice a creature: add {C}{C})\n- **Alela, Artful Provocateur** (legendary creature; whenever you cast an artifact or enchantment spell, make a 1/1 blue Faerie token with flying)\n\n---\n\n## **Combo Explanation**\n\n### **(1) Assembling the pieces**\nAll of these permanents are present and on the battlefield, and you have **Sensei's Divining Top** available to cast. With **Experimental Frenzy**, you can cast spells (including artifact spells like Top) from the top of your library, but not from your hand.\n\n**Assumption:** You control all permanents required, and Top is on top of your library (see note below).\n\n---\n\n### **(2) The Loop (Step-by-step)**\n\n1. **Cast Sensei's Divining Top**  \n   - You may cast it from the top of your library thanks to Experimental Frenzy (\"You may play lands and cast spells from the top of your library\").\n   - Pay {1} to cast Top from the top of your library.\n   - When you cast Top, **Alela triggers** (\"Whenever you cast an artifact or enchantment spell, create a 1/1 blue Faerie creature token with flying.\") and makes a 1/1 Faerie token.\n\n2. **Sacrifice the Faerie token to Ashnod's Altar**  \n   - Use Ashnod's Altar to sacrifice the Faerie token you just made.\n   - Add {C}{C} to your mana pool as a result.\n\n3. **Tap Sensei's Divining Top for its draw ability:**  \n   - Use Top’s ability: \"{T}: Draw a card, then put Sensei's Divining Top on top of its owner's library.\"\n   - You draw a card.\n   - Then, Top goes on top of your library.\n\n4. **Repeat**  \n   - Now, Sensei's Divining Top is once again on top of your library.\n   - As long as you have the {1} to cast Sensei's Divining Top from the top again (from the Altar's {C}{C}), repeat the process.\n   - Each loop: You cast Top (making a Faerie token), sac the token for {C}{C}, tap Top to draw and put it back on top, and start the cycle again.\n\n---\n\n## **Results of the Loop**\n\nBy repeating these steps:\n\n- You generate **infinite Faerie tokens** (by casting the Top repeatedly).\n- You generate **effectively infinite colorless mana** (by sacrificing each created token for {C}{C}, spending only {1} per loop).\n- You **draw infinite cards** (each tap of Top draws you a card).\n- You generate **infinite death triggers** and **“creature sacrificed” triggers**, if any exist.\n- The process increases **your storm count** indefinitely if you continue casting Top.\n\n---\n\n## **Key Rules/Official Rulings Supporting This**\n\n- **Experimental Frenzy ruling:**  \n  \"You may play lands and cast spells from the top of your library,\" as long as you follow normal timing and costs.\n- **Sensei’s Divining Top ruling:**  \n  Tapping Top while it’s on the battlefield, drawing and then putting itself back on your library, interacts as expected; if the Top leaves the battlefield before you can tap it, then you can’t activate its ability—but here, you always re-cast it from the top.\n- **Alela ruling**:  \n  “Whenever you cast an artifact or enchantment spell, create a 1/1 blue Faerie creature token with flying.”\n\n---\n\n## **Summary Table**\n\n| Step                                  | What Happens                                                        |\n|----------------------------------------|---------------------------------------------------------------------|\n| Cast Top from library for {1}          | Make a Faerie (Alela triggers)                                      |\n| Sac Faerie to Altar ({C}{C} gained)    | +2 colorless mana                                                   |\n| Tap Top to draw a card, return it      | Draw, Top on library                                                |\n| Net: +1 card drawn, +1 Faerie, +1 net mana, Top ready again, loop   |\n\n---\n\n### **Assumptions and Limits**\n\n- You must always have Sensei's Divining Top on top of your library or be able to get it there.\n- **Experimental Frenzy** prevents you from casting spells from your hand, but all key casting is from the top of your library.\n- No hidden state (such as removal or counters) prevents these actions.\n\n---\n\n## **Conclusion**\n\nWith all four pieces (**Top, Frenzy, Altar, Alela**) you can create an **infinite loop**, resulting in:\n- Infinite card draw\n- Infinite Faerie tokens\n- Infinite colorless mana\n- Infinite sacrifice triggers\n- Infinite storm count (from repeated artifact castings)\n\nThis is a classic self-contained infinite combo as described.",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant correctly identified the combo, explained all the key steps in the loop, and stated the correct infinite outputs matching the ground truth produced effects."
+      }
+    },
+    {
+      "caseId": "combo-20",
+      "variantId": "719-1606-3510",
+      "band": "zero",
+      "popularity": 0,
+      "cardNames": [
+        "Ley Weaver",
+        "Xenograft",
+        "Life and Limb"
+      ],
+      "groundTruth": {
+        "steps": "Activate any land by tapping it, adding at least {1}.\nActivate Ley Weaver by tapping it, untapping it and the land.\nRepeat.",
+        "producedEffects": [
+          "Infinite mana creatures you control can produce",
+          "Infinite mana lands you control can produce",
+          "Infinite untap of creatures you control",
+          "Infinite untap of lands you control"
+        ],
+        "notablePrerequisites": "Ley Weaver does not have summoning sickness.\n\"Saproling\" chosen with Xenograft."
+      },
+      "diagnosis": {
+        "comboSectionChars": 5668,
+        "comboSectionPresent": true,
+        "supplementalRulesRetrieved": [
+          {
+            "ruleId": "205.1b",
+            "title": "Type Line",
+            "score": 57.353345930077765
+          },
+          {
+            "ruleId": "205.3m",
+            "title": "Type Line",
+            "score": 52.91156747803103
+          },
+          {
+            "ruleId": "702.124j",
+            "title": "Keyword Abilities",
+            "score": 49.78872232659708
+          },
+          {
+            "ruleId": "613.6",
+            "title": "Interaction of Continuous Effects",
+            "score": 42.79388359399678
+          },
+          {
+            "ruleId": "608.2f",
+            "title": "Resolving Spells and Abilities",
+            "score": 41.37573109870263
+          }
+        ],
+        "supplementalRunnerUp": [
+          "712.13a",
+          "106.7",
+          "700.8d",
+          "608.2d",
+          "800.4a",
+          "205.4b",
+          "701.23b",
+          "616.1f",
+          "608.2b",
+          "118.12"
+        ],
+        "supplementalCandidatesScored": 2467,
+        "supplementalQueryText": "How do these cards combo together? Partner with Lore Weaver (When this creature enters, target player may put Lore Weaver into their hand from their library, then shuffle.) {T}: Untap two target lands. Creature — Human Druid As this enchantment enters, choose a creature type. Each creature you control is the chosen type in addition to its other types. Enchantment All Forests and all Saprolings are 1/1 green Saproling creatures and Forest lands in addition to their other types. (They're affected by summoning sickness.) Enchantment",
+        "rulingsIncluded": [
+          {
+            "name": "Ley Weaver",
+            "rulingCount": 3
+          },
+          {
+            "name": "Xenograft",
+            "rulingCount": 3
+          },
+          {
+            "name": "Life and Limb",
+            "rulingCount": 4
+          }
+        ],
+        "rulingsSkippedNoMatch": [],
+        "curatedTopics": [
+          "Triggered Ability Basics",
+          "Stack and Priority",
+          "Targets",
+          "Zones and Zone Changes"
+        ]
+      },
+      "answer": "Let’s break down how **Ley Weaver**, **Xenograft**, and **Life and Limb** can combine, using only the provided rules, card texts, and community-derived combo context.\n\n---\n\n## Card Text and Effects Overview\n\n- **Ley Weaver:**  \n  `{T}: Untap two target lands.`\n- **Xenograft:**  \n  **As this enchantment enters, choose a creature type. Each creature you control is the chosen type in addition to its other types.**\n- **Life and Limb:**  \n  **All Forests and all Saprolings are 1/1 green Saproling creatures and Forest lands in addition to their other types.**\n\nLet’s assume **\"Saproling\"** is chosen with Xenograft, per community combo context.\n\n---\n\n## Step-by-Step Interaction\n\n### 1. What does the board look like?\n\n- **Ley Weaver** is a creature—specifically, a Human Druid—that you control.\n- **Xenograft** is on the field; you chose \"Saproling.\" Every creature you control is now a Saproling in addition to its other types.\n- **Life and Limb** is on the field. Every Forest and every Saproling is a 1/1 green Saproling creature (if not already) and a Forest land, in addition to its other types.\n\n#### Applied Layer Ruling:\n- **205.1b:** “All [X] are [Y] that are still [Z]” = types are cumulative.\n- **Life and Limb official ruling:** “…Forest and Saproling will have the card types creature and land, and the subtypes Forest and Saproling…”\n\n### 2. What happens to creatures you control?\n- Every creature you control (including Ley Weaver) is now also a Saproling (**Xenograft**) and thus also a Forest land creature (**Life and Limb**).\n- Each such creature is a 1/1 green Saproling creature, **and** a Forest land, **in addition** to other types/supertypes/subtypes.\n\n### 3. What do they *gain*?\n- All your creatures (again, including Ley Weaver) are now both:\n  - Creatures (already)\n  - Saprolings (from Xenograft)\n  - Forests (due to being Saprolings and Life and Limb’s ruling)\n  - Lands (due to Life and Limb)\n\n- Critically, **Life and Limb**:  \n  Each Forest has the ability \"{T}: Add {G}.\" (per WotC ruling)\n\n- So Ley Weaver is a land (Forest), can tap to make {G}, but this would normally give it summoning sickness for land-abilities, unless it has been under your control since the start of your turn.\n\n---\n\n## How the Combo Works (Infinite Loop/Value Engine)\n\n### **If Ley Weaver does not have summoning sickness:**\n1. **Tap** Ley Weaver (now a Forest land) for {G} using its new land ability ({T}: Add {G}).\n2. Tap any other of your (now creature/Forest) lands for {G}.\n3. Activate Ley Weaver’s ability ({T}: Untap two target lands) to untap itself and another land.\n   - Ley Weaver is a land and thus a legal target for its own ability.\n4. **Repeat** this process:\n    - Each time you tap Ley Weaver for mana, then use its ability to untap itself and another land (which could be another Saproling/Forest/creature/etc. which has lost summoning sickness).\n    - This yields **infinite untaps of lands/creatures you control that are Forests/Saprolings**, and infinite mana (any color your lands can produce, but at least {G} for each Forest).\n\n### **Why does this work?**\n- **Ley Weaver can untap itself** (since it’s a land, and the ability allows targeting two lands).\n- The identity of “Forest” and “Saproling” spreads to all creatures via Xenograft, and Life and Limb turns all Saprolings into Forest land creatures.\n- Abilities granted by Life and Limb and the layered rules mean every creature you control can both tap for {G} and be untapped by Ley Weaver.\n- Since Ley Weaver’s ability only requires tapping Ley Weaver and doesn’t cost mana, and tapping/untapping is repeatable (no additional exiling, sacrificing, or counter usage), the loop continues as long as you wish.\n\n### **Community Combo Source Confirmation**\n- (Combo 1 from Commander Spellbook context): *Ley Weaver + Xenograft + Life and Limb*  \n  _produces: Infinite mana creatures you control can produce; Infinite mana lands you control can produce; Infinite untap of creatures/lands you control_  \n  prerequisites: *Ley Weaver does not have summoning sickness. \"Saproling\" chosen with Xenograft.*\n\n---\n\n## SUMMARY\n\n**With Ley Weaver, Xenograft (chose Saproling), and Life and Limb, if Ley Weaver does not have summoning sickness:**\n\n- All your creatures become land-creature Forest Saprolings (with all original creature types).\n- They can each tap for {G} (as Forests), and Ley Weaver’s ability can untap itself and another land-permanent (which may also be a creature).\n- By tapping Ley Weaver and another Forest/Saproling for {G}, then using Ley Weaver’s ability to untap both, you repeat this for **infinite mana and infinite untaps** (for as many non-summoning-sick creatures as you control).\n\n**No points on the stack, no complexity with timing:** The combo works by repeatable manual action using available untap/tap abilities.\n\n---\n\n### Relevant Rule/Oracle text cited above.  \nLet me know if you need stack-resolution for triggered abilities coming out of these effects or a breakdown for a specific phase!",
+      "verdict": {
+        "identified": true,
+        "payoff": true,
+        "mechanism": true,
+        "verdict": "CORRECT",
+        "missingContext": "",
+        "rationale": "The assistant correctly identified the combo, explained the infinite mana and untap loop outcome, and accurately described the step-by-step mechanism matching the ground truth."
+      }
+    }
+  ]
+}
