@@ -20,6 +20,10 @@ Do not rename package folders to encode status.
 
 ## owner-action
 
+| Package | Notes |
+| --- | --- |
+| [semantic-rule-retrieval](./semantic-rule-retrieval/) | Run one of graph run graph-20260901-044411 parked here 2026-08-31 after quality-check PASS. Owner action: answer the 9 verdicts in `GATE-QUESTIONS.md` (semantic rule retrieval, REQ-170, + combo over-assertion fix), then resume with `/graph-run PRD/work/semantic-rule-retrieval/`. Design published to `origin/thejudge-auto/semantic-rule-retrieval`; docs-only PR into `main` open for review — merge it last. Run two applies the verdicts, re-checks, then plans/builds/reviews. |
+
 ## deferred
 
 ## parked in ideasForLater

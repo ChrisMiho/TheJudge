@@ -14,6 +14,7 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - API Framework: Express or Fastify
 - Validation: request validation layer
 - AI Provider: backend provider boundary (`ASK_AI_PROVIDER=mock` default, `ASK_AI_PROVIDER=openai` for live answers)
+- Embedding Provider: backend embedding boundary for System 3 semantic rule retrieval (`EMBEDDING_PROVIDER=mock` default → lexical only, `local` → bundled `all-MiniLM-L6-v2` in-process, `openai` → OpenAI embeddings API); mirrors the `ASK_AI_PROVIDER` seam (REQ-170)
 - Provider Access: provider SDKs are backend-only
 - Storage: none for the core product
 
@@ -264,6 +265,10 @@ Purpose:
 - build scripts degrade gracefully: missing CR source or failed extract keeps the prior committed artifacts and exits 0
 - the backend loads both committed artifacts at startup and omits game-rules enrichment if the artifacts are missing or empty
 - runtime CR fetches are out of scope for the core product
+- System 3 semantic retrieval adds a committed per-rule embeddings artifact `apps/backend/data/gameRulesRuleEmbeddings.json` (one 384-dim vector per rule in `gameRulesRuleIndex.json`), produced offline by `all-MiniLM-L6-v2` quantized (q8); the 384-dim corpus is ~5.3MB committed — no vector database, cosine-searched in-process (REQ-170)
+- the embeddings artifact is built by an offline step alongside `build-game-rules.mjs`, runs in the same `npm run data:build` / `data:refresh` chain, rebuilds only on CR refresh, and degrades gracefully (a missing or malformed embeddings artifact disables the semantic path and System 3 falls back to lexical retrieval)
+- the raw local embedding model download is gitignored and must not be committed; only the trimmed 384-dim vectors are committed, never an oversized fp32 blob. If q8 recall drops materially below the fp32 baseline on the committed benchmark, ship fp32 via a container image (10GB limit) instead of the quantized zip (REQ-170)
+- query embedding at request time is selected by `EMBEDDING_PROVIDER` (`mock` | `local` | `openai`, default `mock`); `mock` and `local` make no per-request external call, so System 3 keeps its no-per-request-external-call posture and mock runs with no model access (NFR-009); `openai` is seam-selectable for live mode only
 
 ## Commander Spellbook Combo Data Strategy
 

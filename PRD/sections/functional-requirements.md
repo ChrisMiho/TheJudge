@@ -368,18 +368,23 @@
   - supplemental section appears after `GAME RULES (reference)` and before `OFFICIAL RULINGS`
   - supplemental section omitted when index missing, empty, or no rules score above 0
   - eval fixtures assert labeled supplemental recall per REQ-032
+  - System 3 scoring is semantic-primary when the embedding-provider seam is active (REQ-170): the query embedding is cosine-ranked against the committed rule embeddings, with the exact-rule-id/parent-rule-id boost merged in; lexical scoring remains the mock/offline default and the fallback on any embedding failure, so retrieval is never worse than the prior lexical behavior
+  - the System 3 retrieval query is built from the question plus the keyword signal, not raw concatenated card oracle text (query-construction fix, REQ-170)
 - Constraints:
   - prompt-only and backend-only; no `AskAiRequest`, Zod schema, or frontend changes
   - no paraphrased rule text
   - no runtime CR or Scryfall fetch per request
+  - no per-request external call for System 3 query embedding in the default (`mock`) or shipped-semantic (`local`) modes; the "no per-request external call" posture is preserved by the bundled local model (REQ-170), not reversed — only `EMBEDDING_PROVIDER=openai` would add one, and it is not the default
   - System 2 selection uses only card-agnostic game-state signals (`turnPhase`, `combatStep`, populated zones); no card names, oracle text, or keywords
   - System 3 owns all card/question-driven retrieval including oracle-keyword signals
 - Dependencies:
   - DEC-045
   - DEC-046
   - REQ-032
+  - REQ-170 (semantic retrieval mechanism: embedding-provider seam, rule-embeddings artifact, runtime query-embed, lexical fallback)
 - Notes:
   - supersedes REQ-022 acceptance criteria that required all curated topics on every request
+  - System 3's scoring mechanism moves from lexical-only to semantic-primary with lexical fallback under REQ-170; the section's placement, 5-excerpt cap, and System 2 dedup are unchanged
 
 ### REQ-023
 - Title: Decrypt wait feedback panel
@@ -577,17 +582,19 @@
   - harness check `system2-conditional-selection` passes when selected curated topics match `expectedSystem2TopicIds` for fixtures that define them
   - harness check `system3-expected-recall` passes when every `expectedSupplementalRuleIds` entry appears in System 3 top-5 retrieval results
   - harness check `system3-noise-excluded` passes when no `forbiddenSupplementalRuleIds` entry appears in System 3 top-5
+  - `system3-expected-recall` and `system3-noise-excluded` run against the semantic retrieval path (REQ-170) using committed frozen query embeddings, so the eval measures semantic retrieval with no live embedding call and no live AI call
   - scenario fixtures cover the signal taxonomy: stack-resolution (e.g. counterspell), combat-damage/deathtouch, upkeep-trigger, keyword interaction (extend `cascade-keyword`), out-of-manifest SBA (extend `state-based-actions`)
   - a digestible before/after relevance report is available for tuning review (one table per scenario: System 2 topics selected, System 3 top-5 with scores, recall hit/miss); may be a script output or harness report artifact
   - existing structural checks (section presence, ordering, budget) remain unchanged
   - `npm run test:eval` remains the automated regression gate
 - Constraints:
-  - no live AI provider calls in relevance checks
+  - no live AI provider calls in relevance checks, and no live embedding calls — the semantic path is evaluated via committed frozen query embeddings so the eval stays offline and deterministic
   - expected rule IDs are human-labeled ground truth, not inferred from current scorer output
   - do not assert full prompt golden text for relevance scenarios unless structural sections change intentionally
 - Dependencies:
   - DEC-047
   - REQ-022
+  - REQ-170 (semantic retrieval path this eval now measures)
 - Notes:
   - replaces reliance on manual multi-file `prompt:preview` review as the sole relevance verification path
 
@@ -2213,6 +2220,7 @@
   - each entry includes its classification, stable Commander Spellbook variant reference, compatible present ingredients, present-but-incompatible-zone ingredients, missing exact ingredients, matched/unresolved template ingredients, per-ingredient applicable card state, per-ingredient `mustBeCommander`, produced effects, steps, mana needed, prerequisites, and notes when available
   - the rendered classification never uses the bare word "complete": a fully assigned candidate renders as all pieces present with card state explicitly unverified, and a candidate with gaps renders as partial with its missing pieces named
   - prompt instructions direct the model to check each ingredient's applicable card state and `mustBeCommander` against the submitted board before asserting that a combo is live, assembled, or executable
+  - in lookup mode (no board / no game state), where the against-the-board check has nothing to bind to, prompt instructions direct the model to assert an assembled or working combo only when every ingredient is an attached card; when any required ingredient is not an attached card, the model names the missing role and states the cards do not combo as-is, rather than presenting the combo as assembled (closes the no-board over-assertion gap; see REQ-167)
   - partial candidates explicitly label every missing or incorrectly zoned ingredient so the model can address the user's question without presenting the combo as currently assembled
   - prompt instructions state that Commander Spellbook is community catalog data, not WotC rules, legality validation, or proof of executability; official card text, WotC rulings, and Comprehensive Rules remain authoritative
   - without explicit combo intent, the model is told to use an automatically matched complete combo only when relevant to the user's actual question; it must not expand into unrelated staples or other variants
@@ -3842,6 +3850,7 @@
   - Screen-layout's "Quick Question — pre-submit" row records a **single-card** image cap (REQ-129/DEC-160/REQ-141). That row must be re-measured and updated for a multi-card add strip when this ships; it is deliberately not restamped as measured truth here.
   - Does not resolve Q-003 (lightweight game context) or Q-004 (answer-seeded second-pass retrieval); both stay open.
   - Gate review (2026-08-30) tightened the add cap from a suggested ~6 to a fixed 5, and directed that lookup-mode combo answers explain a completed combo when the attached cards fully assemble it, and otherwise name the missing piece(s) and describe what would fill them. The define loop (2026-08-30) settled those mechanics in REQ-094 (amended): "complete" = every ingredient slot filled by an exact/template match in the attached set, with REQ-094's zone/quantity checks dropped for a board-less mode; "partial" = qualifies on at least one attached card but leaves a slot unmatched; lookup selection order is complete-before-partial, then attached-card coverage, then fewer missing, then popularity, then variant id. The answer is REQ-095's existing present/missing rendering, and "what would fill the role" is the missing ingredient's own identity/template from the combo catalog, not a card recommendation. No new stable ID was needed.
+  - Combo over-assertion fix (semantic-rule-retrieval): REQ-095 now carries the lookup-mode (no board) instruction that the model may assert an assembled combo only when every ingredient is an attached card, and otherwise names the missing role and says the cards do not combo as-is. That closes the board-oriented gap where a board-less lookup let a fabricated combo through. Naming the missing role stays a description of the missing ingredient's own identity/template, not a card recommendation or search — the no-card-recommendation-engine non-goal is preserved.
 
 ### REQ-168
 - Title: The rules guardrail stops refusing real Magic phrases like "combo"
@@ -3883,3 +3892,38 @@
   - `system-map/prompt-assembly.md`; `scripts/prompt-preview.mjs`
 - Notes:
   - The owner's stated purpose is to drive future prompt-format optimization for better rules resolving; this spec is that reference surface.
+
+### REQ-170
+- Title: Semantic rule retrieval — local embedding provider and rule-embeddings artifact
+- Priority: high
+- Description: System 3 supplemental rule retrieval scores rules by semantic similarity between the player's question and the Comprehensive Rules corpus, not lexical keyword overlap alone. A committed offline artifact holds one pre-embedded vector per rule; at request time the query is embedded and cosine-ranked against those vectors to fill System 3's existing top-5 slot. Query embedding runs through a swappable embedding-provider seam that mirrors the `ASK_AI_PROVIDER` boundary, with a bundled local model as the shipped semantic provider so there is no per-request external call. Lexical retrieval is retained as the mock/offline default, the exact-rule-id boost, and the failure fallback, so retrieval is never worse than today.
+- Acceptance Criteria:
+  - a committed offline artifact `apps/backend/data/gameRulesRuleEmbeddings.json` (or equivalent) holds one embedding vector per rule in `gameRulesRuleIndex.json`, built by an offline step alongside `build-game-rules.mjs` and rebuilt only on CR refresh
+  - the embeddings artifact is produced by the local model `all-MiniLM-L6-v2`, 384-dim, quantized (q8); the bundled 384-dim corpus is ~5.3MB
+  - a new embedding-provider seam selects the query embedder by explicit flag `EMBEDDING_PROVIDER` with values `mock` | `local` | `openai`; default is `mock` when unset and does not auto-switch on `NODE_ENV` or deploy target (mirrors `ASK_AI_PROVIDER`, DEC-020)
+  - `EMBEDDING_PROVIDER=mock` performs no embedding and no external call; System 3 uses lexical retrieval only (preserves NFR-009 / DEC-017 / DEC-033 — mock is the default and runs with no model access)
+  - `EMBEDDING_PROVIDER=local` embeds the query in-process with the bundled model — no external call — and ranks the query vector against the committed rule embeddings by cosine to produce System 3 candidates
+  - `EMBEDDING_PROVIDER=openai` embeds the query via the OpenAI embeddings API (live mode only); it is seam-selectable and never the default
+  - the async route handler embeds the query and injects the query vector (or null) into `preparePromptInput` as an option, so `preparePromptInput` stays synchronous
+  - the exact-rule-id and parent-rule-id boost is merged with semantic ranking so a cited rule number (e.g. "rule 613.9") is still pulled even when semantic similarity misses it
+  - the retrieval query is built from the player's question plus the keyword signal, not raw concatenated card oracle text (query-construction fix)
+  - on any embedding failure (model load, inference error, missing embeddings artifact, provider error) System 3 falls back to lexical retrieval and still returns up to 5 excerpts; one diagnostic warning is emitted
+  - the q8 quantized model's recall@5 is re-confirmed on the committed benchmark before locking it; if it drops materially below the fp32 baseline (clean 0.865 / multi-card 0.763) ship fp32 via a container image instead of the quantized zip
+  - System 3 remains capped at 5 excerpts and deduplicated against the selected System 2 baseline rule IDs (REQ-022 unchanged on those points)
+- Constraints:
+  - backend/prompt-only; no `AskAiRequest`, Zod schema, or frontend change; System 3 still fills its existing top-5 slot
+  - no vector database — the ~3,432 rule vectors live in-process and are cosine-searched, bundled like the rule index
+  - RAG scope is rules only; cards, combos, and rulings stay keyed lookups, not semantic search
+  - no per-request external call in the default (`mock`) or shipped-semantic (`local`) modes; only `EMBEDDING_PROVIDER=openai` adds one, and it is not the default
+  - never commit the raw model download or an oversized embeddings blob; the committed artifact is the trimmed 384-dim vectors only
+  - NFR-002 (<3s) holds — a local query embedding adds ~2ms
+- Dependencies:
+  - REQ-022 (System 3 enrichment behavior this mechanism feeds)
+  - REQ-032 (offline semantic retrieval eval)
+  - DEC-020 (provider-boundary pattern the embedding seam mirrors)
+  - DEC-046 (System 3 scoring this amends)
+  - NFR-009 (mock runs with no model access)
+- Notes:
+  - Provider decided by measurement — local MiniLM ties OpenAI on clean questions (0.865 vs 0.885 recall@5) and beats it on the multi-card case (0.763 vs 0.603); it is ~100x faster per query and free at this scale. Evidence: `PRD/work/semantic-rule-retrieval/FINDINGS-EMBEDDING-PROVIDER.md`.
+  - Interacts with Q-001 (System 3 keyword-vocabulary derivation): semantic retrieval reduces reliance on the hand-derived keyword vocabulary but does not remove it — the vocabulary still feeds the query keyword signal and the exact-rule-id boost. Q-001 stays open; this requirement does not resolve it.
+  - The parked mechanic-definition corpus injection (`prompt-context-refinement/RAG-DEFERRED.md`) is a separate feature that reuses this embedding machinery but is not built here.

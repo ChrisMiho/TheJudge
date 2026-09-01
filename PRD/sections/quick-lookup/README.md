@@ -12,8 +12,8 @@
   DEC-100, DEC-116, DEC-131, DEC-146, DEC-153, REQ-072, REQ-073, REQ-074,
   REQ-075, REQ-079, REQ-091, REQ-092, REQ-094, REQ-095, REQ-097, REQ-098,
   REQ-011, REQ-022, REQ-024, REQ-030, REQ-105, REQ-109, REQ-110, REQ-121,
-  REQ-129, REQ-132, REQ-134, REQ-141, REQ-167, FLOW-006, FLOW-011, FLOW-023,
-  NFR-001
+  REQ-129, REQ-132, REQ-134, REQ-141, REQ-167, REQ-170, FLOW-006, FLOW-011,
+  FLOW-023, NFR-001
 
 ## What it is
 
@@ -255,12 +255,15 @@ both providers. (DEC-020, REQ-072)
 
 ### Retrieval
 
-- Built: System 3 supplemental rules retrieval (DEC-046) is IDF-scored keyword
-  retrieval over the loaded rule index, excluding the curated rule numbers the
-  always-on core topics already carry, returning a small capped set of the
-  best-scoring rules. For lookup the query is built from the question tokens
-  always, plus every attached card's oracle text and type line (REQ-167).
-  (DEC-046, REQ-022, DEC-107, REQ-167)
+- Built: System 3 supplemental rules retrieval (DEC-046) is semantic-primary
+  when the embedding-provider seam is active (REQ-170) — the query embedding is
+  cosine-ranked against the committed rule embeddings, with the exact-rule-id
+  boost merged in — excluding the curated rule numbers the always-on core topics
+  already carry, returning a small capped set of the best-scoring rules. Lexical
+  scoring is retained as the mock/offline default and the fallback on any
+  embedding failure, so retrieval is never worse than the prior lexical behavior.
+  For lookup the query is built from the question plus the keyword signal, not
+  raw card oracle text. (DEC-046, REQ-022, REQ-170, DEC-107, REQ-167)
 - Built: the always-on core game-rules topics are a fixed curated set
   (stack-and-priority, targets, zones, triggered-ability basics), not the
   state-gated selector the game flow uses — lookup carries no game state to gate
@@ -310,8 +313,11 @@ as the current shipped configuration, not product truth.
   ending with assistant, per-message cap — shared with the main flow, not a
   Quick-Lookup-specific policy. (REQ-072, REQ-075)
 - Retrieval: System 3 returns a small capped best-scoring set (top 5), curated
-  core-topic rule numbers excluded; question tokens always score, plus every
-  attached card's oracle/type tokens (REQ-167). (DEC-046, REQ-022, REQ-167)
+  core-topic rule numbers excluded; scoring is semantic-primary (cosine over the
+  committed rule embeddings) with the exact-rule-id boost merged and lexical
+  retained as the mock/offline default and failure fallback (REQ-170), and the
+  query is built from the question plus the keyword signal, not raw card oracle
+  text. (DEC-046, REQ-022, REQ-170, REQ-167)
 - Card attach cap: the pre-submit card-attach strip accepts at most 5 cards
   (REQ-167); an add attempted past the cap is blocked with a stated limit
   message. (REQ-167, `QuickLookupApp.tsx`)
