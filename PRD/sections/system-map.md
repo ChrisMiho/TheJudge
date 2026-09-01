@@ -281,7 +281,7 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Identification core
 
 - Status: shipped
-- Summary: Single authoritative TS perceptual-hash + matching module (DB reader, auto-levels, Region A pHash, two-orientation match, ranked candidates), validated byte-for-byte against regenerated golden vectors. Retains a dormant card-back rejection method (inactive until a `_card_back` reference is added — DEC-055).
+- Summary: Single authoritative TS perceptual-hash + matching module (DB reader, auto-levels, Region A pHash, two-orientation match, ranked candidates), validated byte-for-byte against regenerated golden vectors. Card-back rejection is not implemented: the previously-dormant `isCardBack()` method was removed as dead code, while the `_card_back` id stays excluded from the searchable set (DEC-055).
 - Lives in: `apps/frontend/src/lib/scan/{recipe,identify,dbformat,types}.ts`; golden vectors under `apps/frontend/src/lib/scan/__fixtures__/`
 - Backed by: REQ-034, DEC-051, DEC-053
 

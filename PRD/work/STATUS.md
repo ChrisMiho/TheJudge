@@ -14,9 +14,9 @@ Do not rename package folders to encode status.
 
 ## ideation
 
-| [remove-dead-card-back-detector](remove-dead-card-back-detector/) | pure refactor: delete unreachable `isCardBack`/`CARD_BACK_THRESHOLD` in `apps/frontend/src/lib/scan/identify.ts` |
-
 ## owner-action
+
+| [remove-dead-card-back-detector](remove-dead-card-back-detector/) | run one parked: deleting the dormant `isCardBack()` detector changes DEC-055 current-state truth — answer `GATE-QUESTIONS.md` (delete vs keep), then resume. Docs-only PR open. |
 
 ## deferred
 

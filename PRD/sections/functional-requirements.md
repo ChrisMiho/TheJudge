@@ -619,7 +619,7 @@
 - Priority: high
 - Description: Port the Cardomancer art-identification core to TypeScript as a single authoritative module that, given a canonical 745×1040 card image, returns a ranked candidate list, fully on-device with no network calls.
 - Acceptance Criteria:
-  - implements the binary `cardhashes.bin` reader, query-only auto-levels (per-channel black-point stretch), Region A crop `(30,105,715,520)`, the canonical per-channel DCT perceptual hash (64×64 resize → DCT-II → top-left 16×16 → median including DC → `>median` row-major → 32 bytes MSB-first per channel), both-orientation (0°/180°) matching, mean R/G/B Hamming distance on a 0..256 scale, match threshold 120, card-back rejection threshold 100, and `__back` suffix stripping
+  - implements the binary `cardhashes.bin` reader, query-only auto-levels (per-channel black-point stretch), Region A crop `(30,105,715,520)`, the canonical per-channel DCT perceptual hash (64×64 resize → DCT-II → top-left 16×16 → median including DC → `>median` row-major → 32 bytes MSB-first per channel), both-orientation (0°/180°) matching, mean R/G/B Hamming distance on a 0..256 scale, match threshold 120, and `__back` suffix stripping (the card-back rejection threshold and its `isCardBack()` method shipped with this port but were later removed as dead code — DEC-055)
   - exposes the resize + hash "recipe" as a reusable export consumed by the library builder (REQ-035)
   - golden-vector parity tests run under `npm test` (Vitest) and pass: DB load (ids/count/byte lengths), pHash byte-for-byte, auto-levels pixel-for-pixel, end-to-end identify (candidate order, ids, distances, `matched`, `was_rotated`)
   - golden vectors are regenerated from this module's recipe (DEC-051) and committed as the regression fixtures

@@ -85,8 +85,10 @@ passes each one:
 - A committed manifest carries the coverage counters above. The sidecar
   `apps/frontend/public/data/cardhashSkiplist.json` tracks per-id attempt counts
   and parked ids.
-- The card-back reference (`_card_back`) support is present but dormant: no
-  canonical reference asset ships, so card-back detection is inactive (DEC-055).
+- No canonical `_card_back` reference asset ships, and the engine carries no
+  card-back detector — the dormant `isCardBack()` method was removed as dead
+  code. The `_card_back` id remains a distinct, DB-excluded entry; re-enabling
+  detection needs both a reference asset and a reimplemented detector (DEC-055).
 
 ## Measured bounds (current committed build)
 

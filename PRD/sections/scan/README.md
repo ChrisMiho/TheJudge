@@ -304,9 +304,10 @@ product truth, and are recorded here as the current shipped configuration.
   DEC-076 removed the in-scan prompt; manual search is reached by **Exit scan**
   while the camera is open. Manual tap-capture is unchanged. (DEC-076, DEC-052)
 - **Card-back "Flip the card over" prompt — closed door.** Card-back
-  detection is descoped for want of a canonical reference asset; the engine
-  method and build support remain dormant, re-enable by supplying the asset.
-  (DEC-055)
+  detection is descoped for want of a canonical reference asset. The dormant
+  engine detector (`isCardBack()`) was removed as dead code; the `_card_back`
+  id is still excluded from the searchable set. Re-enable now requires
+  reimplementing the detector as well as supplying the asset. (DEC-055)
 - **Loosening the lock gate as the robustness lever — closed door.** Robustness
   is added query-side and detection-side (cleaner query, best-frame selection,
   higher detector recall, guide prior, higher capture resolution); the identity
@@ -325,8 +326,8 @@ product truth, and are recorded here as the current shipped configuration.
   never folded into a robustness story. (DEC-069, DEC-072, DEC-074)
 - **Deferred, not cut:** a torch/flash toggle and explicit exposure control
   (DEC-074), multi-card-per-frame detection (REQ-037), manual reorder of scanned
-  cards (`FLOW-002`), and re-enabling card-back detection once a reference asset
-  exists (DEC-055).
+  cards (`FLOW-002`), and re-enabling card-back detection, which now needs a
+  reimplemented engine detector as well as a reference asset (DEC-055).
 
 ## Where it lives
 
