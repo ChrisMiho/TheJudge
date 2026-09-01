@@ -44,7 +44,7 @@ Quick Question unless every piece is an attached card.
 - Run: graph-20260901-044411, run one, parked at `owner-action` after gate-qc
   PASS.
 - Design published to `origin/thejudge-auto/semantic-rule-retrieval`.
-- Docs-only PR into `main`: <recorded below once opened>
+- Docs-only PR into `main`: https://github.com/ChrisMiho/TheJudge/pull/154
 - Resume once every verdict is filled: `/graph-run PRD/work/semantic-rule-retrieval/`
   — run two applies your verdicts (`graph-gate-review`), re-checks, then plans,
   builds, and reviews the implementation. Leave the docs PR open; you merge it
