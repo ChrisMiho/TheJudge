@@ -14,6 +14,8 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+| [remove-dead-card-back-detector](remove-dead-card-back-detector/) | pure refactor: delete unreachable `isCardBack`/`CARD_BACK_THRESHOLD` in `apps/frontend/src/lib/scan/identify.ts` |
+
 ## owner-action
 
 ## deferred
