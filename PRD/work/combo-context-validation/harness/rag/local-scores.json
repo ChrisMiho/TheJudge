@@ -1,0 +1,63 @@
+{
+  "n": 156,
+  "k": 5,
+  "local": {
+    "bge-small-en-v1.5": {
+      "clean": {
+        "recall5": 0.846,
+        "mrr": 0.674
+      },
+      "poll": {
+        "recall5": 0.365,
+        "mrr": 0.265
+      },
+      "latencyMs": {
+        "p50": 4,
+        "p95": 5,
+        "mean": 4.2
+      },
+      "ruleEmbedSec": 51.4,
+      "dims": 384
+    },
+    "all-MiniLM-L6-v2": {
+      "clean": {
+        "recall5": 0.865,
+        "mrr": 0.708
+      },
+      "poll": {
+        "recall5": 0.763,
+        "mrr": 0.631
+      },
+      "latencyMs": {
+        "p50": 2,
+        "p95": 3,
+        "mean": 2.2
+      },
+      "ruleEmbedSec": 27.1,
+      "dims": 384
+    }
+  },
+  "baseline": {
+    "openai/text-embedding-3-small": {
+      "clean": {
+        "recall5": 0.885,
+        "mrr": 0.733
+      },
+      "poll": {
+        "recall5": 0.603,
+        "mrr": 0.453
+      },
+      "dims": 1536
+    },
+    "lexical-tfidf": {
+      "clean": {
+        "recall5": 0.577,
+        "mrr": 0.413
+      },
+      "poll": {
+        "recall5": 0.026,
+        "mrr": 0.017
+      }
+    }
+  }
+}

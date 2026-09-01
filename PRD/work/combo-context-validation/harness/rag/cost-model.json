@@ -1,0 +1,52 @@
+{
+  "assumptions": {
+    "OPENAI_PER_MTOK": 0.02,
+    "QUERY_TOKENS": 60,
+    "LAMBDA_ARM_GB_SEC": 0.0000133334,
+    "LAMBDA_REQ": 2.0000000000000002e-7,
+    "LOCAL_MEM_GB": 1.5,
+    "VOLUMES": [
+      1000,
+      50000,
+      500000
+    ]
+  },
+  "openaiPerQuery": 0.0000012000000000000002,
+  "rows": [
+    {
+      "provider": "local/bge-small-en-v1.5",
+      "perQueryUsd": 8.00004e-8,
+      "latencyP50ms": 4
+    },
+    {
+      "provider": "local/all-MiniLM-L6-v2",
+      "perQueryUsd": 4.00002e-8,
+      "latencyP50ms": 2
+    },
+    {
+      "provider": "openai/text-embedding-3-small",
+      "perQueryUsd": 0.0000012000000000000002,
+      "latencyP50ms": "~250 (network)"
+    }
+  ],
+  "monthly": [
+    {
+      "provider": "local/bge-small-en-v1.5",
+      "1k/mo": "$0.00",
+      "50k/mo": "$0.00",
+      "500k/mo": "$0.04"
+    },
+    {
+      "provider": "local/all-MiniLM-L6-v2",
+      "1k/mo": "$0.00",
+      "50k/mo": "$0.00",
+      "500k/mo": "$0.02"
+    },
+    {
+      "provider": "openai/text-embedding-3-small",
+      "1k/mo": "$0.00",
+      "50k/mo": "$0.06",
+      "500k/mo": "$0.60"
+    }
+  ]
+}
