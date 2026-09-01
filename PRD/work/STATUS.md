@@ -14,6 +14,9 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+| [graph-shipping-mode-phase1](graph-shipping-mode-phase1/) | unblock graph-run for several ideas: overlap-scope the base→main guard + auto-bridge run one→two on an empty gate; agent-workflow only, no `PRD/sections/` |
+| [graph-shipping-mode-phase2](graph-shipping-mode-phase2/) | concurrent graph-run: one base branch + worktree per run + approval-watcher fires part 2; depends on phase1 |
+
 ## owner-action
 
 ## deferred
