@@ -3,11 +3,11 @@
 ## Problem
 The automated lifecycle carried forward a quirk of the old manual flow: refinement
 mutates durable product truth (`PRD/sections/`) up front, during spec-forming.
-That's the piece that fights everything else — it makes spec-forming touch shared
+That's the piece that fights parallel forming — it makes spec-forming touch shared
 files (so parallel formers collide), and it puts product truth into main before
-the code that backs it exists. Symptom seen 2026-09-01: the overnight loop parked
-after one target and every later fresh run hit the base→main guard; the deeper
-cause is *where the writing happens*, not the guard.
+the code that backs it exists. (The overnight loop freezing after one target on
+2026-09-01 is a *separate* problem — the base→main guard — addressed in Phase 2,
+not here.)
 
 ## Outcome — move the writing: propose / apply / close
 Rework the shared lifecycle's division of labour so durable mutation happens once,
@@ -32,8 +32,9 @@ truth) means no gate.
 - Kills the spec-ahead-of-code window: durable truth and code land together.
 - Makes parallel spec-forming conflict-free: each former writes only its own work
   folder. This is the prerequisite for [[graph-shipping-mode-phase2]].
-- Makes the base→main guard and auto-bridge mostly moot — retire/shrink rather
-  than engineer them.
+- Does NOT retire the base→main guard or unblock the loop — run one still opens a
+  base→main PR the guard blocks on. That's Phase 2. Phase 1 is the correct ground
+  Phase 2 stands on, nothing more.
 
 ## Non-goals
 - No concurrency or background loop yet — that is Phase 2. This is correct even

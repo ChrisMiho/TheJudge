@@ -1,0 +1,30 @@
+{
+  "slug": "graph-shipping-mode-phase1",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "thejudge-refinement records the proposed diff in GATE-QUESTIONS.md and no longer writes durable PRD/sections during define",
+      "value": false,
+      "evidence": { "paths": [".claude/skills/thejudge-refinement/SKILL.md"] }
+    },
+    {
+      "id": "B2",
+      "statement": "graph-run's gate trigger reads GATE-QUESTIONS.md, not a live PRD/sections diff",
+      "value": false,
+      "evidence": { "paths": [".claude/skills/graph-run/SKILL.md"] }
+    },
+    {
+      "id": "B3",
+      "statement": "graph-gate-review finalizes verdicts inside the work-folder proposal",
+      "value": false,
+      "evidence": { "paths": [".claude/skills/graph-gate-review/SKILL.md"] }
+    },
+    {
+      "id": "B4",
+      "statement": "Updated refinement/gate skill fixtures pass",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

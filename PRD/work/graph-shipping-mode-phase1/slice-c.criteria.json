@@ -1,0 +1,30 @@
+{
+  "slug": "graph-shipping-mode-phase1",
+  "slice": "C",
+  "criteria": [
+    {
+      "id": "C1",
+      "statement": "implement-all/implement apply durable PRD/sections truth by intent + code together from the approved proposal",
+      "value": false,
+      "evidence": { "paths": [".claude/skills/thejudge-implement-all/SKILL.md", ".claude/skills/thejudge-implement/SKILL.md"] }
+    },
+    {
+      "id": "C2",
+      "statement": "thejudge-cleanup promotes durable truth exactly once at apply/close, assuming no refinement pre-write",
+      "value": false,
+      "evidence": { "paths": [".claude/skills/thejudge-cleanup/SKILL.md"] }
+    },
+    {
+      "id": "C3",
+      "statement": "Updated implement/cleanup skill fixtures pass",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "C4",
+      "statement": "The script test suite passes",
+      "value": false,
+      "evidence": { "command": "npm run test:scripts" }
+    }
+  ]
+}

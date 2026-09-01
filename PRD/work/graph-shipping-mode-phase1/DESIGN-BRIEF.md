@@ -15,10 +15,15 @@ result of this package.
 ## Motivation
 The old manual flow had refinement mutate `PRD/sections/` up front; automation
 carried that forward. That single choice causes: (a) parallel spec-formers touch
-shared section files and collide; (b) product truth enters main before the code
-that backs it; (c) the base→main guard has to block concurrency because every
-package holds an open truth-bearing PR. Moving the writing removes all three at
-the root.
+shared section files and collide, and (b) product truth enters main before the
+code that backs it. Moving the writing removes both at the root.
+
+**What this does NOT fix (scope correction):** it does not retire the base→main
+guard or unblock the overnight loop. Run one still opens a `thejudge-auto/<slug>`
+→ main PR and parks; the guard blocks the next fresh run on that PR's *existence*,
+regardless of its contents. Concurrency — worktree isolation, the decoupled
+main-handoff, and the guard fix — is [[graph-shipping-mode-phase2]]. Phase 1 is
+the correct foundation those depend on, nothing more.
 
 ## The change — division of labour
 
@@ -28,12 +33,16 @@ the root.
 | Apply | `thejudge-implement-all` (+ slices) | Applies the approved proposal: writes the real `PRD/sections/` edits **and** the code, together, in one PR. Applies **by intent** against current truth, not by replaying a frozen diff. |
 | Close | `thejudge-cleanup` | Promotion happens once, at apply/close; then deletes the work folder. Reconcile any double-promotion. |
 
-Consequent adjustments:
-- **Gate reads the proposal.** `graph-run`'s post-`define` diff check and
-  `graph-gate-review` operate on the work-folder proposal, not a live `PRD/sections/`
-  diff. Empty proposal = no gate.
-- **Guard/auto-bridge retire.** The base→main guard and the run-one→run-two
-  auto-bridge become mostly unnecessary; shrink or remove with tests, don't extend.
+Consequent adjustment (required, in scope):
+- **Gate reads the proposal.** Because refinement no longer writes `PRD/sections/`,
+  the old gate trigger (a live `PRD/sections/` diff) would never fire. `graph-run`'s
+  post-`define` check and `graph-gate-review` must instead read the work-folder
+  proposal to decide whether it carries product-truth changes. Empty proposal =
+  no gate. This is necessary for correctness, not an optional cleanup.
+
+Explicitly out of scope (Phase 2): the base→main guard, the run-one→run-two
+auto-bridge, worktree-per-run isolation, and the background loop. Phase 1 changes
+none of them.
 
 ## Principles this must honour (carry graph-run's discipline forward)
 1. **Enforce in code, not prompts.** The committed PreToolUse hook / scripts are
@@ -62,6 +71,8 @@ Consequent adjustments:
 ## Non-goals
 - No concurrency, background loop, or approval-watcher — that is
   [[graph-shipping-mode-phase2]].
+- No change to the base→main guard or the run-one→run-two flow (no auto-bridge) —
+  also Phase 2. Phase 1 does not touch or claim to fix them.
 - `land` (merge to main) stays a human merge; no auto-merge to main.
 - No `PRD/sections/` product-truth changes from this package.
 
@@ -70,7 +81,9 @@ Consequent adjustments:
   section bodies) and how apply-by-intent consumes it robustly when main has moved.
 - Whether the manual and graph modes share one code path for propose/apply or
   differ only at the orchestration edge.
-- Concrete retirement plan + tests for the base→main guard and auto-bridge.
+- Exactly how the gate reads product-truth intent from the work-folder proposal
+  (a proposed-changes marker vs. parsing the brief), replacing the retired
+  live-`PRD/sections/`-diff trigger.
 
 ## Verification approach
 - Pure-function unit tests for any new classifier.

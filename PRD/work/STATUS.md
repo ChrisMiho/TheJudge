@@ -8,11 +8,11 @@ Do not rename package folders to encode status.
 
 ## active
 
+| [graph-shipping-mode-phase1](graph-shipping-mode-phase1/) | propose/apply lifecycle rework (mapped, 4 slices A–D): refinement proposes (work-folder only), implement applies durable truth + code, cleanup promotes once; agent-workflow only. Guard/auto-bridge/concurrency = Phase 2 |
+
 ## refined
 
 ## refining
-
-| [graph-shipping-mode-phase1](graph-shipping-mode-phase1/) | propose/apply lifecycle rework: refinement documents proposal (work-folder only), implement applies durable truth + code together; conflict-free spec-forming; agent-workflow only, no `PRD/sections/` |
 
 ## ideation
 
