@@ -117,6 +117,22 @@ Package status signals (skill-maintained on every transition):
 
 Full vocabulary and rules: `PRD/instructions/workflow-reference.md`.
 
+## Off-lifecycle investigation skills
+
+Two skills sit **outside** the lifecycle above — they investigate and report,
+they do not move a package through statuses. Neither carries `STATUS.*`
+machinery, and both are model-invocable and explicitly callable.
+
+| Skill | When | Writes | Lands as |
+| --- | --- | --- | --- |
+| `thejudge-investigate` | An open-ended question needs working out before it's a feature — what a change takes, which option wins, is it worth building — with optional ad-hoc subagents | `PRD/work/probe-<slug>/` (thin `PROBE.md`, `FINDINGS-*.md`, and — build-bound only — a `GRAPH-BRIEF.md`) | A plain answer, or a `/graph-run` handoff |
+| `thejudge-sweep` | One question applied across many comparable places (a corpus that splits into sections, one score per item) | `PRD/work/sweep-<slug>/` (finding doc per section + one `ROLLUP.md`) | One PR — the single review gate |
+
+`thejudge-investigate` is the freeform front door; `thejudge-sweep` is the
+structured audit it calls when a question collapses to one-question-across-many-
+places. Investigate delegates to sweep and to `graph-run`; it never reimplements
+them.
+
 ## Session handoffs
 
 Every skill that hands off ends with a **Next step**: one sentence plus the
