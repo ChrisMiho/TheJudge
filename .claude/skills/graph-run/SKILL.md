@@ -108,25 +108,29 @@ boundaries are required.
 5. On `ok`, advance. On `failed`, apply the node's retry rule from the
    contract. On any gate trigger, park.
 
-   **After node 3 (`define`) returns `ok`, diff `PRD/sections/`.** A non-empty
-   diff no longer parks live. Write `PRD/work/<slug>/GATE-QUESTIONS.md` — one
-   `## <STABLE-ID>` block per new stable ID, each opening with the gate-question
+   **After node 3 (`define`) returns `ok`, check for
+   `PRD/work/<slug>/GATE-QUESTIONS.md`.** Refinement *proposes* — it does not
+   edit `PRD/sections/`, so there is no live diff to take; when it proposes
+   product-truth changes it authors `GATE-QUESTIONS.md` itself, one
+   `## <STABLE-ID>` block per stable ID, each opening with the gate-question
    plain-language block from `PRD/instructions/plain-language-standard.md`
    (*What this decides · In plain terms · What happens if you say no*, with every
    cited `DEC`/`REQ` inlined and any technical term defined in the same breath),
-   then that ID's **complete diff** (never a summary), and an `accept/edit/reject`
-   answer slot — then **continue** to `gate-qc`. The owner must be able to answer
-   each block without opening a file to decode an ID: that is the founding pain
-   this gate exists to fix. An empty diff writes no questions file; refinement
-   that only writes `DESIGN-BRIEF.md` produces no gate at all. The exact file
-   format is in `graph-workflow-contract.md` under `## The two runs`.
+   then that ID's **complete proposed diff** (never a summary), and an
+   `accept/edit/reject` answer slot. The driver's job here is only to **gate on
+   its presence**: `GATE-QUESTIONS.md` present → product-truth changes proposed →
+   **continue** to `gate-qc`; absent → no product truth → no gate, continue. The
+   owner must be able to answer each block without opening a file to decode an ID:
+   that is the founding pain this gate exists to fix. Refinement that writes only
+   `DESIGN-BRIEF.md` (no proposed product truth) produces no gate at all. The
+   exact file format is in `graph-workflow-contract.md` under `## The two runs`.
 
-   The **whole** diff gates — every new stable ID gets its own slot, not the
-   headline ones alone. The 2026-08-17 leak wrote two decisions *and*
+   The **whole** proposal gates — every proposed new stable ID gets its own slot,
+   not the headline ones alone. The 2026-08-17 leak wrote two decisions *and*
    REQ-146..151, NFR-015, and FLOW-019 — six requirements and a flow are product
    behavior as surely as the decisions were. Decisions are retired now, so new
-   truth is `REQ`/`FLOW` written into the feature specs, and every one of those
-   gets a slot.
+   truth is `REQ`/`FLOW` *proposed* in `GATE-QUESTIONS.md` (applied to the feature
+   specs only at `build`), and every one of those gets a slot.
 
    This is the one place autonomy is deliberately traded for control, now made
    off the terminal: the owner answers the file on their own schedule between the
@@ -148,11 +152,12 @@ read from the entry point, not a flag.
 instead of advancing to `plan`. A `gate-qc` FAIL still loops to `define` (max
 three) as normal; only PASS stops. To stop, run one:
 
-1. Publishes the design to the base branch — `DESIGN-BRIEF.md`, any
-   `PRD/sections/` truth, `GATE-QUESTIONS.md` (when the define diff was
-   non-empty), the package `README.md` (with `## Autonomous metadata` and
-   `## Preparation gate`), and the ledger — committed and pushed to
-   `origin/<autonomous base>`.
+1. Publishes the proposal to the base branch — `DESIGN-BRIEF.md`,
+   `GATE-QUESTIONS.md` (when refinement proposed product-truth changes), the
+   package `README.md` (with `## Autonomous metadata` and `## Preparation gate`),
+   and the ledger — committed and pushed to `origin/<autonomous base>`. No
+   `PRD/sections/` edits are published here: refinement wrote none, and `build`
+   applies them by intent later.
 2. Opens the **docs-only base→main PR**:
    `gh pr create --base main --head thejudge-auto/<slug>`. This *creates* a PR; it
    never merges one, so no boundary is crossed. Record its URL in the ledger. It
@@ -163,11 +168,13 @@ three) as normal; only PASS stops. To stop, run one:
    to do · What it changes* — so the owner sees, at the top of the PR, that this
    is a docs-only design PR, that their action is to answer `GATE-QUESTIONS.md`
    and hold the PR open (not merge yet), and what product truth it proposes;
-   the design brief, sections diff, and ledger stay in the body below it.
+   the design brief, the proposal (`GATE-QUESTIONS.md`), and the ledger stay in
+   the body below it.
 3. Parks at `owner-action`: set the marker, update the board row, and write under
    `## Open gate` either "answer `GATE-QUESTIONS.md`, then resume" (with the file
-   path) or, on an empty diff, "review the docs PR, then resume to implement" —
-   with `/graph-run PRD/work/<slug>/` as the resume command in both cases. End.
+   path) or, when refinement proposed no product truth (no `GATE-QUESTIONS.md`),
+   "review the docs PR, then resume to implement" — with
+   `/graph-run PRD/work/<slug>/` as the resume command in both cases. End.
 
 **Run two** is `/graph-run PRD/work/<slug>/` resuming that `owner-action` park.
 Before re-entering the node graph it resolves the gate:
@@ -179,8 +186,8 @@ Before re-entering the node graph it resolves the gate:
 - **any answer slot still blank** → re-park at `owner-action` unchanged and end.
   The gate is not resolved, so run two stays a single owner command with nothing
   to guess.
-- **no `GATE-QUESTIONS.md`** (run one's diff was empty) → nothing to apply;
-  restore `STATUS.refined`, re-enter at `gate-qc`, and continue.
+- **no `GATE-QUESTIONS.md`** (refinement proposed no product truth) → nothing to
+  apply; restore `STATUS.refined`, re-enter at `gate-qc`, and continue.
 
 The base→main PR opened in run one stays the owner's to merge and stays open
 across both runs; the run never merges it.

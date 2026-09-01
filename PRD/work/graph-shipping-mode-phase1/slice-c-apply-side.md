@@ -1,6 +1,13 @@
 # Slice C — Apply side (implement applies truth + code; cleanup promotes once)
 
-## Status: planned
+## Status: blocked
+
+### Handoff
+Blocked by the same session permission profile as slice B — all files it touches
+(`thejudge-implement-all`, `thejudge-implement`, `thejudge-cleanup`) are
+`thejudge-*` skills denied in a graph-profile session. Do in a **plain `claude`
+session**. Slice D's `skills:ai-sync` also writes `.agents/skills/thejudge-*/**`,
+so it too must run in the plain session.
 
 ## Goal
 Make implementation write the durable `PRD/sections/` truth (by intent) alongside

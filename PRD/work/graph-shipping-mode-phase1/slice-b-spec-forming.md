@@ -1,6 +1,27 @@
 # Slice B — Spec-forming side (refinement proposes; gate reads the proposal)
 
-## Status: planned
+## Status: blocked
+
+### Handoff
+Blocked by session permission profile, not by the work. This session was launched
+with `.claude/graph-profile.json`, which denies `Edit(.claude/skills/thejudge-*/**)`
+and `Edit(.agents/skills/thejudge-*/**)` for the whole session. Slices B and C edit
+`thejudge-*` skills, so they must be done in a **plain `claude` session** (no
+`--settings .claude/graph-profile.json`).
+
+Done here (allowed — graph-side, not `thejudge-*`):
+- `graph-run/SKILL.md`: the post-`define` gate reads `GATE-QUESTIONS.md` presence
+  (refinement authors it), not a live `PRD/sections/` diff; run-one publish/park
+  language updated to "proposal", no `PRD/sections/` published at run one.
+
+Remaining for the plain session (this slice):
+- `thejudge-refinement/SKILL.md`: Goal/Writes/Gates → propose-only. Author
+  `GATE-QUESTIONS.md` (plain-language blocks + proposed diff per stable id +
+  accept/edit/reject slots); do NOT edit `PRD/sections/`; intake line 60-61 →
+  "surfacing the resulting proposed change in GATE-QUESTIONS.md".
+- `graph-gate-review/SKILL.md` (editable, but do with the set): apply verdicts to
+  the proposed diff **inside `GATE-QUESTIONS.md`**, not to `PRD/sections/`.
+- Update refinement/gate skill fixtures.
 
 ## Goal
 Make refinement write proposals to the work folder only, and make the gate decide
