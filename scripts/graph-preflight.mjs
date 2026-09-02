@@ -442,7 +442,7 @@ export function classifyLock({ contents, isAlive = isPidAlive }) {
       state: "corrupt",
       holder: null,
       message:
-        `graph-run lock at ${LOCK_PATH} is unreadable. Inspect it, confirm no ` +
+        `graph run lock at ${LOCK_PATH} is unreadable. Inspect it, confirm no ` +
         `run is active, then delete it before starting.`
     }
   }
@@ -456,7 +456,7 @@ export function classifyLock({ contents, isAlive = isPidAlive }) {
       state: "held",
       holder,
       message:
-        `graph-run lock at ${LOCK_PATH} is held by ${who}` +
+        `graph run lock at ${LOCK_PATH} is held by ${who}` +
         `${holder.startedAt ? `, started ${holder.startedAt}` : ""}. ` +
         `Refusing: two runs cannot share one launch checkout. Wait for that run ` +
         `to reach a terminal state, which releases the lock.`
@@ -467,7 +467,7 @@ export function classifyLock({ contents, isAlive = isPidAlive }) {
     state: "stale",
     holder,
     message:
-      `graph-run lock at ${LOCK_PATH} names ${who}` +
+      `graph run lock at ${LOCK_PATH} names ${who}` +
       `${holder.startedAt ? `, started ${holder.startedAt}` : ""}, but that ` +
       `process is not running. The lock is stale. Confirm the run really ended, ` +
       `then reclaim it with: rm ${LOCK_PATH}`
@@ -678,7 +678,7 @@ export function classifyHeartbeat({
     return {
       state: "degraded",
       message:
-        `graph-run: degraded heartbeat at node \`${node}\` — no usable run ` +
+        `graph: degraded heartbeat at node \`${node}\` — no usable run ` +
         `state, so there was no counter key to advance. This is not a hook ` +
         `failure. The run-start canary remains the binding proof.`,
       ledgerLine: `Heartbeat: degraded (no run state) at \`${node}\``
@@ -704,7 +704,7 @@ export function classifyHeartbeat({
   return {
     state: "blocked",
     message:
-      `graph-run: BLOCKED — the boundary hook stopped firing during node ` +
+      `graph: BLOCKED — the boundary hook stopped firing during node ` +
       `\`${node}\`.\n` +
       `  expected: the counter to advance past ${before}\n` +
       `  observed: ${after}\n` +

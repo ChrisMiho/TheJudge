@@ -1,6 +1,6 @@
 # Slice E — Downstream, docs, fixtures, final verification
 
-## Status: planned
+## Status: done
 
 ## Goal
 

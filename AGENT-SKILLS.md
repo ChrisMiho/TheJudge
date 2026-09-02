@@ -2,8 +2,8 @@
 
 TheJudge uses 11 `thejudge-*` skills to drive PRD-based feature work — including
 autonomous preparation, sequential single-slice, unattended all-slice, and
-cross-package fanout modes — plus 3 `graph-*` skills that chain those 11 into
-autonomous runs. All 14 are **model-invocable** — the agent may select the
+cross-package fanout modes — plus 4 `graph-*` skills that chain those 11 into
+autonomous runs. All 15 are **model-invocable** — the agent may select the
 matching skill when context clearly indicates it — and every skill remains
 callable explicitly (`/thejudge-*` and `/graph-*` in Claude Code,
 `$thejudge-*` and `$graph-*` in Codex).
@@ -34,8 +34,8 @@ byte-identical after a sync — every skill runs in both runtimes.
 
 ```mermaid
 flowchart LR
-  graphrun[graph-run] -. controls .-> kickoff
-  graphrun -. controls .-> implementall
+  graphkickoff[graph-kickoff] -. controls spec-forming .-> kickoff
+  graphimplement[graph-implement] -. controls build loop .-> mapout
   kickoff[thejudge-kickoff] --> refinement[thejudge-refinement]
   refinement --> qc[thejudge-quality-check]
   qc --> mapout[thejudge-map-out]
@@ -69,7 +69,7 @@ orthogonal to the pipeline shown above.
 
 | Skill | When | Writes | Status | Next |
 | --- | --- | --- | --- | --- |
-| `thejudge-prepare` | Autonomous preparation of one arbitrary request is wanted directly, outside `graph-run`, before an unattended implementation loop | One reviewed `PRD/work/<slug>/` package plus a docs-only preparation branch/PR, or `NO ACTIONABLE PACKAGE` | READY → `active`; BLOCKED preserves the furthest valid status | After human merge, `thejudge-implement-all` |
+| `thejudge-prepare` | Autonomous preparation of one arbitrary request is wanted directly, outside `graph-kickoff`, before an unattended implementation loop | One reviewed `PRD/work/<slug>/` package plus a docs-only preparation branch/PR, or `NO ACTIONABLE PACKAGE` | READY → `active`; BLOCKED preserves the furthest valid status | After human merge, `thejudge-implement-all` |
 | `thejudge-kickoff` | New session or new feature idea | `IDEA.md`, `README.md`, `STATUS.ideation`, board row | → `ideation` | `thejudge-refinement` |
 | `thejudge-refinement` | An idea needs product definition | `DESIGN-BRIEF.md`, section updates | `refining` → (on approval) `refined` | `thejudge-quality-check` |
 | `thejudge-quality-check` | After refinement, before slicing | PASS/FAIL report only | PASS keeps `refined`; FAIL → `refining` | `thejudge-map-out` (PASS) or `thejudge-refinement` (FAIL) |
@@ -83,18 +83,19 @@ orthogonal to the pipeline shown above.
 
 ## Graph workflow skills
 
-Three `graph-*` skills chain the lifecycle above into one autonomous run. They
-**delegate** to the `thejudge-*` skills rather than reimplementing them — the
-graph adds sequencing, a ledger, and gates, not a second pipeline. The phase
-skills recognize `graph-run is controlling` alongside
-`thejudge-prepare is controlling`; that predicate is the only graph-specific
-behavior they carry.
+Four `graph-*` skills chain the lifecycle above into one autonomous run, split
+into two owner-triggered halves joined by `main`. They **delegate** to the
+`thejudge-*` skills rather than reimplementing them — the graph adds sequencing, a
+ledger, and gates, not a second pipeline. The phase skills recognize
+`graph is controlling` alongside `thejudge-prepare is controlling`; that predicate
+is the only graph-specific behavior they carry.
 
 | Skill | When | Writes | Delegates to |
 | --- | --- | --- | --- |
 | `graph-preflight` | Before an autonomous run, to guarantee a clean freshly branched checkout | Auto-commit or stash, new pushed branch, handoff record | `scripts/graph-preflight.mjs` |
-| `graph-run` | Advancing one package through the full lifecycle without per-step input | `PRD/work/<slug>/GRAPH-RUN.md` ledger, package README `## Autonomous metadata` and `## Preparation gate`, status transitions, gate parks | `graph-preflight`, the boundary hook (`scripts/graph-boundary-hook.mjs`, always on), then 6 of the 11 phase skills — `thejudge-kickoff`, `-refinement`, `-quality-check`, `-map-out`, `-implement-all`, `-cleanup` — plus a no-write reviewer subagent at node 7 |
-| `graph-gate-review` | After a run parks at the `define` gate, to walk the recorded `PRD/sections/` diff one stable ID at a time | `GRAPH-RUN.md`'s `## Gate verdicts` and resolved `## Open gate`, the restored `STATUS.*` marker and board row, and `PRD/sections/` edits — only to apply an owner verdict | nothing; it never dispatches and never advances a node |
+| `graph-kickoff` | Starting a fresh idea through the spec-forming half (nodes 1–4), stopping at gate-qc PASS with a docs proposal PR | `PRD/work/<slug>/GRAPH-RUN.md` ledger, package README `## Autonomous metadata` and `## Preparation gate`, status transitions, gate parks | `graph-preflight`, the boundary hook (`scripts/graph-boundary-hook.mjs`, always on), then `thejudge-kickoff`, `-refinement`, `-quality-check` — plus a docs-only base→main PR |
+| `graph-gate-review` | After a run parks at the `define` gate, to walk the recorded proposal one stable ID at a time | `GRAPH-RUN.md`'s `## Gate verdicts` and resolved `## Open gate`, the restored `STATUS.*` marker and board row, and finalized verdicts inside `GATE-QUESTIONS.md` — never `PRD/sections/` | nothing; it never dispatches and never advances a node |
+| `graph-implement` | A single background loop that builds each approved-and-merged spec (nodes 5–9), one at a time | Code PR per spec, `GRAPH-RUN.md` ledger, status transitions, gate parks | `graph-gate-review`, then `thejudge-map-out`, `-implement-all`, `-cleanup` — plus a no-write reviewer subagent at node 7 |
 
 Graph runs load `.claude/graph-profile.json` as their permission profile:
 
@@ -125,13 +126,13 @@ machinery, and both are model-invocable and explicitly callable.
 
 | Skill | When | Writes | Lands as |
 | --- | --- | --- | --- |
-| `thejudge-investigate` | An open-ended question needs working out before it's a feature — what a change takes, which option wins, is it worth building — with optional ad-hoc subagents | `PRD/work/probe-<slug>/` (thin `PROBE.md`, `FINDINGS-*.md`, and — build-bound only — a `GRAPH-BRIEF.md`) | A plain answer, or a `/graph-run` handoff |
+| `thejudge-investigate` | An open-ended question needs working out before it's a feature — what a change takes, which option wins, is it worth building — with optional ad-hoc subagents | `PRD/work/probe-<slug>/` (thin `PROBE.md`, `FINDINGS-*.md`, and — build-bound only — a `GRAPH-BRIEF.md`) | A plain answer, or a `/graph-kickoff` handoff |
 | `thejudge-sweep` | One question applied across many comparable places (a corpus that splits into sections, one score per item) | `PRD/work/sweep-<slug>/` (finding doc per section + one `ROLLUP.md`) | One PR — the single review gate |
 
 `thejudge-investigate` is the freeform front door; `thejudge-sweep` is the
 structured audit it calls when a question collapses to one-question-across-many-
-places. Investigate delegates to sweep and to `graph-run`; it never reimplements
-them.
+places. Investigate delegates to sweep and to `graph-kickoff`; it never
+reimplements them.
 
 ## Session handoffs
 

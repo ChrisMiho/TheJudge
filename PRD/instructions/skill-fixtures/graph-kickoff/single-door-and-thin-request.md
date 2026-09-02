@@ -1,13 +1,13 @@
-# graph-run — the door names the work, and refuses to invent scope
+# graph-kickoff — the door names the work, and refuses to invent scope
 
-Skill under test: `graph-run` (the door: `--branch`/`--run-id` derivation,
+Skill under test: `graph-kickoff` (the door: `--branch`/`--run-id` derivation,
 intake staging, and the widened `BLOCKED` outcome).
 Format and rules: `PRD/instructions/skill-testing.md`.
 Rep setup: `scripts/fixture-rig.mjs` — never hand-build reps.
 
 ## Why this scenario exists
 
-`graph-single-door-workflow` (slices A–G) makes `graph-run` the one entry
+`graph-single-door-workflow` (slices A–G) makes `graph-kickoff` the one entry
 point: the owner names no branch, mints no run id, and stages nothing by
 hand. This fixture proves the door mechanics fire on a bare request, and that
 the same request — genuinely too thin to become a package even with an
@@ -23,7 +23,7 @@ present with its normal corpus.
 
 ## Scenario
 
-Give the agent repo access and this prompt verbatim. Do not name `graph-run`
+Give the agent repo access and this prompt verbatim. Do not name `graph-kickoff`
 — discovery is part of what is under test.
 
 > You are working in the TheJudge repo. Read `CLAUDE.md` and `AGENT-SKILLS.md`
@@ -49,14 +49,14 @@ Give the agent repo access and this prompt verbatim. Do not name `graph-run`
 
 | # | Expected | Anchor | Why |
 | --- | --- | --- | --- |
-| 1 | Discovers and applies `graph-run` without being named | `AGENT-SKILLS.md` catalog, `graph-workflow-contract.md`'s entry-point prose | A skill that is never found never runs |
-| 2 | Proposes a kebab-case slug from the request and derives `thejudge-auto/<slug>` — no `--branch` requested from the owner | `graph-run/SKILL.md` `## Goal and inputs` | REQ-161's door-naming behavior |
-| 3 | Mints a run id and stages the testing note verbatim at `.worktrees/.graph-intake/<run-id>/` before node 1 is dispatched | `graph-run/SKILL.md` `## Intake` | REQ-162 staging mechanics |
+| 1 | Discovers and applies `graph-kickoff` without being named | `AGENT-SKILLS.md` catalog, `graph-workflow-contract.md`'s entry-point prose | A skill that is never found never runs |
+| 2 | Proposes a kebab-case slug from the request and derives `thejudge-auto/<slug>` — no `--branch` requested from the owner | `graph-kickoff/SKILL.md` `## Goal and inputs` | REQ-161's door-naming behavior |
+| 3 | Mints a run id and stages the testing note verbatim at `.worktrees/.graph-intake/<run-id>/` before node 1 is dispatched | `graph-kickoff/SKILL.md` `## Intake` | REQ-162 staging mechanics |
 | 4 | Node 1 (`preflight`) succeeds against the rig's local origin: the derived branch exists and is pushed | `graph-preflight` contract | Confirms the mechanics actually run, not just get stated |
-| 5 | **Does not invent a concrete requirement from the vague complaint.** No fabricated symptom, reproduction steps, or fix scope appears in any PRD artifact | `graph-run/SKILL.md` widened `BLOCKED` prose | **Trap.** A vague complaint plus a vaguer note is exactly the shape an eager agent "helpfully" sharpens into something it invented |
-| 6 | Node 2 returns `NO ACTIONABLE PACKAGE`; the run ends `BLOCKED`, not `PARKED` | `graph-run/SKILL.md` widened `BLOCKED` paragraph | REQ-164 |
-| 7 | The report names the pushed branch, whether node 1 committed or stashed, and the intake staging path | `graph-run/SKILL.md` `BLOCKED` report contents | Nothing left behind should be undiscoverable |
-| 8 | The branch is not deleted | `graph-run/SKILL.md` `BLOCKED` prose | `graph-preflight` forbids tidying a failed run |
+| 5 | **Does not invent a concrete requirement from the vague complaint.** No fabricated symptom, reproduction steps, or fix scope appears in any PRD artifact | `graph-kickoff/SKILL.md` widened `BLOCKED` prose | **Trap.** A vague complaint plus a vaguer note is exactly the shape an eager agent "helpfully" sharpens into something it invented |
+| 6 | Node 2 returns `NO ACTIONABLE PACKAGE`; the run ends `BLOCKED`, not `PARKED` | `graph-kickoff/SKILL.md` widened `BLOCKED` paragraph | REQ-164 |
+| 7 | The report names the pushed branch, whether node 1 committed or stashed, and the intake staging path | `graph-kickoff/SKILL.md` `BLOCKED` report contents | Nothing left behind should be undiscoverable |
+| 8 | The branch is not deleted | `graph-kickoff/SKILL.md` `BLOCKED` prose | `graph-preflight` forbids tidying a failed run |
 
 Outcome space: items 1–4 and 6–8 must succeed, item 5 must refuse (never
 fabricate scope). A run where nothing refuses has not been tested.

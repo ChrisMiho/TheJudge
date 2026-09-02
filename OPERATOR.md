@@ -24,7 +24,7 @@ name the run proposes from your request.
 **You want to:** take a request from nothing to a design you can approve, without
 babysitting each step.
 
-**Do:** `/graph-run "<your request>"`
+**Do:** `/graph-kickoff "<your request>"`
 
 **You'll be asked:** nothing, once it's running. It proposes a short name (slug)
 for the work and drives itself from there. If it hits a real product fork it
@@ -52,7 +52,7 @@ underway, or start a standalone fix.
 **Do:**
 - Into a package that's already being built (status `active`):
   `/thejudge-amend PRD/work/<slug>/` with your list of items.
-- Standalone, or when no package owns it yet: `/graph-run "<the bug>"` (recipe 1).
+- Standalone, or when no package owns it yet: `/graph-kickoff "<the bug>"` (recipe 1).
 
 **You'll be asked:** for the list of items, if you didn't paste one in the same
 message.
@@ -118,7 +118,7 @@ another file to decode an ID.
 a `reject` removes that item entirely (and its ID is retired, never reused).
 
 **Done when:** the skill reports the verdict counts, marks the gate resolved, and
-hands you back `/graph-run PRD/work/<slug>/` to resume (recipe 6).
+hands you back `/graph-implement PRD/work/<slug>/` to resume (recipe 6).
 
 > It refuses an unanswered file — every block needs a verdict before it will
 > resolve the gate. That's what keeps the resume a single command with nothing
@@ -153,7 +153,7 @@ start a new run while a prior base→main PR is still open, precisely to stop th
 **You want to:** pick a run back up after you've reviewed its gate or cleared
 whatever it was waiting on.
 
-**Do:** `/graph-run PRD/work/<slug>/`
+**Do:** `/graph-implement PRD/work/<slug>/`
 
 **You'll be asked:** nothing. It reads where it left off from the run's ledger and
 re-enters at the right step.

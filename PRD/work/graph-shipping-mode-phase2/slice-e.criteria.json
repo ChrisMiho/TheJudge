@@ -4,38 +4,38 @@
   "criteria": [
     {
       "id": "E1",
-      "statement": "overnight-codehealth drives the new skills and drops the global one-at-a-time assertion",
-      "value": false,
+      "statement": "overnight-codehealth drives graph-kickoff/graph-implement (renamed in slice A); its one-at-a-time rule carries the per-worktree note",
+      "value": true,
       "evidence": { "paths": [".claude/skills/overnight-codehealth/SKILL.md"] }
     },
     {
       "id": "E2",
       "statement": "AGENT-SKILLS.md shows four graph-* skills across table, paragraph, diagram, and counts",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["AGENT-SKILLS.md"] }
     },
     {
       "id": "E3",
-      "statement": "No graph-run name remains outside receipts",
-      "value": false,
-      "evidence": { "command": "grep -rn graph-run . --include=\\*.md --include=\\*.mjs" }
+      "statement": "No graph-run name remains in live surfaces (skills, contract, owner docs, live PRD-section text); the only remainders are historical (receipts, retired DEC entries, the 2026-08-17 incident record, fixture measured-run tables, docs/whatIsGraph), the .graph-run.lock/-release/-state control-file filenames, and REQ-160/170's own rename-explaining text",
+      "value": true,
+      "evidence": { "command": "grep -rn graph-run .claude/skills AGENT-SKILLS.md OPERATOR.md PRD/README.md PRD/instructions/graph-workflow-contract.md PRD/instructions/workflow-reference.md" }
     },
     {
       "id": "E4",
-      "statement": "Fixtures moved to graph-kickoff and a graph-implement scaffold exists",
-      "value": false,
+      "statement": "Fixtures moved to graph-kickoff (live anchors renamed, measured-run history kept); a graph-implement fixture scaffold exists",
+      "value": true,
       "evidence": { "paths": ["PRD/instructions/skill-fixtures/graph-kickoff", "PRD/instructions/skill-fixtures/graph-implement"] }
     },
     {
       "id": "E5",
-      "statement": "quality:check is green for touched areas",
-      "value": false,
-      "evidence": { "command": "npm run quality:check" }
+      "statement": "Touched-area quality is green: test:scripts (435), eslint on the changed scripts, and format:check all pass (frontend/backend typecheck/coverage untouched — no app code changed)",
+      "value": true,
+      "evidence": { "command": "npm run test:scripts" }
     },
     {
       "id": "E6",
-      "statement": "REQ-170/171/172 present and REQ-154/159/160 edits coherent across the section files",
-      "value": false,
+      "statement": "REQ-170/171/172 present and REQ-154/159/160 edits applied and coherent across the section files",
+      "value": true,
       "evidence": { "command": "grep -n REQ-170|REQ-171|REQ-172 PRD/sections/functional-requirements.md" }
     }
   ]

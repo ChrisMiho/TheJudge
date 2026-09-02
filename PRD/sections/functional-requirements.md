@@ -3552,7 +3552,7 @@
   - `superpowers:requesting-code-review` is removed from node 7 in the node table, the contract, and `AGENT-SKILLS.md`
 - Constraints:
   - the existing loop cap is unchanged: `review` may return to `build` at most twice, and a third occurrence parks at `owner-action`
-  - the reviewer is dispatched by `graph-run` and is not a `thejudge-*` skill; the run predicate rules are unchanged
+  - the reviewer is dispatched by the graph driver and is not a `thejudge-*` skill; the run predicate rules are unchanged
 - Dependencies:
   - DEC-163
   - DEC-166
@@ -3608,7 +3608,7 @@
 ### REQ-158
 - Title: The no-pre-authorization rule is re-read at every node dispatch
 - Priority: medium
-- Description: `graph-run` re-reads the no-pre-authorization rule from `PRD/instructions/graph-workflow-contract.md` immediately before writing each node's dispatch prompt, so the rule cannot be lost to compaction partway through a long run.
+- Description: the graph driver re-reads the no-pre-authorization rule from `PRD/instructions/graph-workflow-contract.md` immediately before writing each node's dispatch prompt, so the rule cannot be lost to compaction partway through a long run.
 - Acceptance Criteria:
   - the rule is read from the contract before every dispatch prompt is written, not once at run start
   - the re-read happens at the same point `scripts/graph-ledger-check.mjs` already runs, which is before dispatch rather than after
@@ -3703,7 +3703,7 @@
 - Priority: high
 - Description: The door accepts context documents — file paths or markdown pasted in the same message — copies them verbatim into the package, and treats them as evidence that refinement weighs rather than instruction refinement obeys.
 - Acceptance Criteria:
-  - `graph-run` accepts zero or more file paths alongside the request, and accepts markdown pasted in the same message
+  - `graph-kickoff` accepts zero or more file paths alongside the request, and accepts markdown pasted in the same message
   - the door mints the `--run-id` before node 1 and passes that same id to `graph-preflight`, which already accepts a caller-chosen `--run-id`; the staging path is derived from it
   - the door writes each item verbatim into `.worktrees/.graph-intake/<run-id>/` before node 1 is dispatched
   - the staging path is recorded in the ledger at node 2's first ledger write, never before node 1: the ledger is `PRD/work/<slug>/GRAPH-RUN.md`, which does not exist until node 2 has created the package folder
@@ -3755,13 +3755,13 @@
 - Priority: medium
 - Description: When node 2 cannot turn the request into an actionable package, the run stops and tells the owner what it needs, rather than proceeding on a guess or leaving the driver with an unhandled outcome.
 - Acceptance Criteria:
-  - `graph-run` handles `NO ACTIONABLE PACKAGE` returned by node 2 as a named edge in the contract and in the skill
+  - `graph-kickoff` handles `NO ACTIONABLE PACKAGE` returned by node 2 as a named edge in the contract and in the skill
   - the run terminates at `BLOCKED`, reporting what was tried, what exists, what does not, and the recovery action
   - the recovery action names re-invoking the door with a fuller description or with intake material, **and** an explicit `--branch`, because a fuller description of the same thing derives the same slug and `graph-preflight` exits 2 on the collision with the branch node 1 already pushed
   - the report names the `thejudge-auto/<slug>` branch node 1 created and pushed, whether node 1 auto-committed or stashed the working tree, and the staging path holding any intake, so a retry loses no work and re-pastes no material
   - the concurrency lock is released, as every terminal state requires
   - no fifth terminal state is added
-  - `.claude/skills/graph-run/SKILL.md`'s terminal-state paragraph is amended so `BLOCKED` also covers a request too thin to package, not only an external condition
+  - the terminal-state definition (now in `graph-workflow-contract.md`) is amended so `BLOCKED` also covers a request too thin to package, not only an external condition
   - that amendment is required rather than cosmetic: as written, `BLOCKED` is "an external condition outside the repository", `PARKED` is "anything requiring a human decision, judgment, or review", and the tiebreak is "when it is not clear which applies, park". A thin request is neither external nor outside the repository, so without the amendment the tiebreak routes it to `PARKED`, which has nothing to park against
   - the widened `BLOCKED` definition is the only terminal-state text this package changes
 - Constraints:

@@ -46,7 +46,7 @@ Give the agent repo access and this prompt verbatim. Do not name
 
 | # | Expected | Anchor | Why |
 | --- | --- | --- | --- |
-| 1 | Discovers `graph-run`'s door, which derives a slug and dispatches node 2 with it | `graph-run/SKILL.md` `## Goal and inputs` | Kickoff's supplied-slug behavior only fires under this dispatch |
+| 1 | Discovers `graph-kickoff`'s door, which derives a slug and dispatches node 2 with it | `graph-kickoff/SKILL.md` `## Goal and inputs` | Kickoff's supplied-slug behavior only fires under this dispatch |
 | 2 | `PRD/work/<slug>/` uses the door's proposed slug verbatim — `thejudge-kickoff` does not propose a second name | `thejudge-kickoff/SKILL.md` `## Inputs` | REQ-161/162 — one name reaches both the branch and the package |
 | 3 | Searches `PRD/instructions/receipts/` and surfaces at least one of the three scan-lock receipts as a keyword match | `thejudge-kickoff/SKILL.md` `## Mode` receipts search | REQ-163 |
 | 4 | Writes one `## Prior run` line per match into `IDEA.md`, naming the receipt path | `thejudge-kickoff/SKILL.md` `## Writes` | The stated shape |

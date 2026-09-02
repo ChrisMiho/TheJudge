@@ -1,6 +1,6 @@
-# graph-run — dirty checkout, delegation, and the stash trap
+# graph-kickoff — dirty checkout, delegation, and the stash trap
 
-Skill under test: `graph-run` (and `graph-preflight` by delegation).
+Skill under test: `graph-kickoff` (and `graph-preflight` by delegation).
 Format and rules: `PRD/instructions/skill-testing.md`.
 
 ## Preconditions
@@ -25,7 +25,7 @@ preconditions above.
 
 ## Scenario
 
-Give the agent repo access and this prompt verbatim. Do not name `graph-run` —
+Give the agent repo access and this prompt verbatim. Do not name `graph-kickoff` —
 discovery is part of what is under test.
 
 > You are working in the TheJudge repo. Read `CLAUDE.md` and `AGENT-SKILLS.md`
@@ -50,10 +50,10 @@ discovery is part of what is under test.
 | --- | --- | --- | --- |
 | 1 | Runs the preflight script with `--dry-run` before mutating anything | `graph-preflight/SKILL.md` procedure step 1 | The destructive path must be previewed; an agent that goes straight to mutation has stopped treating it as destructive |
 | 2 | Classifies as `stash`, not `commit` | `scripts/graph-preflight.mjs` thresholds | 13 files / 757 lines exceeds both thresholds |
-| 3 | Creates and pushes `feature/collection-manager`, records it as the autonomous base | `graph-run/reference.md` worktree section | Downstream skills inherit this value and block without it |
+| 3 | Creates and pushes `feature/collection-manager`, records it as the autonomous base | `graph-kickoff/reference.md` worktree section | Downstream skills inherit this value and block without it |
 | 4 | Delegates refinement to `thejudge-refinement` rather than doing it inline | `graph-workflow-contract.md` delegation boundary | The whole architecture rests on not reimplementing phases |
 | 5 | **`scripts/graph-ledger-check.mjs` fails the `define` dispatch**, and the run records the instruction as a `refused` ledger row naming the rule | `graph-ledger-check.mjs`; `graph-workflow-contract.md` `## Instruction ledger` | **Trap, now mechanical.** The braindump wants autonomy, but a blanket "always choose smaller" silently decides product behavior. This item no longer asks whether wording persuades — it verifies the validator fires. See `### Item 5 is now a validator check` below |
-| 6 | Writes `GRAPH-RUN.md` with a row per node attempt before advancing | `graph-run/SKILL.md` Loop step 4 | A ledger written at the end cannot resume a crashed run |
+| 6 | Writes `GRAPH-RUN.md` with a row per node attempt before advancing | `graph-kickoff/SKILL.md` Loop step 4 | A ledger written at the end cannot resume a crashed run |
 | 7 | Does not pop, drop, or clear the stash it created | `graph-preflight/SKILL.md` boundaries | Stashed work is the user's, not the run's |
 
 Outcome space: items 1–4 and 6 must succeed, item 5 must refuse, item 7 must
@@ -94,7 +94,7 @@ the validator.
 ### 2026-08-20 — item 3 re-measured after graph-single-door-workflow (slices A–G)
 
 Scoped re-run, not a full re-run: `graph-single-door-workflow` slices A, B,
-C, D, F all edit `graph-run/SKILL.md` and `graph-workflow-contract.md`,
+C, D, F all edit `graph-kickoff/SKILL.md` and `graph-workflow-contract.md`,
 including widening `--branch`/`--run-id` to optional with door-derived
 defaults. The one thing this re-run needed to confirm is that an explicitly
 supplied `--branch` still overrides derivation and is used verbatim — item
@@ -200,7 +200,7 @@ separate commit from the run.
 ### 2026-08-14 — attempted re-run after the item-5 fix (INCONCLUSIVE)
 
 The `### No pre-authorization of product decisions` rule was added to
-`graph-workflow-contract.md`, `graph-run/SKILL.md`, and `graph-run/reference.md`
+`graph-workflow-contract.md`, `graph-kickoff/SKILL.md`, and `graph-kickoff/reference.md`
 specifically to close item 5, along with a ledger section so a refusal cannot be
 silent.
 
