@@ -9,6 +9,7 @@ import type { PlayerLabel } from "../../../types";
 import { useOutsideDismiss } from "../../../hooks/useOutsideDismiss";
 import { NAMED_COUNTER_PALETTE, type NamedCounterId } from "../../../lib/lifeTracker/counters";
 import type { SeatArrangementLayout } from "../../../lib/lifeTracker/seatArrangement";
+import { buildSeatMapCells } from "../../../lib/lifeTracker/seatMap";
 import type { TrackerPlayer } from "../../../lib/lifeTracker/types";
 import { formatPlayerDisplayLabel } from "../../../lib/playerLabels";
 import { OverlayCloseButton } from "../../OverlayCloseButton";
@@ -214,6 +215,8 @@ interface CommanderDamageCellProps {
   name: string;
   value: number;
   testId?: string;
+  /** Seat-map grid placement (REQ-173) - `gridArea`/`gridRow`/`gridColumn` for this cell's own seat. */
+  placement?: { gridArea: string; gridRow: string; gridColumn: string };
   onIncrement: () => void;
   onDecrement: () => void;
 }
@@ -226,12 +229,14 @@ function CommanderDamageCell({
   name,
   value,
   testId,
+  placement,
   onIncrement,
   onDecrement
 }: CommanderDamageCellProps): JSX.Element {
   return (
     <div
       data-testid={testId}
+      style={placement}
       className="flex flex-col overflow-hidden rounded-xl border border-accent/25 bg-accent/10"
     >
       <button
@@ -273,14 +278,17 @@ export function CounterPanel({
   onRemoveCustomCounter,
   onAdjustCommanderDamage
 }: CounterPanelProps): JSX.Element {
-  // Threaded through in slice A; slice C wires it into the commander-damage matrix's placement.
-  void layout;
   const [activeTab, setActiveTab] = useState<"player" | "counters">("player");
   const [customName, setCustomName] = useState("");
   const [customNameError, setCustomNameError] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const displayLabel = formatPlayerDisplayLabel(player.label, player.displayName);
+  // The commander-damage matrix is an absolute top-down replica of the table (REQ-173): the
+  // panel itself is never rotated (DEC-139), but every seat - including the opener's own "me"
+  // cell - sits at its own gridRow/gridColumn/gridArea from the active layout, not a fixed
+  // two-column roster loop.
+  const seatMapCells = buildSeatMapCells(layout, players, player.label);
 
   useOutsideDismiss([dialogRef], onClose, true);
 
@@ -385,15 +393,28 @@ export function CounterPanel({
         {activeTab === "player" ? (
           <div role="tabpanel" aria-label="Player counters" className="mt-4">
             <h3 className="mb-3 text-sm font-black text-zinc-200">Commander damage</h3>
-            <div role="group" aria-label="Commander damage by source" className="grid grid-cols-2 gap-2">
-              {players.map((source) => {
+            <div
+              role="group"
+              aria-label="Commander damage by source"
+              className="grid gap-2"
+              style={{
+                gridTemplateColumns: `repeat(${layout.columns}, minmax(0, 1fr))`,
+                gridTemplateRows: `repeat(${layout.rows}, minmax(0, 1fr))`
+              }}
+            >
+              {seatMapCells.map((cell) => {
+                const source = players.find((candidate) => candidate.label === cell.label);
+                if (!source) return null;
                 const sourceName = formatPlayerDisplayLabel(source.label, source.displayName);
-                if (source.label === player.label) {
+                const cellPlacement = { gridArea: cell.gridArea, gridRow: cell.gridRow, gridColumn: cell.gridColumn };
+
+                if (cell.isSelf) {
                   return (
                     <div
-                      key={source.label}
-                      data-testid={`commander-cell-${source.label}`}
-                      className="flex min-h-36 flex-col items-center justify-center rounded-xl border border-accent/25 bg-accent/10 p-2"
+                      key={cell.label}
+                      data-testid={`commander-cell-${cell.label}`}
+                      style={cellPlacement}
+                      className="flex flex-col items-center justify-center rounded-xl border border-accent/25 bg-accent/10 p-2"
                     >
                       <span className="text-xs font-bold text-zinc-400">{sourceName}</span>
                       <span className="text-2xl font-black text-zinc-100">me</span>
@@ -403,12 +424,13 @@ export function CounterPanel({
 
                 return (
                   <CommanderDamageCell
-                    key={source.label}
-                    testId={`commander-cell-${source.label}`}
+                    key={cell.label}
+                    testId={`commander-cell-${cell.label}`}
                     name={sourceName}
-                    value={player.commanderDamage[source.label] ?? 0}
-                    onIncrement={() => onAdjustCommanderDamage(player.label, source.label, 1)}
-                    onDecrement={() => onAdjustCommanderDamage(player.label, source.label, -1)}
+                    value={player.commanderDamage[cell.label] ?? 0}
+                    placement={cellPlacement}
+                    onIncrement={() => onAdjustCommanderDamage(player.label, cell.label, 1)}
+                    onDecrement={() => onAdjustCommanderDamage(player.label, cell.label, -1)}
                   />
                 );
               })}

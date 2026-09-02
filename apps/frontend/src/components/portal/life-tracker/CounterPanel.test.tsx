@@ -114,6 +114,44 @@ describe("Frontend - Shared", () => {
       ).toHaveClass("min-h-[53px]");
     });
 
+    it("sizes the commander-damage matrix to the active layout's real columns/rows, not a hardcoded grid-cols-2", () => {
+      const state = createInitialState(8, 40);
+      const props = panelProps(state);
+      render(<CounterPanel {...props} />);
+
+      const matrix = screen.getByRole("group", { name: "Commander damage by source" });
+      // seatArrangement(8) is columns: 2, rows: 4 - this happens to match `grid-cols-2` in
+      // value, so the guard is that it comes from `layout`, not the class name, which is gone.
+      expect(matrix.className).not.toContain("grid-cols-2");
+      expect(matrix).toHaveStyle({
+        gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+        gridTemplateRows: "repeat(4, minmax(0, 1fr))"
+      });
+    });
+
+    it("places every opponent's cell at that opponent's own seat, and drops min-h-36 from the me cell", () => {
+      const state = createInitialState(8, 40);
+      const layout = seatArrangement(8);
+      const props = panelProps(state, { layout });
+      render(<CounterPanel {...props} />);
+
+      const ownSeat = layout.seats.find((seat) => seat.label === "Player 1")!;
+      // Player 5 is the first right-column seat (row 1) - same row as Player 1's own seat, even
+      // though it is at roster index 4, so this also proves placement is seat-derived, not a
+      // roster-order scan.
+      const player5Seat = layout.seats.find((seat) => seat.label === "Player 5")!;
+
+      const meCell = screen.getByTestId("commander-cell-Player 1");
+      expect(meCell).toHaveTextContent("me");
+      expect(meCell.className).not.toContain("min-h-36");
+      expect(meCell).toHaveStyle({ gridRow: ownSeat.gridRow, gridColumn: ownSeat.gridColumn });
+
+      const opponentCell = screen.getByTestId("commander-cell-Player 5");
+      expect(opponentCell).toHaveStyle({ gridRow: player5Seat.gridRow, gridColumn: player5Seat.gridColumn });
+      expect(player5Seat.gridRow).toBe(ownSeat.gridRow);
+      expect(player5Seat.gridColumn).not.toBe(ownSeat.gridColumn);
+    });
+
     it("renders the shared palette exactly once and increments each value independently", async () => {
       const user = userEvent.setup();
       const props = panelProps();

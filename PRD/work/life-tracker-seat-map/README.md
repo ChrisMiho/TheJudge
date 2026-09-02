@@ -37,7 +37,7 @@ See `IDEA.md` for the shaped idea, `intake/` for the probe evidence, and
 | --- | --- | --- | --- |
 | [A](slice-a-seat-map-geometry.md) | Shared `buildSeatMapCells` geometry helper; thread the full `layout` prop into `PlayerLifeCard` and `CounterPanel` | — | done |
 | [B](slice-b-card-preview-seat-map.md) | `PlayerLifeCard`: on-card preview becomes the per-seat map, sized to the arrangement's real columns/rows | A | done |
-| [C](slice-c-counter-panel-seat-map.md) | `CounterPanel`: commander-damage matrix becomes the top-down per-seat map; drop the fixed 2-column loop and oversized "me" tile | A | planned |
+| [C](slice-c-counter-panel-seat-map.md) | `CounterPanel`: commander-damage matrix becomes the top-down per-seat map; drop the fixed 2-column loop and oversized "me" tile | A | done |
 | [D](slice-d-live-containment-verification.md) | Live verification: 7/8-player containment (grid + list, iPhone-portrait) and side-seat glyph orientation; runtime cleanup; Ship gates | B, C | planned |
 
 B and C are parallel-ready once A lands. See `GAMEPLAN.md` for architecture and
