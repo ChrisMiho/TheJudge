@@ -1,0 +1,42 @@
+{
+  "slug": "life-tracker-seat-map",
+  "slice": "D",
+  "criteria": [
+    {
+      "id": "D1",
+      "statement": "At 7 players, grid layout, iPhone-portrait width, the on-card map and name pill are fully contained on every card",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "D2",
+      "statement": "At 8 players, grid layout, iPhone-portrait width, the on-card map and name pill are fully contained on every card",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "D3",
+      "statement": "At 7 players, list layout, iPhone-portrait width, the on-card map and name pill are fully contained on every card",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "D4",
+      "statement": "At 8 players, list layout, iPhone-portrait width, the on-card map and name pill are fully contained on every card",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "D5",
+      "statement": "A 90/270-degree side-column seat's map glyphs read upright relative to the seated player, not sideways",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "D6",
+      "statement": "Runtime cleanup complete: browser closed, owned dev server stopped and exit confirmed, port released, capture path recorded",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

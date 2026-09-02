@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (universal: rm -rf denied) + graph tier armed (nohup denied while lock held)`
 - Autonomous base: `origin/thejudge-auto/life-tracker-seat-map`
 - Staging: `.worktrees/.graph-intake/graph-20260902-093611/` (copied verbatim into `PRD/work/life-tracker-seat-map/intake/`, then deleted at node 2 per kickoff's copy→commit→delete)
-- Current node: `plan` (map-out) — gate-qc attempt 2 PASS; building on `thejudge-auto/life-tracker-seat-map-work`
-- Next action: `/graph-implement PRD/work/life-tracker-seat-map/` — plan → build → review → land → close
+- Current node: `build` (implement-all) — slices A–D planned, `STATUS.active`; shared branch `thejudge-auto/life-tracker-seat-map-work`, PR base `main`
+- Next action: `/graph-implement PRD/work/life-tracker-seat-map/` — build → review → land → close
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/180 (MERGED — the build signal)
 - Terminal state (spec-forming half): `PARKED`; build half in progress since 2026-09-02
 - Build-half resume canary: `graph tier armed — nohup denied while lock held`; universal `rm -rf` denied. Lock re-taken (run `graph-20260902-093611`).
@@ -28,6 +28,7 @@ Instruction-ledger match is unambiguous.
 | 4 | gate-qc | sonnet | ok | `0 → 24` | Quality-check PASS; checked `DESIGN-BRIEF.md`; findings none (one non-blocking citation nit); code claims verified against `PlayerLifeCard.tsx`/`CounterPanel.tsx`/`PlayerLifeTrackerApp.tsx`/`seatArrangement.ts`; REQ-173 diff placement + cited IDs confirmed. Run stops at PASS → owner-action | 2026-09-02 |
 | — | gate-review | sonnet | ok | `3 → 22` | Build-half resume. Owner answered `GATE-QUESTIONS.md` `REQ-173: accept` + merged docs PR #180. `graph-gate-review` finalized the proposal (accept = diffs stand as authored), restored `STATUS.refined`, moved board row off `owner-action`; no `PRD/sections/` or code edits | 2026-09-02 |
 | 4 | gate-qc | sonnet | ok | `2 → 28` | Attempt 2 (build-half re-grade after accept). Quality-check PASS; checked `DESIGN-BRIEF.md`; findings none; every code claim re-verified against `seatArrangement.ts`/`PlayerLifeCard.tsx`/`CounterPanel.tsx`; brief consistent with finalized REQ-173, within constraints (pure presentation, DEC-139 not reopened, DEC-136 preserved). `STATUS.refined` unchanged | 2026-09-02 |
+| 5 | plan | sonnet | ok | `2 → 53` | `thejudge-map-out`: `GAMEPLAN.md` + 4 slice docs (A geometry helper `lib/lifeTracker/seatMap.ts` + `layout` prop threading; B `PlayerLifeCard` on-card seat map; C `CounterPanel` seat map; D live 7/8-player containment verification) + 4 `slice-*.criteria.json` (A–C command/path evidence, D six `manual` live-browser checks); `STATUS.active` set; board moved to `## active`; all writes inside `PRD/work/life-tracker-seat-map/` | 2026-09-02 |
 
 ## Gate verdicts
 
@@ -211,6 +212,34 @@ Check the design brief against the finalized product truth in `GATE-QUESTIONS.md
 On FAIL, set `STATUS.refining` and report the complete findings list. On PASS, report PASS with the checked artifact path and an empty findings list.
 
 Report back: PASS or FAIL, the checked artifact, and the complete findings list (or none).
+```
+
+### plan
+
+```text
+graph is controlling. You are node 5 (`plan`) of an autonomous graph run (build half). thejudge-map-out is being dispatched under the graph driver — run non-interactively, ask no questions, make no product decisions.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy this exact `Working directory:` line, unchanged, into every prompt you write to any subagent of your own.
+
+Run ID: graph-20260902-093611
+Package: PRD/work/life-tracker-seat-map/
+
+Invoke the `thejudge-map-out` skill (Skill tool) and follow it exactly. The package is `STATUS.refined` with a `## Preparation gate` recording `Quality-check: PASS` (build-half re-grade, attempt 2) — do not re-run quality-check; read that PASS and proceed.
+
+Produce `GAMEPLAN.md` and lettered slice docs in `PRD/work/life-tracker-seat-map/`, and set `STATUS.active`. Slice the work from `DESIGN-BRIEF.md` and the finalized `GATE-QUESTIONS.md` (REQ-173, accept). The deliverable is pure frontend/presentation across two surfaces:
+- the on-card commander-damage preview (`PlayerLifeCard`) becomes a per-seat map derived from the active arrangement (`seatArrangement` grid mode / `listSeatArrangement` list mode), the 'me' cell at the current player's own seat, each opponent at their seat, using the arrangement's real `columns`/`rows` (not `ceil(sqrt N)`);
+- the opened counter panel's commander-damage matrix (`CounterPanel`) becomes the same seat map (top-down replica, opener highlighted as 'me'), removing the fixed two-column roster loop and the oversized 'me' tile;
+- containment: the on-card map plus player-name pill stay fully inside the card at every player count 2 to 8 in both grid and list layout, verified live at 7 and 8 players at iPhone-portrait width (~430px).
+
+Constraints (do not reopen): pure presentation — no backend, no provider path, no GameContext seed contract (DEC-102), no persistence shape (DEC-103); preserve always-on commander-damage-decrements-life, the panel minus/plus bands (REQ-112), the 'me' self-cell, and seat rotation as the sole orientation input (DEC-136); do not reopen the counter-panel overlay/tray shape (DEC-139) — change only the matrix arrangement inside the panel. Apply REQ-173's three accepted diffs to `PRD/sections/` at BUILD, not now — map-out plans, it does not apply product truth.
+
+Acceptance criteria per the contract's `## Acceptance criteria are earned, not written`: emit one `slice-<letter>.criteria.json` beside each slice doc, every criterion initialised `false`, each with an `evidence` block (a command pattern, one or more file paths, or a manual flag set true). The containment criterion is inherently a live-browser check — give it a manual flag or a browser-command evidence block, and have that slice carry the `PRD/instructions/runtime-process-hygiene.md` cleanup (browser-close, owned-process-stop, port-release, capture path) so build can run its own isolated dev server and capture 7/8-player screenshots.
+
+Do not edit application code or `PRD/sections/`. Write only inside `PRD/work/life-tracker-seat-map/`.
+
+Report back: the GAMEPLAN path, the ordered list of slices (letter + one-line intent), confirmation each `slice-<letter>.criteria.json` was emitted, and confirmation `STATUS.active` is set.
 ```
 
 ## Instruction ledger

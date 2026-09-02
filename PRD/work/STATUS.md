@@ -8,9 +8,9 @@ Do not rename package folders to encode status.
 
 ## active
 
-## refined
+| [life-tracker-seat-map](life-tracker-seat-map/) | mapped into slices A-D (geometry, on-card map, panel map, live containment); `GAMEPLAN.md` + slice docs written by graph node 5 (`plan`). |
 
-| [life-tracker-seat-map](life-tracker-seat-map/) | owner accepted REQ-173; docs PR #180 merged to `main`; gate resolved, run resumes at `gate-qc`. |
+## refined
 
 ## refining
 
