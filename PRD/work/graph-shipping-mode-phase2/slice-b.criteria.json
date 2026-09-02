@@ -1,0 +1,42 @@
+{
+  "slug": "graph-shipping-mode-phase2",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "graph-implement documents STATUS-based ready-detection with STATUS.active as the single claim point",
+      "value": false,
+      "evidence": { "paths": [".claude/skills/graph-implement/SKILL.md"] }
+    },
+    {
+      "id": "B2",
+      "statement": "The skill documents park-one-continue behavior",
+      "value": false,
+      "evidence": { "command": "grep -n park.*continue|owner-action .claude/skills/graph-implement/SKILL.md" }
+    },
+    {
+      "id": "B3",
+      "statement": "The skill is invocable as a self-paced /loop and handles no-ready-spec",
+      "value": false,
+      "evidence": { "paths": [".claude/skills/graph-implement/SKILL.md"] }
+    },
+    {
+      "id": "B4",
+      "statement": "REQ-171 present in functional-requirements",
+      "value": false,
+      "evidence": { "command": "grep -n REQ-171 PRD/sections/functional-requirements.md" }
+    },
+    {
+      "id": "B5",
+      "statement": "The agents mirror matches the canonical skill tree",
+      "value": false,
+      "evidence": { "command": "diff -rq .claude/skills .agents/skills" }
+    },
+    {
+      "id": "B6",
+      "statement": "The script test suite passes",
+      "value": false,
+      "evidence": { "command": "npm run test:scripts" }
+    }
+  ]
+}

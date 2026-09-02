@@ -1,0 +1,42 @@
+{
+  "slug": "graph-shipping-mode-phase2",
+  "slice": "D",
+  "criteria": [
+    {
+      "id": "D1",
+      "statement": "graph-preflight branches into a per-idea worktree and does not mutate the launch checkout; a test asserts it",
+      "value": false,
+      "evidence": { "paths": ["scripts/graph-preflight.mjs", "scripts/graph-preflight.test.mjs"] }
+    },
+    {
+      "id": "D2",
+      "statement": "The lock is not re-keyed and a test asserts per-root lock resolution isolates two roots",
+      "value": false,
+      "evidence": { "paths": ["scripts/graph-preflight.test.mjs"] }
+    },
+    {
+      "id": "D3",
+      "statement": "The boundary hook decision logic is byte-unchanged",
+      "value": false,
+      "evidence": { "command": "git diff main -- scripts/graph-boundary-hook.mjs scripts/lib/boundary-rules.mjs" }
+    },
+    {
+      "id": "D4",
+      "statement": "Docs describe the per-worktree-session launch model and rule out N-in-one-root",
+      "value": false,
+      "evidence": { "paths": [".claude/skills/graph-preflight/SKILL.md", ".claude/skills/graph-kickoff/SKILL.md"] }
+    },
+    {
+      "id": "D5",
+      "statement": "REQ-170 present and lock references reconciled in NFR and user-flows",
+      "value": false,
+      "evidence": { "command": "grep -n REQ-170 PRD/sections/functional-requirements.md" }
+    },
+    {
+      "id": "D6",
+      "statement": "Mirror clean and the script test suite passes",
+      "value": false,
+      "evidence": { "command": "npm run test:scripts" }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "slug": "graph-shipping-mode-phase2",
+  "slice": "E",
+  "criteria": [
+    {
+      "id": "E1",
+      "statement": "overnight-codehealth drives the new skills and drops the global one-at-a-time assertion",
+      "value": false,
+      "evidence": { "paths": [".claude/skills/overnight-codehealth/SKILL.md"] }
+    },
+    {
+      "id": "E2",
+      "statement": "AGENT-SKILLS.md shows four graph-* skills across table, paragraph, diagram, and counts",
+      "value": false,
+      "evidence": { "paths": ["AGENT-SKILLS.md"] }
+    },
+    {
+      "id": "E3",
+      "statement": "No graph-run name remains outside receipts",
+      "value": false,
+      "evidence": { "command": "grep -rn graph-run . --include=\\*.md --include=\\*.mjs" }
+    },
+    {
+      "id": "E4",
+      "statement": "Fixtures moved to graph-kickoff and a graph-implement scaffold exists",
+      "value": false,
+      "evidence": { "paths": ["PRD/instructions/skill-fixtures/graph-kickoff", "PRD/instructions/skill-fixtures/graph-implement"] }
+    },
+    {
+      "id": "E5",
+      "statement": "quality:check is green for touched areas",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    },
+    {
+      "id": "E6",
+      "statement": "REQ-170/171/172 present and REQ-154/159/160 edits coherent across the section files",
+      "value": false,
+      "evidence": { "command": "grep -n REQ-170|REQ-171|REQ-172 PRD/sections/functional-requirements.md" }
+    }
+  ]
+}
