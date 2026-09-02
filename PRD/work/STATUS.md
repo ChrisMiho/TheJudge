@@ -8,6 +8,10 @@ Do not rename package folders to encode status.
 
 ## active
 
+| Package | Mapped |
+| --- | --- |
+| [standalone-codehealth-workflow](./standalone-codehealth-workflow/) | 2026-09-01 |
+
 ## refined
 
 ## refining
