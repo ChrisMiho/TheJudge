@@ -242,6 +242,37 @@ Do not edit application code or `PRD/sections/`. Write only inside `PRD/work/lif
 Report back: the GAMEPLAN path, the ordered list of slices (letter + one-line intent), confirmation each `slice-<letter>.criteria.json` was emitted, and confirmation `STATUS.active` is set.
 ```
 
+### build
+
+```text
+graph is controlling. You are node 6 (`build`) of an autonomous graph run. thejudge-implement-all is being dispatched under the graph driver — run non-interactively, ask no questions, make no product decisions.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy this exact `Working directory:` line, unchanged, into every prompt you write to any subagent of your own.
+
+Run ID: graph-20260902-093611
+Package: PRD/work/life-tracker-seat-map/
+
+Invoke the `thejudge-implement-all` skill (Skill tool) and follow it exactly. Implement every remaining slice (A, B, C, D) end to end in one session, in its own isolated worktree.
+
+Branch/PR shape (the package's `## Autonomous metadata` records this; use it, do not re-derive):
+- Recorded autonomous base: `origin/main` (the docs base merged to main via PR #180 — the answer-then-merge signal; this build branches off fresh main).
+- Shared build branch: `thejudge-auto/life-tracker-seat-map-work` (already pushed to origin, carrying GAMEPLAN + slice docs + criteria). Base your contributor branch on `origin/thejudge-auto/life-tracker-seat-map-work`.
+- The code PR opens from the shared branch into base `main` (a single code PR into main). `gh pr create --base main --head thejudge-auto/life-tracker-seat-map-work`. Opening a PR is allowed; never merge or close it — land is the owner's.
+- Worktree at `.worktrees/implement-life-tracker-seat-map` (repo-local only). One worktree for the package.
+
+Apply the approved product truth AT BUILD, by intent, together with the code (contract `## Applying product truth at build`): write REQ-173's three accepted diffs into `PRD/sections/functional-requirements.md` (new REQ-173), `PRD/sections/life-tracker/README.md`, and `PRD/sections/screen-layout.md`, re-derived against current truth from the finalized `GATE-QUESTIONS.md` (verdict accept) and `DESIGN-BRIEF.md`. These edits happen inside your worktree and ride the slice PR.
+
+Deliverable (pure frontend/presentation): the on-card commander-damage preview (`PlayerLifeCard`) and the opened counter-panel matrix (`CounterPanel`) both become a per-seat map derived from the active arrangement (`seatArrangement`/`listSeatArrangement`), the 'me' cell at each player's own seat, opponents at their seats, using the arrangement's real columns/rows (not ceil(sqrt N)); and the on-card map plus name pill stay contained inside the card at every player count 2 to 8, verified live at 7 and 8 players. Preserve always-on commander-damage-decrements-life, the panel minus/plus bands (REQ-112), the 'me' self-cell, seat rotation as the sole orientation input (DEC-136), and do not reopen the counter-panel overlay shape (DEC-139).
+
+Acceptance criteria: earn every criterion in each `slice-<letter>.criteria.json` — the committed `PreToolUse` hook logs earned ids; a slice is `done` only when all its criteria are earned and its verification and `npm run quality:check` pass. Slice D's six `manual` criteria are live-browser checks: run your worktree's own isolated dev server (a port you own, never attach to an existing one), capture 7/8-player screenshots in grid and list at iPhone-portrait width, record a dated observation line naming each id, and complete the `PRD/instructions/runtime-process-hygiene.md` cleanup (browser-close, owned-process-stop, port-release, capture path under the worktree's `PRD/work/life-tracker-seat-map/.playwright-mcp/`).
+
+Scope: write only inside `.worktrees/implement-life-tracker-seat-map/` and `PRD/work/life-tracker-seat-map/`. Do not edit any `thejudge-*` skill, `.claude/`, `CLAUDE.md`, or `.secrets/`. Do not force-push, merge, or close any PR. When every slice is `done`, set `STATUS.ship-ready`.
+
+Report back: the worktree path, the code PR URL (head `thejudge-auto/life-tracker-seat-map-work`, base `main`), each slice's final status and earned-criteria confirmation, the `PRD/sections/` files edited (REQ-173 applied), the quality:check result, the slice-D capture path, and confirmation `STATUS.ship-ready` is set.
+```
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
