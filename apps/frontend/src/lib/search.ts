@@ -89,6 +89,13 @@ function rankSuggestionFromIndex(entry: SearchIndexEntry, normalizedQuery: strin
     };
   }
 
+  // Levenshtein distance is always >= the absolute length difference, so a name
+  // whose length differs by more than MAX_TYPO_DISTANCE can never rank — skip the
+  // O(n*m) matrix for it (mirrors the prune in trade/oracleSearch.ts).
+  if (Math.abs(normalizedName.length - normalizedQuery.length) > MAX_TYPO_DISTANCE) {
+    return null;
+  }
+
   const typoDistance = levenshteinDistance(normalizedName, normalizedQuery);
   if (typoDistance > MAX_TYPO_DISTANCE) {
     return null;
