@@ -7,6 +7,7 @@
 - Staging: `.worktrees/.graph-intake/graph-20260902-093611/` (copied verbatim into `PRD/work/life-tracker-seat-map/intake/`, then deleted at node 2 per kickoff's copy→commit→delete)
 - Current node: `owner-action` (parked at gate-qc PASS)
 - Next action: owner answers `PRD/work/life-tracker-seat-map/GATE-QUESTIONS.md`, then merges the docs PR to `main`; `graph-implement` builds it
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/180
 - Terminal state: `PARKED`
 
 Note on dispatch-prompt reproduction: prompts below are reproduced with their
@@ -34,7 +35,7 @@ Instruction-ledger match is unambiguous.
   base→main PR; `graph-implement` picks up the approved spec from `main` and builds
   it (map-out → build → review → land → close), applying the accepted diffs to
   `PRD/sections/` together with the code.
-- Docs PR: <recorded below after creation>
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/180 (base→main, docs-only; stays open for the owner to merge as the build signal)
 - Stash handoff: node 1 stashed the launch checkout's uncommitted work (22 files).
   The stash is the owner's and is never dropped, popped, or reordered by the run.
   Restore it with:
