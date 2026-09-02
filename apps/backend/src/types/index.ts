@@ -7,7 +7,6 @@ import type {
   conversationTurnSchema,
   gameContextSchema,
   gamePlayerSchema,
-  lookupCardReferenceSchema,
   playerLabelSchema,
   turnPhaseSchema,
   zoneCardItemSchema,
@@ -23,7 +22,6 @@ export type CombatStep = z.infer<typeof combatStepSchema>;
 export type ZoneId = z.infer<typeof zoneIdSchema>;
 export type ContextTarget = z.infer<typeof contextTargetSchema>;
 export type ZoneCardItem = z.infer<typeof zoneCardItemSchema>;
-export type LookupCardReference = z.infer<typeof lookupCardReferenceSchema>;
 export type GamePlayerContext = z.infer<typeof gamePlayerSchema>;
 export type GameContext = z.infer<typeof gameContextSchema>;
 export type AskAiRequest = z.infer<typeof askAiRequestSchema>;
