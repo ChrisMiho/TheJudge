@@ -46,6 +46,44 @@ Per the intake-is-evidence rule these findings are adopted as design direction,
 not as settled product truth; the durable product-truth change they drive gates
 in `GATE-QUESTIONS.md`.
 
+## Owner clarification (2026-09-02) — on-card map is a compact horizontal block
+
+Recorded from `observations.md` and a confirmed design decision (the owner chose
+"always compact & horizontal"). **This supersedes the on-card parts of "Design
+direction" and acceptance criteria 3–4 below wherever they differ.** The counter
+panel (slice C) is unaffected — the owner is "okay with things changing" once a
+panel is opened.
+
+- **Outcome, not mechanism.** The on-card commander-damage mini-map renders as a
+  **compact, horizontal block** — the *exact* look of the reference images
+  (`intake/references/fullTable.PNG`, `player1..6.PNG`): a small grid **at most 2
+  rows tall** that grows **wider** as players are added, "me" in the current
+  player's own seat corner, opponents around it.
+- **Same block in both layout modes.** It does **not** inherit
+  `listSeatArrangement`'s tall stacked shape in list mode. Grid layout already
+  renders this correctly (measured horizontal + contained at 7 and 8 players
+  in the prior build); list layout must match it. The mini-map's shape is
+  therefore **decoupled from the page's layout mode** — in list layout it stops
+  literally mirroring the stacked-card positions, by the owner's explicit choice,
+  in exchange for matching the reference everywhere.
+- **7–8 players extrapolate sideways.** The references only go to 6. Extend the
+  same 2-row block **wider** for 7 and 8 players (e.g. "me" + up to 7 opponents in
+  a 2×4 block) — never a taller strip, never a near-square `ceil(√N)` blob, and no
+  downgrade of the 2–6-player look.
+- **Never rotate the whole card.** The fix is the mini-map's internal layout only.
+  The card's existing content rotation for the life number (DEC-136) is unchanged.
+  (The prior build over-scoped a callout into rotating the entire component — that
+  is explicitly out of scope.)
+- **Seat-consistency is preserved as an outcome** — one "me" cell at the player's
+  own seat, each opponent placed by their real table direction, no two cards
+  sharing a "me" position — *within* the compact block. Where a table's true
+  geometry cannot fit 2 rows (7–8 players), readability, containment, and the
+  reference look win over exact directional fidelity.
+- **Cell order/mapping is corrected** as part of this work (the owner's "then fix
+  the order displayed").
+- **Verified live** at 7 and 8 players, iPhone-portrait, in **both** grid and list
+  layout, against the references — measured, not reasoned from code.
+
 ## Design direction
 
 ### The map is a miniature of the arrangement we already compute
@@ -127,11 +165,17 @@ height/overlay treatment.
    opener highlighted as "me" at their seat, each opponent's cell at their seat,
    unused slots empty. No fixed `grid-cols-2` roster order; no oversized "me"
    tile.
-3. The map derives from the active arrangement (`seatArrangement` in grid mode,
-   `listSeatArrangement` in list mode) and stays a correct table replica in both.
+3. (Superseded for the on-card map by the 2026-09-02 owner clarification above.)
+   The **on-card** commander-damage mini-map renders as a compact horizontal block
+   — at most 2 rows, growing wider with more players — matching the reference in
+   **both** grid and list layout; it does not inherit list mode's tall stacking.
+   The **counter panel** matrix remains a top-down seat map (criterion 2). Seat
+   consistency (one "me" at the player's own seat, opponents by real direction, no
+   two cards sharing a "me" position) holds within the compact block.
 4. On-card map + name pill are fully inside the card at every player count 2–8,
    both layouts, iPhone-portrait: no cell clipped by `overflow-hidden`, name pill
-   not crushed or spilled into the gutter. Verified at 7 and 8 players.
+   not crushed or spilled into the gutter, and the block reads horizontal (never a
+   vertical strip). Verified live at 7 and 8 players.
 5. Preserved: always-on commander-damage-decrements-life; the panel opponent
    cells' `−`/`+` bands (~53px, REQ-112); the "me" self-cell (DEC-136); seat
    rotation as the sole life-zone orientation input (DEC-136); the panel's

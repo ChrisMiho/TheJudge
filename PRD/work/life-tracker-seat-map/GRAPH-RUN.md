@@ -1,16 +1,61 @@
 # Graph run — life-tracker-seat-map
 
-- Run ID: `graph-20260902-093611`
+- Run ID (original): `graph-20260902-093611`
+- Run ID (build-half re-scope, 2026-09-02): `graph-20260902-121645` — a fresh run
+  id for the resumed build half after the owner's compact-horizontal design
+  clarification, so criteria are re-earned cleanly rather than inheriting the
+  original run's evidence/denials. All new dispatch prompts, the lock, and the
+  hook counters key on this id; historical prompts below keep the original id.
 - Profile: `loaded (env sentinel)`
 - Canary: `denied — hook live (universal: rm -rf denied) + graph tier armed (nohup denied while lock held)`
 - Autonomous base: `origin/thejudge-auto/life-tracker-seat-map`
 - Staging: `.worktrees/.graph-intake/graph-20260902-093611/` (copied verbatim into `PRD/work/life-tracker-seat-map/intake/`, then deleted at node 2 per kickoff's copy→commit→delete)
-- Current node: `build` — **PAUSED at `owner-action`** for a layout-design clarification (not a tooling blocker). Slices A–C implemented + green in the worktree; the on-card commander-damage grid is correct in **grid** mode but renders **vertical and overflows the card bottom in LIST mode** at 8 players. Owner is refreshing context to clarify intent. Full handoff: `PRD/work/life-tracker-seat-map/HANDOFF.md`.
-- Next action: owner clarifies the list-mode grid orientation, then `/graph-implement PRD/work/life-tracker-seat-map/` re-enters at `build`
-- Terminal state (build half): `PARKED`
+- Current node: `gate-qc` — **RESUMED 2026-09-02** after the owner clarified the
+  design. The build-time layout gate is resolved (see `## Build-half re-scope`
+  and `## Open gate`): the on-card commander-damage mini-map becomes a **compact
+  horizontal block** (≤2 rows, grows wider; same in grid and list layout;
+  extrapolate 7–8 sideways; never rotate the whole card). Because that overrides
+  slice B's criteria (which hard-coded "miniature of the active arrangement"), the
+  run re-enters at `gate-qc` → `plan` (re-slice B under the updated brief) →
+  `build` → `review` → `land`.
+- Next action: driver dispatches `gate-qc` (re-validate the clarified
+  `DESIGN-BRIEF.md`), then `plan`, then `build`
+- Terminal state (build half): re-scoped and running (was `PARKED`)
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/180 (MERGED — the build signal)
 - Boundary-hook fix: https://github.com/ChrisMiho/TheJudge/pull/181 (MERGED — `criterion-flip-without-evidence` now remediable)
 - Resume canary (attempt 3): `graph tier armed — nohup denied while lock held`. Lock re-taken (run `graph-20260902-093611`).
+
+## Build-half re-scope (2026-09-02)
+
+The build half was paused at `owner-action` for a layout-design clarification (not
+a tooling blocker). The owner resolved it in `observations.md` and confirmed the
+shape via a single design question ("how should the on-card commander-damage
+mini-grid behave in list layout?" → **"always compact & horizontal"**).
+
+**Decision applied (owner's, recorded — not the driver's):** the on-card
+commander-damage mini-map is a compact horizontal block (≤2 rows, grows wider),
+identical in grid and list layout, decoupled from `listSeatArrangement`'s tall
+stacking, extrapolated sideways for 7–8 players, with the whole card never
+rotated. The counter panel is unaffected (owner: "okay with things changing" once
+open). `DESIGN-BRIEF.md` carries this under "## Owner clarification (2026-09-02)"
+and its acceptance criteria 3–4 are revised.
+
+**Why re-enter at `gate-qc`/`plan`, not `build`:** the clarification overrides
+slice B's acceptance criteria (B2/B3 hard-coded "the preview grid uses the active
+arrangement's real columns/rows" and "each cell at its own seat coordinate" — the
+very shape that goes vertical in list mode). A build node must not rewrite its own
+acceptance criteria (self-grading), so the geometry is re-planned independently by
+`thejudge-map-out`. Slice A (`buildSeatMapCells` + prop threading), slice C
+(panel), and slice D (live containment verification) are design-neutral and
+largely stand; slice B is re-sliced.
+
+**Fresh run id `graph-20260902-121645`:** the original run
+(`graph-20260902-093611`) has 16 evidence entries and 2 denials on disk for the
+old-design criteria. A fresh id makes the resumed build re-earn every criterion
+against the new slice B rather than inheriting stale evidence. Branch reconciled:
+`origin/thejudge-auto/life-tracker-seat-map-work` (the built A/B/C code) merged
+into local `-work`; the base→work→main PR shape is unchanged (base `origin/main`,
+one code PR `-work → main`).
 
 Note on dispatch-prompt reproduction: prompts below are reproduced with their
 words unchanged. Double-quote glyphs are reserved for the single ledgered user
@@ -44,17 +89,23 @@ Instruction-ledger match is unambiguous.
 
 ## Open gate
 
-- **PAUSED at `build` (2026-09-02) for a layout-design clarification — this is the
-  active gate.** Not a tooling blocker. Slices A–C are implemented and green; the
-  open question is the on-card commander-damage grid layout. Measured live: **grid
-  mode is correct** (horizontal, contained, 7 and 8 players), but **list mode at 8
-  players renders the grid vertical and overflows the card bottom by ~4px**. Owner
-  guidance: "just rotate the component, then fix the order displayed"; the
-  `intake/references/` images are the target; a full geometry redesign is
-  out of scope (grid mode already works). The owner is refreshing context and will
-  give clarification. **Full handoff: `PRD/work/life-tracker-seat-map/HANDOFF.md`.**
-  Resume after clarification with `/graph-implement PRD/work/life-tracker-seat-map/`
-  (re-enters at `build`; worktree preserved, no A–C re-coding needed).
+- **RESOLVED 2026-09-02 — the layout-design gate is answered.** The owner clarified
+  the intent in `observations.md` and confirmed the shape (chose "always compact &
+  horizontal"): the on-card commander-damage mini-map is a **compact horizontal
+  block** (≤2 rows, grows wider), the same in grid and list layout, extrapolated
+  sideways for 7–8 players, and the whole card is never rotated. This resolves the
+  paused gate. Because it overrides slice B's "miniature of the active arrangement"
+  criteria, the build half re-scopes and re-enters at `gate-qc` → `plan` → `build`
+  under the fresh run id `graph-20260902-121645`. See `## Build-half re-scope
+  (2026-09-02)`. Original pause detail kept below for the record.
+
+  (Historical) Not a tooling blocker. Slices A–C were implemented and green; the
+  open question was the on-card commander-damage grid layout. Measured live: **grid
+  mode correct** (horizontal, contained, 7 and 8 players), but **list mode at 8
+  players rendered the grid vertical and overflowed the card bottom by ~4px**.
+  Owner guidance: "just rotate the component, then fix the order displayed"; the
+  `intake/references/` images are the target; a full geometry redesign was out of
+  scope (grid mode already works). **Handoff: `PRD/work/life-tracker-seat-map/HANDOFF.md`.**
 
 - **RESOLVED 2026-09-02 (historical): enforcement-tooling defect** — the build
   could not mark slice A's already-earned criteria as met because a stale
@@ -424,3 +475,4 @@ Report back: the worktree path, the code PR URL (head `thejudge-auto/life-tracke
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "Make the life-tracker commander-damage grid a per-seat map — 'me' at each player's own seat, opponents in their table directions on both the on-card preview and the counter panel, and fix map/name containment at 7–8 players" | answered-once | shape | — |
+| "just the mini boxes … horizontal, not [rotate] the entire component" + "always compact & horizontal" (on-card mini-map is a compact horizontal block ≤2 rows, same in grid and list layout, extrapolate 7–8 sideways, never rotate the whole card) — from `observations.md` and the confirmed design question | answered-once | build (re-scope) | — |

@@ -10,13 +10,13 @@ Do not rename package folders to encode status.
 
 ## refined
 
+| [life-tracker-seat-map](life-tracker-seat-map/) | Build half re-scoped 2026-09-02 after owner clarification (on-card map = compact horizontal block, both layouts). Re-entering `gate-qc` → `plan` → `build`. Run id `graph-20260902-121645`. See `GRAPH-RUN.md` `## Build-half re-scope`. |
+
 ## refining
 
 ## ideation
 
 ## owner-action
-
-| [life-tracker-seat-map](life-tracker-seat-map/) | PAUSED at `build` for a layout-design clarification (grid mode correct; list mode grid renders vertical + overflows at 8p). Owner refreshing context to clarify. See `HANDOFF.md`. |
 
 ## deferred
 
