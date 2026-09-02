@@ -68,5 +68,5 @@ diff --git a/PRD/sections/system-map.md b/PRD/sections/system-map.md
 +- Summary: ... Card-back rejection is not implemented: the previously-dormant `isCardBack()` method was removed as dead code, while the `_card_back` id stays excluded from the searchable set (DEC-055).
 ```
 
-- Verdict: <accept | edit | reject>
-- Reason:
+- Verdict: accept
+- Reason: Owner approved deleting the dead, zero-caller `isCardBack()` method and recording the post-deletion truth. The higher future re-enable cost (reimplement the detector, not just add a `_card_back` asset) is acceptable for a card-back prompt that is descoped with no timeline.
