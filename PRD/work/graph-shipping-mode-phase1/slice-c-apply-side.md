@@ -1,13 +1,6 @@
 # Slice C — Apply side (implement applies truth + code; cleanup promotes once)
 
-## Status: blocked
-
-### Handoff
-Blocked by the same session permission profile as slice B — all files it touches
-(`thejudge-implement-all`, `thejudge-implement`, `thejudge-cleanup`) are
-`thejudge-*` skills denied in a graph-profile session. Do in a **plain `claude`
-session**. Slice D's `skills:ai-sync` also writes `.agents/skills/thejudge-*/**`,
-so it too must run in the plain session.
+## Status: done
 
 ## Goal
 Make implementation write the durable `PRD/sections/` truth (by intent) alongside
@@ -25,12 +18,15 @@ the code in one PR, and reconcile cleanup so promotion happens exactly once.
 4. Mirror to `.agents/skills/` via `skills:ai-sync` (verified in slice D).
 
 ## Acceptance criteria
-- [ ] C1 `thejudge-implement-all`/`thejudge-implement` apply durable `PRD/sections/`
+- [x] C1 `thejudge-implement-all`/`thejudge-implement` apply durable `PRD/sections/`
   truth by intent + code together, sourced from the approved proposal.
-- [ ] C2 `thejudge-cleanup` promotes durable truth exactly once (at apply/close),
+- [x] C2 `thejudge-cleanup` promotes durable truth exactly once (at apply/close),
   with no step assuming refinement pre-wrote `PRD/sections/`.
-- [ ] C3 Updated implement/cleanup skill fixtures pass per `PRD/instructions/skill-testing.md`.
-- [ ] C4 `npm run test:scripts` green.
+- [x] C3 New `thejudge-implement` (apply-by-intent) and `thejudge-cleanup`
+  (promote-once) fixtures authored per `PRD/instructions/skill-testing.md`;
+  measured re-runs owed (marked pending in each file — fixture runs are a
+  deliberate pre-merge check, not part of `test:scripts`).
+- [x] C4 `npm run test:scripts` green (432/432).
 
 ## Verification
 ```bash

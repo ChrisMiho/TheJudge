@@ -1,9 +1,10 @@
 ---
 name: thejudge-cleanup
 description: >-
-  Closes out a ship-ready work package: verifies slice completion, promotes
-  durable PRD truth, writes a receipt, updates PRD/work/STATUS.md, and deletes
-  PRD/work/<slug>/. Also handles explicit corpus-hygiene sweeps. Use when a
+  Closes out a ship-ready work package: verifies slice completion, confirms the
+  durable PRD truth implementation applied at build is present (promoting only any
+  leftover, never re-writing), writes a receipt, updates PRD/work/STATUS.md, and
+  deletes PRD/work/<slug>/. Also handles explicit corpus-hygiene sweeps. Use when a
   feature has shipped (STATUS.ship-ready), when the user force-overrides for
   cleanup, or when the user explicitly asks for PRD corpus hygiene — not for
   general code tidying requests.
@@ -13,7 +14,12 @@ description: >-
 
 ## Goal
 
-Close out a work package: verify what's done, promote durable docs, write the receipt, delete `PRD/work/<slug>/`.
+Close out a work package: verify what's done, **confirm** durable `PRD/sections/`
+truth is present (implementation applied it at `build`, together with the code),
+write the receipt, delete `PRD/work/<slug>/`. Durable truth is written **once**,
+at apply — cleanup never assumes refinement pre-wrote `PRD/sections/`, and
+promotes only what `build` genuinely left unapplied (see
+`PRD/instructions/graph-workflow-contract.md`, `## Propose / apply / close`).
 
 ## Mode
 
@@ -49,7 +55,14 @@ Work slug. Optional force override when the user explicitly requests cleanup of 
 
 ## Writes
 
-- Promoted durable outcomes into the relevant feature spec `PRD/sections/<feature>/README.md` and its cited `REQ`/`FLOW` entries, plus any other affected `PRD/sections/*.md`; the decision log is retired, so no new `DEC-###`
+- Durable `PRD/sections/` truth **confirmed present** — implementation applied the
+  approved proposal (`GATE-QUESTIONS.md`) at `build`, by intent, together with the
+  code. Cleanup re-writes nothing that `build` already applied. Promote **only** an
+  outcome `build` genuinely left unapplied, into the relevant feature spec
+  `PRD/sections/<feature>/README.md` and its cited `REQ`/`FLOW` entries plus any
+  other affected `PRD/sections/*.md` (the decision log is retired, so no new
+  `DEC-###`) — writing each such outcome exactly once, never a second copy of what
+  is already there. A package that proposed no product truth promotes nothing
 - Receipt at `PRD/instructions/receipts/<slug>-<YYYY-MM-DD>.md` — **written before delete** — opening with the receipt plain-language block from `PRD/instructions/plain-language-standard.md` (a **What happened** line in product terms and a **What it means for you** line saying what the owner can now do or see), then containing date, slug, status (shipped | partial | corpus-only), actions taken, every file created/updated/deleted, verification results, `## Graph run` when the package holds a `GRAPH-RUN.md`, and `## Intake` when it holds `intake/`. The plain-language block leads; the ledgers and file lists follow it unchanged
 - `PRD/sections/system-map.md` entry flipped `planned`/`partial` → `shipped`, only once both code and the receipt exist
 - `PRD/work/STATUS.md` — remove the slug from every section
@@ -147,7 +160,7 @@ rule.
 - Tests updated; `npm run quality:check` green for touched areas
 - Public contract unchanged unless a slice scoped a change
 - No secrets committed
-- Durable outcomes promoted; `PRD/work/<slug>/` ready to delete
+- Durable outcomes applied at `build` and confirmed present (cleanup double-writes nothing); `PRD/work/<slug>/` ready to delete
 
 ## Gates
 

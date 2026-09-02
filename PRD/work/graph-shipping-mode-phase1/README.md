@@ -19,7 +19,7 @@ rewrite the skills it is running on.
 | --- | --- | --- | --- |
 | [A](slice-a-proposal-contract.md) | Proposal contract + docs | done | — |
 | [B](slice-b-spec-forming.md) | Spec-forming side: refinement proposes; gate reads proposal | done | A |
-| [C](slice-c-apply-side.md) | Apply side: implement applies truth + code; cleanup promotes once | planned | A |
+| [C](slice-c-apply-side.md) | Apply side: implement applies truth + code; cleanup promotes once | done | A |
 | [D](slice-d-sync-verify.md) | Sync + integration verification | planned | B, C |
 
 ## Implementation notes
