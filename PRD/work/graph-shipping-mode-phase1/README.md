@@ -18,16 +18,15 @@ rewrite the skills it is running on.
 | Slice | Objective | Status | Depends on |
 | --- | --- | --- | --- |
 | [A](slice-a-proposal-contract.md) | Proposal contract + docs | done | — |
-| [B](slice-b-spec-forming.md) | Spec-forming side: refinement proposes; gate reads proposal | blocked (graph-run part done; `thejudge-refinement` denied by profile) | A |
-| [C](slice-c-apply-side.md) | Apply side: implement applies truth + code; cleanup promotes once | blocked (all `thejudge-*`, denied by profile) | A |
-| [D](slice-d-sync-verify.md) | Sync + integration verification | blocked (`skills:ai-sync` writes `thejudge-*` mirror) | B, C |
+| [B](slice-b-spec-forming.md) | Spec-forming side: refinement proposes; gate reads proposal | done | A |
+| [C](slice-c-apply-side.md) | Apply side: implement applies truth + code; cleanup promotes once | planned | A |
+| [D](slice-d-sync-verify.md) | Sync + integration verification | planned | B, C |
 
-## BLOCKED — needs a plain session
-This session was launched with `.claude/graph-profile.json` (for the overnight
-loop), which denies `Edit(.claude/skills/thejudge-*/**)` and the mirror. Slices
-B–D edit `thejudge-*` skills. **Resume implementation in a plain `claude` session**
-(no `--settings .claude/graph-profile.json`): `/thejudge-implement PRD/work/graph-shipping-mode-phase1/ slice B`.
-Slice A (contract/docs) and the `graph-run` gate edit (allowed here) are committed.
+## Implementation notes
+Slices A and B are committed. Slice B was completed in a plain `claude` session
+(the earlier graph-profile session could not edit `thejudge-*` skills). Slices C
+and D also edit `thejudge-*` skills / the mirror, so they run in the same plain
+session: `/thejudge-implement PRD/work/graph-shipping-mode-phase1/ slice C`.
 
 ## Implementation map
 - Docs/contract: `PRD/instructions/graph-workflow-contract.md`, `preparation-contract.md`, `workflow-reference.md`
