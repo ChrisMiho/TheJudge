@@ -288,8 +288,9 @@ export function formatSupplementalRulesSection(rules: RetrievedGameRule[]): stri
 }
 
 /**
- * Builds the scope sentence listing zones with no cards.
- * Merges unselected zones and selected-but-empty zones in canonical order.
+ * Builds the scope sentence listing every canonical zone that has no cards in
+ * this submission (all canonical zones minus the populated ones, in canonical
+ * order). The selection set is not consulted — `_selectedZones` is unused.
  */
 export function buildZoneScopeSentence(_selectedZones: ZoneId[], populatedZoneIds: ZoneId[]): string {
   const populatedSet = new Set<string>(populatedZoneIds);
