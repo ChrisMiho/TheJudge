@@ -16,6 +16,10 @@ Do not rename package folders to encode status.
 
 ## owner-action
 
+| Package | Gate |
+| --- | --- |
+| [life-tracker-seat-map](life-tracker-seat-map/) | gate-qc PASS; answer `GATE-QUESTIONS.md` (REQ-173) + merge docs PR to build |
+
 ## deferred
 
 ## parked in ideasForLater
