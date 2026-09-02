@@ -36,21 +36,6 @@ export function buildZoneCardFromMetadata(card: CardMetadataItem, scanImageUrl?:
   };
 }
 
-export function zoneCardToMetadata(card: ZoneCardItem): CardMetadataItem {
-  return {
-    cardId: card.cardId,
-    name: card.name,
-    oracleText: card.oracleText,
-    imageUrl: card.imageUrl ?? "",
-    manaCost: card.manaCost ?? "",
-    manaValue: card.manaValue ?? 0,
-    typeLine: card.typeLine ?? "",
-    colors: card.colors ?? [],
-    supertypes: card.supertypes ?? [],
-    subtypes: card.subtypes ?? []
-  };
-}
-
 export function validateZoneCardAdd(
   existingCards: ZoneCardItem[],
   nextCard: ZoneCardItem,
