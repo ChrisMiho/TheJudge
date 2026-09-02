@@ -145,6 +145,8 @@
       "Edit(./.secrets/**)",
       "Edit(./.agents/skills/thejudge-*/**)",
       "Edit(./.claude/skills/thejudge-*/**)",
+      "Edit(./.agents/skills/codehealth/**)",
+      "Edit(./.claude/skills/codehealth/**)",
       "Edit(./.claude/graph-profile.json)",
       "Edit(./.claude/settings*.json)",
       "Edit(./.claude/settings.json)",

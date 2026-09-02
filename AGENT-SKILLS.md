@@ -134,6 +134,21 @@ structured audit it calls when a question collapses to one-question-across-many-
 places. Investigate delegates to sweep and to `graph-kickoff`; it never
 reimplements them.
 
+## Overnight code-health loop
+
+`codehealth` is a standalone, self-paced overnight loop — **not** part of the graph
+lifecycle and not an investigation skill. It opens one behavior-preserving
+code-health PR per target (dead, duplicate, or unsafe/bad code), tests each locally,
+and **never merges**; a target that would change game behavior parks in a morning
+digest. It runs its **own** preflight and deliberately does **not** use
+`graph-preflight` — so independent targets never block each other the way the graph's
+base→main guard would. It reuses `.claude/graph-profile.json` as its static rails and
+delegates target ranking to `thejudge-investigate` / `thejudge-sweep`.
+
+| Skill | When | Writes | Entry point |
+| --- | --- | --- | --- |
+| `codehealth` | Unattended overnight pass for behavior-preserving code-health fixes | One PR per shipped target; a per-night ledger + digest under `.worktrees/.codehealth/` | `/loop codehealth` (launch with `--settings .claude/graph-profile.json`) |
+
 ## Session handoffs
 
 Every skill that hands off ends with a **Next step**: one sentence plus the

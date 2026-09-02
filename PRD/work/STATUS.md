@@ -6,6 +6,10 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
+| Package | Ship-ready |
+| --- | --- |
+| [standalone-codehealth-workflow](./standalone-codehealth-workflow/) | 2026-09-01 |
+
 ## active
 
 ## refined

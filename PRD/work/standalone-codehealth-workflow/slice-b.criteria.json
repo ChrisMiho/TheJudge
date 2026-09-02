@@ -1,0 +1,52 @@
+{
+  "slug": "standalone-codehealth-workflow",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "codehealth is cataloged in AGENT-SKILLS.md",
+      "value": true,
+      "evidence": {
+        "command": "grep -q \"codehealth\" AGENT-SKILLS.md",
+        "paths": [
+          "AGENT-SKILLS.md"
+        ]
+      }
+    },
+    {
+      "id": "B2",
+      "statement": "overnight-codehealth no longer exists under .claude/skills/ or .agents/skills/",
+      "value": true,
+      "evidence": {
+        "command": "test ! -e .claude/skills/overnight-codehealth"
+      }
+    },
+    {
+      "id": "B3",
+      "statement": "graph-profile.json denies editing the codehealth skill dirs",
+      "value": true,
+      "evidence": {
+        "command": "grep -q \"skills/codehealth\" .claude/graph-profile.json",
+        "paths": [
+          ".claude/graph-profile.json"
+        ]
+      }
+    },
+    {
+      "id": "B4",
+      "statement": "skills:ai-sync run and diff -rq .claude/skills .agents/skills is clean",
+      "value": true,
+      "evidence": {
+        "command": "diff -rq .claude/skills .agents/skills"
+      }
+    },
+    {
+      "id": "B5",
+      "statement": "npm run quality:check is green",
+      "value": true,
+      "evidence": {
+        "command": "npm run quality:check"
+      }
+    }
+  ]
+}
