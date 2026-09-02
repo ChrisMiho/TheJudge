@@ -6,8 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-| [graph-shipping-mode-phase2](graph-shipping-mode-phase2/) | two decoupled tools joined by main: graph-kickoff (parallel spec-former, worktree-rooted session) + graph-implement (single background build loop); slices A–E complete; PR #163 |
-
 ## active
 
 ## refined
