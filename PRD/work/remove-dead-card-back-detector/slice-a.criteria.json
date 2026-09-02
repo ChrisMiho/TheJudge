@@ -5,7 +5,7 @@
     {
       "id": "A1",
       "statement": "identify.ts no longer contains isCardBack, CARD_BACK_THRESHOLD, or a cardBack field/write",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep -rn \"isCardBack|CARD_BACK_THRESHOLD|cardBack\"",
         "paths": ["apps/frontend/src/lib/scan/identify.ts"]
@@ -14,7 +14,7 @@
     {
       "id": "A2",
       "statement": "The CARD_BACK_ID constructor skip branch still excludes _card_back from this.ids / this.db and is otherwise unmodified",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": ["apps/frontend/src/lib/scan/identify.ts"]
       }
@@ -22,7 +22,7 @@
     {
       "id": "A3",
       "statement": "apps/frontend npm test passes, including the CardIdentifier.identify golden-vector test unchanged",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm (run )?test"
       }
@@ -30,7 +30,7 @@
     {
       "id": "A4",
       "statement": "apps/frontend npm run typecheck passes clean",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run typecheck"
       }
@@ -38,7 +38,7 @@
     {
       "id": "A5",
       "statement": "npm run quality:check is green at the repo root",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run quality:check"
       }
@@ -46,7 +46,7 @@
     {
       "id": "A6",
       "statement": "git diff for this slice touches only identify.ts (and identify.test.ts only if a real reference required it) with no PRD/sections/ file touched",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "git diff( --stat)?"
       }

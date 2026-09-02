@@ -6,9 +6,9 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-## active
+| [remove-dead-card-back-detector](remove-dead-card-back-detector/) | slice A done — dormant `isCardBack()` detector, `CARD_BACK_THRESHOLD`, and the `cardBack` field deleted from `identify.ts`; verified by grep, golden-vector test, typecheck, and `quality:check`. |
 
-| [remove-dead-card-back-detector](remove-dead-card-back-detector/) | owner accepted DEC-055 (delete the dormant `isCardBack()` detector); mapped to a single slice A. |
+## active
 
 ## refined
 
