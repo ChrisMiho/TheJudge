@@ -18,13 +18,8 @@ import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { loadGameRulesTopics } from "../apps/backend/src/gameRules.ts";
-import { selectGameRulesTopics } from "../apps/backend/src/gameRulesTopicSelection.ts";
-import {
-  collectCuratedRuleIds,
-  loadGameRulesRuleIndex,
-  retrieveSupplementalRulesWithDebug
-} from "../apps/backend/src/gameRulesRetrieval.ts";
-import { buildPromptContext } from "../apps/backend/src/prompt/context.ts";
+import { loadGameRulesRuleIndex } from "../apps/backend/src/gameRulesRetrieval.ts";
+import { buildRetrievalReportInputs } from "../apps/backend/src/eval/retrievalReportInputs.ts";
 import { buildRelevanceReport } from "../apps/backend/src/eval/contextEvaluationHarness.ts";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -52,17 +47,12 @@ async function main() {
     process.exit(1);
   }
 
-  const inputs = fixtures.map((fixture) => {
-    const context = buildPromptContext(fixture.request);
-    const selectedTopics = selectGameRulesTopics(context, allTopics);
-    const curatedRuleIds = collectCuratedRuleIds(selectedTopics);
-    const { selected } = retrieveSupplementalRulesWithDebug(context, ruleIndex, curatedRuleIds);
-    return {
-      fixtureId: fixture.id,
-      selectedTopics,
-      supplementalRules: selected,
-      expected: fixture.expected
-    };
+  // Route each labeled fixture by its request mode: a lookup-mode fixture has no
+  // gameContext, so it goes through the preparation pipeline rather than the
+  // game-mode context builder (which would crash reading playerCount).
+  const inputs = buildRetrievalReportInputs(fixtures, {
+    gameRulesTopics: allTopics,
+    gameRulesRuleIndex: ruleIndex
   });
 
   const report = buildRelevanceReport(inputs);
