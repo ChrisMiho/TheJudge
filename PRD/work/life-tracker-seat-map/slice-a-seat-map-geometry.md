@@ -1,6 +1,6 @@
 # Slice A — Seat-map geometry: add the compact-horizontal-block builder
 
-## Status: planned
+## Status: done
 
 ## Goal
 
