@@ -13,7 +13,7 @@ changes. See `IDEA.md`, `DESIGN-BRIEF.md`, `GAMEPLAN.md`.
 
 | Slice | Objective | Depends on | Status |
 | --- | --- | --- | --- |
-| [A](./slice-a-codehealth-skill.md) | Author the `codehealth` skill (SKILL.md + reference.md) and its fixture | — | planned |
+| [A](./slice-a-codehealth-skill.md) | Author the `codehealth` skill (SKILL.md + reference.md) and its fixture | — | done |
 | [B](./slice-b-integrate-and-supersede.md) | Catalog it, supersede `overnight-codehealth`, harden the profile, mirror, docs | A | planned |
 
 ## Implementation map

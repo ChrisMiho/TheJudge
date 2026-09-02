@@ -1,6 +1,6 @@
 # Slice A — Author the `codehealth` skill
 
-## Status: planned
+## Status: done
 
 ## Goal
 
