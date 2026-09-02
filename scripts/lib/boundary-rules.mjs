@@ -169,8 +169,22 @@ export const RUN_RELEASE_PATH = ".worktrees/.graph-run-release.json"
  *
  * Membership is deliberately narrow. A rule belongs here only if satisfying the
  * remedy is something the contract *requires* the run to do anyway.
+ *
+ * `criterion-flip-without-evidence` is the second member, for the same shape.
+ * A criterion starts `false` and is earned only when the hook observes its
+ * evidence; flipping it to `true` before then is denied, which is correct. But
+ * earning the evidence and *then* flipping is the documented path the contract
+ * requires. Observed 2026-09-02 on `life-tracker-seat-map`: an attempt flipped
+ * the criteria before one of them had evidence (a criteria-file regex typo),
+ * that flip was denied, and after the evidence arrived `denied-command-retry`
+ * refused the now-legitimate retry — because `denialKey()` keys a file tool on
+ * tool+path alone and cannot tell the stale unevidenced attempt from the
+ * evidenced one. Standing aside here re-runs `criterion-flip-without-evidence`
+ * against the evidence log as it now stands: every flipped id earned, it allows;
+ * any id still missing, it denies again by name. The evidence requirement is
+ * unchanged — only the stale-denial trap is removed.
  */
-export const REMEDIABLE_RULES = Object.freeze(new Set(["run-lock-removal"]))
+export const REMEDIABLE_RULES = Object.freeze(new Set(["run-lock-removal", "criterion-flip-without-evidence"]))
 
 /**
  * The owner's kill switch.
