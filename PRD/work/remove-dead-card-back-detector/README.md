@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # remove-dead-card-back-detector
 
@@ -28,7 +28,7 @@ non-goals.
 
 | Slice | Objective | Depends on | Status |
 | --- | --- | --- | --- |
-| [A](slice-a-remove-dead-detector.md) | Delete the dead card-back detector from `identify.ts`; keep the live `_card_back` DB-exclusion filter | none | planned |
+| [A](slice-a-remove-dead-detector.md) | Delete the dead card-back detector from `identify.ts`; keep the live `_card_back` DB-exclusion filter | none | done |
 
 ## Implementation map
 

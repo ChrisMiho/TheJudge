@@ -1,6 +1,6 @@
 # Slice A — remove dead card-back detector
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -39,21 +39,21 @@ scan, lock, add, or no-match path changes for a player.
 
 ## Acceptance criteria
 
-- [ ] A1 — `apps/frontend/src/lib/scan/identify.ts` no longer contains
+- [x] A1 — `apps/frontend/src/lib/scan/identify.ts` no longer contains
       `isCardBack`, `CARD_BACK_THRESHOLD`, or a `cardBack` field/write
       (repo-wide grep for all three, excluding `dist/`, returns zero hits in
       source).
-- [ ] A2 — The constructor's `CARD_BACK_ID` skip branch (the
+- [x] A2 — The constructor's `CARD_BACK_ID` skip branch (the
       `if (database.ids[i] === CARD_BACK_ID)` check) still compiles, still
       excludes `_card_back` from `this.ids` / `this.db`, and is otherwise
       unmodified.
-- [ ] A3 — `cd apps/frontend && npm test` passes, including the
+- [x] A3 — `cd apps/frontend && npm test` passes, including the
       `CardIdentifier.identify` golden-vector test in `identify.test.ts`
       with byte-for-byte identical expected output to before the change.
-- [ ] A4 — `cd apps/frontend && npm run typecheck` passes clean (no stale
+- [x] A4 — `cd apps/frontend && npm run typecheck` passes clean (no stale
       references to removed exports).
-- [ ] A5 — `npm run quality:check` (repo root) is green.
-- [ ] A6 — `git diff` for this slice touches only
+- [x] A5 — `npm run quality:check` (repo root) is green.
+- [x] A6 — `git diff` for this slice touches only
       `apps/frontend/src/lib/scan/identify.ts` (plus a test file only if
       requirement 7's fresh grep found a real reference) — no
       `PRD/sections/` file is touched.
