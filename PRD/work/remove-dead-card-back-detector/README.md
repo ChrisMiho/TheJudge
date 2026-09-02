@@ -1,4 +1,4 @@
-status: owner-action
+status: refined
 
 # remove-dead-card-back-detector
 
@@ -10,8 +10,9 @@ untouched.
 Not a pure refactor: the method was kept dormant by design under DEC-055 as the
 cheap card-back-detection re-enable path, so deleting it changes product truth
 and raises the re-enable cost. Refinement recorded that in `PRD/sections/` and
-the delete-vs-keep decision is posed to the owner in `GATE-QUESTIONS.md`. See
-`DESIGN-BRIEF.md` and `IDEA.md` for evidence and non-goals.
+the owner accepted the delete-vs-keep decision in `GATE-QUESTIONS.md`
+(DEC-055 — accept). See `DESIGN-BRIEF.md` and `IDEA.md` for evidence and
+non-goals.
 
 ## Autonomous metadata
 

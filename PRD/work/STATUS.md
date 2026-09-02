@@ -10,13 +10,13 @@ Do not rename package folders to encode status.
 
 ## refined
 
+| [remove-dead-card-back-detector](remove-dead-card-back-detector/) | owner accepted DEC-055 (delete the dormant `isCardBack()` detector); gate resolved, run one resumes at `gate-qc`. Docs-only PR open. |
+
 ## refining
 
 ## ideation
 
 ## owner-action
-
-| [remove-dead-card-back-detector](remove-dead-card-back-detector/) | run one parked: deleting the dormant `isCardBack()` detector changes DEC-055 current-state truth — answer `GATE-QUESTIONS.md` (delete vs keep), then resume. Docs-only PR open. |
 
 ## deferred
 

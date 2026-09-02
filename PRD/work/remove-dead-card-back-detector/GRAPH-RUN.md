@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/... ; nohup true graph-tier)`
 - Autonomous base: `origin/thejudge-auto/codehealth-20260901-1457-1-deadcardback`
 - Staging: `.worktrees/.graph-intake/graph-20260901-150630/` (copied to package intake/, then removed)
-- Current node: `owner-action` (run one parked)
-- Next action: answer `GATE-QUESTIONS.md`, then `/graph-run PRD/work/remove-dead-card-back-detector/`
+- Current node: `owner-action` (gate resolved, ready to resume at `gate-qc`)
+- Next action: `/graph-run PRD/work/remove-dead-card-back-detector/`
 
 ## Node ledger
 
@@ -17,19 +17,25 @@
 | 3 | define | opus | ok | `— → 46` | `thejudge-refinement`: judged product decision; wrote 5 `PRD/sections/` edits (no new IDs) + `DESIGN-BRIEF.md`; `STATUS.refined`; `GATE-QUESTIONS.md` written (non-empty diff) | 2026-09-01 |
 | 4 | gate-qc | sonnet | ok | `— → 29` | `thejudge-quality-check`: PASS — brief aligned + slice-ready; line numbers, zero-callers, and 5 `PRD/sections/` edits all verified; delete-vs-keep correctly routed to `GATE-QUESTIONS.md` | 2026-09-01 |
 
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `DEC-055` | accept | — |
+
 ## Open gate
 
-**Run one parked at `owner-action` — this is a product decision for the owner.**
+**Resolved 2026-09-01 — 1 verdict (1 accept).**
 
-- **What to do:** answer the one decision block in
-  `PRD/work/remove-dead-card-back-detector/GATE-QUESTIONS.md` (verdict
-  `accept` / `edit` / `reject`), then resume.
 - **What stopped the run:** deleting the dormant `isCardBack()` detector changes
   product truth — it is the documented cheap re-enable path for card-back
   detection under DEC-055, so removing it raises the future re-enable cost
   (reimplement the detector, not just add a `_card_back` asset). No player-facing
   behavior changes today; the method is uncalled. Refinement recorded the
   post-deletion truth in 5 `PRD/sections/` files and gate-qc PASSed the brief.
+- **How it resolved:** owner answered `GATE-QUESTIONS.md` with `accept` on
+  `DEC-055` — the 5 recorded `PRD/sections/` edits stand as written, no further
+  change applied.
 - **Evidence:** `PRD/sections/` diff (5 files) vs `origin/main`;
   `DESIGN-BRIEF.md`; prior receipt `card-scan-lockin-fix-2026-06-22.md`.
 - **Docs-only PR:** https://github.com/ChrisMiho/TheJudge/pull/157 (hold open, do not merge)
