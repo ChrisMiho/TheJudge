@@ -6,9 +6,9 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-## active
+| [graph-shipping-mode-phase1](graph-shipping-mode-phase1/) | propose/apply lifecycle rework (slices A–D done): refinement proposes (work-folder only), implement applies durable truth + code, cleanup confirms once; agent-workflow only. Guard/auto-bridge/concurrency = Phase 2 |
 
-| [graph-shipping-mode-phase1](graph-shipping-mode-phase1/) | propose/apply lifecycle rework (mapped, 4 slices A–D): refinement proposes (work-folder only), implement applies durable truth + code, cleanup promotes once; agent-workflow only. Guard/auto-bridge/concurrency = Phase 2 |
+## active
 
 ## refined
 
