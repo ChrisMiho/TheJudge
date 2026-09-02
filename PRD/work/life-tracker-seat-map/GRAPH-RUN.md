@@ -5,12 +5,11 @@
 - Canary: `denied — hook live (universal: rm -rf denied) + graph tier armed (nohup denied while lock held)`
 - Autonomous base: `origin/thejudge-auto/life-tracker-seat-map`
 - Staging: `.worktrees/.graph-intake/graph-20260902-093611/` (copied verbatim into `PRD/work/life-tracker-seat-map/intake/`, then deleted at node 2 per kickoff's copy→commit→delete)
-- Current node: `build` — **PARKED at `owner-action`** (attempt 2). Enforcement-tooling defect blocks flipping slice-A criteria; needs an owner fix to `scripts/lib/boundary-rules.mjs` (`REMEDIABLE_RULES`). Slice-A code done + green. See `## Open gate`.
-- Next action: fix the boundary-hook `REMEDIABLE_RULES` defect (own PR), then `/graph-implement PRD/work/life-tracker-seat-map/` to resume at `build`
-- Terminal state (build half): `PARKED`
+- Current node: `build` (attempt 3) — **RESUMED**. Owner merged the boundary-hook fix (PR #181) to `main`; `origin/main` integrated into `thejudge-auto/life-tracker-seat-map-work` so the active hook is corrected. `origin/-work` republished with the A3 fix so the build worktree resumes on a correct base.
+- Next action: `/graph-implement PRD/work/life-tracker-seat-map/` — build → review → land → close
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/180 (MERGED — the build signal)
-- Terminal state (spec-forming half): `PARKED`; build half in progress since 2026-09-02
-- Build-half resume canary: `graph tier armed — nohup denied while lock held`; universal `rm -rf` denied. Lock re-taken (run `graph-20260902-093611`).
+- Boundary-hook fix: https://github.com/ChrisMiho/TheJudge/pull/181 (MERGED — `criterion-flip-without-evidence` now remediable)
+- Resume canary (attempt 3): `graph tier armed — nohup denied while lock held`. Lock re-taken (run `graph-20260902-093611`).
 
 Note on dispatch-prompt reproduction: prompts below are reproduced with their
 words unchanged. Double-quote glyphs are reserved for the single ledgered user
@@ -33,6 +32,7 @@ Instruction-ledger match is unambiguous.
 | 6 | build | sonnet | failed | `2 → 107` | Attempt 1 parked on a **criteria-tooling bug**, not code. Slice A implemented + verified green (typecheck, vitest 32/32, quality:check on staged tree); A1/A2/A4/A5/A6 earned (see `.graph-evidence.jsonl`). A3 un-earnable: `slice-a.criteria.json` A3 evidence regex `grep -n "^import" …` has an unescaped `^` mid-pattern → `new RegExp(pattern).test(command)` is always `false` (verified in `matchesEvidence`, `scripts/lib/boundary-rules.mjs`). Nothing committed/pushed; worktree `.worktrees/implement-life-tracker-seat-map` left staged | 2026-09-02 |
 | — | build (guardrail fix) | — | ok | — | Driver fixed the map-out escaping typo per contract *fix the guardrail, never route around it*: A3 evidence `^import` → `\^import` in the launch-checkout `slice-a.criteria.json` (the copy the hook reads — `projectRoot`=`CLAUDE_PROJECT_DIR`). Verified: JSON valid; escaped pattern now matches the real grep command. Scanned B/C/D command patterns — A3 was the only broken one. Re-dispatching build as attempt 2 | 2026-09-02 |
 | 6 | build | sonnet | parked | `2 → 52` | Attempt 2 parked on a **second, distinct enforcement-tooling defect** (not code). A3 now earned (log `16:56:36`); all six slice-A criteria A1–A6 have hook-observed evidence for this run. But flipping them to `true` is blocked by `denied-command-retry`: a stale denial from attempt 1 (`.graph-denials.jsonl`, `criterion-flip-without-evidence` at `16:46:53`, when A3 lacked evidence) permanently blocks any `Edit` to `slice-a.criteria.json` for the rest of the run. `denialKey` keys on tool+path only, and `criterion-flip-without-evidence` is **not** in `REMEDIABLE_RULES` (only `run-lock-removal` is), so the now-evidenced retry can never be re-evaluated. Build correctly refused to route around it via `Write`/`Bash`. Slice A code complete + green (typecheck, vitest 32/32, quality:check); nothing committed/pushed; no PR; worktree preserved. Slices B/C/D not started; REQ-173 not yet applied; `STATUS` stays `active` → `owner-action` | 2026-09-02 |
+| — | build (gate resolved) | — | ok | — | Owner merged the boundary-hook fix PR #181: `criterion-flip-without-evidence` added to `REMEDIABLE_RULES` (guarantee unchanged — the rule re-evaluates against the evidence log; only the stale-denial trap removed; `test:scripts` green, 436). Driver integrated `origin/main` into `thejudge-auto/life-tracker-seat-map-work` (active hook now corrected) and republished `origin/-work` with the A3 fix so the worktree rebases onto a correct base. `STATUS.active` restored. Re-dispatching build as attempt 3 | 2026-09-02 |
 
 ## Gate verdicts
 
@@ -373,6 +373,35 @@ Apply the approved product truth AT BUILD, by intent, together with the code: RE
 Scope: write only inside `.worktrees/implement-life-tracker-seat-map/` and `PRD/work/life-tracker-seat-map/`. Do not edit any `thejudge-*` skill, `.claude/`, `CLAUDE.md`, or `.secrets/`. When every slice is `done`, set `STATUS.ship-ready`.
 
 Report back: the worktree path, the code PR URL (head `thejudge-auto/life-tracker-seat-map-work`, base `main`), each slice's final status and earned-criteria confirmation, the `PRD/sections/` files edited (REQ-173 applied), the quality:check result, the slice-D capture path, and confirmation `STATUS.ship-ready` is set.
+```
+
+### build (attempt 3)
+
+```text
+graph is controlling. You are node 6 (`build`), attempt 3, of an autonomous graph run. thejudge-implement-all is being dispatched under the graph driver — run non-interactively, ask no questions, make no product decisions.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy this exact `Working directory:` line, unchanged, into every prompt you write to any subagent of your own.
+
+Run ID: graph-20260902-093611
+Package: PRD/work/life-tracker-seat-map/
+
+Resume the build. Slice A is fully implemented and verified green (the buildSeatMapCells helper in apps/frontend/src/lib/lifeTracker/seatMap.ts plus test, and the layout prop threaded from PlayerLifeTrackerApp into PlayerLifeCard and CounterPanel; typecheck, vitest 32/32, quality:check). All six slice-A criteria A1–A6 already have hook-observed evidence for this run. The two prior blockers are both fixed: the A3 criteria regex escape, and the boundary-hook fix (PR #181, merged) that makes criterion-flip-without-evidence remediable — so flipping the already-earned criteria is no longer trapped by the stale attempt-1 denial.
+
+Invoke the `thejudge-implement-all` skill (Skill tool) and follow it exactly. Resume the EXISTING worktree `.worktrees/implement-life-tracker-seat-map` (branch `implement-life-tracker-seat-map`, based on `origin/thejudge-auto/life-tracker-seat-map-work`). Fetch and rebase it onto the updated `origin/thejudge-auto/life-tracker-seat-map-work` (now carries the A3 criteria fix and the merged boundary fix) before continuing; preserve the staged slice-A code.
+
+Do this:
+1. Flip slice A's criteria A1–A6 to true (all are earned) and complete slice A: commit it, and confirm every slice-A criterion is now true.
+2. Implement slices B, C, D end to end, earning every criterion in each slice-<letter>.criteria.json. Slice D's six manual criteria are live-browser checks — run the worktree's own isolated dev server (a port you own), capture 7/8-player screenshots in grid and list at iPhone-portrait width, record a dated observation line per id, and complete the PRD/instructions/runtime-process-hygiene.md cleanup (browser-close, owned-process-stop, port-release, capture path under the worktree's PRD/work/life-tracker-seat-map/.playwright-mcp/).
+
+Branch/PR shape (from `## Autonomous metadata`): recorded autonomous base `origin/main`; shared build branch `thejudge-auto/life-tracker-seat-map-work`; open ONE code PR: `gh pr create --base main --head thejudge-auto/life-tracker-seat-map-work`. Opening is allowed; never merge/close it — land is the owner's.
+
+Apply the approved product truth AT BUILD, by intent, together with the code: REQ-173's three accepted diffs into PRD/sections/functional-requirements.md (new REQ-173), PRD/sections/life-tracker/README.md, and PRD/sections/screen-layout.md, re-derived from the finalized GATE-QUESTIONS.md (accept) and DESIGN-BRIEF.md. Preserve always-on commander-damage-decrements-life, the panel minus/plus bands (REQ-112), the 'me' self-cell, seat rotation as the sole orientation input (DEC-136); do not reopen the counter-panel overlay shape (DEC-139).
+
+Scope: write only inside `.worktrees/implement-life-tracker-seat-map/` and `PRD/work/life-tracker-seat-map/`. Do not edit any `thejudge-*` skill, `.claude/`, `CLAUDE.md`, `scripts/`, or `.secrets/`. When every slice is `done`, set `STATUS.ship-ready`.
+
+Report back: the worktree path, the code PR URL (head `thejudge-auto/life-tracker-seat-map-work`, base `main`), each slice's final status and earned-criteria confirmation, the PRD/sections/ files edited (REQ-173 applied), the quality:check result, the slice-D capture path, and confirmation `STATUS.ship-ready` is set.
 ```
 
 ## Instruction ledger

@@ -8,6 +8,8 @@ Do not rename package folders to encode status.
 
 ## active
 
+| [life-tracker-seat-map](life-tracker-seat-map/) | RESUMED at `build` (attempt 3) after boundary-hook fix PR #181 merged; slices A–D, one code PR into `main`. |
+
 ## refined
 
 ## refining
@@ -15,8 +17,6 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
-
-| [life-tracker-seat-map](life-tracker-seat-map/) | PARKED at `build`: slice-A code done + green, but a graph-boundary-hook defect (`REMEDIABLE_RULES` missing `criterion-flip-without-evidence`) blocks flipping earned criteria. Owner fixes the hook (own PR), then resume. See `GRAPH-RUN.md` `## Open gate`. |
 
 ## deferred
 
