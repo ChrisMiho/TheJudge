@@ -92,11 +92,23 @@ Instruction-ledger match is unambiguous.
   - Launch-checkout `slice-a.criteria.json` A3 fix is committed on
     `thejudge-auto/life-tracker-seat-map-work` (local); `main` untouched.
 
-  **Resume command (after the hook fix lands):**
-  `/graph-implement PRD/work/life-tracker-seat-map/` — re-enters at `build`
-  (`STATUS.active`/`STATUS.owner-action` with `GAMEPLAN.md` present); the resumed
-  build flips A1–A6, completes slice A, then B/C/D, applies REQ-173, and opens the
-  code PR into `main`.
+  **The fix is up as PR #181** (`fix/graph-remediable-criterion-flip` → `main`):
+  adds `criterion-flip-without-evidence` to `REMEDIABLE_RULES` in
+  `scripts/lib/boundary-rules.mjs` (+ tests; `npm run test:scripts` green, 436).
+  https://github.com/ChrisMiho/TheJudge/pull/181
+
+  **Resume sequence:**
+  1. Merge PR #181 to `main`.
+  2. Integrate the fix into this build branch so the *active* hook is the
+     corrected one — the boundary hook runs from the launch checkout's working
+     tree, and this branch (`thejudge-auto/life-tracker-seat-map-work`) forked
+     `main` before the fix: `git checkout thejudge-auto/life-tracker-seat-map-work`
+     then `git merge origin/main`. (The build worktree likewise rebases onto the
+     updated `origin/thejudge-auto/life-tracker-seat-map-work`.)
+  3. `/graph-implement PRD/work/life-tracker-seat-map/` — re-enters at `build`
+     (`STATUS.owner-action` with `GAMEPLAN.md` present, `## Open gate` resolved);
+     the resumed build flips A1–A6, completes slice A, then B/C/D, applies REQ-173,
+     and opens the code PR into `main`.
 
 - **Define gate — resolved 2026-09-02.** Owner answered `GATE-QUESTIONS.md`
   with `REQ-173: accept` (one verdict, three proposed diffs standing as authored)
