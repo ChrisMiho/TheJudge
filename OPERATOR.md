@@ -80,6 +80,11 @@ land as dated held entries, `REFUSE`s stay as the table row and nothing else.
 `claude --settings .claude/graph-profile.json` — then start your run inside it
 (recipe 1 or 6). To repeat work on a schedule, wrap it with `/loop`.
 
+**Overnight code-health:** `/loop codehealth` is a ready-made overnight loop that
+opens one behavior-preserving code-health PR per target and never merges. It uses
+this same profile and the same `.worktrees/.graph-stop` kill switch; a target that
+would change game behavior parks in its morning digest under `.worktrees/.codehealth/`.
+
 **You'll be asked:** nothing while it runs. A run has no one to answer a
 permission prompt overnight, so if it hits an unlisted command it treats that as
 a stop and records it, rather than hanging forever.

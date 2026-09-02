@@ -1,6 +1,6 @@
 # Slice B — Integrate and supersede
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -56,11 +56,11 @@ npm run quality:check
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/<slug>/` ready to delete
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green (exit 0)
+- [x] Public contract unchanged unless slice scoped a change (only skill/docs/profile)
+- [x] No secrets committed
+- [x] Durable outcomes promoted (none — no `PRD/sections/` change); `PRD/work/<slug>/` ready to delete at cleanup
 
 ## Product-truth promotion (executed in cleanup)
 
