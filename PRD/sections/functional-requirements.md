@@ -3885,3 +3885,31 @@
   - `system-map/prompt-assembly.md`; `scripts/prompt-preview.mjs`
 - Notes:
   - The owner's stated purpose is to drive future prompt-format optimization for better rules resolving; this spec is that reference surface.
+
+### REQ-171
+- Title: The `graph-implement` background loop builds approved specs from `main`
+- Priority: high
+- Description: `graph-implement` is a single, background loop that detects an approved-but-unbuilt spec on local `main`, branches off fresh `main`, runs the build half of the lifecycle, and opens a code PR. It replaces the manual build-resume command with an unattended drain of the approved queue — the owner merges an approved spec PR and the loop picks it up.
+- Acceptance Criteria:
+  - a spec is "ready" when its `PRD/work/<slug>/` folder is on `main` at `STATUS.refined` with every `GATE-QUESTIONS.md` verdict slot answered (no blank) and no built code — this state is the queue and needs no bespoke ready-file
+  - on picking up a ready spec, `graph-implement` sets `STATUS.active` as the single claim point, so a second loop iteration or a loop restart never double-picks the same spec — the transition is the idempotency guard (never double-build, never miss)
+  - a `GATE-QUESTIONS.md` with any blank slot is not ready and is skipped, matching the run-two resume rule
+  - for each ready spec the loop dispatches `graph-gate-review` to finalize the owner's verdicts, then re-enters at `gate-qc` and runs `plan → build → review`, branching off fresh `main` in its own worktree
+  - the loop processes one spec at a time (single background loop); it holds exactly one build lock
+  - a build that parks (a gate blocker, a per-node cap, a `gate-qc`/`review` loop-limit) sends that one slug to `owner-action` and the loop continues to the next ready spec — one parked build never stalls the queue
+  - when no ready spec is found the loop reports "no ready spec" and holds or stops rather than spinning
+  - each shipped build opens a code PR into `main` that grows from the same PR the spec was merged on; `land` (the code PR merge) stays human and is never automated
+  - `thejudge-cleanup` deleting `PRD/work/<slug>/` on ship removes it from the queue, so a shipped spec is never re-seen
+- Constraints:
+  - the loop never merges or closes any PR, spec or code — `gh pr merge`/`gh pr close` stay denied
+  - approval is answer-then-merge: the owner's per-ID verdicts in the merged `GATE-QUESTIONS.md` govern; a merge is not blanket-accept
+  - no "ship multiple specs together" grouping — each spec is its own package, branch, and PR
+  - concurrent builds are out of scope: `graph-implement` is single and sequential
+- Dependencies:
+  - REQ-172
+  - DEC-164
+  - DEC-166
+- Notes:
+  - the loop is independent of concurrent spec-forming (REQ-170) and ships first: it builds one spec at a time in its own root, so it needs none of the per-worktree isolation machinery
+  - handoff is `main`: merge a spec, sync, and the loop picks it up. Because approved specs are already in `main`, the loop always branches off a base that has them — the base→main staleness the two-run flow guarded against never arises
+  - ready-detection reuses `STATUS.*` deliberately: the status vocabulary already distinguishes refined (approved, unbuilt) from active (being built) from deleted (shipped), so no new marker or its own drift risk is introduced

@@ -3,9 +3,10 @@ name: graph-implement
 description: >-
   Use to build an approved-and-merged TheJudge spec without per-step user input —
   resolving the answered gate, then map-out, implementation, and review as
-  delegated nodes — opening a code PR the owner merges. The build half of the
-  graph workflow; the spec-forming half is graph-kickoff. (Slice B turns this into
-  a background loop over the approved queue.)
+  delegated nodes — opening a code PR the owner merges. Runs as a single
+  background loop that watches local main and drains the approved queue one spec
+  at a time. The build half of the graph workflow; the spec-forming half is
+  graph-kickoff.
 ---
 
 # Graph Implement
@@ -29,6 +30,46 @@ liveness, tool-call caps, parking, halting on the stop sentinel, the
 no-pre-authorization rule, boundaries, and terminal states — is the contract's,
 the same authority `graph-kickoff` reads; this skill points to it rather than
 restating it.
+
+## The build loop
+
+`graph-implement` runs as a **single, self-paced background loop** — invoked as
+`/loop graph-implement` (no interval; it paces itself) — that drains the approved
+queue one spec at a time. A single `/graph-implement PRD/work/<slug>/` still builds
+one named spec; the loop is the same build applied to every ready spec in turn.
+
+Each tick:
+
+1. **Sync.** `git fetch origin`; read local `main`.
+2. **Find a ready spec.** Scan `PRD/work/*/` **on `main`** for a spec that is
+   *ready to build*: its `STATUS.refined` marker is present, every
+   `GATE-QUESTIONS.md` verdict slot is answered (no blank), and no code has been
+   built for it yet. That state **is** the queue — there is no separate ready-file.
+   A `GATE-QUESTIONS.md` with any blank slot is **not ready** and is skipped
+   (the owner has not finished approving it).
+3. **Claim it.** Set `STATUS.active` for that slug **first**, as the single claim
+   point, and commit that transition. This is the idempotency guard: a second tick,
+   or a loop restart, sees `STATUS.active` (not `refined`) and never double-picks
+   the same spec. Never double-build, never miss.
+4. **Build it.** Branch off fresh `main` in the spec's own worktree, then run the
+   build half — `graph-gate-review` (finalize verdicts) → re-enter at `gate-qc` →
+   `plan → build → review` — and open the code PR that grows from the spec PR the
+   owner merged. `land` stays human.
+5. **Park one, continue.** If that build parks (a gate blocker, a per-node cap, a
+   `gate-qc`/`review` loop-limit), the slug stays at `owner-action` and the loop
+   moves on to the **next** ready spec. One parked build never stalls the queue.
+6. **No ready spec** → report "no ready spec" and hold (schedule the next tick) or
+   stop; never spin.
+
+**Approval is answer-then-merge.** A spec becomes ready only after the owner
+answers its verdict slots in the spec PR and merges it to `main` — the merge is the
+"build it" signal. A merge is not blanket-accept: `graph-gate-review` applies the
+owner's per-ID verdicts before `plan`.
+
+**Pacing.** Under `/loop graph-implement`, end each tick by scheduling the next
+(`ScheduleWakeup` with the same `/loop` input); when the queue is empty and no work
+is expected, stop instead. The stop sentinel halts the loop at a spec boundary
+(see `## Loop safety`).
 
 ## Resolving the gate
 

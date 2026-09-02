@@ -1,6 +1,6 @@
 # Slice B — `graph-implement` becomes the background build loop
 
-## Status: planned
+## Status: done
 
 ## Goal
 
