@@ -19,12 +19,6 @@ export const DEFAULT_LAYOUT_MODE: LayoutMode = "grid";
 export const DEFAULT_CARD_STYLE: CardStyle = "gradient";
 export const DEFAULT_DAY_NIGHT_PHASE: DayNightPhase = "day";
 
-/** The presentation/format settings that survive a New Game, unlike the game's own live values. */
-export const DEFAULT_PREFERENCES: TrackerPreferences = {
-  layoutMode: DEFAULT_LAYOUT_MODE,
-  cardStyle: DEFAULT_CARD_STYLE
-};
-
 /** Every fixed player label, in seat order. The tracker roster is always a contiguous prefix of this list. */
 export const ALL_PLAYER_LABELS: readonly PlayerLabel[] = [
   "Player 1",
