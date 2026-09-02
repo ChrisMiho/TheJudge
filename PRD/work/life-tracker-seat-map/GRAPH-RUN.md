@@ -593,6 +593,40 @@ Do not edit application code or `PRD/sections/`. Write only inside `PRD/work/lif
 Report back: the GAMEPLAN path, the ordered list of slices (letter plus one-line intent), confirmation each `slice-<letter>.criteria.json` was emitted with the on-card criteria reflecting the compact block, and confirmation `STATUS.active` is set.
 ```
 
+### build (build-half re-scope, attempt 1)
+
+```text
+graph is controlling. You are node 6 (`build`), build-half re-scope, of an autonomous graph run. thejudge-implement-all is being dispatched under the graph driver — run non-interactively, ask no questions, make no product decisions.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy this exact `Working directory:` line, unchanged, into every prompt you write to any subagent of your own.
+
+Run ID: graph-20260902-121645
+Package: PRD/work/life-tracker-seat-map/
+
+Invoke the `thejudge-implement-all` skill (Skill tool) and follow it exactly. Implement every remaining slice (A, B, C, D) end to end in one session, in its own isolated worktree.
+
+This is a RE-SCOPED build after the owner's compact-horizontal on-card clarification. The prior build committed the OLD design (on-card preview = miniature of the active arrangement, sized to layout.columns by layout.rows, sharing `buildSeatMapCells` with the panel) on the shared branch. The NEW plan (fresh GAMEPLAN.md + slices A-D, criteria all false under run graph-20260902-121645) changes the ON-CARD map only:
+- The on-card commander-damage preview becomes a COMPACT HORIZONTAL BLOCK — at most 2 rows, growing wider with more players — matching the reference images (`PRD/work/life-tracker-seat-map/intake/references/fullTable.PNG`, `player1..6.PNG`), the SAME in grid and list layout, decoupled from the active arrangement's shape (never layout.columns by layout.rows, never ceil-root-N), self/'me' cell in the current player's own seat corner, opponents around it as best-effort within the block, extrapolated sideways for 7-8 players (e.g. a 2-by-4 block at 8 players). The whole card is NEVER rotated; only the block's internal layout changes.
+- The PANEL (`CounterPanel`) is UNCHANGED: its matrix stays the top-down arrangement miniature (`buildSeatMapCells`), REQ-112 bands and decrements-life preserved.
+
+Slice A adds a NEW compact-horizontal-block builder to `apps/frontend/src/lib/lifeTracker/seatMap.ts` alongside the existing `buildSeatMapCells` (keep buildSeatMapCells for the panel). Slice B rewrites `PlayerLifeCard`'s on-card preview to render the compact block from the new builder. Slice C re-verifies `CounterPanel` is still the unchanged top-down miniature (re-touch only if slice A's export shape moved under it). Slice D is the live 7/8-player containment + block-shape + side-seat glyph-orientation verification, both layouts, against the references.
+
+Branch/PR shape (from `## Autonomous metadata`; use it, do not re-derive):
+- Recorded autonomous base: `origin/main`.
+- Shared build branch / PR head: `thejudge-auto/life-tracker-seat-map-work` (already on origin at commit eaa5aef, carrying the fresh GAMEPLAN + slices + criteria + reconciled brief/REQ-173 + this run's ledger, PLUS the old-design A/B/C code as the starting point). Base the worktree on `origin/thejudge-auto/life-tracker-seat-map-work` and fetch/rebase onto it so you have the new plan; PRESERVE the existing A-slice code (`buildSeatMapCells` + the layout prop wiring) — it is reused, not rebuilt.
+- Worktree at `.worktrees/implement-life-tracker-seat-map` (repo-local only; one worktree for the package). Publish the worktree's commits to the `thejudge-auto/life-tracker-seat-map-work` ref on origin, and open ONE code PR into base `main`: `gh pr create --base main --head thejudge-auto/life-tracker-seat-map-work` (or, if a PR from that head already exists, ensure it reflects the final deliverable). Opening a PR is allowed; never merge or close it — land is the owner's.
+
+Apply the approved product truth AT BUILD, by intent, together with the code (contract `## Applying product truth at build`): write REQ-173's three accepted diffs — re-derived against current truth from the finalized, reconciled `GATE-QUESTIONS.md` (verdict accept) and `DESIGN-BRIEF.md` — into `PRD/sections/functional-requirements.md` (new REQ-173), `PRD/sections/life-tracker/README.md`, and `PRD/sections/screen-layout.md`. These edits happen inside your worktree and ride the code PR. NOTE the reconciled REQ-173 describes the on-card map as a compact horizontal block (NOT the arrangement's real columns/rows) — apply that reconciled wording, not the old.
+
+Acceptance criteria: earn every criterion in each `slice-<letter>.criteria.json` — the committed PreToolUse hook logs earned ids; a slice is `done` only when all its criteria are earned and its verification and `npm run quality:check` pass. Slice D's six `manual` criteria are live-browser checks: run your worktree's own isolated dev server (a port you own, never attach to an existing one — servers on 5173/3000 belong to the launch checkout, do not use them), set the viewport to iPhone-portrait (~430px), capture 7- and 8-player screenshots in BOTH grid and list layout, confirm (visual read against the references) the on-card block is a compact horizontal block (at most 2 rows), fully contained (no clipped cell, name pill not crushed or spilled), record a dated observation line naming each id, and complete the `PRD/instructions/runtime-process-hygiene.md` cleanup (browser-close, owned-process-stop, port-release, capture path under the worktree's `PRD/work/life-tracker-seat-map/.playwright-mcp/`).
+
+Scope: write only inside `.worktrees/implement-life-tracker-seat-map/` and `PRD/work/life-tracker-seat-map/`. Do not edit any `thejudge-*` skill, `.claude/`, `CLAUDE.md`, `scripts/`, or `.secrets/`. Do not force-push, merge, or close any PR. When every slice is `done`, set `STATUS.ship-ready`.
+
+Report back: the worktree path, the code PR URL (head `thejudge-auto/life-tracker-seat-map-work`, base `main`), each slice's final status and earned-criteria confirmation, the `PRD/sections/` files edited (REQ-173 applied, reconciled wording), the quality:check result, the slice-D capture path, and confirmation `STATUS.ship-ready` is set.
+```
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
