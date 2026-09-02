@@ -24,7 +24,6 @@ export const REGION_A = { x1: 30, y1: 105, x2: 715, y2: 520 };
 
 // --- Thresholds, 0..256 scale (SPEC.md section 6.3) ---
 export const MATCH_THRESHOLD = 120;
-export const CARD_BACK_THRESHOLD = 100;
 
 const BACK_FACE_SUFFIX = "__back";
 const CARD_BACK_ID = "_card_back";
@@ -210,14 +209,13 @@ export function regionDistance(q: Uint8Array, db: Uint8Array, dbOff: number): nu
 export class CardIdentifier {
   readonly ids: string[] = [];
   private readonly db: Uint8Array; // N*96
-  private readonly cardBack: Uint8Array | null = null;
 
   constructor(database: HashDb) {
     const keepHashes: Uint8Array[] = [];
     for (let i = 0; i < database.count; i++) {
       const slice = database.hashes.subarray(i * 96, i * 96 + 96);
       if (database.ids[i] === CARD_BACK_ID) {
-        this.cardBack = Uint8Array.from(slice);
+        // _card_back is excluded from the searchable set.
       } else {
         this.ids.push(database.ids[i]);
         keepHashes.push(Uint8Array.from(slice));
@@ -225,19 +223,6 @@ export class CardIdentifier {
     }
     this.db = new Uint8Array(keepHashes.length * 96);
     keepHashes.forEach((h, i) => this.db.set(h, i * 96));
-  }
-
-  /** (is_back, distance). Returns (false, 999) if the DB has no card back. */
-  isCardBack(cardImg: RgbImage): { isBack: boolean; distance: number } {
-    if (!this.cardBack) return { isBack: false, distance: 999.0 };
-    const conditioned = conditionQueryImage(cardImg);
-    const hUp = phashRegionPacked(cropRegionA(conditioned));
-    const hRot = phashRegionPacked(cropRegionA(rotate180(conditioned)));
-    const dist = Math.min(
-      regionDistance(hUp, this.cardBack, 0),
-      regionDistance(hRot, this.cardBack, 0)
-    );
-    return { isBack: dist <= CARD_BACK_THRESHOLD, distance: dist };
   }
 
   /** Identify a canonical 745x1040 RGB card image. Mirrors reference/identify.py. */
