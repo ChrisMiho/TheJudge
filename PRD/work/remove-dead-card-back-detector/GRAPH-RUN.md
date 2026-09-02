@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/... ; nohup true graph-tier)`
 - Autonomous base: `origin/thejudge-auto/codehealth-20260901-1457-1-deadcardback`
 - Staging: `.worktrees/.graph-intake/graph-20260901-150630/` (copied to package intake/, then removed)
-- Current node: `owner-action` (gate resolved, ready to resume at `gate-qc`)
-- Next action: `/graph-run PRD/work/remove-dead-card-back-detector/`
+- Current node: `plan` (run two: gate-review applied, gate-qc re-PASSed)
+- Next action: dispatch `thejudge-map-out`
 
 ## Node ledger
 
@@ -16,6 +16,8 @@
 | 2 | shape | sonnet | ok | `— → 25` | package `PRD/work/remove-dead-card-back-detector/` created (IDEA.md, README.md, STATUS.ideation, intake/); prior-run matches recorded | 2026-09-01 |
 | 3 | define | opus | ok | `— → 46` | `thejudge-refinement`: judged product decision; wrote 5 `PRD/sections/` edits (no new IDs) + `DESIGN-BRIEF.md`; `STATUS.refined`; `GATE-QUESTIONS.md` written (non-empty diff) | 2026-09-01 |
 | 4 | gate-qc | sonnet | ok | `— → 29` | `thejudge-quality-check`: PASS — brief aligned + slice-ready; line numbers, zero-callers, and 5 `PRD/sections/` edits all verified; delete-vs-keep correctly routed to `GATE-QUESTIONS.md` | 2026-09-01 |
+| — | gate-review | sonnet | ok | `— → 15` | `graph-gate-review`: applied `DEC-055` accept (no-op on recorded diff); status restored `refined`; gate resolved | 2026-09-02 |
+| 4 | gate-qc (run two) | sonnet | ok | `— → 17` | `thejudge-quality-check` re-grade after owner accepted DEC-055: PASS, no findings; 5 `PRD/sections/` edits + deletion line numbers + zero-callers re-verified against live tree | 2026-09-02 |
 
 ## Gate verdicts
 
