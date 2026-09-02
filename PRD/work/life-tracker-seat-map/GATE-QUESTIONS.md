@@ -114,5 +114,5 @@ oversized "me" tile, and the 7–8-player clipping and crushed name pill stay.
 +| Notes | DEC-101, DEC-136, DEC-139, REQ-173 |
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
