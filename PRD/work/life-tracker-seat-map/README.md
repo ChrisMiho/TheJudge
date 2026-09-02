@@ -20,9 +20,11 @@ See `IDEA.md` for the shaped idea, `intake/` for the probe evidence, and
 
 ## Preparation gate
 
-- Quality-check: PASS
+- Quality-check: PASS (build-half re-grade, attempt 2, 2026-09-02 — after owner
+  accepted REQ-173; re-confirmed against the finalized proposal)
 - Checked artifact: `PRD/work/life-tracker-seat-map/DESIGN-BRIEF.md`
-- Findings: none (one non-blocking citation nit: DESIGN-BRIEF criterion 5 attributes
-  the "me" self-cell to DEC-136, which covers only life-adjustment split/rotation;
-  GATE-QUESTIONS REQ-173 scopes DEC-136 to rotation correctly — prose imprecision,
-  not a product-truth error, does not affect implementability)
+- Findings: none (one non-blocking citation nit, unchanged from attempt 1:
+  DESIGN-BRIEF criterion 5 attributes the "me" self-cell to DEC-136, which covers
+  only life-adjustment split/rotation; GATE-QUESTIONS REQ-173 scopes DEC-136 to
+  rotation correctly — prose imprecision, not a product-truth error, does not
+  affect implementability)

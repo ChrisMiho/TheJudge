@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (universal: rm -rf denied) + graph tier armed (nohup denied while lock held)`
 - Autonomous base: `origin/thejudge-auto/life-tracker-seat-map`
 - Staging: `.worktrees/.graph-intake/graph-20260902-093611/` (copied verbatim into `PRD/work/life-tracker-seat-map/intake/`, then deleted at node 2 per kickoff's copy→commit→delete)
-- Current node: `gate-review` complete — REQ-173 `accept` applied, `STATUS.refined` restored, board updated
-- Next action: `/graph-implement PRD/work/life-tracker-seat-map/` — re-enters at `gate-qc` → plan → build → review → land → close
+- Current node: `plan` (map-out) — gate-qc attempt 2 PASS; building on `thejudge-auto/life-tracker-seat-map-work`
+- Next action: `/graph-implement PRD/work/life-tracker-seat-map/` — plan → build → review → land → close
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/180 (MERGED — the build signal)
 - Terminal state (spec-forming half): `PARKED`; build half in progress since 2026-09-02
 - Build-half resume canary: `graph tier armed — nohup denied while lock held`; universal `rm -rf` denied. Lock re-taken (run `graph-20260902-093611`).
@@ -27,6 +27,7 @@ Instruction-ledger match is unambiguous.
 | 3 | define | opus | ok | `0 → 33` | `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` written; STATUS.refined; one new id REQ-173 with 3 complete diffs (functional-requirements.md, life-tracker/README.md, screen-layout.md); counter-panel orientation resolved via assumption ladder (top-down replica), no product fork surfaced; no `PRD/sections/` edits | 2026-09-02 |
 | 4 | gate-qc | sonnet | ok | `0 → 24` | Quality-check PASS; checked `DESIGN-BRIEF.md`; findings none (one non-blocking citation nit); code claims verified against `PlayerLifeCard.tsx`/`CounterPanel.tsx`/`PlayerLifeTrackerApp.tsx`/`seatArrangement.ts`; REQ-173 diff placement + cited IDs confirmed. Run stops at PASS → owner-action | 2026-09-02 |
 | — | gate-review | sonnet | ok | `3 → 22` | Build-half resume. Owner answered `GATE-QUESTIONS.md` `REQ-173: accept` + merged docs PR #180. `graph-gate-review` finalized the proposal (accept = diffs stand as authored), restored `STATUS.refined`, moved board row off `owner-action`; no `PRD/sections/` or code edits | 2026-09-02 |
+| 4 | gate-qc | sonnet | ok | `2 → 28` | Attempt 2 (build-half re-grade after accept). Quality-check PASS; checked `DESIGN-BRIEF.md`; findings none; every code claim re-verified against `seatArrangement.ts`/`PlayerLifeCard.tsx`/`CounterPanel.tsx`; brief consistent with finalized REQ-173, within constraints (pure presentation, DEC-139 not reopened, DEC-136 preserved). `STATUS.refined` unchanged | 2026-09-02 |
 
 ## Gate verdicts
 
@@ -185,6 +186,31 @@ Do this:
 Constraints: do not edit `PRD/sections/`, application code, or anything outside `PRD/work/life-tracker-seat-map/` (plus the shared `PRD/work/STATUS.md` board). Do not run git push, PR, or merge operations. A blank verdict slot means re-park unchanged — but REQ-173 is answered `accept`, so this should apply cleanly.
 
 Report back: the verdict applied per stable id (REQ-173 → accept), confirmation `GATE-QUESTIONS.md` proposal is finalized, the new STATUS marker (`STATUS.refined`), the board-row update, and the exact resume command.
+```
+
+### gate-qc (attempt 2, build-half re-grade)
+
+```text
+graph is controlling. You are node 4 (`gate-qc`), attempt 2, of an autonomous graph run — build-half re-grade after the owner's define-gate verdict. thejudge-quality-check is being dispatched under the graph driver.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy this exact `Working directory:` line, unchanged, into every prompt you write to any subagent of your own.
+
+Run ID: graph-20260902-093611
+Package: PRD/work/life-tracker-seat-map/
+
+Run non-interactively: do not pause for the user.
+
+Context: the owner answered the `define` gate with `REQ-173: accept` (no edits to the proposal) and merged docs PR #180. `graph-gate-review` restored `STATUS.refined`. This re-grade confirms the design brief still passes against the now-finalized proposal before the build half proceeds to map-out.
+
+Invoke the `thejudge-quality-check` skill (Skill tool) and follow it exactly. Validate `DESIGN-BRIEF.md` for PRD alignment and agent-readiness and produce a PASS or FAIL report. Do not write a GAMEPLAN or slice docs — that is the map-out node's job.
+
+Check the design brief against the finalized product truth in `GATE-QUESTIONS.md` (REQ-173, verdict accept) and the current-state specs it amends: `PRD/sections/life-tracker/README.md`, `PRD/sections/functional-requirements.md`, `PRD/sections/screen-layout.md`. Confirm the brief is internally consistent with the finalized REQ-173 acceptance criteria, stays within the stated constraints (pure presentation; does not reopen DEC-139; preserves the commander-damage behaviors and DEC-136 rotation), and is specific enough for an implementer to slice without inventing product decisions.
+
+On FAIL, set `STATUS.refining` and report the complete findings list. On PASS, report PASS with the checked artifact path and an empty findings list.
+
+Report back: PASS or FAIL, the checked artifact, and the complete findings list (or none).
 ```
 
 ## Instruction ledger
