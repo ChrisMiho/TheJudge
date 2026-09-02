@@ -5,10 +5,11 @@
 - Canary: `denied — hook live (universal: rm -rf denied) + graph tier armed (nohup denied while lock held)`
 - Autonomous base: `origin/thejudge-auto/life-tracker-seat-map`
 - Staging: `.worktrees/.graph-intake/graph-20260902-093611/` (copied verbatim into `PRD/work/life-tracker-seat-map/intake/`, then deleted at node 2 per kickoff's copy→commit→delete)
-- Current node: `owner-action` (parked at gate-qc PASS)
-- Next action: owner answers `PRD/work/life-tracker-seat-map/GATE-QUESTIONS.md`, then merges the docs PR to `main`; `graph-implement` builds it
-- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/180
-- Terminal state: `PARKED`
+- Current node: `gate-review` complete — REQ-173 `accept` applied, `STATUS.refined` restored, board updated
+- Next action: `/graph-implement PRD/work/life-tracker-seat-map/` — re-enters at `gate-qc` → plan → build → review → land → close
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/180 (MERGED — the build signal)
+- Terminal state (spec-forming half): `PARKED`; build half in progress since 2026-09-02
+- Build-half resume canary: `graph tier armed — nohup denied while lock held`; universal `rm -rf` denied. Lock re-taken (run `graph-20260902-093611`).
 
 Note on dispatch-prompt reproduction: prompts below are reproduced with their
 words unchanged. Double-quote glyphs are reserved for the single ledgered user
@@ -25,17 +26,23 @@ Instruction-ledger match is unambiguous.
 | 2 | shape | sonnet | ok | `degraded (no run state)` | package `PRD/work/life-tracker-seat-map/` created (commit `21778e5`); `IDEA.md` + `STATUS.ideation` + `intake/` (GRAPH-BRIEF.md, PROBE.md, references/ 12 images) committed; 6 `## Prior run` receipt matches recorded | 2026-09-02 |
 | 3 | define | opus | ok | `0 → 33` | `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` written; STATUS.refined; one new id REQ-173 with 3 complete diffs (functional-requirements.md, life-tracker/README.md, screen-layout.md); counter-panel orientation resolved via assumption ladder (top-down replica), no product fork surfaced; no `PRD/sections/` edits | 2026-09-02 |
 | 4 | gate-qc | sonnet | ok | `0 → 24` | Quality-check PASS; checked `DESIGN-BRIEF.md`; findings none (one non-blocking citation nit); code claims verified against `PlayerLifeCard.tsx`/`CounterPanel.tsx`/`PlayerLifeTrackerApp.tsx`/`seatArrangement.ts`; REQ-173 diff placement + cited IDs confirmed. Run stops at PASS → owner-action | 2026-09-02 |
+| — | gate-review | sonnet | ok | `3 → 22` | Build-half resume. Owner answered `GATE-QUESTIONS.md` `REQ-173: accept` + merged docs PR #180. `graph-gate-review` finalized the proposal (accept = diffs stand as authored), restored `STATUS.refined`, moved board row off `owner-action`; no `PRD/sections/` or code edits | 2026-09-02 |
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-173` | accept | — |
 
 ## Open gate
 
-- **Answer `PRD/work/life-tracker-seat-map/GATE-QUESTIONS.md`, then merge the docs
-  PR to `main` to build.** Run one stopped at the first `gate-qc` PASS. The proposal
-  gates on REQ-173 (three diffs): record a `Verdict:` (accept | edit | reject) and,
-  for edit/reject, a `Reason:` in the REQ-173 block. Then merge the docs-only
-  base→main PR; `graph-implement` picks up the approved spec from `main` and builds
-  it (map-out → build → review → land → close), applying the accepted diffs to
-  `PRD/sections/` together with the code.
-- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/180 (base→main, docs-only; stays open for the owner to merge as the build signal)
+- **Resolved 2026-09-02.** Owner answered `PRD/work/life-tracker-seat-map/GATE-QUESTIONS.md`
+  with `REQ-173: accept` (one verdict, three proposed diffs standing as authored)
+  and merged the docs-only base→main PR. `graph-gate-review` applied the verdict
+  (no change needed for `accept`), restored `STATUS.refined`, and updated the
+  `PRD/work/STATUS.md` board row. Run resumes at `gate-qc`; the accepted diffs are
+  applied to `PRD/sections/` by implementation at build.
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/180 (base→main, docs-only; MERGED)
 - Stash handoff: node 1 stashed the launch checkout's uncommitted work (22 files).
   The stash is the owner's and is never dropped, popped, or reordered by the run.
   Restore it with:
@@ -153,6 +160,31 @@ Check the design brief against the proposed product truth in `GATE-QUESTIONS.md`
 On FAIL, set `STATUS.refining` and report the complete findings list so refinement can address them. On PASS, report PASS with the checked artifact path and an empty findings list.
 
 Report back: PASS or FAIL, the checked artifact, and the complete findings list (or none).
+```
+
+### gate-review
+
+```text
+graph is controlling. You are the gate-review step of the build half of an autonomous graph run (graph-implement). graph-gate-review is being dispatched under the graph driver — run non-interactively, ask no questions, make no product decisions of your own.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy this exact `Working directory:` line, unchanged, into every prompt you write to any subagent of your own.
+
+Run ID: graph-20260902-093611
+Package: PRD/work/life-tracker-seat-map/
+
+The owner answered the `define` gate in `GATE-QUESTIONS.md` and merged the docs PR (#180) to `main`. Invoke the `graph-gate-review` skill (Skill tool) and follow it exactly.
+
+Do this:
+1. Read `PRD/work/life-tracker-seat-map/GATE-QUESTIONS.md`. It gates on exactly one stable id, REQ-173, with `- Verdict: accept`. Confirm the verdict slot is filled (not blank).
+2. Apply the owner's verdict INSIDE `GATE-QUESTIONS.md` (finalize the proposal in the work folder). `accept` means the three proposed diffs stand as authored — do not alter their content. Never edit `PRD/sections/` (implementation applies it at build).
+3. Restore `STATUS.refined` for the package, update the `PRD/work/STATUS.md` board row off `owner-action`, and record the verdict application.
+4. Hand back the exact resume command.
+
+Constraints: do not edit `PRD/sections/`, application code, or anything outside `PRD/work/life-tracker-seat-map/` (plus the shared `PRD/work/STATUS.md` board). Do not run git push, PR, or merge operations. A blank verdict slot means re-park unchanged — but REQ-173 is answered `accept`, so this should apply cleanly.
+
+Report back: the verdict applied per stable id (REQ-173 → accept), confirmation `GATE-QUESTIONS.md` proposal is finalized, the new STATUS marker (`STATUS.refined`), the board-row update, and the exact resume command.
 ```
 
 ## Instruction ledger

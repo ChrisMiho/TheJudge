@@ -10,15 +10,13 @@ Do not rename package folders to encode status.
 
 ## refined
 
+| [life-tracker-seat-map](life-tracker-seat-map/) | owner accepted REQ-173; docs PR #180 merged to `main`; gate resolved, run resumes at `gate-qc`. |
+
 ## refining
 
 ## ideation
 
 ## owner-action
-
-| Package | Gate |
-| --- | --- |
-| [life-tracker-seat-map](life-tracker-seat-map/) | gate-qc PASS; answer `GATE-QUESTIONS.md` (REQ-173) + merge docs PR to build |
 
 ## deferred
 

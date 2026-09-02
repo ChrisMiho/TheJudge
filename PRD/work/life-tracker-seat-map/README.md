@@ -9,7 +9,14 @@ See `IDEA.md` for the shaped idea, `intake/` for the probe evidence, and
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/life-tracker-seat-map
+- Autonomous base: origin/main
+- Shared build branch: thejudge-auto/life-tracker-seat-map-work
+- Base note: the spec-forming half's base `thejudge-auto/life-tracker-seat-map`
+  merged to `main` via docs PR #180 (the answer-then-merge build signal). The
+  build half therefore branches off fresh `main` (loaded `graph-implement` skill,
+  Model B) and opens one code PR `…-work → main`, rather than a nested
+  `-work → base` PR into an already-merged base. `main` is the PR target only;
+  the driver never pushes `main`, and the owner merges the code PR at `land`.
 
 ## Preparation gate
 
