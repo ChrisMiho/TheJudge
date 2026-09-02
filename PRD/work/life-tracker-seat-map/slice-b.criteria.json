@@ -5,31 +5,31 @@
     {
       "id": "B1",
       "statement": "previewColumns and commanderDamagePreviewCells are removed from PlayerLifeCard.tsx",
-      "value": false,
+      "value": true,
       "evidence": { "command": "grep -n \"previewColumns|commanderDamagePreviewCells\" apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.tsx" }
     },
     {
       "id": "B2",
       "statement": "The preview grid template uses the active arrangement's real columns/rows, not ceil(sqrt(N))",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.test.tsx"] }
     },
     {
       "id": "B3",
       "statement": "Each opponent's preview cell sits at that opponent's own seat coordinate from the active layout",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.test.tsx"] }
     },
     {
       "id": "B4",
       "statement": "Exactly one preview cell renders me, at the current player's own seat",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.test.tsx"] }
     },
     {
       "id": "B5",
       "statement": "PlayerLifeCard test suite passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "vitest run.*PlayerLifeCard" }
     }
   ]

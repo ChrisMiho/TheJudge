@@ -1,6 +1,21 @@
 # Slice B — PlayerLifeCard: on-card preview becomes the seat map
 
-## Status: planned
+## Status: done
+
+### Handoff
+- Done: `PlayerLifeCard.tsx` drops `previewColumns`/`commanderDamagePreviewCells`
+  and builds the preview from `buildSeatMapCells(layout, players,
+  player.label)`; the preview button's grid template now uses
+  `layout.columns`/`layout.rows`, and each cell is placed at its own
+  `gridArea`/`gridRow`/`gridColumn` from the active layout. Two new
+  `PlayerLifeCard.test.tsx` cases cover B2 (8-player grid template is
+  `2 columns x 4 rows`, not `ceil(sqrt(8)) = 3`) and B3/B4 (an opponent out
+  of roster-index order — Player 5 at roster index 4 lands in row 1 with
+  Player 1, not a scan-order row 2 — plus exactly one "me" cell at the
+  viewer's own seat). All 19 `PlayerLifeCard.test.tsx` cases pass; typecheck
+  passes; B1 grep confirms both removed identifiers are gone.
+- Next: slice C (`CounterPanel` seat map).
+- Stopped because: not stopped — continuing to slice C.
 
 ## Goal
 
@@ -35,19 +50,19 @@ arrangement's real column/row count instead of a near-square `ceil(√N)` blob.
 
 ## Acceptance criteria
 
-- [ ] B1: `previewColumns` and `commanderDamagePreviewCells` no longer exist in
+- [x] B1: `previewColumns` and `commanderDamagePreviewCells` no longer exist in
       `PlayerLifeCard.tsx` (grep evidence).
-- [ ] B2: the preview grid's `gridTemplateColumns`/`gridTemplateRows` equal
+- [x] B2: the preview grid's `gridTemplateColumns`/`gridTemplateRows` equal
       `layout.columns`/`layout.rows` — verified for an 8-player grid-mode
       arrangement (`columns: 2`, not `ceil(√8) = 3`) and a 4-player arrangement
       (component test).
-- [ ] B3: each opponent's preview cell's `gridRow`/`gridColumn` equals that
+- [x] B3: each opponent's preview cell's `gridRow`/`gridColumn` equals that
       opponent's own seat placement in the active `layout` — verified for at
       least one 4-player and one 8-player case, including a seat that is not in
       roster-index order relative to the viewer (component test).
-- [ ] B4: exactly one preview cell renders `"me"`, and it sits at the current
+- [x] B4: exactly one preview cell renders `"me"`, and it sits at the current
       player's own seat coordinate, not a fixed roster index (component test).
-- [ ] B5: `npm run test` passes for `PlayerLifeCard.test.tsx`.
+- [x] B5: `npm run test` passes for `PlayerLifeCard.test.tsx`.
 
 ## Verification
 
