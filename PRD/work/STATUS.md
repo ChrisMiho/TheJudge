@@ -6,9 +6,9 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-## active
+| [life-tracker-seat-map](life-tracker-seat-map/) | Build-half re-scope (run graph-20260902-121645) complete: all four slices A-D done, every criterion earned. On-card preview is a compact horizontal block (≤2 rows, grows wider, decoupled from the arrangement's real columns/rows); panel matrix unchanged (top-down arrangement miniature). Live-verified at 7/8 players, grid + list, iPhone-portrait. REQ-173 applied to PRD/sections/. PR #182 open, awaiting owner merge. |
 
-| [life-tracker-seat-map](life-tracker-seat-map/) | Re-planned (2026-09-02, build-half re-scope, run graph-20260902-121645) to the owner's compact-horizontal on-card block: fresh GAMEPLAN + slices A-D, all criteria re-earned from false. On-card preview (slice B) becomes a compact block (≤2 rows, grows wider), decoupled from the arrangement's real columns/rows; panel matrix (slice C) unchanged — still the top-down arrangement miniature. |
+## active
 
 ## refined
 

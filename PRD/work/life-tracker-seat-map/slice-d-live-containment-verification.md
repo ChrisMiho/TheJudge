@@ -1,6 +1,6 @@
 # Slice D — Live containment + block-shape + orientation verification
 
-## Status: planned
+## Status: done
 
 ## Goal
 

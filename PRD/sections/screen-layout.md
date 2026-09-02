@@ -207,7 +207,8 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Purpose | Live table life/counters |
 | Phone / Desktop | **One-screen fit** for the life table at every player count (DEC-136); full-bleed destination chrome |
 | Fit | No page scroll for the life table; counter panel is full-height overlay (DEC-139) |
-| Notes | DEC-101, DEC-136, DEC-139 |
+| Containment | On-card commander-damage map + player-name pill fit inside the card at every player count 2–8, both grid and list layout — map is a compact horizontal block that grows sideways (at most 2 rows, not a near-square `ceil(√N)` blob and not a tall strip), no cell clipped by the card's `overflow-hidden`, name pill not crushed or spilled into the inter-card gutter. Verified live at 7 and 8 players, iPhone-portrait (REQ-173) |
+| Notes | DEC-101, DEC-136, DEC-139, REQ-173 |
 
 #### Trade Balancer
 

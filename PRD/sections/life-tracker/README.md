@@ -39,14 +39,31 @@ game survives a phone lock or reload because it saves itself as you play.
   as a visual-only death cue; it clears when life returns above 0. No
   elimination, auto-KO, or rules simulation follows from it.
 - Built: cards are life-tinted.
+- Built: each card carries a small commander-damage preview laid out as a
+  compact horizontal block — at most 2 rows tall, growing wider as players are
+  added — that reads as the table from that seat: the current player's "me"
+  cell in their own seat corner and each opponent placed around it by real
+  table direction as a best-effort outcome within the block, the same in grid
+  and list mode. Because each card marks its own seat corner, no two cards
+  place "me" in the same block cell, and the "me" cells no longer cluster
+  toward the middle. The whole card is never rotated. (REQ-173)
+- Built: the preview map and the player-name pill stay fully inside the card
+  at every player count (2–8) in both layouts — the map is a compact
+  horizontal block that grows sideways rather than a near-square blob or a
+  tall strip, so nothing is clipped or spilled into the gutter between cards,
+  including at 7 and 8 players. (REQ-173)
 
 ### Counter panel and commander-damage matrix
 
 - Built: tapping a player's counter area opens that player's counter panel.
-  It tracks a per-opponent commander-damage matrix (a "me" cell marks the
-  player's own seat plus one cell per opponent), the named-counter palette —
-  Monarch, Treasure, Initiative, Poison, Ascend, Rad, Day/night, C.Tax, K.O.,
-  Energy, Exp — and user-added generic named counters.
+  It tracks a per-opponent commander-damage matrix laid out as a seat map —
+  the opener highlighted as "me" at their own seat and each opponent's cell at
+  the seat that player occupies, a top-down replica of the table (the panel is
+  a non-rotated centered dialog). Unused seat slots are empty; there is no
+  fixed roster order and no oversized "me" tile. Alongside it: the
+  named-counter palette — Monarch, Treasure, Initiative, Poison, Ascend, Rad,
+  Day/night, C.Tax, K.O., Energy, Exp — and user-added generic named counters.
+  (REQ-173)
 - Built: tap increments a named or custom counter; a hold/secondary action
   exposes decrement and set.
 - Built: each opponent commander-damage cell exposes always-visible `−`/`+`

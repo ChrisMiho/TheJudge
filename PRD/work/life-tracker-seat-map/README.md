@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # life-tracker-seat-map
 
@@ -49,7 +49,7 @@ of the old evidence carries forward.
 | [A](slice-a-seat-map-geometry.md) | Add the compact-horizontal-block builder to `lib/lifeTracker/seatMap.ts`, alongside the existing `buildSeatMapCells` (kept, unchanged, for the panel) | — | done |
 | [B](slice-b-card-preview-seat-map.md) | `PlayerLifeCard`: on-card preview switches to the compact-horizontal block (≤2 rows, grows wider), same shape in grid and list layout | A | done |
 | [C](slice-c-counter-panel-seat-map.md) | `CounterPanel`: re-verify the commander-damage matrix is still the unchanged top-down arrangement miniature | A | done |
-| [D](slice-d-live-containment-verification.md) | Live verification: 7/8-player containment + block-shape (grid + list, iPhone-portrait, against the reference images) and side-seat glyph orientation; runtime cleanup; Ship gates | B, C | planned |
+| [D](slice-d-live-containment-verification.md) | Live verification: 7/8-player containment + block-shape (grid + list, iPhone-portrait, against the reference images) and side-seat glyph orientation; runtime cleanup; Ship gates | B, C | done |
 
 B and C are parallel-ready once A lands. See `GAMEPLAN.md` for architecture and
 data flow.
