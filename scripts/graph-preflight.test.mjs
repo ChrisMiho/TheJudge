@@ -26,6 +26,8 @@ import {
   findBranchCollision,
   formatFailureReport,
   isPidAlive,
+  kickoffWorktreeCommand,
+  kickoffWorktreePath,
   lockRecord,
   parseArgs,
   parseCommandArgs,
@@ -949,6 +951,48 @@ test("graph-preflight - lock - taking then releasing leaves no lock, for each te
   } finally {
     fs.rmSync(sandbox, { recursive: true, force: true })
   }
+})
+
+test("graph-preflight - worktree - a per-idea worktree lives under the ignored .worktrees root", () => {
+  assert.equal(kickoffWorktreePath("card-fix"), ".worktrees/kickoff-card-fix")
+})
+
+test("graph-preflight - worktree - the add command branches a per-idea worktree off the shared base", () => {
+  assert.equal(
+    kickoffWorktreeCommand("card-fix"),
+    "git worktree add .worktrees/kickoff-card-fix -b thejudge-auto/card-fix origin/main"
+  )
+  // A caller may override the base; the branch is always thejudge-auto/<slug>.
+  assert.match(kickoffWorktreeCommand("card-fix", "origin/develop"), / origin\/develop$/)
+})
+
+test("graph-preflight - lock - two worktree roots each hold their own lock without colliding", () => {
+  // Concurrency is structural: takeLock writes LOCK_PATH relative to the working
+  // directory, so two ideas in two worktree roots read different lock files. Idea
+  // A holding a lock must not make idea B refuse. Model each root as its own store.
+  const rootA = { lock: null }
+  const rootB = { lock: null }
+  const ioFor = (root) => ({
+    read: () => {
+      if (root.lock === null) throw new Error("ENOENT")
+      return root.lock
+    },
+    write: (_path, contents) => {
+      root.lock = contents
+    },
+    ensure: () => {}
+  })
+
+  const a = takeLock({ slug: "idea-a", runId: "graph-a", io: ioFor(rootA) })
+  const b = takeLock({ slug: "idea-b", runId: "graph-b", io: ioFor(rootB) })
+
+  assert.equal(a.taken, true, "idea A takes its own root's lock")
+  assert.equal(b.taken, true, "idea B takes its own root's lock even while A holds A's")
+
+  // Within one root the lock still serializes: a second take in root A refuses.
+  const aAgain = takeLock({ slug: "idea-a2", runId: "graph-a2", io: { ...ioFor(rootA), isAlive: () => true } })
+  assert.equal(aAgain.taken, false, "a second run in the same root still refuses")
+  assert.equal(aAgain.state, "held")
 })
 
 function graphProfile() {

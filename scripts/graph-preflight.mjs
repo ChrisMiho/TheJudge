@@ -759,6 +759,31 @@ export function takeLock({ slug, runId, pid = process.pid, now = new Date().toIS
   return { taken: true, state: "taken", record }
 }
 
+/**
+ * The worktree a parallel spec-forming idea runs in, under the already-ignored
+ * `.worktrees/` root.
+ */
+export function kickoffWorktreePath(slug) {
+  return `.worktrees/kickoff-${slug}`
+}
+
+/**
+ * The command that creates a per-idea worktree off a shared base, so each idea's
+ * `graph-kickoff` session roots in its own checkout.
+ *
+ * Concurrency is structural, not re-keyed: `takeLock` writes `LOCK_PATH`
+ * relative to the process's working directory, and the boundary hook resolves its
+ * control files relative to `$CLAUDE_PROJECT_DIR`. When a session launches inside
+ * this worktree, both resolve to the worktree's own `.worktrees/`, so two ideas in
+ * two worktrees each hold their own lock and never collide — with no change to the
+ * lock record, `classifyLock`, or the hook. Fanning several ideas out inside one
+ * root is the only shape that would force a hook run-identity rework, and it is
+ * deliberately not the model.
+ */
+export function kickoffWorktreeCommand(slug, base = "origin/main") {
+  return `git worktree add ${kickoffWorktreePath(slug)} -b ${GRAPH_BRANCH_PREFIX}${slug} ${base}`
+}
+
 function main(argv) {
   let options
   try {

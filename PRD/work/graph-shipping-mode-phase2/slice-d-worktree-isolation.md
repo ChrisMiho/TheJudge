@@ -1,6 +1,9 @@
 # Slice D — Per-worktree kickoff isolation
 
-## Status: planned
+## Status: done
+
+**Note (D5):** The lock references in `non-functional-requirements.md` and `user-flows.md` needed no edit — the lock filename and its graph-tier-arming role are unchanged under the reframe (isolation is per-root, not re-keying), so they stay accurate. REQ-170 states the per-worktree-session model explicitly.
+
 
 ## Goal
 

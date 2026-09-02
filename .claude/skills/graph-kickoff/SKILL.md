@@ -35,6 +35,13 @@ Node 2 can return `NO ACTIONABLE PACKAGE` when the request cannot be turned into
 package. The run ends `BLOCKED`, not `PARKED`: no package folder exists yet for a
 gate to park against. See the contract's `## Terminal states`.
 
+**Running ideas in parallel.** To shape several ideas at once, launch each as its
+own session rooted in its **own git worktree** — never fan several ideas out inside
+one root. Isolation is structural: each root holds its own lock and control plane
+(`$CLAUDE_PROJECT_DIR` resolves them per-root), so parallel formers never collide
+and the boundary hook needs no change. `graph-preflight`'s `## Per-idea worktree
+isolation` section has the exact `git worktree add` command.
+
 ## Intake
 
 Accept zero or more file paths alongside the request, and markdown pasted in the

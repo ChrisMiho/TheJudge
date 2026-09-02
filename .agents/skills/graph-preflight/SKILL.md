@@ -133,6 +133,30 @@ declared terminal state: write `.worktrees/.graph-run-release.json` in the exact
 shape that section gives — `runId` and `state`, in its own tool call — then delete
 the lock. The hook denies the deletion without that record.
 
+## Per-idea worktree isolation (parallel spec-forming)
+
+To shape several ideas at once, each idea runs as **its own session rooted in its
+own git worktree** — not several ideas fanned out inside one root. Concurrency is
+**structural, not re-keyed**: `takeLock` writes the lock relative to the working
+directory and the boundary hook resolves its control files relative to
+`$CLAUDE_PROJECT_DIR`, so two ideas in two worktrees each read and hold their own
+`.worktrees/.graph-run.lock`. Nothing about the lock record, `classifyLock`, or the
+hook changes.
+
+Create a per-idea worktree and launch the idea's session there:
+
+```
+git worktree add .worktrees/kickoff-<slug> -b thejudge-auto/<slug> origin/main
+# then launch graph-kickoff with that worktree as the session root
+```
+
+`kickoffWorktreePath(slug)` and `kickoffWorktreeCommand(slug, base)` in
+`scripts/graph-preflight.mjs` are the canonical path and command. Because the
+session roots in a **fresh** worktree, its launch checkout is clean, so preflight's
+auto-commit/stash never touches the main checkout on a per-idea run — the launch
+checkout is left untouched. Fanning N ideas out inside one root is the only shape
+that would force a hook run-identity rework, and it is deliberately not the model.
+
 ## base→main guard (fresh runs only)
 
 A fresh run refuses to start while a prior package's base→main PR is still open,

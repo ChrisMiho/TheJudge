@@ -3890,6 +3890,28 @@
 - Notes:
   - The owner's stated purpose is to drive future prompt-format optimization for better rules resolving; this spec is that reference surface.
 
+### REQ-170
+- Title: Concurrent spec-forming via per-worktree-session isolation
+- Priority: high
+- Description: `graph-kickoff` (the spec-former, formerly `graph-run` run-one) is runnable many-at-once by running each idea as its own session rooted in its own git worktree. The boundary hook and scripts already resolve control files relative to `$CLAUDE_PROJECT_DIR`, so separate roots give each concurrent run an isolated lock and control plane with no change to the hook and no re-keying of the lock.
+- Acceptance Criteria:
+  - two `graph-kickoff` ideas, each launched as its own session in its own worktree, proceed at the same time without either refusing on the other's lock — because each root holds its own `.worktrees/.graph-run.lock`
+  - each idea's worktree is created under the repo-local `.worktrees/` root, off one shared base branch, and each writes only its own `PRD/work/<slug>/` folder
+  - `graph-preflight` provides the worktree path and creation command (`kickoffWorktreePath` / `kickoffWorktreeCommand`), and running inside a fresh worktree does not auto-commit or stash the launch checkout on behalf of a per-idea run; the launch checkout is left untouched
+  - the boundary hook is unchanged: the graph tier still arms on the presence of the per-root lock, and `classifyLock()` stale/corrupt/held behavior is preserved as-is
+  - the shared-working-directory hazard is closed structurally: no two runs share a working tree, commit to the same checkout, or rewrite the same `GRAPH-RUN.md`
+  - `graph-implement` runs in its own root as a single background loop; it and any `graph-kickoff` sessions never contend because each root is isolated
+- Constraints:
+  - worktrees never escape the repo-local `.worktrees/` root, preserving the existing boundary
+  - the lock record, filename, and keying are unchanged — isolation comes from separate `$CLAUDE_PROJECT_DIR` roots, not from re-keying one shared lock
+  - fanning out N ideas as subagents inside one root is explicitly not the model — that is the only case that would force a hook run-identity rework, and it is avoided
+  - `main`/`master` push and force-push denials are unchanged; per-idea isolation adds no new publish path
+- Dependencies:
+  - REQ-160
+  - DEC-166
+- Notes:
+  - the lock does two jobs today, conflated: mutual exclusion of the checkout, and arming the hook's graph tier. Per-worktree isolation removes the need for the first (separate checkouts cannot collide) while keeping the second unchanged (each root still has its lock). This is why concurrency needs no hook surgery — verified against `graph-boundary-hook.mjs`, which resolves control files from `$CLAUDE_PROJECT_DIR`
+
 ### REQ-171
 - Title: The `graph-implement` background loop builds approved specs from `main`
 - Priority: high
