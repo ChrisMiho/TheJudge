@@ -6,7 +6,7 @@
       "id": "B1",
       "statement": "PlayerLifeCard.tsx's preview grid template is never derived from layout.columns/layout.rows and never Math.ceil(Math.sqrt(...))",
       "value": false,
-      "evidence": { "command": "grep -n \"layout.columns|layout.rows|ceil(Math.sqrt\" apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.tsx" }
+      "evidence": { "command": "grep -n \"layout.columns|layout.rows|ceil\\(Math.sqrt\" apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.tsx" }
     },
     {
       "id": "B2",

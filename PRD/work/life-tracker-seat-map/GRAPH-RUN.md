@@ -89,6 +89,12 @@ Instruction-ledger match is unambiguous.
 
 | 5 | plan | sonnet | ok | `0 → 47` | Build-half re-scope re-slice (thejudge-map-out). Fresh `GAMEPLAN.md` + slices A–D + 4 `slice-*.criteria.json` (A 8 / B 6 / C 4 / D 6, all `false`). A: add a compact-horizontal-block builder to `seatMap.ts` alongside the unchanged `buildSeatMapCells` (panel keeps it); B: on-card `PlayerLifeCard` switches to the compact block (≤2 rows, grows wider, decoupled from `layout.columns`/`rows`), same in grid + list; C: re-verify panel top-down miniature unchanged; D: live 7/8-player containment + block-shape + glyph-orientation, both layouts, + Ship gates. GAMEPLAN documents the old-design A/B/C already committed on `-work` as the starting state (re-earned, no old evidence carried). `STATUS.active`; board → `## active` | 2026-09-02 |
 
+| 6 | build | sonnet | ok | `0 → 246` | Attempt 4 (re-scope build). Worktree `.worktrees/implement-life-tracker-seat-map` fast-forwarded onto shared head `31e4dea` (stale pre-re-scope uncommitted preview tweaks stashed, not lost — `stash@{0}` "stale-old-design-preview-tweaks"). Slice A: `buildCompactSeatMapCells` added to `seatMap.ts` (2 rows always, columns = ceil(N/2), matches the 6-player reference's 2×3 and the brief's stated 2×4 at 8 players; "me" fixed at the block's top-left corner; opponents in table order from the viewer's own seat, identical for grid and list mode since `layout.seats` is always `Player 1..N` order in both). All 8 criteria earned; typecheck + vitest (9/9) + full `quality:check` green; committed `8f043fe`, pushed to `-work`. PR #182 (pre-existing, from an earlier attempt, marker absent) registered with a comment naming this run's 4-slice plan; title set `[THEJUDGE-AUTO][IN PROGRESS]` | 2026-09-02 |
+
+| — | build (guardrail fix) | — | ok | — | Same defect class as the earlier A3 fix, a fresh instance in the re-scoped `slice-b.criteria.json`: B1's evidence command `grep -n "layout.columns\|layout.rows\|ceil(Math.sqrt" …` has an unescaped `(` — `new RegExp(pattern)` throws "Unterminated group", caught silently by `matchesEvidence`, so B1 could never earn. Fixed `ceil(Math.sqrt` → `ceil\(Math.sqrt` in **both** the launch-checkout and worktree copies of `slice-b.criteria.json` (the hook reads `projectRoot=CLAUDE_PROJECT_DIR`, the launch checkout). Scanned every command pattern across A–D (script check via `new RegExp` on each); B1 was the only broken one. Re-ran the grep; B1 now earned for this run (`.graph-evidence.jsonl`, `19:05:02`) | 2026-09-02 |
+
+| — | build (slices B/C/D complete) | sonnet | ok | — | After the guardrail fix: B — `PlayerLifeCard` on-card preview rewritten to render `buildCompactSeatMapCells` (compact block; 6/6 criteria earned). C — `CounterPanel` re-verified as the unchanged top-down miniature (4/4). D — live 7/8-player verification in BOTH grid and list at iPhone-portrait: the on-card block is compact (≤2 rows) and fully contained, list mode no longer inherits the tall stacked shape (the original bug), side-seat glyphs upright, runtime cleanup complete (owned dev server port 5190 stopped, port released); 6/6 manual criteria observed, captures under the worktree's `.playwright-mcp/`. REQ-173's 3 reconciled diffs applied to `PRD/sections/functional-requirements.md`, `life-tracker/README.md`, `screen-layout.md`. `npm run quality:check` green (436/436) on the pushed head. Code PR #182 (`-work → main`) marked `[THEJUDGE-AUTO][READY]`; `STATUS.ship-ready` set in the deliverable. Advance to `review` | 2026-09-02 |
+
 ## Gate verdicts
 
 | Stable ID | Verdict | Reason |
@@ -625,6 +631,35 @@ Acceptance criteria: earn every criterion in each `slice-<letter>.criteria.json`
 Scope: write only inside `.worktrees/implement-life-tracker-seat-map/` and `PRD/work/life-tracker-seat-map/`. Do not edit any `thejudge-*` skill, `.claude/`, `CLAUDE.md`, `scripts/`, or `.secrets/`. Do not force-push, merge, or close any PR. When every slice is `done`, set `STATUS.ship-ready`.
 
 Report back: the worktree path, the code PR URL (head `thejudge-auto/life-tracker-seat-map-work`, base `main`), each slice's final status and earned-criteria confirmation, the `PRD/sections/` files edited (REQ-173 applied, reconciled wording), the quality:check result, the slice-D capture path, and confirmation `STATUS.ship-ready` is set.
+```
+
+### review (no-write reviewer, build-half re-scope)
+
+```text
+graph is controlling. You are node 7 (`review`) of an autonomous graph run — a fresh-context, NO-WRITE reviewer. You hold read and search tools only; you have no Write/Edit and must not modify anything. You are NOT invoking any thejudge skill.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run ID: graph-20260902-121645
+Package: PRD/work/life-tracker-seat-map/
+
+Grade the code deliverable in PR #182 (head `thejudge-auto/life-tracker-seat-map-work`, base `main`) against the slices' OWN acceptance criteria — nothing else. Read, in fresh context (do NOT look at any build agent's transcript):
+- the PR diff: `gh pr diff 182`
+- the built code at the PR head: it lives in the worktree `.worktrees/implement-life-tracker-seat-map/apps/frontend/src/...` (the launch checkout does NOT have it). Read full files there, or via `git show origin/thejudge-auto/life-tracker-seat-map-work:<path>`.
+- the slice docs and criteria: `PRD/work/life-tracker-seat-map/slice-a-seat-map-geometry.md`, `slice-b-card-preview-seat-map.md`, `slice-c-counter-panel-seat-map.md`, `slice-d-live-containment-verification.md`, and each `slice-*.criteria.json`
+- `DESIGN-BRIEF.md` (especially `## Owner clarification (2026-09-02)`) and the reconciled REQ-173 in `GATE-QUESTIONS.md`
+- the reference images the design targets: `PRD/work/life-tracker-seat-map/intake/references/fullTable.PNG`, `player1..6.PNG`
+
+The rubric is the slices' acceptance criteria (A1-A8, B1-B6, C1-C4, D1-D6). Confirm the code actually satisfies each. Focus on:
+- ON-CARD: the preview is a compact horizontal block, at most 2 rows, growing wider (2-by-3 at 6, 2-by-4 at 8), NEVER derived from `layout.columns`/`layout.rows` and NEVER `ceil(sqrt(N))`; exactly one self/'me' cell at a fixed corner; the same shape in grid and list layout.
+- CONTAINMENT: the on-card block plus name pill stay inside the card at 2-8 in both layouts (slice D's live checks cover 7 and 8).
+- PANEL: `CounterPanel`'s matrix is UNCHANGED — still the top-down arrangement miniature via `buildSeatMapCells`, opener as the self/'me' cell, REQ-112 minus/plus bands and always-on decrements-life preserved.
+- PRODUCT TRUTH: REQ-173 is applied to `PRD/sections/functional-requirements.md`, `life-tracker/README.md`, `screen-layout.md` with the reconciled compact-block wording (NOT the old 'real columns/rows' wording).
+- PRESERVED: DEC-136 (seat rotation sole orientation), DEC-139 (panel overlay not reopened), no backend/provider/persistence change.
+
+Severity rule (hard): a preference, a style note, or an improvement OUTSIDE the slices' stated acceptance criteria is NEVER Critical or Important and must NOT trigger a loop back to build. Flag only gaps that break correctness or a stated acceptance criterion. If the deliverable meets the criteria, APPROVE.
+
+Do NOT write or edit any file. Report back: an overall verdict (APPROVE, or CHANGES-REQUESTED with each finding rated Critical / Important / Minor), and for each finding the criterion or correctness issue it violates with a file:line pointer. If APPROVE, say so plainly with a one-line basis per slice.
 ```
 
 ## Instruction ledger
