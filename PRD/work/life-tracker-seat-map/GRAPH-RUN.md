@@ -102,6 +102,17 @@ Instruction-ledger match is unambiguous.
 
 ## Open gate
 
+- **CORRECTION 2026-09-02 — DO NOT MERGE PR #182; it is wrong.** The owner
+  reviewed the build on Mac localhost and clarified the intent: the on-card map
+  must place **"me" at each player's OWN seat** (a different spot per card, in the
+  correct spot) — a per-seat map, as BOTH `intake/references/fullTable.PNG` and
+  `fullTableList.PNG` show — while staying contained. PR #182 instead pins "me" to
+  a **fixed corner** on every card (the driver's `AskUserQuestion` preview smuggled
+  in that fixed-corner change; the owner picked it for the horizontal SHAPE, not
+  the placement). Rework needed → `thejudge-amend`, not `close`. **Full corrected
+  handoff: `PRD/work/life-tracker-seat-map/HANDOFF.md`.** The `land`/PARKED entry
+  below is superseded by this correction.
+
 - **PARKED at `land` (2026-09-02) — awaiting the owner's PR merge. This is the
   active gate.** The build half completed and the independent review APPROVED.
   **The owner merges the code PR — never the run.**

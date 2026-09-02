@@ -16,7 +16,7 @@ Do not rename package folders to encode status.
 
 ## owner-action
 
-| [life-tracker-seat-map](life-tracker-seat-map/) | PARKED at `land` (2026-09-02) — build half complete, review APPROVED. Code PR #182 (`-work → main`) open for the owner to merge: on-card compact-horizontal commander-damage block (2×3 at 6, 2×4 at 8, contained both layouts, live-verified 7/8), REQ-173 applied. After merge, `/graph-implement PRD/work/life-tracker-seat-map/` runs `close`. See `GRAPH-RUN.md` `## Open gate`. |
+| [life-tracker-seat-map](life-tracker-seat-map/) | **DO NOT MERGE PR #182 — needs rework (2026-09-02).** Owner clarified: the on-card map must place "me" at each player's OWN seat (per-seat map, correct spot) per `fullTable.PNG`/`fullTableList.PNG`, but PR #182 pins "me" to a fixed corner. Rework via `thejudge-amend`. See `HANDOFF.md`. |
 
 ## deferred
 
