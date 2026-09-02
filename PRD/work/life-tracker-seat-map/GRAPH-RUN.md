@@ -5,8 +5,9 @@
 - Canary: `denied — hook live (universal: rm -rf denied) + graph tier armed (nohup denied while lock held)`
 - Autonomous base: `origin/thejudge-auto/life-tracker-seat-map`
 - Staging: `.worktrees/.graph-intake/graph-20260902-093611/` (copied verbatim into `PRD/work/life-tracker-seat-map/intake/`, then deleted at node 2 per kickoff's copy→commit→delete)
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff` (spec-forming half continues)
+- Current node: `owner-action` (parked at gate-qc PASS)
+- Next action: owner answers `PRD/work/life-tracker-seat-map/GATE-QUESTIONS.md`, then merges the docs PR to `main`; `graph-implement` builds it
+- Terminal state: `PARKED`
 
 Note on dispatch-prompt reproduction: prompts below are reproduced with their
 words unchanged. Double-quote glyphs are reserved for the single ledgered user
@@ -22,11 +23,20 @@ Instruction-ledger match is unambiguous.
 | 1 | preflight | haiku | ok | `degraded (no run state)` | branch `thejudge-auto/life-tracker-seat-map` pushed to origin; base `origin/main`; stash `graph-preflight/graph-20260902-093611`; canaries denied (rm -rf universal; nohup graph-tier); Profile loaded (env sentinel) | 2026-09-02 |
 | 2 | shape | sonnet | ok | `degraded (no run state)` | package `PRD/work/life-tracker-seat-map/` created (commit `21778e5`); `IDEA.md` + `STATUS.ideation` + `intake/` (GRAPH-BRIEF.md, PROBE.md, references/ 12 images) committed; 6 `## Prior run` receipt matches recorded | 2026-09-02 |
 | 3 | define | opus | ok | `0 → 33` | `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` written; STATUS.refined; one new id REQ-173 with 3 complete diffs (functional-requirements.md, life-tracker/README.md, screen-layout.md); counter-panel orientation resolved via assumption ladder (top-down replica), no product fork surfaced; no `PRD/sections/` edits | 2026-09-02 |
+| 4 | gate-qc | sonnet | ok | `0 → 24` | Quality-check PASS; checked `DESIGN-BRIEF.md`; findings none (one non-blocking citation nit); code claims verified against `PlayerLifeCard.tsx`/`CounterPanel.tsx`/`PlayerLifeTrackerApp.tsx`/`seatArrangement.ts`; REQ-173 diff placement + cited IDs confirmed. Run stops at PASS → owner-action | 2026-09-02 |
 
 ## Open gate
 
-- None. Node 1 stashed the launch checkout's uncommitted work (22 files). The
-  stash is the owner's and is never dropped, popped, or reordered by the run.
+- **Answer `PRD/work/life-tracker-seat-map/GATE-QUESTIONS.md`, then merge the docs
+  PR to `main` to build.** Run one stopped at the first `gate-qc` PASS. The proposal
+  gates on REQ-173 (three diffs): record a `Verdict:` (accept | edit | reject) and,
+  for edit/reject, a `Reason:` in the REQ-173 block. Then merge the docs-only
+  base→main PR; `graph-implement` picks up the approved spec from `main` and builds
+  it (map-out → build → review → land → close), applying the accepted diffs to
+  `PRD/sections/` together with the code.
+- Docs PR: <recorded below after creation>
+- Stash handoff: node 1 stashed the launch checkout's uncommitted work (22 files).
+  The stash is the owner's and is never dropped, popped, or reordered by the run.
   Restore it with:
 
   ```text
