@@ -8,8 +8,6 @@ Do not rename package folders to encode status.
 
 ## active
 
-| [life-tracker-seat-map](life-tracker-seat-map/) | Re-planned (2026-09-02, build-half re-scope, run graph-20260902-121645) to the owner's compact-horizontal on-card block: fresh GAMEPLAN + slices A-D, all criteria re-earned from false. On-card preview (slice B) becomes a compact block (≤2 rows, grows wider), decoupled from the arrangement's real columns/rows; panel matrix (slice C) unchanged — still the top-down arrangement miniature. |
-
 ## refined
 
 ## refining
@@ -17,6 +15,8 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
+
+| [life-tracker-seat-map](life-tracker-seat-map/) | PARKED at `land` (2026-09-02) — build half complete, review APPROVED. Code PR #182 (`-work → main`) open for the owner to merge: on-card compact-horizontal commander-damage block (2×3 at 6, 2×4 at 8, contained both layouts, live-verified 7/8), REQ-173 applied. After merge, `/graph-implement PRD/work/life-tracker-seat-map/` runs `close`. See `GRAPH-RUN.md` `## Open gate`. |
 
 ## deferred
 

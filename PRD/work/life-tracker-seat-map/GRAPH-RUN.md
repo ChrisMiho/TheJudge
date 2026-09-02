@@ -10,17 +10,14 @@
 - Canary: `denied — hook live (universal: rm -rf denied) + graph tier armed (nohup denied while lock held)`
 - Autonomous base: `origin/thejudge-auto/life-tracker-seat-map`
 - Staging: `.worktrees/.graph-intake/graph-20260902-093611/` (copied verbatim into `PRD/work/life-tracker-seat-map/intake/`, then deleted at node 2 per kickoff's copy→commit→delete)
-- Current node: `gate-qc` — **RESUMED 2026-09-02** after the owner clarified the
-  design. The build-time layout gate is resolved (see `## Build-half re-scope`
-  and `## Open gate`): the on-card commander-damage mini-map becomes a **compact
-  horizontal block** (≤2 rows, grows wider; same in grid and list layout;
-  extrapolate 7–8 sideways; never rotate the whole card). Because that overrides
-  slice B's criteria (which hard-coded "miniature of the active arrangement"), the
-  run re-enters at `gate-qc` → `plan` (re-slice B under the updated brief) →
-  `build` → `review` → `land`.
-- Next action: driver dispatches `gate-qc` (re-validate the clarified
-  `DESIGN-BRIEF.md`), then `plan`, then `build`
-- Terminal state (build half): re-scoped and running (was `PARKED`)
+- Current node: `land` — **PARKED for the owner's merge (2026-09-02).** The full
+  build half ran clean under the re-scope: gate-qc (FAIL→reconcile→PASS) → plan
+  (re-slice) → build (compact-horizontal on-card block, live-verified 7/8 in both
+  layouts) → review (**APPROVE**). Code PR #182 (`-work → main`) is open with the
+  fix + REQ-173 applied; `land` is the owner merging it by hand — never automated.
+- Next action: the owner merges PR #182, then `/graph-implement PRD/work/life-tracker-seat-map/`
+  records `land` as ok and continues to `close` (cleanup).
+- Terminal state (build half): `PARKED` at `land` (awaiting owner merge of PR #182)
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/180 (MERGED — the build signal)
 - Boundary-hook fix: https://github.com/ChrisMiho/TheJudge/pull/181 (MERGED — `criterion-flip-without-evidence` now remediable)
 - Resume canary (attempt 3): `graph tier armed — nohup denied while lock held`. Lock re-taken (run `graph-20260902-093611`).
@@ -95,6 +92,8 @@ Instruction-ledger match is unambiguous.
 
 | — | build (slices B/C/D complete) | sonnet | ok | — | After the guardrail fix: B — `PlayerLifeCard` on-card preview rewritten to render `buildCompactSeatMapCells` (compact block; 6/6 criteria earned). C — `CounterPanel` re-verified as the unchanged top-down miniature (4/4). D — live 7/8-player verification in BOTH grid and list at iPhone-portrait: the on-card block is compact (≤2 rows) and fully contained, list mode no longer inherits the tall stacked shape (the original bug), side-seat glyphs upright, runtime cleanup complete (owned dev server port 5190 stopped, port released); 6/6 manual criteria observed, captures under the worktree's `.playwright-mcp/`. REQ-173's 3 reconciled diffs applied to `PRD/sections/functional-requirements.md`, `life-tracker/README.md`, `screen-layout.md`. `npm run quality:check` green (436/436) on the pushed head. Code PR #182 (`-work → main`) marked `[THEJUDGE-AUTO][READY]`; `STATUS.ship-ready` set in the deliverable. Advance to `review` | 2026-09-02 |
 
+| 7 | review | opus | ok | `0 → 22` | No-write reviewer (fresh-context subagent, read/search only). Verdict **APPROVE** — PR #182 satisfies every acceptance criterion across slices A–D (43/43 tests, typecheck clean). On-card compact block (2×3 at 6, 2×4 at 8; ≤2 rows; never `layout.columns`/`rows`; never ceil-root-N; exactly one self/'me' at a fixed corner; same shape grid + list); panel unchanged (`buildSeatMapCells` miniature, REQ-112 bands, always-on decrements-life); REQ-173 applied with the reconciled compact-block wording; DEC-136 / DEC-139 preserved; presentation-only. Two Minor non-blocking notes: the 2-player block is 1×2 (within the ≤2-row rule, no containment risk); a `boundary-rules.mjs` mention — driver confirmed it is NOT in the PR diff (`git diff origin/main...origin/-work -- scripts/` empty; origin/main already carries the #181 fix). No loop-back. Advance to `land` | 2026-09-02 |
+
 ## Gate verdicts
 
 | Stable ID | Verdict | Reason |
@@ -102,6 +101,25 @@ Instruction-ledger match is unambiguous.
 | `REQ-173` | accept | — |
 
 ## Open gate
+
+- **PARKED at `land` (2026-09-02) — awaiting the owner's PR merge. This is the
+  active gate.** The build half completed and the independent review APPROVED.
+  **The owner merges the code PR — never the run.**
+  - Code PR: https://github.com/ChrisMiho/TheJudge/pull/182 (`thejudge-auto/life-tracker-seat-map-work` → `main`), title `[THEJUDGE-AUTO][READY]`.
+  - What it delivers: the on-card commander-damage preview is now a compact
+    horizontal block (2×3 at 6 players, 2×4 at 8, ≤2 rows, contained in both grid
+    and list layout, live-verified at 7 and 8 players); the counter panel is
+    unchanged; REQ-173's three reconciled diffs are applied to `PRD/sections/`.
+  - Evidence: all criteria earned (A 8/8, B 6/6, C 4/4, D 6/6); `npm run quality:check`
+    green (436/436) on the pushed head; slice-D live captures under the worktree's
+    `.playwright-mcp/`.
+  - **Resume:** after merging PR #182, run `/graph-implement PRD/work/life-tracker-seat-map/`
+    — it checks the PR is merged, records `land` as ok, and runs `close` (cleanup:
+    fold this ledger into the receipt, confirm REQ-173 in `PRD/sections/`, delete
+    the work folder). The base→main hop is this same PR; no separate merge remains.
+  - Note (base frozen): since PR #182 opened, the driver's ledger/status commits
+    (review, this land park) are LOCAL on `-work` only and are NOT on the PR; they
+    reconcile at `close` against merged `main`.
 
 - **RESOLVED 2026-09-02 — the layout-design gate is answered.** The owner clarified
   the intent in `observations.md` and confirmed the shape (chose "always compact &
