@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (universal: rm -rf denied) + graph tier armed (nohup denied while lock held)`
 - Autonomous base: `origin/thejudge-auto/life-tracker-seat-map`
 - Staging: `.worktrees/.graph-intake/graph-20260902-093611/` (copied verbatim into `PRD/work/life-tracker-seat-map/intake/`, then deleted at node 2 per kickoff's copy→commit→delete)
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (spec-forming half continues)
 
 Note on dispatch-prompt reproduction: prompts below are reproduced with their
@@ -21,6 +21,7 @@ Instruction-ledger match is unambiguous.
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `degraded (no run state)` | branch `thejudge-auto/life-tracker-seat-map` pushed to origin; base `origin/main`; stash `graph-preflight/graph-20260902-093611`; canaries denied (rm -rf universal; nohup graph-tier); Profile loaded (env sentinel) | 2026-09-02 |
 | 2 | shape | sonnet | ok | `degraded (no run state)` | package `PRD/work/life-tracker-seat-map/` created (commit `21778e5`); `IDEA.md` + `STATUS.ideation` + `intake/` (GRAPH-BRIEF.md, PROBE.md, references/ 12 images) committed; 6 `## Prior run` receipt matches recorded | 2026-09-02 |
+| 3 | define | opus | ok | `0 → 33` | `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` written; STATUS.refined; one new id REQ-173 with 3 complete diffs (functional-requirements.md, life-tracker/README.md, screen-layout.md); counter-panel orientation resolved via assumption ladder (top-down replica), no product fork surfaced; no `PRD/sections/` edits | 2026-09-02 |
 
 ## Open gate
 
@@ -82,6 +83,65 @@ Constraints:
 - If the request genuinely cannot be turned into an actionable package, return the exact string `NO ACTIONABLE PACKAGE` with the reason and stop.
 
 Report back: the package path created, confirmation IDEA.md + STATUS.ideation + intake/ exist, the list of files copied into intake/, and any `## Prior run` receipt matches found (or none).
+```
+
+### define
+
+```text
+graph is controlling. You are node 3 (`define`) of an autonomous graph-kickoff run. thejudge-refinement is being dispatched under the graph driver.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy this exact `Working directory:` line, unchanged, into every prompt you write to any subagent of your own.
+
+Run ID: graph-20260902-093611
+Package: PRD/work/life-tracker-seat-map/
+
+Run non-interactively: do not pause for the user. Resolve each assumption with the assumption ladder in `PRD/instructions/preparation-contract.md`, evaluated fresh per question. Surface every genuine product decision as a `GATE-QUESTIONS.md` block rather than deciding it — the owner answers those at the define gate.
+
+Invoke the `thejudge-refinement` skill (Skill tool) and follow it exactly. Read `IDEA.md` and the staged intake under `intake/` (GRAPH-BRIEF.md, PROBE.md, references/). Per the contract section on intake being evidence and not authority: the intake's findings and its four already-made decisions are claims to resolve at the define gate, never settled truth. Do not open or fetch any document the intake cites beyond the staged files.
+
+Produce:
+1. `DESIGN-BRIEF.md` — the shaped design for the per-seat map on the on-card commander-damage preview and the opened counter-panel matrix, built from the existing `seatArrangement` / `listSeatArrangement` geometry, plus the map/name containment fix at 7–8 players in both grid and list layouts. State the design direction, the acceptance criteria, and the surfaces touched (`PlayerLifeCard`, `CounterPanel`). Keep it agent-ready.
+2. `GATE-QUESTIONS.md` — when (and only when) the design needs product-truth changes to `PRD/sections/`. Write one `## <STABLE-ID>` block per new or changed stable id. Each block opens with the plain-language gate lines from `PRD/instructions/plain-language-standard.md`, in order — What this decides / In plain terms / What happens if you say no — then that id's COMPLETE proposed diff (never a summary), then `- Verdict: <accept | edit | reject>` and `- Reason:`. The whole proposal gates: every proposed new stable id gets its own slot, not just the headline one.
+
+Product truth the design is expected to touch (propose as diffs in `GATE-QUESTIONS.md`; do NOT edit `PRD/sections/`):
+- `PRD/sections/life-tracker/README.md` — the counter-panel and commander-damage-matrix section, and the life-table section: make explicit that both the on-card preview and the panel matrix are seat maps (me at own seat, opponents in their table directions, per-seat viewpoint, no two me-cells coincident), and add the containment guarantee (map + name pill fit the card at 2–8, no clip).
+- `PRD/sections/functional-requirements.md` — a new REQ for seat-consistent commander-damage placement across both surfaces, with containment acceptance criteria. Assign the REQ id yourself.
+- `PRD/sections/screen-layout.md` — the life-tracker card entry: the map/name containment band at high player counts (fit, no clip, no gutter spill).
+
+The decision log is retired; new product truth is REQ/FLOW proposed in `GATE-QUESTIONS.md`, applied to the feature specs only at build.
+
+Open design choice the intake flags: the opened counter panel is not rotated, so its seat map is a top-down replica. Pick, via the assumption ladder, whether it orients the opener as the near/bottom seat (their own viewpoint) or as an absolute top-down replica with me highlighted; surface it as a gate question only if it is a genuine product fork under the three-condition test.
+
+Constraints (from intake, do not reopen): pure frontend/presentation — touch no backend, no provider path, no GameContext seed contract, no persistence shape; do not reopen the counter-panel overlay shape (DEC-139, owned elsewhere) — change only the matrix arrangement inside the panel; keep the existing commander-damage behaviors (always-on decrements-life, the minus/plus bands, the me self-cell, seat rotation as sole orientation input); the map must derive from the active arrangement so it is correct in both grid and list mode.
+
+Do not edit `PRD/sections/`, application code, or anything outside `PRD/work/life-tracker-seat-map/`. Set `STATUS.refining` while shaping and `STATUS.refined` on completion.
+
+Report back: the DESIGN-BRIEF path, whether `GATE-QUESTIONS.md` was written and the list of stable ids it proposes (or a statement that no product-truth change is needed), the counter-panel orientation choice and how it was resolved, and any genuine product fork you surfaced as a gate question.
+```
+
+### gate-qc
+
+```text
+graph is controlling. You are node 4 (`gate-qc`) of an autonomous graph-kickoff run. thejudge-quality-check is being dispatched under the graph driver.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy this exact `Working directory:` line, unchanged, into every prompt you write to any subagent of your own.
+
+Run ID: graph-20260902-093611
+Package: PRD/work/life-tracker-seat-map/
+
+Run non-interactively: do not pause for the user.
+
+Invoke the `thejudge-quality-check` skill (Skill tool) and follow it exactly. Validate `DESIGN-BRIEF.md` for PRD alignment and agent-readiness and produce a PASS or FAIL report. Do not write a GAMEPLAN or slice docs — that is the map-out node's job, not this one.
+
+Check the design brief against the proposed product truth in `GATE-QUESTIONS.md` (REQ-173) and the current-state specs it amends: `PRD/sections/life-tracker/README.md`, `PRD/sections/functional-requirements.md`, `PRD/sections/screen-layout.md`. Confirm the brief is internally consistent with the proposed REQ-173 acceptance criteria, that it stays within the stated constraints (pure presentation; does not reopen DEC-139; preserves the commander-damage behaviors and DEC-136 rotation), and that it is specific enough for an implementer to slice without inventing product decisions.
+
+On FAIL, set `STATUS.refining` and report the complete findings list so refinement can address them. On PASS, report PASS with the checked artifact path and an empty findings list.
+
+Report back: PASS or FAIL, the checked artifact, and the complete findings list (or none).
 ```
 
 ## Instruction ledger
