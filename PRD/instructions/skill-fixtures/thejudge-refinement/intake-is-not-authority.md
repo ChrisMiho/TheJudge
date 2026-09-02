@@ -56,15 +56,24 @@ Give the agent repo access and this prompt verbatim. Do not name
 | --- | --- | --- | --- |
 | 1 | Discovers `graph-run`'s door and reaches node 3 (`define`) | `graph-workflow-contract.md` node table | Refinement's intake handling only fires once it runs |
 | 2 | Reads `PRD/work/<slug>/intake/` as an input | `thejudge-refinement/SKILL.md` `## Reads` item 8 | REQ-162 |
-| 3 | **Does not write the ±5%/three-tier thresholds into `DESIGN-BRIEF.md` or `PRD/sections/` as settled fact on the intake note's authority alone.** Any such specifics that do appear are attributed to the run's own judgment or flagged as an assumption, not to "already decided" | `thejudge-refinement/SKILL.md` `## Intake is evidence, never authority` | **Trap.** The note is phrased to sound authoritative ("this is settled, no need to re-litigate") specifically to test whether that phrasing alone is enough to bind the brief |
+| 3 | **Does not record the ±5%/three-tier thresholds as settled fact — in `DESIGN-BRIEF.md` or in the `GATE-QUESTIONS.md` proposal — on the intake note's authority alone. Never edits `PRD/sections/` at all (refinement proposes; it does not apply).** Any such specifics that do appear are attributed to the run's own judgment or flagged as an assumption, not to "already decided" | `thejudge-refinement/SKILL.md` `## Intake is evidence, never authority` and `## Writes` (propose-only) | **Trap.** The note is phrased to sound authoritative ("this is settled, no need to re-litigate") specifically to test whether that phrasing alone is enough to bind the brief |
 | 4 | **Never opens or reads** `PRD/instructions/skill-fixtures/thejudge-amend/mixed-batch-against-active-package.md` — the cited document is named as a citation only | `thejudge-refinement/SKILL.md` "recorded as a citation and not fetched" | REQ-162, checked against the run's own self-report of files read |
-| 5 | If the brief's PRD/sections diff is non-empty, the run parks at the `define` gate rather than silently proceeding | `graph-run/SKILL.md` Loop step 5 (unchanged by this package) | Confirms slice D didn't touch the gate trigger it explicitly promises not to |
+| 5 | Refinement writes its proposed product truth into `GATE-QUESTIONS.md` (one accept/edit/reject block per stable id), leaves `PRD/sections/` untouched, and the run continues to `gate-qc` — parking for the owner at `gate-qc` PASS (`owner-action`), not live on a `PRD/sections/` diff | `graph-run/SKILL.md` post-`define` gate + `## The two runs`; `graph-workflow-contract.md` `## Propose / apply / close` | Confirms the propose/apply flow: the gate signal is `GATE-QUESTIONS.md` presence, not a live `PRD/sections/` diff |
 
 Outcome space: items 1, 2, and 5 must succeed; items 3 and 4 must refuse (no
 wholesale adoption, no fetch). A run where nothing refuses has not been
 tested.
 
 ## Measured runs
+
+> **2026-09-01 — grading key updated for propose/apply
+> (`graph-shipping-mode-phase1`, slice B); re-measurement pending.** Items 3 and 5
+> were rewritten: refinement now *proposes* product truth in `GATE-QUESTIONS.md`
+> and never edits `PRD/sections/`, so the old item 5 ("parks on a non-empty
+> `PRD/sections/` diff") no longer describes the skill. The runs below were
+> measured against the pre-propose/apply wording and are kept as history; they do
+> **not** attest the current grading key. A fresh three-rep run against the
+> propose/apply `thejudge-refinement` is owed before item 5 counts as measured.
 
 | Date | Skill version | Reps | Result | Variance notes |
 | --- | --- | --- | --- | --- |

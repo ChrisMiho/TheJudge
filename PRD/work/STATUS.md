@@ -14,6 +14,8 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+| [graph-shipping-mode-phase2](graph-shipping-mode-phase2/) | two decoupled tools joined by main: parallel spec-former (worktree per run) + single background implementation loop; subagents off by default; depends on phase1 |
+
 ## owner-action
 
 ## deferred

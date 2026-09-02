@@ -11,7 +11,11 @@ description: >-
 
 ## Goal
 
-Execute every remaining slice with one agent, publishing each green milestone to a shared GitHub branch and open review PR.
+Execute every remaining slice with one agent, publishing each green milestone to a
+shared GitHub branch and open review PR. This is the **apply** step: refinement
+proposed the product truth in `GATE-QUESTIONS.md`, and implementation writes it to
+`PRD/sections/` **by intent, together with the code**, in the slice's PR (see
+`PRD/instructions/graph-workflow-contract.md`, `## Propose / apply / close`).
 
 ## Mode
 
@@ -37,7 +41,7 @@ Work slug or `PRD/work/<slug>/` path. Optional shared remote branch or PR number
 
 ## Reads
 
-Read the work-package `README.md` — including its `## Autonomous metadata` section — plus `GAMEPLAN.md`, every remaining `slice-*.md`, each slice's files/tests, this skill's `reference.md`, and `PRD/instructions/workflow-reference.md` (package status / STATUS.*).
+Read the work-package `README.md` — including its `## Autonomous metadata` section — plus `GAMEPLAN.md`, every remaining `slice-*.md`, each slice's files/tests, this skill's `reference.md`, and `PRD/instructions/workflow-reference.md` (package status / STATUS.*). When the package proposed product truth, also read `PRD/work/<slug>/GATE-QUESTIONS.md` (the approved proposal) and `DESIGN-BRIEF.md` (the intent) — the source for the apply step.
 
 ## Workflow contract
 
@@ -54,7 +58,14 @@ Read the work-package `README.md` — including its `## Autonomous metadata` sec
 
 1. Fetch/rebase onto the shared branch when it exists, otherwise the recorded autonomous base; resolve conflicts before editing.
 2. Confirm dependencies are `done`, then mark the slice `in-progress`.
-3. Implement only the slice and its tests under `reference.md`.
+3. Implement only the slice and its tests under `reference.md`. When this slice
+   carries the proposal's product truth, **apply it in the same slice**: write the
+   real `PRD/sections/` edits derived **by intent** from the approved
+   `GATE-QUESTIONS.md` diff + `DESIGN-BRIEF.md` against *current* truth (re-derive,
+   never blind-replay the frozen patch; a `reject`ed id is not applied and its
+   number stays burned), committed **together with** the code that realizes them.
+   Apply the proposal **exactly once** across the run — the slice the GAMEPLAN
+   assigns, else the slice whose code realizes that product behavior.
 4. Run the slice verification while its status is `in-progress`; debug until green. For a slice with browser or dev-server acceptance criteria, record `PRD/instructions/runtime-process-hygiene.md`'s cleanup evidence (browser-close, owned-process-stop, port-release, capture output path) before it can become `done`; an unresolved ownership/cleanup failure keeps it `blocked`. This skill's isolated worktree always starts its own dev server(s) on ports it owns — it never attaches to a pre-existing one, since worktrees are isolated checkouts — and writes captures under its own worktree's `PRD/work/<slug>/.playwright-mcp/`.
 5. Mark it `done` — which requires every criterion in the slice's
    `slice-<letter>.criteria.json` to be `true`. Read the emitted files; a summary

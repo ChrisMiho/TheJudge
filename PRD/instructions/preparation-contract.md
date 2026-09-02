@@ -104,7 +104,7 @@ unchanged for the life of the package.
 | Phase | Required input | Required output | Status transition |
 | --- | --- | --- | --- |
 | Investigate and kickoff | Original request or resumable work-folder path | Selected candidate evidence; `IDEA.md`; package `README.md` | new → `ideation` |
-| Refinement | `IDEA.md` or an equivalent captured request | `DESIGN-BRIEF.md`; applicable durable PRD edits; material assumptions | `ideation` → `refined` |
+| Refinement | `IDEA.md` or an equivalent captured request | `DESIGN-BRIEF.md`; proposed durable-PRD edits recorded in `GATE-QUESTIONS.md` (never written to `PRD/sections/` here — `build` applies them); material assumptions | `ideation` → `refined` |
 | Quality-check | `DESIGN-BRIEF.md` and affected authoritative PRD | Explicit PASS or FAIL with complete findings; latest result recorded in the package README | no status advance |
 | Map-out | Recorded quality-check PASS | `GAMEPLAN.md`; lettered slice docs; README slice table and implementation map | `refined` → `active` |
 | Independent review | Original request, authoritative artifacts, repository evidence, and prepared diff | Request-fidelity and quality verdict with findings | no status advance |

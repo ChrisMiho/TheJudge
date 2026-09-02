@@ -40,28 +40,69 @@ pull request, unattended except at the gates below.
    worktree and branch ownership DEC-154 established for the agent-workflow
    lifecycle generally; DEC-163 is the layer that chains that lifecycle's
    phases end to end with no human between steps.
-3. **Refine.** `thejudge-kickoff` (node 2) names the package and
-   `thejudge-refinement` (node 3) writes the design brief and any
-   `PRD/sections/` truth it proposes.
-4. **Gate (async).** A non-empty `PRD/sections/` diff is written into
-   `GATE-QUESTIONS.md` — one accept/edit/reject slot per stable ID — and the run
-   **continues** to `gate-qc` rather than stopping live. Run one ends at
-   quality-check PASS (see `## The two runs`), leaving that questions file and a
-   docs-only PR for the owner to answer on their own schedule — the one place
-   this workflow trades autonomy for a human, because no script can judge whether
-   the product truth written there is the product the owner wants (DEC-164). The
-   trade is now made off the terminal, in the file.
-5. **Build.** Once quality-checked and sliced, `thejudge-implement-all`
-   (node 6) implements sequentially inside `.worktrees/implement-<slug>/`. A
-   committed `PreToolUse` hook — not the driver's own say-so — proves every
-   acceptance criterion before the node can report `ok` (DEC-166).
+3. **Refine (propose).** `thejudge-kickoff` (node 2) names the package and
+   `thejudge-refinement` (node 3) writes the design brief and *records the
+   proposed* `PRD/sections/` truth **in `GATE-QUESTIONS.md` (the work folder)**.
+   Refinement does **not** edit `PRD/sections/`; the proposal lives entirely in
+   the work package until implementation applies it (see `## Propose / apply /
+   close`).
+4. **Gate (async).** When refinement proposes product-truth changes, it writes
+   them into `GATE-QUESTIONS.md` — one accept/edit/reject slot per stable ID — and
+   the run **continues** to `gate-qc` rather than stopping live. The gate signal is
+   the *presence of a proposed change in `GATE-QUESTIONS.md`*, not a live
+   `PRD/sections/` diff. Run one ends at quality-check PASS (see `## The two
+   runs`), leaving that questions file and a docs-only PR for the owner to answer
+   on their own schedule — the one place this workflow trades autonomy for a human,
+   because no script can judge whether the product truth proposed there is the
+   product the owner wants (DEC-164). The trade is made off the terminal, in the
+   file.
+5. **Build (apply).** Once quality-checked and sliced, `thejudge-implement-all`
+   (node 6) implements sequentially inside `.worktrees/implement-<slug>/`, and
+   *applies the approved proposal*: it writes the real `PRD/sections/` truth **by
+   intent** (re-derived from the approved `GATE-QUESTIONS.md` diff and
+   `DESIGN-BRIEF.md` against current truth) **together with the code**, in the
+   slice's PR. A committed `PreToolUse` hook — not the driver's own say-so —
+   proves every acceptance criterion before the node can report `ok` (DEC-166).
 6. **Review.** A fresh-context, no-write reviewer subagent (node 7) grades
    the slice against its own stated acceptance criteria and can loop the run
    back to `build` on a Critical or Important finding, up to twice (DEC-166).
 7. **Merge.** `land` (node 8) is the owner merging the pull request by
    hand — the one merge in this workflow that stays human and is never
-   automated. `thejudge-cleanup` (node 9, `close`) then promotes durable
-   truth, folds the run's ledger into a receipt, and deletes the package.
+   automated. `thejudge-cleanup` (node 9, `close`) then folds the run's ledger
+   into a receipt and deletes the package; durable `PRD/sections/` truth is
+   already applied by build, so cleanup promotes it **once** and never re-writes
+   it.
+
+## Propose / apply / close
+
+Durable product truth (`PRD/sections/`) is written in exactly one place: the
+implementation (`build`), together with the code. This splits the lifecycle into
+three roles:
+
+- **Propose (`thejudge-refinement`, node 3).** Writes only inside
+  `PRD/work/<slug>/`: the design brief and, when the change needs product truth,
+  the *proposed* `PRD/sections/` edits as the exact diff in `GATE-QUESTIONS.md`
+  (one `## <STABLE-ID>` block per stable id). It never edits `PRD/sections/` or
+  code. New stable ids are named and reserved in the proposal, not written live.
+- **Apply (`thejudge-implement-all` / `thejudge-implement`, node 6).** Reads the
+  approved proposal (`GATE-QUESTIONS.md` diff + `DESIGN-BRIEF.md` intent) and
+  writes the real `PRD/sections/` edits **by intent against current truth** — it
+  re-derives the edit rather than blind-replaying a possibly-stale frozen patch —
+  **together with the code**, in the slice's PR.
+- **Close (`thejudge-cleanup`, node 9).** Promotion already happened at apply, so
+  cleanup writes durable truth **once** (or confirms it is present), never assumes
+  refinement pre-wrote `PRD/sections/`, folds the ledger into the receipt, and
+  deletes the work folder.
+
+**The gate signal is the proposal's existence, not a `PRD/sections/` diff.** Since
+refinement no longer writes `PRD/sections/`, a live diff after `define` is always
+empty. The run gates when `GATE-QUESTIONS.md` carries a proposed product-truth
+change, and does not gate when it carries none. `graph-gate-review` applies the
+owner's verdicts to the proposed diff **inside `GATE-QUESTIONS.md`** (finalizing
+the proposal in the work folder), never to live `PRD/sections/`.
+
+This changes *where* durable truth is written, not the two-run split, the node
+table, the caps, or the boundary deny list.
 
 ## The two runs
 
@@ -73,13 +114,14 @@ list are all unchanged: `define` still advances to `gate-qc`, it simply writes t
 questions file on the way rather than parking live.
 
 **Run one** drives `preflight → shape → define → gate-qc` and stops at
-quality-check PASS. At `define`, a non-empty `PRD/sections/` diff is written into
-`PRD/work/<slug>/GATE-QUESTIONS.md` and the run continues. At gate-qc PASS run one
-parks at `owner-action`, opens a **docs-only PR into `main`**, and ends. The PR is
-opened, not merged: `graph-preflight` created and pushed the base branch
-`thejudge-auto/<slug>`, and run one opens it with
-`gh pr create --base main --head thejudge-auto/<slug>`, carrying the design
-brief, any `PRD/sections/` truth, the ledger, and the questions file. `gh pr
+quality-check PASS. At `define`, when refinement proposes product-truth changes it
+records them in `PRD/work/<slug>/GATE-QUESTIONS.md` (never in `PRD/sections/`) and
+the run continues. At gate-qc PASS run one parks at `owner-action`, opens a
+**docs-only PR into `main`**, and ends. The PR is opened, not merged:
+`graph-preflight` created and pushed the base branch `thejudge-auto/<slug>`, and
+run one opens it with `gh pr create --base main --head thejudge-auto/<slug>`,
+carrying the design brief, the proposal (`GATE-QUESTIONS.md`), and the ledger — no
+`PRD/sections/` edits, which apply only at `build`. `gh pr
 create` opens a PR and never merges one, so it crosses no boundary; the merge
 stays the owner's. That PR is the same
 one the implementation later grows into, and the owner merges it last — this is
@@ -99,11 +141,12 @@ requires for a gate question — three labelled lines, in this order:
 
 Then that ID's **complete diff** (never a summary), then
 `- Verdict: <accept | edit | reject>` and `- Reason:` (required for edit and
-reject). The diff and IDs are the pointer for an implementer; the three lines
-above are what lets the owner answer without decoding anything. A trailing
+reject). The diff and IDs are both the owner's decision record and the
+implementer's source for `build`'s apply-by-intent step; the three lines above are
+what lets the owner answer without decoding anything. A trailing
 `## Blocker questions` section holds any genuine decision blocker, written to the
-same standard. An empty `define` diff writes no questions file; run one still
-stops at gate-qc PASS with the docs PR.
+same standard. When refinement proposes no product-truth change it writes no
+questions file; run one still stops at gate-qc PASS with the docs PR.
 
 **The owner** answers the file whenever they choose — the review the live gate
 once took in the terminal, now made on their own schedule.
@@ -126,7 +169,9 @@ in the `thejudge-*` skill, not in a graph skill copy.
 Exactly three graph skills exist in the spine: `graph-preflight`, `graph-run`,
 and `graph-gate-review` — the owner-facing half of the `define` gate, which
 reads the owner's answered `GATE-QUESTIONS.md`, applies its accept/edit/reject
-verdicts to the recorded `PRD/sections/` diff, and resumes the run.
+verdicts to the proposed diff **inside `GATE-QUESTIONS.md`** (finalizing the
+proposal in the work folder; `build` applies it to `PRD/sections/` later), and
+resumes the run.
 
 ## Intake is evidence, never authority
 
@@ -143,9 +188,9 @@ is unbounded, but the rule is broader than that — the cited document itself
 is never opened.
 
 This rule is unenforced. Nothing stops `thejudge-refinement` from adopting an
-intake claim wholesale; what catches it is the `define` gate parking on the
-resulting `PRD/sections/` diff, the same mechanism that catches any other
-unreviewed product truth.
+intake claim wholesale; what catches it is the `define` gate surfacing the
+resulting proposed change in `GATE-QUESTIONS.md`, the same mechanism that catches
+any other unreviewed product truth.
 
 Node 2 also greps `PRD/instructions/receipts/` — each already named
 `<slug>-<date>.md` — for prior runs against the same ground, and writes one
