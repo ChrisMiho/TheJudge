@@ -73,36 +73,33 @@ type AssistantPlayerCounters = Record<ScalarCounterField, string> & {
 type AssistantCountersByPlayer = Record<PlayerLabel, AssistantPlayerCounters>;
 
 function createDefaultLifeTotals(): Record<PlayerLabel, string> {
-  return PLAYER_OPTIONS.reduce<Record<PlayerLabel, string>>(
-    (accumulator, player, index) => ({
-      ...accumulator,
-      [player]: index < MIN_PLAYERS ? DUEL_STARTING_LIFE_TOTAL : MULTIPLAYER_STARTING_LIFE_TOTAL
-    }),
-    {} as Record<PlayerLabel, string>
-  );
+  const lifeTotals = {} as Record<PlayerLabel, string>;
+  PLAYER_OPTIONS.forEach((player, index) => {
+    lifeTotals[player] = index < MIN_PLAYERS ? DUEL_STARTING_LIFE_TOTAL : MULTIPLAYER_STARTING_LIFE_TOTAL;
+  });
+  return lifeTotals;
 }
 
 function createDefaultDisplayNames(): Record<PlayerLabel, string> {
-  return PLAYER_OPTIONS.reduce<Record<PlayerLabel, string>>(
-    (accumulator, player) => ({ ...accumulator, [player]: player }),
-    {} as Record<PlayerLabel, string>
-  );
+  const displayNames = {} as Record<PlayerLabel, string>;
+  PLAYER_OPTIONS.forEach((player) => {
+    displayNames[player] = player;
+  });
+  return displayNames;
 }
 
 function createEmptyCountersByPlayer(): AssistantCountersByPlayer {
-  return PLAYER_OPTIONS.reduce<AssistantCountersByPlayer>(
-    (accumulator, player) => ({
-      ...accumulator,
-      [player]: {
-        poison: "",
-        energy: "",
-        experience: "",
-        commanderDamage: {},
-        counters: []
-      }
-    }),
-    {} as AssistantCountersByPlayer
-  );
+  const countersByPlayer = {} as AssistantCountersByPlayer;
+  PLAYER_OPTIONS.forEach((player) => {
+    countersByPlayer[player] = {
+      poison: "",
+      energy: "",
+      experience: "",
+      commanderDamage: {},
+      counters: []
+    };
+  });
+  return countersByPlayer;
 }
 
 /**
