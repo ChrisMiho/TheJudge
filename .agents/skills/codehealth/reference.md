@@ -16,9 +16,26 @@ A candidate ships **only** if every check below is a clear yes. Any no, or any
 | **Product truth** | Touches no `PRD/sections/` file and no code a `REQ`/`FLOW` cites for its behavior | Touches product-truth-backed behavior |
 | **Data / schema** | No change to a persisted shape, wire contract, or committed artifact | Any schema/contract/artifact shift |
 
-Target classes in scope: dead code, duplicate/consolidatable code, unsafe/bad
-patterns (missing guard, unhandled error, unsafe cast) — **only** where the fix is
-output-equivalent. A "fix" that corrects a behavior is a product change: skip it.
+Target classes in scope: dead code, duplicate/consolidatable code, inefficient code
+(a faster/leaner path), unsafe/bad patterns (missing guard, unhandled error, unsafe
+cast), and documentation drift — **only** where the fix is output-equivalent. A
+"fix" that corrects a behavior is a product change: skip it. An efficiency change
+that alters any observable value, ordering, timing contract, memory-visibility, or
+error is a behavior change: skip it.
+
+## Documentation drift (tick step 4, doc targets)
+
+A doc target ships only when the doc is **non-authoritative** and the code is the
+ground truth it should match.
+
+| Doc | Action | Why |
+|---|---|---|
+| Code comment, module `README`, JSDoc, inline example that misstates what the code does | **Edit the doc to match the code** — ships as a normal behavior-preserving PR | The code is the truth here; the doc drifted |
+| A statement in `PRD/sections/` (or a `REQ`/`FLOW` a spec cites) that disagrees with the code | **Park in the digest — edit nothing** | `PRD/sections/` is product truth. Code disagreeing with truth is a bug **or** a stale spec; only the owner decides which, and syncing either side silently would launder a behavior change into truth |
+| A doc whose "drift" is actually the code being wrong | **Park in the digest** | Fixing the code is a behavior change, not a doc fix |
+
+The rule in one line: the loop may correct a doc **to** the code, never the code
+**to** a doc, and never touches `PRD/sections/`.
 
 ## Post-build assertion (tick step 6)
 

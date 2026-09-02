@@ -1,6 +1,6 @@
 ---
 name: codehealth
-description: Use when running an unattended, self-paced overnight loop that reviews the repo for behavior-preserving code-health fixes (duplicate, dead, or unsafe/bad code) and opens one locally-tested PR per target. Invoked once per tick, typically via `/loop codehealth`. Nothing is merged; targets that would change game behavior park for the owner.
+description: Use when running an unattended, self-paced overnight loop that reviews the repo for behavior-preserving code-health fixes — duplicate or inefficient code, bad practices, dead code, and documentation that has drifted from the code — opening one locally-tested PR per target. Invoked once per tick, typically via `/loop codehealth`. Nothing is merged; targets that would change game behavior, or that pit code against product truth, park for the owner.
 ---
 
 # Code-Health Loop
@@ -8,15 +8,35 @@ description: Use when running an unattended, self-paced overnight loop that revi
 ## Overview
 
 One tick fixes one thing. Each tick finds a single **behavior-preserving**
-code-health target (duplicate, dead, or unsafe/bad code — never a change to game
-behavior), makes the fix on its own branch, tests it locally, and opens a PR. The
-loop **never merges**. It runs self-paced overnight until it has opened a capped
-number of PRs or hits a stop condition.
+code-health target, makes the fix on its own branch, tests it locally, and opens a
+PR. The loop **never merges**. It runs self-paced overnight until it has opened a
+capped number of PRs or hits a stop condition.
+
+**The goal — keep the codebase healthy.** A tick targets one of:
+
+- **duplicate code** — consolidate repeated logic;
+- **inefficient code** — a faster/leaner path, **only when output-equivalent**;
+- **bad practices** — a missing guard, an unhandled error, an unsafe cast, where
+  the corrected code behaves identically;
+- **dead code** — a symbol provably unreached at runtime;
+- **documentation drift** — a doc that misdescribes what the code does.
 
 **Core principle:** you are a target-picker and a builder, bounded by two gates —
 a candidate ships **only if it is behavior-preserving**, and the loop **only ever
 opens PRs, never merges**. Everything between those gates is ordinary refactor
 work.
+
+**Two scope rules that decide "fix vs. park":**
+
+- **Efficiency and bad-practice fixes ship only if output-equivalent.** If a
+  faster path or a "corrected" guard changes any value, order, timing contract, or
+  error a caller observes, that is a behavior change — **park it**, do not ship it.
+- **Documentation drift cuts two ways.** A **non-authoritative** doc — a code
+  comment, a module `README`, JSDoc — that misdescribes the code is **fixed to
+  match the code**. But a mismatch with **`PRD/sections/` product truth** is code
+  disagreeing with the source of truth: deciding whether the code or the truth is
+  right is the owner's product call, so **park it in the digest** — never edit
+  either the spec or the code to paper over it.
 
 **Why this is its own loop, not the graph.** The graph
 (`graph-kickoff`/`graph-implement`) is a *feature engine*: product-truth gates, an

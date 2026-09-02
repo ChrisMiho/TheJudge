@@ -4,9 +4,15 @@
 
 The owner launches one guarded overnight session and, in the morning, finds a
 handful of **independent, locally-tested PRs** — each a single behavior-preserving
-code-health fix (dead code removed, duplication consolidated, an unsafe pattern
-guarded) — plus a short digest of anything the loop found that *would* change game
-behavior and therefore parked for a human. Nothing is merged; the owner reviews and
+code-health fix (dead code removed, duplication consolidated, an inefficient path
+made leaner, an unsafe pattern guarded, or a drifted code comment / module README
+corrected to match the code) — plus a short digest of anything the loop found that
+*would* change game behavior, or that pits code against `PRD/sections/` product
+truth, and therefore parked for a human. The goal is codebase health: reduce
+duplicate, inefficient, dead, and bad-practice code, and doc drift — always
+behavior-preserving. Two guardrails: efficiency and bad-practice fixes ship only if
+output-equivalent, and documentation is corrected only **to** the code (never the
+code to a doc), with any `PRD/sections/` mismatch parked, never edited. Nothing is merged; the owner reviews and
 merges each PR. The night is productive: multiple PRs, not one, because the targets
 are independent and never block each other.
 
