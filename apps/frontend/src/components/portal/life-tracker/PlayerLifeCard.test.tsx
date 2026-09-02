@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { createInitialState } from "../../../lib/lifeTracker/state";
-import type { SeatPlacement } from "../../../lib/lifeTracker/seatArrangement";
+import { seatArrangement, type SeatPlacement } from "../../../lib/lifeTracker/seatArrangement";
 import { PlayerLifeCard } from "./PlayerLifeCard";
 
 const placement: SeatPlacement = {
@@ -13,6 +13,8 @@ const placement: SeatPlacement = {
   gridRow: "1 / 2",
   gridColumn: "1 / 2"
 };
+
+const layout = seatArrangement(4);
 
 function fourPlayerRoster() {
   return createInitialState(4, 40).players;
@@ -40,6 +42,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -71,6 +74,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={onAdjustLife}
           onSetLife={vi.fn()}
@@ -94,6 +98,7 @@ describe("Frontend - Shared", () => {
           player={deadPlayer}
           players={rosterWith(deadPlayer)}
           placement={placement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -111,6 +116,7 @@ describe("Frontend - Shared", () => {
           player={revivedPlayer}
           players={rosterWith(revivedPlayer)}
           placement={placement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -130,6 +136,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -155,6 +162,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -181,6 +189,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={{ ...placement, rotation: 0 }}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -197,6 +206,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={{ ...placement, rotation: 180 }}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -214,6 +224,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={{ ...placement, rotation: 90 }}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -229,6 +240,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={{ ...placement, rotation: 270 }}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -247,6 +259,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -270,6 +283,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -287,6 +301,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={sidewaysPlacement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -305,6 +320,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={uprightPlacement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -326,6 +342,7 @@ describe("Frontend - Shared", () => {
             player={player}
             players={rosterWith(player)}
             placement={placement}
+            layout={layout}
             cardStyle={cardStyle}
             onAdjustLife={vi.fn()}
             onSetLife={vi.fn()}
@@ -379,6 +396,7 @@ describe("Frontend - Shared", () => {
             player={player}
             players={rosterWith(player)}
             placement={placement}
+            layout={layout}
             cardStyle="gradient"
             onAdjustLife={onAdjustLife}
             onSetLife={onSetLife}

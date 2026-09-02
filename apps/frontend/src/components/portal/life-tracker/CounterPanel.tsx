@@ -8,6 +8,7 @@ import {
 import type { PlayerLabel } from "../../../types";
 import { useOutsideDismiss } from "../../../hooks/useOutsideDismiss";
 import { NAMED_COUNTER_PALETTE, type NamedCounterId } from "../../../lib/lifeTracker/counters";
+import type { SeatArrangementLayout } from "../../../lib/lifeTracker/seatArrangement";
 import type { TrackerPlayer } from "../../../lib/lifeTracker/types";
 import { formatPlayerDisplayLabel } from "../../../lib/playerLabels";
 import { OverlayCloseButton } from "../../OverlayCloseButton";
@@ -15,6 +16,13 @@ import { OverlayCloseButton } from "../../OverlayCloseButton";
 export interface CounterPanelProps {
   player: TrackerPlayer;
   players: TrackerPlayer[];
+  /**
+   * The full active seat arrangement (`seatArrangement` in grid mode, `listSeatArrangement` in
+   * list mode) - so the commander-damage matrix can place every seat, not just a fixed roster
+   * order (REQ-173). The panel itself is never rotated (DEC-139); the map it builds is an
+   * absolute top-down replica of the table.
+   */
+  layout: SeatArrangementLayout;
   onClose: () => void;
   onAdjustNamedCounter: (label: PlayerLabel, counterId: NamedCounterId, delta: number) => void;
   onSetNamedCounter: (label: PlayerLabel, counterId: NamedCounterId, value: number) => void;
@@ -255,6 +263,7 @@ function CommanderDamageCell({
 export function CounterPanel({
   player,
   players,
+  layout,
   onClose,
   onAdjustNamedCounter,
   onSetNamedCounter,
@@ -264,6 +273,8 @@ export function CounterPanel({
   onRemoveCustomCounter,
   onAdjustCommanderDamage
 }: CounterPanelProps): JSX.Element {
+  // Threaded through in slice A; slice C wires it into the commander-damage matrix's placement.
+  void layout;
   const [activeTab, setActiveTab] = useState<"player" | "counters">("player");
   const [customName, setCustomName] = useState("");
   const [customNameError, setCustomNameError] = useState<string | null>(null);

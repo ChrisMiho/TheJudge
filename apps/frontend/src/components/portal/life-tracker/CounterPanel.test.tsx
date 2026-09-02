@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { useState, type ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NAMED_COUNTER_PALETTE } from "../../../lib/lifeTracker/counters";
+import { seatArrangement } from "../../../lib/lifeTracker/seatArrangement";
 import { addCustomCounter, createInitialState } from "../../../lib/lifeTracker/state";
 import type { TrackerState } from "../../../lib/lifeTracker/types";
 import { CounterPanel } from "./CounterPanel";
@@ -24,6 +25,7 @@ function panelProps(
   return {
     player: state.players[0],
     players: state.players,
+    layout: seatArrangement(state.playerCount),
     onClose: vi.fn(),
     onAdjustNamedCounter: vi.fn(),
     onSetNamedCounter: vi.fn(),

@@ -1,6 +1,6 @@
 import { useRef, useState, type FormEvent } from "react";
 import type { PlayerLabel } from "../../../types";
-import type { SeatPlacement } from "../../../lib/lifeTracker/seatArrangement";
+import type { SeatArrangementLayout, SeatPlacement } from "../../../lib/lifeTracker/seatArrangement";
 import type { CardStyle, TrackerPlayer } from "../../../lib/lifeTracker/types";
 import { formatPlayerDisplayLabel } from "../../../lib/playerLabels";
 
@@ -13,6 +13,12 @@ export interface PlayerLifeCardProps {
    * on their left and `+` on their right, and the rotation already says which way they face.
    */
   placement: SeatPlacement;
+  /**
+   * The full active seat arrangement (`seatArrangement` in grid mode, `listSeatArrangement` in
+   * list mode) - so the commander-damage preview can place every seat, not just this card's own
+   * (REQ-173).
+   */
+  layout: SeatArrangementLayout;
   /** Surface treatment for the card: the original three-stop ombre, or a single solid tint. */
   cardStyle: CardStyle;
   onAdjustLife: (label: PlayerLabel, delta: number) => void;
@@ -111,11 +117,14 @@ export function PlayerLifeCard({
   player,
   players,
   placement,
+  layout,
   cardStyle,
   onAdjustLife,
   onSetLife,
   onOpenCounters
 }: PlayerLifeCardProps): JSX.Element {
+  // Threaded through in slice A; slice B wires it into the preview grid's placement/sizing.
+  void layout;
   const [lifeDraft, setLifeDraft] = useState<string | null>(null);
   // Escape unmounts the input, which also fires blur; without this the blur handler would then
   // commit the very draft Escape just discarded.
