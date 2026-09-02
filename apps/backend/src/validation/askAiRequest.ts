@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { PLAYER_LABELS } from "../constants.js";
 import { ASK_AI_ERROR_CODES } from "../errors.js";
-import { enrichmentDebugSchema } from "../prompt/enrichmentDebug.js";
 
 export const playerLabelSchema = z.enum(PLAYER_LABELS);
 
@@ -270,15 +269,6 @@ export const askAiRequestSchema = z.preprocess(
   },
   z.discriminatedUnion("mode", [gameAskAiRequestSchema, lookupAskAiRequestSchema])
 );
-
-export const askAiResponseSchema = z
-  .object({
-    answer: z.string(),
-    context: z.record(z.string(), z.unknown()).optional(),
-    diagnostics: z.record(z.string(), z.unknown()).optional(),
-    enrichmentDebug: enrichmentDebugSchema.optional()
-  })
-  .strict();
 
 export const askAiErrorSchema = z
   .object({
