@@ -3524,19 +3524,21 @@
 - Priority: high
 - Description: The owner can stop a graph run in flight by creating `.worktrees/.graph-stop`, and the run halts cleanly — terminal state written, lock released — rather than dying mid-node the way Ctrl-C does.
 - Acceptance Criteria:
-  - `graph-run` checks for the sentinel immediately before every node dispatch and halts if it exists
+  - the graph driver checks for the sentinel immediately before every node dispatch and halts if it exists
   - on halt the run writes a terminal state, records the halt and its evidence under `## Open gate` in `GRAPH-RUN.md`, updates the package `STATUS.*` marker and the `PRD/work/STATUS.md` board row, and deletes the concurrency lock
   - a sentinel created mid-node lets the current node finish; the halt happens at the node boundary, so no ledger is left half written
+  - for the `graph-implement` background loop, the sentinel halts at a spec boundary: the current build finishes and no next ready spec is picked up (see REQ-172)
   - the hook denies new node dispatches while the sentinel exists, as the backstop for a driver that ignores its own check
-  - the halted run resumes with `/graph-run PRD/work/<slug>/` once the sentinel is removed, from the node recorded in the ledger
+  - the halted run resumes with `/graph-implement PRD/work/<slug>/` (or `/graph-kickoff` in the spec-forming half) once the sentinel is removed, from the node recorded in the ledger
 - Constraints:
   - the sentinel lives under the already-ignored `.worktrees/` root, so it never travels with a branch
   - a `STEER.md` mid-run instruction channel is explicitly out of scope: every line it carried would need an `## Instruction ledger` row classified `answered-once` or `refused`, and that is its own package
 - Dependencies:
   - REQ-152
+  - REQ-172
   - DEC-166
 - Notes:
-  - the halt state is drawn from `graph-run`'s existing `## Terminal states` table, which stays the single authority; this requirement adds no fifth state
+  - the halt state is drawn from the contract's `## Terminal states` table, which stays the single authority; this requirement adds no fifth state
 
 ### REQ-155
 - Title: Node 7 review by an independent reviewer with no write tools
@@ -3628,9 +3630,10 @@
   - a canary that is not denied ends the run at `BLOCKED` before node 2 is dispatched, naming what was tried, what came back, and the recovery action; the run does not start
   - the same `BLOCKED` path covers the named untrusted-workspace condition, because a project hook that was never trusted cannot deny the canary either
   - the canary targets a path or command that is inert if it were ever to execute, so a hook that is absent causes no side effect beyond the failed proof
-  - between nodes, `graph-run` confirms that the hook's own counter file advanced during the node just finished; a node that made tool calls while the counter stood still means the hook stopped firing
+  - between nodes, the graph driver confirms that the hook's own counter file advanced during the node just finished; a node that made tool calls while the counter stood still means the hook stopped firing
   - a failed heartbeat ends the run at `BLOCKED` with the node, the expected advance, and the observed counter as evidence; the run does not advance to the next node
   - the ledger records the canary result at run start and the heartbeat result at each node boundary, so the proof is in the record rather than in the agent's word
+  - when the `graph-implement` loop runs multiple builds unattended, the canary and heartbeat are proven per build, not once for the loop as a whole; a failed proof ends that build at `BLOCKED` without the loop continuing past an unproven enforcer (see REQ-172)
 - Constraints:
   - the heartbeat is read-only over `.worktrees/.graph-node-calls.json`, whose single writer is the hook, so the driver cannot manufacture its own proof
   - the heartbeat is unavailable when the cap is degraded — a missing or unparseable `.worktrees/.graph-run-state.json` means the hook attributes no calls to a node, so the counter cannot advance. That condition is reported as a degraded heartbeat rather than as a hook failure, and the canary at run start remains the binding proof
@@ -3639,6 +3642,7 @@
   - REQ-152
   - REQ-153
   - REQ-156
+  - REQ-172
   - DEC-166
 - Notes:
   - the failure this closes is the quiet one — a hook that is present, committed, and trusted still reads exactly like a working hook when it is not firing, and nothing in the run's output distinguishes the two
@@ -3913,3 +3917,25 @@
   - the loop is independent of concurrent spec-forming (REQ-170) and ships first: it builds one spec at a time in its own root, so it needs none of the per-worktree isolation machinery
   - handoff is `main`: merge a spec, sync, and the loop picks it up. Because approved specs are already in `main`, the loop always branches off a base that has them — the base→main staleness the two-run flow guarded against never arises
   - ready-detection reuses `STATUS.*` deliberately: the status vocabulary already distinguishes refined (approved, unbuilt) from active (being built) from deleted (shipped), so no new marker or its own drift risk is introduced
+
+### REQ-172
+- Title: The background loop carries the kill switch, liveness proof, and cost bounds
+- Priority: high
+- Description: `graph-implement` runs unattended, so the stop sentinel, the hook-liveness proof, and the per-node caps that guard a single run all apply to it, and its optional subagent fan-out is off by default with per-run cost logged.
+- Acceptance Criteria:
+  - the stop sentinel `.worktrees/.graph-stop` halts the loop at a spec boundary — the current build finishes, no next spec is picked up, and no ledger is left half written (extends REQ-154 to the loop)
+  - the hook-liveness canary at build start and the per-node heartbeat run for every build the loop performs; a failed proof ends that build at `BLOCKED` and the loop does not silently continue past an unproven enforcer (extends REQ-159 to each build)
+  - the per-node tool-call caps apply per build exactly as for a single run; a cap overrun parks that build's slug at `owner-action` and the loop continues (per REQ-171)
+  - subagent/parallel fan-out inside a build is off by default and opt-in; when on, the per-run cost is written to that run's `GRAPH-RUN.md` ledger
+  - the loop is bounded and fail-closed: it stops rather than spinning when there is no ready spec, and a liveness or lock failure ends the affected build rather than the whole repository
+- Constraints:
+  - the sentinel and all liveness/counter state live under the already-ignored `.worktrees/` root and never travel with a branch
+  - `nohup`, untracked background `&`, `pkill`, and `killall` stay denied; the loop's background execution uses no denied backgrounding primitive
+  - no fifth terminal state is added; the loop reuses `BLOCKED`/`PARKED` per build
+- Dependencies:
+  - REQ-154
+  - REQ-159
+  - REQ-171
+  - DEC-166
+- Notes:
+  - the loop is the sharpest case of "a run never proceeds on an unproven enforcer" — it runs longest and least watched, so a hook that quietly stopped firing would do the most damage there

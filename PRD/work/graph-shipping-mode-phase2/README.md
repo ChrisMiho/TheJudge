@@ -20,7 +20,7 @@ See `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (the product-truth proposal), and
 | --- | --- | --- | --- | --- |
 | [A](slice-a-split-and-rename.md) | Split `graph-run` → `graph-kickoff` + `graph-implement` + shared reference; retire `graph-run`; rewrite contract & predicate | REQ-160 | — | **done** |
 | [B](slice-b-build-loop.md) | `graph-implement` becomes the background build loop | REQ-171 | A | **done** |
-| [C](slice-c-loop-safety.md) | Loop safety: kill switch, per-build liveness, bounds, fan-out knob | REQ-172, REQ-154, REQ-159 | B | planned |
+| [C](slice-c-loop-safety.md) | Loop safety: kill switch, per-build liveness, bounds, fan-out knob | REQ-172, REQ-154, REQ-159 | B | **done** |
 | [D](slice-d-worktree-isolation.md) | Per-worktree kickoff isolation; no hook change | REQ-170 | A | planned |
 | [E](slice-e-downstream-and-close.md) | Downstream (`overnight-codehealth`, docs, `AGENT-SKILLS.md`), fixtures, final verification | — | A,B,C,D | planned |
 

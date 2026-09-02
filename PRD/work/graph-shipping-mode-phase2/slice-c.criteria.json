@@ -5,37 +5,37 @@
     {
       "id": "C1",
       "statement": "graph-implement documents the stop sentinel halting the loop at a spec boundary",
-      "value": false,
+      "value": true,
       "evidence": { "command": "grep -n graph-stop .claude/skills/graph-implement/SKILL.md" }
     },
     {
       "id": "C2",
       "statement": "The skill documents per-build canary/heartbeat and BLOCKED-without-halt",
-      "value": false,
+      "value": true,
       "evidence": { "command": "grep -n canary|heartbeat .claude/skills/graph-implement/SKILL.md" }
     },
     {
       "id": "C3",
       "statement": "The skill documents the subagent knob off-by-default with cost logged",
-      "value": false,
+      "value": true,
       "evidence": { "paths": [".claude/skills/graph-implement/SKILL.md"] }
     },
     {
       "id": "C4",
       "statement": "REQ-172 present and REQ-154/REQ-159 carry loop-coverage edits",
-      "value": false,
+      "value": true,
       "evidence": { "command": "grep -n REQ-172|REQ-154|REQ-159 PRD/sections/functional-requirements.md" }
     },
     {
       "id": "C5",
       "statement": "The agents mirror matches the canonical skill tree",
-      "value": false,
+      "value": true,
       "evidence": { "command": "diff -rq .claude/skills .agents/skills" }
     },
     {
       "id": "C6",
       "statement": "The script test suite passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run test:scripts" }
     }
   ]

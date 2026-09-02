@@ -71,6 +71,36 @@ owner's per-ID verdicts before `plan`.
 is expected, stop instead. The stop sentinel halts the loop at a spec boundary
 (see `## Loop safety`).
 
+## Loop safety
+
+The loop runs unattended and longest, so it carries the same rails a single run
+does — all sourced from the contract, applied per build:
+
+- **Kill switch, at a spec boundary.** The stop sentinel `.worktrees/.graph-stop`
+  halts the loop: the in-flight build finishes at its node boundary, no next spec
+  is picked up, and no ledger is left half written. This extends the contract's
+  `## The owner's stop sentinel` to the loop — the sentinel already halts a single
+  run at a node boundary; here it also stops the loop from claiming the next spec.
+- **Liveness proven per build.** The hook-liveness canary at build start and the
+  per-node heartbeat (contract `## Hook liveness`) run for **every** build the loop
+  performs, not once for the loop as a whole. A failed proof ends **that build** at
+  `BLOCKED` and the loop does **not** silently continue past an unproven enforcer:
+  the affected slug stops, and the loop halts rather than building the next spec on
+  a hook it cannot prove is firing.
+- **Caps per build.** The per-node tool-call caps (contract `## Node table`) apply
+  per build exactly as for a single run; a cap overrun parks that build's slug at
+  `owner-action` and the loop continues to the next ready spec.
+- **Subagent fan-out is off by default.** Splitting a build across helper subagents
+  to go faster is an opt-in knob, off by default. When it is on, the per-run token
+  cost is written to that run's `GRAPH-RUN.md` ledger, so the owner can weigh cost
+  deliberately.
+- **Bounded and fail-closed.** The loop stops rather than spinning when there is no
+  ready spec, and a liveness or lock failure ends the affected build rather than the
+  whole repository. It uses no denied backgrounding primitive (`nohup`, untracked
+  background `&`, `pkill`, `killall` stay denied); all sentinel and counter state
+  lives under the already-ignored `.worktrees/` root. No fifth terminal state is
+  added — the loop reuses `BLOCKED`/`PARKED` per build.
+
 ## Resolving the gate
 
 On resuming an `owner-action` park, resolve the gate before re-entering the node

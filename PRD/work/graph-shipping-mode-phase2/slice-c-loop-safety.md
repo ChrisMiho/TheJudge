@@ -1,6 +1,6 @@
 # Slice C — Loop safety
 
-## Status: planned
+## Status: done
 
 ## Goal
 
