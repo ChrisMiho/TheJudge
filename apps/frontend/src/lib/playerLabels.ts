@@ -10,11 +10,9 @@ export function formatPlayerDisplayLabel(label: PlayerLabel, displayName?: strin
 }
 
 export function buildPlayerDisplayNameMap(players: GamePlayerContext[]): Record<PlayerLabel, string | undefined> {
-  return players.reduce<Record<PlayerLabel, string | undefined>>(
-    (accumulator, player) => ({
-      ...accumulator,
-      [player.label]: player.displayName
-    }),
-    {} as Record<PlayerLabel, string | undefined>
-  );
+  const map = {} as Record<PlayerLabel, string | undefined>;
+  for (const player of players) {
+    map[player.label] = player.displayName;
+  }
+  return map;
 }
