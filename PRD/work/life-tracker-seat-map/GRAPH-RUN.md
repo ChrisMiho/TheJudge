@@ -5,8 +5,9 @@
 - Canary: `denied — hook live (universal: rm -rf denied) + graph tier armed (nohup denied while lock held)`
 - Autonomous base: `origin/thejudge-auto/life-tracker-seat-map`
 - Staging: `.worktrees/.graph-intake/graph-20260902-093611/` (copied verbatim into `PRD/work/life-tracker-seat-map/intake/`, then deleted at node 2 per kickoff's copy→commit→delete)
-- Current node: `build` (implement-all) — slices A–D planned, `STATUS.active`; shared branch `thejudge-auto/life-tracker-seat-map-work`, PR base `main`
-- Next action: `/graph-implement PRD/work/life-tracker-seat-map/` — build → review → land → close
+- Current node: `build` — **PARKED at `owner-action`** (attempt 2). Enforcement-tooling defect blocks flipping slice-A criteria; needs an owner fix to `scripts/lib/boundary-rules.mjs` (`REMEDIABLE_RULES`). Slice-A code done + green. See `## Open gate`.
+- Next action: fix the boundary-hook `REMEDIABLE_RULES` defect (own PR), then `/graph-implement PRD/work/life-tracker-seat-map/` to resume at `build`
+- Terminal state (build half): `PARKED`
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/180 (MERGED — the build signal)
 - Terminal state (spec-forming half): `PARKED`; build half in progress since 2026-09-02
 - Build-half resume canary: `graph tier armed — nohup denied while lock held`; universal `rm -rf` denied. Lock re-taken (run `graph-20260902-093611`).
@@ -31,6 +32,7 @@ Instruction-ledger match is unambiguous.
 | 5 | plan | sonnet | ok | `2 → 53` | `thejudge-map-out`: `GAMEPLAN.md` + 4 slice docs (A geometry helper `lib/lifeTracker/seatMap.ts` + `layout` prop threading; B `PlayerLifeCard` on-card seat map; C `CounterPanel` seat map; D live 7/8-player containment verification) + 4 `slice-*.criteria.json` (A–C command/path evidence, D six `manual` live-browser checks); `STATUS.active` set; board moved to `## active`; all writes inside `PRD/work/life-tracker-seat-map/` | 2026-09-02 |
 | 6 | build | sonnet | failed | `2 → 107` | Attempt 1 parked on a **criteria-tooling bug**, not code. Slice A implemented + verified green (typecheck, vitest 32/32, quality:check on staged tree); A1/A2/A4/A5/A6 earned (see `.graph-evidence.jsonl`). A3 un-earnable: `slice-a.criteria.json` A3 evidence regex `grep -n "^import" …` has an unescaped `^` mid-pattern → `new RegExp(pattern).test(command)` is always `false` (verified in `matchesEvidence`, `scripts/lib/boundary-rules.mjs`). Nothing committed/pushed; worktree `.worktrees/implement-life-tracker-seat-map` left staged | 2026-09-02 |
 | — | build (guardrail fix) | — | ok | — | Driver fixed the map-out escaping typo per contract *fix the guardrail, never route around it*: A3 evidence `^import` → `\^import` in the launch-checkout `slice-a.criteria.json` (the copy the hook reads — `projectRoot`=`CLAUDE_PROJECT_DIR`). Verified: JSON valid; escaped pattern now matches the real grep command. Scanned B/C/D command patterns — A3 was the only broken one. Re-dispatching build as attempt 2 | 2026-09-02 |
+| 6 | build | sonnet | parked | `2 → ?` | Attempt 2 parked on a **second, distinct enforcement-tooling defect** (not code). A3 now earned (log `16:56:36`); all six slice-A criteria A1–A6 have hook-observed evidence for this run. But flipping them to `true` is blocked by `denied-command-retry`: a stale denial from attempt 1 (`.graph-denials.jsonl`, `criterion-flip-without-evidence` at `16:46:53`, when A3 lacked evidence) permanently blocks any `Edit` to `slice-a.criteria.json` for the rest of the run. `denialKey` keys on tool+path only, and `criterion-flip-without-evidence` is **not** in `REMEDIABLE_RULES` (only `run-lock-removal` is), so the now-evidenced retry can never be re-evaluated. Build correctly refused to route around it via `Write`/`Bash`. Slice A code complete + green (typecheck, vitest 32/32, quality:check); nothing committed/pushed; no PR; worktree preserved. Slices B/C/D not started; REQ-173 not yet applied; `STATUS` stays `active` → `owner-action` | 2026-09-02 |
 
 ## Gate verdicts
 
@@ -40,12 +42,68 @@ Instruction-ledger match is unambiguous.
 
 ## Open gate
 
-- **Resolved 2026-09-02.** Owner answered `PRD/work/life-tracker-seat-map/GATE-QUESTIONS.md`
+- **PARKED at `build` (2026-09-02): an enforcement-tooling defect blocks the run;
+  fix needs the owner because it touches the graph guardrail engine, not this
+  feature.** The seat-map code is not the problem — slice A is implemented and
+  verified green. The blocker is a graph-boundary-hook bug.
+
+  **What's blocked, plainly:** the build cannot mark slice A's acceptance criteria
+  as met, even though the hook already observed the evidence for all six.
+
+  **Diagnosis (code-grounded):**
+  - The A3 regex typo is fixed; A3 is now earned (`.worktrees/.graph-evidence.jsonl`,
+    `16:56:36`). All six slice-A criteria A1–A6 have genuine hook-observed evidence
+    for run `graph-20260902-093611`.
+  - Attempt 1 tried to flip the criteria to `true` *before* A3 had evidence, so the
+    hook correctly denied it with `criterion-flip-without-evidence` and logged that
+    denial (`.worktrees/.graph-denials.jsonl`, `16:46:53`).
+  - The `denied-command-retry` guard (`scripts/lib/boundary-rules.mjs`) now blocks
+    **any** later `Edit` to `slice-a.criteria.json` for the rest of the run, because
+    `denialKey()` keys a file-tool denial on tool+path only — it cannot tell the
+    stale unevidenced attempt apart from the now-legitimate, fully-evidenced retry.
+  - The retry guard steps aside only for rules in `REMEDIABLE_RULES`, which today
+    holds just `"run-lock-removal"`. `criterion-flip-without-evidence` is a
+    "earn the evidence first, then this is permitted" rule — exactly the shape that
+    constant is for (see its docstring) — but it was never added.
+
+  **Recommended fix (a small, separate graph-system change — do NOT put it in this
+  feature's PR):** add `"criterion-flip-without-evidence"` to `REMEDIABLE_RULES`
+  in `scripts/lib/boundary-rules.mjs`, and update the membership test in
+  `scripts/lib/boundary-rules.test.mjs` (currently asserts `["run-lock-removal"]`)
+  to include it. This preserves the guarantee: the `criterion-flip-without-evidence`
+  rule still re-evaluates against the evidence log on retry, so a criterion can be
+  flipped only when the hook actually observed its evidence — it just stops a stale
+  denial from permanently trapping a legitimate, evidenced retry. Direct in-file
+  precedent: `run-lock-removal` was added to this same set in August for the
+  identical bug shape. Then run `npm run test:scripts` and commit that fix on its
+  own branch/PR.
+
+  **Alternative the owner may prefer:** make `denialKey` / the retry guard
+  state-aware for criterion flips, or clear stale criterion-flip denials at each
+  build attempt boundary — a more robust fix than widening `REMEDIABLE_RULES`.
+
+  **State left behind (nothing lost):**
+  - Worktree `.worktrees/implement-life-tracker-seat-map` (branch
+    `implement-life-tracker-seat-map`, on `origin/thejudge-auto/life-tracker-seat-map-work`)
+    preserved; slice-A code + tests staged, verified green. Nothing committed/pushed;
+    no code PR exists yet.
+  - Slice A `blocked` with a full `### Handoff` in `slice-a-seat-map-geometry.md`.
+    Slices B/C/D not started. REQ-173 not yet applied to `PRD/sections/`.
+  - Launch-checkout `slice-a.criteria.json` A3 fix is committed on
+    `thejudge-auto/life-tracker-seat-map-work` (local); `main` untouched.
+
+  **Resume command (after the hook fix lands):**
+  `/graph-implement PRD/work/life-tracker-seat-map/` — re-enters at `build`
+  (`STATUS.active`/`STATUS.owner-action` with `GAMEPLAN.md` present); the resumed
+  build flips A1–A6, completes slice A, then B/C/D, applies REQ-173, and opens the
+  code PR into `main`.
+
+- **Define gate — resolved 2026-09-02.** Owner answered `GATE-QUESTIONS.md`
   with `REQ-173: accept` (one verdict, three proposed diffs standing as authored)
   and merged the docs-only base→main PR. `graph-gate-review` applied the verdict
   (no change needed for `accept`), restored `STATUS.refined`, and updated the
-  `PRD/work/STATUS.md` board row. Run resumes at `gate-qc`; the accepted diffs are
-  applied to `PRD/sections/` by implementation at build.
+  `PRD/work/STATUS.md` board row. The accepted diffs are applied to `PRD/sections/`
+  by implementation at build.
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/180 (base→main, docs-only; MERGED)
 - Stash handoff: node 1 stashed the launch checkout's uncommitted work (22 files).
   The stash is the owner's and is never dropped, popped, or reordered by the run.

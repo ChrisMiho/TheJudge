@@ -8,8 +8,6 @@ Do not rename package folders to encode status.
 
 ## active
 
-| [life-tracker-seat-map](life-tracker-seat-map/) | mapped into slices A-D (geometry, on-card map, panel map, live containment); `GAMEPLAN.md` + slice docs written by graph node 5 (`plan`). |
-
 ## refined
 
 ## refining
@@ -17,6 +15,8 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
+
+| [life-tracker-seat-map](life-tracker-seat-map/) | PARKED at `build`: slice-A code done + green, but a graph-boundary-hook defect (`REMEDIABLE_RULES` missing `criterion-flip-without-evidence`) blocks flipping earned criteria. Owner fixes the hook (own PR), then resume. See `GRAPH-RUN.md` `## Open gate`. |
 
 ## deferred
 
