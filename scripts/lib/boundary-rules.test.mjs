@@ -12,9 +12,11 @@ import {
   RUN_LOCK_PATH,
   RUN_RECORD_PATHS,
   WRAPPER_COMMANDS,
+  callContext,
   callCountKey,
   capForNode,
   classifyToolCall,
+  denialKey,
   extractRedirections,
   gitSubcommand,
   isRunActive,
@@ -586,11 +588,74 @@ test("REMEDIABLE_RULES stays narrow, and every member is a real rule", () => {
   // described. A rule belongs here only when its denial names something the
   // contract already requires the run to go and do — adding one is a decision,
   // and this assertion is where that decision has to be made on purpose.
-  assert.deepEqual([...REMEDIABLE_RULES], ["run-lock-removal"])
+  //
+  // `criterion-flip-without-evidence` was added 2026-09-02: earning a
+  // criterion's evidence and then flipping it is the contract's documented
+  // path, so a stale unevidenced denial must not permanently trap the later
+  // evidenced flip. See the constant's docstring.
+  assert.deepEqual([...REMEDIABLE_RULES], ["run-lock-removal", "criterion-flip-without-evidence"])
 
   const known = new Set(RULES.map((rule) => rule.id))
   for (const id of REMEDIABLE_RULES) {
     assert.ok(known.has(id), `REMEDIABLE_RULES names \`${id}\`, which is not a rule`)
   }
   assert.ok(!REMEDIABLE_RULES.has("denied-command-retry"), "the guard cannot exempt itself")
+})
+
+test("an evidenced criterion flip is re-evaluated on retry, not blocked as a stale retry", () => {
+  // Observed 2026-09-02 on `life-tracker-seat-map`: a flip denied before its
+  // evidence arrived (a criteria-file regex typo) left a denial that
+  // `denied-command-retry` then used to block the now-legitimate flip forever,
+  // because `denialKey()` keys a file tool on tool+path alone. Making
+  // `criterion-flip-without-evidence` remediable lets the underlying rule decide
+  // against the evidence log as it now stands, without weakening it.
+  const flip = {
+    toolName: "Edit",
+    toolInput: {
+      file_path: "PRD/work/life-tracker-seat-map/slice-a.criteria.json",
+      old_string: '"value": false',
+      new_string: '"value": true'
+    }
+  }
+  // The prior denial the retry guard would otherwise match, keyed exactly as the
+  // hook keys it.
+  const priorDenials = new Map([[denialKey(callContext(flip)), "criterion-flip-without-evidence"]])
+  const runState = { runId: "graph-20260902-093611", node: "build", attempt: 2 }
+  const flippedCriteria = [{ id: "A1", missing: "apps/frontend/src/lib/lifeTracker/seatMap.ts" }]
+
+  // Evidence has since been observed: the retry is re-evaluated and allowed.
+  const evidenced = classifyToolCall({
+    ...flip,
+    runActive: true,
+    runState,
+    flippedCriteria,
+    observedEvidence: new Set(["A1"]),
+    priorDenials
+  })
+  assert.equal(evidenced.decision, "allow", "an evidenced flip must be allowed on retry")
+
+  // Evidence still missing: the underlying rule denies again *by name*, telling
+  // the caller what is still missing — not "you already tried this".
+  const stillMissing = classifyToolCall({
+    ...flip,
+    runActive: true,
+    runState,
+    flippedCriteria,
+    observedEvidence: new Set(),
+    priorDenials
+  })
+  assert.equal(stillMissing.decision, "deny")
+  assert.equal(stillMissing.rule, "criterion-flip-without-evidence")
+
+  // A non-remediable rule's prior denial still blocks its retry as a retry — the
+  // guard is not globally weakened.
+  const forcePush = { toolName: "Bash", toolInput: { command: "git push --force origin main" } }
+  const guarded = classifyToolCall({
+    ...forcePush,
+    runActive: true,
+    runState,
+    priorDenials: new Map([[denialKey(callContext(forcePush)), "force-push"]])
+  })
+  assert.equal(guarded.decision, "deny")
+  assert.equal(guarded.rule, "denied-command-retry")
 })
