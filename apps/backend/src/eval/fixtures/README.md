@@ -22,20 +22,21 @@ This folder stores fixture-driven golden cases for context and prompt evaluation
       "players": [
         { "label": "Player 1", "lifeTotal": 20 },
         { "label": "Player 2", "lifeTotal": 20 }
-      ]
-    },
-    "battlefieldContext": [],
-    "stack": [
-      {
-        "cardId": "opt",
-        "name": "Opt",
-        "oracleText": "Scry 1, then draw a card.",
-        "imageUrl": "",
-        "manaSpent": 1,
-        "caster": "Player 1",
-        "targets": []
+      ],
+      "turnPhase": "stack_resolving",
+      "selectedZones": ["stack"],
+      "zones": {
+        "stack": [
+          {
+            "cardId": "opt",
+            "name": "Opt",
+            "oracleText": "Scry 1, then draw a card.",
+            "caster": "Player 1",
+            "targets": []
+          }
+        ]
       }
-    ]
+    }
   }
 }
 ```
