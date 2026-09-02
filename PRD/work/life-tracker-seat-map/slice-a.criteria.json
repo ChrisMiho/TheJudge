@@ -18,7 +18,7 @@
       "id": "A3",
       "statement": "seatMap.ts is a pure function with no React or lifeTracker-state import",
       "value": false,
-      "evidence": { "command": "grep -n \"^import\" apps/frontend/src/lib/lifeTracker/seatMap.ts" }
+      "evidence": { "command": "grep -n \"\\^import\" apps/frontend/src/lib/lifeTracker/seatMap.ts" }
     },
     {
       "id": "A4",
