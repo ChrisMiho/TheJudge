@@ -51,20 +51,6 @@ export const NAMED_COUNTER_IDS: readonly NamedCounterId[] = NAMED_COUNTER_PALETT
   (definition) => definition.id
 );
 
-const NAMED_COUNTER_ID_SET: ReadonlySet<string> = new Set(NAMED_COUNTER_IDS);
-
-export function isNamedCounterId(value: string): value is NamedCounterId {
-  return NAMED_COUNTER_ID_SET.has(value);
-}
-
-export function getNamedCounterDefinition(id: NamedCounterId): NamedCounterDefinition {
-  const definition = NAMED_COUNTER_PALETTE.find((candidate) => candidate.id === id);
-  if (!definition) {
-    throw new Error(`Unknown named counter id: ${id}`);
-  }
-  return definition;
-}
-
 /** A fresh, fully-zeroed named-counter map keyed by every palette id. */
 export function createEmptyNamedCounters(): Record<NamedCounterId, number> {
   return NAMED_COUNTER_PALETTE.reduce<Record<NamedCounterId, number>>((accumulator, definition) => {
