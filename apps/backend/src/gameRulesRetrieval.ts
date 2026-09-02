@@ -292,19 +292,19 @@ type ScoredEntry = { entry: GameRulesRuleIndexEntry; score: number; topTokenIdf:
 function scoreEntry(
   entry: GameRulesRuleIndexEntry,
   tokens: QueryToken[],
-  queryRuleIds: string[],
+  queryRuleIds: ReadonlySet<string>,
   N: number,
   df: Map<string, number> | null
 ): { score: number; topTokenIdf: number } {
   let score = 0;
   let topTokenIdf = 0;
 
-  if (queryRuleIds.includes(entry.ruleId)) {
+  if (queryRuleIds.has(entry.ruleId)) {
     score += SCORE_EXACT_RULE_ID;
   }
 
   for (const parentId of entry.parentRuleIds) {
-    if (queryRuleIds.includes(parentId)) {
+    if (queryRuleIds.has(parentId)) {
       score += SCORE_PARENT_RULE_ID;
       break;
     }
@@ -335,6 +335,7 @@ function scoreIndex(
 ): { scored: ScoredEntry[]; excludedCuratedRuleCount: number } {
   const N = resources.tokenStats?.N ?? index.length;
   const df = resources.tokenStats?.df ?? null;
+  const queryRuleIdSet = new Set(queryRuleIds);
 
   const scored: ScoredEntry[] = [];
   let excludedCuratedRuleCount = 0;
@@ -344,7 +345,7 @@ function scoreIndex(
       excludedCuratedRuleCount++;
       continue;
     }
-    const { score, topTokenIdf } = scoreEntry(entry, tokens, queryRuleIds, N, df);
+    const { score, topTokenIdf } = scoreEntry(entry, tokens, queryRuleIdSet, N, df);
     if (score > 0) {
       scored.push({ entry, score, topTokenIdf });
     }
