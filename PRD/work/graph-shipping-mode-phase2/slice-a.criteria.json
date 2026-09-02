@@ -5,43 +5,43 @@
     {
       "id": "A1",
       "statement": "graph-kickoff and graph-implement skills exist; graph-run is deleted",
-      "value": false,
+      "value": true,
       "evidence": { "paths": [".claude/skills/graph-kickoff/SKILL.md", ".claude/skills/graph-implement/SKILL.md"] }
     },
     {
       "id": "A2",
-      "statement": "No graph-run name remains in skills or the contract",
-      "value": false,
+      "statement": "No graph-run name remains in skills or the contract, except the .graph-run.lock/-release.json filenames (unchanged by design) and one historical retirement note",
+      "value": true,
       "evidence": { "command": "grep -rn graph-run .claude/skills PRD/instructions/graph-workflow-contract.md" }
     },
     {
       "id": "A3",
-      "statement": "The orchestrator predicate token is renamed consistently across both graph skills and the six thejudge-* skills",
-      "value": false,
+      "statement": "The orchestrator predicate is renamed to 'graph is controlling' across both graph skills and the six thejudge-* skills; no 'graph-run is controlling' remains",
+      "value": true,
       "evidence": { "command": "grep -rln (graph-run is controlling|graph is controlling) .claude/skills scripts" }
     },
     {
       "id": "A4",
-      "statement": "The Terminal states table has one canonical home and its test reads it there",
-      "value": false,
+      "statement": "The Terminal states table lives in the contract alone; graph-preflight.test.mjs reads it there and passes",
+      "value": true,
       "evidence": { "paths": ["scripts/graph-preflight.test.mjs"] }
     },
     {
       "id": "A5",
-      "statement": "REQ-160 names graph-kickoff/graph-implement and drops the three-skills claim",
-      "value": false,
+      "statement": "REQ-160 names graph-kickoff/graph-implement and says four graph-* skills",
+      "value": true,
       "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
     },
     {
       "id": "A6",
-      "statement": "The agents mirror matches the canonical skill tree",
-      "value": false,
+      "statement": "The agents mirror matches the canonical skill tree and the boundary hook is byte-unchanged",
+      "value": true,
       "evidence": { "command": "diff -rq .claude/skills .agents/skills" }
     },
     {
       "id": "A7",
       "statement": "The script test suite passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run test:scripts" }
     }
   ]

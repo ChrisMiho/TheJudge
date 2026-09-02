@@ -143,8 +143,8 @@ are stable.
 
 Report the verdict counts and the restored status, then end with:
 
-`/graph-run PRD/work/<slug>/` (`$graph-run PRD/work/<slug>/` in Codex) — the run
-resumes at `gate-qc`.
+`/graph-implement PRD/work/<slug>/` (`$graph-implement PRD/work/<slug>/` in Codex)
+— the run resumes at `gate-qc`.
 
 On a refusal, report the gate you found and the skill or human action that owns
 it instead, and give no resume command.

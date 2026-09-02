@@ -27,7 +27,7 @@ Direct invocation keeps the gates, receipt, and delete behavior below, including
 the user force-override.
 
 When the controlling agent explicitly states that an orchestrator is
-controlling — `thejudge-prepare is controlling` or `graph-run is controlling` —
+controlling — `thejudge-prepare is controlling` or `graph is controlling` —
 read `PRD/instructions/graph-workflow-contract.md`, and apply every gate below
 as a **park rather than a question**: a package that is not `ship-ready`, a
 merge-proof check that cannot be satisfied, or a dirty worktree ends the node

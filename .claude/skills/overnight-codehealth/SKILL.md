@@ -1,6 +1,6 @@
 ---
 name: overnight-codehealth
-description: Use when running an unattended, self-paced overnight loop that reviews the repo for behavior-preserving code-health fixes (duplicate, dead, or unsafe/bad code) and opens one locally-tested PR per target by driving graph-run. Invoked once per tick, typically via `/loop overnight-codehealth`. Nothing is merged; targets that would change game behavior park for the owner.
+description: Use when running an unattended, self-paced overnight loop that reviews the repo for behavior-preserving code-health fixes (duplicate, dead, or unsafe/bad code) and opens one locally-tested PR per target by driving graph-kickoff then graph-implement. Invoked once per tick, typically via `/loop overnight-codehealth`. Nothing is merged; targets that would change game behavior park for the owner.
 ---
 
 # Overnight Code-Health Loop
@@ -9,27 +9,28 @@ description: Use when running an unattended, self-paced overnight loop that revi
 
 One tick fixes one thing. Each tick finds a single **behavior-preserving**
 code-health target (duplicate, dead, or unsafe/bad code — never a change to game
-behavior), then drives the repo's `graph-run` skill to build, locally test, and
-open a PR for it. The loop never merges. It runs self-paced overnight until it
-has shipped a capped number of PRs or hits a stop condition.
+behavior), then drives the repo's `graph-kickoff` and `graph-implement` skills to
+build, locally test, and open a PR for it. The loop never merges. It runs
+self-paced overnight until it has shipped a capped number of PRs or hits a stop
+condition.
 
 **Core principle:** you are a scheduler and a target-picker. Everything
-downstream — branch, build, verify, PR, guardrails — is `graph-run`'s job.
-Never reimplement a phase; never edit a `graph-run` or `thejudge-*` skill.
+downstream — branch, build, verify, PR, guardrails — is the graph driver's job.
+Never reimplement a phase; never edit a graph-* or `thejudge-*` skill.
 
-**The mechanic that everything hinges on:** `graph-run`'s *run one* ALWAYS parks
-and ships only a docs-only design PR. Code ships only when *run two* resumes it.
-A tick that stops after run one ships nothing. Every clean tick MUST bridge to
-run two.
+**The mechanic that everything hinges on:** `graph-kickoff` (run one) ALWAYS parks
+and ships only a docs-only design PR. Code ships only when *run two*
+(`graph-implement`) resumes it. A tick that stops after run one ships nothing.
+Every clean tick MUST bridge to run two.
 
 ## Before the first tick (once per night)
 
 1. **Guardrails armed?** This session must be launched with
    `claude --settings .claude/graph-profile.json`. Confirm the profile is
-   loaded (graph-run's preflight prints the `THEJUDGE_GRAPH_PROFILE` sentinel).
+   loaded (graph-preflight prints the `THEJUDGE_GRAPH_PROFILE` sentinel).
    If it is not loaded, **stop the whole loop and report** — without it
-   graph-run's caps, kill switch, and protected-path denials are off. Do not run
-   unguarded.
+   the graph driver's caps, kill switch, and protected-path denials are off. Do
+   not run unguarded.
 2. **Live checks available?** "Locally tested" here means full suite + exercising
    affected paths against the live backend / MCP. Confirm the backend and any MCP
    the changes touch are up with creds. If they are down, a tick that needs them
@@ -60,24 +61,24 @@ Run these in order. One target per tick.
 4. **Write the intake brief.** Name the target, the evidence, the exact files,
    and assert **"no product-truth / `PRD/sections/` change."** Frame it as a
    pure refactor.
-5. **Run one.** Invoke `graph-run` with the brief and
+5. **Run one.** Invoke `graph-kickoff` with the brief and
    `--branch thejudge-auto/codehealth-<night-id>-<n>-<short>` (a unique slug so
    branches never collide). Let it run to its park.
 6. **Bridge or leave** — read `PRD/work/<slug>/GATE-QUESTIONS.md`:
-   - **File present** (non-empty `PRD/sections/` diff → graph-run judged this
+   - **File present** (non-empty `PRD/sections/` diff → graph-kickoff judged this
      changes game behavior): **LEAVE IT parked.** Do NOT answer a single slot.
      Record `parked-for-owner`. This does not count toward the cap. Go to the
      next tick.
    - **File absent** (empty diff → truly behavior-preserving): **bridge to run
-     two** — invoke `graph-run PRD/work/<slug>/`. It runs plan → build → local
-     test + live checks → review, then leaves the implementation PR open awaiting
-     your merge.
+     two** — invoke `graph-implement PRD/work/<slug>/`. It runs plan → build →
+     local test + live checks → review, then leaves the implementation PR open
+     awaiting your merge.
 7. **Classify and record** (see below), append the ledger row, then **pace the
    next tick**.
 
 ## Classifying a tick outcome
 
-| Outcome | What graph-run's report shows | Counts toward cap? | Loop action |
+| Outcome | What the graph driver's report shows | Counts toward cap? | Loop action |
 |---|---|---|---|
 | **shipped** | run two built + review-approved; implementation PR open, awaiting only the owner's merge | **yes** | record PR URL, continue |
 | **parked-for-owner** | run one wrote `GATE-QUESTIONS.md`; left at `owner-action` | no | leave untouched, continue |
@@ -106,15 +107,16 @@ the night summary to the ledger.
 
 ## Hard rules (never negotiate these)
 
-- **Never answer `GATE-QUESTIONS.md`, and never feed graph-run a standing "just
-  pick X" rule.** A gate park is the owner's product decision. Auto-answering it
-  overnight is the exact failure this loop is built to avoid.
+- **Never answer `GATE-QUESTIONS.md`, and never feed the graph driver a standing
+  "just pick X" rule.** A gate park is the owner's product decision. Auto-answering
+  it overnight is the exact failure this loop is built to avoid.
 - **Never merge, close, force-push, or rebase any PR.** The trunk is reached only
   by a PR the owner merges. The loop opens PRs and stops.
-- **One graph run at a time.** graph-run holds `.worktrees/.graph-run.lock`; a
-  park releases it. Never start a tick while a lock is held. Never run two loops
-  driving graph concurrently.
-- **Never raise a cap, retry a denied command, or edit a `graph-run`/`thejudge-*`
+- **One graph run at a time.** The graph driver holds `.worktrees/.graph-run.lock`;
+  a park releases it. Never start a tick while a lock is held. Never run two loops
+  driving graph concurrently. (Per-worktree-session isolation, once it lands,
+  relaxes this to one run per worktree root — until then, one at a time.)
+- **Never raise a cap, retry a denied command, or edit a graph-*/`thejudge-*`
   skill** to get past a stop. A stop is a signal, not an obstacle.
 
 ## Common mistakes

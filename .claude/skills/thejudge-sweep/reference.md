@@ -43,7 +43,7 @@ before building the script `args`. Recommended default profile:
 These map to `agent()`'s `model` (`haiku` / `sonnet` / `opus` / `fable`) and
 `effort` (`low` / `medium` / `high`). Adjust the tiers to what the corpus needs;
 mechanical section reads justify the cheaper worker tier, per
-`graph-run`'s cheapest-capable-model-per-node rationale.
+the graph driver's cheapest-capable-model-per-node rationale.
 
 ## `SWEEP.md` — the on-disk ledger
 
@@ -114,7 +114,7 @@ that is **not** a clean pass sorts to the top so the end-review is skimmable.
 
 Built by the script per batch. Every prompt carries an absolute
 `Working directory:` line and absolute paths — a relative path resolves against
-wherever the child starts, not this checkout (the `graph-run` lesson).
+wherever the child starts, not this checkout (the graph-driver lesson).
 
 ```
 Working directory: <absolute repo root>

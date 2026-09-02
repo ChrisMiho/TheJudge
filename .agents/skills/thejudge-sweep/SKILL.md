@@ -5,7 +5,7 @@ description: >-
   scoring every item against a question and reporting a verdict per item —
   rather than to ship a feature, and the owner wants a single review at the end
   instead of a gate per section. The off-graph, investigate-and-report
-  counterpart to graph-run.
+  counterpart to the graph lifecycle.
 ---
 
 # TheJudge Sweep
@@ -19,7 +19,8 @@ sections, each subagent scores its section's items and writes a finding doc, a
 synthesis pass rolls every verdict into one skimmable list, and the whole thing
 lands as **one PR** — a single review gate at the very end.
 
-It is the off-graph counterpart to `graph-run`. Same idea — encoded judgment
+It is the off-graph counterpart to the graph lifecycle (`graph-kickoff` →
+`graph-implement`). Same idea — encoded judgment
 plus dispatched agents — but a sweep has **no implementation leg**. The
 investigation *is* the job. So there is no per-section gate and no lifecycle
 `STATUS.*` machinery; there is one touch point, the PR.
@@ -35,7 +36,7 @@ Use it when all of these hold:
 - The task is to **investigate and report**, not to change the product.
 - The owner wants **one review at the end**, not a decision per section.
 
-Do not use it to ship a feature (that is the `graph-run` lifecycle), and do not
+Do not use it to ship a feature (that is the graph lifecycle), and do not
 run the full graph per section — that is the opposite of one-review-at-the-end.
 
 ## Inputs
@@ -109,7 +110,7 @@ Create `PRD/work/sweep-<slug>/` and write `SWEEP.md` — a thin ledger of what
 ran: corpus, audit question, verdict set, scored-against reference, the resolved
 cost plan, the section→batch assignment, and the timestamp. Add the Workflow
 `runId` once you have it. This is the small durable record, mirroring
-`graph-run`'s ledger without its lifecycle. Use the `SWEEP.md` shape in
+the graph driver's ledger without its lifecycle. Use the `SWEEP.md` shape in
 reference.md.
 
 ### 5. Fan out — one background Workflow
@@ -126,7 +127,7 @@ background workflow (script skeleton in reference.md):
   wants first), and writes `PRD/work/sweep-<slug>/ROLLUP.md`.
 
 Every dispatched subagent prompt carries an absolute `Working directory:` line
-and absolute paths for what it reads and writes — borrowed from `graph-run`: a
+and absolute paths for what it reads and writes — borrowed from the graph driver: a
 relative path resolves against wherever the child starts, which is not
 guaranteed to be this checkout.
 

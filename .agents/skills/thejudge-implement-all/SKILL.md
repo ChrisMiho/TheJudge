@@ -23,7 +23,7 @@ Direct invocation keeps the unattended single-agent behavior below, including
 its own preflight, worktree creation, and PR lifecycle.
 
 When the controlling agent explicitly states that an orchestrator is
-controlling — `thejudge-prepare is controlling` or `graph-run is controlling` —
+controlling — `thejudge-prepare is controlling` or `graph is controlling` —
 read `PRD/instructions/graph-workflow-contract.md`, take the recorded autonomous
 base from the package README's `## Autonomous metadata` section rather than
 asking for one, and treat every stop as a park reported to the named

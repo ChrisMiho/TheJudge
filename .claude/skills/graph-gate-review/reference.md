@@ -15,13 +15,13 @@ PARKED — STATUS.owner-action, complete diff under ## Open gate
    v
 gate resolved, ## Gate verdicts written, STATUS.refined restored
    |
-   |  /graph-run PRD/work/<slug>/
+   |  /graph-implement PRD/work/<slug>/
    v
 gate-qc (node 4) — the run continues
 ```
 
-No new resume path is invented. `graph-run`'s entry-point table already says a
-package at `STATUS.owner-action` parks again **unless** the recorded
+No new resume path is invented. `graph-implement`'s entry-point table already says
+a package at `STATUS.owner-action` parks again **unless** the recorded
 `## Open gate` is resolved. This skill resolves it and restores the marker; the
 existing table does the rest.
 

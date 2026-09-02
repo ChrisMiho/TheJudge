@@ -10,7 +10,7 @@
 // `define` is the point.
 //
 // STATED LIMIT — read this before trusting it. Both inputs are written by
-// `graph-run` itself: the dispatch prompts it recorded, and the ledger rows it
+// the graph driver itself: the dispatch prompts it recorded, and the ledger rows it
 // wrote. A driver that pre-authorizes and then paraphrases its own dispatch
 // prompt passes this clean. It is a schema check over a self-report, and it is
 // the one check in this package that does not read ground truth. Closing that

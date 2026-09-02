@@ -1,6 +1,14 @@
 # Slice A — Split `graph-run` into `graph-kickoff` + `graph-implement`
 
-## Status: planned
+## Status: done
+
+**Note:** `overnight-codehealth` (a downstream driver of the graph skills) was
+mechanically renamed here (run-one→`graph-kickoff`, run-two→`graph-implement`) so
+no skill references the retired `graph-run`. Its behavioral "one run at a time"
+revisit under per-worktree isolation stays in Slice E (depends on D). Two
+deliberate `graph-run` occurrences remain by design: the `.graph-run.lock` /
+`-release.json` filenames (the reframe keeps the lock name) and a one-line
+historical retirement note in the contract.
 
 ## Goal
 

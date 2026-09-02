@@ -57,7 +57,7 @@ export function layoutsAreIsolated(layouts) {
  * The dispatch prompt for one rep.
  *
  * The clone path is absolute and baked in, and the prompt carries the same
- * `Working directory:` line `graph-run` pins in production — including the
+ * `Working directory:` line the graph driver pins in production — including the
  * instruction to propagate it. A prompt that only tells the rep to "work in
  * your clone" is the wording that failed.
  */

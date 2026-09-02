@@ -22,7 +22,7 @@ Work slug.
 Direct invocation keeps approval-gated trivial fixes below.
 
 When the controlling agent explicitly states that an orchestrator is
-controlling — `thejudge-prepare is controlling` or `graph-run is controlling` —
+controlling — `thejudge-prepare is controlling` or `graph is controlling` —
 read `PRD/instructions/preparation-contract.md`, emit the same explicit PASS or
 FAIL verdict, and return every FAIL issue to refinement through the named
 orchestrator, which records the latest result in the package README's

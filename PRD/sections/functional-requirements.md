@@ -3644,29 +3644,31 @@
   - the failure this closes is the quiet one — a hook that is present, committed, and trusted still reads exactly like a working hook when it is not firing, and nothing in the run's output distinguishes the two
 
 ### REQ-160
-- Title: `graph-run` is the single intake door
+- Title: `graph-kickoff` is the single intake door; `graph-implement` is the build entry
 - Priority: high
-- Description: The owner starts any work — an idea, an observation, a bug, or a context document — by invoking `graph-run` with a description and nothing else. No branch name is required, no orchestrator is chosen, and nothing is classified before it is described.
+- Description: The owner starts any work — an idea, an observation, a bug, or a context document — by invoking `graph-kickoff` with a description and nothing else. No branch name is required, no orchestrator is chosen, and nothing is classified before it is described. The build half is entered by `graph-implement`, the background loop, not by a per-spec command. `graph-run` retired into these two; its run-one role is `graph-kickoff` and its run-two role is `graph-implement`.
 - Acceptance Criteria:
-  - `graph-run` accepts a bare request with no `--branch` argument and starts a fresh package from it
+  - `graph-kickoff` accepts a bare request with no `--branch` argument and starts a fresh package from it
   - `--branch <name>`, when supplied, is used verbatim and overrides derivation
-  - `AGENT-SKILLS.md`'s `## Workflow sequence` mermaid diagram names `graph-run` as the door: the two `prepare` edges — `prepare -. controls .-> kickoff` and `prepare -. READY after human merge .-> implementall` — are replaced by `graph-run` edges, so the diagram shows one entry point rather than two
+  - `AGENT-SKILLS.md`'s `## Workflow sequence` mermaid diagram names `graph-kickoff` as the door and `graph-implement` as the background build entry, so the diagram shows the two graph drivers rather than one `graph-run`
   - `AGENT-SKILLS.md`'s skill-catalog `When` cell for `thejudge-prepare` no longer reads as an intake route: it names the skill as callable but not an entry point
-  - `AGENT-SKILLS.md`'s `## Graph workflow skills` paragraph says three `graph-*` skills, matching its own three-row table
-  - `PRD/instructions/graph-workflow-contract.md` names `graph-run` as the entry point for new work. Its existing `thejudge-prepare` mentions are the `thejudge-prepare is controlling` predicate and README section ownership, not entry-point claims, and are left as they are
+  - `AGENT-SKILLS.md`'s `## Graph workflow skills` paragraph says four `graph-*` skills, matching a four-row table (`graph-preflight`, `graph-kickoff`, `graph-gate-review`, `graph-implement`)
+  - `PRD/instructions/graph-workflow-contract.md` names `graph-kickoff` as the entry point for new work and `graph-implement` as the background build loop; no `graph-run` name remains except in historical receipts and the `.graph-run.lock` filename
   - `.claude/skills/thejudge-prepare/SKILL.md` is unchanged in behavior, remains callable, and remains listed in the skill catalog as a non-entry-point skill
   - `PRD/instructions/preparation-contract.md` is unchanged, and the `thejudge-prepare is controlling` predicate still resolves in all six phase skills that read it
   - a new issue arriving against an `active`, already-mapped-out package still routes to `thejudge-amend`, and the door does not claim that case
 - Constraints:
-  - no skill is deleted; all 14 remain callable
+  - `graph-run` is renamed, not deleted as a capability; its two roles survive as `graph-kickoff` and `graph-implement`
   - the node table, models, per-node caps, loop limits, the `define` gate trigger, and every entry in the contract's `## Boundaries` are unchanged
   - the door adds no depth grading: every entry takes the full path
 - Dependencies:
   - DEC-163
   - DEC-166
   - DEC-167
+  - REQ-170
+  - REQ-171
 - Notes:
-  - the door is not new machinery — `graph-run` already accepted a request plus `--branch` and already delegated package creation to `thejudge-kickoff` at node 2. This requirement removes the remaining choices at intake rather than adding a pipeline
+  - the door is not new machinery — `graph-kickoff` already accepted a request plus `--branch` and already delegated package creation to `thejudge-kickoff` at node 2. This requirement removes the remaining choices at intake rather than adding a pipeline
   - uniform depth is affordable because the `define` gate parks only on a non-empty `PRD/sections/` diff, so a change touching no product truth never interrupts the owner
   - this package is implemented in an ordinary session, not a graph run. REQ-161, REQ-162, and REQ-163 all edit `thejudge-*` skills, and `graph-workflow-contract.md`'s `## Boundaries` forbids a graph run from modifying any `thejudge-*` skill in either synced tree, with `.claude/graph-profile.json` denying `Edit(./.claude/skills/thejudge-*/**)` and its `.agents/` twin. A graph run would end `PROMPTED` on most slices. The boundary is deliberately left as written — it exists so an autonomous run cannot rewrite the skills that govern it
 

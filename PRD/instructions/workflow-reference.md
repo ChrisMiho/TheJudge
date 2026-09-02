@@ -11,7 +11,7 @@ paths, and sync instructions.
 `thejudge-prepare` and `graph-run` are the autonomous alternate paths across
 kickoff, refinement, quality-check, and map-out. Orchestrated mode applies only
 when the controlling agent explicitly states that an orchestrator is
-controlling — `thejudge-prepare is controlling` or `graph-run is controlling`;
+controlling — `thejudge-prepare is controlling` or `graph is controlling`;
 without one of those predicates, those phase skills retain their direct
 interactive behavior. The full autonomous contracts live in
 `preparation-contract.md` and `graph-workflow-contract.md`.
