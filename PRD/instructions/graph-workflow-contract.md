@@ -9,12 +9,22 @@ This contract governs one autonomous graph run: a single work package advanced
 through the existing TheJudge lifecycle with no per-step user input. It
 coordinates the existing `thejudge-*` contracts without replacing them.
 
-`graph-run` is the entry point for new work — the single intake door.
+The run is split into two owner-triggered halves, each with its own driver skill
+(collectively **the graph driver**):
+
+- **`graph-kickoff`** drives the spec-forming half (`preflight → shape → define →
+  gate-qc`) and is the entry point for new work — the single intake door.
+- **`graph-implement`** drives the build half (`plan → build → review → land →
+  close`) as a background loop over approved specs.
+
+`graph-run` retired into these two; its name survives only in historical receipts.
 `thejudge-prepare` no longer serves as an entry point, though it keeps its own
-skill, contract, and predicate (DEC-167). The owner hands `graph-run` a
+skill, contract, and predicate (DEC-167). The owner hands `graph-kickoff` a
 request — an idea, an observation, a bug, or a pasted or referenced document —
-and it drives that request through the full lifecycle unattended, stopping
-only at the `define` gate or a terminal state.
+and it drives that request through the spec-forming half unattended, stopping at
+`gate-qc` PASS with a docs-only proposal PR. The owner answers the proposal's
+verdict slots and merges; `graph-implement` picks the approved spec up and builds
+it.
 
 The current-state feature specs and their `REQ`/`FLOW` entries in `PRD/sections/`
 are product truth; the decision log is retired to a demoted historical index.
@@ -28,8 +38,8 @@ continues to govern its own artifacts.
 One graph run carries a single work package from a raw request to a merged
 pull request, unattended except at the gates below.
 
-1. **Kickoff.** The owner hands `graph-run` a request — an idea, a bug, or a
-   pasted or referenced document. `graph-run` is the single intake door: it
+1. **Kickoff.** The owner hands `graph-kickoff` a request — an idea, a bug, or a
+   pasted or referenced document. `graph-kickoff` is the single intake door: it
    proposes a kebab-case slug, derives the branch as `thejudge-auto/<slug>`,
    and stages any supplied documents as evidence. `thejudge-prepare` no
    longer serves as an entry point for new work, though it keeps its own
@@ -107,13 +117,13 @@ table, the caps, or the boundary deny list.
 ## The two runs
 
 A graph run is split into two owner-triggered runs, so a night's work reviews on
-the owner's schedule instead of holding a live terminal open at the gate. **The
-only contract change this makes is the stop condition and the gate's answer
-mechanism.** The node table, the per-node models, the caps, and the boundary deny
-list are all unchanged: `define` still advances to `gate-qc`, it simply writes the
-questions file on the way rather than parking live.
+the owner's schedule instead of holding a live terminal open at the gate. **Run
+one is `graph-kickoff`; run two is `graph-implement`.** The node table, the
+per-node models, the caps, and the boundary deny list are all unchanged: `define`
+still advances to `gate-qc`, it simply writes the questions file on the way rather
+than parking live.
 
-**Run one** drives `preflight → shape → define → gate-qc` and stops at
+**Run one** (`graph-kickoff`) drives `preflight → shape → define → gate-qc` and stops at
 quality-check PASS. At `define`, when refinement proposes product-truth changes it
 records them in `PRD/work/<slug>/GATE-QUESTIONS.md` (never in `PRD/sections/`) and
 the run continues. At gate-qc PASS run one parks at `owner-action`, opens a
@@ -151,27 +161,30 @@ questions file; run one still stops at gate-qc PASS with the docs PR.
 **The owner** answers the file whenever they choose — the review the live gate
 once took in the terminal, now made on their own schedule.
 
-**Run two** is `/graph-run PRD/work/<slug>/`. On resuming an `owner-action` park
-whose questions file is fully answered, the driver dispatches `graph-gate-review`
-to apply the verdicts (restoring `STATUS.refined`), then re-enters at `gate-qc`
-via the entry-point table — so an owner edit is re-graded — and continues
-`plan → build → review → land → close`. A questions file with any blank slot
-re-parks at `owner-action`, so run two stays a single owner command. When run one
-wrote no questions file, run two resolves the empty gate and proceeds the same
-way.
+**Run two** (`graph-implement`) is `/graph-implement PRD/work/<slug>/`. On
+resuming an `owner-action` park whose questions file is fully answered, the driver
+dispatches `graph-gate-review` to apply the verdicts (restoring `STATUS.refined`),
+then re-enters at `gate-qc` via the entry-point table — so an owner edit is
+re-graded — and continues `plan → build → review → land → close`. A questions file
+with any blank slot re-parks at `owner-action`, so run two stays a single owner
+command. When run one wrote no questions file, run two resolves the empty gate and
+proceeds the same way. (Slice B makes `graph-implement` a background loop that
+watches `main` and resolves this resume for each approved spec in turn.)
 
 ## Delegation boundary
 
-Graph skills never reimplement a `thejudge-*` phase. `graph-run` dispatches the
-existing skill and records its outcome. A change to lifecycle behavior belongs
-in the `thejudge-*` skill, not in a graph skill copy.
+Graph skills never reimplement a `thejudge-*` phase. The graph driver
+(`graph-kickoff` / `graph-implement`) dispatches the existing skill and records
+its outcome. A change to lifecycle behavior belongs in the `thejudge-*` skill, not
+in a graph skill copy.
 
-Exactly three graph skills exist in the spine: `graph-preflight`, `graph-run`,
-and `graph-gate-review` — the owner-facing half of the `define` gate, which
-reads the owner's answered `GATE-QUESTIONS.md`, applies its accept/edit/reject
-verdicts to the proposed diff **inside `GATE-QUESTIONS.md`** (finalizing the
-proposal in the work folder; `build` applies it to `PRD/sections/` later), and
-resumes the run.
+Exactly four graph skills exist in the spine: `graph-preflight`, `graph-kickoff`
+(spec-forming driver, nodes 1–4), `graph-gate-review`, and `graph-implement`
+(build driver, nodes 5–9). `graph-gate-review` is the owner-facing half of the
+`define` gate, which reads the owner's answered `GATE-QUESTIONS.md`, applies its
+accept/edit/reject verdicts to the proposed diff **inside `GATE-QUESTIONS.md`**
+(finalizing the proposal in the work folder; `build` applies it to `PRD/sections/`
+later), and resumes the run.
 
 ## Intake is evidence, never authority
 
@@ -200,25 +213,27 @@ not a chain walk: receipts carry no parent pointer (DEC-167).
 ## Run predicate
 
 Graph mode is active only when the driver explicitly states
-`graph-run is controlling` when handing work to each node. Without that
-observable predicate every phase skill runs directly and preserves its normal
+`graph is controlling` when handing work to each node. Both graph drivers
+(`graph-kickoff` and `graph-implement`) emit this one shared predicate. Without
+that observable predicate every phase skill runs directly and preserves its normal
 user questions, approval pauses, and handoffs — the same mechanism as the
 `thejudge-prepare is controlling` predicate in `preparation-contract.md`.
 
 Six skills gate on the predicate — `thejudge-kickoff`, `thejudge-refinement`,
 `thejudge-quality-check`, `thejudge-map-out`, `thejudge-implement-all`, and
-`thejudge-cleanup` — and each accepts either orchestrator name in its `## Mode`
-section. Nodes 6 and 9 are on that list because a skill `graph-run` dispatches
-which checks nothing has undeclared autonomous behavior: whether it pauses for a
-human in a run with no human is not knowable from the skill file.
+`thejudge-cleanup` — and each accepts either orchestrator name (`thejudge-prepare
+is controlling` or `graph is controlling`) in its `## Mode` section. Nodes 6 and 9
+are on that list because they are a skill the graph driver dispatches which checks
+nothing has undeclared autonomous behavior: whether it pauses for a human in a run
+with no human is not knowable from the skill file.
 
 Node 7's reviewer is deliberately **not** on it, and does not need to be. It is
 not a `thejudge-*` skill and has no autonomous behavior to declare: it is a
-subagent `graph-run` dispatches with no write tools at all, so the question the
-predicate exists to answer — whether a skill pauses for a human who is not there
-— cannot arise. Its independence is structural rather than nominal. The driver
-states its own name and never claims `thejudge-prepare is controlling`: the
-predicate attests which orchestrator is running.
+subagent the graph driver dispatches with no write tools at all, so the question
+the predicate exists to answer — whether a skill pauses for a human who is not
+there — cannot arise. Its independence is structural rather than nominal. The
+driver states the graph predicate and never claims `thejudge-prepare is
+controlling`: the predicate attests which orchestrator is running.
 
 ## Node table
 
@@ -262,7 +277,8 @@ Node 2 (`shape`) can return `NO ACTIONABLE PACKAGE` — the same outcome
 cannot be turned into an actionable package. The run ends `BLOCKED`, not
 `PARKED`: no package folder exists yet for a gate to park against.
 
-This table is the authority. `graph-run/reference.md` mirrors it; when they
+This table is the authority. `graph-kickoff/reference.md` (nodes 1–4) and
+`graph-implement/reference.md` (nodes 5–9) mirror it; when they
 disagree, the contract wins.
 
 Model rationale: mechanical and deterministic nodes take the cheapest capable
@@ -276,7 +292,7 @@ FAIL parks the package at `owner-action` with the complete findings.
 or Important finding. A third occurrence parks the package at `owner-action`
 with the open findings.
 
-After every `gate-qc` node, `graph-run` records the result in the package
+After every `gate-qc` node, the graph driver records the result in the package
 `README.md` using the exact section shape from `preparation-contract.md`:
 
 ```markdown
@@ -290,12 +306,12 @@ After every `gate-qc` node, `graph-run` records the result in the package
 Replace this section with the latest result on every re-check. The `plan` node
 verifies `Quality-check: PASS` here before writing any planning artifact and
 cannot self-certify one. `thejudge-prepare` writes this section during
-preparation runs; during graph runs `graph-run` owns it, because graph runs do
+preparation runs; during graph runs the graph driver owns it, because graph runs do
 not delegate to `thejudge-prepare`.
 
 ## Autonomous metadata
 
-`graph-run` records the branch that node 1 (`preflight`) created and pushed in
+the graph driver records the branch that node 1 (`preflight`) created and pushed in
 the package `README.md`, using the exact section shape from
 `preparation-contract.md`:
 
@@ -310,24 +326,25 @@ where node 2 (`shape`) creates that README, immediately after node 2 — and
 always before dispatching `build`. `thejudge-implement-all` blocks before
 worktree creation when this section is missing, so node 6 cannot start without
 it. `thejudge-prepare` writes it during preparation runs; during graph runs
-`graph-run` owns it, because graph runs do not delegate to `thejudge-prepare`.
+the graph driver owns it, because graph runs do not delegate to `thejudge-prepare`.
 
 ## The owner's stop sentinel
 
-A run is stopped in flight by creating `.worktrees/.graph-stop`. `graph-run`
+A run is stopped in flight by creating `.worktrees/.graph-stop`. The graph driver
 checks for it immediately before every node dispatch, in the same pre-dispatch
 block that runs `graph-ledger-check.mjs`.
 
 A sentinel that appears mid-node lets that node finish. The halt is at the node
 boundary, so no ledger is left half written. On halting, the run writes a
-terminal state from `graph-run`'s `## Terminal states` table, records the halt
+terminal state from this contract's `## Terminal states` table, records the halt
 and the node it halted at under `## Open gate`, sets the package `STATUS.*`
 marker and the `PRD/work/STATUS.md` board row, deletes the lock, and reports the
 branch, the PR URL if one exists, and the ledger path. No fifth terminal state
 exists for this, and no separate steering channel does either.
 
 `graph-preflight` refuses to start while the sentinel exists, naming both it and
-the file to remove. Resume is `/graph-run PRD/work/<slug>/` once the owner has
+the file to remove. Resume is the graph driver for the halted half —
+`/graph-kickoff` or `/graph-implement PRD/work/<slug>/` — once the owner has
 removed it, re-entering at the node the ledger records.
 
 The sentinel and a gate park coincide → **the park wins**. It already carries the
@@ -433,7 +450,7 @@ broken" and "you never trusted this checkout" have different fixes.
 `.claude/graph-profile.json` is **not a fallback**. A failed proof is refused,
 never downgraded to a weaker one.
 
-**Between nodes.** `graph-run` reads `.worktrees/.graph-node-calls.json` before
+**Between nodes.** the graph driver reads `.worktrees/.graph-node-calls.json` before
 and after each node and confirms it advanced. A node that made tool calls while
 the counter stood still means the hook stopped firing mid-run, which the
 run-start canary cannot catch. That ends the run at `BLOCKED` with the node, the
@@ -463,7 +480,7 @@ documentation changes:
 - Autonomous base: `origin/<branch>`
 - Staging: `.worktrees/.graph-intake/<run-id>/`
 - Current node: `<node>`
-- Next action: `/graph-run PRD/work/<slug>/`
+- Next action: `/graph-implement PRD/work/<slug>/` (or `/graph-kickoff` in the spec-forming half)
 
 ## Node ledger
 
@@ -529,7 +546,7 @@ product fork is decided — a post-hoc audit of the 2026-08-17 failure could onl
 have reported seven forks already decided.
 
 It also requires an absolute `Working directory:` line, on its own line, in
-every recorded dispatch prompt, and rejects a relative path. `graph-run` pins
+every recorded dispatch prompt, and rejects a relative path. the graph driver pins
 that line at dispatch and requires each node to copy it unchanged into every
 prompt the node itself writes — constraining a parent does not constrain its
 children, and a node fanning out to its own subagents is where the 2026-08-17
@@ -543,7 +560,7 @@ invoking checkout is byte-unchanged, which a real run is supposed to violate —
 so the write-scope assertion is its production equivalent rather than the same
 check under a new name.
 
-**Its stated limit.** Both inputs are written by `graph-run` itself. A driver
+**Its stated limit.** Both inputs are written by the graph driver itself. A driver
 that pre-authorizes and then paraphrases its own dispatch prompt passes this
 clean. It is a schema check over a self-report — the one check in this workflow
 that does not read ground truth. Closing that honestly is transcript-side work
@@ -822,10 +839,10 @@ because a graph run does not execute test files.
 Writes into the mirror tree `.agents/skills/` belong to the sync path alone,
 through `mirrorSkillTrees()`. Hand-editing a mirror is the drift this guards.
 
-The `thejudge-*/**` deny is a **graph-run boundary, not an authoring
+The `thejudge-*/**` deny is a **graph-tier boundary, not an authoring
 restriction**. Skill authoring happens in ordinary sessions, which do not load
-the profile, and `graph-run` / `graph-preflight` skill files are not denied at
-all.
+the profile, and the `graph-kickoff` / `graph-implement` / `graph-preflight`
+skill files are not denied at all.
 
 The profile is deliberately **not** narrowed to an allowlist of script names:
 that would block a run every time a script is added, which is the opposite of
@@ -846,7 +863,7 @@ pre-authorization survives exactly until the run succeeds — cleanup deletes th
 folder the ledger lives in.
 
 Cleanup also writes an `## Intake` section naming each staged intake file and
-its stated origin, so anything `graph-run` copied into
+its stated origin, so anything the graph driver copied into
 `PRD/work/<slug>/intake/` is not lost when the folder is deleted (DEC-167).
 
 ## One run at a time
@@ -864,18 +881,50 @@ Two runs against one launch checkout both commit to it, both rewrite
 `GRAPH-RUN.md`, and both publish before `build` — the shared-working-directory
 hazard of 2026-08-17 with no isolation between them.
 
-The run releases the lock on every state in `graph-run`'s `## Terminal states`
-table. That table is the definitive list and this contract does not restate it:
-a release path enumerated in two places drifts, and a lock released on a state
-one list omits is a stranded lock.
+The run releases the lock on every state in the `## Terminal states` table below.
+That table is the definitive list and lives in this contract alone: a release path
+enumerated in two places drifts, and a lock released on a state one list omits is
+a stranded lock.
 
 ## Terminal states
 
-`.claude/skills/graph-run/SKILL.md`'s `## Terminal states` table is the single
-authority for the four run-ending states — `COMPLETE`, `PARKED`, `BLOCKED`, and
-`PROMPTED` — including each one's required result and exact next step. This
-contract deliberately keeps no second copy: two lists of terminal states drift,
-and a lock released on a state one list omits is a stranded lock.
+This table is the single authority for the four run-ending states, including each
+one's required result and exact next step. It lives here in the contract; the
+`graph-kickoff` and `graph-implement` skills point to it and never re-enumerate
+it.
+
+| State | Required result | Exact next step |
+| --- | --- | --- |
+| `COMPLETE` | Every node `ok` through `close`; package `ship-ready` or cleaned up; ledger closed | None — the run is finished |
+| `PARKED` | `STATUS.owner-action`, board row updated, `## Open gate` names the question, evidence, and resume command | Resolve the gate, then `/graph-implement PRD/work/<slug>/` (or `/graph-kickoff` in the spec-forming half) |
+| `BLOCKED` | Safe branch and commit preserved; exact failure, what exists, what does not, and recovery action | Fix the external condition, then retry |
+| `PROMPTED` | The denied or unlisted command written verbatim under `## Open gate`, with the node it arose at; `STATUS.owner-action`, board row updated | Run the command yourself, or add the rule to `.claude/graph-profile.json`, then resume |
+
+**Release the concurrency lock on every state in this table.** Node 1 takes
+`.worktrees/.graph-run.lock`; the run declares its terminal state in
+`.worktrees/.graph-run-release.json` and then deletes the lock as the last act
+before reporting any terminal state above. The release record's exact shape,
+because the hook matches keys, not intent:
+
+```json
+{ "runId": "<this run's id>", "state": "COMPLETE | PARKED | BLOCKED | PROMPTED" }
+```
+
+Both keys are required, both non-empty strings, and `runId` must equal the `runId`
+in the live lock. `releasesOwnLock()` in `scripts/lib/boundary-rules.mjs` is the
+decision, and it reads `state` — not `terminalState`. Write that file in **its own
+tool call**, before the call that removes the lock. `run-lock-removal` is a
+remediable rule, so a wrong key is recoverable: correct the record and issue the
+removal again.
+
+**A denied call is never retried** (except a `run-lock-removal` denial that named
+a remedy). `PROMPTED` is what a permission prompt becomes in an autonomous session
+— a hang, not a question — so a run that hits a denied or unlisted command writes
+it under `## Open gate`, sets `STATUS.owner-action`, and stops. `BLOCKED` is for an
+external condition outside the repository, and for a request node 2 cannot turn
+into an actionable package (`NO ACTIONABLE PACKAGE`); `PARKED` is for anything
+requiring a human decision over an existing artifact. When it is not clear which
+applies, park.
 
 ## Related material
 
@@ -885,5 +934,6 @@ and a lock released on a state one list omits is a stranded lock.
   genuine-blocker test this contract reuses verbatim
 - `PRD/instructions/workflow-reference.md` — status vocabulary and marker rules
 - `PRD/instructions/runtime-process-hygiene.md` — browser/server cleanup
-- `.claude/skills/graph-run/reference.md` — operational node detail
+- `.claude/skills/graph-kickoff/reference.md` — spec-forming node detail (nodes 1–4)
+- `.claude/skills/graph-implement/reference.md` — build node detail (nodes 5–9)
 - `AGENT-SKILLS.md` — skill catalog and sync workflow

@@ -434,17 +434,17 @@
 - Main Flow:
   1. Owner creates `.worktrees/.graph-stop`.
   2. The current node finishes its work and returns to the driver.
-  3. Before dispatching the next node, `graph-run` finds the sentinel and stops advancing.
+  3. Before dispatching the next node, the graph driver finds the sentinel and stops advancing.
   4. The run writes its terminal state, records the halt and the node it halted at under `## Open gate` in `GRAPH-RUN.md`, sets the package `STATUS.*` marker, and updates the `PRD/work/STATUS.md` board row.
   5. The run deletes the concurrency lock and reports the terminal state, the branch, the PR URL if one exists, and the ledger path.
-  6. Owner removes the sentinel and resumes later with `/graph-run PRD/work/<slug>/`, which re-enters at the node the ledger records.
+  6. Owner removes the sentinel and resumes later with `/graph-implement PRD/work/<slug>/`, which re-enters at the node the ledger records.
 - Edge Cases:
   - sentinel created while no run is live → nothing happens; the next run refuses to start until it is removed, naming the sentinel
   - driver ignores its own check → the hook denies the next node dispatch, and the run cannot advance
   - run is inside a node that will not return → the owner still has Ctrl-C, which strands the lock; the reclaim command for a stale lock is already stated by `classifyLock()`
   - sentinel and a gate park coincide → the park wins, because it already carries the owner's question and resume command
 - Notes:
-  - the halt reuses `graph-run`'s existing `## Terminal states` table; no new state is added
+  - the halt reuses the contract's `## Terminal states` table; no new state is added
   - mid-run steering via a `STEER.md` channel is deliberately not part of this flow — an instruction arriving mid-run needs `## Instruction ledger` treatment and is scoped as separate work
 
 ### FLOW-021
@@ -455,13 +455,13 @@
   - no `active` package covers the same code, so `thejudge-amend` does not apply
   - no graph run holds `.worktrees/.graph-run.lock`, and `.worktrees/.graph-stop` does not exist
 - Main Flow:
-  1. Owner invokes `graph-run` with a plain description of what is wrong. No branch name, no classification, no choice of orchestrator.
+  1. Owner invokes `graph-kickoff` with a plain description of what is wrong. No branch name, no classification, no choice of orchestrator.
   2. The door proposes a slug from the description and derives the branch `thejudge-auto/<slug>`.
   3. Node 1 (`preflight`) takes the lock, resolves uncommitted work, and creates and pushes that branch.
   4. Node 2 (`shape`) receives the proposed slug, searches `PRD/instructions/receipts/` for slug and keyword matches, and writes `IDEA.md` with one `## Prior run` line per match.
   5. Node 3 (`define`) runs refinement, which reads those prior-run lines as input alongside `PRD/sections/`.
   6. The driver diffs `PRD/sections/`. A non-empty diff parks at `owner-action` with the complete diff and the new stable IDs; an empty diff advances straight to `gate-qc`.
-  7. Owner resolves the gate with `/graph-gate-review PRD/work/<slug>/` and resumes with `/graph-run PRD/work/<slug>/`.
+  7. Owner resolves the gate with `/graph-gate-review PRD/work/<slug>/` and resumes with `/graph-implement PRD/work/<slug>/`.
   8. The run continues through `gate-qc`, `plan`, `build`, and `review` unattended, and stops at node 8 (`land`) for the owner to merge.
 - Edge Cases:
   - description too thin to package → node 2 returns `NO ACTIONABLE PACKAGE`, the run ends at `BLOCKED` naming what it needs, and no package folder is created. The report names the `thejudge-auto/<slug>` branch node 1 already pushed, and the retry supplies an explicit `--branch` so it does not hit `graph-preflight`'s exit-code-2 collision with it
@@ -481,7 +481,7 @@
   - the document exists as a file, or the owner can paste its markdown in the same message
   - no graph run holds `.worktrees/.graph-run.lock`, and `.worktrees/.graph-stop` does not exist
 - Main Flow:
-  1. Owner invokes `graph-run` with a short request and one or more file paths, or with markdown pasted in the same message.
+  1. Owner invokes `graph-kickoff` with a short request and one or more file paths, or with markdown pasted in the same message.
   2. The door reads the intake material and proposes a slug, honoring a slug the material proposes ahead of deriving one from the request text.
   3. The door writes each intake item verbatim into `.worktrees/.graph-intake/<run-id>/` before dispatching node 1 — an ignored path node 1 cannot stash — and records any document the material cites as a citation without fetching it.
   4. Node 1 (`preflight`) creates and pushes `thejudge-auto/<slug>`.

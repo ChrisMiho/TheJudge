@@ -442,7 +442,7 @@ export function classifyLock({ contents, isAlive = isPidAlive }) {
       state: "corrupt",
       holder: null,
       message:
-        `graph-run lock at ${LOCK_PATH} is unreadable. Inspect it, confirm no ` +
+        `graph run lock at ${LOCK_PATH} is unreadable. Inspect it, confirm no ` +
         `run is active, then delete it before starting.`
     }
   }
@@ -456,7 +456,7 @@ export function classifyLock({ contents, isAlive = isPidAlive }) {
       state: "held",
       holder,
       message:
-        `graph-run lock at ${LOCK_PATH} is held by ${who}` +
+        `graph run lock at ${LOCK_PATH} is held by ${who}` +
         `${holder.startedAt ? `, started ${holder.startedAt}` : ""}. ` +
         `Refusing: two runs cannot share one launch checkout. Wait for that run ` +
         `to reach a terminal state, which releases the lock.`
@@ -467,7 +467,7 @@ export function classifyLock({ contents, isAlive = isPidAlive }) {
     state: "stale",
     holder,
     message:
-      `graph-run lock at ${LOCK_PATH} names ${who}` +
+      `graph run lock at ${LOCK_PATH} names ${who}` +
       `${holder.startedAt ? `, started ${holder.startedAt}` : ""}, but that ` +
       `process is not running. The lock is stale. Confirm the run really ended, ` +
       `then reclaim it with: rm ${LOCK_PATH}`
@@ -678,7 +678,7 @@ export function classifyHeartbeat({
     return {
       state: "degraded",
       message:
-        `graph-run: degraded heartbeat at node \`${node}\` — no usable run ` +
+        `graph: degraded heartbeat at node \`${node}\` — no usable run ` +
         `state, so there was no counter key to advance. This is not a hook ` +
         `failure. The run-start canary remains the binding proof.`,
       ledgerLine: `Heartbeat: degraded (no run state) at \`${node}\``
@@ -704,7 +704,7 @@ export function classifyHeartbeat({
   return {
     state: "blocked",
     message:
-      `graph-run: BLOCKED — the boundary hook stopped firing during node ` +
+      `graph: BLOCKED — the boundary hook stopped firing during node ` +
       `\`${node}\`.\n` +
       `  expected: the counter to advance past ${before}\n` +
       `  observed: ${after}\n` +
@@ -757,6 +757,31 @@ export function takeLock({ slug, runId, pid = process.pid, now = new Date().toIS
   ensure(".worktrees", { recursive: true })
   write(LOCK_PATH, record, "utf8")
   return { taken: true, state: "taken", record }
+}
+
+/**
+ * The worktree a parallel spec-forming idea runs in, under the already-ignored
+ * `.worktrees/` root.
+ */
+export function kickoffWorktreePath(slug) {
+  return `.worktrees/kickoff-${slug}`
+}
+
+/**
+ * The command that creates a per-idea worktree off a shared base, so each idea's
+ * `graph-kickoff` session roots in its own checkout.
+ *
+ * Concurrency is structural, not re-keyed: `takeLock` writes `LOCK_PATH`
+ * relative to the process's working directory, and the boundary hook resolves its
+ * control files relative to `$CLAUDE_PROJECT_DIR`. When a session launches inside
+ * this worktree, both resolve to the worktree's own `.worktrees/`, so two ideas in
+ * two worktrees each hold their own lock and never collide — with no change to the
+ * lock record, `classifyLock`, or the hook. Fanning several ideas out inside one
+ * root is the only shape that would force a hook run-identity rework, and it is
+ * deliberately not the model.
+ */
+export function kickoffWorktreeCommand(slug, base = "origin/main") {
+  return `git worktree add ${kickoffWorktreePath(slug)} -b ${GRAPH_BRANCH_PREFIX}${slug} ${base}`
 }
 
 function main(argv) {

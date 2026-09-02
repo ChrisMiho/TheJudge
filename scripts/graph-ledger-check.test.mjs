@@ -30,7 +30,7 @@ const CLEAN = `# Graph run — demo
 
 ### define
 
-graph-run is controlling.
+graph is controlling.
 Working directory: /repo
 The user said "prefer the existing table over a new one" for this question.
 
@@ -203,8 +203,8 @@ test("graph-ledger-check - a relative working directory fails", () => {
 test("graph-ledger-check - the working-directory line must start its own line", () => {
   // Buried mid-sentence it is prose, not a pin a node can propagate verbatim.
   const dirty = CLEAN.replace(
-    "graph-run is controlling.\nWorking directory: /repo",
-    "graph-run is controlling. Working directory: /repo"
+    "graph is controlling.\nWorking directory: /repo",
+    "graph is controlling. Working directory: /repo"
   )
   assert.ok(checkLedger(dirty).some((v) => v.code === "missing-working-directory"))
 })

@@ -3,15 +3,16 @@
 ## Purpose
 
 This file is the lean operator reference for TheJudge PRD-driven work. All 11
-`thejudge-*` skills and all three `graph-*` skills — `graph-preflight`,
-`graph-run`, and `graph-gate-review` — are model-invocable and may also be
-called explicitly; see `AGENT-SKILLS.md` for the full 14-skill catalog, platform
-paths, and sync instructions.
+`thejudge-*` skills and all four `graph-*` skills — `graph-preflight`,
+`graph-kickoff`, `graph-gate-review`, and `graph-implement` — are model-invocable
+and may also be called explicitly; see `AGENT-SKILLS.md` for the full 15-skill
+catalog, platform paths, and sync instructions.
 
-`thejudge-prepare` and `graph-run` are the autonomous alternate paths across
-kickoff, refinement, quality-check, and map-out. Orchestrated mode applies only
+`thejudge-prepare` and the graph drivers (`graph-kickoff` for the spec-forming
+half, `graph-implement` for the build half) are the autonomous alternate paths
+across kickoff, refinement, quality-check, and map-out. Orchestrated mode applies only
 when the controlling agent explicitly states that an orchestrator is
-controlling — `thejudge-prepare is controlling` or `graph-run is controlling`;
+controlling — `thejudge-prepare is controlling` or `graph is controlling`;
 without one of those predicates, those phase skills retain their direct
 interactive behavior. The full autonomous contracts live in
 `preparation-contract.md` and `graph-workflow-contract.md`.

@@ -10,7 +10,7 @@ Pick from what the owner asked for, not from how much you found.
 | The ask sounds like | Landing | Deliverable |
 | --- | --- | --- |
 | "Should we…", "is it worth…", "why is…", "which is better" | **Answer** | Recommendation in chat + `FINDINGS-*.md`. No brief. |
-| "Figure out what building X needs", "set this up for a graph run" | **Brief** | Self-contained `GRAPH-BRIEF.md` + the `/graph-run` handoff. |
+| "Figure out what building X needs", "set this up for a graph run" | **Brief** | Self-contained `GRAPH-BRIEF.md` + the `/graph-kickoff` handoff. |
 | "…, and build it / get it ready **if** it's worth it" (conditional) | **Answer, then Brief if it clears the bar** | Recommendation always; add `GRAPH-BRIEF.md` only when the finding meets the owner's stated condition. |
 | One question across many comparable places (see Decision 2) | **Delegated to sweep** | Sweep's `ROLLUP.md` + PR. One-line `PROBE.md`, then stop. |
 
@@ -51,18 +51,18 @@ investigating and what ran — not a lifecycle document.
 - Evidence: <FINDINGS-*.md paths>
 ```
 
-## `GRAPH-BRIEF.md` — the graph-run intake (brief mode only)
+## `GRAPH-BRIEF.md` — the graph-kickoff intake (brief mode only)
 
-Self-contained intake for `graph-run`. **Every decision and number refinement
-needs is inlined here** — `graph-run` branches from `main` and cannot read your
+Self-contained intake for `graph-kickoff`. **Every decision and number refinement
+needs is inlined here** — `graph-kickoff` branches from `main` and cannot read your
 scratch branch, so a link to your findings is not enough. Fill only the sections
 that apply; drop the rest. Modeled on the `semantic-rule-retrieval` brief that
-graph-run consumed cleanly.
+graph-kickoff consumed cleanly.
 
 ```markdown
 # Graph-run brief — <title>
 
-Self-contained intake for `graph-run`. The investigate-first questions are
+Self-contained intake for `graph-kickoff`. The investigate-first questions are
 **resolved with data below**, so refinement can go straight to a DESIGN-BRIEF.
 
 ## What the player gets
@@ -85,7 +85,7 @@ not slices — map-out owns slicing.>
 ## Current-state PRD truth to amend
 <The feature spec(s) under PRD/sections/<feature>/ to edit and the new REQ/FLOW to
 add. The decision log is retired — no new DEC. Name the files; do not edit them
-here (refinement/graph-run own that write).>
+here (refinement/graph-kickoff own that write).>
 
 ## Constraints (don't rediscover)
 <The traps: mock-default must still work, latency targets, what must not be
@@ -101,14 +101,14 @@ above stand without it.>
 implement it. Note anything already decided so the run doesn't reopen it.>
 
 ## How to hand this off
-/graph-run "<one-line request>" PRD/work/probe-<slug>/GRAPH-BRIEF.md
+/graph-kickoff "<one-line request>" PRD/work/probe-<slug>/GRAPH-BRIEF.md
 ```
 
 ## Subagent dispatch shape (your own probes)
 
 For independent parallel probes only (Decision 2). Every prompt carries an
 absolute `Working directory:` line and absolute paths — a child resolves a
-relative path against wherever it starts, not this checkout (the `graph-run`
+relative path against wherever it starts, not this checkout (the `graph-kickoff`
 lesson).
 
 ```

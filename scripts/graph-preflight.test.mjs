@@ -26,6 +26,8 @@ import {
   findBranchCollision,
   formatFailureReport,
   isPidAlive,
+  kickoffWorktreeCommand,
+  kickoffWorktreePath,
   lockRecord,
   parseArgs,
   parseCommandArgs,
@@ -886,37 +888,39 @@ test("graph-preflight - lock - the path is under the ignored .worktrees root", (
 })
 
 function terminalStates() {
-  const skill = fs.readFileSync(
-    fileURLToPath(new URL("../.claude/skills/graph-run/SKILL.md", import.meta.url)),
+  const contract = fs.readFileSync(
+    fileURLToPath(new URL("../PRD/instructions/graph-workflow-contract.md", import.meta.url)),
     "utf8"
   )
-  const section = /## Terminal states\n([\s\S]*?)\n## /.exec(skill)
-  assert.ok(section, "graph-run must have a ## Terminal states section")
+  const section = /## Terminal states\n([\s\S]*?)\n## /.exec(contract)
+  assert.ok(section, "the contract must have a ## Terminal states section")
   return [...section[1].matchAll(/^\|\s*`([A-Z]+)`\s*\|/gm)].map((match) => match[1])
 }
 
-test("graph-preflight - lock - the releasing states are exactly the four in graph-run's table", () => {
+test("graph-preflight - lock - the releasing states are exactly the four in the contract's table", () => {
   assert.deepEqual(terminalStates(), ["COMPLETE", "PARKED", "BLOCKED", "PROMPTED"])
 })
 
 test("graph-preflight - lock - release is stated by reference, not re-enumerated", () => {
   // A second list of releasing states drifts, and a lock released on a state one
-  // list omits is a stranded lock that blocks every later run.
-  const skill = fs.readFileSync(
-    fileURLToPath(new URL("../.claude/skills/graph-run/SKILL.md", import.meta.url)),
+  // list omits is a stranded lock that blocks every later run. The table lives in
+  // the contract alone; the graph skills point to it and never re-enumerate it.
+  const contract = fs.readFileSync(
+    fileURLToPath(new URL("../PRD/instructions/graph-workflow-contract.md", import.meta.url)),
     "utf8"
   )
-  assert.match(skill, /Release the concurrency lock on every state in this table/)
+  assert.match(contract, /Release the concurrency lock on every state in this table/)
 
   for (const file of [
     "../.claude/skills/graph-preflight/SKILL.md",
-    "../PRD/instructions/graph-workflow-contract.md"
+    "../.claude/skills/graph-kickoff/SKILL.md",
+    "../.claude/skills/graph-implement/SKILL.md"
   ]) {
     const text = fs.readFileSync(fileURLToPath(new URL(file, import.meta.url)), "utf8")
     const enumerated = text.match(/`PROMPTED`/g) ?? []
     assert.ok(
       enumerated.length <= 1,
-      `${file} enumerates terminal states instead of pointing at graph-run's table`
+      `${file} enumerates terminal states instead of pointing at the contract's table`
     )
   }
 })
@@ -947,6 +951,48 @@ test("graph-preflight - lock - taking then releasing leaves no lock, for each te
   } finally {
     fs.rmSync(sandbox, { recursive: true, force: true })
   }
+})
+
+test("graph-preflight - worktree - a per-idea worktree lives under the ignored .worktrees root", () => {
+  assert.equal(kickoffWorktreePath("card-fix"), ".worktrees/kickoff-card-fix")
+})
+
+test("graph-preflight - worktree - the add command branches a per-idea worktree off the shared base", () => {
+  assert.equal(
+    kickoffWorktreeCommand("card-fix"),
+    "git worktree add .worktrees/kickoff-card-fix -b thejudge-auto/card-fix origin/main"
+  )
+  // A caller may override the base; the branch is always thejudge-auto/<slug>.
+  assert.match(kickoffWorktreeCommand("card-fix", "origin/develop"), / origin\/develop$/)
+})
+
+test("graph-preflight - lock - two worktree roots each hold their own lock without colliding", () => {
+  // Concurrency is structural: takeLock writes LOCK_PATH relative to the working
+  // directory, so two ideas in two worktree roots read different lock files. Idea
+  // A holding a lock must not make idea B refuse. Model each root as its own store.
+  const rootA = { lock: null }
+  const rootB = { lock: null }
+  const ioFor = (root) => ({
+    read: () => {
+      if (root.lock === null) throw new Error("ENOENT")
+      return root.lock
+    },
+    write: (_path, contents) => {
+      root.lock = contents
+    },
+    ensure: () => {}
+  })
+
+  const a = takeLock({ slug: "idea-a", runId: "graph-a", io: ioFor(rootA) })
+  const b = takeLock({ slug: "idea-b", runId: "graph-b", io: ioFor(rootB) })
+
+  assert.equal(a.taken, true, "idea A takes its own root's lock")
+  assert.equal(b.taken, true, "idea B takes its own root's lock even while A holds A's")
+
+  // Within one root the lock still serializes: a second take in root A refuses.
+  const aAgain = takeLock({ slug: "idea-a2", runId: "graph-a2", io: { ...ioFor(rootA), isAlive: () => true } })
+  assert.equal(aAgain.taken, false, "a second run in the same root still refuses")
+  assert.equal(aAgain.state, "held")
 })
 
 function graphProfile() {
@@ -1040,7 +1086,7 @@ test("an absent stop sentinel does not block a run", () => {
 
 test("a present stop sentinel refuses the run and names the file to remove", () => {
   // The owner's kill switch has to survive the next invocation. Otherwise
-  // throwing it stops one run and the next `/graph-run` quietly starts another.
+  // throwing it stops one run and the next graph run quietly starts another.
   const refused = classifyStopSentinel({ present: true })
   assert.equal(refused.state, "refused")
   assert.match(refused.message, new RegExp(STOP_PATH.replace(/\./g, "\\.")))

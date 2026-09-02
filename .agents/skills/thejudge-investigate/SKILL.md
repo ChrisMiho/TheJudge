@@ -6,7 +6,7 @@ description: >-
   would take, measuring options, probing code or the PRD, or deciding whether an
   idea is worth building — and you may want to fan out subagents but not run a
   rigid audit. The freeform, orchestrating counterpart to the structured
-  thejudge-sweep audit, and the front door that hands finished work to graph-run.
+  thejudge-sweep audit, and the front door that hands finished work to graph-kickoff.
 ---
 
 # TheJudge Investigate
@@ -18,7 +18,7 @@ You point it at an open-ended question — *what would it take to…*, *is X wor
 doing*, *why is Y slow*, *which approach wins* — and it orients in the repo,
 digs (reading code and the PRD, measuring, probing), dispatches subagents when
 that helps, and lands on one of two things: a plain answer, or a self-contained
-brief that `graph-run` can pick up and build.
+brief that `graph-kickoff` can pick up and build.
 
 It is off-lifecycle, like `thejudge-sweep` — no `STATUS.*` machinery, no gate per
 step. But unlike sweep it has **no fixed corpus, no fixed verdict set, and no
@@ -40,8 +40,8 @@ Do not use it when:
   every file in a set the same way) → that's `thejudge-sweep`; this skill will
   invoke it for you.
 - The finding is **already build-ready and shaped** → hand it straight to
-  `/graph-run "<request>" <paths>`.
-- You're **shipping a feature** → that's the graph lifecycle (`graph-run`).
+  `/graph-kickoff "<request>" <paths>`.
+- You're **shipping a feature** → that's the graph lifecycle (`graph-kickoff`).
 
 ## How a run lands
 
@@ -52,7 +52,7 @@ unclear, ask before writing anything durable.
   the evidence in the probe folder. No handoff, no brief.
 - **Brief mode** — the finding is headed for build. Write a **self-contained**
   `GRAPH-BRIEF.md` (template in [reference.md](reference.md)) and hand back the
-  exact `/graph-run` command. Self-contained is not optional: `graph-run`
+  exact `/graph-kickoff` command. Self-contained is not optional: `graph-kickoff`
   branches from `main` and cannot see your scratch, so every decision and number
   refinement needs must be **inlined in the brief**, not linked to your branch.
 - **Delegated** — the whole job is sweep-shaped (see below). You invoke
@@ -79,13 +79,13 @@ is not the auto-upgrade the boundary forbids — the ban is only on turning an
 3. **Investigate** — read, measure, probe. Dispatch subagents when the work is
    genuinely independent or parallel (see below). Call `thejudge-sweep` when the
    question reduces to one-question-across-many-places (see below).
-4. **Land** in a mode — answer, or brief + `/graph-run` handoff.
+4. **Land** in a mode — answer, or brief + `/graph-kickoff` handoff.
 
 ## Leveraging specialized skills
 
 You are the front door; these are tools you deploy. **Delegate, never
 reimplement** — invoke the specialized skill and let it own its artifact, the
-way `graph-run` delegates without rebuilding a phase.
+way `graph-kickoff` delegates without rebuilding a phase.
 
 - **`thejudge-sweep`** — when the investigation reduces to **applying one
   question, with one verdict set, across many comparable places**: a corpus that
@@ -94,7 +94,7 @@ way `graph-run` delegates without rebuilding a phase.
   rebuild sweep's fan-out inline, and do **not** force heterogeneous probes
   through it — independent, differently-shaped probes stay on this skill's own
   subagents.
-- **`graph-run`** — when the finding is build-bound. Brief mode produces its
+- **`graph-kickoff`** — when the finding is build-bound. Brief mode produces its
   intake; the handoff command is the boundary.
 
 If the owner invoked *you* but the job is actually a sweep, say so and offer to
@@ -107,7 +107,7 @@ asks. This is not sweep's mandatory fleet; a probe can be entirely inline.
 
 Every dispatched prompt **must** carry an absolute `Working directory:` line and
 absolute paths for what it reads and writes. A child resolves a relative path
-against wherever it happens to start, not this checkout — the `graph-run`
+against wherever it happens to start, not this checkout — the `graph-kickoff`
 lesson. Dispatch shape and the parallel-probe skeleton are in
 [reference.md](reference.md).
 
@@ -119,7 +119,7 @@ or fewer you may just launch.
 
 `PRD/work/probe-<slug>/`. The `probe-` prefix keeps the folder inert to the
 `thejudge-*` lifecycle skills — sweep's off-lifecycle rationale, so no skill
-mistakes a probe for a feature package. `graph-run` later mints its **own**
+mistakes a probe for a feature package. `graph-kickoff` later mints its **own**
 `PRD/work/<slug>/`, so there is no collision. Write only inside the probe folder.
 
 Contents: a thin `PROBE.md` ledger (question, what ran), `FINDINGS-*.md` for the
@@ -129,13 +129,13 @@ evidence, and — brief mode only — `GRAPH-BRIEF.md`. Schemas in reference.md.
 
 - **Read-mostly, and writes only into `PRD/work/probe-<slug>/`.** Never edit
   product code, and never promote or amend PRD truth — `thejudge-refinement` and
-  `graph-run` own that. This skill measures; it does not change the product.
+  `graph-kickoff` own that. This skill measures; it does not change the product.
   (Brief mode *names* the `PRD/sections/` files to amend — naming a file in the
   brief is not editing it.)
-- **Never push, and open a PR only if the owner asks.** The graph-run brief is
+- **Never push, and open a PR only if the owner asks.** The graph-kickoff brief is
   the handoff, not a PR. (A probe you want durable, you commit; the handoff works
   from the working tree either way.)
-- **Delegate, never reimplement.** Invoke `thejudge-sweep` / `graph-run`; never
+- **Delegate, never reimplement.** Invoke `thejudge-sweep` / `graph-kickoff`; never
   edit a `thejudge-*` or `graph-*` skill to route around a rough edge — report it.
 - **Owner-facing output follows `PRD/instructions/plain-language-standard.md`** —
   lead with the answer, product terms first, evidence in the artifact.
@@ -145,5 +145,5 @@ evidence, and — brief mode only — `GRAPH-BRIEF.md`. Schemas in reference.md.
 - **Answer mode:** the recommendation, with the evidence path
   (`PRD/work/probe-<slug>/`). No command.
 - **Brief mode:** the handoff, verbatim —
-  `/graph-run "<one-line request>" PRD/work/probe-<slug>/GRAPH-BRIEF.md`
-  (`$graph-run …` in Codex).
+  `/graph-kickoff "<one-line request>" PRD/work/probe-<slug>/GRAPH-BRIEF.md`
+  (`$graph-kickoff …` in Codex).

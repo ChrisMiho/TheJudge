@@ -7,7 +7,7 @@ const PARKED_LEDGER = `# Graph run — overnight-run-tuning
 
 - Run ID: \`graph-20260828-010101\`
 - Current node: \`gate-qc\`
-- Next action: \`/graph-run PRD/work/overnight-run-tuning/\`
+- Next action: \`/graph-implement PRD/work/overnight-run-tuning/\`
 
 ## Node ledger
 
@@ -19,14 +19,14 @@ const PARKED_LEDGER = `# Graph run — overnight-run-tuning
 
 - Run one stopped at quality-check PASS. Answer the questions file, then resume.
 - Questions: \`PRD/work/overnight-run-tuning/GATE-QUESTIONS.md\`
-- Resume: \`/graph-run PRD/work/overnight-run-tuning/\`
+- Resume: \`/graph-implement PRD/work/overnight-run-tuning/\`
 `
 
 const RUNNING_LEDGER = `# Graph run — some-other-package
 
 - Run ID: \`graph-20260828-020202\`
 - Current node: \`build\`
-- Next action: \`/graph-run PRD/work/some-other-package/\`
+- Next action: \`/graph-implement PRD/work/some-other-package/\`
 
 ## Open gate
 
@@ -39,7 +39,7 @@ test("graph-digest - parseLedger - reads a parked run's gate, questions file, an
   assert.equal(parsed.currentNode, "gate-qc")
   assert.equal(parsed.parked, true)
   assert.equal(parsed.questionsFile, "PRD/work/overnight-run-tuning/GATE-QUESTIONS.md")
-  assert.equal(parsed.resumeCommand, "/graph-run PRD/work/overnight-run-tuning/")
+  assert.equal(parsed.resumeCommand, "/graph-implement PRD/work/overnight-run-tuning/")
   assert.match(parsed.gateSummary, /quality-check PASS/)
 })
 
@@ -64,7 +64,7 @@ test("graph-digest - formatDigest - a parked package shows PARKED and the answer
   assert.match(out, /Graph digest — 2026-08-28/)
   assert.match(out, /overnight-run-tuning: PARKED/)
   assert.match(out, /answer: PRD\/work\/overnight-run-tuning\/GATE-QUESTIONS\.md/)
-  assert.match(out, /resume: \/graph-run/)
+  assert.match(out, /resume: \/graph-implement/)
 })
 
 test("graph-digest - formatDigest - lists pending base→main PRs with their urls", () => {

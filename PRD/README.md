@@ -65,7 +65,7 @@ For implementation work, read in this order:
 | `instructions/test-naming.md` | active | Hierarchical Vitest title convention (`Layer - Feature` outer describe, nested area + behavior) |
 | `instructions/workflow-reference.md` | active | Lean ten-skill PRD workflow reference: interactive and autonomous paths, handoff prefix rule, work-folder lifecycle, status vocabulary |
 | `instructions/preparation-contract.md` | active | Autonomous one-package preparation, assumption, blocker, and PR-publication contract |
-| `instructions/graph-workflow-contract.md` | active | Autonomous graph-run contract: node table, per-node model map, run ledger schema, human-gate parking, and boundaries |
+| `instructions/graph-workflow-contract.md` | active | Autonomous graph-workflow contract: node table, per-node model map, run ledger schema, human-gate parking, and boundaries |
 | `instructions/skill-testing.md` | active | Skill-fixture format, storage, and re-run triggers for verifying `thejudge-*` skill edits |
 | `instructions/skill-fixtures/` | active | Per-skill regression scenarios: prompt, grading key, and measured runs |
 
@@ -127,7 +127,7 @@ Read in this order:
 - Prefer narrow edits to one file at a time.
 - Preserve stable IDs once assigned.
 - Agent workflow skills: edit `.claude/skills/thejudge-*` (canonical), run `npm run skills:ai-sync` to mirror into `.agents/skills/`; see `AGENT-SKILLS.md`.
-- Autonomous graph runs: start a fresh run with one command — `/graph-run "<request>"` — which dispatches `graph-preflight` itself as its first step; resume a parked run with `/graph-run PRD/work/<slug>/`. On a define-gate park, answer `GATE-QUESTIONS.md` then `/graph-gate-review PRD/work/<slug>/` applies the verdicts before you resume. Contract in `instructions/graph-workflow-contract.md`, permission profile in `.claude/graph-profile.json` — which binds only in a session launched with `claude --settings .claude/graph-profile.json` and is inert without that flag. Owner-facing task recipes: `OPERATOR.md`.
+- Autonomous graph runs: two owner-triggered halves joined by `main`. Start a fresh idea with `/graph-kickoff "<request>"` — which dispatches `graph-preflight` itself as its first step and stops at quality-check PASS with a docs-only proposal PR. Answer the `GATE-QUESTIONS.md` verdict slots in that PR and merge it to `main`; that merge is the "build it" signal. `/loop graph-implement` — a single background loop — then picks up each approved-and-merged spec, applies the verdicts via `graph-gate-review`, builds it, and opens a code PR you merge. To shape several ideas at once, launch each `graph-kickoff` in its own git worktree (per-worktree-session isolation). Contract in `instructions/graph-workflow-contract.md`, permission profile in `.claude/graph-profile.json` — which binds only in a session launched with `claude --settings .claude/graph-profile.json` and is inert without that flag. Owner-facing task recipes: `OPERATOR.md`.
 
 ## Work packages
 

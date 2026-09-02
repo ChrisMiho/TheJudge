@@ -14,7 +14,7 @@ continuation behavior while the phase skill continues to govern its artifacts.
 
 Orchestrated mode is active only when the controlling agent explicitly names
 itself as controlling the current run: `thejudge-prepare is controlling` for a
-preparation run, or `graph-run is controlling` for an autonomous graph run
+preparation run, or `graph is controlling` for an autonomous graph run
 (`PRD/instructions/graph-workflow-contract.md`). The orchestrator must state
 its own predicate when handing work to each phase, and never states another
 orchestrator's name — the predicate is an attestation of which orchestrator is

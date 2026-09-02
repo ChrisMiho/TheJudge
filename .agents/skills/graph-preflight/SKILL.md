@@ -87,11 +87,10 @@ to get past this — a halted run is the owner's to resume.
 
 ## Concurrency lock
 
-Take the lock **first**, before the dry run and before any mutation. Two
-`graph-run` invocations against one launch checkout both commit to it, both
-rewrite `GRAPH-RUN.md`, and both publish before `build` — the same
-shared-working-directory hazard that produced the 2026-08-17 leak, with no
-isolation between them at all.
+Take the lock **first**, before the dry run and before any mutation. Two graph
+runs against one launch checkout both commit to it, both rewrite `GRAPH-RUN.md`,
+and both publish before `build` — the same shared-working-directory hazard that
+produced the 2026-08-17 leak, with no isolation between them at all.
 
 The lock is `.worktrees/.graph-run.lock`, a JSON record holding the slug, run
 id, PID, and start time. It lives under `.worktrees/`, which `.gitignore`
@@ -127,12 +126,36 @@ Run `graph-preflight --take-lock --slug <slug> --run-id <id>` at re-entry. It
 takes the lock, names the graph canary, and does nothing else — no fetch, no
 branch, no stash. `--branch` is not required there.
 
-Release is `graph-run`'s, not this skill's — see `graph-run`'s
-`## Terminal states` table, which is the definitive list of the states that
-release it. Release goes through a declared terminal state: write
-`.worktrees/.graph-run-release.json` in the exact shape `graph-run`'s
-`## Terminal states` section gives — `runId` and `state`, in its own tool call —
-then delete the lock. The hook denies the deletion without that record.
+Release is the graph driver's, not this skill's — see the contract's
+`## Terminal states` table (`PRD/instructions/graph-workflow-contract.md`), which
+is the definitive list of the states that release it. Release goes through a
+declared terminal state: write `.worktrees/.graph-run-release.json` in the exact
+shape that section gives — `runId` and `state`, in its own tool call — then delete
+the lock. The hook denies the deletion without that record.
+
+## Per-idea worktree isolation (parallel spec-forming)
+
+To shape several ideas at once, each idea runs as **its own session rooted in its
+own git worktree** — not several ideas fanned out inside one root. Concurrency is
+**structural, not re-keyed**: `takeLock` writes the lock relative to the working
+directory and the boundary hook resolves its control files relative to
+`$CLAUDE_PROJECT_DIR`, so two ideas in two worktrees each read and hold their own
+`.worktrees/.graph-run.lock`. Nothing about the lock record, `classifyLock`, or the
+hook changes.
+
+Create a per-idea worktree and launch the idea's session there:
+
+```
+git worktree add .worktrees/kickoff-<slug> -b thejudge-auto/<slug> origin/main
+# then launch graph-kickoff with that worktree as the session root
+```
+
+`kickoffWorktreePath(slug)` and `kickoffWorktreeCommand(slug, base)` in
+`scripts/graph-preflight.mjs` are the canonical path and command. Because the
+session roots in a **fresh** worktree, its launch checkout is clean, so preflight's
+auto-commit/stash never touches the main checkout on a per-idea run — the launch
+checkout is left untouched. Fanning N ideas out inside one root is the only shape
+that would force a hook run-identity rework, and it is deliberately not the model.
 
 ## base→main guard (fresh runs only)
 
@@ -151,16 +174,16 @@ script exits 2 naming the PR to merge first; relay that and stop.
 
 This runs on the fresh-run path only, in the dry run and the real run alike. The
 resume path (`--take-lock`, no `--branch`) skips it: run two's own base→main PR
-is legitimately open. It is the enforcement half of run one opening that PR — see
-`graph-run` and `graph-workflow-contract.md`.
+is legitimately open. It is the enforcement half of run one (`graph-kickoff`)
+opening that PR — see `graph-workflow-contract.md`, `## The two runs`.
 
 ## Procedure
 
 1. Run `npm run graph:preflight -- --branch <name> --run-id <id> --dry-run`
    first. Report the classification, the resolved base, the planned commands,
    and the two `profile sentinel:` / `Profile:` lines the script prints first —
-   they are what `graph-run` records in the ledger, and they are an observation,
-   never a restatement of what the user said at launch.
+   they are what the graph driver records in the ledger, and they are an
+   observation, never a restatement of what the user said at launch.
 2. If the action is `blocked`, stop. Report the offending paths. Never
    hand-resolve a secret-bearing path to get past this.
 3. Otherwise re-run the identical command without `--dry-run`, passing the same
@@ -215,8 +238,10 @@ Never drop, pop, or clear a stash. Never force-push.
 ## Next step
 
 Report the branch, the classification, and the stash reference if one exists,
-then continue the run:
+then continue the run with the graph driver for the half in progress — the
+spec-forming half continues under `graph-kickoff`, the build half under
+`graph-implement`:
 
-`/graph-run PRD/work/<slug>/`
+`/graph-implement PRD/work/<slug>/`
 
 (`$graph-*` in Codex.)

@@ -27,7 +27,7 @@ work package parked at an answered `define` gate:
 - `STATUS.owner-action` marker on the package; its board row under
   `## owner-action` in `PRD/work/STATUS.md`.
 - `GRAPH-RUN.md` with a `## Open gate` recording the parked `define` gate and
-  `/graph-run PRD/work/<slug>/` as the resume command.
+  `/graph-implement PRD/work/<slug>/` as the resume command.
 - `GATE-QUESTIONS.md` carrying three `## <STABLE-ID>` blocks (e.g. `REQ-201`,
   `REQ-202`, `FLOW-045`), each with the gate-question plain-language block, that
   id's complete proposed `PRD/sections/` diff, and a filled `Verdict:` slot —
@@ -61,7 +61,7 @@ Give the agent repo access and this prompt verbatim. Do not name
 | 3 | `edit` id: the owner's `Reason:` correction is applied **inside that id's proposed diff in `GATE-QUESTIONS.md`** | `graph-gate-review/SKILL.md` Procedure step 3 | Edit rewrites the proposal in place |
 | 4 | `reject` id: that id's proposed diff is **removed from the proposal**; the number is not reissued | `graph-gate-review/SKILL.md` Verdicts table (`reject` burns the number) | Reject drops the block from the proposal |
 | 5 | **Writes nothing to `PRD/sections/`.** No section file is edited, created, or reverted by this skill | `graph-gate-review/SKILL.md` `## Boundaries` ("Never edit `PRD/sections/` at all") | **Trap.** The old skill reverted a rejected id out of `PRD/sections/`; here refinement wrote no section file, so any `PRD/sections/` write is the regression |
-| 6 | Records `## Gate verdicts`, resolves `## Open gate`, restores `STATUS.refined`, and hands back `/graph-run PRD/work/<slug>/` | `graph-gate-review/SKILL.md` `## Writes` / `## Next step` | The run must be able to resume at `gate-qc` |
+| 6 | Records `## Gate verdicts`, resolves `## Open gate`, restores `STATUS.refined`, and hands back `/graph-implement PRD/work/<slug>/` | `graph-gate-review/SKILL.md` `## Writes` / `## Next step` | The run must be able to resume at `gate-qc` |
 | 7 | Refuses if any `Verdict:` slot is blank or malformed, naming the offending ids | `graph-gate-review/SKILL.md` "Refuse an unanswered file" | An unanswered gate cannot resume |
 
 Outcome space: items 1–6 must succeed against a fully-answered file; item 5 is the
