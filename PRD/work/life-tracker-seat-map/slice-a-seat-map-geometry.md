@@ -1,92 +1,89 @@
-# Slice A — Seat-map geometry + layout wiring
+# Slice A — Seat-map geometry: add the compact-horizontal-block builder
 
-## Status: done
-
-### Handoff
-- Done: `apps/frontend/src/lib/lifeTracker/seatMap.ts` + `seatMap.test.ts`
-  (new, `buildSeatMapCells`); `layout` prop threaded into `PlayerLifeCard`
-  and `CounterPanel` (types, JSX call sites in `PlayerLifeTrackerApp.tsx`,
-  and both components' test fixtures). `npm run typecheck` passes; `npx
-  vitest run src/lib/lifeTracker/seatMap.test.ts
-  src/components/portal/life-tracker/PlayerLifeCard.test.tsx
-  src/components/portal/life-tracker/CounterPanel.test.tsx` passes (32/32).
-  All six criteria (A1–A6) are `true` in `slice-a.criteria.json` with
-  hook-observed evidence for run `graph-20260902-093611`. The two blockers
-  from the previous attempt are both resolved upstream before this resume:
-  the A3 criteria-authoring bug (unescaped `^` in the evidence regex, fixed
-  in `slice-a.criteria.json`) and the `denied-command-retry` guardrail gap
-  (PR #181 added `"criterion-flip-without-evidence"` to `REMEDIABLE_RULES`
-  in `scripts/lib/boundary-rules.mjs`), so the six `false → true` edits this
-  time were accepted cleanly with no denial.
-- Next: slice B (`PlayerLifeCard` on-card seat map) and slice C
-  (`CounterPanel` seat map), both depending only on this slice.
-- Stopped because: not stopped — slice A is complete; continuing to B/C/D in
-  this same session.
+## Status: planned
 
 ## Goal
 
-Give both surfaces a single, shared way to place every seat, not just their
-own: a pure `buildSeatMapCells` helper, and the full active `layout`
-(`SeatArrangementLayout` — `columns`/`rows`/`seats`) threaded from
-`PlayerLifeTrackerApp` into `PlayerLifeCard` and `CounterPanel` alongside their
-existing `placement`/`players` props. No rendering changes yet — B and C
-consume this.
+Give `PlayerLifeCard` (slice B) a second, independent geometry builder for the
+on-card compact-horizontal block, while keeping `CounterPanel`'s existing
+arrangement-miniature builder exactly as it is. Both live in
+`lib/lifeTracker/seatMap.ts`. No rendering changes in this slice — B consumes
+the new builder, C keeps consuming the existing one.
+
+## Starting state
+
+`apps/frontend/src/lib/lifeTracker/seatMap.ts` already exports
+`buildSeatMapCells(layout: SeatArrangementLayout, players: TrackerPlayer[],
+viewerLabel: PlayerLabel): SeatMapCell[]` — committed on this branch, still
+correct, still required by `CounterPanel`. This slice does not remove or
+change its behavior.
 
 ## Requirements
 
-1. Add `apps/frontend/src/lib/lifeTracker/seatMap.ts` exporting
-   `buildSeatMapCells(layout: SeatArrangementLayout, players: TrackerPlayer[],
-   viewerLabel: PlayerLabel): SeatMapCell[]`, where each `SeatMapCell` carries
-   at least `{ label, isSelf, gridRow, gridColumn, gridArea }` — the values
-   copied straight from that player's own entry in `layout.seats` (matched by
-   `label`), not derived from array order. A player whose label has no matching
-   seat in `layout.seats` is skipped (mirrors the existing `if (!player) return
-   null` guard in `PlayerLifeTrackerApp`) rather than crashing.
-2. `buildSeatMapCells` is a pure, framework-agnostic function like
-   `seatArrangement.ts` itself: no React import, no DOM/browser global read, no
-   `lib/lifeTracker/state.ts` import.
-3. In `PlayerLifeTrackerApp.tsx`, pass the `layout` it already computes as a new
-   `layout` prop to every `<PlayerLifeCard .../>` and to `<CounterPanel .../>`.
-4. Add `layout: SeatArrangementLayout` to `PlayerLifeCardProps` and
-   `CounterPanelProps`; accept it in both components (unused for rendering in
-   this slice — B and C wire it into the actual grid).
-5. Update `PlayerLifeCard.test.tsx` and `CounterPanel.test.tsx` call sites to
-   pass a `layout` fixture so the existing suites keep compiling and passing
-   with the now-required prop.
+1. Add a new export to `apps/frontend/src/lib/lifeTracker/seatMap.ts` — a
+   compact-horizontal-block builder (naming is the implementer's call, e.g.
+   `buildCompactSeatMapCells`) that computes its **own** grid shape for a given
+   player count, independent of any `SeatArrangementLayout`'s `columns`/`rows`:
+   - At most 2 rows tall at every supported count (2–8), growing wider (more
+     columns) as the player count grows — never a near-square `ceil(√N)` grid,
+     never a tall stack.
+   - The current player ("me"/viewer) sits in a fixed corner cell of the
+     block.
+   - Each opponent is placed elsewhere in the block as a best-effort outcome —
+     it may use each seat's real table direction (`SeatPlacement.side` from
+     the active `SeatArrangementLayout`) as an input to *where within the
+     block* an opponent falls, but the block's own row/column count never
+     comes from `layout.columns`/`layout.rows`.
+   - The same output shape for the same player count regardless of which
+     arrangement (`seatArrangement` grid mode vs. `listSeatArrangement` list
+     mode) supplied the direction data — the block does not inherit list
+     mode's tall stacking.
+2. The new builder is pure and framework-agnostic like `seatArrangement.ts`
+   and the existing `buildSeatMapCells`: no React import, no DOM/browser
+   global read, no `lib/lifeTracker/state.ts` import.
+3. Export whatever placement type the new builder returns (e.g. row/column
+   index or CSS grid-area/row/column strings — implementer's call) plus the
+   block's own declared column/row count, so `PlayerLifeCard` can build a grid
+   template from it without recomputing shape logic itself.
+4. `buildSeatMapCells` (used by `CounterPanel`) is untouched — same signature,
+   same behavior, same exports. Confirm `CounterPanel.tsx`'s existing import
+   still compiles unmodified.
+5. New unit tests in `seatMap.test.ts` for the new builder, alongside (not
+   replacing) the existing `buildSeatMapCells` tests.
 
 ## Acceptance criteria
 
-- [x] A1: `buildSeatMapCells` returns one cell per player in `players`, and each
-      cell's `gridRow`/`gridColumn`/`gridArea` equals that same player's own
-      seat entry in `layout.seats` (unit test, checked for at least a 4-player
-      and an 8-player arrangement).
-- [x] A2: exactly one returned cell has `isSelf: true`, and its `label` equals
-      the `viewerLabel` argument (unit test).
-- [x] A3: `seatMap.ts` contains no React import and no import from
+- [ ] A1: the new compact-block builder's returned grid shape has at most 2
+      rows at every supported player count 2–8 (unit test sweeping 2 through
+      8).
+- [ ] A2: at higher player counts the block's column count increases (grows
+      wider) rather than its row count — e.g. 8 players is 2 rows × 4 columns,
+      not 4 rows × 2 columns or a `ceil(√8) = 3` square (unit test).
+- [ ] A3: exactly one cell in the block is marked as the viewer/self cell, at a
+      fixed corner position, for every supported count (unit test).
+- [ ] A4: the new builder's output does not depend on `layout.columns`/
+      `layout.rows` — calling it with direction data derived from
+      `seatArrangement(N)` and from `listSeatArrangement(N)` for the same `N`
+      and viewer produces the same block shape (row/column count) (unit test
+      comparing both).
+- [ ] A5: the new export contains no React import and no import from
       `lib/lifeTracker/state.ts` (grep evidence — same purity bar as
-      `seatArrangement.ts`).
-- [x] A4: `PlayerLifeTrackerApp` passes its computed `layout` to both
-      `PlayerLifeCard` and `CounterPanel` as a `layout` prop (paths evidence:
-      the prop appears on both JSX call sites).
-- [x] A5: `npm run typecheck` passes in `apps/frontend` with the new prop wired
-      through.
-- [x] A6: `npm run test` passes for `seatMap.test.ts`, `PlayerLifeCard.test.tsx`,
-      and `CounterPanel.test.tsx`.
+      `seatArrangement.ts` and the existing `buildSeatMapCells`).
+- [ ] A6: `buildSeatMapCells`'s existing exported signature and behavior are
+      unchanged — the existing `seatMap.test.ts` cases for `buildSeatMapCells`
+      still pass unmodified.
+- [ ] A7: `npm run typecheck` passes.
+- [ ] A8: `npm run test` passes for `seatMap.test.ts`.
 
 ## Verification
 
 ```bash
 cd apps/frontend
 npm run typecheck
-npx vitest run src/lib/lifeTracker/seatMap.test.ts src/components/portal/life-tracker/PlayerLifeCard.test.tsx src/components/portal/life-tracker/CounterPanel.test.tsx
+npx vitest run src/lib/lifeTracker/seatMap.test.ts
 ```
 
 ## Files touched
 
-- `apps/frontend/src/lib/lifeTracker/seatMap.ts` (new)
-- `apps/frontend/src/lib/lifeTracker/seatMap.test.ts` (new)
-- `apps/frontend/src/components/portal/life-tracker/PlayerLifeTrackerApp.tsx`
-- `apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.tsx`
-- `apps/frontend/src/components/portal/life-tracker/CounterPanel.tsx`
-- `apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.test.tsx`
-- `apps/frontend/src/components/portal/life-tracker/CounterPanel.test.tsx`
+- `apps/frontend/src/lib/lifeTracker/seatMap.ts`
+- `apps/frontend/src/lib/lifeTracker/seatMap.test.ts`

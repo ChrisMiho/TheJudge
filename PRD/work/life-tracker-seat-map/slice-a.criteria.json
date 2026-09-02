@@ -4,39 +4,51 @@
   "criteria": [
     {
       "id": "A1",
-      "statement": "buildSeatMapCells places every player at that player's own seat from layout.seats, not array order",
-      "value": true,
+      "statement": "The new compact-block builder's returned grid shape has at most 2 rows at every supported player count 2-8",
+      "value": false,
       "evidence": { "paths": ["apps/frontend/src/lib/lifeTracker/seatMap.ts", "apps/frontend/src/lib/lifeTracker/seatMap.test.ts"] }
     },
     {
       "id": "A2",
-      "statement": "Exactly one returned cell is isSelf, matching the viewer label",
-      "value": true,
+      "statement": "At higher player counts the block grows wider (more columns), not taller, and never a ceil(sqrt(N)) square",
+      "value": false,
       "evidence": { "paths": ["apps/frontend/src/lib/lifeTracker/seatMap.test.ts"] }
     },
     {
       "id": "A3",
-      "statement": "seatMap.ts is a pure function with no React or lifeTracker-state import",
-      "value": true,
-      "evidence": { "command": "grep -n \"\\^import\" apps/frontend/src/lib/lifeTracker/seatMap.ts" }
+      "statement": "Exactly one cell in the block is the viewer/self cell, at a fixed corner position, for every supported count",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/lib/lifeTracker/seatMap.test.ts"] }
     },
     {
       "id": "A4",
-      "statement": "PlayerLifeTrackerApp threads its computed layout into PlayerLifeCard and CounterPanel",
-      "value": true,
-      "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/PlayerLifeTrackerApp.tsx"] }
+      "statement": "The new builder's block shape does not depend on layout.columns/layout.rows - same shape from seatArrangement and listSeatArrangement direction data for the same count",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/lib/lifeTracker/seatMap.test.ts"] }
     },
     {
       "id": "A5",
-      "statement": "Frontend typecheck passes with the new layout prop wired through",
-      "value": true,
-      "evidence": { "command": "npm run typecheck" }
+      "statement": "The new export has no React import and no import from lib/lifeTracker/state.ts",
+      "value": false,
+      "evidence": { "command": "grep -n \"from \\\"react\\\"|lifeTracker/state\" apps/frontend/src/lib/lifeTracker/seatMap.ts" }
     },
     {
       "id": "A6",
-      "statement": "seatMap, PlayerLifeCard, and CounterPanel test suites pass",
-      "value": true,
-      "evidence": { "command": "vitest run.*(seatMap|PlayerLifeCard|CounterPanel)" }
+      "statement": "buildSeatMapCells's existing signature and behavior are unchanged - existing tests still pass unmodified",
+      "value": false,
+      "evidence": { "command": "vitest run.*seatMap", "paths": ["apps/frontend/src/lib/lifeTracker/seatMap.test.ts"] }
+    },
+    {
+      "id": "A7",
+      "statement": "Frontend typecheck passes",
+      "value": false,
+      "evidence": { "command": "npm run typecheck" }
+    },
+    {
+      "id": "A8",
+      "statement": "npm run test passes for seatMap.test.ts",
+      "value": false,
+      "evidence": { "command": "vitest run.*seatMap" }
     }
   ]
 }

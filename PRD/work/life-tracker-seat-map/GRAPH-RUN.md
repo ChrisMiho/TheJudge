@@ -81,6 +81,14 @@ Instruction-ledger match is unambiguous.
 | — | build (gate resolved) | — | ok | — | Owner merged the boundary-hook fix PR #181: `criterion-flip-without-evidence` added to `REMEDIABLE_RULES` (guarantee unchanged — the rule re-evaluates against the evidence log; only the stale-denial trap removed; `test:scripts` green, 436). Driver integrated `origin/main` into `thejudge-auto/life-tracker-seat-map-work` (active hook now corrected) and republished `origin/-work` with the A3 fix so the worktree rebases onto a correct base. `STATUS.active` restored. Re-dispatching build as attempt 3 | 2026-09-02 |
 | 6 | build | sonnet | paused | `2 → ?` | Attempt 3 resumed with the fix live; slices A, B, C reached `done` in the worktree (green: typecheck, vitest 32/32, quality:check). Stopped by the owner mid slice-D on a **layout-design issue**. Live DOM measurement (430px): the on-card commander-damage grid is **horizontal + contained in grid mode** at 7 and 8 players (~49×26), but in **LIST mode at 8 players it is vertical (~12–25w × 60h) and overflows the card bottom by ~4px on players 2–8**. Owner: "just rotate the component, then fix the order displayed"; the reference images (`intake/references/`) are the target; my compact-grid redesign proposal was over-scoped. Paused for owner clarification. Nothing committed to the shared branch; no code PR. Handoff: `HANDOFF.md` | 2026-09-02 |
 
+| 4 | gate-qc | sonnet | failed | `1 → 28` | Attempt 3 (build-half re-scope: re-grade of the clarified brief under run `graph-20260902-121645`). FAIL, 2 findings — (1) `DESIGN-BRIEF.md` acceptance criterion 1 still requires each opponent's on-card cell "at the seat that player occupies in the active arrangement" (verified at 8p), which the compact-horizontal clarification supersedes; the supersession clause named only criteria 3–4. (2) `GATE-QUESTIONS.md` REQ-173's Description + acceptance criteria ("uses the arrangement's real columns/rows … not ceil(√N)", cells at their arrangement gridRow/gridColumn) + Notes still commit the on-card map to the literal-arrangement mechanism. `seatArrangement(8)`=2×4, `listSeatArrangement(8)`=2×5 — both exceed the ≤2-row cap. STATUS.refining set; board moved to `## refining`. Loops to `define` for reconciliation | 2026-09-02 |
+
+| — | define | opus | ok | `0 → 37` | Build-half re-scope reconciliation (thejudge-refinement) after the gate-qc FAIL. Reconciled `DESIGN-BRIEF.md` (criterion 1 + on-card prose in What-the-player-gets / Design-direction / Resolved-decisions + extended supersession clause) and `GATE-QUESTIONS.md` REQ-173 (In-plain-terms, Description, four on-card ACs, on-card Constraint, Note, + the on-card README and screen-layout diff bullets) to the compact-horizontal on-card block. Panel top-down matrix, containment guarantee, and preserved behaviors unchanged; REQ-173 stays `accept` (+ Reason line); no new gate question or stable id. STATUS.refined; board → `## refined` | 2026-09-02 |
+
+| 4 | gate-qc | sonnet | ok | `0 → 16` | Attempt 4 (re-scope re-grade after the define reconciliation). PASS; checked `DESIGN-BRIEF.md`; findings none — both prior findings resolved, `DESIGN-BRIEF.md` + REQ-173 agree on the compact horizontal on-card block, panel top-down matrix / containment guarantee / preserved behaviors (always-on decrements-life, REQ-112, DEC-136, DEC-139) intact. README `## Preparation gate` stamped PASS. `STATUS.refined` stands; advance to `plan` | 2026-09-02 |
+
+| 5 | plan | sonnet | ok | `0 → 47` | Build-half re-scope re-slice (thejudge-map-out). Fresh `GAMEPLAN.md` + slices A–D + 4 `slice-*.criteria.json` (A 8 / B 6 / C 4 / D 6, all `false`). A: add a compact-horizontal-block builder to `seatMap.ts` alongside the unchanged `buildSeatMapCells` (panel keeps it); B: on-card `PlayerLifeCard` switches to the compact block (≤2 rows, grows wider, decoupled from `layout.columns`/`rows`), same in grid + list; C: re-verify panel top-down miniature unchanged; D: live 7/8-player containment + block-shape + glyph-orientation, both layouts, + Ship gates. GAMEPLAN documents the old-design A/B/C already committed on `-work` as the starting state (re-earned, no old evidence carried). `STATUS.active`; board → `## active` | 2026-09-02 |
+
 ## Gate verdicts
 
 | Stable ID | Verdict | Reason |
@@ -468,6 +476,121 @@ Apply the approved product truth AT BUILD, by intent, together with the code: RE
 Scope: write only inside `.worktrees/implement-life-tracker-seat-map/` and `PRD/work/life-tracker-seat-map/`. Do not edit any `thejudge-*` skill, `.claude/`, `CLAUDE.md`, `scripts/`, or `.secrets/`. When every slice is `done`, set `STATUS.ship-ready`.
 
 Report back: the worktree path, the code PR URL (head `thejudge-auto/life-tracker-seat-map-work`, base `main`), each slice's final status and earned-criteria confirmation, the PRD/sections/ files edited (REQ-173 applied), the quality:check result, the slice-D capture path, and confirmation `STATUS.ship-ready` is set.
+```
+
+### gate-qc (attempt 3, build-half re-scope)
+
+```text
+graph is controlling. You are node 4 (`gate-qc`), attempt 3 (build-half re-scope), of an autonomous graph run. thejudge-quality-check is being dispatched under the graph driver.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy this exact `Working directory:` line, unchanged, into every prompt you write to any subagent of your own.
+
+Run ID: graph-20260902-121645
+Package: PRD/work/life-tracker-seat-map/
+
+Run non-interactively: do not pause for the user, ask no questions, make no product decisions.
+
+Context: the build half was paused for a layout-design clarification. The owner resolved it (see `GRAPH-RUN.md` `## Build-half re-scope (2026-09-02)` and `DESIGN-BRIEF.md` `## Owner clarification (2026-09-02)`): the on-card commander-damage mini-map becomes a compact horizontal block (<=2 rows, grows wider), the same in grid and list layout, extrapolated sideways for 7-8 players, whole card never rotated. `DESIGN-BRIEF.md` acceptance criteria 3-4 were revised to match. REQ-173 (the accepted product truth) is unchanged - this is a design-mechanism clarification, not a new product decision.
+
+Invoke the `thejudge-quality-check` skill (Skill tool) and follow it exactly. Validate the UPDATED `DESIGN-BRIEF.md` for PRD alignment and agent-readiness and produce a PASS or FAIL report. Do not write a GAMEPLAN or slice docs - that is the map-out node's job.
+
+Check the design brief against the finalized product truth in `GATE-QUESTIONS.md` (REQ-173, verdict accept) and the current-state specs it amends: `PRD/sections/life-tracker/README.md`, `PRD/sections/functional-requirements.md`, `PRD/sections/screen-layout.md`. Confirm specifically:
+- The new '## Owner clarification (2026-09-02)' section is internally consistent with the rest of the brief and with REQ-173's containment intent (a compact horizontal block contained inside the card at 2-8 satisfies REQ-173's containment; it does not contradict the seat-consistency the panel still delivers).
+- Revised acceptance criteria 3-4 are consistent with the clarification and with criterion 2 (the panel remains a seat map).
+- The brief stays within the stated constraints (pure presentation; does not reopen DEC-139; preserves the commander-damage behaviors and DEC-136 rotation), and is specific enough for an implementer to slice without inventing product decisions.
+
+On FAIL, set `STATUS.refining` and report the complete findings list. On PASS, report PASS with the checked artifact path and an empty findings list.
+
+Report back: PASS or FAIL, the checked artifact, and the complete findings list (or none).
+```
+
+### define (build-half re-scope reconciliation)
+
+```text
+graph is controlling. You are node 3 (`define`), build-half re-scope reconciliation, of an autonomous graph run. thejudge-refinement is being dispatched under the graph driver — run non-interactively, ask no questions, make no product decisions of your own.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy this exact `Working directory:` line, unchanged, into every prompt you write to any subagent of your own.
+
+Run ID: graph-20260902-121645
+Package: PRD/work/life-tracker-seat-map/
+
+The owner has ALREADY decided the on-card commander-damage map design — do NOT re-open a gate question for it and do NOT ask the user. From `observations.md` and a confirmed design question, the on-card mini-map is a compact horizontal block (at most 2 rows, growing wider with more players), the same in grid and list layout, decoupled from the arrangement's tall shape and from `listSeatArrangement`'s stacking, extrapolated sideways for 7-8 players (e.g. a 2-by-4 block at 8 players), with the whole card never rotated. Seat-consistency (one self/'me' cell at the player's own seat, opponents by real direction, no two cards sharing a self cell) is preserved as a best-effort outcome WITHIN the compact block; where a table's true geometry cannot fit 2 rows (7-8 players), containment and the reference look win over exact directional fidelity. The counter panel is unaffected (it stays the top-down seat map). This is recorded in `DESIGN-BRIEF.md` under the '## Owner clarification (2026-09-02)' section.
+
+A `gate-qc` re-validation just FAILED because two artifacts still commit to the OLD 'miniature of the active arrangement / real columns-and-rows' mechanism that the clarification overrides for the on-card map:
+1. `DESIGN-BRIEF.md` acceptance criterion 1 still requires each opponent's on-card cell to sit at the seat that player occupies in the active arrangement, verified at 8 players — contradicting the compact-horizontal clarification. The supersession clause names only 'Design direction and acceptance criteria 3-4', leaving criterion 1 (and any other on-card prose that mandates the literal-arrangement grid) outside it.
+2. `GATE-QUESTIONS.md` REQ-173 (accepted) — its Description, several Acceptance Criteria (especially 'the on-card map uses the arrangement's real columns-and-rows ... not ceil-root-N' and cells placed at their arrangement gridRow/gridColumn), and Notes commit the ON-CARD map to the literal arrangement shape, which the clarification supersedes. `seatArrangement(8)` is 2 columns by 4 rows and `listSeatArrangement(8)` is 2 by 5 — both exceed the at-most-2-rows cap.
+
+Invoke the `thejudge-refinement` skill (Skill tool) and follow it exactly, in reconciliation mode: reconcile `DESIGN-BRIEF.md` and the REQ-173 proposal in `GATE-QUESTIONS.md` to the owner's compact-horizontal on-card decision, introducing NO new product decision beyond it. Specifically:
+- In `DESIGN-BRIEF.md`: bring acceptance criterion 1 (and any on-card 'miniature of the active arrangement / real columns-and-rows' prose in 'What the player gets', 'Design direction', and 'Resolved decisions') into line with the compact-horizontal clarification. Extend the supersession clause to cover criterion 1. Keep the containment guarantee and the panel (top-down seat map) unchanged.
+- In `GATE-QUESTIONS.md` REQ-173: rewrite ONLY the ON-CARD parts of the Description, Acceptance Criteria, and Notes so they describe the compact horizontal block (at most 2 rows, grows wider, contained at 2-8 in both layouts, extrapolate 7-8 sideways, never ceil-root-N, never the tall arrangement, whole card never rotated), while KEEPING: (a) the containment guarantee (map plus name pill inside the card at 2-8, verified live at 7 and 8), (b) the panel top-down-seat-map criteria unchanged, (c) the preserved behaviors/constraints (always-on decrements-life, the REQ-112 bands, DEC-136 rotation, DEC-139 not reopened), and (d) the seat-consistency promise softened to best-effort-within-the-compact-block per the clarification. Keep `- Verdict: accept` (the owner accepted the feature and clarified the mechanism); add a `- Reason:` line recording the 2026-09-02 reconciliation. Do NOT add a new gate question or a new stable id.
+
+Constraints: do NOT edit `PRD/sections/`, application code, or anything outside `PRD/work/life-tracker-seat-map/`. Do NOT run git push, PR, or merge. The owner's decision is the input — do not re-surface it as a question. Set `STATUS.refined` on completion (this reconciles an already-accepted, already-decided proposal; it is not a fresh proposal needing owner review).
+
+Report back: the files changed, a short list of what was reconciled in the brief and in REQ-173, confirmation the containment guarantee and panel criteria are unchanged, confirmation no new gate question or stable id was added, and the STATUS marker set.
+```
+
+### gate-qc (attempt 4, re-scope re-grade after reconciliation)
+
+```text
+graph is controlling. You are node 4 (`gate-qc`), attempt 4 (build-half re-scope re-grade after the reconciliation), of an autonomous graph run. thejudge-quality-check is being dispatched under the graph driver.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy this exact `Working directory:` line, unchanged, into every prompt you write to any subagent of your own.
+
+Run ID: graph-20260902-121645
+Package: PRD/work/life-tracker-seat-map/
+
+Run non-interactively: do not pause for the user, ask no questions, make no product decisions.
+
+Context: the prior gate-qc FAILED because DESIGN-BRIEF criterion 1 and REQ-173's on-card acceptance criteria/Description still committed the on-card map to the literal-arrangement mechanism. The `define` node (thejudge-refinement) reconciled `DESIGN-BRIEF.md` and the REQ-173 proposal in `GATE-QUESTIONS.md` to the owner's compact-horizontal on-card decision (on-card map = compact horizontal block, at most 2 rows, grows wider, decoupled from the arrangement, extrapolate 7-8 sideways, whole card never rotated), keeping the containment guarantee, the panel top-down seat map, and the preserved behaviors unchanged, with REQ-173 still `Verdict: accept`.
+
+Invoke the `thejudge-quality-check` skill (Skill tool) and follow it exactly. Validate the reconciled `DESIGN-BRIEF.md` for PRD alignment and agent-readiness and produce PASS or FAIL. Do not write a GAMEPLAN or slice docs.
+
+Confirm the two prior findings are resolved and no new inconsistency was introduced:
+- No remaining on-card requirement or acceptance criterion mandates the literal-arrangement grid (real columns-and-rows, ceil-root-N, or per-seat arrangement gridRow/gridColumn) for the on-card map — the on-card map is uniformly described as a compact horizontal block contained at 2-8.
+- `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` REQ-173 agree with each other on the on-card map.
+- The panel (top-down seat map), the containment guarantee (map plus name pill inside the card at 2-8, verified live at 7 and 8), and the preserved behaviors/constraints (always-on decrements-life, REQ-112 bands, DEC-136, DEC-139 not reopened) are intact.
+- The brief is specific enough for an implementer to slice without inventing product decisions.
+
+On FAIL, set `STATUS.refining` and report the complete findings. On PASS, report PASS with the checked artifact and an empty findings list.
+
+Report back: PASS or FAIL, the checked artifact, and the complete findings list (or none).
+```
+
+### plan (build-half re-scope re-slice)
+
+```text
+graph is controlling. You are node 5 (`plan`), build-half re-scope, of an autonomous graph run. thejudge-map-out is being dispatched under the graph driver — run non-interactively, ask no questions, make no product decisions.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy this exact `Working directory:` line, unchanged, into every prompt you write to any subagent of your own.
+
+Run ID: graph-20260902-121645
+Package: PRD/work/life-tracker-seat-map/
+
+The package is `STATUS.refined` with a `## Preparation gate` recording `Quality-check: PASS` (build-half re-scope re-grade, attempt 4) — do not re-run quality-check; read that PASS and proceed.
+
+This RE-PLANS an existing GAMEPLAN after the owner's compact-horizontal on-card clarification (see `DESIGN-BRIEF.md` `## Owner clarification (2026-09-02)` and the reconciled REQ-173 in `GATE-QUESTIONS.md`). The prior GAMEPLAN + slice docs + criteria encode the OLD 'on-card map = miniature of the active arrangement' design and MUST be regenerated to the compact-horizontal design. Invoke `thejudge-map-out` (Skill tool) and follow it exactly. Produce a fresh `GAMEPLAN.md` and lettered slice docs plus one `slice-<letter>.criteria.json` per slice (every criterion initialised false, each with an evidence block: a command pattern, file paths, or a manual flag), and set `STATUS.active`.
+
+The deliverable is pure frontend/presentation across two surfaces:
+- ON-CARD (`PlayerLifeCard`): the commander-damage preview is a COMPACT HORIZONTAL BLOCK — at most 2 rows, growing wider as players are added — matching the reference images, the SAME in grid and list layout, decoupled from the active arrangement's shape (never `layout.columns` by `layout.rows`, never ceil-root-N), with the self/'me' cell in the current player's own seat corner and opponents around it as a best-effort outcome within the block, extrapolated sideways for 7-8 players (e.g. a 2-by-4 block at 8 players). The whole card is never rotated; only the block's internal layout changes. Containment: the block plus player-name pill stay fully inside the card at every count 2-8 in BOTH layouts, verified live at 7 and 8 at iPhone-portrait (~430px).
+- PANEL (`CounterPanel`): UNCHANGED from the prior design — the commander-damage matrix stays a top-down seat-map miniature of the active arrangement (opener highlighted as the self/'me' cell, each opponent's CommanderDamageCell at its own seat, unused slots empty), preserving the REQ-112 bands and decrements-life.
+
+Because the on-card block and the panel matrix now use DIFFERENT geometry (compact block vs arrangement miniature), plan slice A (the shared `lib/lifeTracker/seatMap.ts` geometry) to provide BOTH: keep the arrangement-miniature builder the panel uses, and add a compact-horizontal-block builder for the on-card map (the exact helper shape/param is yours to design — a pure, framework-agnostic function like `seatArrangement.ts`, no React/DOM import). Slice B (on-card) renders the compact block; slice C (panel) is largely unchanged; slice D is the live 7/8-player containment plus side-seat glyph-orientation verification in both layouts, carrying the runtime-process-hygiene cleanup and the package Ship gates.
+
+Constraints (do not reopen): pure presentation — no backend, no provider path, no GameContext seed contract (DEC-102), no persistence shape (DEC-103); preserve always-on commander-damage-decrements-life, the panel minus/plus bands (REQ-112), the self/'me' cell, and seat rotation as the sole life-zone orientation input (DEC-136); do not reopen the counter-panel overlay/tray shape (DEC-139). Apply REQ-173's accepted diffs to `PRD/sections/` at BUILD, not now — map-out plans, it does not apply product truth.
+
+Slice B's criteria MUST reflect the compact-horizontal block (e.g. the on-card preview grid is at most 2 rows and grows wider; it does NOT use the active arrangement's columns/rows; the self/'me' cell is at the player's own seat corner) — do NOT carry over the old 'uses the arrangement's real columns/rows' criterion. Slice D's containment criteria stay live-browser/manual checks in both layouts at 7 and 8.
+
+Do not edit application code or `PRD/sections/`. Write only inside `PRD/work/life-tracker-seat-map/`.
+
+Report back: the GAMEPLAN path, the ordered list of slices (letter plus one-line intent), confirmation each `slice-<letter>.criteria.json` was emitted with the on-card criteria reflecting the compact block, and confirmation `STATUS.active` is set.
 ```
 
 ## Instruction ledger

@@ -4,32 +4,38 @@
   "criteria": [
     {
       "id": "B1",
-      "statement": "previewColumns and commanderDamagePreviewCells are removed from PlayerLifeCard.tsx",
-      "value": true,
-      "evidence": { "command": "grep -n \"previewColumns|commanderDamagePreviewCells\" apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.tsx" }
+      "statement": "PlayerLifeCard.tsx's preview grid template is never derived from layout.columns/layout.rows and never Math.ceil(Math.sqrt(...))",
+      "value": false,
+      "evidence": { "command": "grep -n \"layout.columns|layout.rows|ceil(Math.sqrt\" apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.tsx" }
     },
     {
       "id": "B2",
-      "statement": "The preview grid template uses the active arrangement's real columns/rows, not ceil(sqrt(N))",
-      "value": true,
+      "statement": "The preview grid has at most 2 rows at every tested player count (2, 4, 6, 8)",
+      "value": false,
       "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.test.tsx"] }
     },
     {
       "id": "B3",
-      "statement": "Each opponent's preview cell sits at that opponent's own seat coordinate from the active layout",
-      "value": true,
+      "statement": "At 8 players the preview grid is wider than tall (more columns than rows), not a ceil(sqrt(8))=3 square and not a tall stack",
+      "value": false,
       "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.test.tsx"] }
     },
     {
       "id": "B4",
-      "statement": "Exactly one preview cell renders me, at the current player's own seat",
-      "value": true,
+      "statement": "Exactly one preview cell renders 'me', at a fixed corner position, for the current player's own label (4-player and 8-player cases)",
+      "value": false,
       "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.test.tsx"] }
     },
     {
       "id": "B5",
-      "statement": "PlayerLifeCard test suite passes",
-      "value": true,
+      "statement": "The preview's shape for a given player count is the same in grid-mode layout and list-mode layout",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.test.tsx"] }
+    },
+    {
+      "id": "B6",
+      "statement": "npm run test passes for PlayerLifeCard.test.tsx",
+      "value": false,
       "evidence": { "command": "vitest run.*PlayerLifeCard" }
     }
   ]

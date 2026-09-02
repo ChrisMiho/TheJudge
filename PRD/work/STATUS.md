@@ -8,9 +8,9 @@ Do not rename package folders to encode status.
 
 ## active
 
-## refined
+| [life-tracker-seat-map](life-tracker-seat-map/) | Re-planned (2026-09-02, build-half re-scope, run graph-20260902-121645) to the owner's compact-horizontal on-card block: fresh GAMEPLAN + slices A-D, all criteria re-earned from false. On-card preview (slice B) becomes a compact block (≤2 rows, grows wider), decoupled from the arrangement's real columns/rows; panel matrix (slice C) unchanged — still the top-down arrangement miniature. |
 
-| [life-tracker-seat-map](life-tracker-seat-map/) | Build half re-scoped 2026-09-02 after owner clarification (on-card map = compact horizontal block, both layouts). Re-entering `gate-qc` → `plan` → `build`. Run id `graph-20260902-121645`. See `GRAPH-RUN.md` `## Build-half re-scope`. |
+## refined
 
 ## refining
 

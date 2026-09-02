@@ -4,32 +4,26 @@
   "criteria": [
     {
       "id": "C1",
-      "statement": "The commander-damage matrix's grid template derives from layout.columns/rows, not a hardcoded grid-cols-2 class",
-      "value": true,
-      "evidence": { "command": "grep -n \"grid-cols-2\" apps/frontend/src/components/portal/life-tracker/CounterPanel.tsx" }
+      "statement": "CounterPanel.tsx's matrix still derives cells from buildSeatMapCells and its grid template from layout.columns/layout.rows, not grid-cols-2 and not the on-card compact block's shape",
+      "value": false,
+      "evidence": { "command": "grep -n \"buildSeatMapCells|layout.columns|layout.rows\" apps/frontend/src/components/portal/life-tracker/CounterPanel.tsx", "paths": ["apps/frontend/src/components/portal/life-tracker/CounterPanel.tsx"] }
     },
     {
       "id": "C2",
-      "statement": "Each opponent's cell sits at that opponent's own seat coordinate from the active layout",
-      "value": true,
+      "statement": "The opener's 'me' cell still has no min-h-36 and still renders at the opener's own seat coordinate",
+      "value": false,
       "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/CounterPanel.test.tsx"] }
     },
     {
       "id": "C3",
-      "statement": "The opener's own me cell drops min-h-36 and renders at the opener's own seat",
-      "value": true,
-      "evidence": { "command": "grep -n \"min-h-36\" apps/frontend/src/components/portal/life-tracker/CounterPanel.tsx" }
-    },
-    {
-      "id": "C4",
-      "statement": "Opponent cells keep the min-h-[53px] decrease/increase bands and existing onAdjustCommanderDamage wiring",
-      "value": true,
+      "statement": "Every opponent's cell still renders its -/+ bands at min-h-[53px] and still calls onAdjustCommanderDamage with the same arguments",
+      "value": false,
       "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/CounterPanel.test.tsx"] }
     },
     {
-      "id": "C5",
-      "statement": "CounterPanel test suite passes",
-      "value": true,
+      "id": "C4",
+      "statement": "npm run test passes for CounterPanel.test.tsx with no regressions from slice A's additive seatMap.ts change",
+      "value": false,
       "evidence": { "command": "vitest run.*CounterPanel" }
     }
   ]

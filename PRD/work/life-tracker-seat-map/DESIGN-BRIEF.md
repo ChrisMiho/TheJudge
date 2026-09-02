@@ -9,13 +9,14 @@
 ## What the player gets
 
 Open the life tracker. Every player's card now carries a tiny map of the table
-instead of a roster list. On your own card, **"me" sits where you actually
-sit**, and each opponent's cell sits in the direction that player is really
-sitting — the person on your left is on the map's left, the person across the
-table is across. Tap a player's cell (via the preview, which opens the panel) to
-log the commander damage they dealt you. Every card agrees on one seat layout,
-"me" never lands in the same map cell on two different cards, and the map reads
-as the physical table from each seat.
+instead of a roster list, drawn as a **compact horizontal block** — at most two
+rows tall, growing wider as players are added — the exact look of the reference
+images. On your own card **"me" sits in your own seat corner**, with each
+opponent placed around it by their real table direction as far as the compact
+block allows. Tap a player's cell (via the preview, which opens the panel) to
+log the commander damage they dealt you. Across cards "me" never lands in the
+same block cell twice, and the block reads as the table from each seat as a
+best-effort outcome within its compact shape.
 
 Open a player's counter panel and the bigger commander-damage matrix inside it
 is the same seat map, not a fixed two-column roster with an oversized "me" tile.
@@ -49,10 +50,11 @@ in `GATE-QUESTIONS.md`.
 ## Owner clarification (2026-09-02) — on-card map is a compact horizontal block
 
 Recorded from `observations.md` and a confirmed design decision (the owner chose
-"always compact & horizontal"). **This supersedes the on-card parts of "Design
-direction" and acceptance criteria 3–4 below wherever they differ.** The counter
-panel (slice C) is unaffected — the owner is "okay with things changing" once a
-panel is opened.
+"always compact & horizontal"). **This supersedes the on-card parts of "What the
+player gets", "Design direction", "Resolved decisions", and acceptance criteria 1
+and 3–4 below wherever they differ.** The counter panel (slice C) is unaffected —
+the owner is "okay with things changing" once a panel is opened, and its top-down
+seat-map matrix stands unchanged.
 
 - **Outcome, not mechanism.** The on-card commander-damage mini-map renders as a
   **compact, horizontal block** — the *exact* look of the reference images
@@ -86,7 +88,7 @@ panel is opened.
 
 ## Design direction
 
-### The map is a miniature of the arrangement we already compute
+### The panel matrix is a miniature of the arrangement; the on-card map is a compact block
 
 `seatArrangement(count)` (grid mode) and `listSeatArrangement(count)` (list mode)
 already return, per seat, `{ label, side, rotation, gridArea, gridRow,
@@ -94,38 +96,41 @@ gridColumn }` plus the table's `columns` / `rows`. `PlayerLifeTrackerApp`
 computes the active one as `layout` and lays the real cards out on a
 `columns × rows` CSS grid, each card at its own `gridRow`/`gridColumn`.
 
-The commander-damage map becomes a **miniature of that same grid**:
+**The counter panel's matrix becomes a miniature of that same grid** — build it
+with `layout.columns × layout.rows`, place each seat's `CommanderDamageCell` at
+its own seat's `gridRow` / `gridColumn` (and `gridArea` where a seat spans, e.g.
+the 3-player head seat), highlight the opener's own cell as "me", and leave any
+grid slot with no seat empty. This replaces the fixed `grid-cols-2` roster loop
+in `CounterPanel`.
 
-- Build the mini-grid with `layout.columns × layout.rows`.
-- Place each seat's cell at *its own seat's* `gridRow` / `gridColumn` (and
-  `gridArea` where a seat spans, e.g. the 3-player head seat) — the current
-  player's cell renders "me", every opponent's cell renders the
-  commander-damage value (on-card) or the opponent's `CommanderDamageCell`
-  (panel), and any grid slot with no seat renders empty.
-- This replaces the roster-order `players.map` + `ceil(√N)` `previewColumns` in
-  `PlayerLifeCard`, and the fixed `grid-cols-2` roster loop in `CounterPanel`.
+**The on-card mini-map does not use that arrangement shape** (owner clarification
+above). It renders as a compact horizontal block — at most 2 rows, growing wider
+with more players — never the tall `layout.columns × layout.rows` arrangement and
+never a near-square `ceil(√N)` blob. "me" sits in the current player's own seat
+corner; opponents are placed around it by real table direction as a best-effort
+outcome within the block. It replaces the roster-order `players.map` + `ceil(√N)`
+`previewColumns` in `PlayerLifeCard`.
 
-Because each card places "me" at its own distinct seat coordinate, **no two
-cards ever put "me" in the same map cell** — the property falls out of using
-per-seat coordinates and needs no separate guard.
+Because each card marks "me" in its own distinct block cell, **no two cards ever
+put "me" in the same cell**. The panel matrix derives from whichever arrangement
+is active, so it is a true top-down replica of the on-screen table in both grid
+and list mode; the on-card block matches the reference look everywhere.
 
-The map derives from whichever arrangement is active, so it is a true replica of
-the on-screen table in both grid and list mode.
+### On-card glyphs read upright; the whole card is never rotated
 
-### On-card per-seat viewpoint rides the existing card rotation
-
-The card's content box is already rotated by `placement.rotation` (the sole
-life-zone orientation input, DEC-136). A map drawn in table coordinates inside
-that already-rotated box rides the same rotation, so it reads egocentrically from
-each seat — the same mechanism that already faces the life number toward the
-seated player. The cell glyphs (the number, "me") sit inside that rotated content
-box, so they face the seated player without extra work.
+The card's life-number content is already rotated by `placement.rotation` (the
+sole life-zone orientation input, DEC-136), and that stays. The on-card mini-map
+itself is the compact horizontal block above — its shape is fixed, not spun with
+the card, and **the whole card is never rotated** (the prior build over-scoped a
+callout into rotating the entire component; that is out of scope). The block's
+cell glyphs (the damage number, "me") should still read the right way up for the
+seated player.
 
 - **Verification owed at map-out/implement (do not assume):** confirm live that
-  the map glyphs are not sideways relative to the seated player at the 90°/270°
-  side-column seats — the same class of bug the card's life number already
-  solves. If they read sideways, counter-rotate the glyphs only (not the map),
-  matching the life-number treatment.
+  the block's glyphs are not sideways relative to the seated player at the
+  90°/270° side-column seats — the same class of bug the card's life number
+  already solves. If they read sideways, counter-rotate the glyphs only (never
+  the block, never the card), matching the life-number treatment.
 
 ### The opened counter panel: absolute top-down seat map, "me" highlighted
 
@@ -145,22 +150,26 @@ height/overlay treatment.
 
 ### Containment fix (7–8 players, both layout modes)
 
-- Size the on-card map to the table's **real column count** (`layout.columns` —
-  1 for 2 players, 2 for 3–8) and real row count, not the near-square
-  `ceil(√N)`. The map becomes a narrow strip matching the table's own shape
-  rather than a blob wider than the card's short edge.
-- Constrain the map **and** the name pill to sit within the card's inner content
-  box at every count so neither is clipped by `overflow-hidden` nor spills into
-  the inter-card gutter.
+- Lay the on-card map out as the compact horizontal block — at most 2 rows,
+  growing wider as players are added (e.g. a 2×4 block at 8 players) — never the
+  near-square `ceil(√N)` blob and never the tall `layout.columns × layout.rows`
+  arrangement shape. The block stays within the card's short edge because it
+  grows sideways, not down.
+- Constrain the block **and** the name pill to sit within the card's inner
+  content box at every count so neither is clipped by `overflow-hidden` nor
+  spills into the inter-card gutter.
 - **Verify live at 7 and 8 players, iPhone-portrait (~430px), in both grid and
   list layout.**
 
 ## Acceptance criteria
 
-1. On every card, the commander-damage preview places the current player's "me"
-   cell at that player's own seat and each opponent's cell at the seat that
-   player occupies in the active arrangement; no two cards share a "me" cell
-   position. Verified at 4 / 6 / 8 players, grid and list.
+1. On every card, the commander-damage preview is a compact horizontal block
+   (criterion 3) with the current player's "me" cell in their own seat corner and
+   each opponent placed around it by real table direction as a best-effort outcome
+   within the block; no two cards share a "me" cell position. Where a table's true
+   geometry cannot fit the 2-row block (7–8 players), containment and the reference
+   look win over exact directional fidelity. Verified at 4 / 6 / 8 players, grid
+   and list.
 2. The opened counter panel's commander-damage matrix is the same seat map: the
    opener highlighted as "me" at their seat, each opponent's cell at their seat,
    unused slots empty. No fixed `grid-cols-2` roster order; no oversized "me"
@@ -190,8 +199,9 @@ height/overlay treatment.
   `CounterPanel`, which today receive only their own `placement` / `players`.
   Presentation-only prop additions.
 - `PlayerLifeCard.tsx` — replace `previewColumns`/`commanderDamagePreviewCells`
-  with the seat-map builder; render the preview grid at `layout.columns × rows`
-  with per-seat placement; apply the containment sizing.
+  with the compact-block builder; render the preview as the compact horizontal
+  block (at most 2 rows, growing wider), not `layout.columns × rows`; apply the
+  containment sizing.
 - `CounterPanel.tsx` — replace the `grid-cols-2` roster matrix and the oversized
   "me" tile with the top-down seat-map matrix; keep `CommanderDamageCell` bands
   and the decrements-life behavior.
@@ -201,9 +211,12 @@ height/overlay treatment.
 The four intake "decisions already made" and the one flagged open choice are
 recorded here as resolved, with evidence, per the preparation contract:
 
-- **Map model = per-seat viewpoint** (each card is the table from that player's
-  seat), adopted. Basis: the request outcome and the existing card-rotation
-  mechanism (DEC-136) already deliver it. Ladder #2/#3.
+- **Map model = per-seat viewpoint, best-effort within the compact block** — the
+  on-card map is the compact horizontal block (owner clarification above); "me"
+  sits in the player's own seat corner and opponents by real table direction as
+  far as the 2-row block allows, and the panel matrix is the full top-down seat
+  replica. Basis: the request outcome plus the owner's compact-horizontal
+  decision. Ladder #2/#3.
 - **Cell content unchanged** — on-card cells keep the damage value; panel cells
   keep player display-names; the reference's 1–5 relative-index labels are not
   adopted. Basis: position tells you *who*, the number tells you *how much*;
@@ -243,8 +256,10 @@ recorded here as resolved, with evidence, per the preparation contract:
 
 Durable product-truth change is needed and gates in `GATE-QUESTIONS.md`:
 
-- New **REQ-173** — seat-consistent commander-damage placement across both
-  surfaces, with containment acceptance criteria.
+- New **REQ-173** — commander-damage placement that reads as the table on both
+  surfaces (a top-down seat-map matrix in the panel; a compact horizontal block
+  on the card, seat-consistent as a best-effort outcome within it), with
+  containment acceptance criteria.
 - Prose edits to `PRD/sections/life-tracker/README.md` (the life-table and
   counter-panel/commander-damage-matrix sections) making both surfaces explicit
   seat maps and adding the containment guarantee.

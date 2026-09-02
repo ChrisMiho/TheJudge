@@ -1,46 +1,79 @@
-# GAMEPLAN — life-tracker-seat-map
+# GAMEPLAN — life-tracker-seat-map (compact-horizontal re-plan)
 
 ## Objective
 
-Every player's on-card commander-damage preview, and the bigger matrix inside
-their opened counter panel, becomes a miniature of the real seat arrangement —
-"me" at your own seat, each opponent where they actually sit — instead of a
-fixed roster list. At 7–8 players the on-card map and the player-name pill stay
-fully inside the card. Pure frontend/presentation; no backend, provider, seed
-contract, or persistence change. See `DESIGN-BRIEF.md` for the full direction
-and `GATE-QUESTIONS.md` for the accepted REQ-173 diff (applied at build, not
-here).
+The on-card commander-damage preview stops being a miniature of the real seat
+arrangement and becomes a **compact horizontal block** — at most 2 rows,
+growing wider as players are added — matching the reference images, the same
+shape in grid and list layout, "me" in the current player's own seat corner,
+opponents around it as a best-effort outcome, extrapolated sideways for 7–8
+players. The whole card is never rotated; only the block's internal layout
+changes. The opened counter panel's commander-damage matrix is **unchanged**:
+it stays a top-down miniature of the active arrangement (opener as "me" at
+their own seat, each opponent at theirs, unused slots empty).
+
+This replaces the prior plan's on-card mechanism, which reused the panel's
+arrangement-miniature geometry (`layout.columns × layout.rows`) for the on-card
+preview too — the owner's 2026-09-02 clarification (`DESIGN-BRIEF.md` ##
+Owner clarification; `GATE-QUESTIONS.md` REQ-173, reconciled) rejects that for
+the on-card surface specifically. Pure frontend/presentation; no backend,
+provider, seed contract, or persistence change. REQ-173's accepted diff
+applies to `PRD/sections/` at build, not here.
+
+## Starting state (what already exists on this branch)
+
+Slices A/B/C of the prior plan are already committed
+(`thejudge-auto/life-tracker-seat-map-work`):
+
+- `apps/frontend/src/lib/lifeTracker/seatMap.ts` exports
+  `buildSeatMapCells(layout, players, viewerLabel)` — places every player at
+  their own seat from `layout.seats`. **Keep this as-is**; it is exactly what
+  the panel (slice C) still needs.
+- `PlayerLifeCard.tsx` currently calls `buildSeatMapCells` and sizes its
+  preview grid to `layout.columns × layout.rows` — **this is the part that
+  must change** (slice B).
+- `CounterPanel.tsx` calls `buildSeatMapCells` and sizes its matrix to
+  `layout.columns × layout.rows` — **this is correct already and stays**
+  (slice C re-verifies only).
+- `PlayerLifeTrackerApp.tsx` already threads its computed `layout` into both
+  components as a prop — no change needed for that wiring.
+
+This re-plan does not start from zero: it adds a second, independent geometry
+builder for the on-card surface and rewrites only `PlayerLifeCard.tsx`'s
+rendering to use it. `CounterPanel.tsx` and `seatMap.ts`'s existing export are
+untouched in substance.
 
 ## Architecture
 
-- **The map is a miniature of the grid `PlayerLifeTrackerApp` already lays the
-  real cards out on.** `seatArrangement(count)` / `listSeatArrangement(count)`
-  already return, per seat, `{ label, side, rotation, gridArea, gridRow,
-  gridColumn }` plus `columns`/`rows`. `PlayerLifeTrackerApp` computes this once
-  as `layout` and today only threads each card's own `placement` down — the
-  fix is to also thread the **full** `layout` into `PlayerLifeCard` and
-  `CounterPanel`, so each card/panel can place every seat, not just its own.
-- **One shared, pure geometry function** (`buildSeatMapCells`, new in
-  `lib/lifeTracker/seatMap.ts`) turns `(layout, players, viewerLabel)` into one
-  cell per player, each carrying that player's own `gridRow`/`gridColumn`/
-  `gridArea` and an `isSelf` flag. `PlayerLifeCard` and `CounterPanel` both call
-  it; each decides what to render inside a cell (the on-card damage number vs.
-  the panel's `CommanderDamageCell`), so cell content stays exactly as it is
-  today — only placement changes.
-- **On-card (`PlayerLifeCard`):** the existing rotated, container-query-sized
-  content box already makes the card read egocentrically (the same mechanism
-  that faces the life number toward the seated player, DEC-136). The preview
-  grid rides that same box, so per-seat placement plus the existing rotation is
-  sufficient — no new orientation mechanism. Containment is fixed by sizing the
-  grid to the arrangement's real `columns`/`rows` instead of `ceil(√N)`.
-- **Panel (`CounterPanel`):** the panel is a non-rotated centered dialog
-  (DEC-139) and stays that way — its map is an absolute top-down replica of the
-  table, opener's own seat highlighted as "me" at normal cell size (the
-  oversized `min-h-36` tile is dropped). Only the matrix's internal arrangement
-  changes; the overlay/tray shape is untouched.
-- **Removed:** `PlayerLifeCard`'s roster-order `commanderDamagePreviewCells` +
-  `ceil(√N)` `previewColumns`; `CounterPanel`'s fixed `grid-cols-2` roster
-  `.map` and oversized "me" tile.
+- **Two geometry builders, one module.** `lib/lifeTracker/seatMap.ts` keeps
+  exporting `buildSeatMapCells` (arrangement miniature — panel, slice C) and
+  gains a second, independent export for the on-card compact block (slice A).
+  Both stay pure and framework-agnostic, like `seatArrangement.ts` itself: no
+  React import, no DOM/browser global read, no `lib/lifeTracker/state.ts`
+  import.
+- **The compact-block builder is decoupled from the arrangement's real shape.**
+  It never reads `layout.columns`/`layout.rows` to size its own grid and never
+  computes a near-square `ceil(√N)` grid. Its own grid is always at most 2 rows
+  tall, growing wider as the player count grows (e.g. a 2×4 block at 8
+  players). It may still consult each seat's real table direction (`side` in
+  `SeatArrangementLayout`/`SeatPlacement`) to decide where an opponent falls
+  relative to the viewer's own corner — direction is an input to placement
+  *within* the block, not to the block's own row/column count. The exact
+  parameter shape and algorithm are the implementing slice's call; the
+  constraint is the output contract (own grid, ≤2 rows, self at a corner,
+  never derived from `layout.columns`/`layout.rows`).
+- **On-card (`PlayerLifeCard`):** replaces the `buildSeatMapCells` call and the
+  `layout.columns`/`layout.rows` grid template with the new compact-block
+  builder and its own (≤2-row) grid template. The existing rotated,
+  container-query-sized content box (DEC-136's mechanism) is unchanged — the
+  block rides inside it exactly like the old preview did; only the block's own
+  internal shape changes. The whole card is never rotated (out of scope: no
+  callout rotates the entire component).
+- **Panel (`CounterPanel`):** no architectural change. Stays a non-rotated
+  centered dialog (DEC-139) whose matrix is `buildSeatMapCells` sized to
+  `layout.columns × layout.rows` — an absolute top-down replica of the table,
+  opener highlighted as "me" at normal cell size. Slice C re-verifies this
+  still holds; it does not re-derive it.
 - **Preserved unchanged:** always-on commander-damage-decrements-life; the
   panel's `−`/`+` bands (~53px, REQ-112) inside `CommanderDamageCell`; the "me"
   self-cell; seat rotation as the sole life-zone orientation input (DEC-136);
@@ -51,35 +84,37 @@ here).
 
 | Slice | Objective | Depends on |
 | --- | --- | --- |
-| A | Seat-map geometry: shared `buildSeatMapCells` helper; thread the full `layout` prop from `PlayerLifeTrackerApp` into `PlayerLifeCard` and `CounterPanel` | — |
-| B | `PlayerLifeCard`: on-card preview becomes the per-seat map, sized to the arrangement's real columns/rows (containment fix) | A |
-| C | `CounterPanel`: commander-damage matrix becomes the top-down per-seat map; drop the fixed 2-column roster loop and the oversized "me" tile | A |
-| D | Live verification: 7/8-player containment (grid + list, iPhone-portrait) and side-seat glyph orientation, with owned-server/browser cleanup; Ship gates | B, C |
+| A | Seat-map geometry: add the compact-horizontal-block builder to `lib/lifeTracker/seatMap.ts`, alongside the existing `buildSeatMapCells` (kept, unchanged, for the panel) | — |
+| B | `PlayerLifeCard`: on-card preview switches from the arrangement miniature to the compact-horizontal block, same shape in grid and list layout | A |
+| C | `CounterPanel`: re-verify the commander-damage matrix is still the unchanged top-down arrangement miniature; re-touch only if slice A's module shape moved under it | A |
+| D | Live verification: 7/8-player containment plus block-shape (≤2 rows, reads horizontal) in both grid and list layout, iPhone-portrait; side-seat glyph orientation; runtime cleanup; Ship gates | B, C |
 
-B and C are parallel-ready once A lands (each touches a different component).
-D is the closing slice — it needs both surfaces built to verify the map
-end-to-end, and carries the runtime-process-hygiene ownership for the live
-browser check plus the package's Ship gates.
+B and C are parallel-ready once A lands (each touches a different component,
+and C's own logic does not depend on B's new builder). D is the closing slice.
 
 ## Data flow
 
 ```
 PlayerLifeTrackerApp
-  layout = listSeatArrangement(count) | seatArrangement(count)   (already computed)
+  layout = listSeatArrangement(count) | seatArrangement(count)   (already computed, unchanged)
     │
     ├─ per real card: <PlayerLifeCard player players placement layout .../>
     │     placement = this card's own seat (unchanged, drives rotation/gridArea)
-    │     layout    = NEW — the full arrangement, so the preview can place
-    │                  every seat, not just its own
-    │        buildSeatMapCells(layout, players, player.label)
-    │          → one cell per player, each at ITS OWN seat's gridRow/gridColumn
-    │          → preview grid template = layout.columns × layout.rows
+    │     layout    = unchanged wiring — but PlayerLifeCard now uses it only to
+    │                 read each seat's `side` (direction), NOT its columns/rows
+    │        <compact-block builder>(players, player.label, layout-derived directions)
+    │          → the block's OWN grid shape: ≤2 rows, grows wider
+    │          → "me" at the viewer's own corner; opponents by real direction
+    │            as a best-effort outcome within that shape
+    │        (same output shape in grid mode and list mode — decoupled from
+    │         listSeatArrangement's tall stacking)
     │
     └─ opened panel: <CounterPanel player players layout .../>
-          layout = NEW — same arrangement, panel is never rotated (DEC-139)
-             buildSeatMapCells(layout, players, player.label)
+          layout = unchanged, panel is never rotated (DEC-139)
+             buildSeatMapCells(layout, players, player.label)   (UNCHANGED — slice C)
                → opener's own cell renders "me" (normal size) at its own seat
                → each opponent's CommanderDamageCell at its own seat
+               → grid sized to layout.columns × layout.rows (top-down replica)
 ```
 
 ## Verification checklist
@@ -87,10 +122,14 @@ PlayerLifeTrackerApp
 - [ ] `npm run test` (frontend) green for `seatMap.test.ts`, `PlayerLifeCard.test.tsx`,
       `CounterPanel.test.tsx`, `PlayerLifeTrackerApp.test.tsx`.
 - [ ] `npm run typecheck` (frontend) green.
-- [ ] No roster-order `.map(players)` layout logic remains in either surface —
-      `grep -n "previewColumns\|commanderDamagePreviewCells\|grid-cols-2" apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.tsx apps/frontend/src/components/portal/life-tracker/CounterPanel.tsx` returns nothing.
-- [ ] Live containment verified at 7 and 8 players, grid and list, iPhone-portrait
-      (~430px) — slice D.
+- [ ] `PlayerLifeCard.tsx`'s preview grid template is never derived from
+      `layout.columns`/`layout.rows` and never `ceil(Math.sqrt(...))` —
+      `grep -n "layout.columns\|layout.rows\|ceil(Math.sqrt" apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.tsx` returns nothing.
+- [ ] `CounterPanel.tsx` still derives its matrix grid from
+      `layout.columns`/`layout.rows` via `buildSeatMapCells` (unchanged) —
+      `grep -n "buildSeatMapCells\|layout.columns\|layout.rows" apps/frontend/src/components/portal/life-tracker/CounterPanel.tsx` still finds them.
+- [ ] Live containment + block-shape verified at 7 and 8 players, grid and
+      list, iPhone-portrait (~430px), against the reference images — slice D.
 - [ ] Browser closed, owned dev server stopped, port released, capture path
       recorded — slice D.
 
@@ -101,6 +140,6 @@ PlayerLifeTrackerApp
   not re-apply).
 - Prose edits to `PRD/sections/life-tracker/README.md` (life-table + counter
   panel/commander-damage-matrix sections) and the Player Life Tracker row in
-  `PRD/sections/screen-layout.md`, per `GATE-QUESTIONS.md` diffs 2 and 3 —
-  verified present, not re-applied.
+  `PRD/sections/screen-layout.md`, per `GATE-QUESTIONS.md`'s reconciled diffs
+  — verified present, not re-applied.
 - No new `DEC-###` (decision log retired); no new `FLOW-###`.
