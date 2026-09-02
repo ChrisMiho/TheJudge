@@ -1,5 +1,5 @@
 export type { FlowStepId } from "./steps";
-export { FLOW_STEPS, FLOW_STEP_LABELS, getNextStep, getPreviousStep } from "./steps";
+export { FLOW_STEPS, getNextStep, getPreviousStep } from "./steps";
 
 export {
   CANONICAL_ZONE_ORDER,

@@ -1,15 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { FLOW_STEPS, FLOW_STEP_LABELS, getNextStep, getPreviousStep } from "./steps";
+import { FLOW_STEPS, getNextStep, getPreviousStep } from "./steps";
 
 describe("Frontend - MTG Assistant", () => {
 describe("contextFlow steps", () => {
   it("FLOW_STEPS lists the zone-based flow in order", () => {
     expect(FLOW_STEPS).toEqual(["game-context", "zone-confirm", "zone-collection", "enrichment"]);
-  });
-
-  it("FLOW_STEP_LABELS provides human-readable labels", () => {
-    expect(FLOW_STEP_LABELS["game-context"]).toBe("Game Context");
-    expect(FLOW_STEP_LABELS.enrichment).toBe("Enrich & Submit");
   });
 
   it("getNextStep advances through the flow", () => {
