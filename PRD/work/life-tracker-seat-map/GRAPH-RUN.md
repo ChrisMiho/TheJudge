@@ -275,6 +275,36 @@ Scope: write only inside `.worktrees/implement-life-tracker-seat-map/` and `PRD/
 Report back: the worktree path, the code PR URL (head `thejudge-auto/life-tracker-seat-map-work`, base `main`), each slice's final status and earned-criteria confirmation, the `PRD/sections/` files edited (REQ-173 applied), the quality:check result, the slice-D capture path, and confirmation `STATUS.ship-ready` is set.
 ```
 
+### build (attempt 2)
+
+```text
+graph is controlling. You are node 6 (`build`), attempt 2, of an autonomous graph run. thejudge-implement-all is being dispatched under the graph driver — run non-interactively, ask no questions, make no product decisions.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Copy this exact `Working directory:` line, unchanged, into every prompt you write to any subagent of your own.
+
+Run ID: graph-20260902-093611
+Package: PRD/work/life-tracker-seat-map/
+
+Resume the build. Attempt 1 fully implemented slice A (the `buildSeatMapCells` helper in `apps/frontend/src/lib/lifeTracker/seatMap.ts` plus test, and the `layout` prop threaded from `PlayerLifeTrackerApp` into `PlayerLifeCard` and `CounterPanel`) and verified it green (typecheck, vitest 32/32, quality:check on the staged tree). It parked because slice A criterion A3 was un-earnable due to a regex-escaping typo in `slice-a.criteria.json` — now fixed by the driver in the launch checkout (`^import` → `\^import`), which is the copy the hook reads. Slice A criteria A1, A2, A4, A5, A6 are already earned in the evidence log for this run.
+
+Invoke the `thejudge-implement-all` skill (Skill tool) and follow it exactly. Resume the EXISTING worktree `.worktrees/implement-life-tracker-seat-map` (branch `implement-life-tracker-seat-map`, based on `origin/thejudge-auto/life-tracker-seat-map-work`) — do not recreate it; its slice-A work is staged and must be preserved.
+
+Do this:
+1. Ensure the worktree's own `PRD/work/life-tracker-seat-map/slice-a.criteria.json` A3 evidence pattern is the escaped form `grep -n "\^import" …` (matching the launch checkout). If it still has the unescaped `^`, correct it in the worktree.
+2. Re-issue slice A's A3 evidence command (`grep -n "^import" apps/frontend/src/lib/lifeTracker/seatMap.ts`) so the hook logs A3, then flip A3 to true. Confirm every slice-A criterion is now true, commit slice A, and complete it.
+3. Implement slices B, C, D end to end, earning every criterion in each `slice-<letter>.criteria.json`. Slice D's six `manual` criteria are live-browser checks — run the worktree's own isolated dev server (a port you own), capture 7/8-player screenshots in grid and list at iPhone-portrait width, record a dated observation line per id, and complete the `PRD/instructions/runtime-process-hygiene.md` cleanup (browser-close, owned-process-stop, port-release, capture path under the worktree's `PRD/work/life-tracker-seat-map/.playwright-mcp/`).
+
+Branch/PR shape (from `## Autonomous metadata`): recorded autonomous base `origin/main`; shared build branch `thejudge-auto/life-tracker-seat-map-work`; open ONE code PR `gh pr create --base main --head thejudge-auto/life-tracker-seat-map-work`. Opening is allowed; never merge/close it — land is the owner's.
+
+Apply the approved product truth AT BUILD, by intent, together with the code: REQ-173's three accepted diffs into `PRD/sections/functional-requirements.md` (new REQ-173), `PRD/sections/life-tracker/README.md`, and `PRD/sections/screen-layout.md`, re-derived from the finalized `GATE-QUESTIONS.md` (accept) and `DESIGN-BRIEF.md`. Preserve always-on commander-damage-decrements-life, the panel minus/plus bands (REQ-112), the 'me' self-cell, seat rotation as the sole orientation input (DEC-136); do not reopen the counter-panel overlay shape (DEC-139).
+
+Scope: write only inside `.worktrees/implement-life-tracker-seat-map/` and `PRD/work/life-tracker-seat-map/`. Do not edit any `thejudge-*` skill, `.claude/`, `CLAUDE.md`, or `.secrets/`. When every slice is `done`, set `STATUS.ship-ready`.
+
+Report back: the worktree path, the code PR URL (head `thejudge-auto/life-tracker-seat-map-work`, base `main`), each slice's final status and earned-criteria confirmation, the `PRD/sections/` files edited (REQ-173 applied), the quality:check result, the slice-D capture path, and confirmation `STATUS.ship-ready` is set.
+```
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
