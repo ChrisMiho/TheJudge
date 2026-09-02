@@ -1,6 +1,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import type { PlayerLabel } from "../../../types";
 import type { SeatArrangementLayout, SeatPlacement } from "../../../lib/lifeTracker/seatArrangement";
+import { buildSeatMapCells } from "../../../lib/lifeTracker/seatMap";
 import type { CardStyle, TrackerPlayer } from "../../../lib/lifeTracker/types";
 import { formatPlayerDisplayLabel } from "../../../lib/playerLabels";
 
@@ -85,21 +86,6 @@ function lifeHalvesForRotation(rotation: number): LifeHalves {
   }
 }
 
-/** Near-square column count for `count` preview tiles (2x2 for 4, matching the reference). */
-function previewColumns(count: number): number {
-  return Math.max(1, Math.ceil(Math.sqrt(count)));
-}
-
-type PreviewCell = { key: PlayerLabel; isSelf: boolean; value: number };
-
-function commanderDamagePreviewCells(player: TrackerPlayer, players: TrackerPlayer[]): PreviewCell[] {
-  return players.map((seat) => ({
-    key: seat.label,
-    isSelf: seat.label === player.label,
-    value: player.commanderDamage[seat.label] ?? 0
-  }));
-}
-
 /**
  * Parses typed life entry. Any finite number is legal - negative totals and totals far past the
  * usual range are both real game states - but empty/garbage input resolves to `null` so the caller
@@ -123,8 +109,6 @@ export function PlayerLifeCard({
   onSetLife,
   onOpenCounters
 }: PlayerLifeCardProps): JSX.Element {
-  // Threaded through in slice A; slice B wires it into the preview grid's placement/sizing.
-  void layout;
   const [lifeDraft, setLifeDraft] = useState<string | null>(null);
   // Escape unmounts the input, which also fires blur; without this the blur handler would then
   // commit the very draft Escape just discarded.
@@ -132,8 +116,9 @@ export function PlayerLifeCard({
   const displayLabel = formatPlayerDisplayLabel(player.label, player.displayName);
   const status = lifeState(player.life);
   const rotation = `rotate(${placement.rotation}deg)`;
-  const previewCells = commanderDamagePreviewCells(player, players);
-  const previewCols = previewColumns(previewCells.length);
+  // The preview is a miniature of the real table (REQ-173): every seat placed at its own
+  // gridRow/gridColumn/gridArea from the active layout, not roster order or a near-square blob.
+  const previewCells = buildSeatMapCells(layout, players, player.label);
   // A 90/270 rotation swaps the content's effective width and height. Cards are rarely square,
   // so sizing the rotated box off the card's own (un-rotated) dimensions overflows the shorter
   // axis and gets silently clipped by the card's `overflow-hidden`. Container query units size
@@ -265,18 +250,22 @@ export function PlayerLifeCard({
           aria-label={`Open counters for ${displayLabel}`}
           onClick={() => onOpenCounters(player.label)}
           className="motion-focus pointer-events-auto grid gap-1 rounded-xl border border-black/10 bg-white/40 p-1.5 shadow-sm hover:bg-white/65"
-          style={{ gridTemplateColumns: `repeat(${previewCols}, minmax(0, 1fr))` }}
+          style={{
+            gridTemplateColumns: `repeat(${layout.columns}, minmax(0, 1fr))`,
+            gridTemplateRows: `repeat(${layout.rows}, minmax(0, 1fr))`
+          }}
         >
           {previewCells.map((cell) => (
             <span
-              key={cell.key}
+              key={cell.label}
               aria-hidden="true"
-              data-testid={`commander-preview-cell-${cell.key}`}
+              data-testid={`commander-preview-cell-${cell.label}`}
+              style={{ gridArea: cell.gridArea, gridRow: cell.gridRow, gridColumn: cell.gridColumn }}
               className={`flex min-h-6 min-w-6 items-center justify-center rounded-md text-[0.65rem] font-black tabular-nums ${
                 cell.isSelf ? "bg-black/10 opacity-80" : "bg-white/50"
               }`}
             >
-              {cell.isSelf ? "me" : cell.value}
+              {cell.isSelf ? "me" : player.commanderDamage[cell.label] ?? 0}
             </span>
           ))}
         </button>
