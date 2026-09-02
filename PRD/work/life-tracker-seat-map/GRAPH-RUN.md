@@ -5,8 +5,9 @@
 - Canary: `denied — hook live (universal: rm -rf denied) + graph tier armed (nohup denied while lock held)`
 - Autonomous base: `origin/thejudge-auto/life-tracker-seat-map`
 - Staging: `.worktrees/.graph-intake/graph-20260902-093611/` (copied verbatim into `PRD/work/life-tracker-seat-map/intake/`, then deleted at node 2 per kickoff's copy→commit→delete)
-- Current node: `build` (attempt 3) — **RESUMED**. Owner merged the boundary-hook fix (PR #181) to `main`; `origin/main` integrated into `thejudge-auto/life-tracker-seat-map-work` so the active hook is corrected. `origin/-work` republished with the A3 fix so the build worktree resumes on a correct base.
-- Next action: `/graph-implement PRD/work/life-tracker-seat-map/` — build → review → land → close
+- Current node: `build` — **PAUSED at `owner-action`** for a layout-design clarification (not a tooling blocker). Slices A–C implemented + green in the worktree; the on-card commander-damage grid is correct in **grid** mode but renders **vertical and overflows the card bottom in LIST mode** at 8 players. Owner is refreshing context to clarify intent. Full handoff: `PRD/work/life-tracker-seat-map/HANDOFF.md`.
+- Next action: owner clarifies the list-mode grid orientation, then `/graph-implement PRD/work/life-tracker-seat-map/` re-enters at `build`
+- Terminal state (build half): `PARKED`
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/180 (MERGED — the build signal)
 - Boundary-hook fix: https://github.com/ChrisMiho/TheJudge/pull/181 (MERGED — `criterion-flip-without-evidence` now remediable)
 - Resume canary (attempt 3): `graph tier armed — nohup denied while lock held`. Lock re-taken (run `graph-20260902-093611`).
@@ -33,6 +34,7 @@ Instruction-ledger match is unambiguous.
 | — | build (guardrail fix) | — | ok | — | Driver fixed the map-out escaping typo per contract *fix the guardrail, never route around it*: A3 evidence `^import` → `\^import` in the launch-checkout `slice-a.criteria.json` (the copy the hook reads — `projectRoot`=`CLAUDE_PROJECT_DIR`). Verified: JSON valid; escaped pattern now matches the real grep command. Scanned B/C/D command patterns — A3 was the only broken one. Re-dispatching build as attempt 2 | 2026-09-02 |
 | 6 | build | sonnet | parked | `2 → 52` | Attempt 2 parked on a **second, distinct enforcement-tooling defect** (not code). A3 now earned (log `16:56:36`); all six slice-A criteria A1–A6 have hook-observed evidence for this run. But flipping them to `true` is blocked by `denied-command-retry`: a stale denial from attempt 1 (`.graph-denials.jsonl`, `criterion-flip-without-evidence` at `16:46:53`, when A3 lacked evidence) permanently blocks any `Edit` to `slice-a.criteria.json` for the rest of the run. `denialKey` keys on tool+path only, and `criterion-flip-without-evidence` is **not** in `REMEDIABLE_RULES` (only `run-lock-removal` is), so the now-evidenced retry can never be re-evaluated. Build correctly refused to route around it via `Write`/`Bash`. Slice A code complete + green (typecheck, vitest 32/32, quality:check); nothing committed/pushed; no PR; worktree preserved. Slices B/C/D not started; REQ-173 not yet applied; `STATUS` stays `active` → `owner-action` | 2026-09-02 |
 | — | build (gate resolved) | — | ok | — | Owner merged the boundary-hook fix PR #181: `criterion-flip-without-evidence` added to `REMEDIABLE_RULES` (guarantee unchanged — the rule re-evaluates against the evidence log; only the stale-denial trap removed; `test:scripts` green, 436). Driver integrated `origin/main` into `thejudge-auto/life-tracker-seat-map-work` (active hook now corrected) and republished `origin/-work` with the A3 fix so the worktree rebases onto a correct base. `STATUS.active` restored. Re-dispatching build as attempt 3 | 2026-09-02 |
+| 6 | build | sonnet | paused | `2 → ?` | Attempt 3 resumed with the fix live; slices A, B, C reached `done` in the worktree (green: typecheck, vitest 32/32, quality:check). Stopped by the owner mid slice-D on a **layout-design issue**. Live DOM measurement (430px): the on-card commander-damage grid is **horizontal + contained in grid mode** at 7 and 8 players (~49×26), but in **LIST mode at 8 players it is vertical (~12–25w × 60h) and overflows the card bottom by ~4px on players 2–8**. Owner: "just rotate the component, then fix the order displayed"; the reference images (`intake/references/`) are the target; my compact-grid redesign proposal was over-scoped. Paused for owner clarification. Nothing committed to the shared branch; no code PR. Handoff: `HANDOFF.md` | 2026-09-02 |
 
 ## Gate verdicts
 
@@ -42,13 +44,26 @@ Instruction-ledger match is unambiguous.
 
 ## Open gate
 
-- **PARKED at `build` (2026-09-02): an enforcement-tooling defect blocks the run;
-  fix needs the owner because it touches the graph guardrail engine, not this
-  feature.** The seat-map code is not the problem — slice A is implemented and
-  verified green. The blocker is a graph-boundary-hook bug.
+- **PAUSED at `build` (2026-09-02) for a layout-design clarification — this is the
+  active gate.** Not a tooling blocker. Slices A–C are implemented and green; the
+  open question is the on-card commander-damage grid layout. Measured live: **grid
+  mode is correct** (horizontal, contained, 7 and 8 players), but **list mode at 8
+  players renders the grid vertical and overflows the card bottom by ~4px**. Owner
+  guidance: "just rotate the component, then fix the order displayed"; the
+  `intake/references/` images are the target; a full geometry redesign is
+  out of scope (grid mode already works). The owner is refreshing context and will
+  give clarification. **Full handoff: `PRD/work/life-tracker-seat-map/HANDOFF.md`.**
+  Resume after clarification with `/graph-implement PRD/work/life-tracker-seat-map/`
+  (re-enters at `build`; worktree preserved, no A–C re-coding needed).
 
-  **What's blocked, plainly:** the build cannot mark slice A's acceptance criteria
-  as met, even though the hook already observed the evidence for all six.
+- **RESOLVED 2026-09-02 (historical): enforcement-tooling defect** — the build
+  could not mark slice A's already-earned criteria as met because a stale
+  attempt-1 denial trapped the retry (`criterion-flip-without-evidence` was not
+  in `REMEDIABLE_RULES`). Fixed by PR #181 (merged) and integrated into `-work`.
+  Original detail kept below for the record.
+
+  **What was blocked, plainly:** the build could not mark slice A's acceptance
+  criteria as met, even though the hook had already observed the evidence for all six.
 
   **Diagnosis (code-grounded):**
   - The A3 regex typo is fixed; A3 is now earned (`.worktrees/.graph-evidence.jsonl`,

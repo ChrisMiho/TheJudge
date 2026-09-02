@@ -8,8 +8,6 @@ Do not rename package folders to encode status.
 
 ## active
 
-| [life-tracker-seat-map](life-tracker-seat-map/) | RESUMED at `build` (attempt 3) after boundary-hook fix PR #181 merged; slices A–D, one code PR into `main`. |
-
 ## refined
 
 ## refining
@@ -17,6 +15,8 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
+
+| [life-tracker-seat-map](life-tracker-seat-map/) | PAUSED at `build` for a layout-design clarification (grid mode correct; list mode grid renders vertical + overflows at 8p). Owner refreshing context to clarify. See `HANDOFF.md`. |
 
 ## deferred
 
