@@ -7,13 +7,6 @@ export const FLOW_STEPS: FlowStepId[] = [
   "enrichment"
 ];
 
-export const FLOW_STEP_LABELS: Record<FlowStepId, string> = {
-  "game-context": "Game Context",
-  "zone-confirm": "Confirm Zones",
-  "zone-collection": "Add Cards",
-  enrichment: "Enrich & Submit"
-};
-
 export function getNextStep(current: FlowStepId): FlowStepId | null {
   const index = FLOW_STEPS.indexOf(current);
   return index >= 0 && index < FLOW_STEPS.length - 1 ? FLOW_STEPS[index + 1]! : null;
