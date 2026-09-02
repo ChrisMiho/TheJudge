@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # remove-dead-card-back-detector
 
@@ -23,3 +23,18 @@ non-goals.
 - Quality-check: PASS
 - Checked artifact: `PRD/work/remove-dead-card-back-detector/DESIGN-BRIEF.md`
 - Findings: none
+
+## Slices
+
+| Slice | Objective | Depends on | Status |
+| --- | --- | --- | --- |
+| [A](slice-a-remove-dead-detector.md) | Delete the dead card-back detector from `identify.ts`; keep the live `_card_back` DB-exclusion filter | none | planned |
+
+## Implementation map
+
+- `apps/frontend/src/lib/scan/identify.ts` — deletion target (slice A)
+- `apps/frontend/src/lib/scan/identification/identify.test.ts` — verification only; no edit expected
+- `PRD/sections/` — already edited and accepted (commit `7a36b25`); no further edit in this package
+
+See `GAMEPLAN.md` for architecture, data flow, and the full verification
+checklist.

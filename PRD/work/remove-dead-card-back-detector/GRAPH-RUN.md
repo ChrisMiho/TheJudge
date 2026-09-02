@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/... ; nohup true graph-tier)`
 - Autonomous base: `origin/thejudge-auto/codehealth-20260901-1457-1-deadcardback`
 - Staging: `.worktrees/.graph-intake/graph-20260901-150630/` (copied to package intake/, then removed)
-- Current node: `plan` (run two: gate-review applied, gate-qc re-PASSed)
-- Next action: dispatch `thejudge-map-out`
+- Current node: `build` (run two: plan done, one slice A)
+- Next action: dispatch `thejudge-implement-all`
 
 ## Node ledger
 
@@ -18,6 +18,7 @@
 | 4 | gate-qc | sonnet | ok | `— → 29` | `thejudge-quality-check`: PASS — brief aligned + slice-ready; line numbers, zero-callers, and 5 `PRD/sections/` edits all verified; delete-vs-keep correctly routed to `GATE-QUESTIONS.md` | 2026-09-01 |
 | — | gate-review | sonnet | ok | `— → 15` | `graph-gate-review`: applied `DEC-055` accept (no-op on recorded diff); status restored `refined`; gate resolved | 2026-09-02 |
 | 4 | gate-qc (run two) | sonnet | ok | `— → 17` | `thejudge-quality-check` re-grade after owner accepted DEC-055: PASS, no findings; 5 `PRD/sections/` edits + deletion line numbers + zero-callers re-verified against live tree | 2026-09-02 |
+| 5 | plan | sonnet | ok | `— → 27` | `thejudge-map-out`: one slice A (delete `isCardBack()`/`CARD_BACK_THRESHOLD`/`cardBack` from identify.ts, keep live `_card_back` filter); GAMEPLAN + slice-a doc + criteria.json; STATUS.active | 2026-09-02 |
 
 ## Gate verdicts
 

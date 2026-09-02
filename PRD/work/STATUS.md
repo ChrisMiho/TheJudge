@@ -8,9 +8,9 @@ Do not rename package folders to encode status.
 
 ## active
 
-## refined
+| [remove-dead-card-back-detector](remove-dead-card-back-detector/) | owner accepted DEC-055 (delete the dormant `isCardBack()` detector); mapped to a single slice A. |
 
-| [remove-dead-card-back-detector](remove-dead-card-back-detector/) | owner accepted DEC-055 (delete the dormant `isCardBack()` detector); gate resolved, run one resumes at `gate-qc`. Docs-only PR open. |
+## refined
 
 ## refining
 
