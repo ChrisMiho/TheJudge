@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { createInitialState } from "../../../lib/lifeTracker/state";
-import { seatArrangement, type SeatPlacement } from "../../../lib/lifeTracker/seatArrangement";
+import { listSeatArrangement, seatArrangement, type SeatPlacement } from "../../../lib/lifeTracker/seatArrangement";
 import { PlayerLifeCard } from "./PlayerLifeCard";
 
 const placement: SeatPlacement = {
@@ -178,8 +178,8 @@ describe("Frontend - Shared", () => {
       expect(screen.getByTestId("commander-preview-cell-Player 4")).toHaveTextContent("0");
     });
 
-    it("sizes the preview grid to the active arrangement's real columns/rows, not a near-square ceil(sqrt(N)) blob", () => {
-      const eightPlayerLayout = seatArrangement(8); // columns: 2, rows: 4 - not ceil(sqrt(8)) = 3
+    it("sizes the preview grid to the compact block's own shape (2x4 at 8 players), never the arrangement's real columns/rows and never a ceil(sqrt(8))=3 square", () => {
+      const eightPlayerLayout = seatArrangement(8); // arrangement's own shape: columns 2, rows 4
       const roster = createInitialState(8, 40).players;
       const player = { ...roster[0], displayName: "Alice" };
 
@@ -197,27 +197,97 @@ describe("Frontend - Shared", () => {
       );
 
       expect(screen.getByTestId("commander-preview-Player 1")).toHaveStyle({
-        gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-        gridTemplateRows: "repeat(4, minmax(0, 1fr))"
+        gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+        gridTemplateRows: "repeat(2, minmax(0, 1fr))"
       });
     });
 
-    it("places every preview cell at its own seat coordinate, not roster index - including a seat out of roster order", () => {
-      const eightPlayerLayout = seatArrangement(8);
-      const roster = createInitialState(8, 40).players;
+    it("has at most 2 rows in the preview grid at every tested player count (2, 4, 6, 8)", () => {
+      for (const count of [2, 4, 6, 8]) {
+        const roster = createInitialState(count, 40).players;
+        const player = { ...roster[0], displayName: "Alice" };
+        const { unmount } = render(
+          <PlayerLifeCard
+            player={player}
+            players={roster.map((seat) => (seat.label === player.label ? player : seat))}
+            placement={placement}
+            layout={seatArrangement(count)}
+            cardStyle="gradient"
+            onAdjustLife={vi.fn()}
+            onSetLife={vi.fn()}
+            onOpenCounters={vi.fn()}
+          />
+        );
+
+        expect(screen.getByTestId("commander-preview-Player 1")).toHaveStyle({
+          gridTemplateRows: "repeat(2, minmax(0, 1fr))"
+        });
+        unmount();
+      }
+    });
+
+    it("places the viewer's own cell at the block's fixed top-left corner, with exactly one 'me' cell, for a 4-player and an 8-player case", () => {
+      for (const count of [4, 8]) {
+        const roster = createInitialState(count, 40).players;
+        const player = { ...roster[0], displayName: "Alice" };
+        const { unmount } = render(
+          <PlayerLifeCard
+            player={player}
+            players={roster.map((seat) => (seat.label === player.label ? player : seat))}
+            placement={placement}
+            layout={seatArrangement(count)}
+            cardStyle="gradient"
+            onAdjustLife={vi.fn()}
+            onSetLife={vi.fn()}
+            onOpenCounters={vi.fn()}
+          />
+        );
+
+        expect(screen.getByTestId("commander-preview-cell-Player 1")).toHaveStyle({
+          gridRow: "1 / 2",
+          gridColumn: "1 / 2"
+        });
+
+        const meCells = screen
+          .getAllByText("me")
+          .filter((el) => el.getAttribute("data-testid")?.startsWith("commander-preview-cell-"));
+        expect(meCells).toHaveLength(1);
+        expect(meCells[0]).toHaveAttribute("data-testid", "commander-preview-cell-Player 1");
+
+        unmount();
+      }
+    });
+
+    it("renders the same preview shape for a given player count whether the card gets a grid-mode or a list-mode layout", () => {
+      const count = 8;
+      const roster = createInitialState(count, 40).players;
       const player = { ...roster[0], displayName: "Alice" };
-      const ownSeat = eightPlayerLayout.seats.find((seat) => seat.label === "Player 1")!;
-      // Player 5 is the first right-column seat (row 1) - the same row as Player 1's left-column
-      // seat, even though it sits at roster index 4. A ceil(sqrt(8))=3 scan-order grid would have
-      // placed it in row 2; the real layout keeps it in row 1.
-      const player5Seat = eightPlayerLayout.seats.find((seat) => seat.label === "Player 5")!;
+      const playersProp = roster.map((seat) => (seat.label === player.label ? player : seat));
+
+      const { unmount } = render(
+        <PlayerLifeCard
+          player={player}
+          players={playersProp}
+          placement={placement}
+          layout={seatArrangement(count)}
+          cardStyle="gradient"
+          onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
+          onOpenCounters={vi.fn()}
+        />
+      );
+      const gridModeStyle = {
+        gridTemplateColumns: screen.getByTestId("commander-preview-Player 1").style.gridTemplateColumns,
+        gridTemplateRows: screen.getByTestId("commander-preview-Player 1").style.gridTemplateRows
+      };
+      unmount();
 
       render(
         <PlayerLifeCard
           player={player}
-          players={roster.map((seat) => (seat.label === player.label ? player : seat))}
+          players={playersProp}
           placement={placement}
-          layout={eightPlayerLayout}
+          layout={listSeatArrangement(count)}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -225,23 +295,10 @@ describe("Frontend - Shared", () => {
         />
       );
 
-      expect(screen.getByTestId("commander-preview-cell-Player 1")).toHaveStyle({
-        gridRow: ownSeat.gridRow,
-        gridColumn: ownSeat.gridColumn
-      });
-      expect(screen.getByTestId("commander-preview-cell-Player 5")).toHaveStyle({
-        gridRow: player5Seat.gridRow,
-        gridColumn: player5Seat.gridColumn
-      });
-      expect(player5Seat.gridRow).toBe(ownSeat.gridRow);
-      expect(player5Seat.gridColumn).not.toBe(ownSeat.gridColumn);
-
-      // Exactly one cell renders "me", and it is the current player's own cell.
-      const meCells = screen
-        .getAllByText("me")
-        .filter((el) => el.getAttribute("data-testid")?.startsWith("commander-preview-cell-"));
-      expect(meCells).toHaveLength(1);
-      expect(meCells[0]).toHaveAttribute("data-testid", "commander-preview-cell-Player 1");
+      expect(screen.getByTestId("commander-preview-Player 1")).toHaveStyle(gridModeStyle);
+      // list mode's own arrangement is tall/stacked (unlike grid mode) - the sameness above is
+      // only meaningful if the two arrangements actually differ in shape.
+      expect(seatArrangement(count).rows).not.toBe(listSeatArrangement(count).rows);
     });
 
     it("splits the whole card into two half-sized life zones, orientated by the seat's rotation", () => {

@@ -1,6 +1,6 @@
 # Slice B — PlayerLifeCard: on-card preview becomes the compact horizontal block
 
-## Status: planned
+## Status: done
 
 ## Goal
 

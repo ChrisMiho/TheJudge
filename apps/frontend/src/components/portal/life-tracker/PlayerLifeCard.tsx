@@ -1,7 +1,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import type { PlayerLabel } from "../../../types";
 import type { SeatArrangementLayout, SeatPlacement } from "../../../lib/lifeTracker/seatArrangement";
-import { buildSeatMapCells } from "../../../lib/lifeTracker/seatMap";
+import { buildCompactSeatMapCells } from "../../../lib/lifeTracker/seatMap";
 import type { CardStyle, TrackerPlayer } from "../../../lib/lifeTracker/types";
 import { formatPlayerDisplayLabel } from "../../../lib/playerLabels";
 
@@ -116,9 +116,13 @@ export function PlayerLifeCard({
   const displayLabel = formatPlayerDisplayLabel(player.label, player.displayName);
   const status = lifeState(player.life);
   const rotation = `rotate(${placement.rotation}deg)`;
-  // The preview is a miniature of the real table (REQ-173): every seat placed at its own
-  // gridRow/gridColumn/gridArea from the active layout, not roster order or a near-square blob.
-  const previewCells = buildSeatMapCells(layout, players, player.label);
+  // The preview is a compact horizontal block (REQ-173): at most 2 rows, growing wider as
+  // players are added, its own shape decoupled from the active arrangement's real column/row
+  // count and never a near-square `ceil(sqrt(N))` blob. "me" sits at the block's fixed top-left
+  // corner; opponents fill the rest in table order starting from the viewer's own seat. The
+  // block reads the same in grid and list layout - it never inherits list mode's tall stacked
+  // shape.
+  const previewBlock = buildCompactSeatMapCells(layout, players, player.label);
   // A 90/270 rotation swaps the content's effective width and height. Cards are rarely square,
   // so sizing the rotated box off the card's own (un-rotated) dimensions overflows the shorter
   // axis and gets silently clipped by the card's `overflow-hidden`. Container query units size
@@ -249,19 +253,19 @@ export function PlayerLifeCard({
           data-testid={`commander-preview-${player.label}`}
           aria-label={`Open counters for ${displayLabel}`}
           onClick={() => onOpenCounters(player.label)}
-          className="motion-focus pointer-events-auto grid gap-1 rounded-xl border border-black/10 bg-white/40 p-1.5 shadow-sm hover:bg-white/65"
+          className="motion-focus pointer-events-auto grid gap-[1cqmin] rounded-xl border border-black/10 bg-white/40 p-[1.5cqmin] shadow-sm hover:bg-white/65"
           style={{
-            gridTemplateColumns: `repeat(${layout.columns}, minmax(0, 1fr))`,
-            gridTemplateRows: `repeat(${layout.rows}, minmax(0, 1fr))`
+            gridTemplateColumns: `repeat(${previewBlock.columns}, minmax(0, 1fr))`,
+            gridTemplateRows: `repeat(${previewBlock.rows}, minmax(0, 1fr))`
           }}
         >
-          {previewCells.map((cell) => (
+          {previewBlock.cells.map((cell) => (
             <span
               key={cell.label}
               aria-hidden="true"
               data-testid={`commander-preview-cell-${cell.label}`}
-              style={{ gridArea: cell.gridArea, gridRow: cell.gridRow, gridColumn: cell.gridColumn }}
-              className={`flex min-h-6 min-w-6 items-center justify-center rounded-md text-[0.65rem] font-black tabular-nums ${
+              style={{ gridRow: cell.gridRow, gridColumn: cell.gridColumn }}
+              className={`flex min-h-[3cqmin] min-w-[3cqmin] items-center justify-center rounded-md text-[clamp(0.45rem,3cqmin,0.65rem)] font-black tabular-nums ${
                 cell.isSelf ? "bg-black/10 opacity-80" : "bg-white/50"
               }`}
             >
