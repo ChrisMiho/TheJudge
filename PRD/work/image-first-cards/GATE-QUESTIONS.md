@@ -1,10 +1,11 @@
 # Gate questions — image-first-cards
 
 **Decide:** answer each block below with `accept`, `edit`, or `reject` (add a
-reason for edit/reject). Four direction decisions (D1–D4) come first; then one
+reason for edit/reject). Five direction decisions (D1–D5) come first; then one
 block per new or amended stable id, each carrying its complete proposed diff
 against current `PRD/sections/` truth. Reject D1 and the id blocks that implement
-it fall with it.
+it fall with it. D5 is a fork with a recommendation — `edit` it to pick the
+endpoint alternative instead.
 
 Nothing here has been written to `PRD/sections/`. Refinement proposes; the build
 applies your accepted answers together with the code.
@@ -26,8 +27,9 @@ product truth (DEC-151 and the requirements it cites) says those fields are
 carried locally *so the corner detail popup and the image-fail fallback never
 need to fetch*. This flips that: the up-front download shrinks to what a tile
 draws (name, oracle id, image URL, colors), and the descriptive fields for one
-card are fetched from a new backend endpoint the moment its detail opens. A card
-looks and behaves exactly as today — only the moment its text arrives changes.
+card are loaded on demand from a committed card-detail data artifact the moment
+its detail opens (delivery mechanism decided in D5). A card looks and behaves
+exactly as today — only the moment its text arrives changes.
 
 **What happens if you say no:** the app keeps downloading and parsing all
 33,399 cards' descriptive text on every first load, and the slow-first-load
@@ -104,6 +106,53 @@ non-goal in `DESIGN-BRIEF.md`.
 
 ---
 
+## D5 — Serve card detail as a lazy static artifact, not a new backend endpoint
+
+**What this decides:** how one card's descriptive detail reaches the app on
+demand — as a committed static data artifact the frontend lazy-loads on first
+card-detail open, or as a new backend route `GET /api/cards/:oracleId`.
+
+**In plain terms:** the app has exactly one product-facing backend route today
+(`POST /api/ask-ai`; `GET /api/health` is a non-product dev/health check).
+"One main backend endpoint" is a hard, repeated product rule — DEC-010 ("the
+core product uses one main product-facing backend endpoint"), GOAL-002 ("keep
+the core product fast and lightweight ... simple implementation"),
+`technical-design-rules.md` (a second product-facing endpoint is Forbidden
+Design Drift), REQ-072 ("one product-facing endpoint only (DEC-010); no new
+route"), and an Explicit Non-Goal ("multiple product-facing backend
+endpoints"). This work needs card detail on demand, and the app already has a
+blessed pattern for heavy data loaded on first use: `cardhashes.bin` on first
+scan (NFR-010) and `cardPrintingPrices.json` on first Trade Balancer open
+(NFR-013) are static artifacts lazy-loaded on demand, no endpoint. This decision
+serves card detail the same way — a committed static artifact keyed by oracle
+id, lazy-loaded on first card-detail open and cached for the session. The
+backend still needs the same data internally to resolve card text for ask-ai
+(REQ-176), but that read lives inside `POST /api/ask-ai`, not a new route. So
+the one-endpoint rule stays intact and needs no amendment.
+
+**The alternative you can pick instead:** a real backend route
+`GET /api/cards/:oracleId`. It buys per-card fetch granularity (download only
+the card you open) but adds the product's second product-facing endpoint, which
+conflicts with the rule above. Choosing it means amending DEC-010,
+`goals-and-non-goals.md` (the "one main backend endpoint" line and the
+"multiple product-facing backend endpoints" non-goal), `technical-design-rules.md`
+(Allowed Design Direction + Forbidden Design Drift), and REQ-072 to permit a
+second endpoint. Sharding the static artifact by oracle-id prefix recovers most
+of that granularity without a route. **Recommendation: the lazy static
+artifact.** `edit` this block to choose the endpoint, and the build will surface
+the four amendments the endpoint requires.
+
+**What happens if you say no:** rejecting the artifact approach without picking
+the endpoint leaves the on-demand detail with no delivery path, blocking
+REQ-175, FLOW-024, and REQ-128's fetch. (Governs REQ-175; shapes REQ-174,
+FLOW-024, REQ-128, NFR-019. No standalone PRD diff — the chosen path is carried
+by REQ-175's diff.)
+
+- Verdict: <accept | edit | reject>
+- Reason:
+
+---
+
 ## REQ-174 — the up-front card list carries only what a tile draws
 
 **What this decides:** the exact set of card fields the app downloads up front,
@@ -161,8 +210,8 @@ Proposed:
 ```
 ## Metadata Strategy
 - use a static prebuilt metadata file committed with the app
-- the committed frontend metadata artifact carries only the up-front tile fields — `cardId` (oracle id), `name`, `imageUrl`, `colors` — and no descriptive block (REQ-174); descriptive fields are fetched on demand by oracle id (REQ-175, `GET /api/cards/:oracleId`)
-- local metadata powers autocomplete and the tile (name, image, color ring); the card-detail popup and Quick Lookup pre-submit preview fetch the descriptive block on open (FLOW-024)
+- the committed frontend metadata artifact carries only the up-front tile fields — `cardId` (oracle id), `name`, `imageUrl`, `colors` — and no descriptive block (REQ-174); descriptive fields are loaded on demand by oracle id from a separate committed static card-detail artifact (REQ-175), lazy-loaded on first card-detail open — not from a new backend route (D5)
+- local metadata powers autocomplete and the tile (name, image, color ring); the card-detail popup and Quick Lookup pre-submit preview load the descriptive block on open (FLOW-024)
 ```
 
 **Amend `PRD/sections/system-map.md` → "Card search & metadata" summary (line ~256):**
@@ -181,23 +230,27 @@ Proposed:
 
 ---
 
-## REQ-175 — a backend card-detail table and a `GET /api/cards/:oracleId` endpoint
+## REQ-175 — card-detail data artifacts (frontend lazy static + backend for ask-ai)
 
-**What this decides:** the new backend capability that serves one card's
-descriptive fields by its oracle id, so the frontend and the AI path can stop
-carrying that text.
+**What this decides:** the new committed card-detail data that serves one card's
+descriptive fields by its oracle id, so the frontend popup and the AI path can
+stop carrying that text — delivered without a new product-facing route (D5).
 
-**In plain terms:** a new committed data file under `apps/backend/data/`, keyed
-by oracle id, holds each card's descriptive block (oracle text, type line, mana
-cost/value, colors, sub/supertypes), built by trimming the same Scryfall bulk
-every other data builder already trims from. A new route `GET /api/cards/:oracleId`
-returns those fields for one card, alongside the existing `POST /api/ask-ai` and
-`GET /api/health`. It serves from the committed file with no runtime network
-call, so local mock dev keeps working.
+**In plain terms:** a new builder trims the same Scryfall bulk every other data
+builder already trims from into a card-detail map keyed by oracle id, holding
+each card's descriptive block (oracle text, type line, mana cost/value, colors,
+sub/supertypes). It is committed twice from that one builder: a frontend static
+copy under `apps/frontend/public/data/` that the popup and Quick Lookup preview
+lazy-load on first open (the `cardhashes.bin` / `cardPrintingPrices.json`
+lazy-data pattern, NFR-010 / NFR-013), and a backend copy under
+`apps/backend/data/` that ask-ai reads internally to resolve card text (REQ-176).
+No new product-facing endpoint — the frontend reads a static artifact, and the
+backend read lives inside `POST /api/ask-ai`. Local mock dev keeps working with
+no runtime network call.
 
-**What happens if you say no:** there is no server-side source for card detail,
-so the frontend cannot fetch it on demand and the AI path cannot resolve it
-server-side. Blocks REQ-174, REQ-176, FLOW-024. (Implements D1/D2.)
+**What happens if you say no:** there is no source for card detail, so the
+frontend cannot load it on demand and the AI path cannot resolve it server-side.
+Blocks REQ-174, REQ-176, FLOW-024. (Implements D1/D2; carries the D5 choice.)
 
 ### Proposed diff
 
@@ -205,62 +258,44 @@ server-side. Blocks REQ-174, REQ-176, FLOW-024. (Implements D1/D2.)
 
 ```
 ### REQ-175
-- Title: Backend card-detail artifact and endpoint
+- Title: Card-detail data artifacts (frontend lazy static + backend for ask-ai)
 - Priority: high
-- Description: A committed backend artifact keyed by oracle id holds each card's descriptive block, and a new route `GET /api/cards/:oracleId` returns it. The frontend fetches it on demand (FLOW-024); ask-ai resolves it server-side (REQ-176).
+- Description: The card descriptive block is served on demand from committed data, not from a new backend route. One builder trims the committed Scryfall bulk into a card-detail map keyed by oracle id; a frontend static copy is lazy-loaded by the popup on first open (FLOW-024) and a backend copy backs ask-ai's server-side resolution (REQ-176). No new product-facing endpoint is introduced, preserving the one-main-endpoint rule (DEC-010, GOAL-002, `technical-design-rules.md`, REQ-072) and reusing the existing lazy-data-artifact posture (NFR-010, NFR-013).
 - Acceptance Criteria:
-  - a new `scripts/build-*.mjs` trims the committed Scryfall bulk into `apps/backend/data/cardDetailByOracleId.json`, a map keyed by Scryfall `oracle_id`, each value carrying `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`; raw Scryfall bulk stays gitignored and only the trimmed artifact is committed
+  - a new `scripts/build-*.mjs` trims the committed Scryfall bulk into a card-detail map keyed by Scryfall `oracle_id`, each value carrying `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`; raw Scryfall bulk stays gitignored and only the trimmed artifacts are committed
+  - the frontend copy is committed under `apps/frontend/public/data/` and served as static hosting alongside `cardMetadata.json`; the frontend loads it on demand on first card-detail open and caches it for the session (FLOW-024), never up front (NFR-019). It may be a single artifact or sharded by oracle-id prefix to bound the lazy download; either way no descriptive data is fetched before a player opens a card detail
+  - the backend copy is committed under `apps/backend/data/cardDetailByOracleId.json` and read at startup only for ask-ai server-side card-text resolution (REQ-176); it is internal to `POST /api/ask-ai` assembly and adds no product-facing route
+  - both copies are emitted by the one builder from the same Scryfall bulk so the frontend detail and the ask-ai-resolved detail cannot drift
   - `npm run data:build` includes the card-detail build; `npm run data:refresh` requires explicit human approval before any download (existing policy)
-  - `GET /api/cards/:oracleId` returns the descriptive block for a present oracle id and a 404-style not-found for an absent one; it serves from the committed artifact with no runtime network call, so `ASK_AI_PROVIDER=mock` local dev works unchanged
-  - the route handler stays contract-focused per the provider/route boundary (`apps/backend/src/providers/README.md`); no provider or `POST /api/ask-ai` contract change is introduced by the route itself
-  - the backend loads the committed artifact at startup and degrades gracefully (endpoint reports not-found) if the artifact is missing
+  - no new product-facing backend endpoint is added; `POST /api/ask-ai` and `GET /api/health` remain the only routes, and `ASK_AI_PROVIDER=mock` local dev works unchanged with no runtime network call
+  - the backend degrades gracefully if its artifact is missing (ask-ai resolution emits the existing empty-oracle marker); the frontend detail load fails soft to the identity fallback (FLOW-024)
 - Constraints:
-  - commit only the trimmed artifact, matching the existing `apps/backend/data/*.json` pattern
-  - single-oracle-id GET; no batch endpoint without further scope
+  - commit only the trimmed artifacts, matching the existing `apps/frontend/public/data/*.json` and `apps/backend/data/*.json` patterns
+  - no new product-facing endpoint (DEC-010, `technical-design-rules.md` Forbidden Design Drift, REQ-072); the frontend reads a static artifact, not a route
 - Dependencies:
   - REQ-174
   - REQ-176
   - FLOW-024
+  - NFR-010
+  - NFR-013
 - Notes:
   - `oracle_id` is the shared join key already used by card metadata, rulings, and combos
-```
-
-**Amend `PRD/sections/integrations-and-data.md` → `## API Design`:**
-
-Current:
-```
-### Optional Endpoint: `GET /api/health`
-Purpose:
-- local development checks
-- deployment health checks
-- uptime verification
-```
-Proposed (append after the `GET /api/health` block):
-```
-### Optional Endpoint: `GET /api/health`
-Purpose:
-- local development checks
-- deployment health checks
-- uptime verification
-
-### Endpoint: `GET /api/cards/:oracleId`
-Purpose:
-- serve one card's descriptive block (`oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`) by oracle id, from the committed `apps/backend/data/cardDetailByOracleId.json` artifact, with no runtime network call
-- backs the frontend on-demand card-detail popup / preview (FLOW-024) and is the source of truth ask-ai resolves against server-side (REQ-176)
-- returns the descriptive block for a present oracle id; not-found for an absent one
+  - see D5: serving detail as a lazy static artifact (not a second endpoint) is the design choice; an endpoint alternative would require amending DEC-010, `goals-and-non-goals.md`, `technical-design-rules.md`, and REQ-072
 ```
 
 **Add to `PRD/sections/integrations-and-data.md` a new data-strategy block (after `## Rulings Data Strategy`):**
 
 ```
 ## Card Detail Data Strategy
-- the committed backend artifact is `apps/backend/data/cardDetailByOracleId.json`, a trimmed map keyed by Scryfall `oracle_id`
+- the card descriptive block is committed as a trimmed map keyed by Scryfall `oracle_id`, built by one builder from the same Scryfall bulk every other builder trims from; raw bulk stays gitignored and must not be committed
 - each value carries `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`
-- built from the same Scryfall bulk every other builder trims from; raw bulk stays gitignored and must not be committed
-- `npm run data:build` rebuilds it alongside card metadata, rulings, and game rules
-- the backend loads it at startup; `GET /api/cards/:oracleId` and ask-ai's server-side card-text resolution both read from it
+- the frontend copy is committed under `apps/frontend/public/data/` and lazy-loaded on first card-detail open (FLOW-024), served as static hosting alongside `cardMetadata.json` — no new product-facing endpoint (DEC-010, REQ-072); it joins the existing lazy-data-artifact posture (NFR-010, NFR-013)
+- the backend copy is committed under `apps/backend/data/cardDetailByOracleId.json` and read at startup only for ask-ai server-side card-text resolution (REQ-176); it is internal to `POST /api/ask-ai`, not a route
+- `npm run data:build` rebuilds both copies alongside card metadata, rulings, and game rules; the one builder keeps them from drifting
 - runtime Scryfall fetches are out of scope for the core product
 ```
+
+(No `## API Design` change — REQ-175 adds no route; `POST /api/ask-ai` and `GET /api/health` stay the only endpoints.)
 
 - Verdict: <accept | edit | reject>
 - Reason:
@@ -392,6 +427,33 @@ Proposed:
 - populated zone sections — each card in every populated zone (stack and non-stack) includes the full card metadata block: oracle text, mana cost/value, type line, colors, supertypes/subtypes, targets, and context notes; the card-intrinsic fields are resolved server-side by `cardId` from `cardDetailByOracleId.json` (REQ-176), targets and context notes come from the request; empty oracle emits `(none) — no oracle text recorded for this card`
 ```
 
+**Amend `PRD/sections/quick-lookup/README.md` → the lookup-mode `cards` request shape (~lines 170-177).** The lookup-mode card is a *request* shape too, and it must drop the descriptive block the same way `ZoneCardItem` does, or its prose goes stale.
+
+Current:
+```
+- Built: `cards` is an optional bounded list of at most 5 entries (REQ-167,
+  amending DEC-106's single optional `card`); a 6th entry is rejected by
+  validation. Each entry keeps the prior oracle-level shape (`cardId`, `name`,
+  `oracleText` required; `imageUrl`/`manaCost`/`manaValue`/`typeLine`/`colors`/
+  `supertypes`/`subtypes` optional) and carries no zone, caster, owner,
+  targets, or context-notes fields. Zero cards and exactly one card behave
+  identically to the prior single-card shape. (DEC-106, DEC-053, REQ-072,
+  REQ-167)
+```
+Proposed:
+```
+- Built: `cards` is an optional bounded list of at most 5 entries (REQ-167,
+  amending DEC-106's single optional `card`); a 6th entry is rejected by
+  validation. Each entry carries only identity — `cardId` (oracle id) and
+  `name` — and carries no zone, caster, owner, targets, or context-notes
+  fields; the descriptive block (`oracleText`/`imageUrl`/`manaCost`/`manaValue`/
+  `typeLine`/`colors`/`supertypes`/`subtypes`) is no longer sent, because the
+  backend resolves the card-intrinsic fields server-side by `cardId` from
+  `cardDetailByOracleId.json` (REQ-175, REQ-176). Zero cards and exactly one
+  card behave identically to the prior single-card shape. (DEC-106, DEC-053,
+  REQ-072, REQ-167, REQ-176)
+```
+
 - Verdict: <accept | edit | reject>
 - Reason:
 
@@ -408,7 +470,7 @@ data the two screens download on entry should be a small fraction of today's
 under today's size, on the order of a couple of MB gzipped) and requires the
 before/after size to be measured as acceptance evidence, so the win is proven,
 not claimed. It is a data-artifact target, separate from the existing
-code-splitting posture (NFR-018).
+route-level code-splitting posture (NFR-014).
 
 **What happens if you say no:** the slim ships with no measured target, so
 first-load regressions later would go uncaught. (Implements D1.)
@@ -423,12 +485,12 @@ first-load regressions later would go uncaught. (Implements D1.)
 - Description: With descriptive card fields fetched on demand (REQ-174), the up-front card-metadata artifact the frontend downloads on entry to MTG Assistant and Quick Lookup must be a small fraction of the prior 16.4 MB file, and the reduction must be measured as acceptance evidence.
 - Constraints:
   - the trimmed `cardMetadata.json` (up-front fields only) is materially smaller than the prior artifact; the built size is recorded before/after as acceptance evidence and stays within a mobile-friendly budget
-  - this is a data-artifact target, distinct from and additive to the route-level code-splitting posture (NFR-018); it neither replaces nor weakens the existing lazy loads
-  - the on-demand `GET /api/cards/:oracleId` fetch (FLOW-024) must not reintroduce a bulk up-front download
+  - this is a data-artifact target, distinct from and additive to the route-level code-splitting posture (NFR-014); it neither replaces nor weakens the existing lazy loads, and the on-demand card-detail load is itself a data-artifact lazy load in the same family as NFR-010 / NFR-013
+  - the on-demand card-detail load (FLOW-024) must not reintroduce a bulk up-front download
 - Dependencies:
   - REQ-174
   - REQ-175
-  - NFR-018
+  - NFR-014
   - FLOW-024
 - Notes:
   - oracle text alone was 45.4% of the prior file; moving it plus type line, mana, and sub/supertypes off the up-front list is the bulk of the reduction
@@ -445,11 +507,12 @@ first-load regressions later would go uncaught. (Implements D1.)
 Quick Lookup pre-submit preview once detail is fetched rather than carried.
 
 **In plain terms:** when a player taps the corner control on a card image (or
-opens the Quick Lookup card preview), the app fetches that card's descriptive
-block from `GET /api/cards/:oracleId` and shows a brief loading state, then the
-same oracle text / mana / type / sub-supertypes it shows today. The card's name,
-image, and color ring are already local, so they show instantly; only the
-descriptive text waits on the fetch.
+opens the Quick Lookup card preview), the app loads that card's descriptive
+block on demand from the committed static card-detail artifact (REQ-175, D5) —
+lazy-loaded on first open, cached for the session — and shows a brief loading
+state, then the same oracle text / mana / type / sub-supertypes it shows today.
+The card's name, image, and color ring are already local, so they show
+instantly; only the descriptive text waits on the load.
 
 **What happens if you say no:** there is no defined on-demand read path, so the
 popup and preview have nothing to show once detail is no longer local. (Implements
@@ -465,17 +528,17 @@ D1.)
 - Trigger: a player opens a card's corner detail popup, or the Quick Lookup pre-submit card preview, for a card whose descriptive block is not local
 - Preconditions:
   - the card's up-front fields (oracle id, name, imageUrl, colors) are local (REQ-174)
-  - the backend card-detail endpoint is reachable (REQ-175)
+  - the committed static card-detail artifact is available (REQ-175)
 - Main Flow:
   1. Player activates the corner detail control on a card image, or opens the Quick Lookup card preview.
-  2. The app fetches `GET /api/cards/:oracleId` for that card and shows a brief loading state in the popup/preview; the card name, image, and color ring (already local) render immediately.
+  2. The app loads the committed card-detail artifact on demand (lazy-loaded on first open this session, then cached) and resolves that card's descriptive block by oracle id, showing a brief loading state in the popup/preview; the card name, image, and color ring (already local) render immediately.
   3. On success the popup/preview shows the descriptive block (oracle text, type line, mana cost/value, colors, sub/supertypes), identical to today's content.
 - Edge Cases:
-  - if the fetch fails, the popup/preview shows the locally available identity (name + oracle id) and a retry affordance; no descriptive fields are invented
-  - image failure does not trigger a detail fetch; the image-fail fallback shows name + oracle id only (FLOW-001)
-  - a card already fetched this session may be served from an in-memory cache with no repeat request
+  - if the load fails, the popup/preview shows the locally available identity (name + oracle id) and a retry affordance; no descriptive fields are invented
+  - image failure does not trigger a detail load; the image-fail fallback shows name + oracle id only (FLOW-001)
+  - once the artifact is loaded this session, subsequent card-detail opens resolve from the in-memory cache with no repeat request
 - Notes:
-  - the descriptive block is fetched, never carried in the up-front list (REQ-174); this is the read path REQ-128's popup uses
+  - the descriptive block is loaded on demand, never carried in the up-front list (REQ-174), and comes from a committed static artifact, not a new route (D5); this is the read path REQ-128's popup uses
 ```
 
 - Verdict: <accept | edit | reject>
@@ -490,13 +553,13 @@ descriptive fields when opened, instead of reading fields carried locally.
 
 **In plain terms:** today the popup rule says it shows "locally carried
 descriptive fields" and explicitly makes "no new network fetch." Under image-first
-cards those fields are no longer local, so the popup fetches them on demand from
-`GET /api/cards/:oracleId` (FLOW-024) and shows a brief loading state. Everything
-else about the popup — the corner trigger, the portal-hosted bottom-sheet/side-panel
-geometry, the close control — is unchanged.
+cards those fields are no longer local, so the popup loads them on demand from
+the committed static card-detail artifact (REQ-175, FLOW-024) and shows a brief
+loading state. Everything else about the popup — the corner trigger, the
+portal-hosted bottom-sheet/side-panel geometry, the close control — is unchanged.
 
 **What happens if you say no:** the popup would have nothing to show once detail
-is fetched rather than carried. (Implements D1; pairs with REQ-174, FLOW-024.)
+is loaded rather than carried. (Implements D1; pairs with REQ-174, FLOW-024.)
 
 ### Proposed diff
 
@@ -520,7 +583,7 @@ Current:
 ```
 Proposed:
 ```
-  - the popup fetches its descriptive contents on demand from `GET /api/cards/:oracleId` (FLOW-024), showing a brief loading state; name, image, and color ring (already local) render immediately
+  - the popup loads its descriptive contents on demand from the committed static card-detail artifact (REQ-175, FLOW-024), showing a brief loading state; name, image, and color ring (already local) render immediately
 ```
 
 Constraints:

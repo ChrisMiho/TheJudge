@@ -10,9 +10,9 @@ Do not rename package folders to encode status.
 
 ## refined
 
-## refining
+- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; refinement revised (graph run graph-20260903-093903, attempt 2): card detail now ships as a lazy static artifact (no new endpoint; D5 fork surfaced), REQ-176 gains the quick-lookup card-shape diff, NFR-019 cross-ref fixed to NFR-014; awaiting quality-check re-run
 
-- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; quality-check FAIL (graph run graph-20260903-093903): new endpoint contradicts the one-endpoint rule (DEC-010), REQ-176 misses the quick-lookup card-shape diff, NFR-019 cites the wrong NFR
+## refining
 
 ## ideation
 
