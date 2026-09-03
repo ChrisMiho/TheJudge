@@ -2,7 +2,7 @@ import { useRef, useState, type FormEvent } from "react";
 import type { PlayerLabel } from "../../../types";
 import type { SeatArrangementLayout, SeatPlacement } from "../../../lib/lifeTracker/seatArrangement";
 import { buildSeatMapCells } from "../../../lib/lifeTracker/seatMap";
-import type { CardStyle, TrackerPlayer } from "../../../lib/lifeTracker/types";
+import type { CardStyle, LayoutMode, TrackerPlayer } from "../../../lib/lifeTracker/types";
 import { formatPlayerDisplayLabel } from "../../../lib/playerLabels";
 
 export interface PlayerLifeCardProps {
@@ -22,6 +22,12 @@ export interface PlayerLifeCardProps {
   layout: SeatArrangementLayout;
   /** Surface treatment for the card: the original three-stop ombre, or a single solid tint. */
   cardStyle: CardStyle;
+  /**
+   * The active layout. Grid mode splits the life-adjust halves on a fixed screen left/right
+   * (− left, + right) for every card; list mode keeps the per-seat rotation split. Defaults to
+   * list (the per-seat split) when unspecified.
+   */
+  layoutMode?: LayoutMode;
   onAdjustLife: (label: PlayerLabel, delta: number) => void;
   /** Commits an exact total from the inline numeric entry (the "I gained 100000 life" path). */
   onSetLife: (label: PlayerLabel, life: number) => void;
@@ -71,6 +77,14 @@ const HALF_CLASSES = {
   bottom: "inset-x-0 bottom-0 h-1/2 items-end justify-center pb-5"
 } as const;
 
+// Grid mode always splits left/right and reflows the card content inward (see the content's grid
+// padding below), so the ± pin to the very edge of the freed gutter rather than the deeper pl-5/pr-5
+// inset the list bands use - otherwise the glyph would sit under the pulled-in mini-map / name pill.
+const GRID_HALF_CLASSES = {
+  left: "inset-y-0 left-0 w-1/2 justify-start pl-1.5",
+  right: "inset-y-0 right-0 w-1/2 justify-end pr-1.5"
+} as const;
+
 type LifeHalves = { decrease: keyof typeof HALF_CLASSES; increase: keyof typeof HALF_CLASSES };
 
 function lifeHalvesForRotation(rotation: number): LifeHalves {
@@ -105,6 +119,7 @@ export function PlayerLifeCard({
   placement,
   layout,
   cardStyle,
+  layoutMode = "list",
   onAdjustLife,
   onSetLife,
   onOpenCounters
@@ -116,6 +131,10 @@ export function PlayerLifeCard({
   const displayLabel = formatPlayerDisplayLabel(player.label, player.displayName);
   const status = lifeState(player.life);
   const rotation = `rotate(${placement.rotation}deg)`;
+  // In list mode the ± glyph rotates with the seat so it faces the seated player. In grid mode the
+  // split is a fixed screen left/right, so the glyph reads screen-upright - a rotated `−` becomes an
+  // ambiguous vertical bar, which is exactly what we're moving away from.
+  const glyphTransform = layoutMode === "grid" ? "none" : rotation;
   // The preview is a miniature of the real table (REQ-173): every seat placed at its own
   // gridRow/gridColumn/gridArea from the active layout, not roster order or a near-square blob.
   const previewCells = buildSeatMapCells(layout, players, player.label);
@@ -146,11 +165,21 @@ export function PlayerLifeCard({
         height: "clamp(1.1rem, 26cqh, 4.5rem)",
         width: `clamp(${1.05 * layout.columns}rem, ${16 * layout.columns}cqh, ${1.75 * layout.columns}rem)`
       };
-  const halves = lifeHalvesForRotation(placement.rotation);
-  const halfBaseClassName =
-    "absolute z-0 flex items-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10";
-  const decreaseBandClassName = `${halfBaseClassName} ${HALF_CLASSES[halves.decrease]}`;
-  const increaseBandClassName = `${halfBaseClassName} ${HALF_CLASSES[halves.increase]}`;
+  // Grid cards split on a fixed screen left/right (− left, + right) regardless of seat rotation:
+  // with four cards facing in from every side, a per-seat top/bottom split read as awkward, and a
+  // consistent on-screen left/right is the thumb-reachable control. List mode keeps the per-seat
+  // rotation split so − still lands on the seated player's own left.
+  const isGrid = layoutMode === "grid";
+  const halves: LifeHalves = isGrid
+    ? { decrease: "left", increase: "right" }
+    : lifeHalvesForRotation(placement.rotation);
+  // Grid ± sit in the edge gutter and read a touch smaller; list keeps the deeper inset and size.
+  const halfClasses = isGrid ? GRID_HALF_CLASSES : HALF_CLASSES;
+  const halfBaseClassName = `absolute z-0 flex items-center ${
+    isGrid ? "text-2xl" : "text-3xl"
+  } font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10`;
+  const decreaseBandClassName = `${halfBaseClassName} ${halfClasses[halves.decrease as "left" | "right"]}`;
+  const increaseBandClassName = `${halfBaseClassName} ${halfClasses[halves.increase as "left" | "right"]}`;
   const isEditingLife = lifeDraft !== null;
 
   function commitLifeDraft(): void {
@@ -198,7 +227,7 @@ export function PlayerLifeCard({
         onClick={() => onAdjustLife(player.label, -1)}
         className={`motion-focus ${decreaseBandClassName}`}
       >
-        <span aria-hidden="true" style={{ transform: rotation }}>
+        <span aria-hidden="true" style={{ transform: glyphTransform }}>
           −
         </span>
       </button>
@@ -210,7 +239,14 @@ export function PlayerLifeCard({
         // whole card, so leaving it interactive would swallow every tap meant for the two
         // life halves underneath it. Sizes are container-query units so the same content
         // composes in a tall 2-player card and a short 8-player one.
-        className="pointer-events-none absolute left-1/2 top-1/2 z-10 flex flex-col items-center justify-center gap-[1.5cqmin] p-[3cqmin] text-center"
+        // Grid's rotated side seats give the fixed ± a clear edge gutter: the ± tuck to the card's
+        // extreme left/right (GRID_HALF_CLASSES) while extra padding on the flex main axis (which the
+        // 90/270 rotation turns into the card's horizontal axis) keeps the name pill and mini-map off
+        // that gutter as the card shrinks. Upright seats never collide (their ± clear the top/bottom-
+        // stacked content), so they keep the base padding.
+        className={`pointer-events-none absolute left-1/2 top-1/2 z-10 flex flex-col items-center justify-center gap-[1.5cqmin] p-[3cqmin] text-center ${
+          isGrid && isSideways ? "py-[8cqmin]" : ""
+        }`}
       >
         <span className="rounded-full border border-black/10 bg-white/50 px-3 py-1 text-[clamp(0.6rem,5cqmin,0.875rem)] font-semibold shadow-sm">
           {displayLabel}
@@ -318,7 +354,7 @@ export function PlayerLifeCard({
         onClick={() => onAdjustLife(player.label, 1)}
         className={`motion-focus ${increaseBandClassName}`}
       >
-        <span aria-hidden="true" style={{ transform: rotation }}>
+        <span aria-hidden="true" style={{ transform: glyphTransform }}>
           +
         </span>
       </button>

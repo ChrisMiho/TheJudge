@@ -319,6 +319,31 @@ describe("Frontend - Shared", () => {
       expect(screen.getByRole("button", { name: increaseName })).toHaveClass("top-0", "h-1/2");
     });
 
+    it("splits grid-mode cards on a fixed screen left/right regardless of seat rotation", () => {
+      const player = playerAtLife(40);
+      const decreaseName = "Decrease life for Player 1 (Alice)";
+      const increaseName = "Increase life for Player 1 (Alice)";
+
+      // A sideways seat (rotation 90) that would split top/bottom in list mode instead splits on a
+      // fixed on-screen left/right in grid mode: − on the left half, + on the right, every card.
+      render(
+        <PlayerLifeCard
+          player={player}
+          players={rosterWith(player)}
+          placement={{ ...placement, rotation: 90 }}
+          layout={layout}
+          cardStyle="gradient"
+          layoutMode="grid"
+          onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
+          onOpenCounters={vi.fn()}
+        />
+      );
+
+      expect(screen.getByRole("button", { name: decreaseName })).toHaveClass("left-0", "w-1/2");
+      expect(screen.getByRole("button", { name: increaseName })).toHaveClass("right-0", "w-1/2");
+    });
+
     it("keeps the inner controls clickable above the two life halves", () => {
       const player = playerAtLife(40);
       render(

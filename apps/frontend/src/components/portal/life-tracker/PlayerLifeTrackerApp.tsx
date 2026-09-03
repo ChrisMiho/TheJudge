@@ -171,6 +171,7 @@ export function PlayerLifeTrackerApp({
                 placement={placement}
                 layout={layout}
                 cardStyle={tracker.state.cardStyle}
+                layoutMode={tracker.state.layoutMode}
                 onAdjustLife={tracker.adjustPlayerLife}
                 onSetLife={tracker.setPlayerLife}
                 onOpenCounters={openCounters}
