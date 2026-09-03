@@ -12,11 +12,16 @@ import type { PlayerLabel } from "../../types";
  * Supported counts are the integers 2-8 inclusive; every other input (1, 9, non-integers, and
  * `NaN`) throws a `RangeError` rather than silently returning a partial layout.
  *
- * v1 layouts (the 4-player orientation is a manual match against
- * `PRD/work/player-life-tracker/references/IMG_9504.PNG`):
- * - 2: top/bottom halves (1 grid column x 2 rows).
- * - 3: one top seat spanning the full width, plus two bottom seats split into two columns.
- * - 4: a 2x2 table - 2 seats in a left column, 2 seats in a right column.
+ * Seating order (REQ-081, matching the reference photos `intake/references/4TableGrid.png` and
+ * `fullTable.PNG`): **Player 1 sits nearest the viewer and the rest are seated clockwise.** In the
+ * grid layout that means Player 1 is the bottom-left seat; the left column fills bottom-to-top
+ * (`Player 1..left`), then the right column fills top-to-bottom (`Player left+1..N`) - so reading
+ * clockwise from the bottom-left corner gives `Player 1, 2, 3, ...`.
+ *
+ * v1 layouts:
+ * - 2: top/bottom halves (1 grid column x 2 rows) - Player 1 on the bottom.
+ * - 3: two bottom seats split into two columns, plus one top seat spanning the full width.
+ * - 4: a 2x2 table - a left column and a right column of two seats each.
  * - 5-8: left/right seat columns split 3/2, 3/3, 4/3, and 4/4.
  *
  * Rotation convention (degrees, clockwise, matches the CSS `rotate()` function):
@@ -24,11 +29,6 @@ import type { PlayerLabel } from "../../types";
  * - bottom seats: 0 - the default/upright orientation, facing the bottom edge.
  * - left-column seats: 90 - rotated clockwise to face the left edge.
  * - right-column seats: 270 - rotated counter-clockwise to face the right edge.
- *
- * Seats are filled in a fixed, deterministic scan order per layout - top-to-bottom then
- * left-to-right for the 2- and 3-player row layouts; left column top-to-bottom, then right
- * column top-to-bottom, for the 4-8 player column layouts - so `Player 1..N` always maps to the
- * same seat for a given count.
  */
 
 export const MIN_SEAT_ARRANGEMENT_PLAYER_COUNT = 2;
@@ -67,6 +67,14 @@ export type SeatArrangementLayout = {
   seats: SeatPlacement[];
 };
 
+/** A seat's placement/rotation before a player label is assigned to it. */
+type SeatSlot = {
+  side: SeatSide;
+  rotation: SeatRotationDegrees;
+  gridRow: string;
+  gridColumn: string;
+};
+
 function playerLabelAt(index: number): PlayerLabel {
   return `Player ${index + 1}` as PlayerLabel;
 }
@@ -75,72 +83,94 @@ function gridAreaFor(label: PlayerLabel): string {
   return `seat-${label.toLowerCase().replace(" ", "-")}`;
 }
 
-function seat(
-  label: PlayerLabel,
+function slot(
   side: SeatSide,
   rotation: SeatRotationDegrees,
   rowStart: number,
   rowEnd: number,
   columnStart: number,
   columnEnd: number
-): SeatPlacement {
+): SeatSlot {
   return {
-    label,
     side,
     rotation,
-    gridArea: gridAreaFor(label),
     gridRow: `${rowStart} / ${rowEnd}`,
     gridColumn: `${columnStart} / ${columnEnd}`
   };
 }
 
-/** Top/bottom halves: one seat facing the top edge, one facing the bottom edge. */
+/**
+ * Assigns `Player 1..N` to the given seat slots in order - the slots must already be listed in the
+ * clockwise-from-nearest seating order, so `slots[0]` becomes Player 1 (nearest) and the array is
+ * returned in `Player 1..N` order.
+ */
+function seatPlayers(slots: SeatSlot[]): SeatPlacement[] {
+  return slots.map((seat, index) => {
+    const label = playerLabelAt(index);
+    return {
+      label,
+      side: seat.side,
+      rotation: seat.rotation,
+      gridArea: gridAreaFor(label),
+      gridRow: seat.gridRow,
+      gridColumn: seat.gridColumn
+    };
+  });
+}
+
+/** Top/bottom halves: Player 1 nearest on the bottom edge, Player 2 facing the top edge. */
 function twoPlayerLayout(): SeatArrangementLayout {
   return {
     playerCount: 2,
     columns: 1,
     rows: 2,
-    seats: [seat(playerLabelAt(0), "top", 180, 1, 2, 1, 2), seat(playerLabelAt(1), "bottom", 0, 2, 3, 1, 2)]
+    // Clockwise from the nearest seat: bottom (Player 1), then top (Player 2).
+    seats: seatPlayers([slot("bottom", 0, 2, 3, 1, 2), slot("top", 180, 1, 2, 1, 2)])
   };
 }
 
-/** One top seat spanning the full width, plus two bottom seats split into two columns. */
+/** Two bottom seats split into two columns, plus one top seat spanning the full width. */
 function threePlayerLayout(): SeatArrangementLayout {
   return {
     playerCount: 3,
     columns: 2,
     rows: 2,
-    seats: [
-      seat(playerLabelAt(0), "top", 180, 1, 2, 1, 3),
-      seat(playerLabelAt(1), "bottom", 0, 2, 3, 1, 2),
-      seat(playerLabelAt(2), "bottom", 0, 2, 3, 2, 3)
-    ]
+    // Clockwise from the nearest seat: bottom-left (Player 1), top (Player 2), bottom-right (Player 3).
+    seats: seatPlayers([
+      slot("bottom", 0, 2, 3, 1, 2),
+      slot("top", 180, 1, 2, 1, 3),
+      slot("bottom", 0, 2, 3, 2, 3)
+    ])
   };
 }
 
 /**
- * Left/right seat columns (used for 4-8 players). The left column fills first (`Player 1..left`,
- * top-to-bottom), then the right column (`Player left+1..left+right`, top-to-bottom), matching the
- * 4-player 2x2 orientation confirmed against `references/IMG_9504.PNG`: left-column seats rotate
- * clockwise (90deg) to face the left edge, right-column seats rotate counter-clockwise (270deg) to
- * face the right edge.
+ * Left/right seat columns (used for 4-8 players). Player 1 is nearest at the bottom-left; the left
+ * column fills bottom-to-top (`Player 1..left`), then the right column fills top-to-bottom
+ * (`Player left+1..left+right`), so reading clockwise from the bottom-left corner gives
+ * `Player 1, 2, 3, ...` - the seating in `references/4TableGrid.png` / `fullTable.PNG`. Left-column
+ * seats rotate clockwise (90deg) to face the left edge, right-column seats rotate counter-clockwise
+ * (270deg) to face the right edge.
  */
 function columnSplitLayout(leftCount: number, rightCount: number): SeatArrangementLayout {
-  const seats: SeatPlacement[] = [];
+  const slots: SeatSlot[] = [];
 
-  for (let row = 0; row < leftCount; row += 1) {
-    seats.push(seat(playerLabelAt(row), "left", 90, row + 1, row + 2, 1, 2));
+  // Left column: Player 1..left, seated bottom-to-top so Player 1 (nearest) is the bottom-left seat.
+  for (let index = 0; index < leftCount; index += 1) {
+    const rowFromTop = leftCount - 1 - index;
+    slots.push(slot("left", 90, rowFromTop + 1, rowFromTop + 2, 1, 2));
   }
 
-  for (let row = 0; row < rightCount; row += 1) {
-    seats.push(seat(playerLabelAt(leftCount + row), "right", 270, row + 1, row + 2, 2, 3));
+  // Right column: Player left+1..N, top-to-bottom, continuing clockwise past the top of the table.
+  for (let index = 0; index < rightCount; index += 1) {
+    slots.push(slot("right", 270, index + 1, index + 2, 2, 3));
   }
 
   return {
     playerCount: leftCount + rightCount,
     columns: 2,
     rows: Math.max(leftCount, rightCount),
-    seats
+    seats: seatPlayers(slots)
   };
 }
 
@@ -197,9 +227,11 @@ export function seatArrangement(count: number): SeatArrangementLayout {
  * phone-portrait-friendly option: rows stack vertically instead of requiring wide rotated
  * columns, and there are roughly half as many rows as the old one-player-per-row list.
  *
- * Seats fill in a fixed, deterministic scan order - the head seat, then each pair row
- * left-to-right top-to-bottom, then the foot seat last - so `Player 1..N` always maps to the
- * same seat for a given count.
+ * Seating order (REQ-081, matching `references/4TableList.png` / `fullTableList.PNG`): Player 1
+ * sits nearest, then clockwise. So Player 1 takes the foot seat (or, when there is no foot seat,
+ * the bottom of the left column); the left column then fills bottom-to-top, the head seat comes
+ * next, and the right column fills top-to-bottom - reading clockwise from the nearest seat gives
+ * `Player 1, 2, 3, ...`.
  */
 export function listSeatArrangement(count: number): SeatArrangementLayout {
   if (
@@ -214,34 +246,45 @@ export function listSeatArrangement(count: number): SeatArrangementLayout {
   }
 
   const columns = count === 2 ? 1 : 2;
-  const seats: SeatPlacement[] = [];
   let row = 1;
-  let nextIndex = 0;
 
-  seats.push(seat(playerLabelAt(nextIndex), "top", 180, row, row + 1, 1, columns + 1));
-  nextIndex += 1;
+  // Build the seat SLOTS (position + rotation) top-to-bottom: a head at the top, then side-by-side
+  // pair rows, then - when the remaining players are odd - a foot at the bottom.
+  const headSlot = slot("top", 180, row, row + 1, 1, columns + 1);
   row += 1;
 
-  const remainingAfterHead = count - nextIndex;
+  const remainingAfterHead = count - 1;
   const hasFootSeat = remainingAfterHead % 2 === 1;
   const pairedCount = hasFootSeat ? remainingAfterHead - 1 : remainingAfterHead;
 
+  const leftColumn: SeatSlot[] = [];
+  const rightColumn: SeatSlot[] = [];
   for (let pairRow = 0; pairRow < pairedCount / 2; pairRow += 1) {
-    seats.push(seat(playerLabelAt(nextIndex), "bottom", 0, row, row + 1, 1, 2));
-    seats.push(seat(playerLabelAt(nextIndex + 1), "bottom", 0, row, row + 1, 2, 3));
-    nextIndex += 2;
+    leftColumn.push(slot("bottom", 0, row, row + 1, 1, 2));
+    rightColumn.push(slot("bottom", 0, row, row + 1, 2, 3));
     row += 1;
   }
 
+  let footSlot: SeatSlot | null = null;
   if (hasFootSeat) {
-    seats.push(seat(playerLabelAt(nextIndex), "bottom", 0, row, row + 1, 1, columns + 1));
+    footSlot = slot("bottom", 0, row, row + 1, 1, columns + 1);
     row += 1;
   }
+
+  // Seat clockwise from the nearest seat: the foot (bottom, nearest) first, then up the left column
+  // (bottom-to-top), across the head, then down the right column (top-to-bottom). With no foot
+  // (odd counts) start at the bottom of the left column so Player 1 is still the nearest seat.
+  const clockwise: SeatSlot[] = [
+    ...(footSlot ? [footSlot] : []),
+    ...[...leftColumn].reverse(),
+    headSlot,
+    ...rightColumn
+  ];
 
   return {
     playerCount: count,
     columns,
     rows: row - 1,
-    seats
+    seats: seatPlayers(clockwise)
   };
 }

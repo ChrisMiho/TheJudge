@@ -146,9 +146,11 @@ describe("Frontend - Shared", () => {
     it("applies the four-player seat contract literally to every fixed label", () => {
       render(<PlayerLifeTrackerApp />);
 
+      // Player 1 is nearest at the bottom-left; the left column fills bottom-to-top, the right
+      // column top-to-bottom, so reading clockwise from the bottom-left gives Player 1, 2, 3, 4.
       const expected = [
-        ["Player 1", "left", "seat-player-1", "1 / 2", "1 / 2", "translate(-50%, -50%) rotate(90deg)"],
-        ["Player 2", "left", "seat-player-2", "2 / 3", "1 / 2", "translate(-50%, -50%) rotate(90deg)"],
+        ["Player 1", "left", "seat-player-1", "2 / 3", "1 / 2", "translate(-50%, -50%) rotate(90deg)"],
+        ["Player 2", "left", "seat-player-2", "1 / 2", "1 / 2", "translate(-50%, -50%) rotate(90deg)"],
         ["Player 3", "right", "seat-player-3", "1 / 2", "2 / 3", "translate(-50%, -50%) rotate(270deg)"],
         ["Player 4", "right", "seat-player-4", "2 / 3", "2 / 3", "translate(-50%, -50%) rotate(270deg)"]
       ] as const;
@@ -175,11 +177,13 @@ describe("Frontend - Shared", () => {
         gridTemplateRows: "repeat(3, minmax(0, 1fr))"
       });
 
+      // Player 1 is nearest on the foot seat; then clockwise up the left column, across the head,
+      // and down the right column: Player 1 foot, Player 2 left, Player 3 head, Player 4 right.
       const expected = [
-        ["Player 1", "top", "1 / 2", "1 / 3", "rotate(180deg)"],
+        ["Player 1", "bottom", "3 / 4", "1 / 3", "rotate(0deg)"],
         ["Player 2", "bottom", "2 / 3", "1 / 2", "rotate(0deg)"],
-        ["Player 3", "bottom", "2 / 3", "2 / 3", "rotate(0deg)"],
-        ["Player 4", "bottom", "3 / 4", "1 / 3", "rotate(0deg)"]
+        ["Player 3", "top", "1 / 2", "1 / 3", "rotate(180deg)"],
+        ["Player 4", "bottom", "2 / 3", "2 / 3", "rotate(0deg)"]
       ] as const;
 
       for (const [label, side, gridRow, gridColumn, rotate] of expected) {
@@ -192,11 +196,11 @@ describe("Frontend - Shared", () => {
       }
 
       // Half-card life zones orientated by the seat's own rotation, not by layout mode or
-      // seat width: the head seat faces the top edge (180) so its halves mirror, while the
-      // upright pair and foot seats keep `−` on the screen-left half.
-      expect(screen.getByRole("button", { name: "Decrease life for Player 1" })).toHaveClass("right-0", "w-1/2");
+      // seat width: the head seat (now Player 3) faces the top edge (180) so its halves mirror,
+      // while the upright foot (Player 1) and pair (Player 2) seats keep `−` on the screen-left half.
+      expect(screen.getByRole("button", { name: "Decrease life for Player 3" })).toHaveClass("right-0", "w-1/2");
+      expect(screen.getByRole("button", { name: "Decrease life for Player 1" })).toHaveClass("left-0", "w-1/2");
       expect(screen.getByRole("button", { name: "Decrease life for Player 2" })).toHaveClass("left-0", "w-1/2");
-      expect(screen.getByRole("button", { name: "Decrease life for Player 4" })).toHaveClass("left-0", "w-1/2");
     });
 
     it("changes only the selected player's life and applies starting life to the full table", async () => {

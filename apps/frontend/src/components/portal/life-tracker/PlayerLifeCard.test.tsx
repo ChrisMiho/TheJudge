@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { createInitialState } from "../../../lib/lifeTracker/state";
-import type { SeatPlacement } from "../../../lib/lifeTracker/seatArrangement";
+import { seatArrangement, type SeatPlacement } from "../../../lib/lifeTracker/seatArrangement";
 import { PlayerLifeCard } from "./PlayerLifeCard";
 
 const placement: SeatPlacement = {
@@ -13,6 +13,8 @@ const placement: SeatPlacement = {
   gridRow: "1 / 2",
   gridColumn: "1 / 2"
 };
+
+const layout = seatArrangement(4);
 
 function fourPlayerRoster() {
   return createInitialState(4, 40).players;
@@ -40,6 +42,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -71,6 +74,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={onAdjustLife}
           onSetLife={vi.fn()}
@@ -94,6 +98,7 @@ describe("Frontend - Shared", () => {
           player={deadPlayer}
           players={rosterWith(deadPlayer)}
           placement={placement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -111,6 +116,7 @@ describe("Frontend - Shared", () => {
           player={revivedPlayer}
           players={rosterWith(revivedPlayer)}
           placement={placement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -130,6 +136,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -155,6 +162,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -170,6 +178,73 @@ describe("Frontend - Shared", () => {
       expect(screen.getByTestId("commander-preview-cell-Player 4")).toHaveTextContent("0");
     });
 
+    it("sizes the preview grid to the active arrangement's real columns/rows, not a near-square ceil(sqrt(N)) blob", () => {
+      const eightPlayerLayout = seatArrangement(8); // columns: 2, rows: 4 - not ceil(sqrt(8)) = 3
+      const roster = createInitialState(8, 40).players;
+      const player = { ...roster[0], displayName: "Alice" };
+
+      render(
+        <PlayerLifeCard
+          player={player}
+          players={roster.map((seat) => (seat.label === player.label ? player : seat))}
+          placement={placement}
+          layout={eightPlayerLayout}
+          cardStyle="gradient"
+          onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
+          onOpenCounters={vi.fn()}
+        />
+      );
+
+      expect(screen.getByTestId("commander-preview-Player 1")).toHaveStyle({
+        gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+        gridTemplateRows: "repeat(4, minmax(0, 1fr))"
+      });
+    });
+
+    it("places every preview cell at its own seat coordinate, not roster index - including a seat out of roster order", () => {
+      const eightPlayerLayout = seatArrangement(8);
+      const roster = createInitialState(8, 40).players;
+      const player = { ...roster[0], displayName: "Alice" };
+      const ownSeat = eightPlayerLayout.seats.find((seat) => seat.label === "Player 1")!;
+      // Player 1 is nearest at the bottom-left (row 4) despite being roster index 0 - the preview
+      // uses the real seat coordinate, not the roster index. Player 8 sits at the bottom of the
+      // right column, sharing that same bottom row from the other side, even though a
+      // ceil(sqrt(8))=3 scan-order grid would have scattered them into different rows.
+      const player8Seat = eightPlayerLayout.seats.find((seat) => seat.label === "Player 8")!;
+
+      render(
+        <PlayerLifeCard
+          player={player}
+          players={roster.map((seat) => (seat.label === player.label ? player : seat))}
+          placement={placement}
+          layout={eightPlayerLayout}
+          cardStyle="gradient"
+          onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
+          onOpenCounters={vi.fn()}
+        />
+      );
+
+      expect(screen.getByTestId("commander-preview-cell-Player 1")).toHaveStyle({
+        gridRow: ownSeat.gridRow,
+        gridColumn: ownSeat.gridColumn
+      });
+      expect(screen.getByTestId("commander-preview-cell-Player 8")).toHaveStyle({
+        gridRow: player8Seat.gridRow,
+        gridColumn: player8Seat.gridColumn
+      });
+      expect(player8Seat.gridRow).toBe(ownSeat.gridRow);
+      expect(player8Seat.gridColumn).not.toBe(ownSeat.gridColumn);
+
+      // Exactly one cell renders "me", and it is the current player's own cell.
+      const meCells = screen
+        .getAllByText("me")
+        .filter((el) => el.getAttribute("data-testid")?.startsWith("commander-preview-cell-"));
+      expect(meCells).toHaveLength(1);
+      expect(meCells[0]).toHaveAttribute("data-testid", "commander-preview-cell-Player 1");
+    });
+
     it("splits the whole card into two half-sized life zones, orientated by the seat's rotation", () => {
       const player = playerAtLife(40);
       const decreaseName = "Decrease life for Player 1 (Alice)";
@@ -181,6 +256,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={{ ...placement, rotation: 0 }}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -197,6 +273,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={{ ...placement, rotation: 180 }}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -214,6 +291,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={{ ...placement, rotation: 90 }}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -229,6 +307,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={{ ...placement, rotation: 270 }}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -240,6 +319,31 @@ describe("Frontend - Shared", () => {
       expect(screen.getByRole("button", { name: increaseName })).toHaveClass("top-0", "h-1/2");
     });
 
+    it("splits grid-mode cards on a fixed screen left/right regardless of seat rotation", () => {
+      const player = playerAtLife(40);
+      const decreaseName = "Decrease life for Player 1 (Alice)";
+      const increaseName = "Increase life for Player 1 (Alice)";
+
+      // A sideways seat (rotation 90) that would split top/bottom in list mode instead splits on a
+      // fixed on-screen left/right in grid mode: − on the left half, + on the right, every card.
+      render(
+        <PlayerLifeCard
+          player={player}
+          players={rosterWith(player)}
+          placement={{ ...placement, rotation: 90 }}
+          layout={layout}
+          cardStyle="gradient"
+          layoutMode="grid"
+          onAdjustLife={vi.fn()}
+          onSetLife={vi.fn()}
+          onOpenCounters={vi.fn()}
+        />
+      );
+
+      expect(screen.getByRole("button", { name: decreaseName })).toHaveClass("left-0", "w-1/2");
+      expect(screen.getByRole("button", { name: increaseName })).toHaveClass("right-0", "w-1/2");
+    });
+
     it("keeps the inner controls clickable above the two life halves", () => {
       const player = playerAtLife(40);
       render(
@@ -247,6 +351,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -270,6 +375,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={placement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -287,6 +393,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={sidewaysPlacement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -305,6 +412,7 @@ describe("Frontend - Shared", () => {
           player={player}
           players={rosterWith(player)}
           placement={uprightPlacement}
+          layout={layout}
           cardStyle="gradient"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
@@ -326,6 +434,7 @@ describe("Frontend - Shared", () => {
             player={player}
             players={rosterWith(player)}
             placement={placement}
+            layout={layout}
             cardStyle={cardStyle}
             onAdjustLife={vi.fn()}
             onSetLife={vi.fn()}
@@ -379,6 +488,7 @@ describe("Frontend - Shared", () => {
             player={player}
             players={rosterWith(player)}
             placement={placement}
+            layout={layout}
             cardStyle="gradient"
             onAdjustLife={onAdjustLife}
             onSetLife={onSetLife}

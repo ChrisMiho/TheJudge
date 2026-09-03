@@ -1850,6 +1850,7 @@
 - Acceptance Criteria:
   - Player Life Tracker appears as a destination in the feature-portal registry (DEC-095); selecting it switches to the tracker view frontend-only with no reload
   - the main screen renders one card per player (2–8) with a large life total rotated to face that player's seat, using a default seat arrangement per player count
+  - the default seat arrangement seats **Player 1 nearest the viewer and the remaining players clockwise** around the table, in both grid and list mode, matching the reference photos (in grid mode Player 1 is the bottom-left seat, the left column filling bottom-to-top and then the right column top-to-bottom); each `Player N` label stays fixed to its seat across player counts
   - each card exposes `+`/`−` controls (edge tap zones) that adjust that player's life; zone thickness follows REQ-112
   - a player whose life is ≤ 0 shows a skull death indicator overlay on their card; the indicator clears when life returns above 0; no elimination or auto-KO occurs
   - basic game setup lets the user choose player count (2–8) via `−`/`+` controls (not a pill row) and a starting-life preset (20, 25, 30, 40, or Custom); starting life seeds every player
@@ -3961,3 +3962,28 @@
   - DEC-166
 - Notes:
   - the loop is the sharpest case of "a run never proceeds on an unproven enforcer" — it runs longest and least watched, so a hook that quietly stopped firing would do the most damage there
+
+### REQ-173
+- Title: Commander-damage cells are a per-seat top-down map on both surfaces, contained at every count
+- Priority: medium
+- Description: Both the on-card commander-damage preview and the opened counter panel's commander-damage matrix are a miniature of the active seat arrangement — each player's cell at that player's own seat, the opener highlighted as "me", unused slots empty — instead of a fixed roster order with only the "me" mark moved. Both derive from whichever arrangement is active (`seatArrangement` in grid mode, `listSeatArrangement` in list mode) through the shared `buildSeatMapCells`, so each map takes the arrangement's own shape: the grid's `columns × rows` block (e.g. 2×4 at 8 players) and the list's vertical stack. Each is an absolute top-down replica of the table — "me" in the current player's own seat, every opponent at their real seat. The panel is a non-rotated centered dialog, so its map is top-down directly; the card content is rotated to face the seated player (DEC-136), so the on-card map is counter-rotated by that same angle to stay screen top-down (me in the player's real corner) and each glyph is rotated back so the numbers still face the player. The map plus the player-name pill are contained within the card at every player count so nothing is clipped or spilled into the inter-card gutter.
+- Acceptance Criteria:
+  - the on-card commander-damage preview is a top-down miniature of the active arrangement — the grid's `columns × rows` block, the list's vertical stack — with the current player's "me" cell in their own seat and each opponent at their real seat; no two cards place "me" in the same cell
+  - the on-card map is counter-rotated against the card's own rotation so it always reads screen top-down (me in the player's real corner), with the glyphs rotated back to face the seated player; the map is never left to spin with the card
+  - the opened counter panel's commander-damage matrix is the same seat map: the opener highlighted as "me" at their seat, each opponent's `−`/`+` cell at their seat, unused slots empty. The panel is a non-rotated centered dialog, so its map is an absolute top-down replica of the table (not rotated to the opener's viewpoint)
+  - both surfaces derive their layout from the active arrangement, so switching between grid and list mode keeps each a correct top-down replica of the rendered table
+  - the on-card map and the player-name pill are fully contained within the card at every player count 2–8, in both grid and list layout, at iPhone-portrait width (~430px): no cell clipped by the card's `overflow-hidden`, and the name pill neither crushed nor spilled into the inter-card gutter — verified live at 7 and 8 players
+  - a tall list arrangement (7–8 players) stays legible: the upright map's width scales off the column count and card height rather than the arrangement's aspect ratio, so it does not collapse to a vertical sliver; cells may go slightly wide-of-square at high counts while positions still mirror the table
+- Constraints:
+  - pure frontend/presentation: no backend, no provider path, no `GameContext` seed contract (DEC-102), no persistence shape (DEC-103); mock-default keeps working
+  - preserve always-on commander-damage-decrements-life, the panel opponent cells' `−`/`+` bands (~53px, REQ-112), the "me" self-cell, and seat rotation as the sole life-zone orientation input (DEC-136)
+  - do not reopen the counter-panel overlay/tray shape (DEC-139) — change only the matrix arrangement inside the panel, never its height or overlay treatment
+  - the on-card map counter-rotates against the card rotation (DEC-136 rotates the life-number content), and its glyphs counter-rotate back so the numbers face the seated player — never leave the map to rotate with the card
+- Dependencies:
+  - REQ-081
+  - REQ-112
+  - DEC-136
+  - DEC-139
+- Notes:
+  - both surfaces reuse the same `buildSeatMapCells`, placing each seat at its arrangement `gridRow`/`gridColumn`/`gridArea`; the on-card map is that same miniature, just counter-rotated to stay top-down inside the rotated card
+  - the reference's 1–5 relative-index labels are not adopted: position tells you who, the damage number tells you how much

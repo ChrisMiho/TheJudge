@@ -169,7 +169,9 @@ export function PlayerLifeTrackerApp({
                 player={player}
                 players={tracker.state.players}
                 placement={placement}
+                layout={layout}
                 cardStyle={tracker.state.cardStyle}
+                layoutMode={tracker.state.layoutMode}
                 onAdjustLife={tracker.adjustPlayerLife}
                 onSetLife={tracker.setPlayerLife}
                 onOpenCounters={openCounters}
@@ -185,6 +187,7 @@ export function PlayerLifeTrackerApp({
         <CounterPanel
           player={selectedPlayer}
           players={tracker.state.players}
+          layout={layout}
           onClose={() => setSelectedPlayerLabel(null)}
           onAdjustNamedCounter={tracker.adjustNamedCounter}
           onSetNamedCounter={tracker.setNamedCounter}

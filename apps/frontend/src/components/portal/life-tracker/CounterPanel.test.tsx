@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { useState, type ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NAMED_COUNTER_PALETTE } from "../../../lib/lifeTracker/counters";
+import { seatArrangement } from "../../../lib/lifeTracker/seatArrangement";
 import { addCustomCounter, createInitialState } from "../../../lib/lifeTracker/state";
 import type { TrackerState } from "../../../lib/lifeTracker/types";
 import { CounterPanel } from "./CounterPanel";
@@ -24,6 +25,7 @@ function panelProps(
   return {
     player: state.players[0],
     players: state.players,
+    layout: seatArrangement(state.playerCount),
     onClose: vi.fn(),
     onAdjustNamedCounter: vi.fn(),
     onSetNamedCounter: vi.fn(),
@@ -110,6 +112,44 @@ describe("Frontend - Shared", () => {
       expect(
         within(matrix).getByRole("button", { name: "Increase commander damage from Player 2" })
       ).toHaveClass("min-h-[53px]");
+    });
+
+    it("sizes the commander-damage matrix to the active layout's real columns/rows, not a hardcoded grid-cols-2", () => {
+      const state = createInitialState(8, 40);
+      const props = panelProps(state);
+      render(<CounterPanel {...props} />);
+
+      const matrix = screen.getByRole("group", { name: "Commander damage by source" });
+      // seatArrangement(8) is columns: 2, rows: 4 - this happens to match `grid-cols-2` in
+      // value, so the guard is that it comes from `layout`, not the class name, which is gone.
+      expect(matrix.className).not.toContain("grid-cols-2");
+      expect(matrix).toHaveStyle({
+        gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+        gridTemplateRows: "repeat(4, minmax(0, 1fr))"
+      });
+    });
+
+    it("places every opponent's cell at that opponent's own seat, and drops min-h-36 from the me cell", () => {
+      const state = createInitialState(8, 40);
+      const layout = seatArrangement(8);
+      const props = panelProps(state, { layout });
+      render(<CounterPanel {...props} />);
+
+      const ownSeat = layout.seats.find((seat) => seat.label === "Player 1")!;
+      // Player 1 is nearest at the bottom-left (row 4); Player 8 sits at the bottom of the right
+      // column, sharing that same bottom row even though it is roster index 7 - so this proves
+      // placement is seat-derived, not a roster-order scan.
+      const player8Seat = layout.seats.find((seat) => seat.label === "Player 8")!;
+
+      const meCell = screen.getByTestId("commander-cell-Player 1");
+      expect(meCell).toHaveTextContent("me");
+      expect(meCell.className).not.toContain("min-h-36");
+      expect(meCell).toHaveStyle({ gridRow: ownSeat.gridRow, gridColumn: ownSeat.gridColumn });
+
+      const opponentCell = screen.getByTestId("commander-cell-Player 8");
+      expect(opponentCell).toHaveStyle({ gridRow: player8Seat.gridRow, gridColumn: player8Seat.gridColumn });
+      expect(player8Seat.gridRow).toBe(ownSeat.gridRow);
+      expect(player8Seat.gridColumn).not.toBe(ownSeat.gridColumn);
     });
 
     it("renders the shared palette exactly once and increments each value independently", async () => {
