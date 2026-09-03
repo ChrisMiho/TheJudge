@@ -10,6 +10,8 @@ Do not rename package folders to encode status.
 
 ## refined
 
+- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; GATE-QUESTIONS.md proposes REQ-174/175/176, NFR-019, FLOW-024 and amends REQ-128/125, FLOW-001 (graph run graph-20260903-093903)
+
 ## refining
 
 ## ideation
