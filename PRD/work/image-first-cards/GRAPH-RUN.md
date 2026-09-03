@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-kickoff` (spec-forming half in progress)
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | 1 | preflight | haiku | ok | `degraded (no run state)` | branch `thejudge-auto/image-first-cards` pushed (auto-commit `a9b09c7`); canary denied both tiers; profile env sentinel present | 2026-09-03 |
 | 2 | shape | sonnet | ok | `degraded (no run state)` | package created (`IDEA.md`, `STATUS.ideation`, `intake/GRAPH-BRIEF.md`); commit `5e0d9a6`; 6 prior-run receipts recorded; DEC-151 confirmed live-cited | 2026-09-03 |
 | 3 | define | opus | ok | `1 → 31` | `STATUS.refined`; `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` (12 stable-id slots); commit `28ddc9f`; oracle-id join verified from live sections, not the un-opened FINDINGS files | 2026-09-03 |
+| 4 | gate-qc | sonnet | failed | `? → 42` | FAIL loop 1/3: REQ-175 new route conflicts with the one-endpoint rule (DEC-010) with no gate slot; REQ-176 diff misses `quick-lookup` lookup-card shape; NFR-019 cites NFR-018 not NFR-014; `STATUS.refining`; commit `079a647` | 2026-09-03 |
 
 Heartbeat note: nodes 1–2 ran before the driver armed
 `.worktrees/.graph-run-state.json`, so the per-node counter never keyed this run
@@ -130,6 +131,36 @@ Report back:
 2. STATUS marker set (`refining` while in flux, `refined` on convergence)
 3. Path to `DESIGN-BRIEF.md`
 4. Whether `GATE-QUESTIONS.md` was written, and if so the list of stable ids it proposes (one slot each)
+5. Any blocker recorded, and any commit hash
+
+### define (attempt 2)
+
+graph is controlling
+
+You are node 3 (`define`), attempt 2, of an autonomous graph-kickoff run. Quality-check (node 4) returned FAIL on attempt 1. Re-invoke the `thejudge-refinement` skill to revise the design brief and gate questions so they clear the findings, in graph-controlled mode. This is an autonomous run with no human at the terminal: record product-truth changes as proposals in `GATE-QUESTIONS.md` rather than pausing for the owner.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+Read the three FAIL findings in full in the package `README.md` under `## Preparation gate` (they carry the exact ids, section paths, and line numbers). In brief:
+
+1. The proposed backend route in REQ-175 is a second product-facing endpoint, which conflicts with the current one-product-endpoint rule (DEC-010, restated in `goals-and-non-goals.md`, `PRD/instructions/technical-design-rules.md` Forbidden Design Drift, and REQ-072). Nothing in the brief or gate file addresses that rule. Resolve this WITHOUT pre-deciding the owner's answer: either keep the new route and add gate slots that amend DEC-010, `goals-and-non-goals.md`, `technical-design-rules.md`, and REQ-072 so the owner can approve a second endpoint, OR revise the design to serve card detail without a new product-facing route and update REQ-175 accordingly. Pick the design you judge best, and surface it for the owner as gate proposals; do not assume which they will choose.
+2. REQ-176 promises the lookup-mode card shape drops its descriptive block, but the proposed diff only amends `ZoneCardItem` in `integrations-and-data.md`. The lookup-mode card shape lives in `PRD/sections/quick-lookup/README.md` (~lines 169-175) and is untouched. Add a diff block covering that shape, or narrow REQ-176 so its promise and its diffs match.
+3. NFR-019 cites NFR-018 as its code-splitting dependency; the correct one is NFR-014. Fix the cross-reference.
+
+Refinement writes ONLY inside `PRD/work/image-first-cards/`: revise `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md`. Do NOT edit `PRD/sections/` or code. Keep the gate-question format: one `## <STABLE-ID>` block per new or amended id, each opening with the three plain-language lines from `PRD/instructions/plain-language-standard.md` (What this decides · In plain terms · What happens if you say no), then the COMPLETE proposed diff, then `- Verdict:` and `- Reason:`. Do not mint a new DEC — amend existing ids in place.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Outcome: ok | failed (with reason)
+2. STATUS marker set
+3. How each of the three findings was resolved (one line each)
+4. The full list of stable ids `GATE-QUESTIONS.md` now proposes (one slot each), noting any added since attempt 1
 5. Any blocker recorded, and any commit hash
 
 ### gate-qc
