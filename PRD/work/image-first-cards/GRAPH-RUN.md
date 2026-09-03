@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-kickoff` (spec-forming half in progress)
 
 ## Node ledger
@@ -17,6 +17,7 @@
 | 3 | define | opus | ok | `1 → 31` | `STATUS.refined`; `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` (12 stable-id slots); commit `28ddc9f`; oracle-id join verified from live sections, not the un-opened FINDINGS files | 2026-09-03 |
 | 4 | gate-qc | sonnet | failed | `? → 42` | FAIL loop 1/3: REQ-175 new route conflicts with the one-endpoint rule (DEC-010) with no gate slot; REQ-176 diff misses `quick-lookup` lookup-card shape; NFR-019 cites NFR-018 not NFR-014; `STATUS.refining`; commit `079a647` | 2026-09-03 |
 | 3 | define | opus | ok | `? → 48` | attempt 2: all 3 FAIL findings cleared — no new route (card detail via lazy static artifact, DEC-010 intact), endpoint alt surfaced as new `D5` fork; REQ-176 quick-lookup diff added; NFR-019 → NFR-014; `STATUS.refined`; commit `9d030f1`; 13 gate slots | 2026-09-03 |
+| 4 | gate-qc | sonnet | failed | `? → 37` | FAIL loop 2/3: prior 3 findings confirmed fixed; new finding — REQ-176 amends derived `quick-lookup/README.md` but not its authoritative source REQ-167 (`functional-requirements.md` ~L3829), so per DEC-168 the two contradict on lookup-card `oracleText`; `STATUS.refining`; commit `35ec3a6` | 2026-09-03 |
 
 Heartbeat note: nodes 1–2 ran before the driver armed
 `.worktrees/.graph-run-state.json`, so the per-node counter never keyed this run
@@ -219,6 +220,34 @@ Report back:
 3. Findings: none, or the complete issue list
 4. STATUS marker after this node
 5. Any commit hash
+
+### define (attempt 3)
+
+graph is controlling
+
+You are node 3 (`define`), attempt 3, of an autonomous graph-kickoff run. Quality-check attempt 2 confirmed the earlier three findings fixed but raised one new finding. Re-invoke the `thejudge-refinement` skill to clear it, in graph-controlled mode. This is an autonomous run with no human at the terminal: record product-truth changes as proposals in `GATE-QUESTIONS.md` rather than pausing for the owner. This is the LAST refinement loop before the run parks at owner-action, so resolve the finding completely.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+The one open finding (full text in the package `README.md` under `## Preparation gate`): REQ-176 amends the derived spec `PRD/sections/quick-lookup/README.md` so the lookup-mode card shape stops carrying oracle text, but it does NOT amend the authoritative requirement that spec derives from — REQ-167 in `PRD/sections/functional-requirements.md` (~line 3829), whose acceptance criterion still requires `oracleText` on each lookup-mode card entry. Per DEC-168 the authoritative REQ wins any conflict with a derived spec file, so once every proposed diff is applied REQ-167 and the amended `quick-lookup/README.md` contradict each other on product truth.
+
+Fix it by adding a diff block to REQ-176 (or a new amend slot for REQ-167, whichever fits the gate format) that amends REQ-167's acceptance criterion in `functional-requirements.md` to match: the lookup-mode card carries identity fields only (`cardId`, `name`) with descriptive fields resolved server-side, consistent with the `quick-lookup/README.md` and `ZoneCardItem` changes already proposed. Verify no OTHER authoritative REQ that a proposed derived-spec diff touches is left un-amended — check each derived-spec file your diffs edit against its source REQ so this class of contradiction does not recur.
+
+Refinement writes ONLY inside `PRD/work/image-first-cards/`: revise `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md`. Do NOT edit `PRD/sections/` or code. Keep the gate-question format: one `## <STABLE-ID>` block per new or amended id, each opening with the three plain-language lines from `PRD/instructions/plain-language-standard.md` (What this decides · In plain terms · What happens if you say no), then the COMPLETE proposed diff, then `- Verdict:` and `- Reason:`. Do not mint a new DEC.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Outcome: ok | failed (with reason)
+2. STATUS marker set
+3. How the finding was resolved, and the result of your check for other un-amended authoritative REQs
+4. The full list of stable ids `GATE-QUESTIONS.md` now proposes (one slot each), noting any added
+5. Any blocker recorded, and any commit hash
 
 ## Instruction ledger
 
