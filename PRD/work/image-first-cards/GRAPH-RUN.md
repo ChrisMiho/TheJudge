@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (spec-forming half in progress)
 
 ## Node ledger
@@ -14,6 +14,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `degraded (no run state)` | branch `thejudge-auto/image-first-cards` pushed (auto-commit `a9b09c7`); canary denied both tiers; profile env sentinel present | 2026-09-03 |
 | 2 | shape | sonnet | ok | `degraded (no run state)` | package created (`IDEA.md`, `STATUS.ideation`, `intake/GRAPH-BRIEF.md`); commit `5e0d9a6`; 6 prior-run receipts recorded; DEC-151 confirmed live-cited | 2026-09-03 |
+| 3 | define | opus | ok | `1 → 31` | `STATUS.refined`; `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` (12 stable-id slots); commit `28ddc9f`; oracle-id join verified from live sections, not the un-opened FINDINGS files | 2026-09-03 |
 
 Heartbeat note: nodes 1–2 ran before the driver armed
 `.worktrees/.graph-run-state.json`, so the per-node counter never keyed this run
@@ -130,6 +131,34 @@ Report back:
 3. Path to `DESIGN-BRIEF.md`
 4. Whether `GATE-QUESTIONS.md` was written, and if so the list of stable ids it proposes (one slot each)
 5. Any blocker recorded, and any commit hash
+
+### gate-qc
+
+graph is controlling
+
+You are node 4 (`gate-qc`) of an autonomous graph-kickoff run. Invoke the `thejudge-quality-check` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+Validate `PRD/work/image-first-cards/DESIGN-BRIEF.md` for PRD alignment and agent-readiness, and produce a PASS or FAIL report. Do NOT write a GAMEPLAN or slice docs — that is the `plan` node, which does not run in this half.
+
+This is a graph run, so refinement proposed product truth in `PRD/work/image-first-cards/GATE-QUESTIONS.md` rather than editing `PRD/sections/`. Read both the design brief and that gate file: check the brief is internally consistent with the proposed REQ/FLOW/NFR ids and their diffs, that every product-truth change the brief relies on has a matching gate slot, and that the whole is ready to slice once the owner answers.
+
+On FAIL, set `STATUS.refining` and report the complete findings list so the next `define` attempt can address them. On PASS, set nothing beyond what the skill sets — the graph driver handles the stop, the docs PR, and the `owner-action` park.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Verdict: PASS | FAIL
+2. Checked artifact path
+3. Findings: none, or the complete issue list
+4. STATUS marker after this node
+5. Any commit hash
 
 ## Instruction ledger
 
