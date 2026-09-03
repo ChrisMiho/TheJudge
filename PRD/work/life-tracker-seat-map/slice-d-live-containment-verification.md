@@ -1,6 +1,18 @@
 # Slice D — Live containment + block-shape + orientation verification
 
-## Status: planned
+## Status: SUPERSEDED (verification target changed)
+
+> **Superseded.** This slice verified the abandoned compact-horizontal block.
+> The shipped map is the top-down **arrangement miniature** (grid → the `columns
+> × rows` block, list → the vertical stack), so the "at most 2 rows / horizontal"
+> checks (D1–D4) no longer apply — the correct live checks are: the map mirrors
+> the real table with "me" in the player's own seat, it stays contained at 2–8
+> players in both layouts at ~430px, and a 7–8 player list map stays legible
+> (width scaled off the column count, not collapsed to a sliver). D5 (glyphs read
+> upright at 90°/270° side seats via glyph-only counter-rotation) did ship and
+> holds. All counts were re-verified live with Playwright on 2026-09-03; captures
+> under `.playwright-mcp/`. See REQ-173 (reworded) and `DESIGN-BRIEF.md`
+> ## Amendments. The plan below is kept for history only.
 
 ## Goal
 

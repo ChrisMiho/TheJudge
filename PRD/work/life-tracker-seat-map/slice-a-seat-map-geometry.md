@@ -1,6 +1,16 @@
 # Slice A — Seat-map geometry: add the compact-horizontal-block builder
 
-## Status: planned
+## Status: SUPERSEDED (not shipped as planned)
+
+> **Superseded.** The compact-horizontal-block builder this slice planned was
+> never built, and no `buildCompactSeatMapCells` export exists — `seatMap.ts`
+> keeps only `buildSeatMapCells`. What shipped is the top-down **arrangement
+> miniature** (that same `buildSeatMapCells`) on both the card and the panel,
+> counter-rotated so "me" lands in the player's own seat corner. The real bug
+> was the map rotating with the card; containment at 7–8 players was solved by
+> scaling the list/upright map's **width** off the column count and card height
+> (not by a second compact builder). See REQ-173 (reworded) and `DESIGN-BRIEF.md`
+> ## Amendments. The plan below is kept for history only.
 
 ## Goal
 

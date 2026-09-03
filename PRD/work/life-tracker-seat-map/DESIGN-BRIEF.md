@@ -1,5 +1,28 @@
 # Design brief — life-tracker-seat-map
 
+> ## Amendments (2026-09-03) — shipped design supersedes the compact block below
+>
+> **Everything below describing the on-card map as a "compact horizontal block"
+> (at most 2 rows, growing wider, the whole card never rotated) is superseded and
+> was not shipped.** What actually shipped, verified live and in PR #182:
+>
+> - **On-card map = top-down arrangement miniature**, the same `buildSeatMapCells`
+>   the panel uses — the grid's `columns × rows` block, the list's vertical stack —
+>   with **"me" in the player's own seat**. It is *not* a compact 2-row block, and
+>   no `buildCompactSeatMapCells` was ever created.
+> - **The card content rotates (DEC-136); the map counter-rotates** by the same
+>   angle to stay screen top-down (me in the player's real corner), glyphs rotated
+>   back to face the seat. The real bug was the map spinning with the card.
+> - **List legibility/containment fix:** the list/upright map's **width** scales off
+>   the column count and card height (not the arrangement aspect ratio, which had
+>   collapsed an 8-player list map to a 17px vertical sliver).
+> - **Grid life-adjust split = fixed left/right** (tap left = −, right = +), ± reflowed
+>   to the card edges, screen-upright; list keeps its per-seat rotation split.
+>
+> Authoritative product truth is REQ-081 and the **reworded REQ-173**. The
+> compact-block sections and the "Owner clarification (2026-09-02)" below are kept
+> for history only.
+
 - Slug: `life-tracker-seat-map`
 - Status: refined
 - Surfaces touched: `PlayerLifeCard.tsx` (on-card commander-damage preview),

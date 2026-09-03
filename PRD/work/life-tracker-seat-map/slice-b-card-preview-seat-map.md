@@ -1,6 +1,19 @@
 # Slice B — PlayerLifeCard: on-card preview becomes the compact horizontal block
 
-## Status: planned
+## Status: SUPERSEDED (not shipped as planned)
+
+> **Superseded.** The on-card preview was **not** switched to a compact block.
+> It keeps `buildSeatMapCells(layout, players, player.label)` and the
+> `layout.columns`/`layout.rows` grid template — the on-card map is the top-down
+> **arrangement miniature**, the same shape as the panel (grid → the `columns ×
+> rows` block, list → the vertical stack), counter-rotated so "me" lands in the
+> player's own seat corner. Legibility/containment at 7–8 players was fixed by
+> scaling the list/upright map's **width** off the column count and card height
+> instead of the arrangement aspect ratio (which had collapsed an 8-player list
+> map to a 17px sliver). Separately, grid cards now split life-adjust **left/right**
+> (tap left = −, right = +) rather than top/bottom; list keeps its per-seat
+> rotation split. See REQ-173 (reworded) and `DESIGN-BRIEF.md` ## Amendments.
+> The plan below is kept for history only.
 
 ## Goal
 
