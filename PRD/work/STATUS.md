@@ -10,9 +10,9 @@ Do not rename package folders to encode status.
 
 ## refined
 
-- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; refinement revised (graph run graph-20260903-093903, attempt 2): card detail now ships as a lazy static artifact (no new endpoint; D5 fork surfaced), REQ-176 gains the quick-lookup card-shape diff, NFR-019 cross-ref fixed to NFR-014; awaiting quality-check re-run
-
 ## refining
+
+- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; quality-check re-run (graph run graph-20260903-093903, attempt 2) confirms the 3 prior findings resolved but FAILs on a new one: REQ-167's acceptance criterion in `functional-requirements.md` still promises the old lookup-card shape (oracleText required), contradicting REQ-176 and the already-fixed `quick-lookup/README.md`; back to refinement
 
 ## ideation
 
