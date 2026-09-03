@@ -16,8 +16,6 @@ Do not rename package folders to encode status.
 
 ## owner-action
 
-| [life-tracker-seat-map](life-tracker-seat-map/) | **DO NOT MERGE PR #182 — needs rework (2026-09-02).** Owner clarified: the on-card map must place "me" at each player's OWN seat (per-seat map, correct spot) per `fullTable.PNG`/`fullTableList.PNG`, but PR #182 pins "me" to a fixed corner. Rework via `thejudge-amend`. See `HANDOFF.md`. |
-
 ## deferred
 
 ## parked in ideasForLater
