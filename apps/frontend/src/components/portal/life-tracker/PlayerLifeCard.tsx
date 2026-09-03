@@ -130,13 +130,22 @@ export function PlayerLifeCard({
   // A sideways map (the grid's counter-rotated side seats) sits in a tall card, so its cells are
   // sized by the card's smaller edge and self-size the box - contained as measured. An upright map
   // (the whole list, and the grid's 2/3-player top/bottom seats) has one row per table row - up to
-  // 5 in an 8-player list - inside a short, wide card, so a self-sized box overflows the card's
-  // bottom. Instead the upright map gets a hard height bound (a fraction of the card height) with an
-  // aspect ratio, and its rows compress via `minmax(0, 1fr)`, so the whole map always fits.
+  // 5 in an 8-player list.
+  //
+  // Height is the map's real ceiling: it stacks below the life number in the card, so it gets a
+  // hard height bound (a fraction of the card height) and its rows compress via `minmax(0, 1fr)`.
+  // Width, though, is not scarce - the list card is far wider than tall - so sizing width off the
+  // arrangement's aspect ratio (`columns / rows`) collapsed a tall map to a sliver (an 8-player
+  // list map was 17px wide, unreadable). Instead width scales with the column count off the card
+  // height, capped, so cells stay legible; at high counts they go slightly wide-of-square while
+  // their grid positions still mirror the real table.
   const mapCellSize = `clamp(0.3rem, min(7cqmin, ${44 / layout.rows}cqw), 1.5rem)`;
   const uprightMapStyle = isSideways
     ? {}
-    : { height: "clamp(1.1rem, 26cqh, 4.5rem)", aspectRatio: `${layout.columns} / ${layout.rows}` };
+    : {
+        height: "clamp(1.1rem, 26cqh, 4.5rem)",
+        width: `clamp(${1.05 * layout.columns}rem, ${16 * layout.columns}cqh, ${1.75 * layout.columns}rem)`
+      };
   const halves = lifeHalvesForRotation(placement.rotation);
   const halfBaseClassName =
     "absolute z-0 flex items-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10";
