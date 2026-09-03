@@ -1850,6 +1850,7 @@
 - Acceptance Criteria:
   - Player Life Tracker appears as a destination in the feature-portal registry (DEC-095); selecting it switches to the tracker view frontend-only with no reload
   - the main screen renders one card per player (2–8) with a large life total rotated to face that player's seat, using a default seat arrangement per player count
+  - the default seat arrangement seats **Player 1 nearest the viewer and the remaining players clockwise** around the table, in both grid and list mode, matching the reference photos (in grid mode Player 1 is the bottom-left seat, the left column filling bottom-to-top and then the right column top-to-bottom); each `Player N` label stays fixed to its seat across player counts
   - each card exposes `+`/`−` controls (edge tap zones) that adjust that player's life; zone thickness follows REQ-112
   - a player whose life is ≤ 0 shows a skull death indicator overlay on their card; the indicator clears when life returns above 0; no elimination or auto-KO occurs
   - basic game setup lets the user choose player count (2–8) via `−`/`+` controls (not a pill row) and a starting-life preset (20, 25, 30, 40, or Custom); starting life seeds every player
