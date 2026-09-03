@@ -126,6 +126,17 @@ export function PlayerLifeCard({
   // content always ends up exactly card-sized regardless of aspect ratio or rotation.
   const isSideways = placement.rotation === 90 || placement.rotation === 270;
   const contentSize = isSideways ? { width: "100cqh", height: "100cqw" } : { width: "100cqw", height: "100cqh" };
+  // Grid and list maps are sized on different axes, because the layouts have different card shapes.
+  // A sideways map (the grid's counter-rotated side seats) sits in a tall card, so its cells are
+  // sized by the card's smaller edge and self-size the box - contained as measured. An upright map
+  // (the whole list, and the grid's 2/3-player top/bottom seats) has one row per table row - up to
+  // 5 in an 8-player list - inside a short, wide card, so a self-sized box overflows the card's
+  // bottom. Instead the upright map gets a hard height bound (a fraction of the card height) with an
+  // aspect ratio, and its rows compress via `minmax(0, 1fr)`, so the whole map always fits.
+  const mapCellSize = `clamp(0.3rem, min(7cqmin, ${44 / layout.rows}cqw), 1.5rem)`;
+  const uprightMapStyle = isSideways
+    ? {}
+    : { height: "clamp(1.1rem, 26cqh, 4.5rem)", aspectRatio: `${layout.columns} / ${layout.rows}` };
   const halves = lifeHalvesForRotation(placement.rotation);
   const halfBaseClassName =
     "absolute z-0 flex items-center text-3xl font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10";
@@ -190,7 +201,7 @@ export function PlayerLifeCard({
         // whole card, so leaving it interactive would swallow every tap meant for the two
         // life halves underneath it. Sizes are container-query units so the same content
         // composes in a tall 2-player card and a short 8-player one.
-        className="pointer-events-none absolute left-1/2 top-1/2 z-10 flex flex-col items-center justify-center gap-[2cqmin] p-[4cqmin] text-center"
+        className="pointer-events-none absolute left-1/2 top-1/2 z-10 flex flex-col items-center justify-center gap-[1.5cqmin] p-[3cqmin] text-center"
       >
         <span className="rounded-full border border-black/10 bg-white/50 px-3 py-1 text-[clamp(0.6rem,5cqmin,0.875rem)] font-semibold shadow-sm">
           {displayLabel}
@@ -249,10 +260,20 @@ export function PlayerLifeCard({
           data-testid={`commander-preview-${player.label}`}
           aria-label={`Open counters for ${displayLabel}`}
           onClick={() => onOpenCounters(player.label)}
-          className="motion-focus pointer-events-auto grid gap-1 rounded-xl border border-black/10 bg-white/40 p-1.5 shadow-sm hover:bg-white/65"
+          className="motion-focus pointer-events-auto grid rounded-xl border border-black/10 bg-white/40 shadow-sm hover:bg-white/65"
+          // The map is an absolute top-down miniature of the table (REQ-173): "me" must land in
+          // the player's real seat corner on every card. The card's content is rotated by
+          // `placement.rotation` to face the seated player, which would spin the map with it and
+          // scramble the corners; counter-rotate by the same angle so the grid stays screen-aligned
+          // (north-up), then rotate each glyph back so the numbers still read facing the player.
+          // Gap and padding scale with the card so the tall 8-player list map clears the card edge.
           style={{
+            transform: `rotate(${-placement.rotation}deg)`,
+            gap: "clamp(0.05rem, 1cqmin, 0.25rem)",
+            padding: "clamp(0.1rem, 1.5cqmin, 0.375rem)",
             gridTemplateColumns: `repeat(${layout.columns}, minmax(0, 1fr))`,
-            gridTemplateRows: `repeat(${layout.rows}, minmax(0, 1fr))`
+            gridTemplateRows: `repeat(${layout.rows}, minmax(0, 1fr))`,
+            ...uprightMapStyle
           }}
         >
           {previewCells.map((cell) => (
@@ -260,8 +281,19 @@ export function PlayerLifeCard({
               key={cell.label}
               aria-hidden="true"
               data-testid={`commander-preview-cell-${cell.label}`}
-              style={{ gridArea: cell.gridArea, gridRow: cell.gridRow, gridColumn: cell.gridColumn }}
-              className={`flex min-h-6 min-w-6 items-center justify-center rounded-md text-[0.65rem] font-black tabular-nums ${
+              style={{
+                gridArea: cell.gridArea,
+                gridRow: cell.gridRow,
+                gridColumn: cell.gridColumn,
+                transform: `rotate(${placement.rotation}deg)`,
+                // Sideways (grid side seats) self-size each cell from the card's smaller edge. Upright
+                // maps let each cell fill its `minmax(0, 1fr)` track inside the height-bounded box
+                // above, so the rows compress to fit a short card instead of overflowing it.
+                width: isSideways ? mapCellSize : "100%",
+                height: isSideways ? mapCellSize : "100%",
+                fontSize: "clamp(0.3rem, 4.5cqmin, 0.65rem)"
+              }}
+              className={`flex items-center justify-center rounded-md font-black tabular-nums ${
                 cell.isSelf ? "bg-black/10 opacity-80" : "bg-white/50"
               }`}
             >

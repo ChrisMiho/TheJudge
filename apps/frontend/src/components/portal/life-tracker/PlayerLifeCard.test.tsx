@@ -207,10 +207,11 @@ describe("Frontend - Shared", () => {
       const roster = createInitialState(8, 40).players;
       const player = { ...roster[0], displayName: "Alice" };
       const ownSeat = eightPlayerLayout.seats.find((seat) => seat.label === "Player 1")!;
-      // Player 5 is the first right-column seat (row 1) - the same row as Player 1's left-column
-      // seat, even though it sits at roster index 4. A ceil(sqrt(8))=3 scan-order grid would have
-      // placed it in row 2; the real layout keeps it in row 1.
-      const player5Seat = eightPlayerLayout.seats.find((seat) => seat.label === "Player 5")!;
+      // Player 1 is nearest at the bottom-left (row 4) despite being roster index 0 - the preview
+      // uses the real seat coordinate, not the roster index. Player 8 sits at the bottom of the
+      // right column, sharing that same bottom row from the other side, even though a
+      // ceil(sqrt(8))=3 scan-order grid would have scattered them into different rows.
+      const player8Seat = eightPlayerLayout.seats.find((seat) => seat.label === "Player 8")!;
 
       render(
         <PlayerLifeCard
@@ -229,12 +230,12 @@ describe("Frontend - Shared", () => {
         gridRow: ownSeat.gridRow,
         gridColumn: ownSeat.gridColumn
       });
-      expect(screen.getByTestId("commander-preview-cell-Player 5")).toHaveStyle({
-        gridRow: player5Seat.gridRow,
-        gridColumn: player5Seat.gridColumn
+      expect(screen.getByTestId("commander-preview-cell-Player 8")).toHaveStyle({
+        gridRow: player8Seat.gridRow,
+        gridColumn: player8Seat.gridColumn
       });
-      expect(player5Seat.gridRow).toBe(ownSeat.gridRow);
-      expect(player5Seat.gridColumn).not.toBe(ownSeat.gridColumn);
+      expect(player8Seat.gridRow).toBe(ownSeat.gridRow);
+      expect(player8Seat.gridColumn).not.toBe(ownSeat.gridColumn);
 
       // Exactly one cell renders "me", and it is the current player's own cell.
       const meCells = screen

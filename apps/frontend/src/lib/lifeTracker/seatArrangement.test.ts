@@ -37,7 +37,7 @@ const VALID_ROTATIONS = new Set([0, 90, 180, 270]);
 
 describe("Frontend - Shared", () => {
   describe("seatArrangement", () => {
-    it("returns the exact 2-player top/bottom halves layout", () => {
+    it("returns the exact 2-player top/bottom halves layout, Player 1 nearest on the bottom", () => {
       expect(seatArrangement(2)).toEqual<SeatArrangementLayout>({
         playerCount: 2,
         columns: 1,
@@ -45,25 +45,25 @@ describe("Frontend - Shared", () => {
         seats: [
           {
             label: "Player 1",
-            side: "top",
-            rotation: 180,
+            side: "bottom",
+            rotation: 0,
             gridArea: "seat-player-1",
-            gridRow: "1 / 2",
+            gridRow: "2 / 3",
             gridColumn: "1 / 2"
           },
           {
             label: "Player 2",
-            side: "bottom",
-            rotation: 0,
+            side: "top",
+            rotation: 180,
             gridArea: "seat-player-2",
-            gridRow: "2 / 3",
+            gridRow: "1 / 2",
             gridColumn: "1 / 2"
           }
         ]
       });
     });
 
-    it("returns the exact 3-player one-top-two-bottom layout", () => {
+    it("returns the exact 3-player two-bottom-one-top layout, Player 1 nearest bottom-left", () => {
       expect(seatArrangement(3)).toEqual<SeatArrangementLayout>({
         playerCount: 3,
         columns: 2,
@@ -71,19 +71,19 @@ describe("Frontend - Shared", () => {
         seats: [
           {
             label: "Player 1",
-            side: "top",
-            rotation: 180,
+            side: "bottom",
+            rotation: 0,
             gridArea: "seat-player-1",
-            gridRow: "1 / 2",
-            gridColumn: "1 / 3"
+            gridRow: "2 / 3",
+            gridColumn: "1 / 2"
           },
           {
             label: "Player 2",
-            side: "bottom",
-            rotation: 0,
+            side: "top",
+            rotation: 180,
             gridArea: "seat-player-2",
-            gridRow: "2 / 3",
-            gridColumn: "1 / 2"
+            gridRow: "1 / 2",
+            gridColumn: "1 / 3"
           },
           {
             label: "Player 3",
@@ -97,7 +97,7 @@ describe("Frontend - Shared", () => {
       });
     });
 
-    it("returns the exact 4-player 2x2 layout matching the reference photo orientation", () => {
+    it("returns the exact 4-player 2x2 layout, Player 1 nearest and seated clockwise", () => {
       expect(seatArrangement(4)).toEqual<SeatArrangementLayout>({
         playerCount: 4,
         columns: 2,
@@ -108,7 +108,7 @@ describe("Frontend - Shared", () => {
             side: "left",
             rotation: 90,
             gridArea: "seat-player-1",
-            gridRow: "1 / 2",
+            gridRow: "2 / 3",
             gridColumn: "1 / 2"
           },
           {
@@ -116,7 +116,7 @@ describe("Frontend - Shared", () => {
             side: "left",
             rotation: 90,
             gridArea: "seat-player-2",
-            gridRow: "2 / 3",
+            gridRow: "1 / 2",
             gridColumn: "1 / 2"
           },
           {
@@ -139,7 +139,7 @@ describe("Frontend - Shared", () => {
       });
     });
 
-    it("returns the exact 5-player left/right column layout split 3/2", () => {
+    it("returns the exact 5-player left/right column layout split 3/2, clockwise from bottom-left", () => {
       expect(seatArrangement(5)).toEqual<SeatArrangementLayout>({
         playerCount: 5,
         columns: 2,
@@ -150,7 +150,7 @@ describe("Frontend - Shared", () => {
             side: "left",
             rotation: 90,
             gridArea: "seat-player-1",
-            gridRow: "1 / 2",
+            gridRow: "3 / 4",
             gridColumn: "1 / 2"
           },
           {
@@ -166,7 +166,7 @@ describe("Frontend - Shared", () => {
             side: "left",
             rotation: 90,
             gridArea: "seat-player-3",
-            gridRow: "3 / 4",
+            gridRow: "1 / 2",
             gridColumn: "1 / 2"
           },
           {
@@ -189,7 +189,7 @@ describe("Frontend - Shared", () => {
       });
     });
 
-    it("returns the exact 6-player left/right column layout split 3/3", () => {
+    it("returns the exact 6-player left/right column layout split 3/3, clockwise from bottom-left", () => {
       expect(seatArrangement(6)).toEqual<SeatArrangementLayout>({
         playerCount: 6,
         columns: 2,
@@ -200,7 +200,7 @@ describe("Frontend - Shared", () => {
             side: "left",
             rotation: 90,
             gridArea: "seat-player-1",
-            gridRow: "1 / 2",
+            gridRow: "3 / 4",
             gridColumn: "1 / 2"
           },
           {
@@ -216,7 +216,7 @@ describe("Frontend - Shared", () => {
             side: "left",
             rotation: 90,
             gridArea: "seat-player-3",
-            gridRow: "3 / 4",
+            gridRow: "1 / 2",
             gridColumn: "1 / 2"
           },
           {
@@ -247,7 +247,7 @@ describe("Frontend - Shared", () => {
       });
     });
 
-    it("returns the exact 7-player left/right column layout split 4/3", () => {
+    it("returns the exact 7-player left/right column layout split 4/3, clockwise from bottom-left", () => {
       expect(seatArrangement(7)).toEqual<SeatArrangementLayout>({
         playerCount: 7,
         columns: 2,
@@ -258,7 +258,7 @@ describe("Frontend - Shared", () => {
             side: "left",
             rotation: 90,
             gridArea: "seat-player-1",
-            gridRow: "1 / 2",
+            gridRow: "4 / 5",
             gridColumn: "1 / 2"
           },
           {
@@ -266,7 +266,7 @@ describe("Frontend - Shared", () => {
             side: "left",
             rotation: 90,
             gridArea: "seat-player-2",
-            gridRow: "2 / 3",
+            gridRow: "3 / 4",
             gridColumn: "1 / 2"
           },
           {
@@ -274,7 +274,7 @@ describe("Frontend - Shared", () => {
             side: "left",
             rotation: 90,
             gridArea: "seat-player-3",
-            gridRow: "3 / 4",
+            gridRow: "2 / 3",
             gridColumn: "1 / 2"
           },
           {
@@ -282,7 +282,7 @@ describe("Frontend - Shared", () => {
             side: "left",
             rotation: 90,
             gridArea: "seat-player-4",
-            gridRow: "4 / 5",
+            gridRow: "1 / 2",
             gridColumn: "1 / 2"
           },
           {
@@ -313,7 +313,7 @@ describe("Frontend - Shared", () => {
       });
     });
 
-    it("returns the exact 8-player left/right column layout split 4/4", () => {
+    it("returns the exact 8-player left/right column layout split 4/4, clockwise from bottom-left", () => {
       expect(seatArrangement(8)).toEqual<SeatArrangementLayout>({
         playerCount: 8,
         columns: 2,
@@ -324,7 +324,7 @@ describe("Frontend - Shared", () => {
             side: "left",
             rotation: 90,
             gridArea: "seat-player-1",
-            gridRow: "1 / 2",
+            gridRow: "4 / 5",
             gridColumn: "1 / 2"
           },
           {
@@ -332,7 +332,7 @@ describe("Frontend - Shared", () => {
             side: "left",
             rotation: 90,
             gridArea: "seat-player-2",
-            gridRow: "2 / 3",
+            gridRow: "3 / 4",
             gridColumn: "1 / 2"
           },
           {
@@ -340,7 +340,7 @@ describe("Frontend - Shared", () => {
             side: "left",
             rotation: 90,
             gridArea: "seat-player-3",
-            gridRow: "3 / 4",
+            gridRow: "2 / 3",
             gridColumn: "1 / 2"
           },
           {
@@ -348,7 +348,7 @@ describe("Frontend - Shared", () => {
             side: "left",
             rotation: 90,
             gridArea: "seat-player-4",
-            gridRow: "4 / 5",
+            gridRow: "1 / 2",
             gridColumn: "1 / 2"
           },
           {
@@ -423,7 +423,7 @@ describe("Frontend - Shared", () => {
       expect(listSeatArrangement(3)).toEqual<SeatArrangementLayout>(seatArrangement(3));
     });
 
-    it("returns the exact 4-player head/pair/foot layout (matching the icon: wide, pair, wide)", () => {
+    it("returns the exact 4-player head/pair/foot layout, Player 1 nearest on the foot seat", () => {
       expect(listSeatArrangement(4)).toEqual<SeatArrangementLayout>({
         playerCount: 4,
         columns: 2,
@@ -431,10 +431,10 @@ describe("Frontend - Shared", () => {
         seats: [
           {
             label: "Player 1",
-            side: "top",
-            rotation: 180,
+            side: "bottom",
+            rotation: 0,
             gridArea: "seat-player-1",
-            gridRow: "1 / 2",
+            gridRow: "3 / 4",
             gridColumn: "1 / 3"
           },
           {
@@ -447,19 +447,19 @@ describe("Frontend - Shared", () => {
           },
           {
             label: "Player 3",
-            side: "bottom",
-            rotation: 0,
+            side: "top",
+            rotation: 180,
             gridArea: "seat-player-3",
-            gridRow: "2 / 3",
-            gridColumn: "2 / 3"
+            gridRow: "1 / 2",
+            gridColumn: "1 / 3"
           },
           {
             label: "Player 4",
             side: "bottom",
             rotation: 0,
             gridArea: "seat-player-4",
-            gridRow: "3 / 4",
-            gridColumn: "1 / 3"
+            gridRow: "2 / 3",
+            gridColumn: "2 / 3"
           }
         ]
       });
@@ -473,11 +473,11 @@ describe("Frontend - Shared", () => {
         seats: [
           {
             label: "Player 1",
-            side: "top",
-            rotation: 180,
+            side: "bottom",
+            rotation: 0,
             gridArea: "seat-player-1",
-            gridRow: "1 / 2",
-            gridColumn: "1 / 3"
+            gridRow: "3 / 4",
+            gridColumn: "1 / 2"
           },
           {
             label: "Player 2",
@@ -489,19 +489,19 @@ describe("Frontend - Shared", () => {
           },
           {
             label: "Player 3",
-            side: "bottom",
-            rotation: 0,
+            side: "top",
+            rotation: 180,
             gridArea: "seat-player-3",
-            gridRow: "2 / 3",
-            gridColumn: "2 / 3"
+            gridRow: "1 / 2",
+            gridColumn: "1 / 3"
           },
           {
             label: "Player 4",
             side: "bottom",
             rotation: 0,
             gridArea: "seat-player-4",
-            gridRow: "3 / 4",
-            gridColumn: "1 / 2"
+            gridRow: "2 / 3",
+            gridColumn: "2 / 3"
           },
           {
             label: "Player 5",
@@ -515,7 +515,7 @@ describe("Frontend - Shared", () => {
       });
     });
 
-    it("returns the exact 8-player head/three-pairs/foot layout", () => {
+    it("returns the exact 8-player head/three-pairs/foot layout, Player 1 nearest on the foot seat", () => {
       expect(listSeatArrangement(8)).toEqual<SeatArrangementLayout>({
         playerCount: 8,
         columns: 2,
@@ -523,10 +523,10 @@ describe("Frontend - Shared", () => {
         seats: [
           {
             label: "Player 1",
-            side: "top",
-            rotation: 180,
+            side: "bottom",
+            rotation: 0,
             gridArea: "seat-player-1",
-            gridRow: "1 / 2",
+            gridRow: "5 / 6",
             gridColumn: "1 / 3"
           },
           {
@@ -534,7 +534,7 @@ describe("Frontend - Shared", () => {
             side: "bottom",
             rotation: 0,
             gridArea: "seat-player-2",
-            gridRow: "2 / 3",
+            gridRow: "4 / 5",
             gridColumn: "1 / 2"
           },
           {
@@ -542,39 +542,39 @@ describe("Frontend - Shared", () => {
             side: "bottom",
             rotation: 0,
             gridArea: "seat-player-3",
-            gridRow: "2 / 3",
-            gridColumn: "2 / 3"
+            gridRow: "3 / 4",
+            gridColumn: "1 / 2"
           },
           {
             label: "Player 4",
             side: "bottom",
             rotation: 0,
             gridArea: "seat-player-4",
-            gridRow: "3 / 4",
+            gridRow: "2 / 3",
             gridColumn: "1 / 2"
           },
           {
             label: "Player 5",
-            side: "bottom",
-            rotation: 0,
+            side: "top",
+            rotation: 180,
             gridArea: "seat-player-5",
-            gridRow: "3 / 4",
-            gridColumn: "2 / 3"
+            gridRow: "1 / 2",
+            gridColumn: "1 / 3"
           },
           {
             label: "Player 6",
             side: "bottom",
             rotation: 0,
             gridArea: "seat-player-6",
-            gridRow: "4 / 5",
-            gridColumn: "1 / 2"
+            gridRow: "2 / 3",
+            gridColumn: "2 / 3"
           },
           {
             label: "Player 7",
             side: "bottom",
             rotation: 0,
             gridArea: "seat-player-7",
-            gridRow: "4 / 5",
+            gridRow: "3 / 4",
             gridColumn: "2 / 3"
           },
           {
@@ -582,8 +582,8 @@ describe("Frontend - Shared", () => {
             side: "bottom",
             rotation: 0,
             gridArea: "seat-player-8",
-            gridRow: "5 / 6",
-            gridColumn: "1 / 3"
+            gridRow: "4 / 5",
+            gridColumn: "2 / 3"
           }
         ]
       });

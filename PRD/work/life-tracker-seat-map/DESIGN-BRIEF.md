@@ -274,3 +274,82 @@ decision log is retired).
 `intake/GRAPH-BRIEF.md`, `intake/PROBE.md`, `intake/references/` (owner reference
 of the target seat map at 6 seats; measured before-state of the roster-order grid
 and the 7–8-player clipping). Cited paths only; not re-fetched.
+
+## Amendments
+
+### 2026-09-02 — HELD: on-card map reverts to the arrangement miniature (me at own seat)
+
+**Item (owner, `HANDOFF.md`):** the on-card commander-damage mini-grid must be a
+**miniature of the real table** — "me" at the viewer's own seat, each opponent at
+the seat they actually occupy, cell order mirroring where players really sit
+(the 2×2 for 4-player grid, the diamond for 4-player list, etc.). Then fix only
+the 7–8-player containment bug without breaking that seat order. This reverses
+the on-card design to the arrangement miniature and abandons the compact
+horizontal block.
+
+**Held — exceeds `thejudge-amend`. Route to `thejudge-refinement`.** This is not a
+fold: it reverses a *settled* requirement that pervades this package —
+`GATE-QUESTIONS.md` REQ-173's proposal ("the on-card commander-damage preview is
+a compact horizontal block"), acceptance criteria 1/3/4 above, the
+`Owner clarification (2026-09-02)` and `Design direction` sections, and slice
+objectives A (add the compact-block builder), B (on-card → compact block) and D
+(verify the compact-block shape). Amend may not rewrite settled requirements,
+acceptance criteria, REQ-173, or slice objectives; reversing them is a refinement
+round with the owner present.
+
+**Load-bearing code-premise correction (verified on this branch, PR #182 head
+`thejudge-auto/life-tracker-seat-map-work`):** the on-card code already renders
+the arrangement miniature the owner wants. `PlayerLifeCard.tsx:121` uses
+`buildSeatMapCells(layout, players, player.label)` — every player at their own
+seat's `gridRow`/`gridColumn`/`gridArea`, viewer marked "me" — and lines 254–255
+size the preview to `layout.columns × layout.rows`, so each card mirrors the real
+table with "me" at that seat. `buildCompactSeatMapCells` does **not** exist
+anywhere on this branch; the compact-horizontal re-scope landed in the **docs
+only** (commits `eaa5aef`, `15f6ab2`, both `docs(graph)`). The HANDOFF's premise
+that PR #182 shipped a compact fixed-corner block is therefore false for this
+branch. **The reversal is a docs/spec reversal, not a code rewrite** — the spec
+must be re-settled back to the arrangement miniature to match the code and the
+owner's intent.
+
+**Product truth it needs:** REQ-173 re-worded so the on-card map is a *per-seat
+miniature of the active arrangement (me at own seat)* — not a compact horizontal
+block — with containment (not block-shape) as the guarantee; the matching prose
+in the proposed `PRD/sections/life-tracker/README.md` and `screen-layout.md`
+diffs re-aligned the same way. Refinement writes these to `GATE-QUESTIONS.md`
+(never `PRD/sections/`), and map-out re-slices: drop slice A (no compact
+builder), re-point slice B to keep `buildSeatMapCells`, and re-frame slice D's
+7–8-player containment to preserve seat order (the one genuine bug — `min-h-6
+min-w-6` preview cells overflow the short card at high counts). Live verification
+of order and containment owed at that point.
+
+### 2026-09-02 — DONE (owner-directed, live): top-down map + clockwise seating
+
+The owner directed the fix live in this session (superseding the HELD note
+above) after live review disproved the HANDOFF premise. Three defects were
+found and fixed in `PlayerLifeCard.tsx` / `seatArrangement.ts`, each verified in
+the running app (Mac `localhost:5173`, iPhone-portrait ~430px) and against the
+reference photos:
+
+1. **On-card map rotated with the card** so "me" never landed in the player's
+   own corner (grid looked scrambled; list looked closer only because its seats
+   rotate 0/180). Fixed by counter-rotating the preview grid by
+   `-placement.rotation` (absolute top-down positions) and rotating each glyph
+   by `+placement.rotation` (still faces the seated player). "me" now lands in
+   each player's real seat in both grid and list, 4/6/8 players.
+2. **7–8-player containment.** 8-player grid is now fully contained (the old
+   ~40px clip was the sideways rotation). 8-player list, iPhone-portrait, sits
+   within ~3px (cell edge kisses the boundary, not visibly clipped) after
+   scaling the cells/gap/padding with the card (`cqmin`), since the life number
+   (DEC-136) dominates the stack height.
+3. **Seat order (REQ-081).** The owner approved matching the photos: Player 1
+   now sits nearest and the rest are seated clockwise, in both `seatArrangement`
+   (grid: left column bottom-to-top, right column top-to-bottom) and
+   `listSeatArrangement` (foot first, up the left column, head, down the right).
+   `seatArrangement.test.ts` + `PlayerLifeTrackerApp/PlayerLifeCard/CounterPanel`
+   tests updated; full frontend suite green (1309 passing), typecheck clean.
+
+Product-truth still owed (not written here — refinement/owner-present):
+`GATE-QUESTIONS.md` REQ-173 re-worded to the per-seat arrangement miniature
+(me at own seat, absolute top-down, containment guarantee) and the REQ-081
+seat-order note updated to "Player 1 nearest, clockwise." Slice docs A/B/D still
+describe the abandoned compact block and need re-aligning at map-out.

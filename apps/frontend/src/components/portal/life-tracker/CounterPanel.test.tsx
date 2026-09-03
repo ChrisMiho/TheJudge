@@ -136,20 +136,20 @@ describe("Frontend - Shared", () => {
       render(<CounterPanel {...props} />);
 
       const ownSeat = layout.seats.find((seat) => seat.label === "Player 1")!;
-      // Player 5 is the first right-column seat (row 1) - same row as Player 1's own seat, even
-      // though it is at roster index 4, so this also proves placement is seat-derived, not a
-      // roster-order scan.
-      const player5Seat = layout.seats.find((seat) => seat.label === "Player 5")!;
+      // Player 1 is nearest at the bottom-left (row 4); Player 8 sits at the bottom of the right
+      // column, sharing that same bottom row even though it is roster index 7 - so this proves
+      // placement is seat-derived, not a roster-order scan.
+      const player8Seat = layout.seats.find((seat) => seat.label === "Player 8")!;
 
       const meCell = screen.getByTestId("commander-cell-Player 1");
       expect(meCell).toHaveTextContent("me");
       expect(meCell.className).not.toContain("min-h-36");
       expect(meCell).toHaveStyle({ gridRow: ownSeat.gridRow, gridColumn: ownSeat.gridColumn });
 
-      const opponentCell = screen.getByTestId("commander-cell-Player 5");
-      expect(opponentCell).toHaveStyle({ gridRow: player5Seat.gridRow, gridColumn: player5Seat.gridColumn });
-      expect(player5Seat.gridRow).toBe(ownSeat.gridRow);
-      expect(player5Seat.gridColumn).not.toBe(ownSeat.gridColumn);
+      const opponentCell = screen.getByTestId("commander-cell-Player 8");
+      expect(opponentCell).toHaveStyle({ gridRow: player8Seat.gridRow, gridColumn: player8Seat.gridColumn });
+      expect(player8Seat.gridRow).toBe(ownSeat.gridRow);
+      expect(player8Seat.gridColumn).not.toBe(ownSeat.gridColumn);
     });
 
     it("renders the shared palette exactly once and increments each value independently", async () => {
