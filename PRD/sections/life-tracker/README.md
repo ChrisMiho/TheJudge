@@ -6,9 +6,9 @@
   one-line summary, no longer an override. The cited `REQ`/`FLOW` remain the
   granular backing; keep this file correct in step with them as behavior changes,
   editing in place — never by recording a new decision.
-- Backed by: DEC-101, DEC-102, DEC-103, DEC-132, DEC-136, DEC-139, REQ-081,
-  REQ-082, REQ-083, REQ-084, REQ-085, REQ-111, REQ-112, FLOW-013, NFR-001,
-  NFR-006
+- Backed by: DEC-101, DEC-102, DEC-103, DEC-132, DEC-136, DEC-139, DEC-170,
+  REQ-081, REQ-082, REQ-083, REQ-084, REQ-085, REQ-111, REQ-112, REQ-173,
+  FLOW-013, NFR-001, NFR-006
 
 ## What it is
 
@@ -26,11 +26,15 @@ game survives a phone lock or reload because it saves itself as you play.
 - Built: the main screen renders one card per player (2–8), each showing a
   large life total rotated to face that player's own seat, in a default seat
   arrangement per player count with a grid mode and a list mode.
-- Built: life adjustment splits each card into two zones by that seat's own
-  rotation — `−` always on the player's left, `+` always on their right from
-  that player's point of view — covering the whole card except its three
-  interactive controls (life total, commander-damage preview, inline life
-  input). The `−`/`+` glyphs stay pinned to each zone's outer edge. (DEC-136)
+- Built: life adjustment splits each card into two half-card zones covering the
+  whole card except its three interactive controls (life total, commander-damage
+  preview, inline life input). In **list mode** the split follows the seat's own
+  rotation — `−` always on the player's left, `+` always on their right from that
+  player's point of view. In **grid mode** it is a fixed on-screen left/right —
+  `−` on the left half, `+` on the right — the same for every card, because four
+  cards facing in from all sides made a per-seat top/bottom split awkward; the
+  `−`/`+` glyphs reflow to the card's outer edges and read screen-upright.
+  (DEC-136, DEC-170)
 - Built: the life table always fits one screen at every supported player
   count — rows share the shell's height with no per-row or per-card minimum,
   and card contents scale in container-query units rather than clipping.
