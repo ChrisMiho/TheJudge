@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (spec-forming half in progress)
 
 ## Node ledger
@@ -16,6 +16,7 @@
 | 2 | shape | sonnet | ok | `degraded (no run state)` | package created (`IDEA.md`, `STATUS.ideation`, `intake/GRAPH-BRIEF.md`); commit `5e0d9a6`; 6 prior-run receipts recorded; DEC-151 confirmed live-cited | 2026-09-03 |
 | 3 | define | opus | ok | `1 → 31` | `STATUS.refined`; `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` (12 stable-id slots); commit `28ddc9f`; oracle-id join verified from live sections, not the un-opened FINDINGS files | 2026-09-03 |
 | 4 | gate-qc | sonnet | failed | `? → 42` | FAIL loop 1/3: REQ-175 new route conflicts with the one-endpoint rule (DEC-010) with no gate slot; REQ-176 diff misses `quick-lookup` lookup-card shape; NFR-019 cites NFR-018 not NFR-014; `STATUS.refining`; commit `079a647` | 2026-09-03 |
+| 3 | define | opus | ok | `? → 48` | attempt 2: all 3 FAIL findings cleared — no new route (card detail via lazy static artifact, DEC-010 intact), endpoint alt surfaced as new `D5` fork; REQ-176 quick-lookup diff added; NFR-019 → NFR-014; `STATUS.refined`; commit `9d030f1`; 13 gate slots | 2026-09-03 |
 
 Heartbeat note: nodes 1–2 ran before the driver armed
 `.worktrees/.graph-run-state.json`, so the per-node counter never keyed this run
@@ -181,6 +182,34 @@ Validate `PRD/work/image-first-cards/DESIGN-BRIEF.md` for PRD alignment and agen
 This is a graph run, so refinement proposed product truth in `PRD/work/image-first-cards/GATE-QUESTIONS.md` rather than editing `PRD/sections/`. Read both the design brief and that gate file: check the brief is internally consistent with the proposed REQ/FLOW/NFR ids and their diffs, that every product-truth change the brief relies on has a matching gate slot, and that the whole is ready to slice once the owner answers.
 
 On FAIL, set `STATUS.refining` and report the complete findings list so the next `define` attempt can address them. On PASS, set nothing beyond what the skill sets — the graph driver handles the stop, the docs PR, and the `owner-action` park.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Verdict: PASS | FAIL
+2. Checked artifact path
+3. Findings: none, or the complete issue list
+4. STATUS marker after this node
+5. Any commit hash
+
+### gate-qc (attempt 2)
+
+graph is controlling
+
+You are node 4 (`gate-qc`), attempt 2, of an autonomous graph-kickoff run. Attempt 1 returned FAIL; `define` attempt 2 revised the artifacts to clear all three findings. Re-invoke the `thejudge-quality-check` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+Validate `PRD/work/image-first-cards/DESIGN-BRIEF.md` for PRD alignment and agent-readiness, and produce a PASS or FAIL report. Do NOT write a GAMEPLAN or slice docs.
+
+Confirm the three prior findings are actually resolved: (1) the design no longer adds a second product-facing route — card detail is served via the lazy static-data pattern with the ask-ai copy read inside the existing endpoint — so the one-endpoint rule (DEC-010) is not violated, and the endpoint alternative is surfaced as the `D5` gate fork rather than assumed; (2) REQ-176's promise and its diffs match, including the `quick-lookup/README.md` lookup-mode card shape; (3) NFR-019 cites NFR-014. Then run your full check: the brief is internally consistent with the proposed REQ/FLOW/NFR ids in `GATE-QUESTIONS.md` and their diffs, every product-truth change the brief relies on has a matching gate slot, and the whole is ready to slice once the owner answers.
+
+On FAIL, set `STATUS.refining` and report the complete findings list. On PASS, set nothing beyond what the skill sets — the graph driver handles the stop, the docs PR, and the `owner-action` park.
 
 Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
 
