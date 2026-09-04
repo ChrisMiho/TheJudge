@@ -51,7 +51,7 @@ function composeCardsFallbackQuestion(cards: CardMetadataItem[]): string {
   return `Tell me about ${rest.join(", ")} and ${last}.`;
 }
 
-function formatCardsTriggerLabel(cards: CardMetadataItem[]): string {
+function formatCardsTriggerLabel(cards: Array<{ name: string }>): string {
   if (cards.length === 1) return cards[0]!.name;
   return `${cards.length} cards`;
 }

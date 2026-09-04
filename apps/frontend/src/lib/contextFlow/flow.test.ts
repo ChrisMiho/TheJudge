@@ -375,13 +375,16 @@ describe("buildLookupAskAiRequest", () => {
 
     const payload = buildLookupAskAiRequest("Follow up", [cardWithFrontendField], conversationHistory);
 
+    // REQ-176: the descriptive block is resolved server-side by cardId now —
+    // only identity and the image go on the wire.
     expect(payload).toEqual({
       mode: "lookup",
       question: "Follow up",
-      cards: [lookupCard],
+      cards: [{ cardId: lookupCard.cardId, name: lookupCard.name, imageUrl: lookupCard.imageUrl }],
       conversationHistory
     });
     expect(payload.cards?.[0]).not.toHaveProperty("instanceId");
+    expect(payload.cards?.[0]).not.toHaveProperty("oracleText");
   });
 
   it("builds a bounded multi-card lookup payload, in submitted order (REQ-167)", () => {
@@ -403,7 +406,10 @@ describe("buildLookupAskAiRequest", () => {
     expect(payload).toEqual({
       mode: "lookup",
       question: "How do these interact?",
-      cards: [lookupCard, secondCard]
+      cards: [
+        { cardId: lookupCard.cardId, name: lookupCard.name, imageUrl: lookupCard.imageUrl },
+        { cardId: secondCard.cardId, name: secondCard.name, imageUrl: secondCard.imageUrl }
+      ]
     });
   });
 });

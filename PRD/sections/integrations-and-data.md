@@ -40,20 +40,15 @@ This file captures integrations, payloads, data rules, and delivery constraints.
   - `{ kind: "other"; targetDescription: string }`
 
 ### ZoneCardItem
-- `cardId: string`
+- `cardId: string` — oracle id; the backend resolves this card's descriptive block server-side from it (REQ-176)
 - `name: string`
-- `oracleText: string`
-- `imageUrl: string`
-- `manaCost: string`
-- `manaValue: number`
-- `typeLine: string`
-- `colors: string[]`
-- `supertypes: string[]`
-- `subtypes: string[]`
+- `imageUrl?: string` — local rendering only, not read by the prompt assembler; still sent on the wire (harmless, unused bytes) exactly as before this change
+- `colors?: string[]` — local rendering only (the identity ring, REQ-058/DEC-078); not card-intrinsic prompt data, so it is stripped from the wire request the same as the descriptive block below, even though it stays on the frontend object
 - `caster?: PlayerLabel`
 - `targets?: ContextTarget[]`
 - `contextNotes?: string`
-- `manaSpent?: number` (prompt-facing fallback uses `manaValue` when omitted)
+- `manaSpent?: number` (prompt-facing fallback uses the server-resolved `manaValue` when omitted)
+- the descriptive block (`oracleText`, `manaCost`, `manaValue`, `typeLine`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields by `cardId` from `cardDetailByOracleId.json` (REQ-175, REQ-176)
 
 ### GameContext
 - `playerCount: number`
@@ -181,16 +176,9 @@ Purpose:
         "zones": {
           "stack": [
             {
-              "cardId": "uuid-or-stable-card-id",
+              "cardId": "counterspell-oracle-id",
               "name": "Counterspell",
-              "oracleText": "Counter target spell.",
               "imageUrl": "https://example.invalid/counterspell.jpg",
-              "manaCost": "{U}{U}",
-              "manaValue": 2,
-              "typeLine": "Instant",
-              "colors": ["U"],
-              "supertypes": [],
-              "subtypes": [],
               "caster": "Player 2",
               "targets": [
                 { "kind": "card", "zone": "stack", "cardId": "bottom-spell", "cardName": "Lightning Bolt" }
@@ -203,14 +191,7 @@ Purpose:
             {
               "cardId": "rhystic-study",
               "name": "Rhystic Study",
-              "oracleText": "Whenever an opponent casts a spell, you may draw a card unless that player pays {1}.",
               "imageUrl": "",
-              "manaCost": "{2}{U}",
-              "manaValue": 3,
-              "typeLine": "Enchantment",
-              "colors": ["U"],
-              "supertypes": [],
-              "subtypes": [],
               "targets": [{ "kind": "none" }],
               "contextNotes": "Tax effect relevant to stack decisions"
             }
@@ -359,7 +340,7 @@ The backend should include:
 - `ADDITIONAL GAME STATE` section containing `gameStateNotes` content, positioned after `GENERAL GAME CONTEXT` and before `PHASE GUIDANCE`; omitted entirely when `gameStateNotes` is absent or blank after trim (DEC-043)
 - phase-specific guidance block (`PHASE GUIDANCE`) positioned between `GENERAL GAME CONTEXT` (and `ADDITIONAL GAME STATE` when present) and zone sections; always present for a valid phase submission; combat guidance varies by `combatStep` when present (DEC-036)
 - selected zones
-- populated zone sections — each card in every populated zone (stack and non-stack) includes the full card metadata block: oracle text, mana cost/value, type line, colors, supertypes/subtypes, targets, and context notes; empty oracle emits `(none) — no oracle text recorded for this card`
+- populated zone sections — each card in every populated zone (stack and non-stack) includes the full card metadata block: oracle text, mana cost/value, type line, colors, supertypes/subtypes, targets, and context notes; the card-intrinsic fields are resolved server-side by `cardId` from `cardDetailByOracleId.json` (REQ-176), targets and context notes come from the request; empty oracle emits `(none) — no oracle text recorded for this card`
 - ordered stack zone when populated; stack section additionally includes stack role, caster, and mana spent per item
 - non-stack sections use owner and zone item labels (`Hand 1`, `Battlefield 1`, etc.); `caster` is omitted for non-stack items
 - mana spent per stack item (fallback to `manaValue` when omitted)

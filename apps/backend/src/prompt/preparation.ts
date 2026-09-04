@@ -14,7 +14,7 @@ import {
   retrieveSupplementalRulesWithDebug,
   type GameRulesRuleIndexEntry
 } from "../gameRulesRetrieval.js";
-import { buildLookupPromptContext, buildPromptContext } from "./context.js";
+import { buildLookupPromptContext, buildPromptContext, type CardDetailIndex } from "./context.js";
 import type { ComboCatalog } from "../commanderSpellbook/catalog.js";
 import { formatComboSection } from "../commanderSpellbook/formatting.js";
 import { hasExplicitComboIntent } from "../commanderSpellbook/intent.js";
@@ -50,6 +50,7 @@ export type PreparedPromptInput = {
 
 export type PreparePromptInputOptions = {
   cardRulingsIndex?: Map<string, RulingEntry[]>;
+  cardDetailIndex?: CardDetailIndex;
   gameRulesTopics?: GameRulesTopic[];
   gameRulesRuleIndex?: GameRulesRuleIndexEntry[];
   comboCatalog?: ComboCatalog;
@@ -151,7 +152,7 @@ function prepareLookupPromptInput(
   request: LookupAskAiRequest,
   options: PreparePromptInputOptions
 ): PreparedPromptInput {
-  const context = buildLookupPromptContext(request);
+  const context = buildLookupPromptContext(request, options.cardDetailIndex);
   const limits = getRulingLimits();
   const cardsForRulings = (context.cards ?? []).map((card) => ({ cardId: card.cardId, name: card.name }));
   const allGameRulesTopics = options.gameRulesTopics ?? [];
@@ -250,7 +251,7 @@ function prepareLookupPromptInput(
 }
 
 function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromptInputOptions): PreparedPromptInput {
-  const context = buildPromptContext(request);
+  const context = buildPromptContext(request, options.cardDetailIndex);
   const cardsForRulings = collectCardsForRulings(context);
   const limits = getRulingLimits();
   const allGameRulesTopics = options.gameRulesTopics ?? [];

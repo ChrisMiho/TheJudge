@@ -47,6 +47,7 @@ export function createApp(options: AppOptions = {}) {
     logger,
     payloadLoggingEnabled: isPayloadLoggingEnabled,
     cardRulingsIndex: options.cardRulingsIndex,
+    cardDetailIndex,
     gameRulesTopics: options.gameRulesTopics,
     gameRulesRuleIndex: options.gameRulesRuleIndex,
     comboCatalog: options.comboCatalog,

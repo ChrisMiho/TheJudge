@@ -170,12 +170,14 @@ both providers. (DEC-020, REQ-072)
   REQ-167)
 - Built: `cards` is an optional bounded list of at most 5 entries (REQ-167,
   amending DEC-106's single optional `card`); a 6th entry is rejected by
-  validation. Each entry keeps the prior oracle-level shape (`cardId`, `name`,
-  `oracleText` required; `imageUrl`/`manaCost`/`manaValue`/`typeLine`/`colors`/
-  `supertypes`/`subtypes` optional) and carries no zone, caster, owner,
-  targets, or context-notes fields. Zero cards and exactly one card behave
-  identically to the prior single-card shape. (DEC-106, DEC-053, REQ-072,
-  REQ-167)
+  validation. Each entry carries only `cardId` (oracle id), `name`, and
+  `imageUrl` (rendering only, not read by the prompt assembler) and carries no
+  zone, caster, owner, targets, or context-notes fields; the descriptive block
+  (`oracleText`/`manaCost`/`manaValue`/`typeLine`/`colors`/`supertypes`/
+  `subtypes`) is no longer sent, because the backend resolves the
+  card-intrinsic fields server-side by `cardId` from `cardDetailByOracleId.json`
+  (REQ-175, REQ-176). Zero cards and exactly one card behave identically to the
+  prior single-card shape. (DEC-106, DEC-053, REQ-072, REQ-167, REQ-176)
 - Built: `conversationHistory` is optional and validated identically to the game
   mode (1–20 turns, first `user`, last `assistant`, strictly alternating,
   per-message cap). The `question` character bound and control-character

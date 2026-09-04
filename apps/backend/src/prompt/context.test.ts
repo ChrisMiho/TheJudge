@@ -1,7 +1,29 @@
 import { describe, expect, it } from "vitest";
-import { buildLookupPromptContext, buildPromptContext } from "./context.js";
-import { MAX_ORACLE_TEXT_CHARS } from "./normalization.js";
+import { buildLookupPromptContext, buildPromptContext, type CardDetailIndex } from "./context.js";
+import { MAX_ORACLE_TEXT_CHARS, normalizeWhitespace } from "./normalization.js";
+import type { CardDetailEntry } from "../cardDetail.js";
 import type { GameAskAiRequest, LookupAskAiRequest } from "../types/index.js";
+
+/** REQ-176: the resolver now reads descriptive fields from an index, not the
+ * request card itself — build a synthetic per-test index from the same fixture
+ * cards so these tests still exercise normalization/truncation of resolved data. */
+function cardDetailIndexFrom(
+  cards: Array<Partial<CardDetailEntry> & { cardId: string }>
+): CardDetailIndex {
+  const index = new Map<string, CardDetailEntry>();
+  for (const card of cards) {
+    index.set(normalizeWhitespace(card.cardId), {
+      oracleText: card.oracleText ?? "",
+      typeLine: card.typeLine ?? "",
+      manaCost: card.manaCost ?? "",
+      manaValue: card.manaValue ?? 0,
+      colors: card.colors ?? [],
+      supertypes: card.supertypes ?? [],
+      subtypes: card.subtypes ?? []
+    });
+  }
+  return index;
+}
 
 function createStackZoneCards(size: number): NonNullable<GameAskAiRequest["gameContext"]["zones"]["stack"]> {
   return Array.from({ length: size }, (_, index) => ({
@@ -156,72 +178,94 @@ describe("Backend - Ask AI", () => {
     });
 
     it("normalizes noisy text fields and truncates long oracle text", () => {
-      const context = buildPromptContext({
-        question: "  How   does\tthis resolve?\n",
-        gameContext: {
-          playerCount: 3,
-          players: [
-            { label: "Player 1", lifeTotal: 30 },
-            { label: "Player 2", lifeTotal: 20 },
-            { label: "Player 3", lifeTotal: 10 }
-          ],
-          turnPhase: "combat",
-          selectedZones: ["battlefield", "stack"],
-          zones: {
-            battlefield: [
-              {
-                cardId: "rhystic-study",
-                name: "  Rhystic   Study ",
-                oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
-                imageUrl: "",
-                manaCost: "",
-                manaValue: 2,
-                typeLine: "Enchantment",
-                colors: [],
-                supertypes: [],
-                subtypes: [],
-                contextNotes: "  tax effect ",
-                targets: [{ kind: "none" as const }]
-              }
-            ],
-            stack: [
-              {
-                cardId: "  card-1 ",
-                name: "  Fancy   Name ",
-                oracleText: `\n${"z".repeat(MAX_ORACLE_TEXT_CHARS + 60)}\n`,
-                imageUrl: "  https://example.com/image.png  ",
-                manaCost: " {1}{U} ",
-                manaValue: 2,
-                typeLine: "  Legendary   Creature —  Wizard  ",
-                colors: ["U", "U", " "] as string[],
-                supertypes: ["Legendary", "  "] as string[],
-                subtypes: ["Wizard", "Wizard"] as string[],
-                caster: "Player 4" as const,
-                targets: [
-                  {
-                    kind: "card" as const,
-                    zone: "battlefield" as const,
-                    cardId: "delver-of-secrets",
-                    cardName: "   Delver of Secrets   "
-                  },
-                  {
-                    kind: "player" as const,
-                    targetPlayer: "Player 1" as const
-                  },
-                  {
-                    kind: "none" as const
-                  },
-                  {
-                    kind: "other" as const,
-                    targetDescription: "   custom   target details   "
-                  }
-                ],
-                contextNotes: "  kicked  "
-              }
-            ]
-          }
+      const cardDetailIndex = cardDetailIndexFrom([
+        {
+          cardId: "rhystic-study",
+          oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
+          manaCost: "",
+          manaValue: 2,
+          typeLine: "Enchantment"
+        },
+        {
+          cardId: "card-1",
+          oracleText: `\n${"z".repeat(MAX_ORACLE_TEXT_CHARS + 60)}\n`,
+          manaCost: " {1}{U} ",
+          manaValue: 2,
+          typeLine: "  Legendary   Creature —  Wizard  ",
+          colors: ["U", "U", " "] as string[],
+          supertypes: ["Legendary", "  "] as string[],
+          subtypes: ["Wizard", "Wizard"] as string[]
         }
-      });
+      ]);
+      const context = buildPromptContext(
+        {
+          question: "  How   does\tthis resolve?\n",
+          gameContext: {
+            playerCount: 3,
+            players: [
+              { label: "Player 1", lifeTotal: 30 },
+              { label: "Player 2", lifeTotal: 20 },
+              { label: "Player 3", lifeTotal: 10 }
+            ],
+            turnPhase: "combat",
+            selectedZones: ["battlefield", "stack"],
+            zones: {
+              battlefield: [
+                {
+                  cardId: "rhystic-study",
+                  name: "  Rhystic   Study ",
+                  oracleText: "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
+                  imageUrl: "",
+                  manaCost: "",
+                  manaValue: 2,
+                  typeLine: "Enchantment",
+                  colors: [],
+                  supertypes: [],
+                  subtypes: [],
+                  contextNotes: "  tax effect ",
+                  targets: [{ kind: "none" as const }]
+                }
+              ],
+              stack: [
+                {
+                  cardId: "  card-1 ",
+                  name: "  Fancy   Name ",
+                  oracleText: `\n${"z".repeat(MAX_ORACLE_TEXT_CHARS + 60)}\n`,
+                  imageUrl: "  https://example.com/image.png  ",
+                  manaCost: " {1}{U} ",
+                  manaValue: 2,
+                  typeLine: "  Legendary   Creature —  Wizard  ",
+                  colors: ["U", "U", " "] as string[],
+                  supertypes: ["Legendary", "  "] as string[],
+                  subtypes: ["Wizard", "Wizard"] as string[],
+                  caster: "Player 4" as const,
+                  targets: [
+                    {
+                      kind: "card" as const,
+                      zone: "battlefield" as const,
+                      cardId: "delver-of-secrets",
+                      cardName: "   Delver of Secrets   "
+                    },
+                    {
+                      kind: "player" as const,
+                      targetPlayer: "Player 1" as const
+                    },
+                    {
+                      kind: "none" as const
+                    },
+                    {
+                      kind: "other" as const,
+                      targetDescription: "   custom   target details   "
+                    }
+                  ],
+                  contextNotes: "  kicked  "
+                }
+              ]
+            }
+          }
+        },
+        cardDetailIndex
+      );
 
       expect(context.finalQuestion).toBe("How does this resolve?");
       expect(context.orderedStack[0]?.cardId).toBe("card-1");
@@ -249,37 +293,50 @@ describe("Backend - Ask AI", () => {
     });
 
     it("populates oracleText and metadata on non-stack zone items", () => {
-      const context = buildPromptContext({
-        question: "What does this do?",
-        gameContext: {
-          playerCount: 2,
-          players: [
-            { label: "Player 1", lifeTotal: 20 },
-            { label: "Player 2", lifeTotal: 20 }
-          ],
-          turnPhase: "main_1",
-          selectedZones: ["hand", "battlefield"],
-          zones: {
-            hand: [
-              {
-                cardId: "lightning-bolt",
-                name: "Lightning Bolt",
-                oracleText: "Lightning Bolt deals 3 damage to any target.",
-                imageUrl: "https://example.com/bolt.png",
-                manaCost: "{R}",
-                manaValue: 1,
-                typeLine: "Instant",
-                colors: ["R"],
-                supertypes: [],
-                subtypes: [],
-                contextNotes: "in hand",
-                targets: []
-              }
-            ],
-            battlefield: [createBattlefieldCard()]
-          }
+      const cardDetailIndex = cardDetailIndexFrom([
+        {
+          cardId: "lightning-bolt",
+          oracleText: "Lightning Bolt deals 3 damage to any target.",
+          manaCost: "{R}",
+          manaValue: 1,
+          typeLine: "Instant",
+          colors: ["R"]
         }
-      });
+      ]);
+      const context = buildPromptContext(
+        {
+          question: "What does this do?",
+          gameContext: {
+            playerCount: 2,
+            players: [
+              { label: "Player 1", lifeTotal: 20 },
+              { label: "Player 2", lifeTotal: 20 }
+            ],
+            turnPhase: "main_1",
+            selectedZones: ["hand", "battlefield"],
+            zones: {
+              hand: [
+                {
+                  cardId: "lightning-bolt",
+                  name: "Lightning Bolt",
+                  oracleText: "Lightning Bolt deals 3 damage to any target.",
+                  imageUrl: "https://example.com/bolt.png",
+                  manaCost: "{R}",
+                  manaValue: 1,
+                  typeLine: "Instant",
+                  colors: ["R"],
+                  supertypes: [],
+                  subtypes: [],
+                  contextNotes: "in hand",
+                  targets: []
+                }
+              ],
+              battlefield: [createBattlefieldCard()]
+            }
+          }
+        },
+        cardDetailIndex
+      );
 
       const handZone = context.populatedZones.find((z) => z.zoneId === "hand");
       expect(handZone).toBeDefined();
@@ -446,7 +503,20 @@ describe("Backend - Ask AI", () => {
         ]
       };
 
-      expect(buildLookupPromptContext(request)).toEqual({
+      const cardDetailIndex = cardDetailIndexFrom([
+        {
+          cardId: "questing-beast",
+          oracleText: "  Vigilance,   deathtouch, haste  ",
+          manaCost: " {2}{G}{G} ",
+          manaValue: 4,
+          typeLine: " Legendary   Creature — Beast ",
+          colors: ["G", "G", " "],
+          supertypes: ["Legendary", " "],
+          subtypes: ["Beast", "Beast"]
+        }
+      ]);
+
+      expect(buildLookupPromptContext(request, cardDetailIndex)).toEqual({
         finalQuestion: "How does this work?",
         cards: [
           {

@@ -50,20 +50,14 @@ const lookupPayloadFixture: LookupAskAiPayload = {
   question: "How does priority work?"
 };
 
+// REQ-176: the wire shape carries only identity and the image now.
 const lookupCardPayloadFixture: LookupAskAiPayload = {
   ...lookupPayloadFixture,
   cards: [
     {
       cardId: "oracle-lightning-bolt",
       name: "Lightning Bolt",
-      oracleText: "Lightning Bolt deals 3 damage to any target.",
-      imageUrl: "https://cards.example/lightning-bolt.jpg",
-      manaCost: "{R}",
-      manaValue: 1,
-      typeLine: "Instant",
-      colors: ["R"],
-      supertypes: [],
-      subtypes: []
+      imageUrl: "https://cards.example/lightning-bolt.jpg"
     }
   ]
 };

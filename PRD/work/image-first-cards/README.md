@@ -54,7 +54,7 @@ slice safe to ship on its own.
 | Slice | Title | Depends on | Status |
 | --- | --- | --- | --- |
 | [A](slice-a-card-detail-endpoint-and-on-demand-popup.md) | Card-detail endpoint, backend artifact, on-demand popup (all surfaces) | none | done |
-| [B](slice-b-ask-ai-server-side-card-text.md) | Ask-ai resolves card text server-side; client stops sending it | A | planned |
+| [B](slice-b-ask-ai-server-side-card-text.md) | Ask-ai resolves card text server-side; client stops sending it | A | done |
 | [C](slice-c-slim-up-front-card-list.md) | Slim the up-front card list | A, B | planned |
 
 ## Implementation map

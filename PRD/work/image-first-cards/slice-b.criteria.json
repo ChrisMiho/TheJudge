@@ -5,13 +5,13 @@
     {
       "id": "B1",
       "statement": "npm run test:eval passes with the server-side resolver wired in, proving the assembled prompt/context is byte-identical to before the change, for both game and lookup modes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm --workspace apps/backend run test:eval" }
     },
     {
       "id": "B2",
       "statement": "the backend resolves oracleText, typeLine, manaCost, manaValue, colors, supertypes, subtypes server-side by cardId; an empty/absent oracle still emits '(none) — no oracle text recorded for this card'",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/backend run test -- src/prompt",
         "paths": ["apps/backend/src/prompt/context.ts"]
@@ -20,7 +20,7 @@
     {
       "id": "B3",
       "statement": "the client-sent ZoneCardItem (game mode) and lookup-mode card carry only identity and user-entered fields; a backend schema test proves the descriptive block is no longer required and a request omitting it is accepted",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/backend run test -- src/validation",
         "paths": ["apps/backend/src/validation/askAiRequest.ts"]
@@ -29,19 +29,19 @@
     {
       "id": "B4",
       "statement": "mock-default local dev (ASK_AI_PROVIDER=mock) works unchanged; the resolution reads the committed artifact with no runtime network call",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "B5",
       "statement": "the provider/route boundary stays intact (apps/backend/src/providers/README.md unchanged); POST /api/ask-ai response shape is unchanged",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/backend/src/providers/README.md"] }
     },
     {
       "id": "B6",
       "statement": "apps/frontend/src/lib/zoneCards.ts and apps/frontend/src/lib/contextFlow/flow.ts no longer copy the descriptive block onto the wire payload; existing tests for both files (and useAskAiSubmitOrchestration) pass with the trimmed shape",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/frontend run test -- zoneCards contextFlow useAskAiSubmitOrchestration",
         "paths": [
@@ -53,13 +53,13 @@
     {
       "id": "B7",
       "statement": "npm run typecheck && npm run lint && npm run test is green for touched frontend and backend packages",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run typecheck.*npm run lint.*npm run test" }
     },
     {
       "id": "B8",
       "statement": "this slice's PRD/sections/ share is applied, re-derived against current file content, in the same change as the code",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/functional-requirements.md",

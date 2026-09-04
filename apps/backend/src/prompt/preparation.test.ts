@@ -1,9 +1,32 @@
 import { describe, expect, it } from "vitest";
 import type { GameRulesTopic } from "../gameRules.js";
 import type { GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
+import type { CardDetailEntry } from "../cardDetail.js";
 import type { LookupAskAiRequest } from "../types/index.js";
 import { ALWAYS_ON_TOPIC_IDS } from "../gameRulesTopicSelection.js";
 import { preparePromptInput } from "./preparation.js";
+import type { CardDetailIndex } from "./context.js";
+
+/** REQ-176: System 3 now scores query tokens off the server-resolved descriptive
+ * block, not the request card — build a synthetic per-test index so these
+ * fixtures still exercise oracle-text-driven retrieval. */
+function cardDetailIndexFrom(
+  cards: Array<Partial<CardDetailEntry> & { cardId: string }>
+): CardDetailIndex {
+  const index = new Map<string, CardDetailEntry>();
+  for (const card of cards) {
+    index.set(card.cardId, {
+      oracleText: card.oracleText ?? "",
+      typeLine: card.typeLine ?? "",
+      manaCost: card.manaCost ?? "",
+      manaValue: card.manaValue ?? 0,
+      colors: card.colors ?? [],
+      supertypes: card.supertypes ?? [],
+      subtypes: card.subtypes ?? []
+    });
+  }
+  return index;
+}
 
 const topics: GameRulesTopic[] = [
   ...ALWAYS_ON_TOPIC_IDS.map((id) => ({
@@ -68,6 +91,7 @@ describe("Backend - Ask AI", () => {
         cardRulingsIndex: new Map([
           ["questing-beast", [{ publishedAt: "2019-10-04", comment: "Combat damage can't be prevented." }]]
         ]),
+        cardDetailIndex: cardDetailIndexFrom(request.cards ?? []),
         collectEnrichmentDebug: true
       });
 
@@ -117,6 +141,7 @@ describe("Backend - Ask AI", () => {
           ["questing-beast", [{ publishedAt: "2019-10-04", comment: "Combat damage can't be prevented." }]],
           ["snapcaster-mage", [{ publishedAt: "2011-06-01", comment: "Flashback is granted only for that turn." }]]
         ]),
+        cardDetailIndex: cardDetailIndexFrom(request.cards ?? []),
         collectEnrichmentDebug: true
       });
 

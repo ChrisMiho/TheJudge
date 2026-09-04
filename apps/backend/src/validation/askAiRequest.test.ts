@@ -133,6 +133,54 @@ describe("Backend - Ask AI", () => {
       }
     });
 
+    // REQ-176: the descriptive block is resolved server-side by cardId now — the
+    // schema still validates cardId/name, but no longer requires oracleText or
+    // any other descriptive field on the wire.
+    it("accepts a lookup-mode card carrying only identity, with no descriptive block", () => {
+      const parsed = askAiRequestSchema.safeParse({
+        ...validLookupRequest(),
+        cards: [{ cardId: "opt", name: "Opt" }]
+      });
+
+      expect(parsed.success).toBe(true);
+      if (parsed.success && parsed.data.mode === "lookup") {
+        expect(parsed.data.cards).toEqual([
+          {
+            cardId: "opt",
+            name: "Opt",
+            oracleText: "",
+            imageUrl: "",
+            manaCost: "",
+            manaValue: 0,
+            typeLine: "",
+            colors: [],
+            supertypes: [],
+            subtypes: []
+          }
+        ]);
+      }
+    });
+
+    it("accepts a game-mode zone card carrying only identity, with no descriptive block", () => {
+      const parsed = askAiRequestSchema.safeParse({
+        question: "How does this resolve?",
+        gameContext: {
+          playerCount: 2,
+          players: [
+            { label: "Player 1", lifeTotal: 20 },
+            { label: "Player 2", lifeTotal: 20 }
+          ],
+          turnPhase: "main_1",
+          selectedZones: ["stack"],
+          zones: {
+            stack: [{ cardId: "opt", name: "Opt" }]
+          }
+        }
+      });
+
+      expect(parsed.success).toBe(true);
+    });
+
     function lookupCard(cardId: string) {
       return { cardId, name: cardId, oracleText: `${cardId} text` };
     }

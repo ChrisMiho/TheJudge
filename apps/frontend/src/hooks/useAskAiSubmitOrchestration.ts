@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { createCorrelationId, logFrontendDebug } from "../lib/debugLogger";
 import { buildLookupAskAiRequest } from "../lib/contextFlow";
-import type { LookupAskAiPayload, ZoneAskAiPayload } from "../lib/contextFlow";
+import type { LookupAskAiPayload, LookupWireCard, ZoneAskAiPayload } from "../lib/contextFlow";
 import type {
   AskAiError,
   AskAiResponse,
-  CardMetadataItem,
   ConversationMessage,
   GameContext
 } from "../types";
@@ -14,9 +13,12 @@ type SubmitSource = "decrypt" | "retry";
 
 type AskAiPayload = ZoneAskAiPayload | LookupAskAiPayload;
 
+/** REQ-176: a frozen lookup context only ever needs to re-render identity
+ * (image, name) and re-send identity on a follow-up — `LookupWireCard` is the
+ * wire shape now, and it is what `payload.cards` actually is once built. */
 export type FrozenAskAiContext =
   | { kind: "game"; gameContext: GameContext }
-  | { kind: "lookup"; cards: CardMetadataItem[] };
+  | { kind: "lookup"; cards: LookupWireCard[] };
 
 function isLookupAskAiPayload(payload: AskAiPayload): payload is LookupAskAiPayload {
   return "mode" in payload && payload.mode === "lookup";

@@ -140,6 +140,12 @@ function cardDetailResponseFor(
   });
 }
 
+/** REQ-176: the wire request carries only identity + image now — the
+ * descriptive block is resolved server-side by cardId. */
+function toWireCard(card: CardMetadataItem): { cardId: string; name: string; imageUrl?: string } {
+  return { cardId: card.cardId, name: card.name, imageUrl: card.imageUrl };
+}
+
 function appFetchMock(
   answers: string[],
   cardMetadata: CardMetadataItem[] = [lightningBolt, counterspell]
@@ -633,7 +639,7 @@ describe("QuickLookupApp", () => {
     expect(JSON.parse(initialAskRequest?.[1]?.body as string)).toEqual({
       mode: "lookup",
       question: "Tell me about Stack and Priority. What can this target?",
-      cards: [lightningBolt]
+      cards: [toWireCard(lightningBolt)]
     });
 
     await user.type(screen.getByRole("textbox", { name: "Follow-up question" }), "What if I copy it?");
@@ -646,7 +652,7 @@ describe("QuickLookupApp", () => {
     expect(JSON.parse(askRequests[1]?.[1]?.body as string)).toMatchObject({
       mode: "lookup",
       question: "What if I copy it?",
-      cards: [lightningBolt]
+      cards: [toWireCard(lightningBolt)]
     });
 
     await user.click(screen.getByRole("button", { name: "Start Over" }));
@@ -728,7 +734,7 @@ describe("QuickLookupApp", () => {
       expect(JSON.parse(initialAskRequest?.[1]?.body as string)).toEqual({
         mode: "lookup",
         question: "How do these interact?",
-        cards: [lightningBolt, counterspell]
+        cards: [toWireCard(lightningBolt), toWireCard(counterspell)]
       });
 
       const contextTrigger = screen.getByRole("button", { name: "View context: 2 cards" });
@@ -746,7 +752,7 @@ describe("QuickLookupApp", () => {
       expect(JSON.parse(askRequests[1]?.[1]?.body as string)).toMatchObject({
         mode: "lookup",
         question: "What if both resolve?",
-        cards: [lightningBolt, counterspell]
+        cards: [toWireCard(lightningBolt), toWireCard(counterspell)]
       });
     });
   });

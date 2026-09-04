@@ -69,7 +69,8 @@ export type ZoneCardItem = {
   instanceId?: string;
   cardId: string;
   name: string;
-  oracleText: string;
+  /** REQ-176: resolved server-side by cardId now — no longer copied on from CardMetadataItem. */
+  oracleText?: string;
   imageUrl?: string;
   manaCost?: string;
   manaValue?: number;
