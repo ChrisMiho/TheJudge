@@ -10,13 +10,13 @@ Do not rename package folders to encode status.
 
 ## refined
 
-- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; define attempt 4 (graph run graph-20260903-093903) cleared the loading-state finding: added a dedicated `screen-layout.md` gate block constraining the on-demand load state on the card-detail popup and Quick Question pre-submit rows (REQ-126/DEC-149), amended the pre-submit preview prose, and re-ran all four completeness sweeps clean — awaiting quality-check re-run
-
 ## refining
 
 ## ideation
 
 ## owner-action
+
+- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; graph run graph-20260903-093903 reached quality-check PASS after 4 attempts and opened a docs-only PR into `main`. Owner action: answer the 15 decisions in `image-first-cards/GATE-QUESTIONS.md`, then merge the PR — `graph-implement` builds it from there.
 
 ## deferred
 

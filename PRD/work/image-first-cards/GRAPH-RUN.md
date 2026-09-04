@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff` (spec-forming half in progress)
+- Current node: `owner-action` (parked at gate-qc PASS — spec-forming half complete)
+- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR, then `/graph-implement PRD/work/image-first-cards/`
 
 ## Node ledger
 
@@ -21,6 +21,7 @@
 | 3 | define | opus | ok | `? → 23` | attempt 3: added `REQ-167 (amend)` gate slot so authoritative REQ matches derived `quick-lookup` spec; ran full derived-spec↔source-REQ audit (no other contradictions), recorded as recurrence guard in brief; `STATUS.refined`; commit `0910f0a`; 14 gate slots | 2026-09-03 |
 | 4 | gate-qc | sonnet | failed | `? → 47` | FAIL loop 3/3: REQ-167 finding confirmed fixed, all quoted blocks re-verified faithful; new finding — new visible loading state on card-detail popup + Quick Lookup pre-submit needs a `screen-layout.md` catalog constraint (REQ-126/DEC-149) or explicit out-of-scope reason; `STATUS.refining`; commit `75c219a` | 2026-09-04 |
 | 3 | define | opus | ok | `? → 29` | attempt 4 (final loop): added `screen-layout.md` load-state constraint gate slot on both surfaces; 4 completeness sweeps pass — sweep (b) also closed a quick-lookup preview-prose derived-spec gap (folded into FLOW-024); `STATUS.refined`; commit `83286e7`; 15 gate slots | 2026-09-04 |
+| 4 | gate-qc | sonnet | ok | `? → 45` | PASS, no findings: every diff's Current text verified verbatim vs live source; all cross-refs resolve; every user-visible surface has a screen-layout row or reasoned exemption; derived↔source REQs in lockstep; run stops at PASS → docs PR + `owner-action` park | 2026-09-04 |
 
 Heartbeat note: nodes 1–2 ran before the driver armed
 `.worktrees/.graph-run-state.json`, so the per-node counter never keyed this run
@@ -32,7 +33,10 @@ onward, restoring the counter and cap.
 
 ## Open gate
 
-- None
+- **Parked at `owner-action`** — gate-qc reached PASS (attempt 4); the spec-forming half is complete. The one human step in this workflow: the owner reviews and answers the 15 accept/edit/reject slots in `PRD/work/image-first-cards/GATE-QUESTIONS.md`, then merges the docs-only PR to `main`.
+- Docs-only base→main PR: pending create (recorded in the follow-up commit below).
+- Evidence: quality-check PASS (README `## Preparation gate`); 15 gate slots (D1–D5, REQ-174/175/176, REQ-167 amend, NFR-019, FLOW-024, screen-layout.md amend, REQ-128/125/FLOW-001 amend).
+- Resume command (build half): `/graph-implement PRD/work/image-first-cards/`
 
 ## Dispatch prompts
 
