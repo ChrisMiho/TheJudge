@@ -12,7 +12,7 @@ Do not rename package folders to encode status.
 
 ## refining
 
-- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; gate-qc FAIL (attempt 5): `DESIGN-BRIEF.md` still narrates the pre-edit design (no new endpoint, name+oracle-id fallback) and contradicts the finalized `GATE-QUESTIONS.md` on the owner's D3 and D5 edits. Needs the brief reconciled to the finalized proposal before gate-qc can re-run.
+- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; gate-qc FAIL (attempt 6): D5/D3 narration is now reconciled, but REQ-058, FLOW-002, FLOW-006, and `scan/README.md` still assert "locally carried descriptive fields" / local-metadata fallback and were never amended alongside REQ-125/REQ-128/FLOW-001 — capped second re-grade, parks at owner-action.
 
 ## ideation
 

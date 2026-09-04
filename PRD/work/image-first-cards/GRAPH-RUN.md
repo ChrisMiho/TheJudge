@@ -5,8 +5,21 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `gate-qc` (attempt 5 re-grade FAILED — `DESIGN-BRIEF.md` not reconciled to the finalized D3/D5 gate answers; `STATUS.refining`)
-- Next action: parked at `owner-action` — build-half gate-qc FAIL cannot loop to `define`; the owner (or a refinement pass) must reconcile `DESIGN-BRIEF.md` to the finalized `GATE-QUESTIONS.md`, then re-run `/graph-implement PRD/work/image-first-cards/` to re-grade at `gate-qc`
+- Current node: `gate-review` (attempt 2 — brief reconcile) → `gate-qc` (attempt 6 re-grade)
+- Next action: `/graph-implement PRD/work/image-first-cards/` (build half in progress)
+
+## Driver decision — reconcile, do not park (2026-09-04)
+
+gate-qc attempt 5 FAILed only because `DESIGN-BRIEF.md` was never synced to the
+owner's finalized D3/D5 edits — the authoritative `GATE-QUESTIONS.md` diffs are
+sound. The driver reconciles rather than parks, on three grounds: (1) the fix is
+a mechanical projection of the owner's already-finalized decisions onto derived
+narrative — no product decision, so no human gate is triggered; (2) `build` reads
+`DESIGN-BRIEF.md` as intent, so it must be reconciled before build regardless —
+parking would defer necessary mechanical work to the owner; (3) hard cap of one
+reconcile + one re-grade — a second gate-qc FAIL parks at `owner-action`, no spin.
+Workflow gap recorded: `gate-review` applies owner edits to `GATE-QUESTIONS.md`
+but does not sync `DESIGN-BRIEF.md`, so any owner *edit* guarantees this FAIL.
 
 ## Build-half base note
 
@@ -32,6 +45,8 @@ deliverable's base→main PR is therefore fresh (not #184) and merges last.
 | 4 | gate-qc | sonnet | ok | `? → 45` | PASS, no findings: every diff's Current text verified verbatim vs live source; all cross-refs resolve; every user-visible surface has a screen-layout row or reasoned exemption; derived↔source REQs in lockstep; run stops at PASS → docs PR + `owner-action` park | 2026-09-04 |
 | — | gate-review | sonnet | ok | `0 → 37` | build half: owner's 15 verdicts applied inside `GATE-QUESTIONS.md` (12 accept, 3 edit: D3/D5/NFR-019; 0 reject); `PRD/sections/` untouched; `STATUS.refined` restored; commit `b16c139` pushed to base | 2026-09-04 |
 | 4 | gate-qc | sonnet | failed | `0 → 9` | FAIL, build-half re-grade (attempt 5): `GATE-QUESTIONS.md` itself is sound — REQ/FLOW/NFR diffs consistently implement name-only (D3) and the endpoint (D5), every quoted "Current" block re-verified verbatim vs live source, all cross-refs resolve, DEC-010→REQ-012/NFR-004 substitution confirmed factually correct (DEC-010 is a retired bodyless row); but `DESIGN-BRIEF.md` was never updated after the gate — it still narrates "no new endpoint"/static artifact (D5) and "name + oracle id" fallback (D3) in 7 places, contradicting the finalized proposal; package `README.md` summary carries the same D5 staleness; minor: one-endpoint-rule amendments given as prose arrows, not Current:/Proposed: blocks; `STATUS.refining`; cannot loop to `define` (build half) — parks at `owner-action`; commit `97ce6b4` | 2026-09-04 |
+| — | gate-review | sonnet | ok | `0 → 39` | attempt 2 (driver reconcile, not park): synced `DESIGN-BRIEF.md` + `README.md` narrative to the finalized D3/D5 gate answers — 9 stale spots fixed (7 flagged + 2 swept); minor one-endpoint amendments (REQ-012/REQ-072/NFR-004/`goals-and-non-goals.md`/`technical-design-rules.md`) reformatted to 6 Current:/Proposed: blocks from live source; `PRD/sections/` zero diff; `STATUS.refining` unchanged; commit `36d5c05` |
+| 4 | gate-qc | sonnet | failed | — | FAIL (attempt 6, re-grade after reconcile): all three attempt-5 findings confirmed resolved — D5 endpoint narration, D3 name-only narration, and the REQ-012/REQ-072/NFR-004/`goals-and-non-goals.md`/`technical-design-rules.md` Current:/Proposed: reformat all verified verbatim against live source, all 24 cross-refs resolve, both screen-layout.md rows exist, REQ-167/DEC-168 lockstep holds; but the cross-cutting "locally carried descriptive fields" / local-metadata-fallback rule D1/D3 reverse is grepped incomplete — REQ-058 (a second authoritative requirement governing the same popup across `ZoneCardPicker`/`ScanReviewBubble`/`EnrichmentStep`), FLOW-002 (zone-collection inspect/remove), FLOW-006 (scan review, a surface the brief's own screen-layout section claims is covered), and derived `scan/README.md` all still assert local-carry/local-metadata-fallback language with no amendment; `DESIGN-BRIEF.md`'s completeness sweeps (a) and (b) are therefore incorrect; `STATUS.refining` unchanged; cannot loop to `define` (build half) — parks at `owner-action`; commit pending | 2026-09-04 |
 
 Heartbeat note: nodes 1–2 ran before the driver armed
 `.worktrees/.graph-run-state.json`, so the per-node counter never keyed this run
@@ -427,6 +442,76 @@ Report back:
 1. Verdict: PASS | FAIL
 2. Checked artifact path
 3. The three owner edits — one line each on whether the proposal is now consistent for it
+4. Findings: none, or the complete issue list
+5. STATUS marker after this node
+6. Any commit hash
+
+### gate-review (attempt 2 — reconcile DESIGN-BRIEF to finalized proposal)
+
+graph is controlling
+
+You are the `gate-review` step (attempt 2) of an autonomous graph-implement (build-half) run. This is a bounded mechanical reconciliation, NOT a refinement pass. Do NOT invoke a phase skill and do NOT make or reopen any product decision. Run autonomously; there is no human at the terminal.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+Context: the owner answered all 15 gate slots and gate-review attempt 1 applied the three edits (D3 name-only fallback, D5 new `GET /api/cards/:oracleId` endpoint, NFR-019 firm 80%-gzipped budget) to the authoritative diffs in `PRD/work/image-first-cards/GATE-QUESTIONS.md`. Those diffs are sound and are the source of truth. But `DESIGN-BRIEF.md` and the package `README.md` summary were never synced to those edits, so gate-qc FAILed: the brief still narrates the OLD plan (no new endpoint / static artifact for D5; name + oracle id for D3).
+
+Your ONLY job: project the finalized decisions in `GATE-QUESTIONS.md` onto the stale narrative so the brief and README match the authoritative diffs exactly. Change the narrative to match the decisions; never change the decisions. The 7 known stale spots (verify each against `GATE-QUESTIONS.md`, and sweep for any others):
+
+D5 (endpoint chosen — card detail served by a new `GET /api/cards/:oracleId` endpoint, with the one-endpoint-rule amendments to REQ-012, NFR-004, `goals-and-non-goals.md`, `technical-design-rules.md`):
+1. `DESIGN-BRIEF.md` three-seams section — still says no new endpoint / static artifact.
+2. `DESIGN-BRIEF.md` D5 decision bullet — still presents static-artifact default or an open choice.
+3. `DESIGN-BRIEF.md` material assumption #5 — still assumes no new endpoint.
+4. `DESIGN-BRIEF.md` two Constraints bullets — still say static artifact.
+5. `DESIGN-BRIEF.md` proposed-changes summary — still omits the endpoint.
+6. package `README.md` summary — carries the same no-new-backend-endpoint staleness.
+
+D3 (name-only image-fail fallback — the card name, no oracle id):
+7. `DESIGN-BRIEF.md` D3 decision bullet AND the Non-goals line — still say name + oracle id.
+
+Also address the minor gate-qc finding: the one-endpoint-rule amendments to REQ-012, NFR-004, `goals-and-non-goals.md`, and `technical-design-rules.md` in `GATE-QUESTIONS.md` are written as prose constraint→permits arrows; rewrite them as the same Current:/Proposed: diff-block format the other slots use, preserving the exact same product content (no decision change). Skip this only if reformatting would risk altering the content — if so, say why.
+
+Write ONLY inside `PRD/work/image-first-cards/` (`DESIGN-BRIEF.md`, `README.md`, and `GATE-QUESTIONS.md` for the minor reformat). Do NOT touch `PRD/sections/` or code. Leave `STATUS.refining` as-is (the driver re-grades at gate-qc next). Commit with a clear message and report the hash.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Outcome: ok | failed (with reason)
+2. One line per stale spot (1-7): the before→after narrative change
+3. Whether the minor amendment reformat was done (or why skipped)
+4. Confirmation no product decision was changed and `PRD/sections/` was not touched
+5. Commit hash
+
+### gate-qc (attempt 6 — re-grade after reconcile)
+
+graph is controlling
+
+You are node 4 (`gate-qc`), attempt 6, of an autonomous graph-implement (build-half) run. gate-review attempt 2 reconciled `DESIGN-BRIEF.md` and `README.md` to the finalized gate answers (commit `36d5c05`). Invoke the `thejudge-quality-check` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+Validate `PRD/work/image-first-cards/DESIGN-BRIEF.md` against the finalized `PRD/work/image-first-cards/GATE-QUESTIONS.md` for PRD alignment and agent-readiness, and produce a PASS or FAIL report. Do NOT write a GAMEPLAN or slice docs.
+
+The attempt-5 FAIL was that the brief and README still narrated the pre-edit plan. Confirm those are now reconciled: the brief and README describe the new `GET /api/cards/:oracleId` endpoint (D5, not a static artifact), the name-only image-fail fallback (D3, not name + oracle id), and the one-endpoint-rule amendments (REQ-012, REQ-072, NFR-004, goals-and-non-goals.md, technical-design-rules.md) are now Current:/Proposed: blocks matching live source. Then run your full check across every proposed id: brief internally consistent with the REQ/FLOW/NFR diffs; every user-visible surface has a screen-layout row or reasoned exemption; every derived-spec diff has its authoritative source REQ amended in lockstep (DEC-168); every cross-reference resolves; every product-truth change the brief relies on has a matching slot; ready to slice.
+
+On FAIL, set STATUS.refining and report the complete findings list — this is the driver's capped second re-grade, so a FAIL here parks at owner-action. On PASS, set nothing beyond what the skill sets — the driver continues to plan.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Verdict: PASS | FAIL
+2. Checked artifact path
+3. Whether the reconcile resolved the attempt-5 findings (one line for D5, one for D3, one for the amendment reformat)
 4. Findings: none, or the complete issue list
 5. STATUS marker after this node
 6. Any commit hash
