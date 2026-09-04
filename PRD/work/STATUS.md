@@ -12,13 +12,13 @@ Do not rename package folders to encode status.
 
 ## refining
 
-- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; gate-qc FAIL (attempt 6): D5/D3 narration is now reconciled, but REQ-058, FLOW-002, FLOW-006, and `scan/README.md` still assert "locally carried descriptive fields" / local-metadata fallback and were never amended alongside REQ-125/REQ-128/FLOW-001 — capped second re-grade, parks at owner-action.
-
 ## ideation
 
 - [single-source-invariants](single-source-invariants/) — de-duplicate cross-cutting product-truth invariants (rules asserted in 3+ files, e.g. "one main endpoint") into one canonical home each + a grep-before-amend guardrail; bounded corpus hygiene, not an ID-system rewrite. Seeded 2026-09-04 from the image-first-cards D5 near-miss. To implement next, after image-first-cards ships.
 
 ## owner-action
+
+- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail. Build half parked at the driver's capped second gate-qc FAIL: the finalized proposal amends REQ-125/REQ-128/FLOW-001 for the image-first popup + name-only fallback, but the same cross-cutting rule is still asserted (local-carry / local-metadata fallback) in REQ-058, FLOW-002, FLOW-006, the enrichment step, `scan/README.md`, `shared-chrome/README.md`, and the `user-flows.md` zone-collection flow — none amended. Owner decides which of those surfaces also go image-first; then a refinement pass completes the amendment set and `/graph-implement PRD/work/image-first-cards/` resumes. See `image-first-cards/GRAPH-RUN.md` `## Open gate`.
 
 ## deferred
 

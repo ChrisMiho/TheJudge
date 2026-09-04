@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `gate-review` (attempt 2 — brief reconcile) → `gate-qc` (attempt 6 re-grade)
-- Next action: `/graph-implement PRD/work/image-first-cards/` (build half in progress)
+- Current node: `gate-qc` (attempt 6 FAIL) → **PARKED at `owner-action`** (driver's capped second re-grade)
+- Next action: owner decides the amendment-set scope in `## Open gate`, a refinement pass completes the proposal's missing slots, then `/graph-implement PRD/work/image-first-cards/` re-grades at `gate-qc` and continues to build
 
 ## Driver decision — reconcile, do not park (2026-09-04)
 
@@ -78,10 +78,26 @@ onward, restoring the counter and cap.
 
 ## Open gate
 
-- **Resolved 2026-09-04** — the owner's 15 verdicts (12 accept, 3 edit: D3, D5, NFR-019; 0 reject) applied inside `PRD/work/image-first-cards/GATE-QUESTIONS.md`, finalizing the proposal. `PRD/sections/` was not touched — `build` applies the finalized proposal to product truth together with the code.
-- Docs-only base→main PR (merged by the owner): https://github.com/ChrisMiho/TheJudge/pull/184
-- `STATUS.refined` restored; the entry-point table re-enters at `gate-qc` so the owner's edits are re-graded.
-- Resume command (build half): `/graph-implement PRD/work/image-first-cards/`
+- **PARKED at `owner-action` 2026-09-04** — the build half stopped at the driver's capped second gate-qc FAIL (attempt 6). The mechanical staleness is gone; what remains is a genuine product decision only the owner can make.
+
+**What this decides:** whether the image-first change — card detail fetched on demand from the new `GET /api/cards/:oracleId` endpoint (D1), and a failed card image falling back to the card name only (D3) — also applies to the OTHER three surfaces that show the same corner-detail popup, or whether those stay as they are today (descriptive fields carried locally, image-fail shows the local metadata panel).
+
+**In plain terms:** the image-first popup rule is asserted in more live PRD places than the proposal amends. The proposal currently changes the main zone tiles and the shared popup requirement (REQ-128), but leaves the old local-carry rule standing for: the scan-review bubble (FLOW-006, `scan/README.md`), the zone inspect/remove flow (FLOW-002), the enrichment step, and a second authoritative popup requirement that governs all three (REQ-058). Two derived files (`scan/README.md`, `shared-chrome/README.md`) and the zone-collection scan flow (`user-flows.md`) also still say local-carry. If build ships the proposal as-is, the amended REQ-128 and the unamended REQ-058 would contradict each other on the same popup, and those three surfaces would keep behavior the change was meant to replace.
+
+**What happens if you say no** (i.e. these surfaces stay local-carry): the proposal must add an explicit out-of-scope note for each, AND REQ-128's amendment must be narrowed so it does not contradict the unamended REQ-058 — otherwise the corpus ships two rules for one popup. Saying yes means adding amendment slots for REQ-058, FLOW-002, FLOW-006, the enrichment step, `scan/README.md`, `shared-chrome/README.md`, and the `user-flows.md` zone-collection flow, each with the on-demand-fetch + name-only rule. Either answer completes the amendment set; neither can be assumed for you.
+
+- **Complete amendment set the driver grepped** (`locally carried` / `carried locally` / local-metadata-fallback, filtered to the corner-detail popup rule — the separate "local metadata for autocomplete/search" hits in `overview.md`, `integrations-and-data.md`, `goals-and-non-goals.md`, `functional-requirements.md` L22/30/286 are a different concept and are NOT in scope):
+  1. `functional-requirements.md` L1228 — **REQ-058** acceptance criterion (authoritative; governs the popup across ZoneCardPicker / ScanReviewBubble / EnrichmentStep) — not amended
+  2. `functional-requirements.md` L3050 — **REQ-128** Description ("locally carried descriptive fields") — REQ-128 IS in the amend set; confirm the amend covers this Description line, not only its criteria
+  3. `user-flows.md` L53 — **FLOW-002** (zone inspect/remove) — not amended
+  4. `user-flows.md` L135 & L148 — **FLOW-006** (scan review bubble + image-fail edge) — not amended
+  5. `user-flows.md` L12 — zone-collection scan flow — not amended
+  6. `scan/README.md` L112 — derived (DEC-168 source: FLOW-006/REQ-058) — not amended
+  7. `shared-chrome/README.md` L284 — derived — confirm against its source amend
+- **Why it recurred:** this is the same class as the D5 near-miss — a cross-cutting rule's amendment set enumerated from memory rather than by grep (see the queued `single-source-invariants` package, which exists to prevent exactly this).
+- **Evidence:** README `## Preparation gate` (attempt 6 findings, full text); gate-qc ledger row (attempt 6); commit `14eafbd`.
+- **Resume:** decide the scope above, get the proposal's amendment set completed to match (a refinement pass adds the missing slots or the out-of-scope notes; the build half cannot do `define` work itself), then re-run `/graph-implement PRD/work/image-first-cards/` to re-grade at `gate-qc` and continue to build.
+- Docs-only base→main PR (already merged by the owner): https://github.com/ChrisMiho/TheJudge/pull/184
 
 ## Dispatch prompts
 
