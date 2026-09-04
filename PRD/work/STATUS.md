@@ -10,9 +10,9 @@ Do not rename package folders to encode status.
 
 ## refined
 
-- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; owner answered all 15 `GATE-QUESTIONS.md` decisions (edits applied to D3, D5, NFR-019) and merged docs PR #184. Re-enters at `gate-qc` via `/graph-implement PRD/work/image-first-cards/`.
-
 ## refining
+
+- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; gate-qc FAIL (attempt 5): `DESIGN-BRIEF.md` still narrates the pre-edit design (no new endpoint, name+oracle-id fallback) and contradicts the finalized `GATE-QUESTIONS.md` on the owner's D3 and D5 edits. Needs the brief reconciled to the finalized proposal before gate-qc can re-run.
 
 ## ideation
 

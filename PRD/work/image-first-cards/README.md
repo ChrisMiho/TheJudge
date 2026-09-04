@@ -1,4 +1,4 @@
-status: refined
+status: refining
 
 # image-first-cards
 
@@ -25,6 +25,6 @@ https://github.com/ChrisMiho/TheJudge/pull/184
 
 ## Preparation gate
 
-- Quality-check: PASS
+- Quality-check: FAIL
 - Checked artifact: `PRD/work/image-first-cards/DESIGN-BRIEF.md`
-- Findings: none — cleared on quality-check attempt 4 (three prior FAILs, each a distinct correctness/readiness catch, all resolved: the endpoint-vs-DEC-010 conflict, incomplete REQ-176 diffs, the un-amended authoritative REQ-167, and the missing screen-layout load-state constraint). Every proposed diff's "Current" text verified verbatim against live `PRD/sections/` source; all cross-references resolve; every user-visible surface has a screen-layout row or a reasoned exemption; every derived-spec change has its authoritative source REQ amended in lockstep. Ready to slice once the owner answers `GATE-QUESTIONS.md`.
+- Findings: `DESIGN-BRIEF.md` was never updated after the owner's gate answers, so it still narrates the pre-edit design and contradicts the finalized `GATE-QUESTIONS.md` on two of the three owner edits. (1) D5 — the owner chose the `GET /api/cards/:oracleId` endpoint, but the brief's "The three seams" §1 heading/body, the D5 bullet under "Key design decisions," material assumption #5, both Constraints bullets, and the "Proposed product-truth changes" summary all still describe "no new endpoint" / a lazy static artifact as the chosen design, and one line still presents D5 as an open, undecided fork. (2) D3 — the owner picked name-only, but the brief's D3 bullet under "Key design decisions" and the Non-goals bullet still say "name + oracle id." The package `README.md` summary (top of file) carries the same D5 staleness ("no new backend endpoint," "no new product-facing route (D5)"). None of this is a defect in `GATE-QUESTIONS.md` itself — every REQ/FLOW/NFR diff block inside it consistently implements name-only (D3) and the endpoint (D5), every quoted "Current" block verified verbatim against live `PRD/sections/` source, and every cross-referenced id resolves. Minor: the REQ-012/NFR-004/`goals-and-non-goals.md`/`technical-design-rules.md` one-endpoint-rule amendments are given as prose "constraint → permits" arrows rather than the Current:/Proposed: blocks used elsewhere in the document — enough to apply, but less rigorous than the rest of the diff.

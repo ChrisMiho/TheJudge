@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `gate-qc` (gate-review applied the owner's verdicts; `STATUS.refined` restored, re-entering at `gate-qc` per the entry-point table)
-- Next action: `/graph-implement PRD/work/image-first-cards/` (build half in progress)
+- Current node: `gate-qc` (attempt 5 re-grade FAILED — `DESIGN-BRIEF.md` not reconciled to the finalized D3/D5 gate answers; `STATUS.refining`)
+- Next action: parked at `owner-action` — build-half gate-qc FAIL cannot loop to `define`; the owner (or a refinement pass) must reconcile `DESIGN-BRIEF.md` to the finalized `GATE-QUESTIONS.md`, then re-run `/graph-implement PRD/work/image-first-cards/` to re-grade at `gate-qc`
 
 ## Build-half base note
 
@@ -30,6 +30,8 @@ deliverable's base→main PR is therefore fresh (not #184) and merges last.
 | 4 | gate-qc | sonnet | failed | `? → 47` | FAIL loop 3/3: REQ-167 finding confirmed fixed, all quoted blocks re-verified faithful; new finding — new visible loading state on card-detail popup + Quick Lookup pre-submit needs a `screen-layout.md` catalog constraint (REQ-126/DEC-149) or explicit out-of-scope reason; `STATUS.refining`; commit `75c219a` | 2026-09-04 |
 | 3 | define | opus | ok | `? → 29` | attempt 4 (final loop): added `screen-layout.md` load-state constraint gate slot on both surfaces; 4 completeness sweeps pass — sweep (b) also closed a quick-lookup preview-prose derived-spec gap (folded into FLOW-024); `STATUS.refined`; commit `83286e7`; 15 gate slots | 2026-09-04 |
 | 4 | gate-qc | sonnet | ok | `? → 45` | PASS, no findings: every diff's Current text verified verbatim vs live source; all cross-refs resolve; every user-visible surface has a screen-layout row or reasoned exemption; derived↔source REQs in lockstep; run stops at PASS → docs PR + `owner-action` park | 2026-09-04 |
+| — | gate-review | sonnet | ok | `0 → 37` | build half: owner's 15 verdicts applied inside `GATE-QUESTIONS.md` (12 accept, 3 edit: D3/D5/NFR-019; 0 reject); `PRD/sections/` untouched; `STATUS.refined` restored; commit `b16c139` pushed to base | 2026-09-04 |
+| 4 | gate-qc | sonnet | failed | `0 → 9` | FAIL, build-half re-grade (attempt 5): `GATE-QUESTIONS.md` itself is sound — REQ/FLOW/NFR diffs consistently implement name-only (D3) and the endpoint (D5), every quoted "Current" block re-verified verbatim vs live source, all cross-refs resolve, DEC-010→REQ-012/NFR-004 substitution confirmed factually correct (DEC-010 is a retired bodyless row); but `DESIGN-BRIEF.md` was never updated after the gate — it still narrates "no new endpoint"/static artifact (D5) and "name + oracle id" fallback (D3) in 7 places, contradicting the finalized proposal; package `README.md` summary carries the same D5 staleness; minor: one-endpoint-rule amendments given as prose arrows, not Current:/Proposed: blocks; `STATUS.refining`; cannot loop to `define` (build half) — parks at `owner-action`; commit pending | 2026-09-04 |
 
 Heartbeat note: nodes 1–2 ran before the driver armed
 `.worktrees/.graph-run-state.json`, so the per-node counter never keyed this run
@@ -394,6 +396,40 @@ Report back:
 2. Per-verdict application: one line per ID, especially how each of the three `edit`s was applied to its diff
 3. STATUS marker after this step
 4. Any commit hash
+
+### gate-qc (attempt 5 — build-half re-grade)
+
+graph is controlling
+
+You are node 4 (`gate-qc`), attempt 5, of an autonomous graph-implement (build-half) run. This is the re-grade after `gate-review` applied the owner's verdicts. Invoke the `thejudge-quality-check` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+Validate `PRD/work/image-first-cards/DESIGN-BRIEF.md` against the finalized `PRD/work/image-first-cards/GATE-QUESTIONS.md` for PRD alignment and agent-readiness, and produce a PASS or FAIL report. Do NOT write a GAMEPLAN or slice docs — that is the `plan` node.
+
+The owner answered all 15 slots (12 accept, 3 edit, 0 reject) and `gate-review` finalized the proposal inside `GATE-QUESTIONS.md`. Focus especially on whether the three owner edits left the proposal internally consistent:
+- D3 — the image-fail fallback now shows the card name only (no oracle id). Confirm every downstream diff (REQ-125, FLOW-001, FLOW-024) and D3's own text agree on name-only.
+- D5 — card detail is served by a new `GET /api/cards/:oracleId` endpoint. Confirm the four one-endpoint-rule amendments (DEC-010, `goals-and-non-goals.md`, `technical-design-rules.md`, REQ-072) are present and consistent, and that REQ-174/175/176, NFR-019, FLOW-024, REQ-128 all describe the same endpoint design.
+- NFR-019 — the first-load budget is now a firm, testable gate (leg 2 at least 80% smaller, gzipped). Confirm the Description, the In-plain-terms line, and the Constraints all state that same 80% threshold.
+
+Then run your full check across every proposed id: brief internally consistent with the REQ/FLOW/NFR diffs; every user-visible surface has a screen-layout row or reasoned exemption; every derived-spec diff has its authoritative source REQ amended in lockstep (DEC-168); every cross-reference resolves; every product-truth change the brief relies on has a matching slot; ready to slice.
+
+On FAIL, set `STATUS.refining` and report the complete findings list — a build-half gate-qc FAIL cannot loop to `define` (that node does not run here), so the driver parks at `owner-action` for the owner to reconcile their edit. On PASS, set nothing beyond what the skill sets — the driver continues to `plan`.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Verdict: PASS | FAIL
+2. Checked artifact path
+3. The three owner edits — one line each on whether the proposal is now consistent for it
+4. Findings: none, or the complete issue list
+5. STATUS marker after this node
+6. Any commit hash
 
 ## Instruction ledger
 
