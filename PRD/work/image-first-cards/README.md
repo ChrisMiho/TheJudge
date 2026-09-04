@@ -16,7 +16,8 @@ client-sent payload, with the assembled prompt proven byte-identical to today's.
 
 See `IDEA.md` for the captured idea, `intake/GRAPH-BRIEF.md` for staged
 evidence, `GATE-QUESTIONS.md` for the 15 owner decisions, and `GRAPH-RUN.md`
-for the autonomous run ledger.
+for the autonomous run ledger. Docs-only PR:
+https://github.com/ChrisMiho/TheJudge/pull/184
 
 ## Autonomous metadata
 

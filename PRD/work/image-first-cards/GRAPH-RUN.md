@@ -34,7 +34,7 @@ onward, restoring the counter and cap.
 ## Open gate
 
 - **Parked at `owner-action`** — gate-qc reached PASS (attempt 4); the spec-forming half is complete. The one human step in this workflow: the owner reviews and answers the 15 accept/edit/reject slots in `PRD/work/image-first-cards/GATE-QUESTIONS.md`, then merges the docs-only PR to `main`.
-- Docs-only base→main PR: pending create (recorded in the follow-up commit below).
+- Docs-only base→main PR: https://github.com/ChrisMiho/TheJudge/pull/184
 - Evidence: quality-check PASS (README `## Preparation gate`); 15 gate slots (D1–D5, REQ-174/175/176, REQ-167 amend, NFR-019, FLOW-024, screen-layout.md amend, REQ-128/125/FLOW-001 amend).
 - Resume command (build half): `/graph-implement PRD/work/image-first-cards/`
 
