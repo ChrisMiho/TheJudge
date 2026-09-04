@@ -5,8 +5,21 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `gate-qc` (attempt 6 FAIL) → **PARKED at `owner-action`** (driver's capped second re-grade)
-- Next action: owner decides the amendment-set scope in `## Open gate`, a refinement pass completes the proposal's missing slots, then `/graph-implement PRD/work/image-first-cards/` re-grades at `gate-qc` and continues to build
+- Current node: `gate-qc` (attempt 7 — re-grade after refinement completed the amendment set, commit `cf5b9a0`)
+- Next action: `/graph-implement PRD/work/image-first-cards/` (build half resuming)
+
+## Resume note — amendment set completed (2026-09-04)
+
+The owner confirmed their popup/fallback direction was clear and to proceed. A
+refinement pass (commit `cf5b9a0`, run interactively — not as a graph node) applied
+the finalized D1/D3 decision consistently across the surfaces the prior park
+flagged: REQ-058 (authoritative shared presentation), FLOW-002, FLOW-006, the two
+REQ-128 spots the earlier draft missed, and the derived `scan/README.md` +
+`shared-chrome/README.md` (sources amended in lockstep, DEC-168). DEC-078's offline
+scanning guarantee is reconciled, not reversed — the image-fail fallback stays
+name-only with no fetch and the surface stays usable offline; only the popup's
+descriptive text depends on the network, with owner-veto `- Owner note:` lines on
+REQ-058 and FLOW-006. `STATUS.refined`; the build half resumes at `gate-qc`.
 
 ## Driver decision — reconcile, do not park (2026-09-04)
 
@@ -528,6 +541,35 @@ Report back:
 1. Verdict: PASS | FAIL
 2. Checked artifact path
 3. Whether the reconcile resolved the attempt-5 findings (one line for D5, one for D3, one for the amendment reformat)
+4. Findings: none, or the complete issue list
+5. STATUS marker after this node
+6. Any commit hash
+
+### gate-qc (attempt 7 — re-grade after amendment set completed)
+
+graph is controlling
+
+You are node 4 (`gate-qc`), attempt 7, of an autonomous graph-implement (build-half) run. A refinement pass (commit `cf5b9a0`) completed the corner-detail-popup / image-fail-fallback amendment set that the attempt-6 FAIL flagged. Invoke the `thejudge-quality-check` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+Validate `PRD/work/image-first-cards/DESIGN-BRIEF.md` against the finalized `PRD/work/image-first-cards/GATE-QUESTIONS.md` for PRD alignment and agent-readiness, and produce a PASS or FAIL report. Do NOT write a GAMEPLAN or slice docs.
+
+The attempt-6 FAIL was that the on-demand-fetch (D1) + name-only-fallback (D3) rule was asserted in more live PRD locations than the proposal amended. Confirm those are now all covered: REQ-058, FLOW-002, FLOW-006, the two REQ-128 spots the earlier draft missed, and the derived `scan/README.md` + `shared-chrome/README.md` — each derived source amended in lockstep (DEC-168). Confirm DEC-078's offline scanning guarantee is reconciled, not deleted: the image-fail fallback stays name-only with no forced fetch and offline-usable, and the two `- Owner note:` lines (REQ-058, FLOW-006) flag the popup-fetch-offline tension for owner veto without silently reversing the guarantee. Then run your full check across every proposed id: brief internally consistent with the diffs; every user-visible surface has a screen-layout row or reasoned exemption; every derived-spec diff has its authoritative source amended in lockstep; every cross-reference resolves; every product-truth change the brief relies on has a matching slot; ready to slice.
+
+On FAIL, set STATUS.refining and report the complete findings list. On PASS, set nothing beyond what the skill sets — the driver continues to plan.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Verdict: PASS | FAIL
+2. Checked artifact path
+3. Whether the completed amendment set resolved the attempt-6 finding (one line), and whether the DEC-078 reconciliation reads as sound
 4. Findings: none, or the complete issue list
 5. STATUS marker after this node
 6. Any commit hash
