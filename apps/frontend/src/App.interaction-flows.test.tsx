@@ -43,11 +43,11 @@ describe("Interaction flows - search and game context", () => {
     await user.click(await screen.findByRole("button", { name: "Opt" }));
 
     // REQ-133/DEC-160: the staged preview is the shared CardPresentation only — no
-    // duplicated name heading beside it. This fixture carries no image, so the text-first
-    // fallback is what renders and it still carries the card's name.
+    // duplicated name heading beside it. This fixture carries no image, so the name-only
+    // fallback (D3) is what renders — no descriptive fields, no fetch.
     expect(screen.queryByRole("heading", { name: "Opt" })).not.toBeInTheDocument();
     expect(screen.getByTestId("card-presentation-fallback")).toHaveTextContent("Opt");
-    expect(screen.getByText("Scry 1, then draw a card.")).toBeInTheDocument();
+    expect(screen.queryByText("Scry 1, then draw a card.")).not.toBeInTheDocument();
   });
 
   it("shows TheJudge title on first render", () => {

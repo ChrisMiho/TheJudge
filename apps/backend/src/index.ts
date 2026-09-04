@@ -46,6 +46,7 @@ runtime.app.listen(runtime.config.port, () => {
     frontendOrigin: runtime.config.frontendOrigin ?? "(unset)",
     askAiProvider: runtime.config.askAiProvider,
     cardRulingsCardCount: runtime.cardRulingsCardCount,
+    cardDetailCardCount: runtime.cardDetailCardCount,
     gameRulesTopicCount: runtime.gameRulesTopicCount,
     gameRulesRuleCount: runtime.gameRulesRuleCount,
     debugLoggingEnabled: runtime.config.debugLoggingEnabled,

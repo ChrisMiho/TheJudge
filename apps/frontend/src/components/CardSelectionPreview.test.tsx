@@ -1,10 +1,38 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { clearCardDetailCache } from "../lib/cardDetail";
 import type { CardMetadataItem } from "../types";
 import { CardSelectionPreview } from "./CardSelectionPreview";
 
-afterEach(cleanup);
+// The corner detail popup fetches its descriptive block on demand (REQ-175, FLOW-024);
+// stub a default response so opening it in these tests never hits the network.
+beforeEach(() => {
+  clearCardDetailCache();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          oracleText: "Scry 1. Draw a card.",
+          typeLine: "Instant",
+          manaCost: "{U}",
+          manaValue: 1,
+          colors: ["U"],
+          supertypes: [],
+          subtypes: []
+        }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      )
+    )
+  );
+});
+
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  clearCardDetailCache();
+});
 
 function makeCard(overrides: Partial<CardMetadataItem> = {}): CardMetadataItem {
   return {
@@ -57,7 +85,7 @@ describe("Frontend - MTG Assistant", () => {
       await user.click(screen.getByRole("button", { name: "Show details for Opt" }));
 
       const popup = screen.getByTestId("card-detail-popup");
-      expect(within(popup).getByText("Scry 1. Draw a card.")).toBeInTheDocument();
+      await waitFor(() => expect(within(popup).getByText("Scry 1. Draw a card.")).toBeInTheDocument());
       expect(within(popup).getByText("{U}")).toBeInTheDocument();
       expect(within(popup).getByText("Instant")).toBeInTheDocument();
     });

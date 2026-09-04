@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -133,7 +133,9 @@ describe("Interaction flows - zone card presentation", () => {
     expect(within(header as HTMLElement).queryByText("Lightning Bolt")).not.toBeInTheDocument();
     const detailPopup = screen.getByTestId("card-detail-popup");
     expect(within(detailPopup).getByText("Lightning Bolt")).toBeInTheDocument();
-    expect(within(detailPopup).getByText("Lightning Bolt deals 3 damage to any target.")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(within(detailPopup).getByText("Lightning Bolt deals 3 damage to any target.")).toBeInTheDocument()
+    );
 
     await user.click(
       screen.getByRole("button", { name: "Close details for Lightning Bolt" })
@@ -145,7 +147,7 @@ describe("Interaction flows - zone card presentation", () => {
     expect(within(row as HTMLElement).getByLabelText("Context notes for Lightning Bolt")).toBeInTheDocument();
   });
 
-  it("uses the same shared presentation and header controls in list mode", async () => {
+  it("uses the same shared name-only fallback and header controls in list mode (D3)", async () => {
     const user = userEvent.setup();
     render(<App />);
     await openStackBuilder(user);
@@ -168,15 +170,13 @@ describe("Interaction flows - zone card presentation", () => {
     const fallback = within(row as HTMLElement).getByTestId("card-presentation-fallback");
     expect(fallback).toHaveClass("w-full");
     expect(within(fallback).getByText("Lightning Bolt")).toBeInTheDocument();
-    expect(within(fallback).getByText("{R}")).toBeInTheDocument();
-    expect(within(fallback).getByText("1")).toBeInTheDocument();
-    expect(within(fallback).getByText("Instant")).toBeInTheDocument();
-    expect(within(fallback).getByText("Lightning Bolt deals 3 damage to any target.")).toBeInTheDocument();
-    expect(within(fallback).getByText("R")).toBeInTheDocument();
+    // D3: the fallback shows the card name only — no descriptive fields, no detail fetch.
+    expect(within(fallback).queryByText("Instant")).not.toBeInTheDocument();
+    expect(within(fallback).queryByText("Lightning Bolt deals 3 damage to any target.")).not.toBeInTheDocument();
     expect(within(row as HTMLElement).getByRole("button", { name: "Remove Lightning Bolt" })).toBeEnabled();
   });
 
-  it("renders every present local field in the empty-image enrichment fallback", async () => {
+  it("shows only the card name in the empty-image enrichment fallback, with no descriptive fields (D3)", async () => {
     setMetadataFixture(baseCardMetadataFixture.map((card) =>
       card.cardId === "opt"
         ? {
@@ -199,13 +199,9 @@ describe("Interaction flows - zone card presentation", () => {
     expect(screen.queryByRole("img", { name: "Opt" })).not.toBeInTheDocument();
     expect(fallback).toHaveClass("w-full");
     expect(within(fallback).getByText("Opt")).toBeInTheDocument();
-    expect(within(fallback).getByText("{U}")).toBeInTheDocument();
-    expect(within(fallback).getByText("0")).toBeInTheDocument();
-    expect(within(fallback).getByText("Instant")).toBeInTheDocument();
-    expect(within(fallback).getByText("Scry 1, then draw a card.")).toBeInTheDocument();
-    expect(within(fallback).getByText("U")).toBeInTheDocument();
-    expect(within(fallback).getByText("Legendary")).toBeInTheDocument();
-    expect(within(fallback).getByText("Wizard")).toBeInTheDocument();
+    expect(within(fallback).queryByText("Instant")).not.toBeInTheDocument();
+    expect(within(fallback).queryByText("Scry 1, then draw a card.")).not.toBeInTheDocument();
+    expect(within(fallback).queryByText("Legendary")).not.toBeInTheDocument();
     expect(row).toHaveClass("card-identity-ring");
     expect(row).toHaveStyle("--card-identity-ring: rgb(14 165 233 / 0.55)");
   });
