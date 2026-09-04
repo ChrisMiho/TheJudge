@@ -10,6 +10,8 @@ Do not rename package folders to encode status.
 
 ## refined
 
+- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail. Refinement completed the cross-cutting amendment set: the corner-detail-popup / image-fail-fallback rule (D1 on-demand popup fetch, D3 name-only fallback) is now amended consistently across REQ-058 (authoritative shared presentation), FLOW-002, FLOW-006, the two spots the REQ-128 block had missed, and the derived `scan/README.md` + `shared-chrome/README.md` ring bullet — each derived source amended in lockstep (DEC-168). DEC-078's offline scanning guarantee is reconciled, not reversed: the fallback stays name-only with no fetch on image failure and the surface stays usable offline; only the popup's descriptive text depends on the network, with owner-veto `- Owner note:` lines on REQ-058 and FLOW-006. Ready to map out / resume `/graph-implement PRD/work/image-first-cards/`.
+
 ## refining
 
 ## ideation
@@ -17,8 +19,6 @@ Do not rename package folders to encode status.
 - [single-source-invariants](single-source-invariants/) — de-duplicate cross-cutting product-truth invariants (rules asserted in 3+ files, e.g. "one main endpoint") into one canonical home each + a grep-before-amend guardrail; bounded corpus hygiene, not an ID-system rewrite. Seeded 2026-09-04 from the image-first-cards D5 near-miss. To implement next, after image-first-cards ships.
 
 ## owner-action
-
-- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail. Build half parked at the driver's capped second gate-qc FAIL: the finalized proposal amends REQ-125/REQ-128/FLOW-001 for the image-first popup + name-only fallback, but the same cross-cutting rule is still asserted (local-carry / local-metadata fallback) in REQ-058, FLOW-002, FLOW-006, the enrichment step, `scan/README.md`, `shared-chrome/README.md`, and the `user-flows.md` zone-collection flow — none amended. Owner decides which of those surfaces also go image-first; then a refinement pass completes the amendment set and `/graph-implement PRD/work/image-first-cards/` resumes. See `image-first-cards/GRAPH-RUN.md` `## Open gate`.
 
 ## deferred
 

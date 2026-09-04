@@ -817,6 +817,28 @@ Proposed:
   - the popup fetches its descriptive contents on demand from the `GET /api/cards/:oracleId` endpoint (REQ-175, FLOW-024), showing a brief loading state whose presentation follows `PRD/sections/screen-layout.md` (a quiet in-overlay state in the descriptive-content region only — no branded splash, spinner takeover, progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and no overlay resize or layout shift on resolve); name, image, and color ring (already local) render immediately
 ```
 
+Acceptance criteria — the image-fail fallback line (D3, DEC-078 preserved):
+
+Current:
+```
+  - missing/failed image keeps the existing text-first fallback (no broken-image icon)
+```
+Proposed:
+```
+  - missing/failed image shows the name-only fallback — the locally available card name, no broken-image icon — and triggers no detail fetch on image failure (D3; DEC-078's no-fetch-on-failure guarantee preserved)
+```
+
+Notes — the "local-fields-only content rule" line (D1):
+
+Current:
+```
+  - **amended during the `ui-review` pass (2026-08-06)**: DEC-158 supersedes the original "popup over the card" geometry. The top-right image trigger and local-fields-only content rule remain; the popup itself is portal-hosted and independent of the image bounds.
+```
+Proposed:
+```
+  - **amended during the `ui-review` pass (2026-08-06)**: DEC-158 supersedes the original "popup over the card" geometry. The top-right image trigger remains; the popup's content is now fetched on demand by oracle id (REQ-175, FLOW-024) rather than read from locally carried fields, and the popup itself is portal-hosted and independent of the image bounds.
+```
+
 Constraints:
 
 Current:
@@ -942,6 +964,307 @@ Proposed:
 
 - Verdict: accept
 - Reason:
+
+---
+
+## REQ-058 (amend) — the shared card presentation fetches detail on demand; the image-fail fallback is name-only
+
+**What this decides:** whether the authoritative requirement that governs the
+one shared card presentation across `ZoneCardPicker` (zone collection), expanded
+`ScanReviewBubble` (scan review), and `EnrichmentStep` stops describing the
+corner popup as reading "locally carried" fields and its image-fail fallback as a
+"text-first" panel — matching the on-demand fetch (D1) and name-only fallback
+(D3) the proposal already applies to REQ-128 / REQ-125 / FLOW-001.
+
+**In plain terms:** REQ-058 is the authoritative rule for how a card looks and
+behaves on all three suite surfaces. It still says the corner control opens the
+popup "for locally carried descriptive fields" and that a missing image drops to a
+"text-first card panel," and its constraint forbids the popup from using a backend
+route. Under image-first cards the popup fetches its descriptive fields on demand
+by oracle id, and the image-fail fallback shows the card name only. This amends
+REQ-058 so the authoritative source matches — while keeping DEC-078's offline
+guarantee: on image failure the fallback still issues no fetch and the surface
+still works offline.
+
+**What happens if you say no:** REQ-058 stays the authoritative source promising a
+locally-carried popup and a text-first fallback, contradicting REQ-128, REQ-125,
+FLOW-001, and REQ-174 on product truth. (Applies D1/D3 to the authoritative shared
+presentation.)
+
+### Proposed diff
+
+**Amend `PRD/sections/functional-requirements.md` → REQ-058 Description:**
+
+Current:
+```
+- Description: Card containers in zone collection, expanded scan review, enrichment, and other suite card-image surfaces must use one responsive image-first presentation, on-demand local detail (DEC-151 popup), and a restrained ring derived from the existing card colors (DEC-078 as amended).
+```
+Proposed:
+```
+- Description: Card containers in zone collection, expanded scan review, enrichment, and other suite card-image surfaces must use one responsive image-first presentation, on-demand card detail fetched by oracle id (DEC-151 popup, now `GET /api/cards/:oracleId` — REQ-175, FLOW-024), and a restrained ring derived from the existing card colors (DEC-078 as amended).
+```
+
+**Amend REQ-058 → the corner-detail-popup acceptance criterion:**
+
+Current:
+```
+  - a corner detail control opens the dismissible detail popup (REQ-128) for locally carried descriptive fields
+```
+Proposed:
+```
+  - a corner detail control opens the dismissible detail popup (REQ-128), which fetches its descriptive fields on demand by oracle id from `GET /api/cards/:oracleId` (REQ-175, FLOW-024) when opened and the network allows; offline or on fetch failure it degrades gracefully to the locally available identity and does not block the surface or its Remove/workflow controls
+```
+
+**Amend REQ-058 → the image-fail fallback acceptance criterion (D3):**
+
+Current:
+```
+  - when `imageUrl` is empty or the image emits a load error, no broken-image icon or empty image gap remains; the surface replaces the image with a text-first card panel
+```
+Proposed:
+```
+  - when `imageUrl` is empty or the image emits a load error, no broken-image icon or empty image gap remains; the surface replaces the image with a name-only fallback showing the locally available card name (D3)
+```
+
+**Amend REQ-058 → the no-additional-fetch criterion (preserves DEC-078):**
+
+Current:
+```
+  - the fallback never invents values for absent optional fields and does not fetch additional metadata; Remove, stack position where applicable, enrichment fields, and other workflow controls remain rendered and usable
+```
+Proposed:
+```
+  - the image-fail fallback never invents values, shows the card name only, and issues no additional metadata fetch on image failure (DEC-078's offline guarantee preserved); Remove, stack position where applicable, enrichment fields, and other workflow controls remain rendered and usable, so the surface stays usable offline
+```
+
+**Amend REQ-058 → the identity-ring criterion (fallback naming):**
+
+Current:
+```
+  - every complete card tile, scan-review entry, and enrichment row uses a thin, low-opacity identity ring around the container whether it contains an image or the text-first fallback
+```
+Proposed:
+```
+  - every complete card tile, scan-review entry, and enrichment row uses a thin, low-opacity identity ring around the container whether it contains an image or the name-only fallback
+```
+
+**Amend REQ-058 → the presentation-only constraint (the popup now uses the read-only route):**
+
+Current:
+```
+  - presentation only; use existing `colors` and do not add true `colorIdentity`, image caching, connectivity detection, explicit image retry, runtime metadata refresh, or any change to card identity, printing-image selection, `ZoneCardItem`, `CardMetadataItem`, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, scan matching/stabilizer logic, or data-pipeline behavior
+```
+Proposed:
+```
+  - presentation plus the popup's on-demand detail read: use existing `colors` and do not add true `colorIdentity`, image caching, connectivity detection, explicit image retry, runtime metadata refresh, or any change to card identity, printing-image selection, scan matching/stabilizer logic, or data-pipeline behavior; the detail popup's on-demand fetch uses the read-only `GET /api/cards/:oracleId` route (REQ-175) and the `ZoneCardItem` / `AskAiRequest` / prompt changes recorded in REQ-176, and introduces no presentation-layer route or contract of its own
+```
+
+- Verdict: accept
+- Owner note: REQ-058 governs the expanded scan-review surface, which DEC-078
+  (and DEC-051's fully-on-device scan) guarantee works offline. Applying D1 means
+  opening a card's detail popup on that surface now attempts an on-demand
+  `GET /api/cards/:oracleId` fetch it did not make before. The conservative choice
+  preserves DEC-078: the surface and its image-fail fallback stay fully
+  offline-resilient — name-only fallback, no forced fetch on failure, Remove
+  always usable — and only the popup's descriptive text, behind an explicit
+  popup-open gesture, depends on the network and degrades gracefully offline.
+  This adds an optional fetch, not a reversal of DEC-078's no-fetch-on-failure or
+  offline-surface guarantee. Flag to veto if you want the popup itself to stay
+  offline on scan surfaces (which would require keeping a local detail copy for
+  scan contexts, against D1).
+
+---
+
+## FLOW-002 (amend) — zone inspect/remove popup fetches on demand; fallback is name-only
+
+**What this decides:** how the zone inspect/remove flow describes the card
+popup's contents and the image-unavailable fallback, once detail is fetched
+rather than carried.
+
+**In plain terms:** FLOW-002 is the flow a player uses to inspect and remove
+cards while collecting a zone. Step 4 says the corner popup shows "locally carried
+descriptive fields" and that a missing image shows "the same metadata presentation
+directly"; its edge case replaces a failed image with "the readable
+local-metadata fallback." Under image-first cards the popup fetches on demand and
+the image-fail fallback shows the card name only. This flow is not a scanning
+context and carries no DEC-078 offline guarantee, so no conservative carve-out is
+needed here.
+
+**What happens if you say no:** FLOW-002's prose keeps describing a
+locally-carried popup and a local-metadata fallback that have moved on demand.
+(Applies D1/D3.)
+
+### Proposed diff
+
+**Amend `PRD/sections/user-flows.md` → FLOW-002 Main Flow step 4:**
+
+Current:
+```
+  4. Each tile shows an uncropped card image that grows to the tile's own width (DEC-151 as amended by DEC-160; the tile itself does not widen). Image mode keeps Remove and stack position where applicable while hiding duplicated identity labels stacked under the art; a corner detail control opens a dismissible popup with locally carried descriptive fields (including oracle text when present). If the image is unavailable, the same metadata presentation appears directly. The full tile has a thin ring derived from existing card colors: one semantic color, a stable multicolor gradient, or light silver-gray for colorless/missing colors.
+```
+Proposed:
+```
+  4. Each tile shows an uncropped card image that grows to the tile's own width (DEC-151 as amended by DEC-160; the tile itself does not widen). Image mode keeps Remove and stack position where applicable while hiding duplicated identity labels stacked under the art; a corner detail control opens a dismissible popup whose descriptive fields are fetched on demand by oracle id (FLOW-024). If the image is unavailable, the fallback shows the locally available identity — the card name only — directly, with no detail fetch triggered by image failure. The full tile has a thin ring derived from existing card colors: one semantic color, a stable multicolor gradient, or light silver-gray for colorless/missing colors.
+```
+
+**Amend FLOW-002 Edge Cases → the image-fail line:**
+
+Current:
+```
+  - if a card image URL is absent or fails to load, show no broken-image icon or empty image gap; replace it with the readable local-metadata fallback and keep the complete tile controls
+```
+Proposed:
+```
+  - if a card image URL is absent or fails to load, show no broken-image icon or empty image gap; replace it with the name-only fallback (the locally available card name, with no detail fetch on image failure) and keep the complete tile controls
+```
+
+- Verdict: accept
+
+---
+
+## FLOW-006 (amend) — scan-review popup fetches on demand; the offline fallback stays name-only with no fetch
+
+**What this decides:** how the camera scan-review flow describes the card
+popup's contents and its explicit offline image-fail edge case, once detail is
+fetched rather than carried — while keeping the DEC-078 offline guarantee.
+
+**In plain terms:** FLOW-006 is the camera scan flow. Step 5 says the scan-review
+popup opens "locally carried descriptive fields," and its edge case guarantees
+that if the image cannot load "including while offline," the entry shows a
+locally-carried fallback "with no ... additional fetch" (DEC-078). Scan runs fully
+on-device (DEC-051). Under image-first cards the popup fetches on demand, and the
+image-fail fallback shows the card name only. The offline guarantee is kept: the
+fallback still issues no fetch on image failure, Remove stays usable, and the
+surface stays usable offline; only the popup's descriptive text, behind an explicit
+open, depends on the network and degrades gracefully offline.
+
+**What happens if you say no:** FLOW-006 keeps promising a locally-carried
+scan-review popup that has moved on demand. (Applies D1/D3; preserves DEC-078.)
+
+### Proposed diff
+
+**Amend `PRD/sections/user-flows.md` → FLOW-006 Main Flow step 5:**
+
+Current:
+```
+  5. To remove a wrong auto-add, the user taps the scanned-cards bubble in the top-right. Its viewport-capped 320px panel lists each card with the shared container-relative image + corner detail popup presentation and a persistent Remove control. An available uncropped image grows to its list-row width (DEC-160) without displacing the camera chrome; the corner control opens locally carried descriptive fields (including oracle text when present); if the image is unavailable, the metadata appears directly. Each complete entry has the same restrained identity ring used by zone collection and enrichment. Long sessions scroll inside the panel. The user removes the card in one tap (no confirmation) without leaving the camera (DEC-058, DEC-078, DEC-151).
+```
+Proposed:
+```
+  5. To remove a wrong auto-add, the user taps the scanned-cards bubble in the top-right. Its viewport-capped 320px panel lists each card with the shared container-relative image + corner detail popup presentation and a persistent Remove control. An available uncropped image grows to its list-row width (DEC-160) without displacing the camera chrome; the corner control opens a popup whose descriptive fields are fetched on demand by oracle id (FLOW-024) when opened and the network allows, degrading gracefully offline; if the image is unavailable, the fallback shows the card name only, with no fetch triggered by image failure. Each complete entry has the same restrained identity ring used by zone collection and enrichment. Long sessions scroll inside the panel. The user removes the card in one tap (no confirmation) without leaving the camera (DEC-058, DEC-078, DEC-151).
+```
+
+**Amend FLOW-006 Edge Cases → the offline image-fail line (DEC-078 guarantee kept):**
+
+Current:
+```
+  - if neither the selected printing image nor its oracle-level fallback can load, including while offline, the scan review entry shows the locally carried text/metadata fallback with no broken-image icon, additional fetch, or loss of the Remove control (DEC-078)
+```
+Proposed:
+```
+  - if neither the selected printing image nor its oracle-level fallback can load, including while offline, the scan review entry shows the name-only fallback (the locally available card name) with no broken-image icon, no additional fetch triggered by the image failure, and no loss of the Remove control — the surface stays fully usable offline (DEC-078 preserved)
+```
+
+- Verdict: accept
+- Owner note: Scan is an explicitly offline path (DEC-051 identifies cards
+  on-device with no network calls; DEC-078 guarantees the scan-review surface and
+  its image-fail fallback work offline with no additional fetch). Applying D1
+  means opening a card's detail popup on this surface now attempts an on-demand
+  `GET /api/cards/:oracleId` fetch it did not make before. The conservative choice
+  preserves DEC-078: the image-fail fallback stays name-only with no fetch, and
+  Remove and the scan loop stay fully offline; only the popup's descriptive text,
+  behind an explicit open gesture, depends on the network and degrades gracefully
+  (identity shown, no crash) when offline. DEC-078's guarantee is not reversed.
+  Flag to veto if the scan popup must show full detail offline (that would require
+  keeping a local detail copy for scan contexts, against D1).
+
+---
+
+## scan/README.md (amend) — derived scan-review fallback prose (source: FLOW-006 / REQ-058)
+
+**What this decides:** whether the derived scan feature-spec prose that describes
+the scan-review bubble's fallback stops saying it falls back to "locally carried
+text/metadata," matching the on-demand fetch and name-only fallback its
+authoritative sources now state.
+
+**In plain terms:** `scan/README.md` is a derived, non-authoritative feature spec
+(DEC-168) whose authoritative sources for this line are FLOW-006 and REQ-058, both
+amended in lockstep above. It says each scan-review entry falls back to "locally
+carried text/metadata when no image is available." This amends it to the name-only
+fallback with no fetch on image failure, and notes the popup fetches on demand — so
+the derived spec cannot contradict its now-amended sources.
+
+**What happens if you say no:** the derived scan spec keeps promising a
+locally-carried fallback its authoritative sources no longer describe. (Applies
+D1/D3; keeps the derived spec consistent with FLOW-006 / REQ-058.)
+
+### Proposed diff
+
+**Amend `PRD/sections/scan/README.md` (~lines 107-113) — the scan-review bubble bullet:**
+
+Current:
+```
+- Built: a top-right **scanned-cards review bubble** shows the running count of
+  this-session adds and expands to a viewport-capped 320px panel listing each
+  card with a single-tap, no-confirmation **Remove**. It operates on the
+  destination's own card list (no scan-only store), and each entry uses the
+  shared container-relative image + corner-detail presentation, falling back to
+  locally carried text/metadata when no image is available. (DEC-058, DEC-078,
+  DEC-151, REQ-040, FLOW-006)
+```
+Proposed:
+```
+- Built: a top-right **scanned-cards review bubble** shows the running count of
+  this-session adds and expands to a viewport-capped 320px panel listing each
+  card with a single-tap, no-confirmation **Remove**. It operates on the
+  destination's own card list (no scan-only store), and each entry uses the
+  shared container-relative image + corner-detail presentation. The corner detail
+  popup fetches its descriptive fields on demand by oracle id (REQ-175, FLOW-024)
+  when opened and the network allows, degrading gracefully offline; when no image
+  is available the entry falls back to the card name only, with no fetch triggered
+  by image failure, so the scan-review surface stays usable offline (DEC-078).
+  (DEC-058, DEC-078, DEC-151, REQ-040, REQ-175, FLOW-006, FLOW-024)
+```
+
+- Verdict: accept
+
+---
+
+## shared-chrome/README.md (amend) — derived identity-ring fallback prose (source: REQ-058)
+
+**What this decides:** whether the derived shared-chrome prose describing the
+identity ring stops naming the "text-first metadata fallback," matching the
+name-only fallback its authoritative source (REQ-058) now states. (The popup
+bullet in this same file is already amended in the REQ-128 block above; this is
+the separate ring bullet, ~line 308.)
+
+**In plain terms:** `shared-chrome/README.md` is derived, non-authoritative
+(DEC-168); its authoritative source for this ring line is REQ-058, amended in
+lockstep above. The ring bullet says the ring "applies equally when the text-first
+metadata fallback replaces a missing image." This amends the fallback name to the
+name-only fallback so the derived spec matches REQ-058.
+
+**What happens if you say no:** the derived shared-chrome spec keeps naming a
+text-first fallback its authoritative source no longer describes. (Applies D3;
+keeps the derived spec consistent with REQ-058.)
+
+### Proposed diff
+
+**Amend `PRD/sections/shared-chrome/README.md` (~lines 306-308) — the identity-ring bullet's fallback clause:**
+
+Current:
+```
+  animation, or stand in as the sole identity cue — and applies equally when the
+  text-first metadata fallback replaces a missing image. (DEC-078, REQ-058)
+```
+Proposed:
+```
+  animation, or stand in as the sole identity cue — and applies equally when the
+  name-only fallback (the locally available card name, shown with no detail fetch
+  on image failure) replaces a missing image. (DEC-078, REQ-058)
+```
+
+- Verdict: accept
 
 ---
 

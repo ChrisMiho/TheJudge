@@ -82,6 +82,33 @@ read.
   Direction + Forbidden Design Drift) — each narrowed to permit exactly this
   one additional read-only retrieval route, not endpoints generally.
 
+## DEC-078 offline guarantee — how D1/D3 reconcile with it
+
+REQ-058 and FLOW-006 guarantee the scanning-context surfaces (expanded scan
+review) work offline: on image failure they show a resilient local fallback and
+issue no additional metadata fetch (DEC-078; scan itself is fully on-device,
+DEC-051). On-demand fetch (D1) tensions with that, so the amendment set reconciles
+the two rather than reversing the guarantee:
+
+- **The image-fail fallback stays offline-resilient.** On every surface it shows
+  the card name only (D3), with no forced/blocking fetch on image failure and no
+  broken-image state — so it still works offline. DEC-078's no-fetch-on-failure
+  guarantee is preserved verbatim in intent on REQ-058, FLOW-006, and the derived
+  `scan/README.md`.
+- **The popup's descriptive text is fetched on demand (D1)** when the popup is
+  opened and the network allows. Offline or on failure it degrades gracefully
+  (shows the identity it has, no crash) and never blocks the surface or the
+  Remove/workflow controls.
+- **No silent reversal.** Opening the popup on the explicitly-offline scan-review
+  surface now attempts a network fetch it did not before. Because that is a real
+  tension with DEC-078/DEC-051, it is flagged — not hidden — with a labeled
+  `- Owner note:` on both REQ-058 and FLOW-006, so the owner can veto (the veto
+  path would be a local detail copy for scan contexts, against D1). The
+  conservative default preserves offline resilience: surface and fallback stay
+  fully offline; only the popup's optional descriptive text depends on the network.
+
+DEC-078 is reconciled, never deleted or weakened.
+
 ## Colors stays in the up-front list (material design point)
 
 The intake groups `colors` with the popup-only fields to move on demand. It
@@ -171,13 +198,25 @@ endpoint + backend artifact), **REQ-176** (ask-ai server-side card-text
 resolution), **NFR-019** (first-load payload target), **FLOW-024** (on-demand
 card-detail load).
 
-Amended stable ids: **REQ-128** (popup loads on demand), **REQ-125** (image
-fallback path), **FLOW-001** (image-fail fallback = name only), **REQ-167**
-(lookup-mode card carries identity only; descriptive fields resolved
-server-side), **REQ-012** and **NFR-004** (one-main-endpoint constraint
-narrowed to permit the new read-only retrieval route, alongside REQ-072,
-`goals-and-non-goals.md`, and `technical-design-rules.md` — all carried by
-REQ-175's diff, D5).
+Amended stable ids: **REQ-128** (popup loads on demand; image-fail criterion and
+"local-fields-only" note completed), **REQ-125** (image fallback path),
+**FLOW-001** (image-fail fallback = name only), **REQ-058** (authoritative shared
+card presentation across `ZoneCardPicker` / expanded `ScanReviewBubble` /
+`EnrichmentStep` — popup fetches on demand, fallback name-only, offline guarantee
+preserved), **FLOW-002** (zone inspect/remove), **FLOW-006** (scan review, incl.
+the offline edge case), **REQ-167** (lookup-mode card carries identity only;
+descriptive fields resolved server-side), **REQ-012** and **NFR-004**
+(one-main-endpoint constraint narrowed to permit the new read-only retrieval
+route, alongside REQ-072, `goals-and-non-goals.md`, and
+`technical-design-rules.md` — all carried by REQ-175's diff, D5).
+
+Cross-cutting-rule completion (this refinement pass): the corner-detail-popup /
+image-fail-fallback rule was asserted in more live sources than the first draft
+amended. The set is now complete — REQ-058, FLOW-002, FLOW-006, the two missed
+spots inside REQ-128, and the derived `scan/README.md` and `shared-chrome/README.md`
+ring bullet were added, each derived file's authoritative source amended in
+lockstep (DEC-168). See the completeness sweeps below and the DEC-078
+reconciliation section above.
 
 REQ-167 is the *authoritative* source of the derived `quick-lookup/README.md`
 lookup-card prose that REQ-176 amends. Per DEC-168 the cited REQ wins any
@@ -241,6 +280,13 @@ spec is left contradicting its source:
   are the new FLOW-024 and the amended REQ-128 / REQ-174, all in this proposal.
 - `shared-chrome/README.md` (corner detail popup) ← **REQ-128** — both amended
   (REQ-128 already carries its own `(amend)` block).
+- `shared-chrome/README.md` (identity-ring fallback bullet, "text-first metadata
+  fallback replaces a missing image") ← **REQ-058** — both amended (REQ-058's
+  fallback criteria and this derived ring bullet, this pass).
+- `scan/README.md` (scan-review bubble fallback, "falling back to locally carried
+  text/metadata") ← **FLOW-006 / REQ-058** — all amended this pass; the derived
+  prose now states the on-demand popup fetch and the name-only, no-fetch,
+  offline-resilient fallback its sources describe.
 - `screen-layout.md` (card-detail popup + Quick Question pre-submit rows,
   loading-state presentation) ← **REQ-126 / DEC-149** (authoritative-for-layout)
   and the surfaces' own ids **REQ-128 / REQ-174 / FLOW-024** — amended in the
@@ -264,15 +310,34 @@ Run before handoff so no fourth distinct gap remains:
 - **(a) Every new/changed user-visible surface has a `screen-layout.md` row or a
   reasoned no-row note.** Card-detail popup and Quick Question pre-submit both
   gain the on-demand loading state and now carry the matching catalog constraint
-  (dedicated `screen-layout.md` gate block). The image-fail fallback (name +
-  oracle id) reduces content within existing surfaces and changes no
-  size/containment/band/fit dimension — explicit no-row note recorded above. No
-  other surface changes. **Result: pass.**
+  (dedicated `screen-layout.md` gate block). The image-fail fallback (name only,
+  D3) reduces content within existing surfaces and changes no
+  size/containment/band/fit dimension — explicit no-row note recorded above.
+  **Cross-cutting-rule completion (this pass):** the same corner-detail-popup /
+  image-fail-fallback rule was still asserted, unamended, in more live sources
+  than the first draft caught. The full set is now amended so D1/D3 apply
+  consistently: **REQ-058** (authoritative shared presentation for
+  `ZoneCardPicker`, expanded `ScanReviewBubble`, `EnrichmentStep`), **FLOW-002**
+  (zone inspect/remove), **FLOW-006** (scan review, incl. the offline edge case),
+  the two spots the REQ-128 block itself had missed (its image-fail criterion and
+  its "local-fields-only" note), plus the derived `scan/README.md` and
+  `shared-chrome/README.md` ring bullet. FLOW-001 (steps 3/4 + edge case),
+  REQ-125, the `shared-chrome` popup bullet, and `system-map.md` L200 were already
+  amended in the first draft. No cross-cutting popup/fallback assertion remains
+  unamended (verified by grep for `locally carried` / `carried locally` /
+  `text-first fallback` / `local-metadata fallback` across `PRD/sections/`, with
+  the unrelated autocomplete "local metadata" concept in `overview.md`,
+  `integrations-and-data.md`, `goals-and-non-goals.md`, and
+  `functional-requirements.md` L22/30/286 correctly left alone). **Result: pass.**
 - **(b) Every derived-spec diff has its authoritative source amended in lockstep
-  (DEC-168).** Full map in the audit above. The one new item this pass —
-  `quick-lookup/README.md` pre-submit preview-display prose — is now amended and
-  its source (FLOW-024 / REQ-128 / REQ-174, with REQ-167's silent preview
-  criterion left valid) is recorded. **Result: pass.**
+  (DEC-168).** Full map in the audit above. New derived items amended this pass,
+  each with its authoritative source amended in lockstep: `scan/README.md`
+  scan-review fallback prose ← **FLOW-006 / REQ-058** (both amended above);
+  `shared-chrome/README.md` identity-ring fallback bullet ← **REQ-058** (amended
+  above). The `shared-chrome` popup bullet ← REQ-128 and `quick-lookup/README.md`
+  pre-submit preview-display prose ← FLOW-024 / REQ-128 / REQ-174 remain covered
+  from the prior pass. No amended derived spec is left contradicting its source.
+  **Result: pass.**
 - **(c) Every dependency/cross-reference an amended id cites resolves.** The new
   `screen-layout.md` block cites REQ-126, DEC-149, NFR-006, REQ-128, REQ-174,
   REQ-175, FLOW-024, FLOW-001 — all real (NFR-006 is the CSS-motion baseline the
