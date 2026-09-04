@@ -36,7 +36,7 @@ exactly as today — only the moment its text arrives changes.
 symptom stays. Blocks REQ-174, REQ-175, REQ-176, NFR-019, FLOW-024, and the
 amendments to REQ-128, REQ-125, and FLOW-001.
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -60,8 +60,8 @@ the frontend before the backend resolves card text server-side breaks the AI
 prompt in between. No PRD diff of its own — this is a scope/sequencing decision
 recorded in `DESIGN-BRIEF.md`.
 
-- Verdict: <accept | edit | reject>
-- Reason:
+- Verdict: accept
+- Reason: Im not sure what would be a best practice, but it also doesnt hurt to make a new endpoint for the retrieval flow if that helps at all, instead of continuing to build out a massive single endpoint right?
 
 ---
 
@@ -82,8 +82,8 @@ detail (adding a network call exactly when the network may be the problem) or
 keep carrying text locally (defeating D1). Amends FLOW-001 and REQ-125 (see those
 blocks).
 
-- Verdict: <accept | edit | reject>
-- Reason:
+- Verdict: edit
+- Reason: just show the card name, no oracle id is needed
 
 ---
 
@@ -101,7 +101,7 @@ this work, which relocates card text rather than changing how assets are served.
 it would widen this package into deploy-layer work. No PRD diff — recorded as a
 non-goal in `DESIGN-BRIEF.md`.
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -148,8 +148,8 @@ REQ-175, FLOW-024, and REQ-128's fetch. (Governs REQ-175; shapes REQ-174,
 FLOW-024, REQ-128, NFR-019. No standalone PRD diff — the chosen path is carried
 by REQ-175's diff.)
 
-- Verdict: <accept | edit | reject>
-- Reason:
+- Verdict: edit — pick the endpoint alternative (`GET /api/cards/:oracleId`)
+- Reason: `GET /api/cards/:oracleId` sounds like exactly what we need. Lets update the spec to allow for this new endpoint, im happy you highlighted how much ive suggested to not expand, and i view that as a positive, i dont want to resort to always putting together a new endpoint, but this use case seems like the perfect excuse to justify one
 
 ---
 
@@ -210,8 +210,8 @@ Proposed:
 ```
 ## Metadata Strategy
 - use a static prebuilt metadata file committed with the app
-- the committed frontend metadata artifact carries only the up-front tile fields — `cardId` (oracle id), `name`, `imageUrl`, `colors` — and no descriptive block (REQ-174); descriptive fields are loaded on demand by oracle id from a separate committed static card-detail artifact (REQ-175), lazy-loaded on first card-detail open — not from a new backend route (D5)
-- local metadata powers autocomplete and the tile (name, image, color ring); the card-detail popup and Quick Lookup pre-submit preview load the descriptive block on open (FLOW-024)
+- the committed frontend metadata artifact carries only the up-front tile fields — `cardId` (oracle id), `name`, `imageUrl`, `colors` — and no descriptive block (REQ-174); descriptive fields are fetched on demand per card from the `GET /api/cards/:oracleId` endpoint (REQ-175, D5), on first card-detail open
+- local metadata powers autocomplete and the tile (name, image, color ring); the card-detail popup and Quick Lookup pre-submit preview fetch the descriptive block from the endpoint on open (FLOW-024)
 ```
 
 **Amend `PRD/sections/system-map.md` → "Card search & metadata" summary (line ~256):**
@@ -225,32 +225,35 @@ Proposed:
 - Summary: Runtime card metadata fetch (up-front list slimmed to `cardId`, `name`, `imageUrl`, `colors` — REQ-174), fuzzy autocomplete, and zone-card construction in the frontend; descriptive fields load on demand by oracle id (REQ-175 / FLOW-024).
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
 
-## REQ-175 — card-detail data artifacts (frontend lazy static + backend for ask-ai)
+## REQ-175 — new `GET /api/cards/:oracleId` endpoint + backend card-detail artifact
 
-**What this decides:** the new committed card-detail data that serves one card's
-descriptive fields by its oracle id, so the frontend popup and the AI path can
-stop carrying that text — delivered without a new product-facing route (D5).
+**What this decides:** the new backend card-detail data and the new
+product-facing route `GET /api/cards/:oracleId` that serves one card's
+descriptive fields by its oracle id — so the card-detail popup fetches detail per
+card and ask-ai resolves it server-side. This is the endpoint you chose at D5,
+and it adds the product's second product-facing endpoint.
 
 **In plain terms:** a new builder trims the same Scryfall bulk every other data
 builder already trims from into a card-detail map keyed by oracle id, holding
 each card's descriptive block (oracle text, type line, mana cost/value, colors,
-sub/supertypes). It is committed twice from that one builder: a frontend static
-copy under `apps/frontend/public/data/` that the popup and Quick Lookup preview
-lazy-load on first open (the `cardhashes.bin` / `cardPrintingPrices.json`
-lazy-data pattern, NFR-010 / NFR-013), and a backend copy under
-`apps/backend/data/` that ask-ai reads internally to resolve card text (REQ-176).
-No new product-facing endpoint — the frontend reads a static artifact, and the
-backend read lives inside `POST /api/ask-ai`. Local mock dev keeps working with
-no runtime network call.
+sub/supertypes). The map is committed **once, backend-only**, under
+`apps/backend/data/cardDetailByOracleId.json`. Two server-side readers share that
+one file: the new route `GET /api/cards/:oracleId`, which returns one card's
+block (the card-detail popup and Quick Lookup preview call it per card and cache
+each result for the session), and ask-ai's internal read inside
+`POST /api/ask-ai` (REQ-176). The frontend carries no card-detail copy of its
+own — it asks the backend each time it opens a card it hasn't seen this session.
+Local mock dev keeps working with no runtime network call.
 
-**What happens if you say no:** there is no source for card detail, so the
-frontend cannot load it on demand and the AI path cannot resolve it server-side.
-Blocks REQ-174, REQ-176, FLOW-024. (Implements D1/D2; carries the D5 choice.)
+**What happens if you say no:** there is no source for card detail and no route
+to serve it, so the popup cannot fetch on demand and ask-ai cannot resolve it
+server-side. Blocks REQ-174, REQ-176, FLOW-024. (Implements D1/D2; carries the D5
+endpoint choice and its one-endpoint-rule amendments.)
 
 ### Proposed diff
 
@@ -258,29 +261,29 @@ Blocks REQ-174, REQ-176, FLOW-024. (Implements D1/D2; carries the D5 choice.)
 
 ```
 ### REQ-175
-- Title: Card-detail data artifacts (frontend lazy static + backend for ask-ai)
+- Title: Card-detail retrieval endpoint and backend card-detail artifact
 - Priority: high
-- Description: The card descriptive block is served on demand from committed data, not from a new backend route. One builder trims the committed Scryfall bulk into a card-detail map keyed by oracle id; a frontend static copy is lazy-loaded by the popup on first open (FLOW-024) and a backend copy backs ask-ai's server-side resolution (REQ-176). No new product-facing endpoint is introduced, preserving the one-main-endpoint rule (DEC-010, GOAL-002, `technical-design-rules.md`, REQ-072) and reusing the existing lazy-data-artifact posture (NFR-010, NFR-013).
+- Description: The card descriptive block is served on demand by a new product-facing route `GET /api/cards/:oracleId` returning one card's block by oracle id, backed by a committed backend card-detail map. One builder trims the committed Scryfall bulk into that map; the card-detail popup fetches per card from the route (FLOW-024) and ask-ai reads the same map internally for server-side resolution (REQ-176). This introduces the product's second product-facing endpoint, authorized by D5 and applied by the one-endpoint-rule amendments below (REQ-012, REQ-072, NFR-004, `goals-and-non-goals.md`, `technical-design-rules.md`).
 - Acceptance Criteria:
-  - a new `scripts/build-*.mjs` trims the committed Scryfall bulk into a card-detail map keyed by Scryfall `oracle_id`, each value carrying `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`; raw Scryfall bulk stays gitignored and only the trimmed artifacts are committed
-  - the frontend copy is committed under `apps/frontend/public/data/` and served as static hosting alongside `cardMetadata.json`; the frontend loads it on demand on first card-detail open and caches it for the session (FLOW-024), never up front (NFR-019). It may be a single artifact or sharded by oracle-id prefix to bound the lazy download; either way no descriptive data is fetched before a player opens a card detail
-  - the backend copy is committed under `apps/backend/data/cardDetailByOracleId.json` and read at startup only for ask-ai server-side card-text resolution (REQ-176); it is internal to `POST /api/ask-ai` assembly and adds no product-facing route
-  - both copies are emitted by the one builder from the same Scryfall bulk so the frontend detail and the ask-ai-resolved detail cannot drift
+  - a new `scripts/build-*.mjs` trims the committed Scryfall bulk into a card-detail map keyed by Scryfall `oracle_id`, each value carrying `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`; raw Scryfall bulk stays gitignored and only the trimmed artifact is committed
+  - the map is committed once, backend-only, under `apps/backend/data/cardDetailByOracleId.json`; no card-detail copy is committed under `apps/frontend/public/data/` and none is downloaded up front (NFR-019)
+  - a new route `GET /api/cards/:oracleId` returns one card's descriptive block by oracle id; an unknown id returns a not-found response and the descriptive block degrades to the existing empty-oracle marker
+  - the frontend loads a card's detail from `GET /api/cards/:oracleId` on first open and caches it per card for the session (FLOW-024); it never bulk-downloads the map
+  - ask-ai resolves card text by reading the same backend map internally inside `POST /api/ask-ai` (REQ-176), not by calling the new route; the route and the ask-ai read share the one artifact so they cannot drift
   - `npm run data:build` includes the card-detail build; `npm run data:refresh` requires explicit human approval before any download (existing policy)
-  - no new product-facing backend endpoint is added; `POST /api/ask-ai` and `GET /api/health` remain the only routes, and `ASK_AI_PROVIDER=mock` local dev works unchanged with no runtime network call
-  - the backend degrades gracefully if its artifact is missing (ask-ai resolution emits the existing empty-oracle marker); the frontend detail load fails soft to the identity fallback (FLOW-024)
+  - the product-facing routes are exactly `POST /api/ask-ai` and `GET /api/cards/:oracleId` (`GET /api/health` remains the non-product health check); `ASK_AI_PROVIDER=mock` local dev works unchanged with no runtime network call
 - Constraints:
-  - commit only the trimmed artifacts, matching the existing `apps/frontend/public/data/*.json` and `apps/backend/data/*.json` patterns
-  - no new product-facing endpoint (DEC-010, `technical-design-rules.md` Forbidden Design Drift, REQ-072); the frontend reads a static artifact, not a route
+  - commit only the trimmed artifact, matching the existing `apps/backend/data/*.json` pattern
+  - the new route is a read-only `GET` keyed by oracle id; it is the product's second product-facing endpoint (D5), authorized by the amendments to REQ-012, REQ-072, NFR-004, `goals-and-non-goals.md`, and `technical-design-rules.md` below
 - Dependencies:
   - REQ-174
   - REQ-176
   - FLOW-024
-  - NFR-010
-  - NFR-013
+  - REQ-072
+  - NFR-004
 - Notes:
   - `oracle_id` is the shared join key already used by card metadata, rulings, and combos
-  - see D5: serving detail as a lazy static artifact (not a second endpoint) is the design choice; an endpoint alternative would require amending DEC-010, `goals-and-non-goals.md`, `technical-design-rules.md`, and REQ-072
+  - D5 chose the endpoint over a lazy static frontend artifact for per-card fetch granularity (download only the card opened)
 ```
 
 **Add to `PRD/sections/integrations-and-data.md` a new data-strategy block (after `## Rulings Data Strategy`):**
@@ -289,15 +292,37 @@ Blocks REQ-174, REQ-176, FLOW-024. (Implements D1/D2; carries the D5 choice.)
 ## Card Detail Data Strategy
 - the card descriptive block is committed as a trimmed map keyed by Scryfall `oracle_id`, built by one builder from the same Scryfall bulk every other builder trims from; raw bulk stays gitignored and must not be committed
 - each value carries `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`
-- the frontend copy is committed under `apps/frontend/public/data/` and lazy-loaded on first card-detail open (FLOW-024), served as static hosting alongside `cardMetadata.json` — no new product-facing endpoint (DEC-010, REQ-072); it joins the existing lazy-data-artifact posture (NFR-010, NFR-013)
-- the backend copy is committed under `apps/backend/data/cardDetailByOracleId.json` and read at startup only for ask-ai server-side card-text resolution (REQ-176); it is internal to `POST /api/ask-ai`, not a route
-- `npm run data:build` rebuilds both copies alongside card metadata, rulings, and game rules; the one builder keeps them from drifting
+- the map is committed once, backend-only, under `apps/backend/data/cardDetailByOracleId.json`; there is no frontend copy
+- the frontend fetches one card's block on demand from `GET /api/cards/:oracleId` (FLOW-024) and caches per card for the session; ask-ai reads the same backend map internally for server-side resolution (REQ-176)
+- `GET /api/cards/:oracleId` is the product's second product-facing endpoint, authorized by D5 (see the REQ-012 / REQ-072 / NFR-004 / goals-and-non-goals / technical-design-rules amendments below)
+- `npm run data:build` rebuilds the map alongside card metadata, rulings, and game rules
 - runtime Scryfall fetches are out of scope for the core product
 ```
 
-(No `## API Design` change — REQ-175 adds no route; `POST /api/ask-ai` and `GET /api/health` stay the only endpoints.)
+**Amend `PRD/sections/integrations-and-data.md` → `## API Design`:** add
+`GET /api/cards/:oracleId` alongside `POST /api/ask-ai` (previously the only
+product-facing route). The new route returns one card's descriptive block by
+oracle id; success returns the block, an unknown id returns not-found. (Exact
+before/after rendered by the build against the current `## API Design` text.)
 
-- Verdict: <accept | edit | reject>
+### Endpoint amendments (authorized by your D5 edit)
+
+Choosing the endpoint means amending every live place that pins "one
+product-facing endpoint" so it permits a second, read-only retrieval route.
+`DEC-010` is **not** amended — it is a retired historical row in `decisions.md`
+(the whole decision log is retired, bodies deleted). The live assertions are:
+
+- **REQ-012** constraint `one main product-facing endpoint in the core product` → permits the answer endpoint plus a read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175)
+- **REQ-072** constraint `one product-facing endpoint only (DEC-010); no new route` → the answer endpoint stays single; a separate read-only card-detail route (`GET /api/cards/:oracleId`, REQ-175) is permitted
+- **NFR-004** constraint `one main product-facing backend endpoint` → one main answer endpoint plus a read-only card-detail retrieval route (REQ-175)
+- **`goals-and-non-goals.md`**: product-scope line `one main backend endpoint` → answer endpoint plus a read-only card-detail retrieval route (REQ-175); and the Explicit Non-Goal `multiple product-facing backend endpoints` narrowed to `arbitrary/expanding product-facing endpoints beyond the answer endpoint and the single read-only card-detail retrieval route (REQ-175)`
+- **`technical-design-rules.md`**: Allowed Design Direction `one main backend endpoint` → adds the read-only card-detail retrieval route (REQ-175); Forbidden Design Drift `extra product-facing endpoints` narrowed to endpoints beyond the answer endpoint and the one read-only card-detail retrieval route (REQ-175)
+
+Note: D5's block listed `DEC-010` (retired, moot) and missed **REQ-012** and
+**NFR-004**, which also carry the rule as a hard constraint; both are amended
+here so no live source still forbids the route you approved.
+
+- Verdict: accept
 - Reason:
 
 ---
@@ -454,7 +479,7 @@ Proposed:
   REQ-072, REQ-167, REQ-176)
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -503,7 +528,7 @@ Proposed:
 Add `REQ-175` and `REQ-176` to REQ-167's **Dependencies** list so the reciprocal
 link to the server-side resolution is recorded on the authoritative requirement.
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -533,9 +558,9 @@ first-load regressions later would go uncaught. (Implements D1.)
 - Title: First-load card-data payload target
 - Description: With descriptive card fields fetched on demand (REQ-174), the up-front card-metadata artifact the frontend downloads on entry to MTG Assistant and Quick Lookup must be a small fraction of the prior 16.4 MB file, and the reduction must be measured as acceptance evidence.
 - Constraints:
-  - the trimmed `cardMetadata.json` (up-front fields only) is materially smaller than the prior artifact; the built size is recorded before/after as acceptance evidence and stays within a mobile-friendly budget
-  - this is a data-artifact target, distinct from and additive to the route-level code-splitting posture (NFR-014); it neither replaces nor weakens the existing lazy loads, and the on-demand card-detail load is itself a data-artifact lazy load in the same family as NFR-010 / NFR-013
-  - the on-demand card-detail load (FLOW-024) must not reintroduce a bulk up-front download
+  - the build records before/after gzipped sizes and asserts the trimmed `cardMetadata.json` (up-front fields only) is at least 80% smaller (gzipped) than the prior combined artifact — a relative gate, so acceptance does not hinge on an estimated byte ceiling; the expected slim size is on the order of ~1–2 MB gzipped
+  - this is a data-artifact target, distinct from and additive to the route-level code-splitting posture (NFR-014); it neither replaces nor weakens the existing lazy loads
+  - the on-demand card-detail load is a per-card fetch from the `GET /api/cards/:oracleId` endpoint (REQ-175, FLOW-024), not an up-front download, and must not reintroduce a bulk up-front payload
 - Dependencies:
   - REQ-174
   - REQ-175
@@ -545,8 +570,8 @@ first-load regressions later would go uncaught. (Implements D1.)
   - oracle text alone was 45.4% of the prior file; moving it plus type line, mana, and sub/supertypes off the up-front list is the bulk of the reduction
 ```
 
-- Verdict: <accept | edit | reject>
-- Reason:
+- Verdict: edit — pin a firm, testable first-load budget
+- Reason: give leg 2 a hard pass/fail instead of "materially smaller": the build must record before/after gzipped sizes AND assert the slim `cardMetadata.json` is at least 80% smaller (gzipped) than the prior combined artifact (expected on the order of ~1–2 MB gzipped). A relative gate avoids hinging acceptance on an estimated byte ceiling.
 
 ---
 
@@ -556,9 +581,9 @@ first-load regressions later would go uncaught. (Implements D1.)
 Quick Lookup pre-submit preview once detail is fetched rather than carried.
 
 **In plain terms:** when a player taps the corner control on a card image (or
-opens the Quick Lookup card preview), the app loads that card's descriptive
-block on demand from the committed static card-detail artifact (REQ-175, D5) —
-lazy-loaded on first open, cached for the session — and shows a brief loading
+opens the Quick Lookup card preview), the app fetches that card's descriptive
+block on demand from the `GET /api/cards/:oracleId` endpoint (REQ-175, D5) — per
+card, cached for the session — and shows a brief loading
 state, then the same oracle text / mana / type / sub-supertypes it shows today.
 The card's name, image, and color ring are already local, so they show
 instantly; only the descriptive text waits on the load.
@@ -577,17 +602,17 @@ D1.)
 - Trigger: a player opens a card's corner detail popup, or the Quick Lookup pre-submit card preview, for a card whose descriptive block is not local
 - Preconditions:
   - the card's up-front fields (oracle id, name, imageUrl, colors) are local (REQ-174)
-  - the committed static card-detail artifact is available (REQ-175)
+  - the card-detail endpoint `GET /api/cards/:oracleId` is available (REQ-175)
 - Main Flow:
   1. Player activates the corner detail control on a card image, or opens the Quick Lookup card preview.
-  2. The app loads the committed card-detail artifact on demand (lazy-loaded on first open this session, then cached) and resolves that card's descriptive block by oracle id, showing a brief loading state in the popup/preview (presentation constrained by `PRD/sections/screen-layout.md` — a quiet in-overlay state confined to the descriptive-content region, no branded splash, spinner takeover, progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and no overlay resize or layout shift when the block resolves); the card name, image, and color ring (already local) render immediately.
+  2. The app fetches that card's descriptive block from `GET /api/cards/:oracleId` on demand (per card; cached for the session after first fetch), showing a brief loading state in the popup/preview (presentation constrained by `PRD/sections/screen-layout.md` — a quiet in-overlay state confined to the descriptive-content region, no branded splash, spinner takeover, progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and no overlay resize or layout shift when the block resolves); the card name, image, and color ring (already local) render immediately.
   3. On success the popup/preview shows the descriptive block (oracle text, type line, mana cost/value, colors, sub/supertypes), identical to today's content.
 - Edge Cases:
-  - if the load fails, the popup/preview shows the locally available identity (name + oracle id) and a retry affordance; no descriptive fields are invented
-  - image failure does not trigger a detail load; the image-fail fallback shows name + oracle id only (FLOW-001)
-  - once the artifact is loaded this session, subsequent card-detail opens resolve from the in-memory cache with no repeat request
+  - if the fetch fails, the popup/preview shows the locally available identity (name) and a retry affordance; no descriptive fields are invented
+  - image failure does not trigger a detail fetch; the image-fail fallback shows the card name only (FLOW-001)
+  - once a card's detail is fetched this session, reopening it resolves from the in-memory cache with no repeat request
 - Notes:
-  - the descriptive block is loaded on demand, never carried in the up-front list (REQ-174), and comes from a committed static artifact, not a new route (D5); this is the read path REQ-128's popup uses
+  - the descriptive block is fetched on demand, never carried in the up-front list (REQ-174), and comes from the `GET /api/cards/:oracleId` endpoint, not a static artifact (D5); this is the read path REQ-128's popup uses
 ```
 
 **Amend `PRD/sections/quick-lookup/README.md` → `### Entry and pre-submit layout`, the card-preview bullet (~lines 50-60).** This derived prose describes the pre-submit preview showing "oracle text with full metadata before submit" — the same surface this flow now loads on demand. It carries no local/no-fetch claim today, so it does not contradict the change, but it names the descriptive content that now arrives on demand behind a loading state; amend it so the derived spec matches this flow. Its authoritative sources for the on-demand display timing are FLOW-024 and REQ-128 (new/amended here) and REQ-174 (the up-front slim), not a REQ-167 acceptance criterion — REQ-167's preview criterion ("the pre-submit view lets the player add, preview, and remove more than one card") is silent on where the metadata comes from and stays valid unchanged.
@@ -608,7 +633,7 @@ or by camera scan (the shared FLOW-006 engine); each add resolves to one
   state before submit, and can be removed individually.
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -617,7 +642,7 @@ or by camera scan (the shared FLOW-006 engine); each add resolves to one
 
 **What this decides:** what the new "loading" moment is allowed to look like on the two surfaces that gain it — the suite-wide card-detail popup and the Quick Question pre-submit card preview — now that a card's descriptive text is fetched on demand instead of being carried locally.
 
-**In plain terms:** today opening a card's detail shows its text instantly, because every card's text is already downloaded. After image-first cards (D1, REQ-128, FLOW-024), the text for a card arrives on demand the moment you open it, so for a beat the popup (or the pre-submit preview) has the card's name, image, and color ring but not yet its oracle text — a loading moment that does not exist today. `screen-layout.md` is the authoritative catalog for how any user-visible overlay is presented (REQ-126, DEC-149), and it already sets the house style for a loading state one row up: the route-load fallback "must not introduce a branded splash, progress bar, or motion beyond the existing CSS-motion rules (NFR-006)." The card-detail popup row and the Quick Question pre-submit row carry no such rule, so an implementing agent has no guidance on what this new loading moment may show. This adds the matching constraint to both rows: a quiet in-overlay state, the already-local name/image/ring stay put, no branded splash, no full-overlay spinner takeover, no progress bar, no motion beyond NFR-006, and no overlay resize or layout jump when the text resolves; a minimal inline placeholder is fine, and a failed load falls soft to the name + oracle-id identity fallback (FLOW-001) with a retry, not an error takeover.
+**In plain terms:** today opening a card's detail shows its text instantly, because every card's text is already downloaded. After image-first cards (D1, REQ-128, FLOW-024), the text for a card arrives on demand the moment you open it, so for a beat the popup (or the pre-submit preview) has the card's name, image, and color ring but not yet its oracle text — a loading moment that does not exist today. `screen-layout.md` is the authoritative catalog for how any user-visible overlay is presented (REQ-126, DEC-149), and it already sets the house style for a loading state one row up: the route-load fallback "must not introduce a branded splash, progress bar, or motion beyond the existing CSS-motion rules (NFR-006)." The card-detail popup row and the Quick Question pre-submit row carry no such rule, so an implementing agent has no guidance on what this new loading moment may show. This adds the matching constraint to both rows: a quiet in-overlay state, the already-local name/image/ring stay put, no branded splash, no full-overlay spinner takeover, no progress bar, no motion beyond NFR-006, and no overlay resize or layout jump when the text resolves; a minimal inline placeholder is fine, and a failed load falls soft to the name identity fallback (FLOW-001) with a retry, not an error takeover.
 
 **What happens if you say no:** the two rows stay silent on the new loading moment, and an implementing agent could ship a branded splash, a spinner takeover, or a layout that jumps when the text lands — the exact drift the route-load row's rule was written to prevent. (Governs the presentation of the loading state REQ-128 / FLOW-024 introduce; carries no behavior of its own.)
 
@@ -631,7 +656,7 @@ Current:
 ```
 Proposed:
 ```
-| Notes | DEC-151, DEC-158, DEC-159, REQ-128, REQ-142, REQ-175, FLOW-024 — applies whenever a card image is shown across all six surfaces: Quick Question card search, In-Depth Enrichment, View Context, In-Depth zone selected-card/add preview, In-Depth zone strip, and Scan review. Superseded geometry: `absolute inset-0` over the image, measured at 92×128px holding 356px of content with its close X overflowing by 37px (DEC-158). **On-demand load state (REQ-128 / FLOW-024):** the descriptive block is fetched on first card-detail open, so the popup shows a brief loading state confined to the descriptive-content region while the already-local name, image, and color ring stay rendered and do not move. Keep it quiet and minimal — it must not introduce a branded splash, a full-overlay spinner takeover, a progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and must not resize the overlay or shift surrounding content (no layout jump when the block resolves). A minimal inline placeholder/skeleton in the descriptive region is allowed; a failed load falls soft to the name + oracle-id identity fallback (FLOW-001) with a retry affordance, never an error takeover |
+| Notes | DEC-151, DEC-158, DEC-159, REQ-128, REQ-142, REQ-175, FLOW-024 — applies whenever a card image is shown across all six surfaces: Quick Question card search, In-Depth Enrichment, View Context, In-Depth zone selected-card/add preview, In-Depth zone strip, and Scan review. Superseded geometry: `absolute inset-0` over the image, measured at 92×128px holding 356px of content with its close X overflowing by 37px (DEC-158). **On-demand load state (REQ-128 / FLOW-024):** the descriptive block is fetched on first card-detail open, so the popup shows a brief loading state confined to the descriptive-content region while the already-local name, image, and color ring stay rendered and do not move. Keep it quiet and minimal — it must not introduce a branded splash, a full-overlay spinner takeover, a progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and must not resize the overlay or shift surrounding content (no layout jump when the block resolves). A minimal inline placeholder/skeleton in the descriptive region is allowed; a failed load falls soft to the name identity fallback (FLOW-001) with a retry affordance, never an error takeover |
 ```
 
 **Amend `PRD/sections/screen-layout.md` → `#### Quick Question — pre-submit` Notes row (line ~133):**
@@ -642,10 +667,10 @@ Current:
 ```
 Proposed:
 ```
-| Notes | DEC-107, DEC-145, DEC-146, DEC-151, DEC-153, DEC-158, DEC-160, REQ-132, REQ-133, REQ-141, REQ-167, REQ-174, FLOW-024. **On-demand load state (REQ-174 / FLOW-024):** the pre-submit card preview's descriptive metadata now loads on demand, so it shows the same quiet in-overlay loading state as the `#### Card detail popup (suite-wide)` row — no branded splash, spinner takeover, progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and no image/strip resize or layout jump when the block resolves; a minimal inline placeholder only, failing soft to the name + oracle-id identity fallback (FLOW-001) |
+| Notes | DEC-107, DEC-145, DEC-146, DEC-151, DEC-153, DEC-158, DEC-160, REQ-132, REQ-133, REQ-141, REQ-167, REQ-174, FLOW-024. **On-demand load state (REQ-174 / FLOW-024):** the pre-submit card preview's descriptive metadata now loads on demand, so it shows the same quiet in-overlay loading state as the `#### Card detail popup (suite-wide)` row — no branded splash, spinner takeover, progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and no image/strip resize or layout jump when the block resolves; a minimal inline placeholder only, failing soft to the name identity fallback (FLOW-001) |
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -657,8 +682,8 @@ descriptive fields when opened, instead of reading fields carried locally.
 
 **In plain terms:** today the popup rule says it shows "locally carried
 descriptive fields" and explicitly makes "no new network fetch." Under image-first
-cards those fields are no longer local, so the popup loads them on demand from
-the committed static card-detail artifact (REQ-175, FLOW-024) and shows a brief
+cards those fields are no longer local, so the popup fetches them on demand from
+the `GET /api/cards/:oracleId` endpoint (REQ-175, FLOW-024) and shows a brief
 loading state. Everything else about the popup — the corner trigger, the
 portal-hosted bottom-sheet/side-panel geometry, the close control — is unchanged.
 
@@ -687,7 +712,7 @@ Current:
 ```
 Proposed:
 ```
-  - the popup loads its descriptive contents on demand from the committed static card-detail artifact (REQ-175, FLOW-024), showing a brief loading state whose presentation follows `PRD/sections/screen-layout.md` (a quiet in-overlay state in the descriptive-content region only — no branded splash, spinner takeover, progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and no overlay resize or layout shift on resolve); name, image, and color ring (already local) render immediately
+  - the popup fetches its descriptive contents on demand from the `GET /api/cards/:oracleId` endpoint (REQ-175, FLOW-024), showing a brief loading state whose presentation follows `PRD/sections/screen-layout.md` (a quiet in-overlay state in the descriptive-content region only — no branded splash, spinner takeover, progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and no overlay resize or layout shift on resolve); name, image, and color ring (already local) render immediately
 ```
 
 Constraints:
@@ -719,23 +744,23 @@ Proposed:
 - Built: whenever a card image is shown anywhere in the suite, a compact corner control
   (top-right of the image) opens a **dismissible detail popup** carrying oracle text and
   other descriptive fields fetched on demand by oracle id (REQ-175, FLOW-024) behind a
-  brief loading state; a missing image keeps the text-first fallback, which shows name +
-  oracle id only (FLOW-001).
+  brief loading state; a missing image keeps the name-first fallback, which shows the card
+  name only (FLOW-001).
 ```
 
 **Amend `PRD/sections/system-map.md` (line ~200)** — the clause "carrying
 descriptive fields including oracle text; missing or failed images enter metadata
 mode directly" becomes:
 ```
-carrying descriptive fields fetched on demand by oracle id (REQ-175 / FLOW-024); missing or failed images show the name + oracle id fallback (FLOW-001).
+carrying descriptive fields fetched on demand by oracle id (REQ-175 / FLOW-024); missing or failed images show the card-name fallback (FLOW-001).
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
 
-## REQ-125 (amend) — the image-unavailable fallback shows name + oracle id
+## REQ-125 (amend) — the image-unavailable fallback shows the card name
 
 **What this decides:** what the zone-collection card preview's fallback shows
 when the image is unavailable, once detail is fetched rather than carried.
@@ -743,7 +768,7 @@ when the image is unavailable, once detail is fetched rather than carried.
 **In plain terms:** REQ-125 keeps the add action reachable and points at the
 image-unavailable fallback path. Today that fallback renders the card's locally
 carried metadata. Under image-first cards it renders the locally available
-identity (name + oracle id) instead, matching FLOW-001. This is a one-line
+identity (the card name) instead, matching FLOW-001. This is a one-line
 pointer change; the add-action and layout rules REQ-125 owns are unchanged.
 
 **What happens if you say no:** REQ-125 would still promise a local-metadata
@@ -760,15 +785,15 @@ Current:
 ```
 Proposed:
 ```
-  - owner selection and add behavior remain available; when the card image is unavailable, the readable fallback (FLOW-001) renders the locally available identity — name + oracle id — with no detail fetch triggered by image failure
+  - owner selection and add behavior remain available; when the card image is unavailable, the readable fallback (FLOW-001) renders the locally available identity — the card name — with no detail fetch triggered by image failure
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
 
-## FLOW-001 (amend) — image-fail fallback shows name + oracle id; detail loads on demand
+## FLOW-001 (amend) — image-fail fallback shows the card name; detail loads on demand
 
 **What this decides:** how the primary game-context flow describes the card
 popup's contents and the image-fail fallback.
@@ -777,7 +802,7 @@ popup's contents and the image-fail fallback.
 "locally carried oracle/metadata" and that if the image is unavailable "the
 readable metadata panel appears directly." Under image-first cards the popup
 fetches its contents on demand, and the image-fail fallback shows only the
-locally available name + oracle id. The edge case that today replaces a failed
+locally available card name. The edge case that today replaces a failed
 image "without a network-dependent metadata lookup" is updated so image failure
 never fires a fetch, while opening the popup does.
 
@@ -795,7 +820,7 @@ a corner detail control opens a dismissible popup with locally carried oracle/me
 ```
 Proposed:
 ```
-a corner detail control opens a dismissible popup that fetches oracle/metadata on demand by oracle id (FLOW-024). If the image is unavailable, the fallback shows the locally available identity (name + oracle id) directly, and opening the popup still fetches the detail.
+a corner detail control opens a dismissible popup that fetches oracle/metadata on demand by oracle id (FLOW-024). If the image is unavailable, the fallback shows the locally available identity (the card name) directly, and opening the popup still fetches the detail.
 ```
 
 **Amend FLOW-001 Main Flow step 4** (enrichment popup clause) — the phrase
@@ -810,10 +835,10 @@ Current:
 ```
 Proposed:
 ```
-  - if an image URL is absent or fails, replace the image without a broken-image icon and without triggering a detail fetch; the fallback shows the locally available identity (name + oracle id) and all workflow controls remain available. Descriptive detail is available only by opening the popup, which fetches it on demand (FLOW-024)
+  - if an image URL is absent or fails, replace the image without a broken-image icon and without triggering a detail fetch; the fallback shows the locally available identity (the card name) and all workflow controls remain available. Descriptive detail is available only by opening the popup, which fetches it on demand (FLOW-024)
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
