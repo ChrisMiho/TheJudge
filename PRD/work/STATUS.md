@@ -10,9 +10,9 @@ Do not rename package folders to encode status.
 
 ## refined
 
-## refining
+- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; define attempt 4 (graph run graph-20260903-093903) cleared the loading-state finding: added a dedicated `screen-layout.md` gate block constraining the on-demand load state on the card-detail popup and Quick Question pre-submit rows (REQ-126/DEC-149), amended the pre-submit preview prose, and re-ran all four completeness sweeps clean — awaiting quality-check re-run
 
-- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; quality-check attempt 3 (graph run graph-20260903-093903) cleared the REQ-167 finding but found a new gap: the brief adds a loading state to the suite-wide card-detail popup and the Quick Lookup pre-submit preview with no matching `screen-layout.md` row/note (REQ-126/DEC-149) — FAIL
+## refining
 
 ## ideation
 

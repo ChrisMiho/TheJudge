@@ -580,7 +580,7 @@ D1.)
   - the committed static card-detail artifact is available (REQ-175)
 - Main Flow:
   1. Player activates the corner detail control on a card image, or opens the Quick Lookup card preview.
-  2. The app loads the committed card-detail artifact on demand (lazy-loaded on first open this session, then cached) and resolves that card's descriptive block by oracle id, showing a brief loading state in the popup/preview; the card name, image, and color ring (already local) render immediately.
+  2. The app loads the committed card-detail artifact on demand (lazy-loaded on first open this session, then cached) and resolves that card's descriptive block by oracle id, showing a brief loading state in the popup/preview (presentation constrained by `PRD/sections/screen-layout.md` — a quiet in-overlay state confined to the descriptive-content region, no branded splash, spinner takeover, progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and no overlay resize or layout shift when the block resolves); the card name, image, and color ring (already local) render immediately.
   3. On success the popup/preview shows the descriptive block (oracle text, type line, mana cost/value, colors, sub/supertypes), identical to today's content.
 - Edge Cases:
   - if the load fails, the popup/preview shows the locally available identity (name + oracle id) and a retry affordance; no descriptive fields are invented
@@ -588,6 +588,61 @@ D1.)
   - once the artifact is loaded this session, subsequent card-detail opens resolve from the in-memory cache with no repeat request
 - Notes:
   - the descriptive block is loaded on demand, never carried in the up-front list (REQ-174), and comes from a committed static artifact, not a new route (D5); this is the read path REQ-128's popup uses
+```
+
+**Amend `PRD/sections/quick-lookup/README.md` → `### Entry and pre-submit layout`, the card-preview bullet (~lines 50-60).** This derived prose describes the pre-submit preview showing "oracle text with full metadata before submit" — the same surface this flow now loads on demand. It carries no local/no-fetch claim today, so it does not contradict the change, but it names the descriptive content that now arrives on demand behind a loading state; amend it so the derived spec matches this flow. Its authoritative sources for the on-demand display timing are FLOW-024 and REQ-128 (new/amended here) and REQ-174 (the up-front slim), not a REQ-167 acceptance criterion — REQ-167's preview criterion ("the pre-submit view lets the player add, preview, and remove more than one card") is silent on where the metadata comes from and stays valid unchanged.
+
+Current:
+```
+or by camera scan (the shared FLOW-006 engine); each add resolves to one
+  oracle-level `CardMetadataItem`, previewed with its name, image when
+  available, and oracle text with full metadata before submit, and can be
+  removed individually.
+```
+Proposed:
+```
+or by camera scan (the shared FLOW-006 engine); each add resolves to one
+  oracle-level `CardMetadataItem`, previewed with its name, image, and color
+  ring immediately; its descriptive block (oracle text and full metadata) loads
+  on demand by oracle id (REQ-174, REQ-175, FLOW-024) behind a brief loading
+  state before submit, and can be removed individually.
+```
+
+- Verdict: <accept | edit | reject>
+- Reason:
+
+---
+
+## screen-layout.md — card-detail on-demand load state (amend)
+
+**What this decides:** what the new "loading" moment is allowed to look like on the two surfaces that gain it — the suite-wide card-detail popup and the Quick Question pre-submit card preview — now that a card's descriptive text is fetched on demand instead of being carried locally.
+
+**In plain terms:** today opening a card's detail shows its text instantly, because every card's text is already downloaded. After image-first cards (D1, REQ-128, FLOW-024), the text for a card arrives on demand the moment you open it, so for a beat the popup (or the pre-submit preview) has the card's name, image, and color ring but not yet its oracle text — a loading moment that does not exist today. `screen-layout.md` is the authoritative catalog for how any user-visible overlay is presented (REQ-126, DEC-149), and it already sets the house style for a loading state one row up: the route-load fallback "must not introduce a branded splash, progress bar, or motion beyond the existing CSS-motion rules (NFR-006)." The card-detail popup row and the Quick Question pre-submit row carry no such rule, so an implementing agent has no guidance on what this new loading moment may show. This adds the matching constraint to both rows: a quiet in-overlay state, the already-local name/image/ring stay put, no branded splash, no full-overlay spinner takeover, no progress bar, no motion beyond NFR-006, and no overlay resize or layout jump when the text resolves; a minimal inline placeholder is fine, and a failed load falls soft to the name + oracle-id identity fallback (FLOW-001) with a retry, not an error takeover.
+
+**What happens if you say no:** the two rows stay silent on the new loading moment, and an implementing agent could ship a branded splash, a spinner takeover, or a layout that jumps when the text lands — the exact drift the route-load row's rule was written to prevent. (Governs the presentation of the loading state REQ-128 / FLOW-024 introduce; carries no behavior of its own.)
+
+### Proposed diff
+
+**Amend `PRD/sections/screen-layout.md` → `#### Card detail popup (suite-wide)` Notes row (line ~101):**
+
+Current:
+```
+| Notes | DEC-151, DEC-158, DEC-159, REQ-128, REQ-142 — applies whenever a card image is shown across all six surfaces: Quick Question card search, In-Depth Enrichment, View Context, In-Depth zone selected-card/add preview, In-Depth zone strip, and Scan review. Superseded geometry: `absolute inset-0` over the image, measured at 92×128px holding 356px of content with its close X overflowing by 37px (DEC-158) |
+```
+Proposed:
+```
+| Notes | DEC-151, DEC-158, DEC-159, REQ-128, REQ-142, REQ-175, FLOW-024 — applies whenever a card image is shown across all six surfaces: Quick Question card search, In-Depth Enrichment, View Context, In-Depth zone selected-card/add preview, In-Depth zone strip, and Scan review. Superseded geometry: `absolute inset-0` over the image, measured at 92×128px holding 356px of content with its close X overflowing by 37px (DEC-158). **On-demand load state (REQ-128 / FLOW-024):** the descriptive block is fetched on first card-detail open, so the popup shows a brief loading state confined to the descriptive-content region while the already-local name, image, and color ring stay rendered and do not move. Keep it quiet and minimal — it must not introduce a branded splash, a full-overlay spinner takeover, a progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and must not resize the overlay or shift surrounding content (no layout jump when the block resolves). A minimal inline placeholder/skeleton in the descriptive region is allowed; a failed load falls soft to the name + oracle-id identity fallback (FLOW-001) with a retry affordance, never an error takeover |
+```
+
+**Amend `PRD/sections/screen-layout.md` → `#### Quick Question — pre-submit` Notes row (line ~133):**
+
+Current:
+```
+| Notes | DEC-107, DEC-145, DEC-146, DEC-151, DEC-153, DEC-158, DEC-160, REQ-132, REQ-133, REQ-141, REQ-167 |
+```
+Proposed:
+```
+| Notes | DEC-107, DEC-145, DEC-146, DEC-151, DEC-153, DEC-158, DEC-160, REQ-132, REQ-133, REQ-141, REQ-167, REQ-174, FLOW-024. **On-demand load state (REQ-174 / FLOW-024):** the pre-submit card preview's descriptive metadata now loads on demand, so it shows the same quiet in-overlay loading state as the `#### Card detail popup (suite-wide)` row — no branded splash, spinner takeover, progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and no image/strip resize or layout jump when the block resolves; a minimal inline placeholder only, failing soft to the name + oracle-id identity fallback (FLOW-001) |
 ```
 
 - Verdict: <accept | edit | reject>
@@ -632,7 +687,7 @@ Current:
 ```
 Proposed:
 ```
-  - the popup loads its descriptive contents on demand from the committed static card-detail artifact (REQ-175, FLOW-024), showing a brief loading state; name, image, and color ring (already local) render immediately
+  - the popup loads its descriptive contents on demand from the committed static card-detail artifact (REQ-175, FLOW-024), showing a brief loading state whose presentation follows `PRD/sections/screen-layout.md` (a quiet in-overlay state in the descriptive-content region only — no branded splash, spinner takeover, progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and no overlay resize or layout shift on resolve); name, image, and color ring (already local) render immediately
 ```
 
 Constraints:

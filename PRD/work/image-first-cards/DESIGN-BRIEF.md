@@ -182,7 +182,31 @@ Feature-spec prose carrying the same truth is amended inside the relevant id's
 diff: `integrations-and-data.md` (card-detail data strategy, metadata strategy,
 ask-ai payload), `shared-chrome/README.md` and `system-map.md` (popup read
 path), `quick-lookup/README.md` (lookup-mode card request shape under REQ-176,
-and the pre-submit preview), `non-functional-requirements.md` (payload target).
+and the pre-submit card-preview display under FLOW-024),
+`non-functional-requirements.md` (payload target).
+
+Layout-catalog amendment surfaced at the gate as its own slot:
+**`screen-layout.md` — card-detail on-demand load state**. The change introduces
+a user-visible loading moment on two overlays that have none today — the
+suite-wide card-detail popup (REQ-128 / FLOW-024) and the Quick Question
+pre-submit card preview (REQ-174 / FLOW-024). Under REQ-126 / DEC-149
+`screen-layout.md` is authoritative for how a user-visible overlay is presented,
+and its route-load-fallback row already sets the house rule for a loading state
+("no branded splash, progress bar, or motion beyond the existing CSS-motion
+rules, NFR-006"). The card-detail-popup row and the Quick Question pre-submit
+row carried no equivalent rule, so this proposal adds the matching constraint to
+both — a quiet in-overlay state, local name/image/ring stay put, no branded
+splash / spinner takeover / progress bar / motion beyond NFR-006, no overlay
+resize or layout jump, minimal inline placeholder only, failing soft to the
+name + oracle-id fallback (FLOW-001). This closes the class of gap the quality
+gate flagged: every new user-visible loading state now has a matching catalog
+constraint. The FLOW-024 and REQ-128 diffs point at `screen-layout.md` for that
+presentation, so the authoritative flow/requirement and the catalog agree.
+
+No screen-layout row is needed for the image-fail fallback change (REQ-125 /
+FLOW-001, D3): it reduces the fallback content to name + oracle id within
+existing surfaces and changes no size, containment, band, or fit dimension the
+catalog governs — an explicit, reasoned no-row case, not an omission.
 
 ## Derived-spec ↔ source-REQ audit (recurrence guard)
 
@@ -193,8 +217,21 @@ spec is left contradicting its source:
 - `quick-lookup/README.md` (lookup-card request shape) ← **REQ-167** — both now
   amended (REQ-176 diff for the derived prose; the `REQ-167 (amend)` block for
   the authoritative acceptance criterion).
+- `quick-lookup/README.md` (pre-submit card-preview display prose, "oracle text
+  with full metadata before submit") ← **FLOW-024 / REQ-128 / REQ-174** — amended
+  in the FLOW-024 block to say the descriptive block loads on demand behind a
+  loading state. REQ-167's preview acceptance criterion ("the pre-submit view
+  lets the player add, preview, and remove more than one card") is silent on
+  where the metadata comes from, so it does not contradict the on-demand display
+  and needs no lockstep edit; the authoritative sources for the display timing
+  are the new FLOW-024 and the amended REQ-128 / REQ-174, all in this proposal.
 - `shared-chrome/README.md` (corner detail popup) ← **REQ-128** — both amended
   (REQ-128 already carries its own `(amend)` block).
+- `screen-layout.md` (card-detail popup + Quick Question pre-submit rows,
+  loading-state presentation) ← **REQ-126 / DEC-149** (authoritative-for-layout)
+  and the surfaces' own ids **REQ-128 / REQ-174 / FLOW-024** — amended in the
+  dedicated `screen-layout.md` gate block; the FLOW-024 and REQ-128 diffs cite
+  `screen-layout.md` so flow, requirement, and catalog agree.
 - `system-map.md` summaries (card metadata / popup read path) ← **REQ-174 /
   REQ-175 / REQ-128 / FLOW-024** — all new or amended in this proposal.
 - `integrations-and-data.md` (`ZoneCardItem`, prompt-build line, request
@@ -205,6 +242,34 @@ spec is left contradicting its source:
   prompt*, which REQ-176 keeps byte-identical, so it stays valid and is
   correctly left untouched — the descriptive fields still appear in the prompt,
   now resolved server-side rather than from the payload.
+
+## Completeness sweeps (define, attempt 4)
+
+Run before handoff so no fourth distinct gap remains:
+
+- **(a) Every new/changed user-visible surface has a `screen-layout.md` row or a
+  reasoned no-row note.** Card-detail popup and Quick Question pre-submit both
+  gain the on-demand loading state and now carry the matching catalog constraint
+  (dedicated `screen-layout.md` gate block). The image-fail fallback (name +
+  oracle id) reduces content within existing surfaces and changes no
+  size/containment/band/fit dimension — explicit no-row note recorded above. No
+  other surface changes. **Result: pass.**
+- **(b) Every derived-spec diff has its authoritative source amended in lockstep
+  (DEC-168).** Full map in the audit above. The one new item this pass —
+  `quick-lookup/README.md` pre-submit preview-display prose — is now amended and
+  its source (FLOW-024 / REQ-128 / REQ-174, with REQ-167's silent preview
+  criterion left valid) is recorded. **Result: pass.**
+- **(c) Every dependency/cross-reference an amended id cites resolves.** The new
+  `screen-layout.md` block cites REQ-126, DEC-149, NFR-006, REQ-128, REQ-174,
+  REQ-175, FLOW-024, FLOW-001 — all real (NFR-006 is the CSS-motion baseline the
+  route-load row already cites; REQ-126/DEC-149 govern the catalog). FLOW-024 and
+  REQ-128 now cite `screen-layout.md` reciprocally. Prior-pass fixes hold
+  (REQ-167 amended; NFR-019 → NFR-014). **Result: pass.**
+- **(d) Every product-truth change the brief relies on has its own gate slot.**
+  The loading-state presentation now has a dedicated `screen-layout.md` slot the
+  owner can accept/edit/reject; the preview-display prose folds into FLOW-024's
+  slot per the established feature-spec-prose pattern. All other changes retain
+  their existing slots. **Result: pass.**
 
 ## Next step
 
