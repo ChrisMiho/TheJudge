@@ -10,9 +10,9 @@ Do not rename package folders to encode status.
 
 ## refined
 
-## refining
+- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; refinement attempt 3 (graph run graph-20260903-093903) cleared the REQ-167 finding by adding a `REQ-167 (amend)` gate block so the authoritative acceptance criterion drops `oracleText` on the lookup card to match REQ-176 and the derived `quick-lookup/README.md`; awaiting quality-check re-run
 
-- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; quality-check re-run (graph run graph-20260903-093903, attempt 2) confirms the 3 prior findings resolved but FAILs on a new one: REQ-167's acceptance criterion in `functional-requirements.md` still promises the old lookup-card shape (oracleText required), contradicting REQ-176 and the already-fixed `quick-lookup/README.md`; back to refinement
+## refining
 
 ## ideation
 

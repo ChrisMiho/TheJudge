@@ -164,7 +164,16 @@ resolution), **NFR-019** (first-load payload target), **FLOW-024** (on-demand
 card-detail load).
 
 Amended stable ids: **REQ-128** (popup loads on demand), **REQ-125** (image
-fallback path), **FLOW-001** (image-fail fallback = name + oracle id).
+fallback path), **FLOW-001** (image-fail fallback = name + oracle id),
+**REQ-167** (lookup-mode card carries identity only; descriptive fields resolved
+server-side).
+
+REQ-167 is the *authoritative* source of the derived `quick-lookup/README.md`
+lookup-card prose that REQ-176 amends. Per DEC-168 the cited REQ wins any
+conflict with a derived feature spec, so amending the derived prose without
+amending REQ-167 would leave the authoritative source still promising
+`oracleText` on the request. Its acceptance criterion is amended in lockstep so
+the two agree.
 
 Direction decision surfaced at the gate with no id of its own: **D5** (lazy
 static artifact vs. a new `GET /api/cards/:oracleId` endpoint).
@@ -174,6 +183,28 @@ diff: `integrations-and-data.md` (card-detail data strategy, metadata strategy,
 ask-ai payload), `shared-chrome/README.md` and `system-map.md` (popup read
 path), `quick-lookup/README.md` (lookup-mode card request shape under REQ-176,
 and the pre-submit preview), `non-functional-requirements.md` (payload target).
+
+## Derived-spec ↔ source-REQ audit (recurrence guard)
+
+Every derived (non-authoritative, DEC-168) file a proposed diff edits was
+checked against the authoritative REQ it derives from, so no amended derived
+spec is left contradicting its source:
+
+- `quick-lookup/README.md` (lookup-card request shape) ← **REQ-167** — both now
+  amended (REQ-176 diff for the derived prose; the `REQ-167 (amend)` block for
+  the authoritative acceptance criterion).
+- `shared-chrome/README.md` (corner detail popup) ← **REQ-128** — both amended
+  (REQ-128 already carries its own `(amend)` block).
+- `system-map.md` summaries (card metadata / popup read path) ← **REQ-174 /
+  REQ-175 / REQ-128 / FLOW-024** — all new or amended in this proposal.
+- `integrations-and-data.md` (`ZoneCardItem`, prompt-build line, request
+  example) is the authoritative wire contract, amended directly by REQ-176; the
+  only REQ acceptance criterion pinning the descriptive block on a request card
+  shape was REQ-167 (now amended). The game-mode assembled-prompt criterion
+  (REQ-030, `functional-requirements.md` ~line 539) describes the *assembled
+  prompt*, which REQ-176 keeps byte-identical, so it stays valid and is
+  correctly left untouched — the descriptive fields still appear in the prompt,
+  now resolved server-side rather than from the payload.
 
 ## Next step
 

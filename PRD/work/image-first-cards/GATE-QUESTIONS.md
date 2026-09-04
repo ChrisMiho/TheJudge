@@ -427,7 +427,7 @@ Proposed:
 - populated zone sections — each card in every populated zone (stack and non-stack) includes the full card metadata block: oracle text, mana cost/value, type line, colors, supertypes/subtypes, targets, and context notes; the card-intrinsic fields are resolved server-side by `cardId` from `cardDetailByOracleId.json` (REQ-176), targets and context notes come from the request; empty oracle emits `(none) — no oracle text recorded for this card`
 ```
 
-**Amend `PRD/sections/quick-lookup/README.md` → the lookup-mode `cards` request shape (~lines 170-177).** The lookup-mode card is a *request* shape too, and it must drop the descriptive block the same way `ZoneCardItem` does, or its prose goes stale.
+**Amend `PRD/sections/quick-lookup/README.md` → the lookup-mode `cards` request shape (~lines 170-177).** The lookup-mode card is a *request* shape too, and it must drop the descriptive block the same way `ZoneCardItem` does, or its prose goes stale. This `quick-lookup/README.md` line is *derived*, non-authoritative prose (DEC-168) whose authoritative source is REQ-167's acceptance criterion; that source is amended to match in the `## REQ-167 (amend)` block below, so the authoritative REQ and this derived spec cannot contradict each other once both diffs apply.
 
 Current:
 ```
@@ -453,6 +453,55 @@ Proposed:
   card behave identically to the prior single-card shape. (DEC-106, DEC-053,
   REQ-072, REQ-167, REQ-176)
 ```
+
+- Verdict: <accept | edit | reject>
+- Reason:
+
+---
+
+## REQ-167 (amend) — the lookup-mode card carries identity only, descriptive fields resolved server-side
+
+**What this decides:** whether the authoritative requirement that defined the
+Quick Question multi-card shape (REQ-167) is updated so its acceptance criterion
+stops requiring `oracleText` on each attached card — matching the server-side
+resolution REQ-176 introduces.
+
+**In plain terms:** REQ-167 is the authoritative requirement that let Quick
+Question attach several cards; its acceptance criterion still says each attached
+card carries the old oracle-level shape with `oracleText` required. REQ-176 and
+the already-amended `quick-lookup/README.md` say the attached card now carries
+only identity (`cardId`, `name`) and the backend resolves the descriptive fields
+server-side. Per DEC-168 the derived feature spec (`quick-lookup/README.md`) is
+explicitly non-authoritative and the cited REQ wins any conflict — so if REQ-167
+is left as-is, the authoritative source would still promise `oracleText` on the
+request while everything else says it is never sent. This amends REQ-167's
+acceptance criterion so the authoritative source and the derived spec agree. It
+touches only the request-shape line; the bounded-list cap, per-card enrichment,
+combo, and no-game-state rules of REQ-167 are unchanged (enrichment still runs
+per attached card — it now resolves each card's metadata server-side by `cardId`
+rather than reading it from the request, exactly as REQ-176 requires).
+
+**What happens if you say no:** REQ-167's acceptance criterion keeps requiring
+`oracleText` on each lookup-mode card, contradicting REQ-176 and the amended
+`quick-lookup/README.md` on authoritative product truth. (Implements D1/D2;
+keeps the authoritative source consistent with REQ-176.)
+
+### Proposed diff
+
+**Amend `PRD/sections/functional-requirements.md` → REQ-167** — the first
+acceptance criterion (the request card shape).
+
+Current:
+```
+  - The lookup request carries an optional **bounded list** of oracle-level cards in place of the single optional card; each entry keeps the current oracle-level shape (`cardId`, `name`, `oracleText` required; `imageUrl`/`manaCost`/`manaValue`/`typeLine`/`colors`/`supertypes`/`subtypes` optional) and carries no zone, owner, caster, targets, or context-notes fields.
+```
+Proposed:
+```
+  - The lookup request carries an optional **bounded list** of cards in place of the single optional card; each entry carries only identity — `cardId` (oracle id) and `name` — and carries no zone, owner, caster, targets, or context-notes fields. The descriptive block (`oracleText`, `imageUrl`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields server-side by `cardId` from `cardDetailByOracleId.json` (REQ-175, REQ-176). The per-card enrichment below is unchanged — it resolves each attached card's metadata server-side rather than from the request.
+```
+
+Add `REQ-175` and `REQ-176` to REQ-167's **Dependencies** list so the reciprocal
+link to the server-side resolution is recorded on the authoritative requirement.
 
 - Verdict: <accept | edit | reject>
 - Reason:
