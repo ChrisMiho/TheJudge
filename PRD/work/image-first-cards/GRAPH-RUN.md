@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `build` (plan done — 3 slices A→B→C; implementing sequentially in `.worktrees/implement-image-first-cards`)
-- Next action: `/graph-implement PRD/work/image-first-cards/` (build half in progress)
+- Current node: `build` (Slices A+B done & pushed, PR #185; Slice C blocked) → **PARKED at `owner-action`**
+- Next action: owner decides NFR-019's target (see `## Open gate`); then `/graph-implement PRD/work/image-first-cards/` resumes Slice C, review, and land
 
 ## Resume note — amendment set completed (2026-09-04)
 
@@ -63,6 +63,8 @@ deliverable's base→main PR is therefore fresh (not #184) and merges last.
 | — | refine | opus | ok | `n/a (interactive)` | owner confirmed direction, proceed; completed the corner-popup/fallback amendment set — D1/D3 applied across REQ-058, FLOW-002, FLOW-006, two missed REQ-128 spots, derived `scan/README.md` + `shared-chrome/README.md` (sources in lockstep, DEC-168); DEC-078 offline guarantee reconciled with owner-veto notes on REQ-058/FLOW-006; `STATUS.refined`; commit `cf5b9a0` | 2026-09-04 |
 | 4 | gate-qc | sonnet | ok | `0 → 62` | PASS (attempt 7): amendment set verified complete — all named + derived locations amended in lockstep, 38 diff blocks' Current text verbatim, 26 cross-refs resolve, screen-layout coverage complete, DEC-078 reconciliation sound; incidental README `status:` line fix; `STATUS.refined`; commit `87af556` → continue to `plan` | 2026-09-04 |
 | 5 | plan | sonnet | ok | `0 → 51` | `GAMEPLAN.md` + 3 slice docs + 3 criteria files; dependency-safe order A→B→C (A endpoint/artifact/on-demand popup, B ask-ai server-side gated by byte-identical `test:eval`, C slim list gated by NFR-019 80%-gzipped); criteria: A 13 / B 8 / C 10; `STATUS.active`; board → active; no commit (driver publishes) | 2026-09-04 |
+| 6 | build | sonnet | failed | `0 → 152` | attempt 1 STALLED (harness stream watchdog, 600s no-progress; infra, not a logic failure) mid-Slice-A while debugging QuickLookup/interaction-flow test failures. Worktree `.worktrees/implement-image-first-cards` has Slice A largely implemented but uncommitted (21 files: `cardDetail.ts` + `routes/cardDetail.ts`+test, `build-card-detail-by-oracle-id.mjs`, `cardDetailByOracleId.json`, `CardPresentation.tsx`+tests, `lib/cardDetail.ts`, route wiring); no commits, no PR. Driver renamed worktree branch → `thejudge-auto/image-first-cards-work`, WIP preserved; re-dispatching build attempt 2 to resume with anti-stall guardrails | 2026-09-04 |
+| 6 | build | sonnet | parked | `0 → 491` | attempt 2 (resume): Slice A DONE (13/13 criteria, live Playwright verified — on-demand load, offline degrade, image-fail name-only zero-fetch; REQ-175/FLOW-024 new + 9 amended across 11 `PRD/sections/` files; commit `28e4eef`) and Slice B DONE (8/8 criteria, `test:eval` byte-identical proof; fixed 2 real bugs — `colors` kept locally + `FrozenAskAiContext` trimmed shape; REQ-176 new + REQ-167/integrations/quick-lookup amended; commit `0bea2f3`). Both pushed to `-work`, PR #185 opened → base. Slice C BLOCKED on a genuine owner decision: NFR-019's ≥80%-gzipped-reduction gate is structurally unreachable — measured 48.1% (removed oracle text compresses well; kept `cardId`/`imageUrl` barely do); C code green but uncommitted, PRD truth for C held. 4 options in PR #185 blocker comment. Parks at `owner-action` | 2026-09-04 |
 
 Heartbeat note: nodes 1–2 ran before the driver armed
 `.worktrees/.graph-run-state.json`, so the per-node counter never keyed this run
@@ -94,26 +96,22 @@ onward, restoring the counter and cap.
 
 ## Open gate
 
-- **PARKED at `owner-action` 2026-09-04** — the build half stopped at the driver's capped second gate-qc FAIL (attempt 6). The mechanical staleness is gone; what remains is a genuine product decision only the owner can make.
+- **PARKED at `owner-action` 2026-09-04** — Slices A and B are built, verified, and pushed (PR #185); Slice C is blocked on one genuine owner decision. Its code is green and sitting uncommitted in the worktree, gated only on a numeric target that turned out to be unreachable as written.
 
-**What this decides:** whether the image-first change — card detail fetched on demand from the new `GET /api/cards/:oracleId` endpoint (D1), and a failed card image falling back to the card name only (D3) — also applies to the OTHER three surfaces that show the same corner-detail popup, or whether those stay as they are today (descriptive fields carried locally, image-fail shows the local metadata panel).
+**What this decides:** how NFR-019's first-load target for the slimmed card list is restated, now that the ≥80%-gzipped-reduction gate the owner set is structurally unreachable with the four fields kept (`cardId`, `name`, `imageUrl`, `colors`).
 
-**In plain terms:** the image-first popup rule is asserted in more live PRD places than the proposal amends. The proposal currently changes the main zone tiles and the shared popup requirement (REQ-128), but leaves the old local-carry rule standing for: the scan-review bubble (FLOW-006, `scan/README.md`), the zone inspect/remove flow (FLOW-002), the enrichment step, and a second authoritative popup requirement that governs all three (REQ-058). Two derived files (`scan/README.md`, `shared-chrome/README.md`) and the zone-collection scan flow (`user-flows.md`) also still say local-carry. If build ships the proposal as-is, the amended REQ-128 and the unamended REQ-058 would contradict each other on the same popup, and those three surfaces would keep behavior the change was meant to replace.
+**In plain terms:** the slim list (name/image/id/colors only) is 2.20 MB gzipped, down from 4.25 MB — a 48.1% reduction, not 80%. The removed oracle text compresses extremely well under gzip; the kept fields (`cardId` UUID, `imageUrl` hash) barely compress, so raw size drops ~87% but gzipped drops only ~48%. The 80% figure was a relative-percentage proxy that doesn't fit this data shape — and notably the delivered 2.20 MB is right inside NFR-019's own Notes estimate of ~1–2 MB gzipped. The feature's real win (the up-front payload roughly halves, and detail loads on demand) is delivered; only the acceptance number needs restating.
 
-**What happens if you say no** (i.e. these surfaces stay local-carry): the proposal must add an explicit out-of-scope note for each, AND REQ-128's amendment must be narrowed so it does not contradict the unamended REQ-058 — otherwise the corpus ships two rules for one popup. Saying yes means adding amendment slots for REQ-058, FLOW-002, FLOW-006, the enrichment step, `scan/README.md`, `shared-chrome/README.md`, and the `user-flows.md` zone-collection flow, each with the on-demand-fetch + name-only rule. Either answer completes the amendment set; neither can be assumed for you.
+**What happens if you say no** (leave NFR-019 at 80%): Slice C cannot pass its gate and cannot ship, so image-first would land as A+B only (endpoint + on-demand popup + server-side ask-ai) without the up-front-list slimming — the piece that halves the initial download. The number blocks the payload win, not the correctness.
 
-- **Complete amendment set the driver grepped** (`locally carried` / `carried locally` / local-metadata-fallback, filtered to the corner-detail popup rule — the separate "local metadata for autocomplete/search" hits in `overview.md`, `integrations-and-data.md`, `goals-and-non-goals.md`, `functional-requirements.md` L22/30/286 are a different concept and are NOT in scope):
-  1. `functional-requirements.md` L1228 — **REQ-058** acceptance criterion (authoritative; governs the popup across ZoneCardPicker / ScanReviewBubble / EnrichmentStep) — not amended
-  2. `functional-requirements.md` L3050 — **REQ-128** Description ("locally carried descriptive fields") — REQ-128 IS in the amend set; confirm the amend covers this Description line, not only its criteria
-  3. `user-flows.md` L53 — **FLOW-002** (zone inspect/remove) — not amended
-  4. `user-flows.md` L135 & L148 — **FLOW-006** (scan review bubble + image-fail edge) — not amended
-  5. `user-flows.md` L12 — zone-collection scan flow — not amended
-  6. `scan/README.md` L112 — derived (DEC-168 source: FLOW-006/REQ-058) — not amended
-  7. `shared-chrome/README.md` L284 — derived — confirm against its source amend
-- **Why it recurred:** this is the same class as the D5 near-miss — a cross-cutting rule's amendment set enumerated from memory rather than by grep (see the queued `single-source-invariants` package, which exists to prevent exactly this).
-- **Evidence:** README `## Preparation gate` (attempt 6 findings, full text); gate-qc ledger row (attempt 6); commit `14eafbd`.
-- **Resume:** decide the scope above, get the proposal's amendment set completed to match (a refinement pass adds the missing slots or the out-of-scope notes; the build half cannot do `define` work itself), then re-run `/graph-implement PRD/work/image-first-cards/` to re-grade at `gate-qc` and continue to build.
-- Docs-only base→main PR (already merged by the owner): https://github.com/ChrisMiho/TheJudge/pull/184
+- **The four options** (full diagnosis in PR #185's blocker comment):
+  1. Recalibrate NFR-019 to the measured ~48% gzipped reduction (relative % — but a relative gate is fragile, it moves with the baseline).
+  2. **[recommended]** Restate NFR-019 as an absolute gzipped-size ceiling (e.g. ≤2.3 MB), which is what the requirement's own Notes actually estimated toward (~1–2 MB) and is robust to baseline drift. The delivered 2.20 MB passes.
+  3. Change the `imageUrl` contract (store CDN-relative suffix, rebuild prefix client-side) — measured to move the number only to 48.8%, so insufficient alone.
+  4. A different `cardId` scheme to shrink the UUID — large change, breaks the `oracle_id` join key REQ-175/176/rulings/combos rely on; not recommended.
+- **State of the work:** Slice A (`28e4eef`) and Slice B (`0bea2f3`) done, verified, pushed; PR #185 `[BLOCKED]` open → base. Slice C code (type slim + ~14 consumer/test files) implemented and green (1315 frontend + 398 backend tests) but uncommitted; its `PRD/sections/` truth held so the applied NFR-019 text matches the chosen number.
+- **Code PR (owner merges last):** https://github.com/ChrisMiho/TheJudge/pull/185
+- **Resume:** pick an option (1 or 2 keep the delivered work); then `/graph-implement PRD/work/image-first-cards/` applies the NFR-019 restatement, commits Slice C, runs review, and parks at `land` for your merge.
 
 ## Dispatch prompts
 
@@ -645,6 +643,51 @@ Report back:
 4. The `-work` → base PR URL
 5. Test/verification commands run and their results
 6. Any commit hashes
+
+### build (attempt 2 — resume after infra stall)
+
+graph is controlling
+
+You are node 6 (`build`), attempt 2, of an autonomous graph-implement (build-half) run. Attempt 1 STALLED on a harness stream-watchdog timeout (infra, not a logic failure) mid-Slice-A. You are RESUMING. Invoke the `thejudge-implement-all` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Package path: `PRD/work/image-first-cards/`
+- Recorded autonomous base: `origin/thejudge-auto/image-first-cards`
+- Shared work branch: `thejudge-auto/image-first-cards-work` (ALREADY the current branch of the existing worktree)
+- Worktree: `.worktrees/implement-image-first-cards` — ALREADY EXISTS. Reuse it. Do NOT recreate it.
+
+RESUME STATE — read before doing anything:
+- The worktree already holds Slice A largely implemented but UNCOMMITTED (21 changed/new files: `apps/backend/src/cardDetail.ts`, `apps/backend/src/routes/cardDetail.ts` + its test, `scripts/build-card-detail-by-oracle-id.mjs`, `apps/backend/data/cardDetailByOracleId.json`, `apps/frontend/src/components/CardPresentation.tsx` + tests, `apps/frontend/src/lib/cardDetail.ts`, route wiring in `createApp.ts`/`index.ts`/`createConfiguredApp.ts`, plus updated tests). Attempt 1 was mid-fix on failing QuickLookupApp / interaction-flow tests when it stalled.
+- Do NOT `git reset --hard`, `git clean`, or otherwise discard this uncommitted work — build on it. FIRST make a WIP checkpoint commit of the existing work (stage explicit paths; the artifact `apps/backend/data/cardDetailByOracleId.json` is a Slice-A deliverable and should be committed unless a `.gitignore` already covers it — check), so a future stall cannot lose it. Then continue.
+
+ANTI-STALL GUARDRAILS (attempt 1 hung for 600s — almost certainly a command that never returned):
+- NEVER run tests, linters, or servers in watch / interactive / foreground mode. Use one-shot runs only: for vitest pass `--run` (e.g. `npm run test -- --run <file>` or the repo's non-watch script); never a bare watch command.
+- NEVER start `npm run dev` or any long-running dev/server process in the foreground.
+- Prefer targeted test files over the whole suite while iterating; run the full suite once at the end with the non-watch command.
+- If any command risks hanging, wrap it so it cannot block indefinitely.
+- Commit after each slice (and after clearing a cluster of test failures) so progress is durable.
+
+Then finish the work in dependency order:
+- A — complete the endpoint + artifact + on-demand popup fetch across all six card surfaces via `CardPresentation.tsx`, preserving DEC-078 offline resilience (image-fail fallback stays name-only, no forced fetch; popup fetch degrades gracefully offline). Clear the failing QuickLookup / interaction-flow tests.
+- B — ask-ai resolves oracle text server-side (`apps/backend/src/prompt/context.ts`) against A's artifact, gated by the byte-identical prompt proof (`npm run test:eval`); only then does the client stop sending card text.
+- C — slim the up-front card list (`scripts/build-card-metadata.mjs` → `apps/frontend/public/data/cardMetadata.json`, `CardMetadataItem` in `apps/frontend/src/types.ts`), gated by the NFR-019 ≥80%-gzipped-reduction assertion.
+
+APPLY the approved product truth: for each slice, write the real `PRD/sections/` edits BY INTENT (re-derived from the finalized `GATE-QUESTIONS.md` diff + `DESIGN-BRIEF.md` against current truth) TOGETHER WITH the code. Honor the two `- Owner note:` DEC-078 flags — do not reverse the offline scanning guarantee. Each slice's `slice-<letter>.criteria.json` must all read `true` before ok.
+
+Every path you write must lie inside `.worktrees/implement-image-first-cards/` or `PRD/work/image-first-cards/`. Open the `thejudge-auto/image-first-cards-work` → `thejudge-auto/image-first-cards` PR. Do NOT merge, force-push, or push `main`.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch, on its own line.
+
+Report back:
+1. Outcome: ok | failed (with reason)
+2. Per slice A/B/C: implemented + criteria all true (evidence)
+3. `PRD/sections/` truth applied per slice
+4. The `-work` → base PR URL
+5. Verification commands run + results
+6. Commit hashes
 
 ## Instruction ledger
 

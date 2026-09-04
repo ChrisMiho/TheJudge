@@ -8,8 +8,6 @@ Do not rename package folders to encode status.
 
 ## active
 
-- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail. Mapped out into three sequential slices: (A) new `GET /api/cards/:oracleId` endpoint + backend card-detail artifact + on-demand popup fetch across all six card surfaces, name-only image-fail fallback (DEC-078 offline guarantee preserved); (B) ask-ai resolves card text server-side, proven byte-identical via `npm run test:eval` before the client stops sending it; (C) slims the up-front `cardMetadata.json` to tile-only fields, gated by an 80%-gzipped-reduction assertion (NFR-019). Slice order follows real code dependencies, not the brief's expository seam numbering — see `GAMEPLAN.md`. Resume `/thejudge-implement PRD/work/image-first-cards/ slice A`.
-
 ## refined
 
 ## refining
@@ -19,6 +17,8 @@ Do not rename package folders to encode status.
 - [single-source-invariants](single-source-invariants/) — de-duplicate cross-cutting product-truth invariants (rules asserted in 3+ files, e.g. "one main endpoint") into one canonical home each + a grep-before-amend guardrail; bounded corpus hygiene, not an ID-system rewrite. Seeded 2026-09-04 from the image-first-cards D5 near-miss. To implement next, after image-first-cards ships.
 
 ## owner-action
+
+- [image-first-cards](image-first-cards/) — Slices A + B built, verified, and pushed (PR #185: new `GET /api/cards/:oracleId` endpoint + on-demand popup across all surfaces; ask-ai resolves card text server-side, byte-identical proven). Slice C (slim the up-front list) is blocked on one owner decision: NFR-019's ≥80%-gzipped-reduction target is structurally unreachable — measured 48.1% (kept `cardId`/`imageUrl` barely compress), though the delivered 2.20 MB gzipped is inside NFR-019's own ~1–2 MB estimate. Pick how to restate NFR-019 (rec: an absolute ≤2.3 MB gzipped ceiling) — 4 options in `GRAPH-RUN.md` `## Open gate` / PR #185 blocker comment — then `/graph-implement PRD/work/image-first-cards/` commits C, reviews, and parks at land.
 
 ## deferred
 
