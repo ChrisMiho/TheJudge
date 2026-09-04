@@ -113,6 +113,33 @@ function jsonResponse(payload: unknown): Response {
   } as Response;
 }
 
+/** REQ-175/FLOW-024: the popup fetches a card's descriptive block by oracle id
+ * from `GET /api/cards/:oracleId` — matched here against the same fixtures
+ * used to seed `/data/cardMetadata.json`. */
+function cardDetailResponseFor(
+  url: string,
+  cardMetadata: CardMetadataItem[]
+): Response | undefined {
+  const match = url.match(/\/api\/cards\/([^/?]+)$/);
+  if (!match) {
+    return undefined;
+  }
+  const oracleId = decodeURIComponent(match[1]);
+  const card = cardMetadata.find((candidate) => candidate.cardId === oracleId);
+  if (!card) {
+    return new Response(null, { status: 404 });
+  }
+  return jsonResponse({
+    oracleText: card.oracleText,
+    typeLine: card.typeLine,
+    manaCost: card.manaCost,
+    manaValue: card.manaValue,
+    colors: card.colors,
+    supertypes: card.supertypes,
+    subtypes: card.subtypes
+  });
+}
+
 function appFetchMock(
   answers: string[],
   cardMetadata: CardMetadataItem[] = [lightningBolt, counterspell]
@@ -125,6 +152,10 @@ function appFetchMock(
     }
     if (url === "/data/gameRulesCoreTopics.json") {
       return Promise.resolve(jsonResponse(coreTopics));
+    }
+    const cardDetailResponse = cardDetailResponseFor(url, cardMetadata);
+    if (cardDetailResponse) {
+      return Promise.resolve(cardDetailResponse);
     }
     if (url === "http://localhost:3000/api/ask-ai") {
       const answer = answers[answerIndex] ?? answers.at(-1) ?? "Answer";
@@ -166,6 +197,10 @@ describe("QuickLookupApp", () => {
         }
         if (url === "/data/gameRulesCoreTopics.json") {
           return Promise.resolve(jsonResponse(coreTopics));
+        }
+        const cardDetailResponse = cardDetailResponseFor(url, [lightningBolt, counterspell]);
+        if (cardDetailResponse) {
+          return Promise.resolve(cardDetailResponse);
         }
         throw new Error(`Unexpected fetch: ${url}`);
       })
@@ -317,7 +352,7 @@ describe("QuickLookupApp", () => {
     // the suite-wide corner detail popup.
     expect(screen.queryByText(lightningBolt.oracleText)).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Show details for Lightning Bolt" }));
-    expect(screen.getByText(lightningBolt.oracleText)).toBeInTheDocument();
+    expect(await screen.findByText(lightningBolt.oracleText)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Close details for Lightning Bolt" }));
     expect(screen.getByRole("heading", { name: "General rules topics" })).toBeVisible();
     await openGeneralRulesTopics(user);
@@ -358,7 +393,7 @@ describe("QuickLookupApp", () => {
 
     expect(await screen.findByRole("img", { name: "Counterspell" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Show details for Counterspell" }));
-    expect(screen.getByText(counterspell.oracleText)).toBeInTheDocument();
+    expect(await screen.findByText(counterspell.oracleText)).toBeInTheDocument();
   });
 
   it("caps the raw question at 300 characters and blocks blank submission", async () => {

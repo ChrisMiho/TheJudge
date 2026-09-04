@@ -9,7 +9,7 @@ These rules govern how agents may propose architecture or implementation details
 - React + Vite + TypeScript frontend
 - Tailwind CSS for styling
 - local static metadata file for card search
-- one main backend endpoint
+- one main backend endpoint, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175)
 - Node.js + TypeScript backend
 - Express or Fastify
 - backend provider boundary with explicit `ASK_AI_PROVIDER` selection (`mock` default, `openai` live)
@@ -33,7 +33,7 @@ Do not propose or implement:
 - legality validation
 - board-state simulation
 - full gameplay-rules target/controller/mode simulation for the core product
-- extra product-facing endpoints
+- product-facing endpoints beyond the answer endpoint and the one read-only card-detail retrieval route (REQ-175)
 - microservices
 - runtime metadata refresh/sync
 - billing/auth/account systems in the core product

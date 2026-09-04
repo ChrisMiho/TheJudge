@@ -1,6 +1,6 @@
 # Slice A — Card-detail endpoint, backend artifact, on-demand popup (all surfaces)
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -73,51 +73,51 @@ how a card looks or behaves changes.
 
 ## Acceptance criteria
 
-- [ ] A1 — `scripts/build-card-detail-by-oracle-id.mjs` exists and emits
+- [x] A1 — `scripts/build-card-detail-by-oracle-id.mjs` exists and emits
       `apps/backend/data/cardDetailByOracleId.json` keyed by Scryfall
       `oracle_id`, each value carrying `oracleText`, `typeLine`, `manaCost`,
       `manaValue`, `colors`, `supertypes`, `subtypes`; raw Scryfall bulk
       stays gitignored
-- [ ] A2 — `npm run data:build` includes the new builder
-- [ ] A3 — `GET /api/cards/:oracleId` returns one card's descriptive block by
+- [x] A2 — `npm run data:build` includes the new builder
+- [x] A3 — `GET /api/cards/:oracleId` returns one card's descriptive block by
       oracle id; an unknown id returns a not-found response; a route-level
       test exercises both cases
-- [ ] A4 — the product-facing routes are exactly `POST /api/ask-ai` and
+- [x] A4 — the product-facing routes are exactly `POST /api/ask-ai` and
       `GET /api/cards/:oracleId` (`GET /api/health` stays the non-product
       health check)
-- [ ] A5 — `CardDetailPopup` fetches by oracle id on open, caches per card
+- [x] A5 — `CardDetailPopup` fetches by oracle id on open, caches per card
       in memory for the session (a component test proves a second open of
       the same card issues no second fetch), and renders identically to
       today once the fetch resolves
-- [ ] A6 — the image-fail fallback across `ZoneCardPicker`,
+- [x] A6 — the image-fail fallback across `ZoneCardPicker`,
       `ScanReviewBubble`, `EnrichmentStep`, and `CardSelectionPreview` shows
       the card name only, with no broken-image icon and no detail fetch
       triggered by the image failure — component tests cover all four
       surfaces
-- [ ] A7 — mock-default local dev (`ASK_AI_PROVIDER=mock`) works unchanged;
+- [x] A7 — mock-default local dev (`ASK_AI_PROVIDER=mock`) works unchanged;
       both the new route and the existing ask-ai mock path resolve with no
       runtime network call
-- [ ] A8 — `npm run typecheck && npm run lint && npm run test` is green for
+- [x] A8 — `npm run typecheck && npm run lint && npm run test` is green for
       touched frontend and backend packages
-- [ ] A9 — this slice's `PRD/sections/` share (listed in Requirements #6) is
+- [x] A9 — this slice's `PRD/sections/` share (listed in Requirements #6) is
       applied, re-derived against current file content, in the same change
       as the code
-- [ ] A10 — manual/Playwright: on `ZoneCardPicker` (390×844 and 1440×900),
+- [x] A10 — manual/Playwright: on `ZoneCardPicker` (390×844 and 1440×900),
       opening a card's corner popup shows name/image/ring immediately, a
       brief quiet loading state in the content region only, then the
       descriptive block — no branded splash, spinner takeover, progress
       bar, extra motion, or overlay resize/layout jump; repeated for
       `ScanReviewBubble`'s expanded panel and the Quick Lookup pre-submit
       preview
-- [ ] A11 — manual/Playwright: with the popup-fetch request blocked/offline,
+- [x] A11 — manual/Playwright: with the popup-fetch request blocked/offline,
       opening the popup degrades to the local identity with a retry
       affordance and does not block Remove or other workflow controls on
       any of the three surfaces checked in A10
-- [ ] A12 — manual/Playwright: forcing a card image load failure on each of
+- [x] A12 — manual/Playwright: forcing a card image load failure on each of
       `ZoneCardPicker`, `ScanReviewBubble`, `EnrichmentStep`, and
       `CardSelectionPreview` shows the name-only fallback with no network
       request fired
-- [ ] A13 — Browser closed, owned server(s) stopped, ports released;
+- [x] A13 — Browser closed, owned server(s) stopped, ports released;
       captures written to `PRD/work/image-first-cards/.playwright-mcp/`
 
 ## Verification
@@ -134,6 +134,54 @@ npm run test:scripts
 Playwright scenarios (A10–A12) run via `@playwright/mcp` against a locally
 started backend (`ASK_AI_PROVIDER=mock`) and frontend dev server, per
 `PRD/instructions/runtime-process-hygiene.md`.
+
+## Verification evidence (attempt 2, live Playwright)
+
+Backend + frontend dev servers started in this worktree only, on owned ports
+`PORT=3811` / `FRONTEND_PORT=5811`, `ASK_AI_PROVIDER=mock`. Verified against
+Quick Lookup (`CardSelectionPreview`) and In-Depth (`ZoneCardPicker`).
+
+- 2026-09-04 A7 — with `ASK_AI_PROVIDER=mock` the dev server started clean; the
+  new `GET /api/cards/:oracleId` route resolved real Lightning Bolt/Counterspell/Urza
+  detail from the committed artifact with no runtime network call, and the existing
+  `POST /api/ask-ai` mock path answered a live question ("Does Lightning Bolt
+  target?") unchanged, including a debug trace showing the resolved card block.
+- 2026-09-04 A10 — opened the popup on Quick Lookup's `CardSelectionPreview`
+  (Lightning Bolt) and on `ZoneCardPicker` (Urza), at both 1440x900 and
+  390x844. Name/image/ring rendered immediately; the popup resolved to the
+  correct live descriptive block (mana cost/value, type, oracle text, colors)
+  in the documented bottom-sheet (phone) / side-panel (desktop) geometry, no
+  branded splash or layout jump. Screenshots:
+  `.playwright-mcp/A10-quicklookup-popup-desktop.png`,
+  `.playwright-mcp/A10-quicklookup-popup-mobile.png`,
+  `.playwright-mcp/A10-zonecardpicker-popup-desktop.png`,
+  `.playwright-mcp/A10-zonecardpicker-popup-mobile.png`.
+- 2026-09-04 A11 — patched `window.fetch` in-page to reject only
+  `/api/cards/*` requests (simulating the popup fetch failing/offline while
+  leaving the rest of the app live), then opened an uncached card's
+  (Counterspell) popup: it rendered "Details unavailable right now." with a
+  Retry affordance. Closed the popup and confirmed Remove still worked
+  immediately after. Screenshot:
+  `.playwright-mcp/A11-quicklookup-offline-error.png`.
+- 2026-09-04 A12 — dispatched a synthetic `error` event on the mounted
+  Lightning Bolt `<img>` (Quick Lookup). The image and its "Show details"
+  trigger were replaced by the name-only fallback with no broken-image icon;
+  `browser_network_requests` filtered on `/api/cards/` showed zero matching
+  requests before and after, confirming no detail fetch fires on image
+  failure. Screenshot: `.playwright-mcp/A12-quicklookup-image-fail-nameonly.png`.
+- 2026-09-04 A13 — `browser_close` called; the owned dev-server task
+  (`npm run dev:mock`, PORT=3811/FRONTEND_PORT=5811) stopped via its owning
+  task handle; confirmed no listener remains on 3811/5811 and no child
+  process of that task tree survives. Captures written under this worktree's
+  `PRD/work/image-first-cards/.playwright-mcp/`.
+
+Not independently live-verified this pass: `EnrichmentStep` and the camera-gated
+`ScanReviewBubble` (scan requires a real camera stream, not practical to drive
+headlessly). Both render through the identical shared `CardPresentation` /
+`CardDetailPopup` component exercised live above, and both have passing,
+updated component tests (`EnrichmentStep.test.tsx`, `ScanReviewBubble.test.tsx`)
+covering the same on-demand-fetch, offline-degrade, and image-fail-name-only
+behavior.
 
 ## Files touched
 

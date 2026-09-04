@@ -108,9 +108,12 @@ becomes the only way to add a card. It sits outside the core product loop
   this-session adds and expands to a viewport-capped 320px panel listing each
   card with a single-tap, no-confirmation **Remove**. It operates on the
   destination's own card list (no scan-only store), and each entry uses the
-  shared container-relative image + corner-detail presentation, falling back to
-  locally carried text/metadata when no image is available. (DEC-058, DEC-078,
-  DEC-151, REQ-040, FLOW-006)
+  shared container-relative image + corner-detail presentation. The corner detail
+  popup fetches its descriptive fields on demand by oracle id (REQ-175, FLOW-024)
+  when opened and the network allows, degrading gracefully offline; when no image
+  is available the entry falls back to the card name only, with no fetch triggered
+  by image failure, so the scan-review surface stays usable offline (DEC-078).
+  (DEC-058, DEC-078, DEC-151, REQ-040, REQ-175, FLOW-006, FLOW-024)
 - Built: the scan preview and the added card's thumbnail show the **scanned
   printing's** art — not the oracle-level representative image — so on-screen
   art matches the physical card; a missing printing image falls back to the

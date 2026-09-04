@@ -172,7 +172,7 @@
   - submit is allowed only when at least one selected zone has a card
   - blank trimmed question uses the zone-aware fallback in request/prompt logic
 - Constraints:
-  - one main product-facing endpoint in the core product
+  - one main product-facing endpoint in the core product, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175)
 - Dependencies:
   - backend API
   - DEC-153
@@ -1220,26 +1220,26 @@
 ### REQ-058
 - Title: Consistent legible card presentation and identity highlighting
 - Priority: medium
-- Description: Card containers in zone collection, expanded scan review, enrichment, and other suite card-image surfaces must use one responsive image-first presentation, on-demand local detail (DEC-151 popup), and a restrained ring derived from the existing card colors (DEC-078 as amended).
+- Description: Card containers in zone collection, expanded scan review, enrichment, and other suite card-image surfaces must use one responsive image-first presentation, on-demand card detail fetched by oracle id (DEC-151 popup, now `GET /api/cards/:oracleId` — REQ-175, FLOW-024), and a restrained ring derived from the existing card colors (DEC-078 as amended).
 - Acceptance Criteria:
   - `ZoneCardPicker`, expanded `ScanReviewBubble`, `EnrichmentStep`, and shared preview surfaces use the same shared card-presentation boundary for image sizing, identity ring, and detail affordance
   - an available card image preserves its intrinsic aspect ratio and renders without cropping; size follows DEC-151 compact density rather than a fixed 80%-of-container target when that target prevents first-viewport fit
   - image mode does not stack duplicated name, owner/zone, or oracle labels under the art while retaining Remove, stack position where applicable, enrichment inputs, and other workflow controls
-  - a corner detail control opens the dismissible detail popup (REQ-128) for locally carried descriptive fields
+  - a corner detail control opens the dismissible detail popup (REQ-128), which fetches its descriptive fields on demand by oracle id from `GET /api/cards/:oracleId` (REQ-175, FLOW-024) when opened and the network allows; offline or on fetch failure it degrades gracefully to the locally available identity and does not block the surface or its Remove/workflow controls
   - `ZoneCardPicker` uses a horizontal left-to-right strip in add order with horizontal region scroll (REQ-130); stack bottom-to-top semantics and Remove behavior remain
   - expanded `ScanReviewBubble` uses a 320px width with a viewport-safe cap and retains its counter and one-tap Remove behavior
   - long scan-review sessions scroll inside the expanded panel before the panel would exceed the available camera viewport; the top-right counter and one-tap removal behavior remain unchanged
   - `EnrichmentStep` uses the shared presentation in both **View all cards** and **Card-by-card** modes; enrichment fields remain full-width below without changing either mode's behavior
-  - when `imageUrl` is empty or the image emits a load error, no broken-image icon or empty image gap remains; the surface replaces the image with a text-first card panel
-  - the fallback never invents values for absent optional fields and does not fetch additional metadata; Remove, stack position where applicable, enrichment fields, and other workflow controls remain rendered and usable
-  - every complete card tile, scan-review entry, and enrichment row uses a thin, low-opacity identity ring around the container whether it contains an image or the text-first fallback
+  - when `imageUrl` is empty or the image emits a load error, no broken-image icon or empty image gap remains; the surface replaces the image with a name-only fallback showing the locally available card name (D3)
+  - the image-fail fallback never invents values, shows the card name only, and issues no additional metadata fetch on image failure (DEC-078's offline guarantee preserved); Remove, stack position where applicable, enrichment fields, and other workflow controls remain rendered and usable, so the surface stays usable offline
+  - every complete card tile, scan-review entry, and enrichment row uses a thin, low-opacity identity ring around the container whether it contains an image or the name-only fallback
   - single-color cards map W/U/B/R/G to warm ivory, blue, muted violet-charcoal, red, and green; white remains visually distinguishable from the cool light silver-gray colorless treatment
   - multicolor cards use a stable WUBRG-ordered gradient containing every recognized color present in the existing `colors` array
   - cards with an empty, missing, or wholly unrecognized `colors` value use the cool light silver-gray ring without failing rendering
   - identity rings remain decorative: card text continues to identify the card, and the ring adds no glow, background tint, animation, or dependency on the selected app theme palette
   - automated tests cover compact uncropped rendering, detail-popup open/close, empty-URL and image-error fallback paths, zone horizontal strip, scan-panel viewport containment/internal scrolling, both enrichment modes, color mappings, and ring application on participating surfaces
 - Constraints:
-  - presentation only; use existing `colors` and do not add true `colorIdentity`, image caching, connectivity detection, explicit image retry, runtime metadata refresh, or any change to card identity, printing-image selection, `ZoneCardItem`, `CardMetadataItem`, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, scan matching/stabilizer logic, or data-pipeline behavior
+  - presentation plus the popup's on-demand detail read: use existing `colors` and do not add true `colorIdentity`, image caching, connectivity detection, explicit image retry, runtime metadata refresh, or any change to card identity, printing-image selection, scan matching/stabilizer logic, or data-pipeline behavior; the detail popup's on-demand fetch uses the read-only `GET /api/cards/:oracleId` route (REQ-175) and the `ZoneCardItem` / `AskAiRequest` / prompt changes recorded in REQ-176, and introduces no presentation-layer route or contract of its own
   - preserve region scrolling in zone collection, enrichment, and scan review
   - define shared image sizing, detail-popup/error handling, fallback rendering, semantic color mapping, and ring treatment once and reuse them; do not duplicate sizing, image-fit, fallback-field, or card-color logic
   - card-color presentation constants stay separate from user-selectable theme palette tokens
@@ -1674,7 +1674,7 @@
   - success `{ answer }` and error response shapes are unchanged for both modes and both `ASK_AI_PROVIDER` providers
   - `POST /api/ask-ai` route path and provider boundary are unchanged
 - Constraints:
-  - one product-facing endpoint only (DEC-010); no new route
+  - `POST /api/ask-ai` stays the one answer endpoint (DEC-010); a separate read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175) is permitted alongside it
   - additive amendment to the DEC-020 frozen contract; no existing field changes meaning
 - Dependencies:
   - DEC-106
@@ -2981,7 +2981,7 @@
   - while the selected-card preview is present, the search field displays that card's exact canonical name; a partial query must not remain as the only external identity label for a different selected card
   - no standalone card-name/title row renders between the image and the add action; the search field, printed card name, and corner detail popup provide identity without duplicate vertical chrome
   - oracle/detail text is not stacked under the card image by default; it is available via the corner detail popup (REQ-128)
-  - owner selection and add behavior remain available; when the card image is unavailable, the readable metadata fallback path (FLOW-001) still renders
+  - owner selection and add behavior remain available; when the card image is unavailable, the readable fallback (FLOW-001) renders the locally available identity — the card name — with no detail fetch triggered by image failure
   - wider viewports keep a legible preview presentation
 - Constraints:
   - presentation only; no card metadata content change, no Scryfall fetch change, no `gameContext.zones` payload change
@@ -3047,16 +3047,16 @@
 ### REQ-128
 - Title: Suite-wide card-image detail popup
 - Priority: high
-- Description: Whenever a card image is displayed in the suite, a compact corner control on the image opens a dismissible, portal-hosted overlay with oracle text and other locally carried descriptive fields. The overlay follows DEC-158 and the `AdaptiveContextDialog` family: it is sized to its own content outside the image bounds, presenting as a bottom sheet below `768px` and a side panel at `768px`+ (DEC-151, DEC-158).
+- Description: Whenever a card image is displayed in the suite, a compact corner control on the image opens a dismissible, portal-hosted overlay with oracle text and other descriptive fields fetched on demand by oracle id (REQ-175, FLOW-024). The overlay follows DEC-158 and the `AdaptiveContextDialog` family: it is sized to its own content outside the image bounds, presenting as a bottom sheet below `768px` and a side panel at `768px`+ (DEC-151, DEC-158).
 - Acceptance Criteria:
   - every suite card-image surface that shows an available image exposes the corner detail control (top-right of the image)
   - activating the control opens a portal-hosted, content-sized overlay outside the card image's bounding box: a bottom sheet below `768px` and a side panel at `768px`+, following `screen-layout.md` → *Card detail popup (suite-wide)*
   - the popup has an X close control; Escape and/or outside dismiss may match other overlays
   - stacked oracle/detail under the image is not the default path when the image is present
-  - missing/failed image keeps the existing text-first fallback (no broken-image icon)
-  - no new network fetch for popup contents
+  - the popup fetches its descriptive contents on demand from the `GET /api/cards/:oracleId` endpoint (REQ-175, FLOW-024), showing a brief loading state whose presentation follows `PRD/sections/screen-layout.md` (a quiet in-overlay state in the descriptive-content region only — no branded splash, spinner takeover, progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and no overlay resize or layout shift on resolve); name, image, and color ring (already local) render immediately
+  - missing/failed image shows the name-only fallback — the locally available card name, no broken-image icon — and triggers no detail fetch on image failure (D3; DEC-078's no-fetch-on-failure guarantee preserved)
 - Constraints:
-  - presentation only; no `AskAiRequest`, Zod, `GameContext`, or metadata-pipeline change
+  - popup contents are fetched on demand (FLOW-024); the up-front list no longer carries them (REQ-174). No `AskAiRequest` change beyond the descriptive-block move recorded in REQ-176
 - Dependencies:
   - DEC-151
   - DEC-158
@@ -3064,8 +3064,11 @@
   - REQ-058
   - REQ-125
   - NFR-001
+  - REQ-174
+  - REQ-175
+  - FLOW-024
 - Notes:
-  - **amended during the `ui-review` pass (2026-08-06)**: DEC-158 supersedes the original "popup over the card" geometry. The top-right image trigger and local-fields-only content rule remain; the popup itself is portal-hosted and independent of the image bounds.
+  - **amended during the `ui-review` pass (2026-08-06)**: DEC-158 supersedes the original "popup over the card" geometry. The top-right image trigger remains; the popup's content is now fetched on demand by oracle id (REQ-175, FLOW-024) rather than read from locally carried fields, and the popup itself is portal-hosted and independent of the image bounds.
 
 ### REQ-129
 - Title: Card image first-viewport fit ceiling
@@ -3987,3 +3990,28 @@
 - Notes:
   - both surfaces reuse the same `buildSeatMapCells`, placing each seat at its arrangement `gridRow`/`gridColumn`/`gridArea`; the on-card map is that same miniature, just counter-rotated to stay top-down inside the rotated card
   - the reference's 1–5 relative-index labels are not adopted: position tells you who, the damage number tells you how much
+
+### REQ-175
+- Title: Card-detail retrieval endpoint and backend card-detail artifact
+- Priority: high
+- Description: The card descriptive block is served on demand by a new product-facing route `GET /api/cards/:oracleId` returning one card's block by oracle id, backed by a committed backend card-detail map. One builder trims the committed Scryfall bulk into that map; the card-detail popup fetches per card from the route (FLOW-024) and ask-ai reads the same map internally for server-side resolution (REQ-176). This introduces the product's second product-facing endpoint, authorized by D5 and applied by the one-endpoint-rule amendments below (REQ-012, REQ-072, NFR-004, `goals-and-non-goals.md`, `technical-design-rules.md`).
+- Acceptance Criteria:
+  - a new `scripts/build-*.mjs` trims the committed Scryfall bulk into a card-detail map keyed by Scryfall `oracle_id`, each value carrying `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`; raw Scryfall bulk stays gitignored and only the trimmed artifact is committed
+  - the map is committed once, backend-only, under `apps/backend/data/cardDetailByOracleId.json`; no card-detail copy is committed under `apps/frontend/public/data/` and none is downloaded up front (NFR-019)
+  - a new route `GET /api/cards/:oracleId` returns one card's descriptive block by oracle id; an unknown id returns a not-found response and the descriptive block degrades to the existing empty-oracle marker
+  - the frontend loads a card's detail from `GET /api/cards/:oracleId` on first open and caches it per card for the session (FLOW-024); it never bulk-downloads the map
+  - ask-ai resolves card text by reading the same backend map internally inside `POST /api/ask-ai` (REQ-176), not by calling the new route; the route and the ask-ai read share the one artifact so they cannot drift
+  - `npm run data:build` includes the card-detail build; `npm run data:refresh` requires explicit human approval before any download (existing policy)
+  - the product-facing routes are exactly `POST /api/ask-ai` and `GET /api/cards/:oracleId` (`GET /api/health` remains the non-product health check); `ASK_AI_PROVIDER=mock` local dev works unchanged with no runtime network call
+- Constraints:
+  - commit only the trimmed artifact, matching the existing `apps/backend/data/*.json` pattern
+  - the new route is a read-only `GET` keyed by oracle id; it is the product's second product-facing endpoint (D5), authorized by the amendments to REQ-012, REQ-072, NFR-004, `goals-and-non-goals.md`, and `technical-design-rules.md` below
+- Dependencies:
+  - REQ-174
+  - REQ-176
+  - FLOW-024
+  - REQ-072
+  - NFR-004
+- Notes:
+  - `oracle_id` is the shared join key already used by card metadata, rulings, and combos
+  - D5 chose the endpoint over a lazy static frontend artifact for per-card fetch granularity (download only the card opened)

@@ -149,6 +149,12 @@ Purpose:
 - invoke the model
 - return the response
 
+### Endpoint: `GET /api/cards/:oracleId`
+Purpose:
+- serve one card's descriptive block (`oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`) by Scryfall `oracle_id`, read-only, from the committed `cardDetailByOracleId.json` artifact (REQ-175)
+- back the card-detail popup and Quick Lookup pre-submit preview's on-demand fetch (FLOW-024); a known id returns the block, an unknown id returns a not-found response
+- the product's second product-facing endpoint (D5), permitted alongside `POST /api/ask-ai` by the REQ-012 / REQ-072 / NFR-004 / goals-and-non-goals / technical-design-rules amendments
+
 ### Optional Endpoint: `GET /api/health`
 Purpose:
 - local development checks
@@ -248,6 +254,15 @@ Purpose:
 - `npm run data:build` rebuilds card metadata, card rulings, and game rules from local inputs
 - `npm run data:refresh` downloads Scryfall bulk data and WotC CR source, then rebuilds local artifacts; agent-run refreshes require explicit human approval before any download command
 - the backend loads the committed artifact at startup and omits rulings enrichment if the artifact is missing or has no matches
+- runtime Scryfall fetches are out of scope for the core product
+
+## Card Detail Data Strategy
+- the card descriptive block is committed as a trimmed map keyed by Scryfall `oracle_id`, built by one builder from the same Scryfall bulk every other builder trims from; raw bulk stays gitignored and must not be committed
+- each value carries `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`
+- the map is committed once, backend-only, under `apps/backend/data/cardDetailByOracleId.json`; there is no frontend copy
+- the frontend fetches one card's block on demand from `GET /api/cards/:oracleId` (FLOW-024) and caches per card for the session; ask-ai reads the same backend map internally for server-side resolution (REQ-176)
+- `GET /api/cards/:oracleId` is the product's second product-facing endpoint, authorized by D5 (see the REQ-012 / REQ-072 / NFR-004 / goals-and-non-goals / technical-design-rules amendments below)
+- `npm run data:build` rebuilds the map alongside card metadata, rulings, and game rules
 - runtime Scryfall fetches are out of scope for the core product
 
 ## Game Rules Data Strategy

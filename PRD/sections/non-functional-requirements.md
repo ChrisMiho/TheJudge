@@ -32,7 +32,7 @@
 - Title: Lightweight architecture
 - Description: The core product should use the smallest reasonable architecture.
 - Constraints:
-  - one main product-facing backend endpoint
+  - one main product-facing backend endpoint, plus the read-only card-detail retrieval route (REQ-175)
   - no microservices
   - no runtime metadata sync tooling
 

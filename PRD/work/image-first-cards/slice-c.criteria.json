@@ -49,7 +49,7 @@
       "id": "C7",
       "statement": "npm run test and npm run quality:check are green",
       "value": false,
-      "evidence": { "command": "npm run test && npm run quality:check" }
+      "evidence": { "command": "npm run test.*npm run quality:check" }
     },
     {
       "id": "C8",

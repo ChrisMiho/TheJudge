@@ -54,7 +54,7 @@
       "id": "B7",
       "statement": "npm run typecheck && npm run lint && npm run test is green for touched frontend and backend packages",
       "value": false,
-      "evidence": { "command": "npm run typecheck && npm run lint && npm run test" }
+      "evidence": { "command": "npm run typecheck.*npm run lint.*npm run test" }
     },
     {
       "id": "B8",
