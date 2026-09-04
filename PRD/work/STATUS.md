@@ -10,9 +10,9 @@ Do not rename package folders to encode status.
 
 ## refined
 
-- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; refinement attempt 3 (graph run graph-20260903-093903) cleared the REQ-167 finding by adding a `REQ-167 (amend)` gate block so the authoritative acceptance criterion drops `oracleText` on the lookup card to match REQ-176 and the derived `quick-lookup/README.md`; awaiting quality-check re-run
-
 ## refining
+
+- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; quality-check attempt 3 (graph run graph-20260903-093903) cleared the REQ-167 finding but found a new gap: the brief adds a loading state to the suite-wide card-detail popup and the Quick Lookup pre-submit preview with no matching `screen-layout.md` row/note (REQ-126/DEC-149) — FAIL
 
 ## ideation
 
