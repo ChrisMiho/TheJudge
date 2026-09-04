@@ -1,0 +1,117 @@
+{
+  "slug": "image-first-cards",
+  "slice": "A",
+  "criteria": [
+    {
+      "id": "A1",
+      "statement": "scripts/build-card-detail-by-oracle-id.mjs exists and emits apps/backend/data/cardDetailByOracleId.json keyed by Scryfall oracle_id, each value carrying oracleText, typeLine, manaCost, manaValue, colors, supertypes, subtypes; raw Scryfall bulk stays gitignored",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "scripts/build-card-detail-by-oracle-id.mjs",
+          "apps/backend/data/cardDetailByOracleId.json"
+        ]
+      }
+    },
+    {
+      "id": "A2",
+      "statement": "npm run data:build includes the new builder",
+      "value": false,
+      "evidence": { "paths": ["package.json"] }
+    },
+    {
+      "id": "A3",
+      "statement": "GET /api/cards/:oracleId returns one card's descriptive block by oracle id; an unknown id returns a not-found response; a route-level test exercises both cases",
+      "value": false,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test -- src/routes",
+        "paths": ["apps/backend/src/routes/cardDetail.ts"]
+      }
+    },
+    {
+      "id": "A4",
+      "statement": "the product-facing routes are exactly POST /api/ask-ai and GET /api/cards/:oracleId (GET /api/health stays the non-product health check)",
+      "value": false,
+      "evidence": { "paths": ["apps/backend/src/app/createApp.ts"] }
+    },
+    {
+      "id": "A5",
+      "statement": "CardDetailPopup fetches by oracle id on open, caches per card in memory for the session (a second open of the same card issues no second fetch), and renders identically to today once the fetch resolves",
+      "value": false,
+      "evidence": {
+        "command": "npm --workspace apps/frontend run test -- CardPresentation",
+        "paths": ["apps/frontend/src/components/CardPresentation.tsx"]
+      }
+    },
+    {
+      "id": "A6",
+      "statement": "the image-fail fallback across ZoneCardPicker, ScanReviewBubble, EnrichmentStep, and CardSelectionPreview shows the card name only, with no broken-image icon and no detail fetch triggered by image failure",
+      "value": false,
+      "evidence": {
+        "command": "npm --workspace apps/frontend run test -- ZoneCardPicker ScanReviewBubble EnrichmentStep",
+        "paths": [
+          "apps/frontend/src/components/ZoneCardPicker.tsx",
+          "apps/frontend/src/components/ScanReviewBubble.tsx",
+          "apps/frontend/src/components/EnrichmentStep.tsx",
+          "apps/frontend/src/components/CardSelectionPreview.tsx"
+        ]
+      }
+    },
+    {
+      "id": "A7",
+      "statement": "mock-default local dev (ASK_AI_PROVIDER=mock) works unchanged; both the new route and the existing ask-ai mock path resolve with no runtime network call",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "A8",
+      "statement": "npm run typecheck && npm run lint && npm run test is green for touched frontend and backend packages",
+      "value": false,
+      "evidence": { "command": "npm run typecheck && npm run lint && npm run test" }
+    },
+    {
+      "id": "A9",
+      "statement": "this slice's PRD/sections/ share is applied, re-derived against current file content, in the same change as the code",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "PRD/sections/functional-requirements.md",
+          "PRD/sections/non-functional-requirements.md",
+          "PRD/sections/user-flows.md",
+          "PRD/sections/integrations-and-data.md",
+          "PRD/sections/goals-and-non-goals.md",
+          "PRD/instructions/technical-design-rules.md",
+          "PRD/sections/scan/README.md",
+          "PRD/sections/shared-chrome/README.md",
+          "PRD/sections/system-map.md",
+          "PRD/sections/quick-lookup/README.md",
+          "PRD/sections/screen-layout.md"
+        ]
+      }
+    },
+    {
+      "id": "A10",
+      "statement": "manual/Playwright: on ZoneCardPicker (390x844 and 1440x900), opening a card's corner popup shows name/image/ring immediately, a brief quiet loading state in the content region only, then the descriptive block, with no branded splash/spinner takeover/progress bar/extra motion/overlay resize; repeated for ScanReviewBubble's expanded panel and the Quick Lookup pre-submit preview",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "A11",
+      "statement": "manual/Playwright: with the popup-fetch request blocked/offline, opening the popup degrades to the local identity with a retry affordance and does not block Remove or other workflow controls on any of the three surfaces checked in A10",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "A12",
+      "statement": "manual/Playwright: forcing a card image load failure on each of ZoneCardPicker, ScanReviewBubble, EnrichmentStep, and CardSelectionPreview shows the name-only fallback with no network request fired",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "A13",
+      "statement": "Browser closed, owned server(s) stopped, ports released; captures written to PRD/work/image-first-cards/.playwright-mcp/",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

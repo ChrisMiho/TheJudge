@@ -8,9 +8,9 @@ Do not rename package folders to encode status.
 
 ## active
 
-## refined
+- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail. Mapped out into three sequential slices: (A) new `GET /api/cards/:oracleId` endpoint + backend card-detail artifact + on-demand popup fetch across all six card surfaces, name-only image-fail fallback (DEC-078 offline guarantee preserved); (B) ask-ai resolves card text server-side, proven byte-identical via `npm run test:eval` before the client stops sending it; (C) slims the up-front `cardMetadata.json` to tile-only fields, gated by an 80%-gzipped-reduction assertion (NFR-019). Slice order follows real code dependencies, not the brief's expository seam numbering — see `GAMEPLAN.md`. Resume `/thejudge-implement PRD/work/image-first-cards/ slice A`.
 
-- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail. Refinement completed the cross-cutting amendment set: the corner-detail-popup / image-fail-fallback rule (D1 on-demand popup fetch, D3 name-only fallback) is now amended consistently across REQ-058 (authoritative shared presentation), FLOW-002, FLOW-006, the two spots the REQ-128 block had missed, and the derived `scan/README.md` + `shared-chrome/README.md` ring bullet — each derived source amended in lockstep (DEC-168). DEC-078's offline scanning guarantee is reconciled, not reversed: the fallback stays name-only with no fetch on image failure and the surface stays usable offline; only the popup's descriptive text depends on the network, with owner-veto `- Owner note:` lines on REQ-058 and FLOW-006. Ready to map out / resume `/graph-implement PRD/work/image-first-cards/`.
+## refined
 
 ## refining
 

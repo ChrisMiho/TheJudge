@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `gate-qc` (attempt 7 — re-grade after refinement completed the amendment set, commit `cf5b9a0`)
-- Next action: `/graph-implement PRD/work/image-first-cards/` (build half resuming)
+- Current node: `build` (plan done — 3 slices A→B→C; implementing sequentially in `.worktrees/implement-image-first-cards`)
+- Next action: `/graph-implement PRD/work/image-first-cards/` (build half in progress)
 
 ## Resume note — amendment set completed (2026-09-04)
 
@@ -60,6 +60,9 @@ deliverable's base→main PR is therefore fresh (not #184) and merges last.
 | 4 | gate-qc | sonnet | failed | `0 → 9` | FAIL, build-half re-grade (attempt 5): `GATE-QUESTIONS.md` itself is sound — REQ/FLOW/NFR diffs consistently implement name-only (D3) and the endpoint (D5), every quoted "Current" block re-verified verbatim vs live source, all cross-refs resolve, DEC-010→REQ-012/NFR-004 substitution confirmed factually correct (DEC-010 is a retired bodyless row); but `DESIGN-BRIEF.md` was never updated after the gate — it still narrates "no new endpoint"/static artifact (D5) and "name + oracle id" fallback (D3) in 7 places, contradicting the finalized proposal; package `README.md` summary carries the same D5 staleness; minor: one-endpoint-rule amendments given as prose arrows, not Current:/Proposed: blocks; `STATUS.refining`; cannot loop to `define` (build half) — parks at `owner-action`; commit `97ce6b4` | 2026-09-04 |
 | — | gate-review | sonnet | ok | `0 → 39` | attempt 2 (driver reconcile, not park): synced `DESIGN-BRIEF.md` + `README.md` narrative to the finalized D3/D5 gate answers — 9 stale spots fixed (7 flagged + 2 swept); minor one-endpoint amendments (REQ-012/REQ-072/NFR-004/`goals-and-non-goals.md`/`technical-design-rules.md`) reformatted to 6 Current:/Proposed: blocks from live source; `PRD/sections/` zero diff; `STATUS.refining` unchanged; commit `36d5c05` |
 | 4 | gate-qc | sonnet | failed | — | FAIL (attempt 6, re-grade after reconcile): all three attempt-5 findings confirmed resolved — D5 endpoint narration, D3 name-only narration, and the REQ-012/REQ-072/NFR-004/`goals-and-non-goals.md`/`technical-design-rules.md` Current:/Proposed: reformat all verified verbatim against live source, all 24 cross-refs resolve, both screen-layout.md rows exist, REQ-167/DEC-168 lockstep holds; but the cross-cutting "locally carried descriptive fields" / local-metadata-fallback rule D1/D3 reverse is grepped incomplete — REQ-058 (a second authoritative requirement governing the same popup across `ZoneCardPicker`/`ScanReviewBubble`/`EnrichmentStep`), FLOW-002 (zone-collection inspect/remove), FLOW-006 (scan review, a surface the brief's own screen-layout section claims is covered), and derived `scan/README.md` all still assert local-carry/local-metadata-fallback language with no amendment; `DESIGN-BRIEF.md`'s completeness sweeps (a) and (b) are therefore incorrect; `STATUS.refining` unchanged; cannot loop to `define` (build half) — parks at `owner-action`; commit `14eafbd` | 2026-09-04 |
+| — | refine | opus | ok | `n/a (interactive)` | owner confirmed direction, proceed; completed the corner-popup/fallback amendment set — D1/D3 applied across REQ-058, FLOW-002, FLOW-006, two missed REQ-128 spots, derived `scan/README.md` + `shared-chrome/README.md` (sources in lockstep, DEC-168); DEC-078 offline guarantee reconciled with owner-veto notes on REQ-058/FLOW-006; `STATUS.refined`; commit `cf5b9a0` | 2026-09-04 |
+| 4 | gate-qc | sonnet | ok | `0 → 62` | PASS (attempt 7): amendment set verified complete — all named + derived locations amended in lockstep, 38 diff blocks' Current text verbatim, 26 cross-refs resolve, screen-layout coverage complete, DEC-078 reconciliation sound; incidental README `status:` line fix; `STATUS.refined`; commit `87af556` → continue to `plan` | 2026-09-04 |
+| 5 | plan | sonnet | ok | `0 → 51` | `GAMEPLAN.md` + 3 slice docs + 3 criteria files; dependency-safe order A→B→C (A endpoint/artifact/on-demand popup, B ask-ai server-side gated by byte-identical `test:eval`, C slim list gated by NFR-019 80%-gzipped); criteria: A 13 / B 8 / C 10; `STATUS.active`; board → active; no commit (driver publishes) | 2026-09-04 |
 
 Heartbeat note: nodes 1–2 ran before the driver armed
 `.worktrees/.graph-run-state.json`, so the per-node counter never keyed this run
@@ -573,6 +576,75 @@ Report back:
 4. Findings: none, or the complete issue list
 5. STATUS marker after this node
 6. Any commit hash
+
+### plan
+
+graph is controlling
+
+You are node 5 (`plan`) of an autonomous graph-implement (build-half) run. Invoke the `thejudge-map-out` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+Verify `Quality-check: PASS` in the package `README.md` `## Preparation gate` section (gate-qc attempt 7, commit `87af556`) before writing any planning artifact — do not self-certify it.
+
+Read `DESIGN-BRIEF.md` (the intent) and the finalized `GATE-QUESTIONS.md` (the approved proposal — 15 owner decisions plus the completed cross-cutting amendment set: REQ-058, FLOW-002, FLOW-006, REQ-128 spots, derived `scan/README.md` + `shared-chrome/README.md`). Produce `GAMEPLAN.md` and lettered slice docs, plus one `slice-<letter>.criteria.json` beside each slice doc (every criterion initialised `false` with an `evidence` block — command pattern, file paths, or `"manual": true`), per `thejudge-map-out/reference.md` and `PRD/instructions/requirement-format.md`. Set `STATUS.active`.
+
+Slice for sequential single-agent implementation. The deliverable spans three seams (per the brief): (1) slim the up-front card list; (2) the new `GET /api/cards/:oracleId` endpoint + backend card-detail artifact + on-demand popup fetch across all popup surfaces, preserving DEC-078 offline resilience; (3) ask-ai resolving card text server-side with the assembled prompt proven byte-identical. Each slice's `build` step will ALSO apply that slice's share of the approved `PRD/sections/` product truth by intent (re-derived against current truth), together with the code — call this out in the GAMEPLAN so the builder writes durable truth with the code, not before.
+
+Do NOT write code or edit `PRD/sections/` — planning only. Do NOT push or open a PR — the driver publishes before `build`.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Outcome: ok | failed (with reason)
+2. STATUS marker set
+3. GAMEPLAN.md path + the ordered slice list (letter + one-line title each)
+4. Confirmation each slice has a `slice-<letter>.criteria.json`
+5. Any commit hash
+
+### build
+
+graph is controlling
+
+You are node 6 (`build`) of an autonomous graph-implement (build-half) run. Invoke the `thejudge-implement-all` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal. Implement every remaining slice in one session.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+- Recorded autonomous base: `origin/thejudge-auto/image-first-cards` (README `## Autonomous metadata`)
+- Shared work branch (distinct head so the PR is valid): `thejudge-auto/image-first-cards-work`
+- Worktree: `.worktrees/implement-image-first-cards` (repo-local `.worktrees/` root only; refuse any path outside it)
+
+Implement the three slices in the GAMEPLAN's dependency order A → B → C:
+- A — new `GET /api/cards/:oracleId` endpoint + backend card-detail artifact (`scripts/build-card-detail-by-oracle-id.mjs` → `apps/backend/data/cardDetailByOracleId.json`) + on-demand popup fetch across all six card surfaces via `apps/frontend/src/components/CardPresentation.tsx`, preserving DEC-078 offline resilience (image-fail fallback stays name-only with no forced fetch; popup fetch degrades gracefully offline).
+- B — ask-ai resolves card oracle text server-side (`apps/backend/src/prompt/context.ts`) against A's artifact, gated by a byte-identical prompt proof (`npm run test:eval`); only then does the client stop sending card text.
+- C — slim the up-front card list (`scripts/build-card-metadata.mjs` → `apps/frontend/public/data/cardMetadata.json`, `CardMetadataItem` in `apps/frontend/src/types.ts`), gated by the NFR-019 ≥80%-gzipped-reduction assertion.
+
+APPLY the approved product truth: for each slice, write the real `PRD/sections/` edits BY INTENT — re-derived from the finalized `GATE-QUESTIONS.md` diff and `DESIGN-BRIEF.md` against CURRENT truth, never a blind replay — TOGETHER WITH the code, in that slice's PR. This is the one place durable `PRD/sections/` truth is written. Honor the two `- Owner note:` DEC-078 flags: do not reverse the offline scanning guarantee.
+
+Each slice's `slice-<letter>.criteria.json` criteria must all read `true` before the node reports ok — the committed hook earns evidence per issued command; the check reads the emitted files, not a summary.
+
+Every path you write must lie inside `.worktrees/implement-image-first-cards/` or `PRD/work/image-first-cards/` — a write outside that set fails the node.
+
+Open the `thejudge-auto/image-first-cards-work` → `thejudge-auto/image-first-cards` (base) PR showing the whole deliverable. Do NOT merge it, do NOT force-push, do NOT push `main`. `land` (the owner's merge) stays human.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch, on its own line.
+
+Report back:
+1. Outcome: ok | failed (with reason)
+2. Per slice (A/B/C): implemented + criteria all true (with the criteria file evidence)
+3. The `PRD/sections/` product-truth applied per slice
+4. The `-work` → base PR URL
+5. Test/verification commands run and their results
+6. Any commit hashes
 
 ## Instruction ledger
 
