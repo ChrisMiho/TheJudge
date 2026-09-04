@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-kickoff` (spec-forming half in progress)
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 3 | define | opus | ok | `? → 48` | attempt 2: all 3 FAIL findings cleared — no new route (card detail via lazy static artifact, DEC-010 intact), endpoint alt surfaced as new `D5` fork; REQ-176 quick-lookup diff added; NFR-019 → NFR-014; `STATUS.refined`; commit `9d030f1`; 13 gate slots | 2026-09-03 |
 | 4 | gate-qc | sonnet | failed | `? → 37` | FAIL loop 2/3: prior 3 findings confirmed fixed; new finding — REQ-176 amends derived `quick-lookup/README.md` but not its authoritative source REQ-167 (`functional-requirements.md` ~L3829), so per DEC-168 the two contradict on lookup-card `oracleText`; `STATUS.refining`; commit `35ec3a6` | 2026-09-03 |
 | 3 | define | opus | ok | `? → 23` | attempt 3: added `REQ-167 (amend)` gate slot so authoritative REQ matches derived `quick-lookup` spec; ran full derived-spec↔source-REQ audit (no other contradictions), recorded as recurrence guard in brief; `STATUS.refined`; commit `0910f0a`; 14 gate slots | 2026-09-03 |
+| 4 | gate-qc | sonnet | failed | `? → 47` | FAIL loop 3/3: REQ-167 finding confirmed fixed, all quoted blocks re-verified faithful; new finding — new visible loading state on card-detail popup + Quick Lookup pre-submit needs a `screen-layout.md` catalog constraint (REQ-126/DEC-149) or explicit out-of-scope reason; `STATUS.refining`; commit `75c219a` | 2026-09-04 |
 
 Heartbeat note: nodes 1–2 ran before the driver armed
 `.worktrees/.graph-run-state.json`, so the per-node counter never keyed this run
@@ -277,6 +278,34 @@ Report back:
 3. Findings: none, or the complete issue list
 4. STATUS marker after this node
 5. Any commit hash
+
+### define (attempt 4)
+
+graph is controlling
+
+You are node 3 (`define`), attempt 4, of an autonomous graph-kickoff run. Quality-check attempt 3 confirmed all earlier findings fixed but raised one new finding. Re-invoke the `thejudge-refinement` skill to clear it, in graph-controlled mode. This is an autonomous run with no human at the terminal: record product-truth changes as proposals in `GATE-QUESTIONS.md` rather than pausing for the owner. This is the FINAL refinement loop: if the next quality-check fails, the run parks at owner-action. Resolve the finding completely AND proactively close the class of gap so the next check does not surface a fourth distinct one.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+The open finding (full text in the package `README.md` under `## Preparation gate`): the brief introduces a new user-visible loading state on the suite-wide card-detail popup (REQ-128 amend, FLOW-024) and on the Quick Lookup pre-submit preview, where today there is none, but no proposed diff touches `PRD/sections/screen-layout.md`. Per REQ-126/DEC-149 a redesign of a user-visible overlay needs a matching screen-layout catalog constraint (its route-level Suspense-fallback row at line 73 is the precedent: a loading state must not introduce a branded splash, progress bar, or motion beyond existing CSS-motion rules). The card-detail-popup row (`screen-layout.md` lines 93–101) and the Quick Question pre-submit row (lines 125–133) carry no such constraint. Fix it: add a `screen-layout.md` amendment (a note on those two rows, or a new catalog row) constraining the new loading-state presentation, or record an explicit, reasoned out-of-scope note in the brief and gate file if none is needed. Pick what the design warrants.
+
+Then, before finishing, run the same completeness sweeps a quality-check runs, so no fourth distinct gap remains: (a) every new or changed user-visible surface in the brief has a matching `screen-layout.md` catalog row or an explicit reason it needs none; (b) every derived-spec diff has its authoritative source REQ amended in lockstep (DEC-168); (c) every dependency/cross-reference an amended id cites points at the correct id; (d) every product-truth change the brief relies on has its own gate slot. Report the result of each sweep.
+
+Refinement writes ONLY inside `PRD/work/image-first-cards/`: revise `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md`. Do NOT edit `PRD/sections/` or code. Keep the gate-question format: one `## <STABLE-ID>` block per new or amended id, each opening with the three plain-language lines from `PRD/instructions/plain-language-standard.md` (What this decides · In plain terms · What happens if you say no), then the COMPLETE proposed diff, then `- Verdict:` and `- Reason:`. Do not mint a new DEC.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Outcome: ok | failed (with reason)
+2. STATUS marker set
+3. How the finding was resolved, and the result of each of the four completeness sweeps (a)-(d)
+4. The full list of stable ids `GATE-QUESTIONS.md` now proposes (one slot each), noting any added
+5. Any blocker recorded, and any commit hash
 
 ## Instruction ledger
 
