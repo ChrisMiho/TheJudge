@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (spec-forming half in progress)
 
 ## Node ledger
@@ -18,6 +18,7 @@
 | 4 | gate-qc | sonnet | failed | `? → 42` | FAIL loop 1/3: REQ-175 new route conflicts with the one-endpoint rule (DEC-010) with no gate slot; REQ-176 diff misses `quick-lookup` lookup-card shape; NFR-019 cites NFR-018 not NFR-014; `STATUS.refining`; commit `079a647` | 2026-09-03 |
 | 3 | define | opus | ok | `? → 48` | attempt 2: all 3 FAIL findings cleared — no new route (card detail via lazy static artifact, DEC-010 intact), endpoint alt surfaced as new `D5` fork; REQ-176 quick-lookup diff added; NFR-019 → NFR-014; `STATUS.refined`; commit `9d030f1`; 13 gate slots | 2026-09-03 |
 | 4 | gate-qc | sonnet | failed | `? → 37` | FAIL loop 2/3: prior 3 findings confirmed fixed; new finding — REQ-176 amends derived `quick-lookup/README.md` but not its authoritative source REQ-167 (`functional-requirements.md` ~L3829), so per DEC-168 the two contradict on lookup-card `oracleText`; `STATUS.refining`; commit `35ec3a6` | 2026-09-03 |
+| 3 | define | opus | ok | `? → 23` | attempt 3: added `REQ-167 (amend)` gate slot so authoritative REQ matches derived `quick-lookup` spec; ran full derived-spec↔source-REQ audit (no other contradictions), recorded as recurrence guard in brief; `STATUS.refined`; commit `0910f0a`; 14 gate slots | 2026-09-03 |
 
 Heartbeat note: nodes 1–2 ran before the driver armed
 `.worktrees/.graph-run-state.json`, so the per-node counter never keyed this run
@@ -248,6 +249,34 @@ Report back:
 3. How the finding was resolved, and the result of your check for other un-amended authoritative REQs
 4. The full list of stable ids `GATE-QUESTIONS.md` now proposes (one slot each), noting any added
 5. Any blocker recorded, and any commit hash
+
+### gate-qc (attempt 3)
+
+graph is controlling
+
+You are node 4 (`gate-qc`), attempt 3, of an autonomous graph-kickoff run. Attempts 1 and 2 returned FAIL; `define` attempt 3 added a `REQ-167 (amend)` gate slot and ran a derived-spec↔source-REQ audit. Re-invoke the `thejudge-quality-check` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+Validate `PRD/work/image-first-cards/DESIGN-BRIEF.md` for PRD alignment and agent-readiness, and produce a PASS or FAIL report. Do NOT write a GAMEPLAN or slice docs.
+
+Confirm the attempt-2 finding is resolved: REQ-167's acceptance criterion in `functional-requirements.md` is now amended so the lookup-mode card carries identity only, matching the amended `quick-lookup/README.md` and `ZoneCardItem`, so no authoritative REQ contradicts a derived spec it sources (DEC-168). Then run your full check across every proposed id in `GATE-QUESTIONS.md`: the brief is internally consistent with the proposed REQ/FLOW/NFR ids and their diffs, every product-truth change the brief relies on has a matching gate slot, and the whole is ready to slice once the owner answers.
+
+On FAIL, set `STATUS.refining` and report the complete findings list. Note this would be the third FAIL, which parks the run at owner-action — so report findings precisely enough for the owner to act. On PASS, set nothing beyond what the skill sets — the graph driver handles the stop, the docs PR, and the `owner-action` park.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Verdict: PASS | FAIL
+2. Checked artifact path
+3. Findings: none, or the complete issue list
+4. STATUS marker after this node
+5. Any commit hash
 
 ## Instruction ledger
 
