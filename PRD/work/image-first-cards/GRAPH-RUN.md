@@ -5,8 +5,16 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `owner-action` (parked at gate-qc PASS — spec-forming half complete)
-- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR, then `/graph-implement PRD/work/image-first-cards/`
+- Current node: `gate-qc` (gate-review applied the owner's verdicts; `STATUS.refined` restored, re-entering at `gate-qc` per the entry-point table)
+- Next action: `/graph-implement PRD/work/image-first-cards/` (build half in progress)
+
+## Build-half base note
+
+Docs PR #184 merged as the answer-then-merge build signal, which deleted the
+autonomous base `thejudge-auto/image-first-cards` from origin. The driver
+recreated it at `main`'s tip (`99c7a09`) and re-pushed it, restoring the recorded
+autonomous base so `build` can grow a fresh `-work` → base PR. The code
+deliverable's base→main PR is therefore fresh (not #184) and merges last.
 
 ## Node ledger
 
@@ -31,11 +39,31 @@ enforcement itself stayed live throughout, proven by the run-start canary deny
 (both universal and graph tiers). Run-state is armed from node 3 (`define`)
 onward, restoring the counter and cap.
 
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `D1` | accept | — |
+| `D2` | accept | "Im not sure what would be a best practice, but it also doesnt hurt to make a new endpoint for the retrieval flow if that helps at all, instead of continuing to build out a massive single endpoint right?" |
+| `D3` | edit | "just show the card name, no oracle id is needed" — applied to D3's own heading/description (the downstream diffs REQ-125, FLOW-001, FLOW-024 already showed name-only) |
+| `D4` | accept | — |
+| `D5` | edit | "`GET /api/cards/:oracleId` sounds like exactly what we need... this use case seems like the perfect excuse to justify one" — the endpoint alternative; already implemented throughout REQ-174/175/176/NFR-019/FLOW-024/REQ-128, only D5's own heading updated to state the finalized design |
+| `REQ-174` | accept | — |
+| `REQ-175` | accept | — |
+| `REQ-176` | accept | — |
+| `REQ-167` (amend) | accept | — |
+| `NFR-019` | edit | "give leg 2 a hard pass/fail instead of \"materially smaller\": ... at least 80% smaller (gzipped) ... A relative gate avoids hinging acceptance on an estimated byte ceiling." — the Constraints already carried this 80% gate; Description and "In plain terms" tightened to state it directly |
+| `FLOW-024` | accept | — |
+| `screen-layout.md` (amend) | accept | — |
+| `REQ-128` (amend) | accept | — |
+| `REQ-125` (amend) | accept | — |
+| `FLOW-001` (amend) | accept | — |
+
 ## Open gate
 
-- **Parked at `owner-action`** — gate-qc reached PASS (attempt 4); the spec-forming half is complete. The one human step in this workflow: the owner reviews and answers the 15 accept/edit/reject slots in `PRD/work/image-first-cards/GATE-QUESTIONS.md`, then merges the docs-only PR to `main`.
-- Docs-only base→main PR: https://github.com/ChrisMiho/TheJudge/pull/184
-- Evidence: quality-check PASS (README `## Preparation gate`); 15 gate slots (D1–D5, REQ-174/175/176, REQ-167 amend, NFR-019, FLOW-024, screen-layout.md amend, REQ-128/125/FLOW-001 amend).
+- **Resolved 2026-09-04** — the owner's 15 verdicts (12 accept, 3 edit: D3, D5, NFR-019; 0 reject) applied inside `PRD/work/image-first-cards/GATE-QUESTIONS.md`, finalizing the proposal. `PRD/sections/` was not touched — `build` applies the finalized proposal to product truth together with the code.
+- Docs-only base→main PR (merged by the owner): https://github.com/ChrisMiho/TheJudge/pull/184
+- `STATUS.refined` restored; the entry-point table re-enters at `gate-qc` so the owner's edits are re-graded.
 - Resume command (build half): `/graph-implement PRD/work/image-first-cards/`
 
 ## Dispatch prompts
@@ -339,6 +367,33 @@ Report back:
 3. Findings: none, or the complete issue list
 4. STATUS marker after this node
 5. Any commit hash
+
+### gate-review
+
+graph is controlling
+
+You are the `gate-review` step of an autonomous graph-implement (build-half) run. Invoke the `graph-gate-review` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal. Your job is to apply the owner's already-recorded accept/edit/reject verdicts to the proposed diffs inside `GATE-QUESTIONS.md` — you do NOT re-decide anything and you do NOT ask the owner anything.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+The owner answered all 15 verdict slots in `PRD/work/image-first-cards/GATE-QUESTIONS.md` and merged the docs PR #184. Verdicts: most `accept`; three are `edit` — D3 (image-fail fallback: show name only, not name+oracle-id), D5 (`edit — pick the endpoint alternative: GET /api/cards/:oracleId`), and NFR-019 (`edit — pin a firm, testable first-load budget`). Apply each verdict to that ID's proposed diff INSIDE `GATE-QUESTIONS.md` (finalize the proposal in the work folder). NEVER edit `PRD/sections/` — that is `build`'s apply step. A `reject`ed id (none here) would stay burned.
+
+For each `edit` verdict, reshape that ID's proposed diff to match the owner's stated edit, reading the `- Reason:` line and the D5/D3/NFR-019 answer text for the exact instruction. Keep every accepted diff as-is. Preserve the gate-question format.
+
+Restore `STATUS.refined` when done (the entry-point table then re-enters at `gate-qc` so an owner edit is re-graded).
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Outcome: ok | failed (with reason)
+2. Per-verdict application: one line per ID, especially how each of the three `edit`s was applied to its diff
+3. STATUS marker after this step
+4. Any commit hash
 
 ## Instruction ledger
 

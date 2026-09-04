@@ -65,7 +65,7 @@ recorded in `DESIGN-BRIEF.md`.
 
 ---
 
-## D3 — When a card image fails, the fallback shows only name + oracle id
+## D3 — When a card image fails, the fallback shows only the card name
 
 **What this decides:** what a card tile shows when its image cannot load, once
 descriptive text is no longer carried locally.
@@ -74,8 +74,9 @@ descriptive text is no longer carried locally.
 back to showing the card's locally carried text/metadata (including oracle text)
 with no broken-image icon. Once D1 moves that text to an on-demand fetch, the
 fallback no longer has it on hand. This decision says the image-fail fallback
-shows only what stays local — the card name and oracle id — and does **not** fire
-a detail fetch on image failure. Richer offline fallback is deferred.
+shows only the card name — the locally available identity, with no oracle id
+alongside it — and does **not** fire a detail fetch on image failure. Richer
+offline fallback is deferred.
 
 **What happens if you say no:** the image-fail fallback would have to fetch
 detail (adding a network call exactly when the network may be the problem) or
@@ -84,6 +85,10 @@ blocks).
 
 - Verdict: edit
 - Reason: just show the card name, no oracle id is needed
+- Resolution (applied at gate-review): the downstream diffs already showed
+  name-only (REQ-125, FLOW-001, FLOW-024 all render just "the card name"); only
+  this block's own heading and description named oracle id too, now corrected
+  to match. No further diff changes needed.
 
 ---
 
@@ -106,7 +111,7 @@ non-goal in `DESIGN-BRIEF.md`.
 
 ---
 
-## D5 — Serve card detail as a lazy static artifact, not a new backend endpoint
+## D5 — Serve card detail via a new backend endpoint (`GET /api/cards/:oracleId`)
 
 **What this decides:** how one card's descriptive detail reaches the app on
 demand — as a committed static data artifact the frontend lazy-loads on first
@@ -150,6 +155,14 @@ by REQ-175's diff.)
 
 - Verdict: edit — pick the endpoint alternative (`GET /api/cards/:oracleId`)
 - Reason: `GET /api/cards/:oracleId` sounds like exactly what we need. Lets update the spec to allow for this new endpoint, im happy you highlighted how much ive suggested to not expand, and i view that as a positive, i dont want to resort to always putting together a new endpoint, but this use case seems like the perfect excuse to justify one
+- Resolution (applied at gate-review): the endpoint alternative is the
+  finalized choice. Every downstream diff already implements it — REQ-175 (the
+  new route + backend map + the four one-endpoint-rule amendments to REQ-012,
+  REQ-072, NFR-004, `goals-and-non-goals.md`, `technical-design-rules.md`),
+  REQ-174, REQ-176, NFR-019, FLOW-024, and REQ-128 (amend) all reference
+  `GET /api/cards/:oracleId`, not a static artifact. No diff changes were
+  needed; only this block's heading is updated to state the finalized design
+  rather than the (unchosen) recommendation above.
 
 ---
 
@@ -540,11 +553,12 @@ the slim is verified rather than assumed.
 
 **In plain terms:** with descriptive text moved on demand, the up-front card
 data the two screens download on entry should be a small fraction of today's
-16.4 MB. This records a first-load payload target (the up-front artifact well
-under today's size, on the order of a couple of MB gzipped) and requires the
-before/after size to be measured as acceptance evidence, so the win is proven,
-not claimed. It is a data-artifact target, separate from the existing
-route-level code-splitting posture (NFR-014).
+16.4 MB. This records a firm, testable first-load payload target — the build
+must record before/after gzipped sizes and assert the trimmed
+`cardMetadata.json` is at least 80% smaller (gzipped) than today's combined
+16.4 MB artifact (expected on the order of ~1–2 MB gzipped) — a relative gate
+that ships pass/fail, not an estimate. It is a data-artifact target, separate
+from the existing route-level code-splitting posture (NFR-014).
 
 **What happens if you say no:** the slim ships with no measured target, so
 first-load regressions later would go uncaught. (Implements D1.)
@@ -556,7 +570,7 @@ first-load regressions later would go uncaught. (Implements D1.)
 ```
 ### NFR-019
 - Title: First-load card-data payload target
-- Description: With descriptive card fields fetched on demand (REQ-174), the up-front card-metadata artifact the frontend downloads on entry to MTG Assistant and Quick Lookup must be a small fraction of the prior 16.4 MB file, and the reduction must be measured as acceptance evidence.
+- Description: With descriptive card fields fetched on demand (REQ-174), the up-front card-metadata artifact the frontend downloads on entry to MTG Assistant and Quick Lookup must be at least 80% smaller, gzipped, than the prior combined 16.4 MB artifact — a firm, testable pass/fail gate, not an estimate — and the build must record the before/after gzipped sizes as acceptance evidence.
 - Constraints:
   - the build records before/after gzipped sizes and asserts the trimmed `cardMetadata.json` (up-front fields only) is at least 80% smaller (gzipped) than the prior combined artifact — a relative gate, so acceptance does not hinge on an estimated byte ceiling; the expected slim size is on the order of ~1–2 MB gzipped
   - this is a data-artifact target, distinct from and additive to the route-level code-splitting posture (NFR-014); it neither replaces nor weakens the existing lazy loads
@@ -572,6 +586,11 @@ first-load regressions later would go uncaught. (Implements D1.)
 
 - Verdict: edit — pin a firm, testable first-load budget
 - Reason: give leg 2 a hard pass/fail instead of "materially smaller": the build must record before/after gzipped sizes AND assert the slim `cardMetadata.json` is at least 80% smaller (gzipped) than the prior combined artifact (expected on the order of ~1–2 MB gzipped). A relative gate avoids hinging acceptance on an estimated byte ceiling.
+- Resolution (applied at gate-review): the diff's Constraints already stated
+  this exact 80%-gzipped hard gate; only the Description and "In plain terms"
+  above still used soft language ("small fraction," "well under"). Both are
+  now tightened to state the firm 80% threshold directly, so the requirement
+  reads as a pass/fail gate throughout, not just in its Constraints.
 
 ---
 

@@ -10,6 +10,8 @@ Do not rename package folders to encode status.
 
 ## refined
 
+- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; owner answered all 15 `GATE-QUESTIONS.md` decisions (edits applied to D3, D5, NFR-019) and merged docs PR #184. Re-enters at `gate-qc` via `/graph-implement PRD/work/image-first-cards/`.
+
 ## refining
 
 ## ideation
@@ -17,8 +19,6 @@ Do not rename package folders to encode status.
 - [single-source-invariants](single-source-invariants/) — de-duplicate cross-cutting product-truth invariants (rules asserted in 3+ files, e.g. "one main endpoint") into one canonical home each + a grep-before-amend guardrail; bounded corpus hygiene, not an ID-system rewrite. Seeded 2026-09-04 from the image-first-cards D5 near-miss. To implement next, after image-first-cards ships.
 
 ## owner-action
-
-- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail; graph run graph-20260903-093903 reached quality-check PASS after 4 attempts and opened a docs-only PR into `main`. Owner action: answer the 15 decisions in `image-first-cards/GATE-QUESTIONS.md`, then merge the PR — `graph-implement` builds it from there.
 
 ## deferred
 
