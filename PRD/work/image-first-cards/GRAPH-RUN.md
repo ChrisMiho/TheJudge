@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (spec-forming half in progress)
 
 ## Node ledger
@@ -20,6 +20,7 @@
 | 4 | gate-qc | sonnet | failed | `? → 37` | FAIL loop 2/3: prior 3 findings confirmed fixed; new finding — REQ-176 amends derived `quick-lookup/README.md` but not its authoritative source REQ-167 (`functional-requirements.md` ~L3829), so per DEC-168 the two contradict on lookup-card `oracleText`; `STATUS.refining`; commit `35ec3a6` | 2026-09-03 |
 | 3 | define | opus | ok | `? → 23` | attempt 3: added `REQ-167 (amend)` gate slot so authoritative REQ matches derived `quick-lookup` spec; ran full derived-spec↔source-REQ audit (no other contradictions), recorded as recurrence guard in brief; `STATUS.refined`; commit `0910f0a`; 14 gate slots | 2026-09-03 |
 | 4 | gate-qc | sonnet | failed | `? → 47` | FAIL loop 3/3: REQ-167 finding confirmed fixed, all quoted blocks re-verified faithful; new finding — new visible loading state on card-detail popup + Quick Lookup pre-submit needs a `screen-layout.md` catalog constraint (REQ-126/DEC-149) or explicit out-of-scope reason; `STATUS.refining`; commit `75c219a` | 2026-09-04 |
+| 3 | define | opus | ok | `? → 29` | attempt 4 (final loop): added `screen-layout.md` load-state constraint gate slot on both surfaces; 4 completeness sweeps pass — sweep (b) also closed a quick-lookup preview-prose derived-spec gap (folded into FLOW-024); `STATUS.refined`; commit `83286e7`; 15 gate slots | 2026-09-04 |
 
 Heartbeat note: nodes 1–2 ran before the driver armed
 `.worktrees/.graph-run-state.json`, so the per-node counter never keyed this run
@@ -306,6 +307,34 @@ Report back:
 3. How the finding was resolved, and the result of each of the four completeness sweeps (a)-(d)
 4. The full list of stable ids `GATE-QUESTIONS.md` now proposes (one slot each), noting any added
 5. Any blocker recorded, and any commit hash
+
+### gate-qc (attempt 4)
+
+graph is controlling
+
+You are node 4 (`gate-qc`), attempt 4, of an autonomous graph-kickoff run. Attempts 1–3 returned FAIL; `define` attempt 4 added a `screen-layout.md` load-state constraint gate slot and ran four completeness sweeps. Re-invoke the `thejudge-quality-check` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal. This is the fourth quality-check — a FAIL here parks the run at owner-action, so make the verdict decisive and, on FAIL, report findings precisely enough for the owner to act.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+Validate `PRD/work/image-first-cards/DESIGN-BRIEF.md` for PRD alignment and agent-readiness, and produce a PASS or FAIL report. Do NOT write a GAMEPLAN or slice docs.
+
+Confirm the attempt-3 finding is resolved: the new on-demand loading state on the card-detail popup and Quick Lookup pre-submit preview now carries a `screen-layout.md` catalog constraint (via the new gate slot), consistent with REQ-126/DEC-149 and the route-load-fallback precedent. Then run your full check across every proposed id in `GATE-QUESTIONS.md`: the brief is internally consistent with the proposed REQ/FLOW/NFR ids and their diffs; every user-visible surface has a screen-layout row or a reasoned exemption; every derived-spec diff has its authoritative source REQ amended in lockstep (DEC-168); every cross-reference resolves; every product-truth change the brief relies on has a matching gate slot; and the whole is ready to slice once the owner answers.
+
+On FAIL, set `STATUS.refining` and report the complete findings list. On PASS, set nothing beyond what the skill sets — the graph driver handles the stop, the docs PR, and the `owner-action` park.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Verdict: PASS | FAIL
+2. Checked artifact path
+3. Findings: none, or the complete issue list
+4. STATUS marker after this node
+5. Any commit hash
 
 ## Instruction ledger
 
