@@ -325,11 +325,94 @@ product-facing endpoint" so it permits a second, read-only retrieval route.
 `DEC-010` is **not** amended — it is a retired historical row in `decisions.md`
 (the whole decision log is retired, bodies deleted). The live assertions are:
 
-- **REQ-012** constraint `one main product-facing endpoint in the core product` → permits the answer endpoint plus a read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175)
-- **REQ-072** constraint `one product-facing endpoint only (DEC-010); no new route` → the answer endpoint stays single; a separate read-only card-detail route (`GET /api/cards/:oracleId`, REQ-175) is permitted
-- **NFR-004** constraint `one main product-facing backend endpoint` → one main answer endpoint plus a read-only card-detail retrieval route (REQ-175)
-- **`goals-and-non-goals.md`**: product-scope line `one main backend endpoint` → answer endpoint plus a read-only card-detail retrieval route (REQ-175); and the Explicit Non-Goal `multiple product-facing backend endpoints` narrowed to `arbitrary/expanding product-facing endpoints beyond the answer endpoint and the single read-only card-detail retrieval route (REQ-175)`
-- **`technical-design-rules.md`**: Allowed Design Direction `one main backend endpoint` → adds the read-only card-detail retrieval route (REQ-175); Forbidden Design Drift `extra product-facing endpoints` narrowed to endpoints beyond the answer endpoint and the one read-only card-detail retrieval route (REQ-175)
+**Amend `PRD/sections/functional-requirements.md` → REQ-012 → Constraints:**
+
+Current:
+```
+- Constraints:
+  - one main product-facing endpoint in the core product
+```
+Proposed:
+```
+- Constraints:
+  - one main product-facing endpoint in the core product, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175)
+```
+
+**Amend `PRD/sections/functional-requirements.md` → REQ-072 → Constraints:**
+
+Current:
+```
+- Constraints:
+  - one product-facing endpoint only (DEC-010); no new route
+  - additive amendment to the DEC-020 frozen contract; no existing field changes meaning
+```
+Proposed:
+```
+- Constraints:
+  - `POST /api/ask-ai` stays the one answer endpoint (DEC-010); a separate read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175) is permitted alongside it
+  - additive amendment to the DEC-020 frozen contract; no existing field changes meaning
+```
+
+**Amend `PRD/sections/non-functional-requirements.md` → NFR-004 → Constraints:**
+
+Current:
+```
+- Constraints:
+  - one main product-facing backend endpoint
+  - no microservices
+  - no runtime metadata sync tooling
+```
+Proposed:
+```
+- Constraints:
+  - one main product-facing backend endpoint, plus the read-only card-detail retrieval route (REQ-175)
+  - no microservices
+  - no runtime metadata sync tooling
+```
+
+**Amend `PRD/sections/goals-and-non-goals.md` → `## Shipped capabilities`:**
+
+Current:
+```
+- one main backend endpoint
+```
+Proposed:
+```
+- one main backend endpoint, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175)
+```
+
+**Amend `PRD/sections/goals-and-non-goals.md` → `## Explicit Non-Goals`:**
+
+Current:
+```
+- multiple product-facing backend endpoints
+```
+Proposed:
+```
+- arbitrary/expanding product-facing endpoints beyond the answer endpoint and the single read-only card-detail retrieval route (REQ-175)
+```
+
+**Amend `PRD/instructions/technical-design-rules.md` → `## Allowed Design Direction`:**
+
+Current:
+```
+- one main backend endpoint
+```
+Proposed:
+```
+- one main backend endpoint, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175)
+```
+
+**Amend `PRD/instructions/technical-design-rules.md` → `## Forbidden Design Drift`:**
+
+Current:
+```
+- extra product-facing endpoints
+```
+Proposed:
+```
+- product-facing endpoints beyond the answer endpoint and the one read-only card-detail retrieval route (REQ-175)
+```
 
 Note: D5's block listed `DEC-010` (retired, moot) and missed **REQ-012** and
 **NFR-004**, which also carry the rule as a hard constraint; both are amended

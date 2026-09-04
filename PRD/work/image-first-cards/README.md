@@ -2,16 +2,17 @@ status: refining
 
 # image-first-cards
 
-Image-first cards with on-demand card detail from a committed static data
-artifact (no new backend endpoint).
+Image-first cards with on-demand card detail from a new
+`GET /api/cards/:oracleId` endpoint.
 
 **What the player gets.** Card tiles stay image-first exactly as today. The
 app stops downloading all 33,399 cards' descriptive text up front; the up-front
 list slims to what tiles render (name, oracle id, imageUrl, colors). Opening a
 card's detail popup loads oracle text, type line, mana cost/value, colors, and
-sub/supertypes on demand from a committed static card-detail artifact keyed by
-oracle id — lazy-loaded on first open, no new product-facing route (D5). Ask-ai
-resolves a card's oracle text server-side instead of reading it from the
+sub/supertypes on demand from a new backend endpoint, `GET
+/api/cards/:oracleId`, keyed by oracle id — fetched per card on first open and
+cached for the session (D5). Ask-ai resolves a card's oracle text server-side
+by reading the same backend artifact internally, instead of reading it from the
 client-sent payload, with the assembled prompt proven byte-identical to today's.
 
 See `IDEA.md` for the captured idea, `intake/GRAPH-BRIEF.md` for staged
