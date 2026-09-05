@@ -13,8 +13,8 @@
 | # | Node | Model | Outcome | Heartbeat | Evidence | Date |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 5` | branch `thejudge-auto/rag-rule-retrieval` pushed at `ad4930f` (tree `clean`, no stash); lock `.worktrees/.graph-run.lock` runId `graph-20260905-061805`; canary denied both tiers; `Profile: unverified` | 2026-09-05 |
-| 2 | shape | sonnet | ok | `0 → 44` | package `PRD/work/rag-rule-retrieval/` created (`IDEA.md` with 13 `## Prior run` receipts, `README.md`, `STATUS.ideation`, board row); 26 intake files copied verbatim into `intake/` (`diff -rq` zero drift) from `.worktrees/.graph-intake/graph-20260905-061805/`, staging deleted; commit `d352be3` | 2026-09-05 |
-| — | driver-bookkeeping | — | ok | `n/a (driver)` | owner's cleanup: `git rm` of `PRD/work/probe-slow-load-vs-rag/`, `PRD/work/probe-prompt-data-optimization/`, four `PRD/work/promptRefinement*.md` — every file first confirmed byte-identical under `intake/` (`cmp`); ledger moved into package; `## Autonomous metadata` written; commit `0759c16` | 2026-09-05 |
+| 2 | shape | sonnet | ok | `0 → 44` | package `PRD/work/rag-rule-retrieval/` created (`IDEA.md` with 13 `## Prior run` receipts, `README.md`, `STATUS.ideation`, board row); 26 intake files copied verbatim into `intake/` (`diff -rq` zero drift) from `.worktrees/.graph-intake/graph-20260905-061805/`, staging deleted; commit `d6b8d84` | 2026-09-05 |
+| — | driver-bookkeeping | — | ok | `n/a (driver)` | owner's cleanup: `git rm` of `PRD/work/probe-slow-load-vs-rag/`, `PRD/work/probe-prompt-data-optimization/`, four `PRD/work/promptRefinement*.md` — every file first confirmed byte-identical under `intake/` (`cmp`); ledger moved into package; `## Autonomous metadata` written; commit `d6b8d84` | 2026-09-05 |
 
 ## Open gate
 
