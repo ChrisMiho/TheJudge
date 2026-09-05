@@ -10,13 +10,13 @@ Do not rename package folders to encode status.
 
 ## refined
 
+- [single-source-invariants](single-source-invariants/) — de-duplicate cross-cutting product-truth invariants (rules asserted in 3+ files, e.g. "one main endpoint") into one canonical home each + a grep-before-amend guardrail; bounded corpus hygiene, not an ID-system rewrite. Gate answered: all five decision blocks (INV-ENDPOINT, INV-MOCK-FIRST, INV-RULES-ENGINE, INV-DECISION-LOG, GUARD-GREP-BEFORE-AMEND) verdict `accept`. Docs PR #187 merged to `main`. Next: `/graph-implement PRD/work/single-source-invariants/` (resumes at `gate-qc`).
+
 ## refining
 
 ## ideation
 
 ## owner-action
-
-- [single-source-invariants](single-source-invariants/) — de-duplicate cross-cutting product-truth invariants (rules asserted in 3+ files, e.g. "one main endpoint") into one canonical home each + a grep-before-amend guardrail; bounded corpus hygiene, not an ID-system rewrite. Spec-forming half complete via graph-20260904-201403: quality-check PASS on re-check 4 (four FAIL→fix loops, each catching the exact grep-from-memory defect this fixes). Docs-only base→main PR open. **Owner action:** answer the five decision blocks in `GATE-QUESTIONS.md` (INV-ENDPOINT, INV-MOCK-FIRST, INV-RULES-ENGINE, INV-DECISION-LOG, GUARD-GREP-BEFORE-AMEND), merge the PR, then `/graph-implement PRD/work/single-source-invariants/`.
 
 ## deferred
 

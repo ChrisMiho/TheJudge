@@ -1,13 +1,15 @@
 # Graph run — single-source-invariants
 
-- Run ID: `graph-20260904-201403`
+- Run ID: `graph-20260904-201403` (run one, spec-forming half)
+- Build-half run ID: `graph-20260904-220341` (run two, `/graph-implement`; lock, run-state, evidence, and release records for nodes 5–9 key on this id)
 - Profile: `unverified`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`
 - Graph canary: `denied — graph tier armed (nohup true)`
+- Build-half canary: `denied — graph tier armed (nohup true), 2026-09-04 run two`; run-state degraded at take-lock (`.graph-run-state.json` absent until first node dispatch), so cap enforcement arms once run-state is written per node
 - Autonomous base: `origin/thejudge-auto/single-source-invariants`
 - Staging: none — resume of an existing `STATUS.ideation` package, no new intake staged
-- Current node: `owner-action` (gate-qc PASS on re-check 4; spec-forming half complete)
-- Next action: answer `PRD/work/single-source-invariants/GATE-QUESTIONS.md`, merge docs PR #187 (https://github.com/ChrisMiho/TheJudge/pull/187), then `/graph-implement PRD/work/single-source-invariants/`
+- Current node: `gate-review` complete (5 accept, 0 edit, 0 reject; docs PR #187 merged to `main`); `STATUS.refined` restored
+- Next action: `/graph-implement PRD/work/single-source-invariants/` — re-enter at `gate-qc`, then `plan → build → review → land → close`
 
 ## Node ledger
 
@@ -23,22 +25,43 @@
 | 3 | define | opus | ok | `0 → 35` | attempt 4 (FINAL loop-back). Closed both straggler classes, not just the two named lines. CLASS A: adopted a written scope test — a line stating the one-endpoint rule is in-scope even when it cites DEC-010; only Backed-by/traceability and per-feature closed-door clauses stay out. Applied it to a fresh `grep -rniE 'DEC-010'` hit-by-hit — folded `in-depth/README.md:278` in as an INV-ENDPOINT pointer (+ NFR-004 echoed-in list); every DEC-010 hit now explicitly classified in `GATE-QUESTIONS.md`. CLASS B: folded root `README.md:17` ("start with the decisions.md router") into INV-DECISION-LOG beside `:163`; block now rewrites both lines. Re-reconciled all four families vs fresh grep — mock-first + rules-engine sets matched, no third class. `DESIGN-BRIEF.md` scope test + Loop-4 reconciliation note added; `STATUS.refined`; no `PRD/sections/` edits; no new IDs | 2026-09-04 |
 | 4 | gate-qc | sonnet | ok | `0 → 26` | PASS (re-check 4, final). Independent full-corpus re-grep of all four families + dedicated DEC-010 sweep (9 live hits, all matching the brief's classification: 3 in-scope rule-statements, 6 out-of-scope traceability/closed-door). Every live rule-stating line is a canonical home or a listed pointer; no unlisted home; no new IDs; docs-only, no genuine blocker. `STATUS.refined` (no transition on PASS) | 2026-09-04 |
 
+| — | gate-review | sonnet | ok | `1 → 17` | run two, build half. Applied 5 accept / 0 edit / 0 reject inside `GATE-QUESTIONS.md` (no diff change — all accept); wrote `## Gate verdicts`; resolved `## Open gate`; restored `STATUS.owner-action → STATUS.refined`, README `status:`, board row. No `PRD/sections/` edits | 2026-09-04 |
+
 Entry point: resume of a `STATUS.ideation` package with no prior ledger. Per the
 entry-point table, `STATUS.ideation` enters at `define`; `shape` (node 2) is
 skipped because the package is already named (README + IDEA exist). Preflight
 was run first (README carried no `## Autonomous metadata`) to record the base.
 
+Build-half resume (run two, `graph-20260904-220341`): docs PR #187 (base→main)
+was merged as the answer-then-merge build signal, so `origin/main` already carries
+the finalized spec (`origin/main` is 1 ahead of the now-merged base branch, which
+is 0 ahead — base is fully contained in main). The code deliverable therefore
+grows into a PR **against `main`**, not the merged base; the reference's
+`-work → base` shape assumes an still-open base→main PR, which #187's merge closed.
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `INV-ENDPOINT` | accept | — |
+| `INV-MOCK-FIRST` | accept | — |
+| `INV-RULES-ENGINE` | accept | — |
+| `INV-DECISION-LOG` | accept | — |
+| `GUARD-GREP-BEFORE-AMEND` | accept | — |
+
+Blocker questions: none recorded; none raised.
+
 ## Open gate
 
-- Parked at `owner-action` — spec-forming half complete (gate-qc PASS on re-check 4).
-- Question: answer the five decision blocks in
-  `PRD/work/single-source-invariants/GATE-QUESTIONS.md` (INV-ENDPOINT,
-  INV-MOCK-FIRST, INV-RULES-ENGINE, INV-DECISION-LOG, GUARD-GREP-BEFORE-AMEND) —
-  accept / edit / reject each — then merge the docs-only PR to `main`.
-- Evidence: docs-only base→main PR — https://github.com/ChrisMiho/TheJudge/pull/187
-- Resume: after answering and merging, run
-  `/graph-implement PRD/work/single-source-invariants/` — the build half applies
-  the approved proposal to `PRD/sections/` together with the code.
+- **Resolved 2026-09-04 — 5 accept, 0 edit, 0 reject.** Owner answered all five
+  decision blocks in `PRD/work/single-source-invariants/GATE-QUESTIONS.md`
+  (INV-ENDPOINT, INV-MOCK-FIRST, INV-RULES-ENGINE, INV-DECISION-LOG,
+  GUARD-GREP-BEFORE-AMEND) with verdict `accept`; every proposed diff stands as
+  refinement wrote it. Docs-only base→main PR merged —
+  https://github.com/ChrisMiho/TheJudge/pull/187. `STATUS.refined` restored.
+- Resume: `/graph-implement PRD/work/single-source-invariants/` — the run
+  re-enters at `gate-qc`, then `plan → build → review → land → close` applies
+  the finalized proposal to `PRD/sections/` together with the code.
 
 ## Dispatch prompts
 
@@ -290,6 +313,29 @@ findings.
 Copy the `Working directory:` line above, unchanged, into every prompt you write
 for any subagent you dispatch. Report PASS or FAIL and the complete findings
 list back to the driver.
+
+### gate-review
+
+graph is controlling. This is an autonomous graph run (build-half run ID
+`graph-20260904-220341`); no human is available at this step, so do not stop to
+ask clarifying questions — read the verdicts the owner already recorded in
+`GATE-QUESTIONS.md` and apply them exactly as written.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Invoke the `graph-gate-review` skill on the package at
+`PRD/work/single-source-invariants/`. The owner has answered every
+`## <STABLE-ID>` block in `GATE-QUESTIONS.md` and merged the docs PR to `main`.
+Read each block's `Verdict:` slot, apply it inside that ID's proposed diff in
+`GATE-QUESTIONS.md` only (never `PRD/sections/`), write the `## Gate verdicts`
+table into `GRAPH-RUN.md`, resolve the `## Open gate`, restore `STATUS.refined`
+and the board row, and hand back the resume command. All five verdicts are
+`accept` and there are no blocker questions, so an `accept` leaves each proposed
+diff as refinement wrote it — record the verdicts and resolve the gate.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write
+for any subagent you dispatch. Report the verdict counts and the restored status
+back to the driver.
 
 ## Instruction ledger
 

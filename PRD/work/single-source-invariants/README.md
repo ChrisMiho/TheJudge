@@ -1,4 +1,4 @@
-status: owner-action
+status: refined
 
 # single-source-invariants
 
@@ -12,6 +12,12 @@ ships.
 
 Next step: answer the five decision blocks in `GATE-QUESTIONS.md`, merge the
 docs-only PR to `main`, then `/graph-implement PRD/work/single-source-invariants/`.
+
+Gate review complete (2026-09-04): owner answered all five decision blocks in
+`GATE-QUESTIONS.md` — INV-ENDPOINT, INV-MOCK-FIRST, INV-RULES-ENGINE,
+INV-DECISION-LOG, GUARD-GREP-BEFORE-AMEND — all verdict `accept`; no blocker
+questions. Docs PR #187 merged to `main`. `STATUS.refined`. Next:
+`/graph-implement PRD/work/single-source-invariants/` (resumes at `gate-qc`).
 
 Refinement complete (2026-09-04): `DESIGN-BRIEF.md` written; `GATE-QUESTIONS.md`
 carries five decision blocks (INV-ENDPOINT, INV-MOCK-FIRST, INV-RULES-ENGINE,
@@ -47,7 +53,12 @@ live contradiction is the already-captured root `README.md:163`. `STATUS.refined
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/single-source-invariants
+- Autonomous base: origin/main
+- Note: node 1 first recorded `origin/thejudge-auto/single-source-invariants`;
+  docs PR #187 merged that base into `main` as the answer-then-merge build signal,
+  so the build half branches from `origin/main` (which now carries the finalized
+  spec) and the code deliverable PR targets `main`. Shared build head:
+  `thejudge-auto/single-source-invariants-work`.
 
 ## Preparation gate
 
