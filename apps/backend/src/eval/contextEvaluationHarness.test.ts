@@ -7,6 +7,7 @@ import { loadGameRulesTopics, type GameRulesTopic } from "../gameRules.js";
 import { selectGameRulesTopics } from "../gameRulesTopicSelection.js";
 import {
   collectCuratedRuleIds,
+  loadGameRulesRuleEmbeddings,
   loadGameRulesRuleIndex,
   retrieveSupplementalRules,
   type GameRulesRuleIndexEntry,
@@ -22,6 +23,7 @@ import {
   buildChecklistReport,
   buildEvalComboCatalog,
   evaluateScenario,
+  evaluateSystem3RelevanceChecks,
   type EvaluationFixture,
   type EvaluationResult
 } from "./contextEvaluationHarness.js";
@@ -34,7 +36,7 @@ const allGameRulesTopics: GameRulesTopic[] = loadGameRulesTopics(gameRulesPath);
 const ruleIndexPath = path.resolve(currentDir, "../../data/gameRulesRuleIndex.json");
 const ruleIndex: GameRulesRuleIndexEntry[] = loadGameRulesRuleIndex(ruleIndexPath);
 const fixtureRulings = new Map([
-  ["fixture-questing-beast", [{ publishedAt: "2019-10-04", comment: "Combat damage can't be prevented." }]],
+  ["003e5dc6-8b26-4a0a-a50b-5f0806a7bacd", [{ publishedAt: "2019-10-04", comment: "Combat damage can't be prevented." }]],
   // The lookup combo fixtures attach these cards; `lookup-card-enrichment`
   // requires an OFFICIAL RULINGS section for any attached card.
   ["eval-oracle-a", [{ publishedAt: "2020-01-10", comment: "Its ability triggers once per turn." }]],
@@ -42,6 +44,18 @@ const fixtureRulings = new Map([
   ["eval-oracle-c", [{ publishedAt: "2020-02-05", comment: "It returns only creature cards." }]],
   ["eval-oracle-d", [{ publishedAt: "2020-02-11", comment: "Its trigger uses the stack." }]]
 ]);
+
+// REQ-181/E10 (review loop 1): one frozen query embedding per labeled
+// fixture, generated offline with the shipped local model and committed
+// (`npm run eval:build-frozen-query-embeddings`; see
+// scripts/build-frozen-query-embeddings.mjs) — no live embedding call at
+// test time. Keyed by fixture id, each value is the exact vector production
+// would compute for that fixture's retrieval query text.
+const ruleEmbeddingsPath = path.resolve(currentDir, "../../data/gameRulesRuleEmbeddings.json");
+type FrozenQueryEmbedding = { question: string; vector: number[] };
+const frozenQueryEmbeddings: Record<string, FrozenQueryEmbedding> = JSON.parse(
+  readFileSync(path.join(fixtureDir, "frozen-query-embeddings.json"), "utf8")
+);
 
 // Eval-only combo corpus: independent of the production artifact so an
 // owner-approved corpus refresh can never churn a prompt golden.
@@ -113,7 +127,7 @@ function relevanceFromPrepared(prepared: ReturnType<typeof preparePromptInput>) 
 // also calls, so the gate and the review report can no longer resolve
 // card-intrinsic fields differently (REQ-177).
 
-function evaluateFixtureRequest(request: AskAiRequest, disableComboEnrichment = false) {
+function evaluateFixtureRequest(request: AskAiRequest, disableComboEnrichment = false, queryEmbedding: number[] | null = null) {
   // The degraded fixture omits the catalog entirely, which is exactly how the
   // runtime behaves with a missing artifact or COMBO_ENRICHMENT_ENABLED=false.
   const comboCatalog = disableComboEnrichment ? undefined : evalComboCatalog;
@@ -126,7 +140,10 @@ function evaluateFixtureRequest(request: AskAiRequest, disableComboEnrichment = 
       cardRulingsIndex: fixtureRulings,
       cardDetailIndex,
       comboCatalog,
-      collectEnrichmentDebug: true
+      collectEnrichmentDebug: true,
+      // REQ-181/E10: `null` for every existing (lexical, golden) call site —
+      // only the semantic-path check below passes a frozen vector.
+      queryEmbedding
     });
     return {
       context: prepared.context,
@@ -139,12 +156,47 @@ function evaluateFixtureRequest(request: AskAiRequest, disableComboEnrichment = 
   const context = buildPromptContext(gameRequest, cardDetailIndex);
   const selectedTopics = selectGameRulesTopics(context, allGameRulesTopics);
   const curatedRuleIds = collectCuratedRuleIds(selectedTopics);
-  const supplementalRules = retrieveSupplementalRules(context, ruleIndex, curatedRuleIds);
+  // 4th/5th positional args (`max`, `resources`) stay at their production
+  // defaults; only `queryVector` (6th) is ever overridden here, same as the
+  // lookup branch above.
+  const supplementalRules = retrieveSupplementalRules(context, ruleIndex, curatedRuleIds, undefined, undefined, queryEmbedding);
   const comboCandidates = resolveGameComboCandidates(gameRequest, context, { comboCatalog });
   return {
     context,
     promptText: buildPromptText(context, { gameRulesTopics: selectedTopics, supplementalRules, comboCandidates }),
     relevance: { selectedTopics, supplementalRules }
+  };
+}
+
+// REQ-181/E10 (review loop 1): unlike `evaluateFixtureRequest` above (whose
+// game-mode branch calls the non-debug `retrieveSupplementalRules` directly),
+// this always goes through `preparePromptInput` with `collectEnrichmentDebug`
+// for BOTH modes, so the semantic-path mechanism test below can read
+// `usedSemantic` off the returned debug object and prove the semantic branch
+// actually engaged rather than silently falling back to lexical.
+function evaluateFixtureRequestWithDebug(fixture: EvaluationFixture, queryEmbedding: number[] | null) {
+  const comboCatalog = fixture.disableComboEnrichment ? undefined : evalComboCatalog;
+  const cardDetailIndex = cardDetailIndexFromRequest(fixture.request);
+  const prepared = preparePromptInput(fixture.request, {
+    gameRulesTopics: allGameRulesTopics,
+    gameRulesRuleIndex: ruleIndex,
+    cardRulingsIndex: fixtureRulings,
+    cardDetailIndex,
+    comboCatalog,
+    collectEnrichmentDebug: true,
+    queryEmbedding
+  });
+  // `usedSemantic` rides through `enrichmentDebug.supplemental` at runtime
+  // (preparation.ts passes the debug object through by reference) but isn't
+  // part of the zod-derived `EnrichmentDebug` type that field is declared
+  // with, so it's read back via an explicit cast rather than widening that
+  // public, schema-validated debug type for one internal test assertion.
+  const supplementalDebug = prepared.enrichmentDebug?.supplemental as unknown as
+    | { usedSemantic?: boolean }
+    | undefined;
+  return {
+    relevance: relevanceFromPrepared(prepared),
+    usedSemantic: supplementalDebug?.usedSemantic ?? false
   };
 }
 
@@ -182,6 +234,97 @@ describe("Backend - Eval", () => {
       // runtime scales with the fixture count and legitimately nears the 5s default.
       // 30s keeps slow CI runners clear of the timeout without loosening it suite-wide.
     }, 30000);
+
+    // REQ-032/REQ-181 (E10, review loop 1): `system3-expected-recall` and
+    // `system3-noise-excluded` above only ever exercise the lexical path
+    // (every golden fixture is evaluated with `queryEmbedding: null`). This
+    // test runs the same two checks against the semantic path instead —
+    // frozen query embeddings, committed offline, no live embedding call
+    // here — so a real, committed change to `gameRulesRuleEmbeddings.json`
+    // or the semantic scorer is caught the same way a lexical regression is.
+    //
+    // What's a hard assertion here vs. a measured, reported number, and why:
+    // E10's acceptance criterion (slice-e.criteria.json) is that these checks
+    // *run against the semantic path* using committed frozen embeddings, with
+    // no live call — a mechanism claim. This test hard-asserts that mechanism:
+    // the committed embeddings artifact loads, every labelled fixture has a
+    // correctly-dimensioned frozen vector, and `usedSemantic` (gameRulesRetrieval.ts's
+    // `scoreIndex` gate) is genuinely true for each one — so a silent fallback
+    // to lexical would fail loudly, not pass by accident.
+    //
+    // Full per-fixture recall is reported, not hard-gated, for a measured
+    // reason: 3 of 8 labelled fixtures do not reach 100% recall under pure
+    // cosine-similarity ranking — quick-lookup-card/quick-lookup-multi-card
+    // (702.2b ranks 6th, just outside top-5, behind sibling sub-rule 702.2a —
+    // both are topically "deathtouch," and the lookup-mode query is only
+    // name + type line + keywords, no combat context, per `buildRetrievalQueryText`)
+    // and state-based-actions (701.8b is missed because it only mentions
+    // "704.5g" *inside its own rule text* — a cross-reference pure embedding
+    // similarity doesn't capture, unlike lexical's literal token-overlap
+    // scoring). This is consistent with REQ-181's own committed benchmark note
+    // (build-rule-embeddings.mjs): the shipped plain-text embedding format was
+    // measured at 19/20 recall@5, i.e. adjacent/cross-referenced sub-rules are
+    // a known, already-accepted ~5% miss band for this design — not a wiring
+    // bug, and not something this loop's findings authorized fixing (REQ-181's
+    // embedding-text shaping and the human-labeled `expectedSupplementalRuleIds`
+    // ground truth are both explicitly hands-off; see functional-requirements.md
+    // and the review notes for this loop). Reported here, and in the slice
+    // notes, for an owner decision rather than silently forced to pass.
+    it("validates System 3 relevance under the semantic path (frozen query embeddings)", async () => {
+      const ruleEmbeddings = loadGameRulesRuleEmbeddings(ruleEmbeddingsPath);
+      expect(ruleEmbeddings, "committed gameRulesRuleEmbeddings.json must load for this test to prove anything").not.toBeNull();
+
+      const fixtures = await readFixtures();
+      const labeledFixtures = fixtures.filter(
+        (fixture) => fixture.expected?.expectedSupplementalRuleIds || fixture.expected?.forbiddenSupplementalRuleIds
+      );
+      expect(labeledFixtures.length).toBeGreaterThan(0);
+      expect(
+        labeledFixtures.every((fixture) => frozenQueryEmbeddings[fixture.id]),
+        `Missing a frozen query embedding for: ${labeledFixtures
+          .filter((fixture) => !frozenQueryEmbeddings[fixture.id])
+          .map((fixture) => fixture.id)
+          .join(", ")}. Run: npm run eval:build-frozen-query-embeddings`
+      ).toBe(true);
+
+      const results: EvaluationResult[] = [];
+      const notUsingSemantic: string[] = [];
+
+      for (const fixture of labeledFixtures) {
+        const frozen = frozenQueryEmbeddings[fixture.id];
+        expect(frozen.vector.length, `${fixture.id}: frozen vector dims must match the committed embeddings artifact`).toBe(
+          ruleEmbeddings!.dims
+        );
+
+        const evaluated = evaluateFixtureRequestWithDebug(fixture, frozen.vector);
+        if (!evaluated.usedSemantic) notUsingSemantic.push(fixture.id);
+
+        const checks = evaluateSystem3RelevanceChecks(evaluated.relevance.supplementalRules, fixture.expected);
+        expect(checks.length).toBeGreaterThan(0);
+
+        results.push({
+          fixtureId: fixture.id,
+          passed: checks.every((check) => check.passed),
+          score: checks.filter((check) => check.passed).length,
+          maxScore: checks.length,
+          checks
+        });
+      }
+
+      // Hard gate: every labelled fixture's supplemental retrieval actually
+      // ran semantic-primary scoring — a silent lexical fallback here (e.g.
+      // from a missing/malformed committed artifact) fails this loudly.
+      expect(notUsingSemantic, `Fixtures that fell back to lexical instead of semantic: ${notUsingSemantic.join(", ")}`).toEqual(
+        []
+      );
+
+      // Measured, reported (not hard-gated — see the comment above this
+      // test): the real per-fixture recall/noise-exclusion verdict under the
+      // semantic path.
+      const checklistReport = buildChecklistReport(results);
+      // eslint-disable-next-line no-console
+      console.log(`Semantic-path relevance report:\n${checklistReport}`);
+    });
 
     it("detects ordering and guardrail regressions", () => {
       const fixture: EvaluationFixture = {

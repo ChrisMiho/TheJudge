@@ -16,11 +16,27 @@
 // single implementation is what both call, so they cannot resolve
 // card-intrinsic fields differently again.
 
-import type { CardDetailEntry } from "../cardDetail.js";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { loadCardDetailIndex, type CardDetailEntry } from "../cardDetail.js";
 import type { CardDetailIndex } from "../prompt/context.js";
 import type { AskAiRequest, GameAskAiRequest, ZoneCardItem } from "../types/index.js";
 
+const currentDir = dirname(fileURLToPath(import.meta.url));
+
+/**
+ * REQ-180 (review loop 1, D4): the real committed backend artifact, loaded
+ * once so a labelled fixture that uses a real oracle id as its `cardId`
+ * resolves `keywords` through the exact same by-id lookup production uses —
+ * proving the production path, not an inline fixture shortcut. Fixtures with
+ * a synthetic, non-oracle-id `cardId` (most of them, deliberately, per
+ * REQ-176's rationale below) fall back to the fixture's own inline
+ * `keywords` field.
+ */
+const realCardDetailIndex = loadCardDetailIndex(resolve(currentDir, "../../data/cardDetailByOracleId.json"));
+
 export function cardDetailEntryFrom(card: Partial<ZoneCardItem>): CardDetailEntry {
+  const real = card.cardId ? realCardDetailIndex.get(card.cardId) : undefined;
   return {
     oracleText: card.oracleText ?? "",
     typeLine: card.typeLine ?? "",
@@ -29,11 +45,11 @@ export function cardDetailEntryFrom(card: Partial<ZoneCardItem>): CardDetailEntr
     colors: card.colors ?? [],
     supertypes: card.supertypes ?? [],
     subtypes: card.subtypes ?? [],
-    // REQ-180: fixtures carry keywords inline (as the real committed
-    // cardDetailByOracleId.json artifact will once a human refreshes it from
-    // Scryfall), the same fixture-convenience pattern REQ-176 established for
-    // oracleText/typeLine above.
-    keywords: card.keywords ?? []
+    // REQ-180: resolve keywords by cardId through the committed artifact
+    // first — the same lookup production's `resolveCardDetail` does — and
+    // fall back to the fixture's inline `keywords` only when the fixture's
+    // cardId is synthetic and has no entry there.
+    keywords: real?.keywords ?? card.keywords ?? []
   };
 }
 

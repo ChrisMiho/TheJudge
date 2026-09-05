@@ -31,6 +31,16 @@ const currentDir = dirname(fileURLToPath(import.meta.url));
 export const BENCHMARK_PATH = resolve(currentDir, "benchmark/rag-retrieval-benchmark.json");
 export const RULE_INDEX_PATH = resolve(currentDir, "../../data/gameRulesRuleIndex.json");
 export const CARD_DETAIL_PATH = resolve(currentDir, "../../data/cardDetailByOracleId.json");
+/**
+ * REQ-178/REQ-180 (review loop 1, B4/D5/E9): `cardDetailByOracleId.json` is
+ * keyed by oracle id but carries no `name` field (REQ-175 kept it out of that
+ * artifact). `cardMetadata.json` is keyed by the same oracle id
+ * (`build-card-metadata.mjs`'s `cardId` is `oracle_id`) and does carry `name`
+ * — joining the two here, purely for this benchmark's pollution text, is the
+ * same cross-artifact join production's own compact card signal needs, not a
+ * new production behavior.
+ */
+export const CARD_METADATA_PATH = resolve(currentDir, "../../../frontend/public/data/cardMetadata.json");
 
 /** Deterministic pollution source: three fixed, sorted oracle ids from the
  * already-committed card-detail artifact — never a live call, never random. */
@@ -73,21 +83,49 @@ function meanReciprocalRank(ranks: number[]): number {
   return ranks.reduce((sum, rank) => sum + (rank > 0 ? 1 / rank : 0), 0) / ranks.length;
 }
 
+type CardMetadataRecord = { cardId?: unknown; name?: unknown };
+
+/**
+ * REQ-178/REQ-180 (review loop 1, B4/D5/E9): oracle-id -> name, joined from
+ * the committed `cardMetadata.json` (the only committed artifact carrying a
+ * card's name keyed by oracle id — see `CARD_METADATA_PATH` above). Missing
+ * or unparsable is a benchmark-methodology fallback (empty name), not a
+ * thrown error — this file is a build/eval-time input, never a live fetch.
+ */
+export function loadCardNameByOracleId(filePath: string = CARD_METADATA_PATH): Map<string, string> {
+  const index = new Map<string, string>();
+  try {
+    const raw: unknown = JSON.parse(readFileSync(filePath, "utf8"));
+    if (!Array.isArray(raw)) return index;
+    for (const record of raw as CardMetadataRecord[]) {
+      if (typeof record?.cardId === "string" && typeof record?.name === "string") {
+        index.set(record.cardId, record.name);
+      }
+    }
+  } catch {
+    return index;
+  }
+  return index;
+}
+
 /**
  * REQ-178/REQ-180: the "polluted" condition simulates attached cards through
  * the same compact per-card signal production's `buildQueryParts` builds —
  * name, type line, and real per-card Scryfall keywords — so this benchmark
  * measures whatever query shape is actually shipped, slice over slice, rather
- * than freezing an earlier pollution shape. The committed card-detail
- * artifact carries no `name` field (it is keyed by oracle id, not card id),
- * so the name component is empty here; that is a benchmark-methodology
- * limitation, not a production behavior difference. Real committed keyword
- * data is populated only once a human runs the Scryfall-sourced `data:build`
- * chain (REQ-180); until then `keywords` is `[]` and pollution here is
- * correspondingly weaker than it will be once that data lands — a disclosed,
- * accurate reflection of the current committed artifact, not a bug.
+ * than freezing an earlier pollution shape.
+ *
+ * `cardDetailByOracleId.json` carries no `name` field (REQ-175 kept it out of
+ * that artifact; it's keyed by oracle id, not card id) — the name component
+ * is joined from the committed `cardMetadata.json` by that same oracle id
+ * (review loop 1, B4/D5/E9). A card with no metadata entry (or no committed
+ * metadata file at all) falls back to an empty name, same as production's own
+ * `buildCompactCardSignal` does for a card with no name on the request.
  */
-export function buildPollutionText(cardDetailIndex: Map<string, CardDetailEntry>): string {
+export function buildPollutionText(
+  cardDetailIndex: Map<string, CardDetailEntry>,
+  cardNameIndex: Map<string, string> = loadCardNameByOracleId()
+): string {
   const oracleIds = [...cardDetailIndex.keys()].sort();
   const chosen = POLLUTION_ORACLE_INDEXES.map((index) => oracleIds[index % oracleIds.length]).filter(
     (id): id is string => typeof id === "string"
@@ -95,7 +133,7 @@ export function buildPollutionText(cardDetailIndex: Map<string, CardDetailEntry>
   return chosen
     .map((oracleId) => {
       const entry = cardDetailIndex.get(oracleId);
-      return entry ? buildCompactCardSignal("", entry.typeLine, entry.keywords) : "";
+      return entry ? buildCompactCardSignal(cardNameIndex.get(oracleId) ?? "", entry.typeLine, entry.keywords) : "";
     })
     .join(" ");
 }

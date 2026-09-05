@@ -15,10 +15,14 @@ mkdir -p "$package_root/apps/backend" "$artifact_dir"
 # REQ-181: the local embedding model (bundled, not fetched at request time —
 # SCOPE-B) must already be cached before this copy, or the package ships
 # without it and the `local` provider fails on every cold start. Warm it once
-# here if it is not already warm from a prior `npm run data:build`.
+# here if it is not already warm from a prior `npm run data:build`. Uses the
+# dedicated cache-warm script, not `npm run data:build-rule-embeddings` —
+# that script's job is rebuilding the committed `gameRulesRuleEmbeddings.json`
+# artifact, a tracked file this deploy-time step must never rewrite (review
+# loop 1, cheap finding #8).
 if [ ! -f "$repo_root/apps/backend/data/models/Xenova/all-MiniLM-L6-v2/onnx/model_quantized.onnx" ]; then
   echo "Warming local embedding model cache..." >&2
-  (cd "$repo_root" && npm run data:build-rule-embeddings >&2) || true
+  (cd "$repo_root" && npx tsx scripts/warm-embedding-model-cache.mjs >&2) || true
 fi
 
 cp "$repo_root/package.json" "$package_root/package.json"

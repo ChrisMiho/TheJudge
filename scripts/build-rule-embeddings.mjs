@@ -29,6 +29,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { format as prettierFormat } from "prettier";
 import { LOCAL_MODEL_CACHE_DIR, LOCAL_MODEL_ID } from "../apps/backend/src/providers/localEmbeddingProvider.ts";
 
@@ -45,16 +46,46 @@ function ensureParentDirectory(filePath) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
 }
 
+/**
+ * REQ-181/E12 (review loop 1): a hash of the rule index this artifact was
+ * built from, stored on the artifact itself (`ruleIndexHash`) — the
+ * accepted `GATE-QUESTIONS.md` wording says this step "runs in the same
+ * `npm run data:build` chain... rebuilds only on CR refresh." Since a CR
+ * refresh only changes anything downstream by changing
+ * `gameRulesRuleIndex.json`, keying the skip on a hash of that file (rather
+ * than a timestamp or a separate "did CR refresh run" flag) is the same
+ * condition expressed precisely, and re-running `data:build` on an unchanged
+ * checkout doesn't re-run the (comparatively slow) embedding step for
+ * nothing.
+ */
+export function hashRuleIndex(rawIndexJson) {
+  return createHash("sha256").update(rawIndexJson).digest("hex");
+}
+
 async function main() {
   if (!fs.existsSync(indexPath)) {
     console.warn(`Rule index not found; nothing to embed: ${indexPath}`);
     return;
   }
 
-  const entries = JSON.parse(fs.readFileSync(indexPath, "utf8"));
+  const rawIndexJson = fs.readFileSync(indexPath, "utf8");
+  const entries = JSON.parse(rawIndexJson);
   if (!Array.isArray(entries) || entries.length === 0) {
     console.warn(`Rule index is empty; nothing to embed: ${indexPath}`);
     return;
+  }
+
+  const ruleIndexHash = hashRuleIndex(rawIndexJson);
+  if (fs.existsSync(outputPath)) {
+    try {
+      const existing = JSON.parse(fs.readFileSync(outputPath, "utf8"));
+      if (existing.ruleIndexHash === ruleIndexHash) {
+        console.log(`Rule index unchanged (sha256 ${ruleIndexHash.slice(0, 12)}...); skipping rebuild: ${outputPath}`);
+        return;
+      }
+    } catch {
+      // Malformed existing artifact: fall through and rebuild.
+    }
   }
 
   const embeddingTexts = entries.map((entry) => ({ ruleId: entry.ruleId, embeddingText: buildEmbeddingText(entry) }));
@@ -93,6 +124,7 @@ async function main() {
     dims: EMBEDDING_DIMS,
     encoding: "float32-base64",
     generatedAt: new Date().toISOString(),
+    ruleIndexHash,
     ruleIds,
     vectorsBase64
   };

@@ -72,6 +72,17 @@ condition through the same shared `buildCompactCardSignal` production uses,
 so the benchmark measures the query shape actually shipped rather than a
 frozen pre-Slice-B approximation.
 
+2026-09-05 B4 (review loop 1) — the pollution simulation's card name and
+keywords were placeholder-weak until this loop (the committed
+`cardDetailByOracleId.json` had no real `keywords` yet, and `buildPollutionText`
+passed an empty name — see the D1/D5 review-loop-1 notes on
+`slice-d-scryfall-keywords.md`). Re-measured on the now-current corpus
+(post-Slice-C) with real name + real keywords in the polluted condition:
+clean recall@5 0.5833, multi-card (polluted) recall@5 0.5256, a gap of
+0.0577 — still well within the 0.10 ceiling, on a materially harder,
+realistic pollution text. `results.json` re-recorded; `step1-baseline.json`
+deliberately left untouched (see the D5 review-loop-1 note for why).
+
 2026-09-05 B5 — same run: clean recall@5 0.5769230769230769, exactly equal
 to the committed Slice A baseline (`benchmark/step1-baseline.json`
 clean.recall5 0.5769230769230769) — no regression. Expected: a

@@ -80,6 +80,15 @@ polluted), both are single-item boundary swaps, and this is judged not a
 substantive quality regression — a single-item swing from correcting corpus
 statistics is the expected cost of the fix, not evidence the fix is wrong.
 
+2026-09-05 C5 (review loop 1) — the multi-card 0.5321 above was measured
+under a placeholder-weak pollution simulation (empty card name, no
+committed Scryfall keywords yet). Re-measured with real name + real
+keywords (see `slice-d-scryfall-keywords.md`'s D1/D5 review-loop-1 notes):
+clean recall@5 unchanged at 0.5833; multi-card recall@5 0.5256 (down one
+more item from 0.5321, from genuinely harder pollution text, not a scorer
+change). Recorded here for the audit trail; the gate comparison this number
+now feeds is D5's, restated in `slice-d-scryfall-keywords.md`.
+
 2026-09-05 C6 — two labelled fixtures needed a hand relabel after the
 corpus/exclusion changes, both because previously-correct behavior depended
 on exactly what this slice removes: `quick-lookup-no-card` expected the bare

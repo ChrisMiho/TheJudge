@@ -13,6 +13,7 @@ import type { GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
 import type { ComboCatalog } from "../commanderSpellbook/catalog.js";
 import type { AskAiProvider } from "../providers/askAiProvider.js";
 import type { EmbeddingProvider } from "../providers/embeddingProvider.js";
+import { mockEmbeddingProvider } from "../providers/mockEmbeddingProvider.js";
 import type { AskAiRequest } from "../types/index.js";
 import { askAiRequestSchema } from "../validation/askAiRequest.js";
 import { toValidationErrorMessage } from "../app/errorHandler.js";
@@ -29,7 +30,12 @@ export type AskAiRouteDeps = {
   gameRulesRuleIndex?: GameRulesRuleIndexEntry[];
   comboCatalog?: ComboCatalog;
   collectEnrichmentDebug?: boolean;
-  /** REQ-181: absent under `EMBEDDING_PROVIDER=mock` (the default) — System 3 stays lexical-only. */
+  /**
+   * REQ-181: always present — `createApp` defaults this to
+   * `mockEmbeddingProvider` when no real provider is configured, it is never
+   * `undefined` in practice. Under `EMBEDDING_PROVIDER=mock` (the default)
+   * `embed()` always resolves to `null`, so System 3 stays lexical-only.
+   */
   embeddingProvider?: EmbeddingProvider;
 };
 
@@ -86,12 +92,15 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
       // REQ-181: the one async step in prompt preparation. Embedding happens
       // here, before the otherwise-synchronous `preparePromptInput`, so the
       // vector is passed in as an option rather than making prompt assembly
-      // itself async. `embeddingProvider` is absent under the default
-      // `EMBEDDING_PROVIDER=mock`, and any embedding failure resolves to
-      // `null` (never throws) — either way System 3 falls back to lexical
-      // retrieval with no change in behavior or latency shape.
+      // itself async. `embeddingProvider` is always present (`createApp`
+      // defaults it to `mockEmbeddingProvider`), so skip building the
+      // retrieval query text — wasted work, since `mockEmbeddingProvider`
+      // always resolves to `null` — when that's the provider in play. Any
+      // real-provider embedding failure also resolves to `null` (never
+      // throws) — either way System 3 falls back to lexical retrieval with
+      // no change in behavior or latency shape.
       let queryEmbedding: number[] | null = null;
-      if (embeddingProvider) {
+      if (embeddingProvider && embeddingProvider !== mockEmbeddingProvider) {
         const queryText = buildRetrievalQueryText(askAiRequest, { cardDetailIndex });
         queryEmbedding = await embeddingProvider.embed(queryText);
       }

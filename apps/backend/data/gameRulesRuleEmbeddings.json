@@ -2,7 +2,8 @@
   "model": "Xenova/all-MiniLM-L6-v2",
   "dims": 384,
   "encoding": "float32-base64",
-  "generatedAt": "2026-09-05T14:31:33.691Z",
+  "generatedAt": "2026-09-05T16:00:17.561Z",
+  "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
   "ruleIds": [
     "616",
     "100.1",

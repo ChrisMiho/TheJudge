@@ -459,6 +459,42 @@ function scoreEntrySemantic(
   return score;
 }
 
+/**
+ * REQ-181/E12 (review loop 1): the committed embeddings artifact and the
+ * committed rule index are two separate files, built by two separate steps
+ * (`build-rule-embeddings.mjs` reads `gameRulesRuleIndex.json`, but nothing
+ * stops a stale embeddings artifact from being committed alongside a newer
+ * index, or vice versa — the hash-skip in `build-rule-embeddings.mjs` guards
+ * the normal `npm run data:build` path, not every possible checkout state).
+ * If the two ever disagree on which rule ids exist, semantic ranking could
+ * either miss real rules (in the index, no vector) or rank stale ones (a
+ * vector for a rule id the index no longer has) — silently, with no
+ * indication anything's wrong. Checked once per (embeddings, index) pair —
+ * not per query — and cached, consistent with E7's "one diagnostic warning,
+ * fall back to lexical" pattern rather than a thrown error or a per-entry
+ * silent drop.
+ */
+const embeddingsRuleIndexMatchCache = new WeakMap<GameRulesRuleEmbeddings, { index: GameRulesRuleIndexEntry[]; matches: boolean }>();
+
+function embeddingsMatchRuleIndex(embeddings: GameRulesRuleEmbeddings, index: GameRulesRuleIndexEntry[]): boolean {
+  const cached = embeddingsRuleIndexMatchCache.get(embeddings);
+  if (cached && cached.index === index) return cached.matches;
+
+  const indexRuleIds = new Set(index.map((entry) => entry.ruleId));
+  const embeddingRuleIds = new Set(embeddings.ruleIds);
+  const matches = indexRuleIds.size === embeddingRuleIds.size && [...indexRuleIds].every((ruleId) => embeddingRuleIds.has(ruleId));
+
+  if (!matches) {
+    warnOnce(
+      "embeddings-rule-index-mismatch",
+      "Committed rule embeddings' rule ids do not match the current gameRulesRuleIndex.json; System 3 falls back to lexical retrieval."
+    );
+  }
+
+  embeddingsRuleIndexMatchCache.set(embeddings, { index, matches });
+  return matches;
+}
+
 function scoreIndex(
   tokens: QueryToken[],
   queryRuleIds: string[],
@@ -476,7 +512,11 @@ function scoreIndex(
   // (mock provider, embedding failure, missing/malformed artifact) is the
   // lexical path — never a thrown error, never a worse-than-before result.
   const embeddings = resources.ruleEmbeddings;
-  const useSemantic = queryVector !== null && embeddings !== null && queryVector.length === embeddings.dims;
+  const useSemantic =
+    queryVector !== null &&
+    embeddings !== null &&
+    queryVector.length === embeddings.dims &&
+    embeddingsMatchRuleIndex(embeddings, index);
   const embeddingByRuleId = useSemantic
     ? new Map(embeddings!.ruleIds.map((ruleId, vectorIndex) => [ruleId, embeddings!.vectors[vectorIndex]!]))
     : null;
@@ -536,6 +576,14 @@ export type SupplementalRulesDebug = {
   selected: Array<{ ruleId: string; sectionTitle: string; score: number }>;
   runnerUp: Array<{ ruleId: string; sectionTitle: string; score: number }>;
   candidatesScored: number;
+  /**
+   * REQ-181/E10 (review loop 1): whether this scoring pass actually ran
+   * semantic-primary (`scoreIndex`'s `useSemantic` gate) rather than silently
+   * falling back to lexical — surfaced so a caller (the eval harness's
+   * semantic-path test, in particular) can prove it exercised the real
+   * semantic path instead of an unnoticed fallback.
+   */
+  usedSemantic: boolean;
 };
 
 export type SupplementalRulesWithDebug = {
@@ -565,12 +613,13 @@ export function retrieveRulesForQueryWithDebug(
         excludedCuratedRuleCount: 0,
         selected: [],
         runnerUp: [],
-        candidatesScored: 0
+        candidatesScored: 0,
+        usedSemantic: false
       }
     };
   }
 
-  const { scored, excludedCuratedRuleCount } = scoreIndex(
+  const { scored, excludedCuratedRuleCount, usedSemantic } = scoreIndex(
     queryTokens,
     queryRuleIds,
     index,
@@ -591,7 +640,8 @@ export function retrieveRulesForQueryWithDebug(
       excludedCuratedRuleCount,
       selected: selected.map((rule) => ({ ruleId: rule.ruleId, sectionTitle: rule.sectionTitle, score: rule.score })),
       runnerUp: runnerUp.map((rule) => ({ ruleId: rule.ruleId, sectionTitle: rule.sectionTitle, score: rule.score })),
-      candidatesScored: scored.length
+      candidatesScored: scored.length,
+      usedSemantic
     }
   };
 }

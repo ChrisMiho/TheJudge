@@ -1,22 +1,21 @@
 {
   "id": "quick-lookup-multi-card",
-  "description": "Lookup mode with two attached cards and no combo intent: per-card metadata and rulings appear for both attached cards, and the System 3 supplemental retrieval query is built from the question plus each card's name, type line, and real Scryfall keywords (REQ-167, REQ-178, REQ-180).",
+  "description": "Lookup mode with two attached cards and no combo intent: per-card metadata and rulings appear for both attached cards, and the System 3 supplemental retrieval query is built from the question plus each card's name, type line, and real Scryfall keywords resolved by real oracle id through the committed cardDetailByOracleId.json artifact — the production path (REQ-167, REQ-178, REQ-180). South Wind Avatar's real keyword list is exactly [\"Deathtouch\"] (review loop 1, D4) — see quick-lookup-card.fixture.json's note on why a single-keyword card is used here instead of a multi-keyword one.",
   "request": {
     "mode": "lookup",
     "question": "Do these abilities interact during combat?",
     "cards": [
       {
-        "cardId": "fixture-questing-beast",
-        "name": "Questing Beast",
+        "cardId": "003e5dc6-8b26-4a0a-a50b-5f0806a7bacd",
+        "name": "South Wind Avatar",
         "oracleText": "Deathtouch",
         "imageUrl": "",
-        "manaCost": "{2}{G}{G}",
+        "manaCost": "{3}{B}",
         "manaValue": 4,
-        "typeLine": "Legendary Creature — Beast",
-        "colors": ["G"],
-        "supertypes": ["Legendary"],
-        "subtypes": ["Beast"],
-        "keywords": ["Deathtouch"]
+        "typeLine": "Creature — Snake Spirit Avatar",
+        "colors": ["B"],
+        "supertypes": [],
+        "subtypes": ["Snake", "Spirit", "Avatar"]
       },
       {
         "cardId": "eval-oracle-b",

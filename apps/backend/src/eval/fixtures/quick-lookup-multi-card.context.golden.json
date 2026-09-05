@@ -2,21 +2,21 @@
   "finalQuestion": "Do these abilities interact during combat?",
   "cards": [
     {
-      "cardId": "fixture-questing-beast",
-      "name": "Questing Beast",
+      "cardId": "003e5dc6-8b26-4a0a-a50b-5f0806a7bacd",
+      "name": "South Wind Avatar",
       "oracleText": "Deathtouch",
       "imageUrl": "",
-      "manaCost": "{2}{G}{G}",
+      "manaCost": "{3}{B}",
       "manaValue": 4,
-      "typeLine": "Legendary Creature — Beast",
+      "typeLine": "Creature — Snake Spirit Avatar",
       "colors": [
-        "G"
+        "B"
       ],
-      "supertypes": [
-        "Legendary"
-      ],
+      "supertypes": [],
       "subtypes": [
-        "Beast"
+        "Snake",
+        "Spirit",
+        "Avatar"
       ],
       "keywords": [
         "Deathtouch"
