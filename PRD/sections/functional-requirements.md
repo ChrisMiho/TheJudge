@@ -3992,6 +3992,28 @@
   - both surfaces reuse the same `buildSeatMapCells`, placing each seat at its arrangement `gridRow`/`gridColumn`/`gridArea`; the on-card map is that same miniature, just counter-rotated to stay top-down inside the rotated card
   - the reference's 1–5 relative-index labels are not adopted: position tells you who, the damage number tells you how much
 
+### REQ-174
+- Title: Image-first up-front card list
+- Priority: high
+- Description: The shared card metadata the frontend loads on entry to MTG Assistant and Quick Lookup carries only the fields a card tile renders directly — `cardId` (oracle id), `name`, `imageUrl`, and `colors` — and no longer carries the descriptive block (`oracleText`, `typeLine`, `manaCost`, `manaValue`, `supertypes`, `subtypes`), which is fetched on demand per REQ-175 / FLOW-024. `colors` stays up front because each card tile draws its identity ring from the card's colors (FLOW-001, DEC-078).
+- Acceptance Criteria:
+  - `scripts/build-card-metadata.mjs` emits `apps/frontend/public/data/cardMetadata.json` records containing only `cardId`, `name`, `imageUrl`, and `colors`
+  - autocomplete, card selection, image rendering, and the color identity ring behave identically off the slimmed list at both 390×844 and 1440×900
+  - no card surface renders a descriptive field (oracle text, type line, mana cost/value, sub/supertypes) directly from the up-front list; those fields arrive only via the on-demand fetch (FLOW-024)
+  - the color identity ring (including silver-gray for colorless/missing colors) renders from the up-front `colors` with no detail fetch
+- Constraints:
+  - do not remove `colors` from the up-front list; the tile ring depends on it
+  - representative-printing selection, image selection, and card identity are unchanged
+- Dependencies:
+  - REQ-175
+  - FLOW-024
+  - DEC-078
+  - DEC-160
+  - FLOW-001
+  - NFR-019
+- Notes:
+  - the dominant byte-mass (oracle text, 45.4% of the file) is what this removes from first load
+
 ### REQ-175
 - Title: Card-detail retrieval endpoint and backend card-detail artifact
 - Priority: high

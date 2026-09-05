@@ -8,17 +8,14 @@ export type PlayerLabel =
   | "Player 7"
   | "Player 8";
 
+/** REQ-174: the up-front artifact carries only what a card tile renders
+ * directly — the descriptive block (oracle text, mana, type, sub/supertypes)
+ * is fetched on demand by oracle id instead (REQ-175, FLOW-024). */
 export type CardMetadataItem = {
   cardId: string;
   name: string;
-  oracleText: string;
   imageUrl: string;
-  manaCost: string;
-  manaValue: number;
-  typeLine: string;
   colors: string[];
-  supertypes: string[];
-  subtypes: string[];
 };
 
 export type GamePlayerContext = {

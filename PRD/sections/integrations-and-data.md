@@ -219,7 +219,8 @@ Purpose:
 
 ## Metadata Strategy
 - use a static prebuilt metadata file committed with the app
-- local metadata powers autocomplete and preview
+- the committed frontend metadata artifact carries only the up-front tile fields — `cardId` (oracle id), `name`, `imageUrl`, `colors` — and no descriptive block (REQ-174); descriptive fields are fetched on demand per card from the `GET /api/cards/:oracleId` endpoint (REQ-175, D5), on first card-detail open
+- local metadata powers autocomplete and the tile (name, image, color ring); the card-detail popup and Quick Lookup pre-submit preview fetch the descriptive block from the endpoint on open (FLOW-024)
 - filter source records to english, paper-playable, non-digital cards with a non-empty name
 - dedupe by normalized card name with deterministic tie-breaks (higher metadata completeness, then later release date, then stable ID)
 - do not implement runtime sync/refresh in the core product

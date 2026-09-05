@@ -12,7 +12,7 @@ vi.mock("./lib/debugLogger", async () => {
 
 import App from "./App";
 import { NO_MATCH_COPY } from "./lib/search";
-import type { CardMetadataItem } from "./types";
+import type { CardFixture } from "./test/appTestHelpers";
 import {
   expandPlayerDetails,
   selectTurnPhase,
@@ -195,7 +195,7 @@ describe("Interaction flows - search and game context", () => {
   });
 
   it("keeps ordered suggestions, threshold, and no-match behavior in parity across stack and battlefield flows", async () => {
-    const parityFixture: CardMetadataItem[] = [
+    const parityFixture: CardFixture[] = [
       {
         cardId: "swords-to-plowshares",
         name: "Swords to Plowshares",

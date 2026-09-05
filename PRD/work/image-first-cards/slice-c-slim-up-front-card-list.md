@@ -1,6 +1,48 @@
 # Slice C — Slim the up-front card list
 
-## Status: planned
+## Status: done
+
+### Resolution (2026-09-04, attempt 3)
+
+NFR-019's 80%-gzipped-reduction floor was structurally unreachable: the
+removed descriptive text compresses well under gzip while the kept
+`cardId`/`imageUrl` barely do, so raw size dropped ~87% but gzipped only
+~48.1% (4,246,522 → 2,204,907 bytes) against the live 33,399-card corpus.
+Recorded as a blocker on PR #185
+(https://github.com/ChrisMiho/TheJudge/pull/185#issuecomment-5546866433) with
+four resolution options; the owner recalibrated the floor to **>= 40%
+gzipped reduction** (relative gate kept — robust to corpus growth — floor
+lowered below the measured ~48% with headroom for data-refresh drift).
+Applied together, in this commit:
+`MIN_GZIPPED_REDUCTION` in `scripts/build-card-metadata.mjs` (0.8 → 0.4,
+doc comment updated with the recalibration rationale), and NFR-019's
+`PRD/sections/non-functional-requirements.md` text (>= 40%, with the
+owner-recalibration provenance note). `node scripts/build-card-metadata.mjs`
+now passes: 48.1% >= 40%.
+
+Also fixed as a forced supporting change: `scripts/compare-combo-answer-quality.test.mjs`'s
+"every scenario card matches the committed card corpus field for field" test
+compared every fixture field against `cardMetadata.json`, which broke once
+this slice removed the descriptive block from that file. It now checks
+identity/tile fields (`cardId`, `name`, `colors`) against `cardMetadata.json`
+and descriptive fields (`oracleText`, `typeLine`, `manaCost`, `manaValue`,
+`supertypes`, `subtypes`) against `apps/backend/data/cardDetailByOracleId.json`
+— the backend artifact that now carries them (REQ-175).
+
+C1–C10 evidence (all green, committed):
+- `npm run typecheck` — clean (0 errors) with the trimmed `CardMetadataItem`
+- `npm run test -- --run` — 1315/1315 frontend, 398/398 backend passing,
+  including the slimmed `CardMetadataItem` fixtures across all touched
+  consumers (`ZoneCardPicker`, `ZoneCollectionStep`, `useAutocompleteSuggestions`,
+  `useScanCapture`, `search`, `resolveScanCandidates`, `zoneCards`,
+  `contextFlow/flow`, `QuickLookupApp`, `useTradeScan`, plus the shared
+  `appTestHelpers`/`interactionFlowsHarness` fixture split into
+  `CardFixture` (test-only, carries the descriptive block for the
+  `/api/cards/:oracleId` mock) vs. the real slim `CardMetadataItem`
+  (served from `/data/cardMetadata.json`))
+- No card surface renders a descriptive field from the up-front list; the
+  identity ring renders from `colors` alone (unchanged by this slice — it
+  was already carried up front and stays so)
 
 ## Goal
 
@@ -35,9 +77,10 @@ list carrying descriptive fields.
    colorless/missing-color fallback) render unchanged off the slimmed
    objects at both 390×844 and 1440×900.
 4. The build records before/after gzipped sizes for `cardMetadata.json` and
-   asserts the trimmed artifact is at least 80% smaller (gzipped) than the
+   asserts the trimmed artifact is at least 40% smaller (gzipped) than the
    prior combined 16.4 MB artifact — a firm pass/fail gate, not an estimate
-   (NFR-019).
+   (NFR-019; owner-recalibrated 2026-09-04 from the structurally unreachable
+   80% — measured 48.1%).
 5. Apply this slice's `PRD/sections/` share (re-derive each diff against
    current file content at build time):
    - New: `REQ-174`, `NFR-019` (functional-requirements.md /
@@ -54,34 +97,35 @@ list carrying descriptive fields.
 
 ## Acceptance criteria
 
-- [ ] C1 — `scripts/build-card-metadata.mjs` emits records with only
+- [x] C1 — `scripts/build-card-metadata.mjs` emits records with only
       `cardId`, `name`, `imageUrl`, `colors`
-- [ ] C2 — `apps/frontend/src/types.ts` — `CardMetadataItem` no longer
+- [x] C2 — `apps/frontend/src/types.ts` — `CardMetadataItem` no longer
       declares the descriptive fields
-- [ ] C3 — the build records before/after gzipped `cardMetadata.json` size
-      and asserts at least 80% reduction versus the prior combined 16.4 MB
-      artifact; the assertion fails the build if not met
-- [ ] C4 — `npm run typecheck` is clean with the trimmed
+- [x] C3 — the build records before/after gzipped `cardMetadata.json` size
+      and asserts at least 40% reduction (owner-recalibrated 2026-09-04 from
+      the structurally unreachable 80%) versus the prior combined 16.4 MB
+      artifact; the assertion fails the build if not met — measured 48.1%
+- [x] C4 — `npm run typecheck` is clean with the trimmed
       `CardMetadataItem` — every listed consumer (Requirements #3) compiles
       with no remaining reference to the removed fields
-- [ ] C5 — no card surface renders a descriptive field (oracle text, type
+- [x] C5 — no card surface renders a descriptive field (oracle text, type
       line, mana cost/value, sub/supertypes) directly from the up-front
       list; those fields render only via Slice A's on-demand popup fetch —
       component tests for the surfaces touched in Requirements #3 confirm
       this
-- [ ] C6 — the color identity ring (including silver-gray for
+- [x] C6 — the color identity ring (including silver-gray for
       colorless/missing colors) renders from the up-front `colors` field
       with no detail fetch, on every surface that draws it
-- [ ] C7 — `npm run test` and `npm run quality:check` are green
-- [ ] C8 — this slice's `PRD/sections/` share (listed in Requirements #5) is
+- [x] C7 — `npm run test` and `npm run quality:check` are green
+- [x] C8 — this slice's `PRD/sections/` share (listed in Requirements #5) is
       applied, re-derived against current file content, in the same change
       as the code
-- [ ] C9 — manual/Playwright: MTG Assistant and Quick Lookup, at 390×844
+- [x] C9 — manual/Playwright: MTG Assistant and Quick Lookup, at 390×844
       and 1440×900, show autocomplete suggestions, card selection, the
       image, and each tile's color identity ring rendering identically to
       pre-slice behavior off the slimmed data — including a colorless card
       showing the silver-gray ring
-- [ ] C10 — Browser closed, owned server(s) stopped, ports released;
+- [x] C10 — Browser closed, owned server(s) stopped, ports released;
       captures written to `PRD/work/image-first-cards/.playwright-mcp/`
 
 ## Verification

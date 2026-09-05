@@ -96,15 +96,24 @@ test("every scenario card matches the committed card corpus field for field", as
   // text reaches the provider unchallenged. The 2026-08-22 run spent twelve
   // live calls on cards whose text described abilities they do not have —
   // Avatar of Growth as a +1/+1 counter ETB, Springheart Nantuko without
-  // bestow — which made every answer's rules reasoning unusable. In the real
-  // app buildZoneCardFromMetadata() copies these fields straight out of
-  // cardMetadata.json, so the fixtures must do the same.
-  const corpus = new Map(
+  // bestow — which made every answer's rules reasoning unusable.
+  //
+  // REQ-174 slimmed the up-front `cardMetadata.json` to only the tile fields
+  // (cardId, name, imageUrl, colors); the descriptive block (oracleText,
+  // typeLine, manaCost, manaValue, supertypes, subtypes) now lives only in
+  // the backend `cardDetailByOracleId.json` artifact (REQ-175), keyed by the
+  // same oracle id. So identity/tile fields validate against the frontend
+  // corpus and descriptive fields validate against the backend one.
+  const tileCorpus = new Map(
     JSON.parse(fs.readFileSync(path.resolve("apps/frontend/public/data/cardMetadata.json"), "utf8")).map((card) => [
       card.cardId,
       card
     ])
   )
+  const detailCorpus = JSON.parse(
+    fs.readFileSync(path.resolve("apps/backend/data/cardDetailByOracleId.json"), "utf8")
+  )
+  const descriptiveFields = new Set(["oracleText", "typeLine", "manaCost", "manaValue", "supertypes", "subtypes"])
   // imageUrl is deliberately blank in the fixtures; owner/targets are request
   // state, not card identity. Everything else must be the corpus verbatim.
   const exempt = new Set(["imageUrl", "owner", "targets"])
@@ -113,10 +122,13 @@ test("every scenario card matches the committed card corpus field for field", as
   assert.ok(cards.length >= 7, `expected the curated scenarios to submit real cards, found ${cards.length}`)
 
   for (const card of cards) {
-    const real = corpus.get(card.cardId)
-    assert.ok(real, `${card.name} (${card.cardId}) is not in the committed card corpus`)
+    const tile = tileCorpus.get(card.cardId)
+    assert.ok(tile, `${card.name} (${card.cardId}) is not in the committed card corpus`)
+    const detail = detailCorpus[card.cardId]
+    assert.ok(detail, `${card.name} (${card.cardId}) has no committed card-detail record`)
     for (const [field, value] of Object.entries(card)) {
       if (exempt.has(field)) continue
+      const real = descriptiveFields.has(field) ? detail : tile
       assert.deepEqual(value, real[field], `${card.name}: fixture ${field} does not match the card corpus`)
     }
   }

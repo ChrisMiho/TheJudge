@@ -12,22 +12,14 @@ import { DUPLICATE_CARD_MESSAGE } from "./stackLimits";
 const SAMPLE_CARD: CardMetadataItem = {
   cardId: "opt",
   name: "Opt",
-  oracleText: "Scry 1, then draw a card.",
   imageUrl: "",
-  manaCost: "{U}",
-  manaValue: 1,
-  typeLine: "Instant",
   colors: ["U"],
-  supertypes: [],
-  subtypes: []
 };
 
 const BOLT_CARD: CardMetadataItem = {
   ...SAMPLE_CARD,
   cardId: "lightning-bolt",
   name: "Lightning Bolt",
-  oracleText: "Lightning Bolt deals 3 damage to any target.",
-  manaCost: "{R}",
   colors: ["R"]
 };
 

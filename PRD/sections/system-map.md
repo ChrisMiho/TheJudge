@@ -253,7 +253,7 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ## Card search & metadata
 
 - Status: shipped
-- Summary: Runtime card metadata fetch, fuzzy autocomplete, and zone-card construction in the frontend.
+- Summary: Runtime card metadata fetch (up-front list slimmed to `cardId`, `name`, `imageUrl`, `colors` — REQ-174), fuzzy autocomplete, and zone-card construction in the frontend; descriptive fields load on demand by oracle id (REQ-175 / FLOW-024).
 - Lives in: `apps/frontend/src/lib/search.ts`, `lib/zoneCards.ts`
 - Backed by: DEC-012, REQ-002, REQ-003
 

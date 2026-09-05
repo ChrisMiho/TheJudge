@@ -3,9 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CardMetadataItem } from "../../../types";
 import { NO_MATCH_COPY } from "../../../lib/search";
+import { toCardDetail, toSlimMetadata, type CardFixture } from "../../../test/appTestHelpers";
 import { QuickLookupApp } from "./QuickLookupApp";
 
-const lightningBolt: CardMetadataItem = {
+const lightningBolt: CardFixture = {
   cardId: "oracle-lightning-bolt",
   name: "Lightning Bolt",
   oracleText: "Lightning Bolt deals 3 damage to any target.",
@@ -18,7 +19,7 @@ const lightningBolt: CardMetadataItem = {
   subtypes: []
 };
 
-const counterspell: CardMetadataItem = {
+const counterspell: CardFixture = {
   cardId: "oracle-counterspell",
   name: "Counterspell",
   oracleText: "Counter target spell.",
@@ -31,7 +32,7 @@ const counterspell: CardMetadataItem = {
   subtypes: []
 };
 
-function simpleCard(cardId: string, name: string): CardMetadataItem {
+function simpleCard(cardId: string, name: string): CardFixture {
   return {
     cardId,
     name,
@@ -118,7 +119,7 @@ function jsonResponse(payload: unknown): Response {
  * used to seed `/data/cardMetadata.json`. */
 function cardDetailResponseFor(
   url: string,
-  cardMetadata: CardMetadataItem[]
+  cardMetadata: CardFixture[]
 ): Response | undefined {
   const match = url.match(/\/api\/cards\/([^/?]+)$/);
   if (!match) {
@@ -129,15 +130,7 @@ function cardDetailResponseFor(
   if (!card) {
     return new Response(null, { status: 404 });
   }
-  return jsonResponse({
-    oracleText: card.oracleText,
-    typeLine: card.typeLine,
-    manaCost: card.manaCost,
-    manaValue: card.manaValue,
-    colors: card.colors,
-    supertypes: card.supertypes,
-    subtypes: card.subtypes
-  });
+  return jsonResponse(toCardDetail(card));
 }
 
 /** REQ-176: the wire request carries only identity + image now — the
@@ -148,13 +141,13 @@ function toWireCard(card: CardMetadataItem): { cardId: string; name: string; ima
 
 function appFetchMock(
   answers: string[],
-  cardMetadata: CardMetadataItem[] = [lightningBolt, counterspell]
+  cardMetadata: CardFixture[] = [lightningBolt, counterspell]
 ): ReturnType<typeof vi.fn> {
   let answerIndex = 0;
   return vi.fn((input: RequestInfo | URL) => {
     const url = String(input);
     if (url === "/data/cardMetadata.json") {
-      return Promise.resolve(jsonResponse(cardMetadata));
+      return Promise.resolve(jsonResponse(cardMetadata.map(toSlimMetadata)));
     }
     if (url === "/data/gameRulesCoreTopics.json") {
       return Promise.resolve(jsonResponse(coreTopics));
@@ -199,7 +192,7 @@ describe("QuickLookupApp", () => {
       vi.fn((input: RequestInfo | URL) => {
         const url = String(input);
         if (url === "/data/cardMetadata.json") {
-          return Promise.resolve(jsonResponse([lightningBolt, counterspell]));
+          return Promise.resolve(jsonResponse([lightningBolt, counterspell].map(toSlimMetadata)));
         }
         if (url === "/data/gameRulesCoreTopics.json") {
           return Promise.resolve(jsonResponse(coreTopics));
@@ -356,9 +349,9 @@ describe("QuickLookupApp", () => {
     expect(screen.queryByRole("heading", { name: "Lightning Bolt" })).not.toBeInTheDocument();
     // Oracle text is not stacked under the image by default (DEC-151) — it is reached via
     // the suite-wide corner detail popup.
-    expect(screen.queryByText(lightningBolt.oracleText)).not.toBeInTheDocument();
+    expect(screen.queryByText(lightningBolt.oracleText!)).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Show details for Lightning Bolt" }));
-    expect(await screen.findByText(lightningBolt.oracleText)).toBeInTheDocument();
+    expect(await screen.findByText(lightningBolt.oracleText!)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Close details for Lightning Bolt" }));
     expect(screen.getByRole("heading", { name: "General rules topics" })).toBeVisible();
     await openGeneralRulesTopics(user);
@@ -399,7 +392,7 @@ describe("QuickLookupApp", () => {
 
     expect(await screen.findByRole("img", { name: "Counterspell" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Show details for Counterspell" }));
-    expect(await screen.findByText(counterspell.oracleText)).toBeInTheDocument();
+    expect(await screen.findByText(counterspell.oracleText!)).toBeInTheDocument();
   });
 
   it("caps the raw question at 300 characters and blocks blank submission", async () => {
@@ -496,7 +489,7 @@ describe("QuickLookupApp", () => {
     expect(submitButton).toBeEnabled();
     await user.click(submitButton);
 
-    expect(onSubmit).toHaveBeenCalledWith("Tell me about Lightning Bolt.", [lightningBolt]);
+    expect(onSubmit).toHaveBeenCalledWith("Tell me about Lightning Bolt.", [toSlimMetadata(lightningBolt)]);
   });
 
   it("replaces the question form during the initial wait and restores it on error", async () => {
@@ -505,7 +498,7 @@ describe("QuickLookupApp", () => {
     const fetchMock = vi.fn((input: RequestInfo | URL) => {
       const url = String(input);
       if (url === "/data/cardMetadata.json") {
-        return Promise.resolve(jsonResponse([lightningBolt, counterspell]));
+        return Promise.resolve(jsonResponse([lightningBolt, counterspell].map(toSlimMetadata)));
       }
       if (url === "/data/gameRulesCoreTopics.json") {
         return Promise.resolve(jsonResponse(coreTopics));

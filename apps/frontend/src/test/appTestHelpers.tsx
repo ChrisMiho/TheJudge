@@ -3,11 +3,37 @@ import { resolve } from "node:path";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NO_MATCH_COPY } from "../lib/search";
+import type { CardDetailBlock } from "../lib/cardDetail";
 import type { CardMetadataItem } from "../types";
 
 export const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
 
-export const baseCardMetadataFixture: CardMetadataItem[] = [
+/**
+ * Test-fixture shape: the slim up-front `CardMetadataItem` fields (REQ-174)
+ * plus the descriptive block, so one literal seeds both the
+ * `/data/cardMetadata.json` mock (slim, via `toSlimMetadata`) and the
+ * `GET /api/cards/:oracleId` popup-detail mock (full, via `toCardDetail`)
+ * without duplicating card data across the two.
+ */
+export type CardFixture = CardMetadataItem & Partial<CardDetailBlock>;
+
+export function toSlimMetadata(card: CardFixture): CardMetadataItem {
+  return { cardId: card.cardId, name: card.name, imageUrl: card.imageUrl, colors: card.colors };
+}
+
+export function toCardDetail(card: CardFixture): CardDetailBlock {
+  return {
+    oracleText: card.oracleText ?? "",
+    typeLine: card.typeLine ?? "",
+    manaCost: card.manaCost ?? "",
+    manaValue: card.manaValue ?? 0,
+    colors: card.colors ?? [],
+    supertypes: card.supertypes ?? [],
+    subtypes: card.subtypes ?? []
+  };
+}
+
+export const baseCardMetadataFixture: CardFixture[] = [
   {
     cardId: "opt",
     name: "Opt",
@@ -130,7 +156,7 @@ export function startOnInDepthQuestion(): void {
   }
 }
 
-export function createStackItem(name: string, index: number): CardMetadataItem {
+export function createStackItem(name: string, index: number): CardFixture {
   return {
     cardId: `card-${index}`,
     name,

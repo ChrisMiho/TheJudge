@@ -22,13 +22,7 @@ beforeEach(() => {
     vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
-          oracleText: "",
-          typeLine: "",
-          manaCost: "",
-          manaValue: 0,
           colors: [],
-          supertypes: [],
-          subtypes: []
         }),
         { status: 200, headers: { "content-type": "application/json" } }
       )
@@ -56,14 +50,8 @@ function makeZoneCard(cardId: string, name: string, overrides: Partial<ZoneCardI
   return {
     cardId,
     name,
-    oracleText: "",
     imageUrl: "",
-    manaCost: "",
-    manaValue: 0,
-    typeLine: "",
     colors: [],
-    supertypes: [],
-    subtypes: [],
     ...overrides
   };
 }
@@ -72,14 +60,8 @@ function makeMetadataCard(name: string, imageUrl: string): CardMetadataItem {
   return {
     cardId: name.toLowerCase(),
     name,
-    oracleText: "",
     imageUrl,
-    manaCost: "",
-    manaValue: 0,
-    typeLine: "",
     colors: [],
-    supertypes: [],
-    subtypes: []
   };
 }
 

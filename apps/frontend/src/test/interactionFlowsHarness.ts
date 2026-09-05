@@ -2,13 +2,15 @@ import { afterEach, beforeEach, vi } from "vitest";
 
 import { clearCardDetailCache } from "../lib/cardDetail";
 import type { ZoneAskAiPayload } from "../lib/contextFlow";
-import type { CardMetadataItem } from "../types";
 import {
   baseCardMetadataFixture,
   getUrlFromRequest,
   jsonResponse,
   normalizeHeaders,
-  startOnInDepthQuestion
+  startOnInDepthQuestion,
+  toCardDetail,
+  toSlimMetadata,
+  type CardFixture
 } from "./appTestHelpers";
 
 // `App.interaction-flows*.test.tsx` was one 1300-line file until it became the
@@ -32,14 +34,14 @@ export const submittedAskAiHeaders: Array<Record<string, string>> = [];
 export const createCorrelationIdMock = vi.fn(() => "corr-test-id");
 export const logFrontendDebugMock = vi.fn();
 
-let metadataFixture: CardMetadataItem[] = [];
+let metadataFixture: CardFixture[] = [];
 let askAiResponseQueue: AskAiResponse[] = [];
 
 export function queueAskAiResponses(...responses: AskAiResponse[]): void {
   askAiResponseQueue = responses;
 }
 
-export function setMetadataFixture(cards: CardMetadataItem[]): void {
+export function setMetadataFixture(cards: CardFixture[]): void {
   metadataFixture = cards;
 }
 
@@ -58,7 +60,7 @@ export function installInteractionFlowsHarness(): void {
       const url = getUrlFromRequest(input);
 
       if (url === "/data/cardMetadata.json") {
-        return jsonResponse(metadataFixture);
+        return jsonResponse(metadataFixture.map(toSlimMetadata));
       }
 
       // Card-detail popup fetch (REQ-175, FLOW-024): serve the descriptive block
@@ -71,15 +73,7 @@ export function installInteractionFlowsHarness(): void {
         if (!card) {
           return jsonResponse({ error: "card_not_found" }, 404);
         }
-        return jsonResponse({
-          oracleText: card.oracleText,
-          typeLine: card.typeLine,
-          manaCost: card.manaCost,
-          manaValue: card.manaValue,
-          colors: card.colors,
-          supertypes: card.supertypes,
-          subtypes: card.subtypes
-        });
+        return jsonResponse(toCardDetail(card));
       }
 
       if (url.endsWith("/api/ask-ai") && init?.method === "POST") {

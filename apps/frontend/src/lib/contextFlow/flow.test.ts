@@ -24,7 +24,6 @@ function makeCard(id: string, name = id): ZoneCardItem {
   return {
     cardId: id,
     name,
-    oracleText: ""
   };
 }
 
@@ -346,14 +345,8 @@ describe("buildLookupAskAiRequest", () => {
   const lookupCard: CardMetadataItem = {
     cardId: "oracle-lightning-bolt",
     name: "Lightning Bolt",
-    oracleText: "Lightning Bolt deals 3 damage to any target.",
     imageUrl: "https://cards.example/lightning-bolt.jpg",
-    manaCost: "{R}",
-    manaValue: 1,
-    typeLine: "Instant",
     colors: ["R"],
-    supertypes: [],
-    subtypes: []
   };
 
   it("builds a trimmed lookup payload without a card", () => {
@@ -391,14 +384,8 @@ describe("buildLookupAskAiRequest", () => {
     const secondCard: CardMetadataItem = {
       cardId: "oracle-counterspell",
       name: "Counterspell",
-      oracleText: "Counter target spell.",
       imageUrl: "https://cards.example/counterspell.jpg",
-      manaCost: "{U}{U}",
-      manaValue: 2,
-      typeLine: "Instant",
       colors: ["U"],
-      supertypes: [],
-      subtypes: []
     };
 
     const payload = buildLookupAskAiRequest("How do these interact?", [lookupCard, secondCard]);

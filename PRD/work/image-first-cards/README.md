@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # image-first-cards
 
@@ -42,8 +42,11 @@ https://github.com/ChrisMiho/TheJudge/pull/184
 
 All 15 owner decisions in `GATE-QUESTIONS.md` are answered `accept` or
 resolved `edit` (D3 name-only fallback, D5 endpoint alternative, NFR-019
-firm 80%-gzipped gate) with no rejections and no blockers. See
-`GATE-QUESTIONS.md` for the complete proposal and resolutions.
+firm gzipped gate — pinned at gate-review to 80%, then owner-recalibrated at
+build 2026-09-04 to >= 40% once the 80% floor proved structurally
+unreachable against the real corpus, measured 48.1%) with no rejections and
+no blockers. See `GATE-QUESTIONS.md` for the complete proposal and
+resolutions.
 
 ## Slices
 
@@ -55,7 +58,7 @@ slice safe to ship on its own.
 | --- | --- | --- | --- |
 | [A](slice-a-card-detail-endpoint-and-on-demand-popup.md) | Card-detail endpoint, backend artifact, on-demand popup (all surfaces) | none | done |
 | [B](slice-b-ask-ai-server-side-card-text.md) | Ask-ai resolves card text server-side; client stops sending it | A | done |
-| [C](slice-c-slim-up-front-card-list.md) | Slim the up-front card list | A, B | planned |
+| [C](slice-c-slim-up-front-card-list.md) | Slim the up-front card list | A, B | done |
 
 ## Implementation map
 
