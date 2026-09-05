@@ -14,7 +14,7 @@ Its primary feature, **MTG Assistant**, helps players build staged game context,
 
 - Product: MTG assistant suite (`DEC-094`); primary MTG Assistant loop is validated (past MVP), deployed on AWS with live OpenAI (`DEC-084`), and being refined from real user feedback
 - Baseline: MTG Assistant (staged zone flow + Ask AI), card scanning, personalization, and planned Trade Balancer; mock-default local backend with optional OpenAI provider mode (`DEC-020` in `PRD/sections/decisions/providers-and-contract.md`, indexed from `PRD/sections/decisions.md`; canonical rule: `PRD/sections/integrations-and-data.md`)
-- Product source of truth: `PRD/sections/` (start with the `decisions.md` router)
+- Product source of truth: `PRD/sections/` — read-first #1 is the current-state feature spec `PRD/sections/<feature>/README.md`; `PRD/sections/decisions.md` is a demoted historical index that only resolves a cited `DEC-ID` (canonical rule: `PRD/instructions/doc-lifecycle.md`, "Decision lifecycle (retired)")
 - Agent workflow skills: see `AGENT-SKILLS.md` (canonical: `.claude/skills/`)
 
 ## Tech Stack
@@ -160,7 +160,7 @@ Quick local verification flow:
 
 - Keep product truth and planning detail in `PRD/`.
 - Keep this root README concise and onboarding-focused.
-- Keep product truth in `PRD/sections/`; record new DEC bodies in the relevant `PRD/sections/decisions/<domain>.md` file and keep the `PRD/sections/decisions.md` router index current.
+- Keep product truth in `PRD/sections/`; record it by editing the current-state feature spec `PRD/sections/<feature>/README.md` and its cited `REQ`/`FLOW` entries in place. The decision log is **retired** — do not author a new `DEC-###` (canonical rule: `PRD/instructions/doc-lifecycle.md`, "Decision lifecycle (retired)"). `PRD/sections/decisions.md` is a demoted historical index that only resolves a cited `DEC-ID`.
 - Keep historical implementation detail out of the repo unless promoted into active PRD sections.
 - Empty-state artwork is bundled at `apps/frontend/public/assets/cats-homescreen.png`; keep it local/static and retain a text fallback path.
 - Provider integration boundary docs live in `apps/backend/src/providers/README.md`.

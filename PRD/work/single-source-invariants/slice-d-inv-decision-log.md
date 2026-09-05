@@ -1,6 +1,6 @@
 # Slice D — INV-DECISION-LOG: fix the two root-README decision-log contradictions
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -33,17 +33,27 @@ opposite of what the rest of the corpus requires.
 
 ## Acceptance criteria
 
-- [ ] D1 — root `README.md:17` no longer tells a reader to "start with the
+- [x] D1 — root `README.md:17` no longer tells a reader to "start with the
       `decisions.md` router"; it names the current-state feature spec as
       read-first #1 and cites `doc-lifecycle.md` for the decision-lifecycle
       rule
-- [ ] D2 — root `README.md:163` no longer instructs authoring new `DEC-###`
+- [x] D2 — root `README.md:163` no longer instructs authoring new `DEC-###`
       bodies or keeping a router index current; it instructs editing the
       current-state feature spec and cites `doc-lifecycle.md`
-- [ ] D3 — re-grep root `README.md` for `decisions.md router|record new DEC|
+- [x] D3 — re-grep root `README.md` for `decisions.md router|record new DEC|
       start with` and confirm no line still treats the decision log as live
       or read-first; confirm `:16,136,137` (DEC-ID resolution) are unchanged
       (manual check — no test command applies to this docs-only slice)
+
+### Re-grep observation: 2026-09-04 D3 — root README decision-log family
+
+Re-ran the Verification block pattern after D1–D2 landed. Remaining hits are
+the fixed `:17` and `:163` lines themselves and the three DEC-ID resolution
+lines `:16` (DEC-020), `:136` (DEC-020), `:137` (DEC-029) — all confirmed
+unchanged, each merely resolving a cited `DEC-ID` via the index, which the
+retired-log rule permits. No line still tells a reader to start at the
+decisions.md router or to author a new DEC body. `doc-lifecycle.md` was not
+edited by this slice.
 
 ## Verification
 
