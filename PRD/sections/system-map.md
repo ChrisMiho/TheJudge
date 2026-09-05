@@ -85,9 +85,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Supplemental retrieval (System 3)
 
 - Status: shipped
-- Summary: Selects up to 5 supplemental rule excerpts per request. The query is the player's question plus a compact per-card signal (name, type line, keywords), not raw card oracle text. Ranking is semantic-primary — cosine over committed per-rule embeddings — with the exact-rule-id boost merged in and lexical IDF scoring retained as the mock/offline default and the failure fallback; deduplicated against the System 2 selection by rule-number prefix.
+- Summary: Selects up to 5 supplemental rule excerpts per request. The query is the player's question plus a compact per-card signal (name, type line, keywords), not raw card oracle text. Ranking is a hybrid score — normalised cosine over committed per-rule embeddings blended with normalised lexical IDF overlap — with the exact-rule-id boost merged in; lexical scoring alone is retained as the mock/offline default and the failure fallback. Deduplicated against the System 2 selection by rule-number prefix.
 - Lives in: `apps/backend/src/gameRulesRetrieval.ts`, `apps/backend/data/gameRulesKeywordVocabulary.json`, `apps/backend/data/gameRulesTokenStats.json`, the committed per-rule embeddings artifact
-- Backed by: DEC-032, DEC-046, REQ-178, REQ-179, REQ-180, REQ-181
+- Backed by: DEC-032, DEC-046, REQ-178, REQ-179, REQ-180, REQ-181, REQ-182
 
 ## Provider boundary
 
