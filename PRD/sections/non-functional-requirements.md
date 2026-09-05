@@ -17,9 +17,11 @@
   - card add flow under 5 seconds
   - Decrypt Stack flow under 20 seconds
   - normal AI latency target under 3 seconds
+  - cold-start model readiness — wall-clock time from backend process start to the first System 3 query embedding returning, with the model read from the packaged on-disk cache and no network call — is measured and recorded, and stays a small enough share of the 3-second answer target that a cold request still meets it
 - Notes:
   - **Product risk:** game-rules prompt enrichment (DEC-030, REQ-022) materially increases prompt size (~25–32k chars typical/worst case when all 23 curated topics shipped). This was an active risk to the 3-second AI latency target, not a temporary scope tradeoff.
   - **Mitigation (shipped):** context-driven System 2 topic selection (DEC-045) plus System 3 relevance scoring (DEC-046) shipped 2026-06-18, reducing baseline prompt size for phase-irrelevant requests (confirmed via golden line-count deltas: zero-cards −90 lines, simple-interaction −69, full-context −36). Live p50/p95 latency re-sampling under real traffic is still pending — open follow-up, not blocking ship. `MAX_PROMPT_CHAR_BUDGET` remains at `EFFECTIVELY_UNLIMITED_CHARS` (DEC-042); revisit cap values after latency/cost sampling.
+  - **Cold start with the bundled embedding model (REQ-181), measured 2026-09-05** on a local Darwin arm64 checkout with a warmed on-disk cache, one run: importing `@huggingface/transformers` 120.3 ms, building the quantised feature-extraction pipeline 57.4 ms, first query embedding 3.6 ms — cold-start model readiness 181.2 ms — plus 3.7 ms to parse the 5.65 MB rule-embeddings artifact and 3.6 ms for the 2.04 MB rule index. Steady-state query embedding averaged 1.05 ms over 20 runs. So the semantic path adds roughly 185 ms to a cold process and about 1 ms per answer thereafter. AWS Lambda x86 with a cold filesystem is slower than this machine: the deployed figure is read from the function's own cold-start log line, and this local measurement bounds it rather than replacing it.
 
 ### NFR-003
 - Title: Secure backend-only model access
