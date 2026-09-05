@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "`rm -rf` is denied in every session"; graph tier: nohup true → "`nohup` is denied while a graph run holds the lock")`
 - Autonomous base: `origin/thejudge-auto/rag-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-061805/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/rag-rule-retrieval/`
+- Current node: `owner-action` (parked after `gate-qc` PASS — run one complete)
+- Next action: answer `GATE-QUESTIONS.md`, merge the docs PR to `main`; then `/graph-implement PRD/work/rag-rule-retrieval/`
 
 ## Node ledger
 
@@ -16,10 +16,14 @@
 | 2 | shape | sonnet | ok | `0 → 44` | package `PRD/work/rag-rule-retrieval/` created (`IDEA.md` with 13 `## Prior run` receipts, `README.md`, `STATUS.ideation`, board row); 26 intake files copied verbatim into `intake/` (`diff -rq` zero drift) from `.worktrees/.graph-intake/graph-20260905-061805/`, staging deleted; commit `d6b8d84` | 2026-09-05 |
 | — | driver-bookkeeping | — | ok | `n/a (driver)` | owner's cleanup: `git rm` of `PRD/work/probe-slow-load-vs-rag/`, `PRD/work/probe-prompt-data-optimization/`, four `PRD/work/promptRefinement*.md` — every file first confirmed byte-identical under `intake/` (`cmp`); ledger moved into package; `## Autonomous metadata` written; commit `d6b8d84` | 2026-09-05 |
 | 3 | define | opus | ok | `0 → 73` | `STATUS.refined`; `DESIGN-BRIEF.md` (5-step gameplan REQ-177..181, 10 assumptions, intake dispositions) + `GATE-QUESTIONS.md` (24 slots: 5 new REQ, 4 SCOPE decisions, 8 amended IDs incl. NFR-017 Lambda-budget finding, 7 amended specs; 32 Current blocks verified verbatim); 0 blocker questions; commit `797086a` | 2026-09-05 |
+| 4 | gate-qc | sonnet | ok | `0 → 54` | PASS, no findings (attempt 1): all Current blocks verbatim vs live files; REQ-177–181 unused live, FLOW-024 high-water; amendment set re-grepped complete; RAG-DEFERRED citations repointed; technical-design-rules hold; live measurements reproduced (`retrieval:report` 6/9 same 3 failures, `test:eval` green, index 3,432/3,285/147/626); `STATUS.refined` unchanged, nothing committed → stop at PASS: docs PR + `owner-action` park | 2026-09-05 |
 
 ## Open gate
 
-- None
+- Gate: answer the 24 verdict slots in `PRD/work/rag-rule-retrieval/GATE-QUESTIONS.md` (`accept | edit | reject`, Reason required for edit/reject), then merge the docs-only PR (URL below) to `main`.
+- Evidence: `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` at commit `797086a`; gate-qc PASS attempt 1 (row 4 above); `README.md` `## Preparation gate`.
+- Docs PR: PR_URL_PENDING
+- Resume: `graph-implement` (background loop) picks the package up from `main` after merge; manual form `/graph-implement PRD/work/rag-rule-retrieval/`.
 
 ## Dispatch prompts
 

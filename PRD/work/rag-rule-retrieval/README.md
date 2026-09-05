@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # rag-rule-retrieval
 
@@ -18,3 +18,13 @@ Next step: `/thejudge-quality-check PRD/work/rag-rule-retrieval/`
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/rag-rule-retrieval
+
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/rag-rule-retrieval/DESIGN-BRIEF.md`
+- Findings: none (attempt 1, 2026-09-05). Every `Current:` block re-verified verbatim against live `PRD/sections/`; new IDs REQ-177–181 confirmed unused; amendment set re-grepped complete; live measurements reproduced (`retrieval:report` 6/9 with the same three named failures, `test:eval` green, 3,432 index entries / 147 duplicate ids / 626 under 60 chars).
+
+## Open gate
+
+- Answer `PRD/work/rag-rule-retrieval/GATE-QUESTIONS.md` (24 verdict slots), then merge the docs PR to `main`; `graph-implement` builds it from there.
