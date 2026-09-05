@@ -8,8 +8,8 @@
 - Resume canary (2026-09-05 01:27, run `graph-20260905-012712`): `denied` both tiers — `nohup true` → \"`nohup` is denied while a graph run holds the lock\"; `rm -rf .worktrees/.graph-canary-nonexistent` → \"`rm -rf` is denied in every session\"; run-state degraded at take-lock, then `.graph-run-state.json` written by the driver (`driver-bookkeeping/1`) before any node dispatch
 - Autonomous base: `origin/thejudge-auto/rag-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-061805/`
-- Current node: `land` — PARKED, ready for the owner's merge of PR #191 at head `659f57e`; all decisions applied
-- Next action: after build attempt 3 pushes, owner merges PR #191 (`-work` → base); then `/graph-implement PRD/work/rag-rule-retrieval/` records `land` ok, runs `close`, and opens the base → `main` PR the owner merges last
+- Current node: `close` (run `graph-20260905-012712`) — dispatched to `thejudge-cleanup`, no fan-out
+- Next action: `close` writes the receipt and deletes this folder; the driver commits, pushes the base, and opens the base → `main` PR the owner merges last; the close row is appended to the receipt's `## Graph run` section
 
 ## Node ledger
 
@@ -35,6 +35,7 @@
 | 7 | review (attempt 2) | opus | ok — APPROVE with 2 Important owner-decision findings | `0 → 40` | fresh no-write reviewer (Explore type), 37 tool calls, no subagents. Both loop-1 Criticals resolved: E10's semantic path is real (frozen vectors cosine 1.000000 against a live embed of the same query text; `usedSemantic` asserted), REQ-032 line true; D1 counts confirmed (36,521 / 16,311; local bulk file, no fetch); D4 swap disclosed and on the production path (`fixtureCardDetail.ts:31` reads the committed artifact by oracle id); benchmark result files reproduce byte-for-byte in-process (B4 gap 0.0577 < 0.10; B5 0.5833 ≥ 0.5769; E9 0.8526/0.8333 vs 0.865/0.763); E12 chain + hash skip + rule-id validator with lexical fallback confirmed; NFR-017 test 2/2 green, 118.10 MB of 120 MB (1.90 MB headroom); deploy script no longer rewrites a tracked file; `askAi.ts` fixed. Important (owner decisions, not builder errors): (1) E10/REQ-032 — `contextEvaluationHarness.test.ts:326-331` hard-asserts only that the semantic scorer engaged; the per-fixture recall verdicts are printed, not gated, and the printed run shows `quick-lookup-card` 0/1, `quick-lookup-multi-card` 0/1, `state-based-actions` 1/2 FAIL under semantic — honest in kind (no threshold lowered, no changed expectation, no hybrid scorer) but `functional-requirements.md:591` reads as if `test:eval` gates it; making it gate needs a ground-truth or shaping decision this loop was forbidden to make. (2) REQ-181/`functional-requirements.md:4197` (also `:372`, `game-rules-retrieval.md:31,118`) — the accepted sentence that System 3 is never worse than lexical under any provider setting is contradicted by the PR's own measurement: under `EMBEDDING_PROVIDER=local` the multi-card lookup returns no deathtouch rule at all where lexical returned `702.2c, 702.2b, 702.2a, 702.2d, 702.2f`. Minor: slice-E note understates the multi-card miss (702.2b ~13th, not 6th); D5 read literally fails (0.5256 < 0.5321) and the slice doc says so, attributing it to the pollution-realism change; no labelled fixture covers the multi-keyword case. Product signal: today nothing changes for players (default `mock` keeps the improved lexical path, clean recall@5 0.5769 → 0.5833); flipping to `local` is much better on the 156-pair benchmark (0.85 vs 0.58 clean, 0.83 vs 0.53 polluted) and distinctly worse on short lookup-mode questions. Verified by own run: quality:check exit 0, test:eval 3/3, benchmark reproduction, budget test | 2026-09-05 |
 | 8 | land | — | parked | `n/a (human)` | awaiting the owner's merge of PR #191 https://github.com/ChrisMiho/TheJudge/pull/191 (head `03bcb0f`, MERGEABLE, checks green) and the three decisions under `## Open gate`; `STATUS.active → STATUS.owner-action`, board row moved to `## owner-action`; lock released with `{"runId":"graph-20260905-012712","state":"PARKED"}` and the run-state file deleted | 2026-09-05 |
 | 6 | build (attempt 3, gate resolution at land) | sonnet | ok | `0 → 57` | merge commit `c5f1e8b` brought the base's bookkeeping commits into the `-work` branch (board row kept under `## ship-ready`, `STATUS.ship-ready` the only marker); edit commit `659f57e` applied the owner's decisions: never-worse promise softened at `functional-requirements.md:372`/`:4197`, `game-rules-retrieval.md:31`/`:123`, `quick-lookup/README.md:271` (now scoped to `mock` and fallback settings, with the 2026-09-05 `local` measurements and lookup-mode exceptions stated); REQ-032 bullets at `functional-requirements.md:591`/`:593` reworded to report-only semantic checks until the hybrid blend; slice-E disclosure corrected (702.2b 6th single-card, ~13th multi-card) with the dated decision line. Driver-verified: no file outside `PRD/` in the edit commit, `grep -rn 'never worse' PRD/sections/` shows only the scoped phrasing, launch checkout and worktree clean, `quality:check` + `test:eval` green per builder, PR #191 head `659f57e` MERGEABLE (frontend shards still running at record time). Text-only change, verified by the driver by reading the diff; no third reviewer dispatched | 2026-09-05 |
+| 8 | land | — | ok | `n/a (human)` | owner merged PR #191 at `d284074` (2026-09-05T17:22:14Z) after all eight checks passed at head `659f57e`; base `thejudge-auto/rag-rule-retrieval` fast-forwarded to the merge; `STATUS.ship-ready` and the `## ship-ready` board row arrived with the merge; E14 attestation made by the owner at merge; lock re-taken with the same run id and the canary denied again | 2026-09-05 |
 
 ## Gate verdicts
 
@@ -69,9 +70,7 @@ Applied 2026-09-05 by `graph-gate-review` (build-half run `graph-20260905-010802
 
 ## Open gate
 
-- Gate: `land` — awaiting the owner's merge of PR #191 https://github.com/ChrisMiho/TheJudge/pull/191. The three product decisions were answered by the owner in session on 2026-09-05: (1) REQ-181 embedding text — accept plain; (2) the never-worse promise — soften now to state the measured lookup-mode exceptions under `local`; (3) eval gating — the semantic checks report until a hybrid blend lands. Verdicts flipped to `edit` on REQ-181, SCOPE-D, REQ-022, REQ-032, `system-map/game-rules-retrieval.md`, and `quick-lookup/README.md` in `GATE-QUESTIONS.md` with the reasons; `build` attempt 3 applies decisions 2 and 3 as text edits on the PR branch and merges the base's six bookkeeping commits into it.
-- Still for the owner at merge: the E14 human attestation (no live network call under `mock`/`local`; reviewer confirmed by reading). The Lambda package sits at 248 of 250 MB. `/tmp/lambda-sim` (311 MB) is safe to delete. Follow-up spec to kick off after close: hybrid lexical-plus-semantic blend, eval gating, package-budget relief, cold-start latency measurement.
-- Resume: merge PR #191, then `/graph-implement PRD/work/rag-rule-retrieval/`.
+- None. `land` resolved 2026-09-05 by the owner's merge of PR #191 (`d284074`).
 
 ## Dispatch prompts
 
@@ -890,6 +889,51 @@ Do these, in order, inside the worktree on branch
 Copy the `Working directory:` line above, unchanged, into every prompt you write
 for any subagent you dispatch (you should dispatch none).
 
+### close
+
+graph is controlling. This is an autonomous graph run (build-half run ID
+`graph-20260905-012712`), node 9 `close`. No human is available; every gate is a
+park reported back to the driver, never a question, and the force override is
+unavailable.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Do NOT dispatch any subagent, fork, or helper agent: this node has a hard budget
+of 120 tool calls and every helper's calls count against it. Work alone and keep
+under 100 tool calls — batch reads into few shell commands. Boundaries: no
+`git add -A`/`git add .`, no force push, no remote branch deletion, no PR merge
+or close, no `rm -rf`, no background `&`, no network fetch.
+
+Invoke the `thejudge-cleanup` skill on the package at
+`PRD/work/rag-rule-retrieval/`, in the launch checkout on branch
+`thejudge-auto/rag-rule-retrieval` (the recorded autonomous base). State of play:
+the package is `STATUS.ship-ready`; the code PR #191
+(`thejudge-auto/rag-rule-retrieval-work` → `thejudge-auto/rag-rule-retrieval`)
+merged at `d284074` on 2026-09-05 and the base is fast-forwarded to it; all 48
+acceptance criteria across `slice-{a..e}.criteria.json` are `true`; durable
+`PRD/sections/` truth was applied at build (REQ-177–181, the amended IDs and
+specs named in `GATE-QUESTIONS.md`, with the owner's three `edit` verdicts at
+`land` already applied), so confirm it is present and never re-write it. The
+build worktree `.worktrees/implement-rag-rule-retrieval` is clean and its branch
+is merged; removing that worktree is in scope, deleting any branch is not.
+
+Write the receipt at `PRD/instructions/receipts/rag-rule-retrieval-2026-09-05.md`
+before any delete, opening with the receipt plain-language block (What happened
+in product terms; What it means for you), then date, slug, status `shipped`,
+actions, every file created/updated/deleted, verification results, and — because
+the package holds `GRAPH-RUN.md` — a `## Graph run` section carrying that file's
+`## Node ledger` and `## Instruction ledger` tables verbatim, plus `## Intake`
+naming each file under `intake/` and its stated origin. Refuse the delete if
+`## Graph run` is missing. Then delete `PRD/work/rag-rule-retrieval/`, remove
+the board row from `PRD/work/STATUS.md`, and flip any `PRD/sections/system-map.md`
+entry for this feature from planned or partial to shipped only if such an entry
+exists. Do not commit; the driver commits and pushes.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write
+for any subagent you dispatch (you should dispatch none). Report back: the
+receipt path, the list of files created, updated, and deleted, the worktree
+state, and anything that parked.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -904,3 +948,4 @@ for any subagent you dispatch (you should dispatch none).
 | "Soften now (Recommended)" | answered-once | land | — |
 | "Report for now (Recommended)" | answered-once | land | — |
 | "i see 6 local commits? want to walk me through the questions and get everything pushed up before i merge?" | answered-once | land | — |
+| "merged, go ahead and run close" | answered-once | land | — |
