@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "[graph-boundary] `rm -rf` is denied in every session."; graph tier: nohup true → "[graph-boundary] `nohup` is denied while a graph run holds the lock")`
 - Autonomous base: `origin/thejudge-auto/hybrid-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-173655/`
-- Current node: `gate-qc`
+- Current node: `define` (attempt 2, gate-qc loop 1 of 3)
 - Next action: `/graph-kickoff` (spec-forming half in progress)
 
 ## Node ledger
@@ -16,6 +16,7 @@
 | 2 | shape | sonnet | ok | `0 → 44` | package `PRD/work/hybrid-rule-retrieval/` created (`IDEA.md` with 8 `## Prior run` receipts, `README.md` `status: ideation`, `STATUS.ideation`, board row under `## ideation`); 2 intake files copied verbatim into `intake/` (`cmp` clean, driver re-checked) from `.worktrees/.graph-intake/graph-20260905-173655/`, staging deleted; 21 tool calls, no subagents; commit `8fc3f8b` pushed | 2026-09-05 |
 | — | driver-bookkeeping | — | ok | `n/a (driver)` | `## Autonomous metadata` (`origin/thejudge-auto/hybrid-rule-retrieval`) written to the package README; ledger moved into the package from the driver's scratchpad; committed with the node 3 dispatch prompt recorded | 2026-09-05 |
 | 3 | define | opus | ok | `0 → 69` | `STATUS.refined`, board row under `## refined`; `DESIGN-BRIEF.md` (401 lines, four items in one spec, measurement plan) + `GATE-QUESTIONS.md` (865 lines, 14 slots: 3 new REQ-182/183/184, 11 amended — REQ-022/032/177/181, NFR-002/017, system-map.md, game-rules-retrieval.md, quick-lookup/README.md, in-depth/README.md, integrations-and-data.md; 0 blocker questions; 18 `Current:` blocks verified byte-for-byte by script). Measurements reproduced: `test:eval` semantic 9/12 (three fixtures fail, not the intake's two) lexical 12/12; benchmark lexical clean r@5 0.5833, semantic 0.8526/0.8333; budget test 118.095 MB of 120 MB; hybrid probe α=0.52 → 12/12 fixtures + 0.8654/0.8333; cold start 181.2 ms model readiness in-process; int8 vectors 5.650 → 1.442 MB. Finding: `benchmark:rag-retrieval -- --semantic` silently reports lexical numbers under a cold model cache (REQ-177 amendment). Gate signal present (`GATE-QUESTIONS.md`) → continue to `gate-qc`. No `PRD/sections/` or code edits (`git diff --stat` empty); 63 tool calls, no subagents; commit `227eeda` pushed | 2026-09-05 |
+| 4 | gate-qc | sonnet | failed → define (loop 1 of 3) | `0 → 40` | FAIL, one finding: `PRD/sections/system-map/prompt-layout-spec.md:36` (row 8, `ADDITIONAL RELEVANT RULE EXCERPTS`) still asserts semantic-primary ranking with keyword fallback and has no `GATE-QUESTIONS.md` block (driver confirmed by grep: 0 mentions of `prompt-layout-spec` in the proposal). Everything else passed: 12 `Current:` blocks byte-identical, amendment-set grep otherwise covered, REQ-182/183/184 unused and next free, all four measurements reproduced exactly (`test:eval` 9/12 semantic, 12/12 lexical; benchmark 0.5833 / 0.8526 / 0.8333; budget 118.095 MB). Node set `STATUS.refining`, board row under `## refining`; 29 tool calls, no subagents; commit `214d184` pushed. Driver wrote `## Preparation gate` FAIL to the README | 2026-09-05 |
 
 ## Open gate
 
@@ -134,6 +135,30 @@ and push `origin thejudge-auto/hybrid-rule-retrieval` (no force). Never edit `DE
 Constraints: tool-call cap 60 for this node, counting every call. Do not dispatch subagents; a helper's calls charge this node's own budget and a prior gate-qc exhausted its cap that way. Run each measurement command once. Never run `npm run data:refresh` or any Scryfall refresh. Never touch the lock, the stop sentinel, or any `.worktrees/.graph-*` file.
 
 Report back, in this order: the one-word verdict (PASS or FAIL); the complete findings list, or `none`; the `Current:` block verification result (count checked, count identical); the amendment-set grep result; each reproduced measurement with the brief's value beside it; the package state after the node; the commit hash if you committed; the tool-call count. Copy the `Working directory:` line above, unchanged, into every prompt you write.
+
+### define (attempt 2)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 3 (`define`), attempt 2, of graph run `graph-20260905-173655`, the spec-forming half driven by `graph-kickoff`. The quality check (node 4, attempt 1) returned FAIL with one finding, and the package is back at `STATUS.refining`. Invoke the `thejudge-refinement` skill with the Skill tool (skill name `thejudge-refinement`) on the package `PRD/work/hybrid-rule-retrieval/`, following its `## Mode` section for an orchestrator that is controlling, and correct the finding. Read `.claude/skills/thejudge-refinement/SKILL.md`, `PRD/instructions/plain-language-standard.md`, and `PRD/instructions/graph-workflow-contract.md` (`## The two runs`) before acting.
+
+The finding, verbatim from the quality check: "`PRD/sections/system-map/prompt-layout-spec.md`, row 8 of the prompt-section table, has no gate block. It says Ask AI's rule excerpts are 'ranked by meaning against committed per-rule embeddings with a keyword-overlap fallback' (citing REQ-181) — the same semantic-primary-with-lexical-fallback description that GATE-QUESTIONS.md does correct in `system-map.md`, `system-map/game-rules-retrieval.md`, `quick-lookup/README.md`, and `in-depth/README.md`. REQ-182's hybrid blend falsifies this row exactly the way it falsifies the other four, and it was missed."
+
+What to do:
+1. Add one `## system-map/prompt-layout-spec.md — <plain title>` block to `GATE-QUESTIONS.md`, in the same shape as the existing amended-spec blocks: the three-line plain-language block (*What this decides · In plain terms · What happens if you say no*, cited ids inlined, terms defined), a `Current:` block copied byte-for-byte from the live file (row 8 of the table at `PRD/sections/system-map/prompt-layout-spec.md:36`, and any other line in that file the change falsifies — grep it for `REQ-181`, `meaning`, `embedding`, `fallback`, `hybrid`), the proposed replacement consistent with the REQ-182 wording already used in the sibling blocks, and `- Verdict:` / `- Reason:` slots. Place it beside the other amended-spec blocks, before `## Blocker questions`.
+2. Re-run the amendment-set grep across `PRD/sections/` once more (`EMBEDDING_PROVIDER`, `recall@5`, `report-only`, `hybrid`, `never worse`, `NFR-017`, `NFR-002`, `REQ-032`, `REQ-181`, `120 MB`, `cold start`, `MIN_VARIANT_POPULARITY`, `float32`, `ranked by meaning`, `keyword-overlap fallback`, `per-rule embeddings`) and add a block for any other live assertion the change falsifies that still has none. Verify every `Current:` block in the file byte-for-byte against live `PRD/sections/` by script before committing.
+3. Update the brief only where it lists the amended specs, so `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` name the same set. Do not re-run the measurements; the checkout reproduced all of them at gate-qc.
+4. Status: set `status: refined` in `README.md`, replace `STATUS.refining` with `STATUS.refined` (exactly one `STATUS.*`), and move the board row in `PRD/work/STATUS.md` from `## refining` to `## refined` (remove the old row, add the new one). Leave the README's `## Autonomous metadata` and `## Preparation gate` sections unchanged; the driver rewrites the gate section after the re-check.
+5. Commit with explicit paths only (`git add PRD/work/hybrid-rule-retrieval PRD/work/STATUS.md`; never `git add -A`, `--all`, or `.`), message `define(hybrid-rule-retrieval): gate block for prompt-layout-spec row 8`, ending with the two trailer lines:
+   Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+   Claude-Session: https://claude.ai/code/session_01HTYnaUSGyYNRwK4J1ggRW9
+   Then `git push origin thejudge-auto/hybrid-rule-retrieval` (no force). Leave `GRAPH-RUN.md` alone.
+
+Constraints: tool-call cap 150 for this node, counting every call. Do not dispatch subagents. Never edit `PRD/sections/`, code, tests, `.claude/`, or `CLAUDE.md`. Never touch the lock, the stop sentinel, or any `.worktrees/.graph-*` file. Do not widen scope beyond the finding and what the re-grep surfaces.
+
+Report back, in this order: the status marker and board row after the node; the blocks added (ids and titles) and the new total block count; the re-grep result; the `Current:` verification result; the commit hash and push result; the tool-call count. Copy the `Working directory:` line above, unchanged, into every prompt you write.
 
 ## Instruction ledger
 
