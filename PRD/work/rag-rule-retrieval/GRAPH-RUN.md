@@ -8,8 +8,8 @@
 - Resume canary (2026-09-05 01:27, run `graph-20260905-012712`): `denied` both tiers — `nohup true` → \"`nohup` is denied while a graph run holds the lock\"; `rm -rf .worktrees/.graph-canary-nonexistent` → \"`rm -rf` is denied in every session\"; run-state degraded at take-lock, then `.graph-run-state.json` written by the driver (`driver-bookkeeping/1`) before any node dispatch
 - Autonomous base: `origin/thejudge-auto/rag-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-061805/`
-- Current node: `gate-qc` (build-half re-check, attempt 3, run `graph-20260905-012712`) — dispatched, no fan-out
-- Next action: on PASS `plan → build → review`; `land` stays the owner's. Resume command if interrupted: `/graph-implement PRD/work/rag-rule-retrieval/`
+- Current node: `plan` (run `graph-20260905-012712`) — dispatched, no fan-out
+- Next action: `plan` → publish package to `origin/thejudge-auto/rag-rule-retrieval` → `build` → `review`; `land` stays the owner's. Resume command if interrupted: `/graph-implement PRD/work/rag-rule-retrieval/`
 
 ## Node ledger
 
@@ -251,6 +251,42 @@ commit; the driver commits.
 Copy the `Working directory:` line above, unchanged, into every prompt you write
 for any subagent you dispatch (you should dispatch none). Report PASS or FAIL and
 the complete findings list back to the driver.
+
+### plan
+
+graph is controlling. This is an autonomous graph run (build-half run ID
+`graph-20260905-012712`); no human is available, so do not stop to ask clarifying
+questions — apply the assumption ladder in
+`PRD/instructions/preparation-contract.md` per question and record each assumption
+you make in `GAMEPLAN.md`; a genuine blocker under its three-condition test is
+reported back to the driver as a blocker, not guessed.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Do NOT dispatch any subagent, fork, or helper agent: this node has a hard budget
+of 120 tool calls and every helper's calls count against it. Work alone and keep
+under 100 tool calls — batch reads into few shell commands.
+
+Invoke the `thejudge-map-out` skill on the package at
+`PRD/work/rag-rule-retrieval/`. The package README's `## Preparation gate` records
+`Quality-check: PASS` (attempt 3, 2026-09-05); read it, do not self-certify. Slice
+from `DESIGN-BRIEF.md` (five ordered steps REQ-177..181, each with a measurement
+gate) and the accepted proposal in `GATE-QUESTIONS.md` (24/24 accept, 0 edit, 0
+reject). Write `GAMEPLAN.md`, the lettered `slice-<letter>.md` docs, and one
+`slice-<letter>.criteria.json` beside each slice doc per your reference (every
+criterion initialised `false` with an `evidence` block — a command pattern, file
+paths, or `"manual": true`), and set `STATUS.active` with the board row under
+`## active`. Each slice's `## Acceptance criteria` must be checkable by a command,
+a file path, or a dated manual observation. The slice that lands each step also
+applies that step's accepted `PRD/sections/` amendments from `GATE-QUESTIONS.md`
+by intent against current truth — `build` writes durable product truth together
+with the code; do not edit `PRD/sections/` yourself. Do not edit `DESIGN-BRIEF.md`
+or `GATE-QUESTIONS.md`. Do not commit; the driver commits.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write
+for any subagent you dispatch (you should dispatch none). Report the slice list
+(letters, titles, one-line scope each) and every assumption you recorded back to
+the driver.
 
 ## Instruction ledger
 

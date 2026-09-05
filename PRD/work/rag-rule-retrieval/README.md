@@ -23,6 +23,6 @@ Next step: gate resolved — all 24 verdicts `accept`, docs PR #190 merged. Buil
 
 - Quality-check: PASS
 - Checked artifact: `PRD/work/rag-rule-retrieval/DESIGN-BRIEF.md`
-- Findings: none (attempt 1, 2026-09-05). Every `Current:` block re-verified verbatim against live `PRD/sections/`; new IDs REQ-177–181 confirmed unused; amendment set re-grepped complete; live measurements reproduced (`retrieval:report` 6/9 with the same three named failures, `test:eval` green, 3,432 index entries / 147 duplicate ids / 626 under 60 chars).
+- Findings: none (build-half re-check attempt 3, 2026-09-05, run `graph-20260905-012712`, 13 calls, no fan-out). All 24 verdict slots `accept`; REQ-177–181 still unused live; every spot-checked `Current:` block in `GATE-QUESTIONS.md` byte-identical to live `PRD/sections/`; no `PRD/sections/` edit since the gate resolved; `DESIGN-BRIEF.md` agent-ready (five ordered steps, relative measurement gates, enumerated amendment set, assumptions resolved via the conservative ladder). Run-one attempt 1 (2026-09-05) also PASSed with the same verbatim checks and live measurements reproduced (`retrieval:report` 6/9 with the same three failures, `test:eval` green, index 3,432/3,285/147/626).
 - Gate resolved 2026-09-05: 24/24 verdicts `accept` in `GATE-QUESTIONS.md`; no blocker questions. Docs PR #190 merged to `main`. See `GRAPH-RUN.md` `## Gate verdicts`.
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/190
