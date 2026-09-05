@@ -6,7 +6,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "[graph-boundary] `rm -rf` is denied in every session."; graph tier: nohup true → "[graph-boundary] `nohup` is denied while a graph run holds the lock")`
 - Autonomous base: `origin/thejudge-auto/hybrid-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-173655/`
-- Current node: `build` (attempt 2, resumed after the owner's slice A decision)
+- Current node: `review` (attempt 1)
 - Next action: `/graph-implement PRD/work/hybrid-rule-retrieval/` (the `/loop graph-implement` build loop is driving)
 
 ## Node ledger
@@ -28,6 +28,7 @@
 | 6 | build | sonnet | failed → parked (decision blocker) | `0 → 219` | worktree `.worktrees/implement-hybrid-rule-retrieval` on `thejudge-auto/hybrid-rule-retrieval-work`; PR #197 https://github.com/ChrisMiho/TheJudge/pull/197 (`-work` → base, head `c9487c1`, MERGEABLE) carrying slice D done (2/2 criteria; cold start 181.2 ms recorded in NFR-002, matching the brief). Slice A blocked at 6/10 criteria (A2/A5/A7/A10 false): built over the full candidate list as REQ-182 requires, no `alpha` in the accepted band `[0.50, 0.70]` passes all 12 fixture checks — `state-based-actions` loses `701.8b` at every alpha from 0.50 to 0.70 (crossover solves to alpha ≈ 0.4787), while the two lookup fixtures the blend exists to fix pass at every alpha; the brief's 12/12 probe fused only the top 15 candidates per ranking. Sweep in `slice-a-hybrid-blend.md` `## Blocker`: 11/12 at every alpha; clean/polluted recall@5 0.8526/0.8205 (0.50), 0.8974/0.8910 (0.60), 0.9167/0.9038 (0.70). Slice A code left uncommitted in the worktree (`gameRulesRetrieval.ts`/`.test.ts`, `ragRetrievalBenchmark.ts`/`.test.ts`, two benchmark result files); no `PRD/sections/` block applied because REQ-182's text asserts the 12/12 figure. B, C, E planned (depend on A). Write scope held: launch-checkout writes only under `PRD/work/hybrid-rule-retrieval/` (README, slice-a/d docs, slice-a/d criteria). `quality:check` exit 0. 1 hook denial (`rm -rf` of two worktree `.tmp/` debug files, universal tier; not retried). Node self-reported 216 calls | 2026-09-05 |
 | — | driver-resume | — | ok | `n/a (driver)` | park committed locally `3f38119`; lock released `PARKED`; loop stopped. Owner answered in session the same day: rejected 11/12, chose the cross-reference boost (see `## Open gate` Decision and `## Instruction ledger`); driver investigation grounded it — 701.8b is present in the index and cites 704.5g in its text, only 701.8b and 702.12b cite 704.5g, the question cites 704.5g, and today's boost matches a rule's own id only (`computeIdBoost`), so the miss is a missing signal, not stale data. `STATUS.owner-action → STATUS.active`, README `status: active`, board row under `## active`; lock re-taken with the same run id; graph canary denied again | 2026-09-05 |
 | 6 | build (attempt 2, same builder resumed with the owner's decision) | sonnet | ok (bookkeeping follow-up pending) | `0 → 364` | PR #197 https://github.com/ChrisMiho/TheJudge/pull/197 head `e0ec080`, MERGEABLE, checks static/backend/frontend×3/coverage-merge SUCCESS; five slice commits on `thejudge-auto/hybrid-rule-retrieval-work` (`c9487c1` D, `323931e` A, `c97a12f` B, `4a9c0c2` C, `e0ec080` E), `fff2df3..e0ec080` 27 files +1323/−221 incl. 8 `PRD/sections/` files (+159/−67; REQ-182/183/184 live on the head). Cross-reference boost `SCORE_CROSS_REFERENCE = 10`, `HYBRID_BLEND_ALPHA = 0.6`; builder-reported gates: fixture checks 14/14 (12 original + 2 from slice B's new fixture), benchmark recall@5 clean 0.8974 / polluted 0.8910 (bars 0.8526 / 0.8333), Lambda data 113.887 MB of 120 (from 118.095), cold start 181.2 ms; int8 scale computed from the corpus (fixed scale regressed clean recall 0.8974→0.8910); `package-lambda.sh` model-cache check now refuses instead of warning. Criteria 33/33 `true` (driver-read: a 10/10, b 6/6, c 8/8, d 2/2, e 7/7) — **in the launch-checkout copies only**: the PR head's `PRD/work/hybrid-rule-retrieval/` still carries all-planned README, all-`false` criteria, and `STATUS.active`, so the package bookkeeping was never committed to `-work`. Write-scope assertion: launch-checkout writes are `PRD/work/hybrid-rule-retrieval/*` plus `PRD/work/STATUS.md` (board row `## active → ## ship-ready` only, the skill's own ship-ready transition; accepted as that mandated status write, not a product-truth leak). Worktree clean at `e0ec080`; `quality:check` exit 0 (builder); 5 `criterion-flip-without-evidence` denials on `slice-b.criteria.json` (guard working; later earned) + 1 `rm -rf` (universal tier); builder self-reported 360 calls. One scratch stash `slice-b-eval-gating.md B1 evidence note` left in the shared stash list (not the preflight stash; untouched) | 2026-09-05 |
+| 6 | build (attempt 2, bookkeeping follow-up) | sonnet | ok | `364 → 380` (same attempt budget) | commit `b45d85d` pushed to `thejudge-auto/hybrid-rule-retrieval-work` (PR #197 head, MERGEABLE): README, five slice docs, five criteria files, `STATUS.active → STATUS.ship-ready`, and `PRD/work/STATUS.md` copied byte-identical from the launch checkout (builder `diff` ×12 identical; driver re-checked README + two criteria files against `origin/…-work`); no code, data, or `PRD/sections/` change; worktree clean; 15 calls. Build node closed `ok` — 33/33 criteria `true` on the PR head | 2026-09-05 |
 
 ## Gate verdicts
 
@@ -363,6 +364,67 @@ Do exactly this, nothing else: in the worktree `.worktrees/implement-hybrid-rule
 and push `HEAD` to `thejudge-auto/hybrid-rule-retrieval-work` without force. Never push to the base or `main`; never merge or close the PR; never touch the lock, the stop sentinel, or any `.worktrees/.graph-*` file; no subagents. This continues your attempt-2 budget (cap 1200, 364 used).
 
 Report back: the commit hash and the pushed head; the `diff` result per copied file (expect identical); `ls PRD/work/hybrid-rule-retrieval/STATUS.*` in the worktree (expect only `STATUS.ship-ready`); worktree `git status --porcelain` (expect empty); the tool-call count for this follow-up. Copy the `Working directory:` line above, unchanged, into every prompt you write.
+
+### review (attempt 1)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 7 (`review`) of graph run `graph-20260905-191535`: a fresh-context, no-write reviewer. You hold no Write, Edit, or NotebookEdit tool and must not modify, commit, push, stash, or delete anything; do not run any command that changes tracked files (in particular never run `npm run benchmark:rag-retrieval`, `npm run data:refresh`, `eval:build-frozen-query-embeddings`, or any deploy script). Do not dispatch subagents. Tool-call cap 120, counting every call. Never touch the lock, the stop sentinel, or any `.worktrees/.graph-*` file.
+
+What you are grading: PR #197 https://github.com/ChrisMiho/TheJudge/pull/197, branch `thejudge-auto/hybrid-rule-retrieval-work` at head `b45d85d`, against its base `thejudge-auto/hybrid-rule-retrieval` at `fff2df3`. The checked-out copy of the head is the worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-hybrid-rule-retrieval` (read there; run read-only test commands there). The diff is `git diff fff2df3..b45d85d` (27 code/data/spec files plus the package bookkeeping commit). Package artifacts, in the worktree under `PRD/work/hybrid-rule-retrieval/`: `DESIGN-BRIEF.md` (intent and `## Measurement plan`), `GATE-QUESTIONS.md` (the finalized product-truth proposal, 15 blocks, 14 accept + 1 owner edit on NFR-017; REQ-182's block was amended at build by owner decision to add a cross-reference boost), `GAMEPLAN.md` (slice and proposal-block assignment tables), the five slice docs, and their `slice-<letter>.criteria.json` files. Read `PRD/instructions/graph-workflow-contract.md` `## Node 7 — the no-write reviewer` and `## Propose / apply / close` first.
+
+The rubric is the slices' own acceptance criteria, quoted here verbatim, and nothing else:
+
+Slice A (`slice-a-hybrid-blend.md`):
+- A1 — under `EMBEDDING_PROVIDER=local`, each candidate's score is the normalised linear blend above, with the boost merged into the blended score
+- A2 — `alpha` is a single named constant in `[0.50, 0.70]`; the chosen value and the full sweep are recorded in REQ-182's Notes
+- A3 — the blend is scored over the full candidate list, never a truncated top-N of either ranking
+- A4 — under `mock`, and on any embedding failure, scoring is byte-identical to the prior lexical-only path: benchmark clean recall@5 0.5833 / MRR 0.4249, polluted recall@5 0.5256 / MRR 0.3872
+- A5 — all 12 labelled fixture checks pass under the semantic path (`system3-expected-recall`, `system3-noise-excluded` across the eight labelled fixtures), against the 2026-09-05 baseline of 9/12
+- A6 — benchmark clean recall@5 ≥ 0.8526 and polluted recall@5 ≥ 0.8333
+- A7 — clean/polluted MRR are recorded in REQ-182's Notes alongside recall (reported, not gated)
+- A8 — System 3 stays capped at 5 excerpts, still deduplicated against the System 2 selection by rule-number prefix, prompt section placement unchanged
+- A9 — `scripts/rag-retrieval-benchmark.mjs --semantic` (via `scoreBenchmarkSemantic`) fails loudly rather than silently reporting a lexical result as semantic when the embedder is unavailable
+- A10 — the six documentation blocks in Requirement 3 are applied, byte-matching the finalized `GATE-QUESTIONS.md` diff by intent, across `functional-requirements.md`, `system-map.md`, `system-map/game-rules-retrieval.md`, `in-depth/README.md`, and `system-map/prompt-layout-spec.md`
+
+Slice B (`slice-b-eval-gating.md`):
+- B1 — Slice A is `done` before this slice's code lands
+- B2 — `system3-expected-recall` and `system3-noise-excluded` fail `npm run test:eval` on a genuine semantic-path regression (a failing check fails the run; no report-only `console.log`-only path remains for the labelled-fixture assertion)
+- B3 — one new labelled fixture exists for a multi-keyword card (two or more real Scryfall keywords), with hand-labelled expected/forbidden supplemental rule ids
+- B4 — the new fixture's frozen query embedding is committed via `npm run eval:build-frozen-query-embeddings`
+- B5 — `npm run test:eval` passes with the new fixture included and the checks gating
+- B6 — the REQ-032 documentation block is applied by intent, matching the finalized `GATE-QUESTIONS.md` diff, in `PRD/sections/functional-requirements.md`
+
+Slice C (`slice-c-lambda-vector-budget.md`):
+- C1 — the artifact's `encoding` field names the shipped format, and the loader reads that field rather than assuming one
+- C2 — the committed artifact is measurably smaller: from 5.650 MB (`float32-base64`) to about 1.442 MB (int8)
+- C3 — tracked `apps/backend/data` total drops from the 2026-09-05 measurement of 118.095 MB; the new figure and headroom are recorded in NFR-017
+- C4 — retrieval quality does not regress after the format change: benchmark clean recall@5 at or above the value REQ-182 records, polluted recall@5 likewise, and all 12 labelled fixture checks still pass
+- C5 — the vector-loading path degrades exactly as REQ-181 requires: a missing, malformed, or unrecognised-encoding artifact disables the semantic path with one diagnostic warning and System 3 falls back to lexical retrieval
+- C6 — `node --test scripts/lambda-package-budget.test.mjs` passes with the new artifact, and the test's recorded figures are updated in the same change
+- C7 — `MIN_VARIANT_POPULARITY` stays at 0 (the combo corpus is not trimmed) and no new dependency or external service is introduced
+- C8 — the REQ-183 and NFR-017 documentation blocks are applied by intent, matching the finalized `GATE-QUESTIONS.md` diff (including the owner's CI/CUDA edit), in `PRD/sections/functional-requirements.md` and `PRD/sections/non-functional-requirements.md`
+
+Slice D (`slice-d-cold-start-measurement.md`):
+- D1 — `PRD/sections/non-functional-requirements.md`'s NFR-002 defines cold-start model readiness (wall-clock, process start to first System 3 query embedding, packaged on-disk cache, no network call) and requires it to stay a small enough share of the 3-second answer target
+- D2 — NFR-002's Notes record the 2026-09-05 local measurement (181.2 ms cold-start model readiness; 1.05 ms steady-state) and require the deployed figure to be read from the Lambda function's own cold-start log line, not assumed from the local number
+
+Slice E (`slice-e-deploy-default.md`):
+- E1 — Slices A, B, and C are all `done` before this slice's code and doc changes land
+- E2 — the deployed Lambda's environment sets `EMBEDDING_PROVIDER=local` explicitly, recorded in the same places `ASK_AI_PROVIDER` is set (`scripts/aws-deploy.sh`, `scripts/aws-bootstrap.sh`)
+- E3 — `EMBEDDING_PROVIDER` unset still resolves to `mock` and never auto-switches on `NODE_ENV` or deploy target (existing coverage: `apps/backend/src/config/index.test.ts`)
+- E4 — a test asserts the deploy fails, rather than silently degrading, when the packaged model cache is absent
+- E5 — a local `npm run dev` with no warmed model cache and no network still answers, using lexical retrieval, with the single diagnostic warning REQ-181 requires (existing coverage; confirmed, not re-built)
+- E6 — the REQ-184 (new), `quick-lookup/README.md`, and `integrations-and-data.md` documentation blocks are applied by intent, matching the finalized `GATE-QUESTIONS.md` diff
+- E7 — Ship gates below are satisfied and the durable `PRD/sections/` outcome for this package is fully applied (no leftover proposal text)
+
+How to grade: for every criterion, find the evidence in the diff, the tests, or a read-only command you ran, and mark it met, not met, or not verifiable read-only (say why). You may run, in the worktree, `npm --workspace apps/backend run test:eval`, `node --test scripts/lambda-package-budget.test.mjs`, `npm --workspace apps/backend run test -- gameRulesRetrieval`, `npm --workspace apps/backend run test -- ragRetrievalBenchmark`, and `npm --workspace apps/backend run typecheck`; nothing that writes tracked files. Check the apply-by-intent work specifically: every one of the 15 `GATE-QUESTIONS.md` blocks should now be present in its target `PRD/sections/` file as the block's proposed text, re-derived against current truth, exactly once, with the NFR-017 owner edit and the REQ-182 build-time amendment (cross-reference boost, alpha 0.60, the full sweep) reflected, and with no stale claim left standing (for example a 12/12-at-alpha-0.52 sentence that the measured build contradicts). Check the cross-reference boost is matched against question-cited ids only, is one named constant smaller than the exact-id boost, and leaves the mock path byte-identical.
+
+Severity rule, from the contract: flag only gaps affecting correctness or these stated requirements. A preference, a style note, or an improvement outside the slices' stated requirements is never Critical or Important and never returns the run to `build`; list such things, if at all, as Minor with no action. Critical means a stated criterion is not met in a way that ships wrong behaviour or false product truth; Important means a stated criterion is not met but the code behaves; Minor is everything else.
+
+Report back, in this order: the one-line verdict, `APPROVE` or `RETURN TO BUILD`; per-criterion results A1–E7 (met / not met / not verifiable, one line each with the evidence path or command); the findings list, each with severity, the criterion id it fails, file and line, and what was observed versus required; the commands you ran and their results; the tool-call count. Copy the `Working directory:` line above, unchanged, into every prompt you write.
 
 ## Instruction ledger
 
