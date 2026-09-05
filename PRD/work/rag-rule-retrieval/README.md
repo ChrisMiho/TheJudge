@@ -13,3 +13,7 @@ shaped work-folder and the parked, never-merged `semantic-rule-retrieval`
 design (PR #154, closed unmerged) into one pinpoint gameplan.
 
 Next step: `/thejudge-refinement PRD/work/rag-rule-retrieval/`
+
+## Autonomous metadata
+
+- Autonomous base: origin/thejudge-auto/rag-rule-retrieval
