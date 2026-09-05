@@ -16,6 +16,15 @@ Do not rename package folders to encode status.
 
 ## owner-action
 
+- [rag-rule-retrieval](rag-rule-retrieval/) — one gameplan for RAG in Ask AI's
+  supplemental Comprehensive-Rules block (System 3): five ordered steps, each
+  with a measurement gate — repair the recall instruments (REQ-177), fix the
+  retrieval query (REQ-178), clean the rule corpus (REQ-179), feed it Scryfall
+  keywords (REQ-180), then rank rules by meaning with a bundled local model
+  (REQ-181). Consolidates every RAG-shaped work folder and the parked,
+  never-merged `semantic-rule-retrieval` design (PR #154). Refined 2026-09-05;
+  24 gate slots await verdicts. — parked: answer `GATE-QUESTIONS.md` (24 slots), then merge the docs PR
+
 ## deferred
 
 ## parked in ideasForLater
