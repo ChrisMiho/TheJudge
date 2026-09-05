@@ -228,7 +228,8 @@ function prepareLookupPromptInput(
       5,
       undefined,
       options.queryEmbedding ?? null,
-      query.queryText
+      query.queryText,
+      query.questionRuleIds
     );
     const supplementalRulesSection = formatSupplementalRulesSection(supplementalResult.selected);
     const promptText = buildLookupPromptText(context, {
@@ -270,7 +271,8 @@ function prepareLookupPromptInput(
     curatedRuleIds,
     5,
     undefined,
-    options.queryEmbedding ?? null
+    options.queryEmbedding ?? null,
+    query.questionRuleIds
   );
   const supplementalRulesSection = formatSupplementalRulesSection(supplementalRules);
   const promptText = buildLookupPromptText(context, {
