@@ -14,6 +14,7 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - API Framework: Express or Fastify
 - Validation: request validation layer
 - AI Provider: backend provider boundary (`ASK_AI_PROVIDER=mock` default, `ASK_AI_PROVIDER=openai` for live answers). **Canonical rule — mock-first local default:** local development defaults to the mock provider; the live OpenAI provider is opt-in via `ASK_AI_PROVIDER=openai` and is what production runs. This is the single authoritative statement; echoed in `overview.md`, `goals-and-non-goals.md`, `instructions/technical-design-rules.md`, `in-depth/README.md`, `quick-lookup/README.md`, `PRD/README.md`, and root `README.md` (enumerate by grep before amending — see `instructions/writing-rules.md`, grep-before-amend).
+- Embedding Provider: backend embedding boundary for System 3 semantic rule retrieval (`EMBEDDING_PROVIDER=mock` default → lexical retrieval only and no embedding at all, `local` → bundled `all-MiniLM-L6-v2` run in-process, `openai` → OpenAI embeddings API, live mode only). Mirrors the `ASK_AI_PROVIDER` seam above and inherits its mock-first default: `mock` and `local` make no per-request external call (REQ-181).
 - Provider Access: provider SDKs are backend-only
 - Storage: none for the core product
 
@@ -243,6 +244,7 @@ Purpose:
 - each value carries `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`
 - the map is committed once, backend-only, under `apps/backend/data/cardDetailByOracleId.json`; there is no frontend copy
 - the frontend fetches one card's block on demand from `GET /api/cards/:oracleId` (FLOW-024) and caches per card for the session; ask-ai reads the same backend map internally for server-side resolution (REQ-176)
+- the backend map additionally carries each card's Scryfall `keywords` array, used only to build the System 3 retrieval query's keyword signal; it is not part of the on-demand card block the frontend fetches and adds nothing to the up-front payload (REQ-180)
 - `GET /api/cards/:oracleId` is the product's second product-facing endpoint, authorized by D5 — the one-endpoint rule (canonical: NFR-004)
 - `npm run data:build` rebuilds the map alongside card metadata, rulings, and game rules
 - runtime Scryfall fetches are out of scope for the core product
@@ -260,6 +262,11 @@ Purpose:
 - `npm run data:refresh` downloads Scryfall bulk data and WotC CR source, then rebuilds local artifacts; agent-run refreshes require explicit human approval before any download command
 - build scripts degrade gracefully: missing CR source or failed extract keeps the prior committed artifacts and exits 0
 - the backend loads both committed artifacts at startup and omits game-rules enrichment if the artifacts are missing or empty
+- the rule index excludes the source document's table of contents and heading-only entries, so every searchable entry carries real rule content and no rule id appears twice; a build test asserts both and fails when a CR refresh reintroduces either (REQ-179)
+- System 3 semantic retrieval adds a committed per-rule embeddings artifact under `apps/backend/data/` holding one 384-dimension vector per entry in `gameRulesRuleIndex.json`, produced offline by a quantised `all-MiniLM-L6-v2`. There is no vector database — the vectors are loaded in-process and cosine-searched (REQ-181)
+- the embeddings artifact is built by an offline step alongside `build-game-rules.mjs`, runs in the same `npm run data:build` / `data:refresh` chain, rebuilds only on CR refresh (skipped when a hash of the current rule index matches the hash the committed artifact was built from, so an unrelated `data:build` run doesn't re-embed for nothing), and degrades gracefully: a missing or malformed artifact, or one whose rule ids don't match the current rule index, disables the semantic path and System 3 falls back to lexical retrieval with one diagnostic warning
+- the raw local embedding model download is gitignored (`apps/backend/data/models/`) and must not be committed; the deploy packaging script warms it once at build time and copies it into the deployment artifact so it ships with no per-request network dependency
+- query embedding at request time is selected by `EMBEDDING_PROVIDER` (`mock` | `local` | `openai`, default `mock`); `mock` and `local` make no per-request external call, so System 3 keeps its no-per-request-external-call posture and the mock default runs with no model access; `openai` is seam-selectable for live mode only (REQ-181)
 - runtime CR fetches are out of scope for the core product
 
 ## Commander Spellbook Combo Data Strategy
@@ -347,7 +354,7 @@ The backend should include:
 - mana spent per stack item (fallback to `manaValue` when omitted)
 - published WotC Oracle rulings for submitted cards when available from the static backend artifact
 - verbatim WotC Comprehensive Rules excerpts for curated general game-rules topics selected per DEC-045 (always-on core plus game-state-gated expansion) from the static backend artifact
-- up to 5 supplemental WotC CR rule excerpts dynamically retrieved from the committed rule index artifact, scored per DEC-046 against the request context and deduplicated against selected System 2 baseline rule numbers
+- up to 5 supplemental WotC CR rule excerpts dynamically retrieved from the committed rule index artifact, ranked semantic-first against the committed per-rule embeddings with the exact-rule-id boost merged and lexical IDF scoring retained as the mock/offline default and failure fallback (DEC-046, REQ-181), from a query built from the question plus each card's name, type line, and keywords rather than its full oracle text (REQ-178), and deduplicated by rule-number prefix against selected System 2 baseline rule numbers (REQ-179)
 - up to 5 eligible community-sourced Commander Spellbook variants: complete identity, quantity, and compatible-zone matches in game context, or labeled partial candidates for explicit combo questions; each ingredient carries the card state applicable to its matched zone plus `mustBeCommander`, with an instruction to check that state against the submitted board before calling a combo live; omit combo context otherwise and keep official Wizards card, rules, and rulings sources authoritative (DEC-116, REQ-094, REQ-095)
 - static MTG reference block
 - merged scope sentence for unselected zones and selected-but-empty zones

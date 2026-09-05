@@ -59,6 +59,8 @@ export type PromptContextZoneItem = {
   colors: string[];
   supertypes: string[];
   subtypes: string[];
+  /** REQ-180: Scryfall keywords, resolved server-side; feeds System 3's keyword signal. */
+  keywords?: string[];
   owner?: PlayerLabel;
   targets: PromptContextStackTarget[];
   contextNotes?: string;
@@ -75,6 +77,8 @@ export type PromptContextStackItem = {
   colors: string[];
   supertypes: string[];
   subtypes: string[];
+  /** REQ-180: Scryfall keywords, resolved server-side; feeds System 3's keyword signal. */
+  keywords?: string[];
   caster: PlayerLabel;
   targets: PromptContextStackTarget[];
   contextNotes?: string;

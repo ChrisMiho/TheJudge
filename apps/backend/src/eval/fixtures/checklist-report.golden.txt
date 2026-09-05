@@ -13,7 +13,7 @@ commander-spellbook-lookup-unrelated | 14/14 | PASS
 commander-spellbook-partial-explicit-intent | 16/16 | PASS
 commander-spellbook-unresolved-template | 16/16 | PASS
 commander-spellbook-wrong-zone | 16/16 | PASS
-counterspell-stack | 19/19 | PASS
+counterspell-stack | 18/18 | PASS
 follow-up-chat | 16/16 | PASS
 full-context | 16/16 | PASS
 mana-spent-explicit-fallback | 16/16 | PASS

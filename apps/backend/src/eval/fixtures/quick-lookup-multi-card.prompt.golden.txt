@@ -62,22 +62,22 @@ Use these additional official rule excerpts as reference. They do not override t
 
 702.2c. 702.2c Any nonzero amount of combat damage assigned to a creature by a source with deathtouch is considered to be lethal damage for the purposes of determining if excess damage is being dealt.
 
-702.170a. 702.170a Plot is a keyword ability that functions while the card with plot is in a player’s hand. “Plot [cost]” means “Any time you have priority during your main phase while the stack is empty, you may exile this card from your hand and pay [cost]. It becomes a plotted card.”
-
 702.2b. 702.2b A creature with toughness greater than 0 that’s been dealt damage by a source with deathtouch since the last time state-based actions were checked is destroyed as a state-based action. See rule 704.
-
-702.2. 702.2. Deathtouch
 
 702.2a. 702.2a Deathtouch is a static ability.
 
+702.2d. 702.2d The deathtouch rules function no matter what zone an object with deathtouch deals damage from.
+
+702.2f. 702.2f Multiple instances of deathtouch on the same object are redundant.
+
 CARD (looked up)
-name: Questing Beast
-manaCost: {2}{G}{G}
+name: South Wind Avatar
+manaCost: {3}{B}
 manaValue: 4
-typeLine: Legendary Creature — Beast
-colors: G
-supertypes: Legendary
-subtypes: Beast
+typeLine: Creature — Snake Spirit Avatar
+colors: B
+supertypes: (none)
+subtypes: Snake, Spirit, Avatar
 oracleText: Deathtouch
 
 name: Dark Consultation
@@ -92,7 +92,7 @@ oracleText: Name a card. Exile the top four cards of your library.
 OFFICIAL RULINGS (WotC reference)
 Use these published Oracle rulings as reference for how each card works. They do not override the user's stack order, zones, or stated game state.
 
-Questing Beast
+South Wind Avatar
 - 2019-10-04: Combat damage can't be prevented.
 
 Dark Consultation

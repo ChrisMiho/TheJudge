@@ -15,11 +15,15 @@ export type CardDetailEntry = {
   colors: string[];
   supertypes: string[];
   subtypes: string[];
+  /** REQ-180: Scryfall's per-card keyword list, feeds System 3's keyword
+   * signal. Optional (older committed artifacts predate this field); callers
+   * treat an absent value the same as an empty array. */
+  keywords?: string[];
 };
 
 const warnedLoadFailures = new Set<string>();
 
-function isCardDetailEntry(value: unknown): value is CardDetailEntry {
+function isCardDetailEntry(value: unknown): value is Omit<CardDetailEntry, "keywords"> & { keywords?: unknown } {
   if (typeof value !== "object" || value === null) {
     return false;
   }
@@ -32,7 +36,8 @@ function isCardDetailEntry(value: unknown): value is CardDetailEntry {
     typeof candidate.manaValue === "number" &&
     Array.isArray(candidate.colors) &&
     Array.isArray(candidate.supertypes) &&
-    Array.isArray(candidate.subtypes)
+    Array.isArray(candidate.subtypes) &&
+    (candidate.keywords === undefined || Array.isArray(candidate.keywords))
   );
 }
 
@@ -44,7 +49,7 @@ function normalizeCardDetailIndex(value: unknown): Map<string, CardDetailEntry> 
 
   for (const [oracleId, entry] of Object.entries(value)) {
     if (oracleId.trim().length > 0 && isCardDetailEntry(entry)) {
-      index.set(oracleId, entry);
+      index.set(oracleId, { ...entry, keywords: Array.isArray(entry.keywords) ? entry.keywords : [] });
     }
   }
 

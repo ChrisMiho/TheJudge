@@ -364,22 +364,29 @@
   - manual latency sampling (p50/p95) is recorded after integration against the NFR-002 product risk
   - committed artifact `apps/backend/data/gameRulesRuleIndex.json` loads at backend startup alongside the topic artifact
   - every assembled prompt may include an `ADDITIONAL RELEVANT RULE EXCERPTS` section with up to 5 rules scored per DEC-046 against the request context
-  - supplemental rules are excluded from the curated baseline set (deduplicated against selected System 2 topic rule numbers)
+  - supplemental rules are excluded from the curated baseline set (deduplicated against selected System 2 topic rule numbers by rule-number prefix, so a curated parent rule also excludes its lettered sub-rules — REQ-179)
   - supplemental section appears after `GAME RULES (reference)` and before `OFFICIAL RULINGS`
   - supplemental section omitted when index missing, empty, or no rules score above 0
   - eval fixtures assert labeled supplemental recall per REQ-032
+  - the System 3 retrieval query is built from the player's question plus a compact per-card signal — name, type line, and keyword list — not from raw concatenated card oracle text (REQ-178)
+  - System 3 scoring is semantic-primary when the embedding-provider seam is active (REQ-181): the query embedding is cosine-ranked against the committed rule embeddings with the exact-rule-id and parent-rule-id boost merged in. Lexical scoring is retained as the mock/offline default and as the fallback on any embedding failure, so those settings are never worse than the prior lexical-only behaviour; under `local`, measured 2026-09-05 on the 156-pair benchmark, semantic ranking is better overall (recall@5 0.85 vs 0.58 clean, 0.83 vs 0.53 with cards) and worse on short lookup-mode questions where the query is a card name, type line, and one keyword (two of eight labelled fixtures lose rule 702.2b from the top five) — a hybrid lexical-plus-semantic blend is the tracked follow-up before `local` becomes the default
 - Constraints:
   - prompt-only and backend-only; no `AskAiRequest`, Zod schema, or frontend changes
   - no paraphrased rule text
   - no runtime CR or Scryfall fetch per request
+  - no per-request external call for System 3 query embedding in the default (`mock`) or shipped-semantic (`local`) modes; the no-per-request-external-call posture is preserved by the bundled local model (REQ-181), not reversed — only `EMBEDDING_PROVIDER=openai` would add one, and it is never the default
   - System 2 selection uses only card-agnostic game-state signals (`turnPhase`, `combatStep`, populated zones); no card names, oracle text, or keywords
   - System 3 owns all card/question-driven retrieval including oracle-keyword signals
 - Dependencies:
   - DEC-045
   - DEC-046
   - REQ-032
+  - REQ-178 (retrieval query construction)
+  - REQ-179 (rule-index hygiene and prefix-based curated exclusion)
+  - REQ-181 (semantic retrieval mechanism: embeddings artifact, provider seam, runtime query-embed, lexical fallback)
 - Notes:
   - supersedes REQ-022 acceptance criteria that required all curated topics on every request
+  - System 3's scoring mechanism moves from lexical-only to semantic-primary with lexical fallback under REQ-181; the section's placement, five-excerpt cap, and System 2 deduplication are unchanged
 
 ### REQ-023
 - Title: Decrypt wait feedback panel
@@ -579,17 +586,23 @@
   - harness check `system3-noise-excluded` passes when no `forbiddenSupplementalRuleIds` entry appears in System 3 top-5
   - scenario fixtures cover the signal taxonomy: stack-resolution (e.g. counterspell), combat-damage/deathtouch, upkeep-trigger, keyword interaction (extend `cascade-keyword`), out-of-manifest SBA (extend `state-based-actions`)
   - a digestible before/after relevance report is available for tuning review (one table per scenario: System 2 topics selected, System 3 top-5 with scores, recall hit/miss); may be a script output or harness report artifact
+  - the relevance report and the eval harness model production retrieval identically — same card-detail resolution, same query construction — and a test asserts they return the same per-scenario recall verdict for every labelled fixture, failing the pull request when they diverge (REQ-177)
+  - a committed offline benchmark of labelled question-to-rule pairs records recall@5 and MRR under clean and card-polluted queries, and is the standing measure retrieval changes are judged against (REQ-177)
+  - `system3-expected-recall` and `system3-noise-excluded` also run against the semantic retrieval path (REQ-181) using committed frozen query embeddings, so the eval measures semantic retrieval with no live embedding call and no live AI call; they run in report mode there — printed per fixture, not failing the run — until a hybrid lexical-plus-semantic blend lands, at which point they gate (2026-09-05 owner decision: measured semantic-only ranking is worse than lexical on short lookup-mode questions, so it cannot gate yet)
   - existing structural checks (section presence, ordering, budget) remain unchanged
-  - `npm run test:eval` remains the automated regression gate
+  - `npm run test:eval` remains the automated regression gate for the lexical retrieval path; the semantic-path checks above are report-only until the hybrid blend lands
 - Constraints:
-  - no live AI provider calls in relevance checks
+  - no live AI provider calls in relevance checks, and no live embedding calls — the semantic path is evaluated via committed frozen query embeddings so the eval stays offline and deterministic
   - expected rule IDs are human-labeled ground truth, not inferred from current scorer output
   - do not assert full prompt golden text for relevance scenarios unless structural sections change intentionally
 - Dependencies:
   - DEC-047
   - REQ-022
+  - REQ-177 (report/harness parity and the committed benchmark)
+  - REQ-181 (the semantic retrieval path this eval now measures)
 - Notes:
   - replaces reliance on manual multi-file `prompt:preview` review as the sole relevance verification path
+  - the report/harness parity criterion exists because the two diverged in practice: after REQ-176 moved card-text resolution server-side, the report stopped passing a card-detail index and reported three false scenario failures while the gate stayed green
 
 ### REQ-033
 - Title: Live response-size diagnostic logs
@@ -1721,7 +1734,7 @@
 - Description: For `mode: "lookup"`, the backend must assemble one prompt that always runs question-driven rules retrieval, layers in per-card enrichment when a card is attached, omits game-state-only sections, and guards against off-domain questions.
 - Acceptance Criteria:
   - the assembled prompt always includes the static MTG reference block (DEC-025), the always-on core game-rules topics (DEC-045 core set), and question-scored System 3 supplemental rules (DEC-046 / REQ-022)
-  - when a card is attached, the assembled prompt additionally includes that card's full metadata including oracle text using the same per-card formatting as populated-zone cards (REQ-030), that card's WotC rulings (DEC-029), and System 3 scored against the card as well as the question
+  - when a card is attached, the assembled prompt additionally includes that card's full metadata including oracle text using the same per-card formatting as populated-zone cards (REQ-030), that card's WotC rulings (DEC-029), and System 3 scored against the question plus a compact signal for each attached card — name, type line, and keyword list — rather than the card's full oracle text (REQ-178)
   - the assembled prompt omits zone sections, `PHASE GUIDANCE` (REQ-024), System 2 game-state topic gating (DEC-045), and the merged zone scope sentence (DEC-025), because this path never carries game state
   - the prompt instructs the model to quote only from the provided rule excerpts and to present the relevant ones verbatim plus an explanation
   - the prompt instructs the model to respond to off-domain / non-MTG questions in the "confused rules lookup" persona (DEC-108) rather than a direct answer or a generic capability refusal
@@ -3831,7 +3844,7 @@
 - Acceptance Criteria:
   - The lookup request carries an optional **bounded list** of cards in place of the single optional card; each entry carries only identity — `cardId` (oracle id) and `name` — and carries no zone, owner, caster, targets, or context-notes fields. The descriptive block (`oracleText`, `imageUrl`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields server-side by `cardId` from `cardDetailByOracleId.json` (REQ-175, REQ-176). The per-card enrichment below is unchanged — it resolves each attached card's metadata server-side rather than from the request.
   - The pre-submit view lets the player add, preview, and remove more than one card; an explicit cap of **5 cards** is enforced and stated to the player so the prompt stays bounded.
-  - Backend enrichment runs per attached card: each card's full metadata (same per-card formatting as populated-zone cards, DEC-042/REQ-030) and each card's WotC rulings (DEC-029) appear; System 3 supplemental retrieval (DEC-046/REQ-022) scores the question plus every attached card's oracle text and type line.
+  - Backend enrichment runs per attached card: each card's full metadata (same per-card formatting as populated-zone cards, DEC-042/REQ-030) and each card's WotC rulings (DEC-029) appear; System 3 supplemental retrieval (DEC-046/REQ-022) scores the question plus a compact signal for every attached card — name, type line, and keyword list. It no longer scores over each card's full oracle text, which was measured to drop supplemental recall@5 from 0.577 to 0.026 on a labelled benchmark (REQ-178).
   - Combo enrichment (Commander Spellbook) adapts to the card set: the attached cards become the match instances, amending REQ-094's single-card lookup rule. A candidate qualifies when it contains at least one attached card as an exact ingredient or authoritative template match, and candidates covering more of the attached cards rank ahead of those covering fewer (attached-card coverage), applied before popularity — so "how do these cards combo" surfaces the combos using the most of the attached cards first. With exactly one card attached this is identical to today's single-card lookup; with zero cards attached, behavior is unchanged (no combo data without explicit intent and at least one card). (DEC-116/REQ-094 [amended]/REQ-095)
   - When an eligible candidate is **complete** — every ingredient slot filled by an exact or authoritative-template match across the attached cards — the answer explains that combo, with per-ingredient card state left explicitly unverified (a lookup carries no board). When a candidate is **partial** — it qualifies on at least one attached card but at least one ingredient slot is unmatched — the answer names each missing ingredient and describes what would fill that role: the missing ingredient's own card name (missing exact ingredient) or template/category description (missing template ingredient) drawn from the combo definition, so the player learns how the combo could be completed rather than getting nothing. This is a description of the missing role, **not** a card recommendation or search — no card-suggestion engine is added. Complete/partial classification for lookup and its at-most-five selection/ranking are defined in REQ-094 (amended); the answer text itself is rendered by REQ-095's existing present/missing ingredient enrichment, which already covers game and lookup candidates alike and needs no new criterion here.
   - With no cards attached, behavior is identical to today's no-card lookup; with exactly one card attached, identical to today's single-card lookup.
@@ -3871,7 +3884,7 @@
   - REQ-074 (lookup prompt assembly and guardrail instruction)
   - REQ-072
 - Notes:
-  - This also resolves the **symptom** half of the mechanic-keyword observation: a mechanic asked by name with no card must not be refused as "not an official mechanic." The separate idea of guaranteeing every relevant mechanic's **definition** is enriched into the prompt is RAG-shaped and filed to `PRD/work/prompt-context-refinement/RAG-DEFERRED.md`, not built here.
+  - This also resolves the **symptom** half of the mechanic-keyword observation: a mechanic asked by name with no card must not be refused as "not an official mechanic." The separate idea of guaranteeing every relevant mechanic's **definition** is enriched into the prompt is RAG-shaped and is not built here. It needs a mechanic-definition corpus, a per-question relevance step, and a new prompt section — a different feature from improving which Comprehensive Rules excerpts are selected. It is an explicit non-goal of the RAG retrieval gameplan (REQ-177 through REQ-181) and becomes its own package once REQ-180 settles how the keyword vocabulary is derived. Its original write-up was preserved when the `prompt-context-refinement` package closed and is carried in that gameplan's intake.
   - The same persona applies whether or not cards are attached (DEC-108); the reworded line lives on the shared lookup instruction, `apps/backend/src/prompt/promptAssembly.ts`.
   - Gate review (2026-08-30): the maintained phrasing doc must explain what each phrase represents, not just list it — a glossary, not a bare word list. Applied above.
 
@@ -4059,3 +4072,140 @@
 - Notes:
   - `caster`, `targets`, `contextNotes`, `manaSpent` are user-entered game-state and remain client-sent; only card-intrinsic fields move server-side
   - `colors` is the one exception carried alongside identity on `ZoneCardItem`: it is not card-intrinsic prompt data, it is local rendering state the identity ring reads directly (REQ-058, DEC-078), so it stays on the frontend object but is still stripped before the wire request the same as the rest of the descriptive block
+
+### REQ-177
+- Title: Trustworthy System 3 retrieval measurement
+- Priority: high
+- Description: The two instruments that measure System 3 supplemental rule recall — the gating eval harness and the human relevance report — must model production retrieval identically and must not be able to drift apart, and the labelled question-to-rule benchmark used to judge retrieval changes must be committed, offline, and reproducible in-repo. No retrieval behaviour changes under this requirement.
+- Acceptance Criteria:
+  - the relevance report resolves each fixture's card-intrinsic fields by `cardId` through the same card-detail index path the eval harness uses (REQ-176), so both build the same System 3 query for the same fixture
+  - an automated test asserts the report and the harness return the same per-scenario System 3 recall verdict for every fixture carrying an `expected` block, and fails the pull request when they diverge; it runs in `quality:check`
+  - before/after evidence is recorded: at the time of writing the report reports 3 of 9 labelled scenarios failing (`counterspell-stack`, `quick-lookup-card`, `quick-lookup-multi-card`) while the harness reports all passing; after this change every labelled scenario returns one verdict from both
+  - a committed retrieval benchmark harness scores the labelled question-to-rule corpus (156 pairs: 150 synthetic grounded in real CR text plus 6 gold worked-solution cases) for recall@5 and MRR, under both a clean query and a query polluted with attached-card text, and writes a machine-readable result file
+  - the benchmark runs offline and deterministically — no live AI provider call and no live embedding call — consistent with REQ-032's no-live-call constraint
+  - the benchmark's current lexical result is recorded as the committed baseline that later retrieval changes are measured against; every subsequent retrieval requirement states its gate relative to a recorded baseline, never to a number derived by proportion
+- Constraints:
+  - measurement-only: no change to System 3 query construction, scoring, corpus, or output; the prompt text produced for every existing fixture is byte-identical before and after
+  - the benchmark is committed evaluation data and tooling; it never becomes runtime prompt context and adds no runtime dependency or external call
+  - the eval harness remains the gate; the relevance report remains a review aid whose exit code is advisory
+- Dependencies:
+  - REQ-032 (the relevance-measurement requirement this repairs)
+  - REQ-176 (server-side card-text resolution, whose landing caused the report/harness divergence)
+  - DEC-047 (the eval harness and labelled-outcome evaluation)
+- Notes:
+  - located in code: `apps/backend/src/eval/retrievalReportInputs.ts` calls `buildPromptContext(request)` and `preparePromptInput(request, …)` with no `cardDetailIndex`, while `apps/backend/src/eval/contextEvaluationHarness.test.ts` builds one per fixture (`cardDetailIndexFromRequest`)
+  - this is Step 1 of the RAG gameplan; Steps 2–5 (REQ-178, REQ-179, REQ-180, REQ-181) each state their gate against the baseline this requirement records
+  - the benchmark corpus and scoring logic originate from a throwaway harness on `origin/explore/semantic-rule-retrieval` (`PRD/work/combo-context-validation/harness/rag/`); committing it in-repo is the point of this requirement
+
+### REQ-178
+- Title: System 3 retrieval query is built from the question plus a compact card signal
+- Priority: high
+- Description: The System 3 supplemental-rules search query is built from the player's question plus a compact per-card signal — each submitted or attached card's name, type line, and keyword list — instead of the question plus every card's full oracle text, context notes, zone ids, and turn phase. The assembled prompt is unchanged; only the internal retrieval query changes.
+- Acceptance Criteria:
+  - the retrieval query carries the player's question and, per card, that card's name, type line, and keyword list; it no longer concatenates full oracle text or context notes into the query
+  - the change applies to both game mode and lookup mode, through the one shared retrieval path (no second implementation)
+  - the assembled prompt text is unchanged by this requirement: card oracle text still renders in its own card sections exactly as today, and the supplemental section still carries up to 5 excerpts
+  - measured on the committed benchmark (REQ-177), multi-card recall@5 lands within 0.10 of the same build's clean-query recall@5
+  - measured on the committed benchmark, clean-query recall@5 does not regress below the REQ-177 baseline
+  - the labelled eval fixtures and the relevance report are re-run and their new expected outcomes are re-labelled by hand where retrieval legitimately improves — never by copying current scorer output (REQ-032)
+- Constraints:
+  - backend and prompt-internal only; no `AskAiRequest` change, no Zod schema change, no frontend change, no new endpoint
+  - the acceptance gate is stated as a gap between two numbers measured on the same build, not as an absolute floor derived by proportion; absolute recall figures are recorded as evidence
+  - keyword lists come from the signal available at the time this ships (the committed keyword vocabulary); REQ-180 later replaces that source with per-card Scryfall keywords without changing this requirement's shape
+- Dependencies:
+  - REQ-177 (the benchmark and repaired report this gate is measured on)
+  - REQ-022 (the System 3 enrichment requirement this narrows the query for)
+  - REQ-167 (multi-card lookup, whose attached-card set feeds the query)
+  - REQ-074 (lookup prompt assembly)
+- Notes:
+  - this is Step 2 of the RAG gameplan and is independent of embeddings: a semantic query built from the same polluted input inherits the same flood (measured: semantic drops 0.885 clean to 0.603 polluted)
+  - located in code: `buildQueryParts` in `apps/backend/src/gameRulesRetrieval.ts` currently appends turn phase, zone ids, and every card's name, type line, oracle text, and context notes
+
+### REQ-179
+- Title: Comprehensive Rules index hygiene
+- Priority: medium
+- Description: The committed Comprehensive Rules index excludes the source document's table of contents and heading-only entries, so every searchable entry carries real rule text; and System 3's exclusion of rules already shown in the curated baseline matches by rule-number prefix rather than exact id, so a curated parent rule no longer lets its own lettered sub-rules reappear as supplemental excerpts.
+- Acceptance Criteria:
+  - the build skips the source document's table of contents; the built index contains zero duplicate rule ids (measured before this change on 2026-09-05: 3,432 entries, 3,285 distinct ids, 147 duplicates)
+  - the build omits heading-only entries — an entry whose text is nothing but its own numbered heading — so no searchable entry lacks rule content (measured before this change: 626 entries under 60 characters, of which the heading-only subset is the target; the build test names the exact count it removed)
+  - a build test asserts both properties and fails when a future Comprehensive Rules refresh reintroduces either
+  - System 3 excludes a candidate rule when its id or any of its parent rule ids is already selected by the curated baseline, replacing today's exact-id-only exclusion
+  - measured on the committed benchmark (REQ-177), clean and multi-card recall@5 do not regress below the values recorded after REQ-178
+  - `npm run test:eval` stays green; any golden prompt change is an intentional, reviewed consequence of removing a junk excerpt, never a silent update
+- Constraints:
+  - build-time and retrieval-internal only; no request, response, or frontend change
+  - the raw Comprehensive Rules source stays gitignored and human-approval-gated for refresh, unchanged
+  - the build's existing graceful degradation is preserved: a missing or unparsable source keeps the prior committed artifacts and exits 0
+- Dependencies:
+  - REQ-177 (the benchmark this no-regression gate is measured on)
+  - REQ-022 (the System 3 enrichment requirement whose corpus this cleans)
+- Notes:
+  - this is Step 3 of the RAG gameplan; it improves the current word-overlap scorer immediately (fewer junk entries, cleaner word-rarity statistics) and is a prerequisite for REQ-181, which would otherwise embed 147 near-identical duplicate documents
+  - the deeper chunking work — folding a keyword's sub-rules into one document, prefixing an orphan sub-rule with its parent sentence, splitting fused examples — shapes what gets embedded rather than what gets printed, and belongs to REQ-181
+
+### REQ-180
+- Title: Per-card Scryfall keywords feed the System 3 keyword signal
+- Priority: medium
+- Description: The committed backend card-detail artifact carries each card's Scryfall `keywords` array, and System 3's keyword signal is derived from those per-card keywords unioned at query time rather than from tokenizing oracle text against a hand-curated static vocabulary. The frontend's up-front card list is unchanged.
+- Acceptance Criteria:
+  - the card-data build writes each card's Scryfall `keywords` array into the committed backend card-detail artifact (`cardDetailByOracleId.json`), alongside the fields it already resolves server-side (REQ-176)
+  - System 3's keyword signal for a request is the union of the submitted or attached cards' keywords, resolved server-side by `cardId`, plus any keyword the question itself names; the hand-curated static vocabulary is retained only as the source for question-text keyword detection, no longer as the per-card inference path
+  - the up-front `cardMetadata.json` the frontend downloads gains no field and its gzipped size is unchanged, so NFR-019's first-load gate (the trimmed artifact must be at least 40% smaller gzipped than the prior combined 16.4 MB artifact) is untouched
+  - the keyword-heavy labelled fixtures retrieve their expected rules: `quick-lookup-card` and `quick-lookup-multi-card`, whose expected supplemental rule `702.2b` (deathtouch) the production retrieval path misses today
+  - measured on the committed benchmark (REQ-177), clean and multi-card recall@5 do not regress below the values recorded after REQ-179
+  - this requirement records the answer to Q-001; `open-questions.md` is updated in the same change
+- Constraints:
+  - the backend corpus carries more, the browser payload carries less: no Scryfall field added here reaches the up-front frontend download or the request wire
+  - no new runtime Scryfall fetch; keywords come from the committed artifact, refreshed only through the existing human-approved `data:refresh` chain
+  - no request, response, or frontend change
+- Dependencies:
+  - REQ-176 (the server-side card-detail artifact this extends)
+  - REQ-178 (the compact query this signal feeds)
+  - REQ-177 (the benchmark this no-regression gate is measured on)
+  - NFR-019 (the first-load payload gate this must not disturb)
+  - Q-001 (the open question this answers)
+- Notes:
+  - this is Step 4 of the RAG gameplan
+  - measured evidence: the Scryfall bulk record carries 62 fields and the card-metadata build keeps 10, dropping `keywords` — the exact field Q-001 names as the strongest option
+  - power, toughness, and loyalty are also dropped by the same build step and would remove a large class of "does this damage kill it" guesswork; that is card-data work, not retrieval, and is deliberately out of this gameplan's scope
+
+### REQ-181
+- Title: Semantic rule retrieval for System 3
+- Priority: high
+- Description: System 3 supplemental rule retrieval ranks Comprehensive Rules excerpts by semantic similarity between the player's question and the rule corpus, not by lexical word overlap alone. A committed offline artifact holds one embedding vector per rule; at request time the query is embedded and cosine-ranked against those vectors to fill System 3's existing five-excerpt slot. The query embedder is selected by an explicit provider flag that mirrors the existing `ASK_AI_PROVIDER` boundary.
+- Acceptance Criteria:
+  - a committed offline artifact in `apps/backend/data/` holds one embedding vector per entry in `gameRulesRuleIndex.json`, built by an offline step alongside `build-game-rules.mjs` and rebuilt only on a Comprehensive Rules refresh
+  - a new `EMBEDDING_PROVIDER` flag selects the query embedder with values `mock` | `local` | `openai`; the default when unset is `mock`, and it never auto-switches on `NODE_ENV` or deploy target, mirroring `ASK_AI_PROVIDER`
+  - `EMBEDDING_PROVIDER=mock` performs no embedding and makes no external call; System 3 uses lexical retrieval only, so a checkout with no model access and no network behaves exactly as before
+  - `EMBEDDING_PROVIDER=local` embeds the query in-process with the bundled model and cosine-ranks it against the committed rule vectors
+  - `EMBEDDING_PROVIDER=openai` is seam-selectable for live mode only and is never the default
+  - the async route handler embeds the query and passes the resulting vector (or null) into prompt preparation as an option, so `preparePromptInput` stays synchronous
+  - the exact-rule-id and parent-rule-id boost is merged with the semantic ranking, so a question citing a rule number by name (for example "rule 613.9") still pulls that rule even when semantic similarity misses it — measured on the benchmark, gold rule 613.9 ranks 1st lexically and 5th semantically
+  - on any embedding failure — model load, inference error, missing artifact, provider error — System 3 falls back to lexical retrieval, still returns up to 5 excerpts, and emits one diagnostic warning
+  - each rule's embedding text is `sectionTitle: text` — measured against the more elaborate transformation originally proposed here (folding a keyword's numbered sub-rules into one document, prefixing an orphaned lettered sub-rule with its parent sentence, excluding fused `Example:` text), which scored 13/20 recall@5 on a benchmark sample against 19/20 for the plain form; the worked examples and each sub-rule's own text carry meaning the model needs, so nothing is folded, prefixed, or stripped before embedding
+  - System 3 remains capped at 5 excerpts, still deduplicated against the curated System 2 selection by rule-number prefix (REQ-179)
+  - the shipped quantised model's clean and multi-card recall@5 are re-measured on the committed benchmark (REQ-177) against the full-precision reference of 0.865 clean / 0.763 multi-card; a material drop ships the full-precision model by container image instead of the quantised package — measured 2026-09-05: 0.853 clean / 0.833 multi-card, no material drop
+  - the eval measures the semantic path using committed frozen query vectors, so `system3-expected-recall` and `system3-noise-excluded` run with no live embedding call and no live AI call
+  - the deploy package budget test (NFR-017) is green with the bundled model and the embeddings artifact present
+- Constraints:
+  - backend and prompt-internal only; no `AskAiRequest` change, no Zod schema change, no frontend change, no new endpoint
+  - the raw model download and any oversized full-precision vector blob are gitignored and never committed; only the trimmed committed vectors ship
+  - NFR-002's under-3-second answer target holds; an in-process query embedding adds about 2 milliseconds
+  - semantic retrieval scope is the Comprehensive Rules corpus only; cards, WotC rulings, and Commander Spellbook combos remain exact-id keyed lookups and are never embedded or semantically searched under this requirement
+  - the shipped semantic provider is a small embedding model bundled in the answer process and run in-process (`all-MiniLM-L6-v2`, 384 dimensions, quantised), not a hosted service and not a per-request external call; System 3's no-per-request-external-call posture is preserved by this choice rather than reversed, and only `EMBEDDING_PROVIDER=openai` would add such a call, which is never the default. A dedicated always-on inference host is out of scope
+  - no vector database and no new storage service: the rule vectors are loaded in-process alongside the rule index and cosine-searched directly. A hosted vector store would only be justified if semantic search later spanned cards, rulings, and combos (over 150,000 vectors), which the corpus-scope constraint above excludes
+  - lexical retrieval is retained and never removed: it is the retrieval path under `EMBEDDING_PROVIDER=mock` (the default, which must run with no model access — canonical mock-first rule, `integrations-and-data.md` Tech Stack), under an `openai` provider failure, and under any embedding failure, it supplies the exact-rule-id and parent-rule-id boost merged into semantic ranking — so those settings are never worse than System 3's prior lexical-only behaviour. Under `local`, measured 2026-09-05 on the 156-pair benchmark, semantic ranking is better overall (recall@5 0.85 vs 0.58 clean, 0.83 vs 0.53 with cards) and worse on short lookup-mode questions where the query is a card name, type line, and one keyword (two of eight labelled fixtures lose rule 702.2b from the top five); a hybrid lexical-plus-semantic blend is the tracked follow-up before `local` becomes the default
+- Dependencies:
+  - REQ-177 (the committed benchmark this is gated on)
+  - REQ-178 (the query-construction fix this inherits — a semantic query built from polluted input inherits the same flood)
+  - REQ-179 (the cleaned corpus this embeds)
+  - REQ-180 (the keyword signal that feeds the query and the merged boost)
+  - REQ-022 (the System 3 enrichment behaviour this mechanism serves)
+  - REQ-032 (the offline eval this extends)
+  - NFR-017 (the deploy package budget this consumes)
+  - NFR-002 (the latency target)
+- Notes:
+  - this is Step 5 of the RAG gameplan, the end state
+  - the parked mechanic-definition corpus idea reuses this machinery but is a different feature — a new corpus and a new prompt section — and is not built here
+  - no hybrid lexical-plus-semantic fusion score was ever measured; this requirement merges the exact-rule-id boost with semantic ranking rather than claiming a measured fusion result
+  - the embedding-text shaping described in early drafts of this requirement was measured, not assumed, and dropped when it measurably hurt recall; `scripts/build-rule-embeddings.mjs` records the comparison

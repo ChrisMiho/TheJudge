@@ -30,6 +30,7 @@
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "keywords": [],
       "caster": "Player 1",
       "targets": [],
       "manaSpent": 3,
@@ -47,6 +48,7 @@
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "keywords": [],
       "caster": "Player 2",
       "targets": [
         {

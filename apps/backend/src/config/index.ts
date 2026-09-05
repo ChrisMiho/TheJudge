@@ -7,12 +7,19 @@ const ASK_AI_PROVIDER_MODES = ["mock", "openai"] as const;
 const DEFAULT_ASK_AI_PROVIDER_MODE = "mock";
 type AskAiProviderMode = (typeof ASK_AI_PROVIDER_MODES)[number];
 
+// REQ-181: mirrors ASK_AI_PROVIDER exactly — mock default, never auto-switches
+// on NODE_ENV or deploy target (SCOPE-B/D, canonical mock-first rule).
+const EMBEDDING_PROVIDER_MODES = ["mock", "local", "openai"] as const;
+const DEFAULT_EMBEDDING_PROVIDER_MODE = "mock";
+export type EmbeddingProviderMode = (typeof EMBEDDING_PROVIDER_MODES)[number];
+
 export type ServerConfig = {
   port: number;
   frontendOrigin?: string;
   debugLoggingEnabled: boolean;
   payloadLoggingEnabled: boolean;
   askAiProvider: AskAiProviderMode;
+  embeddingProvider: EmbeddingProviderMode;
   comboEnrichmentEnabled: boolean;
   openAiApiKey?: string;
   openAiModel?: string;
@@ -24,6 +31,15 @@ function parseAskAiProviderMode(rawProvider: string | undefined): AskAiProviderM
   const provider = (rawProvider?.trim().toLowerCase() ?? DEFAULT_ASK_AI_PROVIDER_MODE) as AskAiProviderMode;
   if (!ASK_AI_PROVIDER_MODES.includes(provider)) {
     throw new Error(`Invalid ASK_AI_PROVIDER value "${rawProvider}". Expected one of: mock, openai.`);
+  }
+
+  return provider;
+}
+
+function parseEmbeddingProviderMode(rawProvider: string | undefined): EmbeddingProviderMode {
+  const provider = (rawProvider?.trim().toLowerCase() ?? DEFAULT_EMBEDDING_PROVIDER_MODE) as EmbeddingProviderMode;
+  if (!EMBEDDING_PROVIDER_MODES.includes(provider)) {
+    throw new Error(`Invalid EMBEDDING_PROVIDER value "${rawProvider}". Expected one of: mock, local, openai.`);
   }
 
   return provider;
@@ -78,6 +94,7 @@ function parseOptionalPositiveInteger(rawValue: string | undefined, envName: str
 
 export function readServerConfig(env: NodeJS.ProcessEnv): ServerConfig {
   const provider = parseAskAiProviderMode(env.ASK_AI_PROVIDER);
+  const embeddingProvider = parseEmbeddingProviderMode(env.EMBEDDING_PROVIDER);
   const openAiApiKey = env.OPENAI_API_KEY?.trim() || undefined;
   const openAiModel = env.OPENAI_MODEL?.trim() || undefined;
   const openAiTimeoutMs = parseOptionalPositiveInteger(env.OPENAI_TIMEOUT_MS, "OPENAI_TIMEOUT_MS");
@@ -98,6 +115,7 @@ export function readServerConfig(env: NodeJS.ProcessEnv): ServerConfig {
     debugLoggingEnabled: resolveDebugLoggingEnabled(env.DEBUG_LOGGING, env.NODE_ENV),
     payloadLoggingEnabled: resolvePayloadLoggingEnabled(env.LOG_PAYLOADS, env.NODE_ENV),
     askAiProvider: provider,
+    embeddingProvider,
     comboEnrichmentEnabled: resolveBooleanEnv(env.COMBO_ENRICHMENT_ENABLED, "COMBO_ENRICHMENT_ENABLED", true),
     openAiApiKey,
     openAiModel,

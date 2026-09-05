@@ -8,6 +8,7 @@ import { loadGameRulesTopics } from "../gameRules.js";
 import { loadGameRulesRuleIndex } from "../gameRulesRetrieval.js";
 import { createAppLogger } from "../logging.js";
 import { createAskAiProvider } from "../providers/createAskAiProvider.js";
+import { createEmbeddingProvider } from "../providers/createEmbeddingProvider.js";
 
 export type RuntimeApp = {
   app: ReturnType<typeof createApp>;
@@ -47,6 +48,7 @@ export function createConfiguredApp(repoRoot: string, env: NodeJS.ProcessEnv = p
       payloadLoggingEnabled: config.payloadLoggingEnabled,
       askAiProvider: createAskAiProvider(config),
       askAiProviderMode: config.askAiProvider,
+      embeddingProvider: createEmbeddingProvider(config),
       cardRulingsIndex,
       cardDetailIndex,
       gameRulesTopics,

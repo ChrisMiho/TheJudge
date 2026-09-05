@@ -4,6 +4,7 @@ import { pathToFileURL } from "node:url";
 import {
   choosePreferredCard,
   getColors,
+  getKeywords,
   getManaCost,
   getManaValue,
   getOracleText,
@@ -32,7 +33,10 @@ export function buildDetailEntry(card) {
     manaValue: getManaValue(card),
     colors: getColors(card),
     supertypes,
-    subtypes
+    subtypes,
+    // REQ-180: Scryfall's keyword list, feeds System 3's keyword signal;
+    // never reaches the up-front frontend card list.
+    keywords: getKeywords(card)
   };
 }
 

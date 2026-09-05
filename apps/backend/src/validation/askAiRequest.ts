@@ -99,7 +99,13 @@ const cardReferenceShape = {
   typeLine: optionalBoundedTextWithEmptyDefault(200),
   colors: z.array(boundedText(1)).max(5).optional().default([]),
   supertypes: z.array(boundedText(30)).max(8).optional().default([]),
-  subtypes: z.array(boundedText(40)).max(12).optional().default([])
+  subtypes: z.array(boundedText(40)).max(12).optional().default([]),
+  // REQ-180: same test/round-trip-convenience shape as oracleText above — the
+  // server always re-resolves keywords itself from the committed card-detail
+  // artifact by cardId, so nothing sent here reaches System 3's keyword
+  // signal. Genuinely optional (no `.default()`) so existing request literals
+  // that predate this field keep type-checking unchanged.
+  keywords: z.array(boundedText(40)).max(20).optional()
 };
 
 export const zoneCardItemSchema = z.object({

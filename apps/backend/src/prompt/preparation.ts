@@ -6,6 +6,8 @@ import {
 import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
 import { ALWAYS_ON_TOPIC_IDS, selectGameRulesTopics } from "../gameRulesTopicSelection.js";
 import {
+  buildCompactCardSignal,
+  buildQueryText,
   buildQueryTokensFromParts,
   collectCuratedRuleIds,
   retrieveRulesForQuery,
@@ -55,6 +57,14 @@ export type PreparePromptInputOptions = {
   gameRulesRuleIndex?: GameRulesRuleIndexEntry[];
   comboCatalog?: ComboCatalog;
   collectEnrichmentDebug?: boolean;
+  /**
+   * REQ-181: the player's question, already embedded by the async route
+   * handler (or `null` under `EMBEDDING_PROVIDER=mock`, on embedding
+   * failure, or with no provider configured). Passing it in as data — rather
+   * than embedding here — is what keeps `preparePromptInput` itself
+   * synchronous.
+   */
+  queryEmbedding?: number[] | null;
 };
 
 export function preparePromptInput(request: AskAiRequest, options: PreparePromptInputOptions = {}): PreparedPromptInput {
@@ -63,6 +73,30 @@ export function preparePromptInput(request: AskAiRequest, options: PreparePrompt
   }
 
   return prepareGamePromptInput(request as GameAskAiRequest, options);
+}
+
+/**
+ * REQ-181: the exact System 3 retrieval query text — question plus each
+ * card's compact signal (REQ-178/REQ-180) — for the async route handler to
+ * embed *before* calling `preparePromptInput`, so the vector can be passed
+ * in as data and `preparePromptInput` itself stays synchronous. Pure and
+ * side-effect-free; duplicates the (cheap) context-build `preparePromptInput`
+ * does internally rather than making that function async.
+ */
+export function buildRetrievalQueryText(
+  request: AskAiRequest,
+  options: Pick<PreparePromptInputOptions, "cardDetailIndex"> = {}
+): string {
+  if (request.mode === "lookup") {
+    const context = buildLookupPromptContext(request, options.cardDetailIndex);
+    const cardSignal = (context.cards ?? [])
+      .map((card) => buildCompactCardSignal(card.name, card.typeLine, card.keywords))
+      .join(" ");
+    return `${request.question} ${cardSignal}`.trim();
+  }
+
+  const context = buildPromptContext(request as GameAskAiRequest, options.cardDetailIndex);
+  return buildQueryText(context);
 }
 
 function getRulingLimits() {
@@ -161,12 +195,16 @@ function prepareLookupPromptInput(
   );
   const gameRulesSection = formatGameRulesSection(gameRulesTopics);
   const curatedRuleIds = collectCuratedRuleIds(gameRulesTopics);
-  // REQ-167: System 3 scores the question plus every attached card's oracle
-  // text and type line, not just one.
+  // REQ-167 / REQ-178 / REQ-180: System 3 scores the question plus, for every
+  // attached card, the same compact per-card signal (name, type line, real
+  // Scryfall keywords resolved server-side) game mode builds via
+  // `buildCompactCardSignal` — never the card's full oracle text. One shared
+  // signal builder, not a second implementation, so lookup and game mode
+  // cannot drift apart again.
   const query = buildQueryTokensFromParts({
     questionText: request.question,
     oracleText: (context.cards ?? [])
-      .map((card) => `${card.oracleText} ${card.typeLine}`)
+      .map((card) => buildCompactCardSignal(card.name, card.typeLine, card.keywords))
       .join(" ")
   });
   const conversationHistory = request.conversationHistory;
@@ -189,6 +227,7 @@ function prepareLookupPromptInput(
       curatedRuleIds,
       5,
       undefined,
+      options.queryEmbedding ?? null,
       query.queryText
     );
     const supplementalRulesSection = formatSupplementalRulesSection(supplementalResult.selected);
@@ -228,7 +267,10 @@ function prepareLookupPromptInput(
     query.tokens,
     query.queryRuleIds,
     options.gameRulesRuleIndex ?? [],
-    curatedRuleIds
+    curatedRuleIds,
+    5,
+    undefined,
+    options.queryEmbedding ?? null
   );
   const supplementalRulesSection = formatSupplementalRulesSection(supplementalRules);
   const promptText = buildLookupPromptText(context, {
@@ -266,7 +308,14 @@ function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromp
 
   if (options.collectEnrichmentDebug) {
     const rulingsResult = resolveRulingsForPrompt(cardsForRulings, options.cardRulingsIndex ?? new Map(), limits, true);
-    const supplementalResult = retrieveSupplementalRulesWithDebug(context, options.gameRulesRuleIndex ?? [], curatedRuleIds);
+    const supplementalResult = retrieveSupplementalRulesWithDebug(
+      context,
+      options.gameRulesRuleIndex ?? [],
+      curatedRuleIds,
+      5,
+      undefined,
+      options.queryEmbedding ?? null
+    );
     const supplementalRulesSection = formatSupplementalRulesSection(supplementalResult.selected);
     const promptText = buildPromptText(context, {
       rulings: rulingsResult,
@@ -297,7 +346,14 @@ function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromp
   }
 
   const resolvedRulings = resolveRulingsForPrompt(cardsForRulings, options.cardRulingsIndex ?? new Map(), limits);
-  const supplementalRules = retrieveSupplementalRules(context, options.gameRulesRuleIndex ?? [], curatedRuleIds);
+  const supplementalRules = retrieveSupplementalRules(
+    context,
+    options.gameRulesRuleIndex ?? [],
+    curatedRuleIds,
+    5,
+    undefined,
+    options.queryEmbedding ?? null
+  );
   const supplementalRulesSection = formatSupplementalRulesSection(supplementalRules);
   const promptText = buildPromptText(context, {
     rulings: resolvedRulings,

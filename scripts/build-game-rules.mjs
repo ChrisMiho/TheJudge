@@ -119,6 +119,44 @@ export function extractRuleExcerpt(crText, ruleNumber) {
   return rest.slice(0, end).trim();
 }
 
+const HEADING_ONLY_MAX_LENGTH = 60;
+
+/**
+ * REQ-179: an entry whose text is nothing but its own numbered heading — e.g.
+ * "100. General" or "702.19. Trample" — carries no rule content; the actual
+ * definition lives in a separate child entry (100.1, 702.19a, ...). Every
+ * Comprehensive Rules statement ends with sentence-terminating punctuation
+ * (a period, or a closing quote/bracket after one); a bare heading title never
+ * does, so that is the general, corpus-independent signal used here rather
+ * than a hard-coded title list.
+ */
+export function isHeadingOnlyEntry(ruleId, text) {
+  const prefixPattern = new RegExp(`^${escapeRegExp(ruleId)}(?:\\.|\\s)\\s*`);
+  const remainder = text.replace(prefixPattern, "").trim();
+  if (remainder.length === 0) return true;
+  if (remainder.length >= HEADING_ONLY_MAX_LENGTH) return false;
+  // A colon introduces a following list (e.g. "704.5. The state-based actions
+  // are as follows:") and is real rule content, not a bare title.
+  return !/[.!?:;]['")\]]?$/.test(remainder);
+}
+
+/**
+ * REQ-179: drop heading-only entries, then dedupe by rule id (keeping the
+ * first occurrence) as a backstop — belt and braces once the table of
+ * contents is no longer scanned at all by `parseRuleIndex`.
+ */
+export function cleanRuleIndexEntries(entries) {
+  const withoutHeadings = entries.filter((entry) => !isHeadingOnlyEntry(entry.ruleId, entry.text));
+  const seen = new Set();
+  const deduped = [];
+  for (const entry of withoutHeadings) {
+    if (seen.has(entry.ruleId)) continue;
+    seen.add(entry.ruleId);
+    deduped.push(entry);
+  }
+  return deduped;
+}
+
 function computeParentRuleIds(ruleId) {
   const parents = [];
   const withoutLetter = ruleId.replace(/[a-z]$/, "");
@@ -136,14 +174,25 @@ function computeParentRuleIds(ruleId) {
 export function parseRuleIndex(crText) {
   const normalizedText = normalizeNewlines(crText);
 
-  // The TOC also contains a "Glossary" entry; use the LAST occurrence as the actual cutoff.
+  // REQ-179: the source document opens with a table of contents that lists
+  // every top-level section (and, as its last two items, "Glossary" then
+  // "Credits") before the real numbered rule text begins; unguarded, every
+  // TOC line becomes a duplicate rule-index entry shadowing the real section
+  // heading. The FIRST bare "Glossary" line is that TOC's own last-but-one
+  // entry, so everything up to and including it is the TOC — skip it. The
+  // real Glossary section (definitions, not numbered rules) sits near the end
+  // of the document; the LAST bare "Glossary" line marks where it starts, so
+  // everything from there on is cut too, same as before this change.
   const glossaryPattern = /^Glossary\s*$/gm;
-  let lastGlossaryIndex = -1;
+  const glossaryIndexes = [];
   let gm;
   while ((gm = glossaryPattern.exec(normalizedText)) !== null) {
-    lastGlossaryIndex = gm.index;
+    glossaryIndexes.push(gm.index);
   }
-  const text = lastGlossaryIndex >= 0 ? normalizedText.slice(0, lastGlossaryIndex) : normalizedText;
+  const contentStart = glossaryIndexes.length > 0 ? glossaryIndexes[0] : 0;
+  const lastGlossaryIndex = glossaryIndexes.length > 0 ? glossaryIndexes[glossaryIndexes.length - 1] : -1;
+  const contentEnd = lastGlossaryIndex > contentStart ? lastGlossaryIndex : normalizedText.length;
+  const text = normalizedText.slice(contentStart, contentEnd);
 
   // Match both `100.1. ` (period+space) and `100.1a ` (space only, lettered sub-rules).
   const ruleHeaderPattern = /^(\d{3}(?:\.\d+)*(?:[a-z])?)(?:\. | (?=\S))/gm;
@@ -174,7 +223,7 @@ export function parseRuleIndex(crText) {
     entries.push({ ruleId, sectionTitle: currentSectionTitle, text: ruleText, searchText, parentRuleIds });
   }
 
-  return entries;
+  return cleanRuleIndexEntries(entries);
 }
 
 function mapPreviousTopics(previousTopics) {

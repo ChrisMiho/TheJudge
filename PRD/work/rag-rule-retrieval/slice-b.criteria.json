@@ -5,49 +5,67 @@
     {
       "id": "B1",
       "statement": "The retrieval query carries the question plus, per card, name + type line + keyword list; no full oracle text or context notes",
-      "value": false,
-      "evidence": { "paths": ["apps/backend/src/gameRulesRetrieval.ts"] }
+      "value": true,
+      "evidence": {
+        "paths": [
+          "apps/backend/src/gameRulesRetrieval.ts"
+        ]
+      }
     },
     {
       "id": "B2",
       "statement": "The change applies through the one shared retrieval path for both game mode and lookup mode",
-      "value": false,
-      "evidence": { "command": "npm --workspace apps/backend run test:eval" }
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test:eval"
+      }
     },
     {
       "id": "B3",
       "statement": "The assembled prompt text is unchanged by this slice outside the internal query",
-      "value": false,
-      "evidence": { "command": "npm --workspace apps/backend run test:eval" }
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test:eval"
+      }
     },
     {
       "id": "B4",
       "statement": "Multi-card recall@5 lands within 0.10 of the same build's clean-query recall@5 on the Slice A benchmark",
-      "value": false,
-      "evidence": { "manual": true }
+      "value": true,
+      "evidence": {
+        "manual": true
+      }
     },
     {
       "id": "B5",
       "statement": "Clean-query recall@5 does not regress below the Slice A baseline",
-      "value": false,
-      "evidence": { "manual": true }
+      "value": true,
+      "evidence": {
+        "manual": true
+      }
     },
     {
       "id": "B6",
       "statement": "Labelled fixtures and the relevance report are re-run; relabeling is a hand judgment, never copied from current scorer output",
-      "value": false,
-      "evidence": { "manual": true }
+      "value": true,
+      "evidence": {
+        "manual": true
+      }
     },
     {
       "id": "B7",
       "statement": "functional-requirements.md carries the new REQ-178 entry and corrected REQ-074/REQ-167 lines",
-      "value": false,
-      "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
+      "value": true,
+      "evidence": {
+        "paths": [
+          "PRD/sections/functional-requirements.md"
+        ]
+      }
     },
     {
       "id": "B8",
       "statement": "quick-lookup/README.md, system-map/prompt-layout-spec.md, system-map/game-rules-retrieval.md, and user-flows.md carry this step's query-construction wording",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/quick-lookup/README.md",
@@ -60,8 +78,10 @@
     {
       "id": "B9",
       "statement": "test:eval and quality:check are green",
-      "value": false,
-      "evidence": { "command": "npm --workspace apps/backend run test:eval|npm run quality:check" }
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test:eval|npm run quality:check"
+      }
     }
   ]
 }

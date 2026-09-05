@@ -261,6 +261,7 @@
 - Description: With the deploy on the S3-staged path (DEC-169/REQ-165), the binding limit becomes AWS's 250 MB unzipped deployment-package quota. A committed data artifact that would push the package past a deployable size must be caught before merge, not after a failed deploy on `main`.
 - Constraints:
   - `scripts/lambda-package-budget.test.mjs` measures the unzipped on-disk package footprint (code + production `node_modules` + committed `apps/backend/data`) against the 250 MB quota, with a reserve, and fails when the tracked data would exceed the budget
+  - the non-data reserve is sized from a measurement of the real packaged code and production dependencies, not left at a figure the package has outgrown. When a bundled embedding model ships (REQ-181) it lands in production dependencies, inside this reserve, so the reserve is re-measured in that same change and the test's failure message names the model as a contributor. The guardrail is re-based, never loosened to make a red test green — measured on 2026-09-05 (post-REQ-181), committed data is 118.1 MB against a 120 MB data budget (1.9 MB headroom), so the constrained side is the reserve, not the data budget. Before REQ-181's model reserve was re-based, committed data was 111.9 MB against a 230 MB data budget (118 MB headroom) — see the Notes below for the full before/after
   - the base64/request-limit basis (`LAMBDA_REQUEST_LIMIT`, `BASE64_EXPANSION`, `ZIP_CEILING`) is removed with the direct-upload path it described; the test no longer models the ~50 MB direct-upload ceiling
   - the test runs in `test:scripts` / `quality:check` so an over-quota artifact fails on the pull request, not after the merge
   - the full combo corpus is the standing state (`MIN_VARIANT_POPULARITY` = 0, REQ-093); the failure message names the largest data contributors and points at the levers (reduce committed data, or as an emergency size valve raise `MIN_VARIANT_POPULARITY` to re-trim), consistent with the current test's guidance
@@ -268,9 +269,12 @@
   - DEC-169
   - REQ-165
   - REQ-093
+  - REQ-181 (the bundled embedding model and committed rule-embeddings artifact this budget must accommodate)
 - Notes:
   - the guardrail is repointed, never removed — a disarmed budget check is how the 2026-08-22 two-day deploy outage went unseen; the new basis simply matches the new real limit
   - the budget is measured against the full corpus (no popularity floor), so the headroom the test reports is the real headroom, not headroom over a trimmed baseline
+  - re-measured 2026-09-05 for REQ-181: `onnxruntime-node` bundles all three platforms' native binaries directly in its published package (not npm `optionalDependencies`), so every install pulls ~283MB before pruning; `scripts/package-lambda.sh` prunes the two platforms the Lambda runtime (linux/x64) never loads before zipping. The re-measured real non-data footprint (pruned production `node_modules` + the warmed local-model cache, ~130 MB) raised the reserve from 20 MB to 130 MB, shrinking the data budget from 230 MB to 120 MB against the then-current ~117 MB tracked data
+  - re-measured again 2026-09-05 once REQ-180's committed keyword data actually landed (`cardDetailByOracleId.json` rebuilt with real per-card Scryfall keywords) and the committed rule-embeddings artifact gained its `ruleIndexHash` field (REQ-181/E12): tracked data is now 118.1 MB against the 120 MB budget — 1.9 MB headroom, materially less than before. This is a real, measured constraint, not a comfortable margin; the next data-artifact growth must re-check it before merging
 
 ### NFR-018
 - Title: Prompt quality is validated against real worked rules solutions
@@ -283,7 +287,8 @@
   - REQ-032, DEC-047 (eval harness and labeled-outcome evaluation)
   - REQ-022, DEC-046 (retrieval the validation set exercises)
 - Notes:
-  - Distinct from RAG/corpus retrieval: this external data validates and tunes the prompt; it is not injected into prompts. The mechanic-definition enrichment idea, which would inject a corpus into the prompt, is RAG-deferred (`PRD/work/prompt-context-refinement/RAG-DEFERRED.md`).
+  - Distinct from RAG/corpus retrieval: this external data validates and tunes the prompt; it is not injected into prompts. The mechanic-definition enrichment idea, which would inject a corpus into the prompt, remains deferred and is an explicit non-goal of the RAG retrieval gameplan (REQ-177 through REQ-181); see REQ-168's note for where it stands.
+  - The RAG gameplan's own measurement work (REQ-177) commits an offline labelled question-to-rule benchmark. That benchmark and this worked-solutions set are complementary: the benchmark measures whether the right rule was retrieved, this set measures whether the assembled prompt resolves a hard case correctly.
 
 ### NFR-019
 - Title: First-load card-data payload target

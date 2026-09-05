@@ -17,6 +17,7 @@
       "subtypes": [
         "Zombie"
       ],
+      "keywords": [],
       "targets": []
     },
     {
@@ -34,6 +35,7 @@
       "subtypes": [
         "Insect"
       ],
+      "keywords": [],
       "targets": []
     }
   ]

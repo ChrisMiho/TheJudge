@@ -11,6 +11,7 @@ describe("Backend - Shared", () => {
         debugLoggingEnabled: false,
         payloadLoggingEnabled: false,
         askAiProvider: "mock",
+        embeddingProvider: "mock",
         comboEnrichmentEnabled: true,
         openAiApiKey: undefined,
         openAiModel: undefined,
@@ -32,6 +33,7 @@ describe("Backend - Shared", () => {
         debugLoggingEnabled: true,
         payloadLoggingEnabled: false,
         askAiProvider: "mock",
+        embeddingProvider: "mock",
         comboEnrichmentEnabled: true,
         openAiApiKey: undefined,
         openAiModel: undefined,
@@ -175,6 +177,26 @@ describe("Backend - Shared", () => {
       expect(() => readServerConfig({ COMBO_ENRICHMENT_ENABLED: "maybe" })).toThrow(
         /Invalid COMBO_ENRICHMENT_ENABLED value/
       );
+    });
+
+    // REQ-181: EMBEDDING_PROVIDER mirrors ASK_AI_PROVIDER exactly.
+    it("defaults EMBEDDING_PROVIDER to mock, never auto-switching on NODE_ENV", () => {
+      expect(readServerConfig({}).embeddingProvider).toBe("mock");
+      expect(readServerConfig({ NODE_ENV: "production" }).embeddingProvider).toBe("mock");
+      expect(readServerConfig({ NODE_ENV: "test" }).embeddingProvider).toBe("mock");
+    });
+
+    it("accepts EMBEDDING_PROVIDER=local and =openai", () => {
+      expect(readServerConfig({ EMBEDDING_PROVIDER: "local" }).embeddingProvider).toBe("local");
+      expect(readServerConfig({ EMBEDDING_PROVIDER: "openai" }).embeddingProvider).toBe("openai");
+    });
+
+    it("normalizes EMBEDDING_PROVIDER casing and surrounding whitespace", () => {
+      expect(readServerConfig({ EMBEDDING_PROVIDER: "  LoCaL  " }).embeddingProvider).toBe("local");
+    });
+
+    it("throws on an invalid EMBEDDING_PROVIDER value", () => {
+      expect(() => readServerConfig({ EMBEDDING_PROVIDER: "bedrock" })).toThrow(/Invalid EMBEDDING_PROVIDER value/);
     });
   });
 });

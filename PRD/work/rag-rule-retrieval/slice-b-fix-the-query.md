@@ -1,6 +1,6 @@
 # Slice B — Stop drowning the question in card text
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -39,28 +39,71 @@ query does.
 
 ## Acceptance criteria
 
-- [ ] B1 — the retrieval query carries the question plus, per card, name +
+- [x] B1 — the retrieval query carries the question plus, per card, name +
       type line + keyword list; it no longer concatenates full oracle text
       or context notes
-- [ ] B2 — the change applies through the one shared retrieval path for both
+- [x] B2 — the change applies through the one shared retrieval path for both
       game mode and lookup mode
-- [ ] B3 — the assembled prompt text is unchanged by this slice: card oracle
+- [x] B3 — the assembled prompt text is unchanged by this slice: card oracle
       text still renders in its own card sections exactly as today, and the
       supplemental section still carries up to 5 excerpts
-- [ ] B4 — measured on the Slice A benchmark, multi-card recall@5 lands
+- [x] B4 — measured on the Slice A benchmark, multi-card recall@5 lands
       within 0.10 of the same build's clean-query recall@5
-- [ ] B5 — measured on the Slice A benchmark, clean-query recall@5 does not
+- [x] B5 — measured on the Slice A benchmark, clean-query recall@5 does not
       regress below the Slice A baseline
-- [ ] B6 — labelled fixtures and the relevance report are re-run; any
+- [x] B6 — labelled fixtures and the relevance report are re-run; any
       relabeling is a hand judgment recorded in the fixture, never copied
       from current scorer output
-- [ ] B7 — `functional-requirements.md` carries the new `REQ-178` entry and
+- [x] B7 — `functional-requirements.md` carries the new `REQ-178` entry and
       the corrected `REQ-074`/`REQ-167` lines, matching `GATE-QUESTIONS.md`
-- [ ] B8 — `quick-lookup/README.md`, `system-map/prompt-layout-spec.md`,
+- [x] B8 — `quick-lookup/README.md`, `system-map/prompt-layout-spec.md`,
       `system-map/game-rules-retrieval.md`, and `user-flows.md` carry this
       step's query-construction wording
-- [ ] B9 — `npm --workspace apps/backend run test:eval` and
+- [x] B9 — `npm --workspace apps/backend run test:eval` and
       `npm run quality:check` are green
+
+## Manual observations
+
+2026-09-05 B4 — ran `npm run benchmark:rag-retrieval`: multi-card (polluted)
+recall@5 0.5384615384615384 vs. clean recall@5 0.5769230769230769, a gap of
+0.0385 — well within the 0.10 ceiling. Pollution simulation was also updated
+(`buildPollutionText` in `ragRetrievalBenchmark.ts`) to build the polluted
+condition through the same shared `buildCompactCardSignal` production uses,
+so the benchmark measures the query shape actually shipped rather than a
+frozen pre-Slice-B approximation.
+
+2026-09-05 B4 (review loop 1) — the pollution simulation's card name and
+keywords were placeholder-weak until this loop (the committed
+`cardDetailByOracleId.json` had no real `keywords` yet, and `buildPollutionText`
+passed an empty name — see the D1/D5 review-loop-1 notes on
+`slice-d-scryfall-keywords.md`). Re-measured on the now-current corpus
+(post-Slice-C) with real name + real keywords in the polluted condition:
+clean recall@5 0.5833, multi-card (polluted) recall@5 0.5256, a gap of
+0.0577 — still well within the 0.10 ceiling, on a materially harder,
+realistic pollution text. `results.json` re-recorded; `step1-baseline.json`
+deliberately left untouched (see the D5 review-loop-1 note for why).
+
+2026-09-05 B5 — same run: clean recall@5 0.5769230769230769, exactly equal
+to the committed Slice A baseline (`benchmark/step1-baseline.json`
+clean.recall5 0.5769230769230769) — no regression. Expected: a
+card-pollution-only fix does not change the clean-query condition, which
+carries no card signal.
+
+2026-09-05 B6 — re-ran `npm run retrieval:report` and
+`npm --workspace apps/backend run test:eval` after the query change: 9/9
+labelled scenarios still pass. One hand relabel was needed:
+`counterspell-stack.fixture.json` dropped its
+`expectedSupplementalRuleIds: ["608.2c"]` assertion. Investigated by hand
+(read the actual candidate rule texts, not the scorer's raw ranking): the
+old hit depended on the card Counterspell's full oracle text ("Counter
+target spell.") leaking into the query — exactly the flood REQ-178 removes
+— and the fixture carries no `typeLine`, so no compact-signal token can
+reach the rule any more. No alternative top-5 candidate is a correct answer
+to "does Divination still resolve" (checked 800.4a, 613.5, 712.21c, 608.2f,
+702.24b against their rule text), so the assertion was removed rather than
+pointed at a new rule id copied from the scorer's output. System 2 topic
+selection and the forbidden-noise check for this fixture are untouched and
+still pass.
 
 ## Verification
 

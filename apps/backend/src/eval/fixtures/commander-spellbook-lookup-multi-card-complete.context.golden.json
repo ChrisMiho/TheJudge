@@ -17,6 +17,7 @@
         "Merfolk",
         "Wizard"
       ],
+      "keywords": [],
       "targets": []
     },
     {
@@ -32,6 +33,7 @@
       ],
       "supertypes": [],
       "subtypes": [],
+      "keywords": [],
       "targets": []
     }
   ]

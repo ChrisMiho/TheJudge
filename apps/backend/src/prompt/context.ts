@@ -130,7 +130,8 @@ const EMPTY_CARD_DETAIL: CardDetailEntry = {
   manaValue: 0,
   colors: [],
   supertypes: [],
-  subtypes: []
+  subtypes: [],
+  keywords: []
 };
 
 /** REQ-176: resolves a card's descriptive block server-side by `cardId` (oracle id)
@@ -161,6 +162,7 @@ function normalizeZoneItem(
     colors: normalizeOptionalList(detail.colors),
     supertypes: normalizeOptionalList(detail.supertypes),
     subtypes: normalizeOptionalList(detail.subtypes),
+    keywords: normalizeOptionalList(detail.keywords),
     owner: owner && normalizeWhitespace(owner).length > 0 ? owner : undefined,
     targets: normalizeTargets(card.targets),
     contextNotes: normalizeOptionalText(card.contextNotes) || undefined
@@ -267,6 +269,7 @@ export function buildPromptContext(
         colors: normalizeOptionalList(detail.colors),
         supertypes: normalizeOptionalList(detail.supertypes),
         subtypes: normalizeOptionalList(detail.subtypes),
+        keywords: normalizeOptionalList(detail.keywords),
         caster: card.caster ?? "Player 1",
         targets: normalizeTargets(card.targets),
         contextNotes: normalizeOptionalText(card.contextNotes) || undefined,
