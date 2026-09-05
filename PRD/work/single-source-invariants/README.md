@@ -1,4 +1,4 @@
-status: owner-action
+status: ship-ready
 
 # single-source-invariants
 
@@ -12,6 +12,12 @@ ships.
 
 Next step: answer the five decision blocks in `GATE-QUESTIONS.md`, merge the
 docs-only PR to `main`, then `/graph-implement PRD/work/single-source-invariants/`.
+
+Gate review complete (2026-09-04): owner answered all five decision blocks in
+`GATE-QUESTIONS.md` — INV-ENDPOINT, INV-MOCK-FIRST, INV-RULES-ENGINE,
+INV-DECISION-LOG, GUARD-GREP-BEFORE-AMEND — all verdict `accept`; no blocker
+questions. Docs PR #187 merged to `main`. `STATUS.refined`. Next:
+`/graph-implement PRD/work/single-source-invariants/` (resumes at `gate-qc`).
 
 Refinement complete (2026-09-04): `DESIGN-BRIEF.md` written; `GATE-QUESTIONS.md`
 carries five decision blocks (INV-ENDPOINT, INV-MOCK-FIRST, INV-RULES-ENGINE,
@@ -45,13 +51,64 @@ carry its new pointers (NFR-004 gains `PRD/README.md`; the rules-engine home
 gains `quick-lookup/README.md`). Decision-log family re-verified clean: the only
 live contradiction is the already-captured root `README.md:163`. `STATUS.refined`.
 
+Map-out complete (2026-09-04, `graph-20260904-220341`): `GAMEPLAN.md` and five
+lettered slices written (A–E, one per accepted gate block: INV-ENDPOINT,
+INV-MOCK-FIRST, INV-RULES-ENGINE, INV-DECISION-LOG,
+GUARD-GREP-BEFORE-AMEND), each with a `.criteria.json`. `STATUS.active`. Next:
+implementation (`/thejudge-implement-all PRD/work/single-source-invariants/`
+in direct mode; the graph build half continues per its own contract in
+orchestrated mode).
+
+Implementation complete (2026-09-05, `graph-20260904-220341`): all five
+slices (A–E) done, every acceptance criterion in every `slice-*.criteria.json`
+earned. Docs-only edits applied by intent from the accepted proposal:
+`non-functional-requirements.md` NFR-004 (Slice A, 11 pointers plus the
+shared `functional-requirements.md` REQ-094 dual pointer), `integrations-and-
+data.md:16` (Slice B, 7 pointers), `goals-and-non-goals.md:85` Scope Notes
+(Slice C, 12 pointers, verified the shared REQ-094 line), the two root
+`README.md` decision-log contradictions at `:17`/`:163` (Slice D), and the
+new grep-before-amend guardrail in `writing-rules.md` plus
+`requirement-format.md`'s cross-reference (Slice E). `npm run quality:check`
+green (436/436) after every slice. `STATUS.ship-ready`. Docs-only PR:
+https://github.com/ChrisMiho/TheJudge/pull/188 (base `main`, head
+`thejudge-auto/single-source-invariants-work`) — open, not merged. Next:
+merge PR #188, then `thejudge-cleanup PRD/work/single-source-invariants/`.
+
+## Slice table
+
+| Slice | Doc | Invariant | Canonical home | Depends on |
+| --- | --- | --- | --- | --- |
+| A | `slice-a-inv-endpoint.md` | INV-ENDPOINT | `non-functional-requirements.md` NFR-004 | none |
+| B | `slice-b-inv-mock-first.md` | INV-MOCK-FIRST | `integrations-and-data.md:16` | none |
+| C | `slice-c-inv-rules-engine.md` | INV-RULES-ENGINE | `goals-and-non-goals.md:85` Scope Notes | A (shared line, see Sequencing note in `GAMEPLAN.md`) |
+| D | `slice-d-inv-decision-log.md` | INV-DECISION-LOG | `doc-lifecycle.md` (unedited; fixes root README contradictions) | none |
+| E | `slice-e-guard-grep-before-amend.md` | GUARD-GREP-BEFORE-AMEND | `writing-rules.md` (new subsection) | none |
+
+Recommended implementation order: A, B, C, D, E (letter order) in one
+sequential session — see `GAMEPLAN.md` Sequencing note for why this package
+should not fan out across parallel worktrees.
+
+## Implementation map
+
+- Full architecture, sequencing rationale, and files-touched union: `GAMEPLAN.md`
+- Per-invariant proposed diffs (source of intent for every edit): `GATE-QUESTIONS.md`
+- Grep-derived amendment sets and scope-boundary tests: `DESIGN-BRIEF.md`
+
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/single-source-invariants
+- Autonomous base: origin/main
+- Note: node 1 first recorded `origin/thejudge-auto/single-source-invariants`;
+  docs PR #187 merged that base into `main` as the answer-then-merge build signal,
+  so the build half branches from `origin/main` (which now carries the finalized
+  spec) and the code deliverable PR targets `main`. Shared build head:
+  `thejudge-auto/single-source-invariants-work`.
 
 ## Preparation gate
 
-- Quality-check: PASS (re-check 4, final — 2026-09-04, graph-20260904-201403).
+- Quality-check: PASS (build-half re-check — 2026-09-04, graph-20260904-220341;
+  originally PASS at re-check 4, graph-20260904-201403). Proposal byte-identical
+  after gate-review (5 accept, 0 edit, 0 reject), so the re-check confirmed the
+  standing PASS rather than re-grading a changed proposal.
 - Checked artifact: `PRD/work/single-source-invariants/DESIGN-BRIEF.md`
 - Findings: none. Independent full-corpus `grep -rniE` of all four invariant
   families (endpoint, mock-first, rules-engine, decision-log) plus a dedicated

@@ -1,0 +1,101 @@
+{
+  "slug": "single-source-invariants",
+  "slice": "C",
+  "criteria": [
+    {
+      "id": "C1",
+      "statement": "goals-and-non-goals.md Scope Notes (~85) carries the full canonical rule text, echoed-in list, and retired DEC-001/002/013 note; related lines (~50,~65,~66) updated",
+      "value": true,
+      "evidence": { "paths": ["PRD/sections/goals-and-non-goals.md"] }
+    },
+    {
+      "id": "C2",
+      "statement": "overview.md Product Positioning (~23-24) and Current Product Status (~39) each append the canonical pointer",
+      "value": true,
+      "evidence": { "paths": ["PRD/sections/overview.md"] }
+    },
+    {
+      "id": "C3",
+      "statement": "problem-statement.md (~31,~32) appends the canonical pointer",
+      "value": true,
+      "evidence": { "paths": ["PRD/sections/problem-statement.md"] }
+    },
+    {
+      "id": "C4",
+      "statement": "technical-design-rules.md Forbidden Design Drift (~32-35) appends one pointer to the group",
+      "value": true,
+      "evidence": { "paths": ["PRD/instructions/technical-design-rules.md"] }
+    },
+    {
+      "id": "C5",
+      "statement": "agent-working-rules.md (~41,~44) each append the canonical pointer",
+      "value": true,
+      "evidence": { "paths": ["PRD/instructions/agent-working-rules.md"] }
+    },
+    {
+      "id": "C6",
+      "statement": "integrations-and-data.md backend must-not-add list (~370-373) appends one pointer to the group",
+      "value": true,
+      "evidence": { "paths": ["PRD/sections/integrations-and-data.md"] }
+    },
+    {
+      "id": "C7",
+      "statement": "functional-requirements.md REQ-081 (~1863) and REQ-083 (~1918) each repoint their DEC-013 citation to the canonical home",
+      "value": true,
+      "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
+    },
+    {
+      "id": "C8",
+      "statement": "functional-requirements.md REQ-094 (~2195) is verified to already carry the dual pointer written by Slice A",
+      "value": true,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "C9",
+      "statement": "in-depth/README.md (~49-50) appends the canonical pointer",
+      "value": true,
+      "evidence": { "paths": ["PRD/sections/in-depth/README.md"] }
+    },
+    {
+      "id": "C10",
+      "statement": "quick-lookup/README.md (~34) appends the canonical pointer",
+      "value": true,
+      "evidence": { "paths": ["PRD/sections/quick-lookup/README.md"] }
+    },
+    {
+      "id": "C11",
+      "statement": "user-flows.md (~268 Quick-Lookup note, ~302 life-tracker note) each repoint their DEC-002/DEC-013 citation to the canonical home",
+      "value": true,
+      "evidence": { "paths": ["PRD/sections/user-flows.md"] }
+    },
+    {
+      "id": "C12",
+      "statement": "system-map/prompt-assembly.md (~92) and system-map/game-rules-retrieval.md (~46,~89) each append the canonical pointer",
+      "value": true,
+      "evidence": {
+        "paths": [
+          "PRD/sections/system-map/prompt-assembly.md",
+          "PRD/sections/system-map/game-rules-retrieval.md"
+        ]
+      }
+    },
+    {
+      "id": "C13",
+      "statement": "life-tracker/README.md (~44) appends the canonical pointer",
+      "value": true,
+      "evidence": { "paths": ["PRD/sections/life-tracker/README.md"] }
+    },
+    {
+      "id": "C14",
+      "statement": "root README.md (~3) appends the canonical pointer",
+      "value": true,
+      "evidence": { "paths": ["README.md"] }
+    },
+    {
+      "id": "C15",
+      "statement": "A fresh re-grep of the rules-engine pattern family and DEC-001/002/013 across PRD/ and root README.md shows every rule-stating line is the canonical home or a listed pointer; out-of-scope per-feature clauses and decisions.md index rows are unchanged; no unlisted rule-stating home remains",
+      "value": true,
+      "evidence": { "manual": true }
+    }
+  ]
+}

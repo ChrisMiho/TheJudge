@@ -41,7 +41,8 @@ game survives a phone lock or reload because it saves itself as you play.
   (DEC-136)
 - Built: a player whose life reaches ≤ 0 shows a skull overlay on their card
   as a visual-only death cue; it clears when life returns above 0. No
-  elimination, auto-KO, or rules simulation follows from it.
+  elimination, auto-KO, or rules simulation follows from it (canonical rule:
+  `goals-and-non-goals.md` Scope Notes).
 - Built: cards are life-tinted.
 
 ### Counter panel and commander-damage matrix

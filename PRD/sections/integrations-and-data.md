@@ -13,7 +13,7 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - Backend: Node.js + TypeScript
 - API Framework: Express or Fastify
 - Validation: request validation layer
-- AI Provider: backend provider boundary (`ASK_AI_PROVIDER=mock` default, `ASK_AI_PROVIDER=openai` for live answers)
+- AI Provider: backend provider boundary (`ASK_AI_PROVIDER=mock` default, `ASK_AI_PROVIDER=openai` for live answers). **Canonical rule — mock-first local default:** local development defaults to the mock provider; the live OpenAI provider is opt-in via `ASK_AI_PROVIDER=openai` and is what production runs. This is the single authoritative statement; echoed in `overview.md`, `goals-and-non-goals.md`, `instructions/technical-design-rules.md`, `in-depth/README.md`, `quick-lookup/README.md`, `PRD/README.md`, and root `README.md` (enumerate by grep before amending — see `instructions/writing-rules.md`, grep-before-amend).
 - Provider Access: provider SDKs are backend-only
 - Storage: none for the core product
 
@@ -148,7 +148,7 @@ Purpose:
 Purpose:
 - serve one card's descriptive block (`oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`) by Scryfall `oracle_id`, read-only, from the committed `cardDetailByOracleId.json` artifact (REQ-175)
 - back the card-detail popup and Quick Lookup pre-submit preview's on-demand fetch (FLOW-024); a known id returns the block, an unknown id returns a not-found response
-- the product's second product-facing endpoint (D5), permitted alongside `POST /api/ask-ai` by the REQ-012 / REQ-072 / NFR-004 / goals-and-non-goals / technical-design-rules amendments
+- the product's second product-facing endpoint (D5), permitted alongside `POST /api/ask-ai` by the one-endpoint rule (canonical: NFR-004)
 
 ### Optional Endpoint: `GET /api/health`
 Purpose:
@@ -243,7 +243,7 @@ Purpose:
 - each value carries `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`
 - the map is committed once, backend-only, under `apps/backend/data/cardDetailByOracleId.json`; there is no frontend copy
 - the frontend fetches one card's block on demand from `GET /api/cards/:oracleId` (FLOW-024) and caches per card for the session; ask-ai reads the same backend map internally for server-side resolution (REQ-176)
-- `GET /api/cards/:oracleId` is the product's second product-facing endpoint, authorized by D5 (see the REQ-012 / REQ-072 / NFR-004 / goals-and-non-goals / technical-design-rules amendments below)
+- `GET /api/cards/:oracleId` is the product's second product-facing endpoint, authorized by D5 — the one-endpoint rule (canonical: NFR-004)
 - `npm run data:build` rebuilds the map alongside card metadata, rulings, and game rules
 - runtime Scryfall fetches are out of scope for the core product
 
@@ -371,6 +371,7 @@ The backend must not add:
 - commander-specific validation
 - legality engine logic
 - board-state simulation logic
+  (canonical rule: `goals-and-non-goals.md` Scope Notes)
 
 WotC rulings prompt enrichment must:
 - be omitted entirely when no submitted card has matching WotC rulings

@@ -23,12 +23,14 @@ This product is not:
 - a deterministic rules engine
 - a full board-state simulator
 
+(canonical rule: `goals-and-non-goals.md` Scope Notes)
+
 ## Current Product Status
 The primary MTG Assistant loop is considered validated (past MVP):
 
 **Players will use a lightweight MTG assistant if it is fast to use during real gameplay.**
 
-The shipped baseline includes the MTG Assistant staged zone flow, `GameContext`, plain-text answers, card scanning, and personalization. The app is deployed to production on AWS-provided URLs and runs the live OpenAI provider (`DEC-084`); the focus now is gathering real user feedback and refining the suite. Local development continues to use `ASK_AI_PROVIDER=mock` by default under `DEC-020`.
+The shipped baseline includes the MTG Assistant staged zone flow, `GameContext`, plain-text answers, card scanning, and personalization. The app is deployed to production on AWS-provided URLs and runs the live OpenAI provider (`DEC-084`); the focus now is gathering real user feedback and refining the suite. Local development continues to use `ASK_AI_PROVIDER=mock` by default under `DEC-020` (canonical rule: `integrations-and-data.md`).
 
 MTG Assistant intentionally keeps context structured but lightweight:
 - game context (player count, life totals, active player when known, and turn phase)
@@ -36,7 +38,7 @@ MTG Assistant intentionally keeps context structured but lightweight:
 - selected cards grouped by zone, with ordered stack positioning when stack is populated
 - per-card context fields (caster, context targets, optional notes, optional mana spent with fallback for stack cards)
 - optional user question
-- no full legality validation
+- no full legality validation (canonical rule: `goals-and-non-goals.md` Scope Notes)
 
 Beyond MTG Assistant, the suite includes a shipped standalone **Card Trade Balancer**: a frontend-only, ephemeral two-sided card-value comparison (static-snapshot USD prices, per-entry printing + foil + quantity), reached via the feature-portal Menu (DEC-087, DEC-088, DEC-095). It adds no backend endpoint or prompt/contract change.
 
@@ -53,7 +55,7 @@ Intentional constraints are tracked in `goals-and-non-goals.md`.
 
 ## Key Constraints
 - mobile-first UI
-- single main backend endpoint
+- single main backend endpoint (canonical rule: NFR-004)
 - plain-text response
 - static local metadata file
-- mock-default local provider mode with optional live OpenAI provider mode
+- mock-default local provider mode with optional live OpenAI provider mode (canonical rule: `integrations-and-data.md`)

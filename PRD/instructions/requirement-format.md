@@ -68,6 +68,9 @@ are the deployment survivors DEC-084 / DEC-169 in
 - Use acceptance criteria to make implementation measurable.
 - Use constraints for anything the agent must not overstep.
 - Use dependencies to show external reliance or coupling.
+- When a change touches a cross-cutting invariant (a rule asserted in 3+ files),
+  enumerate its homes by grep and amend them together — see
+  `instructions/writing-rules.md`, "Cross-cutting invariants (grep before amend)".
 
 ## Slice Dependency Rules
 

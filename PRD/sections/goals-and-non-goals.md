@@ -35,8 +35,8 @@
 - card-gated submit flow requiring at least one selected-zone card
 - Decrypt Stack submit flow
 - markdown-rendered AI answers in the shared conversation thread (wire contract remains a plain string; DEC-123, REQ-102)
-- mock-first integration path
-- one main backend endpoint, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175)
+- mock-first integration path (canonical rule: `integrations-and-data.md`)
+- one main backend endpoint, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175) — canonical: NFR-004
 - app-wide CSS decorative-motion and visual-feedback baseline with reduced-motion support (DEC-079, REQ-059, NFR-006)
 - predefined browser-local palette personalization hosted in the feature-portal Menu (DEC-066, DEC-110, REQ-044)
 - In-Depth Question and Quick Question destinations, both reusing the shipped conversation/thread behavior
@@ -47,7 +47,7 @@
 ## Intentional constraints
 - duplicate-card blocking is a temporary product constraint, not a gameplay rule
 - stack size is capped at 10 cards to reduce token use and abuse risk
-- the product does not implement a deterministic rules engine or full board-state simulator
+- the product does not implement a deterministic rules engine or full board-state simulator (canonical rule: `goals-and-non-goals.md` Scope Notes, below)
 - answer wire format stays a plain markdown string; schema-enforced answer shapes are out of scope (DEC-123)
 - runtime metadata syncing is out of scope
 - camera scanning is out of the **core product loop**, but is a scoped, optional, frontend-only input feature (DEC-050)
@@ -64,6 +64,7 @@
 - official judge-grade rulings
 - deterministic rules engine behavior
 - full board-state modeling
+  (canonical rule: `goals-and-non-goals.md` Scope Notes, below)
 - controller selection
 - mode selection
 - multiplayer sync
@@ -72,7 +73,7 @@
 - billing
 - runtime metadata syncing
 - dependency-heavy or performance-harming animation systems, and motion that ignores `prefers-reduced-motion` (decorative CSS motion itself is in scope per DEC-079, NFR-006; this non-goal narrows the prior blanket "animation-heavy UI" exclusion)
-- arbitrary/expanding product-facing endpoints beyond the answer endpoint and the single read-only card-detail retrieval route (REQ-175)
+- arbitrary/expanding product-facing endpoints beyond the answer endpoint and the single read-only card-detail retrieval route (REQ-175; canonical rule: NFR-004)
 - grading and multi-card-per-frame detection in card scanning (DEC-053)
 - pricing and printing disambiguation remain out of the **card-scanning** feature (DEC-053), but are **in scope for the Trade Balancer** as a static-snapshot USD value aid and printing picker (DEC-087); this narrows the prior blanket pricing/printing-disambiguation exclusion — live/real-time price sync stays out of scope
 - live/real-time card price sync, price history, marketplace/transaction handling, and automated "suggest cards to balance" logic in the Trade Balancer (DEC-087)
@@ -82,5 +83,5 @@
 - automated answer-quality gating in `npm run quality:check`: combo enrichment's effect on answers is measured by an opt-in, human-reviewed live-provider A/B that never blocks a build, and a general answer-quality baseline across the whole fixture corpus stays separate scope (DEC-161)
 
 ## Scope Notes
-TheJudge is an **MTG assistant with a suite of features** that help players — not an official judge or a deterministic/gameplay-accurate rules engine. **In-Depth Question** (the staged game-context + Ask AI feature, internally `mtg-assistant`) is the primary feature; Quick Question and other tools sit alongside it (`DEC-094`).
+**Canonical rule — assistant, not a rules engine.** TheJudge is an **MTG assistant with a suite of features** that help players — not an official judge or a deterministic/gameplay-accurate rules engine. It never implements legality validation, deterministic rules simulation, board-state logic, or format enforcement in the core product. **In-Depth Question** (the staged game-context + Ask AI feature, internally `mtg-assistant`) is the primary feature; Quick Question and other tools sit alongside it (`DEC-094`). This is the single authoritative statement of the assistant-not-a-rules-engine rule; echoed in `overview.md`, `problem-statement.md`, `instructions/technical-design-rules.md`, `instructions/agent-working-rules.md`, `integrations-and-data.md`, REQ-094, REQ-081, REQ-083, `in-depth/README.md`, `quick-lookup/README.md`, `user-flows.md`, `system-map/prompt-assembly.md`, `system-map/game-rules-retrieval.md`, `life-tracker/README.md`, and root `README.md` (enumerate by grep before amending — see `instructions/writing-rules.md`, grep-before-amend). Retired index rows: DEC-001, DEC-002, DEC-013.
 Some constraints are temporary and intentionally narrow.

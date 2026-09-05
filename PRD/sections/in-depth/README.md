@@ -43,11 +43,11 @@ runs the full Ask AI backend on its `mode: "game"` branch — the request carrie
 whole `GameContext`, the backend assembles one large prompt (general context,
 phase guidance, every populated zone with full card text, curated and retrieved
 Comprehensive Rules, per-card WotC rulings, and gated Commander Spellbook combo
-context), and the same provider boundary (mock by default, OpenAI live) returns a
+context), and the same provider boundary (mock by default, OpenAI live; canonical rule: `integrations-and-data.md`) returns a
 plain-text answer. The answer opens the shared chat workspace, where the game
 context is frozen and the player can ask text follow-ups that carry the whole
 conversation forward. It is an assistant, not a rules engine — it validates no
-legality, simulates no board state, and enforces no format (DEC-002, DEC-013).
+legality, simulates no board state, and enforces no format (canonical rule: `goals-and-non-goals.md` Scope Notes; retired index DEC-002 / DEC-013).
 It is the largest and most entangled destination in the suite: it originates the
 staged flow, the game-mode request contract, the conversation thread, and the
 game-context UI, and it consumes shared chrome, the scan input path, and the
@@ -275,7 +275,7 @@ retrieval/combo machinery that other specs own.
 
 In-Depth is the original and primary consumer of the whole Ask AI backend. The
 path below is the `mode: "game"` branch of the single product-facing
-`POST /api/ask-ai` endpoint (DEC-010); success `{ answer }` and error shapes are
+`POST /api/ask-ai` endpoint (canonical rule: NFR-004); success `{ answer }` and error shapes are
 frozen across providers and shared with `mode: "lookup"` (Quick Lookup). The
 retrieval and combo machinery are owned by `system-map.md`; this spec states how
 the game-mode request drives them. (DEC-020, DEC-010)
@@ -368,7 +368,7 @@ the game-mode request drives them. (DEC-020, DEC-010)
 - Built: assembly produces one prepared prompt handed to the shared
   `AskAiProvider.generateAnswer`; the provider consumes prompt text and never
   inspects `mode`. Provider selection is explicit via `ASK_AI_PROVIDER` — mock is
-  the default and returns the exact assembled prompt (including
+  the default (canonical rule: `integrations-and-data.md`) and returns the exact assembled prompt (including
   `CONVERSATION HISTORY`, frozen `gameContext`, phase guidance, and any combo
   section) as its `answer` for inspection; `openai` is the live path. HTTP
   contracts stay frozen across the swap and upstream failures map to the

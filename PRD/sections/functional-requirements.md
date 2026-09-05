@@ -172,7 +172,7 @@
   - submit is allowed only when at least one selected zone has a card
   - blank trimmed question uses the zone-aware fallback in request/prompt logic
 - Constraints:
-  - one main product-facing endpoint in the core product, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175)
+  - one main product-facing endpoint in the core product, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175) — canonical rule: NFR-004
 - Dependencies:
   - backend API
   - DEC-153
@@ -1674,7 +1674,7 @@
   - success `{ answer }` and error response shapes are unchanged for both modes and both `ASK_AI_PROVIDER` providers
   - `POST /api/ask-ai` route path and provider boundary are unchanged
 - Constraints:
-  - `POST /api/ask-ai` stays the one answer endpoint (DEC-010); a separate read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175) is permitted alongside it
+  - `POST /api/ask-ai` stays the one answer endpoint (canonical rule: NFR-004); a separate read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175) is permitted alongside it
   - additive amendment to the DEC-020 frozen contract; no existing field changes meaning
 - Dependencies:
   - DEC-106
@@ -1860,7 +1860,7 @@
   - display names are editable from Game Setup via the tracker's Edit names disclosure; In-Depth continues to use the shared `PlayerRosterEditor` (REQ-015)
   - game-wide day/night designation tracking is always available in the tracker header (REQ-111 / DEC-132)
 - Constraints:
-  - presentation/tracking only; not a rules engine, no board/zone tracking, no elimination logic (DEC-013)
+  - presentation/tracking only; not a rules engine, no board/zone tracking, no elimination logic (canonical rule: `goals-and-non-goals.md` Scope Notes; retired index DEC-013)
   - decorative motion stays CSS-only and reduced-motion-aware (DEC-079, NFR-006)
   - tracker Game Setup does not reuse `PlayerRosterEditor`; shared seed/data contracts are unchanged
 - Dependencies:
@@ -1915,7 +1915,7 @@
   - eval fixtures/goldens are updated only for this intentional prompt change
 - Constraints:
   - additive amendment to DEC-021/DEC-027; do not restructure existing GameContext fields
-  - captured numbers only; no legality/board-state/rules simulation (DEC-013)
+  - captured numbers only; no legality/board-state/rules simulation (canonical rule: `goals-and-non-goals.md` Scope Notes; retired index DEC-013)
 - Dependencies:
   - DEC-102
   - REQ-015
@@ -2192,7 +2192,7 @@
   - identical request context and artifact data produce the same selected variants and match annotations
 - Constraints:
   - retrieval is local and backend-only; no model call is used to decide intent, eligibility, template satisfaction, or ranking
-  - do not introduce legality validation, rules simulation, hidden-state assumptions, or a second product-facing endpoint
+  - do not introduce legality validation, rules simulation, hidden-state assumptions, or a second product-facing endpoint (one-endpoint rule canonical: NFR-004; rules-engine rule canonical: `goals-and-non-goals.md` Scope Notes)
 - Dependencies:
   - DEC-116
   - REQ-093
@@ -4017,7 +4017,7 @@
 ### REQ-175
 - Title: Card-detail retrieval endpoint and backend card-detail artifact
 - Priority: high
-- Description: The card descriptive block is served on demand by a new product-facing route `GET /api/cards/:oracleId` returning one card's block by oracle id, backed by a committed backend card-detail map. One builder trims the committed Scryfall bulk into that map; the card-detail popup fetches per card from the route (FLOW-024) and ask-ai reads the same map internally for server-side resolution (REQ-176). This introduces the product's second product-facing endpoint, authorized by D5 and applied by the one-endpoint-rule amendments below (REQ-012, REQ-072, NFR-004, `goals-and-non-goals.md`, `technical-design-rules.md`).
+- Description: The card descriptive block is served on demand by a new product-facing route `GET /api/cards/:oracleId` returning one card's block by oracle id, backed by a committed backend card-detail map. One builder trims the committed Scryfall bulk into that map; the card-detail popup fetches per card from the route (FLOW-024) and ask-ai reads the same map internally for server-side resolution (REQ-176). This introduces the product's second product-facing endpoint, authorized by D5 — the one-endpoint rule (canonical: NFR-004).
 - Acceptance Criteria:
   - a new `scripts/build-*.mjs` trims the committed Scryfall bulk into a card-detail map keyed by Scryfall `oracle_id`, each value carrying `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`; raw Scryfall bulk stays gitignored and only the trimmed artifact is committed
   - the map is committed once, backend-only, under `apps/backend/data/cardDetailByOracleId.json`; no card-detail copy is committed under `apps/frontend/public/data/` and none is downloaded up front (NFR-019)
@@ -4028,7 +4028,7 @@
   - the product-facing routes are exactly `POST /api/ask-ai` and `GET /api/cards/:oracleId` (`GET /api/health` remains the non-product health check); `ASK_AI_PROVIDER=mock` local dev works unchanged with no runtime network call
 - Constraints:
   - commit only the trimmed artifact, matching the existing `apps/backend/data/*.json` pattern
-  - the new route is a read-only `GET` keyed by oracle id; it is the product's second product-facing endpoint (D5), authorized by the amendments to REQ-012, REQ-072, NFR-004, `goals-and-non-goals.md`, and `technical-design-rules.md` below
+  - the new route is a read-only `GET` keyed by oracle id; it is the product's second product-facing endpoint (D5), authorized by the one-endpoint rule (canonical: NFR-004)
 - Dependencies:
   - REQ-174
   - REQ-176

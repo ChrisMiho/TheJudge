@@ -28,5 +28,5 @@ The solution should not try to solve every MTG rules problem, and it is not limi
 
 It should instead:
 - keep stack-context entry fast and useful as the primary MTG Assistant path
-- grow a suite of player-help features without becoming a rules engine
-- avoid heavy rules-engine complexity
+- grow a suite of player-help features without becoming a rules engine (canonical rule: `goals-and-non-goals.md` Scope Notes)
+- avoid heavy rules-engine complexity (canonical rule: `goals-and-non-goals.md` Scope Notes)

@@ -89,7 +89,7 @@ included. If this is a follow-up turn, `CONVERSATION HISTORY` appears before the
 - Zone sections include full card metadata in every populated zone; prompt budget
   diagnostics remain in place rather than silencing size concerns.
 - The static MTG reference and merged scope sentence frame the answer, but they do not
-  add hidden state or a rules engine.
+  add hidden state or a rules engine (canonical rule: `goals-and-non-goals.md` Scope Notes).
 - Rules and rulings blocks are reference context. They do not override submitted stack
   order, zones, targets, notes, or stated game state.
 - The enrichment-debug sidecar is mock-only diagnostic output and is not part of the

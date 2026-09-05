@@ -6,6 +6,8 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
+- [single-source-invariants](single-source-invariants/) — de-duplicate cross-cutting product-truth invariants (rules asserted in 3+ files, e.g. "one main endpoint") into one canonical home each + a grep-before-amend guardrail; bounded corpus hygiene, not an ID-system rewrite. All five lettered slices (A–E) done, every acceptance criterion earned, independent review **APPROVE**. Docs-only PR #188 open against `main` — **owner action: merge PR #188**, then `/graph-implement PRD/work/single-source-invariants/` runs `close` (`thejudge-cleanup`).
+
 ## active
 
 ## refined
@@ -15,8 +17,6 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
-
-- [single-source-invariants](single-source-invariants/) — de-duplicate cross-cutting product-truth invariants (rules asserted in 3+ files, e.g. "one main endpoint") into one canonical home each + a grep-before-amend guardrail; bounded corpus hygiene, not an ID-system rewrite. Spec-forming half complete via graph-20260904-201403: quality-check PASS on re-check 4 (four FAIL→fix loops, each catching the exact grep-from-memory defect this fixes). Docs-only base→main PR open. **Owner action:** answer the five decision blocks in `GATE-QUESTIONS.md` (INV-ENDPOINT, INV-MOCK-FIRST, INV-RULES-ENGINE, INV-DECISION-LOG, GUARD-GREP-BEFORE-AMEND), merge the PR, then `/graph-implement PRD/work/single-source-invariants/`.
 
 ## deferred
 

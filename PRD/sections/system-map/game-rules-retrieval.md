@@ -43,7 +43,7 @@ supplemental excerpts, then official rulings.
 
 The output is reference text for the prompt. Missing or unparsable artifacts degrade by
 omitting the affected section or disabling that boost path; they do not create an API
-shape change or a deterministic rules-engine answer.
+shape change or a deterministic rules-engine answer (canonical rule: `goals-and-non-goals.md` Scope Notes).
 
 ## Where it lives
 
@@ -87,4 +87,4 @@ reference material and simply omits `OFFICIAL RULINGS`.
   references that question but does not resolve it.
 - These systems provide prompt reference context only. They do not validate legality,
   simulate board state, or override submitted zones, stack order, targets, notes, or
-  card oracle text.
+  card oracle text (canonical rule: `goals-and-non-goals.md` Scope Notes).
