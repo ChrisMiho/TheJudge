@@ -82,7 +82,7 @@ Proposed: append after REQ-176 in `PRD/sections/functional-requirements.md`.
   - the benchmark corpus and scoring logic originate from a throwaway harness on `origin/explore/semantic-rule-retrieval` (`PRD/work/combo-context-validation/harness/rag/`); committing it in-repo is the point of this requirement
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -144,7 +144,7 @@ Proposed: append after REQ-177.
   - located in code: `buildQueryParts` in `apps/backend/src/gameRulesRetrieval.ts` currently appends turn phase, zone ids, and every card's name, type line, oracle text, and context notes
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -200,7 +200,7 @@ Proposed: append after REQ-178.
   - the deeper chunking work — folding a keyword's sub-rules into one document, prefixing an orphan sub-rule with its parent sentence, splitting fused examples — shapes what gets embedded rather than what gets printed, and belongs to REQ-181
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -260,7 +260,7 @@ Proposed: append after REQ-179.
   - power, toughness, and loyalty are also dropped by the same build step and would remove a large class of "does this damage kill it" guesswork; that is card-data work, not retrieval, and is deliberately out of this gameplan's scope
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -342,7 +342,7 @@ single source for each.
   - no hybrid lexical-plus-semantic fusion score was ever measured; this requirement merges the exact-rule-id boost with semantic ranking rather than claiming a measured fusion result
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -374,7 +374,7 @@ Proposed: added to REQ-181's `Constraints` list in
   - semantic retrieval scope is the Comprehensive Rules corpus only; cards, WotC rulings, and Commander Spellbook combos remain exact-id keyed lookups and are never embedded or semantically searched under this requirement
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -413,7 +413,7 @@ Proposed: added to REQ-181's `Constraints` list.
   - the shipped semantic provider is a small embedding model bundled in the answer process and run in-process (`all-MiniLM-L6-v2`, 384 dimensions, quantised), not a hosted service and not a per-request external call; System 3's no-per-request-external-call posture is preserved by this choice rather than reversed, and only `EMBEDDING_PROVIDER=openai` would add such a call, which is never the default. A dedicated always-on inference host is out of scope
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -442,7 +442,7 @@ Proposed: added to REQ-181's `Constraints` list.
   - no vector database and no new storage service: the rule vectors are loaded in-process alongside the rule index and cosine-searched directly. A hosted vector store would only be justified if semantic search later spanned cards, rulings, and combos (over 150,000 vectors), which SCOPE-A excludes
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -475,7 +475,7 @@ Proposed: added to REQ-181's `Constraints` list.
   - lexical retrieval is retained and never removed: it is the retrieval path under `EMBEDDING_PROVIDER=mock` (the default, which must run with no model access — canonical mock-first rule, `integrations-and-data.md` Tech Stack), it supplies the exact-rule-id and parent-rule-id boost merged into semantic ranking, and it is the fallback on any embedding failure. System 3 is therefore never worse than its prior lexical-only behaviour under any provider setting or failure mode
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -550,7 +550,7 @@ Proposed:
   - System 3's scoring mechanism moves from lexical-only to semantic-primary with lexical fallback under REQ-181; the section's placement, five-excerpt cap, and System 2 deduplication are unchanged
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -622,7 +622,7 @@ Proposed:
   - the report/harness parity criterion exists because the two diverged in practice: after REQ-176 moved card-text resolution server-side, the report stopped passing a card-detail index and reported three false scenario failures while the gate stayed green
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -658,7 +658,7 @@ Proposed:
   - when a card is attached, the assembled prompt additionally includes that card's full metadata including oracle text using the same per-card formatting as populated-zone cards (REQ-030), that card's WotC rulings (DEC-029), and System 3 scored against the question plus a compact signal for each attached card — name, type line, and keyword list — rather than the card's full oracle text (REQ-178)
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -692,7 +692,7 @@ Proposed:
   - Backend enrichment runs per attached card: each card's full metadata (same per-card formatting as populated-zone cards, DEC-042/REQ-030) and each card's WotC rulings (DEC-029) appear; System 3 supplemental retrieval (DEC-046/REQ-022) scores the question plus a compact signal for every attached card — name, type line, and keyword list. It no longer scores over each card's full oracle text, which was measured to drop supplemental recall@5 from 0.577 to 0.026 on a labelled benchmark (REQ-178).
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -727,7 +727,7 @@ Proposed:
   - This also resolves the **symptom** half of the mechanic-keyword observation: a mechanic asked by name with no card must not be refused as "not an official mechanic." The separate idea of guaranteeing every relevant mechanic's **definition** is enriched into the prompt is RAG-shaped and is not built here. It needs a mechanic-definition corpus, a per-question relevance step, and a new prompt section — a different feature from improving which Comprehensive Rules excerpts are selected. It is an explicit non-goal of the RAG retrieval gameplan (REQ-177 through REQ-181) and becomes its own package once REQ-180 settles how the keyword vocabulary is derived. Its original write-up was preserved when the `prompt-context-refinement` package closed and is carried in that gameplan's intake.
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -758,7 +758,7 @@ Proposed:
   - The RAG gameplan's own measurement work (REQ-177) commits an offline labelled question-to-rule benchmark. That benchmark and this worked-solutions set are complementary: the benchmark measures whether the right rule was retrieved, this set measures whether the assembled prompt resolves a hard case correctly.
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -819,7 +819,7 @@ Proposed:
   - REQ-181 (the bundled embedding model and committed rule-embeddings artifact this budget must accommodate)
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -857,7 +857,7 @@ Proposed:
 - Answered (2026-09-05, RAG retrieval gameplan): option two. Per-card Scryfall `keywords` are added to the committed backend card-detail artifact and unioned at query time to form the System 3 keyword signal (REQ-180). The hand-curated static vocabulary is retained only for detecting a keyword named in the question text, no longer for inferring a card's keywords from its oracle text. The trigger Q-001 named — labelled recall metrics showing gaps — is produced by the committed retrieval benchmark and the repaired relevance report (REQ-177); the two labelled deathtouch fixtures missing their expected rule `702.2b` are the gap. Option three (generating the vocabulary from Comprehensive Rules 702.x) is not taken: it describes what a keyword means, not which cards carry it, and is better suited to the deferred mechanic-definition corpus than to the retrieval query signal.
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -926,7 +926,7 @@ Proposed:
 - Backed by: DEC-047, REQ-032, REQ-177
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -1102,7 +1102,7 @@ Proposed:
   in the question text.
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -1160,7 +1160,7 @@ Proposed:
 | `ADDITIONAL RELEVANT RULE EXCERPTS` | conditional — present when System 3 retrieves ≥1 scoring rule; can be empty | conditional — present when System 3 retrieves ≥1 scoring rule (question + each attached card's name/type line/keywords, REQ-167, REQ-178); can be empty | conditional — present when System 3 retrieves ≥1 scoring rule from the question alone; can be empty | conditional — same rule as whichever mode |
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -1271,7 +1271,7 @@ Proposed:
   REQ-022, REQ-178, REQ-181, REQ-167)
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -1349,7 +1349,7 @@ Proposed:
   REQ-181)
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -1433,7 +1433,7 @@ Proposed:
 - up to 5 supplemental WotC CR rule excerpts dynamically retrieved from the committed rule index artifact, ranked semantic-first against the committed per-rule embeddings with the exact-rule-id boost merged and lexical IDF scoring retained as the mock/offline default and failure fallback (DEC-046, REQ-181), from a query built from the question plus each card's name, type line, and keywords rather than its full oracle text (REQ-178), and deduplicated by rule-number prefix against selected System 2 baseline rule numbers (REQ-179)
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
@@ -1477,7 +1477,7 @@ Proposed:
   5. Backend assembles one lookup-mode prompt: per-card full metadata and per-card WotC rulings for every attached card, System 3 supplemental retrieval scored over the question plus each attached card's name, type line, and keywords — not its full oracle text (REQ-178) — and combo enrichment over the card set when explicit combo intent is present; game-state-only sections stay omitted (REQ-167 / DEC-107).
 ```
 
-- Verdict: <accept | edit | reject>
+- Verdict: accept
 - Reason:
 
 ---
