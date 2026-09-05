@@ -360,3 +360,4 @@ path written outside the worktree (expected: none beyond
 | "accept all 24 and mark them in the gate file for me" | answered-once | owner-action | — |
 | "graph-implement, this is probably a long running task, and i am heading to bed, do you wanna start with validating any credentials you need before i head out" | answered-once | driver-resume | — |
 | "graph-implement, im resuming this graph after some issues, and ive got the graph profile on now" | answered-once | driver-resume | — |
+| "i approve increasing the budget if needed" | answered-once | build | — |
