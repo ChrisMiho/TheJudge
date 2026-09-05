@@ -378,10 +378,11 @@ approval pause.
 - **Amended:** REQ-022 (System 3 enrichment behaviour), REQ-032 (retrieval
   relevance measurement), REQ-177 (trustworthy retrieval measurement), REQ-181
   (semantic rule retrieval), NFR-002 (fast interaction loop), NFR-017 (deploy
-  package quota), and the four current-state spec files that restate the
+  package quota), and the six current-state spec files that restate the
   never-worse / hybrid-follow-up wording: `system-map.md`,
   `system-map/game-rules-retrieval.md`, `quick-lookup/README.md`,
-  `in-depth/README.md`, `integrations-and-data.md`.
+  `in-depth/README.md`, `integrations-and-data.md`,
+  `system-map/prompt-layout-spec.md`.
 - **Reserved (new, not written live):** REQ-182 (hybrid blend), REQ-183 (Lambda
   data-budget relief), REQ-184 (`EMBEDDING_PROVIDER` default).
 - **Unchanged and depended on:** REQ-167, REQ-176, REQ-178, REQ-179, REQ-180,

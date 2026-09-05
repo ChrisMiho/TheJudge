@@ -854,6 +854,61 @@ Proposed replacement:
 
 ---
 
+## system-map/prompt-layout-spec.md — the prompt anatomy spec
+
+**What this decides:** how the document that lists every section of an Ask AI
+prompt describes the way the supplemental rule excerpts are picked.
+
+**In plain terms:** `prompt-layout-spec.md` is the readable anatomy of the
+prompt — one line per section, in the order the backend assembles them, written
+so nobody has to read the raw JSON to find out what a player's question actually
+carries. Row 8 is `ADDITIONAL RELEVANT RULE EXCERPTS`, the up-to-five extra
+rules Ask AI pulls in. That row says they are "ranked by meaning against
+committed per-rule embeddings with a keyword-overlap fallback" — meaning-matching
+first, word-matching only if meaning-matching breaks, which is what REQ-181
+shipped. REQ-182 replaces that either/or with one blended score: the meaning
+score and the word-overlap score are each scaled against the query's own best
+score and added with a single tuned weight, and word-matching alone stays only as
+the offline default and the failure fallback. The row should say that, and the
+file's `Backed by:` list should name the new requirement so a reader lands in the
+right place.
+
+**What happens if you say no:** the one-page map of what goes into every prompt
+describes a ranking rule the code no longer follows — in the same four-way
+disagreement the other spec files are being corrected out of.
+
+Amends `PRD/sections/system-map/prompt-layout-spec.md`.
+
+Current (byte-for-byte, row 8 of the `## Sections, in assembly order` table):
+
+```markdown
+| 8 | `ADDITIONAL RELEVANT RULE EXCERPTS` | Supplemental rule excerpts (System 3), ranked by meaning against committed per-rule embeddings with a keyword-overlap fallback, from a query built from the question plus each attached card's name, type line, and keywords — not its full oracle text (REQ-167, REQ-178, REQ-181). |
+```
+
+Proposed replacement:
+
+```markdown
+| 8 | `ADDITIONAL RELEVANT RULE EXCERPTS` | Supplemental rule excerpts (System 3), ranked by a hybrid blend of normalised cosine against committed per-rule embeddings and normalised keyword-overlap score, with the exact-rule-id boost merged into the blended score and keyword-overlap scoring alone retained as the mock/offline default and the failure fallback, from a query built from the question plus each attached card's name, type line, and keywords — not its full oracle text (REQ-167, REQ-178, REQ-181, REQ-182). |
+```
+
+Proposed addition — the `Backed by:` id list at the top of the file gains the
+new id, replacing the byte-for-byte current line:
+
+```markdown
+Backed by: DEC-025, DEC-042, REQ-169, DEC-107, REQ-074, REQ-178, REQ-181
+```
+
+with:
+
+```markdown
+Backed by: DEC-025, DEC-042, REQ-169, DEC-107, REQ-074, REQ-178, REQ-181, REQ-182
+```
+
+- Verdict:
+- Reason:
+
+---
+
 ## Blocker questions
 
 None. Every uncertainty this node met was resolved from the conservative

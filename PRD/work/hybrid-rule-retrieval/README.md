@@ -1,4 +1,4 @@
-status: refining
+status: refined
 
 # hybrid-rule-retrieval
 
