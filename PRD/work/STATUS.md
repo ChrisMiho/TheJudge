@@ -6,8 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-- [image-first-cards](image-first-cards/) — image-first tiles with on-demand card detail. All three slices done: (A) new `GET /api/cards/:oracleId` endpoint + backend card-detail artifact + on-demand popup fetch across all six card surfaces, name-only image-fail fallback (DEC-078 offline guarantee preserved); (B) ask-ai resolves card text server-side, proven byte-identical via `npm run test:eval` before the client stops sending it; (C) slims the up-front `cardMetadata.json` to tile-only fields, gated by a >= 40%-gzipped-reduction assertion (NFR-019, owner-recalibrated 2026-09-04 from a structurally unreachable 80%; measured 48.1%). PR #185 carries A+B+C. Ready for `/thejudge-cleanup PRD/work/image-first-cards/`.
-
 ## active
 
 ## refined
