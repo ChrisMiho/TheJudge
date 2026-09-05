@@ -7,7 +7,7 @@
 - Autonomous base: `origin/thejudge-auto/single-source-invariants`
 - Staging: none — resume of an existing `STATUS.ideation` package, no new intake staged
 - Current node: `owner-action` (gate-qc PASS on re-check 4; spec-forming half complete)
-- Next action: answer `PRD/work/single-source-invariants/GATE-QUESTIONS.md`, merge the docs PR, then `/graph-implement PRD/work/single-source-invariants/`
+- Next action: answer `PRD/work/single-source-invariants/GATE-QUESTIONS.md`, merge docs PR #187 (https://github.com/ChrisMiho/TheJudge/pull/187), then `/graph-implement PRD/work/single-source-invariants/`
 
 ## Node ledger
 
@@ -35,7 +35,7 @@ was run first (README carried no `## Autonomous metadata`) to record the base.
   `PRD/work/single-source-invariants/GATE-QUESTIONS.md` (INV-ENDPOINT,
   INV-MOCK-FIRST, INV-RULES-ENGINE, INV-DECISION-LOG, GUARD-GREP-BEFORE-AMEND) —
   accept / edit / reject each — then merge the docs-only PR to `main`.
-- Evidence: docs-only base→main PR — `PENDING (URL recorded below after creation)`.
+- Evidence: docs-only base→main PR — https://github.com/ChrisMiho/TheJudge/pull/187
 - Resume: after answering and merging, run
   `/graph-implement PRD/work/single-source-invariants/` — the build half applies
   the approved proposal to `PRD/sections/` together with the code.
