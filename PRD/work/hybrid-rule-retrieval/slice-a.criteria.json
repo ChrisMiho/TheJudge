@@ -11,7 +11,7 @@
     {
       "id": "A2",
       "statement": "alpha is a single named constant in [0.50, 0.70]; the chosen value and the full sweep are recorded in REQ-182's Notes",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/backend/src/gameRulesRetrieval.ts", "PRD/sections/functional-requirements.md"] }
     },
     {
@@ -29,7 +29,7 @@
     {
       "id": "A5",
       "statement": "All 12 labelled fixture checks pass under the semantic path (system3-expected-recall, system3-noise-excluded across the eight labelled fixtures)",
-      "value": false,
+      "value": true,
       "evidence": { "command": "test:eval" }
     },
     {
@@ -41,7 +41,7 @@
     {
       "id": "A7",
       "statement": "Clean/polluted MRR are recorded in REQ-182's Notes alongside recall, reported rather than gated",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
     },
     {
@@ -59,7 +59,7 @@
     {
       "id": "A10",
       "statement": "The six documentation blocks (REQ-182 new, REQ-177/REQ-181/REQ-022 amendments, system-map.md, system-map/game-rules-retrieval.md, in-depth/README.md, system-map/prompt-layout-spec.md) are applied by intent, matching the finalized GATE-QUESTIONS.md diff",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/functional-requirements.md",

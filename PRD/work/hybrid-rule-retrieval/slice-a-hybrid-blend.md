@@ -1,108 +1,49 @@
 # Slice A — hybrid blend
 
-## Status: blocked
+## Status: done
 
-### Handoff
+## Resolution (2026-09-05)
 
-- Done: the hybrid blend (REQ-182, A1/A3/A4/A8) and the benchmark's loud-failure
-  guard (REQ-177, A9) are implemented and unit-tested in
-  `apps/backend/src/gameRulesRetrieval.ts` and
-  `apps/backend/src/eval/ragRetrievalBenchmark(.test).ts` — all 57+5 relevant
-  tests pass, typecheck is clean, and the mock/lexical path is measured
-  byte-identical to the pre-hybrid baseline (A4). Benchmark recall@5 at
-  `HYBRID_BLEND_ALPHA = 0.6` clears A6 (clean 0.8974 ≥ 0.8526, polluted 0.8910
-  ≥ 0.8333). `slice-a.criteria.json` reflects this: A1/A3/A4/A6/A8/A9 are `true`
-  with real evidence; A2/A5/A7/A10 are left `false` — see `## Blocker` below.
-  No `PRD/sections/` edit has been made (A10 not applied) and nothing has been
-  committed.
-- Next: an owner decision on the REQ-182/A5 conflict below, then resume this
-  slice — pick a final `alpha`, apply the six documentation blocks (A10) with
-  REQ-182's Notes carrying the real full-candidate-list sweep (not the
-  depth-15 probe's numbers) and the MRR figures (A7), and finish Slices B/C/E
-  which depend on this one being `done`.
-- Stopped because: a measured, unresolvable conflict between two of REQ-182's
-  own accepted acceptance criteria (A2's alpha band and A5's 12/12 fixture
-  gate) — see `## Blocker` below. This is a product decision, not an
-  implementation bug.
+Slice A blocked once on a real conflict: built over the full candidate list
+REQ-182 mandates (never a truncated top-15 sample), no `alpha` in the
+accepted `[0.50, 0.70]` band got all 12 labelled fixture checks passing —
+`state-based-actions` always lost `701.8b`, a rule that answers the question
+only by citing another rule number (`704.5g`) inside its own text rather than
+restating the cited number itself. Full math and the alpha sweep without a
+fix are preserved in `GRAPH-RUN.md`'s `## Open gate` and in `GATE-QUESTIONS.md`
+(REQ-182's Notes).
 
-## Blocker
+**Owner decision:** keep the 12/12 gate and the `[0.50, 0.70]` band; add a
+cross-reference boost instead of relaxing either. A candidate rule whose own
+text cites a rule number the question cites gets `SCORE_CROSS_REFERENCE = 10`
+— on top of, never instead of, the existing exact-rule-id and parent-rule-id
+boosts, and matched only against the question's own cited ids, never
+oracle-sourced card text. Sized by measurement: the largest gap between
+`701.8b`'s blended score and its closest full-pool competitor, across the
+whole accepted alpha band, was 0.078 (at alpha 0.70); 10 clears that with a
+wide margin while staying an order of magnitude below the exact-rule-id boost
+(100) and half the parent-rule-id boost (20).
 
-**What this decides:** REQ-182 (accepted) requires both (a) `alpha` inside
-`[0.50, 0.70]`, and (b) all 12 labelled fixture checks passing under the
-semantic path. Measured against the actual full-candidate-list hybrid
-implementation the requirement itself mandates (A3 — never a truncated top-N),
-these two accepted requirements cannot both hold at once. One of them has to
-give, and that's an owner call, not mine.
+With the boost in place, all 12 fixture checks pass at every alpha from 0.50
+through 0.70. `alpha = 0.60` is shipped: clean/polluted recall@5 0.8974/0.8910,
+both above the accepted floors (0.8526/0.8333) with real headroom. Full sweep
+recorded in REQ-182's Notes (`PRD/sections/functional-requirements.md`) and
+`GATE-QUESTIONS.md`. `slice-a.criteria.json` is 10/10 `true`.
 
-**In plain terms:** the design brief's alpha sweep (0.50–0.70 all clearing
-12/12) was measured on a throwaway probe that could only fuse the top 15
-candidates from each ranking — not the full ~2,870-rule pool the real code
-scores. Built against the full pool, as REQ-182 requires, one of the three
-`state-based-actions` fixture's expected rules (`701.8b`) never makes it into
-the top 5 at any alpha from 0.50 up to 0.70: more real candidates compete for
-the last two slots than the truncated probe saw, and two of them
-(`704.5h`, `510.3a`, `702.2b` — depending on alpha) always outscore `701.8b`
-in that band. The two rules explicitly cited by number or already dominant by
-exact-id boost (`704.5g`, `120.5`) are never at risk; only this third,
-indirectly-referenced rule is. Below alpha ≈ 0.48 (outside the accepted
-`[0.50, 0.70]` band), `701.8b` would win — but that band was also an accepted,
-measured decision (REQ-182's Notes), not something I can override.
+Applied to `PRD/sections/`: REQ-182 (new, with the amended text above), the
+REQ-177/REQ-181/REQ-022 amendments, and the four current-state spec updates
+(`system-map.md`, `system-map/game-rules-retrieval.md`, `in-depth/README.md`,
+`system-map/prompt-layout-spec.md`). One deliberate deviation from the
+originally-finalized `system-map.md` diff: its `Backed by:` list cited
+`REQ-182, REQ-183, REQ-184`, but REQ-183 and REQ-184 do not exist as written
+`PRD/sections/` truth until Slices C and E land (an id is never cited before
+the slice that writes it — the same rule `GAMEPLAN.md` already applies to
+`quick-lookup/README.md` and `integrations-and-data.md`). Applied `REQ-182`
+only; **Slices C and E must append `REQ-183` and `REQ-184` respectively** to
+`system-map.md`'s `Supplemental retrieval (System 3)` `Backed by:` list when
+they land.
 
-**Evidence — the exact math.** At the fixture's frozen query embedding, over
-the full non-curated-excluded candidate pool:
-
-| rule | cosineRaw | cosineNorm | lexicalRaw | lexicalNorm |
-| --- | --- | --- | --- | --- |
-| 701.8b (expected, missing) | 0.3053 | 0.5226 | 55.908 | 0.7194 |
-| 704.5h (crowds it out) | 0.5267 | 0.9016 | 31.671 | 0.4075 |
-| 510.3a (crowds it out) | 0.4075 | 0.6974 | 44.358 | 0.5708 |
-| 702.2b (crowds it out) | 0.4739 | 0.8112 | 35.314 | 0.4544 |
-
-`blended = alpha*cosineNorm + (1-alpha)*lexicalNorm` (boost is 0 for all four —
-none is cited by number). Solving for where 701.8b's blended score overtakes
-its closest competitor (702.2b) gives `alpha ≈ 0.4787` — below the accepted
-0.50 floor. Measured directly at the band's edges with the real
-implementation (`npm run test:eval`, `contextEvaluationHarness.test.ts`):
-
-| alpha | fixture checks | clean recall@5 / MRR | polluted recall@5 / MRR |
-| --- | --- | --- | --- |
-| 0.50 | 11/12 (state-based-actions) | 0.8526 / 0.6649 | 0.8205 / 0.6392 (below A6's 0.8333 floor) |
-| 0.55 | 11/12 (state-based-actions) | 0.8782 / 0.6918 | 0.8718 / 0.6615 |
-| 0.60 | 11/12 (state-based-actions) | 0.8974 / 0.7139 | 0.8910 / 0.6928 |
-| 0.65 | 11/12 (state-based-actions) | 0.8974 / 0.7188 | 0.9038 / 0.7042 |
-| 0.70 | 11/12 (state-based-actions) | 0.9167 / 0.7353 | 0.9038 / 0.7188 |
-
-`state-based-actions` is the *only* failing fixture at every alpha tested —
-`quick-lookup-card` and `quick-lookup-multi-card` (the two fixtures the
-design brief specifically built the blend to fix) pass at every alpha from
-0.50 through 0.70. This is a real, measured improvement over the semantic-only
-9/12 baseline; it stops one rule short of REQ-182's accepted 12/12 gate.
-
-**What happens if you say no (i.e. leave both requirements as accepted,
-unresolved):** this slice — and Slices B, C, and E, which all depend on it —
-stay blocked indefinitely, since no alpha in the accepted band satisfies A5.
-
-**Options for the owner, not decided here:**
-1. Accept 11/12 and amend REQ-182's acceptance criteria to record
-   `state-based-actions`/`701.8b` as a known, accepted miss (the same pattern
-   already used for the pre-hybrid semantic-only gap — see the comment above
-   `"validates System 3 relevance under the semantic path"` in
-   `contextEvaluationHarness.test.ts`), picking a final alpha from the sweep
-   above (0.60 recommended: it's the first value where both clean and
-   polluted recall clear A6 with real headroom, and MRR keeps climbing above
-   it without further fixture cost).
-2. Widen the accepted alpha band below 0.50 to let `701.8b` in, accepting the
-   recall/MRR cost that comes with it (not measured here, since it wasn't in
-   scope until this conflict surfaced).
-3. Something else — e.g. revisit the fixture's ground truth or the embedding
-   text, both explicitly out of scope for this slice per the existing code
-   comments.
-
-No PRD/sections/ edit has been made for REQ-182 (or the other five Slice A
-documentation blocks) because REQ-182's own proposed text asserts "a blend
-weighted 52% meaning / 48% words gets all 12 scenario checks right" — a claim
-this measurement now contradicts. Applying it verbatim would write a false
-number into durable product truth.
+Committed `323931e` on `thejudge-auto/hybrid-rule-retrieval-work` (PR #197).
 
 ## Goal
 
@@ -156,29 +97,29 @@ follow-up."
 
 ## Acceptance criteria
 
-- [ ] A1 — under `EMBEDDING_PROVIDER=local`, each candidate's score is the
+- [x] A1 — under `EMBEDDING_PROVIDER=local`, each candidate's score is the
       normalised linear blend above, with the boost merged into the blended
       score
-- [ ] A2 — `alpha` is a single named constant in `[0.50, 0.70]`; the chosen
+- [x] A2 — `alpha` is a single named constant in `[0.50, 0.70]`; the chosen
       value and the full sweep are recorded in REQ-182's Notes
-- [ ] A3 — the blend is scored over the full candidate list, never a truncated
+- [x] A3 — the blend is scored over the full candidate list, never a truncated
       top-N of either ranking
-- [ ] A4 — under `mock`, and on any embedding failure, scoring is byte-identical
+- [x] A4 — under `mock`, and on any embedding failure, scoring is byte-identical
       to the prior lexical-only path: benchmark clean recall@5 0.5833 / MRR
       0.4249, polluted recall@5 0.5256 / MRR 0.3872
-- [ ] A5 — all 12 labelled fixture checks pass under the semantic path
+- [x] A5 — all 12 labelled fixture checks pass under the semantic path
       (`system3-expected-recall`, `system3-noise-excluded` across the eight
       labelled fixtures), against the 2026-09-05 baseline of 9/12
-- [ ] A6 — benchmark clean recall@5 ≥ 0.8526 and polluted recall@5 ≥ 0.8333
-- [ ] A7 — clean/polluted MRR are recorded in REQ-182's Notes alongside recall
+- [x] A6 — benchmark clean recall@5 ≥ 0.8526 and polluted recall@5 ≥ 0.8333
+- [x] A7 — clean/polluted MRR are recorded in REQ-182's Notes alongside recall
       (reported, not gated)
-- [ ] A8 — System 3 stays capped at 5 excerpts, still deduplicated against the
+- [x] A8 — System 3 stays capped at 5 excerpts, still deduplicated against the
       System 2 selection by rule-number prefix, prompt section placement
       unchanged
-- [ ] A9 — `scripts/rag-retrieval-benchmark.mjs --semantic` (via
+- [x] A9 — `scripts/rag-retrieval-benchmark.mjs --semantic` (via
       `scoreBenchmarkSemantic`) fails loudly rather than silently reporting a
       lexical result as semantic when the embedder is unavailable
-- [ ] A10 — the six documentation blocks in Requirement 3 are applied, byte-
+- [x] A10 — the six documentation blocks in Requirement 3 are applied, byte-
       matching the finalized `GATE-QUESTIONS.md` diff by intent, across
       `functional-requirements.md`, `system-map.md`,
       `system-map/game-rules-retrieval.md`, `in-depth/README.md`, and

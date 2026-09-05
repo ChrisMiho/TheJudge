@@ -1,6 +1,10 @@
 # Slice B — eval gating
 
-## Status: planned
+## Status: done
+
+2026-09-05 B1 — observed Slice A `done` (10/10 criteria `true`, committed
+`323931e` on `thejudge-auto/hybrid-rule-retrieval-work`), confirmed before
+starting this slice's code.
 
 ## Goal
 
@@ -37,19 +41,19 @@ multi-keyword-card fixture no labelled fixture covers today.
 
 ## Acceptance criteria
 
-- [ ] B1 — Slice A is `done` before this slice's code lands
-- [ ] B2 — `system3-expected-recall` and `system3-noise-excluded` fail
+- [x] B1 — Slice A is `done` before this slice's code lands
+- [x] B2 — `system3-expected-recall` and `system3-noise-excluded` fail
       `npm run test:eval` on a genuine semantic-path regression (a failing
       check fails the run; no report-only `console.log`-only path remains for
       the labelled-fixture assertion)
-- [ ] B3 — one new labelled fixture exists for a multi-keyword card (two or
+- [x] B3 — one new labelled fixture exists for a multi-keyword card (two or
       more real Scryfall keywords), with hand-labelled expected/forbidden
       supplemental rule ids
-- [ ] B4 — the new fixture's frozen query embedding is committed via
+- [x] B4 — the new fixture's frozen query embedding is committed via
       `npm run eval:build-frozen-query-embeddings`
-- [ ] B5 — `npm run test:eval` passes with the new fixture included and the
+- [x] B5 — `npm run test:eval` passes with the new fixture included and the
       checks gating
-- [ ] B6 — the REQ-032 documentation block is applied by intent, matching the
+- [x] B6 — the REQ-032 documentation block is applied by intent, matching the
       finalized `GATE-QUESTIONS.md` diff, in
       `PRD/sections/functional-requirements.md`
 
