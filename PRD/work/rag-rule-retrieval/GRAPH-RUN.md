@@ -8,8 +8,8 @@
 - Resume canary (2026-09-05 01:27, run `graph-20260905-012712`): `denied` both tiers — `nohup true` → \"`nohup` is denied while a graph run holds the lock\"; `rm -rf .worktrees/.graph-canary-nonexistent` → \"`rm -rf` is denied in every session\"; run-state degraded at take-lock, then `.graph-run-state.json` written by the driver (`driver-bookkeeping/1`) before any node dispatch
 - Autonomous base: `origin/thejudge-auto/rag-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-061805/`
-- Current node: `plan` (run `graph-20260905-012712`) — dispatched, no fan-out
-- Next action: `plan` → publish package to `origin/thejudge-auto/rag-rule-retrieval` → `build` → `review`; `land` stays the owner's. Resume command if interrupted: `/graph-implement PRD/work/rag-rule-retrieval/`
+- Current node: `build` (run `graph-20260905-012712`) — dispatched, no fan-out; worktree `.worktrees/implement-rag-rule-retrieval`, head branch `thejudge-auto/rag-rule-retrieval-work`
+- Next action: `build` → `review` → `land` (owner merges the `-work` → base PR, then the base → `main` PR) → `close`. The base branch is frozen from this dispatch until the `-work` PR merges: the driver commits ledger updates locally only. Resume command if interrupted: `/graph-implement PRD/work/rag-rule-retrieval/`
 
 ## Node ledger
 
@@ -287,6 +287,69 @@ Copy the `Working directory:` line above, unchanged, into every prompt you write
 for any subagent you dispatch (you should dispatch none). Report the slice list
 (letters, titles, one-line scope each) and every assumption you recorded back to
 the driver.
+
+### build
+
+graph is controlling. This is an autonomous graph run (build-half run ID
+`graph-20260905-012712`); no human is available, so do not stop to ask clarifying
+questions — apply the assumption ladder in
+`PRD/instructions/preparation-contract.md` per question as it arises and record
+each assumption in the slice doc's notes; a blocked slice, an unresolvable gate
+failure, or a rebase conflict whose intent is not derivable ends this node
+`failed` with the evidence, reported back to the driver.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Do NOT dispatch any subagent, fork, or helper agent: subagent fan-out is off for
+this run, this node has a hard budget of 600 tool calls, and every helper's
+calls count against it. Work alone, sequentially, slice A → B → C → D → E, and
+batch reads, greps, and verification commands into few shell calls.
+
+Invoke the `thejudge-implement-all` skill on the package at
+`PRD/work/rag-rule-retrieval/`. Take the recorded autonomous base from the
+package README's `## Autonomous metadata` section
+(`origin/thejudge-auto/rag-rule-retrieval`, published at the driver's latest
+commit). Use the shared remote branch `thejudge-auto/rag-rule-retrieval-work` as
+the PR head — a distinct head from the base, so the `-work` → base PR shows the
+whole deliverable. Create the worktree at
+`.worktrees/implement-rag-rule-retrieval` (repo-local `.worktrees/` root only;
+never edit the launch checkout). Write only inside
+`.worktrees/implement-rag-rule-retrieval/` and `PRD/work/rag-rule-retrieval/`;
+any write outside that set fails this node.
+
+This is the apply step for product truth: `GAMEPLAN.md` names which slice owns
+each accepted `PRD/sections/` amendment in `GATE-QUESTIONS.md` (24/24 accept, 0
+edit, 0 reject). In each slice, write those `PRD/sections/` edits by intent
+against current truth — re-derived from the accepted diff and `DESIGN-BRIEF.md`,
+not a blind replay — together with the code, in the same commit series. Every
+slice's `slice-<letter>.criteria.json` criterion flips to `true` only after the
+hook has observed its evidence (a criterion flip without logged evidence is
+denied and names what is missing — earn it, then flip it; a `manual` criterion
+takes a dated observation line naming its id). Report `ok` only when every
+criterion in every slice file is `true` and the last slice has set
+`STATUS.ship-ready`; otherwise report `failed` naming the slice, the criterion,
+and the evidence still missing.
+
+Verification runs live: run each slice's stated verification and
+`npm run quality:check` in the worktree before marking it done. For any slice with
+browser or dev-server acceptance criteria, own your own dev server on a port you
+start, write captures under the worktree's `PRD/work/rag-rule-retrieval/.playwright-mcp/`,
+and record `PRD/instructions/runtime-process-hygiene.md`'s cleanup evidence (browser
+closed, owned processes stopped, port released) before the slice can be done.
+Never run `npm run data:refresh` or any Scryfall network refresh; never use
+`git add -A`, `git add .`, or a force push; never merge or close a PR — the base
+branch merge stays the owner's. Push `HEAD` to the shared `-work` branch without
+force and open (or update) the `-work` → `thejudge-auto/rag-rule-retrieval` PR
+with a body that opens with the plain-language block from
+`PRD/instructions/plain-language-standard.md` (What this is · What you need to
+do · What it changes) and names the five slices.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write
+for any subagent you dispatch (you should dispatch none). Report back to the
+driver: the PR URL, the worktree path, the head commit, the per-slice
+done/blocked status with each slice's verification command and result, every
+path written outside the worktree (expected: none beyond
+`PRD/work/rag-rule-retrieval/`), and any assumption you recorded.
 
 ## Instruction ledger
 

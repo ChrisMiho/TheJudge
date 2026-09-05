@@ -7,8 +7,6 @@ Do not rename package folders to encode status.
 ## ship-ready
 
 ## active
-
-## refined
 - [rag-rule-retrieval](rag-rule-retrieval/) — one gameplan for RAG in Ask AI's
   supplemental Comprehensive-Rules block (System 3): five ordered steps, each
   with a measurement gate — repair the recall instruments (REQ-177), fix the
@@ -16,8 +14,11 @@ Do not rename package folders to encode status.
   keywords (REQ-180), then rank rules by meaning with a bundled local model
   (REQ-181). Consolidates every RAG-shaped work folder and the parked,
   never-merged `semantic-rule-retrieval` design (PR #154). All 24 gate slots
-  accepted 2026-09-05, docs PR #190 merged; build half running under
-  `/loop graph-implement` (run `graph-20260905-012712`, re-entered at `gate-qc`).
+  accepted 2026-09-05, docs PR #190 merged; mapped into five sequential slices
+  A–E (`GAMEPLAN.md`); build half running under `/loop graph-implement` (run
+  `graph-20260905-012712`, at `plan` → `build` → `review`).
+
+## refined
 
 ## refining
 

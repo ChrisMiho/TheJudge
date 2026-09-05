@@ -1,0 +1,54 @@
+{
+  "slug": "rag-rule-retrieval",
+  "slice": "D",
+  "criteria": [
+    {
+      "id": "D1",
+      "statement": "The card-data build writes each card's Scryfall keywords array into cardDetailByOracleId.json",
+      "value": false,
+      "evidence": { "command": "node scripts/build-card-detail-by-oracle-id.mjs", "paths": ["apps/backend/data/cardDetailByOracleId.json"] }
+    },
+    {
+      "id": "D2",
+      "statement": "System 3's keyword signal unions request cards' keywords plus question-text keywords; static vocabulary retained only for question-text detection",
+      "value": false,
+      "evidence": { "paths": ["apps/backend/src/gameRulesRetrieval.ts"] }
+    },
+    {
+      "id": "D3",
+      "statement": "cardMetadata.json gains no field and its gzipped size is unchanged",
+      "value": false,
+      "evidence": { "command": "gzip -c apps/frontend/public/data/cardMetadata.json | wc -c" }
+    },
+    {
+      "id": "D4",
+      "statement": "quick-lookup-card and quick-lookup-multi-card fixtures retrieve expected rule 702.2b",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/backend run test:eval" }
+    },
+    {
+      "id": "D5",
+      "statement": "Clean and multi-card recall@5 do not regress below the values recorded after Slice C",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "D6",
+      "statement": "open-questions.md records Q-001 as answered, citing REQ-180",
+      "value": false,
+      "evidence": { "paths": ["PRD/sections/open-questions.md"] }
+    },
+    {
+      "id": "D7",
+      "statement": "functional-requirements.md carries the new REQ-180 entry and integrations-and-data.md carries the Card Data Strategy addition",
+      "value": false,
+      "evidence": { "paths": ["PRD/sections/functional-requirements.md", "PRD/sections/integrations-and-data.md"] }
+    },
+    {
+      "id": "D8",
+      "statement": "test:eval and quality:check are green",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/backend run test:eval|npm run quality:check" }
+    }
+  ]
+}

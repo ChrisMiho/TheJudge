@@ -1,0 +1,63 @@
+{
+  "slug": "rag-rule-retrieval",
+  "slice": "A",
+  "criteria": [
+    {
+      "id": "A1",
+      "statement": "retrieval:report and test:eval return the same per-scenario recall verdict for all 9 labelled fixtures",
+      "value": false,
+      "evidence": { "command": "npm run retrieval:report|npm --workspace apps/backend run test:eval" }
+    },
+    {
+      "id": "A2",
+      "statement": "An automated parity test between the report and the harness exists and runs in quality:check",
+      "value": false,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test.*retrievalReportInputs|npm run quality:check",
+        "paths": ["apps/backend/src/eval/retrievalReportInputs.test.ts"]
+      }
+    },
+    {
+      "id": "A3",
+      "statement": "A committed offline benchmark harness scores the 156-pair corpus for recall@5 and MRR under clean and card-polluted queries and writes a machine-readable result file",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "A4",
+      "statement": "The benchmark's current lexical clean/multi-card recall@5 is recorded as the committed Step 1 baseline",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "A5",
+      "statement": "The prompt text produced for every existing labelled fixture is byte-identical before and after this slice",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/backend run test:eval" }
+    },
+    {
+      "id": "A6",
+      "statement": "functional-requirements.md carries the new REQ-177 entry and the Slice-A portion of REQ-032's amendment",
+      "value": false,
+      "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
+    },
+    {
+      "id": "A7",
+      "statement": "system-map.md's Retrieval relevance report block and the REQ-168/NFR-018 dangling-citation repoints match the accepted GATE-QUESTIONS.md text",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "PRD/sections/system-map.md",
+          "PRD/sections/functional-requirements.md",
+          "PRD/sections/non-functional-requirements.md"
+        ]
+      }
+    },
+    {
+      "id": "A8",
+      "statement": "npm run quality:check is green",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    }
+  ]
+}

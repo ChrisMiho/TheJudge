@@ -1,0 +1,101 @@
+{
+  "slug": "rag-rule-retrieval",
+  "slice": "E",
+  "criteria": [
+    {
+      "id": "E1",
+      "statement": "A committed offline artifact holds one embedding vector per rule index entry",
+      "value": false,
+      "evidence": { "paths": ["apps/backend/data"] }
+    },
+    {
+      "id": "E2",
+      "statement": "EMBEDDING_PROVIDER (mock|local|openai, default mock) exists and never auto-switches on environment",
+      "value": false,
+      "evidence": { "paths": ["apps/backend/src/providers/createEmbeddingProvider.ts", "apps/backend/src/config/index.ts"] }
+    },
+    {
+      "id": "E3",
+      "statement": "EMBEDDING_PROVIDER=mock performs no embedding and makes no external call",
+      "value": false,
+      "evidence": { "paths": ["apps/backend/src/providers/mockEmbeddingProvider.ts"] }
+    },
+    {
+      "id": "E4",
+      "statement": "EMBEDDING_PROVIDER=local embeds the query in-process and cosine-ranks it against the committed vectors",
+      "value": false,
+      "evidence": { "command": "EMBEDDING_PROVIDER=local npm --workspace apps/backend run test:eval" }
+    },
+    {
+      "id": "E5",
+      "statement": "The async route handler embeds the query and passes the vector into preparePromptInput as an option; preparePromptInput stays synchronous",
+      "value": false,
+      "evidence": { "paths": ["apps/backend/src/prompt/preparation.ts"] }
+    },
+    {
+      "id": "E6",
+      "statement": "The exact-rule-id/parent-rule-id boost is merged with semantic ranking",
+      "value": false,
+      "evidence": { "paths": ["apps/backend/src/gameRulesRetrieval.ts"] }
+    },
+    {
+      "id": "E7",
+      "statement": "On any embedding failure, System 3 falls back to lexical retrieval, still returns up to 5 excerpts, and emits one diagnostic warning",
+      "value": false,
+      "evidence": { "paths": ["apps/backend/src/gameRulesRetrieval.ts"] }
+    },
+    {
+      "id": "E8",
+      "statement": "System 3 stays capped at 5 excerpts, deduplicated against System 2 by rule-number prefix",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/backend run test:eval" }
+    },
+    {
+      "id": "E9",
+      "statement": "The shipped quantised model's clean/multi-card recall@5 are re-measured against the full-precision reference",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "E10",
+      "statement": "system3-expected-recall and system3-noise-excluded run against the semantic path using committed frozen query embeddings with no live call",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/backend run test:eval" }
+    },
+    {
+      "id": "E11",
+      "statement": "lambda-package-budget.test.mjs is green with the bundled model present and NON_DATA_RESERVE re-measured",
+      "value": false,
+      "evidence": { "command": "node --test scripts/lambda-package-budget.test.mjs" }
+    },
+    {
+      "id": "E12",
+      "statement": "Every PRD/sections/ location this slice owns matches its accepted GATE-QUESTIONS.md text",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "PRD/sections/functional-requirements.md",
+          "PRD/sections/non-functional-requirements.md",
+          "PRD/sections/system-map.md",
+          "PRD/sections/system-map/game-rules-retrieval.md",
+          "PRD/sections/system-map/prompt-layout-spec.md",
+          "PRD/sections/quick-lookup/README.md",
+          "PRD/sections/in-depth/README.md",
+          "PRD/sections/integrations-and-data.md"
+        ]
+      }
+    },
+    {
+      "id": "E13",
+      "statement": "test:eval and quality:check are green",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/backend run test:eval|npm run quality:check" }
+    },
+    {
+      "id": "E14",
+      "statement": "A human confirmed no live-network call occurs under EMBEDDING_PROVIDER=mock or =local by reading the code path",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

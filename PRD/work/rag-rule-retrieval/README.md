@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # rag-rule-retrieval
 
@@ -13,7 +13,24 @@ RAG-deferred mechanic-definition enrichment idea. Consolidates every RAG-
 shaped work-folder and the parked, never-merged `semantic-rule-retrieval`
 design (PR #154, closed unmerged) into one pinpoint gameplan.
 
-Next step: gate resolved — all 24 verdicts `accept`, docs PR #190 merged. Build half running under `/loop graph-implement` (run `graph-20260905-012712`, at `gate-qc` re-check → `plan` → `build` → `review`); if interrupted, resume with `/graph-implement PRD/work/rag-rule-retrieval/`. See `GRAPH-RUN.md`
+Next step: mapped into five sequential slices (A–E, one per gameplan step,
+`GAMEPLAN.md`). Build half running under `/loop graph-implement` (run
+`graph-20260905-012712`, at `plan` → `build` → `review`); if interrupted,
+resume with `/graph-implement PRD/work/rag-rule-retrieval/`. Direct
+implementation entry: `/thejudge-implement PRD/work/rag-rule-retrieval/ slice A`.
+See `GRAPH-RUN.md`.
+
+## Slices
+
+| Slice | Step / REQ | Title | Status |
+| --- | --- | --- | --- |
+| [A](slice-a-trustworthy-measurement.md) | Step 1 / REQ-177 | Make the recall ruler trustworthy | planned |
+| [B](slice-b-fix-the-query.md) | Step 2 / REQ-178 | Stop drowning the question in card text | planned |
+| [C](slice-c-clean-the-corpus.md) | Step 3 / REQ-179 | Clean the junk out of the rule index | planned |
+| [D](slice-d-scryfall-keywords.md) | Step 4 / REQ-180 | Use the keyword list Scryfall already gives us | planned |
+| [E](slice-e-pick-rules-by-meaning.md) | Step 5 / REQ-181 | Pick rules by meaning, not word overlap | planned |
+
+Sequential, A → B → C → D → E (dependency-forced; see `GAMEPLAN.md`).
 
 ## Autonomous metadata
 
