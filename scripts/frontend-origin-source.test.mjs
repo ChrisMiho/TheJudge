@@ -21,8 +21,10 @@ import test from "node:test"
  *   the deploy follows whatever the bootstrap attached and never needs a second
  *   copy of the domain.
  * - `aws-bootstrap.sh` (admin, one-off) attaches the domain: ACM certificate in
- *   us-east-1 (the only region CloudFront accepts), Route 53 validation and
- *   alias records, and the distribution update guarded by its ETag.
+ *   us-east-1 (the only region CloudFront accepts) covering the apex and www,
+ *   Route 53 validation and alias records for both, the redirect CloudFront
+ *   Function that sends www (and the raw CloudFront hostname) to the apex, and
+ *   the distribution update guarded by its ETag.
  */
 
 const here = path.dirname(fileURLToPath(import.meta.url))
@@ -42,8 +44,8 @@ test("aws-deploy.sh derives FRONTEND_ORIGIN from the distribution's alias, with 
 
   assert.match(
     source,
-    /Aliases\.Items/,
-    "aws-deploy.sh must read the distribution's alias list to find the player-facing domain."
+    /Aliases\.Items\[\?!starts_with\(@, 'www\.'\)\]/,
+    "aws-deploy.sh must pick the apex alias, never the www alias that only redirects to it."
   )
   assert.match(
     source,
@@ -67,7 +69,14 @@ test("aws-bootstrap.sh attaches the custom domain end to end", () => {
     "the certificate must live in us-east-1 for CloudFront."
   )
   assert.match(source, /--validation-method DNS/)
+  assert.match(
+    source,
+    /--subject-alternative-names "\$www_domain"/,
+    "the certificate must also cover www, which redirects to the apex."
+  )
   assert.match(source, /aws acm wait certificate-validated/)
+  assert.match(source, /aws cloudfront publish-function/, "the www redirect is a published CloudFront Function.")
+  assert.match(source, /Runtime=cloudfront-js-2\.0/)
   assert.match(source, /aws route53 change-resource-record-sets/)
   assert.match(
     source,

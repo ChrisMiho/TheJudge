@@ -374,13 +374,20 @@ frontend_origin="https://$cloudfront_domain"
 
 # --- Custom domain (DEC-084) ---------------------------------------------
 # Players reach the app on $frontend_domain instead of the raw CloudFront
-# hostname. Four idempotent steps: an ACM certificate (us-east-1 is the only
-# region CloudFront accepts certificates from, whatever $aws_region is),
-# its DNS-validation CNAME in Route 53, the alias + certificate on the
-# distribution, and A/AAAA alias records pointing the domain at CloudFront.
-# aws-deploy.sh then reads the alias back off the distribution to set the
-# backend's single allowed origin, so the domain is stored in AWS once.
+# hostname. www.$frontend_domain (and the CloudFront hostname itself) answer
+# with a permanent redirect to it: the backend allows exactly one browser
+# origin, so exactly one name may run the app. Five idempotent steps: an ACM
+# certificate covering both names (us-east-1 is the only region CloudFront
+# accepts certificates from, whatever $aws_region is), its DNS-validation
+# CNAMEs in Route 53, the redirect CloudFront Function, the aliases +
+# certificate + function on the distribution, and A/AAAA alias records
+# pointing both names at CloudFront. aws-deploy.sh then reads the apex alias
+# back off the distribution to set the backend's allowed origin, so the
+# domain is stored in AWS once.
 if [[ -n "$frontend_domain" ]]; then
+  www_domain="www.$frontend_domain"
+  redirect_function_name="$app_name-redirect-to-apex"
+
   hosted_zone_id="$(aws route53 list-hosted-zones-by-name \
     --dns-name "$frontend_domain." \
     --query "HostedZones[?Name=='$frontend_domain.'].Id | [0]" \
@@ -392,83 +399,126 @@ if [[ -n "$frontend_domain" ]]; then
   fi
   hosted_zone_id="${hosted_zone_id#/hostedzone/}"
 
-  certificate_arn="$(aws acm list-certificates \
+  # Reuse the first certificate that covers both names; request one otherwise.
+  certificate_arn=""
+  while IFS= read -r candidate_arn; do
+    if [[ -z "$candidate_arn" || "$candidate_arn" == "None" ]]; then
+      continue
+    fi
+    candidate_names=" $(aws acm describe-certificate \
+      --certificate-arn "$candidate_arn" \
+      --query "Certificate.SubjectAlternativeNames" \
+      --output text \
+      --region us-east-1 | tr '\t' ' ') "
+    if [[ "$candidate_names" == *" $frontend_domain "* && "$candidate_names" == *" $www_domain "* ]]; then
+      certificate_arn="$candidate_arn"
+      break
+    fi
+  done < <(aws acm list-certificates \
     --certificate-statuses ISSUED PENDING_VALIDATION \
-    --query "CertificateSummaryList[?DomainName=='$frontend_domain'].CertificateArn | [0]" \
+    --query "CertificateSummaryList[?DomainName=='$frontend_domain'].CertificateArn" \
     --output text \
-    --region us-east-1)"
-  if [[ "$certificate_arn" == "None" || -z "$certificate_arn" ]]; then
+    --region us-east-1 | tr '\t' '\n')
+  if [[ -z "$certificate_arn" ]]; then
     certificate_arn="$(aws acm request-certificate \
       --domain-name "$frontend_domain" \
+      --subject-alternative-names "$www_domain" \
       --validation-method DNS \
       --query CertificateArn \
       --output text \
       --region us-east-1)"
   fi
 
-  # ACM publishes the validation CNAME a few seconds after the request.
-  validation_name=""
-  validation_value=""
+  # ACM publishes one validation CNAME per name a few seconds after the request.
+  validation_records=""
   for _ in $(seq 1 30); do
-    read -r validation_name validation_value < <(aws acm describe-certificate \
+    validation_records="$(aws acm describe-certificate \
       --certificate-arn "$certificate_arn" \
-      --query "Certificate.DomainValidationOptions[0].ResourceRecord.[Name,Value]" \
+      --query "Certificate.DomainValidationOptions[].ResourceRecord.[Name,Value]" \
       --output text \
-      --region us-east-1)
-    if [[ -n "$validation_name" && "$validation_name" != "None" ]]; then
+      --region us-east-1)"
+    if [[ "$validation_records" != *None* ]] \
+      && (( $(printf '%s\n' "$validation_records" | grep -c .) >= 2 )); then
       break
     fi
     sleep 5
   done
-  if [[ -z "$validation_name" || "$validation_name" == "None" ]]; then
-    echo "ACM did not publish a DNS validation record for $certificate_arn." >&2
+  if [[ "$validation_records" == *None* ]] \
+    || (( $(printf '%s\n' "$validation_records" | grep -c .) < 2 )); then
+    echo "ACM did not publish DNS validation records for both names on $certificate_arn." >&2
     exit 1
   fi
 
-  cat > "$tmp_dir/acm-validation-record.json" <<JSON
-{
-  "Changes": [
-    {
-      "Action": "UPSERT",
-      "ResourceRecordSet": {
-        "Name": "$validation_name",
-        "Type": "CNAME",
-        "TTL": 300,
-        "ResourceRecords": [{ "Value": "$validation_value" }]
-      }
-    }
-  ]
-}
-JSON
+  validation_changes=""
+  while IFS=$'\t' read -r record_name record_value; do
+    if [[ -z "$record_name" ]]; then
+      continue
+    fi
+    validation_changes+="${validation_changes:+,}{\"Action\":\"UPSERT\",\"ResourceRecordSet\":{\"Name\":\"$record_name\",\"Type\":\"CNAME\",\"TTL\":300,\"ResourceRecords\":[{\"Value\":\"$record_value\"}]}}"
+  done <<< "$validation_records"
+  printf '{"Changes":[%s]}\n' "$validation_changes" > "$tmp_dir/acm-validation-records.json"
   aws route53 change-resource-record-sets \
     --hosted-zone-id "$hosted_zone_id" \
-    --change-batch "$(aws_file_uri "$tmp_dir/acm-validation-record.json")" \
+    --change-batch "$(aws_file_uri "$tmp_dir/acm-validation-records.json")" \
     >/dev/null
 
-  echo "Waiting for ACM to validate $frontend_domain over DNS (usually a few minutes)..."
+  echo "Waiting for ACM to validate $frontend_domain and $www_domain over DNS (usually a few minutes)..."
   aws acm wait certificate-validated \
     --certificate-arn "$certificate_arn" \
     --region us-east-1
+
+  # The redirect function: every host except the apex gets a 301 to the apex.
+  # Always update + publish; the source is tiny and this keeps it in step with
+  # scripts/lib/cloudfront-custom-domain.mjs on every run.
+  node "$repo_root/scripts/lib/cloudfront-custom-domain.mjs" function-code "$frontend_domain" \
+    > "$tmp_dir/redirect-to-apex.js"
+  redirect_function_comment="Redirect every other host to https://$frontend_domain"
+  if function_etag="$(aws cloudfront describe-function \
+    --name "$redirect_function_name" \
+    --query ETag \
+    --output text 2>/dev/null)"; then
+    function_etag="$(aws cloudfront update-function \
+      --name "$redirect_function_name" \
+      --if-match "$function_etag" \
+      --function-config "Comment=$redirect_function_comment,Runtime=cloudfront-js-2.0" \
+      --function-code "$(aws_fileb_uri "$tmp_dir/redirect-to-apex.js")" \
+      --query ETag \
+      --output text)"
+  else
+    function_etag="$(aws cloudfront create-function \
+      --name "$redirect_function_name" \
+      --function-config "Comment=$redirect_function_comment,Runtime=cloudfront-js-2.0" \
+      --function-code "$(aws_fileb_uri "$tmp_dir/redirect-to-apex.js")" \
+      --query ETag \
+      --output text)"
+  fi
+  redirect_function_arn="$(aws cloudfront publish-function \
+    --name "$redirect_function_name" \
+    --if-match "$function_etag" \
+    --query FunctionSummary.FunctionMetadata.FunctionARN \
+    --output text)"
 
   aws cloudfront get-distribution-config \
     --id "$distribution_id" \
     > "$tmp_dir/distribution-config.json"
   if node "$repo_root/scripts/lib/cloudfront-custom-domain.mjs" check \
-    "$tmp_dir/distribution-config.json" "$frontend_domain" "$certificate_arn"; then
-    echo "CloudFront distribution already serves $frontend_domain."
+    "$tmp_dir/distribution-config.json" "$certificate_arn" "$redirect_function_arn" \
+    "$frontend_domain" "$www_domain"; then
+    echo "CloudFront distribution already serves $frontend_domain (with $www_domain redirecting to it)."
   else
     distribution_etag="$(node -p \
       "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8')).ETag" \
       "$tmp_dir/distribution-config.json")"
     node "$repo_root/scripts/lib/cloudfront-custom-domain.mjs" attach \
-      "$tmp_dir/distribution-config.json" "$frontend_domain" "$certificate_arn" \
+      "$tmp_dir/distribution-config.json" "$certificate_arn" "$redirect_function_arn" \
+      "$frontend_domain" "$www_domain" \
       > "$tmp_dir/distribution-config-with-domain.json"
     aws cloudfront update-distribution \
       --id "$distribution_id" \
       --if-match "$distribution_etag" \
       --distribution-config "$(aws_file_uri "$tmp_dir/distribution-config-with-domain.json")" \
       >/dev/null
-    echo "CloudFront distribution now serves $frontend_domain."
+    echo "CloudFront distribution now serves $frontend_domain (with $www_domain redirecting to it)."
   fi
 
   # Z2FDTNDATAQYW2 is CloudFront's fixed hosted zone id for alias records.
@@ -491,6 +541,30 @@ JSON
       "Action": "UPSERT",
       "ResourceRecordSet": {
         "Name": "$frontend_domain.",
+        "Type": "AAAA",
+        "AliasTarget": {
+          "HostedZoneId": "Z2FDTNDATAQYW2",
+          "DNSName": "$cloudfront_domain.",
+          "EvaluateTargetHealth": false
+        }
+      }
+    },
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "$www_domain.",
+        "Type": "A",
+        "AliasTarget": {
+          "HostedZoneId": "Z2FDTNDATAQYW2",
+          "DNSName": "$cloudfront_domain.",
+          "EvaluateTargetHealth": false
+        }
+      }
+    },
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "$www_domain.",
         "Type": "AAAA",
         "AliasTarget": {
           "HostedZoneId": "Z2FDTNDATAQYW2",

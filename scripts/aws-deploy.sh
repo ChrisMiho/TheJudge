@@ -75,14 +75,15 @@ cloudfront_domain="$(aws cloudfront get-distribution \
   --output text)"
 
 # The backend allows exactly one browser origin (FRONTEND_ORIGIN -> CORS), so
-# it must be the domain players actually type. The live distribution is the
-# single source of truth for that: whatever alias aws-bootstrap.sh attached
-# (DEC-084) wins, and a distribution with no alias falls back to its
-# *.cloudfront.net hostname. No second copy of the domain lives here, so the
-# deploy can never disagree with what CloudFront serves.
+# it must be the domain players actually land on. The live distribution is the
+# single source of truth for that: the apex alias aws-bootstrap.sh attached
+# (DEC-084) wins — never the www alias, which only redirects to the apex — and
+# a distribution with no alias falls back to its *.cloudfront.net hostname. No
+# second copy of the domain lives here, so the deploy can never disagree with
+# what CloudFront serves.
 frontend_alias="$(aws cloudfront get-distribution \
   --id "$distribution_id" \
-  --query "Distribution.DistributionConfig.Aliases.Items[0]" \
+  --query "Distribution.DistributionConfig.Aliases.Items[?!starts_with(@, 'www.')] | [0]" \
   --output text)"
 if [[ "$frontend_alias" == "None" || -z "$frontend_alias" ]]; then
   frontend_origin="https://$cloudfront_domain"
