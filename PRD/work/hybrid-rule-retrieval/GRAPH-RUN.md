@@ -1,12 +1,13 @@
 # Graph run — hybrid-rule-retrieval
 
-- Run ID: `graph-20260905-173655`
-- Profile: `loaded (env sentinel)` (observed by the preflight script at node 1)
+- Run ID: `graph-20260905-191535` (build half, `/loop graph-implement`; spec-forming half `graph-20260905-173655`)
+- Profile: spec-forming half `loaded (env sentinel)` (observed by the preflight script at node 1); build half `unverified` (launch command not stated in the session)
+- Build-half canary: `denied — hook live (graph tier: nohup true → "[graph-boundary] `nohup` is denied while a graph run holds the lock")`, 2026-09-05, lock `graph-20260905-191535`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "[graph-boundary] `rm -rf` is denied in every session."; graph tier: nohup true → "[graph-boundary] `nohup` is denied while a graph run holds the lock")`
 - Autonomous base: `origin/thejudge-auto/hybrid-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-173655/`
-- Current node: `owner-action` (parked after gate-qc PASS — spec-forming half complete)
-- Next action: owner answers `PRD/work/hybrid-rule-retrieval/GATE-QUESTIONS.md` and merges the docs PR; `graph-implement` builds it
+- Current node: `gate-review` (build half; resolving the answered define gate)
+- Next action: `/graph-implement PRD/work/hybrid-rule-retrieval/` (the `/loop graph-implement` build loop is driving)
 
 ## Node ledger
 
@@ -19,6 +20,7 @@
 | 4 | gate-qc | sonnet | failed → define (loop 1 of 3) | `0 → 40` | FAIL, one finding: `PRD/sections/system-map/prompt-layout-spec.md:36` (row 8, `ADDITIONAL RELEVANT RULE EXCERPTS`) still asserts semantic-primary ranking with keyword fallback and has no `GATE-QUESTIONS.md` block (driver confirmed by grep: 0 mentions of `prompt-layout-spec` in the proposal). Everything else passed: 12 `Current:` blocks byte-identical, amendment-set grep otherwise covered, REQ-182/183/184 unused and next free, all four measurements reproduced exactly (`test:eval` 9/12 semantic, 12/12 lexical; benchmark 0.5833 / 0.8526 / 0.8333; budget 118.095 MB). Node set `STATUS.refining`, board row under `## refining`; 29 tool calls, no subagents; commit `214d184` pushed. Driver wrote `## Preparation gate` FAIL to the README | 2026-09-05 |
 | 3 | define (attempt 2) | opus | ok | `0 → 34` | one block added to `GATE-QUESTIONS.md`: `## system-map/prompt-layout-spec.md — the prompt anatomy spec` (row 8 + `Backed by:` line, REQ-182 wording); 16 `## ` headings now (15 stable-id/spec blocks + `## Blocker questions`); 16-term amendment-set re-grep found no further uncovered assertion; 21 `Current:` fences script-verified, 0 mismatches; brief's spec list now names six files; `STATUS.refined`, board row under `## refined`; no `PRD/sections/` or code edits (`git diff --stat` empty); 30 tool calls, no subagents; commit `f13f8d2` pushed | 2026-09-05 |
 | 4 | gate-qc (attempt 2) | sonnet | ok | `0 → 35` | PASS, no findings: 21/21 `Current:` excerpts byte-identical by script (incl. the new `prompt-layout-spec.md` block); REQ-182/183/184 unused, REQ-181 highest live; 13-term amendment-set re-grep leaves no uncovered assertion; measurements reproduced once each (`test:eval` semantic 9/12 / lexical 12/12; benchmark 0.5833 lexical, 0.8526/0.8333 semantic; budget 118.095 MB of 120 MB); hybrid gates are measured thresholds with baselines; `STATUS.refined` unchanged, nothing committed; 28 tool calls, no subagents. Driver discarded the benchmark's regenerated `scoredAt` timestamps in `results.json`/`semantic-results.json` (`git checkout --`, timestamp-only) → stop at PASS: docs PR + `owner-action` park | 2026-09-05 |
+| — | driver-resume | — | ok | `n/a (driver)` | build half (`/loop graph-implement`, tick 1, 2026-09-05): `git fetch origin`; no stop sentinel; no lock held; ready-spec scan found `hybrid-rule-retrieval` at `STATUS.owner-action` with 15/15 `- Verdict:` slots answered (14 accept, 1 edit on NFR-017), docs PR #195 MERGED 2026-09-05T19:11:26Z at `c0aa52c`, no code built; base `thejudge-auto/hybrid-rule-retrieval` fast-forwarded to `origin/main` (`c0aa52c`); claim commit `b41ec8c` (`STATUS.active`, README `status: active`, board row under `## active`); lock taken (`npm run graph:preflight -- --take-lock --slug hybrid-rule-retrieval --run-id graph-20260905-191535`, pid 13714); graph canary `nohup true` denied | 2026-09-05 |
 
 ## Open gate
 
@@ -191,8 +193,28 @@ Constraints: tool-call cap 60 for this node, counting every call. Do not dispatc
 
 Report back, in this order: the one-word verdict (PASS or FAIL); the complete findings list, or `none`; the `Current:` block verification result (count checked, count identical); the amendment-set grep result; each reproduced measurement with the brief's value beside it; the package state after the node; the commit hash if you committed; the tool-call count. Copy the `Working directory:` line above, unchanged, into every prompt you write.
 
+### gate-review
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are the gate-review step of graph run `graph-20260905-191535`, the build half driven by `graph-implement` (the spec-forming half was run `graph-20260905-173655`). Invoke the `graph-gate-review` skill with the Skill tool (skill name `graph-gate-review`) on the package `PRD/work/hybrid-rule-retrieval/`. Read `.claude/skills/graph-gate-review/SKILL.md` and `PRD/instructions/graph-workflow-contract.md` (`## Propose / apply / close`, `## The two runs`) before acting.
+
+Context: the owner answered all 15 `- Verdict:` slots in `GATE-QUESTIONS.md` (14 accept, 1 edit on the NFR-017 block) and merged the docs PR #195 to `main` on 2026-09-05. The package currently carries `STATUS.active` and `status: active` — the build loop's claim marker; the skill restores `STATUS.refined` as the lifecycle position after a resolved define gate. The current branch is `thejudge-auto/hybrid-rule-retrieval`, already fast-forwarded to `main`.
+
+What to do, per the skill: parse every `## <STABLE-ID>` block; confirm each Verdict slot is filled and every edit or reject carries a Reason; apply each verdict inside that ID's proposed diff in `GATE-QUESTIONS.md` only (accept: nothing; edit: apply the owner's Reason as the correction to that ID's proposed diff — for NFR-017 that means adding the extra Notes bullet the owner's Reason describes, worded from the Reason and the PR #194 facts it cites; reject: remove the proposed diff). Never edit `PRD/sections/`, `DESIGN-BRIEF.md`, code, or any `thejudge-*` skill. Then write `## Gate verdicts` in `GRAPH-RUN.md` (one row per stable ID, the owner's Reason quoted for the edit), mark `## Open gate` resolved with the date and the verdict count, replace `STATUS.active` with `STATUS.refined` (exactly one marker), set `status: refined` in `README.md`, and move the board row in `PRD/work/STATUS.md` from `## active` to `## refined`. Do not touch the `## Node ledger`, `## Dispatch prompts`, or `## Instruction ledger` sections of `GRAPH-RUN.md`; the driver owns those.
+
+Commit with explicit paths only (`git add PRD/work/hybrid-rule-retrieval PRD/work/STATUS.md`; never `git add -A`, `--all`, or `.`) on the current branch, with the trailer lines
+   Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+   Claude-Session: https://claude.ai/code/session_01HTYnaUSGyYNRwK4J1ggRW9
+Do not push. Do not dispatch subagents. Never touch the lock, the stop sentinel, or any `.worktrees/.graph-*` file. Never run `npm run data:refresh` or any Scryfall refresh.
+
+Report back, in this order: the verdict split (accept / edit / reject counts); for the edit, the exact text you added to the proposal; `git diff --stat` of `GATE-QUESTIONS.md` for your commit and confirmation that `git diff -- PRD/sections/` is empty; the package state after the node (marker, README status line, board heading); the commit hash; the tool-call count. Copy the `Working directory:` line above, unchanged, into every prompt you write.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "Make Ask AI's semantic rule retrieval safe to turn on. The rag-rule-retrieval run shipped an opt-in local embedding model (EMBEDDING_PROVIDER=local) that lifts recall@5 on the 156-pair benchmark from 0.58 to 0.85 but loses the exact rule on short lookup-mode questions: two of eight labelled fixtures drop rule 702.2b from the top five because a card name plus one keyword carries too little meaning for cosine ranking alone. Four items, one spec: (1) a hybrid score that blends lexical and semantic ranking so lookup-mode questions keep the exact rule while long questions keep the semantic gain, measured on the same benchmark and the labelled fixtures; (2) once hybrid holds, make the system3-expected-recall and system3-noise-excluded checks gate test:eval on the semantic path instead of report-only, and add one labelled fixture for a multi-keyword card; (3) relieve the Lambda package budget, which sits at 118.10 of 120 MB data after the 130 MB runtime-and-model reserve, by shrinking the 75 MB combos artifact, loading the model from S3 at cold start, or storing vectors in a smaller number format, decided by measurement before the next data refresh; (4) measure Lambda cold-start latency with the model loaded and record it against the existing latency requirement. Success is a measured case for setting EMBEDDING_PROVIDER=local as the default." | answered-once | shape | — (the owner's launch request, passed to node 2 verbatim as the package's intake; every product question it raises is decided at the `define` gate, not pre-resolved) |
+| "graph-implement" (the owner's `/loop graph-implement` launch, 2026-09-05) | answered-once | driver-resume | — (a request to run the build loop; every product decision stays with the owner's recorded verdicts and the gates) |
