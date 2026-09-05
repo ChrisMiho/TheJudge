@@ -9,6 +9,12 @@ Do not rename package folders to encode status.
 ## active
 
 ## refined
+
+## refining
+
+## ideation
+
+## owner-action
 - [rag-rule-retrieval](rag-rule-retrieval/) — one gameplan for RAG in Ask AI's
   supplemental Comprehensive-Rules block (System 3): five ordered steps, each
   with a measurement gate — repair the recall instruments (REQ-177), fix the
@@ -18,12 +24,6 @@ Do not rename package folders to encode status.
   never-merged `semantic-rule-retrieval` design (PR #154). All 24 gate slots
   accepted 2026-09-05, docs PR #190 merged; resume with `/graph-implement` at
   `gate-qc` (run `graph-20260905-010802`).
-
-## refining
-
-## ideation
-
-## owner-action
 
 
 ## deferred
