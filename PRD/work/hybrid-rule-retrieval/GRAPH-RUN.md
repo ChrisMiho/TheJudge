@@ -24,7 +24,7 @@
 
 - **Ask:** Decide. Answer every `- Verdict:` slot (accept / edit / reject, with a reason on edit or reject) in `PRD/work/hybrid-rule-retrieval/GATE-QUESTIONS.md` — 15 slots, 0 blocker questions — then merge the docs-only PR to `main` to build.
 - **Evidence:** gate-qc attempt 2 PASS (row 4 above); `## Preparation gate` in `README.md`; the proposal's measurements recorded under `DESIGN-BRIEF.md` `## Measurement plan`.
-- **PR:** (recorded below once opened)
+- **PR:** https://github.com/ChrisMiho/TheJudge/pull/195 (docs-only, `thejudge-auto/hybrid-rule-retrieval` → `main`; opened, not merged)
 - **Resume:** `graph-implement` (the background build loop) picks the package up from `main` after the merge. Manual equivalent: `/graph-implement PRD/work/hybrid-rule-retrieval/`.
 - Parked 2026-09-05 at `owner-action`; run `graph-20260905-173655` released its lock with state `PARKED`.
 
