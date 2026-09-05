@@ -14,6 +14,14 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+- [rag-rule-retrieval](rag-rule-retrieval/) — upgrade Ask AI's supplemental
+  Comprehensive-Rules retrieval (System 3) from lexical keyword/IDF scoring
+  toward semantic retrieval, plus the retrieval pre-work (query construction,
+  rule-corpus hygiene, Scryfall keyword enrichment) and the RAG-deferred
+  mechanic-definition enrichment idea. Consolidates every RAG-shaped work
+  folder and the parked, never-merged `semantic-rule-retrieval` design
+  (PR #154, closed unmerged) into one pinpoint gameplan. Seeded 2026-09-05.
+
 ## owner-action
 
 ## deferred
