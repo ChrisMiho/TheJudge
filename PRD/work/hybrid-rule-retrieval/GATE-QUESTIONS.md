@@ -481,6 +481,13 @@ Proposed addition — one new `- Dependencies:` entry:
   - REQ-183 (the compact vector encoding that relieved this budget)
 ```
 
+Proposed addition — one more new `- Notes:` bullet, recording the 2026-09-05
+CI deploy rejection (owner edit, applied by `graph-gate-review`):
+
+```markdown
+  - the 130 MB non-data reserve was measured on macOS; on the linux/x64 CI runner, `onnxruntime-node`'s postinstall downloaded the CUDA runtime — which the Lambda CPU runtime never loads — and AWS rejected the resulting package as over 250 MB unzipped even though the budget test had passed. Fixed on `main` in PR #194: `scripts/package-lambda.sh` now sets `ONNXRUNTIME_NODE_INSTALL_CUDA=skip` for the packaging install and measures the real unzipped package bytes with a per-entry breakdown, failing before upload when over quota. The 130 MB reserve figure itself is still to be re-measured on the CI runner, not a laptop
+```
+
 - Verdict: edit
 - Reason: add one more Notes bullet recording the 2026-09-05 deploy rejection: the 130 MB non-data reserve was measured on macOS, but on the linux/x64 CI runner onnxruntime-node's postinstall downloaded the CUDA runtime (which the Lambda CPU runtime never loads) and AWS rejected the package as over 250 MB unzipped even though the budget test passed. Fixed on main in PR #194: `scripts/package-lambda.sh` now sets `ONNXRUNTIME_NODE_INSTALL_CUDA=skip` for the packaging install and measures the real unzipped bytes with a per-entry breakdown, failing before upload when over quota. The reserve figure is to be re-measured on the CI runner, not a laptop.
 

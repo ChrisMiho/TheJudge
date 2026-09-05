@@ -22,13 +22,33 @@
 | 4 | gate-qc (attempt 2) | sonnet | ok | `0 → 35` | PASS, no findings: 21/21 `Current:` excerpts byte-identical by script (incl. the new `prompt-layout-spec.md` block); REQ-182/183/184 unused, REQ-181 highest live; 13-term amendment-set re-grep leaves no uncovered assertion; measurements reproduced once each (`test:eval` semantic 9/12 / lexical 12/12; benchmark 0.5833 lexical, 0.8526/0.8333 semantic; budget 118.095 MB of 120 MB); hybrid gates are measured thresholds with baselines; `STATUS.refined` unchanged, nothing committed; 28 tool calls, no subagents. Driver discarded the benchmark's regenerated `scoredAt` timestamps in `results.json`/`semantic-results.json` (`git checkout --`, timestamp-only) → stop at PASS: docs PR + `owner-action` park | 2026-09-05 |
 | — | driver-resume | — | ok | `n/a (driver)` | build half (`/loop graph-implement`, tick 1, 2026-09-05): `git fetch origin`; no stop sentinel; no lock held; ready-spec scan found `hybrid-rule-retrieval` at `STATUS.owner-action` with 15/15 `- Verdict:` slots answered (14 accept, 1 edit on NFR-017), docs PR #195 MERGED 2026-09-05T19:11:26Z at `c0aa52c`, no code built; base `thejudge-auto/hybrid-rule-retrieval` fast-forwarded to `origin/main` (`c0aa52c`); claim commit `b41ec8c` (`STATUS.active`, README `status: active`, board row under `## active`); lock taken (`npm run graph:preflight -- --take-lock --slug hybrid-rule-retrieval --run-id graph-20260905-191535`, pid 13714); graph canary `nohup true` denied | 2026-09-05 |
 
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-182` | accept | — |
+| `REQ-183` | accept | — |
+| `REQ-184` | accept | — |
+| `REQ-032` | accept | — |
+| `REQ-177` | accept | — |
+| `REQ-181` | accept | — |
+| `REQ-022` | accept | — |
+| `NFR-002` | accept | — |
+| `NFR-017` | edit | "add one more Notes bullet recording the 2026-09-05 deploy rejection: the 130 MB non-data reserve was measured on macOS, but on the linux/x64 CI runner onnxruntime-node's postinstall downloaded the CUDA runtime (which the Lambda CPU runtime never loads) and AWS rejected the package as over 250 MB unzipped even though the budget test passed. Fixed on main in PR #194: `scripts/package-lambda.sh` now sets `ONNXRUNTIME_NODE_INSTALL_CUDA=skip` for the packaging install and measures the real unzipped bytes with a per-entry breakdown, failing before upload when over quota. The reserve figure is to be re-measured on the CI runner, not a laptop." |
+| `system-map.md` | accept | — |
+| `system-map/game-rules-retrieval.md` | accept | — |
+| `quick-lookup/README.md` | accept | — |
+| `in-depth/README.md` | accept | — |
+| `integrations-and-data.md` | accept | — |
+| `system-map/prompt-layout-spec.md` | accept | — |
+
 ## Open gate
 
-- **Ask:** Decide. Answer every `- Verdict:` slot (accept / edit / reject, with a reason on edit or reject) in `PRD/work/hybrid-rule-retrieval/GATE-QUESTIONS.md` — 15 slots, 0 blocker questions — then merge the docs-only PR to `main` to build.
+- **Resolved** 2026-09-05: 15/15 stable IDs verdicted (14 accept, 1 edit — `NFR-017`, reason recorded above and applied inside its proposed diff in `GATE-QUESTIONS.md`), 0 rejects, 0 blocker questions. Docs PR #195 merged to `main` at `c0aa52c`. Package restored to `STATUS.refined`; the resumed run re-enters at `gate-qc`.
+- **Prior ask (resolved):** Decide. Answer every `- Verdict:` slot (accept / edit / reject, with a reason on edit or reject) in `PRD/work/hybrid-rule-retrieval/GATE-QUESTIONS.md` — 15 slots, 0 blocker questions — then merge the docs-only PR to `main` to build.
 - **Evidence:** gate-qc attempt 2 PASS (row 4 above); `## Preparation gate` in `README.md`; the proposal's measurements recorded under `DESIGN-BRIEF.md` `## Measurement plan`.
-- **PR:** https://github.com/ChrisMiho/TheJudge/pull/195 (docs-only, `thejudge-auto/hybrid-rule-retrieval` → `main`; opened, not merged)
-- **Resume:** `graph-implement` (the background build loop) picks the package up from `main` after the merge. Manual equivalent: `/graph-implement PRD/work/hybrid-rule-retrieval/`.
-- Parked 2026-09-05 at `owner-action`; run `graph-20260905-173655` released its lock with state `PARKED`.
+- **PR:** https://github.com/ChrisMiho/TheJudge/pull/195 (docs-only, `thejudge-auto/hybrid-rule-retrieval` → `main`; merged 2026-09-05T19:11:26Z at `c0aa52c`)
+- **Resume:** `/graph-implement PRD/work/hybrid-rule-retrieval/` — re-enters at `gate-qc`.
 
 ## Dispatch prompts
 
