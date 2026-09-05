@@ -1,4 +1,4 @@
-status: active
+status: owner-action
 
 # hybrid-rule-retrieval
 
@@ -13,7 +13,7 @@ for the process this run follows.
 
 | Slice | File | Goal | Depends on | Status |
 | --- | --- | --- | --- | --- |
-| A | `slice-a-hybrid-blend.md` | Ship the hybrid lexical+semantic blend and stop the benchmark from silently mislabeling a lexical result as semantic | none | planned |
+| A | `slice-a-hybrid-blend.md` | Ship the hybrid lexical+semantic blend and stop the benchmark from silently mislabeling a lexical result as semantic | none | blocked — see `## Blocker` in the slice doc |
 | B | `slice-b-eval-gating.md` | Turn the two semantic eval checks from report-only into a hard `test:eval` gate, plus a multi-keyword-card fixture | A | planned |
 | C | `slice-c-lambda-vector-budget.md` | Re-encode the committed rule vectors in a compact format to relieve the Lambda data budget | A | planned |
 | D | `slice-d-cold-start-measurement.md` | Give "cold start with the model loaded" a definition and record what it costs | none | planned |

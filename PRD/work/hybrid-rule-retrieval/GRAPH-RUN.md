@@ -6,8 +6,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "[graph-boundary] `rm -rf` is denied in every session."; graph tier: nohup true → "[graph-boundary] `nohup` is denied while a graph run holds the lock")`
 - Autonomous base: `origin/thejudge-auto/hybrid-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-173655/`
-- Current node: `build`
-- Next action: `/graph-implement PRD/work/hybrid-rule-retrieval/` (the `/loop graph-implement` build loop is driving)
+- Current node: `build` (parked at `owner-action` — slice A decision blocker, see `## Open gate`)
+- Next action: answer the `- Decision:` slot under `## Open gate`, then `/graph-implement PRD/work/hybrid-rule-retrieval/` (or restart `/loop graph-implement`)
 
 ## Node ledger
 
@@ -24,6 +24,8 @@
 | — | gate-review | sonnet | ok | `0 → 24` | applied 14 accept / 1 edit / 0 reject inside `GATE-QUESTIONS.md` (NFR-017 gained one `- Notes:` bullet recording the CUDA-runtime CI rejection and PR #194's fix; `git show 334f377 -- GATE-QUESTIONS.md` +7 lines); `git diff -- PRD/sections/` empty; `## Gate verdicts` written (15 rows), `## Open gate` resolved 2026-09-05; `STATUS.active → STATUS.refined`, README `status: refined`, board row under `## refined`; 12 tool calls, no subagents, 0 denials; commit `334f377` (local, not pushed) | 2026-09-05 |
 | 4 | gate-qc (build half, attempt 1) | sonnet | ok | `4 → 29` (4 driver calls charged before dispatch) | PASS, no findings: 21/21 `Current:` blocks byte-identical by script against live `PRD/sections/` at `c0aa52c`; REQ-182/183/184 unused, next free after REQ-181; 16-term amendment-set grep (three new terms) found only unrelated hits (UI `hybrid %` bands, `decisions/deployment.md` S3 staging); NFR-017 owner edit consistent with `scripts/package-lambda.sh` lines 43–44 (`ONNXRUNTIME_NODE_INSTALL_CUDA=skip`) and 64–101 (unzipped-size breakdown), `lambda-package-budget.test.mjs` still hardcodes the 130 MB reserve as the edit states; `test:eval` semantic 9/12 (same three fixtures) lexical 12/12; budget test 2/2, 118.095 MB of 120 MB; all 15 verdict slots filled; nothing committed, tree clean; 21 tool calls, no subagents, 0 denials. Driver wrote `## Preparation gate` PASS to the README | 2026-09-05 |
 | 5 | plan | sonnet | ok | `0 → 83` (node self-reported 34; the hook counter is the record) | `GAMEPLAN.md` + five slice docs (A `slice-a-hybrid-blend.md`, B `slice-b-eval-gating.md`, C `slice-c-lambda-vector-budget.md`, D `slice-d-cold-start-measurement.md`, E `slice-e-deploy-default.md`) + `slice-{a..e}.criteria.json` (10/6/8/2/7 criteria, driver-checked: all `false`, every one with an `evidence` block; 3 `manual`); all 15 `GATE-QUESTIONS.md` blocks assigned one slice each in the GAMEPLAN's assignment table (A 8, B 1, C 2, D 1, E 3); README slice table + implementation map, `status: active`, `STATUS.refined → STATUS.active` (only marker), board row under `## active`; `## Preparation gate` PASS verified by the node; no subagents, 0 denials; commit `94b3b33`; `git status --porcelain` empty | 2026-09-05 |
+| — | driver-bookkeeping | — | ok | `n/a (driver)` | publish before build: ledger + README + GAMEPLAN + slices + `STATUS.active` + board row pushed to `origin/thejudge-auto/hybrid-rule-retrieval` at `fff2df3` (GitHub had deleted the branch after PR #195 merged; re-created); `git status --porcelain` empty; base frozen from here | 2026-09-05 |
+| 6 | build | sonnet | failed → parked (decision blocker) | `0 → 219` | worktree `.worktrees/implement-hybrid-rule-retrieval` on `thejudge-auto/hybrid-rule-retrieval-work`; PR #197 https://github.com/ChrisMiho/TheJudge/pull/197 (`-work` → base, head `c9487c1`, MERGEABLE) carrying slice D done (2/2 criteria; cold start 181.2 ms recorded in NFR-002, matching the brief). Slice A blocked at 6/10 criteria (A2/A5/A7/A10 false): built over the full candidate list as REQ-182 requires, no `alpha` in the accepted band `[0.50, 0.70]` passes all 12 fixture checks — `state-based-actions` loses `701.8b` at every alpha from 0.50 to 0.70 (crossover solves to alpha ≈ 0.4787), while the two lookup fixtures the blend exists to fix pass at every alpha; the brief's 12/12 probe fused only the top 15 candidates per ranking. Sweep in `slice-a-hybrid-blend.md` `## Blocker`: 11/12 at every alpha; clean/polluted recall@5 0.8526/0.8205 (0.50), 0.8974/0.8910 (0.60), 0.9167/0.9038 (0.70). Slice A code left uncommitted in the worktree (`gameRulesRetrieval.ts`/`.test.ts`, `ragRetrievalBenchmark.ts`/`.test.ts`, two benchmark result files); no `PRD/sections/` block applied because REQ-182's text asserts the 12/12 figure. B, C, E planned (depend on A). Write scope held: launch-checkout writes only under `PRD/work/hybrid-rule-retrieval/` (README, slice-a/d docs, slice-a/d criteria). `quality:check` exit 0. 1 hook denial (`rm -rf` of two worktree `.tmp/` debug files, universal tier; not retried). Node self-reported 216 calls | 2026-09-05 |
 
 ## Gate verdicts
 
@@ -47,11 +49,22 @@
 
 ## Open gate
 
-- **Resolved** 2026-09-05: 15/15 stable IDs verdicted (14 accept, 1 edit — `NFR-017`, reason recorded above and applied inside its proposed diff in `GATE-QUESTIONS.md`), 0 rejects, 0 blocker questions. Docs PR #195 merged to `main` at `c0aa52c`. Package restored to `STATUS.refined`; the resumed run re-enters at `gate-qc`.
-- **Prior ask (resolved):** Decide. Answer every `- Verdict:` slot (accept / edit / reject, with a reason on edit or reject) in `PRD/work/hybrid-rule-retrieval/GATE-QUESTIONS.md` — 15 slots, 0 blocker questions — then merge the docs-only PR to `main` to build.
-- **Evidence:** gate-qc attempt 2 PASS (row 4 above); `## Preparation gate` in `README.md`; the proposal's measurements recorded under `DESIGN-BRIEF.md` `## Measurement plan`.
-- **PR:** https://github.com/ChrisMiho/TheJudge/pull/195 (docs-only, `thejudge-auto/hybrid-rule-retrieval` → `main`; merged 2026-09-05T19:11:26Z at `c0aa52c`)
-- **Resume:** `/graph-implement PRD/work/hybrid-rule-retrieval/` — re-enters at `gate-qc`.
+Parked 2026-09-05 at `build`, slice A (`owner-action`). Gate trigger: a `build` blocker that is a genuine product decision — two acceptance criteria the owner accepted in REQ-182 cannot both hold in the built code, and the assumption ladder's first rung (active requirements) is exactly what conflicts, so nothing below it can resolve it.
+
+- **What this decides:** whether Ask AI's new blended rule ranking ships with one known miss on one test scenario, or whether the accepted blend-weight range is widened to recover that rule at a cost to the benchmark.
+- **In plain terms:** REQ-182 (the accepted rule that System 3 scores each candidate rule by a blend of meaning-similarity and rare-word overlap) requires both that the blend weight `alpha` sit inside `[0.50, 0.70]` and that all 12 labelled fixture checks pass. Built the way REQ-182 mandates — blending over the full candidate pool, not a top-15 sample — no weight in that band gets 12/12. The `state-based-actions` scenario (a creature dying from damage) always drops one of its three expected rules, `701.8b`, because three other rules outscore it at every weight from 0.50 to 0.70; the crossover where it would win is `alpha ≈ 0.48`, outside the band. The two Quick Lookup scenarios the blend was built to fix pass at every weight. The brief's 12/12 came from a throwaway probe that only fused the top 15 candidates per ranking, which is why it did not see this. Full table: `slice-a-hybrid-blend.md` `## Blocker`.
+- **What happens if you say no (leave both criteria as accepted):** slice A stays blocked, and slices B, C, and E, which depend on it, never start. Slice D (cold start measured and recorded) is already done on PR #197.
+- **Options:**
+  1. Accept 11/12 and amend REQ-182 to record `state-based-actions` / `701.8b` as a known accepted miss, with `alpha = 0.60` (clean recall@5 0.8974, polluted 0.8910, both clear the accepted floors of 0.8526 / 0.8333 with headroom). **Recommended.**
+  2. Widen the accepted `alpha` band below 0.50 so `701.8b` wins; recall and MRR at that weight are unmeasured and polluted recall was already below its floor at 0.50 (0.8205).
+  3. Something else, stated here (for example, revisit the fixture's expected rules).
+- **Decision:** 
+- **Evidence:** node 6 row above; `PRD/work/hybrid-rule-retrieval/slice-a-hybrid-blend.md` `## Blocker` (score table and alpha sweep); PR #197 blocker comment `thejudge-auto:v1:blocker:hybrid-rule-retrieval:A:req-182-alpha-band-vs-fixture-gate`; slice A code uncommitted in `.worktrees/implement-hybrid-rule-retrieval` (kept).
+- **PR:** https://github.com/ChrisMiho/TheJudge/pull/197 (`thejudge-auto/hybrid-rule-retrieval-work` → `thejudge-auto/hybrid-rule-retrieval`, head `c9487c1`, slice D only; open, not merged).
+- **Resume:** fill the `- Decision:` line above (option number, or your own wording), then `/graph-implement PRD/work/hybrid-rule-retrieval/` or restart `/loop graph-implement`. The driver re-enters at `build` (`GAMEPLAN.md` exists), passes your decision to the builder, which amends REQ-182's proposal block to match before applying it, and finishes A, B, C, E. A blank `- Decision:` re-parks.
+- Run `graph-20260905-191535` released its lock with state `PARKED`.
+
+Prior gate on this package: the `define` gate (15 verdict slots) was resolved 2026-09-05 by `graph-gate-review`; see `## Gate verdicts`.
 
 ## Dispatch prompts
 
