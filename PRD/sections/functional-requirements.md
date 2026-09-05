@@ -4110,3 +4110,25 @@
 - Notes:
   - this is Step 2 of the RAG gameplan and is independent of embeddings: a semantic query built from the same polluted input inherits the same flood (measured: semantic drops 0.885 clean to 0.603 polluted)
   - located in code: `buildQueryParts` in `apps/backend/src/gameRulesRetrieval.ts` currently appends turn phase, zone ids, and every card's name, type line, oracle text, and context notes
+
+### REQ-179
+- Title: Comprehensive Rules index hygiene
+- Priority: medium
+- Description: The committed Comprehensive Rules index excludes the source document's table of contents and heading-only entries, so every searchable entry carries real rule text; and System 3's exclusion of rules already shown in the curated baseline matches by rule-number prefix rather than exact id, so a curated parent rule no longer lets its own lettered sub-rules reappear as supplemental excerpts.
+- Acceptance Criteria:
+  - the build skips the source document's table of contents; the built index contains zero duplicate rule ids (measured before this change on 2026-09-05: 3,432 entries, 3,285 distinct ids, 147 duplicates)
+  - the build omits heading-only entries — an entry whose text is nothing but its own numbered heading — so no searchable entry lacks rule content (measured before this change: 626 entries under 60 characters, of which the heading-only subset is the target; the build test names the exact count it removed)
+  - a build test asserts both properties and fails when a future Comprehensive Rules refresh reintroduces either
+  - System 3 excludes a candidate rule when its id or any of its parent rule ids is already selected by the curated baseline, replacing today's exact-id-only exclusion
+  - measured on the committed benchmark (REQ-177), clean and multi-card recall@5 do not regress below the values recorded after REQ-178
+  - `npm run test:eval` stays green; any golden prompt change is an intentional, reviewed consequence of removing a junk excerpt, never a silent update
+- Constraints:
+  - build-time and retrieval-internal only; no request, response, or frontend change
+  - the raw Comprehensive Rules source stays gitignored and human-approval-gated for refresh, unchanged
+  - the build's existing graceful degradation is preserved: a missing or unparsable source keeps the prior committed artifacts and exits 0
+- Dependencies:
+  - REQ-177 (the benchmark this no-regression gate is measured on)
+  - REQ-022 (the System 3 enrichment requirement whose corpus this cleans)
+- Notes:
+  - this is Step 3 of the RAG gameplan; it improves the current word-overlap scorer immediately (fewer junk entries, cleaner word-rarity statistics) and is a prerequisite for REQ-181, which would otherwise embed 147 near-identical duplicate documents
+  - the deeper chunking work — folding a keyword's sub-rules into one document, prefixing an orphan sub-rule with its parent sentence, splitting fused examples — shapes what gets embedded rather than what gets printed, and belongs to REQ-181

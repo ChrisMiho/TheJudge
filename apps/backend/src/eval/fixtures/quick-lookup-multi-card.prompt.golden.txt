@@ -64,11 +64,11 @@ Use these additional official rule excerpts as reference. They do not override t
 
 702.2b. 702.2b A creature with toughness greater than 0 that’s been dealt damage by a source with deathtouch since the last time state-based actions were checked is destroyed as a state-based action. See rule 704.
 
-702.2. 702.2. Deathtouch
-
 702.2a. 702.2a Deathtouch is a static ability.
 
 702.2d. 702.2d The deathtouch rules function no matter what zone an object with deathtouch deals damage from.
+
+702.2f. 702.2f Multiple instances of deathtouch on the same object are redundant.
 
 CARD (looked up)
 name: Questing Beast

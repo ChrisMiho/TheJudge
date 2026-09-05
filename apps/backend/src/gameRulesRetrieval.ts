@@ -365,7 +365,11 @@ function scoreIndex(
   let excludedCuratedRuleCount = 0;
 
   for (const entry of index) {
-    if (excludeRuleIds.has(entry.ruleId)) {
+    // REQ-179: prefix match, not exact-id-only — a curated parent rule (e.g.
+    // 603.1) also excludes its own lettered sub-rules (603.1a) via
+    // `parentRuleIds`, so a curated baseline entry can never let its own
+    // children reappear as supplemental excerpts.
+    if (excludeRuleIds.has(entry.ruleId) || entry.parentRuleIds.some((parentId) => excludeRuleIds.has(parentId))) {
       excludedCuratedRuleCount++;
       continue;
     }

@@ -1,6 +1,6 @@
 {
   "id": "upkeep-trigger",
-  "description": "Upkeep phase with an 'at the beginning of your upkeep' triggered ability source on the battlefield; empty stack. Core + delayed-trigger + battlefield buckets (no stack bucket). System 3 should surface triggered-ability/upkeep rules.",
+  "description": "Upkeep phase with an 'at the beginning of your upkeep' triggered ability source on the battlefield; empty stack. Core + delayed-trigger + battlefield buckets (no stack bucket). System 3 should surface triggered-ability/upkeep rules. REQ-179: rule 603.3b is a lettered sub-rule of curated topic abilities-trigger-basics' rule 603.3, so System 3's rule-number-prefix exclusion now correctly omits it from supplemental (a curated parent excludes its own children) instead of letting a related rule number reappear; 603.3b was hand-dropped from the expected supplemental set rather than chased in the scorer.",
   "request": {
     "question": "It's my upkeep. My Phyrexian Arena's beginning-of-upkeep trigger and my opponent's beginning-of-upkeep trigger both want to go on the stack — who chooses the order and when do they trigger?",
     "gameContext": {
@@ -38,7 +38,7 @@
       "targets-basics",
       "zones-basics"
     ],
-    "expectedSupplementalRuleIds": ["500.6", "603.3b"],
+    "expectedSupplementalRuleIds": ["500.6"],
     "forbiddenSupplementalRuleIds": ["100.1"]
   }
 }

@@ -1,12 +1,12 @@
 {
   "id": "quick-lookup-no-card",
-  "description": "Lookup mode retrieves rules from a Magic question without attached card context.",
+  "description": "Lookup mode retrieves rules from a Magic question without attached card context. REQ-179: rule 702.85 (\"702.85. Cascade\") is a bare keyword heading with no rule content of its own — the actual definition lives in 702.85a — so the corpus-hygiene cleanup correctly omits it as heading-only. Relabeled by hand to the real cascade-definition rule that now surfaces in its place.",
   "request": {
     "mode": "lookup",
     "question": "How does cascade work?"
   },
   "expected": {
     "expectedSystem2TopicIds": ["stack-and-priority", "targets-basics", "zones-basics", "abilities-trigger-basics"],
-    "expectedSupplementalRuleIds": ["702.85"]
+    "expectedSupplementalRuleIds": ["702.85a"]
   }
 }

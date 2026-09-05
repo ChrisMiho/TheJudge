@@ -216,6 +216,32 @@ describe("Backend - Game Rules", () => {
       expect(ruleIds).not.toContain("405.1");
     });
 
+    it("excludes by rule-number prefix (REQ-179): a curated parent rule also excludes its own lettered sub-rules", () => {
+      const index = [
+        makeEntry({
+          ruleId: "603.1a",
+          sectionTitle: "Triggers",
+          text: "603.1a A lettered sub-rule of 603.1.",
+          searchText: "603.1a lettered sub-rule triggers",
+          parentRuleIds: ["603.1", "603"]
+        }),
+        makeEntry({
+          ruleId: "405.1",
+          sectionTitle: "The Stack",
+          text: "405.1. The stack.",
+          searchText: "405.1 stack",
+          parentRuleIds: ["405"]
+        })
+      ];
+      const context = makeContext({ finalQuestion: "What does rule 603.1a say about triggers and the stack?" });
+      // Only the exact parent id "603.1" is curated (as System 2 would pass),
+      // never the lettered child "603.1a" itself — the old exact-id-only
+      // exclusion would have let 603.1a reappear as a supplemental excerpt.
+      const excludeRuleIds = new Set(["603.1"]);
+      const result = retrieveSupplementalRules(context, index, excludeRuleIds);
+      expect(result.map((r) => r.ruleId)).not.toContain("603.1a");
+    });
+
     it("caps results at max", () => {
       const index = Array.from({ length: 10 }, (_, i) => {
         const id = `${400 + i}.1`;
