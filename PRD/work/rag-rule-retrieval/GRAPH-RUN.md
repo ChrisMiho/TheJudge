@@ -8,8 +8,8 @@
 - Resume canary (2026-09-05 01:27, run `graph-20260905-012712`): `denied` both tiers — `nohup true` → \"`nohup` is denied while a graph run holds the lock\"; `rm -rf .worktrees/.graph-canary-nonexistent` → \"`rm -rf` is denied in every session\"; run-state degraded at take-lock, then `.graph-run-state.json` written by the driver (`driver-bookkeeping/1`) before any node dispatch
 - Autonomous base: `origin/thejudge-auto/rag-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-061805/`
-- Current node: `build` (run `graph-20260905-012712`) — dispatched, no fan-out; worktree `.worktrees/implement-rag-rule-retrieval`, head branch `thejudge-auto/rag-rule-retrieval-work`
-- Next action: `build` → `review` → `land` (owner merges the `-work` → base PR, then the base → `main` PR) → `close`. The base branch is frozen from this dispatch until the `-work` PR merges: the driver commits ledger updates locally only. Resume command if interrupted: `/graph-implement PRD/work/rag-rule-retrieval/`
+- Current node: `review` (run `graph-20260905-012712`) — dispatched, no-write reviewer, no fan-out
+- Next action: `review` → on approval park at `land` (owner merges PR #191 `-work` → base, then the base → `main` PR) → `close`. Base branch still frozen; driver commits locally only. Resume command if interrupted: `/graph-implement PRD/work/rag-rule-retrieval/`
 
 ## Node ledger
 
@@ -29,6 +29,7 @@
 | 5 | plan | sonnet | ok | `0 → 40` | `GAMEPLAN.md` + five slice docs (A `slice-a-trustworthy-measurement.md` REQ-177, B `slice-b-fix-the-query.md` REQ-178, C `slice-c-clean-the-corpus.md` REQ-179, D `slice-d-scryfall-keywords.md` REQ-180, E `slice-e-pick-rules-by-meaning.md` REQ-181 + ship gates) + `slice-{a..e}.criteria.json` (8/9/9/8/14 criteria, all `false`, every one with an `evidence` block — driver-verified by script); GAMEPLAN maps each accepted `PRD/sections` amendment to its owning slice and records six assumptions (1:1 step→slice sequential; REQ-177–181 next-free; gates stay relative; `EMBEDDING_PROVIDER` mirrors `ASK_AI_PROVIDER`; embeddings artifact beside the rule index in `apps/backend/data/`; slice A clears the two dangling-citation repoints); `STATUS.refined → STATUS.active`, board row under `## active`; `DESIGN-BRIEF.md`/`GATE-QUESTIONS.md`/`PRD/sections/` untouched (`git status`); 37 tool calls, no subagents; package published to `origin/thejudge-auto/rag-rule-retrieval` at `98da746` (last driver push to the base) | 2026-09-05 |
 | — | driver-bookkeeping | — | ok | `n/a (driver, during build/1)` | owner approved raising the build cap mid-run ("i approve increasing the budget if needed"): `build` cap 600 → 1200 in `scripts/lib/boundary-rules.mjs` `NODE_CALL_CAPS` and the contract `## Node table` (commit `f9886f6`); the hook re-reads the module per call, so it took effect at once (`capForNode("build")` → 1200); counter stood at 210 after slice A of five. The `graph-implement/reference.md` mirror row still reads 600: the driver's `sed -i` was denied by the graph profile and the `Edit` on `.claude/skills/` was blocked by the auto-mode classifier — owner to make that one-line edit and run `npm run skills:ai-sync`; the contract wins where they disagree. Mechanics only, no scope or criteria change; builder notified | 2026-09-05 |
 | — | driver-bookkeeping | — | ok | `n/a (driver, during build/1)` | build/1 stalled four times on the harness stream watchdog ("no progress for 600s") during an intermittent model outage — counter at 405, 413, 420, and 426; zero hook denials for run `graph-20260905-012712` at each stall; the driver resumed the same agent by message each time (same attempt, context intact). State at the fourth stall: slices A–C committed on the implement-agent branch and pushed (`5746a04`), slice D verified and marked done in the worktree README with 62 changed files uncommitted, slice E not started; PR #191 open `thejudge-auto/rag-rule-retrieval-work` → `thejudge-auto/rag-rule-retrieval` (https://github.com/ChrisMiho/TheJudge/pull/191). Also recorded here: the driver's 01:27 `## Open gate` rewrite anchored on the first textual `## Open gate` (inside the gate-review row) instead of the heading and truncated the node table, so the four rows above were silently dropped until this repair rebuilt the table from commit `e0140a9` — `graph-ledger-check` does not validate the node table, which is why it passed | 2026-09-05 |
+| 6 | build | sonnet | ok | `0 → 773` (four stream-watchdog stalls, resumed in place) | PR #191 https://github.com/ChrisMiho/TheJudge/pull/191 (`thejudge-auto/rag-rule-retrieval-work` → `thejudge-auto/rag-rule-retrieval`, head `a0d38f2`, MERGEABLE, checks static/backend/frontend×3/coverage-merge SUCCESS); worktree `.worktrees/implement-rag-rule-retrieval` clean at `a0d38f2`; five slices A–E done, each with `test:eval` + `quality:check` green and E adding `lambda-package-budget.test.mjs` + `EMBEDDING_PROVIDER=local test:eval`; 48/48 criteria `true` across `slice-{{a..e}}.criteria.json` (driver-verified by script); `STATUS.ship-ready` in the worktree; 133 files (95 `apps/backend`, 10 `PRD/sections`, 13 `PRD/work`, scripts, `vendor/onnxruntime-web-stub`); PR touches no driver-owned file (no `GRAPH-RUN.md`, `boundary-rules`, contract, `.claude/`). Write-scope assertion: launch checkout and both other worktrees `git status --porcelain` empty — pass for the repository; one write outside the repository, scratch dir `/tmp/lambda-sim` (311M, Lambda package measurement via `npm ci`), left for the owner to delete. Two boundary denials during the node, both correct and neither retried: `rm -rf` inside `/tmp/lambda-sim` (`recursive-force-remove`) and a backgrounded `npm run quality:check` (`background-launch`). Builder-raised findings carried to review and `land`: (1) REQ-181 embedding-text shaping measured 13/20 vs plain 19/20 recall@5 — plain shipped, measurement recorded in REQ-181 notes (a divergence from the accepted wording the owner must see); (2) Lambda non-data reserve 20MB → 130MB, ~2.6MB headroom under the 250MB quota. 700 tool calls, ~944k subagent tokens, no subagents | 2026-09-05 |
 
 ## Gate verdicts
 
@@ -386,6 +387,141 @@ driver: the PR URL, the worktree path, the head commit, the per-slice
 done/blocked status with each slice's verification command and result, every
 path written outside the worktree (expected: none beyond
 `PRD/work/rag-rule-retrieval/`), and any assumption you recorded.
+
+### review
+
+graph is controlling. This is an autonomous graph run (build-half run ID
+`graph-20260905-012712`), node 7 `review`. You are a fresh-context, no-write
+reviewer: you hold no Write, Edit, or NotebookEdit tool, and you must not run any
+command that changes tracked files, branches, or the index (no checkout, reset,
+stash, commit, push, npm install). Read-only git and gh commands are fine, and
+you may run the repository's existing test commands inside the build worktree
+to confirm a claim. No human is available; do not ask questions — grade and
+report.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Do NOT dispatch any subagent, fork, or helper agent: this node has a hard budget
+of 120 tool calls and every helper's calls count against it. Work alone and keep
+under 100 tool calls — batch reads into few shell commands.
+
+What you are grading: pull request #191, `thejudge-auto/rag-rule-retrieval-work`
+→ `thejudge-auto/rag-rule-retrieval`, head `a0d38f2`, base `98da746`. The code is
+checked out at `.worktrees/implement-rag-rule-retrieval/` (relative to the working
+directory above); the diff is `git -C .worktrees/implement-rag-rule-retrieval diff
+98da746..a0d38f2` (133 files: `apps/backend`, `scripts/`, `PRD/sections/`,
+`PRD/work/rag-rule-retrieval/`, `vendor/onnxruntime-web-stub`). The package
+artifacts are in that worktree under `PRD/work/rag-rule-retrieval/`:
+`GAMEPLAN.md`, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (the owner-accepted product
+truth, 24/24 accept), the five `slice-*.md` docs, and their
+`slice-<letter>.criteria.json` files (all criteria currently `true`). You never see
+the build node's transcript; the PR body is the builder's own account, treat it as
+a claim to verify, not evidence.
+
+The rubric is each slice's own acceptance criteria, quoted here from the criteria
+files — flag gaps affecting correctness or these stated requirements, and nothing
+else:
+
+Slice A:
+- A1: retrieval:report and test:eval return the same per-scenario recall verdict for all 9 labelled fixtures
+- A2: An automated parity test between the report and the harness exists and runs in quality:check
+- A3: A committed offline benchmark harness scores the 156-pair corpus for recall@5 and MRR under clean and card-polluted queries and writes a machine-readable result file
+- A4: The benchmark's current lexical clean/multi-card recall@5 is recorded as the committed Step 1 baseline
+- A5: The prompt text produced for every existing labelled fixture is byte-identical before and after this slice
+- A6: functional-requirements.md carries the new REQ-177 entry and the Slice-A portion of REQ-032's amendment
+- A7: system-map.md's Retrieval relevance report block and the REQ-168/NFR-018 dangling-citation repoints match the accepted GATE-QUESTIONS.md text
+- A8: npm run quality:check is green
+
+Slice B:
+- B1: The retrieval query carries the question plus, per card, name + type line + keyword list; no full oracle text or context notes
+- B2: The change applies through the one shared retrieval path for both game mode and lookup mode
+- B3: The assembled prompt text is unchanged by this slice outside the internal query
+- B4: Multi-card recall@5 lands within 0.10 of the same build's clean-query recall@5 on the Slice A benchmark
+- B5: Clean-query recall@5 does not regress below the Slice A baseline
+- B6: Labelled fixtures and the relevance report are re-run; relabeling is a hand judgment, never copied from current scorer output
+- B7: functional-requirements.md carries the new REQ-178 entry and corrected REQ-074/REQ-167 lines
+- B8: quick-lookup/README.md, system-map/prompt-layout-spec.md, system-map/game-rules-retrieval.md, and user-flows.md carry this step's query-construction wording
+- B9: test:eval and quality:check are green
+
+Slice C:
+- C1: The built gameRulesRuleIndex.json contains zero duplicate rule ids
+- C2: The build omits heading-only entries; no searchable entry lacks rule content
+- C3: A build test asserts zero duplicates and no heading-only entries, and fails on regression
+- C4: System 3 excludes a candidate rule by rule-number prefix match against the curated baseline, not exact-id-only
+- C5: Clean and multi-card recall@5 do not regress below the values recorded after Slice B
+- C6: test:eval stays green; any golden prompt change is an intentional, reviewed consequence
+- C7: The build's missing/unparsable-source degrade-gracefully behavior is unchanged
+- C8: functional-requirements.md carries the new REQ-179 entry
+- C9: npm run quality:check is green
+
+Slice D:
+- D1: The card-data build writes each card's Scryfall keywords array into cardDetailByOracleId.json
+- D2: System 3's keyword signal unions request cards' keywords plus question-text keywords; static vocabulary retained only for question-text detection
+- D3: cardMetadata.json gains no field and its gzipped size is unchanged
+- D4: quick-lookup-card and quick-lookup-multi-card fixtures retrieve expected rule 702.2b
+- D5: Clean and multi-card recall@5 do not regress below the values recorded after Slice C
+- D6: open-questions.md records Q-001 as answered, citing REQ-180
+- D7: functional-requirements.md carries the new REQ-180 entry and integrations-and-data.md carries the Card Data Strategy addition
+- D8: test:eval and quality:check are green
+
+Slice E:
+- E1: A committed offline artifact holds one embedding vector per rule index entry
+- E2: EMBEDDING_PROVIDER (mock|local|openai, default mock) exists and never auto-switches on environment
+- E3: EMBEDDING_PROVIDER=mock performs no embedding and makes no external call
+- E4: EMBEDDING_PROVIDER=local embeds the query in-process and cosine-ranks it against the committed vectors
+- E5: The async route handler embeds the query and passes the vector into preparePromptInput as an option; preparePromptInput stays synchronous
+- E6: The exact-rule-id/parent-rule-id boost is merged with semantic ranking
+- E7: On any embedding failure, System 3 falls back to lexical retrieval, still returns up to 5 excerpts, and emits one diagnostic warning
+- E8: System 3 stays capped at 5 excerpts, deduplicated against System 2 by rule-number prefix
+- E9: The shipped quantised model's clean/multi-card recall@5 are re-measured against the full-precision reference
+- E10: system3-expected-recall and system3-noise-excluded run against the semantic path using committed frozen query embeddings with no live call
+- E11: lambda-package-budget.test.mjs is green with the bundled model present and NON_DATA_RESERVE re-measured
+- E12: Every PRD/sections/ location this slice owns matches its accepted GATE-QUESTIONS.md text
+- E13: test:eval and quality:check are green
+- E14: A human confirmed no live-network call occurs under EMBEDDING_PROVIDER=mock or =local by reading the code path
+
+Severity rule: a preference, a style note, or an improvement outside a slice's
+stated requirements is never Critical or Important and never sends the run back
+to build. Critical = a stated criterion is not actually met, or the change breaks
+existing behaviour the PRD requires. Important = a stated criterion is met only
+partially or only by the letter, or a test claims to prove something it does not.
+Everything else is Minor or Note.
+
+Two things to examine specifically, both raised by the builder itself:
+1. REQ-181 in the accepted `GATE-QUESTIONS.md` diff calls for shaping each rule's
+   embedding text before vectorising. The builder measured shaping at 13/20
+   recall@5 versus 19/20 for plain text, shipped the plain form, and says it
+   recorded the measurement in REQ-181's notes in `PRD/sections/`. Compare the
+   applied `PRD/sections/functional-requirements.md` REQ-181 text against the
+   accepted diff block in `GATE-QUESTIONS.md`, state exactly how they differ, and
+   grade whether the shipped behaviour and the recorded truth are consistent with
+   each other and with criterion E12. Report the divergence to the owner
+   regardless of severity: the owner decides at `land`, you do not.
+2. The Lambda package budget: bundling the local embedding model raised the
+   non-data reserve from 20MB to 130MB, leaving roughly 2.6MB of headroom under
+   the 250MB quota. Read `scripts/lambda-package-budget.test.mjs` and the applied
+   NFR-017 text; confirm the numbers the test asserts, that the test is green in
+   the worktree, and whether the applied NFR-017 truth states this margin
+   honestly.
+
+Also verify by reading code, not the PR body: no live network call under
+`EMBEDDING_PROVIDER=mock` or `=local` (E3, E14); `test:eval` runs the semantic
+path on committed frozen query embeddings with no live call (E10); System 3 stays
+capped at 5 excerpts and deduplicates against System 2 by rule-number prefix
+(E8, C criteria); the lexical fallback on embedding failure returns excerpts and
+emits one warning (E7); the `PRD/sections/` edits each slice owns match the
+accepted `GATE-QUESTIONS.md` text by intent (the criterion in each of A–E that names `PRD/sections/` paths), and
+Q-001 is answered as the accepted amendment says.
+
+Report back to the driver, in this order: (1) verdict `APPROVE` or
+`RETURN TO BUILD`; (2) findings as a list, each with severity, the criterion id
+it affects, `file:line`, one sentence of evidence; Critical and Important first;
+(3) the REQ-181 divergence statement and the NFR-017 margin statement, written so
+the owner can read them cold; (4) which criteria you confirmed by your own
+reading or test run, and which you took on the criteria file's word.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write
+for any subagent you dispatch (you should dispatch none).
 
 ## Instruction ledger
 
