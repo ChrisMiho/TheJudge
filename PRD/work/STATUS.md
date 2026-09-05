@@ -8,9 +8,9 @@ Do not rename package folders to encode status.
 
 ## active
 
-## refined
-
 | [hybrid-rule-retrieval](hybrid-rule-retrieval/) | Hybrid lexical+semantic rule retrieval, semantic eval gating, Lambda budget relief, cold-start latency measurement — making `EMBEDDING_PROVIDER=local` safe to default |
+
+## refined
 
 ## refining
 
