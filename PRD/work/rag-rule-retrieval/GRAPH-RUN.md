@@ -21,13 +21,49 @@
 | 3 | define | opus | ok | `0 → 73` | `STATUS.refined`; `DESIGN-BRIEF.md` (5-step gameplan REQ-177..181, 10 assumptions, intake dispositions) + `GATE-QUESTIONS.md` (24 slots: 5 new REQ, 4 SCOPE decisions, 8 amended IDs incl. NFR-017 Lambda-budget finding, 7 amended specs; 32 Current blocks verified verbatim); 0 blocker questions; commit `797086a` | 2026-09-05 |
 | 4 | gate-qc | sonnet | ok | `0 → 54` | PASS, no findings (attempt 1): all Current blocks verbatim vs live files; REQ-177–181 unused live, FLOW-024 high-water; amendment set re-grepped complete; RAG-DEFERRED citations repointed; technical-design-rules hold; live measurements reproduced (`retrieval:report` 6/9 same 3 failures, `test:eval` green, index 3,432/3,285/147/626); `STATUS.refined` unchanged, nothing committed → stop at PASS: docs PR + `owner-action` park | 2026-09-05 |
 | — | driver-resume | — | ok | `n/a (driver)` | run two (`/loop graph-implement`, tick 1): `git fetch`; ready-spec scan found `rag-rule-retrieval` (24/24 `accept`, PR #190 MERGED 2026-09-05T07:02:31Z, no code built); base `thejudge-auto/rag-rule-retrieval` fast-forwarded to `main` (`eb0db9a`); lock taken (`npm run graph:preflight -- --take-lock --slug rag-rule-retrieval --run-id graph-20260905-010802 --pid 83033`); both canaries denied; claim committed (`STATUS.owner-action → STATUS.active`, board row moved to `## active`) | 2026-09-05 |
-| — | gate-review | sonnet | ok | `0 → 23` | run two, build half. Applied 24 accept / 0 edit / 0 reject inside `GATE-QUESTIONS.md` (no diff change — all accept; `git diff` on `GATE-QUESTIONS.md` and `PRD/sections/` empty); wrote `## Gate verdicts`; resolved `## Open gate
+| — | gate-review | sonnet | ok | `0 → 23` | run two, build half. Applied 24 accept / 0 edit / 0 reject inside `GATE-QUESTIONS.md` (no diff change — all accept; `git diff` on `GATE-QUESTIONS.md` and `PRD/sections/` empty); wrote `## Gate verdicts`; resolved `## Open gate`; restored `STATUS.active → STATUS.refined`, README `status: refined`, board row moved to `## refined`. No `PRD/sections/` edits | 2026-09-05 |
+| 4 | gate-qc | sonnet | failed | `0 → 103 — cap 60 + grace 30 exhausted` | build-half re-check attempt 1 reported PASS (all `Current:` blocks verbatim, REQ-177–181 unused, `retrieval:report` 6/9 same 3 failures, `test:eval` green, budget test green, index 3,432/3,285/147/626) but the node fanned out to three helper subagents whose calls charged its own key; the hook denied every call from #91 onward, including the driver's park writes, until the owner deleted `.worktrees/.graph-run-state.json` by hand. Outcome recorded `failed` (cap overrun, contract `## Node table`), not PASS: the helpers were cut off mid-check, so the PASS is re-graded as attempt 2 with fan-out forbidden. Driver closed the two residuals it named: `prompt-assembly.md:53` is a debug-sidecar mention, not a scoring claim; `prompt-layout-spec.md:3` `Backed by:` line present and unchanged since the run-one PASS | 2026-09-05 |
+| 4 | gate-qc | sonnet | parked | `attempt 2: 0 → 1 (dispatch denied)` | attempt 2 dispatch (no fan-out) denied by the hook rule `denied-command-retry`: attempt 1's helpers had an `Agent` call denied under `tool-call-cap` (`.worktrees/.graph-denials.jsonl` key `Agent::::`, 2026-09-05T07:14:25Z), and `denialKey()` keys `Agent` on tool name alone, so every later `Agent` dispatch in run `graph-20260905-010802` is refused (`ToolSearch::::` and `ScheduleWakeup::::` poisoned the same way). Not remediable in-run; run PARKED, lock released with `.graph-run-release.json` `{ runId, state: PARKED }`, run-state deleted. Product truth untouched; no product question open | 2026-09-05 |
+| — | driver-resume | — | ok | `n/a (driver)` | run two resumed (`/loop graph-implement`, 2026-09-05 01:27): `git fetch`; `origin/main` at `eb0db9a` is an ancestor of the base branch (`git log HEAD..origin/main` empty); stale lock (`graph-20260905-012215`, pid 83033 dead) reclaimed via release record + `rm`; lock taken (`npm run graph:preflight -- --take-lock --slug rag-rule-retrieval --run-id graph-20260905-012712 --pid 41137`); both canaries denied; `STATUS.owner-action → STATUS.refined` (gate already resolved by gate-review), board row moved to `## refined`; open gate resolved (fresh run id clears the poisoned retry key) | 2026-09-05 |
+| 4 | gate-qc | sonnet | ok | `0 → 16` | build-half re-check attempt 3 (run `graph-20260905-012712`, key `gate-qc/1`): PASS, no findings; 13 tool calls, no subagents; all 24 `Verdict:` lines `accept`; REQ-177–181 unused live (`functional-requirements.md` ends at REQ-176); every spot-checked `Current:` block byte-identical to live `PRD/sections/` (REQ-022/032/074/167/168, NFR-017/018, Q-001, system-map.md:88/493, game-rules-retrieval.md, prompt-layout-spec.md, quick-lookup/in-depth READMEs, integrations-and-data.md, user-flows.md:252/517); `git log -- PRD/sections` shows no section edit since the gate resolved; `STATUS.refined` unchanged; `git status --porcelain` empty after the node | 2026-09-05 |
+| 5 | plan | sonnet | ok | `0 → 40` | `GAMEPLAN.md` + five slice docs (A `slice-a-trustworthy-measurement.md` REQ-177, B `slice-b-fix-the-query.md` REQ-178, C `slice-c-clean-the-corpus.md` REQ-179, D `slice-d-scryfall-keywords.md` REQ-180, E `slice-e-pick-rules-by-meaning.md` REQ-181 + ship gates) + `slice-{a..e}.criteria.json` (8/9/9/8/14 criteria, all `false`, every one with an `evidence` block — driver-verified by script); GAMEPLAN maps each accepted `PRD/sections` amendment to its owning slice and records six assumptions (1:1 step→slice sequential; REQ-177–181 next-free; gates stay relative; `EMBEDDING_PROVIDER` mirrors `ASK_AI_PROVIDER`; embeddings artifact beside the rule index in `apps/backend/data/`; slice A clears the two dangling-citation repoints); `STATUS.refined → STATUS.active`, board row under `## active`; `DESIGN-BRIEF.md`/`GATE-QUESTIONS.md`/`PRD/sections/` untouched (`git status`); 37 tool calls, no subagents; package published to `origin/thejudge-auto/rag-rule-retrieval` at `98da746` (last driver push to the base) | 2026-09-05 |
+| — | driver-bookkeeping | — | ok | `n/a (driver, during build/1)` | owner approved raising the build cap mid-run ("i approve increasing the budget if needed"): `build` cap 600 → 1200 in `scripts/lib/boundary-rules.mjs` `NODE_CALL_CAPS` and the contract `## Node table` (commit `f9886f6`); the hook re-reads the module per call, so it took effect at once (`capForNode("build")` → 1200); counter stood at 210 after slice A of five. The `graph-implement/reference.md` mirror row still reads 600: the driver's `sed -i` was denied by the graph profile and the `Edit` on `.claude/skills/` was blocked by the auto-mode classifier — owner to make that one-line edit and run `npm run skills:ai-sync`; the contract wins where they disagree. Mechanics only, no scope or criteria change; builder notified | 2026-09-05 |
+| — | driver-bookkeeping | — | ok | `n/a (driver, during build/1)` | build/1 stalled four times on the harness stream watchdog ("no progress for 600s") during an intermittent model outage — counter at 405, 413, 420, and 426; zero hook denials for run `graph-20260905-012712` at each stall; the driver resumed the same agent by message each time (same attempt, context intact). State at the fourth stall: slices A–C committed on the implement-agent branch and pushed (`5746a04`), slice D verified and marked done in the worktree README with 62 changed files uncommitted, slice E not started; PR #191 open `thejudge-auto/rag-rule-retrieval-work` → `thejudge-auto/rag-rule-retrieval` (https://github.com/ChrisMiho/TheJudge/pull/191). Also recorded here: the driver's 01:27 `## Open gate` rewrite anchored on the first textual `## Open gate` (inside the gate-review row) instead of the heading and truncated the node table, so the four rows above were silently dropped until this repair rebuilt the table from commit `e0140a9` — `graph-ledger-check` does not validate the node table, which is why it passed | 2026-09-05 |
+
+## Gate verdicts
+
+Applied 2026-09-05 by `graph-gate-review` (build-half run `graph-20260905-010802`). All 24 stable IDs `accept`; no `## Blocker questions` entries. An `accept` leaves the proposed diff in `GATE-QUESTIONS.md` exactly as refinement wrote it — nothing was edited there.
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-177` | accept | — |
+| `REQ-178` | accept | — |
+| `REQ-179` | accept | — |
+| `REQ-180` | accept | — |
+| `REQ-181` | accept | — |
+| `SCOPE-A` | accept | — |
+| `SCOPE-B` | accept | — |
+| `SCOPE-C` | accept | — |
+| `SCOPE-D` | accept | — |
+| `REQ-022` (amendment) | accept | — |
+| `REQ-032` (amendment) | accept | — |
+| `REQ-074` (amendment) | accept | — |
+| `REQ-167` (amendment) | accept | — |
+| `REQ-168` (amendment) | accept | — |
+| `NFR-018` (amendment) | accept | — |
+| `NFR-017` (amendment) | accept | — |
+| `Q-001` (amendment) | accept | — |
+| `system-map.md` (spec amendment) | accept | — |
+| `system-map/game-rules-retrieval.md` (spec amendment) | accept | — |
+| `system-map/prompt-layout-spec.md` (spec amendment) | accept | — |
+| `quick-lookup/README.md` (spec amendment) | accept | — |
+| `in-depth/README.md` (spec amendment) | accept | — |
+| `integrations-and-data.md` (spec amendment) | accept | — |
+| `user-flows.md` (spec amendment) | accept | — |
+
+## Open gate
 
 - None. The gate-qc mechanics park of run `graph-20260905-010802` (cap overrun → poisoned `Agent` retry key) was resolved 2026-09-05 01:27 by resuming under fresh run id `graph-20260905-012712` — `denied-command-retry` reads prior denials per run id, so the new id carries none. The owner follow-up it raised (key dispatch tools on a prompt hash, or exempt `tool-call-cap` denials from `denied-command-retry`; `PARK_GRACE_CALLS` consumed by a node's own helpers) is unchanged and still not blocking; it is preserved verbatim in commit `658aebf`.
-
-## Dispatch prompts` → `### gate-qc (build-half re-check, attempt 2)`; ledger rows 4 above.
-- Owner follow-up (not blocking the build): `denialKey()` for `Agent`/`Task`/`ToolSearch`/`ScheduleWakeup` carries no input, so a single cap-denied dispatch poisons the rest of the run. Consider keying dispatch tools on a prompt hash, or exempting `tool-call-cap` denials from `denied-command-retry` (the cap already re-evaluates per attempt). Also: `PARK_GRACE_CALLS` was consumed by the node's own helpers, leaving the driver zero calls to park — the same strand `feedback_reset_runstate_before_park` records.
-- Resume: `/graph-implement PRD/work/rag-rule-retrieval/` — re-enters at `gate-qc` (attempt 2, fan-out forbidden), then `plan → build → review`.
 
 ## Dispatch prompts
 
