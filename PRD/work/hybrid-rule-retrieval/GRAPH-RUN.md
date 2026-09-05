@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "[graph-boundary] `rm -rf` is denied in every session."; graph tier: nohup true → "[graph-boundary] `nohup` is denied while a graph run holds the lock")`
 - Autonomous base: `origin/thejudge-auto/hybrid-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-173655/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (spec-forming half in progress)
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | 1 | preflight | haiku | ok | `0 → 4` | branch `thejudge-auto/hybrid-rule-retrieval` created from `main` (`0243e83`, tree `clean`, no stash) and pushed to `origin` (`git ls-remote` confirms); lock `.worktrees/.graph-run.lock` runId `graph-20260905-173655` pid 77812; both canaries denied (2 rows in `.worktrees/.graph-denials.jsonl` for this run); `Profile: loaded (env sentinel)`; base→main guard passed (no open `thejudge-auto/*` PR) | 2026-09-05 |
 | 2 | shape | sonnet | ok | `0 → 44` | package `PRD/work/hybrid-rule-retrieval/` created (`IDEA.md` with 8 `## Prior run` receipts, `README.md` `status: ideation`, `STATUS.ideation`, board row under `## ideation`); 2 intake files copied verbatim into `intake/` (`cmp` clean, driver re-checked) from `.worktrees/.graph-intake/graph-20260905-173655/`, staging deleted; 21 tool calls, no subagents; commit `8fc3f8b` pushed | 2026-09-05 |
 | — | driver-bookkeeping | — | ok | `n/a (driver)` | `## Autonomous metadata` (`origin/thejudge-auto/hybrid-rule-retrieval`) written to the package README; ledger moved into the package from the driver's scratchpad; committed with the node 3 dispatch prompt recorded | 2026-09-05 |
+| 3 | define | opus | ok | `0 → 69` | `STATUS.refined`, board row under `## refined`; `DESIGN-BRIEF.md` (401 lines, four items in one spec, measurement plan) + `GATE-QUESTIONS.md` (865 lines, 14 slots: 3 new REQ-182/183/184, 11 amended — REQ-022/032/177/181, NFR-002/017, system-map.md, game-rules-retrieval.md, quick-lookup/README.md, in-depth/README.md, integrations-and-data.md; 0 blocker questions; 18 `Current:` blocks verified byte-for-byte by script). Measurements reproduced: `test:eval` semantic 9/12 (three fixtures fail, not the intake's two) lexical 12/12; benchmark lexical clean r@5 0.5833, semantic 0.8526/0.8333; budget test 118.095 MB of 120 MB; hybrid probe α=0.52 → 12/12 fixtures + 0.8654/0.8333; cold start 181.2 ms model readiness in-process; int8 vectors 5.650 → 1.442 MB. Finding: `benchmark:rag-retrieval -- --semantic` silently reports lexical numbers under a cold model cache (REQ-177 amendment). Gate signal present (`GATE-QUESTIONS.md`) → continue to `gate-qc`. No `PRD/sections/` or code edits (`git diff --stat` empty); 63 tool calls, no subagents; commit `227eeda` pushed | 2026-09-05 |
 
 ## Open gate
 
@@ -110,6 +111,29 @@ What to produce, all inside `PRD/work/hybrid-rule-retrieval/` (never `PRD/sectio
 Constraints: tool-call cap 150 for this node, and it counts every call you make. Do not dispatch subagents; a helper's calls charge this node's own budget and a prior run exhausted its cap that way. Long-running measurement commands are fine, but run each once and record the output. Never edit `PRD/sections/`, code, tests, `.claude/`, or `CLAUDE.md`. Never run `npm run data:refresh` or any Scryfall network refresh. Never touch the lock, the stop sentinel, or any `.worktrees/.graph-*` file. No new dependency, endpoint, data contract, or external integration without authoritative scope; propose such things as gate questions instead.
 
 Report back, in this order: the status marker and board row after the node; the files written; the number of `## <STABLE-ID>` blocks in `GATE-QUESTIONS.md` (new vs amended) and the count of blocker questions; the commit hash and push result; the commands you ran to reproduce measurements with their key numbers; the tool-call count. Copy the `Working directory:` line above, unchanged, into every prompt you write.
+
+### gate-qc (attempt 1)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 4 (`gate-qc`) of graph run `graph-20260905-173655`, the spec-forming half driven by `graph-kickoff`. Invoke the `thejudge-quality-check` skill with the Skill tool (skill name `thejudge-quality-check`) on the package `PRD/work/hybrid-rule-retrieval/`, and follow its `## Mode` section for an orchestrator that is controlling: read `PRD/instructions/preparation-contract.md`, emit an explicit PASS or FAIL verdict with the complete findings, and return it to the driver, which records it in the package README's `## Preparation gate` section. Read `.claude/skills/thejudge-quality-check/SKILL.md`, `PRD/instructions/technical-design-rules.md`, `PRD/instructions/plain-language-standard.md`, and `PRD/instructions/graph-workflow-contract.md` (`## The two runs`) before acting.
+
+What to check, beyond the skill's own checklist:
+1. `DESIGN-BRIEF.md` against the current-state feature specs it touches (`PRD/sections/quick-lookup/README.md`, `PRD/sections/in-depth/README.md`, `PRD/sections/system-map/game-rules-retrieval.md`, `PRD/sections/system-map.md`, `PRD/sections/integrations-and-data.md`) and the `REQ`/`NFR` entries it cites: no contradictions, current vocabulary, stack ordering preserved, technical-design-rules respected, scope implementable without hidden assumptions, no user-visible screen change (so no `screen-layout.md` row is required; confirm that claim).
+2. `GATE-QUESTIONS.md`: every `## <STABLE-ID>` block opens with the three-line plain-language block, inlines every cited id, defines its technical terms, carries a complete diff (not a summary), and has `- Verdict:` / `- Reason:` slots. Verify every `Current:` block byte-for-byte against the live `PRD/sections/` file by script, not by eye. Confirm the new ids (REQ-182, REQ-183, REQ-184) are unused in live `PRD/sections/` and are the next free numbers. Re-grep the amendment set yourself (`EMBEDDING_PROVIDER`, `recall@5`, `report-only`, `hybrid`, `never worse`, `NFR-017`, `NFR-002`, `REQ-032`, `REQ-181`, `120 MB`, `cold start`, `MIN_VARIANT_POPULARITY`, `float32`) and FAIL if a live assertion the change would falsify has no block.
+3. Every quantitative target in the brief must rest on a recorded measurement. Reproduce the cheap ones once each and compare: `npm --workspace apps/backend run test:eval` (expect the semantic path at 9 of 12 labelled checks, lexical 12/12), `npm run benchmark:rag-retrieval` and `npm run benchmark:rag-retrieval -- --semantic` (expect lexical clean recall@5 0.5833, semantic clean 0.8526 / polluted 0.8333), and `node --test scripts/lambda-package-budget.test.mjs` (expect 118.095 MB of 120 MB). A number in the brief that the checkout does not reproduce is a FAIL finding with both values. Confirm the hybrid gates in the brief are stated as measured thresholds with baselines, not proportions.
+4. Confirm the package state: `STATUS.refined` is the only marker, `README.md` reads `status: refined`, the board row sits under `## refined`, and `README.md` carries `## Autonomous metadata`.
+
+Verdict handling: on PASS, change nothing (leave `STATUS.refined`; do not write `GAMEPLAN.md`, slice docs, or code; do not edit the README, the driver writes the gate section). On FAIL, set `status: refining` in `README.md`, replace the marker with `STATUS.refining`, move the board row under `## refining`, commit with explicit paths only (`git add PRD/work/hybrid-rule-retrieval PRD/work/STATUS.md`, never `git add -A`, `--all`, or `.`) with the trailer lines
+   Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+   Claude-Session: https://claude.ai/code/session_01HTYnaUSGyYNRwK4J1ggRW9
+and push `origin thejudge-auto/hybrid-rule-retrieval` (no force). Never edit `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `PRD/sections/`, code, or `GRAPH-RUN.md`.
+
+Constraints: tool-call cap 60 for this node, counting every call. Do not dispatch subagents; a helper's calls charge this node's own budget and a prior gate-qc exhausted its cap that way. Run each measurement command once. Never run `npm run data:refresh` or any Scryfall refresh. Never touch the lock, the stop sentinel, or any `.worktrees/.graph-*` file.
+
+Report back, in this order: the one-word verdict (PASS or FAIL); the complete findings list, or `none`; the `Current:` block verification result (count checked, count identical); the amendment-set grep result; each reproduced measurement with the brief's value beside it; the package state after the node; the commit hash if you committed; the tool-call count. Copy the `Working directory:` line above, unchanged, into every prompt you write.
 
 ## Instruction ledger
 
