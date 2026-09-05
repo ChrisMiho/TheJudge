@@ -5,37 +5,37 @@
     {
       "id": "B1",
       "statement": "Slice A is done before this slice's code lands",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "B2",
       "statement": "system3-expected-recall and system3-noise-excluded fail npm run test:eval on a genuine semantic-path regression; no report-only console.log-only path remains for the labelled-fixture assertion",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/backend/src/eval/contextEvaluationHarness.test.ts"] }
     },
     {
       "id": "B3",
       "statement": "One new labelled fixture exists for a multi-keyword card (two or more real Scryfall keywords), with hand-labelled expected/forbidden supplemental rule ids",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/backend/src/eval/fixtures"] }
     },
     {
       "id": "B4",
       "statement": "The new fixture's frozen query embedding is committed via npm run eval:build-frozen-query-embeddings",
-      "value": false,
+      "value": true,
       "evidence": { "command": "eval:build-frozen-query-embeddings", "paths": ["apps/backend/src/eval/fixtures/frozen-query-embeddings.json"] }
     },
     {
       "id": "B5",
       "statement": "npm run test:eval passes with the new fixture included and the checks gating",
-      "value": false,
+      "value": true,
       "evidence": { "command": "test:eval" }
     },
     {
       "id": "B6",
       "statement": "The REQ-032 documentation block is applied by intent, matching the finalized GATE-QUESTIONS.md diff, in PRD/sections/functional-requirements.md",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
     }
   ]

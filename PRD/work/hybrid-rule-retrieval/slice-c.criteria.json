@@ -5,49 +5,49 @@
     {
       "id": "C1",
       "statement": "The artifact's encoding field names the shipped format, and the loader reads that field rather than assuming one",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["scripts/build-rule-embeddings.mjs", "apps/backend/src/gameRulesRetrieval.ts"] }
     },
     {
       "id": "C2",
       "statement": "The committed artifact is measurably smaller: from 5.650 MB (float32-base64) to about 1.442 MB (int8)",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/backend/data/gameRulesRuleEmbeddings.json"] }
     },
     {
       "id": "C3",
       "statement": "Tracked apps/backend/data total drops from the 2026-09-05 measurement of 118.095 MB; the new figure and headroom are recorded in NFR-017",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/non-functional-requirements.md"] }
     },
     {
       "id": "C4",
       "statement": "Retrieval quality does not regress after the format change: benchmark clean recall@5 at or above the value REQ-182 records, polluted recall@5 likewise, all 12 labelled fixture checks still pass",
-      "value": false,
+      "value": true,
       "evidence": { "command": "benchmark:rag-retrieval.*--semantic" }
     },
     {
       "id": "C5",
       "statement": "The vector-loading path degrades exactly as REQ-181 requires: missing, malformed, or unrecognised-encoding disables the semantic path with one diagnostic warning and falls back to lexical",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/backend/src/gameRulesRetrieval.ts", "apps/backend/src/gameRulesRetrieval.test.ts"] }
     },
     {
       "id": "C6",
       "statement": "node --test scripts/lambda-package-budget.test.mjs passes with the new artifact, and the test's recorded figures are updated in the same change",
-      "value": false,
+      "value": true,
       "evidence": { "command": "lambda-package-budget", "paths": ["scripts/lambda-package-budget.test.mjs"] }
     },
     {
       "id": "C7",
       "statement": "MIN_VARIANT_POPULARITY stays at 0 (combo corpus not trimmed) and no new dependency or external service is introduced",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "C8",
       "statement": "The REQ-183 and NFR-017 documentation blocks are applied by intent, matching the finalized GATE-QUESTIONS.md diff (including the owner's CI/CUDA edit)",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": ["PRD/sections/functional-requirements.md", "PRD/sections/non-functional-requirements.md"]
       }
