@@ -153,7 +153,7 @@ Backed-by reference, or inside a per-feature closed-door rationale, stays out.
   feedback feature's own blast radius, DEC-168 governs it.
 - OUT — the demoted index home itself: `decisions.md:51` (retired DEC-010 row).
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -218,7 +218,7 @@ files; if the default ever changes, every copy must be found by hand.
 #   root README.md:115 (the `ASK_AI_PROVIDER` env-var doc) is a setup reference, left as-is.
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -300,7 +300,7 @@ specs, the same retired-citation pattern that caused the endpoint near-miss.
 **Left unchanged (out of scope):** REQ-072's own retrieval constraints already
 point via this block; the retired `decisions.md` DEC-001/DEC-013 rows stay.
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -357,7 +357,7 @@ starts there is told to do exactly what the rest of the corpus forbids.
 they do not send the reader to start at the log or author a new one.
 `doc-lifecycle.md` is already the canonical home and is not edited.
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -421,7 +421,7 @@ scope (protected `thejudge-*` trees), so that pointer lands as a separate
 ordinary-session edit; the durable product-truth home is the instruction file
 above.
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
