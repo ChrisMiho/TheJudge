@@ -284,10 +284,13 @@ every one of them — proving this isn't a silent lexical fallback. Per-fixture
 recall/noise-exclusion is measured and printed (not hard-gated), for a
 reason worth restating plainly: 3 of 8 labelled fixtures don't reach 100%
 recall under pure cosine-similarity ranking today —
-`quick-lookup-card`/`quick-lookup-multi-card` (702.2b ranks 6th, just
-outside top-5, behind sibling sub-rule 702.2a — a lookup-mode query is only
-name + type line + keywords, no combat context, so nothing distinguishes the
-two adjacent Deathtouch sub-rules) and `state-based-actions` (701.8b is
+`quick-lookup-card` (702.2b ranks 6th, just outside top-5, behind sibling
+sub-rule 702.2a — a lookup-mode query is only name + type line + keywords,
+no combat context, so nothing distinguishes the two adjacent Deathtouch
+sub-rules) and `quick-lookup-multi-card` (no `702.2x` rule reaches the top
+five at all; 702.2b sits around 13th, behind both 702.2a and several
+unrelated keyword-ability rules the second attached card's signal pulls in)
+and `state-based-actions` (701.8b is
 missed because it only mentions "704.5g" *inside its own rule text*, a
 cross-reference pure embedding similarity doesn't capture the way lexical's
 literal token-overlap scoring does). This is consistent with, not contrary
@@ -305,6 +308,19 @@ semantic path's real ceiling under the current design, or scope a follow-up
 slice to close it (e.g. a cross-referenced-rule-id boost in
 `scoreEntrySemantic`, or richer lookup-mode query text) — not something to
 decide unilaterally inside a review-fix loop.
+
+2026-09-05 gate resolution at `land` — owner decisions recorded, applied
+exactly: (1) REQ-181's applied plain `sectionTitle: text` embedding wording
+is accepted as-is, no code or text change; (2) the never-worse promise is
+softened everywhere it appears in `PRD/sections/` — lexical retention is
+never-worse under `mock`, an `openai` failure, or any embedding failure, but
+under `local` semantic ranking is measurably worse on short lookup-mode
+questions (this fixture pair is the evidence), pending a hybrid
+lexical-plus-semantic blend; (3) `test:eval` keeps gating the lexical path
+only — the two semantic-path checks run in report mode (printed per fixture,
+not failing the run) until that hybrid blend lands, at which point they
+gate. REQ-032's applied text and this note's own disclosure above are
+corrected to match.
 
 2026-09-05 E10 (original) — `apps/backend/src/eval/semanticRetrievalEval.test.ts` (3
 tests, ~30-75ms total, no network) loads two frozen query vectors from

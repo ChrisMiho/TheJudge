@@ -28,8 +28,13 @@ against a committed per-rule embedding vector, with the exact rule-ID and parent
 rule-ID boost merged in so a cited rule number (for example "rule 613.9") is still
 pulled even when semantic similarity misses it. The IDF-weighted lexical scorer is
 retained as the mock/offline default, as the source of the exact-rule-ID boost, and as
-the fallback whenever query embedding fails — so System 3 is never worse than its
-earlier lexical-only behaviour. Ties prefer the highest matching signal, then ascending
+the fallback whenever query embedding fails — so those settings are never worse than
+System 3's earlier lexical-only behaviour. Under the `local` provider, measured
+2026-09-05 on the 156-pair benchmark, semantic ranking is better overall (recall@5 0.85
+vs 0.58 clean, 0.83 vs 0.53 with cards) and worse on short lookup-mode questions where
+the query is a card name, type line, and one keyword (two of eight labelled fixtures
+lose rule 702.2b from the top five); a hybrid lexical-plus-semantic blend is the tracked
+follow-up before `local` becomes the default. Ties prefer the highest matching signal, then ascending
 rule ID. Before output is selected, System 3 excludes rule IDs already selected by
 System 2 — by rule-number prefix, so a curated parent rule also excludes its lettered
 sub-rules — and the prompt does not print the same rule in both `GAME RULES (reference)`
@@ -115,7 +120,11 @@ reference material and simply omits `OFFICIAL RULINGS`.
 - System 3 is capped at five supplemental excerpts per request.
 - System 3 ranking is semantic-primary (cosine over committed rule embeddings) with the
   exact-rule-ID boost merged in and lexical retained as the mock/offline default and the
-  failure fallback; it is never worse than the prior lexical-only behaviour (REQ-181).
+  failure fallback; those settings are never worse than the prior lexical-only behaviour
+  (REQ-181). Under the `local` provider, semantic ranking measures better overall but
+  worse on short lookup-mode questions (a card name, type line, and one keyword) — see
+  REQ-181's notes; a hybrid lexical-plus-semantic blend is the tracked follow-up before
+  `local` becomes the default.
 - The shipped semantic path uses a bundled local model, so System 3 keeps its "no
   per-request external call" posture; only `EMBEDDING_PROVIDER=openai` would add a
   per-request call, and that is never the default.

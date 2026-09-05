@@ -268,8 +268,13 @@ both providers. (DEC-020, REQ-072)
   rule-number prefix the curated rule numbers the always-on core topics already
   carry, and returning a small capped set of the best-ranked rules. IDF-scored
   keyword retrieval is retained as the mock/offline default and the fallback on
-  any embedding failure, so retrieval is never worse than the prior lexical
-  behaviour. For lookup the query is built from the question tokens always, plus
+  any embedding failure, so those settings are never worse than the prior
+  lexical behaviour. Under the `local` provider, semantic ranking measures
+  better overall but worse on exactly this lookup-mode query shape — a card
+  name, type line, and one keyword, with no combat context — where two of
+  eight labelled fixtures lose their expected rule from the top five; a
+  hybrid lexical-plus-semantic blend is the tracked follow-up before `local`
+  becomes the default (REQ-181's notes). For lookup the query is built from the question tokens always, plus
   each attached card's name, type line, and keywords — not its oracle text
   (REQ-167, REQ-178). (DEC-046, REQ-022, REQ-178, REQ-179, REQ-181, DEC-107,
   REQ-167)
