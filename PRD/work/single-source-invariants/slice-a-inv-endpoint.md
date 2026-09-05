@@ -1,6 +1,6 @@
 # Slice A — INV-ENDPOINT: one canonical home for "one main product-facing endpoint"
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -77,12 +77,28 @@ every place it echoes; every other home becomes a short pointer.
       citing DEC-010 as the live rule, to `canonical rule: NFR-004`
 - [ ] A12 — `PRD/sections/integrations-and-data.md` (~151, ~246) replace the
       frozen enumerated amendment list with the NFR-004 pointer
-- [ ] A13 — re-grep the endpoint pattern family and `grep -rniE 'DEC-010'`
+- [x] A13 — re-grep the endpoint pattern family and `grep -rniE 'DEC-010'`
       across `PRD/` and root `README.md`; every returned rule-stating line is
       NFR-004 or a listed pointer above; the out-of-scope traceability/
       Backed-by lines and `user-feedback/README.md:123` are unchanged; no
       unlisted rule-stating home remains (manual check — no test command
       applies to this docs-only slice)
+
+### Re-grep observation: 2026-09-04 A13 — endpoint + DEC-010 families
+
+Re-ran both patterns from the Verification block after all A1–A12 edits
+landed. Endpoint-family grep: every non-canonical hit is either the new
+NFR-004 canonical text itself, a pointer already edited above, a `POST
+/api/ask-ai` mention inside a user-flow step or endpoint definition (not a
+rule assertion), a per-feature "no change to ... any product-facing
+endpoint" scope clause (`scan/data/cardScanMap.md:86`,
+`trade-balancer/README.md:103`, `trade-balancer/data/cardPrintingPrices.md:109`),
+or a retired `decisions.md` index row. `DEC-010` grep: remaining hits are the
+new "Retired index row: DEC-010" note and the pre-existing NFR-004
+Backed-by list, `system-map.md:125,132,153` Backed-by lists, `in-depth/README.md:10,281`
+Backed-by/traceability lines, `user-feedback/README.md:123` closed-door
+rationale, and the `decisions.md:51` retired index row itself — all confirmed
+unchanged. No unlisted rule-stating home remains.
 
 ## Verification
 

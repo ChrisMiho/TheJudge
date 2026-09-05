@@ -275,7 +275,7 @@ retrieval/combo machinery that other specs own.
 
 In-Depth is the original and primary consumer of the whole Ask AI backend. The
 path below is the `mode: "game"` branch of the single product-facing
-`POST /api/ask-ai` endpoint (DEC-010); success `{ answer }` and error shapes are
+`POST /api/ask-ai` endpoint (canonical rule: NFR-004); success `{ answer }` and error shapes are
 frozen across providers and shared with `mode: "lookup"` (Quick Lookup). The
 retrieval and combo machinery are owned by `system-map.md`; this spec states how
 the game-mode request drives them. (DEC-020, DEC-010)

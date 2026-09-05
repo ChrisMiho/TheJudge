@@ -36,7 +36,7 @@
 - Decrypt Stack submit flow
 - markdown-rendered AI answers in the shared conversation thread (wire contract remains a plain string; DEC-123, REQ-102)
 - mock-first integration path
-- one main backend endpoint, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175)
+- one main backend endpoint, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175) — canonical: NFR-004
 - app-wide CSS decorative-motion and visual-feedback baseline with reduced-motion support (DEC-079, REQ-059, NFR-006)
 - predefined browser-local palette personalization hosted in the feature-portal Menu (DEC-066, DEC-110, REQ-044)
 - In-Depth Question and Quick Question destinations, both reusing the shipped conversation/thread behavior
@@ -72,7 +72,7 @@
 - billing
 - runtime metadata syncing
 - dependency-heavy or performance-harming animation systems, and motion that ignores `prefers-reduced-motion` (decorative CSS motion itself is in scope per DEC-079, NFR-006; this non-goal narrows the prior blanket "animation-heavy UI" exclusion)
-- arbitrary/expanding product-facing endpoints beyond the answer endpoint and the single read-only card-detail retrieval route (REQ-175)
+- arbitrary/expanding product-facing endpoints beyond the answer endpoint and the single read-only card-detail retrieval route (REQ-175; canonical rule: NFR-004)
 - grading and multi-card-per-frame detection in card scanning (DEC-053)
 - pricing and printing disambiguation remain out of the **card-scanning** feature (DEC-053), but are **in scope for the Trade Balancer** as a static-snapshot USD value aid and printing picker (DEC-087); this narrows the prior blanket pricing/printing-disambiguation exclusion — live/real-time price sync stays out of scope
 - live/real-time card price sync, price history, marketplace/transaction handling, and automated "suggest cards to balance" logic in the Trade Balancer (DEC-087)

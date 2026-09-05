@@ -142,7 +142,7 @@ Work packages: see [work/STATUS.md](./work/STATUS.md) (skill-maintained board + 
 - Provider modularity remains a hard rule: route handlers stay contract-focused and only consume the provider interface selected in bootstrap/factory composition.
 
 ## Implementation Snapshot
-- Runtime code is split across `apps/frontend` and `apps/backend`, with a single product-facing backend route (`POST /api/ask-ai`) plus health endpoint.
+- Runtime code is split across `apps/frontend` and `apps/backend`, with a single product-facing backend route (`POST /api/ask-ai`) plus health endpoint (canonical rule: NFR-004).
 - Current frontend flow supports staged context + stack interaction patterns; canonical behavior is tracked in `sections/user-flows.md`.
 - Prompt/input contract includes structured context beyond stack/question (see `sections/integrations-and-data.md` and the `sections/in-depth/README.md` feature spec).
 - Metadata pipeline remains static-file based (`npm run data:build` / `npm run data:refresh`) with runtime loading from `/data/cardMetadata.json`.

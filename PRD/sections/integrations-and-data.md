@@ -148,7 +148,7 @@ Purpose:
 Purpose:
 - serve one card's descriptive block (`oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`) by Scryfall `oracle_id`, read-only, from the committed `cardDetailByOracleId.json` artifact (REQ-175)
 - back the card-detail popup and Quick Lookup pre-submit preview's on-demand fetch (FLOW-024); a known id returns the block, an unknown id returns a not-found response
-- the product's second product-facing endpoint (D5), permitted alongside `POST /api/ask-ai` by the REQ-012 / REQ-072 / NFR-004 / goals-and-non-goals / technical-design-rules amendments
+- the product's second product-facing endpoint (D5), permitted alongside `POST /api/ask-ai` by the one-endpoint rule (canonical: NFR-004)
 
 ### Optional Endpoint: `GET /api/health`
 Purpose:
@@ -243,7 +243,7 @@ Purpose:
 - each value carries `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`
 - the map is committed once, backend-only, under `apps/backend/data/cardDetailByOracleId.json`; there is no frontend copy
 - the frontend fetches one card's block on demand from `GET /api/cards/:oracleId` (FLOW-024) and caches per card for the session; ask-ai reads the same backend map internally for server-side resolution (REQ-176)
-- `GET /api/cards/:oracleId` is the product's second product-facing endpoint, authorized by D5 (see the REQ-012 / REQ-072 / NFR-004 / goals-and-non-goals / technical-design-rules amendments below)
+- `GET /api/cards/:oracleId` is the product's second product-facing endpoint, authorized by D5 — the one-endpoint rule (canonical: NFR-004)
 - `npm run data:build` rebuilds the map alongside card metadata, rulings, and game rules
 - runtime Scryfall fetches are out of scope for the core product
 

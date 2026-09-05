@@ -32,7 +32,18 @@
 - Title: Lightweight architecture
 - Description: The core product should use the smallest reasonable architecture.
 - Constraints:
-  - one main product-facing backend endpoint, plus the read-only card-detail retrieval route (REQ-175)
+  - **Canonical rule — one main product-facing endpoint.** The core product
+    exposes exactly one main product-facing backend endpoint (the answer
+    endpoint `POST /api/ask-ai`), plus the single read-only card-detail
+    retrieval route (`GET /api/cards/:oracleId`, REQ-175). Adding any further
+    product-facing endpoint requires amending this constraint. This is the
+    single authoritative statement of the one-endpoint rule; the homes below
+    echo it and must be updated together (enumerate by grep before amending —
+    see `instructions/writing-rules.md`, grep-before-amend):
+    REQ-012, REQ-072, REQ-094, REQ-175, `goals-and-non-goals.md`, `overview.md`,
+    `instructions/technical-design-rules.md`, `quick-lookup/README.md`,
+    `in-depth/README.md`, `integrations-and-data.md`, `PRD/README.md`.
+    Retired index row: DEC-010.
   - no microservices
   - no runtime metadata sync tooling
 

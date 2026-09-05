@@ -53,7 +53,7 @@ Intentional constraints are tracked in `goals-and-non-goals.md`.
 
 ## Key Constraints
 - mobile-first UI
-- single main backend endpoint
+- single main backend endpoint (canonical rule: NFR-004)
 - plain-text response
 - static local metadata file
 - mock-default local provider mode with optional live OpenAI provider mode

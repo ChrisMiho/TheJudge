@@ -155,7 +155,7 @@ not a full rules browser or a judge authority.
 
 Quick Lookup is the first spec whose subject runs the entire Ask AI backend, not
 a frontend-only surface. The path below is one branch of the shared
-`POST /api/ask-ai` endpoint (DEC-010's single product-facing endpoint); success
+`POST /api/ask-ai` endpoint (the single product-facing endpoint; canonical rule: NFR-004); success
 `{ answer }` and error response shapes are unchanged from the game mode and from
 both providers. (DEC-020, REQ-072)
 

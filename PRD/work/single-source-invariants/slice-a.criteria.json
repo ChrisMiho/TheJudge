@@ -5,79 +5,79 @@
     {
       "id": "A1",
       "statement": "non-functional-requirements.md NFR-004 carries the full canonical rule text (answer endpoint, REQ-175 carve-out), the echoed-in list of all ten other homes, and the retired-DEC-010 note",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/non-functional-requirements.md"] }
     },
     {
       "id": "A2",
       "statement": "functional-requirements.md REQ-012 constraint (~175) keeps its text and appends the NFR-004 pointer",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
     },
     {
       "id": "A3",
       "statement": "functional-requirements.md REQ-072 constraint (~1677) repoints away from citing DEC-010 as the live rule, to canonical rule: NFR-004",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
     },
     {
       "id": "A4",
       "statement": "functional-requirements.md REQ-094 constraint (~2195) carries the dual pointer to NFR-004 and to goals-and-non-goals.md Scope Notes",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
     },
     {
       "id": "A5",
       "statement": "functional-requirements.md REQ-175 Description (~4020) and Constraints (~4031) replace the frozen enumerated amendment list with the NFR-004 pointer",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
     },
     {
       "id": "A6",
       "statement": "goals-and-non-goals.md Shipped capabilities (~39) and Explicit Non-Goals (~75) each append the NFR-004 pointer",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/goals-and-non-goals.md"] }
     },
     {
       "id": "A7",
       "statement": "overview.md Key Constraints (~56) appends the NFR-004 pointer",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/overview.md"] }
     },
     {
       "id": "A8",
       "statement": "PRD/README.md Implementation Snapshot (~145) appends the NFR-004 pointer",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/README.md"] }
     },
     {
       "id": "A9",
       "statement": "technical-design-rules.md Allowed (~12) and Forbidden (~36) each append the NFR-004 pointer",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/instructions/technical-design-rules.md"] }
     },
     {
       "id": "A10",
       "statement": "quick-lookup/README.md (~158) repoints away from citing DEC-010 as the live rule, to canonical rule: NFR-004",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/quick-lookup/README.md"] }
     },
     {
       "id": "A11",
       "statement": "in-depth/README.md (~277-278) repoints away from citing DEC-010 as the live rule, to canonical rule: NFR-004",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/in-depth/README.md"] }
     },
     {
       "id": "A12",
       "statement": "integrations-and-data.md (~151, ~246) replace the frozen enumerated amendment list with the NFR-004 pointer",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/integrations-and-data.md"] }
     },
     {
       "id": "A13",
       "statement": "A fresh re-grep of the endpoint pattern family and DEC-010 across PRD/ and root README.md shows every rule-stating line is NFR-004 or a listed pointer; out-of-scope traceability/Backed-by lines and user-feedback/README.md:123 are unchanged; no unlisted rule-stating home remains",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     }
   ]
