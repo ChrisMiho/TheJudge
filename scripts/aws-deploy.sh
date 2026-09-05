@@ -73,7 +73,22 @@ cloudfront_domain="$(aws cloudfront get-distribution \
   --id "$distribution_id" \
   --query Distribution.DomainName \
   --output text)"
-frontend_origin="https://$cloudfront_domain"
+
+# The backend allows exactly one browser origin (FRONTEND_ORIGIN -> CORS), so
+# it must be the domain players actually type. The live distribution is the
+# single source of truth for that: whatever alias aws-bootstrap.sh attached
+# (DEC-084) wins, and a distribution with no alias falls back to its
+# *.cloudfront.net hostname. No second copy of the domain lives here, so the
+# deploy can never disagree with what CloudFront serves.
+frontend_alias="$(aws cloudfront get-distribution \
+  --id "$distribution_id" \
+  --query "Distribution.DistributionConfig.Aliases.Items[0]" \
+  --output text)"
+if [[ "$frontend_alias" == "None" || -z "$frontend_alias" ]]; then
+  frontend_origin="https://$cloudfront_domain"
+else
+  frontend_origin="https://$frontend_alias"
+fi
 
 aws lambda update-function-configuration \
   --function-name "$lambda_name" \
