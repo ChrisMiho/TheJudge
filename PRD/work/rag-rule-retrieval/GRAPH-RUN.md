@@ -8,8 +8,8 @@
 - Resume canary (2026-09-05 01:27, run `graph-20260905-012712`): `denied` both tiers — `nohup true` → \"`nohup` is denied while a graph run holds the lock\"; `rm -rf .worktrees/.graph-canary-nonexistent` → \"`rm -rf` is denied in every session\"; run-state degraded at take-lock, then `.graph-run-state.json` written by the driver (`driver-bookkeeping/1`) before any node dispatch
 - Autonomous base: `origin/thejudge-auto/rag-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-061805/`
-- Current node: `review` (run `graph-20260905-012712`) — dispatched, no-write reviewer, no fan-out
-- Next action: `review` → on approval park at `land` (owner merges PR #191 `-work` → base, then the base → `main` PR) → `close`. Base branch still frozen; driver commits locally only. Resume command if interrupted: `/graph-implement PRD/work/rag-rule-retrieval/`
+- Current node: `build` attempt 2 (review loop 1 of 2, run `graph-20260905-012712`) — same builder agent resumed with the review findings; no fan-out
+- Next action: `build` attempt 2 → `review` attempt 2 → on approval park at `land` (owner merges PR #191, then base → `main`) → `close`. Owner decisions pending at `land`: REQ-181 embedding-text shaping (builder shipped plain text on a 19/20 vs 13/20 measurement; accepted wording called for shaping) and the E14 human attestation. Base branch still frozen. Resume command if interrupted: `/graph-implement PRD/work/rag-rule-retrieval/`
 
 ## Node ledger
 
@@ -30,6 +30,7 @@
 | — | driver-bookkeeping | — | ok | `n/a (driver, during build/1)` | owner approved raising the build cap mid-run ("i approve increasing the budget if needed"): `build` cap 600 → 1200 in `scripts/lib/boundary-rules.mjs` `NODE_CALL_CAPS` and the contract `## Node table` (commit `f9886f6`); the hook re-reads the module per call, so it took effect at once (`capForNode("build")` → 1200); counter stood at 210 after slice A of five. The `graph-implement/reference.md` mirror row still reads 600: the driver's `sed -i` was denied by the graph profile and the `Edit` on `.claude/skills/` was blocked by the auto-mode classifier — owner to make that one-line edit and run `npm run skills:ai-sync`; the contract wins where they disagree. Mechanics only, no scope or criteria change; builder notified | 2026-09-05 |
 | — | driver-bookkeeping | — | ok | `n/a (driver, during build/1)` | build/1 stalled four times on the harness stream watchdog ("no progress for 600s") during an intermittent model outage — counter at 405, 413, 420, and 426; zero hook denials for run `graph-20260905-012712` at each stall; the driver resumed the same agent by message each time (same attempt, context intact). State at the fourth stall: slices A–C committed on the implement-agent branch and pushed (`5746a04`), slice D verified and marked done in the worktree README with 62 changed files uncommitted, slice E not started; PR #191 open `thejudge-auto/rag-rule-retrieval-work` → `thejudge-auto/rag-rule-retrieval` (https://github.com/ChrisMiho/TheJudge/pull/191). Also recorded here: the driver's 01:27 `## Open gate` rewrite anchored on the first textual `## Open gate` (inside the gate-review row) instead of the heading and truncated the node table, so the four rows above were silently dropped until this repair rebuilt the table from commit `e0140a9` — `graph-ledger-check` does not validate the node table, which is why it passed | 2026-09-05 |
 | 6 | build | sonnet | ok | `0 → 773` (four stream-watchdog stalls, resumed in place) | PR #191 https://github.com/ChrisMiho/TheJudge/pull/191 (`thejudge-auto/rag-rule-retrieval-work` → `thejudge-auto/rag-rule-retrieval`, head `a0d38f2`, MERGEABLE, checks static/backend/frontend×3/coverage-merge SUCCESS); worktree `.worktrees/implement-rag-rule-retrieval` clean at `a0d38f2`; five slices A–E done, each with `test:eval` + `quality:check` green and E adding `lambda-package-budget.test.mjs` + `EMBEDDING_PROVIDER=local test:eval`; 48/48 criteria `true` across `slice-{{a..e}}.criteria.json` (driver-verified by script); `STATUS.ship-ready` in the worktree; 133 files (95 `apps/backend`, 10 `PRD/sections`, 13 `PRD/work`, scripts, `vendor/onnxruntime-web-stub`); PR touches no driver-owned file (no `GRAPH-RUN.md`, `boundary-rules`, contract, `.claude/`). Write-scope assertion: launch checkout and both other worktrees `git status --porcelain` empty — pass for the repository; one write outside the repository, scratch dir `/tmp/lambda-sim` (311M, Lambda package measurement via `npm ci`), left for the owner to delete. Two boundary denials during the node, both correct and neither retried: `rm -rf` inside `/tmp/lambda-sim` (`recursive-force-remove`) and a backgrounded `npm run quality:check` (`background-launch`). Builder-raised findings carried to review and `land`: (1) REQ-181 embedding-text shaping measured 13/20 vs plain 19/20 recall@5 — plain shipped, measurement recorded in REQ-181 notes (a divergence from the accepted wording the owner must see); (2) Lambda non-data reserve 20MB → 130MB, ~2.6MB headroom under the 250MB quota. 700 tool calls, ~944k subagent tokens, no subagents | 2026-09-05 |
+| 7 | review | opus | failed → build (loop 1 of 2) | `0 → 39` | no-write reviewer (Explore agent type: no Write/Edit/NotebookEdit), 36 tool calls, no subagents. Verdict RETURN TO BUILD. Critical: C-1 E10 not met — `test:eval` runs only `contextEvaluationHarness.test.ts`, which has no `queryEmbedding` wiring, so `system3-expected-recall`/`system3-noise-excluded` stay lexical-only; the new `semanticRetrievalEval.test.ts` tests two invented queries and is outside `test:eval`; C-2 applied REQ-032 text (`functional-requirements.md:591`) asserts the semantic eval that does not exist. Important: I-1 D1 committed `cardDetailByOracleId.json` has `keywords` on 0/36,521 entries (script writes it, artifact never rebuilt; production keyword signal inert); I-2 D4 fixtures pass only via hand-added inline `keywords`; I-3 B4/D5/E9 benchmark pollution nearly empty (no `name`/`keywords` in the artifact), so multi-card gates are met by the letter; I-4 E12 embeddings artifact outside the `data:build` chain contrary to the accepted block, validator never checks rule ids against the index, semantic branch silently drops unvectored entries. Minor: M-1 `askAi.ts` comment/mock query build; M-2 `package-lambda.sh` rewrites the committed embeddings artifact at deploy; M-3 E14 needs a human. Notes: N-1 REQ-179 note contradicts applied REQ-181; N-2 SCOPE-C/`real rule content` wording drift. Owner statements: REQ-181 divergence (accepted shaping vs shipped plain `sectionTitle: text`, 13/20 vs 19/20 on a 20-question sample; code and applied text consistent with each other, not with the accepted text — owner's call at `land`); NFR-017 test green and honest (quota 250 MB, reserve 130 MB, data 117.40 MB, headroom ~2.6 MB) but the constraint line still carries the stale 230 MB / 118 MB numbers. Reviewer confirmed by reading or running: A1–A7, B1–B2, B4–B5, C1–C4, C7, D3, D6, E1–E8, E11, E13 partial; 39/42 accepted blocks match `PRD/sections/` exactly; took on the file's word: full `quality:check` chains, B6 provenance, E9 full-precision reference, D2 question-text half | 2026-09-05 |
 
 ## Gate verdicts
 
@@ -519,6 +520,111 @@ it affects, `file:line`, one sentence of evidence; Critical and Important first;
 (3) the REQ-181 divergence statement and the NFR-017 margin statement, written so
 the owner can read them cold; (4) which criteria you confirmed by your own
 reading or test run, and which you took on the criteria file's word.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write
+for any subagent you dispatch (you should dispatch none).
+
+### build (attempt 2, review loop 1)
+
+graph is controlling. Build attempt 2 (review loop 1 of 2) for autonomous graph
+run `graph-20260905-012712`; no human is available, so do not stop to ask
+clarifying questions — apply the assumption ladder in
+`PRD/instructions/preparation-contract.md` per question and record each
+assumption in the slice doc's notes; anything you cannot resolve from confirmed
+decisions and tests is reported back to the driver as a blocker, not guessed.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Do NOT dispatch any subagent, fork, or helper agent. This attempt has a fresh
+budget of 1200 tool calls; keep shell calls short and single-purpose. Same write
+scope as before: only `.worktrees/implement-rag-rule-retrieval/` and
+`PRD/work/rag-rule-retrieval/`. Same boundaries: no `npm run data:refresh`, no
+Scryfall or any other network fetch, no `git add -A`/`git add .`, no force push,
+no PR merge or close, no background `&`, no `rm -rf`.
+
+The independent reviewer graded PR #191 RETURN TO BUILD. Fix the findings below
+in the same worktree and on the same `thejudge-auto/rag-rule-retrieval-work`
+branch, re-verify, and update PR #191. When you flip a criterion back to `false`
+to rework it, re-earn its evidence before flipping it `true` again — the hook
+denies a flip it has not observed evidence for.
+
+Critical (both must be resolved):
+1. E10 is not met. `test:eval` runs only `contextEvaluationHarness.test.ts`, and
+   that harness has no `queryEmbedding` wiring, so `system3-expected-recall` and
+   `system3-noise-excluded` still run lexical-only for all 9 labelled fixtures.
+   The separate `semanticRetrievalEval.test.ts` quotes the scenario ids but tests
+   two invented queries with no fixture labels and is not in `test:eval`. Make the
+   harness run those two checks against the semantic path using committed frozen
+   query embeddings for the 9 fixtures (one vector per fixture question, generated
+   offline with the shipped local model and committed; no live call at test time),
+   and make `test:eval` exercise it. Keep the lexical-fallback check covered too.
+2. Once E10 is real, the applied REQ-032 text at
+   `PRD/sections/functional-requirements.md:591` becomes true; until then it
+   asserts behaviour the code does not have. Do not soften the text — make the
+   code match it.
+
+Important (all four must be resolved or reported as blocked with evidence):
+3. D1: the committed `apps/backend/data/cardDetailByOracleId.json` has no
+   `keywords` field on any of its 36,521 entries; the build script writes it but
+   the artifact was never rebuilt. Check whether the build's input (the local
+   Scryfall bulk file the script reads) exists on disk. If it does, rebuild the
+   artifact from it with no network access and commit the result. If it does not
+   exist, do not fetch it: flip D1 back to `false`, report D1 as blocked on the
+   owner running `npm run data:refresh`, and finish everything else — the driver
+   will park the run on that one item with your evidence.
+4. D4: the fixtures retrieve 702.2b only because `keywords` were hand-added inline
+   in the fixture JSON and `fixtureCardDetail.ts` reads them from there. Make the
+   eval index take keywords from the same source production uses so the passing
+   fixture proves the production path; if item 3 is blocked, say so plainly in
+   the test and the slice notes instead of leaving the test claiming more than it
+   proves.
+5. B4, D5, E9: the benchmark's polluted condition is nearly empty because the
+   pollution text draws from a card-detail artifact with no `name` and no
+   `keywords`. Make the pollution realistic: card name (join from `cardMetadata`
+   if the detail artifact lacks it), type line, and real keywords. Re-run the
+   benchmark, re-record `results.json`, `step1-baseline.json` where the baseline
+   itself was affected, and `semantic-results.json`, and re-state the B4/C5/D5/E9
+   numbers in the slice docs honestly. If a gate no longer holds under realistic
+   pollution, report the measured numbers and leave the gate text as written — do
+   not loosen a gate to make it pass.
+6. E12 / I-4: the accepted `GATE-QUESTIONS.md` block says the embeddings artifact
+   rebuilds in the same `npm run data:build` chain and only when the rule index
+   changed; the applied `PRD/sections/integrations-and-data.md:267` dropped that
+   and `data:build` does not invoke it. Put `build-rule-embeddings` into the
+   `data:build` chain, skipping the rebuild when the rule index is unchanged (key
+   it on a hash of the index), restore the accepted wording, and make the
+   artifact validator verify that the embeddings' rule ids match the rule index
+   exactly — on mismatch fall back to lexical with one warning, consistent with E7,
+   rather than silently dropping entries.
+
+Also do these, they are cheap and real:
+7. NFR-017: the constraint line at
+   `PRD/sections/non-functional-requirements.md:264` still carries the
+   pre-implementation measurement (230 MB budget, 118 MB headroom). Put the
+   post-change numbers in the constraint (budget 120 MB, tracked data about
+   117.4 MB, headroom about 2.6 MB) and keep the history in the note; drop the
+   word comfortably.
+8. `scripts/package-lambda.sh` warms the model cache by running the embeddings
+   build, which rewrites the committed artifact at deploy time. Warm the cache
+   without rewriting a tracked file.
+9. `routes/askAi.ts:88-90` comment is wrong (the provider is always present; mock
+   returns null). Fix the comment and skip building the retrieval query text when
+   the provider is the mock.
+
+Do NOT touch these — they are owner decisions carried to `land`:
+- REQ-181's applied wording (plain `sectionTitle: text` embedding, measured 19/20
+  vs 13/20 for the accepted shaping) and REQ-179's note that still refers to
+  shaping. Leave both exactly as they are.
+- E14's human attestation.
+
+When done: run every slice's stated verification plus `npm run quality:check`
+in the worktree; confirm every criterion in every `slice-*.criteria.json` is
+`true` (or D1 `false` with the blocked report); keep `STATUS.ship-ready` only if
+all are `true`, otherwise set `STATUS.active`; commit with explicit paths; push
+`HEAD` to `thejudge-auto/rag-rule-retrieval-work` without force; append a
+Review loop 1 section to the PR #191 body listing each finding and what changed.
+Report back: head commit, per-finding resolution with file paths, the new
+benchmark numbers, any blocker, and every path written.
 
 Copy the `Working directory:` line above, unchanged, into every prompt you write
 for any subagent you dispatch (you should dispatch none).
