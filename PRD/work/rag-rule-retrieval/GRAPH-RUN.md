@@ -8,8 +8,8 @@
 - Resume canary (2026-09-05 01:27, run `graph-20260905-012712`): `denied` both tiers — `nohup true` → \"`nohup` is denied while a graph run holds the lock\"; `rm -rf .worktrees/.graph-canary-nonexistent` → \"`rm -rf` is denied in every session\"; run-state degraded at take-lock, then `.graph-run-state.json` written by the driver (`driver-bookkeeping/1`) before any node dispatch
 - Autonomous base: `origin/thejudge-auto/rag-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-061805/`
-- Current node: `land` — PARKED 2026-09-05 awaiting the owner's merge of PR #191 (see `## Open gate`)
-- Next action: owner decides the three items under `## Open gate`, merges PR #191 (`-work` → base), then runs `/graph-implement PRD/work/rag-rule-retrieval/` — the driver records `land` as `ok`, reconciles its local base commits onto the merged base, runs `close` (`thejudge-cleanup`), and opens the base → `main` PR the owner merges last
+- Current node: `land` — owner decisions recorded 2026-09-05 (accept plain / soften never-worse / eval reports); `build` attempt 3 dispatched to apply the two text decisions on the PR branch and merge the base into it; owner merges PR #191 after
+- Next action: after build attempt 3 pushes, owner merges PR #191 (`-work` → base); then `/graph-implement PRD/work/rag-rule-retrieval/` records `land` ok, runs `close`, and opens the base → `main` PR the owner merges last
 
 ## Node ledger
 
@@ -45,13 +45,13 @@ Applied 2026-09-05 by `graph-gate-review` (build-half run `graph-20260905-010802
 | `REQ-178` | accept | — |
 | `REQ-179` | accept | — |
 | `REQ-180` | accept | — |
-| `REQ-181` | accept | — |
+| `REQ-181` | edit (owner, at land) | embedding text stays plain `sectionTitle: text` as applied — measured 19/20 vs 13/20 recall@5 for the accepted shaping on a 20-question sample; the never-worse note in this block is softened per the owner's decision to state the measured lookup-mode exceptions under `local`. |
 | `SCOPE-A` | accept | — |
 | `SCOPE-B` | accept | — |
 | `SCOPE-C` | accept | — |
-| `SCOPE-D` | accept | — |
-| `REQ-022` (amendment) | accept | — |
-| `REQ-032` (amendment) | accept | — |
+| `SCOPE-D` | edit (owner, at land) | keep lexical retained and never removed; soften the never-worse claim — true under `mock` and every fallback, not under `local` for short lookup-mode questions (two of eight labelled fixtures), measured 2026-09-05. |
+| `REQ-022` (amendment) | edit (owner, at land) | same softening of the never-worse claim as SCOPE-D; the semantic-primary mechanism stands. |
+| `REQ-032` (amendment) | edit (owner, at land) | `test:eval` remains the gate for the lexical path and runs the two semantic checks in report mode until a hybrid lexical-plus-semantic blend lands, then they gate. |
 | `REQ-074` (amendment) | accept | — |
 | `REQ-167` (amendment) | accept | — |
 | `REQ-168` (amendment) | accept | — |
@@ -59,36 +59,18 @@ Applied 2026-09-05 by `graph-gate-review` (build-half run `graph-20260905-010802
 | `NFR-017` (amendment) | accept | — |
 | `Q-001` (amendment) | accept | — |
 | `system-map.md` (spec amendment) | accept | — |
-| `system-map/game-rules-retrieval.md` (spec amendment) | accept | — |
+| `system-map/game-rules-retrieval.md` (spec amendment) | edit (owner, at land) | soften the never-worse sentences (near the explainer's lines 31 and 118 as applied) to state the measured lookup-mode exceptions under `local`. |
 | `system-map/prompt-layout-spec.md` (spec amendment) | accept | — |
-| `quick-lookup/README.md` (spec amendment) | accept | — |
+| `quick-lookup/README.md` (spec amendment) | edit (owner, at land) | soften the never-worse shipped-fact wording the same way. |
 | `in-depth/README.md` (spec amendment) | accept | — |
 | `integrations-and-data.md` (spec amendment) | accept | — |
 | `user-flows.md` (spec amendment) | accept | — |
 
 ## Open gate
 
-- Gate: `land` — the one merge this workflow keeps human. The code is built, reviewed twice, and approved: PR #191 https://github.com/ChrisMiho/TheJudge/pull/191 (`thejudge-auto/rag-rule-retrieval-work` → `thejudge-auto/rag-rule-retrieval`, head `03bcb0f`, all checks green, 48/48 acceptance criteria earned, `STATUS.ship-ready` on the PR branch).
-- Three decisions are yours before or at merge. Each is a product call the run may not make; none blocks merging the PR as it stands, because today's default `EMBEDDING_PROVIDER=mock` keeps players on the improved lexical path.
-
-  1. REQ-181 embedding text: shaping or plain?
-     - What this decides: whether each rule's text is shaped (sub-rules folded, parent sentence prefixed, examples stripped) before it is turned into a vector, as the wording you accepted said, or embedded plainly as `sectionTitle: text`, as the builder shipped.
-     - In plain terms: the builder measured your accepted shaping at 13 of 20 questions answered with the right rule in the top five, versus 19 of 20 for plain text, and shipped plain text, rewriting REQ-181 to say so. Code and the recorded requirement agree with each other; neither matches the wording you accepted.
-     - What happens if you say no: reply `require shaping` and the next build restores the accepted wording and implements shaping, accepting the measured loss. Reply `accept plain` and REQ-181 stands as applied; the driver marks the accepted block `edit` after the fact with your reason. Driver recommendation: accept plain.
-
-  2. The promise that semantic retrieval is never worse than lexical.
-     - What this decides: whether `PRD/sections/functional-requirements.md` keeps the accepted sentence that System 3 is never worse than its prior lexical-only behaviour under any provider setting.
-     - In plain terms: with the local model on, a player who points the app at one deathtouch creature and asks what the ability does no longer gets rule 702.2b in the top five (it falls to sixth); with two cards attached no deathtouch rule appears at all, where the old search returned five of them. Across the 156-question benchmark the local model is far better (0.85 vs 0.58 clean, 0.83 vs 0.53 with cards). Two of eight labelled scenarios get worse; the average gets much better.
-     - What happens if you say no: keep the sentence and keep `EMBEDDING_PROVIDER=local` off until short lookup-mode questions are addressed (a hybrid lexical-plus-semantic blend, or shaping, or a fixture-driven fix — new work, a new kickoff). Otherwise reply `soften the promise` and the driver records the sentence as `edit` with the measured exceptions, and the next build applies it.
-
-  3. Should `test:eval` gate the semantic recall checks, or only report them?
-     - What this decides: whether the two labelled-fixture checks (`system3-expected-recall`, `system3-noise-excluded`) fail the build when the semantic path misses a rule, or print their result and let the build pass.
-     - In plain terms: today they run on the semantic path (the loop-1 Critical is fixed) but only print; the printed run shows three of eight fixtures failing under semantic. Making them gate means either changing the ground truth for those fixtures (a hand judgment) or fixing retrieval for them (decision 2). REQ-032's text reads as if they gate.
-     - What happens if you say no: leave them reporting and reword REQ-032 to say so (`edit`), or accept the three failures as known and gate the other five. Driver recommendation: decide 1 and 2 first; this one follows from them.
-
-- Also for you at merge: E14 asks a human to confirm by reading the code that no live network call happens under `mock` or `local`; the reviewer confirmed it by reading (`mockEmbeddingProvider.embed()` returns null; `localEmbeddingProvider` sets `allowRemoteModels = false` and only imports `@huggingface/transformers`; the OpenAI client is constructed only under `openai`), but the attestation is yours. The Lambda package sits at 248 of 250 MB (1.90 MB headroom under NFR-017); the next data artifact of any size fails the deploy budget. A 311 MB scratch folder at `/tmp/lambda-sim` is safe to delete.
-- Evidence: ledger rows 6, 7, and 8 above; PR #191 body (Review loop 1 section); `PRD/work/rag-rule-retrieval/slice-e-pick-rules-by-meaning.md` notes on the PR branch; `apps/backend/src/eval/benchmark/results.json` and `semantic-results.json` on the PR branch.
-- Resume: merge PR #191 into `thejudge-auto/rag-rule-retrieval`, answer the three decisions in this session or in the PR, then `/graph-implement PRD/work/rag-rule-retrieval/` — the driver records `land` as `ok`, rebases its local ledger commits onto the merged base, runs `close`, and opens the base → `main` PR for you to merge last.
+- Gate: `land` — awaiting the owner's merge of PR #191 https://github.com/ChrisMiho/TheJudge/pull/191. The three product decisions were answered by the owner in session on 2026-09-05: (1) REQ-181 embedding text — accept plain; (2) the never-worse promise — soften now to state the measured lookup-mode exceptions under `local`; (3) eval gating — the semantic checks report until a hybrid blend lands. Verdicts flipped to `edit` on REQ-181, SCOPE-D, REQ-022, REQ-032, `system-map/game-rules-retrieval.md`, and `quick-lookup/README.md` in `GATE-QUESTIONS.md` with the reasons; `build` attempt 3 applies decisions 2 and 3 as text edits on the PR branch and merges the base's six bookkeeping commits into it.
+- Still for the owner at merge: the E14 human attestation (no live network call under `mock`/`local`; reviewer confirmed by reading). The Lambda package sits at 248 of 250 MB. `/tmp/lambda-sim` (311 MB) is safe to delete. Follow-up spec to kick off after close: hybrid lexical-plus-semantic blend, eval gating, package-budget relief, cold-start latency measurement.
+- Resume: merge PR #191, then `/graph-implement PRD/work/rag-rule-retrieval/`.
 
 ## Dispatch prompts
 
@@ -827,6 +809,86 @@ test run, and which you took on the criteria file's word.
 Copy the `Working directory:` line above, unchanged, into every prompt you write
 for any subagent you dispatch (you should dispatch none).
 
+### build (attempt 3, gate resolution at land)
+
+graph is controlling. Build attempt 3 (gate resolution at `land`, not a review
+loop) for autonomous graph run `graph-20260905-012712`. No human is available
+mid-task; the owner already made the decisions below, so apply them exactly and
+do not reopen them. Anything else you cannot resolve from these decisions and the
+tests is reported back to the driver, not guessed.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Do NOT dispatch any subagent, fork, or helper agent. Fresh budget of 1200 tool
+calls, but this is a small task — aim for under 60 calls. Same write scope: only
+`.worktrees/implement-rag-rule-retrieval/` and `PRD/work/rag-rule-retrieval/`.
+Same boundaries: no network fetch, no `npm run data:refresh`, no `git add -A`,
+no force push, no PR merge or close, no background `&`, no `rm -rf`, no merge
+or pull strategy option that discards a side.
+
+Owner decisions recorded 2026-09-05 at `land`:
+- REQ-181 embedding text: accept plain `sectionTitle: text` as applied. No
+  change to code or to the applied REQ-181 wording.
+- The never-worse promise: soften it now. Semantic retrieval is measurably worse
+  than lexical on short lookup-mode questions under `EMBEDDING_PROVIDER=local`,
+  so product truth must say so.
+- Eval gating: report for now. `test:eval` keeps gating the lexical path and
+  runs the two semantic checks in report mode until a hybrid lexical-plus-semantic
+  blend lands in a follow-up spec.
+
+Do these, in order, inside the worktree on branch
+`thejudge-auto/rag-rule-retrieval-work`:
+
+1. `git fetch origin`, then merge `origin/thejudge-auto/rag-rule-retrieval` into
+   the branch with a plain `git merge` (no `-s`, no `-X`). The driver just pushed
+   six bookkeeping commits to the base. Expect two conflicts and resolve them
+   like this: `PRD/work/STATUS.md` — keep this branch's version (the row under
+   `## ship-ready`); the status marker — the base renamed `STATUS.active` to
+   `STATUS.owner-action` and this branch renamed it to `STATUS.ship-ready`; the
+   merge result must contain exactly one marker, `STATUS.ship-ready`, and no
+   `STATUS.owner-action`. Take the base's `GRAPH-RUN.md`,
+   `scripts/lib/boundary-rules.mjs`, and
+   `PRD/instructions/graph-workflow-contract.md` as they come. Commit the merge.
+
+2. Soften the never-worse promise everywhere the applied `PRD/sections/` text
+   carries it. Known locations: `PRD/sections/functional-requirements.md` near
+   lines 372 and 4197, `PRD/sections/system-map/game-rules-retrieval.md` near
+   lines 31 and 118; grep `never worse` across `PRD/sections/` for any other. The
+   replacement must say, in each place in its own register: lexical retrieval is
+   retained and is the path under `mock`, under `openai` failure, and under any
+   embedding failure, so those settings are never worse than before; under
+   `local`, measured 2026-09-05 on the 156-pair benchmark, semantic ranking is
+   better overall (recall@5 0.85 vs 0.58 clean, 0.83 vs 0.53 with cards) and worse
+   on short lookup-mode questions where the query is a card name, type line, and
+   one keyword (two of eight labelled fixtures lose rule 702.2b from the top five);
+   a hybrid lexical-plus-semantic blend is the tracked follow-up before `local`
+   becomes the default. Keep each edit to the sentence or bullet that carried the
+   promise; do not rewrite surrounding text.
+
+3. Reword REQ-032 so it is true: at `PRD/sections/functional-requirements.md`
+   near line 593 (and any duplicate of the same bullet), state that
+   `npm run test:eval` remains the automated regression gate for the lexical path
+   and runs `system3-expected-recall` and `system3-noise-excluded` against the
+   semantic path in report mode — printed per fixture, not failing the run —
+   until the hybrid blend lands, at which point they gate.
+
+4. In `PRD/work/rag-rule-retrieval/slice-e-pick-rules-by-meaning.md` (notes
+   near lines 292–296) correct the disclosure: for `quick-lookup-card` 702.2b
+   ranks 6th; for `quick-lookup-multi-card` no `702.2x` rule reaches the top five
+   and 702.2b sits around 13th. Add one line recording the three owner decisions
+   above with the date.
+
+5. No code changes. Run `npm run quality:check` and
+   `npm --workspace apps/backend run test:eval` in the worktree; both must stay
+   green. Commit with explicit paths. Push `HEAD` to
+   `thejudge-auto/rag-rule-retrieval-work` without force. Append a section titled
+   Gate resolution at land to the PR #191 body listing the three decisions and the
+   files changed. Report back: the merge commit and the edit commit, every file
+   changed, the exact replacement sentences, and `gh pr view 191` mergeability.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write
+for any subagent you dispatch (you should dispatch none).
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -837,3 +899,7 @@ for any subagent you dispatch (you should dispatch none).
 | "graph-implement, this is probably a long running task, and i am heading to bed, do you wanna start with validating any credentials you need before i head out" | answered-once | driver-resume | — |
 | "graph-implement, im resuming this graph after some issues, and ive got the graph profile on now" | answered-once | driver-resume | — |
 | "i approve increasing the budget if needed" | answered-once | build | — |
+| "Accept plain (Recommended)" | answered-once | land | — |
+| "Soften now (Recommended)" | answered-once | land | — |
+| "Report for now (Recommended)" | answered-once | land | — |
+| "i see 6 local commits? want to walk me through the questions and get everything pushed up before i merge?" | answered-once | land | — |
