@@ -1,12 +1,14 @@
 # Graph run — rag-rule-retrieval
 
-- Run ID: `graph-20260905-061805`
+- Run ID: `graph-20260905-061805` (run one, spec-forming half)
+- Build-half run ID: `graph-20260905-010802` (run two, `/loop graph-implement`; lock, run-state, evidence, and release records for gate-review and nodes 4–9 key on this id)
 - Profile: `unverified`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "`rm -rf` is denied in every session"; graph tier: nohup true → "`nohup` is denied while a graph run holds the lock")`
+- Build-half canary: `denied — universal tier (rm -rf .worktrees/.graph-canary-nonexistent → "`rm -rf` is denied in every session"); graph tier armed (nohup true → "`nohup` is denied while a graph run holds the lock")`, 2026-09-05; run-state degraded at take-lock (`.graph-run-state.json` absent until the first node dispatch writes it)
 - Autonomous base: `origin/thejudge-auto/rag-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-061805/`
-- Current node: `owner-action` (parked after `gate-qc` PASS — run one complete)
-- Next action: answer `GATE-QUESTIONS.md`, merge the docs PR to `main`; then `/graph-implement PRD/work/rag-rule-retrieval/`
+- Current node: `gate-review` (run two claimed the package; 24/24 verdicts `accept`, docs PR #190 merged 2026-09-05)
+- Next action: driver dispatches `graph-gate-review`, then re-enters at `gate-qc` → `plan` → `build` → `review`; `land` stays the owner's
 
 ## Node ledger
 
@@ -17,6 +19,7 @@
 | — | driver-bookkeeping | — | ok | `n/a (driver)` | owner's cleanup: `git rm` of `PRD/work/probe-slow-load-vs-rag/`, `PRD/work/probe-prompt-data-optimization/`, four `PRD/work/promptRefinement*.md` — every file first confirmed byte-identical under `intake/` (`cmp`); ledger moved into package; `## Autonomous metadata` written; commit `d6b8d84` | 2026-09-05 |
 | 3 | define | opus | ok | `0 → 73` | `STATUS.refined`; `DESIGN-BRIEF.md` (5-step gameplan REQ-177..181, 10 assumptions, intake dispositions) + `GATE-QUESTIONS.md` (24 slots: 5 new REQ, 4 SCOPE decisions, 8 amended IDs incl. NFR-017 Lambda-budget finding, 7 amended specs; 32 Current blocks verified verbatim); 0 blocker questions; commit `797086a` | 2026-09-05 |
 | 4 | gate-qc | sonnet | ok | `0 → 54` | PASS, no findings (attempt 1): all Current blocks verbatim vs live files; REQ-177–181 unused live, FLOW-024 high-water; amendment set re-grepped complete; RAG-DEFERRED citations repointed; technical-design-rules hold; live measurements reproduced (`retrieval:report` 6/9 same 3 failures, `test:eval` green, index 3,432/3,285/147/626); `STATUS.refined` unchanged, nothing committed → stop at PASS: docs PR + `owner-action` park | 2026-09-05 |
+| — | driver-resume | — | ok | `n/a (driver)` | run two (`/loop graph-implement`, tick 1): `git fetch`; ready-spec scan found `rag-rule-retrieval` (24/24 `accept`, PR #190 MERGED 2026-09-05T07:02:31Z, no code built); base `thejudge-auto/rag-rule-retrieval` fast-forwarded to `main` (`eb0db9a`); lock taken (`npm run graph:preflight -- --take-lock --slug rag-rule-retrieval --run-id graph-20260905-010802 --pid 83033`); both canaries denied; claim committed (`STATUS.owner-action → STATUS.active`, board row moved to `## active`) | 2026-09-05 |
 
 ## Open gate
 
@@ -24,6 +27,7 @@
 - Evidence: `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` at commit `797086a`; gate-qc PASS attempt 1 (row 4 above); `README.md` `## Preparation gate`.
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/190
 - Resume: `graph-implement` (background loop) picks the package up from `main` after merge; manual form `/graph-implement PRD/work/rag-rule-retrieval/`.
+- Claimed 2026-09-05 by run `graph-20260905-010802`; `graph-gate-review` dispatched to apply the 24 verdicts and resolve this gate.
 
 ## Dispatch prompts
 
@@ -116,6 +120,35 @@ Status duties: on PASS leave `STATUS.refined` and the board row under `## refine
 
 Return: PASS or FAIL first, then the complete numbered finding list (each with the file, the line or block, what is wrong, and what would resolve it), the commit hash if a status change was committed, and the final `STATUS.*` marker.
 
+### gate-review
+
+graph is controlling. This is an autonomous graph run (build-half run ID
+`graph-20260905-010802`); no human is available at this step, so do not stop to
+ask clarifying questions — read the verdicts the owner already recorded in
+`GATE-QUESTIONS.md` and apply them exactly as written.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Invoke the `graph-gate-review` skill on the package at
+`PRD/work/rag-rule-retrieval/`. The owner has answered every `## <STABLE-ID>`
+block in `GATE-QUESTIONS.md` (24 blocks: REQ-177, REQ-178, REQ-179, REQ-180,
+REQ-181, SCOPE-A, SCOPE-B, SCOPE-C, SCOPE-D, REQ-022, REQ-032, REQ-074, REQ-167,
+REQ-168, NFR-018, NFR-017, Q-001, and seven spec-file amendment blocks) and merged
+the docs PR #190 to `main`. Read each block's `Verdict:` slot, apply it inside that
+ID's proposed diff in `GATE-QUESTIONS.md` only (never `PRD/sections/`), write the
+`## Gate verdicts` table into `GRAPH-RUN.md`, resolve the `## Open gate`, restore
+`STATUS.refined` (the driver's claim marker `STATUS.active` is present — replace it
+with `STATUS.refined`, exactly one marker), update the package `README.md`
+`status:` field and the `PRD/work/STATUS.md` board row to `refined`, and hand back
+the resume command. All 24 verdicts are `accept` and the `## Blocker questions`
+section carries none, so an `accept` leaves each proposed diff as refinement wrote
+it — record the verdicts and resolve the gate. Do not edit `DESIGN-BRIEF.md`,
+`PRD/sections/`, or any `thejudge-*` skill. Do not commit; the driver commits.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write
+for any subagent you dispatch. Report the verdict counts and the restored status
+back to the driver.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -123,3 +156,4 @@ Return: PASS or FAIL first, then the complete numbered finding list (each with t
 | "i want to better refine this idea and cleanup the rest of the work folder on that pertains to rag, so that we have a pinpoint gameplan" | answered-once | shape | — |
 | "cleanup the rest of the work folder on that pertains to rag" | answered-once | shape | — |
 | "accept all 24 and mark them in the gate file for me" | answered-once | owner-action | — |
+| "graph-implement, this is probably a long running task, and i am heading to bed, do you wanna start with validating any credentials you need before i head out" | answered-once | driver-resume | — |
