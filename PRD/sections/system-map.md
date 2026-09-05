@@ -490,9 +490,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Retrieval relevance report
 
 - Status: shipped
-- Summary: Digestible before/after report (System 2 topics, System 3 top-5 with scores, recall hit/miss) for tuning review; shares scoring logic with the harness so report output cannot drift.
-- Lives in: `scripts/retrieval-relevance-report.mjs`, `apps/backend/src/eval/contextEvaluationHarness.ts` (`buildRelevanceReport`)
-- Backed by: DEC-047, REQ-032
+- Summary: Digestible before/after report (System 2 topics, System 3 top-5 with scores, recall hit/miss) for tuning review. It models production retrieval the same way the eval harness does — same card-detail resolution, same query construction — and a parity test asserts the two return the same per-scenario verdict, so report output cannot drift from the gate (REQ-177). Before REQ-177 the claim was aspirational and untrue: after REQ-176 moved card-text resolution server-side, the report passed no card-detail index and reported three false scenario failures.
+- Lives in: `scripts/retrieval-relevance-report.mjs`, `apps/backend/src/eval/retrievalReportInputs.ts`, `apps/backend/src/eval/contextEvaluationHarness.ts` (`buildRelevanceReport`)
+- Backed by: DEC-047, REQ-032, REQ-177
 
 ## AWS production deployment
 

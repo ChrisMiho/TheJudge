@@ -283,7 +283,8 @@
   - REQ-032, DEC-047 (eval harness and labeled-outcome evaluation)
   - REQ-022, DEC-046 (retrieval the validation set exercises)
 - Notes:
-  - Distinct from RAG/corpus retrieval: this external data validates and tunes the prompt; it is not injected into prompts. The mechanic-definition enrichment idea, which would inject a corpus into the prompt, is RAG-deferred (`PRD/work/prompt-context-refinement/RAG-DEFERRED.md`).
+  - Distinct from RAG/corpus retrieval: this external data validates and tunes the prompt; it is not injected into prompts. The mechanic-definition enrichment idea, which would inject a corpus into the prompt, remains deferred and is an explicit non-goal of the RAG retrieval gameplan (REQ-177 through REQ-181); see REQ-168's note for where it stands.
+  - The RAG gameplan's own measurement work (REQ-177) commits an offline labelled question-to-rule benchmark. That benchmark and this worked-solutions set are complementary: the benchmark measures whether the right rule was retrieved, this set measures whether the assembled prompt resolves a hard case correctly.
 
 ### NFR-019
 - Title: First-load card-data payload target

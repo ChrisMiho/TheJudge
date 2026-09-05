@@ -1,6 +1,6 @@
 # Slice A — Make the recall ruler trustworthy
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -45,29 +45,46 @@ slice is measured against. No retrieval behavior changes.
 
 ## Acceptance criteria
 
-- [ ] A1 — `npm run retrieval:report` and
+- [x] A1 — `npm run retrieval:report` and
       `npm --workspace apps/backend run test:eval` return the same
       per-scenario recall verdict for all 9 labelled fixtures (today they
       disagree on 3: `counterspell-stack`, `quick-lookup-card`,
       `quick-lookup-multi-card`)
-- [ ] A2 — an automated parity test exists and runs in `quality:check`,
+- [x] A2 — an automated parity test exists and runs in `quality:check`,
       failing if the report and the harness diverge on any labelled fixture
-- [ ] A3 — a committed benchmark harness scores the 156-pair corpus for
+- [x] A3 — a committed benchmark harness scores the 156-pair corpus for
       recall@5 and MRR under clean and card-polluted queries, runs offline
       with no live AI or embedding call, and writes a machine-readable
       result file
-- [ ] A4 — the benchmark's current lexical clean/multi-card recall@5 is
+- [x] A4 — the benchmark's current lexical clean/multi-card recall@5 is
       recorded as the committed Step 1 baseline (a file Slice B's gate reads)
-- [ ] A5 — the prompt text produced for every existing labelled fixture is
+- [x] A5 — the prompt text produced for every existing labelled fixture is
       byte-identical before and after (measurement-only; no retrieval
       behavior changed)
-- [ ] A6 — `functional-requirements.md` carries the new `REQ-177` entry and
+- [x] A6 — `functional-requirements.md` carries the new `REQ-177` entry and
       the Slice-A portion of `REQ-032`'s amendment, matching
       `GATE-QUESTIONS.md`'s accepted text
-- [ ] A7 — `system-map.md`'s "Retrieval relevance report" block and the
+- [x] A7 — `system-map.md`'s "Retrieval relevance report" block and the
       `REQ-168`/`NFR-018` dangling-citation repoints match
       `GATE-QUESTIONS.md`'s accepted text
-- [ ] A8 — `npm run quality:check` is green
+- [x] A8 — `npm run quality:check` is green
+
+## Manual observations
+
+2026-09-05 A3 — ran `npm run benchmark:rag-retrieval -- --record-baseline`;
+`apps/backend/src/eval/ragRetrievalBenchmark.ts` scores all 156 committed
+pairs (`benchmark/rag-retrieval-benchmark.json`) for recall@5 and MRR under
+clean and card-polluted queries using only the in-process production lexical
+retriever and the already-committed `cardDetailByOracleId.json` for
+pollution text — no live AI call, no live embedding call, no network. Wrote
+`apps/backend/src/eval/benchmark/results.json`. `ragRetrievalBenchmark.test.ts`
+asserts two runs are byte-identical (determinism).
+
+2026-09-05 A4 — `apps/backend/src/eval/benchmark/step1-baseline.json` records
+the Step 1 lexical baseline: clean recall@5 0.5769230769230769 (mrr
+0.41292735042735057), polluted (multi-card) recall@5 0.40384615384615385
+(mrr 0.27019230769230773), n=156, method lexical-idf. Slice B's gate reads
+this file.
 
 ## Verification
 

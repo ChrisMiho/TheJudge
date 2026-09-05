@@ -579,6 +579,8 @@
   - harness check `system3-noise-excluded` passes when no `forbiddenSupplementalRuleIds` entry appears in System 3 top-5
   - scenario fixtures cover the signal taxonomy: stack-resolution (e.g. counterspell), combat-damage/deathtouch, upkeep-trigger, keyword interaction (extend `cascade-keyword`), out-of-manifest SBA (extend `state-based-actions`)
   - a digestible before/after relevance report is available for tuning review (one table per scenario: System 2 topics selected, System 3 top-5 with scores, recall hit/miss); may be a script output or harness report artifact
+  - the relevance report and the eval harness model production retrieval identically — same card-detail resolution, same query construction — and a test asserts they return the same per-scenario recall verdict for every labelled fixture, failing the pull request when they diverge (REQ-177)
+  - a committed offline benchmark of labelled question-to-rule pairs records recall@5 and MRR under clean and card-polluted queries, and is the standing measure retrieval changes are judged against (REQ-177)
   - existing structural checks (section presence, ordering, budget) remain unchanged
   - `npm run test:eval` remains the automated regression gate
 - Constraints:
@@ -590,6 +592,7 @@
   - REQ-022
 - Notes:
   - replaces reliance on manual multi-file `prompt:preview` review as the sole relevance verification path
+  - the report/harness parity criterion exists because the two diverged in practice: after REQ-176 moved card-text resolution server-side, the report stopped passing a card-detail index and reported three false scenario failures while the gate stayed green
 
 ### REQ-033
 - Title: Live response-size diagnostic logs
@@ -3871,7 +3874,7 @@
   - REQ-074 (lookup prompt assembly and guardrail instruction)
   - REQ-072
 - Notes:
-  - This also resolves the **symptom** half of the mechanic-keyword observation: a mechanic asked by name with no card must not be refused as "not an official mechanic." The separate idea of guaranteeing every relevant mechanic's **definition** is enriched into the prompt is RAG-shaped and filed to `PRD/work/prompt-context-refinement/RAG-DEFERRED.md`, not built here.
+  - This also resolves the **symptom** half of the mechanic-keyword observation: a mechanic asked by name with no card must not be refused as "not an official mechanic." The separate idea of guaranteeing every relevant mechanic's **definition** is enriched into the prompt is RAG-shaped and is not built here. It needs a mechanic-definition corpus, a per-question relevance step, and a new prompt section — a different feature from improving which Comprehensive Rules excerpts are selected. It is an explicit non-goal of the RAG retrieval gameplan (REQ-177 through REQ-181) and becomes its own package once REQ-180 settles how the keyword vocabulary is derived. Its original write-up was preserved when the `prompt-context-refinement` package closed and is carried in that gameplan's intake.
   - The same persona applies whether or not cards are attached (DEC-108); the reworded line lives on the shared lookup instruction, `apps/backend/src/prompt/promptAssembly.ts`.
   - Gate review (2026-08-30): the maintained phrasing doc must explain what each phrase represents, not just list it — a glossary, not a bare word list. Applied above.
 
@@ -4059,3 +4062,27 @@
 - Notes:
   - `caster`, `targets`, `contextNotes`, `manaSpent` are user-entered game-state and remain client-sent; only card-intrinsic fields move server-side
   - `colors` is the one exception carried alongside identity on `ZoneCardItem`: it is not card-intrinsic prompt data, it is local rendering state the identity ring reads directly (REQ-058, DEC-078), so it stays on the frontend object but is still stripped before the wire request the same as the rest of the descriptive block
+
+### REQ-177
+- Title: Trustworthy System 3 retrieval measurement
+- Priority: high
+- Description: The two instruments that measure System 3 supplemental rule recall — the gating eval harness and the human relevance report — must model production retrieval identically and must not be able to drift apart, and the labelled question-to-rule benchmark used to judge retrieval changes must be committed, offline, and reproducible in-repo. No retrieval behaviour changes under this requirement.
+- Acceptance Criteria:
+  - the relevance report resolves each fixture's card-intrinsic fields by `cardId` through the same card-detail index path the eval harness uses (REQ-176), so both build the same System 3 query for the same fixture
+  - an automated test asserts the report and the harness return the same per-scenario System 3 recall verdict for every fixture carrying an `expected` block, and fails the pull request when they diverge; it runs in `quality:check`
+  - before/after evidence is recorded: at the time of writing the report reports 3 of 9 labelled scenarios failing (`counterspell-stack`, `quick-lookup-card`, `quick-lookup-multi-card`) while the harness reports all passing; after this change every labelled scenario returns one verdict from both
+  - a committed retrieval benchmark harness scores the labelled question-to-rule corpus (156 pairs: 150 synthetic grounded in real CR text plus 6 gold worked-solution cases) for recall@5 and MRR, under both a clean query and a query polluted with attached-card text, and writes a machine-readable result file
+  - the benchmark runs offline and deterministically — no live AI provider call and no live embedding call — consistent with REQ-032's no-live-call constraint
+  - the benchmark's current lexical result is recorded as the committed baseline that later retrieval changes are measured against; every subsequent retrieval requirement states its gate relative to a recorded baseline, never to a number derived by proportion
+- Constraints:
+  - measurement-only: no change to System 3 query construction, scoring, corpus, or output; the prompt text produced for every existing fixture is byte-identical before and after
+  - the benchmark is committed evaluation data and tooling; it never becomes runtime prompt context and adds no runtime dependency or external call
+  - the eval harness remains the gate; the relevance report remains a review aid whose exit code is advisory
+- Dependencies:
+  - REQ-032 (the relevance-measurement requirement this repairs)
+  - REQ-176 (server-side card-text resolution, whose landing caused the report/harness divergence)
+  - DEC-047 (the eval harness and labelled-outcome evaluation)
+- Notes:
+  - located in code: `apps/backend/src/eval/retrievalReportInputs.ts` calls `buildPromptContext(request)` and `preparePromptInput(request, …)` with no `cardDetailIndex`, while `apps/backend/src/eval/contextEvaluationHarness.test.ts` builds one per fixture (`cardDetailIndexFromRequest`)
+  - this is Step 1 of the RAG gameplan; Steps 2–5 (REQ-178, REQ-179, REQ-180, REQ-181) each state their gate against the baseline this requirement records
+  - the benchmark corpus and scoring logic originate from a throwaway harness on `origin/explore/semantic-rule-retrieval` (`PRD/work/combo-context-validation/harness/rag/`); committing it in-repo is the point of this requirement
