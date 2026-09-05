@@ -8,8 +8,8 @@
 - Build-half canary: `denied — graph tier armed (nohup true), 2026-09-04 run two`; run-state degraded at take-lock (`.graph-run-state.json` absent until first node dispatch), so cap enforcement arms once run-state is written per node
 - Autonomous base: `origin/thejudge-auto/single-source-invariants`
 - Staging: none — resume of an existing `STATUS.ideation` package, no new intake staged
-- Current node: `review` (build ok — 43/43 criteria, PR #188 opened `-work → main`; fresh-context reviewer grades the slices next)
-- Next action: `/graph-implement PRD/work/single-source-invariants/` — `review → land (owner merges PR #188) → close`
+- Current node: `land` — **PARKED for owner merge** (review APPROVE; PR #188 `-work → main` [READY])
+- Next action: owner merges PR #188 (https://github.com/ChrisMiho/TheJudge/pull/188), then `/graph-implement PRD/work/single-source-invariants/` records `land` ok and runs `close`
 
 ## Node ledger
 
@@ -29,6 +29,8 @@
 | 4 | gate-qc | sonnet | ok | `1 → 26` | run two build-half re-check (PASS). Independent full-corpus `grep -rniE` of all four families + `DEC-010` sweep (9 live hits: 3 in-scope CLASS-A rule-statements, 6 out-of-scope). Every amendment-set home in `GATE-QUESTIONS.md` resolves to its cited live file:line; no unlisted rule-stating home; guardrail anchors (`writing-rules.md ## Editing Rules`, `requirement-format.md ## Formatting Rules`) present. `STATUS.refined` holds; no `PRD/sections/` edits | 2026-09-04 |
 | 5 | plan | sonnet | ok | `1 → 33` | 5 slices A–E (one per accepted gate block), 43 acceptance criteria total (A 13, B 9, C 15, D 3, E 3); all evidence path-based or dated manual re-grep (docs-only). `GAMEPLAN.md` + `slice-{a..e}-*.md` + `slice-{a..e}.criteria.json` written; `STATUS.active`; scope-clean (`git status`: only work-folder + board). Sequencing: A→C share `functional-requirements.md` REQ-094 line (A writes, C verifies) — sequential, no fan-out | 2026-09-04 |
 | 6 | build | sonnet | ok | `1 → 219` | All 5 slices `done`, **43/43 criteria earned** (evidence log run `graph-20260904-220341`: A13 B9 C15 D3 E3), each verified `value:true` in the emitted `slice-*.criteria.json` on `origin/-work`. `quality:check` green (436/436) per slice. Applied proposal by intent to `PRD/sections/` (NFR-004, functional/goals/overview/problem-statement/integrations/user-flows/in-depth/quick-lookup/life-tracker/system-map), `PRD/instructions/` (writing-rules, requirement-format, agent-working-rules, technical-design-rules), `PRD/README.md`, root `README.md`. Worktree `.worktrees/implement-single-source-invariants`. **Write-scope PASS**: launch checkout `git status` clean — build wrote only inside its worktree; no `thejudge-*` skill or code file touched (PR #188 name-only scope verified). PR #188 opened `-work → main` [READY]. `STATUS.ship-ready`. One in-scope judgment: `functional-requirements.md:1893` (DEC-013 counter-automation caveat) surfaced on Slice-C re-grep, classified out-of-scope per-feature clause | 2026-09-04 |
+| 7 | review | opus | ok | `1 → 13` | Fresh-context, no-write reviewer (read-only) graded PR #188 against each slice's acceptance criteria + both amendment-set enumerations hit-by-hit. **VERDICT: APPROVE** — every canonical home carries full rule text + echoed-in list; every enumerated pointer repointed (endpoint/mock-first/rules-engine/decision-log sets all complete — the missed-home defect is absent); no in-scope line left with an independent copy or a retired DEC as the live rule; out-of-scope per-feature clauses untouched; guardrail substance matches; no `thejudge-*` skill or code file edited. One **Minor** (non-blocking): slice-a/slice-b doc checkboxes left `- [ ]` though criteria JSON records all `true` — cosmetic, in the cleanup-deleted work folder; Minor never loops to build | 2026-09-04 |
+| 8 | land | — | parked | `n/a — human PR merge` | Awaiting owner merge of PR #188 (`-work → main`). Not dispatched — `land` is the one human step. Resume records `land` ok once the PR is merged, then continues to `close` | 2026-09-04 |
 
 Entry point: resume of a `STATUS.ideation` package with no prior ledger. Per the
 entry-point table, `STATUS.ideation` enters at `define`; `shape` (node 2) is
@@ -56,15 +58,23 @@ Blocker questions: none recorded; none raised.
 
 ## Open gate
 
-- **Resolved 2026-09-04 — 5 accept, 0 edit, 0 reject.** Owner answered all five
-  decision blocks in `PRD/work/single-source-invariants/GATE-QUESTIONS.md`
-  (INV-ENDPOINT, INV-MOCK-FIRST, INV-RULES-ENGINE, INV-DECISION-LOG,
-  GUARD-GREP-BEFORE-AMEND) with verdict `accept`; every proposed diff stands as
-  refinement wrote it. Docs-only base→main PR merged —
-  https://github.com/ChrisMiho/TheJudge/pull/187. `STATUS.refined` restored.
-- Resume: `/graph-implement PRD/work/single-source-invariants/` — the run
-  re-enters at `gate-qc`, then `plan → build → review → land → close` applies
-  the finalized proposal to `PRD/sections/` together with the code.
+- **PARKED at `land` — owner merges the code PR (2026-09-04).** The build half is
+  complete and reviewed: gate-review (5 accept) → gate-qc PASS → plan (5 slices /
+  43 criteria) → build ok (43/43 criteria earned, `quality:check` 436/436 per
+  slice) → review **APPROVE** (no Critical/Important findings).
+- **Question (the one human step):** merge the code PR to `main`. `land` is the
+  single merge this workflow never automates.
+- **Evidence:** PR #188 — https://github.com/ChrisMiho/TheJudge/pull/188 —
+  `-work → main`, [THEJUDGE-AUTO][READY], OPEN, MERGEABLE. Docs-only /
+  product-truth-only; no application code. `STATUS.ship-ready`.
+- **Resume:** after merging PR #188, run
+  `/graph-implement PRD/work/single-source-invariants/` — it confirms the PR is
+  merged into `main`, records `land` ok, and runs `close` (`thejudge-cleanup`):
+  promotes durable truth (already applied at build), folds this ledger into a
+  receipt, and deletes the work folder.
+- *(Prior gate, resolved 2026-09-04: the `define` gate — owner answered all five
+  decision blocks `accept` in `GATE-QUESTIONS.md` and merged docs PR #187; every
+  proposed diff stood as refinement wrote it.)*
 
 ## Dispatch prompts
 
