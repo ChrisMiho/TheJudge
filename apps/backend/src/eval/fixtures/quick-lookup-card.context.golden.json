@@ -18,6 +18,9 @@
       "subtypes": [
         "Beast"
       ],
+      "keywords": [
+        "Deathtouch"
+      ],
       "targets": []
     }
   ]

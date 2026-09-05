@@ -65,7 +65,12 @@ function makeResources(N: number, df: Record<string, number>, keywords: string[]
   };
 }
 
-function battlefieldCard(oracleText: string, name = "Test Card", typeLine = "Creature") {
+function battlefieldCard(
+  oracleText: string,
+  name = "Test Card",
+  typeLine = "Creature",
+  keywords: string[] = []
+) {
   return {
     zoneId: "battlefield" as const,
     items: [
@@ -74,6 +79,7 @@ function battlefieldCard(oracleText: string, name = "Test Card", typeLine = "Cre
         name,
         oracleText,
         typeLine,
+        keywords,
         imageUrl: "",
         manaCost: "",
         manaValue: 0,
@@ -629,14 +635,14 @@ describe("Backend - Game Rules", () => {
       expect(result.find((r) => r.ruleId === "100.1")).toBeUndefined();
     });
 
-    it("boosts a keyword found in oracle text above generic low-IDF rules", () => {
+    it("boosts a card's real keyword (REQ-180) above generic low-IDF rules", () => {
       const index = [
         makeEntry({ ruleId: "702.2", sectionTitle: "Deathtouch", text: "702.2. Deathtouch.", searchText: "702.2 deathtouch lethal damage", parentRuleIds: ["702"] }),
         makeEntry({ ruleId: "100.6", sectionTitle: "General", text: "100.6. General.", searchText: "100.6 general rules game", parentRuleIds: ["100"] })
       ];
       const context = makeContext({
         finalQuestion: "What about damage rules",
-        populatedZones: [battlefieldCard("Deathtouch")]
+        populatedZones: [battlefieldCard("Some other reminder text", "Test Card", "Creature", ["Deathtouch"])]
       });
       const resources = makeResources(3432, { deathtouch: 9, damage: 179, rules: 50 }, ["deathtouch"]);
       const result = retrieveSupplementalRules(context, index, new Set(), 5, resources);

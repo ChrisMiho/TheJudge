@@ -4132,3 +4132,29 @@
 - Notes:
   - this is Step 3 of the RAG gameplan; it improves the current word-overlap scorer immediately (fewer junk entries, cleaner word-rarity statistics) and is a prerequisite for REQ-181, which would otherwise embed 147 near-identical duplicate documents
   - the deeper chunking work — folding a keyword's sub-rules into one document, prefixing an orphan sub-rule with its parent sentence, splitting fused examples — shapes what gets embedded rather than what gets printed, and belongs to REQ-181
+
+### REQ-180
+- Title: Per-card Scryfall keywords feed the System 3 keyword signal
+- Priority: medium
+- Description: The committed backend card-detail artifact carries each card's Scryfall `keywords` array, and System 3's keyword signal is derived from those per-card keywords unioned at query time rather than from tokenizing oracle text against a hand-curated static vocabulary. The frontend's up-front card list is unchanged.
+- Acceptance Criteria:
+  - the card-data build writes each card's Scryfall `keywords` array into the committed backend card-detail artifact (`cardDetailByOracleId.json`), alongside the fields it already resolves server-side (REQ-176)
+  - System 3's keyword signal for a request is the union of the submitted or attached cards' keywords, resolved server-side by `cardId`, plus any keyword the question itself names; the hand-curated static vocabulary is retained only as the source for question-text keyword detection, no longer as the per-card inference path
+  - the up-front `cardMetadata.json` the frontend downloads gains no field and its gzipped size is unchanged, so NFR-019's first-load gate (the trimmed artifact must be at least 40% smaller gzipped than the prior combined 16.4 MB artifact) is untouched
+  - the keyword-heavy labelled fixtures retrieve their expected rules: `quick-lookup-card` and `quick-lookup-multi-card`, whose expected supplemental rule `702.2b` (deathtouch) the production retrieval path misses today
+  - measured on the committed benchmark (REQ-177), clean and multi-card recall@5 do not regress below the values recorded after REQ-179
+  - this requirement records the answer to Q-001; `open-questions.md` is updated in the same change
+- Constraints:
+  - the backend corpus carries more, the browser payload carries less: no Scryfall field added here reaches the up-front frontend download or the request wire
+  - no new runtime Scryfall fetch; keywords come from the committed artifact, refreshed only through the existing human-approved `data:refresh` chain
+  - no request, response, or frontend change
+- Dependencies:
+  - REQ-176 (the server-side card-detail artifact this extends)
+  - REQ-178 (the compact query this signal feeds)
+  - REQ-177 (the benchmark this no-regression gate is measured on)
+  - NFR-019 (the first-load payload gate this must not disturb)
+  - Q-001 (the open question this answers)
+- Notes:
+  - this is Step 4 of the RAG gameplan
+  - measured evidence: the Scryfall bulk record carries 62 fields and the card-metadata build keeps 10, dropping `keywords` — the exact field Q-001 names as the strongest option
+  - power, toughness, and loyalty are also dropped by the same build step and would remove a large class of "does this damage kill it" guesswork; that is card-data work, not retrieval, and is deliberately out of this gameplan's scope

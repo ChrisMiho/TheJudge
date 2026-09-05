@@ -39,6 +39,7 @@
             "Human",
             "Wizard"
           ],
+          "keywords": [],
           "targets": []
         }
       ]
@@ -59,6 +60,7 @@
           ],
           "supertypes": [],
           "subtypes": [],
+          "keywords": [],
           "targets": []
         }
       ]
@@ -76,6 +78,7 @@
       "colors": [],
       "supertypes": [],
       "subtypes": [],
+      "keywords": [],
       "caster": "Player 2",
       "targets": [
         {

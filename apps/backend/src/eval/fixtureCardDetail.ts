@@ -28,7 +28,12 @@ export function cardDetailEntryFrom(card: Partial<ZoneCardItem>): CardDetailEntr
     manaValue: card.manaValue ?? 0,
     colors: card.colors ?? [],
     supertypes: card.supertypes ?? [],
-    subtypes: card.subtypes ?? []
+    subtypes: card.subtypes ?? [],
+    // REQ-180: fixtures carry keywords inline (as the real committed
+    // cardDetailByOracleId.json artifact will once a human refreshes it from
+    // Scryfall), the same fixture-convenience pattern REQ-176 established for
+    // oracleText/typeLine above.
+    keywords: card.keywords ?? []
   };
 }
 

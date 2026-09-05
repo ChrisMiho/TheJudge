@@ -530,6 +530,7 @@ describe("Backend - Ask AI", () => {
             colors: ["G"],
             supertypes: ["Legendary"],
             subtypes: ["Beast"],
+            keywords: [],
             targets: []
           }
         ],

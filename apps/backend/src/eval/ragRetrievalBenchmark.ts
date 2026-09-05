@@ -74,14 +74,18 @@ function meanReciprocalRank(ranks: number[]): number {
 }
 
 /**
- * REQ-178: the "polluted" condition simulates attached cards through the same
- * compact per-card signal production's `buildQueryParts` builds — name, type
- * line, and the keyword-vocabulary subset of oracle text, never full oracle
- * text — so this benchmark measures whatever query shape is actually shipped,
- * slice over slice, rather than freezing the pre-Slice-B pollution shape. The
- * committed card-detail artifact carries no `name` field (it is keyed by
- * oracle id, not card id), so the name component is empty here; that is a
- * benchmark-methodology limitation, not a production behavior difference.
+ * REQ-178/REQ-180: the "polluted" condition simulates attached cards through
+ * the same compact per-card signal production's `buildQueryParts` builds —
+ * name, type line, and real per-card Scryfall keywords — so this benchmark
+ * measures whatever query shape is actually shipped, slice over slice, rather
+ * than freezing an earlier pollution shape. The committed card-detail
+ * artifact carries no `name` field (it is keyed by oracle id, not card id),
+ * so the name component is empty here; that is a benchmark-methodology
+ * limitation, not a production behavior difference. Real committed keyword
+ * data is populated only once a human runs the Scryfall-sourced `data:build`
+ * chain (REQ-180); until then `keywords` is `[]` and pollution here is
+ * correspondingly weaker than it will be once that data lands — a disclosed,
+ * accurate reflection of the current committed artifact, not a bug.
  */
 export function buildPollutionText(cardDetailIndex: Map<string, CardDetailEntry>): string {
   const oracleIds = [...cardDetailIndex.keys()].sort();
@@ -91,7 +95,7 @@ export function buildPollutionText(cardDetailIndex: Map<string, CardDetailEntry>
   return chosen
     .map((oracleId) => {
       const entry = cardDetailIndex.get(oracleId);
-      return entry ? buildCompactCardSignal("", entry.typeLine, entry.oracleText) : "";
+      return entry ? buildCompactCardSignal("", entry.typeLine, entry.keywords) : "";
     })
     .join(" ");
 }

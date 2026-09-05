@@ -1,6 +1,6 @@
 {
   "id": "quick-lookup-card",
-  "description": "Lookup mode uses attached card oracle text to retrieve a rule absent from the question.",
+  "description": "Lookup mode uses the attached card's real Scryfall keyword list (REQ-180) to retrieve a rule absent from the question.",
   "request": {
     "mode": "lookup",
     "question": "What does this ability do?",
@@ -15,7 +15,8 @@
         "typeLine": "Legendary Creature — Beast",
         "colors": ["G"],
         "supertypes": ["Legendary"],
-        "subtypes": ["Beast"]
+        "subtypes": ["Beast"],
+        "keywords": ["Deathtouch"]
       }
     ]
   },
