@@ -21,6 +21,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 54` | PASS, no findings (attempt 1): all Current blocks verbatim vs live files; REQ-177–181 unused live, FLOW-024 high-water; amendment set re-grepped complete; RAG-DEFERRED citations repointed; technical-design-rules hold; live measurements reproduced (`retrieval:report` 6/9 same 3 failures, `test:eval` green, index 3,432/3,285/147/626); `STATUS.refined` unchanged, nothing committed → stop at PASS: docs PR + `owner-action` park | 2026-09-05 |
 | — | driver-resume | — | ok | `n/a (driver)` | run two (`/loop graph-implement`, tick 1): `git fetch`; ready-spec scan found `rag-rule-retrieval` (24/24 `accept`, PR #190 MERGED 2026-09-05T07:02:31Z, no code built); base `thejudge-auto/rag-rule-retrieval` fast-forwarded to `main` (`eb0db9a`); lock taken (`npm run graph:preflight -- --take-lock --slug rag-rule-retrieval --run-id graph-20260905-010802 --pid 83033`); both canaries denied; claim committed (`STATUS.owner-action → STATUS.active`, board row moved to `## active`) | 2026-09-05 |
 | — | gate-review | sonnet | ok | `0 → 23` | run two, build half. Applied 24 accept / 0 edit / 0 reject inside `GATE-QUESTIONS.md` (no diff change — all accept; `git diff` on `GATE-QUESTIONS.md` and `PRD/sections/` empty); wrote `## Gate verdicts`; resolved `## Open gate`; restored `STATUS.active → STATUS.refined`, README `status: refined`, board row moved to `## refined`. No `PRD/sections/` edits | 2026-09-05 |
+| 4 | gate-qc | sonnet | failed | `0 → 103 — cap 60 + grace 30 exhausted` | build-half re-check attempt 1 reported PASS (all `Current:` blocks verbatim, REQ-177–181 unused, `retrieval:report` 6/9 same 3 failures, `test:eval` green, budget test green, index 3,432/3,285/147/626) but the node fanned out to three helper subagents whose calls charged its own key; the hook denied every call from #91 onward, including the driver's park writes, until the owner deleted `.worktrees/.graph-run-state.json` by hand. Outcome recorded `failed` (cap overrun, contract `## Node table`), not PASS: the helpers were cut off mid-check, so the PASS is re-graded as attempt 2 with fan-out forbidden. Driver closed the two residuals it named: `prompt-assembly.md:53` is a debug-sidecar mention, not a scoring claim; `prompt-layout-spec.md:3` `Backed by:` line present and unchanged since the run-one PASS | 2026-09-05 |
 
 ## Gate verdicts
 
@@ -210,6 +211,42 @@ and list the findings. Do not commit; the driver commits.
 Copy the `Working directory:` line above, unchanged, into every prompt you write
 for any subagent you dispatch. Report PASS or FAIL and the complete findings list
 back to the driver.
+
+### gate-qc (build-half re-check, attempt 2)
+
+graph is controlling. This is an autonomous graph run (build-half run ID
+`graph-20260905-010802`); no human is available, so do not stop to ask clarifying
+questions — produce the PASS/FAIL report and set the STATUS marker per the skill.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Do NOT dispatch any subagent, fork, or helper agent: this node has a hard budget
+of 60 tool calls and every helper's calls count against it. Attempt 1 fanned out
+to three helpers, overran the cap, and was cut off; you are the re-grade. Work
+alone, in a single pass, and keep under 50 tool calls — batch reads and greps
+into few shell commands.
+
+Invoke the `thejudge-quality-check` skill on the package at
+`PRD/work/rag-rule-retrieval/`. This is the build-half re-entry required after
+gate-review. The owner accepted all 24 blocks unchanged (0 edit, 0 reject, no
+blocker questions), so the proposal in `GATE-QUESTIONS.md` is byte-identical to
+the run-one attempt-1 PASS recorded in `README.md` `## Preparation gate`, and the
+branch (`thejudge-auto/rag-rule-retrieval`, level with `main` at `eb0db9a` plus
+two driver bookkeeping commits) has had no `PRD/sections/` change since. The
+measurements in the brief were already reproduced today (`retrieval:report` 6/9
+with the same three failures, `test:eval` green, budget test green, index
+3,432/3,285/147/626) — do not re-run them. Focus the pass on agent-readiness of
+`DESIGN-BRIEF.md` and on a spot-check of the `Current:` blocks in
+`GATE-QUESTIONS.md` against live `PRD/sections/` (one `grep -F` per cited line
+batched into a single command is enough), plus a confirmation that REQ-177–181
+remain unused live. Do not write a GAMEPLAN or slice docs, do not edit
+`PRD/sections/`, `DESIGN-BRIEF.md`, or `GATE-QUESTIONS.md`. On PASS leave
+`STATUS.refined`; on FAIL set `STATUS.refining` and list the findings. Do not
+commit; the driver commits.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write
+for any subagent you dispatch (you should dispatch none). Report PASS or FAIL and
+the complete findings list back to the driver.
 
 ## Instruction ledger
 
