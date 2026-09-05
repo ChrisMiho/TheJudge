@@ -74,7 +74,7 @@ Proposed new requirement — reserved id, not written live. Inserted in
   - the prior state this replaces: `gameRulesRetrieval.ts` chose `scoreEntrySemantic` or `scoreEntry` for the whole index with no blend, which is why REQ-181's notes recorded that no fusion score had been measured
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -133,7 +133,7 @@ Proposed new requirement — reserved id, not written live. Inserted in
   - the alternatives were measured, not assumed: moving the model to S3 frees the 22.59 MB warmed model cache, which sits inside the 130 MB non-data reserve and is gitignored, so it is absent from the 118.095 MB data figure entirely
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -186,7 +186,7 @@ Proposed new requirement — reserved id, not written live. Inserted in
   - measured 2026-09-05: in a checkout whose model cache was empty, `npm run benchmark:rag-retrieval -- --semantic` returned the lexical numbers labelled `method=semantic-local` with no failure — the reason the *unset* default must stay `mock` rather than flipping repo-wide
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -248,7 +248,7 @@ Proposed addition — one new `- Notes:` bullet:
   - measured 2026-09-05 before the hybrid blend: under the semantic path the labelled fixtures scored `cascade-keyword` 2/2, `combat-deathtouch` 2/2, `counterspell-stack` 1/1, `quick-lookup-card` 0/1, `quick-lookup-multi-card` 0/1, `quick-lookup-no-card` 1/1, `state-based-actions` 1/2, `upkeep-trigger` 2/2 — three fixtures failing, not the two recorded in REQ-181's earlier note
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -293,7 +293,7 @@ Proposed addition — one new `- Notes:` bullet:
   - measured 2026-09-05: in a checkout with an unwarmed model cache (`apps/backend/data/models/` empty), `npm run benchmark:rag-retrieval -- --semantic` printed clean recall@5 0.5833 — the lexical figure — labelled `method=semantic-local`, and wrote it to `semantic-results.json` with no failure. After `node scripts/warm-embedding-model-cache.mjs` the same command returned the true semantic 0.8526. The guard above exists because of that observed silent substitution
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -342,7 +342,7 @@ Proposed replacement:
   - no hybrid lexical-plus-semantic fusion score was measured for this requirement; it merges the exact-rule-id boost with semantic ranking rather than claiming a measured fusion result. REQ-182 measured one afterwards and ships it
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -382,7 +382,7 @@ Proposed addition — one new `- Dependencies:` entry, after the REQ-181 line:
   - REQ-182 (the hybrid blend that is now System 3's shipped ranking)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -435,7 +435,7 @@ Proposed addition — one new `- Notes:` bullet:
   - **Cold start with the bundled embedding model (REQ-181), measured 2026-09-05** on a local Darwin arm64 checkout with a warmed on-disk cache, one run: importing `@huggingface/transformers` 120.3 ms, building the quantised feature-extraction pipeline 57.4 ms, first query embedding 3.6 ms — cold-start model readiness 181.2 ms — plus 3.7 ms to parse the 5.65 MB rule-embeddings artifact and 3.6 ms for the 2.04 MB rule index. Steady-state query embedding averaged 1.05 ms over 20 runs. So the semantic path adds roughly 185 ms to a cold process and about 1 ms per answer thereafter. AWS Lambda x86 with a cold filesystem is slower than this machine: the deployed figure is read from the function's own cold-start log line, and this local measurement bounds it rather than replacing it
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -481,8 +481,8 @@ Proposed addition — one new `- Dependencies:` entry:
   - REQ-183 (the compact vector encoding that relieved this budget)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: edit
+- Reason: add one more Notes bullet recording the 2026-09-05 deploy rejection: the 130 MB non-data reserve was measured on macOS, but on the linux/x64 CI runner onnxruntime-node's postinstall downloaded the CUDA runtime (which the Lambda CPU runtime never loads) and AWS rejected the package as over 250 MB unzipped even though the budget test passed. Fixed on main in PR #194: `scripts/package-lambda.sh` now sets `ONNXRUNTIME_NODE_INSTALL_CUDA=skip` for the packaging install and measures the real unzipped bytes with a per-entry breakdown, failing before upload when over quota. The reserve figure is to be re-measured on the CI runner, not a laptop.
 
 ---
 
@@ -518,7 +518,7 @@ Proposed replacement:
 - Backed by: DEC-032, DEC-046, REQ-178, REQ-179, REQ-180, REQ-181, REQ-182, REQ-183, REQ-184
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -601,7 +601,7 @@ Proposed replacement:
   REQ-182's notes for the measured sweep.
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -706,7 +706,7 @@ with:
   REQ-181, REQ-182, REQ-184, FLOW-006, FLOW-011, FLOW-023, NFR-001
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -779,7 +779,7 @@ Proposed replacement:
   (DEC-046, REQ-181, REQ-182)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -849,7 +849,7 @@ Proposed replacement:
 - up to 5 supplemental WotC CR rule excerpts dynamically retrieved from the committed rule index artifact, ranked by a hybrid blend of normalised cosine against the committed per-rule embeddings and normalised lexical IDF overlap, with the exact-rule-id boost merged into the blended score and lexical scoring alone retained as the mock/offline default and failure fallback (DEC-046, REQ-181, REQ-182), from a query built from the question plus each card's name, type line, and keywords rather than its full oracle text (REQ-178), and deduplicated by rule-number prefix against selected System 2 baseline rule numbers (REQ-179)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -904,7 +904,7 @@ with:
 Backed by: DEC-025, DEC-042, REQ-169, DEC-107, REQ-074, REQ-178, REQ-181, REQ-182
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
