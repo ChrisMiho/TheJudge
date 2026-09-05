@@ -6,7 +6,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "[graph-boundary] `rm -rf` is denied in every session."; graph tier: nohup true → "[graph-boundary] `nohup` is denied while a graph run holds the lock")`
 - Autonomous base: `origin/thejudge-auto/hybrid-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-173655/`
-- Current node: `plan`
+- Current node: `build`
 - Next action: `/graph-implement PRD/work/hybrid-rule-retrieval/` (the `/loop graph-implement` build loop is driving)
 
 ## Node ledger
@@ -23,6 +23,7 @@
 | — | driver-resume | — | ok | `n/a (driver)` | build half (`/loop graph-implement`, tick 1, 2026-09-05): `git fetch origin`; no stop sentinel; no lock held; ready-spec scan found `hybrid-rule-retrieval` at `STATUS.owner-action` with 15/15 `- Verdict:` slots answered (14 accept, 1 edit on NFR-017), docs PR #195 MERGED 2026-09-05T19:11:26Z at `c0aa52c`, no code built; base `thejudge-auto/hybrid-rule-retrieval` fast-forwarded to `origin/main` (`c0aa52c`); claim commit `b41ec8c` (`STATUS.active`, README `status: active`, board row under `## active`); lock taken (`npm run graph:preflight -- --take-lock --slug hybrid-rule-retrieval --run-id graph-20260905-191535`, pid 13714); graph canary `nohup true` denied | 2026-09-05 |
 | — | gate-review | sonnet | ok | `0 → 24` | applied 14 accept / 1 edit / 0 reject inside `GATE-QUESTIONS.md` (NFR-017 gained one `- Notes:` bullet recording the CUDA-runtime CI rejection and PR #194's fix; `git show 334f377 -- GATE-QUESTIONS.md` +7 lines); `git diff -- PRD/sections/` empty; `## Gate verdicts` written (15 rows), `## Open gate` resolved 2026-09-05; `STATUS.active → STATUS.refined`, README `status: refined`, board row under `## refined`; 12 tool calls, no subagents, 0 denials; commit `334f377` (local, not pushed) | 2026-09-05 |
 | 4 | gate-qc (build half, attempt 1) | sonnet | ok | `4 → 29` (4 driver calls charged before dispatch) | PASS, no findings: 21/21 `Current:` blocks byte-identical by script against live `PRD/sections/` at `c0aa52c`; REQ-182/183/184 unused, next free after REQ-181; 16-term amendment-set grep (three new terms) found only unrelated hits (UI `hybrid %` bands, `decisions/deployment.md` S3 staging); NFR-017 owner edit consistent with `scripts/package-lambda.sh` lines 43–44 (`ONNXRUNTIME_NODE_INSTALL_CUDA=skip`) and 64–101 (unzipped-size breakdown), `lambda-package-budget.test.mjs` still hardcodes the 130 MB reserve as the edit states; `test:eval` semantic 9/12 (same three fixtures) lexical 12/12; budget test 2/2, 118.095 MB of 120 MB; all 15 verdict slots filled; nothing committed, tree clean; 21 tool calls, no subagents, 0 denials. Driver wrote `## Preparation gate` PASS to the README | 2026-09-05 |
+| 5 | plan | sonnet | ok | `0 → 83` (node self-reported 34; the hook counter is the record) | `GAMEPLAN.md` + five slice docs (A `slice-a-hybrid-blend.md`, B `slice-b-eval-gating.md`, C `slice-c-lambda-vector-budget.md`, D `slice-d-cold-start-measurement.md`, E `slice-e-deploy-default.md`) + `slice-{a..e}.criteria.json` (10/6/8/2/7 criteria, driver-checked: all `false`, every one with an `evidence` block; 3 `manual`); all 15 `GATE-QUESTIONS.md` blocks assigned one slice each in the GAMEPLAN's assignment table (A 8, B 1, C 2, D 1, E 3); README slice table + implementation map, `status: active`, `STATUS.refined → STATUS.active` (only marker), board row under `## active`; `## Preparation gate` PASS verified by the node; no subagents, 0 denials; commit `94b3b33`; `git status --porcelain` empty | 2026-09-05 |
 
 ## Gate verdicts
 
@@ -285,6 +286,36 @@ Do not push; the driver publishes before `build`.
 Constraints: tool-call cap 120 for this node, counting every call. Do not dispatch subagents. Never touch the lock, the stop sentinel, or any `.worktrees/.graph-*` file.
 
 Report back, in this order: the slice list (letter, file name, one-line goal, the proposal blocks it applies, dependencies); the criteria count per slice and how many are `manual`; the `## Preparation gate` line you verified; the package state after the node (marker, README status, board heading); the commit hash; `git status --porcelain` output (expect empty); the tool-call count. Copy the `Working directory:` line above, unchanged, into every prompt you write.
+
+### build
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 6 (`build`) of graph run `graph-20260905-191535`, the build half driven by `graph-implement`. Invoke the `thejudge-implement-all` skill with the Skill tool (skill name `thejudge-implement-all`) on the package `PRD/work/hybrid-rule-retrieval/`, and follow its `## Mode` section for an orchestrator that is controlling: read `PRD/instructions/graph-workflow-contract.md` (`## Propose / apply / close`, `## Acceptance criteria are earned, not written`, `## Boundaries`), take the recorded autonomous base from the package README's `## Autonomous metadata` section (`origin/thejudge-auto/hybrid-rule-retrieval`), and treat every stop as a park reported back to the driver, never as a question to a user. Read `.claude/skills/thejudge-implement-all/SKILL.md` and its `reference.md`, `PRD/instructions/workflow-reference.md`, `PRD/instructions/runtime-process-hygiene.md`, `PRD/instructions/plain-language-standard.md`, and `PRD/instructions/technical-design-rules.md` before acting.
+
+Branch and worktree (fixed by the driver): create the worktree at `.worktrees/implement-hybrid-rule-retrieval` (inside the repo-local `.worktrees/` root, nowhere else) from the latest fetched `origin/thejudge-auto/hybrid-rule-retrieval`, and use the explicit shared remote branch `thejudge-auto/hybrid-rule-retrieval-work` — distinct from the base, so the PR is `thejudge-auto/hybrid-rule-retrieval-work` → `thejudge-auto/hybrid-rule-retrieval`. Open that PR with `gh pr create` after the first milestone push (base `thejudge-auto/hybrid-rule-retrieval`, never `main`); its body opens with the plain-language block `PRD/instructions/plain-language-standard.md` requires and ends with the lines
+   🤖 Generated with [Claude Code](https://claude.com/claude-code)
+   https://claude.ai/code/session_01HTYnaUSGyYNRwK4J1ggRW9
+Never merge or close the PR. Never push to the base branch or to `main`. Never force-push in any form.
+
+The work: `GAMEPLAN.md` and the five slice docs A–E, in dependency order (A, then B and C and D in any order that respects the table, then E). Slice A is where the hybrid blend lands; treat its measured gates in `DESIGN-BRIEF.md` `## Measurement plan` as the bar. Each slice's `slice-<letter>.criteria.json` is the gate: a criterion is set `true` only after the boundary hook has observed its evidence (the hook denies a premature flip and names the evidence still missing; a denied call is never retried verbatim — earn the evidence first, then flip). A `manual` criterion is earned by a dated observation line naming its id, written in the slice doc. Report `ok` only when every criterion in every slice's file is `true`; any `false` fails the node.
+
+Apply product truth by intent: every one of the 15 finalized `GATE-QUESTIONS.md` blocks is applied to `PRD/sections/` in the slice the GAMEPLAN's assignment table names, re-derived against the current text of the target file (never a blind replay of the frozen patch), committed together with that slice's code. The NFR-017 block carries an owner-added `- Notes:` bullet (the CUDA-runtime CI rejection and PR #194's fix) — apply it with the rest of that block in slice C. No block was rejected, so nothing is burned. Apply each block exactly once.
+
+Verification per slice: the slice's own `## Tests` and `## Acceptance criteria`, then `npm run quality:check`, with the non-ignored worktree matching the index before and after; commit `feat(hybrid-rule-retrieval): complete slice <letter>` and push `HEAD` to the shared branch without force. Commit with explicit paths only (`git add <path> ...`; never `git add -A`, `--all`, or `.`) with the trailer lines
+   Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+   Claude-Session: https://claude.ai/code/session_01HTYnaUSGyYNRwK4J1ggRW9
+`npm run benchmark:rag-retrieval` (both modes) rewrites the tracked `apps/backend/src/eval/benchmark/results.json` and `semantic-results.json`; where a slice legitimately changes those numbers, commit them as that slice's output, and where only `scoredAt` moved, restore them with `git checkout --` before committing.
+
+Write scope: write only inside `.worktrees/implement-hybrid-rule-retrieval/` and `PRD/work/hybrid-rule-retrieval/`. The driver asserts this on return and a write anywhere else fails the node. Never edit the launch checkout's code, `PRD/sections/`, `CLAUDE.md`, `.claude/settings*.json`, `.claude/graph-profile.json`, or any `thejudge-*` skill. Never touch the lock, the stop sentinel, or any `.worktrees/.graph-*` file. Never run `npm run data:refresh` or any Scryfall refresh. Never use `nohup`, a background `&`, `pkill`, or `killall`. Slices C and E touch deploy scripts and the Lambda budget test only; do not run `scripts/aws-deploy.sh` or `scripts/aws-bootstrap.sh` against AWS — deploying is not in scope, the tests are.
+
+When every slice is `done`: set `status: ship-ready` in the package README, replace the marker with `STATUS.ship-ready` (exactly one marker), move the board row under `## ship-ready` in `PRD/work/STATUS.md`, commit and push those with the last slice, and run the READY loop from `reference.md`.
+
+Constraints: tool-call cap 1200 for this node, counting every call you and any helper make. Do not dispatch implementation subagents; a helper's calls charge this node's own budget. If a slice is blocked, an acceptance gate cannot be made green from the confirmed decisions and tests, or a rebase conflict's intent is not derivable, stop: leave the slice `blocked` with the evidence in its doc, push nothing further for it, and report `failed` with the reason — never guess a product decision.
+
+Report back, in this order: `ok` or `failed`; the PR URL and its head commit; the worktree path; each slice's final status with its criteria count true/total; the list of every path you wrote outside the worktree (expect only `PRD/work/hybrid-rule-retrieval/` entries, or none); the measured numbers for the brief's gates (fixtures passing under the blend, benchmark recall@5 clean and polluted, Lambda data MB of 120, cold-start figure) beside the brief's values; the package state (marker, README status, board heading); `npm run quality:check` result; `git status --porcelain` of the worktree (expect empty); the tool-call count. Copy the `Working directory:` line above, unchanged, into every prompt you write.
 
 ## Instruction ledger
 
