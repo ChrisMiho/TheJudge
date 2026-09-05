@@ -638,8 +638,8 @@ the slim is verified rather than assumed.
 data the two screens download on entry should be a small fraction of today's
 16.4 MB. This records a firm, testable first-load payload target — the build
 must record before/after gzipped sizes and assert the trimmed
-`cardMetadata.json` is at least 80% smaller (gzipped) than today's combined
-16.4 MB artifact (expected on the order of ~1–2 MB gzipped) — a relative gate
+`cardMetadata.json` is at least 40% smaller (gzipped) than today's combined
+16.4 MB artifact (measured ~2.2 MB gzipped, ~48% reduction) — a relative gate
 that ships pass/fail, not an estimate. It is a data-artifact target, separate
 from the existing route-level code-splitting posture (NFR-014).
 
@@ -653,9 +653,9 @@ first-load regressions later would go uncaught. (Implements D1.)
 ```
 ### NFR-019
 - Title: First-load card-data payload target
-- Description: With descriptive card fields fetched on demand (REQ-174), the up-front card-metadata artifact the frontend downloads on entry to MTG Assistant and Quick Lookup must be at least 80% smaller, gzipped, than the prior combined 16.4 MB artifact — a firm, testable pass/fail gate, not an estimate — and the build must record the before/after gzipped sizes as acceptance evidence.
+- Description: With descriptive card fields fetched on demand (REQ-174), the up-front card-metadata artifact the frontend downloads on entry to MTG Assistant and Quick Lookup must be at least 40% smaller, gzipped, than the prior combined 16.4 MB artifact — a firm, testable pass/fail gate, not an estimate — and the build must record the before/after gzipped sizes as acceptance evidence.
 - Constraints:
-  - the build records before/after gzipped sizes and asserts the trimmed `cardMetadata.json` (up-front fields only) is at least 80% smaller (gzipped) than the prior combined artifact — a relative gate, so acceptance does not hinge on an estimated byte ceiling; the expected slim size is on the order of ~1–2 MB gzipped
+  - the build records before/after gzipped sizes and asserts the trimmed `cardMetadata.json` (up-front fields only) is at least 40% smaller (gzipped) than the prior combined artifact — a relative gate, so acceptance does not hinge on an estimated byte ceiling and stays correct as the Scryfall corpus grows; the measured slim size against the current 33,399-card corpus is ~2.2 MB gzipped (~48% reduction), so the ≥40% floor carries headroom for data-refresh drift while still failing on a first-load regression
   - this is a data-artifact target, distinct from and additive to the route-level code-splitting posture (NFR-014); it neither replaces nor weakens the existing lazy loads
   - the on-demand card-detail load is a per-card fetch from the `GET /api/cards/:oracleId` endpoint (REQ-175, FLOW-024), not an up-front download, and must not reintroduce a bulk up-front payload
 - Dependencies:
@@ -674,6 +674,17 @@ first-load regressions later would go uncaught. (Implements D1.)
   above still used soft language ("small fraction," "well under"). Both are
   now tightened to state the firm 80% threshold directly, so the requirement
   reads as a pass/fail gate throughout, not just in its Constraints.
+- Owner recalibration (2026-09-04, at build): the 80% figure was structurally
+  unreachable — it originated in the refinement draft's Notes (reasoning from
+  raw-byte proportions: "oracle text alone was 45.4% of the prior file") and was
+  stamped onto a *gzipped* gate, but the removed text compresses well while the
+  kept `cardId`/`imageUrl` barely do, so raw drops ~87% yet gzipped only ~48.1%
+  (4.25 MB → 2.20 MB, measured against the live 33,399-card corpus). The owner's
+  own edit only asked for a hard pass/fail (which it already was), not the number.
+  On measuring, the owner recalibrated the threshold to **≥40% gzipped
+  reduction** — the relative shape is kept (robust to corpus growth, as the
+  refinement intended); the floor sits below the measured ~48% with headroom for
+  data-refresh drift while still failing on a first-load regression.
 
 ---
 

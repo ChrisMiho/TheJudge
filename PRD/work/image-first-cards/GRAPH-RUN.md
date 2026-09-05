@@ -5,8 +5,20 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `build` (Slices A+B done & pushed, PR #185; Slice C blocked) → **PARKED at `owner-action`**
-- Next action: owner decides NFR-019's target (see `## Open gate`); then `/graph-implement PRD/work/image-first-cards/` resumes Slice C, review, and land
+- Current node: `review` (build complete, all 3 slices in PR #185; independent no-write review of the full deliverable)
+- Next action: `/graph-implement PRD/work/image-first-cards/` (review → land)
+
+## Owner decision — NFR-019 recalibrated (2026-09-04)
+
+The Slice-C blocker (NFR-019's ≥80%-gzipped-reduction gate unreachable, measured
+48.1%) is resolved by the owner: the 80% originated in the refinement draft's
+raw-byte reasoning stamped onto a gzipped gate (not the owner's number). On
+measuring, the owner recalibrated the threshold to **≥40% gzipped reduction**,
+keeping the relative shape (robust to corpus growth) with headroom below the
+measured ~48% for data-refresh drift. Proposal (`GATE-QUESTIONS.md` NFR-019)
+updated with the new threshold + provenance note. Slice C resumes: change the
+build-script floor `0.8 → 0.4`, apply the recalibrated NFR-019 to
+`PRD/sections/`, commit the (already-green) Slice-C code, push, un-block PR #185.
 
 ## Resume note — amendment set completed (2026-09-04)
 
@@ -65,6 +77,7 @@ deliverable's base→main PR is therefore fresh (not #184) and merges last.
 | 5 | plan | sonnet | ok | `0 → 51` | `GAMEPLAN.md` + 3 slice docs + 3 criteria files; dependency-safe order A→B→C (A endpoint/artifact/on-demand popup, B ask-ai server-side gated by byte-identical `test:eval`, C slim list gated by NFR-019 80%-gzipped); criteria: A 13 / B 8 / C 10; `STATUS.active`; board → active; no commit (driver publishes) | 2026-09-04 |
 | 6 | build | sonnet | failed | `0 → 152` | attempt 1 STALLED (harness stream watchdog, 600s no-progress; infra, not a logic failure) mid-Slice-A while debugging QuickLookup/interaction-flow test failures. Worktree `.worktrees/implement-image-first-cards` has Slice A largely implemented but uncommitted (21 files: `cardDetail.ts` + `routes/cardDetail.ts`+test, `build-card-detail-by-oracle-id.mjs`, `cardDetailByOracleId.json`, `CardPresentation.tsx`+tests, `lib/cardDetail.ts`, route wiring); no commits, no PR. Driver renamed worktree branch → `thejudge-auto/image-first-cards-work`, WIP preserved; re-dispatching build attempt 2 to resume with anti-stall guardrails | 2026-09-04 |
 | 6 | build | sonnet | parked | `0 → 491` | attempt 2 (resume): Slice A DONE (13/13 criteria, live Playwright verified — on-demand load, offline degrade, image-fail name-only zero-fetch; REQ-175/FLOW-024 new + 9 amended across 11 `PRD/sections/` files; commit `28e4eef`) and Slice B DONE (8/8 criteria, `test:eval` byte-identical proof; fixed 2 real bugs — `colors` kept locally + `FrozenAskAiContext` trimmed shape; REQ-176 new + REQ-167/integrations/quick-lookup amended; commit `0bea2f3`). Both pushed to `-work`, PR #185 opened → base. Slice C BLOCKED on a genuine owner decision: NFR-019's ≥80%-gzipped-reduction gate is structurally unreachable — measured 48.1% (removed oracle text compresses well; kept `cardId`/`imageUrl` barely do); C code green but uncommitted, PRD truth for C held. 4 options in PR #185 blocker comment. Parks at `owner-action` | 2026-09-04 |
+| 6 | build | sonnet | ok | `0 → 187` | attempt 3 (resume after owner recalibrated NFR-019 → ≥40%): Slice C committed (`37d5aed`) — `CardMetadataItem` slimmed, build-script floor 0.8→0.4, gate now passes at 48.1% ≥ 40%; NFR-019 truth applied fresh to `non-functional-requirements.md` at ≥40% (no lingering 80%) + REQ-174 new + integrations/system-map amendments; fixed a real combo-quality test regression the slim caused; all 10 Slice-C criteria true; full suite green (fe 1315 / be 398 / scripts 436), Playwright-verified; PR #185 un-blocked, all 3 slices A+B+C present. Build complete → review | 2026-09-04 |
 
 Heartbeat note: nodes 1–2 ran before the driver armed
 `.worktrees/.graph-run-state.json`, so the per-node counter never keyed this run
@@ -689,8 +702,81 @@ Report back:
 5. Verification commands run + results
 6. Commit hashes
 
+### build (attempt 3 — finish Slice C after NFR-019 recalibration)
+
+graph is controlling
+
+You are node 6 (`build`), attempt 3, of an autonomous graph-implement (build-half) run. Slices A and B are DONE and pushed (PR #185). Slice C was blocked only on NFR-019's threshold; the owner has recalibrated it. Invoke the `thejudge-implement-all` skill (or `thejudge-implement` for the single remaining Slice C) and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Package path: `PRD/work/image-first-cards/`
+- Recorded autonomous base: `origin/thejudge-auto/image-first-cards`
+- Shared work branch: `thejudge-auto/image-first-cards-work` (existing)
+- Worktree: `.worktrees/implement-image-first-cards` (existing — reuse; Slice C code is already implemented and green there, uncommitted)
+
+RESUME STATE:
+- Slice C's code (trim `CardMetadataItem` to `cardId`/`name`/`imageUrl`/`colors`, ~14 consumer/test updates) is ALREADY implemented and green in the worktree, uncommitted. Do NOT rewrite it — finish and commit it.
+- The ONLY thing that blocked it: `scripts/build-card-metadata.mjs` asserts `MIN_GZIPPED_REDUCTION = 0.8`, which fails at the measured 48.1%. The owner has recalibrated NFR-019 to **≥40% gzipped reduction** (relative gate kept, robust to corpus growth; measured ~48% sits above the ≥40% floor).
+
+Do this:
+1. Change the build-script floor from `0.8` to `0.4` (`MIN_GZIPPED_REDUCTION` in `scripts/build-card-metadata.mjs`), and update its doc comment to state the ≥40% relative gate.
+2. APPLY the recalibrated NFR-019 product truth to `PRD/sections/non-functional-requirements.md` BY INTENT from the finalized `GATE-QUESTIONS.md` NFR-019 slot (now ≥40%, with the provenance note) — TOGETHER WITH the code, in Slice C's commit. Do not reintroduce the 80% anywhere.
+3. Re-run Slice C's gates: `node scripts/build-card-metadata.mjs` (now passes at ~48% ≥ 40%), plus `npm run typecheck` / `lint` / the frontend+backend tests non-watch (`-- --run`). ANTI-STALL: never run tests/servers in watch or foreground mode; one-shot commands only; never `npm run dev` in the foreground.
+4. Ensure every criterion in `slice-c.criteria.json` reads `true`.
+5. Commit Slice C on `thejudge-auto/image-first-cards-work`, push, and update PR #185 (remove the `[BLOCKED]` title marker; it now shows the whole A+B+C deliverable).
+
+Every path you write must lie inside `.worktrees/implement-image-first-cards/` or `PRD/work/image-first-cards/`. Do NOT merge, force-push, or push `main`. `land` stays human.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch, on its own line.
+
+Report back:
+1. Outcome: ok | failed (with reason)
+2. Slice C: committed + all criteria true (evidence); the build-card-metadata gate result (measured reduction %)
+3. NFR-019 `PRD/sections/` truth applied (≥40%, no lingering 80%)
+4. PR #185 URL + confirmation the `[BLOCKED]` marker is removed
+5. Verification commands + results
+6. Commit hash
+
+### review
+
+graph is controlling
+
+You are node 7 (`review`) of an autonomous graph-implement run — the independent, no-write reviewer. You have READ/SEARCH tools only; you hold no Write/Edit and must not modify anything. Run autonomously; there is no human at the terminal. You have fresh context: you did NOT see the build node's work being done — grade the result on its own merits.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Review target: PR #185 — the full image-first-cards deliverable (Slices A+B+C) on `thejudge-auto/image-first-cards-work` against base `thejudge-auto/image-first-cards`. Read the diff with `git diff thejudge-auto/image-first-cards...origin/thejudge-auto/image-first-cards-work` (fetch origin first) and/or `gh pr diff 185`.
+
+Rubric — the slices' OWN acceptance criteria, nothing else. Read and grade against:
+- `PRD/work/image-first-cards/slice-a-card-detail-endpoint-and-on-demand-popup.md` + `slice-a.criteria.json`
+- `PRD/work/image-first-cards/slice-b-ask-ai-server-side-card-text.md` + `slice-b.criteria.json`
+- `PRD/work/image-first-cards/slice-c-slim-up-front-card-list.md` + `slice-c.criteria.json`
+- context: `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md` (the approved product-truth proposal).
+
+Focus your correctness checks on:
+1. DEC-078 offline resilience is honored — the image-fail fallback shows the card NAME ONLY and issues NO forced fetch; the on-demand popup fetch degrades gracefully offline without blocking Remove/other controls. (Two `- Owner note:` flags exist on REQ-058/FLOW-006; the code must not reverse the offline guarantee.)
+2. The on-demand `GET /api/cards/:oracleId` popup fetch is wired across the shared `CardPresentation` surfaces.
+3. Ask-ai (Slice B) resolves card text server-side and the assembled prompt is proven byte-identical (`test:eval`), with the client no longer sending card text.
+4. NFR-019 (Slice C): the build-script gate asserts ≥40% gzipped reduction (NOT 80%), and the applied `PRD/sections/non-functional-requirements.md` truth matches — no 80% figure remains anywhere.
+5. The applied `PRD/sections/` product truth matches the approved `GATE-QUESTIONS.md` proposal by intent (spot-check the key REQ/FLOW/NFR against the finalized diffs).
+
+SEVERITY RULE (strict): flag only gaps affecting correctness or the slices' stated acceptance criteria. A preference, a style note, or an improvement OUTSIDE the slices' stated requirements is NEVER Critical or Important and must not be raised as one — a manufactured finding wastes a build loop the run cannot get back. Rate each finding Critical / Important / Minor, and say plainly if there are none.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch, on its own line.
+
+Report back:
+1. Verdict: APPROVE (no Critical/Important) | CHANGES (list Critical/Important)
+2. Per focus-area (1–5): pass, or the specific gap with `file:line`
+3. Findings: none, or each as Critical/Important/Minor with `file:line` and the concrete failure it causes
+4. Whether any criterion in the three criteria.json files is not actually met by the diff
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | Image-first cards: slim the up-front card list and fetch card detail on demand from a new backend card endpoint, moving ask-ai's card-text read server-side | answered-once | shape | — |
+| recalibrate NFR-019's first-load gate — the 80% gzipped-reduction target is unreachable (measured 48%); keep it relative, set the floor to ≥40% | answered-once | build | — |
+| recalibrate NFR-019's first-load gate — the 80% gzipped-reduction target is unreachable (measured 48%); keep it relative, set the floor to ≥40% | answered-once | build | — |
